@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderInvoice" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="head" property="head" jdbcType="VARCHAR" />
+    <result column="context" property="context" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, order_id, head, context
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_invoice
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据订单ID查询订单发票信息 -->
+  <select id="selectByOrderId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_invoice
+    where order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM trade_order_invoice WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM trade_order_invoice
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderInvoice" >
+    insert into trade_order_invoice (id, order_id, head, 
+      context)
+    values (#{id,jdbcType=VARCHAR}, #{orderId,jdbcType=VARCHAR}, #{head,jdbcType=VARCHAR}, 
+      #{context,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderInvoice" >
+    insert into trade_order_invoice
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="orderId != null" >
+        order_id,
+      </if>
+      <if test="head != null" >
+        head,
+      </if>
+      <if test="context != null" >
+        context,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="head != null" >
+        #{head,jdbcType=VARCHAR},
+      </if>
+      <if test="context != null" >
+        #{context,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.order.entity.TradeOrderInvoice" >
+    update trade_order_invoice
+    <set >
+      <if test="orderId != null" >
+        order_id = #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="head != null" >
+        head = #{head,jdbcType=VARCHAR},
+      </if>
+      <if test="context != null" >
+        context = #{context,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.order.entity.TradeOrderInvoice" >
+    update trade_order_invoice
+    set order_id = #{orderId,jdbcType=VARCHAR},
+      head = #{head,jdbcType=VARCHAR},
+      context = #{context,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

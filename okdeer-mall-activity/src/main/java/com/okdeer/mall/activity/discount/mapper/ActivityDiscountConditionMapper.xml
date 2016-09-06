@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="discount_id" property="discountId" jdbcType="VARCHAR" />
+    <result column="arrive" property="arrive" javaType="java.math.BigDecimal" jdbcType="DECIMAL" />
+    <result column="discount" property="discount" javaType="java.math.BigDecimal" jdbcType="FLOAT" />
+    <result column="sort" property="sort" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id,discount_id,arrive,discount
+  </sql>
+  
+  <!-- 判断是否为空，添加店铺满立减和折扣活动条件 -->
+  <insert id="insertActivityDiscountCondition" parameterType="java.util.List">
+    INSERT INTO activity_discount_conditions(
+        discount_id,
+        arrive,
+        discount,
+        sort,
+        id)values
+    <foreach collection="list" item="item" index="index" separator=",">
+          (#{item.discountId,jdbcType=VARCHAR},
+          #{item.arrive,jdbcType=DECIMAL},
+          #{item.discount,jdbcType=FLOAT},
+          #{item.sort,jdbcType=INTEGER},
+          #{item.id,jdbcType=VARCHAR})
+	</foreach>
+  </insert>
+  
+  <!-- 删除该活动的条件 -->
+  <delete id="deleteActivityDiscountCondition" parameterType="java.lang.String">
+    DELETE FROM activity_discount_conditions where discount_id = #{discountId,jdbcType=VARCHAR};
+  </delete>
+  
+  <!-- 根据活动ID查询活动下的满减条件 -->
+  <select id="selectByDiscountId" resultMap="BaseResultMap" parameterType="java.lang.String">
+    SELECT
+     <include refid="Base_Column_List" />
+    FROM activity_discount_conditions
+    WHERE discount_id = #{discountId,jdbcType=VARCHAR}
+    ORDER BY sort ASC
+  </select>
+  
+  <!-- 根据主键查询活动项消息 add by zengj -->
+   <select id="findByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+    SELECT
+     <include refid="Base_Column_List" />
+     FROM activity_discount_conditions
+    WHERE id = #{id,jdbcType=VARCHAR}
+   </select>
+  
+</mapper>

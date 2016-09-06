@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.column.mapper.ServerColumnStoreMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.ServerColumnStore" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="column_server_id" property="columnServerId" jdbcType="VARCHAR" />
+    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+    <result column="sort" property="sort" jdbcType="TINYINT" />
+    <result column="is_recommend" property="isRecommend" jdbcType="TINYINT" />
+  </resultMap>
+ 
+  <sql id="Base_Column_List" >
+    id, column_server_id, store_id, sort, is_recommend
+  </sql>
+ 
+  <!-- 根据服务栏目id查询服务栏目关联店铺信息 -->
+  <select id="findByServerColumnId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM column_server_store
+    WHERE column_server_id = #{serverColumnId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据服务栏目id删除服务栏目关联店铺信息 -->
+  <delete id="deleteByServerColumnId" >
+    DELETE FROM column_server_store 
+	 WHERE column_server_id = #{serverColumnId,jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 插入服务栏目关联店铺 -->
+  <insert id="insert" parameterType="com.okdeer.mall.operate.column.mapper.ServerColumnAreaMapper" >
+    INSERT INTO column_server_store (id, column_server_id, store_id, sort, is_recommend)
+    VALUES (#{id,jdbcType=VARCHAR}, #{columnServerId,jdbcType=VARCHAR}, #{storeId,jdbcType=VARCHAR}, 
+      #{sort,jdbcType=TINYINT}, #{isRecommend,jdbcType=TINYINT} )
+  </insert>
+  
+  <!-- 根据店铺ID查询服务栏目信息 add by zengj-->
+  <select id="findByStoreId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM column_server_store
+    WHERE store_id = #{storeId,jdbcType=VARCHAR}
+    limit 1
+  </select>
+  
+  <!-- 新增多条数据  -->
+  <insert id="insertList">
+     INSERT INTO column_server_store (id, column_server_id, store_id, sort, is_recommend)
+     VALUES
+     <foreach collection="serverColumnStores" item="d" separator=",">
+         <trim>
+             (
+	             #{d.id,jdbcType=VARCHAR},
+	             #{d.columnServerId,jdbcType=VARCHAR},
+	             #{d.storeId,jdbcType=VARCHAR},
+	             #{d.sort,jdbcType=VARCHAR},
+	             #{d.isRecommend,jdbcType=VARCHAR}
+             )
+        </trim>
+     </foreach>
+   </insert>
+   
+  <!-- 根据店铺id查询是否已被关联 add by tangy -->
+  <select id="findByStoreIds" resultType="int" >
+    SELECT 
+    count(id)
+    FROM column_server_store
+    WHERE store_id in  
+    <foreach collection="storeIds" open="(" close=")" index="index" item="item"  separator=",">
+       #{item}
+    </foreach>
+  </select>
+  
+</mapper>

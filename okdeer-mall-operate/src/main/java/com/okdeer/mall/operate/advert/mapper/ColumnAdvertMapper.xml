@@ -1,0 +1,737 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.advert.mapper.ColumnAdvertMapper">
+	<resultMap type="com.okdeer.mall.advert.entity.ColumnAdvert" id="columnAdvertRsMap">
+		<id column="id" property="id" jdbcType="VARCHAR"/>
+		<result column="position_id" property="positionId" jdbcType="VARCHAR"/>
+		<result column="belong_type" property="belongType" jdbcType="VARCHAR"/>
+		<result column="name" property="name" jdbcType="VARCHAR"/>
+		<result column="target_type" property="targetType" jdbcType="TINYINT" javaType="com.okdeer.mall.advert.enums.AdvertTargetTypeEnum"/>
+		<result column="target" property="target" jdbcType="TINYINT" javaType="com.okdeer.mall.advert.enums.BusinessFastNavigateEnum"/>
+		<result column="target_url" property="targetUrl" jdbcType="VARCHAR"/>
+		<result column="pic_url" property="picUrl" jdbcType="VARCHAR"/>
+		<result column="area_type" property="areaType" jdbcType="TINYINT" javaType="com.okdeer.mall.common.enums.AreaType"/>
+		<result column="start_time" property="startTime" jdbcType="TIMESTAMP"/>
+		<result column="end_time" property="endTime" jdbcType="TIMESTAMP"/>
+		<result column="is_pay" property="isPay" jdbcType="TINYINT" javaType="com.okdeer.mall.advert.enums.AdvertIsPayEnum"/>
+		<result column="trade_num" property="tradeNum" jdbcType="VARCHAR"/>
+		<result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.advert.enums.AdvertStatusEnum"/>
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+		<result column="create_user_id" property="createUserId" jdbcType="VARCHAR"/>
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+		<result column="update_user_id" property="updateUserId" jdbcType="VARCHAR"/>
+		<result column="disabled" property="disabled" jdbcType="INTEGER" javaType="com.yschome.base.common.enums.Disabled"/>
+		<result column="pv" property="pv" jdbcType="INTEGER"/>
+		<result column="on_shelf_time" property="onShelfTime" jdbcType="TIMESTAMP"/>
+		<result column="off_shelf_time" property="offShelfTime" jdbcType="TIMESTAMP"/>
+	</resultMap>
+
+	<resultMap type="com.okdeer.mall.advert.entity.ColumnAdvertVo" id="columnAdvertVoRsMap" extends="columnAdvertRsMap">
+		<result column="positionName" property="positionName" jdbcType="VARCHAR"/>
+		<result column="agentName" property="agentName" jdbcType="VARCHAR"/>
+		<result column="approval_time" property="approvalTime" jdbcType="TIMESTAMP"/>
+		<result column="advertiser" property="advertiser" jdbcType="VARCHAR"/>
+		<result column="cost" property="cost" jdbcType="DECIMAL"/>
+		<result column="approval_status" property="approvalStatus" jdbcType="TINYINT" javaType="com.okdeer.mall.common.enums.AuditStatusEnum"/>
+		<result column="log" property="log" jdbcType="VARCHAR"/>
+	</resultMap>
+
+	<resultMap type="com.okdeer.mall.advert.entity.AdvertDetailVo" id="advertDetailMap" extends="columnAdvertRsMap">
+		<!-- 关联广告位属性 -->
+		<association property="advertPosition" javaType="com.okdeer.mall.advert.entity.AdvertPosition">
+			<id column="positionId" property="id" jdbcType="VARCHAR"/>
+			<result column="positionName" property="name" jdbcType="VARCHAR"/>
+		</association>
+		<!-- 关联广告商 -->
+		<association property="advertInfo" javaType="com.okdeer.mall.advert.entity.ColumnAdvertInfo">
+			<id column="advertInfoId" property="id" jdbcType="VARCHAR"/>
+			<result column="advertiser" property="advertiser" jdbcType="VARCHAR"/>
+			<result column="contact" property="contact" jdbcType="VARCHAR"/>
+			<result column="phone" property="phone" jdbcType="VARCHAR"/>
+			<result column="cost" property="cost" jdbcType="DECIMAL"/>
+			<result column="protocol_url" property="protocolUrl" jdbcType="VARCHAR"/>
+		</association>
+		<!-- 关联广告审核 -->
+		<association property="advertApproval" javaType="com.okdeer.mall.advert.entity.ColumnAdvertApproval">
+			<id column="approvalId" property="id" jdbcType="VARCHAR"/>
+			<result column="auditStatus" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.common.enums.AuditStatusEnum"/>
+			<result column="log" property="log" jdbcType="VARCHAR"/>
+		</association>
+		<!-- 关联广告区域关系 -->
+		<collection property="advertAreaList" ofType="com.okdeer.mall.advert.entity.ColumnAdvertArea">
+			<id column="aaId" property="id" jdbcType="VARCHAR"/>
+			<result column="area_id" property="areaId" jdbcType="VARCHAR"/>
+			<result column="type" property="type" jdbcType="TINYINT"/>
+		</collection>
+		<!-- 关联广告小区关系 -->
+		<collection property="advertCommunityList" ofType="com.okdeer.mall.advert.entity.ColumnAdvertCommunity">	
+			<id column="acId" property="id" jdbcType="VARCHAR"/>
+			<result column="communityName" property="communityName" jdbcType="VARCHAR"/>
+			<result column="city_id" property="cityId" jdbcType="VARCHAR"/>
+			<result column="community_id" property="communityId" jdbcType="VARCHAR"/>
+		</collection>
+	</resultMap>
+	
+	<sql id="base_column_list">
+		id, position_id, belong_type, name, target_type, target, target_url, pic_url,
+		area_type, start_time, end_time, is_pay, trade_num, status, create_time, create_user_id,
+		update_time, update_user_id, disabled, pv, on_shelf_time, off_shelf_time
+	</sql>
+	
+	<select id="selectByPrimaryKey" resultMap="columnAdvertRsMap">
+		SELECT <include refid="base_column_list" />
+		FROM column_advert
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</select>
+	
+<!-- update by  zhulq 将未开始的广告置成开始 必须要审核通过  -->
+	<select id="getAdvertForJob" resultMap="columnAdvertRsMap">
+		SELECT ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
+		ca.area_type, ca.start_time, ca.end_time, ca.is_pay, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
+		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, caa.status as appStatus
+		FROM column_advert ca LEFT JOIN column_advert_approval caa ON caa.advert_id = ca.id
+		WHERE caa.status = 1  
+		<if test="status != null">
+			AND ca.status = #{status}
+		</if>
+		<if test="currentTime != null and timeColumn != null and timeLogicSymbol != null">
+			AND ${timeColumn} ${timeLogicSymbol} #{currentTime}
+		</if>
+	</select>
+	
+<!-- add by  zhulq 将进行中的广告置成结束  不用判断是否审核通过   -->
+	<select id="getAdvertStartForJob" resultMap="columnAdvertRsMap">
+		SELECT ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
+		ca.area_type, ca.start_time, ca.end_time, ca.is_pay, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
+		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, caa.status as appStatus
+		FROM column_advert ca LEFT JOIN column_advert_approval caa ON caa.advert_id = ca.id
+		WHERE 1 = 1  
+		<if test="status != null">
+			AND ca.status = #{status}
+		</if>
+		<if test="currentTime != null and timeColumn != null and timeLogicSymbol != null">
+			AND ${timeColumn} ${timeLogicSymbol} #{currentTime}
+		</if>
+	</select>
+	
+	<select id="getAdvertNumInCommunitys" resultType="int">
+	    SELECT  COUNT(DISTINCT ca.id) FROM column_advert ca
+        LEFT JOIN column_advert_community cac ON cac.advert_id=ca.id 
+        WHERE cac.community_id IN 
+        <foreach collection="communitys" index="index" item="item" open="(" close=")" separator=",">
+        	#{item.communityId}
+        </foreach>
+        AND ca.belong_type != 0 AND ca.position_id=#{positionId, jdbcType=VARCHAR}
+		AND ca.disabled = 0  
+	</select>
+	
+	<select id="findColumnAdvertPage" resultMap="columnAdvertVoRsMap" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertQueryVo">     
+        SELECT ca.id,ca.name,ca.create_time,ca.start_time, ca.end_time, ai.cost, ca.status, 
+       		   ca.pv, pa.full_name as agentName,ap.name AS positionName,ai.advertiser, aap.approval_time 
+		FROM column_advert_position ap, column_advert_approval aap, column_advert ca
+		LEFT JOIN psms_agent pa ON ca.belong_type = pa.id
+		LEFT JOIN column_advert_info ai ON ca.id = ai.advert_id
+		WHERE ca.position_id = ap.id  AND ca.disabled = 0  
+			AND ca.id = aap.advert_id AND aap.status=1
+		<if test="agentId != null and agentId != ''">
+			AND ca.belong_type = #{agentId}
+		</if>
+		<if test="advertName != null and advertName != ''">
+			AND ca.name LIKE CONCAT('%',#{advertName},'%')
+		</if>
+		<if test="advertiser != null and advertiser != ''">
+			AND ai.advertiser LIKE CONCAT('%',#{advertiser},'%')
+		</if>
+		<if test="auditStartTime != null ">
+			AND aap.approval_time &gt;= #{auditStartTime}
+		</if>
+		<if test="auditEndTime != null ">
+			AND aap.approval_time &lt;= #{auditEndTime}
+		</if>
+		<if test="advertStartTime != null ">
+			AND ca.start_time &gt;= #{advertStartTime}
+		</if>
+		<if test="advertEndTime != null ">
+			AND ca.end_time &lt;= #{advertEndTime}
+		</if>
+		<if test="agentName != null and agentName != ''">
+			AND pa.full_name LIKE CONCAT('%',#{agentName},'%')
+		</if>
+		<if test="applyStartTime != null ">
+			AND ca.create_time &gt;= #{applyStartTime}
+		</if>
+		<if test="applyEndTime != null ">
+			AND ca.create_time &lt;= #{applyEndTime}
+		</if>		
+		ORDER BY aap.approval_time DESC			
+	</select>
+	
+	<select id="findAuditingAdvertPage" resultMap="columnAdvertVoRsMap" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertQueryVo">
+			SELECT ca.id,ca.name,ca.create_time,ca.start_time, ca.end_time,ai.cost,ca.status, 
+		     	   pa.id,ap.name AS positionName,ai.advertiser, aap.approval_time,
+		     	   aap.status AS approval_status, ca.is_pay, pa.full_name as agentName,
+		     	   aap.log, ca.trade_num
+			FROM column_advert_position ap, column_advert_info ai,  
+			column_advert_approval aap, column_advert ca
+			LEFT JOIN psms_agent pa ON ca.belong_type = pa.id 
+			WHERE ca.position_id = ap.id AND ca.id = ai.advert_id
+			AND ca.disabled = 0 AND ca.belong_type != 0 
+			AND ca.id = aap.advert_id 
+			AND aap.status != 1 
+			<if test="agentId != null and agentId != ''">
+				AND ca.belong_type = #{agentId}
+			</if>
+			<if test="advertName != null and advertName != ''">
+				AND ca.name LIKE CONCAT('%',#{advertName},'%')
+			</if>
+			<if test="advertiser != null and advertiser != ''">
+				AND ai.advertiser LIKE CONCAT('%',#{advertiser},'%')
+			</if>
+			<if test="auditStartTime != null">
+				AND aap.approval_time &gt;= #{auditStartTime}
+				AND aap.status != 0
+			</if>
+			<if test="auditEndTime != null ">
+				AND aap.approval_time &lt;= #{auditEndTime}
+				AND aap.status != 0
+			</if>
+			<if test="advertStartTime != null ">
+				AND ca.start_time &gt;= #{advertStartTime}
+			</if>
+			<if test="advertEndTime != null ">
+				AND ca.end_time &lt;= #{advertEndTime}
+			</if>
+			<if test="applyStartTime != null ">
+				AND ca.create_time &gt;= #{applyStartTime}
+			</if>
+			<if test="applyEndTime != null ">
+				AND ca.create_time &lt;= #{applyEndTime}
+			</if>
+			<if test="agentName != null and agentName != ''">
+				AND pa.full_name LIKE CONCAT('%',#{agentName},'%')
+			</if>
+			ORDER BY ca.create_time DESC
+	</select>
+	
+	<select id="findExistAdvertTime" resultMap="columnAdvertRsMap">
+		SELECT ca.start_time, ca.end_time FROM column_advert ca , column_advert_position ap 
+       	WHERE ca.disabled = 0 AND ca.position_id = ap.id
+       	AND ap.id = #{positionId, jdbcType=VARCHAR}
+       	AND (ca.status = 0 OR ca.status = 1)
+	</select>
+	
+	<!-- modfiy  by zhulq  去掉判断用户类型    添加时候只是判断运营商的总张数  审核时候判断代理商的 -->
+	<select id="findAcrossTimeAdvertQty" resultType="int" parameterType = "com.okdeer.mall.advert.entity.ColumnAdvert">
+		   SELECT COUNT(DISTINCT(ca.id)) FROM column_advert ca
+		   LEFT JOIN column_advert_position ap ON ca.position_id = ap.id
+		   LEFT JOIN column_advert_area caa ON caa.advert_id = ca.id
+	       WHERE ca.belong_type = 0 AND ca.disabled = 0 AND (ca.status = 0 OR ca.status = 1)	      
+	       AND ((ca.start_time &lt;= #{startTime} AND ca.end_time &gt;= #{startTime})  
+		     OR (ca.start_time &lt;= #{endTime} AND ca.end_time &gt;= #{endTime}) 
+		     OR (ca.start_time &gt;= #{startTime} AND ca.end_time &lt;= #{endTime})
+		     OR (ca.start_time &lt;= #{startTime} AND ca.end_time &gt;= #{endTime}))
+		  <if test="positionId != null and positionId !=''">
+		   	 AND ap.id = #{positionId, jdbcType=VARCHAR}
+		   </if>   
+		   <if test="id != null and id != ''">
+		   	   AND ca.id != #{id,jdbcType=VARCHAR}
+		   </if>
+<!-- 		   <if test="belongType != '0'">
+		   	   AND ca.belong_type != '0'
+		  </if>	
+		  <if test="belongType = '0'">
+		   	   AND ca.belong_type = '0'
+		  </if>	 -->	   
+		  <if test="areaType.name() == 'area' and areaIdList != null" >      
+		 			   AND caa.area_id in  
+		    	 			<foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	        	  		 		 #{item}
+	         		 		</foreach>
+		  </if> 		    
+		  <if test="areaType.name() == 'national'">      
+     		 AND ca.area_type = 0
+		 </if>
+	</select>
+	<!-- add  by zhulq  去掉判断用户类型    添加时候只是判断运营商的总张数  -->
+	
+	<!-- add  by zhulq  去掉判断用户类型    审核时候只是判断代理商的总张数  -->
+	<select id="findAcrossTimeAdvert" resultType="int" parameterType = "com.okdeer.mall.advert.entity.ColumnAdvert">
+		   SELECT COUNT(DISTINCT(ca.id)) FROM column_advert ca
+		   LEFT JOIN column_advert_position ap ON ca.position_id = ap.id
+		   LEFT JOIN column_advert_area caa ON caa.advert_id = ca.id
+		   LEFT JOIN column_advert_approval app ON app.advert_id = ca.id
+	       WHERE ca.belong_type != 0 AND app.status = 1
+	       AND ca.disabled = 0 AND (ca.status = 0 OR ca.status = 1)	      
+	       AND ((ca.start_time &lt;= #{startTime} AND ca.end_time &gt;= #{startTime})  
+		     OR (ca.start_time &lt;= #{endTime} AND ca.end_time &gt;= #{endTime}) 
+		     OR (ca.start_time &gt;= #{startTime} AND ca.end_time &lt;= #{endTime})
+		     OR (ca.start_time &lt;= #{startTime} AND ca.end_time &gt;= #{endTime}))
+		  <if test="positionId != null and positionId !=''">
+		   	 AND ap.id = #{positionId, jdbcType=VARCHAR}
+		   </if>   
+		   <if test="id != null and id != ''">
+		   	   AND ca.id != #{id,jdbcType=VARCHAR}
+		   </if>
+		   <if test="areaType.name() == 'area' and areaIdList != null" >      
+		 			   AND caa.area_id in  
+		    	 			<foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	        	  		 		 #{item}
+	         		 		</foreach>
+		  </if> 		    
+	</select> 
+	<!-- add  by zhulq  去掉判断用户类型    添加时候只是判断运营商的总张数  -->
+	
+	<select id="getAdvertDetailById" resultMap="advertDetailMap">
+	  SELECT ca.id,cp.id AS positionId, ca.name,cp.name AS positionName, ca.start_time,
+	      cp.name as positionName, ca.end_time, ca.pic_url, ca.target_type, ca.target,
+	      ca.target_url, ci.advertiser, ci.contact,ci.phone,ca.position_id,
+	      ci.id AS advertInfoId,ci.cost, ci.protocol_url,ca.position_id,
+	      caa.id as aaId, caa.area_id, caa.type, ca.area_type,ca.belong_type,
+	      aap.id AS approvalId, aap.status AS auditStatus, aap.log, ca.status
+       FROM column_advert_position cp
+       LEFT JOIN column_advert ca ON ca.position_id = cp.id
+       LEFT JOIN column_advert_approval aap ON aap.advert_id = ca.id
+       LEFT JOIN column_advert_info ci ON ca.id = ci.advert_id
+       LEFT JOIN column_advert_area caa ON caa.advert_id = ca.id
+       WHERE  1 = 1
+       AND ca.id = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<insert id="insert" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
+		INSERT INTO column_advert(id, position_id, belong_type, name, target_type, target_url, pic_url,
+				area_type, start_time, end_time, is_pay, trade_num, status, create_time, create_user_id,
+				update_time, update_user_id, disabled, pv, target, on_shelf_time, off_shelf_time)
+		VALUES (#{id, jdbcType=VARCHAR}, #{positionId, jdbcType=VARCHAR}, #{belongType, jdbcType=VARCHAR}, 
+				#{name, jdbcType=VARCHAR}, #{targetType, jdbcType=TINYINT}, #{targetUrl, jdbcType=VARCHAR}, 
+				#{picUrl, jdbcType=VARCHAR}, #{areaType, jdbcType=TINYINT}, #{startTime, jdbcType=TIMESTAMP}, 
+				#{endTime, jdbcType=TIMESTAMP}, #{isPay, jdbcType=TINYINT}, #{tradeNum, jdbcType=VARCHAR}, #{status, jdbcType=TINYINT}, 
+				#{createTime, jdbcType=TIMESTAMP}, #{createUserId, jdbcType=VARCHAR}, #{updateTime, jdbcType=TIMESTAMP}, 
+				#{updateUserId, jdbcType=VARCHAR}, #{disabled, jdbcType=INTEGER}, #{pv, jdbcType=INTEGER}, 
+				#{target, jdbcType=TINYINT}, #{onShelfTime, jdbcType=TIMESTAMP}, #{offShelfTime, jdbcType=TIMESTAMP})
+	</insert>
+	
+	<insert id="insertSelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
+		INSERT INTO column_advert
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="positionId != null">
+				position_id,
+			</if>
+			<if test="belongType != null">
+				belong_type,
+			</if>			
+			<if test="name != null">
+				name,
+			</if>			
+			<if test="targetType != null">
+				target_type,
+			</if>			
+			<if test="targetUrl != null">
+				target_url,
+			</if>			
+			<if test="picUrl != null">
+				pic_url,
+			</if>
+			<if test="areaType != null">
+				area_type,
+			</if>			
+			<if test="startTime != null">
+				start_time,
+			</if>						
+			<if test="endTime != null">
+				end_time,
+			</if>
+			<if test="isPay != null">
+				is_pay,
+			</if>
+			<if test="tradeNum != null">
+				trade_num,
+			</if>			
+			<if test="status != null">
+				status,
+			</if>			
+			<if test="createTime != null">
+				create_time,
+			</if>			
+			<if test="createUserId != null">
+				create_user_id,
+			</if>	
+			<if test="updateTime != null">
+				update_time,
+			</if>			
+			<if test="updateUserId != null">
+				update_user_id,
+			</if>			
+			<if test="disabled != null">
+				disabled,
+			</if>	
+			<if test="pv != null">
+				pv,
+			</if>
+			<if test="target != null">
+				target,
+			</if>
+			<if test="onShelfTime != null">
+				on_shelf_time, 
+			</if>
+			<if test="offShelfTime != null">
+				off_shelf_time
+			</if>									
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id, jdbcType=VARCHAR},
+			</if>
+			<if test="positionId != null">
+				#{positionId, jdbcType=VARCHAR},
+			</if>
+			<if test="belongType != null">
+				#{belongType, jdbcType=VARCHAR}, 
+			</if>			
+			<if test="name != null">
+				#{name, jdbcType=VARCHAR},
+			</if>			
+			<if test="targetType != null">
+				#{targetType, jdbcType=TINYINT},
+			</if>			
+			<if test="targetUrl != null">
+				#{targetUrl, jdbcType=VARCHAR}, 
+			</if>			
+			<if test="picUrl != null">
+				#{picUrl, jdbcType=VARCHAR}, 
+			</if>
+			<if test="areaType != null">
+				#{areaType, jdbcType=TINYINT},
+			</if>			
+			<if test="startTime != null">
+				 #{startTime, jdbcType=TIMESTAMP}, 
+			</if>						
+			<if test="endTime != null">
+				#{endTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="isPay != null">
+				#{isPay, jdbcType=TINYINT},
+			</if>
+			<if test="tradeNum != null">
+				#{tradeNum, jdbcType=VARCHAR},
+			</if>			
+			<if test="status != null">
+				#{status, jdbcType=TINYINT}, 
+			</if>			
+			<if test="createTime != null">
+				#{createTime, jdbcType=TIMESTAMP}, 
+			</if>			
+			<if test="createUserId != null">
+				#{createUserId, jdbcType=VARCHAR},
+			</if>	
+			<if test="updateTime != null">
+				#{updateTime, jdbcType=TIMESTAMP}, 
+			</if>			
+			<if test="updateUserId != null">
+				#{updateUserId, jdbcType=VARCHAR}, 
+			</if>			
+			<if test="disabled != null">
+				#{disabled, jdbcType=INTEGER},
+			</if>
+			<if test="pv != null">
+				#{pv, jdbcType=INTEGER},
+			</if>
+			<if test="target != null">
+				#{target, jdbcType=TINYINT}
+			</if>
+			<if test="onShelfTime != null">
+				#{onShelfTime, jdbcType=TIMESTAMP}, 
+			</if>
+			<if test="offShelfTime != null">
+				#{offShelfTime, jdbcType=TIMESTAMP}
+			</if>				
+		</trim>
+	</insert>
+	
+	<update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
+		UPDATE column_advert
+		<set>
+			<if test="positionId != null">
+				position_id = #{positionId, jdbcType=VARCHAR},
+			</if>
+			<if test="belongType != null">
+				belong_type = #{belongType, jdbcType=VARCHAR}, 
+			</if>			
+			<if test="name != null">
+				name = #{name, jdbcType=VARCHAR},
+			</if>			
+			<if test="targetType != null">
+				target_type = #{targetType, jdbcType=TINYINT},
+			</if>			
+			<if test="targetUrl != null">
+				target_url = #{targetUrl, jdbcType=VARCHAR}, 
+			</if>			
+			<if test="picUrl != null">
+				pic_url = #{picUrl, jdbcType=VARCHAR}, 
+			</if>
+			<if test="areaType != null">
+				area_type = #{areaType, jdbcType=TINYINT},
+			</if>			
+			<if test="startTime != null">
+				 start_time = #{startTime, jdbcType=TIMESTAMP}, 
+			</if>						
+			<if test="endTime != null">
+				end_time = #{endTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="isPay != null">
+				is_pay = #{isPay, jdbcType=TINYINT},
+			</if>
+			<if test="tradeNum != null">
+				trade_num = #{tradeNum, jdbcType=VARCHAR},
+			</if>			
+			<if test="status != null">
+				status = #{status, jdbcType=TINYINT}, 
+			</if>			
+			<if test="createTime != null">
+				create_time = #{createTime, jdbcType=TIMESTAMP}, 
+			</if>			
+			<if test="createUserId != null">
+				create_user_id = #{createUserId, jdbcType=VARCHAR},
+			</if>	
+			<if test="updateTime != null">
+				update_time = #{updateTime, jdbcType=TIMESTAMP}, 
+			</if>			
+			<if test="updateUserId != null">
+				update_user_id = #{updateUserId, jdbcType=VARCHAR}, 
+			</if>			
+			<if test="disabled != null">
+				disabled = #{disabled, jdbcType=INTEGER},
+			</if>
+			<if test="pv != null">
+				pv = #{pv, jdbcType=INTEGER},
+			</if>
+			<if test="target != null">
+				target = #{target, jdbcType=TINYINT},
+			</if>					
+			<if test="onShelfTime != null">
+				on_shelf_time = #{onShelfTime, jdbcType=TIMESTAMP}, 
+			</if>
+			<if test="offShelfTime != null">
+				off_shelf_time = #{offShelfTime, jdbcType=TIMESTAMP}
+			</if>
+		</set>
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 根据城市id 或者小区id查询广告 -->
+	<select id="getAdvertById" resultMap="columnAdvertRsMap" parameterType="map">
+		select * from(
+		    select * from (
+		       SELECT
+			ca.id,ca.name,
+			ca.pic_url,
+			ca.target_type,
+			ca.belong_type,
+			ca.target,
+			ca.target_url,
+			ca.area_type,
+			ca.on_shelf_time,
+			ca.start_time,
+			ca.create_time
+		FROM
+			column_advert ca 
+			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
+			LEFT JOIN column_advert_position cpos ON cpos.id = ca.position_id 
+			LEFT JOIN column_advert_area area ON area.advert_id = ca.id
+		<if test="communityId != null and communityId != ''">
+		 	LEFT JOIN column_advert_community community ON ca.id = community.advert_id
+		</if>
+		WHERE
+			app.status = 1
+			AND ca.status = 1
+			<!-- 查询运营商的 -->
+			and ca.belong_type = 0
+		AND cpos.name = #{name,jdbcType=VARCHAR}
+		<if test="cityId != null and cityId != ''">
+		AND (
+			ca.area_type = 0
+			OR (
+				ca.area_type = 1
+				AND (
+						(
+							area.type = 1
+							AND area.area_id = #{provinceId,jdbcType=VARCHAR}
+						)
+						OR (
+							area.type = 0
+							AND area.area_id = #{cityId,jdbcType=VARCHAR}
+						)				
+				)
+			)
+		)
+		<!-- 排序规则：当定位的地址不属于签约小区时，则默认获取当前城市下的区域广告，
+		区域广告只能有运营商发布，按照广告列表中的生效时间获取最多5张广告，如果有排序值，
+		默认优先按照排序值进行广告展示 ，tips:没有排序值，按上架时间倒叙-->
+		ORDER BY ca.on_shelf_time desc
+		</if>
+		<if test="communityId != null and communityId != ''">
+		 AND (
+			ca.area_type = 0
+			OR (
+				ca.area_type = 1
+				AND (
+						(
+							area.type = 1
+							AND area.area_id = (SELECT province_id FROM psms_small_community_info WHERE id = #{communityId,jdbcType=VARCHAR})
+						)
+						OR (
+							area.type = 0
+							AND area.area_id = (SELECT city_id FROM psms_small_community_info WHERE id = #{communityId,jdbcType=VARCHAR})
+						)				
+				)
+			)
+		   OR (ca.area_type = 2 AND community.community_id = #{communityId,jdbcType=VARCHAR})
+		)
+		<!-- 排序规则:定位小区，
+			1、优先展示代理商广告，
+			2、然后展示运营商发布到小区的广告，
+			3、最后展示运营商发布的范围广告 -->
+		ORDER BY ca.belong_type desc,ca.area_type desc,ca.start_time desc,ca.create_time desc
+	    </if>
+	    <!-- 运营商只查询前5条 -->
+	    limit 5
+		    )a
+		    
+		 union all
+		 select * from (
+		   SELECT
+			ca.id,ca.name,
+			ca.pic_url,
+			ca.target_type,
+			ca.belong_type,
+			ca.target,
+			ca.target_url,
+			ca.area_type,
+			ca.on_shelf_time,
+			ca.start_time,
+			ca.create_time
+		FROM
+			column_advert ca 
+			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
+			LEFT JOIN column_advert_position cpos ON cpos.id = ca.position_id 
+			LEFT JOIN column_advert_area area ON area.advert_id = ca.id
+		<if test="communityId != null and communityId != ''">
+		 	LEFT JOIN column_advert_community community ON ca.id = community.advert_id
+		</if>
+		WHERE
+			app.status = 1
+			AND ca.status = 1
+			<!-- 查询代理商的 -->
+			and ca.belong_type > 0
+		AND cpos.name = #{name,jdbcType=VARCHAR}
+		<if test="cityId != null and cityId != ''">
+		AND (
+			ca.area_type = 0
+			OR (
+				ca.area_type = 1
+				AND (
+						(
+							area.type = 1
+							AND area.area_id = #{provinceId,jdbcType=VARCHAR}
+						)
+						OR (
+							area.type = 0
+							AND area.area_id = #{cityId,jdbcType=VARCHAR}
+						)				
+				)
+			)
+		)
+		<!-- 排序规则：当定位的地址不属于签约小区时，则默认获取当前城市下的区域广告，
+		区域广告只能有运营商发布，按照广告列表中的生效时间获取最多5张广告，如果有排序值，
+		默认优先按照排序值进行广告展示 ，tips:没有排序值，按上架时间倒叙-->
+		ORDER BY ca.on_shelf_time desc
+		</if>
+		<if test="communityId != null and communityId != ''">
+		 AND (
+			ca.area_type = 0
+			OR (
+				ca.area_type = 1
+				AND (
+						(
+							area.type = 1
+							AND area.area_id = (SELECT province_id FROM psms_small_community_info WHERE id = #{communityId,jdbcType=VARCHAR})
+						)
+						OR (
+							area.type = 0
+							AND area.area_id = (SELECT city_id FROM psms_small_community_info WHERE id = #{communityId,jdbcType=VARCHAR})
+						)				
+				)
+			)
+		   OR (ca.area_type = 2 AND community.community_id = #{communityId,jdbcType=VARCHAR})
+			)
+			<!-- 排序规则:定位小区，
+				1、优先展示代理商广告，
+				2、然后展示运营商发布到小区的广告，
+				3、最后展示运营商发布的范围广告 -->
+			ORDER BY ca.belong_type desc,ca.area_type desc,ca.start_time desc,ca.create_time desc
+	    </if>
+	     <!-- 代理商只查询前两条 -->
+		 limit 2
+		 )b
+		)obj	   
+		<!-- 排序规则:定位小区，
+			1、优先展示代理商广告，
+			2、然后展示运营商发布到小区的广告，
+			3、最后展示运营商发布的范围广告 -->
+		ORDER BY obj.belong_type desc,obj.area_type desc,obj.start_time desc,obj.create_time desc
+	</select>
+	
+
+	<select id="listForPos" resultMap="columnAdvertRsMap" parameterType="map">
+		select c.* from column_advert c
+		LEFT JOIN column_advert_area area ON area.advert_id = c.id
+		LEFT JOIN column_advert_approval app ON app.advert_id = c.id
+			where app.status = 1
+			and c.position_id = (select id from column_advert_position p where p.name = 'POS机广告')
+			and c.disabled = 0 
+			and c.status = 1
+			<if test="provinceId != null and provinceId != ''">
+	    	AND (c.area_type =  #{nationalAreaType,jdbcType=TINYINT}
+	      	  OR (c.area_type = #{districtAreaType,jdbcType=TINYINT}
+	         	  AND ((area.type = 1 AND area.area_id = #{provinceId,jdbcType=VARCHAR})
+	              	 OR (area.type = 0 AND area.area_id = #{cityId,jdbcType=VARCHAR})
+	              	 )
+	         	  )
+	       	 )
+	    	</if>
+	</select>
+	
+	<select id="getAdvertByTradeNum" resultMap="columnAdvertRsMap">
+		SELECT <include refid="base_column_list"/>
+		FROM column_advert
+		WHERE disabled = 0 
+			AND trade_num = #{tradeNum, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="findMobileDoorAdvert" resultMap="columnAdvertRsMap" parameterType="map">
+		SELECT ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
+			   ca.area_type, ca.start_time, ca.end_time, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
+			   ca.update_time, ca.disabled
+		FROM column_advert ca
+		LEFT JOIN column_advert_area area ON area.advert_id = ca.id
+		LEFT JOIN column_advert_position po ON po.id = ca.position_id
+		LEFT JOIN column_advert_approval app ON app.advert_id = ca.id
+		WHERE ca.disabled = 0 AND ca.status = 1 AND app.status = 1
+		<if test="name != null and name != ''">
+	    AND po.name = #{name,jdbcType=VARCHAR}
+	    </if>		
+		<if test="provinceId != null and provinceId != ''">
+	    AND (ca.area_type =  #{nationalAreaType,jdbcType=TINYINT}
+	        OR (ca.area_type = #{districtAreaType,jdbcType=TINYINT}
+	           AND ((area.type = 1 AND area.area_id = #{provinceId,jdbcType=VARCHAR})
+	               OR (area.type = 0 AND area.area_id = #{cityId,jdbcType=VARCHAR})
+	               )
+	           )
+	        )
+	    </if>
+	    ORDER BY ca.create_time DESC limit 1
+	</select>
+</mapper>

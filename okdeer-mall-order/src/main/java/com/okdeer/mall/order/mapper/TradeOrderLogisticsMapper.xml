@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderLogisticsMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderLogistics" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="BIT" javaType="com.okdeer.mall.common.enums.LogisticsType"/>
+    <result column="consignee_name" property="consigneeName" jdbcType="VARCHAR" />
+    <result column="province_id" property="provinceId" jdbcType="VARCHAR" />
+    <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+    <result column="area_id" property="areaId" jdbcType="VARCHAR" />
+    <result column="area" property="area" jdbcType="VARCHAR" />
+    <result column="address" property="address" jdbcType="VARCHAR" />
+    <result column="zip_code" property="zipCode" jdbcType="VARCHAR" />
+    <result column="telephone" property="telephone" jdbcType="VARCHAR" />
+    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+    <result column="logistics_company_name" property="logisticsCompanyName" jdbcType="VARCHAR" />
+    <result column="logistics_no" property="logisticsNo" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, order_id, type, consignee_name, province_id, city_id, area_id, area, address, 
+    zip_code, telephone, mobile, logistics_company_name, logistics_no
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  
+  <!-- 根据订单order_id查询收货人信息 -->
+  <select id="selectByOrderId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_logistics
+    where order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_logistics
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM trade_order_logistics WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM trade_order_logistics
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderLogistics" >
+    insert into trade_order_logistics (id, order_id, type, 
+      consignee_name, province_id, city_id, 
+      area_id, area, address, 
+      zip_code, telephone, mobile, 
+      logistics_company_name, logistics_no)
+    values (#{id,jdbcType=VARCHAR}, #{orderId,jdbcType=VARCHAR}, #{type,jdbcType=BIT}, 
+      #{consigneeName,jdbcType=VARCHAR}, #{provinceId,jdbcType=VARCHAR}, #{cityId,jdbcType=VARCHAR}, 
+      #{areaId,jdbcType=VARCHAR}, #{area,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}, 
+      #{zipCode,jdbcType=VARCHAR}, #{telephone,jdbcType=VARCHAR}, #{mobile,jdbcType=VARCHAR}, 
+      #{logisticsCompanyName,jdbcType=VARCHAR}, #{logisticsNo,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderLogistics" >
+    insert into trade_order_logistics
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="orderId != null" >
+        order_id,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="consigneeName != null" >
+        consignee_name,
+      </if>
+      <if test="provinceId != null" >
+        province_id,
+      </if>
+      <if test="cityId != null" >
+        city_id,
+      </if>
+      <if test="areaId != null" >
+        area_id,
+      </if>
+      <if test="area != null" >
+        area,
+      </if>
+      <if test="address != null" >
+        address,
+      </if>
+      <if test="zipCode != null" >
+        zip_code,
+      </if>
+      <if test="telephone != null" >
+        telephone,
+      </if>
+      <if test="mobile != null" >
+        mobile,
+      </if>
+      <if test="logisticsCompanyName != null" >
+        logistics_company_name,
+      </if>
+      <if test="logisticsNo != null" >
+        logistics_no,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=BIT},
+      </if>
+      <if test="consigneeName != null" >
+        #{consigneeName,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceId != null" >
+        #{provinceId,jdbcType=VARCHAR},
+      </if>
+      <if test="cityId != null" >
+        #{cityId,jdbcType=VARCHAR},
+      </if>
+      <if test="areaId != null" >
+        #{areaId,jdbcType=VARCHAR},
+      </if>
+      <if test="area != null" >
+        #{area,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="zipCode != null" >
+        #{zipCode,jdbcType=VARCHAR},
+      </if>
+      <if test="telephone != null" >
+        #{telephone,jdbcType=VARCHAR},
+      </if>
+      <if test="mobile != null" >
+        #{mobile,jdbcType=VARCHAR},
+      </if>
+      <if test="logisticsCompanyName != null" >
+        #{logisticsCompanyName,jdbcType=VARCHAR},
+      </if>
+      <if test="logisticsNo != null" >
+        #{logisticsNo,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.order.entity.TradeOrderLogistics" >
+    update trade_order_logistics
+    <set >
+      <if test="orderId != null" >
+        order_id = #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=BIT},
+      </if>
+      <if test="consigneeName != null" >
+        consignee_name = #{consigneeName,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceId != null" >
+        province_id = #{provinceId,jdbcType=VARCHAR},
+      </if>
+      <if test="cityId != null" >
+        city_id = #{cityId,jdbcType=VARCHAR},
+      </if>
+      <if test="areaId != null" >
+        area_id = #{areaId,jdbcType=VARCHAR},
+      </if>
+      <if test="area != null" >
+        area = #{area,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="zipCode != null" >
+        zip_code = #{zipCode,jdbcType=VARCHAR},
+      </if>
+      <if test="telephone != null" >
+        telephone = #{telephone,jdbcType=VARCHAR},
+      </if>
+      <if test="mobile != null" >
+        mobile = #{mobile,jdbcType=VARCHAR},
+      </if>
+      <if test="logisticsCompanyName != null" >
+        logistics_company_name = #{logisticsCompanyName,jdbcType=VARCHAR},
+      </if>
+      <if test="logisticsNo != null" >
+        logistics_no = #{logisticsNo,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.order.entity.TradeOrderLogistics" >
+    update trade_order_logistics
+    set order_id = #{orderId,jdbcType=VARCHAR},
+      type = #{type,jdbcType=BIT},
+      consignee_name = #{consigneeName,jdbcType=VARCHAR},
+      province_id = #{provinceId,jdbcType=VARCHAR},
+      city_id = #{cityId,jdbcType=VARCHAR},
+      area_id = #{areaId,jdbcType=VARCHAR},
+      area = #{area,jdbcType=VARCHAR},
+      address = #{address,jdbcType=VARCHAR},
+      zip_code = #{zipCode,jdbcType=VARCHAR},
+      telephone = #{telephone,jdbcType=VARCHAR},
+      mobile = #{mobile,jdbcType=VARCHAR},
+      logistics_company_name = #{logisticsCompanyName,jdbcType=VARCHAR},
+      logistics_no = #{logisticsNo,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

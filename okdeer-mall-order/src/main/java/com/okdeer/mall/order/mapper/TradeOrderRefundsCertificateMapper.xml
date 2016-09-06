@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderRefundsCertificateMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderRefundsCertificate" >
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="refunds_id" property="refundsId" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="operator" property="operator" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  
+  <resultMap id="RefundsRecodesMap"  type="com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo" extends="BaseResultMap">
+    <!-- 退货退款截图凭证信息 -->
+    <association property="buyerUser" javaType="com.okdeer.archive.system.entity.SysBuyerUser">
+      <id column="user_id" property="id" jdbcType="VARCHAR" />
+      <result column="login_name" property="loginName" jdbcType="VARCHAR" />
+      <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
+    </association>
+    <collection property="tradeOrderRefundsCertificateImg" ofType="com.okdeer.mall.order.entity.TradeOrderRefundsCertificateImg">
+        <result column="image_path" property="imagePath" jdbcType="VARCHAR" />
+    </collection>
+  </resultMap>
+  
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  
+  <select id="findByRefundsId" resultMap="RefundsRecodesMap" parameterType="java.lang.String" >
+    SELECT certificate.id, certificate.refunds_id, remark, certificate.operator, certificate.create_time,image.image_path,
+    buyer.id as user_id,buyer.login_name,buyer.pic_url
+    FROM trade_order_refunds_certificate certificate
+    LEFT JOIN trade_order_refunds_certificate_img image ON image.certificate_id = certificate.id
+    LEFT JOIN sys_buyer_user buyer ON buyer.id = certificate.operator
+    WHERE certificate.refunds_id = #{refundsId,jdbcType=VARCHAR} 
+    ORDER BY create_time ASC
+  </select>
+  
+  <!-- 查询第一个凭证的图片 -->
+  <select id="findImageByRefundsId" resultType="java.lang.String" parameterType="java.lang.String" >
+	SELECT
+		image.image_path
+	FROM
+		trade_order_refunds_certificate_img image
+	WHERE
+		image.certificate_id = (
+			SELECT
+				certificate.id
+			FROM
+				trade_order_refunds_certificate certificate
+			WHERE
+				certificate.refunds_id = #{refundsId,jdbcType=VARCHAR}
+			ORDER BY
+				certificate.create_time ASC
+			LIMIT 0,1
+	)
+  </select>
+  
+  <!-- 查询第一个凭证 -->
+  <select id="findFirstByRefundsId" resultType="com.okdeer.mall.order.entity.TradeOrderRefundsCertificate" parameterType="java.lang.String" >
+		SELECT
+			*
+		FROM
+			trade_order_refunds_certificate certificate
+		WHERE
+			certificate.refunds_id = #{refundsId,jdbcType=VARCHAR}
+		ORDER BY
+			certificate.create_time ASC
+		LIMIT 0,1
+  </select>
+  
+  <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderRefundsCertificate" >
+    insert into trade_order_refunds_certificate (id, refunds_id, remark, 
+      operator, create_time)
+    values (#{id,jdbcType=VARCHAR}, #{refundsId,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, 
+      #{operator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  
+  <insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderRefundsCertificate" >
+    insert into trade_order_refunds_certificate
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="refundsId != null" >
+        refunds_id,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+      <if test="operator != null" >
+        operator,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="refundsId != null" >
+        #{refundsId,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="operator != null" >
+        #{operator,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM trade_order_refunds_certificate
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <delete id="deleteAndImageById" parameterType="java.lang.String" >
+    DELETE FROM trade_order_refunds_certificate_img WHERE certificate_id = #{id,jdbcType=VARCHAR};
+    DELETE FROM trade_order_refunds_certificate WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+</mapper>

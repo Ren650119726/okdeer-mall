@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.advert.mapper.AdvertPositionMapper">
+	<resultMap type="com.okdeer.mall.advert.entity.AdvertPosition" id="positionResultMap">
+		<id column="id" property="id" jdbcType="VARCHAR"/>
+		<result column="name" property="name" jdbcType="VARCHAR"/>
+		<result column="belong_type" property="belongType" jdbcType="TINYINT"/>
+		<result column="description" property="description" jdbcType="VARCHAR"/>
+		<result column="advert_num" property="advertNum" jdbcType="INTEGER"/>
+		<result column="wide" property="wide" jdbcType="INTEGER"/>
+		<result column="high" property="high" jdbcType="INTEGER"/>
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+		<result column="create_user_id" property="createUserId" jdbcType="VARCHAR"/>
+		<result column="update_time" property="updateTime" jdbcType="DATE"/>
+		<result column="update_user_id" property="updateUserId" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<sql id="base_column_list">
+		id, name, belong_type, description, advert_num, create_time, 
+		wide, high, create_user_id, update_time, update_user_id
+	</sql>
+	
+	<select id="findAdvertPositions" resultMap="positionResultMap">
+		SELECT <include refid="base_column_list" />
+		FROM column_advert_position
+		
+		<!-- ORDER BY create_time
+		DESC 	 -->
+	</select>
+	
+	<select id="selectByPrimaryKey" resultMap="positionResultMap">
+		SELECT <include refid="base_column_list" />
+		FROM column_advert_position
+		WHERE id = #{id, jdbcType=VARCHAR}
+	</select>
+	
+	<update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.advert.entity.AdvertPosition">
+		UPDATE column_advert_position
+		<set>
+			<if test="name != null">
+				name = #{name, jdbcType=VARCHAR},
+			</if>
+			<if test="description != null">
+				description = #{description, jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime}
+			</if>			
+			<if test="createUserId != null">
+				create_user_id = #{createUserId, jdbcType=VARCHAR},
+			</if>			
+			<if test="updateTime != null">
+				update_time = #{updateTime},
+			</if>
+			<if test="updateUserId != null">
+				update_user_id = #{updateUserId, jdbcType=VARCHAR},
+			</if>		
+		</set>
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+</mapper>

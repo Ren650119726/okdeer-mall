@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper">
+	<resultMap type="com.okdeer.mall.order.entity.TradeOrderThirdRelation" id="baseResultMap">
+		<id column="id" property="id" jdbcType="VARCHAR"/>
+		<result column="order_id" property="orderId" jdbcType="VARCHAR"/>
+		<result column="third_orderNo" property="thirdOrderNo" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<sql id="base_cloumn_list">
+		id, order_id, third_orderNo
+	</sql>
+
+	<insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderThirdRelation">
+		INSERT INTO trade_order_third_relation (id, order_id, third_orderNo)
+		VALUES (#{id, jdbcType=VARCHAR}, #{orderId, jdbcType=VARCHAR}, #{thirdOrderNo, jdbcType=VARCHAR})
+	</insert>
+	
+	<insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderThirdRelation">
+		INSERT INTO trade_order_third_relation
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="orderId != null">
+				order_id,
+			</if>
+			<if test="thirdOrderNo">
+				third_orderNo
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id, jdbcType=VARCHAR},
+			</if>
+			<if test="orderId != null">
+				#{orderId, jdbcType=VARCHAR},
+			</if>
+			<if test="thirdOrderNo">
+				#{thirdOrderNo, jdbcType=VARCHAR}
+			</if>
+		</trim>
+	</insert>
+	
+	<update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.order.entity.TradeOrderThirdRelation">
+		UPDATE trade_order_third_relation
+		<set>
+			<if test="orderId != null">
+				order_id = #{orderId, jdbcType=VARCHAR},
+			</if>
+			<if test="thirdOrderNo">
+				third_orderNo = #{thirdOrderNo, jdbcType=VARCHAR}
+			</if>
+		</set>
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<delete id="deleteById" parameterType="string">
+		DELETE FROM trade_order_third_relation
+		WHERE order_id = #{orderId, jdbcType=VARCHAR}
+	</delete>
+</mapper>

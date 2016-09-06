@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<bean id="kafkaProducer"
+		class="com.yschome.base.kafka.producer.KafkaProducer"
+		init-method="init" destroy-method="destroy">
+		<property name="prop">
+			<map>
+				<entry key="metadata.broker.list">
+					<value>${kafka.p.metadata.broker.list}</value>
+				</entry>
+				<entry key="key.serializer.class">
+					<value>${kafka.p.key.serializer.class}</value>
+				</entry>
+				<entry key="serializer.class">
+					<value>${kafka.p.serializer.class}</value>
+				</entry>
+				<entry key="partitioner.class">
+					<value>${kafka.p.partitioner.class}</value>
+				</entry>
+				<entry key="request.required.acks">
+					<value>${kafka.p.request.required.acks}</value>
+				</entry>
+				<entry key="compression.codec">
+					<value>${kafka.p.compression.codec}</value>
+				</entry>
+				<entry key="batch.num.messages">
+					<value>${kafka.p.async.batch.num.messages}</value>
+				</entry>
+				<!--<entry key="client.id">-->
+					<!--<value>${kafka.p.client.id}</value>-->
+				<!--</entry>-->
+				<entry key="queue.buffering.max.ms">
+					<value>${kafka.p.queue.buffering.max.ms}</value>
+				</entry>
+				<entry key="producer.type">
+					<value>${kafka.p.producer.type}</value>
+				</entry>
+			</map>
+		</property>
+		<property name="topic" value="${kafka.p.topic}"></property>
+	</bean>
+	
+</beans>

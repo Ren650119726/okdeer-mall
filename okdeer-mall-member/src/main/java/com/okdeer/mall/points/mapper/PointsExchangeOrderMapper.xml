@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.points.mapper.PointsExchangeOrderMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.member.points.entity.PointsExchangeOrder" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="duiba_order_no" property="duibaOrderNo" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="params" property="params" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="point_val" property="pointVal" jdbcType="INTEGER" />
+    <result column="facePrice" property="faceprice" jdbcType="INTEGER" />
+    <result column="actualPrice" property="actualprice" jdbcType="INTEGER" />
+    <result column="timestamp" property="timestamp" jdbcType="TIMESTAMP" />
+    <result column="user_ip" property="userIp" jdbcType="VARCHAR" />
+    <result column="my_order_no" property="myOrderNo" jdbcType="VARCHAR" />
+    <result column="order_status" property="orderStatus" jdbcType="CHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, duiba_order_no, user_id, type, params, description, point_val, facePrice, actualPrice, 
+    timestamp, user_ip, my_order_no, order_status, create_time, update_time
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from points_exchange_order
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 通过duibaOrderNo 获取积分兑换订单记录表  luosm start-->
+  <select id="selectByDuibaOrderNo" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM points_exchange_order 
+     WHERE duiba_order_no = #{duibaOrderNo,jdbcType=VARCHAR} 
+  </select>
+  <!-- 通过duibaOrderNo 获取积分兑换订单记录表  luosm end-->
+  
+  
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM points_exchange_order WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM points_exchange_order
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.member.points.entity.PointsExchangeOrder" >
+    insert into points_exchange_order (id, duiba_order_no, user_id, 
+      type, params, description, 
+      point_val, facePrice, actualPrice, 
+      timestamp, user_ip, my_order_no, 
+      order_status, create_time, update_time
+      )
+    values (#{id,jdbcType=VARCHAR}, #{duibaOrderNo,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, 
+      #{type,jdbcType=VARCHAR}, #{params,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, 
+      #{pointVal,jdbcType=INTEGER}, #{faceprice,jdbcType=INTEGER}, #{actualprice,jdbcType=INTEGER}, 
+      #{timestamp,jdbcType=TIMESTAMP}, #{userIp,jdbcType=VARCHAR}, #{myOrderNo,jdbcType=VARCHAR}, 
+      #{orderStatus,jdbcType=CHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.member.points.entity.PointsExchangeOrder" >
+    insert into points_exchange_order
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="duibaOrderNo != null" >
+        duiba_order_no,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="params != null" >
+        params,
+      </if>
+      <if test="description != null" >
+        description,
+      </if>
+      <if test="pointVal != null" >
+        point_val,
+      </if>
+      <if test="faceprice != null" >
+        facePrice,
+      </if>
+      <if test="actualprice != null" >
+        actualPrice,
+      </if>
+      <if test="timestamp != null" >
+        timestamp,
+      </if>
+      <if test="userIp != null" >
+        user_ip,
+      </if>
+      <if test="myOrderNo != null" >
+        my_order_no,
+      </if>
+      <if test="orderStatus != null" >
+        order_status,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="duibaOrderNo != null" >
+        #{duibaOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="params != null" >
+        #{params,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="pointVal != null" >
+        #{pointVal,jdbcType=INTEGER},
+      </if>
+      <if test="faceprice != null" >
+        #{faceprice,jdbcType=INTEGER},
+      </if>
+      <if test="actualprice != null" >
+        #{actualprice,jdbcType=INTEGER},
+      </if>
+      <if test="timestamp != null" >
+        #{timestamp,jdbcType=TIMESTAMP},
+      </if>
+      <if test="userIp != null" >
+        #{userIp,jdbcType=VARCHAR},
+      </if>
+      <if test="myOrderNo != null" >
+        #{myOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="orderStatus != null" >
+        #{orderStatus,jdbcType=CHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.member.points.entity.PointsExchangeOrder" >
+    update points_exchange_order
+    <set >
+      <if test="duibaOrderNo != null" >
+        duiba_order_no = #{duibaOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="params != null" >
+        params = #{params,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="pointVal != null" >
+        point_val = #{pointVal,jdbcType=INTEGER},
+      </if>
+      <if test="faceprice != null" >
+        facePrice = #{faceprice,jdbcType=INTEGER},
+      </if>
+      <if test="actualprice != null" >
+        actualPrice = #{actualprice,jdbcType=INTEGER},
+      </if>
+      <if test="timestamp != null" >
+        timestamp = #{timestamp,jdbcType=TIMESTAMP},
+      </if>
+      <if test="userIp != null" >
+        user_ip = #{userIp,jdbcType=VARCHAR},
+      </if>
+      <if test="myOrderNo != null" >
+        my_order_no = #{myOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="orderStatus != null" >
+        order_status = #{orderStatus,jdbcType=CHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.member.points.entity.PointsExchangeOrder" >
+    update points_exchange_order
+    set duiba_order_no = #{duibaOrderNo,jdbcType=VARCHAR},
+      user_id = #{userId,jdbcType=VARCHAR},
+      type = #{type,jdbcType=VARCHAR},
+      params = #{params,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      point_val = #{pointVal,jdbcType=INTEGER},
+      facePrice = #{faceprice,jdbcType=INTEGER},
+      actualPrice = #{actualprice,jdbcType=INTEGER},
+      timestamp = #{timestamp,jdbcType=TIMESTAMP},
+      user_ip = #{userIp,jdbcType=VARCHAR},
+      my_order_no = #{myOrderNo,jdbcType=VARCHAR},
+      order_status = #{orderStatus,jdbcType=CHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

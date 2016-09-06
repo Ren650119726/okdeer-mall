@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.system.mapper.SysDictMapper">
+	<resultMap id="BaseResultMap" type="com.okdeer.archive.system.entity.SysDict">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="label" property="label" jdbcType="VARCHAR" />
+	    <result column="value" property="value" jdbcType="VARCHAR" />
+	    <result column="type" property="type" jdbcType="VARCHAR" />
+	    <result column="description" property="description" jdbcType="VARCHAR" />
+	    <result column="sort" property="sort" jdbcType="INTEGER" />
+	    <result column="remark" property="remark" jdbcType="VARCHAR" />
+	    <result column="del_flag" property="delFlag" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		id, label, value, type, description, sort, remark, del_flag
+	</sql> 
+	
+	<sql id="condition" >
+	    <if test="null!=params" >
+	      <if test="null != params.labelSearch and params.labelSearch != ''">
+	        AND label LIKE CONCAT('%',#{params.labelSearch},'%')
+	      </if>
+	      <if test="null != params.valueSearch and params.valueSearch != ''">
+	        AND value LIKE CONCAT('%',#{params.valueSearch},'%')
+	      </if>
+	      <if test="null != params.typeSearch and params.typeSearch != ''">
+	        AND type LIKE CONCAT('%',#{params.typeSearch},'%')
+	      </if>
+	    </if>
+	</sql>
+	
+	<select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	     FROM sys_dict WHERE 1=1 
+	    <include refid="condition" />
+	     ORDER BY TYPE ASC
+	</select>
+	
+	<!-- 根据type查询数据词典 zhongy -->
+	<select id="findDictListByType" resultMap="BaseResultMap" parameterType="string" >
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	     FROM sys_dict 
+	    WHERE 1=1 
+	      AND type = #{type}
+	     ORDER BY type ASC
+	</select>
+	
+	<select id="selectByType" resultMap="BaseResultMap" parameterType="string" >
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	     FROM sys_dict 
+	    WHERE 1=1 
+	      AND type = #{type}
+	     ORDER BY type,sort ASC
+	</select>
+	
+	<select id="findDictByValueAndType" resultMap="BaseResultMap">
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	    FROM sys_dict
+	    WHERE value = #{value}
+	      AND type = #{type}
+	</select>
+
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	    FROM sys_dict
+	    WHERE id = #{id}
+	</select>
+	
+	<!-- 检查标签唯一 -->
+	<select id="checkLabel" resultMap="BaseResultMap" parameterType="com.okdeer.archive.system.entity.SysDict" >
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	    FROM sys_dict
+	    WHERE label = #{label} AND type = #{type}
+	</select>
+	
+   <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+	    DELETE FROM sys_dict
+	    WHERE id = #{id}
+   </delete>
+   
+   <insert id="insert" parameterType="com.okdeer.archive.system.entity.SysDict" >
+	    INSERT INTO sys_dict (id, label, value, type, description, sort, remark, del_flag)
+	    VALUES (#{id}, #{label}, #{value}, #{type}, #{description}, #{sort}, #{remark}, #{delFlag})
+   </insert>
+   
+   <insert id="insertSelective" parameterType="com.okdeer.archive.system.entity.SysDict" >
+	    INSERT INTO sys_dict
+	    <trim prefix="(" suffix=")" suffixOverrides="," >
+	      <if test="id != null" >
+	        id,
+	      </if>
+	      <if test="label != null" >
+	        label,
+	      </if>
+	      <if test="value != null" >
+	        value,
+	      </if>
+	      <if test="type != null" >
+	        type,
+	      </if>
+	      <if test="description != null" >
+	        description,
+	      </if>
+	      <if test="sort != null" >
+	        sort,
+	      </if>
+	      <if test="remark != null" >
+	        remark,
+	      </if>
+	      <if test="delFlag != null" >
+	        del_flag,
+	      </if>
+	    </trim>
+	    <trim prefix="values (" suffix=")" suffixOverrides="," >
+	      <if test="id != null" >
+	        #{id},
+	      </if>
+	      <if test="label != null" >
+	        #{label},
+	      </if>
+	      <if test="value != null" >
+	        #{value},
+	      </if>
+	      <if test="type != null" >
+	        #{type},
+	      </if>
+	      <if test="description != null" >
+	        #{description},
+	      </if>
+	      <if test="sort != null" >
+	        #{sort},
+	      </if>
+	      <if test="remark != null" >
+	        #{remark},
+	      </if>
+	      <if test="delFlag != null" >
+	        #{delFlag},
+	      </if>
+	    </trim>
+    </insert>
+    
+    <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.archive.system.entity.SysDict" >
+	    UPDATE sys_dict
+	    <set >
+	      <if test="label != null" >
+	        label = #{label},
+	      </if>
+	      <if test="value != null" >
+	        value = #{value},
+	      </if>
+	      <if test="type != null" >
+	        type = #{type},
+	      </if>
+	      <if test="description != null" >
+	        description = #{description},
+	      </if>
+	      <if test="sort != null" >
+	        sort = #{sort},
+	      </if>
+	      <if test="remark != null" >
+	        remark = #{remark},
+	      </if>
+	      <if test="delFlag != null" >
+	        del_flag = #{delFlag},
+	      </if>
+	    </set>
+	    WHERE id = #{id}
+    </update>
+    
+    <update id="updateByPrimaryKey" parameterType="com.okdeer.archive.system.entity.SysDict" >
+	    UPDATE sys_dict
+	      SET label = #{label},
+		      value = #{value},
+		      type = #{type},
+		      description = #{description},
+		      sort = #{sort},
+		      remark = #{remark},
+		      del_flag = #{delFlag}
+		  WHERE id = #{id}
+    </update>
+
+</mapper>
+

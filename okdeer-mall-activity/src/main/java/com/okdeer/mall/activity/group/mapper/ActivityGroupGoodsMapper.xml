@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.group.mapper.ActivityGroupGoodsMapper" >
+  
+ 
+  <!-- 活动团购商品列 -->
+  <sql id="activityGroupGoodsColumn" >
+    id, store_sku_id,group_inventory,limit_num,group_price,group_id,disabled
+  </sql>
+  
+  
+ <!-- 活动团购商品 map -->
+ <resultMap id="activityGroupGoodsColumnMap" type="com.okdeer.mall.activity.group.entity.ActivityGroupGoods" >
+ 	 <id column="id" property="id" jdbcType="VARCHAR" />
+ 	  <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+ 	  <result column="group_inventory" property="groupInventory" jdbcType="VARCHAR" />
+ 	  <result column="limit_num" property="limitNum" jdbcType="VARCHAR" />
+ 	  <result column="group_price" property="gourpPrice" jdbcType="VARCHAR" />
+ 	  <result column="group_id" property="groupId" jdbcType="VARCHAR" />
+ </resultMap>
+ 
+ 
+ <resultMap id="BaseResultMap" type="com.okdeer.archive.goods.spu.entity.GoodsSpu">
+        <id column="id" property="id" jdbcType="VARCHAR" javaType="string"/>
+        <result column="spu_category_id" property="spuCategoryId" jdbcType="VARCHAR" javaType="string"/>
+        <result column="brand_id" property="brandId" jdbcType="VARCHAR" javaType="string"/>
+        <result column="code" property="code" jdbcType="VARCHAR" javaType="string"/>
+        <result column="name" property="name" jdbcType="VARCHAR" javaType="string"/>
+        <result column="alias" property="alias" jdbcType="VARCHAR" javaType="string"/>
+        <result column="keyword" property="keyword" jdbcType="VARCHAR" javaType="string"/>
+        <result column="description" property="description" jdbcType="VARCHAR" javaType="string"/>
+       <!--  <result column="type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.enums.SpuTypeEnum"/>
+        <result column="tag_type" property="tagType" jdbcType="TINYINT" javaType="com.okdeer.mall.enums.SpuTagTypeEnum"/>
+        <result column="obsolete" property="obsolete" jdbcType="TINYINT" javaType="com.okdeer.mall.enums.SpuObsoleteStatusEnum"/>
+        <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.enums.SpuStatusEnum"/> -->
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="date"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" javaType="date"/>
+       <!--  <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.mall.enums.Disabled"/> -->
+    </resultMap>
+ 
+ <insert id="insert" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroupGoods">
+ 	INSERT INTO activity_group_goods ( 
+  			id, store_sku_id,group_inventory,limit_num,group_price,group_id,status,disabled,sort)
+  		VALUES(
+  			#{id,jdbcType=VARCHAR},#{storeSkuId,jdbcType=VARCHAR},#{groupInventory,jdbcType=INTEGER},#{limitNum,jdbcType=INTEGER},
+  			#{gourpPrice,jdbcType=NUMERIC},#{groupId,jdbcType=VARCHAR},#{status,jdbcType=VARCHAR},#{disabled,jdbcType=VARCHAR},#{sort,jdbcType=INTEGER}
+  		)
+ </insert>
+ 
+ <update id="updateActivityGroupGoods" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroupGoods">
+ 	UPDATE activity_group_goods 
+ 	 <set>
+	 	<if test="storeSkuId != null and storeSkuId !=''">
+	 		store_sku_id = #{storeSkuId},
+	 	</if>
+	 	<if test="groupInventory != null and groupInventory !=''">
+	 		group_inventory = #{groupInventory},
+	 	</if>
+	 	<if test="limitNum != null and limitNum !=''">
+	 		limit_num = #{limitNum},
+	 	</if>
+	 	<if test="gourpPrice != null and gourpPrice !=''">
+	 		group_price = #{gourpPrice},
+	 	</if>
+	 	<if test="groupId != null and groupId !=''">
+	 		group_id = #{groupId},
+	 	</if>
+	 	<if test="sort !=null and sort !=''">
+	 		sort = #{sort},
+	 	</if>
+	 	<if test="status !=null and status !=''">
+	 		status = #{status}
+	 	</if>
+ 	</set>
+ 	WHERE id = #{id}
+ </update>
+ 
+ <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+ 	UPDATE activity_group_goods SET disabled = '1' WHERE id = #{id,jdbcType=VARCHAR}
+ </delete>
+ 
+ <delete id="deleteByGroupId" parameterType="java.lang.String">
+ 	UPDATE activity_group_goods SET disabled = '1' WHERE group_id = #{groupId,jdbcType=VARCHAR}
+ </delete>
+ 
+  <delete id="removeByGroupId" parameterType="java.lang.String">
+ 	DELETE FROM activity_group_goods WHERE group_id = #{groupId,jdbcType=VARCHAR}
+ </delete>
+ 
+ 
+ <select id="getActivityGroupGoods" parameterType="java.lang.String" resultMap="activityGroupGoodsColumnMap">
+ 	SELECT <include refid="activityGroupGoodsColumn" /> FROM activity_group_goods WHERE disabled != '1' 
+ 	AND group_id = #{groupId}
+ </select>
+ 
+ <select id="getActivityGroupGoodsGByParams" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroupGoods" resultMap="activityGroupGoodsColumnMap">
+ 	SELECT <include refid="activityGroupGoodsColumn" /> FROM activity_group_goods WHERE disabled != '1' 
+ 	
+ 	<if test="groupId != null and groupId != ''">
+ 		AND group_id = #{groupId}
+ 	</if>
+ 	
+ 	<if test="storeSkuId != null and storeSkuId !=''">
+ 		AND store_sku_id = #{storeSkuId}
+ 	</if>
+ 	
+ </select>
+  
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="activityGroupGoodsColumnMap">
+  	SELECT <include refid="activityGroupGoodsColumn" /> FROM activity_group_goods WHERE disabled != '1' 
+ 	AND id = #{id} 
+  </select>
+  
+  <select id="findActivityGroupGoods" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroupGoods" resultType="com.okdeer.mall.activity.group.entity.ActivityGroupGoods">
+   	SELECT  g.id, g.store_sku_id as storeSkuId,g.group_inventory as groupInventory,g.limit_num as limitNum,
+  			g.group_price as gourpPrice,g.group_id as groupId,g.disabled,
+    		a.`name` AS goodsName, d.`name` AS categoryName,p.`url` as goodsPic ,c.`id` AS spuId,a.`sort`,
+    		ag.`name` as groupName ,ag.`start_time` as startTime,ag.`end_time` as endTime,ag.`create_time` as createTime,ag.`status` as groupStatus
+     FROM activity_group_goods g LEFT JOIN activity_group ag ON g.`group_id` = ag.`id` 
+  	LEFT JOIN goods_store_sku a ON g.`store_sku_id` = a.`id`
+			LEFT JOIN goods_store_spu c ON a.`store_spu_id` = c.`id`
+			LEFT JOIN goods_spu_category d ON c.`spu_category_id` = d.`id` 
+			LEFT JOIN goods_store_sku_picture p ON (p.`store_sku_id` = g.`store_sku_id` AND p.`type` = '1')
+  	 WHERE g.disabled != '1' AND a.online='1' AND a.status='1' and ag.status ='1'
+  	 
+  	 <if test="goodsName !=null and goodsName !=''">
+		AND a.`name` LIKE CONCAT('%',#{goodsName},'%')
+	 </if>
+	 <if test="status !=null and status !=''">
+		AND g.status = #{status}
+	 </if>
+	 <if test="startTime !=null">
+		AND ag.start_time <![CDATA[>= ]]> #{startTime,jdbcType=TIMESTAMP}
+	</if>
+	<if test="endTime != null">
+		AND ag.end_time <![CDATA[<= ]]> #{endTime,jdbcType=TIMESTAMP}
+	</if>
+	<if test="createTimeStart != null">
+		AND ag.create_time <![CDATA[>= ]]>  #{createTimeStart,jdbcType=TIMESTAMP}
+	</if>
+	<if test="createTimeEnd != null">
+		AND ag.create_time <![CDATA[<= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+	</if>
+  		ORDER BY a.`create_time` DESC
+  </select>
+  
+  <select id="findActivityGroupGoodsByParam" parameterType="java.util.Map" resultMap="activityGroupGoodsColumnMap">
+  	SELECT <include refid="activityGroupGoodsColumn" /> FROM activity_group_goods WHERE disabled != '1' 
+  </select>
+  
+  <select id="findStoreGoodsByUserId" parameterType="java.lang.String">
+  		SELECT * FROM goods_store_spu  s WHERE s.`store_id` = (
+		SELECT a.`id` FROM store_info a WHERE a.`id` = (
+			SELECT b.`store_id` FROM  store_member_relation b WHERE b.`sys_user_id` = '1'
+		))
+  </select>
+  
+  <select id="findSpuBySkuId" parameterType="java.util.List" resultType="com.okdeer.archive.goods.spu.vo.ActivityGroupGoodsVo">
+  		SELECT c.`id`,c.`name` AS goodsName ,d.`name` AS categoryName,f.`sellable`  AS goodsStock,b.`id`  AS skuId,a.id as storeSkuId,
+		p.`url`,b.`bar_code` AS barcode,b.`style_code` AS  styleCode,a.`offline_price` AS  offlinePrice ,a.`online_price` AS  salePrice,c.`type` AS  goodsType,market_price AS  marketPrice
+			FROM goods_store_sku a 
+			LEFT JOIN goods_sku b ON a.`sku_id` = b.`id` 
+			LEFT JOIN goods_spu c ON b.`spu_id` = c.`id`
+			LEFT JOIN goods_spu_category d ON c.`spu_category_id` = d.`id` 
+			LEFT JOIN goods_spu_category_spu_type e ON c.`id` = e.`spu_category_id` 
+			LEFT JOIN goods_store_sku_stock f ON a.`id` = f.`store_sku_id`
+			LEFT JOIN goods_store_sku_picture p ON (p.`store_sku_id` = f.`store_sku_id` AND p.`type` = '1')
+			WHERE a.`store_id` = #{storeId} AND a.online='1' AND a.status='1' AND (a.activity_id='0' or a.activity_id is null) AND a.`id`  in
+        <foreach collection="ids" item="item" open="(" close=")" separator=",">
+            #{item,jdbcType=VARCHAR}
+        </foreach>
+  </select>
+  
+    <select id="findSpuByGoodsStoreId" parameterType="java.util.List" resultType="com.okdeer.archive.goods.spu.vo.ActivityGroupGoodsVo">
+			
+			SELECT a.`name` AS goodsName ,a.`properties_indb` AS propertiesIndb,d.`name` AS categoryName,f.`sellable`  AS goodsStock,f.locked as lockedStock,a.id AS storeSkuId,c.id AS storeSpuId,d.level_id as levelId,
+		p.`url`,a.`bar_code` AS barcode,a.`style_code` AS  styleCode,a.`offline_price` AS  offlinePrice ,a.`online_price` AS  salePrice,c.`type` AS  goodsType,market_price AS  marketPrice,a.`sort`
+			FROM goods_store_sku a 
+			LEFT JOIN goods_store_spu c ON a.`store_spu_id` = c.`id`
+			LEFT JOIN goods_spu_category d ON c.`spu_category_id` = d.`id` 
+			LEFT JOIN goods_spu_category_spu_type e ON c.`id` = e.`spu_category_id` 
+			LEFT JOIN goods_store_sku_stock f ON a.`id` = f.`store_sku_id`
+			LEFT JOIN goods_store_sku_picture p ON (p.`store_sku_id` = f.`store_sku_id` AND p.`type` = '1')
+			
+			WHERE a.`store_id` = #{storeId}
+			<if test="online != null and online !=''">
+				AND a.online=#{online}
+			</if>
+			 
+			  AND a.status='1' AND a.`id`  in
+        <foreach collection="ids" item="item" open="(" close=")" separator=",">
+            #{item,jdbcType=VARCHAR}
+        </foreach>
+        order by a.sort desc
+  </select>
+  
+  
+   <select id="getActivityGroupGoodsByParam" parameterType="java.util.Map" resultType="com.okdeer.archive.goods.spu.vo.ActivityGroupGoodsVo">
+		 SELECT a.id AS storeSkuId, a.`name` AS goodsName ,a.`properties_indb` as propertiesIndb,d.`name` AS categoryName,a.`online_price` AS salePrice,f.`sellable`  AS goodsStock,p.`url`,b.`id` AS storeSpuId
+		FROM goods_store_sku a 
+		LEFT JOIN goods_store_spu b ON b.`id` = a.`store_spu_id`
+		LEFT JOIN goods_spu_category d ON b.`spu_category_id` = d.`id` 
+		LEFT JOIN goods_store_sku_stock f ON a.`id` = f.`store_sku_id`
+		LEFT JOIN goods_store_sku_picture p ON (p.`store_sku_id` = f.`store_sku_id` AND p.`type` = '1')
+		WHERE a.`store_id` = #{storeId} AND a.online='0' AND a.status='1' AND (a.activity_id='0' or a.activity_id is null) AND f.`sellable` !='0' 
+		
+		<if test="barcode !=null and barcode !=''">
+			 AND b.`bar_code` LIKE CONCAT('%',#{barcode},'%')
+		</if>
+		
+		<if test="goodsName !=null and goodsName !=''">
+			 AND a.`name` LIKE CONCAT('%',#{goodsName},'%')
+		</if>
+		
+		<if test="categoryName !=null and categoryName !=''">
+			 AND d.`name` LIKE CONCAT('%',#{categoryName},'%')
+		</if>
+		
+		
+		
+		<if test="storeSkuIds != null and storeSkuIds !=''">
+			 OR a.id IN 
+			<foreach collection="storeSkuIds" item="item" open="(" close=")" separator=",">
+	            #{item,jdbcType=VARCHAR}
+	        </foreach>
+		</if>
+		
+		<if test="barcode !=null and barcode !=''">
+			 AND b.`bar_code` LIKE CONCAT('%',#{barcode},'%')
+		</if>
+		
+		<if test="goodsName !=null and goodsName !=''">
+			 AND a.`name` LIKE CONCAT('%',#{goodsName},'%')
+		</if>
+		
+		<if test="catetoryName !=null and catetoryName !=''">
+			 AND d.`name` LIKE CONCAT('%',#{catetoryName},'%')
+		</if>
+		order by a.sort desc
+		
+  </select>
+  
+  <select id="selectActivityGroupLimitNum" parameterType="map" resultMap="activityGroupGoodsColumnMap">
+  
+   	SELECT * FROM activity_group_goods AS ag 
+   		WHERE ag.store_sku_id=#{storeSkuId,jdbcType=VARCHAR} AND ag.group_id=#{groupId,jdbcType=VARCHAR} AND disabled = 0
+  
+  </select>
+  
+  <select id="selectByObject" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroupGoods" resultMap="activityGroupGoodsColumnMap"> 
+   	SELECT * FROM activity_group_goods AS ag 
+   		WHERE ag.store_sku_id=#{storeSkuId,jdbcType=VARCHAR} AND ag.group_id=#{groupId,jdbcType=VARCHAR} AND disabled = #{disabled} 
+  </select>
+  
+</mapper>

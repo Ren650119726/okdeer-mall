@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderComplainMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderComplain" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="content" property="content" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="is_read" property="isRead" jdbcType="TINYINT" javaType="com.okdeer.mall.common.enums.IsRead"/>
+  </resultMap>
+  <!-- zengj：订单投诉VO -->
+  <resultMap id="TradeOrderComplainVo" type="com.okdeer.mall.order.vo.TradeOrderComplainVo" extends="BaseResultMap">
+    <collection property="tradeOrderComplainImageList" ofType="com.okdeer.mall.order.entity.TradeOrderComplainImage">
+      <id column="image_id" property="id" jdbcType="VARCHAR"/>
+      <result column="image_path" property="imagePath" jdbcType="VARCHAR"/>
+      <result column="complain_id" property="complainId" jdbcType="VARCHAR"/>
+    </collection>
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, user_id, store_id, order_id, content, create_time, is_read
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_complain
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM trade_order_complain WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM trade_order_complain
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderComplain" >
+    insert into trade_order_complain (id, user_id, store_id, 
+      order_id, content, create_time, 
+      is_read)
+    values (#{id,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{storeId,jdbcType=VARCHAR}, 
+      #{orderId,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{isRead,jdbcType=TINYINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderComplain" >
+    insert into trade_order_complain
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="storeId != null" >
+        store_id,
+      </if>
+      <if test="orderId != null" >
+        order_id,
+      </if>
+      <if test="content != null" >
+        content,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="isRead != null" >
+        is_read,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeId != null" >
+        #{storeId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isRead != null" >
+        #{isRead,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.order.entity.TradeOrderComplain" >
+    update trade_order_complain
+    <set >
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeId != null" >
+        store_id = #{storeId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        order_id = #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        content = #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isRead != null" >
+        is_read = #{isRead,jdbcType=TINYINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.order.entity.TradeOrderComplain" >
+    update trade_order_complain
+    set user_id = #{userId,jdbcType=VARCHAR},
+      store_id = #{storeId,jdbcType=VARCHAR},
+      order_id = #{orderId,jdbcType=VARCHAR},
+      content = #{content,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      is_read = #{isRead,jdbcType=TINYINT}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- zengj：查询订单下的投诉信息 -->
+  <select id="findOrderComplainByParams" parameterType="string" resultMap="TradeOrderComplainVo">
+    SELECT tc.id, tc.user_id, tc.store_id, tc.order_id, tc.content, tc.create_time, tc.is_read,
+           tci.id as image_id,tci.complain_id,tci.image_path
+	FROM trade_order_complain AS tc
+	LEFT join trade_order_complain_image AS tci
+	ON tc.id = tci.complain_id 
+	WHERE tc.order_id = #{orderId, jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 投诉结果集（关联订单信息）  add  by  wusw -->
+  <resultMap id="OrderComplainQueryVo" type="com.okdeer.mall.order.vo.TradeOrderComplainQueryVo" extends="BaseResultMap">
+      <result column="user_phone" property="userPhone" jdbcType="VARCHAR"/>
+      <result column="order_no" property="orderNo" jdbcType="VARCHAR"/>
+  </resultMap>
+  <!-- 根据店铺id，查询投诉单和订单信息  add  by  wusw -->
+  <select id="selectComplainByStoreId" parameterType="map" resultMap="OrderComplainQueryVo">
+    SELECT complain.id,
+           complain.order_id,
+           complain.create_time,
+		   trade.order_no,
+		   trade.user_phone
+    FROM trade_order_complain complain
+	LEFT JOIN trade_order trade ON trade.id = complain.order_id
+	WHERE complain.store_id = #{storeId,jdbcType=VARCHAR}
+	<if test="orderNo != null and orderNo != ''">
+	  AND trade.order_no like CONCAT('%',#{orderNo},'%') 
+	</if>
+	<if test="userPhone != null and userPhone != ''">
+	  AND trade.user_phone like CONCAT('%',#{userPhone},'%') 
+	</if>
+	<if test="null != startCreateTime">
+	    <![CDATA[ AND complain.create_time >= #{startCreateTime} ]]>
+	</if>
+	<if test="null != endCreateTime">
+	    <![CDATA[ AND complain.create_time <= #{endCreateTime} ]]>
+	</if>
+	ORDER BY complain.create_time DESC
+  </select>
+  
+  <!-- 根据投诉单id，查询投诉单内容和图片   add  by  wusw -->
+  <select id="selectComplainContentById" parameterType="java.lang.String" resultMap="TradeOrderComplainVo">
+     SELECT tc.id,
+            tc.content,
+            tci.id AS image_id,
+            tci.image_path
+	FROM trade_order_complain AS tc
+	LEFT join trade_order_complain_image AS tci ON tc.id = tci.complain_id 
+	WHERE tc.id = #{id, jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 获取指定店铺的未读投诉消息数量     add  by  wusw -->
+  <select id="selectCountUnReadByStoreId" resultType="int" parameterType="map">
+    SELECT COUNT(1)
+    FROM trade_order_complain
+     WHERE is_read = #{isRead,jdbcType=TINYINT}
+    AND store_id = #{storeId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据指定店铺的未读投诉单为已读  add  by  wusw -->
+  <update id="updateReadByStoreId" parameterType="map">
+    UPDATE trade_order_complain
+    SET is_read = #{read,jdbcType=TINYINT}
+    WHERE is_read = #{isRead,jdbcType=TINYINT}
+    AND store_id = #{storeId,jdbcType=VARCHAR}
+  </update>
+</mapper>

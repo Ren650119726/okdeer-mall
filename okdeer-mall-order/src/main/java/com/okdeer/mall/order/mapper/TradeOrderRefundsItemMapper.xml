@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper" >
+    <!-- 数据库表名 start -->
+    <sql id="table_name">
+        trade_order_refunds_item
+    </sql>
+    <sql id="base_column">
+    	id,refunds_id,order_item_id,store_sku_id,sku_name,properties_indb,main_pic_prl,spu_type,
+        amount,preferential_price,income,quantity,weight,bar_code,style_code,status,unit_price,
+        recharge_mobile
+    </sql>
+    
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderRefundsItem" >
+	    <id column="id" property="id" jdbcType="VARCHAR" />
+	    <result column="refunds_id" property="refundsId" jdbcType="VARCHAR" />
+	    <result column="order_item_id" property="orderItemId" jdbcType="VARCHAR" />
+	    <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
+	    <result column="properties_indb" property="propertiesIndb" jdbcType="VARCHAR" />
+	    <result column="main_pic_prl" property="mainPicUrl" jdbcType="VARCHAR" />
+	    <result column="spu_type" property="spuType" jdbcType="VARCHAR" javaType="com.okdeer.archive.goods.base.enums.GoodsTypeEnum"/>
+	    <result column="amount" property="amount" jdbcType="DECIMAL" />
+	    <result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
+	    <result column="income" property="income" jdbcType="DECIMAL" />
+	    <result column="quantity" property="quantity" jdbcType="INTEGER" />
+	    <result column="weight" property="weight" jdbcType="DECIMAL" />
+	    <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+	    <result column="style_code" property="styleCode" jdbcType="VARCHAR" />
+	    <result column="status" property="status" jdbcType="VARCHAR" javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum" />
+	    <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+	    <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+	    <result column="recharge_mobile" property="rechargeMobile" jdbcType="VARCHAR" />
+	  </resultMap>
+    
+    <!-- 数据库表名 start -->
+
+    <!-- 批量插入退款单项信息 start -->
+    <insert id="insert" parameterType="java.util.List">
+        INSERT INTO <include refid="table_name"/>
+        <!-- 批量插入 14 个参数 -->
+        (id,refunds_id,order_item_id,sku_name,store_sku_id,properties_indb,main_pic_prl,
+         spu_type,amount,preferential_price,income,quantity,bar_code,style_code,status,
+         unit_price,weight,recharge_mobile)
+        VALUES
+        <foreach collection="list"  index="index" item="s" separator=",">
+            <trim prefix="(" suffix=")">
+                #{s.id,jdbcType=VARCHAR},
+                #{s.refundsId,jdbcType=VARCHAR},
+                #{s.orderItemId,jdbcType=VARCHAR},
+                #{s.skuName,jdbcType=VARCHAR},
+                #{s.storeSkuId,jdbcType=VARCHAR},
+                #{s.propertiesIndb,jdbcType=VARCHAR},
+                #{s.mainPicUrl,jdbcType=VARCHAR},
+                #{s.spuType,jdbcType=TINYINT},
+                #{s.amount,jdbcType=DECIMAL},
+                #{s.preferentialPrice,jdbcType=DECIMAL},
+                #{s.income,jdbcType=DECIMAL},
+                #{s.quantity,jdbcType=INTEGER},
+                #{s.barCode,jdbcType=VARCHAR},
+                #{s.styleCode,jdbcType=VARCHAR},
+                #{s.status,jdbcType=TINYINT},
+                #{s.unitPrice,jdbcType=DECIMAL},
+                #{s.weight,jdbcType=DECIMAL},
+                #{s.rechargeMobile,jdbcType=VARCHAR}
+            </trim>
+        </foreach>
+    </insert>
+    <!-- 批量插入退款单项信息 end -->
+    
+    <insert id="insertTradeOrderRefundsItem" parameterType="com.okdeer.mall.order.entity.TradeOrderRefundsItem">
+        INSERT INTO <include refid="table_name"/>
+        (id,refunds_id,order_item_id,sku_name,store_sku_id,properties_indb,main_pic_prl,
+         spu_type,amount,preferential_price,income,quantity,bar_code,style_code,status,
+         unit_price,weight,recharge_mobile)
+        VALUES(
+                #{id,jdbcType=VARCHAR},
+                #{refundsId,jdbcType=VARCHAR},
+                #{orderItemId,jdbcType=VARCHAR},
+                #{skuName,jdbcType=VARCHAR},
+                #{storeSkuId,jdbcType=VARCHAR},
+                #{propertiesIndb,jdbcType=VARCHAR},
+                #{mainPicUrl,jdbcType=VARCHAR},
+                #{spuType,jdbcType=TINYINT},
+                #{amount,jdbcType=DECIMAL},
+                #{preferentialPrice,jdbcType=DECIMAL},
+                #{income,jdbcType=DECIMAL},
+                #{quantity,jdbcType=INTEGER},
+                #{barCode,jdbcType=VARCHAR},
+                #{styleCode,jdbcType=VARCHAR},
+                #{status,jdbcType=TINYINT},
+                #{unitPrice,jdbcType=DECIMAL},
+                #{weight,jdbcType=DECIMAL},
+                #{rechargeMobile,jdbcType=VARCHAR}
+                )
+    </insert>
+    
+    
+    <select id="getTradeOrderRefundsItemByRefundsId" parameterType="java.lang.String" resultMap="BaseResultMap">
+    	select <include refid="base_column" /> from <include refid="table_name"/>
+    	where refunds_id = #{refundsId}
+    </select>
+    
+    <select id="selectByOrderId" parameterType="java.lang.String" resultMap="BaseResultMap">
+    	SELECT 
+			item.id,item.refunds_id,item.order_item_id,item.store_sku_id,item.sku_name,item.properties_indb,item.main_pic_prl,item.spu_type,
+        	item.amount,item.preferential_price,item.income,item.quantity,item.weight,item.bar_code,item.style_code,item.status,item.unit_price,
+        	item.recharge_mobile
+    	FROM trade_order_refunds_item item 
+    	LEFT JOIN trade_order_refunds refunds ON refunds.id = item.refunds_id
+    	WHERE  refunds.order_id = #{orderId}
+    </select>
+    
+    <select id="selectCountOrderItemId" parameterType="java.lang.String" resultType="java.lang.Integer">
+    	select count(1) from <include refid="table_name"/>
+    	where order_item_id = #{orderItemId,jdbcType=VARCHAR}
+    </select>
+    
+    
+</mapper>

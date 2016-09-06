@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.system.mapper.SysUserMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.archive.system.entity.SysUser" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="code_no" property="codeNo" jdbcType="INTEGER" />
+    <result column="user_name" property="userName" jdbcType="VARCHAR" />
+    <result column="login_name" property="loginName" jdbcType="VARCHAR" />
+    <result column="login_password" property="loginPassword" jdbcType="VARCHAR" />
+    <result column="parent_id" property="parentId" jdbcType="VARCHAR" />
+    <result column="path_ids" property="pathIds" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="tel" property="tel" jdbcType="VARCHAR" />
+    <result column="birthday" property="birthday" jdbcType="DATE" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="last_visit" property="lastVisit" jdbcType="TIMESTAMP" />
+    <result column="data_source" property="dataSource" jdbcType="VARCHAR" />
+    <result column="system_id" property="systemId" jdbcType="VARCHAR" />
+    <result column="child_enabled" property="childEnabled" jdbcType="TINYINT" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+    <result column="pwd_update_time" property="pwdUpdateTime" jdbcType="TIMESTAMP" />
+    <result column="disabled" property="disabled" jdbcType="VARCHAR" />
+    <result column="is_accept" property="isAccept" jdbcType="TINYINT" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, code_no, user_name, login_name, login_password, parent_id, path_ids, status, 
+    type, email, phone, tel, birthday, description, last_visit, data_source, system_id, 
+    child_enabled, create_time, create_user_id, update_time, update_user_id, pwd_update_time,disabled,is_accept
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+      <if test="null!=params.userNameLikeSearch and ''!= params.userNameLikeSearch" >
+        AND user_name LIKE CONCAT('%',#{params.userNameLikeSearch},'%')
+      </if>
+      <if test="null!=params.loginNameLikeSearch and ''!= params.loginNameLikeSearch">
+        AND login_name LIKE CONCAT('%',#{params.loginNameSearch},'%')
+      </if>
+      <if test="null!=params.loginNameSearch and ''!= params.loginNameSearch" >
+        AND login_name = #{params.loginNameSearch}
+      </if>
+      <if test="null!=params.loginPassWordSearch and ''!= params.loginPassWordSearch" >
+        AND login_password = #{params.loginPassWordSearch}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from sys_user
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectUserByLoginName" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from sys_user
+    where login_name = #{login_name,jdbcType=VARCHAR}
+  </select>
+  <select id="getUserById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from sys_user
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM sys_user WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM sys_user
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.archive.system.entity.SysUser" >
+    insert into sys_user (id, code_no, user_name, 
+      login_name, login_password, parent_id, 
+      path_ids, status, type, 
+      email, phone, tel, 
+      birthday, description, last_visit, 
+      data_source, system_id, child_enabled, 
+      create_time, create_user_id, update_time, 
+      update_user_id, pwd_update_time, disabled)
+    values (#{id,jdbcType=VARCHAR}, #{codeNo,jdbcType=INTEGER}, #{userName,jdbcType=VARCHAR}, 
+      #{loginName,jdbcType=VARCHAR}, #{loginPassword,jdbcType=VARCHAR}, #{parentId,jdbcType=VARCHAR}, 
+      #{pathIds,jdbcType=VARCHAR}, #{status,jdbcType=TINYINT}, #{type,jdbcType=TINYINT}, 
+      #{email,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{tel,jdbcType=VARCHAR}, 
+      #{birthday,jdbcType=DATE}, #{description,jdbcType=VARCHAR}, #{lastVisit,jdbcType=TIMESTAMP}, 
+      #{dataSource,jdbcType=VARCHAR}, #{systemId,jdbcType=VARCHAR}, #{childEnabled,jdbcType=TINYINT}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{createUserId,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP}, 
+      #{updateUserId,jdbcType=VARCHAR}, #{pwdUpdateTime,jdbcType=TIMESTAMP},#{disabled,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.archive.system.entity.SysUser" >
+    insert into sys_user
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="codeNo != null" >
+        code_no,
+      </if>
+      <if test="userName != null" >
+        user_name,
+      </if>
+      <if test="loginName != null" >
+        login_name,
+      </if>
+      <if test="loginPassword != null" >
+        login_password,
+      </if>
+      <if test="parentId != null" >
+        parent_id,
+      </if>
+      <if test="pathIds != null" >
+        path_ids,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="email != null" >
+        email,
+      </if>
+      <if test="phone != null" >
+        phone,
+      </if>
+      <if test="tel != null" >
+        tel,
+      </if>
+      <if test="birthday != null" >
+        birthday,
+      </if>
+      <if test="description != null" >
+        description,
+      </if>
+      <if test="lastVisit != null" >
+        last_visit,
+      </if>
+      <if test="dataSource != null" >
+        data_source,
+      </if>
+      <if test="systemId != null" >
+        system_id,
+      </if>
+      <if test="childEnabled != null" >
+        child_enabled,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="createUserId != null" >
+        create_user_id,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="updateUserId != null" >
+        update_user_id,
+      </if>
+      <if test="pwdUpdateTime != null" >
+        pwd_update_time,
+      </if>
+      <if test="disabled != null" >
+        disabled,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="codeNo != null" >
+        #{codeNo,jdbcType=INTEGER},
+      </if>
+      <if test="userName != null" >
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="loginName != null" >
+        #{loginName,jdbcType=VARCHAR},
+      </if>
+      <if test="loginPassword != null" >
+        #{loginPassword,jdbcType=VARCHAR},
+      </if>
+      <if test="parentId != null" >
+        #{parentId,jdbcType=VARCHAR},
+      </if>
+      <if test="pathIds != null" >
+        #{pathIds,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=TINYINT},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=TINYINT},
+      </if>
+      <if test="email != null" >
+        #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="tel != null" >
+        #{tel,jdbcType=VARCHAR},
+      </if>
+      <if test="birthday != null" >
+        #{birthday,jdbcType=DATE},
+      </if>
+      <if test="description != null" >
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="lastVisit != null" >
+        #{lastVisit,jdbcType=TIMESTAMP},
+      </if>
+      <if test="dataSource != null" >
+        #{dataSource,jdbcType=VARCHAR},
+      </if>
+      <if test="systemId != null" >
+        #{systemId,jdbcType=VARCHAR},
+      </if>
+      <if test="childEnabled != null" >
+        #{childEnabled,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUserId != null" >
+        #{createUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null" >
+        #{updateUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="pwdUpdateTime != null" >
+        #{pwdUpdateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="disabled != null" >
+        #{disabled,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.archive.system.entity.SysUser" >
+    update sys_user
+    <set >
+      <if test="codeNo != null" >
+        code_no = #{codeNo,jdbcType=INTEGER},
+      </if>
+      <if test="userName != null" >
+        user_name = #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="loginName != null" >
+        login_name = #{loginName,jdbcType=VARCHAR},
+      </if>
+      <if test="loginPassword != null" >
+        login_password = #{loginPassword,jdbcType=VARCHAR},
+      </if>
+      <if test="parentId != null" >
+        parent_id = #{parentId,jdbcType=VARCHAR},
+      </if>
+      <if test="pathIds != null" >
+        path_ids = #{pathIds,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=TINYINT},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=TINYINT},
+      </if>
+      <if test="email != null" >
+        email = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="tel != null" >
+        tel = #{tel,jdbcType=VARCHAR},
+      </if>
+      <if test="birthday != null" >
+        birthday = #{birthday,jdbcType=DATE},
+      </if>
+      <if test="description != null" >
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="lastVisit != null" >
+        last_visit = #{lastVisit,jdbcType=TIMESTAMP},
+      </if>
+      <if test="dataSource != null" >
+        data_source = #{dataSource,jdbcType=VARCHAR},
+      </if>
+      <if test="systemId != null" >
+        system_id = #{systemId,jdbcType=VARCHAR},
+      </if>
+      <if test="childEnabled != null" >
+        child_enabled = #{childEnabled,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUserId != null" >
+        create_user_id = #{createUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null" >
+        update_user_id = #{updateUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="pwdUpdateTime != null" >
+        pwd_update_time = #{pwdUpdateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="disabled != null" >
+        disabled = #{disabled,jdbcType=VARCHAR},
+      </if>
+      <if test="isAccept != null and isAccept != ''">
+      	is_accept = #{isAccept,jdbcType=TINYINT},
+      </if>
+      id = #{id,jdbcType=VARCHAR} 
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.archive.system.entity.SysUser" >
+    update sys_user
+    set code_no = #{codeNo,jdbcType=INTEGER},
+      user_name = #{userName,jdbcType=VARCHAR},
+      login_name = #{loginName,jdbcType=VARCHAR},
+      login_password = #{loginPassword,jdbcType=VARCHAR},
+      parent_id = #{parentId,jdbcType=VARCHAR},
+      path_ids = #{pathIds,jdbcType=VARCHAR},
+      status = #{status,jdbcType=TINYINT},
+      type = #{type,jdbcType=TINYINT},
+      email = #{email,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      tel = #{tel,jdbcType=VARCHAR},
+      birthday = #{birthday,jdbcType=DATE},
+      description = #{description,jdbcType=VARCHAR},
+      last_visit = #{lastVisit,jdbcType=TIMESTAMP},
+      data_source = #{dataSource,jdbcType=VARCHAR},
+      system_id = #{systemId,jdbcType=VARCHAR},
+      child_enabled = #{childEnabled,jdbcType=TINYINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      create_user_id = #{createUserId,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      update_user_id = #{updateUserId,jdbcType=VARCHAR},
+      pwd_update_time = #{pwdUpdateTime,jdbcType=TIMESTAMP},
+      disabled = #{disabled,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- zengj:查询店铺内的用户 -->
+  <select id="selectUserByStoreId" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select su.id, su.code_no, su.user_name, su.login_name, su.login_password, su.parent_id, su.path_ids, su.status, 
+    su.type, su.email, su.phone, su.tel, su.birthday, su.description, su.last_visit, su.data_source, su.system_id, 
+    su.child_enabled, su.create_time, su.create_user_id, su.update_time, su.update_user_id, su.pwd_update_time,su.disabled,su.is_accept FROM
+    sys_user su inner join store_member_relation member ON su.id = member.sys_user_id
+    where member.store_id=#{storeId,jdbcType=VARCHAR}
+    AND su.disabled = 0
+    AND member.disabled = 0
+  </select>
+</mapper>

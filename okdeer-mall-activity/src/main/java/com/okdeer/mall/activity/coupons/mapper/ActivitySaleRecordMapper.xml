@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="stroe_id" property="stroeId" jdbcType="VARCHAR" />
+    <result column="sale_goods_id" property="saleGoodsId" jdbcType="VARCHAR" />
+    <result column="sale_goods_num" property="saleGoodsNum" jdbcType="INTEGER" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="sale_id" property="saleId" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="order_disabled" property="orderDisabled" javaType="com.yschome.base.common.enums.Disabled" jdbcType="TINYINT"/>
+  </resultMap>
+  
+  <!-- 查询字段 -->
+  <sql id="Base_Column_List" >
+    id, stroe_id, sale_goods_id, sale_goods_num, user_id, sale_id, order_id, order_disabled
+  </sql>
+  
+  <!-- 查询条件 -->
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  
+  <!-- 根据主键ID，查询特惠活动记录信息 -->
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM activity_sale_record
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据查询条件，查询特惠活动记录信息列表 -->
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_sale_record WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  
+  <!-- 根据主键ID，删除特惠活动记录信息 -->
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM activity_sale_record
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <select id="selectActivitySaleRecord" parameterType="map" resultType="int">
+     SELECT COALESCE(SUM(sale_goods_num),0) FROM activity_sale_record WHERE stroe_id = #{storeId,jdbcType=VARCHAR} AND
+      sale_goods_id =#{saleGoodsId,jdbcType=VARCHAR} AND user_id = #{userId,jdbcType=VARCHAR} AND sale_id = #{saleId,jdbcType=VARCHAR} AND order_disabled = 0
+  </select>
+  
+  <select id="selectOrderGoodsCount" parameterType="map" resultType="int">
+     SELECT count(1) FROM activity_sale_record WHERE 
+      sale_goods_id =#{saleGoodsId,jdbcType=VARCHAR} AND order_id= #{orderId,jdbcType=VARCHAR}
+  </select>
+
+	<!-- 查询特惠活动id start  -->
+  <select id="selectOrderGoodsActivity" parameterType="map" resultType="string">
+    SELECT sale_id FROM activity_sale_record WHERE
+    sale_goods_id =#{saleGoodsId,jdbcType=VARCHAR} AND order_id= #{orderId,jdbcType=VARCHAR}
+  </select>
+  <!-- 查询特惠活动id end  -->
+  
+  <select id="selectActivitySaleRecordOfFund" parameterType="map" resultType="string">
+  		SELECT distinct(sale_goods_id) FROM activity_sale_record WHERE stroe_id = #{storeId,jdbcType=VARCHAR}
+  		 AND user_id = #{userId,jdbcType=VARCHAR} AND sale_id = #{saleId,jdbcType=VARCHAR} AND order_disabled = 0
+  </select>
+  
+  <select id="selectActivitySaleRecordList" parameterType="map" resultType="string">
+      SELECT sale_goods_id FROM activity_sale_record WHERE stroe_id = #{storeId,jdbcType=VARCHAR}
+  		 AND user_id = #{userId,jdbcType=VARCHAR} AND sale_id = #{saleId,jdbcType=VARCHAR} AND order_disabled = 0
+  </select>
+  
+  <!-- 插入特惠活动记录信息 -->
+  <insert id="insert" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord" >
+    INSERT INTO activity_sale_record (id, stroe_id, sale_goods_id, 
+      sale_goods_num, user_id, sale_id, 
+      order_id, order_disabled)
+    VALUES (#{id,jdbcType=VARCHAR}, #{stroeId,jdbcType=VARCHAR}, #{saleGoodsId,jdbcType=VARCHAR}, 
+      #{saleGoodsNum,jdbcType=INTEGER}, #{userId,jdbcType=VARCHAR}, #{saleId,jdbcType=VARCHAR}, 
+      #{orderId,jdbcType=VARCHAR}, #{orderDisabled,jdbcType=TINYINT})
+  </insert>
+  
+  <!-- 判断是否为空，插入特惠活动记录信息 -->
+  <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord" >
+    INSERT INTO activity_sale_record
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        id,
+      </if>
+      <if test="stroeId != null and stroeId != ''" >
+        stroe_id,
+      </if>
+      <if test="saleGoodsId != null and saleGoodsId != ''" >
+        sale_goods_id,
+      </if>
+      <if test="saleGoodsNum != null" >
+        sale_goods_num,
+      </if>
+      <if test="userId != null and userId != ''" >
+        user_id,
+      </if>
+      <if test="saleId != null and saleId != ''" >
+        sale_id,
+      </if>
+      <if test="orderId != null and orderId != ''" >
+        order_id,
+      </if>
+      <if test="orderDisabled != null" >
+        order_disabled,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="stroeId != null and stroeId != ''" >
+        #{stroeId,jdbcType=VARCHAR},
+      </if>
+      <if test="saleGoodsId != null and saleGoodsId != ''" >
+        #{saleGoodsId,jdbcType=VARCHAR},
+      </if>
+      <if test="saleGoodsNum != null" >
+        #{saleGoodsNum,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null and userId != ''" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="saleId != null and saleId != ''" >
+        #{saleId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null and orderId != ''" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderDisabled != null" >
+        #{orderDisabled,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- 判断是否为空，根据主键ID，更新特惠活动记录信息 -->
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord" >
+    UPDATE activity_sale_record
+    <set >
+      <if test="stroeId != null and stroeId != ''" >
+        stroe_id = #{stroeId,jdbcType=VARCHAR},
+      </if>
+      <if test="saleGoodsId != null and saleGoodsId != ''" >
+        sale_goods_id = #{saleGoodsId,jdbcType=VARCHAR},
+      </if>
+      <if test="saleGoodsNum != null" >
+        sale_goods_num = #{saleGoodsNum,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null and userId != ''" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="saleId != null and saleId != ''" >
+        sale_id = #{saleId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null and orderId != ''" >
+        order_id = #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderDisabled != null" >
+        order_disabled = #{orderDisabled,jdbcType=TINYINT},
+      </if>
+    </set>
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 根据主键ID，更新特惠活动记录信息 -->
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord" >
+    UPDATE activity_sale_record
+    SET stroe_id = #{stroeId,jdbcType=VARCHAR},
+      sale_goods_id = #{saleGoodsId,jdbcType=VARCHAR},
+      sale_goods_num = #{saleGoodsNum,jdbcType=INTEGER},
+      user_id = #{userId,jdbcType=VARCHAR},
+      sale_id = #{saleId,jdbcType=VARCHAR},
+      order_id = #{orderId,jdbcType=VARCHAR},
+      order_disabled = #{orderDisabled,jdbcType=TINYINT}
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 根据订单ID，逻辑删除特惠活动记录信息 -->
+  <update id="updateDisabledByOrderId" parameterType="map">
+    UPDATE activity_sale_record
+    SET order_disabled = 1
+    WHERE order_id = #{orderId,jdbcType=VARCHAR} 
+    AND sale_goods_id = #{storeSkuId,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- Begin added by maojj 2016-07-15 -->
+  <!-- 查询用户购买特惠商品记录列表-->
+  <select id="countSaleRecord" parameterType="map" resultMap="BaseResultMap">
+  	SELECT sale_goods_id,sum(sale_goods_num) sale_goods_num
+  	FROM activity_sale_record 
+  	WHERE stroe_id = #{storeId,jdbcType=VARCHAR}
+  	AND user_id = #{userId,jdbcType=VARCHAR} 
+  	AND sale_id = #{activityId,jdbcType=VARCHAR} 
+  	AND order_disabled = 0
+  	GROUP BY sale_goods_id
+  </select>
+  
+  <!-- 批量插入特惠商品购买记录 add by maojj -->
+  <insert id="batchInsert" parameterType="list">
+	INSERT INTO activity_sale_record (
+    	id, 
+    	stroe_id, 
+    	sale_goods_id, 
+      	sale_goods_num, 
+      	user_id, 
+      	sale_id, 
+      	order_id, 
+      	order_disabled)
+    VALUES 
+    <foreach collection="list" item="item" separator="," >
+		(
+			#{item.id,jdbcType=VARCHAR}, 
+			#{item.stroeId,jdbcType=VARCHAR}, 
+			#{item.saleGoodsId,jdbcType=VARCHAR}, 
+      		#{item.saleGoodsNum,jdbcType=INTEGER}, 
+      		#{item.userId,jdbcType=VARCHAR}, 
+      		#{item.saleId,jdbcType=VARCHAR}, 
+      		#{item.orderId,jdbcType=VARCHAR}, 
+      		#{item.orderDisabled,jdbcType=TINYINT}
+      	)
+     </foreach>
+  </insert>
+  <!-- End added by maojj 2016-07-15 -->
+</mapper>

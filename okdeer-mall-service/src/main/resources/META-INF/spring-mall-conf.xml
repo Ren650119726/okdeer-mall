@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd  
+	                      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	                      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd         
+	                      http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd         
+	                      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+ 	<bean class="com.yschome.base.framework.zkconfig.InitZooKeeperPropertyConfigurer">
+		<property name="ignoreUnresolvablePlaceholders" value="true"></property>
+		<property name="ignoreResourceNotFound" value="true"></property>
+		<property name="locations">
+			<list>
+				<value>file:/okdeer/config/config.properties</value>
+				<!-- <value>file:/D:/workspace/mall/okdeer-mall/okdeer-mall-service/src/main/resources/config.properties</value> -->
+			</list>
+		</property>
+	</bean>
+</beans>

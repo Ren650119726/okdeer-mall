@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper">	
+    <resultMap id="CouponsResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCoupons">
+        <id property="id" column="id" javaType="string" jdbcType="VARCHAR"/>
+        <result property="name" column="name" javaType="string" jdbcType="VARCHAR"/>
+        <result property="activityId" column="activity_id" javaType="string" jdbcType="VARCHAR"/>    
+        <result property="belongType" column="belong_type" javaType="string" jdbcType="VARCHAR"/>            
+       	<result property="faceValue" column="face_value" javaType="integer" jdbcType="INTEGER"/>
+     	<result property="totalNum" column="total_num" javaType="integer" jdbcType="INTEGER"/>
+     	<result property="usedNum" column="used_num" javaType="integer" jdbcType="INTEGER"/>
+        <result property="remainNum" column="remain_num" javaType="integer" jdbcType="INTEGER"/>
+        <result property="arriveLimit" column="arrive_limit" javaType="integer" jdbcType="INTEGER"/>
+        <result property="validDay" column="valid_day" javaType="integer" jdbcType="INTEGER"/>
+        <result property="everyLimit" column="every_limit" javaType="integer" jdbcType="INTEGER"/>
+        <result property="isCashDelivery" column="is_cash_delivery" javaType="com.okdeer.mall.activity.coupons.enums.CashDelivery"
+                   jdbcType="TINYINT"/>
+        <result property="isCategoryLimit" column="is_category_limit" javaType="com.okdeer.mall.activity.coupons.enums.CategoryLimit"
+                   jdbcType="TINYINT"/>
+        <result property="code" column="code" javaType="string" jdbcType="VARCHAR"/>
+        <result property="exchangeCode" column="exchange_code" javaType="string" jdbcType="VARCHAR"/>            
+        <result property="areaType" column="area_type" javaType="com.okdeer.mall.common.enums.AreaType"
+                   jdbcType="TINYINT"/>
+        <result property="sort" column="sort" javaType="integer" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" javaType="date" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" javaType="date" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    
+    <resultMap id="CouponsVoResultMap" type="com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery" extends="CouponsResultMap">
+        <result property="activityName" column="activity_name" javaType="string" jdbcType="VARCHAR"/> 
+        <collection property="activityCouponsAreaList" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea">
+	      <id column="areaid" property="id" jdbcType="VARCHAR" />
+          <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
+          <result column="area_id" property="areaId" jdbcType="VARCHAR" /> 
+          <result column="type" property="couponsAreaType" javaType="com.okdeer.mall.common.enums.DistrictType" jdbcType="TINYINT"/>
+	    </collection> 
+	    <collection property="activityCouponsCommunityList" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsCommunity">
+	       <id column="communityid" property="id" jdbcType="VARCHAR" />
+           <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
+           <result column="community_id" property="communityId" jdbcType="VARCHAR" />
+           <result column="community_name" property="communityName" jdbcType="VARCHAR" />
+           <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+           <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+	    </collection> 
+		<collection property="activityCouponsStoreList" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore">
+	       <id column="storeid" property="id" jdbcType="VARCHAR" />
+           <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
+           <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+           <result column="store_name_area" property="storeName" jdbcType="VARCHAR" />
+           <result column="storeCityId" property="storeCityId" jdbcType="VARCHAR" />
+           <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+	   </collection>  
+	   <collection property="activityCouponsLimitCategoryList" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsLimitCategory">
+	       <id column="categoryid" property="id" jdbcType="VARCHAR" />
+           <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
+           <result column="category_id" property="categoryId" jdbcType="VARCHAR" />
+           <result column="category_name" property="categoryName" jdbcType="VARCHAR" />
+	   </collection>             
+    </resultMap>
+    
+    <select id="selectCategory"  parameterType="com.okdeer.archive.goods.base.entity.GoodsSpuCategory" 
+                                 resultType="com.okdeer.archive.goods.base.entity.GoodsSpuCategory">
+    	SELECT id, pid, level_id, NAME, level_type, sort, description, disabled,
+    	create_time, update_time FROM goods_spu_category g WHERE g.disabled = #{disabled,jdbcType=TINYINT} 
+    	and g.level_type = #{levelType,jdbcType=TINYINT}
+    </select>
+    
+	<select id="selectStoreInfoByCityId" parameterType="com.okdeer.archive.store.entity.StoreInfo" resultType="com.okdeer.mall.common.entity.AreaScTreeVo">
+		SELECT id , disabled, type, agent_id, CONCAT(store_name,'(',area,')') as text FROM store_info 
+		WHERE city_id = #{cityId, jdbcType=VARCHAR} AND disabled = #{disabled,jdbcType=TINYINT}
+		AND type = #{type,jdbcType=TINYINT} 
+		<if test="agentId != null and agentId != ''">
+            AND agent_id = #{agentId, jdbcType=VARCHAR}
+       </if> 
+	</select>
+	
+	<sql id="BaseSelectSQL">
+        id, name, activity_id, belong_type, face_value, total_num, used_num, remain_num, arrive_limit, valid_day, every_limit,
+	    is_cash_delivery, is_category_limit, code, exchange_code, area_type, create_user_id, create_time, update_user_id, update_time, disabled 
+    </sql>
+    
+   <!--  新增    根据代金卷名字和优惠码查询 名字和优惠码要唯一 -->
+    <select id="selectCouponsByName" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCoupons" 
+                   					 resultMap="CouponsResultMap">
+       SELECT <include refid="BaseSelectSQL" />
+       FROM  activity_coupons WHERE disabled = #{disabled,jdbcType=TINYINT} 
+       <if test="name != null and name != ''">
+            AND name = #{name,jdbcType=VARCHAR}
+       </if> 
+       <if test="exchangeCode != null and exchangeCode != ''">
+            AND exchange_code = #{exchangeCode,jdbcType=VARCHAR}
+      </if>
+    </select>
+
+  <!--  编辑时候判断唯一    根据代金卷名字和优惠码查询 名字和优惠码要唯一 -->
+	<select id="selectByParams" parameterType="com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery" resultMap="CouponsVoResultMap">
+       SELECT <include refid="BaseSelectSQL" />
+       FROM  activity_coupons WHERE disabled = #{disabled,jdbcType=TINYINT} 
+       <if test="name != null and name != ''">
+            AND name = #{name,jdbcType=VARCHAR}
+       </if> 
+       <if test="exchangeCode != null and exchangeCode != ''">
+            AND exchange_code = #{exchangeCode,jdbcType=VARCHAR}
+      </if>
+       <![CDATA[ AND id != #{id,jdbcType=VARCHAR}]]>  
+    </select>
+    
+	<select id="selectCoupons" parameterType="com.okdeer.mall.activity.coupons.entity.CouponsInfoParams" 
+										resultMap="CouponsVoResultMap">
+		SELECT ac.id, ac.name, acc.name as activity_name, ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, ac.used_num, 
+		       ac.remain_num, ac.arrive_limit, ac.valid_day, ac.every_limit, ac.is_cash_delivery, ac.is_category_limit, 
+		       ac.code,ac.exchange_code, ac.area_type, ac.create_user_id, ac.create_time, ac.update_user_id, ac.update_time, 
+		       ac.disabled 
+		FROM activity_coupons ac
+        left join activity_collect_coupons acc on ac.activity_id = acc.id
+        WHERE 1=1
+	<if test="name != null and name != ''">
+            AND ac.name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
+    </if>
+    <if test="activityName != null and activityName != ''">
+            AND acc.name LIKE CONCAT('%',#{activityName,jdbcType=VARCHAR},'%')
+    </if>
+    <if test="faceValue != null">
+            AND ac.face_value = #{faceValue,jdbcType=INTEGER}
+    </if> 
+   	<if test="startTime != null">
+			<![CDATA[ AND ac.create_time >= #{startTime}]]> 
+	</if>
+	<if test="endTime != null">
+			<![CDATA[ AND ac.create_time < #{endTime}]]>  
+	</if> 
+	<if test="disabled != null">
+            AND ac.disabled = #{disabled,jdbcType=TINYINT}
+    </if> 
+	<if test="belongType != null and belongType != ''">
+<!-- 			0是运营商,可以看到所有人的,  大于0,是代理商,只能看到自己的 -->
+			AND ac.belong_type = #{belongType}
+	</if>
+    <if test="isActivityRelated != null">
+      <choose>
+         <when test="isActivityRelated.name() == 'no'">
+              AND ac.activity_id is null
+         </when>
+         <when test="isActivityRelated.name() == 'yes'">
+                AND ac.activity_id is not null
+         </when>
+         <otherwise>
+                AND 1=1
+         </otherwise>
+    </choose>
+    </if>
+            ORDER BY 
+			   ac.create_time 
+	        desc
+	</select> 
+	
+	<select id="selectCouponsById" parameterType="String" resultMap="CouponsVoResultMap">
+	   SELECT ac.id, ac.name,ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, ac.used_num, ac.remain_num, ac.arrive_limit, 
+	          ac.valid_day, ac.every_limit,ac.is_cash_delivery, ac.is_category_limit, ac.code,ac.exchange_code, ac.area_type, 
+	          ac.create_user_id, ac.create_time, ac.update_user_id, ac.update_time, ac.disabled, a.area_id, a.type, c.community_id,
+	          c.community_name, c.city_id, e.store_name_area, e.storeCityId, e.store_id
+	  FROM activity_coupons ac 
+	  left join activity_coupons_area a on a.coupons_id = ac.id
+	  left join (SELECT b.id, b.coupons_id, b.community_id, ps.name AS community_name, ps.city_id 
+				FROM activity_coupons_community b, psms_small_community_info ps
+				WHERE b.community_id = ps.id) c on ac.id = c.coupons_id		
+      left join (SELECT acs.coupons_id, acs.store_id, st.id, st.disabled, st.city_id AS storeCityId, CONCAT(st.store_name,'(',st.area,')') as store_name_area FROM store_info st, activity_coupons_store acs
+                   where st.id = acs.store_id ) e on e.coupons_id = ac.id          
+      WHERE ac.id = #{id,jdbcType=VARCHAR}
+      order by ac.create_time desc
+	</select>
+	
+	<insert id="insert" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCoupons">  
+	     INSERT INTO activity_coupons(id, name, belong_type, 
+	     face_value, total_num, used_num, 
+	     remain_num, arrive_limit, valid_day,
+	     every_limit, is_cash_delivery, is_category_limit,
+	     exchange_code, area_type, create_user_id, 
+	     create_time, update_user_id, update_time, disabled)
+	     VALUES(#{id, jdbcType=VARCHAR}, #{name, jdbcType=VARCHAR}, #{belongType, jdbcType=VARCHAR},
+	     #{faceValue, jdbcType=INTEGER}, #{totalNum, jdbcType=INTEGER}, #{usedNum, jdbcType=INTEGER},
+	     #{totalNum, jdbcType=INTEGER}, #{arriveLimit, jdbcType=INTEGER}, #{validDay, jdbcType=INTEGER}, 
+		 #{everyLimit, jdbcType=INTEGER}, #{isCashDelivery, jdbcType=TINYINT}, #{isCategoryLimit, jdbcType=TINYINT},
+		 #{exchangeCode, jdbcType=VARCHAR}, #{areaType, jdbcType=TINYINT}, #{createUserId, jdbcType=VARCHAR},  
+		 #{createTime, jdbcType=TIMESTAMP}, #{updateUserId, jdbcType=VARCHAR}, #{updateTime, jdbcType=TIMESTAMP}, #{disabled, jdbcType=TINYINT});
+	</insert> 
+	
+    <update id="updateCoupons" parameterType="com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery">
+	      UPDATE activity_coupons
+	       <set>
+	          <if test="name != null and name != ''">
+                name = #{name, jdbcType=VARCHAR},
+              </if>
+             <if test="faceValue != null">
+                face_value = #{faceValue, jdbcType=INTEGER},
+             </if>
+             <if test="arriveLimit != null">
+                arrive_limit = #{arriveLimit, jdbcType=INTEGER},
+             </if>
+             <if test="totalNum != null">
+                total_num = #{totalNum, jdbcType=INTEGER},
+             </if>
+             <if test="validDay != null">
+                valid_day = #{validDay, jdbcType=INTEGER},
+             </if>
+             <if test="everyLimit != null">
+                every_limit = #{everyLimit, jdbcType=INTEGER}, 
+             </if>
+             <if test="isCategoryLimit != null">
+                is_category_limit = #{isCategoryLimit, jdbcType=TINYINT},
+             </if>
+             <if test="isCashDelivery != null">
+                is_cash_delivery = #{isCashDelivery, jdbcType=TINYINT},
+             </if>
+                exchange_code = #{exchangeCode, jdbcType=VARCHAR},
+             <if test="areaType != null">
+                area_type = #{areaType, jdbcType=TINYINT},
+             </if>
+             <if test="updateTime != null" >
+        		update_time = #{updateTime,jdbcType=TIMESTAMP},
+     		 </if>
+	       </set>
+	       WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<insert id="insertCouponsLimitCategory" parameterType="list">
+	       INSERT INTO activity_coupons_limit_category
+			(id, coupons_id, category_id)
+			VALUES 
+			<foreach collection="list" item="item" index="index" separator="," >
+      		 (
+             #{item.id,jdbcType=VARCHAR},
+             #{item.couponsId, jdbcType=VARCHAR},
+             #{item.categoryId, jdbcType=VARCHAR}
+       		 )
+		</foreach>
+	</insert>
+	
+	<insert id="insertCouponsArea" parameterType="list">
+	       INSERT INTO activity_coupons_area
+			(id, coupons_id, area_id, type)
+			VALUES
+			<foreach collection="list" item="item" index="index" separator="," >
+			  (#{item.id, jdbcType=VARCHAR}, #{item.couponsId, jdbcType=VARCHAR}, #{item.areaId, jdbcType=VARCHAR}, #{item.couponsAreaType, jdbcType=TINYINT})
+			</foreach>
+	</insert>
+	
+	<insert id="insertCouponsCommunity" parameterType="list">
+	       INSERT INTO activity_coupons_community
+			(id, coupons_id, community_id)
+			VALUES 
+		   <foreach collection="list" item="item" index="index" separator="," >
+		   	  (#{item.id, jdbcType=VARCHAR}, #{item.couponsId, jdbcType=VARCHAR}, #{item.communityId, jdbcType=VARCHAR})
+		   </foreach>
+	</insert>
+	
+	<insert id="insertCouponsStore" parameterType="list">
+	       INSERT INTO activity_coupons_store
+			(id, coupons_id, store_id)
+			VALUES 
+			<foreach collection="list" item="item" index="index" separator="," >
+			 (#{item.id, jdbcType=VARCHAR}, #{item.couponsId, jdbcType=VARCHAR}, #{item.storeId, jdbcType=VARCHAR})
+			</foreach>
+	</insert>
+	
+	<select id="selectCouponsLimitCategory" parameterType="String" 
+						resultType="int">
+	       select count(1) from activity_coupons_limit_category where coupons_id = #{id, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="selectCouponsArea" parameterType="String" resultType="int">
+	      select count(1) from activity_coupons_area where coupons_id = #{id, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="selectCouponsCommunity" parameterType="String" resultType="int">
+	       select count(1) from activity_coupons_community where coupons_id = #{id, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="selectCouponsStore" parameterType="String" resultType="int">
+	       select count(1) from activity_coupons_store where coupons_id = #{id, jdbcType=VARCHAR}
+	</select>
+	
+	    <!--通过ID删除-->
+	<delete id="deleteByIds" parameterType="String">
+	       delete from activity_coupons where id = #{id,jdbcType=VARCHAR}
+	</delete>
+	            
+	<delete id="deleteCouponsLimitCategory" parameterType="String">
+	        DELETE FROM activity_coupons_limit_category WHERE coupons_id= #{id,jdbcType=VARCHAR}
+	</delete>
+
+	<delete id="deleteCouponsArea" parameterType="String">
+	        DELETE FROM activity_coupons_area WHERE coupons_id= #{id,jdbcType=VARCHAR}
+	</delete>
+	
+	<delete id="deleteCouponsCommunity" parameterType="String">
+	         DELETE FROM activity_coupons_community WHERE coupons_id= #{id,jdbcType=VARCHAR}
+	</delete>
+		
+	<delete id="deleteCouponsStore" parameterType="String">
+	         DELETE FROM activity_coupons_store WHERE coupons_id= #{id,jdbcType=VARCHAR}
+	</delete>
+	
+	<select id="listByActivityId" parameterType="map" resultMap="CouponsResultMap">
+		select * from activity_coupons 
+		where disabled = 0 
+		and 
+		(
+			(activity_id is null or activity_id = '')
+			<if test="belongType != null and belongType != ''">
+				and belong_type = #{belongType}
+			</if>
+		)
+		<!-- 如果是修改调用接口,就加载之前该活动已经关联的代金券 -->
+		<if test="activityId != null and activityId != ''">
+			or activity_id = #{activityId}
+		</if>
+		order by face_value desc
+	</select> 
+	
+	<select id="getActivityCoupons" parameterType="java.lang.String" resultMap="CouponsResultMap">
+		select * from activity_coupons where disabled = 0 and activity_id = #{activityId}
+	</select>
+	
+	<update id="updateActivityIdNull" parameterType="string">
+		update activity_coupons set activity_id = null  where activity_id = #{value}
+	</update>
+	
+	<update id="updateBatchActivityId" parameterType="map">
+		update activity_coupons set activity_id = #{activityId} where id in 
+		<foreach item="item" index="index" collection="couponsIds" open="(" separator="," close=")">  
+  			#{item}  
+ 		</foreach>  
+	</update>
+	
+	<!-- zengj:根据主键查询代金券活动 -->
+	<select id="selectByPrimaryKey" parameterType="string" resultMap="CouponsResultMap">
+	    SELECT <include refid="BaseSelectSQL" /> FROM activity_coupons WHERE id = #{id,jdbcType=VARCHAR} 
+	</select>
+	
+	<select id="selectById" parameterType="string" resultMap="CouponsResultMap">
+	    SELECT <include refid="BaseSelectSQL" /> FROM activity_coupons WHERE id = #{id,jdbcType=VARCHAR} AND disabled = 0
+	</select>
+	
+	<!-- wusw:根据优惠码，查询代金券信息 -->
+	<select id="selectByExchangeCode" resultMap="CouponsResultMap"  parameterType="java.lang.String">
+	  SELECT <include refid="BaseSelectSQL" />
+	  FROM activity_coupons
+	  WHERE disabled = 0
+	  AND exchange_code = #{exchangeCode,jdbcType=VARCHAR}
+	</select>
+	
+	 <!--获取最近一个进行中的活动的代金券活动关联的代金券集合 -->
+	<select id="listCouponsByType" resultMap="CouponsResultMap"  parameterType="map">
+	  select ac.* from activity_coupons ac
+		where ac.activity_id in
+		(
+			select c.id from activity_collect_coupons c 
+				where c.disabled = 0
+<!-- 				运营商的不用审批,所以审批状态可能是空的 -->
+				and (c.approval_status = 1 or c.approval_status is null)
+				and c.`status` = 1
+				<if test="type != null">
+					and c.type = #{type}
+				</if>
+				
+		)
+	</select>
+	<!-- zhulq  判断代金卷是否能用于注册活动 -->
+	<select id="selectByIds" resultType="int">
+		 SELECT COUNT(*) from activity_coupons where disabled = 0 
+	     AND area_type = '0' AND ( exchange_code is null or exchange_code = '')
+	     <if test="ids != null ">
+	     AND id in
+	     <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+		  #{item}
+		 </foreach>
+	     </if>
+	</select>
+	
+	<update id="updateActivityCouponsUsedNum" parameterType="string">
+		UPDATE activity_coupons SET used_num=used_num+1 WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<update id="updateRemainNum" parameterType="java.lang.String">
+	      UPDATE activity_coupons SET
+                remain_num = (remain_num -1),
+        		update_time = NOW()
+	       WHERE remain_num > 0 AND id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<update id="updateReduceUseNum" parameterType="java.lang.String">
+	      UPDATE activity_coupons SET
+                used_num = (used_num - 1),
+        		update_time = NOW()
+	       WHERE used_num > 0 AND id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+</mapper>

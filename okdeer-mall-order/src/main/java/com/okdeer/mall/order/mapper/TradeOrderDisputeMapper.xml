@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderDisputeMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderDispute" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+    <result column="dispute_no" property="disputeNo" jdbcType="VARCHAR" />
+    <result column="refunds_id" property="refundsId" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.DisputeStatusEnum"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.yschome.base.common.enums.Disabled"/>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, user_id, store_id, dispute_no, refunds_id,remark, status, create_time, disabled
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_dispute
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM trade_order_dispute WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM trade_order_dispute
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderDispute" >
+    insert into trade_order_dispute (id, user_id, store_id, 
+      dispute_no, refunds_id, status, 
+      create_time, disabled)
+    values (#{id,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{storeId,jdbcType=VARCHAR}, 
+      #{disputeNo,jdbcType=VARCHAR}, #{refundsId,jdbcType=VARCHAR},#{remark,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{disabled,jdbcType=TINYINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderDispute" >
+    insert into trade_order_dispute
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="storeId != null" >
+        store_id,
+      </if>
+      <if test="disputeNo != null" >
+        dispute_no,
+      </if>
+      <if test="refundsId != null" >
+        refunds_id,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="disabled != null" >
+        disabled,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeId != null" >
+        #{storeId,jdbcType=VARCHAR},
+      </if>
+      <if test="disputeNo != null" >
+        #{disputeNo,jdbcType=VARCHAR},
+      </if>
+      <if test="refundsId != null" >
+        #{refundsId,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="disabled != null" >
+        #{disabled,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- author yangq 新增纠纷单 begin -->
+  <insert id="insertDispute" parameterType="com.okdeer.mall.order.entity.TradeOrderDispute" >
+    insert into trade_order_dispute
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="storeId != null" >
+        store_id,
+      </if>
+      <if test="disputeNo != null" >
+        dispute_no,
+      </if>
+      <if test="refundsId != null" >
+        refunds_id,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="disabled != null" >
+        disabled,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeId != null" >
+        #{storeId,jdbcType=VARCHAR},
+      </if>
+      <if test="disputeNo != null" >
+        #{disputeNo,jdbcType=VARCHAR},
+      </if>
+      <if test="refundsId != null" >
+        #{refundsId,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="disabled != null" >
+        #{disabled,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  <!-- author yangq 新增纠纷单 end -->
+  
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.order.entity.TradeOrderDispute" >
+    update trade_order_dispute
+    <set >
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeId != null" >
+        store_id = #{storeId,jdbcType=VARCHAR},
+      </if>
+      <if test="disputeNo != null" >
+        dispute_no = #{disputeNo,jdbcType=VARCHAR},
+      </if>
+      <if test="refundsId != null" >
+        refunds_id = #{refundsId,jdbcType=VARCHAR},
+      </if>
+       <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="disabled != null" >
+        disabled = #{disabled,jdbcType=TINYINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- author yangq 修改纠纷单状态 begin -->
+  <update id="updateDispute" parameterType="com.okdeer.mall.order.entity.TradeOrderDispute" >
+    update trade_order_dispute
+    <set >
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeId != null" >
+        store_id = #{storeId,jdbcType=VARCHAR},
+      </if>
+      <if test="disputeNo != null" >
+        dispute_no = #{disputeNo,jdbcType=VARCHAR},
+      </if>
+      <if test="refundsId != null" >
+        refunds_id = #{refundsId,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="disabled != null" >
+        disabled = #{disabled,jdbcType=TINYINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <!-- author yangq 修改纠纷单状态 end -->
+  
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.order.entity.TradeOrderDispute" >
+    update trade_order_dispute
+    set user_id = #{userId,jdbcType=VARCHAR},
+      store_id = #{storeId,jdbcType=VARCHAR},
+      dispute_no = #{disputeNo,jdbcType=VARCHAR},
+      refunds_id = #{refundsId,jdbcType=VARCHAR},
+      remark = #{remark,jdbcType=VARCHAR},
+      status = #{status,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      disabled = #{disabled,jdbcType=TINYINT}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

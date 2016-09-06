@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderItemDetail" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="order_item_id" property="orderItemId" jdbcType="VARCHAR" />
+    <result column="consume_code" property="consumeCode" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.ConsumeStatusEnum"/>
+    <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+    <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="use_time" property="useTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, order_item_id, consume_code, status, start_time, end_time, create_time
+  </sql>
+  
+   <sql id="condition">
+      <if test="null!=params" >
+		<if test="null!=params.orderItemId and ''!= params.orderItemId">
+			AND op.order_item_id = #{params.orderItemId}
+		</if>
+		<if test="null!=params.consumeCode and ''!= params.consumeCode">
+		    AND it.consume_code = #{params.consumeCode}
+		</if>
+		<if test="null!=params.startTime">
+		    AND tr.start_time = #{params.startTime}
+		</if>
+		<if test="null!=params.endTime">
+		    AND tr.end_time = #{params.endTime}
+		</if>
+		<if test="null!=params.createTime">
+		    AND tr.create_time = #{params.createTime}
+		</if>
+	</if>
+</sql>
+	
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_item_detail
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="selectByOrderId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_item_detail
+    where order_item_id = #{orderItemId,jdbcType=VARCHAR}
+  </select>
+  <!-- 查询明细列表 -->
+  <select id="selectByOrderItemId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_item_detail
+    where order_item_id = #{orderItemId,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM trade_order_item_detail WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM trade_order_item_detail
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderItemDetail" >
+    insert into trade_order_item_detail (id, order_item_id, consume_code, 
+      status, start_time, end_time, 
+      create_time)
+    values (#{id,jdbcType=VARCHAR}, #{orderItemId,jdbcType=VARCHAR}, #{consumeCode,jdbcType=VARCHAR}, 
+      #{status,jdbcType=TINYINT}, #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, 
+      #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  
+    <insert id="insertBatch" parameterType="list">  
+	    insert into trade_order_item_detail 
+	   (id, order_item_id, consume_code, 
+	      status, start_time, end_time, 
+	      create_time)
+	    	values   
+	    <foreach collection="list" item="item" index="index" separator=",">
+	    	(#{item.id,jdbcType=VARCHAR}, #{item.orderItemId,jdbcType=VARCHAR}, #{item.consumeCode,jdbcType=VARCHAR}, 
+	      #{item.status,jdbcType=TINYINT}, #{item.startTime,jdbcType=TIMESTAMP}, #{item.endTime,jdbcType=TIMESTAMP}, 
+	      #{item.createTime,jdbcType=TIMESTAMP})  
+	    </foreach>  
+	</insert> 
+  
+  <insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderItemDetail" >
+    insert into trade_order_item_detail
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="orderItemId != null" >
+        order_item_id,
+      </if>
+      <if test="consumeCode != null" >
+        consume_code,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="startTime != null" >
+        start_time,
+      </if>
+      <if test="endTime != null" >
+        end_time,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="orderItemId != null" >
+        #{orderItemId,jdbcType=VARCHAR},
+      </if>
+      <if test="consumeCode != null" >
+        #{consumeCode,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=TINYINT},
+      </if>
+      <if test="startTime != null" >
+        #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null" >
+        #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.order.entity.TradeOrderItemDetail" >
+    update trade_order_item_detail
+    <set >
+      <if test="orderItemId != null" >
+        order_item_id = #{orderItemId,jdbcType=VARCHAR},
+      </if>
+      <if test="consumeCode != null" >
+        consume_code = #{consumeCode,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=TINYINT},
+      </if>
+      <if test="startTime != null" >
+        start_time = #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null" >
+        end_time = #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="useTime != null" >
+        use_time = #{useTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.order.entity.TradeOrderItemDetail" >
+    update trade_order_item_detail
+    set order_item_id = #{orderItemId,jdbcType=VARCHAR},
+      consume_code = #{consumeCode,jdbcType=VARCHAR},
+      status = #{status,jdbcType=TINYINT},
+      start_time = #{startTime,jdbcType=TIMESTAMP},
+      end_time = #{endTime,jdbcType=TIMESTAMP},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <update id="updateStatusWithRefund" parameterType="java.lang.String">
+	UPDATE trade_order_item_detail
+	SET status = 2
+	WHERE status = 0 AND
+		order_item_id = #{orderItemId,jdbcType=VARCHAR}
+  </update>
+  
+  <update id="updateStatusWithExpire" parameterType="java.lang.String">
+	UPDATE trade_order_item_detail
+	SET status = 3
+	WHERE status = 0 AND
+		order_item_id = #{orderItemId,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- zengj:更新消费码状态为已消费 -->
+  <update id="updateStatusWithConsumed" parameterType="java.lang.String">
+	UPDATE trade_order_item_detail
+	SET STATUS = 1,
+	use_time = now()
+	WHERE
+		id = #{orderItemId,jdbcType=VARCHAR}
+  </update>
+  
+  <select id="selectByOrderItemById" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select * from trade_order_item_detail where order_item_id = #{orderItemId,jdbcType=VARCHAR}
+  </select>
+  
+    <select id="selectUnConsumerCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select COUNT(1) from trade_order_item_detail where order_item_id = #{orderItemId,jdbcType=VARCHAR} AND status = 0
+  </select>
+  
+</mapper>

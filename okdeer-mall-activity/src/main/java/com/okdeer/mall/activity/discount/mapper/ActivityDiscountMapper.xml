@@ -1,0 +1,939 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.discount.entity.ActivityDiscount" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="disabled" property="disabled" javaType="com.yschome.base.common.enums.Disabled" jdbcType="TINYINT" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+    <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+    
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+    <result column="status" property="status" javaType="com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus" jdbcType="TINYINT" />
+    <result column="type" property="type" javaType="com.okdeer.mall.activity.discount.enums.ActivityDiscountType" jdbcType="TINYINT" />
+    <result column="area_type" property="areaType" javaType="com.okdeer.mall.common.enums.AreaType" jdbcType="TINYINT" />
+    <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+    <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+    <result column="is_cash_delivery" javaType="com.okdeer.mall.activity.coupons.enums.CashDelivery" property="isCashDelivery" jdbcType="TINYINT" />
+    <result column="identity_limit" javaType="com.okdeer.mall.activity.discount.enums.IdentityLimit" property="identityLimit" jdbcType="TINYINT"/>
+    <result column="limit_client_type" javaType="com.okdeer.mall.activity.discount.enums.LimitClientType" property="limitClientType" jdbcType="TINYINT"/>
+    <!-- 关联满减活动条件信息 -->
+    <collection property="discountConditionList" ofType="com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition" >
+       <id  column="conditionId" property= "id" jdbcType="VARCHAR" /> 
+       <result column="discount_id" property="discountId" jdbcType="VARCHAR" />
+       <result column="arrive" property="arrive" javaType="java.math.BigDecimal" jdbcType="DECIMAL" />
+       <result column="discount" property="discount" javaType="java.math.BigDecimal" jdbcType="FLOAT" />
+    </collection >
+  </resultMap>
+  
+  
+  <resultMap id="discountDetailMap" type="com.okdeer.mall.activity.discount.entity.ActivityDiscountQueryVo" extends="BaseResultMap">
+     
+     <!-- 关联满减活动区域信息 -->
+     <collection property="discountAreaList" ofType="com.okdeer.mall.activity.discount.entity.ActivityDiscountArea" >
+       <id column="areaid" property= "id" jdbcType="VARCHAR" />
+       <result column="discount_id" property="discountId" jdbcType="VARCHAR" />
+       <result column="area_id" property= "areaId" jdbcType="VARCHAR" />
+       <result column="districtType" property="type" javaType="com.okdeer.mall.common.enums.DistrictType" jdbcType="TINYINT" />
+    </collection >
+    <!-- 关联满减活动小区信息 -->
+    <collection property="discountCommunityList" ofType="com.okdeer.mall.activity.discount.entity.ActivityDiscountCommunity" >
+       <id  column="communityid" property= "id" jdbcType="VARCHAR" />
+       <result column="discount_id" property="discountId" jdbcType="VARCHAR" />
+       <result column="community_id" property="communityId" jdbcType="VARCHAR" />
+       <result column="community_name" property="communityName" jdbcType="VARCHAR" />
+       <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+       <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+    </collection >
+    <!-- 关联满减活动店铺信息 -->
+    <collection property="discountStoreList" ofType="com.okdeer.mall.activity.discount.entity.ActivityDiscountStore" >
+       <id  column="storeid" property= "id" jdbcType="VARCHAR" />
+       <result column="discount_id" property="discountId" jdbcType="VARCHAR" />
+       <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+       <result column="store_name" property="storeName" jdbcType="VARCHAR" />
+       <result column="store_address" property="storeAddress" jdbcType="VARCHAR" />
+       <result column="store_city_id" property="cityId" jdbcType="VARCHAR" />
+    </collection >
+    <!-- 关联满减活动条件信息 -->
+    <collection property="discountConditionList" ofType="com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition" >
+       <id  column="conditionid" property= "id" jdbcType="VARCHAR" />
+       <result column="discount_id" property="discountId" jdbcType="VARCHAR" />
+       <result column="arrive" property="arrive" javaType="java.math.BigDecimal" jdbcType="DECIMAL" />
+       <result column="discount" property="discount" javaType="java.math.BigDecimal" jdbcType="FLOAT" />
+    </collection >
+   </resultMap>  
+  
+  
+  
+  <sql id="Base_Column_List" >
+    id,name,create_time,start_time,end_time,status,type
+  </sql>
+  <sql id="Get_Column_List" >
+    id,name,start_time,end_time,type,is_cash_delivery,identity_limit,status,store_id
+  </sql>
+  <!-- 查询条件 -->
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  
+  <!-- 由于mybatis升级，判断是否为字符串写法不支持   modify  by  wusw  20160721 -->
+  <!-- 判断是否为空，添加店铺满立减和折扣活动 -->
+  <insert id="insertActivityDiscount" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscount" >
+    INSERT INTO activity_discount
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="name != null and name != ''" >
+        name,
+      </if>
+      <if test="storeId != null and storeId != ''" >
+        store_id,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="areaType != null" >
+        area_type,
+      </if>
+      <if test="startTime != null" >
+        start_time,
+      </if>
+      <if test="endTime != null" >
+        end_time,
+      </if>
+      <if test="isCashDelivery != null" >
+        is_cash_delivery,
+      </if>
+      <if test="identityLimit != null" >
+        identity_limit,
+      </if>
+      <if test="limitClientType != null" >
+        limit_client_type,
+      </if>
+      <if test="createUserId != null and createUserId != ''" >
+        create_user_id,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateUserId != null and updateUserId != ''" >
+        update_user_id,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="disabled != null" >
+        disabled,
+      </if>
+      id
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="name != null and name != ''" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="storeId != null and storeId != ''" >
+        #{storeId,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=TINYINT},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=TINYINT},
+      </if>
+      <if test="areaType != null" >
+        #{areaType,jdbcType=TINYINT},
+      </if>
+      <if test="startTime != null" >
+        #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null" >
+        #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isCashDelivery != null" >
+        #{isCashDelivery,jdbcType=TINYINT},
+      </if>
+      <if test="identityLimit != null" >
+        #{identityLimit,jdbcType=TINYINT},
+      </if>
+      <if test="limitClientType != null" >
+        #{limitClientType,jdbcType=TINYINT},
+      </if>
+      <if test="createUserId != null and createUserId != ''" >
+         #{createUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+       #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null and updateUserId != ''" >
+        #{updateUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="disabled != null" >
+         #{disabled,jdbcType=TINYINT},
+      </if>
+      #{id,jdbcType=VARCHAR}
+    </trim>
+  </insert>
+  <!-- 关闭满减、折扣活动 -->
+  <update id="updateCloseActivityDiscount" parameterType="java.util.Map">
+  	UPDATE activity_discount SET status = 3,update_time = now(),update_user_id=#{userId,jdbcType=VARCHAR}
+  	WHERE id IN
+	<foreach collection="list" index="index" item="item" open="(" close=")" separator=",">
+		#{item}
+	</foreach>
+	AND status in(0,1)
+	AND store_id = #{storeId,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 根据活动名称查询活动 -->
+  <select id="selectByActivityName" resultMap="BaseResultMap">
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_discount 
+     WHERE store_id = #{storeId,jdbcType=VARCHAR}
+       AND name = #{name, jdbcType=VARCHAR}
+  </select>
+  <!-- 根据店铺id查询店铺创建的正在进行中活动列表 -->
+  <select id="selectByStoreId" resultType="com.okdeer.mall.activity.discount.entity.ActivityDiscountDto">
+  	SELECT 
+  		a.id,a.name,a.type,a.is_cash_delivery AS isCashDelivery, conditions.arrive,conditions.discount,conditions.sort
+	FROM
+  		activity_discount a, activity_discount_conditions conditions 
+	WHERE 
+		a.id = conditions.discount_id  
+	AND  #{currentDate} BETWEEN a.start_time AND a.end_time 
+  	AND a.disabled = 0 
+  	AND a.store_id = #{storeId}
+  	AND a.status != 3 
+  	ORDER BY 
+  		a.create_time DESC,conditions.sort ASC;
+  </select>
+  
+  <!-- 判断是否为空，根据主键id修改折扣和满立减信息 -->
+  <update id="updateActivityDiscount" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscount" >
+    UPDATE activity_discount
+    <set >
+      <if test="name != null and name != ''" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="storeId != null and storeId != ''" >
+        store_id = #{storeId,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=TINYINT},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=TINYINT},
+      </if>
+      <if test="areaType != null" >
+        area_type = #{areaType,jdbcType=TINYINT},
+      </if>
+      <if test="startTime != null" >
+        start_time = #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null" >
+        end_time = #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isCashDelivery != null" >
+        is_cash_delivery = #{isCashDelivery,jdbcType=TINYINT},
+      </if>
+      <if test="identityLimit != null" >
+        identity_limit = #{identityLimit,jdbcType=TINYINT},
+      </if>
+      <if test="limitClientType != null" >
+        limit_client_type = #{limitClientType,jdbcType=TINYINT},
+      </if>
+      <if test="createUserId != null and createUserId != ''" >
+        create_user_id = #{createUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null and updateUserId != ''" >
+        update_user_id = #{updateUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="disabled != null" >
+        disabled = #{disabled,jdbcType=TINYINT},
+      </if>
+      id = #{id,jdbcType=VARCHAR}
+    </set>
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+   <!-- 查询同个店铺相同时间段的同一类型活动 -->
+   <select id="selectActivityByTime" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountVo" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_discount 
+     <!-- 未被删除的 -->
+     WHERE disabled = 0
+       <!-- 状态为未开始和进行中 -->
+       AND status <![CDATA[ < ]]> 2 
+       AND type = #{type,jdbcType=TINYINT}
+       AND store_id = #{storeId,jdbcType=VARCHAR}
+       AND (#{startTime,jdbcType=TIMESTAMP} BETWEEN start_time and end_time 
+       OR #{endTime,jdbcType=TIMESTAMP} BETWEEN start_time and end_time 
+       OR (start_time <![CDATA[ >= ]]> #{startTime,jdbcType=TIMESTAMP} and end_time <![CDATA[ <= ]]> #{endTime,jdbcType=TIMESTAMP}))
+  </select>
+  
+  <!-- 根据主键ID获取活动信息 -->
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+      SELECT
+       <include refid="Get_Column_List" />
+     FROM activity_discount 
+     WHERE id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 店铺活动搜索 -->
+  <select id="searchByEntityParams" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountVo">
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_discount 
+     WHERE 1=1
+       <!-- 未被删除的 -->
+       AND disabled = 0
+       <!-- 活动名称 -->
+       <if test="name != null and name != ''">
+         AND name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%') 
+       </if>
+       <!-- 活动类型 -->
+       <if test="type != null">
+         AND type = #{type,jdbcType=TINYINT}
+       </if>
+       <!-- 活动状态 -->
+       <if test="status != null">
+         AND status = #{status,jdbcType=TINYINT}
+       </if>
+       <!-- 创建时间 -->
+       <if test="createTimeStart != null">
+         AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="createTimeEnd != null">
+         AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <!-- 活动开始时间 -->
+       <if test="startTimeStart != null">
+         AND start_time <![CDATA[ >= ]]> #{startTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="startTimeEnd != null">
+         AND start_time <![CDATA[ <= ]]> #{startTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <!-- 活动结束时间 -->
+       <if test="endTimeStart != null">
+         AND end_time <![CDATA[ >= ]]> #{endTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="endTimeEnd != null">
+         AND end_time <![CDATA[ <= ]]> #{endTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <if test="storeId != null and storeId != ''">
+         AND store_id = #{storeId,jdbcType=VARCHAR}
+       </if>
+       ORDER BY create_time DESC
+  </select>
+  <!-- 店铺活动搜索 -->
+  <select id="searchByMap" resultMap="BaseResultMap" parameterType="map">
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_discount 
+     WHERE 1=1
+       <!-- 未被删除的 -->
+       AND disabled = 0
+       <!-- 活动名称 -->
+       <if test="name != null and name != ''">
+         AND name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%') 
+       </if>
+       <!-- 活动类型 -->
+       <if test="type != null">
+         AND type = #{type,jdbcType=TINYINT}
+       </if>
+       <!-- 活动状态 -->
+       <if test="status != null">
+         AND status = #{status,jdbcType=TINYINT}
+       </if>
+       <!-- 创建时间 -->
+       <if test="createTimeStart != null">
+         AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="createTimeEnd != null">
+         AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <!-- 活动开始时间 -->
+       <if test="startTimeStart != null">
+         AND start_time <![CDATA[ >= ]]> #{startTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="startTimeEnd != null">
+         AND start_time <![CDATA[ <= ]]> #{startTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <!-- 活动结束时间 -->
+       <if test="endTimeStart != null">
+         AND end_time <![CDATA[ >= ]]> #{endTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="endTimeEnd != null">
+         AND end_time <![CDATA[ <= ]]> #{endTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <if test="storeId != null and storeId != ''">
+         AND store_id = #{storeId,jdbcType=VARCHAR}
+       </if>
+  </select>
+  
+  
+  
+  
+  <!-- wusw:查询指定id的活动关闭的记录数量 -->
+  <select id="selectCountClosedByIds" resultType="int">
+    SELECT COUNT(1)
+    FROM activity_discount
+    WHERE disabled = #{disabled,jdbcType=TINYINT}
+    AND `status` = #{status,jdbcType=TINYINT}
+    <if test="ids != null ">
+		AND id  in 
+		 <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+	        #{item}
+	     </foreach>
+     </if>
+    <if test="ids == null ">
+      AND 1 = 2
+    </if>
+  </select>
+  
+  <!--wusw： 根据活动id，关闭满减活动（批量）-->
+  <update id="closeByDiscountId">
+	 UPDATE activity_discount
+	 SET `status` = #{status,jdbcType=TINYINT},
+	     update_time = #{updateTime,jdbcType=TIMESTAMP},
+	     update_user_id = #{updateUserId,jdbcType=VARCHAR}
+	 WHERE 
+	 <if test="ids != null ">
+		 id  in 
+		 <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+	        #{item}
+	     </foreach>
+     </if>
+    <if test="ids == null ">
+      1 = 2
+    </if>
+  </update>
+  
+    <!--wusw: 根据查询条件，查询满减活动信息列表 -->
+  <select id="selectByEntity" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountVo">
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_discount 
+     WHERE 1=1
+       <!-- 未被删除的 -->
+       AND disabled = #{disabled,jdbcType=TINYINT}
+       <!-- 活动名称 -->
+       <if test="name != null and name != ''">
+         AND name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%') 
+       </if>
+       <if test="storeId != null and storeId != ''">
+         AND store_id = #{storeId,jdbcType=VARCHAR}
+       </if>
+       <!-- 活动类型 -->
+       <if test="type != null">
+         AND type = #{type,jdbcType=TINYINT}
+       </if>
+       <!-- 活动状态 -->
+       <if test="status != null">
+         AND status = #{status,jdbcType=TINYINT}
+       </if>
+       <!-- 创建时间 -->
+       <if test="createTimeStart != null">
+         AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="createTimeEnd != null">
+         AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <!-- 活动开始时间 -->
+       <if test="startTimeStart != null">
+         AND start_time <![CDATA[ >= ]]> #{startTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="startTimeEnd != null">
+         AND start_time <![CDATA[ <= ]]> #{startTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <!-- 活动结束时间 -->
+       <if test="endTimeStart != null">
+         AND end_time <![CDATA[ >= ]]> #{endTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="endTimeEnd != null">
+         AND end_time <![CDATA[ <= ]]> #{endTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       ORDER BY create_time DESC
+  </select>
+  
+  
+   <!--wusw: 根据主键id，查满减详细信息（包括区域信息） -->
+   <select id="selectDiscountAssociateById" resultMap="discountDetailMap">
+    SELECT A.id, A.`name`, A.area_type, A.start_time, A.end_time, A.`status`,A.type,A.is_cash_delivery,
+            A.limit_client_type,A.identity_limit, B.area_id,B.type AS districtType, C.community_id,
+            C.community_name, C.city_id,D.store_id,D.store_name,D.store_city_id<!-- ,E.arrive,E.discount -->
+     FROM activity_discount A
+     LEFT JOIN activity_discount_area B ON A.id = B.discount_id
+     LEFT JOIN (SELECT co.id, co.discount_id, co.community_id, ps.`name` AS community_name, ps.city_id 
+				FROM activity_discount_community co
+				LEFT JOIN psms_small_community_info ps
+				ON co.community_id = ps.id) C ON A.id = C.discount_id
+	LEFT JOIN (SELECT ds.id,ds.discount_id,ds.store_id,s.store_name,s.city_id AS store_city_id
+	           FROM activity_discount_store ds
+	           LEFT JOIN store_info s
+	           ON ds.store_id = s.id) D ON A.id = D.discount_id
+	<!-- LEFT JOIN activity_discount_conditions E ON A.id = E.discount_id  -->
+     WHERE A.id = #{id,jdbcType=VARCHAR} 
+     
+   </select>
+   
+   
+    <!--wusw: 查询指定名称相同的数量 -->
+   <select id="selectCountByName" resultType="int" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountVo" >
+    SELECT count(1)
+    FROM activity_discount
+    WHERE disabled = #{disabled,jdbcType=VARCHAR}
+    AND `name` = #{name,jdbcType=VARCHAR}
+    <if test="id != null and id != ''" >
+      AND id != #{id,jdbcType=VARCHAR}
+    </if>
+  </select>
+   
+   <!--wusw: 查询与指定开始结束时间有交集、指定区域有交集的记录数量 -->
+   <select id="selectCountByDistrict" resultType="int">
+     SELECT count(1)
+     FROM activity_discount A 
+     LEFT JOIN activity_discount_area B ON A.id = B.discount_id
+     LEFT JOIN (SELECT co.id, co.discount_id, co.community_id, ps.`name` AS community_name, 
+                       ps.city_id,ps.province_id 
+				FROM activity_discount_community co, psms_small_community_info ps
+				WHERE co.community_id = ps.id) C ON A.id = C.discount_id
+	 LEFT JOIN ( SELECT dsi.id,dsi.discount_id,dsi.store_id,dsi.province_id,dsi.city_id, sac.small_community_id
+                 FROM 
+	                 (SELECT ds.id,ds.discount_id,ds.store_id,si.province_id,si.city_id
+	                   FROM activity_discount_store ds,store_info si
+	                   WHERE ds.store_id = si.id) dsi 
+	             LEFT JOIN store_agent_community sac ON dsi.store_id = sac.store_id) D ON A.id = D.discount_id
+	  WHERE A.disabled = #{disabled,jdbcType=VARCHAR}
+	  AND A.store_id = #{storeId,jdbcType=VARCHAR}
+	  AND (A.`status` = #{noStartStatus,jdbcType=TINYINT} OR A.`status` = #{startStatus,jdbcType=TINYINT})
+      AND ((A.start_time <![CDATA[>=]]> #{startTime,jdbcType=TIMESTAMP} AND A.start_time <![CDATA[<=]]> #{endTime,jdbcType=TIMESTAMP})
+             OR (A.start_time <![CDATA[<=]]> #{startTime,jdbcType=TIMESTAMP} AND A.end_time <![CDATA[>=]]> #{startTime,jdbcType=TIMESTAMP})
+             OR (A.start_time <![CDATA[<=]]> #{startTime,jdbcType=TIMESTAMP} AND A.end_time <![CDATA[>=]]> #{endTime,jdbcType=TIMESTAMP}))
+      <if test="id != null and id != ''">
+        AND A.id != #{id,jdbcType=VARCHAR}
+      </if>
+      <if test="areaType.name == 'area'">      
+      AND 
+       (  <if test="areaIdList != null ">
+		    B.area_id in  
+		     <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	            #{item}
+	          </foreach>
+           </if>
+        OR <if test="associateIdList != null ">
+		     B.area_id in  
+		      <foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
+	            #{item}
+	          </foreach>
+           </if>
+        OR <if test="areaIdList != null ">
+		    C.province_id in  
+		      <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	          </foreach>
+           </if>
+        OR <if test="areaIdList != null ">
+		     C.city_id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if> 
+        OR <if test="areaIdList != null ">
+		    D.province_id in  
+		      <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	          </foreach>
+           </if>
+        OR <if test="areaIdList != null ">
+		     D.city_id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if> 
+	    OR A.area_type = 0)
+	    </if> 
+	    <if test="areaType.name == 'community'">
+	     AND (B.area_id in (SELECT province_id FROM psms_small_community_info WHERE 
+	       <if test="areaIdList != null ">
+		     id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if>)
+          OR B.area_id in (SELECT city_id FROM psms_small_community_info WHERE  
+            <if test="areaIdList != null ">
+		     id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if>)
+          OR<if test="areaIdList != null ">
+		     C.community_id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if>
+	      OR<if test="areaIdList != null ">
+		     D.small_community_id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if>
+	       OR A.area_type = 0)
+
+	    </if>
+	    <if test="areaType.name == 'store'">
+	     AND (B.area_id in (SELECT province_id FROM store_info WHERE 
+	       <if test="areaIdList != null ">
+		     id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if>)
+          OR B.area_id in (SELECT city_id FROM store_info WHERE  
+            <if test="areaIdList != null ">
+		     id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if>)
+          OR C.community_id in (SELECT small_community_id FROM store_agent_community WHERE  
+            <if test="areaIdList != null ">
+		     store_id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if>)
+	      OR<if test="areaIdList != null ">
+		     D.store_id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if>
+	       OR A.area_type = 0)
+	    </if>
+   </select>
+   
+   <!-- wusw:根据店铺id、活动状态、客户端限制类型，查询该店铺下的满减满折活动 -->
+   <select id="selectByStoreAndLimitType" resultMap="BaseResultMap" parameterType="map">
+	SELECT A.id,A.`name`,A.start_time,A.end_time,A.type
+	FROM activity_discount A
+	LEFT JOIN activity_discount_relation_store B ON A.id = B.discount_id
+	WHERE A.disabled = 0
+	<!-- <if test="limitClientType != null">
+	  AND A.limit_client_type IN
+	      <foreach collection="limitClientType" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item,jdbcType=TINYINT}
+	      </foreach>
+	</if> -->
+	<if test="status != null">
+	   AND A.`status` = #{status,jdbcType=TINYINT}
+	</if>
+	<if test="storeId != null and storeId != ''">
+	   AND (A.store_id = #{storeId,jdbcType=VARCHAR}
+	       OR (A.store_id = 0 AND B.store_id = #{storeId,jdbcType=VARCHAR})
+	       )
+	</if>
+   </select>
+   
+   <resultMap id="BaseADCResultMap" type="com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition" >
+     <id column="id" property="id" jdbcType="VARCHAR" />
+     <result column="discount_id" property="discountId" jdbcType="VARCHAR" />
+     <result column="arrive" property="arrive" javaType="java.math.BigDecimal" jdbcType="DECIMAL" />
+     <result column="discount" property="discount" javaType="java.math.BigDecimal" jdbcType="FLOAT" />
+     <result column="sort" property="sort" jdbcType="INTEGER" />
+     <association property="activityDiscount" javaType="com.okdeer.mall.activity.discount.entity.ActivityDiscount">
+	    <result column="name" property="name" jdbcType="VARCHAR" />
+	    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+	    <result column="type" property="type" javaType="com.okdeer.mall.activity.discount.enums.ActivityDiscountType" jdbcType="TINYINT" />
+	    <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+	    <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+	    <result column="is_cash_delivery" property="isCashDelivery" javaType="com.okdeer.mall.activity.coupons.enums.CashDelivery" jdbcType="TINYINT"/>
+     </association>
+    
+  </resultMap>
+   
+   <!-- :yangq 根据店铺id、活动状态,查询该店铺下的满减活动 -->
+   <select id="selectByStoreReduce" resultMap="BaseADCResultMap" parameterType="map">
+		SELECT A.`name`,A.start_time,A.end_time,A.type,C.`arrive`,A.is_cash_delivery,C.`discount`,C.id,C.discount_id
+		FROM activity_discount_conditions C LEFT JOIN `activity_discount` A ON A.`id` = C.`discount_id`
+		LEFT JOIN activity_discount_relation_store B ON A.id = B.discount_id
+		AND NOW() BETWEEN A.start_time AND A.end_time 
+		WHERE A.disabled = 0 AND A.type=1 
+		   AND A.`status` = 1 
+		   <if test="storeId != null and storeId != ''">
+		   AND (A.store_id = #{storeId,jdbcType=VARCHAR}
+		       OR (A.store_id = 0 AND (B.store_id = #{storeId,jdbcType=VARCHAR} OR A.area_type=0))
+		       )
+		    </if>
+   </select>
+   
+    <!-- :yangq 根据店铺id、活动状态,查询该店铺下的满减活动 (周边店) -->
+   <select id="selectByStoreReduceOff" resultMap="BaseADCResultMap" parameterType="map">
+		SELECT A.`name`,A.start_time,A.end_time,A.type,C.`arrive`,A.is_cash_delivery,C.`discount`,C.id,C.discount_id
+		FROM activity_discount_conditions C LEFT JOIN `activity_discount` A ON A.`id` = C.`discount_id`
+		LEFT JOIN activity_discount_relation_store B ON A.id = B.discount_id
+		AND NOW() BETWEEN A.start_time AND A.end_time 
+		WHERE A.disabled = 0 AND A.type=1 
+		   AND A.`status` = 1 
+		   <if test="storeId != null and storeId != ''">
+		   AND (A.store_id = #{storeId,jdbcType=VARCHAR}
+		       OR (A.store_id = 0 AND (B.store_id = #{storeId,jdbcType=VARCHAR}))
+		       )
+		    </if>
+   </select>
+   
+   <!-- :yangq 根据店铺id、活动状态,查询该店铺下的满减活动 -->
+   <select id="selectByStoreDiscount" resultMap="BaseADCResultMap" parameterType="map">
+		SELECT A.`name`,A.start_time,A.end_time,A.type,C.`arrive`,A.is_cash_delivery,C.`discount`,C.id,C.discount_id
+		FROM activity_discount_conditions C LEFT JOIN `activity_discount` A ON A.`id` = C.`discount_id`
+		LEFT JOIN activity_discount_relation_store B ON A.id = B.discount_id
+		AND NOW() BETWEEN A.start_time AND A.end_time 
+		WHERE A.disabled = 0 AND A.type=0 
+		   AND A.`status` = 1
+				<if test="storeId != null and storeId != ''">
+		   AND (A.store_id = #{storeId,jdbcType=VARCHAR})
+		    </if>
+
+   </select>
+   
+   <!-- 查询需要修改状态的集合。用于定时任务扫描 -->
+   <select id="selectNeedUpdateList" resultMap="BaseResultMap" parameterType="java.util.Date">
+     SELECT id,1 as status FROM activity_discount WHERE start_time &lt;= #{curDate,jdbcType=TIMESTAMP} AND end_time &gt;= #{curDate,jdbcType=TIMESTAMP}
+     AND STATUS = 0
+     UNION ALL
+     SELECT id,2 as status FROM activity_discount WHERE end_time &lt; #{curDate,jdbcType=TIMESTAMP} AND STATUS = 1
+   </select>
+   <!-- 批量更新活动状态 -->
+   <update id="updateStatus" parameterType="java.util.Map">
+     UPDATE activity_discount SET status = #{status,jdbcType=INTEGER},update_time = #{updateTime,jdbcType=TIMESTAMP},update_user_id= #{updateUserId,jdbcType=VARCHAR} 
+     WHERE id in
+     <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+       #{item}
+     </foreach>
+   </update>
+   
+   <!-- zengj:查询便利店店铺活动 -->
+   <select id="selectActivityByStoreId">
+	SELECT
+		a.id as act_id,
+		a.`name` as act_name,
+	    a.start_time,
+	    a.end_time,
+		a.type as act_type,
+		conditions.arrive,
+		conditions.discount
+	FROM
+		activity_discount a,
+		activity_discount_conditions conditions
+	WHERE
+		a.id = conditions.discount_id
+	AND a.disabled = 0
+	AND a.STATUS != 3
+	and #{curDate,jdbcType=TIMESTAMP} BETWEEN a.start_time and a.end_time
+	and a.limit_client_type in(0,1)
+	and (a.area_type = 0
+	or EXISTS (select 1 from activity_discount_store s where s.discount_id = a.id and s.store_id = #{storeId,jdbcType=VARCHAR})
+	)
+   </select>
+
+   
+   <!-- 根据店铺ID获取活动 -->
+  <select id="findActivityIndustrys" resultType="com.okdeer.mall.activity.discount.entity.ActivityDiscount" parameterType="java.lang.String">
+      SELECT
+        a.id,
+		a.NAME,
+		a.start_time,
+		a.end_time,
+		a.type,
+		a.is_cash_delivery,
+		a.identity_limit,
+		a.STATUS
+     FROM activity_discount a,store_info s
+     WHERE 1=1
+	     AND a.store_id = s.id
+	     AND s.type = 0
+	     AND a.store_id = #{id,jdbcType=VARCHAR}
+  </select>
+   
+   <!-- zhuliq用于 -->
+   <select id="selectDtoByStoreId" resultMap="BaseResultMap">
+  	SELECT DISTINCT a.id,a.store_id,a.name,a.type,a.is_cash_delivery, 
+  	a.start_time, a.end_time, conditions.arrive,conditions.discount
+	FROM activity_discount a 
+	LEFT JOIN activity_discount_conditions conditions 
+	ON a.id = conditions.discount_id  
+	LEFT JOIN activity_discount_relation_store b ON a.id = b.discount_id
+  	WHERE a.disabled = 0 
+  	<if test="storeId != null and storeId != ''">
+		   AND (a.store_id = #{storeId,jdbcType=VARCHAR}
+		       OR (a.store_id = 0 AND (b.store_id = #{storeId,jdbcType=VARCHAR} OR a.area_type = 0))
+		       )
+		    </if>
+  	AND a.status = 1 
+  	ORDER BY 
+	conditions.arrive asc;
+  </select>
+  
+  <!-- wusw:根据店铺id，查询店铺的满减或满折活动（用于非便利店的店铺） -->
+  <select id="selectDtoByStoreIdForNoCloud" resultMap="BaseResultMap">
+  	SELECT DISTINCT a.id,a.store_id,a.name,a.type,a.is_cash_delivery, 
+  	a.start_time, a.end_time, conditions.arrive,conditions.discount
+	FROM activity_discount a 
+	LEFT JOIN activity_discount_conditions conditions 
+	ON a.id = conditions.discount_id  
+	LEFT JOIN activity_discount_relation_store b ON a.id = b.discount_id
+  	WHERE a.disabled = 0 
+  	AND a.store_id = #{storeId,jdbcType=VARCHAR}
+  	AND a.status = 1 
+  	ORDER BY 
+	conditions.arrive asc;
+  </select>
+  
+
+  <select id="getDiscountConditionsId" parameterType="java.lang.String" resultType="java.lang.String">
+  	SELECT discount_conditions_id FROM  activity_discount_record WHERE discount_id = #{discountId};
+  </select>
+  
+  <select id="getDiscountConditions" parameterType="map" resultType="com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition">
+  		SELECT * FROM activity_discount cou LEFT JOIN activity_discount_conditions dis ON cou.`id`=dis.`discount_id` 
+  		WHERE cou.`type` = 1 AND dis.`discount_id`= #{discountId,jdbcType=VARCHAR} AND dis.id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+   <select id="getReduceConditions" parameterType="map" resultType="com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition">
+  		SELECT * FROM activity_discount cou LEFT JOIN activity_discount_conditions dis ON cou.`id`=dis.`discount_id` WHERE cou.`type` = 0
+  		 AND dis.`discount_id`= #{discountId,jdbcType=VARCHAR} AND dis.id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+ <!--  zhulq订单关联的活动 -->
+  <select id="selectRelaveOrderById" resultMap="BaseResultMap">
+  	SELECT a.id,a.name,a.type,a.is_cash_delivery, 
+  	a.start_time, a.end_time, conditions.arrive, conditions.discount
+	FROM activity_discount a 
+	LEFT JOIN activity_discount_conditions conditions 
+	ON a.id = conditions.discount_id  
+  	WHERE 1 = 1
+  	<if test="id != null and id != ''">
+		AND a.id = #{id,jdbcType=VARCHAR}
+	</if>
+  	ORDER BY 
+  		a.create_time DESC;
+  </select>
+  
+  <!-- 获取折扣value Begin added by maojj-->
+  <select id="getDiscountValue" parameterType="string" resultType="BigDecimal">
+  	SELECT discount FROM activity_discount_conditions WHERE id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 查询用户有效的折扣 -->
+  <select id="findValidDiscount" parameterType="map" resultType="com.okdeer.mall.order.vo.Discount">
+  	SELECT
+		t. NAME AS discountTitle,
+		CASE t.is_cash_delivery
+			WHEN 0 THEN	0
+			WHEN 1 THEN	2
+			ELSE 0
+		END AS usableRange,
+		date_format(t.end_time,'%Y-%m-%d %T') AS indate,
+		t.id,
+		FORMAT(t1.discount,2) AS discountPrice,
+		t1.id AS activityItemId,
+		FORMAT(t1.arrive,2) AS arrive
+	FROM
+		activity_discount t
+	INNER JOIN activity_discount_conditions t1 ON t.id = t1.discount_id
+	WHERE
+		t.store_id = #{storeId}
+	AND t.STATUS = 1
+	AND t1.arrive &lt;= #{totalAmount} 
+	AND t.type = 0
+	AND t.disabled = 0	
+	ORDER BY t1.arrive DESC
+  </select>
+  
+  <!-- 查询用户有效的满减 -->
+  <select id="findValidFullSubtract" parameterType="map" resultType="com.okdeer.mall.order.vo.FullSubtract">
+  	SELECT
+		t.name AS fullSubtractTitle,
+		CASE t.is_cash_delivery
+			WHEN 0 THEN	0
+			WHEN 1 THEN	2
+			ELSE 0
+		END AS usableRange,
+		date_format(t.end_time,'%Y-%m-%d %T') AS indate,
+		t.id,
+		FORMAT(t2.discount,2) AS fullSubtractPrice,
+		CASE t.store_id 
+			WHEN 0 THEN  0
+			ELSE 1
+		END AS type,
+		t2.id AS activityItemId,
+		FORMAT(t2.arrive,2) AS arrive
+	FROM activity_discount t
+	LEFT JOIN activity_discount_relation_store t1 ON t.id = t1.discount_id
+	INNER JOIN activity_discount_conditions t2 ON t.id = t2.discount_id
+	WHERE 
+		(
+			t.store_id=#{storeId}  
+			OR t1.store_id = #{storeId}
+			<!-- 平台发起的满减活动，只有云上店可以使用 -->
+			<if test="storeType == 2">
+				OR (t.store_id='0' and t.area_type = 0)  
+			</if>
+		)
+	AND t.status = 1
+	AND t2.arrive &lt;= #{totalAmount}
+	AND t.type = 1
+	AND t.disabled = 0
+	ORDER BY t.store_id ASC, t2.arrive DESC
+  </select>
+  <!-- End added by maojj -->
+  
+  <!-- begin 重构4.1 added by zhangkn -->
+  <!-- 查询店铺的满减满折列表 (用户app首页用) -->
+  <select id="findActivityDiscountForUserApp" parameterType="map" resultMap="BaseResultMap">
+  	select ad.* from activity_discount ad 
+	where ad.disabled = 0
+	<if test="storeId != null and storeId != ''">
+		AND ad.store_id = #{storeId} 
+	</if>
+	and ad.`status` = 1
+  </select>
+  <!-- end 重构4.1 added by zhangkn -->
+  
+  <!-- 查询店铺满减满折活动信息，确认订单接口使用  add by zengj -->
+  <select id="findActivityDiscountByStoreId" parameterType="java.util.Map" resultType="java.util.Map">
+       select dis.id as activityId,
+	       dis.`name` as activityName,
+	       CAST(dis.type AS SIGNED) as activityType,
+	       CAST(dis.is_cash_delivery AS SIGNED) as isCashDelivery,
+	       con.id as activityItemId,
+	       con.arrive,
+	       con.discount,
+	       dis.end_time as endTime
+	  from activity_discount dis
+	 inner join activity_discount_conditions con on dis.id = con.discount_id
+	 where dis. status = 1
+	   and dis.disabled = 0
+	   and con.arrive &lt;= #{totalAmount,jdbcType=FLOAT}
+       and dis.store_id = #{storeId, jdbcType=VARCHAR}
+  </select>
+</mapper>

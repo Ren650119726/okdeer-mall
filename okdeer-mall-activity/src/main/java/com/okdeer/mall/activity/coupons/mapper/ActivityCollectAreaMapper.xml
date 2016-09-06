@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCollectAreaMapper">
+
+	<resultMap type="com.okdeer.mall.activity.coupons.entity.ActivityCollectArea" id="ActivityCollectArea" >
+		<result property="id" column="id" />
+		<result property="collectCouponsId" column="collect_coupons_id" />
+		<result property="areaId" column="area_id" />
+		<result property="type" column="type" />
+	</resultMap>
+
+    <sql id="columns">
+		id,collect_coupons_id,area_id,type
+	</sql>
+
+    <insert id="saveBatch" parameterType="list">
+        insert into activity_collect_area(
+			<include refid="columns"/>
+		)values
+		<foreach collection="list" item="item" index="index" separator="," >
+        (
+            #{item.id},
+            #{item.collectCouponsId},
+            #{item.areaId},
+            #{item.type}
+        )
+		</foreach>
+	</insert>
+
+    <delete id="deleteByCollectCouponsId" parameterType="string">
+        delete from activity_collect_area where collect_coupons_id = #{value} 
+    </delete>
+    
+    <select id="listByCollectCouponsId" parameterType="string" resultMap="ActivityCollectArea">
+    	select <include refid="columns"/> from activity_collect_area where collect_coupons_id = #{value}
+    </select>
+
+</mapper>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.column.mapper.ColumnOperationCommunityMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.ColumnOperationCommunity" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="operation_id" property="operationId" jdbcType="VARCHAR" />
+    <result column="community_id" property="communityId" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, operation_id, community_id
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  
+  <!-- 根据主键id查询运营栏目和小区关联 -->
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM column_operation_community
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据条件查询运营栏目和小区关联（参数类型map） -->
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM column_operation_community WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  
+  <!-- 根据主键id删除运营栏目和小区关联信息 -->
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM column_operation_community
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 插入运营栏目和小区关联信息 -->
+  <insert id="insert" parameterType="com.okdeer.mall.operate.entity.ColumnOperationCommunity" >
+    INSERT INTO column_operation_community (id, operation_id, community_id)
+    VALUES (#{id,jdbcType=VARCHAR}, #{operationId,jdbcType=VARCHAR}, #{communityId,jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- 判断是否为空，插入运营栏目和小区关联信息 -->
+  <insert id="insertSelective" parameterType="com.okdeer.mall.operate.entity.ColumnOperationCommunity" >
+    INSERT INTO column_operation_community
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        id,
+      </if>
+      <if test="operationId != null and operationId != ''" >
+        operation_id,
+      </if>
+      <if test="communityId != null and communityId != ''" >
+        community_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="operationId != null and operationId != ''" >
+        #{operationId,jdbcType=VARCHAR},
+      </if>
+      <if test="communityId != null and communityId != ''" >
+        #{communityId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- 判断是否为空，根据主键id，修改运营栏目和小区关联信息 -->
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.operate.entity.ColumnOperationCommunity" >
+    UPDATE column_operation_community
+    <set >
+      <if test="operationId != null and operationId != ''" >
+        operation_id = #{operationId,jdbcType=VARCHAR},
+      </if>
+      <if test="communityId != null and communityId != ''" >
+        community_id = #{communityId,jdbcType=VARCHAR},
+      </if>
+    </set>
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 根据主键id，修改运营栏目和小区关联信息 -->
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.operate.entity.ColumnOperationCommunity" >
+    UPDATE column_operation_community
+    SET operation_id = #{operationId,jdbcType=VARCHAR},
+      community_id = #{communityId,jdbcType=VARCHAR}
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 批量新增运营栏目和区域关联信息 -->
+  <insert id="insertCommunityBatch" parameterType="java.util.List">
+		INSERT INTO column_operation_community (id, operation_id, community_id)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.id,jdbcType=VARCHAR}, #{item.operationId,jdbcType=VARCHAR},  #{item.communityId,jdbcType=VARCHAR})
+		</foreach>
+  </insert>
+  
+  <!-- 根据运营栏目id，删除运营栏目与小区关联信息（物理删除） -->
+  <delete id="deleteByOperationId">
+	 DELETE FROM column_operation_community 
+	 WHERE 
+	 <if test="operationId != null ">
+		 operation_id  = #{operationId,jdbcType=VARCHAR}		
+     </if>
+     <if test="operationId == null ">
+      1 = 2
+     </if>  
+  </delete>
+</mapper>

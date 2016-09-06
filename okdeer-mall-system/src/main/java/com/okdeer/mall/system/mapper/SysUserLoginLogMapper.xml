@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.system.mapper.SysUserLoginLogMapper" > 
+   <resultMap id="BaseResultMap" type="com.okdeer.archive.system.entity.SysUserLoginLog" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="USER_ID" property="userId" jdbcType="VARCHAR" />
+    <result column="DEVICE_ID" property="deviceId" jdbcType="VARCHAR" />
+    <result column="TOKEN" property="token" jdbcType="VARCHAR" />
+    <result column="IS_LOGIN" property="isLogin" jdbcType="BIT" />
+    <result column="CLIENT_TYPE" property="clientType" jdbcType="BIT" />
+    <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>   
+  
+  <sql id="Base_Column_List" >
+    ID, USER_ID, DEVICE_ID, TOKEN, IS_LOGIN, CLIENT_TYPE, CREATE_TIME, UPDATE_TIME 
+  </sql>
+  
+  <!-- 根据用户(登录状态、设备id)查询用户登录信息 -->
+  <select id="findAllByUserId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+	FROM SYS_USER_LOGIN_LOG tt
+	WHERE tt.USER_ID = #{userId,jdbcType=VARCHAR}
+	<if test="isLogin != null and isLogin > 0">
+        <![CDATA[ AND tt.IS_LOGIN = #{isLogin} ]]>
+	</if>
+    <if test="deviceId != null and deviceId != ''">
+        <![CDATA[ AND tt.DEVICE_ID = #{deviceId} ]]>
+	</if>
+	<if test="clientType != null and clientType > 0">
+        <![CDATA[ AND tt.CLIENT_TYPE = #{clientType} ]]>
+	</if>
+  </select>
+   
+  <!-- 新增 用户登陆信息 -->
+  <insert id="insertSysUserLoginLog" parameterType="com.okdeer.archive.system.entity.SysUserLoginLog" >
+    INSERT INTO SYS_USER_LOGIN_LOG (id, user_id, device_id, token, is_login, client_type, create_time, update_time)
+    VALUES (#{id,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{deviceId,jdbcType=VARCHAR}, #{token,jdbcType=VARCHAR}, 
+            #{isLogin,jdbcType=BIT}, #{clientType,jdbcType=BIT}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
+  </insert>  
+  
+  <!-- 根据id批量更新登录下线状态 -->
+  <update id="updateIsLoginByIds">
+      <![CDATA[ UPDATE SYS_USER_LOGIN_LOG
+	    SET 
+	      IS_LOGIN = 2
+	    WHERE  id  IN
+      ]]>
+      <foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+        #{item}
+      </foreach>
+      <![CDATA[ AND IS_LOGIN <> 2 ]]>
+  </update>
+  
+  <!-- 更新 系统用户登录信息 -->
+  <update id="updateSysUserLoginLog" parameterType="com.okdeer.archive.system.entity.SysUserLoginLog" >
+    UPDATE SYS_USER_LOGIN_LOG
+    <set >
+      <if test="deviceId != null" >
+        DEVICE_ID = #{deviceId,jdbcType=VARCHAR},
+      </if>
+      <if test="token != null" >
+        TOKEN = #{token,jdbcType=VARCHAR},
+      </if>
+      <if test="isLogin != null" >
+        IS_LOGIN = #{isLogin,jdbcType=BIT},
+      </if>
+      <if test="updateTime != null" >
+        UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    WHERE ID = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 根据用户id(登录状态、设备id)批量更新登录下线状态  -->
+  <update id="updateIsLoginByUserId">
+      <![CDATA[ UPDATE SYS_USER_LOGIN_LOG tt
+	    SET 
+	      IS_LOGIN = 2
+      ]]>
+	  WHERE tt.USER_ID = #{userId,jdbcType=VARCHAR}
+	  <if test="deviceId != null and deviceId != ''">
+        <![CDATA[ AND tt.DEVICE_ID = #{deviceId} ]]>
+	  </if>
+     <![CDATA[ AND tt.IS_LOGIN <> 2 ]]>
+  </update>
+  
+</mapper>

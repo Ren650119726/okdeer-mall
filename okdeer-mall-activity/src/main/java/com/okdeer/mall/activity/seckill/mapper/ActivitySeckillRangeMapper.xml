@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.seckill.mapper.ActivitySeckillRangeMapper">
+    <!-- 基本返回类型 start -->
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.seckill.entity.ActivitySeckillRange">
+        <id column="id" property="id" jdbcType="VARCHAR" javaType="string"/>
+        <result column="activity_seckill_id" property="activitySeckillId" jdbcType="VARCHAR" javaType="string"/>
+        <result column="city_id" property="cityId" jdbcType="VARCHAR" javaType="string"/>
+        <result column="city_name" property="cityName" jdbcType="VARCHAR" javaType="string"/>
+        <result column="province_id" property="provinceId" jdbcType="VARCHAR" javaType="string"/>
+        <result column="province_name" property="provinceName" jdbcType="VARCHAR" javaType="string"/>
+    </resultMap>
+    <!-- 基本返回类型 end -->
+    
+    <!-- 基本表名 start -->
+    <sql id="BASE_TABLE_NAME">
+        activity_seckill_range 
+    </sql>
+    <!-- 基本表名 end -->
+    
+    <!-- 基本返回字段 start -->
+    <sql id="Base_Column_List">
+        id, activity_seckill_id, city_id, city_name, province_id, province_name 
+    </sql>
+    <!-- 基本返回字段 end -->
+    
+    <!-- 通过活动id获取秒杀活动范围信息  add by lijun 20160714 -->
+    <select id="findBySeckillId" resultMap="BaseResultMap">
+    	SELECT 
+		  <include refid="Base_Column_List"/> 
+		FROM 
+		  <include refid="BASE_TABLE_NAME"/> 
+		WHERE `activity_seckill_id` = #{seckillId,jdbcType=VARCHAR} 
+    </select>
+    
+    
+    <!-- 批量保存秒杀活动关联区域信息  add by lijun 20160717 -->
+    <insert id="addByBatch" parameterType="com.okdeer.mall.activity.seckill.entity.ActivitySeckillRange">
+		INSERT INTO <include refid="BASE_TABLE_NAME"/> (id, activity_seckill_id, city_id, city_name, province_id, province_name)
+	       VALUES 
+	       <foreach collection="seckillRangeList" item="item" index="index" separator="," >
+	       	(#{item.id,jdbcType=VARCHAR}, #{item.activitySeckillId,jdbcType=VARCHAR}, #{item.cityId,jdbcType=VARCHAR}, 
+             #{item.cityName,jdbcType=VARCHAR}, #{item.provinceId,jdbcType=VARCHAR}, #{item.provinceName,jdbcType=VARCHAR})
+	       </foreach>
+    </insert>
+    
+    <!-- 根据活动id删除秒杀活动区域信息  add by lijun 20160718 -->
+    <delete id="deleteByActivityId" parameterType="string">
+     DELETE 
+       FROM <include refid="BASE_TABLE_NAME"/> 
+      WHERE activity_seckill_id = #{activityId,jdbcType=VARCHAR}
+  </delete>
+</mapper>
+

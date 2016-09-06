@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper">	
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRelationStore">
+        <id property="id" column="id" javaType="string" jdbcType="VARCHAR"/>
+        <result property="couponsId" column="coupons_id" javaType="string" jdbcType="VARCHAR"/>
+        <result property="storeId" column="store_id" javaType="string" jdbcType="VARCHAR"/>            
+    </resultMap>
+   	<insert id="insertCouponsRelationStore" parameterType="list">
+	     INSERT INTO activity_coupons_relation_store
+			(id, coupons_id, store_id)
+			VALUES 
+		 <foreach collection="list" item="item" index="index" separator="," >
+			 (#{item.id, jdbcType=VARCHAR}, #{item.couponsId, jdbcType=VARCHAR}, #{item.storeId, jdbcType=VARCHAR})
+		 </foreach>
+	</insert>
+	<delete id="deleteCouponsRelationStore" parameterType="String">
+	        DELETE FROM activity_coupons_relation_store WHERE coupons_id= #{id,jdbcType=VARCHAR}
+	</delete>
+	<select id="selectCouponsRelationStore" parameterType="String" resultType="int">
+	       select count(1) from activity_coupons_relation_store where coupons_id = #{id, jdbcType=VARCHAR}
+	</select>
+	
+	<!-- wusw:根据代金券id、省id，查询关联店铺id、所在市id，或者根据代金券id，查询关联店铺所在省id -->
+	<select id="selectAddressRelationStoreByParams" parameterType="map" resultType="map">
+		SELECT DISTINCT
+		       store.id AS storeId,store.store_name AS storeName,CONCAT(store.area,store.address) AS storeAddress,
+		       store.city_id AS cityId,store.province_id AS provinceId
+	    FROM store_info store
+	    INNER JOIN activity_coupons_relation_store couponsStore ON couponsStore.store_id = store.id
+	    WHERE couponsStore.coupons_id = #{couponsId, jdbcType=VARCHAR}
+	    and store.type = #{type, jdbcType=TINYINT}
+	    <if test="provinceId != null and provinceId != ''">
+	      AND store.province_id = #{provinceId, jdbcType=VARCHAR}
+	    </if>
+	</select>
+	
+	<!-- wusw:根据代金券id，查询关联店铺所在省id -->
+	<select id="selectAddressRelationProvinceByParams" parameterType="map" resultType="map">
+		SELECT DISTINCT store.province_id AS provinceId
+	    FROM store_info store
+	    INNER JOIN activity_coupons_relation_store couponsStore ON couponsStore.store_id = store.id
+	    WHERE couponsStore.coupons_id = #{couponsId, jdbcType=VARCHAR}
+	</select>
+</mapper>

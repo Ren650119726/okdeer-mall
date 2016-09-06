@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.GenerateNumericalMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.GenerateNumericalNumber" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="numerical_order" property="numericalOrder" jdbcType="VARCHAR" />
+    <result column="numerical_type" property="numericalType" jdbcType="CHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  
+  <select id="generateNumericalNumber" statementType="CALLABLE" resultType="String" 
+        parameterType="java.util.Map">
+        <![CDATA[
+         { CALL generate_randOrderNo(
+          #{numerical_type,mode=IN,jdbcType=VARCHAR},#{numerical_number,mode=OUT,jdbcType=VARCHAR}
+          )}
+        ]]>
+  </select>
+  
+  <select id="generateRandOrderNo" statementType="CALLABLE" resultType="String" 
+        parameterType="java.util.Map">
+        <![CDATA[
+         { CALL generate_randOrderNo(
+          #{numerical_type,mode=IN,jdbcType=VARCHAR},#{numerical_number,mode=OUT,jdbcType=VARCHAR}
+          )}
+        ]]>
+  </select>
+  
+  <!-- 保存订单编号  Begin add by maojj 2016-07-14  -->
+  <insert id="saveNumericalNumber" parameterType="com.okdeer.mall.order.entity.GenerateNumericalNumber" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO generate_numerical_order(numerical_order,numerical_type,create_time) 
+        VALUES(#{numericalOrder},#{numericalType},#{createTime})
+  </insert>
+  <!-- End add by maojj -->
+</mapper>

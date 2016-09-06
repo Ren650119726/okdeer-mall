@@ -1,0 +1,547 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="collect_type" property="collectType" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsType" jdbcType="TINYINT" />
+    <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
+    <result column="coupons_collect_id" property="couponsCollectId" jdbcType="VARCHAR" />
+    <result column="collect_time" property="collectTime" jdbcType="TIMESTAMP" />
+    <result column="collect_user_id" property="collectUserId" jdbcType="VARCHAR" />
+    <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
+    <result column="status" property="status" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum" jdbcType="TINYINT" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="room_id" property="roomId" jdbcType="VARCHAR" />
+  </resultMap>
+  
+   <resultMap id="VoResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo" extends="BaseResultMap">
+    <result column="face_value" property="faceValue" javaType="integer" jdbcType="INTEGER" />
+    <result property="belongType" column="belong_type" javaType="string" jdbcType="VARCHAR"/> 
+    <result property="createUserId" column="create_user_id" javaType="string" jdbcType="VARCHAR"/>    
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id, 
+    valid_time, status, order_id, room_id
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.orderId and ''!=params.orderId" >
+        AND order_id = #{params.orderId,jdbcType=VARCHAR}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from activity_coupons_record
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_coupons_record WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM activity_coupons_record
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
+    insert into activity_coupons_record (id, collect_type, coupons_id, 
+      coupons_collect_id, collect_time, collect_user_id, 
+      valid_time, status, order_id, 
+      room_id)
+    values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=BIT}, #{couponsId,jdbcType=VARCHAR}, 
+      #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUserId,jdbcType=VARCHAR}, 
+      #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=BIT}, #{orderId,jdbcType=VARCHAR}, 
+      #{roomId,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
+    insert into activity_coupons_record
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="collectType != null" >
+        collect_type,
+      </if>
+      <if test="couponsId != null" >
+        coupons_id,
+      </if>
+      <if test="couponsCollectId != null" >
+        coupons_collect_id,
+      </if>
+      <if test="collectTime != null" >
+        collect_time,
+      </if>
+      <if test="collectUserId != null" >
+        collect_user_id,
+      </if>
+      <if test="validTime != null" >
+        valid_time,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="orderId != null" >
+        order_id,
+      </if>
+      <if test="roomId != null" >
+        room_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="collectType != null" >
+        #{collectType,jdbcType=BIT},
+      </if>
+      <if test="couponsId != null" >
+        #{couponsId,jdbcType=VARCHAR},
+      </if>
+      <if test="couponsCollectId != null" >
+        #{couponsCollectId,jdbcType=VARCHAR},
+      </if>
+      <if test="collectTime != null" >
+        #{collectTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="collectUserId != null" >
+        #{collectUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="validTime != null" >
+        #{validTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=BIT},
+      </if>
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="roomId != null" >
+        #{roomId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
+    update activity_coupons_record
+    <set >
+      <if test="collectType != null" >
+        collect_type = #{collectType,jdbcType=BIT},
+      </if>
+      <if test="couponsId != null" >
+        coupons_id = #{couponsId,jdbcType=VARCHAR},
+      </if>
+      <if test="couponsCollectId != null" >
+        coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR},
+      </if>
+      <if test="collectTime != null" >
+        collect_time = #{collectTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="collectUserId != null" >
+        collect_user_id = #{collectUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="validTime != null" >
+        valid_time = #{validTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=BIT},
+      </if>
+      <if test="orderId != null" >
+        order_id = #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="roomId != null" >
+        room_id = #{roomId,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
+    update activity_coupons_record
+    set collect_type = #{collectType,jdbcType=BIT},
+      coupons_id = #{couponsId,jdbcType=VARCHAR},
+      coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR},
+      collect_time = #{collectTime,jdbcType=TIMESTAMP},
+      collect_user_id = #{collectUserId,jdbcType=VARCHAR},
+      valid_time = #{validTime,jdbcType=TIMESTAMP},
+      status = #{status,jdbcType=BIT},
+      order_id = #{orderId,jdbcType=VARCHAR},
+      room_id = #{roomId,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <resultMap id="RecordVoMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo" extends="BaseResultMap">     
+        <result property="name" column="name" javaType="string" jdbcType="VARCHAR"/> 
+        <result property="faceValue" column="face_value" javaType="integer" jdbcType="INTEGER"/>
+        <result property="activityId" column=" activity_id " javaType="string" jdbcType="VARCHAR"/>
+        <result property="activityName" column="activity_name" javaType="string" jdbcType="VARCHAR"/>
+        <result property="collectUserName" column="user_name" javaType="string" jdbcType="VARCHAR"/>              
+        <result property="arriveLimit" column="arrive_limit" javaType="integer" jdbcType="INTEGER"/>
+        <result property="validDay" column="valid_day" javaType="integer" jdbcType="INTEGER"/>  
+        <result property="orderNo" column="order_no" javaType="string" jdbcType="VARCHAR"/>
+        <result property="belongType" column="belong_type" javaType="string" jdbcType="VARCHAR"/> 
+  </resultMap>
+  
+  <resultMap id="CouponsFindMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCoupons">
+       	<result property="faceValue" column="face_value" javaType="integer" jdbcType="INTEGER"/>
+        <result property="arriveLimit" column="arrive_limit" javaType="integer" jdbcType="INTEGER"/>
+    </resultMap>
+  
+  <sql id="BaseSelectSQL">
+         id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id,
+         valid_time, STATUS, order_id, room_id
+  </sql>
+  
+  <sql id="couponsVo">
+  		cou.`face_value`,cou.`arrive_limit`
+  </sql>
+  
+   <select id="selectAllRecords" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo" resultMap="RecordVoMap">
+	  select A.id, A.collect_type, A.coupons_id, A.coupons_collect_id, A.collect_time, A.collect_user_id, B.name, B.activity_id, B.arrive_limit, 
+             B.valid_day, A.valid_time, A.STATUS, A.order_id, A.room_id, C.name as activity_name, D.login_name as user_name, B.face_value, B.belong_type 
+      FROM activity_coupons_record A
+      LEFT JOIN activity_coupons B ON B.id = A.coupons_id
+      LEFT JOIN activity_collect_coupons C ON C.id = B.activity_id
+      LEFT JOIN sys_buyer_user D ON D.id = A.collect_user_id   
+      WHERE 1 = 1 
+      <if test="name != null and name != ''">
+            AND B.name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
+      </if>
+      <if test="collectUserName != null and collectUserName != ''">
+            AND D.login_name LIKE CONCAT('%',#{collectUserName,jdbcType=VARCHAR},'%')
+      </if> 
+      <if test="startTime != null">
+			<![CDATA[ AND A.collect_time >= #{startTime}]]> 
+	  </if>
+	  <if test="endTime != null">
+			<![CDATA[ AND A.collect_time < #{endTime}]]>  
+	  </if>
+	  <if test="belongType != null and belongType != ''">
+<!-- 			0是运营商,可以看到所有人的,  大于0,是代理商,只能看到自己的 -->
+			AND B.belong_type = #{belongType}
+	</if>
+	  <if test="status != null">
+			AND A.STATUS = #{status,jdbcType=TINYINT} 
+	  </if>  
+	  ORDER BY 
+		A.collect_time 
+	  DESC 
+   </select> 
+   
+   <!-- 根据记录id查询订单相关信息 added by tangy -->
+   <select id="findOrderByRecordId" resultMap="RecordVoMap">
+	  select T.order_no, A.id
+      FROM activity_coupons_record A 
+      LEFT JOIN trade_order T ON T.id = A.order_id   
+      WHERE A.id IN 
+	  <foreach collection="recordIds" item="item" open="(" close=")" separator=",">
+           #{item,jdbcType=VARCHAR}
+      </foreach>
+   </select> 
+   <!-- end added by tangy -->
+	
+   <select id="selectExportRecords" parameterType="java.util.Map" resultMap="RecordVoMap">
+<!-- 	  select A.id, A.collect_type, A.coupons_id, A.coupons_collect_id, A.collect_time, A.collect_user_id, B.name, B.activity_id, B.arrive_limit, 
+             B.valid_day, A.valid_time, A.STATUS, A.order_id, A.room_id, C.name as activity_name, D.nick_name user_name, B.face_value 
+      FROM activity_coupons_record A
+      LEFT JOIN activity_coupons B ON B.id = A.coupons_id
+      LEFT JOIN activity_collect_coupons C ON C.id = B.activity_id 
+      LEFT JOIN sys_buyer_user D ON D.id = A.collect_user_id  
+      WHERE 1 = 1  -->
+      select T.order_no, A.id, A.collect_type, A.coupons_id, A.coupons_collect_id, A.collect_time, A.collect_user_id, B.name, B.activity_id, B.arrive_limit, 
+             B.valid_day, A.valid_time, A.STATUS, A.order_id, A.room_id, C.name as activity_name, D.login_name as user_name, B.face_value, B.belong_type 
+      FROM activity_coupons_record A
+      LEFT JOIN activity_coupons B ON B.id = A.coupons_id
+      LEFT JOIN activity_collect_coupons C ON C.id = B.activity_id 
+      LEFT JOIN trade_order T ON T.id = A.order_id
+      LEFT JOIN sys_buyer_user D ON D.id = A.collect_user_id   
+      WHERE 1 = 1 
+      <if test="name != null and name != ''">
+            AND B.name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
+      </if>
+      <if test="collectUserName != null and collectUserName != ''">
+            AND D.user_name LIKE CONCAT('%',#{collectUserName,jdbcType=VARCHAR},'%')
+      </if> 
+      <if test="startTime != null">
+			<![CDATA[ AND A.collect_time >= #{startTime}]]> 
+	  </if>
+	  <if test="endTime != null">
+			<![CDATA[ AND A.collect_time < #{endTime}]]>  
+	  </if>
+	  <if test="belongType != null and belongType != ''">
+<!-- 			0是运营商,可以看到所有人的,  大于0,是代理商,只能看到自己的 -->
+			AND B.belong_type = #{belongType}
+	</if>
+	  <if test="status != null">
+			AND A.STATUS = #{status,jdbcType=TINYINT} 
+	  </if> 
+	  ORDER BY A.collect_time DESC 
+  </select>
+
+  <select id="updateUseStatus" resultType="java.lang.Integer" parameterType="java.lang.String">
+   	update activity_coupons_record
+	SET status = 0,
+	order_id = ''
+	WHERE order_id= #{orderId,jdbcType=VARCHAR}
+   </select>
+   
+  <select id="updateUseStatusAndExpire" resultType="java.lang.Integer" parameterType="java.lang.String">
+   	update activity_coupons_record
+	SET status = 2
+	WHERE order_id= #{orderId,jdbcType=VARCHAR}
+   </select>
+  
+  <!-- wusw:根据代金券id、活动id、活动类型和领取人id，查询代金券领取记录信息 -->
+	<select id="selectCountByParams" resultType="int" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
+	  SELECT count(1)
+	  FROM activity_coupons_record 
+	  WHERE  1=1
+	  <!-- 领取人id -->
+	  <if test="collectUserId != null and collectUserId != ''">
+	     AND collect_user_id = #{collectUserId,jdbcType=VARCHAR}
+	  </if>
+	  <!-- 代金券领取活动（注册活动）id -->
+	  <if test="couponsCollectId != null and couponsCollectId != ''">
+	    AND coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR}
+	  </if>
+	  <!-- 代金券id -->
+	  <if test="couponsId != null and couponsId != ''">
+	    AND coupons_id = #{couponsId,jdbcType=VARCHAR}
+	  </if>
+	  <!-- 活动类型 -->
+	  <if test="collectType != null">
+	     AND collect_type = #{collectType,jdbcType=TINYINT}
+	  </if>
+	  <!-- 领取状态 -->
+	  <if test="status != null">
+	     AND `status` = #{status,jdbcType=TINYINT}
+	  </if>
+	  <!-- 领取时间-->
+	  <if test="collectTime != null">
+	     AND collect_time = #{collectTime}
+	  </if>	  
+	</select>
+  
+   <!-- wusw:代金券领取活动、代金券、限制类目等关联信息 -->
+    <resultMap id="couponsAndLimitCategoryDetailMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo" extends="BaseResultMap">
+      <!-- 代金券活动信息 -->
+      <!--  <id property="collectCouponsId" column="collectCouponsId" jdbcType="VARCHAR"/>
+	  <result property="collectCouponsName" column="collectCouponsName" jdbcType="VARCHAR"/>
+	  <result property="identityLimit" column="identity_limit" jdbcType="TINYINT" javaType="com.okdeer.mall.enums.IdentityLimit"/> -->
+      <!-- 代金券信息 -->
+      <association property="activityCoupons" javaType="com.okdeer.mall.activity.coupons.entity.ActivityCoupons">		
+		<id property="id" column="couponsId" javaType="string" jdbcType="VARCHAR"/>
+        <result property="name" column="couponsName" javaType="string" jdbcType="VARCHAR"/>
+        <result property="faceValue" column="face_value" javaType="integer" jdbcType="INTEGER"/>     	
+        <result property="arriveLimit" column="arrive_limit" javaType="integer" jdbcType="INTEGER"/>
+        <result property="validDay" column="valid_day" javaType="integer" jdbcType="INTEGER"/>
+        <result property="everyLimit" column="every_limit" javaType="integer" jdbcType="INTEGER"/>
+        <result property="isCashDelivery" column="is_cash_delivery" javaType="com.okdeer.mall.activity.coupons.enums.CashDelivery" jdbcType="TINYINT"/>
+        <result property="isCategoryLimit" column="is_category_limit" javaType="com.okdeer.mall.activity.coupons.enums.CategoryLimit"  jdbcType="TINYINT"/>
+      </association>
+      <!-- 限制使用类目信息 -->
+    <!--   <collection property="goodsSpuCategoryList"  ofType="com.okdeer.mall.goods.category.entity.GoodsSpuCategory">
+         <id column="spuCategoryId" property="id" jdbcType="VARCHAR" />
+		 <result column="spuCategoryName" property="name" jdbcType="VARCHAR" />
+      </collection> -->
+    </resultMap>
+    
+  <!-- wusw:根据领取人id、领取状态，查询领取的代金券详细信息 -->
+  <select id="selectMyCouponsDetailByParams" resultMap="couponsAndLimitCategoryDetailMap" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
+   SELECT 
+   coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
+   coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
+   record.id,record.collect_time,record.valid_time 
+   FROM activity_coupons_record record
+   LEFT JOIN activity_coupons coupons ON record.coupons_id = coupons.id
+   WHERE 1=1
+   <if test="collectUserId != null and collectUserId != ''">
+     AND record.collect_user_id = #{collectUserId,jdbcType=VARCHAR}
+   </if>
+   <if test="status != null">
+     AND record.`status` = #{status,jdbcType=TINYINT}
+   </if>
+    ORDER BY record.collect_time DESC
+  </select> 
+  
+  <!-- yangq:根据领取人id、领取状态，店铺ID，查询领取的代金券详细信息 -->
+  <select id="selectCouponsDetailByStoreId" resultMap="couponsAndLimitCategoryDetailMap"  parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
+	   SELECT coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
+          coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
+          record.id,record.collect_time,record.valid_time,record.collect_type,record.coupons_collect_id
+	   FROM activity_coupons_record record LEFT JOIN activity_coupons_relation_store relation ON record.`coupons_id` = relation.`coupons_id`
+	   LEFT JOIN activity_coupons coupons ON record.coupons_id = coupons.id
+	   WHERE 1=1
+	   <if test="collectUserId != null and collectUserId != ''">
+	     AND record.collect_user_id = #{collectUserId,jdbcType=VARCHAR}
+	   </if>
+	   <if test="status != null">
+	     AND record.`status` = #{status,jdbcType=TINYINT}
+	   </if>
+	   <if test="storeId != null">
+	     AND relation.`store_id` = #{storeId,jdbcType=VARCHAR}
+	   </if>
+   </select>
+   
+   <select id="selectCouponsAllId" resultMap="couponsAndLimitCategoryDetailMap"  parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
+     SELECT 
+		  coupons.id AS couponsId,
+		  coupons.`name` AS couponsName,
+		  coupons.face_value,
+		  coupons.arrive_limit,
+		  coupons.valid_day,
+		  coupons.every_limit,
+		  coupons.is_cash_delivery,
+		  coupons.is_category_limit,
+		  coupons.valid_day,
+		  record.id,
+		  record.collect_time,
+		  record.valid_time,
+		  record.collect_type,
+		  record.coupons_collect_id 
+		FROM
+		  activity_coupons_record record 
+		  LEFT JOIN activity_coupons coupons 
+		    ON record.coupons_id = coupons.id 
+		WHERE 1 = 1 
+		  <if test="collectUserId != null and collectUserId != ''">
+		  AND record.collect_user_id = #{collectUserId,jdbcType=VARCHAR}
+		  </if>
+		  AND record.`status` = 0 AND coupons.`area_type` = 0
+   </select>
+   
+   <!-- Begin modified by maojj 查询条件去除type -->
+   <!-- @author yangqin begin -->
+   <select id="selectCouponsItem" parameterType="com.okdeer.mall.activity.coupons.entity.CouponsFindVo" resultMap="CouponsFindMap">
+   		SELECT <include refid="couponsVo"/>
+		FROM activity_collect_coupons co 
+		LEFT JOIN activity_coupons cou  ON co.`id` = cou.`activity_id` 
+		WHERE cou.`activity_id` = #{activityId,jdbcType=VARCHAR} 
+		AND cou.`id`= #{activityItemId,jdbcType=VARCHAR}
+   </select>
+  <!-- @author yangqin end -->
+  <!-- End modified by maojj 查询条件去除type -->
+  
+<!--   zhulq 定时任务 -->
+   <select id="selectAllForJob" resultMap="BaseResultMap">
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_coupons_record WHERE status = 0
+  </select>
+  
+     <update id="updateAllByBatch" parameterType="map">
+    	update activity_coupons_record set status = #{status} where id in 
+		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">  
+  			#{item}  
+ 		</foreach>  
+ 		and status = 0
+    </update>
+    
+   <select id="selectAllVendorById" parameterType="map" resultMap="BaseResultMap">
+   		SELECT 
+		  coupons.id AS couponsId,
+		  coupons.`name` AS couponsName,
+		  coupons.face_value,
+		  coupons.arrive_limit,
+		  coupons.valid_day,
+		  coupons.every_limit,
+		  coupons.is_cash_delivery,
+		  coupons.is_category_limit,
+		  coupons.valid_day,
+		  record.id,
+		  record.collect_time,
+		  record.valid_time,
+		  record.collect_type,
+		  record.coupons_collect_id 
+		FROM
+		  activity_coupons_record record 
+		  LEFT JOIN activity_coupons coupons 
+		    ON record.coupons_id = coupons.id 
+		WHERE 1 = 1 
+		  AND record.collect_user_id = #{collectUserId,jdbcType=VARCHAR} 
+		  AND record.`status` = '0' AND coupons.`area_type`=0 
+   </select>
+   
+   <update id="updateActivityCouponsStatus" parameterType="map">
+      UPDATE activity_coupons_record set status = 1,order_id = #{orderId,jdbcType=VARCHAR} WHERE id = #{id,jdbcType=VARCHAR}
+   </update>
+    
+   <insert id="insertSelectiveBatch" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
+    insert into activity_coupons_record
+        (id, collect_type, coupons_id, coupons_collect_id, collect_time, 
+         collect_user_id, valid_time, status, order_id, room_id) values
+     <foreach collection="list" item="item" index="index" separator="," >
+       (#{item.id,jdbcType=VARCHAR},
+        #{item.collectType,jdbcType=BIT},
+        #{item.couponsId,jdbcType=VARCHAR},
+        #{item.couponsCollectId,jdbcType=VARCHAR},
+        #{item.collectTime,jdbcType=TIMESTAMP},
+        #{item.collectUserId,jdbcType=VARCHAR},
+        #{item.validTime,jdbcType=TIMESTAMP},
+        #{item.status,jdbcType=BIT},
+        #{item.orderId,jdbcType=VARCHAR},
+        #{item.roomId,jdbcType=VARCHAR}
+        )
+     </foreach>
+  </insert> 
+  
+    <!-- zhulq:根据代金券id、活动id、活动类型和领取人id，查询其他人代金券领取记录信息 -->
+<!-- 	<select id="selectOtherCountByParams" resultType="int" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
+	  SELECT count(1)
+	  FROM activity_coupons_record 
+	  WHERE  1=1
+	  领取人id
+	  <if test="collectUserId != null and collectUserId != ''">
+	     AND collect_user_id != #{collectUserId,jdbcType=VARCHAR}
+	  </if>
+	  代金券领取活动（注册活动）id
+	  <if test="couponsCollectId != null and couponsCollectId != ''">
+	    AND coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR}
+	  </if>
+	  代金券id
+	  <if test="couponsId != null and couponsId != ''">
+	    AND coupons_id = #{couponsId,jdbcType=VARCHAR}
+	  </if>
+	  活动类型
+	  <if test="collectType != null">
+	     AND collect_type = #{collectType,jdbcType=TINYINT}
+	  </if>
+	  领取状态
+	  <if test="status != null">
+	     AND `status` = #{status,jdbcType=TINYINT}
+	  </if>
+	</select> -->
+	
+	<!-- 查询用户有效的代金券信息 Begin added by maojj -->
+	<select id="findValidCoupons" parameterType="map" resultType="com.okdeer.mall.order.vo.Coupons">
+		SELECT
+			t2.name AS couponTitle,
+			0 AS usableRange,
+			date_format(t.valid_time,'%Y-%m-%d %T') AS indate,
+			t.coupons_collect_id AS id,
+			t2.id AS couponId,
+			FORMAT(t2.face_value,2) AS couponPrice,
+			t.id AS recordId,
+			t.collect_type AS couponsType,
+			t2.id AS activityItemId ,
+			FORMAT(t2.arrive_limit,2) AS arrive
+		FROM
+			activity_coupons_record t
+		LEFT JOIN activity_coupons_relation_store t1 ON t.coupons_id = t1.coupons_id
+		LEFT JOIN activity_coupons t2 ON t.coupons_id = t2.id
+		WHERE
+			t.collect_user_id = #{userId}
+		AND t.status = 0
+		AND t2.disabled = 0
+		AND (
+			t1.store_id = #{storeId}
+			<!-- 平台发起的代金券活动，只有云上店可以使用 -->
+			<if test="storeType == 2">
+				OR t2.area_type = 0
+			</if>
+		)
+		AND t2.arrive_limit &lt;= #{totalAmount}
+		ORDER BY t.collect_time DESC
+	</select>
+	<!-- End added by maojj -->
+</mapper> 

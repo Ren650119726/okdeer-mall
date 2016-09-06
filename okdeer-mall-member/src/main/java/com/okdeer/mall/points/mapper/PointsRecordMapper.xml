@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.points.mapper.PointsRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.member.points.entity.PointsRecord" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="code" property="code" jdbcType="VARCHAR" />
+    <result column="point_val" property="pointVal" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="referent_id" property="referentId" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, user_id, code, point_val, type, description, referent_id, create_time
+  </sql>
+  <sql id="condition" >
+      <if test="null!=params" >
+      <if test="null!=params.userId and ''!=params.userId" >
+        AND user_id = #{params.userId}
+      </if>
+      <if test="null!=params.code and ''!=params.code" >
+        AND code = #{params.code}
+      </if>
+      <if test="null!=params.type" >
+        AND type= #{params.type}
+      </if>
+    </if>
+  </sql>
+  <!-- 按照参数查询用户积分变动记录 -->
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM points_record WHERE 1=1 
+     <include refid="condition" />
+     ORDER BY create_time DESC
+  </select>
+
+  <!-- 条件积分统计 -->
+  <select id="countByParams" resultType="INTEGER" parameterType="map" >
+    SELECT sum(point_val)
+     FROM points_record WHERE 1=1 
+     <include refid="condition" />
+  </select>
+  
+   <!-- 条件查询当天积分统计 -->
+  <select id="currentSumByParams" resultType="INTEGER" parameterType="map" >
+    SELECT ifnull(sum(point_val),0)
+     FROM points_record WHERE 1=1 AND CURDATE()=DATE_FORMAT(create_time,'%Y-%m-%d')
+      <if test="null!=params" >
+      <if test="null!=params.userId and ''!=params.userId" >
+        AND user_id = #{params.userId}
+      </if>
+      <if test="null!=params.code and ''!=params.code" >
+        AND code != #{params.code}
+      </if>
+    </if>
+  </select>
+  
+  <!-- 条件查询当天操作次数 -->
+  <select id="currentCountByParams" resultType="INTEGER" parameterType="map" >
+    SELECT count(*)
+     FROM points_record WHERE 1=1 
+      <if test="null!=params" >
+      <if test="null!=params.userId and ''!=params.userId" >
+        AND user_id = #{params.userId}
+      </if>
+      <if test="null!=params.code and ''!=params.code" >
+        AND code = #{params.code}
+      </if>
+     <if test="null != params.startCreateTime">
+        AND create_time &gt;= #{params.startCreateTime}
+      </if>
+      <if test="null != params.endCreateTime">
+      	AND create_time &lt;= #{params.endCreateTime}
+      </if>
+    </if>
+  </select>
+
+  <!-- 添加用户积分变动记录 -->
+  <insert id="insert" parameterType="com.okdeer.mall.member.points.entity.PointsRecord" >
+    insert into points_record (id, user_id, code, 
+      point_val, type, description, referent_id,
+      create_time)
+    values (#{id,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, 
+      #{pointVal,jdbcType=INTEGER}, #{type,jdbcType=TINYINT}, #{description,jdbcType=VARCHAR}, 
+      #{referentId,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  <!-- 添加用户积分变动记录 -->
+  <insert id="insertSelective" parameterType="com.okdeer.mall.member.points.entity.PointsRecord" >
+    insert into points_record
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="code != null" >
+        code,
+      </if>
+      <if test="pointVal != null" >
+        point_val,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="description != null" >
+        description,
+      </if>
+      <if test="referentId != null" >
+        referent_id,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null" >
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="pointVal != null" >
+        #{pointVal,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=TINYINT},
+      </if>
+      <if test="description != null" >
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="referentId != null" >
+        #{referentId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  
+  
+  <!-- 按照参数查询用户积分变动记录 -->
+  <select id="selectDayByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM points_record WHERE 1=1 AND CURDATE()=DATE_FORMAT(create_time,'%Y-%m-%d')
+     <include refid="condition" />
+     ORDER BY create_time DESC
+  </select>
+  
+  
+</mapper>

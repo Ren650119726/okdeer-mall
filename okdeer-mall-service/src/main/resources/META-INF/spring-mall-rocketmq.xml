@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- rocketMq config -->
+	<bean id="rocketMQconfig" class="com.yschome.base.framework.mq.RocketMQConfigurer">
+		<property name="namesrvAddr" value="${rocketmq.nameSrvAddr}"></property>
+		<property name="producerGroupName" value="${rocketmq.producerGroupName}"></property>
+		<property name="sendMsgTimeout" value="${rocketmq.sendMsgTimeout}"></property>
+		<property name="retryTimesWhenSendFailed" value="${rocketmq.retryTimesWhenSendFailed}"></property>
+		<property name="maxMessageSize" value="${rocketmq.maxMessageSize}"></property>
+		<property name="consumerGroupName" value="${rocketmq.consumerGroupName}"></property>
+		<property name="isAllowConsumer" value="true"/>
+	</bean>
+	<!-- 消息生产者 -->
+	<bean id="rocketMQProducer" class="com.yschome.base.framework.mq.RocketMQProducer"/>
+	<!-- 事务消息生产者 -->
+	<bean id="rocketMQTransactionProducer" class="com.yschome.base.framework.mq.RocketMQTransactionProducer" />
+
+	<bean id="rocketMQConsumer" class="com.yschome.base.framework.mq.RocketMQConsumer"/>
+	
+	
+	<!-- 用户同步dao -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.yschome.ca.dao.*" />
+		<property name="sqlSessionTemplateBeanName" value="sqlSessionTemplate"></property>
+	</bean>
+	<!-- 系统用户同步消息消费 -->
+<!-- 	<bean id="userSyncService" class="com.yschome.ca.client.service.UserSyncService">
+		<property name="syncUserTable">
+			<list>
+				<value>sys_user</value>
+				<value>sys_admin_user</value>
+				<value>sys_buyer_user</value>
+			</list>
+		</property>
+	</bean> -->
+	 
+</beans>

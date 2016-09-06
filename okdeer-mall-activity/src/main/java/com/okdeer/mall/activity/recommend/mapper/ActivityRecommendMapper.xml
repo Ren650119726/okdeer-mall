@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.recommend.mapper.ActivityRecommendMapper" >
+  
+  <!-- 推荐活动字段 -->
+  <sql id="activityRecommendColumn" >
+    id, recommend_name,link_url,start_time,end_time,pic_url,recommend_range_type,recommend_status,
+    create_time,create_user_id,update_time,update_user_id,disabled
+  </sql>
+  
+  <!-- 推荐活动和地区关联列 -->
+  <sql id="activityRecommendRangeColumn">
+  	id,activity_recommend_id,city_id,city_name,province_id,province_name
+  </sql>
+ 
+  <!-- 推荐活动和标准商品库商品关联列 -->
+  <sql id="activityRecommendGoodsColumn">
+  	id,activity_recommend_id,goods_sku_id
+  </sql>
+  
+  <!-- 推荐活动 map -->
+  <resultMap id="activityRecommendMap" type="com.okdeer.mall.activity.recommend.entity.ActivityRecommend">
+     <id column="id" property="id" jdbcType="VARCHAR" />
+     <result column="recommend_name" property="recommendName" jdbcType="VARCHAR" />
+     <result column="link_url" property="linkUrl" jdbcType="VARCHAR" />
+     <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+     <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+     <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
+     <result column="recommend_range_type" property="recommendRangeType" jdbcType="TINYINT" javaType="com.okdeer.mall.common.enums.AreaType" />
+     <result column="recommend_status" property="recommendStatus" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.recommend.enums.ActivityRecommendStatus" />
+     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+     <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+     <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+     <result column="disabled" property="disabled" jdbcType="INTEGER" />
+  </resultMap> 
+ 
+  <!-- 推荐活动和区域关联 map -->
+  <resultMap id="activityRecommendRangeMap" type="com.okdeer.mall.activity.recommend.entity.ActivityRecommendRange" >
+ 	 <id column="id" property="id" jdbcType="VARCHAR" />
+ 	  <result column="activity_recommend_id" property="activityRecommendId" jdbcType="VARCHAR" />
+ 	  <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+ 	  <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+ 	  <result column="province_id" property="provinceId" jdbcType="VARCHAR" />
+ 	  <result column="province_name" property="provinceName" jdbcType="VARCHAR" />
+  </resultMap>
+ 
+  <!-- 推荐活动和商品关联关系  map -->
+  <resultMap id="activityRecommendGoodsMap" type="com.okdeer.mall.activity.recommend.entity.ActivityRecommendGoods" >
+ 	 <id column="id" property="id" jdbcType="VARCHAR" />
+ 	 <result column="activity_recommend_id" property="activityRecommendId" jdbcType="VARCHAR" />
+ 	 <result column="goods_sku_id" property="goodsSkuId" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  
+  <!-- 新增团购活动 add by zhongy -->
+  <insert id="insert" parameterType="com.okdeer.mall.activity.recommend.entity.ActivityRecommend" >
+  		INSERT INTO activity_recommend ( 
+  			id, recommend_name,link_url,start_time,end_time,pic_url,recommend_range_type,
+  			recommend_status,create_time,create_user_id,update_time,update_user_id,disabled)
+  		  VALUES(
+  			#{id,jdbcType=VARCHAR},#{recommendName,jdbcType=VARCHAR},#{linkUrl,jdbcType=VARCHAR},
+  			#{startTime,jdbcType=TIMESTAMP},#{endTime,jdbcType=TIMESTAMP},
+  			#{picUrl,jdbcType=VARCHAR},#{recommendRangeType,jdbcType=INTEGER},
+  			#{recommendStatus,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP},
+  			#{createUserId,jdbcType=VARCHAR},#{updateTime,jdbcType=TIMESTAMP},
+  			#{updateUserId,jdbcType=VARCHAR},#{disabled,jdbcType=INTEGER}
+  		    )
+  </insert>
+  
+  <!-- 批量添加推荐活动关联区域城市start  add by zhongy-->
+  <insert id="insertBatchActivityRecommendRange" parameterType="com.okdeer.mall.activity.recommend.entity.ActivityRecommendRange">
+	INSERT INTO activity_recommend_range (id, activity_recommend_id,city_id,city_name,province_id, province_name)
+	       values 
+	       <foreach collection="activityRecommendRanges" item="item" index="index" separator="," >
+	       	(#{item.id,jdbcType=VARCHAR}, #{item.activityRecommendId,jdbcType=VARCHAR}, #{item.cityId,jdbcType=VARCHAR}, 
+             #{item.cityName,jdbcType=VARCHAR}, #{item.provinceId,jdbcType=VARCHAR}, #{item.provinceName,jdbcType=VARCHAR})
+	       </foreach>
+    </insert>
+   <!--批量添加推荐活动关联区域城市 end -->
+  
+  <!-- 批量添加推荐活动关联商品 start  add by zhongy -->
+  <insert id="insertBatchActivityRecommendGoods" parameterType="com.okdeer.mall.activity.recommend.entity.ActivityRecommendGoods">
+	INSERT INTO activity_recommend_goods (id,activity_recommend_id,goods_sku_id)
+	       values 
+	       <foreach collection="activityRecommendGoods" item="item" index="index" separator="," >
+	       	(#{item.id,jdbcType=VARCHAR}, #{item.activityRecommendId,jdbcType=VARCHAR}, #{item.goodsSkuId,jdbcType=VARCHAR})
+	       </foreach>
+    </insert>
+   <!--批量添加推荐活动关联商品 end -->
+   
+   <!-- 更新推荐活动(有条件判断) start   add by zhongy-->
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.recommend.entity.ActivityRecommendRange" >
+    UPDATE activity_recommend
+    <set >
+      <if test="recommendName != null" >
+        recommend_name = #{recommendName,jdbcType=VARCHAR},
+      </if>
+      <if test="linkUrl != null" >
+        link_url = #{linkUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="startTime != null" >
+        start_time = #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null" >
+        end_time = #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="picUrl != null" >
+        pic_url = #{picUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="recommendRangeType != null" >
+        recommend_range_type = #{recommendRangeType,jdbcType=TINYINT},
+      </if>
+      <if test="recommendStatus != null" >
+        recommend_status = #{recommendStatus,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUserId != null" >
+        create_user_id = #{createUserId,jdbcType=VARCHAR}, 
+      </if> 
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null" >
+        update_user_id = #{updateUserId,jdbcType=VARCHAR}, 
+      </if> 
+    </set>
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  <!-- 更新推荐活动(有条件判断) end -->
+   
+  <!-- 删除推荐和区域关联关系  start  add by zhongy-->
+  <delete id="deleteActivityRecommendRange" parameterType="java.lang.String">
+      DELETE FROM activity_recommend_range 
+      WHERE activity_recommend_id =#{activityRecommendId,jdbcType=VARCHAR}
+  </delete>
+  <!-- 删除推荐和区域关联关系  end -->
+  
+  <!-- 删除推荐和商品关联关系  start  add by zhongy-->
+  <delete id="deleteActivityRecommendGoods" parameterType="java.lang.String">
+      DELETE FROM activity_recommend_goods 
+      WHERE activity_recommend_id =#{activityRecommendId,jdbcType=VARCHAR}
+  </delete>
+  <!-- 删除推荐和商品关联关系  end -->
+  
+   <!-- 根据id查询推荐活动  add by zhongy-->
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="activityRecommendMap">
+  		SELECT <include refid="activityRecommendColumn" /> 
+  		FROM activity_recommend 
+  		WHERE disabled != 1
+  		AND id = #{id,jdbcType=VARCHAR} 
+  </select>
+  
+ <!-- 分页查询推荐活动 start  add by zhongy-->
+  <select id="findActivityRecommend"  parameterType="com.okdeer.mall.activity.recommend.entity.ActivityRecommend" resultMap="activityRecommendMap">
+  		SELECT <include refid="activityRecommendColumn" /> 
+  		FROM activity_recommend WHERE disabled != 1 
+  		<if test="recommendName != null and recommendName !=''">
+  			AND	recommend_name LIKE CONCAT('%',#{recommendName},'%')
+  		</if>
+  		<if test="startTime !=null">
+			AND start_time <![CDATA[>= ]]> #{startTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="endTime != null">
+			AND end_time <![CDATA[<= ]]> #{endTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="recommendStatus != null">
+			AND recommend_status =  #{recommendStatus,jdbcType=TINYINT}
+		</if>
+  		order by create_time desc
+  </select> 
+  <!-- 分页查询推荐活动 end -->
+ 
+  <!-- 关闭推荐活动 start  add by zhongy-->
+  <update id="closeActivityRecommend" parameterType="java.lang.String">
+    UPDATE activity_recommend SET recommend_status = 3 WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  <!-- 关闭推荐活动 end -->
+ 
+ <!-- 查询推荐活动关联所有范围 start  add by zhongy-->
+  <select id="findActivityRecommendRange"  parameterType="java.lang.String" resultMap="activityRecommendRangeMap">
+  		SELECT <include refid="activityRecommendRangeColumn" /> 
+  		FROM activity_recommend_range WHERE activity_recommend_id = #{activityRecommendId,jdbcType=VARCHAR}
+  </select> 
+ <!-- 查询推荐活动关联所有范围 end -->
+ 
+ <!-- 查询指定开始时间、结束时间有交集、指定区域有交集的记录数量   add by zhongy-->
+   <select id="selectCountByDistrict" resultType="int">
+     SELECT count(1)
+     FROM activity_recommend a 
+     LEFT JOIN activity_recommend_range arr ON a.id = arr.activity_recommend_id
+	  WHERE a.disabled !=1
+	  AND (a.recommend_status = 0 OR a.recommend_status = 1)
+      <if test="null!=params" >
+	      AND ((a.start_time <![CDATA[>=]]> #{params.startTime,jdbcType=TIMESTAMP} 
+	      AND a.start_time <![CDATA[<]]> #{params.endTime,jdbcType=TIMESTAMP})
+	             OR (a.start_time <![CDATA[<=]]> #{params.startTime,jdbcType=TIMESTAMP} AND a.end_time <![CDATA[>]]> #{params.startTime,jdbcType=TIMESTAMP})
+	             OR (a.start_time <![CDATA[<=]]> #{params.startTime,jdbcType=TIMESTAMP} AND a.end_time <![CDATA[>=]]> #{params.endTime,jdbcType=TIMESTAMP}))
+	      <if test="params.id != null and params.id != ''">
+	        AND a.id != #{params.id,jdbcType=VARCHAR}
+	      </if>
+	      <if test="params.areaType.name == 'area'">  
+	        AND (
+	            <if test="params.areaIds != null ">
+			    arr.city_id in  
+			     <foreach collection="params.areaIds" open="(" close=")" index="index" item="item"  separator=",">
+		            #{item}
+		          </foreach>
+	             </if>
+	            )
+		 </if> 
+      </if>
+   </select>
+   
+   <!--根据用户定位城市名称查询推荐活动 start  add by zhongy-->
+  <select id="findByCurrentCityActivity" resultMap="activityRecommendMap">
+  		SELECT DISTINCT
+  		ar.id,ar.recommend_name,ar.link_url,ar.start_time,ar.end_time,ar.pic_url,ar.recommend_range_type,
+  		ar.recommend_status,ar.create_time,ar.create_user_id,ar.update_time,ar.update_user_id
+  		FROM activity_recommend ar 
+		LEFT JOIN activity_recommend_range arr ON ar.id = arr.activity_recommend_id 
+		WHERE ar.disabled = 0
+		AND ar.recommend_status= 1
+		 <if test="null!=params" >
+		   AND arr.city_name = #{params.cityName,jdbcType=VARCHAR}
+		 </if>
+  </select> 
+  <!-- 根据用户定位城市名称查询推荐活动 end -->
+  
+  <!--查询范围为全国的推荐活动 start  add by zhongy-->
+  <select id="findByNationActivity" resultMap="activityRecommendMap">
+  		SELECT DISTINCT
+  		ar.id,ar.recommend_name,ar.link_url,ar.start_time,ar.end_time,ar.pic_url,ar.recommend_range_type,
+  		ar.recommend_status,ar.create_time,ar.create_user_id,ar.update_time,ar.update_user_id
+  		FROM activity_recommend ar 
+		WHERE ar.disabled = 0
+		AND ar.recommend_range_type = 0 
+		AND ar.recommend_status = 1
+  </select> 
+  <!-- 查询范围为全国的推荐活动  end -->
+  
+   
+</mapper>

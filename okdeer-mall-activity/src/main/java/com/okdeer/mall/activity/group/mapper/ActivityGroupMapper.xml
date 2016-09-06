@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.group.mapper.ActivityGroupMapper" >
+  
+  <!-- 活动团购列 -->
+  <sql id="activityGroupColumn" >
+    id, name,store_id, belong_type,start_time,end_time,contact,tel,description,status,area_type,belong_type,
+    approval_status,approval_user_id,approval_time,approval_reason,create_time ,update_time,create_user_id,disabled
+  </sql>
+  
+  <!-- 活动团购和地区关联列 -->
+  <sql id="activityGroupAreaColumn">
+  	id,group_id,area_id,area_name
+  </sql>
+  
+  <!-- 活动团购和小区关联列 -->
+  <sql id="activityGroupCommuntityColumn">
+  	id,group_id,community_id,community_name
+  </sql>
+  
+  <!-- 活动团购条件 -->
+  <sql id="condition" >
+     <if test="name !=null and name != ''">
+ 		name = #{name,jdbcType=VARCHAR},
+	</if>
+	<if test="startTime !=null">
+		start_time = #{startTime,jdbcType=TIMESTAMP},
+	</if>
+	<if test="endTime != null">
+		end_time = #{endTime,jdbcType=TIMESTAMP},
+	</if>
+	<if test="contact !=null and contact != ''">
+		contact = #{contact,jdbcType=VARCHAR},
+	</if>
+	<if test="tel !=null and tel != ''">
+		tel = #{tel,jdbcType=VARCHAR},
+	</if>
+	<if test="description != null and description !=''">
+		description = #{description,jdbcType=VARCHAR},
+	</if>
+	<if test="status !=null and status != ''">
+		status = #{status,jdbcType=INTEGER},
+	</if>
+	<if test="sort !=null and sort != ''">
+		sort = #{sort,jdbcType=INTEGER},
+	</if>
+	<if test="areaType != null and areaType !=''">
+		area_type = #{areaType,jdbcType=INTEGER},
+	</if>
+	<if test="approvalStatus !=null and approvalStatus != ''">
+		approval_status = #{approvalStatus,jdbcType=INTEGER},
+	</if>
+	<if test="approvalReason !=null and approvalReason != ''">
+		approval_reason = #{approvalReason,jdbcType=VARCHAR},
+	</if>
+	<if test="approvalTime !=null">
+		approval_time = #{approvalTime,jdbcType=TIMESTAMP},
+	</if>
+	<if test="updateTime != null">
+		update_time = #{updateTime,jdbcType=TIMESTAMP},
+	</if>
+	<if test="disabled != null">
+		disabled = #{disabled,jdbcType=INTEGER},
+	</if>
+  </sql>
+  
+  
+  
+  <sql id="queryCondition" >
+     <if test="name !=null and name != ''">
+ 		AND name = #{name,jdbcType=VARCHAR}
+	</if>
+	<if test="startTime !=null">
+		AND start_time = #{startTime,jdbcType=TIMESTAMP}
+	</if>
+	<if test="endTime != null">
+		AND end_time = #{endTime,jdbcType=TIMESTAMP}
+	</if>
+	<if test="contact !=null and contact != ''">
+		AND contact = #{contact,jdbcType=VARCHAR}
+	</if>
+	<if test="tel !=null and tel != ''">
+		AND tel = #{tel,jdbcType=VARCHAR}
+	</if>
+	<if test="description != null and description !=''">
+		AND description = #{description,jdbcType=VARCHAR}
+	</if>
+	<if test="status !=null and status != ''">
+		AND status = #{status,jdbcType=VARCHAR}
+	</if>
+	<if test="sort !=null and sort != ''">
+		AND sort = #{sort,jdbcType=INTEGER}
+	</if>
+	<if test="areaType != null and areaType !=''">
+		AND area_type = #{areaType,jdbcType=INTEGER}
+	</if>
+	<if test="approvalStatus !=null and approvalStatus != ''">
+		AND approval_status = #{approvalStatus,jdbcType=VARCHAR}
+	</if>
+	<if test="approvalReason !=null and approvalReason != ''">
+		AND approval_reason = #{approvalReason,jdbcType=VARCHAR}
+	</if>
+	<if test="approvalTime !=null">
+		AND approval_time = #{approvalTime,jdbcType=TIMESTAMP}
+	</if>
+	<if test="updateTime != null">
+		AND update_time = #{updateTime,jdbcType=TIMESTAMP}
+	</if>
+  </sql>
+  
+  <!-- 活动团购 map -->
+  <resultMap id="activityGroupMap" type="com.okdeer.mall.activity.group.entity.ActivityGroup">
+     <id column="id" property="id" jdbcType="VARCHAR" />
+     <result column="name" property="name" jdbcType="VARCHAR" />
+     <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+      <result column="belong_type" property="belongType" jdbcType="VARCHAR" />
+     <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+     <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+     <result column="contact" property="contact" jdbcType="VARCHAR" />
+     <result column="tel" property="tel" jdbcType="VARCHAR" />
+     <result column="description" property="description" jdbcType="VARCHAR" />
+     <result column="status" property="status" jdbcType="INTEGER" />
+     <result column="sort" property="sort" jdbcType="INTEGER" />
+     <result column="area_type" property="areaType" jdbcType="VARCHAR" />
+     <result column="approval_status" property="approvalStatus" jdbcType="INTEGER" />
+      <result column="approval_reason" property="approvalReason" jdbcType="VARCHAR" />
+     <result column="approval_time" property="approvalTime" jdbcType="TIMESTAMP" />
+     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+     <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+     <result column="disabled" property="disabled" jdbcType="INTEGER" />
+ </resultMap> 
+ 
+ <!-- 活动团购和地区关联map -->
+ <resultMap id="activityGroupAreaMap" type="com.okdeer.mall.activity.group.entity.ActivityGroupArea" >
+ 	 <id column="id" property="id" jdbcType="VARCHAR" />
+ 	  <result column="group_id" property="groupId" jdbcType="VARCHAR" />
+ 	   <result column="area_id" property="areaId" jdbcType="VARCHAR" />
+ 	    <result column="area_name" property="areaName" jdbcType="VARCHAR" />
+ </resultMap>
+ 
+ <!-- 活动团购和小区关联 map -->
+ <resultMap id="activityGroupCommuntityMap" type="com.okdeer.mall.activity.group.entity.ActivityGroupCommuntity" >
+ 	 <id column="id" property="id" jdbcType="VARCHAR" />
+ 	  <result column="group_id" property="groupId" jdbcType="VARCHAR" />
+ 	   <result column="community_id" property="communityId" jdbcType="VARCHAR" />
+ 	   <result column="community_name" property="communityName" jdbcType="VARCHAR" />
+ </resultMap>
+  
+  
+  <!-- 新增团购活动 -->
+  <insert id="insert" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroup" >
+  		INSERT INTO activity_group ( 
+  			id, name, store_id,belong_type,start_time,end_time,contact,tel,description,status,area_type,approval_status,
+  					approval_time,create_time ,update_time,create_user_id,update_user_id,disabled)
+  		VALUES(
+  			#{id,jdbcType=VARCHAR},#{name,jdbcType=VARCHAR},#{storeId,jdbcType=VARCHAR},#{belongType,jdbcType=VARCHAR},
+  			#{startTime,jdbcType=TIMESTAMP},#{endTime,jdbcType=TIMESTAMP},
+  			#{contact,jdbcType=VARCHAR},#{tel,jdbcType=VARCHAR},#{description,jdbcType=VARCHAR},#{status,jdbcType=INTEGER},
+  			#{areaType,jdbcType=INTEGER},#{approvalStatus,jdbcType=INTEGER},#{approvalTime,jdbcType=TIMESTAMP},
+  			#{createTime,jdbcType=TIMESTAMP},#{updateTime,jdbcType=TIMESTAMP},#{createUserId,jdbcType=VARCHAR},#{updateUserId,jdbcType=VARCHAR},#{disabled,jdbcType=INTEGER}
+  		)
+  </insert>
+  
+  <!-- 更新团购活动  -->
+  <update id="update" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroup">
+  		UPDATE activity_group 
+  		<set>
+  			<include refid="condition" />
+  		</set>
+  		WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+    
+  <!-- 删除团购活动 -->
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+  		UPDATE activity_group SET disabled = '1' WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+   <!-- 根据ID查询团购活动 -->
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="activityGroupMap">
+  		SELECT <include refid="activityGroupColumn" /> FROM activity_group WHERE id = #{id,jdbcType=VARCHAR} AND disabled != '1'
+  </select>
+  
+  <select id="selectServiceTime" parameterType="java.lang.String" resultMap="activityGroupMap">
+  	 SELECT * FROM activity_group AS ag WHERE id = #{id,jdbcType=VARCHAR} 
+  	 AND 
+    <![CDATA[ Date_format(now(),'%Y-%m-%d %H:%i') < DATE_FORMAT(ag.end_time,'%Y-%m-%d %H:%i')]]> and status =1
+  </select>
+  
+  <select id="selectGroupStatus" parameterType="java.lang.String" resultMap="activityGroupMap">
+  	 SELECT * FROM activity_group AS ag WHERE id = #{id,jdbcType=VARCHAR} 
+  </select>
+  
+  <!-- 获取所有团购活动 -->
+  <select id="findActivityGroups"  parameterType="com.okdeer.mall.activity.group.entity.ActivityGroup" resultMap="activityGroupMap">
+  		SELECT <include refid="activityGroupColumn" /> FROM activity_group WHERE disabled != '1' 
+  		<if test="name != null and name !=''">
+  			AND	name LIKE CONCAT('%',#{name},'%')
+  		</if>
+  		<if test="startTime !=null">
+			AND start_time <![CDATA[>= ]]> #{startTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="endTime != null">
+			AND end_time <![CDATA[<= ]]> #{endTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="createTimeStart != null">
+			AND create_time <![CDATA[>= ]]>  #{createTimeStart,jdbcType=TIMESTAMP}
+		</if>
+		<if test="createTimeEnd != null">
+			AND create_time <![CDATA[<= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+		</if>
+		<if test="status != null and status !=''">
+			AND status =  #{status,jdbcType=INTEGER}
+		</if>
+		<if test="approvalStatus != null and approvalStatus !=''">
+			AND approval_status = #{approvalStatus,jdbcType=INTEGER}
+		</if>
+  		order by create_time desc
+  </select>
+  
+  <select id="findActivityGroupsByPrames" resultMap="activityGroupMap" parameterType="java.util.Map">
+  	SELECT <include refid="activityGroupColumn" /> FROM activity_group WHERE disabled != '1' 
+  	 <if test="name != null and name !=''">
+  			AND	name LIKE CONCAT('%',#{name},'%')
+  		</if>
+  		<if test="startTime !=null">
+			AND start_time <![CDATA[>= ]]> #{startTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="endTime != null">
+			AND end_time  <![CDATA[<= ]]> #{endTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="createTimeStart != null">
+			AND create_time <![CDATA[>= ]]>  #{createTimeStart,jdbcType=TIMESTAMP}
+		</if>
+		<if test="createTimeEnd != null">
+			AND create_time <![CDATA[<= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+		</if>
+		<if test="status != null and status !=''">
+			AND status =  #{status,jdbcType=INTEGER}
+		</if>
+		<if test="approvalStatus != null and approvalStatus !=''">
+			AND approval_status = #{approvalStatus,jdbcType=INTEGER}
+		</if>
+		<if test="storeId != null and storeId !=''">
+			AND store_id = #{storeId,jdbcType=VARCHAR}
+		</if>
+  		order by create_time desc
+  	
+  </select>
+  
+  <select id="findActivityGroupList" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroup" resultMap="activityGroupMap">
+  	SELECT <include refid="activityGroupColumn" /> FROM activity_group WHERE disabled != '1' 
+  	<include refid="queryCondition" />
+  </select>
+  
+  <!-- 添加团购和区域关联 -->
+  <insert id="insertActivityGroupArea" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroupArea">
+  		INSERT INTO activity_group_area(id,group_id,area_id,area_name)
+  		VALUES(#{id,jdbcType=VARCHAR},#{groupId,jdbcType=VARCHAR},#{areaId,jdbcType=VARCHAR},#{areaName,jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- 添加团购和小区关联 -->
+  <insert id="insertActivityGroupCommuntity" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroupCommuntity">
+  		INSERT INTO activity_group_community(id,group_id,community_id,community_name)
+  		VALUES(#{id,jdbcType=VARCHAR},#{groupId,jdbcType=VARCHAR},#{communityId,jdbcType=VARCHAR},#{communityName,jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- 删除团购和区域关联 -->
+  <delete id="deleteActivityGroupArea" parameterType="java.lang.String">
+  		DELETE FROM activity_group_area WHERE group_id = #{groupId,jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 删除团购和小区关联  -->
+  <delete id="deleteActivityGroupCommuntity" parameterType="java.lang.String">
+  		DELETE FROM activity_group_community WHERE group_id = #{groupId,jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 根据团购ID查询团购和区域关联 -->
+  <select id="findActivityGroupAreas" parameterType="java.lang.String" resultMap="activityGroupAreaMap">
+  	SELECT <include refid="activityGroupAreaColumn"/> FROM activity_group_area WHERE group_id = #{groupId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据团购ID查询团购和小区关联-->
+  <select id="findActivityGroupCommuntitys" parameterType="java.lang.String" resultMap="activityGroupCommuntityMap">
+  	SELECT <include refid="activityGroupCommuntityColumn"/> FROM activity_group_community WHERE group_id = #{groupId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 用户app云团购查询 活动发布区域是否在用户所在范围内 zhongy start -->
+  <select id="selectAreaBygroupIdAndAreaId" resultMap="activityGroupAreaMap">
+  	SELECT <include refid="activityGroupAreaColumn"/> FROM activity_group_area 
+  	WHERE group_id = #{activityId,jdbcType=VARCHAR}
+  	 AND  area_id = #{areaId,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="selectCommuntitysBygroupIdAndAreaId" resultMap="activityGroupCommuntityMap">
+  	SELECT <include refid="activityGroupCommuntityColumn"/> FROM activity_group_community 
+  	WHERE group_id = #{activityId,jdbcType=VARCHAR}
+  	AND community_id = #{communityId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 用户app云团购查询 活动发布区域是否在用户所在范围内 zhongy end -->
+  
+  
+  
+  <!-- 根据店铺skuid查询商品信息 -->
+<!--   <select id="getActivityGroupGoodsBySkuId" parameterType="java.lang.String" resultType="com.okdeer.mall.goods.spu.vo.ActivityGroupGoodsVo">
+  		SELECT c.`name` as goodsName ,a.`bar_code` as barcode,d.`name` as categoryName,
+  		e.`spu_type` as goodsType,a.`market_price` as salePrice,f.`sellable`  as goodsStock
+		FROM goods_store_sku a 
+		LEFT JOIN goods_sku b ON a.`sku_id` = b.`id` 
+		LEFT JOIN goods_spu c ON b.`spu_id` = c.`id`
+		LEFT JOIN goods_spu_category d ON c.`spu_category_id` = d.`id` 
+		LEFT JOIN goods_spu_category_spu_type e ON c.`id` = e.`spu_category_id` 
+		LEFT JOIN goods_store_sku_stock f ON a.`id` = f.`store_sku_id`
+		 WHERE a.`sku_id` = #{storeSkuId}
+  </select> -->
+  
+ 
+  
+  <select id="findCommuntityByCityId" parameterType="java.lang.String" resultType="com.okdeer.archive.system.entity.PsmsSmallCommunityInfo">
+  	SELECT id,name,agent_id as agentId FROM psms_small_community_info WHERE disabled = '0' AND city_id = #{cityId}
+  	<if test="agentId !=null and agentId != ''">
+  		AND agent_id = #{agentId}
+  	</if>
+  </select>
+  
+  <select id="findCommuntity" parameterType="java.lang.String" resultType="com.okdeer.archive.system.entity.PsmsSmallCommunityInfo">
+  	SELECT id,name,agent_id as agentId,city_id as cityId FROM psms_small_community_info WHERE disabled = '0' AND id = #{id}
+
+  </select>
+  
+  <select id="getPsmsAgent" parameterType="java.lang.String" resultType="com.okdeer.archive.system.entity.PsmsAgent">
+  	SELECT id,full_name as fullName,mobile FROM psms_agent WHERE disabled = '0' AND id = #{id}
+  </select>
+
+<select id="selectUnApprovalNum" parameterType="map" resultType="java.lang.Integer">
+  	SELECT count(1) FROM activity_group WHERE store_id = #{storeId,jdbcType=VARCHAR} AND disabled = 0 
+  	<if test="approvalStatus != null">
+		AND approval_status = #{approvalStatus,jdbcType=INTEGER}
+	</if>
+  	<if test="status != null">
+		AND status = #{status,jdbcType=INTEGER}
+	</if>
+  </select>
+ 
+    <!-- 根据ID查询团购活动 已经开始-->
+  <select id="selectById" parameterType="java.lang.String" resultMap="activityGroupMap">
+  		SELECT <include refid="activityGroupColumn" /> FROM activity_group WHERE id = #{id,jdbcType=VARCHAR} AND disabled != '1' AND status = 1
+  </select>
+  
+</mapper>

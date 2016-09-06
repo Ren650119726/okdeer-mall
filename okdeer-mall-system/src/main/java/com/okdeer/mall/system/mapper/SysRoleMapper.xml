@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.system.mapper.SysRoleMapper">
+	<resultMap id="BaseResultMap" type="com.okdeer.archive.system.entity.SysRole">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+	    <result column="name" property="name" jdbcType="VARCHAR" />
+	    <result column="role_code" property="roleCode" jdbcType="VARCHAR" />
+	    <result column="sort" property="sort" jdbcType="INTEGER" />
+	    <result column="del_flag" property="delFlag" jdbcType="VARCHAR" />
+	    <result column="description" property="description" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		id, name,role_code, sort, del_flag,description
+	</sql>
+	
+	<sql id="condition" >
+	    <if test="null!=params" >
+	      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+	        ${params.queryCondition}
+	      </if>
+	     </if>
+	</sql> 
+	
+	<select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	     FROM sys_role WHERE 1=1 and DEL_FLAG='0'
+	    <include refid="condition" />
+	    ORDER BY SORT ASC
+	</select>
+	
+	<select id="findSysRole" resultMap="BaseResultMap" parameterType="java.lang.String" >
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	    FROM sys_role
+	    WHERE id = #{id}
+	    AND del_flag='0'
+	    ORDER BY SORT ASC
+	</select>
+	
+	<select id="findSelective" resultMap="BaseResultMap" parameterType="com.okdeer.archive.system.entity.SysRole" >
+	     SELECT 
+	     <include refid="Base_Column_List" />
+	     FROM sys_role 
+			<trim prefix="where" suffixOverrides="and">
+				      <if test="id != null" >
+				        id = #{id} AND
+				      </if>
+				      <if test="name != null" >
+				        name = #{name} AND
+				      </if>
+				      <if test="roleCode != null" >
+				        roleCode = #{roleCode} AND
+				      </if>
+				      <if test="sort != null" >
+				        sort = #{sort} AND
+				      </if>
+				      <if test="description != null" >
+				        description = #{description} AND
+				      </if>
+			</trim>
+	     AND DEL_FLAG='0'
+	     ORDER BY SORT ASC
+	</select>
+	
+    <select id="findRoleList" resultMap="BaseResultMap">
+       SELECT * FROM sys_role WHERE del_flag='0'
+		ORDER BY SORT ASC
+    </select>
+    
+    <!-- 
+    <select id="findRoleList" resultMap="BaseResultMap">
+       SELECT * FROM sys_role WHERE id IN
+		<foreach collection="roleIds" index="index" item="item" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+		AND del_flag='0'
+		ORDER BY SORT ASC
+    </select> -->
+	
+ 	<insert id="insertRole" parameterType="com.okdeer.archive.system.entity.SysRole" >
+	    INSERT INTO sys_role
+	    <trim prefix="(" suffix=")" suffixOverrides="," >
+	      <if test="id != null" >
+	        id,
+	      </if>
+	      <if test="name != null" >
+	        name,
+	      </if>
+	      <if test="roleCode != null" >
+	        role_code,
+	      </if>
+	      <if test="sort != null" >
+	        sort,
+	      </if>
+	       <if test="description != null" >
+	        description,
+	      </if>
+	       <if test="delFlag != null" >
+	        del_flag,
+	      </if>
+	    </trim>
+	    <trim prefix="VALUES (" suffix=")" suffixOverrides="," >
+	      <if test="id != null" >
+	        #{id},
+	      </if>
+	      <if test="name != null" >
+	        #{name},
+	      </if>
+	      <if test="roleCode != null" >
+	        #{roleCode},
+	      </if>
+	       <if test="sort != null" >
+	        #{sort},
+	      </if>
+	      <if test="description != null" >
+	        #{description},
+	      </if>
+	      <if test="delFlag != null" >
+	        #{delFlag},
+	      </if>
+	    </trim>
+    </insert>
+
+	<update id="updateRole" parameterType="com.okdeer.archive.system.entity.SysRole" >
+	    UPDATE sys_role
+	    <set >
+	      <if test="name != null" >
+	        name = #{name},
+	      </if>
+	      <if test="roleCode != null" >
+	        role_code = #{roleCode},
+	      </if>
+	      <if test="sort != null" >
+	        sort = #{sort},
+	      </if>
+	      <if test="description != null" >
+	        description = #{description},
+	      </if>
+	      <if test="delFlag != null" >
+	        del_flag = #{delFlag},
+	      </if>
+	    </set>
+	    WHERE id = #{id}
+    </update>
+
+</mapper>

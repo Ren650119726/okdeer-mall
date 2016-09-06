@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.discount.mapper.ActivityDiscountRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="discount_id" property="discountId" jdbcType="VARCHAR" />
+    <result column="discount_conditions_id" property="discountConditionsId" jdbcType="VARCHAR" />
+    <result column="discount_type" property="discountType" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.discount.enums.ActivityDiscountType"/>
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="order_time" property="orderTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, discount_id, discount_conditions_id, discount_type, user_id, store_id, order_id, 
+    order_time
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from activity_discount_record
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_discount_record WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM activity_discount_record
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord" >
+    insert into activity_discount_record (id, discount_id, discount_conditions_id, 
+      discount_type, user_id, store_id, 
+      order_id, order_time)
+    values (#{id,jdbcType=VARCHAR}, #{discountId,jdbcType=VARCHAR}, #{discountConditionsId,jdbcType=VARCHAR}, 
+      #{discountType,jdbcType=BIT}, #{userId,jdbcType=VARCHAR}, #{storeId,jdbcType=VARCHAR}, 
+      #{orderId,jdbcType=VARCHAR}, #{orderTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord" >
+    insert into activity_discount_record
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="discountId != null" >
+        discount_id,
+      </if>
+      <if test="discountConditionsId != null" >
+        discount_conditions_id,
+      </if>
+      <if test="discountType != null" >
+        discount_type,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="storeId != null" >
+        store_id,
+      </if>
+      <if test="orderId != null" >
+        order_id,
+      </if>
+      <if test="orderTime != null" >
+        order_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="discountId != null" >
+        #{discountId,jdbcType=VARCHAR},
+      </if>
+      <if test="discountConditionsId != null" >
+        #{discountConditionsId,jdbcType=VARCHAR},
+      </if>
+      <if test="discountType != null" >
+        #{discountType,jdbcType=BIT},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeId != null" >
+        #{storeId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderTime != null" >
+        #{orderTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- @author yangq 添加活动使用记录 begin -->
+  <insert id="insertRecord" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord" >
+    insert into activity_discount_record
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="discountId != null" >
+        discount_id,
+      </if>
+      <if test="discountConditionsId != null" >
+        discount_conditions_id,
+      </if>
+      <if test="discountType != null" >
+        discount_type,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="storeId != null" >
+        store_id,
+      </if>
+      <if test="orderId != null" >
+        order_id,
+      </if>
+      <if test="orderTime != null" >
+        order_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="discountId != null" >
+        #{discountId,jdbcType=VARCHAR},
+      </if>
+      <if test="discountConditionsId != null" >
+        #{discountConditionsId,jdbcType=VARCHAR},
+      </if>
+      <if test="discountType != null" >
+        #{discountType,jdbcType=BIT},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeId != null" >
+        #{storeId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderTime != null" >
+        #{orderTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <!-- @author yangq 添加活动使用记录  end -->
+  
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord" >
+    update activity_discount_record
+    <set >
+      <if test="discountId != null" >
+        discount_id = #{discountId,jdbcType=VARCHAR},
+      </if>
+      <if test="discountConditionsId != null" >
+        discount_conditions_id = #{discountConditionsId,jdbcType=VARCHAR},
+      </if>
+      <if test="discountType != null" >
+        discount_type = #{discountType,jdbcType=BIT},
+      </if>
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeId != null" >
+        store_id = #{storeId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        order_id = #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderTime != null" >
+        order_time = #{orderTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord" >
+    update activity_discount_record
+    set discount_id = #{discountId,jdbcType=VARCHAR},
+      discount_conditions_id = #{discountConditionsId,jdbcType=VARCHAR},
+      discount_type = #{discountType,jdbcType=BIT},
+      user_id = #{userId,jdbcType=VARCHAR},
+      store_id = #{storeId,jdbcType=VARCHAR},
+      order_id = #{orderId,jdbcType=VARCHAR},
+      order_time = #{orderTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

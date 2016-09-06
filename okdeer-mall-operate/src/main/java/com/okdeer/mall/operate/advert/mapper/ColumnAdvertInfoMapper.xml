@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.advert.mapper.ColumnAdvertInfoMapper">
+	<resultMap type="com.okdeer.mall.advert.entity.ColumnAdvertInfo" id="columnAdvertInfoRsMap">
+		<id column="id" property="id" jdbcType="VARCHAR"/>
+		<result column="advert_id" property="advertId" jdbcType="VARCHAR"/>
+		<result column="advertiser" property="advertiser" jdbcType="VARCHAR"/>
+		<result column="contact" property="contact" jdbcType="VARCHAR"/>
+		<result column="phone" property="phone" jdbcType="VARCHAR"/>
+		<result column="cost" property="cost" jdbcType="DECIMAL"/>
+		<result column="protocol_url" property="protocolUrl" jdbcType="VARCHAR"/>
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+		<result column="create_user_id" property="createUserId" jdbcType="VARCHAR"/>
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+		<result column="update_user_id" property="updateUserId" jdbcType="VARCHAR"/>
+	</resultMap>
+
+	<sql id="base_column_list">
+		id, advert_id, advertiser, contact, phone, cost, protocol_url, 
+		create_time, create_user_id, update_time, update_user_id
+	</sql>
+
+	<insert id="insert" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertInfo">
+		INSERT INTO column_advert_info(id, advert_id, advertiser, contact, phone, cost, protocol_url, 
+				create_time, create_user_id, update_time, update_user_id)
+		VALUES (#{id, jdbcType=VARCHAR}, #{advertId, jdbcType=VARCHAR}, #{advertiser, jdbcType=VARCHAR},
+				#{contact, jdbcType=VARCHAR}, #{phone, jdbcType=VARCHAR}, #{cost, jdbcType=DECIMAL},
+				#{protocolUrl, jdbcType=VARCHAR}, #{createTime, jdbcType=TIMESTAMP}, #{createUserId, jdbcType=VARCHAR},
+				#{updateTime, jdbcType=TIMESTAMP}, #{updateUserId, jdbcType=VARCHAR})
+	</insert>
+	
+	<insert id="insertSelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertInfo">
+		INSERT INTO column_advert_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="advertId != null">
+				advert_id,
+			</if>
+			<if test="advertiser != null">
+				advertiser,
+			</if>
+			<if test="contact != null">
+				contact,
+			</if>
+			<if test="phone != null">
+				phone,
+			</if>
+			<if test="cost != null">
+				cost,
+			</if>
+			<if test="protocolUrl != null">
+				protocol_url,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="createUserId != null">
+				create_user_id,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="updateUserId != null">
+				update_user_id
+			</if>		
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id, jdbcType=VARCHAR},
+			</if>
+			<if test="advertId != null">
+				#{advertId, jdbcType=VARCHAR},
+			</if>
+			<if test="advertiser != null">
+				#{advertiser, jdbcType=VARCHAR},
+			</if>			
+			<if test="contact != null">
+				#{contact, jdbcType=VARCHAR},
+			</if>			
+			<if test="phone != null">
+				#{phone, jdbcType=VARCHAR},
+			</if>			
+			<if test="cost != null">
+				#{cost, jdbcType=DECIMAL},
+			</if>			
+			<if test="protocolUrl != null">
+				#{protocolUrl, jdbcType=VARCHAR},
+			</if>			
+			<if test="createTime != null">
+				#{createTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="createUserId != null">
+				#{createUserId, jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime, jdbcType=TIMESTAMP},
+			</if>		
+			<if test="updateUserId != null">
+				 #{updateUserId, jdbcType=VARCHAR}
+			</if>				
+		</trim>
+	</insert>
+
+	<update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertInfo">
+		UPDATE column_advert_info
+		<set>
+			<if test="advertId != null">
+				advert_id = #{advertId, jdbcType=VARCHAR},
+			</if>
+			<if test="advertiser != null">
+				advertiser = #{advertiser, jdbcType=VARCHAR},
+			</if>			
+			<if test="contact != null">
+				contact = #{contact, jdbcType=VARCHAR},
+			</if>			
+			<if test="phone != null">
+				phone = #{phone, jdbcType=VARCHAR},
+			</if>			
+			<if test="cost != null">
+				cost = #{cost, jdbcType=DECIMAL},
+			</if>			
+			<if test="protocolUrl != null">
+				protocol_url = #{protocolUrl, jdbcType=VARCHAR},
+			</if>			
+			<if test="createTime != null">
+				create_time = #{createTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="createUserId != null">
+				create_user_id = #{createUserId, jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime, jdbcType=TIMESTAMP},
+			</if>		
+			<if test="updateUserId != null">
+				update_user_id = #{updateUserId, jdbcType=VARCHAR}
+			</if>		
+		</set>
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+
+	
+</mapper>

@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.crossBorderElectricity.mapper.OperateCrossBorderElectricityMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.OperateCrossBorderElectricity" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="image_url" property="imageUrl" jdbcType="VARCHAR" />
+    <result column="link_url" property="linkUrl" jdbcType="VARCHAR" />
+    <result column="electricity_name" property="electricityName" jdbcType="VARCHAR" />
+    <result column="sort" property="sort" jdbcType="INTEGER" />
+    <result column="disabled" property="disabled" javaType="com.yschome.base.common.enums.Disabled" jdbcType="TINYINT"/>
+    <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, image_url, link_url, electricity_name, sort, disabled, create_user_id, create_time, 
+    update_user_id, update_time
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  
+  <!-- 根据主键id查询跨境电商设置信息 -->
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM operate_cross_border_electricity
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据条件查询跨境电商设置列表信息（参数map类型） -->
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM operate_cross_border_electricity WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  
+  <!-- 根据主键id删除跨境电商设置信息 -->
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM operate_cross_border_electricity
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 插入跨境电商设置信息 -->
+  <insert id="insert" parameterType="com.okdeer.mall.operate.entity.OperateCrossBorderElectricity" >
+    INSERT INTO operate_cross_border_electricity (id, image_url, link_url, 
+      electricity_name, sort, disabled, 
+      create_user_id, create_time, update_user_id, 
+      update_time)
+    VALUES (#{id,jdbcType=VARCHAR}, #{imageUrl,jdbcType=VARCHAR}, #{linkUrl,jdbcType=VARCHAR}, 
+      #{electricityName,jdbcType=VARCHAR}, #{sort,jdbcType=INTEGER}, #{disabled,jdbcType=TINYINT}, 
+      #{createUserId,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateUserId,jdbcType=VARCHAR}, 
+      #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+  
+  <!-- 判断是否为空，插入跨境电商设置信息 -->
+  <insert id="insertSelective" parameterType="com.okdeer.mall.operate.entity.OperateCrossBorderElectricity" >
+    INSERT INTO operate_cross_border_electricity
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        id,
+      </if>
+      <if test="imageUrl != null and imageUrl != ''" >
+        image_url,
+      </if>
+      <if test="linkUrl != null and linkUrl != ''" >
+        link_url,
+      </if>
+      <if test="electricityName != null and electricityName != ''" >
+        electricity_name,
+      </if>
+      <if test="sort != null" >
+        sort,
+      </if>
+      <if test="disabled != null" >
+        disabled,
+      </if>
+      <if test="createUserId != null" >
+        create_user_id,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateUserId != null" >
+        update_user_id,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="imageUrl != null and imageUrl != ''" >
+        #{imageUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="linkUrl != null and linkUrl != ''" >
+        #{linkUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="electricityName != null and electricityName != ''" >
+        #{electricityName,jdbcType=VARCHAR},
+      </if>
+      <if test="sort != null" >
+        #{sort,jdbcType=INTEGER},
+      </if>
+      <if test="disabled != null" >
+        #{disabled,jdbcType=TINYINT},
+      </if>
+      <if test="createUserId != null" >
+        #{createUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null" >
+        #{updateUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- 判断是否为空，根据主键id修改跨境电商设置信息 -->
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.operate.entity.OperateCrossBorderElectricity" >
+    UPDATE operate_cross_border_electricity
+    <set >
+      <if test="imageUrl != null and imageUrl != ''" >
+        image_url = #{imageUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="linkUrl != null and linkUrl != ''" >
+        link_url = #{linkUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="electricityName != null and electricityName != ''" >
+        electricity_name = #{electricityName,jdbcType=VARCHAR},
+      </if>
+      <if test="sort != null" >
+        sort = #{sort,jdbcType=INTEGER},
+      </if>
+      <if test="disabled != null" >
+        disabled = #{disabled,jdbcType=TINYINT},
+      </if>
+      <if test="createUserId != null" >
+        create_user_id = #{createUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null" >
+        update_user_id = #{updateUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 修改跨境电商设置信息 -->
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.operate.entity.OperateCrossBorderElectricity" >
+    UPDATE operate_cross_border_electricity
+    SET image_url = #{imageUrl,jdbcType=VARCHAR},
+      link_url = #{linkUrl,jdbcType=VARCHAR},
+      electricity_name = #{electricityName,jdbcType=VARCHAR},
+      sort = #{sort,jdbcType=INTEGER},
+      disabled = #{disabled,jdbcType=TINYINT},
+      create_user_id = #{createUserId,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_user_id = #{updateUserId,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 根据条件查询跨境电商设置列表信息（参数实体类型） -->
+  <select id="selectByParamsEntity" resultMap="BaseResultMap" parameterType="com.okdeer.mall.operate.entity.OperateCrossBorderElectricity">
+    SELECT
+    <include refid="Base_Column_List" />
+    FROM operate_cross_border_electricity
+    WHERE 1=1
+   <!--  <if test="disabled != null" >
+        AND disabled = #{disabled,jdbcType=TINYINT}
+    </if> -->
+    <if test="imageUrl != null and imageUrl != ''" >
+       AND image_url = #{imageUrl,jdbcType=VARCHAR}
+    </if>
+    <if test="linkUrl != null and linkUrl != ''" >
+       AND link_url = #{linkUrl,jdbcType=VARCHAR}
+    </if>
+    <if test="electricityName != null and electricityName != ''" >
+       AND electricity_name LIKE CONCAT('%',#{electricityName},'%')
+    </if>
+    <if test="sort != null" >
+       AND sort = #{sort,jdbcType=INTEGER}
+    </if>
+    <if test="createUserId != null and createUserId != ''" >
+       AND create_user_id = #{createUserId,jdbcType=VARCHAR}
+    </if>
+    <if test="updateUserId != null and updateUserId != ''" >
+       AND update_user_id = #{updateUserId,jdbcType=VARCHAR}
+    </if>
+    
+  </select>
+  
+   <!-- 批量删除 （逻辑删除） -->
+  <update id="deleteByIds">
+	 UPDATE operate_cross_border_electricity 
+	 SET disabled = #{disabled,jdbcType=TINYINT},
+	     update_time = #{updateTime,jdbcType=TIMESTAMP},
+	     update_user_id = #{updateUserId,jdbcType=VARCHAR}
+	 WHERE 
+	 <if test="ids != null ">
+		 id  in 
+		 <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+	        #{item}
+	     </foreach>
+     </if>
+     <if test="ids == null ">
+       1 = 2
+     </if>  
+   </update>
+   
+   <!-- 统计指定id集合的启用（或停用）状态的记录数量 -->
+   <select id="selectCountById" resultType="int">
+     SELECT COUNT(1)
+     FROM operate_cross_border_electricity
+     WHERE 
+      <if test="ids != null ">
+		 id  in 
+		 <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+	        #{item}
+	     </foreach>
+	     AND disabled = #{disabled,jdbcType=TINYINT}
+     </if>
+     <if test="ids == null ">
+       1 = 2
+     </if>  
+   </select>
+</mapper>

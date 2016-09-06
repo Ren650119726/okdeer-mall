@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.system.mapper.SysRolePermissionMapper">
+	<resultMap id="BaseResultMap" type="com.okdeer.archive.system.entity.SysRolePermission">
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="ROLE_ID" property="roleId" jdbcType="VARCHAR" />
+	    <result column="PERMISSION_ID" property="permissionId" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		id, role_id, permission_id
+	</sql> 
+	
+    <select id="findRoleRPPermission" parameterType="java.lang.String" resultType="java.lang.String">
+   		SELECT permission_id FROM sys_role_permission WHERE role_id = #{roleId}
+   </select>
+
+   <insert id="insert" parameterType="com.okdeer.archive.system.entity.SysRolePermission">
+   		INSERT INTO sys_role_permission(id,role_id,permission_id)VALUES(#{id},#{roleId},#{permissionId})
+   </insert>
+
+   <delete id="deleteRP" parameterType="com.okdeer.archive.system.entity.SysRolePermission">
+   		DELETE FROM sys_role_permission WHERE ROLE_ID = #{roleId} AND PERMISSION_ID = #{permissionId}
+   </delete>
+   
+</mapper>

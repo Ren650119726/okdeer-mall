@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.column.mapper.ServerColumnAreaMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.ServerColumnArea" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="column_server_id" property="columnServerId" jdbcType="VARCHAR" />
+    <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+    <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+    <result column="province_id" property="provinceId" jdbcType="VARCHAR" />
+    <result column="province_name" property="provinceName" jdbcType="VARCHAR" />
+  </resultMap>
+ 
+  <sql id="Base_Column_List" >
+    id, column_server_id, city_id, city_name, province_id, province_name
+  </sql>
+ 
+  <!-- 根据服务栏目id查询服务栏目关联区域信息 -->
+  <select id="findByServerColumnId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM column_server_area
+    WHERE column_server_id = #{serverColumnId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据服务栏目id删除服务栏目关联区域信息 -->
+  <delete id="deleteByServerColumnId" >
+    DELETE FROM column_server_area 
+	 WHERE column_server_id = #{serverColumnId,jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 插入服务栏目关联区域 -->
+  <insert id="insert" parameterType="com.okdeer.mall.operate.column.mapper.ServerColumnAreaMapper" >
+    INSERT INTO column_server_area (id, column_server_id, city_id, city_name, province_id, province_name)
+    VALUES (#{id,jdbcType=VARCHAR}, #{columnServerId,jdbcType=VARCHAR}, #{cityId,jdbcType=VARCHAR}, 
+      #{cityName,jdbcType=VARCHAR}, #{provinceId,jdbcType=VARCHAR}, #{provinceName,jdbcType=VARCHAR} )
+  </insert>
+
+  <!-- 新增多条数据  -->
+  <insert id="insertList">
+     INSERT INTO column_server_area (id, column_server_id, city_id, city_name, province_id, province_name)
+     VALUES
+     <foreach collection="serverColumnAreas" item="d" separator=",">
+         <trim>
+             (
+	             #{d.id,jdbcType=VARCHAR},
+	             #{d.columnServerId,jdbcType=VARCHAR},
+	             #{d.cityId,jdbcType=VARCHAR},
+	             #{d.cityName,jdbcType=VARCHAR},
+	             #{d.provinceId,jdbcType=VARCHAR},
+	             #{d.provinceName,jdbcType=VARCHAR}
+             )
+        </trim>
+     </foreach>
+   </insert>
+      
+  <!-- 根据城市名查询服务栏目id begin add by luosm 2016-07-18-->
+  <select id="findByCityName" resultType="java.lang.String" parameterType="java.lang.String" >
+    SELECT 
+     area.column_server_id
+     FROM column_server_area area
+     WHERE 1=1
+  	<if test="null != cityName and cityName != ''">
+        AND area.city_name =#{cityName,jdbcType=VARCHAR}
+  	</if>
+  	<if test="null != provinceName and provinceName != ''">
+        AND area.province_name =#{provinceName,jdbcType=VARCHAR}
+  	</if>
+  </select>
+  <!-- 根据城市名查询服务栏目id end add by luosm 2016-07-18-->
+  
+</mapper>

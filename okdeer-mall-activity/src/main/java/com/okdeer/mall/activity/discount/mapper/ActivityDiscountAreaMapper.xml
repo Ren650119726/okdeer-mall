@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.discount.mapper.ActivityDiscountAreaMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.discount.entity.ActivityDiscountArea" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="discount_id" property="discountId" jdbcType="VARCHAR" />
+    <result column="area_id" property="areaId" jdbcType="VARCHAR" />
+    <result column="type" property="type" javaType="com.okdeer.mall.common.enums.DistrictType" jdbcType="TINYINT"/>
+  </resultMap>
+  
+  <!-- 查询字段 -->
+  <sql id="Base_Column_List" >
+    id, discount_id, area_id, type
+  </sql>
+  
+  <!-- 查询条件 -->
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  
+  <!-- 根据主键id，查询满减活动区域信息 -->
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM activity_discount_area
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据查询条件，查询满减活动区域信息列表 -->
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_discount_area WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  
+  <!-- 根据主键id，删除满减活动区域信息 -->
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM activity_discount_area
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 插入满减活动区域信息 -->
+  <insert id="insert" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountArea" >
+    INSERT INTO activity_discount_area (id, discount_id, area_id, 
+      type)
+    VALUES (#{id,jdbcType=VARCHAR}, #{discountId,jdbcType=VARCHAR}, #{areaId,jdbcType=VARCHAR}, 
+      #{type,jdbcType=TINYINT})
+  </insert>
+  
+  <!-- 判断是否为空，插入满减活动区域信息 -->
+  <insert id="insertSelective" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountArea" >
+    INSERT INTO activity_discount_area
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        id,
+      </if>
+      <if test="discountId != null and discountId != ''" >
+        discount_id,
+      </if>
+      <if test="areaId != null and areaId != ''" >
+        area_id,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="discountId != null and discountId != ''" >
+        #{discountId,jdbcType=VARCHAR},
+      </if>
+      <if test="areaId != null and areaId != ''" >
+        #{areaId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- 判断是否为空，根据主键id修改满减活动区域信息 -->
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountArea" >
+    UPDATE activity_discount_area
+    <set >
+      <if test="discountId != null and discountId != ''" >
+        discount_id = #{discountId,jdbcType=VARCHAR},
+      </if>
+      <if test="areaId != null and areaId != ''" >
+        area_id = #{areaId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=TINYINT},
+      </if>
+    </set>
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 根据主键id，修改满减活动区域信息 -->
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountArea" >
+    UPDATE activity_discount_area
+    SET discount_id = #{discountId,jdbcType=VARCHAR},
+      area_id = #{areaId,jdbcType=VARCHAR},
+      type = #{type,jdbcType=TINYINT}
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  
+  <!--wusw： 批量新增活动区域关联信息 -->
+  <insert id="insertAreaBatch" parameterType="java.util.List">
+	INSERT INTO activity_discount_area (id, discount_id, area_id,type)
+	VALUES
+	<foreach collection="list" item="item" index="index" separator=",">
+		(#{item.id,jdbcType=VARCHAR}, #{item.discountId,jdbcType=VARCHAR}, 
+		#{item.areaId,jdbcType=VARCHAR}, #{item.type,jdbcType=TINYINT})
+	</foreach>
+  </insert>
+  
+  <!--wusw： 根据活动id，删除活动区域关联信息（物理删除） -->
+  <delete id="deleteByDiscountId">
+	 DELETE FROM activity_discount_area 
+	 WHERE 
+	 <if test="discountId != null ">
+		 discount_id  = #{discountId,jdbcType=VARCHAR}		
+     </if>
+     <if test="discountId == null ">
+      1 = 2
+     </if>  
+  </delete>
+</mapper>

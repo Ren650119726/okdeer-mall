@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.advert.mapper.ColumnAdvertApprovalMapper">
+	<resultMap type="com.okdeer.mall.advert.entity.ColumnAdvertApproval" id="advertApprovalRsMap">
+		<id column="id" property="id" jdbcType="VARCHAR"/>
+		<result column="advert_id" property="advertId" jdbcType="VARCHAR"/>
+		<result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.common.enums.AuditStatusEnum"/>
+		<result column="log" property="log" jdbcType="VARCHAR"/>
+		<result column="approval_time" property="approvalTime" jdbcType="TIMESTAMP"/>
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+		<result column="create_user_id" property="createUserId" jdbcType="VARCHAR"/>
+		<result column="update_time" property="updateTime" jdbcType="DATE"/>
+		<result column="update_user_id" property="updateUserId" jdbcType="VARCHAR"/>
+	</resultMap>
+
+	<sql id="base_column_list">
+		id, advert_id, status, log, approval_time, create_time, 
+		create_user_id, update_time, update_user_id
+	</sql>
+	
+	<insert id="insert" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertApproval">
+		INSERT INTO column_advert_approval(id, advert_id, status, log, approval_time, create_time, 
+			create_user_id, update_time, update_user_id)
+		VALUES (#{id, jdbcType=VARCHAR}, #{advertId, jdbcType=VARCHAR}, #{status, jdbcType=TINYINT},
+				#{log, jdbcType=VARCHAR}, #{approvalTime, jdbcType=TIMESTAMP}, #{createTime, jdbcType=TIMESTAMP},
+				#{createUserId, jdbcType=VARCHAR}, #{updateTime, jdbcType=TIMESTAMP}, #{updateUserId, jdbcType=VARCHAR})
+	</insert>
+
+	<select id="getApprovalByAdvertId" resultMap="advertApprovalRsMap">
+		SELECT <include refid="base_column_list"/> 
+		FROM column_advert_approval
+		WHERE advert_id = #{advertId, jdbcType=VARCHAR}
+	</select>
+
+	<insert id="insertSelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertApproval">
+		INSERT INTO column_advert_approval
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="advertId != null">
+				advert_id,
+			</if>
+			<if test="status != null">
+				status,
+			</if>
+			<if test="log != null">
+				log,
+			</if>					
+			<if test="approvalTime != null">
+				approval_time,
+			</if>		
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="createUserId != null">
+				create_user_id,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="updateUserId != null">
+				update_user_id
+			</if>		
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id, jdbcType=VARCHAR},
+			</if>
+			<if test="advertId != null">
+				#{advertId, jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				#{status, jdbcType=TINYINT},
+			</if>
+			<if test="log != null">
+				#{log, jdbcType=VARCHAR},
+			</if>					
+			<if test="approvalTime != null">
+				#{approvalTime, jdbcType=TIMESTAMP},
+			</if>		
+			<if test="createTime != null">
+				#{createTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="createUserId != null">
+				#{createUserId, jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateUserId != null">
+				#{updateUserId, jdbcType=VARCHAR}
+			</if>		
+		</trim>
+	</insert>
+	
+	<update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertApproval">
+		UPDATE column_advert_approval
+		<set>
+			<if test="advertId != null">
+				advert_id = #{advertId, jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				status = #{status, jdbcType=TINYINT},
+			</if>
+			<if test="log != null">
+				log = #{log, jdbcType=VARCHAR},
+			</if>					
+			<if test="approvalTime != null">
+				approval_time = #{approvalTime, jdbcType=TIMESTAMP},
+			</if>		
+			<if test="createTime != null">
+				create_time = #{createTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="createUserId != null">
+				create_user_id = #{createUserId, jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateUserId != null">
+				update_user_id = #{updateUserId, jdbcType=VARCHAR}
+			</if>
+		</set>
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+
+</mapper>

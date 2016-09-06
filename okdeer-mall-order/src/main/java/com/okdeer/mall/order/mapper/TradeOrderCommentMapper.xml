@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderCommentMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderComment" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="sku_id" property="skuId" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="user_name" property="userName" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="order_item_id" property="orderItemId" jdbcType="VARCHAR" />
+    <result column="content" property="content" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="star" property="star" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="TINYINT" javaType="com.yschome.base.common.enums.WhetherEnum"/>
+    <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" javaType="string"/>
+    <result column="store_spu_id" property="storeSpuId" jdbcType="VARCHAR" javaType="string"/>
+  </resultMap>
+  
+  <resultMap id="CommentResultMap" type="com.okdeer.mall.order.vo.TradeOrderCommentVo" extends="BaseResultMap">
+    <result column="pic_url" property="picUrl" jdbcType="VARCHAR" javaType="string"/>
+    <result column="login_name" property="loginName" jdbcType="VARCHAR" javaType="string"/>
+    <result column="nick_name" property="nickName" jdbcType="VARCHAR" javaType="string"/>
+    <association property="tradeOrderItem" javaType="com.okdeer.mall.order.entity.TradeOrderItem" >
+       <id column="item_id" property= "id" jdbcType="VARCHAR" javaType="string"/>
+       <result column="sku_name" property="skuName" jdbcType="VARCHAR" javaType="string"/>
+       <result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
+       <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+       <result column="quantity" property="quantity" jdbcType="DECIMAL" />
+       <result column="properties_indb" property="propertiesIndb" jdbcType="VARCHAR" />
+    </association>
+    <collection property="imagePaths" ofType="com.okdeer.mall.order.entity.TradeOrderCommentImage">
+      <id column="image_id" property="id" jdbcType="VARCHAR" />
+      <result column="image_path" property="imagePath" jdbcType="VARCHAR"/>
+    </collection>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, sku_id, user_id, user_name, order_id, order_item_id, content, create_time, star, store_spu_id, store_sku_id,
+    status
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.skuId and ''!=params.skuId" >
+         AND sku_id = #{params.skuId}
+      </if>
+      <if test="null!=params.userId and ''!=params.userId" >
+         AND user_id = #{params.userId}
+      </if>
+      <if test="null!=params.userName and ''!=params.userName" >
+         AND user_name = #{params.userName}
+      </if>
+      <if test="null!=params.orderId and ''!=params.orderId" >
+         AND order_id = #{params.orderId}
+      </if>
+      <if test="null!=params.orderItemId and ''!=params.orderItemId" >
+         AND order_item_id = #{params.orderItemId}
+      </if>
+      <if test="null!=params.storeSkuId and ''!=params.storeSkuId" >
+         AND store_sku_id = #{params.storeSkuId}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_comment
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="CommentResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM trade_order_comment WHERE 1=1 
+    <include refid="condition" />
+    AND status=1
+    ORDER BY create_time
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM trade_order_comment
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderComment" >
+    insert into trade_order_comment (id, sku_id, user_id, 
+      user_name, order_id, order_item_id, 
+      content, create_time, star, 
+      status, store_spu_id, store_sku_id)
+    values (#{id,jdbcType=VARCHAR}, #{skuId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, 
+      #{userName,jdbcType=VARCHAR}, #{orderId,jdbcType=VARCHAR}, #{orderItemId,jdbcType=VARCHAR}, 
+      #{content,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{star,jdbcType=INTEGER}, 
+      #{status,jdbcType=TINYINT}, #{storeSpuId,jdbcType=VARCHAR}, #{storeSkuId,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderComment" >
+    insert into trade_order_comment
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="skuId != null" >
+        sku_id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="userName != null" >
+        user_name,
+      </if>
+      <if test="orderId != null" >
+        order_id,
+      </if>
+      <if test="orderItemId != null" >
+        order_item_id,
+      </if>
+      <if test="content != null" >
+        content,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="star != null" >
+        star,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="storeSpuId != null" >
+        store_spu_id,
+      </if>
+      <if test="storeSkuId != null" >
+        store_sku_id
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="skuId != null" >
+        #{skuId,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null" >
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderItemId != null" >
+        #{orderItemId,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="star != null" >
+        #{star,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=TINYINT},
+      </if>
+      <if test="storeSpuId != null" >
+         #{storeSpuId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeSkuId != null" >
+        #{storeSkuId,jdbcType=VARCHAR}
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- zengj:查询评价信息 -->
+  <select id="selectCommentByParams" parameterType="map" resultMap="CommentResultMap">
+  	SELECT c.id, c.sku_id, c.user_id, c.user_name, c.order_id, c.order_item_id, c.content, c.create_time, c.star, 
+    c.status,ci.id as image_id,ci.image_path
+    FROM trade_order_comment AS c left join trade_order_comment_image AS ci ON c.id = ci.comment_id
+    WHERE 1=1
+    <if test="orderId != null and orderId != ''">
+       AND c.order_id = #{orderId, jdbcType=VARCHAR}
+    </if>
+    <if test="orderItemId != null and orderItemId != ''">
+       AND c.order_item_id = #{orderItemId, jdbcType=VARCHAR}
+    </if>
+    <if test="skuId != null and skuId != ''">
+       AND c.sku_id = #{skuId, jdbcType=VARCHAR}
+    </if>
+    <if test="storeSkuId != null and storeSkuId != ''">
+       AND c.store_sku_id = #{storeSkuId, jdbcType=VARCHAR}
+    </if>
+    <if test="commentId != null and commentId != ''">
+       AND c.id = #{commentId, jdbcType=VARCHAR}
+    </if>
+  </select>
+  
+<!--   zhulq:商品评价列表信息查询 -->
+  <select id="selectByStoreSkuId" resultMap="CommentResultMap" parameterType="com.okdeer.mall.order.entity.TradeOrderComment">
+    SELECT c.id, c.sku_id, c.user_id, c.user_name, c.order_id, c.order_item_id, c.content, user.nick_name, 
+    user.login_name, c.create_time, c.star, c.store_sku_id, c.status, ci.id as image_id, ci.image_path,
+    user.pic_url FROM trade_order_comment AS c 
+    LEFT JOIN trade_order_comment_image AS ci ON c.id = ci.comment_id
+    LEFT JOIN sys_buyer_user AS user ON user.id = c.user_id
+    WHERE 1 = 1
+    <if test="storeSkuId != null and storeSkuId != ''">
+       AND c.store_sku_id = #{storeSkuId, jdbcType=VARCHAR}
+    </if>
+    <if test="status != null">
+       AND c.status = #{status, jdbcType=TINYINT}
+    </if>
+    ORDER BY c.create_time DESC
+  </select>
+
+    <!-- zhulq:查询订单的评价信息 -->
+  <select id="selectOrderCommentByOrderId" parameterType="string" resultMap="CommentResultMap">
+    SELECT c.id, c.sku_id, c.user_id, c.user_name, c.order_id, c.order_item_id, c.content,  
+    c.create_time, c.star, c.store_sku_id, c.status, ci.id as image_id, ci.image_path,
+    item.sku_name, item.main_pic_prl, item.unit_price, item.quantity, item.properties_indb
+    FROM trade_order_comment AS c 
+    LEFT JOIN trade_order_comment_image AS ci ON c.id = ci.comment_id
+    LEFT JOIN trade_order_item AS item ON item.order_id = c.order_id AND c.order_item_id = item.id
+    WHERE 1=1
+    <if test="orderId != null and orderId != ''">
+       AND c.order_id = #{orderId, jdbcType=VARCHAR}
+    </if>
+  </select>
+  
+<!--   zhulq订单商品评论 -->
+  	<insert id="insertByBatch" parameterType="java.util.List">
+	  INSERT INTO trade_order_comment
+		(id, sku_id, user_id, user_name, order_id, order_item_id, content, create_time, star, status, store_spu_id, store_sku_id)
+		VALUES
+		<foreach collection="tradeOrderCommentList" item="item" index="index" separator="," >
+		 (#{item.id,jdbcType=VARCHAR}, #{item.skuId,jdbcType=VARCHAR}, #{item.userId,jdbcType=VARCHAR}, 
+     	 #{item.userName,jdbcType=VARCHAR}, #{item.orderId,jdbcType=VARCHAR}, #{item.orderItemId,jdbcType=VARCHAR}, 
+     	 #{item.content,jdbcType=VARCHAR}, #{item.createTime,jdbcType=TIMESTAMP}, #{item.star,jdbcType=INTEGER}, 
+     	 #{item.status,jdbcType=TINYINT}, #{item.storeSpuId,jdbcType=VARCHAR}, #{item.storeSkuId,jdbcType=VARCHAR})
+		</foreach>
+	</insert>
+	
+    <!--sku评论总条数-->
+  <select id="selectSkuCommentCount" parameterType="string" resultType="integer">
+    SELECT COUNT(1) FROM trade_order_comment WHERE store_sku_id = #{skuId}
+  </select>
+  
+  
+</mapper>

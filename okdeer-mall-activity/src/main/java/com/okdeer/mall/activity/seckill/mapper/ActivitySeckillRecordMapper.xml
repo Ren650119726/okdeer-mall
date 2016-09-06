@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.okdeer.mall.activity.seckill.mapper.ActivitySeckillRecordMapper">
+	<!-- 基本返回类型 start -->
+	<resultMap id="BaseResultMap"
+		type="com.okdeer.mall.activity.seckill.entity.ActivitySeckillRecord">
+		<id column="id" property="id" jdbcType="VARCHAR" javaType="string" />
+		<result column="activity_seckill_id" property="activitySeckillId"
+			jdbcType="VARCHAR" javaType="string" />
+		<result column="buyer_user_id" property="buyerUserId" jdbcType="VARCHAR"
+			javaType="string" />
+		<result column="store_id" property="storeId" jdbcType="VARCHAR"
+			javaType="string" />
+		<result column="order_id" property="orderId" jdbcType="VARCHAR"
+			javaType="string" />
+		<result column="goods_store_sku_id" property="goodsStoreSkuId"
+			jdbcType="VARCHAR" javaType="string" />
+		<result column="order_no" property="orderNo" jdbcType="VARCHAR"
+			javaType="string" />
+		<result column="order_disabled" property="orderDisabled"
+			jdbcType="VARCHAR" javaType="string" />
+	</resultMap>
+	<!-- 基本返回类型 end -->
+
+	<!-- 基本返回字段 start -->
+	<sql id="Base_Column_List">
+		id, activity_seckill_id, buyer_user_id, store_id, order_id,
+		goods_store_sku_id, order_no, order_disabled
+	</sql>
+	<!-- 基本返回字段 end -->
+	
+	<!--begin 根据订单id逻辑删除秒杀购买记录 add by wushp -->
+	<update id="updateStatusBySeckillId" parameterType="java.lang.String">
+		UPDATE activity_seckill_record t SET order_disabled = 1 
+		WHERE t.order_id = #{tradeOrderId,jdbcType=VARCHAR}
+	</update>
+	<!--end 根据订单id逻辑删除秒杀购买记录 add by wushp -->
+
+	<!-- 统计秒杀数量 add by zengj -->
+	<select id="findSeckillCount" parameterType="java.util.Map"
+		resultType="java.lang.Integer">
+		select count(1)
+		from activity_seckill_record
+		where order_disabled = 0
+		and activity_seckill_id = #{activitySeckillId,jdbcType=VARCHAR}
+
+		<if test="buyerUserId != null and buyerUserId != ''">
+			and buyer_user_id = #{buyerUserId,jdbcType=VARCHAR}
+		</if>
+	</select>
+
+	<!-- 根据秒杀活动id统计秒杀数量 add by luosm -->
+	<select id="findByActivitySeckillId" parameterType="string"
+		resultType="java.lang.Integer">
+		select count(1)
+		from activity_seckill_record
+		where order_disabled = 0
+		and activity_seckill_id = #{activitySeckillId,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 新增秒杀活动买家购买记录 -->
+	<insert id="add"
+		parameterType="com.okdeer.mall.activity.seckill.entity.ActivitySeckillRecord">
+		insert into activity_seckill_record
+		(id,
+		activity_seckill_id,
+		buyer_user_id,
+		store_id,
+		order_id,
+		goods_store_sku_id,
+		order_no,
+		order_disabled)
+		values
+		(#{id,jdbcType=VARCHAR},
+		#{activitySeckillId,jdbcType=VARCHAR},
+		#{buyerUserId,jdbcType=VARCHAR},
+		#{storeId,jdbcType=VARCHAR},
+		#{orderId,jdbcType=VARCHAR},
+		#{goodsStoreSkuId,jdbcType=VARCHAR},
+		#{orderNo,jdbcType=VARCHAR},
+		#{orderDisabled,jdbcType=VARCHAR})
+	</insert>
+</mapper>
+

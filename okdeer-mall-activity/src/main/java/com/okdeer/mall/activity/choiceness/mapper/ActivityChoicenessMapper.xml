@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.choiceness.mapper.ActivityChoicenessMapper">
+    <!-- 基本返回类型 Map add by lijun 20160719  -->
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.choiceness.entity.ActivityChoiceness">
+        <id column="id" property="id" jdbcType="VARCHAR" javaType="string"/>
+        <result column="store_id" property="storeId" jdbcType="VARCHAR" javaType="string"/>
+        <result column="goods_store_sku_id" property="goodsStoreSkuId" jdbcType="VARCHAR" javaType="string"/>
+        <result column="sort" property="sort" javaType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="date"/>
+        <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.yschome.base.common.enums.Disabled"/>
+    </resultMap>
+    
+    <!-- 精选活动列表查询结果Map add by lijun 20160719 -->
+    <resultMap id="ChoicenessListPageResultMap" type="com.okdeer.mall.activity.choiceness.vo.ActivityChoicenessListPageVo" extends="BaseResultMap">
+    	<result column="storeSkuName" property="storeSkuName" jdbcType="VARCHAR" javaType="string"/>
+    	<result column="storeSkuUrl" property="storeSkuUrl" jdbcType="VARCHAR" javaType="string"/>
+    	<result column="storeSkuPrice" property="storeSkuPrice" jdbcType="DECIMAL" />
+    	<result column="storeId" property="storeId" jdbcType="VARCHAR" javaType="string"/>
+    	<result column="storeName" property="storeName" jdbcType="VARCHAR" javaType="string"/>
+    </resultMap>
+    
+    <!-- 基本表名 start -->
+    <sql id="BASE_TABLE_NAME">
+        activity_choiceness 
+    </sql>
+    
+    <!-- 表名：店铺SKU表 add by lijun 20160714 -->
+    <sql id="TABLE_STORE_SKU">
+        goods_store_sku 
+    </sql>
+    
+    <!-- 表名：店铺SKU PIC表 add by lijun 20160714 -->
+    <sql id="TABLE_STORE_SKU_PIC">
+        goods_store_sku_picture 
+    </sql>
+    
+    <!-- 表名：店铺信息表 add by lijun 20160714 -->
+    <sql id="TABLE_STORE_INFO">
+        store_info 
+    </sql>
+    
+    <!-- 基本返回字段 start -->
+    <sql id="Base_Column_List">
+        id, store_id, goods_store_sku_id, sort, create_time, disabled 
+    </sql>
+    <!-- 基本返回字段 end -->
+    
+    <!-- 精选服务列表页查询  add by lijun 20160719 -->
+	<select id="findChoicenessListPageByFilter" parameterType="com.okdeer.mall.activity.choiceness.vo.ActivityChoicenessFilterVo" resultMap="ChoicenessListPageResultMap">
+		SELECT
+			cho.*, 
+			sku.name AS storeSkuName,
+			pic.url AS storeSkuUrl,
+			sku.online_price AS storeSkuPrice,
+			store.id AS storeId,
+			store.store_name AS storeName 
+		FROM
+			<include refid="BASE_TABLE_NAME"/> cho
+		LEFT JOIN <include refid="TABLE_STORE_SKU"/> sku ON cho.goods_store_sku_id = sku.id
+		LEFT JOIN <include refid="TABLE_STORE_SKU_PIC"/> pic ON sku.id = pic.store_sku_id AND pic.type = 1 
+		LEFT JOIN <include refid="TABLE_STORE_INFO"/> store ON sku.store_id = store.id
+		WHERE 1 = 1 
+		<if test="null != storeSkuName and storeSkuName != ''">
+	          AND sku.`name` LIKE CONCAT('%',#{storeSkuName,jdbcType=VARCHAR},'%') 
+	      </if> 
+	      <if test="null != storeName and storeName != ''">
+	          AND store.store_name LIKE CONCAT('%',#{storeName,jdbcType=VARCHAR},'%') 
+	      </if>
+	      <!-- start  update by zhongy 20160805 -->
+		  <if test="startTime !=null">
+			AND cho.create_time &gt;= #{startTime,jdbcType=TIMESTAMP}
+		  </if>
+		  <if test="endTime != null">
+			AND cho.create_time &lt;= #{endTime,jdbcType=TIMESTAMP}
+		  </if>
+	      <!--end  update by zhongy 20160805 -->
+		ORDER BY cho.create_time DESC
+	</select>
+	
+	<!-- 通过主键id获取精选活动信息  add by lijun 20160714 -->
+    <select id="findByPrimaryKey" resultMap="BaseResultMap">
+    	SELECT 
+		  <include refid="Base_Column_List"/> 
+		FROM 
+		  <include refid="BASE_TABLE_NAME"/> 
+		WHERE `id` = #{choicenessId,jdbcType=VARCHAR}
+    </select>
+    
+    <!-- 通过主键id获取精选活动信息  add by lijun 20160714 -->
+    <select id="findByPrimaryKeyList" resultMap="BaseResultMap">
+    	SELECT 
+		  <include refid="Base_Column_List"/> 
+		FROM 
+		  <include refid="BASE_TABLE_NAME"/> 
+		WHERE `id` IN 
+		<foreach collection="choicenessIdList" item="item" open="(" close=")" separator=",">
+            #{item,jdbcType=VARCHAR}
+        </foreach>
+    </select>
+	
+	<!-- 批量添加精选服务 add by lijun 20160719 -->
+	<insert id="addByBatch" parameterType="com.okdeer.mall.activity.choiceness.entity.ActivityChoiceness">
+        INSERT INTO <include refid="BASE_TABLE_NAME"/> 
+        (id, store_id, goods_store_sku_id, sort, create_time) 
+        VALUES  
+        <foreach collection="choicenessList" item="item" index="index" separator="," >  
+        	(#{item.id,jdbcType=VARCHAR}, #{item.storeId,jdbcType=VARCHAR}, #{item.goodsStoreSkuId,jdbcType=VARCHAR}, 
+        	 #{item.sort,jdbcType=INTEGER}, #{item.createTime,jdbcType=TIMESTAMP}) 
+        </foreach>
+    </insert>
+    
+    <!-- 批量删除精选服务 add by lijun 20160719 -->
+    <delete id="deleteByIds">
+        DELETE FROM <include refid="BASE_TABLE_NAME"/> 
+        WHERE id IN  
+        <foreach collection="choicenessIds" item="item" open="(" close=")" separator=",">
+            #{item,jdbcType=VARCHAR}
+        </foreach>
+    </delete>
+    
+    <!-- 更新精选活动状态 add by lijun 20160714 -->
+	<update id="updateChoicenessStatus">
+		UPDATE
+		<include refid="BASE_TABLE_NAME" />
+		<set>
+			sort = #{sortValue,jdbcType=TINYINT} 
+		</set>
+		WHERE `id` = #{activityId,jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 通过商品id查询商品是否存在  add by zhongy 20160804 -->
+    <select id="findCountBySkuIds" resultType="int">
+    SELECT COUNT(*) FROM activity_choiceness 
+		WHERE goods_store_sku_id IN 
+		<foreach collection="skuIds" item="item" open="(" close=")" separator=",">
+            #{item,jdbcType=VARCHAR}
+        </foreach>
+    </select>
+    
+     <!-- 批量删除精选服务商品 add by zhongy 20160804 -->
+    <delete id="deleteBySkuIds">
+        DELETE FROM activity_choiceness 
+        WHERE goods_store_sku_id IN  
+        <foreach collection="goodsStoreSkuIds" item="item" open="(" close=")" separator=",">
+            #{item,jdbcType=VARCHAR}
+        </foreach>
+    </delete>
+</mapper>
+

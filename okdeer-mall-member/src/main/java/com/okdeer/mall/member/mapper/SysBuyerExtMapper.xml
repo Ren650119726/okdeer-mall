@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.member.mapper.SysBuyerExtMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.member.member.entity.SysBuyerExt" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="is_accept_msg" property="isAcceptMsg" jdbcType="TINYINT" />
+    <result column="position" property="position" jdbcType="VARCHAR" />
+    <result column="point_val" property="pointVal" jdbcType="TINYINT" />
+    
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, user_id, is_accept_msg, position,point_val
+  </sql>
+  
+  <!-- 根据会员用户id查询会员扩展信息 -->
+  <select id="selectByUserId" resultMap="BaseResultMap" parameterType="java.lang.String">
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM sys_buyer_ext WHERE 1=1 AND user_id=#{userId,jdbcType=VARCHAR}
+  </select> 
+  
+  <!-- 按需更新会员扩展实体 -->
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.member.member.entity.SysBuyerExt" >
+    UPDATE sys_buyer_ext
+    <set>
+       <if test="isAcceptMsg != null" >
+        is_accept_msg = #{isAcceptMsg,jdbcType=INTEGER},
+       </if>
+       <if test="position != null" >
+        position = #{position,jdbcType=VARCHAR},
+      </if>
+      <if test="pointVal != null" >
+        point_val = #{pointVal,jdbcType=INTEGER},
+      </if>
+    </set>
+    WHERE user_id = #{userId,jdbcType=VARCHAR} AND id = #{id,jdbcType=VARCHAR} 
+  </update>
+  
+  <!-- 根据userId更新会员扩展实体 luosm start-->
+  <update id="updateByUserId" parameterType="com.okdeer.mall.member.member.entity.SysBuyerExt" >
+    UPDATE sys_buyer_ext
+    <set>
+       <if test="isAcceptMsg != null" >
+        is_accept_msg = #{isAcceptMsg,jdbcType=INTEGER},
+       </if>
+       <if test="position != null" >
+        position = #{position,jdbcType=VARCHAR},
+      </if>
+      <if test="pointVal != null" >
+        point_val = #{pointVal,jdbcType=INTEGER},
+      </if>
+    </set>
+    WHERE user_id = #{userId,jdbcType=VARCHAR}
+  </update>
+  <!-- 根据userId更新会员扩展实体 luosm end-->
+  
+   <insert id="insertSelective" parameterType="com.okdeer.mall.member.member.entity.SysBuyerExt" >
+    insert into sys_buyer_ext
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="isAcceptMsg != null" >
+        is_accept_msg,
+      </if>
+      <if test="position != null" >
+        position,
+      </if>
+      <if test="pointVal != null" >
+        point_val,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="isAcceptMsg != null" >
+        #{isAcceptMsg,jdbcType=INTEGER},
+      </if>
+      <if test="position != null" >
+        #{position,jdbcType=VARCHAR},
+      </if>
+      <if test="pointVal != null" >
+        #{pointVal,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  
+  
+  
+  
+</mapper>

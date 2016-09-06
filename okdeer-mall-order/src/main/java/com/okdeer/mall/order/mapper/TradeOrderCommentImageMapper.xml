@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderCommentImageMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderCommentImage" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="comment_id" property="commentId" jdbcType="VARCHAR" />
+    <result column="image_path" property="imagePath" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, comment_id, image_path
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.commentId and ''!=params.commentId" >
+         AND comment_id = #{params.commentId}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByCommentId" resultMap="BaseResultMap" parameterType="java.lang.String">
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM trade_order_comment_image
+     WHERE comment_id = #{commentId,jdbcType=VARCHAR}
+  </select>
+  <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderCommentImage" >
+    insert into trade_order_comment_image (id, comment_id, image_path
+      )
+    values (#{id,jdbcType=VARCHAR}, #{commentId,jdbcType=VARCHAR}, #{imagePath,jdbcType=VARCHAR}
+      )
+  </insert>
+  <delete id="deleteByCommentId" parameterType="java.lang.String" >
+    DELETE FROM trade_order_comment_image
+    WHERE comment_id = #{commentId,jdbcType=VARCHAR}
+  </delete>
+  
+  	<insert id="insertByBatch" parameterType="java.util.List">
+	       INSERT INTO trade_order_comment_image
+			(id, comment_id, image_path)
+			VALUES 
+			<foreach collection="tradeOrderCommentImageList" item="item" index="index" separator="," >
+      		 (
+				#{item.id,jdbcType=VARCHAR}, 
+				#{item.commentId,jdbcType=VARCHAR}, 
+				#{item.imagePath,jdbcType=VARCHAR}
+       		 )
+		</foreach>
+	</insert>
+</mapper>

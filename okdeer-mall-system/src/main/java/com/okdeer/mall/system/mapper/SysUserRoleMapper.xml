@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.system.mapper.SysUserRoleMapper">
+	<resultMap id="BaseResultMap" type="com.okdeer.archive.system.entity.SysUserRole">
+		<id column="ID" property="id" />
+		<result column="USER_ID" property="userId" />
+		<result column="ROLE_ID" property="roleId" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		ID, USER_ID, ROLE_ID
+	</sql>
+
+	<select id="getByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM sys_user_role
+		WHERE ID = #{id}
+	</select>
+
+	<select id="findSysUserRoleList" resultMap="BaseResultMap" parameterType="java.lang.String">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM sys_user_role WHERE user_id = #{id}
+	</select>
+    
+    <!-- 查询用户拥有哪些角色 add by wulm -->
+	<select id="findUserRoleByUserId" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT ROLE_ID FROM sys_user_role WHERE user_id=#{userId}
+	</select>
+	
+	<select id="findSelective" resultMap="BaseResultMap" parameterType="com.okdeer.archive.system.entity.SysUserRole">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM sys_user_role
+		<trim prefix="where" suffixOverrides="and">
+			<if test="id != null">
+				ID= #{id} AND
+			</if>
+			<if test="userId != null">
+				USER_ID = #{userId} AND
+			</if>
+			<if test="roleId != null">
+				ROLE_ID = #{roleId} AND
+			</if>
+		</trim>
+	</select>
+
+	<select id="getRoleIdList" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT role_id FROM sys_user_role where user_id=#{userId}
+	</select>
+
+    <select id="findUserRPRole" resultType="java.lang.String" parameterType="com.okdeer.archive.system.entity.SysUserRole">
+		SELECT role_id FROM sys_user_role WHERE user_id = #{userId}
+	</select>
+
+	<insert id="save" parameterType="com.okdeer.archive.system.entity.SysUserRole">
+		INSERT INTO sys_user_role (id, user_id, role_id)
+		VALUES (#{id}, #{userId}, #{roleId})
+	</insert>
+
+	<insert id="saveSelective" parameterType="com.okdeer.archive.system.entity.SysUserRole">
+		INSERT INTO sys_user_role
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="userId != null">
+				USER_ID,
+			</if>
+			<if test="roleId != null">
+				ROLE_ID,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id},
+			</if>
+			<if test="userId != null">
+				#{userId},
+			</if>
+			<if test="roleId != null">
+				#{roleId},
+			</if>
+		</trim>
+	</insert>
+	
+	<insert id="insertRP" parameterType="com.okdeer.archive.system.entity.SysUserRole">
+		INSERT INTO sys_user_role
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="userId != null">
+				USER_ID,
+			</if>
+			<if test="roleId != null">
+				ROLE_ID,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id},
+			</if>
+			<if test="userId != null">
+				#{userId},
+			</if>
+			<if test="roleId != null">
+				#{roleId},
+			</if>
+		</trim>
+	</insert>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		DELETE FROM sys_user_role
+		WHERE id = #{id}
+	</delete>
+	
+	<delete id="deleteAllByUserId" parameterType="java.lang.String">
+		DELETE FROM sys_user_role
+		WHERE user_id = #{userId}
+	</delete>
+
+	<delete id="deleteRP" parameterType="com.okdeer.archive.system.entity.SysUserRole">
+		DELETE from sys_user_role WHERE user_id = #{userId} AND role_id = #{roleId}
+	</delete>
+
+	<update id="updateByPrimaryKeySelective" parameterType="com.okdeer.archive.system.entity.SysUserRole">
+		UPDATE sys_user_role
+		<set>
+			<if test="userId != null">
+				USER_ID = #{userId},
+			</if>
+			<if test="roleId != null">
+				ROLE_ID = #{roleId},
+			</if>
+		</set>
+		WHERE ID = #{id}
+	</update>
+
+	<update id="updateByPrimaryKey" parameterType="com.okdeer.archive.system.entity.SysUserRole">
+		UPDATE sys_user_role
+		SET user_id = #{userId},
+		role_id = #{roleId}
+		WHERE id = #{id}
+	</update>
+
+</mapper>

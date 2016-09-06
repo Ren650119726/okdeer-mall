@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:reg="http://www.dangdang.com/schema/ddframe/reg" 
+    xmlns:job="http://www.dangdang.com/schema/ddframe/job" 
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.dangdang.com/schema/ddframe/reg
+                        http://www.dangdang.com/schema/ddframe/reg/reg.xsd
+                        http://www.dangdang.com/schema/ddframe/job
+                        http://www.dangdang.com/schema/ddframe/job/job.xsd
+                        ">
+	<!-- 阿里云配置 end -->
+     <bean id="regCenter" class="com.dangdang.ddframe.reg.zookeeper.ZookeeperRegistryCenter" init-method="init">
+        <constructor-arg>
+            <bean class="com.dangdang.ddframe.reg.zookeeper.ZookeeperConfiguration">
+                <property name="serverLists" value="${dubbo.registry.address}" />
+                <property name="namespace" value="job/mall" />
+                <property name="baseSleepTimeMilliseconds" value="1000" />
+                <property name="maxSleepTimeMilliseconds" value="3000" />
+                <property name="maxRetries" value="3" />
+            </bean>
+        </constructor-arg>
+    </bean>
+	
+	<!-- 每隔半个小时执行-修改团购活动的状态job -->
+ 	<job:simple id="activityGroupJob" class="com.okdeer.mall.activity.group.job.ActivityGroupJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
+	
+	<!-- 每隔半个小时执行商家中心特惠活动的定时任务 -->
+	<job:simple id="activitySaleJob" class="com.okdeer.mall.activity.coupons.job.ActivitySaleJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
+	
+	<!-- zengj：每隔半个小时执行满减满折活动的定时任务 -->
+	<job:simple id="activityDiscountJob" class="com.okdeer.mall.activity.discount.job.ActivityDiscountJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
+	
+	<!-- 每隔一天执行运营后台代金券领取记录定时任务 -->
+	<job:simple id="activityCouponsRecordJob" class="com.okdeer.mall.activity.coupons.job.ActivityCouponsRecordJob" registry-center-ref="regCenter" cron="0 0 0/1 * * ?"   sharding-total-count="1"/>
+	
+	<!-- 每隔半个小时执行代金卷活动 退款 定时任务 -->
+	<job:simple id="activityCollectRefundJob" class="com.okdeer.mall.activity.coupons.job.ActivityCollectRefundJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
+	
+	<!-- 每隔半个小时执行运营后台代金券活动的定时任务 -->
+	<job:simple id="activityCollectCouponsJob" class="com.okdeer.mall.activity.coupons.job.ActivityCollectCouponsJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
+	
+	<!-- 每隔半个小时执行运营后台运营栏目的定时任务 -->
+	<job:simple id="columnOperationJob" class="com.okdeer.mall.operate.column.job.ColumnOperationJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
+	
+	<!-- 每隔半小时执行运营后台广告管理的定时任务 -->
+	<job:simple id="coumnAdevertJob" class="com.okdeer.mall.operate.advert.job.CoumnAdevertJob" registry-center-ref="regCenter" cron="0 */30 * * * ?" sharding-total-count="1" />
+	
+	<!-- 推荐定时任务修改活动状态 add by zhongy 20160718 -->
+	<job:simple id="activityRecommendJob" class="com.okdeer.mall.activity.recommend.job.ActivityRecommendJob" registry-center-ref="regCenter" cron="0 */3 * * * ?"   sharding-total-count="1"/>
+	
+	<!-- 秒杀活动定时任务修改活动状态 add by lijun 20160718 -->
+	<job:simple id="activitySeckillJob" class="com.okdeer.mall.activity.seckill.job.ActivitySeckillJob" registry-center-ref="regCenter" cron="0 */3 * * * ?" sharding-total-count="1" />
+
+	<!-- 充值中订单定时查询 add by zhaoqc 20160730 -->
+	<job:simple id="rechargingOrderDealWithJob" class="com.okdeer.mall.order.job.RechargingOrderDealWithJob" registry-center-ref="regCenter" cron="0 */10 * * * ?" sharding-total-count="1"></job:simple>
+</beans>

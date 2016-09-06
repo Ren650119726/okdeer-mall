@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderComplainImageMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderComplainImage" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="complain_id" property="complainId" jdbcType="VARCHAR" />
+    <result column="image_path" property="imagePath" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, complain_id, image_path
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_complain_image
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM trade_order_complain_image WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM trade_order_complain_image
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderComplainImage" >
+    insert into trade_order_complain_image (id, complain_id, image_path
+      )
+    values (#{id,jdbcType=VARCHAR}, #{complainId,jdbcType=VARCHAR}, #{imagePath,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderComplainImage" >
+    insert into trade_order_complain_image
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="complainId != null" >
+        complain_id,
+      </if>
+      <if test="imagePath != null" >
+        image_path,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="complainId != null" >
+        #{complainId,jdbcType=VARCHAR},
+      </if>
+      <if test="imagePath != null" >
+        #{imagePath,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.order.entity.TradeOrderComplainImage" >
+    update trade_order_complain_image
+    <set >
+      <if test="complainId != null" >
+        complain_id = #{complainId,jdbcType=VARCHAR},
+      </if>
+      <if test="imagePath != null" >
+        image_path = #{imagePath,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.order.entity.TradeOrderComplainImage" >
+    update trade_order_complain_image
+    set complain_id = #{complainId,jdbcType=VARCHAR},
+      image_path = #{imagePath,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+ 	<!-- 批量插入订单投诉图片 -->
+  <insert id="insertByBatch" parameterType="java.util.List">
+   insert into trade_order_complain_image (id, complain_id, image_path
+      )
+    values
+	<foreach collection="tradeOrderComplainImageList" item="item" index="index" separator="," >
+	 (#{item.id,jdbcType=VARCHAR}, #{item.complainId,jdbcType=VARCHAR}, #{item.imagePath,jdbcType=VARCHAR})
+	</foreach>
+  </insert>
+</mapper>

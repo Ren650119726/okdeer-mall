@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.seckill.mapper.ActivitySeckillMapper">
+	<!-- 基本返回类型 add by lijun 20160714 -->
+	<resultMap id="BaseResultMap"
+		type="com.okdeer.mall.activity.seckill.entity.ActivitySeckill">
+		<id column="id" property="id" jdbcType="VARCHAR" javaType="string" />
+		<result column="seckill_name" property="seckillName" jdbcType="VARCHAR" javaType="string" />
+		<result column="seckill_alias" property="seckillAlias" jdbcType="VARCHAR" javaType="string" />
+		<result column="seckill_range_type" property="seckillRangeType" jdbcType="VARCHAR" javaType="com.okdeer.mall.common.enums.RangeTypeEnum" />
+		<result column="seckill_status" property="seckillStatus" jdbcType="VARCHAR" javaType="com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum" />
+		<result column="start_time" property="startTime" jdbcType="TIMESTAMP" javaType="date" />
+		<result column="end_time" property="endTime" jdbcType="TIMESTAMP" javaType="date" />
+		<result column="seckill_num" property="seckillNum" jdbcType="INTEGER" />
+		<result column="start_num" property="startNum" jdbcType="INTEGER" />
+		<result column="seckill_price" property="seckillPrice" jdbcType="DECIMAL" />
+		<result column="pic_url" property="picUrl" jdbcType="VARCHAR" javaType="string" />
+		<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" javaType="string" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="date" />
+		<result column="create_user_id" property="createUserId" jdbcType="VARCHAR" javaType="string" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" javaType="date" />
+		<result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" javaType="string" />
+		<result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.yschome.base.common.enums.Disabled" />
+	</resultMap>
+
+	<!-- 秒杀活动列表查询结果Map add by lijun 20160714 -->
+	<resultMap id="SeckillListPageResultMap"
+		type="com.okdeer.mall.activity.seckill.vo.ActivitySeckillListPageVo"
+		extends="BaseResultMap">
+		<result column="storeSkuName" property="storeSkuName" jdbcType="VARCHAR" javaType="string" />
+		<result column="storeSkuPrice" property="storeSkuPrice" jdbcType="DECIMAL" />
+		<result column="storeSkuUrl" property="storeSkuUrl" jdbcType="VARCHAR" javaType="string" />
+		<result column="storeId" property="storeId" jdbcType="VARCHAR" javaType="string" />
+		<result column="storeName" property="storeName" jdbcType="VARCHAR" javaType="string" />
+	</resultMap>
+	
+	<!-- 秒杀活动详情 Map add by luosm 20160720 -->
+	<resultMap id="SeckillItemResultMap"
+		type="com.okdeer.mall.activity.seckill.vo.ActivitySeckillItemVo"
+		extends="BaseResultMap">
+		<result column="store_sku_price" property="storeSkuPrice"  jdbcType="DECIMAL" javaType="java.math.BigDecimal"/>
+		<result column="seckill_time_left" property="seckillTimeLeft" jdbcType="VARCHAR" javaType="string" />
+		<result column="remain_stock_ratio" property="remainStockRatio" jdbcType="DECIMAL" javaType="java.math.BigDecimal" />
+	</resultMap>
+
+	<!-- 基本表名 add by lijun 20160714 -->
+	<sql id="BASE_TABLE_NAME">
+		activity_seckill
+	</sql>
+
+	<!-- 表名：秒杀活动区域范围表 add by lijun 20160714 -->
+	<sql id="TABLE_SECKILL_RANGE">
+		activity_seckill_range
+	</sql>
+
+	<!-- 表名：店铺SKU表 add by lijun 20160714 -->
+	<sql id="TABLE_STORE_SKU">
+		goods_store_sku
+	</sql>
+
+	<!-- 表名：店铺SKU PIC表 add by lijun 20160714 -->
+	<sql id="TABLE_STORE_SKU_PIC">
+		goods_store_sku_picture
+	</sql>
+
+	<!-- 表名：店铺信息表 add by lijun 20160714 -->
+	<sql id="TABLE_STORE_INFO">
+		store_info
+	</sql>
+
+	<!-- 基本返回字段 add by lijun 20160714 -->
+	<sql id="Base_Column_List">
+		id, seckill_name, seckill_alias, seckill_range_type, seckill_status,
+		start_time,
+		end_time, seckill_num, start_num, seckill_price, pic_url, store_sku_id,
+		create_time, create_user_id, update_time, update_user_id, disabled
+	</sql>
+
+	<!-- 秒杀活动列表页查询 add by lijun 20160714 -->
+	<select id="findListPageByFilter"
+		parameterType="com.okdeer.mall.activity.seckill.vo.ActivitySeckillQueryFilterVo"
+		resultMap="SeckillListPageResultMap">
+		SELECT
+		seckill.*,
+		sku.`name` AS storeSkuName,
+		sku.`online_price` AS storeSkuPrice,
+		pic.url AS storeSkuUrl,
+		store.id AS storeId,
+		store.store_name AS storeName
+		FROM
+		<include refid="BASE_TABLE_NAME" />
+		seckill
+		LEFT JOIN
+		<include refid="TABLE_STORE_SKU" />
+		sku ON seckill.store_sku_id = sku.id
+		LEFT JOIN
+		<include refid="TABLE_STORE_SKU_PIC" />
+		pic ON sku.id = pic.store_sku_id AND pic.type = 1
+		LEFT JOIN
+		<include refid="TABLE_STORE_INFO" />
+		store ON sku.store_id = store.id
+		WHERE 1 = 1
+		<if test="null != skuName and skuName != ''">
+			AND sku.`name` LIKE CONCAT('%',#{skuName,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="null != storeName and storeName != ''">
+			AND store.store_name LIKE CONCAT('%',#{storeName,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="null != seckillName and seckillName != ''">
+			AND seckill.seckill_name LIKE
+			CONCAT('%',#{seckillName,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="null != seckillStatus">
+			AND seckill.seckill_status = #{seckillStatus,jdbcType=TINYINT}
+		</if>
+		ORDER BY seckill.create_time DESC
+	</select>
+
+	<!-- 通过主键id获取秒杀详情信息 add by lijun 20160714 -->
+	<select id="findDetailByPrimaryKey" resultMap="SeckillListPageResultMap">
+		SELECT
+		seckill.*,
+		sku.`name` AS storeSkuName,
+		sku.`online_price` AS storeSkuPrice,
+		pic.url AS storeSkuUrl,
+		store.id AS storeId,
+		store.store_name AS storeName
+		FROM
+		<include refid="BASE_TABLE_NAME" />
+		seckill
+		LEFT JOIN
+		<include refid="TABLE_STORE_SKU" />
+		sku ON seckill.store_sku_id = sku.id
+		LEFT JOIN
+		<include refid="TABLE_STORE_SKU_PIC" />
+		pic ON sku.id = pic.store_sku_id AND pic.type = 1
+		LEFT JOIN
+		<include refid="TABLE_STORE_INFO" />
+		store ON sku.store_id = store.id
+		WHERE seckill.`id` = #{id, jdbcType=VARCHAR}
+	</select>
+
+	<!-- 通过主键id获取秒杀活动信息 add by lijun 20160714 -->
+	<select id="findByPrimaryKey" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM
+		<include refid="BASE_TABLE_NAME" />
+		WHERE `id` = #{id,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 同一个区域同一个时间范围只能有一个秒杀活动，查询现有的活动记录数 add by lijun 20160714 -->
+	<select id="findSeckillCountByRange" resultType="int"
+		parameterType="map">
+		SELECT count(1)
+		FROM
+		<include refid="BASE_TABLE_NAME" />
+		seckill
+		LEFT JOIN
+		<include refid="TABLE_SECKILL_RANGE" />
+		ran ON seckill.id = ran.activity_seckill_id
+		WHERE seckill.disabled = 0
+		AND (seckill.seckill_status = 0 OR seckill.seckill_status = 1)
+		AND ((seckill.start_time <![CDATA[>=]]>
+		#{params.startTime,jdbcType=TIMESTAMP}
+		AND seckill.start_time <![CDATA[<]]>
+		#{params.endTime,jdbcType=TIMESTAMP})
+		OR (seckill.start_time <![CDATA[<=]]>
+		#{params.startTime,jdbcType=TIMESTAMP} AND seckill.end_time <![CDATA[>]]>
+		#{params.startTime,jdbcType=TIMESTAMP})
+		OR (seckill.start_time <![CDATA[<=]]>
+		#{params.startTime,jdbcType=TIMESTAMP} AND seckill.end_time <![CDATA[>=]]>
+		#{params.endTime,jdbcType=TIMESTAMP})) 
+		<if test="params.id != null and params.id != ''">
+			AND seckill.id != #{params.id,jdbcType=VARCHAR}
+		</if>
+		<if test="params.isFlag != null and params.isFlag != ''">
+			AND seckill.seckill_range_type = 0 
+		</if>
+		<if test="params.rangeType.name == 'area'">
+			AND (
+			<if test="params.areaIds != null ">
+				ran.city_id in
+				<foreach collection="params.areaIds" open="(" close=")"
+					index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			)
+		</if>
+	</select>
+
+	<!-- 查询定位地址是否在秒杀活动范围 add by zengj 2016-7-16 10:47:30 -->
+	<select id="findSecKillByCityId" parameterType="java.util.Map"
+		resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM activity_seckill sec
+		where sec.id = #{activitySeckillId,jdbcType=VARCHAR}
+		AND (sec.seckill_range_type = 0 or exists
+		(select 1
+		from activity_seckill_range sr
+		where sr.activity_seckill_id = sec.id
+		AND sr.city_id = #{cityId,jdbcType=VARCHAR})
+		)
+	</select>
+
+	<!-- 在当前时间内查询定位地址是否有秒杀活动 begin add by luosm 2016-7-20 -->
+	<select id="findAppUserSecKillByCityId" parameterType="string"
+		resultMap="BaseResultMap">
+		SELECT
+		sec.id,sec.seckill_name,sec.seckill_alias,sec.seckill_range_type,sec.seckill_status,sec.start_time,sec.end_time,
+		sec.seckill_num,sec.start_num,sec.seckill_price,sec.pic_url,sec.store_sku_id,sec.create_time,sec.create_user_id,
+		sec.update_time,sec.update_user_id,sec.disabled
+		FROM activity_seckill sec,goods_store_sku gss,store_info_ext sie
+		where sec.seckill_status = 1
+		AND (sec.seckill_range_type = 0 or exists
+		(select 1
+		from activity_seckill_range sr
+		where sr.activity_seckill_id = sec.id
+		AND sr.city_id = #{cityId,jdbcType=VARCHAR}))
+		AND sec.store_sku_id = gss.id
+		AND gss.store_id = sie.store_id
+		AND sie.is_closed = 1
+	</select>
+	<!-- 查询定位地址是否有秒杀活动 end add by luosm 2016-7-20 -->
+
+
+	<!-- 在当前时间范围内查询秒杀活动详情 begin add by luosm 2016-7-20 -->
+	<select id="findAppUserSecKillBySeckill" parameterType="string"
+		resultMap="SeckillItemResultMap">
+		SELECT se.id,se.store_sku_id,g.online_price as store_sku_price,TIME_TO_SEC(TIMEDIFF(se.end_time,NOW())) as seckill_time_left
+		,se.seckill_name,se.seckill_num,se.seckill_alias ,se.pic_url,se.seckill_price,
+		ROUND((se.seckill_num-sale.num)/(se.seckill_num+se.start_num),2) as
+		remain_stock_ratio FROM
+		(select count(1) as num
+		from activity_seckill_record ad
+		where order_disabled = 0
+		and ad.activity_seckill_id = #{id,jdbcType=VARCHAR})as sale,
+		`activity_seckill` se , goods_store_sku g
+		WHERE se.store_sku_id = g.id
+		and se.seckill_status = 1
+		and se.id = #{id,jdbcType=VARCHAR}
+	</select>
+	<!-- 查询定位地址是否有秒杀活动 end add by luosm 2016-7-20 -->
+
+
+	<!-- 查询商品在定位地址是否存在秒杀活动 add by zengj 2016-7-18 11:55:30 -->
+	<select id="findSecKillByGoodsId" parameterType="java.util.Map"
+		resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM activity_seckill sec
+		where sec.seckill_status = 1
+		<if test="storeSkuId != null and storeSkuId != ''">
+    		AND sec.store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
+		</if>
+		AND (sec.seckill_range_type = 0
+		or exists (select 1
+		from activity_seckill_range sr
+		where sr.activity_seckill_id = sec.id
+		AND sr.city_id = #{cityId,jdbcType=VARCHAR})
+		)
+	</select>
+
+	<!-- 根据状态查询秒杀活动的集合 add by lijun 20160718 -->
+	<select id="findActivitySeckillByStatus" resultMap="BaseResultMap" parameterType="java.util.Map">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM
+		<include refid="BASE_TABLE_NAME" /> 
+		WHERE 1 = 1
+		<if test="null != params.seckillStatus">
+			AND `seckill_status` = #{params.seckillStatus, jdbcType=TINYINT}
+		</if>
+		<if test="null != params.disabled">
+			AND `disabled` = #{params.disabled, jdbcType=TINYINT}
+		</if>
+	</select>
+
+	<!-- 保存秒杀活动信息 add by lijun 20160717 -->
+	<insert id="add"
+		parameterType="com.okdeer.mall.activity.seckill.entity.ActivitySeckill">
+		INSERT INTO
+		<include refid="BASE_TABLE_NAME" />
+		(
+		id, seckill_name, seckill_alias, seckill_range_type, seckill_status,
+		start_time, end_time,
+		seckill_num, start_num, seckill_price, pic_url, store_sku_id, create_time,
+		create_user_id,
+		update_time, update_user_id, disabled)
+		VALUES(
+		#{id,jdbcType=VARCHAR}, #{seckillName,jdbcType=VARCHAR}, #{seckillAlias,jdbcType=VARCHAR},
+		#{seckillRangeType,jdbcType=TINYINT},
+		#{seckillStatus,jdbcType=TINYINT}, #{startTime,jdbcType=TIMESTAMP},
+		#{endTime,jdbcType=TIMESTAMP}, #{seckillNum,jdbcType=INTEGER},
+		#{startNum,jdbcType=INTEGER},
+		#{seckillPrice,jdbcType=DECIMAL}, #{picUrl,jdbcType=VARCHAR}, #{storeSkuId,jdbcType=VARCHAR},
+		#{createTime,jdbcType=TIMESTAMP}, #{createUserId,jdbcType=VARCHAR},
+		#{updateTime,jdbcType=TIMESTAMP},
+		#{updateUserId,jdbcType=VARCHAR}, #{disabled,jdbcType=TINYINT}
+		)
+	</insert>
+
+	<!-- 更新秒杀活动状态 add by lijun 20160714 -->
+	<update id="updateSeckillStatus">
+		UPDATE
+		<include refid="BASE_TABLE_NAME" />
+		<set>
+			seckill_status = #{status,jdbcType=TINYINT},
+			update_time = now(),
+		</set>
+		WHERE `id` = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<!-- 更新秒杀活动信息 add by lijun 20160718 -->
+	<update id="updateByPrimaryKeySelective"
+		parameterType="com.okdeer.mall.activity.seckill.entity.ActivitySeckill">
+		UPDATE
+		<include refid="BASE_TABLE_NAME" />
+		<set>
+			<if test="seckillName != null and seckillName != ''">
+				seckill_name = #{seckillName,jdbcType=VARCHAR},
+			</if>
+			<if test="seckillAlias != null and seckillAlias != ''">
+				seckill_alias = #{seckillAlias,jdbcType=VARCHAR},
+			</if>
+			<if test="startTime != null">
+				start_time = #{startTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="endTime != null">
+				end_time = #{endTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="storeSkuId != null and storeSkuId != ''">
+				store_sku_id = #{storeSkuId,jdbcType=VARCHAR},
+			</if>
+			<if test="seckillNum != null">
+				seckill_num = #{seckillNum,jdbcType=INTEGER},
+			</if>
+			<if test="startNum != null">
+				start_num = #{startNum,jdbcType=INTEGER},
+			</if>
+			<if test="seckillPrice != null">
+				seckill_price = #{seckillPrice,jdbcType=DECIMAL},
+			</if>
+			<if test="picUrl != null and picUrl != ''">
+				pic_url = #{picUrl,jdbcType=VARCHAR},
+			</if>
+			<if test="seckillRangeType != null">
+				seckill_range_type = #{seckillRangeType,jdbcType=TINYINT},
+			</if>
+			<if test="seckillStatus != null">
+				seckill_status = #{seckillStatus,jdbcType=TINYINT},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateUserId != null and updateUserId != ''">
+				update_user_id = #{updateUserId,jdbcType=VARCHAR},
+			</if>
+		</set>
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+</mapper>
+

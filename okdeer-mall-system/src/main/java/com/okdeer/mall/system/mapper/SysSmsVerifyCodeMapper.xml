@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.system.mapper.SysSmsVerifyCodeMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.archive.system.entity.SysSmsVerifyCode" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="verify_code" property="verifyCode" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="bussiness_type" property="bussinessType" jdbcType="TINYINT" />
+    <result column="period_minute" property="periodMinute" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, phone, verify_code, type, bussiness_type, period_minute, status, create_time
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+      <if test="null!=params.bussinessTypeSearch and ''!= params.bussinessTypeSearch" >
+        AND bussiness_type = #{params.bussinessTypeSearch}
+      </if>
+      <if test="null!=params.typeSearch and ''!= params.typeSearch" >
+        AND type = #{params.typeSearch}
+      </if>
+      <if test="null!=params.phoneSearch and ''!= params.phoneSearch" >
+        AND phone = #{params.phoneSearch}
+      </if>
+      
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from sys_sms_verify_code
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM sys_sms_verify_code WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM sys_sms_verify_code
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.archive.system.entity.SysSmsVerifyCode" >
+    insert into sys_sms_verify_code (id, phone, verify_code, 
+      type, bussiness_type, period_minute, status, 
+      create_time)
+    values (#{id,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{verifyCode,jdbcType=VARCHAR}, 
+      #{type,jdbcType=TINYINT}, #{bussinessType,jdbcType=TINYINT},#{periodMinute,jdbcType=INTEGER}, #{status,jdbcType=TINYINT}, 
+      #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.archive.system.entity.SysSmsVerifyCode" >
+    insert into sys_sms_verify_code
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="phone != null" >
+        phone,
+      </if>
+      <if test="verifyCode != null" >
+        verify_code,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="bussinessType != null" >
+        bussiness_type,
+      </if>
+      <if test="periodMinute != null" >
+        period_minute,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="verifyCode != null" >
+        #{verifyCode,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=TINYINT},
+      </if>
+      <if test="bussinessType != null" >
+        #{bussinessType,jdbcType=TINYINT},
+      </if>
+      <if test="periodMinute != null" >
+        #{periodMinute,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.archive.system.entity.SysSmsVerifyCode" >
+    update sys_sms_verify_code
+    <set >
+      <if test="phone != null" >
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="verifyCode != null" >
+        verify_code = #{verifyCode,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=TINYINT},
+      </if>
+      <if test="bussinessType != null" >
+        bussiness_type = #{bussinessType,jdbcType=TINYINT},
+      </if>
+      <if test="periodMinute != null" >
+        period_minute = #{periodMinute,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.archive.system.entity.SysSmsVerifyCode" >
+    update sys_sms_verify_code
+    set phone = #{phone,jdbcType=VARCHAR},
+      verify_code = #{verifyCode,jdbcType=VARCHAR},
+      type = #{type,jdbcType=TINYINT},
+      bussiness_type = #{bussinessType,jdbcType=TINYINT},
+      period_minute = #{periodMinute,jdbcType=INTEGER},
+      status = #{status,jdbcType=TINYINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+   <select id="selectLatestByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM sys_sms_verify_code WHERE 1=1 
+    	AND NOW() &lt;= DATE_ADD(create_time,INTERVAL period_minute MINUTE)
+    	<include refid="condition" />
+    ORDER BY create_time DESC LIMIT 1
+  </select>
+  
+  
+</mapper>

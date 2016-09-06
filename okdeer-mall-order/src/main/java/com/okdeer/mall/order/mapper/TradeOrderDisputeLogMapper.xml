@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderDisputeLogMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderDisputeLog" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <id column="dispute_id" property="disputeId" jdbcType="VARCHAR" />
+    <result column="operate_user" property="operateUser" jdbcType="VARCHAR" />
+    <result column="record_time" property="recordTime" jdbcType="TIMESTAMP" />
+    <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.DisputeStatusEnum"/>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, dispute_id, operate_user, record_time, status
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="com.okdeer.mall.order.entity.TradeOrderDisputeLogKey" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_dispute_log
+    where id = #{id,jdbcType=VARCHAR}
+      and dispute_id = #{disputeId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM trade_order_dispute_log WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="com.okdeer.mall.order.entity.TradeOrderDisputeLogKey" >
+    DELETE FROM trade_order_dispute_log
+    WHERE id = #{id,jdbcType=VARCHAR}
+      AND dispute_id = #{disputeId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderDisputeLog" >
+    insert into trade_order_dispute_log (id, dispute_id, operate_user, 
+      record_time, status)
+    values (#{id,jdbcType=VARCHAR}, #{disputeId,jdbcType=VARCHAR}, #{operateUser,jdbcType=VARCHAR}, 
+      #{recordTime,jdbcType=TIMESTAMP}, #{status,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderDisputeLog" >
+    insert into trade_order_dispute_log
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="disputeId != null" >
+        dispute_id,
+      </if>
+      <if test="operateUser != null" >
+        operate_user,
+      </if>
+      <if test="recordTime != null" >
+        record_time,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="disputeId != null" >
+        #{disputeId,jdbcType=VARCHAR},
+      </if>
+      <if test="operateUser != null" >
+        #{operateUser,jdbcType=VARCHAR},
+      </if>
+      <if test="recordTime != null" >
+        #{recordTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.order.entity.TradeOrderDisputeLog" >
+    update trade_order_dispute_log
+    <set >
+      <if test="operateUser != null" >
+        operate_user = #{operateUser,jdbcType=VARCHAR},
+      </if>
+      <if test="recordTime != null" >
+        record_time = #{recordTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+      and dispute_id = #{disputeId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.order.entity.TradeOrderDisputeLog" >
+    update trade_order_dispute_log
+    set operate_user = #{operateUser,jdbcType=VARCHAR},
+      record_time = #{recordTime,jdbcType=TIMESTAMP},
+      status = #{status,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+      and dispute_id = #{disputeId,jdbcType=VARCHAR}
+  </update>
+</mapper>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.group.mapper.ActivityGroupRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.group.entity.ActivityGroupRecord" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="stroe_id" property="stroeId" jdbcType="VARCHAR" />
+    <result column="group_goods_id" property="groupGoodsId" jdbcType="VARCHAR" />
+    <result column="group_goods_num" property="groupGoodsNum" jdbcType="INTEGER" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="sale_id" property="saleId" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="order_disabled" property="orderDisabled" jdbcType="BIT" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, stroe_id, group_goods_id, group_goods_num, user_id, sale_id, order_id, order_disabled
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  
+  <select id="selectActivityGroupRecord" resultType="int" parameterType="map">
+  	 SELECT COALESCE(SUM(ag.group_goods_num),0) FROM activity_group_record ag WHERE stroe_id = #{storeId,jdbcType=VARCHAR} AND
+  	 group_goods_id =#{groupGoodsId,jdbcType=VARCHAR} AND user_id = #{userId,jdbcType=VARCHAR} AND sale_id = #{saleId,jdbcType=VARCHAR} AND order_disabled = 0
+  </select>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from activity_group_record
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_group_record WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM activity_group_record
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroupRecord" >
+    insert into activity_group_record (id, stroe_id, group_goods_id, 
+      group_goods_num, user_id, sale_id, 
+      order_id, order_disabled)
+    values (#{id,jdbcType=VARCHAR}, #{stroeId,jdbcType=VARCHAR}, #{groupGoodsId,jdbcType=VARCHAR}, 
+      #{groupGoodsNum,jdbcType=INTEGER}, #{userId,jdbcType=VARCHAR}, #{saleId,jdbcType=VARCHAR}, 
+      #{orderId,jdbcType=VARCHAR}, #{orderDisabled,jdbcType=BIT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroupRecord" >
+    insert into activity_group_record
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="stroeId != null" >
+        stroe_id,
+      </if>
+      <if test="groupGoodsId != null" >
+        group_goods_id,
+      </if>
+      <if test="groupGoodsNum != null" >
+        group_goods_num,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="saleId != null" >
+        sale_id,
+      </if>
+      <if test="orderId != null" >
+        order_id,
+      </if>
+      <if test="orderDisabled != null" >
+        order_disabled,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="stroeId != null" >
+        #{stroeId,jdbcType=VARCHAR},
+      </if>
+      <if test="groupGoodsId != null" >
+        #{groupGoodsId,jdbcType=VARCHAR},
+      </if>
+      <if test="groupGoodsNum != null" >
+        #{groupGoodsNum,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="saleId != null" >
+        #{saleId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderDisabled != null" >
+        #{orderDisabled,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroupRecord" >
+    update activity_group_record
+    <set >
+      <if test="stroeId != null" >
+        stroe_id = #{stroeId,jdbcType=VARCHAR},
+      </if>
+      <if test="groupGoodsId != null" >
+        group_goods_id = #{groupGoodsId,jdbcType=VARCHAR},
+      </if>
+      <if test="groupGoodsNum != null" >
+        group_goods_num = #{groupGoodsNum,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="saleId != null" >
+        sale_id = #{saleId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        order_id = #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderDisabled != null" >
+        order_disabled = #{orderDisabled,jdbcType=BIT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.activity.group.entity.ActivityGroupRecord" >
+    update activity_group_record
+    set stroe_id = #{stroeId,jdbcType=VARCHAR},
+      group_goods_id = #{groupGoodsId,jdbcType=VARCHAR},
+      group_goods_num = #{groupGoodsNum,jdbcType=INTEGER},
+      user_id = #{userId,jdbcType=VARCHAR},
+      sale_id = #{saleId,jdbcType=VARCHAR},
+      order_id = #{orderId,jdbcType=VARCHAR},
+      order_disabled = #{orderDisabled,jdbcType=BIT}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+    <!-- 根据订单ID，逻辑删除特惠活动记录信息 -->
+  <update id="updateDisabledByOrderId" parameterType="java.lang.String">
+    UPDATE activity_group_record
+    SET order_disabled = 1
+    WHERE order_id = #{orderId,jdbcType=VARCHAR}
+  </update>
+</mapper>

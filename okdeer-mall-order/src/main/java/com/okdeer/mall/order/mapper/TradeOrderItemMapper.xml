@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderItemMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderItem" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="store_spu_id" property="storeSpuId" jdbcType="VARCHAR" />
+    <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+    <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
+    <result column="properties_indb" property="propertiesIndb" jdbcType="VARCHAR" />
+    <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+    <result column="style_code" property="styleCode" jdbcType="VARCHAR" />
+    <result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
+    <result column="spu_type" property="spuType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.base.enums.GoodsTypeEnum"/>
+    <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+    <result column="quantity" property="quantity" jdbcType="INTEGER" />
+    <result column="weight" property="weight" jdbcType="DECIMAL" />
+    <result column="service_assurance" property="serviceAssurance" jdbcType="TINYINT" />
+    <result column="income" property="income" jdbcType="DECIMAL" />
+    <result column="total_amount" property="totalAmount" jdbcType="DECIMAL" />
+    <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
+    <result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
+    <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum"/>
+    <result column="appraise" property="appraise" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.AppraiseEnum"/>
+    <result column="compain_status" property="compainStatus" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.CompainStatusEnum"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+    <result column="sty_code" property="styleCode" jdbcType="VARCHAR" />
+    <result column="is_complete" property="isComplete" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderComplete" />
+    <result column="recharge_mobile" property="rechargeMobile" jdbcType="VARCHAR" />
+    <association property="tradeOrderRefunds" javaType="com.okdeer.mall.order.entity.TradeOrderRefunds">
+    	<result column="refoundId" property="id" jdbcType="VARCHAR" />
+	    <result column="refunds_status" property="refundsStatus" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundsStatusEnum" />
+	    <result column="refund_total_amount" property="totalAmount" jdbcType="DECIMAL" />
+    </association>
+    <collection property="tradeOrderItemDetails" ofType="com.okdeer.mall.order.entity.TradeOrderItemDetail">
+	    <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+	    <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+	    <result column="consume_code" property="consumeCode" jdbcType="VARCHAR" />
+	    <result column="consume_status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.ConsumeStatusEnum"/>
+    </collection>
+  </resultMap>
+  
+  <resultMap id="OrderItemResultMap" type="com.okdeer.mall.order.entity.TradeOrderItem" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="store_spu_id" property="storeSpuId" jdbcType="VARCHAR" />
+    <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+    <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
+    <result column="properties_indb" property="propertiesIndb" jdbcType="VARCHAR" />
+    <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+    <result column="style_code" property="styleCode" jdbcType="VARCHAR" />
+    <result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
+    <result column="spu_type" property="spuType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.base.enums.GoodsTypeEnum"/>
+    <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+    <result column="quantity" property="quantity" jdbcType="INTEGER" />
+    <result column="weight" property="weight" jdbcType="DECIMAL" />
+    <result column="service_assurance" property="serviceAssurance" jdbcType="TINYINT" />
+    <result column="total_amount" property="totalAmount" jdbcType="DECIMAL" />
+    <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
+    <result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
+    <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum"/>
+    <result column="appraise" property="appraise" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.AppraiseEnum"/>
+    <result column="compain_status" property="compainStatus" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.CompainStatusEnum"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+    <result column="sty_code" property="styleCode" jdbcType="VARCHAR" />
+    <result column="recharge_mobile" property="rechargeMobile" jdbcType="VARCHAR" />
+    <result column="is_complete" property="isComplete" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderComplete" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, order_id, store_spu_id, store_sku_id, sku_name,properties_indb, main_pic_prl, bar_code,
+    spu_type, unit_price, quantity,weight,service_assurance,total_amount,income, actual_amount, preferential_price, 
+    status, appraise,compain_status,create_time,income,recharge_mobile,is_complete
+  </sql>
+  
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_item
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+
+   <select id="selectTradeOrderItem" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    T.id, T.order_id, T.store_spu_id, T.store_sku_id, T.sku_name, T.properties_indb, T.main_pic_prl, T.bar_code,
+    T.spu_type, T.unit_price, T.quantity, T.weight, T.service_assurance, T.total_amount, T.income, T.actual_amount, T.preferential_price, 
+    R.status, T.appraise, T.compain_status, T.create_time, T.income, T.recharge_mobile
+    FROM trade_order_item T
+    LEFT JOIN trade_order_refunds_item R
+    on T.id = R.order_item_id 
+    WHERE T.order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 判断订单是否评价 start zhongy -->
+   <select id="selectTradeOrderItemIsAppraise" resultType="int" parameterType="java.lang.String" >
+    SELECT count(1)
+    FROM trade_order_item
+    WHERE appraise = 1
+     and order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  <!-- 判断订单是否评价 end zhongy -->
+  
+  <!-- 订单项关联退款单查询  zhongy  start-->
+  <select id="selectTradeOrderItemOrRefund" resultMap="BaseResultMap" parameterType="java.lang.String" >
+       SELECT 
+	    item.id, item.order_id, item.store_spu_id, item.store_sku_id, item.sku_name,item.properties_indb, item.main_pic_prl, 
+	    item.spu_type, item.unit_price, item.quantity,item.service_assurance,item.total_amount, item.actual_amount, item.preferential_price, 
+	    item.status, item.appraise,item.compain_status,item.create_time,item.recharge_mobile,
+	    refound.id as refoundId,refound.refunds_status,refound.total_amount as refund_total_amount
+	    FROM trade_order_item item left join trade_order_refunds_item refundItem on item.id = refundItem.order_item_id
+	    left join trade_order_refunds refound on refound.id = refundItem.refunds_id
+	    WHERE item.order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  <!-- 订单项关联退款单查询  zhongy  end-->
+  
+  <!-- 订单项关联详细查询  zhongy  start-->
+  <!-- update by wushp 服务店订单详情用 -->
+  <select id="selectTradeOrderItemOrDetail" resultMap="BaseResultMap" parameterType="java.lang.String" >
+	SELECT 
+		item.id, item.order_id, item.store_spu_id, item.store_sku_id, item.sku_name,item.properties_indb, item.main_pic_prl, 
+		item.spu_type, item.unit_price, item.quantity,item.service_assurance,item.total_amount, item.actual_amount, item.preferential_price, 
+		item.status, item.appraise,item.compain_status,item.create_time,item.recharge_mobile
+	FROM trade_order_item item 
+	WHERE item.order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  <!-- 订单项关联详细查询  zhongy  end-->
+  
+  
+  <!-- author yangq 根据订单项ID查询该订单项的信息 -->
+  <select id="selectOrderItemById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM trade_order_item
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM trade_order_item WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM trade_order_item
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderItem" >
+    insert into trade_order_item (id, order_id, store_spu_id, 
+      store_sku_id, sku_name, properties_indb, 
+      main_pic_prl, spu_type, unit_price, 
+      quantity,weight, total_amount, actual_amount, 
+      preferential_price, status, appraise, 
+      create_time, recharge_mobile)
+    values (#{id,jdbcType=VARCHAR}, #{orderId,jdbcType=VARCHAR}, #{storeSpuId,jdbcType=VARCHAR}, 
+      #{storeSkuId,jdbcType=VARCHAR}, #{skuName,jdbcType=VARCHAR}, #{propertiesIndb,jdbcType=VARCHAR}, 
+      #{mainPicPrl,jdbcType=VARCHAR}, #{spuType,jdbcType=VARCHAR}, #{unitPrice,jdbcType=DECIMAL}, 
+      #{quantity,jdbcType=INTEGER},#{weight,jdbcType=DECIMAL}, #{totalAmount,jdbcType=DECIMAL}, #{actualAmount,jdbcType=DECIMAL}, 
+      #{preferentialPrice,jdbcType=DECIMAL}, #{status,jdbcType=BIT}, #{appraise,jdbcType=BIT}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{rechargeMobile, jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- begin 重构4.1 added by zhangkn -->
+	<insert id="insertBatch" parameterType="list" >
+  		insert into trade_order_item(
+			id,
+  			order_id,
+			store_spu_id,
+			store_sku_id,
+			sku_name,
+			properties_indb,
+			main_pic_prl,
+			spu_type,
+			unit_price,
+			quantity,
+			total_amount,
+			actual_amount,
+			preferential_price,
+			status,
+			compain_status,
+			appraise,
+			create_time,
+			service_assurance,
+			activity_type,
+			activity_id,
+			bar_code,
+			style_code,
+
+			weight,
+			income,
+			recharge_mobile,
+			is_complete
+		)values
+		<foreach collection="list" item="item" index="index" separator="," >
+        (
+            #{item.id,jdbcType=VARCHAR},
+  			#{item.orderId,jdbcType=VARCHAR},
+			#{item.storeSpuId,jdbcType=VARCHAR},
+			#{item.storeSkuId,jdbcType=VARCHAR},
+			#{item.skuName,jdbcType=VARCHAR},
+			#{item.propertiesIndb,jdbcType=VARCHAR},
+			#{item.mainPicPrl,jdbcType=VARCHAR},
+			#{item.spuType,jdbcType=INTEGER},
+			#{item.unitPrice,jdbcType=DECIMAL},
+			#{item.quantity,jdbcType=INTEGER},
+			#{item.totalAmount,jdbcType=DECIMAL},
+			#{item.actualAmount,jdbcType=DECIMAL},
+			#{item.preferentialPrice,jdbcType=DECIMAL},
+			#{item.status,jdbcType=INTEGER},
+			#{item.compainStatus,jdbcType=INTEGER},
+			#{item.appraise,jdbcType=INTEGER},
+			#{item.createTime,jdbcType=TIMESTAMP},
+			#{item.serviceAssurance,jdbcType=INTEGER},
+			#{item.activityType,jdbcType=INTEGER},
+			#{item.activityId,jdbcType=VARCHAR},
+			#{item.barCode,jdbcType=VARCHAR},
+			#{item.styleCode,jdbcType=VARCHAR},
+
+			#{item.weight,jdbcType=DECIMAL},
+			#{item.income,jdbcType=DECIMAL},
+			#{item.rechargeMobile,jdbcType=VARCHAR},
+			#{item.isComplete,jdbcType=INTEGER}
+        )
+		</foreach>
+  </insert>
+  <!-- end 重构4.1 added by zhangkn -->
+  
+  <insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderItem" >
+    insert into trade_order_item
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="orderId != null" >
+        order_id,
+      </if>
+      <if test="storeSpuId != null" >
+        store_spu_id,
+      </if>
+      <if test="storeSkuId != null" >
+        store_sku_id,
+      </if>
+      <if test="skuName != null" >
+        sku_name,
+      </if>
+      <if test="propertiesIndb != null" >
+        properties_indb,
+      </if>
+      <if test="mainPicPrl != null" >
+        main_pic_prl,
+      </if>
+      <if test="spuType != null" >
+        spu_type,
+      </if>
+      <if test="unitPrice != null" >
+        unit_price,
+      </if>
+      <if test="quantity != null" >
+        quantity,
+      </if>
+      <if test="weight != null" >
+        weight,
+      </if>
+      <if test="totalAmount != null" >
+        total_amount,
+      </if>
+      <if test="income != null" >
+        income,
+      </if>
+      <if test="actualAmount != null" >
+        actual_amount,
+      </if>
+      <if test="preferentialPrice != null" >
+        preferential_price,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="appraise != null" >
+        appraise,
+      </if>
+      <if test="serviceAssurance != null" >
+        service_assurance,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="barCode != null" >
+        bar_code,
+      </if>
+      <if test="styleCode != null" >
+        style_code,
+      </if>
+      <if test="activityId != null">
+        activity_id,
+      </if>
+      <if test="activityType != null">
+        activity_type,
+      </if>
+      <if test="rechargeMobile != null">
+      	recharge_mobile
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeSpuId != null" >
+        #{storeSpuId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeSkuId != null" >
+        #{storeSkuId,jdbcType=VARCHAR},
+      </if>
+      <if test="skuName != null" >
+        #{skuName,jdbcType=VARCHAR},
+      </if>
+      <if test="propertiesIndb != null" >
+        #{propertiesIndb,jdbcType=VARCHAR},
+      </if>
+      <if test="mainPicPrl != null" >
+        #{mainPicPrl,jdbcType=VARCHAR},
+      </if>
+      <if test="spuType != null" >
+        #{spuType,jdbcType=VARCHAR},
+      </if>
+      <if test="unitPrice != null" >
+        #{unitPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="quantity != null" >
+        #{quantity,jdbcType=INTEGER},
+      </if>
+      <if test="weight != null" >
+        #{weight,jdbcType=DECIMAL},
+      </if>
+      <if test="totalAmount != null" >
+        #{totalAmount,jdbcType=DECIMAL},
+      </if>
+       <if test="income != null" >
+        #{income,jdbcType=DECIMAL},
+      </if>
+      <if test="actualAmount != null" >
+        #{actualAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="preferentialPrice != null" >
+        #{preferentialPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=BIT},
+      </if>
+      <if test="appraise != null" >
+        #{appraise,jdbcType=BIT},
+      </if>
+      <if test="serviceAssurance != null" >
+        #{serviceAssurance,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="barCode != null" >
+        #{barCode,jdbcType=VARCHAR},
+      </if>
+      <if test="styleCode != null" >
+        #{styleCode,jdbcType=VARCHAR},
+      </if>
+      <if test="activityId != null">
+        #{activityId,jdbcType=VARCHAR},
+      </if>
+      <if test="activityType != null">
+        #{activityType,jdbcType=TINYINT},
+      </if>
+      <if test="rechargeMobile != null">
+      	#{rechargeMobile,jdbcType=VARCHAR}
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.order.entity.TradeOrderItem" >
+    update trade_order_item
+    <set >
+      <if test="orderId != null" >
+        order_id = #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeSpuId != null" >
+        store_spu_id = #{storeSpuId,jdbcType=VARCHAR},
+      </if>
+      <if test="storeSkuId != null" >
+        store_sku_id = #{storeSkuId,jdbcType=VARCHAR},
+      </if>
+      <if test="skuName != null" >
+        sku_name = #{skuName,jdbcType=VARCHAR},
+      </if>
+      <if test="propertiesIndb != null" >
+        properties_indb = #{propertiesIndb,jdbcType=VARCHAR},
+      </if>
+      <if test="mainPicPrl != null" >
+        main_pic_prl = #{mainPicPrl,jdbcType=VARCHAR},
+      </if>
+      <if test="spuType != null" >
+        spu_type = #{spuType,jdbcType=VARCHAR},
+      </if>
+      <if test="unitPrice != null" >
+        unit_price = #{unitPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="quantity != null" >
+        quantity = #{quantity,jdbcType=INTEGER},
+      </if>
+      <if test="weight != null" >
+        weight = #{weight,jdbcType=DECIMAL},
+      </if>
+      <if test="totalAmount != null" >
+        total_amount = #{totalAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="actualAmount != null" >
+        actual_amount = #{actualAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="preferentialPrice != null" >
+        preferential_price = #{preferentialPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=BIT},
+      </if>
+      <if test="appraise != null" >
+        appraise = #{appraise,jdbcType=BIT},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="rechargeMobile != null">
+      	recharge_mobile = #{rechargeMobile,jdbcType=VARCHAR}
+      </if>
+      <if test="isComplete != null">
+      	is_complete = #{isComplete,jdbcType=TINYINT}
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.order.entity.TradeOrderItem" >
+    update trade_order_item
+    set order_id = #{orderId,jdbcType=VARCHAR},
+      store_spu_id = #{storeSpuId,jdbcType=VARCHAR},
+      store_sku_id = #{storeSkuId,jdbcType=VARCHAR},
+      sku_name = #{skuName,jdbcType=VARCHAR},
+      properties_indb = #{propertiesIndb,jdbcType=VARCHAR},
+      main_pic_prl = #{mainPicPrl,jdbcType=VARCHAR},
+      spu_type = #{spuType,jdbcType=BIT},
+      unit_price = #{unitPrice,jdbcType=DECIMAL},
+      quantity = #{quantity,jdbcType=INTEGER},
+      weight = #{weight,jdbcType=DECIMAL},
+      total_amount = #{totalAmount,jdbcType=DECIMAL},
+      actual_amount = #{actualAmount,jdbcType=DECIMAL},
+      preferential_price = #{preferentialPrice,jdbcType=DECIMAL},
+      status = #{status,jdbcType=BIT},
+      appraise = #{appraise,jdbcType=BIT},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- wusw:订单项和订单项详细字段 -->
+  <sql id="Item_Detail_Column_List" >
+    item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
+    item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, 
+    item.status, item.appraise, item.create_time,detail.status AS itemDetailStatus,detail.consume_code,
+    detail.start_time,detail.end_time,item.service_assurance,item.income,item.recharge_mobile
+  </sql>
+  
+  <!-- wusw:订单项和订单项详细字段 -->
+  <sql id="Item_Column_List" >
+    item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
+    item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, item.service_assurance,
+    item.status, item.appraise, item.create_time,item.income,item.recharge_mobile,item.is_complete
+  </sql>
+  
+  <!-- wusw:订单项和订单项信息resultMap  -->
+   <resultMap id="TradeOrderItemDetailMap" type="com.okdeer.mall.order.entity.TradeOrderItem" extends="BaseResultMap">
+    <collection property="tradeOrderItemDetails" ofType="com.okdeer.mall.order.entity.TradeOrderItemDetail">
+        <result column="consume_code" property="consumeCode" jdbcType="VARCHAR"/>
+        <result column="itemDetailStatus" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.ConsumeStatusEnum"/>
+        <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+        <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+    </collection>
+   </resultMap>
+  
+  <!-- wusw:根据订单id，查询订单项和订单项消费信息 -->
+  <select id="selectOrderItemDetailById" resultMap="TradeOrderItemDetailMap" parameterType="java.lang.String">
+    SELECT  <include refid="Item_Detail_Column_List" />
+    FROM trade_order_item item
+    LEFT JOIN trade_order_item_detail detail ON item.id = detail.order_item_id
+    WHERE item.order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="selectOrderItemListById" resultMap="OrderItemResultMap" parameterType="java.lang.String">
+    SELECT  <include refid="Item_Column_List" />
+    FROM trade_order_item item
+    WHERE item.order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  
+    <!-- wusw:订单项和订单项信息resultMap  -->
+   <resultMap id="orderItemDetailMap" type="com.okdeer.mall.order.vo.TradeOrderItemDetailVo">
+      <id column="id" property="itemDetailId" jdbcType="VARCHAR" />
+      <result column="sku_name" property="skuName" jdbcType="VARCHAR"/>
+      <result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR"/>
+      <result column="properties_indb" property="propertiesIndb" jdbcType="VARCHAR"/>
+      <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+      <result column="quantity" property="quantity" jdbcType="INTEGER" />
+      <result column="total_amount" property="totalAmount" jdbcType="DECIMAL" />
+      <result column="consume_code" property="consumeCode" jdbcType="VARCHAR"/>
+      <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.ConsumeStatusEnum"/>
+      <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+      <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+    
+   </resultMap>
+  
+  <!-- wusw:根据订单id，查询订单项和订单项消费信息 -->
+  <select id="selectItemDetailByOrderId" resultMap="orderItemDetailMap" parameterType="java.lang.String">
+    SELECT  item.sku_name,item.main_pic_prl,item.properties_indb,item.unit_price,item.quantity,item.total_amount,
+            detail.consume_code,detail.status,detail.start_time,detail.end_time
+    FROM trade_order_item item
+    LEFT JOIN trade_order_item_detail detail ON item.id = detail.order_item_id
+    WHERE item.order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- wusw:根据订单id和订单项详情消费状态，查询记录数量 -->
+  <select id="selectCountByOrderIdDetailStatus" resultType="int" parameterType="map">
+    SELECT COUNT(1)
+    FROM trade_order_item item
+    LEFT JOIN trade_order_item_detail detail ON item.id = detail.order_item_id
+    WHERE detail.`status` = #{status,jdbcType=TINYINT}
+    AND item.order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  
+	
+ <update id="updateByOrderId" parameterType="string">
+	UPDATE trade_order_item
+	SET appraise = 1
+	WHERE
+	order_id = #{orderId,jdbcType=VARCHAR}
+</update>
+
+ <!-- 批量更新订单项已完成  add by zengj-->
+ <update id="updateCompleteById" parameterType="java.util.List">
+    UPDATE trade_order_item
+    SET is_complete = 1
+    WHERE id in
+    <foreach collection="ids" index="index" item="item" open="(" close=")" separator=",">
+        #{item}
+    </foreach>
+ </update>
+</mapper>

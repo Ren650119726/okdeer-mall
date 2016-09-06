@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.system.mapper.SysPermissionMapper">
+	<resultMap id="BaseResultMap" type="com.okdeer.archive.system.entity.SysPermission">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="pid" property="pid" jdbcType="VARCHAR" />
+	    <result column="name" property="name" jdbcType="VARCHAR" />
+	    <result column="type" property="type" jdbcType="VARCHAR" />
+	    <result column="sort" property="sort" jdbcType="INTEGER" />
+	    <result column="url" property="url" jdbcType="VARCHAR" />
+	    <result column="perm_code" property="permCode" jdbcType="VARCHAR" />
+	    <result column="icon" property="icon" jdbcType="VARCHAR" />
+	    <result column="state" property="state" jdbcType="VARCHAR" />
+	    <result column="description" property="description" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		id, pid, name, type, sort, url, perm_code, icon, state, description
+	</sql> 
+	
+	<sql id="condition" >
+	    <if test="null!=params" >
+	      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+	        ${params.queryCondition}
+	      </if>
+	    </if>
+	</sql>
+	
+	<select id="selectById" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT permission_id FROM sys_role_permission WHERE role_id = #{id}
+	</select>
+	
+	<select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	     FROM sys_permission WHERE 1=1 
+	    <include refid="condition" />
+	</select>
+
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	    FROM sys_permission
+	    WHERE id = #{id}
+	</select>
+	
+	<select id="selectAllMenu" resultMap="BaseResultMap">
+		SELECT p.id,
+			   p.pid,
+			   p.name,
+			   p.url,
+			   p.icon,
+			   p.sort,
+			   p.description 
+			FROM sys_permission p 
+		WHERE p.type = 'F' 
+		 ORDER BY p.sort 
+	</select>
+    
+    <!--通过父菜单ID，查询子菜单or功能 add by Laven-->
+	<select id="selectByPID" parameterType="string" resultMap="BaseResultMap">
+		SELECT p.id,
+			   p.pid,
+			   p.name,
+			   p.url,
+			   p.icon,
+			   p.sort,
+			   p.description
+			FROM sys_permission p
+		WHERE p.pid = #{pid}
+		 ORDER BY p.sort
+	</select>
+	
+	<!-- 根据id查询下级菜单 start -->
+	<select id="selectMenuById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+		SELECT p.id,
+			   p.name,
+			   p.url,
+			   p.perm_code,
+			   p.description 
+		  FROM sys_permission p 
+	     WHERE p.type = 'F' 
+			   AND p.pid = #{pid} 
+		 ORDER BY p.sort 
+	</select>
+	<!-- 根据id查询下级菜单 end -->
+	
+	<select id="selectMenuOperation" resultMap="BaseResultMap" parameterType="java.lang.String" >
+		SELECT p.id,
+			   p.name,
+			   p.url,
+			   p.perm_code,
+			   p.description 
+		  FROM sys_permission p 
+	     WHERE p.type = 'O' 
+			   AND p.pid = #{pid} 
+		 ORDER BY p.sort 
+	</select>
+
+    <!-- 根据用户id查询用户拥有的权限资源 -->
+	<select id="selectByUserId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+		SELECT DISTINCT p.id, p.pid, p.name, p.type, p.sort, p.url, p.perm_code, p.icon, p.state, p.description
+		FROM sys_permission p 
+		LEFT JOIN sys_role_permission rp ON  p.id=rp.permission_id
+		LEFT JOIN sys_user_role ur ON rp.role_id=ur.role_id
+		WHERE ur.user_id=#{userId}
+		ORDER BY p.sort  ASC
+	</select>
+	
+	<!-- 查询全部权限资源，只给超级管理员使用 -->
+	<select id="findAll" resultMap="BaseResultMap" >
+		SELECT * FROM sys_permission
+	</select>
+
+   <insert id="insert" parameterType="com.okdeer.archive.system.entity.SysPermission" >
+	    INSERT INTO sys_permission (id, pid, name, type, sort, url, perm_code, icon, state, description)
+	    VALUES (#{id}, #{pid}, #{name}, #{type}, #{sort}, #{url}, #{permCode}, #{icon}, #{state},#{description})
+   </insert>
+   
+   <insert id="insertSelective" parameterType="com.okdeer.archive.system.entity.SysPermission" >
+	    INSERT INTO sys_permission
+	    <trim prefix="(" suffix=")" suffixOverrides="," >
+	      <if test="id != null" >
+	        id,
+	      </if>
+	      <if test="pid != null and pid!=''" >
+	        pid,
+	      </if>
+	      <if test="name != null" >
+	        name,
+	      </if>
+	      <if test="type != null" >
+	        type,
+	      </if>
+	      <if test="sort != null" >
+	        sort,
+	      </if>
+	      <if test="url != null" >
+	        url,
+	      </if>
+	      <if test="permCode != null" >
+	        perm_code,
+	      </if>
+	      <if test="icon != null" >
+	        icon,
+	      </if>
+	      <if test="state != null" >
+	        state,
+	      </if>
+	      <if test="description != null" >
+	        description,
+	      </if>
+	    </trim>
+	    <trim prefix="values (" suffix=")" suffixOverrides="," >
+	      <if test="id != null" >
+	        #{id},
+	      </if>
+	      <if test="pid != null and pid!=''" >
+	        #{pid},
+	      </if>
+	      <if test="name != null" >
+	        #{name},
+	      </if>
+	      <if test="type != null" >
+	        #{type},
+	      </if>
+	      <if test="sort != null" >
+	        #{sort},
+	      </if>
+	      <if test="url != null" >
+	        #{url},
+	      </if>
+	      <if test="permCode != null" >
+	        #{permCode},
+	      </if>
+	      <if test="icon != null" >
+	        #{icon},
+	      </if>
+	      <if test="state != null" >
+	        #{state},
+	      </if>
+	      <if test="description != null" >
+	        #{description},
+	      </if>
+	    </trim>
+    </insert>
+    
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+	    DELETE FROM sys_permission
+	    WHERE id = #{id}
+    </delete>
+    
+    <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.archive.system.entity.SysPermission" >
+	    UPDATE sys_permission
+	    <set >
+	      <if test="pid != null and pid !=''" >
+	        pid = #{pid},
+	      </if>
+	      <if test="name != null" >
+	        name = #{name},
+	      </if>
+	      <if test="type != null" >
+	        type = #{type},
+	      </if>
+	      <if test="sort != null" >
+	        sort = #{sort},
+	      </if>
+	      <if test="url != null" >
+	        url = #{url},
+	      </if>
+	      <if test="permCode != null" >
+	        perm_code = #{permCode},
+	      </if>
+	      <if test="icon != null" >
+	        icon = #{icon},
+	      </if>
+	      <if test="state != null" >
+	        state = #{state},
+	      </if>
+	      <if test="description != null" >
+	        description = #{description},
+	      </if>
+	    </set>
+	    WHERE id = #{id}
+    </update>
+    
+    <update id="updateByPrimaryKey" parameterType="com.okdeer.archive.system.entity.SysPermission" >
+	    UPDATE sys_permission
+	      SET pid = #{pid},
+	        name = #{name},
+	        type = #{type},
+	        sort = #{sort},
+	        url = #{url},
+	        perm_code = #{permCode},
+	        icon = #{icon},
+	        state = #{state},
+	        description = #{description}
+		  WHERE id = #{id}
+    </update>
+	
+</mapper>

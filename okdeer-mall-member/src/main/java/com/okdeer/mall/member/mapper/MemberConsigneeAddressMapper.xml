@@ -1,0 +1,657 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.member.member.entity.MemberConsigneeAddress" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="consignee_name" property="consigneeName" jdbcType="VARCHAR" />
+    <result column="province_id" property="provinceId" jdbcType="VARCHAR" />
+    <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+    <result column="area_id" property="areaId" jdbcType="VARCHAR" />
+    <result column="area" property="area" jdbcType="VARCHAR" />
+    <result column="address" property="address" jdbcType="VARCHAR" />
+    <result column="zip_code" property="zipCode" jdbcType="VARCHAR" />
+    <result column="telephone" property="telephone" jdbcType="VARCHAR" />
+    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+    <result column="is_default" property="isDefault" javaType="com.okdeer.mall.member.member.enums.AddressDefault" jdbcType="TINYINT" />
+    <result column="source" property="source" javaType="com.okdeer.mall.member.member.enums.AddressSource" jdbcType="TINYINT" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+    <result column="disabled" property="disabled" javaType="com.yschome.base.common.enums.Disabled" jdbcType="TINYINT"/>
+    <result column="community_id" property="communityId" jdbcType="VARCHAR" />
+    <result column="room_id" property="roomId" jdbcType="VARCHAR" />
+    <result column="type" property="type" javaType="com.okdeer.mall.member.member.enums.AddressType" jdbcType="TINYINT" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="company_name" property="companyName" jdbcType="VARCHAR" />
+    <result column="longitude" property="longitude" jdbcType="DOUBLE" />
+    <result column="latitude" property="latitude" jdbcType="DOUBLE" />
+    <result column="area_ext" property="areaExt" jdbcType="VARCHAR" />
+    <result column="area_name" property="areaName" jdbcType="VARCHAR" />
+    <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+    <result column="province_name" property="provinceName" jdbcType="VARCHAR" />
+    <result column="use_time" property="useTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  
+  <!-- 经纬度距离 DistanceResultMap add by luosm start -->
+  <resultMap id="DistanceResultMap" type="com.okdeer.mall.member.member.vo.MemberConsigneeAddressVo" extends="BaseResultMap">
+  	<result column="store_id" property="storeId" jdbcType="VARCHAR" />
+    <result column="longitudeStore" property="longitudeStore" jdbcType="DOUBLE" />
+    <result column="latitudeStore" property="latitudeStore" jdbcType="DOUBLE" />
+    <result column="distance" property="distance" jdbcType="VARCHAR" />
+    <result column="beyondType" property="beyondType" jdbcType="VARCHAR" />
+  </resultMap>
+  <!-- 经纬度距离 DistanceResultMap add by luosm end -->
+  
+  <sql id="Base_Column_List" >
+    id, user_id, consignee_name, province_id, city_id, area_id, area, address, zip_code, 
+    telephone, mobile, is_default, source, create_time, create_user_id, update_time, 
+    update_user_id, disabled, community_id, room_id, type,remark,company_name,longitude,latitude,area_ext,area_name,city_name,province_name,use_time
+  </sql>
+  
+  <!-- 查询条件 -->
+   <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        #{params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  
+   <!-- 根据主键id查询收货地址信息 -->
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM member_consignee_address
+    WHERE id = #{id,jdbcType=VARCHAR}
+    and disabled = 0
+  </select>
+  
+   <!-- 根据主键id查询收货地址信息 -->
+  <select id="selectAddressById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM member_consignee_address
+    WHERE id = #{id,jdbcType=VARCHAR}
+    and disabled = 0
+  </select>
+  
+  <!-- 根据条件查询店铺地址列表 -->
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="com.okdeer.mall.member.member.entity.MemberConsigneeAddress" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM member_consignee_address addr
+     WHERE addr.disabled = 0
+    <if test="null != type">
+        AND addr.type = #{type}
+  	</if>
+    <if test="null != userId and userId != ''">
+        AND addr.user_id = #{userId}
+  	</if>
+    <if test="null != roomId and roomId != ''">
+        AND addr.room_id = #{roomId}
+  	</if>
+  	<if test="null != isDefault">
+        AND addr.is_default = #{isDefault}
+  	</if>
+  	<if test="null != source">
+        AND addr.source = #{source,jdbcType=TINYINT}
+  	</if>
+	 ORDER BY addr.create_time DESC
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM member_consignee_address
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 添加收货地址信息 -->
+  <insert id="insert" parameterType="com.okdeer.mall.member.member.entity.MemberConsigneeAddress" >
+    insert into member_consignee_address (id, user_id, consignee_name, 
+      province_id, city_id, area_id, 
+      area, address, zip_code, 
+      telephone, mobile, is_default, 
+      source, create_time, create_user_id, 
+      update_time, update_user_id, disabled, 
+      community_id, room_id, type,remark,company_name,longitude,latitude,area_ext,area_name,city_name,province_name
+      )
+    values (#{id,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{consigneeName,jdbcType=VARCHAR}, 
+      #{provinceId,jdbcType=VARCHAR}, #{cityId,jdbcType=VARCHAR}, #{areaId,jdbcType=VARCHAR}, 
+      #{area,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}, #{zipCode,jdbcType=VARCHAR}, 
+      #{telephone,jdbcType=VARCHAR}, #{mobile,jdbcType=VARCHAR}, #{isDefault,jdbcType=TINYINT}, 
+      #{source,jdbcType=TINYINT}, #{createTime,jdbcType=TIMESTAMP}, #{createUserId,jdbcType=VARCHAR}, 
+      #{updateTime,jdbcType=TIMESTAMP}, #{updateUserId,jdbcType=VARCHAR}, #{disabled,jdbcType=TINYINT}, 
+      #{communityId,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, #{type,jdbcType=TINYINT}, #{remark,jdbcType=VARCHAR},
+      #{companyName,jdbcType=VARCHAR},#{longitude,jdbcType=DOUBLE},#{latitude,jdbcType=DOUBLE}, #{areaExt,jdbcType=VARCHAR}, 
+      #{areaName,jdbcType=VARCHAR}, #{cityName,jdbcType=VARCHAR}, #{provinceName,jdbcType=VARCHAR}
+      )
+  </insert>
+  
+  
+   <!-- 判断是否为空，添加收货地址信息 -->
+  <insert id="insertSelective" parameterType="com.okdeer.mall.member.member.entity.MemberConsigneeAddress" >
+    insert into member_consignee_address
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        id,
+      </if>
+      <if test="userId != null and userId != ''" >
+        user_id,
+      </if>
+      <if test="consigneeName != null and consigneeName != ''" >
+        consignee_name,
+      </if>
+      <if test="provinceId != null and provinceId != ''" >
+        province_id,
+      </if>
+      <if test="cityId != null and cityId != ''" >
+        city_id,
+      </if>
+      <if test="areaId != null and areaId != ''" >
+        area_id,
+      </if>
+      <if test="area != null and area != ''" >
+        area,
+      </if>
+      <if test="address != null and address != ''" >
+        address,
+      </if>
+      <if test="zipCode != null and zipCode != ''" >
+        zip_code,
+      </if>
+      <if test="telephone != null and telephone != ''" >
+        telephone,
+      </if>
+      <if test="mobile != null and mobile != ''" >
+        mobile,
+      </if>
+      <if test="isDefault != null" >
+        is_default,
+      </if>
+      <if test="source != null" >
+        source,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="createUserId != null and createUserId != ''" >
+        create_user_id,
+      </if>
+      <if test="updateTime != null " >
+        update_time,
+      </if>
+      <if test="updateUserId != null and updateUserId != ''" >
+        update_user_id,
+      </if>
+      <if test="disabled != null " >
+        disabled,
+      </if>
+      <if test="communityId != null and communityId != ''" >
+        community_id,
+      </if>
+      <if test="roomId != null and roomId != ''" >
+        room_id,
+      </if>
+      <if test="type != null " >
+        type,
+      </if>
+      <if test="remark != null and remark != ''" >
+        remark,
+      </if>
+      <if test="companyName != null and companyName != ''" >
+        company_name,
+      </if>
+      <if test="longitude != null" >
+        longitude,
+      </if>
+      <if test="latitude != null" >
+        latitude,
+      </if>
+      <if test="areaExt != null and areaExt != ''" >
+        area_ext,
+      </if>
+      <if test="areaName != null and areaName != ''" >
+        area_name,
+      </if>
+      <if test="cityName != null and cityName != ''" >
+        city_name,
+      </if>
+      <if test="provinceName != null and provinceName != ''" >
+        province_name,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null and userId != ''" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="consigneeName != null and consigneeName != ''" >
+        #{consigneeName,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceId != null and provinceId != ''" >
+        #{provinceId,jdbcType=VARCHAR},
+      </if>
+      <if test="cityId != null and cityId != ''" >
+        #{cityId,jdbcType=VARCHAR},
+      </if>
+      <if test="areaId != null and areaId != ''" >
+        #{areaId,jdbcType=VARCHAR},
+      </if>
+      <if test="area != null and area != ''" >
+        #{area,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null and address != ''" >
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="zipCode != null and zipCode != ''" >
+        #{zipCode,jdbcType=VARCHAR},
+      </if>
+      <if test="telephone != null and telephone != ''" >
+        #{telephone,jdbcType=VARCHAR},
+      </if>
+      <if test="mobile != null and mobile != ''" >
+        #{mobile,jdbcType=VARCHAR},
+      </if>
+      <if test="isDefault != null " >
+        #{isDefault,jdbcType=TINYINT},
+      </if>
+      <if test="source != null " >
+        #{source,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null " >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUserId != null and createUserId != ''" >
+        #{createUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null " >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null and updateUserId != ''" >
+        #{updateUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="disabled != null" >
+        #{disabled,jdbcType=TINYINT},
+      </if>
+      <if test="communityId != null and communityId != ''" >
+        #{communityId,jdbcType=VARCHAR},
+      </if>
+      <if test="roomId != null and roomId != ''" >
+        #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null " >
+        #{type,jdbcType=TINYINT},
+      </if>
+      <if test="remark != null and remark != ''" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="companyName != null and companyName != ''" >
+        #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="longitude != null " >
+        #{longitude,jdbcType=DOUBLE},
+      </if>
+      <if test="latitude != null" >
+        #{latitude,jdbcType=DOUBLE},
+      </if>
+      <if test="areaExt != null and areaExt != ''" >
+        #{areaExt,jdbcType=VARCHAR},
+      </if>
+      <if test="areaName != null and areaName != ''" >
+        #{areaName,jdbcType=VARCHAR},
+      </if>
+      <if test="cityName != null and cityName != ''" >
+        #{cityName,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceName != null and provinceName != ''" >
+        #{provinceName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- 判断是否为空，根据主键id修改收货地址信息 -->
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.member.member.entity.MemberConsigneeAddress" >
+    update member_consignee_address
+    <set >
+      <if test="userId != null and userId != ''" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="consigneeName != null and consigneeName != ''" >
+        consignee_name = #{consigneeName,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceId != null and provinceId != ''" >
+        province_id = #{provinceId,jdbcType=VARCHAR},
+      </if>
+      <if test="cityId != null and cityId != ''" >
+        city_id = #{cityId,jdbcType=VARCHAR},
+      </if>
+      <if test="areaId != null and areaId != ''" >
+        area_id = #{areaId,jdbcType=VARCHAR},
+      </if>
+      <if test="area != null and area != ''" >
+        area = #{area,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null and address != ''" >
+        address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="zipCode != null and zipCode != ''" >
+        zip_code = #{zipCode,jdbcType=VARCHAR},
+      </if>
+      <if test="telephone != null and telephone != ''" >
+        telephone = #{telephone,jdbcType=VARCHAR},
+      </if>
+      <if test="mobile != null and mobile != ''" >
+        mobile = #{mobile,jdbcType=VARCHAR},
+      </if>
+      <if test="isDefault != null " >
+        is_default = #{isDefault,jdbcType=TINYINT},
+      </if>
+      <if test="source != null " >
+        source = #{source,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null " >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUserId != null and createUserId != ''" >
+        create_user_id = #{createUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null " >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null and updateUserId != ''" >
+        update_user_id = #{updateUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="disabled != null " >
+        disabled = #{disabled,jdbcType=TINYINT},
+      </if>
+      <if test="communityId != null and communityId != ''" >
+        community_id = #{communityId,jdbcType=VARCHAR},
+      </if>
+      <if test="roomId != null and roomId != ''" >
+        room_id = #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null " >
+        type = #{type,jdbcType=TINYINT},
+      </if>
+      <if test="remark != null and remark != ''" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="companyName != null and companyName != ''" >
+        company_name = #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="longitude != null " >
+        longitude = #{longitude,jdbcType=DOUBLE},
+      </if>
+      <if test="latitude != null " >
+        latitude = #{latitude,jdbcType=DOUBLE},
+      </if>
+      <if test="areaExt != null and areaExt != ''" >
+        area_ext = #{areaExt,jdbcType=VARCHAR},
+      </if>
+      <if test="areaName != null and areaName != ''" >
+        area_name = #{areaName,jdbcType=VARCHAR},
+      </if>
+      <if test="cityName != null and cityName != ''" >
+        city_name = #{cityName,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceName != null and provinceName != ''" >
+        province_name = #{provinceName,jdbcType=VARCHAR},
+      </if>
+      <if test="useTime != null " >
+        use_time = #{useTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 根据主键id修改收货地址信息 -->
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.member.member.entity.MemberConsigneeAddress" >
+    update member_consignee_address
+    set user_id = #{userId,jdbcType=VARCHAR},
+      consignee_name = #{consigneeName,jdbcType=VARCHAR},
+      province_id = #{provinceId,jdbcType=VARCHAR},
+      city_id = #{cityId,jdbcType=VARCHAR},
+      area_id = #{areaId,jdbcType=VARCHAR},
+      area = #{area,jdbcType=VARCHAR},
+      address = #{address,jdbcType=VARCHAR},
+      zip_code = #{zipCode,jdbcType=VARCHAR},
+      telephone = #{telephone,jdbcType=VARCHAR},
+      mobile = #{mobile,jdbcType=VARCHAR},
+      is_default = #{isDefault,jdbcType=TINYINT},
+      source = #{source,jdbcType=TINYINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      create_user_id = #{createUserId,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      update_user_id = #{updateUserId,jdbcType=VARCHAR},
+      disabled = #{disabled,jdbcType=TINYINT},
+      community_id = #{communityId,jdbcType=VARCHAR},
+      room_id = #{roomId,jdbcType=VARCHAR},
+      type = #{type,jdbcType=TINYINT},
+      remark = #{remark,jdbcType=VARCHAR},
+      company_name = #{companyName,jdbcType=VARCHAR},
+      longitude = #{longitude,jdbcType=DOUBLE},
+      latitude = #{latitude,jdbcType=DOUBLE},
+      area_ext = #{areaExt,jdbcType=VARCHAR},
+      area_name = #{areaName,jdbcType=VARCHAR},
+      city_name = #{cityName,jdbcType=VARCHAR},
+      province_name = #{provinceName,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+   <!-- 批量删除 （逻辑删除） -->
+  <update id="deleteByIds">
+	  UPDATE member_consignee_address
+	  SET disabled = #{disabled,jdbcType=TINYINT},
+	      update_time = #{updateTime,jdbcType=TIMESTAMP},
+	      update_user_id = #{updateUserId,jdbcType=VARCHAR}
+	  WHERE
+	  <if test="ids != null ">
+		id  in 
+		<foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+	       #{item}
+	    </foreach>
+      </if>
+      <if test="ids == null ">
+        1 = 2
+      </if>
+   </update>
+  
+  <!-- 根据会员用户id查询会员收货地址 -->
+  <select id="selectByUserId" resultMap="BaseResultMap" parameterType="java.lang.String">
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM member_consignee_address WHERE 1=1 AND user_id=#{userId,jdbcType=VARCHAR}
+     AND disabled=0 
+     ORDER BY update_time DESC
+  </select>
+ 
+ <!-- 根据主键id删除店铺信息(逻辑删除) -->
+ <update id="deleteById">
+	  UPDATE member_consignee_address
+	  SET disabled = #{disabled,jdbcType=TINYINT},
+	      update_time = #{updateTime,jdbcType=TIMESTAMP},
+	      update_user_id = #{updateUserId,jdbcType=VARCHAR}
+      WHERE id = #{id,jdbcType=VARCHAR}
+   </update>
+   
+   <!-- 优化距离是否超出范围查询  add by luosm start 2016-07-14-->
+  <select id="selectByDistance" resultMap="DistanceResultMap" parameterType="map">
+	SELECT DISTINCT sudo.id,sudo.consignee_name,sudo.area,sudo.address,sudo.mobile,sudo.room_id,sudo.community_id,sudo.source,sudo.longitude,sudo.latitude,sudo.distance,sudo.area_ext,sudo.area_name,sudo.city_name,sudo.province_name,
+	CASE WHEN distance  <![CDATA[<=]]> se.service_scope*1000 THEN '0'
+		 WHEN sudo.longitude = 0 AND sudo.latitude = 0 THEN '0'
+   		ELSE '1'
+		END
+		as beyondType from(
+		SELECT 
+		  m.id,m.consignee_name,m.area,m.address,m.mobile,m.room_id,m.community_id,m.source,m.longitude,m.latitude,m.area_ext,m.area_name,m.city_name,m.province_name,
+		  ROUND(
+		    6378.138 * 2 * ASIN(
+		      SQRT(
+		        POW(
+		          SIN((s.latitude * PI() / 180- m.latitude * PI() / 180) / 2),
+		          2
+		        ) + COS(s.latitude * PI() / 180) * COS(m.latitude * PI() / 180) * POW(
+		          SIN((s.longitude * PI() / 180 - m.longitude * PI() / 180) / 2),
+		          2
+		        )
+		      )
+		    ) * 1000
+		  ) AS distance
+		FROM
+		  member_consignee_address m,store_info s
+		  where m.user_id = #{userId,jdbcType=VARCHAR}
+			and s.id = #{storeId,jdbcType=VARCHAR}
+			and m.disabled =0
+		ORDER BY distance ASC
+		) sudo,store_info si
+      LEFT JOIN store_info_ext AS se ON si.id = se.store_id 
+      where si.id = #{storeId,jdbcType=VARCHAR}
+  </select>
+  <!-- 距离是否超出范围查询  add by luosm end 2016-07-14-->
+  
+     <!-- 距离是否超出范围查询  add by yangqin start  13062 update by wusw 20160823-->
+  <select id="selectByWxDistance" resultMap="DistanceResultMap" parameterType="map">
+	SELECT DISTINCT sudo.id,sudo.consignee_name,sudo.area,sudo.address,sudo.mobile,sudo.room_id,sudo.community_id,sudo.source,sudo.longitude,sudo.latitude,sudo.distance,sudo.area_ext,sudo.area_name,sudo.city_name,sudo.province_name,
+	CASE WHEN distance  <![CDATA[<=]]> se.service_scope*1000 THEN '0'
+		 WHEN sudo.longitude = 0 AND sudo.latitude = 0 THEN '0'
+   		ELSE '1'
+		END
+		as beyondType from(
+		SELECT 
+		  m.id,m.consignee_name,m.area,m.address,m.mobile,m.room_id,m.community_id,m.source,m.longitude,m.latitude,m.area_ext,m.area_name,m.city_name,m.province_name,
+		  ROUND(
+		    6378.138 * 2 * ASIN(
+		      SQRT(
+		        POW(
+		          SIN((s.latitude * PI() / 180- m.latitude * PI() / 180) / 2),
+		          2
+		        ) + COS(s.latitude * PI() / 180) * COS(m.latitude * PI() / 180) * POW(
+		          SIN((s.longitude * PI() / 180 - m.longitude * PI() / 180) / 2),
+		          2
+		        )
+		      )
+		    ) * 1000
+		  ) AS distance,
+		  s.id as storeId
+		FROM
+		  member_consignee_address m,store_info s
+		  where m.user_id = #{userId,jdbcType=VARCHAR}
+			and s.id = #{storeId,jdbcType=VARCHAR}
+			and m.disabled =0
+			AND m.source = 1
+		) sudo 
+      LEFT JOIN store_info_ext AS se ON sudo.storeId = se.store_id 
+      where se.store_id = #{storeId,jdbcType=VARCHAR}
+      ORDER BY sudo.distance ASC
+  </select>
+  
+ <!-- 距离是否超出范围查询  add by yangqin start  13062 update by wusw 20160823-->
+  <select id="selectWxDistanceById" resultMap="DistanceResultMap" parameterType="map">
+	SELECT DISTINCT sudo.id,sudo.consignee_name,sudo.area,sudo.address,sudo.mobile,sudo.room_id,sudo.community_id,sudo.source,sudo.longitude,sudo.latitude,sudo.distance,sudo.area_ext,sudo.area_name,sudo.city_name,sudo.province_name,
+	CASE WHEN distance  <![CDATA[<=]]> se.service_scope*1000 THEN '0'
+		 WHEN sudo.longitude = 0 AND sudo.latitude = 0 THEN '0'
+   		ELSE '1'
+		END
+		as beyondType from(
+		SELECT 
+		  m.id,m.consignee_name,m.area,m.address,m.mobile,m.room_id,m.community_id,m.source,m.longitude,m.latitude,m.area_ext,m.area_name,m.city_name,m.province_name,
+		  ROUND(
+		    6378.138 * 2 * ASIN(
+		      SQRT(
+		        POW(
+		          SIN((s.latitude * PI() / 180- m.latitude * PI() / 180) / 2),
+		          2
+		        ) + COS(s.latitude * PI() / 180) * COS(m.latitude * PI() / 180) * POW(
+		          SIN((s.longitude * PI() / 180 - m.longitude * PI() / 180) / 2),
+		          2
+		        )
+		      )
+		    ) * 1000
+		  ) AS distance,
+		  s.id as storeId
+		FROM
+		  member_consignee_address m,store_info s
+		  where m.id = #{id,jdbcType=VARCHAR}
+		  	and s.id = #{storeId,jdbcType=VARCHAR}
+			and m.disabled =0
+		) sudo
+      LEFT JOIN store_info_ext AS se ON sudo.storeId = se.store_id 
+      where se.store_id = #{storeId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 距离是否超出范围查询  add by yangqin end -->
+  
+  <select id="getSellerDefaultAddress" parameterType="java.lang.String" resultMap="BaseResultMap">
+     SELECT * FROM member_consignee_address WHERE user_id = #{userId,jdbcType=VARCHAR} AND is_default = 1
+     AND disabled = 0
+  </select>
+  
+  <!-- zengj：查询用户收货地址列表，用于服务店下单 -->
+  <sql id="userAddressListSql">
+    SELECT
+        IFNULL(addr.id,'') AS addressId,
+        IFNULL(addr.province_name,'') AS provinceName,
+        IFNULL(addr.city_name,'') AS cityName,
+        IFNULL(addr.area_name,'') AS areaName,
+        IFNULL(addr.area_ext,'') AS areaExt,
+        IFNULL(addr.use_time,'') AS useTime,
+       cast(addr.`source` as SIGNED) AS isCommunity,
+     IFNULL(addr.address,'') AS address,
+     IFNULL(addr.consignee_name,'') AS consigneeName,
+     IFNULL(addr.mobile,'') AS mobile,
+     IFNULL(addr.longitude,'') AS longitude,
+     IFNULL(addr.latitude,'') AS latitude,
+     (
+        SELECT
+    
+        IF (count(1) > 0, 0, 1)
+        FROM store_info store
+        LEFT JOIN store_server_area area  ON (area.store_id = store.id)
+        WHERE
+            (store.area_type = 0
+        OR (
+            area.province_id = addr.province_id
+            AND area.city_id = addr.city_id
+            AND (area.area_id = addr.area_id or addr.area_id is null or addr.area_id = '')
+        )) AND store.id = #{storeId, jdbcType=VARCHAR}
+    ) AS isOutRange
+    FROM
+        member_consignee_address addr
+    WHERE
+        user_id = #{userId, jdbcType=VARCHAR}
+        and disabled = 0 
+  </sql>
+  
+  <!-- 用户收货地址列表，针对服务订单 add by zengj 2016-7-25 19:34:51 -->
+  <select id="findUserAddressList" parameterType="java.util.Map" resultType ="java.util.Map">
+    <include refid="userAddressListSql" />
+    order by addr.`source` asc
+  </select>
+  <!-- 查询用户默认收货地址，针对服务单 -->
+  <select id="findUserDefaultAddress" parameterType="java.util.Map" resultType ="java.util.Map">
+    select * from(
+    <include refid="userAddressListSql" />
+    ) a where a.isOutRange = 0
+    order by useTime desc
+    limit 1
+  </select>
+  
+  <!-- 获取用户默认收货地址，针对服务单-秒杀商品 -->
+  <select id="findUserDefilatSeckillAddress" parameterType="java.util.Map" resultType ="java.util.Map">
+    select * from(
+    <include refid="userAddressListSql" />
+	    AND EXISTS(
+	        SELECT 1 FROM activity_seckill_range r
+	        WHERE r.activity_seckill_id = #{seckillId,jdbcType=VARCHAR}
+	        AND addr.province_id = r.province_id
+	        AND addr.city_id = r.city_id
+	    )
+    ) a where a.isOutRange = 0
+   
+    order by useTime desc
+    limit 1
+  </select>
+</mapper>

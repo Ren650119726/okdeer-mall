@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.okdeer.mall</groupId>
+		<artifactId>okdeer-mall</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>okdeer-mall-order</artifactId>
+	<name>okdeer-mall-order</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<parent.version>0.0.1-SNAPSHOT</parent.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.okdeer.mall</groupId>
+			<artifactId>okdeer-mall-system</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.okdeer.mall</groupId>
+			<artifactId>okdeer-mall-activity</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.okdeer.mall</groupId>
+			<artifactId>okdeer-mall-member</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.okdeer.mall</groupId>
+			<artifactId>okdeer-mall-operate</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.okdeer.mall</groupId>
+			<artifactId>okdeer-mall-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com</groupId>
+			<artifactId>yscapi</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.yschome</groupId>
+			<artifactId>cloudy_file</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.jsqlparser</groupId>
+			<artifactId>jsqlparser</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	
+	<build>
+	  <plugins>
+	     <plugin>
+	        <groupId>org.apache.maven.plugins</groupId> 
+            <artifactId>maven-compiler-plugin</artifactId>
+	     </plugin>
+	     <plugin>
+	       <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-jar-plugin</artifactId>
+	     </plugin>
+	  </plugins>
+	  <resources>
+	     <resource>
+	       <directory>src/main/java</directory>
+	       <includes>
+	         <include>**/*.xml</include>
+	       </includes>
+	     </resource>
+	  </resources>
+	</build>
+	
+</project>

@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.column.mapper.ColumnOperationMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.ColumnOperation" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="type" property="type" javaType="com.okdeer.mall.operate.enums.ColumnOperationType" jdbcType="TINYINT"/>
+    <result column="target_type" property="targetType" javaType="com.okdeer.mall.operate.enums.ColumnTargetType" jdbcType="TINYINT"/>
+    <result column="target" property="target" javaType="com.okdeer.mall.operate.enums.ColumnAppTarget" jdbcType="TINYINT"/>
+    <result column="target_url" property="targetUrl" jdbcType="VARCHAR" />
+    <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
+    <result column="area_type" property="areaType" javaType="com.okdeer.mall.common.enums.AreaType" jdbcType="TINYINT"/>
+    <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+    <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+    <result column="state" property="state" javaType="com.okdeer.mall.operate.enums.State" jdbcType="TINYINT"/>
+    <result column="disabled" property="disabled" javaType="com.yschome.base.common.enums.Disabled" jdbcType="TINYINT"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  
+  <resultMap type="com.okdeer.mall.operate.entity.ColumnOperationVo" id="ColumnOperationDetailMap" extends="BaseResultMap">
+    <collection property="columnOperationAreaList" ofType="com.okdeer.mall.operate.entity.ColumnOperationArea">
+	   <id column="areaid" property="id" jdbcType="VARCHAR" />
+       <result column="operation_id" property="operationId" jdbcType="VARCHAR" />
+       <result column="area_id" property="areaId" jdbcType="VARCHAR" />
+       <result column="districtType" property="type" javaType="com.okdeer.mall.common.enums.DistrictType" jdbcType="TINYINT"/>
+	</collection> 
+	<collection property="columnOperationCommunityList" ofType="com.okdeer.mall.operate.entity.ColumnOperationCommunity">
+	   <id column="communityid" property="id" jdbcType="VARCHAR" />
+       <result column="operation_id" property="operationId" jdbcType="VARCHAR" />
+       <result column="community_id" property="communityId" jdbcType="VARCHAR" />
+       <result column="community_name" property="communityName" jdbcType="VARCHAR" />
+       <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+       <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+	</collection> 
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, name, description, type, target_type, target, target_url, pic_url, area_type, 
+    start_time, end_time, state, disabled, create_time, create_user_id, update_time, 
+    update_user_id
+  </sql>
+  
+  <!-- 查询条件 -->
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.disabled and ''!=params.disabled" >
+        AND disabled = #{params.disabled,jdbcType=TINYINT}
+      </if>
+       <if test="null!=params.type and ''!=params.type" >
+        AND type = #{params.type,jdbcType=TINYINT}
+      </if>
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+      
+    </if>
+  </sql>
+  
+  <!-- 根据主键id查询运营栏目信息 -->
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM column_operation
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据条件查询运营栏目信息列表（参数类型map） -->
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM column_operation WHERE 1=1 
+    <include refid="condition" />
+    ORDER BY state ASC,create_time DESC
+  </select>
+  
+  <!-- 根据主键id删除运营栏目信息 -->
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM column_operation
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 插入运营栏目信息 -->
+  <insert id="insert" parameterType="com.okdeer.mall.operate.entity.ColumnOperation" >
+    INSERT INTO column_operation (id, name, description, 
+      type, target_type, target, target_url, 
+      pic_url, area_type, start_time, 
+      end_time, state, disabled, 
+      create_time, create_user_id, update_time, 
+      update_user_id)
+    VALUES (#{id,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, 
+      #{type,jdbcType=TINYINT}, #{targetType,jdbcType=TINYINT}, #{target,jdbcType=TINYINT}, #{targetUrl,jdbcType=VARCHAR}, 
+      #{picUrl,jdbcType=VARCHAR}, #{areaType,jdbcType=TINYINT}, #{startTime,jdbcType=TIMESTAMP}, 
+      #{endTime,jdbcType=TIMESTAMP}, #{state,jdbcType=TINYINT}, #{disabled,jdbcType=TINYINT}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{createUserId,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP}, 
+      #{updateUserId,jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- 判断是否为空，插入运营栏目信息 -->
+  <insert id="insertSelective" parameterType="com.okdeer.mall.operate.entity.ColumnOperation" >
+    INSERT INTO column_operation
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        id,
+      </if>
+      <if test="name != null and name != ''" >
+        name,
+      </if>
+      <if test="description != null" >
+        description,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="targetType != null" >
+        target_type,
+      </if>
+      <if test="target != null" >
+        target,
+      </if>
+      <if test="targetUrl != null" >
+        target_url,
+      </if>
+      <if test="picUrl != null and picUrl != ''" >
+        pic_url,
+      </if>
+      <if test="areaType != null" >
+        area_type,
+      </if>
+      <if test="startTime != null" >
+        start_time,
+      </if>
+      <if test="endTime != null" >
+        end_time,
+      </if>
+      <if test="state != null" >
+        state,
+      </if>
+      <if test="disabled != null" >
+        disabled,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="createUserId != null and createUserId != ''" >
+        create_user_id,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="updateUserId != null and updateUserId != ''" >
+        update_user_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null and name != ''" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=TINYINT},
+      </if>
+      <if test="targetType != null" >
+        #{targetType,jdbcType=TINYINT},
+      </if>
+      <if test="target != null" >
+        #{target,jdbcType=TINYINT},
+      </if>
+      <if test="targetUrl != null" >
+        #{targetUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="picUrl != null and picUrl != ''" >
+        #{picUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="areaType != null" >
+        #{areaType,jdbcType=TINYINT},
+      </if>
+      <if test="startTime != null" >
+        #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null" >
+        #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=TINYINT},
+      </if>
+      <if test="disabled != null" >
+        #{disabled,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUserId != null and createUserId != ''" >
+        #{createUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null and updateUserId != ''" >
+        #{updateUserId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- 判断是否为空，根据主键id修改运营栏目信息 -->
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.operate.entity.ColumnOperation" >
+    UPDATE column_operation
+    <set >
+      <if test="name != null and name != ''" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=TINYINT},
+      </if>
+      <if test="targetType != null" >
+        target_type = #{targetType,jdbcType=TINYINT},
+      </if>
+      <if test="target != null" >
+        target = #{target,jdbcType=TINYINT},
+      </if>
+      <if test="targetUrl != null" >
+        target_url = #{targetUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="picUrl != null and picUrl != ''" >
+        pic_url = #{picUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="areaType != null" >
+        area_type = #{areaType,jdbcType=TINYINT},
+      </if>
+      <if test="startTime != null" >
+        start_time = #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null" >
+        end_time = #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="state != null" >
+        state = #{state,jdbcType=TINYINT},
+      </if>
+      <if test="disabled != null" >
+        disabled = #{disabled,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUserId != null and createUserId != ''" >
+        create_user_id = #{createUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null and updateUserId != ''" >
+        update_user_id = #{updateUserId,jdbcType=VARCHAR},
+      </if>
+    </set>
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 根据主键id修改运营栏目信息 -->
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.operate.entity.ColumnOperation" >
+    UPDATE column_operation
+    SET name = #{name,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      type = #{type,jdbcType=TINYINT},
+      target_type = #{targetType,jdbcType=TINYINT},
+      target = #{target,jdbcType=TINYINT},
+      target_url = #{targetUrl,jdbcType=VARCHAR},
+      pic_url = #{picUrl,jdbcType=VARCHAR},
+      area_type = #{areaType,jdbcType=TINYINT},
+      start_time = #{startTime,jdbcType=TIMESTAMP},
+      end_time = #{endTime,jdbcType=TIMESTAMP},
+      state = #{state,jdbcType=TINYINT},
+      disabled = #{disabled,jdbcType=TINYINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      create_user_id = #{createUserId,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      update_user_id = #{updateUserId,jdbcType=VARCHAR}
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 根据查询条件，查询运营栏目信息列表（参数实体类型） -->
+  <select id="selectByEntity" resultMap="BaseResultMap" parameterType="com.okdeer.mall.operate.entity.ColumnOperation" >
+     SELECT 
+     <include refid="Base_Column_List" />
+     FROM column_operation WHERE 1=1 
+     <if test="disabled != null">
+        AND disabled = #{disabled,jdbcType=TINYINT}
+     </if>
+     <if test="type != null" >
+        AND type = #{type,jdbcType=TINYINT}
+     </if>
+     ORDER BY state ASC,start_time DESC
+  </select>
+  
+  
+  <!-- 逻辑删除运营栏目任务（单个） -->
+  <update id="deleteById">
+	 UPDATE column_operation 
+	 SET disabled = #{disabled,jdbcType=TINYINT},
+	     update_time = #{updateTime,jdbcType=TIMESTAMP},
+	     update_user_id = #{updateUserId,jdbcType=VARCHAR}
+	 WHERE 
+	 <if test="id != null ">
+		id = #{id,jdbcType=VARCHAR}
+     </if>
+     <if test="id == null ">
+       1 = 2
+     </if>  
+   </update>
+   <!-- 停用运营栏目任务 -->
+   <update id="disableById">
+      UPDATE column_operation 
+	  SET state = #{state,jdbcType=TINYINT},
+	     update_time = #{updateTime,jdbcType=TIMESTAMP},
+	     update_user_id = #{updateUserId,jdbcType=VARCHAR}
+	 WHERE 
+	 <if test="id != null ">
+		id = #{id,jdbcType=VARCHAR}
+     </if>
+     <if test="id == null ">
+       1 = 2
+     </if>  
+   </update>
+   
+ 
+   <!-- 根据主键id，查询运营栏目任务详细信息（包括区域、小区信息） -->
+   <select id="selectOperationAssociateById" resultMap="ColumnOperationDetailMap">
+     SELECT a.id, a.`name`, a.description, a.type, a.target_type, a.target, a.target_url, a.pic_url, a.area_type, 
+            a.start_time, a.end_time, a.state, b.area_id,b.type AS districtType, c.community_id,c.community_name,
+            c.city_id
+     FROM column_operation a 
+     LEFT JOIN column_operation_area b ON a.id = b.operation_id
+     LEFT JOIN (SELECT co.id, co.operation_id, co.community_id, ps.`name` AS community_name, ps.city_id 
+				FROM column_operation_community co
+				LEFT JOIN psms_small_community_info ps
+				ON co.community_id = ps.id		
+			) c ON a.id = c.operation_id
+     WHERE a.id = #{id,jdbcType=VARCHAR}
+   </select>
+   
+   <!-- 查询指定名称相同的数量 -->
+   <select id="selectCountByName" resultType="int" parameterType="com.okdeer.mall.operate.entity.ColumnOperation" >
+    SELECT count(1)
+    FROM column_operation
+    WHERE disabled = #{disabled,jdbcType=VARCHAR} 
+    AND name = #{name,jdbcType=VARCHAR}
+    <if test="id != null and id != ''" >
+      AND id != #{id,jdbcType=VARCHAR}
+    </if>
+  </select>
+  
+  <!-- 查询指定关联栏目下指定开始结束时间有交集、指定区域有交集的记录数量 -->
+   <select id="selectCountByDistrict" resultType="int">
+     SELECT count(1)
+     FROM column_operation a 
+     LEFT JOIN column_operation_area b ON a.id = b.operation_id
+    <!--  LEFT JOIN (SELECT co.id, co.operation_id, co.community_id, ps.`name` AS community_name, 
+                       ps.city_id,ps.province_id 
+				FROM column_operation_community co, psms_small_community_info ps
+				WHERE co.community_id = ps.id) c ON a.id = c.operation_id -->
+	  WHERE a.disabled = #{disabled,jdbcType=VARCHAR}
+	  AND (a.state = #{noStartStatus,jdbcType=TINYINT} OR a.state = #{startStatus,jdbcType=TINYINT})
+      AND a.type = #{type,jdbcType=TINYINT}
+      AND ((a.start_time <![CDATA[>=]]> #{startTime,jdbcType=TIMESTAMP} AND a.start_time <![CDATA[<]]> #{endTime,jdbcType=TIMESTAMP})
+             OR (a.start_time <![CDATA[<=]]> #{startTime,jdbcType=TIMESTAMP} AND a.end_time <![CDATA[>]]> #{startTime,jdbcType=TIMESTAMP})
+             OR (a.start_time <![CDATA[<=]]> #{startTime,jdbcType=TIMESTAMP} AND a.end_time <![CDATA[>=]]> #{endTime,jdbcType=TIMESTAMP}))
+      <if test="id != null and id != ''">
+        AND a.id != #{id,jdbcType=VARCHAR}
+      </if>
+      <if test="areaType.name == 'area'">      
+      AND 
+       (  <if test="areaIdList != null ">
+		    b.area_id in  
+		     <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	            #{item}
+	          </foreach>
+           </if>
+        OR <if test="associateIdList != null ">
+		     b.area_id in  
+		      <foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
+	            #{item}
+	          </foreach>
+           </if>
+       <!--  OR <if test="areaIdList != null ">
+		    c.province_id in  
+		      <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	          </foreach>
+           </if>
+        OR <if test="areaIdList != null ">
+		     c.city_id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if>  -->
+	    OR A.area_type = 0)
+	    </if> 
+	    <!-- <if test="areaType.name == 'community'">
+	      AND (b.area_id in (SELECT province_id FROM psms_small_community_info WHERE 
+	       <if test="areaIdList != null ">
+		     id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if>)
+          OR b.area_id in (SELECT city_id FROM psms_small_community_info WHERE  
+            <if test="areaIdList != null ">
+		     id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if>)
+          OR<if test="areaIdList != null ">
+		     c.community_id in  
+		       <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+	       </if>
+	       OR A.area_type = 0)
+	    </if> -->
+   </select>
+   
+   <!-- wusw:运营栏目基本信息map（不用枚举） -->
+   <resultMap id="resultMapForUser" type="com.okdeer.mall.operate.entity.ColumnOperationQueryVo" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="taskName" property="taskName" jdbcType="VARCHAR" />
+   <!--  <result column="name" property="name"  jdbcType="VARCHAR"/> -->
+    <result column="type" property="type"  jdbcType="VARCHAR"/>
+    <result column="target" property="target" jdbcType="VARCHAR"/>
+    <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
+  </resultMap>
+  <!-- wusw:根据市id或者小区id，获取正在进行中的运营栏目信息列表 -->
+  <!-- 修改删除关于小区范围的查询  modify  by  wusw  20160722 -->
+  <select id="selectByCityOrCommunity" resultMap="resultMapForUser" parameterType="map">
+    SELECT
+		operation.id,
+		operation.`name` AS taskName,
+		operation.type,
+		CASE operation.target_type WHEN 0 THEN operation.target WHEN 1 THEN operation.target_url END AS target,
+		operation.pic_url
+	FROM column_operation operation
+	LEFT JOIN column_operation_area area ON operation.id = area.operation_id
+	<!-- <if test="communityId != null and communityId != ''">
+	 LEFT JOIN column_operation_community community  ON operation.id = community.operation_id
+	</if> -->
+	WHERE operation.disabled = 0
+	AND operation.state = 1
+	<if test="cityId != null and cityId != ''">
+	AND (
+		operation.area_type = 0
+		OR (
+			operation.area_type = 1
+			AND (
+					(
+						area.type = 1
+						AND area.area_id = #{provinceId,jdbcType=VARCHAR}
+					)
+					OR (
+						area.type = 0
+						AND area.area_id = #{cityId,jdbcType=VARCHAR}
+					)				
+			)
+		)
+	)
+	</if>
+	<!-- <if test="communityId != null and communityId != ''">
+	 AND (
+		operation.area_type = 0
+		OR (
+			operation.area_type = 1
+			AND (
+					(
+						area.type = 1
+						AND area.area_id = (SELECT province_id FROM psms_small_community_info WHERE id = #{communityId,jdbcType=VARCHAR})
+					)
+					OR (
+						area.type = 0
+						AND area.area_id = (SELECT city_id FROM psms_small_community_info WHERE id = #{communityId,jdbcType=VARCHAR})
+					)				
+			)
+		)
+	   OR (operation.area_type = 2 AND community.community_id = #{communityId,jdbcType=VARCHAR})
+	)
+    </if> -->
+  </select> 
+  
+  <!-- 统计在某一指定时间之后更新的记录数量 -->
+  <select id="selectCountByUpdateTime" resultType="int" >
+    SELECT COUNT(1)
+    FROM column_operation
+    WHERE update_time <![CDATA[>=]]> #{updateTime,jdbcType=TIMESTAMP}
+  </select>
+  
+   
+   <select id="listByJob" parameterType="map" resultMap="BaseResultMap">
+		select s.* from column_operation s where 
+		(s.state = 0 and  s.start_time &lt;= #{nowTime,jdbcType=TIMESTAMP})
+		OR
+		(s.state = 1 and  s.end_time &lt;= #{nowTime,jdbcType=TIMESTAMP})
+	</select>
+   
+    <!--修改运营栏目任务状态（批量） -->
+   <update id="updateStateByIds">
+      UPDATE column_operation 
+	  SET state = #{state,jdbcType=TINYINT},
+	     update_time = #{updateTime,jdbcType=TIMESTAMP},
+	     update_user_id = #{updateUserId,jdbcType=VARCHAR}
+	 WHERE 
+	 <if test="ids != null ">
+		 id in  
+		       <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item}
+	           </foreach>
+     </if>
+     <if test="ids == null ">
+       1 = 2
+     </if>  
+   </update>
+</mapper>

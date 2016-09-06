@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.system.mapper.SysBuyerUserThirdpartyMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.archive.system.entity.SysBuyerUserThirdparty" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="buyer_user_id" property="buyerUserId" jdbcType="VARCHAR" />
+    <result column="open_type" property="openType" jdbcType="TINYINT" />
+    <result column="open_id" property="openId" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, buyer_user_id, open_type, open_id, create_time
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+      <if test="null!=params.openTypeSearch and ''!= params.openTypeSearch" >
+        AND open_type = #{params.openTypeSearch}
+      </if>
+      <if test="null!=params.buyerUserIdSearch and ''!= params.buyerUserIdSearch">
+        AND buyer_user_id = #{params.buyerUserIdSearch}
+      </if>
+      <if test="null!=params.openIdSearch and ''!= params.openIdSearch" >
+        AND open_id = #{params.openIdSearch}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from sys_buyer_user_thirdparty
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM sys_buyer_user_thirdparty WHERE 1=1 
+    <if test="null!=params" >
+      <if test="null!=params.openTypeSearch and ''!= params.openTypeSearch" >
+        AND open_type = #{params.openTypeSearch}
+      </if>
+      <if test="null!=params.buyerUserIdSearch and ''!= params.buyerUserIdSearch">
+        AND buyer_user_id = #{params.buyerUserIdSearch}
+      </if>
+      <if test="null!=params.openIdSearch and ''!= params.openIdSearch" >
+        AND open_id = #{params.openIdSearch}
+      </if>
+    </if>
+    ORDER BY CREATE_TIME DESC
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM sys_buyer_user_thirdparty
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.archive.system.entity.SysBuyerUserThirdparty" >
+    insert into sys_buyer_user_thirdparty (id, buyer_user_id, open_type, 
+      open_id, create_time)
+    values (#{id,jdbcType=VARCHAR}, #{buyerUserId,jdbcType=VARCHAR}, #{openType,jdbcType=TINYINT}, 
+      #{openId,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.archive.system.entity.SysBuyerUserThirdparty" >
+    insert into sys_buyer_user_thirdparty
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="buyerUserId != null" >
+        buyer_user_id,
+      </if>
+      <if test="openType != null" >
+        open_type,
+      </if>
+      <if test="openId != null" >
+        open_id,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerUserId != null" >
+        #{buyerUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="openType != null" >
+        #{openType,jdbcType=TINYINT},
+      </if>
+      <if test="openId != null" >
+        #{openId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.archive.system.entity.SysBuyerUserThirdparty" >
+    update sys_buyer_user_thirdparty
+    <set >
+      <if test="buyerUserId != null" >
+        buyer_user_id = #{buyerUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="openType != null" >
+        open_type = #{openType,jdbcType=TINYINT},
+      </if>
+      <if test="openId != null" >
+        open_id = #{openId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.archive.system.entity.SysBuyerUserThirdparty" >
+    update sys_buyer_user_thirdparty
+    set buyer_user_id = #{buyerUserId,jdbcType=VARCHAR},
+      open_type = #{openType,jdbcType=TINYINT},
+      open_id = #{openId,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+   <delete id="deleteByOpenId" parameterType="com.okdeer.archive.system.entity.SysBuyerUserThirdparty" >
+    DELETE FROM sys_buyer_user_thirdparty
+    WHERE open_type=#{openType,jdbcType=TINYINT}
+          AND open_id=#{openId,jdbcType=VARCHAR}
+  </delete>
+  
+</mapper>

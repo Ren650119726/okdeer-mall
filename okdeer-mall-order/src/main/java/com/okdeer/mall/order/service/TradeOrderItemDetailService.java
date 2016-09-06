@@ -1,0 +1,65 @@
+package com.okdeer.mall.order.service;
+
+import java.util.List;
+
+import com.okdeer.mall.order.entity.TradeOrderItemDetail;
+
+/**
+ * @DESC: 
+ * @author YSCGD
+ * @date  2016-02-05 15:22:58
+ * @version 1.0.0
+ * @copyright ©2005-2020 yschome.com Inc. All rights reserved
+ * 
+ */
+public interface TradeOrderItemDetailService {
+
+	/**
+	 * 更新订单项明细为退货 
+	 */
+	int updateStatusWithRefund(String orderItemId);
+
+	/**
+	 * 查询订单明细
+	 */
+	List<TradeOrderItemDetail> selectByOrderItemId(String orderItemId);
+
+	/**
+	 * 消费码生成 </p>
+	 * 
+	 * @author yangq
+	 * @param itemDetail
+	 */
+	void insertSelective(TradeOrderItemDetail itemDetail) throws Exception;
+
+	/**
+	 * 查询是否生成消息码 </p>
+	 * 
+	 * @author yangq
+	 * @param orderItemId
+	 * @return
+	 */
+	List<TradeOrderItemDetail> selectByOrderItemById(String orderItemId) throws Exception;
+
+	/**
+	 * 批量新增消费码 </p>
+	 * 
+	 * @author yangq
+	 * @param itemDetailList
+	 * @throws Exception
+	 */
+	void insertBatch(List<TradeOrderItemDetail> itemDetailList) throws Exception;
+
+	/**
+	 * 查询未消费数量
+	 */
+	int selectUnConsumerCount(String orderItemId);
+
+	/**
+	 * 更改消费码过期
+	 * @param orderItemId
+	 * @return
+	 */
+	int updateStatusWithExpire(String orderItemId);
+
+}

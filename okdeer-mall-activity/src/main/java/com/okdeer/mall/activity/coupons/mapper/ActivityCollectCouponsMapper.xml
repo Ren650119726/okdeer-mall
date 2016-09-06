@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper">
+
+	<resultMap type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons" id="ActivityCollectCoupons" >
+		<result property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="type" column="type" />
+		<result property="status" column="status" />
+		<result property="belongType" column="belong_type" />
+		<result property="limitClientType" column="limit_client_type" />
+		<result property="startTime" column="start_time" />
+		<result property="endTime" column="end_time" />
+		<result property="description" column="description" />
+		<result property="identityLimit" column="identity_limit" />
+		<result property="areaType" column="area_type" />
+		<result property="totalCost" column="total_cost" />
+		<result property="approvalStatus" column="approval_status" />
+		<result property="approvalReason" column="approval_reason" />
+		<result property="approvalTime" column="approval_time" />
+		<result property="approvalUserId" column="approval_user_id" />
+		<result property="createTime" column="create_time" />
+		<result property="createUserId" column="create_user_id" />
+		<result property="updateTime" column="update_time" />
+		<result property="updateUserId" column="update_user_id" />
+		<result property="disabled" column="disabled" />
+		<result column="refund_type" property="refundType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundType" />
+		<result property="dailyCirculation" column="daily_circulation" />
+	</resultMap>
+
+    <!-- wusw:代金券领取活动、代金券、限制类目等关联信息 -->
+    <resultMap id="couponsAndLimitCategoryDetailMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo">
+      <id property="id" column="id" jdbcType="VARCHAR"/>
+	  <result property="name" column="name" jdbcType="VARCHAR"/>
+	  <result property="identityLimit" column="identity_limit" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.discount.enums.IdentityLimit"/>
+      <result column="refund_type" property="refundType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundType" />
+      <result property="dailyCirculation" column="daily_circulation" jdbcType="TINYINT" />
+      <!-- 代金券信息 -->
+      <collection property="activityCoupons" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCoupons">	
+		<id property="id" column="couponsId" javaType="string" jdbcType="VARCHAR"/>
+		<result property="activityId" column="activity_id" javaType="string" jdbcType="VARCHAR"/>
+		<result property="totalNum" column="total_num" javaType="integer" jdbcType="INTEGER"/>
+		<result property="remainNum" column="remain_num" javaType="integer" jdbcType="INTEGER"/>
+        <result property="name" column="couponsName" javaType="string" jdbcType="VARCHAR"/>
+        <result property="faceValue" column="face_value" javaType="integer" jdbcType="INTEGER"/>     	
+        <result property="arriveLimit" column="arrive_limit" javaType="integer" jdbcType="INTEGER"/>
+        <result property="validDay" column="valid_day" javaType="integer" jdbcType="INTEGER"/>
+        <result property="everyLimit" column="every_limit" javaType="integer" jdbcType="INTEGER"/>
+        <result property="isCashDelivery" column="is_cash_delivery" javaType="com.okdeer.mall.activity.coupons.enums.CashDelivery" jdbcType="TINYINT"/>
+        <result property="isCategoryLimit" column="is_category_limit" javaType="com.okdeer.mall.activity.coupons.enums.CategoryLimit"  jdbcType="TINYINT"/>
+        <result property="belongType" column="belong_type" javaType="string" jdbcType="VARCHAR"/>
+        <result property="createUserId" column="create_user_id" javaType="string" jdbcType="VARCHAR"/> 
+      </collection>
+      <!-- 限制使用类目信息 -->
+     <!--  <collection property="goodsSpuCategoryList"  ofType="com.okdeer.mall.goods.category.entity.GoodsSpuCategory">
+         <id column="spuCategoryId" property="id" jdbcType="VARCHAR" />
+		 <result column="spuCategoryName" property="name" jdbcType="VARCHAR" />
+      </collection> -->
+    </resultMap>
+    
+        <!-- zhulq:活动关联的代金卷领取记录信息 -->
+    <resultMap id="couponsRecordMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo">
+      <id property="id" column="id" jdbcType="VARCHAR"/>
+	  <result property="name" column="name" jdbcType="VARCHAR"/>
+	  <result property="identityLimit" column="identity_limit" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.discount.enums.IdentityLimit"/>
+      <result column="refund_type" property="refundType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundType" />
+      <!-- 代金券信息 -->
+      <collection property="activityCouponsRecordVo" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo">	
+		<id property="id" column="couponsRecordId" javaType="string" jdbcType="VARCHAR"/>
+		<result column="face_value" property="faceValue" javaType="integer" jdbcType="INTEGER" />
+   		<result property="belongType" column="belong_type" javaType="string" jdbcType="VARCHAR"/> 
+        <result property="createUserId" column="create_user_id" javaType="string" jdbcType="VARCHAR"/>
+        <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
+        <result property="couponsCollectId" column="coupons_collect_id" javaType="string" jdbcType="VARCHAR"/>
+      </collection>
+    </resultMap>
+    
+    <!-- begin：查询代金券活动以及关联地区列表 add by wushp -->
+    <resultMap id="CollectCouponsAreaMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCollectAreaVo" extends="ActivityCollectCoupons">
+    	<collection property="activityCollectArea" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCollectArea">
+    		<result property="id" column="activityCollectAreaId" />
+			<result property="collectCouponsId" column="collect_coupons_id" />
+			<result property="areaId" column="area_id" />
+			<result property="type" column="activityCollectAreaType" />
+    	</collection>
+    </resultMap>
+    <!-- end：查询代金券活动以及关联地区列表 add by wushp -->
+    
+    <sql id="columns">
+		id,name,type,status,belong_type,limit_client_type,start_time,end_time,description,identity_limit,area_type,total_cost,approval_status,approval_reason,approval_time,approval_user_id,create_time,create_user_id,update_time,update_user_id,disabled,daily_circulation
+	</sql>
+	<sql id="columnsExt">
+		collectCoupons.id,name,collectCoupons.type,status,belong_type,limit_client_type,start_time,end_time,description,identity_limit,area_type,total_cost,approval_status,approval_reason,approval_time,approval_user_id,create_time,create_user_id,update_time,update_user_id,disabled,daily_circulation
+	</sql>
+	<sql id="activityCollectAreaColumns">
+		area.id AS activityCollectAreaId,area.collect_coupons_id,area.area_id,area.type AS activityCollectAreaType
+	</sql>
+
+    <select id="list" parameterType="map" resultMap="ActivityCollectCoupons">
+		select <include refid="columns"/> from activity_collect_coupons where disabled = 0 
+		<if test="belongType != null and belongType != ''">
+<!-- 			0是运营商,可以看到所有人的,  大于0,是代理商,只能看到自己的 -->
+			<if test="belongType != '0'.toString() ">
+				and belong_type = #{belongType}
+			</if>
+			
+			<!-- 代理商未审核已关闭的数据 运营商无法看到 -->
+			<if test="belongType == '0'.toString() ">
+				and id not in(
+					select a.id from activity_collect_coupons a
+					where a.`status` = 4
+					and a.approval_status = 0 
+					and a.belong_type != '0'
+				)
+			</if>
+		</if>
+		<if test="name != null and name != ''">
+			and name like concat('%',#{name},'%' )
+		</if>
+		<if test="createStartTime != null and createStartTime != ''">
+			and create_time &gt;= #{createStartTime}
+		</if>
+		<if test="createEndTime != null and createEndTime != ''">
+			and create_time &lt;= #{createEndTime}
+		</if>
+		
+		
+		<if test="activityStartStartTime != null and activityStartStartTime != ''">
+			and start_time &gt;= #{activityStartStartTime}
+		</if>
+		<if test="activityStartEndTime != null and activityStartEndTime != ''">
+			and start_time &lt;= #{activityStartEndTime}
+		</if>
+		
+		<if test="activityEndStartTime != null and activityEndStartTime != ''">
+			and end_time &gt;= #{activityEndStartTime}
+		</if>
+		<if test="activityEndEndTime != null and activityEndEndTime != ''">
+			and end_time &lt;= #{activityEndEndTime}
+		</if>
+		
+		<if test="type != null and type != ''">
+			and type = #{type}
+		</if>
+		<if test="approvalStatus != null and approvalStatus != ''">
+			and approval_status = #{approvalStatus}
+		</if>
+		<if test="status != null and status != ''">
+			and status = #{status}
+		</if>
+		order by create_time desc
+	</select>
+
+    <insert id="save" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons" useGeneratedKeys="true" keyProperty="id">
+        insert into activity_collect_coupons(
+			<include refid="columns"/>
+		)values(
+            #{id},
+            #{name},
+            #{type},
+            #{status},
+            #{belongType},
+            #{limitClientType},
+            #{startTime},
+            #{endTime},
+            #{description},
+            #{identityLimit},
+            #{areaType},
+            #{totalCost},
+            #{approvalStatus},
+            #{approvalReason},
+            #{approvalTime},
+            #{approvalUserId},
+            #{createTime},
+            #{createUserId},
+            #{updateTime},
+            #{updateUserId},
+            #{disabled},
+            #{dailyCirculation}
+        )
+	</insert>
+
+    <insert id="insertBatch" parameterType="list">
+        insert into activity_collect_coupons(
+			<include refid="columns"/>
+		)values
+		<foreach collection="list" item="item" index="index" separator="," >
+        (
+            #{item.id},
+            #{item.name},
+            #{item.type},
+            #{item.status},
+            #{item.belongType},
+            #{item.limitClientType},
+            #{item.startTime},
+            #{item.endTime},
+            #{item.description},
+            #{item.identityLimit},
+            #{item.areaType},
+            #{item.totalCost},
+            #{item.approvalStatus},
+            #{item.approvalReason},
+            #{item.approvalTime},
+            #{item.approvalUserId},
+            #{item.createTime},
+            #{item.createUserId},
+            #{item.updateTime},
+            #{item.updateUserId},
+            #{item.disabled},
+            #{dailyCirculation}
+        )
+		</foreach>
+	</insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons">
+        update activity_collect_coupons set
+     		name = #{name},
+     		type = #{type},
+     		status = #{status},
+     		belongType = #{belongType},
+     		limitClientType = #{limitClientType},
+     		startTime = #{startTime},
+     		endTime = #{endTime},
+     		description = #{description},
+     		identityLimit = #{identityLimit},
+     		areaType = #{areaType},
+     		totalCost = #{totalCost},
+     		approvalStatus = #{approvalStatus},
+     		approvalReason = #{approvalReason},
+     		approvalTime = #{approvalTime},
+     		approvalUserId = #{approvalUserId},
+     		createTime = #{createTime},
+     		createUserId = #{createUserId},
+     		updateTime = #{updateTime},
+     		updateUserId = #{updateUserId},
+     		disabled = #{disabled}
+        where id = #{id}
+    </update>
+
+    <update id="updateDynamic" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons">
+        update activity_collect_coupons set
+			<if test="name != null">
+				name = #{name},
+			</if>
+			<if test="type != null">
+				type = #{type},
+			</if>
+			<if test="status != null">
+				status = #{status},
+			</if>
+			<if test="belongType != null">
+				belong_type = #{belongType},
+			</if>
+			<if test="limitClientType != null">
+				limit_client_type = #{limitClientType},
+			</if>
+			<if test="startTime != null">
+				start_time = #{startTime},
+			</if>
+			<if test="endTime != null">
+				end_time = #{endTime},
+			</if>
+			<if test="description != null">
+				description = #{description},
+			</if>
+			<if test="identityLimit != null">
+				identity_limit = #{identityLimit},
+			</if>
+			<if test="areaType != null">
+				area_type = #{areaType},
+			</if>
+			<if test="totalCost != null">
+				total_cost = #{totalCost},
+			</if>
+			<if test="approvalStatus != null">
+				approval_status = #{approvalStatus},
+			</if>
+			<if test="approvalReason != null">
+				approval_reason = #{approvalReason},
+			</if>
+			<if test="approvalTime != null">
+				approval_time = #{approvalTime},
+			</if>
+			<if test="approvalUserId != null">
+				approval_user_id = #{approvalUserId},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime},
+			</if>
+			<if test="createUserId != null">
+				create_user_id = #{createUserId},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime},
+			</if>
+			<if test="updateUserId != null">
+				update_user_id = #{updateUserId},
+			</if>
+			<if test="disabled != null">
+				disabled = #{disabled},
+			</if>
+			<if test="dailyCirculation != null">
+				daily_circulation = #{dailyCirculation},
+			</if>
+        id = #{id}
+        where id = #{id}
+    </update>
+
+    <select id="get" resultMap="ActivityCollectCoupons" parameterType="string">
+        select <include refid="columns"/> from activity_collect_coupons where id = #{value} and disabled = 0 
+    </select>
+
+    <delete id="delete" parameterType="string">
+        delete from activity_collect_coupons where id = #{value} 
+    </delete>
+    
+     <update id="updateBatchStatus" parameterType="map">
+    	update activity_collect_coupons set status = #{status} where id in 
+		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">  
+  			#{item}  
+ 		</foreach>  
+<!--  		未开始或者进行中的才关闭,其他状态的不管 -->
+ 		and (status = 0 or status = 1)
+    </update>
+
+	<select id="listByJob" parameterType="map" resultMap="ActivityCollectCoupons">
+		select s.* from activity_collect_coupons s where 
+		(s.`status` = 0 and  s.start_time &lt;= NOW())
+		OR
+		(s.`status` = 1 and  s.end_time &lt;= NOW())
+	</select>   
+	<!-- wusw:根据店铺id、活动状态、客户端限制类型等，获取代金券领券活动及代金券信息 -->
+	<select id="selectByStoreAndLimitType" resultMap="couponsAndLimitCategoryDetailMap" parameterType="map">
+	   SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time,
+              coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
+              coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num
+              <!-- ,category.id AS spuCategoryId,category.`name` AS spuCategoryName -->
+		FROM activity_collect_coupons collect
+		LEFT JOIN activity_collect_area area ON area.collect_coupons_id = collect.id
+		LEFT JOIN activity_coupons coupons ON coupons.activity_id = collect.id
+		<!-- LEFT JOIN activity_coupons_limit_category limitCategory ON limitCategory.coupons_id = coupons.id
+		LEFT JOIN goods_spu_category category ON category.id = limitCategory.category_id -->
+		WHERE collect.disabled = 0 AND ( collect.belong_type = '0' or collect.approval_status = 1 )
+		<if test="exchangeCode != null and exchangeCode != ''">
+		  AND coupons.exchange_code = #{exchangeCode,jdbcType=VARCHAR}
+		</if>
+		<if test="exchangeCode == null or exchangeCode == ''">
+		  AND (coupons.exchange_code is null or coupons.exchange_code = '')
+		</if>
+		<if test="type != null">
+		 AND collect.type = #{type,jdbcType=TINYINT}
+		</if>
+		<if test="status != null">
+		 AND collect.`status` = #{status,jdbcType=TINYINT}
+		</if>
+		<!-- <if test="limitClientType != null">
+	      AND collect.limit_client_type IN
+	      <foreach collection="limitClientType" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item,jdbcType=TINYINT}
+	      </foreach>
+	    </if> -->
+	    <if test="storeId != null and storeId != ''">
+	    AND (collect.area_type =  #{nationalAreaType,jdbcType=TINYINT}
+	        OR (collect.area_type = #{districtAreaType,jdbcType=TINYINT}
+	           AND ((area.type = 1 AND area.area_id = (SELECT province_id FROM store_info WHERE id = #{storeId,jdbcType=VARCHAR}))
+	               OR (area.type = 0 AND area.area_id = (SELECT city_id FROM store_info WHERE id = #{storeId,jdbcType=VARCHAR}))
+	               )
+	           )
+	        )
+	    </if>
+	    <if test="provinceId != null and provinceId != ''">
+	    AND (collect.area_type =  #{nationalAreaType,jdbcType=TINYINT}
+	        OR (collect.area_type = #{districtAreaType,jdbcType=TINYINT}
+	           AND ((area.type = 1 AND area.area_id = #{provinceId,jdbcType=VARCHAR})
+	               OR (area.type = 0 AND area.area_id = #{cityId,jdbcType=VARCHAR})
+	               )
+	           )
+	        )
+	    </if>
+	    ORDER BY collect.start_time DESC		
+	</select>
+	
+	<!-- wusw:根据店铺id、活动状态、客户端限制类型等，统计代金券领券活动及代金券数量 -->
+	<select id="selectCountByStoreAndLimitType" resultType="int" parameterType="map">
+	   SELECT COUNT(1)
+		FROM activity_collect_coupons collect
+		LEFT JOIN activity_collect_area area ON area.collect_coupons_id = collect.id
+		LEFT JOIN activity_coupons coupons ON coupons.activity_id = collect.id		
+		WHERE collect.disabled = 0 AND ( collect.belong_type = '0' or collect.approval_status = 1 )
+		<if test="exchangeCode != null and exchangeCode != ''">
+		  AND coupons.exchange_code = #{exchangeCode,jdbcType=VARCHAR}
+		</if>
+		<if test="exchangeCode == null or exchangeCode == ''">
+		  AND (coupons.exchange_code is null or coupons.exchange_code = '')
+		</if>
+		<if test="type != null">
+		 AND collect.type = #{type,jdbcType=TINYINT}
+		</if>
+		<if test="status != null">
+		 AND collect.`status` = #{status,jdbcType=TINYINT}
+		</if>
+		<!-- <if test="limitClientType != null">
+	      AND collect.limit_client_type IN
+	      <foreach collection="limitClientType" open="(" close=")" index="index" item="item"  separator=",">
+	             #{item,jdbcType=TINYINT}
+	      </foreach>
+	    </if> -->
+	    <if test="storeId != null and storeId != ''">
+	    AND (collect.area_type =  #{nationalAreaType,jdbcType=TINYINT}
+	        OR (collect.area_type = #{districtAreaType,jdbcType=TINYINT}
+	           AND ((area.type = 1 AND area.area_id = (SELECT province_id FROM store_info WHERE id = #{storeId,jdbcType=VARCHAR}))
+	               OR (area.type = 0 AND area.area_id = (SELECT city_id FROM store_info WHERE id = #{storeId,jdbcType=VARCHAR}))
+	               )
+	           )
+	        )
+	    </if>
+	    <if test="provinceId != null and provinceId != ''">
+	    AND (collect.area_type =  #{nationalAreaType,jdbcType=TINYINT}
+	        OR (collect.area_type = #{districtAreaType,jdbcType=TINYINT}
+	           AND ((area.type = 1 AND area.area_id = #{provinceId,jdbcType=VARCHAR})
+	               OR (area.type = 0 AND area.area_id = #{cityId,jdbcType=VARCHAR})
+	               )
+	           )
+	        )
+	    </if>		
+	</select>
+	
+	
+<!-- 	用于判断某个时间段内活动是否冲突 -->
+	<select id="countTimeQuantum"  parameterType="map" resultType="int">
+		select count(*) from activity_collect_coupons c
+	    where c.disabled = 0 
+<!-- 	    未开始或者进行中 -->
+	    and (c.status = 1 or c.status = 0)
+			AND 
+			(
+				#{startTime} BETWEEN c.start_time and c.end_time 
+	      		OR 
+	      		#{endTime} BETWEEN c.start_time and c.end_time 
+	      		OR 
+	     		(c.start_time &gt;= #{startTime} and c.end_time &lt;= #{endTime})
+	    	)
+<!-- 	    如果是修改,就忽略自己本身这条记录 -->
+	    <if test="id != null and id != ''">
+	    	and c.id != #{id}
+	    </if>
+	    <if test="type != null and type != ''">
+	    	and c.type = #{type}
+	    </if>
+    </select>
+    
+    <!--     通过活动id查询该活动一共有多少被使用的代金券的总额 -->
+    <select id="selectTotalFaceValueByCollectId" parameterType="string" resultType="java.math.BigDecimal">
+		select 
+	 	-- r.*,ac.face_value
+		IFNULL(sum(ac.face_value),0.00) as total
+		from activity_coupons_record r 
+		left JOIN activity_coupons ac on (ac.id = r.coupons_id)
+		where r.coupons_collect_id = #{value}
+		and (status = 0 or status = 1)
+	</select>
+	
+	<select id="selectActivityCononsOwner" parameterType="string" resultType="string">
+	
+	
+	
+	</select>
+	
+	<!--    已经失效的所有代金卷   addBy zlq-->
+	<select id="selectByCollectStatus" resultMap="couponsAndLimitCategoryDetailMap" parameterType="map">
+	  SELECT A.id, A.refund_type, B.belong_type as type, B.face_value, B.create_user_id, B.remain_num, B.total_num, B.id as couponsId 
+	  FROM activity_collect_coupons A 
+      LEFT JOIN activity_coupons B 
+      ON A.id = B.activity_id
+      WHERE A.refund_type = #{refundType} 
+      AND B.belong_type != 0
+      AND ( (A.status = #{disabled}) or (A.status = #{closed} and B.remain_num &gt; 0) or (A.status = #{end} and B.remain_num &gt; 0))
+	</select>
+	
+	<!--    已经关闭和已经结束 的活动 所关联的代金卷 zlq-->
+	<select id="selectByUnusedOrExpires" resultMap="couponsRecordMap" parameterType="map">
+	  SELECT A.id, A.refund_type, B.belong_type as type , B.face_value, B.create_user_id, C.valid_time, C.coupons_collect_id 
+	  FROM activity_collect_coupons A 
+      LEFT JOIN activity_coupons B 
+      ON A.id = B.activity_id
+      LEFT JOIN activity_coupons_record C
+      ON C.coupons_id = B.id
+      WHERE B.belong_type != 0
+      AND A.refund_type = #{refundType}
+      AND ((A.status = #{closed}) or (A.status = #{end}))
+      AND C.status != 1
+      ORDER BY C.valid_time DESC
+	</select>
+	
+	
+	<update id="updateRefundType" parameterType="java.util.List">
+	 UPDATE activity_collect_coupons
+	 SET refund_type = 1
+	 WHERE
+	 id IN 
+	 <foreach collection="list" item="item" separator="," open="(" close=")" >
+		#{item.id,jdbcType=VARCHAR}
+	 </foreach>
+	</update>
+	
+	<update id="updateRefundTypeByVo" parameterType="string">
+	 UPDATE activity_collect_coupons
+	 SET refund_type = 2
+	 WHERE
+	 id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<select id="">
+	  SELECT * FROM ativity_collect_coupons acc LEFT JOIN activity_coupons ac ON acc.id=ac.activity_id WHERE acc.id=#{id,jdbcType=VARCHAR}
+	</select>
+
+	<!-- begin：查询代金券活动以及关联地区列表 add by wushp -->
+	<select id="findCollectCouponsAreaList" parameterType="java.util.Map" resultType="int">
+		SELECT count(0) FROM activity_collect_coupons collectCoupons
+		LEFT JOIN activity_collect_area area ON collectCoupons.id = area.collect_coupons_id
+		WHERE collectCoupons.disabled = 0
+		<!-- 未开始或者进行中 -->
+		AND (collectCoupons.status = 1 or collectCoupons.status = 0)
+		AND
+		(
+		#{startTime} BETWEEN collectCoupons.start_time and collectCoupons.end_time
+		OR
+		#{endTime} BETWEEN collectCoupons.start_time and collectCoupons.end_time
+		OR
+		(collectCoupons.start_time &gt;= #{startTime} and collectCoupons.end_time &lt;= #{endTime})
+		)
+		<!-- 如果是修改,就忽略自己本身这条记录 -->
+		<if test="id != null and id != ''">
+			AND collectCoupons.id != #{id}
+		</if>
+		<if test="type != null">
+			AND collectCoupons.type = #{type}
+		</if>
+		<if test="areaType == 1">
+			<if test="associateIdList != null">
+				AND area.area_id in  
+				<foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
+					#{item}
+				</foreach>
+			</if>
+		</if>
+		
+	</select>
+	<!-- end：查询代金券活动以及关联地区列表 -->
+	
+	<!-- begin：查询代金券活动  add by tangy -->
+	<select id="findActivityCollectCouponsByCity" resultMap="couponsAndLimitCategoryDetailMap" parameterType="string">
+	    SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time, collect.daily_circulation,
+	           coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
+	           coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num
+	    FROM activity_collect_coupons collect 
+	    LEFT JOIN activity_coupons coupons ON coupons.activity_id = collect.id
+	    WHERE collect.disabled = 0 AND collect.type=2 AND ( collect.belong_type = '0' or collect.approval_status = 1 ) AND collect.status = 1 AND coupons.remain_num > 0
+	    AND (collect.area_type = 0 OR (collect.area_type = 1 AND EXISTS(
+	        SELECT 1 FROM activity_collect_area area WHERE area.collect_coupons_id = collect.id 
+			    AND ((area.type = 1 AND area.area_id = #{provinceId}) OR (area.type = 0 AND area.area_id = #{cityId} ))
+	    )))
+	    LIMIT 1
+	</select>
+	<!-- end：查询代金券活动 -->
+</mapper>

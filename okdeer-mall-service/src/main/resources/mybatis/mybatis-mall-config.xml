@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <!-- changes from the defaults -->
+        <setting name="lazyLoadingEnabled" value="false"/>
+        <!-- JdbcType enumeration. Most common are: NULL, VARCHAR and OTHER -->
+        <setting name="jdbcTypeForNull" value="NULL"/>
+        <setting name="defaultStatementTimeout" value="60"/>
+    </settings>
+
+    <typeHandlers>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.yschome.base.common.enums.WhetherEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.yschome.base.common.enums.Disabled"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.UserType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.AreaType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.DistrictType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.AuditStatusEnum"/>   
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.RefundType"/>     
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.ActivityRelated"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.CashDelivery"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.CategoryLimit"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.ActivitySaleStatus"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.ActivitySourceEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.ActivityStatus"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsApprovalStatus"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsIdentityLimit"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsLimitClientType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsStatus"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsStatus"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.discount.enums.IdentityLimit"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.discount.enums.LimitClientType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.discount.enums.ActivityDiscountType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.group.enums.ActivityGroupStatus"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.group.enums.ActivityGroupAuditStatus"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.group.enums.ActivityGroupAreaEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.operate.enums.ColumnAppTarget"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.operate.enums.ColumnOperationType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.operate.enums.ColumnTargetType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.operate.enums.State"/>      
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.advert.enums.AdvertIsPayEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.advert.enums.AdvertStatusEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.advert.enums.AdvertTargetTypeEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.advert.enums.BusinessFastNavigateEnum"/>
+
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.ActivityBelongType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.AppraiseEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.CompainStatusEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.ConsumeStatusEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.DisputeStatusEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderActivityType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderComplete"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderIsInvoice"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderIsShowEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderPayTypeEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderPickUpType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderResourceEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderStatusEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderTypeEnum"/>
+        <!-- Begin added by maojj 2016-08-22 Bug:13044 -->
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.yschome.api.mall.enums.order.OrderTypeEnum"/>
+        <!-- Begin added by maojj 2016-08-22 -->
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PaymentStatusEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PayTypeEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PayWayEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PickUpTypeEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.RefundsLogisticsEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.RefundsStatusEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.RefundType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.SendMsgType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.WithInvoiceEnum"/>
+        
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.FileUploadPathEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.TokenCheckTypeEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.archive.goods.base.enums.GoodsTypeEnum"/>
+        
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.member.member.enums.AddressDefault"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.member.member.enums.AddressSource"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.member.member.enums.AddressType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.member.points.enums.DuiBaOrderStatusEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.member.points.enums.PointsRuleCode"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.LogisticsType"/>
+        
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.archive.store.enums.StoreTypeEnum"/>
+        
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.RangeTypeEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum"/>
+         
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.RechargeOrderPayEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.RechargeOrderStatusEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.RechargeTypeEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.recommend.enums.ActivityRecommendStatus"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.IsRead"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.operate.enums.ServerStatus"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.operate.enums.ContentType"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.operate.enums.AssociationRangeType"/>
+   		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.advert.enums.AdvertTypeEnum"/>
+   		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.MsgType"/>
+   
+    </typeHandlers>
+</configuration>

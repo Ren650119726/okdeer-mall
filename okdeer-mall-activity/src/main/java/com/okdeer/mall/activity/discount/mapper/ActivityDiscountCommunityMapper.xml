@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.discount.mapper.ActivityDiscountCommunityMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.discount.entity.ActivityDiscountCommunity" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="discount_id" property="discountId" jdbcType="VARCHAR" />
+    <result column="community_id" property="communityId" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <!-- 查询字段 -->
+  <sql id="Base_Column_List" >
+    id, discount_id, community_id
+  </sql>
+  
+  <!-- 查询条件 -->
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+    </if>
+  </sql>
+  
+  <!-- 根据主键id，查询满减小区信息 -->
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM activity_discount_community
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据查询条件，查询满减小区信息列表 -->
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_discount_community WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  
+  <!-- 根据主键id，删除满减小区信息 -->
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM activity_discount_community
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 插入满减小区信息 -->
+  <insert id="insert" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountCommunity" >
+    INSERT INTO activity_discount_community (id, discount_id, community_id
+      )
+    VALUES (#{id,jdbcType=VARCHAR}, #{discountId,jdbcType=VARCHAR}, #{communityId,jdbcType=VARCHAR}
+      )
+  </insert>
+  
+  <!--判断是否为空，插入满减小区信息  -->
+  <insert id="insertSelective" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountCommunity" >
+    INSERT INTO activity_discount_community
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        id,
+      </if>
+      <if test="discountId != null and discountId != ''" >
+        discount_id,
+      </if>
+      <if test="communityId != null and communityId != ''" >
+        community_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null and id != ''" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="discountId != null and discountId != ''" >
+        #{discountId,jdbcType=VARCHAR},
+      </if>
+      <if test="communityId != null and communityId != ''" >
+        #{communityId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- 根据主键id，判断是否为空，修改满减小区信息 -->
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountCommunity" >
+    UPDATE activity_discount_community
+    <set >
+      <if test="discountId != null and discountId != ''" >
+        discount_id = #{discountId,jdbcType=VARCHAR},
+      </if>
+      <if test="communityId != null and communityId != ''" >
+        community_id = #{communityId,jdbcType=VARCHAR},
+      </if>
+    </set>
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 根据主键id，修改满减小区信息 -->
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountCommunity" >
+    UPDATE activity_discount_community
+    SET discount_id = #{discountId,jdbcType=VARCHAR},
+      community_id = #{communityId,jdbcType=VARCHAR}
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  
+  <!--wusw： 批量新增活动小区关联信息 -->
+  <insert id="insertCommunityBatch" parameterType="java.util.List">
+	INSERT INTO activity_discount_community (id, discount_id, community_id)
+	VALUES
+	<foreach collection="list" item="item" index="index" separator=",">
+		(#{item.id,jdbcType=VARCHAR}, #{item.discountId,jdbcType=VARCHAR}, 
+		#{item.communityId,jdbcType=VARCHAR})
+	</foreach>
+  </insert>
+  
+  <!--wusw： 根据活动id，删除活动小区关联信息（物理删除） -->
+  <delete id="deleteByDiscountId">
+	 DELETE FROM activity_discount_community 
+	 WHERE 
+	 <if test="discountId != null ">
+		 discount_id  = #{discountId,jdbcType=VARCHAR}		
+     </if>
+     <if test="discountId == null ">
+      1 = 2
+     </if>  
+  </delete>
+</mapper>

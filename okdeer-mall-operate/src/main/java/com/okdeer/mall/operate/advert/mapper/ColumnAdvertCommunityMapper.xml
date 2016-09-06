@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.advert.mapper.ColumnAdvertCommunityMapper">
+	<resultMap type="com.okdeer.mall.advert.entity.ColumnAdvertCommunity" id="columbAdvertCommunityRsMap">
+		<id column="id" property="id" jdbcType="VARCHAR"/>
+		<result column="advert_id" property="advertId" jdbcType="VARCHAR"/>
+		<result column="community_id" property="communityId" jdbcType="VARCHAR"/>
+	</resultMap>
+
+	<sql id="base_column_sql">
+		id, advert_id, community_id
+	</sql>
+	
+	<insert id="insert" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertCommunity">
+		INSERT INTO column_advert_area (id, advert_id, community_id)
+		VALUES(#{id, jdbcType=VARCHAR}, #{advertId, jdbcType=VARCHAR}, #{communityId, jdbcType=VARCHAR)
+	</insert>
+	
+	<insert id="insertSelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertCommunity">
+		INSERT INTO column_advert_area 
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="advertId != null">
+				advert_id,
+			</if>
+			<if test="communityId != null">
+				community_id
+			</if>			
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id, jdbcType=VARCHAR},
+			</if>
+			<if test="advertId != null">
+				#{advertId, jdbcType=VARCHAR},
+			</if>
+			<if test="communityId != null">
+				#{communityId, jdbcType=VARCHAR}
+			</if>			
+		</trim>		
+	</insert>
+	
+	<insert id="insertAdvertCommunityBatch" parameterType="java.util.List">
+		INSERT INTO column_advert_community(id, advert_id, community_id)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.id}, #{item.advertId}, #{item.communityId})
+		</foreach>
+	</insert>
+	
+	<update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertCommunity">
+		UPDATE column_advert_area
+		<if test="advertId != null">
+			advert_id = #{advertId, jdbcType=VARCHAR},
+		</if>
+		<if test="communityId != null">
+			community_id = #{communityId, jdbcType=VARCHAR}
+		</if>			
+	</update>
+
+	<delete id="deleteByAdvertId" parameterType="string">
+		DELETE FROM column_advert_community 
+		WHERE advert_id = #{advertId, jdbcType=VARCHAR}
+	</delete>
+	
+</mapper>

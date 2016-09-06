@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper">
+
+	<resultMap type="com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods" id="ActivitySaleGoods" >
+		<result property="id" column="id" />
+		<result property="storeSkuId" column="store_sku_id" />
+		<result property="saleId" column="sale_id" />
+		<result property="tradeMax" column="trade_max" />
+		<result property="saleStock" column="sale_stock" />
+		<result property="salePrice" column="sale_price" />
+		<result property="sort" column="sort" />
+		<result property="disabled" column="disabled" />
+	</resultMap>
+
+    <sql id="columns">
+		id,store_sku_id,sale_id,trade_max,sale_stock,sale_price,sort,disabled
+	</sql>
+
+    <insert id="saveBatch" parameterType="list">
+        insert into activity_sale_goods(
+			<include refid="columns"/>
+		)values
+		<foreach collection="list" item="item" index="index" separator="," >
+        (
+            #{item.id},
+            #{item.storeSkuId},
+            #{item.saleId},
+            #{item.tradeMax},
+            #{item.saleStock},
+            #{item.salePrice},
+            #{item.sort},
+            #{item.disabled}
+        )
+		</foreach>
+	</insert>
+
+    <delete id="deleteBySaleId" parameterType="string">
+        delete from activity_sale_goods where sale_id = #{value} 
+    </delete>
+    
+    <delete id="deleteById" parameterType="string">
+        delete from activity_sale_goods where id = #{value} 
+    </delete>
+    
+    <select id="get" parameterType="string" resultMap="ActivitySaleGoods">
+        select <include refid="columns"/> from activity_sale_goods where id = #{value} 
+    </select>
+    
+    <select id="listBySaleId" parameterType="string" resultMap="ActivitySaleGoods">
+    	select 
+		s.*,
+		gss.sku_id as goodsSkuId
+		from activity_sale_goods s
+		left join goods_store_sku gss on (s.store_sku_id = gss.id)
+		where s.sale_id = #{value}
+		order by s.sort asc
+    </select>
+
+<!-- 根据店铺商品的id和活动id去查询单个记录  addBy  zhulq -->
+<select id="selectByObject" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods" resultMap="ActivitySaleGoods">
+     SELECT id, store_sku_id, sale_price, trade_max, sale_id, disabled 
+     FROM activity_sale_goods
+     WHERE disabled = #{disabled}
+     AND store_sku_id = #{storeSkuId}
+     AND sale_id = #{saleId}
+</select>
+
+	<select id="selectActivitySaleByParams" parameterType="map" resultMap="ActivitySaleGoods">
+	    SELECT * FROM activity_sale_goods WHERE store_sku_id = #{storeSkuId,jdbcType=VARCHAR} AND sale_id = #{saleId,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 根据活动ID和店铺商品id查询活动商品信息 Begin added by maojj 2016-07-15 -->
+	<select id="findActivityGoodsList" parameterType="map" resultMap="ActivitySaleGoods">
+		SELECT <include refid="columns" />
+		FROM activity_sale_goods
+		WHERE sale_id = #{saleId}
+		AND store_sku_id IN
+		<foreach collection="storeSkuIds" item="item" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+	</select>
+	<!-- End added by maojj 2016-07-15 -->
+</mapper>

@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.system.mapper.SysMsgMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.archive.system.entity.SysMsg" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="context" property="context" jdbcType="VARCHAR" />
+    <result column="link" property="link" jdbcType="VARCHAR" />
+    <result column="target_id" property="targetId" jdbcType="VARCHAR" />
+    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+    <result column="is_read" property="isRead" jdbcType="TINYINT" javaType="com.okdeer.mall.common.enums.IsRead" />
+   	<result column="from_user_id" property="fromUserId" jdbcType="VARCHAR"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="read_time" property="readTime" jdbcType="TIMESTAMP" />
+    <result column="type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.common.enums.MsgType" />
+    <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.yschome.base.common.enums.Disabled"/>
+  </resultMap>
+  
+  <resultMap type="com.okdeer.archive.system.entity.SysMsgVo" id="SysMsgVoMap" extends="BaseResultMap">
+  	<result column="fromUserName" property="fromUserName" jdbcType="VARCHAR"/>
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+     m.id, m.title, m.context, m.link, m.target_id, m.is_read, m.create_time, 
+     m.from_user_id, m.read_time, m.type, m.disabled, m.store_id
+  </sql>
+  <sql id="condition" >
+  	<if test="params != null and params != ''">
+	    <if test="params.storeId != null and params.storeId != ''">
+	    	AND m.store_id = #{params.storeId,jdbcType=VARCHAR}
+	    </if>
+	    <if test="params.disabled != null">
+	    	AND m.disabled = #{params.disabled,jdbcType=TINYINT}
+	    </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from sys_msg m
+    where m.id = #{id,jdbcType=VARCHAR}
+    	  and m.disabled=0
+  </select>
+  <select id="selectByParams" resultMap="SysMsgVoMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />, u.login_name as fromUserName
+    FROM sys_msg m
+    left join sys_user u on m.from_user_id = u.id
+    WHERE 1=1
+    <include refid="condition" />
+    ORDER BY m.create_time DESC
+  </select>
+  
+  <select id="selectNearestMsg" resultMap="SysMsgVoMap">
+  	SELECT 
+  	<include refid="Base_Column_List" />
+  	FROM sys_msg m
+  	WHERE m.disabled=0
+  	<if test="storeId != null and storeId != ''">
+	    AND m.store_id = #{storeId,jdbcType=VARCHAR}
+	</if>
+	ORDER BY m.is_read ASC, m.create_time DESC
+	LIMIT 0, #{count,jdbcType=INTEGER}
+  </select> 
+  
+  <!-- 统计店铺未读消息数量 -->
+  <select id="selectUnReadMsg" resultType="java.lang.Integer" parameterType="java.lang.String" >
+    SELECT count(1) FROM sys_msg WHERE store_id=#{storeId,jdbcType=VARCHAR} AND disabled = 0 AND is_read = 0 
+  </select>
+  
+  
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM sys_msg
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.archive.system.entity.SysMsg" >
+    insert into sys_msg (id, title, context, 
+      link, target_id, is_read,
+      from_user_id, create_time, read_time, 
+      type, disabled)
+    values (#{id,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR}, #{context,jdbcType=VARCHAR}, 
+      #{link,jdbcType=VARCHAR}, #{targetId,jdbcType=VARCHAR}, #{isRead,jdbcType=BIT}, 
+      #{fromUserId,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{readTime,jdbcType=TIMESTAMP}, 
+      #{type,jdbcType=BIT}, #{disabled,jdbcType=BIT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.archive.system.entity.SysMsg" >
+    insert into sys_msg
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="title != null" >
+        title,
+      </if>
+      <if test="context != null" >
+        context,
+      </if>
+      <if test="link != null" >
+        link,
+      </if>
+      <if test="targetId != null" >
+        target_id,
+      </if>
+      <if test="isRead != null" >
+        is_read,
+      </if>
+      <if test="fromUserId != null">
+      	from_user_id,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="readTime != null" >
+        read_time,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="disabled != null" >
+        disabled,
+      </if>
+      <if test="storeId != null">
+       store_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="title != null" >
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="context != null" >
+        #{context,jdbcType=VARCHAR},
+      </if>
+      <if test="link != null" >
+        #{link,jdbcType=VARCHAR},
+      </if>
+      <if test="targetId != null" >
+        #{targetId,jdbcType=VARCHAR},
+      </if>
+      <if test="isRead != null" >
+        #{isRead,jdbcType=BIT},
+      </if>
+      <if test="fromUserId != null">
+      	#{fromUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="readTime != null" >
+        #{readTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=BIT},
+      </if>
+      <if test="disabled != null" >
+        #{disabled,jdbcType=BIT},
+      </if>
+      <if test="storeId != null">
+      	#{storeId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.archive.system.entity.SysMsg" >
+    update sys_msg
+    <set >
+      <if test="title != null" >
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="context != null" >
+        context = #{context,jdbcType=VARCHAR},
+      </if>
+      <if test="link != null" >
+        link = #{link,jdbcType=VARCHAR},
+      </if>
+      <if test="targetId != null" >
+        target_id = #{targetId,jdbcType=VARCHAR},
+      </if>
+      <if test="isRead != null" >
+        is_read = #{isRead,jdbcType=BIT},
+      </if>
+      <if test="fromUserId != null">
+      	from_user_id = #{fromUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="readTime != null" >
+        read_time = #{readTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=BIT},
+      </if>
+      <if test="disabled != null" >
+        disabled = #{disabled,jdbcType=BIT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.archive.system.entity.SysMsg" >
+    update sys_msg
+    set title = #{title,jdbcType=VARCHAR},
+      context = #{context,jdbcType=VARCHAR},
+      link = #{link,jdbcType=VARCHAR},
+      target_id = #{targetId,jdbcType=VARCHAR},
+      is_read = #{isRead,jdbcType=BIT},
+      from_user_id = #{fromUserId,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      read_time = #{readTime,jdbcType=TIMESTAMP},
+      type = #{type,jdbcType=BIT},
+      disabled = #{disabled,jdbcType=BIT}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+   <insert id="insertSysMsgWithOrder" parameterType="com.okdeer.archive.system.entity.SysMsg" >
+    insert into sys_msg
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="title != null" >
+        title,
+      </if>
+      <if test="context != null" >
+        context,
+      </if>
+      <if test="link != null" >
+        link,
+      </if>
+      <if test="targetId != null" >
+        target_id,
+      </if>
+      <if test="isRead != null" >
+        is_read,
+      </if>
+      <if test="fromUserId != null">
+      	from_user_id,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="readTime != null" >
+        read_time,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="disabled != null" >
+        disabled,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="title != null" >
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="context != null" >
+        #{context,jdbcType=VARCHAR},
+      </if>
+      <if test="link != null" >
+        #{link,jdbcType=VARCHAR},
+      </if>
+      <if test="targetId != null" >
+        #{targetId,jdbcType=VARCHAR},
+      </if>
+      <if test="isRead != null" >
+        #{isRead,jdbcType=BIT},
+      </if>
+      <if test="fromUserId != null">
+      	#{fromUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="readTime != null" >
+        #{readTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=BIT},
+      </if>
+      <if test="disabled != null" >
+        #{disabled,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  
+</mapper>

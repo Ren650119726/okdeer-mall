@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.advert.mapper.ColumnAdvertAreaMapper">
+	<resultMap type="com.okdeer.mall.advert.entity.ColumnAdvertArea" id="columnAdvertAreaRsMap">
+		<id column="id" property="id" jdbcType="VARCHAR"/>
+		<result column="advert_id" property="advertId" jdbcType="VARCHAR"/>
+		<result column="area_id" property="areaId" jdbcType="VARCHAR"/>
+		<result column="type" property="type" jdbcType="TINYINT"/>
+	</resultMap>
+
+	<sql id="base_column_list">
+		id, advert_id, area_id, type
+	</sql>
+	
+	<insert id="insert" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertArea">
+		INSERT INTO column_advert_area (id, advert_id, area_id, type)
+		VALUES(#{id, jdbcType=VARCHAR}, #{advertId, jdbcType=VARCHAR}, #{areaId, jdbcType=VARCHAR}, #{type, jdbcType=TINYINT})
+	</insert>
+	
+	<insert id="insertSelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertArea">
+		INSERT INTO column_advert_area 
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="advertId != null">
+				advert_id,
+			</if>
+			<if test="areaId != null">
+				area_id,
+			</if>	
+			<if test="type != null">
+				type
+			</if>		
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id, jdbcType=VARCHAR},
+			</if>
+			<if test="advertId != null">
+				#{advertId, jdbcType=VARCHAR},
+			</if>
+			<if test="areaId != null">
+				#{areaId, jdbcType=VARCHAR},
+			</if>
+			<if test="type != null">
+				#{type, jdbcType=TINYINT}
+			</if>			
+		</trim>		
+	</insert>
+	
+	<insert id="insertAdvertAreaBatch" parameterType="java.util.List">
+		INSERT INTO column_advert_area (id, advert_id, area_id, type)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.id}, #{item.advertId}, #{item.areaId}, #{item.type})
+		</foreach>
+	</insert>
+	
+	<update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertArea">
+		UPDATE column_advert_area
+		<set>
+			<if test="advertId != null">
+				advert_id = #{advertId, jdbcType=VARCHAR},
+			</if>
+			<if test="areaId != null">
+				area_id = #{areaId, jdbcType=VARCHAR},
+			</if>
+			<if test="type != null">
+				type = #{type, jdbcType=TINYINT}
+			</if>	
+		</set>
+		WHERE id = #{id,jdbcType=VARCHAR}		
+	</update>
+	
+	<delete id="deleteByAdvertId" parameterType="string">
+		DELETE FROM column_advert_area 
+		WHERE advert_id = #{advertId, jdbcType=VARCHAR}
+	</delete>
+</mapper>

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.points.mapper.PointsRuleMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.member.points.entity.PointsRule" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="code" property="code" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="point_val" property="pointVal" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="limit_num" property="limitNum" jdbcType="INTEGER" />
+    <result column="is_total_point_limit" property="isTotalPointLimit" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="disabled" property="disabled" javaType="com.yschome.base.common.enums.Disabled" jdbcType="TINYINT"/>
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, code, name, point_val, status, limit_num, is_total_point_limit, create_time, 
+    update_time, disabled, remark
+  </sql>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from points_rule
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="selectByCode" resultMap="BaseResultMap" parameterType="com.okdeer.mall.member.points.entity.PointsRule" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM points_rule
+    WHERE disabled = 0 
+    AND code = #{code,jdbcType=VARCHAR}
+    <if test="id != null and id != ''" >
+      AND id != #{id,jdbcType=VARCHAR}
+    </if>
+  </select>
+  
+  <select id="queryByParam" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM points_rule WHERE 1=1 
+     AND disabled=0
+     ORDER BY create_time DESC    
+  </select>
+  
+  
+  <select id="findValidList" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM points_rule WHERE 1=1 
+     AND disabled=0
+     AND status=1
+     ORDER BY create_time DESC    
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM points_rule
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.member.points.entity.PointsRule" >
+    insert into points_rule (id, code, name, 
+      point_val, status, limit_num, 
+      is_total_point_limit, create_time, update_time, 
+      disabled, remark)
+    values (#{id,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
+      #{pointVal,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, #{limitNum,jdbcType=INTEGER}, 
+      #{isTotalPointLimit,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, 
+      #{disabled,jdbcType=BIT}, #{remark,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.member.points.entity.PointsRule" >
+    insert into points_rule
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="code != null" >
+        code,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="pointVal != null" >
+        point_val,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="limitNum != null" >
+        limit_num,
+      </if>
+      <if test="isTotalPointLimit != null" >
+        is_total_point_limit,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="disabled != null" >
+        disabled,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null" >
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="pointVal != null" >
+        #{pointVal,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="limitNum != null" >
+        #{limitNum,jdbcType=INTEGER},
+      </if>
+      <if test="isTotalPointLimit != null" >
+        #{isTotalPointLimit,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="disabled != null" >
+        #{disabled,jdbcType=BIT},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.member.points.entity.PointsRule" >
+    update points_rule
+    <set >
+      <if test="code != null" >
+        code = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="pointVal != null" >
+        point_val = #{pointVal,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="limitNum != null" >
+        limit_num = #{limitNum,jdbcType=INTEGER},
+      </if>
+      <if test="isTotalPointLimit != null" >
+        is_total_point_limit = #{isTotalPointLimit,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="disabled != null" >
+        disabled = #{disabled,jdbcType=BIT},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <!-- 批量修改状态启用、禁用 -->
+  <update id="batchUpdateStatus">
+	 UPDATE points_rule 
+	 SET status = #{status,jdbcType=TINYINT},update_time = #{updateTime,jdbcType=TIMESTAMP}
+	 WHERE 
+	 <if test="ids != null ">
+		 id  in 
+		 <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+	        #{item}
+	     </foreach>
+     </if>
+    <if test="ids == null ">
+      1 = 2
+    </if>
+   </update>
+</mapper>

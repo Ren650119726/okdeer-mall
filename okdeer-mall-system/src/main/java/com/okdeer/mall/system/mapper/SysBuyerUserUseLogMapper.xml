@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.system.mapper.SysBuyerUserUseLogMapper" > 
+  
+  <insert id="insertSysBuyerUserUseLog" parameterType="com.okdeer.archive.system.entity.SysBuyerUserUseLog" >
+    insert into sys_buyer_user_use_log (id, user_id, mobile, client, client_version, d_brand, 
+      screen, network_type, machine_code, create_time)
+    values (#{id,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{mobile,jdbcType=VARCHAR}, #{client,jdbcType=VARCHAR}, 
+            #{clientVersion,jdbcType=VARCHAR}, #{dBrand,jdbcType=VARCHAR}, #{screen,jdbcType=VARCHAR},
+             #{networkType,jdbcType=VARCHAR}, #{machineCode,jdbcType=VARCHAR},#{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  
+</mapper>

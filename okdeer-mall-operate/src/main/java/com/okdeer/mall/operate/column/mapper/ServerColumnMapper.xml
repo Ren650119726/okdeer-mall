@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.column.mapper.ServerColumnMapper">
+	<resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.ServerColumn">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="server_name" property="serverName" jdbcType="VARCHAR" />
+		<result column="server_status" property="serverStatus"
+			jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.ServerStatus" />
+		<result column="content_type" property="contentType" jdbcType="TINYINT" />
+		<result column="pic_little" property="picLittle" jdbcType="VARCHAR" />
+		<result column="pic_middle" property="picMiddle" jdbcType="VARCHAR" />
+		<result column="pic_big" property="picBig" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="TINYINT" />
+		<result column="association_url" property="associationUrl"
+			jdbcType="VARCHAR" />
+		<result column="association_range_type" property="associationRangeType"
+			jdbcType="TINYINT" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="create_user_id" property="createUserId"
+			jdbcType="VARCHAR" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="update_user_id" property="updateUserId"
+			jdbcType="VARCHAR" />
+		<result column="disabled" property="disabled"
+			javaType="com.yschome.base.common.enums.Disabled" jdbcType="TINYINT" />
+		<association property="serverColumnAreas" column="id"
+			select="findAreaByServerColumnId">
+		</association>
+		<association property="serverColumnStores" column="id"
+			select="findStoreByServerColumnId">
+		</association>
+	</resultMap>
+
+	<resultMap id="ServerColumnResultMap" type="com.okdeer.mall.operate.entity.ServerColumn">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="server_name" property="serverName" jdbcType="VARCHAR" />
+		<result column="server_status" property="serverStatus"
+			jdbcType="TINYINT" />
+		<result column="content_type" property="contentType" jdbcType="TINYINT" />
+		<result column="pic_little" property="picLittle" jdbcType="VARCHAR" />
+		<result column="pic_middle" property="picMiddle" jdbcType="VARCHAR" />
+		<result column="pic_big" property="picBig" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="TINYINT" />
+		<result column="association_url" property="associationUrl"
+			jdbcType="VARCHAR" />
+		<result column="association_range_type" property="associationRangeType"
+			jdbcType="TINYINT" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="create_user_id" property="createUserId"
+			jdbcType="VARCHAR" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="update_user_id" property="updateUserId"
+			jdbcType="VARCHAR" />
+	</resultMap>
+
+	<resultMap id="ServerColumnStoreResultMap"
+		type="com.okdeer.mall.operate.entity.ServerColumnStore">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="column_server_id" property="columnServerId"
+			jdbcType="VARCHAR" />
+		<result column="store_id" property="storeId" jdbcType="VARCHAR" />
+		<result column="store_name" property="storeName" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="TINYINT" />
+		<result column="is_recommend" property="isRecommend" jdbcType="TINYINT" />
+	</resultMap>
+
+	<resultMap id="ServerColumnAreaResultMap"
+		type="com.okdeer.mall.operate.entity.ServerColumnArea">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="column_server_id" property="columnServerId"
+			jdbcType="VARCHAR" />
+		<result column="city_id" property="cityId" jdbcType="VARCHAR" />
+		<result column="city_name" property="cityName" jdbcType="VARCHAR" />
+		<result column="province_id" property="provinceId" jdbcType="VARCHAR" />
+		<result column="province_name" property="provinceName"
+			jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, server_name, server_status, content_type, pic_little,
+		pic_middle,
+		pic_big, sort, association_url,
+		association_range_type,
+		create_time
+	</sql>
+
+	<!-- 根据服务栏目id查询服务栏目关联区域信息 -->
+	<select id="findAreaByServerColumnId" resultMap="ServerColumnAreaResultMap"
+		parameterType="java.lang.String">
+		SELECT id, column_server_id, city_id, city_name,
+		province_id, province_name
+		FROM column_server_area
+		WHERE
+		column_server_id = #{serverColumnId,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 根据服务栏目id查询服务栏目关联店铺信息 -->
+	<select id="findStoreByServerColumnId" resultMap="ServerColumnStoreResultMap"
+		parameterType="java.lang.String">
+		SELECT tt.id, tt.column_server_id, tt.store_id, tt.sort,
+		tt.is_recommend,
+		t2.store_name
+		FROM column_server_store tt
+		LEFT JOIN
+		store_info t2 ON t2.id = tt.store_id
+		WHERE tt.column_server_id =
+		#{serverColumnId,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 根据主键id查询服务栏目信息 -->
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM column_server
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 用户app专用根据主键id查询服务栏目信息 begin add by luosm 2016-07-18 -->
+	<select id="findUserAppById" resultMap="BaseResultMap"
+		parameterType="list">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM column_server
+		WHERE id IN
+		<foreach collection="list" item="item" separator="," open="("
+			close=")">
+			#{item}
+		</foreach>
+		AND server_status = 0
+		AND disabled = 0
+		ORDER BY sort
+	</select>
+	<!-- 用户app专用根据主键id查询服务栏目信息 end add by luosm 2016-07-18 -->
+
+	<!-- 根据cityId查询关联链接服务栏目信息 begin add by luosm 20160730 -->
+	<select id="findByRangeType" resultMap="BaseResultMap"
+		parameterType="string">
+		SELECT *
+		FROM column_server tt
+		WHERE tt.server_status = 0 AND tt.disabled = 0
+		AND (  
+		(tt.content_type = 1 and tt.association_range_type =0) or
+		EXISTS(
+		SELECT 1 from column_server_area csa where tt.id = csa.column_server_id
+		and tt.content_type = 1
+		and tt.disabled = 0
+		AND  (tt.association_range_type = 1 AND csa.city_id =#{cityId,jdbcType=VARCHAR}))
+		OR
+		EXISTS(
+		SELECT 1 FROM store_info si
+		LEFT JOIN column_server_store css ON css.store_id = si.id
+		LEFT JOIN store_server_area ssa ON ssa.store_id = si.id
+		WHERE (si.area_type = 0 OR ssa.city_id = #{cityId,jdbcType=VARCHAR})
+		AND tt.content_type = 0
+		AND css.column_server_id = tt.id
+		))
+		ORDER BY tt.sort DESC, tt.create_time DESC
+	</select>
+	<!-- 根据cityId查询服务栏目信息 end update by luosm 2016-07-30 -->
+
+	<!-- 根据条件查询服务栏目信息列表（参数类型map） -->
+	<select id="findByServerColumnQueryVo" resultMap="ServerColumnResultMap"
+		parameterType="com.okdeer.mall.operate.entity.ServerColumnQueryVo">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM column_server WHERE disabled = 0
+		<if test="serverName != null and serverName != ''">
+			AND server_name LIKE CONCAT('%',#{serverName},'%')
+		</if>
+		<if test="serverStatus != null">
+			AND server_status = #{serverStatus}
+		</if>
+		<if test="startRangeTime != null">
+        <![CDATA[ AND create_time >= #{startRangeTime} ]]>
+		</if>
+		<if test="endRangeTime != null">
+        <![CDATA[ AND create_time <= #{endRangeTime} ]]>
+		</if>
+		ORDER BY server_status, sort DESC, create_time DESC
+	</select>
+
+	<!-- 根据主键id删除服务栏目信息 -->
+	<update id="deleteById">
+		UPDATE column_server
+		SET disabled = 1, update_time =
+		#{updateTime}, update_user_id =
+		#{updateUserId}
+		WHERE id =
+		#{id,jdbcType=VARCHAR}
+	</update>
+
+	<!-- 插入服务栏目信息 -->
+	<insert id="insert" parameterType="com.okdeer.mall.operate.entity.ServerColumn">
+		INSERT INTO column_server (id,
+		server_name, server_status,
+		content_type, pic_little,
+		pic_middle,
+		pic_big, sort, association_url, association_range_type, disabled,
+		create_time, create_user_id, update_time, update_user_id)
+		VALUES
+		(#{id,jdbcType=VARCHAR}, #{serverName,jdbcType=VARCHAR},
+		#{serverStatus,jdbcType=TINYINT},
+		#{contentType,jdbcType=TINYINT},
+		#{picLittle,jdbcType=VARCHAR}, #{picMiddle,jdbcType=VARCHAR},
+		#{picBig,jdbcType=VARCHAR},
+		#{sort,jdbcType=TINYINT},
+		#{associationUrl,jdbcType=VARCHAR},
+		#{associationRangeType,jdbcType=TINYINT},
+		#{disabled,jdbcType=TINYINT},
+		#{createTime,jdbcType=TIMESTAMP},
+		#{createUserId,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP},
+		#{updateUserId,jdbcType=VARCHAR})
+	</insert>
+
+	<!-- 判断是否为空，根据主键id修改服务栏目信息 -->
+	<update id="updateServerColumn" parameterType="com.okdeer.mall.operate.entity.ServerColumn">
+		UPDATE column_server
+		<set>
+			<if test="serverName != null and serverName != ''">
+				server_name = #{serverName,jdbcType=VARCHAR},
+			</if>
+			<if test="contentType != null">
+				content_type = #{contentType,jdbcType=TINYINT},
+			</if>
+			<if test="serverStatus != null">
+				server_status = #{serverStatus,jdbcType=TINYINT},
+			</if>
+			<if test="picLittle != null and picLittle != ''">
+				pic_little = #{picLittle,jdbcType=VARCHAR},
+			</if>
+			<if test="picMiddle != null and picMiddle != ''">
+				pic_middle = #{picMiddle,jdbcType=VARCHAR},
+			</if>
+			<if test="picBig != null and picBig != ''">
+				pic_big = #{picBig,jdbcType=VARCHAR},
+			</if>
+			<if test="sort != null">
+				sort = #{sort,jdbcType=TINYINT},
+			</if>
+			<if test="associationUrl != null">
+				association_url = #{associationUrl,jdbcType=VARCHAR},
+			</if>
+			<if test="associationRangeType != null">
+				association_range_type = #{associationRangeType,jdbcType=TINYINT},
+			</if>
+			<if test="disabled != null">
+				disabled = #{disabled,jdbcType=TINYINT},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateUserId != null and updateUserId != ''">
+				update_user_id = #{updateUserId,jdbcType=VARCHAR},
+			</if>
+		</set>
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<!-- 更新服务栏目排序值 -->
+	<update id="updateServerColumnSortById">
+		UPDATE column_server
+		SET sort = #{sort},
+		update_user_id = #{updateUserId}, update_time = #{updateTime}
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<!-- 更改服务栏目服务状态 -->
+	<update id="updateServerStatusById">
+		UPDATE column_server
+		SET server_status =
+		#{serverStatus}, update_user_id = #{updateUserId}, update_time = #{updateTime}
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+
+</mapper>
