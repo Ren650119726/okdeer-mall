@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.order.service.impl;
 
 import java.math.BigDecimal;
@@ -33,15 +34,23 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRecordMapper;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.TradeNumUtil;
+import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.order.constant.OrderTipMsgConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.enums.AppraiseEnum;
 import com.okdeer.mall.order.enums.CompainStatusEnum;
@@ -52,29 +61,24 @@ import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
+import com.okdeer.mall.order.service.GenerateNumericalService;
+import com.okdeer.mall.order.service.TradeOrderAddService;
+import com.okdeer.mall.order.service.TradeOrderLogService;
+import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.CodeStatistical;
+import com.okdeer.mall.order.utils.OrderNoUtils;
 import com.okdeer.mall.order.vo.TradeOrderContext;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
 import com.okdeer.mall.order.vo.TradeOrderReq;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
+import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
+import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.yschome.base.common.enums.Disabled;
 import com.yschome.base.common.exception.ServiceException;
 import com.yschome.base.common.utils.UuidUtils;
-import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRecordMapper;
-import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
-import com.okdeer.mall.order.constant.OrderTipMsgConstant;
-import com.okdeer.mall.order.service.GenerateNumericalService;
-import com.okdeer.mall.order.service.TradeOrderAddService;
-import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
-import com.okdeer.mall.system.mq.RollbackMQProducer;
 
 import net.sf.json.JSONObject;
 
@@ -90,6 +94,7 @@ import net.sf.json.JSONObject;
  *		重构V4.1			2016-07-14			maojj			生成订单流程
  *		重构V4.1			2016-07-30			maojj			修改获取折扣金额的查询语句
  *		Bug:12710		2016-08-15			maojj			修改地址信息
+ *		1.0.Z			2016-09-05			zengj			增加订单操作记录
  */
 @Service
 public class TradeOrderAddServiceImpl implements TradeOrderAddService {
@@ -168,6 +173,14 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	@Resource
 	private ActivityDiscountRecordMapper activityDiscountRecordMapper;
 
+	// Begin 1.0.Z 增加订单操作记录Service add by zengj
+	/**
+	 * 订单操作记录Service
+	 */
+	@Resource
+	private TradeOrderLogService tradeOrderLogService;
+	// End 1.0.Z 增加订单操作记录Service add by zengj
+
 	/**
 	 * 消息生产者
 	 */
@@ -195,6 +208,11 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			tradeOrderSerive.insertTradeOrder(tradeOrder);
 			// 发送消息
 			sendTimerMessage(tradeOrder.getId(), req.getPayType());
+
+			// Begin 1.0.Z 增加订单操作记录 add by zengj
+			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUserId(),
+					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+			// End 1.0.Z 增加订单操作记录 add by zengj
 
 			resp.setOrderId(tradeOrder.getId());
 			resp.setOrderNo(tradeOrder.getOrderNo());
@@ -239,7 +257,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		tradeOrder.setIsShow(OrderIsShowEnum.yes);
 		tradeOrder.setPaymentStatus(PaymentStatusEnum.STAY_BACK);
 		tradeOrder.setCompainStatus(CompainStatusEnum.NOT_COMPAIN);
-		//tradeOrder.setPickUpCode(RandomStringUtil.getRandomInt(6));
+		// tradeOrder.setPickUpCode(RandomStringUtil.getRandomInt(6));
 		tradeOrder.setTradeNum(TradeNumUtil.getTradeNum());
 		tradeOrder.setDisabled(Disabled.valid);
 		tradeOrder.setCreateTime(new Date());
@@ -273,10 +291,14 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	 * @date 2016年7月14日
 	 */
 	private void setOrderNo(TradeOrder tradeOrder) throws ServiceException {
-		String orderNo = generateNumericalService.generateNumberAndSave("XS");
-		if (orderNo == null) {
-			throw new ServiceException("订单编号生成失败");
-		}
+		// String orderNo =
+		// generateNumericalService.generateNumberAndSave("XS");
+		// if (orderNo == null) {
+		// throw new ServiceException("订单编号生成失败");
+		// }
+		// TODO zengj 代码不能提交，机构信息没有更新下来，先写死机构5位
+		String orderNo = generateNumericalService.generateOrderNo(OrderNoUtils.PHYSICAL_ORDER_PREFIX, "ZENGJ",
+				OrderNoUtils.ONLINE_POS_ID);
 		logger.info("生成订单编号：{}", orderNo);
 		tradeOrder.setOrderNo(orderNo);
 	}
@@ -401,14 +423,14 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		orderLogistics.setConsigneeName(address.getConsigneeName());
 		orderLogistics.setMobile(address.getMobile());
 		orderLogistics.setAddress(address.getAddress());
-		
+
 		// Begin modified by maojj 2016-08-15
 		StringBuilder area = new StringBuilder();
 		area.append(clean(address.getProvinceName())).append(clean(address.getCityName()))
 				.append(clean(address.getAreaName())).append(clean(address.getAreaExt()));
 		orderLogistics.setArea(area.toString());
 		// End modified by maojj 2016-08-15
-		
+
 		orderLogistics.setOrderId(tradeOrder.getId());
 		orderLogistics.setAreaId(address.getAreaId());
 		orderLogistics.setProvinceId(address.getProvinceId());
@@ -417,7 +439,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 
 		tradeOrder.setTradeOrderLogistics(orderLogistics);
 	}
-	
+
 	// Begin added by maojj 2016-08-15
 	/**
 	 * @Description: 处理字符串

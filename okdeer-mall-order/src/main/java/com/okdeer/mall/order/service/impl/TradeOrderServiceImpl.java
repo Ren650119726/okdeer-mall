@@ -59,15 +59,27 @@ import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivitySourceEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
+import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.group.entity.ActivityGroup;
+import com.okdeer.mall.activity.group.service.ActivityGroupRecordService;
+import com.okdeer.mall.activity.group.service.ActivityGroupService;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
+import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillMapper;
+import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
+import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
+import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
 import com.okdeer.mall.order.constant.OrderMessageConstant;
@@ -95,7 +107,24 @@ import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.enums.SendMsgType;
+import com.okdeer.mall.order.mapper.TradeOrderCommentMapper;
+import com.okdeer.mall.order.mapper.TradeOrderComplainMapper;
+import com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper;
+import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
+import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
+import com.okdeer.mall.order.mapper.TradeOrderLogisticsMapper;
+import com.okdeer.mall.order.mapper.TradeOrderMapper;
+import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
+import com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper;
+import com.okdeer.mall.order.service.TradeMessageService;
+import com.okdeer.mall.order.service.TradeOrderLogService;
+import com.okdeer.mall.order.service.TradeOrderPayService;
+import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
+import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.JsonDateValueProcessor;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
@@ -110,6 +139,10 @@ import com.okdeer.mall.order.vo.TradeOrderStatisticsVo;
 import com.okdeer.mall.order.vo.TradeOrderStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderVo;
 import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
+import com.okdeer.mall.points.service.PointsBuriedService;
+import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
+import com.okdeer.mall.system.mq.RollbackMQProducer;
+import com.okdeer.mall.system.mq.StockMQProducer;
 import com.yschome.api.pay.enums.BusinessTypeEnum;
 import com.yschome.api.pay.enums.TradeErrorEnum;
 import com.yschome.api.pay.service.IPayTradeServiceApi;
@@ -123,38 +156,6 @@ import com.yschome.base.common.utils.UuidUtils;
 import com.yschome.base.framework.mq.RocketMQTransactionProducer;
 import com.yschome.base.framework.mq.RocketMqResult;
 import com.yschome.common.BaseResultDto;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
-import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
-import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
-import com.okdeer.mall.activity.group.service.ActivityGroupRecordService;
-import com.okdeer.mall.activity.group.service.ActivityGroupService;
-import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillMapper;
-import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
-import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
-import com.okdeer.mall.operate.column.service.ServerColumnService;
-import com.okdeer.mall.order.mapper.TradeOrderCommentMapper;
-import com.okdeer.mall.order.mapper.TradeOrderComplainMapper;
-import com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper;
-import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
-import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
-import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
-import com.okdeer.mall.order.mapper.TradeOrderLogisticsMapper;
-import com.okdeer.mall.order.mapper.TradeOrderMapper;
-import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
-import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
-import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
-import com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper;
-import com.okdeer.mall.order.service.TradeMessageService;
-import com.okdeer.mall.order.service.TradeOrderPayService;
-import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.points.service.PointsBuriedService;
-import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
-import com.okdeer.mall.system.mq.RollbackMQProducer;
-import com.okdeer.mall.system.mq.StockMQProducer;
 import com.yschome.mcm.service.ISmsService;
 
 import net.sf.json.JSONArray;
@@ -189,7 +190,8 @@ import net.sf.json.JsonConfig;
  *    重构4.1            2016-8-16            zhaoqc             新增根据交易号修改订单状态的方法
  *    重构4.1（代码评审优化）    2016-8-18            wusw               优化服务店订单列表和导出代码
  *    重构4.1			    2016-8-24            maojj              支付成功时，才发送提货码的信息
- *    V1.0.3            2016-09-01             wusw               修改自动确认收货期限为7天              
+ *    V1.0.3            2016-09-01             wusw               修改自动确认收货期限为7天      
+ *    1.0.Z			2016-09-05			zengj			增加订单操作记录        
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -427,6 +429,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Reference(version = "1.0.0", check = false)
 	IPsmsAgentServiceApi psmsAgentServiceApi;
 	// End sql优化，将复杂sql拆分开来 add by zengj
+
+	// Begin 1.0.Z 增加订单操作记录Service add by zengj
+	/**
+	 * 订单操作记录Service
+	 */
+	@Resource
+	private TradeOrderLogService tradeOrderLogService;
+	// End 1.0.Z 增加订单操作记录Service add by zengj
 
 	@Override
 	public PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize)
@@ -1197,7 +1207,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					@Override
 					public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
 						try {
-							updateCancelOrder(object);
+							updateCancelOrder(object, json.optString("operator"));
 							return LocalTransactionState.COMMIT_MESSAGE;
 						} catch (Exception e) {
 							// Begin 重构4.1 update by wusw 20160816
@@ -1224,7 +1234,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 *            订单对象
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	private void updateCancelOrder(Object entity) throws Exception {
+	private void updateCancelOrder(Object entity, String operator) throws Exception {
 		List<String> rpcIdList = new ArrayList<String>();
 		try {
 			if (entity instanceof TradeOrder) {
@@ -1295,9 +1305,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				this.tradeOrderPayService.cancelOrderPay(tradeOrder);
 
 				// 添加日志
-				if (tradeOrder.getTradeOrderLog() != null) {
-					tradeOrderLogMapper.insertSelective(tradeOrder.getTradeOrderLog());
-				}
+				// if (tradeOrder.getTradeOrderLog() != null) {
+				// tradeOrderLogMapper.insertSelective(tradeOrder.getTradeOrderLog());
+				// }
+				// Begin 1.0.Z 增加订单操作记录 add by zengj
+				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), operator,
+						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+				// End 1.0.Z 增加订单操作记录 add by zengj
 
 				// 发送短信
 				if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
@@ -1596,6 +1610,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					tradeOrderLogMapper.insertSelective(tradeOrder.getTradeOrderLog());
 				}
 
+				// Begin 1.0.Z 增加订单操作记录 add by zengj
+				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
+						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+				// End 1.0.Z 增加订单操作记录 add by zengj
+
 				// added by maojj 给ERP发消息去生成出入库单据
 				stockMQProducer.sendMessage(stockAdjustVo);
 
@@ -1629,7 +1648,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					@Override
 					public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
 						try {
-							updateCancelOrder(object);
+							updateCancelOrder(object, json.optString("operator"));
 						} catch (Exception e) {
 							// Begin 重构4.1 update by wusw 20160816
 							logger.error(ORDER_EXECUTE_REFUSE_FAIL, e);
@@ -1805,7 +1824,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 
 			// 保存订单操作日志
-			tradeOrderLogMapper.insertSelective(getTradeOrderLog(param, OrderStatusEnum.TO_BE_SIGNED));
+			// tradeOrderLogMapper.insertSelective(getTradeOrderLog(param,
+			// OrderStatusEnum.TO_BE_SIGNED));
+
+			// Begin 1.0.Z 增加订单操作记录 add by zengj
+			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), param.getUserId(),
+					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+			// End 1.0.Z 增加订单操作记录 add by zengj
 
 			// 调整库存
 			this.stockManagerService.updateStock(stockAdjustVo);
@@ -1821,10 +1846,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout,
 				// tradeOrder.getId(),
 				// DateUtils.addHours(serviceTime, 24).getTime());
-				//Begin V1.0.3修改自动确认收货期限为7天   update by wusw 20160901
+				// Begin V1.0.3修改自动确认收货期限为7天 update by wusw 20160901
 				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout, tradeOrder.getId(),
-						(DateUtils.addHours(serviceTime, 24*7).getTime() - DateUtils.getSysDate().getTime()) / 1000);
-				//End V1.0.3修改自动确认收货期限为7天  update by wusw 20160901
+						(DateUtils.addHours(serviceTime, 24 * 7).getTime() - DateUtils.getSysDate().getTime()) / 1000);
+				// End V1.0.3修改自动确认收货期限为7天 update by wusw 20160901
 				// 服务店派单发送短信
 				tradeMessageService.sendSmsByServiceStoreShipments(tradeOrder);
 			} else {// End 重构4.1 add by wusw 20160801
@@ -4547,6 +4572,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				} else {
 					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
 				}
+
+				// Begin 1.0.Z 增加订单操作记录 add by zengj
+				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
+						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+				// End 1.0.Z 增加订单操作记录 add by zengj
+
 				// 发送短信
 				tradeMessageService.sendSmsByShipments(tradeOrder);
 				// added by maojj 给ERP发消息去生成出入库单据
@@ -4631,6 +4662,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// tradeOrderItemMapper.insertSelective(item);
 			// }
 			tradeOrderItemMapper.insertBatch(itemList);
+
+			// Begin 1.0.Z 增加订单操作记录 add by zengj
+			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUserId(),
+					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+			// End 1.0.Z 增加订单操作记录 add by zengj
 		}
 	}
 
@@ -4656,6 +4692,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			order.setPickUpCode(tradeOrder.getPickUpCode());
 		}
 		// End added by maojj 2016-08-24
+
+		// Begin 1.0.Z 增加订单支付操作记录 add by zengj
+		tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUserId(),
+				tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+		// End 1.0.Z 增加订单操作记录 add by zengj
 
 		tradeMessageService.sendSmsByCreateOrder(order);
 
