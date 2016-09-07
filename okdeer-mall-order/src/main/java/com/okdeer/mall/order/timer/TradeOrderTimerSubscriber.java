@@ -202,6 +202,9 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 		TimeoutMessage timeoutMsg = JsonMapper.nonEmptyMapper().fromJson(content, TimeoutMessage.class);
 		try {
 			TradeOrder order = tradeOrderService.selectById(timeoutMsg.getKey());
+			if (order == null) {
+				return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+			}
 			if (order.getStatus() == OrderStatusEnum.UNPAID) {
 				logger.info("订单支付超时取消订单,订单号：" + order.getOrderNo());
 				order.setUpdateTime(new Date());

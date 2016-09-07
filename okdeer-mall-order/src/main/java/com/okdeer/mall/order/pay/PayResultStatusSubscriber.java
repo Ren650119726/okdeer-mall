@@ -41,6 +41,7 @@ import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.group.entity.ActivityGroup;
+import com.okdeer.mall.activity.group.service.ActivityGroupService;
 import com.okdeer.mall.common.utils.HttpClientUtil;
 import com.okdeer.mall.common.utils.LockUtil;
 import com.okdeer.mall.common.utils.RandomStringUtil;
@@ -50,6 +51,7 @@ import com.okdeer.mall.order.constant.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
+import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
@@ -58,7 +60,19 @@ import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
+import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
+import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
+import com.okdeer.mall.order.pay.entity.ResponseResult;
+import com.okdeer.mall.order.service.TradeOrderItemService;
+import com.okdeer.mall.order.service.TradeOrderLogService;
+import com.okdeer.mall.order.service.TradeOrderLogisticsService;
+import com.okdeer.mall.order.service.TradeOrderPayService;
+import com.okdeer.mall.order.service.TradeOrderRefundsService;
+import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.JsonDateValueProcessor;
+import com.okdeer.mall.system.utils.mapper.JsonMapper;
 import com.yschome.api.pay.enums.TradeErrorEnum;
 import com.yschome.base.common.utils.DateUtils;
 import com.yschome.base.common.utils.StringUtils;
@@ -66,18 +80,6 @@ import com.yschome.base.common.utils.UuidUtils;
 import com.yschome.base.framework.mq.AbstractRocketMQSubscriber;
 import com.yschome.base.framework.mq.RocketMQTransactionProducer;
 import com.yschome.base.framework.mq.RocketMqResult;
-import com.okdeer.mall.activity.group.service.ActivityGroupService;
-import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
-import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
-import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
-import com.okdeer.mall.order.pay.entity.ResponseResult;
-import com.okdeer.mall.order.service.TradeOrderItemService;
-import com.okdeer.mall.order.service.TradeOrderLogisticsService;
-import com.okdeer.mall.order.service.TradeOrderPayService;
-import com.okdeer.mall.order.service.TradeOrderRefundsService;
-import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.system.utils.mapper.JsonMapper;
 
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -114,7 +116,7 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 
 	@Resource
 	private TradeOrderService tradeOrderService;
-	
+
 	@Resource
 	private TradeOrderItemService tradeOrderItemService;
 
@@ -141,7 +143,7 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 
 	@Autowired
 	private RocketMQTransactionProducer rocketMQTransactionProducer;
-	
+
 	// Begin 12002 add by zengj
 	/**
 	 * 商品信息Service
@@ -150,32 +152,44 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	private GoodsStoreSkuServiceApi goodsStoreSkuService;
 	// End 12002 add by zengj
 
+	// Begin 1.0.Z 增加订单操作记录Service add by zengj
+	/**
+	 * 订单操作记录Service
+	 */
+	@Resource
+	private TradeOrderLogService tradeOrderLogService;
+	// End 1.0.Z 增加订单操作记录Service add by zengj
+
 	/**
 	 * 开放平台Id
 	 */
 	@Value("${juhe.openId}")
 	private String openId;
+
 	/**
 	 * 话费充值appKey
 	 */
 	@Value("${juhe.phonefee.appKey}")
 	private String appKey;
+
 	/**
 	 * 流量充值appKey
 	 */
 	@Value("${juhe.dataplan.appKey}")
 	private String dataPlanKey;
+
 	/**
 	 * 话费充值充值url
 	 */
 	@Value("${phonefee.onlineOrder}")
 	private String submitOrderUrl;
+
 	/**
 	 * 流量套餐充值url
 	 */
 	@Value("${dataplan.onlineOrder}")
 	private String dataplanOrderUrl;
-	
+
 	@Override
 	public String getTopic() {
 		return TOPIC_PAY_RESULT;
@@ -277,25 +291,25 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			updateWithApply(tradeOrder);
 		} else {
 			if (result.getCode().equals(TradeErrorEnum.SUCCESS.getName())) {
-				
+
 				// Begin 12002 add by zengj
 				if (tradeOrder.getType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
 					// 线上支付的，支付完成，销量增加
 					GoodsStoreSku goodsStoreSku = this.goodsStoreSkuService.getById(item.getStoreSkuId());
 					if (goodsStoreSku != null) {
-						goodsStoreSku.setSaleNum(
-								(goodsStoreSku.getSaleNum() == null ? 0 : goodsStoreSku.getSaleNum()) + item.getQuantity());
+						goodsStoreSku.setSaleNum((goodsStoreSku.getSaleNum() == null ? 0 : goodsStoreSku.getSaleNum())
+								+ item.getQuantity());
 						goodsStoreSkuService.updateByPrimaryKeySelective(goodsStoreSku);
 					}
 				}
 				// End 12002 add by zengj
-				
+
 				// Begin added by maojj 2016-08-24 付款成功生成提货码
 				if (tradeOrder.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
 					tradeOrder.setPickUpCode(RandomStringUtil.getRandomInt(6));
 				}
 				// Begin added by maojj 2016-08-24 付款成功生成提货码
-				
+
 				TradeOrderPay tradeOrderPay = new TradeOrderPay();
 				tradeOrderPay.setId(UuidUtils.getUuid());
 				tradeOrderPay.setCreateTime(new Date());
@@ -320,8 +334,6 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		}
 	}
 
-	
-	
 	private StoreInfo getStoreInfo(String storeId) throws Exception {
 		return storeInfoService.getStoreBaseInfoById(storeId);
 	}
@@ -382,23 +394,24 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			if (StringUtils.isEmpty(result.getTradeNum())) {
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
-		
-			//查询订单消息
-			TradeOrder tradeOrder =  tradeOrderService.getByTradeNum(tradeNum);
-			if(tradeOrder == null) {
+
+			// 查询订单消息
+			TradeOrder tradeOrder = tradeOrderService.getByTradeNum(tradeNum);
+			if (tradeOrder == null) {
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
-			if(tradeOrder.getStatus() == OrderStatusEnum.DROPSHIPPING || tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
+			if (tradeOrder.getStatus() == OrderStatusEnum.DROPSHIPPING
+					|| tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
 			List<TradeOrderItem> tradeOrderItems = tradeOrderItemService.selectOrderItemByOrderId(tradeOrder.getId());
-			if(tradeOrderItems.isEmpty()) {
+			if (tradeOrderItems.isEmpty()) {
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
-			
+
 			insertTradeOrderPay(tradeOrder);
 			synchronized (LockUtil.getInitialize().synObject(tradeNum)) {
-				//调用第三方聚合充值平台
+				// 调用第三方聚合充值平台
 				TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
 				String phoneno = tradeOrderItem.getRechargeMobile();
 				int cardnum = tradeOrder.getTotalAmount().intValue();
@@ -408,35 +421,37 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 				String sign = null;
 				String url = null;
 				if (orderType == OrderTypeEnum.PHONE_PAY_ORDER) {
-					//话费充值
+					// 话费充值
 					sign = MD5.md5(openId + appKey + phoneno + cardnum + orderid);
-					url = submitOrderUrl + "?key=" + appKey + "&phoneno=" + phoneno + "&orderid=" + orderid + "&cardnum=" + cardnum + "&sign=" + sign;
+					url = submitOrderUrl + "?key=" + appKey + "&phoneno=" + phoneno + "&orderid=" + orderid
+							+ "&cardnum=" + cardnum + "&sign=" + sign;
 					String resp = HttpClientUtil.get(url);
 					JSONObject respJson = JSONObject.fromObject(resp);
 					int errorCode = respJson.getInt("error_code");
 					if (errorCode == 0) {
 						JSONObject resultJson = respJson.getJSONObject("result");
 						int gameState = Integer.parseInt(resultJson.getString("game_state"));
-						if(gameState == 9) {
-							//充值失败，走退款流程
+						if (gameState == 9) {
+							// 充值失败，走退款流程
 							this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
 						} else if (gameState == 0) {
 							updateTradeOrderStatus(tradeOrder);
 						}
 					} else {
-						//充值失败，走退款流程
+						// 充值失败，走退款流程
 						this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
 					}
-				} else if(orderType == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
-					//流量充值
+				} else if (orderType == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
+					// 流量充值
 					sign = MD5.md5(openId + dataPlanKey + phoneno + pid + orderid);
-					url = dataplanOrderUrl + "?key=" + dataPlanKey + "&phone=" + phoneno + "&pid=" + pid + "&orderid=" + orderid + "&sign=" + sign;
-					
+					url = dataplanOrderUrl + "?key=" + dataPlanKey + "&phone=" + phoneno + "&pid=" + pid + "&orderid="
+							+ orderid + "&sign=" + sign;
+
 					String resp = HttpClientUtil.get(url);
 					JSONObject respJson = JSONObject.fromObject(resp);
 					int errorCode = respJson.getInt("error_code");
-					if(errorCode != 0) {
-						//充值聚合订单提交失败，走退款流程
+					if (errorCode != 0) {
+						// 充值聚合订单提交失败，走退款流程
 						this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
 					} else {
 						updateTradeOrderStatus(tradeOrder);
@@ -448,14 +463,14 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			logger.error("充值订单支付状态消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
 		} finally {
-			if(tradeNum != null) {
+			if (tradeNum != null) {
 				LockUtil.getInitialize().unLock(tradeNum);
 			}
 		}
 	}
-	
+
 	private void insertTradeOrderPay(TradeOrder tradeOrder) throws Exception {
-		//新增支付方式记录
+		// 新增支付方式记录
 		TradeOrderPay tradeOrderPay = new TradeOrderPay();
 		tradeOrderPay.setId(UuidUtils.getUuid());
 		tradeOrderPay.setCreateTime(new Date());
@@ -465,14 +480,14 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		tradeOrderPay.setPayType(PayTypeEnum.WALLET);
 		this.tradeOrderPayService.insertSelective(tradeOrderPay);
 	}
-	
+
 	private void updateTradeOrderStatus(TradeOrder tradeOrder) throws Exception {
-		//修改订单状态为代发货
+		// 修改订单状态为代发货
 		tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
 		tradeOrder.setUpdateTime(new Date());
 		this.tradeOrderService.updateRechargeOrderByTradeNum(tradeOrder);
 	}
-	
+
 	/**
 	 * 订单支付消息处理
 	 */
@@ -485,13 +500,12 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
 			TradeOrder tradeOrder = tradeOrderService.getByTradeNum(result.getTradeNum());
-			// Begin 判断订单状态为不是待买家支付中，就过掉该消息 add by zengj 
+			// Begin 判断订单状态为不是待买家支付中，就过掉该消息 add by zengj
 			if (tradeOrder == null || (tradeOrder.getStatus() != OrderStatusEnum.UNPAID
 					&& tradeOrder.getStatus() != OrderStatusEnum.BUYER_PAYING)) {
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
 			// End 判断订单状态为不是待买家支付中，就过掉该消息 add by zengj
-
 
 			inserts(tradeOrder, result);
 
@@ -558,12 +572,19 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			}
 
 			if (result.getCode().equals(TradeErrorEnum.SUCCESS.getName())) {
+				String operator = tradeOrder.getUserId();
 				// 判断是否取消订单
 				if (OrderStatusEnum.CANCELING == tradeOrder.getStatus()) {
 					tradeOrder.setStatus(OrderStatusEnum.CANCELED);
 				} else if (OrderStatusEnum.REFUSING == tradeOrder.getStatus()) {
 					tradeOrder.setStatus(OrderStatusEnum.REFUSED);
+					operator = tradeOrder.getSellerId();
 				}
+
+				// Begin 1.0.Z 增加订单操作记录 add by zengj
+				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), operator,
+						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+				// End 1.0.Z 增加订单操作记录 add by zengj
 				tradeOrderService.updateOrderStatus(tradeOrder);
 			} else {
 				logger.error("取消(拒收)订单退款支付失败,订单编号为：" + tradeOrder.getOrderNo() + "，问题原因" + result.getMsg());
@@ -661,7 +682,7 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			case SERVICE_STORE:
 				return TOPIC_ORDER_SERVICE;
 			// End 重构4.1 add by zengj
-			
+
 			default:
 				break;
 		}

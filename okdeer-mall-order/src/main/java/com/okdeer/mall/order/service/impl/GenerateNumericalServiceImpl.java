@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.order.service.impl;
 
 import java.text.DecimalFormat;
@@ -10,16 +11,19 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.order.entity.GenerateNumericalNumber;
-import com.okdeer.mall.order.service.GenerateNumericalServiceApi;
-import com.yschome.base.common.exception.ServiceException;
 import com.okdeer.mall.order.mapper.GenerateNumericalMapper;
 import com.okdeer.mall.order.service.GenerateNumericalService;
+import com.okdeer.mall.order.service.GenerateNumericalServiceApi;
+import com.okdeer.mall.order.utils.OrderNoUtils;
+import com.yschome.base.common.exception.ServiceException;
+import com.yschome.base.redis.IRedisTemplateWrapper;
 
 /**
  * @DESC: 
@@ -59,6 +63,16 @@ class GenerateNumericalServiceImpl implements GenerateNumericalService, Generate
 
 	@Resource
 	private GenerateNumericalMapper generateNumericalOrderMapper;
+
+	// Begin 增加Redis处理类 add by zengj
+	/**
+	 * Redis处理类
+	 */
+	@Autowired
+	private IRedisTemplateWrapper<String, Object> redisTemplateWrapper;
+	// @Autowired
+	// private org.springframework.data.redis.core.RedisTemplate redisTemplate;
+	// End 增加Redis处理类 add by zengj
 
 	@Override
 	public String generateNumericalNumber(Map<String, String> map) throws ServiceException {
@@ -161,4 +175,37 @@ class GenerateNumericalServiceImpl implements GenerateNumericalService, Generate
 	}
 	// End added by maojj 2016-07-14
 
+	// Begin 1.0.Z 调整订单编号生成规则 add by zengj
+	/**
+	 * 
+	 * @Description: 生成订单编号
+	 * @param prefix 订单编号前缀
+	 * @param branchCode 店铺机构编码
+	 * @param posId POS机ID
+	 * @return   新的订单编号
+	 * @author zengj
+	 * @date 2016年9月5日
+	 */
+	@Override
+	public String generateOrderNo(String prefix, String branchCode, String posId) {
+		// 获取当前年月日
+		String dateStr = DateUtils.getDate("yyMMdd");
+		// redis中存储的key
+		String redisKey = OrderNoUtils.PHYSICAL_ORDER_PREFIX + branchCode + dateStr;
+		// 否则实现自增长
+		Long seq = redisTemplateWrapper.incr(redisKey);
+		// 如果该key是初始化的时候，将该key的过期时间设置为一天，一天后该key会失效
+		if (seq == 1L) {
+			redisTemplateWrapper.expire(redisKey, 86400);
+		}
+
+		// 新的订单号,规则为：为XS+5位店铺编码+2位POS机ID+6位日期+4位流水号
+		StringBuilder newOrderNo = new StringBuilder(OrderNoUtils.PHYSICAL_ORDER_PREFIX);
+		newOrderNo.append(branchCode);
+		newOrderNo.append(posId);
+		newOrderNo.append(DateUtils.getDate("yyMMdd"));
+		newOrderNo.append(String.format("%0" + OrderNoUtils.SEQ_SIZE + "d", seq));
+		return newOrderNo.toString();
+	}
+	// End 1.0.Z 调整订单编号生成规则 add by zengj
 }
