@@ -24,16 +24,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
-import com.okdeer.archive.goods.store.entity.GoodsStoreSkuPicture;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
@@ -43,13 +41,15 @@ import com.okdeer.archive.stock.entity.ImsDaily;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.exception.StockException;
 import com.okdeer.archive.stock.service.ImsDailyServiceApi;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
+import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
+import com.okdeer.archive.store.entity.StoreBranches;
 import com.okdeer.archive.store.entity.StoreInfo;
-import com.okdeer.archive.store.enums.StoreStatusEnum;
+import com.okdeer.archive.store.service.StoreBranchesServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
+import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
@@ -57,23 +57,28 @@ import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsService;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
-import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
+import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
+import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.group.entity.ActivityGroup;
 import com.okdeer.mall.activity.group.entity.ActivityGroupGoods;
 import com.okdeer.mall.activity.group.entity.ActivityGroupRecord;
-import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
-import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRecord;
-import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
+import com.okdeer.mall.activity.group.service.ActivityGroupGoodsService;
+import com.okdeer.mall.activity.group.service.ActivityGroupRecordService;
+import com.okdeer.mall.activity.group.service.ActivityGroupService;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
-import com.okdeer.mall.operate.entity.ServerColumn;
-import com.okdeer.mall.operate.enums.ServerStatus;
-import com.okdeer.mall.operate.service.IServerColumnServiceApi;
+import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -81,7 +86,6 @@ import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.enums.AppraiseEnum;
 import com.okdeer.mall.order.enums.CompainStatusEnum;
-import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
@@ -92,12 +96,18 @@ import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
-import com.okdeer.mall.order.exception.OrderException;
+import com.okdeer.mall.order.mapper.GenerateNumericalMapper;
+import com.okdeer.mall.order.mapper.TradeOrderMapper;
+import com.okdeer.mall.order.service.GenerateNumericalService;
+import com.okdeer.mall.order.service.TradeOrderFlowService;
 import com.okdeer.mall.order.service.TradeOrderFlowServiceApi;
+import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.CalculateOrderStock;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.utils.DiscountCalculate;
 import com.okdeer.mall.order.utils.OrderItem;
+import com.okdeer.mall.order.utils.OrderNoUtils;
 import com.okdeer.mall.order.utils.OrderStock;
 import com.okdeer.mall.order.utils.OrderUtils;
 import com.okdeer.mall.order.utils.TradeOrderStock;
@@ -112,41 +122,15 @@ import com.okdeer.mall.order.vo.NewGoodsListToAppVo;
 import com.okdeer.mall.order.vo.SaveOrderInfo;
 import com.okdeer.mall.order.vo.SaveTradeOrderInfo;
 import com.okdeer.mall.order.vo.SaveTradeOrderInfoInParam;
-import com.okdeer.mall.order.vo.ServiceOrderReq;
+import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
+import com.okdeer.mall.system.mq.StockMQProducer;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 import com.qiniu.util.Auth;
 import com.yschome.base.common.enums.Disabled;
 import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.DateUtils;
-import com.yschome.base.common.utils.StringUtils;
 import com.yschome.base.common.utils.UuidUtils;
 import com.yschome.file.FileUtil;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
-import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
-import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsService;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRecordMapper;
-import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
-import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
-import com.okdeer.mall.activity.group.service.ActivityGroupGoodsService;
-import com.okdeer.mall.activity.group.service.ActivityGroupRecordService;
-import com.okdeer.mall.activity.group.service.ActivityGroupService;
-import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
-import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
-import com.okdeer.mall.member.service.MemberConsigneeAddressService;
-import com.okdeer.mall.order.constant.ExceptionConstant;
-import com.okdeer.mall.order.mapper.GenerateNumericalMapper;
-import com.okdeer.mall.order.mapper.TradeOrderMapper;
-import com.okdeer.mall.order.service.GenerateNumericalService;
-import com.okdeer.mall.order.service.TradeOrderFlowService;
-import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
-import com.okdeer.mall.system.mq.StockMQProducer;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -163,6 +147,7 @@ import net.sf.json.JSONObject;
  * ----------------+----------------+-------------------+-------------------------------------------
  *     重构4.1          2016年7月13日                               zengj			   新增服务店订单确认订单和下单方法
  *     重构4.1          2016年8月26日                               maojj			 POS下单重复发消息。解决重复发消息的问题。
+ *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderFlowServiceApi")
 public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOrderFlowServiceApi {
@@ -238,8 +223,22 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 	@Resource
 	private GenerateNumericalMapper generateNumericalMapper;
 
+	// @Reference(version = "1.0.0", check = false)
+	// private StockManagerServiceApi stockManagerService;
+
+	// Begin 1.0.Z add by zengj
+	/**
+	 * 库存管理Service
+	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi stockManagerService;
+	private StockManagerJxcServiceApi stockManagerService;
+
+	/**
+	 * 机构Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private StoreBranchesServiceApi storeBranchesService;
+	// End 1.0.Z add by zengj
 
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceServiceApi goodsStoreSkuServiceService;
@@ -264,7 +263,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 	@Resource
 	private ActivitySaleRecordMapper activitySaleRecordMapper;
-	
+
 	/**
 	 * 库存MQ信息
 	 */
@@ -4260,11 +4259,15 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			orderPay.setPayType(PayTypeEnum.OFFLINE_BANK);
 		}
 
-//		Map<String, String> dmap = new HashMap<String, String>();
-//		dmap.put("numerical_type", "XS");
-//		dmap.put("numerical_order", "");
-//		orderNo = generateNumericalMapper.generateNumericalNumber(dmap);
-		orderNo = generateNumericalService.generateNumberAndSave("XS");
+		// Map<String, String> dmap = new HashMap<String, String>();
+		// dmap.put("numerical_type", "XS");
+		// dmap.put("numerical_order", "");
+		// orderNo = generateNumericalMapper.generateNumericalNumber(dmap);
+		// orderNo = generateNumericalService.generateNumberAndSave("XS");
+		// Begin 1.0.Z add by zengj
+		// 生成订单编号
+		orderNo = generatePOSOrderNo(storeId);
+		// End 1.0.Z add by zengj
 
 		// 张克能加,生成流水号,支付宝或者微信的时候要用
 		order.setTradeNum(TradeNumUtil.getTradeNum());
@@ -4285,8 +4288,8 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 		order.setType(OrderTypeEnum.PHYSICAL_ORDER);
 		order.setTotalAmount(sum); // 订单总金额
-//		BigDecimal prSum = CalculateMoneyUtil.getOrderBigMoney(sum);
-//		order.setActualAmount(prSum); // 订单实际金额
+		// BigDecimal prSum = CalculateMoneyUtil.getOrderBigMoney(sum);
+		// order.setActualAmount(prSum); // 订单实际金额
 		order.setActualAmount(sum); // 订单实际金额
 		order.setIncome(sum); // 收入
 
@@ -4312,16 +4315,18 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		int buyNum = 0;
 		int isOrder = 0; // 是否可以下单标识1:是、0:否
 		int isStock = 1; // 是否满足库存(0:不足、1:满足)
-		
-		//张克能优化,把selectSingleSkuStock方法改造成一次查出来,而不是循环查数据库
+
+		// 张克能优化,把selectSingleSkuStock方法改造成一次查出来,而不是循环查数据库
 		List<GoodsStoreSkuStock> stuStockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(list);
-		
+
 		for (int i = 0; i < array.size(); i++) {
 			JSONObject objss = array.getJSONObject(i);
 
 			String skuId = objss.getString("skuId");
 
-//			GoodsStoreSkuStock skuStock = goodsStoreSkuStockService.selectSingleSkuStock(list); // 查询店铺商品库存数量
+			// GoodsStoreSkuStock skuStock =
+			// goodsStoreSkuStockService.selectSingleSkuStock(list); //
+			// 查询店铺商品库存数量
 			GoodsStoreSkuStock skuStock = stuStockList.get(i); // 查询店铺商品库存数量
 			if (skuStock == null) {
 				logger.error("查询店铺商品库存数量", "skuStock 为空-------->" + CodeStatistical.getLineInfo());
@@ -4380,10 +4385,10 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		}
 
 		List<StockAdjustVo> stockAdjustList = new ArrayList<StockAdjustVo>();
-		
-		//张克能优化,一次用list in的方式,避免在循环里多次调用selectGoodsStoreSkuDetailNotPri方法
+
+		// 张克能优化,一次用list in的方式,避免在循环里多次调用selectGoodsStoreSkuDetailNotPri方法
 		List<GoodsStoreSku> storeSkuList = goodsStoreSkuService.selectGoodsStoreSkuDetailNotPriByIdList(list);
-		
+
 		for (int i = 0; i < array.size(); i++) {
 
 			TradeOrderItem orderItem = new TradeOrderItem();
@@ -4400,7 +4405,9 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 																		// 2是18位称重
 			int meters = new Integer(meteringMethods);
 
-//			GoodsStoreSku storeSku = goodsStoreSkuService.selectGoodsStoreSkuDetailNotPri(skuId); // 查询店铺商品信息
+			// GoodsStoreSku storeSku =
+			// goodsStoreSkuService.selectGoodsStoreSkuDetailNotPri(skuId); //
+			// 查询店铺商品信息
 			GoodsStoreSku storeSku = storeSkuList.get(i); // 查询店铺商品信息
 			if (storeSku == null) {
 				logger.error("查询店铺商品信息", "storeSku 为空-------->" + CodeStatistical.getLineInfo());
@@ -4453,7 +4460,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			}
 
 			// 是否满足库存(0:不足、1:满足)
-			if(isStock == 1){
+			if (isStock == 1) {
 				try {
 					stockManagerService.updateStock(stockVo);
 				} catch (StockException e) {
@@ -4575,13 +4582,35 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		obj.put("isOrder", isOrder);
 		obj.put("isStock", isStock);
 		obj.put("isPass", isPass);
-		
+
 		// 统一发送MQ生成消息
 		// Begin modified by maojj 2016-08-26 重复发消息问题
-		//stockMQProducer.sendMessage(stockAdjustList);
+		// stockMQProducer.sendMessage(stockAdjustList);
 		// End modified by maojj 2016-08-26 重复发消息问题
 
 		return obj;
 	}
+
+	// Begin 1.0.Z add by zengj
+	/**
+	 * @Description: 生成订单编号
+	 * @param storeId 店铺ID
+	 * @return void  无
+	 * @throws ServiceException 自定义异常
+	 * @author maojj
+	 * @date 2016年7月14日
+	 */
+	private String generatePOSOrderNo(String storeId) throws ServiceException {
+		// 查询店铺机构信息
+		StoreBranches storeBranches = storeBranchesService.findBranches(storeId);
+		if (storeBranches == null || StringUtils.isEmpty(storeBranches.getBranchCode())) {
+			throw new ServiceException(LogConstants.STORE_BRANCHE_NOT_EXISTS);
+		}
+		String orderNo = generateNumericalService.generateOrderNo(OrderNoUtils.PHYSICAL_ORDER_PREFIX,
+				storeBranches.getBranchCode(), OrderNoUtils.OFFLINE_POS_ID);
+		logger.info("生成订单编号：{}", orderNo);
+		return orderNo;
+	}
+	// End 1.0.Z add by zengj
 
 }

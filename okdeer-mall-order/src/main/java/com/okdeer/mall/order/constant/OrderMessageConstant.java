@@ -5,6 +5,7 @@
  * @Date: 2016年3月2日 
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的 
  */
+
 package com.okdeer.mall.order.constant;
 
 /**
@@ -28,14 +29,17 @@ public interface OrderMessageConstant {
 	 * 快送店订单TOPIC
 	 */
 	String TOPIC_ORDER_FAST = "topic_order_fast";
+
 	/**
 	 * 便利店订单TOPIC
 	 */
 	String TOPIC_ORDER_CLOUD = "topic_order_cloud";
+
 	/**
 	 * 周边订单TOPIC
 	 */
 	String TOPIC_ORDER_AROUND = "topic_order_around";
+
 	/**
 	 * 活动店订单TOPIC
 	 */
@@ -45,30 +49,37 @@ public interface OrderMessageConstant {
 	 * 下单TAG
 	 */
 	String TAG_ORDER_ADD = "tag_order_add";
+
 	/**
 	 * 取消订单TAG
 	 */
 	String TAG_ORDER_CANCEL = "tag_order_cancel";
+
 	/**
 	 * 支付订单TAG
 	 */
 	String TAG_ORDER_APPLY = "tag_order_apply";
+
 	/**
 	 * 订单自提TAG
 	 */
 	String TAG_ORDER_PICKUP = "tag_order_pickup";
+
 	/**
 	 * 订单提货码失效TAG
 	 */
 	String TAG_ORDER_PICKUP_CODE_DISABLED = "tag_order_pickup_code_disabled";
+
 	/**
 	 * 确认收货TAG
 	 */
 	String TAG_ORDER_CONFIRM = "tag_order_confirm";
+
 	/**
 	 * 用户拒收TAG
 	 */
 	String TAG_ORDER_REFUSE_RECEIVE = "tag_order_refuse_receive";
+
 	/**
 	 * 用户评价TAG
 	 */
@@ -78,19 +89,28 @@ public interface OrderMessageConstant {
 	 * 发货TAG
 	 */
 	String TAG_ORDER_SHIPMENT = "tag_order_shipment";
-	
-	// Begin 重构4.1  add by wusw
+
+	// Begin 重构4.1 add by wusw
 	/**
 	 * 服务店TOPIC
 	 */
 	String TOPIC_ORDER_SERVICE = "topic_order_service";
-	
+
 	// End 重构4.1 add by wusw
-	
-	// Begin 重构4.1  add by wushp
+
+	// Begin 重构4.1 add by wushp
 	/**
 	 * 100:未评价
 	 */
 	String ONE_HUNDRED = "100";
-	// end 重构4.1  add by wushp
+	// end 重构4.1 add by wushp
+
+	// Begin 1.0.Z 订单同步进销存的topic和tag
+	/** * 订单完成TOPIC */
+	String TOPIC_ORDER_COMPLETE = "topic_order_complete";
+
+	/** * 订单完成TAG */
+	String TAG_ORDER_COMPLETE = "tag_order_complete";
+	// End 1.0.Z 订单同步进销存的topic和tag
+
 }

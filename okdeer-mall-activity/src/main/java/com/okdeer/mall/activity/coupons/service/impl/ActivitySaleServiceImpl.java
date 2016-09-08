@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.activity.coupons.service.impl;
 
 import java.util.ArrayList;
@@ -12,33 +13,41 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
-import com.alibaba.rocketmq.common.message.Message;
 import com.github.pagehelper.PageHelper;
-import com.google.common.base.Charsets;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.enums.IsActivity;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
-import com.okdeer.archive.stock.consts.RollBackConstant;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
+import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.enums.ActivitySaleStatus;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
+import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.yschome.api.ims.service.StockOperaterService;
 import com.yschome.base.common.enums.Disabled;
 import com.yschome.base.common.utils.PageUtils;
 import com.yschome.base.common.utils.UuidUtils;
-import com.yschome.base.framework.mq.RocketMQProducer;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
-import com.okdeer.mall.system.mq.RollbackMQProducer;
 
+/**
+ * 
+ * ClassName: ActivitySaleServiceImpl 
+ * @Description: 特惠活动服务
+ * @author zengj
+ * @date 2016年9月7日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
+ */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi")
 public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, ActivitySaleService {
 
@@ -56,9 +65,17 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Reference
 	private StockOperaterService stockOperaterService;
 
+	// @Reference(version = "1.0.0", check = false)
+	// private StockManagerServiceApi stockManagerServiceApi;
+
+	// Begin 1.0.Z add by zengj
+	/**
+	 * 库存管理Service
+	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi stockManagerServiceApi;
-	
+	private StockManagerJxcServiceApi stockManagerServiceApi;
+	// End 1.0.Z add by zengj
+
 	/**
 	 * 回滚MQ
 	 */
@@ -81,7 +98,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		try {
 			// 先保存特惠主对象
 			activitySaleMapper.save(activitySale);
-			
+
 			// 再保存特惠商品列表
 			for (ActivitySaleGoods a : asgList) {
 				a.setDisabled(Disabled.valid);
@@ -100,13 +117,13 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				goodsStoreSku.setIsActivity(IsActivity.ATTEND);
 				// 活动类型
 				goodsStoreSku.setActivityType(StoreActivityTypeEnum.PRIVLIEGE);
-				
+
 				// 记录rpcId
 				String rpcId = UuidUtils.getUuid();
 				goodsStoreSku.setRpcId(rpcId);
 				goodsStoreSku.setMethodName(this.getClass().getName() + ".save");
 				rpcIdBySkuList.add(rpcId);
-				
+
 				goodsStoreSkuServiceApi.updateByPrimaryKeySelective(goodsStoreSku);
 
 				// 和erp同步库存
@@ -129,12 +146,12 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	 * @param storeId
 	 * @throws Exception 
 	 */
-	private void syncGoodsStock(ActivitySaleGoods goods, String userId, String storeId, StockOperateEnum soe, List<String> rpcIdByStockList)
-			throws Exception {
+	private void syncGoodsStock(ActivitySaleGoods goods, String userId, String storeId, StockOperateEnum soe,
+			List<String> rpcIdByStockList) throws Exception {
 
 		String rpcId = UuidUtils.getUuid();
 		rpcIdByStockList.add(rpcId);
-		
+
 		StockAdjustVo stockAdjustVo = new StockAdjustVo();
 		stockAdjustVo.setUserId(userId);
 		stockAdjustVo.setStoreId(storeId);
@@ -213,7 +230,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				a.setDisabled(Disabled.valid);
 				a.setSaleId(activitySale.getId());
 				a.setId(UuidUtils.getUuid());
-				
+
 				// 记录rpcId
 				String rpcId = UuidUtils.getUuid();
 				rpcIdBySkuList.add(rpcId);
@@ -230,7 +247,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				goodsStoreSku.setIsActivity(IsActivity.ATTEND);
 				// 活动类型
 				goodsStoreSku.setActivityType(StoreActivityTypeEnum.PRIVLIEGE);
-				
+
 				goodsStoreSku.setRpcId(rpcId);
 				goodsStoreSku.setMethodName(this.getClass().getName() + ".update");
 				goodsStoreSkuServiceApi.updateByPrimaryKeySelective(goodsStoreSku);
@@ -385,7 +402,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			goodsStoreSku.setActivityType(StoreActivityTypeEnum.NONE);
 			goodsStoreSku.setUpdateTime(new Date());
 			goodsStoreSku.setOnline(BSSC.UNSHELVE);
-			
+
 			// 记录rpcId
 			String rpcId = UuidUtils.getUuid();
 			goodsStoreSku.setRpcId(rpcId);
