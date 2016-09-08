@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
@@ -43,9 +44,12 @@ import com.okdeer.archive.stock.service.ImsDailyServiceApi;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
+import com.okdeer.archive.store.entity.StoreBranches;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.service.StoreBranchesServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
+import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
@@ -103,6 +107,7 @@ import com.okdeer.mall.order.utils.CalculateOrderStock;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.utils.DiscountCalculate;
 import com.okdeer.mall.order.utils.OrderItem;
+import com.okdeer.mall.order.utils.OrderNoUtils;
 import com.okdeer.mall.order.utils.OrderStock;
 import com.okdeer.mall.order.utils.OrderUtils;
 import com.okdeer.mall.order.utils.TradeOrderStock;
@@ -227,6 +232,12 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private StockManagerJxcServiceApi stockManagerService;
+
+	/**
+	 * 机构Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private StoreBranchesServiceApi storeBranchesService;
 	// End 1.0.Z add by zengj
 
 	@Reference(version = "1.0.0", check = false)
@@ -4252,7 +4263,11 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		// dmap.put("numerical_type", "XS");
 		// dmap.put("numerical_order", "");
 		// orderNo = generateNumericalMapper.generateNumericalNumber(dmap);
-		orderNo = generateNumericalService.generateNumberAndSave("XS");
+		// orderNo = generateNumericalService.generateNumberAndSave("XS");
+		// Begin 1.0.Z add by zengj
+		// 生成订单编号
+		orderNo = generatePOSOrderNo(storeId);
+		// End 1.0.Z add by zengj
 
 		// 张克能加,生成流水号,支付宝或者微信的时候要用
 		order.setTradeNum(TradeNumUtil.getTradeNum());
@@ -4575,5 +4590,27 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 		return obj;
 	}
+
+	// Begin 1.0.Z add by zengj
+	/**
+	 * @Description: 生成订单编号
+	 * @param storeId 店铺ID
+	 * @return void  无
+	 * @throws ServiceException 自定义异常
+	 * @author maojj
+	 * @date 2016年7月14日
+	 */
+	private String generatePOSOrderNo(String storeId) throws ServiceException {
+		// 查询店铺机构信息
+		StoreBranches storeBranches = storeBranchesService.findBranches(storeId);
+		if (storeBranches == null || StringUtils.isEmpty(storeBranches.getBranchCode())) {
+			throw new ServiceException(LogConstants.STORE_BRANCHE_NOT_EXISTS);
+		}
+		String orderNo = generateNumericalService.generateOrderNo(OrderNoUtils.PHYSICAL_ORDER_PREFIX,
+				storeBranches.getBranchCode(), OrderNoUtils.OFFLINE_POS_ID);
+		logger.info("生成订单编号：{}", orderNo);
+		return orderNo;
+	}
+	// End 1.0.Z add by zengj
 
 }
