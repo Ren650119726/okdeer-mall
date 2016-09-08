@@ -17,12 +17,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.common.message.Message;
 import com.google.common.base.Charsets;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.exception.StockException;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderPay;
@@ -37,6 +40,7 @@ import com.yschome.base.common.exception.ServiceException;
 import com.yschome.base.framework.mq.RocketMQProducer;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * ClassName: TradeOrderCompleteProcessServiceImpl 
@@ -70,6 +74,10 @@ public class TradeOrderCompleteProcessServiceImpl {
 	@Resource
 	private TradeOrderPayMapper tradeOrderPayMapper;
 
+	/** * 店铺商品Service */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
+
 	/** * A：销售单、B：退货单 */
 	private static final String ORDER_TYPE_A = "A";
 
@@ -89,11 +97,11 @@ public class TradeOrderCompleteProcessServiceImpl {
 	 * 
 	 * @Description: 订单完成时发送MQ消息同步到商业管理系统
 	 * @param orderId 订单ID
-	 * @throws ServiceException 异常信息  
 	 * @author zengj
+	 * @throws Exception 异常处理
 	 * @date 2016年9月6日
 	 */
-	public void orderCompleteSyncToJxc(String orderId) throws ServiceException {
+	public void orderCompleteSyncToJxc(String orderId) throws Exception {
 		if (StringUtils.isBlank(orderId)) {
 			throw new ServiceException(ORDER_ID_IS_NULL);
 		}
@@ -122,14 +130,94 @@ public class TradeOrderCompleteProcessServiceImpl {
 		}
 
 		// 订单信息
-		JSONObject orderInfo = new JSONObject();
+		JSONObject orderInfo = buildOrderInfo(tradeOrder);
 		// 订单项json数组
-		JSONArray orderItemList = new JSONArray();
+		JSONArray orderItemList = buildOrderItemList(tradeOrder, tradeOrder.getTradeOrderItem());
 		// 订单支付信息
-		JSONObject orderPayInfo = new JSONObject();
+		JSONArray orderPayInfo = buildOrderPayList(tradeOrder, tradeOrderPay);
 
 	}
 
+	/**
+	 * 
+	 * @Description: 构建订单支付信息JSON
+	 * @param order 订单信息
+	 * @param orderPay 订单支付信息
+	 * @return JSONArray 返回的订单支付信息JSON  
+	 * @author zengj
+	 * @date 2016年9月7日
+	 */
+	private JSONArray buildOrderPayList(TradeOrder order, TradeOrderPay orderPay) {
+		JSONObject orderPayJson = new JSONObject();
+		orderPayJson.put("id", orderPay.getId());
+		orderPayJson.put("orderId", orderPay.getOrderId());
+		orderPayJson.put("rowNo", 1);
+		orderPayJson.put("payTypeId", orderPay.getPayType().ordinal());
+		orderPayJson.put("payAmount", orderPay.getPayAmount());
+		// 代金券ID
+		String payItemId = null;
+		if (order.getActivityType() == ActivityTypeEnum.VONCHER) {
+			payItemId = order.getActivityId();
+		}
+		orderPayJson.put("payItemId", payItemId);
+		orderPayJson.put("payAmount", orderPay.getPayAmount());
+		orderPayJson.put("payTradeNo", orderPay.getReturns());
+		orderPayJson.put("remark", order.getRemark());
+		orderPayJson.put("payTime", orderPay.getPayTime());
+		orderPayJson.put("createTime", orderPay.getCreateTime());
+		JSONArray orderPayArr = new JSONArray();
+		orderPayArr.add(orderPayJson);
+		return orderPayArr;
+	}
+
+	/**
+	 * 
+	 * @Description: 构建订单项JSON信息
+	 * @param order 订单信息
+	 * @param orderItemList 订单项集合
+	 * @return JSONArray 订单项JSON信息  
+	 * @throws Exception   异常信息
+	 * @author zengj
+	 * @date 2016年9月7日
+	 */
+	private JSONArray buildOrderItemList(TradeOrder order, List<TradeOrderItem> orderItemList) throws Exception {
+		JSONArray orderItemArr = new JSONArray();
+		JSONObject item = null;
+		int orderItemSize = orderItemList.size();
+		for (int i = 0; i < orderItemSize; i++) {
+			TradeOrderItem orderItem = orderItemList.get(i);
+			GoodsStoreSku goods = goodsStoreSkuServiceApi.getById(orderItem.getStoreSkuId());
+			item = new JSONObject();
+			item.put("id", orderItem.getId());
+			item.put("orderId", orderItem.getOrderId());
+			item.put("rowNo", i + 1);
+			item.put("skuId", goods.getSkuId());
+			// item.put("skuCode", goods.geta);
+			item.put("saleType", ORDER_TYPE_A);
+			item.put("saleNum", orderItem.getQuantity());
+			// item.put("originalPrice", orderItem.getUnitPrice());
+			// item.put("salePrice", orderItem.getUnitPrice());
+			// item.put("totalAmount", orderItem.getUnitPrice());
+			// item.put("saleAmount", orderItem.getUnitPrice());
+			// item.put("discountAmount", orderItem.getUnitPrice());
+			item.put("activityType", order.getActivityType().ordinal());
+			item.put("activityId", order.getActivityId());
+			item.put("activityItemId", order.getActivityItemId());
+			item.put("remark", order.getRemark());
+			item.put("createTime", orderItem.getCreateTime());
+			orderItemArr.add(item);
+		}
+		return orderItemArr;
+	}
+
+	/**
+	 * 
+	 * @Description: 构建订单信息JSON
+	 * @param order 订单信息
+	 * @return JSONObject  订单信息JSON
+	 * @author zengj
+	 * @date 2016年9月7日
+	 */
 	private JSONObject buildOrderInfo(TradeOrder order) {
 		// 订单信息
 		JSONObject orderInfo = new JSONObject();
@@ -145,8 +233,16 @@ public class TradeOrderCompleteProcessServiceImpl {
 		orderInfo.put("orderResource", order.getOrderResource().ordinal());
 		orderInfo.put("totalAmount", order.getTotalAmount());
 		orderInfo.put("amount", order.getIncome());
-		orderInfo.put("discountAmount", order.getIncome());
-		return null;
+		orderInfo.put("discountAmount", order.getPreferentialPrice());
+		orderInfo.put("freightAmount", order.getFare());
+		orderInfo.put("userId", order.getUserId());
+		orderInfo.put("referenceNo", null);
+		orderInfo.put("operatorId", order.getSellerId());
+		orderInfo.put("pickUpCode", order.getPickUpCode());
+		orderInfo.put("remark", order.getRemark());
+		orderInfo.put("createrId", order.getCreateUserId());
+		orderInfo.put("createTime", order.getCreateTime());
+		return orderInfo;
 	}
 
 	/**

@@ -24,12 +24,15 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
+import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
+import com.okdeer.archive.store.entity.StoreBranches;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
+import com.okdeer.archive.store.service.StoreBranchesServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
@@ -95,6 +98,7 @@ import net.sf.json.JSONObject;
  *		重构V4.1			2016-07-30			maojj			修改获取折扣金额的查询语句
  *		Bug:12710		2016-08-15			maojj			修改地址信息
  *		1.0.Z			2016-09-05			zengj			增加订单操作记录
+  *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
  */
 @Service
 public class TradeOrderAddServiceImpl implements TradeOrderAddService {
@@ -149,11 +153,25 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	@Resource
 	private TradeOrderTimer tradeOrderTimer;
 
+	// /**
+	// * 库存管理Dubbo接口
+	// */
+	// @Reference(version = "1.0.0", check = false)
+	// private StockManagerServiceApi stockManagerServiceApi;
+
+	// Begin 1.0.Z add by zengj
 	/**
-	 * 库存管理Dubbo接口
+	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi stockManagerServiceApi;
+	private StockManagerJxcServiceApi stockManagerServiceApi;
+
+	/**
+	 * 机构Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private StoreBranchesServiceApi storeBranchesService;
+	// End 1.0.Z add by zengj
 
 	/**
 	 * 代金券Mapper
@@ -203,7 +221,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			// 保存满减、满折记录
 			saveActivityDiscountRecord(tradeOrder.getId(), req);
 			// 更新库存
-			toUpdateStock(tradeOrder.getId(), reqDto, rpcIdList);
+			toUpdateStock(tradeOrder, reqDto, rpcIdList);
 			// 插入订单
 			tradeOrderSerive.insertTradeOrder(tradeOrder);
 			// 发送消息
@@ -296,11 +314,17 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		// if (orderNo == null) {
 		// throw new ServiceException("订单编号生成失败");
 		// }
-		// TODO zengj 代码不能提交，机构信息没有更新下来，先写死机构5位
-		String orderNo = generateNumericalService.generateOrderNo(OrderNoUtils.PHYSICAL_ORDER_PREFIX, "ZENGJ",
-				OrderNoUtils.ONLINE_POS_ID);
+		// Begin 1.0.Z add by zengj
+		// 查询店铺机构信息
+		StoreBranches storeBranches = storeBranchesService.findBranches(tradeOrder.getStoreId());
+		if (storeBranches == null || StringUtils.isEmpty(storeBranches.getBranchCode())) {
+			throw new ServiceException(LogConstants.STORE_BRANCHE_NOT_EXISTS);
+		}
+		String orderNo = generateNumericalService.generateOrderNo(OrderNoUtils.PHYSICAL_ORDER_PREFIX,
+				storeBranches.getBranchCode(), OrderNoUtils.ONLINE_POS_ID);
 		logger.info("生成订单编号：{}", orderNo);
 		tradeOrder.setOrderNo(orderNo);
+		// End 1.0.Z add by zengj
 	}
 
 	/**
@@ -886,24 +910,24 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 
 	/**
 	 * @Description: 更新库存
-	 * @param orderId 订单ID
+	 * @param order 订单对象
 	 * @param reqDto 请求对象
 	 * @return void  
 	 * @throws Exception 异常
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private void toUpdateStock(String orderId, TradeOrderReqDto reqDto, List<String> rpcIdList) throws Exception {
+	private void toUpdateStock(TradeOrder order, TradeOrderReqDto reqDto, List<String> rpcIdList) throws Exception {
 		StockAdjustVo stockAdjustVo = null;
 		if (!CollectionUtils.isEmpty(reqDto.getContext().getNomalSkuList())) {
-			stockAdjustVo = buildStockAdjustVo(orderId, reqDto, false);
+			stockAdjustVo = buildStockAdjustVo(order, reqDto, false);
 			rpcIdList.add(stockAdjustVo.getRpcId());
 			// 正常商品下单，更新库存
 			stockManagerServiceApi.updateStock(stockAdjustVo);
 		}
 
 		if (!CollectionUtils.isEmpty(reqDto.getContext().getActivitySkuList())) {
-			stockAdjustVo = buildStockAdjustVo(orderId, reqDto, true);
+			stockAdjustVo = buildStockAdjustVo(order, reqDto, true);
 			rpcIdList.add(stockAdjustVo.getRpcId());
 			// 特惠商品下单，更新库存
 			stockManagerServiceApi.updateStock(stockAdjustVo);
@@ -912,14 +936,14 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 
 	/**
 	 * @Description: 构建库存更新对象
-	 * @param orderId 订单id
+	 * @param order 订单对象
 	 * @param reqDto 请求对象
 	 * @param isPrivilege 是否为特惠商品
 	 * @return StockAdjustVo  
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private StockAdjustVo buildStockAdjustVo(String orderId, TradeOrderReqDto reqDto, boolean isPrivilege) {
+	private StockAdjustVo buildStockAdjustVo(TradeOrder order, TradeOrderReqDto reqDto, boolean isPrivilege) {
 		TradeOrderReq req = reqDto.getData();
 		TradeOrderContext context = reqDto.getContext();
 
@@ -933,7 +957,11 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		StockAdjustVo stockAjustVo = new StockAdjustVo();
 
 		stockAjustVo.setRpcId(UuidUtils.getUuid());
-		stockAjustVo.setOrderId(orderId);
+		stockAjustVo.setOrderId(order.getId());
+		stockAjustVo.setOrderNo(order.getOrderNo());
+		stockAjustVo.setOrderResource(order.getOrderResource());
+		stockAjustVo.setOrderType(order.getType());
+
 		stockAjustVo.setStoreId(req.getStoreId());
 		stockAjustVo.setUserId(req.getUserId());
 		stockAjustVo.setMethodName(this.getClass().getName() + ".process");
@@ -954,7 +982,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			adjustDetailVo.setPrice(orderItem.getSkuPrice());
 			adjustDetailVo.setPropertiesIndb(storeSku.getPropertiesIndb());
 			adjustDetailVo.setStoreSkuId(storeSku.getId());
-
+			adjustDetailVo.setGoodsSkuId(storeSku.getSkuId());
 			adjustDetailList.add(adjustDetailVo);
 		}
 

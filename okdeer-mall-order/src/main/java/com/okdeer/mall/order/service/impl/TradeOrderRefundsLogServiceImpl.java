@@ -16,7 +16,7 @@ import com.okdeer.mall.order.service.TradeOrderRefundsLogServiceApi;
  * @copyright ©2005-2020 yschome.com Inc. All rights reserved
  * 
  */
-@Service(version = "1.0.0", interfaceName = "com.yschome.mall.order.service.TradeOrderRefundsLogServiceApi")
+@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderRefundsLogServiceApi")
 class TradeOrderRefundsLogServiceImpl implements TradeOrderRefundsLogServiceApi {
 
 	/** * 退款单操作记录Mapper */

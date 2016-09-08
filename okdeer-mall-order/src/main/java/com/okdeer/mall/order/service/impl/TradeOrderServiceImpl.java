@@ -42,7 +42,7 @@ import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
+import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreAgentCommunity;
@@ -192,6 +192,7 @@ import net.sf.json.JsonConfig;
  *    重构4.1			    2016-8-24            maojj              支付成功时，才发送提货码的信息
  *    V1.0.3            2016-09-01             wusw               修改自动确认收货期限为7天      
  *    1.0.Z			2016-09-05			zengj			增加订单操作记录        
+ *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -341,8 +342,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Autowired
 	private TradeOrderItemDetailMapper tradeOrderItemDetailMapper;
 
+	// @Reference(version = "1.0.0", check = false)
+	// private StockManagerServiceApi stockManagerService;
+
+	// Begin 1.0.Z add by zengj
+	/**
+	 * 库存管理Service
+	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi stockManagerService;
+	private StockManagerJxcServiceApi stockManagerService;
+	// End 1.0.Z add by zengj
 
 	@Reference(version = "1.0.0", check = false)
 	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
