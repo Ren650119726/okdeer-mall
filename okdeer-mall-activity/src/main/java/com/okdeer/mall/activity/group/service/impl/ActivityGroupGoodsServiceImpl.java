@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.activity.group.service.impl;
 
 import java.util.ArrayList;
@@ -17,16 +18,16 @@ import com.okdeer.archive.goods.spu.vo.ActivityGroupGoodsVo;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
+import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.mall.activity.group.entity.ActivityGroupGoods;
-import com.okdeer.mall.activity.group.service.ActivityGroupGoodsServiceApi;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.group.mapper.ActivityGroupGoodsMapper;
 import com.okdeer.mall.activity.group.mapper.ActivityGroupMapper;
 import com.okdeer.mall.activity.group.service.ActivityGroupGoodsService;
+import com.okdeer.mall.activity.group.service.ActivityGroupGoodsServiceApi;
+import com.yschome.base.common.exception.ServiceException;
+import com.yschome.base.common.utils.PageUtils;
 
 /**
  * 
@@ -36,6 +37,11 @@ import com.okdeer.mall.activity.group.service.ActivityGroupGoodsService;
  * @author chenwj
  * @date 2016年1月6日 下午5:21:17
  * @copyright ©2005-2020 yschome.com Inc. All rights reserved
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.group.service.ActivityGroupGoodsServiceApi")
 public class ActivityGroupGoodsServiceImpl implements ActivityGroupGoodsServiceApi, ActivityGroupGoodsService {
@@ -51,8 +57,16 @@ public class ActivityGroupGoodsServiceImpl implements ActivityGroupGoodsServiceA
 	@Autowired
 	private ActivityGroupMapper activityGroupMapper;
 
+	// @Reference(version = "1.0.0", check = false)
+	// private StockManagerServiceApi stockManagerServiceApi;
+
+	// Begin 1.0.Z add by zengj
+	/**
+	 * 库存管理Service
+	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi stockManagerServiceApi;
+	private StockManagerJxcServiceApi stockManagerServiceApi;
+	// End 1.0.Z add by zengj
 
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
@@ -94,14 +108,16 @@ public class ActivityGroupGoodsServiceImpl implements ActivityGroupGoodsServiceA
 	}
 
 	@Override
-	public List<ActivityGroupGoods> findActivityGroupGoodsByParam(Map<String, Object> map, int pageNumber, int pageSize) {
+	public List<ActivityGroupGoods> findActivityGroupGoodsByParam(Map<String, Object> map, int pageNumber,
+			int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true);
 		List<ActivityGroupGoods> list = activityGroupGoodsMapper.findActivityGroupGoodsByParam(map);
 		return list;
 	}
 
 	@Override
-	public PageUtils<ActivityGroupGoodsVo> findSpuBySkuId(List<String> ids, String storeId, int pageNumber, int pageSize) {
+	public PageUtils<ActivityGroupGoodsVo> findSpuBySkuId(List<String> ids, String storeId, int pageNumber,
+			int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<ActivityGroupGoodsVo> list = activityGroupGoodsMapper.findSpuBySkuId(ids, storeId);
 		for (ActivityGroupGoodsVo good : list) {
@@ -192,7 +208,8 @@ public class ActivityGroupGoodsServiceImpl implements ActivityGroupGoodsServiceA
 	}
 
 	@Override
-	public void syncGoodsStock(ActivityGroupGoods activityGroupGoods, String userId, StockOperateEnum stockOperateEnum) {
+	public void syncGoodsStock(ActivityGroupGoods activityGroupGoods, String userId,
+			StockOperateEnum stockOperateEnum) {
 		try {
 
 			GoodsStoreSku goodsStoreSku = goodsStoreSkuServiceApi.getById(activityGroupGoods.getStoreSkuId());

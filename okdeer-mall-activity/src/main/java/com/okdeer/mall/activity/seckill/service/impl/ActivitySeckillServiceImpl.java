@@ -26,26 +26,26 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.enums.IsActivity;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
+import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRange;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
+import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillMapper;
+import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillRangeMapper;
+import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi;
 import com.okdeer.mall.activity.seckill.vo.ActivitySeckillFormVo;
 import com.okdeer.mall.activity.seckill.vo.ActivitySeckillItemVo;
 import com.okdeer.mall.activity.seckill.vo.ActivitySeckillListPageVo;
 import com.okdeer.mall.activity.seckill.vo.ActivitySeckillQueryFilterVo;
 import com.okdeer.mall.common.enums.RangeTypeEnum;
+import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.yschome.base.common.enums.Disabled;
 import com.yschome.base.common.utils.PageUtils;
 import com.yschome.base.common.utils.UuidUtils;
-import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillMapper;
-import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillRangeMapper;
-import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
-import com.okdeer.mall.system.mq.RollbackMQProducer;
 
 /**
  * ClassName: ActivitySeckillServiceImpl 
@@ -61,6 +61,7 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
  *      重构 4.1         2016年7月16日                                 zengj               查询定位地址是否在秒杀活动范围
  *		重构 4.1         2016年7月20日                                 luosm               新增方法
  *		重构 4.1         2016年7月22日                                 luosm               优化方法
+  *     1.0.Z	        2016年9月07日                               zengj              库存管理修改，采用商业管理系统校验
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi")
 public class ActivitySeckillServiceImpl implements ActivitySeckillService, ActivitySeckillServiceApi {
@@ -88,12 +89,20 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	@Reference(version = "1.0.0", check = false)
 	GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 
+	// /**
+	// * 注入库存API接口
+	// */
+	// @Reference(version = "1.0.0", check = false)
+	// StockManagerServiceApi stockManagerServiceApi;
+
+	// Begin 1.0.Z add by zengj
 	/**
-	 * 注入库存API接口
+	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	StockManagerServiceApi stockManagerServiceApi;
-	
+	private StockManagerJxcServiceApi stockManagerServiceApi;
+	// End 1.0.Z add by zengj
+
 	/**
 	 * 回滚MQ
 	 */
@@ -178,7 +187,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		try {
 			// 操作时间
 			Date date = new Date();
-			
+
 			ActivitySeckill activitySeckill = activitySeckillMapper.findByPrimaryKey(activitySeckillFormVo.getId());
 			if (activitySeckill.getStoreSkuId().equals(activitySeckillFormVo.getStoreSkuId())) {
 				// 修改秒杀活动库存
@@ -193,7 +202,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 				// 保存秒杀活动商品关系信息
 				this.addSkuRelation(activitySeckillFormVo.getStoreSkuId(), activitySeckill.getId(), rpcIdBySkuList);
 			}
-			
+
 			// 更新秒杀活动表
 			this.updateActivitySeckillByForm(activitySeckillFormVo, date);
 			// 更新秒杀活动区域信息
@@ -229,7 +238,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		params.put("endTime", endTime);
 		params.put("areaIds", areaIds);
 		params.put("rangeType", rangeType);
-		
+
 		Boolean flag = true;
 		if (RangeTypeEnum.area == rangeType) {
 			// 当前区域是否存在有秒杀活动
@@ -253,7 +262,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	public Integer updateSeckillStatus(String id, SeckillStatusEnum status) throws Exception {
 		return activitySeckillMapper.updateSeckillStatus(id, status);
 	}
-	
+
 	@Override
 	public void updateSeckillByEnd(ActivitySeckill activitySeckill) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
@@ -313,14 +322,14 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		goodsStoreSku.setIsActivity(IsActivity.ABSTENTION);
 		goodsStoreSku.setActivityType(StoreActivityTypeEnum.NONE);
 		goodsStoreSku.setUpdateTime(new Date());
-		
+
 		String rpcId = UuidUtils.getUuid();
 		rpcIdBySkuList.add(rpcId);
 		goodsStoreSku.setRpcId(rpcId);
 		goodsStoreSku.setMethodName(this.getClass().getName() + ".removeSkuRelation");
 		goodsStoreSkuServiceApi.updateActivityStatus(goodsStoreSku);
 	}
-	
+
 	/**
 	 * @Description: 添加商品与活动的关联关系，更新店铺SKU表
 	 * @param skuId 店铺skuId
@@ -337,7 +346,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		storeSku.setIsActivity(IsActivity.ATTEND);
 		storeSku.setActivityType(StoreActivityTypeEnum.SECKILL);
 		storeSku.setUpdateTime(new Date());
-		
+
 		// RPCID
 		String rpcId = UuidUtils.getUuid();
 		rpcIdBySkuList.add(rpcId);
@@ -345,7 +354,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		storeSku.setMethodName(this.getClass().getName() + ".addSkuRelation");
 		goodsStoreSkuServiceApi.updateActivityStatus(storeSku);
 	}
-	
+
 	/**
 	 * @Description: 新增活动库存
 	 * @param activitySeckillFormVo 页面Form对象
@@ -354,7 +363,8 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	 * @author lijun
 	 * @date 2016年7月26日
 	 */
-	private void lockActivitySkuStock(ActivitySeckillFormVo activitySeckillFormVo, List<String> rpcIdByStockList) throws Exception {
+	private void lockActivitySkuStock(ActivitySeckillFormVo activitySeckillFormVo, List<String> rpcIdByStockList)
+			throws Exception {
 		// 获取店铺sku信息
 		GoodsStoreSku storeSku = goodsStoreSkuServiceApi.getById(activitySeckillFormVo.getStoreSkuId());
 
@@ -369,7 +379,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		stockAdjustVo.setAdjustDetailList(adjustDetailList);
 		stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_STOCK);
 		stockAdjustVo.setStoreId(storeSku.getStoreId());
-		
+
 		// 保存RPCID
 		String rpcId = UuidUtils.getUuid();
 		rpcIdByStockList.add(rpcId);
@@ -402,7 +412,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		stockAdjustVo.setAdjustDetailList(adjustDetailList);
 		stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_END);
 		stockAdjustVo.setStoreId(storeSku.getStoreId());
-		
+
 		// 保存RPCID
 		String rpcId = UuidUtils.getUuid();
 		rpcIdByStockList.add(rpcId);
@@ -540,7 +550,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	}
 	// end update by luosm 2016-07-22
 
-	//begin update by luosm 2016-07-26
+	// begin update by luosm 2016-07-26
 	/**
 	 * 
 	 * @Description: 通过秒杀活动id查询，秒杀活动详情
@@ -554,5 +564,5 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	public ActivitySeckillItemVo findAppUserSecKillBySeckill(String id) throws Exception {
 		return activitySeckillMapper.findAppUserSecKillBySeckill(id);
 	}
-	//end update by luosm 2016-07-26
+	// end update by luosm 2016-07-26
 }

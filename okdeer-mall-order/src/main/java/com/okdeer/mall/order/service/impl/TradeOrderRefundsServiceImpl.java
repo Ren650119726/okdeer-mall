@@ -37,7 +37,7 @@ import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.enums.MeteringMethod;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
+import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreMemberRelation;
@@ -136,6 +136,7 @@ import net.sf.json.JSONObject;
  *    重构4.1            2016-7-26            maojj             库存修改地方添加分布式事务机制
  *    Bug:12917         2016-8-18            maojj             客服介入时增加对退款单状态的检查
  *    1.0.Z				2016-09-05			 zengj			        增加退款单操作记录
+ *    1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
  *  
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderRefundsServiceApi")
@@ -243,8 +244,16 @@ public class TradeOrderRefundsServiceImpl
 	@Autowired
 	private TradeOrderRefundsItemService tradeOrderRefundsItemService;
 
+	// @Reference(version = "1.0.0", check = false)
+	// private StockManagerServiceApi stockManagerService;
+
+	// Begin 1.0.Z add by zengj
+	/**
+	 * 库存管理Service
+	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi stockManagerService;
+	private StockManagerJxcServiceApi stockManagerService;
+	// End 1.0.Z add by zengj
 
 	@Autowired
 	private SysMsgMapper sysMsgMapper;

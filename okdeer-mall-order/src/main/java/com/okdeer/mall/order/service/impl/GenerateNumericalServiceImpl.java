@@ -192,7 +192,7 @@ class GenerateNumericalServiceImpl implements GenerateNumericalService, Generate
 		String dateStr = DateUtils.getDate("yyMMdd");
 		// redis中存储的key
 		String redisKey = OrderNoUtils.PHYSICAL_ORDER_PREFIX + branchCode + dateStr;
-		// 否则实现自增长
+		// 实现自增长
 		Long seq = redisTemplateWrapper.incr(redisKey);
 		// 如果该key是初始化的时候，将该key的过期时间设置为一天，一天后该key会失效
 		if (seq == 1L) {
