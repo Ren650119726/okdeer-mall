@@ -622,7 +622,7 @@ public class TradeOrderRefundsServiceImpl
 			addRefundsCerticate(orderRefunds.getId(), remark, orderRefunds.getOperator());
 
 			// 发消息给ERP生成库存单据 added by maojj
-			stockMQProducer.sendMessage(stockAdjustList);
+			// stockMQProducer.sendMessage(stockAdjustList);
 		} catch (Exception e) {
 			// 发消息回滚库存的修改 added by maojj
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
@@ -655,6 +655,9 @@ public class TradeOrderRefundsServiceImpl
 			stockAdjustVo.setRpcId(rpcId);
 			// End added by maojj 2016-07-26
 			stockAdjustVo.setOrderId(orderRefunds.getOrderId());
+			stockAdjustVo.setOrderNo(orderRefunds.getOrderNo());
+			stockAdjustVo.setOrderResource(orderRefunds.getOrderResource());
+			stockAdjustVo.setOrderType(orderRefunds.getType());
 			stockAdjustVo.setStoreId(orderRefunds.getStoreId());
 			// 取消销售单
 			TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
@@ -1664,7 +1667,7 @@ public class TradeOrderRefundsServiceImpl
 				addRefundsCerticate(tradeOrderRefunds.getId(), "", userId);
 
 				// 发消息给ERP增加出库单 added by maojj
-				stockMQProducer.sendMessage(stockAdjustList);
+				// stockMQProducer.sendMessage(stockAdjustList);
 			}
 		} catch (Exception e) {
 			// 发消息回滚库存的更改 added by maojj
