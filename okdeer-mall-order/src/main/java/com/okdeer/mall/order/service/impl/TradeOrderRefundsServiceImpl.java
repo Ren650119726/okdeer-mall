@@ -655,6 +655,9 @@ public class TradeOrderRefundsServiceImpl
 			stockAdjustVo.setRpcId(rpcId);
 			// End added by maojj 2016-07-26
 			stockAdjustVo.setOrderId(orderRefunds.getOrderId());
+			stockAdjustVo.setOrderNo(orderRefunds.getOrderNo());
+			stockAdjustVo.setOrderResource(orderRefunds.getOrderResource());
+			stockAdjustVo.setOrderType(orderRefunds.getType());
 			stockAdjustVo.setStoreId(orderRefunds.getStoreId());
 			// 取消销售单
 			TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());

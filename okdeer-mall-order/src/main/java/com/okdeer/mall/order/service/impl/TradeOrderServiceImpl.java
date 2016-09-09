@@ -1394,6 +1394,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// End added by maojj 2016-07-26
 
 			stockAdjustVo.setOrderId(tradeOrder.getId());
+			stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
+			stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
+			stockAdjustVo.setOrderType(tradeOrder.getType());
 			stockAdjustVo.setStoreId(tradeOrder.getStoreId());
 			// 判断是否是团购和特惠商品
 			boolean isGoodActivity = ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()
@@ -1492,6 +1495,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// End added by maojj 2016-07-26
 		// 订单ID
 		stockAdjustVo.setOrderId(tradeOrder.getId());
+		stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
+		stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
+		stockAdjustVo.setOrderType(tradeOrder.getType());
 		// 店铺ID
 		stockAdjustVo.setStoreId(tradeOrder.getStoreId());
 		// 库存操作枚举
@@ -4625,6 +4631,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// End added by maojj 2016-07-26
 
 		stockAdjustVo.setOrderId(tradeOrder.getId());
+		stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
+		stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
+		stockAdjustVo.setOrderType(tradeOrder.getType());
 		stockAdjustVo.setStoreId(tradeOrder.getStoreId());
 		// 发货
 		if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {

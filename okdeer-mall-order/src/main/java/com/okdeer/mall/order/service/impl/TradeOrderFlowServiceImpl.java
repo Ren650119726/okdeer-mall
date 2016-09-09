@@ -3725,6 +3725,9 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 								detailList.add(detail);
 
 								stockVo.setOrderId(order.getId());
+								stockVo.setOrderNo(order.getOrderNo());
+								stockVo.setOrderResource(order.getOrderResource());
+								stockVo.setOrderType(order.getType());
 								stockVo.setStoreId(storeId);
 								stockVo.setUserId(userId);
 								stockVo.setAdjustDetailList(detailList);
@@ -4448,6 +4451,9 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			StockAdjustVo stockVo = new StockAdjustVo();
 
 			stockVo.setOrderId(order.getId());
+			stockVo.setOrderNo(order.getOrderNo());
+			stockVo.setOrderResource(order.getOrderResource());
+			stockVo.setOrderType(order.getType());
 			stockVo.setStoreId(storeId);
 			stockVo.setUserId(sellerId);
 			stockVo.setAdjustDetailList(detailList);
