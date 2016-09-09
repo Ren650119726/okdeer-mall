@@ -16,9 +16,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.common.message.Message;
@@ -26,18 +26,25 @@ import com.google.common.base.Charsets;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.exception.StockException;
+import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.constant.OrderMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
+import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
+import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
+import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
+import com.okdeer.mall.order.service.TradeOrderCompleteProcessServiceApi;
 import com.okdeer.mall.order.utils.OrderNoUtils;
 import com.yschome.base.common.exception.ServiceException;
 import com.yschome.base.framework.mq.RocketMQProducer;
@@ -56,8 +63,9 @@ import net.sf.json.JSONObject;
  * ----------------+----------------+-------------------+-------------------------------------------
  *     1.0.Z          2016年9月6日                               zengj				订单或退款单完成后同步处理Service
  */
-@Service
-public class TradeOrderCompleteProcessServiceImpl {
+@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderCompleteProcessServiceApi")
+public class TradeOrderCompleteProcessServiceImpl
+		implements TradeOrderCompleteProcessServiceApi, TradeOrderCompleteProcessService {
 
 	private static final Logger logger = LoggerFactory.getLogger(TradeOrderCompleteProcessServiceImpl.class);
 
@@ -77,6 +85,14 @@ public class TradeOrderCompleteProcessServiceImpl {
 	@Resource
 	private TradeOrderPayMapper tradeOrderPayMapper;
 
+	/** * 退款单Mapper */
+	@Resource
+	private TradeOrderRefundsMapper tradeOrderRefundsMapper;
+
+	/** * 退款单项Mapper */
+	@Resource
+	private TradeOrderRefundsItemMapper tradeOrderRefundsItemMapper;
+
 	/** * 店铺商品Service */
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
@@ -86,15 +102,6 @@ public class TradeOrderCompleteProcessServiceImpl {
 
 	/** * A：销售单、B：退货单 */
 	private static final String ORDER_TYPE_B = "B";
-
-	/** * 订单ID为空 */
-	public static final String ORDER_ID_IS_NULL = "订单ID为空";
-
-	/** * 订单信息为空 */
-	public static final String ORDER_NOT_EXISTS = "订单不存在";
-
-	/** * 订单状态不匹配 */
-	public static final String ORDER_STATUS_NO_MATCHING = "订单状态不匹配,ID{},,应该为{}实际为{}";
 
 	/**
 	 * 
@@ -106,20 +113,21 @@ public class TradeOrderCompleteProcessServiceImpl {
 	 */
 	public void orderCompleteSyncToJxc(String orderId) throws Exception {
 		if (StringUtils.isBlank(orderId)) {
-			throw new ServiceException(ORDER_ID_IS_NULL);
+			throw new ServiceException(LogConstants.ORDER_ID_IS_NULL);
 		}
 		// 查询订单信息
 		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderId);
 		// 查询订单项信息
 		List<TradeOrderItem> tradeOrderItemList = tradeOrderItemMapper.selectOrderItemDetailById(orderId);
 		if (tradeOrder == null || CollectionUtils.isEmpty(tradeOrderItemList)) {
-			throw new ServiceException(ORDER_NOT_EXISTS);
+			throw new ServiceException(LogConstants.ORDER_NOT_EXISTS);
 		}
 
+		// 判断订单状态是否为已完成
 		if (tradeOrder.getStatus() != OrderStatusEnum.HAS_BEEN_SIGNED) {
-			logger.error(ORDER_STATUS_NO_MATCHING, orderId, OrderStatusEnum.HAS_BEEN_SIGNED.getName(),
+			logger.error(LogConstants.ORDER_STATUS_NO_MATCHING, orderId, OrderStatusEnum.HAS_BEEN_SIGNED.getName(),
 					tradeOrder.getStatus().getName());
-			throw new ServiceException(ORDER_STATUS_NO_MATCHING);
+			throw new ServiceException(LogConstants.ORDER_STATUS_NO_MATCHING);
 		}
 
 		// 查询订单支付信息
@@ -127,15 +135,12 @@ public class TradeOrderCompleteProcessServiceImpl {
 		// 线上支付才有支付信息
 		if (tradeOrder.getPayWay() == PayWayEnum.PAY_ONLINE) {
 			tradeOrderPay = tradeOrderPayMapper.selectByOrderId(orderId);
-		} else {
-			// 否则new一个实例
-			tradeOrderPay = new TradeOrderPay();
 		}
 
 		// 订单信息
 		JSONObject orderInfo = buildOrderInfo(tradeOrder);
 		// 订单项json数组
-		JSONArray orderItemList = buildOrderItemList(tradeOrder, tradeOrder.getTradeOrderItem());
+		JSONArray orderItemList = buildOrderItemList(tradeOrder, tradeOrderItemList);
 		// 订单支付信息
 		JSONObject orderPayInfo = buildOrderPayInfo(tradeOrder, tradeOrderPay);
 
@@ -156,22 +161,37 @@ public class TradeOrderCompleteProcessServiceImpl {
 	 * @throws Exception 异常处理
 	 * @date 2016年9月6日
 	 */
-	public void refundOrderCompleteSyncToJxc(String refundsId) throws Exception {
-		// 订单信息
-		// JSONObject orderInfo = buildOrderInfo(tradeOrder);
-		// // 订单项json数组
-		// JSONArray orderItemList = buildOrderItemList(tradeOrder,
-		// tradeOrder.getTradeOrderItem());
-		// // 订单支付信息
-		// JSONObject orderPayInfo = buildOrderPayInfo(tradeOrder,
-		// tradeOrderPay);
+	public void orderRefundsCompleteSyncToJxc(String refundsId) throws Exception {
+		if (StringUtils.isBlank(refundsId)) {
+			throw new ServiceException(LogConstants.ORDER_REFUNDS_ID_IS_NULL);
+		}
+		TradeOrderRefunds orderRefunds = tradeOrderRefundsMapper.selectByPrimaryKey(refundsId);
+		// 查询退款单项信息
+		List<TradeOrderRefundsItem> tradeOrderRefundsItemList = tradeOrderRefundsItemMapper
+				.getTradeOrderRefundsItemByRefundsId(refundsId);
+		if (orderRefunds == null || CollectionUtils.isEmpty(tradeOrderRefundsItemList)) {
+			throw new ServiceException(LogConstants.ORDER_REFUNDS_NOT_EXISTS);
+		}
 
-		// orderInfo.put("orderItemList", orderItemList);
+		// 判断退款单状态是否为已完成
+		if (orderRefunds.getRefundsStatus() != RefundsStatusEnum.REFUND_SUCCESS
+				&& orderRefunds.getRefundsStatus() != RefundsStatusEnum.SELLER_REFUNDING
+				&& orderRefunds.getRefundsStatus() != RefundsStatusEnum.FORCE_SELLER_REFUND_SUCCESS
+				&& orderRefunds.getRefundsStatus() != RefundsStatusEnum.YSC_REFUND_SUCCESS) {
+			logger.error(LogConstants.ORDER_STATUS_NO_MATCHING, refundsId, RefundsStatusEnum.REFUND_SUCCESS.getName(),
+					orderRefunds.getRefundsStatus().getName());
+			throw new ServiceException(LogConstants.ORDER_STATUS_NO_MATCHING);
+		}
+		// 订单信息
+		JSONObject orderRefundsInfo = buildOrderRefundsInfo(orderRefunds);
+		// 订单项json数组
+		JSONArray orderRefundsItemList = buildOrderRefundsItemList(orderRefunds, tradeOrderRefundsItemList);
+
+		orderRefundsInfo.put("orderRefundsItemList", orderRefundsItemList);
 		// orderInfo.put("orderPayInfo", orderPayInfo);
-		// // 发送消息
-		// this.send(OrderMessageConstant.TOPIC_REFUND_ORDER_COMPLETE,
-		// OrderMessageConstant.TAG_REFUND_ORDER_COMPLETE,
-		// orderInfo.toString());
+		// 发送消息
+		this.send(OrderMessageConstant.TOPIC_REFUND_ORDER_COMPLETE, OrderMessageConstant.TAG_REFUND_ORDER_COMPLETE,
+				orderRefundsInfo.toString());
 	}
 
 	/**
@@ -228,29 +248,29 @@ public class TradeOrderCompleteProcessServiceImpl {
 		// 创建人
 		orderInfo.put("createrId", order.getCreateUserId());
 		// 创建时间
-		orderInfo.put("createTime", order.getCreateTime());
+		orderInfo.put("createTime", order.getCreateTime().getTime());
 		return orderInfo;
 	}
 
 	/**
 	 * 
 	 * @Description: 构建订单信息JSON
-	 * @param refundOrder 订单信息
+	 * @param orderRefunds 订单信息
 	 * @return JSONObject  订单信息JSON
 	 * @author zengj
 	 * @date 2016年9月7日
 	 */
-	private JSONObject buildRefundsOrderInfo(TradeOrderRefunds refundOrder) {
+	private JSONObject buildOrderRefundsInfo(TradeOrderRefunds orderRefunds) {
 		// 订单信息
 		JSONObject orderInfo = new JSONObject();
 		// 订单ID
-		orderInfo.put("id", refundOrder.getId());
-		// 订单编号
-		orderInfo.put("orderNo", refundOrder.getOrderNo());
+		orderInfo.put("id", orderRefunds.getId());
+		// 退款单编号
+		orderInfo.put("orderNo", orderRefunds.getRefundNo());
 		// 店铺ID
-		orderInfo.put("storeId", refundOrder.getStoreId());
+		orderInfo.put("storeId", orderRefunds.getStoreId());
 		// 判断是POS单还是线上单，给posID
-		if (refundOrder.getOrderResource() == OrderResourceEnum.POS) {
+		if (orderRefunds.getOrderResource() == OrderResourceEnum.POS) {
 			orderInfo.put("posId", OrderNoUtils.OFFLINE_POS_ID);
 		} else {
 			orderInfo.put("posId", OrderNoUtils.ONLINE_POS_ID);
@@ -258,36 +278,35 @@ public class TradeOrderCompleteProcessServiceImpl {
 		// 销售类型
 		orderInfo.put("saleType", ORDER_TYPE_B);
 		// 订单来源
-		orderInfo.put("orderResource", refundOrder.getOrderResource().ordinal());
-		// 原价金额=商品实际金额和运费（实际金额+优惠金额)
-		orderInfo.put("totalAmount", refundOrder.getTotalAmount());
-		// 商家实收金额（包含运费）
-		orderInfo.put("amount", refundOrder.getTotalAmount());
+		orderInfo.put("orderResource", orderRefunds.getOrderResource().ordinal());
+		// 原价金额=商品实际金额和运费
+		orderInfo.put("totalAmount", orderRefunds.getTotalAmount());
+		// 商家实收金额
+		orderInfo.put("amount", orderRefunds.getTotalAmount());
 		// 店铺优惠金额
 		BigDecimal storePreferentialPrice = BigDecimal.ZERO;
 		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
-		// if (refundOrder.getTotalAmount().compareTo(refundOrder.getIncome())
-		// != 0) {
-		// storePreferentialPrice = refundOrder.getPreferentialPrice();
-		// }
+		if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0) {
+			storePreferentialPrice = orderRefunds.getTotalPreferentialPrice();
+		}
 		// 店铺优惠金额
 		orderInfo.put("discountAmount", storePreferentialPrice);
 		// 运费
 		// orderInfo.put("freightAmount", refundOrder.getFare());
 		// （会员）买家ID
-		orderInfo.put("userId", refundOrder.getUserId());
+		orderInfo.put("userId", orderRefunds.getUserId());
 		// 退货原单号
-		orderInfo.put("referenceNo", null);
+		orderInfo.put("referenceNo", orderRefunds.getOrderNo());
 		// 收银员ID
-		// orderInfo.put("operatorId", refundOrder.getSellerId());
+		orderInfo.put("operatorId", orderRefunds.getOperator());
 		// // 提货码
 		// orderInfo.put("pickUpCode", refundOrder.getPickUpCode());
 		// // 备注
-		// orderInfo.put("remark", refundOrder.getRemark());
+		orderInfo.put("remark", orderRefunds.getMemo());
 		// 创建人
-		orderInfo.put("createrId", refundOrder.getOperator());
+		orderInfo.put("createrId", orderRefunds.getUserId());
 		// 创建时间
-		orderInfo.put("createTime", refundOrder.getCreateTime());
+		orderInfo.put("createTime", orderRefunds.getCreateTime().getTime());
 		return orderInfo;
 	}
 
@@ -347,7 +366,70 @@ public class TradeOrderCompleteProcessServiceImpl {
 			item.put("activityId", order.getActivityId());
 			item.put("activityItemId", order.getActivityItemId());
 			item.put("remark", order.getRemark());
-			item.put("createTime", orderItem.getCreateTime());
+			item.put("createTime", orderItem.getCreateTime().getTime());
+			orderItemArr.add(item);
+		}
+		return orderItemArr;
+	}
+
+	/**
+	 * 
+	 * @Description: 构建退款单项JSON信息
+	 * @param orderRefunds 退款单信息
+	 * @param orderRefundsItemList 退款单项集合
+	 * @return JSONArray 退款单项JSON信息  
+	 * @throws Exception   异常信息
+	 * @author zengj
+	 * @date 2016年9月7日
+	 */
+	private JSONArray buildOrderRefundsItemList(TradeOrderRefunds orderRefunds,
+			List<TradeOrderRefundsItem> orderRefundsItemList) throws Exception {
+		JSONArray orderItemArr = new JSONArray();
+		JSONObject item = null;
+		int orderItemSize = orderRefundsItemList.size();
+		for (int i = 0; i < orderItemSize; i++) {
+			TradeOrderRefundsItem orderRefundsItem = orderRefundsItemList.get(i);
+			GoodsStoreSku goods = goodsStoreSkuServiceApi.getById(orderRefundsItem.getStoreSkuId());
+			item = new JSONObject();
+			// 退款单项ID
+			item.put("id", orderRefundsItem.getId());
+			// 订单ID
+			item.put("orderId", orderRefunds.getOrderId());
+			// 序号
+			item.put("rowNo", i + 1);
+			// 标准商品库ID
+			item.put("skuId", goods.getSkuId());
+			// 店铺优惠金额
+			BigDecimal storePreferentialPrice = BigDecimal.ZERO;
+			// 订单金额如果不等于店家收入金额，说明是店铺有优惠
+			if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0) {
+				storePreferentialPrice = orderRefunds.getTotalPreferentialPrice();
+			}
+			// 实际单价=原单价减去店铺优惠
+			BigDecimal actualPrice = orderRefundsItem.getUnitPrice().subtract(storePreferentialPrice);
+			// 货号
+			// item.put("skuCode", goods.geta);
+			// 销售类型
+			item.put("saleType", ORDER_TYPE_A);
+			// 商品数量
+			item.put("saleNum", orderRefundsItem.getQuantity());
+			// 原单价
+			item.put("originalPrice", orderRefundsItem.getUnitPrice());
+			// 实际单价=原单价减去店铺优惠
+			item.put("salePrice", actualPrice);
+			// 原价金额=原单价*数量
+			item.put("totalAmount", orderRefundsItem.getUnitPrice()
+					.multiply(BigDecimal.valueOf(orderRefundsItem.getQuantity())).setScale(2, BigDecimal.ROUND_FLOOR));
+			// 实际金额=实际交易单价*数量
+			item.put("saleAmount", actualPrice.multiply(BigDecimal.valueOf(orderRefundsItem.getQuantity())).setScale(2,
+					BigDecimal.ROUND_FLOOR));
+			// 店铺优惠金额
+			item.put("discountAmount", storePreferentialPrice);
+			// item.put("activityType", order.getActivityType().ordinal());
+			// item.put("activityId", order.getActivityId());
+			// item.put("activityItemId", order.getActivityItemId());
+			item.put("remark", orderRefunds.getMemo());
+			item.put("createTime", orderRefunds.getCreateTime().getTime());
 			orderItemArr.add(item);
 		}
 		return orderItemArr;
@@ -364,6 +446,9 @@ public class TradeOrderCompleteProcessServiceImpl {
 	 */
 	private JSONObject buildOrderPayInfo(TradeOrder order, TradeOrderPay orderPay) {
 		JSONObject orderPayJson = new JSONObject();
+		if (orderPay == null) {
+			return orderPayJson;
+		}
 		// 支付ID
 		orderPayJson.put("id", orderPay.getId());
 		// 订单ID
@@ -385,9 +470,9 @@ public class TradeOrderCompleteProcessServiceImpl {
 		// 备注
 		orderPayJson.put("remark", order.getRemark());
 		// 支付时间
-		orderPayJson.put("payTime", orderPay.getPayTime());
+		orderPayJson.put("payTime", orderPay.getPayTime().getTime());
 		// 创建时间
-		orderPayJson.put("createTime", orderPay.getCreateTime());
+		orderPayJson.put("createTime", orderPay.getCreateTime().getTime());
 		return orderPayJson;
 	}
 
@@ -402,6 +487,9 @@ public class TradeOrderCompleteProcessServiceImpl {
 	 * @date 2016年9月6日
 	 */
 	private void send(String topic, String tag, String msg) throws Exception {
+		if (logger.isInfoEnabled()) {
+			logger.info(LogConstants.ORDER_OR_REFUNDS_COMPLETE_MSG_PARAM, tag, msg);
+		}
 		Message message = new Message(topic, tag, msg.getBytes(Charsets.UTF_8));
 		SendResult sendResult = rocketMqProducer.send(message);
 		if (sendResult.getSendStatus() != SendStatus.SEND_OK) {

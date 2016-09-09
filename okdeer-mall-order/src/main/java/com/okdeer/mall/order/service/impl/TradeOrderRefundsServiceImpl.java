@@ -85,6 +85,7 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
+import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderDisputeLogService;
 import com.okdeer.mall.order.service.TradeOrderDisputeService;
 import com.okdeer.mall.order.service.TradeOrderItemDetailService;
@@ -253,6 +254,12 @@ public class TradeOrderRefundsServiceImpl
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private StockManagerJxcServiceApi stockManagerService;
+
+	/**
+	 * 订单完成后同步商业管理系统Service
+	 */
+	@Resource
+	private TradeOrderCompleteProcessService tradeOrderCompleteProcessService;
 	// End 1.0.Z add by zengj
 
 	@Autowired
@@ -954,6 +961,9 @@ public class TradeOrderRefundsServiceImpl
 		tradeOrderRefundsLogMapper
 				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
 						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
+
+		// 订单完成后同步到商业管理系统
+		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
 		// End 1.0.Z 增加退款单操作记录 add by zengj
 		// 发送短信
 		this.tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());

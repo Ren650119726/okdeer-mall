@@ -99,6 +99,7 @@ import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.mapper.GenerateNumericalMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.service.GenerateNumericalService;
+import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderFlowService;
 import com.okdeer.mall.order.service.TradeOrderFlowServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
@@ -238,6 +239,12 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private StoreBranchesServiceApi storeBranchesService;
+
+	/**
+	 * 订单完成后的操作Service
+	 */
+	@Autowired
+	private TradeOrderCompleteProcessService tradeOrderCompleteProcessService;
 	// End 1.0.Z add by zengj
 
 	@Reference(version = "1.0.0", check = false)
@@ -4579,6 +4586,10 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			obj.put("orderNo", order.getOrderNo());
 			obj.put("orderId", order.getId());
 			obj.put("orderTime", createTime);
+			// 订单完成需要同步到商业管理系统
+			if (order.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
+				tradeOrderCompleteProcessService.orderCompleteSyncToJxc(order.getId());
+			}
 			if ("1".equals(payWay) || "2".equals(payWay)) {
 				obj.put("orderPay_payAmount", sum);
 				obj.put("payWay", payWay);
