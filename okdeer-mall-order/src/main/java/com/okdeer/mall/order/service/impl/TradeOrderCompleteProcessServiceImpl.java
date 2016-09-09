@@ -7,6 +7,7 @@
 
 package com.okdeer.mall.order.service.impl;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -26,9 +27,11 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.exception.StockException;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.order.constant.OrderMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderPay;
+import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
@@ -134,40 +137,158 @@ public class TradeOrderCompleteProcessServiceImpl {
 		// 订单项json数组
 		JSONArray orderItemList = buildOrderItemList(tradeOrder, tradeOrder.getTradeOrderItem());
 		// 订单支付信息
-		JSONArray orderPayInfo = buildOrderPayList(tradeOrder, tradeOrderPay);
+		JSONObject orderPayInfo = buildOrderPayInfo(tradeOrder, tradeOrderPay);
+
+		orderInfo.put("orderItemList", orderItemList);
+		orderInfo.put("orderPayInfo", orderPayInfo);
+
+		// 发送消息
+		this.send(OrderMessageConstant.TOPIC_ORDER_COMPLETE, OrderMessageConstant.TAG_ORDER_COMPLETE,
+				orderInfo.toString());
 
 	}
 
 	/**
 	 * 
-	 * @Description: 构建订单支付信息JSON
+	 * @Description: 退款单完成时发送MQ消息同步到商业管理系统
+	 * @param refundsId 退款单ID
+	 * @author zengj
+	 * @throws Exception 异常处理
+	 * @date 2016年9月6日
+	 */
+	public void refundOrderCompleteSyncToJxc(String refundsId) throws Exception {
+		// 订单信息
+		// JSONObject orderInfo = buildOrderInfo(tradeOrder);
+		// // 订单项json数组
+		// JSONArray orderItemList = buildOrderItemList(tradeOrder,
+		// tradeOrder.getTradeOrderItem());
+		// // 订单支付信息
+		// JSONObject orderPayInfo = buildOrderPayInfo(tradeOrder,
+		// tradeOrderPay);
+
+		// orderInfo.put("orderItemList", orderItemList);
+		// orderInfo.put("orderPayInfo", orderPayInfo);
+		// // 发送消息
+		// this.send(OrderMessageConstant.TOPIC_REFUND_ORDER_COMPLETE,
+		// OrderMessageConstant.TAG_REFUND_ORDER_COMPLETE,
+		// orderInfo.toString());
+	}
+
+	/**
+	 * 
+	 * @Description: 构建订单信息JSON
 	 * @param order 订单信息
-	 * @param orderPay 订单支付信息
-	 * @return JSONArray 返回的订单支付信息JSON  
+	 * @return JSONObject  订单信息JSON
 	 * @author zengj
 	 * @date 2016年9月7日
 	 */
-	private JSONArray buildOrderPayList(TradeOrder order, TradeOrderPay orderPay) {
-		JSONObject orderPayJson = new JSONObject();
-		orderPayJson.put("id", orderPay.getId());
-		orderPayJson.put("orderId", orderPay.getOrderId());
-		orderPayJson.put("rowNo", 1);
-		orderPayJson.put("payTypeId", orderPay.getPayType().ordinal());
-		orderPayJson.put("payAmount", orderPay.getPayAmount());
-		// 代金券ID
-		String payItemId = null;
-		if (order.getActivityType() == ActivityTypeEnum.VONCHER) {
-			payItemId = order.getActivityId();
+	private JSONObject buildOrderInfo(TradeOrder order) {
+		// 订单信息
+		JSONObject orderInfo = new JSONObject();
+		// 订单ID
+		orderInfo.put("id", order.getId());
+		// 订单编号
+		orderInfo.put("orderNo", order.getOrderNo());
+		// 店铺ID
+		orderInfo.put("storeId", order.getStoreId());
+		// 判断是POS单还是线上单，给posID
+		if (order.getOrderResource() == OrderResourceEnum.POS) {
+			orderInfo.put("posId", OrderNoUtils.OFFLINE_POS_ID);
+		} else {
+			orderInfo.put("posId", OrderNoUtils.ONLINE_POS_ID);
 		}
-		orderPayJson.put("payItemId", payItemId);
-		orderPayJson.put("payAmount", orderPay.getPayAmount());
-		orderPayJson.put("payTradeNo", orderPay.getReturns());
-		orderPayJson.put("remark", order.getRemark());
-		orderPayJson.put("payTime", orderPay.getPayTime());
-		orderPayJson.put("createTime", orderPay.getCreateTime());
-		JSONArray orderPayArr = new JSONArray();
-		orderPayArr.add(orderPayJson);
-		return orderPayArr;
+		// 销售类型
+		orderInfo.put("saleType", ORDER_TYPE_A);
+		// 订单来源
+		orderInfo.put("orderResource", order.getOrderResource().ordinal());
+		// 原价金额=商品实际金额和运费（实际金额+优惠金额)
+		orderInfo.put("totalAmount", order.getTotalAmount());
+		// 商家实收金额（包含运费）
+		orderInfo.put("amount", order.getIncome());
+		// 店铺优惠金额
+		BigDecimal storePreferentialPrice = BigDecimal.ZERO;
+		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
+		if (order.getTotalAmount().compareTo(order.getIncome()) != 0) {
+			storePreferentialPrice = order.getPreferentialPrice();
+		}
+		// 店铺优惠金额
+		orderInfo.put("discountAmount", storePreferentialPrice);
+		// 运费
+		orderInfo.put("freightAmount", order.getFare());
+		// （会员）买家ID
+		orderInfo.put("userId", order.getUserId());
+		// 退货原单号
+		orderInfo.put("referenceNo", null);
+		// 收银员ID
+		orderInfo.put("operatorId", order.getSellerId());
+		// 提货码
+		orderInfo.put("pickUpCode", order.getPickUpCode());
+		// 备注
+		orderInfo.put("remark", order.getRemark());
+		// 创建人
+		orderInfo.put("createrId", order.getCreateUserId());
+		// 创建时间
+		orderInfo.put("createTime", order.getCreateTime());
+		return orderInfo;
+	}
+
+	/**
+	 * 
+	 * @Description: 构建订单信息JSON
+	 * @param refundOrder 订单信息
+	 * @return JSONObject  订单信息JSON
+	 * @author zengj
+	 * @date 2016年9月7日
+	 */
+	private JSONObject buildRefundsOrderInfo(TradeOrderRefunds refundOrder) {
+		// 订单信息
+		JSONObject orderInfo = new JSONObject();
+		// 订单ID
+		orderInfo.put("id", refundOrder.getId());
+		// 订单编号
+		orderInfo.put("orderNo", refundOrder.getOrderNo());
+		// 店铺ID
+		orderInfo.put("storeId", refundOrder.getStoreId());
+		// 判断是POS单还是线上单，给posID
+		if (refundOrder.getOrderResource() == OrderResourceEnum.POS) {
+			orderInfo.put("posId", OrderNoUtils.OFFLINE_POS_ID);
+		} else {
+			orderInfo.put("posId", OrderNoUtils.ONLINE_POS_ID);
+		}
+		// 销售类型
+		orderInfo.put("saleType", ORDER_TYPE_B);
+		// 订单来源
+		orderInfo.put("orderResource", refundOrder.getOrderResource().ordinal());
+		// 原价金额=商品实际金额和运费（实际金额+优惠金额)
+		orderInfo.put("totalAmount", refundOrder.getTotalAmount());
+		// 商家实收金额（包含运费）
+		orderInfo.put("amount", refundOrder.getTotalAmount());
+		// 店铺优惠金额
+		BigDecimal storePreferentialPrice = BigDecimal.ZERO;
+		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
+		// if (refundOrder.getTotalAmount().compareTo(refundOrder.getIncome())
+		// != 0) {
+		// storePreferentialPrice = refundOrder.getPreferentialPrice();
+		// }
+		// 店铺优惠金额
+		orderInfo.put("discountAmount", storePreferentialPrice);
+		// 运费
+		// orderInfo.put("freightAmount", refundOrder.getFare());
+		// （会员）买家ID
+		orderInfo.put("userId", refundOrder.getUserId());
+		// 退货原单号
+		orderInfo.put("referenceNo", null);
+		// 收银员ID
+		// orderInfo.put("operatorId", refundOrder.getSellerId());
+		// // 提货码
+		// orderInfo.put("pickUpCode", refundOrder.getPickUpCode());
+		// // 备注
+		// orderInfo.put("remark", refundOrder.getRemark());
+		// 创建人
+		orderInfo.put("createrId", refundOrder.getOperator());
+		// 创建时间
+		orderInfo.put("createTime", refundOrder.getCreateTime());
+		return orderInfo;
 	}
 
 	/**
@@ -188,18 +309,40 @@ public class TradeOrderCompleteProcessServiceImpl {
 			TradeOrderItem orderItem = orderItemList.get(i);
 			GoodsStoreSku goods = goodsStoreSkuServiceApi.getById(orderItem.getStoreSkuId());
 			item = new JSONObject();
+			// 订单项ID
 			item.put("id", orderItem.getId());
+			// 订单ID
 			item.put("orderId", orderItem.getOrderId());
+			// 序号
 			item.put("rowNo", i + 1);
+			// 标准商品库ID
 			item.put("skuId", goods.getSkuId());
+			// 店铺优惠金额
+			BigDecimal storePreferentialPrice = BigDecimal.ZERO;
+			// 订单金额如果不等于店家收入金额，说明是店铺有优惠
+			if (order.getTotalAmount().compareTo(order.getIncome()) != 0) {
+				storePreferentialPrice = order.getPreferentialPrice();
+			}
+			// 实际单价=原单价减去店铺优惠
+			BigDecimal actualPrice = orderItem.getUnitPrice().subtract(storePreferentialPrice);
+			// 货号
 			// item.put("skuCode", goods.geta);
+			// 销售类型
 			item.put("saleType", ORDER_TYPE_A);
+			// 商品数量
 			item.put("saleNum", orderItem.getQuantity());
-			// item.put("originalPrice", orderItem.getUnitPrice());
-			// item.put("salePrice", orderItem.getUnitPrice());
-			// item.put("totalAmount", orderItem.getUnitPrice());
-			// item.put("saleAmount", orderItem.getUnitPrice());
-			// item.put("discountAmount", orderItem.getUnitPrice());
+			// 原单价
+			item.put("originalPrice", orderItem.getUnitPrice());
+			// 实际单价=原单价减去店铺优惠
+			item.put("salePrice", actualPrice);
+			// 原价金额=原单价*数量
+			item.put("totalAmount", orderItem.getUnitPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()))
+					.setScale(2, BigDecimal.ROUND_FLOOR));
+			// 实际金额=实际交易单价*数量
+			item.put("saleAmount", actualPrice.multiply(BigDecimal.valueOf(orderItem.getQuantity())).setScale(2,
+					BigDecimal.ROUND_FLOOR));
+			// 店铺优惠金额
+			item.put("discountAmount", storePreferentialPrice);
 			item.put("activityType", order.getActivityType().ordinal());
 			item.put("activityId", order.getActivityId());
 			item.put("activityItemId", order.getActivityItemId());
@@ -212,37 +355,40 @@ public class TradeOrderCompleteProcessServiceImpl {
 
 	/**
 	 * 
-	 * @Description: 构建订单信息JSON
+	 * @Description: 构建订单支付信息JSON
 	 * @param order 订单信息
-	 * @return JSONObject  订单信息JSON
+	 * @param orderPay 订单支付信息
+	 * @return JSONObject 返回的订单支付信息JSON  
 	 * @author zengj
 	 * @date 2016年9月7日
 	 */
-	private JSONObject buildOrderInfo(TradeOrder order) {
-		// 订单信息
-		JSONObject orderInfo = new JSONObject();
-		orderInfo.put("id", order.getId());
-		orderInfo.put("orderNo", order.getOrderNo());
-		orderInfo.put("storeId", order.getStoreId());
-		if (order.getOrderResource() == OrderResourceEnum.POS) {
-			orderInfo.put("posId", OrderNoUtils.OFFLINE_POS_ID);
-		} else {
-			orderInfo.put("posId", OrderNoUtils.ONLINE_POS_ID);
+	private JSONObject buildOrderPayInfo(TradeOrder order, TradeOrderPay orderPay) {
+		JSONObject orderPayJson = new JSONObject();
+		// 支付ID
+		orderPayJson.put("id", orderPay.getId());
+		// 订单ID
+		orderPayJson.put("orderId", orderPay.getOrderId());
+		// 序号
+		orderPayJson.put("rowNo", 1);
+		// 支付类型
+		orderPayJson.put("payTypeId", orderPay.getPayType().ordinal());
+		// 支付金额
+		orderPayJson.put("payAmount", orderPay.getPayAmount());
+		// 代金券ID
+		String payItemId = null;
+		if (order.getActivityType() == ActivityTypeEnum.VONCHER) {
+			payItemId = order.getActivityId();
 		}
-		orderInfo.put("saleType", ORDER_TYPE_A);
-		orderInfo.put("orderResource", order.getOrderResource().ordinal());
-		orderInfo.put("totalAmount", order.getTotalAmount());
-		orderInfo.put("amount", order.getIncome());
-		orderInfo.put("discountAmount", order.getPreferentialPrice());
-		orderInfo.put("freightAmount", order.getFare());
-		orderInfo.put("userId", order.getUserId());
-		orderInfo.put("referenceNo", null);
-		orderInfo.put("operatorId", order.getSellerId());
-		orderInfo.put("pickUpCode", order.getPickUpCode());
-		orderInfo.put("remark", order.getRemark());
-		orderInfo.put("createrId", order.getCreateUserId());
-		orderInfo.put("createTime", order.getCreateTime());
-		return orderInfo;
+		orderPayJson.put("payItemId", payItemId);
+		// 支付流水号
+		orderPayJson.put("payTradeNo", orderPay.getReturns());
+		// 备注
+		orderPayJson.put("remark", order.getRemark());
+		// 支付时间
+		orderPayJson.put("payTime", orderPay.getPayTime());
+		// 创建时间
+		orderPayJson.put("createTime", orderPay.getCreateTime());
+		return orderPayJson;
 	}
 
 	/**

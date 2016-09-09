@@ -26,7 +26,7 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.enums.IsActivity;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
+import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
@@ -61,7 +61,6 @@ import com.yschome.base.common.utils.UuidUtils;
  *      重构 4.1         2016年7月16日                                 zengj               查询定位地址是否在秒杀活动范围
  *		重构 4.1         2016年7月20日                                 luosm               新增方法
  *		重构 4.1         2016年7月22日                                 luosm               优化方法
-  *     1.0.Z	        2016年9月07日                               zengj              库存管理修改，采用商业管理系统校验
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi")
 public class ActivitySeckillServiceImpl implements ActivitySeckillService, ActivitySeckillServiceApi {
@@ -89,19 +88,11 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	@Reference(version = "1.0.0", check = false)
 	GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 
-	// /**
-	// * 注入库存API接口
-	// */
-	// @Reference(version = "1.0.0", check = false)
-	// StockManagerServiceApi stockManagerServiceApi;
-
-	// Begin 1.0.Z add by zengj
 	/**
-	 * 库存管理Service
-	 */
+	* 注入库存API接口
+	*/
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerServiceApi;
-	// End 1.0.Z add by zengj
+	StockManagerServiceApi stockManagerServiceApi;
 
 	/**
 	 * 回滚MQ

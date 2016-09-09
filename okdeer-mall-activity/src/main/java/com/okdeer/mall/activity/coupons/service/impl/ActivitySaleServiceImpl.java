@@ -168,6 +168,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		adjustDetailVo.setGoodsName(entity.getName());
 		adjustDetailVo.setBarCode(entity.getBarCode());
 		adjustDetailVo.setStyleCode(entity.getStyleCode());
+		adjustDetailVo.setPrice(goods.getSalePrice());
 		/*************新增字段 end  **************/
 		adjustDetailList.add(adjustDetailVo);
 		stockAdjustVo.setAdjustDetailList(adjustDetailList);

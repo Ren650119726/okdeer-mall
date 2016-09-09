@@ -111,6 +111,12 @@ public interface OrderMessageConstant {
 
 	/** * 订单完成TAG */
 	String TAG_ORDER_COMPLETE = "tag_order_complete";
+
+	/** * 退款单完成TOPIC */
+	String TOPIC_REFUND_ORDER_COMPLETE = "topic_refund_order_complete";
+
+	/** * 订单完成TAG */
+	String TAG_REFUND_ORDER_COMPLETE = "tag_refund_order_complete";
 	// End 1.0.Z 订单同步进销存的topic和tag
 
 }
