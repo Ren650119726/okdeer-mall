@@ -3721,6 +3721,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 								detail.setPrice(BigGroupPrice);
 								detail.setPropertiesIndb(propertiesIndb);
 								detail.setStoreSkuId(skuId);
+								detail.setGoodsSkuId(goodsStoreSku.getSkuId());
 								detailList.add(detail);
 
 								stockVo.setOrderId(order.getId());

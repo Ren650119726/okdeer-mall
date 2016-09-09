@@ -1,5 +1,7 @@
+
 package com.okdeer.mall.order.service.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,11 +13,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
+import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
+import com.okdeer.mall.order.constant.OrderTipMsgConstant;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
+import com.okdeer.mall.order.service.StockCheckService;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.vo.TradeOrderContext;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
@@ -23,11 +31,6 @@ import com.okdeer.mall.order.vo.TradeOrderReq;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
 import com.yschome.base.common.exception.ServiceException;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
-import com.okdeer.mall.order.constant.OrderTipMsgConstant;
-import com.okdeer.mall.order.service.StockCheckService;
 
 /**
  * @author maojj
@@ -72,6 +75,12 @@ public class StockCheckServiceImpl implements StockCheckService {
 	private ActivitySaleRecordMapper activitySaleRecordMapper;
 
 	/**
+	 * 库存管理Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private StockManagerJxcServiceApi stockManagerService;
+
+	/**
 	 * 校验商品库存
 	 */
 	@Override
@@ -101,8 +110,19 @@ public class StockCheckServiceImpl implements StockCheckService {
 			}
 		}
 
+		// Begin 1.0.Z add by zengj
+		// 店铺商品ID 集合
+		List<String> storeSkuIdList = new ArrayList<String>();
+		// 循环加入
 		for (TradeOrderGoodsItem goodsItem : req.getList()) {
-			int currentStock = findStock(context, goodsItem);
+			storeSkuIdList.add(goodsItem.getSkuId());
+		}
+		// 查询库存集合
+		List<GoodsStoreSkuStock> stockList = stockManagerService.findGoodsStockInfoList(storeSkuIdList);
+		// End 1.0.Z add by zengj
+
+		for (TradeOrderGoodsItem goodsItem : req.getList()) {
+			int currentStock = findStock(context, goodsItem, stockList);
 			// 如果库存不足，直接返回
 			if (currentStock < goodsItem.getSkuNum()) {
 				respDto.setFlag(false);
@@ -260,17 +280,19 @@ public class StockCheckServiceImpl implements StockCheckService {
 	 * @Description: 根据店铺商品ID获取库存对象
 	 * @param context 请求处理缓存对象
 	 * @param goodsItem 请求商品列表
+	 * @param stockList 库存列表
 	 * @return int 当前库存
 	 * @throws ServiceException 服务异常  
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private int findStock(TradeOrderContext context, TradeOrderGoodsItem goodsItem) throws ServiceException {
+	private int findStock(TradeOrderContext context, TradeOrderGoodsItem goodsItem, List<GoodsStoreSkuStock> stockList)
+			throws ServiceException {
 		int currentStock = 0;
 		GoodsStoreSkuStock storeSkuStock = null;
-		for (GoodsStoreSku storeSku : context.getCurrentStoreSkuList()) {
-			if (goodsItem.getSkuId().equals(storeSku.getId())) {
-				storeSkuStock = storeSku.getGoodsStoreSkuStock();
+		for (GoodsStoreSkuStock tmp : stockList) {
+			if (goodsItem.getSkuId().equals(tmp.getStoreSkuId())) {
+				storeSkuStock = tmp;
 				break;
 			}
 		}

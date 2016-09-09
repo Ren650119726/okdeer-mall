@@ -1329,7 +1329,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 
 				// added by maojj 给ERP发消息去生成出入库单据
-				stockMQProducer.sendMessage(stockAdjustList);
+				// stockMQProducer.sendMessage(stockAdjustList);
 			}
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
@@ -1586,13 +1586,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					if (tradeOrder.getTradeOrderItem() == null || Iterables.isEmpty(tradeOrder.getTradeOrderItem())) {
 						tradeOrder.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId()));
 					}
-					// 锁定库存
-					// Begin modified by maojj 2016-07-26
-					rpcId = UuidUtils.getUuid();
-					stockAdjustVo = buildDeliveryStock(tradeOrder, rpcId);
-					stockManagerService.updateStock(stockAdjustVo);
-					// End modified by maojj 2016-07-26
 				}
+				// 锁定库存
+				// Begin modified by maojj 2016-07-26
+				rpcId = UuidUtils.getUuid();
+				stockAdjustVo = buildDeliveryStock(tradeOrder, rpcId);
+				stockManagerService.updateStock(stockAdjustVo);
+				// End modified by maojj 2016-07-26
 				// 给卖家打款
 				this.tradeOrderPayService.confirmOrderPay(tradeOrder);
 
@@ -1625,7 +1625,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// End 1.0.Z 增加订单操作记录 add by zengj
 
 				// added by maojj 给ERP发消息去生成出入库单据
-				stockMQProducer.sendMessage(stockAdjustVo);
+				// stockMQProducer.sendMessage(stockAdjustVo);
 
 			}
 		} catch (Exception e) {
@@ -1770,39 +1770,41 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 
 			// 将实际库存-1 订单占用库存 -1
-			StockAdjustVo stockAdjustVo = new StockAdjustVo();
-			// Begin added by maojj 2016-07-26
-			rpcId = UuidUtils.getUuid();
-			stockAdjustVo.setRpcId(rpcId);
-			// End added by maojj 2016-07-26
-			stockAdjustVo.setStoreId(tradeOrder.getStoreId());
-			stockAdjustVo.setUserId(tradeOrder.getUserId());
-			stockAdjustVo.setOrderId(tradeOrder.getId());
-			ActivityTypeEnum activityType = tradeOrder.getActivityType();
-			if (activityType != null) {
-				if (activityType.equals(ActivityTypeEnum.GROUP_ACTIVITY)) {
-					stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_SEND_OUT_GOODS);
-				} else {
-					stockAdjustVo.setStockOperateEnum(StockOperateEnum.SEND_OUT_GOODS);
-				}
-			}
-
-			List<AdjustDetailVo> adjustDetailVos = new ArrayList<AdjustDetailVo>();
-			AdjustDetailVo adjustDetailVo = null;
-			List<TradeOrderItem> orderItems = tradeOrder.getTradeOrderItem();
-			for (TradeOrderItem item : orderItems) {
-				adjustDetailVo = new AdjustDetailVo();
-				adjustDetailVo.setStoreSkuId(item.getStoreSkuId());
-				adjustDetailVo.setGoodsName(item.getSkuName());
-				adjustDetailVo.setBarCode(item.getBarCode());
-				adjustDetailVo.setStyleCode(item.getStyleCode());
-				adjustDetailVo.setPropertiesIndb(item.getPropertiesIndb());
-				adjustDetailVo.setNum(item.getQuantity());
-				// 下单时SKU的价格
-				adjustDetailVo.setPrice(item.getUnitPrice());
-				adjustDetailVos.add(adjustDetailVo);
-			}
-			stockAdjustVo.setAdjustDetailList(adjustDetailVos);
+			// 发货不在修改库存，得订单完成后才有
+			// StockAdjustVo stockAdjustVo = new StockAdjustVo();
+			// // Begin added by maojj 2016-07-26
+			// rpcId = UuidUtils.getUuid();
+			// stockAdjustVo.setRpcId(rpcId);
+			// // End added by maojj 2016-07-26
+			// stockAdjustVo.setStoreId(tradeOrder.getStoreId());
+			// stockAdjustVo.setUserId(tradeOrder.getUserId());
+			// stockAdjustVo.setOrderId(tradeOrder.getId());
+			// ActivityTypeEnum activityType = tradeOrder.getActivityType();
+			// if (activityType != null) {
+			// if (activityType.equals(ActivityTypeEnum.GROUP_ACTIVITY)) {
+			// stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_SEND_OUT_GOODS);
+			// } else {
+			// stockAdjustVo.setStockOperateEnum(StockOperateEnum.SEND_OUT_GOODS);
+			// }
+			// }
+			//
+			// List<AdjustDetailVo> adjustDetailVos = new
+			// ArrayList<AdjustDetailVo>();
+			// AdjustDetailVo adjustDetailVo = null;
+			// List<TradeOrderItem> orderItems = tradeOrder.getTradeOrderItem();
+			// for (TradeOrderItem item : orderItems) {
+			// adjustDetailVo = new AdjustDetailVo();
+			// adjustDetailVo.setStoreSkuId(item.getStoreSkuId());
+			// adjustDetailVo.setGoodsName(item.getSkuName());
+			// adjustDetailVo.setBarCode(item.getBarCode());
+			// adjustDetailVo.setStyleCode(item.getStyleCode());
+			// adjustDetailVo.setPropertiesIndb(item.getPropertiesIndb());
+			// adjustDetailVo.setNum(item.getQuantity());
+			// // 下单时SKU的价格
+			// adjustDetailVo.setPrice(item.getUnitPrice());
+			// adjustDetailVos.add(adjustDetailVo);
+			// }
+			// stockAdjustVo.setAdjustDetailList(adjustDetailVos);
 
 			// 修改订单状态为已发货
 			tradeOrder.setStatus(OrderStatusEnum.TO_BE_SIGNED);
@@ -1841,8 +1843,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
 			// End 1.0.Z 增加订单操作记录 add by zengj
 
-			// 调整库存
-			this.stockManagerService.updateStock(stockAdjustVo);
+			// 调整库存 Tips:发货不再修改库存，等订单完成才会
+			// this.stockManagerService.updateStock(stockAdjustVo);
 
 			// 获取店铺信息
 			StoreInfo storeInfo = storeInfoService.findById(tradeOrder.getStoreId());
@@ -1876,10 +1878,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 
 			// added by maojj 给ERP发消息去生成出入库单据
-			stockMQProducer.sendMessage(stockAdjustVo);
+			// stockMQProducer.sendMessage(stockAdjustVo);
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
-			rollbackMQProducer.sendStockRollbackMsg(rpcId);
+			// rollbackMQProducer.sendStockRollbackMsg(rpcId);
 			throw e;
 		}
 	}
@@ -4492,7 +4494,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 			}
 			// Begin added by maojj 给ERP发消息去生成出入库单据
-			stockMQProducer.sendMessage(stockAdjustList);
+			// stockMQProducer.sendMessage(stockAdjustList);
 			// End added by maojj
 
 			// 这里返回的key与BaseController中一样，就没有重新定义，先写死
@@ -4590,7 +4592,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 发送短信
 				tradeMessageService.sendSmsByShipments(tradeOrder);
 				// added by maojj 给ERP发消息去生成出入库单据
-				stockMQProducer.sendMessage(stockAdjustVo);
+				// stockMQProducer.sendMessage(stockAdjustVo);
 			} catch (Exception e) {
 				logger.info("pos 发货锁定库存发生异常", e);
 				// added by maojj
@@ -4625,7 +4627,21 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		stockAdjustVo.setOrderId(tradeOrder.getId());
 		stockAdjustVo.setStoreId(tradeOrder.getStoreId());
 		// 发货
-		stockAdjustVo.setStockOperateEnum(StockOperateEnum.SEND_OUT_GOODS);
+		if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {
+			// 活动订单发货
+			if (tradeOrder.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES) {
+				stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_SEND_OUT_GOODS);
+			} else {
+				stockAdjustVo.setStockOperateEnum(StockOperateEnum.SEND_OUT_GOODS);
+			}
+		} else if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
+			// 订单完成
+			if (tradeOrder.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES) {
+				stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_ORDER_COMPLETE);
+			} else {
+				stockAdjustVo.setStockOperateEnum(StockOperateEnum.PLACE_ORDER_COMPLETE);
+			}
+		}
 		stockAdjustVo.setUserId(tradeOrder.getUserId());
 
 		List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
