@@ -1,0 +1,83 @@
+/** 
+ *@Project: okdeer-archive-system 
+ *@Author: wangf01
+ *@Date: 2016年9月8日 
+ *@Copyright: ©2014-2020 www.yschome.com Inc. All rights reserved. 
+ */
+
+package com.okdeer.mall.system.service.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.transaction.annotation.Transactional;
+
+import com.alibaba.dubbo.config.annotation.Service;
+import com.github.pagehelper.PageHelper;
+import com.okdeer.mall.system.entity.SysUserInvitationCode;
+import com.okdeer.mall.system.entity.SysUserInvitationCodeVo;
+import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
+import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
+import com.okdeer.mall.system.mapper.SysUserMapper;
+import com.okdeer.mall.system.service.ISysUserInvitationCodeServiceApi;
+import com.yschome.base.common.utils.PageUtils;
+
+/**
+ * ClassName: SysUserInvitationCodeServiceImpl 
+ * @Description: 邀请码服务的实现
+ * @author wangf01
+ * @date 2016年9月8日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *
+ */
+@Service(version = "1.0.0", interfaceName = "com.okdeer.archive.system.service.ISysUserInvitationCodeServiceApi")
+public class SysUserInvitationCodeServiceImpl implements ISysUserInvitationCodeServiceApi {
+
+	/**
+	 * 引用SysUserInvitationCodeMapper
+	 */
+	@Resource
+	private SysUserInvitationCodeMapper sysUserInvitationCodeMapper;
+
+	/**
+	 * 引用SysBuyerUserMapper
+	 */
+	@Resource
+	private SysBuyerUserMapper sysBuyerUserMapper;
+
+	/**
+	 * 引用SysUserMapper
+	 */
+	@Resource
+	private SysUserMapper sysUserMapper;
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	@Transactional(readOnly = true)
+	public PageUtils<SysUserInvitationCodeVo> findByParam(Map param, Integer pageNumber, Integer pageSize)
+			throws Exception {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+		// 根据参数查询符合的邀请码记录
+		List<SysUserInvitationCode> list = sysUserInvitationCodeMapper.findByParam(param);
+		// 分别查询符合记录的用户信息,获取用户帐号
+		List<String> userIds = new ArrayList<String>();
+		List<String> buyerUserIds = new ArrayList<String>();
+		list.stream().forEach(e -> {
+			if (e.getUserType() == 0) {
+				buyerUserIds.add(e.getSysBuyerUserId());
+			} else {
+				userIds.add(e.getSysUserId());
+			}
+		});
+		List<SysUserInvitationCodeVo> voList = new ArrayList<SysUserInvitationCodeVo>();
+		PageUtils<SysUserInvitationCodeVo> page = new PageUtils<SysUserInvitationCodeVo>(voList);
+		return page;
+	}
+
+}
