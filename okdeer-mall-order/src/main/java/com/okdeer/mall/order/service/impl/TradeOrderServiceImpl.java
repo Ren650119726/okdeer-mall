@@ -120,6 +120,7 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper;
 import com.okdeer.mall.order.service.TradeMessageService;
+import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
@@ -445,6 +446,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Resource
 	private TradeOrderLogService tradeOrderLogService;
+
+	/**
+	 * 订单完成后同步商业管理系统Service
+	 */
+	@Resource
+	private TradeOrderCompleteProcessService tradeOrderCompleteProcessService;
 	// End 1.0.Z 增加订单操作记录Service add by zengj
 
 	@Override
@@ -1628,6 +1635,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// Begin 1.0.Z 增加订单操作记录 add by zengj
 				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
 						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+				// 订单完成后同步到商业管理系统
+				tradeOrderCompleteProcessService.orderCompleteSyncToJxc(tradeOrder.getId());
 				// End 1.0.Z 增加订单操作记录 add by zengj
 
 				// added by maojj 给ERP发消息去生成出入库单据
