@@ -366,4 +366,16 @@
     AND su.disabled = 0
     AND member.disabled = 0
   </select>
+
+  <!-- begin 新增根据id集合获取信息 add by wangf01 -->
+  <select id="findByIds" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sys_user
+    where id IN
+    <foreach collection="ids" item="item" open="(" close=")" separator=",">
+      #{item}
+    </foreach>
+  </select>
+  <!-- end 新增根据id集合获取信息 add by wangf01 -->
 </mapper>

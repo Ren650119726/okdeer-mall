@@ -13,6 +13,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.system.entity.SysUserInvitationCode;
+import com.okdeer.mall.system.entity.SysUserInvitationCodeVo;
 
 /**
  * ClassName: SysUserInvitationCode 
@@ -47,7 +48,7 @@ public interface SysUserInvitationCodeMapper {
 	 * @date 2016年9月8日
 	 */
 	@SuppressWarnings("rawtypes")
-	List<SysUserInvitationCode> findByParam(@Param(value = "params") Map params);
+	List<SysUserInvitationCodeVo> findByParam(Map params);
 
 	/**
 	 * 

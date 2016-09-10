@@ -19,6 +19,12 @@
 		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
 	</resultMap>
 	<!-- 返回基本的所有字段 end -->
+	
+	<!-- 扩展字段Vo start -->
+	<resultMap id="extResultMap" extends="BaseResultMap" type="com.okdeer.mall.system.entity.SysUserInvitationCodeVo">
+		<result column="user_name" property="userName" jdbcType="VARCHAR" />
+	</resultMap>
+	<!-- 扩展字段Vo end -->
 
 	<!-- 邀请码表名 start -->
 	<sql id="tableBaseName">sys_user_invitation_code</sql>
@@ -27,6 +33,14 @@
 	<!-- 邀请码表名 start -->
 	<sql id="tableName">sys_user_invitation_code suic</sql>
 	<!-- 邀请码表名 end -->
+	
+	<!-- 系统用户表名 start -->
+	<sql id="sysUser">sys_user suser</sql>
+	<!-- 系统用户表名 end -->
+	
+	<!-- 系统用户表名 start -->
+	<sql id="sysBuyerUser">sys_buyer_user buser</sql>
+	<!-- 系统用户表名 end -->
 
 	<!-- 基本的返回字段 start -->
 	<sql id="resultBaseColumn">
@@ -35,6 +49,15 @@
 		suic.create_time,suic.update_time
 	</sql>
 	<!-- 基本的返回字段 end -->
+	
+	<!-- 扩展字段 start -->
+	<sql id="extResultBaseColumn">
+		CASE
+		WHEN suic.user_type=0 THEN suser.login_name
+		WHEN suic.user_type=1 THEN buser.login_name
+		ELSE '' END as user_name,
+	</sql>
+	<!-- 扩展字段 end -->
 
 	<!-- 根据条件查询信息 start -->
 	<sql id="condition">
@@ -46,10 +69,19 @@
 				AND suic.sys_buyer_user_id=#{params.sysBuyerUserId}
 			</if>
 			<if test="null!=params.invitationCode and ''!= params.invitationCode">
-				AND suic.invitation_code=#{params.invitationCode}
+				AND suic.invitation_code LIKE concat('%', #{params.invitationCode}, '%')
 			</if>
 			<if test="null!=params.userType and ''!= params.userType">
 				AND suic.user_type=#{params.userType}
+			</if>
+			<if test="null!=params.userName and ''!= params.userName">
+				AND (suser.login_name LIKE concat('%', #{params.userName}, '%') or buser.login_name like concat('%',#{params.userName},'%'))
+			</if>
+			<if test="null != params.beginTime">
+				<![CDATA[  and suic.create_time >= #{params.beginTime} ]]>
+			</if>
+			<if test="null != params.endTime">
+				<![CDATA[  and suic.create_time <= #{params.endTime} ]]>
 			</if>
 		</if>
 	</sql>
@@ -66,20 +98,23 @@
 	<!-- 根据id获取信息 end -->
 
 	<!-- 根据参数获取信息 start -->
-	<select id="findByParam" resultMap="BaseResultMap">
+	<select id="findByParam" resultMap="extResultMap" parameterType="hashmap">
 		select
+		<include refid="extResultBaseColumn" />
 		<include refid="resultBaseColumn" />
 		from
 		<include refid="tableName" />
+		left join <include refid="sysUser"/> ON suic.sys_user_id=suser.id
+		left join <include refid="sysBuyerUser"/> ON suic.sys_buyer_user_id=buser.id
 		where 1=1
 		<include refid="condition" />
-		order by invitation_user_num desc,first_order_user_num desc
+		order by suic.invitation_user_num desc,suic.first_order_user_num desc
 	</select>
 	<!-- 根据参数获取信息 end -->
 
 	<!-- 保存信息 start -->
 	<insert id="save"
-		parameterType="com.okdeer.archive.system.entity.SysUserInvitationCode">
+		parameterType="com.okdeer.mall.system.entity.SysUserInvitationCode">
 		insert into
 		<include refid="tableBaseName" />
 		(id,sys_user_id,sys_buyer_user_id,user_type,invitation_code,invitation_user_num,first_order_user_num,create_time,update_time)
@@ -102,7 +137,7 @@
 
 	<!-- 更改信息 start -->
 	<update id="update"
-		parameterType="com.okdeer.archive.system.entity.SysUserInvitationCode">
+		parameterType="com.okdeer.mall.system.entity.SysUserInvitationCode">
 		update
 		<include refid="tableBaseName" />
 		invitation_user_num=invitation_user_num+1,
