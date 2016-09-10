@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.system.mapper.SysUserInvitationRecordMapper">
+	<!-- 返回基本的所有字段 start -->
+	<resultMap id="BaseResultMap"
+		type="com.okdeer.mall.system.entity.SysUserInvitationRecord">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="invitation_code_id" property="invitationCodeId"
+			jdbcType="VARCHAR" />
+		<result column="sys_buyer_user_id" property="sysBuyerUserId"
+			jdbcType="VARCHAR" />
+		<result column="is_first_order" property="isFirstOrder"
+			jdbcType="TINYINT" />
+		<result column="machine_code" property="machineCode" jdbcType="VARCHAR" />
+		<result column="first_order_time" property="firstOrderTime"
+			jdbcType="TIMESTAMP" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<!-- 返回基本的所有字段 end -->
+
+	<!-- 扩展字段Vo start -->
+	<resultMap id="extResultMap" extends="BaseResultMap"
+		type="com.okdeer.mall.system.entity.SysUserInvitationRecordVo">
+		<result column="login_name" property="loginName" jdbcType="VARCHAR" />
+	</resultMap>
+	<!-- 扩展字段Vo end -->
+
+	<!-- 邀请码表名 start -->
+	<sql id="tableBaseName">sys_user_invitation_record</sql>
+	<!-- 邀请码表名 end -->
+
+	<!-- 邀请码表名 start -->
+	<sql id="tableName">sys_user_invitation_record suir</sql>
+	<!-- 邀请码表名 end -->
+
+	<!-- 系统用户表名 start -->
+	<sql id="sysBuyerUser">sys_buyer_user buser</sql>
+	<!-- 系统用户表名 end -->
+
+	<!-- 基本的返回字段 start -->
+	<sql id="resultBaseColumn">
+		suir.id,suir.sys_user_id,suir.sys_buyer_user_id,suir.user_type,
+		suir.invitation_code,suir.invitation_user_num,suir.first_order_user_num,
+		suir.create_time,suir.update_time
+	</sql>
+	<!-- 基本的返回字段 end -->
+
+	<!-- 扩展字段 start -->
+	<sql id="extResultBaseColumn">
+		buser.login_name,
+	</sql>
+	<!-- 扩展字段 end -->
+
+	<!-- 根据条件查询信息 start -->
+	<sql id="condition">
+		<if test="null!=params">
+			<if test="null!=params.invitationCodeId and ''!=params.invitationCodeId">
+				AND suir.invitation_code_id=#{params.invitationCodeId}
+			</if>
+			<if test="null!=params.sysBuyerUserId and ''!= params.sysBuyerUserId">
+				AND suir.sys_buyer_user_id=#{params.sysBuyerUserId}
+			</if>
+			<if test="null!=params.isFirstOrder and ''!= params.isFirstOrder">
+				AND suir.is_first_order=#{params.isFirstOrder}
+			</if>
+			<if test="null != params.beginTime">
+				<![CDATA[  and suir.create_time >= #{params.beginTime} ]]>
+			</if>
+			<if test="null != params.endTime">
+				<![CDATA[  and suir.create_time <= #{params.endTime} ]]>
+			</if>
+		</if>
+	</sql>
+	<!-- 根据条件查询信息 start -->
+
+	<!-- 根据id获取信息 start -->
+	<select id="findById" resultMap="BaseResultMap">
+		select
+		<include refid="resultBaseColumn" />
+		from
+		<include refid="tableName" />
+		where suir.id=#{id,jdbcType=VARCHAR}
+	</select>
+	<!-- 根据id获取信息 end -->
+
+	<!-- 根据参数获取信息 start -->
+	<select id="findByParam" resultMap="extResultMap" parameterType="hashmap">
+		select
+		<include refid="extResultBaseColumn" />
+		<include refid="resultBaseColumn" />
+		from
+		<include refid="tableName" />
+		left join
+		<include refid="sysBuyerUser" />
+		ON suir.sys_buyer_user_id=buser.id
+		where 1=1
+		<include refid="condition" />
+		order by suir.create_time desc
+	</select>
+	<!-- 根据参数获取信息 end -->
+
+	<!-- 保存信息 start -->
+	<insert id="save"
+		parameterType="com.okdeer.mall.system.entity.SysUserInvitationRecord">
+		insert into
+		<include refid="tableBaseName" />
+		(id,invitation_code_id,sys_buyer_user_id,is_first_order,first_order_time,machine_code,create_time,update_time)
+		values
+		<trim>
+			(
+			#{id,jdbcType=VARCHAR},
+			#{invitation_code_id,jdbcType=VARCHAR},
+			#{sysBuyerUserId,jdbcType=VARCHAR},
+			#{is_first_order,jdbcType=TINYINT},
+			#{first_order_time,jdbcType=TIMESTAMP},
+			#{machine_code,jdbcType=VARCHAR},
+			#{createTime,jdbcType=TIMESTAMP},
+			#{updateTime,jdbcType=TIMESTAMP}
+			)
+		</trim>
+	</insert>
+	<!-- 保存信息 end -->
+
+	<!-- 更改信息 start -->
+	<update id="update"
+		parameterType="com.okdeer.mall.system.entity.SysUserInvitationRecord">
+		update
+		<include refid="tableBaseName" />
+		is_first_order=#{isFirstOrder,jdbcType=TINYINT},
+		first_order_time=#{firstOrderTime,jdbcType=TIMESTAMP},
+		machine_code=#{machineCode,jdbcType=VARCHAR},
+		update_time=#{updateTime,jdbcType=TIMESTAMP}
+		where
+		id=#{id,jdbcType=VARCHAR}
+	</update>
+	<!-- 更改信息 end -->
+</mapper>

@@ -7,8 +7,6 @@
 
 package com.okdeer.mall.system.service.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -18,9 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
-import com.okdeer.archive.system.entity.SysBuyerUser;
-import com.okdeer.archive.system.entity.SysUser;
-import com.okdeer.mall.system.entity.SysUserInvitationCode;
 import com.okdeer.mall.system.entity.SysUserInvitationCodeVo;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
@@ -43,6 +38,25 @@ import com.yschome.base.common.utils.PageUtils;
 @Transactional(readOnly = true)
 public class SysUserInvitationCodeServiceImpl implements ISysUserInvitationCodeServiceApi {
 
+	@SuppressWarnings("rawtypes")
+	@Override
+	public PageUtils<SysUserInvitationCodeVo> findByParam(Map param, Integer pageNumber, Integer pageSize)
+			throws Exception {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+		// 根据参数查询符合的邀请码记录
+		List<SysUserInvitationCodeVo> list = sysUserInvitationCodeMapper.findByParam(param);
+		PageUtils<SysUserInvitationCodeVo> page = new PageUtils<SysUserInvitationCodeVo>(list);
+		return page;
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public List<SysUserInvitationCodeVo> findByParam(Map param) throws Exception {
+		// 根据参数查询符合的邀请码记录
+		List<SysUserInvitationCodeVo> list = sysUserInvitationCodeMapper.findByParam(param);
+		return list;
+	}
+
 	/**
 	 * 引用SysUserInvitationCodeMapper
 	 */
@@ -60,15 +74,4 @@ public class SysUserInvitationCodeServiceImpl implements ISysUserInvitationCodeS
 	 */
 	@Resource
 	private SysUserMapper sysUserMapper;
-
-	@SuppressWarnings("rawtypes")
-	@Override
-	public PageUtils<SysUserInvitationCodeVo> findByParam(Map param, Integer pageNumber, Integer pageSize)
-			throws Exception {
-		PageHelper.startPage(pageNumber, pageSize, true, false);
-		// 根据参数查询符合的邀请码记录
-		List<SysUserInvitationCodeVo> list = sysUserInvitationCodeMapper.findByParam(param);
-		PageUtils<SysUserInvitationCodeVo> page = new PageUtils<SysUserInvitationCodeVo>(list);
-		return page;
-	}
 }
