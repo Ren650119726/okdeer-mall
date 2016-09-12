@@ -191,7 +191,7 @@ class GenerateNumericalServiceImpl implements GenerateNumericalService, Generate
 		// 获取当前年月日
 		String dateStr = DateUtils.getDate("yyMMdd");
 		// redis中存储的key
-		String redisKey = OrderNoUtils.PHYSICAL_ORDER_PREFIX + branchCode + dateStr;
+		String redisKey = prefix + branchCode + dateStr;
 		// 实现自增长
 		Long seq = redisTemplateWrapper.incr(redisKey);
 		// 如果该key是初始化的时候，将该key的过期时间设置为一天，一天后该key会失效
@@ -200,10 +200,10 @@ class GenerateNumericalServiceImpl implements GenerateNumericalService, Generate
 		}
 
 		// 新的订单号,规则为：为XS+5位店铺编码+2位POS机ID+6位日期+4位流水号
-		StringBuilder newOrderNo = new StringBuilder(OrderNoUtils.PHYSICAL_ORDER_PREFIX);
+		StringBuilder newOrderNo = new StringBuilder(prefix);
 		newOrderNo.append(branchCode);
 		newOrderNo.append(posId);
-		newOrderNo.append(DateUtils.getDate("yyMMdd"));
+		newOrderNo.append(dateStr);
 		newOrderNo.append(String.format("%0" + OrderNoUtils.SEQ_SIZE + "d", seq));
 		return newOrderNo.toString();
 	}
