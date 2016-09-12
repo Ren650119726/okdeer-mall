@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.system.mq;
 
 import java.util.List;
@@ -39,9 +40,10 @@ public class RollbackMQProducer {
 	 * @date 2016年7月26日
 	 */
 	public void sendStockRollbackMsg(List<String> rpcIdList) throws Exception {
-		for (String rpcId : rpcIdList) {
-			this.sendStockRollbackMsg(rpcId);
-		}
+		// 现在库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
+		// for (String rpcId : rpcIdList) {
+		// this.sendStockRollbackMsg(rpcId);
+		// }
 	}
 
 	/**
@@ -52,8 +54,12 @@ public class RollbackMQProducer {
 	 * @date 2016年7月26日
 	 */
 	public void sendStockRollbackMsg(String rpcId) throws Exception {
-		if(rpcId == null) return;
-		this.send(rpcId, RollBackConstant.TOPIC_STOCK_ROLLBACK, RollBackConstant.TAGS_STOCK_ROLLBACK);
+		// 现在库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
+		// if (rpcId == null) {
+		// return;
+		// }
+		// this.send(rpcId, RollBackConstant.TOPIC_STOCK_ROLLBACK,
+		// RollBackConstant.TAGS_STOCK_ROLLBACK);
 	}
 
 	/**
@@ -77,10 +83,12 @@ public class RollbackMQProducer {
 	 * @date 2016年7月26日
 	 */
 	public void sendSkuRollbackMsg(String rpcId) throws Exception {
-		if(rpcId == null) return;
-		this.send(rpcId, RollBackConstant.TOPIC_ACTIVITY_SKU_STATUS_ROLLBACK, RollBackConstant.TAGS_ACTIVITY_SKU_STATUS_ROLLBACK);
+		if (rpcId == null)
+			return;
+		this.send(rpcId, RollBackConstant.TOPIC_ACTIVITY_SKU_STATUS_ROLLBACK,
+				RollBackConstant.TAGS_ACTIVITY_SKU_STATUS_ROLLBACK);
 	}
-	
+
 	/**
 	 * @Description: 发送回滚商品消息
 	 * @param rpcIdList rpcID列表
@@ -102,8 +110,9 @@ public class RollbackMQProducer {
 	 * @date 2016年7月26日
 	 */
 	public void sendSkuBatchRollbackMsg(String rpcId) throws Exception {
-		if(rpcId == null) return;
-		this.send(rpcId, RollBackConstant.TOPIC_ACTIVITY_SKU_STATUS_BATCH_ROLLBACK, 
+		if (rpcId == null)
+			return;
+		this.send(rpcId, RollBackConstant.TOPIC_ACTIVITY_SKU_STATUS_BATCH_ROLLBACK,
 				RollBackConstant.TAGS_ACTIVITY_SKU_STATUS_BATCH_ROLLBACK);
 	}
 

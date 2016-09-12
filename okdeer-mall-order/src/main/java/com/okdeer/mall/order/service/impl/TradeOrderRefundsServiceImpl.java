@@ -31,7 +31,6 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
@@ -601,9 +600,6 @@ public class TradeOrderRefundsServiceImpl
 			// 更新订单状态
 			updateRefunds(orderRefunds);
 
-			// 回收库存
-			List<StockAdjustVo> stockAdjustList = recycleBuildStock(orderRefunds, rpcIdList);
-
 			// 服务订单修改消费码状态
 			if (orderRefunds.getType() == OrderTypeEnum.SERVICE_ORDER) {
 				for (TradeOrderRefundsItem refundsItem : orderRefunds.getTradeOrderRefundsItem()) {
@@ -628,6 +624,8 @@ public class TradeOrderRefundsServiceImpl
 			String remark = "同意退款";
 			addRefundsCerticate(orderRefunds.getId(), remark, orderRefunds.getOperator());
 
+			// 回收库存
+			List<StockAdjustVo> stockAdjustList = recycleBuildStock(orderRefunds, rpcIdList);
 			// 发消息给ERP生成库存单据 added by maojj
 			// stockMQProducer.sendMessage(stockAdjustList);
 		} catch (Exception e) {
@@ -654,27 +652,31 @@ public class TradeOrderRefundsServiceImpl
 			tradeOrderRefundsItems = tradeOrderRefundsItemService
 					.getTradeOrderRefundsItemByRefundsId(orderRefunds.getId());
 		}
+		// Begin 一个订单只调一次库存 add by zengj
+		StockAdjustVo stockAdjustVo = new StockAdjustVo();
+		// Begin added by maojj 2016-07-26
+		String rpcId = UuidUtils.getUuid();
+		rpcIdList.add(rpcId);
+		stockAdjustVo.setRpcId(rpcId);
+		// End added by maojj 2016-07-26
+		stockAdjustVo.setOrderId(orderRefunds.getOrderId());
+		stockAdjustVo.setOrderNo(orderRefunds.getOrderNo());
+		stockAdjustVo.setOrderResource(orderRefunds.getOrderResource());
+		stockAdjustVo.setOrderType(orderRefunds.getType());
+		stockAdjustVo.setStoreId(orderRefunds.getStoreId());
+		// 取消销售单
+		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
+		// if (order.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY
+		// || isAttendSale(orderRefunds.getOrderId(), item.getStoreSkuId())) {
+		// stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_RETURN_OF_GOODS);
+		// } else {
+		// 操作类型都默认是普通商品的，然后如果里面有活动商品，在商品详情中有isEvent判断
+		stockAdjustVo.setStockOperateEnum(StockOperateEnum.RETURN_OF_GOODS);
+		// }
+		stockAdjustVo.setUserId(orderRefunds.getUserId());
+		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
+		// End 一个订单只调一次库存 add by zengj
 		for (TradeOrderRefundsItem item : tradeOrderRefundsItems) {
-			StockAdjustVo stockAdjustVo = new StockAdjustVo();
-			// Begin added by maojj 2016-07-26
-			String rpcId = UuidUtils.getUuid();
-			rpcIdList.add(rpcId);
-			stockAdjustVo.setRpcId(rpcId);
-			// End added by maojj 2016-07-26
-			stockAdjustVo.setOrderId(orderRefunds.getOrderId());
-			stockAdjustVo.setOrderNo(orderRefunds.getOrderNo());
-			stockAdjustVo.setOrderResource(orderRefunds.getOrderResource());
-			stockAdjustVo.setOrderType(orderRefunds.getType());
-			stockAdjustVo.setStoreId(orderRefunds.getStoreId());
-			// 取消销售单
-			TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-			if (order.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY
-					|| isAttendSale(orderRefunds.getOrderId(), item.getStoreSkuId())) {
-				stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_RETURN_OF_GOODS);
-			} else {
-				stockAdjustVo.setStockOperateEnum(StockOperateEnum.RETURN_OF_GOODS);
-			}
-			stockAdjustVo.setUserId(orderRefunds.getUserId());
 
 			AdjustDetailVo detail = new AdjustDetailVo();
 			detail.setStoreSkuId(item.getStoreSkuId());
@@ -687,6 +689,8 @@ public class TradeOrderRefundsServiceImpl
 			detail.setBarCode(item.getBarCode());
 			detail.setSpuType(
 					order.getType() == OrderTypeEnum.SERVICE_ORDER ? SpuTypeEnum.serviceSpu : SpuTypeEnum.physicalSpu);
+			detail.setIsEvent(order.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY
+					|| isAttendSale(orderRefunds.getOrderId(), item.getStoreSkuId()));
 			Integer quantity;
 			if (order.getType() == OrderTypeEnum.SERVICE_ORDER) {
 				quantity = tradeOrderItemDetailService.selectUnConsumerCount(item.getOrderItemId());
@@ -700,14 +704,14 @@ public class TradeOrderRefundsServiceImpl
 				}
 			}
 			detail.setNum(quantity);
-			List<AdjustDetailVo> adjustDetailList = Lists.newArrayList(detail);
-			stockAdjustVo.setAdjustDetailList(adjustDetailList);
-			stockManagerService.updateStock(stockAdjustVo);
-
-			// Begin added by maojj 2016-07-26
-			stockAdjustList.add(stockAdjustVo);
-			// End added by maojj 2016-07-26
+			adjustDetailList.add(detail);
 		}
+		stockAdjustVo.setAdjustDetailList(adjustDetailList);
+
+		// Begin added by maojj 2016-07-26
+		stockAdjustList.add(stockAdjustVo);
+		// End added by maojj 2016-07-26
+		stockManagerService.updateStock(stockAdjustVo);
 		return stockAdjustList;
 	}
 	// End modified by maojj 2016-07-26
@@ -1678,6 +1682,9 @@ public class TradeOrderRefundsServiceImpl
 
 				// 发消息给ERP增加出库单 added by maojj
 				// stockMQProducer.sendMessage(stockAdjustList);
+
+				// 退款完成后，同步退款单到商业管理系统
+				tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(tradeOrderRefunds.getId());
 			}
 		} catch (Exception e) {
 			// 发消息回滚库存的更改 added by maojj

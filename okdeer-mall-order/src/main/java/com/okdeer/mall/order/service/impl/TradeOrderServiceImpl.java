@@ -1286,9 +1286,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// End 重构4.1 update by wusw 20160816
 				}
 
-				// 回收库存
-				List<StockAdjustVo> stockAdjustList = recycleStockInfo(tradeOrder, rpcIdList);
-
 				if (tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER) {
 					// 释放所有代金卷
 					activityCouponsRecordService.updateUseStatus(tradeOrder.getId());
@@ -1335,6 +1332,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					tradeMessageService.sendSmsByCancel(oldOrder, oldOrder.getStatus());
 				}
 
+				// 回收库存
+				List<StockAdjustVo> stockAdjustList = recycleStockInfo(tradeOrder, rpcIdList);
 				// added by maojj 给ERP发消息去生成出入库单据
 				// stockMQProducer.sendMessage(stockAdjustList);
 			}
@@ -1392,19 +1391,23 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (tradeOrderItems == null) {
 			tradeOrderItems = tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId());
 		}
-		for (TradeOrderItem item : tradeOrderItems) {
-			StockAdjustVo stockAdjustVo = new StockAdjustVo();
-			// Begin added by maojj 2016-07-26
-			String rpcId = UuidUtils.getUuid();
-			rpcIdList.add(rpcId);
-			stockAdjustVo.setRpcId(rpcId);
-			// End added by maojj 2016-07-26
+		StockAdjustVo stockAdjustVo = new StockAdjustVo();
+		// Begin added by maojj 2016-07-26
+		String rpcId = UuidUtils.getUuid();
+		rpcIdList.add(rpcId);
+		stockAdjustVo.setRpcId(rpcId);
+		// End added by maojj 2016-07-26
 
-			stockAdjustVo.setOrderId(tradeOrder.getId());
-			stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
-			stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
-			stockAdjustVo.setOrderType(tradeOrder.getType());
-			stockAdjustVo.setStoreId(tradeOrder.getStoreId());
+		stockAdjustVo.setOrderId(tradeOrder.getId());
+		stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
+		stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
+		stockAdjustVo.setOrderType(tradeOrder.getType());
+		stockAdjustVo.setStoreId(tradeOrder.getStoreId());
+
+		// end add by wangf01 2016.08.06
+		stockAdjustVo.setStockOperateEnum(getStockOperateType(tradeOrder.getStatus(), Boolean.FALSE));
+		stockAdjustVo.setUserId(tradeOrder.getUserId());
+		for (TradeOrderItem item : tradeOrderItems) {
 			// 判断是否是团购和特惠商品
 			boolean isGoodActivity = ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()
 					|| isAttendSale(tradeOrder.getId(), item.getStoreSkuId());
@@ -1420,6 +1423,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					isGoodActivity = false;
 				}
 			}
+			// end add by wushp
 			// begin add by wangf01 2016.08.06
 			// 判断是否是特惠活动，如果是，则判断特惠活动是否正在进行中，不在进行中则当成普通的商品减库存
 			String saleId = findSaleId(tradeOrder.getId(), item.getStoreSkuId());
@@ -1430,10 +1434,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					isGoodActivity = false;
 				}
 			}
-			// end add by wangf01 2016.08.06
-			// end add by wushp
-			stockAdjustVo.setStockOperateEnum(getStockOperateType(tradeOrder.getStatus(), isGoodActivity));
-			stockAdjustVo.setUserId(tradeOrder.getUserId());
 
 			AdjustDetailVo detail = new AdjustDetailVo();
 			detail.setStoreSkuId(item.getStoreSkuId());
@@ -1445,6 +1445,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			detail.setStyleCode(item.getStyleCode());
 			detail.setBarCode(item.getBarCode());
 			detail.setNum(item.getQuantity());
+			detail.setIsEvent(isGoodActivity);
 			List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
 			adjustDetailList.add(detail);
 
@@ -1600,12 +1601,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						tradeOrder.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId()));
 					}
 				}
-				// 锁定库存
-				// Begin modified by maojj 2016-07-26
-				rpcId = UuidUtils.getUuid();
-				stockAdjustVo = buildDeliveryStock(tradeOrder, rpcId);
-				stockManagerService.updateStock(stockAdjustVo);
-				// End modified by maojj 2016-07-26
 				// 给卖家打款
 				this.tradeOrderPayService.confirmOrderPay(tradeOrder);
 
@@ -1635,6 +1630,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// Begin 1.0.Z 增加订单操作记录 add by zengj
 				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
 						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+
+				// 锁定库存
+				// Begin modified by maojj 2016-07-26
+				rpcId = UuidUtils.getUuid();
+				stockAdjustVo = buildDeliveryStock(tradeOrder, rpcId);
+				stockManagerService.updateStock(stockAdjustVo);
+				// End modified by maojj 2016-07-26
+
 				// 订单完成后同步到商业管理系统
 				tradeOrderCompleteProcessService.orderCompleteSyncToJxc(tradeOrder.getId());
 				// End 1.0.Z 增加订单操作记录 add by zengj
@@ -4471,7 +4474,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					StockAdjustVo stockAdjustVo = buildServiceOrderStock(tradeOrder,
 							StockOperateEnum.ACTIVITY_SEND_OUT_GOODS, 1, rpcIdList);
 					stockAdjustList.add(stockAdjustVo);
-					stockManagerService.updateStock(stockAdjustVo);
 
 					// 验证通过，将该消费码改为已消费
 					tradeOrderItemDetailMapper.updateStatusWithConsumed(data.get("detailId").toString());
@@ -4496,16 +4498,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 消费完，增加积分
 					pointsBuriedService.doConsumePoints(data.get("userId").toString(), unitPrice);
 
-					// 自动评价计时消息
-					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_finish_evaluate_timeout,
-							tradeOrder.getId());
-
+					stockManagerService.updateStock(stockAdjustVo);
 					// 调用dubbo接口
 					BaseResultDto result = payTradeServiceApi.balanceTrade(payTradeVo);
 					if (result == null || !TradeErrorEnum.SUCCESS.getName().equals(result.getCode())) {
 						throw new ServiceException("调用云钱包dubbo失败==code==" + (result == null ? null : result.getCode())
 								+ "==message==" + (result == null ? null : result.getMsg()));
 					}
+
+					// 自动评价计时消息
+					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_finish_evaluate_timeout,
+							tradeOrder.getId());
 				}
 			}
 			// Begin added by maojj 给ERP发消息去生成出入库单据
@@ -4590,7 +4593,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			try {
 				rpcId = UuidUtils.getUuid();
 				stockAdjustVo = buildDeliveryStock(tradeOrder, rpcId);
-				stockManagerService.updateStock(stockAdjustVo);
 
 				// 发送计时消息
 				if (ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()) {
@@ -4607,6 +4609,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 发送短信
 				tradeMessageService.sendSmsByShipments(tradeOrder);
 				// added by maojj 给ERP发消息去生成出入库单据
+				// 库存调整-放到最后处理
+				stockManagerService.updateStock(stockAdjustVo);
 				// stockMQProducer.sendMessage(stockAdjustVo);
 			} catch (Exception e) {
 				logger.info("pos 发货锁定库存发生异常", e);
