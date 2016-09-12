@@ -39,7 +39,6 @@ import com.okdeer.archive.goods.store.vo.GoodsStoreSkuDetailVo;
 import com.okdeer.archive.goods.store.vo.GoodsStoreSkuToAppVo;
 import com.okdeer.archive.stock.entity.ImsDaily;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.exception.StockException;
 import com.okdeer.archive.stock.service.ImsDailyServiceApi;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
@@ -4042,6 +4041,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 							detail.setPrice(BigGroupPrice);
 							detail.setPropertiesIndb(propertiesIndb);
 							detail.setStoreSkuId(skuId);
+							detail.setArticleNo(storeSku.getArticleNo());
 							detailList.add(detail);
 
 							stockVo.setOrderId(order.getId());
@@ -4277,7 +4277,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		// orderNo = generateNumericalService.generateNumberAndSave("XS");
 		// Begin 1.0.Z add by zengj
 		// 生成订单编号
-		orderNo = generatePOSOrderNo(storeId);
+		orderNo = generatePosOrderNo(storeId);
 		// End 1.0.Z add by zengj
 
 		// 张克能加,生成流水号,支付宝或者微信的时候要用
@@ -4328,7 +4328,9 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		int isStock = 1; // 是否满足库存(0:不足、1:满足)
 
 		// 张克能优化,把selectSingleSkuStock方法改造成一次查出来,而不是循环查数据库
-		List<GoodsStoreSkuStock> stuStockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(list);
+		// List<GoodsStoreSkuStock> stuStockList =
+		// goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(list);
+		List<GoodsStoreSkuStock> stuStockList = stockManagerService.findGoodsStockInfoList(list);
 
 		for (int i = 0; i < array.size(); i++) {
 			JSONObject objss = array.getJSONObject(i);
@@ -4383,7 +4385,9 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			int num = soleStock.get(i);
 			GoodsStoreSku storeSku = stock.get(i);
 			String skuId = storeSku.getId(); // 商品ID
-			int selleabed = storeSku.getGoodsStoreSkuStock().getSellable(); // 商品实际库存
+			int selleabed = stockManagerService.findGoodsStockInfo(skuId).getSellable();// storeSku.getGoodsStoreSkuStock().getSellable();
+			// //
+			// 商品实际库存
 			if (num > selleabed) { // 库存不足
 				// 商品:***** 条码:******库存不足
 				msg += "商品:" + storeSku.getName() + " 条码：" + storeSku.getBarCode() + " 库存不足\n";
@@ -4399,6 +4403,24 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 		// 张克能优化,一次用list in的方式,避免在循环里多次调用selectGoodsStoreSkuDetailNotPri方法
 		List<GoodsStoreSku> storeSkuList = goodsStoreSkuService.selectGoodsStoreSkuDetailNotPriByIdList(list);
+
+		StockAdjustVo stockVo = new StockAdjustVo();
+
+		stockVo.setOrderId(order.getId());
+		stockVo.setOrderNo(order.getOrderNo());
+		stockVo.setOrderResource(order.getOrderResource());
+		stockVo.setOrderType(order.getType());
+		stockVo.setStoreId(storeId);
+		stockVo.setUserId(sellerId);
+
+		List<AdjustDetailVo> detailList = new ArrayList<AdjustDetailVo>();
+		// 0:云钱包,1:支付宝支付,2:微信支付,3:京东支付,4:现金支付,5:友门鹿垫付,6:网银支付,7:银行转账
+		// 现金,网银支付是POS_PLACE_ORDER, 支付宝,微信扫码是PLACE_ORDER("下订单"),
+		if (payWay.equals("1") || payWay.equals("2")) {
+			stockVo.setStockOperateEnum(StockOperateEnum.PLACE_ORDER);
+		} else {
+			stockVo.setStockOperateEnum(StockOperateEnum.POS_PLACE_ORDER);
+		}
 
 		for (int i = 0; i < array.size(); i++) {
 
@@ -4434,14 +4456,13 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			}
 			String propertiesIndb = skuPrperties;
 
-			List<AdjustDetailVo> detailList = new ArrayList<AdjustDetailVo>();
 			AdjustDetailVo detail = new AdjustDetailVo();
 
 			detail.setBarCode(storeSku.getBarCode());
 			detail.setGoodsName(skuName);
 			detail.setGoodsSkuId(storeSku.getSkuId());
 			detail.setMultipleSkuId(storeSku.getMultipleSkuId());
-
+			detail.setArticleNo(storeSku.getArticleNo());
 			if (meters == 0 || meters == 2) {
 				BigDecimal bigSkuW = new BigDecimal(skuWeight);
 				detail.setNum(bigSkuW.multiply(new BigDecimal(1000)).intValue());
@@ -4455,32 +4476,14 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			detail.setStoreSkuId(skuId);
 			detailList.add(detail);
 
-			StockAdjustVo stockVo = new StockAdjustVo();
-
-			stockVo.setOrderId(order.getId());
-			stockVo.setOrderNo(order.getOrderNo());
-			stockVo.setOrderResource(order.getOrderResource());
-			stockVo.setOrderType(order.getType());
-			stockVo.setStoreId(storeId);
-			stockVo.setUserId(sellerId);
-			stockVo.setAdjustDetailList(detailList);
-			// 0:云钱包,1:支付宝支付,2:微信支付,3:京东支付,4:现金支付,5:友门鹿垫付,6:网银支付,7:银行转账
-			// 现金,网银支付是POS_PLACE_ORDER, 支付宝,微信扫码是PLACE_ORDER("下订单"),
-			if (payWay.equals("1") || payWay.equals("2")) {
-				stockVo.setStockOperateEnum(StockOperateEnum.PLACE_ORDER);
-			} else {
-				stockVo.setStockOperateEnum(StockOperateEnum.POS_PLACE_ORDER);
-				stockAdjustList.add(stockVo);
-			}
-
-			// 是否满足库存(0:不足、1:满足)
-			if (isStock == 1) {
-				try {
-					stockManagerService.updateStock(stockVo);
-				} catch (StockException e) {
-					logger.error("修改异常", e);
-				}
-			}
+			// // 是否满足库存(0:不足、1:满足)
+			// if (isStock == 1) {
+			// try {
+			// stockManagerService.updateStock(stockVo);
+			// } catch (StockException e) {
+			// logger.error("修改异常", e);
+			// }
+			// }
 
 			String spuType = objs.getString("spuType"); // 商品类型
 			String mainPicPrl = objs.getString("mainPicPrl"); // 主图
@@ -4557,7 +4560,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			orderItem.setServiceAssurance(Integer.valueOf(serviceAssurance));
 			orderItemList.add(orderItem);
 		}
-
+		stockVo.setAdjustDetailList(detailList);
 		order.setTradeOrderItem(orderItemList);
 
 		obj.put("message", msg);
@@ -4596,6 +4599,8 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 				obj.put("orderId", order.getId());
 			}
 			isOrder = 1;
+
+			stockManagerService.updateStock(stockVo);
 		}
 		obj.put("isOrder", isOrder);
 		obj.put("isStock", isStock);
@@ -4618,7 +4623,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private String generatePOSOrderNo(String storeId) throws ServiceException {
+	private String generatePosOrderNo(String storeId) throws ServiceException {
 		// 查询店铺机构信息
 		StoreBranches storeBranches = storeBranchesService.findBranches(storeId);
 		if (storeBranches == null || StringUtils.isEmpty(storeBranches.getBranchCode())) {

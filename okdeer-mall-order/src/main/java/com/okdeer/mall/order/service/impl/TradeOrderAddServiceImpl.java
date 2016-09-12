@@ -220,8 +220,6 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			saveActivitySaleRecord(tradeOrder.getId(), reqDto);
 			// 保存满减、满折记录
 			saveActivityDiscountRecord(tradeOrder.getId(), req);
-			// 更新库存
-			toUpdateStock(tradeOrder, reqDto, rpcIdList);
 			// 插入订单
 			tradeOrderSerive.insertTradeOrder(tradeOrder);
 			// 发送消息
@@ -231,7 +229,8 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUserId(),
 					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
 			// End 1.0.Z 增加订单操作记录 add by zengj
-
+			// 更新库存 -- 放到最后执行
+			toUpdateStock(tradeOrder, reqDto, rpcIdList);
 			resp.setOrderId(tradeOrder.getId());
 			resp.setOrderNo(tradeOrder.getOrderNo());
 			resp.setOrderPrice(tradeOrder.getActualAmount());
