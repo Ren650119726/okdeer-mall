@@ -17,7 +17,7 @@ import com.okdeer.mall.system.entity.SysUserInvitationCodeVo;
 
 /**
  * ClassName: SysUserInvitationCode 
- * @Description: TODO
+ * @Description: 邀请码mapper
  * @author wangf01
  * @date 2016年9月8日
  *
@@ -38,6 +38,26 @@ public interface SysUserInvitationCodeMapper {
 	 * @date 2016年9月8日
 	 */
 	SysUserInvitationCode findById(@Param(value = "id") String id);
+
+	/**
+	 * 
+	 * @Description: 根据sysUserId获取信息
+	 * @param sysUserId String
+	 * @return entity SysUserInvitationCode
+	 * @author wangf01
+	 * @date 2016年9月8日
+	 */
+	SysUserInvitationCode findBySysUserId(@Param(value = "sysUserId") String sysUserId);
+
+	/**
+	 * 
+	 * @Description: 根据sysBuyerUserId获取信息
+	 * @param sysBuyerUserId String
+	 * @return entity SysUserInvitationCode
+	 * @author wangf01
+	 * @date 2016年9月8日
+	 */
+	SysUserInvitationCode findBySysBuyerUserId(@Param(value = "sysBuyerUserId") String sysBuyerUserId);
 
 	/**
 	 * 

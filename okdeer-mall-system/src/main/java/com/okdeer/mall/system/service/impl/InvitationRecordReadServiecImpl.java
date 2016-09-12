@@ -19,7 +19,7 @@ import com.github.pagehelper.PageHelper;
 import com.okdeer.mall.system.entity.SysUserInvitationRecordVo;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysUserInvitationRecordMapper;
-import com.okdeer.mall.system.service.ISysUserInvitationRecordServiceApi;
+import com.okdeer.mall.system.service.InvitationRecordReadServiceApi;
 import com.yschome.base.common.utils.PageUtils;
 
 /**
@@ -35,7 +35,7 @@ import com.yschome.base.common.utils.PageUtils;
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.system.service.ISysUserInvitationRecordServiceApi")
 @Transactional(readOnly = true)
-public class SysUserInvitationRecordServiecImpl implements ISysUserInvitationRecordServiceApi {
+public class InvitationRecordReadServiecImpl implements InvitationRecordReadServiceApi {
 
 	@SuppressWarnings("rawtypes")
 	@Override

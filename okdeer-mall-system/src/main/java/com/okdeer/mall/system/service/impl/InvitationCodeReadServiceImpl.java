@@ -16,16 +16,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.mall.system.entity.SysUserInvitationCode;
 import com.okdeer.mall.system.entity.SysUserInvitationCodeVo;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 import com.okdeer.mall.system.mapper.SysUserMapper;
-import com.okdeer.mall.system.service.ISysUserInvitationCodeServiceApi;
+import com.okdeer.mall.system.service.InvitationCodeReadServiceApi;
 import com.yschome.base.common.utils.PageUtils;
 
 /**
  * ClassName: SysUserInvitationCodeServiceImpl 
- * @Description: 邀请码服务的实现
+ * @Description: 邀请码服务的实现,只提供查询方法
  * @author wangf01
  * @date 2016年9月8日
  *
@@ -36,7 +37,19 @@ import com.yschome.base.common.utils.PageUtils;
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.system.service.ISysUserInvitationCodeServiceApi")
 @Transactional(readOnly = true)
-public class SysUserInvitationCodeServiceImpl implements ISysUserInvitationCodeServiceApi {
+public class InvitationCodeReadServiceImpl implements InvitationCodeReadServiceApi {
+
+	@Override
+	public SysUserInvitationCode findBySysUserId(String sysUserId) throws Exception {
+		SysUserInvitationCode entity = sysUserInvitationCodeMapper.findBySysUserId(sysUserId);
+		return entity;
+	}
+
+	@Override
+	public SysUserInvitationCode findBySysBuyerUserId(String sysBuyerUserId) throws Exception {
+		SysUserInvitationCode entity = sysUserInvitationCodeMapper.findBySysBuyerUserId(sysBuyerUserId);
+		return entity;
+	}
 
 	@SuppressWarnings("rawtypes")
 	@Override

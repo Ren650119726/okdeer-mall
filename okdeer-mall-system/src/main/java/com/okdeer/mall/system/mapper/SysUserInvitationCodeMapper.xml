@@ -59,6 +59,15 @@
 	</sql>
 	<!-- 扩展字段 end -->
 
+	<!-- 根据各类id获取信息 start -->
+	<sql id="findBy">
+		select
+		<include refid="resultBaseColumn" />
+		from
+		<include refid="tableName" />
+	</sql>
+	<!-- 根据各类id获取信息 end -->
+
 	<!-- 根据条件查询信息 start -->
 	<sql id="condition">
 		<if test="null!=params">
@@ -89,11 +98,22 @@
 
 	<!-- 根据id获取信息 start -->
 	<select id="findById" resultMap="BaseResultMap">
-		select
-		<include refid="resultBaseColumn" />
-		from
-		<include refid="tableName" />
+		<include refid="findBy"/>
 		where suic.id=#{id,jdbcType=VARCHAR}
+	</select>
+	<!-- 根据id获取信息 end -->
+
+	<!-- 根据sysUserId获取信息 start -->
+	<select id="findBySysUserId" resultMap="BaseResultMap">
+		<include refid="findBy"/>
+		where suic.sys_user_id=#{sysUserId,jdbcType=VARCHAR}
+	</select>
+	<!-- 根据id获取信息 end -->
+
+	<!-- 根据sysBuyerUserId获取信息 start -->
+	<select id="findBySysBuyerUserId" resultMap="BaseResultMap">
+		<include refid="findBy"/>
+		where suic.sys_buyer_user_id=#{sysBuyerUserId,jdbcType=VARCHAR}
 	</select>
 	<!-- 根据id获取信息 end -->
 
