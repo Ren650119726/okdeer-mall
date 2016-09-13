@@ -248,7 +248,7 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 创建人
 		orderInfo.put("createrId", order.getCreateUserId());
 		// 创建时间
-		orderInfo.put("createTime", order.getCreateTime().getTime());
+		orderInfo.put("createTime", order.getCreateTime());
 		return orderInfo;
 	}
 
@@ -306,7 +306,7 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 创建人
 		orderInfo.put("createrId", orderRefunds.getUserId());
 		// 创建时间
-		orderInfo.put("createTime", orderRefunds.getCreateTime().getTime());
+		orderInfo.put("createTime", orderRefunds.getCreateTime());
 		return orderInfo;
 	}
 
@@ -366,7 +366,7 @@ public class TradeOrderCompleteProcessServiceImpl
 			item.put("activityId", order.getActivityId());
 			item.put("activityItemId", order.getActivityItemId());
 			item.put("remark", order.getRemark());
-			item.put("createTime", orderItem.getCreateTime().getTime());
+			item.put("createTime", orderItem.getCreateTime());
 			orderItemArr.add(item);
 		}
 		return orderItemArr;
@@ -429,7 +429,7 @@ public class TradeOrderCompleteProcessServiceImpl
 			// item.put("activityId", order.getActivityId());
 			// item.put("activityItemId", order.getActivityItemId());
 			item.put("remark", orderRefunds.getMemo());
-			item.put("createTime", orderRefunds.getCreateTime().getTime());
+			item.put("createTime", orderRefunds.getCreateTime());
 			orderItemArr.add(item);
 		}
 		return orderItemArr;
@@ -470,9 +470,9 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 备注
 		orderPayJson.put("remark", order.getRemark());
 		// 支付时间
-		orderPayJson.put("payTime", orderPay.getPayTime().getTime());
+		orderPayJson.put("payTime", orderPay.getPayTime());
 		// 创建时间
-		orderPayJson.put("createTime", orderPay.getCreateTime().getTime());
+		orderPayJson.put("createTime", orderPay.getCreateTime());
 		return orderPayJson;
 	}
 
