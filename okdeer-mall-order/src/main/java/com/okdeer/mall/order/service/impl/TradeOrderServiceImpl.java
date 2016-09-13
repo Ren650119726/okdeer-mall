@@ -1071,6 +1071,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/**
 	 * 保存订单及相关信息
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	private void insertOrder(Object entity) throws ServiceException, Exception {
 
 		if (entity instanceof TradeOrder) {
@@ -1584,6 +1585,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @param entity
 	 *            订单对象
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	private void updateWithConfirm(Object entity) throws Exception {
 		String rpcId = null;
 		try {
@@ -1596,10 +1598,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					throw new Exception("操作异常，订单状态已经改变：订单号：" + tradeOrder.getOrderNo());
 				}
 
-				if (tradeOrder.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
-					if (tradeOrder.getTradeOrderItem() == null || Iterables.isEmpty(tradeOrder.getTradeOrderItem())) {
-						tradeOrder.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId()));
-					}
+				if (CollectionUtils.isEmpty(tradeOrder.getTradeOrderItem())) {
+					tradeOrder.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId()));
 				}
 				// 给卖家打款
 				this.tradeOrderPayService.confirmOrderPay(tradeOrder);
@@ -4667,7 +4667,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		stockAdjustVo.setUserId(tradeOrder.getUserId());
 
 		List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
-		for (TradeOrderItem item : tradeOrder.getTradeOrderItem()) {
+		List<TradeOrderItem> orderItemList = tradeOrder.getTradeOrderItem();
+		if (CollectionUtils.isEmpty(orderItemList)) {
+			orderItemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
+		}
+		for (TradeOrderItem item : orderItemList) {
 			AdjustDetailVo detail = new AdjustDetailVo();
 			detail.setStoreSkuId(item.getStoreSkuId());
 			detail.setGoodsSkuId("");
@@ -5385,4 +5389,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 	// End 12051 add by wusw 20160811
 
+	/**
+	 * 
+	 * @Description: 查询POS确认收货订单列表
+	 * @param storeId 店铺ID
+	 * @param pageNumber 当前页
+	 * @param pageSize 页大小
+	 * @return List 确认收货订单列表  
+	 * @author zengj
+	 * @date 2016年9月13日
+	 */
+	public List<Map<String, Object>> findConfirmDeliveryOrderListByPos(String storeId, int pageNumber, int pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+		return tradeOrderMapper.findConfirmDeliveryOrderListByPos(storeId);
+	}
 }
