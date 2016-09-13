@@ -3989,4 +3989,18 @@
    		from trade_order 
    		where status=#{status,jdbcType=TINYINT} and (type=3 or type=4)
    </select>
+   
+   <!--  POS查询确认收货订单列表   zengj 2016-9-13 15:45:30 -->
+   <select id="findConfirmDeliveryOrderListByPos" parameterType="java.lang.String" resultType="map">
+	   SELECT o.id as orderId,
+	       o.order_no as orderNo,
+	       (select count(1) from trade_order_item i where o.id = i.order_Id) as itemCount,
+	       o.fare as fare,
+	       o.income as totalAmount,
+	       date_format(o.create_time,'%Y-%m-%d %H:%i:%s')  as createTime
+	  FROM trade_order o
+	 WHERE o. status = 3
+	   AND o.store_id = #{storeId, jdbcType=VARCHAR}
+	   ORDER BY o.create_time ASC
+   </select>
 </mapper>
