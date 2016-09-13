@@ -22,7 +22,7 @@ package com.okdeer.mall.order.utils;
 public class OrderNoUtils {
 
 	/** * 流水号位数 */
-	public static final Integer SEQ_SIZE = 4;
+	public static final Integer SEQ_SIZE = 5;
 
 	/**
 	 *  销售单号生成规则调整：
