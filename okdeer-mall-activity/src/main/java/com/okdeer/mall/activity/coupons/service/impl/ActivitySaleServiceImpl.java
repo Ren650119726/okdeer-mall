@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,7 +99,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		try {
 			// 先保存特惠主对象
 			activitySaleMapper.save(activitySale);
-
 			// 再保存特惠商品列表
 			for (ActivitySaleGoods a : asgList) {
 				a.setDisabled(Disabled.valid);
@@ -125,18 +125,69 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				rpcIdBySkuList.add(rpcId);
 
 				goodsStoreSkuServiceApi.updateByPrimaryKeySelective(goodsStoreSku);
-
 				// 和erp同步库存
-				this.syncGoodsStock(a, activitySale.getCreateUserId(), activitySale.getStoreId(),
-						StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
+				// this.syncGoodsStock(a, activitySale.getCreateUserId(),
+				// activitySale.getStoreId(),
+				// StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 			}
 			activitySaleGoodsMapper.saveBatch(asgList);
+			// 库存同步
+			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
+					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
 			throw e;
 		}
 
+	}
+
+	/**
+	 * 
+	 * @Description: 同步erp库存-批量
+	 * @param goodsList 特惠商品集合
+	 * @param userId 用户ID
+	 * @param storeId 店铺ID
+	 * @param soe 操作
+	 * @param rpcIdByStockList rpcId
+	 * @throws Exception    一次信息
+	 * @author zengj
+	 * @date 2016年9月12日
+	 */
+	private void syncGoodsStockBatch(List<ActivitySaleGoods> goodsList, String userId, String storeId,
+			StockOperateEnum soe, List<String> rpcIdByStockList) throws Exception {
+
+		String rpcId = UuidUtils.getUuid();
+		rpcIdByStockList.add(rpcId);
+
+		StockAdjustVo stockAdjustVo = new StockAdjustVo();
+		stockAdjustVo.setUserId(userId);
+		stockAdjustVo.setStoreId(storeId);
+		stockAdjustVo.setRpcId(rpcId);
+		stockAdjustVo.setMethodName(this.getClass().getName() + ".syncGoodsStock");
+		/***********************/
+		/***********************/
+		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
+		for (ActivitySaleGoods goods : goodsList) {
+			GoodsStoreSku entity = goodsStoreSkuServiceApi.getById(goods.getStoreSkuId());
+
+			AdjustDetailVo adjustDetailVo = new AdjustDetailVo();
+			adjustDetailVo.setStoreSkuId(goods.getStoreSkuId());
+			adjustDetailVo.setNum(goods.getSaleStock());
+			/*************新增字段 start **************/
+			adjustDetailVo.setGoodsName(entity.getName());
+			adjustDetailVo.setBarCode(entity.getBarCode());
+			adjustDetailVo.setStyleCode(entity.getStyleCode());
+			adjustDetailVo.setPrice(goods.getSalePrice());
+			/*************新增字段 end  **************/
+			adjustDetailList.add(adjustDetailVo);
+		}
+		stockAdjustVo.setAdjustDetailList(adjustDetailList);
+		stockAdjustVo.setStockOperateEnum(soe);
+
+		log.info("特惠活动时同步erp库存开始:");
+		stockManagerServiceApi.updateStock(stockAdjustVo);
+		log.info("特惠活动时同步erp完成:");
 	}
 
 	/**
@@ -211,15 +262,19 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			}
 			// 差集 (比如添加活动 选的是1,2,3商品,修改活动选的是3,4,5商品,差集就是1,2)
 			sourceIdList.removeAll(newIdList);
+			List<ActivitySaleGoods> saleGoodsList = null;
 			if (sourceIdList.size() > 0) {
+				saleGoodsList = new ArrayList<ActivitySaleGoods>();
 				// 同步库存
 				for (String activitySaleGoodsId : sourceIdList) {
 					// 和erp同步库存
-					ActivitySaleGoods a = activitySaleGoodsMapper.get(activitySaleGoodsId);
-					if (a != null) {
-						this.syncGoodsStock(a, activitySale.getCreateUserId(), activitySale.getStoreId(),
-								StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
-					}
+					ActivitySaleGoods saleGoods = activitySaleGoodsMapper.get(activitySaleGoodsId);
+					saleGoodsList.add(saleGoods);
+					// if (a != null) {
+					// this.syncGoodsStock(a, activitySale.getCreateUserId(),
+					// activitySale.getStoreId(),
+					// StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
+					// }
 				}
 			}
 
@@ -254,11 +309,21 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				goodsStoreSkuServiceApi.updateByPrimaryKeySelective(goodsStoreSku);
 
 				// 和erp同步库存
-				this.syncGoodsStock(a, activitySale.getCreateUserId(), activitySale.getStoreId(),
-						StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
+				// this.syncGoodsStock(a, activitySale.getCreateUserId(),
+				// activitySale.getStoreId(),
+				// StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 			}
-
 			activitySaleGoodsMapper.saveBatch(asgList);
+			// 同步差集部分商品，也就是原来是特惠商品，然后本次编辑没勾选，所以这批商品需要释放库存。
+			if (CollectionUtils.isNotEmpty(saleGoodsList)) {
+				// 库存同步
+				this.syncGoodsStockBatch(saleGoodsList, activitySale.getCreateUserId(), activitySale.getStoreId(),
+						StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
+			}
+			// 新加商品的库存同步，需要增加锁定库存
+			// 库存同步
+			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
+					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
@@ -316,22 +381,24 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				String rcpId = UuidUtils.getUuid();
 				rpcIdByBathSkuList.add(rcpId);
 				goodsStoreSkuServiceApi.updateActivityByActivityIds(ids.toArray(new String[ids.size()]), rcpId);
-
+				// 需要库存同步的商品集合
+				List<ActivitySaleGoods> saleGoodsList = new ArrayList<ActivitySaleGoods>();
 				// 已经结束或者已关闭才同步,数字改为0
 				for (String id : ids) {
 					List<ActivitySaleGoods> asgList = listActivitySaleGoods(id);
 
 					if (asgList != null && asgList.size() > 0) {
-
+						saleGoodsList.addAll(asgList);
 						// 所有店铺商品id
 						List<String> goodsStoreSkuIds = new ArrayList<String>();
 
 						for (ActivitySaleGoods asg : asgList) {
 							goodsStoreSkuIds.add(asg.getStoreSkuId());
 
-							// 手动关闭或者定时器结束都要把未卖完的数量释放库存
-							// 和erp同步库存
-							this.syncGoodsStock(asg, "", storeId, StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
+							// // 手动关闭或者定时器结束都要把未卖完的数量释放库存
+							// // 和erp同步库存
+							// this.syncGoodsStock(asg, "", storeId,
+							// StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
 						}
 
 						// 把所有店铺商品online改成下架
@@ -342,6 +409,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 
 					}
 				}
+				// 手动关闭或者定时器结束都要把未卖完的数量释放库存
+				// 和erp同步库存
+				this.syncGoodsStockBatch(saleGoodsList, "", storeId, StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
 			}
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
