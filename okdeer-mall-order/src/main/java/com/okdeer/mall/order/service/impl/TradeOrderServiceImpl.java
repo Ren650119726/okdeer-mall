@@ -5399,8 +5399,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @author zengj
 	 * @date 2016年9月13日
 	 */
-	public List<Map<String, Object>> findConfirmDeliveryOrderListByPos(String storeId, int pageNumber, int pageSize) {
+	public PageUtils<Map<String, Object>> findConfirmDeliveryOrderListByPos(String storeId, int pageNumber,
+			int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
-		return tradeOrderMapper.findConfirmDeliveryOrderListByPos(storeId);
+		return new PageUtils<Map<String, Object>>(tradeOrderMapper.findConfirmDeliveryOrderListByPos(storeId));
 	}
 }
