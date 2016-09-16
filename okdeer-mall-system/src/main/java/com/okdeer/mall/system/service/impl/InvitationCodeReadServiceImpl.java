@@ -35,7 +35,7 @@ import com.yschome.base.common.utils.PageUtils;
  * ----------------+----------------+-------------------+-------------------------------------------
  *
  */
-@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.system.service.ISysUserInvitationCodeServiceApi")
+@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.system.service.InvitationCodeReadServiceApi")
 @Transactional(readOnly = true)
 public class InvitationCodeReadServiceImpl implements InvitationCodeReadServiceApi {
 
