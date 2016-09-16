@@ -3995,8 +3995,8 @@
 	   SELECT o.id as orderId,
 	       o.order_no as orderNo,
 	       (select count(1) from trade_order_item i where o.id = i.order_Id) as itemCount,
-	       o.fare as fare,
-	       o.income as totalAmount,
+	       format(o.fare,2) as fare,
+	       format(o.income,2) as totalAmount,
 	       date_format(o.create_time,'%Y-%m-%d %H:%i:%s')  as createTime
 	  FROM trade_order o
 	 WHERE o. status = 3
