@@ -30,26 +30,28 @@ import com.yschome.base.dal.IBaseCrudMapper;
  * ----------------+----------------+-------------------+-------------------------------------------
  *   重构4.1				2016-7-19			zhulq
  *   重构4.1             2016-7-13            wusw              添加退款中、第三方支付的充值退款记录数方法、查询充值订单列表方法（用于财务系统）
+ *   v1.1.0				2016-9-17            zengjz            增加财务系统统计数量、金额方法
  */
 public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
-	
+
 	/**
 	 * 根据主键查询退款单
 	 */
 	List<TradeOrderRefunds> selectByPrimaryKeys(List<String> ids);
-	
+
 	/**
 	 * 查询退款单详情
 	 */
 	TradeOrderRefunds findInfoById(String id);
-	
+
 	/**
 	 * zhongy
 	 * 根据用户id订单类型查询退款单列表
 	 * @param params 请求参数
 	 * @return 返回查询结果
 	 */
-	List<TradeOrderRefunds> selectByUserIdAndType(@Param("params") Map<String,Object> params);
+	List<TradeOrderRefunds> selectByUserIdAndType(@Param("params")
+	Map<String, Object> params);
 
 	/**
 	 * 根据订单id，统计退款金额
@@ -61,8 +63,9 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	/**
 	 * 根据退款状态，查询线上退款单信息（pos--线上退货列表）
 	 */
-	List<TradeOrderRefunds> selectOnlineByRefundsStatus(@Param("refundsStatus") List<RefundsStatusEnum> refundsStatus,
-					@Param("orderResource") OrderResourceEnum orderResource);
+	List<TradeOrderRefunds> selectOnlineByRefundsStatus(@Param("refundsStatus")
+	List<RefundsStatusEnum> refundsStatus, @Param("orderResource")
+	OrderResourceEnum orderResource);
 
 	/**
 	 * 根据退款单id，查询退款单详细信息（包括退款单、商品、订单、支付等信息）
@@ -113,14 +116,16 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * 查询退款单状态下对应的退款单数量
 	 * @param storeId 店铺ID
 	 */
-	List<TradeOrderRefundsStatusVo> getOrderRefundsCount(@Param("storeId") String storeId);
+	List<TradeOrderRefundsStatusVo> getOrderRefundsCount(@Param("storeId")
+	String storeId);
 
 	/**
 	 * 根据退款单ID查看所属图片
 	 * @param refundsId String
 	 * @return List
 	 */
-	List<TradeOrderRefundsImage> getTradeOrderRefundsImage(@Param("refundsId") String refundsId);
+	List<TradeOrderRefundsImage> getTradeOrderRefundsImage(@Param("refundsId")
+	String refundsId);
 
 	/**
 	 * @desc 退款单查询
@@ -128,17 +133,17 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * @param map 查询条件
 	 */
 	List<TradeOrderRefundsVo> selectWXRefundsOrder(Map<String, Object> map);
-	
+
 	/**
 	 * 退款列表查询
 	 */
 	List<TradeOrderRefundsVo> selectRefundsByFinance(Map<String, Object> map);
-	
+
 	/**
 	 * 统计退款列表数
 	 */
 	Integer selectRefundsCountByFinance(Map<String, Object> map);
-	
+
 	/**
 	 * 查询退款详细信息 
 	 * @param refundId 退款单ID
@@ -170,7 +175,7 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * POS销售退款统计
 	 */
 	BigDecimal findPosSum(Map<String, Object> params);
-	
+
 	/**
 	 * 根据店铺id、时间段查询订单统计数据
 	 * @param storeId      店铺id
@@ -178,16 +183,18 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * @param endTime     结束时间
 	 * @return  交班统计
 	 */
-	PosShiftExchange findPosShiftExchangeByStoreId(@Param("storeId")String storeId, 
-			                            @Param("startTime")Date startTime, @Param("endTime")Date endTime);
-	
+	PosShiftExchange findPosShiftExchangeByStoreId(@Param("storeId")
+	String storeId, @Param("startTime")
+	Date startTime, @Param("endTime")
+	Date endTime);
+
 	/**
 	 * 退货单列表(pos销售查询用)
 	 * @author zhangkeneng
 	 * @param map
 	 * @throws ServiceException
 	 */
-	List<TradeOrderRefunds> listForPos(Map<String,Object> map);
+	List<TradeOrderRefunds> listForPos(Map<String, Object> map);
 
 	/**
 	 * 退款订单未支付统计
@@ -199,47 +206,46 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 */
 	Integer findComplainUnPayCount();
 
-
-	
 	/**
- 	 * zengj:查询店铺一段时间内退款实际金额
- 	 *
- 	 * @param map
- 	 * @return
- 	 */
- 	BigDecimal selectRefundTotalAmount(Map<String,Object> map);
- 	
- 	/**
- 	 * zengj:查询店铺一段时间内退款单参与店铺本身发起的活动优惠金额
- 	 *
- 	 * @param map
- 	 * @return
- 	 */
- 	BigDecimal selectRefundPreferentialPrice(Map<String,Object> map);
- 	
- 	/**
- 	 * zengj:查询店铺内所有的退单数
- 	 *
- 	 * @param storeId 店铺ID
- 	 * @return
- 	 */
- 	Long selectRefundsCount(String storeId);
- 	
- 	
- 	/**
- 	 * 根据订单项查询退款单
- 	 *
- 	 * @param orderItemId
- 	 * @return
- 	 */
- 	List<TradeOrderRefunds> getTradeOrderRefundsByOrderItemId(String orderItemId);
- 	
- 	TradeOrderRefunds getTradeOrderRefundsByOrderNo(String orderNo);
- 	
- 	/**
+	 * zengj:查询店铺一段时间内退款实际金额
+	 *
+	 * @param map
+	 * @return
+	 */
+	BigDecimal selectRefundTotalAmount(Map<String, Object> map);
+
+	/**
+	 * zengj:查询店铺一段时间内退款单参与店铺本身发起的活动优惠金额
+	 *
+	 * @param map
+	 * @return
+	 */
+	BigDecimal selectRefundPreferentialPrice(Map<String, Object> map);
+
+	/**
+	 * zengj:查询店铺内所有的退单数
+	 *
+	 * @param storeId 店铺ID
+	 * @return
+	 */
+	Long selectRefundsCount(String storeId);
+
+	/**
+	 * 根据订单项查询退款单
+	 *
+	 * @param orderItemId
+	 * @return
+	 */
+	List<TradeOrderRefunds> getTradeOrderRefundsByOrderItemId(String orderItemId);
+
+	TradeOrderRefunds getTradeOrderRefundsByOrderNo(String orderNo);
+
+	/**
 	 * 商家中心首页 根据状态统计退款单数量(张克能加)
 	 */
-	public Integer selectRefundsCountForIndex(@Param("storeId")String storeId,@Param("refundsStatusList")List<Integer> refundsStatusList);
+	public Integer selectRefundsCountForIndex(@Param("storeId")
+	String storeId, @Param("refundsStatusList")
+	List<Integer> refundsStatusList);
 
 	/**
 	 * 查询pos退款单导出列表
@@ -249,9 +255,8 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * @return
 	 */
 	public List<Map<String, Object>> selectPosRefundExportList(Map<String, Object> params);
-	
-	
-	//begin 根据订单id查询退款详情  add  by zhulq  2019-7-19
+
+	// begin 根据订单id查询退款详情 add by zhulq 2019-7-19
 	/**
 	 * @Description: 根据订单号查询退款信息
 	 * @param orderId  订单id
@@ -260,9 +265,10 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * @date 2016年7月19日
 	 */
 	List<TradeOrderRefunds> selectByOrderId(String orderId);
-	//end 根据订单id查询退款详情  add  by zhulq  2019-7-19
-	
-	//Begin 重构4.1     add by wusw  20160722 
+
+	// end 根据订单id查询退款详情 add by zhulq 2019-7-19
+
+	// Begin 重构4.1 add by wusw 20160722
 	/**
 	 * 
 	 * @Description: 查询退款中状态、第三方支付的充值退款记录数（用于财务系统）
@@ -271,8 +277,8 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * @author wusw
 	 * @date 2016年7月22日
 	 */
-	Integer findCountChargeForFinance(Map<String,Object> params);
-	
+	Integer findCountChargeForFinance(Map<String, Object> params);
+
 	/**
 	 * 
 	 * @Description: 查询充值退款列表（用于财务系统）
@@ -281,6 +287,20 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * @author wusw
 	 * @date 2016年7月22日
 	 */
-	List<TradeOrderRefundsChargeVo> findeChargeRefundsByParams(Map<String,Object> params);
-	//End 重构4.1      add by wusw  20160722 
+	List<TradeOrderRefundsChargeVo> findeChargeRefundsByParams(Map<String, Object> params);
+
+	// End 重构4.1 add by wusw 20160722
+
+	// Begin v1.1.0 add by zengjz 20160914
+
+	/**
+	 * @Description: 根据条件统计金额、数量
+	 * @param params 查询条件
+	 * @return Map<String,Object>  返回结果
+	 * @author zengjizu
+	 * @date 2016年9月14日
+	 */
+	Map<String, Object> statisRefundsByFinance(Map<String, Object> params);
+
+	// end v1.1.0 add by zengjz 20160914
 }

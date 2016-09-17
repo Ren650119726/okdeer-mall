@@ -27,7 +27,8 @@ import com.yschome.base.common.utils.PageUtils;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *    重构4.1            2016-7-13            wusw              添加退款中、第三方支付的充值退款记录数方法、查询充值订单列表方法（用于财务系统）
- * 	     重构4.1	            2016-7-13            zhaoqc            添加支付订单退款
+ * 	  重构4.1	            2016-7-13        zhaoqc            添加支付订单退款
+ *    v1.1.0            2016-9-17 			 zengjz 		   添加统计订单退款金额、数量接口
  */
 public interface TradeOrderRefundsService {
 
@@ -314,8 +315,8 @@ public interface TradeOrderRefundsService {
 	 * @return
 	 */
 	public List<Map<String, Object>> selectPosRefundExportList(Map<String, Object> params);
-	
-	//Begin 重构4.1      add by wusw  20160722
+
+	// Begin 重构4.1 add by wusw 20160722
 	/**
 	 * 
 	 * @Description: 查询退款中状态、第三方支付的充值退款记录数（用于财务系统）
@@ -325,7 +326,7 @@ public interface TradeOrderRefundsService {
 	 * @date 2016年7月22日
 	 */
 	Integer findCountChargeForFinance() throws Exception;
-	
+
 	/**
 	 * 
 	 * @Description: 查询充值退款列表（用于财务系统，分页）
@@ -335,8 +336,9 @@ public interface TradeOrderRefundsService {
 	 * @author wusw
 	 * @date 2016年7月22日
 	 */
-	PageUtils<TradeOrderRefundsChargeVo> findeChargeRefundsByParams(Map<String,Object> params, int pageNumber, int pageSize)throws Exception;
-	
+	PageUtils<TradeOrderRefundsChargeVo> findeChargeRefundsByParams(Map<String, Object> params, int pageNumber,
+			int pageSize) throws Exception;
+
 	/**
 	 * 
 	 * @Description: 查询充值退款列表（用于财务系统，不分页）
@@ -346,13 +348,18 @@ public interface TradeOrderRefundsService {
 	 * @author wusw
 	 * @date 2016年7月22日
 	 */
-	List<TradeOrderRefundsChargeVo> findeChargeRefundsListByParams(Map<String,Object> params)throws Exception;
-	//End 重构4.1      add by wusw  20160722
-	
+	List<TradeOrderRefundsChargeVo> findeChargeRefundsListByParams(Map<String, Object> params) throws Exception;
+
+	// End 重构4.1 add by wusw 20160722
+
 	/**
 	 * 插入充值订单退款单
 	 * @param tradeOrder
 	 * @throws Exception
 	 */
 	void insertRechargeRefunds(TradeOrder tradeOrder) throws Exception;
+
+	// Begin v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
+	Map<String, Object> statisRefundsByParams(Map<String, Object> params) throws Exception;
+	// End v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
 }

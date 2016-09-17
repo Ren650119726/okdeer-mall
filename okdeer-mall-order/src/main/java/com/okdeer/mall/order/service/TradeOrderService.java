@@ -922,4 +922,26 @@ public interface TradeOrderService {
 	 */
 	Map<String, List<TradeOrder>> findRechargeOrdersByStatus(OrderStatusEnum status) throws ServiceException;
 	//End 重构4.1      add by zhaoqc  20160730 
+	
+	
+	//Begin v1.1.0    add by zengjz  20160912
+	/**
+	 * @Description: 按条件统计订单交易量与金额
+	 * @param params 查询参数
+	 * @return Map<String,Object>  返回结果
+	 * @author zengjizu
+	 * @date 2016年9月12日
+	 */
+	Map<String, Object> statisOrderForFinanceByParams(Map<String, Object> params);
+	
+	/**
+	 * @Description: 按条件统计取消订单退款交易量与金额
+	 * @param params 查询条件
+	 * @return Map<String,Object>  统计结果
+	 * @throws
+	 * @author zengjizu
+	 * @date 2016年9月17日
+	 */
+	Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params);
+	//End v1.1.0      add by zengjz  20160912
 }
