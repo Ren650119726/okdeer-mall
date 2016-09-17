@@ -1832,6 +1832,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			tradeOrder.setUpdateUserId(param.getUserId());
 			// 发货时间为当前时间
 			tradeOrder.setDeliveryTime(new Date());
+			// 发货人ID
+			tradeOrder.setShipmentsUserId(param.getUserId());
 			// 更新订单信息
 			this.updateOrderStatus(tradeOrder);
 

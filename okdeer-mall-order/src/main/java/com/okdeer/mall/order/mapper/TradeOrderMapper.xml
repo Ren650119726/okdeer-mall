@@ -38,6 +38,7 @@
     <result column="pick_up_id" property="pickUpId" jdbcType="VARCHAR" />
     <result column="trade_num" property="tradeNum" jdbcType="VARCHAR"/>
     <result column="seller_id" property="sellerId" jdbcType="VARCHAR"/>
+    <result column="shipments_user_id" property="shipmentsUserId" jdbcType="VARCHAR"/>
     <result column="is_show" property="isShow" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderIsShowEnum" />
     <result column="is_complete" property="isComplete" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderComplete" />
     <result column="compain_status" property="compainStatus" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.CompainStatusEnum"/>
@@ -1315,6 +1316,9 @@
       <if test="deliveryTime != null">
         delivery_time,
       </if>
+      <if test="shipmentsUserId != null">
+        shipments_user_id,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -1411,7 +1415,10 @@
       #{income,jdbcType=VARCHAR},
       </if>
       <if test="deliveryTime != null">
-      #{deliveryTime,jdbcType=VARCHAR}
+      #{deliveryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="shipmentsUserId != null">
+      #{shipmentsUserId,jdbcType=VARCHAR}
       </if>
     </trim>
   </insert>
@@ -2204,6 +2211,9 @@
       </if>
       <if test="deliveryTime != null" >
           delivery_time = #{deliveryTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="shipmentsUserId != null" >
+          shipments_user_id = #{shipmentsUserId,jdbcType=VARCHAR},
       </if>
       
     </set>
