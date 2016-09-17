@@ -1822,6 +1822,9 @@
    <select id="selectOrderPayInvoiceById" resultMap="TradeOrderPayMap" parameterType="java.lang.String">
      SELECT tr.id,tr.order_no,tr.invoice,tr.create_time,tr.status,tr.pick_up_type,tr.pick_up_time,tr.preferential_price,tr.total_amount,tr.user_id,tr.type,tr.pick_up_code,
             tr.preferential_price,tr.fare,tr.actual_amount,tr.remark,tr.activity_id,tr.store_id,tr.update_time,tr.received_time,tr.delivery_time,tr.activity_type,
+            <!-- begin 商城后台实物订单管理新增订单来源字段 add by wangf01  -->
+            tr.order_resource,
+            <!-- end 商城后台实物订单管理新增订单来源字段 add by wangf01  -->
             op.pay_type,tr.`pay_way`,op.pay_time,op.pay_amount,op.create_time AS pay_create_time,invoice.head,invoice.context,tr.reason
      FROM trade_order tr
      LEFT JOIN trade_order_pay op ON tr.id = op.order_id 

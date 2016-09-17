@@ -471,4 +471,16 @@
        AND id = 'a'
       </if>
   </select>
+  
+  <!-- begin 新增根据id集合获取用户信息 add by wangf01 -->
+  <select id="findByIds" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sys_buyer_user
+    where id in 
+    <foreach collection="ids" item="item" open="(" close=")" separator=",">
+    	#{item}
+    </foreach>
+  </select>
+  <!-- end 新增根据id集合获取用户信息 add by wangf01 -->
 </mapper>
