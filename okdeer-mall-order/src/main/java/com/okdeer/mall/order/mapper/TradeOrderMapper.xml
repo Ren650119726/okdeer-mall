@@ -443,7 +443,7 @@
   <sql id="Base_Column_List" >
     id, user_id, store_id, pid, order_no, type, pick_up_type, pick_up_code, pick_up_time,order_resource, is_complete,
     status, total_amount, actual_amount, preferential_price, fare, activity_type, activity_id, activity_item_id,pay_way,
-    remark, invoice, disabled, create_time, update_time,is_show,pospay,reason,trade_num,user_phone,payment_status,payment_time,income,seller_id
+    remark, invoice, disabled, create_time, update_time,is_show,pospay,reason,trade_num,user_phone,payment_status,payment_time,income,seller_id,shipments_user_id
   </sql>
   
   <sql id="order_column_list">
