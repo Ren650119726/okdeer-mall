@@ -1,4 +1,3 @@
-
 package com.okdeer.mall.order.service.impl;
 
 import static com.okdeer.common.consts.DescriptConstants.UPDATE_REFUNDS_STATUS_FAILE;
@@ -31,6 +30,7 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
@@ -135,13 +135,14 @@ import net.sf.json.JSONObject;
  *    重构4.1            2016-7-13            wusw              添加退款中、第三方支付的充值退款记录数方法、查询充值订单列表方法（用于财务系统）
  *    重构4.1            2016-7-26            maojj             库存修改地方添加分布式事务机制
  *    Bug:12917         2016-8-18            maojj             客服介入时增加对退款单状态的检查
- *    1.0.Z				2016-09-05			 zengj			        增加退款单操作记录
- *    1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
+ *    1.0.Z				2016-09-05			 zengj			   增加退款单操作记录
+ *    1.0.Z	          2016年9月07日           zengj             库存管理修改，采用商业管理系统校验
+ *    V1.1.0	       2016-9-12             zengjz            增加财务系统订单交易统计接口
  *  
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderRefundsServiceApi")
-public class TradeOrderRefundsServiceImpl
-		implements TradeOrderRefundsService, TradeOrderRefundsServiceApi, PayMessageConstant {
+public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, TradeOrderRefundsServiceApi,
+		PayMessageConstant {
 
 	private static final Logger logger = LoggerFactory.getLogger(TradeOrderRefundsServiceImpl.class);
 
@@ -259,6 +260,7 @@ public class TradeOrderRefundsServiceImpl
 	 */
 	@Resource
 	private TradeOrderCompleteProcessService tradeOrderCompleteProcessService;
+
 	// End 1.0.Z add by zengj
 
 	@Autowired
@@ -297,6 +299,7 @@ public class TradeOrderRefundsServiceImpl
 	 */
 	@Resource
 	private StockMQProducer stockMQProducer;
+
 	// End added by maojj 2016-07-26
 
 	/**
@@ -387,9 +390,8 @@ public class TradeOrderRefundsServiceImpl
 		}
 
 		// Begin 1.0.Z 增加退款单操作记录 add by zengj
-		tradeOrderRefundsLogMapper
-				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
-						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
+		tradeOrderRefundsLogMapper.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds
+				.getOperator(), orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
 	}
 
@@ -468,8 +470,8 @@ public class TradeOrderRefundsServiceImpl
 
 	public void updateRechargeWallet(TradeOrderRefunds orderRefunds) throws Exception {
 		// 添加交易记录
-		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
-				buildRechargeBalancePayTrade(orderRefunds).getBytes("UTF-8"));
+		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL, buildRechargeBalancePayTrade(
+				orderRefunds).getBytes("UTF-8"));
 
 		rocketMqProducer.send(msg);
 		// 发送事务消息
@@ -649,8 +651,8 @@ public class TradeOrderRefundsServiceImpl
 		// End added by maojj 2016-07-26
 		List<TradeOrderRefundsItem> tradeOrderRefundsItems = orderRefunds.getTradeOrderRefundsItem();
 		if (Iterables.isEmpty(tradeOrderRefundsItems)) {
-			tradeOrderRefundsItems = tradeOrderRefundsItemService
-					.getTradeOrderRefundsItemByRefundsId(orderRefunds.getId());
+			tradeOrderRefundsItems = tradeOrderRefundsItemService.getTradeOrderRefundsItemByRefundsId(orderRefunds
+					.getId());
 		}
 		// Begin 一个订单只调一次库存 add by zengj
 		StockAdjustVo stockAdjustVo = new StockAdjustVo();
@@ -687,8 +689,8 @@ public class TradeOrderRefundsServiceImpl
 			detail.setPropertiesIndb(item.getPropertiesIndb());
 			detail.setStyleCode(item.getStyleCode());
 			detail.setBarCode(item.getBarCode());
-			detail.setSpuType(
-					order.getType() == OrderTypeEnum.SERVICE_ORDER ? SpuTypeEnum.serviceSpu : SpuTypeEnum.physicalSpu);
+			detail.setSpuType(order.getType() == OrderTypeEnum.SERVICE_ORDER ? SpuTypeEnum.serviceSpu
+					: SpuTypeEnum.physicalSpu);
 			detail.setIsEvent(order.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY
 					|| isAttendSale(orderRefunds.getOrderId(), item.getStoreSkuId()));
 			Integer quantity;
@@ -714,6 +716,7 @@ public class TradeOrderRefundsServiceImpl
 		stockManagerService.updateStock(stockAdjustVo);
 		return stockAdjustList;
 	}
+
 	// End modified by maojj 2016-07-26
 
 	/**
@@ -735,8 +738,8 @@ public class TradeOrderRefundsServiceImpl
 
 		orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
 		// 构建余额支付（或添加交易记录）对象
-		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
-				buildBalancePayTrade(orderRefunds).getBytes(Charsets.UTF_8));
+		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL, buildBalancePayTrade(orderRefunds)
+				.getBytes(Charsets.UTF_8));
 		// 发送事务消息
 		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, orderRefunds,
 				new LocalTransactionExecuter() {
@@ -865,8 +868,8 @@ public class TradeOrderRefundsServiceImpl
 			addRefundsCerticate(id, remark, userId);
 			// Begin 1.0.Z 增加退款单操作记录 add by zengj
 			tradeOrderRefundsLogMapper.insertSelective(new TradeOrderRefundsLog(tradeOrderRefunds.getId(),
-					tradeOrderRefunds.getOperator(), tradeOrderRefunds.getRefundsStatus().getName(),
-					tradeOrderRefunds.getRefundsStatus().getValue()));
+					tradeOrderRefunds.getOperator(), tradeOrderRefunds.getRefundsStatus().getName(), tradeOrderRefunds
+							.getRefundsStatus().getValue()));
 			// End 1.0.Z 增加退款单操作记录 add by zengj
 			// 自动撤销申请计时消息
 			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_cancel_by_agree_timeout, id);
@@ -938,8 +941,8 @@ public class TradeOrderRefundsServiceImpl
 	private void doRefundPay(TradeOrderRefunds orderRefunds) throws Exception {
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
 		if (Iterables.isEmpty(orderRefunds.getTradeOrderRefundsItem())) {
-			orderRefunds.setTradeOrderRefundsItem(
-					tradeOrderRefundsItemService.getTradeOrderRefundsItemByRefundsId(orderRefunds.getId()));
+			orderRefunds.setTradeOrderRefundsItem(tradeOrderRefundsItemService
+					.getTradeOrderRefundsItemByRefundsId(orderRefunds.getId()));
 		}
 		// 判断非在线支付
 		if (PayWayEnum.PAY_ONLINE != order.getPayWay()) {
@@ -962,9 +965,8 @@ public class TradeOrderRefundsServiceImpl
 		}
 
 		// Begin 1.0.Z 增加退款单操作记录 add by zengj
-		tradeOrderRefundsLogMapper
-				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
-						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
+		tradeOrderRefundsLogMapper.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds
+				.getOperator(), orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
 
 		// 订单完成后同步到商业管理系统
 		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
@@ -977,8 +979,8 @@ public class TradeOrderRefundsServiceImpl
 	private boolean updateWalletByThird(TradeOrderRefunds orderRefunds) throws Exception {
 
 		// 构建余额支付（或添加交易记录）对象
-		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
-				buildBalanceThirdPayTrade(orderRefunds).getBytes(Charsets.UTF_8));
+		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL, buildBalanceThirdPayTrade(orderRefunds)
+				.getBytes(Charsets.UTF_8));
 		// 发送事务消息
 		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, orderRefunds,
 				new LocalTransactionExecuter() {
@@ -1175,8 +1177,8 @@ public class TradeOrderRefundsServiceImpl
 
 		// Begin 1.0.Z 增加退款单操作记录 add by zengj
 		tradeOrderRefundsLogMapper.insertSelective(new TradeOrderRefundsLog(tradeOrderRefunds.getId(),
-				tradeOrderRefunds.getOperator(), tradeOrderRefunds.getRefundsStatus().getName(),
-				tradeOrderRefunds.getRefundsStatus().getValue()));
+				tradeOrderRefunds.getOperator(), tradeOrderRefunds.getRefundsStatus().getName(), tradeOrderRefunds
+						.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
 		// 发送超时消息
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_cancel_by_refuse_timeout, id);
@@ -1286,8 +1288,8 @@ public class TradeOrderRefundsServiceImpl
 	 *            导出最大值，如为空，不限制导出数量
 	 */
 	public List<TradeOrderRefundsExportVo> selectExportList(Map<String, Object> map, Integer maxSize) {
-		PageUtils<TradeOrderRefundsVo> pages = searchOrderRefundByParams(map, 0,
-				maxSize == null ? Integer.MAX_VALUE : maxSize);
+		PageUtils<TradeOrderRefundsVo> pages = searchOrderRefundByParams(map, 0, maxSize == null ? Integer.MAX_VALUE
+				: maxSize);
 		List<TradeOrderRefundsExportVo> list = new ArrayList<TradeOrderRefundsExportVo>();
 		if (pages != null && pages.getList() != null && !pages.getList().isEmpty()) {
 			// 退款单状态Map
@@ -1325,8 +1327,8 @@ public class TradeOrderRefundsServiceImpl
 							if (refundsVo.getTradeOrderVo().getTradeOrderPay() == null) {
 								exportVo.setPayType(refundsVo.getTradeOrderVo().getPayWay().getValue());
 							} else {
-								exportVo.setPayType(
-										refundsVo.getTradeOrderVo().getTradeOrderPay().getPayType().getValue());
+								exportVo.setPayType(refundsVo.getTradeOrderVo().getTradeOrderPay().getPayType()
+										.getValue());
 							}
 						}
 
@@ -1421,8 +1423,8 @@ public class TradeOrderRefundsServiceImpl
 					if (activityCollectCoupons != null) {
 						refundsVo.getTradeOrderVo().setActivityName(activityCollectCoupons.getName());
 					}
-				} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
-						.equals(refundsVo.getTradeOrderVo().getActivityType())) {
+				} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(refundsVo.getTradeOrderVo()
+						.getActivityType())) {
 					// 满减活动
 					ActivityDiscount activityDiscount = activityDiscountService.selectByPrimaryKey(activityId);
 					if (activityDiscount != null) {
@@ -1478,8 +1480,8 @@ public class TradeOrderRefundsServiceImpl
 		if (list != null && !list.isEmpty()) {
 			for (TradeOrderRefundsVo orderRefundsVo : list) {
 				// 查询退款单下的订单项
-				orderRefundsVo.setTradeOrderRefundsItem(
-						tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(orderRefundsVo.getId()));
+				orderRefundsVo.setTradeOrderRefundsItem(tradeOrderRefundsItemMapper
+						.getTradeOrderRefundsItemByRefundsId(orderRefundsVo.getId()));
 			}
 		}
 		return new PageUtils<TradeOrderRefundsVo>(list);
@@ -1709,6 +1711,11 @@ public class TradeOrderRefundsServiceImpl
 	public PageUtils<TradeOrderRefundsVo> findPageByFinance(Map<String, Object> map, int pageNumber, int pageSize)
 			throws Exception {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
+
+		// Begin add by zengjz 2016-9-14 增加退款状态查询条件
+		convertParamsForFinanceRefund(map);
+		// End add by zengjz 2016-9-14 增加退款状态查询条件
+
 		List<TradeOrderRefundsVo> list = tradeOrderRefundsMapper.selectRefundsByFinance(map);
 		return new PageUtils<TradeOrderRefundsVo>(list);
 	}
@@ -1720,6 +1727,9 @@ public class TradeOrderRefundsServiceImpl
 
 	@Override
 	public Integer findCountByFinance(Map<String, Object> map) throws Exception {
+		// Begin add by zengjz 2016-9-14 增加退款状态查询条件
+		convertParamsForFinanceRefund(map);
+		// End add by zengjz 2016-9-14 增加退款状态查询条件
 		return tradeOrderRefundsMapper.selectRefundsCountByFinance(map);
 	}
 
@@ -1957,6 +1967,66 @@ public class TradeOrderRefundsServiceImpl
 		params.put("refundsStatus", refundsStatusList);
 		params.put("disabled", Disabled.valid);
 	}
+
 	// End 重构4.1 add by wusw 20160722
 
+	// Begin add by zengjz 2016-9-14
+
+	@Override
+	public Map<String, Object> statisRefundsByParams(Map<String, Object> params) throws Exception {
+		convertParamsForFinanceRefund(params);
+		Map<String, Object> result = tradeOrderRefundsMapper.statisRefundsByFinance(params);
+		return result;
+	}
+
+	/**
+	 * @Description: 财务系统退款订单参数转换
+	 * @param map   查询参数
+	 * @author zengjizu
+	 * @date 2016年9月17日
+	 */
+	private void convertParamsForFinanceRefund(Map<String, Object> map) {
+		// 退款类型参数 : complain客诉订单退款 refunds:普通订单退款
+		String type = (String) map.get("type");
+		// 退款状态参数： 0:退款中 1:退款完成 默认为空，全部
+		String status = (String) map.get("status");
+		List<String> statusList = Lists.newArrayList();
+
+		/*
+		 * 退货/退款状态:(0:等待卖家确认,1:买家撤销退款,2:等待买家退货,3:等待卖家收货,4:待卖家退款,5:卖家拒绝退款,6:退款成功,
+		 * 7
+		 * :卖家拒绝申请,8:申请客服介入,9:客户介入取消,10:云上城退款,11:(纠纷单)云上城退款成功),12:强制卖家退款,13强制卖家退款成功
+		 * ,14卖家退款中'
+		 */
+
+		if (type != null && "complain".equals(type)) {
+
+			if (status != null && "0".equals(status)) {
+				statusList.add("10");
+			} else if (status != null && "1".equals(status)) {
+				statusList.add("11");
+			} else {
+				statusList.add("10");
+				statusList.add("11");
+			}
+
+		} else if (type != null && "refunds".equals(type)) {
+
+			if (status != null && "0".equals(status)) {
+				statusList.add("14");
+				statusList.add("12");
+			} else if (status != null && "1".equals(status)) {
+				statusList.add("6");
+				statusList.add("13");
+			} else {
+				statusList.add("14");
+				statusList.add("6");
+				statusList.add("12");
+				statusList.add("13");
+			}
+
+		}
+		map.put("statusList", statusList);
+	}
+	// End add by zengjz 2016-9-14
 }
