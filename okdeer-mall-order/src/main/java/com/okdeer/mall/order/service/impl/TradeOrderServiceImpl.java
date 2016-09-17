@@ -4612,7 +4612,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				tradeMessageService.sendSmsByShipments(tradeOrder);
 				// added by maojj 给ERP发消息去生成出入库单据
 				// 库存调整-放到最后处理
-				stockManagerService.updateStock(stockAdjustVo);
+				// stockManagerService.updateStock(stockAdjustVo);
 				// stockMQProducer.sendMessage(stockAdjustVo);
 			} catch (Exception e) {
 				logger.info("pos 发货锁定库存发生异常", e);
