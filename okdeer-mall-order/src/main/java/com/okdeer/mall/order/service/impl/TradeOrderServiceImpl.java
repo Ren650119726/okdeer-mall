@@ -1837,6 +1837,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			tradeOrder.setUpdateUserId(param.getUserId());
 			// 发货时间为当前时间
 			tradeOrder.setDeliveryTime(new Date());
+			// 发货人ID
+			tradeOrder.setShipmentsUserId(param.getUserId());
 			// 更新订单信息
 			this.updateOrderStatus(tradeOrder);
 
@@ -4631,7 +4633,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				tradeMessageService.sendSmsByShipments(tradeOrder);
 				// added by maojj 给ERP发消息去生成出入库单据
 				// 库存调整-放到最后处理
-				stockManagerService.updateStock(stockAdjustVo);
+				// stockManagerService.updateStock(stockAdjustVo);
 				// stockMQProducer.sendMessage(stockAdjustVo);
 			} catch (Exception e) {
 				logger.info("pos 发货锁定库存发生异常", e);

@@ -14,7 +14,7 @@
 		<property name="ignoreResourceNotFound" value="true"></property>
 		<property name="locations">
 			<list>
-				<value>file:/okdeer/config/config.properties</value>
+				<value>file:/yschome/config/config.properties</value>
 				<!-- <value>file:/D:/workspace/mall/okdeer-mall/okdeer-mall-service/src/main/resources/config.properties</value> -->
 			</list>
 		</property>
