@@ -24,6 +24,8 @@
         <result property="sort" column="sort" javaType="integer" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" javaType="date" jdbcType="TIMESTAMP"/>
         <result property="updateTime" column="update_time" javaType="date" jdbcType="TIMESTAMP"/>
+        <result property="type" column="type" javaType="integer" jdbcType="INTEGER"/>
+        <result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/>
     </resultMap>
     
     <resultMap id="CouponsVoResultMap" type="com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery" extends="CouponsResultMap">
@@ -32,7 +34,7 @@
 	      <id column="areaid" property="id" jdbcType="VARCHAR" />
           <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
           <result column="area_id" property="areaId" jdbcType="VARCHAR" /> 
-          <result column="type" property="couponsAreaType" javaType="com.okdeer.mall.common.enums.DistrictType" jdbcType="TINYINT"/>
+          <result column="activityCouponsAreaType" property="couponsAreaType" javaType="com.okdeer.mall.common.enums.DistrictType" jdbcType="TINYINT"/>
 	    </collection> 
 	    <collection property="activityCouponsCommunityList" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsCommunity">
 	       <id column="communityid" property="id" jdbcType="VARCHAR" />
@@ -58,11 +60,26 @@
 	   </collection>             
     </resultMap>
     
-    <select id="selectCategory"  parameterType="com.okdeer.archive.goods.base.entity.GoodsSpuCategory" 
-                                 resultType="com.okdeer.archive.goods.base.entity.GoodsSpuCategory">
-    	SELECT id, pid, level_id, NAME, level_type, sort, description, disabled,
-    	create_time, update_time FROM goods_spu_category g WHERE g.disabled = #{disabled,jdbcType=TINYINT} 
-    	and g.level_type = #{levelType,jdbcType=TINYINT}
+    <select id="findSpuCategoryList" resultType="com.okdeer.archive.goods.base.entity.GoodsSpuCategory" parameterType="map">
+    	SELECT id, NAME FROM goods_spu_category g WHERE g.disabled = 0 
+    	and g.level_type = 3
+    	<if test="notIdList != null">
+    		and id not in 
+			<foreach item="item" index="index" collection="notIdList" open="(" separator="," close=")">  
+	 			#{item}  
+			</foreach>  
+    	</if>
+    </select>
+    
+    <select id="findNavigateCategoryList"  resultType="com.okdeer.archive.goods.base.entity.GoodsNavigateCategory" parameterType="map">
+    	SELECT id, NAME FROM goods_navigate_category g WHERE g.disabled = 0 
+    	and g.level_type = 0
+    	<if test="notIdList != null">
+    		and id not in 
+			<foreach item="item" index="index" collection="notIdList" open="(" separator="," close=")">  
+	 			#{item}  
+			</foreach>  
+    	</if>
     </select>
     
 	<select id="selectStoreInfoByCityId" parameterType="com.okdeer.archive.store.entity.StoreInfo" resultType="com.okdeer.mall.common.entity.AreaScTreeVo">
@@ -76,7 +93,7 @@
 	
 	<sql id="BaseSelectSQL">
         id, name, activity_id, belong_type, face_value, total_num, used_num, remain_num, arrive_limit, valid_day, every_limit,
-	    is_cash_delivery, is_category_limit, code, exchange_code, area_type, create_user_id, create_time, update_user_id, update_time, disabled 
+	    is_cash_delivery, is_category_limit, code, exchange_code, area_type, create_user_id, create_time, update_user_id, update_time, disabled ,type,is_category
     </sql>
     
    <!--  新增    根据代金卷名字和优惠码查询 名字和优惠码要唯一 -->
@@ -110,10 +127,13 @@
 		SELECT ac.id, ac.name, acc.name as activity_name, ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, ac.used_num, 
 		       ac.remain_num, ac.arrive_limit, ac.valid_day, ac.every_limit, ac.is_cash_delivery, ac.is_category_limit, 
 		       ac.code,ac.exchange_code, ac.area_type, ac.create_user_id, ac.create_time, ac.update_user_id, ac.update_time, 
-		       ac.disabled 
+		       ac.disabled ,ac.type,ac.is_category
 		FROM activity_coupons ac
         left join activity_collect_coupons acc on ac.activity_id = acc.id
         WHERE 1=1
+    <if test="type != null and type != ''">
+            AND ac.type = #{type}
+    </if>
 	<if test="name != null and name != ''">
             AND ac.name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
     </if>
@@ -155,9 +175,9 @@
 	</select> 
 	
 	<select id="selectCouponsById" parameterType="String" resultMap="CouponsVoResultMap">
-	   SELECT ac.id, ac.name,ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, ac.used_num, ac.remain_num, ac.arrive_limit, 
+	   SELECT ac.id,ac.type,ac.is_category, ac.name,ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, ac.used_num, ac.remain_num, ac.arrive_limit, 
 	          ac.valid_day, ac.every_limit,ac.is_cash_delivery, ac.is_category_limit, ac.code,ac.exchange_code, ac.area_type, 
-	          ac.create_user_id, ac.create_time, ac.update_user_id, ac.update_time, ac.disabled, a.area_id, a.type, c.community_id,
+	          ac.create_user_id, ac.create_time, ac.update_user_id, ac.update_time, ac.disabled, a.area_id, a.type as activityCouponsAreaType, c.community_id,
 	          c.community_name, c.city_id, e.store_name_area, e.storeCityId, e.store_id
 	  FROM activity_coupons ac 
 	  left join activity_coupons_area a on a.coupons_id = ac.id
@@ -176,19 +196,20 @@
 	     remain_num, arrive_limit, valid_day,
 	     every_limit, is_cash_delivery, is_category_limit,
 	     exchange_code, area_type, create_user_id, 
-	     create_time, update_user_id, update_time, disabled)
+	     create_time, update_user_id, update_time, disabled,type,is_category)
 	     VALUES(#{id, jdbcType=VARCHAR}, #{name, jdbcType=VARCHAR}, #{belongType, jdbcType=VARCHAR},
 	     #{faceValue, jdbcType=INTEGER}, #{totalNum, jdbcType=INTEGER}, #{usedNum, jdbcType=INTEGER},
 	     #{totalNum, jdbcType=INTEGER}, #{arriveLimit, jdbcType=INTEGER}, #{validDay, jdbcType=INTEGER}, 
 		 #{everyLimit, jdbcType=INTEGER}, #{isCashDelivery, jdbcType=TINYINT}, #{isCategoryLimit, jdbcType=TINYINT},
 		 #{exchangeCode, jdbcType=VARCHAR}, #{areaType, jdbcType=TINYINT}, #{createUserId, jdbcType=VARCHAR},  
-		 #{createTime, jdbcType=TIMESTAMP}, #{updateUserId, jdbcType=VARCHAR}, #{updateTime, jdbcType=TIMESTAMP}, #{disabled, jdbcType=TINYINT});
+		 #{createTime, jdbcType=TIMESTAMP}, #{updateUserId, jdbcType=VARCHAR}, #{updateTime, jdbcType=TIMESTAMP}, #{disabled, jdbcType=TINYINT},
+		 #{type, jdbcType=INTEGER},#{isCategory, jdbcType=INTEGER})
 	</insert> 
 	
     <update id="updateCoupons" parameterType="com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery">
 	      UPDATE activity_coupons
 	       <set>
-	          <if test="name != null and name != ''">
+	          <if test="name != null">
                 name = #{name, jdbcType=VARCHAR},
               </if>
              <if test="faceValue != null">
@@ -218,6 +239,12 @@
              </if>
              <if test="updateTime != null" >
         		update_time = #{updateTime,jdbcType=TIMESTAMP},
+     		 </if>
+     		 <if test="type != null" >
+        		type = #{type,jdbcType=INTEGER},
+     		 </if>
+     		 <if test="isCategory != null" >
+        		is_category = #{isCategory,jdbcType=INTEGER},
      		 </if>
 	       </set>
 	       WHERE id = #{id,jdbcType=VARCHAR}
@@ -376,6 +403,8 @@
 		  #{item}
 		 </foreach>
 	     </if>
+	     
+	     
 	</select>
 	
 	<update id="updateActivityCouponsUsedNum" parameterType="string">
