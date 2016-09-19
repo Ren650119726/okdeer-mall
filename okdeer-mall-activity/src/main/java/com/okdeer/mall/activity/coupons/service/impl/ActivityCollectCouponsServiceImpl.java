@@ -2,7 +2,9 @@ package com.okdeer.mall.activity.coupons.service.impl;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +28,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCommunity;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectOrderType;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsApprovalStatus;
@@ -46,6 +49,7 @@ import com.yschome.common.BaseResultDto;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectAreaMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCommunityMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCollectOrderTypeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
@@ -70,6 +74,9 @@ public class ActivityCollectCouponsServiceImpl
 
 	@Autowired
 	private ActivityCouponsMapper activityCouponsMapper;
+	
+	@Autowired
+	private ActivityCollectOrderTypeMapper activityCollectOrderTypeMapper;
 
 	@Value("${mcm.sys.code}")
 	private String msgSysCode;
@@ -129,36 +136,41 @@ public class ActivityCollectCouponsServiceImpl
 
 		// 代金卷范围类型：0全国，1区域，2小区 , 3店铺
 		// 如果是区域
-		if (activityCollectCoupons.getAreaType().intValue() == AreaType.area.ordinal()) {
-			// 批量添加新记录
-			String[] array = areaIds.split(",");
-
-			List<ActivityCollectArea> areaList = new ArrayList<ActivityCollectArea>();
-			for (String str : array) {
-				ActivityCollectArea a = new ActivityCollectArea();
-				a.setId(UuidUtils.getUuid());
-				a.setCollectCouponsId(activityCollectCoupons.getId());
-				a.setType(Integer.parseInt(str.split("-")[1]));
-				a.setAreaId(str.split("-")[0]);
-				areaList.add(a);
+		if(activityCollectCoupons.getType() == ActivityCollectCouponsType.OPEN_DOOR.getValue() ||
+		   activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue() ||	
+		   activityCollectCoupons.getType() == ActivityCollectCouponsType.get.getValue()){
+			if (activityCollectCoupons.getAreaType().intValue() == AreaType.area.ordinal()) {
+				// 批量添加新记录
+				String[] array = areaIds.split(",");
+	
+				List<ActivityCollectArea> areaList = new ArrayList<ActivityCollectArea>();
+				for (String str : array) {
+					ActivityCollectArea a = new ActivityCollectArea();
+					a.setId(UuidUtils.getUuid());
+					a.setCollectCouponsId(activityCollectCoupons.getId());
+					a.setType(Integer.parseInt(str.split("-")[1]));
+					a.setAreaId(str.split("-")[0]);
+					areaList.add(a);
+				}
+				activityCollectAreaMapper.saveBatch(areaList);
 			}
-			activityCollectAreaMapper.saveBatch(areaList);
-		}
-
-		// 如果是小区
-		if (activityCollectCoupons.getAreaType() == AreaType.community.ordinal()) {
-			// 批量添加新记录
-			String[] array = areaIds.split(",");
-			List<ActivityCollectCommunity> areaList = new ArrayList<ActivityCollectCommunity>();
-			for (String str : array) {
-				ActivityCollectCommunity a = new ActivityCollectCommunity();
-				a.setId(UuidUtils.getUuid());
-				a.setCollectCouponsId(activityCollectCoupons.getId());
-				a.setCommunityId(str);
-				areaList.add(a);
+	
+			// 如果是小区
+			if (activityCollectCoupons.getAreaType() == AreaType.community.ordinal()) {
+				// 批量添加新记录
+				String[] array = areaIds.split(",");
+				List<ActivityCollectCommunity> areaList = new ArrayList<ActivityCollectCommunity>();
+				for (String str : array) {
+					ActivityCollectCommunity a = new ActivityCollectCommunity();
+					a.setId(UuidUtils.getUuid());
+					a.setCollectCouponsId(activityCollectCoupons.getId());
+					a.setCommunityId(str);
+					areaList.add(a);
+				}
+				activityCollectCommunityMapper.saveBatch(areaList);
 			}
-			activityCollectCommunityMapper.saveBatch(areaList);
 		}
+		
 		// 可用余额- 冻结+ 代理商才同步
 		if (!"0".equals(activityCollectCoupons.getBelongType())) {
 			PayUpdateAmountDto dto = new PayUpdateAmountDto();
@@ -169,7 +181,20 @@ public class ActivityCollectCouponsServiceImpl
 				throw new Exception(result.getMsg());
 			}
 		}
-
+		
+		//批量插入ActivityCollectOrderType表
+		if(activityCollectCoupons.getOrderTypes() != null && 
+				activityCollectCoupons.getOrderTypes().length > 0){
+			List<ActivityCollectOrderType> otList = new ArrayList<ActivityCollectOrderType>();
+			for(String orderTypeId : activityCollectCoupons.getOrderTypes()){
+				ActivityCollectOrderType ot = new ActivityCollectOrderType();
+				ot.setId(UuidUtils.getUuid());
+				ot.setCollectCouponsId(activityCollectCoupons.getId());
+				ot.setOrderType(Integer.parseInt(orderTypeId));
+				otList.add(ot);
+			}
+			activityCollectOrderTypeMapper.saveOrderTypeBatch(otList);
+		}
 	}
 
 	@Transactional(rollbackFor = Exception.class)
@@ -309,45 +334,66 @@ public class ActivityCollectCouponsServiceImpl
 		map.put("activityId", activityCollectCoupons.getId());
 		activityCouponsMapper.updateBatchActivityId(map);
 
-		// 代金卷范围类型：0全国，1区域，2小区 , 3店铺
-		// 如果是区域
-		if (activityCollectCoupons.getAreaType() == 1) {
+		if(activityCollectCoupons.getType() == ActivityCollectCouponsType.OPEN_DOOR.getValue() ||
+				   activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue() ||	
+				   activityCollectCoupons.getType() == ActivityCollectCouponsType.get.getValue()){
+			// 代金卷范围类型：0全国，1区域，2小区 , 3店铺
+			// 如果是区域
+			if (activityCollectCoupons.getAreaType() == 1) {
 
-			// 先删除老记录
-			activityCollectAreaMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
+				// 先删除老记录
+				activityCollectAreaMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
 
-			// 批量添加新记录
-			String[] array = areaIds.split(",");
+				// 批量添加新记录
+				String[] array = areaIds.split(",");
 
-			List<ActivityCollectArea> areaList = new ArrayList<ActivityCollectArea>();
-			for (String str : array) {
-				ActivityCollectArea a = new ActivityCollectArea();
-				a.setId(UuidUtils.getUuid());
-				a.setCollectCouponsId(activityCollectCoupons.getId());
-				a.setType(Integer.parseInt(str.split("-")[1]));
-				a.setAreaId(str.split("-")[0]);
-				areaList.add(a);
+				List<ActivityCollectArea> areaList = new ArrayList<ActivityCollectArea>();
+				for (String str : array) {
+					ActivityCollectArea a = new ActivityCollectArea();
+					a.setId(UuidUtils.getUuid());
+					a.setCollectCouponsId(activityCollectCoupons.getId());
+					a.setType(Integer.parseInt(str.split("-")[1]));
+					a.setAreaId(str.split("-")[0]);
+					areaList.add(a);
+				}
+				activityCollectAreaMapper.saveBatch(areaList);
 			}
-			activityCollectAreaMapper.saveBatch(areaList);
+
+			// 如果是小区
+			if (activityCollectCoupons.getAreaType() == 2) {
+
+				// 先删除老记录
+				activityCollectCommunityMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
+
+				// 批量添加新记录
+				String[] array = areaIds.split(",");
+				List<ActivityCollectCommunity> areaList = new ArrayList<ActivityCollectCommunity>();
+				for (String str : array) {
+					ActivityCollectCommunity a = new ActivityCollectCommunity();
+					a.setId(UuidUtils.getUuid());
+					a.setCollectCouponsId(activityCollectCoupons.getId());
+					a.setCommunityId(str);
+					areaList.add(a);
+				}
+				activityCollectCommunityMapper.saveBatch(areaList);
+			}
 		}
-
-		// 如果是小区
-		if (activityCollectCoupons.getAreaType() == 2) {
-
-			// 先删除老记录
-			activityCollectCommunityMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
-
-			// 批量添加新记录
-			String[] array = areaIds.split(",");
-			List<ActivityCollectCommunity> areaList = new ArrayList<ActivityCollectCommunity>();
-			for (String str : array) {
-				ActivityCollectCommunity a = new ActivityCollectCommunity();
-				a.setId(UuidUtils.getUuid());
-				a.setCollectCouponsId(activityCollectCoupons.getId());
-				a.setCommunityId(str);
-				areaList.add(a);
+		
+		//批量插入ActivityCollectOrderType表
+		if(activityCollectCoupons.getOrderTypes() != null && 
+				activityCollectCoupons.getOrderTypes().length > 0){
+			//先删掉老数据
+			activityCollectOrderTypeMapper.deleteOrderTypeByCollectCouponsId(activityCollectCoupons.getId());
+			
+			List<ActivityCollectOrderType> otList = new ArrayList<ActivityCollectOrderType>();
+			for(String orderTypeId : activityCollectCoupons.getOrderTypes()){
+				ActivityCollectOrderType ot = new ActivityCollectOrderType();
+				ot.setId(UuidUtils.getUuid());
+				ot.setCollectCouponsId(activityCollectCoupons.getId());
+				ot.setOrderType(Integer.parseInt(orderTypeId));
+				otList.add(ot);
 			}
-			activityCollectCommunityMapper.saveBatch(areaList);
+			activityCollectOrderTypeMapper.saveOrderTypeBatch(otList);
 		}
 	}
 
@@ -600,6 +646,22 @@ public class ActivityCollectCouponsServiceImpl
 			
 		} 		
 		return resultMap;
+	}
+	
+	@Override
+	public List<ActivityCoupons> findCouponsByParams(Map<String,Object> map){
+		return activityCollectCouponsMapper.findCouponsByParams(map);
+	}
+	
+	/**
+	 * @Description: 根据活动id查询列表
+	 * @param collectCouponsId 代金券活动id
+	 * @author zhangkn
+	 * @date 2016年9月17日
+	 */
+	@Override
+	public List<ActivityCollectOrderType> findOrderTypeListByCollectCouponsId(String collectCouponsId){
+		return activityCollectOrderTypeMapper.findOrderTypeListByCollectCouponsId(collectCouponsId);
 	}
 	
 }

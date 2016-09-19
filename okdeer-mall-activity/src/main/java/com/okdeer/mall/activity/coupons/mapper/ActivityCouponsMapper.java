@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.archive.goods.base.entity.GoodsNavigateCategory;
 import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -34,11 +35,17 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	List<AreaScTreeVo> selectStoreInfoByCityId(StoreInfo parStoreInfo);
 	
 	/**
-	 * 查询一级类目
+	 * 查询一级导航类目
 	 * @param goodsSpuCategory 对象
 	 * @return 结果
 	 */
-	List<GoodsSpuCategory> selectCategory(GoodsSpuCategory goodsSpuCategory);
+	List<GoodsNavigateCategory> findNavigateCategoryList(Map<String,Object> map);
+	/**
+	 * 查询三级商品类目
+	 * @param goodsSpuCategory 对象
+	 * @return 结果
+	 */
+	List<GoodsSpuCategory> findSpuCategoryList(Map<String,Object> map);
 	
 	/**
 	 * 根据条件查询代金卷信息 

@@ -26,6 +26,8 @@
 		<result property="disabled" column="disabled" />
 		<result column="refund_type" property="refundType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundType" />
 		<result property="dailyCirculation" column="daily_circulation" />
+		<result property="h5Url" column="h5_url" />
+		<result property="orderTotalAmount" column="order_total_amount" />
 	</resultMap>
 
     <!-- wusw:代金券领取活动、代金券、限制类目等关联信息 -->
@@ -87,7 +89,7 @@
     <!-- end：查询代金券活动以及关联地区列表 add by wushp -->
     
     <sql id="columns">
-		id,name,type,status,belong_type,limit_client_type,start_time,end_time,description,identity_limit,area_type,total_cost,approval_status,approval_reason,approval_time,approval_user_id,create_time,create_user_id,update_time,update_user_id,disabled,daily_circulation
+		id,name,type,status,belong_type,limit_client_type,start_time,end_time,description,identity_limit,area_type,total_cost,approval_status,approval_reason,approval_time,approval_user_id,create_time,create_user_id,update_time,update_user_id,disabled,daily_circulation,h5_url,order_total_amount
 	</sql>
 	<sql id="columnsExt">
 		collectCoupons.id,name,collectCoupons.type,status,belong_type,limit_client_type,start_time,end_time,description,identity_limit,area_type,total_cost,approval_status,approval_reason,approval_time,approval_user_id,create_time,create_user_id,update_time,update_user_id,disabled,daily_circulation
@@ -176,66 +178,11 @@
             #{updateTime},
             #{updateUserId},
             #{disabled},
-            #{dailyCirculation}
+            #{dailyCirculation},
+            #{h5Url},
+            #{orderTotalAmount}
         )
 	</insert>
-
-    <insert id="insertBatch" parameterType="list">
-        insert into activity_collect_coupons(
-			<include refid="columns"/>
-		)values
-		<foreach collection="list" item="item" index="index" separator="," >
-        (
-            #{item.id},
-            #{item.name},
-            #{item.type},
-            #{item.status},
-            #{item.belongType},
-            #{item.limitClientType},
-            #{item.startTime},
-            #{item.endTime},
-            #{item.description},
-            #{item.identityLimit},
-            #{item.areaType},
-            #{item.totalCost},
-            #{item.approvalStatus},
-            #{item.approvalReason},
-            #{item.approvalTime},
-            #{item.approvalUserId},
-            #{item.createTime},
-            #{item.createUserId},
-            #{item.updateTime},
-            #{item.updateUserId},
-            #{item.disabled},
-            #{dailyCirculation}
-        )
-		</foreach>
-	</insert>
-
-    <update id="update" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons">
-        update activity_collect_coupons set
-     		name = #{name},
-     		type = #{type},
-     		status = #{status},
-     		belongType = #{belongType},
-     		limitClientType = #{limitClientType},
-     		startTime = #{startTime},
-     		endTime = #{endTime},
-     		description = #{description},
-     		identityLimit = #{identityLimit},
-     		areaType = #{areaType},
-     		totalCost = #{totalCost},
-     		approvalStatus = #{approvalStatus},
-     		approvalReason = #{approvalReason},
-     		approvalTime = #{approvalTime},
-     		approvalUserId = #{approvalUserId},
-     		createTime = #{createTime},
-     		createUserId = #{createUserId},
-     		updateTime = #{updateTime},
-     		updateUserId = #{updateUserId},
-     		disabled = #{disabled}
-        where id = #{id}
-    </update>
 
     <update id="updateDynamic" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons">
         update activity_collect_coupons set
@@ -301,6 +248,12 @@
 			</if>
 			<if test="dailyCirculation != null">
 				daily_circulation = #{dailyCirculation},
+			</if>
+			<if test="h5Url != null">
+				h5_url = #{h5Url},
+			</if>
+			<if test="orderTotalAmount != null">
+				order_total_amount = #{orderTotalAmount},
 			</if>
         id = #{id}
         where id = #{id}
@@ -563,4 +516,40 @@
 	    LIMIT 1
 	</select>
 	<!-- end：查询代金券活动 -->
+	
+	<select id="findCouponsByParams" resultType="com.okdeer.mall.activity.coupons.entity.ActivityCoupons" parameterType="string">
+		select s.id,
+		s.name,
+		s.type,
+		s.area_type as areaType,
+		s.activity_id as activityId,
+		s.belong_type as belongType,
+		s.face_value as faceValue,
+		s.total_num as totalNum,
+		s.valid_day as validDay,
+		s.arrive_limit as arriveLimit,
+		s.every_limit as everyLimit
+		 from activity_coupons s
+		where disabled = 0 
+		and 
+		(
+			(activity_id is null or activity_id = '')
+			<if test="totalNumInfinite != null and totalNumInfinite != ''">
+				and total_num = 0
+			</if>
+			<if test="exchangeCodeNull != null and exchangeCodeNull != ''">
+				and (exchange_code is null or exchange_code = '')
+			</if>
+			
+			<if test="everyLimitNull != null and everyLimitNull != ''">
+				and (every_limit is null or every_limit = 0)
+			</if>
+		)
+		<!-- 如果是修改调用接口,就加载之前该活动已经关联的代金券 -->
+		<if test="activityId != null and activityId != ''">
+			or activity_id = #{activityId}
+		</if>
+		order by s.face_value desc
+	</select>
+	
 </mapper>

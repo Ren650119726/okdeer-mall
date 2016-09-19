@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 
 /**
  * @DESC: 商品类目-分类类型关系表dao
@@ -148,4 +149,12 @@ public interface ActivityCollectCouponsMapper {
 	ActivityCollectCouponsVo findActivityCollectCouponsByCity(@Param("provinceId") String provinceId, @Param("cityId") String cityId);
 	//End added by tangy
 	
+	/**
+	 * @Description: 根据筛选条件加载代金券列表
+	 * @param map
+	 * @return 代金券列表
+	 * @author zhangkn
+	 * @date 2016年9月14日
+	 */
+	List<ActivityCoupons> findCouponsByParams(Map<String,Object> map);
 }
