@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.activity.coupons.service;
 
 import java.util.List;
@@ -24,8 +25,7 @@ public interface ActivitySaleService {
 
 	PageUtils<ActivitySale> pageList(Map<String, Object> map, Integer pageNumber, Integer pageSize);
 
-	void updateBatchStatus(List<String> ids, int status, String storeId, String createUserId, List<ActivitySale> asList)
-			throws Exception;
+	void updateBatchStatus(List<String> ids, int status, String storeId, String createUserId) throws Exception;
 
 	List<Map<String, Object>> listGoodsStoreSku(Map<String, Object> map);
 
@@ -41,13 +41,8 @@ public interface ActivitySaleService {
 	 */
 	int validateExist(Map<String, Object> map);
 
-	void deleteActivitySaleGoods(String storeId, String createUserId, String activitySaleGoodsId, String goodsStoreSkuId)
-			throws Exception;
-
-	/**
-	 * 执行定时任务
-	 */
-	void updateByTask() throws Exception;
+	void deleteActivitySaleGoods(String storeId, String createUserId, String activitySaleGoodsId,
+			String goodsStoreSkuId) throws Exception;
 
 	/**
 	 * 
@@ -59,6 +54,8 @@ public interface ActivitySaleService {
 	ActivitySale findByPrimaryKey(String id);
 
 	ActivitySale getAcSaleStatus(String activityId);
-	
+
 	int selectActivitySale(String activityId);
+
+	List<ActivitySale> listByTask();
 }
