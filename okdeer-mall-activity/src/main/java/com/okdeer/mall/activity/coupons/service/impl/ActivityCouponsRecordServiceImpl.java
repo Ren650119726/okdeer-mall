@@ -30,6 +30,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
+import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
@@ -55,6 +56,7 @@ import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *		V4.1			2016-07-04			maojj			事务控制使用注解
+ *		V1.1.0			2016-9-19		wushp				各种状态代金券数量统计
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi")
 class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceApi, ActivityCouponsRecordService {
@@ -468,5 +470,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		activityCouponsRecordMapper.updateActivityCouponsStatus(params);
 
 	}
-
+	
+	//begin add by wushp 20160919 V1.1.0
+	@Transactional(readOnly = true)
+	@Override
+	public List<CouponsStatusCountVo> findStatusCountByUserId(String userId) {
+		return activityCouponsRecordMapper.findStatusCountByUserId(userId);
+	}
+	//end add by wushp 20160919 V1.1.0
 }
