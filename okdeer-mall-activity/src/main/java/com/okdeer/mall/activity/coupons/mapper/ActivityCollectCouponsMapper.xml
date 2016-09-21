@@ -27,7 +27,7 @@
 		<result column="refund_type" property="refundType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundType" />
 		<result property="dailyCirculation" column="daily_circulation" />
 		<result property="h5Url" column="h5_url" />
-		<result property="orderTotalAmount" column="order_total_amount" />
+		<result property="limitAmount" column="limit_amount" />
 	</resultMap>
 
     <!-- wusw:代金券领取活动、代金券、限制类目等关联信息 -->
@@ -89,7 +89,7 @@
     <!-- end：查询代金券活动以及关联地区列表 add by wushp -->
     
     <sql id="columns">
-		id,name,type,status,belong_type,limit_client_type,start_time,end_time,description,identity_limit,area_type,total_cost,approval_status,approval_reason,approval_time,approval_user_id,create_time,create_user_id,update_time,update_user_id,disabled,daily_circulation,h5_url,order_total_amount
+		id,name,type,status,belong_type,limit_client_type,start_time,end_time,description,identity_limit,area_type,total_cost,approval_status,approval_reason,approval_time,approval_user_id,create_time,create_user_id,update_time,update_user_id,disabled,daily_circulation,h5_url,limit_amount
 	</sql>
 	<sql id="columnsExt">
 		collectCoupons.id,name,collectCoupons.type,status,belong_type,limit_client_type,start_time,end_time,description,identity_limit,area_type,total_cost,approval_status,approval_reason,approval_time,approval_user_id,create_time,create_user_id,update_time,update_user_id,disabled,daily_circulation
@@ -180,7 +180,7 @@
             #{disabled},
             #{dailyCirculation},
             #{h5Url},
-            #{orderTotalAmount}
+            #{limitAmount}
         )
 	</insert>
 
@@ -252,8 +252,8 @@
 			<if test="h5Url != null">
 				h5_url = #{h5Url},
 			</if>
-			<if test="orderTotalAmount != null">
-				order_total_amount = #{orderTotalAmount},
+			<if test="limitAmount != null">
+				limit_amount = #{limitAmount},
 			</if>
         id = #{id}
         where id = #{id}
