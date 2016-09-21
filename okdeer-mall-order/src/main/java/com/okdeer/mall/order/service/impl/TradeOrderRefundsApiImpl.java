@@ -44,14 +44,14 @@ import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsChargeVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsVo;
 import com.okdeer.mall.system.service.SysBuyerUserService;
-import com.yschome.api.mall.order.dto.OrderRefundsDetailDto;
-import com.yschome.api.mall.order.dto.OrderRefundsDto;
-import com.yschome.api.mall.order.dto.RefundsCertificateDto;
-import com.yschome.api.mall.order.dto.RefundsMoneyDto;
-import com.yschome.api.mall.order.dto.TradeOrderItemDto;
-import com.yschome.api.mall.order.exception.ExceedRangeException;
-import com.yschome.api.mall.order.service.ITradeOrderRefundsApi;
-import com.yschome.common.PageResultVo;
+import com.okdeer.mall.order.dto.OrderRefundsDetailDto;
+import com.okdeer.mall.order.dto.OrderRefundsDto;
+import com.okdeer.mall.order.dto.RefundsCertificateDto;
+import com.okdeer.mall.order.dto.RefundsMoneyDto;
+import com.okdeer.mall.order.dto.TradeOrderItemDto;
+import com.okdeer.mall.order.exception.ExceedRangeException;
+import com.okdeer.mall.order.service.ITradeOrderRefundsApi;
+import com.okdeer.mall.common.vo.PageResultVo;
 
 /**
  * 售后单接口
@@ -67,7 +67,7 @@ import com.yschome.common.PageResultVo;
  *    重构4.1            2016-8-5            wusw               修改退款凭证图片的七牛二级域名
  *    重构4.1            2016-8-18            zengj             如果是商家的优惠活动，就不需要传递优惠金额字段
  */
-@Service(version = "1.0.0", interfaceName = "com.yschome.api.mall.order.service.ITradeOrderRefundsApi")
+@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.ITradeOrderRefundsApi")
 public class TradeOrderRefundsApiImpl implements ITradeOrderRefundsApi {
 
     private static final Logger logger = LoggerFactory.getLogger(TradeOrderRefundsApiImpl.class);
@@ -504,5 +504,12 @@ public class TradeOrderRefundsApiImpl implements ITradeOrderRefundsApi {
 	}
 	
 	//End 重构4.1  add by wusw  20160722
-
+	
+	// Begin v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
+	@Override
+	public Map<String, Object> statisRefundsByParams(Map<String, Object> params) throws Exception {
+		
+		return tradeOrderRefundsService.statisRefundsByParams(params);
+	}
+	// End v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
 }

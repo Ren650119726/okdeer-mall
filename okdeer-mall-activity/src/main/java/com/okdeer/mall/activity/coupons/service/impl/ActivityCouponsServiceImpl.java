@@ -5,13 +5,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.archive.goods.base.entity.GoodsNavigateCategory;
 import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.archive.store.entity.StoreAgentCommunity;
 import com.okdeer.archive.store.entity.StoreInfo;
@@ -20,6 +23,7 @@ import com.okdeer.archive.store.service.StoreAgentCommunityServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCommunity;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsLimitCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRelationStore;
@@ -28,6 +32,7 @@ import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.activity.coupons.enums.CashDelivery;
 import com.okdeer.mall.activity.coupons.enums.CategoryLimit;
+import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.common.entity.AreaScTreeVo;
 import com.okdeer.mall.common.enums.AreaType;
@@ -38,6 +43,7 @@ import com.yschome.base.common.enums.Disabled;
 import com.yschome.base.common.exception.ServiceException;
 import com.yschome.base.common.utils.PageUtils;
 import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsLimitCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
@@ -57,6 +63,12 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	 */
 	@Autowired
 	private ActivityCouponsMapper activityCouponsMapper;
+	
+	/**
+	 * 注入代金券分类mapper
+	 */
+	@Autowired
+	private ActivityCouponsCategoryMapper activityCouponsCategoryMapper;
 
 	/**
 	 * 店铺信息serviceApi注入
@@ -102,6 +114,14 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		if (couponsInfos == null) {
 			couponsInfos = new ArrayList<CouponsInfoQuery>();
 		}
+		
+		//转义字段
+		for(CouponsInfoQuery c : couponsInfos){
+			if(c.getType() != null){
+				c.setTypeName(CouponsType.getName(c.getType()));
+			}
+		}
+		
 		PageUtils<CouponsInfoQuery> pageUtils = new PageUtils<CouponsInfoQuery>(couponsInfos);
 		return pageUtils;
 	}
@@ -109,16 +129,18 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void addCoupons(ActivityCoupons coupons) throws ServiceException {
-		String id = UuidUtils.getUuid();
-		coupons.setId(id);
-		coupons.setCreateTime(new Date());
-		coupons.setUpdateTime(new Date());
-		coupons.setUsedNum(0);
-		coupons.setIsCategoryLimit(CategoryLimit.no);
-		coupons.setIsCashDelivery(CashDelivery.no);
-		coupons.setDisabled(Disabled.valid);
-		activityCouponsMapper.insert(coupons);
-		this.addRelatedInfo(coupons);
+		//0：便利店和服务店，1：便利店    2 服务店   3话费充值
+		if(coupons.getType() == CouponsType.bldfwd.getValue()){
+			activityCouponsMapper.insert(coupons);
+		} else if (coupons.getType() == CouponsType.hfcz.getValue()) {
+			activityCouponsMapper.insert(coupons);
+		} else if (coupons.getType() == CouponsType.bld.getValue()) {
+			activityCouponsMapper.insert(coupons);
+			this.addRelatedInfo(coupons);
+		} else if (coupons.getType() == CouponsType.fwd.getValue()) {
+			activityCouponsMapper.insert(coupons);
+			this.addRelatedInfo(coupons);
+		}
 	}
 
 	@Override
@@ -148,10 +170,13 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	}
 
 	@Override
-	public List<GoodsSpuCategory> getCategory(GoodsSpuCategory goodsSpuCategory) {
-		goodsSpuCategory.setDisabled(Disabled.valid);
-		goodsSpuCategory.setLevelType(1);
-		return activityCouponsMapper.selectCategory(goodsSpuCategory);
+	public List<GoodsSpuCategory> findSpuCategoryList(Map<String,Object> map) {
+		return activityCouponsMapper.findSpuCategoryList(map);
+	}
+	
+	@Override
+	public List<GoodsNavigateCategory> findNavigateCategoryList(Map<String,Object> map){
+		return activityCouponsMapper.findNavigateCategoryList(map);
 	}
 
 	@Override
@@ -173,36 +198,28 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateCoupons(CouponsInfoQuery coupons) throws ServiceException {
-		/* int category = couponsManageService.getCategory(coupons.getId()); */
-		int area = this.getArea(coupons.getId());
-		int community = this.getCommunity(coupons.getId());
-		int store = this.getStore(coupons.getId());
-		int relationStores = this.getCouponsRelationStroe(coupons.getId());
-		/*
-		 * if (category > 0) {
-		 * couponsManageService.deleteCouponsLimitCategory(coupons.getId()); }
-		 */
-		if (area > 0) {
+		//0：便利店和服务店，1：便利店    2 服务店   3 充值
+		if(coupons.getType() == CouponsType.bldfwd.getValue() || coupons.getType() == CouponsType.hfcz.getValue()){
+			activityCouponsMapper.updateCoupons(coupons);
+		} else if (coupons.getType() == CouponsType.bld.getValue() || coupons.getType() == CouponsType.fwd.getValue()) {
+			activityCouponsMapper.updateCoupons(coupons);
+			
+			//删掉老数据
 			this.deleteCouponsArea(coupons.getId());
-		}
-		if (community > 0) {
-			this.deleteCouponsCommunity(coupons.getId());
-		}
-		if (store > 0) {
 			this.deleteCouponsStroe(coupons.getId());
-		}
-		if (relationStores > 0) {
 			this.deleteCouponsRelationStroe(coupons.getId());
+			activityCouponsCategoryMapper.deleteByCouponsId(coupons.getId());
+			
+			//批量插入新数据 (由于新增和修改 接收的对象用的不是同一个,只能重新转换一下)
+			ActivityCoupons activitycoupons = new ActivityCoupons();
+			activitycoupons.setId(coupons.getId());
+			activitycoupons.setAreaIds(coupons.getAreaIds());
+			activitycoupons.setAreaType(coupons.getAreaType());
+			activitycoupons.setCategoryLimitIds(coupons.getCategoryLimitIds());
+			activitycoupons.setType(coupons.getType());
+			activitycoupons.setCategoryIds(coupons.getCategoryIds());
+			this.addRelatedInfo(activitycoupons);
 		}
-		coupons.setUpdateTime(new Date());
-		coupons.setIsCashDelivery(CashDelivery.no);
-		activityCouponsMapper.updateCoupons(coupons);
-		ActivityCoupons activitycoupons = new ActivityCoupons();
-		activitycoupons.setId(coupons.getId());
-		activitycoupons.setAreaIds(coupons.getAreaIds());
-		activitycoupons.setAreaType(coupons.getAreaType());
-		// activitycoupons.setCategoryLimitIds(coupons.getCategoryLimitIds());
-		this.addRelatedInfo(activitycoupons);
 	}
 
 	@Override
@@ -277,7 +294,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		List<StoreInfo> storeInfoList = new ArrayList<>();
 		if (coupons.getAreaType() == AreaType.area) {
 			ArrayList<ActivityCouponsArea> areaList = new ArrayList<>();
-			if (coupons.getAreaIds() != null && coupons.getAreaIds() != "") {
+			if (StringUtils.isNotEmpty(coupons.getAreaIds())) {
 				areas1 = coupons.getAreaIds().split(",");
 				if (areas1 != null && areas1.length > 0) {
 					for (int i = 0; i < areas1.length; i++) {
@@ -355,6 +372,27 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		}
 		if (storeInfoList.size() > 0) {
 			this.addRelationStore(storeInfoList, coupons);
+		}
+		
+		//代金券关联的分类 1 导航分类 2 服务店店铺商品分类
+		int type = 0;
+		if (coupons.getType() == CouponsType.bld.getValue()) {
+			type = 1;
+		} else if (coupons.getType() == CouponsType.fwd.getValue()) {
+			type = 2;
+		}
+		if(StringUtils.isNotEmpty(coupons.getCategoryIds())){
+			String[] categoryArray = coupons.getCategoryIds().split(",");
+			List<ActivityCouponsCategory> accList = new ArrayList<ActivityCouponsCategory>();
+			for(String s : categoryArray){
+				ActivityCouponsCategory acc = new ActivityCouponsCategory();
+				acc.setId(UuidUtils.getUuid());
+				acc.setCategoryId(s);
+				acc.setCouponId(coupons.getId());
+				acc.setType(type);
+				accList.add(acc);
+			}
+			activityCouponsCategoryMapper.saveBatch(accList);
 		}
 	}
 
@@ -530,4 +568,11 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		return activityCouponsMapper.selectByPrimaryKey(id);
 	}
 
+	@Override
+	public List<ActivityCouponsCategory> findActivityCouponsCategoryByCouponsId(String couponId,Integer type){
+		Map<String,Object> map = new HashMap<String, Object>();
+		map.put("couponId", couponId);
+		map.put("type", type);
+		return activityCouponsCategoryMapper.findActivityCouponsCategoryByCouponsId(map);
+	}
 }

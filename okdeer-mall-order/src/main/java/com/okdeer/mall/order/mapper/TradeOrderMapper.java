@@ -41,6 +41,7 @@ import com.yschome.base.common.exception.ServiceException;
  *    重构4.1            2016-7-19            wusw                添加财务系统的订单接口（包含服务店订单情况）
  *    重构4.1            2016-7-29            wusw                添加服务店订单详情查询（商城后台）
  *    重构4.1            2016-7-30            zhaoqc              添加根据订单状态查询订单列表
+ *    v1.1.0            2016-9-17            zengjz              添加财务系统统计接口
  */
 public interface TradeOrderMapper {
 
@@ -952,4 +953,25 @@ public interface TradeOrderMapper {
 	 * @date 2016年9月13日
 	 */
 	List<Map<String, Object>> findConfirmDeliveryOrderListByPos(@Param("storeId") String storeId);
+	
+	// Begin v1.1.0 add by zengjz
+	/**
+	 * @Description: 按条件统计订单交易量与金额
+	 * @param params 查询参数
+	 * @return Map<String,Object>  返回结果
+	 * @author zengjizu
+	 * @date 2016年9月12日
+	 */
+	Map<String, Object> statisOrderForFinanceByParams(Map<String, Object> params);
+	
+	/**
+	 * @Description: 按查询条件统计取消订单退款 金额、数量
+	 * @param params 查询参数
+	 * @return Map<String,Object>  返回结果
+	 * @author zengjizu
+	 * @date 2016年9月17日
+	 */
+	Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params);
+	
+	// end v1.1.0 add by zengjz
 }

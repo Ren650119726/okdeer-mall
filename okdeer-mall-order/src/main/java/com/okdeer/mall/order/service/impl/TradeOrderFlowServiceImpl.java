@@ -4282,7 +4282,9 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 		// 张克能加,生成流水号,支付宝或者微信的时候要用
 		order.setTradeNum(TradeNumUtil.getTradeNum());
-
+		// Begin 发货人ID add by zengj
+		order.setShipmentsUserId(sellerId);
+		// End 发货人ID add by zengj
 		order.setStoreName(myStoreName);
 		order.setSellerId(sellerId);
 		order.setStoreId(storeId);

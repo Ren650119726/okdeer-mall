@@ -10,6 +10,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
+import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.order.vo.Coupons;
 import com.yschome.base.dal.IBaseCrudMapper;
 
@@ -23,7 +24,7 @@ import com.yschome.base.dal.IBaseCrudMapper;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构V4.1			2016-07-16			maojj			添加查找用户有效的代金券信息方法
- * 
+ * 		V1.1.0			2016-09-19			wushp			V1.1.0
  */
 public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	
@@ -160,4 +161,14 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
     List<ActivityCouponsRecordVo> findOrderByRecordId(@Param("recordIds") List<String> recordIds);
     //End added by tangy 
     
+    //begin add by wushp 20160919 V1.1.0
+    /**
+     * @Description: 根据用户统计各种状态的代金券数量
+     * @param userId 用户id
+     * @return list
+     * @author wushp
+     * @date 2016年9月19日
+     */
+    List<CouponsStatusCountVo> findStatusCountByUserId(@Param("userId") String userId);
+    //end add by wushp 20160919 V1.1.0
 }

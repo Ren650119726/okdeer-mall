@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysBuyerUserPointsExt;
 import com.okdeer.archive.system.entity.SysMemberExtVo;
 import com.yschome.base.dal.IBaseCrudMapper;
@@ -58,4 +59,14 @@ public interface SysBuyerUserMapper extends IBaseCrudMapper {
 	 * @date 2016年8月18日
 	 */
 	List<SysMemberExtVo> findExtByUserIds(@Param("userIds") List<String> userIds);
+	
+	/**
+	 * 
+	 * @Description: 根据ID集合获取用户信息
+	 * @param ids List<String>
+	 * @return list List<SysBuyerUser>
+	 * @author wangf01
+	 * @date 2016年9月9日
+	 */
+	List<SysBuyerUser> findByIds(@Param("ids") List<String> ids);
 }

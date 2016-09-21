@@ -38,6 +38,7 @@
     <result column="pick_up_id" property="pickUpId" jdbcType="VARCHAR" />
     <result column="trade_num" property="tradeNum" jdbcType="VARCHAR"/>
     <result column="seller_id" property="sellerId" jdbcType="VARCHAR"/>
+    <result column="shipments_user_id" property="shipmentsUserId" jdbcType="VARCHAR"/>
     <result column="is_show" property="isShow" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderIsShowEnum" />
     <result column="is_complete" property="isComplete" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderComplete" />
     <result column="compain_status" property="compainStatus" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.CompainStatusEnum"/>
@@ -442,7 +443,7 @@
   <sql id="Base_Column_List" >
     id, user_id, store_id, pid, order_no, type, pick_up_type, pick_up_code, pick_up_time,order_resource, is_complete,
     status, total_amount, actual_amount, preferential_price, fare, activity_type, activity_id, activity_item_id,pay_way,
-    remark, invoice, disabled, create_time, update_time,is_show,pospay,reason,trade_num,user_phone,payment_status,payment_time,income,seller_id
+    remark, invoice, disabled, create_time, update_time,is_show,pospay,reason,trade_num,user_phone,payment_status,payment_time,income,seller_id,shipments_user_id
   </sql>
   
   <sql id="order_column_list">
@@ -1315,6 +1316,9 @@
       <if test="deliveryTime != null">
         delivery_time,
       </if>
+      <if test="shipmentsUserId != null">
+        shipments_user_id,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -1411,7 +1415,10 @@
       #{income,jdbcType=VARCHAR},
       </if>
       <if test="deliveryTime != null">
-      #{deliveryTime,jdbcType=VARCHAR}
+      #{deliveryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="shipmentsUserId != null">
+      #{shipmentsUserId,jdbcType=VARCHAR}
       </if>
     </trim>
   </insert>
@@ -1822,6 +1829,9 @@
    <select id="selectOrderPayInvoiceById" resultMap="TradeOrderPayMap" parameterType="java.lang.String">
      SELECT tr.id,tr.order_no,tr.invoice,tr.create_time,tr.status,tr.pick_up_type,tr.pick_up_time,tr.preferential_price,tr.total_amount,tr.user_id,tr.type,tr.pick_up_code,
             tr.preferential_price,tr.fare,tr.actual_amount,tr.remark,tr.activity_id,tr.store_id,tr.update_time,tr.received_time,tr.delivery_time,tr.activity_type,
+            <!-- begin 商城后台实物订单管理新增订单来源字段 add by wangf01  -->
+            tr.order_resource,
+            <!-- end 商城后台实物订单管理新增订单来源字段 add by wangf01  -->
             op.pay_type,tr.`pay_way`,op.pay_time,op.pay_amount,op.create_time AS pay_create_time,invoice.head,invoice.context,tr.reason
      FROM trade_order tr
      LEFT JOIN trade_order_pay op ON tr.id = op.order_id 
@@ -2204,6 +2214,9 @@
       </if>
       <if test="deliveryTime != null" >
           delivery_time = #{deliveryTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="shipmentsUserId != null" >
+          shipments_user_id = #{shipmentsUserId,jdbcType=VARCHAR},
       </if>
       
     </set>
@@ -4000,4 +4013,60 @@
 	   AND o.store_id = #{storeId, jdbcType=VARCHAR}
 	   ORDER BY o.create_time ASC
    </select>
+   
+   <select id="statisOrderCannelRefundByParams" parameterType="map"
+		resultType="map">
+		SELECT IFNULL(sum(total_amount),0) as totalAmount,count(1) as count
+		FROM trade_order trade
+		LEFT JOIN trade_order_pay pay ON pay.order_id =
+		trade.id
+		LEFT JOIN store_info store ON store.id = trade.store_id
+		LEFT
+		JOIN psms_agent agent ON agent.id = store.agent_id
+		WHERE 1=1
+		<!-- trade.disabled = 0 -->
+		<if test="params != null">
+			<!-- 订单状态 -->
+			<if test="params.status != null">
+				AND trade.`status` IN
+				<foreach collection="params.status" index="index" item="item"
+					open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<!-- 订单支付方式 -->
+			<if test="params.payWay != null">
+				AND trade.pay_way = #{params.payWay,jdbcType=TINYINT}
+			</if>
+			<!-- 订单支付类型 -->
+			<if test="params.payType != null">
+				AND pay.pay_type IN
+				<foreach collection="params.payType" index="index" item="item"
+					open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<!-- 订单编号 -->
+			<if test="params.orderNo != null and params.orderNo != ''">
+				AND trade.order_no LIKE CONCAT('%',#{params.orderNo},'%')
+			</if>
+			<if test="params.shopName != null and params.shopName != ''">
+				AND store.store_name LIKE CONCAT('%',#{params.shopName},'%')
+			</if>
+			<!-- 更新时间 -->
+			<if test="params.startTime != null">
+				AND trade.create_time <![CDATA[ >= ]]>
+				#{params.startTime,jdbcType=TIMESTAMP}
+			</if>
+			<!-- 更新时间 -->
+			<if test="params.endTime != null">
+				AND trade.create_time <![CDATA[ <= ]]>
+				#{params.endTime,jdbcType=TIMESTAMP}
+			</if>
+			<!-- 买家用户手机号码 -->
+			<if test="params.buyer != null and params.buyer != ''">
+				AND trade.user_phone LIKE CONCAT('%',#{params.buyer},'%')
+			</if>
+		</if>
+	</select>
 </mapper>

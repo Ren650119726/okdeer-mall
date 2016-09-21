@@ -1,4 +1,3 @@
-
 package com.okdeer.mall.order.service.impl;
 
 import static com.okdeer.common.consts.DescriptConstants.ORDER_EXECUTE_CANCEL_FAIL;
@@ -194,6 +193,7 @@ import net.sf.json.JsonConfig;
  *    V1.0.3            2016-09-01             wusw               修改自动确认收货期限为7天      
  *    1.0.Z			2016-09-05			zengj			增加订单操作记录        
  *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
+ *   V1.1.0	       2016-9-12             zengjz            财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口  
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -266,6 +266,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Autowired
 	private ActivitySaleMapper activitySaleMapper;
+
 	// end add by wangf01 2016.08.06
 
 	@Autowired
@@ -352,6 +353,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private StockManagerJxcServiceApi stockManagerService;
+
 	// End 1.0.Z add by zengj
 
 	@Reference(version = "1.0.0", check = false)
@@ -408,6 +410,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Resource
 	private StockMQProducer stockMQProducer;
+
 	// End added by maojj 2016-07-26
 
 	// begin 重构4.1 add by wushp 20160803
@@ -416,6 +419,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Autowired
 	ServerColumnService serverColumnService;
+
 	// end 重构4.1 add by wushp 20160803
 
 	// begin 12051 add by wusw 20160811
@@ -424,6 +428,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Autowired
 	ActivitySeckillMapper activitySeckillMapper;
+
 	// end 12051 add by wusw 20160811
 
 	// Begin sql优化，将复杂sql拆分开来 add by zengj
@@ -438,6 +443,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Reference(version = "1.0.0", check = false)
 	IPsmsAgentServiceApi psmsAgentServiceApi;
+
 	// End sql优化，将复杂sql拆分开来 add by zengj
 
 	// Begin 1.0.Z 增加订单操作记录Service add by zengj
@@ -452,6 +458,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Resource
 	private TradeOrderCompleteProcessService tradeOrderCompleteProcessService;
+
 	// End 1.0.Z 增加订单操作记录Service add by zengj
 
 	@Override
@@ -633,11 +640,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public PageUtils<TradeOrderPayQueryVo> findByStatusPayType(Map<String, Object> params, int pageNumber, int pageSize)
 			throws ServiceException {
 		PageHelper.startPage(pageNumber, pageSize);
-		List<OrderStatusEnum> orderStatusList = new ArrayList<OrderStatusEnum>();
-		orderStatusList.add(OrderStatusEnum.CANCELED);
-		orderStatusList.add(OrderStatusEnum.CANCELING);
-		orderStatusList.add(OrderStatusEnum.REFUSED);
-		orderStatusList.add(OrderStatusEnum.REFUSING);
+
+		// Begin v1.1.0 modify by zengjz 20160912 增加退款状态的判断
+		convertParamsForFinance(params);
+		// End v1.1.0 modify by zengjz 20160912
 
 		List<OrderPayTypeEnum> orderPayList = new ArrayList<OrderPayTypeEnum>();
 		if (params == null) {
@@ -657,8 +663,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				orderPayList.add(OrderPayTypeEnum.ALIPAY_PAY);
 			}
 		}
-
-		params.put("status", orderStatusList);
 		params.put("payWay", PayWayEnum.PAY_ONLINE);
 		params.put("payType", orderPayList);
 		List<TradeOrderPayQueryVo> result = tradeOrderMapper.selectByStatusPayType(params);
@@ -679,11 +683,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	@Override
 	public int selectCountByStatusPayType(Map<String, Object> params) throws ServiceException {
-		List<OrderStatusEnum> orderStatusList = new ArrayList<OrderStatusEnum>();
-		orderStatusList.add(OrderStatusEnum.CANCELED);
-		orderStatusList.add(OrderStatusEnum.CANCELING);
-		orderStatusList.add(OrderStatusEnum.REFUSED);
-		orderStatusList.add(OrderStatusEnum.REFUSING);
+
+		// Begin v1.1.0 modify by zengjz 20160912 增加退款状态的判断
+		convertParamsForFinance(params);
+		// End v1.1.0 modify by zengjz 20160912
 
 		List<OrderPayTypeEnum> orderPayList = new ArrayList<OrderPayTypeEnum>();
 		if (params == null) {
@@ -704,7 +707,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 		}
 
-		params.put("status", orderStatusList);
 		params.put("payWay", PayWayEnum.PAY_ONLINE);
 		params.put("payType", orderPayList);
 		return tradeOrderMapper.selectCountByStatusPayType(params);
@@ -761,8 +763,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 获取订单参与活动信息
 		Map<String, Object> map = getActivity(tradeOrder.getActivityType(), tradeOrder.getActivityId());
 		String activityName = map.get("activityName") == null ? null : map.get("activityName").toString();
-		ActivitySourceEnum activitySource = map.get("activitySource") == null ? null
-				: (ActivitySourceEnum) map.get("activitySource");
+		ActivitySourceEnum activitySource = map.get("activitySource") == null ? null : (ActivitySourceEnum) map
+				.get("activitySource");
 		tradeOrder.setActivityName(activityName);
 		tradeOrder.setActivitySource(activitySource);
 		// 交易项信息（包括商品基本信息）
@@ -922,14 +924,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 查询订单项表。
 				tradeOrderVo.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrderVo.getId()));
 				// 查询投诉信息
-				tradeOrderVo.setTradeOrderComplainVoList(
-						tradeOrderComplainMapper.findOrderComplainByParams(tradeOrderVo.getId()));
+				tradeOrderVo.setTradeOrderComplainVoList(tradeOrderComplainMapper
+						.findOrderComplainByParams(tradeOrderVo.getId()));
 
 				// 获取订单活动信息
 				Map<String, Object> activityMap = getActivity(tradeOrderVo.getActivityType(),
 						tradeOrderVo.getActivityId());
-				String activityName = activityMap.get("activityName") == null ? null
-						: activityMap.get("activityName").toString();
+				String activityName = activityMap.get("activityName") == null ? null : activityMap.get("activityName")
+						.toString();
 				ActivitySourceEnum activitySource = activityMap.get("activitySource") == null ? null
 						: (ActivitySourceEnum) activityMap.get("activitySource");
 				tradeOrderVo.setActivityName(activityName);
@@ -1050,8 +1052,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			// 获取订单活动信息
 			Map<String, Object> activityMap = getActivity(tradeOrderVo.getActivityType(), tradeOrderVo.getActivityId());
-			String activityName = activityMap.get("activityName") == null ? null
-					: activityMap.get("activityName").toString();
+			String activityName = activityMap.get("activityName") == null ? null : activityMap.get("activityName")
+					.toString();
 			ActivitySourceEnum activitySource = activityMap.get("activitySource") == null ? null
 					: (ActivitySourceEnum) activityMap.get("activitySource");
 			tradeOrderVo.setActivityName(activityName);
@@ -1142,10 +1144,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * 发送消息(快送同步)并插入订单
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	private boolean insertOrderAndSendMsg(StoreInfo storeInfo, JSONObject json, TradeOrder tradeOrder)
-			throws Exception {
-		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_ADD,
-				json.toString().getBytes(Charsets.UTF_8));
+	private boolean insertOrderAndSendMsg(StoreInfo storeInfo, JSONObject json, TradeOrder tradeOrder) throws Exception {
+		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_ADD, json.toString().getBytes(
+				Charsets.UTF_8));
 		// 发送事务消息
 		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, tradeOrder,
 				new LocalTransactionExecuter() {
@@ -1177,8 +1178,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Transactional(rollbackFor = Exception.class)
 	public boolean updateWithApply(TradeOrder tradeOrder) throws Exception {
 		StoreInfo storeInfo = getStoreInfo(tradeOrder.getStoreId());
-		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_APPLY,
-				tradeOrder.getId().getBytes());
+		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_APPLY, tradeOrder.getId()
+				.getBytes());
 		// 发送事务消息
 		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, tradeOrder,
 				new LocalTransactionExecuter() {
@@ -1204,7 +1205,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Transactional(rollbackFor = Exception.class)
 	public boolean updateCancelOrder(TradeOrder tradeOrder, boolean isBuyerOperate) throws Exception {
-		JSONObject json = new JSONObject();
+		final JSONObject json = new JSONObject();
 		json.put("id", tradeOrder.getId());
 		json.put("reason", tradeOrder.getReason());
 		json.put("status", tradeOrder.getStatus());
@@ -1215,8 +1216,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		json.put("isBuyerOperator", isBuyerOperate);
 		StoreInfo storeInfo = getStoreInfo(tradeOrder.getStoreId());
-		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_CANCEL,
-				json.toString().getBytes(Charsets.UTF_8));
+		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_CANCEL, json.toString().getBytes(
+				Charsets.UTF_8));
 		// 发送事务消息
 		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, tradeOrder,
 				new LocalTransactionExecuter() {
@@ -1323,8 +1324,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// tradeOrderLogMapper.insertSelective(tradeOrder.getTradeOrderLog());
 				// }
 				// Begin 1.0.Z 增加订单操作记录 add by zengj
-				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), operator,
-						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), operator, tradeOrder
+						.getStatus().getName(), tradeOrder.getStatus().getValue()));
 				// End 1.0.Z 增加订单操作记录 add by zengj
 
 				// 发送短信
@@ -1344,6 +1345,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			throw e;
 		}
 	}
+
 	// End modified by maojj 2016-07-26
 
 	/**
@@ -1458,6 +1460,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		return stockAdjustList;
 	}
+
 	// End modified by maojj 2016-07-26
 
 	/**
@@ -1552,8 +1555,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("operator", tradeOrder.getUpdateUserId());
 		json.put("isBuyerOperator", true);
 		StoreInfo storeInfo = getStoreInfo(tradeOrder.getStoreId());
-		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_CONFIRM,
-				json.toString().getBytes(Charsets.UTF_8));
+		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_CONFIRM, json.toString()
+				.getBytes(Charsets.UTF_8));
 		// 发送事务消息
 		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, tradeOrder,
 				new LocalTransactionExecuter() {
@@ -1628,8 +1631,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 
 				// Begin 1.0.Z 增加订单操作记录 add by zengj
-				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
-						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(),
+						tradeOrder.getUpdateUserId(), tradeOrder.getStatus().getName(), tradeOrder.getStatus()
+								.getValue()));
 
 				// 锁定库存
 				// Begin modified by maojj 2016-07-26
@@ -1652,6 +1656,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			throw e;
 		}
 	}
+
 	// End modified by maojj 2016-07-26
 
 	/**
@@ -1660,14 +1665,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public boolean updateWithUserRefuse(TradeOrder tradeOrder) throws Exception {
-		JSONObject json = new JSONObject();
+		final JSONObject json = new JSONObject();
 		json.put("id", tradeOrder.getId());
 		json.put("reason", tradeOrder.getReason());
 		json.put("operator", tradeOrder.getUpdateUserId());
 		json.put("isBuyerOperator", false);
 		StoreInfo storeInfo = getStoreInfo(tradeOrder.getStoreId());
-		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_REFUSE_RECEIVE,
-				json.toString().getBytes(Charsets.UTF_8));
+		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_REFUSE_RECEIVE, json.toString()
+				.getBytes(Charsets.UTF_8));
 		// 发送事务消息
 		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, tradeOrder,
 				new LocalTransactionExecuter() {
@@ -1734,10 +1739,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				return TOPIC_ORDER_CLOUD;
 			case ACTIVITY_STORE:
 				return TOPIC_ORDER_ACTIVITY;
-			// Begin 重构4.1 add by wusw
+				// Begin 重构4.1 add by wusw
 			case SERVICE_STORE:
 				return TOPIC_ORDER_SERVICE;
-			// End 重构4.1 add by wusw
+				// End 重构4.1 add by wusw
 			default:
 				break;
 		}
@@ -1832,6 +1837,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			tradeOrder.setUpdateUserId(param.getUserId());
 			// 发货时间为当前时间
 			tradeOrder.setDeliveryTime(new Date());
+			// 发货人ID
+			tradeOrder.setShipmentsUserId(param.getUserId());
 			// 更新订单信息
 			this.updateOrderStatus(tradeOrder);
 
@@ -1857,8 +1864,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// OrderStatusEnum.TO_BE_SIGNED));
 
 			// Begin 1.0.Z 增加订单操作记录 add by zengj
-			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), param.getUserId(),
-					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), param.getUserId(), tradeOrder
+					.getStatus().getName(), tradeOrder.getStatus().getValue()));
 			// End 1.0.Z 增加订单操作记录 add by zengj
 
 			// 调整库存 Tips:发货不再修改库存，等订单完成才会
@@ -1903,6 +1910,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			throw e;
 		}
 	}
+
 	// End modified by maojj 2016-07-26
 
 	/**
@@ -1985,13 +1993,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (StringUtils.isNotEmpty(tradeOrder.getActivityId()) && !"0".equals(tradeOrder.getActivityId())) {
 			// 代金券活动
 			if (ActivityTypeEnum.VONCHER.equals(tradeOrder.getActivityType())) {
-				ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService
-						.get(tradeOrder.getActivityId());
+				ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(tradeOrder
+						.getActivityId());
 				activityName = activityCollectCoupons.getName();
 			} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrder.getActivityType())) {
 				// 满减活动
-				ActivityDiscount activityDiscount = activityDiscountMapper
-						.selectByPrimaryKey(tradeOrder.getActivityId());
+				ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(tradeOrder
+						.getActivityId());
 				activityName = activityDiscount.getName();
 			}
 		}
@@ -2028,22 +2036,22 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				if (StringUtils.isNotBlank(tradeOrderVo.getActivityId()) && !"0".equals(tradeOrderVo.getActivityId())) {
 					// 代金券活动
 					if (ActivityTypeEnum.VONCHER.equals(tradeOrderVo.getActivityType())) {
-						ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService
-								.get(tradeOrderVo.getActivityId());
+						ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(tradeOrderVo
+								.getActivityId());
 						if (activityCollectCoupons != null) {
 							tradeOrderVo.setActivityName(activityCollectCoupons.getName());
 						}
 					} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrderVo.getActivityType())) {
 						// 满减活动
-						ActivityDiscount activityDiscount = activityDiscountMapper
-								.selectByPrimaryKey(tradeOrderVo.getActivityId());
+						ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(tradeOrderVo
+								.getActivityId());
 						if (activityDiscount != null) {
 							tradeOrderVo.setActivityName(activityDiscount.getName());
 						}
 					} else if (ActivityTypeEnum.GROUP_ACTIVITY.equals(tradeOrderVo.getActivityType())) {
 						// 团购活动
-						ActivityGroup activityGroup = activityGroupService
-								.selectByPrimaryKey(tradeOrderVo.getActivityId());
+						ActivityGroup activityGroup = activityGroupService.selectByPrimaryKey(tradeOrderVo
+								.getActivityId());
 						if (activityGroup != null) {
 							tradeOrderVo.setActivityName(activityGroup.getName());
 						}
@@ -2101,15 +2109,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			if (StringUtils.isNotBlank(tradeOrderVo.getActivityId()) && !"0".equals(tradeOrderVo.getActivityId())) {
 				// 代金券活动
 				if (ActivityTypeEnum.VONCHER.equals(tradeOrderVo.getActivityType())) {
-					ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService
-							.get(tradeOrderVo.getActivityId());
+					ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(tradeOrderVo
+							.getActivityId());
 					if (activityCollectCoupons != null) {
 						tradeOrderVo.setActivityName(activityCollectCoupons.getName());
 					}
 				} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrderVo.getActivityType())) {
 					// 满减活动
-					ActivityDiscount activityDiscount = activityDiscountMapper
-							.selectByPrimaryKey(tradeOrderVo.getActivityId());
+					ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(tradeOrderVo
+							.getActivityId());
 					if (activityDiscount != null) {
 						tradeOrderVo.setActivityName(activityDiscount.getName());
 					}
@@ -2154,22 +2162,22 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				if (StringUtils.isNotBlank(tradeOrderVo.getActivityId()) && !"0".equals(tradeOrderVo.getActivityId())) {
 					// 代金券活动
 					if (ActivityTypeEnum.VONCHER.equals(tradeOrderVo.getActivityType())) {
-						ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService
-								.get(tradeOrderVo.getActivityId());
+						ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(tradeOrderVo
+								.getActivityId());
 						if (activityCollectCoupons != null) {
 							tradeOrderVo.setActivityName(activityCollectCoupons.getName());
 						}
 					} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrderVo.getActivityType())) {
 						// 满减活动
-						ActivityDiscount activityDiscount = activityDiscountMapper
-								.selectByPrimaryKey(tradeOrderVo.getActivityId());
+						ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(tradeOrderVo
+								.getActivityId());
 						if (activityDiscount != null) {
 							tradeOrderVo.setActivityName(activityDiscount.getName());
 						}
 					} else if (ActivityTypeEnum.GROUP_ACTIVITY.equals(tradeOrderVo.getActivityType())) {
 						// 团购活动
-						ActivityGroup activityGroup = activityGroupService
-								.selectByPrimaryKey(tradeOrderVo.getActivityId());
+						ActivityGroup activityGroup = activityGroupService.selectByPrimaryKey(tradeOrderVo
+								.getActivityId());
 						if (activityGroup != null) {
 							tradeOrderVo.setActivityName(activityGroup.getName());
 						}
@@ -2205,22 +2213,22 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				if (StringUtils.isNotBlank(tradeOrderVo.getActivityId()) && !"0".equals(tradeOrderVo.getActivityId())) {
 					// 代金券活动
 					if (ActivityTypeEnum.VONCHER.equals(tradeOrderVo.getActivityType())) {
-						ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService
-								.get(tradeOrderVo.getActivityId());
+						ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(tradeOrderVo
+								.getActivityId());
 						if (activityCollectCoupons != null) {
 							tradeOrderVo.setActivityName(activityCollectCoupons.getName());
 						}
 					} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrderVo.getActivityType())) {
 						// 满减活动
-						ActivityDiscount activityDiscount = activityDiscountMapper
-								.selectByPrimaryKey(tradeOrderVo.getActivityId());
+						ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(tradeOrderVo
+								.getActivityId());
 						if (activityDiscount != null) {
 							tradeOrderVo.setActivityName(activityDiscount.getName());
 						}
 					} else if (ActivityTypeEnum.GROUP_ACTIVITY.equals(tradeOrderVo.getActivityType())) {
 						// 团购活动
-						ActivityGroup activityGroup = activityGroupService
-								.selectByPrimaryKey(tradeOrderVo.getActivityId());
+						ActivityGroup activityGroup = activityGroupService.selectByPrimaryKey(tradeOrderVo
+								.getActivityId());
 						if (activityGroup != null) {
 							tradeOrderVo.setActivityName(activityGroup.getName());
 						}
@@ -2256,22 +2264,22 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				if (StringUtils.isNotBlank(tradeOrderVo.getActivityId()) && !"0".equals(tradeOrderVo.getActivityId())) {
 					// 代金券活动
 					if (ActivityTypeEnum.VONCHER.equals(tradeOrderVo.getActivityType())) {
-						ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService
-								.get(tradeOrderVo.getActivityId());
+						ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(tradeOrderVo
+								.getActivityId());
 						if (activityCollectCoupons != null) {
 							tradeOrderVo.setActivityName(activityCollectCoupons.getName());
 						}
 					} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrderVo.getActivityType())) {
 						// 满减活动
-						ActivityDiscount activityDiscount = activityDiscountMapper
-								.selectByPrimaryKey(tradeOrderVo.getActivityId());
+						ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(tradeOrderVo
+								.getActivityId());
 						if (activityDiscount != null) {
 							tradeOrderVo.setActivityName(activityDiscount.getName());
 						}
 					} else if (ActivityTypeEnum.GROUP_ACTIVITY.equals(tradeOrderVo.getActivityType())) {
 						// 团购活动
-						ActivityGroup activityGroup = activityGroupService
-								.selectByPrimaryKey(tradeOrderVo.getActivityId());
+						ActivityGroup activityGroup = activityGroupService.selectByPrimaryKey(tradeOrderVo
+								.getActivityId());
 						if (activityGroup != null) {
 							tradeOrderVo.setActivityName(activityGroup.getName());
 						}
@@ -2572,14 +2580,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		int posOrderCount = 0;
 		if (result != null) {
 			// 线上订单数量
-			onlineOrderCount = result.get("onlineOrderCount") == null ? 0
-					: Integer.valueOf(result.get("onlineOrderCount").toString());
+			onlineOrderCount = result.get("onlineOrderCount") == null ? 0 : Integer.valueOf(result.get(
+					"onlineOrderCount").toString());
 			// 货到付款订单数量
-			deliveryOrderCount = result.get("deliveryOrderCount") == null ? 0
-					: Integer.valueOf(result.get("deliveryOrderCount").toString());
+			deliveryOrderCount = result.get("deliveryOrderCount") == null ? 0 : Integer.valueOf(result.get(
+					"deliveryOrderCount").toString());
 			// POS订单数量
-			posOrderCount = result.get("posOrderCount") == null ? 0
-					: Integer.valueOf(result.get("posOrderCount").toString());
+			posOrderCount = result.get("posOrderCount") == null ? 0 : Integer.valueOf(result.get("posOrderCount")
+					.toString());
 		}
 
 		json.put("onlineOrderCount", onlineOrderCount); // 线上-订单数量
@@ -2609,14 +2617,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		BigDecimal totalOrderAmount = BigDecimal.ZERO;
 		if (result != null) {
 			// 线上订单金额
-			onlineOrderAmount = result.get("onlineOrderAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("onlineOrderAmount").toString());
+			onlineOrderAmount = result.get("onlineOrderAmount") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"onlineOrderAmount").toString());
 			// 货到付款订单金额
-			deliveryOrderAmount = result.get("deliveryOrderAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("deliveryOrderAmount").toString());
+			deliveryOrderAmount = result.get("deliveryOrderAmount") == null ? BigDecimal.ZERO : new BigDecimal(result
+					.get("deliveryOrderAmount").toString());
 			// POS订单金额
-			posOrderAmount = result.get("posOrderAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("posOrderAmount").toString());
+			posOrderAmount = result.get("posOrderAmount") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"posOrderAmount").toString());
 
 			// 订单总金额=线上订单金额+货到付款订单金额+POS订单金额
 			totalOrderAmount = onlineOrderAmount.add(deliveryOrderAmount).add(posOrderAmount);
@@ -2659,30 +2667,29 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		if (result != null) {
 			// 线上订单退款金额
-			onlineRefundAmount = result.get("onlineRefundAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("onlineRefundAmount").toString());
+			onlineRefundAmount = result.get("onlineRefundAmount") == null ? BigDecimal.ZERO : new BigDecimal(result
+					.get("onlineRefundAmount").toString());
 			// 货到付款订单退款金额
-			deliveryRefundAmount = result.get("deliveryRefundAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("deliveryRefundAmount").toString());
+			deliveryRefundAmount = result.get("deliveryRefundAmount") == null ? BigDecimal.ZERO : new BigDecimal(result
+					.get("deliveryRefundAmount").toString());
 			// POS订单退款金额
-			posRefundAmount = result.get("posRefundAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("posRefundAmount").toString());
+			posRefundAmount = result.get("posRefundAmount") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"posRefundAmount").toString());
 			// 总退款金额=线上订单退款金额+货到付款订单退款金额+POS订单退款金额
 			totalRefundAmount = onlineRefundAmount.add(deliveryRefundAmount).add(posRefundAmount);
 
 			// 在线订单平台 需退款的优惠金额（满减）
-			onlineRefundPlatformPreferentialAmount = result.get("onlineRefundPlatformPreferentialAmount") == null
-					? BigDecimal.ZERO : new BigDecimal(result.get("onlineRefundPlatformPreferentialAmount").toString());
+			onlineRefundPlatformPreferentialAmount = result.get("onlineRefundPlatformPreferentialAmount") == null ? BigDecimal.ZERO
+					: new BigDecimal(result.get("onlineRefundPlatformPreferentialAmount").toString());
 			// 货到付款订单平台优惠金额（满减）
-			deliveryRefundPlatformPreferentialAmount = result.get("deliveryRefundPlatformPreferentialAmount") == null
-					? BigDecimal.ZERO
+			deliveryRefundPlatformPreferentialAmount = result.get("deliveryRefundPlatformPreferentialAmount") == null ? BigDecimal.ZERO
 					: new BigDecimal(result.get("deliveryRefundPlatformPreferentialAmount").toString());
 			// 在线订单代金券 需退款的优惠金额
 			onlineRefundPlatformCouponAmount = result.get("onlineRefundPlatformCouponAmount") == null ? BigDecimal.ZERO
 					: new BigDecimal(result.get("onlineRefundPlatformCouponAmount").toString());
 			// 货到付款订单代金券 需退款的优惠金额
-			deliveryRefundPlatformCouponAmount = result.get("deliveryRefundPlatformCouponAmount") == null
-					? BigDecimal.ZERO : new BigDecimal(result.get("deliveryRefundPlatformCouponAmount").toString());
+			deliveryRefundPlatformCouponAmount = result.get("deliveryRefundPlatformCouponAmount") == null ? BigDecimal.ZERO
+					: new BigDecimal(result.get("deliveryRefundPlatformCouponAmount").toString());
 		}
 
 		json.put("onlineRefundAmount", moneyFormat(onlineRefundAmount)); // 线上-退款金额
@@ -2718,11 +2725,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		BigDecimal totalCouponAmount = BigDecimal.ZERO;
 		if (result != null) {
 			// 线上订单代金券金额
-			onlineCouponAmount = result.get("onlineCouponAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("onlineCouponAmount").toString());
+			onlineCouponAmount = result.get("onlineCouponAmount") == null ? BigDecimal.ZERO : new BigDecimal(result
+					.get("onlineCouponAmount").toString());
 			// 货到付款订单代金券金额
-			deliveryCouponAmount = result.get("deliveryCouponAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("deliveryCouponAmount").toString());
+			deliveryCouponAmount = result.get("deliveryCouponAmount") == null ? BigDecimal.ZERO : new BigDecimal(result
+					.get("deliveryCouponAmount").toString());
 			// 总的代金券金额=线上订单代金券金额+货到付款订单代金券金额
 			totalCouponAmount = onlineCouponAmount.add(deliveryCouponAmount);
 		}
@@ -2730,17 +2737,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		 * 需退款的代金券金额 begin
 		 */
 		// 线上订单 需退款的代金券金额
-		BigDecimal onlineRefundPlatformCouponAmount = BigDecimal
-				.valueOf(json.optDouble("onlineRefundPlatformCouponAmount", 0));
+		BigDecimal onlineRefundPlatformCouponAmount = BigDecimal.valueOf(json.optDouble(
+				"onlineRefundPlatformCouponAmount", 0));
 		// 货到付款订单 需退款的代金券金额
-		BigDecimal deliveryRefundPlatformCouponAmount = BigDecimal
-				.valueOf(json.optDouble("deliveryRefundPlatformCouponAmount", 0));
+		BigDecimal deliveryRefundPlatformCouponAmount = BigDecimal.valueOf(json.optDouble(
+				"deliveryRefundPlatformCouponAmount", 0));
 		/*
 		 * 需退款的代金券金额 end
 		 */
 		json.put("onlineCouponAmount", moneyFormat(onlineCouponAmount.subtract(onlineRefundPlatformCouponAmount)));// 线上-代金劵金额
-		json.put("deliveryCouponAmount",
-				moneyFormat(deliveryCouponAmount.subtract(deliveryRefundPlatformCouponAmount)));// 货到付款-代金劵金额
+		json.put("deliveryCouponAmount", moneyFormat(deliveryCouponAmount.subtract(deliveryRefundPlatformCouponAmount)));// 货到付款-代金劵金额
 		// 总代金劵金额，需要减掉线上订单 需退款的代金券金额和货到付款订单 需退款的代金券金额
 		json.put("totalCouponAmount", moneyFormat(totalCouponAmount.subtract(onlineRefundPlatformCouponAmount)
 				.subtract(deliveryRefundPlatformCouponAmount)));
@@ -2771,17 +2777,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		BigDecimal totalPlatformDiscount = BigDecimal.ZERO;
 		if (result != null) {
 			// 线上订单店铺优惠金额
-			onlineStoreDiscount = result.get("onlineStoreDiscount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("onlineStoreDiscount").toString());
+			onlineStoreDiscount = result.get("onlineStoreDiscount") == null ? BigDecimal.ZERO : new BigDecimal(result
+					.get("onlineStoreDiscount").toString());
 			// 货到付款订单店铺优惠金额
-			deliveryStoreDiscount = result.get("deliveryStoreDiscount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("deliveryStoreDiscount").toString());
+			deliveryStoreDiscount = result.get("deliveryStoreDiscount") == null ? BigDecimal.ZERO : new BigDecimal(
+					result.get("deliveryStoreDiscount").toString());
 			// 总的店铺优惠金额=线上订单店铺优惠金额+货到付款订单店铺优惠金额
 			totalStoreDiscount = onlineStoreDiscount.add(deliveryStoreDiscount);
 
 			// 线上订单平台优惠金额
-			onlinePlatformDiscount = result.get("onlinePlatformDiscount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("onlinePlatformDiscount").toString());
+			onlinePlatformDiscount = result.get("onlinePlatformDiscount") == null ? BigDecimal.ZERO : new BigDecimal(
+					result.get("onlinePlatformDiscount").toString());
 			// 货到付款订单平台优惠金额
 			deliveryPlatformDiscount = result.get("deliveryPlatformDiscount") == null ? BigDecimal.ZERO
 					: new BigDecimal(result.get("deliveryPlatformDiscount").toString());
@@ -2793,11 +2799,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		 * 需退款的优惠金额 begin
 		 */
 		// 线上订单 需退款的优惠金额
-		BigDecimal onlineRefundPlatformPreferentialAmount = BigDecimal
-				.valueOf(json.optDouble("onlineRefundPlatformPreferentialAmount", 0));
+		BigDecimal onlineRefundPlatformPreferentialAmount = BigDecimal.valueOf(json.optDouble(
+				"onlineRefundPlatformPreferentialAmount", 0));
 		// 货到付款订单 需退款的优惠金额
-		BigDecimal deliveryRefundPlatformPreferentialAmount = BigDecimal
-				.valueOf(json.optDouble("deliveryRefundPlatformPreferentialAmount", 0));
+		BigDecimal deliveryRefundPlatformPreferentialAmount = BigDecimal.valueOf(json.optDouble(
+				"deliveryRefundPlatformPreferentialAmount", 0));
 		// 线上订单 代金券金额
 		BigDecimal onlineCouponAmount = BigDecimal.valueOf(json.optDouble("onlineCouponAmount", 0));
 		// 货到付款订单 代金券金额
@@ -2817,8 +2823,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("onlinePlatformDiscount", moneyFormat(onlinePlatformDiscount));// 线上-平台优惠金额
 		json.put("deliveryPlatformDiscount", moneyFormat(deliveryPlatformDiscount));// 货到付款-平台优惠金额
 		// 总平台优惠金额，需要减掉线上订单平台优惠和货到付款订单平台优惠
-		json.put("totalPlatformDiscount", moneyFormat(totalPlatformDiscount
-				.subtract(onlineRefundPlatformPreferentialAmount).subtract(deliveryRefundPlatformPreferentialAmount)));
+		json.put(
+				"totalPlatformDiscount",
+				moneyFormat(totalPlatformDiscount.subtract(onlineRefundPlatformPreferentialAmount).subtract(
+						deliveryRefundPlatformPreferentialAmount)));
 
 		// 线上订单平台补贴=线上订单平台优惠+代金券
 		BigDecimal onlinePlatformSubsidy = onlinePlatformDiscount.add(onlineCouponAmount);
@@ -2850,11 +2858,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		BigDecimal totalFare = BigDecimal.ZERO;
 		if (result != null) {
 			// 线上订单配送费
-			onlineFare = result.get("onlineFare") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("onlineFare").toString());
+			onlineFare = result.get("onlineFare") == null ? BigDecimal.ZERO : new BigDecimal(result.get("onlineFare")
+					.toString());
 			// 货到付款订单配送费
-			deliveryFare = result.get("deliveryFare") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("deliveryFare").toString());
+			deliveryFare = result.get("deliveryFare") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"deliveryFare").toString());
 			// 总配送费=线上订单配送费+货到付款订单配送费
 			totalFare = onlineFare.add(deliveryFare);
 		}
@@ -2889,23 +2897,23 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		BigDecimal unionPosAmount = BigDecimal.ZERO;
 		if (result != null) {
 			// 线上订单余额支付金额
-			yunPayAmount = result.get("yunPayAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("yunPayAmount").toString());
+			yunPayAmount = result.get("yunPayAmount") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"yunPayAmount").toString());
 			// 线上订单支付宝支付金额
-			aliPayAmount = result.get("aliPayAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("aliPayAmount").toString());
+			aliPayAmount = result.get("aliPayAmount") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"aliPayAmount").toString());
 			// 线上订单微信支付金额
-			weiPayAmount = result.get("weiPayAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("weiPayAmount").toString());
+			weiPayAmount = result.get("weiPayAmount") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"weiPayAmount").toString());
 			// POS订单支付宝支付金额
-			aliPosAmount = result.get("aliPosAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("aliPosAmount").toString());
+			aliPosAmount = result.get("aliPosAmount") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"aliPosAmount").toString());
 			// POS订单微信支付金额
-			weiPosAmount = result.get("weiPosAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("weiPosAmount").toString());
+			weiPosAmount = result.get("weiPosAmount") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"weiPosAmount").toString());
 			// POS订单银联支付金额
-			unionPosAmount = result.get("unionPosAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("unionPosAmount").toString());
+			unionPosAmount = result.get("unionPosAmount") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"unionPosAmount").toString());
 		}
 
 		/*
@@ -2955,31 +2963,31 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		BigDecimal unionPosRefundAmount = BigDecimal.ZERO;
 		if (result != null) {
 			// 线上订单余额支付退款金额
-			yunRefundAmount = result.get("yunRefundAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("yunRefundAmount").toString());
+			yunRefundAmount = result.get("yunRefundAmount") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"yunRefundAmount").toString());
 			// 线上订单支付宝支付退款金额
-			aliRefundAmount = result.get("aliRefundAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("aliRefundAmount").toString());
+			aliRefundAmount = result.get("aliRefundAmount") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"aliRefundAmount").toString());
 			// 线上订单微信支付退款金额
-			weiRefundAmount = result.get("weiRefundAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("weiRefundAmount").toString());
+			weiRefundAmount = result.get("weiRefundAmount") == null ? BigDecimal.ZERO : new BigDecimal(result.get(
+					"weiRefundAmount").toString());
 
 			// POS订单支付宝支付退款金额
-			aliPosRefundAmount = result.get("aliPosRefundAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("aliPosRefundAmount").toString());
+			aliPosRefundAmount = result.get("aliPosRefundAmount") == null ? BigDecimal.ZERO : new BigDecimal(result
+					.get("aliPosRefundAmount").toString());
 			// POS订单微信支付退款金额
-			weiPosRefundAmount = result.get("weiPosRefundAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("weiPosRefundAmount").toString());
+			weiPosRefundAmount = result.get("weiPosRefundAmount") == null ? BigDecimal.ZERO : new BigDecimal(result
+					.get("weiPosRefundAmount").toString());
 			// POS订单银联卡支付退款金额
-			unionPosRefundAmount = result.get("unionPosRefundAmount") == null ? BigDecimal.ZERO
-					: new BigDecimal(result.get("unionPosRefundAmount").toString());
+			unionPosRefundAmount = result.get("unionPosRefundAmount") == null ? BigDecimal.ZERO : new BigDecimal(result
+					.get("unionPosRefundAmount").toString());
 
 		}
 		// 线上订单实收金额=线上订单金额-线上订单退款-店铺优惠金额
 		BigDecimal onlineActualAmout = onlineOrderAmount.subtract(onlineRefundAmount).subtract(onlineStoreDiscount);
 		// 货到付款订单实收金额=货到付款订单金额-货到付款订单退款-店铺优惠金额
-		BigDecimal deliveryActualAmout = deliveryOrderAmount.subtract(deliveryRefundAmount)
-				.subtract(deliveryStoreDiscount);
+		BigDecimal deliveryActualAmout = deliveryOrderAmount.subtract(deliveryRefundAmount).subtract(
+				deliveryStoreDiscount);
 		// POS订单实收金额=POS订单金额-POS订单退款-店铺优惠金额,tips：POS订单金额实际上是店铺收入，已经减掉了店铺优惠金额了
 		BigDecimal posActualAmout = posOrderAmount.subtract(posRefundAmount);
 		// 实收金额=总的订单金额-总的退款金额
@@ -3661,8 +3669,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @return
 	 */
 	@Override
-	public PageUtils<Map<String, Object>> selectOrderIncomeList(Map<String, Object> params, int pageSize,
-			int pageNumber) {
+	public PageUtils<Map<String, Object>> selectOrderIncomeList(Map<String, Object> params, int pageSize, int pageNumber) {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		return new PageUtils<Map<String, Object>>(tradeOrderMapper.selectOrderIncomeList(params));
 	}
@@ -3783,8 +3790,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		UserTradeOrderDetailVo orders = tradeOrderMapper.selectUserOrderDetail(orderId);
 		// Begin 13113 待付款的订单不展示提货码 add by zengj
 		if (orders != null
-				&& (orders.getStatus() == OrderStatusEnum.UNPAID || orders.getStatus() == OrderStatusEnum.BUYER_PAYING
-						|| orders.getStatus() == OrderStatusEnum.CANCELED)) {
+				&& (orders.getStatus() == OrderStatusEnum.UNPAID || orders.getStatus() == OrderStatusEnum.BUYER_PAYING || orders
+						.getStatus() == OrderStatusEnum.CANCELED)) {
 			orders.setPickUpCode(null);
 		}
 		// End 13113 add by zengj
@@ -3837,12 +3844,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("actualAmount", orders.getActualAmount() == null ? "0" : orders.getActualAmount());
 		json.put("orderNo", orders.getOrderNo() == null ? "" : orders.getOrderNo());
 		json.put("cancelReason", orders.getReason() == null ? "" : orders.getReason());
-		json.put("orderSubmitOrderTime", orders.getCreateTime() != null
-				? DateUtils.formatDate(orders.getCreateTime(), "yyyy-MM-dd HH:mm:ss") : "");
-		json.put("orderDeliveryTime", orders.getDeliveryTime() != null
-				? DateUtils.formatDate(orders.getDeliveryTime(), "yyyy-MM-dd HH:mm:ss") : "");
-		json.put("orderConfirmGoodTime", orders.getReceivedTime() != null
-				? DateUtils.formatDate(orders.getReceivedTime(), "yyyy-MM-dd HH:mm:ss") : "");
+		json.put("orderSubmitOrderTime",
+				orders.getCreateTime() != null ? DateUtils.formatDate(orders.getCreateTime(), "yyyy-MM-dd HH:mm:ss")
+						: "");
+		json.put(
+				"orderDeliveryTime",
+				orders.getDeliveryTime() != null ? DateUtils.formatDate(orders.getDeliveryTime(), "yyyy-MM-dd HH:mm:ss")
+						: "");
+		json.put(
+				"orderConfirmGoodTime",
+				orders.getReceivedTime() != null ? DateUtils.formatDate(orders.getReceivedTime(), "yyyy-MM-dd HH:mm:ss")
+						: "");
 		json.put("activityType", orders.getActivityType() == null ? "" : orders.getActivityType().ordinal());
 		json.put("preferentialPrice", orders.getPreferentialPrice() == null ? "" : orders.getPreferentialPrice());
 		json.put("fare", orders.getFare() == null ? "" : orders.getFare());
@@ -3918,8 +3930,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (tradeOrderPay != null) {
 			json.put("payType", tradeOrderPay.getPayType().ordinal());
 			json.put("payAmount", tradeOrderPay.getPayAmount());
-			json.put("payTime", tradeOrderPay.getPayTime() == null ? ""
-					: DateUtils.formatDate(tradeOrderPay.getPayTime(), "yyyy-MM-dd HH:mm:ss"));
+			json.put(
+					"payTime",
+					tradeOrderPay.getPayTime() == null ? "" : DateUtils.formatDate(tradeOrderPay.getPayTime(),
+							"yyyy-MM-dd HH:mm:ss"));
 		} else {
 			json.put("payType", "");
 			json.put("payAmount", "");
@@ -3975,8 +3989,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					refundAmount = tradeOrderRefunds.getTotalAmount();
 					if (tradeOrderRefunds.getRefundsStatus() != null) {
 						// app退款状态转义
-						refundStatus = OrderAppStatusAdaptor
-								.convertAppRefundStatus(tradeOrderRefunds.getRefundsStatus());
+						refundStatus = OrderAppStatusAdaptor.convertAppRefundStatus(tradeOrderRefunds
+								.getRefundsStatus());
 					}
 				}
 				item.put("refundId", refundId);
@@ -4121,14 +4135,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			json.put("isRefund", "0");
 		}
 		// 下单时间
-		json.put("orderSubmitOrderTime", orders.getCreateTime() != null
-				? DateUtils.formatDate(orders.getCreateTime(), "yyyy-MM-dd HH:mm:ss") : "");
+		json.put("orderSubmitOrderTime",
+				orders.getCreateTime() != null ? DateUtils.formatDate(orders.getCreateTime(), "yyyy-MM-dd HH:mm:ss")
+						: "");
 		// 出发时间--对应实物订单发货时间
-		json.put("orderDeliveryTime", orders.getDeliveryTime() != null
-				? DateUtils.formatDate(orders.getDeliveryTime(), "yyyy-MM-dd HH:mm:ss") : "");
+		json.put(
+				"orderDeliveryTime",
+				orders.getDeliveryTime() != null ? DateUtils.formatDate(orders.getDeliveryTime(), "yyyy-MM-dd HH:mm:ss")
+						: "");
 		// 服务完成时间--对应实物订单收货时间
-		json.put("orderConfirmGoodTime", orders.getReceivedTime() != null
-				? DateUtils.formatDate(orders.getReceivedTime(), "yyyy-MM-dd HH:mm:ss") : "");
+		json.put(
+				"orderConfirmGoodTime",
+				orders.getReceivedTime() != null ? DateUtils.formatDate(orders.getReceivedTime(), "yyyy-MM-dd HH:mm:ss")
+						: "");
 		// 优惠金额
 		json.put("preferentialPrice", orders.getPreferentialPrice() == null ? "" : orders.getPreferentialPrice());
 		// 订单评价类型0：未评价，1：已评价 1已投诉
@@ -4141,8 +4160,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (tradeOrderPay != null) {
 			json.put("payType", tradeOrderPay.getPayType().ordinal());
 			json.put("payAmount", tradeOrderPay.getPayAmount());
-			json.put("payTime", tradeOrderPay.getPayTime() == null ? ""
-					: DateUtils.formatDate(tradeOrderPay.getPayTime(), "yyyy-MM-dd HH:mm:ss"));
+			json.put(
+					"payTime",
+					tradeOrderPay.getPayTime() == null ? "" : DateUtils.formatDate(tradeOrderPay.getPayTime(),
+							"yyyy-MM-dd HH:mm:ss"));
 		} else {
 			// 支付方式
 			json.put("payType", "");
@@ -4176,7 +4197,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// zengj
 			storeMobile = storeInfo.getStoreInfoExt() == null
 					|| StringUtils.isBlank(storeInfo.getStoreInfoExt().getServicePhone()) ? storeInfo.getMobile()
-							: storeInfo.getStoreInfoExt().getServicePhone();
+					: storeInfo.getStoreInfoExt().getServicePhone();
 			// End 客服电话优先取store_info_ext表中的service_phone，如为空再选店铺号码 add by zengj
 		}
 		// 店铺名称
@@ -4252,6 +4273,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public List<TradeOrderStatusVo> selectWxBuyerPhysicalOrderCount(String userId) {
 		return tradeOrderMapper.selectWxBuyerPhysicalOrderCount(userId);
 	}
+
 	// end add by wushp 20160823
 
 	/**
@@ -4465,8 +4487,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 订单ID
 					tradeOrder.setId(data.get("id").toString());
 					// 查询消费码对应的订单项信息
-					TradeOrderItem tradeOrderItem = tradeOrderItemMapper
-							.selectOrderItemById(data.get("orderItemId").toString());
+					TradeOrderItem tradeOrderItem = tradeOrderItemMapper.selectOrderItemById(data.get("orderItemId")
+							.toString());
 					List<TradeOrderItem> tradeOrderItemList = new ArrayList<TradeOrderItem>();
 					tradeOrderItemList.add(tradeOrderItem);
 					tradeOrder.setTradeOrderItem(tradeOrderItemList);
@@ -4478,10 +4500,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 验证通过，将该消费码改为已消费
 					tradeOrderItemDetailMapper.updateStatusWithConsumed(data.get("detailId").toString());
 					// 单价
-					BigDecimal unitPrice = (data.get("unitPrice") == null ? BigDecimal.ZERO
-							: new BigDecimal(data.get("unitPrice").toString()));
-					BigDecimal totalAmount = (data.get("totalAmount") == null ? BigDecimal.ZERO
-							: new BigDecimal(data.get("totalAmount").toString()));
+					BigDecimal unitPrice = (data.get("unitPrice") == null ? BigDecimal.ZERO : new BigDecimal(data.get(
+							"unitPrice").toString()));
+					BigDecimal totalAmount = (data.get("totalAmount") == null ? BigDecimal.ZERO : new BigDecimal(data
+							.get("totalAmount").toString()));
 
 					BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 					payTradeVo.setAmount(unitPrice); // 交易金额
@@ -4602,15 +4624,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 
 				// Begin 1.0.Z 增加订单操作记录 add by zengj
-				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
-						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(),
+						tradeOrder.getUpdateUserId(), tradeOrder.getStatus().getName(), tradeOrder.getStatus()
+								.getValue()));
 				// End 1.0.Z 增加订单操作记录 add by zengj
 
 				// 发送短信
 				tradeMessageService.sendSmsByShipments(tradeOrder);
 				// added by maojj 给ERP发消息去生成出入库单据
 				// 库存调整-放到最后处理
-				stockManagerService.updateStock(stockAdjustVo);
+				// stockManagerService.updateStock(stockAdjustVo);
 				// stockMQProducer.sendMessage(stockAdjustVo);
 			} catch (Exception e) {
 				logger.info("pos 发货锁定库存发生异常", e);
@@ -4745,8 +4768,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// End added by maojj 2016-08-24
 
 		// Begin 1.0.Z 增加订单支付操作记录 add by zengj
-		tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUserId(),
-				tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+		tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUserId(), tradeOrder
+				.getStatus().getName(), tradeOrder.getStatus().getValue()));
 		// End 1.0.Z 增加订单操作记录 add by zengj
 
 		tradeMessageService.sendSmsByCreateOrder(order);
@@ -4838,6 +4861,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		 */
 		return new PageUtils<TradeOrder>(result);
 	}
+
 	// End 重构4.1 add by wusw
 
 	// Begin 重构4.1 add by wusw
@@ -4882,6 +4906,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		return new PageUtils<TradeOrderExportVo>(result);
 	}
+
 	// End 重构4.1 add by wusw
 
 	// Begin 重构4.1 add by wusw
@@ -4895,8 +4920,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (vo != null) {
 			// 获取订单活动信息
 			Map<String, Object> activityMap = getActivity(vo.getActivityType(), vo.getActivityId());
-			String activityName = activityMap.get("activityName") == null ? null
-					: activityMap.get("activityName").toString();
+			String activityName = activityMap.get("activityName") == null ? null : activityMap.get("activityName")
+					.toString();
 			ActivitySourceEnum activitySource = activityMap.get("activitySource") == null ? null
 					: (ActivitySourceEnum) activityMap.get("activitySource");
 			vo.setActivityName(activityName);
@@ -4904,6 +4929,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		return vo;
 	}
+
 	// End 重构4.1 add by wusw
 
 	// Begin 重构4.1 add by zhulq
@@ -4922,6 +4948,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		List<TradeOrderRechargeVo> result = tradeOrderMapper.selectRechargeOrder(vo);
 		return new PageUtils<TradeOrderRechargeVo>(result);
 	}
+
 	// End 重构4.1 add by zhulq
 
 	// Begin 重构4.1 add by wusw
@@ -4930,8 +4957,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findServiceStoreOrderForOperateByParams(java.util.Map, int, int)
 	 */
 	@Override
-	public PageUtils<PhysicsOrderVo> findServiceStoreOrderForOperateByParams(Map<String, Object> params, int pageNumber,
-			int pageSize) throws ServiceException {
+	public PageUtils<PhysicsOrderVo> findServiceStoreOrderForOperateByParams(Map<String, Object> params,
+			int pageNumber, int pageSize) throws ServiceException {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<PhysicsOrderVo> result = tradeOrderMapper.selectServiceStoreListForOperate(params);
 		if (result == null) {
@@ -5002,6 +5029,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		// End 重构4.1 add by wusw 20160720
 	}
+
 	// End 重构4.1 add by wusw
 
 	/**
@@ -5200,6 +5228,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		params.put("completeStatus", OrderStatusEnum.HAS_BEEN_SIGNED);
 		// End 重构4.1 add by wusw 20160727
 	}
+
 	// End 重构4.1 add by wusw 20160719
 
 	// Begin 重构4.1 add by wusw 20160723
@@ -5213,6 +5242,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		this.convertParams(params);
 		return tradeOrderMapper.findOrderForFinanceByParams(params);
 	}
+
 	// End 重构4.1 add by wusw 20160723
 
 	// Begin 重构4.1 add by zhaoqc 20160722
@@ -5227,6 +5257,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		relation.setThirdOrderNo(sporderId);
 		this.tradeOrderThirdRelationMapper.insertSelective(relation);
 	}
+
 	// End 重构4.1 add by zhaoqc 20160722
 
 	// Begin 重构4.1 add by wusw 20160729
@@ -5238,6 +5269,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public TradeOrderVo findServiceStoreOrderDetailForOperate(String orderId) {
 		return tradeOrderMapper.selectServiceStoreDetailForOperate(orderId);
 	}
+
 	// End 重构4.1 add by wusw 20160729
 
 	@Override
@@ -5302,6 +5334,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		return jsonObject;
 	}
+
 	// end 重构4.1 add by wushp 20160803
 
 	// begin 充值订单导出转换订单状态名 add by zhulq 2016-8-8
@@ -5333,6 +5366,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				break;
 		}
 	}
+
 	// End 充值订单导出转换订单状态名 add by zhulq 2016-8-8
 
 	/**
@@ -5387,6 +5421,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			return null;
 		}
 	}
+
 	// End 12051 add by wusw 20160811
 
 	/**
@@ -5399,9 +5434,55 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @author zengj
 	 * @date 2016年9月13日
 	 */
-	public PageUtils<Map<String, Object>> findConfirmDeliveryOrderListByPos(String storeId, int pageNumber,
-			int pageSize) {
+	public PageUtils<Map<String, Object>> findConfirmDeliveryOrderListByPos(String storeId, int pageNumber, int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		return new PageUtils<Map<String, Object>>(tradeOrderMapper.findConfirmDeliveryOrderListByPos(storeId));
 	}
+	
+	
+	// Begin v1.1.0 add by zengjz 20160912
+	@Override
+	public Map<String, Object> statisOrderForFinanceByParams(Map<String, Object> params) {
+		// 参数转换处理（例如订单状态）
+		this.convertParams(params);
+		Map<String, Object> result = tradeOrderMapper.statisOrderForFinanceByParams(params);
+		return result;
+	}
+	
+	/**
+	 * @Description: 财务系统退款订单参数转换
+	 * @param map   查询参数
+	 * @author zengjizu
+	 * @date 2016年9月17日
+	 */
+	private void convertParamsForFinance(Map<String, Object> map) {
+		// 退款状态参数： 0:退款中 1:退款完成 默认为空，全部
+		String status = (String) map.get("status");
+		List<String> statusList = Lists.newArrayList();
+
+		List<OrderStatusEnum> orderStatusList = new ArrayList<OrderStatusEnum>();
+		/*
+		 * 2:已取消 4:已拒收 7:取消中,8:拒收中
+		 */
+		if (status != null && "0".equals(status)) {
+			orderStatusList.add(OrderStatusEnum.CANCELING);
+			orderStatusList.add(OrderStatusEnum.REFUSING);
+		} else if (status != null && "1".equals(status)) {
+			orderStatusList.add(OrderStatusEnum.CANCELED);
+			orderStatusList.add(OrderStatusEnum.REFUSED);
+		} else {
+			orderStatusList.add(OrderStatusEnum.CANCELING);
+			orderStatusList.add(OrderStatusEnum.REFUSING);
+			orderStatusList.add(OrderStatusEnum.CANCELED);
+			orderStatusList.add(OrderStatusEnum.REFUSED);
+		}
+		map.put("status", statusList);
+	}
+
+	@Override
+	public Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params) {
+		convertParamsForFinance(params);
+		return tradeOrderMapper.statisOrderCannelRefundByParams(params);
+	}
+	// End v1.1.0 add by zengjz 20160912
 }

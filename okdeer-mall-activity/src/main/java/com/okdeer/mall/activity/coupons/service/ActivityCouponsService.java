@@ -33,13 +33,6 @@ public interface ActivityCouponsService {
 	List<AreaScTreeVo> getStoreInfoByCityId(StoreInfo parStoreInfo);
 
 	/**
-	 * 查询一级类目
-	 * @param goodsSpuCategory 对象
-	 * @return 结果
-	 */
-	List<GoodsSpuCategory> getCategory(GoodsSpuCategory goodsSpuCategory);
-
-	/**
 	 * 获取代金券信息
 	 * @param params 请求参数
 	 * @param pageNum 页码

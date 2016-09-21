@@ -338,6 +338,7 @@
         <result property="everyLimit" column="every_limit" javaType="integer" jdbcType="INTEGER"/>
         <result property="isCashDelivery" column="is_cash_delivery" javaType="com.okdeer.mall.activity.coupons.enums.CashDelivery" jdbcType="TINYINT"/>
         <result property="isCategoryLimit" column="is_category_limit" javaType="com.okdeer.mall.activity.coupons.enums.CategoryLimit"  jdbcType="TINYINT"/>
+        <result property="type" column="type" javaType="integer" jdbcType="INTEGER"/>
       </association>
       <!-- 限制使用类目信息 -->
     <!--   <collection property="goodsSpuCategoryList"  ofType="com.okdeer.mall.goods.category.entity.GoodsSpuCategory">
@@ -351,6 +352,7 @@
    SELECT 
    coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
    coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
+   coupons.type,
    record.id,record.collect_time,record.valid_time 
    FROM activity_coupons_record record
    LEFT JOIN activity_coupons coupons ON record.coupons_id = coupons.id
@@ -544,4 +546,22 @@
 		ORDER BY t.collect_time DESC
 	</select>
 	<!-- End added by maojj -->
+	<!-- add by wushp 20160919 根据用户统计各种状态的代金券数量 -->
+	<select id="findStatusCountByUserId" parameterType="java.lang.String" resultType="com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo">
+		SELECT 
+		  STATUS,COUNT(0) AS COUNT,
+		  CASE
+		    WHEN t.status = 0 
+		    THEN 'unUse' 
+		    WHEN t.status = 1 
+		    THEN 'used' 
+		    WHEN t.status = 2 
+		    THEN 'expires' 
+		  END AS statusStr 
+		FROM
+		  activity_coupons_record t 
+		WHERE t.`collect_user_id` = #{userId} 
+		GROUP BY t.status 	
+	</select>
+	<!-- end by wushp 20160919 根据用户统计各种状态的代金券数量 -->
 </mapper> 

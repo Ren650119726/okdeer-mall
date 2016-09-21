@@ -238,8 +238,8 @@ public class TradeOrderCompleteProcessServiceImpl
 		orderInfo.put("userId", order.getUserId());
 		// 退货原单号
 		orderInfo.put("referenceNo", null);
-		// 收银员ID
-		orderInfo.put("operatorId", order.getSellerId());
+		// 收银员ID-对应发货人ID
+		orderInfo.put("operatorId", order.getShipmentsUserId());
 		// 提货码
 		orderInfo.put("pickUpCode", order.getPickUpCode());
 		// 备注
@@ -261,27 +261,27 @@ public class TradeOrderCompleteProcessServiceImpl
 	 */
 	private JSONObject buildOrderRefundsInfo(TradeOrderRefunds orderRefunds) {
 		// 订单信息
-		JSONObject orderInfo = new JSONObject();
+		JSONObject refunds = new JSONObject();
 		// 订单ID
-		orderInfo.put("id", orderRefunds.getId());
+		refunds.put("id", orderRefunds.getId());
 		// 退款单编号
-		orderInfo.put("orderNo", orderRefunds.getRefundNo());
+		refunds.put("orderNo", orderRefunds.getRefundNo());
 		// 店铺ID
-		orderInfo.put("storeId", orderRefunds.getStoreId());
+		refunds.put("storeId", orderRefunds.getStoreId());
 		// 判断是POS单还是线上单，给posID
 		if (orderRefunds.getOrderResource() == OrderResourceEnum.POS) {
-			orderInfo.put("posId", OrderNoUtils.OFFLINE_POS_ID);
+			refunds.put("posId", OrderNoUtils.OFFLINE_POS_ID);
 		} else {
-			orderInfo.put("posId", OrderNoUtils.ONLINE_POS_ID);
+			refunds.put("posId", OrderNoUtils.ONLINE_POS_ID);
 		}
 		// 销售类型
-		orderInfo.put("saleType", ORDER_TYPE_B);
+		refunds.put("saleType", ORDER_TYPE_B);
 		// 订单来源
-		orderInfo.put("orderResource", orderRefunds.getOrderResource().ordinal());
+		refunds.put("orderResource", orderRefunds.getOrderResource().ordinal());
 		// 原价金额=商品实际金额和运费
-		orderInfo.put("totalAmount", orderRefunds.getTotalAmount());
+		refunds.put("totalAmount", orderRefunds.getTotalAmount());
 		// 商家实收金额
-		orderInfo.put("amount", orderRefunds.getTotalAmount());
+		refunds.put("amount", orderRefunds.getTotalAmount());
 		// 店铺优惠金额
 		BigDecimal storePreferentialPrice = BigDecimal.ZERO;
 		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
@@ -289,24 +289,24 @@ public class TradeOrderCompleteProcessServiceImpl
 			storePreferentialPrice = orderRefunds.getTotalPreferentialPrice();
 		}
 		// 店铺优惠金额
-		orderInfo.put("discountAmount", storePreferentialPrice);
+		refunds.put("discountAmount", storePreferentialPrice);
 		// 运费
 		// orderInfo.put("freightAmount", refundOrder.getFare());
 		// （会员）买家ID
-		orderInfo.put("userId", orderRefunds.getUserId());
+		refunds.put("userId", orderRefunds.getUserId());
 		// 退货原单号
-		orderInfo.put("referenceNo", orderRefunds.getOrderNo());
+		refunds.put("referenceNo", orderRefunds.getOrderNo());
 		// 收银员ID
-		orderInfo.put("operatorId", orderRefunds.getOperator());
+		refunds.put("operatorId", orderRefunds.getOperator());
 		// // 提货码
 		// orderInfo.put("pickUpCode", refundOrder.getPickUpCode());
 		// // 备注
-		orderInfo.put("remark", orderRefunds.getMemo());
+		refunds.put("remark", orderRefunds.getMemo());
 		// 创建人
-		orderInfo.put("createrId", orderRefunds.getUserId());
+		refunds.put("createrId", orderRefunds.getUserId());
 		// 创建时间
-		orderInfo.put("createTime", orderRefunds.getCreateTime());
-		return orderInfo;
+		refunds.put("createTime", orderRefunds.getCreateTime());
+		return refunds;
 	}
 
 	/**
