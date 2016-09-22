@@ -31,7 +31,7 @@ import com.yschome.base.common.utils.PageUtils;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构4.1			 2016年9月19日 			zhulq
  */
-@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.operate.service.InvitationCodeServiceApi")
+@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.system.service.InvitationCodeServiceApi")
 public class InvitationCodeServiceImpl implements InvitationCodeServiceApi,InvitationCodeService{
 
 	/**
