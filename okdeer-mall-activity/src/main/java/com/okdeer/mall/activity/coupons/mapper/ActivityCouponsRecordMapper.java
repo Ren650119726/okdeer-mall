@@ -12,6 +12,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.order.vo.Coupons;
+import com.okdeer.mall.order.vo.RechargeCouponVo;
 import com.yschome.base.dal.IBaseCrudMapper;
 
 /**
@@ -25,6 +26,7 @@ import com.yschome.base.dal.IBaseCrudMapper;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构V4.1			2016-07-16			maojj			添加查找用户有效的代金券信息方法
  * 		V1.1.0			2016-09-19			wushp			V1.1.0
+ *      V1.1.0          2016-09-21          zhaoqc          添加充值获取代金券的方法
  */
 public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	
@@ -148,6 +150,9 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @date 2016年7月16日
 	 */
     List<Coupons> findValidCoupons(Map<String,Object> params);
+    
+    //Begin 获取用户充值代金券列表
+    List<RechargeCouponVo> findValidRechargeCoupons(Map<String, Object> params);
     
     //Begin 代金券领取列表优化 added by tangy  2016-8-17
     /**

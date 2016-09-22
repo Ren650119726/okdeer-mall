@@ -190,10 +190,10 @@ import net.sf.json.JsonConfig;
  *    重构4.1            2016-8-16            zhaoqc             新增根据交易号修改订单状态的方法
  *    重构4.1（代码评审优化）    2016-8-18            wusw               优化服务店订单列表和导出代码
  *    重构4.1			    2016-8-24            maojj              支付成功时，才发送提货码的信息
- *    V1.0.3            2016-09-01             wusw               修改自动确认收货期限为7天      
- *    1.0.Z			2016-09-05			zengj			增加订单操作记录        
- *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
- *   V1.1.0	       2016-9-12             zengjz            财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口  
+ *    V1.0.3            2016-09-01           wusw               修改自动确认收货期限为7天      
+ *    1.0.Z			    2016-09-05			 zengj			          增加订单操作记录        
+ *    1.0.Z	            2016-09-07           zengj              库存管理修改，采用商业管理系统校验
+ *   V1.1.0	            2016-9-12            zengjz             财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口  
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -266,7 +266,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Autowired
 	private ActivitySaleMapper activitySaleMapper;
-
 	// end add by wangf01 2016.08.06
 
 	@Autowired
@@ -353,7 +352,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private StockManagerJxcServiceApi stockManagerService;
-
 	// End 1.0.Z add by zengj
 
 	@Reference(version = "1.0.0", check = false)

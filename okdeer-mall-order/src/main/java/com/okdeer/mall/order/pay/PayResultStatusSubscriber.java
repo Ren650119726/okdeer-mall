@@ -45,6 +45,7 @@ import com.okdeer.mall.activity.group.service.ActivityGroupService;
 import com.okdeer.mall.common.utils.HttpClientUtil;
 import com.okdeer.mall.common.utils.LockUtil;
 import com.okdeer.mall.common.utils.RandomStringUtil;
+import com.okdeer.mall.common.utils.Xml2JsonUtil;
 import com.okdeer.mall.common.utils.security.MD5;
 import com.okdeer.mall.order.constant.OrderMessageConstant;
 import com.okdeer.mall.order.constant.PayMessageConstant;
@@ -69,11 +70,12 @@ import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
-import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.JsonDateValueProcessor;
 import com.okdeer.mall.system.utils.mapper.JsonMapper;
 import com.yschome.api.pay.enums.TradeErrorEnum;
+import com.yschome.base.common.exception.ServiceException;
 import com.yschome.base.common.utils.DateUtils;
 import com.yschome.base.common.utils.StringUtils;
 import com.yschome.base.common.utils.UuidUtils;
@@ -98,6 +100,7 @@ import net.sf.json.JsonConfig;
  *     重构4.1          2016年8月16日                               zengj				支付成功回调判断订单状态是不是买家支付中
  *     重构4.1          2016年8月22日                               maojj				余额支付失败，将订单状态更改为待付款状态
  *     重构4.1          2016年8月24日                               maojj				余额支付成功，如果是到店自提，生成提货码
+ *     重构4.1          2016年9月22日                              zhaoqc             V1.0.0移动代码
  */
 @Service
 public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
@@ -114,8 +117,8 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	@Resource
 	private TradeOrderPayService tradeOrderPayService;
 
-	@Resource
-	private TradeOrderService tradeOrderService;
+	@Reference(version = "1.0.0", check = false)
+	private TradeOrderServiceApi tradeOrderService;
 
 	@Resource
 	private TradeOrderItemService tradeOrderItemService;
@@ -161,6 +164,11 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	// End 1.0.Z 增加订单操作记录Service add by zengj
 
 	/**
+     * okdeer.recharge.partner
+     */
+    @Value("${okdeer.recharge.partner}")
+    private String partner;
+	/**
 	 * 开放平台Id
 	 */
 	@Value("${juhe.openId}")
@@ -189,7 +197,48 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	 */
 	@Value("${dataplan.onlineOrder}")
 	private String dataplanOrderUrl;
-
+	/*************欧飞网充值配置*********************/
+    /**
+     * ofpay.userid
+     */
+    @Value("${ofpay.userid}")
+    private String userid;
+    /**
+     * ofpay.userpws
+     */
+    @Value("${ofpay.userpws}")
+    private String userpws;
+    /**
+     * ofpay.keyStr
+     */
+    @Value("${ofpay.keyStr}")
+    private String keyStr;
+    /**
+     * ofpay.returl
+     */
+    @Value("${ofpay.returl}")
+    private String returl;
+    /**
+     * ofpay.version
+     */
+    @Value("${ofpay.version}")
+    private String version;
+    /**
+     * ofpay.dataplan.range
+     */
+    @Value("${ofpay.dataplan.range}")
+    private String range;
+    /**
+     * ofpay.dataplan.effectStartTime
+     */
+    @Value("${ofpay.dataplan.effectStartTime}")
+    private String effectStartTime;
+    /**
+     * ofpay.dataplan.effectTime
+     */
+    @Value("${ofpay.dataplan.effectTime}")
+    private String effectTime;
+    
 	@Override
 	public String getTopic() {
 		return TOPIC_PAY_RESULT;
@@ -418,46 +467,106 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 				String orderid = tradeOrder.getTradeNum();
 				String pid = tradeOrderItem.getStoreSkuId();
 				OrderTypeEnum orderType = tradeOrder.getType();
-				String sign = null;
-				String url = null;
-				if (orderType == OrderTypeEnum.PHONE_PAY_ORDER) {
-					// 话费充值
-					sign = MD5.md5(openId + appKey + phoneno + cardnum + orderid);
-					url = submitOrderUrl + "?key=" + appKey + "&phoneno=" + phoneno + "&orderid=" + orderid
-							+ "&cardnum=" + cardnum + "&sign=" + sign;
-					String resp = HttpClientUtil.get(url);
-					JSONObject respJson = JSONObject.fromObject(resp);
-					int errorCode = respJson.getInt("error_code");
-					if (errorCode == 0) {
-						JSONObject resultJson = respJson.getJSONObject("result");
-						int gameState = Integer.parseInt(resultJson.getString("game_state"));
-						if (gameState == 9) {
-							// 充值失败，走退款流程
-							this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
-						} else if (gameState == 0) {
-							updateTradeOrderStatus(tradeOrder);
-						}
-					} else {
-						// 充值失败，走退款流程
-						this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
-					}
-				} else if (orderType == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
-					// 流量充值
-					sign = MD5.md5(openId + dataPlanKey + phoneno + pid + orderid);
-					url = dataplanOrderUrl + "?key=" + dataPlanKey + "&phone=" + phoneno + "&pid=" + pid + "&orderid="
-							+ orderid + "&sign=" + sign;
-
-					String resp = HttpClientUtil.get(url);
-					JSONObject respJson = JSONObject.fromObject(resp);
-					int errorCode = respJson.getInt("error_code");
-					if (errorCode != 0) {
-						// 充值聚合订单提交失败，走退款流程
-						this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
-					} else {
-						updateTradeOrderStatus(tradeOrder);
-					}
-				}
-			}
+				int partnerNum = Integer.parseInt(partner);
+                if(partnerNum == 1) {
+                    //调用第三方聚合充值平台
+                    String sign = null;
+                    String url = null;
+                    if (orderType == OrderTypeEnum.PHONE_PAY_ORDER) {
+                        //话费充值
+                        sign = MD5.md5(openId + appKey + phoneno + cardnum + orderid);
+                        url = submitOrderUrl + "?key=" + appKey + "&phoneno=" + phoneno + "&orderid=" + orderid + "&cardnum=" + cardnum + "&sign=" + sign;
+                        String resp = HttpClientUtil.get(url);
+                        JSONObject respJson = JSONObject.fromObject(resp);
+                        int errorCode = respJson.getInt("error_code");
+                        if (errorCode == 0) {
+                            JSONObject resultJson = respJson.getJSONObject("result");
+                            int gameState = Integer.parseInt(resultJson.getString("game_state"));
+                            if(gameState == 9) {
+                                //充值失败，走退款流程
+                                this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
+                            } else if (gameState == 0) {
+                                updateTradeOrderStatus(tradeOrder);
+                            }
+                        } else {
+                            //充值失败，走退款流程
+                            this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
+                        }
+                    } else if(orderType == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
+                        //流量充值
+                        sign = MD5.md5(openId + dataPlanKey + phoneno + pid + orderid);
+                        url = dataplanOrderUrl + "?key=" + dataPlanKey + "&phone=" + phoneno + "&pid=" + pid + "&orderid=" + orderid + "&sign=" + sign;
+                        
+                        String resp = HttpClientUtil.get(url);
+                        JSONObject respJson = JSONObject.fromObject(resp);
+                        int errorCode = respJson.getInt("error_code");
+                        if(errorCode != 0) {
+                            //充值聚合订单提交失败，走退款流程
+                            this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
+                        } else {
+                            updateTradeOrderStatus(tradeOrder);
+                        }
+                    }
+                } else if (partnerNum == 2) {
+                    if (orderType == OrderTypeEnum.PHONE_PAY_ORDER) {
+                        String ordertime = orderid.substring(0, 14);
+                        String sign = MD5.md5(userid + userpws + pid + cardnum + orderid + ordertime + phoneno + keyStr).toUpperCase();
+                        String url = "http://" + userid + ".api2.ofpay.com/onlineorder.do?userid=" + userid + "&userpws=" + userpws 
+                                + "&cardid=" + pid + "&cardnum=" + cardnum + "&sporder_id=" + orderid + "&sporder_time=" + ordertime
+                                + "&game_userid=" + phoneno + "&md5_str=" + sign + "&ret_url=" + returl + "&version=" + version;
+                        String xml = HttpClientUtil.get(url, "GB2312");
+                        JSONObject respJson = Xml2JsonUtil.xml2Json(xml, "GB2312");
+                        JSONObject orderinfo = respJson.getJSONObject("orderinfo");
+                        logger.info("*******手机话费充值订单{}，返回参数：{}***********", orderid, orderinfo);
+                        int retcode = orderinfo.getInt("retcode");
+                        if (retcode == 1) {
+                            int gameState = orderinfo.getInt("game_state");
+                            if (gameState == 0) {
+                                //充值请求订单生成成功，支付成功
+                                logger.info("PHONEFEE===手机话费充值订单{}请求返回状态为充值中，修改订单状态为充值中！", orderid);
+                                updateTradeOrderStatus(tradeOrder, orderinfo.getString("orderid"));
+                            } else if (gameState == 9) {
+                                //充值请求订单失败，走退款流程
+                                logger.info("PHONEFEE===手机话费充值订单{}请求同步返回状态为失败，创建充值退款单！", orderid);
+                                this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
+                            }
+                        } else {
+                            //欧飞订单提交失败，走退款流程
+                            logger.info("PHONEFEE==OFPAY==手机话费充值订单{}请求充值返回码为：{}，创建充值退款单！",orderid, retcode);
+                            this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
+                        }
+                    } else if(orderType == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
+                        String arr[] = pid.split("\\|");
+                        String perValue = arr[0];
+                        String flowValue = arr[1];
+                        String sign = MD5.md5(userid + userpws + phoneno + perValue + flowValue + range + effectStartTime + effectTime + orderid + keyStr).toUpperCase();
+                        String url = "http://" + userid + ".api2.ofpay.com/flowOrder.do?userid=" + userid + "&userpws=" + userpws
+                                + "&phoneno=" + phoneno + "&perValue=" + perValue + "&flowValue=" + flowValue + "&range=" + range
+                                + "&effectStartTime=" + effectStartTime + "&effectTime=" + effectTime + "&sporderId=" + orderid
+                                + "&md5Str=" + sign + "&version=" + version + "&retUrl=" + returl; 
+                        String xml = HttpClientUtil.get(url, "GB2312");
+                        JSONObject respJson = Xml2JsonUtil.xml2Json(xml, "GB2312");
+                        JSONObject orderinfo = respJson.getJSONObject("orderinfo");
+                        logger.info("***********手机流量充值订单{},返回参数{}***************", orderid, orderinfo);
+                        int retcode = orderinfo.getInt("retcode");
+                        if (retcode == 1) {
+                            int gameState = orderinfo.getInt("game_state");
+                            if (gameState == 0) {
+                                //充值订单请求成功
+                                logger.info("DATAPLAN===手机流量充值订单{}请求返回状态为充值中，修改订单状态为充值中！", orderid);
+                                updateTradeOrderStatus(tradeOrder, orderinfo.getString("orderid"));
+                            } else if(gameState == 9) {
+                                //充值订单请求失败
+                                logger.info("DATAPLAN===手机流量充值订单{}请求同步返回状态为失败，创建充值退款单！", orderid);
+                                this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
+                            }
+                        } else {
+                            //欧飞订单提交失败，走退款流程
+                            logger.info("DATAPLAN==OFPAY==手机流量充值订单{}请求充值返回码为：{}，创建充值退款单！", orderid, retcode);
+                        }
+                    }
+                }
+            }
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 		} catch (Exception e) {
 			logger.error("充值订单支付状态消息处理失败", e);
@@ -487,6 +596,14 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		tradeOrder.setUpdateTime(new Date());
 		this.tradeOrderService.updateRechargeOrderByTradeNum(tradeOrder);
 	}
+	
+    private void updateTradeOrderStatus(TradeOrder tradeOrder, String sporderId) throws ServiceException {
+        //修改订单状态为代发货
+        tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
+        tradeOrder.setUpdateTime(new Date());
+        
+        this.tradeOrderService.updataRechargeOrderStatus(tradeOrder, sporderId);
+    }
 
 	/**
 	 * 订单支付消息处理
