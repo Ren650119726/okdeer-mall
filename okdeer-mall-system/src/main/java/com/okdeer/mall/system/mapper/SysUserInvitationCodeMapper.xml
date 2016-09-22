@@ -48,8 +48,8 @@
 	<!-- 扩展字段 start -->
 	<sql id="extResultBaseColumn">
 		CASE
-		WHEN suic.user_type = '0' THEN suser.login_name
-		WHEN suic.user_type = '1' THEN buser.login_name
+		WHEN suic.user_type = 0 THEN suser.login_name
+		WHEN suic.user_type = 1 THEN buser.login_name
 		ELSE '' END as user_name,
 	</sql>
 	<!-- 扩展字段 end -->
@@ -74,7 +74,7 @@
 				AND suic.invitation_code LIKE concat('%', #{invitationCode}, '%')
 		</if>
 		<if test="null!=userType">
-				AND suic.user_type = #{userType}
+				AND suic.user_type = #{userType,jdbcType=TINYINT}
 		</if>
 		<if test="null!= userName and ''!= userName">
 				AND (suser.login_name LIKE concat('%', #{userName}, '%') or buser.login_name like concat('%',#{userName},'%'))
@@ -113,9 +113,9 @@
 	            #{item}   
 	        </foreach>
 		</if>
-		<if test="ids == null">
+	<!-- 	<if test="ids == null">
 			<include refid="condition" />
-		</if>
+		</if> -->
 		order by suic.invitation_user_num desc,suic.first_order_user_num desc,suic.create_time desc 
 	</select>
 	<!-- 根据参数获取信息 end -->
