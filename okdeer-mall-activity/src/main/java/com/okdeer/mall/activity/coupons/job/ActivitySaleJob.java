@@ -39,17 +39,22 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 
 			if (list != null && list.size() > 0) {
 				for (ActivitySale a : list) {
-					if (a.getStatus() == ActivitySaleStatus.noStart.getValue()) {
-						List<String> idList = new ArrayList<String>();
-						idList.add(a.getId());
-						activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.ing.getValue(), a.getStoreId(),
-								"0");
-					} else if (a.getStatus() == ActivitySaleStatus.ing.getValue()) {
-						List<String> idList = new ArrayList<String>();
-						idList.add(a.getId());
-						activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.end.getValue(), a.getStoreId(),
-								"0");
+					try {
+						if (a.getStatus() == ActivitySaleStatus.noStart.getValue()) {
+							List<String> idList = new ArrayList<String>();
+							idList.add(a.getId());
+							activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.ing.getValue(),
+									a.getStoreId(), "0");
+						} else if (a.getStatus() == ActivitySaleStatus.ing.getValue()) {
+							List<String> idList = new ArrayList<String>();
+							idList.add(a.getId());
+							activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.end.getValue(),
+									a.getStoreId(), "0");
+						}
+					} catch (Exception e) {
+						logger.error("特惠活动定时器异常" + a.getId(), e);
 					}
+
 				}
 			}
 		} catch (Exception e) {
