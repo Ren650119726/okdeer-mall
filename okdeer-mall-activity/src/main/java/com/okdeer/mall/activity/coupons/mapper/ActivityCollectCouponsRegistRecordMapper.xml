@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsRegistRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecord" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="invite_id" property="inviteId" jdbcType="INTEGER" />
+    <result column="finish_order_time" property="finishOrderTime" javaType="date" jdbcType="TIMESTAMP" />
+    <result column="machine_code" property="machineCode" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" javaType="date" jdbcType="TIMESTAMP" />
+  </resultMap>
+  
+  <resultMap type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo" id="extResultMap" extends="BaseResultMap">
+   	<result column="activity_name" property="activityName" jdbcType="VARCHAR" />
+   	<result column="invite_login_name" property="inviteLoginName" jdbcType="VARCHAR" />
+   	<result column="be_invite_login_name" property="beInviteLoginName" jdbcType="VARCHAR" />
+    <result column="begin_time" property="beginTime" javaType="date" jdbcType="TIMESTAMP" />
+    <result column="end_time" property="endTime" javaType="date" jdbcType="TIMESTAMP" />
+    <result column="invite_num" property="inviteNum" javaType="integer" jdbcType="INTEGER"/>
+    <result column="invite_order_num" property="inviteOrderNum" javaType="integer" jdbcType="INTEGER"/>
+  </resultMap>
+  
+  <!-- 查询字段 -->
+  <sql id="Base_Column_List" >
+    id, activity_id, user_id, invite_id, finish_order_time, machine_code, create_time
+  </sql>
+ 
+  <sql id="condition1">
+  	  <if test="activityName != null and activityName != ''">
+            AND B.name LIKE CONCAT('%',#{activityName,jdbcType=VARCHAR},'%')
+      </if>
+      <if test="inviteLoginName != null and inviteLoginName != ''">
+            AND C.login_name LIKE CONCAT('%',#{inviteLoginName,jdbcType=VARCHAR},'%')
+      </if> 
+      <if test="beginTimeQuery != null">
+			<![CDATA[ AND B.start_time >= #{beginTimeQuery}]]> 
+	  </if>
+	  <if test="endTimeQuery != null">
+			<![CDATA[ AND B.start_time <= #{endTimeQuery}]]>  
+	  </if>
+	</sql>
+		  
+  <select id="findRegisteRecord" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo" 
+  								resultMap="extResultMap">
+	SELECT A.activity_id, 
+		A.user_id,  
+		C.login_name AS invite_login_name,
+	    B.name AS activity_name, 
+		B.start_time as begin_time, 
+		B.end_time as end_time,
+		count(*) as invite_num,
+		count(a.finish_order_time) as invite_order_num
+	  FROM activity_collect_coupons_regist_record A 
+	  LEFT JOIN activity_collect_coupons B ON A.activity_id = B.id
+	  LEFT JOIN sys_buyer_user C ON C.id = A.user_id
+	  where 1 = 1
+	 <include refid="condition1" />
+	 ORDER BY 
+		B.start_time DESC, invite_num DESC	  
+   </select> 	
+   
+     <select id="findRegisteRecordForExport" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo" 
+  								resultMap="extResultMap">
+	SELECT A.id,
+		A.activity_id, 
+		A.user_id,  
+		C.login_name AS invite_login_name,
+		D.login_name AS be_invite_login_name,
+		A.create_time,
+		A.finish_order_time,
+		A.machine_code
+	  FROM activity_collect_coupons_regist_record A 
+	  LEFT JOIN sys_buyer_user C ON C.id = A.user_id
+	  LEFT JOIN sys_buyer_user D ON D.id = A.invite_id
+	  where 1 = 1
+	  <if test="ids != null">
+			AND A.activity_id  in 
+		    <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">  
+	            #{item}   
+	        </foreach>
+	  </if> 
+	  <if test="ids == null">
+	  		<include refid="condition1" />
+	  </if>
+	 ORDER BY 
+		B.start_time DESC  
+   </select> 
+      
+   <select id="findByUserId" parameterType="java.lang.String" resultMap="extResultMap">
+	  SELECT A.id,
+		A.activity_id, 
+		A.user_id,  
+		C.login_name AS invite_login_name,
+		D.login_name AS be_invite_login_name,
+		A.create_time,
+		A.finish_order_time,
+		A.machine_code
+	  FROM activity_collect_coupons_regist_record A 
+	  LEFT JOIN sys_buyer_user C ON C.id = A.user_id
+	  LEFT JOIN sys_buyer_user D ON D.id = A.invite_id
+	  where 1 = 1
+	  <if test="userId != null and userId != ''">
+            AND A.user_id = #{userId,jdbcType=VARCHAR}
+      </if>
+	  ORDER BY 
+		A.create_time 
+	  DESC 
+   </select>
+</mapper>

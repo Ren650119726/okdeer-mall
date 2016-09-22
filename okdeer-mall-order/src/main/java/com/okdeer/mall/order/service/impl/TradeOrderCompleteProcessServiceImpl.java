@@ -348,17 +348,21 @@ public class TradeOrderCompleteProcessServiceImpl
 			// 销售类型
 			item.put("saleType", ORDER_TYPE_A);
 			// 商品数量
-			item.put("saleNum", orderItem.getQuantity());
+			item.put("saleNum", orderItem.getQuantity() == null ? orderItem.getWeight() : orderItem.getQuantity());
 			// 原单价
 			item.put("originalPrice", orderItem.getUnitPrice());
 			// 实际单价=原单价减去店铺优惠
 			item.put("salePrice", actualPrice);
 			// 原价金额=原单价*数量
-			item.put("totalAmount", orderItem.getUnitPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()))
-					.setScale(2, BigDecimal.ROUND_FLOOR));
+			item.put("totalAmount",
+					orderItem
+							.getUnitPrice().multiply(orderItem.getWeight() == null
+									? BigDecimal.valueOf(orderItem.getQuantity()) : orderItem.getWeight())
+							.setScale(2, BigDecimal.ROUND_FLOOR));
 			// 实际金额=实际交易单价*数量
-			item.put("saleAmount", actualPrice.multiply(BigDecimal.valueOf(orderItem.getQuantity())).setScale(2,
-					BigDecimal.ROUND_FLOOR));
+			item.put("saleAmount", actualPrice.multiply(
+					orderItem.getWeight() == null ? BigDecimal.valueOf(orderItem.getQuantity()) : orderItem.getWeight())
+					.setScale(2, BigDecimal.ROUND_FLOOR));
 			// 店铺优惠金额
 			item.put("discountAmount", storePreferentialPrice);
 			item.put("activityType", order.getActivityType().ordinal());
@@ -411,17 +415,24 @@ public class TradeOrderCompleteProcessServiceImpl
 			// 销售类型
 			item.put("saleType", ORDER_TYPE_A);
 			// 商品数量
-			item.put("saleNum", orderRefundsItem.getQuantity());
+			item.put("saleNum", orderRefundsItem.getQuantity() == null ? orderRefundsItem.getWeight()
+					: orderRefundsItem.getQuantity());
 			// 原单价
 			item.put("originalPrice", orderRefundsItem.getUnitPrice());
 			// 实际单价=原单价减去店铺优惠
 			item.put("salePrice", actualPrice);
 			// 原价金额=原单价*数量
-			item.put("totalAmount", orderRefundsItem.getUnitPrice()
-					.multiply(BigDecimal.valueOf(orderRefundsItem.getQuantity())).setScale(2, BigDecimal.ROUND_FLOOR));
+			item.put("totalAmount",
+					orderRefundsItem.getUnitPrice()
+							.multiply(orderRefundsItem.getWeight() == null
+									? BigDecimal.valueOf(orderRefundsItem.getQuantity()) : orderRefundsItem.getWeight())
+							.setScale(2, BigDecimal.ROUND_FLOOR));
 			// 实际金额=实际交易单价*数量
-			item.put("saleAmount", actualPrice.multiply(BigDecimal.valueOf(orderRefundsItem.getQuantity())).setScale(2,
-					BigDecimal.ROUND_FLOOR));
+			item.put("saleAmount",
+					actualPrice
+							.multiply(orderRefundsItem.getWeight() == null
+									? BigDecimal.valueOf(orderRefundsItem.getQuantity()) : orderRefundsItem.getWeight())
+							.setScale(2, BigDecimal.ROUND_FLOOR));
 			// 店铺优惠金额
 			item.put("discountAmount", storePreferentialPrice);
 			// item.put("activityType", order.getActivityType().ordinal());

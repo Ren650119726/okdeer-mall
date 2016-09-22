@@ -347,8 +347,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateBatchStatus(List<String> ids, int status, String storeId, String createUserId,
-			List<ActivitySale> asList) throws Exception {
+	public void updateBatchStatus(List<String> ids, int status, String storeId, String createUserId) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdByBathSkuList = new ArrayList<String>();
 		try {
@@ -487,43 +486,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		}
 	}
 
-	@Transactional(rollbackFor = Exception.class)
-	public void updateByTask() throws Exception {
-		log.info("特惠活动定时器开始");
-		// 未开始(改为进行中)的 和 进行中的(改为已过期)list
-		List<ActivitySale> list = activitySaleMapper.listByTask();
-
-		List<String> listIdNoStart = new ArrayList<String>();
-		List<String> listIdIng = new ArrayList<String>();
-
-		List<ActivitySale> listNoStart = new ArrayList<ActivitySale>();
-		List<ActivitySale> listIng = new ArrayList<ActivitySale>();
-
-		if (list != null && list.size() > 0) {
-			for (ActivitySale a : list) {
-				// 所有进行中的数据
-				if (a.getStatus() == ActivitySaleStatus.ing.getValue()) {
-					listIdIng.add(a.getId());
-					listIng.add(a);
-				}
-				// 所有未开始的数据
-				else if (a.getStatus() == ActivitySaleStatus.noStart.getValue()) {
-					listIdNoStart.add(a.getId());
-					listNoStart.add(a);
-				}
-			}
-			// 所有未开始的改为进行中
-			if (listIdNoStart != null && listIdNoStart.size() > 0) {
-				updateBatchStatus(listIdNoStart, ActivitySaleStatus.ing.getValue(), "job", "job", listNoStart);
-			}
-			// 所有进行中的的改为已经结束
-			if (listIdIng != null && listIdIng.size() > 0) {
-				updateBatchStatus(listIdIng, ActivitySaleStatus.end.getValue(), "job", "job", listIng);
-			}
-		}
-		log.info("特惠活动定时器结束");
-	}
-
 	@Override
 	public ActivitySale findByPrimaryKey(String id) {
 		return activitySaleMapper.selectById(id);
@@ -537,5 +499,10 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Override
 	public int selectActivitySale(String activityId) {
 		return activitySaleMapper.selectActivitySale(activityId);
+	}
+
+	@Override
+	public List<ActivitySale> listByTask() {
+		return activitySaleMapper.listByTask();
 	}
 }

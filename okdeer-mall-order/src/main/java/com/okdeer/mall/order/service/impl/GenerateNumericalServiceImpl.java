@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.common.consts.RedisKeyConstants;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.order.entity.GenerateNumericalNumber;
 import com.okdeer.mall.order.mapper.GenerateNumericalMapper;
@@ -191,7 +192,7 @@ class GenerateNumericalServiceImpl implements GenerateNumericalService, Generate
 		// 获取当前年月日
 		String dateStr = DateUtils.getDate("yyMMdd");
 		// redis中存储的key
-		String redisKey = prefix + branchCode + dateStr;
+		String redisKey = RedisKeyConstants.REDIS_ORDER_NO + prefix + branchCode + dateStr;
 		// 实现自增长
 		Long seq = redisTemplateWrapper.incr(redisKey);
 		// 如果该key是初始化的时候，将该key的过期时间设置为一天，一天后该key会失效
