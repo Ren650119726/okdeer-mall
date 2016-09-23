@@ -11,7 +11,7 @@
     <result column="is_total_point_limit" property="isTotalPointLimit" jdbcType="INTEGER" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
-    <result column="disabled" property="disabled" javaType="com.yschome.base.common.enums.Disabled" jdbcType="TINYINT"/>
+    <result column="disabled" property="disabled" javaType="com.okdeer.base.common.enums.Disabled" jdbcType="TINYINT"/>
     <result column="remark" property="remark" jdbcType="VARCHAR" />
   </resultMap>
   <sql id="Base_Column_List" >

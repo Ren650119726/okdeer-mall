@@ -13,8 +13,8 @@ import java.util.List;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.mall.advert.entity.AdvertPosition;
 import com.okdeer.mall.advert.entity.AdvertPositionQueryVo;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * 广告service类

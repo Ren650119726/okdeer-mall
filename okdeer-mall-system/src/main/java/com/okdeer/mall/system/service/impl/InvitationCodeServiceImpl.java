@@ -16,9 +16,9 @@ import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 import com.okdeer.mall.system.mapper.SysUserInvitationRecordMapper;
 import com.okdeer.mall.system.service.InvitationCodeService;
 import com.okdeer.mall.system.service.InvitationCodeServiceApi;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.DateUtils;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * ClassName: InvitationCodeServiceImpl 

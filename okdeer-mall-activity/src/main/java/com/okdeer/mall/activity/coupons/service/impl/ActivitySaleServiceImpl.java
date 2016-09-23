@@ -32,10 +32,9 @@ import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
-import com.yschome.api.ims.service.StockOperaterService;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 
 /**
  * 
@@ -63,8 +62,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 
-	@Reference
-	private StockOperaterService stockOperaterService;
 
 	// @Reference(version = "1.0.0", check = false)
 	// private StockManagerServiceApi stockManagerServiceApi;
@@ -83,13 +80,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Autowired
 	RollbackMQProducer rollbackMQProducer;
 
-	public StockOperaterService getStockOperaterService() {
-		return stockOperaterService;
-	}
-
-	public void setStockOperaterService(StockOperaterService stockOperaterService) {
-		this.stockOperaterService = stockOperaterService;
-	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)

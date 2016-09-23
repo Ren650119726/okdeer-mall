@@ -126,9 +126,9 @@ import com.okdeer.mall.system.mq.StockMQProducer;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 import com.qiniu.util.Auth;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.yschome.file.FileUtil;
 
 import net.sf.json.JSONArray;
@@ -154,7 +154,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 	private static final Logger logger = LoggerFactory.getLogger(TradeOrderFlowServiceImpl.class);
 
 	@Reference(version = "1.0.0", check = false)
-	private com.yschome.api.pay.service.IScanPayServiceApi scanPayServiceApi;
+	private com.okdeer.api.pay.service.IScanPayServiceApi scanPayServiceApi;
 
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuService;

@@ -33,11 +33,11 @@ import com.okdeer.mall.activity.recommend.entity.ActivityRecommendRange;
 import com.okdeer.mall.activity.recommend.entity.ActivityRecommendVo;
 import com.okdeer.mall.activity.recommend.service.ActivityRecommendServiceApi;
 import com.okdeer.mall.common.enums.AreaType;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.common.utils.StringUtils;
-import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.recommend.mapper.ActivityRecommendMapper;
 import com.okdeer.mall.activity.recommend.service.ActivityRecommendService;
 

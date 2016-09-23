@@ -10,7 +10,7 @@ import com.okdeer.archive.system.entity.PsmsSmallCommunityInfo;
 import com.okdeer.mall.activity.group.entity.ActivityGroup;
 import com.okdeer.mall.activity.group.entity.ActivityGroupArea;
 import com.okdeer.mall.activity.group.entity.ActivityGroupCommuntity;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * 

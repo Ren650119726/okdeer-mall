@@ -23,7 +23,7 @@ import com.okdeer.mall.order.vo.TradeOrderStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderVo;
 import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
 import com.okdeer.mall.order.vo.UserTradeServiceOrderVo;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * @DESC: 

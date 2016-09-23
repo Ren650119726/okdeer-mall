@@ -9,8 +9,8 @@ import com.okdeer.mall.activity.group.entity.ActivityGroup;
 import com.okdeer.mall.activity.group.entity.ActivityGroupArea;
 import com.okdeer.mall.activity.group.entity.ActivityGroupCommuntity;
 import com.okdeer.mall.activity.group.entity.ActivityGroupGoods;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 import net.sf.json.JSONObject;
 

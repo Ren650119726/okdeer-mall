@@ -7,9 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.system.entity.SysBuyerUserThirdparty;
 import com.okdeer.mall.system.service.SysBuyerUserThirdpartyServiceApi;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.dal.IBaseCrudMapper;
-import com.yschome.base.service.BaseCrudServiceImpl;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.base.service.BaseCrudServiceImpl;
 import com.okdeer.mall.system.mapper.SysBuyerUserThirdpartyMapper;
 import com.okdeer.mall.system.service.SysBuyerUserThirdpartyService;
 

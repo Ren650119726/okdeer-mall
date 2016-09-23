@@ -21,8 +21,8 @@ import com.okdeer.mall.order.vo.TradeOrderQueryVo;
 import com.okdeer.mall.order.vo.TradeOrderStatisticsVo;
 import com.okdeer.mall.order.vo.TradeOrderStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderVo;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 import net.sf.json.JSONObject;
 

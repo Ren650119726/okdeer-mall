@@ -23,8 +23,8 @@ import com.okdeer.mall.order.mapper.GenerateNumericalMapper;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.GenerateNumericalServiceApi;
 import com.okdeer.mall.order.utils.OrderNoUtils;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.redis.IRedisTemplateWrapper;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.redis.IRedisTemplateWrapper;
 
 /**
  * @DESC: 

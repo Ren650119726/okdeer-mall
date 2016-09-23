@@ -1,7 +1,7 @@
 package com.okdeer.mall.system.mapper;
 
 import com.okdeer.archive.system.entity.SysBuyerUserThirdparty;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 

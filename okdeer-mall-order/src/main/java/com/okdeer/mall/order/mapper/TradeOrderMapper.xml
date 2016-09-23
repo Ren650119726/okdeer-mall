@@ -33,7 +33,7 @@
 		<result column="invoice" property="invoice" jdbcType="TINYINT"
 			javaType="com.okdeer.mall.order.enums.WithInvoiceEnum" />
 		<result column="disabled" property="disabled" jdbcType="TINYINT"
-			javaType="com.yschome.base.common.enums.Disabled" />
+			javaType="com.okdeer.base.common.enums.Disabled" />
 		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
 		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
 		<result column="payment_time" property="paymentTime" jdbcType="TIMESTAMP" />
@@ -108,7 +108,7 @@
 		<result column="invoice" property="invoice" jdbcType="TINYINT"
 			javaType="com.okdeer.mall.order.enums.WithInvoiceEnum" />
 		<result column="disabled" property="disabled" jdbcType="TINYINT"
-			javaType="com.yschome.base.common.enums.Disabled" />
+			javaType="com.okdeer.base.common.enums.Disabled" />
 		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
 		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
 		<result column="payment_time" property="paymentTime" jdbcType="TIMESTAMP" />

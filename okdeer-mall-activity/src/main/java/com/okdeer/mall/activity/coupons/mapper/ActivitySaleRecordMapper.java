@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 特惠活动记录mapper

@@ -5,7 +5,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.entity.SysSmsVerifyCode;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 

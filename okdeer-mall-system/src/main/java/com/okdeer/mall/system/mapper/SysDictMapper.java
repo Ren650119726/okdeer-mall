@@ -6,7 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.entity.SysDict;
-import com.yschome.api.psms.system.entity.SysDictVO;
+import com.okdeer.common.system.entity.SysDictVO;
 
 /**
  * DESC: 系统数据字典Mapper

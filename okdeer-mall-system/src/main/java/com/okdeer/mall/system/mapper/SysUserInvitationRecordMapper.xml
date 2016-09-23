@@ -5,7 +5,7 @@
     <id column="id" property="id" javaType="string" jdbcType="VARCHAR" />
     <result column="invitation_code_id" property="invitationCodeId" javaType="string" jdbcType="VARCHAR" />
     <result column="sys_buyer_user_id" property="sysBuyerUserId" javaType="string" jdbcType="VARCHAR" />
-    <result column="is_first_order" property="isFirstOrder" javaType="com.yschome.base.common.enums.WhetherEnum" jdbcType="TINYINT"/>
+    <result column="is_first_order" property="isFirstOrder" javaType="com.okdeer.base.common.enums.WhetherEnum" jdbcType="TINYINT"/>
     <result column="machine_code" property="machineCode" javaType="string" jdbcType="VARCHAR" />
     <result column="first_order_time" property="firstOrderTime" javaType="date" jdbcType="TIMESTAMP" />  	  
    	<result column="create_time" property="createTime" javaType="date" jdbcType="TIMESTAMP" />

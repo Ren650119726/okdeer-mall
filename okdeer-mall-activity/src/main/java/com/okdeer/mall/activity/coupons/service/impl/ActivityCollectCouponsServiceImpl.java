@@ -38,14 +38,14 @@ import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi;
 import com.okdeer.mall.common.enums.AreaType;
-import com.yschome.api.pay.account.dto.PayUpdateAmountDto;
-import com.yschome.api.pay.service.IPayAccountServiceApi;
-import com.yschome.api.pay.service.IPayTradeServiceApi;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.DateUtils;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.common.utils.UuidUtils;
-import com.yschome.common.BaseResultDto;
+import com.okdeer.api.pay.account.dto.PayUpdateAmountDto;
+import com.okdeer.api.pay.common.dto.BaseResultDto;
+import com.okdeer.api.pay.service.IPayAccountServiceApi;
+import com.okdeer.api.pay.service.IPayTradeServiceApi;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectAreaMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCommunityMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
@@ -54,8 +54,8 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.system.mapper.SysUserMapper;
-import com.yschome.mcm.entity.SmsVO;
-import com.yschome.mcm.service.ISmsService;
+import com.okdeer.mcm.entity.SmsVO;
+import com.okdeer.mcm.service.ISmsService;
 
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi")
 public class ActivityCollectCouponsServiceImpl

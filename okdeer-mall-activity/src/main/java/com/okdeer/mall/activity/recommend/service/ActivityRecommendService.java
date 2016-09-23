@@ -11,8 +11,8 @@ import java.util.List;
 import com.okdeer.mall.activity.recommend.entity.ActivityRecommend;
 import com.okdeer.mall.activity.recommend.entity.ActivityRecommendRange;
 import com.okdeer.mall.activity.recommend.entity.ActivityRecommendVo;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * TODO 推荐活动服务接口类

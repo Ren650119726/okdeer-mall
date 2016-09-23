@@ -3,7 +3,7 @@ package com.okdeer.mall.activity.coupons.mapper;
 import java.util.List;
 
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * ClassName: ActivityCollectCouponsRegistRecordMapper 

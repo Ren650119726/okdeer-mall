@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import com.yschome.base.redis.RedisTemplateWrapperImpl;
-import com.yschome.base.redis.util.KryoRedisSerializer;
+import com.okdeer.base.redis.RedisTemplateWrapperImpl;
+import com.okdeer.base.redis.util.KryoRedisSerializer;
 
 /**
  * DESC: RedisTemplate 配置属性类

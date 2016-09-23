@@ -9,8 +9,8 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCommunity;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * @pr yscm

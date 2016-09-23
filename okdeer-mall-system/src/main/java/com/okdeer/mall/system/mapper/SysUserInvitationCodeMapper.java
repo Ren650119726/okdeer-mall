@@ -3,7 +3,7 @@ package com.okdeer.mall.system.mapper;
 import java.util.List;
 
 import com.okdeer.mall.system.entity.SysUserInvitationCodeVo;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * ClassName: SysUserInvitationCodeMapper 

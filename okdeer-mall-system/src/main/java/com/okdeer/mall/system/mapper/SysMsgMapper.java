@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.entity.SysMsg;
 import com.okdeer.archive.system.entity.SysMsgVo;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 

@@ -9,7 +9,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.service.TradeOrderItemServiceApi;
 import com.okdeer.mall.order.vo.TradeOrderItemDetailVo;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.service.TradeOrderItemService;
 

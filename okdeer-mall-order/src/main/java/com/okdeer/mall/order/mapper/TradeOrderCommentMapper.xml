@@ -11,7 +11,7 @@
     <result column="content" property="content" jdbcType="VARCHAR" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="star" property="star" jdbcType="INTEGER" />
-    <result column="status" property="status" jdbcType="TINYINT" javaType="com.yschome.base.common.enums.WhetherEnum"/>
+    <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.WhetherEnum"/>
     <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" javaType="string"/>
     <result column="store_spu_id" property="storeSpuId" jdbcType="VARCHAR" javaType="string"/>
   </resultMap>

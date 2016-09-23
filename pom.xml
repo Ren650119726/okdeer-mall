@@ -9,16 +9,16 @@
 	<name>okdeer-mall</name>
 	
 	<parent>
-		<groupId>com.yschome</groupId>
-		<artifactId>yschome-root</artifactId>
-		<version>0.0.1</version>
+		<groupId>com.okdeer</groupId>
+		<artifactId>okdeer-root</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
-		<base.version>0.3.0-SNAPSHOT</base.version>
-		<ca.version>1.2.4-SNAPSHOT</ca.version>
+		<base.version>0.0.1-SNAPSHOT</base.version>
+		<ca.version>1.0.0-SNAPSHOT</ca.version>
 		<mall.version>0.0.2-SNAPSHOT</mall.version>
 		<yscapi.version>0.0.3-SNAPSHOT</yscapi.version>
 	</properties>
@@ -48,38 +48,38 @@
 				<version>${yscapi.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.yschome.ca</groupId>
-				<artifactId>yschome-ca-client</artifactId>
+				<groupId>com.okdeer.ca</groupId>
+				<artifactId>okdeer-ca-client</artifactId>
 				<version>${ca.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.yschome.ca</groupId>
-				<artifactId>yschome-ca-api</artifactId>
+				<groupId>com.okdeer.ca</groupId>
+				<artifactId>okdeer-ca-api</artifactId>
 				<version>${ca.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.yschome.base</groupId>
-				<artifactId>yschome-base-common</artifactId>
+				<groupId>com.okdeer.base</groupId>
+				<artifactId>okdeer-base-common</artifactId>
 				<version>${base.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.yschome.base</groupId>
-				<artifactId>yschome-base-framework</artifactId>
+				<groupId>com.okdeer.base</groupId>
+				<artifactId>okdeer-base-framework</artifactId>
 				<version>${base.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.yschome.base</groupId>
-				<artifactId>yschome-base-manager</artifactId>
+				<groupId>com.okdeer.base</groupId>
+				<artifactId>okdeer-base-manager</artifactId>
 				<version>${base.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.yschome.base</groupId>
-				<artifactId>yschome-base-web</artifactId>
+				<groupId>com.okdeer.base</groupId>
+				<artifactId>okdeer-base-web</artifactId>
 				<version>${base.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.yschome.base</groupId>
-				<artifactId>yschome-base-dal</artifactId>
+				<groupId>com.okdeer.base</groupId>
+				<artifactId>okdeer-base-dal</artifactId>
 				<version>${base.version}</version>
 				<exclusions>
 					<exclusion>

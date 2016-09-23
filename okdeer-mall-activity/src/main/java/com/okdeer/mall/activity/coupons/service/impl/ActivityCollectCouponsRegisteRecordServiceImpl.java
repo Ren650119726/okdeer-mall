@@ -14,9 +14,9 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteReco
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsRegistRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsRegisteRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsRegisteRecordServiceApi;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.DateUtils;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * ClassName: ActivityCollectCouponsRegisteRecordServiceImpl 

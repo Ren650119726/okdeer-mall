@@ -14,8 +14,8 @@ import java.util.Map;
 import com.okdeer.mall.operate.entity.ColumnOperation;
 import com.okdeer.mall.operate.entity.ColumnOperationQueryVo;
 import com.okdeer.mall.operate.entity.ColumnOperationVo;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * 运营栏目service接口

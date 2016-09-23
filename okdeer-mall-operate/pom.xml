@@ -29,32 +29,32 @@
 			<artifactId>okdeer-mall-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com</groupId>
-			<artifactId>yscapi</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.yschome</groupId>
 			<artifactId>cloudy_file</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>com.yschome.base</groupId>
-			<artifactId>yschome-base-framework</artifactId>
+			<groupId>com.okdeer.base</groupId>
+			<artifactId>okdeer-base-framework</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.yschome.base</groupId>
-			<artifactId>yschome-base-manager</artifactId>
+			<groupId>com.okdeer.base</groupId>
+			<artifactId>okdeer-base-manager</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.yschome.base</groupId>
-			<artifactId>yschome-base-dal</artifactId>
+			<groupId>com.okdeer.base</groupId>
+			<artifactId>okdeer-base-dal</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>com.github.jsqlparser</groupId>
 			<artifactId>jsqlparser</artifactId>
 		</dependency>
-
+		<dependency>
+		  <groupId>com.okdeer.pay</groupId>
+		  <artifactId>pay-api</artifactId>
+		  <version>1.0.0-SNAPSHOT</version>
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>

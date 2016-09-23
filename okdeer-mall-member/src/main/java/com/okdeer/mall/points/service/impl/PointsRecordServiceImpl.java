@@ -21,9 +21,9 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.mall.member.points.entity.PointsRecord;
 import com.okdeer.mall.member.points.service.PointsRecordServiceApi;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.points.mapper.PointsRecordMapper;
 
 /**

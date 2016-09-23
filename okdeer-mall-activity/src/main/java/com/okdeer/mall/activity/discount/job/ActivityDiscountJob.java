@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
-import com.yschome.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 
 /**

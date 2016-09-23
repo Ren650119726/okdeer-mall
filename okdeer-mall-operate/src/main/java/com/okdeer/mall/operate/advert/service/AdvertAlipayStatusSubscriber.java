@@ -14,19 +14,17 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
+import com.okdeer.api.pay.pay.dto.PayResponseDto;
+import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.advert.entity.AdvertResponseResult;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.enums.AdvertIsPayEnum;
-import com.yschome.api.pay.pay.dto.PayResponseDto;
-import com.yschome.base.framework.mq.AbstractRocketMQSubscriber;
-import com.yschome.base.framework.mq.RocketMQProducer;
 import com.okdeer.mall.operate.advert.constant.AdvertMessageConstant;
 import com.okdeer.mall.system.utils.mapper.JsonMapper;
 

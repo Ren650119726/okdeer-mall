@@ -29,7 +29,7 @@ import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
