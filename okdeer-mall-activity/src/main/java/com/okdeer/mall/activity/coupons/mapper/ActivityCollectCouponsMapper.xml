@@ -385,14 +385,14 @@
 	    where c.disabled = 0 
 <!-- 	    未开始或者进行中 -->
 	    and (c.status = 1 or c.status = 0)
-			AND 
-			(
-				#{startTime} BETWEEN c.start_time and c.end_time 
-	      		OR 
-	      		#{endTime} BETWEEN c.start_time and c.end_time 
-	      		OR 
-	     		(c.start_time &gt;= #{startTime} and c.end_time &lt;= #{endTime})
-	    	)
+		AND 
+		(
+			#{startTime} BETWEEN c.start_time and c.end_time 
+      		OR 
+      		#{endTime} BETWEEN c.start_time and c.end_time 
+      		OR 
+     		(c.start_time &gt;= #{startTime} and c.end_time &lt;= #{endTime})
+    	)
 <!-- 	    如果是修改,就忽略自己本身这条记录 -->
 	    <if test="id != null and id != ''">
 	    	and c.id != #{id}
@@ -400,6 +400,29 @@
 	    <if test="type != null and type != ''">
 	    	and c.type = #{type}
 	    </if>
+	    <if test="associateIdList != null">
+	    	and 
+	    	(
+		    	c.area_type = 0 
+				OR
+				c.id in (
+					select a.collect_coupons_id from activity_collect_area a where a.collect_coupons_id = c.id
+					AND a.area_id in  
+					<foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
+						#{item}
+					</foreach>
+				)
+			)
+		</if>
+	    <if test="orderTypeList != null">
+	    	and c.id in (
+				select ot.collect_coupons_id from activity_collect_order_type ot where ot.collect_coupons_id = c.id
+				AND ot.order_type in  
+				<foreach collection="orderTypeList" open="(" close=")" index="index" item="item"  separator=",">
+					#{item}
+				</foreach>
+			)
+		</if>
     </select>
     
     <!--     通过活动id查询该活动一共有多少被使用的代金券的总额 -->
