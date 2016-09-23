@@ -213,4 +213,40 @@
         select COUNT(1) from trade_order_item_detail where order_item_id = #{orderItemId,jdbcType=VARCHAR} AND status = 0
   </select>
   
+  <!-- 批量更新订单项详细状态和时间  V1.1.0 add by wusw 20160923-->
+  <update id="updateStatusByDetailId">
+    UPDATE trade_order_item_detail
+	SET STATUS = #{status,jdbcType=TINYINT},
+	    use_time = #{useTime,jdbcType=TIMESTAMP},
+	    update_time = #{useTime,jdbcType=TIMESTAMP},
+	WHERE 
+	<if test="orderItemIds != null">
+	  id in
+	  <foreach collection="orderItemIds" index="index" item="item" open="(" close=")" separator=",">
+		 #{item}
+	  </foreach>
+	</if>
+	<if test="orderItemIds == null">
+	  id = 'noExist'
+	</if>
+  </update>
+  
+  <!-- 批量分组统计同一订单的不同消费码状态数量 V1.1.0 add by wusw 20160923-->
+  <select id="findStatusCountByOrderIds" resultType="map">
+    SELECT CONCAT(status,'-',order_id) AS orderIdStatus,
+		   count(1) AS num
+	FROM trade_order_item_detail
+	WHERE
+	<if test="orderIds != null">
+	   order_id in
+	  <foreach collection="orderIds" index="index" item="item" open="(" close=")" separator=",">
+		 #{item}
+	  </foreach>
+	</if>
+	<if test="orderItemIds == null">
+	  order_id = 'noExist'
+	</if>
+	GROUP BY STATUS,order_id
+  </select>
+  
 </mapper>
