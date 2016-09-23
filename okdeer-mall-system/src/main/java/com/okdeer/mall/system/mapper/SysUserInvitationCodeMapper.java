@@ -16,7 +16,7 @@ import com.yschome.base.dal.IBaseCrudMapper;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构4.1			 2016年9月19日 			zhulq
  */
-public interface SysUserInvitationCodeMapper extends IBaseCrudMapper{
+public interface SysUserInvitationCodeMapper extends IBaseCrudMapper {
 
 	/**
 	 * @Description: 获取邀请码列表

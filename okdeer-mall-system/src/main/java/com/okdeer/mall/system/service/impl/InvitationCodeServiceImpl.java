@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
-import com.okdeer.mall.operate.entity.ColumnOperation;
 import com.okdeer.mall.system.entity.SysUserInvitationCodeVo;
 import com.okdeer.mall.system.entity.SysUserInvitationRecordVo;
 import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
@@ -32,7 +31,7 @@ import com.yschome.base.common.utils.PageUtils;
  *		重构4.1			 2016年9月19日 			zhulq
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.system.service.InvitationCodeServiceApi")
-public class InvitationCodeServiceImpl implements InvitationCodeServiceApi,InvitationCodeService{
+public class InvitationCodeServiceImpl implements InvitationCodeServiceApi,InvitationCodeService {
 
 	/**
 	 * 邀请码mapper
@@ -95,17 +94,17 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi,Invit
 	public PageUtils<SysUserInvitationRecordVo> findInvitationRecordPage(
 			SysUserInvitationRecordVo sysUserInvitationRecordVo, int pageNumber, int pageSize) throws ServiceException {
 		PageHelper.startPage(pageNumber, pageSize, true);
-		if (sysUserInvitationRecordVo.getIds() != null && sysUserInvitationRecordVo.getIds().length <= 0) {
-			sysUserInvitationRecordVo.setIds(null);
+		if (sysUserInvitationRecordVo.getIdsRecord() != null && sysUserInvitationRecordVo.getIdsRecord().length <= 0) {
+			sysUserInvitationRecordVo.setIdsRecord(null);
 		}
-		if (sysUserInvitationRecordVo.getBeginTime() != null) {
+		if (sysUserInvitationRecordVo.getBeginTimeRecord() != null) {
 			//页面搜索时间框传来的时间
-			Date sta = DateUtils.getDateStart(sysUserInvitationRecordVo.getBeginTime());
-			sysUserInvitationRecordVo.setBeginTime(sta);
+			Date sta = DateUtils.getDateStart(sysUserInvitationRecordVo.getBeginTimeRecord());
+			sysUserInvitationRecordVo.setBeginTimeRecord(sta);
 		} 
-		if (sysUserInvitationRecordVo.getEndTime() != null) {
-			Date end = DateUtils.getDateEnd(sysUserInvitationRecordVo.getEndTime());
-			sysUserInvitationRecordVo.setEndTime(end);
+		if (sysUserInvitationRecordVo.getEndTimeRecord() != null) {
+			Date end = DateUtils.getDateEnd(sysUserInvitationRecordVo.getEndTimeRecord());
+			sysUserInvitationRecordVo.setEndTimeRecord(end);
 		}
 		List<SysUserInvitationRecordVo> list = sysUserInvitationRecordMapper.findByQueryRecordVo(sysUserInvitationRecordVo);
 		if (list == null) {
@@ -118,17 +117,17 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi,Invit
 	@Override
 	public List<SysUserInvitationRecordVo> findInvitationRecordForExport(SysUserInvitationRecordVo invitationRecordVo)
 			throws ServiceException {
-		if (invitationRecordVo.getIds() != null && invitationRecordVo.getIds().length <= 0) {
-			invitationRecordVo.setIds(null);
+		if (invitationRecordVo.getIdsRecord() != null && invitationRecordVo.getIdsRecord().length <= 0) {
+			invitationRecordVo.setIdsRecord(null);
 		}
-		if (invitationRecordVo.getBeginTime() != null) {
+		if (invitationRecordVo.getBeginTimeRecord() != null) {
 			//页面搜索时间框传来的时间
-			Date sta = DateUtils.getDateStart(invitationRecordVo.getBeginTime());
-			invitationRecordVo.setBeginTime(sta);
+			Date sta = DateUtils.getDateStart(invitationRecordVo.getBeginTimeRecord());
+			invitationRecordVo.setBeginTimeRecord(sta);
 		} 
-		if (invitationRecordVo.getEndTime() != null) {
-			Date end = DateUtils.getDateEnd(invitationRecordVo.getEndTime());
-			invitationRecordVo.setEndTime(end);
+		if (invitationRecordVo.getEndTimeRecord() != null) {
+			Date end = DateUtils.getDateEnd(invitationRecordVo.getEndTimeRecord());
+			invitationRecordVo.setEndTimeRecord(end);
 		}
 		List<SysUserInvitationRecordVo> list = sysUserInvitationRecordMapper.findByQueryRecordVo(invitationRecordVo);
 		return list;
