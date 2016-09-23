@@ -48,6 +48,7 @@ import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessServiceApi;
 import com.okdeer.mall.order.utils.OrderNoUtils;
 import com.yschome.base.common.exception.ServiceException;
+import com.yschome.base.common.utils.UuidUtils;
 import com.yschome.base.framework.mq.RocketMQProducer;
 
 import net.sf.json.JSONArray;
@@ -170,10 +171,11 @@ public class TradeOrderCompleteProcessServiceImpl
 				case WECHATPAY:
 					tradeOrderPay.setPayType(PayTypeEnum.WXPAY);
 					break;
-
 				default:
+					tradeOrderPay.setPayType(PayTypeEnum.CASH);
 					break;
 			}
+			tradeOrderPay.setId(UuidUtils.getUuid());
 			tradeOrderPay.setOrderId(tradeOrder.getId());
 		}
 
