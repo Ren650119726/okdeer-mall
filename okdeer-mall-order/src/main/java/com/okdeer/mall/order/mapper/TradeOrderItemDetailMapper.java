@@ -1,8 +1,13 @@
 package com.okdeer.mall.order.mapper;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
+import com.okdeer.mall.order.enums.ConsumeStatusEnum;
 
 /**
  * @DESC:
@@ -10,7 +15,10 @@ import com.okdeer.mall.order.entity.TradeOrderItemDetail;
  * @date 2016-02-05 15:22:58
  * @version 1.0.0
  * @copyright ©2005-2020 yschome.com Inc. All rights reserved
- * 
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *    V1.1.0            2016-09-23           wusw                 添加消费码验证（到店消费）相应方法
  */
 public interface TradeOrderItemDetailMapper{
 
@@ -73,5 +81,28 @@ public interface TradeOrderItemDetailMapper{
 	 * 查询未消费数量
 	 */
 	Integer selectUnConsumerCount(String orderItemId);
-
+	
+	// Begin V1.1.0 update by wusw 20160923 
+	/**
+	 * 
+	 * @Description: 批量更新订单项详细状态和时间
+	 * @param status 状态
+	 * @param useTime 当前时间
+	 * @param orderItemIds 订单项目id集合
+	 * @return 更新结果
+	 * @author wusw
+	 * @date 2016年9月23日
+	 */
+	int updateStatusByDetailId(@Param("status")ConsumeStatusEnum status,@Param("useTime")Date useTime,@Param("orderItemIds")List<String> orderItemIds);
+	
+	/**
+	 * 
+	 * @Description: 批量分组统计同一订单的不同消费码状态数量
+	 * @param orderIds 订单id集合
+	 * @return 不同订单的不同消费码状态数据
+	 * @author wusw
+	 * @date 2016年9月23日
+	 */
+	List<Map<String,Object>> findStatusCountByOrderIds(@Param("orderIds")List<String> orderIds);
+	// End V1.1.0 update by wusw 20160923 
 }

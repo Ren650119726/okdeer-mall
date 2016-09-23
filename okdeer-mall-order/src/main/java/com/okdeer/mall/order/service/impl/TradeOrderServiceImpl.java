@@ -219,6 +219,7 @@ import net.sf.json.JsonConfig;
  *    1.0.Z			    2016-09-05			 zengj			          增加订单操作记录        
  *    1.0.Z	            2016-09-07           zengj              库存管理修改，采用商业管理系统校验
  *   V1.1.0	            2016-9-12            zengjz             财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口  
+ *   V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -3821,10 +3822,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @param params
 	 * @return
 	 */
+	// Begin V1.1.0 update by wusw 20160923 
 	@Override
-	public Map<String, Object> selectOrderDetailByConsumeCode(Map<String, Object> params) {
+	public List<Map<String, Object>> selectOrderDetailByConsumeCode(Map<String, Object> params) {
 		return tradeOrderMapper.selectOrderDetailByConsumeCode(params);
 	}
+	// End V1.1.0 update by wusw 20160923 
 
 	@Override
 	public JSONObject findUserOrderDetailList(String orderId) throws ServiceException {
@@ -4490,7 +4493,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			for (String consumeCode : consumeCodes) {
 				params.put("consumeCode", consumeCode);
 				// 根据消费码查询订单信息
-				Map<String, Object> data = this.selectOrderDetailByConsumeCode(params);
+				// Begin V1.1.0 update by wusw 20160923 
+				List<Map<String, Object>> list = this.selectOrderDetailByConsumeCode(params);
+				Map<String, Object> data = null;
+				if (CollectionUtils.isNotEmpty(list)) {
+					data = list.get(0);
+				}
+				// Begin V1.1.0 update by wusw 20160923 
 				// 没有找到订单信息
 				if (data == null || data.get("id") == null || data.get("orderItemId") == null
 						|| data.get("detailId") == null) {

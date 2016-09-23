@@ -4667,4 +4667,20 @@
 		ORDER BY o.create_time desc
 	</select>
 	
+	<!-- 批量根据订单id，修改订单消费码状态 V1.1.0 add by wusw 20160923 -->
+	<update id="updateConsumerStatusByIds">
+	  UPDATE trade_order
+	  SET consumer_code_status = #{status,jdbcType=TINYINT},
+	      update_time = #{updateTime,jdbcType=TIMESTAMP}
+	  WHERE
+		<if test="ids != null">
+		   id in
+		  <foreach collection="ids" index="index" item="item" open="(" close=")" separator=",">
+			 #{item}
+		  </foreach>
+		</if>
+		<if test="ids == null">
+		  id = 'noExist'
+		</if>
+	</update>
 </mapper>
