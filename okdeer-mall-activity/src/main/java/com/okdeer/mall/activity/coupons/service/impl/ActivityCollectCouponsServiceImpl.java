@@ -334,15 +334,15 @@ public class ActivityCollectCouponsServiceImpl
 		map.put("activityId", activityCollectCoupons.getId());
 		activityCouponsMapper.updateBatchActivityId(map);
 
+		// 先删除老记录
+		activityCollectAreaMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
+		
 		if(activityCollectCoupons.getType() == ActivityCollectCouponsType.OPEN_DOOR.getValue() ||
 				   activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue() ||	
 				   activityCollectCoupons.getType() == ActivityCollectCouponsType.get.getValue()){
 			// 代金卷范围类型：0全国，1区域，2小区 , 3店铺
 			// 如果是区域
 			if (activityCollectCoupons.getAreaType() == 1) {
-
-				// 先删除老记录
-				activityCollectAreaMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
 
 				// 批量添加新记录
 				String[] array = areaIds.split(",");
@@ -362,9 +362,6 @@ public class ActivityCollectCouponsServiceImpl
 			// 如果是小区
 			if (activityCollectCoupons.getAreaType() == 2) {
 
-				// 先删除老记录
-				activityCollectCommunityMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
-
 				// 批量添加新记录
 				String[] array = areaIds.split(",");
 				List<ActivityCollectCommunity> areaList = new ArrayList<ActivityCollectCommunity>();
@@ -379,11 +376,12 @@ public class ActivityCollectCouponsServiceImpl
 			}
 		}
 		
+		//先删掉老数据
+		activityCollectOrderTypeMapper.deleteOrderTypeByCollectCouponsId(activityCollectCoupons.getId());
+		
 		//批量插入ActivityCollectOrderType表
 		if(activityCollectCoupons.getOrderTypes() != null && 
 				activityCollectCoupons.getOrderTypes().length > 0){
-			//先删掉老数据
-			activityCollectOrderTypeMapper.deleteOrderTypeByCollectCouponsId(activityCollectCoupons.getId());
 			
 			List<ActivityCollectOrderType> otList = new ArrayList<ActivityCollectOrderType>();
 			for(String orderTypeId : activityCollectCoupons.getOrderTypes()){
