@@ -10,6 +10,13 @@
     <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="use_time" property="useTime" jdbcType="TIMESTAMP" />
+    
+    <!--Begin add by zengjz 2016-9-23 订单明细表新增字断 -->
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <!-- End by zengjz 2016-9-23 订单明细表新增字断 -->
+	    
   </resultMap>
   <sql id="Base_Column_List" >
     id, order_item_id, consume_code, status, start_time, end_time, create_time

@@ -42,6 +42,7 @@ import com.yschome.base.common.exception.ServiceException;
  *    重构4.1            2016-7-29            wusw                添加服务店订单详情查询（商城后台）
  *    重构4.1            2016-7-30            zhaoqc              添加根据订单状态查询订单列表
  *    v1.1.0            2016-9-17            zengjz              添加财务系统统计接口
+ *    V1.1.0			2016-9-23 			 zengjz				 增加查询到店消费订单列表
  */
 public interface TradeOrderMapper {
 
@@ -974,4 +975,18 @@ public interface TradeOrderMapper {
 	Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params);
 	
 	// end v1.1.0 add by zengjz
+	
+	// Begin v1.1.0 add by zengjz 增加查询到店消费列表
+	/**
+	 * @Description: 增加查询到店消费方法
+	 * @param map
+	 * @return   
+	 * @return List<TradeOrder>  
+	 * @throws
+	 * @author zengjizu
+	 * @date 2016年9月22日
+	 */
+	List<TradeOrder> selectStoreConsumeOrderList(Map<String, Object> map);
+	
+	// End v1.1.0 add by zengjz 增加查询到店消费列表
 }

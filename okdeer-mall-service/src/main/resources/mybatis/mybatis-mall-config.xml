@@ -105,5 +105,8 @@
    		
    		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.archive.goods.store.enums.IsShopNum"/>
    	    <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.system.enums.InvitationUserType"/>
+   	    <!-- Begin added by zengjz 2016-09-22 增加消费码状态 -->
+   		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.ConsumerCodeStatusEnum"/>
+   		<!-- End added by zengjz 2016-09-22 增加消费码状态 -->
     </typeHandlers>
 </configuration>
