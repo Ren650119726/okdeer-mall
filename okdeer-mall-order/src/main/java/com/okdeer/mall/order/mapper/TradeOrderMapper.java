@@ -1,4 +1,3 @@
-
 package com.okdeer.mall.order.mapper;
 
 import java.math.BigDecimal;
@@ -66,14 +65,16 @@ public interface TradeOrderMapper {
 	 * @param params 请求参数
 	 * @return 返回结果集
 	 */
-	List<TradeOrder> selectUserOrderList(@Param("params") Map<String, Object> params);
+	List<TradeOrder> selectUserOrderList(@Param("params")
+	Map<String, Object> params);
 
 	/**
 	 * 用户未评价订单列表查询
 	 * @param params 请求参数
 	 * @return 返回结果
 	 */
-	List<TradeOrder> selectUserIsCommentOrderList(@Param("params") Map<String, Object> params);
+	List<TradeOrder> selectUserIsCommentOrderList(@Param("params")
+	Map<String, Object> params);
 
 	// begin add by wushp
 	/**
@@ -84,7 +85,9 @@ public interface TradeOrderMapper {
 	 * @author wushp
 	 * @date 2016年7月16日
 	 */
-	List<TradeOrder> findNotCommentServiceOrderList(@Param("params") Map<String, Object> params);
+	List<TradeOrder> findNotCommentServiceOrderList(@Param("params")
+	Map<String, Object> params);
+
 	// end add by wushp
 
 	/**
@@ -107,7 +110,8 @@ public interface TradeOrderMapper {
 	 * @param params 请求参数
 	 * @return 返回结果
 	 */
-	List<UserTradeServiceOrderVo> selectUserServiceOrderList(@Param("params") Map<String, Object> params);
+	List<UserTradeServiceOrderVo> selectUserServiceOrderList(@Param("params")
+	Map<String, Object> params);
 
 	/**
 	 * 用户服务订单列表查询
@@ -115,7 +119,8 @@ public interface TradeOrderMapper {
 	 * @param params 请求参数
 	 * @return 返回结果
 	 */
-	List<UserTradeServiceOrderVo> selectUserServiceOrderAlreadyPayList(@Param("params") Map<String, Object> params);
+	List<UserTradeServiceOrderVo> selectUserServiceOrderAlreadyPayList(@Param("params")
+	Map<String, Object> params);
 
 	/**
 	 *运营后台实物、服务订单列表查询
@@ -145,7 +150,8 @@ public interface TradeOrderMapper {
 	 * @param params
 	 * @return
 	 */
-	List<TradeOrderQueryVo> selectShippedOrderByParams(@Param("params") Map<String, Object> params);
+	List<TradeOrderQueryVo> selectShippedOrderByParams(@Param("params")
+	Map<String, Object> params);
 
 	/**
 	 * 
@@ -165,7 +171,8 @@ public interface TradeOrderMapper {
 	 * @param tradeOrderItem
 	 * @return
 	 */
-	List<TradeOrderItem> selectShippedOrderItemByEntity(@Param("params") Map<String, Object> params);
+	List<TradeOrderItem> selectShippedOrderItemByEntity(@Param("params")
+	Map<String, Object> params);
 
 	/**
 	 * 
@@ -176,8 +183,10 @@ public interface TradeOrderMapper {
 	 * @param paymentStatus
 	 * @param paymentTime
 	 */
-	void updatePaymentStatusByIds(@Param("ids") String[] ids, @Param("paymentStatus") PaymentStatusEnum paymentStatus,
-			@Param("paymentTime") Date paymentTime);
+	void updatePaymentStatusByIds(@Param("ids")
+	String[] ids, @Param("paymentStatus")
+	PaymentStatusEnum paymentStatus, @Param("paymentTime")
+	Date paymentTime);
 
 	/**
 	 * 
@@ -188,8 +197,9 @@ public interface TradeOrderMapper {
 	 * @param paymentStatus
 	 * @return
 	 */
-	int selectPaymentStatusCountByIds(@Param("ids") String[] ids,
-			@Param("paymentStatus") PaymentStatusEnum paymentStatus);
+	int selectPaymentStatusCountByIds(@Param("ids")
+	String[] ids, @Param("paymentStatus")
+	PaymentStatusEnum paymentStatus);
 
 	/**
 	 * 
@@ -199,7 +209,8 @@ public interface TradeOrderMapper {
 	 * @param id
 	 * @return
 	 */
-	TradeOrder selectOrderPayInvoiceById(@Param("id") String id);
+	TradeOrder selectOrderPayInvoiceById(@Param("id")
+	String id);
 
 	/**
 	 * 
@@ -210,8 +221,10 @@ public interface TradeOrderMapper {
 	 * @param updateTime
 	 * @param id
 	 */
-	void updateIsShowById(@Param("isShow") OrderIsShowEnum isShow, @Param("updateTime") Date updateTime,
-			@Param("id") String id);
+	void updateIsShowById(@Param("isShow")
+	OrderIsShowEnum isShow, @Param("updateTime")
+	Date updateTime, @Param("id")
+	String id);
 
 	/**
 	 * 
@@ -221,7 +234,8 @@ public interface TradeOrderMapper {
 	 * @param params
 	 * @return
 	 */
-	List<TradeOrderPayQueryVo> selectByStatusPayType(@Param("params") Map<String, Object> params);
+	List<TradeOrderPayQueryVo> selectByStatusPayType(@Param("params")
+	Map<String, Object> params);
 
 	/**
 	 * 
@@ -231,7 +245,8 @@ public interface TradeOrderMapper {
 	 * @param orderId
 	 * @return
 	 */
-	int selectCountByStatusPayType(@Param("params") Map<String, Object> params);
+	int selectCountByStatusPayType(@Param("params")
+	Map<String, Object> params);
 
 	/**
 	 * 
@@ -241,7 +256,8 @@ public interface TradeOrderMapper {
 	 * @param orderIds
 	 * @return
 	 */
-	List<TradeOrderPayQueryVo> selectByOrderIdList(@Param("orderIds") List<String> orderIds);
+	List<TradeOrderPayQueryVo> selectByOrderIdList(@Param("orderIds")
+	List<String> orderIds);
 
 	/**
 	 * 
@@ -269,7 +285,8 @@ public interface TradeOrderMapper {
 	 * @param orderId 订单ID
 	 * @return
 	 */
-	TradeOrderVo getOrderDetail(@Param("orderId") String orderId);
+	TradeOrderVo getOrderDetail(@Param("orderId")
+	String orderId);
 
 	/**
 	 * 
@@ -415,11 +432,14 @@ public interface TradeOrderMapper {
 	 * @param endTime     结束时间
 	 * @return  交班统计
 	 */
-	PosShiftExchange findPosShiftExchangeByStoreId(@Param("storeId") String storeId, @Param("startTime") Date startTime,
-			@Param("endTime") Date endTime);
+	PosShiftExchange findPosShiftExchangeByStoreId(@Param("storeId")
+	String storeId, @Param("startTime")
+	Date startTime, @Param("endTime")
+	Date endTime);
 
-	////////////////////////////// 销售统计
-	////////////////////////////// start///////////////////////////////////////////////
+	// //////////////////////////// 销售统计
+	// ////////////////////////////
+	// start///////////////////////////////////////////////
 	/**
 	 * 根据条件获取订单数量
 	 * @param map Map
@@ -490,8 +510,9 @@ public interface TradeOrderMapper {
 	 */
 	BigDecimal getDeliveryCashPayAmoutByParames(Map<String, Object> map);
 
-	////////////////////////////// 销售统计
-	////////////////////////////// end///////////////////////////////////////////////
+	// //////////////////////////// 销售统计
+	// ////////////////////////////
+	// end///////////////////////////////////////////////
 
 	/**
 	 * zengj:查询店铺当天的收入
@@ -586,6 +607,7 @@ public interface TradeOrderMapper {
 	 * @return
 	 */
 	List<TradeOrderStatusVo> selectWxBuyerPhysicalOrderCount(String userId);
+
 	// end add by wushp 20160823
 
 	/**
@@ -612,7 +634,9 @@ public interface TradeOrderMapper {
 	 * @param type 类型 1= 订单 2=售后单3=纠纷单
 	 * @return
 	 */
-	public Map<String, Object> selectWindowTipOrderCounts(@Param("storeId") String storeId, @Param("type") String type);
+	public Map<String, Object> selectWindowTipOrderCounts(@Param("storeId")
+	String storeId, @Param("type")
+	String type);
 
 	/**
 	 * 查询用户对应的订单信息 </p>
@@ -792,7 +816,8 @@ public interface TradeOrderMapper {
 	 * @param params
 	 * @return
 	 */
-	List<TradeOrder> selectOrderItemListForSeller(@Param("params") Map<String, Object> params);
+	List<TradeOrder> selectOrderItemListForSeller(@Param("params")
+	Map<String, Object> params);
 
 	/**
 	 * 查询导出POS销售单列表
@@ -821,7 +846,8 @@ public interface TradeOrderMapper {
 	 * @param params
 	 * @return
 	 */
-	List<TradeOrder> selectRealOrderItemList(@Param("params") Map<String, Object> params);
+	List<TradeOrder> selectRealOrderItemList(@Param("params")
+	Map<String, Object> params);
 
 	// Begin 重构4.1 add by wusw
 	/**
@@ -835,6 +861,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年7月13日
 	 */
 	List<TradeOrder> selectServiceStoreOrderList(Map<String, Object> map);
+
 	// End 重构4.1 add by wusw
 
 	// Begin 重构4.1 add by wusw
@@ -847,6 +874,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年7月14日
 	 */
 	TradeOrderVo selectServiceStoreOrderDetail(String orderId);
+
 	// End 重构4.1 add by wusw
 
 	// Begin 重构4.1 add by wusw
@@ -860,6 +888,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年7月17日
 	 */
 	List<PhysicsOrderVo> selectServiceStoreListForOperate(Map<String, Object> map);
+
 	// End 重构4.1 add by wusw
 
 	// Begin 重构4.1 add by zhulq 2016-7-16
@@ -871,6 +900,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年7月16日
 	 */
 	List<TradeOrderRechargeVo> selectRechargeOrder(TradeOrderRechargeVo vo);
+
 	// End 重构4.1 add by zhulq 2016-7-16
 
 	// Begin 重构4.1 导出数据 add by zhulq 2016-7-18
@@ -882,6 +912,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年7月18日
 	 */
 	List<TradeOrderRechargeVo> selectRechargeOrderExport(Map<String, Object> map);
+
 	// End 重构4.1 add by zhulq 2016-7-18
 
 	// Begin 重构4.1 订单详情 add by zhulq 2016-7-18
@@ -893,6 +924,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年7月18日
 	 */
 	List<TradeOrderRechargeVo> selectRechargeOrderDetail(TradeOrderRechargeVo vo);
+
 	// End 重构4.1 订单详情 add by zhulq 2016-7-18
 
 	// Begin 重构4.1 add by wusw 20160719
@@ -905,6 +937,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年7月19日
 	 */
 	List<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params);
+
 	// End 重构4.1 add by wusw 20160719
 
 	// Begin 重构4.1 add by wusw 20160729
@@ -917,6 +950,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年7月29日
 	 */
 	TradeOrderVo selectServiceStoreDetailForOperate(String orderId);
+
 	// End 重构4.1 add by wusw 20160729
 
 	// Begin 重构4.1 add by zhaoqc 20160730
@@ -929,6 +963,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年7月29日
 	 */
 	List<TradeOrder> findRechargeOrdersByStatus(int status);
+
 	// End 重构4.1 add by zhaoqc 20160730
 
 	// Begin sql优化，将复杂sql拆分开来 add by zengj
@@ -952,8 +987,9 @@ public interface TradeOrderMapper {
 	 * @author zengj
 	 * @date 2016年9月13日
 	 */
-	List<Map<String, Object>> findConfirmDeliveryOrderListByPos(@Param("storeId") String storeId);
-	
+	List<Map<String, Object>> findConfirmDeliveryOrderListByPos(@Param("storeId")
+	String storeId);
+
 	// Begin v1.1.0 add by zengjz
 	/**
 	 * @Description: 按条件统计订单交易量与金额
@@ -963,7 +999,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年9月12日
 	 */
 	Map<String, Object> statisOrderForFinanceByParams(Map<String, Object> params);
-	
+
 	/**
 	 * @Description: 按查询条件统计取消订单退款 金额、数量
 	 * @param params 查询参数
@@ -972,6 +1008,16 @@ public interface TradeOrderMapper {
 	 * @date 2016年9月17日
 	 */
 	Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params);
-	
+
 	// end v1.1.0 add by zengjz
+	/**
+	 * @Description: 
+	 * @param map
+	 * @return   
+	 * @return List<TradeOrder>  
+	 * @throws
+	 * @author zengjizu
+	 * @date 2016年9月22日
+	 */
+	List<TradeOrder> selectStoreConsumeOrderList(Map<String, Object> map);
 }
