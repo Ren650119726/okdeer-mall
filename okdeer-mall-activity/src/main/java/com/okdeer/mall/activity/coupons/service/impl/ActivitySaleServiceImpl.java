@@ -89,6 +89,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		try {
 			// 先保存特惠主对象
 			activitySaleMapper.save(activitySale);
+			// 库存同步--库存出错的几率更大。先处理库存
+			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
+					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 			// 再保存特惠商品列表
 			for (ActivitySaleGoods a : asgList) {
 				a.setDisabled(Disabled.valid);
@@ -121,9 +124,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 			}
 			activitySaleGoodsMapper.saveBatch(asgList);
-			// 库存同步
-			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
-					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
+
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
