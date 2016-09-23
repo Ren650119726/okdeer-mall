@@ -243,7 +243,7 @@
 		 #{item}
 	  </foreach>
 	</if>
-	<if test="orderItemIds == null">
+	<if test="orderIds == null">
 	  order_id = 'noExist'
 	</if>
 	GROUP BY STATUS,order_id
