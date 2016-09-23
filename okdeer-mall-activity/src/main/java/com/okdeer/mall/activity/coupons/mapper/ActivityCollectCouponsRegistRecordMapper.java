@@ -2,6 +2,8 @@ package com.okdeer.mall.activity.coupons.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo;
 import com.okdeer.base.dal.IBaseCrudMapper;
 
@@ -16,11 +18,11 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构4.1			 2016年9月18日 			zhulq
  */
-public interface ActivityCollectCouponsRegistRecordMapper extends IBaseCrudMapper{
+public interface ActivityCollectCouponsRegistRecordMapper extends IBaseCrudMapper {
 
 	/**
 	 * @Description: 邀请注册记录列表数据查询
-	 * @param record  实体
+	 * @param registeRecordVo  实体
 	 * @return list
 	 * @author zhulq
 	 * @date 2016年9月18日
@@ -38,11 +40,11 @@ public interface ActivityCollectCouponsRegistRecordMapper extends IBaseCrudMappe
 	
 	/**
 	 * @Description: 某个账号的邀请记录详情
-	 * @param userId 账号id
+	 * @param userQueryId 账号id
 	 * @return  list
 	 * @author zhulq
 	 * @date 2016年9月18日
 	 */
-	List<ActivityCollectCouponsRegisteRecordVo> findByUserId(String userId);
+	List<ActivityCollectCouponsRegisteRecordVo> findByUserId(@Param("userQueryId")String userQueryId);
 	
 }
