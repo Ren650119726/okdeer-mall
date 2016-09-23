@@ -662,4 +662,8 @@ public class ActivityCollectCouponsServiceImpl
 		return activityCollectOrderTypeMapper.findOrderTypeListByCollectCouponsId(collectCouponsId);
 	}
 	
+	@Override
+	public List<ActivityCollectCouponsVo> findCollCouponsLinks(Map<String, Object> map) throws ServiceException {
+		return activityCollectCouponsMapper.findCollCouponsLinks(map);
+	}
 }
