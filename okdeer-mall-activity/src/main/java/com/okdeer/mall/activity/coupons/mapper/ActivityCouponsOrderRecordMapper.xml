@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCouponsOrderRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="collect_type" property="collectType" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsType" jdbcType="TINYINT" />
+    <result column="coupons_collect_id" property="couponsCollectId" jdbcType="VARCHAR" />
+    <result column="collect_time" property="collectTime" jdbcType="TIMESTAMP" />
+    <result column="collect_user_id" property="collectUserId" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, collect_type, coupons_collect_id, collect_time, collect_user_id, order_id
+  </sql>
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.orderId and ''!=params.orderId" >
+        AND order_id = #{params.orderId,jdbcType=VARCHAR}
+      </if>
+    </if>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from activity_coupons_order_record
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_coupons_order_record WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    DELETE FROM activity_coupons_order_record
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord" >
+    insert into activity_coupons_order_record (id, collect_type,  
+      coupons_collect_id, collect_time, collect_user_id, order_id)
+    values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=BIT}, 
+      #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUserId,jdbcType=VARCHAR}, 
+      #{orderId,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord" >
+    insert into activity_coupons_order_record
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="collectType != null" >
+        collect_type,
+      </if>
+      <if test="couponsCollectId != null" >
+        coupons_collect_id,
+      </if>
+      <if test="collectTime != null" >
+        collect_time,
+      </if>
+      <if test="collectUserId != null" >
+        collect_user_id,
+      </if>
+      <if test="orderId != null" >
+        order_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="collectType != null" >
+        #{collectType,jdbcType=BIT},
+      </if>
+      <if test="couponsCollectId != null" >
+        #{couponsCollectId,jdbcType=VARCHAR},
+      </if>
+      <if test="collectTime != null" >
+        #{collectTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="collectUserId != null" >
+        #{collectUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord" >
+    update activity_coupons_order_record
+    <set >
+      <if test="collectType != null" >
+        collect_type = #{collectType,jdbcType=BIT},
+      </if>
+      <if test="couponsCollectId != null" >
+        coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR},
+      </if>
+      <if test="collectTime != null" >
+        collect_time = #{collectTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="collectUserId != null" >
+        collect_user_id = #{collectUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        order_id = #{orderId,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord" >
+    update activity_coupons_order_record
+    set collect_type = #{collectType,jdbcType=BIT},
+      coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR},
+      collect_time = #{collectTime,jdbcType=TIMESTAMP},
+      collect_user_id = #{collectUserId,jdbcType=VARCHAR},
+      order_id = #{orderId,jdbcType=VARCHAR},
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper> 

@@ -1,5 +1,19 @@
 package com.okdeer.mall.order.service.impl;
 
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ONLY;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ONLY_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_SUCCESS_TIPS;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_EXECUTE_CANCEL_FAIL;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_EXECUTE_REFUSE_FAIL;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_NOT_EXSITS_DELETE;
@@ -38,6 +52,11 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.okdeer.api.pay.common.dto.BaseResultDto;
+import com.okdeer.api.pay.enums.BusinessTypeEnum;
+import com.okdeer.api.pay.enums.TradeErrorEnum;
+import com.okdeer.api.pay.service.IPayTradeServiceApi;
+import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
@@ -53,11 +72,29 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.PsmsAgent;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.archive.system.service.IPsmsAgentServiceApi;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
+import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
+import com.okdeer.mall.activity.coupons.enums.ActivityCollectOrderTypeEnum;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.enums.ActivitySourceEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsOrderRecordMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
@@ -127,6 +164,7 @@ import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.JsonDateValueProcessor;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
+import com.okdeer.mall.order.vo.OrderCouponsRespDto;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.order.vo.TradeOrderCommentVo;
@@ -143,19 +181,6 @@ import com.okdeer.mall.points.service.PointsBuriedService;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
-import com.okdeer.api.pay.common.dto.BaseResultDto;
-import com.okdeer.api.pay.enums.BusinessTypeEnum;
-import com.okdeer.api.pay.enums.TradeErrorEnum;
-import com.okdeer.api.pay.service.IPayTradeServiceApi;
-import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.DateUtils;
-import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.StringUtils;
-import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
-import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.mcm.service.ISmsService;
 
 import net.sf.json.JSONArray;
@@ -458,6 +483,24 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	private TradeOrderCompleteProcessService tradeOrderCompleteProcessService;
 
 	// End 1.0.Z 增加订单操作记录Service add by zengj
+	
+	// begin add by wushp V1.1.0 20160923
+	/**
+	 * 代金券管理mapper
+	 */
+	@Autowired
+	private ActivityCouponsMapper activityCouponsMapper;
+	/**
+	 * 代金券领取记录mapper
+	 */
+	@Autowired
+	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+	/**
+	 * 消费返券记录mapper
+	 */
+	@Autowired
+	ActivityCouponsOrderRecordMapper activityCouponsOrderRecordMapper;
+	// end add by wushp V1.1.0 20160923
 
 	@Override
 	public PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize)
@@ -5483,4 +5526,263 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		return tradeOrderMapper.statisOrderCannelRefundByParams(params);
 	}
 	// End v1.1.0 add by zengjz 20160912
+	
+	// begin add by wushp  V1.1.0 20160922
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public OrderCouponsRespDto getOrderCoupons(String orderId, String userId,String type) throws ServiceException {
+		OrderCouponsRespDto orderCouponsRespDto = new OrderCouponsRespDto();
+		if ("mall".equals(type)) {
+			//商城订单
+			this.getMallOrderCoupons(orderId, userId,orderCouponsRespDto);
+		}
+		if ("psms".equals(type)) {
+			//物业订单
+			this.getPsmsOrderCoupons(orderId, userId,orderCouponsRespDto);
+		}
+		
+		return orderCouponsRespDto;
+	}
+	
+	/**
+	 * @Description: 商城订单消费返券
+	 * @param orderId 订单id
+	 * @param userId 下单用户id
+	 * @return int 0:符合消费返券，1：不符合消费返券
+	 * @throws ServiceException 异常
+	 * @author wushp
+	 * @date 2016年9月22日
+	 */
+	private void getMallOrderCoupons(String orderId, String userId, OrderCouponsRespDto respDto) 
+			throws ServiceException {
+		// 1、获取订单基本信息,判断订单状态是否符合消费返券
+		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderId);
+		// 订单状态(0:等待买家付款,1:待发货,2:已取消,3:已发货,4:已拒收,5:已签收(交易完成),6:交易关闭),7:取消中,8:拒收中，11支付确认中
+		int orderStatus = tradeOrder.getStatus().ordinal();
+		if (!(orderStatus == 1 || orderStatus == 11)) {
+			//只有支付完成、货到付款、支付确认中的订单，也就是状态为1或者11的订单才返券
+			logger.info(ORDER_COUPONS_STATUS_CHANGE, orderStatus,orderId,userId);
+			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_STATUS_CHANGE_TIPS);
+			return;
+			
+		}
+		//订单类型(0:实物订单,1:团购店服务订单，2:上门服务订单，3：手机充值，4：流量充值，5：到店消费订单)
+		int orderType = tradeOrder.getType().ordinal();
+		Map<String, Object> map = new HashMap<String, Object>();
+		// 订单实付金额
+		map.put("limitAmout", tradeOrder.getActualAmount());
+		if (orderType == 0) {
+			//实物订单
+			String storeId = tradeOrder.getStoreId();
+			StoreInfo storeInfo = storeInfoServiceApi.selectByPrimaryKey(storeId);
+			String provinceId = storeInfo.getProvinceId();
+			String cityId = storeInfo.getCityId();
+			
+			// 订单类型
+			map.put("orderType", ActivityCollectOrderTypeEnum.PHYSICAL_ORDER.getValue());
+			map.put("provinceId", provinceId);
+			map.put("cityId", cityId);
+			// 获取消费返券信息并赠送代金券
+			getOrderCouponsInfo(orderId, userId, map, respDto);
+		} else if (orderType == 2 || orderType == 5) {
+			// 服务店订单 ，活动范围判定：物流地址
+			// 获取订单的的物流地址
+			TradeOrderLogistics tradeOrderLogistics = tradeOrderLogisticsMapper.selectByOrderId(orderId);
+			
+			// 订单类型
+			map.put("orderType", ActivityCollectOrderTypeEnum.SERVICE_STORE_ORDER.getValue());
+			map.put("provinceId", tradeOrderLogistics.getProvinceId());
+			map.put("cityId", tradeOrderLogistics.getCityId());
+			// 获取消费返券信息并赠送代金券
+			getOrderCouponsInfo(orderId, userId, map, respDto);
+		} else if (orderType == 3 || orderType == 4) {
+			// 充值订单
+			// 订单类型
+			map.put("orderType", ActivityCollectOrderTypeEnum.MOBILE_PAY_ORDER.getValue());
+			// 获取消费返券信息并赠送代金券
+			getOrderCouponsInfo(orderId, userId, map, respDto);
+		}
+	}
+	
+	/**
+	 * @Description: 物业订单消费返券
+	 * @param orderId 订单id
+	 * @param userId 下单用户id
+	 * @param respDto 响应
+	 * @throws ServiceException 异常
+	 * @author wushp
+	 * @date 2016年9月22日
+	 */
+	private void getPsmsOrderCoupons(String orderId, String userId, OrderCouponsRespDto respDto) 
+			throws ServiceException {
+		// 调用物业接口获取订单信息，省id，市id
+		BigDecimal actualAmount = BigDecimal.valueOf(0);
+		String provinceId = null;
+		String cityId = null;
+		
+		if (StringUtils.isBlank(provinceId) && StringUtils.isBlank(cityId)) {
+			// 没有符合条件的消费返券活动
+			logger.info(ORDER_COUPONS_PSMS_ERROR, orderId,userId);
+			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_PSMS_ERROR_TIPS);
+			return;
+		}
+		
+		Map<String, Object> map = new HashMap<String, Object>();
+		// 订单实付金额
+		map.put("limitAmout", actualAmount);
+		// 订单类型
+		map.put("orderType", ActivityCollectOrderTypeEnum.ESTATE_PAY_ORDER.getValue());
+		map.put("provinceId", provinceId);
+		map.put("cityId", cityId);
+		// 获取消费返券信息并赠送代金券
+		getOrderCouponsInfo(orderId, userId, map, respDto);
+	}
+	
+	/**
+	 * 
+	 * @Description: 获取消费返券信息并赠送代金券
+	 * @param orderId 订单id
+	 * @param userId 用户id
+	 * @param map 代金券活动查询map
+	 * @param respDto 响应
+	 * @throws ServiceException 异常
+	 * @author wushp
+	 * @date 2016年9月23日
+	 */
+	private void getOrderCouponsInfo(String orderId, String userId, Map<String, Object> map, 
+			OrderCouponsRespDto respDto) throws ServiceException {
+		// 查询是否有符合消费返券的活动（活动代金券）
+		List<ActivityCollectCouponsVo> collCoupons = activityCollectCouponsService.findCollCouponsLinks(map);
+		if (CollectionUtils.isEmpty(collCoupons)) {
+			// 没有符合条件的消费返券活动
+			logger.info(ORDER_COUPONS_NOT_ACTIVITY, orderId,userId);
+			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_NOT_ACTIVITY_TIPS);
+			return;
+		}
+		if (collCoupons.size() > 1) {
+			// 同一时间，同一区域，只能有一个消费返券活动
+			logger.info(ORDER_COUPONS_NOT_ONLY, orderId,userId);
+			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_NOT_ONLY_TIPS);
+			return;
+		}
+		// 活动关联的代金券
+		List<ActivityCoupons> activityCouponsList = collCoupons.get(0).getActivityCoupons();
+		if (CollectionUtils.isEmpty(activityCouponsList)) {
+			// 活动没有关联代金券
+			logger.info(ORDER_COUPONS_NOT_COUPONE, orderId,userId);
+			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_NOT_COUPONE_TIPS);
+			return;
+		}
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("orderId", orderId);
+		// 消费返券记录
+		List<ActivityCouponsOrderRecord> recordList = activityCouponsOrderRecordMapper.selectByParams(params);
+		if (CollectionUtils.isNotEmpty(recordList)) {
+			// 该订单已经参与过消费返券活动
+			logger.info(ORDER_COUPONS_ALREADY, orderId,userId);
+			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_ALREADY_TIPS);
+			return;
+		}
+		
+		// 待插入的代金券领取记录
+		List<ActivityCouponsRecord> lstCouponsRecords = new ArrayList<ActivityCouponsRecord>();
+		// 代金券ids：用于更新代金券剩余量
+		List<String> lstActivityCouponsIds = new ArrayList<String>();
+		// 赠送的代金券总面额
+		int totalValue = 0;
+		// 代金卷活动类型：0代金券领取活动，1注册活动，2开门成功送代金券活动3 邀请注册送代金券活动4 消费返券活动
+		ActivityCouponsType activityCouponsType = ActivityCouponsType
+				.enumValueOf(collCoupons.get(0).getType() + "");
+		for (ActivityCoupons coupons : activityCouponsList) {
+			// 便利活动关联的代金券，判断是否能领取，能领取则
+			// 插入代金券领取记录表activity_coupons_record，订单消费返券记录activity_coupons_order_record
+			// 剩余总数量
+			int remainNum = coupons.getRemainNum();
+			if (remainNum <= 0) {
+				// 消费返券活动，对应的的代金券已被领完
+				logger.info(ORDER_COUPONS_NOT_COUPONE_RECEIVE, coupons.getId(),orderId,userId);
+				continue;
+			}
+			// 每人限领数量
+			Integer everyLimit = coupons.getEveryLimit();
+			// 构造某个用户领取某一种代金券数量的 查询条件
+			ActivityCouponsRecord record = new ActivityCouponsRecord();
+			record.setCollectUserId(userId);
+			record.setCouponsId(coupons.getId());
+			// 查询用户领取该代金券的数量
+			int count = activityCouponsRecordService.selectCountByParams(record);
+			if (count >= everyLimit) {
+				// 领取的数量大于等于每人限领数量，则不能再领取
+				// 消费返券活动，对应的的代金券已被领完
+				logger.info(ORDER_COUPONS_NOT_COUPONE_RECEIVE, coupons.getId(),orderId,userId);
+				continue;
+			} 
+			
+			// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
+			ActivityCouponsRecord activityCouponsRecord = new ActivityCouponsRecord();
+			activityCouponsRecord.setId(UuidUtils.getUuid());
+			activityCouponsRecord.setCollectType(activityCouponsType);
+			activityCouponsRecord.setCouponsId(coupons.getId());
+			activityCouponsRecord.setCouponsCollectId(collCoupons.get(0).getId());
+			activityCouponsRecord.setCollectTime(new Date());
+			activityCouponsRecord.setCollectUserId(userId);
+			activityCouponsRecord.setValidTime(DateUtils.addDays(new Date(), coupons.getValidDay()));
+			activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
+
+			lstCouponsRecords.add(activityCouponsRecord);
+			// 更新代金券已使用数量和剩余数量
+			lstActivityCouponsIds.add(coupons.getId());
+			// 赠送的代金券总面额
+			totalValue = coupons.getFaceValue();
+		}
+		ActivityCouponsOrderRecord record = new ActivityCouponsOrderRecord();
+		record.setId(UuidUtils.getUuid());
+		record.setCollectTime(new Date());
+		record.setCollectType(activityCouponsType);
+		record.setCollectUserId(userId);
+		record.setCouponsCollectId(collCoupons.get(0).getId());
+		record.setOrderId(orderId);
+		// 费返券插入代金券记录以及更新剩余的代金券,插入消费返券记录
+		addActivityCouponsRecord(lstCouponsRecords, lstActivityCouponsIds, record);
+		if (totalValue != 0) {
+			respDto.setVouContent("恭喜您获得" + totalValue + "元代金券");
+			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_SUCCESS_TIPS);
+		}
+	}
+	
+	/**
+	 * 
+	 * @Description: 消费返券插入代金券记录以及更新剩余的代金券
+	 * @param lstCouponsRecords 代金券领取记录list
+	 * @param lstActivityCouponsIds 代金券ids
+	 * @throws ServiceException 异常
+	 * @author wushp
+	 * @date 2016年9月23日
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public void addActivityCouponsRecord(List<ActivityCouponsRecord> lstCouponsRecords,
+			List<String> lstActivityCouponsIds,ActivityCouponsOrderRecord record) throws ServiceException {
+
+		try {
+			// 插入消费返券记录
+			activityCouponsOrderRecordMapper.insertSelective(record);
+			// 批量插入代金券
+			if (!CollectionUtils.isEmpty(lstCouponsRecords)) {
+				activityCouponsRecordMapper.insertSelectiveBatch(lstCouponsRecords);
+			}
+			// 更新可使用的
+			if (!CollectionUtils.isEmpty(lstActivityCouponsIds)) {
+				for (String activityCouponId : lstActivityCouponsIds) {
+					int count = activityCouponsMapper.updateRemainNum(activityCouponId);
+					if (count == 0) {
+						throw new Exception("添加代金卷记录失败!");
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			throw new ServiceException("", e);
+		}
+	}
+	// end add by wushp  V1.1.0 20160922
 }
