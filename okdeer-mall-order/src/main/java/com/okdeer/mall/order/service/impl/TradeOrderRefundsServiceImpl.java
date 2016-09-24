@@ -1010,13 +1010,15 @@ public class TradeOrderRefundsServiceImpl
 	@Transactional(rollbackFor = Exception.class)
 	public void updateByCustomer(String refundsId, RefundsStatusEnum status, String userId) throws Exception {
 
+		logger.error("客服处理更新订单状态：refundsId =" + refundsId + ",status=" + status.ordinal() + ",userId" + userId);
 		if (RefundsStatusEnum.YSC_REFUND != status && RefundsStatusEnum.FORCE_SELLER_REFUND != status
 				&& RefundsStatusEnum.CUSTOMER_SERVICE_CANCEL_INTERVENE != status) {
 			new Exception("更新退款单异常，退款单状态错误");
 		}
 
 		TradeOrderRefunds refunds = this.findById(refundsId);
-
+		logger.error("客服处理更新订单状态：refundsId =" + refundsId + ",status=" + status.ordinal() + ",userId" + userId
+				+ ",退款单状态=" + refunds.getRefundsStatus());
 		// Begin added by maojj 2016-08-18
 		if (refunds.getRefundsStatus() != RefundsStatusEnum.APPLY_CUSTOMER_SERVICE_INTERVENE) {
 			logger.error(CUSTOMER_SERVICE_INTERVENE_FAIL, refunds.getRefundsStatus());
@@ -1044,6 +1046,7 @@ public class TradeOrderRefundsServiceImpl
 			// 解冻订单项金额
 			updateWithRevocatory(refunds, null);
 		}
+		logger.error("客服处理更新订单状态成功");
 	}
 
 	@Override
