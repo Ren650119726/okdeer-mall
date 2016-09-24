@@ -45,7 +45,6 @@ import com.okdeer.mall.order.service.GoodsCheckService;
  *		Bug:12572	    2016-08-10		 	maojj			添加结算校验失败的提示语
  *		Bug:12566		2016-08-10		 	maojj			获取当前商品线上价格时，添加价格是否为空的判断
  *		重构V4.1			2016-08-17			maojj			比较时间时，先判断时间转换是否成功，增强程序的健壮性，预防空指针异常
- *		V1.1.0			2016-09-23			tangy			添加商品类目ids
  */
 @Service
 public class GoodsCheckServiceImpl implements GoodsCheckService {
@@ -159,17 +158,9 @@ public class GoodsCheckServiceImpl implements GoodsCheckService {
 		if (activityId != null) {
 			acSale = activitySaleMapper.getAcSaleStatus(activityId);
 		}
-	    //Begin added by tangy  2016-9-23
-		// 商品类目id
-		List<String> spuCategoryIds = new ArrayList<String>();
-		//End added by tangy
-		
 		// 将商品分为特惠商品和正常商品
 		for (GoodsStoreSku storeSku : storeSkuList) {
 			if (storeSku.getActivityType() == StoreActivityTypeEnum.PRIVLIEGE) {
-			    //Begin added by tangy  2016-9-23
-			    spuCategoryIds.add(storeSku.getSpuCategoryId());
-			    //End added by tangy
 				// 特惠活动状态(0:未开始,1:进行中,2:已结束,3:已关闭)
 				if (acSale.getStatus() == 1) {
 					activitySkuIds.add(storeSku.getId());
@@ -191,8 +182,6 @@ public class GoodsCheckServiceImpl implements GoodsCheckService {
 		context.setNomalSkuList(nomalSkuList);
 		// 保存特惠商品列表
 		context.setActivitySkuList(activitySkuList);
-		// 商品类目id
-		context.setSpuCategoryIds(spuCategoryIds);
 	}
 
 	/**
