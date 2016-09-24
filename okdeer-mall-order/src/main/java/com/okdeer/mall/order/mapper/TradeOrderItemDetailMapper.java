@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
+import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
 
 /**
  * @DESC:
@@ -19,7 +20,7 @@ import com.okdeer.mall.order.enums.ConsumeStatusEnum;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *    V1.1.0            2016-09-23           wusw                 添加消费码验证（到店消费）相应方法
- *    V1.1.0            2016-09-23           zengjz               增加更加订单id查询明细的方法
+ *    V1.1.0            2016-09-24           wusw                 添加消费码验证（到店消费）相应方法
  */
 public interface TradeOrderItemDetailMapper{
 
@@ -118,4 +119,27 @@ public interface TradeOrderItemDetailMapper{
 	List<TradeOrderItemDetail> selectByOrderItemDetailByOrderId(String orderId);
 	
 	// End V1.1.0 update by zengjz 20160923 
+	
+	// Begin V1.1.0 add by wusw 20160924
+	/**
+	 * 
+	 * @Description: 批量查询指定店铺的消费码相应的订单信息
+	 * @param params 查询参数
+	 * @return 消费码的相应订单信息集合
+	 * @author wusw
+	 * @date 2016年9月24日
+	 */
+	List<OrderItemDetailConsumeVo> findOrderInfoByConsumeCode(Map<String,Object> params);
+	// End V1.1.0 add by wusw 20160924
+	
+	// Begin V1.1.0 add by zengjz 20160924
+	/**
+	 * @Description: 根据订单id查询明细列表
+	 * @param orderId 订单id
+	 * @return 订单明细列表
+	 * @author zengjizu
+	 * @date 2016年9月23日
+	 */
+	List<TradeOrderItemDetail> selectItemDetailByOrderIdAndStatus(String orderId,int status);
+	// End V1.1.0 add by zengjz 20160924
 }
