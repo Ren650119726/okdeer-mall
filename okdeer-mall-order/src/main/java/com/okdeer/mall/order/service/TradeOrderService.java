@@ -21,8 +21,8 @@ import com.okdeer.mall.order.vo.TradeOrderQueryVo;
 import com.okdeer.mall.order.vo.TradeOrderStatisticsVo;
 import com.okdeer.mall.order.vo.TradeOrderStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderVo;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 import net.sf.json.JSONObject;
 
@@ -37,6 +37,7 @@ import net.sf.json.JSONObject;
  * ----------------+----------------+-------------------+-------------------------------------------
  *    重构4.1            2016-7-19            wusw                添加财务系统的订单接口（包含服务店订单情况）
  *    重构4.1            2016-8-16            zhaoqc              新增根绝交易号修改订单状态的方法
+ *    V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
  * 
  */
 public interface TradeOrderService {
@@ -431,6 +432,14 @@ public interface TradeOrderService {
 	 */
 	boolean updateCancelOrder(TradeOrder tradeOrder, boolean isBuyerOperate) throws Exception;
 
+	/**
+	 * 
+	 * @desc 取消充值超时未支付订单
+	 * @param tradeOrder
+	 * @throws Exception
+	 */
+	void updateCancelRechargeOrder(TradeOrder tradeOrder) throws Exception;
+	
 	/**
 	 * 更新订单
 	 * 

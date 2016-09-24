@@ -45,7 +45,10 @@ import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysMsg;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
@@ -107,19 +110,19 @@ import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysMsgMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
-import com.yschome.api.pay.enums.BusinessTypeEnum;
-import com.yschome.api.pay.enums.TradeErrorEnum;
-import com.yschome.api.pay.service.IPayTradeServiceApi;
-import com.yschome.api.pay.tradeLog.dto.BalancePayTradeVo;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.utils.DateUtils;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.common.utils.StringUtils;
-import com.yschome.base.common.utils.UuidUtils;
-import com.yschome.base.framework.mq.RocketMQProducer;
-import com.yschome.base.framework.mq.RocketMQTransactionProducer;
-import com.yschome.base.framework.mq.RocketMqResult;
-import com.yschome.common.BaseResultDto;
+import com.okdeer.common.BaseResultDto;
+import com.okdeer.api.pay.enums.BusinessTypeEnum;
+import com.okdeer.api.pay.enums.TradeErrorEnum;
+import com.okdeer.api.pay.service.IPayTradeServiceApi;
+import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
+import com.okdeer.base.framework.mq.RocketMqResult;
 
 import net.sf.json.JSONObject;
 
@@ -244,7 +247,17 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 
 	@Autowired
 	private TradeOrderRefundsItemService tradeOrderRefundsItemService;
-
+	/**
+	 * 代金券领取记录Mapper
+	 */
+	@Resource
+	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+	/**
+     * 代金券管理mapper
+     */
+    @Autowired
+    private ActivityCouponsMapper activityCouponsMapper;
+	   
 	// @Reference(version = "1.0.0", check = false)
 	// private StockManagerServiceApi stockManagerService;
 
@@ -466,6 +479,23 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 		if (refunds.getPaymentMethod().equals(PayTypeEnum.WALLET)) {
 			this.updateRechargeWallet(refunds);
 		}
+		
+		//如果有优惠，则返还优惠信息
+		if(tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER) {
+		    Map<String, Object> params = Maps.newHashMap();
+		    String orderId = tradeOrder.getId();
+	        params.put("orderId", orderId);
+	        List<ActivityCouponsRecord> records = activityCouponsRecordMapper.selectByParams(params);
+	        if (records != null && records.size() == 1) {
+	            if (records.get(0).getValidTime().compareTo(DateUtils.getSysDate()) > 0) {
+	                activityCouponsRecordMapper.updateUseStatus(orderId);
+	                activityCouponsMapper.updateReduceUseNum(records.get(0).getCouponsId());
+	            } else {
+	                activityCouponsRecordMapper.updateUseStatusAndExpire(orderId);
+	            }
+	        }
+		}
+		
 	}
 
 	public void updateRechargeWallet(TradeOrderRefunds orderRefunds) throws Exception {
