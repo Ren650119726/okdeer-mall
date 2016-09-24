@@ -14,9 +14,11 @@
   
   
   <resultMap type="com.okdeer.mall.system.entity.SysUserInvitationRecordVo" id="extResultMap" extends="BaseResultMap">
-   <result column="login_name" property="loginName" jdbcType="VARCHAR" />
+    <result column="login_name" property="loginName" jdbcType="VARCHAR" />
     <result column="begin_time" property="beginTimeRecord" javaType="date" jdbcType="TIMESTAMP" />
 	<result column="end_time" property="endTimeRecord" javaType="date" jdbcType="TIMESTAMP" />
+	<result column="invitation_user_num" property="invitationUserNum" javaType="integer" jdbcType="INTEGER" />
+   	<result column="first_order_user_num" property="firstOrderUserNum" javaType="integer" jdbcType="INTEGER" />
   </resultMap>
   
 <!-- 邀请码表名 start -->
@@ -74,10 +76,12 @@
 	<!-- 根据参数获取信息 start -->
 	<select id="findByQueryRecordVo" resultMap="extResultMap" parameterType="com.okdeer.mall.system.entity.SysUserInvitationRecordVo">
 		select
-		buser.login_name as login_name,
+		buser.login_name as login_name, code.invitation_user_num, code.first_order_user_num,
 		<include refid="resultBaseColumn" />
-		from
+		from sys_user_invitation_code code
+		left join
 		<include refid="tableName" />
+		ON code.id = suir.invitation_code_id
 		left join
 		<include refid="sysBuyerUser" />
 		ON suir.sys_buyer_user_id = buser.id

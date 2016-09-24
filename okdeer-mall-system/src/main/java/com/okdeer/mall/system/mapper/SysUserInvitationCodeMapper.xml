@@ -87,15 +87,6 @@
 		</if>
 	</sql>
 	
-<!--   <select id="findByQueryVo" parameterType="com.okdeer.mall.operate.entity.SysUserInvitationCodeVo"
-                             resultMap="VoResultMap">
-    SELECT SC.*,SU.login_name AS sys_user_name,SBU.login_name AS sys_buyer_user_name FROM sys_user_invitation_code SC 
-	LEFT JOIN sys_user SU ON (SC.sys_user_id = SU.id)
-	LEFT JOIN sys_buyer_user SBU ON (SC.sys_buyer_user_id = SBU.id)      
-	<include refid="condition" />
-	order by suic.invitation_user_num desc,suic.first_order_user_num desc   
-  </select> -->
-  
   	<!-- 根据参数获取信息 start -->
 	<select id="findByQueryVo" resultMap="extResultMap" 
 					parameterType="com.okdeer.mall.system.entity.SysUserInvitationCodeVo">
@@ -119,6 +110,7 @@
 		order by suic.invitation_user_num desc,suic.first_order_user_num desc,suic.create_time desc 
 	</select>
 	<!-- 根据参数获取信息 end -->
+		
 	<!-- 保存信息 start -->
 	<insert id="save"
 		parameterType="com.okdeer.mall.system.entity.SysUserInvitationCode">
