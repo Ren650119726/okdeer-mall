@@ -155,7 +155,7 @@ public class TradeOrderCompleteProcessServiceImpl
 			// 支付创建时间取下单时间
 			tradeOrderPay.setCreateTime(tradeOrder.getCreateTime());
 			// 支付时间取下单时间
-			tradeOrderPay.setPayTime(tradeOrder.getPaymentTime());
+			tradeOrderPay.setPayTime(tradeOrder.getCreateTime());
 			// 支付金额取用户实付金额
 			tradeOrderPay.setPayAmount(tradeOrder.getActualAmount());
 			// 该字段为空就是线上订单货到付款支付，默认现金支付
