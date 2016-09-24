@@ -518,6 +518,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Autowired
 	ActivityCouponsOrderRecordMapper activityCouponsOrderRecordMapper;
 	
+	// Begin add by wushp V1.1.0 20160923
+	/**
+	 * 物业缴费接口
+	 */
+	@Autowired
+	ICostPaymentServiceApi costPaymentServiceApi;
+	// end add by wushp V1.1.0 20160923
+	
 	// Begin V1.1.0 add by wusw 20160924
 	/**
      * MQ信息
