@@ -29,12 +29,16 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderPay;
+import com.okdeer.mall.order.entity.TradeOrderRefunds;
+import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.service.StoreConsumeOrderServiceApi;
 import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
 
@@ -60,6 +64,12 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 
 	@Autowired
 	private TradeOrderItemDetailMapper tradeOrderItemDetailMapper;
+
+	@Autowired
+	private TradeOrderRefundsMapper tradeOrderRefundsMapper;
+
+	@Autowired
+	private TradeOrderRefundsItemMapper tradeOrderRefundsItemMapper;
 
 	@Reference(version = "1.0.0", check = false)
 	private IStoreInfoExtServiceApi storeInfoExtService;
@@ -195,14 +205,14 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			getStoreInfo(json, userTradeOrderDetailVo);
 			// 商品信息
 			getTradeItemInfo(json, tradeOrderItems);
-			//订单明细信息
+			// 订单明细信息
 			getTradeOrderItemDetail(json, userTradeOrderDetailVo, tradeOrderItems.get(0), orderId);
 		} catch (ServiceException e) {
 			throw new RuntimeException("查询店铺信息出错");
 		}
 		return json;
 	}
-	
+
 	/**
 	 * @Description: 获取店铺信息
 	 * @param json 返回的json对象
@@ -211,12 +221,12 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 	 * @author zengjizu
 	 * @date 2016年9月24日
 	 */
-	private void getStoreInfo(JSONObject json,UserTradeOrderDetailVo userTradeOrderDetailVo) throws ServiceException{
+	private void getStoreInfo(JSONObject json, UserTradeOrderDetailVo userTradeOrderDetailVo) throws ServiceException {
 		StoreInfo storeInfo = userTradeOrderDetailVo.getStoreInfo();
 		String storeName = "";
 		String storeMobile = "";
 		String address = "";
-		String storeId ="";
+		String storeId = "";
 		if (storeInfo != null) {
 			storeId = storeInfo.getId();
 			storeName = storeInfo.getStoreName();
@@ -241,10 +251,9 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		json.put("orderExtractShopName", storeName);
 		json.put("orderShopAddress", address);
 		json.put("storeLogo", storeInfo.getLogoUrl());
-		
-		
+
 	}
-	
+
 	/**
 	 * @Description: 获取订单项信息
 	 * @param json 返回json对象
@@ -252,7 +261,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 	 * @author zengjizu
 	 * @date 2016年9月24日
 	 */
-	private void getTradeItemInfo(JSONObject json,List<TradeOrderItem> tradeOrderItems){
+	private void getTradeItemInfo(JSONObject json, List<TradeOrderItem> tradeOrderItems) {
 		TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
 
 		if (tradeOrderItem != null) {
@@ -262,8 +271,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			json.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
 			json.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
 			json.put("quantity", tradeOrderItem.getQuantity() == null ? "" : tradeOrderItem.getQuantity());
-			json.put("skuTotalAmount",
-					tradeOrderItem.getTotalAmount() == null ? "" : tradeOrderItem.getTotalAmount());
+			json.put("skuTotalAmount", tradeOrderItem.getTotalAmount() == null ? "" : tradeOrderItem.getTotalAmount());
 			json.put("skuActualAmount",
 					tradeOrderItem.getActualAmount() == null ? "" : tradeOrderItem.getActualAmount());
 			json.put("preferentialPrice",
@@ -285,7 +293,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 
 		}
 	}
-	
+
 	/**
 	 * @Description: 获取订单明细列表信息
 	 * @param json 返回的json对象
@@ -295,7 +303,8 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 	 * @author zengjizu
 	 * @date 2016年9月24日
 	 */
-	private void getTradeOrderItemDetail(JSONObject json,UserTradeOrderDetailVo userTradeOrderDetailVo,TradeOrderItem tradeOrderItem, String orderId) {
+	private void getTradeOrderItemDetail(JSONObject json, UserTradeOrderDetailVo userTradeOrderDetailVo,
+			TradeOrderItem tradeOrderItem, String orderId) {
 
 		// 消费码列表
 		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper.selectByOrderItemDetailByOrderId(orderId);
@@ -310,7 +319,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 				detail.put("consumeId", tradeOrderItemDetail.getId());
 				detail.put("consumeCode", tradeOrderItemDetail.getConsumeCode());
 				// 0：未消费，1：已消费，2：已退款，3：已过期
-				detail.put("consumeStatus", tradeOrderItemDetail.getStatus());
+				detail.put("consumeStatus", tradeOrderItemDetail.getStatus().ordinal());
 				if (tradeOrderItemDetail.getUseTime() != null) {
 					detail.put("consumeTime",
 							DateUtils.formatDate(tradeOrderItemDetail.getUseTime(), "yyyy-MM-dd HH:mm:ss"));
@@ -333,6 +342,38 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		}
 
 		json.put("consumeCodeList", consumeCodeList);
+	}
+
+	@Override
+	public PageUtils<TradeOrderRefunds> findUserRefundOrderList(Map<String, Object> params, Integer pageNo,
+			Integer pageSize) {
+		PageHelper.startPage(pageNo, pageSize, true, false);
+		List<TradeOrderRefunds> list = tradeOrderRefundsMapper.getListByParams(params);
+
+		List<TradeOrderRefundsItem> itemList = null;
+		for (TradeOrderRefunds tradeOrderRefunds : list) {
+			itemList = tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(tradeOrderRefunds.getId());
+			tradeOrderRefunds.setTradeOrderRefundsItem(itemList);
+			itemList = null;
+		}
+		return new PageUtils<TradeOrderRefunds>(list);
+	}
+
+	@Override
+	public TradeOrderRefunds getRefundOrderDetail(String refundId) {
+		TradeOrderRefunds refunds = tradeOrderRefundsMapper.findStoreConsumeOrderDetailById(refundId);
+		List<TradeOrderRefundsItem> itemList = tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(refunds
+				.getId());
+		refunds.setTradeOrderRefundsItem(itemList);
+		return refunds;
+	}
+
+	@Override
+	public List<TradeOrderItemDetail> getStoreConsumeOrderDetailList(String orderId, int status) {
+		List<TradeOrderItemDetail> list = tradeOrderItemDetailMapper
+				.selectItemDetailByOrderIdAndStatus(orderId, status);
+
+		return list;
 	}
 
 }
