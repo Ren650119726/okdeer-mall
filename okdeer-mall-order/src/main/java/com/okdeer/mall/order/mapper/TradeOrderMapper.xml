@@ -60,6 +60,8 @@
 			javaType="com.okdeer.mall.order.enums.OrderComplete" />
 		<result column="compain_status" property="compainStatus"
 			jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.CompainStatusEnum" />
+		<!-- add by zengjiz 2016-9-22 增加消费码状态字断 -->
+		<result column="consumer_code_status" property="consumerCodeStatus" jdbcType="TINYINT" />	
 		<association property="tradeOrderLogistics"
 			javaType="com.okdeer.mall.order.entity.TradeOrderLogistics">
 			<result column="logistics_id" property="id" jdbcType="VARCHAR" />
@@ -73,8 +75,6 @@
 			<result column="area" property="area" jdbcType="VARCHAR" />
 			<result column="address" property="address" jdbcType="VARCHAR" />
 			<result column="logistics_type" property="type" jdbcType="TINYINT" />
-			<!-- add by zengjiz 2016-9-22 增加消费码状态字断 -->
-			<result column="consumer_code_status" property="consumerCodeStatus" jdbcType="TINYINT" />
 		</association>
 	</resultMap>
 
@@ -4683,4 +4683,24 @@
 		  id = 'noExist'
 		</if>
 	</update>
+	
+	<!-- 用户订单详细查询  V1.1.0 add by zengjz 20160923 -->
+	<select id="findStoreConsumeOrderById" resultMap="UserTradeOrderDetailMap"
+		parameterType="java.lang.String">
+		SELECT
+		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,
+		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,
+		pay.pay_type,pay.pay_amount,pay.pay_time,
+		TIMESTAMPDIFF(SECOND,DATE_FORMAT(NOW(),'%Y-%m-%d
+		%H:%i:%s'),o.create_time) AS remaining_time,
+		store.id as store_id,store.store_name as store_name,store.mobile as
+		store_mobile,store.area as store_area,store.address as store_address,
+		store.type as store_type,invoice.id as
+		invoice_id,invoice.head,invoice.context
+		FROM trade_order o
+		LEFT JOIN trade_order_pay pay ON o.id = pay.order_id
+		LEFT JOIN trade_order_invoice invoice ON o.id = invoice.order_id
+		LEFT JOIN store_info store ON o.store_id = store.id
+		WHERE o.id = #{orderId,jdbcType=VARCHAR} and o.is_show = 1
+	</select>
 </mapper>

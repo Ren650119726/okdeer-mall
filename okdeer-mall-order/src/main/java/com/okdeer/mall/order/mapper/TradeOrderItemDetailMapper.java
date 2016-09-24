@@ -19,6 +19,7 @@ import com.okdeer.mall.order.enums.ConsumeStatusEnum;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *    V1.1.0            2016-09-23           wusw                 添加消费码验证（到店消费）相应方法
+ *    V1.1.0            2016-09-23           zengjz               增加更加订单id查询明细的方法
  */
 public interface TradeOrderItemDetailMapper{
 
@@ -105,4 +106,16 @@ public interface TradeOrderItemDetailMapper{
 	 */
 	List<Map<String,Object>> findStatusCountByOrderIds(@Param("orderIds")List<String> orderIds);
 	// End V1.1.0 update by wusw 20160923 
+	
+	// Begin V1.1.0 update by zengjz 20160923 
+	/**
+	 * @Description: 根据订单id查询明细列表
+	 * @param orderId 订单id
+	 * @return 订单明细列表
+	 * @author zengjizu
+	 * @date 2016年9月23日
+	 */
+	List<TradeOrderItemDetail> selectByOrderItemDetailByOrderId(String orderId);
+	
+	// End V1.1.0 update by zengjz 20160923 
 }

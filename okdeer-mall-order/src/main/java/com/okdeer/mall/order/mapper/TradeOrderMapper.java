@@ -1007,4 +1007,17 @@ public interface TradeOrderMapper {
 	 */
 	int updateConsumerStatusByIds(@Param("status")ConsumeStatusEnum status,@Param("updateTime")Date updateTime,@Param("ids")List<String> ids);
 	// End V1.1.0 add by wusw 20160923
+	
+	
+	// Begin V1.1.0 add by zengjz 20160923
+	/**
+	 * @Description: 查询到店消费订单详情
+	 * @param orderId 订单id
+	 * @return 订单详情 
+	 * @author zengjizu
+	 * @date 2016年9月23日
+	 */
+	UserTradeOrderDetailVo findStoreConsumeOrderById(String orderId);
+	
+	// End V1.1.0 add by zengjz 20160923
 }
