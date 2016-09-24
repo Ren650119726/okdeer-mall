@@ -9,10 +9,11 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
-import com.okdeer.mall.order.enums.ConsumeStatusEnum;
+import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
@@ -24,7 +25,6 @@ import com.okdeer.mall.order.vo.TradeOrderStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderVo;
 import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
 import com.okdeer.mall.order.vo.UserTradeServiceOrderVo;
-import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * @DESC: 
@@ -569,9 +569,7 @@ public interface TradeOrderMapper {
 	 * @param params
 	 * @return
 	 */
-	// Begin V1.1.0 update by wusw 20160923 
-	List<Map<String, Object>> selectOrderDetailByConsumeCode(Map<String, Object> params);
-	// End V1.1.0 update by wusw 20160923 
+	Map<String, Object> selectOrderDetailByConsumeCode(Map<String, Object> params);
 
 	/**
 	 * 
@@ -1005,7 +1003,7 @@ public interface TradeOrderMapper {
 	 * @author wusw
 	 * @date 2016年9月23日
 	 */
-	int updateConsumerStatusByIds(@Param("status")ConsumeStatusEnum status,@Param("updateTime")Date updateTime,@Param("ids")List<String> ids);
+	int updateConsumerStatusByIds(@Param("status")ConsumerCodeStatusEnum status,@Param("updateTime")Date updateTime,@Param("ids")List<String> ids);
 	// End V1.1.0 add by wusw 20160923
 	
 	
