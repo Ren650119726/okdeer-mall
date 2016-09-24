@@ -63,9 +63,6 @@
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderStatusEnum"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderType"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderTypeEnum"/>
-        <!-- Begin added by maojj 2016-08-22 Bug:13044 -->
-        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.archive.store.enums.order.OrderTypeEnum"/>
-        <!-- Begin added by maojj 2016-08-22 -->
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PaymentStatusEnum"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PayTypeEnum"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PayWayEnum"/>
