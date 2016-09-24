@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.order.service.impl;
 
 import java.util.ArrayList;
@@ -131,8 +132,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		// 判断订单是否评价appraise大于0，已评价
 		Integer appraise = tradeOrderItemMapper.selectTradeOrderItemIsAppraise(orderId);
 		// 查询店铺扩展信息
-		String storeId = userTradeOrderDetailVo.getStoreInfo().getId();
-
 		JSONObject json = new JSONObject();
 		try {
 			// StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
@@ -193,110 +192,147 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			json.put("leaveMessage", userTradeOrderDetailVo.getRemark());
 
 			// 店铺信息
-			StoreInfo storeInfo = userTradeOrderDetailVo.getStoreInfo();
-			String storeName = "";
-			String storeMobile = "";
-			String address = "";
-			if (storeInfo != null) {
-				storeId = storeInfo.getId();
-				storeName = storeInfo.getStoreName();
-				storeMobile = storeInfo.getMobile();
-
-				// 确认订单时，没有将地址保存到trade_order_logistics订单物流表，暂时取收货地址表的默认地址
-				MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
-				memberConsigneeAddress.setUserId(storeId);
-				memberConsigneeAddress.setIsDefault(AddressDefault.YES);
-
-				List<MemberConsigneeAddress> memberAddressList = memberConsigneeAddressService
-						.getList(memberConsigneeAddress);
-				if (memberAddressList != null && memberAddressList.size() > 0) {
-					MemberConsigneeAddress memberAddress = memberAddressList.get(0);
-					address = memberAddress.getArea() + memberAddress.getAddress();
-				}
-			}
-
-			json.put("orderShopid", storeId);
-			json.put("orderShopName", storeName);
-			json.put("orderShopMobile", storeMobile);
-			json.put("orderExtractShopName", storeName);
-			json.put("orderShopAddress", address);
-			json.put("storeLogo", storeInfo.getLogoUrl());
-
+			getStoreInfo(json, userTradeOrderDetailVo);
 			// 商品信息
-			TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
-
-			if (tradeOrderItem != null) {
-
-				json.put("productId", tradeOrderItem.getStoreSkuId() == null ? "" : tradeOrderItem.getStoreSkuId());
-				json.put("mainPicPrl", tradeOrderItem.getMainPicPrl() == null ? "" : tradeOrderItem.getMainPicPrl());
-				json.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
-				json.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
-				json.put("quantity", tradeOrderItem.getQuantity() == null ? "" : tradeOrderItem.getQuantity());
-				json.put("skuTotalAmount",
-						tradeOrderItem.getTotalAmount() == null ? "" : tradeOrderItem.getTotalAmount());
-				json.put("skuActualAmount",
-						tradeOrderItem.getActualAmount() == null ? "" : tradeOrderItem.getActualAmount());
-				json.put("preferentialPrice",
-						tradeOrderItem.getPreferentialPrice() == null ? "0" : tradeOrderItem.getPreferentialPrice());
-
-				GoodsStoreSkuService goodsStoreSkuService = goodsStoreSkuServiceServiceApi
-						.selectByStoreSkuId(tradeOrderItem.getStoreSkuId());
-
-				// 是否需要预约0：不需要，1：需要
-				json.put("isPrecontract", goodsStoreSkuService.getIsAppointment());
-				json.put("appointmentHour", goodsStoreSkuService.getAppointmentHour());
-				// 是否支持退订0：不支持，1：支持
-				json.put("isUnsubscribe", goodsStoreSkuService.getIsUnsubscribe());
-
-				String startDate = DateUtils.formatDate(goodsStoreSkuService.getStartTime(), "yyyy-MM-dd");
-				String endDate = DateUtils.formatDate(goodsStoreSkuService.getEndTime(), "yyyy-MM-dd");
-				json.put("orderInDate", startDate + "-" + endDate);
-				json.put("notAvailableDate", goodsStoreSkuService.getInvalidDate());
-
-			}
-			// 消费码列表
-			List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
-					.selectByOrderItemDetailByOrderId(orderId);
-
-			JSONArray consumeCodeList = new JSONArray();
-
-			if (CollectionUtils.isNotEmpty(detailList)) {
-				JSONObject detail = null;
-				for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
-					detail = new JSONObject();
-
-					detail.put("consumeId", tradeOrderItemDetail.getId());
-					detail.put("consumeCode", tradeOrderItemDetail.getConsumeCode());
-					// 0：未消费，1：已消费，2：已退款，3：已过期
-					detail.put("consumeStatus", tradeOrderItemDetail.getStatus());
-					if (tradeOrderItemDetail.getUseTime() != null) {
-						detail.put("consumeTime",
-								DateUtils.formatDate(tradeOrderItemDetail.getUseTime(), "yyyy-MM-dd HH:mm:ss"));
-					} else {
-						detail.put("consumeTime", "");
-					}
-
-					if (tradeOrderItem != null) {
-						detail.put("consumePrice", tradeOrderItem.getUnitPrice());
-					} else {
-						detail.put("consumePrice", "0");
-					}
-					consumeCodeList.add(detail);
-					detail = null;
-				}
-			}
-
-			if (userTradeOrderDetailVo.getStatus() == OrderStatusEnum.CANCELED) {
-				json.put("cancelTime",
-						DateUtils.formatDate(userTradeOrderDetailVo.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
-			}
-
-			json.put("consumeCodeList", consumeCodeList);
-
+			getTradeItemInfo(json, tradeOrderItems);
+			//订单明细信息
+			getTradeOrderItemDetail(json, userTradeOrderDetailVo, tradeOrderItems.get(0), orderId);
 		} catch (ServiceException e) {
 			throw new RuntimeException("查询店铺信息出错");
 		}
 		return json;
+	}
+	
+	/**
+	 * @Description: 获取店铺信息
+	 * @param json 返回的json对象
+	 * @param userTradeOrderDetailVo 订单信息
+	 * @throws ServiceException 抛出异常
+	 * @author zengjizu
+	 * @date 2016年9月24日
+	 */
+	private void getStoreInfo(JSONObject json,UserTradeOrderDetailVo userTradeOrderDetailVo) throws ServiceException{
+		StoreInfo storeInfo = userTradeOrderDetailVo.getStoreInfo();
+		String storeName = "";
+		String storeMobile = "";
+		String address = "";
+		String storeId ="";
+		if (storeInfo != null) {
+			storeId = storeInfo.getId();
+			storeName = storeInfo.getStoreName();
+			storeMobile = storeInfo.getMobile();
+
+			// 确认订单时，没有将地址保存到trade_order_logistics订单物流表，暂时取收货地址表的默认地址
+			MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
+			memberConsigneeAddress.setUserId(storeId);
+			memberConsigneeAddress.setIsDefault(AddressDefault.YES);
+
+			List<MemberConsigneeAddress> memberAddressList = memberConsigneeAddressService
+					.getList(memberConsigneeAddress);
+			if (memberAddressList != null && memberAddressList.size() > 0) {
+				MemberConsigneeAddress memberAddress = memberAddressList.get(0);
+				address = memberAddress.getArea() + memberAddress.getAddress();
+			}
+		}
+
+		json.put("orderShopid", storeId);
+		json.put("orderShopName", storeName);
+		json.put("orderShopMobile", storeMobile);
+		json.put("orderExtractShopName", storeName);
+		json.put("orderShopAddress", address);
+		json.put("storeLogo", storeInfo.getLogoUrl());
+		
+		
+	}
+	
+	/**
+	 * @Description: 获取订单项信息
+	 * @param json 返回json对象
+	 * @param tradeOrderItems 订单项
+	 * @author zengjizu
+	 * @date 2016年9月24日
+	 */
+	private void getTradeItemInfo(JSONObject json,List<TradeOrderItem> tradeOrderItems){
+		TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
+
+		if (tradeOrderItem != null) {
+
+			json.put("productId", tradeOrderItem.getStoreSkuId() == null ? "" : tradeOrderItem.getStoreSkuId());
+			json.put("mainPicPrl", tradeOrderItem.getMainPicPrl() == null ? "" : tradeOrderItem.getMainPicPrl());
+			json.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
+			json.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
+			json.put("quantity", tradeOrderItem.getQuantity() == null ? "" : tradeOrderItem.getQuantity());
+			json.put("skuTotalAmount",
+					tradeOrderItem.getTotalAmount() == null ? "" : tradeOrderItem.getTotalAmount());
+			json.put("skuActualAmount",
+					tradeOrderItem.getActualAmount() == null ? "" : tradeOrderItem.getActualAmount());
+			json.put("preferentialPrice",
+					tradeOrderItem.getPreferentialPrice() == null ? "0" : tradeOrderItem.getPreferentialPrice());
+
+			GoodsStoreSkuService goodsStoreSkuService = goodsStoreSkuServiceServiceApi
+					.selectByStoreSkuId(tradeOrderItem.getStoreSkuId());
+
+			// 是否需要预约0：不需要，1：需要
+			json.put("isPrecontract", goodsStoreSkuService.getIsAppointment());
+			json.put("appointmentHour", goodsStoreSkuService.getAppointmentHour());
+			// 是否支持退订0：不支持，1：支持
+			json.put("isUnsubscribe", goodsStoreSkuService.getIsUnsubscribe());
+
+			String startDate = DateUtils.formatDate(goodsStoreSkuService.getStartTime(), "yyyy-MM-dd");
+			String endDate = DateUtils.formatDate(goodsStoreSkuService.getEndTime(), "yyyy-MM-dd");
+			json.put("orderInDate", startDate + "-" + endDate);
+			json.put("notAvailableDate", goodsStoreSkuService.getInvalidDate());
+
+		}
+	}
+	
+	/**
+	 * @Description: 获取订单明细列表信息
+	 * @param json 返回的json对象
+	 * @param userTradeOrderDetailVo 订单信息
+	 * @param tradeOrderItem 订单项信息
+	 * @param orderId 订单id
+	 * @author zengjizu
+	 * @date 2016年9月24日
+	 */
+	private void getTradeOrderItemDetail(JSONObject json,UserTradeOrderDetailVo userTradeOrderDetailVo,TradeOrderItem tradeOrderItem, String orderId) {
+
+		// 消费码列表
+		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper.selectByOrderItemDetailByOrderId(orderId);
+
+		JSONArray consumeCodeList = new JSONArray();
+
+		if (CollectionUtils.isNotEmpty(detailList)) {
+			JSONObject detail = null;
+			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
+				detail = new JSONObject();
+
+				detail.put("consumeId", tradeOrderItemDetail.getId());
+				detail.put("consumeCode", tradeOrderItemDetail.getConsumeCode());
+				// 0：未消费，1：已消费，2：已退款，3：已过期
+				detail.put("consumeStatus", tradeOrderItemDetail.getStatus());
+				if (tradeOrderItemDetail.getUseTime() != null) {
+					detail.put("consumeTime",
+							DateUtils.formatDate(tradeOrderItemDetail.getUseTime(), "yyyy-MM-dd HH:mm:ss"));
+				} else {
+					detail.put("consumeTime", "");
+				}
+
+				if (tradeOrderItem != null) {
+					detail.put("consumePrice", tradeOrderItem.getUnitPrice());
+				} else {
+					detail.put("consumePrice", "0");
+				}
+				consumeCodeList.add(detail);
+				detail = null;
+			}
+		}
+
+		if (userTradeOrderDetailVo.getStatus() == OrderStatusEnum.CANCELED) {
+			json.put("cancelTime", DateUtils.formatDate(userTradeOrderDetailVo.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
+		}
+
+		json.put("consumeCodeList", consumeCodeList);
 	}
 
 }
