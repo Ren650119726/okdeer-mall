@@ -10,9 +10,9 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.service.IBaseCrudService;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.service.IBaseCrudService;
 
 import net.sf.json.JSONObject;
 

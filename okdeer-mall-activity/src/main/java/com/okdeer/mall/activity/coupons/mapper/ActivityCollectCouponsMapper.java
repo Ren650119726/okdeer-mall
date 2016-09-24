@@ -157,4 +157,16 @@ public interface ActivityCollectCouponsMapper {
 	 * @date 2016年9月14日
 	 */
 	List<ActivityCoupons> findCouponsByParams(Map<String,Object> map);
+	
+	// begin add by wushp V1.1.0 20160923
+	/**
+	 * 
+	 * @Description: 消费返券：活动代金券查询
+	 * @param map 参数map
+	 * @return list
+	 * @author wushp
+	 * @date 2016年9月23日
+	 */
+	List<ActivityCollectCouponsVo> findCollCouponsLinks(Map<String,Object> map);
+	// end add by wushp V1.1.0 20160923
 }

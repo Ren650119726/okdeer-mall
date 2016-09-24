@@ -19,7 +19,7 @@ import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
 
-import com.yschome.base.framework.mq.AbstractRocketMQSubscriber;
+import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.activity.coupons.service.MessageConstant;
 
 /** 

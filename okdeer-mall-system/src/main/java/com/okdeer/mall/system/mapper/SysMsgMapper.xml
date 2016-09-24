@@ -13,7 +13,7 @@
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="read_time" property="readTime" jdbcType="TIMESTAMP" />
     <result column="type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.common.enums.MsgType" />
-    <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.yschome.base.common.enums.Disabled"/>
+    <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled"/>
   </resultMap>
   
   <resultMap type="com.okdeer.archive.system.entity.SysMsgVo" id="SysMsgVoMap" extends="BaseResultMap">

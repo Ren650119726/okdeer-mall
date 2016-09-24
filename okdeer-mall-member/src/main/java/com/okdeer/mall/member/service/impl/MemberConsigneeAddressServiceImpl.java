@@ -25,10 +25,10 @@ import com.okdeer.mall.member.member.enums.AddressSource;
 import com.okdeer.mall.member.member.enums.AddressType;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
 import com.okdeer.mall.member.member.vo.MemberConsigneeAddressVo;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.common.utils.StringUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 

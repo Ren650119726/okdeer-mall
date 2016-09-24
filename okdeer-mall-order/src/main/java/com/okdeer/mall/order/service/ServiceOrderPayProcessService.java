@@ -8,7 +8,7 @@
 package com.okdeer.mall.order.service;
 
 import com.okdeer.mall.order.entity.TradeOrder;
-import com.yschome.api.pay.pay.dto.PayResponseDto;
+import com.okdeer.api.pay.pay.dto.PayResponseDto;
 import com.okdeer.mall.order.pay.entity.ResponseResult;
 
 /**

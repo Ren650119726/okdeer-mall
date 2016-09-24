@@ -14,8 +14,8 @@ import java.util.Map;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.vo.MemberConsigneeAddressVo;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * 收货地址service

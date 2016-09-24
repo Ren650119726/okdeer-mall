@@ -13,7 +13,7 @@ import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.RechargeCouponVo;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 

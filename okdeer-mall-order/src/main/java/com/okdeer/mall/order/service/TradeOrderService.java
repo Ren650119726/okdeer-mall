@@ -21,8 +21,8 @@ import com.okdeer.mall.order.vo.TradeOrderQueryVo;
 import com.okdeer.mall.order.vo.TradeOrderStatisticsVo;
 import com.okdeer.mall.order.vo.TradeOrderStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderVo;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 import net.sf.json.JSONObject;
 
@@ -37,6 +37,7 @@ import net.sf.json.JSONObject;
  * ----------------+----------------+-------------------+-------------------------------------------
  *    重构4.1            2016-7-19            wusw                添加财务系统的订单接口（包含服务店订单情况）
  *    重构4.1            2016-8-16            zhaoqc              新增根绝交易号修改订单状态的方法
+ *    V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
  * 
  */
 public interface TradeOrderService {
@@ -660,7 +661,9 @@ public interface TradeOrderService {
 	 * @param params
 	 * @return
 	 */
-	Map<String, Object> selectOrderDetailByConsumeCode(Map<String, Object> params);
+	// Begin V1.1.0 update by wusw 20160923
+	List<Map<String, Object>> selectOrderDetailByConsumeCode(Map<String, Object> params);
+	// End V1.1.0 update by wusw 20160923
 
 	/**
 	 * 未支付订单倒计时时间查询

@@ -21,8 +21,8 @@ import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.utils.DateUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 
 /**

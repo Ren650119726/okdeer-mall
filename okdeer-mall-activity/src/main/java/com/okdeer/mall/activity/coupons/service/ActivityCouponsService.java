@@ -13,8 +13,8 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.common.entity.AreaScTreeVo;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 
 /**

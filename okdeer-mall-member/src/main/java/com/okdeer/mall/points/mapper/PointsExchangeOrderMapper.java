@@ -1,7 +1,7 @@
 package com.okdeer.mall.points.mapper;
 
 import com.okdeer.mall.member.points.entity.PointsExchangeOrder;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 

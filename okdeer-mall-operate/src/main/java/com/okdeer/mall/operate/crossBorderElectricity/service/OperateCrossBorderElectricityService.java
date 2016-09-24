@@ -10,9 +10,9 @@ package com.okdeer.mall.operate.crossBorderElectricity.service;
 import java.util.List;
 
 import com.okdeer.mall.operate.entity.OperateCrossBorderElectricity;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * 跨境电商设置的service接口

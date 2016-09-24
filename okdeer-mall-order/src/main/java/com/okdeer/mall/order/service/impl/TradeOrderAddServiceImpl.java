@@ -79,9 +79,9 @@ import com.okdeer.mall.order.vo.TradeOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.UuidUtils;
 
 import net.sf.json.JSONObject;
 

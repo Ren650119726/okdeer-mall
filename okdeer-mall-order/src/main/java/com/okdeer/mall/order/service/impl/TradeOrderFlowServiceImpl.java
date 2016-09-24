@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -126,9 +127,9 @@ import com.okdeer.mall.system.mq.StockMQProducer;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 import com.qiniu.util.Auth;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.yschome.file.FileUtil;
 
 import net.sf.json.JSONArray;
@@ -154,7 +155,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 	private static final Logger logger = LoggerFactory.getLogger(TradeOrderFlowServiceImpl.class);
 
 	@Reference(version = "1.0.0", check = false)
-	private com.yschome.api.pay.service.IScanPayServiceApi scanPayServiceApi;
+	private com.okdeer.api.pay.service.IScanPayServiceApi scanPayServiceApi;
 
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuService;
@@ -4183,6 +4184,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public JSONObject confirmSettleMent(String requestStr) throws Exception {
 		List<String> list = new ArrayList<String>();
 		List<Object> objList = new ArrayList<Object>();

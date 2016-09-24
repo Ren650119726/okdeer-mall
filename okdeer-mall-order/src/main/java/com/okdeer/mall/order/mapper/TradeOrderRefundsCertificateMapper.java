@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.okdeer.mall.order.entity.TradeOrderRefundsCertificate;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 
