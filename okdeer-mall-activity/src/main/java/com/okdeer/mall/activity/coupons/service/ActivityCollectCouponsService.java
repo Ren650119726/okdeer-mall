@@ -4,13 +4,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCommunity;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * @pr yscm
@@ -105,6 +106,6 @@ public interface ActivityCollectCouponsService {
 	 * @author wushp
 	 * @date 2016年9月23日
 	 */
-	List<ActivityCollectCouponsVo> findCollCouponsLinks(Map<String,Object> map) throws ServiceException;
+	List<ActivityCollectCouponsOrderVo> findCollCouponsLinks(Map<String,Object> map) throws ServiceException;
 	// end add by wushp V1.1.0 20160923
 }

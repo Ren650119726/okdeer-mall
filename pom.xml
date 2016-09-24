@@ -43,11 +43,6 @@
 				<version>${mall.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com</groupId>
-				<artifactId>yscapi</artifactId>
-				<version>${yscapi.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>com.okdeer.ca</groupId>
 				<artifactId>okdeer-ca-client</artifactId>
 				<version>${ca.version}</version>

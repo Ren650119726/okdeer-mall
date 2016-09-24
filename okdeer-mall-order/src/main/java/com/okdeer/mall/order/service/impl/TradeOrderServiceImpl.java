@@ -1,5 +1,6 @@
 package com.okdeer.mall.order.service.impl;
 
+import static com.okdeer.common.consts.DescriptConstants.ACTIVITY_RECOMMEND_REQ_PARAM_ERROR;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY_TIPS;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY;
@@ -20,6 +21,11 @@ import static com.okdeer.common.consts.DescriptConstants.ORDER_NOT_EXSITS_DELETE
 import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_CHANGE;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_CHANGE_ID;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_OVERDUE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE_TIPS;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -43,6 +49,8 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
 import com.alibaba.rocketmq.client.producer.LocalTransactionState;
+import com.alibaba.rocketmq.client.producer.SendResult;
+import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
@@ -57,9 +65,12 @@ import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
+import com.okdeer.api.psms.finance.entity.CostPaymentApi;
+import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
+import com.okdeer.archive.stock.exception.StockException;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
@@ -78,10 +89,11 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
-import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
@@ -119,6 +131,7 @@ import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
 import com.okdeer.mall.order.constant.OrderMessageConstant;
+import com.okdeer.mall.order.constant.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -130,6 +143,7 @@ import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderThirdRelation;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
+import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
@@ -165,6 +179,7 @@ import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.JsonDateValueProcessor;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.OrderCouponsRespDto;
+import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.order.vo.TradeOrderCommentVo;
@@ -220,6 +235,7 @@ import net.sf.json.JsonConfig;
  *    1.0.Z	            2016-09-07           zengj              库存管理修改，采用商业管理系统校验
  *   V1.1.0	            2016-9-12            zengjz             财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口  
  *   V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
+ *   V1.1.0             2016-09-24           wusw               消费码验证（到店消费）相应方法
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -501,7 +517,22 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Autowired
 	ActivityCouponsOrderRecordMapper activityCouponsOrderRecordMapper;
+	
+	// Begin add by wushp V1.1.0 20160923
+	/**
+	 * 物业缴费接口
+	 */
+	@Autowired
+	ICostPaymentServiceApi costPaymentServiceApi;
 	// end add by wushp V1.1.0 20160923
+	
+	// Begin V1.1.0 add by wusw 20160924
+	/**
+     * MQ信息
+     */
+    @Autowired
+    RocketMQProducer rocketMQProducer;
+    // End V1.1.0 add by wusw 20160924
 
 	@Override
 	public PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize)
@@ -3822,12 +3853,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @param params
 	 * @return
 	 */
-	// Begin V1.1.0 update by wusw 20160923 
 	@Override
-	public List<Map<String, Object>> selectOrderDetailByConsumeCode(Map<String, Object> params) {
+	public Map<String, Object> selectOrderDetailByConsumeCode(Map<String, Object> params) {
 		return tradeOrderMapper.selectOrderDetailByConsumeCode(params);
 	}
-	// End V1.1.0 update by wusw 20160923 
 
 	@Override
 	public JSONObject findUserOrderDetailList(String orderId) throws ServiceException {
@@ -4493,13 +4522,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			for (String consumeCode : consumeCodes) {
 				params.put("consumeCode", consumeCode);
 				// 根据消费码查询订单信息
-				// Begin V1.1.0 update by wusw 20160923 
-				List<Map<String, Object>> list = this.selectOrderDetailByConsumeCode(params);
-				Map<String, Object> data = null;
-				if (CollectionUtils.isNotEmpty(list)) {
-					data = list.get(0);
-				}
-				// Begin V1.1.0 update by wusw 20160923 
+				Map<String, Object> data = this.selectOrderDetailByConsumeCode(params);	
 				// 没有找到订单信息
 				if (data == null || data.get("id") == null || data.get("orderItemId") == null
 						|| data.get("detailId") == null) {
@@ -5571,7 +5594,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (!(orderStatus == 1 || orderStatus == 11)) {
 			//只有支付完成、货到付款、支付确认中的订单，也就是状态为1或者11的订单才返券
 			logger.info(ORDER_COUPONS_STATUS_CHANGE, orderStatus,orderId,userId);
-			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_STATUS_CHANGE_TIPS);
+			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_STATUS_CHANGE_TIPS);
 			return;
 			
 		}
@@ -5624,15 +5647,30 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	private void getPsmsOrderCoupons(String orderId, String userId, OrderCouponsRespDto respDto) 
 			throws ServiceException {
+		CostPaymentApi costPayment = null;
+		try {
+			costPayment = costPaymentServiceApi.getCostPaymentApiById(orderId);
+		} catch (Exception e) {
+			logger.error(ORDER_COUPONS_PSMS_ERROR, orderId, userId);
+			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_PSMS_ERROR_TIPS);
+			throw new ServiceException(ORDER_COUPONS_PSMS_ERROR_TIPS);
+		}
+		if (costPayment == null) {
+			// 查询不到该物业订单
+			logger.info(ORDER_COUPONS_PSMS_NOT, orderId, userId);
+			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_PSMS_NOT_TIPS);
+			return;
+		}
+		
 		// 调用物业接口获取订单信息，省id，市id
-		BigDecimal actualAmount = BigDecimal.valueOf(0);
-		String provinceId = null;
-		String cityId = null;
+		Double actualAmount = costPayment.getPayAmount();
+		String provinceId = costPayment.getProvinceId() + "";
+		String cityId = costPayment.getCityId() + "";
 		
 		if (StringUtils.isBlank(provinceId) && StringUtils.isBlank(cityId)) {
-			// 没有符合条件的消费返券活动
+			// 物业订单信息异常，没有省市id
 			logger.info(ORDER_COUPONS_PSMS_ERROR, orderId,userId);
-			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_PSMS_ERROR_TIPS);
+			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_PSMS_ERROR_TIPS);
 			return;
 		}
 		
@@ -5661,17 +5699,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	private void getOrderCouponsInfo(String orderId, String userId, Map<String, Object> map, 
 			OrderCouponsRespDto respDto) throws ServiceException {
 		// 查询是否有符合消费返券的活动（活动代金券）
-		List<ActivityCollectCouponsVo> collCoupons = activityCollectCouponsService.findCollCouponsLinks(map);
+		List<ActivityCollectCouponsOrderVo> collCoupons = activityCollectCouponsService.findCollCouponsLinks(map);
 		if (CollectionUtils.isEmpty(collCoupons)) {
 			// 没有符合条件的消费返券活动
 			logger.info(ORDER_COUPONS_NOT_ACTIVITY, orderId,userId);
-			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_NOT_ACTIVITY_TIPS);
+			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_NOT_ACTIVITY_TIPS);
 			return;
 		}
 		if (collCoupons.size() > 1) {
 			// 同一时间，同一区域，只能有一个消费返券活动
 			logger.info(ORDER_COUPONS_NOT_ONLY, orderId,userId);
-			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_NOT_ONLY_TIPS);
+			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_NOT_ONLY_TIPS);
 			return;
 		}
 		// 活动关联的代金券
@@ -5679,7 +5717,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (CollectionUtils.isEmpty(activityCouponsList)) {
 			// 活动没有关联代金券
 			logger.info(ORDER_COUPONS_NOT_COUPONE, orderId,userId);
-			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_NOT_COUPONE_TIPS);
+			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_NOT_COUPONE_TIPS);
 			return;
 		}
 		Map<String, Object> params = new HashMap<String, Object>();
@@ -5689,7 +5727,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (CollectionUtils.isNotEmpty(recordList)) {
 			// 该订单已经参与过消费返券活动
 			logger.info(ORDER_COUPONS_ALREADY, orderId,userId);
-			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_ALREADY_TIPS);
+			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_ALREADY_TIPS);
 			return;
 		}
 		
@@ -5700,8 +5738,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 赠送的代金券总面额
 		int totalValue = 0;
 		// 代金卷活动类型：0代金券领取活动，1注册活动，2开门成功送代金券活动3 邀请注册送代金券活动4 消费返券活动
-		ActivityCouponsType activityCouponsType = ActivityCouponsType
-				.enumValueOf(collCoupons.get(0).getType() + "");
+		ActivityCouponsType activityCouponsType = null;
+		for (ActivityCouponsType activityType : ActivityCouponsType.values()) {
+			if (activityType.ordinal() == collCoupons.get(0).getType()) {
+				activityCouponsType = activityType;
+			}
+		}
 		for (ActivityCoupons coupons : activityCouponsList) {
 			// 便利活动关联的代金券，判断是否能领取，能领取则
 			// 插入代金券领取记录表activity_coupons_record，订单消费返券记录activity_coupons_order_record
@@ -5709,10 +5751,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			int remainNum = coupons.getRemainNum();
 			if (remainNum <= 0) {
 				// 消费返券活动，对应的的代金券已被领完
+				respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) 
+						+ ORDER_COUPONS_NOT_COUPONE_RECEIVE_TIPS + coupons.getName());
 				logger.info(ORDER_COUPONS_NOT_COUPONE_RECEIVE, coupons.getId(),orderId,userId);
 				continue;
-			}
-			// 每人限领数量
+			}			// 每人限领数量
 			Integer everyLimit = coupons.getEveryLimit();
 			// 构造某个用户领取某一种代金券数量的 查询条件
 			ActivityCouponsRecord record = new ActivityCouponsRecord();
@@ -5722,8 +5765,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			int count = activityCouponsRecordService.selectCountByParams(record);
 			if (count >= everyLimit) {
 				// 领取的数量大于等于每人限领数量，则不能再领取
-				// 消费返券活动，对应的的代金券已被领完
-				logger.info(ORDER_COUPONS_NOT_COUPONE_RECEIVE, coupons.getId(),orderId,userId);
+				respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) 
+						+ ORDER_COUPONS_LIMIT_TIPS + coupons.getName());
+				logger.info(ORDER_COUPONS_LIMIT, coupons.getId(),orderId,userId);
 				continue;
 			} 
 			
@@ -5742,7 +5786,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 更新代金券已使用数量和剩余数量
 			lstActivityCouponsIds.add(coupons.getId());
 			// 赠送的代金券总面额
-			totalValue = coupons.getFaceValue();
+			totalValue = totalValue + coupons.getFaceValue();
 		}
 		ActivityCouponsOrderRecord record = new ActivityCouponsOrderRecord();
 		record.setId(UuidUtils.getUuid());
@@ -5755,7 +5799,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		addActivityCouponsRecord(lstCouponsRecords, lstActivityCouponsIds, record);
 		if (totalValue != 0) {
 			respDto.setVouContent("恭喜您获得" + totalValue + "元代金券");
-			respDto.setMessage(respDto.getMessage() + ORDER_COUPONS_SUCCESS_TIPS);
+			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_SUCCESS_TIPS);
 		}
 	}
 	
@@ -5794,4 +5838,206 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 	}
 	// end add by wushp  V1.1.0 20160922
+	
+	// Begin V1.1.0 add by wusw 20160924
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public Map<String, String> updateServiceStoreOrderConsume(String userId, String storeId, List<String> consumeCodes)
+			throws ServiceException,StockException,Exception {
+		// 返回值Map
+		Map<String, String> resultMap = new HashMap<String, String>();
+		List<String> rpcIdList = new ArrayList<String>();
+		try {
+			if (CollectionUtils.isEmpty(consumeCodes)) {
+				throw new ServiceException(ACTIVITY_RECOMMEND_REQ_PARAM_ERROR);
+			}
+			// 验证成功和失败的消费码
+			StringBuffer successResult = new StringBuffer();
+			StringBuffer failResult = new StringBuffer();
+			// 当前时间
+			Calendar calendar = Calendar.getInstance();
+			
+			// 查询所有消费码对于的订单相应信息
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("storeId", storeId);
+			params.put("consumeCodeList", consumeCodes);
+			List<OrderItemDetailConsumeVo> orderDetailList = tradeOrderItemDetailMapper.findOrderInfoByConsumeCode(params);
+			if (CollectionUtils.isNotEmpty(orderDetailList)) {
+				// 存放验证通过的消费码对应的订单项详细id和订单id
+				List<String> itemDetailIdList = new ArrayList<String>();
+				List<String> orderIdList = new ArrayList<String>();
+				List<OrderItemDetailConsumeVo> successOrderList = new ArrayList<OrderItemDetailConsumeVo>();
+				for (OrderItemDetailConsumeVo detailConsumeVo:orderDetailList) {
+					String consumeCode = detailConsumeVo.getConsumeCode();
+					// 没有找到订单信息
+					if (detailConsumeVo == null || StringUtils.isEmpty(detailConsumeVo.getOrderId()) 
+							|| StringUtils.isEmpty(detailConsumeVo.getOrderItemId())
+							|| StringUtils.isEmpty(detailConsumeVo.getOrderItemDetailId())) {
+						failResult.append(consumeCode + "|抱歉,没有对应的订单信息,请核实消费码的准确性;");
+						continue;
+					}
+					// 消费码有效开始时间和有效结束时间
+					Date startTime = detailConsumeVo.getStartTime();
+					Date endTime = detailConsumeVo.getEndTime();
+					//判断消费码状态是否为未消费，是否已到或超过使用日期
+					if (ConsumeStatusEnum.noConsume != detailConsumeVo.getDetailStatus()) {
+						failResult.append(consumeCode + "|抱歉,消费码失效,请输入有效的消费码;");
+						continue;
+					} else if (startTime != null && calendar.getTime().getTime() < startTime.getTime()) {
+						failResult.append(consumeCode + "|抱歉,消费码还未到使用日期;");
+						continue;
+					} else if (endTime != null && calendar.getTime().getTime() > endTime.getTime()) {
+						failResult.append(consumeCode + "|抱歉,消费码已过期;");
+						continue;
+					} else {
+						itemDetailIdList.add(detailConsumeVo.getOrderItemDetailId());
+						int orderSize = orderIdList.size();
+						orderIdList.add(detailConsumeVo.getOrderId());
+						if (orderIdList.size() > orderSize) {
+							successOrderList.add(detailConsumeVo);
+						}
+					}
+				}
+				if (CollectionUtils.isNotEmpty(successOrderList)) {
+					for (OrderItemDetailConsumeVo detailConsumeVo:successOrderList) {
+						
+						// 消费完，增加积分
+						pointsBuriedService.doConsumePoints(detailConsumeVo.getUserId(), detailConsumeVo.getDetailActualAmount());
+						//修改库存
+						this.updateServiceStoreStock(detailConsumeVo, rpcIdList, userId, storeId);
+						// 云钱包解冻金额
+						this.payTradeOrderByMq(detailConsumeVo);
+						// 自动评价计时消息
+						/*tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_finish_evaluate_timeout,
+								data.get("id").toString());*/
+						
+					}
+				}
+				Date nowTime = new Date();
+				//修改订单消费码状态
+				this.updateOrderConsumeStatus(orderIdList,nowTime);
+				// 批量修改订单项详细验证码状态为已消费，消费时间和更新时间为当前时间
+				if (CollectionUtils.isNotEmpty(itemDetailIdList)) {
+					tradeOrderItemDetailMapper.updateStatusByDetailId(ConsumeStatusEnum.consumed, nowTime, itemDetailIdList);
+				}
+			} else {
+				throw new ServiceException(ACTIVITY_RECOMMEND_REQ_PARAM_ERROR);
+			}
+			// 验证成功或失败的消费码信息,多条以逗号隔开。信息与消费码以|隔开
+			resultMap.put("success", successResult.toString());
+			resultMap.put("failure", failResult.toString());
+		} catch(StockException se) {
+			throw se;
+		} catch (Exception e) {
+			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			throw e;
+		}
+
+		return resultMap;
+	}
+	
+	/**
+	 * 
+	 * @Description: 修改库存
+	 * @param detailConsumeVo 订单信息
+	 * @param rpcIdList rpcid集合
+	 * @param userId 用户id
+	 * @param storeId 店铺id
+	 * @throws StockException 库存异常
+	 * @throws ServiceException service异常
+	 * @throws Exception 异常
+	 * @author wusw
+	 * @date 2016年9月24日
+	 */
+	private void updateServiceStoreStock(OrderItemDetailConsumeVo detailConsumeVo, List<String> rpcIdList, String userId,
+			String storeId) throws StockException, ServiceException, Exception {
+		TradeOrder tradeOrder = new TradeOrder();
+		// 当前登录用户ID、店铺ID、订单ID
+		tradeOrder.setUserId(userId);
+		tradeOrder.setStoreId(storeId);
+		tradeOrder.setId(detailConsumeVo.getOrderId());
+		tradeOrder.setOrderNo(detailConsumeVo.getOrderNo());
+		tradeOrder.setOrderResource(detailConsumeVo.getOrderResource());
+		tradeOrder.setType(detailConsumeVo.getOrderType());
+		// 查询消费码对应的订单项信息
+		TradeOrderItem tradeOrderItem = tradeOrderItemMapper.selectOrderItemById(detailConsumeVo.getOrderItemId());
+		List<TradeOrderItem> tradeOrderItemList = new ArrayList<TradeOrderItem>();
+		tradeOrderItemList.add(tradeOrderItem);
+		tradeOrder.setTradeOrderItem(tradeOrderItemList);
+		// 消费后调整库存
+		StockAdjustVo stockAdjustVo = this.buildServiceOrderStock(tradeOrder, StockOperateEnum.SEND_OUT_GOODS, 1,
+				rpcIdList);
+
+		// 修改库存
+		stockManagerService.updateStock(stockAdjustVo);
+	}
+	
+	/**
+	 * 
+	 * @Description: 修改订单消费码状态
+	 * @param orderIdList 订单id集合
+	 * @param nowTime 当前时间
+	 * @author wusw
+	 * @date 2016年9月24日
+	 */
+	private void updateOrderConsumeStatus(List<String> orderIdList,Date nowTime) {
+		if (CollectionUtils.isNotEmpty(orderIdList)) {
+			// 分组统计同一订单的不同消费码状态数量,并将结果存入map，key为订单id+下划线+订单消费码状态，value为统计数据
+			List<Map<String,Object>> orderStatusCountList = tradeOrderItemDetailMapper.findStatusCountByOrderIds(orderIdList);
+			Map<String,Object> orderStatusCountMap = new HashMap<String,Object>();
+			for (Map<String,Object> map:orderStatusCountList) {
+				orderStatusCountMap.put(map.get("orderId") + "-" + map.get("status"), map.get("num"));
+			}
+			// 根据统计数量，判断订单消费码状态值，如果存在已过期的，状态为已过期；如果存在未消费的，状态为未消费；否则，状态为待评价
+			List<String> expiredOrderList = new ArrayList<String>();
+			List<String> consumedList = new ArrayList<String>();
+			for (String orderId:orderIdList) {
+				int noConsumeCount = (int) orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal());
+				int expiredCount = (int) orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.expired.ordinal());
+				
+				if (expiredCount > 0) {
+					expiredOrderList.add(orderId);
+				} else if (noConsumeCount <= 0) {
+					consumedList.add(orderId);
+				}
+			}
+			//更新相应的订单消费码状态
+			if (CollectionUtils.isNotEmpty(expiredOrderList)) {
+				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.EXPIRED, nowTime, expiredOrderList);
+			}
+			if (CollectionUtils.isNotEmpty(consumedList)) {
+				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.WAIT_EVALUATE, nowTime, consumedList);
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @Description: 云钱包发送消息
+	 * @param detailConsumeVo 订单信息
+	 * @throws Exception 异常
+	 * @author wusw
+	 * @date 2016年9月24日
+	 */
+	private void payTradeOrderByMq(OrderItemDetailConsumeVo detailConsumeVo) throws Exception {
+		
+        // 写入mq数据
+        JSONObject jsonObj = new JSONObject();
+    	jsonObj.put("userId", detailConsumeVo.getStoreUserId());
+    	jsonObj.put("amount", detailConsumeVo.getDetailActualAmount());
+    	jsonObj.put("type",2);
+    	jsonObj.put("serviceFkId", detailConsumeVo.getOrderId());
+    	jsonObj.put("remark", "订单[" + detailConsumeVo.getOrderNo() + "]");
+        // 转化Json串
+        String jsonStr = jsonObj.toString();
+
+        // 写入mq数据
+        Message message = new Message(PayMessageConstant.TOPIC_BALANCE_CHANGE, PayMessageConstant.TAG_BALANCE_CHANGE,
+                jsonStr.getBytes(Charsets.UTF_8));
+        SendResult sendResult = rocketMQProducer.send(message);
+        if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
+            throw new StockException("写mq数据失败");
+        }
+    }
+	// End V1.1.0 add by wusw 20160924
 }
