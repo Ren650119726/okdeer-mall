@@ -88,7 +88,7 @@
 			<result property="type" column="activityCollectAreaType" />
     	</collection>
     </resultMap>
-    <resultMap id="collectCouponsLinkMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo" extends="ActivityCollectCoupons">
+    <resultMap id="collectCouponsLinkMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo" extends="ActivityCollectCoupons">
     	 <!-- 代金券信息 -->
       <collection property="activityCoupons" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCoupons">	
 		<id property="id" column="couponsId" javaType="string" jdbcType="VARCHAR"/>
@@ -129,7 +129,7 @@
 	</sql>
 	
 	<sql id="activityCoupons">
-        coupons.id AS couponsId, coupons.name, coupons.activity_id, coupons.belong_type, coupons.face_value, coupons.total_num, 
+        coupons.id AS couponsId, coupons.name AS couponsName, coupons.activity_id, coupons.belong_type, coupons.face_value, coupons.total_num, 
         coupons.used_num, coupons.remain_num, coupons.arrive_limit, coupons.valid_day, coupons.every_limit,
 	    coupons.is_cash_delivery, coupons.is_category_limit, coupons.code, coupons.exchange_code, coupons.area_type, 
 	    coupons.create_user_id, coupons.create_time, coupons.update_user_id, coupons.update_time, coupons.disabled,

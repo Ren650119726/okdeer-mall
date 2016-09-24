@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -167,6 +168,6 @@ public interface ActivityCollectCouponsMapper {
 	 * @author wushp
 	 * @date 2016年9月23日
 	 */
-	List<ActivityCollectCouponsVo> findCollCouponsLinks(Map<String,Object> map);
+	List<ActivityCollectCouponsOrderVo> findCollCouponsLinks(Map<String,Object> map);
 	// end add by wushp V1.1.0 20160923
 }
