@@ -248,5 +248,9 @@
 	</if>
 	GROUP BY STATUS,order_id
   </select>
-  
+	
+	<!-- 根据订单id查询明细列表 V1.1.0 add by zengjz 20160923-->
+   <select id="selectByOrderItemDetailByOrderId" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select * from trade_order_item_detail where order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
 </mapper>
