@@ -279,6 +279,19 @@ public interface TradeOrderMapper {
 	 * @return
 	 */
 	List<TradeOrderStatusVo> getOrderCount(Map<String, Object> map);
+	
+	//start added by luosm 20160924 V1.1.1
+	/***
+	 * 
+	 * @Description: 查询商家版APP服务店到店消费订单信息
+	 * @param map
+	 * @return
+	 * @author luosm
+	 * @date 2016年9月24日
+	 */
+	List<TradeOrderStatusVo> selectArrivedOrderCount(Map<String, Object> map);
+	//end added by luosm 20160924 V1.1.1
+
 
 	/**
 	 * 更新订单信息

@@ -2056,6 +2056,33 @@
 	  END
    </select>
    
+   <!-- luosm:V1.1.1获取服务店到店消费订单总数，根据订单状态分组 -->
+   <select id="selectArrivedOrderCount" parameterType="java.util.Map" resultMap="TradeOrderStatusVoMap">
+      SELECT CASE
+				WHEN `status` IN (0,11) THEN 0
+				WHEN `status` IN (5) THEN 2
+				WHEN `status` IN (2, 12) THEN 3
+				ELSE `STATUS`
+			 END AS `status`,count(1) as `count` FROM trade_order 
+     	WHERE store_id = #{storeId,jdbcType=VARCHAR} 
+     	and disabled = 0
+		<!-- 订单来源，多个时使用IN -->
+     	<if test="null!=orderResources" >
+			AND order_resource IN
+		    <foreach collection="orderResources" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		and `status` >= 0
+      GROUP BY 
+	  CASE
+		WHEN `status` IN (0,11) THEN 0
+		WHEN `status` IN (5) THEN 2
+		WHEN `status` IN (2, 12) THEN 3
+		ELSE `STATUS`
+	  END
+   </select>
+   
    <!-- zengj:商家版APP订单查询 -->
    <select id="selectOrderInfo" parameterType="java.util.Map" resultMap="TradeOrderVo">
        SELECT tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.status,tr.delivery_time,
@@ -2732,6 +2759,9 @@
   		OR tr.payment_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP}
   	)
   	AND tr.store_id = #{storeId, jdbcType=VARCHAR}
+  	<if test="type != null">
+	    AND tr.type = #{type,jdbcType=TINYINT}
+	</if>
   </select>
   <!-- zengj:查询店铺当天的退单(负收入)-商家云钱包的实际扣款金额 -->
   <select id="selectRefundAmount" parameterType="java.util.Map" resultType="java.math.BigDecimal">
@@ -2740,22 +2770,31 @@
   	LEFT JOIN trade_order_refunds_item ri ON tr.id = ri.refunds_id
   	WHERE tr.refund_money_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP}
   	AND tr.store_id = #{storeId, jdbcType=VARCHAR}
+  	<if test="refundsOrderType != null">
+	    AND tr.type = #{refundsOrderType,jdbcType=TINYINT}
+	</if>
   </select>
   <!-- zengj:今日(昨日)营收列表 -->
   <select id="selectOrderIncomeList" parameterType="java.util.Map" resultType="java.util.Map">
-	    SELECT tradeNo,income,tradeTime,type
+	    SELECT tradeNo,income,tradeTime,types
 	FROM
-		(SELECT order_no AS tradeNo,income,received_time AS tradeTime,0 as type
+		(SELECT order_no AS tradeNo,income,received_time AS tradeTime,0 as types
 		 FROM trade_order
 		 WHERE store_id = #{storeId, jdbcType=VARCHAR}
 		 AND (received_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP}
 		  OR payment_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP}
 		 )
+	 	 <if test="type != null">
+	    	AND trade_order.type = #{type,jdbcType=TINYINT}
+		</if>
 		 UNION ALL
-		 SELECT refund_no AS tradeNo,(select sum(income) from trade_order_refunds_item i where i.refunds_id = r.id) as income,refund_money_time AS tradeTime,1 as type
+		 SELECT refund_no AS tradeNo,(select sum(income) from trade_order_refunds_item i where i.refunds_id = r.id) as income,refund_money_time AS tradeTime,1 as types
 		 FROM trade_order_refunds r
 		 WHERE store_id = #{storeId, jdbcType=VARCHAR}
 		 AND refund_money_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP}
+		 <if test="refundsOrderType != null">
+	    	AND r.type = #{refundsOrderType,jdbcType=TINYINT}
+		</if>
 		) AS tmp
 	ORDER BY
 		tradeTime DESC

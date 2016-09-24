@@ -1067,6 +1067,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public List<TradeOrderStatusVo> getOrderCount(Map<String, Object> map) {
 		return tradeOrderMapper.getOrderCount(map);
 	}
+	
+	//start added by luosm 20160924 V1.1.1
+	/***
+	 * 
+	 *查询商家版APP服务店到店消费订单信息
+	 */
+	@Override
+	public List<TradeOrderStatusVo> selectArrivedOrderCount(Map<String, Object> map){
+		return tradeOrderMapper.selectArrivedOrderCount(map);
+	}
+	//end added by luosm 20160924 V1.1.1
 
 	/**
 	 * 保存订单及相关信息
