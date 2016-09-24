@@ -16,21 +16,21 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
-import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.common.utils.DateUtils;
-import com.okdeer.mall.order.constant.OrderTipMsgConstant;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
-import com.okdeer.mall.order.service.GoodsCheckService;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.vo.TradeOrderContext;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
+import com.okdeer.mall.order.constant.OrderTipMsgConstant;
+import com.okdeer.mall.order.service.GoodsCheckService;
 
 /**
  * ClassName: GoodsCheckServiceImpl 
@@ -154,22 +154,22 @@ public class GoodsCheckServiceImpl implements GoodsCheckService {
 		List<String> activitySkuIds = new ArrayList<String>();
 		// 从商品列表中提取商品所参加的活动ID
 		String activityId = extractActivityId(storeSkuList);
-		//Begin added by tangy  2016-9-23
-		// 商品类目id
-		List<String> spuCategoryIds = new ArrayList<String>();
-		//End added by tangy
-		
 		// 特惠活动信息
 		ActivitySale acSale = null;
 		if (activityId != null) {
 			acSale = activitySaleMapper.getAcSaleStatus(activityId);
 		}
+	    //Begin added by tangy  2016-9-23
+		// 商品类目id
+		List<String> spuCategoryIds = new ArrayList<String>();
+		//End added by tangy
+		
 		// 将商品分为特惠商品和正常商品
 		for (GoodsStoreSku storeSku : storeSkuList) {
-			//Begin added by tangy  2016-9-23
-			spuCategoryIds.add(storeSku.getSpuCategoryId());
-			//End added by tangy
 			if (storeSku.getActivityType() == StoreActivityTypeEnum.PRIVLIEGE) {
+			    //Begin added by tangy  2016-9-23
+			    spuCategoryIds.add(storeSku.getSpuCategoryId());
+			    //End added by tangy
 				// 特惠活动状态(0:未开始,1:进行中,2:已结束,3:已关闭)
 				if (acSale.getStatus() == 1) {
 					activitySkuIds.add(storeSku.getId());
