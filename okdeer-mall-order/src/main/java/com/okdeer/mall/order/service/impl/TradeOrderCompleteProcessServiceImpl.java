@@ -158,22 +158,27 @@ public class TradeOrderCompleteProcessServiceImpl
 			tradeOrderPay.setPayTime(tradeOrder.getPaymentTime());
 			// 支付金额取用户实付金额
 			tradeOrderPay.setPayAmount(tradeOrder.getActualAmount());
-			switch (tradeOrder.getPospay()) {
-				case CASH:
-					tradeOrderPay.setPayType(PayTypeEnum.CASH);
-					break;
-				case UNITCARD:
-					tradeOrderPay.setPayType(PayTypeEnum.ONLINE_BANK);
-					break;
-				case APLIPAY:
-					tradeOrderPay.setPayType(PayTypeEnum.ALIPAY);
-					break;
-				case WECHATPAY:
-					tradeOrderPay.setPayType(PayTypeEnum.WXPAY);
-					break;
-				default:
-					tradeOrderPay.setPayType(PayTypeEnum.CASH);
-					break;
+			// 该字段为空就是线上订单货到付款支付，默认现金支付
+			if (StringUtils.isBlank(tradeOrder.getPospay())) {
+				tradeOrderPay.setPayType(PayTypeEnum.CASH);
+			} else {
+				switch (tradeOrder.getPospay()) {
+					case CASH:
+						tradeOrderPay.setPayType(PayTypeEnum.CASH);
+						break;
+					case UNITCARD:
+						tradeOrderPay.setPayType(PayTypeEnum.ONLINE_BANK);
+						break;
+					case APLIPAY:
+						tradeOrderPay.setPayType(PayTypeEnum.ALIPAY);
+						break;
+					case WECHATPAY:
+						tradeOrderPay.setPayType(PayTypeEnum.WXPAY);
+						break;
+					default:
+						tradeOrderPay.setPayType(PayTypeEnum.CASH);
+						break;
+				}
 			}
 			tradeOrderPay.setId(UuidUtils.getUuid());
 			tradeOrderPay.setOrderId(tradeOrder.getId());
