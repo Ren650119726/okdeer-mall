@@ -18,8 +18,12 @@ import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.common.utils.DateUtils;
+import com.okdeer.mall.order.constant.OrderTipMsgConstant;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
+import com.okdeer.mall.order.service.GoodsCheckService;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.vo.TradeOrderContext;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
@@ -27,10 +31,6 @@ import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
 import com.yschome.base.common.exception.ServiceException;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
-import com.okdeer.mall.order.constant.OrderTipMsgConstant;
-import com.okdeer.mall.order.service.GoodsCheckService;
 
 /**
  * ClassName: GoodsCheckServiceImpl 
@@ -45,6 +45,7 @@ import com.okdeer.mall.order.service.GoodsCheckService;
  *		Bug:12572	    2016-08-10		 	maojj			添加结算校验失败的提示语
  *		Bug:12566		2016-08-10		 	maojj			获取当前商品线上价格时，添加价格是否为空的判断
  *		重构V4.1			2016-08-17			maojj			比较时间时，先判断时间转换是否成功，增强程序的健壮性，预防空指针异常
+ *		V1.1.0			2016-09-23			tangy			添加商品类目ids
  */
 @Service
 public class GoodsCheckServiceImpl implements GoodsCheckService {
@@ -90,7 +91,7 @@ public class GoodsCheckServiceImpl implements GoodsCheckService {
 			processActivityGoods(context);
 		}
 		// 判断商品信息是否发生变化
-		ReturnInfo info = compareGoods(itemList, context,reqDto.getOrderOptType());
+		ReturnInfo info = compareGoods(itemList, context, reqDto.getOrderOptType());
 		if (!info.isFlag()) {
 			// 商品信息发生变化
 			respDto.setFlag(false);
@@ -155,11 +156,17 @@ public class GoodsCheckServiceImpl implements GoodsCheckService {
 		String activityId = extractActivityId(storeSkuList);
 		// 特惠活动信息
 		ActivitySale acSale = null;
+		//Begin added by tangy  2016-9-23
+		// 商品类目id
+		List<String> spuCategoryIds = new ArrayList<String>();
+		//End added by tangy
+
 		if (activityId != null) {
 			acSale = activitySaleMapper.getAcSaleStatus(activityId);
 		}
 		// 将商品分为特惠商品和正常商品
 		for (GoodsStoreSku storeSku : storeSkuList) {
+			spuCategoryIds.add(storeSku.getSpuCategoryId());
 			if (storeSku.getActivityType() == StoreActivityTypeEnum.PRIVLIEGE) {
 				// 特惠活动状态(0:未开始,1:进行中,2:已结束,3:已关闭)
 				if (acSale.getStatus() == 1) {
@@ -182,6 +189,8 @@ public class GoodsCheckServiceImpl implements GoodsCheckService {
 		context.setNomalSkuList(nomalSkuList);
 		// 保存特惠商品列表
 		context.setActivitySkuList(activitySkuList);
+		// 保存商品类目id集
+		context.setSpuCategoryIds(spuCategoryIds);
 	}
 
 	/**
@@ -264,7 +273,7 @@ public class GoodsCheckServiceImpl implements GoodsCheckService {
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private ReturnInfo isChange(TradeOrderGoodsItem item, TradeOrderContext context,OrderOptTypeEnum orderOptType) {
+	private ReturnInfo isChange(TradeOrderGoodsItem item, TradeOrderContext context, OrderOptTypeEnum orderOptType) {
 		ReturnInfo info = new ReturnInfo();
 		info.setFlag(true);
 		// 获取当前数据库中的商品信息
@@ -313,7 +322,7 @@ public class GoodsCheckServiceImpl implements GoodsCheckService {
 		long newTime = newDate.getTime();
 		return oldTime == newTime;
 	}
-	
+
 	// Begin added by maojj 2016-08-11 Bug:12566
 	/**
 	 * @Description: 价格为空的处理
