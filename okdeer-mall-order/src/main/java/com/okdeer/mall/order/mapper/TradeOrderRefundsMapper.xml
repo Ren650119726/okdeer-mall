@@ -90,11 +90,9 @@
 	</resultMap>
 
 	<sql id="Base_Column_List">
-		id, user_id, store_id, type, refund_no,order_id, order_no,
-		trade_num,
+		id, user_id, store_id, type, refund_no,order_id, order_no, trade_num,
 		payment_method, status,
-		total_amount,
-		total_preferential_price, create_time, update_time, refunds_reason,
+		total_amount, total_preferential_price, create_time, update_time, refunds_reason,
 		refuse_reson, memo, operator, refunds_status, order_resource,
 		logistics_type, refund_money_time,
 		disabled, total_income
@@ -130,10 +128,8 @@
 		store.id as store_id,store.store_name,store.mobile as
 		store_mobile,store.area as store_area,store.address as store_address
 		FROM trade_order_refunds refunds
-		LEFT JOIN trade_order_refunds_item
-		item ON refunds.id = item.refunds_id
-		LEFT JOIN store_info store ON
-		store.id = refunds.store_id
+		LEFT JOIN trade_order_refunds_item item ON refunds.id = item.refunds_id
+		LEFT JOIN store_info store ON store.id = refunds.store_id
 		WHERE 1=1
 		AND refunds.disabled = 0
 		<if test="null!=params">
@@ -162,10 +158,8 @@
 			store.id as store_id,store.store_name,store.mobile as
 			store_mobile,store.area as store_area,store.address as store_address
 			FROM trade_order_refunds refunds
-			LEFT JOIN trade_order_refunds_item
-			item ON refunds.id = item.refunds_id
-			LEFT JOIN store_info store ON
-			store.id = refunds.store_id
+			LEFT JOIN trade_order_refunds_item item ON refunds.id = item.refunds_id
+			LEFT JOIN store_info store ON store.id = refunds.store_id
 			WHERE 1=1
 			AND refunds.disabled = 0
 			<if test="null!=params">
@@ -176,8 +170,7 @@
 					AND refunds.user_id = #{params.userId,jdbcType=VARCHAR}
 				</if>
 				<if test="params.skuName !=null and params.skuName !=''">
-					AND refunds.refund_no like
-					CONCAT('%',#{params.skuName},'%')
+					AND refunds.refund_no like CONCAT('%',#{params.skuName},'%')
 				</if>
 			</if>
 		</if>
@@ -218,26 +211,18 @@
 	<select id="findInfoById" resultMap="BaseResultMap"
 		parameterType="java.lang.String">
 		select
-		refunds.id, refunds.user_id, refunds.store_id,
-		refunds.refund_no,
-		refunds.order_id,refunds.order_no, trade_num,
-		refunds.payment_method,
-		refunds.total_amount,
-		refunds.total_preferential_price,
-		refunds.create_time,
-		refunds.update_time,
+		refunds.id, refunds.user_id, refunds.store_id, refunds.refund_no,
+		refunds.order_id,refunds.order_no, trade_num, refunds.payment_method,
+		refunds.total_amount, refunds.total_preferential_price,
+		refunds.create_time, refunds.update_time,
 		refunds.operator,
-		refunds.refunds_status,
-		refunds.order_resource,
-		refunds.logistics_type,
-		refunds.refund_money_time,
+		refunds.refunds_status, refunds.order_resource,
+		refunds.logistics_type, refunds.refund_money_time,
 		item.refunds_id,item.order_item_id,item.sku_name,item.properties_indb,item.store_sku_id,
 		item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code
 		FROM trade_order_refunds refunds
-		LEFT JOIN trade_order_refunds_item
-		item ON item.refunds_id = refunds.id
-		where refunds.id =
-		#{id,jdbcType=VARCHAR}
+		LEFT JOIN trade_order_refunds_item item ON item.refunds_id = refunds.id
+		where refunds.id = #{id,jdbcType=VARCHAR}
 	</select>
 
 	<select id="getTradeOrderRefundsByOrderNo" parameterType="java.lang.String"
@@ -251,53 +236,40 @@
 	<select id="getTradeOrderRefundsByOrderItemId" parameterType="java.lang.String"
 		resultMap="BaseResultMap">
 		select
-		r.id, user_id, store_id, type, refund_no,
-		order_id,order_no, trade_num,
+		r.id, user_id, store_id, type, refund_no, order_id,order_no, trade_num,
 		payment_method, r.status,
-		total_amount,
-		total_preferential_price, create_time, update_time, refunds_reason,
+		total_amount, total_preferential_price, create_time, update_time, refunds_reason,
 		refuse_reson, memo, operator, refunds_status, order_resource,
 		logistics_type, refund_money_time,
 		disabled
-		from trade_order_refunds r
-		left join trade_order_refunds_item i on r.id =
-		i.refunds_id where
-		i.order_item_id = #{orderItemId}
+		from trade_order_refunds r left join trade_order_refunds_item i on r.id =
+		i.refunds_id where i.order_item_id = #{orderItemId}
 	</select>
 
 	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
-		DELETE FROM
-		trade_order_refunds
+		DELETE FROM trade_order_refunds
 		WHERE id = #{id,jdbcType=VARCHAR}
 	</delete>
 	<insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderRefunds">
-		insert into
-		trade_order_refunds (id, user_id, store_id,
-		type, refund_no,order_id,
-		order_no,
+		insert into trade_order_refunds (id, user_id, store_id,
+		type, refund_no,order_id, order_no,
 		trade_num, payment_method, status,
-		total_amount,
-		total_preferential_price,total_income, create_time,
-		update_time,
-		refunds_reason, refuse_reson,
+		total_amount, total_preferential_price,total_income, create_time,
+		update_time, refunds_reason, refuse_reson,
 		memo, operator, refunds_status,
 		order_resource, logistics_type, refund_money_time,
 		disabled)
-		values
-		(#{id,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR},
+		values (#{id,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR},
 		#{storeId,jdbcType=VARCHAR},
-		#{type,jdbcType=BIT},
-		#{refundNo,jdbcType=VARCHAR}, #{orderId,jdbcType=VARCHAR},
+		#{type,jdbcType=BIT}, #{refundNo,jdbcType=VARCHAR}, #{orderId,jdbcType=VARCHAR},
 		#{orderNo,jdbcType=VARCHAR},
-		#{tradeNum,jdbcType=VARCHAR},
-		#{paymentMethod,jdbcType=BIT}, #{status,jdbcType=BIT},
+		#{tradeNum,jdbcType=VARCHAR}, #{paymentMethod,jdbcType=BIT}, #{status,jdbcType=BIT},
 		#{totalAmount,jdbcType=DECIMAL},
 		#{totalPreferentialPrice,jdbcType=DECIMAL},
 		#{totalIncome,jdbcType=DECIMAL}, #{createTime,jdbcType=TIMESTAMP},
 		#{updateTime,jdbcType=TIMESTAMP}, #{refundsReason,jdbcType=VARCHAR},
 		#{refuseReson,jdbcType=VARCHAR},
-		#{memo,jdbcType=VARCHAR},
-		#{operator,jdbcType=VARCHAR}, #{refundsStatus,jdbcType=BIT},
+		#{memo,jdbcType=VARCHAR}, #{operator,jdbcType=VARCHAR}, #{refundsStatus,jdbcType=BIT},
 		#{orderResource,jdbcType=BIT}, #{logisticsType,jdbcType=BIT},
 		#{refundMoneyTime,jdbcType=TIMESTAMP},
 		#{disabled,jdbcType=BIT})
@@ -524,8 +496,7 @@
 				logistics_type = #{logisticsType,jdbcType=BIT},
 			</if>
 			<if test="refundMoneyTime != null">
-				refund_money_time =
-				#{refundMoneyTime,jdbcType=TIMESTAMP},
+				refund_money_time = #{refundMoneyTime,jdbcType=TIMESTAMP},
 			</if>
 			<if test="deliveryTime != null">
 				delivery_time = #{deliveryTime,jdbcType=TIMESTAMP},
@@ -537,42 +508,29 @@
 		where id = #{id,jdbcType=VARCHAR}
 	</update>
 	<update id="updateByPrimaryKey" parameterType="com.okdeer.mall.order.entity.TradeOrderRefunds">
-		update
-		trade_order_refunds
+		update trade_order_refunds
 		set user_id = #{userId,jdbcType=VARCHAR},
-		store_id =
-		#{storeId,jdbcType=VARCHAR},
+		store_id = #{storeId,jdbcType=VARCHAR},
 		type = #{type,jdbcType=BIT},
-		refund_no =
-		#{refundNo,jdbcType=VARCHAR},
+		refund_no = #{refundNo,jdbcType=VARCHAR},
 		order_id = #{orderId,jdbcType=VARCHAR},
 		order_no = #{orderNo,jdbcType=VARCHAR},
-		trade_num =
-		#{tradeNum,jdbcType=VARCHAR},
-		payment_method =
-		#{paymentMethod,jdbcType=BIT},
+		trade_num = #{tradeNum,jdbcType=VARCHAR},
+		payment_method = #{paymentMethod,jdbcType=BIT},
 		status = #{status,jdbcType=BIT},
 		total_amount = #{totalAmount,jdbcType=DECIMAL},
 		total_preferential_price = #{totalPreferentialPrice,jdbcType=DECIMAL},
 		create_time = #{createTime,jdbcType=TIMESTAMP},
-		update_time =
-		#{updateTime,jdbcType=TIMESTAMP},
-		refunds_reason =
-		#{refundsReason,jdbcType=VARCHAR},
-		refuse_reson =
-		#{refuseReson,jdbcType=VARCHAR},
+		update_time = #{updateTime,jdbcType=TIMESTAMP},
+		refunds_reason = #{refundsReason,jdbcType=VARCHAR},
+		refuse_reson = #{refuseReson,jdbcType=VARCHAR},
 		memo = #{memo,jdbcType=VARCHAR},
 		operator = #{operator,jdbcType=VARCHAR},
-		refunds_status =
-		#{refundsStatus,jdbcType=BIT},
-		order_resource =
-		#{orderResource,jdbcType=BIT},
-		logistics_type =
-		#{logisticsType,jdbcType=BIT},
-		refund_money_time =
-		#{refundMoneyTime,jdbcType=TIMESTAMP},
-		delivery_time =
-		#{deliveryTime,jdbcType=TIMESTAMP},
+		refunds_status = #{refundsStatus,jdbcType=BIT},
+		order_resource = #{orderResource,jdbcType=BIT},
+		logistics_type = #{logisticsType,jdbcType=BIT},
+		refund_money_time = #{refundMoneyTime,jdbcType=TIMESTAMP},
+		delivery_time = #{deliveryTime,jdbcType=TIMESTAMP},
 		disabled = #{disabled,jdbcType=BIT}
 		where id = #{id,jdbcType=VARCHAR}
 	</update>
@@ -838,12 +796,9 @@
 	<select id="selectSumAmountByOrderId" resultType="java.lang.Double"
 		parameterType="java.lang.String">
 		SELECT SUM(amount)
-		FROM trade_order_refunds_item
-		refundsItem
-		WHERE refundsItem.order_item_id in (select i.id from
-		trade_order_item i
-		where i.id = refundsItem.order_item_id and
-		i.order_id =
+		FROM trade_order_refunds_item refundsItem
+		WHERE refundsItem.order_item_id in (select i.id from trade_order_item i
+		where i.id = refundsItem.order_item_id and i.order_id =
 		#{orderId,jdbcType=VARCHAR})
 	</select>
 
@@ -852,10 +807,8 @@
 		resultType="int">
 		select count(1) from trade_order_refunds_item refundsItem where 1=1
 		<if test="null != orderId and '' != orderId">
-			and refundsItem.order_item_id in (select i.id from
-			trade_order_item i
-			where i.id = refundsItem.order_item_id and
-			i.order_id = #{orderId})
+			and refundsItem.order_item_id in (select i.id from trade_order_item i
+			where i.id = refundsItem.order_item_id and i.order_id = #{orderId})
 		</if>
 	</select>
 
@@ -867,8 +820,7 @@
 		FROM trade_order_refunds refunds
 		WHERE 1=1
 		<if test="orderResource != null">
-			AND refunds.order_resource !=
-			#{orderResource,jdbcType=TINYINT}
+			AND refunds.order_resource != #{orderResource,jdbcType=TINYINT}
 		</if>
 		<if test="refundsStatus != null">
 			AND refunds.refunds_status in
@@ -975,14 +927,10 @@
 		AS order_time,trade.remark,
 		trade.fare,trade.pay_way,trade.`activity_id`,trade.`activity_type`
 		FROM trade_order_refunds refunds
-		LEFT JOIN trade_order_refunds_item
-		item ON item.refunds_id = refunds.id
-		LEFT JOIN trade_order trade ON
-		trade.order_no = refunds.order_no
-		LEFT JOIN
-		trade_order_refunds_logistics logistics ON logistics.refunds_id
-		=
-		refunds.id
+		LEFT JOIN trade_order_refunds_item item ON item.refunds_id = refunds.id
+		LEFT JOIN trade_order trade ON trade.order_no = refunds.order_no
+		LEFT JOIN trade_order_refunds_logistics logistics ON logistics.refunds_id
+		= refunds.id
 		WHERE refunds.id = #{id,jdbcType=VARCHAR}
 	</select>
 
@@ -1018,8 +966,7 @@
 		refunds.id,refunds.refund_no,refunds.logistics_type,refunds.refuse_reson,refunds.memo,refunds.create_time,refunds.refund_money_time,refunds.total_amount,
 		refunds.total_preferential_price,refunds.refunds_reason,trade.received_time,
 		image.id as image_id,image.image_path,
-		trade.update_time as
-		order_update_time,
+		trade.update_time as order_update_time,
 		trade.store_id,trade.order_no,trade.`status` AS
 		order_status,trade.pick_up_type,trade.pick_up_time,trade.create_time
 		AS order_create_time,trade.remark,
@@ -1032,21 +979,15 @@
 		,ol.type,
 		pay.pay_type,pay.pay_time,
 		i.head,i.context
-		FROM
-		trade_order_refunds refunds
-		LEFT JOIN trade_order_refunds_image image
-		ON image.refunds_id = refunds.id
-		LEFT JOIN trade_order trade ON
-		trade.order_no = refunds.order_no
-		LEFT JOIN
-		trade_order_refunds_logistics logistics ON refunds.id =
+		FROM trade_order_refunds refunds
+		LEFT JOIN trade_order_refunds_image image ON image.refunds_id = refunds.id
+		LEFT JOIN trade_order trade ON trade.order_no = refunds.order_no
+		LEFT JOIN trade_order_refunds_logistics logistics ON refunds.id =
 		logistics.refunds_id
-		LEFT JOIN trade_order_logistics ol ON ol.order_id
-		= trade.id
+		LEFT JOIN trade_order_logistics ol ON ol.order_id = trade.id
 		LEFT JOIN trade_order_invoice i ON i.order_id = trade.id
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
-		WHERE
-		refunds.id = #{id,jdbcType=VARCHAR}
+		WHERE refunds.id = #{id,jdbcType=VARCHAR}
 	</select>
 	<!-- zengj:查询退款单项信息 -->
 	<select id="selectRefundsItemList" parameterType="java.util.Map"
@@ -1068,8 +1009,7 @@
 		ri.status,
 		ri.unit_price,
 		ri.store_sku_id,
-		d.id as
-		detail_id,
+		d.id as detail_id,
 		d.consume_code,
 		d.status as detail_status,
 		d.start_time,
@@ -1077,8 +1017,7 @@
 		d.use_time,
 		ri.weight
 		FROM trade_order_refunds_item ri
-		LEFT
-		JOIN trade_order_item_detail d on ri.order_item_id = d.order_item_id
+		LEFT JOIN trade_order_item_detail d on ri.order_item_id = d.order_item_id
 		where ri.refunds_id = #{refundsId,jdbcType=VARCHAR}
 		ORDER BY ri.id ASC
 	</select>
@@ -1086,8 +1025,7 @@
 	<!-- zengj:退款单查询条件 -->
 	<sql id="refund_condition">
 		<if test="null!=skuName and '' !=skuName">
-			AND exists (select 1 from trade_order_refunds_item ri
-			where
+			AND exists (select 1 from trade_order_refunds_item ri where
 			ri.refunds_id = tr.id and ri.sku_name like
 			CONCAT('%',#{skuName,jdbcType=VARCHAR},'%'))
 		</if>
@@ -1124,15 +1062,13 @@
 			</foreach>
 		</if>
 		<if test="null != orderNo and '' != orderNo">
-			AND o.order_no like
-			CONCAT('%',#{orderNo,jdbcType=VARCHAR},'%')
+			AND o.order_no like CONCAT('%',#{orderNo,jdbcType=VARCHAR},'%')
 		</if>
 		<if test="null != type">
 			AND tr.type = #{type}
 		</if>
 		<if test="null != userPhone and '' != userPhone">
-			AND o.user_phone like
-			CONCAT('%',#{userPhone,jdbcType=VARCHAR},'%')
+			AND o.user_phone like CONCAT('%',#{userPhone,jdbcType=VARCHAR},'%')
 		</if>
 		<if test="null != refundsStatus">
 			AND tr.refunds_status IN
@@ -1164,12 +1100,10 @@
 		as pay_id,pay.pay_type,pay.pay_time,
 		tr.id,tr.refund_no,tr.payment_method,su.login_name,su.user_name,tr.operator,tr.create_time,
 		tr.total_amount,tr.refunds_status,tr.total_income
-		FROM
-		trade_order_refunds AS tr
+		FROM trade_order_refunds AS tr
 		LEFT JOIN sys_user su ON su.id=tr.operator
 		LEFT JOIN trade_order AS o ON o.order_no = tr.order_no
-		LEFT JOIN
-		trade_order_pay as pay on pay.order_id = o.id
+		LEFT JOIN trade_order_pay as pay on pay.order_id = o.id
 		WHERE 1=1
 		<include refid="refund_condition" />
 		<!-- 根据不同页签排序不相同 -->
@@ -1237,24 +1171,18 @@
 		resultMap="TradeOrderRefundsStatusVoMap">
 		SELECT CASE
 		WHEN `refunds_status` = 0 THEN 0
-		WHEN
-		`refunds_status` in(5,7,8,12) THEN 5
-		WHEN `refunds_status` in(2,3,4)
-		THEN 2
+		WHEN `refunds_status` in(5,7,8,12) THEN 5
+		WHEN `refunds_status` in(2,3,4) THEN 2
 		WHEN `refunds_status` in(1,6,9,10,11,13,14,15,16) THEN 6
-		END as
-		`refunds_status`,count(1) as `count` FROM trade_order_refunds
-		WHERE
-		store_id = #{storeId, jdbcType=VARCHAR}
+		END as `refunds_status`,count(1) as `count` FROM trade_order_refunds
+		WHERE store_id = #{storeId, jdbcType=VARCHAR}
 		AND order_resource IN(0,1)
 		GROUP BY
 		CASE
 		WHEN `refunds_status` = 0 THEN 0
-		WHEN `refunds_status`
-		IN(5,7,8,12) THEN 5
+		WHEN `refunds_status` IN(5,7,8,12) THEN 5
 		WHEN `refunds_status` IN(2,3,4) THEN 2
-		WHEN
-		`refunds_status` IN(1,6,9,10,11,13,14,15,16) THEN 6
+		WHEN `refunds_status` IN(1,6,9,10,11,13,14,15,16) THEN 6
 		END
 	</select>
 	<!-- zengj:查询商家版APP售后单列表 -->
@@ -1264,8 +1192,7 @@
 		<include refid="Base_Column_List" />
 		FROM
 		trade_order_refunds tr
-		WHERE tr.store_id = #{storeId,
-		jdbcType=VARCHAR}
+		WHERE tr.store_id = #{storeId, jdbcType=VARCHAR}
 		<if test="refundsStatus != null">
 			AND tr.refunds_status IN
 			<foreach collection="refundsStatus" index="index" item="item"
@@ -1290,8 +1217,7 @@
 		ri.main_pic_prl
 		FROM trade_order_refunds tr
 		LEFT JOIN trade_order_refunds_item ri ON tr.id = ri.refunds_id
-		WHERE
-		tr.disabled = 0 AND tr.user_id = #{userId, jdbcType=VARCHAR}
+		WHERE tr.disabled = 0 AND tr.user_id = #{userId, jdbcType=VARCHAR}
 		<!-- <if test="refundsStatus != null and refundsStatus != ''"> AND tr.refunds_status 
 			IN <foreach collection="refundsStatus" index="index" item="item" open="(" 
 			close=")" separator=","> #{item} </foreach> </if> -->
@@ -1480,16 +1406,11 @@
 		FROM
 		trade_order_refunds tr
 		LEFT JOIN trade_order_refunds_item ri ON tr.id = ri.refunds_id
-		LEFT
-		JOIN trade_order trade ON trade.order_no = tr.order_no
-		LEFT JOIN
-		trade_order_item item ON trade.id = item.order_id
-		LEFT JOIN
-		trade_order_pay pay ON pay.order_id = trade.id
-		LEFT JOIN
-		trade_order_invoice i ON i.order_id = trade.id
-		LEFT JOIN sys_buyer_user
-		user ON tr.user_id = user.id
+		LEFT JOIN trade_order trade ON trade.order_no = tr.order_no
+		LEFT JOIN trade_order_item item ON trade.id = item.order_id
+		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
+		LEFT JOIN trade_order_invoice i ON i.order_id = trade.id
+		LEFT JOIN sys_buyer_user user ON tr.user_id = user.id
 		WHERE tr.id = #{refundId,jdbcType=VARCHAR}
 	</select>
 
@@ -1504,19 +1425,15 @@
 		trade_order_refunds_item roi
 		LEFT JOIN
 		trade_order_refunds r
-		ON r.id =
-		roi.refunds_id
+		ON r.id = roi.refunds_id
 		WHERE
 		r.store_id = #{storeId,jdbcType=VARCHAR}
-		AND
-		r.refunds_status = 6
+		AND r.refunds_status = 6
 		AND
 		r.payment_method = 4
-		AND r.refund_money_time
-		&gt; #{start,jdbcType=TIMESTAMP}
+		AND r.refund_money_time &gt; #{start,jdbcType=TIMESTAMP}
 		AND
-		r.refund_money_time &lt;=
-		#{end,jdbcType=TIMESTAMP}
+		r.refund_money_time &lt;= #{end,jdbcType=TIMESTAMP}
 	</select>
 
 	<!-- 线上支付退款统计 -->
@@ -1528,16 +1445,13 @@
 		trade_order_refunds_item roi
 		LEFT JOIN
 		trade_order_refunds r
-		ON r.id =
-		roi.refunds_id
+		ON r.id = roi.refunds_id
 		WHERE
 		r.store_id = #{storeId,jdbcType=VARCHAR}
-		AND
-		r.order_resource != 2
+		AND r.order_resource != 2
 		AND
 		r.refunds_status = 6
-		AND r.payment_method in
-		(0,1,2,3)
+		AND r.payment_method in (0,1,2,3)
 		AND
 		r.refund_money_time &gt; #{start,jdbcType=TIMESTAMP}
 		AND
@@ -1553,19 +1467,16 @@
 		trade_order_refunds_item roi
 		LEFT JOIN
 		trade_order_refunds r
-		ON r.id =
-		roi.refunds_id
+		ON r.id = roi.refunds_id
 		LEFT JOIN trade_order tt
 		ON tt.id = r.order_id
 		WHERE
 		r.store_id = #{storeId,jdbcType=VARCHAR}
-		AND r.order_resource != 2 AND
-		tt.pay_way
+		AND r.order_resource != 2 AND tt.pay_way
 		= 1
 		AND r.refunds_status = 6
 		AND r.payment_method = 4
-		AND
-		r.refund_money_time &gt; #{start,jdbcType=TIMESTAMP}
+		AND r.refund_money_time &gt; #{start,jdbcType=TIMESTAMP}
 		AND
 		r.refund_money_time &lt;= #{end,jdbcType=TIMESTAMP}
 	</select>
@@ -1579,12 +1490,10 @@
 		trade_order_refunds_item roi
 		LEFT JOIN
 		trade_order_refunds r
-		ON r.id =
-		roi.refunds_id
+		ON r.id = roi.refunds_id
 		WHERE
 		r.store_id = #{storeId,jdbcType=VARCHAR}
-		AND
-		r.order_resource = 2
+		AND r.order_resource = 2
 		AND
 		r.refunds_status = 6
 		AND r.payment_method = 4
@@ -1618,8 +1527,7 @@
 		FROM
 		trade_order_refunds r
 		WHERE
-		(r.refunds_status = 14 OR r.refunds_status =
-		12)
+		(r.refunds_status = 14 OR r.refunds_status = 12)
 		AND (r.payment_method = 1 OR
 		r.payment_method = 2)
 		AND r.type != 3
@@ -1644,8 +1552,7 @@
 	<select id="listForPos" resultMap="BaseResultMap">
 		select r.* from trade_order_refunds r
 		where r.disabled = 0
-		and
-		r.store_id = #{storeId}
+		and r.store_id = #{storeId}
 		and r.refunds_status in (6,11,13,14)
 		<if test="null != orderNo and '' != orderNo">
 			AND r.refund_no like CONCAT('%',#{orderNo},'%')
@@ -1688,47 +1595,33 @@
 		c.`name` AS threeCategory,
 		tori.sku_name AS skuName,
 		tori.bar_code AS barCode,
-		tori.style_code AS
-		styleCode,
+		tori.style_code AS styleCode,
 		tori.unit_price AS unitPrice,
-		IFNULL(tori.quantity,
-		tori.weight) AS quantity,
-		tori.unit_price * IFNULL(tori.quantity,
-		tori.weight) AS orderItemTotalAmount,
+		IFNULL(tori.quantity, tori.weight) AS quantity,
+		tori.unit_price * IFNULL(tori.quantity, tori.weight) AS orderItemTotalAmount,
 		u.login_name AS operator
-		FROM
-		trade_order_refunds_item tori
-		LEFT JOIN trade_order_refunds tor ON
-		tori.refunds_id = tor.id
-		LEFT JOIN trade_order_item toi ON
-		tori.order_item_id = toi.id
-		LEFT JOIN goods_store_sku sku ON
-		toi.store_sku_id = sku.id
-		LEFT JOIN goods_store_spu spu ON
-		sku.store_spu_id = spu.id
-		LEFT JOIN goods_spu_category c ON c.id =
-		spu.spu_category_id
+		FROM trade_order_refunds_item tori
+		LEFT JOIN trade_order_refunds tor ON tori.refunds_id = tor.id
+		LEFT JOIN trade_order_item toi ON tori.order_item_id = toi.id
+		LEFT JOIN goods_store_sku sku ON toi.store_sku_id = sku.id
+		LEFT JOIN goods_store_spu spu ON sku.store_spu_id = spu.id
+		LEFT JOIN goods_spu_category c ON c.id = spu.spu_category_id
 		LEFT JOIN sys_user u ON tor.operator = u.id
-		WHERE
-		tor.store_id = #{storeId,jdbcType=VARCHAR}
+		WHERE tor.store_id = #{storeId,jdbcType=VARCHAR}
 		AND tor.order_resource = 2
 		<if test="orderNo != null and orderNo != ''">
-			AND tor.order_no LIKE CONCAT('%',
-			#{orderNo,jdbcType=VARCHAR}, '%')
+			AND tor.order_no LIKE CONCAT('%', #{orderNo,jdbcType=VARCHAR}, '%')
 		</if>
 		<if test="skuName != null and skuName != ''">
-			AND EXISTS (SELECT 1 FROM trade_order_refunds_item rt
-			WHERE
+			AND EXISTS (SELECT 1 FROM trade_order_refunds_item rt WHERE
 			rt.refunds_id = tor.id AND rt.sku_name LIKE CONCAT('%',
 			#{skuName,jdbcType=VARCHAR}, '%'))
 		</if>
 		<if test="startCreateTime != null">
-			AND tor.create_time >=
-			#{startCreateTime,jdbcType=TIMESTAMP}
+			AND tor.create_time >= #{startCreateTime,jdbcType=TIMESTAMP}
 		</if>
 		<if test="endCreateTime != null">
-			AND tor.create_time &lt;=
-			#{endCreateTime,jdbcType=TIMESTAMP}
+			AND tor.create_time &lt;= #{endCreateTime,jdbcType=TIMESTAMP}
 		</if>
 		<if test="refundIds != null">
 			AND tor.id in
@@ -1766,8 +1659,7 @@
 			</foreach>
 		</if>
 		<if test="refundsStatus != null">
-			AND refunds.refunds_status =
-			#{refundsStatus,jdbcType=TINYINT}
+			AND refunds.refunds_status = #{refundsStatus,jdbcType=TINYINT}
 		</if>
 		<if test="paymentMethod != null">
 			AND refunds.payment_method IN
@@ -1804,11 +1696,9 @@
 		trade.order_no,
 		trade.user_phone,
 		pay.returns AS third_orderNo
-		FROM trade_order_refunds
-		refunds
+		FROM trade_order_refunds refunds
 		LEFT JOIN trade_order trade ON trade.id = refunds.order_id
-		LEFT
-		JOIN trade_order_pay pay ON pay.order_id = refunds.order_id
+		LEFT JOIN trade_order_pay pay ON pay.order_id = refunds.order_id
 		WHERE 1=1
 		<if test="type != null">
 			AND refunds.type IN
@@ -1841,8 +1731,7 @@
 			AND refunds.refund_no = #{refundNo,jdbcType=VARCHAR}
 		</if>
 		<if test="userPhone != null and userPhone != ''">
-			AND trade.user_phone LIKE CONCAT('%',
-			#{userPhone,jdbcType=VARCHAR},
+			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
 			'%')
 		</if>
 		<if test="startTime != null">
@@ -1865,14 +1754,12 @@
 		FROM
 		trade_order_refunds tr
 		LEFT JOIN
-		store_info ti ON tr.store_id =
-		ti.id
+		store_info ti ON tr.store_id = ti.id
 		LEFT JOIN trade_order_refunds_item
 		ri ON tr.id = ri.refunds_id
 		LEFT JOIN trade_order_pay pay ON
 		pay.order_id = tr.order_id
-		LEFT JOIN
-		sys_buyer_user user1 ON tr.user_id
+		LEFT JOIN sys_buyer_user user1 ON tr.user_id
 		= user1.id
 		WHERE
 		tr.disabled = 0
@@ -1916,33 +1803,4 @@
 	</select>
 	<!-- end add by zengjz 2016-09-14 添加退款单统计金额、数量 -->
 
-	<!-- add by zengjz 2016-9-24 根据用户id查询退款单列表,实物订单与到店消费订单 -->
-	<select id="getListByParams" resultMap="BaseResultMap"
-		parameterType="map">
-		SELECT
-		refunds.id,refunds.total_amount,refunds.refunds_status,refunds.refund_no,refunds.order_no,refunds.trade_num,
-		store.id as store_id,store.store_name,store.mobile as
-		store_mobile,store.area as store_area,store.address as store_address
-		FROM trade_order_refunds refunds
-		LEFT JOIN store_info store ON store.id = refunds.store_id
-		WHERE 1=1
-		<if test="userId != null and userId != ''">
-			AND refunds.user_id = #{userId,jdbcType=VARCHAR}
-		</if>
-		AND refunds.type in (0,5)
-		AND refunds.disabled = 0
-		AND refunds.is_show =1
-		ORDER BY refunds.create_time desc
-	</select>
-	
-	<select id="findStoreConsumeOrderDetailById" resultMap="BaseResultMap" parameterType="string">
-		SELECT
-		refunds.id,refunds.total_amount,refunds.total_preferential_price,refunds.refunds_status,refunds.refund_no,refunds.order_id,refunds.order_no,
-		refunds.trade_num,refunds.payment_method,refunds.create_time,refunds.refund_money_time,refunds.update_time,
-		store.id as store_id,store.store_name,store.mobile as
-		store_mobile,store.area as store_area,store.address as store_address
-		FROM trade_order_refunds refunds
-		LEFT JOIN store_info store ON store.id = refunds.store_id
-		WHERE  refunds.id = #{refundId,jdbcType=VARCHAR}
-	</select>	
 </mapper>
