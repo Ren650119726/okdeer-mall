@@ -456,7 +456,7 @@ public class TradeOrderCompleteProcessServiceImpl
 			// 退款单项ID
 			item.put("id", orderRefundsItem.getId());
 			// 订单ID
-			item.put("orderId", orderRefunds.getOrderId());
+			item.put("orderId", orderRefunds.getId());
 			// 序号
 			item.put("rowNo", i + 1);
 			// 标准商品库ID
