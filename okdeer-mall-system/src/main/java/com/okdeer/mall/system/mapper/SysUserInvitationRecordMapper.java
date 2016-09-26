@@ -2,6 +2,7 @@ package com.okdeer.mall.system.mapper;
 
 import java.util.List;
 
+import com.okdeer.mall.system.entity.SysUserInvitationRecord;
 import com.okdeer.mall.system.entity.SysUserInvitationRecordVo;
 import com.okdeer.base.dal.IBaseCrudMapper;
 
@@ -26,4 +27,20 @@ public interface SysUserInvitationRecordMapper extends IBaseCrudMapper {
 	 * @date 2016年9月20日
 	 */
 	List<SysUserInvitationRecordVo> findByQueryRecordVo(SysUserInvitationRecordVo invitationRecordVo);
+	
+	/**
+	 * @Description: 保存邀请记录
+	 * @param sysUserInvitationRecord  sysUserInvitationRecord
+	 * @author zhulq
+	 * @date 2016年9月26日
+	 */
+	void saveCodeRecord(SysUserInvitationRecord sysUserInvitationRecord);
+	
+	/**
+	 * @Description: 跟新记录信息
+	 * @param sysUserInvitationRecord  sysUserInvitationRecord
+	 * @author zhulq
+	 * @date 2016年9月26日
+	 */
+	void updateCodeRecord(SysUserInvitationRecord sysUserInvitationRecord);
 }
