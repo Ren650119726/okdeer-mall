@@ -236,6 +236,7 @@ import net.sf.json.JsonConfig;
  *   V1.1.0	            2016-9-12            zengjz             财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口  
  *   V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
  *   V1.1.0             2016-09-24           wusw               消费码验证（到店消费）相应方法
+ *   V1.1.0				2016-09-26			 luosm              查询商家版APP服务店到店消费订单信息
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
