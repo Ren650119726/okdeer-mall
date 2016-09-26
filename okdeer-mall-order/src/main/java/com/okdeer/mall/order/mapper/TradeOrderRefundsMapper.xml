@@ -1807,7 +1807,8 @@
 	<select id="getListByParams" resultMap="BaseResultMap"
 		parameterType="map">
 		SELECT
-		refunds.id,refunds.total_amount,refunds.refunds_status,refunds.refund_no,refunds.order_no,refunds.trade_num,
+		refunds.id,refunds.user_id, refunds.refunds_status,refunds.payment_method,refunds.type,refunds.total_amount,refunds.total_preferential_price,refunds.refund_no,refunds.order_id,refunds.order_no,
+		refunds.trade_num,refunds.create_time,refunds.refund_money_time,refunds.update_time,
 		store.id as store_id,store.store_name,store.mobile as
 		store_mobile,store.area as store_area,store.address as store_address
 		FROM trade_order_refunds refunds
@@ -1827,8 +1828,8 @@
 	<select id="findStoreConsumeOrderDetailById" resultMap="BaseResultMap"
 		parameterType="string">
 		SELECT
-		refunds.id,refunds.total_amount,refunds.total_preferential_price,refunds.refunds_status,refunds.refund_no,refunds.order_id,refunds.order_no,
-		refunds.trade_num,refunds.payment_method,refunds.create_time,refunds.refund_money_time,refunds.update_time,
+		refunds.id,refunds.user_id, refunds.refunds_status,refunds.payment_method,refunds.type,refunds.total_amount,refunds.total_preferential_price,refunds.refund_no,refunds.order_id,refunds.order_no,
+		refunds.trade_num,refunds.create_time,refunds.refund_money_time,refunds.update_time,
 		store.id as store_id,store.store_name,store.mobile as
 		store_mobile,store.area as store_area,store.address as store_address
 		FROM trade_order_refunds refunds
