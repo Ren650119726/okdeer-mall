@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRecord;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordServiceApi;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillRecordMapper;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
 

@@ -110,7 +110,7 @@ import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysMsgMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
-import com.okdeer.common.BaseResultDto;
+import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;

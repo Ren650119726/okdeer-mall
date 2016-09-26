@@ -8,8 +8,8 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.vo.MemberConsigneeAddressVo;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 

@@ -16,8 +16,8 @@ import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.order.vo.Discount;
 import com.okdeer.mall.order.vo.FullSubtract;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * 店铺活动mapper

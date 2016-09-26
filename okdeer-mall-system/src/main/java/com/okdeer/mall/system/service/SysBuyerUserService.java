@@ -3,9 +3,9 @@ package com.okdeer.mall.system.service;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysBuyerUserThirdparty;
 import com.okdeer.archive.system.entity.SysSmsVerifyCode;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.ca.api.buyeruser.entity.SysBuyerUserDto;
-import com.yschome.ca.api.common.ApiException;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.ca.api.buyeruser.entity.SysBuyerUserDto;
+import com.okdeer.ca.api.common.ApiException;
 
 /**
  * @DESC: 

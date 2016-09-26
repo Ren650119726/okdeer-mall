@@ -23,25 +23,25 @@
 			<artifactId>okdeer-mall-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com</groupId>
-			<artifactId>yscapi</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.yschome</groupId>
 			<artifactId>cloudy_file</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>com.yschome.base</groupId>
-			<artifactId>yschome-base-framework</artifactId>
+			<groupId>com.okdeer.ca</groupId>
+			<artifactId>okdeer-ca-api</artifactId>
+			<version>${ca.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.yschome.base</groupId>
-			<artifactId>yschome-base-manager</artifactId>
+			<groupId>com.okdeer.base</groupId>
+			<artifactId>okdeer-base-framework</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.yschome.base</groupId>
-			<artifactId>yschome-base-dal</artifactId>
+			<groupId>com.okdeer.base</groupId>
+			<artifactId>okdeer-base-manager</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.okdeer.base</groupId>
+			<artifactId>okdeer-base-dal</artifactId>
 		</dependency>
 
 		<dependency>

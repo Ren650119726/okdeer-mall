@@ -3,7 +3,7 @@ package com.okdeer.mall.order.mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 /**
  *订单与第三方手机充值平台关系Mapper
  * @project yschome-mall

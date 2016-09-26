@@ -1,6 +1,5 @@
 package com.okdeer.mall.order.service.impl;
 
-
 import static com.okdeer.common.consts.DescriptConstants.ACTIVITY_RECOMMEND_REQ_PARAM_ERROR;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY_TIPS;
@@ -67,7 +66,6 @@ import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
-import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
@@ -125,7 +123,6 @@ import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillMapper;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.consts.Constant;
-import com.okdeer.mall.common.dto.BaseResultDto;
 import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
@@ -237,7 +234,10 @@ import net.sf.json.JsonConfig;
  *    1.0.Z			    2016-09-05			 zengj			          增加订单操作记录        
  *    1.0.Z	            2016-09-07           zengj              库存管理修改，采用商业管理系统校验
  *   V1.1.0	            2016-9-12            zengjz             财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口  
+<<<<<<< HEAD
  *   V1.1.0             2016-9-24            zhaoqc             新增充值订单超时未支付订单取消
+=======
+>>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
  *   V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
  *   V1.1.0             2016-09-24           wusw               消费码验证（到店消费）相应方法
  */
@@ -521,6 +521,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Autowired
 	ActivityCouponsOrderRecordMapper activityCouponsOrderRecordMapper;
+	
+	// Begin add by wushp V1.1.0 20160923
+	/**
+	 * 物业缴费接口
+	 */
+	@Autowired
+	ICostPaymentServiceApi costPaymentServiceApi;
+	// end add by wushp V1.1.0 20160923
 	
 	// Begin V1.1.0 add by wusw 20160924
 	/**

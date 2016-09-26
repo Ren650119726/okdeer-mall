@@ -106,16 +106,16 @@
 		<include refid="tableName" />
 		left join <include refid="sysUser"/> ON suic.sys_user_id=suser.id
 		left join <include refid="sysBuyerUser"/> ON suic.sys_buyer_user_id=buser.id
-		where 1=1
+		where suic.invitation_user_num > 0
 		<if test="ids != null">
 			AND suic.id  in 
 		    <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">  
 	            #{item}   
 	        </foreach>
 		</if>
-	<!-- 	<if test="ids == null">
+	 	<if test="ids == null">
 			<include refid="condition" />
-		</if> -->
+		</if> 
 		order by suic.invitation_user_num desc,suic.first_order_user_num desc,suic.create_time desc 
 	</select>
 	<!-- 根据参数获取信息 end -->

@@ -40,7 +40,7 @@
 		<result column="delivery_time" property="deliveryTime"
 			jdbcType="TIMESTAMP" />
 		<result column="disabled" property="disabled" jdbcType="TINYINT"
-			javaType="com.yschome.base.common.enums.Disabled" />
+			javaType="com.okdeer.base.common.enums.Disabled" />
 
 		<!-- 店铺信息 zhongy -->
 		<association property="storeInfo"

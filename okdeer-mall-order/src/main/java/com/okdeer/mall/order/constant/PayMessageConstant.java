@@ -4,6 +4,10 @@
  * @文件名称: OrderMessageConstant.java 
  * @Date: 2016年3月2日 
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的 
+ *  =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *     v1.1.0            2016-9-24          wusw			  云钱包解冻金额修改
  */
 
 package com.okdeer.mall.order.constant;
@@ -113,5 +117,20 @@ public interface PayMessageConstant {
 	 * 财务退款通知tag（取消的订单）
 	 */
 	String TAG_REFUSE_REFUND_RESULT = "tag_refuse_refund_result";
+	
+	
+	
+	
+	/*********************************start  云钱包冻结金额修改通知********************************/
+	/**
+	 * 云钱包冻结金额修改topic
+	 */
+	String TOPIC_BALANCE_CHANGE = "topic_balance_change";
+	
+	/**
+	 * 云钱包冻结金额修改tag
+	 */
+	String TAG_BALANCE_CHANGE = "tag_balance_change";
+	/*********************************end  云钱包解冻金额通知********************************/
 
 }

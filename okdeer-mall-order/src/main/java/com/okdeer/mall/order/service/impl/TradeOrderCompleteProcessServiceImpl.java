@@ -36,6 +36,7 @@ import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
@@ -46,8 +47,9 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessServiceApi;
 import com.okdeer.mall.order.utils.OrderNoUtils;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -103,6 +105,18 @@ public class TradeOrderCompleteProcessServiceImpl
 	/** * A：销售单、B：退货单 */
 	private static final String ORDER_TYPE_B = "B";
 
+	/** * pos支付方式:现金 */
+	private static final String CASH = "现金";
+
+	/** * pos支付方式:银联卡 */
+	private static final String UNITCARD = "银联卡";
+
+	/** * pos支付方式:支付宝 */
+	private static final String APLIPAY = "支付宝";
+
+	/** * pos支付方式:微信 */
+	private static final String WECHATPAY = "微信";
+
 	/**
 	 * 
 	 * @Description: 订单完成时发送MQ消息同步到商业管理系统
@@ -135,6 +149,34 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 线上支付才有支付信息
 		if (tradeOrder.getPayWay() == PayWayEnum.PAY_ONLINE) {
 			tradeOrderPay = tradeOrderPayMapper.selectByOrderId(orderId);
+		} else {
+			// 如果不是线上支付。新建一个支付实例
+			tradeOrderPay = new TradeOrderPay();
+			// 支付创建时间取下单时间
+			tradeOrderPay.setCreateTime(tradeOrder.getCreateTime());
+			// 支付时间取下单时间
+			tradeOrderPay.setPayTime(tradeOrder.getPaymentTime());
+			// 支付金额取用户实付金额
+			tradeOrderPay.setPayAmount(tradeOrder.getActualAmount());
+			switch (tradeOrder.getPospay()) {
+				case CASH:
+					tradeOrderPay.setPayType(PayTypeEnum.CASH);
+					break;
+				case UNITCARD:
+					tradeOrderPay.setPayType(PayTypeEnum.ONLINE_BANK);
+					break;
+				case APLIPAY:
+					tradeOrderPay.setPayType(PayTypeEnum.ALIPAY);
+					break;
+				case WECHATPAY:
+					tradeOrderPay.setPayType(PayTypeEnum.WXPAY);
+					break;
+				default:
+					tradeOrderPay.setPayType(PayTypeEnum.CASH);
+					break;
+			}
+			tradeOrderPay.setId(UuidUtils.getUuid());
+			tradeOrderPay.setOrderId(tradeOrder.getId());
 		}
 
 		// 订单信息
@@ -249,6 +291,17 @@ public class TradeOrderCompleteProcessServiceImpl
 		orderInfo.put("createrId", order.getCreateUserId());
 		// 创建时间
 		orderInfo.put("createTime", order.getCreateTime());
+		// 进销存那边的优惠类型0:无活动 ;1：代金券；2：其他
+		int activityType = 0;
+		// 活动类型为代金券活动
+		if (order.getActivityType() == ActivityTypeEnum.VONCHER) {
+			activityType = 1;
+		} else if (order.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
+				&& order.getIncome().compareTo(order.getActualAmount()) != 0) {
+			// 活动类型为满减活动且店家收入不等于用户实付，说明里面有平台的补贴
+			activityType = 2;
+		}
+		orderInfo.put("activityType", activityType);
 		return orderInfo;
 	}
 

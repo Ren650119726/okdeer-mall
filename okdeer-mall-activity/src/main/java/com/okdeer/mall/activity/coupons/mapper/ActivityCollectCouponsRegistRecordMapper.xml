@@ -55,8 +55,9 @@
 	  LEFT JOIN activity_collect_coupons B ON A.activity_id = B.id
 	  LEFT JOIN sys_buyer_user C ON C.id = A.user_id
 	  where 1 = 1
-	 <include refid="condition1" />
-	 ORDER BY 
+	  <include refid="condition1" /> 
+	  GROUP BY a.activity_id,a.user_id
+	  ORDER BY 
 		B.start_time DESC, invite_num DESC	  
    </select> 	
    
@@ -65,12 +66,16 @@
 	SELECT A.id,
 		A.activity_id, 
 		A.user_id,  
+		B.name AS activity_name, 
+		B.start_time as begin_time, 
+		B.end_time as end_time,
 		C.login_name AS invite_login_name,
 		D.login_name AS be_invite_login_name,
 		A.create_time,
 		A.finish_order_time,
 		A.machine_code
 	  FROM activity_collect_coupons_regist_record A 
+	  LEFT JOIN activity_collect_coupons B ON A.activity_id = B.id
 	  LEFT JOIN sys_buyer_user C ON C.id = A.user_id
 	  LEFT JOIN sys_buyer_user D ON D.id = A.invite_id
 	  where 1 = 1
@@ -87,7 +92,7 @@
 		B.start_time DESC  
    </select> 
       
-   <select id="findByUserId" parameterType="java.lang.String" resultMap="extResultMap">
+   <select id="findByUserId" parameterType="string" resultMap="extResultMap">
 	  SELECT A.id,
 		A.activity_id, 
 		A.user_id,  
@@ -100,8 +105,8 @@
 	  LEFT JOIN sys_buyer_user C ON C.id = A.user_id
 	  LEFT JOIN sys_buyer_user D ON D.id = A.invite_id
 	  where 1 = 1
-	  <if test="userId != null and userId != ''">
-            AND A.user_id = #{userId,jdbcType=VARCHAR}
+	  <if test="userQueryId != null and userQueryId != ''">
+            AND A.user_id = #{userQueryId}
       </if>
 	  ORDER BY 
 		A.create_time 

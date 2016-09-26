@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.rocketmq.common.message.Message;
 import com.google.common.base.Charsets;
-import com.yschome.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.mall.order.timer.constant.TimerMessageConstant;
 import com.okdeer.mall.system.utils.mapper.JsonMapper;
 

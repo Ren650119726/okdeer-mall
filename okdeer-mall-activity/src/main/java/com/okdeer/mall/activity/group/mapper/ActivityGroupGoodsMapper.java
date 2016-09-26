@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.goods.spu.vo.ActivityGroupGoodsVo;
 import com.okdeer.mall.activity.group.entity.ActivityGroupGoods;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * 

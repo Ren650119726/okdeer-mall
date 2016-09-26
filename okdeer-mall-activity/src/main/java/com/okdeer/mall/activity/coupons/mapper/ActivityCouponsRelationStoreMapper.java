@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRelationStore;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * 代金卷管理店铺

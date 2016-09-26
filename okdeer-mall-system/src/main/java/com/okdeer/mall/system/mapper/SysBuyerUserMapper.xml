@@ -24,7 +24,7 @@
     <result column="description" property="description" jdbcType="VARCHAR" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
-    <result column="disabled" property="disabled" javaType="com.yschome.base.common.enums.Disabled" jdbcType="TINYINT" />
+    <result column="disabled" property="disabled" javaType="com.okdeer.base.common.enums.Disabled" jdbcType="TINYINT" />
     <result column="profession" property="profession" jdbcType="VARCHAR" />
   </resultMap>
   

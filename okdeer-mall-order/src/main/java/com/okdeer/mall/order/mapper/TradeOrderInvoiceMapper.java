@@ -3,7 +3,7 @@ package com.okdeer.mall.order.mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 

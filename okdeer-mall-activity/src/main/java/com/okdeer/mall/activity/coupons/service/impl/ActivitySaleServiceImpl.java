@@ -32,10 +32,9 @@ import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
-import com.yschome.api.ims.service.StockOperaterService;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 
 /**
  * 
@@ -63,8 +62,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 
-	@Reference
-	private StockOperaterService stockOperaterService;
 
 	// @Reference(version = "1.0.0", check = false)
 	// private StockManagerServiceApi stockManagerServiceApi;
@@ -83,13 +80,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Autowired
 	RollbackMQProducer rollbackMQProducer;
 
-	public StockOperaterService getStockOperaterService() {
-		return stockOperaterService;
-	}
-
-	public void setStockOperaterService(StockOperaterService stockOperaterService) {
-		this.stockOperaterService = stockOperaterService;
-	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -99,6 +89,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		try {
 			// 先保存特惠主对象
 			activitySaleMapper.save(activitySale);
+			// 库存同步--库存出错的几率更大。先处理库存
+			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
+					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 			// 再保存特惠商品列表
 			for (ActivitySaleGoods a : asgList) {
 				a.setDisabled(Disabled.valid);
@@ -131,9 +124,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 			}
 			activitySaleGoodsMapper.saveBatch(asgList);
-			// 库存同步
-			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
-					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
+
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);

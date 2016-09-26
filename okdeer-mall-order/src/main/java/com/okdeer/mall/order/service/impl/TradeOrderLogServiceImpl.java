@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.service.TradeOrderLogServiceApi;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 

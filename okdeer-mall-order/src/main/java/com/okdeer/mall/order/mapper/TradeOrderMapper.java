@@ -9,9 +9,11 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
+import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
@@ -23,7 +25,6 @@ import com.okdeer.mall.order.vo.TradeOrderStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderVo;
 import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
 import com.okdeer.mall.order.vo.UserTradeServiceOrderVo;
-import com.yschome.base.common.exception.ServiceException;
 
 /**
  * @DESC: 
@@ -42,6 +43,8 @@ import com.yschome.base.common.exception.ServiceException;
  *    重构4.1            2016-7-29            wusw                添加服务店订单详情查询（商城后台）
  *    重构4.1            2016-7-30            zhaoqc              添加根据订单状态查询订单列表
  *    v1.1.0            2016-9-17            zengjz              添加财务系统统计接口
+ *    V1.1.0			2016-9-23 			 zengjz				 增加查询到店消费订单列表
+ *    V1.1.0            2016-09-23           wusw                添加消费码验证（到店消费）相应方法
  */
 public interface TradeOrderMapper {
 
@@ -974,4 +977,45 @@ public interface TradeOrderMapper {
 	Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params);
 	
 	// end v1.1.0 add by zengjz
+	
+	// Begin v1.1.0 add by zengjz 增加查询到店消费列表
+	/**
+	 * @Description: 增加查询到店消费方法
+	 * @param map
+	 * @return   
+	 * @return List<TradeOrder>  
+	 * @throws
+	 * @author zengjizu
+	 * @date 2016年9月22日
+	 */
+	List<TradeOrder> selectStoreConsumeOrderList(Map<String, Object> map);
+	
+	// End v1.1.0 add by zengjz 增加查询到店消费列表
+	
+	// Begin V1.1.0 add by wusw 20160923
+	/**
+	 * 
+	 * @Description: 批量根据订单id，修改订单消费码状态
+	 * @param status 消费码状态
+	 * @param updateTime 更新时间
+	 * @param ids 订单id集合
+	 * @return 更新结果
+	 * @author wusw
+	 * @date 2016年9月23日
+	 */
+	int updateConsumerStatusByIds(@Param("status")ConsumerCodeStatusEnum status,@Param("updateTime")Date updateTime,@Param("ids")List<String> ids);
+	// End V1.1.0 add by wusw 20160923
+	
+	
+	// Begin V1.1.0 add by zengjz 20160923
+	/**
+	 * @Description: 查询到店消费订单详情
+	 * @param orderId 订单id
+	 * @return 订单详情 
+	 * @author zengjizu
+	 * @date 2016年9月23日
+	 */
+	UserTradeOrderDetailVo findStoreConsumeOrderById(String orderId);
+	
+	// End V1.1.0 add by zengjz 20160923
 }

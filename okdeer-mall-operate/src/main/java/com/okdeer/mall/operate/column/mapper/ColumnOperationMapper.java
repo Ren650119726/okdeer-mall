@@ -13,8 +13,8 @@ import com.okdeer.mall.operate.entity.ColumnOperationQueryVo;
 import com.okdeer.mall.operate.entity.ColumnOperationVo;
 import com.okdeer.mall.operate.enums.ColumnOperationType;
 import com.okdeer.mall.operate.enums.State;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 运营栏目mapper

@@ -26,8 +26,8 @@ import com.okdeer.mall.activity.group.mapper.ActivityGroupGoodsMapper;
 import com.okdeer.mall.activity.group.mapper.ActivityGroupMapper;
 import com.okdeer.mall.activity.group.service.ActivityGroupGoodsService;
 import com.okdeer.mall.activity.group.service.ActivityGroupGoodsServiceApi;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * 

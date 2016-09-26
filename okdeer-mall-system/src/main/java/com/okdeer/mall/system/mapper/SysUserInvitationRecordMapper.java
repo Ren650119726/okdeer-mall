@@ -3,7 +3,7 @@ package com.okdeer.mall.system.mapper;
 import java.util.List;
 
 import com.okdeer.mall.system.entity.SysUserInvitationRecordVo;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * ClassName: SysUserInvitationRecordMapper 
@@ -16,7 +16,7 @@ import com.yschome.base.dal.IBaseCrudMapper;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构4.1			 2016年9月19日 			zhulq
  */
-public interface SysUserInvitationRecordMapper extends IBaseCrudMapper{
+public interface SysUserInvitationRecordMapper extends IBaseCrudMapper {
 
 	/**
 	 * @Description: 获取邀请码记录列表

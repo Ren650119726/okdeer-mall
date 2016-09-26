@@ -10,7 +10,7 @@
     <result column="remark" property="remark" jdbcType="VARCHAR" />
     <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.DisputeStatusEnum"/>
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
-    <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.yschome.base.common.enums.Disabled"/>
+    <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled"/>
   </resultMap>
   <sql id="Base_Column_List" >
     id, user_id, store_id, dispute_no, refunds_id,remark, status, create_time, disabled

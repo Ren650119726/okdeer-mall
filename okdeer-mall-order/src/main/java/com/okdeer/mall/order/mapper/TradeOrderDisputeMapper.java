@@ -1,7 +1,7 @@
 package com.okdeer.mall.order.mapper;
 
 import com.okdeer.mall.order.entity.TradeOrderDispute;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 

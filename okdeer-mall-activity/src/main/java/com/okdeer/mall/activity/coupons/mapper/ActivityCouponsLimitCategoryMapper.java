@@ -4,7 +4,7 @@ package com.okdeer.mall.activity.coupons.mapper;
 import java.util.List;
 
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsLimitCategory;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * 代金卷关联类目表 
