@@ -4645,7 +4645,7 @@
 		parameterType="map">
 		SELECT store.id as store_id,store.store_name,
 		o.id,o.order_no,o.status,o.remark,o.total_amount,o.trade_num,o.user_id,o.actual_amount,o.preferential_price,o.fare,
-		o.pick_up_type,o.pick_up_time,o.create_time
+		o.pick_up_type,o.pick_up_time,o.create_time,o.consumer_code_status
 		FROM trade_order o
 		LEFT JOIN store_info store ON o.store_id = store.id
 		WHERE 1=1
@@ -4689,7 +4689,7 @@
 		parameterType="java.lang.String">
 		SELECT
 		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,
-		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,
+		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,o.consumer_code_status,
 		pay.pay_type,pay.pay_amount,pay.pay_time,
 		TIMESTAMPDIFF(SECOND,DATE_FORMAT(NOW(),'%Y-%m-%d
 		%H:%i:%s'),o.create_time) AS remaining_time,
