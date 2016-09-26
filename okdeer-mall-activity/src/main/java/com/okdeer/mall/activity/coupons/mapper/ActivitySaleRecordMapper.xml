@@ -9,7 +9,7 @@
     <result column="user_id" property="userId" jdbcType="VARCHAR" />
     <result column="sale_id" property="saleId" jdbcType="VARCHAR" />
     <result column="order_id" property="orderId" jdbcType="VARCHAR" />
-    <result column="order_disabled" property="orderDisabled" javaType="com.yschome.base.common.enums.Disabled" jdbcType="TINYINT"/>
+    <result column="order_disabled" property="orderDisabled" javaType="com.okdeer.base.common.enums.Disabled" jdbcType="TINYINT"/>
   </resultMap>
   
   <!-- 查询字段 -->

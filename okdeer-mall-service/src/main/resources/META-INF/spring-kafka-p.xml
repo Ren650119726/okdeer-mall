@@ -6,7 +6,7 @@
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 	<bean id="kafkaProducer"
-		class="com.yschome.base.kafka.producer.KafkaProducer"
+		class="com.okdeer.base.kafka.producer.KafkaProducer"
 		init-method="init" destroy-method="destroy">
 		<property name="prop">
 			<map>

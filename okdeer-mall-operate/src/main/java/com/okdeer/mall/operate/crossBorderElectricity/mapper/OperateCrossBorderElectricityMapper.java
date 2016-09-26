@@ -7,8 +7,8 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import com.okdeer.mall.operate.entity.OperateCrossBorderElectricity;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 跨境电商设置mapper

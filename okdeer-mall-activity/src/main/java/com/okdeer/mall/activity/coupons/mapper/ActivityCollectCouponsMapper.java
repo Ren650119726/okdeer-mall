@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -157,4 +158,16 @@ public interface ActivityCollectCouponsMapper {
 	 * @date 2016年9月14日
 	 */
 	List<ActivityCoupons> findCouponsByParams(Map<String,Object> map);
+	
+	// begin add by wushp V1.1.0 20160923
+	/**
+	 * 
+	 * @Description: 消费返券：活动代金券查询
+	 * @param map 参数map
+	 * @return list
+	 * @author wushp
+	 * @date 2016年9月23日
+	 */
+	List<ActivityCollectCouponsOrderVo> findCollCouponsLinks(Map<String,Object> map);
+	// end add by wushp V1.1.0 20160923
 }

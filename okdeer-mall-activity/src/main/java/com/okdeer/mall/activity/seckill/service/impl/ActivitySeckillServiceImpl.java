@@ -43,9 +43,9 @@ import com.okdeer.mall.activity.seckill.vo.ActivitySeckillListPageVo;
 import com.okdeer.mall.activity.seckill.vo.ActivitySeckillQueryFilterVo;
 import com.okdeer.mall.common.enums.RangeTypeEnum;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 
 /**
  * ClassName: ActivitySeckillServiceImpl 

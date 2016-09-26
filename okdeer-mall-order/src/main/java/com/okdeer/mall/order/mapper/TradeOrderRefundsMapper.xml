@@ -40,7 +40,7 @@
 		<result column="delivery_time" property="deliveryTime"
 			jdbcType="TIMESTAMP" />
 		<result column="disabled" property="disabled" jdbcType="TINYINT"
-			javaType="com.yschome.base.common.enums.Disabled" />
+			javaType="com.okdeer.base.common.enums.Disabled" />
 
 		<!-- 店铺信息 zhongy -->
 		<association property="storeInfo"
@@ -1802,5 +1802,38 @@
 		AND tr.type != 3 AND tr.type != 4
 	</select>
 	<!-- end add by zengjz 2016-09-14 添加退款单统计金额、数量 -->
+	
+	<!-- add by zengjz 2016-9-24 根据用户id查询退款单列表,实物订单与到店消费订单 -->
+	<select id="getListByParams" resultMap="BaseResultMap"
+		parameterType="map">
+		SELECT
+		refunds.id,refunds.total_amount,refunds.refunds_status,refunds.refund_no,refunds.order_no,refunds.trade_num,
+		store.id as store_id,store.store_name,store.mobile as
+		store_mobile,store.area as store_area,store.address as store_address
+		FROM trade_order_refunds refunds
+		LEFT JOIN store_info store ON store.id
+		= refunds.store_id
+		WHERE 1=1
+		<if test="userId != null and userId != ''">
+			AND refunds.user_id = #{userId,jdbcType=VARCHAR}
+		</if>
+		AND refunds.type in (0,5)
+		AND refunds.disabled = 0
+		AND refunds.is_show
+		=1
+		ORDER BY refunds.create_time desc
+	</select>
 
+	<select id="findStoreConsumeOrderDetailById" resultMap="BaseResultMap"
+		parameterType="string">
+		SELECT
+		refunds.id,refunds.total_amount,refunds.total_preferential_price,refunds.refunds_status,refunds.refund_no,refunds.order_id,refunds.order_no,
+		refunds.trade_num,refunds.payment_method,refunds.create_time,refunds.refund_money_time,refunds.update_time,
+		store.id as store_id,store.store_name,store.mobile as
+		store_mobile,store.area as store_area,store.address as store_address
+		FROM trade_order_refunds refunds
+		LEFT JOIN store_info store ON store.id
+		= refunds.store_id
+		WHERE refunds.id = #{refundId,jdbcType=VARCHAR}
+	</select>
 </mapper>

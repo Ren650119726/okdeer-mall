@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.order.entity.TradeOrderComplainImage;
 import com.okdeer.mall.order.service.TradeOrderComplainImageServiceApi;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.mapper.TradeOrderComplainImageMapper;
 import com.okdeer.mall.order.service.TradeOrderComplainImageService;
 

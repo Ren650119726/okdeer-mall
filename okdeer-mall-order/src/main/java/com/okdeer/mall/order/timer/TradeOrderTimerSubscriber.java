@@ -44,10 +44,10 @@ import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.vo.TradeOrderCommentVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
-import com.yschome.base.common.constant.LoggerConstants;
-import com.yschome.base.common.enums.WhetherEnum;
-import com.yschome.base.common.utils.UuidUtils;
-import com.yschome.base.framework.mq.AbstractRocketMQSubscriber;
+import com.okdeer.base.common.constant.LoggerConstants;
+import com.okdeer.base.common.enums.WhetherEnum;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.service.GenerateNumericalService;
@@ -189,6 +189,8 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				return processRefundConfirmTimeout(content, tag);
 			case tag_service_order_refund_timeout:
 				return processServiceRefundTimeout(content, tag);
+			case tag_recharge_pay_timeout:
+			    return processRechargePayTimeout(content, tag);
 			default:
 				break;
 		}
@@ -219,6 +221,32 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 	}
 
+	/**
+	 * 充值订单未支付超时处理
+	 */
+	public ConsumeConcurrentlyStatus processRechargePayTimeout(String content, Tag tag) {
+	    TimeoutMessage timeoutMsg = JsonMapper.nonEmptyMapper().fromJson(content, TimeoutMessage.class);
+	    try {
+	        TradeOrder order = tradeOrderService.selectById(timeoutMsg.getKey());
+	        if (order == null) {
+	            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+	        }
+	        
+	        if(order.getStatus() == OrderStatusEnum.UNPAID) {
+	            logger.info("订单支付超时取消订单，订单号：" + order.getOrderNo());
+	            order.setUpdateTime(new Date());
+	            order.setUpdateUserId(RobotUserUtil.getRobotUser().getId());
+	            order.setReason("充值订单支付超时，系统取消订单");
+	            
+	            this.tradeOrderService.updateCancelRechargeOrder(order);
+	        }
+        } catch (Exception e) {
+            logger.error("充值订单支付超时取消订单异常", e);
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+        }
+	    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+	}
+	
 	/**
 	 * 发货超时
 	 * 

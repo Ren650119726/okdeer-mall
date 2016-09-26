@@ -40,10 +40,10 @@ import com.okdeer.mall.activity.group.service.ActivityGroupService;
 import com.okdeer.mall.activity.group.service.ActivityGroupServiceApi;
 import com.okdeer.mall.common.entity.TreeVo;
 import com.okdeer.mall.system.mapper.SysUserMapper;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 
 import net.sf.json.JSONObject;
 

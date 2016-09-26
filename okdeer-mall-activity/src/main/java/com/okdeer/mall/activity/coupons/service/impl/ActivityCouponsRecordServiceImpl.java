@@ -11,8 +11,6 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +21,13 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Maps;
+import com.okdeer.api.pay.account.dto.PayUpdateAmountDto;
+import com.okdeer.api.pay.common.dto.BaseResultDto;
+import com.okdeer.api.pay.service.IPayTradeServiceApi;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -33,18 +38,14 @@ import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
-import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
-import com.yschome.api.pay.account.dto.PayUpdateAmountDto;
-import com.yschome.api.pay.service.IPayTradeServiceApi;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.DateUtils;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.common.utils.UuidUtils;
-import com.yschome.common.BaseResultDto;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
+import com.okdeer.mall.order.vo.RechargeCouponVo;
+
+import net.sf.json.JSONObject;
 
 /**
  * @DESC: 活动代金券记录
@@ -478,4 +479,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		return activityCouponsRecordMapper.findStatusCountByUserId(userId);
 	}
 	//end add by wushp 20160919 V1.1.0
+
+    @Override
+    public List<RechargeCouponVo> findValidRechargeCoupons(Map<String, Object> params) {
+        return activityCouponsRecordMapper.findValidRechargeCoupons(params);
+    }
 }

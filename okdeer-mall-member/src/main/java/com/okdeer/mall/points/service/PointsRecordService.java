@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.okdeer.mall.member.points.entity.PointsRecord;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * 用户积分变动记录service

@@ -19,11 +19,11 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.mall.operate.entity.OperateCrossBorderElectricity;
 import com.okdeer.mall.operate.service.IOperateCrossBorderElectricityServiceApi;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.common.utils.StringUtils;
-import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.operate.crossBorderElectricity.mapper.OperateCrossBorderElectricityMapper;
 import com.okdeer.mall.operate.crossBorderElectricity.service.OperateCrossBorderElectricityService;
 

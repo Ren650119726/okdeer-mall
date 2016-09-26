@@ -2,9 +2,7 @@ package com.okdeer.mall.activity.coupons.service.impl;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -19,13 +17,22 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.api.pay.account.dto.PayUpdateAmountDto;
+import com.okdeer.api.pay.common.dto.BaseResultDto;
+import com.okdeer.api.pay.service.IPayAccountServiceApi;
+import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.archive.system.entity.PsmsAgent;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.IPsmsAgentServiceApi;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCommunity;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectOrderType;
@@ -36,16 +43,6 @@ import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsStatus;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsType;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
-import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi;
-import com.okdeer.mall.common.enums.AreaType;
-import com.yschome.api.pay.account.dto.PayUpdateAmountDto;
-import com.yschome.api.pay.service.IPayAccountServiceApi;
-import com.yschome.api.pay.service.IPayTradeServiceApi;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.DateUtils;
-import com.yschome.base.common.utils.PageUtils;
-import com.yschome.base.common.utils.UuidUtils;
-import com.yschome.common.BaseResultDto;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectAreaMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCommunityMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
@@ -53,9 +50,11 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCollectOrderTypeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
+import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi;
+import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.system.mapper.SysUserMapper;
-import com.yschome.mcm.entity.SmsVO;
-import com.yschome.mcm.service.ISmsService;
+import com.okdeer.mcm.entity.SmsVO;
+import com.okdeer.mcm.service.ISmsService;
 
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi")
 public class ActivityCollectCouponsServiceImpl
@@ -334,15 +333,15 @@ public class ActivityCollectCouponsServiceImpl
 		map.put("activityId", activityCollectCoupons.getId());
 		activityCouponsMapper.updateBatchActivityId(map);
 
+		// 先删除老记录
+		activityCollectAreaMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
+		
 		if(activityCollectCoupons.getType() == ActivityCollectCouponsType.OPEN_DOOR.getValue() ||
 				   activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue() ||	
 				   activityCollectCoupons.getType() == ActivityCollectCouponsType.get.getValue()){
 			// 代金卷范围类型：0全国，1区域，2小区 , 3店铺
 			// 如果是区域
 			if (activityCollectCoupons.getAreaType() == 1) {
-
-				// 先删除老记录
-				activityCollectAreaMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
 
 				// 批量添加新记录
 				String[] array = areaIds.split(",");
@@ -362,9 +361,6 @@ public class ActivityCollectCouponsServiceImpl
 			// 如果是小区
 			if (activityCollectCoupons.getAreaType() == 2) {
 
-				// 先删除老记录
-				activityCollectCommunityMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
-
 				// 批量添加新记录
 				String[] array = areaIds.split(",");
 				List<ActivityCollectCommunity> areaList = new ArrayList<ActivityCollectCommunity>();
@@ -379,11 +375,12 @@ public class ActivityCollectCouponsServiceImpl
 			}
 		}
 		
+		//先删掉老数据
+		activityCollectOrderTypeMapper.deleteOrderTypeByCollectCouponsId(activityCollectCoupons.getId());
+		
 		//批量插入ActivityCollectOrderType表
 		if(activityCollectCoupons.getOrderTypes() != null && 
 				activityCollectCoupons.getOrderTypes().length > 0){
-			//先删掉老数据
-			activityCollectOrderTypeMapper.deleteOrderTypeByCollectCouponsId(activityCollectCoupons.getId());
 			
 			List<ActivityCollectOrderType> otList = new ArrayList<ActivityCollectOrderType>();
 			for(String orderTypeId : activityCollectCoupons.getOrderTypes()){
@@ -664,4 +661,8 @@ public class ActivityCollectCouponsServiceImpl
 		return activityCollectOrderTypeMapper.findOrderTypeListByCollectCouponsId(collectCouponsId);
 	}
 	
+	@Override
+	public List<ActivityCollectCouponsOrderVo> findCollCouponsLinks(Map<String, Object> map) throws ServiceException {
+		return activityCollectCouponsMapper.findCollCouponsLinks(map);
+	}
 }

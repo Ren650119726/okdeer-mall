@@ -8,7 +8,7 @@
         <result column="goods_store_sku_id" property="goodsStoreSkuId" jdbcType="VARCHAR" javaType="string"/>
         <result column="sort" property="sort" javaType="INTEGER"/>
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="date"/>
-        <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.yschome.base.common.enums.Disabled"/>
+        <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled"/>
     </resultMap>
     
     <!-- 精选活动列表查询结果Map add by lijun 20160719 -->

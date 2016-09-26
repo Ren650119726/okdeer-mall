@@ -12,8 +12,8 @@ import java.util.List;
 
 import com.okdeer.mall.order.entity.TradeOrderComment;
 import com.okdeer.mall.order.vo.TradeOrderCommentVo;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * 商品评论接口

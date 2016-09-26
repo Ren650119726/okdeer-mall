@@ -10,8 +10,8 @@
     </settings>
 
     <typeHandlers>
-        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.yschome.base.common.enums.WhetherEnum"/>
-        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.yschome.base.common.enums.Disabled"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.base.common.enums.WhetherEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.base.common.enums.Disabled"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.UserType"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.AreaType"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.DistrictType"/>
@@ -63,9 +63,6 @@
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderStatusEnum"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderType"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.OrderTypeEnum"/>
-        <!-- Begin added by maojj 2016-08-22 Bug:13044 -->
-        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.yschome.api.mall.enums.order.OrderTypeEnum"/>
-        <!-- Begin added by maojj 2016-08-22 -->
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PaymentStatusEnum"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PayTypeEnum"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PayWayEnum"/>
@@ -104,6 +101,9 @@
    		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.MsgType"/>
    		
    		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.archive.goods.store.enums.IsShopNum"/>
-   
+   	    <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.system.enums.InvitationUserType"/>
+   	    <!-- Begin added by zengjz 2016-09-22 增加消费码状态 -->
+   		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.ConsumerCodeStatusEnum"/>
+   		<!-- End added by zengjz 2016-09-22 增加消费码状态 -->
     </typeHandlers>
 </configuration>

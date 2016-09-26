@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.vo.TradeOrderItemDetailVo;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * @DESC: 

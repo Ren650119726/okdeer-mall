@@ -13,7 +13,7 @@ import com.google.common.base.Charsets;
 import com.okdeer.archive.stock.consts.StockConstants;
 import com.okdeer.archive.stock.exception.StockException;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
-import com.yschome.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.mall.system.factory.MessageFactory;
 
 /**

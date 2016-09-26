@@ -31,8 +31,8 @@ import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
-import com.yschome.base.common.utils.UuidUtils;
-import com.yschome.base.framework.mq.AbstractRocketMQSubscriber;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 
 /**
  * pos支付支付结果消息订阅处理

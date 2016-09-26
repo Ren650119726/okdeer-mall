@@ -11,8 +11,8 @@ package com.okdeer.mall.points.service;
 import java.util.List;
 
 import com.okdeer.mall.member.points.entity.PointsRule;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * 积分规则service

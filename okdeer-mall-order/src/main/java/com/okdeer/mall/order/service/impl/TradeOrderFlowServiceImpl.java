@@ -104,7 +104,6 @@ import com.okdeer.mall.order.service.TradeOrderFlowService;
 import com.okdeer.mall.order.service.TradeOrderFlowServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.order.utils.CalculateOrderStock;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.utils.DiscountCalculate;
 import com.okdeer.mall.order.utils.OrderItem;
@@ -128,9 +127,9 @@ import com.okdeer.mall.system.mq.StockMQProducer;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 import com.qiniu.util.Auth;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.yschome.file.FileUtil;
 
 import net.sf.json.JSONArray;
@@ -156,7 +155,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 	private static final Logger logger = LoggerFactory.getLogger(TradeOrderFlowServiceImpl.class);
 
 	@Reference(version = "1.0.0", check = false)
-	private com.yschome.api.pay.service.IScanPayServiceApi scanPayServiceApi;
+	private com.okdeer.api.pay.service.IScanPayServiceApi scanPayServiceApi;
 
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuService;
@@ -4284,9 +4283,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 		// 张克能加,生成流水号,支付宝或者微信的时候要用
 		order.setTradeNum(TradeNumUtil.getTradeNum());
-		// Begin 发货人ID add by zengj
-		order.setShipmentsUserId(sellerId);
-		// End 发货人ID add by zengj
+
 		order.setStoreName(myStoreName);
 		order.setSellerId(sellerId);
 		order.setStoreId(storeId);
@@ -4344,35 +4341,44 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			// GoodsStoreSkuStock skuStock =
 			// goodsStoreSkuStockService.selectSingleSkuStock(list); //
 			// 查询店铺商品库存数量
-			GoodsStoreSkuStock skuStock = stuStockList.get(i); // 查询店铺商品库存数量
-			if (skuStock == null) {
-				logger.error("查询店铺商品库存数量", "skuStock 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询店铺商品库存数量 skuStock 为空-------->" + CodeStatistical.getLineInfo());
-				throw new Exception("查询店铺商品库存数量异常：skuStock 为空-------->" + CodeStatistical.getLineInfo());
-			}
-			int sellable = skuStock.getSellable();
+			// GoodsStoreSkuStock skuStock = stuStockList.get(i); // 查询店铺商品库存数量
+			// if (skuStock == null) {
+			// logger.error("查询店铺商品库存数量", "skuStock 为空-------->" +
+			// CodeStatistical.getLineInfo());
+			// logger.info("查询店铺商品库存数量 skuStock 为空-------->" +
+			// CodeStatistical.getLineInfo());
+			// throw new Exception("查询店铺商品库存数量异常：skuStock 为空-------->" +
+			// CodeStatistical.getLineInfo());
+			// }
+			// int sellable = skuStock.getSellable();
 
 			String skuNum = objss.getString("skuNum");
 			String skuWeight = objss.getString("skuWeight");
-			String meteringMethod = objss.getString("meteringMethod"); // 是否计件与称重
+			// String meteringMethod = objss.getString("meteringMethod"); //
+			// 是否计件与称重
 
-			int meter = Integer.valueOf(meteringMethod);
+			// int meter = Integer.valueOf(meteringMethod);
 
-			if (meter == 1) {
-				OrderStock stockNum = new OrderStock();
-				stockNum.setId(skuId);
-				stockNum.setCount(Integer.valueOf(skuNum));
-				stockNum.setSellable(sellable);
-				stockNumList.add(stockNum);
-				isStock = CalculateOrderStock.calculateSingleOrderStock(stockNumList); // 计件库存异动
-			} else if (meter == 0 || meter == 2) {
-				OrderStock stockWeight = new OrderStock();
-				stockWeight.setId(skuId);
-				stockWeight.setCount((new BigDecimal(skuWeight).multiply(new BigDecimal(1000)).intValue()));
-				stockWeight.setSellable(sellable);
-				stockWeightList.add(stockWeight);
-				isStock = CalculateOrderStock.calculateSingleOrderStock(stockWeightList); // 称重、无条码库存异动
-			}
+			// if (meter == 1) {
+			// OrderStock stockNum = new OrderStock();
+			// stockNum.setId(skuId);
+			// stockNum.setCount(Integer.valueOf(skuNum));
+			// stockNum.setSellable(sellable);
+			// stockNumList.add(stockNum);
+			// isStock =
+			// CalculateOrderStock.calculateSingleOrderStock(stockNumList); //
+			// 计件库存异动
+			// } else if (meter == 0 || meter == 2) {
+			// OrderStock stockWeight = new OrderStock();
+			// stockWeight.setId(skuId);
+			// stockWeight.setCount((new BigDecimal(skuWeight).multiply(new
+			// BigDecimal(1000)).intValue()));
+			// stockWeight.setSellable(sellable);
+			// stockWeightList.add(stockWeight);
+			// isStock =
+			// CalculateOrderStock.calculateSingleOrderStock(stockWeightList);
+			// // 称重、无条码库存异动
+			// }
 
 			if (!skuNum.equals("")) {
 				buyNum = Integer.valueOf(objss.getString("skuNum"));
@@ -4382,26 +4388,27 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			}
 			soleStock.add(buyNum);
 		}
-		stock = goodsStoreSkuService.getGoodsStoreSkuSelleabed(list); // 查询可销售库存是否发生变化
-		Map<String, Object> map = new HashMap<String, Object>();
+		// stock = goodsStoreSkuService.getGoodsStoreSkuSelleabed(list); //
+		// 查询可销售库存是否发生变化
+		// Map<String, Object> map = new HashMap<String, Object>();
 		String msg = "";
-		for (int i = 0; i < stock.size(); i++) {
+		/**for (int i = 0; i < stock.size(); i++) {
 			int num = soleStock.get(i);
 			GoodsStoreSku storeSku = stock.get(i);
 			String skuId = storeSku.getId(); // 商品ID
 			int selleabed = stockManagerService.findGoodsStockInfo(skuId).getSellable();// storeSku.getGoodsStoreSkuStock().getSellable();
 			// //
 			// 商品实际库存
-			if (num > selleabed) { // 库存不足
-				// 商品:***** 条码:******库存不足
-				msg += "商品:" + storeSku.getName() + " 条码：" + storeSku.getBarCode() + " 库存不足\n";
-				map.put("msg", storeSku.getName() + ",库存不足");
-				map.put("skuId", skuId);
-				map.put("sellableStock", selleabed);
-				objList.add(map);
-				obj.put("detail", objList);
-			}
-		}
+		//			if (num > selleabed) { // 库存不足
+		//				// 商品:***** 条码:******库存不足
+		//				msg += "商品:" + storeSku.getName() + " 条码：" + storeSku.getBarCode() + " 库存不足\n";
+		//				map.put("msg", storeSku.getName() + ",库存不足");
+		//				map.put("skuId", skuId);
+		//				map.put("sellableStock", selleabed);
+		//				objList.add(map);
+		//				obj.put("detail", objList);
+		//			}
+		}*/
 
 		List<StockAdjustVo> stockAdjustList = new ArrayList<StockAdjustVo>();
 

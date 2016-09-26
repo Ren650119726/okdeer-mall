@@ -16,8 +16,8 @@ import com.okdeer.mall.order.vo.TradeOrderRefundsChargeVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsQueryVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsVo;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 
@@ -301,6 +301,10 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * @date 2016年9月14日
 	 */
 	Map<String, Object> statisRefundsByFinance(Map<String, Object> params);
+	
+	List<TradeOrderRefunds> getListByParams(Map<String, Object> params);
+	
+	TradeOrderRefunds findStoreConsumeOrderDetailById(String refundId);
 
 	// end v1.1.0 add by zengjz 20160914
 }

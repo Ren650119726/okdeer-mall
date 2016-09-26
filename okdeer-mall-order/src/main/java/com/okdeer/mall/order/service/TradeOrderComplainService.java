@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.okdeer.mall.order.entity.TradeOrderComplain;
 import com.okdeer.mall.order.vo.TradeOrderComplainVo;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * @DESC: 投诉单service

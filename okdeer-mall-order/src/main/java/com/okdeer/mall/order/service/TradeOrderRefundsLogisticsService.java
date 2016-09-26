@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * @DESC: 

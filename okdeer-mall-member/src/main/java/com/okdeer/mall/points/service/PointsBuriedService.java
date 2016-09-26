@@ -11,7 +11,7 @@ package com.okdeer.mall.points.service;
 import java.math.BigDecimal;
 
 import com.okdeer.mall.member.points.enums.PointsRuleCode;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * 积分埋点接口

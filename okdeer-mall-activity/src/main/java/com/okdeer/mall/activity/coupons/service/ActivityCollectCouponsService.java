@@ -4,13 +4,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCommunity;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
 
 /**
  * @pr yscm
@@ -94,4 +95,17 @@ public interface ActivityCollectCouponsService {
 	 * @throws ServiceException
 	 */
 	int selectCountByStoreAndLimitType(Map<String,Object> params) throws ServiceException;
+	
+	// begin add by wushp V1.1.0 20160923
+	/**
+	 * 
+	 * @Description: 消费返券：活动代金券查询
+	 * @param map 参数map
+	 * @return list
+	 * @throws ServiceException 异常
+	 * @author wushp
+	 * @date 2016年9月23日
+	 */
+	List<ActivityCollectCouponsOrderVo> findCollCouponsLinks(Map<String,Object> map) throws ServiceException;
+	// end add by wushp V1.1.0 20160923
 }
