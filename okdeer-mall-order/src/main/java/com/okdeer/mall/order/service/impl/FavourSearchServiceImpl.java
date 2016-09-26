@@ -1,15 +1,21 @@
 package com.okdeer.mall.order.service.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.archive.store.enums.StoreTypeEnum;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
+import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.order.service.FavourSearchService;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.Discount;
 import com.okdeer.mall.order.vo.FullSubtract;
@@ -17,9 +23,6 @@ import com.okdeer.mall.order.vo.TradeOrderReq;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
-import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
-import com.okdeer.mall.order.service.FavourSearchService;
 
 /**
  * ClassName: ValidFavourFindServiceImpl 
@@ -32,6 +35,7 @@ import com.okdeer.mall.order.service.FavourSearchService;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构V4.1			2016-07-14			maojj			查找用户有效的优惠记录
  *		重构V4.1			2016-07-14			maojj			查找用户有效的优惠记录增加店铺类型的判断
+ *		V1.1.0			2016-09-23			tangy			代金券判断指定分类使用
  */
 @Service
 public class FavourSearchServiceImpl implements FavourSearchService {
@@ -56,14 +60,36 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 	public void process(TradeOrderReqDto reqDto, TradeOrderRespDto respDto) throws Exception {
 		TradeOrderResp resp = respDto.getResp();
 		//构建优惠查询请求条件
-		Map<String,Object> queryCondition = buildFindFavourCondition(reqDto);
+		Map<String, Object> queryCondition = buildFindFavourCondition(reqDto);
 		// 获取用户有效的代金券
 		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);
 		// 获取用户有效的折扣
 		List<Discount> discountList = activityDiscountMapper.findValidDiscount(queryCondition);
 		// 获取用户有效的满减
 		List<FullSubtract> fullSubtractList = activityDiscountMapper.findValidFullSubtract(queryCondition);
-
+		//Begin added by tangy  2016-9-23
+		//排除不符合的代金券
+		if (CollectionUtils.isNotEmpty(couponList)) {
+			//商品类目id集
+			List<String> spuCategoryIds = reqDto.getContext().getSpuCategoryIds();
+			List<Coupons> delCouponList = new ArrayList<Coupons>();
+			//判断筛选指定分类使用代金券
+			for (Coupons coupons : couponList) {
+				//是否指定分类使用
+				if (Constant.ONE == coupons.getIsCategory().intValue()) {
+					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds,
+							coupons.getId());
+					if (count > Constant.ZERO) {
+						delCouponList.add(coupons);
+					}
+				}
+			}
+			//删除不符合指定分类使用的代金券
+			if (CollectionUtils.isNotEmpty(delCouponList)) {
+				couponList.removeAll(delCouponList);
+			}
+		}
+		//End added by tangy
 		resp.setCouponList(couponList);
 		resp.setDiscountList(discountList);
 		resp.setFullSubtractList(fullSubtractList);
@@ -87,8 +113,15 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 		// Begin added by maojj 2016-08-19
 		queryCondition.put("storeType", storeType.ordinal());
 		// End added by maojj 2016-08-19
+		//Begin added by tangy  2016-9-23
+		//根据店铺类型查询代金券
+		if (StoreTypeEnum.CLOUD_STORE.equals(storeType)) {
+			queryCondition.put("type", Constant.ONE);
+		} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
+			queryCondition.put("type", Constant.TWO);
+		}
+		//End added by tangy
 		return queryCondition;
 	}
-	
-	
+
 }
