@@ -301,4 +301,9 @@
 		  </foreach>
 		</if>
 	</select>
+	
+	<!-- 根据消费码状态与订单id查询列表 V1.1.0 add by zengjz 20160924-->
+	 <select id="selectItemDetailByOrderIdAndStatus"  resultMap="BaseResultMap">
+        select * from trade_order_item_detail where order_id = #{orderId,jdbcType=VARCHAR} and  status= #{status,jdbcType=TINYINT}
+  </select>
 </mapper>

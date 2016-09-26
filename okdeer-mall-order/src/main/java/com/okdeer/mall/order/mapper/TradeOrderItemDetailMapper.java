@@ -131,4 +131,15 @@ public interface TradeOrderItemDetailMapper{
 	 */
 	List<OrderItemDetailConsumeVo> findOrderInfoByConsumeCode(Map<String,Object> params);
 	// End V1.1.0 add by wusw 20160924
+	
+	// Begin V1.1.0 add by zengjz 20160924
+	/**
+	 * @Description: 根据订单id查询明细列表
+	 * @param orderId 订单id
+	 * @return 订单明细列表
+	 * @author zengjizu
+	 * @date 2016年9月23日
+	 */
+	List<TradeOrderItemDetail> selectItemDetailByOrderIdAndStatus(String orderId,int status);
+	// End V1.1.0 add by zengjz 20160924
 }
