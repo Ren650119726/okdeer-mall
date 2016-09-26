@@ -38,7 +38,7 @@ import net.sf.json.JSONObject;
  *    重构4.1            2016-7-19            wusw                添加财务系统的订单接口（包含服务店订单情况）
  *    重构4.1            2016-8-16            zhaoqc              新增根绝交易号修改订单状态的方法
  *    V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
- * 
+ * 	  V1.1.0            2016-09-26			 luosm               查询商家版APP服务店到店消费订单信息
  */
 public interface TradeOrderService {
 
@@ -346,6 +346,18 @@ public interface TradeOrderService {
 	 * @return
 	 */
 	List<TradeOrderStatusVo> getOrderCount(Map<String, Object> map);
+	
+	//start added by luosm 20160924 V1.1.1
+	/***
+	 * 
+	 * @Description: 查询商家版APP服务店到店消费订单信息
+	 * @param map
+	 * @return
+	 * @author luosm
+	 * @date 2016年9月24日
+	 */
+	List<TradeOrderStatusVo> selectArrivedOrderCount(Map<String, Object> map);
+	//end added by luosm 20160924 V1.1.1
 
 	/**
 	 * 更新订单信息
