@@ -633,7 +633,7 @@
 				 *  
 				 ((addr.latitude-area.latitude)*PI()*12656/180)  
 				)  
-			 ) <  area.distance
+			 )<![CDATA[ <  ]]> area.distance
            )
            <!-- End added by tangy  2016-9-26 -->
         ) AND store.id = #{storeId, jdbcType=VARCHAR}
