@@ -168,7 +168,6 @@ public class GoodsCheckServiceImpl implements GoodsCheckService {
 			//Begin added by tangy  2016-9-23
 			spuCategoryIds.add(storeSku.getSpuCategoryId());
 			//End added by tangy
-			//End added by tangy
 			if (storeSku.getActivityType() == StoreActivityTypeEnum.PRIVLIEGE) {
 				// 特惠活动状态(0:未开始,1:进行中,2:已结束,3:已关闭)
 				if (acSale.getStatus() == 1) {
