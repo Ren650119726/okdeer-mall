@@ -41,6 +41,8 @@ import com.okdeer.mall.order.constant.OrderMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderComment;
 import com.okdeer.mall.order.entity.TradeOrderCommentImage;
+import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.service.TradeOrderCommentServiceApi;
 import com.okdeer.mall.order.vo.TradeOrderCommentVo;
 import com.okdeer.base.common.enums.WhetherEnum;
@@ -89,8 +91,8 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 	/**
 	 * 买家用户Mapper注入
 	 */
-	//@Autowired
-	//private SysBuyerUserMapper sysBuyerUserMapper;
+	// @Autowired
+	// private SysBuyerUserMapper sysBuyerUserMapper;
 	/**
 	 * 买家用户service注入
 	 */
@@ -254,7 +256,7 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 	public boolean updateUserEvaluate(List<TradeOrderCommentVo> tradeOrderCommentVoList) throws Exception {
 
 		TradeOrderCommentVo TradeOrderCommentVo = tradeOrderCommentVoList.get(0);
-		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(TradeOrderCommentVo.getOrderId());
+		final TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(TradeOrderCommentVo.getOrderId());
 		JSONObject json = new JSONObject();
 		json.put("id", tradeOrder.getId());
 		json.put("operator", TradeOrderCommentVo.getUserId());
@@ -272,6 +274,16 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 						// todo 执行本地业务
 						try {
 							addCommentByBatch((List<TradeOrderCommentVo>) tradeOrderCommentVoList);
+							
+							//begin add by zengjz  到店消费评价增加逻辑
+							//到店消费订单需要更改消费码的状态，更改为已经完成
+							if (tradeOrder.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+								TradeOrder tempTradeOrder = new TradeOrder();
+								tempTradeOrder.setId(tradeOrder.getId());
+								tempTradeOrder.setConsumerCodeStatus(ConsumerCodeStatusEnum.COMPLETED);
+								tradeOrderMapper.updateByPrimaryKeySelective(tradeOrder);
+							}
+							//end add by zengjz  到店消费评价增加逻辑
 						} catch (ServiceException e) {
 							logger.error("提交评价异常", e.getMessage());
 							return LocalTransactionState.ROLLBACK_MESSAGE;
@@ -293,10 +305,11 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 	public void addCommentByBatch(List<TradeOrderCommentVo> tradeOrderCommentVoList) throws ServiceException {
 		List<TradeOrderComment> tradeOrderCommentList = new ArrayList<>();
 		List<TradeOrderCommentImage> tradeOrderCommentImageList = new ArrayList<>();
-		//begin 跨模块调用，改为dubbo update by wushp 
-		//SysBuyerUser sysBuyerUser = sysBuyerUserMapper.selectByPrimaryKey(tradeOrderCommentVoList.get(0).getUserId());
+		// begin 跨模块调用，改为dubbo update by wushp
+		// SysBuyerUser sysBuyerUser =
+		// sysBuyerUserMapper.selectByPrimaryKey(tradeOrderCommentVoList.get(0).getUserId());
 		SysBuyerUser sysBuyerUser = sysBuyerUserService.findByPrimaryKey(tradeOrderCommentVoList.get(0).getUserId());
-		//end update by wushp 
+		// end update by wushp
 		for (TradeOrderCommentVo tradeOrderCommentVo : tradeOrderCommentVoList) {
 			TradeOrderComment tradeOrderComment = new TradeOrderComment();
 			String id = UuidUtils.getUuid();
@@ -332,12 +345,10 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 	}
 
 	/*
-	 * @Override public void addByBatch(List<TradeOrderCommentImage>
-	 * tradeOrderCommentImageList) throws ServiceException {
-	 * tradeOrderCommentImageMapper.insertByBatch(tradeOrderCommentImageList); }
+	 * @Override public void addByBatch(List<TradeOrderCommentImage> tradeOrderCommentImageList) throws ServiceException
+	 * { tradeOrderCommentImageMapper.insertByBatch(tradeOrderCommentImageList); }
 	 * 
-	 * @Override public void addComment(TradeOrderComment tradeOrderComment)
-	 * throws ServiceException {
+	 * @Override public void addComment(TradeOrderComment tradeOrderComment) throws ServiceException {
 	 * tradeOrderCommentMapper.insert(tradeOrderComment);
 	 * 
 	 * }
