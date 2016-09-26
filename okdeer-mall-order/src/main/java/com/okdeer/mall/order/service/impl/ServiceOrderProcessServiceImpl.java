@@ -69,6 +69,9 @@ import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.RangeTypeEnum;
 import com.okdeer.mall.common.utils.TradeNumUtil;
+import com.okdeer.mall.common.vo.OrderQueue;
+import com.okdeer.mall.common.vo.Request;
+import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
@@ -92,13 +95,16 @@ import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.exception.OrderException;
+import com.okdeer.mall.order.handler.RequestHandlerChain;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.ServiceOrderProcessServiceApi;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.thread.SeckillQueue;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
+import com.okdeer.mall.order.vo.ServiceOrderResp;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -113,7 +119,8 @@ import net.sf.json.JSONObject;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *     重构4.1          2016年7月21日                               zengj				新建类
- *	   V1.1.0		   2016-09-23			 tangy			    服务店添加代金券
+ *	   V1.1.0		  2016-09-23		  tangy			             服务店添加代金券
+ 	   1.1			  2016年9月22日		  maojj             新增秒杀确认订单、提交订单 
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.ServiceOrderProcessServiceApi")
 public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServiceApi {
@@ -240,6 +247,16 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 	
+	// Begin added by maojj 2016-09-22
+	/**
+	 * 确认订单处理链
+	 */
+	@Resource
+	private RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> confirmSeckillOrderChain;
+	
+	@Resource
+	private SeckillQueue seckillQueue;
+	// End added by maojj 2016-09-22
 	/**
 	 * @Description: 服务订单确认订单
 	 * @return JSONObject
@@ -1295,4 +1312,23 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	}
 	//End added by tangy
 	
+	// Begin added by maojj 2016-09-22
+	@Override
+	public void confirmSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
+			throws OrderException, Exception {
+		// TODO 测试完成之后去除该注释
+		resp.setData(new ServiceOrderResp());
+		confirmSeckillOrderChain.process(req, resp);
+	}
+
+	@Override
+	public void submitSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
+			throws OrderException, Exception {
+		// TODO Auto-generated method stub
+		resp.setData(new ServiceOrderResp());
+		OrderQueue<ServiceOrderReq, ServiceOrderResp> orderQueue = new OrderQueue<ServiceOrderReq, ServiceOrderResp>(
+				req, resp);
+		seckillQueue.push(orderQueue);
+	}
+	// End added by maojj 2016-09-22
 }

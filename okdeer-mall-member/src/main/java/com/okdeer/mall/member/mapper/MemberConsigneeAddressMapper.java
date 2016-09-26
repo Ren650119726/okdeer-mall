@@ -6,10 +6,11 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
-import com.okdeer.mall.member.member.vo.MemberConsigneeAddressVo;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.member.member.vo.MemberConsigneeAddressVo;
+import com.okdeer.mall.member.member.vo.UserAddressVo;
 
 /**
  * @DESC: 
@@ -22,6 +23,7 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *     重构4.1          2016年7月25日                               zengj				添加查询用户收货地址列表，针对服务订单 方法
+ *     1.1            2016年9月24日                               maojj				添加查询用户地址，针对秒杀
  */
 public interface MemberConsigneeAddressMapper extends IBaseCrudMapper {
 
@@ -142,4 +144,41 @@ public interface MemberConsigneeAddressMapper extends IBaseCrudMapper {
 	Map<String, Object> findUserDefilatSeckillAddress(Map<String, Object> params);
 	// End 重构4.1 add by zengj
 
+	// Begin added by maojj 2016-09-24 友门鹿1.1
+	/**
+	 * @Description: 根据店铺服务范围查询用户地址信息
+	 * @param params 查询参数
+	 * @return 用户地址列表  
+	 * @author maojj
+	 * @date 2016年9月26日
+	 */
+	List<UserAddressVo> findAddrWithStoreServRange(Map<String, Object> params);
+
+	/**
+	 * @Description: 根据秒杀服务范围查询用户地址信息
+	 * @param params 查询参数
+	 * @return 用户地址列表
+	 * @author maojj
+	 * @date 2016年9月26日
+	 */
+	List<UserAddressVo> findAddrWithSeckillServRange(Map<String, Object> params);
+
+	/**
+	 * @Description: 根据服务范围查询用户地址信息
+	 * @param params 查询参数
+	 * @return 用户地址列表
+	 * @author maojj
+	 * @date 2016年9月26日
+	 */
+	List<UserAddressVo> findAddrWithServRange(Map<String, Object> params);
+
+	/**
+	 * @Description: 根据用户ID查询用户地址列表
+	 * @param userId 用户Id
+	 * @return 用户地址列表
+	 * @author maojj
+	 * @date 2016年9月26日
+	 */
+	List<UserAddressVo> findAddrWithUserId(String userId);
+	// End added by maojj 2016-09-24 友门鹿1.1
 }
