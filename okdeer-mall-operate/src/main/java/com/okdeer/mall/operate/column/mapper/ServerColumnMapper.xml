@@ -22,7 +22,7 @@
 		<result column="update_user_id" property="updateUserId"
 			jdbcType="VARCHAR" />
 		<result column="disabled" property="disabled"
-			javaType="com.yschome.base.common.enums.Disabled" jdbcType="TINYINT" />
+			javaType="com.okdeer.base.common.enums.Disabled" jdbcType="TINYINT" />
 		<association property="serverColumnAreas" column="id"
 			select="findAreaByServerColumnId">
 		</association>

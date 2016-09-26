@@ -22,8 +22,8 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.enums.AdvertIsPayEnum;
-import com.yschome.api.pay.enums.TradeErrorEnum;
-import com.yschome.base.framework.mq.AbstractRocketMQSubscriber;
+import com.okdeer.api.pay.enums.TradeErrorEnum;
+import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.operate.advert.constant.AdvertMessageConstant;
 
 import net.sf.json.JSONObject;

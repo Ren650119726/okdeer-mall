@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.member.points.entity.PointsExchangeOrder;
 import com.okdeer.mall.member.points.service.PointsExchangeOrderServiceApi;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.points.mapper.PointsExchangeOrderMapper;
 
 /**

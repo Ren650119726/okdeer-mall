@@ -5,7 +5,7 @@
     <id column="id" property="id" javaType="string" jdbcType="VARCHAR" />
     <result column="invitation_code_id" property="invitationCodeId" javaType="string" jdbcType="VARCHAR" />
     <result column="sys_buyer_user_id" property="sysBuyerUserId" javaType="string" jdbcType="VARCHAR" />
-    <result column="is_first_order" property="isFirstOrder" javaType="com.yschome.base.common.enums.WhetherEnum" jdbcType="TINYINT"/>
+    <result column="is_first_order" property="isFirstOrder" javaType="com.okdeer.base.common.enums.WhetherEnum" jdbcType="TINYINT"/>
     <result column="machine_code" property="machineCode" javaType="string" jdbcType="VARCHAR" />
     <result column="first_order_time" property="firstOrderTime" javaType="date" jdbcType="TIMESTAMP" />  	  
    	<result column="create_time" property="createTime" javaType="date" jdbcType="TIMESTAMP" />
@@ -14,9 +14,11 @@
   
   
   <resultMap type="com.okdeer.mall.system.entity.SysUserInvitationRecordVo" id="extResultMap" extends="BaseResultMap">
-   <result column="login_name" property="loginName" jdbcType="VARCHAR" />
-    <result column="begin_time" property="beginTime" javaType="date" jdbcType="TIMESTAMP" />
-	<result column="end_time" property="endTime" javaType="date" jdbcType="TIMESTAMP" />
+    <result column="login_name" property="loginName" jdbcType="VARCHAR" />
+    <result column="begin_time" property="beginTimeRecord" javaType="date" jdbcType="TIMESTAMP" />
+	<result column="end_time" property="endTimeRecord" javaType="date" jdbcType="TIMESTAMP" />
+	<result column="invitation_user_num" property="invitationUserNum" javaType="integer" jdbcType="INTEGER" />
+   	<result column="first_order_user_num" property="firstOrderUserNum" javaType="integer" jdbcType="INTEGER" />
   </resultMap>
   
 <!-- 邀请码表名 start -->
@@ -33,9 +35,8 @@
 
 	<!-- 基本的返回字段 start -->
 	<sql id="resultBaseColumn">
-		suir.id,suir.sys_user_id,suir.sys_buyer_user_id,suir.user_type,
-		suir.invitation_code,suir.invitation_user_num,suir.first_order_user_num,
-		suir.create_time,suir.update_time
+		suir.id, suir.invitation_code_id, suir.sys_buyer_user_id, suir.is_first_order,
+		suir.first_order_time, suir.machine_code, suir.create_time,suir.update_time
 	</sql>
 	<!-- 基本的返回字段 end -->
 
@@ -47,20 +48,17 @@
 
 	<!-- 根据条件查询信息 start -->
 	<sql id="condition">
-		<if test="null!=invitationCodeId and ''!=invitationCodeId">
-			AND suir.invitation_code_id=#{invitationCodeId}
+		<if test="null != sysBuyerUserId and '' != sysBuyerUserId">
+			AND suir.sys_buyer_user_id = #{sysBuyerUserId}
 		</if>
-		<if test="null!=sysBuyerUserId and ''!= sysBuyerUserId">
-			AND suir.sys_buyer_user_id=#{sysBuyerUserId}
+		<if test="null != isFirstOrder">
+			AND suir.is_first_order = #{isFirstOrder}
 		</if>
-		<if test="null!=isFirstOrder">
-			AND suir.is_first_order=#{isFirstOrder}
+		<if test="null != beginTimeRecord">
+			<![CDATA[  and suir.create_time >= #{beginTimeRecord} ]]>
 		</if>
-		<if test="null != beginTime">
-			<![CDATA[  and suir.create_time >= #{beginTime} ]]>
-		</if>
-		<if test="null != endTime">
-			<![CDATA[  and suir.create_time <= #{endTime} ]]>
+		<if test="null != endTimeRecord">
+			<![CDATA[  and suir.create_time <= #{endTimeRecord} ]]>
 		</if>
 	</sql>
 	<!-- 根据条件查询信息 start -->
@@ -78,21 +76,23 @@
 	<!-- 根据参数获取信息 start -->
 	<select id="findByQueryRecordVo" resultMap="extResultMap" parameterType="com.okdeer.mall.system.entity.SysUserInvitationRecordVo">
 		select
-		<include refid="extResultBaseColumn" />
+		buser.login_name as login_name, code.invitation_user_num, code.first_order_user_num,
 		<include refid="resultBaseColumn" />
-		from
+		from sys_user_invitation_code code
+		left join
 		<include refid="tableName" />
+		ON code.id = suir.invitation_code_id
 		left join
 		<include refid="sysBuyerUser" />
-		ON suir.sys_buyer_user_id=buser.id
-		where 1=1
-		<if test="ids != null">
+		ON suir.sys_buyer_user_id = buser.id
+		where suir.invitation_code_id = #{invitationCodeId}
+		<if test="idsRecord != null">
 			AND suir.id  in 
-		    <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">  
+		    <foreach collection="idsRecord" index="index" item="item" open="(" separator="," close=")">  
 	            #{item}   
 	        </foreach>
 		</if>
-		<if test="ids == null">
+		<if test="idsRecord == null">
 			<include refid="condition" />
 		</if>
 		order by suir.create_time desc

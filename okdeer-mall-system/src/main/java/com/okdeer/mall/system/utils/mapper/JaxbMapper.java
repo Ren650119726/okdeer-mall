@@ -21,8 +21,8 @@ import javax.xml.namespace.QName;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
-import com.yschome.base.common.utils.Exceptions;
-import com.yschome.base.common.utils.Reflections;
+import com.okdeer.base.common.utils.Exceptions;
+import com.okdeer.base.common.utils.Reflections;
 
 /**
  * 使用Jaxb2.0实现XML<->Java Object的Mapper.

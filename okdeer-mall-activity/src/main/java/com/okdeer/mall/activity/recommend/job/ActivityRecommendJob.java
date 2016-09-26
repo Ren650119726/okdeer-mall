@@ -18,8 +18,8 @@ import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
 import com.okdeer.mall.activity.recommend.entity.ActivityRecommend;
 import com.okdeer.mall.activity.recommend.enums.ActivityRecommendStatus;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.activity.recommend.mapper.ActivityRecommendMapper;
 import com.okdeer.mall.activity.recommend.service.ActivityRecommendService;
 

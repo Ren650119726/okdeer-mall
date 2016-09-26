@@ -2,7 +2,7 @@ package com.okdeer.mall.order.service;
 
 import java.util.Map;
 
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * @DESC: 

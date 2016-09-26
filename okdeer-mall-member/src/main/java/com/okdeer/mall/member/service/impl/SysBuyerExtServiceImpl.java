@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
 import com.okdeer.mall.member.member.service.SysBuyerExtServiceApi;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.member.mapper.SysBuyerExtMapper;
 
 /**

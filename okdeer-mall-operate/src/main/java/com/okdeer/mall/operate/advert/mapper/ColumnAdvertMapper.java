@@ -20,7 +20,7 @@ import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.entity.ColumnAdvertCommunity;
 import com.okdeer.mall.advert.entity.ColumnAdvertQueryVo;
 import com.okdeer.mall.advert.entity.ColumnAdvertVo;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * 广告Mapper

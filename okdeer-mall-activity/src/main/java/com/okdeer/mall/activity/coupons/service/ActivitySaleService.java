@@ -6,7 +6,7 @@ import java.util.Map;
 
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * @pr yscm

@@ -27,8 +27,8 @@ import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.enums.AddressSource;
 import com.okdeer.mall.member.member.enums.AddressType;
-import com.yschome.base.common.enums.Disabled;
-import com.yschome.base.framework.mq.AbstractRocketMQSubscriber;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 
 /***

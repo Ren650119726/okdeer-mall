@@ -19,8 +19,8 @@ import com.okdeer.mall.order.vo.TradeOrderReq;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
-import com.yschome.base.common.enums.WhetherEnum;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.enums.WhetherEnum;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.constant.OrderTipMsgConstant;
 import com.okdeer.mall.order.service.StoreCheckService;
 

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.rocketmq.common.message.Message;
 import com.google.common.base.Charsets;
 import com.okdeer.archive.stock.consts.RollBackConstant;
-import com.yschome.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 
 /**
  * ClassName: RollbackMQProducer 

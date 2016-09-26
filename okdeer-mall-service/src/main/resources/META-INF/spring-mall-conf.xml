@@ -9,7 +9,7 @@
 	                      http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd         
 	                      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
- 	<bean class="com.yschome.base.framework.zkconfig.InitZooKeeperPropertyConfigurer">
+ 	<bean class="com.okdeer.base.framework.zkconfig.InitZooKeeperPropertyConfigurer">
 		<property name="ignoreUnresolvablePlaceholders" value="true"></property>
 		<property name="ignoreResourceNotFound" value="true"></property>
 		<property name="locations">

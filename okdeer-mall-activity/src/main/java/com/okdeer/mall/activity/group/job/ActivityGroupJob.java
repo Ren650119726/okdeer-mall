@@ -21,13 +21,13 @@ import com.okdeer.mall.activity.group.entity.ActivityGroup;
 import com.okdeer.mall.activity.group.entity.ActivityGroupGoods;
 import com.okdeer.mall.activity.group.enums.ActivityGroupAuditStatus;
 import com.okdeer.mall.activity.group.enums.ActivityGroupStatus;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.DateUtils;
-import com.yschome.base.common.utils.UuidUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.group.service.ActivityGroupGoodsService;
 import com.okdeer.mall.activity.group.service.ActivityGroupService;
-import com.yschome.mcm.entity.SmsVO;
-import com.yschome.mcm.service.ISmsService;
+import com.okdeer.mcm.entity.SmsVO;
+import com.okdeer.mcm.service.ISmsService;
 
 /**
  * 

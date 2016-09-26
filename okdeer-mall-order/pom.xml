@@ -44,10 +44,6 @@
 			<artifactId>okdeer-mall-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com</groupId>
-			<artifactId>yscapi</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.yschome</groupId>
 			<artifactId>cloudy_file</artifactId>
 		</dependency>

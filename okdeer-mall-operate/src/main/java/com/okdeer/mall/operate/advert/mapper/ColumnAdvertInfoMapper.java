@@ -10,7 +10,7 @@ package com.okdeer.mall.operate.advert.mapper;
 
 import org.springframework.stereotype.Repository;
 
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * 广告商Mapper

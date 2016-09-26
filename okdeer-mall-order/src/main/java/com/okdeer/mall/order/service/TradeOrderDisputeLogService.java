@@ -1,7 +1,7 @@
 package com.okdeer.mall.order.service;
 
 import com.okdeer.mall.order.entity.TradeOrderDisputeLog;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * @DESC: 

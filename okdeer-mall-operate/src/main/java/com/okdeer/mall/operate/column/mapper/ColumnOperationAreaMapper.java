@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import com.okdeer.mall.operate.entity.ColumnOperationArea;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 运营栏目区域关联mapper

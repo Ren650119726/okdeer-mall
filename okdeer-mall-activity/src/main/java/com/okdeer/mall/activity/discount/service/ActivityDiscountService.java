@@ -12,8 +12,8 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscountDto;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountQueryVo;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountVo;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * 满减(满折)Service

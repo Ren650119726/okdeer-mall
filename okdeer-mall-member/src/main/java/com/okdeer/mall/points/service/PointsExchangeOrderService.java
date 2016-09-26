@@ -2,7 +2,7 @@ package com.okdeer.mall.points.service;
 
 
 import com.okdeer.mall.member.points.entity.PointsExchangeOrder;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * @DESC: 

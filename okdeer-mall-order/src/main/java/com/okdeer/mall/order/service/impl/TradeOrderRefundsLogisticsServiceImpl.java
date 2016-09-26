@@ -12,7 +12,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Maps;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
 import com.okdeer.mall.order.service.TradeOrderRefundsLogisticsServiceApi;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsLogisticsMapper;
 import com.okdeer.mall.order.service.TradeOrderRefundsLogisticsService;
 

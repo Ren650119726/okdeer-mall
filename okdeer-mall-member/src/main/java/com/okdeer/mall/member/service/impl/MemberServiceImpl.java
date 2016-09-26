@@ -24,8 +24,8 @@ import com.okdeer.archive.system.entity.SysBuyerUserPointsExt;
 import com.okdeer.archive.system.entity.SysMemberExtVo;
 import com.okdeer.archive.system.entity.TmpExample;
 import com.okdeer.mall.member.member.service.MemberServiceApi;
-import com.yschome.base.common.exception.ServiceException;
-import com.yschome.base.common.utils.PageUtils;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 
 /**

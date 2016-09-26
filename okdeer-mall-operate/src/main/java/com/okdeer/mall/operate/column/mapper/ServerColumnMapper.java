@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnQueryVo;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * 

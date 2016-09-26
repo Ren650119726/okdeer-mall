@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import com.okdeer.mall.advert.entity.AdvertPosition;
 import com.okdeer.mall.advert.entity.AdvertPositionQueryVo;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * 广告位Mapper

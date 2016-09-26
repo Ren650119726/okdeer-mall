@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysBuyerUserPointsExt;
 import com.okdeer.archive.system.entity.SysMemberExtVo;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 

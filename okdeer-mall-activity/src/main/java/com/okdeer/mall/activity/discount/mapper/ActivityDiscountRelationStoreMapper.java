@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRelationStore;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 满减（满折）活动的范围关联的店铺mapper

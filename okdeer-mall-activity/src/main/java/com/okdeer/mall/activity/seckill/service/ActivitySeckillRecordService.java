@@ -11,7 +11,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRecord;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * ClassName: ActivitySeckillRecordService 

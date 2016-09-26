@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.order.vo.TradeOrderComplainQueryVo;
 import com.okdeer.mall.order.vo.TradeOrderComplainVo;
-import com.yschome.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 

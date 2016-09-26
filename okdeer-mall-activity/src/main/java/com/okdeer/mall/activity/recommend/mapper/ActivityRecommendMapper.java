@@ -14,7 +14,7 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.mall.activity.recommend.entity.ActivityRecommend;
 import com.okdeer.mall.activity.recommend.entity.ActivityRecommendGoods;
 import com.okdeer.mall.activity.recommend.entity.ActivityRecommendRange;
-import com.yschome.base.common.exception.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * 
