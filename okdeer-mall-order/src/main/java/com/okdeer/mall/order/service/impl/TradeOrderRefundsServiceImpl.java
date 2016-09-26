@@ -37,6 +37,7 @@ import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.enums.MeteringMethod;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
+import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreMemberRelation;
@@ -244,15 +245,15 @@ public class TradeOrderRefundsServiceImpl
 	@Autowired
 	private TradeOrderRefundsItemService tradeOrderRefundsItemService;
 
-	// @Reference(version = "1.0.0", check = false)
-	// private StockManagerServiceApi stockManagerService;
+	@Reference(version = "1.0.0", check = false)
+	private StockManagerServiceApi stockManagerService;
 
 	// Begin 1.0.Z add by zengj
 	/**
 	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerService;
+	private StockManagerJxcServiceApi stockManagerJxcService;
 
 	/**
 	 * 订单完成后同步商业管理系统Service
@@ -711,7 +712,13 @@ public class TradeOrderRefundsServiceImpl
 		// Begin added by maojj 2016-07-26
 		stockAdjustList.add(stockAdjustVo);
 		// End added by maojj 2016-07-26
-		stockManagerService.updateStock(stockAdjustVo);
+		// 实物订单走进销存库存
+		if (orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+			stockManagerJxcService.updateStock(stockAdjustVo);
+		} else {
+			// 否则走商城库存
+			stockManagerService.updateStock(stockAdjustVo);
+		}
 		return stockAdjustList;
 	}
 	// End modified by maojj 2016-07-26
