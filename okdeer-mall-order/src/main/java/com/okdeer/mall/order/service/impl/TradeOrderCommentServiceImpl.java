@@ -275,6 +275,7 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 						try {
 							addCommentByBatch((List<TradeOrderCommentVo>) tradeOrderCommentVoList);
 							
+							//begin add by zengjz  到店消费评价增加逻辑
 							//到店消费订单需要更改消费码的状态，更改为已经完成
 							if (tradeOrder.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 								TradeOrder tempTradeOrder = new TradeOrder();
@@ -282,7 +283,7 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 								tempTradeOrder.setConsumerCodeStatus(ConsumerCodeStatusEnum.COMPLETED);
 								tradeOrderMapper.updateByPrimaryKeySelective(tradeOrder);
 							}
-							
+							//end add by zengjz  到店消费评价增加逻辑
 						} catch (ServiceException e) {
 							logger.error("提交评价异常", e.getMessage());
 							return LocalTransactionState.ROLLBACK_MESSAGE;
