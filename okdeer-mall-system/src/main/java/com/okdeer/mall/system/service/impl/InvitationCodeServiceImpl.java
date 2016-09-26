@@ -9,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.mall.system.entity.SysUserInvitationCode;
 import com.okdeer.mall.system.entity.SysUserInvitationCodeVo;
+import com.okdeer.mall.system.entity.SysUserInvitationRecord;
 import com.okdeer.mall.system.entity.SysUserInvitationRecordVo;
 import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 import com.okdeer.mall.system.mapper.SysUserInvitationRecordMapper;
@@ -131,6 +133,30 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi,Invit
 		}
 		List<SysUserInvitationRecordVo> list = sysUserInvitationRecordMapper.findByQueryRecordVo(invitationRecordVo);
 		return list;
+	}
+
+	@Override
+	public void saveCode(SysUserInvitationCode sysUserInvitationCode) throws ServiceException {
+		sysUserInvitationCodeMapper.saveCode(sysUserInvitationCode);
+		
+	}
+
+	@Override
+	public void updateCode(SysUserInvitationCode sysUserInvitationCode) throws ServiceException {
+		sysUserInvitationCodeMapper.updateCode(sysUserInvitationCode);
+		
+	}
+
+	@Override
+	public void saveCodeRecord(SysUserInvitationRecord sysUserInvitationRecord) throws ServiceException {
+		sysUserInvitationRecordMapper.saveCodeRecord(sysUserInvitationRecord);
+		
+	}
+
+	@Override
+	public void updateCodeRecord(SysUserInvitationRecord sysUserInvitationRecord) throws ServiceException {
+		sysUserInvitationRecordMapper.updateCodeRecord(sysUserInvitationRecord);
+		
 	}
 
 }
