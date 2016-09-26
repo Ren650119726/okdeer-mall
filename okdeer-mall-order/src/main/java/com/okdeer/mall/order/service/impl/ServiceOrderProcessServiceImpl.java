@@ -44,21 +44,37 @@ import com.okdeer.archive.store.enums.PublicResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
 import com.okdeer.archive.store.service.IStoreServerAreaServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRecordMapper;
+import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRange;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRecord;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
+import com.okdeer.mall.activity.seckill.service.ActivitySeckillRangeService;
+import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
+import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.enums.RangeTypeEnum;
 import com.okdeer.mall.common.utils.TradeNumUtil;
+import com.okdeer.mall.common.vo.OrderQueue;
+import com.okdeer.mall.common.vo.Request;
+import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.member.service.MemberConsigneeAddressService;
+import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.enums.ServerStatus;
+import com.okdeer.mall.order.constant.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -76,25 +92,15 @@ import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.exception.OrderException;
-import com.okdeer.mall.order.service.ServiceOrderProcessServiceApi;
-import com.okdeer.mall.order.vo.ServiceOrderReq;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.utils.DateUtils;
-import com.okdeer.base.common.utils.StringUtils;
-import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRecordMapper;
-import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
-import com.okdeer.mall.activity.seckill.service.ActivitySeckillRangeService;
-import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
-import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
-import com.okdeer.mall.member.service.MemberConsigneeAddressService;
-import com.okdeer.mall.operate.column.service.ServerColumnService;
-import com.okdeer.mall.order.constant.ExceptionConstant;
+import com.okdeer.mall.order.handler.RequestHandlerChain;
 import com.okdeer.mall.order.service.GenerateNumericalService;
+import com.okdeer.mall.order.service.ServiceOrderProcessServiceApi;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.thread.SeckillQueue;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
+import com.okdeer.mall.order.vo.ServiceOrderReq;
+import com.okdeer.mall.order.vo.ServiceOrderResp;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -109,6 +115,7 @@ import net.sf.json.JSONObject;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *     重构4.1          2016年7月21日                               zengj				新建类
+ *     1.1			  2016年9月22日		  maojj             新增秒杀确认订单、提交订单 
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.ServiceOrderProcessServiceApi")
 public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServiceApi {
@@ -222,6 +229,17 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private IStoreServerAreaServiceApi storeServerAreaService;
+	
+	// Begin added by maojj 2016-09-22
+	/**
+	 * 确认订单处理链
+	 */
+	@Resource
+	private RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> confirmSeckillOrderChain;
+	
+	@Resource
+	private SeckillQueue seckillQueue;
+	// End added by maojj 2016-09-22
 
 	/**
 	 * @Description: 服务订单确认订单
@@ -1211,4 +1229,22 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		}
 		return result;
 	}
+
+	// Begin added by maojj 2016-09-22
+	@Override
+	public void confirmSeckillOrder(Request<ServiceOrderReq> req,Response<ServiceOrderResp> resp) throws OrderException, Exception{
+		// TODO 测试完成之后去除该注释
+		resp.setData(new ServiceOrderResp());
+		confirmSeckillOrderChain.process(req, resp);
+	}
+	
+	@Override
+	public void submitSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
+			throws OrderException, Exception {
+		// TODO Auto-generated method stub
+		resp.setData(new ServiceOrderResp());
+		OrderQueue<ServiceOrderReq, ServiceOrderResp> orderQueue = new OrderQueue<ServiceOrderReq, ServiceOrderResp>(req,resp);
+		seckillQueue.push(orderQueue);
+	}
+	// End added by maojj 2016-09-22
 }

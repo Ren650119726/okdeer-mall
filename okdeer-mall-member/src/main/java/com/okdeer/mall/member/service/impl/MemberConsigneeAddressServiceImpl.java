@@ -19,17 +19,18 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.archive.system.entity.SysUser;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.enums.AddressSource;
 import com.okdeer.mall.member.member.enums.AddressType;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
 import com.okdeer.mall.member.member.vo.MemberConsigneeAddressVo;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.StringUtils;
-import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
+import com.okdeer.mall.member.member.vo.UserAddressVo;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 
 /**
@@ -392,4 +393,28 @@ public class MemberConsigneeAddressServiceImpl
 		return memberConsigneeAddressMapper.findUserDefilatSeckillAddress(params);
 	}
 	// End 重构4.1 add by zengj
+
+	// Begin 友门鹿重构1.1 added by maojj 2016-09-24 
+	@Override
+	public List<UserAddressVo> findUserAddr(Map<String, Object> params) {
+		List<UserAddressVo> addrList = null;
+		String seckillRangeType = String.valueOf(params.get("seckillRangeType"));
+		String storeAreaType = String.valueOf(params.get("storeAreaType"));
+		String userId = String.valueOf(params.get("userId"));
+		if ("0".equals(seckillRangeType) && "0".equals(storeAreaType)) {
+			// 如果秒杀区域类型和店铺服务区域都是全国范围，则用户地址均有效
+			addrList = memberConsigneeAddressMapper.findAddrWithUserId(userId);
+		} else if ("0".equals(seckillRangeType) && "1".equals(storeAreaType)) {
+			// 如果秒杀区域类型为全国范围，服务店铺服务范围为区域，则按照店铺服务范围查询用户地址
+			addrList = memberConsigneeAddressMapper.findAddrWithStoreServRange(params);
+		} else if ("1".equals(seckillRangeType) && "0".equals(storeAreaType)) {
+			// 如果秒杀区域类型为区域，服务店铺服务范围为全国，则按照秒杀服务范围查询
+			addrList = memberConsigneeAddressMapper.findAddrWithSeckillServRange(params);
+		} else if ("1".equals(seckillRangeType) && "1".equals(storeAreaType)) {
+			// 如果秒杀区域类型和店铺服务区域类型都是区域，则按照两者的交集查询用户地址
+			addrList = memberConsigneeAddressMapper.findAddrWithServRange(params);
+		}
+		return addrList;
+	}
+	// End added by maojj 2016-09-24
 }
