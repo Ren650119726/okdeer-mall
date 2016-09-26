@@ -355,6 +355,8 @@
     	<result property="indate" column="indate" jdbcType="VARCHAR"/>
     	<result property="couponPrice" column="couponPrice" jdbcType="VARCHAR"/>
     	<result property="arrive" column="arrive" jdbcType="VARCHAR"/>
+    	<result column="status" property="status" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum" jdbcType="TINYINT" />
+    	<result property="activityId" column="activity_id" javaType="string" jdbcType="VARCHAR"/>
     </resultMap>
     
   <!-- wusw:根据领取人id、领取状态，查询领取的代金券详细信息 -->
@@ -567,10 +569,11 @@
 			DATE_FORMAT(t.valid_time, '%Y-%m-%d %T') AS indate,
 			t.id as recordId,
 			c.id as couponId,
+			c.activity_id,
 			FORMAT(c.face_value, 2) as couponPrice,
 			FORMAT(c.arrive_limit,2) as arrive
 		FROM activity_coupons_record t
-		LEFT join activity_coupons c ON t.coupons_id
+		LEFT join activity_coupons c ON t.coupons_id=c.id
 		WHERE t.collect_user_id = #{userId}
 			and t.status = 0
 			and c.disabled = 0 
@@ -578,9 +581,21 @@
 			and c.type = 3
 		ORDER BY arrive,indate desc
 	</select>
-	
-	
 	<!-- end added by zhaoqc -->
+	
+	<!-- 查询优惠券信息 Begin added by zhaoqc -->
+	<select id="findRechargeCouponInfo" resultMap="rechargeCouponRsMap">
+		SELECT DATE_FORMAT(r.valid_time, '%Y-%m-%d %T') AS indate,
+			FORMAT(c.face_value, 2) as couponPrice,
+			FORMAT(c.arrive_limit,2) as arrive,
+			r.status
+		FROM activity_coupons_record r
+		LEFT join activity_coupons c on r.coupons_id=c.id
+		WHERE r.id=#{recordId, jdbcType=VARCHAR} 
+			AND c.id=#{couponId, jdbcType=VARCHAR}
+			AND r.status = 0
+	</select>
+	<!-- End added by zhaoqc -->
 	
 	<!-- add by wushp 20160919 根据用户统计各种状态的代金券数量 -->
 	<select id="findStatusCountByUserId" parameterType="java.lang.String" resultType="com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo">

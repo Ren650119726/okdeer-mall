@@ -234,8 +234,10 @@ import net.sf.json.JsonConfig;
  *    1.0.Z			    2016-09-05			 zengj			          增加订单操作记录        
  *    1.0.Z	            2016-09-07           zengj              库存管理修改，采用商业管理系统校验
  *   V1.1.0	            2016-9-12            zengjz             财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口  
+ *   V1.1.0             2016-9-24            zhaoqc             新增充值订单超时未支付订单取消
  *   V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
  *   V1.1.0             2016-09-24           wusw               消费码验证（到店消费）相应方法
+ *   V1.1.0				2016-09-26			 luosm              查询商家版APP服务店到店消费订单信息
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1142,6 +1144,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public List<TradeOrderStatusVo> getOrderCount(Map<String, Object> map) {
 		return tradeOrderMapper.getOrderCount(map);
 	}
+	
+	//start added by luosm 20160924 V1.1.1
+	/***
+	 * 
+	 *查询商家版APP服务店到店消费订单信息
+	 */
+	@Override
+	public List<TradeOrderStatusVo> selectArrivedOrderCount(Map<String, Object> map){
+		return tradeOrderMapper.selectArrivedOrderCount(map);
+	}
+	//end added by luosm 20160924 V1.1.1
 
 	/**
 	 * 保存订单及相关信息
@@ -1318,6 +1331,31 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	// Begin modified by maojj 2016-07-26 添加分布式事务处理机制
+	
+    /**
+     * 
+     * @desc 取消充值超时未支付订单
+     * @param tradeOrder
+     * @throws ServiceException 
+     * @throws Exception
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateCancelRechargeOrder(TradeOrder tradeOrder) throws ServiceException {
+        // 未支付订单变成已取消
+        tradeOrder.setStatus(OrderStatusEnum.CANCELED);
+        tradeOrderMapper.updateOrderStatus(tradeOrder);
+        
+        //释放代金券
+        if(tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER) {
+            activityCouponsRecordService.updateUseStatus(tradeOrder.getId());
+        }
+        
+        //增加订单操作记录 add by zengj
+        tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(), tradeOrder
+                .getStatus().getName(), tradeOrder.getStatus().getValue()));
+    }
+	   
 	/**
 	 * 取消订单处理
 	 *
