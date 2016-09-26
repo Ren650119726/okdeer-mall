@@ -151,8 +151,25 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 */
     List<Coupons> findValidCoupons(Map<String,Object> params);
     
-    //Begin 获取用户充值代金券列表
+    //Begin 获取用户充值代金券列表 added by zhaoqc
+    /**
+     * @Description: 査取用户有效的手机充值优惠信息
+     * @param params 查询条件 
+     * @return List 有效的代金券列表
+     * @author zhaoqc
+     * @date 2016年9月23日
+     */
     List<RechargeCouponVo> findValidRechargeCoupons(Map<String, Object> params);
+    
+    /**
+     * @Description: 查询优惠券的信息
+     * @param params 查询条件 
+     * @return rechargeCouponVo 优惠券信息VO
+     * @author zhaoqc
+     * @date 2016年9月23日
+     */
+    RechargeCouponVo findRechargeCouponInfo(Map<String, String> params);
+    //END added by zhaoqc
     
     //Begin 代金券领取列表优化 added by tangy  2016-8-17
     /**
