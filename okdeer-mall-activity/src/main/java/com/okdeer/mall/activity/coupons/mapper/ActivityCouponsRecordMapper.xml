@@ -355,6 +355,8 @@
     	<result property="indate" column="indate" jdbcType="VARCHAR"/>
     	<result property="couponPrice" column="couponPrice" jdbcType="VARCHAR"/>
     	<result property="arrive" column="arrive" jdbcType="VARCHAR"/>
+    	<result column="status" property="status" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum" jdbcType="TINYINT" />
+    	<result property="activityId" column="activity_id" javaType="string" jdbcType="VARCHAR"/>
     </resultMap>
     
   <!-- wusw:根据领取人id、领取状态，查询领取的代金券详细信息 -->
@@ -536,7 +538,8 @@
 			t.id AS recordId,
 			t.collect_type AS couponsType,
 			t2.id AS activityItemId ,
-			FORMAT(t2.arrive_limit,2) AS arrive
+			FORMAT(t2.arrive_limit,2) AS arrive,
+			t2.is_category AS isCategory
 		FROM
 			activity_coupons_record t
 		LEFT JOIN activity_coupons_relation_store t1 ON t.coupons_id = t1.coupons_id
@@ -545,6 +548,9 @@
 			t.collect_user_id = #{userId}
 		AND t.status = 0
 		AND t2.disabled = 0
+		<if test="type != ''">
+			AND t2.type = #{type}
+		</if>
 		AND (
 			t1.store_id = #{storeId}
 			<!-- 平台发起的代金券活动，只有云上店可以使用 -->
@@ -563,10 +569,11 @@
 			DATE_FORMAT(t.valid_time, '%Y-%m-%d %T') AS indate,
 			t.id as recordId,
 			c.id as couponId,
+			c.activity_id,
 			FORMAT(c.face_value, 2) as couponPrice,
 			FORMAT(c.arrive_limit,2) as arrive
 		FROM activity_coupons_record t
-		LEFT join activity_coupons c ON t.coupons_id
+		LEFT join activity_coupons c ON t.coupons_id=c.id
 		WHERE t.collect_user_id = #{userId}
 			and t.status = 0
 			and c.disabled = 0 
@@ -574,9 +581,21 @@
 			and c.type = 3
 		ORDER BY arrive,indate desc
 	</select>
-	
-	
 	<!-- end added by zhaoqc -->
+	
+	<!-- 查询优惠券信息 Begin added by zhaoqc -->
+	<select id="findRechargeCouponInfo" resultMap="rechargeCouponRsMap">
+		SELECT DATE_FORMAT(r.valid_time, '%Y-%m-%d %T') AS indate,
+			FORMAT(c.face_value, 2) as couponPrice,
+			FORMAT(c.arrive_limit,2) as arrive,
+			r.status
+		FROM activity_coupons_record r
+		LEFT join activity_coupons c on r.coupons_id=c.id
+		WHERE r.id=#{recordId, jdbcType=VARCHAR} 
+			AND c.id=#{couponId, jdbcType=VARCHAR}
+			AND r.status = 0
+	</select>
+	<!-- End added by zhaoqc -->
 	
 	<!-- add by wushp 20160919 根据用户统计各种状态的代金券数量 -->
 	<select id="findStatusCountByUserId" parameterType="java.lang.String" resultType="com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo">
@@ -596,4 +615,19 @@
 		GROUP BY t.status 	
 	</select>
 	<!-- end by wushp 20160919 根据用户统计各种状态的代金券数量 -->
+	
+	<!-- add by tangy 20160923 根据商品ids查询商品是否符合代金券指定分类 -->
+    <select id="findIsContainBySpuCategoryIds" >
+		SELECT COUNT(1)
+	    FROM goods_navigate_category_association gca 
+	    LEFT JOIN (SELECT t2.category_id FROM activity_coupons tt 
+	         LEFT JOIN activity_coupons_category t2 ON t2.coupon_id = tt.id 
+	         WHERE tt.is_category = 1 AND tt.id = #{couponsId} ) djq ON djq.category_id = gca.navigate_category_id
+	    WHERE gca.spu_category_id IN 
+        <foreach item="item" index="index" collection="spuCategoryIds" open="(" separator="," close=")">  
+  			#{item}  
+ 		</foreach>  
+	    AND djq.category_id IS NULL 
+	</select>
+    <!-- end by tangy 20160923 根据商品ids查询商品是否符合代金券指定分类 -->
 </mapper> 
