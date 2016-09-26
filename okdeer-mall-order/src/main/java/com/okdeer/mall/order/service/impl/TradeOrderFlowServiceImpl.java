@@ -42,6 +42,7 @@ import com.okdeer.archive.stock.entity.ImsDaily;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.ImsDailyServiceApi;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
+import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreBranches;
@@ -224,15 +225,15 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 	@Resource
 	private GenerateNumericalMapper generateNumericalMapper;
 
-	// @Reference(version = "1.0.0", check = false)
-	// private StockManagerServiceApi stockManagerService;
+	@Reference(version = "1.0.0", check = false)
+	private StockManagerServiceApi stockManagerService;
 
 	// Begin 1.0.Z add by zengj
 	/**
 	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerService;
+	private StockManagerJxcServiceApi stockManagerJxcService;
 
 	/**
 	 * 机构Service
@@ -906,7 +907,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 				stockYunVo.setUserId(userId);
 				stockYunVo.setAdjustDetailList(yunGoodsList);
 				stockYunVo.setStockOperateEnum(StockOperateEnum.PLACE_ORDER);
-				stockManagerService.updateStock(stockYunVo);
+				stockManagerJxcService.updateStock(stockYunVo);
 
 			} else if ((saleStatus != 1) && actiType == 2) {
 				AdjustDetailVo yunDetail = new AdjustDetailVo();
@@ -926,7 +927,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 				stockYunVo.setUserId(userId);
 				stockYunVo.setAdjustDetailList(yunGoodsList);
 				stockYunVo.setStockOperateEnum(StockOperateEnum.PLACE_ORDER);
-				stockManagerService.updateStock(stockYunVo);
+				stockManagerJxcService.updateStock(stockYunVo);
 
 			} else if (actiType == 2 && saleStatus == 1) {
 
@@ -947,7 +948,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 				stockVo.setUserId(userId);
 				stockVo.setAdjustDetailList(saleGoodsList);
 				stockVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_PLACE_ORDER);
-				stockManagerService.updateStock(stockVo);
+				stockManagerJxcService.updateStock(stockVo);
 
 			}
 		}
@@ -4075,7 +4076,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		if (isContent == 1 && isClosed == 1 && status == 1 && groupStatus == 1 && isStock == 1 && violation == 1) { // 判断是否可以下单标识
 			isOrder = 1;
 			activityGroupRecordService.insertSelective(groupRecord);
-			stockManagerService.updateStock(stockVo);
+			stockManagerJxcService.updateStock(stockVo);
 			tradeOrderService.insertTradeOrder(order);
 			json.put("orderId", order.getId());
 			json.put("orderNo", order.getOrderNo());
@@ -4334,7 +4335,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		// 张克能优化,把selectSingleSkuStock方法改造成一次查出来,而不是循环查数据库
 		// List<GoodsStoreSkuStock> stuStockList =
 		// goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(list);
-		List<GoodsStoreSkuStock> stuStockList = stockManagerService.findGoodsStockInfoList(list);
+		List<GoodsStoreSkuStock> stuStockList = stockManagerJxcService.findGoodsStockInfoList(list);
 
 		for (int i = 0; i < array.size(); i++) {
 			JSONObject objss = array.getJSONObject(i);
@@ -4395,7 +4396,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			int num = soleStock.get(i);
 			GoodsStoreSku storeSku = stock.get(i);
 			String skuId = storeSku.getId(); // 商品ID
-			int selleabed = stockManagerService.findGoodsStockInfo(skuId).getSellable();// storeSku.getGoodsStoreSkuStock().getSellable();
+			int selleabed = stockManagerJxcService.findGoodsStockInfo(skuId).getSellable();// storeSku.getGoodsStoreSkuStock().getSellable();
 			// //
 			// 商品实际库存
 			if (num > selleabed) { // 库存不足
@@ -4610,7 +4611,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			}
 			isOrder = 1;
 
-			stockManagerService.updateStock(stockVo);
+			stockManagerJxcService.updateStock(stockVo);
 		}
 		obj.put("isOrder", isOrder);
 		obj.put("isStock", isStock);

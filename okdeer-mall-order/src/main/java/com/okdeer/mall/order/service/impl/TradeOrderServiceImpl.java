@@ -43,6 +43,7 @@ import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
+import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreAgentCommunity;
@@ -343,15 +344,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Autowired
 	private TradeOrderItemDetailMapper tradeOrderItemDetailMapper;
 
-	// @Reference(version = "1.0.0", check = false)
-	// private StockManagerServiceApi stockManagerService;
+	@Reference(version = "1.0.0", check = false)
+	private StockManagerServiceApi stockManagerService;
 
 	// Begin 1.0.Z add by zengj
 	/**
 	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerService;
+	private StockManagerJxcServiceApi stockManagerJxcService;
 	// End 1.0.Z add by zengj
 
 	@Reference(version = "1.0.0", check = false)
@@ -1451,7 +1452,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			adjustDetailList.add(detail);
 
 			stockAdjustVo.setAdjustDetailList(adjustDetailList);
-			stockManagerService.updateStock(stockAdjustVo);
+			// 如果是实物订单，走进销存库存
+			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+				stockManagerJxcService.updateStock(stockAdjustVo);
+			} else {
+				// 否则走商城库存
+				stockManagerService.updateStock(stockAdjustVo);
+			}
 
 			stockAdjustList.add(stockAdjustVo);
 		}
@@ -1635,12 +1642,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// Begin modified by maojj 2016-07-26
 				rpcId = UuidUtils.getUuid();
 				stockAdjustVo = buildDeliveryStock(tradeOrder, rpcId);
-				stockManagerService.updateStock(stockAdjustVo);
+				// 只有实物店才同步商品，走进销存库存
+				if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+					stockManagerJxcService.updateStock(stockAdjustVo);
+					// 订单完成后同步到商业管理系统
+					tradeOrderCompleteProcessService.orderCompleteSyncToJxc(tradeOrder.getId());
+					// End 1.0.Z 增加订单操作记录 add by zengj
+				} else {
+					// 否则走商城库存
+					stockManagerService.updateStock(stockAdjustVo);
+				}
 				// End modified by maojj 2016-07-26
-
-				// 订单完成后同步到商业管理系统
-				tradeOrderCompleteProcessService.orderCompleteSyncToJxc(tradeOrder.getId());
-				// End 1.0.Z 增加订单操作记录 add by zengj
 
 				// added by maojj 给ERP发消息去生成出入库单据
 				// stockMQProducer.sendMessage(stockAdjustVo);
