@@ -22,6 +22,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.account.dto.PayUpdateAmountDto;
+import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
@@ -42,7 +43,6 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
-import com.okdeer.mall.common.dto.BaseResultDto;
 import com.okdeer.mall.order.vo.RechargeCouponVo;
 
 import net.sf.json.JSONObject;
