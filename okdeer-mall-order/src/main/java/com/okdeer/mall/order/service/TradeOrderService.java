@@ -661,9 +661,7 @@ public interface TradeOrderService {
 	 * @param params
 	 * @return
 	 */
-	// Begin V1.1.0 update by wusw 20160923
-	List<Map<String, Object>> selectOrderDetailByConsumeCode(Map<String, Object> params);
-	// End V1.1.0 update by wusw 20160923
+	Map<String, Object> selectOrderDetailByConsumeCode(Map<String, Object> params);
 
 	/**
 	 * 未支付订单倒计时时间查询
