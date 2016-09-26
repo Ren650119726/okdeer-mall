@@ -1642,15 +1642,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// Begin modified by maojj 2016-07-26
 				rpcId = UuidUtils.getUuid();
 				stockAdjustVo = buildDeliveryStock(tradeOrder, rpcId);
-				// 只有实物店才同步商品，走进销存库存
+				// 只有实物店才同步商品，走进销存库存,服务商品是派单时就扣了库存
 				if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 					stockManagerJxcService.updateStock(stockAdjustVo);
 					// 订单完成后同步到商业管理系统
 					tradeOrderCompleteProcessService.orderCompleteSyncToJxc(tradeOrder.getId());
 					// End 1.0.Z 增加订单操作记录 add by zengj
-				} else {
-					// 否则走商城库存
-					stockManagerService.updateStock(stockAdjustVo);
 				}
 				// End modified by maojj 2016-07-26
 
@@ -1801,40 +1798,39 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			// 将实际库存-1 订单占用库存 -1
 			// 发货不在修改库存，得订单完成后才有
-			// StockAdjustVo stockAdjustVo = new StockAdjustVo();
-			// // Begin added by maojj 2016-07-26
-			// rpcId = UuidUtils.getUuid();
-			// stockAdjustVo.setRpcId(rpcId);
-			// // End added by maojj 2016-07-26
-			// stockAdjustVo.setStoreId(tradeOrder.getStoreId());
-			// stockAdjustVo.setUserId(tradeOrder.getUserId());
-			// stockAdjustVo.setOrderId(tradeOrder.getId());
-			// ActivityTypeEnum activityType = tradeOrder.getActivityType();
-			// if (activityType != null) {
-			// if (activityType.equals(ActivityTypeEnum.GROUP_ACTIVITY)) {
-			// stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_SEND_OUT_GOODS);
-			// } else {
-			// stockAdjustVo.setStockOperateEnum(StockOperateEnum.SEND_OUT_GOODS);
-			// }
-			// }
-			//
-			// List<AdjustDetailVo> adjustDetailVos = new
-			// ArrayList<AdjustDetailVo>();
-			// AdjustDetailVo adjustDetailVo = null;
-			// List<TradeOrderItem> orderItems = tradeOrder.getTradeOrderItem();
-			// for (TradeOrderItem item : orderItems) {
-			// adjustDetailVo = new AdjustDetailVo();
-			// adjustDetailVo.setStoreSkuId(item.getStoreSkuId());
-			// adjustDetailVo.setGoodsName(item.getSkuName());
-			// adjustDetailVo.setBarCode(item.getBarCode());
-			// adjustDetailVo.setStyleCode(item.getStyleCode());
-			// adjustDetailVo.setPropertiesIndb(item.getPropertiesIndb());
-			// adjustDetailVo.setNum(item.getQuantity());
-			// // 下单时SKU的价格
-			// adjustDetailVo.setPrice(item.getUnitPrice());
-			// adjustDetailVos.add(adjustDetailVo);
-			// }
-			// stockAdjustVo.setAdjustDetailList(adjustDetailVos);
+			StockAdjustVo stockAdjustVo = new StockAdjustVo();
+			// Begin added by maojj 2016-07-26
+			rpcId = UuidUtils.getUuid();
+			stockAdjustVo.setRpcId(rpcId);
+			// End added by maojj 2016-07-26
+			stockAdjustVo.setStoreId(tradeOrder.getStoreId());
+			stockAdjustVo.setUserId(tradeOrder.getUserId());
+			stockAdjustVo.setOrderId(tradeOrder.getId());
+			ActivityTypeEnum activityType = tradeOrder.getActivityType();
+			if (activityType != null) {
+				if (activityType.equals(ActivityTypeEnum.GROUP_ACTIVITY)) {
+					stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_SEND_OUT_GOODS);
+				} else {
+					stockAdjustVo.setStockOperateEnum(StockOperateEnum.SEND_OUT_GOODS);
+				}
+			}
+
+			List<AdjustDetailVo> adjustDetailVos = new ArrayList<AdjustDetailVo>();
+			AdjustDetailVo adjustDetailVo = null;
+			List<TradeOrderItem> orderItems = tradeOrder.getTradeOrderItem();
+			for (TradeOrderItem item : orderItems) {
+				adjustDetailVo = new AdjustDetailVo();
+				adjustDetailVo.setStoreSkuId(item.getStoreSkuId());
+				adjustDetailVo.setGoodsName(item.getSkuName());
+				adjustDetailVo.setBarCode(item.getBarCode());
+				adjustDetailVo.setStyleCode(item.getStyleCode());
+				adjustDetailVo.setPropertiesIndb(item.getPropertiesIndb());
+				adjustDetailVo.setNum(item.getQuantity());
+				// 下单时SKU的价格
+				adjustDetailVo.setPrice(item.getUnitPrice());
+				adjustDetailVos.add(adjustDetailVo);
+			}
+			stockAdjustVo.setAdjustDetailList(adjustDetailVos);
 
 			// 修改订单状态为已发货
 			tradeOrder.setStatus(OrderStatusEnum.TO_BE_SIGNED);
@@ -1874,9 +1870,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), param.getUserId(),
 					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
 			// End 1.0.Z 增加订单操作记录 add by zengj
-
-			// 调整库存 Tips:发货不再修改库存，等订单完成才会
-			// this.stockManagerService.updateStock(stockAdjustVo);
+			// 实物订单是在确收时才会扣减实际库存，但是服务订单还是在派单时
+			if (tradeOrder.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
+				// 调整库存 Tips:发货不再修改库存，等订单完成才会
+				this.stockManagerService.updateStock(stockAdjustVo);
+			}
 
 			// 获取店铺信息
 			StoreInfo storeInfo = storeInfoService.findById(tradeOrder.getStoreId());
