@@ -54,6 +54,14 @@
         <result property="createUserId" column="create_user_id" javaType="string" jdbcType="VARCHAR"/> 
         <result property="type" column="coupons_type" javaType="integer" jdbcType="INTEGER"/>
         <result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/>
+        <result property="areaType" column="coupons_area_type" javaType="com.okdeer.mall.common.enums.AreaType"
+                   jdbcType="TINYINT"/>
+        <collection property="activityCouponsCategory" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory">
+	       <id column="categoryid" property="id" jdbcType="VARCHAR" />
+           <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
+           <result column="category_id" property="categoryId" jdbcType="VARCHAR" />
+           <result column="category_name" property="categoryName" jdbcType="VARCHAR" />
+	    </collection>  
       </collection>
       <!-- 限制使用类目信息 -->
      <!--  <collection property="goodsSpuCategoryList"  ofType="com.okdeer.mall.goods.category.entity.GoodsSpuCategory">
@@ -322,16 +330,28 @@
 	</select>   
 	<!-- wusw:根据店铺id、活动状态、客户端限制类型等，获取代金券领券活动及代金券信息 -->
 	<select id="selectByStoreAndLimitType" resultMap="couponsAndLimitCategoryDetailMap" parameterType="map">
-	   SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time,
+<!-- 	   SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time,
               coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
               coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num,
-              coupons.type AS coupons_type,coupons.is_category
-              <!-- ,category.id AS spuCategoryId,category.`name` AS spuCategoryName -->
+              coupons.type AS coupons_type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type
 		FROM activity_collect_coupons collect
 		LEFT JOIN activity_collect_area area ON area.collect_coupons_id = collect.id
 		LEFT JOIN activity_coupons coupons ON coupons.activity_id = collect.id
-		<!-- LEFT JOIN activity_coupons_limit_category limitCategory ON limitCategory.coupons_id = coupons.id
-		LEFT JOIN goods_spu_category category ON category.id = limitCategory.category_id -->
+		WHERE collect.disabled = 0 AND ( collect.belong_type = '0' or collect.approval_status = 1 ) -->
+		SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time,
+              coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
+              coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num,
+              coupons.type AS coupons_type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, coupons.id as couponsId,
+		CASE
+		WHEN coupons.type = 1 THEN nav.name
+		WHEN coupons.type = 2 THEN spu.name
+		ELSE '' END as category_name
+		FROM activity_collect_coupons collect
+		LEFT JOIN activity_collect_area area ON area.collect_coupons_id = collect.id
+		LEFT JOIN activity_coupons coupons ON coupons.activity_id = collect.id
+		LEFT JOIN activity_coupons_category category ON category.coupon_id = coupons.id	
+		LEFT JOIN goods_navigate_category nav ON nav.id = category.category_id
+		LEFT JOIN goods_spu_category spu ON spu.id = category.category_id
 		WHERE collect.disabled = 0 AND ( collect.belong_type = '0' or collect.approval_status = 1 )
 		<if test="exchangeCode != null and exchangeCode != ''">
 		  AND coupons.exchange_code = #{exchangeCode,jdbcType=VARCHAR}
@@ -364,6 +384,7 @@
 	    AND (collect.area_type =  #{nationalAreaType,jdbcType=TINYINT}
 	        OR (collect.area_type = #{districtAreaType,jdbcType=TINYINT}
 	           AND ((area.type = 1 AND area.area_id = #{provinceId,jdbcType=VARCHAR})
+	           
 	               OR (area.type = 0 AND area.area_id = #{cityId,jdbcType=VARCHAR})
 	               )
 	           )
