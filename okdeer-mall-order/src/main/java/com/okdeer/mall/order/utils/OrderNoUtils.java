@@ -43,4 +43,12 @@ public class OrderNoUtils {
 
 	/** * 线下POS机ID */
 	public static final String OFFLINE_POS_ID = "01";
+	
+	//　Begin added by maojj 2016-09-23
+	/**
+	 * 服务订单 编号前缀
+	 */
+	public static final String SERV_ORDER_PREFIXE = "FW";
+	
+	//　End added by maojj 2016-09-23
 }
