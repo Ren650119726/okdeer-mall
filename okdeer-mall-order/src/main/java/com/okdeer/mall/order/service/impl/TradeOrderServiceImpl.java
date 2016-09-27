@@ -72,6 +72,7 @@ import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.exception.StockException;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
+import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreAgentCommunity;
@@ -234,6 +235,7 @@ import net.sf.json.JsonConfig;
  *    1.0.Z			    2016-09-05			 zengj			          增加订单操作记录        
  *    1.0.Z	            2016-09-07           zengj              库存管理修改，采用商业管理系统校验
  *   V1.1.0	            2016-9-12            zengjz             财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口  
+ *   V1.1.0             2016-9-24            zhaoqc             新增充值订单超时未支付订单取消
  *   V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
  *   V1.1.0             2016-09-24           wusw               消费码验证（到店消费）相应方法
  *   V1.1.0				2016-09-26			 luosm              查询商家版APP服务店到店消费订单信息
@@ -386,8 +388,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Autowired
 	private TradeOrderItemDetailMapper tradeOrderItemDetailMapper;
 
-	// @Reference(version = "1.0.0", check = false)
-	// private StockManagerServiceApi stockManagerService;
+	@Reference(version = "1.0.0", check = false)
+	private StockManagerServiceApi serviceStockManagerService;
 
 	// Begin 1.0.Z add by zengj
 	/**
@@ -1330,6 +1332,31 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	// Begin modified by maojj 2016-07-26 添加分布式事务处理机制
+	
+    /**
+     * 
+     * @desc 取消充值超时未支付订单
+     * @param tradeOrder
+     * @throws ServiceException 
+     * @throws Exception
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateCancelRechargeOrder(TradeOrder tradeOrder) throws ServiceException {
+        // 未支付订单变成已取消
+        tradeOrder.setStatus(OrderStatusEnum.CANCELED);
+        tradeOrderMapper.updateOrderStatus(tradeOrder);
+        
+        //释放代金券
+        if(tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER) {
+            activityCouponsRecordService.updateUseStatus(tradeOrder.getId());
+        }
+        
+        //增加订单操作记录 add by zengj
+        tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(), tradeOrder
+                .getStatus().getName(), tradeOrder.getStatus().getValue()));
+    }
+	   
 	/**
 	 * 取消订单处理
 	 *
@@ -5878,7 +5905,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 存放验证通过的消费码对应的订单项详细id和订单id
 				List<String> itemDetailIdList = new ArrayList<String>();
 				List<String> orderIdList = new ArrayList<String>();
-				List<OrderItemDetailConsumeVo> successOrderList = new ArrayList<OrderItemDetailConsumeVo>();
+				// 存放验证通过的消费码相应的订单库存和金额
+				Map<String,OrderItemDetailConsumeVo> successOrderDetailMap = new HashMap<String,OrderItemDetailConsumeVo>();
 				for (OrderItemDetailConsumeVo detailConsumeVo:orderDetailList) {
 					String consumeCode = detailConsumeVo.getConsumeCode();
 					// 没有找到订单信息
@@ -5902,23 +5930,30 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						failResult.append(consumeCode + "|抱歉,消费码已过期;");
 						continue;
 					} else {
-						itemDetailIdList.add(detailConsumeVo.getOrderItemDetailId());
-						int orderSize = orderIdList.size();
-						orderIdList.add(detailConsumeVo.getOrderId());
-						if (orderIdList.size() > orderSize) {
-							successOrderList.add(detailConsumeVo);
+						// 如果是同一个订单的消费码，将该订单需要修改库存的数量和调整云钱包金额的价格进行累加（到店消费订单与其订单项是一对一关系）
+						if (successOrderDetailMap.containsKey(detailConsumeVo.getOrderId())) {
+							OrderItemDetailConsumeVo oldConsumeVo = successOrderDetailMap.get(detailConsumeVo.getOrderId());
+							oldConsumeVo.setDetailActualAmount(oldConsumeVo.getDetailActualAmount().add(detailConsumeVo.getDetailActualAmount()));
+							oldConsumeVo.setNum(oldConsumeVo.getNum().intValue() + 1);
+							successOrderDetailMap.put(detailConsumeVo.getOrderId(), oldConsumeVo);
+						} else {
+							detailConsumeVo.setNum(1);
+							successOrderDetailMap.put(detailConsumeVo.getOrderId(), detailConsumeVo);
+							// 放入订单id和订单项详细id
+							orderIdList.add(detailConsumeVo.getOrderId());
+							itemDetailIdList.add(detailConsumeVo.getOrderItemDetailId());
 						}
 					}
 				}
-				if (CollectionUtils.isNotEmpty(successOrderList)) {
-					for (OrderItemDetailConsumeVo detailConsumeVo:successOrderList) {
-						
+				if (CollectionUtils.isNotEmpty(orderIdList)) {
+					for (String orderId:orderIdList) {
+						OrderItemDetailConsumeVo consumeVo = successOrderDetailMap.get(orderId);
 						// 消费完，增加积分
-						pointsBuriedService.doConsumePoints(detailConsumeVo.getUserId(), detailConsumeVo.getDetailActualAmount());
+						pointsBuriedService.doConsumePoints(consumeVo.getUserId(), consumeVo.getDetailActualAmount());
 						//修改库存
-						this.updateServiceStoreStock(detailConsumeVo, rpcIdList, userId, storeId);
+						this.updateServiceStoreStock(consumeVo, rpcIdList,StockOperateEnum.SEND_OUT_GOODS,userId,storeId);
 						// 云钱包解冻金额
-						this.payTradeOrderByMq(detailConsumeVo);
+						this.payTradeOrderByMq(consumeVo);
 						// 自动评价计时消息
 						/*tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_finish_evaluate_timeout,
 								data.get("id").toString());*/
@@ -5947,12 +5982,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		return resultMap;
 	}
-	
+
 	/**
 	 * 
 	 * @Description: 修改库存
 	 * @param detailConsumeVo 订单信息
 	 * @param rpcIdList rpcid集合
+	 * @param stockOperateEnum 操作类别
 	 * @param userId 用户id
 	 * @param storeId 店铺id
 	 * @throws StockException 库存异常
@@ -5961,27 +5997,41 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @author wusw
 	 * @date 2016年9月24日
 	 */
-	private void updateServiceStoreStock(OrderItemDetailConsumeVo detailConsumeVo, List<String> rpcIdList, String userId,
-			String storeId) throws StockException, ServiceException, Exception {
-		TradeOrder tradeOrder = new TradeOrder();
-		// 当前登录用户ID、店铺ID、订单ID
-		tradeOrder.setUserId(userId);
-		tradeOrder.setStoreId(storeId);
-		tradeOrder.setId(detailConsumeVo.getOrderId());
-		tradeOrder.setOrderNo(detailConsumeVo.getOrderNo());
-		tradeOrder.setOrderResource(detailConsumeVo.getOrderResource());
-		tradeOrder.setType(detailConsumeVo.getOrderType());
-		// 查询消费码对应的订单项信息
-		TradeOrderItem tradeOrderItem = tradeOrderItemMapper.selectOrderItemById(detailConsumeVo.getOrderItemId());
-		List<TradeOrderItem> tradeOrderItemList = new ArrayList<TradeOrderItem>();
-		tradeOrderItemList.add(tradeOrderItem);
-		tradeOrder.setTradeOrderItem(tradeOrderItemList);
-		// 消费后调整库存
-		StockAdjustVo stockAdjustVo = this.buildServiceOrderStock(tradeOrder, StockOperateEnum.SEND_OUT_GOODS, 1,
-				rpcIdList);
+	private void updateServiceStoreStock(OrderItemDetailConsumeVo detailConsumeVo, List<String> rpcIdList,StockOperateEnum stockOperateEnum,String userId,String storeId) throws StockException, ServiceException, Exception {
+		StockAdjustVo stockAdjustVo = new StockAdjustVo();
+		String rpcId = UuidUtils.getUuid();
+		rpcIdList.add(rpcId);
+		stockAdjustVo.setRpcId(rpcId);
+		
+		// 订单ID
+		stockAdjustVo.setOrderId(detailConsumeVo.getOrderId());
+		stockAdjustVo.setOrderNo(detailConsumeVo.getOrderNo());
+		stockAdjustVo.setOrderResource(detailConsumeVo.getOrderResource());
+		stockAdjustVo.setOrderType(detailConsumeVo.getOrderType());
+		// 店铺ID
+		stockAdjustVo.setStoreId(storeId);
+		// 库存操作枚举
+		stockAdjustVo.setStockOperateEnum(stockOperateEnum);
+		// 操作用户ID
+		stockAdjustVo.setUserId(detailConsumeVo.getUserId());
+		// 库存调整详情VO
+		List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
+		
+		AdjustDetailVo detail = new AdjustDetailVo();
+		detail.setStoreSkuId(detailConsumeVo.getStoreSkuId());
+		detail.setGoodsSkuId("");
+		//detail.setMultipleSkuId("");
+		detail.setGoodsName(detailConsumeVo.getSkuName());
+		detail.setPrice(detailConsumeVo.getUnitPrice());
+		detail.setPropertiesIndb(detailConsumeVo.getPropertiesIndb());
+		detail.setStyleCode(detailConsumeVo.getStyleCode());
+		detail.setBarCode(detailConsumeVo.getBarCode());
+		detail.setNum(detailConsumeVo.getNum());
+		adjustDetailList.add(detail);
+		stockAdjustVo.setAdjustDetailList(adjustDetailList);
 
 		// 修改库存
-		stockManagerService.updateStock(stockAdjustVo);
+        serviceStockManagerService.updateStock(stockAdjustVo);
 	}
 	
 	/**
@@ -5996,16 +6046,22 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (CollectionUtils.isNotEmpty(orderIdList)) {
 			// 分组统计同一订单的不同消费码状态数量,并将结果存入map，key为订单id+下划线+订单消费码状态，value为统计数据
 			List<Map<String,Object>> orderStatusCountList = tradeOrderItemDetailMapper.findStatusCountByOrderIds(orderIdList);
-			Map<String,Object> orderStatusCountMap = new HashMap<String,Object>();
+			Map<String,Integer> orderStatusCountMap = new HashMap<String,Integer>();
 			for (Map<String,Object> map:orderStatusCountList) {
-				orderStatusCountMap.put(map.get("orderId") + "-" + map.get("status"), map.get("num"));
+				orderStatusCountMap.put(map.get("orderId") + "-" + map.get("status"), new Integer(map.get("num").toString()));
 			}
 			// 根据统计数量，判断订单消费码状态值，如果存在已过期的，状态为已过期；如果存在未消费的，状态为未消费；否则，状态为待评价
 			List<String> expiredOrderList = new ArrayList<String>();
 			List<String> consumedList = new ArrayList<String>();
 			for (String orderId:orderIdList) {
-				int noConsumeCount = (int) orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal());
-				int expiredCount = (int) orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.expired.ordinal());
+				int noConsumeCount = 0;
+				int expiredCount = 0;
+				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal()) != null) {
+					noConsumeCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal()).intValue();
+				}
+				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.expired.ordinal()) != null) {
+					expiredCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.expired.ordinal()).intValue();
+				}
 				
 				if (expiredCount > 0) {
 					expiredOrderList.add(orderId);
@@ -6048,7 +6104,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 jsonStr.getBytes(Charsets.UTF_8));
         SendResult sendResult = rocketMQProducer.send(message);
         if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
-            throw new StockException("写mq数据失败");
+            throw new Exception("写mq数据失败");
         }
     }
 	// End V1.1.0 add by wusw 20160924

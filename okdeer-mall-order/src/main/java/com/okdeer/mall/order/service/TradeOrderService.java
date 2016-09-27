@@ -445,6 +445,14 @@ public interface TradeOrderService {
 	boolean updateCancelOrder(TradeOrder tradeOrder, boolean isBuyerOperate) throws Exception;
 
 	/**
+	 * 
+	 * @desc 取消充值超时未支付订单
+	 * @param tradeOrder
+	 * @throws Exception
+	 */
+	void updateCancelRechargeOrder(TradeOrder tradeOrder) throws Exception;
+	
+	/**
 	 * 更新订单
 	 * 
 	 * @param tradeOrder
