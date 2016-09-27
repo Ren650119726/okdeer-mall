@@ -31,6 +31,7 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  *   重构4.1				2016-7-19			zhulq
  *   重构4.1             2016-7-13            wusw              添加退款中、第三方支付的充值退款记录数方法、查询充值订单列表方法（用于财务系统）
  *   v1.1.0				2016-9-17            zengjz            增加财务系统统计数量、金额方法
+ *   V1.1.0				2016-09-27			luosm			        查询服务店到店消费退款单状态下对应的退款单数量
  */
 public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 
@@ -116,8 +117,19 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * 查询退款单状态下对应的退款单数量
 	 * @param storeId 店铺ID
 	 */
-	List<TradeOrderRefundsStatusVo> getOrderRefundsCount(@Param("storeId")
-	String storeId);
+	List<TradeOrderRefundsStatusVo> getOrderRefundsCount(@Param("storeId")String storeId);
+	
+	//start added by luosm 20160927 V1.1.0
+	/***
+	 * 
+	 * @Description: 查询服务店到店消费退款单状态下对应的退款单数量
+	 * @param storeId
+	 * @return
+	 * @author luosm
+	 * @date 2016年9月27日
+	 */
+	List<TradeOrderRefundsStatusVo> selectServiceOrderRefundsCount(@Param("storeId")String storeId);
+	//end added by luosm 20160927 V1.1.0
 
 	/**
 	 * 根据退款单ID查看所属图片
