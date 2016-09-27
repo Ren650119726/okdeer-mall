@@ -112,7 +112,7 @@
 	<!-- 根据参数获取信息 end -->
 		
 	<!-- 保存信息 start -->
-	<insert id="save"
+	<insert id="saveCode"
 		parameterType="com.okdeer.mall.system.entity.SysUserInvitationCode">
 		insert into
 		<include refid="tableBaseName" />
@@ -135,7 +135,7 @@
 	<!-- 保存信息 end -->
 
 	<!-- 更改信息 start -->
-	<update id="update"
+	<update id="updateCode"
 		parameterType="com.okdeer.mall.system.entity.SysUserInvitationCode">
 		update
 		<include refid="tableBaseName" />
