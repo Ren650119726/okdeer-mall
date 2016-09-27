@@ -351,7 +351,7 @@
     	<id property="recordId" column="recordId" jdbcType="VARCHAR"/>
     	<result property="couponId" column="couponId" jdbcType="VARCHAR"/>
     	<result property="usableRange" column="usableRange" jdbcType="VARCHAR"/>
-    	<result property="couponTitle" column="couponTitle" jdbcType="VARCHAR"/>
+    	<result property="couponName" column="couponName" jdbcType="VARCHAR"/>
     	<result property="indate" column="indate" jdbcType="VARCHAR"/>
     	<result property="couponPrice" column="couponPrice" jdbcType="VARCHAR"/>
     	<result property="arrive" column="arrive" jdbcType="VARCHAR"/>
@@ -565,13 +565,13 @@
 	
 	<!-- 查询用户有效的手机充值代金券 begin added by zhaoqc -->
 	<select id="findValidRechargeCoupons" parameterType="map" resultMap="rechargeCouponRsMap">
-		select c.name as couponTitle,0 AS usableRange,
+		select c.name as couponName,0 AS usableRange,
 			DATE_FORMAT(t.valid_time, '%Y-%m-%d %T') AS indate,
 			t.id as recordId,
 			c.id as couponId,
 			c.activity_id,
 			FORMAT(c.face_value, 2) as couponPrice,
-			FORMAT(c.arrive_limit,2) as arrive
+			FORMAT(c.arrive_limit,2) as arrive, t.status
 		FROM activity_coupons_record t
 		LEFT join activity_coupons c ON t.coupons_id=c.id
 		WHERE t.collect_user_id = #{userId}
@@ -579,7 +579,7 @@
 			and c.disabled = 0 
 			and (c.arrive_limit &lt;= #{orderAmount} or c.arrive_limit =  0) 
 			and c.type = 3
-		ORDER BY arrive,indate desc
+		ORDER BY c.face_value DESC, t.valid_time
 	</select>
 	<!-- end added by zhaoqc -->
 	
