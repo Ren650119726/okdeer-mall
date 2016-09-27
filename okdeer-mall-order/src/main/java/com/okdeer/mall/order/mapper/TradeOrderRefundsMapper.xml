@@ -1185,6 +1185,23 @@
 		WHEN `refunds_status` IN(1,6,9,10,11,13,14,15,16) THEN 6
 		END
 	</select>
+	
+	<!-- luosm:统计线上服务店到店消费退款单状态所对应的退款单数量 -->
+	<select id="selectServiceOrderRefundsCount" parameterType="java.lang.String"
+		resultMap="TradeOrderRefundsStatusVoMap">
+		SELECT CASE
+		WHEN `refunds_status` IN(6) THEN 6
+		ELSE 7
+		END as `refunds_status`,count(1) as `count` FROM trade_order_refunds
+		WHERE store_id = #{storeId, jdbcType=VARCHAR}
+		AND order_resource IN(0,1)
+		GROUP BY
+		CASE
+		WHEN `refunds_status` IN(6) THEN 6
+		ELSE 7
+		END
+	</select>
+	
 	<!-- zengj:查询商家版APP售后单列表 -->
 	<select id="selectMallAppByParams" parameterType="java.util.Map"
 		resultMap="TradeOrderRefundsVo">
