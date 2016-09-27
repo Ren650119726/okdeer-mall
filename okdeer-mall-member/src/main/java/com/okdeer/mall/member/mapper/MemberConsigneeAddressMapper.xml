@@ -611,18 +611,38 @@
         FROM store_info store
         LEFT JOIN store_server_area area  ON (area.store_id = store.id)
         WHERE
-            (store.area_type = 0
-        OR (
-            area.province_id = addr.province_id
-            AND area.city_id = addr.city_id
-            AND (area.area_id = addr.area_id or addr.area_id is null or addr.area_id = '')
-        )) AND store.id = #{storeId, jdbcType=VARCHAR}
+        (store.area_type = 0
+          OR (
+            <!-- Begin 服务店区域范围数据结构变更兼容 added by tangy  2016-9-26 -->           
+            area.type = 0 AND (
+              (area.area_type = 2 AND area.province_id = addr.province_id )
+               OR (area.area_type = 1 AND area.city_id = addr.city_id )
+               OR (area.area_type = 0 AND area.city_id = addr.city_id AND (area.area_id = addr.area_id or addr.area_id is null or addr.area_id = ''))
+            )
+          )
+          OR (
+            area.type = 1 AND  SQRT(  
+			 (  
+				 ((addr.longitude-area.longitude)*PI()*12656*cos(((addr.latitude+area.latitude)/2)*PI()/180)/180)  
+				 *  
+				 ((addr.longitude-area.longitude)*PI()*12656*cos (((addr.latitude+area.latitude)/2)*PI()/180)/180)  
+				)  
+				+  
+				(  
+				 ((addr.latitude-area.latitude)*PI()*12656/180)  
+				 *  
+				 ((addr.latitude-area.latitude)*PI()*12656/180)  
+				)  
+			 )<![CDATA[ <  ]]> area.distance
+           )
+           <!-- End added by tangy  2016-9-26 -->
+        ) AND store.id = #{storeId, jdbcType=VARCHAR}
     ) AS isOutRange
     FROM
         member_consignee_address addr
     WHERE
-        user_id = #{userId, jdbcType=VARCHAR}
-        and disabled = 0 
+        addr.user_id = #{userId, jdbcType=VARCHAR}
+        and addr.disabled = 0 
   </sql>
   
   <!-- 用户收货地址列表，针对服务订单 add by zengj 2016-7-25 19:34:51 -->
