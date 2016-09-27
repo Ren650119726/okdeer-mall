@@ -154,7 +154,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 					.convertAppStoreConsumeOrderStatus(userTradeOrderDetailVo.getStatus(), userTradeOrderDetailVo.getConsumerCodeStatus());
 			
 			json.put("orderStatus", consumerCodeStatusEnum.ordinal());
-			json.put("orderStatusName", consumerCodeStatusEnum.getName());
+			json.put("orderStatusName", consumerCodeStatusEnum.getValue());
 
 			// 2 订单支付倒计时计算
 			Integer remainingTime = userTradeOrderDetailVo.getRemainingTime();
