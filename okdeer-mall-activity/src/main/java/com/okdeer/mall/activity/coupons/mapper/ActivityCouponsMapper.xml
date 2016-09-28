@@ -25,7 +25,7 @@
         <result property="createTime" column="create_time" javaType="date" jdbcType="TIMESTAMP"/>
         <result property="updateTime" column="update_time" javaType="date" jdbcType="TIMESTAMP"/>
         <result property="type" column="type" javaType="integer" jdbcType="INTEGER"/>
-        <result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/>
+        <result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/> 
     </resultMap>
     
     <resultMap id="CouponsVoResultMap" type="com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery" extends="CouponsResultMap">
@@ -57,8 +57,27 @@
            <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
            <result column="category_id" property="categoryId" jdbcType="VARCHAR" />
            <result column="category_name" property="categoryName" jdbcType="VARCHAR" />
-	   </collection>             
+	   </collection>       
     </resultMap>
+	
+   <!--  add  by zhuliq -->
+    <select id="findNavCategoryByCouponsId" parameterType="string" resultMap="CouponsVoResultMap">
+        SELECT coupons.id as id, re.category_id as category_id, nav.name as category_name 
+        FROM activity_coupons coupons
+        LEFT JOIN activity_coupons_category re ON re.coupon_id = coupons.id
+        LEFT JOIN goods_navigate_category nav ON nav.id = re.category_id
+        WHERE coupons.is_category != 0 and coupons.type = 1
+        and coupons.id = #{id, jdbcType=VARCHAR}        
+    </select>
+    <!--  add  by zhuliq -->
+    <select id="findSpuCategoryByCouponsId" parameterType="string" resultMap="CouponsVoResultMap">
+    	SELECT coupons.id as id, re.category_id as category_id, spu.name as category_name 
+        FROM activity_coupons coupons
+        LEFT JOIN activity_coupons_category re ON re.coupon_id = coupons.id
+        LEFT JOIN goods_spu_category spu ON spu.id = re.category_id
+        WHERE coupons.is_category != 0 and coupons.type = 2
+        and coupons.id = #{id, jdbcType=VARCHAR} 
+    </select>
     
     <select id="findSpuCategoryList" resultType="com.okdeer.archive.goods.base.entity.GoodsSpuCategory" parameterType="map">
     	SELECT id, NAME FROM goods_spu_category g WHERE g.disabled = 0 
@@ -71,6 +90,7 @@
     	</if>
     </select>
     
+
     <select id="findNavigateCategoryList"  resultType="com.okdeer.archive.goods.base.entity.GoodsNavigateCategory" parameterType="map">
     	SELECT id, NAME FROM goods_navigate_category g WHERE g.disabled = 0 
     	and g.level_type = 0

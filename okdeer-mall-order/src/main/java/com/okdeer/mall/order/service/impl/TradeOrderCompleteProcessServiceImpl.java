@@ -155,25 +155,30 @@ public class TradeOrderCompleteProcessServiceImpl
 			// 支付创建时间取下单时间
 			tradeOrderPay.setCreateTime(tradeOrder.getCreateTime());
 			// 支付时间取下单时间
-			tradeOrderPay.setPayTime(tradeOrder.getPaymentTime());
+			tradeOrderPay.setPayTime(tradeOrder.getCreateTime());
 			// 支付金额取用户实付金额
 			tradeOrderPay.setPayAmount(tradeOrder.getActualAmount());
-			switch (tradeOrder.getPospay()) {
-				case CASH:
-					tradeOrderPay.setPayType(PayTypeEnum.CASH);
-					break;
-				case UNITCARD:
-					tradeOrderPay.setPayType(PayTypeEnum.ONLINE_BANK);
-					break;
-				case APLIPAY:
-					tradeOrderPay.setPayType(PayTypeEnum.ALIPAY);
-					break;
-				case WECHATPAY:
-					tradeOrderPay.setPayType(PayTypeEnum.WXPAY);
-					break;
-				default:
-					tradeOrderPay.setPayType(PayTypeEnum.CASH);
-					break;
+			// 该字段为空就是线上订单货到付款支付，默认现金支付
+			if (StringUtils.isBlank(tradeOrder.getPospay())) {
+				tradeOrderPay.setPayType(PayTypeEnum.CASH);
+			} else {
+				switch (tradeOrder.getPospay()) {
+					case CASH:
+						tradeOrderPay.setPayType(PayTypeEnum.CASH);
+						break;
+					case UNITCARD:
+						tradeOrderPay.setPayType(PayTypeEnum.ONLINE_BANK);
+						break;
+					case APLIPAY:
+						tradeOrderPay.setPayType(PayTypeEnum.ALIPAY);
+						break;
+					case WECHATPAY:
+						tradeOrderPay.setPayType(PayTypeEnum.WXPAY);
+						break;
+					default:
+						tradeOrderPay.setPayType(PayTypeEnum.CASH);
+						break;
+				}
 			}
 			tradeOrderPay.setId(UuidUtils.getUuid());
 			tradeOrderPay.setOrderId(tradeOrder.getId());
@@ -451,7 +456,7 @@ public class TradeOrderCompleteProcessServiceImpl
 			// 退款单项ID
 			item.put("id", orderRefundsItem.getId());
 			// 订单ID
-			item.put("orderId", orderRefunds.getOrderId());
+			item.put("orderId", orderRefunds.getId());
 			// 序号
 			item.put("rowNo", i + 1);
 			// 标准商品库ID
