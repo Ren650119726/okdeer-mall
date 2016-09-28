@@ -1248,4 +1248,18 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		submitServiceOrderChain.process(req, resp);
 	}
 	// end add by wushp V1.1.0 
+
+	@Override
+	public void confirmSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
+			throws OrderException, Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void submitSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
+			throws OrderException, Exception {
+		// TODO Auto-generated method stub
+		
+	}
 }

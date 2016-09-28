@@ -2082,4 +2082,10 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 		map.put("statusList", statusList);
 	}
 	// End add by zengjz 2016-9-14
+
+	@Override
+	public Long selectRefundsCount(String storeId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
