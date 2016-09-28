@@ -274,8 +274,10 @@
 	   <result column="properties_indb" property="propertiesIndb" jdbcType="VARCHAR" />
 	   <result column="unit_price" property="unitPrice" jdbcType="VARCHAR" />
 	   <result column="style_code" property="styleCode" jdbcType="VARCHAR" />
-	   <result column="bar_code" property="barCode" jdbcType="VARCHAR" />    
+	   <result column="bar_code" property="barCode" jdbcType="VARCHAR" /> 
+	   <result column="main_pic_prl" property="skuPictureUrl" jdbcType="VARCHAR" />    
 	   <result column="storeUserId" property="storeUserId" jdbcType="VARCHAR" />
+	   <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     </resultMap>
     <!-- 批量查询指定店铺的消费码相应的订单信息 V1.1.0 add by wusw 20160924-->
 	<select id="findOrderInfoByConsumeCode" resultMap="orderDetailResultMap" parameterType="java.util.Map">
@@ -291,8 +293,10 @@
 			trade.type,
 			trade.order_resource,
 			trade.user_id,
+			trade.create_time,
 			item.id AS order_item_id,
 			item.store_sku_id,
+			item.main_pic_prl,
 			item.sku_name,
 			item.properties_indb,
 			item.unit_price,
@@ -307,6 +311,9 @@
 		WHERE 1=1
 		<if test="storeId != null and storeId != ''">
 			AND trade.store_id = #{storeId,jdbcType=VARCHAR}
+		</if>
+		<if test="consumeCode != null">
+		    AND detail.consume_code = #{consumeCode,jdbcType=VARCHAR}
 		</if>
 		<if test="consumeCodeList != null">
 		   AND detail.consume_code IN

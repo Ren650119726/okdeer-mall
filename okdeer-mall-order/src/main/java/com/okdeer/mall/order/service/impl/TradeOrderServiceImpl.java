@@ -1,6 +1,6 @@
 package com.okdeer.mall.order.service.impl;
 
-import static com.okdeer.common.consts.DescriptConstants.ACTIVITY_RECOMMEND_REQ_PARAM_ERROR;
+import static com.okdeer.common.consts.DescriptConstants.REQUEST_PARAM_FAIL;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY_TIPS;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY;
@@ -5888,11 +5888,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		List<String> rpcIdList = new ArrayList<String>();
 		try {
 			if (CollectionUtils.isEmpty(consumeCodes)) {
-				throw new ServiceException(ACTIVITY_RECOMMEND_REQ_PARAM_ERROR);
+				throw new ServiceException(REQUEST_PARAM_FAIL);
 			}
-			// 验证成功和失败的消费码
-			StringBuffer successResult = new StringBuffer();
-			StringBuffer failResult = new StringBuffer();
+			// 验证失败的消费码
+			StringBuffer failResult = new StringBuffer("");
 			// 当前时间
 			Calendar calendar = Calendar.getInstance();
 			
@@ -5968,18 +5967,20 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					tradeOrderItemDetailMapper.updateStatusByDetailId(ConsumeStatusEnum.consumed, nowTime, itemDetailIdList);
 				}
 			} else {
-				throw new ServiceException(ACTIVITY_RECOMMEND_REQ_PARAM_ERROR);
+				throw new ServiceException(REQUEST_PARAM_FAIL);
 			}
-			// 验证成功或失败的消费码信息,多条以逗号隔开。信息与消费码以|隔开
-			resultMap.put("success", successResult.toString());
-			resultMap.put("failure", failResult.toString());
+			if (StringUtils.isEmpty(failResult.toString())) {
+				resultMap.put("success", "");
+			} else {
+				// 验证失败的消费码信息,多条以逗号隔开。信息与消费码以|隔开
+				resultMap.put("failure", failResult.toString());
+			}
 		} catch(StockException se) {
 			throw se;
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
-
 		return resultMap;
 	}
 
