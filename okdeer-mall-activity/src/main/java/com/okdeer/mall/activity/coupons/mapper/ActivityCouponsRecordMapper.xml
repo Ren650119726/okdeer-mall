@@ -339,7 +339,16 @@
         <result property="isCashDelivery" column="is_cash_delivery" javaType="com.okdeer.mall.activity.coupons.enums.CashDelivery" jdbcType="TINYINT"/>
         <result property="isCategoryLimit" column="is_category_limit" javaType="com.okdeer.mall.activity.coupons.enums.CategoryLimit"  jdbcType="TINYINT"/>
         <result property="type" column="type" javaType="integer" jdbcType="INTEGER"/>
-      </association>
+        <result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/>
+        <result property="areaType" column="coupons_area_type" javaType="com.okdeer.mall.common.enums.AreaType"
+                   jdbcType="TINYINT"/>
+        <collection property="activityCouponsCategory" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory">
+	       <id column="categoryid" property="id" jdbcType="VARCHAR" />
+           <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
+           <result column="category_id" property="categoryId" jdbcType="VARCHAR" />
+           <result column="category_name" property="categoryName" jdbcType="VARCHAR" />
+	    </collection> 
+      </association> 
       <!-- 限制使用类目信息 -->
     <!--   <collection property="goodsSpuCategoryList"  ofType="com.okdeer.mall.goods.category.entity.GoodsSpuCategory">
          <id column="spuCategoryId" property="id" jdbcType="VARCHAR" />
@@ -364,10 +373,17 @@
    SELECT 
    coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
    coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
-   coupons.type,
-   record.id,record.collect_time,record.valid_time 
+   coupons.type AS type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, 
+   coupons.id as couponsId,record.id,record.collect_time,record.valid_time,  		
+   CASE
+   WHEN coupons.type = 1 THEN nav.name
+   WHEN coupons.type = 2 THEN spu.name
+   ELSE '' END as category_name
    FROM activity_coupons_record record
    LEFT JOIN activity_coupons coupons ON record.coupons_id = coupons.id
+   LEFT JOIN activity_coupons_category category ON category.coupon_id = coupons.id	
+   LEFT JOIN goods_navigate_category nav ON nav.id = category.category_id
+   LEFT JOIN goods_spu_category spu ON spu.id = category.category_id
    WHERE 1=1
    <if test="collectUserId != null and collectUserId != ''">
      AND record.collect_user_id = #{collectUserId,jdbcType=VARCHAR}
