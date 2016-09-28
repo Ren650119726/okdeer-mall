@@ -66,6 +66,8 @@ import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.enums.RangeTypeEnum;
 import com.okdeer.mall.common.utils.TradeNumUtil;
+import com.okdeer.mall.common.vo.Request;
+import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
@@ -89,16 +91,14 @@ import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.exception.OrderException;
+import com.okdeer.mall.order.handler.RequestHandlerChain;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.ServiceOrderProcessServiceApi;
-import com.okdeer.mall.order.service.ServiceStoreCheckService;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.order.utils.TradeOrderStock;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
-import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
-import com.okdeer.mall.order.vo.TradeOrderServiceReqDto;
+import com.okdeer.mall.order.vo.ServiceOrderResp;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -229,10 +229,17 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	
 	// begin add by wushp V1.1.0 
 	/**
-	 * 服务订单检查店铺
+	 * 服务订单确认订单处理链
 	 */
 	@Resource
-	private ServiceStoreCheckService serviceStoreCheckService;
+	private RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> confirmServiceOrderChain;
+	
+	/**
+	 * 提交服务订单处理链
+	 */
+	@Resource
+	private RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> submitServiceOrderChain;
+	// end add by wushp V1.1.0 
 	// end add by wushp V1.1.0 
 
 	/**
@@ -1227,201 +1234,18 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	// begin add by wushp V1.1.0 
 	@Transactional(readOnly = true, rollbackFor = Exception.class)
 	@Override
-	public JSONObject confirmServiceOrderV110(TradeOrderServiceReqDto reqDto)
+	public void confirmServiceOrderV110(Request<ServiceOrderReq> req,Response<ServiceOrderResp> resp)
 			throws OrderException, Exception {
-		DecimalFormat df = new DecimalFormat("0.00");
-		// 将校验通过的数据返回，需要用到的时候就可以直接取，不需要再查数据库了
-		Map<String, Object> result = new HashMap<String, Object>();
-		// 校验通过返回值
-		JSONObject resultJson = new JSONObject();
-		try {
-			// 数据校验
-			checkConfirmOrderInputParamV110(reqDto, result, resultJson);
-		} catch (OrderException e) {
-			resultJson.put("code", PublicResultCodeEnum.BUSINESS_FAILURE);
-			resultJson.put("message", e.getMessage());
-			return resultJson;
-		}
-		return null;
+		// 调用处理链处理确认订单流程
+		confirmServiceOrderChain.process(req, resp);
 	}
-	
-	/**
-	 * @Description: 校验服务订单确认订单参数
-	 * @param orderReq 订单请求参数
-	 * @param result 校验通过的结果
-	 * @param resultJson 返回前端信息
-	 * @throws OrderException  订单验证异常 
-	 * @throws Exception   其他异常
-	 * @author wusp
-	 * @date 2016年9月26日
-	 */
-	private void checkConfirmOrderInputParamV110(TradeOrderServiceReqDto reqDto, Map<String, Object> result,
-			JSONObject resultJson) throws OrderException, Exception {
-		// 1、先做非空校验
-		checkNotNullV110(reqDto);
-		// 2、再做业务逻辑校验
-		ServerColumn serverColumn = serverColumnService.findById(reqDto.getColumnServerId());
-		// 服务栏目不存在
-		if (serverColumn == null || serverColumn.getDisabled() == Disabled.invalid) {
-			resultJson.put("serverColumnStatus", ExceptionConstant.ZERO);
-			throw new OrderException(ExceptionConstant.SERVER_COLUMN_NOT_EXISTS);
-		}
-		// 服务栏目已关闭
-		if (serverColumn.getServerStatus() == ServerStatus.close) {
-			resultJson.put("serverColumnStatus", ExceptionConstant.ONE);
-			throw new OrderException(ExceptionConstant.SERVER_COLUMN_IS_CLOSED);
-		}
-		// 服务店铺不存在
-		StoreInfo storeInfo = storeInfoService.getStoreInfoById(reqDto.getStoreId());
-		if (storeInfo == null || storeInfo.getStoreInfoExt() == null) {
-			resultJson.put("storeStatus", ExceptionConstant.ZERO);
-			throw new OrderException(ExceptionConstant.SERVER_STORE_NOT_EXISTS);
-		}
-		// 店铺已关闭
-		if (StoreStatusEnum.OPENING != storeInfo.getStoreInfoExt().getIsClosed()) {
-			resultJson.put("storeStatus", ExceptionConstant.ONE);
-			throw new OrderException(ExceptionConstant.SERVER_STORE_IS_CLOSED);
-		}
-		
-		// TODO 上门服务订单，如果商家中心设置起送价，不满起送价不可下单，提示
-		// 提示‘抱歉，订单不满起送价，请重新结算’且页面跳回至购物车页面，购物车页面刷新，获取最新的起送价、配送费信息
-		
-		// 订单商品列表
-		List<TradeOrderGoodsItem> list = reqDto.getList();
-		// 店铺商品skuId集合
-		List<String> storeSkuIdList = new ArrayList<String>();
-		for (TradeOrderGoodsItem item : list) {
-			storeSkuIdList.add(item.getSkuId());
-		}
-		// 判断商品信息是否有更新
-		List<GoodsStoreSku> goodsStoreSkuList = goodsStoreSkuService.findByIds(storeSkuIdList);
-		// 存储有商品信息有更新的sku列表
-		List<Map<String, Object>> skuInfoList = new ArrayList<Map<String,Object>>();
-		// 商品下架标识，0：没有下架，1：下架
-		int offlineFlag = 0;
-		for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
-			if (goodsStoreSku == null || goodsStoreSku.getOnline() != BSSC.PUTAWAY) {
-				// 下架
-				offlineFlag = 1;
-			}
-			skuInfoList.add(findGoodsStoreSkuInfo(goodsStoreSku.getId()));
-		}
-		
-		if (offlineFlag == 1) {
-			// 商品信息有变化，不能下单
-			resultJson.put("skuStatus", ExceptionConstant.ZERO);
-			resultJson.put("skuInfoList", skuInfoList);
-			throw new OrderException(ExceptionConstant.GOODS_NOT_EXSITS_PART);
-		}
-		Date goodsUpdateTime = null;
-		// 商品更新标识，0：没有更新，1：有更新
-		int updateFlag = 0;
-		for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
-			for (TradeOrderGoodsItem item : list) {
-				if (goodsStoreSku.getId() == item.getSkuId()) {
-					goodsUpdateTime = DateUtils.parseDate(item.getUpdateTime());
-					// 判断商品信息是否有更新
-					if (goodsStoreSku.getUpdateTime().getTime() != goodsUpdateTime.getTime()) {
-						updateFlag = 1;
-						// 商品信息有更新，跳出循环
-						break;
-					}
-				}
-			}
-			if (updateFlag == 1) {
-				// 商品信息有更新，直接跳出循环
-				break;
-			}
-		}
-		// 商品信息有更新
-		if (updateFlag == 1) {
-			resultJson.put("goodsIsUpdate", ExceptionConstant.ONE);
-			resultJson.put("skuInfoList", skuInfoList);
-			throw new OrderException(ExceptionConstant.GOODS_IS_UPDATE_PART);
-		}
-				
-		
-		// 校验正常商品库存
-		//GoodsStoreSkuStock goodsStoreSkuStock = goodsStoreSkuStockService.getBySkuId(orderReq.getSkuId());
-		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockService
-				.selectSingleSkuStockBySkuIdList(storeSkuIdList);
-		
-		// 存储返回的sku对应的库存信息列表
-		List<TradeOrderStock> detail = new ArrayList<TradeOrderStock>();
-		TradeOrderStock tradeOrderStock = null;
-		//可销售库存是否充足标识，0：充足， 1：不足
-		int stockEnoughFlag = 0;
-		// 判断库存是否满足销售
-		for (GoodsStoreSkuStock skuStock : stockList) {
-			for (TradeOrderGoodsItem item : list) {
-				if (skuStock.getStoreSkuId() == item.getSkuId()) {
-					tradeOrderStock = new TradeOrderStock();
-					tradeOrderStock.setSkuId(skuStock.getStoreSkuId());
-					tradeOrderStock.setSellableStock(skuStock.getSellable());
-					detail.add(tradeOrderStock);
- 					if (skuStock.getSellable() < item.getSkuNum()) {
-						// 可销售库存小雨售卖的商品数量
-						stockEnoughFlag = 1;
-						
-					}
-				}
-			}
-		}
-		// 库存不足
-		if (stockEnoughFlag == 1) {
-			resultJson.put("stockStatus", ExceptionConstant.ONE);
-			resultJson.put("skuInfoList", skuInfoList);
-			// 库存信息
-			resultJson.put("tradeOrderStockList", detail);
-			throw new OrderException(ExceptionConstant.GOODS_STOCK_NOT_ENOUGH);
-		}
-		
-		// 将验证通过的信息返回
-		result.put("storeInfo", storeInfo);
-		result.put("goodsStoreSkuList", goodsStoreSkuList);
-	}
-	
-	/**
-	 * @Description: 非空校验
-	 * @param orderReq   订单请求参数
-	 * @return void  
-	 * @author wushp
-	 * @throws OrderException 订单校验异常信息
-	 * @date 2016年9月26日
-	 */
-	private void checkNotNullV110(TradeOrderServiceReqDto orderReq) throws OrderException {
-		// 服务栏目不能为空
-		if (StringUtils.isNullOrEmpty(orderReq.getColumnServerId())) {
-			throw new OrderException(ExceptionConstant.SERVER_COLUMN_IS_NULL);
-		}
-		// 服务店铺不能为空
-		if (StringUtils.isNullOrEmpty(orderReq.getStoreId())) {
-			throw new OrderException(ExceptionConstant.SERVER_STORE_IS_NULL);
-		}
-		// 订单商品列表
-		List<TradeOrderGoodsItem> list = orderReq.getList();
-		if (CollectionUtils.isEmpty(list)) {
-			throw new OrderException(ExceptionConstant.GOODS_IS_NULL);
-		}
-		for (TradeOrderGoodsItem item : list) {
-			// 商品不能为空
-			if (StringUtils.isNullOrEmpty(item.getSkuId())) {
-				throw new OrderException(ExceptionConstant.GOODS_IS_NULL);
-			}
-			// 购买商品数量不能为空
-			if (item.getSkuNum() == 0) {
-				throw new OrderException(ExceptionConstant.GOODS_BUY_NUM_IS_NULL);
-			}
-			// 商品更新时间不能为空
-			if (StringUtils.isNullOrEmpty(item.getUpdateTime())) {
-				throw new OrderException(ExceptionConstant.GOODS_UPDATE_TIME_IS_NULL);
-			}
-			// 商品更新时间格式错误
-			if (DateUtils.parseDate(item.getUpdateTime()) == null) {
-				throw new OrderException(ExceptionConstant.GOODS_UPDATE_TIME_FORMAT_ERROR);
-			}
-		}
-		
+
+	@Transactional(readOnly = true, rollbackFor = Exception.class)
+	@Override
+	public void submitServiceOrderV110(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
+			throws OrderException, Exception {
+		// 调用处理链处理提交订单流程
+		submitServiceOrderChain.process(req, resp);
 	}
 	// end add by wushp V1.1.0 
 }
