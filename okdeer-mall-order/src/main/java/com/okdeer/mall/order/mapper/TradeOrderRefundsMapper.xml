@@ -1149,15 +1149,20 @@
 	<select id="selectServiceOrderRefundsCount" parameterType="java.lang.String"
 		resultMap="TradeOrderRefundsStatusVoMap">
 		SELECT CASE
-		WHEN `refunds_status` IN(6) THEN 6
-		ELSE 7
+		WHEN `refunds_status` = 0 THEN 0
+		WHEN `refunds_status` in(5,7,8,12) THEN 5
+		WHEN `refunds_status` in(2,3,4) THEN 2
+		WHEN `refunds_status` in(1,6,9,10,11,13,14,15,16) THEN 6
 		END as `refunds_status`,count(1) as `count` FROM trade_order_refunds
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
 		AND order_resource IN(0,1)
+		AND type = '5'
 		GROUP BY
 		CASE
-		WHEN `refunds_status` IN(6) THEN 6
-		ELSE 7
+		WHEN `refunds_status` = 0 THEN 0
+		WHEN `refunds_status` IN(5,7,8,12) THEN 5
+		WHEN `refunds_status` IN(2,3,4) THEN 2
+		WHEN `refunds_status` IN(1,6,9,10,11,13,14,15,16) THEN 6
 		END
 	</select>
 	
