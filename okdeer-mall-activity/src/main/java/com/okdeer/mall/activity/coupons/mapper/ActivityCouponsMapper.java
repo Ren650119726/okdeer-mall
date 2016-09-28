@@ -20,10 +20,15 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
- * 代金卷管理
- * @project yschome-mall
+ * ClassName: ActivityCouponsMapper 
+ * @Description: 代金卷管理
  * @author zhulq
- * @date 2016年1月11日 上午10:58:04
+ * @date 2016年9月27日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *		重构4.1			 2016年9月27日 			zhulq    新增查询对应类目名称
  */
 public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	
@@ -245,4 +250,35 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	 * @return
 	 */
 	ActivityCoupons selectById(String id);
+	
+	//add  by  zhuliq
+	/**
+	 * @Description: 根据代金券id查询对应的导航类目
+	 * @param id  代金券id
+	 * @return  CouponsInfoQuery
+	 * @author zhulq
+	 * @date 2016年9月27日
+	 */
+	//CouponsInfoQuery findNavCategoryByCouponsId(@Param("id")String id);
+	//end  by  zhuliq
+	
+	//add  by  zhuliq
+	/**
+	 * @Description: 根据代金券id查询对应的导航类目
+	 * @param id  代金券id
+	 * @return  CouponsInfoQuery
+	 * @author zhulq
+	 * @date 2016年9月27日
+	 */
+	//CouponsInfoQuery findSpuCategoryByCouponsId(@Param("id")String id);
+	//end  by  zhuliq
+	
+	/**
+	 * @Description: 领卷中心
+	 * @param map map
+	 * @return CouponsInfoQuery
+	 * @author zhulq
+	 * @date 2016年9月27日
+	 */
+	//List<CouponsInfoQuery> findForCouponsCenter(Map<String,Object> map);
 }

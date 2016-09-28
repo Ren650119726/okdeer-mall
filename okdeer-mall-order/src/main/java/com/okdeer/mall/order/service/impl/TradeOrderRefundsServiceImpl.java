@@ -1527,6 +1527,15 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 		return tradeOrderRefundsMapper.getOrderRefundsCount(storeId);
 	}
 
+	//start added by luosm 20160927 V1.1.0
+	/***
+	 * 查询服务店到店消费退款单状态下对应的退款单数量
+	 */
+	public List<TradeOrderRefundsStatusVo> selectServiceOrderRefundsCount(String storeId){
+		return tradeOrderRefundsMapper.selectServiceOrderRefundsCount(storeId);
+	}
+	//end added by luosm 20160927 V1.1.0
+	
 	/**
 	 * 商家版APP查询退款单信息
 	 *

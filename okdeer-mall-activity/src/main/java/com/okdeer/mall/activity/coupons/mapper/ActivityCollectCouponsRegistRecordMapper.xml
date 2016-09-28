@@ -45,7 +45,7 @@
   <select id="findRegisteRecord" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo" 
   								resultMap="extResultMap">
 	SELECT A.activity_id, 
-		count(A.id) as total_num,
+<!-- 		count(A.id) as total_num, -->
 		A.user_id,  
 		C.login_name AS invite_login_name,
 	    B.name AS activity_name, 

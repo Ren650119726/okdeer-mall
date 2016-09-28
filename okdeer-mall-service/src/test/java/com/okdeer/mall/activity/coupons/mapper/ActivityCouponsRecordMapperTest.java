@@ -17,11 +17,12 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.okdeer.mall.Application;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.Discount;
 import com.okdeer.mall.order.vo.FullSubtract;
-import com.okdeer.mall.Application;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
+import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 
 import net.sf.json.JSONArray;
 
@@ -40,6 +41,8 @@ import net.sf.json.JSONArray;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
 public class ActivityCouponsRecordMapperTest {
+	@Resource 
+	SysUserInvitationCodeMapper mapper;
 	
 	@Resource
 	ActivityCouponsRecordMapper activityCouponsRecordMapper;
@@ -49,6 +52,11 @@ public class ActivityCouponsRecordMapperTest {
 	/**
 	 * Test method for {@link com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper#findValidCoupons(java.util.Map)}.
 	 */
+	@Test
+	public void testFind(){
+		mapper.findByQueryVo(null);
+	}
+	
 	@Test
 	public void testFindValidCoupons() {
 		Map<String,Object> queryCondition = new HashMap<String,Object>();

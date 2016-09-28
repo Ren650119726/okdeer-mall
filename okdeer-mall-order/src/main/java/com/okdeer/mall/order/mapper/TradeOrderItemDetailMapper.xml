@@ -15,6 +15,11 @@
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
     <result column="order_id" property="orderId" jdbcType="VARCHAR" />
     <result column="user_id" property="userId" jdbcType="VARCHAR" />
+     <!--Begin add by zengjz 2016-9-27 订单明细表新增字断 -->
+    <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+    <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
+    <result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
+    
     <!-- End by zengjz 2016-9-23 订单明细表新增字断 -->
 	    
   </resultMap>
@@ -218,7 +223,7 @@
     UPDATE trade_order_item_detail
 	SET STATUS = #{status,jdbcType=TINYINT},
 	    use_time = #{useTime,jdbcType=TIMESTAMP},
-	    update_time = #{useTime,jdbcType=TIMESTAMP},
+	    update_time = #{useTime,jdbcType=TIMESTAMP}
 	WHERE 
 	<if test="orderItemIds != null">
 	  id in
@@ -233,7 +238,8 @@
   
   <!-- 批量分组统计同一订单的不同消费码状态数量 V1.1.0 add by wusw 20160923-->
   <select id="findStatusCountByOrderIds" resultType="map">
-    SELECT CONCAT(status,'-',order_id) AS orderIdStatus,
+    SELECT order_id AS orderId,
+           cast(`status` as SIGNED) AS status,
 		   count(1) AS num
 	FROM trade_order_item_detail
 	WHERE
@@ -251,7 +257,9 @@
 	
 	<!-- 根据订单id查询明细列表 V1.1.0 add by zengjz 20160923-->
    <select id="selectByOrderItemDetailByOrderId" parameterType="java.lang.String" resultMap="BaseResultMap">
-        select * from trade_order_item_detail where order_id = #{orderId,jdbcType=VARCHAR}
+        select 
+         <include refid="Base_Column_List" />
+         from trade_order_item_detail where order_id = #{orderId,jdbcType=VARCHAR}
   </select>
   
   <!-- 订单消费的详细信息结果集  V1.1.0 add by wusw 20160924-->
@@ -268,31 +276,51 @@
 	   <result column="type" property="orderType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
 	   <result column="order_no" property="orderNo" jdbcType="VARCHAR" />
 	   <result column="user_id" property="userId" jdbcType="VARCHAR" />
+	   <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+	   <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
+	   <result column="properties_indb" property="propertiesIndb" jdbcType="VARCHAR" />
+	   <result column="unit_price" property="unitPrice" jdbcType="VARCHAR" />
+	   <result column="style_code" property="styleCode" jdbcType="VARCHAR" />
+	   <result column="bar_code" property="barCode" jdbcType="VARCHAR" /> 
+	   <result column="main_pic_prl" property="skuPictureUrl" jdbcType="VARCHAR" />    
 	   <result column="storeUserId" property="storeUserId" jdbcType="VARCHAR" />
+	   <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     </resultMap>
     <!-- 批量查询指定店铺的消费码相应的订单信息 V1.1.0 add by wusw 20160924-->
 	<select id="findOrderInfoByConsumeCode" resultMap="orderDetailResultMap" parameterType="java.util.Map">
 	   SELECT
 			detail.id,
-			detail.order_item_id,
-			detail.order_id,
 			detail.consume_code,
 			detail.start_time,
 			detail.end_time,
 			detail.`status`,
 			detail.actual_amount,
+			trade.id AS order_id,
 			trade.order_no,
-			trade.type
+			trade.type,
 			trade.order_resource,
 			trade.user_id,
+			trade.create_time,
+			item.id AS order_item_id,
+			item.store_sku_id,
+			item.main_pic_prl,
+			item.sku_name,
+			item.properties_indb,
+			item.unit_price,
+			item.style_code,
+			item.bar_code,
 			member.sys_user_id AS storeUserId	
 		FROM trade_order_item_detail detail
+		INNER JOIN trade_order_item item on detail.order_item_id = item.id
 		INNER JOIN trade_order trade on item.order_id = trade.id
 		LEFT JOIN store_member_relation member ON (member.store_id = trade.store_id and
 		member.menber_type = 0)
 		WHERE 1=1
 		<if test="storeId != null and storeId != ''">
 			AND trade.store_id = #{storeId,jdbcType=VARCHAR}
+		</if>
+		<if test="consumeCode != null">
+		    AND detail.consume_code = #{consumeCode,jdbcType=VARCHAR}
 		</if>
 		<if test="consumeCodeList != null">
 		   AND detail.consume_code IN
@@ -304,6 +332,8 @@
 	
 	<!-- 根据消费码状态与订单id查询列表 V1.1.0 add by zengjz 20160924-->
 	 <select id="selectItemDetailByOrderIdAndStatus"  resultMap="BaseResultMap">
-        select * from trade_order_item_detail where order_id = #{orderId,jdbcType=VARCHAR} and  status= #{status,jdbcType=TINYINT}
+        select 
+         <include refid="Base_Column_List" />
+         from trade_order_item_detail where order_id = #{orderId,jdbcType=VARCHAR} and  status= #{status,jdbcType=TINYINT}
   </select>
 </mapper>
