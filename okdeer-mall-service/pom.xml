@@ -37,6 +37,12 @@
 			<groupId>com.okdeer.base</groupId>
 			<artifactId>okdeer-base-zookeeper-conf</artifactId>
 			<version>${base.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>spring-boot-starter-web</artifactId>
+					<groupId>org.springframework.boot</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.okdeer.mall</groupId>
