@@ -27,7 +27,7 @@
     <result column="logistics_type" property="logisticsType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundsLogisticsEnum" />
     <result column="refund_money_time" property="refundMoneyTime" jdbcType="TIMESTAMP" />
     <result column="delivery_time" property="deliveryTime" jdbcType="TIMESTAMP" />
-    <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.yschome.base.common.enums.Disabled" />
+    <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled" />
     
      <!-- 店铺信息  zhongy-->
     <association property="storeInfo" javaType="com.okdeer.archive.store.entity.StoreInfo">
