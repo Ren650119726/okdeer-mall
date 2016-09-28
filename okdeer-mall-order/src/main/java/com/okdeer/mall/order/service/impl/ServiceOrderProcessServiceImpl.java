@@ -17,12 +17,12 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
@@ -42,7 +42,6 @@ import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.PublicResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
-import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.IStoreServerAreaServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
@@ -50,7 +49,6 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
-import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
@@ -66,10 +64,8 @@ import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRangeService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
-import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.RangeTypeEnum;
 import com.okdeer.mall.common.utils.TradeNumUtil;
-import com.okdeer.mall.common.vo.OrderQueue;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
@@ -100,9 +96,7 @@ import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.ServiceOrderProcessServiceApi;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.mall.order.thread.SeckillQueue;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
 
@@ -119,8 +113,6 @@ import net.sf.json.JSONObject;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *     重构4.1          2016年7月21日                               zengj				新建类
- *	   V1.1.0		  2016-09-23		  tangy			             服务店添加代金券
- 	   1.1			  2016年9月22日		  maojj             新增秒杀确认订单、提交订单 
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.ServiceOrderProcessServiceApi")
 public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServiceApi {
@@ -174,13 +166,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	 */
 	@Resource
 	private ActivityDiscountRecordMapper activityDiscountRecordMapper;
-	
-	/**
-	 * 代金券记录Mapper
-	 */
-	@Resource
-	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
-	
+
 	/**
 	 * 订单服务Service
 	 */
@@ -240,23 +226,22 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private IStoreServerAreaServiceApi storeServerAreaService;
+	
+	// begin add by wushp V1.1.0 
+	/**
+	 * 服务订单确认订单处理链
+	 */
+	@Resource
+	private RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> confirmServiceOrderChain;
+	
+	/**
+	 * 提交服务订单处理链
+	 */
+	@Resource
+	private RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> submitServiceOrderChain;
+	// end add by wushp V1.1.0 
+	// end add by wushp V1.1.0 
 
-	/**
-	 * 店铺商品Api
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
-	
-	// Begin added by maojj 2016-09-22
-	/**
-	 * 确认订单处理链
-	 */
-	@Resource
-	private RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> confirmSeckillOrderChain;
-	
-	@Resource
-	private SeckillQueue seckillQueue;
-	// End added by maojj 2016-09-22
 	/**
 	 * @Description: 服务订单确认订单
 	 * @return JSONObject
@@ -373,14 +358,11 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		// 查询秒杀范围
 		findActivitySeckillRangeList(activitySeckill, resultJson);
 
-		//查询代金券
-		findValidCoupons(storeInfo, orderReq, totalAmount, resultJson);
-		
 		// 查询用户默认收货地址
 		resultJson.put("defaultAddress", findUserDefaultAddress(orderReq));
 		return resultJson;
 	}
-	
+
 	/**
 	 * @Description: 服务店订单下单
 	 * @param orderReq 下单请求参数
@@ -1249,86 +1231,21 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		return result;
 	}
 	
-	//Begin added by tangy  2016-9-23
-	/**
-	 * 
-	 * @Description: 获取服务店铺代金券
-	 * @param storeInfo    店铺信息
-	 * @param orderReq     订单信息
-	 * @param totalAmount  订单总金额
-	 * @param resultJson   返回
-	 * @return void  
-	 * @author tangy
-	 * @date 2016年9月24日
-	 */
-	private void findValidCoupons(StoreInfo storeInfo, ServiceOrderReq orderReq, BigDecimal totalAmount, JSONObject resultJson){
-		// 获取店铺类型
-		StoreTypeEnum storeType = storeInfo.getType();
-		//构建优惠查询请求条件
-		Map<String, Object> queryCondition = new HashMap<String, Object>();
-		queryCondition.put("userId", orderReq.getUserId());
-		queryCondition.put("storeId", orderReq.getStoreId());
-		queryCondition.put("totalAmount", totalAmount);
-		queryCondition.put("storeType", storeType.ordinal());
-		//根据店铺类型查询代金券
-		if (StoreTypeEnum.CLOUD_STORE.equals(storeType)) {
-			queryCondition.put("type", Constant.ONE);
-		} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
-			queryCondition.put("type", Constant.TWO);
-		}
-		// 获取用户有效的代金券
-		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);
-		//排除不符合的代金券
-		if (CollectionUtils.isNotEmpty(couponList)) {
-			// 提取商品skuId
-			List<String> skuIdList = new ArrayList<String>();
-			skuIdList.add(orderReq.getSkuId());
-			// 当前店铺商品信息
-			List<GoodsStoreSku> currentStoreSkuList = goodsStoreSkuServiceApi.findStoreSkuForOrder(skuIdList);
-            //商品类型ids
-			List<String> spuCategoryIds = new ArrayList<String>();
-			if (CollectionUtils.isNotEmpty(currentStoreSkuList)) {
-				for (GoodsStoreSku goodsStoreSku : currentStoreSkuList) {
-					spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
-				}
-			}			
-			List<Coupons> delCouponList = new ArrayList<Coupons>();
-			//判断筛选指定分类使用代金券
-			for (Coupons coupons : couponList) {
-				//是否指定分类使用
-				if (Constant.ONE == coupons.getIsCategory().intValue()) {
-					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getId());
-					if (count > Constant.ZERO) {
-						delCouponList.add(coupons);
-					}
-				}
-			}
-			//删除不符合指定分类使用的代金券
-			if (CollectionUtils.isNotEmpty(delCouponList)) {
-				couponList.removeAll(delCouponList);
-			}
-		}
-		resultJson.put("couponList", JSONArray.fromObject(couponList));
-	}
-	//End added by tangy
-	
-	// Begin added by maojj 2016-09-22
+	// begin add by wushp V1.1.0 
+	@Transactional(readOnly = true, rollbackFor = Exception.class)
 	@Override
-	public void confirmSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
+	public void confirmServiceOrderV110(Request<ServiceOrderReq> req,Response<ServiceOrderResp> resp)
 			throws OrderException, Exception {
-		// TODO 测试完成之后去除该注释
-		resp.setData(new ServiceOrderResp());
-		confirmSeckillOrderChain.process(req, resp);
+		// 调用处理链处理确认订单流程
+		confirmServiceOrderChain.process(req, resp);
 	}
 
+	@Transactional(readOnly = true, rollbackFor = Exception.class)
 	@Override
-	public void submitSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
+	public void submitServiceOrderV110(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
 			throws OrderException, Exception {
-		// TODO Auto-generated method stub
-		resp.setData(new ServiceOrderResp());
-		OrderQueue<ServiceOrderReq, ServiceOrderResp> orderQueue = new OrderQueue<ServiceOrderReq, ServiceOrderResp>(
-				req, resp);
-		seckillQueue.push(orderQueue);
+		// 调用处理链处理提交订单流程
+		submitServiceOrderChain.process(req, resp);
 	}
-	// End added by maojj 2016-09-22
+	// end add by wushp V1.1.0 
 }
