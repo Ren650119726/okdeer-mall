@@ -16,7 +16,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.druid.util.StringUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
@@ -27,10 +26,12 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
@@ -160,6 +161,39 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				cal.setTime(vo.getValidTime());
 				cal.add(Calendar.DATE, -1); // 减1天
 				vo.setValidTime(cal.getTime());
+				ActivityCoupons activityCoupons = vo.getActivityCoupons();
+				if (activityCoupons.getType() == 1) {
+					if (activityCoupons.getIsCategory() == 1) {
+						String categoryNames = "";
+						//CouponsInfoQuery couponsInfo = activityCouponsMapper.findNavCategoryByCouponsId(activityCoupons.getId());
+						List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
+						if (cates != null) {
+					    	for (ActivityCouponsCategory category : cates) {
+					    		if (StringUtils.isNotBlank(categoryNames)) {
+						    		categoryNames =  categoryNames + "、" ;	
+					    		}	
+					    		categoryNames = categoryNames + category.getCategoryName();
+					    	}
+					    }
+						activityCoupons.setCategoryNames(categoryNames);
+					}
+				} else if (activityCoupons.getType() == 2) {
+					if (activityCoupons.getIsCategory() == 1) {
+						String categoryNames = "";
+						//CouponsInfoQuery couponsInfo = activityCouponsMapper.findSpuCategoryByCouponsId(activityCoupons.getId());
+						List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
+						if (cates != null) {
+					    	for (ActivityCouponsCategory category : cates) {
+					    		if (StringUtils.isNotBlank(categoryNames)) {
+						    		categoryNames =  categoryNames + "、" ;	
+					    		}	
+					    		categoryNames = categoryNames + category.getCategoryName();						    		
+					    	}
+					    }
+						activityCoupons.setCategoryNames(categoryNames);
+					}
+					
+				}
 			}
 		}
 		return voList;

@@ -140,6 +140,6 @@ public interface TradeOrderItemDetailMapper{
 	 * @author zengjizu
 	 * @date 2016年9月23日
 	 */
-	List<TradeOrderItemDetail> selectItemDetailByOrderIdAndStatus(String orderId,int status);
+	List<TradeOrderItemDetail> selectItemDetailByOrderIdAndStatus(@Param("orderId") String orderId,@Param("status")int status);
 	// End V1.1.0 add by zengjz 20160924
 }
