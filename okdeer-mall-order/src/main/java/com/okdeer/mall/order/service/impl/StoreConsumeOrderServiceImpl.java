@@ -170,7 +170,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 
 			if (payInfo != null) {
 				// 0:余额支付 1:支付宝 2:微信支付
-				json.put("payMethod", payInfo.getPayType());
+				json.put("payMethod", payInfo.getPayType().ordinal());
 				json.put("orderPayTime", DateUtils.formatDate(payInfo.getPayTime(), "yyyy-MM-dd HH:mm:ss"));
 				// 是否支持投诉 0：支持 1:不支持
 				json.put("isSupportComplain", 0);
@@ -267,36 +267,45 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 	 * @date 2016年9月24日
 	 */
 	private void getTradeItemInfo(JSONObject json, List<TradeOrderItem> tradeOrderItems) {
-		TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
+		
+		
+//		TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
 
-		if (tradeOrderItem != null) {
+		JSONArray  itemArry = new JSONArray();
+		
+		if (tradeOrderItems != null && tradeOrderItems.size() > 0) {
+			JSONObject itemObject = new JSONObject();
+			for (TradeOrderItem tradeOrderItem : tradeOrderItems) {
+				json.put("itemId", tradeOrderItem.getId());
+				json.put("productId", tradeOrderItem.getStoreSkuId() == null ? "" : tradeOrderItem.getStoreSkuId());
+				json.put("mainPicPrl", tradeOrderItem.getMainPicPrl() == null ? "" : tradeOrderItem.getMainPicPrl());
+				json.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
+				json.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
+				json.put("quantity", tradeOrderItem.getQuantity() == null ? "0" : tradeOrderItem.getQuantity());
+				json.put("skuTotalAmount", tradeOrderItem.getTotalAmount() == null ? "0" : tradeOrderItem.getTotalAmount());
+				json.put("skuActualAmount",
+						tradeOrderItem.getActualAmount() == null ? "0" : tradeOrderItem.getActualAmount());
+				json.put("skuPreferPrice",
+						tradeOrderItem.getPreferentialPrice() == null ? "0" : tradeOrderItem.getPreferentialPrice());
 
-			json.put("productId", tradeOrderItem.getStoreSkuId() == null ? "" : tradeOrderItem.getStoreSkuId());
-			json.put("mainPicPrl", tradeOrderItem.getMainPicPrl() == null ? "" : tradeOrderItem.getMainPicPrl());
-			json.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
-			json.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
-			json.put("quantity", tradeOrderItem.getQuantity() == null ? "" : tradeOrderItem.getQuantity());
-			json.put("skuTotalAmount", tradeOrderItem.getTotalAmount() == null ? "" : tradeOrderItem.getTotalAmount());
-			json.put("skuActualAmount",
-					tradeOrderItem.getActualAmount() == null ? "" : tradeOrderItem.getActualAmount());
-			json.put("preferentialPrice",
-					tradeOrderItem.getPreferentialPrice() == null ? "0" : tradeOrderItem.getPreferentialPrice());
+				GoodsStoreSkuService goodsStoreSkuService = goodsStoreSkuServiceServiceApi
+						.selectByStoreSkuId(tradeOrderItem.getStoreSkuId());
 
-			GoodsStoreSkuService goodsStoreSkuService = goodsStoreSkuServiceServiceApi
-					.selectByStoreSkuId(tradeOrderItem.getStoreSkuId());
+				// 是否需要预约0：不需要，1：需要
+				json.put("isPrecontract", goodsStoreSkuService.getIsAppointment().ordinal());
+				json.put("appointmentHour", goodsStoreSkuService.getAppointmentHour());
+				// 是否支持退订0：不支持，1：支持
+				json.put("isUnsubscribe", goodsStoreSkuService.getIsUnsubscribe().ordinal());
 
-			// 是否需要预约0：不需要，1：需要
-			json.put("isPrecontract", goodsStoreSkuService.getIsAppointment());
-			json.put("appointmentHour", goodsStoreSkuService.getAppointmentHour());
-			// 是否支持退订0：不支持，1：支持
-			json.put("isUnsubscribe", goodsStoreSkuService.getIsUnsubscribe());
-
-			String startDate = DateUtils.formatDate(goodsStoreSkuService.getStartTime(), "yyyy-MM-dd");
-			String endDate = DateUtils.formatDate(goodsStoreSkuService.getEndTime(), "yyyy-MM-dd");
-			json.put("orderInDate", startDate + "-" + endDate);
-			json.put("notAvailableDate", goodsStoreSkuService.getInvalidDate());
-
+				String startDate = DateUtils.formatDate(goodsStoreSkuService.getStartTime(), "yyyy-MM-dd");
+				String endDate = DateUtils.formatDate(goodsStoreSkuService.getEndTime(), "yyyy-MM-dd");
+				json.put("orderInDate", startDate + "-" + endDate);
+				json.put("notAvailableDate", goodsStoreSkuService.getInvalidDate());
+				
+				itemArry.add(itemObject);
+			}
 		}
+		json.put("items", itemArry);
 	}
 
 	/**
