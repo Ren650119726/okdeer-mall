@@ -1546,12 +1546,16 @@
 		</if>
 		order by r.create_time desc
 	</select>
-	<!-- zengj:查询店铺内所有的退单数 -->
-	<select id="selectRefundsCount" parameterType="java.lang.String"
-		resultType="java.lang.Long">
-		SELECT count(1) FROM trade_order_refunds WHERE store_id =
-		#{storeId,jdbcType=VARCHAR} and disabled = 0 and order_resource
-		IN(0,1)
+	<!-- zengj:查询店铺内所有的退单数 V1.1.0 update by wusw 20160928 -->
+	<select id="selectRefundsCount" resultType="java.lang.Long">
+		SELECT count(1) 
+		FROM trade_order_refunds 
+		WHERE store_id = #{storeId,jdbcType=VARCHAR} 
+		and disabled = 0 
+		and order_resource IN(0,1)
+		<if test="type != null">
+		 AND type = #{type,jdbcType=TINYINT}
+		</if>
 	</select>
 
 	<!-- 商家中心首页 根据状态统计退款单数量(张克能加) -->

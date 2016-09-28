@@ -8,6 +8,7 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsChargeVo;
@@ -30,6 +31,7 @@ import com.okdeer.base.common.utils.PageUtils;
  * 	  重构4.1	            2016-7-13            zhaoqc            添加支付订单退款
  *    v1.1.0            2016-9-17 			zengjz 		                  添加统计订单退款金额、数量接口
  *    V1.1.0			2016-09-27			luosm			     查询服务店到店消费退款单状态下对应的退款单数量
+ *    V1.1.0			2016-09-28			wusw			       修改查询退款单数量，如果是服务店，只查询到店消费退款单
  */
 public interface TradeOrderRefundsService {
 
@@ -294,7 +296,9 @@ public interface TradeOrderRefundsService {
 	 * @param storeId 店铺
 	 * @return
 	 */
-	Long selectRefundsCount(String storeId);
+	// Begin V1.1.0 add by wusw 20160928
+	Long selectRefundsCount(String storeId,OrderTypeEnum type);
+	// End V1.1.0 add by wusw 20160928
 
 	List<TradeOrderRefunds> getTradeOrderRefundsByOrderItemId(String orderItemId);
 

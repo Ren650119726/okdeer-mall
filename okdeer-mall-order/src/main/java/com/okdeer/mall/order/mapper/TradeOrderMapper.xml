@@ -2285,7 +2285,7 @@
 		AND trade.id = #{orderId,jdbcType=VARCHAR}
 	</select>
 
-	<!-- zengj:获取订单总数，根据订单状态分组 -->
+	<!-- zengj:获取订单总数，根据订单状态分组 V1.1.0  update by wusw 20160928 -->
 	<select id="getOrderCount" parameterType="java.util.Map"
 		resultMap="TradeOrderStatusVoMap">
 		SELECT CASE
@@ -2305,6 +2305,9 @@
 				open="(" close=")" separator=",">
 				#{item}
 			</foreach>
+		</if>
+		<if test="type != null">
+		   AND type = #{type,jdbcType=TINYINT}
 		</if>
 		and `status` >= 0
 		GROUP BY
