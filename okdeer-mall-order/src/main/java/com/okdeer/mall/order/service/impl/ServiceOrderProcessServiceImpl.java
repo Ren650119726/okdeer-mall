@@ -1350,18 +1350,20 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	// begin add by wushp V1.1.0 
 	@Transactional(readOnly = true, rollbackFor = Exception.class)
 	@Override
-	public void confirmServiceOrderV110(Request<ServiceOrderReq> req,Response<ServiceOrderResp> resp)
+	public Response<ServiceOrderResp> confirmServiceOrderV110(Request<ServiceOrderReq> req,Response<ServiceOrderResp> resp)
 			throws OrderException, Exception {
 		// 调用处理链处理确认订单流程
 		confirmServiceOrderChain.process(req, resp);
+		return resp;
 	}
 
-	@Transactional(readOnly = true, rollbackFor = Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public void submitServiceOrderV110(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
+	public Response<ServiceOrderResp> submitServiceOrderV110(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
 			throws OrderException, Exception {
 		// 调用处理链处理提交订单流程
 		submitServiceOrderChain.process(req, resp);
+		return resp;
 	}
 	// end add by wushp V1.1.0
 }
