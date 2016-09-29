@@ -1,6 +1,8 @@
 package com.okdeer.mall.order.service.impl;
 
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import org.junit.Test;
@@ -10,6 +12,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.alibaba.fastjson.JSONObject;
 import com.okdeer.mall.Application;
+import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
+import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
@@ -24,6 +28,19 @@ public class TradeOrderRefundsTraceServiceImplTest {
 	@Resource
 	private TradeOrderRefundsTraceServiceImpl tradeOrderRefundsTraceService; 
 	
+	@Resource
+	private ActivitySeckillService activitySeckillService;
+	
+	@Test
+	public void testQuery(){
+		try {
+			List<ActivitySeckill> activitySeckill = activitySeckillService.findByUserAppSecKillByCityId("291");
+			System.out.println(activitySeckill.size());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 	@Test
 	public void testSaveRefundApplyTrace() {
