@@ -5,12 +5,14 @@ import org.springframework.stereotype.Service;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
+import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.ServStoreInfo;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
@@ -57,6 +59,18 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		
 		req.getContext().put("storeName", storeInfo.getStoreName());
 		req.getContext().put("storeAreaType", storeInfo.getAreaType());
+		// begin add by wushp 20160927 
+		// 上门服务订单，如果商家中心设置起送价，不满起送价不可下单，提示
+		// 提示‘抱歉，订单不满起送价，请重新结算’且页面跳回至购物车页面，购物车页面刷新，获取最新的起送价、配送费信息 
+		OrderTypeEnum orderType = reqData.getOrderType();
+		if (orderType != null && orderType.ordinal() == OrderTypeEnum.SERVICE_STORE_ORDER.ordinal()) {
+			// 上门服务订单
+			StoreInfoServiceExt serviceExt = storeInfo.getStoreInfoServiceExt();
+			// 返回服务店铺扩展信息
+			data.setStoreInfoServiceExt(serviceExt);
+			
+		}
+		// end add by wushp 20160927 
 		// 返回服务店铺信息
 		if (req.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
 			data.setStoreInfo(buildServStoreInfo(storeInfo));
@@ -76,6 +90,8 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		StoreInfoExt storeExt = storeInfo.getStoreInfoExt();
 		// 设置店铺ID
 		servStoreInfo.setStoreId(storeInfo.getId());
+		// 店铺类型
+		servStoreInfo.setStoreType(storeInfo.getType().ordinal());
 		// 设置店铺服务时间
 		servStoreInfo.setStartTime(storeExt.getServiceStartTime());
 		servStoreInfo.setEndTime(storeExt.getServiceEndTime());

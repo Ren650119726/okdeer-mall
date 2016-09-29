@@ -43,15 +43,16 @@ import com.okdeer.mall.order.service.StoreConsumeOrderServiceApi;
 import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
 
 /**
- * ClassName: ConsumerCodeOrderServiceImpl 
+ * ClassName: ConsumerCodeOrderServiceImpl
+ * 
  * @Description: 到店消费接口实现类
  * @author zengjizu
  * @date 2016年9月20日
  *
- * =================================================================================================
- *     Task ID			  Date			     Author		      Description
- * ----------------+----------------+-------------------+-------------------------------------------
- *     v1.1.0            2016-9-20          zengjz			  增加查询消费码订单列表
+ *       =======================================================================
+ *       ========================== Task ID Date Author Description
+ *       ----------------+----------------+-------------------+-----------------
+ *       -------------------------- v1.1.0 2016-9-20 zengjz 增加查询消费码订单列表
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.StoreConsumeOrderServiceApi")
 public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi {
@@ -144,15 +145,15 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		// 查询店铺扩展信息
 		JSONObject json = new JSONObject();
 		try {
-			// StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
+			// StoreInfoExt storeInfoExt =
+			// storeInfoExtService.getByStoreId(storeId);
 
 			// 1 订单信息
 			json.put("orderId", userTradeOrderDetailVo.getId() == null ? "" : userTradeOrderDetailVo.getId());
-			
-			
-			ConsumerCodeStatusEnum consumerCodeStatusEnum = OrderAppStatusAdaptor
-					.convertAppStoreConsumeOrderStatus(userTradeOrderDetailVo.getStatus(), userTradeOrderDetailVo.getConsumerCodeStatus());
-			
+
+			ConsumerCodeStatusEnum consumerCodeStatusEnum = OrderAppStatusAdaptor.convertAppStoreConsumeOrderStatus(
+					userTradeOrderDetailVo.getStatus(), userTradeOrderDetailVo.getConsumerCodeStatus());
+
 			json.put("orderStatus", consumerCodeStatusEnum.ordinal());
 			json.put("orderStatusName", consumerCodeStatusEnum.getValue());
 
@@ -170,7 +171,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 
 			if (payInfo != null) {
 				// 0:余额支付 1:支付宝 2:微信支付
-				json.put("payMethod", payInfo.getPayType());
+				json.put("payMethod", payInfo.getPayType().ordinal());
 				json.put("orderPayTime", DateUtils.formatDate(payInfo.getPayTime(), "yyyy-MM-dd HH:mm:ss"));
 				// 是否支持投诉 0：支持 1:不支持
 				json.put("isSupportComplain", 0);
@@ -189,22 +190,26 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			json.put("orderNo", userTradeOrderDetailVo.getOrderNo() == null ? "" : userTradeOrderDetailVo.getOrderNo());
 			json.put("cancelReason",
 					userTradeOrderDetailVo.getReason() == null ? "" : userTradeOrderDetailVo.getReason());
-			json.put(
-					"orderSubmitOrderTime",
-					userTradeOrderDetailVo.getCreateTime() != null ? DateUtils.formatDate(
-							userTradeOrderDetailVo.getCreateTime(), "yyyy-MM-dd HH:mm:ss") : "");
+			json.put("orderSubmitOrderTime", userTradeOrderDetailVo.getCreateTime() != null
+					? DateUtils.formatDate(userTradeOrderDetailVo.getCreateTime(), "yyyy-MM-dd HH:mm:ss") : "");
 
-			json.put("activityType", userTradeOrderDetailVo.getActivityType() == null ? "" : userTradeOrderDetailVo
-					.getActivityType().ordinal());
+			json.put("activityType", userTradeOrderDetailVo.getActivityType() == null ? ""
+					: userTradeOrderDetailVo.getActivityType().ordinal());
 			json.put("preferentialPrice", userTradeOrderDetailVo.getPreferentialPrice() == null ? ""
 					: userTradeOrderDetailVo.getPreferentialPrice());
 			// 订单评价类型0：未评价，1：已评价
 			json.put("orderIsComment", appraise > 0 ? Constant.ONE : Constant.ZERO);
 			// 订单投诉状态
-			json.put("compainStatus", userTradeOrderDetailVo.getCompainStatus() == null ? "" : userTradeOrderDetailVo
-					.getCompainStatus().ordinal());
+			json.put("compainStatus", userTradeOrderDetailVo.getCompainStatus() == null ? ""
+					: userTradeOrderDetailVo.getCompainStatus().ordinal());
 
 			json.put("leaveMessage", userTradeOrderDetailVo.getRemark());
+			
+			if (userTradeOrderDetailVo.getStatus() == OrderStatusEnum.CANCELED) {
+				json.put("cancelTime", DateUtils.formatDate(userTradeOrderDetailVo.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
+			}else{
+				json.put("cancelTime","");
+			}
 
 			// 店铺信息
 			getStoreInfo(json, userTradeOrderDetailVo);
@@ -220,9 +225,12 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 
 	/**
 	 * @Description: 获取店铺信息
-	 * @param json 返回的json对象
-	 * @param userTradeOrderDetailVo 订单信息
-	 * @throws ServiceException 抛出异常
+	 * @param json
+	 *            返回的json对象
+	 * @param userTradeOrderDetailVo
+	 *            订单信息
+	 * @throws ServiceException
+	 *             抛出异常
 	 * @author zengjizu
 	 * @date 2016年9月24日
 	 */
@@ -255,56 +263,89 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		json.put("orderShopMobile", storeMobile);
 		json.put("orderExtractShopName", storeName);
 		json.put("orderShopAddress", address);
-		json.put("storeLogo", storeInfo.getLogoUrl());
+		json.put("storeLogo", storeInfo.getLogoUrl() == null ? "" : storeInfo.getLogoUrl());
 
 	}
 
 	/**
 	 * @Description: 获取订单项信息
-	 * @param json 返回json对象
-	 * @param tradeOrderItems 订单项
+	 * @param json
+	 *            返回json对象
+	 * @param tradeOrderItems
+	 *            订单项
 	 * @author zengjizu
 	 * @date 2016年9月24日
 	 */
 	private void getTradeItemInfo(JSONObject json, List<TradeOrderItem> tradeOrderItems) {
-		TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
 
-		if (tradeOrderItem != null) {
+		// TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
 
-			json.put("productId", tradeOrderItem.getStoreSkuId() == null ? "" : tradeOrderItem.getStoreSkuId());
-			json.put("mainPicPrl", tradeOrderItem.getMainPicPrl() == null ? "" : tradeOrderItem.getMainPicPrl());
-			json.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
-			json.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
-			json.put("quantity", tradeOrderItem.getQuantity() == null ? "" : tradeOrderItem.getQuantity());
-			json.put("skuTotalAmount", tradeOrderItem.getTotalAmount() == null ? "" : tradeOrderItem.getTotalAmount());
-			json.put("skuActualAmount",
-					tradeOrderItem.getActualAmount() == null ? "" : tradeOrderItem.getActualAmount());
-			json.put("preferentialPrice",
-					tradeOrderItem.getPreferentialPrice() == null ? "0" : tradeOrderItem.getPreferentialPrice());
+		JSONArray itemArry = new JSONArray();
 
-			GoodsStoreSkuService goodsStoreSkuService = goodsStoreSkuServiceServiceApi
-					.selectByStoreSkuId(tradeOrderItem.getStoreSkuId());
+		if (tradeOrderItems != null && tradeOrderItems.size() > 0) {
+			JSONObject itemObject = null;
+			GoodsStoreSkuService goodsStoreSkuService = null;
+			for (TradeOrderItem tradeOrderItem : tradeOrderItems) {
+				itemObject = new JSONObject();
+				itemObject.put("itemId", tradeOrderItem.getId());
+				itemObject.put("productId",
+						tradeOrderItem.getStoreSkuId() == null ? "" : tradeOrderItem.getStoreSkuId());
+				itemObject.put("mainPicPrl",
+						tradeOrderItem.getMainPicPrl() == null ? "" : tradeOrderItem.getMainPicPrl());
+				itemObject.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
+				itemObject.put("unitPrice",
+						tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
+				itemObject.put("quantity", tradeOrderItem.getQuantity() == null ? "0" : tradeOrderItem.getQuantity());
+				itemObject.put("skuTotalAmount",
+						tradeOrderItem.getTotalAmount() == null ? "0" : tradeOrderItem.getTotalAmount());
+				itemObject.put("skuActualAmount",
+						tradeOrderItem.getActualAmount() == null ? "0" : tradeOrderItem.getActualAmount());
+				itemObject.put("skuPreferPrice",
+						tradeOrderItem.getPreferentialPrice() == null ? "0" : tradeOrderItem.getPreferentialPrice());
 
-			// 是否需要预约0：不需要，1：需要
-			json.put("isPrecontract", goodsStoreSkuService.getIsAppointment());
-			json.put("appointmentHour", goodsStoreSkuService.getAppointmentHour());
-			// 是否支持退订0：不支持，1：支持
-			json.put("isUnsubscribe", goodsStoreSkuService.getIsUnsubscribe());
+				goodsStoreSkuService = goodsStoreSkuServiceServiceApi
+						.selectByStoreSkuId(tradeOrderItem.getStoreSkuId());
 
-			String startDate = DateUtils.formatDate(goodsStoreSkuService.getStartTime(), "yyyy-MM-dd");
-			String endDate = DateUtils.formatDate(goodsStoreSkuService.getEndTime(), "yyyy-MM-dd");
-			json.put("orderInDate", startDate + "-" + endDate);
-			json.put("notAvailableDate", goodsStoreSkuService.getInvalidDate());
+				if (goodsStoreSkuService != null) {
+					// 是否需要预约0：不需要，1：需要
+					itemObject.put("isPrecontract", goodsStoreSkuService.getIsAppointment().ordinal());
+					itemObject.put("appointmentHour", goodsStoreSkuService.getAppointmentHour());
+					// 是否支持退订0：不支持，1：支持
+					itemObject.put("isUnsubscribe", goodsStoreSkuService.getIsUnsubscribe().ordinal());
 
+					String startDate = DateUtils.formatDate(goodsStoreSkuService.getStartTime(), "yyyy-MM-dd");
+					String endDate = DateUtils.formatDate(goodsStoreSkuService.getEndTime(), "yyyy-MM-dd");
+					itemObject.put("orderInDate", startDate + "-" + endDate);
+					itemObject.put("notAvailableDate", goodsStoreSkuService.getInvalidDate());
+				} else {
+					// 是否需要预约0：不需要，1：需要
+					itemObject.put("isPrecontract", 0);
+					itemObject.put("appointmentHour", 0);
+					// 是否支持退订0：不支持，1：支持
+					itemObject.put("isUnsubscribe", 0);
+					itemObject.put("orderInDate", "");
+					itemObject.put("notAvailableDate", "");
+				}
+
+				itemArry.add(itemObject);
+
+				itemObject = null;
+				goodsStoreSkuService = null;
+			}
 		}
+		json.put("items", itemArry);
 	}
 
 	/**
 	 * @Description: 获取订单明细列表信息
-	 * @param json 返回的json对象
-	 * @param userTradeOrderDetailVo 订单信息
-	 * @param tradeOrderItem 订单项信息
-	 * @param orderId 订单id
+	 * @param json
+	 *            返回的json对象
+	 * @param userTradeOrderDetailVo
+	 *            订单信息
+	 * @param tradeOrderItem
+	 *            订单项信息
+	 * @param orderId
+	 *            订单id
 	 * @author zengjizu
 	 * @date 2016年9月24日
 	 */
@@ -341,11 +382,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 				detail = null;
 			}
 		}
-
-		if (userTradeOrderDetailVo.getStatus() == OrderStatusEnum.CANCELED) {
-			json.put("cancelTime", DateUtils.formatDate(userTradeOrderDetailVo.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
-		}
-
 		json.put("consumeCodeList", consumeCodeList);
 	}
 
@@ -367,16 +403,16 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 	@Override
 	public TradeOrderRefunds getRefundOrderDetail(String refundId) {
 		TradeOrderRefunds refunds = tradeOrderRefundsMapper.findStoreConsumeOrderDetailById(refundId);
-		List<TradeOrderRefundsItem> itemList = tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(refunds
-				.getId());
+		List<TradeOrderRefundsItem> itemList = tradeOrderRefundsItemMapper
+				.getTradeOrderRefundsItemByRefundsId(refunds.getId());
 		refunds.setTradeOrderRefundsItem(itemList);
 		return refunds;
 	}
 
 	@Override
 	public List<TradeOrderItemDetail> getStoreConsumeOrderDetailList(String orderId, int status) {
-		List<TradeOrderItemDetail> list = tradeOrderItemDetailMapper
-				.selectItemDetailByOrderIdAndStatus(orderId, status);
+		List<TradeOrderItemDetail> list = tradeOrderItemDetailMapper.selectItemDetailByOrderIdAndStatus(orderId,
+				status);
 
 		return list;
 	}

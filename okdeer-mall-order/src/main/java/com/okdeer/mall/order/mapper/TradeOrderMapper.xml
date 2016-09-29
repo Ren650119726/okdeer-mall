@@ -212,6 +212,11 @@
 			<result column="store_address" property="address" jdbcType="VARCHAR" />
 			<result column="store_type" property="type" jdbcType="TINYINT"
 				javaType="com.okdeer.archive.store.enums.StoreTypeEnum" />
+			
+			<!--begin add by zengjz 2016-9-28 增加店铺logo字段 -->
+			<result column="store_logo_url" property="logoUrl" jdbcType="VARCHAR" />
+			<!--end add by zengjz 2016-9-28 增加店铺logo字段 -->
+			
 			<association property="storeInfoExt"
 				javaType="com.okdeer.archive.store.entity.StoreInfoExt">
 				<id column="storeExtId" property="id" jdbcType="VARCHAR" />
@@ -2280,7 +2285,7 @@
 		AND trade.id = #{orderId,jdbcType=VARCHAR}
 	</select>
 
-	<!-- zengj:获取订单总数，根据订单状态分组 -->
+	<!-- zengj:获取订单总数，根据订单状态分组 V1.1.0  update by wusw 20160928 -->
 	<select id="getOrderCount" parameterType="java.util.Map"
 		resultMap="TradeOrderStatusVoMap">
 		SELECT CASE
@@ -2300,6 +2305,9 @@
 				open="(" close=")" separator=",">
 				#{item}
 			</foreach>
+		</if>
+		<if test="type != null">
+		   AND type = #{type,jdbcType=TINYINT}
 		</if>
 		and `status` >= 0
 		GROUP BY
@@ -4726,7 +4734,7 @@
 		TIMESTAMPDIFF(SECOND,DATE_FORMAT(NOW(),'%Y-%m-%d
 		%H:%i:%s'),o.create_time) AS remaining_time,
 		store.id as store_id,store.store_name as store_name,store.mobile as
-		store_mobile,store.area as store_area,store.address as store_address,
+		store_mobile,store.area as store_area,store.address as store_address,store.logo_url as store_logo_url,
 		store.type as store_type,invoice.id as
 		invoice_id,invoice.head,invoice.context
 		FROM trade_order o

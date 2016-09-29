@@ -637,7 +637,7 @@
 	
 	<!-- add by wushp V1.1.0 消费返券：活动代金券查询 20160923-->
 	<select id="findCollCouponsLinks" parameterType="map" resultMap="collectCouponsLinkMap">
-		SELECT <include refid="columns"/>,<include refid="activityCoupons" /> 
+		SELECT <include refid="columns_as"/>,<include refid="activityCoupons" /> 
 		FROM activity_collect_coupons coll 
 		LEFT JOIN activity_coupons coupons ON coll.id= coupons.activity_id
 		LEFT JOIN activity_collect_order_type collOrder ON coll.`id` = collOrder.`collect_coupons_id`

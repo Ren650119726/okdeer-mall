@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- * TradeOrderRefundsTrace 数据持久化 * @author YSCERP CODE GENERATOR * @Copyright: 
+	©2005-2013 yschome.com Inc. All rights reserved -->
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderRefundsTraceMapper">
+
+	<!-- 属性映射 -->
+	<resultMap id="tradeOrderRefundsTraceMap" type="com.okdeer.mall.order.entity.TradeOrderRefundsTrace">
+		<result property="id" column="id" />
+		<result property="refundsId" column="refunds_id" />
+		<result property="traceStatus" column="trace_status" javaType="com.okdeer.mall.order.enums.RefundsTraceEnum"/>
+		<result property="remark" column="remark" />
+		<result property="optTime" column="opt_time" />
+	</resultMap>
+
+	<!-- 查询公共列 -->
+	<sql id="columns">
+		id,
+		refunds_id,
+		trace_status,
+		remark,
+		opt_time
+	</sql>
+
+
+
+	<!-- 新增 -->
+	<insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderRefundsTrace">
+		INSERT INTO trade_order_refunds_trace 
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+			<if test="id != null" >
+				id,
+			</if>
+			<if test="refundsId != null" >
+				refunds_id,
+			</if>
+			<if test="traceStatus != null" >
+				trace_status,
+			</if>
+			<if test="remark != null" >
+				remark,
+			</if>
+			<if test="optTime != null" >
+				opt_time,
+			</if>
+		</trim>
+		VALUES 
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+			<if test="id != null" >
+				#{id, jdbcType=VARCHAR},
+			</if>
+			<if test="refundsId != null" >
+				#{refundsId, jdbcType=VARCHAR},
+			</if>
+			<if test="traceStatus != null" >
+				#{traceStatus, jdbcType=TINYINT},
+			</if>
+			<if test="remark != null" >
+				#{remark, jdbcType=VARCHAR},
+			</if>
+			<if test="optTime != null" >
+				#{optTime, jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+	
+	<!-- 批量新增 -->
+	<insert id="batchInsert" parameterType="com.okdeer.mall.order.entity.TradeOrderRefundsTrace">
+		INSERT INTO trade_order_refunds_trace (
+			id,
+			refunds_id,
+			trace_status,
+			remark,
+			opt_time
+		) VALUES 
+		<foreach collection="list" item="item" separator=",">
+		(
+			#{item.id, jdbcType=VARCHAR},
+			#{item.refundsId, jdbcType=VARCHAR},
+			#{item.traceStatus, jdbcType=TINYINT},
+			#{item.remark, jdbcType=VARCHAR},
+			#{item.optTime, jdbcType=TIMESTAMP}
+		)
+		</foreach>
+	</insert>
+
+	<!-- 更新 -->
+	<update id="updateByPrimaryKey" parameterType="com.okdeer.mall.order.entity.TradeOrderRefundsTrace">
+		UPDATE trade_order_refunds_trace
+		<set>
+			<if test="refundsId != null">
+				refunds_id = #{refundsId, jdbcType=VARCHAR},
+			</if>
+			<if test="traceStatus != null">
+				trace_status = #{traceStatus, jdbcType=TINYINT},
+			</if>
+			<if test="remark != null">
+				remark = #{remark, jdbcType=VARCHAR},
+			</if>
+			<if test="optTime != null">
+				opt_time = #{optTime, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		WHERE
+		id = #{id} 
+	</update>
+
+	<!-- 根据主键查询 -->
+	<select id="selectByPrimaryKey" parameterType="string"
+		resultMap="tradeOrderRefundsTraceMap">
+		SELECT
+		<include refid="columns" />
+		FROM trade_order_refunds_trace
+		id = #{id} 
+	</select>
+
+	<!-- 查询退款单退款轨迹 -->
+	<select id="findRefundsTrace" parameterType="string" resultMap="tradeOrderRefundsTraceMap">
+		SELECT trace_status,remark,opt_time
+		FROM trade_order_refunds_trace
+		WHERE refunds_id = #{refundsId}
+		ORDER BY opt_time,trace_status
+	</select>
+</mapper>
+
