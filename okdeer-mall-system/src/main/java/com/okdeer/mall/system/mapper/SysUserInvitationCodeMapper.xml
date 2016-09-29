@@ -87,6 +87,16 @@
 		</if>
 	</sql>
 	
+	<!-- by:yangq 根据用户ID查询用户邀请码信息 -->
+	<select id="selectInvitationById" resultMap="BaseResultMap" parameterType="string">
+	  SELECT <include refid="BaseResultMap"/> FROM sys_user_invitation_code where sys_buyer_user_id = #{sysBuyerUserId,jdbcType=VARCHAR} 
+	</select>
+	
+	<!-- by:yangq 根据用户邀请码code查询用户邀请码信息 -->
+	<select id="selectInvitationByCode" resultMap="BaseResultMap" parameterType="string">
+	  SELECT <include refid="BaseResultMap"/> FROM sys_user_invitation_code WHERE invitation_code =#{invitationCode,jdbcType=VARCHAR}
+	</select>
+	
   	<!-- 根据参数获取信息 start -->
 	<select id="findByQueryVo" resultMap="extResultMap" 
 					parameterType="com.okdeer.mall.system.entity.SysUserInvitationCodeVo">

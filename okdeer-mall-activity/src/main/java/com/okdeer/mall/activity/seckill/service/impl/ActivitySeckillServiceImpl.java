@@ -556,4 +556,10 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		return activitySeckillMapper.findAppUserSecKillBySeckill(id);
 	}
 	// end update by luosm 2016-07-26
+
+	@Override
+	public List<ActivitySeckill> findByUserAppSecKillListByCityId(String cityId) throws Exception {
+	
+		return null;
+	}
 }
