@@ -67,6 +67,7 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
+import com.okdeer.archive.goods.store.enums.IsUnsubscribe;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
@@ -239,6 +240,8 @@ import net.sf.json.JsonConfig;
  *   V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
  *   V1.1.0             2016-09-24           wusw               消费码验证（到店消费）相应方法
  *   V1.1.0				2016-09-26			 luosm              查询商家版APP服务店到店消费订单信息
+ *   V1.1.0				2016-09-27			 maojj				商品订单详情页新增字段
+ *   V1.1.0             2016-09-29           wusw               添加上门服务订单详情的查询方法
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -4048,6 +4051,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("payway", orders.getPayWay() == null ? "" : orders.getPayWay().ordinal());
 		// 4 支付类型
 		TradeOrderPay tradeOrderPay = orders.getTradeOrderPay();
+		// Begin 友门鹿1.1 added by maojj 2016-09-27
+		// 是否支持投诉：只有选择了线上支付，且未付款的，不支持投诉，其他方式均支持。
+		String isSupportComplain = "0";
+		if(orders.getPayWay() == PayWayEnum.PAY_ONLINE && tradeOrderPay == null){
+			isSupportComplain = "1";
+		}
+		json.put("isSupportComplain", isSupportComplain);
+		// End 友门鹿1.1 added by maojj 2016-09-27
 		if (tradeOrderPay != null) {
 			json.put("payType", tradeOrderPay.getPayType().ordinal());
 			json.put("payAmount", tradeOrderPay.getPayAmount());
@@ -4192,12 +4203,24 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
 
 		orders.setItems(tradeOrderItems);
-		JSONObject json = getServiceJsonObj(orders, appraise, storeInfoExt);
+		// Begin V1.1.0 add by wusw 20160929
+		JSONObject json = this.getServiceJsonObj(orders, appraise, storeInfoExt,false);
+		// End V1.1.0 add by wusw 20160929
 		return json;
 	}
 
-	// 服务订单详细组装返回数据
-	private JSONObject getServiceJsonObj(UserTradeOrderDetailVo orders, Integer appraise, StoreInfoExt storeInfoExt) {
+	/**
+	 * 
+	 * @Description: 服务订单详细组装返回数据
+	 * @param orders 订单信息
+	 * @param appraise 是否评价
+	 * @param storeInfoExt 店铺信息
+	 * @param isMoreItem 订单与订单项是否一对多关系
+	 * @return 订单详情
+	 * @author wusw
+	 * @date 2016年9月29日
+	 */
+	private JSONObject getServiceJsonObj(UserTradeOrderDetailVo orders, Integer appraise, StoreInfoExt storeInfoExt,boolean isMoreItem) {
 		// 订单信息
 		JSONObject json = new JSONObject();
 		// 订单号
@@ -4347,25 +4370,59 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		String strPickUpTime = orders.getPickUpTime();
 		json.put("pickUpTime", strPickUpTime == null ? "" : strPickUpTime);
 
+		// Begin V1.1.0 add by wusw 20160929
 		// 商品信息
 		List<TradeOrderItem> items = orders.getItems();
-		Map<String, Object> item = new HashMap<String, Object>();
-		if (items != null && items.size() > 0) {
-			for (TradeOrderItem tradeOrderItem : items) {
-				// 商品名称
-				item.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
-				// 商品id
-				item.put("productId", tradeOrderItem.getStoreSkuId() == null ? "" : tradeOrderItem.getStoreSkuId());
-				// 商品图片
-				item.put("mainPicPrl", tradeOrderItem.getMainPicPrl() == null ? "" : tradeOrderItem.getMainPicPrl());
-				// 商品单价
-				item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
-				// 购买商品的数量
-				item.put("quantity", tradeOrderItem.getQuantity());
+		// 订单与订单项是否一对多关系，如果是，订单项用JSONArray存储，否则，不用（兼容V1.1.0)
+		if (isMoreItem) {
+			// 订单状态为等待买家付款、付款确认中、已取消、取消中、已拒收、拒收中的订单，可以投诉，否则，不可以
+			if (orders.getStatus() == OrderStatusEnum.UNPAID || orders.getStatus() == OrderStatusEnum.BUYER_PAYING 
+					|| orders.getStatus() == OrderStatusEnum.CANCELED || orders.getStatus() == OrderStatusEnum.CANCELING 
+					|| orders.getStatus() == OrderStatusEnum.REFUSED || orders.getStatus() == OrderStatusEnum.REFUSING) {
+				json.put("isSupportComplain", 1);
+			} else {
+				json.put("isSupportComplain", 0);
 			}
+			// 配送费
+			json.put("freightFree", orders.getFare());
+			JSONArray itemArray = new JSONArray();
+			if (items != null && items.size() > 0) {
+				for (TradeOrderItem tradeOrderItem : items) {
+					Map<String, Object> item = new HashMap<String, Object>();
+					// 商品名称
+					item.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
+					// 商品id
+					item.put("productId", tradeOrderItem.getStoreSkuId() == null ? "" : tradeOrderItem.getStoreSkuId());
+					// 商品图片
+					item.put("mainPicPrl", tradeOrderItem.getMainPicPrl() == null ? "" : tradeOrderItem.getMainPicPrl());
+					// 商品单价
+					item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
+					// 购买商品的数量
+					item.put("quantity", tradeOrderItem.getQuantity());
+					itemArray.add(item);
+				}
+				json.put("orderItems", itemArray);
+			}
+		} else {
+			Map<String, Object> item = new HashMap<String, Object>();
+			if (items != null && items.size() > 0) {
+				for (TradeOrderItem tradeOrderItem : items) {
+					// 商品名称
+					item.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
+					// 商品id
+					item.put("productId", tradeOrderItem.getStoreSkuId() == null ? "" : tradeOrderItem.getStoreSkuId());
+					// 商品图片
+					item.put("mainPicPrl", tradeOrderItem.getMainPicPrl() == null ? "" : tradeOrderItem.getMainPicPrl());
+					// 商品单价
+					item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
+					// 购买商品的数量
+					item.put("quantity", tradeOrderItem.getQuantity());
+				}
+			}
+			// 商品信息
+			json.put("orderItems", item);
 		}
-		// 商品信息
-		json.put("orderItems", item);
+		// End V1.1.0 add by wusw 20160929
 		json.put("height", 126);
 		json.put("width", 126);
 		return json;
@@ -5001,27 +5058,27 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				Map<String, String> orderStatusMap = OrderStatusEnum.convertViewStatus(order.getType());
 				List<TradeOrderItem> itemList = order.getTradeOrderItem();
 				if (itemList != null) {
-					TradeOrderItem item = itemList.get(0);
-					TradeOrderExportVo vo = new TradeOrderExportVo();
-					vo.setOrderNo(order.getOrderNo());
-					vo.setCreateTime(DateUtils.formatDate(order.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
-					vo.setUserPhone(order.getUserPhone());
-					vo.setSkuName(item.getSkuName());
-					vo.setUnitPrice(item.getUnitPrice());
-					vo.setQuantity(item.getQuantity() == null ? "" : item.getQuantity().toString());
-					vo.setActualAmount(item.getActualAmount());
-					vo.setStatus(orderStatusMap.get(order.getStatus().getName()));
-					// Begin 重构4.1 add by wusw 20160727
-					if (order.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
-						vo.setPayType("线下确认价格并当面支付");
-					} else {
-						vo.setPayType(order.getPayWay().getValue());
+					for (TradeOrderItem item : itemList) {
+						TradeOrderExportVo vo = new TradeOrderExportVo();
+						vo.setOrderNo(order.getOrderNo());
+						vo.setCreateTime(DateUtils.formatDate(order.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
+						vo.setUserPhone(order.getUserPhone());
+						vo.setSkuName(item.getSkuName());
+						vo.setUnitPrice(item.getUnitPrice());
+						vo.setQuantity(item.getQuantity() == null ? "" : item.getQuantity().toString());
+						vo.setActualAmount(item.getActualAmount());
+						vo.setStatus(orderStatusMap.get(order.getStatus().getName()));
+						// Begin 重构4.1 add by wusw 20160727
+						if (order.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
+							vo.setPayType("线下确认价格并当面支付");
+						} else {
+							vo.setPayType(order.getPayWay().getValue());
+						}
+						// End 重构4.1 add by wusw 20160727
+						BigDecimal quantity = new BigDecimal(item.getQuantity());
+						vo.setTotalAmount(item.getUnitPrice().multiply(quantity));
+						result.add(vo);
 					}
-					// End 重构4.1 add by wusw 20160727
-					BigDecimal quantity = new BigDecimal(item.getQuantity());
-					vo.setTotalAmount(item.getUnitPrice().multiply(quantity));
-
-					result.add(vo);
 				}
 			}
 		}
@@ -5960,8 +6017,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						pointsBuriedService.doConsumePoints(consumeVo.getUserId(), consumeVo.getDetailActualAmount());
 						//修改库存
 						this.updateServiceStoreStock(consumeVo, rpcIdList,StockOperateEnum.SEND_OUT_GOODS,userId,storeId);
-						// 云钱包解冻金额
-						this.payTradeOrderByMq(consumeVo);
+						// 判断商品是否支持退订，如果支持，云钱包解冻金额，否则，不用
+						if (consumeVo.getIsUnsubscribe() == IsUnsubscribe.SUPPORT) {
+							this.payTradeOrderByMq(consumeVo);
+						}
 						// 自动评价计时消息
 						/*tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_finish_evaluate_timeout,
 								data.get("id").toString());*/
@@ -6118,4 +6177,26 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         }
     }
 	// End V1.1.0 add by wusw 20160924
+
+	// Begin V1.1.0 add by wusw 20160929
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findUserVisitServiceOrderDetail(java.lang.String)
+	 */
+	@Override
+	public JSONObject findUserVisitServiceOrderDetail(String orderId) throws ServiceException {
+		UserTradeOrderDetailVo orders = tradeOrderMapper.selectUserOrderServiceDetail(orderId);
+		List<TradeOrderItem> tradeOrderItems = tradeOrderItemMapper.selectTradeOrderItemOrDetail(orderId);
+		// 判断订单是否评价appraise大于0，已评价
+		Integer appraise = tradeOrderItemMapper.selectTradeOrderItemIsAppraise(orderId);
+
+		// 查询店铺扩展信息
+		String storeId = orders.getStoreInfo().getId();
+		StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
+
+		orders.setItems(tradeOrderItems);
+		JSONObject json = this.getServiceJsonObj(orders, appraise, storeInfoExt,true);
+		return json;
+	}
+	// End V1.1.0 add by wusw 20160929
 }
