@@ -241,6 +241,7 @@ import net.sf.json.JsonConfig;
  *   V1.1.0             2016-09-24           wusw               消费码验证（到店消费）相应方法
  *   V1.1.0				2016-09-26			 luosm              查询商家版APP服务店到店消费订单信息
  *   V1.1.0				2016-09-27			 maojj				商品订单详情页新增字段
+ *   V1.1.0             2016-09-29           wusw               添加上门服务订单详情的查询方法
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -6176,4 +6177,26 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         }
     }
 	// End V1.1.0 add by wusw 20160924
+
+	// Begin V1.1.0 add by wusw 20160929
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findUserVisitServiceOrderDetail(java.lang.String)
+	 */
+	@Override
+	public JSONObject findUserVisitServiceOrderDetail(String orderId) throws ServiceException {
+		UserTradeOrderDetailVo orders = tradeOrderMapper.selectUserOrderServiceDetail(orderId);
+		List<TradeOrderItem> tradeOrderItems = tradeOrderItemMapper.selectTradeOrderItemOrDetail(orderId);
+		// 判断订单是否评价appraise大于0，已评价
+		Integer appraise = tradeOrderItemMapper.selectTradeOrderItemIsAppraise(orderId);
+
+		// 查询店铺扩展信息
+		String storeId = orders.getStoreInfo().getId();
+		StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
+
+		orders.setItems(tradeOrderItems);
+		JSONObject json = this.getServiceJsonObj(orders, appraise, storeInfoExt,true);
+		return json;
+	}
+	// End V1.1.0 add by wusw 20160929
 }
