@@ -83,6 +83,18 @@ public class InitBeanConfig {
 	 */
 	@Resource
 	private RequestHandler<ServiceOrderReq, ServiceOrderResp> servOrderSubmitService;
+	
+	/**
+	 * 商品校验（上门服务，到店消费）
+	 */
+	@Resource
+	private RequestHandler<ServiceOrderReq, ServiceOrderResp> serviceGoodsCheckService;
+	
+	/**
+	 * 服务地址查询（上门服务，到店消费）
+	 */
+	@Resource
+	private RequestHandler<ServiceOrderReq, ServiceOrderResp> servAddressSearchService;
 
 	/**
 	 * @Description: 创建服务栏目确认的处理链
@@ -138,13 +150,13 @@ public class InitBeanConfig {
 		// 第二步：服务店铺校验
 		chain.addHandlerChain(servStoreCheckService);
 		// 第三步：商品校验
-		chain.addHandlerChain(servGoodsCheckService);
+		chain.addHandlerChain(serviceGoodsCheckService);
 		// 第四步：库存校验
 		chain.addHandlerChain(servStockCheckService);
 		// 第五步：活动查询
 		chain.addHandlerChain(servActivityQueryService);
 		// 第六步：获取服务地址地址
-		chain.addHandlerChain(seckillAddressSearchService);
+		chain.addHandlerChain(servAddressSearchService);
 		
 		return chain;
 	}
@@ -164,7 +176,7 @@ public class InitBeanConfig {
 		// 第二步：服务店铺校验
 		chain.addHandlerChain(servStoreCheckService);
 		// 第三步：商品校验
-		chain.addHandlerChain(servGoodsCheckService);
+		chain.addHandlerChain(serviceGoodsCheckService);
 		// 第四步：库存校验
 		chain.addHandlerChain(servStockCheckService);
 		// 第五步：活动校验
