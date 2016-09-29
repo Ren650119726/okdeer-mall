@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
+import com.okdeer.mall.order.vo.ExpireStoreConsumerOrderVo;
 import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
 
 /**
@@ -142,4 +143,25 @@ public interface TradeOrderItemDetailMapper{
 	 */
 	List<TradeOrderItemDetail> selectItemDetailByOrderIdAndStatus(@Param("orderId") String orderId,@Param("status")int status);
 	// End V1.1.0 add by zengjz 20160924
+	
+	// Begin V1.1.0 add by zengjz 20160929
+	/**
+	 * @Description: 查询过期的消费码订单列表
+	 * @return 过期订单列表
+	 * @author zengjizu
+	 * @date 2016年9月29日
+	 */
+	List<ExpireStoreConsumerOrderVo> findExpireList();
+	
+	/**
+	 * @Description: 更新订单项明细信息
+	 * @param orderItemDetail  订单项明细信息
+	 * @return 影响行数
+	 * @author zengjizu
+	 * @date 2016年9月29日
+	 */
+	int updateByPrimaryKeySelective(TradeOrderItemDetail orderItemDetail);
+	// End V1.1.0 add by zengjz 20160929
+	
+	
 }
