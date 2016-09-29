@@ -120,7 +120,8 @@ import net.sf.json.JSONObject;
  * ----------------+----------------+-------------------+-------------------------------------------
  *     重构4.1          2016年7月21日                               zengj				新建类
  *	   V1.1.0		  2016-09-23		  tangy			             服务店添加代金券
- 	   1.1			  2016年9月22日		  maojj             新增秒杀确认订单、提交订单 
+ *	   1.1			  2016年9月22日		  maojj             新增秒杀确认订单、提交订单 
+ *	   V1.1.0		  2016-09-29			wushp			新增服务订单确认/提交订单	   
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.ServiceOrderProcessServiceApi")
 public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServiceApi {
@@ -257,6 +258,20 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	@Resource
 	private SeckillQueue seckillQueue;
 	// End added by maojj 2016-09-22
+	
+	// begin add by wushp V1.1.0 
+	/**
+	 * 服务订单确认订单处理链
+	 */
+	@Resource
+	private RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> confirmServiceOrderChain;
+	
+	/**
+	 * 提交服务订单处理链
+	 */
+	@Resource
+	private RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> submitServiceOrderChain;
+	// end add by wushp V1.1.0 
 	/**
 	 * @Description: 服务订单确认订单
 	 * @return JSONObject
@@ -1331,4 +1346,22 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		seckillQueue.push(orderQueue);
 	}
 	// End added by maojj 2016-09-22
+	
+	// begin add by wushp V1.1.0 
+	@Transactional(readOnly = true, rollbackFor = Exception.class)
+	@Override
+	public void confirmServiceOrderV110(Request<ServiceOrderReq> req,Response<ServiceOrderResp> resp)
+			throws OrderException, Exception {
+		// 调用处理链处理确认订单流程
+		confirmServiceOrderChain.process(req, resp);
+	}
+
+	@Transactional(readOnly = true, rollbackFor = Exception.class)
+	@Override
+	public void submitServiceOrderV110(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
+			throws OrderException, Exception {
+		// 调用处理链处理提交订单流程
+		submitServiceOrderChain.process(req, resp);
+	}
+	// end add by wushp V1.1.0
 }

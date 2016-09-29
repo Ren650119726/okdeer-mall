@@ -1149,15 +1149,20 @@
 	<select id="selectServiceOrderRefundsCount" parameterType="java.lang.String"
 		resultMap="TradeOrderRefundsStatusVoMap">
 		SELECT CASE
-		WHEN `refunds_status` IN(6) THEN 6
-		ELSE 7
+		WHEN `refunds_status` = 0 THEN 0
+		WHEN `refunds_status` in(5,7,8,12) THEN 5
+		WHEN `refunds_status` in(2,3,4) THEN 2
+		WHEN `refunds_status` in(1,6,9,10,11,13,14,15,16) THEN 6
 		END as `refunds_status`,count(1) as `count` FROM trade_order_refunds
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
 		AND order_resource IN(0,1)
+		AND type = '5'
 		GROUP BY
 		CASE
-		WHEN `refunds_status` IN(6) THEN 6
-		ELSE 7
+		WHEN `refunds_status` = 0 THEN 0
+		WHEN `refunds_status` IN(5,7,8,12) THEN 5
+		WHEN `refunds_status` IN(2,3,4) THEN 2
+		WHEN `refunds_status` IN(1,6,9,10,11,13,14,15,16) THEN 6
 		END
 	</select>
 	
@@ -1541,12 +1546,16 @@
 		</if>
 		order by r.create_time desc
 	</select>
-	<!-- zengj:查询店铺内所有的退单数 -->
-	<select id="selectRefundsCount" parameterType="java.lang.String"
-		resultType="java.lang.Long">
-		SELECT count(1) FROM trade_order_refunds WHERE store_id =
-		#{storeId,jdbcType=VARCHAR} and disabled = 0 and order_resource
-		IN(0,1)
+	<!-- zengj:查询店铺内所有的退单数 V1.1.0 update by wusw 20160928 -->
+	<select id="selectRefundsCount" resultType="java.lang.Long">
+		SELECT count(1) 
+		FROM trade_order_refunds 
+		WHERE store_id = #{storeId,jdbcType=VARCHAR} 
+		and disabled = 0 
+		and order_resource IN(0,1)
+		<if test="type != null">
+		 AND type = #{type,jdbcType=TINYINT}
+		</if>
 	</select>
 
 	<!-- 商家中心首页 根据状态统计退款单数量(张克能加) -->

@@ -84,6 +84,20 @@ public interface ExceptionConstant {
 
 	public static final String GOODS_LIMIT_NUM = "该商品限购%s件";
 
+	// Begin add by wushp V1.1.0
+	/**
+	 * 部分商品已下架
+	 */
+	public static final String GOODS_NOT_EXSITS_PART = "部分商品已下架";
+	/**
+	 * 部分商品信息发生变化
+	 */
+	public static final String GOODS_IS_UPDATE_PART = "部分商品信息发生变化";
+	/**
+	 * 部分商品库存不足
+	 */
+	public static final String GOODS_STOCK_NOT_ENOUGH = "部分商品库存不足";
+	// End add by wushp V1.1.0
 	/*
 	 * 商品相关提示 end
 	 */
