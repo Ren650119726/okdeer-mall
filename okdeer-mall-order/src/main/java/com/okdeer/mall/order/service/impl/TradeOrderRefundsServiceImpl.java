@@ -142,6 +142,7 @@ import net.sf.json.JSONObject;
  *    1.0.Z				2016-09-05			 zengj			   增加退款单操作记录
  *    1.0.Z	          2016年9月07日           zengj             库存管理修改，采用商业管理系统校验
  *    V1.1.0	       2016-9-12             zengjz            增加财务系统订单交易统计接口
+ *    V1.1.0				2016-09-28			wusw			       修改查询退款单数量，如果是服务店，只查询到店消费退款单
  *  
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderRefundsServiceApi")
@@ -1877,9 +1878,11 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 	 * @param storeId
 	 *            店铺
 	 */
-	public Long selectRefundsCount(String storeId) {
-		return tradeOrderRefundsMapper.selectRefundsCount(storeId);
+	// Begin V1.1.0 add by wusw 20160928
+	public Long selectRefundsCount(String storeId,OrderTypeEnum type) {
+		return tradeOrderRefundsMapper.selectRefundsCount(storeId,type);
 	}
+	// End V1.1.0 add by wusw 20160928
 
 	@Override
 	public List<TradeOrderRefunds> getTradeOrderRefundsByOrderItemId(String orderItemId) {
