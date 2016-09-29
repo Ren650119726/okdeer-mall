@@ -87,6 +87,7 @@ import com.okdeer.mall.order.enums.CompainStatusEnum;
 import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
+import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
@@ -1329,21 +1330,25 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	
 	// Begin added by maojj 2016-09-22
 	@Override
-	public void confirmSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
+	public Response<ServiceOrderResp> confirmSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
 			throws OrderException, Exception {
 		// TODO 测试完成之后去除该注释
 		resp.setData(new ServiceOrderResp());
+		req.setOrderOptType(OrderOptTypeEnum.ORDER_SETTLEMENT);
 		confirmSeckillOrderChain.process(req, resp);
+		return resp;
 	}
 
 	@Override
-	public void submitSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
+	public Response<ServiceOrderResp> submitSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
 			throws OrderException, Exception {
 		// TODO Auto-generated method stub
 		resp.setData(new ServiceOrderResp());
+		req.setOrderOptType(OrderOptTypeEnum.ORDER_SUBMIT);
 		OrderQueue<ServiceOrderReq, ServiceOrderResp> orderQueue = new OrderQueue<ServiceOrderReq, ServiceOrderResp>(
 				req, resp);
 		seckillQueue.push(orderQueue);
+		return resp;
 	}
 	// End added by maojj 2016-09-22
 	

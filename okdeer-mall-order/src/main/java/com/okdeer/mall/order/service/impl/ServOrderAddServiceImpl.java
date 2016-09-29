@@ -8,7 +8,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -25,8 +25,11 @@ import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.common.consts.RedisKeyConstants;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRecord;
+import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillRecordMapper;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
@@ -81,6 +84,9 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 
 	@Resource
 	private MemberConsigneeAddressMapper memberConsigneeAddressMapper;
+	
+	@Resource
+	private ActivitySeckillRecordMapper activitySeckillRecordMapper;
 
 	/**
 	 * 订单服务Service
@@ -104,7 +110,7 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 	 * redis缓存
 	 */
 	@Autowired
-	private RedisTemplate<String, Integer> redisTemplate;
+	private StringRedisTemplate stringRedisTemplate;
 	
 	/**
 	 * 消息生产者
@@ -131,6 +137,8 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 			}
 			// 根据请求构建订单
 			TradeOrder tradeOrder = buildTradeOrder(req, address);
+			// 保存用户秒杀记录
+			activitySeckillRecordMapper.add(buildSeckillRecord(req.getData(), tradeOrder));
 			// 保存订单和订单项信息，并发送消息
 			tradeOrderService.insertTradeOrder(tradeOrder);
 			// 更新库存
@@ -150,12 +158,14 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 			respData.setLimitTime(1800);
 			
 			//成功则减去缓存中的数据
-			redisTemplate.boundValueOps(seckillStockKey).increment(-1);
+//			redisTemplateWrapper.decr(seckillStockKey);
+			stringRedisTemplate.boundValueOps(seckillStockKey).increment(-1);
 		} catch (Exception e) {
 			//TODO
 			if(rpcId != null){
 				rollbackMQProducer.sendStockRollbackMsg(rpcId);
-				redisTemplate.boundValueOps(seckillStockKey).increment(1);
+//				redisTemplateWrapper.incr(seckillStockKey);
+				stringRedisTemplate.boundValueOps(seckillStockKey).increment(1);
 			}
 			throw e;
 		}finally{
@@ -355,6 +365,22 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		orderLogistics.setCityId(address.getCityId());
 		orderLogistics.setZipCode(address.getZipCode());
 		return orderLogistics;
+	}
+	
+	private ActivitySeckillRecord buildSeckillRecord(ServiceOrderReq orderReq, TradeOrder order) {
+		ActivitySeckillRecord activitySeckillRecord = new ActivitySeckillRecord();
+		activitySeckillRecord.setId(UuidUtils.getUuid());
+		// 秒杀活动ID
+		activitySeckillRecord.setActivitySeckillId(orderReq.getSeckillId());
+		// 买家ID
+		activitySeckillRecord.setBuyerUserId(orderReq.getUserId());
+		activitySeckillRecord.setStoreId(orderReq.getStoreId());
+		activitySeckillRecord.setOrderId(order.getId());
+		// 活动商品ID
+		activitySeckillRecord.setGoodsStoreSkuId(orderReq.getSkuId());
+		activitySeckillRecord.setOrderNo(order.getOrderNo());
+		activitySeckillRecord.setOrderDisabled("0");
+		return activitySeckillRecord;
 	}
 
 	/**

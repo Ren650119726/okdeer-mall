@@ -34,8 +34,7 @@
 
 	<insert id="insertSeckillReminde"
 		parameterType="com.okdeer.mall.activity.seckill.entity.SeckillReminde">
-		INSERT INTO
-		<include refid="Base_Column_List" />
+		INSERT INTO seckill_reminde  
 		(
 		id, seckill_id, goods_store_sku_id, lead_time, seckill_time,
 		reminder_content, reminder_settings,
@@ -52,6 +51,14 @@
 		#{userId,jdbcType=VARCHAR}
 		)
 	</insert>
+	
+	
+	<!-- 更新提醒设置状态 -->
+    <update id="updateRemindeStatus">
+	    update seckill_reminde 
+	    set reminder_settings = #{settingValue,jdbcType=INTEGER}, update_time = now() 
+	    where seckill_id = #{seckillId,jdbcType=VARCHAR} 
+    </update>
 
 
 </mapper>

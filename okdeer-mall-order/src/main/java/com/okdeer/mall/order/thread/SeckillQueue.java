@@ -11,11 +11,12 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.esotericsoftware.minlog.Log;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
+import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.common.consts.RedisKeyConstants;
 import com.okdeer.mall.common.vo.OrderQueue;
 import com.okdeer.mall.order.handler.RequestHandlerChain;
@@ -47,8 +48,11 @@ public class SeckillQueue{
 	@Value("${seckill_wait_time}")
 	private int seckillWaitTime;
 	
+//	@Resource
+//	private IRedisTemplateWrapper<String,Integer> redisTemplateWrapper;
+	
 	@Resource
-	private RedisTemplate<String,Integer> redisTemplate;
+	private StringRedisTemplate stringRedisTemplate;
 
 	private static ExecutorService executor = null;
 
@@ -63,7 +67,8 @@ public class SeckillQueue{
 				boolean isEnqueue = orderQueues.offer(orderQueue);
 				if (isEnqueue) {
 					String skuId = orderQueue.getReq().getData().getSkuId();
-					redisTemplate.boundValueOps(RedisKeyConstants.SECKILL_QUEUE + skuId).increment(1L);
+//					redisTemplateWrapper.incr(RedisKeyConstants.SECKILL_QUEUE + skuId);
+					stringRedisTemplate.boundValueOps(RedisKeyConstants.SECKILL_QUEUE + skuId).increment(1);
 					orderQueue.wait(seckillWaitTime);
 					if (!orderQueue.getReq().isComplete()) {
 						orderQueue.getResp().setResult(ResultCodeEnum.PROCESS_TIME_OUT);
@@ -97,7 +102,8 @@ public class SeckillQueue{
 						synchronized (orderQueue) {
 							try {
 								String skuId = orderQueue.getReq().getData().getSkuId();
-								redisTemplate.boundValueOps(RedisKeyConstants.SECKILL_QUEUE + skuId).increment(-1L);
+//								redisTemplateWrapper.decr(RedisKeyConstants.SECKILL_QUEUE + skuId);
+								stringRedisTemplate.boundValueOps(RedisKeyConstants.SECKILL_QUEUE + skuId).increment(-1);
 								submitSeckillOrderChain.process(orderQueue.getReq(), orderQueue.getResp());
 								orderQueue.notifyAll();
 
