@@ -56,27 +56,6 @@ public class SeckillAddressSearchServiceImpl implements RequestHandler<ServiceOr
 	@Override
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
 		ServiceOrderResp respData = resp.getData();
-		ServiceOrderReq reqData = req.getData();
-		OrderTypeEnum orderType = reqData.getOrderType();
-		// 上门服务订单
-		if (orderType != null && orderType == OrderTypeEnum.SERVICE_STORE_ORDER) {
-			// 上门服务订单获取用户地址
-			this.getDoorServiceOrderAddress(req,respData);
-			return;
-		}
-		// 到店消费订单
-		if (orderType != null && orderType == OrderTypeEnum.STORE_CONSUME_ORDER) {
-			StoreInfo storeInfo = storeInfoServiceApi.selectDefaultAddressById(reqData.getStoreId());
-			MemberConsigneeAddress memberConsignee = storeInfo.getMemberConsignee();
-			if (memberConsignee != null) {
-				UserAddressVo userAddressVo = new UserAddressVo();
-				BeanUtils.copyProperties(userAddressVo, memberConsignee);
-				respData.setDefaultAddress(userAddressVo);
-			}
-			// 店铺详细地址
-			req.setComplete(true);
-			return;
-		}
 		
 		// 区域类型：0全国，1区域
 		String seckillRangeType = String.valueOf(req.getContext().get("seckillRangeType"));
@@ -109,30 +88,4 @@ public class SeckillAddressSearchServiceImpl implements RequestHandler<ServiceOr
 		req.setComplete(true);
 	}
 	
-	/**
-	 * 
-	 * @Description: 上门服务订单获取用户地址
-	 * @param req 请求参数
-	 * @param respData 响应参数的data对象
-	 * @author wushp
-	 * @date 2016年9月28日
-	 */
-	private void getDoorServiceOrderAddress(Request<ServiceOrderReq> req, ServiceOrderResp respData) throws Exception {
-		ServiceOrderReq reqData = req.getData();
-		// 构建查询参数
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("userId", reqData.getUserId());
-		params.put("storeId", reqData.getStoreId());
-		// 查询用户的所有收货地址
-		Map<String, Object> map = memberConsigneeAddressService.findUserDefaultAddress(params);
-		if (!map.containsKey("provinceName")) {
-			req.setComplete(true);
-			return;
-		} 
-		UserAddressVo userAddressVo = new UserAddressVo();
-		// 将map转成bean
-		BeanUtils.populate(userAddressVo, map);
-		respData.setDefaultAddress(userAddressVo);
-		req.setComplete(true);
-	}
 }
