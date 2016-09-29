@@ -801,7 +801,7 @@
 		<if test="null != endCreateTime">
 			    <![CDATA[ AND tr.create_time <= #{endCreateTime} ]]>
 		</if>
-		<if test="null != orderIds">
+		<if test="null != orderIds and orderIds.size > 0 ">
 			AND tr.id IN
 			<foreach collection="orderIds" index="index" item="item"
 				open="(" close=")" separator=",">
