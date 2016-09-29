@@ -1,6 +1,7 @@
 package com.okdeer.mall.system.service.impl;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -52,16 +53,25 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi,Invit
 	public PageUtils<SysUserInvitationCodeVo> findInvitationCodePage(SysUserInvitationCodeVo invitationCodeVo, 
 			int pageNumber, int pageSize) throws ServiceException {
 		PageHelper.startPage(pageNumber, pageSize, true);
+		Date beginTime = invitationCodeVo.getBeginTime();
+		Date endTime = invitationCodeVo.getEndTime();
 		if (invitationCodeVo.getIds() != null && invitationCodeVo.getIds().length <= 0) {
 			invitationCodeVo.setIds(null);
 		}
-		if (invitationCodeVo.getBeginTime() != null) {
+		if (beginTime == null && endTime != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(endTime);
+			//三个月前
+			cal.add(Calendar.DAY_OF_MONTH, -3);
+			beginTime = cal.getTime();
+		}
+		if (beginTime != null) {
 			//页面搜索时间框传来的时间
-			Date sta = DateUtils.getDateStart(invitationCodeVo.getBeginTime());
+			Date sta = DateUtils.getDateStart(beginTime);
 			invitationCodeVo.setBeginTime(sta);
 		} 
-		if (invitationCodeVo.getEndTime() != null) {
-			Date end = DateUtils.getDateEnd(invitationCodeVo.getEndTime());
+		if (endTime != null) {
+			Date end = DateUtils.getDateEnd(endTime);
 			invitationCodeVo.setEndTime(end);
 		}
 		List<SysUserInvitationCodeVo> list = sysUserInvitationCodeMapper.findByQueryVo(invitationCodeVo);
@@ -75,16 +85,25 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi,Invit
 	@Override
 	public List<SysUserInvitationCodeVo> findInvitationCodeForExport(SysUserInvitationCodeVo invitationCodeVo)
 			throws ServiceException {
+		Date beginTime = invitationCodeVo.getBeginTime();
+		Date endTime = invitationCodeVo.getEndTime();
 		if (invitationCodeVo.getIds() != null && invitationCodeVo.getIds().length <= 0) {
 			invitationCodeVo.setIds(null);
 		}
-		if (invitationCodeVo.getBeginTime() != null) {
+		if (beginTime == null && endTime != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(endTime);
+			//三个月前
+			cal.add(Calendar.DAY_OF_MONTH, -3);
+			beginTime = cal.getTime();
+		}
+		if (beginTime != null) {
 			//页面搜索时间框传来的时间
-			Date sta = DateUtils.getDateStart(invitationCodeVo.getBeginTime());
+			Date sta = DateUtils.getDateStart(beginTime);
 			invitationCodeVo.setBeginTime(sta);
 		} 
-		if (invitationCodeVo.getEndTime() != null) {
-			Date end = DateUtils.getDateEnd(invitationCodeVo.getEndTime());
+		if (endTime != null) {
+			Date end = DateUtils.getDateEnd(endTime);
 			invitationCodeVo.setEndTime(end);
 		}
 		List<SysUserInvitationCodeVo> list = sysUserInvitationCodeMapper.findByQueryVo(invitationCodeVo);
@@ -99,13 +118,22 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi,Invit
 		if (sysUserInvitationRecordVo.getIdsRecord() != null && sysUserInvitationRecordVo.getIdsRecord().length <= 0) {
 			sysUserInvitationRecordVo.setIdsRecord(null);
 		}
-		if (sysUserInvitationRecordVo.getBeginTimeRecord() != null) {
+		Date beginTimeRecord = sysUserInvitationRecordVo.getBeginTimeRecord();
+		Date endTimeRecord = sysUserInvitationRecordVo.getEndTimeRecord();
+		if (beginTimeRecord == null && endTimeRecord != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(endTimeRecord);
+			//三个月前
+			cal.add(Calendar.DAY_OF_MONTH, -3);
+			beginTimeRecord = cal.getTime();
+		}
+		if (beginTimeRecord != null) {
 			//页面搜索时间框传来的时间
-			Date sta = DateUtils.getDateStart(sysUserInvitationRecordVo.getBeginTimeRecord());
+			Date sta = DateUtils.getDateStart(beginTimeRecord);
 			sysUserInvitationRecordVo.setBeginTimeRecord(sta);
 		} 
-		if (sysUserInvitationRecordVo.getEndTimeRecord() != null) {
-			Date end = DateUtils.getDateEnd(sysUserInvitationRecordVo.getEndTimeRecord());
+		if (endTimeRecord != null) {
+			Date end = DateUtils.getDateEnd(endTimeRecord);
 			sysUserInvitationRecordVo.setEndTimeRecord(end);
 		}
 		List<SysUserInvitationRecordVo> list = sysUserInvitationRecordMapper.findByQueryRecordVo(sysUserInvitationRecordVo);
@@ -122,13 +150,22 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi,Invit
 		if (invitationRecordVo.getIdsRecord() != null && invitationRecordVo.getIdsRecord().length <= 0) {
 			invitationRecordVo.setIdsRecord(null);
 		}
-		if (invitationRecordVo.getBeginTimeRecord() != null) {
+		Date beginTimeRecord = invitationRecordVo.getBeginTimeRecord();
+		Date endTimeRecord = invitationRecordVo.getEndTimeRecord();
+		if (beginTimeRecord == null && endTimeRecord != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(endTimeRecord);
+			//三个月前
+			cal.add(Calendar.DAY_OF_MONTH, -3);
+			beginTimeRecord = cal.getTime();
+		}
+		if (beginTimeRecord != null) {
 			//页面搜索时间框传来的时间
-			Date sta = DateUtils.getDateStart(invitationRecordVo.getBeginTimeRecord());
+			Date sta = DateUtils.getDateStart(beginTimeRecord);
 			invitationRecordVo.setBeginTimeRecord(sta);
 		} 
-		if (invitationRecordVo.getEndTimeRecord() != null) {
-			Date end = DateUtils.getDateEnd(invitationRecordVo.getEndTimeRecord());
+		if (endTimeRecord != null) {
+			Date end = DateUtils.getDateEnd(endTimeRecord);
 			invitationRecordVo.setEndTimeRecord(end);
 		}
 		List<SysUserInvitationRecordVo> list = sysUserInvitationRecordMapper.findByQueryRecordVo(invitationRecordVo);
