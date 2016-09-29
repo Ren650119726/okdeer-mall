@@ -83,7 +83,12 @@ public class SeckillAddressSearchServiceImpl implements RequestHandler<ServiceOr
 			addrList = memberConsigneeAddressMapper.findAddrWithServRange(condition);
 		}
 		if(!CollectionUtils.isEmpty(addrList)){
-			respData.setDefaultAddress(addrList.get(0));
+			for(UserAddressVo addr : addrList){
+				if(addr.getIsOutRange() == 0){
+					respData.setDefaultAddress(addr);
+					break;
+				}
+			}
 		}
 		req.setComplete(true);
 	}
