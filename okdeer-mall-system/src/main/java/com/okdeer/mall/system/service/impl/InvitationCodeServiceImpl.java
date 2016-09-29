@@ -159,4 +159,22 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi,Invit
 		
 	}
 
+	@Override
+	public SysUserInvitationCode findInvitationCode(String invitationCode) {
+		SysUserInvitationCode  sysUser = sysUserInvitationCodeMapper.selectInvitationByCode(invitationCode);
+		
+		return sysUser;
+	}
+
+	@Override
+	public SysUserInvitationCode findInvitationById(String sysBuyerUserId) {
+		SysUserInvitationCode sysUser = sysUserInvitationCodeMapper.selectInvitationById(sysBuyerUserId);
+		return sysUser;
+	}
+
+	@Override
+	public void insertInvitationRecord(SysUserInvitationRecord sysUserInvitationRecord) throws Exception {
+		sysUserInvitationRecordMapper.saveCodeRecord(sysUserInvitationRecord);
+	}
+
 }
