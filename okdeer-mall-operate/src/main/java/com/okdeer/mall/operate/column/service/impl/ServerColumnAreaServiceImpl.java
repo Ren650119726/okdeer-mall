@@ -7,6 +7,7 @@
 package com.okdeer.mall.operate.column.service.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,6 +15,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.operate.service.IServerColumnAreaServiceApi;
 import com.okdeer.mall.operate.column.mapper.ServerColumnAreaMapper;
 import com.okdeer.mall.operate.column.service.ServerColumnAreaService;
+import com.okdeer.mall.operate.entity.ServerColumnArea;
 
 
 /**
@@ -41,6 +43,11 @@ public class ServerColumnAreaServiceImpl implements ServerColumnAreaService,ISer
 	@Override
 	public List<String> findByCityName(String cityName,String provinceName) {
 		return serverColumnAreaMapper.findByCityName(cityName,provinceName);
+	}
+	
+	@Override
+	public List<ServerColumnArea> findByParams(Map<String,Object> map){
+		return serverColumnAreaMapper.findByParams(map);
 	}
 
 }

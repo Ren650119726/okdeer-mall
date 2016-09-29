@@ -68,4 +68,14 @@
   </select>
   <!-- 根据城市名查询服务栏目id end add by luosm 2016-07-18-->
   
+  <select id="findByParams" parameterType="map" resultMap="BaseResultMap" >
+    SELECT <include refid="Base_Column_List"/> FROM column_server_area a
+     WHERE 1=1
+  	<if test="null != cityId and cityId != ''">
+        AND a.city_id =#{cityId,jdbcType=VARCHAR}
+  	</if>
+  	<if test="null != columnServerId and columnServerId != ''">
+        AND a.column_server_id =#{columnServerId,jdbcType=VARCHAR}
+  	</if>
+  </select>
 </mapper>
