@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.order.service;
 
 import java.util.List;
@@ -62,4 +63,14 @@ public interface TradeOrderItemDetailService {
 	 */
 	int updateStatusWithExpire(String orderItemId);
 
+	// start added by luosm 20160929 V1.1.0
+	/**
+	 * @Description: 根据订单id查询明细列表
+	 * @param orderId 订单id
+	 * @return 订单明细列表
+	 * @author luosm
+	 * @date 2016年9月29日
+	 */
+	List<TradeOrderItemDetail> selectByOrderItemDetailByOrderId(String orderId);
+	// end added by luosm 20160929 V1.1.0
 }
