@@ -139,6 +139,17 @@ public interface ActivitySeckillMapper {
 	 * @date 2016年7月20日
 	 */
 	List<ActivitySeckill> findAppUserSecKillByCityId(@Param("cityId") String cityId);
+	
+	/***
+	 * 
+	 * @Description: App首页根据城市名查询当前区域是否有秒杀活动集合 </p>
+	 * @param cityId 城市id
+	 * @return List 秒杀信息
+	 * @author luosm
+	 * @date 2016年7月20日
+	 */
+	List<ActivitySeckill> findAppUserSecKillListByCityId(@Param("cityId") String cityId);
+	
 
 	/**
 	 * 

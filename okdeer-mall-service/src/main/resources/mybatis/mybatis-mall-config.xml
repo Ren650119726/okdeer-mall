@@ -107,5 +107,9 @@
    		<!-- End added by zengjz 2016-09-22 增加消费码状态 -->
    		
    		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.operate.enums.SysIconType"/>
+   		
+   		<!-- Begin 友门鹿1.1 added by maojj 2016-09-28增加退款轨迹枚举  -->
+   		<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.order.enums.RefundsTraceEnum"/>
+   		<!-- End 友门鹿1.1 added by maojj 2016-09-28增加退款轨迹枚举  -->
     </typeHandlers>
 </configuration>
