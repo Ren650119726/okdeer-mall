@@ -31,6 +31,7 @@ import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
+import com.okdeer.mall.order.enums.ConsumeStatusEnum;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
@@ -190,25 +191,28 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			json.put("orderNo", userTradeOrderDetailVo.getOrderNo() == null ? "" : userTradeOrderDetailVo.getOrderNo());
 			json.put("cancelReason",
 					userTradeOrderDetailVo.getReason() == null ? "" : userTradeOrderDetailVo.getReason());
-			json.put("orderSubmitOrderTime", userTradeOrderDetailVo.getCreateTime() != null
-					? DateUtils.formatDate(userTradeOrderDetailVo.getCreateTime(), "yyyy-MM-dd HH:mm:ss") : "");
+			json.put(
+					"orderSubmitOrderTime",
+					userTradeOrderDetailVo.getCreateTime() != null ? DateUtils.formatDate(
+							userTradeOrderDetailVo.getCreateTime(), "yyyy-MM-dd HH:mm:ss") : "");
 
-			json.put("activityType", userTradeOrderDetailVo.getActivityType() == null ? ""
-					: userTradeOrderDetailVo.getActivityType().ordinal());
+			json.put("activityType", userTradeOrderDetailVo.getActivityType() == null ? "" : userTradeOrderDetailVo
+					.getActivityType().ordinal());
 			json.put("preferentialPrice", userTradeOrderDetailVo.getPreferentialPrice() == null ? ""
 					: userTradeOrderDetailVo.getPreferentialPrice());
 			// 订单评价类型0：未评价，1：已评价
 			json.put("orderIsComment", appraise > 0 ? Constant.ONE : Constant.ZERO);
 			// 订单投诉状态
-			json.put("compainStatus", userTradeOrderDetailVo.getCompainStatus() == null ? ""
-					: userTradeOrderDetailVo.getCompainStatus().ordinal());
+			json.put("compainStatus", userTradeOrderDetailVo.getCompainStatus() == null ? "" : userTradeOrderDetailVo
+					.getCompainStatus().ordinal());
 
 			json.put("leaveMessage", userTradeOrderDetailVo.getRemark());
-			
+
 			if (userTradeOrderDetailVo.getStatus() == OrderStatusEnum.CANCELED) {
-				json.put("cancelTime", DateUtils.formatDate(userTradeOrderDetailVo.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
-			}else{
-				json.put("cancelTime","");
+				json.put("cancelTime",
+						DateUtils.formatDate(userTradeOrderDetailVo.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
+			} else {
+				json.put("cancelTime", "");
 			}
 
 			// 店铺信息
@@ -293,8 +297,8 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 				itemObject.put("mainPicPrl",
 						tradeOrderItem.getMainPicPrl() == null ? "" : tradeOrderItem.getMainPicPrl());
 				itemObject.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
-				itemObject.put("unitPrice",
-						tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
+				itemObject
+						.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
 				itemObject.put("quantity", tradeOrderItem.getQuantity() == null ? "0" : tradeOrderItem.getQuantity());
 				itemObject.put("skuTotalAmount",
 						tradeOrderItem.getTotalAmount() == null ? "0" : tradeOrderItem.getTotalAmount());
@@ -378,6 +382,13 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 				} else {
 					detail.put("consumePrice", "0");
 				}
+
+				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.refund) {
+					detail.put("refundTime",
+							DateUtils.formatDate(tradeOrderItemDetail.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
+				} else {
+					detail.put("refundTime", "");
+				}
 				consumeCodeList.add(detail);
 				detail = null;
 			}
@@ -403,16 +414,16 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 	@Override
 	public TradeOrderRefunds getRefundOrderDetail(String refundId) {
 		TradeOrderRefunds refunds = tradeOrderRefundsMapper.findStoreConsumeOrderDetailById(refundId);
-		List<TradeOrderRefundsItem> itemList = tradeOrderRefundsItemMapper
-				.getTradeOrderRefundsItemByRefundsId(refunds.getId());
+		List<TradeOrderRefundsItem> itemList = tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(refunds
+				.getId());
 		refunds.setTradeOrderRefundsItem(itemList);
 		return refunds;
 	}
 
 	@Override
 	public List<TradeOrderItemDetail> getStoreConsumeOrderDetailList(String orderId, int status) {
-		List<TradeOrderItemDetail> list = tradeOrderItemDetailMapper.selectItemDetailByOrderIdAndStatus(orderId,
-				status);
+		List<TradeOrderItemDetail> list = tradeOrderItemDetailMapper
+				.selectItemDetailByOrderIdAndStatus(orderId, status);
 
 		return list;
 	}
