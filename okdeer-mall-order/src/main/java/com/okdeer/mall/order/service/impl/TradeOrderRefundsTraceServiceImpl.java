@@ -21,7 +21,9 @@ import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsLogisticsEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.enums.RefundsTraceEnum;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsTraceMapper;
+import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsTraceService;
 import com.okdeer.mall.order.service.TradeOrderRefundsTraceServiceApi;
 import com.okdeer.mall.order.vo.RefundsTraceResp;
@@ -46,6 +48,9 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 	 */
 	@Autowired
 	private TradeOrderRefundsTraceMapper tradeOrderRefundsTraceMapper;
+	
+	@Autowired
+	private TradeOrderRefundsMapper tradeOrderRefundsMapper;
 	
 	@Override
 	public void saveRefundTrace(TradeOrderRefunds refundsOrder){
@@ -271,7 +276,18 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 	public Response<RefundsTraceResp> findRefundsTrace(String refundsId) {
 		Response<RefundsTraceResp> resp = new Response<RefundsTraceResp>();
 		RefundsTraceResp respData = new RefundsTraceResp();
+		// 根据退款单id查询退款单
+		TradeOrderRefunds refundsOrder =tradeOrderRefundsMapper.selectByPrimaryKey(refundsId);
+		if(refundsOrder == null){
+			// 如果未找到退款单ID，表示该请求数据不对，返回错误代码。
+			resp.setCode(ResultCodeEnum.FAIL.ordinal());
+			return resp;
+		}
+		// 设置当前退款单所处的状态
+		respData.setRefundStatus(refundsOrder.getRefundsStatus().ordinal());
+		// 根据退款单ID查询退款轨迹列表
 		List<TradeOrderRefundsTrace> traceList = tradeOrderRefundsTraceMapper.findRefundsTrace(refundsId);
+		// 定义返回给App的退款轨迹列表
 		List<RefundsTraceVo> traceVoList = new ArrayList<RefundsTraceVo>();
 		RefundsTraceVo traceVo = null;
 		int index = 0;
@@ -279,6 +295,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		for (TradeOrderRefundsTrace trace : traceList) {
 			traceVo = new RefundsTraceVo();
 			traceVo.setTitle(trace.getTraceStatus().getDesc());
+			// 如果退款轨迹状态为：等待您的处理或者是等待卖家的处理，当所处状态不是最后一个节点时，无需显示备注信息，如果是最后一个节点，需要显示备注的提示信息
 			if ((trace.getTraceStatus() == RefundsTraceEnum.WAIT_BUYER_DEAL
 					|| trace.getTraceStatus() == RefundsTraceEnum.WAIT_SELLER_DEAL) && index < size - 1) {
 				traceVo.setContent("");

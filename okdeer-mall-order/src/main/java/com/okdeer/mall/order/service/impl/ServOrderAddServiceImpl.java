@@ -8,7 +8,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -25,6 +25,7 @@ import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.common.consts.RedisKeyConstants;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.common.utils.TradeNumUtil;
@@ -104,7 +105,7 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 	 * redis缓存
 	 */
 	@Autowired
-	private RedisTemplate<String, Integer> redisTemplate;
+	private StringRedisTemplate stringRedisTemplate;
 	
 	/**
 	 * 消息生产者
@@ -150,12 +151,14 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 			respData.setLimitTime(1800);
 			
 			//成功则减去缓存中的数据
-			redisTemplate.boundValueOps(seckillStockKey).increment(-1);
+//			redisTemplateWrapper.decr(seckillStockKey);
+			stringRedisTemplate.boundValueOps(seckillStockKey).increment(-1);
 		} catch (Exception e) {
 			//TODO
 			if(rpcId != null){
 				rollbackMQProducer.sendStockRollbackMsg(rpcId);
-				redisTemplate.boundValueOps(seckillStockKey).increment(1);
+//				redisTemplateWrapper.incr(seckillStockKey);
+				stringRedisTemplate.boundValueOps(seckillStockKey).increment(1);
 			}
 			throw e;
 		}finally{
