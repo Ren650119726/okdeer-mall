@@ -240,7 +240,7 @@ import net.sf.json.JsonConfig;
  *   V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
  *   V1.1.0             2016-09-24           wusw               消费码验证（到店消费）相应方法
  *   V1.1.0				2016-09-26			 luosm              查询商家版APP服务店到店消费订单信息
- *   V1.1.0				2016-09-29			 wusw               在1.0.0版本的用户上门服务订单详情接口加入是否支持投诉、运费的字段信息
+ *   V1.1.0				2016-09-27			 maojj				商品订单详情页新增字段
  *   V1.1.0             2016-09-29           wusw               添加上门服务订单详情的查询方法
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
@@ -4051,6 +4051,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("payway", orders.getPayWay() == null ? "" : orders.getPayWay().ordinal());
 		// 4 支付类型
 		TradeOrderPay tradeOrderPay = orders.getTradeOrderPay();
+		// Begin 友门鹿1.1 added by maojj 2016-09-27
+		// 是否支持投诉：只有选择了线上支付，且未付款的，不支持投诉，其他方式均支持。
+		String isSupportComplain = "0";
+		if(orders.getPayWay() == PayWayEnum.PAY_ONLINE && tradeOrderPay == null){
+			isSupportComplain = "1";
+		}
+		json.put("isSupportComplain", isSupportComplain);
+		// End 友门鹿1.1 added by maojj 2016-09-27
 		if (tradeOrderPay != null) {
 			json.put("payType", tradeOrderPay.getPayType().ordinal());
 			json.put("payAmount", tradeOrderPay.getPayAmount());
