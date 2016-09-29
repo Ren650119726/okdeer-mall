@@ -85,7 +85,7 @@ public class SeckillAddressSearchServiceImpl implements RequestHandler<ServiceOr
 		if(!CollectionUtils.isEmpty(addrList)){
 			for(UserAddressVo addr : addrList){
 				if(addr.getIsOutRange() == 0){
-					respData.setDefaultAddress(addrList.get(0));
+					respData.setDefaultAddress(addr);
 					break;
 				}
 			}
