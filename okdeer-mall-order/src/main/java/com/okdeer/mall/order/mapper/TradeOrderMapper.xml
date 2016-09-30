@@ -557,17 +557,13 @@
 		<result column="id" property="id" jdbcType="VARCHAR" />
 		<result column="order_no" property="orderNo" jdbcType="VARCHAR" />
 		<result column="sku_name" property="goodsName" jdbcType="VARCHAR" />
-		<result column="recharge_mobile" property="rechargePhone"
-			jdbcType="VARCHAR" />
-		<result column="actual_amount" property="actualAmount"
-			jdbcType="DECIMAL" />
+		<result column="recharge_mobile" property="rechargePhone" jdbcType="VARCHAR" />
+		<result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
+		<result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
 		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
-		<result column="type" property="orderType" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
-		<result column="pay_type" property="payType" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.OrderPayTypeEnum" />
-		<result column="status" property="status" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.OrderStatusEnum" />
+		<result column="type" property="orderType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
+		<result column="pay_type" property="payType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderPayTypeEnum" />
+		<result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderStatusEnum" />
 		<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
 		<result column="quantity" property="quantity" jdbcType="INTEGER" />
 		<result column="user_id" property="userId" jdbcType="VARCHAR" />
@@ -4387,7 +4383,7 @@
 		LEFT JOIN trade_order_item tri ON tr.id = tri.order_id
 		<!-- LEFT JOIN trade_order_refunds trf ON tr.id = trf.order_id -->
 		WHERE (tr.status = 1 OR tr.status = 5 OR tr.status = 6 OR tr.status =
-		0 OR tr.status = 11)
+		0 OR tr.status = 11 OR tr.status = 2)
 		<!-- 充值类型选择 流量或者话费 -->
 		<if test="ids != null">
 			AND tr.id in
@@ -4484,6 +4480,7 @@
 		SELECT tr.id,
 		tr.status,
 		tr.actual_amount,
+		tr.preferential_price,
 		tr.order_no,
 		tr.type,
 		tr.create_time,

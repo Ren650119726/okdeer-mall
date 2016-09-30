@@ -8,6 +8,7 @@
 */
 package com.okdeer.mall.order.pay;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -97,7 +98,8 @@ import net.sf.json.JsonConfig;
  *     12002           2016年8月5日                                zengj			增加服务店订单下单成功增加销量
  *     重构4.1          2016年8月16日                              zengj			支付成功回调判断订单状态是不是买家支付中
  *     重构4.1          2016年8月24日                              maojj			支付成功，如果订单是到店自提，则生成提货码
- *     重构4.1          2016年9月22日                              zhaoqc         从V1.0.0移动代码         
+ *     重构4.1          2016年9月22日                              zhaoqc         从V1.0.0移动代码 
+ *     V1.1.0          2016年9月29日                             zhaoqc         新增到店消费订单处理                 
  */
 @Service
 public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
@@ -556,6 +558,11 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
                         }
                     }
 				}
+			} else if (orderNum.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+			    //到店消费订单处理
+			    synchronized(LockUtil.getInitialize().synObject(orderNum.getTradeNum())) {
+			       this.tradeOrderService.dealWithStoreConsumeOrder(orderNum, result.getFlowNo(), result.getPayType().ordinal());
+			    }
 			} else {
 				inserts(orderNum, result);
 				
@@ -591,7 +598,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 		}
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 	}
-
+	
 	private void insertTradeOrderPay(TradeOrder tradeOrder, PayResponseDto result) throws Exception {
 		//新增支付方式记录
 		TradeOrderPay tradeOrderPay = new TradeOrderPay();
