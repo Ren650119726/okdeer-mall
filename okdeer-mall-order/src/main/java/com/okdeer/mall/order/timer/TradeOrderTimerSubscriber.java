@@ -689,5 +689,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 		certificate.setRemark("服务商品超时未消费，系统自动退款");
 		return certificate;
 	}
+	
+	
 
 }

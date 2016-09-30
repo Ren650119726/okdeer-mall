@@ -210,7 +210,7 @@
   
   <update id="updateStatusWithRefund" parameterType="java.lang.String">
 	UPDATE trade_order_item_detail
-	SET status = 2
+	SET status = 2,update_time = now()
 	WHERE status = 0 AND
 		order_item_id = #{orderItemId,jdbcType=VARCHAR}
   </update>
