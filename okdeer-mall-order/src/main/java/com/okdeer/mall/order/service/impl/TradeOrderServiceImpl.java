@@ -63,7 +63,6 @@ import com.google.common.collect.Maps;
 import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
-import com.okdeer.api.pay.pay.dto.PayResponseDto;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
