@@ -212,6 +212,11 @@
 			<result column="store_address" property="address" jdbcType="VARCHAR" />
 			<result column="store_type" property="type" jdbcType="TINYINT"
 				javaType="com.okdeer.archive.store.enums.StoreTypeEnum" />
+			
+			<!--begin add by zengjz 2016-9-28 增加店铺logo字段 -->
+			<result column="store_logo_url" property="logoUrl" jdbcType="VARCHAR" />
+			<!--end add by zengjz 2016-9-28 增加店铺logo字段 -->
+			
 			<association property="storeInfoExt"
 				javaType="com.okdeer.archive.store.entity.StoreInfoExt">
 				<id column="storeExtId" property="id" jdbcType="VARCHAR" />
@@ -552,17 +557,13 @@
 		<result column="id" property="id" jdbcType="VARCHAR" />
 		<result column="order_no" property="orderNo" jdbcType="VARCHAR" />
 		<result column="sku_name" property="goodsName" jdbcType="VARCHAR" />
-		<result column="recharge_mobile" property="rechargePhone"
-			jdbcType="VARCHAR" />
-		<result column="actual_amount" property="actualAmount"
-			jdbcType="DECIMAL" />
+		<result column="recharge_mobile" property="rechargePhone" jdbcType="VARCHAR" />
+		<result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
+		<result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
 		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
-		<result column="type" property="orderType" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
-		<result column="pay_type" property="payType" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.OrderPayTypeEnum" />
-		<result column="status" property="status" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.OrderStatusEnum" />
+		<result column="type" property="orderType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
+		<result column="pay_type" property="payType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderPayTypeEnum" />
+		<result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderStatusEnum" />
 		<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
 		<result column="quantity" property="quantity" jdbcType="INTEGER" />
 		<result column="user_id" property="userId" jdbcType="VARCHAR" />
@@ -796,7 +797,7 @@
 		<if test="null != endCreateTime">
 			    <![CDATA[ AND tr.create_time <= #{endCreateTime} ]]>
 		</if>
-		<if test="null != orderIds">
+		<if test="null != orderIds and orderIds.size > 0 ">
 			AND tr.id IN
 			<foreach collection="orderIds" index="index" item="item"
 				open="(" close=")" separator=",">
@@ -2280,7 +2281,7 @@
 		AND trade.id = #{orderId,jdbcType=VARCHAR}
 	</select>
 
-	<!-- zengj:获取订单总数，根据订单状态分组 -->
+	<!-- zengj:获取订单总数，根据订单状态分组 V1.1.0  update by wusw 20160928 -->
 	<select id="getOrderCount" parameterType="java.util.Map"
 		resultMap="TradeOrderStatusVoMap">
 		SELECT CASE
@@ -2301,6 +2302,9 @@
 				#{item}
 			</foreach>
 		</if>
+		<if test="type != null">
+		   AND type = #{type,jdbcType=TINYINT}
+		</if>
 		and `status` >= 0
 		GROUP BY
 		CASE
@@ -2319,8 +2323,8 @@
    <select id="selectArrivedOrderCount" parameterType="java.util.Map" resultMap="TradeOrderStatusVoMap">
       SELECT CASE
 				WHEN `status` IN (0,11) THEN 0
-				WHEN `status` IN (5) THEN 2
-				WHEN `status` IN (2, 12) THEN 3
+				WHEN `status` IN (4,5,6,13) THEN 5
+				WHEN `status` IN (2, 12) THEN 2
 				ELSE `STATUS`
 			 END AS `status`,count(1) as `count` FROM trade_order 
      	WHERE store_id = #{storeId,jdbcType=VARCHAR} 
@@ -2336,8 +2340,8 @@
       GROUP BY 
 	  CASE
 		WHEN `status` IN (0,11) THEN 0
-		WHEN `status` IN (5) THEN 2
-		WHEN `status` IN (2, 12) THEN 3
+		WHEN `status` IN (4,5,6,13) THEN 5
+		WHEN `status` IN (2, 12) THEN 2
 		ELSE `STATUS`
 	  END
    </select>
@@ -2346,7 +2350,7 @@
 	<select id="selectOrderInfo" parameterType="java.util.Map"
 		resultMap="TradeOrderVo">
 		SELECT
-		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.status,tr.delivery_time,
+		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.status,tr.delivery_time,tr.type,
 		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
 		= tr.id) as goods_count,
 		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
@@ -4379,7 +4383,7 @@
 		LEFT JOIN trade_order_item tri ON tr.id = tri.order_id
 		<!-- LEFT JOIN trade_order_refunds trf ON tr.id = trf.order_id -->
 		WHERE (tr.status = 1 OR tr.status = 5 OR tr.status = 6 OR tr.status =
-		0 OR tr.status = 11)
+		0 OR tr.status = 11 OR tr.status = 2)
 		<!-- 充值类型选择 流量或者话费 -->
 		<if test="ids != null">
 			AND tr.id in
@@ -4476,6 +4480,7 @@
 		SELECT tr.id,
 		tr.status,
 		tr.actual_amount,
+		tr.preferential_price,
 		tr.order_no,
 		tr.type,
 		tr.create_time,
@@ -4726,7 +4731,7 @@
 		TIMESTAMPDIFF(SECOND,DATE_FORMAT(NOW(),'%Y-%m-%d
 		%H:%i:%s'),o.create_time) AS remaining_time,
 		store.id as store_id,store.store_name as store_name,store.mobile as
-		store_mobile,store.area as store_area,store.address as store_address,
+		store_mobile,store.area as store_area,store.address as store_address,store.logo_url as store_logo_url,
 		store.type as store_type,invoice.id as
 		invoice_id,invoice.head,invoice.context
 		FROM trade_order o
