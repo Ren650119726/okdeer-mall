@@ -6,6 +6,8 @@
  */    
 package com.okdeer.mall.activity.seckill.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.mall.activity.seckill.entity.SeckillReminde;
 
 /**
@@ -23,5 +25,7 @@ import com.okdeer.mall.activity.seckill.entity.SeckillReminde;
 public interface SeckillRemindeMapper {
 
 	void insertSeckillReminde(SeckillReminde seckillReminde);
+	
+	void updateRemindeStatus(@Param("seckillId") String seckillId, @Param("settingValue") Integer settingValue);
 	
 }

@@ -57,6 +57,9 @@ public class ServActivityCheckServiceImpl implements RequestHandler<ServiceOrder
 		ServiceOrderResp respData = resp.getData();
 		// 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
 		ActivityTypeEnum activityType = reqData.getActivityType();
+		if (activityType == null) {
+			activityType = ActivityTypeEnum.NO_ACTIVITY;
+		}
 		// 代金券领取记录
 		String recordId = reqData.getRecordId();
 		// 活动id

@@ -81,7 +81,7 @@ public class ServGoodsCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		req.getContext().put("skuPrice", goodsStoreSku.getOnlinePrice());
 		req.getContext().put("storeSku", goodsStoreSku);
 		req.getContext().put("mainPic", goodsStoreSkuPicture.getUrl());
-
+		req.getContext().put("skuType", goodsStoreSku.getSpuTypeEnum());
 		// 设置响应信息
 		if (req.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
 			respData.setSkuId(goodsStoreSku.getId());
@@ -90,6 +90,7 @@ public class ServGoodsCheckServiceImpl implements RequestHandler<ServiceOrderReq
 			respData.setSkuNum(reqData.getSkuNum());
 			respData.setUnitPrice(ConvertUtil.format(goodsStoreSku.getOnlinePrice()));
 			respData.setLimitNum(goodsStoreSku.getTradeMax());
+			respData.setSkuType(goodsStoreSku.getSpuTypeEnum().ordinal());
 			// 设置商品的支付方式
 			respData.setPaymentMode(getPaymentMode(goodsStoreSku.getPayType()));
 		}

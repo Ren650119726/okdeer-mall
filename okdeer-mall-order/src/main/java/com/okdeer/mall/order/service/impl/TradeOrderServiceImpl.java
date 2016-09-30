@@ -5058,27 +5058,27 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				Map<String, String> orderStatusMap = OrderStatusEnum.convertViewStatus(order.getType());
 				List<TradeOrderItem> itemList = order.getTradeOrderItem();
 				if (itemList != null) {
-					TradeOrderItem item = itemList.get(0);
-					TradeOrderExportVo vo = new TradeOrderExportVo();
-					vo.setOrderNo(order.getOrderNo());
-					vo.setCreateTime(DateUtils.formatDate(order.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
-					vo.setUserPhone(order.getUserPhone());
-					vo.setSkuName(item.getSkuName());
-					vo.setUnitPrice(item.getUnitPrice());
-					vo.setQuantity(item.getQuantity() == null ? "" : item.getQuantity().toString());
-					vo.setActualAmount(item.getActualAmount());
-					vo.setStatus(orderStatusMap.get(order.getStatus().getName()));
-					// Begin 重构4.1 add by wusw 20160727
-					if (order.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
-						vo.setPayType("线下确认价格并当面支付");
-					} else {
-						vo.setPayType(order.getPayWay().getValue());
+					for (TradeOrderItem item : itemList) {
+						TradeOrderExportVo vo = new TradeOrderExportVo();
+						vo.setOrderNo(order.getOrderNo());
+						vo.setCreateTime(DateUtils.formatDate(order.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
+						vo.setUserPhone(order.getUserPhone());
+						vo.setSkuName(item.getSkuName());
+						vo.setUnitPrice(item.getUnitPrice());
+						vo.setQuantity(item.getQuantity() == null ? "" : item.getQuantity().toString());
+						vo.setActualAmount(item.getActualAmount());
+						vo.setStatus(orderStatusMap.get(order.getStatus().getName()));
+						// Begin 重构4.1 add by wusw 20160727
+						if (order.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
+							vo.setPayType("线下确认价格并当面支付");
+						} else {
+							vo.setPayType(order.getPayWay().getValue());
+						}
+						// End 重构4.1 add by wusw 20160727
+						BigDecimal quantity = new BigDecimal(item.getQuantity());
+						vo.setTotalAmount(item.getUnitPrice().multiply(quantity));
+						result.add(vo);
 					}
-					// End 重构4.1 add by wusw 20160727
-					BigDecimal quantity = new BigDecimal(item.getQuantity());
-					vo.setTotalAmount(item.getUnitPrice().multiply(quantity));
-
-					result.add(vo);
 				}
 			}
 		}

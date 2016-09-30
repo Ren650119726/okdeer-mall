@@ -29,6 +29,7 @@ import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
+import com.okdeer.archive.store.enums.PublicResultCodeEnum;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
@@ -220,10 +221,23 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 						(DateUtils.addHours(serviceTime, 2).getTime() - DateUtils.getSysDate().getTime()) / 1000);
 
 				List<GoodsStoreSku> goodsStoreSkuList = (List<GoodsStoreSku>)req.getContext().get("storeSkuList");
-				List<TradeOrderServiceGoodsItem> list = respData.getList();
+				/*List<TradeOrderServiceGoodsItem> list = respData.getList();
 				
 				for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
 					for (TradeOrderServiceGoodsItem goodsItem : list) {
+						if (goodsStoreSku.getId().equals(goodsItem.getSkuId())) {
+							int skuNum = goodsItem.getSkuNum();
+							goodsStoreSku.setSaleNum(
+									(goodsStoreSku.getSaleNum() == null ? 0 : goodsStoreSku.getSaleNum()) + skuNum);
+
+							this.goodsStoreSkuService.updateByPrimaryKeySelective(goodsStoreSku);
+						}
+					}
+					
+				}*/
+				List<TradeOrderGoodsItem> list = req.getData().getList();
+				for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
+					for (TradeOrderGoodsItem goodsItem : list) {
 						if (goodsStoreSku.getId().equals(goodsItem.getSkuId())) {
 							int skuNum = goodsItem.getSkuNum();
 							goodsStoreSku.setSaleNum(
@@ -408,7 +422,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		List<TradeOrderItem> orderItemList = new ArrayList<TradeOrderItem>();
 		// 数据库中对应的商品信息list
 		List<GoodsStoreSku> goodsStoreSkuList = (List<GoodsStoreSku>)req.getContext().get("storeSkuList");
-		List<TradeOrderServiceGoodsItem> goodsSkuItemList = resp.getData().getList();
+		//List<TradeOrderServiceGoodsItem> goodsSkuItemList = resp.getData().getList();
+		List<TradeOrderGoodsItem> goodsSkuItemList = req.getData().getList();
 		// 订单项总金额
 		BigDecimal totalAmount = tradeOrder.getTotalAmount();
 		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
@@ -420,7 +435,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		ComparatorChain chain = new ComparatorChain();
 		chain.addComparator(new BeanComparator("skuPrice"), false);
 		Collections.sort(goodsSkuItemList, chain);
-		for (TradeOrderServiceGoodsItem goodsItem : goodsSkuItemList) {
+		//for (TradeOrderServiceGoodsItem goodsItem : goodsSkuItemList) {
+		for (TradeOrderGoodsItem goodsItem : goodsSkuItemList) {
 			storeSku = findFromStoreSkuList(goodsStoreSkuList, goodsItem.getSkuId());
 			tradeOrderItem = new TradeOrderItem();
 			tradeOrderItem.setId(UuidUtils.getUuid());
@@ -564,12 +580,12 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		stockAjustVo.setMethodName(this.getClass().getName() + ".process");
 
 		AdjustDetailVo adjustDetailVo = null;
-		TradeOrderServiceGoodsItem orderItem = null;
+		TradeOrderGoodsItem orderItem = null;
 		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
 
 		for (GoodsStoreSku storeSku : storeSkuList) {
 			adjustDetailVo = new AdjustDetailVo();
-			orderItem = respData.findOrderItem(storeSku.getId());
+			orderItem = req.getData().findOrderItem(storeSku.getId());
 
 			adjustDetailVo.setBarCode(storeSku.getBarCode());
 			adjustDetailVo.setGoodsName(storeSku.getName());
