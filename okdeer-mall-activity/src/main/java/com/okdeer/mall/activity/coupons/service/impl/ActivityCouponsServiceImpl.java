@@ -618,9 +618,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 							}
 						}
 					}
-				} else if (area.getCouponsAreaType() == DistrictType.province) {
+				} /*else if (area.getCouponsAreaType() == DistrictType.province) {
 					cityMap.put("0", "所属范围内都可以用");
-				}
+				}*/
 			}
 			
 		}	
