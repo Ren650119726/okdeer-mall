@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +35,11 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCommunity;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectOrderType;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsApprovalStatus;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsStatus;
@@ -455,8 +458,6 @@ public class ActivityCollectCouponsServiceImpl
 						if (StringUtils.isNotEmpty(params.get("currentOperatUserId").toString())) {
 							activityCouponsRecord.setCollectUserId(params.get("currentOperatUserId").toString());
 							currentRecordCount = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecord);
-							// otherRecordCount =
-							// activityCouponsRecordMapper.selectOtherCountByParams(activityCouponsRecord);
 						}
 						if (activityCoupons.getRemainNum() <= 0) {
 							// 剩余数量小于0 显示已领完
@@ -469,6 +470,40 @@ public class ActivityCollectCouponsServiceImpl
 								// 立即领取
 								activityCoupons.setIsReceive(2);
 							}
+						}
+						//根据代金卷类型判断使用的分类
+						
+						if (activityCoupons.getType() == 1) {
+							if (activityCoupons.getIsCategory() == 1) {
+								String categoryNames = "";
+								//CouponsInfoQuery couponsInfo = activityCouponsMapper.findNavCategoryByCouponsId(activityCoupons.getId());
+								List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
+								if (cates != null) {
+							    	for (ActivityCouponsCategory category : cates) {
+							    		if (StringUtils.isNotBlank(categoryNames)) {
+								    		categoryNames =  categoryNames + "、" ;	
+							    		}	
+							    		categoryNames = categoryNames + category.getCategoryName();
+							    	}
+							    }
+								activityCoupons.setCategoryNames(categoryNames);
+							}
+						} else if (activityCoupons.getType() == 2) {
+							if (activityCoupons.getIsCategory() == 1) {
+								String categoryNames = "";
+								//CouponsInfoQuery couponsInfo = activityCouponsMapper.findSpuCategoryByCouponsId(activityCoupons.getId());
+								List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
+								if (cates != null) {
+							    	for (ActivityCouponsCategory category : cates) {
+							    		if (StringUtils.isNotBlank(categoryNames)) {
+								    		categoryNames =  categoryNames + "、" ;	
+							    		}	
+							    		categoryNames = categoryNames + category.getCategoryName();						    		
+							    	}
+							    }
+								activityCoupons.setCategoryNames(categoryNames);
+							}
+							
 						}
 					}
 				}
@@ -665,4 +700,20 @@ public class ActivityCollectCouponsServiceImpl
 	public List<ActivityCollectCouponsOrderVo> findCollCouponsLinks(Map<String, Object> map) throws ServiceException {
 		return activityCollectCouponsMapper.findCollCouponsLinks(map);
 	}
+
+    @Override
+    public ActivityCollectCouponsSimpleVo findRecommendAcvitity() {
+        List<ActivityCollectCouponsSimpleVo> simpleVos = this.activityCollectCouponsMapper.findRecommendAcvititys();
+        ActivityCollectCouponsSimpleVo simpleVo = null;
+        if(CollectionUtils.isEmpty(simpleVos)) {
+            simpleVo = new ActivityCollectCouponsSimpleVo();
+            simpleVo.setVoucher(false);
+        } else {
+            simpleVo = simpleVos.get(0);
+            simpleVo.setVoucher(true);
+        }
+        return simpleVo;
+    }
+	
+	
 }
