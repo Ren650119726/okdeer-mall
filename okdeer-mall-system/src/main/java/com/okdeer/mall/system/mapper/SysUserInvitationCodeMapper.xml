@@ -87,6 +87,16 @@
 		</if>
 	</sql>
 	
+	<!-- by:yangq 根据用户ID查询用户邀请码信息 -->
+	<select id="selectInvitationById" resultMap="BaseResultMap" parameterType="string">
+	  SELECT <include refid="resultBaseColumn"/> FROM sys_user_invitation_code where sys_buyer_user_id = #{sysBuyerUserId,jdbcType=VARCHAR} 
+	</select>
+	
+	<!-- by:yangq 根据用户邀请码code查询用户邀请码信息 -->
+	<select id="selectInvitationByCode" resultMap="BaseResultMap" parameterType="string">
+	  SELECT <include refid="resultBaseColumn"/> FROM sys_user_invitation_code WHERE invitation_code =#{invitationCode,jdbcType=VARCHAR}
+	</select>
+	
   	<!-- 根据参数获取信息 start -->
 	<select id="findByQueryVo" resultMap="extResultMap" 
 					parameterType="com.okdeer.mall.system.entity.SysUserInvitationCodeVo">
@@ -146,4 +156,33 @@
 		id=#{id,jdbcType=VARCHAR}
 	</update>
 	<!-- 更改信息 end -->
+	
+	<!-- 根据用户Id查询邀请码信息 added by zhaoqc  -->
+  	<select id="findInvitationCodeByUserId" resultMap="BaseResultMap">
+  		select suic.id,suic.sys_user_id,suic.sys_buyer_user_id,suic.user_type,
+			suic.invitation_code,suic.invitation_user_num,suic.first_order_user_num,
+			suic.create_time,suic.update_time
+		from sys_user_invitation_code suic 
+		where 1=1
+		<if test="userType == 0">
+			and suic.sys_user_id = #{userId, jdbcType=VARCHAR}
+		</if>
+  		<if test="userType == 1">
+  			and suic.sys_buyer_user_id = #{userId, jdbcType=VARCHAR}
+  		</if>
+  	</select>
+  	<!--end added by zhaoqc  -->
+  	
+  	<!-- 根据邀请码查询邀请码实体 added by zhaoqc -->
+  	<select id="findInvitationCodeByCode" resultMap="BaseResultMap">
+  		select suic.id,suic.sys_user_id,suic.sys_buyer_user_id,suic.user_type,
+			suic.invitation_code,suic.invitation_user_num,suic.first_order_user_num,
+			suic.create_time,suic.update_time
+		from sys_user_invitation_code suic 
+		where 1=1
+		<if test="invitationCode != null">
+			and suic.invitation_code = #{invitationCode, jdbcType=VARCHAR}
+		</if>
+  	</select>
+  	<!-- End added by zhaoqc -->
 </mapper>
