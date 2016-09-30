@@ -565,7 +565,7 @@
 		AND t.status = 0
 		AND t2.disabled = 0
 		<if test="type != ''">
-			AND t2.type = #{type}
+			AND (t2.type = 0 OR t2.type = #{type}) 
 		</if>
 		AND (
 			t1.store_id = #{storeId}
