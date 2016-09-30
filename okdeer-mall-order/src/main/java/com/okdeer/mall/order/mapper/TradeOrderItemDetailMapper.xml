@@ -15,11 +15,36 @@
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
     <result column="order_id" property="orderId" jdbcType="VARCHAR" />
     <result column="user_id" property="userId" jdbcType="VARCHAR" />
+     <!--Begin add by zengjz 2016-9-27 订单明细表新增字断 -->
+    <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+    <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
+    <result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
+    
     <!-- End by zengjz 2016-9-23 订单明细表新增字断 -->
-	    
   </resultMap>
+  
+   <resultMap id="ExpireStoreConsumerOrderVoMap" type="com.okdeer.mall.order.vo.ExpireStoreConsumerOrderVo" >
+	   <id column="order_id" property="orderId" jdbcType="VARCHAR" />
+	   <collection property="detailList" ofType="com.okdeer.mall.order.entity.TradeOrderItemDetail">
+			<result column="id" property="id" jdbcType="VARCHAR" />
+		    <result column="order_item_id" property="orderItemId" jdbcType="VARCHAR" />
+		    <result column="consume_code" property="consumeCode" jdbcType="VARCHAR" />
+		    <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.ConsumeStatusEnum"/>
+		    <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+		    <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+		    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		    <result column="use_time" property="useTime" jdbcType="TIMESTAMP" />
+		    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		    <result column="detail_order_id" property="orderId" jdbcType="VARCHAR" />
+		    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+		    <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+		    <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
+		    <result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
+		</collection>
+  </resultMap>
+    
   <sql id="Base_Column_List" >
-    id, order_item_id, consume_code, status, start_time, end_time, create_time
+    id, order_item_id, consume_code, status, start_time, end_time, create_time,use_time,update_time,order_id,user_id,unit_price,actual_amount,preferential_price
   </sql>
   
    <sql id="condition">
@@ -75,23 +100,28 @@
   </delete>
   <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderItemDetail" >
     insert into trade_order_item_detail (id, order_item_id, consume_code, 
-      status, start_time, end_time, 
-      create_time)
+      status, start_time, end_time,create_time,
+     user_time, update_time, order_id, user_id, unit_price, actual_amount, preferential_price)
     values (#{id,jdbcType=VARCHAR}, #{orderItemId,jdbcType=VARCHAR}, #{consumeCode,jdbcType=VARCHAR}, 
       #{status,jdbcType=TINYINT}, #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, 
-      #{createTime,jdbcType=TIMESTAMP})
+      #{createTime,jdbcType=TIMESTAMP}, #{useTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP},
+      #{orderId, jdbcType=VARCHAR}, #{userId, jdbcType=VARCHAR}, #{unitPrice, jdbcType=DECIMAL},
+      #{actualAmount, jdbcType=DECIMAL}, #{preferentialPrice, jdbcType=DECIMAL} )
   </insert>
   
     <insert id="insertBatch" parameterType="list">  
 	    insert into trade_order_item_detail 
 	   (id, order_item_id, consume_code, 
 	      status, start_time, end_time, 
-	      create_time)
-	    	values   
+	      create_time, user_time, update_time, order_id, user_id,
+   		  unit_price, actual_amount, preferential_price)
+	    values   
 	    <foreach collection="list" item="item" index="index" separator=",">
 	    	(#{item.id,jdbcType=VARCHAR}, #{item.orderItemId,jdbcType=VARCHAR}, #{item.consumeCode,jdbcType=VARCHAR}, 
 	      #{item.status,jdbcType=TINYINT}, #{item.startTime,jdbcType=TIMESTAMP}, #{item.endTime,jdbcType=TIMESTAMP}, 
-	      #{item.createTime,jdbcType=TIMESTAMP})  
+	      #{item.createTime,jdbcType=TIMESTAMP}, #{item.useTime,jdbcType=TIMESTAMP}, #{item.updateTime,jdbcType=TIMESTAMP},
+      	  #{item.orderId, jdbcType=VARCHAR}, #{item.userId, jdbcType=VARCHAR}, #{item.unitPrice, jdbcType=DECIMAL},
+     	  #{item.actualAmount, jdbcType=DECIMAL}, #{item.preferentialPrice, jdbcType=DECIMAL})  
 	    </foreach>  
 	</insert> 
   
@@ -119,6 +149,27 @@
       <if test="createTime != null" >
         create_time,
       </if>
+      <if test="useTime != null">
+     	 user_time, 
+      </if>
+      <if test="updateTime != null">
+     	 update_time, 
+      </if>
+      <if test="orderId != null">
+     	 order_id, 
+      </if>      
+      <if test="userId != null">
+      	user_id,
+      </if>
+      <if test="unitPrice != null">
+   		 unit_price, 
+      </if>      
+      <if test="actualAmount != null">
+      	actual_amount, 
+      </if> 
+      <if test="preferentialPrice != null">
+      	preferential_price
+      </if>                  
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -142,6 +193,27 @@
       <if test="createTime != null" >
         #{createTime,jdbcType=TIMESTAMP},
       </if>
+      <if test="useTime != null">
+     	#{useTime,jdbcType=TIMESTAMP}, 
+      </if>
+      <if test="updateTime != null">
+     	#{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="orderId != null">
+      	#{orderId, jdbcType=VARCHAR},  
+      </if>      
+      <if test="userId != null">
+      	#{userId, jdbcType=VARCHAR}, 
+      </if>
+      <if test="unitPrice != null">
+   		 #{unitPrice, jdbcType=DECIMAL},
+      </if>      
+      <if test="actualAmount != null">
+      	#{actualAmount, jdbcType=DECIMAL}, 
+      </if> 
+      <if test="preferentialPrice != null">
+      	#{preferentialPrice, jdbcType=DECIMAL}
+      </if> 
     </trim>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.order.entity.TradeOrderItemDetail" >
@@ -168,6 +240,24 @@
       <if test="useTime != null" >
         use_time = #{useTime,jdbcType=TIMESTAMP},
       </if>
+      <if test="updateTime != null">
+     	update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="orderId != null">
+      	order_id = #{orderId, jdbcType=VARCHAR},  
+      </if>      
+      <if test="userId != null">
+      	user_id = #{userId, jdbcType=VARCHAR}, 
+      </if>
+      <if test="unitPrice != null">
+   		 unit_price = #{unitPrice, jdbcType=DECIMAL},
+      </if>      
+      <if test="actualAmount != null">
+      	actual_amount = #{actualAmount, jdbcType=DECIMAL}, 
+      </if> 
+      <if test="preferentialPrice != null">
+      	preferential_price = #{preferentialPrice, jdbcType=DECIMAL}
+      </if> 
     </set>
     where id = #{id,jdbcType=VARCHAR}
   </update>
@@ -184,7 +274,7 @@
   
   <update id="updateStatusWithRefund" parameterType="java.lang.String">
 	UPDATE trade_order_item_detail
-	SET status = 2
+	SET status = 2,update_time = now()
 	WHERE status = 0 AND
 		order_item_id = #{orderItemId,jdbcType=VARCHAR}
   </update>
@@ -252,7 +342,9 @@
 	
 	<!-- 根据订单id查询明细列表 V1.1.0 add by zengjz 20160923-->
    <select id="selectByOrderItemDetailByOrderId" parameterType="java.lang.String" resultMap="BaseResultMap">
-        select * from trade_order_item_detail where order_id = #{orderId,jdbcType=VARCHAR}
+        select 
+         <include refid="Base_Column_List" />
+         from trade_order_item_detail where order_id = #{orderId,jdbcType=VARCHAR}
   </select>
   
   <!-- 订单消费的详细信息结果集  V1.1.0 add by wusw 20160924-->
@@ -274,8 +366,11 @@
 	   <result column="properties_indb" property="propertiesIndb" jdbcType="VARCHAR" />
 	   <result column="unit_price" property="unitPrice" jdbcType="VARCHAR" />
 	   <result column="style_code" property="styleCode" jdbcType="VARCHAR" />
-	   <result column="bar_code" property="barCode" jdbcType="VARCHAR" />    
+	   <result column="bar_code" property="barCode" jdbcType="VARCHAR" /> 
+	   <result column="main_pic_prl" property="skuPictureUrl" jdbcType="VARCHAR" />    
 	   <result column="storeUserId" property="storeUserId" jdbcType="VARCHAR" />
+	   <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+	   <result column="is_unsubscribe" property="isUnsubscribe" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.store.enums.IsUnsubscribe" />
     </resultMap>
     <!-- 批量查询指定店铺的消费码相应的订单信息 V1.1.0 add by wusw 20160924-->
 	<select id="findOrderInfoByConsumeCode" resultMap="orderDetailResultMap" parameterType="java.util.Map">
@@ -291,22 +386,29 @@
 			trade.type,
 			trade.order_resource,
 			trade.user_id,
+			trade.create_time,
 			item.id AS order_item_id,
 			item.store_sku_id,
+			item.main_pic_prl,
 			item.sku_name,
 			item.properties_indb,
 			item.unit_price,
 			item.style_code,
 			item.bar_code,
+			skuService.is_unsubscribe,
 			member.sys_user_id AS storeUserId	
 		FROM trade_order_item_detail detail
 		INNER JOIN trade_order_item item on detail.order_item_id = item.id
 		INNER JOIN trade_order trade on item.order_id = trade.id
+		INNER JOIN goods_store_sku_service skuService ON skuService.store_sku_id = item.store_sku_id 
 		LEFT JOIN store_member_relation member ON (member.store_id = trade.store_id and
 		member.menber_type = 0)
 		WHERE 1=1
 		<if test="storeId != null and storeId != ''">
 			AND trade.store_id = #{storeId,jdbcType=VARCHAR}
+		</if>
+		<if test="consumeCode != null">
+		    AND detail.consume_code = #{consumeCode,jdbcType=VARCHAR}
 		</if>
 		<if test="consumeCodeList != null">
 		   AND detail.consume_code IN
@@ -318,6 +420,28 @@
 	
 	<!-- 根据消费码状态与订单id查询列表 V1.1.0 add by zengjz 20160924-->
 	 <select id="selectItemDetailByOrderIdAndStatus"  resultMap="BaseResultMap">
-        select * from trade_order_item_detail where order_id = #{orderId,jdbcType=VARCHAR} and  status= #{status,jdbcType=TINYINT}
+        select 
+         <include refid="Base_Column_List" />
+         from trade_order_item_detail where order_id = #{orderId,jdbcType=VARCHAR} and  status= #{status,jdbcType=TINYINT}
+  	</select>
+  
+  	<!-- 查询过期的明细列表 V1.1.0 add by zengjz 20160929-->
+  	<select id="findExpireList"  resultMap="ExpireStoreConsumerOrderVoMap">
+        select 
+        b.id as order_id,a.id, a.order_item_id,a.consume_code,a.status,a.start_time, a.end_time,a.create_time,a.use_time,a.update_time,a.order_id as detai_order_id,a.user_id,a.unit_price,a.actual_amount,a.preferential_price 		
+        from  trade_order_item_detail a left JOIN trade_order b on a.order_id =  b.id   
+         where   a.status=0 and  b.type =5  and b.status = 5
+				and  TIMESTAMPDIFF(SECOND,DATE_FORMAT(NOW(),'%Y-%m-%d %H:%i:%s'), end_time) &lt; 0
+  	</select>
+  
+  <!-- 验证消费码在店铺中是否已经存在 added by zhaoqc -->
+  <select id="checkConsumeHasExsit" resultMap="BaseResultMap">
+  	select d.* 
+	from trade_order o, trade_order_item i, trade_order_item_detail d
+	where o.id=i.order_id and i.id=d.order_item_id
+		and o.store_id = #{storeId, jdbcType=VARCHAR} 
+		and d.consume_code = #{consumeCode, jdbcType=VARCHAR}
   </select>
+  <!-- end added by zhaoqc  -->
+  
 </mapper>
