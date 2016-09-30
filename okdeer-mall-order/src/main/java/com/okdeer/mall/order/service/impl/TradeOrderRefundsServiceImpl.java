@@ -994,7 +994,23 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 		// 执行退款操作
 		doRefundPay(orderRefunds);
 	}
-
+	
+	/**
+	 * @Description: 自动退款
+	 * @param id 退款单id
+	 * @param userId 用户id
+	 * @throws Exception
+	 * @author zengjizu
+	 * @date 2016年9月29日
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public void autoRefundPayment(TradeOrderRefunds orderRefunds) throws Exception {
+		
+		orderRefunds.setTradeNum(TradeNumUtil.getTradeNum());
+		// 执行退款操作
+		doRefundPay(orderRefunds);
+	}
+	
 	/**
 	 * 执行退款操作
 	 */

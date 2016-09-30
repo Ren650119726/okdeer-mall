@@ -11,6 +11,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.mall.common.vo.Request;
@@ -23,6 +24,7 @@ import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
+import com.okdeer.mall.system.utils.ConvertUtil;
 /**
  * ClassName: SeckillAddressSearchServiceImpl 
  * @Description: 秒杀地址查询
@@ -83,7 +85,25 @@ public class SeckillAddressSearchServiceImpl implements RequestHandler<ServiceOr
 			addrList = memberConsigneeAddressMapper.findAddrWithServRange(condition);
 		}
 		if(!CollectionUtils.isEmpty(addrList)){
-			respData.setDefaultAddress(addrList.get(0));
+			for(UserAddressVo addr : addrList){
+				if(addr.getIsOutRange() == 0){
+					respData.setDefaultAddress(addr);
+					break;
+				}
+			}
+		}
+		
+		// 查询店铺地址
+		SpuTypeEnum skuType = (SpuTypeEnum)req.getContext().get("skuType");
+		if(skuType == SpuTypeEnum.fwdDdxfSpu){
+			// 到店消费的商品，需要返回店铺地址
+			MemberConsigneeAddress storeAddrObj = memberConsigneeAddressService.findByStoreId(req.getData().getStoreId());
+			StringBuilder storeAddr = new StringBuilder();
+			storeAddr.append(ConvertUtil.format(storeAddrObj.getProvinceName()))
+					.append(ConvertUtil.format(storeAddrObj.getCityName()))
+					.append(ConvertUtil.format(storeAddrObj.getAreaName()))
+					.append(ConvertUtil.format(storeAddrObj.getAreaExt()));
+			respData.getStoreInfo().setAddress(storeAddr.toString());
 		}
 		req.setComplete(true);
 	}

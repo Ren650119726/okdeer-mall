@@ -6193,25 +6193,97 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         // 判断订单是否评价appraise大于0，已评价
         Integer appraise = tradeOrderItemMapper.selectTradeOrderItemIsAppraise(orderId);
 
-	// Begin V1.1.0 add by wusw 20160929
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findUserVisitServiceOrderDetail(java.lang.String)
-	 */
-	@Override
-	public JSONObject findUserVisitServiceOrderDetail(String orderId) throws ServiceException {
-		UserTradeOrderDetailVo orders = tradeOrderMapper.selectUserOrderServiceDetail(orderId);
-		List<TradeOrderItem> tradeOrderItems = tradeOrderItemMapper.selectTradeOrderItemOrDetail(orderId);
-		// 判断订单是否评价appraise大于0，已评价
-		Integer appraise = tradeOrderItemMapper.selectTradeOrderItemIsAppraise(orderId);
+        // 查询店铺扩展信息
+        String storeId = orders.getStoreInfo().getId();
+        StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
 
-		// 查询店铺扩展信息
-		String storeId = orders.getStoreInfo().getId();
-		StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
-
-		orders.setItems(tradeOrderItems);
-		JSONObject json = this.getServiceJsonObj(orders, appraise, storeInfoExt,true);
-		return json;
-	}
-	// End V1.1.0 add by wusw 20160929
+        orders.setItems(tradeOrderItems);
+        JSONObject json = this.getServiceJsonObj(orders, appraise, storeInfoExt,true);
+        return json;
+    }
+    // End V1.1.0 add by wusw 20160929
+	
+    /**
+     * 到店消费订单处理
+     * @param tradeOrder 订单
+     * @param result MQ返回请求数据
+     * @throws Exception
+     */
+	@Transactional(rollbackFor = Exception.class)
+    @Override
+    public void dealWithStoreConsumeOrder(TradeOrder tradeOrder, String flowNo, int payType) throws Exception {
+        List<TradeOrderItem> orderItems = this.tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
+        TradeOrderItem orderItem = orderItems.get(0);
+        
+        //添加支付方式
+        insertTradeOrderPay(tradeOrder, flowNo, payType);
+        
+        //修改订单状态，将订单的状态改为已完成
+        tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
+        tradeOrder.setUpdateTime(new Date());
+        this.updateOrderStatus(tradeOrder);
+        
+        //创建消费码记录，如有优惠分摊优惠
+        GoodsStoreSkuService goodsService = this.goodsStoreSkuServiceService.selectByStoreSkuId(orderItem.getStoreSkuId());
+        BigDecimal orderAmount = orderItem.getTotalAmount();
+        BigDecimal actualAmount = orderItem.getActualAmount();
+        BigDecimal preferentialAmount = orderItem.getPreferentialPrice();
+        int skuQty = orderItem.getQuantity(); 
+        String storeId = tradeOrder.getStoreId();
+        for (int i = 0 ; i < skuQty ; i++) {
+            TradeOrderItemDetail itemDetail = new TradeOrderItemDetail();
+            itemDetail.setId(UuidUtils.getUuid());
+            itemDetail.setOrderId(orderItem.getOrderId());
+            itemDetail.setOrderItemId(orderItem.getId());
+            
+            String consumeCode = RandomStringUtil.getRandomInt(8);
+            TradeOrderItemDetail entity = this.tradeOrderItemDetailMapper.checkConsumeHasExsit(storeId, consumeCode);
+            while (entity != null) {
+                consumeCode = RandomStringUtil.getRandomInt(8);
+                entity = this.tradeOrderItemDetailMapper.checkConsumeHasExsit(storeId, consumeCode);
+            }
+            itemDetail.setConsumeCode(consumeCode);
+            itemDetail.setStartTime(goodsService.getStartTime());
+            itemDetail.setEndTime(goodsService.getEndTime());
+            itemDetail.setCreateTime(new Date());
+            itemDetail.setUpdateTime(new Date());
+            itemDetail.setUserId(tradeOrder.getUserId());
+            
+            BigDecimal unitPrice = orderAmount.divide(new BigDecimal(skuQty));
+            BigDecimal preferentialPrice = preferentialAmount.divide(new BigDecimal(skuQty));
+            itemDetail.setUnitPrice(unitPrice);
+            itemDetail.setActualAmount(actualAmount.divide(new BigDecimal(skuQty)));
+            itemDetail.setPreferentialPrice(preferentialPrice);
+            itemDetail.setActualAmount(unitPrice.subtract(preferentialPrice));
+            
+            this.tradeOrderItemDetailMapper.insertSelective(itemDetail);
+        }
+    }
+    
+    /**
+     * 创建订单支付方式
+     * @param tradeOrder
+     * @param result
+     * @throws Exception
+     */
+    private void insertTradeOrderPay(TradeOrder tradeOrder, String flowNo, int payType) throws Exception {
+        //新增支付方式记录
+        TradeOrderPay tradeOrderPay = new TradeOrderPay();
+        tradeOrderPay.setId(UuidUtils.getUuid());
+        tradeOrderPay.setCreateTime(new Date());
+        tradeOrderPay.setPayAmount(tradeOrder.getActualAmount());
+        tradeOrderPay.setOrderId(tradeOrder.getId());
+        tradeOrderPay.setPayTime(new Date());
+        tradeOrderPay.setReturns(flowNo);
+        
+        if (payType == 1) {
+            tradeOrderPay.setPayType(PayTypeEnum.ALIPAY);
+        } else if (payType == 2) {
+            tradeOrderPay.setPayType(PayTypeEnum.WXPAY);
+        } else if (payType == 3) {
+            tradeOrderPay.setPayType(PayTypeEnum.JDPAY);
+        }
+        this.tradeOrderPayService.insertSelective(tradeOrderPay);
+    }
+    
 }

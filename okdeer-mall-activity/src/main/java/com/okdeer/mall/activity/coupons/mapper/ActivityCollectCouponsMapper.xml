@@ -117,6 +117,11 @@
       </collection>
     </resultMap>
     
+    <resultMap type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo" id="activityCouponsSimpleVo">
+    	<id property="activityId" column="id" jdbcType="VARCHAR"/>
+    	<result property="startUrl" column="h5_url" jdbcType="VARCHAR"/>
+    </resultMap>
+    
     <!-- end：查询代金券活动以及关联地区列表 add by wushp -->
     
     <sql id="columns">
@@ -652,4 +657,11 @@
 		(area1.type = 0 AND area1.`area_id`=#{cityId}));
 		
 	</select>
+	
+	<select id="findRecommendAcvititys" resultMap="activityCouponsSimpleVo">
+		select id, h5_url from activity_collect_coupons
+		where status=1 and type=3
+		and disabled=0  and approval_status=1
+	</select>
+	
 </mapper>

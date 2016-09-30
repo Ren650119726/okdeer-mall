@@ -99,6 +99,8 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		servStoreInfo.setIsInvoice(extractIsInvoice(storeExt));
 		// 设置预约期限天数
 		servStoreInfo.setDeadline(storeExt.getSubscribeTime());
+		// 设置店铺区域类型
+		servStoreInfo.setStoreAreaType(storeInfo.getAreaType());
 		// 根据店铺设置的信息设置提前天数预约和提前预约小时数
 		// 店铺是否设置提前预约
 		if(isAdvance(storeExt)){

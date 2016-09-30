@@ -23,6 +23,7 @@ import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
+import com.okdeer.mall.system.utils.ConvertUtil;
 /**
  * ClassName: SeckillAddressSearchServiceImpl 
  * @Description: 服务订单地址查询
@@ -76,7 +77,13 @@ public class ServAddressSearchServiceImpl implements RequestHandler<ServiceOrder
 				BeanUtils.copyProperties(userAddressVo, memberConsignee);
 				respData.setDefaultAddress(userAddressVo);
 			}
-			// 店铺详细地址
+			// 到店消费的商品，需要返回店铺地址
+			StringBuilder storeAddr = new StringBuilder();
+			storeAddr.append(ConvertUtil.format(memberConsignee.getProvinceName()))
+					.append(ConvertUtil.format(memberConsignee.getCityName()))
+					.append(ConvertUtil.format(memberConsignee.getAreaName()))
+					.append(ConvertUtil.format(memberConsignee.getAreaExt()));
+			respData.getStoreInfo().setAddress(storeAddr.toString());
 			req.setComplete(true);
 			return;
 		}

@@ -110,17 +110,11 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		List<String> spuCategoryIds = new ArrayList<String>();
 		// 订单总价
 		BigDecimal totalAmout = BigDecimal.ZERO;
+		Date goodsUpdateTime = null;
 		// 检测商品信息是否有变化
 		for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
 			if (goodsStoreSku == null || goodsStoreSku.getOnline() != BSSC.PUTAWAY) {
 				resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS);
-				req.setComplete(true);
-				return;
-			}
-			Date goodsUpdateTime = DateUtils.parseDate(reqData.getGoodsUpdateTime());
-			// 商品信息有更新
-			if (goodsStoreSku.getUpdateTime().getTime() != goodsUpdateTime.getTime()) {
-				resp.setResult(ResultCodeEnum.SERV_GOODS_IS_UPDATE);
 				req.setComplete(true);
 				return;
 			}
@@ -131,6 +125,14 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			// 计算订单总价
 			for (TradeOrderGoodsItem item : listTemp) {
 				if (goodsStoreSku.getId().equals(item.getSkuId())) {
+					goodsUpdateTime = DateUtils.parseDate(item.getUpdateTime());
+					// 商品信息有更新
+					if (goodsStoreSku.getUpdateTime().getTime() != goodsUpdateTime.getTime()) {
+						resp.setResult(ResultCodeEnum.SERV_GOODS_IS_UPDATE);
+						req.setComplete(true);
+						return;
+					}
+					
 					BigDecimal onlinePrice = goodsStoreSku.getOnlinePrice();
 					totalAmout = totalAmout.add(onlinePrice.multiply(BigDecimal.valueOf(item.getSkuNum())));
 				}
@@ -153,6 +155,34 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 					return;
 				}
 			}
+			
+			if (serviceExt != null && serviceExt.getIsShoppingCart() == 1
+					&& serviceExt.getIsDistributionFee() == 1) {
+				// 支持购物车并且有配送费
+				if (serviceExt.getIsStartingPrice() == 1) {
+					// 有起送价
+					if (serviceExt.getIsCollect() == 1) {
+						// 已满起送价收取配送费
+						respData.setFare(BigDecimal.valueOf(serviceExt.getDistributionFee()));
+					} else {
+						// 已满起送价不收取配送费
+						BigDecimal startingPrice = serviceExt.getStartingPrice();
+						if (totalAmout.compareTo(startingPrice) == -1) {
+							// 设置运费
+							respData.setFare(BigDecimal.valueOf(serviceExt.getDistributionFee()));
+						}
+					}
+					
+				} else {
+					// 没有起送价
+					if (serviceExt.getIsCollect() == 1) {
+						// 已满起送价收取配送费，0：否，1：是
+						// 设置运费
+						respData.setFare(BigDecimal.valueOf(serviceExt.getDistributionFee()));
+					}
+					
+				}
+			}
 		}
 		
 		List<TradeOrderServiceGoodsItem> list = new ArrayList<TradeOrderServiceGoodsItem>();
@@ -162,8 +192,10 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			goodsItem = new TradeOrderServiceGoodsItem();
 			goodsItem.setSkuId(goodsStoreSku.getId());
 			goodsItem.setSkuName(goodsStoreSku.getName());
-			goodsItem.setUnitPrice(ConvertUtil.format(goodsStoreSku.getOnlinePrice()));
+			goodsItem.setUnitPrice(goodsStoreSku.getOnlinePrice());
 			goodsItem.setLimitNum(goodsStoreSku.getTradeMax());
+			goodsItem.setUpdateTime(goodsStoreSku.getUpdateTime());
+			goodsItem.setSkuType(goodsStoreSku.getSpuTypeEnum().ordinal());
 			// 设置商品的支付方式
 			goodsItem.setPaymentMode(getPaymentMode(goodsStoreSku.getPayType()));
 			// 商品主图信息列表
@@ -185,6 +217,24 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		}
 		// 将商品信息返回
 		respData.setList(list);
+		for (TradeOrderGoodsItem goodsStoreSku : reqData.getList()) {
+			// 商品主图信息列表
+			List<GoodsStoreSkuPicture> storeSkuPicList = goodsStoreSkuPictureService
+					.findMainByStoreSkuIds(storeSkuIdList);
+			for (GoodsStoreSkuPicture goodsStoreSkuPicture : storeSkuPicList) {
+				if (goodsStoreSku.getSkuId().equals(goodsStoreSkuPicture.getStoreSkuId())) {
+					// 设置商品主图
+					goodsStoreSku.setSkuIcon(goodsStoreSkuPicture.getUrl());
+				} 
+			}
+			
+			for (GoodsStoreSku goodsItems : goodsStoreSkuList) {
+				if (goodsStoreSku.getSkuId().equals(goodsItems.getId())) {
+					goodsStoreSku.setSkuPrice(goodsItems.getOnlinePrice());
+				}
+			}
+		}
+		
 		// 店铺skuId集合
 		req.getContext().put("storeSkuIdList", storeSkuIdList);
 		// 类目id
