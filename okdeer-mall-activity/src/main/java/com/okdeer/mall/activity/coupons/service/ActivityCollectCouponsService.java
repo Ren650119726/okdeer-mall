@@ -11,6 +11,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCommunity;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 
 /**
@@ -108,4 +109,10 @@ public interface ActivityCollectCouponsService {
 	 */
 	List<ActivityCollectCouponsOrderVo> findCollCouponsLinks(Map<String,Object> map) throws ServiceException;
 	// end add by wushp V1.1.0 20160923
+	
+	/**
+	 * @Description: 查询最近可用的注册推荐活动 
+	 * @return 注册推荐活动Vo
+	 */
+	ActivityCollectCouponsSimpleVo findRecommendAcvitity(); 
 }

@@ -14,6 +14,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -26,20 +28,6 @@ import com.okdeer.archive.system.entity.SysSmsVerifyCode;
 import com.okdeer.archive.system.entity.SysUserLoginLog;
 import com.okdeer.archive.system.service.SysSmsVerifyCodeServiceApi;
 import com.okdeer.archive.system.service.SysUserLoginLogServiceApi;
-import com.okdeer.mall.common.utils.security.DESUtils;
-import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
-import com.okdeer.mall.member.member.entity.SysBuyerExt;
-import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
-import com.okdeer.mall.member.member.service.SysBuyerExtServiceApi;
-import com.okdeer.mall.member.points.entity.PointsRecord;
-import com.okdeer.mall.member.points.entity.PointsRule;
-import com.okdeer.mall.member.points.enums.PointsRuleCode;
-import com.okdeer.mall.member.points.service.PointsBuriedServiceApi;
-import com.okdeer.mall.member.points.service.PointsRecordServiceApi;
-import com.okdeer.mall.member.points.service.PointsRuleServiceApi;
-import com.okdeer.mall.system.entity.BuyerUserVo;
-import com.okdeer.mall.system.enums.VerifyCodeBussinessTypeEnum;
-import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.EncryptionUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -52,10 +40,28 @@ import com.okdeer.ca.api.buyeruser.service.ISysBuyerUserApi;
 import com.okdeer.ca.api.common.ApiException;
 import com.okdeer.ca.api.sysuser.entity.SysUserDto;
 import com.okdeer.ca.api.sysuser.service.ISysUserApi;
+import com.okdeer.common.consts.RedisKeyConstants;
+import com.okdeer.mall.common.utils.security.DESUtils;
+import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.member.member.entity.SysBuyerExt;
+import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
+import com.okdeer.mall.member.member.service.SysBuyerExtServiceApi;
+import com.okdeer.mall.member.points.entity.PointsRecord;
+import com.okdeer.mall.member.points.entity.PointsRule;
+import com.okdeer.mall.member.points.enums.PointsRuleCode;
+import com.okdeer.mall.member.points.service.PointsBuriedServiceApi;
+import com.okdeer.mall.member.points.service.PointsRecordServiceApi;
+import com.okdeer.mall.member.points.service.PointsRuleServiceApi;
+import com.okdeer.mall.system.entity.BuyerUserVo;
+import com.okdeer.mall.system.entity.SysUserInvitationCode;
+import com.okdeer.mall.system.enums.InvitationUserType;
+import com.okdeer.mall.system.enums.VerifyCodeBussinessTypeEnum;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysBuyerUserThirdpartyMapper;
 import com.okdeer.mall.system.mapper.SysSmsVerifyCodeMapper;
+import com.okdeer.mall.system.service.InvitationCodeService;
 import com.okdeer.mall.system.service.SysBuyerUserService;
+import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
 
 /**
  * @DESC: 买家用户信息
@@ -145,6 +151,18 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	@Reference(version = "1.0.0", check = false)
 	private MemberConsigneeAddressServiceApi MemberConsigneeAddressServiceApi;
 
+	/**
+	 * RedisTemplate
+	 */
+	@Autowired
+	private RedisTemplate<String, String> redisTemplate;
+	/**
+	 * 用户邀请码service
+	 */
+	@Autowired
+	private InvitationCodeService invitationCodeService;
+	
+	
 	@Override
 	public IBaseCrudMapper init() {
 		return sysBuyerUserMapper;
@@ -388,7 +406,14 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 			map.put("flag", 3);
 			return map;
 		}
+		
+		//查看用户是否有邀请码
+		SysUserInvitationCode invitationCodeEntity = this.invitationCodeService.findInvitationCodeByUserId(sysBuyerUserItemDto.getId(), InvitationUserType.phoneUser);
 		resultBuyerUserVo = new BuyerUserVo();
+		if(invitationCodeEntity != null) {
+		    resultBuyerUserVo.setInvitationCode(invitationCodeEntity.getInvitationCode());
+		}
+		
 		PropertyUtils.copyProperties(resultBuyerUserVo, sysBuyerUserItemDto);
 		// 单点登录
 		List<SysUserLoginLog> sysUserLoginLogs = sysUserLoginLogService.findAllByUserId(sysBuyerUserItemDto.getId(),
@@ -507,17 +532,28 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 			sysBuyerUserDto.setPhone(mobilePhone);
 			String userId = sysBuyerUserService.addSysBuyerSync410(sysBuyerUserDto, sysSmsVerifyCodeUpdate, null);
 
+			//Begin added by zhaoqc
+			//用户创建邀请码记录
+			SysUserInvitationCode invitationCode = createInvitationCode(userId);
+			this.invitationCodeService.saveCode(invitationCode);
+			//End added by zhaoqc
+			
 			resultBuyerUserVo = new BuyerUserVo();
 			resultBuyerUserVo.setId(userId);
 			resultBuyerUserVo.setLoginName(mobilePhone);
 			resultBuyerUserVo.setPhone(mobilePhone);
+			resultBuyerUserVo.setInvitationCode(invitationCode.getInvitationCode());
 			// 判断用户是否第一次注册登录，如果是则返回1
 			resultBuyerUserVo.setIsOneLogin("1");
 		} else {
 			// 查询手机用户信息
 			sysBuyerUserItemDto = sysBuyerUserApi.login(mobilePhone, null);
 
+			//查询用户邀请码
+			SysUserInvitationCode invitationCode = this.invitationCodeService.findInvitationCodeByUserId(sysBuyerUserItemDto.getId(), InvitationUserType.phoneUser);
+			
 			resultBuyerUserVo = new BuyerUserVo();
+			resultBuyerUserVo.setInvitationCode(invitationCode.getInvitationCode());
 			PropertyUtils.copyProperties(resultBuyerUserVo, sysBuyerUserItemDto);
 		}
 		// 更新验证码状态
@@ -532,4 +568,20 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 		return requestMap;
 	}
 	// end by wangf01 2016.07.26
+	
+	
+	private SysUserInvitationCode createInvitationCode(String userId) {
+	    SysUserInvitationCode invitationCode = new SysUserInvitationCode();
+        invitationCode.setId(UuidUtils.getUuid());
+        invitationCode.setSysBuyerUserId(userId);
+        invitationCode.setUserType(InvitationUserType.phoneUser);
+        String code = redisTemplate.boundListOps(RedisKeyConstants.MALL_RANDCODE).rightPop();
+        invitationCode.setInvitationCode(code);
+        invitationCode.setInvitationUserNum(0);
+        invitationCode.setCreateTime(new Date());
+        invitationCode.setUpdateTime(new Date());
+	 
+        return invitationCode;
+	}
+	
 }

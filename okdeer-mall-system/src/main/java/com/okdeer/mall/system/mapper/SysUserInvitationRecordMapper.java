@@ -2,6 +2,8 @@ package com.okdeer.mall.system.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.mall.system.entity.SysUserInvitationRecord;
 import com.okdeer.mall.system.entity.SysUserInvitationRecordVo;
 import com.okdeer.base.dal.IBaseCrudMapper;
@@ -43,4 +45,11 @@ public interface SysUserInvitationRecordMapper extends IBaseCrudMapper {
 	 * @date 2016年9月26日
 	 */
 	void updateCodeRecord(SysUserInvitationRecord sysUserInvitationRecord);
+	
+	/**
+	 * 根据买家id查询邀请记录
+	 * @param buyerUserId 买家用户Id
+	 * @return 邀请记录
+	 */
+	List<SysUserInvitationRecord> findInvitationRecordByUserId(@Param("buyerUserId") String buyerUserId);
 }
