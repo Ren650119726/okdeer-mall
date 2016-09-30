@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
+import com.okdeer.mall.order.vo.ExpireStoreConsumerOrderVo;
 import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
 
 /**
@@ -21,6 +22,7 @@ import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
  * ----------------+----------------+-------------------+-------------------------------------------
  *    V1.1.0            2016-09-23           wusw                 添加消费码验证（到店消费）相应方法
  *    V1.1.0            2016-09-24           wusw                 添加消费码验证（到店消费）相应方法
+ *    V1.1.0            2016-09-29           zhaoqc               查询验证码在店铺中是否存在
  */
 public interface TradeOrderItemDetailMapper{
 
@@ -140,6 +142,33 @@ public interface TradeOrderItemDetailMapper{
 	 * @author zengjizu
 	 * @date 2016年9月23日
 	 */
-	List<TradeOrderItemDetail> selectItemDetailByOrderIdAndStatus(String orderId,int status);
+	List<TradeOrderItemDetail> selectItemDetailByOrderIdAndStatus(@Param("orderId") String orderId,@Param("status")int status);
 	// End V1.1.0 add by zengjz 20160924
+	   
+    // Begin V1.1.0 add by zengjz 20160929
+    /**
+     * @Description: 查询过期的消费码订单列表
+     * @return 过期订单列表
+     * @author zengjizu
+     * @date 2016年9月29日
+     */
+    List<ExpireStoreConsumerOrderVo> findExpireList();
+    
+    /**
+     * @Description: 更新订单项明细信息
+     * @param orderItemDetail  订单项明细信息
+     * @return 影响行数
+     * @author zengjizu
+     * @date 2016年9月29日
+     */
+    int updateByPrimaryKeySelective(TradeOrderItemDetail orderItemDetail);
+    // End V1.1.0 add by zengjz 20160929
+    
+	/**
+	 * 验证消费码在店铺中是否已经存在
+	 * @param storeId 店铺Id
+	 * @param consumeCode 消费码
+	 * @return
+	 */
+	TradeOrderItemDetail checkConsumeHasExsit(@Param("String") String storeId, @Param("consumeCode") String consumeCode);
 }
