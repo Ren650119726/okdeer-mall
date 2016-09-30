@@ -645,5 +645,21 @@
  		</foreach>  
 	    AND djq.category_id IS NULL 
 	</select>
+	
+	<!-- 根据代金券id获取类目名称集 -->
+	<select id="findByCategoryNames" resultType="java.util.Map" >
+		SELECT tt.coupon_id AS couponId,
+		CASE tt.type WHEN 1 THEN GROUP_CONCAT(t2.`name`)
+		WHEN 2 THEN GROUP_CONCAT(t3.`name`)
+		END AS categoryNames
+		FROM activity_coupons_category tt
+		LEFT JOIN goods_navigate_category t2 ON tt.type = 1 AND t2.id = tt.category_id
+		LEFT JOIN goods_spu_category t3 ON tt.type = 2 AND t3.id = tt.category_id
+		WHERE tt.coupon_id IN 
+        <foreach item="item" index="index" collection="couponIds" open="(" separator="," close=")">  
+  			#{item}  
+ 		</foreach>
+ 		GROUP BY tt.coupon_id
+	</select>
     <!-- end by tangy 20160923 根据商品ids查询商品是否符合代金券指定分类 -->
 </mapper> 
