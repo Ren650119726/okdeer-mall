@@ -1,16 +1,20 @@
 package com.okdeer.mall.order.service.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.service.TradeOrderItemDetailServiceApi;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
 import com.okdeer.mall.order.service.TradeOrderItemDetailService;
+import com.okdeer.mall.order.service.TradeOrderItemDetailServiceApi;
+import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
 
 /**
  * @DESC: 
@@ -18,7 +22,11 @@ import com.okdeer.mall.order.service.TradeOrderItemDetailService;
  * @date  2016-02-05 15:22:58
  * @version 1.0.0
  * @copyright ©2005-2020 yschome.com Inc. All rights reserved
- * 
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *    V1.1.0            2016-09-26           wusw                 添加消费码验证（到店消费）相应方法
+ *    V1.1.0            2016-09-29           luosm     			     根据订单id查询明细列表
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderItemDetailServiceApi")
 class TradeOrderItemDetailServiceImpl implements TradeOrderItemDetailService, TradeOrderItemDetailServiceApi {
@@ -76,4 +84,33 @@ class TradeOrderItemDetailServiceImpl implements TradeOrderItemDetailService, Tr
 	public int selectUnConsumerCount(String orderItemId) {
 		return tradeOrderItemDetailMapper.selectUnConsumerCount(orderItemId);
 	}
+ 	
+
+    // Begin V1.1.0 add by wusw 20160926
+    /**
+     * (non-Javadoc)
+     * @see com.okdeer.mall.order.service.TradeOrderItemDetailServiceApi#findOrderInfoByConsumeCode(java.util.Map)
+     */
+    @Override
+    public List<OrderItemDetailConsumeVo> findOrderDetailByConsumeCode(Map<String, Object> params) throws ServiceException{
+        return tradeOrderItemDetailMapper.findOrderInfoByConsumeCode(params);
+        
+    }
+    // End V1.1.0 add by wusw 20160926
+
+    //start added by luosm 20160929 V1.1.0
+    /**
+     * 
+     * 根据订单id查询明细列表
+     */
+    @Override
+    public List<TradeOrderItemDetail> selectByOrderItemDetailByOrderId(String orderId) {
+        return tradeOrderItemDetailMapper.selectByOrderItemDetailByOrderId(orderId);
+    }
+    //end added by luosm 20160929 V1.1.0
+
+    @Override
+    public TradeOrderItemDetail checkConsumeHasExsit(String storeId, String consumeCode) {
+        return tradeOrderItemDetailMapper.checkConsumeHasExsit(storeId, consumeCode);
+    }
 }
