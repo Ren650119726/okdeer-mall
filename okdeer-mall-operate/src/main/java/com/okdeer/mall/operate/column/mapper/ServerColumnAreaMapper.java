@@ -1,6 +1,7 @@
 package com.okdeer.mall.operate.column.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -78,5 +79,14 @@ public interface ServerColumnAreaMapper {
 	 * @date 2016年7月15日
 	 */
 	List<String> findByCityName(@Param("cityName")String cityName,@Param("provinceName")String provinceName);
+	
+	/***
+	 * @Description: 根据map查询
+	 * @param map
+	 * @return
+	 * @author zhangkn
+	 * @date 2016年7月18日
+	 */
+	List<ServerColumnArea> findByParams(Map<String,Object> map);
 	
 }

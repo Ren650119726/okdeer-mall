@@ -12,11 +12,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -35,17 +37,22 @@ import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRange;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillMapper;
 import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillRangeMapper;
+import com.okdeer.mall.activity.seckill.mapper.SeckillRemindeMapper;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi;
 import com.okdeer.mall.activity.seckill.vo.ActivitySeckillFormVo;
 import com.okdeer.mall.activity.seckill.vo.ActivitySeckillItemVo;
 import com.okdeer.mall.activity.seckill.vo.ActivitySeckillListPageVo;
 import com.okdeer.mall.activity.seckill.vo.ActivitySeckillQueryFilterVo;
+import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.RangeTypeEnum;
+import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
+import com.okdeer.mcm.service.IAppMsgApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.common.consts.RedisKeyConstants;
 
 /**
  * ClassName: ActivitySeckillServiceImpl 
@@ -99,6 +106,26 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	 */
 	@Autowired
 	RollbackMQProducer rollbackMQProducer;
+	
+	/**
+	 * 秒杀提醒设置Mapper
+	 */
+	@Autowired
+	SeckillRemindeMapper seckillRemindeMapper;
+	
+	/**
+	 * Redis模板注入
+	 */
+	@Autowired
+	//private IRedisTemplateWrapper<String,Integer> redisTemplateWrapper;
+	private StringRedisTemplate stringRedisTemplate;
+	
+	
+	/**
+	 * iAppMsgApi 消息中心的接口
+	 */
+	@Reference(version="1.0.0", check = false)
+	private IAppMsgApi appMsgApi;
 
 	@Override
 	public PageUtils<ActivitySeckillListPageVo> findSeckillListPageByFilter(ActivitySeckillQueryFilterVo queryFilterVo,
@@ -128,6 +155,10 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 			this.removeSkuRelation(activitySeckill.getStoreSkuId(), rpcIdBySkuList);
 			// 释放库存数
 			this.releaseActivitySkuStock(activitySeckill.getStoreSkuId(), rpcIdByStockList);
+			// 修改秒杀提醒设置状态
+			seckillRemindeMapper.updateRemindeStatus(activitySeckill.getId(), Constant.ZERO);
+			// 取消消息中心秒杀提醒
+			appMsgApi.deleteMsgByInfoId(activitySeckill.getId());
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
@@ -163,12 +194,18 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 			this.addSkuRelation(activitySeckillFormVo.getStoreSkuId(), activityId, rpcIdBySkuList);
 			// 锁定活动库存信息
 			this.lockActivitySkuStock(activitySeckillFormVo, rpcIdByStockList);
+			
+			// 设置redis缓存信息
+			Long millisecond = DateUtils.getMilliseconds(activitySeckillFormVo.getStartTime(), activitySeckillFormVo.getEndTime());
+			stringRedisTemplate.boundValueOps(RedisKeyConstants.SECKILL_STOCK + activitySeckillFormVo.getStoreSkuId())
+					.set(String.valueOf(activitySeckillFormVo.getSeckillNum()), millisecond, TimeUnit.MILLISECONDS);	
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
 			throw e;
 		}
 	}
+	
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -179,10 +216,13 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 			// 操作时间
 			Date date = new Date();
 
+			String redisKeyByDel = null;
 			ActivitySeckill activitySeckill = activitySeckillMapper.findByPrimaryKey(activitySeckillFormVo.getId());
 			if (activitySeckill.getStoreSkuId().equals(activitySeckillFormVo.getStoreSkuId())) {
 				// 修改秒杀活动库存
 				this.lockActivitySkuStock(activitySeckillFormVo, rpcIdByStockList);
+				// 设置需要删除的redisKey
+				redisKeyByDel = RedisKeyConstants.SECKILL_STOCK + activitySeckillFormVo.getStoreSkuId();
 			} else {
 				// 释放原来商品活动库存
 				this.releaseActivitySkuStock(activitySeckill.getStoreSkuId(), rpcIdByStockList);
@@ -192,12 +232,21 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 				this.lockActivitySkuStock(activitySeckillFormVo, rpcIdByStockList);
 				// 保存秒杀活动商品关系信息
 				this.addSkuRelation(activitySeckillFormVo.getStoreSkuId(), activitySeckill.getId(), rpcIdBySkuList);
+				// 设置需要删除的redisKey
+				redisKeyByDel = RedisKeyConstants.SECKILL_STOCK + activitySeckill.getStoreSkuId();
 			}
 
 			// 更新秒杀活动表
 			this.updateActivitySeckillByForm(activitySeckillFormVo, date);
 			// 更新秒杀活动区域信息
 			this.updateActivitySeckillRange(activitySeckillFormVo);
+			
+			// 设置Redis缓存
+			stringRedisTemplate.delete(redisKeyByDel);
+			// 设置redis缓存信息
+			Long millisecond = DateUtils.getMilliseconds(activitySeckillFormVo.getStartTime(), activitySeckillFormVo.getEndTime());
+			stringRedisTemplate.boundValueOps(RedisKeyConstants.SECKILL_STOCK + activitySeckillFormVo.getStoreSkuId())
+					.set(String.valueOf(activitySeckillFormVo.getSeckillNum()), millisecond, TimeUnit.MILLISECONDS);
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
@@ -556,4 +605,10 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		return activitySeckillMapper.findAppUserSecKillBySeckill(id);
 	}
 	// end update by luosm 2016-07-26
+
+	@Override
+	public List<ActivitySeckill> findByUserAppSecKillListByCityId(String cityId) throws Exception {
+	
+		return null;
+	}
 }

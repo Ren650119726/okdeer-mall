@@ -1,223 +1,182 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderRefundsMapper">
-	<resultMap id="BaseResultMap"
-		type="com.okdeer.mall.order.entity.TradeOrderRefunds">
-		<id column="id" property="id" jdbcType="VARCHAR" />
-		<result column="user_id" property="userId" jdbcType="VARCHAR" />
-		<result column="store_id" property="storeId" jdbcType="VARCHAR" />
-		<result column="type" property="type" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
-		<result column="refund_no" property="refundNo" jdbcType="VARCHAR" />
-		<result column="order_id" property="orderId" jdbcType="VARCHAR" />
-		<result column="order_no" property="orderNo" jdbcType="VARCHAR" />
-		<result column="trade_num" property="tradeNum" jdbcType="VARCHAR" />
-		<result column="payment_method" property="paymentMethod"
-			jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.PayTypeEnum" />
-		<result column="status" property="status" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum" />
-		<result column="total_amount" property="totalAmount" jdbcType="DECIMAL" />
-		<result column="total_income" property="totalIncome" jdbcType="DECIMAL" />
-		<result column="total_preferential_price" property="totalPreferentialPrice"
-			jdbcType="DECIMAL" />
-		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
-		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
-		<result column="refunds_reason" property="refundsReason"
-			jdbcType="VARCHAR" />
-		<result column="refuse_reson" property="refuseReson" jdbcType="VARCHAR" />
-		<result column="memo" property="memo" jdbcType="VARCHAR" />
-		<result column="operator" property="operator" jdbcType="VARCHAR" />
-		<result column="is_show" property="isShow" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.OrderIsShowEnum" />
-		<result column="refunds_status" property="refundsStatus"
-			jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundsStatusEnum" />
-		<result column="order_resource" property="orderResource"
-			jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderResourceEnum" />
-		<result column="logistics_type" property="logisticsType"
-			jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundsLogisticsEnum" />
-		<result column="refund_money_time" property="refundMoneyTime"
-			jdbcType="TIMESTAMP" />
-		<result column="delivery_time" property="deliveryTime"
-			jdbcType="TIMESTAMP" />
-		<result column="disabled" property="disabled" jdbcType="TINYINT"
-			javaType="com.okdeer.base.common.enums.Disabled" />
-
-		<!-- 店铺信息 zhongy -->
-		<association property="storeInfo"
-			javaType="com.okdeer.archive.store.entity.StoreInfo">
-			<id column="store_id" property="id" jdbcType="VARCHAR" />
-			<result column="store_name" property="storeName" jdbcType="VARCHAR" />
-			<result column="store_mobile" property="mobile" jdbcType="VARCHAR" />
-			<result column="store_area" property="area" jdbcType="VARCHAR" />
-			<result column="store_address" property="address" jdbcType="VARCHAR" />
-		</association>
-
-		<!-- 退款单项 zhongy start -->
-		<collection property="tradeOrderRefundsItem"
-			ofType="com.okdeer.mall.order.entity.TradeOrderRefundsItem">
-			<result column="refunds_id" property="refundsId" jdbcType="VARCHAR" />
-			<result column="item_status" property="status" jdbcType="TINYINT"
-				javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum" />
-			<result column="order_item_id" property="orderItemId"
-				jdbcType="VARCHAR" />
-			<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
-			<result column="sku_name" property="skuName" jdbcType="VARCHAR" />
-			<result column="properties_indb" property="propertiesIndb"
-				jdbcType="VARCHAR" />
-			<result column="main_pic_prl" property="mainPicUrl" jdbcType="VARCHAR" />
-			<result column="preferential_price" property="preferentialPrice"
-				javaType="DECIMAL" />
-			<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
-			<result column="quantity" property="quantity" jdbcType="INTEGER" />
-			<result column="amount" property="amount" jdbcType="DECIMAL" />
-			<result column="bar_code" property="barCode" jdbcType="VARCHAR" />
-			<result column="sty_code" property="styleCode" jdbcType="VARCHAR" />
-		</collection>
-
-	</resultMap>
-
-	<!-- 交班统计 -->
-	<resultMap id="PosShiftExchangeResultMap"
-		type="com.okdeer.archive.system.pos.entity.PosShiftExchange">
-		<result column="onlinePaymentRefund" property="onlinePaymentRefund"
-			jdbcType="DECIMAL" />
-		<result column="payDeliveryRefund" property="payDeliveryRefund"
-			jdbcType="DECIMAL" />
-		<result column="posSalesRefund" property="posSalesRefund"
-			jdbcType="DECIMAL" />
-		<result column="actualCashTotal" property="actualCashTotal"
-			jdbcType="DECIMAL" />
-	</resultMap>
-
-	<sql id="Base_Column_List">
-		id, user_id, store_id, type, refund_no,order_id, order_no, trade_num,
-		payment_method, status,
-		total_amount, total_preferential_price, create_time, update_time, refunds_reason,
-		refuse_reson, memo, operator, refunds_status, order_resource,
-		logistics_type, refund_money_time,
-		disabled, total_income
-	</sql>
-
-	<sql id="condition">
-		<if test="null!=params">
-			<if test="null!=params.queryCondition and ''!=params.queryCondition">
-				${params.queryCondition}
-			</if>
-			<!-- <if test="params.orderItemId != null and params.orderItemId != ''"> 
-				AND order_item_id = #{params.orderItemId,jdbcType=VARCHAR} </if> -->
-			<if test="params.tradeNum != null and params.tradeNum != ''">
-				AND trade_num = #{params.tradeNum,jdbcType=VARCHAR}
-			</if>
-			<if test="params.refundNo != null and params.refundNo != ''">
-				AND refund_no = #{params.refundNo,jdbcType=VARCHAR}
-			</if>
-			<if test="params.orderNo != null and params.orderNo != ''">
-				AND order_no = #{params.orderNo,jdbcType=VARCHAR}
-			</if>
-		</if>
-	</sql>
-
-	<!-- 查询退款单列表 zhongy start -->
-	<select id="selectByUserIdAndType" resultMap="BaseResultMap"
-		parameterType="map">
-		SELECT
-		refunds.id,refunds.total_amount,refunds.refunds_status,refunds.refund_no,refunds.order_no,refunds.trade_num,
-		item.refunds_id,item.status as
-		item_status,item.order_item_id,item.sku_name,item.properties_indb,
-		item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code,
-		store.id as store_id,store.store_name,store.mobile as
-		store_mobile,store.area as store_area,store.address as store_address
-		FROM trade_order_refunds refunds
-		LEFT JOIN trade_order_refunds_item item ON refunds.id = item.refunds_id
-		LEFT JOIN store_info store ON store.id = refunds.store_id
-		WHERE 1=1
-		AND refunds.disabled = 0
-		<if test="null!=params">
-			<if test="null!=params.type">
-				AND refunds.type = #{params.type,jdbcType=VARCHAR}
-			</if>
-			<if test="params.userId != null and params.userId != ''">
-				AND refunds.user_id = #{params.userId,jdbcType=VARCHAR}
-			</if>
-			<if test="params.skuName !=null and params.skuName !=''">
-				AND item.sku_name like CONCAT('%',#{params.skuName},'%')
-			</if>
-			<if test="params.skuName ==''">
-				ORDER BY refunds.create_time desc
-			</if>
-		</if>
-
-		<!-- 退款单号搜索退款单 -->
-		<if test="params.skuName !=''">
-			UNION
-			SELECT
-			refunds.id,refunds.total_amount,refunds.refunds_status,refunds.refund_no,refunds.order_no,refunds.trade_num,
-			item.refunds_id,item.status as
-			item_status,item.order_item_id,item.sku_name,item.properties_indb,
-			item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code,
-			store.id as store_id,store.store_name,store.mobile as
-			store_mobile,store.area as store_area,store.address as store_address
-			FROM trade_order_refunds refunds
-			LEFT JOIN trade_order_refunds_item item ON refunds.id = item.refunds_id
-			LEFT JOIN store_info store ON store.id = refunds.store_id
-			WHERE 1=1
-			AND refunds.disabled = 0
-			<if test="null!=params">
-				<if test="null!=params.type">
-					AND refunds.type = #{params.type,jdbcType=VARCHAR}
-				</if>
-				<if test="params.userId != null and params.userId != ''">
-					AND refunds.user_id = #{params.userId,jdbcType=VARCHAR}
-				</if>
-				<if test="params.skuName !=null and params.skuName !=''">
-					AND refunds.refund_no like CONCAT('%',#{params.skuName},'%')
-				</if>
-			</if>
-		</if>
-	</select>
-	<!-- 查询退款单列表 zhongy end -->
-
-	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
-		parameterType="java.lang.String">
-		select
-		<include refid="Base_Column_List" />
-		from trade_order_refunds
-		where id = #{id,jdbcType=VARCHAR}
-	</select>
-
-	<!-- 根据主键查询退款单 -->
-	<select id="selectByPrimaryKeys" resultMap="BaseResultMap"
-		parameterType="java.util.List">
-		SELECT
-		<include refid="Base_Column_List" />
-		FROM trade_order_refunds
-		WHERE 1=1
-		<if test="null != list">
-			AND id IN
-			<foreach collection="list" index="index" item="item" open="("
-				separator="," close=")">
-				#{item,jdbcType=VARCHAR}
-			</foreach>
-		</if>
-	</select>
-	<select id="selectByParams" resultMap="BaseResultMap"
-		parameterType="map">
-		SELECT
-		<include refid="Base_Column_List" />
-		FROM trade_order_refunds WHERE 1=1
-		<include refid="condition" />
-	</select>
-
-	<select id="findInfoById" resultMap="BaseResultMap"
-		parameterType="java.lang.String">
-		select
-		refunds.id, refunds.user_id, refunds.store_id, refunds.refund_no,
-		refunds.order_id,refunds.order_no, trade_num, refunds.payment_method,
-		refunds.total_amount, refunds.total_preferential_price,
-		refunds.create_time, refunds.update_time,
-		refunds.operator,
-		refunds.refunds_status, refunds.order_resource,
-		refunds.logistics_type, refunds.refund_money_time,
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderRefundsMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderRefunds" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderTypeEnum"/>
+    <result column="refund_no" property="refundNo" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="order_no" property="orderNo" jdbcType="VARCHAR" />
+    <result column="trade_num" property="tradeNum" jdbcType="VARCHAR" />
+    <result column="payment_method" property="paymentMethod" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.PayTypeEnum" />
+    <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum" />
+    <result column="total_amount" property="totalAmount" jdbcType="DECIMAL" />
+    <result column="total_income" property="totalIncome" jdbcType="DECIMAL" />
+    <result column="total_preferential_price" property="totalPreferentialPrice" jdbcType="DECIMAL" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="refunds_reason" property="refundsReason" jdbcType="VARCHAR" />
+    <result column="refuse_reson" property="refuseReson" jdbcType="VARCHAR" />
+    <result column="memo" property="memo" jdbcType="VARCHAR" />
+    <result column="operator" property="operator" jdbcType="VARCHAR" />
+    <result column="is_show" property="isShow" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderIsShowEnum" />
+    <result column="refunds_status" property="refundsStatus" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundsStatusEnum" />
+    <result column="order_resource" property="orderResource" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderResourceEnum"/>
+    <result column="logistics_type" property="logisticsType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundsLogisticsEnum" />
+    <result column="refund_money_time" property="refundMoneyTime" jdbcType="TIMESTAMP" />
+    <result column="delivery_time" property="deliveryTime" jdbcType="TIMESTAMP" />
+    <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled" />
+    
+     <!-- 店铺信息  zhongy-->
+    <association property="storeInfo" javaType="com.okdeer.archive.store.entity.StoreInfo">
+      <id column="store_id" property= "id" jdbcType="VARCHAR" />
+      <result column="store_name" property="storeName" jdbcType="VARCHAR" />
+      <result column="store_mobile" property="mobile" jdbcType="VARCHAR" />
+      <result column="store_area" property="area" jdbcType="VARCHAR" />
+      <result column="store_address" property="address" jdbcType="VARCHAR" />
+    </association>
+    
+    <!-- 退款单项 zhongy start-->
+    <collection property="tradeOrderRefundsItem" ofType="com.okdeer.mall.order.entity.TradeOrderRefundsItem">
+      <result column="refunds_id" property="refundsId" jdbcType="VARCHAR" />
+      <result column="item_status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum"/>
+      <result column="order_item_id" property="orderItemId" jdbcType="VARCHAR" />
+      <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+      <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
+      <result column="properties_indb" property="propertiesIndb" jdbcType="VARCHAR" />
+      <result column="main_pic_prl" property="mainPicUrl" jdbcType="VARCHAR" />
+      <result column="preferential_price" property="preferentialPrice" javaType="DECIMAL" />
+      <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+      <result column="quantity" property="quantity" jdbcType="INTEGER" />
+      <result column="amount" property="amount" jdbcType="DECIMAL" />
+      <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+      <result column="sty_code" property="styleCode" jdbcType="VARCHAR" />
+    </collection>
+    
+  </resultMap>
+  
+  <!-- 交班统计 -->
+  <resultMap id="PosShiftExchangeResultMap" type="com.okdeer.archive.system.pos.entity.PosShiftExchange" >
+      <result column="onlinePaymentRefund" property="onlinePaymentRefund" jdbcType="DECIMAL" />
+      <result column="payDeliveryRefund" property="payDeliveryRefund" jdbcType="DECIMAL" />
+      <result column="posSalesRefund" property="posSalesRefund" jdbcType="DECIMAL" />
+      <result column="actualCashTotal" property="actualCashTotal" jdbcType="DECIMAL" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, user_id, store_id, type, refund_no,order_id, order_no, trade_num, payment_method, status, 
+    total_amount, total_preferential_price, create_time, update_time, refunds_reason, 
+    refuse_reson, memo, operator, refunds_status, order_resource, logistics_type, refund_money_time, 
+    disabled, total_income
+  </sql>
+  
+  <sql id="condition" >
+    <if test="null!=params" >
+      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
+        ${params.queryCondition}
+      </if>
+<!--       <if test="params.orderItemId != null and params.orderItemId != ''">
+      	 AND order_item_id = #{params.orderItemId,jdbcType=VARCHAR}
+      </if> -->
+      <if test="params.tradeNum != null and params.tradeNum != ''">
+      	 AND trade_num = #{params.tradeNum,jdbcType=VARCHAR}
+      </if>
+      <if test="params.refundNo != null and params.refundNo != ''">
+      	 AND refund_no = #{params.refundNo,jdbcType=VARCHAR}
+      </if>
+      <if test="params.orderNo != null and params.orderNo != ''">
+      	 AND order_no = #{params.orderNo,jdbcType=VARCHAR}
+      </if>
+    </if>
+  </sql>
+  
+  <!-- 查询退款单列表 zhongy start-->
+  <select id="selectByUserIdAndType" resultMap="BaseResultMap" parameterType="map" >
+    SELECT refunds.id,refunds.total_amount,refunds.refunds_status,refunds.refund_no,refunds.order_no,refunds.trade_num,
+           item.refunds_id,item.status as item_status,item.order_item_id,item.sku_name,item.properties_indb,
+           item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code,
+           store.id as store_id,store.store_name,store.mobile as store_mobile,store.area as store_area,store.address as store_address
+	       FROM trade_order_refunds refunds 
+		   LEFT JOIN trade_order_refunds_item item ON refunds.id = item.refunds_id
+		   LEFT JOIN store_info store ON store.id = refunds.store_id
+		   WHERE 1=1
+		   AND refunds.disabled = 0
+		<if test="null!=params" >
+	      <if test="null!=params.type" >
+	        AND refunds.type = #{params.type,jdbcType=VARCHAR}
+	      </if>
+	      <if test="params.userId != null and params.userId != ''">
+		   AND refunds.user_id = #{params.userId,jdbcType=VARCHAR}
+	      </if>
+	      <if test="params.skuName !=null and params.skuName !=''">
+		   AND item.sku_name  like CONCAT('%',#{params.skuName},'%') 
+		  </if>
+		  <if test="params.skuName ==''">
+	        ORDER BY refunds.create_time desc
+	      </if>
+	    </if>
+      
+      <!-- 退款单号搜索退款单 -->
+	  <if test="params.skuName !=''">
+	      UNION
+	           SELECT refunds.id,refunds.total_amount,refunds.refunds_status,refunds.refund_no,refunds.order_no,refunds.trade_num,
+	           item.refunds_id,item.status as item_status,item.order_item_id,item.sku_name,item.properties_indb,
+	           item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code,
+	           store.id as store_id,store.store_name,store.mobile as store_mobile,store.area as store_area,store.address as store_address
+		       FROM trade_order_refunds refunds 
+			   LEFT JOIN trade_order_refunds_item item ON refunds.id = item.refunds_id
+			   LEFT JOIN store_info store ON store.id = refunds.store_id
+			   WHERE 1=1
+			   AND refunds.disabled = 0
+		      <if test="null!=params">
+			      <if test="null!=params.type">
+			        AND refunds.type = #{params.type,jdbcType=VARCHAR}
+			      </if>
+			      <if test="params.userId != null and params.userId != ''">
+				   AND refunds.user_id = #{params.userId,jdbcType=VARCHAR}
+			      </if>
+			      <if test="params.skuName !=null and params.skuName !=''">
+				   AND refunds.refund_no like CONCAT('%',#{params.skuName},'%') 
+				  </if>
+			    </if>
+	    </if>
+  </select>
+  <!-- 查询退款单列表 zhongy end-->
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from trade_order_refunds
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+ 
+  <!-- 根据主键查询退款单 -->
+  <select id="selectByPrimaryKeys" resultMap="BaseResultMap" parameterType="java.util.List" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM trade_order_refunds
+    WHERE 1=1 
+    <if test="null != list">
+	  AND id IN
+	     <foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+            #{item,jdbcType=VARCHAR}   
+         </foreach>
+    </if>
+  </select>
+  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM trade_order_refunds WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  
+  <select id="findInfoById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    	refunds.id, refunds.user_id, refunds.store_id, refunds.refund_no, refunds.order_id,refunds.order_no, trade_num, refunds.payment_method,
+    	refunds.total_amount, refunds.total_preferential_price, refunds.create_time, refunds.update_time,refunds.type,
+		refunds.operator, refunds.refunds_status, refunds.order_resource, refunds.logistics_type, refunds.refund_money_time,
 		item.refunds_id,item.order_item_id,item.sku_name,item.properties_indb,item.store_sku_id,
 		item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code
 		FROM trade_order_refunds refunds
@@ -961,7 +920,7 @@
 	<!-- zengj:查询售后单详细信息 -->
 	<select id="selectRefundOrderDetailById" resultMap="TradeOrderRefundsVo2"
 		parameterType="java.lang.String">
-		SELECT refunds.refunds_status,refunds.update_time,
+		SELECT refunds.refunds_status,refunds.update_time,refunds.order_id as order_id,
 		trade.type as order_type,refunds.total_income,
 		refunds.id,refunds.refund_no,refunds.logistics_type,refunds.refuse_reson,refunds.memo,refunds.create_time,refunds.refund_money_time,refunds.total_amount,
 		refunds.total_preferential_price,refunds.refunds_reason,trade.received_time,
@@ -1083,7 +1042,7 @@
 		<if test="null != endCreateTime">
 	    <![CDATA[ AND o.create_time <= #{endCreateTime} ]]>
 		</if>
-		<if test="null != refundIds">
+		<if test="null != refundIds and refundIds.size > 0  ">
 			AND tr.id IN
 			<foreach collection="refundIds" index="index" item="item"
 				open="(" close=")" separator=",">
@@ -1185,6 +1144,28 @@
 		WHEN `refunds_status` IN(1,6,9,10,11,13,14,15,16) THEN 6
 		END
 	</select>
+	
+	<!-- luosm:统计线上服务店到店消费退款单状态所对应的退款单数量 -->
+	<select id="selectServiceOrderRefundsCount" parameterType="java.lang.String"
+		resultMap="TradeOrderRefundsStatusVoMap">
+		SELECT CASE
+		WHEN `refunds_status` = 0 THEN 0
+		WHEN `refunds_status` in(5,7,8,12) THEN 5
+		WHEN `refunds_status` in(2,3,4) THEN 2
+		WHEN `refunds_status` in(1,6,9,10,11,13,14,15,16) THEN 6
+		END as `refunds_status`,count(1) as `count` FROM trade_order_refunds
+		WHERE store_id = #{storeId, jdbcType=VARCHAR}
+		AND order_resource IN(0,1)
+		AND type = '5'
+		GROUP BY
+		CASE
+		WHEN `refunds_status` = 0 THEN 0
+		WHEN `refunds_status` IN(5,7,8,12) THEN 5
+		WHEN `refunds_status` IN(2,3,4) THEN 2
+		WHEN `refunds_status` IN(1,6,9,10,11,13,14,15,16) THEN 6
+		END
+	</select>
+	
 	<!-- zengj:查询商家版APP售后单列表 -->
 	<select id="selectMallAppByParams" parameterType="java.util.Map"
 		resultMap="TradeOrderRefundsVo">
@@ -1565,12 +1546,16 @@
 		</if>
 		order by r.create_time desc
 	</select>
-	<!-- zengj:查询店铺内所有的退单数 -->
-	<select id="selectRefundsCount" parameterType="java.lang.String"
-		resultType="java.lang.Long">
-		SELECT count(1) FROM trade_order_refunds WHERE store_id =
-		#{storeId,jdbcType=VARCHAR} and disabled = 0 and order_resource
-		IN(0,1)
+	<!-- zengj:查询店铺内所有的退单数 V1.1.0 update by wusw 20160928 -->
+	<select id="selectRefundsCount" resultType="java.lang.Long">
+		SELECT count(1) 
+		FROM trade_order_refunds 
+		WHERE store_id = #{storeId,jdbcType=VARCHAR} 
+		and disabled = 0 
+		and order_resource IN(0,1)
+		<if test="type != null">
+		 AND type = #{type,jdbcType=TINYINT}
+		</if>
 	</select>
 
 	<!-- 商家中心首页 根据状态统计退款单数量(张克能加) -->
@@ -1807,7 +1792,8 @@
 	<select id="getListByParams" resultMap="BaseResultMap"
 		parameterType="map">
 		SELECT
-		refunds.id,refunds.total_amount,refunds.refunds_status,refunds.refund_no,refunds.order_no,refunds.trade_num,
+		refunds.id,refunds.user_id, refunds.refunds_status,refunds.payment_method,refunds.type,refunds.total_amount,refunds.total_preferential_price,refunds.refund_no,refunds.order_id,refunds.order_no,
+		refunds.trade_num,refunds.create_time,refunds.refund_money_time,refunds.update_time,
 		store.id as store_id,store.store_name,store.mobile as
 		store_mobile,store.area as store_area,store.address as store_address
 		FROM trade_order_refunds refunds
@@ -1827,8 +1813,8 @@
 	<select id="findStoreConsumeOrderDetailById" resultMap="BaseResultMap"
 		parameterType="string">
 		SELECT
-		refunds.id,refunds.total_amount,refunds.total_preferential_price,refunds.refunds_status,refunds.refund_no,refunds.order_id,refunds.order_no,
-		refunds.trade_num,refunds.payment_method,refunds.create_time,refunds.refund_money_time,refunds.update_time,
+		refunds.id,refunds.user_id, refunds.refunds_status,refunds.payment_method,refunds.type,refunds.total_amount,refunds.total_preferential_price,refunds.refund_no,refunds.order_id,refunds.order_no,
+		refunds.trade_num,refunds.create_time,refunds.refund_money_time,refunds.update_time,
 		store.id as store_id,store.store_name,store.mobile as
 		store_mobile,store.area as store_area,store.address as store_address
 		FROM trade_order_refunds refunds

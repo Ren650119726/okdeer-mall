@@ -32,11 +32,17 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.okdeer.api.pay.common.dto.BaseResultDto;
+import com.okdeer.api.pay.enums.BusinessTypeEnum;
+import com.okdeer.api.pay.enums.TradeErrorEnum;
+import com.okdeer.api.pay.service.IPayTradeServiceApi;
+import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.enums.MeteringMethod;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
+import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreMemberRelation;
@@ -44,6 +50,14 @@ import com.okdeer.archive.store.enums.StoreUserTypeEnum;
 import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysMsg;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
+import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
@@ -98,6 +112,7 @@ import com.okdeer.mall.order.service.TradeOrderRefundsItemService;
 import com.okdeer.mall.order.service.TradeOrderRefundsLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
+import com.okdeer.mall.order.service.TradeOrderRefundsTraceService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
@@ -110,19 +125,6 @@ import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysMsgMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
-import com.okdeer.api.pay.common.dto.BaseResultDto;
-import com.okdeer.api.pay.enums.BusinessTypeEnum;
-import com.okdeer.api.pay.enums.TradeErrorEnum;
-import com.okdeer.api.pay.service.IPayTradeServiceApi;
-import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.utils.DateUtils;
-import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.StringUtils;
-import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.framework.mq.RocketMQProducer;
-import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
-import com.okdeer.base.framework.mq.RocketMqResult;
 
 import net.sf.json.JSONObject;
 
@@ -141,6 +143,8 @@ import net.sf.json.JSONObject;
  *    1.0.Z				2016-09-05			 zengj			   增加退款单操作记录
  *    1.0.Z	          2016年9月07日           zengj             库存管理修改，采用商业管理系统校验
  *    V1.1.0	       2016-9-12             zengjz            增加财务系统订单交易统计接口
+ *    V1.1.0				2016-09-28			wusw			       修改查询退款单数量，如果是服务店，只查询到店消费退款单
+ *    V1.1.0			2016-09-29			maojj			  退款流程中增加轨迹的存储
  *  
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderRefundsServiceApi")
@@ -258,15 +262,16 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
     @Autowired
     private ActivityCouponsMapper activityCouponsMapper;
 	   
-	// @Reference(version = "1.0.0", check = false)
-	// private StockManagerServiceApi stockManagerService;
+
+	@Reference(version = "1.0.0", check = false)
+	private StockManagerServiceApi stockManagerService;
 
 	// Begin 1.0.Z add by zengj
 	/**
 	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerService;
+	private StockManagerJxcServiceApi stockManagerJxcService;
 
 	/**
 	 * 订单完成后同步商业管理系统Service
@@ -314,6 +319,11 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 	private StockMQProducer stockMQProducer;
 
 	// End added by maojj 2016-07-26
+	
+	// Begin 友门鹿1.1 added by maojj 2016-09-28
+	@Resource
+	private TradeOrderRefundsTraceService tradeOrderRefundsTraceService;
+	// End 友门鹿1.1 added by maojj 2016-09-28
 
 	/**
 	 * 根据主键查询退款单
@@ -406,6 +416,10 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 		tradeOrderRefundsLogMapper.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds
 				.getOperator(), orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
+		
+		// Begin 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
+		tradeOrderRefundsTraceService.saveRefundTrace(orderRefunds);
+		// End 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
 	}
 
 	@Override
@@ -743,7 +757,13 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 		// Begin added by maojj 2016-07-26
 		stockAdjustList.add(stockAdjustVo);
 		// End added by maojj 2016-07-26
-		stockManagerService.updateStock(stockAdjustVo);
+		// 实物订单走进销存库存
+		if (orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+			stockManagerJxcService.updateStock(stockAdjustVo);
+		} else {
+			// 否则走商城库存
+			stockManagerService.updateStock(stockAdjustVo);
+		}
 		return stockAdjustList;
 	}
 
@@ -901,6 +921,11 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 					tradeOrderRefunds.getOperator(), tradeOrderRefunds.getRefundsStatus().getName(), tradeOrderRefunds
 							.getRefundsStatus().getValue()));
 			// End 1.0.Z 增加退款单操作记录 add by zengj
+			
+			// Begin 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
+			tradeOrderRefundsTraceService.saveRefundTrace(tradeOrderRefunds);
+			// End 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
+			
 			// 自动撤销申请计时消息
 			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_cancel_by_agree_timeout, id);
 		} catch (Exception e) {
@@ -938,6 +963,11 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 		tradeOrderRefundsLogMapper.insertSelective(new TradeOrderRefundsLog(tradeOrderRefunds.getId(), userId,
 				tradeOrderRefunds.getRefundsStatus().getName(), tradeOrderRefunds.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
+		
+		// Begin 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
+		tradeOrderRefundsTraceService.saveRefundTrace(tradeOrderRefunds);
+		// End 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
+		
 		// 售后申请计时消息
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_cancel_by_refuse_apply_timeout, id);
 	}
@@ -964,7 +994,23 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 		// 执行退款操作
 		doRefundPay(orderRefunds);
 	}
-
+	
+	/**
+	 * @Description: 自动退款
+	 * @param id 退款单id
+	 * @param userId 用户id
+	 * @throws Exception
+	 * @author zengjizu
+	 * @date 2016年9月29日
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public void autoRefundPayment(TradeOrderRefunds orderRefunds) throws Exception {
+		
+		orderRefunds.setTradeNum(TradeNumUtil.getTradeNum());
+		// 执行退款操作
+		doRefundPay(orderRefunds);
+	}
+	
 	/**
 	 * 执行退款操作
 	 */
@@ -998,6 +1044,10 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 		tradeOrderRefundsLogMapper.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds
 				.getOperator(), orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
 
+		//TODO 需要确认客服退款怎么处理 Begin 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
+		tradeOrderRefundsTraceService.saveRefundTrace(orderRefunds);
+		// End 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
+		
 		// 订单完成后同步到商业管理系统
 		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
 		// End 1.0.Z 增加退款单操作记录 add by zengj
@@ -1042,13 +1092,15 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 	@Transactional(rollbackFor = Exception.class)
 	public void updateByCustomer(String refundsId, RefundsStatusEnum status, String userId) throws Exception {
 
+		logger.error("客服处理更新订单状态：refundsId =" + refundsId + ",status=" + status.ordinal() + ",userId" + userId);
 		if (RefundsStatusEnum.YSC_REFUND != status && RefundsStatusEnum.FORCE_SELLER_REFUND != status
 				&& RefundsStatusEnum.CUSTOMER_SERVICE_CANCEL_INTERVENE != status) {
 			new Exception("更新退款单异常，退款单状态错误");
 		}
 
 		TradeOrderRefunds refunds = this.findById(refundsId);
-
+		logger.error("客服处理更新订单状态：refundsId =" + refundsId + ",status=" + status.ordinal() + ",userId" + userId
+				+ ",退款单状态=" + refunds.getRefundsStatus());
 		// Begin added by maojj 2016-08-18
 		if (refunds.getRefundsStatus() != RefundsStatusEnum.APPLY_CUSTOMER_SERVICE_INTERVENE) {
 			logger.error(CUSTOMER_SERVICE_INTERVENE_FAIL, refunds.getRefundsStatus());
@@ -1076,6 +1128,7 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 			// 解冻订单项金额
 			updateWithRevocatory(refunds, null);
 		}
+		logger.error("客服处理更新订单状态成功");
 	}
 
 	@Override
@@ -1094,6 +1147,10 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 		tradeOrderRefundsLogMapper.insertSelective(new TradeOrderRefundsLog(refunds.getId(), refunds.getOperator(),
 				refunds.getRefundsStatus().getName(), refunds.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
+		
+		// Begin 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
+		tradeOrderRefundsTraceService.saveRefundTrace(refunds);
+		// End 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
 
 		// 执行资金解冻
 		refunds.setTradeNum(TradeNumUtil.getTradeNum());
@@ -1210,6 +1267,11 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 				tradeOrderRefunds.getOperator(), tradeOrderRefunds.getRefundsStatus().getName(), tradeOrderRefunds
 						.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
+		
+		// Begin 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
+		tradeOrderRefundsTraceService.saveRefundTrace(tradeOrderRefunds);
+		// End 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
+		
 		// 发送超时消息
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_cancel_by_refuse_timeout, id);
 	}
@@ -1527,6 +1589,15 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 		return tradeOrderRefundsMapper.getOrderRefundsCount(storeId);
 	}
 
+	//start added by luosm 20160927 V1.1.0
+	/***
+	 * 查询服务店到店消费退款单状态下对应的退款单数量
+	 */
+	public List<TradeOrderRefundsStatusVo> selectServiceOrderRefundsCount(String storeId){
+		return tradeOrderRefundsMapper.selectServiceOrderRefundsCount(storeId);
+	}
+	//end added by luosm 20160927 V1.1.0
+	
 	/**
 	 * 商家版APP查询退款单信息
 	 *
@@ -1857,9 +1928,11 @@ public class TradeOrderRefundsServiceImpl implements TradeOrderRefundsService, T
 	 * @param storeId
 	 *            店铺
 	 */
-	public Long selectRefundsCount(String storeId) {
-		return tradeOrderRefundsMapper.selectRefundsCount(storeId);
+	// Begin V1.1.0 add by wusw 20160928
+	public Long selectRefundsCount(String storeId,OrderTypeEnum type) {
+		return tradeOrderRefundsMapper.selectRefundsCount(storeId,type);
 	}
+	// End V1.1.0 add by wusw 20160928
 
 	@Override
 	public List<TradeOrderRefunds> getTradeOrderRefundsByOrderItemId(String orderItemId) {

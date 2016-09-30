@@ -1,8 +1,12 @@
 package com.okdeer.mall.order.service.impl;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
@@ -11,15 +15,19 @@ import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.enums.GoodsStoreSkuPayTypeEnum;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
+import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
+import com.okdeer.mall.order.vo.TradeOrderServiceGoodsItem;
 import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
@@ -52,6 +60,7 @@ public class ServGoodsCheckServiceImpl implements RequestHandler<ServiceOrderReq
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
 		ServiceOrderReq reqData = req.getData();
 		ServiceOrderResp respData = resp.getData();
+		
 		// 判断商品信息是否有更新
 		GoodsStoreSku goodsStoreSku = goodsStoreSkuService.getById(reqData.getSkuId());
 		if (goodsStoreSku == null || goodsStoreSku.getOnline() != BSSC.PUTAWAY) {
@@ -72,7 +81,7 @@ public class ServGoodsCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		req.getContext().put("skuPrice", goodsStoreSku.getOnlinePrice());
 		req.getContext().put("storeSku", goodsStoreSku);
 		req.getContext().put("mainPic", goodsStoreSkuPicture.getUrl());
-
+		req.getContext().put("skuType", goodsStoreSku.getSpuTypeEnum());
 		// 设置响应信息
 		if (req.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
 			respData.setSkuId(goodsStoreSku.getId());
@@ -81,6 +90,7 @@ public class ServGoodsCheckServiceImpl implements RequestHandler<ServiceOrderReq
 			respData.setSkuNum(reqData.getSkuNum());
 			respData.setUnitPrice(ConvertUtil.format(goodsStoreSku.getOnlinePrice()));
 			respData.setLimitNum(goodsStoreSku.getTradeMax());
+			respData.setSkuType(goodsStoreSku.getSpuTypeEnum().ordinal());
 			// 设置商品的支付方式
 			respData.setPaymentMode(getPaymentMode(goodsStoreSku.getPayType()));
 		}
@@ -101,4 +111,5 @@ public class ServGoodsCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		}
 		return paymentMode;
 	}
+	
 }

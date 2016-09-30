@@ -42,6 +42,7 @@ public class ServColumnCheckServiceImpl implements RequestHandler<ServiceOrderRe
 		ServiceOrderResp respData = resp.getData();
 		// 查询服务栏目
 		ServerColumn serverColumn = serverColumnService.findById(reqData.getColumnServerId());
+		
 		// 服务栏目不存在
 		if (serverColumn == null || serverColumn.getDisabled() == Disabled.invalid) {
 			resp.setResult(ResultCodeEnum.SERVER_COLUMN_NOT_EXISTS);

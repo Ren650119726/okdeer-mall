@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
-import com.okdeer.mall.order.service.TradeOrderItemDetailServiceApi;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
 import com.okdeer.mall.order.service.TradeOrderItemDetailService;
 import com.okdeer.mall.order.service.TradeOrderItemDetailServiceApi;
@@ -84,7 +83,6 @@ class TradeOrderItemDetailServiceImpl implements TradeOrderItemDetailService, Tr
 	public int selectUnConsumerCount(String orderItemId) {
 		return tradeOrderItemDetailMapper.selectUnConsumerCount(orderItemId);
 	}
- 	
 
     // Begin V1.1.0 add by wusw 20160926
     /**
@@ -108,9 +106,17 @@ class TradeOrderItemDetailServiceImpl implements TradeOrderItemDetailService, Tr
         return tradeOrderItemDetailMapper.selectByOrderItemDetailByOrderId(orderId);
     }
     //end added by luosm 20160929 V1.1.0
-
+    
+    //Begin added by zhaqoc 20160929 V1.1.0
+    /**
+     * 查询消费码在店铺中是否已经存在
+     * @param storeId
+     * @param consumeCode
+     * @return
+     */
     @Override
     public TradeOrderItemDetail checkConsumeHasExsit(String storeId, String consumeCode) {
         return tradeOrderItemDetailMapper.checkConsumeHasExsit(storeId, consumeCode);
     }
+    //End added by zhaqoc 20160929 V1.1.0
 }

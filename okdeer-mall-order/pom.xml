@@ -44,6 +44,11 @@
 			<artifactId>okdeer-mall-api</artifactId>
 		</dependency>
 		<dependency>
+		  <groupId>com.okdeer.psms</groupId>
+		  <artifactId>psms-api</artifactId>
+		  <version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>com.yschome</groupId>
 			<artifactId>cloudy_file</artifactId>
 		</dependency>

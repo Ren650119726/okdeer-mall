@@ -19,6 +19,7 @@ package com.okdeer.mall.order.constant;
  *	  重构V4.1				2016-07-14		 maojj				订单提示信息常量
  *	  重构V4.1				2016-08-10		 maojj				修改优惠失效的提示语
  *	 Bug 12572			2016-08-10		 maojj				添加结算校验失败的提示语
+ *   V1.1.0             2016-09-28       zhaoqc             添加优惠券金额判断错误
  */
 
 public interface OrderTipMsgConstant {
@@ -64,4 +65,9 @@ public interface OrderTipMsgConstant {
 	
 	String STOCK_NOT_ENOUGH_SETTLEMENT = "对不起，部分商品库存不足，请您重新结算";
 	// End added by maojj 2016-08-10
+	
+	//Begin added by zhaoqc 
+	String RECHARGE_COUPON_VALUE_TOOMUCH = "优惠券面额大于订单实付金额，下单失败。";
+	//End added by zhaoqc
+	
 }

@@ -171,4 +171,5 @@ public interface TradeOrderItemDetailMapper{
 	 * @return
 	 */
 	TradeOrderItemDetail checkConsumeHasExsit(@Param("String") String storeId, @Param("consumeCode") String consumeCode);
+	
 }

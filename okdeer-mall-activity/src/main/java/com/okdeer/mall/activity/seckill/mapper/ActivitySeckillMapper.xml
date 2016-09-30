@@ -205,6 +205,25 @@
 		)
 	</select>
 
+	<!-- by:yangq 查询定位地址是否有秒杀活动list -->
+	<select id="findAppUserSecKillListByCityId" parameterType="string"
+		resultMap="BaseResultMap">
+		SELECT
+		sec.id,sec.seckill_name,sec.seckill_alias,sec.seckill_range_type,sec.seckill_status,sec.start_time,sec.end_time,
+		sec.seckill_num,sec.start_num,sec.seckill_price,sec.pic_url,sec.store_sku_id,sec.create_time,sec.create_user_id,
+		sec.update_time,sec.update_user_id,sec.disabled
+		FROM activity_seckill sec,goods_store_sku gss,store_info_ext sie
+		where sec.seckill_status = 1
+		AND (sec.seckill_range_type = 0 or exists
+		(select 1
+		from activity_seckill_range sr
+		where sr.activity_seckill_id = sec.id
+		AND sr.city_id = #{cityId,jdbcType=VARCHAR}))
+		AND sec.store_sku_id = gss.id
+		AND gss.store_id = sie.store_id
+		AND sie.is_closed = 1
+	</select>
+
 	<!-- 在当前时间内查询定位地址是否有秒杀活动 begin add by luosm 2016-7-20 -->
 	<select id="findAppUserSecKillByCityId" parameterType="string"
 		resultMap="BaseResultMap">

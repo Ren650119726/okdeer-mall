@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.seckill.mapper.SeckillRemindeMapper">
+	<resultMap id="BaseResultMap"
+		type="com.okdeer.mall.activity.seckill.entity.SeckillReminde">
+		<id column="id" property="id" jdbcType="VARCHAR" javaType="string" />
+		<result column="seckill_id" property="seckillId" jdbcType="VARCHAR"
+			javaType="string" />
+		<result column="goods_store_sku_id" property="goodsStoreSkuId"
+			jdbcType="VARCHAR" javaType="string" />
+		<result column="lead_time" property="leadTime" jdbcType="INTEGER"
+			javaType="int" />
+		<result column="seckill_time" property="seckillTime" jdbcType="TIMESTAMP"
+			javaType="date" />
+		<result column="reminder_content" property="reminderContent"
+			jdbcType="VARCHAR" javaType="date" />
+		<result column="reminder_settings" property="reminderSettings"
+			jdbcType="INTEGER" javaType="int" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP"
+			javaType="date" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP"
+			javaType="date" />
+		<result column="user_id" property="userId" jdbcType="VARCHAR"
+			javaType="string" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, seckill_id, goods_store_sku_id, lead_time,
+		seckill_time,
+		reminder_content,
+		reminder_settings, create_time,
+		update_time, user_id
+	</sql>
+
+	<insert id="insertSeckillReminde"
+		parameterType="com.okdeer.mall.activity.seckill.entity.SeckillReminde">
+		INSERT INTO seckill_reminde  
+		(
+		id, seckill_id, goods_store_sku_id, lead_time, seckill_time,
+		reminder_content, reminder_settings,
+		create_time, update_time, user_id)
+		VALUES(
+		#{id,jdbcType=VARCHAR}, #{seckillId,jdbcType=VARCHAR},
+		#{goodsStoreSkuId,jdbcType=VARCHAR},
+		#{leadTime,jdbcType=INTEGER},
+		#{seckillTime,jdbcType=TIMESTAMP},
+		#{reminderContent,jdbcType=VARCHAR},
+		#{reminderSettings,jdbcType=INTEGER},
+		#{createTime,jdbcType=TIMESTAMP},
+		#{updateTime,jdbcType=TIMESTAMP},
+		#{userId,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	
+	<!-- 更新提醒设置状态 -->
+    <update id="updateRemindeStatus">
+	    update seckill_reminde 
+	    set reminder_settings = #{settingValue,jdbcType=INTEGER}, update_time = now() 
+	    where seckill_id = #{seckillId,jdbcType=VARCHAR} 
+    </update>
+
+
+</mapper>
+

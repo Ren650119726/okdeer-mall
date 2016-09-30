@@ -200,7 +200,7 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 		sysUserInvitationRecordMapper.updateCodeRecord(sysUserInvitationRecord);
 		
 	}
-
+	
     @Override
     public SysUserInvitationCode findInvitationCode(String invitationCode) {
         SysUserInvitationCode  sysUser = sysUserInvitationCodeMapper.selectInvitationByCode(invitationCode);

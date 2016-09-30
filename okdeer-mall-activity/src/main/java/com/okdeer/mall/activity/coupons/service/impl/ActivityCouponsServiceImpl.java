@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -502,12 +503,13 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Override
 	public Map<String, Object> findCouponsProvinceByCouponsId(String couponsId) throws ServiceException {
 		// 存放省信息,key是省id，value是省名称
+		//根据代金券的区域类型 查询省的名称
 		Map<String, Object> provinceMap = new HashMap<String, Object>();
 		ActivityCoupons activityCoupons = activityCouponsMapper.selectByPrimaryKey(couponsId);
 		if (activityCoupons != null) {
-			if (activityCoupons.getAreaType() == AreaType.national) {// 全国范围
+			if (activityCoupons.getAreaType() == AreaType.national) {
 				provinceMap.put("0", "全国");
-			} else {// 区域、小区和店铺范围
+			} else if (activityCoupons.getAreaType() == AreaType.store) {
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("couponsId", couponsId);
 				// 根据代金券id，查询省份id
@@ -526,6 +528,27 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 						
 					}
 				}
+			} else if (activityCoupons.getAreaType() == AreaType.area) {		
+				CouponsInfoQuery couponsInfo = null;
+				couponsInfo = activityCouponsMapper.selectCouponsById(couponsId);
+				List<ActivityCouponsArea> areaList = couponsInfo.getActivityCouponsAreaList();
+				if (CollectionUtils.isNotEmpty(areaList)) {
+					for (ActivityCouponsArea area : areaList) {
+						Address addressInfo = null;
+						if (area.getCouponsAreaType() == DistrictType.city) {
+							addressInfo = addressService.getAddressById(Long.valueOf(area.getAreaId().toString()));  
+							if (addressInfo != null && !provinceMap.containsKey(addressInfo.getParentId().toString())) {
+								provinceMap.put(addressInfo.getParentId().toString(), addressInfo.getParentName());
+							}
+						} else if (area.getCouponsAreaType() == DistrictType.province) {
+							addressInfo = addressService.getAddressById(Long.valueOf(area.getAreaId().toString()));
+							if (addressInfo != null && !provinceMap.containsKey(addressInfo.getId().toString())) {
+								provinceMap.put(addressInfo.getId().toString(), addressInfo.getName());
+							}
+						}
+					}
+					
+				}				
 			}
 		}
 		return provinceMap;
@@ -574,5 +597,33 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		map.put("couponId", couponId);
 		map.put("type", type);
 		return activityCouponsCategoryMapper.findActivityCouponsCategoryByCouponsId(map);
+	}
+
+	@Override
+	public Map<String, Object> findRelationCityByCouponsId(String couponsId,String provinceId) throws ServiceException {
+		Map<String, Object> cityMap = new HashMap<String, Object>();
+		CouponsInfoQuery couponsInfo = null;
+		couponsInfo = activityCouponsMapper.selectCouponsById(couponsId);
+		List<ActivityCouponsArea> areaList = couponsInfo.getActivityCouponsAreaList();
+		if (CollectionUtils.isNotEmpty(areaList)) {
+			for (ActivityCouponsArea area : areaList) {
+				//List<String> cityList = null;
+				Address addressInfo = null;
+				if (area.getCouponsAreaType() == DistrictType.city) {
+					addressInfo = addressService.getAddressById(Long.valueOf(area.getAreaId().toString()));  
+					if (addressInfo != null) {
+						if (addressInfo.getParentId().toString().equals(provinceId)) {
+							if (addressInfo != null && !cityMap.containsKey(addressInfo.getId().toString())) {
+								cityMap.put(addressInfo.getId().toString(), addressInfo.getName());
+							}
+						}
+					}
+				} else if (area.getCouponsAreaType() == DistrictType.province) {
+					cityMap.put("0", "所属范围内都可以用");
+				}
+			}
+			
+		}	
+		return cityMap;
 	}
 }

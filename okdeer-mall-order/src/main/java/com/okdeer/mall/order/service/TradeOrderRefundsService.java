@@ -8,6 +8,7 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsChargeVo;
@@ -27,8 +28,10 @@ import com.okdeer.base.common.utils.PageUtils;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *    重构4.1            2016-7-13            wusw              添加退款中、第三方支付的充值退款记录数方法、查询充值订单列表方法（用于财务系统）
- * 	  重构4.1	            2016-7-13        zhaoqc            添加支付订单退款
- *    v1.1.0            2016-9-17 			 zengjz 		   添加统计订单退款金额、数量接口
+ * 	  重构4.1	            2016-7-13            zhaoqc            添加支付订单退款
+ *    v1.1.0            2016-9-17 			zengjz 		                  添加统计订单退款金额、数量接口
+ *    V1.1.0			2016-09-27			luosm			     查询服务店到店消费退款单状态下对应的退款单数量
+ *    V1.1.0			2016-09-28			wusw			       修改查询退款单数量，如果是服务店，只查询到店消费退款单
  */
 public interface TradeOrderRefundsService {
 
@@ -251,6 +254,18 @@ public interface TradeOrderRefundsService {
 	 * @param storeId 店铺ID
 	 */
 	List<TradeOrderRefundsStatusVo> getOrderRefundsCount(String storeId);
+	
+	//start added by luosm 20160927 V1.1.0
+	/***
+	 * 
+	 * @Description: 查询服务店到店消费退款单状态下对应的退款单数量
+	 * @param storeId
+	 * @return
+	 * @author luosm
+	 * @date 2016年9月27日
+	 */
+	List<TradeOrderRefundsStatusVo> selectServiceOrderRefundsCount(String storeId);
+	//end added by luosm 20160927 V1.1.0
 
 	/**
 	 * 微信版App查询退货/退款单列表
@@ -281,7 +296,9 @@ public interface TradeOrderRefundsService {
 	 * @param storeId 店铺
 	 * @return
 	 */
-	Long selectRefundsCount(String storeId);
+	// Begin V1.1.0 add by wusw 20160928
+	Long selectRefundsCount(String storeId,OrderTypeEnum type);
+	// End V1.1.0 add by wusw 20160928
 
 	List<TradeOrderRefunds> getTradeOrderRefundsByOrderItemId(String orderItemId);
 
@@ -362,4 +379,6 @@ public interface TradeOrderRefundsService {
 	// Begin v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
 	Map<String, Object> statisRefundsByParams(Map<String, Object> params) throws Exception;
 	// End v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
+	
+	void autoRefundPayment(TradeOrderRefunds tradeOrderRefunds) throws Exception;
 }
