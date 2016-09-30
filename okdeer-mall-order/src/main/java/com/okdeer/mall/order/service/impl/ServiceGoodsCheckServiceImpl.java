@@ -194,7 +194,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			goodsItem.setSkuName(goodsStoreSku.getName());
 			goodsItem.setUnitPrice(goodsStoreSku.getOnlinePrice());
 			goodsItem.setLimitNum(goodsStoreSku.getTradeMax());
-			goodsItem.setUpdateTime(goodsStoreSku.getUpdateTime());
+			goodsItem.setUpdateTime(DateUtils.formatDateTime(goodsStoreSku.getUpdateTime()));
 			goodsItem.setSkuType(goodsStoreSku.getSpuTypeEnum().ordinal());
 			// 设置商品的支付方式
 			goodsItem.setPaymentMode(getPaymentMode(goodsStoreSku.getPayType()));
