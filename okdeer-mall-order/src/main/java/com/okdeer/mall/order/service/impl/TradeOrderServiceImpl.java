@@ -6030,12 +6030,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					}
 				}
 				Date nowTime = new Date();
-				//修改订单消费码状态
-				this.updateOrderConsumeStatus(orderIdList,nowTime);
 				// 批量修改订单项详细验证码状态为已消费，消费时间和更新时间为当前时间
 				if (CollectionUtils.isNotEmpty(itemDetailIdList)) {
 					tradeOrderItemDetailMapper.updateStatusByDetailId(ConsumeStatusEnum.consumed, nowTime, itemDetailIdList);
 				}
+				//修改订单消费码状态
+				this.updateOrderConsumeStatus(orderIdList,nowTime);
+				
 			} else {
 				throw new ServiceException(REQUEST_PARAM_FAIL);
 			}
