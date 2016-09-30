@@ -54,6 +54,14 @@
         <result property="createUserId" column="create_user_id" javaType="string" jdbcType="VARCHAR"/> 
         <result property="type" column="coupons_type" javaType="integer" jdbcType="INTEGER"/>
         <result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/>
+        <result property="areaType" column="coupons_area_type" javaType="com.okdeer.mall.common.enums.AreaType"
+                   jdbcType="TINYINT"/>
+        <collection property="activityCouponsCategory" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory">
+	       <id column="categoryid" property="id" jdbcType="VARCHAR" />
+           <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
+           <result column="category_id" property="categoryId" jdbcType="VARCHAR" />
+           <result column="category_name" property="categoryName" jdbcType="VARCHAR" />
+	    </collection>  
       </collection>
       <!-- 限制使用类目信息 -->
      <!--  <collection property="goodsSpuCategoryList"  ofType="com.okdeer.mall.goods.category.entity.GoodsSpuCategory">
@@ -107,6 +115,11 @@
         <result property="type" column="coupons_type" javaType="integer" jdbcType="INTEGER"/>
         <result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/>
       </collection>
+    </resultMap>
+    
+    <resultMap type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo" id="activityCouponsSimpleVo">
+    	<id property="activityId" column="id" jdbcType="VARCHAR"/>
+    	<result property="startUrl" column="h5_url" jdbcType="VARCHAR"/>
     </resultMap>
     
     <!-- end：查询代金券活动以及关联地区列表 add by wushp -->
@@ -322,16 +335,28 @@
 	</select>   
 	<!-- wusw:根据店铺id、活动状态、客户端限制类型等，获取代金券领券活动及代金券信息 -->
 	<select id="selectByStoreAndLimitType" resultMap="couponsAndLimitCategoryDetailMap" parameterType="map">
-	   SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time,
+<!-- 	   SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time,
               coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
               coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num,
-              coupons.type AS coupons_type,coupons.is_category
-              <!-- ,category.id AS spuCategoryId,category.`name` AS spuCategoryName -->
+              coupons.type AS coupons_type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type
 		FROM activity_collect_coupons collect
 		LEFT JOIN activity_collect_area area ON area.collect_coupons_id = collect.id
 		LEFT JOIN activity_coupons coupons ON coupons.activity_id = collect.id
-		<!-- LEFT JOIN activity_coupons_limit_category limitCategory ON limitCategory.coupons_id = coupons.id
-		LEFT JOIN goods_spu_category category ON category.id = limitCategory.category_id -->
+		WHERE collect.disabled = 0 AND ( collect.belong_type = '0' or collect.approval_status = 1 ) -->
+		SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time,
+              coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
+              coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num,
+              coupons.type AS coupons_type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, coupons.id as couponsId,
+		CASE
+		WHEN coupons.type = 1 THEN nav.name
+		WHEN coupons.type = 2 THEN spu.name
+		ELSE '' END as category_name
+		FROM activity_collect_coupons collect
+		LEFT JOIN activity_collect_area area ON area.collect_coupons_id = collect.id
+		LEFT JOIN activity_coupons coupons ON coupons.activity_id = collect.id
+		LEFT JOIN activity_coupons_category category ON category.coupon_id = coupons.id	
+		LEFT JOIN goods_navigate_category nav ON nav.id = category.category_id
+		LEFT JOIN goods_spu_category spu ON spu.id = category.category_id
 		WHERE collect.disabled = 0 AND ( collect.belong_type = '0' or collect.approval_status = 1 )
 		<if test="exchangeCode != null and exchangeCode != ''">
 		  AND coupons.exchange_code = #{exchangeCode,jdbcType=VARCHAR}
@@ -364,6 +389,7 @@
 	    AND (collect.area_type =  #{nationalAreaType,jdbcType=TINYINT}
 	        OR (collect.area_type = #{districtAreaType,jdbcType=TINYINT}
 	           AND ((area.type = 1 AND area.area_id = #{provinceId,jdbcType=VARCHAR})
+	           
 	               OR (area.type = 0 AND area.area_id = #{cityId,jdbcType=VARCHAR})
 	               )
 	           )
@@ -616,7 +642,7 @@
 	
 	<!-- add by wushp V1.1.0 消费返券：活动代金券查询 20160923-->
 	<select id="findCollCouponsLinks" parameterType="map" resultMap="collectCouponsLinkMap">
-		SELECT <include refid="columns"/>,<include refid="activityCoupons" /> 
+		SELECT <include refid="columns_as"/>,<include refid="activityCoupons" /> 
 		FROM activity_collect_coupons coll 
 		LEFT JOIN activity_coupons coupons ON coll.id= coupons.activity_id
 		LEFT JOIN activity_collect_order_type collOrder ON coll.`id` = collOrder.`collect_coupons_id`
@@ -631,4 +657,11 @@
 		(area1.type = 0 AND area1.`area_id`=#{cityId}));
 		
 	</select>
+	
+	<select id="findRecommendAcvititys" resultMap="activityCouponsSimpleVo">
+		select id, h5_url from activity_collect_coupons
+		where status=1 and type=3
+		and disabled=0  and approval_status=1
+	</select>
+	
 </mapper>
