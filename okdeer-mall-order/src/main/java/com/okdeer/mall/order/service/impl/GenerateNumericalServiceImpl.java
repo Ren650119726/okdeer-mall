@@ -200,7 +200,7 @@ class GenerateNumericalServiceImpl implements GenerateNumericalService, Generate
 			redisTemplateWrapper.expire(redisKey, 86400);
 		}
 
-		// 新的订单号,规则为：为XS+5位店铺编码+2位POS机ID+6位日期+4位流水号
+		// 新的订单号,规则为：为XS+5位店铺编码+2位POS机ID+6位日期+5位流水号
 		StringBuilder newOrderNo = new StringBuilder(prefix);
 		newOrderNo.append(branchCode);
 		newOrderNo.append(posId);
