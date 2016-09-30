@@ -67,6 +67,7 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsUnsubscribe;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
@@ -126,6 +127,7 @@ import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.LogisticsType;
+import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
@@ -6028,12 +6030,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					}
 				}
 				Date nowTime = new Date();
-				//修改订单消费码状态
-				this.updateOrderConsumeStatus(orderIdList,nowTime);
 				// 批量修改订单项详细验证码状态为已消费，消费时间和更新时间为当前时间
 				if (CollectionUtils.isNotEmpty(itemDetailIdList)) {
 					tradeOrderItemDetailMapper.updateStatusByDetailId(ConsumeStatusEnum.consumed, nowTime, itemDetailIdList);
 				}
+				//修改订单消费码状态
+				this.updateOrderConsumeStatus(orderIdList,nowTime);
+				
 			} else {
 				throw new ServiceException(REQUEST_PARAM_FAIL);
 			}
@@ -6177,6 +6180,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         }
     }
 	// End V1.1.0 add by wusw 20160924
+
+    // Begin V1.1.0 add by wusw 20160929
+    /**
+     * (non-Javadoc)
+     * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findUserVisitServiceOrderDetail(java.lang.String)
+     */
+    @Override
+    public JSONObject findUserVisitServiceOrderDetail(String orderId) throws ServiceException {
+        UserTradeOrderDetailVo orders = tradeOrderMapper.selectUserOrderServiceDetail(orderId);
+        List<TradeOrderItem> tradeOrderItems = tradeOrderItemMapper.selectTradeOrderItemOrDetail(orderId);
+        // 判断订单是否评价appraise大于0，已评价
+        Integer appraise = tradeOrderItemMapper.selectTradeOrderItemIsAppraise(orderId);
 
 	// Begin V1.1.0 add by wusw 20160929
 	/**
