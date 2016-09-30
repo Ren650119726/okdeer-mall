@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +35,12 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCommunity;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectOrderType;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
-import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsApprovalStatus;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsStatus;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsType;
@@ -700,4 +701,18 @@ public class ActivityCollectCouponsServiceImpl
 		return activityCollectCouponsMapper.findCollCouponsLinks(map);
 	}
 
+    @Override
+    public ActivityCollectCouponsSimpleVo findRecommendAcvitity() {
+        List<ActivityCollectCouponsSimpleVo> simpleVos = this.activityCollectCouponsMapper.findRecommendAcvititys();
+        ActivityCollectCouponsSimpleVo simpleVo = null;
+        if(CollectionUtils.isEmpty(simpleVos)) {
+            simpleVo = new ActivityCollectCouponsSimpleVo();
+            simpleVo.setVoucher(false);
+        } else {
+            simpleVo = simpleVos.get(0);
+            simpleVo.setVoucher(true);
+        }
+        return simpleVo;
+    }
+	
 }
