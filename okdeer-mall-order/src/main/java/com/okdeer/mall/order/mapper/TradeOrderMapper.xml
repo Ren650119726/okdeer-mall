@@ -911,7 +911,7 @@
 			<if test="null != params.userId and params.userId != ''">
 				AND o.user_id = #{params.userId,jdbcType=VARCHAR}
 			</if>
-			<if test="params.status != null ">
+			<if test="params.status != null and params.status.size() > 0">
 				AND o.status in
 				<foreach collection="params.status" open="(" close=")"
 					index="index" item="item" separator=",">
@@ -1066,7 +1066,7 @@
 		AND tor.type=1
 		AND tor.user_id= #{params.userId,jdbcType=VARCHAR}
 		<if test="null!=params">
-			<if test="params.status != null ">
+			<if test="params.status != null and params.status.size() > 0">
 				AND tor.status in
 				<foreach collection="params.status" open="(" close=")"
 					index="index" item="item" separator=",">
@@ -2152,7 +2152,7 @@
 		<!-- trade.disabled = 0 -->
 		<if test="params != null">
 			<!-- 订单状态 -->
-			<if test="params.status != null">
+			<if test="params.status != null and params.status.size() > 0">
 				AND trade.`status` IN
 				<foreach collection="params.status" index="index" item="item"
 					open="(" close=")" separator=",">
@@ -2206,7 +2206,7 @@
 		<!-- trade.disabled = 0 -->
 		<if test="params != null">
 			<!-- 订单状态 -->
-			<if test="params.status != null">
+			<if test="params.status != null and params.status.size() > 0">
 				AND trade.`status` IN
 				<foreach collection="params.status" index="index" item="item"
 					open="(" close=")" separator=",">
@@ -4632,7 +4632,7 @@
 		<!-- trade.disabled = 0 -->
 		<if test="params != null">
 			<!-- 订单状态 -->
-			<if test="params.status != null">
+			<if test="params.status != null and params.status.size() > 0">
 				AND trade.`status` IN
 				<foreach collection="params.status" index="index" item="item"
 					open="(" close=")" separator=",">
