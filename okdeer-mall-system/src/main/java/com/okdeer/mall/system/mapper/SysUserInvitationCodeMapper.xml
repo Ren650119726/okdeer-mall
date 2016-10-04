@@ -149,6 +149,7 @@
 		parameterType="com.okdeer.mall.system.entity.SysUserInvitationCode">
 		update
 		<include refid="tableBaseName" />
+		set
 		invitation_user_num=invitation_user_num+1,
 		first_order_user_num=first_order_user_num+1,
 		update_time=#{updateTime,jdbcType=TIMESTAMP}
