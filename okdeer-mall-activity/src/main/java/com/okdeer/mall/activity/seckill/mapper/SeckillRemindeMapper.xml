@@ -60,6 +60,46 @@
 	    where seckill_id = #{seckillId,jdbcType=VARCHAR} 
     </update>
 
+	<!-- 查询秒杀提醒 -->
+	<select id="selectSeckillRemindeByUserId" parameterType="string" resultMap="BaseResultMap">
+			SELECT <include refid="Base_Column_List"/> FROM seckill_reminde where user_id = #{user_id,jdbcType=VARCHAR}
+	</select>
+
+    <!-- 更新秒杀提醒信息 -->
+	<update id="updateSeckillReminde" parameterType="com.okdeer.mall.activity.seckill.entity.SeckillReminde">
+	    UPDATE seckill_reminde
+	    <set >
+	      <if test="recommendName != null" >
+	        seckill_id = #{seckillId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="linkUrl != null" >
+	        goods_store_sku_id = #{goodsStoreSkuId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="startTime != null" >
+	        lead_time = #{leadTime,jdbcType=INTEGER},
+	      </if>
+	      <if test="endTime != null" >
+	        seckill_time = #{seckillTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="picUrl != null" >
+	        reminder_content = #{reminderContent,jdbcType=VARCHAR},
+	      </if>
+	      <if test="recommendRangeType != null" >
+	        reminder_settings = #{reminderSettings,jdbcType=TINYINT},
+	      </if>
+	      <if test="recommendStatus != null" >
+	        create_time = #{createTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="updateTime != null" >
+	        update_time = #{updateTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="updateUserId != null" >
+	        user_id = #{userId,jdbcType=VARCHAR}, 
+	      </if> 
+	    </set>
+	    WHERE userId = #{userId,jdbcType=VARCHAR}
+  </update>
+
 
 </mapper>
 
