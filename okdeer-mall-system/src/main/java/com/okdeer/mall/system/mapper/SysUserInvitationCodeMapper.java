@@ -77,6 +77,16 @@ public interface SysUserInvitationCodeMapper extends IBaseCrudMapper {
     SysUserInvitationCode findInvitationCodeByUserId(@Param("userId") String userId, @Param("userType")int userType);
     
     /**
+     * 根据用户Id及邀请码查询邀请码信息
+     * @param userId 用户Id
+     * @param invitationCode 邀请码
+     * @return 邀请码实体
+     * @tuzhiding start 2016-10-4
+     */
+    List<SysUserInvitationCode> findInvitationByIdCode(@Param("userId")String userId, @Param("invitationCode")String invitationCode);
+    //end 2016-10-4
+    
+    /**
      * 根据邀请码查找邀请码实体
      * @param invitationCode 邀请码
      * @return 邀请码实体
