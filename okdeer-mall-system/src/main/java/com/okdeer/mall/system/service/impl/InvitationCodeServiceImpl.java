@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -176,13 +177,33 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 		List<SysUserInvitationRecordVo> list = sysUserInvitationRecordMapper.findByQueryRecordVo(invitationRecordVo);
 		return list;
 	}
-
+	/**
+	 * 保存邀请码记录
+	 * @param code
+	 * @throws ServiceException
+	 * 涂志定 start 2016-10-4 修改进行数据校验
+	 */
 	@Override
-	public void saveCode(SysUserInvitationCode sysUserInvitationCode) throws ServiceException {
-		sysUserInvitationCodeMapper.saveCode(sysUserInvitationCode);
-		
+	public void saveCode(SysUserInvitationCode code) throws ServiceException {
+		//保存邀请码数据，需要校验改
+		if(code != null && code.getInvitationCode() != null){
+			String userid =  code.getSysBuyerUserId();
+			//手机用户id为空去取后台系统用户
+			if(StringUtils.isBlank(userid)){
+				//并且如果后台系统用户id都为空 返回
+				if(StringUtils.isBlank(code.getSysUserId())){
+					return ;
+				}
+				userid = code.getSysUserId();
+			}
+			//如果该验证码或用户id 不存在记录，才进行保存
+			List<SysUserInvitationCode>  ls =sysUserInvitationCodeMapper.findInvitationByIdCode(code.getInvitationCode(),userid);
+			if(CollectionUtils.isEmpty(ls)){
+				sysUserInvitationCodeMapper.saveCode(code);
+			}
+		}
 	}
-
+	//涂志定 end 2016-10-4
 	@Override
 	public void updateCode(SysUserInvitationCode sysUserInvitationCode) throws ServiceException {
 		sysUserInvitationCodeMapper.updateCode(sysUserInvitationCode);
