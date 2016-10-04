@@ -441,12 +441,12 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		PageHelper.startPage(pageNo, pageSize, true, false);
 		List<TradeOrderRefunds> list = tradeOrderRefundsMapper.getListByParams(params);
 
-		List<TradeOrderRefundsItem> itemList = null;
-		for (TradeOrderRefunds tradeOrderRefunds : list) {
-			itemList = tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(tradeOrderRefunds.getId());
-			tradeOrderRefunds.setTradeOrderRefundsItem(itemList);
-			itemList = null;
-		}
+//		List<TradeOrderRefundsItem> itemList = null;
+//		for (TradeOrderRefunds tradeOrderRefunds : list) {
+//			itemList = tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(tradeOrderRefunds.getId());
+//			tradeOrderRefunds.setTradeOrderRefundsItem(itemList);
+//			itemList = null;
+//		}
 		return new PageUtils<TradeOrderRefunds>(list);
 	}
 
@@ -475,47 +475,45 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public void handleExpireOrder(TradeOrder order, List<TradeOrderItemDetail> detailList) throws Exception {
+	public void handleExpireOrder(TradeOrder order) throws Exception {
 
 		List<TradeOrderItem> orderItem = tradeOrderItemMapper.selectOrderItemListById(order.getId());
+		order.setTradeOrderItem(orderItem);
 		if (orderItem != null && !Iterables.isEmpty(orderItem)) {
 
 			for (TradeOrderItem item : order.getTradeOrderItem()) {
 				if (item.getServiceAssurance() != null && item.getServiceAssurance() > 0) {
 					logger.info("超时未消费，系统自动退款,订单号：" + order.getOrderNo());
 					// 超时未消费，系统自动申请退款
-					refundOrder(order, item, detailList);
+					refundOrder(order, item);
 				} else {
 					// 不支持退款，将消费码状态改为已经过期，同时要将商家的冻结金额还回给平台
-					expireOrder(order, item, detailList);
+					expireOrder(order, item);
 				}
 			}
 		}
-
 	}
 
-	private void expireOrder(TradeOrder order, TradeOrderItem item, List<TradeOrderItemDetail> detailList)
-			throws Exception {
-		// 设置消费码为已退款
-		if (CollectionUtils.isNotEmpty(detailList)) {
-			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
-				if (tradeOrderItemDetail.getOrderItemId().equals(item.getId())) {
+	@Transactional(rollbackFor = Exception.class)
+	private void expireOrder(TradeOrder order, TradeOrderItem item) throws Exception {
+		// 更新消费码为全部过期状态
+		int result = tradeOrderItemDetailMapper.updateStatusWithExpire(item.getId());
 
-					// 更新订单
-					tradeOrderItemDetail.setStatus(ConsumeStatusEnum.expired);
-					tradeOrderItemDetail.setUpdateTime(new Date());
-					tradeOrderItemDetailMapper.updateByPrimaryKeySelective(tradeOrderItemDetail);
-				}
-			}
+		if (result < 1) {
+			// 如果没有更新到，说明已经处理过了，需要回滚本次事务
+			throw new Exception("更新消费码状态失败");
 		}
+		List<String> updateIds = Lists.newArrayList();
+		updateIds.add(item.getId());
+		tradeOrderItemMapper.updateCompleteById(updateIds);
 		// 更新订单的的消费状态为已过期
 		order.setConsumerCodeStatus(ConsumerCodeStatusEnum.EXPIRED);
 		order.setIsComplete(OrderComplete.YES);
 		tradeOrderMapper.updateOrderStatus(order);
+
 	}
 
-	private void refundOrder(TradeOrder order, TradeOrderItem item, List<TradeOrderItemDetail> detailList)
-			throws Exception {
+	private void refundOrder(TradeOrder order, TradeOrderItem item) throws Exception {
 
 		TradeOrderRefunds orderRefunds = new TradeOrderRefunds();
 		String refundsId = UuidUtils.getUuid();
@@ -544,26 +542,25 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		orderRefunds.setCreateTime(new Date());
 		orderRefunds.setUpdateTime(new Date());
 		BigDecimal totalIncome = new BigDecimal("0.00");
-		
-		//退款金额
+
+		// 退款金额
 		BigDecimal refundAmount = new BigDecimal("0.00");
-		//退款优惠金额
+		// 退款优惠金额
 		BigDecimal refundPrefeAmount = new BigDecimal("0.00");
-		
-		//退款数量
+
+		// 退款数量
 		int quantity = 0;
+		
+		//查询未退款的消费码列表
+		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper.selectItemDetailByItemIdAndStatus(
+				item.getId(), ConsumerCodeStatusEnum.WAIT_CONSUME.ordinal());
+
 		if (CollectionUtils.isNotEmpty(detailList)) {
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
 				if (tradeOrderItemDetail.getOrderItemId().equals(item.getId())) {
-					
 					quantity++;
-
 					refundAmount = refundAmount.add(tradeOrderItemDetail.getActualAmount());
 					refundPrefeAmount = refundPrefeAmount.add(tradeOrderItemDetail.getPreferentialPrice());
-					// 更新订单
-					tradeOrderItemDetail.setStatus(ConsumeStatusEnum.refund);
-					tradeOrderItemDetail.setUpdateTime(new Date());
-					tradeOrderItemDetailMapper.updateByPrimaryKeySelective(tradeOrderItemDetail);
 				}
 			}
 		}
@@ -596,12 +593,8 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		orderRefunds.setTotalAmount(refundAmount);
 		orderRefunds.setTotalPreferentialPrice(refundPrefeAmount);
 		orderRefunds.setTotalIncome(totalIncome);
-		// 退款凭证信息
+		// 调用退款操作
 		tradeOrderRefundsService.insertRefunds(orderRefunds, buildRefundCertificate(refundsId));
-		order.setIsComplete(OrderComplete.YES);
-		tradeOrderMapper.updateOrderStatus(order);
-		
-		tradeOrderRefundsService.autoRefundPayment(orderRefunds);
 	}
 
 	private TradeOrderRefundsCertificateVo buildRefundCertificate(String refundsId) {

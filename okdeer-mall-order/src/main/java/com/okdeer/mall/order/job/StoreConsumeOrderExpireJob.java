@@ -52,7 +52,7 @@ public class StoreConsumeOrderExpireJob extends AbstractSimpleElasticJob {
 			for (ExpireStoreConsumerOrderVo expireStoreConsumerOrderVo : expireList) {
 				try {
 					TradeOrder order = tradeOrderService.findOrderDetail(expireStoreConsumerOrderVo.getOrderId());
-					storeConsumeOrderService.handleExpireOrder(order, expireStoreConsumerOrderVo.getDetailList());
+					storeConsumeOrderService.handleExpireOrder(order);
 				} catch (Exception e) {
 					logger.error("到店消费订单自动过期出现异常，订单id{}", expireStoreConsumerOrderVo.getOrderId());
 				}
