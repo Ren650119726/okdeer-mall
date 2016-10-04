@@ -441,12 +441,12 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		PageHelper.startPage(pageNo, pageSize, true, false);
 		List<TradeOrderRefunds> list = tradeOrderRefundsMapper.getListByParams(params);
 
-		List<TradeOrderRefundsItem> itemList = null;
-		for (TradeOrderRefunds tradeOrderRefunds : list) {
-			itemList = tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(tradeOrderRefunds.getId());
-			tradeOrderRefunds.setTradeOrderRefundsItem(itemList);
-			itemList = null;
-		}
+//		List<TradeOrderRefundsItem> itemList = null;
+//		for (TradeOrderRefunds tradeOrderRefunds : list) {
+//			itemList = tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(tradeOrderRefunds.getId());
+//			tradeOrderRefunds.setTradeOrderRefundsItem(itemList);
+//			itemList = null;
+//		}
 		return new PageUtils<TradeOrderRefunds>(list);
 	}
 

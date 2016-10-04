@@ -1794,19 +1794,23 @@
 		SELECT
 		refunds.id,refunds.user_id, refunds.refunds_status,refunds.payment_method,refunds.type,refunds.total_amount,refunds.total_preferential_price,refunds.refund_no,refunds.order_id,refunds.order_no,
 		refunds.trade_num,refunds.create_time,refunds.refund_money_time,refunds.update_time,
+		item.refunds_id,item.status as item_status,item.order_item_id,item.sku_name,item.properties_indb,
+        item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code,
 		store.id as store_id,store.store_name,store.mobile as
 		store_mobile,store.area as store_area,store.address as store_address
 		FROM trade_order_refunds refunds
-		LEFT JOIN store_info store ON store.id
-		= refunds.store_id
-		WHERE 1=1
+		 LEFT JOIN trade_order_refunds_item item ON refunds.id = item.refunds_id
+		   LEFT JOIN store_info store ON store.id = refunds.store_id
+		   WHERE 1=1
 		<if test="userId != null and userId != ''">
 			AND refunds.user_id = #{userId,jdbcType=VARCHAR}
 		</if>
 		AND refunds.type in (0,5)
 		AND refunds.disabled = 0
-		AND refunds.is_show
-		=1
+		AND refunds.is_show = 1
+		<if test="skuName !=null and skuName !=''">
+		   AND item.sku_name  like CONCAT('%',#{skuName},'%') 
+		</if>
 		ORDER BY refunds.create_time desc
 	</select>
 
