@@ -2337,6 +2337,7 @@
 			</foreach>
 		</if>
 		and `status` >= 0
+		and type =5
       GROUP BY 
 	  CASE
 		WHEN `status` IN (0,11) THEN 0
