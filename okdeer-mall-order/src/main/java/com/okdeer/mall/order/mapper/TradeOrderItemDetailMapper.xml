@@ -217,7 +217,7 @@
   
   <update id="updateStatusWithExpire" parameterType="java.lang.String">
 	UPDATE trade_order_item_detail
-	SET status = 3
+	SET status = 3,update_time = now()
 	WHERE status = 0 AND
 		order_item_id = #{orderItemId,jdbcType=VARCHAR}
   </update>
@@ -359,7 +359,14 @@
         select 
          <include refid="Base_Column_List" />
          from trade_order_item_detail where order_id = #{orderId,jdbcType=VARCHAR} and  status= #{status,jdbcType=TINYINT}
-  </select>
+    </select>
+    
+    <!-- 根据消费码状态与订单项id查询列表 V1.1.0 add by zengjz 20160930-->
+	 <select id="selectItemDetailByOrderIdAndStatus"  resultMap="BaseResultMap">
+        select 
+         <include refid="Base_Column_List" />
+         from trade_order_item_detail where order_item_id = #{itemId,jdbcType=VARCHAR} and  status= #{status,jdbcType=TINYINT}
+    </select>
   
    <!-- 查询过期的明细列表 V1.1.0 add by zengjz 20160929-->
 	 <select id="findExpireList"  resultMap="ExpireStoreConsumerOrderVoMap">
