@@ -44,6 +44,8 @@ import com.okdeer.mall.system.utils.mapper.JsonMapper;
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.seckill.service.SeckillRemindeServiceApi",timeout=60000)
 public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 
+	
+	
 	/**
 	 * 消息系统CODE
 	 */
