@@ -804,19 +804,21 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 */
 	private void processDelivery(TradeOrder tradeOrder, ServiceOrderReq reqDto,Response<ServiceOrderResp> resp) {
 		// 运费
-		tradeOrder.setFare(new BigDecimal(0.0));
+		tradeOrder.setFare(BigDecimal.ZERO);
 		// 服务店扩展信息
 		StoreInfoServiceExt serviceExt = resp.getData().getStoreInfoServiceExt();
 		// 配送费
-		Double distributionFee = serviceExt.getDistributionFee();
+		//Double distributionFee = serviceExt.getDistributionFee();
 		// 是否支持购物车，0：否，1：是
-		Integer isShoppingCart = serviceExt.getIsShoppingCart();
+		//Integer isShoppingCart = serviceExt.getIsShoppingCart();
 		// 是否有配送费，0：否，1：是
-		Integer isDistributionFee = serviceExt.getIsDistributionFee();
+		//Integer isDistributionFee = serviceExt.getIsDistributionFee();
 		if (serviceExt != null && serviceExt.getIsShoppingCart() == 1 
 				&& serviceExt.getIsDistributionFee() == 1) {
+			// 配送费
+			Double distributionFee = serviceExt.getDistributionFee();
 			// 是否有起送价，0：否，1：是
-			Integer isStartingPrice = serviceExt.getIsStartingPrice();
+			//Integer isStartingPrice = serviceExt.getIsStartingPrice();
 			// 已满起送价是否收取配送费，0：否，1：是
 			Integer isCollect = serviceExt.getIsCollect();
 			// 起送价

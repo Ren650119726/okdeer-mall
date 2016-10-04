@@ -109,11 +109,11 @@
 		<trim>
 			(
 			#{id,jdbcType=VARCHAR},
-			#{invitation_code_id,jdbcType=VARCHAR},
+			#{invitationCodeId,jdbcType=VARCHAR},
 			#{sysBuyerUserId,jdbcType=VARCHAR},
-			#{is_first_order,jdbcType=TINYINT},
-			#{first_order_time,jdbcType=TIMESTAMP},
-			#{machine_code,jdbcType=VARCHAR},
+			#{isFirstOrder,jdbcType=TINYINT},
+			#{firstOrderTime,jdbcType=TIMESTAMP},
+			#{machineCode,jdbcType=VARCHAR},
 			#{createTime,jdbcType=TIMESTAMP},
 			#{updateTime,jdbcType=TIMESTAMP}
 			)
@@ -134,5 +134,13 @@
 		id=#{id,jdbcType=VARCHAR}
 	</update>
 	<!-- 更改信息 end -->
-  
+  	
+  	<!-- Begin 用户填写推荐人邀请码  added by zhaoqc -->
+  	<select id="findInvitationRecordByUserId" resultMap="BaseResultMap">
+  		select suir.id, suir.invitation_code_id, suir.sys_buyer_user_id, suir.is_first_order,
+			suir.first_order_time, suir.machine_code, suir.create_time,suir.update_time
+  		from sys_user_invitation_record suir
+  		where suir.sys_buyer_user_id = #{buyerUserId, jdbcType=VARCHAR}
+  	</select>
+  	<!-- End added by zhaoqc -->
 </mapper>

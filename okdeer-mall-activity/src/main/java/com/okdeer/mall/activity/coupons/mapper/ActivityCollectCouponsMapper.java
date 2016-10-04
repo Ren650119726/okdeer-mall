@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 
@@ -170,4 +171,8 @@ public interface ActivityCollectCouponsMapper {
 	 */
 	List<ActivityCollectCouponsOrderVo> findCollCouponsLinks(Map<String,Object> map);
 	// end add by wushp V1.1.0 20160923
+	
+	//Begin added by zhaoqc 2016-09-29
+	List<ActivityCollectCouponsSimpleVo> findRecommendAcvititys();
+	//End added by zhaoqc 2016-09-29
 }

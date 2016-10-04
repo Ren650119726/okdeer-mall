@@ -75,6 +75,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 		//排除不符合的代金券
 		if (CollectionUtils.isNotEmpty(couponList) && CollectionUtils.isNotEmpty(skuIdList)) {
 			List<Coupons> delCouponList = new ArrayList<Coupons>();
+			List<String> couponIds = new ArrayList<String>();
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
 				//是否指定分类使用
@@ -83,6 +84,8 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 							coupons.getId());
 					if (count > Constant.ZERO) {
 						delCouponList.add(coupons);
+					} else {
+						couponIds.add(coupons.getId());
 					}
 				}
 			}
@@ -90,8 +93,26 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 			if (CollectionUtils.isNotEmpty(delCouponList)) {
 				couponList.removeAll(delCouponList);
 			}
+			
+			//指定类目返回类目名称集
+			if (CollectionUtils.isNotEmpty(couponIds)) {
+				List<Map<String, Object>> retMap = activityCouponsRecordMapper.findByCategoryNames(couponIds);
+				if (retMap != null) {
+					for (Map<String, Object> map : retMap) {
+						String id = (String) map.get("couponId");
+						String categoryNames = (String) map.get("categoryNames");
+						for (Coupons coupons : couponList) {
+							if (coupons.getId().equals(id)) {
+								coupons.setCategoryNames(categoryNames);
+								break;
+							}
+						}
+					}
+				}
+			}
+			
 		}
-		
+
 		preferentialVo.setCouponList(couponList);
 		preferentialVo.setDiscountList(discountList);
 		preferentialVo.setFullSubtractList(fullSubtractList);

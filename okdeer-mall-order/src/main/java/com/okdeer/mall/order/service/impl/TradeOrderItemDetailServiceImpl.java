@@ -84,26 +84,39 @@ class TradeOrderItemDetailServiceImpl implements TradeOrderItemDetailService, Tr
 		return tradeOrderItemDetailMapper.selectUnConsumerCount(orderItemId);
 	}
 
-	// Begin V1.1.0 add by wusw 20160926
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.order.service.TradeOrderItemDetailServiceApi#findOrderInfoByConsumeCode(java.util.Map)
-	 */
-	@Override
-	public List<OrderItemDetailConsumeVo> findOrderDetailByConsumeCode(Map<String, Object> params) throws ServiceException{
-		return tradeOrderItemDetailMapper.findOrderInfoByConsumeCode(params);
-		
-	}
-	// End V1.1.0 add by wusw 20160926
+    // Begin V1.1.0 add by wusw 20160926
+    /**
+     * (non-Javadoc)
+     * @see com.okdeer.mall.order.service.TradeOrderItemDetailServiceApi#findOrderInfoByConsumeCode(java.util.Map)
+     */
+    @Override
+    public List<OrderItemDetailConsumeVo> findOrderDetailByConsumeCode(Map<String, Object> params) throws ServiceException{
+        return tradeOrderItemDetailMapper.findOrderInfoByConsumeCode(params);
+        
+    }
+    // End V1.1.0 add by wusw 20160926
 
-	//start added by luosm 20160929 V1.1.0
-	/**
-	 * 
-	 * 根据订单id查询明细列表
-	 */
-	@Override
-	public List<TradeOrderItemDetail> selectByOrderItemDetailByOrderId(String orderId) {
-		return tradeOrderItemDetailMapper.selectByOrderItemDetailByOrderId(orderId);
-	}
-	//end added by luosm 20160929 V1.1.0
+    //start added by luosm 20160929 V1.1.0
+    /**
+     * 
+     * 根据订单id查询明细列表
+     */
+    @Override
+    public List<TradeOrderItemDetail> selectByOrderItemDetailByOrderId(String orderId) {
+        return tradeOrderItemDetailMapper.selectByOrderItemDetailByOrderId(orderId);
+    }
+    //end added by luosm 20160929 V1.1.0
+    
+    //Begin added by zhaqoc 20160929 V1.1.0
+    /**
+     * 查询消费码在店铺中是否已经存在
+     * @param storeId
+     * @param consumeCode
+     * @return
+     */
+    @Override
+    public TradeOrderItemDetail checkConsumeHasExsit(String storeId, String consumeCode) {
+        return tradeOrderItemDetailMapper.checkConsumeHasExsit(storeId, consumeCode);
+    }
+    //End added by zhaqoc 20160929 V1.1.0
 }
