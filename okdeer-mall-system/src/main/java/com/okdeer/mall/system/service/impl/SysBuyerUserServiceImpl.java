@@ -548,12 +548,15 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 		} else {
 			// 查询手机用户信息
 			sysBuyerUserItemDto = sysBuyerUserApi.login(mobilePhone, null);
-
+			resultBuyerUserVo = new BuyerUserVo();
+			
 			//查询用户邀请码
 			SysUserInvitationCode invitationCode = this.invitationCodeService.findInvitationCodeByUserId(sysBuyerUserItemDto.getId(), InvitationUserType.phoneUser);
-			
-			resultBuyerUserVo = new BuyerUserVo();
-			resultBuyerUserVo.setInvitationCode(invitationCode.getInvitationCode());
+			//当邀请码为空时，让用户继续登录  start 涂志定
+			if(invitationCode != null){
+				resultBuyerUserVo.setInvitationCode(invitationCode.getInvitationCode());
+			}
+			//end 涂志定
 			PropertyUtils.copyProperties(resultBuyerUserVo, sysBuyerUserItemDto);
 		}
 		// 更新验证码状态
