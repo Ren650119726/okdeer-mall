@@ -633,7 +633,7 @@
 	<!-- end by wushp 20160919 根据用户统计各种状态的代金券数量 -->
 	
 	<!-- add by tangy 20160923 根据商品ids查询商品是否符合代金券指定分类 -->
-    <select id="findIsContainBySpuCategoryIds" >
+    <select id="findIsContainBySpuCategoryIds" resultType="int">
 		SELECT COUNT(1)
 	    FROM goods_navigate_category_association gca 
 	    LEFT JOIN (SELECT t2.category_id FROM activity_coupons tt 
