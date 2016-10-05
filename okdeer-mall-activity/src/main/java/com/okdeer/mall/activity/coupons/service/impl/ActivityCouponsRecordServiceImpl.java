@@ -65,7 +65,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	private static final Logger log = Logger.getLogger(ActivityCouponsRecordServiceImpl.class);
 
-	@Resource
+	@Autowired
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
 
 	/**

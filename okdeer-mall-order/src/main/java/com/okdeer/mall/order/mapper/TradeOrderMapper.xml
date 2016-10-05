@@ -3135,7 +3135,7 @@
 		#{endTime,jdbcType=TIMESTAMP}
 		AND tr.store_id = #{storeId, jdbcType=VARCHAR}
 		<if test="refundsOrderType != null">
-	    AND tr.type = #{refundsOrderType,jdbcType=TINYINT}
+	    AND tr.type = #{type,jdbcType=TINYINT}
 		</if>
 	</select>
 	<!-- zengj:今日(昨日)营收列表 -->
@@ -3144,7 +3144,7 @@
 		SELECT tradeNo,income,tradeTime,types
 		FROM
 		(SELECT order_no AS tradeNo,income,received_time AS tradeTime,0 as
-		type
+		types
 		FROM trade_order
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
 		AND (received_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND
@@ -4561,7 +4561,7 @@
 			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
 			'%')
 		</if>
-		<if test="type != null">
+		<if test="type != null and type.size() > 0">
 			AND trade.type IN
 			<foreach collection="type" index="index" item="item" open="("
 				close=")" separator=",">
@@ -4779,7 +4779,7 @@
 			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
 			'%')
 		</if>
-		<if test="type != null">
+		<if test="type != null and type.size() > 0">
 			AND trade.type IN
 			<foreach collection="type" index="index" item="item" open="("
 				close=")" separator=",">
