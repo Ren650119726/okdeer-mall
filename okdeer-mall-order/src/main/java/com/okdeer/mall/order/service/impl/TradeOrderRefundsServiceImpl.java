@@ -2143,6 +2143,8 @@ public class TradeOrderRefundsServiceImpl
 
 	@Transactional(rollbackFor = Exception.class)
 	private void updateStoreConsumeRefunds(TradeOrderRefunds orderRefunds) throws Exception {
+
+		List<String> ids = Lists.newArrayList();
 		for (TradeOrderRefundsItem refundsItem : orderRefunds.getTradeOrderRefundsItem()) {
 			// 设置消费码为已退款
 			int result = tradeOrderItemDetailService.updateStatusWithRefund(refundsItem.getOrderItemId());
@@ -2153,10 +2155,10 @@ public class TradeOrderRefundsServiceImpl
 			// 更新订单项状态为已完成
 			TradeOrderItem tradeOrderItem = tradeOrderItemService.selectByPrimaryKey(refundsItem.getOrderItemId());
 			tradeOrderItem.setIsComplete(OrderComplete.YES);
-			// tradeOrderItemService.
+			ids.add(tradeOrderItem.getId());
 		}
+		tradeOrderItemService.updateWithComplete(ids);
 		// 更新订单状态
-
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
 
 		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailService
@@ -2187,8 +2189,8 @@ public class TradeOrderRefundsServiceImpl
 				}
 			}
 		}
-		
-		if(isComplete){
+
+		if (isComplete) {
 			order.setIsComplete(OrderComplete.YES);
 		}
 		tradeOrderMapper.updateByPrimaryKeySelective(order);
