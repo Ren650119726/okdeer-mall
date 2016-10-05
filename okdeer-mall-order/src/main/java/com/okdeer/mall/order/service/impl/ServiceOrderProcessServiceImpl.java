@@ -1299,6 +1299,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 			queryCondition.put("type", Constant.ONE);
 		} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
 			queryCondition.put("type", Constant.TWO);
+			queryCondition.put("addressId", orderReq.getAddressId());
 		}
 		// 获取用户有效的代金券
 		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);
@@ -1322,7 +1323,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
 					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getId());
-					if (count > Constant.ZERO) {
+					if (count == Constant.ZERO || count != spuCategoryIds.size()) {
 						delCouponList.add(coupons);
 					}
 				}
