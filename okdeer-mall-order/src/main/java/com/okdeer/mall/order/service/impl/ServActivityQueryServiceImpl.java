@@ -109,6 +109,7 @@ public class ServActivityQueryServiceImpl implements RequestHandler<ServiceOrder
 			queryCondition.put("type", Constant.ONE);
 		} else if (StoreTypeEnum.SERVICE_STORE.ordinal() == storeType) {
 			queryCondition.put("type", Constant.TWO);
+			queryCondition.put("addressId", reqDto.getAddressId());
 		}
 		return queryCondition;
 	}
