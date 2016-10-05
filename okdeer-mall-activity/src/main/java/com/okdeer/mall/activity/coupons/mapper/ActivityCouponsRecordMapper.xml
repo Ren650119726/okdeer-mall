@@ -568,7 +568,7 @@
 			AND (t2.type = 0 OR ( t2.type = #{type}
 			     AND (
 					t1.store_id = #{storeId}
-					<if test="storeType == 4 ">
+					<if test="storeType == 4 and addressId != null and addressId != '' ">
 						AND (t2.area_type = 0 OR (t2.area_type = 1 AND EXISTS(SELECT 1 FROM activity_coupons_area aca LEFT JOIN member_consignee_address mca ON mca.id = ${addressId} 
                         WHERE aca.coupons_id = t2.id AND ((aca.type = 0 AND aca.area_id = mca.city_id) OR (aca.type = 1 AND aca.area_id = mca.province_id)))))
 					</if>
