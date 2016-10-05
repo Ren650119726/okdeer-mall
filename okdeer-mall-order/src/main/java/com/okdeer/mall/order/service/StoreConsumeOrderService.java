@@ -28,5 +28,5 @@ public interface StoreConsumeOrderService {
 	 */
 	List<ExpireStoreConsumerOrderVo> findExpireOrder();
 
-	void handleExpireOrder(TradeOrder order, List<TradeOrderItemDetail> detailList) throws Exception;
+	void handleExpireOrder(TradeOrder order) throws Exception;
 }

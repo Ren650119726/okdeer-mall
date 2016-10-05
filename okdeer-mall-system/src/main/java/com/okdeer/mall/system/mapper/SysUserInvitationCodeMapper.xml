@@ -149,6 +149,7 @@
 		parameterType="com.okdeer.mall.system.entity.SysUserInvitationCode">
 		update
 		<include refid="tableBaseName" />
+		set
 		invitation_user_num=invitation_user_num+1,
 		first_order_user_num=first_order_user_num+1,
 		update_time=#{updateTime,jdbcType=TIMESTAMP}
@@ -172,6 +173,20 @@
   		</if>
   	</select>
   	<!--end added by zhaoqc  -->
+  	
+  	
+  	<!-- 根据用户Id查询邀请码信息 added by tuzhiding 2016-10-4  -->
+  	<select id="findInvitationByIdCode" resultMap="BaseResultMap">
+  		SELECT s.id,s.sys_user_id,s.sys_buyer_user_id,s.user_type,
+			s.invitation_code,s.invitation_user_num,s.first_order_user_num,
+			s.create_time,s.update_time
+		from sys_user_invitation_code s 
+		where s.sys_user_id = #{userId, jdbcType=VARCHAR}
+  			or s.sys_buyer_user_id = #{userId, jdbcType=VARCHAR}
+  			or s.invitation_code = #{invitationCode, jdbcType=VARCHAR}
+  	</select>
+  	<!--end added by tuzhiding 2016-10-4 -->
+  	
   	
   	<!-- 根据邀请码查询邀请码实体 added by zhaoqc -->
   	<select id="findInvitationCodeByCode" resultMap="BaseResultMap">

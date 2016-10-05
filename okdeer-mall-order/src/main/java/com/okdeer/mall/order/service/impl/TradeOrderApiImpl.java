@@ -19,6 +19,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -262,9 +263,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	 */
 	@Override
 	public PageResultVo<ERPTradeOrderVoDto> selectByParams(Map<String, Object> params) throws Exception {
-		// TODO Auto-generated method stub
+		
+		Assert.notNull(params, "type is not null");
 		int pageSize = Integer.valueOf(params.get("pageSize").toString());
 		int pageNum = Integer.valueOf(params.get("pageNum").toString());
+		convertERPParams(params);
+		
 		PageUtils<ERPTradeOrderVo> page = tradeOrderService.erpSelectByParams(params, pageSize, pageNum);
 		List<ERPTradeOrderVoDto> erpTradeOrderVoDto = Lists.newArrayList();
 		for (ERPTradeOrderVo erpTradeOrderVo : page.getList()) {
@@ -290,12 +294,30 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		return result;
 	}
 
+	private void convertERPParams(Map<String, Object> params) {
+		Assert.notNull(params.get("type"), "type is not null");
+		String type = params.get("type").toString();
+		List<OrderTypeEnum> typeList = Lists.newArrayList();
+		if("0".equals(type)){
+			typeList.add(OrderTypeEnum.PHYSICAL_ORDER);
+		}else if("1".equals(type)){
+			typeList.add(OrderTypeEnum.SERVICE_ORDER);
+		}else if("2".equals(type)){
+			typeList.add(OrderTypeEnum.STORE_CONSUME_ORDER);
+		}else if("3".equals(type)){
+			typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
+			typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
+		}
+		params.put("typeList", typeList);
+	}
+
 	/**
 	 * 订单列表
 	 */
 	@Override
 	public List<ERPTradeOrderVoDto> selectByParam(Map<String, Object> params) throws Exception {
-		// TODO Auto-generated method stub
+		
+		convertERPParams(params);
 		List<ERPTradeOrderVo> list = tradeOrderService.erpSelectByParam(params);
 		List<ERPTradeOrderVoDto> erpTradeOrderVoDtoList = new ArrayList<ERPTradeOrderVoDto>();
 		for (ERPTradeOrderVo erpTradeOrderVo : list) {

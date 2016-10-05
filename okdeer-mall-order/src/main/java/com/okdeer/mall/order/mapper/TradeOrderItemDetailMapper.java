@@ -172,4 +172,17 @@ public interface TradeOrderItemDetailMapper{
 	 */
 	TradeOrderItemDetail checkConsumeHasExsit(@Param("String") String storeId, @Param("consumeCode") String consumeCode);
 	
+	// Begin V1.1.0 add by zengjz 20160924
+	/**
+	 * @Description: 根据订单项id查询明细列表
+	 * @param itemId 订单项id
+	 * @param status 状态
+	 * @return 明细列表
+	 * @author zengjizu
+	 * @date 2016年9月30日
+	 */
+	List<TradeOrderItemDetail> selectItemDetailByItemIdAndStatus(@Param("itemId") String itemId,@Param("status")int status);
+	
+	// End V1.1.0 add by zengjz 20160924
+	
 }
