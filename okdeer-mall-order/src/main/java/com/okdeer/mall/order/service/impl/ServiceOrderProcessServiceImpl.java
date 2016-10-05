@@ -301,7 +301,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		GoodsStoreSku goodsStoreSku = (GoodsStoreSku) result.get("goodsStoreSku");
 		ActivitySeckill activitySeckill = (ActivitySeckill) result.get("activitySeckill");
 		StoreInfo storeInfo = (StoreInfo) result.get("storeInfo");
-
+		
 		// 查询商品主图信息
 		GoodsStoreSkuPicture goodsStoreSkuPicture = goodsStoreSkuPictureService
 				.findMainPicByStoreSkuId(orderReq.getSkuId());
@@ -329,6 +329,14 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		resultJson.put("sysTime", new Date().getTime());
 		// 返回的店铺信息JSON
 		JSONObject storeJson = new JSONObject();
+		//查询店铺的默认收货地址
+		MemberConsigneeAddress address = memberConsigneeAddressService.findByStoreId(storeInfo.getId());
+		StringBuffer sb = new StringBuffer();
+		sb.append(address.getProvinceName());
+		sb.append(address.getCityName());
+		sb.append(address.getAreaName());
+		sb.append(address.getAddress());
+		storeJson.put("address", sb.toString());
 		storeJson.put("storeId", storeInfo.getId());
 		// 店铺预约期限天数
 		storeJson.put("deadline", storeInfo.getStoreInfoExt().getSubscribeTime());
