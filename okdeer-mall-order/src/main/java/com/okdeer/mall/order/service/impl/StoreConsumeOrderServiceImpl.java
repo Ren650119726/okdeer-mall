@@ -246,14 +246,14 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 					.getCompainStatus().ordinal());
 
 			json.put("leaveMessage", userTradeOrderDetailVo.getRemark());
-
-			if (userTradeOrderDetailVo.getStatus() == OrderStatusEnum.CANCELED) {
+			//订单状态为已取消且 更新时间不为null时设置正常的取消时间 start 涂志定
+			if (userTradeOrderDetailVo.getStatus() == OrderStatusEnum.CANCELED && userTradeOrderDetailVo.getUpdateTime() != null) {
 				json.put("cancelTime",
 						DateUtils.formatDate(userTradeOrderDetailVo.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
 			} else {
 				json.put("cancelTime", "");
 			}
-
+			//end 涂志定
 			// 店铺信息
 			getStoreInfo(json, userTradeOrderDetailVo);
 			// 商品信息
