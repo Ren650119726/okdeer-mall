@@ -55,4 +55,6 @@
 
 	<!-- 充值中订单定时查询 add by zhaoqc 20160730 -->
 	<job:simple id="rechargingOrderDealWithJob" class="com.okdeer.mall.order.job.RechargingOrderDealWithJob" registry-center-ref="regCenter" cron="0 */10 * * * ?" sharding-total-count="1"></job:simple>
+	
+	<job:simple id="storeConsumeOrderExpireJob" class="com.okdeer.mall.order.job.StoreConsumeOrderExpireJob" registry-center-ref="regCenter" cron="0 */1 * * * ?" sharding-total-count="1"></job:simple>
 </beans>
