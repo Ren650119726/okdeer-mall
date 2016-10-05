@@ -320,7 +320,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @return
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	private Map<String, Object> insertRecordByJudgeNum(ActivityCoupons activityCoupons, String currentOperatUserId,
+	public Map<String, Object> insertRecordByJudgeNum(ActivityCoupons activityCoupons, String currentOperatUserId,
 			String successMsg, ActivityCouponsType activityCouponsType) {
 		Map<String, Object> map = new HashMap<String, Object>();
 
