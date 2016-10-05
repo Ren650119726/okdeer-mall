@@ -6357,7 +6357,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			tradeOrderPay.setPayType(PayTypeEnum.WXPAY);
 		} else if (payType == 3) {
 			tradeOrderPay.setPayType(PayTypeEnum.JDPAY);
+		} else {
+		    tradeOrderPay.setPayType(PayTypeEnum.WALLET);
 		}
+		
 		this.tradeOrderPayService.insertSelective(tradeOrderPay);
 	}
 
