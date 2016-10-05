@@ -4561,7 +4561,7 @@
 			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
 			'%')
 		</if>
-		<if test="type != null">
+		<if test="type != null and type.size() > 0">
 			AND trade.type IN
 			<foreach collection="type" index="index" item="item" open="("
 				close=")" separator=",">
@@ -4779,7 +4779,7 @@
 			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
 			'%')
 		</if>
-		<if test="type != null">
+		<if test="type != null and type.size() > 0">
 			AND trade.type IN
 			<foreach collection="type" index="index" item="item" open="("
 				close=")" separator=",">
