@@ -105,10 +105,12 @@ public class ServAddressSearchServiceImpl implements RequestHandler<ServiceOrder
 		params.put("storeId", reqData.getStoreId());
 		// 查询用户的所有收货地址
 		Map<String, Object> map = memberConsigneeAddressService.findUserDefaultAddress(params);
-		if (!map.containsKey("provinceName")) {
+		//当地址为空时 为null肯定不包含 或 不包含时 start 涂志定
+		if (map == null || !map.containsKey("provinceName")) {
 			req.setComplete(true);
 			return;
 		} 
+		// end 涂志定
 		UserAddressVo userAddressVo = new UserAddressVo();
 		// 将map转成bean
 		BeanUtils.populate(userAddressVo, map);
