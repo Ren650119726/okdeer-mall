@@ -1,6 +1,8 @@
 
 package com.okdeer.mall.order.service.impl;
 
+import static com.okdeer.common.consts.DescriptConstants.ORDER_EXECUTE_CANCEL_FAIL;
+import static com.okdeer.mall.order.constant.PayMessageConstant.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,9 +23,18 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
+import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
+import com.alibaba.rocketmq.client.producer.LocalTransactionState;
+import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
+import com.alibaba.rocketmq.client.producer.TransactionSendResult;
+import com.alibaba.rocketmq.common.message.Message;
+import com.alibaba.rocketmq.common.message.MessageExt;
 import com.github.pagehelper.PageHelper;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.okdeer.api.pay.enums.BusinessTypeEnum;
+import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
@@ -31,18 +42,22 @@ import com.okdeer.archive.store.service.IStoreInfoExtServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
+import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
+import com.okdeer.mall.order.constant.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
+import com.okdeer.mall.order.enums.ActivityBelongType;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
@@ -50,6 +65,7 @@ import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
@@ -120,6 +136,9 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 	 */
 	@Resource
 	private GenerateNumericalService generateNumericalService;
+	
+	@Autowired
+	private RocketMQTransactionProducer rocketMQTransactionProducer;
 
 	@Override
 	public PageUtils<TradeOrder> findStoreConsumeOrderList(Map<String, Object> map, Integer pageNo, Integer pageSize) {
@@ -144,26 +163,30 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 				map.put("orderStatus", orderStatus);
 			} else if (status.equals(String.valueOf(Constant.THIRTH))) {
 				// 查询未消费的消费码订单
-				map.put("orderStatus", OrderStatusEnum.HAS_BEEN_SIGNED.ordinal());
+				orderStatus.add(String.valueOf(OrderStatusEnum.HAS_BEEN_SIGNED.ordinal()));
+				map.put("orderStatus", orderStatus);
 				map.put("consumerCodeStatus", ConsumerCodeStatusEnum.WAIT_CONSUME.ordinal());
 			} else if (status.equals(String.valueOf(Constant.FOUR))) {
 				// 查询已过期的消费码订单
-				map.put("orderStatus", OrderStatusEnum.HAS_BEEN_SIGNED.ordinal());
+				orderStatus.add(String.valueOf(OrderStatusEnum.HAS_BEEN_SIGNED.ordinal()));
+				map.put("orderStatus", orderStatus);
 				map.put("consumerCodeStatus", ConsumerCodeStatusEnum.EXPIRED.ordinal());
 			} else if (status.equals(String.valueOf(Constant.FIVE))) {
 				// 查询已消费的消费码订单
-				map.put("orderStatus", OrderStatusEnum.HAS_BEEN_SIGNED.ordinal());
+				orderStatus.add(String.valueOf(OrderStatusEnum.HAS_BEEN_SIGNED.ordinal()));
+				map.put("orderStatus", orderStatus);
 				map.put("consumerCodeStatus", ConsumerCodeStatusEnum.WAIT_EVALUATE.ordinal());
 			} else if (status.equals(String.valueOf(Constant.SIX))) {
 				// 查询已退款的消费码订单
-				map.put("orderStatus", OrderStatusEnum.HAS_BEEN_SIGNED.ordinal());
+				orderStatus.add(String.valueOf(OrderStatusEnum.HAS_BEEN_SIGNED.ordinal()));
+				map.put("orderStatus", orderStatus);
 				map.put("consumerCodeStatus", ConsumerCodeStatusEnum.REFUNDED.ordinal());
 			} else if (status.equals(String.valueOf(Constant.SEVEN))) {
 				// 查询已完成的消费码订单
-				map.put("orderStatus", OrderStatusEnum.HAS_BEEN_SIGNED.ordinal());
+				orderStatus.add(String.valueOf(OrderStatusEnum.HAS_BEEN_SIGNED.ordinal()));
+				map.put("orderStatus", orderStatus);
 				map.put("consumerCodeStatus", ConsumerCodeStatusEnum.COMPLETED.ordinal());
 			}
-
 			list = tradeOrderMapper.selectStoreConsumeOrderList(map);
 		}
 
@@ -185,9 +208,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		// 查询店铺扩展信息
 		JSONObject json = new JSONObject();
 		try {
-			// StoreInfoExt storeInfoExt =
-			// storeInfoExtService.getByStoreId(storeId);
-
 			// 1 订单信息
 			json.put("orderId", userTradeOrderDetailVo.getId() == null ? "" : userTradeOrderDetailVo.getId());
 
@@ -496,6 +516,34 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 
 	@Transactional(rollbackFor = Exception.class)
 	private void expireOrder(TradeOrder order, TradeOrderItem item) throws Exception {
+		
+		// 构建余额支付（或添加交易记录）对象
+				Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
+						buildBalancePayTrade(order).getBytes(Charsets.UTF_8));
+				// 发送事务消息
+				TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, order,
+						new LocalTransactionExecuter() {
+
+							@Override
+							public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
+								try {
+									// 执行同意退款操作
+									//save((TradeOrderRefunds) object);
+								} catch (Exception e) {
+									logger.error("执行同意退款操作异常", e);
+									return LocalTransactionState.ROLLBACK_MESSAGE;
+								}
+								return LocalTransactionState.COMMIT_MESSAGE;
+							}
+						}, new TransactionCheckListener() {
+
+							@Override
+							public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
+								return LocalTransactionState.COMMIT_MESSAGE;
+							}
+						});
+				 RocketMqResult.returnResult(sendResult);
+		
 		// 更新消费码为全部过期状态
 		int result = tradeOrderItemDetailMapper.updateStatusWithExpire(item.getId());
 
@@ -511,6 +559,35 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		order.setIsComplete(OrderComplete.YES);
 		tradeOrderMapper.updateOrderStatus(order);
 
+	}
+
+	private String buildBalancePayTrade(TradeOrder order) {
+//		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+//		payTradeVo.setAmount(orderRefunds.getTotalAmount());
+//		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
+//		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(orderRefunds.getStoreId()));
+//		payTradeVo.setTradeNum(orderRefunds.getTradeNum());
+//		payTradeVo.setTitle("订单退款(余额支付)，退款交易号：" + orderRefunds.getRefundNo());
+//
+//		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
+//		if (order.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+//			payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
+//		} else {
+//			payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_SERVICE_ORDER);
+//		}
+//		payTradeVo.setServiceFkId(orderRefunds.getId());
+//		payTradeVo.setServiceNo(orderRefunds.getOrderNo());
+//		payTradeVo.setRemark("关联订单号：" + orderRefunds.getOrderNo());
+//		// 优惠额退款 判断是否有优惠劵
+//		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
+//		if (activityResource == ActivityBelongType.OPERATOR || activityResource == ActivityBelongType.AGENT
+//				&& (orderRefunds.getTotalPreferentialPrice().compareTo(BigDecimal.ZERO) > 0)) {
+//			payTradeVo.setPrefeAmount(orderRefunds.getTotalPreferentialPrice());
+//			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
+//		}
+//		// 接受返回消息的tag
+//		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_REFUND);
+		return JSONObject.fromObject(null).toString();
 	}
 
 	private void refundOrder(TradeOrder order, TradeOrderItem item) throws Exception {
