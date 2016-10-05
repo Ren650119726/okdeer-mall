@@ -53,5 +53,14 @@ public interface TradeOrderItemService {
 	int selectCountByOrderIdDetailStatus(Map<String, Object> params) throws ServiceException;
 
 	TradeOrderItem selectByPrimaryKey(String id);
+	
+	/**
+	 * @Description: 更新订单项为订单完成状态
+	 * @param id 订单项id
+	 * @return
+	 * @author zengjizu
+	 * @date 2016年10月5日
+	 */
+	void updateWithComplete(List<String> ids);
 
 }
