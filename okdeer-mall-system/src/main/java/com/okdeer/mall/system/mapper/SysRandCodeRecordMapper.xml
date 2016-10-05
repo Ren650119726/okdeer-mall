@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.okdeer.archive.system.mapper.SysRandCodeRecordMapper">
+<mapper namespace="com.okdeer.mall.system.mapper.SysRandCodeRecordMapper">
 	<resultMap id="randCodeBaseMap" type="com.okdeer.mall.system.entity.SysRandCodeRecord">
 		<id column="id" property="id" jdbcType="VARCHAR"/>
 		<result column="random_code" property="randomCode" jdbcType="VARCHAR"/>
