@@ -216,9 +216,9 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 				address.setUseTime(DateUtils.getSysDate());
 				memberConsigneeAddressMapper.updateByPrimaryKeySelective(address);
 			}
-			Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime(), "yyyy-MM-dd HH:mm");
 			// 线下确认价格并支付
 			if (tradeOrder.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
+				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime(), "yyyy-MM-dd HH:mm");
 				// 预约服务时间过后2小时未派单的自动取消订单
 				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
 						(DateUtils.addHours(serviceTime, 2).getTime() - DateUtils.getSysDate().getTime()) / 1000);
@@ -876,13 +876,15 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		// 获取默认地址
 		String defaultAddressId = storeInfo.getMemberConsignee().getId();
 		tradeOrder.setPickUpId(defaultAddressId);
-		if (!StringUtils.isEmpty(serviceTime)) {
-			tradeOrder.setPickUpTime(serviceTime);
-		} else {
-			String attrTime = DateUtils.getDate();
-			String pcTime = attrTime + " " + resp.getData().getStoreInfo().getStartTime() + "-"
-					+ resp.getData().getStoreInfo().getEndTime();
-			tradeOrder.setPickUpTime(pcTime);
+		if (reqDto.getOrderType() != OrderTypeEnum.STORE_CONSUME_ORDER) {
+			if (!StringUtils.isEmpty(serviceTime)) {
+				tradeOrder.setPickUpTime(serviceTime);
+			} else {
+				String attrTime = DateUtils.getDate();
+				String pcTime = attrTime + " " + resp.getData().getStoreInfo().getStartTime() + "-"
+						+ resp.getData().getStoreInfo().getEndTime();
+				tradeOrder.setPickUpTime(pcTime);
+			}
 		}
 		tradeOrder.setFare(new BigDecimal("0.00"));
 	}
