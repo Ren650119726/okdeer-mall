@@ -101,6 +101,7 @@ import net.sf.json.JsonConfig;
  *     重构4.1          2016年8月22日                               maojj				余额支付失败，将订单状态更改为待付款状态
  *     重构4.1          2016年8月24日                               maojj				余额支付成功，如果是到店自提，生成提货码
  *     重构4.1          2016年9月22日                              zhaoqc             V1.0.0移动代码
+ *     V1.1.0          2016年10月5日                              zhaoqc             新增余额支付到店消费订单处理  
  */
 @Service
 public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
@@ -624,16 +625,23 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			}
 			// End 判断订单状态为不是待买家支付中，就过掉该消息 add by zengj
 
-			inserts(tradeOrder, result);
-
 			// Begin 重构4.1 add by zengj
 			// 判断是否是服务店订单，如果是服务店订单走单独流程
 			if (tradeOrder.getType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
+			    inserts(tradeOrder, result);
+			    
 				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime(), "yyyy-MM-dd HH:mm");
 				// 预约服务时间过后2小时未派单的自动取消订单
 				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
 						(DateUtils.addHours(serviceTime, 2).getTime() - DateUtils.getSysDate().getTime()) / 1000);
+			}else if (tradeOrder.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+			    //到店消费的订单 处理
+                synchronized(LockUtil.getInitialize().synObject(tradeOrder.getTradeNum())) {
+                   this.tradeOrderService.dealWithStoreConsumeOrder(tradeOrder, null, PayTypeEnum.WALLET.ordinal());
+                }
 			} else {
+			    inserts(tradeOrder, result);
+			    
 				// End 重构4.1 add by zengj
 				// 发送计时消息
 				if (ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()) {

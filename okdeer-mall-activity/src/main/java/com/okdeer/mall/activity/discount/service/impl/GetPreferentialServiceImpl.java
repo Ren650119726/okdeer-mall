@@ -62,7 +62,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 	
 	@Override
 	public PreferentialVo findPreferentialByUser(String userId, StoreInfo storeInfo, BigDecimal totalAmount,
-			List<String> skuIdList) throws Exception {
+			List<String> skuIdList, String addressId) throws Exception {
 		PreferentialVo preferentialVo = new PreferentialVo();
 		StoreTypeEnum storeType = storeInfo.getType();
 		Map<String, Object> queryCondition = new HashMap<String, Object>();
@@ -75,6 +75,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 			queryCondition.put("type", Constant.ONE);
 		} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
 			queryCondition.put("type", Constant.TWO);
+			queryCondition.put("addressId", addressId);
 		}
 		// 获取用户有效的代金券
 		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);

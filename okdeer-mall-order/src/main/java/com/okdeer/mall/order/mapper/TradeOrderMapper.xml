@@ -3135,7 +3135,7 @@
 		#{endTime,jdbcType=TIMESTAMP}
 		AND tr.store_id = #{storeId, jdbcType=VARCHAR}
 		<if test="refundsOrderType != null">
-	    AND tr.type = #{refundsOrderType,jdbcType=TINYINT}
+	    AND tr.type = #{type,jdbcType=TINYINT}
 		</if>
 	</select>
 	<!-- zengj:今日(昨日)营收列表 -->
@@ -3144,7 +3144,7 @@
 		SELECT tradeNo,income,tradeTime,types
 		FROM
 		(SELECT order_no AS tradeNo,income,received_time AS tradeTime,0 as
-		type
+		types
 		FROM trade_order
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
 		AND (received_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND
@@ -4391,6 +4391,7 @@
 		<!-- LEFT JOIN trade_order_refunds trf ON tr.id = trf.order_id -->
 		WHERE (tr.status = 1 OR tr.status = 5 OR tr.status = 6 OR tr.status =
 		0 OR tr.status = 11 OR tr.status = 2)
+		AND tr.disabled=1
 		<!-- 充值类型选择 流量或者话费 -->
 		<if test="ids != null">
 			AND tr.id in
