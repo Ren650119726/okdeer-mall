@@ -570,7 +570,7 @@
 		AND (
 			t1.store_id = #{storeId}
 			<!-- 平台发起的代金券活动，只有云上店可以使用 -->
-			<if test="storeType == 2">
+			<if test="storeType == 2 or storeType == 4">
 				OR t2.area_type = 0
 			</if>
 		)
@@ -643,7 +643,7 @@
         <foreach item="item" index="index" collection="spuCategoryIds" open="(" separator="," close=")">  
   			#{item}  
  		</foreach>  
-	 <!--   AND djq.category_id IS NULL  -->
+	   AND djq.category_id IS NULL
 	</select>
 	
 	<!-- 根据代金券id获取类目名称集 -->
