@@ -309,7 +309,7 @@
 	   <!-- <result column="is_unsubscribe" property="isUnsubscribe" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.store.enums.IsUnsubscribe" /> -->
     </resultMap>
     <!-- 批量查询指定店铺的消费码相应的订单信息 V1.1.0 add by wusw 20160924-->
-	<select id="findOrderInfoByConsumeCode" resultMap="orderDetailResultMap">
+	<select id="findOrderInfoByConsumeCode" resultMap="orderDetailResultMap" parameterType="java.util.Map">
 	   SELECT
 			detail.id,
 			detail.consume_code,
