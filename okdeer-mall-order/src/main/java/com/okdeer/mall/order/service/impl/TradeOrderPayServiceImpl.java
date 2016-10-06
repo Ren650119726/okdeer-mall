@@ -240,7 +240,13 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		// 交易描述
 		payReqest.setTradeDescription("订单支付");
 		// 业务类型
-		payReqest.setServiceType(PayTradeServiceTypeEnum.ORDER);
+		if (order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+			payReqest.setServiceType(PayTradeServiceTypeEnum.STORE_CONSUME_ORDER);
+			payReqest.setReceiver(storeInfoService.getBossIdByStoreId(order.getStoreId()));
+		} else {
+			payReqest.setServiceType(PayTradeServiceTypeEnum.ORDER);
+		}
+
 		// 系统类型
 		payReqest.setSystemEnum(SystemEnum.MALL);
 		// 业务ID，如订单ID，服务ID
@@ -945,6 +951,10 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		if (order.getType() == OrderTypeEnum.PHONE_PAY_ORDER || order.getType() == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
 			payTradeVo.setBusinessType(BusinessTypeEnum.RECHARGE_ORDER_PAY);
 			payTradeVo.setTag(PayMessageConstant.TAG_PAY_RECHARGE_ORDER_BLANCE);// 接受返回消息的tag
+		}else if (order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+			payTradeVo.setBusinessType(BusinessTypeEnum.STORE_CONSUME_ORDER);
+			payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_INSERT);// 接受返回消息的tag
+			payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		} else {
 			payTradeVo.setBusinessType(BusinessTypeEnum.ORDER_PAY);// 业务类型
 			payTradeVo.setTag("tag_pay_result_mall_insert");// 接受返回消息的tag
@@ -953,8 +963,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payTradeVo.setServiceFkId(order.getId());// 服务单id
 		payTradeVo.setServiceNo(order.getOrderNo());// 服务单号，例如订单号、退单号
 		payTradeVo.setRemark("订单");// 备注信息
-		payTradeVo.setIncomeUserId("");// 收款人，根据业务不同设置不同的id
-		payTradeVo.setActivitier("");// 优化活动发起人，比如代理商id或者运营商id
 		payTradeVo.setPrefeAmount(order.getPreferentialPrice());// 优惠金额
 
 		return payTradeVo;
