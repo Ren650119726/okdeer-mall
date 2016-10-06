@@ -1,5 +1,7 @@
 package com.okdeer.mall.system.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.mall.system.entity.SysRandCodeRecord;
 
 /**
@@ -31,5 +33,5 @@ public interface SysRandCodeRecordMapper {
      * @param randCode 随机码
      * @return 随机码实体
      */
-    SysRandCodeRecord findRecordByRandCode(String randCode);
+    SysRandCodeRecord findRecordByRandCode(@Param("randomCode") String randomCode);
 }

@@ -90,7 +90,7 @@
 		FROM sys_rand_code_record
 		WHERE 1=1
 		<if test="randomCode != null">
-			AND random_code = #{randomCode, jdbcType=VARCHAR}, 
+			AND random_code = #{randomCode, jdbcType=VARCHAR}
 		</if>	
 	</select>
 	
