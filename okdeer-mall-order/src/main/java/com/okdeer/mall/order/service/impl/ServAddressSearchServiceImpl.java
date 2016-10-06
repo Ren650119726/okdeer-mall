@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
@@ -70,8 +71,9 @@ public class ServAddressSearchServiceImpl implements RequestHandler<ServiceOrder
 		}
 		// 到店消费订单
 		if (orderType != null && orderType == OrderTypeEnum.STORE_CONSUME_ORDER) {
-			StoreInfo storeInfo = storeInfoServiceApi.selectDefaultAddressById(reqData.getStoreId());
-			MemberConsigneeAddress memberConsignee = storeInfo.getMemberConsignee();
+			MemberConsigneeAddress memberConsignee = memberConsigneeAddressMapper.getSellerDefaultAddress(reqData.getStoreId());
+			//StoreInfo storeInfo = storeInfoServiceApi.selectDefaultAddressById(reqData.getStoreId());
+			//MemberConsigneeAddress memberConsignee = storeInfo.getMemberConsignee();
 			if (memberConsignee != null) {
 				UserAddressVo userAddressVo = new UserAddressVo();
 				BeanUtils.copyProperties(userAddressVo, memberConsignee);
@@ -83,6 +85,10 @@ public class ServAddressSearchServiceImpl implements RequestHandler<ServiceOrder
 					.append(ConvertUtil.format(memberConsignee.getCityName()))
 					.append(ConvertUtil.format(memberConsignee.getAreaName()))
 					.append(ConvertUtil.format(memberConsignee.getAreaExt()));
+			if (StringUtils.isBlank(storeAddr)) {
+				storeAddr.append(memberConsignee.getArea());
+				storeAddr.append(memberConsignee.getAddress());
+			} 
 			respData.getStoreInfo().setAddress(storeAddr.toString());
 			req.setComplete(true);
 			return;
