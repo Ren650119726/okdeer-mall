@@ -2526,7 +2526,9 @@
 			<if test="shipmentsUserId != null">
 				shipments_user_id = #{shipmentsUserId,jdbcType=VARCHAR},
 			</if>
-
+			<if test="consumerCodeStatus !=null">
+				consumer_code_status = #{consumerCodeStatus,jdbcType=BIT},
+			</if>
 		</set>
 		WHERE id = #{id,jdbcType=VARCHAR}
 		<if test="currentStatus != null">
