@@ -240,7 +240,13 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		// 交易描述
 		payReqest.setTradeDescription("订单支付");
 		// 业务类型
-		payReqest.setServiceType(PayTradeServiceTypeEnum.ORDER);
+		if (order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+			payReqest.setServiceType(PayTradeServiceTypeEnum.STORE_CONSUME_ORDER);
+			payReqest.setReceiver(storeInfoService.getBossIdByStoreId(tradeOrder.getStoreId()));
+		} else {
+			payReqest.setServiceType(PayTradeServiceTypeEnum.ORDER);
+		}
+
 		// 系统类型
 		payReqest.setSystemEnum(SystemEnum.MALL);
 		// 业务ID，如订单ID，服务ID
