@@ -151,6 +151,7 @@ import net.sf.json.JSONObject;
  *    V1.1.0	       2016-9-12             zengjz            增加财务系统订单交易统计接口
  *    V1.1.0				2016-09-28			wusw			       修改查询退款单数量，如果是服务店，只查询到店消费退款单
  *    V1.1.0			2016-09-29			maojj			  退款流程中增加轨迹的存储
+ *    V1.1.0					2016 10 06  zhulq  在后台将消费码中间四位用* 显示
  *  
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderRefundsServiceApi")
@@ -2194,5 +2195,39 @@ public class TradeOrderRefundsServiceImpl
 			order.setIsComplete(OrderComplete.YES);
 		}
 		tradeOrderMapper.updateByPrimaryKeySelective(order);
+	}
+
+	@Override
+	public PageUtils<TradeOrderRefundsVo> findOrderRefundByParams(Map<String, Object> map, int pageNumber,
+			int pageSize) {
+		if (pageNumber > 0) {
+			PageHelper.startPage(pageNumber == 0 ? 1 : pageNumber, pageSize, pageNumber != 0, false);
+		}
+		List<TradeOrderRefundsVo> list = null;
+		list = tradeOrderRefundsMapper.searchOrderRefundByParams(map);
+		if (CollectionUtils.isNotEmpty(list)) {
+			for (TradeOrderRefundsVo vo : list) {
+				List<TradeOrderRefundsItem> itemList = vo.getTradeOrderRefundsItem();
+				if (CollectionUtils.isNotEmpty(itemList)) {
+					for (TradeOrderRefundsItem itemVo : itemList) {
+						List<TradeOrderItemDetail> itemDetailList = itemVo.getTradeOrderItemDetails();
+						if (CollectionUtils.isNotEmpty(itemDetailList)) {
+							for (TradeOrderItemDetail itemDetailVo : itemDetailList) {
+								if (StringUtils.isNotBlank(itemDetailVo.getConsumeCode())) {
+									String first = itemDetailVo.getConsumeCode().substring(0,2);
+									String end = itemDetailVo.getConsumeCode().substring(6,8);
+									itemDetailVo.setConsumeCode(first + "****" + end);
+								}
+							}
+						}
+					}
+				}
+				
+				
+			}
+		} else {
+			list = new ArrayList<TradeOrderRefundsVo>();
+		}
+		return new PageUtils<TradeOrderRefundsVo>(list);
 	}
 }
