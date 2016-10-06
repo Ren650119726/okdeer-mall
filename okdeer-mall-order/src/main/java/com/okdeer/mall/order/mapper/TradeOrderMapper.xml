@@ -1860,6 +1860,9 @@
 			<if test="isComplete != null">
 				is_complete = #{isComplete,jdbcType=TINYINT},
 			</if>
+			<if test="consumerCodeStatus !=null">
+				consumer_code_status = #{consumerCodeStatus,jdbcType=BIT},
+			</if>
 		</set>
 		where id = #{id,jdbcType=VARCHAR}
 	</update>
