@@ -237,6 +237,7 @@ import net.sf.json.JsonConfig;
  *            V1.1.0 2016-09-24 wusw 消费码验证（到店消费）相应方法 V1.1.0 2016-09-26 luosm
  *            查询商家版APP服务店到店消费订单信息 V1.1.0 2016-09-27 maojj 商品订单详情页新增字段 V1.1.0
  *            2016-09-29 wusw 添加上门服务订单详情的查询方法
+ *            2016 10 06  zhulq  在后台将消费码中间四位用* 显示
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -6349,6 +6350,36 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 
 		this.tradeOrderPayService.insertSelective(tradeOrderPay);
+	}
+
+	@Override
+	public PageUtils<TradeOrder> findConsumeByParams(Map<String, Object> map, int pageNumber, int pageSize)
+			throws ServiceException {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+		List<TradeOrder> list = null;
+		list = tradeOrderMapper.selectOrderList(map);
+		if (CollectionUtils.isNotEmpty(list)) {
+			for (TradeOrder vo : list) {
+				List<TradeOrderItem> itemList = vo.getTradeOrderItem();
+				if (CollectionUtils.isNotEmpty(itemList)) {
+					for (TradeOrderItem itemVo : itemList) {
+						List<TradeOrderItemDetail> itemDetailList = itemVo.getTradeOrderItemDetails();
+						if (CollectionUtils.isNotEmpty(itemDetailList)) {
+							for (TradeOrderItemDetail itemDetailVo : itemDetailList) {
+								if (StringUtils.isNotBlank(itemDetailVo.getConsumeCode())) {
+									String first = itemDetailVo.getConsumeCode().substring(0,2);
+									String end = itemDetailVo.getConsumeCode().substring(6,8);
+									itemDetailVo.setConsumeCode(first + "****" + end);
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			list = new ArrayList<TradeOrder>();
+		}
+		return new PageUtils<TradeOrder>(list);
 	}
 
 }
