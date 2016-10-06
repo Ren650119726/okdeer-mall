@@ -370,7 +370,7 @@
 	   <result column="main_pic_prl" property="skuPictureUrl" jdbcType="VARCHAR" />    
 	   <result column="storeUserId" property="storeUserId" jdbcType="VARCHAR" />
 	   <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
-	   <result column="is_unsubscribe" property="isUnsubscribe" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.store.enums.IsUnsubscribe" />
+	   <!-- <result column="is_unsubscribe" property="isUnsubscribe" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.store.enums.IsUnsubscribe" /> -->
     </resultMap>
     <!-- 批量查询指定店铺的消费码相应的订单信息 V1.1.0 add by wusw 20160924-->
 	<select id="findOrderInfoByConsumeCode" resultMap="orderDetailResultMap" parameterType="java.util.Map">
@@ -395,7 +395,7 @@
 			item.unit_price,
 			item.style_code,
 			item.bar_code,
-			skuService.is_unsubscribe,
+			<!-- skuService.is_unsubscribe, -->
 			member.sys_user_id AS storeUserId	
 		FROM trade_order_item_detail detail
 		INNER JOIN trade_order_item item on detail.order_item_id = item.id
