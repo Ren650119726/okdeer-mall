@@ -2168,7 +2168,7 @@ public class TradeOrderRefundsServiceImpl
 		boolean isAllRefund = true;
 		if (CollectionUtils.isNotEmpty(detailList)) {
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
-				if (tradeOrderItemDetail.getStatus() != ConsumeStatusEnum.refund) {
+				if (tradeOrderItemDetail.getStatus() != ConsumeStatusEnum.refund && !ids.contains(tradeOrderItemDetail.getOrderItemId())) {
 					isAllRefund = false;
 				}
 			}
@@ -2184,7 +2184,7 @@ public class TradeOrderRefundsServiceImpl
 		boolean isComplete = true;
 		if (CollectionUtils.isNotEmpty(itemList)) {
 			for (TradeOrderItem tradeOrderItem : itemList) {
-				if (tradeOrderItem.getIsComplete() != OrderComplete.YES) {
+				if (tradeOrderItem.getIsComplete() != OrderComplete.YES && !ids.contains(tradeOrderItem.getId())) {
 					isComplete = false;
 				}
 			}
