@@ -6314,7 +6314,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			lastActualAmount = lastActualAmount.subtract(itemDetail.getActualAmount());
 			lastPreferentialAmount = lastPreferentialAmount.subtract(itemDetail.getPreferentialPrice());
-			
+
 			this.tradeOrderItemDetailMapper.insertSelective(itemDetail);
 
 			itemDetail = null;
