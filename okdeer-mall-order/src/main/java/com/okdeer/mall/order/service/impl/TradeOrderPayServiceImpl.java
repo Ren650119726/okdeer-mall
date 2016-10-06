@@ -951,7 +951,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		if (order.getType() == OrderTypeEnum.PHONE_PAY_ORDER || order.getType() == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
 			payTradeVo.setBusinessType(BusinessTypeEnum.RECHARGE_ORDER_PAY);
 			payTradeVo.setTag(PayMessageConstant.TAG_PAY_RECHARGE_ORDER_BLANCE);// 接受返回消息的tag
-		}if (order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+		}else if (order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 			payTradeVo.setBusinessType(BusinessTypeEnum.STORE_CONSUME_ORDER);
 			payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_INSERT);// 接受返回消息的tag
 			payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
