@@ -678,32 +678,8 @@
   <!-- Begin added by maojj 2016-09-24 1.1 -->
   <!-- 根据店铺服务范围查询用户地址信息 -->
   <select id="findAddrWithStoreServRange" parameterType="map" resultType="com.okdeer.mall.member.member.vo.UserAddressVo">
-		SELECT 
-			t.id addressId,
-			t.consignee_name AS consigneeName,
-			t.mobile,
-			t.province_name AS provinceName,
-			t.city_name AS cityName,
-			t.area_name AS areaName,
-			t.area_ext AS areaExt,
-			t.address,
-			t.longitude,
-			t.latitude,
-			cast(t.source as SIGNED) AS isCommunity,
-			CASE t1.type 
-				WHEN 0 THEN 0
-				WHEN 1 THEN IF(distance(t.longitude,t.latitude,t1.longitude,t1.latitude)>t1.distance*1000,1,0)
-				ELSE 1
-			END AS isOutRange
-		FROM member_consignee_address t
-		LEFT JOIN store_server_area t1 
-		ON t.province_id = t1.province_id
-		AND t.city_id = t1.city_id 
-		AND (t.area_id = t1.area_id OR t.area_id is null) 
-		AND t1.store_id=#{storeId}
-		WHERE t.user_id = #{userId}
-		AND t.disabled=0
-		ORDER BY t.update_time DESC
+      <include refid="userAddressListSql" />
+      order by addr.`source` asc
   </select>
   
   <!-- 根据活动服务范围查询用户地址信息 -->
@@ -733,34 +709,16 @@
   
   <!-- 根据服务范围查询用户地址 -->
   <select id="findAddrWithServRange" parameterType="map" resultType="com.okdeer.mall.member.member.vo.UserAddressVo">
-  		SELECT 
-			t.id addressId,
-			t.consignee_name AS consigneeName,
-			t.mobile,
-			t.province_name AS provinceName,
-			t.city_name AS cityName,
-			t.area_name AS areaName,
-			t.area_ext AS areaExt,
-			t.address,
-			t.longitude,
-			t.latitude,
-			cast(t.source as SIGNED) AS isCommunity,
-			CASE t1.type 
-				WHEN 0 THEN 0
-				WHEN 1 THEN IF(distance(t.longitude,t.latitude,t1.longitude,t1.latitude)>t1.distance*1000,'1','0')
-				ELSE 1
-			END AS isOutRange
-		FROM member_consignee_address t
-		LEFT JOIN (
-			SELECT ssa.province_id,ssa.city_id,ssa.area_id,ssa.type,ssa.longitude,ssa.latitude,ssa.distance
-			FROM activity_seckill_range asr 
-			INNER JOIN store_server_area ssa ON asr.province_id = ssa.province_id AND asr.city_id = ssa.city_id
-			WHERE asr.activity_seckill_id = #{activitySeckillId}
-			AND ssa.store_id = #{storeId}
-		)t1 ON t.province_id = t1.province_id AND t.city_id = t1.city_id AND (t.area_id = t1.area_id OR t.area_id is null)
-		WHERE t.user_id = #{userId}
-		AND t.disabled=0
-		ORDER BY t.update_time DESC
+    select * from(
+    <include refid="userAddressListSql" />
+	    AND EXISTS(
+	        SELECT 1 FROM activity_seckill_range r
+	        WHERE r.activity_seckill_id = #{activitySeckillId,jdbcType=VARCHAR}
+	        AND addr.province_id = r.province_id
+	        AND addr.city_id = r.city_id
+	    )
+    ) a where a.isOutRange = 0
+    order by useTime desc
   </select>
   
   <!-- 根据用户Id查询用户地址 -->
