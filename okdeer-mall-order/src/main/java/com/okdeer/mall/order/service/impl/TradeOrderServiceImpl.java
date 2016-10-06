@@ -4599,7 +4599,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 订单交易号
 					String tradeNum = data.get("tradeNum").toString();
 					// 店主ID
-					String storeUserId = data.get("storeUserId") == null ? null : data.get("storeUserId").toString();;
+					String storeUserId = data.get("storeUserId") == null ? null : data.get("storeUserId").toString();
 					// 当前登录用户ID
 					tradeOrder.setUserId(userId);
 					// 店铺ID
