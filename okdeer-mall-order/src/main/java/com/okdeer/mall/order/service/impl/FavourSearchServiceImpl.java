@@ -120,6 +120,7 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 			queryCondition.put("type", Constant.ONE);
 		} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
 			queryCondition.put("type", Constant.TWO);
+			queryCondition.put("addressId", req.getAddressId());
 		}
 		//End added by tangy
 		return queryCondition;

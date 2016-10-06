@@ -301,7 +301,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		GoodsStoreSku goodsStoreSku = (GoodsStoreSku) result.get("goodsStoreSku");
 		ActivitySeckill activitySeckill = (ActivitySeckill) result.get("activitySeckill");
 		StoreInfo storeInfo = (StoreInfo) result.get("storeInfo");
-
+		
 		// 查询商品主图信息
 		GoodsStoreSkuPicture goodsStoreSkuPicture = goodsStoreSkuPictureService
 				.findMainPicByStoreSkuId(orderReq.getSkuId());
@@ -329,6 +329,14 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		resultJson.put("sysTime", new Date().getTime());
 		// 返回的店铺信息JSON
 		JSONObject storeJson = new JSONObject();
+		//查询店铺的默认收货地址
+		MemberConsigneeAddress address = memberConsigneeAddressService.findByStoreId(storeInfo.getId());
+		StringBuffer sb = new StringBuffer();
+		sb.append(address.getProvinceName());
+		sb.append(address.getCityName());
+		sb.append(address.getAreaName());
+		sb.append(address.getAddress());
+		storeJson.put("address", sb.toString());
 		storeJson.put("storeId", storeInfo.getId());
 		// 店铺预约期限天数
 		storeJson.put("deadline", storeInfo.getStoreInfoExt().getSubscribeTime());
@@ -1291,6 +1299,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 			queryCondition.put("type", Constant.ONE);
 		} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
 			queryCondition.put("type", Constant.TWO);
+			queryCondition.put("addressId", orderReq.getAddressId());
 		}
 		// 获取用户有效的代金券
 		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);
@@ -1314,7 +1323,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
 					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getId());
-					if (count > Constant.ZERO) {
+					if (count == Constant.ZERO || count != spuCategoryIds.size()) {
 						delCouponList.add(coupons);
 					}
 				}

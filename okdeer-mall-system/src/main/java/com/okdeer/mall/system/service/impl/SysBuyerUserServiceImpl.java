@@ -28,6 +28,7 @@ import com.okdeer.archive.system.entity.SysSmsVerifyCode;
 import com.okdeer.archive.system.entity.SysUserLoginLog;
 import com.okdeer.archive.system.service.SysSmsVerifyCodeServiceApi;
 import com.okdeer.archive.system.service.SysUserLoginLogServiceApi;
+import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.EncryptionUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -53,11 +54,13 @@ import com.okdeer.mall.member.points.service.PointsBuriedServiceApi;
 import com.okdeer.mall.member.points.service.PointsRecordServiceApi;
 import com.okdeer.mall.member.points.service.PointsRuleServiceApi;
 import com.okdeer.mall.system.entity.BuyerUserVo;
+import com.okdeer.mall.system.entity.SysRandCodeRecord;
 import com.okdeer.mall.system.entity.SysUserInvitationCode;
 import com.okdeer.mall.system.enums.InvitationUserType;
 import com.okdeer.mall.system.enums.VerifyCodeBussinessTypeEnum;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysBuyerUserThirdpartyMapper;
+import com.okdeer.mall.system.mapper.SysRandCodeRecordMapper;
 import com.okdeer.mall.system.mapper.SysSmsVerifyCodeMapper;
 import com.okdeer.mall.system.service.InvitationCodeService;
 import com.okdeer.mall.system.service.SysBuyerUserService;
@@ -162,6 +165,11 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	@Autowired
 	private InvitationCodeService invitationCodeService;
 	
+	/**
+	 * 随机码Mapper
+	 */
+	@Autowired
+	private SysRandCodeRecordMapper sysRandCodeRecordMapper;
 	
 	@Override
 	public IBaseCrudMapper init() {
@@ -534,8 +542,7 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 
 			//Begin added by zhaoqc
 			//用户创建邀请码记录
-			SysUserInvitationCode invitationCode = createInvitationCode(userId);
-			this.invitationCodeService.saveCode(invitationCode);
+			SysUserInvitationCode invitationCode = saveInvitationCode(userId);
 			//End added by zhaoqc
 			
 			resultBuyerUserVo = new BuyerUserVo();
@@ -571,10 +578,11 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 		return requestMap;
 	}
 	// end by wangf01 2016.07.26
-	
-	
-	private SysUserInvitationCode createInvitationCode(String userId) {
-	    SysUserInvitationCode invitationCode = new SysUserInvitationCode();
+
+	//Begin add by zhaoqc 2016.10.05
+    @Override
+    public SysUserInvitationCode saveInvitationCode(String userId) throws Exception {
+        SysUserInvitationCode invitationCode = new SysUserInvitationCode();
         invitationCode.setId(UuidUtils.getUuid());
         invitationCode.setSysBuyerUserId(userId);
         invitationCode.setUserType(InvitationUserType.phoneUser);
@@ -583,8 +591,20 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
         invitationCode.setInvitationUserNum(0);
         invitationCode.setCreateTime(new Date());
         invitationCode.setUpdateTime(new Date());
-	 
+        
+        //生成消费码
+        this.invitationCodeService.saveCode(invitationCode);
+        
+        //在商城库将消费码设置为不可用
+        SysRandCodeRecord sysRandCodeRecord = this.sysRandCodeRecordMapper.findRecordByRandCode(code);
+        if(sysRandCodeRecord != null) {
+            sysRandCodeRecord.setDisabled(Disabled.invalid);
+            sysRandCodeRecord.setUpdateTime(new Date());
+            
+            this.sysRandCodeRecordMapper.updateSysRandCodeRecord(sysRandCodeRecord);
+        }
+        
         return invitationCode;
-	}
-	
+    }
+    //End add by zhaoqc 2016.10.05
 }
