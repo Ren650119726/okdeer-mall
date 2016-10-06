@@ -242,7 +242,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		// 业务类型
 		if (order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 			payReqest.setServiceType(PayTradeServiceTypeEnum.STORE_CONSUME_ORDER);
-			payReqest.setReceiver(storeInfoService.getBossIdByStoreId(tradeOrder.getStoreId()));
+			payReqest.setReceiver(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		} else {
 			payReqest.setServiceType(PayTradeServiceTypeEnum.ORDER);
 		}
