@@ -963,8 +963,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payTradeVo.setServiceFkId(order.getId());// 服务单id
 		payTradeVo.setServiceNo(order.getOrderNo());// 服务单号，例如订单号、退单号
 		payTradeVo.setRemark("订单");// 备注信息
-		payTradeVo.setIncomeUserId("");// 收款人，根据业务不同设置不同的id
-		payTradeVo.setActivitier("");// 优化活动发起人，比如代理商id或者运营商id
 		payTradeVo.setPrefeAmount(order.getPreferentialPrice());// 优惠金额
 
 		return payTradeVo;
