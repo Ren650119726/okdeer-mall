@@ -648,6 +648,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		// 如果总金额<优惠金额，则实付为0，否则实付金额为总金额-优惠金额
 		if (totalAmount.compareTo(favourAmount) == -1) {
 			tradeOrder.setActualAmount(new BigDecimal(0.0));
+			// 实付金额为0时，订单状态为待派单
+			tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
 		} else {
 			tradeOrder.setActualAmount(totalAmount.subtract(favourAmount));
 		}
