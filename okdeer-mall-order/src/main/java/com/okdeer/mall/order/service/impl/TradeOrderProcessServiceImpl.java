@@ -402,9 +402,11 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         
         BigDecimal preferentialPrice = new BigDecimal("0.00");
         String activityId = "";
+        String couponId = "";
         if(couponVo != null) {
             preferentialPrice = new BigDecimal(couponVo.getCouponPrice());
             activityId = couponVo.getActivityId();
+            couponId = couponVo.getCouponId();
             
             //更新优惠券使用信息
             ActivityCouponsRecord couponRecord = this.couponsRecordMapper.selectByPrimaryKey(reqDto.getRecordId());
@@ -451,6 +453,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         tradeOrder.setPayWay(PayWayEnum.PAY_ONLINE);
         tradeOrder.setIsComplete(OrderComplete.NO);
         tradeOrder.setTradeNum(TradeNumUtil.getTradeNum());
+        tradeOrder.setActivityItemId(couponId);
         tradeOrderMapper.insertSelective(tradeOrder);
         
         // 创建订单项
