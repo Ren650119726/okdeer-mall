@@ -592,7 +592,7 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
         invitationCode.setCreateTime(new Date());
         invitationCode.setUpdateTime(new Date());
         
-        //生成消费码
+        //生成邀请码
         this.invitationCodeService.saveCode(invitationCode);
         
         //在商城库将消费码设置为不可用
