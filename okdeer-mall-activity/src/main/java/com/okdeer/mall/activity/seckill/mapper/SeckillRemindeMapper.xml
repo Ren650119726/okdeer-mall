@@ -13,7 +13,7 @@
 		<result column="seckill_time" property="seckillTime" jdbcType="TIMESTAMP"
 			javaType="date" />
 		<result column="reminder_content" property="reminderContent"
-			jdbcType="VARCHAR" javaType="date" />
+			jdbcType="VARCHAR" javaType="string" />
 		<result column="reminder_settings" property="reminderSettings"
 			jdbcType="INTEGER" javaType="int" />
 		<result column="create_time" property="createTime" jdbcType="TIMESTAMP"
@@ -69,35 +69,35 @@
 	<update id="updateSeckillReminde" parameterType="com.okdeer.mall.activity.seckill.entity.SeckillReminde">
 	    UPDATE seckill_reminde
 	    <set >
-	      <if test="recommendName != null" >
+	      <if test="seckillId != null" >
 	        seckill_id = #{seckillId,jdbcType=VARCHAR},
 	      </if>
-	      <if test="linkUrl != null" >
+	      <if test="goodsStoreSkuId != null" >
 	        goods_store_sku_id = #{goodsStoreSkuId,jdbcType=VARCHAR},
 	      </if>
-	      <if test="startTime != null" >
+	      <if test="leadTime != null" >
 	        lead_time = #{leadTime,jdbcType=INTEGER},
 	      </if>
-	      <if test="endTime != null" >
+	      <if test="seckillTime != null" >
 	        seckill_time = #{seckillTime,jdbcType=TIMESTAMP},
 	      </if>
-	      <if test="picUrl != null" >
+	      <if test="reminderContent != null" >
 	        reminder_content = #{reminderContent,jdbcType=VARCHAR},
 	      </if>
-	      <if test="recommendRangeType != null" >
+	      <if test="reminderSettings != null" >
 	        reminder_settings = #{reminderSettings,jdbcType=TINYINT},
 	      </if>
-	      <if test="recommendStatus != null" >
+	      <if test="createTime != null" >
 	        create_time = #{createTime,jdbcType=TIMESTAMP},
 	      </if>
 	      <if test="updateTime != null" >
 	        update_time = #{updateTime,jdbcType=TIMESTAMP},
 	      </if>
-	      <if test="updateUserId != null" >
+	      <if test="userId != null" >
 	        user_id = #{userId,jdbcType=VARCHAR}, 
 	      </if> 
 	    </set>
-	    WHERE userId = #{userId,jdbcType=VARCHAR}
+	    WHERE user_id = #{userId,jdbcType=VARCHAR}
   </update>
 
 
