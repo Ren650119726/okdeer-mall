@@ -52,4 +52,14 @@ public interface SysUserInvitationRecordMapper extends IBaseCrudMapper {
 	 * @return 邀请记录
 	 */
 	List<SysUserInvitationRecord> findInvitationRecordByUserId(@Param("buyerUserId") String buyerUserId);
+	
+	/**
+	 * 
+	 * @Description: 根据邀请人ID查询被邀请人首单列表 </p>
+	 * @param buyerUserId
+	 * @return
+	 * @author yangq
+	 * @date 2016年10月4日
+	 */
+	List<SysUserInvitationRecordVo> selectInvitationFirstOrderById(@Param("invitationCodeId") String invitationCodeId);
 }
