@@ -179,7 +179,7 @@
     <if test="isActivityRelated != null">
       <choose>
          <when test="isActivityRelated.name() == 'no'">
-              AND ac.activity_id is null
+              AND (ac.activity_id is null or ac.activity_id = '')
          </when>
          <when test="isActivityRelated.name() == 'yes'">
                 AND ac.activity_id is not null
