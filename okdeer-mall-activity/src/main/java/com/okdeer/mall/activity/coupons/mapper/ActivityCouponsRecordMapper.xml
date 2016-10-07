@@ -545,7 +545,7 @@
 	<!-- 查询用户有效的代金券信息 Begin added by maojj -->
 	<select id="findValidCoupons" parameterType="map" resultType="com.okdeer.mall.order.vo.Coupons">
 		SELECT
-			t2.name AS couponTitle,
+			t2.name AS couponTitle, t2.type,
 			0 AS usableRange,
 			date_format(t.valid_time,'%Y-%m-%d %T') AS indate,
 			t.coupons_collect_id AS id,
