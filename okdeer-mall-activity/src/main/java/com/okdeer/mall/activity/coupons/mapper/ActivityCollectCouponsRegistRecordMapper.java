@@ -47,4 +47,24 @@ public interface ActivityCollectCouponsRegistRecordMapper extends IBaseCrudMappe
 	 */
 	List<ActivityCollectCouponsRegisteRecordVo> findByUserId(@Param("userQueryId")String userQueryId);
 	
+	/**
+	 * 
+	 * @Description: 查询当前注册送代金券面额 </p>
+	 * @return
+	 * @author yangq
+	 * @date 2016年10月4日
+	 */
+	int selectActivityCouponsFaceValue();
+	
+	/**
+	 * 
+	 * @Description: 查询邀请的人数 </p>
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 * @author yangq
+	 * @date 2016年10月4日
+	 */
+	int selectInvitationNum(String userId) ; 
+	
 }

@@ -240,7 +240,20 @@
 		AND sr.city_id = #{cityId,jdbcType=VARCHAR}))
 		AND sec.store_sku_id = gss.id
 		AND gss.store_id = sie.store_id
-		AND sie.is_closed = 1
+		AND sie.is_closed = 1 union 
+		SELECT
+		sec.id,sec.seckill_name,sec.seckill_alias,sec.seckill_range_type,sec.seckill_status,sec.start_time,sec.end_time,
+		sec.seckill_num,sec.start_num,sec.seckill_price,sec.pic_url,sec.store_sku_id,sec.create_time,sec.create_user_id,
+		sec.update_time,sec.update_user_id,sec.disabled
+		FROM activity_seckill sec,goods_store_sku gss,store_info_ext sie
+		where (sec.seckill_range_type = 0 or exists
+		(select 1
+		from activity_seckill_range sr
+		where sr.activity_seckill_id = sec.id
+		AND sr.city_id = #{cityId,jdbcType=VARCHAR}))
+		AND sec.store_sku_id = gss.id
+		AND gss.store_id = sie.store_id
+		AND sie.is_closed = 1 AND sec.start_time = (SELECT start_time FROM activity_seckill ORDER BY start_time DESC LIMIT 1)
 	</select>
 	<!-- 查询定位地址是否有秒杀活动 end add by luosm 2016-7-20 -->
 
@@ -248,7 +261,7 @@
 	<!-- 在当前时间范围内查询秒杀活动详情 begin add by luosm 2016-7-20 -->
 	<select id="findAppUserSecKillBySeckill" parameterType="string"
 		resultMap="SeckillItemResultMap">
-		SELECT se.id,se.store_sku_id,g.online_price as store_sku_price,TIME_TO_SEC(TIMEDIFF(se.end_time,NOW())) as seckill_time_left
+		SELECT se.id,se.store_sku_id,g.online_price as store_sku_price,se.seckill_status,se.start_time,TIME_TO_SEC(TIMEDIFF(se.end_time,NOW())) as seckill_time_left
 		,se.seckill_name,se.seckill_num,se.seckill_alias ,se.pic_url,se.seckill_price,
 		ROUND((se.seckill_num-sale.num)/(se.seckill_num+se.start_num),2) as
 		remain_stock_ratio FROM
@@ -258,7 +271,6 @@
 		and ad.activity_seckill_id = #{id,jdbcType=VARCHAR})as sale,
 		`activity_seckill` se , goods_store_sku g
 		WHERE se.store_sku_id = g.id
-		and se.seckill_status = 1
 		and se.id = #{id,jdbcType=VARCHAR}
 	</select>
 	<!-- 查询定位地址是否有秒杀活动 end add by luosm 2016-7-20 -->

@@ -69,7 +69,7 @@ import com.okdeer.common.consts.RedisKeyConstants;
  *		重构 4.1         2016年7月20日                                 luosm               新增方法
  *		重构 4.1         2016年7月22日                                 luosm               优化方法
  */
-@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi")
+@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi",timeout=60000)
 public class ActivitySeckillServiceImpl implements ActivitySeckillService, ActivitySeckillServiceApi {
 
 	/**

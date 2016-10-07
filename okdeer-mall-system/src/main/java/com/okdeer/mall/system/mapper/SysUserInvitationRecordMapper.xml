@@ -19,6 +19,7 @@
 	<result column="end_time" property="endTimeRecord" javaType="date" jdbcType="TIMESTAMP" />
 	<result column="invitation_user_num" property="invitationUserNum" javaType="integer" jdbcType="INTEGER" />
    	<result column="first_order_user_num" property="firstOrderUserNum" javaType="integer" jdbcType="INTEGER" />
+   	<result column="phone" property="phone" javaType="string" jdbcType="VARCHAR"/>
   </resultMap>
   
 <!-- 邀请码表名 start -->
@@ -143,4 +144,14 @@
   		where suir.sys_buyer_user_id = #{buyerUserId, jdbcType=VARCHAR}
   	</select>
   	<!-- End added by zhaoqc -->
+  	
+  	<!-- begin by yangq 根据用户ID查询邀请人首单列表 -->
+  	<select id="selectInvitationFirstOrderById" resultMap="extResultMap">
+  	    select suir.id, suir.invitation_code_id, suir.sys_buyer_user_id, suir.is_first_order,
+			suir.first_order_time, suir.machine_code, suir.create_time,suir.update_time,buyer.phone
+  		FROM sys_user_invitation_record suir,sys_buyer_user buyer
+  		WHERE suir.invitation_code_id = #{invitationCodeId, jdbcType=VARCHAR} AND suir.sys_buyer_user_id=buyer.id AND is_first_order = 1
+  	</select>
+  	<!-- end -->
+  	
 </mapper>

@@ -83,4 +83,16 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		return voList;
 	}
 
+	@Override
+	public int selectActivityCouponsFaceValue() throws Exception {
+		int result = registeRecordMapper.selectActivityCouponsFaceValue();
+		return result;
+	}
+
+	@Override
+	public int selectInvitationNum(String userId) throws Exception {
+		int result = registeRecordMapper.selectInvitationNum(userId);
+		return result;
+	}
+
 }
