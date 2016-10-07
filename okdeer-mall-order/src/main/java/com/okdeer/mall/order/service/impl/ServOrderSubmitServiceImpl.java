@@ -667,15 +667,14 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		// 设置订单实付金额
 		BigDecimal totalAmount = tradeOrder.getTotalAmount();
 		// 如果总金额<优惠金额，则实付为0，否则实付金额为总金额-优惠金额
-		if (totalAmount.compareTo(favourAmount) == -1) {
+		if (totalAmount.compareTo(favourAmount) == -1 || totalAmount.compareTo(favourAmount) == 0) {
 			tradeOrder.setActualAmount(new BigDecimal(0.0));
 			// 实付金额为0时，订单状态为待派单
 			tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
 			OrderTypeEnum orderType = reqData.getOrderType();
-			// 到店消费订单，实付金额为0时，订单状态为5（交易完成），并生成消费码
+			// 到店消费订单，实付金额为0时，订单状态为5（交易完成）
 			if (orderType != null && orderType.ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
-				// TODO
-				
+				tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
 			}
 		} else {
 			tradeOrder.setActualAmount(totalAmount.subtract(favourAmount));
