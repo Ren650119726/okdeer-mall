@@ -10,6 +10,8 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
@@ -17,6 +19,7 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
+import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.entity.PreferentialVo;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
@@ -41,6 +44,10 @@ import com.okdeer.mall.order.vo.FullSubtract;
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.discount.service.IGetPreferentialServiceApi")
 public class GetPreferentialServiceImpl implements GetPreferentialService, IGetPreferentialServiceApi {
+	/**
+	 * log
+	 */
+	private static final Logger logger = LoggerFactory.getLogger(GetPreferentialServiceImpl.class);
 
 	/**
 	 * 店铺商品Api
@@ -97,12 +104,12 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 			for (Coupons coupons : couponList) {
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
-					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds,
-							coupons.getId());
+					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
+					logger.info(LoggerConstants.LOGGER_DEBUG_INCOMING_METHOD, count, spuCategoryIds.size());
 					if (count == Constant.ZERO || count != spuCategoryIds.size()) {
 						delCouponList.add(coupons);
 					} else {
-						couponIds.add(coupons.getId());
+						couponIds.add(coupons.getCouponId());
 					}
 				}
 			}
@@ -119,7 +126,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 						String id = (String) map.get("couponId");
 						String categoryNames = (String) map.get("categoryNames");
 						for (Coupons coupons : couponList) {
-							if (coupons.getId().equals(id)) {
+							if (coupons.getCouponId().equals(id)) {
 								coupons.setCategoryNames(categoryNames);
 								break;
 							}
