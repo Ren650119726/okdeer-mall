@@ -211,7 +211,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 				orderStatus.add(String.valueOf(OrderStatusEnum.CANCELED.ordinal()));
 				orderStatus.add(String.valueOf(OrderStatusEnum.CANCELING.ordinal()));
 				map.put("orderStatus", orderStatus);
-			} else if (status.equals(String.valueOf(Constant.THIRTH))) {
+			} else if (status.equals(String.valueOf(Constant.THREE))) {
 				// 查询未消费的消费码订单
 				orderStatus.add(String.valueOf(OrderStatusEnum.HAS_BEEN_SIGNED.ordinal()));
 				map.put("orderStatus", orderStatus);
