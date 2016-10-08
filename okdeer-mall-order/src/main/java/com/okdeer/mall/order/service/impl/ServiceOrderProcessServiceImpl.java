@@ -45,6 +45,7 @@ import com.okdeer.archive.store.enums.StoreStatusEnum;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.IStoreServerAreaServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
@@ -123,6 +124,7 @@ import net.sf.json.JSONObject;
  *	   V1.1.0		  2016-09-23		  tangy			             服务店添加代金券
  *	   1.1			  2016年9月22日		  maojj             新增秒杀确认订单、提交订单 
  *	   V1.1.0		  2016-09-29			wushp			新增服务订单确认/提交订单	   
+ *	   V1.1.0		  2016-10-08			tangy			到店消费按店铺地址查询代金券
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.ServiceOrderProcessServiceApi")
 public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServiceApi {
@@ -1299,7 +1301,21 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 			queryCondition.put("type", Constant.ONE);
 		} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
 			queryCondition.put("type", Constant.TWO);
-			queryCondition.put("addressId", orderReq.getAddressId());
+			//Begin added by tangy  2016-10-08
+			//到店消费根据店铺地址查询代金券
+			if (OrderTypeEnum.STORE_CONSUME_ORDER.equals(orderReq.getOrderType())) {
+				try {
+					MemberConsigneeAddress mAddress = memberConsigneeAddressService.findByStoreId(orderReq.getStoreId());
+				    if (mAddress != null) {
+				    	queryCondition.put("addressId", mAddress.getId());
+					}
+				} catch (Exception e) {
+					logger.error(LoggerConstants.LOGGER_ERROR_EXCEPTION, e);
+				}
+			} else {
+				queryCondition.put("addressId", orderReq.getAddressId());
+			}
+			//End added by tangy
 		}
 		// 获取用户有效的代金券
 		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);
@@ -1322,7 +1338,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 			for (Coupons coupons : couponList) {
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
-					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getId());
+					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
 					if (count == Constant.ZERO || count != spuCategoryIds.size()) {
 						delCouponList.add(coupons);
 					}
