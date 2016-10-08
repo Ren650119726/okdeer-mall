@@ -722,7 +722,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					dto.setOrderResource(1);
 				}
 			}
-			dto.setStatus(OrderStatusEnum.convertStatusView(vo.getType(), vo.getStatus()));
+			dto.setStatus(vo.getStatus().ordinal());
 			if (vo.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
 				dto.setPayType(3);
 			} else {
@@ -779,7 +779,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				}
 			}
 			// End 重构4.1 add by wusw 20160725
-			dto.setStatus(OrderStatusEnum.convertStatusView(vo.getType(), vo.getStatus()));
+			dto.setStatus(vo.getStatus().ordinal());
 			if (vo.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
 				dto.setPayType(3);
 			} else {
