@@ -84,9 +84,11 @@ public class ServAddressSearchServiceImpl implements RequestHandler<ServiceOrder
 			storeAddr.append(ConvertUtil.format(memberConsignee.getProvinceName()))
 					.append(ConvertUtil.format(memberConsignee.getCityName()))
 					.append(ConvertUtil.format(memberConsignee.getAreaName()))
-					.append(ConvertUtil.format(memberConsignee.getAreaExt()));
-			if (StringUtils.isBlank(storeAddr)) {
-				storeAddr.append(memberConsignee.getArea());
+					.append(ConvertUtil.format(memberConsignee.getAreaExt()))
+					.append(ConvertUtil.format(memberConsignee.getAddress()));
+			if (StringUtils.isBlank(memberConsignee.getProvinceName())) {
+				storeAddr = new StringBuilder();
+				storeAddr.append(memberConsignee.getArea().trim());
 				storeAddr.append(memberConsignee.getAddress());
 			} 
 			respData.getStoreInfo().setAddress(storeAddr.toString());

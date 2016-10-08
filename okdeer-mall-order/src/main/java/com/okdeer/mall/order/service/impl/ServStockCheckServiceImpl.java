@@ -72,8 +72,8 @@ public class ServStockCheckServiceImpl implements RequestHandler<ServiceOrderReq
  					if (skuStock.getSellable() < item.getSkuNum()) {
 						// 可销售库存小雨售卖的商品数量
 						stockEnoughFlag = 1;
-						
 					}
+ 					break;
 				}
 			}
 		}
@@ -85,5 +85,5 @@ public class ServStockCheckServiceImpl implements RequestHandler<ServiceOrderReq
 			return;
 		}
 	}
-
+	
 }

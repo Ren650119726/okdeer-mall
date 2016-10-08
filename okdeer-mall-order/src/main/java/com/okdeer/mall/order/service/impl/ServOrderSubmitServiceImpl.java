@@ -63,6 +63,7 @@ import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
@@ -71,6 +72,7 @@ import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.OrderNoUtils;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
@@ -177,6 +179,12 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuService;
+	
+	/**
+	 * TradeOrderServiceApi
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private TradeOrderServiceApi tradeOrderServiceApi;
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
@@ -205,7 +213,13 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			saveActivityDiscountRecord(tradeOrder.getId(), reqData);
 			// 保存订单和订单项信息，并发送消息
 			tradeOrderService.insertTradeOrder(tradeOrder);
-
+			if (tradeOrder.getTotalAmount().compareTo(BigDecimal.ZERO) == 0
+					&& reqData.getOrderType() != null 
+					&& reqData.getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+				// 实付金额为0的到店消费订单，生成消费码
+				tradeOrderServiceApi.dealWithStoreConsumeOrder(tradeOrder, null, PayTypeEnum.WALLET.ordinal());
+			}
+			
 			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUserId(),
 					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
 
@@ -446,6 +460,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		ComparatorChain chain = new ComparatorChain();
 		chain.addComparator(new BeanComparator("skuPrice"), false);
 		Collections.sort(goodsSkuItemList, chain);
+		// 订单类型
+		OrderTypeEnum orderType = req.getData().getOrderType();
 		// for (TradeOrderServiceGoodsItem goodsItem : goodsSkuItemList) {
 		for (TradeOrderGoodsItem goodsItem : goodsSkuItemList) {
 			storeSku = findFromStoreSkuList(goodsStoreSkuList, goodsItem.getSkuId());
@@ -493,6 +509,11 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(favourItem));
 			// 设置订单项收入
 			setOrderItemIncome(tradeOrderItem, tradeOrder);
+			if (totalAmount.compareTo(BigDecimal.ZERO) == 0
+					&& orderType != null && orderType.ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+				// 实付金额为0的到店消费订单，设置服务保障为无
+				tradeOrderItem.setServiceAssurance(0);
+			}
 			orderItemList.add(tradeOrderItem);
 		}
 		return orderItemList;
@@ -646,10 +667,15 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		// 设置订单实付金额
 		BigDecimal totalAmount = tradeOrder.getTotalAmount();
 		// 如果总金额<优惠金额，则实付为0，否则实付金额为总金额-优惠金额
-		if (totalAmount.compareTo(favourAmount) == -1) {
+		if (totalAmount.compareTo(favourAmount) == -1 || totalAmount.compareTo(favourAmount) == 0) {
 			tradeOrder.setActualAmount(new BigDecimal(0.0));
 			// 实付金额为0时，订单状态为待派单
 			tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
+			OrderTypeEnum orderType = reqData.getOrderType();
+			// 到店消费订单，实付金额为0时，订单状态为5（交易完成）
+			if (orderType != null && orderType.ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+				tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
+			}
 		} else {
 			tradeOrder.setActualAmount(totalAmount.subtract(favourAmount));
 		}
