@@ -5256,6 +5256,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				switch (params.get("status").toString()) {
 					case "0":
 						statusList.add(OrderStatusEnum.BUYER_PAYING);
+						statusList.add(OrderStatusEnum.UNPAID);
 						// orderTypeList.add(OrderTypeEnum.PHYSICAL_ORDER);
 						// orderTypeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
 						break;
@@ -5272,7 +5273,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// orderTypeList.add(OrderTypeEnum.PHYSICAL_ORDER);
 						break;
 					case "4":
-						statusList.add(OrderStatusEnum.UNPAID);
+						
 						// orderTypeList.add(OrderTypeEnum.PHYSICAL_ORDER);
 						// orderTypeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
 						break;
