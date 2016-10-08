@@ -283,10 +283,15 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 				// 0:余额支付 1:支付宝 2:微信支付
 				json.put("payMethod", payInfo.getPayType().ordinal());
 				json.put("orderPayTime", DateUtils.formatDate(payInfo.getPayTime(), "yyyy-MM-dd HH:mm:ss"));
-				// 是否支持投诉 0：支持 1:不支持
-				json.put("isSupportComplain", 0);
+				// 是否支持投诉 0：不支持  1:支持
+				if(userTradeOrderDetailVo.getConsumerCodeStatus() == ConsumerCodeStatusEnum.WAIT_EVALUATE 
+				           || userTradeOrderDetailVo.getConsumerCodeStatus() == ConsumerCodeStatusEnum.COMPLETED) {
+				    json.put("isSupportComplain", 1);
+				} else {
+				    json.put("isSupportComplain", 0);
+				}
 			} else {
-				json.put("isSupportComplain", 1);
+				json.put("isSupportComplain", 0);
 			}
 
 			// 交易号

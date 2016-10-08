@@ -473,6 +473,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         resp.setOrderNo(tradeOrder.getOrderNo());
         resp.setOrderPrice(tradeOrder.getActualAmount());
         resp.setTradeNum(tradeOrder.getTradeNum());
+        resp.setOrderType(orderType.ordinal());
         respDto.setResp(resp);
         respDto.setFlag(true);
         respDto.setMessage(OrderTipMsgConstant.ORDER_SUCESS);
