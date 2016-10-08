@@ -342,7 +342,8 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
                 logger.info("订单生成===订单Id：{}，订单号：{}，向欧飞平台查询话费充值面值结果{}", orderId, tradeOrder.getOrderNo(), inprice);            
                 //将从第三方平台上查到的商品信息赋值给订单项
                 tradeOrderItem.setSkuName(cardInfo.getString("cardname"));
-                tradeOrderItem.setStoreSkuId(cardInfo.getString("cardid"));
+                //记录充值话费的面额
+                tradeOrderItem.setStoreSkuId(sysDict.getValue());
                 flag = true;
             } 
         } else if(OrderTypeEnum.TRAFFIC_PAY_ORDER.equals(orderType)) {
