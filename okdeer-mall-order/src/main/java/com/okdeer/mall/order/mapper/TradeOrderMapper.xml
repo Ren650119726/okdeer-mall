@@ -557,6 +557,7 @@
 		<result column="id" property="id" jdbcType="VARCHAR" />
 		<result column="order_no" property="orderNo" jdbcType="VARCHAR" />
 		<result column="sku_name" property="goodsName" jdbcType="VARCHAR" />
+		<result column="total_amount" property="totalAmount" jdbcType="VARCHAR" />
 		<result column="recharge_mobile" property="rechargePhone" jdbcType="VARCHAR" />
 		<result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
 		<result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
@@ -4141,6 +4142,7 @@
 		tr.type,
 		tr.delivery_time,
 		tr.update_time,
+		tr.pick_up_time,
 		item.store_sku_id,
 		item.main_pic_prl,
 		item.sku_name,
@@ -4493,6 +4495,7 @@
 		SELECT tr.id,
 		tr.status,
 		tr.actual_amount,
+		tr.total_amount,
 		tr.preferential_price,
 		tr.order_no,
 		tr.type,
