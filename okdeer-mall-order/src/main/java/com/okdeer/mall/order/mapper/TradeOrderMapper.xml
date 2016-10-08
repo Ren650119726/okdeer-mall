@@ -4534,6 +4534,8 @@
 		store.store_name
 		WHEN 2 THEN
 		store.store_name
+		WHEN 5 THEN
+		store.store_name
 		END AS store_name,
 		trade.user_phone,
 		trade.total_amount,
