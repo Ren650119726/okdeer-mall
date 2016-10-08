@@ -309,7 +309,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
                     insertTradeOrderPay(orderNum, result);
                     TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
                     String phoneno = tradeOrderItem.getRechargeMobile();
-                    int cardnum = orderNum.getTotalAmount().intValue();
+                    String cardnum = tradeOrderItem.getStoreSkuId();
                     String orderid = orderNum.getTradeNum();
                     
                     int partnerNum = Integer.parseInt(partner);
