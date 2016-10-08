@@ -5230,8 +5230,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						typeList.add(OrderTypeEnum.STORE_CONSUME_ORDER);
 						break;
 					case "3":
-						typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
-						typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
+						if(params.get("rechargeType") != null && "1".equals(params.get("rechargeType").toString())){
+							//流量充值
+							typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
+						}else if(params.get("rechargeType") != null && "0".equals(params.get("rechargeType").toString())){
+							//话费充值
+							typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
+						}else{
+							typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
+							typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
+						}
 						break;
 					default:
 						break;
