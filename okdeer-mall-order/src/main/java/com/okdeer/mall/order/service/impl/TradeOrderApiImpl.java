@@ -5,6 +5,7 @@
  * @Date: 2016年3月3日 
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的 
  */
+
 package com.okdeer.mall.order.service.impl;
 
 import java.math.BigDecimal;
@@ -195,8 +196,8 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	 */
 	@Override
 	public boolean updateOrderStatus(String orderId, String status, String reason, String userId) throws Exception {
-		logger.info("确认收货订单同步状态" + "，orderId:" + orderId + "，status:" + status + "，reason:" + reason + "userId"
-				+ userId);
+		logger.info(
+				"确认收货订单同步状态" + "，orderId:" + orderId + "，status:" + status + "，reason:" + reason + "userId" + userId);
 		TradeOrder tradeOrder = tradeOrderService.selectById(orderId);
 		OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
 		if (orderStatus == null) {
@@ -263,12 +264,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	 */
 	@Override
 	public PageResultVo<ERPTradeOrderVoDto> selectByParams(Map<String, Object> params) throws Exception {
-		
+
 		Assert.notNull(params, "type is not null");
 		int pageSize = Integer.valueOf(params.get("pageSize").toString());
 		int pageNum = Integer.valueOf(params.get("pageNum").toString());
 		convertERPParams(params);
-		
+
 		PageUtils<ERPTradeOrderVo> page = tradeOrderService.erpSelectByParams(params, pageSize, pageNum);
 		List<ERPTradeOrderVoDto> erpTradeOrderVoDto = Lists.newArrayList();
 		for (ERPTradeOrderVo erpTradeOrderVo : page.getList()) {
@@ -298,13 +299,13 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		Assert.notNull(params.get("type"), "type is not null");
 		String type = params.get("type").toString();
 		List<OrderTypeEnum> typeList = Lists.newArrayList();
-		if("0".equals(type)){
+		if ("0".equals(type)) {
 			typeList.add(OrderTypeEnum.PHYSICAL_ORDER);
-		}else if("1".equals(type)){
+		} else if ("1".equals(type)) {
 			typeList.add(OrderTypeEnum.SERVICE_ORDER);
-		}else if("2".equals(type)){
+		} else if ("2".equals(type)) {
 			typeList.add(OrderTypeEnum.STORE_CONSUME_ORDER);
-		}else if("3".equals(type)){
+		} else if ("3".equals(type)) {
 			typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
 			typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
 		}
@@ -316,7 +317,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	 */
 	@Override
 	public List<ERPTradeOrderVoDto> selectByParam(Map<String, Object> params) throws Exception {
-		
+
 		convertERPParams(params);
 		List<ERPTradeOrderVo> list = tradeOrderService.erpSelectByParam(params);
 		List<ERPTradeOrderVoDto> erpTradeOrderVoDtoList = new ArrayList<ERPTradeOrderVoDto>();
@@ -357,7 +358,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 		// 店铺信息
 		tradeOrderDto.setStoreName(order.getStoreName());
-		tradeOrderDto.setStoreType(order.getStoreType().ordinal());
+		if (order.getStoreType() != null) {
+			tradeOrderDto.setStoreType(order.getStoreType().ordinal());
+		}
 		tradeOrderDto.setStoreMobile(order.getStoreMobile());
 
 		// 收货信息
@@ -412,9 +415,8 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		}
 		// 商品信息
 		/*
-		 * TradeOrderItemDto tradeOrderItemDto = new TradeOrderItemDto();
-		 * TradeOrderItem tradeOrderItem = order.getTradeOrderItem().get(0);
-		 * tradeOrderItemDto.setMainPicPrl(tradeOrderItem.getMainPicPrl());
+		 * TradeOrderItemDto tradeOrderItemDto = new TradeOrderItemDto(); TradeOrderItem tradeOrderItem =
+		 * order.getTradeOrderItem().get(0); tradeOrderItemDto.setMainPicPrl(tradeOrderItem.getMainPicPrl());
 		 * tradeOrderItemDto.setSkuName(tradeOrderItem.getSkuName());
 		 * tradeOrderItemDto.setUnitPrice(tradeOrderItem.getUnitPrice());
 		 * tradeOrderItemDto.setQuantity(tradeOrderItem.getQuantity());
@@ -590,8 +592,8 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	 * @throws Exception
 	 */
 	@Override
-	public List<TradeOrderPayQueryDto> findListByStatusPayType(Map<String, Object> params) throws ExceedRangeException,
-			Exception {
+	public List<TradeOrderPayQueryDto> findListByStatusPayType(Map<String, Object> params)
+			throws ExceedRangeException, Exception {
 		if (tradeOrderService.selectCountByStatusPayType(params) > RECORD_NUM) {
 			throw new ExceedRangeException("查询导出取消、拒收订单异常", new Throwable());
 		}
@@ -733,7 +735,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					if (vo.getType() == OrderTypeEnum.PHYSICAL_ORDER && vo.getPayWay() == PayWayEnum.CASH_DELIERY) {
 						dto.setPayType(4);
 					}
-				}// End 12170 add by wusw 20160806
+				} // End 12170 add by wusw 20160806
 					// End 重构4.1 add by wusw 20160726
 			}
 			dtoList.add(dto);
@@ -790,7 +792,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					if (vo.getType() == OrderTypeEnum.PHYSICAL_ORDER && vo.getPayWay() == PayWayEnum.CASH_DELIERY) {
 						dto.setPayType(4);
 					}
-				}// End 12170 add by wusw 20160806
+				} // End 12170 add by wusw 20160806
 					// End 重构4.1 add by wusw 20160726
 			}
 			result.add(dto);
