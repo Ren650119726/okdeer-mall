@@ -4142,6 +4142,7 @@
 		tr.type,
 		tr.delivery_time,
 		tr.update_time,
+		tr.pick_up_time,
 		item.store_sku_id,
 		item.main_pic_prl,
 		item.sku_name,
