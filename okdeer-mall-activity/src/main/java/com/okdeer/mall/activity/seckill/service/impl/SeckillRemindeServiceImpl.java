@@ -7,6 +7,7 @@
 
 package com.okdeer.mall.activity.seckill.service.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -239,7 +240,8 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 		pushMsgVo.setMsgDetailContent(skuName);
 		// 设置是否定时发送
 		pushMsgVo.setIsTiming(1);
-		pushMsgVo.setSendTime(String.valueOf(startTime.getTime() + time));//毫秒
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		pushMsgVo.setSendTime(format.format(startTime) + time);//毫秒
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
 		// 查询的用户信息

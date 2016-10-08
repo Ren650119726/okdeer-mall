@@ -424,7 +424,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         
         tradeOrder.setActualAmount(actualAmount);
         
-        tradeOrderItem.setUnitPrice(actualAmount);
+        tradeOrderItem.setUnitPrice(totalAmount);
         tradeOrderItem.setTotalAmount(totalAmount);
         tradeOrderItem.setActualAmount(actualAmount);
         tradeOrderItem.setPreferentialPrice(preferentialPrice);
