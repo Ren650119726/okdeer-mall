@@ -309,7 +309,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
                     insertTradeOrderPay(orderNum, result);
                     TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
                     String phoneno = tradeOrderItem.getRechargeMobile();
-                    int cardnum = orderNum.getTotalAmount().intValue();
+                    String cardnum = tradeOrderItem.getStoreSkuId();
                     String orderid = orderNum.getTradeNum();
                     
                     int partnerNum = Integer.parseInt(partner);
@@ -359,7 +359,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
                             if (gameState == 0) {
                                 //充值请求订单生成成功，支付成功
                                 logger.info("PHONEFEE===手机话费充值订单{}请求返回状态为充值中，修改订单状态为充值中！", orderid);
-                                updateTradeOrderStatus(orderNum, orderid);
+                                updateTradeOrderStatus(orderNum, orderinfo.getString("orderid"));
                             } else if (gameState == 9) {
                                 //充值请求订单失败，走退款流程
                                 logger.info("PHONEFEE===手机话费充值订单{}请求同步返回状态为失败，创建充值退款单！", orderid);

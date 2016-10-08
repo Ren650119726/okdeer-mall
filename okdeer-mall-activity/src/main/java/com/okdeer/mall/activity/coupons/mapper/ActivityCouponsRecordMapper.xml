@@ -547,7 +547,7 @@
 		SELECT
 			t2.name AS couponTitle, t2.type,
 			0 AS usableRange,
-			date_format(t.valid_time,'%Y-%m-%d %T') AS indate,
+			date_format(t.valid_time,'%Y-%m-%d') AS indate,
 			t.coupons_collect_id AS id,
 			t2.id AS couponId,
 			FORMAT(t2.face_value,2) AS couponPrice,
@@ -569,7 +569,7 @@
 			     AND (
 					t1.store_id = #{storeId}
 					<if test="storeType == 4 and addressId != null and addressId != '' ">
-						AND (t2.area_type = 0 OR (t2.area_type = 1 AND EXISTS(SELECT 1 FROM activity_coupons_area aca LEFT JOIN member_consignee_address mca ON mca.id = #{addressId} 
+						OR (t2.area_type = 0 OR (t2.area_type = 1 AND EXISTS(SELECT 1 FROM activity_coupons_area aca LEFT JOIN member_consignee_address mca ON mca.id = #{addressId} 
                         WHERE aca.coupons_id = t2.id AND ((aca.type = 0 AND aca.area_id = mca.city_id) OR (aca.type = 1 AND aca.area_id = mca.province_id)))))
 					</if>
 					<!-- 平台发起的代金券活动，只有云上店可以使用 -->
@@ -581,7 +581,7 @@
 			) 
 		</if>
 		AND t2.arrive_limit &lt;= #{totalAmount}
-		ORDER BY t.collect_time DESC
+		ORDER BY t2.face_value DESC, t.collect_time DESC
 	</select>
 	<!-- End added by maojj -->
 	

@@ -8,15 +8,22 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
+import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.Discount;
@@ -34,10 +41,16 @@ import com.okdeer.mall.order.vo.ServiceOrderResp;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *		V1.1.0			2016年9月28日				wushp		活动查询
+ *	    V1.1.0		    2016-09-23			   tangy		到店消费按店铺地址查询代金券
  */
 @Service("servActivityQueryService")
 public class ServActivityQueryServiceImpl implements RequestHandler<ServiceOrderReq,ServiceOrderResp> {
 
+	/**
+	 * log
+	 */
+	private static final Logger logger = LoggerFactory.getLogger(ServActivityQueryServiceImpl.class);
+			
 	/**
 	 * 满减满折活动Service
 	 */
@@ -55,6 +68,14 @@ public class ServActivityQueryServiceImpl implements RequestHandler<ServiceOrder
 	 */
 	@Resource
 	private ActivityDiscountMapper activityDiscountMapper;
+	
+	//Begin added by tangy  2016-10-08
+	/**
+	 * 地址
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
+	//End added by tangy
 	
 	@Override
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
@@ -78,8 +99,7 @@ public class ServActivityQueryServiceImpl implements RequestHandler<ServiceOrder
 			for (Coupons coupons : couponList) {
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
-					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds,
-							coupons.getId());
+					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
 					if (count > Constant.ZERO) {
 						delCouponList.add(coupons);
 					}
@@ -109,7 +129,21 @@ public class ServActivityQueryServiceImpl implements RequestHandler<ServiceOrder
 			queryCondition.put("type", Constant.ONE);
 		} else if (StoreTypeEnum.SERVICE_STORE.ordinal() == storeType) {
 			queryCondition.put("type", Constant.TWO);
-			queryCondition.put("addressId", reqDto.getAddressId());
+			//Begin added by tangy  2016-10-08
+			//到店消费根据店铺地址查询代金券
+			if (OrderTypeEnum.STORE_CONSUME_ORDER.equals(reqDto.getOrderType())) {
+				try {
+					MemberConsigneeAddress mAddress = memberConsigneeAddressService.findByStoreId(reqDto.getStoreId());
+				    if (mAddress != null) {
+				    	queryCondition.put("addressId", mAddress.getId());
+					}
+				} catch (Exception e) {
+					logger.error(LoggerConstants.LOGGER_ERROR_EXCEPTION, e);
+				}
+			}else {
+				queryCondition.put("addressId", reqDto.getAddressId());
+			}
+			//End added by tangy
 		}
 		return queryCondition;
 	}

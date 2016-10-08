@@ -10,9 +10,12 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.archive.store.enums.StoreTypeEnum;
+import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.common.consts.Constant;
@@ -37,10 +40,15 @@ import com.okdeer.mall.order.vo.TradeOrderRespDto;
  *		重构V4.1			2016-07-14			maojj			查找用户有效的优惠记录
  *		重构V4.1			2016-07-14			maojj			查找用户有效的优惠记录增加店铺类型的判断
  *		V1.1.0			2016-09-23			tangy			代金券判断指定分类使用
+ *		V1.1.0			2016-09-23			tangy			添加日志
  */
 @Service
 public class FavourSearchServiceImpl implements FavourSearchService {
-
+	/**
+	 * log
+	 */
+	private static final Logger logger = LoggerFactory.getLogger(FavourSearchServiceImpl.class);
+	
 	/**
 	 * 代金券记录Mapper
 	 */
@@ -77,9 +85,9 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
 				//是否指定分类使用
-				if (Constant.ONE == coupons.getIsCategory().intValue()) {
-					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds,
-							coupons.getId());
+				if (Constant.ONE == coupons.getIsCategory().intValue() && CollectionUtils.isNotEmpty(spuCategoryIds)) {
+					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
+					logger.info(LoggerConstants.LOGGER_DEBUG_INCOMING_METHOD, count, spuCategoryIds.size());
 					if (count == Constant.ZERO || count != spuCategoryIds.size()) {
 						delCouponList.add(coupons);
 					}
