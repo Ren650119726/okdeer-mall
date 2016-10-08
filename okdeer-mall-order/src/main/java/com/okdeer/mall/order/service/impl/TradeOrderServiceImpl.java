@@ -5252,82 +5252,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				params.remove("status");
 			} else {
 				List<OrderStatusEnum> statusList = new ArrayList<OrderStatusEnum>();
-				// List<OrderTypeEnum> orderTypeList = new ArrayList<OrderTypeEnum>();
-				switch (params.get("status").toString()) {
-					case "0":
-						statusList.add(OrderStatusEnum.BUYER_PAYING);
-						statusList.add(OrderStatusEnum.UNPAID);
-						// orderTypeList.add(OrderTypeEnum.PHYSICAL_ORDER);
-						// orderTypeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
-						break;
-					case "1":
-						statusList.add(OrderStatusEnum.DROPSHIPPING);
-						// orderTypeList.add(OrderTypeEnum.PHYSICAL_ORDER);
-						break;
-					case "2":
-						statusList.add(OrderStatusEnum.TO_BE_SIGNED);
-						// orderTypeList.add(OrderTypeEnum.PHYSICAL_ORDER);
-						break;
-					case "3":
-						statusList.add(OrderStatusEnum.HAS_BEEN_SIGNED);
-						// orderTypeList.add(OrderTypeEnum.PHYSICAL_ORDER);
-						break;
-					case "4":
-						
-						// orderTypeList.add(OrderTypeEnum.PHYSICAL_ORDER);
-						// orderTypeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
-						break;
-					case "5":
-						statusList.add(OrderStatusEnum.REFUSED);
-						// statusList.add(OrderStatusEnum.REFUSING);
-						// orderTypeList.add(OrderTypeEnum.PHYSICAL_ORDER);
-						break;
-					case "6":
-						statusList.add(OrderStatusEnum.TRADE_CLOSED);
-						statusList.add(OrderStatusEnum.CANCELED);
-						statusList.add(OrderStatusEnum.CANCELING);
-						// orderTypeList.add(OrderTypeEnum.PHYSICAL_ORDER);
-						// orderTypeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
-						break;
-					case "7":
-						statusList.add(OrderStatusEnum.DROPSHIPPING);
-						// orderTypeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
-						// orderTypeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
-						break;
-					case "8":
-						statusList.add(OrderStatusEnum.HAS_BEEN_SIGNED);
-						// orderTypeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
-						// orderTypeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
-						break;
-					case "9":
-						statusList.add(OrderStatusEnum.TRADE_CLOSED);
-						// orderTypeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
-						// orderTypeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
-						break;
-					case "10":
-						statusList.add(OrderStatusEnum.DROPSHIPPING);
-						// orderTypeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
-						break;
-					case "11":
-						statusList.add(OrderStatusEnum.TO_BE_SIGNED);
-						// orderTypeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
-						break;
-					case "12":
-						statusList.add(OrderStatusEnum.HAS_BEEN_SIGNED);
-						// orderTypeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
-						break;
-					case "13":
-						statusList.add(OrderStatusEnum.REFUSED);
-						statusList.add(OrderStatusEnum.REFUSING);
-						// orderTypeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
-						break;
-					default:
-						break;
+				String[] statusArry =  params.get("status").toString().split(",");
+				
+				for (int i = 0; i < statusArry.length; i++) {
+					statusList.add(OrderStatusEnum.enumValueOf(Integer.parseInt(statusArry[i])));
 				}
 				params.put("status", statusList);
-				// if (params.get("type") == null || StringUtils.isBlank(params.get("type").toString())) {
-				// params.put("type", orderTypeList);
-				// }
 			}
 			// 订单来源转换，注意线上订单包括云上城app和微信
 			if (params.get("orderResource") == null || StringUtils.isBlank(params.get("orderResource").toString())) {
