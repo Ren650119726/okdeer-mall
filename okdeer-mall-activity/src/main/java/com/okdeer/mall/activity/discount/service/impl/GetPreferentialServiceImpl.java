@@ -3,6 +3,7 @@ package com.okdeer.mall.activity.discount.service.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,10 @@ import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
@@ -39,6 +43,12 @@ import com.okdeer.mall.order.vo.FullSubtract;
 public class GetPreferentialServiceImpl implements GetPreferentialService, IGetPreferentialServiceApi {
 
 	/**
+	 * 店铺商品Api
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
+	
+	/**
 	 * 代金券记录Mapper
 	 */
 	@Resource
@@ -52,7 +62,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 	
 	@Override
 	public PreferentialVo findPreferentialByUser(String userId, StoreInfo storeInfo, BigDecimal totalAmount,
-			List<String> skuIdList) {
+			List<String> skuIdList, String addressId) throws Exception {
 		PreferentialVo preferentialVo = new PreferentialVo();
 		StoreTypeEnum storeType = storeInfo.getType();
 		Map<String, Object> queryCondition = new HashMap<String, Object>();
@@ -65,6 +75,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 			queryCondition.put("type", Constant.ONE);
 		} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
 			queryCondition.put("type", Constant.TWO);
+			queryCondition.put("addressId", addressId);
 		}
 		// 获取用户有效的代金券
 		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);
@@ -75,14 +86,23 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 		//排除不符合的代金券
 		if (CollectionUtils.isNotEmpty(couponList) && CollectionUtils.isNotEmpty(skuIdList)) {
 			List<Coupons> delCouponList = new ArrayList<Coupons>();
+			List<String> couponIds = new ArrayList<String>();
+			List<GoodsStoreSku> goodsStoreSkus = goodsStoreSkuServiceApi.findStoreSkuForOrder(skuIdList);
+			HashSet<String> hsSpuCategoryIds = new HashSet<String>();
+			for (GoodsStoreSku goodsStoreSku : goodsStoreSkus) {
+				hsSpuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
+			}
+			List<String> spuCategoryIds = new ArrayList<String>(hsSpuCategoryIds);
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
-					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(skuIdList,
+					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds,
 							coupons.getId());
-					if (count > Constant.ZERO) {
+					if (count == Constant.ZERO || count != spuCategoryIds.size()) {
 						delCouponList.add(coupons);
+					} else {
+						couponIds.add(coupons.getId());
 					}
 				}
 			}
@@ -90,8 +110,26 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 			if (CollectionUtils.isNotEmpty(delCouponList)) {
 				couponList.removeAll(delCouponList);
 			}
+			
+			//指定类目返回类目名称集
+			if (CollectionUtils.isNotEmpty(couponIds)) {
+				List<Map<String, Object>> retMap = activityCouponsRecordMapper.findByCategoryNames(couponIds);
+				if (retMap != null) {
+					for (Map<String, Object> map : retMap) {
+						String id = (String) map.get("couponId");
+						String categoryNames = (String) map.get("categoryNames");
+						for (Coupons coupons : couponList) {
+							if (coupons.getId().equals(id)) {
+								coupons.setCategoryNames(categoryNames);
+								break;
+							}
+						}
+					}
+				}
+			}
+			
 		}
-		
+
 		preferentialVo.setCouponList(couponList);
 		preferentialVo.setDiscountList(discountList);
 		preferentialVo.setFullSubtractList(fullSubtractList);

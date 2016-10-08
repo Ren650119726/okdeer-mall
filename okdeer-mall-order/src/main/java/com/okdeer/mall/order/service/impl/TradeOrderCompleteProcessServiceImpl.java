@@ -235,7 +235,6 @@ public class TradeOrderCompleteProcessServiceImpl
 		JSONArray orderRefundsItemList = buildOrderRefundsItemList(orderRefunds, tradeOrderRefundsItemList);
 
 		orderRefundsInfo.put("orderRefundsItemList", orderRefundsItemList);
-		// orderInfo.put("orderPayInfo", orderPayInfo);
 		// 发送消息
 		this.send(OrderMessageConstant.TOPIC_REFUND_ORDER_COMPLETE, OrderMessageConstant.TAG_REFUND_ORDER_COMPLETE,
 				orderRefundsInfo.toString());

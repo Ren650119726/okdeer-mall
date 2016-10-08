@@ -64,13 +64,21 @@ public interface TradeOrderItemDetailService {
 	int updateStatusWithExpire(String orderItemId);
 
 	// start added by luosm 20160929 V1.1.0
+    /**
+     * @Description: 根据订单id查询明细列表
+     * @param orderId 订单id
+     * @return 订单明细列表
+     * @author luosm
+     * @date 2016年9月29日
+     */
+    List<TradeOrderItemDetail> selectByOrderItemDetailByOrderId(String orderId);
+    // end added by luosm 20160929 V1.1.0
+    
 	/**
-	 * @Description: 根据订单id查询明细列表
-	 * @param orderId 订单id
-	 * @return 订单明细列表
-	 * @author luosm
-	 * @date 2016年9月29日
+	 * 验证消费码在店铺中是否已经存在
+	 * @param storeId 店铺Id
+	 * @param consumeCode 消费码
+	 * @return
 	 */
-	List<TradeOrderItemDetail> selectByOrderItemDetailByOrderId(String orderId);
-	// end added by luosm 20160929 V1.1.0
+	TradeOrderItemDetail checkConsumeHasExsit(String storeId, String consumeCode);
 }

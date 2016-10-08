@@ -988,7 +988,7 @@ public interface TradeOrderMapper {
 	 * @author zengjizu
 	 * @date 2016年9月17日
 	 */
-	Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params);
+	Map<String, Object> statisOrderCannelRefundByParams(@Param("params") Map<String, Object> params);
 	
 	// end v1.1.0 add by zengjz
 	

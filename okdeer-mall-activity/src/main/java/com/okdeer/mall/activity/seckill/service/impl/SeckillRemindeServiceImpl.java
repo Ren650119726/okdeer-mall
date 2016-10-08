@@ -11,16 +11,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Value;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.google.common.collect.Maps;
+import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysUser;
-import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.kafka.producer.KafkaProducer;
 import com.okdeer.mall.activity.seckill.entity.SeckillReminde;
 import com.okdeer.mall.activity.seckill.mapper.SeckillRemindeMapper;
@@ -29,6 +27,7 @@ import com.okdeer.mall.order.constant.OrderMsgConstant;
 import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
+import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysUserMapper;
 import com.okdeer.mall.system.utils.mapper.JsonMapper;
 
@@ -43,9 +42,11 @@ import com.okdeer.mall.system.utils.mapper.JsonMapper;
  * ----------------+----------------+-------------------+-------------------------------------------
  *
  */
-@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.seckill.service.SeckillRemindeServiceApi")
+@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.seckill.service.SeckillRemindeServiceApi",timeout=60000)
 public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 
+	
+	
 	/**
 	 * 消息系统CODE
 	 */
@@ -57,8 +58,6 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 	 */
 	@Value("${mcm.sys.token}")
 	private String msgToken;
-
-	private SysUserMapper sysUserMapper;
 
 	/**取消订单短信1*/
 	@Value("${sms.cancalOrder.style1}")
@@ -204,6 +203,9 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 
 	@Resource
 	private KafkaProducer kafkaProducer;
+	
+	@Resource
+	private SysBuyerUserMapper sysBuyerUserMapper;
 
 	public static final int time = 60000 * 15;
 
@@ -221,11 +223,11 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 		pushMsgVo.setServiceFkId(sendMsgParamVo.getOrderId());
 		pushMsgVo.setServiceTypes(new Integer[] { 0 });
 		// 0:用户APP,2:商家APP,3POS机
-		pushMsgVo.setAppType(2);
+		pushMsgVo.setAppType(0);
 		pushMsgVo.setIsUseTemplate(0);
 		pushMsgVo.setMsgType(1);
+		pushMsgVo.setId(sendMsgParamVo.getStoreId());
 		// 业务消息标识
-
 		String msgTypeCustom = OrderMsgConstant.SECKILL_MESSAGE;
 
 		// 推送消息标题
@@ -235,29 +237,24 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 		// 不使用模板
 		pushMsgVo.setMsgNotifyContent(msgTitle);
 		pushMsgVo.setMsgDetailType(1);
-		pushMsgVo.setMsgDetailContent("");
+		pushMsgVo.setMsgDetailContent(skuName);
 		// 设置是否定时发送
 		pushMsgVo.setIsTiming(1);
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		pushMsgVo.setSendTime(format.format(startTime) + time);
+		pushMsgVo.setSendTime(format.format(startTime) + time);//毫秒
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
-		Map<String, Object> params = Maps.newHashMap();
-		params.put("storeId", sendMsgParamVo.getStoreId());
-		params.put("isFinish", 0);
 		// 查询的用户信息
 
-		SysUser sysUser = sysUserMapper.selectByPrimaryKey(sendMsgParamVo.getUserId());
-
+		SysBuyerUser sysBuyerUser = sysBuyerUserMapper.selectByPrimaryKey(sendMsgParamVo.getUserId());
 		PushUserVo pushUser = new PushUserVo();
-
-		pushUser.setUserId(sysUser.getId());
-		pushUser.setMobile(sysUser.getPhone());
-
+		pushUser.setUserId(sysBuyerUser.getId());
+		pushUser.setMobile(sysBuyerUser.getPhone());
+/*
 		try {
 			pushUser.setNotificationBuilderId(Integer.valueOf(notificationBuilderId));
 			// 消息信息提示
-			if (WhetherEnum.whether.equals(sysUser.getIsAccept())) {
+			if (WhetherEnum.whether.equals(sysBuyerUser.getIsAccept())) {
 				// 有声音
 				pushUser.setIsexitsSound(0);
 				pushUser.setNotificationBasicStyle(Integer.valueOf(notificationBasicStyle1));
@@ -270,7 +267,7 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 			// 没有配置zookeeper，取默认的
 			pushUser.setNotificationBuilderId(defaultNotificationBuilderId);
 			// 消息信息提示
-			if (WhetherEnum.whether.equals(sysUser.getIsAccept())) {
+			if (WhetherEnum.whether.equals(sysBuyerUser.getIsAccept())) {
 				// 有声音
 				pushUser.setIsexitsSound(0);
 				pushUser.setNotificationBasicStyle(defaultNotificationBasicStyle1);
@@ -279,13 +276,24 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 				pushUser.setNotificationBasicStyle(defaultNotificationBasicStyle2);
 				pushUser.setIsexitsSound(1);
 			}
-		}
+		}*/
 		pushUser.setMsgType(1);
 
 		userList.add(pushUser);
 		pushMsgVo.setUserList(userList);
 		kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushMsgVo));
 
+	}
+
+	@Override
+	public SeckillReminde selectSeckillRemindeByUserId(String UserId) throws Exception {
+		SeckillReminde seckillReminde = seckillRemindeMapper.selectSeckillRemindeByUserId(UserId);
+		return seckillReminde;
+	}
+
+	@Override
+	public void updateSeckillReminde(SeckillReminde reminde) throws Exception {
+		seckillRemindeMapper.updateSeckillReminde(reminde);
 	}
 
 }

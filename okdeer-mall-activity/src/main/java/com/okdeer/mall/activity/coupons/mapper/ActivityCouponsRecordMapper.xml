@@ -360,7 +360,7 @@
     	<id property="recordId" column="recordId" jdbcType="VARCHAR"/>
     	<result property="couponId" column="couponId" jdbcType="VARCHAR"/>
     	<result property="usableRange" column="usableRange" jdbcType="VARCHAR"/>
-    	<result property="couponTitle" column="couponTitle" jdbcType="VARCHAR"/>
+    	<result property="couponName" column="couponName" jdbcType="VARCHAR"/>
     	<result property="indate" column="indate" jdbcType="VARCHAR"/>
     	<result property="couponPrice" column="couponPrice" jdbcType="VARCHAR"/>
     	<result property="arrive" column="arrive" jdbcType="VARCHAR"/>
@@ -545,7 +545,7 @@
 	<!-- 查询用户有效的代金券信息 Begin added by maojj -->
 	<select id="findValidCoupons" parameterType="map" resultType="com.okdeer.mall.order.vo.Coupons">
 		SELECT
-			t2.name AS couponTitle,
+			t2.name AS couponTitle, t2.type,
 			0 AS usableRange,
 			date_format(t.valid_time,'%Y-%m-%d %T') AS indate,
 			t.coupons_collect_id AS id,
@@ -565,29 +565,35 @@
 		AND t.status = 0
 		AND t2.disabled = 0
 		<if test="type != ''">
-			AND t2.type = #{type}
+			AND (t2.type = 0 OR ( t2.type = #{type}
+			     AND (
+					t1.store_id = #{storeId}
+					<if test="storeType == 4 and addressId != null and addressId != '' ">
+						OR (t2.area_type = 0 OR (t2.area_type = 1 AND EXISTS(SELECT 1 FROM activity_coupons_area aca LEFT JOIN member_consignee_address mca ON mca.id = #{addressId} 
+                        WHERE aca.coupons_id = t2.id AND ((aca.type = 0 AND aca.area_id = mca.city_id) OR (aca.type = 1 AND aca.area_id = mca.province_id)))))
+					</if>
+					<!-- 平台发起的代金券活动，只有云上店可以使用 -->
+					<if test="storeType == 2">
+						OR t2.area_type = 0
+					</if>
+				)
+			  )
+			) 
 		</if>
-		AND (
-			t1.store_id = #{storeId}
-			<!-- 平台发起的代金券活动，只有云上店可以使用 -->
-			<if test="storeType == 2">
-				OR t2.area_type = 0
-			</if>
-		)
 		AND t2.arrive_limit &lt;= #{totalAmount}
-		ORDER BY t.collect_time DESC
+		ORDER BY t2.face_value DESC, t.collect_time DESC
 	</select>
 	<!-- End added by maojj -->
 	
 	<!-- 查询用户有效的手机充值代金券 begin added by zhaoqc -->
 	<select id="findValidRechargeCoupons" parameterType="map" resultMap="rechargeCouponRsMap">
-		select c.name as couponTitle,0 AS usableRange,
+		select c.name as couponName,0 AS usableRange,
 			DATE_FORMAT(t.valid_time, '%Y-%m-%d %T') AS indate,
 			t.id as recordId,
 			c.id as couponId,
 			c.activity_id,
 			FORMAT(c.face_value, 2) as couponPrice,
-			FORMAT(c.arrive_limit,2) as arrive
+			FORMAT(c.arrive_limit,2) as arrive, t.status
 		FROM activity_coupons_record t
 		LEFT join activity_coupons c ON t.coupons_id=c.id
 		WHERE t.collect_user_id = #{userId}
@@ -595,7 +601,7 @@
 			and c.disabled = 0 
 			and (c.arrive_limit &lt;= #{orderAmount} or c.arrive_limit =  0) 
 			and c.type = 3
-		ORDER BY arrive,indate desc
+		ORDER BY c.face_value DESC, t.valid_time
 	</select>
 	<!-- end added by zhaoqc -->
 	
@@ -633,17 +639,30 @@
 	<!-- end by wushp 20160919 根据用户统计各种状态的代金券数量 -->
 	
 	<!-- add by tangy 20160923 根据商品ids查询商品是否符合代金券指定分类 -->
-    <select id="findIsContainBySpuCategoryIds" >
-		SELECT COUNT(1)
-	    FROM goods_navigate_category_association gca 
-	    LEFT JOIN (SELECT t2.category_id FROM activity_coupons tt 
-	         LEFT JOIN activity_coupons_category t2 ON t2.coupon_id = tt.id 
-	         WHERE tt.is_category = 1 AND tt.id = #{couponsId} ) djq ON djq.category_id = gca.navigate_category_id
-	    WHERE gca.spu_category_id IN 
+    <select id="findIsContainBySpuCategoryIds" resultType="int">
+        SELECT COUNT(1) FROM goods_spu_category tt
+		LEFT JOIN goods_navigate_category_association gca ON gca.spu_category_id = tt.id
+		INNER JOIN activity_coupons_category acc ON acc.coupon_id = #{couponsId} AND acc.category_id = gca.navigate_category_id
+		WHERE tt.id IN 
         <foreach item="item" index="index" collection="spuCategoryIds" open="(" separator="," close=")">  
   			#{item}  
- 		</foreach>  
-	    AND djq.category_id IS NULL 
+ 		</foreach>
+	</select>
+	
+	<!-- 根据代金券id获取类目名称集 -->
+	<select id="findByCategoryNames" resultType="java.util.Map" >
+		SELECT tt.coupon_id AS couponId,
+		CASE tt.type WHEN 1 THEN GROUP_CONCAT(t2.`name`)
+		WHEN 2 THEN GROUP_CONCAT(t3.`name`)
+		END AS categoryNames
+		FROM activity_coupons_category tt
+		LEFT JOIN goods_navigate_category t2 ON tt.type = 1 AND t2.id = tt.category_id
+		LEFT JOIN goods_spu_category t3 ON tt.type = 2 AND t3.id = tt.category_id
+		WHERE tt.coupon_id IN 
+        <foreach item="item" index="index" collection="couponIds" open="(" separator="," close=")">  
+  			#{item}  
+ 		</foreach>
+ 		GROUP BY tt.coupon_id
 	</select>
     <!-- end by tangy 20160923 根据商品ids查询商品是否符合代金券指定分类 -->
 </mapper> 

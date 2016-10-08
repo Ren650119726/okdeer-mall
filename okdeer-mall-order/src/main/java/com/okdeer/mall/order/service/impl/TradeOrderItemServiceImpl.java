@@ -65,4 +65,9 @@ class TradeOrderItemServiceImpl implements TradeOrderItemService, TradeOrderItem
 		return tradeOrderItemMapper.selectTradeOrderItemIsAppraise(orderId);
 	}
 
+	@Override
+	public void updateWithComplete(List<String> ids) {
+		tradeOrderItemMapper.updateCompleteById(ids);
+	}
+
 }

@@ -117,6 +117,11 @@
       </collection>
     </resultMap>
     
+    <resultMap type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo" id="activityCouponsSimpleVo">
+    	<id property="activityId" column="id" jdbcType="VARCHAR"/>
+    	<result property="startUrl" column="h5_url" jdbcType="VARCHAR"/>
+    </resultMap>
+    
     <!-- end：查询代金券活动以及关联地区列表 add by wushp -->
     
     <sql id="columns">
@@ -390,7 +395,7 @@
 	           )
 	        )
 	    </if>
-	    ORDER BY collect.start_time DESC		
+	    ORDER BY collect.start_time DESC,coupons.face_value	DESC	
 	</select>
 	
 	<!-- wusw:根据店铺id、活动状态、客户端限制类型等，统计代金券领券活动及代金券数量 -->
@@ -613,24 +618,24 @@
 		s.arrive_limit as arriveLimit,
 		s.every_limit as everyLimit
 		 from activity_coupons s
-		where disabled = 0 
+		where s.disabled = 0 
 		and 
 		(
-			(activity_id is null or activity_id = '')
+			(s.activity_id is null or s.activity_id = '')
 			<if test="totalNumInfinite != null and totalNumInfinite != ''">
-				and total_num = 0
+				and s.total_num = 0
 			</if>
 			<if test="exchangeCodeNull != null and exchangeCodeNull != ''">
-				and (exchange_code is null or exchange_code = '')
+				and (s.exchange_code is null or s.exchange_code = '')
 			</if>
 			
 			<if test="everyLimitNull != null and everyLimitNull != ''">
-				and (every_limit is null or every_limit = 0)
+				and (s.every_limit is null or s.every_limit = 0)
 			</if>
 		)
 		<!-- 如果是修改调用接口,就加载之前该活动已经关联的代金券 -->
 		<if test="activityId != null and activityId != ''">
-			or activity_id = #{activityId}
+			or s.activity_id = #{activityId}
 		</if>
 		order by s.face_value desc
 	</select>
@@ -652,4 +657,11 @@
 		(area1.type = 0 AND area1.`area_id`=#{cityId}));
 		
 	</select>
+	
+	<select id="findRecommendAcvititys" resultMap="activityCouponsSimpleVo">
+		select id, h5_url from activity_collect_coupons
+		where status=1 and type=3
+		and disabled=0  and approval_status=1
+	</select>
+	
 </mapper>

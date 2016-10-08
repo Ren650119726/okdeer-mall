@@ -114,4 +114,16 @@
 		A.create_time 
 	  DESC 
    </select>
+   
+   <select id="selectActivityCouponsFaceValue" resultType="int">
+      SELECT ac.`face_value`
+	FROM activity_collect_coupons_regist_record regist LEFT JOIN activity_collect_coupons coupons ON regist.`activity_id` = coupons.`id` LEFT JOIN activity_coupons ac ON ac.`activity_id` = coupons.`id`
+	WHERE coupons.`type` = 3
+		AND coupons.`status` = 1
+   </select>
+   
+   <select id="selectInvitationNum" resultType="int" parameterType="string">
+      SELECT COUNT(1) FROM activity_collect_coupons_regist_record record LEFT JOIN activity_collect_coupons coupons ON record.`activity_id` = coupons.`id` WHERE record.`user_id` = #{userId,jdbcType=VARCHAR}
+   </select>
+   
 </mapper>

@@ -106,6 +106,39 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			return;
 		}
 		
+		List<TradeOrderServiceGoodsItem> list = new ArrayList<TradeOrderServiceGoodsItem>();
+		TradeOrderServiceGoodsItem goodsItem = null;
+		// 组装商品list
+		for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
+			goodsItem = new TradeOrderServiceGoodsItem();
+			goodsItem.setSkuId(goodsStoreSku.getId());
+			goodsItem.setSkuName(goodsStoreSku.getName());
+			goodsItem.setUnitPrice(goodsStoreSku.getOnlinePrice());
+			goodsItem.setLimitNum(goodsStoreSku.getTradeMax());
+			goodsItem.setUpdateTime(DateUtils.formatDateTime(goodsStoreSku.getUpdateTime()));
+			goodsItem.setSkuType(goodsStoreSku.getSpuTypeEnum().ordinal());
+			// 设置商品的支付方式
+			goodsItem.setPaymentMode(getPaymentMode(goodsStoreSku.getPayType()));
+			// 商品主图信息列表
+			List<GoodsStoreSkuPicture> storeSkuPicList = goodsStoreSkuPictureService
+					.findMainByStoreSkuIds(storeSkuIdList);
+			for (GoodsStoreSkuPicture goodsStoreSkuPicture : storeSkuPicList) {
+				if (goodsStoreSku.getId().equals(goodsStoreSkuPicture.getStoreSkuId())) {
+					// 设置商品主图
+					goodsItem.setSkuIcon(goodsStoreSkuPicture.getUrl());
+				} 
+			}
+			for (TradeOrderGoodsItem item : listTemp) {
+				if (goodsStoreSku.getId().equals(item.getSkuId())) {
+					// 设置商品数量
+					goodsItem.setSkuNum(item.getSkuNum());
+				}
+			}
+			list.add(goodsItem);
+		}
+		// 将商品信息返回
+		respData.setList(list);
+		
 		// 商品类目id
 		List<String> spuCategoryIds = new ArrayList<String>();
 		// 订单总价
@@ -185,36 +218,6 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			}
 		}
 		
-		List<TradeOrderServiceGoodsItem> list = new ArrayList<TradeOrderServiceGoodsItem>();
-		TradeOrderServiceGoodsItem goodsItem = null;
-		// 组装商品list
-		for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
-			goodsItem = new TradeOrderServiceGoodsItem();
-			goodsItem.setSkuId(goodsStoreSku.getId());
-			goodsItem.setSkuName(goodsStoreSku.getName());
-			goodsItem.setUnitPrice(goodsStoreSku.getOnlinePrice());
-			goodsItem.setLimitNum(goodsStoreSku.getTradeMax());
-			// 设置商品的支付方式
-			goodsItem.setPaymentMode(getPaymentMode(goodsStoreSku.getPayType()));
-			// 商品主图信息列表
-			List<GoodsStoreSkuPicture> storeSkuPicList = goodsStoreSkuPictureService
-					.findMainByStoreSkuIds(storeSkuIdList);
-			for (GoodsStoreSkuPicture goodsStoreSkuPicture : storeSkuPicList) {
-				if (goodsStoreSku.getId().equals(goodsStoreSkuPicture.getStoreSkuId())) {
-					// 设置商品主图
-					goodsItem.setSkuIcon(goodsStoreSkuPicture.getUrl());
-				} 
-			}
-			for (TradeOrderGoodsItem item : listTemp) {
-				if (goodsStoreSku.getId().equals(item.getSkuId())) {
-					// 设置商品数量
-					goodsItem.setSkuNum(item.getSkuNum());
-				}
-			}
-			list.add(goodsItem);
-		}
-		// 将商品信息返回
-		respData.setList(list);
 		for (TradeOrderGoodsItem goodsStoreSku : reqData.getList()) {
 			// 商品主图信息列表
 			List<GoodsStoreSkuPicture> storeSkuPicList = goodsStoreSkuPictureService

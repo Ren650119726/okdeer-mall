@@ -1,11 +1,10 @@
+
 package com.okdeer.mall.activity.coupons.service.impl;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +21,12 @@ import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreAgentCommunityServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.bdp.address.entity.Address;
+import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
@@ -31,24 +36,16 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRelationStore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
-import com.okdeer.mall.activity.coupons.enums.CashDelivery;
-import com.okdeer.mall.activity.coupons.enums.CategoryLimit;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
-import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
-import com.okdeer.mall.common.entity.AreaScTreeVo;
-import com.okdeer.mall.common.enums.AreaType;
-import com.okdeer.mall.common.enums.DistrictType;
-import com.okdeer.bdp.address.entity.Address;
-import com.okdeer.bdp.address.service.IAddressService;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsLimitCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
+import com.okdeer.mall.common.entity.AreaScTreeVo;
+import com.okdeer.mall.common.enums.AreaType;
+import com.okdeer.mall.common.enums.DistrictType;
 
 /**
  * 代金券管理实现类
@@ -64,7 +61,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	 */
 	@Autowired
 	private ActivityCouponsMapper activityCouponsMapper;
-	
+
 	/**
 	 * 注入代金券分类mapper
 	 */
@@ -115,14 +112,14 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		if (couponsInfos == null) {
 			couponsInfos = new ArrayList<CouponsInfoQuery>();
 		}
-		
-		//转义字段
-		for(CouponsInfoQuery c : couponsInfos){
-			if(c.getType() != null){
+
+		// 转义字段
+		for (CouponsInfoQuery c : couponsInfos) {
+			if (c.getType() != null) {
 				c.setTypeName(CouponsType.getName(c.getType()));
 			}
 		}
-		
+
 		PageUtils<CouponsInfoQuery> pageUtils = new PageUtils<CouponsInfoQuery>(couponsInfos);
 		return pageUtils;
 	}
@@ -130,8 +127,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void addCoupons(ActivityCoupons coupons) throws ServiceException {
-		//0：便利店和服务店，1：便利店    2 服务店   3话费充值
-		if(coupons.getType() == CouponsType.bldfwd.getValue()){
+		// 0：便利店和服务店，1：便利店 2 服务店 3话费充值
+		if (coupons.getType() == CouponsType.bldfwd.getValue()) {
 			activityCouponsMapper.insert(coupons);
 		} else if (coupons.getType() == CouponsType.hfcz.getValue()) {
 			activityCouponsMapper.insert(coupons);
@@ -171,12 +168,12 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	}
 
 	@Override
-	public List<GoodsSpuCategory> findSpuCategoryList(Map<String,Object> map) {
+	public List<GoodsSpuCategory> findSpuCategoryList(Map<String, Object> map) {
 		return activityCouponsMapper.findSpuCategoryList(map);
 	}
-	
+
 	@Override
-	public List<GoodsNavigateCategory> findNavigateCategoryList(Map<String,Object> map){
+	public List<GoodsNavigateCategory> findNavigateCategoryList(Map<String, Object> map) {
 		return activityCouponsMapper.findNavigateCategoryList(map);
 	}
 
@@ -199,19 +196,19 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateCoupons(CouponsInfoQuery coupons) throws ServiceException {
-		//0：便利店和服务店，1：便利店    2 服务店   3 充值
-		if(coupons.getType() == CouponsType.bldfwd.getValue() || coupons.getType() == CouponsType.hfcz.getValue()){
+		// 0：便利店和服务店，1：便利店 2 服务店 3 充值
+		if (coupons.getType() == CouponsType.bldfwd.getValue() || coupons.getType() == CouponsType.hfcz.getValue()) {
 			activityCouponsMapper.updateCoupons(coupons);
 		} else if (coupons.getType() == CouponsType.bld.getValue() || coupons.getType() == CouponsType.fwd.getValue()) {
 			activityCouponsMapper.updateCoupons(coupons);
-			
-			//删掉老数据
+
+			// 删掉老数据
 			this.deleteCouponsArea(coupons.getId());
 			this.deleteCouponsStroe(coupons.getId());
 			this.deleteCouponsRelationStroe(coupons.getId());
 			activityCouponsCategoryMapper.deleteByCouponsId(coupons.getId());
-			
-			//批量插入新数据 (由于新增和修改 接收的对象用的不是同一个,只能重新转换一下)
+
+			// 批量插入新数据 (由于新增和修改 接收的对象用的不是同一个,只能重新转换一下)
 			ActivityCoupons activitycoupons = new ActivityCoupons();
 			activitycoupons.setId(coupons.getId());
 			activitycoupons.setAreaIds(coupons.getAreaIds());
@@ -307,7 +304,14 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 							Map<String, Object> params = new HashMap<>();
 							params.put("disabled", Disabled.valid);
 							params.put("cityId", areas[0]);
-							params.put("type", StoreTypeEnum.CLOUD_STORE);
+							// 对应枚举 CouponsType 0：便利店和服务店，1：便利店 2 服务店 3 充值
+							if (coupons.getType() == 1) {
+								// 查询便利店店铺
+								params.put("type", StoreTypeEnum.CLOUD_STORE);
+							} else if (coupons.getType() == 2) {
+								// 查询服务店店铺
+								params.put("type", StoreTypeEnum.SERVICE_STORE);
+							}
 							storeInfos = storeInfoServiceApi.getByProvinceIdAndCityId(params);
 							storeInfoList.addAll(storeInfos);
 						} else if ("1".equals(areas[1])) {
@@ -315,7 +319,14 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 							Map<String, Object> params = new HashMap<>();
 							params.put("disabled", Disabled.valid);
 							params.put("provinceId", areas[0]);
-							params.put("type", StoreTypeEnum.CLOUD_STORE);
+							// 对应枚举 CouponsType 0：便利店和服务店，1：便利店 2 服务店 3 充值
+							if (coupons.getType() == 1) {
+								// 查询便利店店铺
+								params.put("type", StoreTypeEnum.CLOUD_STORE);
+							} else if (coupons.getType() == 2) {
+								// 查询服务店店铺
+								params.put("type", StoreTypeEnum.SERVICE_STORE);
+							}
 							storeInfos = storeInfoServiceApi.getByProvinceIdAndCityId(params);
 							storeInfoList.addAll(storeInfos);
 						}
@@ -374,18 +385,18 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		if (storeInfoList.size() > 0) {
 			this.addRelationStore(storeInfoList, coupons);
 		}
-		
-		//代金券关联的分类 1 导航分类 2 服务店店铺商品分类
+
+		// 代金券关联的分类 1 导航分类 2 服务店店铺商品分类
 		int type = 0;
 		if (coupons.getType() == CouponsType.bld.getValue()) {
 			type = 1;
 		} else if (coupons.getType() == CouponsType.fwd.getValue()) {
 			type = 2;
 		}
-		if(StringUtils.isNotEmpty(coupons.getCategoryIds())){
+		if (StringUtils.isNotEmpty(coupons.getCategoryIds())) {
 			String[] categoryArray = coupons.getCategoryIds().split(",");
 			List<ActivityCouponsCategory> accList = new ArrayList<ActivityCouponsCategory>();
-			for(String s : categoryArray){
+			for (String s : categoryArray) {
 				ActivityCouponsCategory acc = new ActivityCouponsCategory();
 				acc.setId(UuidUtils.getUuid());
 				acc.setCategoryId(s);
@@ -480,7 +491,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		List<Map<String, Object>> cityStoreList = couponsRelationStoreMapper.selectAddressRelationStoreByParams(params);
 		if (cityStoreList != null && cityStoreList.size() > 0) {
 			for (Map<String, Object> map : cityStoreList) {
-				if (map != null && map.get("storeId") != null && !"".equals(map.get("storeId").toString())){
+				if (map != null && map.get("storeId") != null && !"".equals(map.get("storeId").toString())) {
 					// 根据市id，获取市信息，并将同一市下面的店铺信息存放在一个list中，且保证市名称唯一
 					Address addressCity = addressService.getAddressById(Long.valueOf(map.get("cityId").toString()));
 					List<Map<String, Object>> storeList = new ArrayList<Map<String, Object>>();
@@ -503,7 +514,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Override
 	public Map<String, Object> findCouponsProvinceByCouponsId(String couponsId) throws ServiceException {
 		// 存放省信息,key是省id，value是省名称
-		//根据代金券的区域类型 查询省的名称
+		// 根据代金券的区域类型 查询省的名称
 		Map<String, Object> provinceMap = new HashMap<String, Object>();
 		ActivityCoupons activityCoupons = activityCouponsMapper.selectByPrimaryKey(couponsId);
 		if (activityCoupons != null) {
@@ -518,17 +529,19 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 				if (provinceIdList != null && provinceIdList.size() > 0) {
 					// 循环省份id，查询出省名称，并且确定省名称唯一
 					for (Map<String, Object> map : provinceIdList) {
-						if (map != null && map.get("provinceId") != null && !"".equals(map.get("provinceId").toString())) {
-							Address addressProvince = addressService.getAddressById(Long.valueOf(map.get("provinceId")
-									.toString()));
-							if (addressProvince != null && !provinceMap.containsKey(addressProvince.getId().toString())) {
+						if (map != null && map.get("provinceId") != null
+								&& !"".equals(map.get("provinceId").toString())) {
+							Address addressProvince = addressService
+									.getAddressById(Long.valueOf(map.get("provinceId").toString()));
+							if (addressProvince != null
+									&& !provinceMap.containsKey(addressProvince.getId().toString())) {
 								provinceMap.put(addressProvince.getId().toString(), addressProvince.getName());
 							}
 						}
-						
+
 					}
 				}
-			} else if (activityCoupons.getAreaType() == AreaType.area) {		
+			} else if (activityCoupons.getAreaType() == AreaType.area) {
 				CouponsInfoQuery couponsInfo = null;
 				couponsInfo = activityCouponsMapper.selectCouponsById(couponsId);
 				List<ActivityCouponsArea> areaList = couponsInfo.getActivityCouponsAreaList();
@@ -536,7 +549,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 					for (ActivityCouponsArea area : areaList) {
 						Address addressInfo = null;
 						if (area.getCouponsAreaType() == DistrictType.city) {
-							addressInfo = addressService.getAddressById(Long.valueOf(area.getAreaId().toString()));  
+							addressInfo = addressService.getAddressById(Long.valueOf(area.getAreaId().toString()));
 							if (addressInfo != null && !provinceMap.containsKey(addressInfo.getParentId().toString())) {
 								provinceMap.put(addressInfo.getParentId().toString(), addressInfo.getParentName());
 							}
@@ -547,8 +560,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 							}
 						}
 					}
-					
-				}				
+
+				}
 			}
 		}
 		return provinceMap;
@@ -592,25 +605,26 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	}
 
 	@Override
-	public List<ActivityCouponsCategory> findActivityCouponsCategoryByCouponsId(String couponId,Integer type){
-		Map<String,Object> map = new HashMap<String, Object>();
+	public List<ActivityCouponsCategory> findActivityCouponsCategoryByCouponsId(String couponId, Integer type) {
+		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("couponId", couponId);
 		map.put("type", type);
 		return activityCouponsCategoryMapper.findActivityCouponsCategoryByCouponsId(map);
 	}
 
 	@Override
-	public Map<String, Object> findRelationCityByCouponsId(String couponsId,String provinceId) throws ServiceException {
+	public Map<String, Object> findRelationCityByCouponsId(String couponsId, String provinceId)
+			throws ServiceException {
 		Map<String, Object> cityMap = new HashMap<String, Object>();
 		CouponsInfoQuery couponsInfo = null;
 		couponsInfo = activityCouponsMapper.selectCouponsById(couponsId);
 		List<ActivityCouponsArea> areaList = couponsInfo.getActivityCouponsAreaList();
 		if (CollectionUtils.isNotEmpty(areaList)) {
 			for (ActivityCouponsArea area : areaList) {
-				//List<String> cityList = null;
+				// List<String> cityList = null;
 				Address addressInfo = null;
 				if (area.getCouponsAreaType() == DistrictType.city) {
-					addressInfo = addressService.getAddressById(Long.valueOf(area.getAreaId().toString()));  
+					addressInfo = addressService.getAddressById(Long.valueOf(area.getAreaId().toString()));
 					if (addressInfo != null) {
 						if (addressInfo.getParentId().toString().equals(provinceId)) {
 							if (addressInfo != null && !cityMap.containsKey(addressInfo.getId().toString())) {
@@ -618,12 +632,13 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 							}
 						}
 					}
-				} else if (area.getCouponsAreaType() == DistrictType.province) {
-					cityMap.put("0", "所属范围内都可以用");
-				}
+				} /*
+					 * else if (area.getCouponsAreaType() ==
+					 * DistrictType.province) { cityMap.put("0", "所属范围内都可以用"); }
+					 */
 			}
-			
-		}	
+
+		}
 		return cityMap;
 	}
 }

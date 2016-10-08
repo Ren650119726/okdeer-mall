@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
@@ -23,6 +24,7 @@ import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
+import com.okdeer.mall.system.utils.ConvertUtil;
 /**
  * ClassName: SeckillAddressSearchServiceImpl 
  * @Description: 服务订单地址查询
@@ -69,14 +71,27 @@ public class ServAddressSearchServiceImpl implements RequestHandler<ServiceOrder
 		}
 		// 到店消费订单
 		if (orderType != null && orderType == OrderTypeEnum.STORE_CONSUME_ORDER) {
-			StoreInfo storeInfo = storeInfoServiceApi.selectDefaultAddressById(reqData.getStoreId());
-			MemberConsigneeAddress memberConsignee = storeInfo.getMemberConsignee();
+			MemberConsigneeAddress memberConsignee = memberConsigneeAddressMapper.getSellerDefaultAddress(reqData.getStoreId());
+			//StoreInfo storeInfo = storeInfoServiceApi.selectDefaultAddressById(reqData.getStoreId());
+			//MemberConsigneeAddress memberConsignee = storeInfo.getMemberConsignee();
 			if (memberConsignee != null) {
 				UserAddressVo userAddressVo = new UserAddressVo();
 				BeanUtils.copyProperties(userAddressVo, memberConsignee);
 				respData.setDefaultAddress(userAddressVo);
 			}
-			// 店铺详细地址
+			// 到店消费的商品，需要返回店铺地址
+			StringBuilder storeAddr = new StringBuilder();
+			storeAddr.append(ConvertUtil.format(memberConsignee.getProvinceName()))
+					.append(ConvertUtil.format(memberConsignee.getCityName()))
+					.append(ConvertUtil.format(memberConsignee.getAreaName()))
+					.append(ConvertUtil.format(memberConsignee.getAreaExt()))
+					.append(ConvertUtil.format(memberConsignee.getAddress()));
+			if (StringUtils.isBlank(memberConsignee.getProvinceName())) {
+				storeAddr = new StringBuilder();
+				storeAddr.append(memberConsignee.getArea().trim());
+				storeAddr.append(memberConsignee.getAddress());
+			} 
+			respData.getStoreInfo().setAddress(storeAddr.toString());
 			req.setComplete(true);
 			return;
 		}
@@ -98,10 +113,12 @@ public class ServAddressSearchServiceImpl implements RequestHandler<ServiceOrder
 		params.put("storeId", reqData.getStoreId());
 		// 查询用户的所有收货地址
 		Map<String, Object> map = memberConsigneeAddressService.findUserDefaultAddress(params);
-		if (!map.containsKey("provinceName")) {
+		//当地址为空时 为null肯定不包含 或 不包含时 start 涂志定
+		if (map == null || !map.containsKey("provinceName")) {
 			req.setComplete(true);
 			return;
 		} 
+		// end 涂志定
 		UserAddressVo userAddressVo = new UserAddressVo();
 		// 将map转成bean
 		BeanUtils.populate(userAddressVo, map);

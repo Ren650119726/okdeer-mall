@@ -149,6 +149,7 @@
 		parameterType="com.okdeer.mall.system.entity.SysUserInvitationCode">
 		update
 		<include refid="tableBaseName" />
+		set
 		invitation_user_num=invitation_user_num+1,
 		first_order_user_num=first_order_user_num+1,
 		update_time=#{updateTime,jdbcType=TIMESTAMP}
@@ -156,4 +157,47 @@
 		id=#{id,jdbcType=VARCHAR}
 	</update>
 	<!-- 更改信息 end -->
+	
+	<!-- 根据用户Id查询邀请码信息 added by zhaoqc  -->
+  	<select id="findInvitationCodeByUserId" resultMap="BaseResultMap">
+  		select suic.id,suic.sys_user_id,suic.sys_buyer_user_id,suic.user_type,
+			suic.invitation_code,suic.invitation_user_num,suic.first_order_user_num,
+			suic.create_time,suic.update_time
+		from sys_user_invitation_code suic 
+		where 1=1
+		<if test="userType == 0">
+			and suic.sys_user_id = #{userId, jdbcType=VARCHAR}
+		</if>
+  		<if test="userType == 1">
+  			and suic.sys_buyer_user_id = #{userId, jdbcType=VARCHAR}
+  		</if>
+  	</select>
+  	<!--end added by zhaoqc  -->
+  	
+  	
+  	<!-- 根据用户Id查询邀请码信息 added by tuzhiding 2016-10-4  -->
+  	<select id="findInvitationByIdCode" resultMap="BaseResultMap">
+  		SELECT s.id,s.sys_user_id,s.sys_buyer_user_id,s.user_type,
+			s.invitation_code,s.invitation_user_num,s.first_order_user_num,
+			s.create_time,s.update_time
+		from sys_user_invitation_code s 
+		where s.sys_user_id = #{userId, jdbcType=VARCHAR}
+  			or s.sys_buyer_user_id = #{userId, jdbcType=VARCHAR}
+  			or s.invitation_code = #{invitationCode, jdbcType=VARCHAR}
+  	</select>
+  	<!--end added by tuzhiding 2016-10-4 -->
+  	
+  	
+  	<!-- 根据邀请码查询邀请码实体 added by zhaoqc -->
+  	<select id="findInvitationCodeByCode" resultMap="BaseResultMap">
+  		select suic.id,suic.sys_user_id,suic.sys_buyer_user_id,suic.user_type,
+			suic.invitation_code,suic.invitation_user_num,suic.first_order_user_num,
+			suic.create_time,suic.update_time
+		from sys_user_invitation_code suic 
+		where 1=1
+		<if test="invitationCode != null">
+			and suic.invitation_code = #{invitationCode, jdbcType=VARCHAR}
+		</if>
+  	</select>
+  	<!-- End added by zhaoqc -->
 </mapper>

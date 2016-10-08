@@ -13,7 +13,7 @@
 		<result column="seckill_time" property="seckillTime" jdbcType="TIMESTAMP"
 			javaType="date" />
 		<result column="reminder_content" property="reminderContent"
-			jdbcType="VARCHAR" javaType="date" />
+			jdbcType="VARCHAR" javaType="string" />
 		<result column="reminder_settings" property="reminderSettings"
 			jdbcType="INTEGER" javaType="int" />
 		<result column="create_time" property="createTime" jdbcType="TIMESTAMP"
@@ -59,6 +59,46 @@
 	    set reminder_settings = #{settingValue,jdbcType=INTEGER}, update_time = now() 
 	    where seckill_id = #{seckillId,jdbcType=VARCHAR} 
     </update>
+
+	<!-- 查询秒杀提醒 -->
+	<select id="selectSeckillRemindeByUserId" parameterType="string" resultMap="BaseResultMap">
+			SELECT <include refid="Base_Column_List"/> FROM seckill_reminde where user_id = #{user_id,jdbcType=VARCHAR}
+	</select>
+
+    <!-- 更新秒杀提醒信息 -->
+	<update id="updateSeckillReminde" parameterType="com.okdeer.mall.activity.seckill.entity.SeckillReminde">
+	    UPDATE seckill_reminde
+	    <set >
+	      <if test="seckillId != null" >
+	        seckill_id = #{seckillId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="goodsStoreSkuId != null" >
+	        goods_store_sku_id = #{goodsStoreSkuId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="leadTime != null" >
+	        lead_time = #{leadTime,jdbcType=INTEGER},
+	      </if>
+	      <if test="seckillTime != null" >
+	        seckill_time = #{seckillTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="reminderContent != null" >
+	        reminder_content = #{reminderContent,jdbcType=VARCHAR},
+	      </if>
+	      <if test="reminderSettings != null" >
+	        reminder_settings = #{reminderSettings,jdbcType=TINYINT},
+	      </if>
+	      <if test="createTime != null" >
+	        create_time = #{createTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="updateTime != null" >
+	        update_time = #{updateTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="userId != null" >
+	        user_id = #{userId,jdbcType=VARCHAR}, 
+	      </if> 
+	    </set>
+	    WHERE user_id = #{userId,jdbcType=VARCHAR}
+  </update>
 
 
 </mapper>

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
@@ -13,7 +14,6 @@ import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.RechargeCouponVo;
-import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 
@@ -205,6 +205,15 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 */
 	int findIsContainBySpuCategoryIds(@Param("spuCategoryIds") List<String> spuCategoryIds,
 			@Param("couponsId") String couponsId);
+	
+	/**
+	 * @Description: 根据代金券id获取类目名称集
+	 * @param couponIds  代金券id集
+	 * @return Map<String,Object>  
+	 * @author tangy
+	 * @date 2016年9月29日
+	 */
+	List<Map<String, Object>> findByCategoryNames(@Param("couponIds") List<String> couponIds);
 	//End added by tangy
 
 }

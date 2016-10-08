@@ -281,7 +281,7 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 								TradeOrder tempTradeOrder = new TradeOrder();
 								tempTradeOrder.setId(tradeOrder.getId());
 								tempTradeOrder.setConsumerCodeStatus(ConsumerCodeStatusEnum.COMPLETED);
-								tradeOrderMapper.updateByPrimaryKeySelective(tradeOrder);
+								tradeOrderMapper.updateByPrimaryKeySelective(tempTradeOrder);
 							}
 							//end add by zengjz  到店消费评价增加逻辑
 						} catch (ServiceException e) {
