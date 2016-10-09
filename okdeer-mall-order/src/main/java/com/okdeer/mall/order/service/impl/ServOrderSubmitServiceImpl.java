@@ -213,13 +213,15 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			saveActivityDiscountRecord(tradeOrder.getId(), reqData);
 			// 保存订单和订单项信息，并发送消息
 			tradeOrderService.insertTradeOrder(tradeOrder);
-			if (tradeOrder.getTotalAmount().compareTo(BigDecimal.ZERO) == 0
-					&& reqData.getOrderType() != null 
-					&& reqData.getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
-				// 实付金额为0的到店消费订单，生成消费码
-				tradeOrderServiceApi.dealWithStoreConsumeOrder(tradeOrder, null, PayTypeEnum.WALLET.ordinal());
-			}
-			
+			/*
+			 * 实付金额为0的到店消费订单，在controller调用生成消费码的接口
+			 * if (tradeOrder.getActualAmount().compareTo(BigDecimal.ZERO) == 0
+			 *		&& reqData.getOrderType() != null 
+			 *		&& reqData.getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+			 *	// 实付金额为0的到店消费订单，生成消费码
+			 *	tradeOrderServiceApi.dealWithStoreConsumeOrder(tradeOrder, null, PayTypeEnum.WALLET.ordinal());
+			 *	}
+			 */			
 			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUserId(),
 					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
 
@@ -509,7 +511,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(favourItem));
 			// 设置订单项收入
 			setOrderItemIncome(tradeOrderItem, tradeOrder);
-			if (totalAmount.compareTo(BigDecimal.ZERO) == 0
+			if (tradeOrderItem.getActualAmount().compareTo(BigDecimal.ZERO) == 0
 					&& orderType != null && orderType.ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
 				// 实付金额为0的到店消费订单，设置服务保障为无
 				tradeOrderItem.setServiceAssurance(0);
