@@ -735,7 +735,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		}
 		// 接受返回消息的tag
 		payTradeVo.setTag(null);
-		return JSONObject.fromObject(null).toString();
+		return JSONObject.fromObject(payTradeVo).toString();
 	}
 
 	@Transactional(rollbackFor = Exception.class)
