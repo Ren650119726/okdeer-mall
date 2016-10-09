@@ -648,7 +648,7 @@
 		LEFT JOIN activity_collect_order_type collOrder ON coll.`id` = collOrder.`collect_coupons_id`
 		LEFT JOIN activity_collect_area area1 ON coll.`id` = area1.`collect_coupons_id` 
 		WHERE  1 = 1
-		AND (coll.limit_amount = 0 OR coll.limit_amount >= #{limitAmout} )
+		<![CDATA[ AND (coll.limit_amount is null OR coll.limit_amount = 0 OR coll.limit_amount <= #{limitAmout} )]]>
 		AND coll.`status` = 1 
 		AND coll.`disabled` = 0 
 		AND coll.`type` = 4
