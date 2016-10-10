@@ -5803,15 +5803,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 订单类型(0:实物订单,1:团购店服务订单，2:上门服务订单，3：手机充值，4：流量充值，5：到店消费订单)
 		int orderType = tradeOrder.getType().ordinal();
 		Map<String, Object> map = new HashMap<String, Object>();
+		String storeId = tradeOrder.getStoreId();
+		StoreInfo storeInfo = storeInfoServiceApi.selectByPrimaryKey(storeId);
+		String provinceId = storeInfo.getProvinceId();
+		String cityId = storeInfo.getCityId();
 		// 订单实付金额
 		map.put("limitAmout", tradeOrder.getActualAmount());
 		if (orderType == 0) {
 			// 实物订单
-			String storeId = tradeOrder.getStoreId();
-			StoreInfo storeInfo = storeInfoServiceApi.selectByPrimaryKey(storeId);
-			String provinceId = storeInfo.getProvinceId();
-			String cityId = storeInfo.getCityId();
-
 			// 订单类型
 			map.put("orderType", ActivityCollectOrderTypeEnum.PHYSICAL_ORDER.getValue());
 			map.put("provinceId", provinceId);
@@ -5820,13 +5819,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			getOrderCouponsInfo(orderId, userId, map, respDto);
 		} else if (orderType == 2 || orderType == 5) {
 			// 服务店订单 ，活动范围判定：物流地址
-			// 获取订单的的物流地址
-			TradeOrderLogistics tradeOrderLogistics = tradeOrderLogisticsMapper.selectByOrderId(orderId);
+			map.put("provinceId", provinceId);
+			map.put("cityId", cityId);
 
 			// 订单类型
 			map.put("orderType", ActivityCollectOrderTypeEnum.SERVICE_STORE_ORDER.getValue());
-			map.put("provinceId", tradeOrderLogistics.getProvinceId());
-			map.put("cityId", tradeOrderLogistics.getCityId());
+			
 			// 获取消费返券信息并赠送代金券
 			getOrderCouponsInfo(orderId, userId, map, respDto);
 		} else if (orderType == 3 || orderType == 4) {
