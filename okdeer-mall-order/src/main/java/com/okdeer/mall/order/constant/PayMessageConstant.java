@@ -133,4 +133,13 @@ public interface PayMessageConstant {
 	String TAG_BALANCE_CHANGE = "tag_balance_change";
 	/*********************************end  云钱包解冻金额通知********************************/
 
+	/**
+	 * 到店消费验证tipic
+	 */
+	String TOPIC_CONSUME_CODE_VALI = "topic_consume_code_vali";
+	/**
+	 * 到店消费验证tag
+	 */
+	String TAG_CONSUME_CODE_VALI = "tag_consume_code_vali";
+
 }

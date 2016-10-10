@@ -48,6 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
 import com.alibaba.rocketmq.client.producer.LocalTransactionState;
 import com.alibaba.rocketmq.client.producer.SendResult;
@@ -61,9 +62,12 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.okdeer.api.pay.account.dto.PayAccountDetailDto;
+import com.okdeer.api.pay.account.dto.PayAccountDto;
 import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
+import com.okdeer.api.pay.service.IPayAccountServiceApi;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
@@ -147,6 +151,7 @@ import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderThirdRelation;
+import com.okdeer.mall.order.enums.ActivityBelongType;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
@@ -175,6 +180,7 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper;
 import com.okdeer.mall.order.service.TradeMessageService;
+import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
@@ -537,6 +543,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Autowired
 	RocketMQProducer rocketMQProducer;
 	// End V1.1.0 add by wusw 20160924
+
+	@Autowired
+	private TradeOrderActivityService tradeOrderActivityService;
+
+	@Reference(check=false,version="1.0.0")
+	private IPayAccountServiceApi payAccountApi;
 
 	@Override
 	public PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize)
@@ -5230,13 +5242,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						typeList.add(OrderTypeEnum.STORE_CONSUME_ORDER);
 						break;
 					case "3":
-						if(params.get("rechargeType") != null && "1".equals(params.get("rechargeType").toString())){
-							//流量充值
+						if (params.get("rechargeType") != null && "1".equals(params.get("rechargeType").toString())) {
+							// 流量充值
 							typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
-						}else if(params.get("rechargeType") != null && "0".equals(params.get("rechargeType").toString())){
-							//话费充值
+						} else if (params.get("rechargeType") != null
+								&& "0".equals(params.get("rechargeType").toString())) {
+							// 话费充值
 							typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
-						}else{
+						} else {
 							typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
 							typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
 						}
@@ -5252,8 +5265,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				params.remove("status");
 			} else {
 				List<OrderStatusEnum> statusList = new ArrayList<OrderStatusEnum>();
-				String[] statusArry =  params.get("status").toString().split(",");
-				
+				String[] statusArry = params.get("status").toString().split(",");
+
 				for (int i = 0; i < statusArry.length; i++) {
 					statusList.add(OrderStatusEnum.enumValueOf(Integer.parseInt(statusArry[i])));
 				}
@@ -5915,6 +5928,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			params.put("consumeCodeList", consumeCodes);
 			List<OrderItemDetailConsumeVo> orderDetailList = tradeOrderItemDetailMapper
 					.findOrderInfoByConsumeCode(params);
+
+			// 总验证金额
+			BigDecimal totalValiAmount = BigDecimal.ZERO;
+			// 总优惠金额
+			BigDecimal totalValiPrefAmount = BigDecimal.ZERO;
+
 			if (CollectionUtils.isNotEmpty(orderDetailList)) {
 				// 存放验证通过的消费码对应的订单项详细id和订单id
 				List<String> itemDetailIdList = new ArrayList<String>();
@@ -5959,36 +5978,86 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							orderIdList.add(detailConsumeVo.getOrderId());
 							itemDetailIdList.add(detailConsumeVo.getOrderItemDetailId());
 						}
+
+						totalValiAmount = totalValiAmount.add(detailConsumeVo.getDetailActualAmount());
+						totalValiPrefAmount = totalValiPrefAmount.add(detailConsumeVo.getPreferentialPrice());
 					}
 				}
 				if (CollectionUtils.isNotEmpty(orderIdList)) {
-					for (String orderId : orderIdList) {
-						OrderItemDetailConsumeVo consumeVo = successOrderDetailMap.get(orderId);
-						// 消费完，增加积分
-						pointsBuriedService.doConsumePoints(consumeVo.getUserId(), consumeVo.getDetailActualAmount());
-						// 修改库存
-						this.updateServiceStoreStock(consumeVo, rpcIdList, StockOperateEnum.SEND_OUT_GOODS, userId,
-								storeId);
-						// 判断商品是否支持退订，如果支持，云钱包解冻金额，否则，不用
-						if (consumeVo.getIsUnsubscribe() == IsUnsubscribe.SUPPORT) {
-							this.payTradeOrderByMq(consumeVo);
-						}
-						// 自动评价计时消息
-						/*
-						 * tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag. tag_finish_evaluate_timeout,
-						 * data.get("id").toString());
-						 */
 
+					String bossId = storeInfoService.getBossIdByStoreId(storeId);
+
+					PayAccountDto payAccount = payAccountApi.findByUserId(bossId);
+
+					if (payAccount == null) {
+						//云钱包账号不存在
 					}
+
+					// 总收入金额
+					BigDecimal totalCome = totalValiAmount.add(totalValiPrefAmount);
+
+					if (payAccount.getTotalAmount().compareTo(totalCome) < 0
+							|| payAccount.getFrozenAmount().compareTo(totalCome) < 0) {
+						//店铺的云钱包资金异常
+						
+					}
+					
+					TradeOrder order = null;
+					List<BalancePayTradeVo>	tradeVoList =  Lists.newArrayList();
+					
+					for (String orderId : orderIdList) {
+						// 订单中光宇消费码订单项的总金额和优惠金额
+						order = tradeOrderMapper.selectByPrimaryKey(orderId);
+						tradeVoList.add(buildBalancePayTrade(order,bossId,BigDecimal.ZERO,BigDecimal.ZERO));
+						order = null;
+					}			
+					
+					String sendJson = JSON.toJSONString(tradeVoList);
+					
+					// 构建余额支付（或添加交易记录）对象
+					Message msg = new Message(PayMessageConstant.TOPIC_CONSUME_CODE_VALI, PayMessageConstant.TAG_CONSUME_CODE_VALI,sendJson.getBytes(Charsets.UTF_8));
+					// 发送事务消息
+					TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, null,
+							new LocalTransactionExecuter() {
+
+								@Override
+								public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
+									try {
+										
+										//更新消费码状态、操作库存
+										for (String orderId : orderIdList) {
+											
+											OrderItemDetailConsumeVo consumeVo = successOrderDetailMap.get(orderId);
+											// 消费完，增加积分
+											pointsBuriedService.doConsumePoints(consumeVo.getUserId(), consumeVo.getDetailActualAmount());
+											// 修改库存
+											updateServiceStoreStock(consumeVo, rpcIdList, StockOperateEnum.SEND_OUT_GOODS, userId,
+													storeId);
+										}
+										Date nowTime = new Date();
+										// 批量修改订单项详细验证码状态为已消费，消费时间和更新时间为当前时间
+										if (CollectionUtils.isNotEmpty(itemDetailIdList)) {
+											tradeOrderItemDetailMapper.updateStatusByDetailId(ConsumeStatusEnum.consumed, nowTime,
+													itemDetailIdList);
+										}
+										// 修改订单消费码状态
+										updateOrderConsumeStatus(orderIdList, nowTime);
+										
+									} catch (Exception e) {
+										logger.error("执行同意退款操作异常", e);
+										return LocalTransactionState.ROLLBACK_MESSAGE;
+									}
+									return LocalTransactionState.COMMIT_MESSAGE;
+								}
+							}, new TransactionCheckListener() {
+
+								@Override
+								public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
+									return LocalTransactionState.COMMIT_MESSAGE;
+								}
+							});
+					RocketMqResult.returnResult(sendResult);
 				}
-				Date nowTime = new Date();
-				// 批量修改订单项详细验证码状态为已消费，消费时间和更新时间为当前时间
-				if (CollectionUtils.isNotEmpty(itemDetailIdList)) {
-					tradeOrderItemDetailMapper.updateStatusByDetailId(ConsumeStatusEnum.consumed, nowTime,
-							itemDetailIdList);
-				}
-				// 修改订单消费码状态
-				this.updateOrderConsumeStatus(orderIdList, nowTime);
 
 			} else {
 				throw new ServiceException(REQUEST_PARAM_FAIL);
@@ -6079,7 +6148,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @author wusw
 	 * @date 2016年9月24日
 	 */
-	private void updateOrderConsumeStatus(List<String> orderIdList, Date nowTime) {
+	private void updateOrderConsumeStatus(final List<String> orderIdList, final Date nowTime) {
 		if (CollectionUtils.isNotEmpty(orderIdList)) {
 			// 分组统计同一订单的不同消费码状态数量,并将结果存入map，key为订单id+下划线+订单消费码状态，value为统计数据
 			List<Map<String, Object>> orderStatusCountList = tradeOrderItemDetailMapper
@@ -6307,8 +6376,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						if (CollectionUtils.isNotEmpty(itemDetailList)) {
 							for (TradeOrderItemDetail itemDetailVo : itemDetailList) {
 								if (StringUtils.isNotBlank(itemDetailVo.getConsumeCode())) {
-									String first = itemDetailVo.getConsumeCode().substring(0,2);
-									String end = itemDetailVo.getConsumeCode().substring(6,8);
+									String first = itemDetailVo.getConsumeCode().substring(0, 2);
+									String end = itemDetailVo.getConsumeCode().substring(6, 8);
 									itemDetailVo.setConsumeCode(first + "****" + end);
 								}
 							}
@@ -6322,4 +6391,27 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		return new PageUtils<TradeOrder>(list);
 	}
 
+	/**
+	 * 构建支付对象
+	 */
+	private BalancePayTradeVo buildBalancePayTrade(TradeOrder order,String bossId, BigDecimal amount, BigDecimal prefAmount)
+			throws Exception {
+		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+		payTradeVo.setAmount(amount);
+		payTradeVo.setIncomeUserId(bossId);
+		payTradeVo.setPayUserId("1");
+		payTradeVo.setTradeNum(order.getTradeNum());
+		payTradeVo.setTitle("销售收入-冻结转可用[" + order.getOrderNo() + "]");
+		payTradeVo.setBusinessType(BusinessTypeEnum.CONSUME_CODE_VALI);
+		payTradeVo.setServiceFkId(order.getId());
+		payTradeVo.setServiceNo(order.getOrderNo());
+		// 优惠额退款 判断是否有优惠劵
+		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
+		if (activityResource == ActivityBelongType.OPERATOR
+				|| activityResource == ActivityBelongType.AGENT && (prefAmount.compareTo(BigDecimal.ZERO) > 0)) {
+			payTradeVo.setPrefeAmount(prefAmount);
+			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
+		}
+		return payTradeVo;
+	}
 }
