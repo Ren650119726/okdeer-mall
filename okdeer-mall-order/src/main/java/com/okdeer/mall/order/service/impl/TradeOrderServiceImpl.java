@@ -547,7 +547,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Autowired
 	private TradeOrderActivityService tradeOrderActivityService;
 
-	@Autowired
+	@Reference(check=false,version="1.0.0")
 	private IPayAccountServiceApi payAccountApi;
 
 	@Override
