@@ -70,7 +70,7 @@
 				random_code = #{randomCode, jdbcType=VARCHAR}, 
 			</if>			
 			<if test="codeType != null">
-				codeType = #{codeType, jdbcType=INTEGER}, 
+				code_type = #{codeType, jdbcType=INTEGER}, 
 			</if>			
 			<if test="disabled != null">
 				disabled = #{disabled, jdbcType=TINYINT}, 
