@@ -5861,6 +5861,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 费返券插入代金券记录以及更新剩余的代金券,插入消费返券记录
 		addActivityCouponsRecord(lstCouponsRecords, lstActivityCouponsIds, record);
 		if (totalValue != 0) {
+			respDto.setTotalValue(totalValue);
 			respDto.setVouContent("恭喜您获得" + totalValue + "元代金券");
 			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_SUCCESS_TIPS);
 		}
