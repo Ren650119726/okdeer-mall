@@ -132,6 +132,7 @@ import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
+import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
@@ -6525,6 +6526,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		payTradeVo.setBusinessType(BusinessTypeEnum.CONSUME_CODE_VALI);
 		payTradeVo.setServiceFkId(order.getId());
 		payTradeVo.setServiceNo(order.getOrderNo());
+		payTradeVo.setExt("HX"+TradeNumUtil.getTradeNum());
 		// 优惠额退款 判断是否有优惠劵
 		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
 		if (activityResource == ActivityBelongType.OPERATOR
