@@ -244,6 +244,7 @@ import net.sf.json.JsonConfig;
  *            查询商家版APP服务店到店消费订单信息 V1.1.0 2016-09-27 maojj 商品订单详情页新增字段 V1.1.0
  *            2016-09-29 wusw 添加上门服务订单详情的查询方法
  *            2016 10 06  zhulq  在后台将消费码中间四位用* 显示
+ *             13960             2016-10-10            wusw               修改判断上门服务订单是否支持投诉
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {

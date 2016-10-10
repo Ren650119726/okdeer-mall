@@ -112,6 +112,7 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
  *       ----------------+----------------+-------------------+------------------------------------------- 
  *       v1.1.0             2016-9-20            zengjz             增加查询消费码订单列表
  *       V1.1.0             2016-10-8            zhaoqc             新增通过消费码消费状态判断订单能否投诉
+ *       13960             2016-10-10            wusw               修改通过订单消费码状态判断订单是否支持投诉
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.StoreConsumeOrderServiceApi")
 public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi, StoreConsumeOrderService {
