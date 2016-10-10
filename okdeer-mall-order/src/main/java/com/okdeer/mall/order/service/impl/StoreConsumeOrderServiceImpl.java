@@ -43,6 +43,7 @@ import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.service.IStoreInfoExtServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
@@ -112,6 +113,7 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
  *       ----------------+----------------+-------------------+------------------------------------------- 
  *       v1.1.0             2016-9-20            zengjz             增加查询消费码订单列表
  *       V1.1.0             2016-10-8            zhaoqc             新增通过消费码消费状态判断订单能否投诉
+ *       13960             2016-10-10            wusw               修改通过订单消费码状态判断订单是否支持投诉
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.StoreConsumeOrderServiceApi")
 public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi, StoreConsumeOrderService {
@@ -280,22 +282,24 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			// 支付信息
 			TradeOrderPay payInfo = userTradeOrderDetailVo.getTradeOrderPay();
 
-			//Begin added by zhaoqc 2016-10-08
 			if (payInfo != null) {
 				// 0:余额支付 1:支付宝 2:微信支付
 				json.put("payMethod", payInfo.getPayType().ordinal());
 				json.put("orderPayTime", DateUtils.formatDate(payInfo.getPayTime(), "yyyy-MM-dd HH:mm:ss"));
 				// 是否支持投诉 0：不支持  1:支持
+				// Begin 13960 add by wusw 20161010
+				// 订单消费码状态为待评价、已过期、已退款时，支持投诉
 				if(userTradeOrderDetailVo.getConsumerCodeStatus() == ConsumerCodeStatusEnum.WAIT_EVALUATE 
-				           || userTradeOrderDetailVo.getConsumerCodeStatus() == ConsumerCodeStatusEnum.COMPLETED) {
+				           || userTradeOrderDetailVo.getConsumerCodeStatus() == ConsumerCodeStatusEnum.EXPIRED
+				           || userTradeOrderDetailVo.getConsumerCodeStatus() == ConsumerCodeStatusEnum.REFUNDED) {
 				    json.put("isSupportComplain", 1);
 				} else {
 				    json.put("isSupportComplain", 0);
 				}
+				// End 13960 add by wusw 20161010
 			} else {
 				json.put("isSupportComplain", 0);
 			}
-			//End added by zhaoqc 2016-10-08
 			
 			// 交易号
 			json.put("tradeNum",
@@ -322,14 +326,13 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 					: userTradeOrderDetailVo.getCompainStatus().ordinal());
 
 			json.put("leaveMessage", userTradeOrderDetailVo.getRemark());
-			//订单状态为已取消且 更新时间不为null时设置正常的取消时间 start 涂志定
+			//订单状态为已取消且 更新时间不为null时设置正常的取消时间
 			if (userTradeOrderDetailVo.getStatus() == OrderStatusEnum.CANCELED && userTradeOrderDetailVo.getUpdateTime() != null) {
 				json.put("cancelTime",
 						DateUtils.formatDate(userTradeOrderDetailVo.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
 			} else {
 				json.put("cancelTime", "");
 			}
-			//end 涂志定
 			// 店铺信息
 			getStoreInfo(json, userTradeOrderDetailVo);
 			// 商品信息
@@ -362,8 +365,14 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		if (storeInfo != null) {
 			storeId = storeInfo.getId();
 			storeName = storeInfo.getStoreName();
-			storeMobile = storeInfo.getMobile();
-
+//			storeMobile = storeInfo.getMobile();
+			
+			//获取店铺客服电话
+			StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
+			if(storeInfoExt != null){
+				storeMobile = storeInfoExt.getServicePhone();
+			}
+			
 			// 确认订单时，没有将地址保存到trade_order_logistics订单物流表，暂时取收货地址表的默认地址
 			MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
 			memberConsigneeAddress.setUserId(storeId);

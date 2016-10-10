@@ -262,11 +262,11 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
             return 1;
         }
         
-        List<SysUserInvitationRecord> records = this.sysUserInvitationRecordMapper.findInvitationRecordByUserId(userId);
-        if(!CollectionUtils.isEmpty(records)) {
-            //已经被邀请过，不能再次填写邀请记录
-            return 2;
-        }
+		SysUserInvitationRecord records = this.sysUserInvitationRecordMapper.findInvitationRecordByUserId(userId);
+		if (records != null) {
+			// 已经被邀请过，不能再次填写邀请记录
+			return 2;
+		}
         
         //创建邀请记录表
         SysUserInvitationRecord invitationRecord = new SysUserInvitationRecord();
