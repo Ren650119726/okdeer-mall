@@ -342,7 +342,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
                          * md5_str检验码的计算方法:包体=userid+userpws+cardid+cardnum+sporder_id+sporder_time+ game_userid
                          *1: 对: “包体+KeyStr” 这个串进行md5 的32位值. 结果大写
                          */
-                        String cardid = tradeOrderItem.getStoreSkuId();
+                        String cardid = tradeOrderItem.getStoreSpuId();
                         String ordertime = orderid.substring(0, 14);
                         String sign = MD5.md5(userid + userpws + cardid + cardnum + orderid + ordertime + phoneno + keyStr).toUpperCase();
                         String url = "http://" + userid + ".api2.ofpay.com/onlineorder.do?userid=" + userid + "&userpws=" + userpws 
