@@ -5190,8 +5190,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @Description: 服务店订单状态和支付方式转换
 	 * @param vo
 	 * @return void
-	 * @author wusw
-	 * @date 2016年7月17日
+	 * @author zhangkn
+	 * @date 2016年10月10日
 	 */
 	private void convertOrderStatusDdxf(PhysicsOrderVo vo) {
 		switch (vo.getStatus()) {
