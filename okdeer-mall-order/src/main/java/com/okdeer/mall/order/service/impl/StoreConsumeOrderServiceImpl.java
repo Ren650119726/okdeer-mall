@@ -43,6 +43,7 @@ import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.service.IStoreInfoExtServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
@@ -362,8 +363,14 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		if (storeInfo != null) {
 			storeId = storeInfo.getId();
 			storeName = storeInfo.getStoreName();
-			storeMobile = storeInfo.getMobile();
-
+//			storeMobile = storeInfo.getMobile();
+			
+			//获取店铺客服电话
+			StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
+			if(storeInfoExt != null){
+				storeMobile = storeInfoExt.getServicePhone();
+			}
+			
 			// 确认订单时，没有将地址保存到trade_order_logistics订单物流表，暂时取收货地址表的默认地址
 			MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
 			memberConsigneeAddress.setUserId(storeId);
