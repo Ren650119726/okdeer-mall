@@ -9,8 +9,6 @@ import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIV
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_TIPS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ONLY;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ONLY_TIPS;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR_TIPS;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE;
@@ -147,6 +145,7 @@ import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderThirdRelation;
+import com.okdeer.mall.order.enums.CompainStatusEnum;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
@@ -208,36 +207,46 @@ import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 
 /**
- * @DESC:
- * @author YSCGD
- * @date 2016-02-05 15:22:58
- * @version 1.0.0
- * @copyright ©2005-2020 yschome.com Inc. All rights reserved
- *            ==================================================================
- *            =============================== Task ID Date Author Description
- *            ----------------+----------------+-------------------+------------
- *            ------------------------------- 重构4.1 2016-7-13 wusw 添加服务店订单列表查询
- *            重构4.1 2016-7-15 wusw 添加服务店订单详情查询,服务店订单派单的短信发送 重构4.1 2016-7-16
- *            zengj 服务店订单下单后不推送消息和发送短信 重构4.1 2016-7-17 wusw 服务订单管理（商城后台） 重构4.1
- *            2016-7-17 wushp 服务订单 重构4.1 2016-7-19 wusw 添加财务系统的订单接口（包含服务店订单情况）
- *            重构4.1 2016-7-19 wusw 修改商城后台的服务订单管理，线下确认价格并当面支付的支付方式判断 重构4.1
- *            2016-7-27 wusw 添加相应注释，修改财务系统订单接口默认参数处理，修改服务店订单导出的支付方式判断 重构4.1
- *            2016-7-29 wusw 添加设置拒绝服务原因 重构4.1 2016-7-29 wusw 添加服务店订单详情查询（商城后台）
- *            重构4.1 2016-7-30 zhaoqc 添加根据订单状态查询订单列表 重构4.1 2016-7-29 wusw
- *            修改发货时，服务店订单超时未派单的计时消息发送 重构4.1 2016-8-3 wushp
- *            用户app订单列表或者订单详情--再逛逛按钮 12170 2016-8-9 wusw
- *            修改订单交易参数处理，支付方式为现金支付时包括货到付款的实物订单 12051 2016-8-11 wusw 修改活动信息 重构4.1
- *            2016-8-16 wusw 修改订单发货、取消、拒收的日志描述 重构4.1 2016-8-16 zhaoqc
- *            新增根据交易号修改订单状态的方法 重构4.1（代码评审优化） 2016-8-18 wusw 优化服务店订单列表和导出代码 重构4.1
- *            2016-8-24 maojj 支付成功时，才发送提货码的信息 V1.0.3 2016-09-01 wusw
- *            修改自动确认收货期限为7天 1.0.Z 2016-09-05 zengj 增加订单操作记录 1.0.Z 2016-09-07
- *            zengj 库存管理修改，采用商业管理系统校验 V1.1.0 2016-9-12 zengjz
- *            财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口 V1.1.0 2016-9-24 zhaoqc
- *            新增充值订单超时未支付订单取消 V1.1.0 2016-09-23 wusw 修改根据消费码查询相应订单信息的方法为批量
- *            V1.1.0 2016-09-24 wusw 消费码验证（到店消费）相应方法 V1.1.0 2016-09-26 luosm
- *            查询商家版APP服务店到店消费订单信息 V1.1.0 2016-09-27 maojj 商品订单详情页新增字段 V1.1.0
- *            2016-09-29 wusw 添加上门服务订单详情的查询方法
- *            2016 10 06  zhulq  在后台将消费码中间四位用* 显示
+ * 
+ * ClassName: TradeOrderServiceImpl 
+ * @Description: 交易订单服务接口
+ * @author maojj
+ * @date 2016年10月10日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *		重构4.1 				2016-7-13 			wusw 		添加服务店订单列表查询
+ *      重构4.1 				2016-7-15 			wusw 		添加服务店订单详情查询,服务店订单派单的短信发送
+ *      重构4.1 				2016-7-16 			zengj 		服务店订单下单后不推送消息和发送短信 
+ *      重构4.1 				2016-7-17 			wusw 		服务订单管理（商城后台） 
+ *      重构4.1 				2016-7-17 			wushp 		服务订单
+ *      重构4.1 				2016-7-19 			wusw 		添加财务系统的订单接口（包含服务店订单情况）
+ *      重构4.1 				2016-7-19 			wusw 		修改商城后台的服务订单管理，线下确认价格并当面支付的支付方式判断 
+ *     	重构4.1 				2016-7-27 			wusw 		添加相应注释，修改财务系统订单接口默认参数处理，修改服务店订单导出的支付方式判断
+ *     	重构4.1 				2016-7-29 			wusw 		添加设置拒绝服务原因 
+ *     	重构4.1 				2016-7-29 			wusw 		添加服务店订单详情查询（商城后台）
+ *     	重构4.1 				2016-7-30 			zhaoqc  	添加根据订单状态查询订单列表 
+ *     	重构4.1 				2016-7-29 			wusw    	修改发货时，服务店订单超时未派单的计时消息发送
+ *    	 重构4.1 				2016-8-3 			wushp 		用户app订单列表或者订单详情--再逛逛按钮 
+ *     	12170 				2016-8-9 			wusw  		修改订单交易参数处理，支付方式为现金支付时包括货到付款的实物订单 
+ *     	12051 				2016-8-11 			wusw 		修改活动信息 
+ *     	重构4.1				2016-8-16			wusw 		修改订单发货、取消、拒收的日志描述 
+ *     	重构4.1				2016-8-16 			zhaoqc 		新增根据交易号修改订单状态的方法 
+ *     	重构4.1（代码评审优化）		2016-8-18 			wusw 		优化服务店订单列表和导出代码 
+ *     	重构4.1				2016-8-24 			maojj 		支付成功时，才发送提货码的信息 
+ *     	V1.0.3 			 	2016-09-01 			wusw  		修改自动确认收货期限为7天 
+ *     	1.0.Z  				2016-09-05 			zengj 		增加订单操作记录 
+ *     	1.0.Z  				2016-09-07 			zengj 		库存管理修改，采用商业管理系统校验 
+ *     	V1.1.0 				2016-9-12 			zengjz		 财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口 
+ *     	V1.1.0 				2016-9-24 			zhaoqc		 新增充值订单超时未支付订单取消 
+ *     	V1.1.0 				2016-09-23			 wusw 		修改根据消费码查询相应订单信息的方法为批量
+ *     	V1.1.0 				2016-09-24			 wusw 		消费码验证（到店消费）相应方法 
+ *     	V1.1.0 				2016-09-26			 luosm		 查询商家版APP服务店到店消费订单信息 
+ *     	V1.1.0 				2016-09-27			 maojj		 商品订单详情页新增字段 
+ *     	V1.1.0 				2016-09-29 			 wusw 		 添加上门服务订单详情的查询方法
+ *      Bug:13961			2016-10-10			 maojj		订单详情修改订单是否支持投诉的逻辑 
+ *      
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -3995,14 +4004,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("payway", orders.getPayWay() == null ? "" : orders.getPayWay().ordinal());
 		// 4 支付类型
 		TradeOrderPay tradeOrderPay = orders.getTradeOrderPay();
+		// Begin Bug:13961 modified by maojj 2016-10-10 
 		// Begin 友门鹿1.1 added by maojj 2016-09-27
-		// 是否支持投诉：只有选择了线上支付，且未付款的，不支持投诉，其他方式均支持。
-		String isSupportComplain = "0";
-		if (orders.getPayWay() == PayWayEnum.PAY_ONLINE && tradeOrderPay == null) {
-			isSupportComplain = "1";
-		}
-		json.put("isSupportComplain", isSupportComplain);
+		// 订单状态是否支持投诉
+		json.put("isSupportComplain", isSupportComplain(orders));
 		// End 友门鹿1.1 added by maojj 2016-09-27
+		// End Bug:13961 modified by maojj 2016-10-10 
 		if (tradeOrderPay != null) {
 			json.put("payType", tradeOrderPay.getPayType().ordinal());
 			json.put("payAmount", tradeOrderPay.getPayAmount());
@@ -4078,6 +4085,42 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("width", 126);
 		return json;
 	}
+	
+	// Begin Bug:13961 added by maojj 2016-10-10 
+	/**
+	 * @Description: 订单是否支持投诉。
+	 * 支持投诉的条件：1、订单支付方式为：在线支付。订单状态为已取消且订单已完成支付或订单状态为交易完成或者已拒收。
+	 * 			 2、订单支付方式为：货到付款。订单状态为已取消或订单状态为交易完成或者已拒收	
+	 * @param userOrderDetail 用户订单明细
+	 * @return   
+	 * @author maojj
+	 * @date 2016年10月10日
+	 */
+	private String isSupportComplain(UserTradeOrderDetailVo userOrderDetail){
+		// isSupportComplain 0:支持，1：不支持
+		String isSupportComplain = "1";
+		if(userOrderDetail.getCompainStatus() == CompainStatusEnum.HAVE_COMPAIN){
+			return isSupportComplain;
+		}
+		switch (userOrderDetail.getStatus()) {
+			case CANCELED:
+				if(userOrderDetail.getPayWay() == PayWayEnum.PAY_ONLINE && userOrderDetail.getTradeOrderPay() != null){
+					isSupportComplain = "0";
+				}else if(userOrderDetail.getPayWay() == PayWayEnum.CASH_DELIERY){
+					isSupportComplain = "0";
+				}
+				break;
+			case REFUSED :
+			case HAS_BEEN_SIGNED :
+			case TRADE_CLOSED :
+				isSupportComplain = "0";
+				break;
+			default:
+				break;
+		}
+		return isSupportComplain;
+	}
+	// End Bug:13961 added by maojj
 
 	// 退换货状态计算0:不支持，1:支持退换货
 	private String getServiceAssurance(Date receivedTime, Integer serviceAssurance) {
