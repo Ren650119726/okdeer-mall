@@ -2146,6 +2146,7 @@ public class TradeOrderRefundsServiceImpl
 	private void updateStoreConsumeRefunds(TradeOrderRefunds orderRefunds) throws Exception {
 
 		List<String> ids = Lists.newArrayList();
+
 		for (TradeOrderRefundsItem refundsItem : orderRefunds.getTradeOrderRefundsItem()) {
 			// 设置消费码为已退款
 			int result = tradeOrderItemDetailService.updateStatusWithRefund(refundsItem.getOrderItemId());
@@ -2168,8 +2169,11 @@ public class TradeOrderRefundsServiceImpl
 		// 是否消费码全部退款
 		boolean isAllRefund = true;
 		if (CollectionUtils.isNotEmpty(detailList)) {
+			
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
-				if (tradeOrderItemDetail.getStatus() != ConsumeStatusEnum.refund && !ids.contains(tradeOrderItemDetail.getOrderItemId())) {
+				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.consumed
+						|| tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.expired) {
+					//如果消费码有已经消费火车过期的状态，就不是全部退款了
 					isAllRefund = false;
 				}
 			}
@@ -2214,16 +2218,15 @@ public class TradeOrderRefundsServiceImpl
 						if (CollectionUtils.isNotEmpty(itemDetailList)) {
 							for (TradeOrderItemDetail itemDetailVo : itemDetailList) {
 								if (StringUtils.isNotBlank(itemDetailVo.getConsumeCode())) {
-									String first = itemDetailVo.getConsumeCode().substring(0,2);
-									String end = itemDetailVo.getConsumeCode().substring(6,8);
+									String first = itemDetailVo.getConsumeCode().substring(0, 2);
+									String end = itemDetailVo.getConsumeCode().substring(6, 8);
 									itemDetailVo.setConsumeCode(first + "****" + end);
 								}
 							}
 						}
 					}
 				}
-				
-				
+
 			}
 		} else {
 			list = new ArrayList<TradeOrderRefundsVo>();
