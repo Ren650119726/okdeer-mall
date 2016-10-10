@@ -2169,11 +2169,11 @@ public class TradeOrderRefundsServiceImpl
 		// 是否消费码全部退款
 		boolean isAllRefund = true;
 		if (CollectionUtils.isNotEmpty(detailList)) {
-			
+
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
 				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.consumed
 						|| tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.expired) {
-					//如果消费码有已经消费火车过期的状态，就不是全部退款了
+					// 如果消费码有已经消费或者过期的状态，就不是全部退款了
 					isAllRefund = false;
 				}
 			}
@@ -2182,6 +2182,9 @@ public class TradeOrderRefundsServiceImpl
 		if (isAllRefund) {
 			// 如果全部退款了，将订单状态改为已经退款
 			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.REFUNDED);
+		} else {
+			//变成已经消费
+			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_EVALUATE);
 		}
 
 		// 判断所有的订单项是否全部完成了，如果全部完成了，就更改订单isComplete为已经完成
