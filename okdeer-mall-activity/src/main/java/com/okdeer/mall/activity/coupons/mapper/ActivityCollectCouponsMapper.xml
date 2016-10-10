@@ -661,7 +661,7 @@
 	<select id="findRecommendAcvititys" resultMap="activityCouponsSimpleVo">
 		select id, h5_url from activity_collect_coupons
 		where status=1 and type=3
-		and disabled=0  and approval_status=1
+		and disabled=0
 	</select>
 	
 </mapper>
