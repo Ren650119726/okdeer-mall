@@ -281,7 +281,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			// 支付信息
 			TradeOrderPay payInfo = userTradeOrderDetailVo.getTradeOrderPay();
 
-			//Begin added by zhaoqc 2016-10-08
 			if (payInfo != null) {
 				// 0:余额支付 1:支付宝 2:微信支付
 				json.put("payMethod", payInfo.getPayType().ordinal());
@@ -296,7 +295,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			} else {
 				json.put("isSupportComplain", 0);
 			}
-			//End added by zhaoqc 2016-10-08
 			
 			// 交易号
 			json.put("tradeNum",
@@ -323,14 +321,13 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 					: userTradeOrderDetailVo.getCompainStatus().ordinal());
 
 			json.put("leaveMessage", userTradeOrderDetailVo.getRemark());
-			//订单状态为已取消且 更新时间不为null时设置正常的取消时间 start 涂志定
+			//订单状态为已取消且 更新时间不为null时设置正常的取消时间
 			if (userTradeOrderDetailVo.getStatus() == OrderStatusEnum.CANCELED && userTradeOrderDetailVo.getUpdateTime() != null) {
 				json.put("cancelTime",
 						DateUtils.formatDate(userTradeOrderDetailVo.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
 			} else {
 				json.put("cancelTime", "");
 			}
-			//end 涂志定
 			// 店铺信息
 			getStoreInfo(json, userTradeOrderDetailVo);
 			// 商品信息
