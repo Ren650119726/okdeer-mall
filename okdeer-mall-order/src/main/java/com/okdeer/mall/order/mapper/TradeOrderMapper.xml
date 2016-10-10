@@ -4142,6 +4142,7 @@
 		tr.type,
 		tr.delivery_time,
 		tr.update_time,
+		tr.pick_up_time,
 		item.store_sku_id,
 		item.main_pic_prl,
 		item.sku_name,
@@ -4397,7 +4398,7 @@
 		<!-- LEFT JOIN trade_order_refunds trf ON tr.id = trf.order_id -->
 		WHERE (tr.status = 1 OR tr.status = 5 OR tr.status = 6 OR tr.status =
 		0 OR tr.status = 11 OR tr.status = 2)
-		AND tr.disabled=0
+		AND tr.is_show=1
 		<!-- 充值类型选择 流量或者话费 -->
 		<if test="ids != null">
 			AND tr.id in
@@ -4532,6 +4533,8 @@
 		WHEN 0 THEN
 		store.store_name
 		WHEN 2 THEN
+		store.store_name
+		WHEN 5 THEN
 		store.store_name
 		END AS store_name,
 		trade.user_phone,
@@ -4742,7 +4745,7 @@
 		SELECT
 		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,
 		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,o.consumer_code_status,
-		pay.pay_type,pay.pay_amount,pay.pay_time,
+		o.update_time,pay.pay_type,pay.pay_amount,pay.pay_time,
 		TIMESTAMPDIFF(SECOND,DATE_FORMAT(NOW(),'%Y-%m-%d
 		%H:%i:%s'),o.create_time) AS remaining_time,
 		store.id as store_id,store.store_name as store_name,store.mobile as

@@ -213,6 +213,22 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 	public void insertSeckillReminde(SeckillReminde seckillReminde) throws Exception {
 		seckillRemindeMapper.insertSeckillReminde(seckillReminde);
 	}
+	
+	public static void main(String[] args) {
+		Date date = new Date();
+		Long time = date.getTime();
+		System.out.println(time);
+
+		Date d = new Date(time);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		System.out.println(sdf.format(d));
+		
+		Date d1 = new Date(time + (60000 * 15));
+		SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		System.out.println(sdf1.format(d1));
+		
+		
+	}
 
 	@Override
 	public void sendPosMessage(SendMsgParamVo sendMsgParamVo, String skuName, Date startTime) throws Exception {
@@ -241,7 +257,7 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 		// 设置是否定时发送
 		pushMsgVo.setIsTiming(1);
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		pushMsgVo.setSendTime(format.format(startTime) + time);//毫秒
+		pushMsgVo.setSendTime(format.format(new Date(startTime.getTime() - time)));
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
 		// 查询的用户信息

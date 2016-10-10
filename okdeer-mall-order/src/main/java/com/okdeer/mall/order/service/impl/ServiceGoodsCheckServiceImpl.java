@@ -11,10 +11,14 @@ import org.springframework.util.CollectionUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuPicture;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.enums.GoodsStoreSkuPayTypeEnum;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.utils.DateUtils;
@@ -23,6 +27,7 @@ import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
+import com.okdeer.mall.order.utils.TradeOrderStock;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
@@ -54,6 +59,18 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuPictureServiceApi goodsStoreSkuPictureService;
+	
+	/**
+	 * 到店消费服务商品service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuServiceServiceApi goodsStoreSkuServiceServiceApi;
+	
+	/**
+	 * 店铺商品库存Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockService;
 	
 	@Override
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
@@ -97,6 +114,9 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			storeSkuIdList.add(item.getSkuId());
 		}
 		
+		// 店铺skuId集合
+		req.getContext().put("storeSkuIdList", storeSkuIdList);
+		
 		// 数据库中对应的商品信息list
 		List<GoodsStoreSku> goodsStoreSkuList = goodsStoreSkuService.findByIds(storeSkuIdList);
 		
@@ -117,6 +137,8 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			goodsItem.setLimitNum(goodsStoreSku.getTradeMax());
 			goodsItem.setUpdateTime(DateUtils.formatDateTime(goodsStoreSku.getUpdateTime()));
 			goodsItem.setSkuType(goodsStoreSku.getSpuTypeEnum().ordinal());
+			// 是否上架，0:下架、1:上架
+			goodsItem.setOnline(goodsStoreSku.getOnline().ordinal());
 			// 设置商品的支付方式
 			goodsItem.setPaymentMode(getPaymentMode(goodsStoreSku.getPayType()));
 			// 商品主图信息列表
@@ -138,6 +160,8 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		}
 		// 将商品信息返回
 		respData.setList(list);
+		// 组装库存信息并返回
+		this.buildRespGoodsStock(req, resp);
 		
 		// 商品类目id
 		List<String> spuCategoryIds = new ArrayList<String>();
@@ -147,10 +171,35 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		// 检测商品信息是否有变化
 		for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
 			if (goodsStoreSku == null || goodsStoreSku.getOnline() != BSSC.PUTAWAY) {
-				resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS);
+				if (reqData.getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+					// 到店消费提示信息与上门服务提示信息不一样
+					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_BUY);
+				} else {
+					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS);
+				}
+				
 				req.setComplete(true);
 				return;
 			}
+			
+			// 判断到店消费商品是否已过有效期
+			if (reqData.getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+				GoodsStoreSkuService skuService = goodsStoreSkuServiceServiceApi.selectBySkuId(goodsStoreSku.getId());
+				if (skuService == null) {
+					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS_1);
+					req.setComplete(true);
+					return;
+				}
+				
+				Date endTime = skuService.getEndTime();
+				if (new Date().compareTo(endTime) == 0 || new Date().compareTo(endTime) == 1) {
+					// 服务商品已过期，不能预约
+					resp.setResult(ResultCodeEnum.SERV_GOODS_EXP);
+					req.setComplete(true);
+					return;
+				} 
+			}
+			
 			
 			// 商品类目id
 			spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
@@ -236,14 +285,47 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			}
 		}
 		
-		// 店铺skuId集合
-		req.getContext().put("storeSkuIdList", storeSkuIdList);
 		// 类目id
 		req.getContext().put("spuCategoryIds", spuCategoryIds);
 		// 商品sku信息
 		req.getContext().put("storeSkuList", goodsStoreSkuList);
 		
 		reqData.setTotalAmount(totalAmout);
+	}
+	
+	/**
+	 * 
+	 * @Description: 组装商品库存信息
+	 * @param req 请求
+	 * @param resp 响应
+	 * @throws Exception 异常
+	 * @author wushp
+	 * @date 2016年10月10日
+	 */
+	public void buildRespGoodsStock(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
+		List<String> storeSkuIdList = (List<String>)req.getContext().get("storeSkuIdList");
+		// 商品库存
+		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockService
+				.selectSingleSkuStockBySkuIdList(storeSkuIdList);
+		
+		List<TradeOrderGoodsItem> list = req.getData().getList();
+		// 存储返回的sku对应的库存信息列表
+		List<TradeOrderStock> detail = new ArrayList<TradeOrderStock>();
+		TradeOrderStock tradeOrderStock = null;
+		// 组装商品库存信息
+		for (GoodsStoreSkuStock skuStock : stockList) {
+			for (TradeOrderGoodsItem item : list) {
+				if (skuStock.getStoreSkuId().equals(item.getSkuId())) {
+					tradeOrderStock = new TradeOrderStock();
+					tradeOrderStock.setSkuId(skuStock.getStoreSkuId());
+					tradeOrderStock.setSellableStock(skuStock.getSellable());
+					detail.add(tradeOrderStock);
+ 					break;
+				}
+			}
+		}
+		// 返回商品库存信息
+		resp.getData().setDetail(detail);
 	}
 	// end add by wushp V1.1.0
 }
