@@ -169,7 +169,19 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 	@Override
 	public List<GoodsSpuCategory> findSpuCategoryList(Map<String, Object> map) {
-		return activityCouponsMapper.findSpuCategoryList(map);
+		List<String> firstCagegoryList = activityCouponsMapper.findFwdFirstSpuCategoryList(map);
+		if(CollectionUtils.isNotEmpty(firstCagegoryList)){
+			StringBuffer sb = new StringBuffer();
+			for(String categoryId : firstCagegoryList){
+				if(!"".equals(sb.toString())){
+					sb.append(" or ");
+				}
+				sb.append(" g.level_id like '" + categoryId + "|%' ");
+			}
+			map.put("firstCagegoryList", " ( " + sb.toString() + " ) ");
+			return activityCouponsMapper.findSpuCategoryList(map);
+		}
+		return new ArrayList<GoodsSpuCategory>();
 	}
 
 	@Override
