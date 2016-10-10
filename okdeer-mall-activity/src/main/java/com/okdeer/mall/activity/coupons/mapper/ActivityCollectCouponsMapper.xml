@@ -621,6 +621,8 @@
 		where s.disabled = 0 
 		and 
 		(
+			 s.belong_type = #{belongType} 
+			  and 
 			(s.activity_id is null or s.activity_id = '')
 			<if test="totalNumInfinite != null and totalNumInfinite != ''">
 				and s.total_num = 0
