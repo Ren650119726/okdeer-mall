@@ -5991,6 +5991,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 					if (payAccount == null) {
 						//云钱包账号不存在
+						failResult.append("抱歉,该账号没有开通云钱包;");
 					}
 
 					// 总收入金额
@@ -5999,6 +6000,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					if (payAccount.getTotalAmount().compareTo(totalCome) < 0
 							|| payAccount.getFrozenAmount().compareTo(totalCome) < 0) {
 						//店铺的云钱包资金异常
+						failResult.append("抱歉,该账号云钱包资金异常;");
 						
 					}
 					
@@ -6006,16 +6008,28 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					List<BalancePayTradeVo>	tradeVoList =  Lists.newArrayList();
 					
 					for (String orderId : orderIdList) {
-						// 订单中光宇消费码订单项的总金额和优惠金额
+						// 订单中关于消费码订单项的总金额和优惠金额
 						order = tradeOrderMapper.selectByPrimaryKey(orderId);
-						tradeVoList.add(buildBalancePayTrade(order,bossId,BigDecimal.ZERO,BigDecimal.ZERO));
+						// 每个订单的订单项详细实付金额（当前输入验证码的订单项）
+						BigDecimal totalAmountDetail = BigDecimal.ZERO;
+						// 每个订单的订单项详细优惠金额（当前输入验证码的订单项）
+						BigDecimal prefAmountDetail = BigDecimal.ZERO;
+						for (OrderItemDetailConsumeVo detailConsumeVo : orderDetailList) {
+							if (detailConsumeVo.getOrderId() == orderId) {
+								totalAmountDetail = totalAmountDetail.add(detailConsumeVo.getDetailActualAmount());
+								prefAmountDetail = prefAmountDetail.add(detailConsumeVo.getPreferentialPrice());
+							}
+							
+						}
+						tradeVoList.add(buildBalancePayTrade(order,bossId,totalAmountDetail,prefAmountDetail));
 						order = null;
 					}			
 					
 					String sendJson = JSON.toJSONString(tradeVoList);
 					
 					// 构建余额支付（或添加交易记录）对象
-					Message msg = new Message(PayMessageConstant.TOPIC_CONSUME_CODE_VALI, PayMessageConstant.TAG_CONSUME_CODE_VALI,sendJson.getBytes(Charsets.UTF_8));
+					Message msg = new Message(PayMessageConstant.TOPIC_CONSUME_CODE_VALI, 
+							PayMessageConstant.TAG_CONSUME_CODE_VALI,sendJson.getBytes(Charsets.UTF_8));
 					// 发送事务消息
 					TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, null,
 							new LocalTransactionExecuter() {
@@ -6044,7 +6058,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 										updateOrderConsumeStatus(orderIdList, nowTime);
 										
 									} catch (Exception e) {
-										logger.error("执行同意退款操作异常", e);
+										logger.error("执行消费码消费操作异常", e);
 										return LocalTransactionState.ROLLBACK_MESSAGE;
 									}
 									return LocalTransactionState.COMMIT_MESSAGE;
