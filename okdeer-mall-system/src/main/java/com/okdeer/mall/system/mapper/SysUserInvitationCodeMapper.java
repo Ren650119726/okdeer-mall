@@ -1,12 +1,13 @@
 package com.okdeer.mall.system.mapper;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.system.entity.SysUserInvitationCode;
 import com.okdeer.mall.system.entity.SysUserInvitationCodeVo;
-import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * ClassName: SysUserInvitationCodeMapper 
@@ -19,6 +20,7 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构4.1			 2016年9月19日 			zhulq
  *      V1.1.0           2016年9月28日                                zhaoqc        添加根据用户Id查询邀请码信息 
+ *      Bug:13700        2016年10月10日		maojj		          根据邀请码更新下单人数 
  */
 public interface SysUserInvitationCodeMapper extends IBaseCrudMapper {
 
@@ -92,4 +94,16 @@ public interface SysUserInvitationCodeMapper extends IBaseCrudMapper {
      * @return 邀请码实体
      */
     SysUserInvitationCode findInvitationCodeByCode(@Param("invitationCode") String invitationCode);
+    
+    // Begin Bug:13700 added by maojj 2016-10-10
+    /**
+     * @Description: 修改邀请码首单人数
+     * @param invitationCode 邀请码
+     * @param updateTime 更新时间
+     * @return   
+     * @author maojj
+     * @date 2016年10月10日
+     */
+    int updateFirstOrderNum(@Param("id")String id,@Param("updateTime")Date updateTime);
+    // End Bug:13700 added by maojj 2016-10-10
 }

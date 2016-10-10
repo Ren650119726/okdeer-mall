@@ -90,6 +90,7 @@ import com.okdeer.archive.system.entity.PsmsAgent;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.archive.system.service.IPsmsAgentServiceApi;
 import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
@@ -203,7 +204,10 @@ import com.okdeer.mall.order.vo.TradeOrderStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderVo;
 import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
 import com.okdeer.mall.points.service.PointsBuriedService;
+import com.okdeer.mall.system.entity.SysUserInvitationRecord;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
+import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
+import com.okdeer.mall.system.mapper.SysUserInvitationRecordMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
 import com.okdeer.mcm.service.ISmsService;
@@ -558,6 +562,20 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	@Reference(check=false,version="1.0.0")
 	private IPayAccountServiceApi payAccountApi;
+	
+	// Begin Bug:13700 added by maojj 2016-10-10
+	/**
+	 * 用户邀请记录Mapper
+	 */
+	@Resource
+	private SysUserInvitationRecordMapper sysUserInvitationRecordMapper;
+	
+	/**
+	 * 用户邀请码Mapper
+	 */
+	@Resource
+	private SysUserInvitationCodeMapper sysUserInvitationCodeMapper;
+	// End Bug:13700 added by maojj 2016-10-10
 
 	@Override
 	public PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize)
@@ -1752,7 +1770,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// End 1.0.Z 增加订单操作记录 add by zengj
 				}
 				// End modified by maojj 2016-07-26
-
+				// Begin Bug:13700 added by maojj 2016-10-10
+				// 确认收货，更新用户邀请记录
+				updateInvitationRecord(tradeOrder.getUserId());
+				// End Bug:13700 added by maojj 2016-10-10
 				// added by maojj 给ERP发消息去生成出入库单据
 				// stockMQProducer.sendMessage(stockAdjustVo);
 
@@ -1765,7 +1786,38 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	// End modified by maojj 2016-07-26
-
+	
+	// Begin Bug:13700 added by maojj 2016-10-10
+	/**
+	 * @Description: 更新邀请记录   
+	 * @author maojj
+	 * @date 2016年10月10日
+	 */
+	private void updateInvitationRecord(String buyerUserId) {
+		// 根据用户Id查询邀请记录
+		SysUserInvitationRecord invitationRecord = sysUserInvitationRecordMapper
+				.findInvitationRecordByUserId(buyerUserId);
+		if (invitationRecord == null) {
+			return;
+		}
+		// 如果邀请记录中已经是首单，则不做任何处理。
+		if (invitationRecord.getIsFirstOrder() == WhetherEnum.whether) {
+			return;
+		}
+		// 如果已存在的邀请记录中不是首单，则确认收货时，将状态更改为首单，并修改用户邀请码的下单人数。
+		Date updateTime = new Date();
+		invitationRecord.setFirstOrderTime(updateTime);
+		invitationRecord.setUpdateTime(updateTime);
+		// 更新邀请记录
+		int updateResult = sysUserInvitationRecordMapper.updateCodeRecord(invitationRecord);
+		// 如果更新成功，则修改邀请码下单人数
+		if (updateResult == 1) {
+			// 跟新邀请码下单人数
+			sysUserInvitationCodeMapper.updateFirstOrderNum(invitationRecord.getInvitationCodeId(), updateTime);
+		}
+	}
+	// End Bug:13700 added by maojj 2016-10-10
+	
 	/**
 	 * @desc 用户拒收并发送消息(快送同步)
 	 */
