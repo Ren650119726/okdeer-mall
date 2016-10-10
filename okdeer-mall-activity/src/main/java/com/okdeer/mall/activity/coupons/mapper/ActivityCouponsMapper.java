@@ -53,6 +53,13 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	List<GoodsSpuCategory> findSpuCategoryList(Map<String,Object> map);
 	
 	/**
+	 * 查询服务店一级分类id
+	 * @param goodsSpuCategory 对象
+	 * @return 结果
+	 */
+	List<String> findFwdFirstSpuCategoryList(Map<String,Object> map);
+	
+	/**
 	 * 根据条件查询代金卷信息 
 	 * @param couponsInfoParams 条件
 	 * @return 代金卷信息

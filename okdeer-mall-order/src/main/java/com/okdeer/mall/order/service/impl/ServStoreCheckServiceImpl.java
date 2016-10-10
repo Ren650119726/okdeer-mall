@@ -71,10 +71,10 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 			
 		}
 		// end add by wushp 20160927 
-		// 返回服务店铺信息
-		if (req.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
-			data.setStoreInfo(buildServStoreInfo(storeInfo));
-		}
+		// 返回服务店铺信息 到店消费需要拿店铺信息发短信用
+		// if (req.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
+		data.setStoreInfo(buildServStoreInfo(storeInfo));
+		// }
 	}
 
 	/**

@@ -4745,7 +4745,7 @@
 		SELECT
 		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,
 		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,o.consumer_code_status,
-		pay.pay_type,pay.pay_amount,pay.pay_time,
+		o.update_time,pay.pay_type,pay.pay_amount,pay.pay_time,
 		TIMESTAMPDIFF(SECOND,DATE_FORMAT(NOW(),'%Y-%m-%d
 		%H:%i:%s'),o.create_time) AS remaining_time,
 		store.id as store_id,store.store_name as store_name,store.mobile as

@@ -88,6 +88,13 @@
 	 			#{item}  
 			</foreach>  
     	</if>
+    	<if test="firstCagegoryList != null">
+    		and ${firstCagegoryList}
+    	</if>
+    </select>
+    
+    <select id="findFwdFirstSpuCategoryList" resultType="string" parameterType="map">
+    	select spu_category_id from goods_spu_category_industry where industry_id = '8a9410d556916b01015692493bf90aa9';
     </select>
     
 

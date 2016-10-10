@@ -23,7 +23,6 @@ import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.enums.RefundsTraceEnum;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsTraceMapper;
-import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsTraceService;
 import com.okdeer.mall.order.service.TradeOrderRefundsTraceServiceApi;
 import com.okdeer.mall.order.vo.RefundsTraceResp;
@@ -39,6 +38,7 @@ import com.okdeer.mall.order.vo.RefundsTraceVo;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构1.1			2016年9月28日				maojj		 交易订单退款轨迹Service
+ *		Bug:13658		2016年10月10日				maojj		查询退款轨迹时返回参数增加isDone。默认均为1	
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderRefundsTraceServiceApi")
 public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTraceService,TradeOrderRefundsTraceServiceApi{
@@ -303,6 +303,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 				traceVo.setContent(trace.getRemark());
 			}
 			traceVo.setTime(DateUtils.formatDateTime(trace.getOptTime()));
+			traceVo.setIsDone(1);
 			traceVoList.add(traceVo);
 			index++;
 		}

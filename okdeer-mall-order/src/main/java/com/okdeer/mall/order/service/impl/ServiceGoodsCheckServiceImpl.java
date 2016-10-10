@@ -171,7 +171,13 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		// 检测商品信息是否有变化
 		for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
 			if (goodsStoreSku == null || goodsStoreSku.getOnline() != BSSC.PUTAWAY) {
-				resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS);
+				if (reqData.getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+					// 到店消费提示信息与上门服务提示信息不一样
+					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_BUY);
+				} else {
+					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS);
+				}
+				
 				req.setComplete(true);
 				return;
 			}
@@ -309,7 +315,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		// 组装商品库存信息
 		for (GoodsStoreSkuStock skuStock : stockList) {
 			for (TradeOrderGoodsItem item : list) {
-				if (skuStock.getStoreSkuId() == item.getSkuId()) {
+				if (skuStock.getStoreSkuId().equals(item.getSkuId())) {
 					tradeOrderStock = new TradeOrderStock();
 					tradeOrderStock.setSkuId(skuStock.getStoreSkuId());
 					tradeOrderStock.setSellableStock(skuStock.getSellable());
