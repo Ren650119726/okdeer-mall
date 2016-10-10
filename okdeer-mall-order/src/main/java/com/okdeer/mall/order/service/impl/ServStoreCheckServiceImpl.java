@@ -113,6 +113,8 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 				servStoreInfo.setAheadTimeDay(String.valueOf(storeExt.getAdvanceTime()));
 			}
 		}
+		// 设置店铺客服电话
+		servStoreInfo.setServicePhone(storeInfo.getStoreInfoExt().getServicePhone());
 		return servStoreInfo;
 	}
 	
