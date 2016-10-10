@@ -344,6 +344,8 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
                 tradeOrderItem.setSkuName(cardInfo.getString("cardname"));
                 //记录充值话费的面额
                 tradeOrderItem.setStoreSkuId(sysDict.getValue());
+                //将cardid赋值给cardid
+                tradeOrderItem.setStoreSpuId(cardInfo.getString("cardid"));
                 flag = true;
             } 
         } else if(OrderTypeEnum.TRAFFIC_PAY_ORDER.equals(orderType)) {
