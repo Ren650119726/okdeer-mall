@@ -315,7 +315,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		// 组装商品库存信息
 		for (GoodsStoreSkuStock skuStock : stockList) {
 			for (TradeOrderGoodsItem item : list) {
-				if (skuStock.getStoreSkuId() == item.getSkuId()) {
+				if (skuStock.getStoreSkuId().equals(item.getSkuId())) {
 					tradeOrderStock = new TradeOrderStock();
 					tradeOrderStock.setSkuId(skuStock.getStoreSkuId());
 					tradeOrderStock.setSellableStock(skuStock.getSellable());
