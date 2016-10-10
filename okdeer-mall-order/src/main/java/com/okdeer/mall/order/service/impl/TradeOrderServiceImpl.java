@@ -207,6 +207,7 @@ import com.okdeer.mall.points.service.PointsBuriedService;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
+import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
 import net.sf.json.JSONArray;
@@ -543,7 +544,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Autowired
 	RocketMQProducer rocketMQProducer;
 	// End V1.1.0 add by wusw 20160924
-
+	/**
+     * 短信code
+     */
+    @Value("${mcm.sys.code}")
+    private String mcmSysCode;
+    /**
+     * 短信token
+     */
+    @Value("${mcm.sys.token}")
+    private String mcmSysToken;
+    
 	@Autowired
 	private TradeOrderActivityService tradeOrderActivityService;
 
@@ -6305,6 +6316,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				BigDecimal.ROUND_HALF_UP);
 		// 单价
 		BigDecimal unitPrice = orderItem.getUnitPrice();
+		StringBuffer consumeCodeSb = new StringBuffer();
 		for (int i = 0; i < skuQty; i++) {
 			itemDetail = new TradeOrderItemDetail();
 			itemDetail.setId(UuidUtils.getUuid());
@@ -6318,6 +6330,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				entity = this.tradeOrderItemDetailMapper.checkConsumeHasExsit(storeId, consumeCode);
 			}
 			itemDetail.setConsumeCode(consumeCode);
+			consumeCodeSb.append(consumeCode).append("，");
 			itemDetail.setStartTime(goodsService.getStartTime());
 			itemDetail.setEndTime(goodsService.getEndTime());
 			itemDetail.setCreateTime(new Date());
@@ -6343,8 +6356,80 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			itemDetail = null;
 		}
+		
+		//用户支付成功，发送消费码短信
+		try {
+		    String consumeCodes = null;
+		    if (consumeCodeSb.length() > 0) {
+		        consumeCodes = consumeCodeSb.substring(0, consumeCodeSb.length() - 1);
+		    }
+		    
+		    // 店铺地址
+            String storeAddress = this.buildAddress(storeId);
+		    //店铺信息
+            StoreInfo storeInfo = this.storeInfoService.getStoreBaseInfoById(storeId);
+            StoreInfoExt storeInfoExt = storeInfo.getStoreInfoExt();
+            
+		    StringBuffer smsBuffer = new StringBuffer();
+		    smsBuffer.append("您的")
+		        .append(orderItem.getSkuName())
+		        .append("购买成功！消费码为")
+		        .append(consumeCodes)
+		        .append("，商家地址：")
+		        .append(storeAddress)
+		        .append("，商家电话：")
+		        .append(storeInfoExt.getServicePhone())
+		        .append("，有效期")
+		        .append(DateUtils.formatDate(goodsService.getStartTime(), ""))
+		        .append("至")
+		        .append(DateUtils.formatDate(goodsService.getEndTime(), ""));
+		    if(storeInfoExt.getIsAdvanceType() == 1) {
+		        smsBuffer.append("，需提前")
+		            .append(storeInfoExt.getAdvanceTime());
+		        if(storeInfoExt.getAdvanceType() == 0) {
+		            //提前N小时预约
+		            smsBuffer.append("小时预约");
+		        } else if(storeInfoExt.getAdvanceType() == 1) {
+		           //提前N天预约
+		           smsBuffer.append("天预约");
+		        }
+		    }
+		    smsBuffer.append("，记得要在有效期内消费噢！");
+		    
+		    String content = smsBuffer.toString();
+		    SmsVO smsVo = new SmsVO();
+            smsVo.setId(UuidUtils.getUuid());
+            smsVo.setUserId(tradeOrder.getUserId());
+            smsVo.setIsTiming(0);
+            smsVo.setToken(mcmSysToken);
+            smsVo.setSysCode(mcmSysCode);
+            smsVo.setMobile(tradeOrder.getUserPhone());
+            smsVo.setContent(content);
+            smsVo.setSmsChannelType(3);
+            smsVo.setSendTime(DateUtils.formatDateTime(new Date()));
+            smsService.sendSms(smsVo);
+		    
+        } catch (Exception e) {
+            logger.error("消费订单发送短信异常，订单号：{}", tradeOrder.getId(), e.getMessage());
+        }
 	}
 
+	private String buildAddress(String storeId) throws Exception{
+        MemberConsigneeAddress memberConsignee = memberConsigneeAddressService.getSellerDefaultAddress(storeId);
+        StringBuilder storeAddr = new StringBuilder();
+        storeAddr.append(memberConsignee.getProvinceName())
+                .append(memberConsignee.getCityName())
+                .append(memberConsignee.getAreaName())
+                .append(memberConsignee.getAreaExt())
+                .append(memberConsignee.getAddress());
+        if (StringUtils.isBlank(memberConsignee.getProvinceName())) {
+            storeAddr = new StringBuilder();
+            storeAddr.append(memberConsignee.getArea().trim());
+            storeAddr.append(memberConsignee.getAddress());
+        } 
+        return storeAddr.toString();
+    }
+	
 	/**
 	 * 创建订单支付方式
 	 * 
