@@ -5210,7 +5210,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			result = new ArrayList<PhysicsOrderVo>();
 		} else {
 			for (PhysicsOrderVo vo : result) {
-				this.convertOrderStatus(vo);
+				if(params.get("type") == OrderTypeEnum.STORE_CONSUME_ORDER){
+					this.convertOrderStatusDdxf(vo);
+				} else {
+					this.convertOrderStatus(vo);
+				}
 			}
 		}
 		return new PageUtils<PhysicsOrderVo>(result);
@@ -5231,6 +5235,39 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * 
+	 * @Description: 服务店订单状态和支付方式转换
+	 * @param vo
+	 * @return void
+	 * @author zhangkn
+	 * @date 2016年10月10日
+	 */
+	private void convertOrderStatusDdxf(PhysicsOrderVo vo) {
+		switch (vo.getStatus()) {
+			case BUYER_PAYING:
+			case UNPAID:
+				vo.setOrderStatusName("等待买家付款");
+				break;
+			case DROPSHIPPING:
+			case HAS_BEEN_SIGNED:
+			case WAIT_CONSUME:
+			case PART_CONSUME:
+				vo.setOrderStatusName("买家已付款");
+				break;
+			case CANCELED:
+			case CANCELING:
+			case TRADE_CLOSED:
+			case REFUSED:
+			case REFUSING:
+				vo.setOrderStatusName("交易关闭");
+				break;
+			default:
+				vo.setOrderStatusName(vo.getStatus().getValue());
+				break;
+		}
 	}
 
 	/**
