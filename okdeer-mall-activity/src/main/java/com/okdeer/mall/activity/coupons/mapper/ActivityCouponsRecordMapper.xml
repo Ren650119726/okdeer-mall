@@ -547,7 +547,7 @@
 		SELECT
 			t2.name AS couponTitle, t2.type,
 			0 AS usableRange,
-			date_format(t.valid_time,'%Y-%m-%d') AS indate,
+			date_format(date_add(t.valid_time, interval -1 day),'%Y-%m-%d') AS indate,
 			t.coupons_collect_id AS id,
 			t2.id AS couponId,
 			FORMAT(t2.face_value,2) AS couponPrice,
