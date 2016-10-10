@@ -122,17 +122,16 @@
 	</insert>
 	<!-- 保存信息 end -->
 
+	<!-- Modified by maojj 2016-10-10 更新首单时间。 -->
 	<!-- 更改信息 start -->
 	<update id="updateCodeRecord"
 		parameterType="com.okdeer.mall.system.entity.SysUserInvitationRecord">
-		update
-		<include refid="tableBaseName" />
-		is_first_order=#{isFirstOrder,jdbcType=TINYINT},
-		first_order_time=#{firstOrderTime,jdbcType=TIMESTAMP},
-		machine_code=#{machineCode,jdbcType=VARCHAR},
-		update_time=#{updateTime,jdbcType=TIMESTAMP}
-		where
-		id=#{id,jdbcType=VARCHAR}
+		UPDATE <include refid="tableBaseName" />
+		SET	is_first_order= 1,
+			first_order_time=#{firstOrderTime,jdbcType=TIMESTAMP},
+			update_time=#{updateTime,jdbcType=TIMESTAMP}
+		WHERE is_first_order = 0
+		AND id=#{id,jdbcType=VARCHAR}
 	</update>
 	<!-- 更改信息 end -->
   	

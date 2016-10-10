@@ -44,14 +44,14 @@ public interface SysUserInvitationRecordMapper extends IBaseCrudMapper {
 	 * @author zhulq
 	 * @date 2016年9月26日
 	 */
-	void updateCodeRecord(SysUserInvitationRecord sysUserInvitationRecord);
+	int updateCodeRecord(SysUserInvitationRecord sysUserInvitationRecord);
 	
 	/**
 	 * 根据买家id查询邀请记录
 	 * @param buyerUserId 买家用户Id
 	 * @return 邀请记录
 	 */
-	List<SysUserInvitationRecord> findInvitationRecordByUserId(@Param("buyerUserId") String buyerUserId);
+	SysUserInvitationRecord findInvitationRecordByUserId(@Param("buyerUserId") String buyerUserId);
 	
 	/**
 	 * 
