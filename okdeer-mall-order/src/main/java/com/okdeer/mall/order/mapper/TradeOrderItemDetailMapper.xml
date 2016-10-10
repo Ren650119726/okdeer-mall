@@ -357,6 +357,7 @@
 	   <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
 	   <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
 	   <result column="actual_amount" property="detailActualAmount" jdbcType="DECIMAL" />
+	   <result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
 	   <result column="order_resource" property="orderResource" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderResourceEnum" />
 	   <result column="type" property="orderType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
 	   <result column="order_no" property="orderNo" jdbcType="VARCHAR" />
@@ -370,6 +371,7 @@
 	   <result column="main_pic_prl" property="skuPictureUrl" jdbcType="VARCHAR" />    
 	   <result column="storeUserId" property="storeUserId" jdbcType="VARCHAR" />
 	   <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+	   <result column="subscribe" property="subscribe" jdbcType="TINYINT" />
 	   <!-- <result column="is_unsubscribe" property="isUnsubscribe" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.store.enums.IsUnsubscribe" /> -->
     </resultMap>
     <!-- 批量查询指定店铺的消费码相应的订单信息 V1.1.0 add by wusw 20160924-->
@@ -381,6 +383,7 @@
 			detail.end_time,
 			detail.`status`,
 			detail.actual_amount,
+			detail.preferential_price,
 			trade.id AS order_id,
 			trade.order_no,
 			trade.type,
@@ -395,7 +398,7 @@
 			item.unit_price,
 			item.style_code,
 			item.bar_code,
-			<!-- skuService.is_unsubscribe, -->
+			skuService.is_unsubscribe as subscribe, 
 			member.sys_user_id AS storeUserId	
 		FROM trade_order_item_detail detail
 		INNER JOIN trade_order_item item on detail.order_item_id = item.id
