@@ -252,7 +252,7 @@ import net.sf.json.JsonConfig;
  *     	V1.1.0 				2016-09-27			 maojj		 商品订单详情页新增字段 
  *     	V1.1.0 				2016-09-29 			 wusw 		 添加上门服务订单详情的查询方法
  *      Bug:13961			2016-10-10			 maojj		订单详情修改订单是否支持投诉的逻辑 
- *      
+ *      13960             2016-10-10            wusw               修改判断上门服务订单是否支持投诉
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -4370,15 +4370,24 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		List<TradeOrderItem> items = orders.getItems();
 		// 订单与订单项是否一对多关系，如果是，订单项用JSONArray存储，否则，不用（兼容V1.1.0)
 		if (isMoreItem) {
-			// 订单状态为等待买家付款、付款确认中、已取消、取消中、已拒收、拒收中的订单，可以投诉，否则，不可以
-			if (orders.getStatus() == OrderStatusEnum.UNPAID || orders.getStatus() == OrderStatusEnum.BUYER_PAYING
-					|| orders.getStatus() == OrderStatusEnum.CANCELED || orders.getStatus() == OrderStatusEnum.CANCELING
-					|| orders.getStatus() == OrderStatusEnum.REFUSED
-					|| orders.getStatus() == OrderStatusEnum.REFUSING) {
+			// Begin 13960 add by wusw 20161010
+			/**
+			 * 1、对于在线支付的商品，已付款的订单及其以后的状态均可以投诉，待付款状态、待付款状态取消订单后变成的已取消状态的订单均不可投诉;
+			 * 2、对于线下确认价格并当面支付的商品，订单提交成功后便可进行投诉；
+			 */
+			if (orders.getPayWay() == PayWayEnum.PAY_ONLINE) {
+				if (tradeOrderPay != null && orders.getStatus() != OrderStatusEnum.UNPAID 
+						&& orders.getStatus() != OrderStatusEnum.BUYER_PAYING) {
+					json.put("isSupportComplain", 1);
+				} else {
+					if (orders.getStatus() == OrderStatusEnum.CANCELED && orders.getReason().contains("超时")) {
+						json.put("isSupportComplain", 0);
+					}
+				}
+			} else if (orders.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
 				json.put("isSupportComplain", 1);
-			} else {
-				json.put("isSupportComplain", 0);
 			}
+			// End 13960 add by wusw 20161010
 			// 配送费
 			json.put("freightFree", orders.getFare());
 			JSONArray itemArray = new JSONArray();

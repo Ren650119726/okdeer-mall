@@ -113,6 +113,7 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
  *       ----------------+----------------+-------------------+------------------------------------------- 
  *       v1.1.0             2016-9-20            zengjz             增加查询消费码订单列表
  *       V1.1.0             2016-10-8            zhaoqc             新增通过消费码消费状态判断订单能否投诉
+ *       13960             2016-10-10            wusw               修改通过订单消费码状态判断订单是否支持投诉
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.StoreConsumeOrderServiceApi")
 public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi, StoreConsumeOrderService {
@@ -286,12 +287,16 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 				json.put("payMethod", payInfo.getPayType().ordinal());
 				json.put("orderPayTime", DateUtils.formatDate(payInfo.getPayTime(), "yyyy-MM-dd HH:mm:ss"));
 				// 是否支持投诉 0：不支持  1:支持
+				// Begin 13960 add by wusw 20161010
+				// 订单消费码状态为待评价、已过期、已退款时，支持投诉
 				if(userTradeOrderDetailVo.getConsumerCodeStatus() == ConsumerCodeStatusEnum.WAIT_EVALUATE 
-				           || userTradeOrderDetailVo.getConsumerCodeStatus() == ConsumerCodeStatusEnum.COMPLETED) {
+				           || userTradeOrderDetailVo.getConsumerCodeStatus() == ConsumerCodeStatusEnum.EXPIRED
+				           || userTradeOrderDetailVo.getConsumerCodeStatus() == ConsumerCodeStatusEnum.REFUNDED) {
 				    json.put("isSupportComplain", 1);
 				} else {
 				    json.put("isSupportComplain", 0);
 				}
+				// End 13960 add by wusw 20161010
 			} else {
 				json.put("isSupportComplain", 0);
 			}
