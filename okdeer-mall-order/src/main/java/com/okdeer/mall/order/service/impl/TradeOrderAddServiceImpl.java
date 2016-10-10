@@ -67,6 +67,7 @@ import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.TradeOrderAddService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
+import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.CodeStatistical;
@@ -98,7 +99,8 @@ import net.sf.json.JSONObject;
  *		重构V4.1			2016-07-30			maojj			修改获取折扣金额的查询语句
  *		Bug:12710		2016-08-15			maojj			修改地址信息
  *		1.0.Z			2016-09-05			zengj			增加订单操作记录
-  *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
+  *     1.0.Z	        2016年9月07日                    	zengj           库存管理修改，采用商业管理系统校验
+  *     Bug:13906		2016-10-10			maojj			添加订单实付金额为0的处理
  */
 @Service
 public class TradeOrderAddServiceImpl implements TradeOrderAddService {
@@ -204,6 +206,11 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	 */
 	@Resource
 	private RollbackMQProducer rollbackMQProducer;
+	
+	// Begin Bug:13906 added by maojj 2016-10-10
+	@Reference(version = "1.0.0", check = false)
+	private TradeOrderPayServiceApi tradeOrderPayService;
+	// End Bug:13906 added by maojj 2016-10-10
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -231,6 +238,12 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			// End 1.0.Z 增加订单操作记录 add by zengj
 			// 更新库存 -- 放到最后执行
 			toUpdateStock(tradeOrder, reqDto, rpcIdList);
+			// Begin Bug:13906 added by maojj 2016-10-10
+			// 如果订单实付金额为0，调用余额支付进行支付。
+			if(tradeOrder.getActualAmount().compareTo(BigDecimal.valueOf(0.0)) == 0){
+				tradeOrderPayService.wlletPay(String.valueOf(tradeOrder.getActualAmount()), tradeOrder);
+			}
+			// End Bug:13906 added by maojj 2016-10-10
 			resp.setOrderId(tradeOrder.getId());
 			resp.setOrderNo(tradeOrder.getOrderNo());
 			resp.setOrderPrice(tradeOrder.getActualAmount());
@@ -679,9 +692,10 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	private void setActualAmount(TradeOrder tradeOrder) {
 		BigDecimal totalAmount = tradeOrder.getTotalAmount();
 		BigDecimal favourAmount = tradeOrder.getPreferentialPrice();
-		// 如果总金额<优惠金额，则实付为0，否则实付金额为总金额-优惠金额
+		// 如果总金额<优惠金额，则实付为0，优惠为订单总金额，否则实付金额为总金额-优惠金额，优惠为优惠金额
 		if (totalAmount.compareTo(favourAmount) == -1) {
-			tradeOrder.setActualAmount(new BigDecimal(0.0));
+			tradeOrder.setActualAmount(BigDecimal.valueOf(0.0));
+			tradeOrder.setPreferentialPrice(totalAmount);
 		} else {
 			tradeOrder.setActualAmount(totalAmount.subtract(favourAmount));
 		}
@@ -1022,7 +1036,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private void updateActivityCoupons(TradeOrder tradeOrder, TradeOrderReq req) {
+	private void updateActivityCoupons(TradeOrder tradeOrder, TradeOrderReq req) throws Exception{
 		ActivityTypeEnum activityType = req.getActivityType();
 		int couponsType = req.getCouponsType();
 
@@ -1034,7 +1048,10 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			params.put("couponsId", req.getActivityItemId());
 			params.put("collectType", couponsType);
 			// 更新代金券状态
-			activityCouponsRecordMapper.updateActivityCouponsStatus(params);
+			int updateResult = activityCouponsRecordMapper.updateActivityCouponsStatus(params);
+			if(updateResult == 0){
+				throw new Exception("代金券已使用或者已过期");
+			}
 			// 修改代金券使用数量
 			activityCouponsMapper.updateActivityCouponsUsedNum(req.getActivityItemId());
 		}

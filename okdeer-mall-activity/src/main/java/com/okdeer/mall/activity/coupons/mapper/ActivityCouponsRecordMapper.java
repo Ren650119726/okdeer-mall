@@ -122,7 +122,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 */
 	List<ActivityCouponsRecordQueryVo> selectCouponsAllId(ActivityCouponsRecord activityCouponsRecord);
 
-	void updateActivityCouponsStatus(Map<String, Object> map);
+	int updateActivityCouponsStatus(Map<String, Object> map);
 
 	/**
 	 * DESC: 批量插入代金券 
