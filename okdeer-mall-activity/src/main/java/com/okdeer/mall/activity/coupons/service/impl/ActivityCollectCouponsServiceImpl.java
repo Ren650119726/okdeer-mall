@@ -573,7 +573,7 @@ public class ActivityCollectCouponsServiceImpl
 					smsVo.setMobile(user.getPhone());
 					// smsVo.setMobile("18566239287");
 					smsVo.setContent("您好，你的代金券活动" + obj.getName() + "，因以下原因：（" + obj.getApprovalReason()
-							+ "）审核不通过，如有疑问请联系运营商客服，客服电话：4008-357-889");
+							+ "）审核不通过，如有疑问请联系运营商客服，客服电话：400-831-0008"); 
 					smsVo.setSendTime(DateUtils.formatDateTime(new Date()));
 					smsVo.setSmsChannelType(3);
 					smsService.sendSms(smsVo);

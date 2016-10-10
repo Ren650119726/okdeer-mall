@@ -11,10 +11,12 @@ import org.springframework.util.CollectionUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuPicture;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.enums.GoodsStoreSkuPayTypeEnum;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.utils.DateUtils;
@@ -54,6 +56,12 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuPictureServiceApi goodsStoreSkuPictureService;
+	
+	/**
+	 * 到店消费服务商品service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuServiceServiceApi goodsStoreSkuServiceServiceApi;
 	
 	@Override
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
@@ -151,6 +159,25 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 				req.setComplete(true);
 				return;
 			}
+			
+			// 判断到店消费商品是否已过有效期
+			if (reqData.getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+				GoodsStoreSkuService skuService = goodsStoreSkuServiceServiceApi.selectBySkuId(goodsStoreSku.getId());
+				if (skuService == null) {
+					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS_1);
+					req.setComplete(true);
+					return;
+				}
+				
+				Date endTime = skuService.getEndTime();
+				if (new Date().compareTo(endTime) == 0 || new Date().compareTo(endTime) == 1) {
+					// 服务商品已过期，不能预约
+					resp.setResult(ResultCodeEnum.SERV_GOODS_EXP);
+					req.setComplete(true);
+					return;
+				} 
+			}
+			
 			
 			// 商品类目id
 			spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());

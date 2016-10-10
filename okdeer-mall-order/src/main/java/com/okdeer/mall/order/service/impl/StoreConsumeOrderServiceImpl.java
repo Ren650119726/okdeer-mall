@@ -434,7 +434,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 
 					String startDate = DateUtils.formatDate(goodsStoreSkuService.getStartTime(), "yyyy-MM-dd");
 					String endDate = DateUtils.formatDate(goodsStoreSkuService.getEndTime(), "yyyy-MM-dd");
-					itemObject.put("orderInDate", startDate + "-" + endDate);
+					itemObject.put("orderInDate", startDate + "至" + endDate);
 					itemObject.put("notAvailableDate", goodsStoreSkuService.getInvalidDate());
 				} else {
 					// 是否需要预约0：不需要，1：需要
@@ -735,7 +735,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		}
 		// 接受返回消息的tag
 		payTradeVo.setTag(null);
-		return JSONObject.fromObject(null).toString();
+		return JSONObject.fromObject(payTradeVo).toString();
 	}
 
 	@Transactional(rollbackFor = Exception.class)
