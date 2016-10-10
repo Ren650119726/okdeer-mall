@@ -27,6 +27,8 @@ import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT_
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT_TIPS;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.USER_WALLET_FAIL;
+import static com.okdeer.common.consts.DescriptConstants.USER_NOT_WALLET;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -5992,7 +5994,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 					if (payAccount == null) {
 						//云钱包账号不存在
-						failResult.append("抱歉,该账号没有开通云钱包;");
+						throw new ServiceException(USER_NOT_WALLET);
 					}
 
 					// 总收入金额
@@ -6001,7 +6003,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					if (payAccount.getTotalAmount().compareTo(totalCome) < 0
 							|| payAccount.getFrozenAmount().compareTo(totalCome) < 0) {
 						//店铺的云钱包资金异常
-						failResult.append("抱歉,该账号云钱包资金异常;");
+						throw new ServiceException(USER_WALLET_FAIL);
 						
 					}
 					
