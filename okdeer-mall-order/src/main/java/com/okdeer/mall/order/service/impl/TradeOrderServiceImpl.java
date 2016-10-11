@@ -5855,9 +5855,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		try {
 			costPayment = costPaymentServiceApi.getCostPaymentApiById(orderId);
 		} catch (Exception e) {
-			logger.error(ORDER_COUPONS_PSMS_ERROR, orderId, userId);
+			logger.error(ORDER_COUPONS_PSMS_ERROR, orderId, userId,e.getMessage());
 			respDto.setMessage(
-					(respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_PSMS_ERROR_TIPS);
+					(respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_PSMS_NOT_TIPS);
 			throw new ServiceException(ORDER_COUPONS_PSMS_ERROR_TIPS);
 		}
 		if (costPayment == null) {
