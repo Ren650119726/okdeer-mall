@@ -561,7 +561,7 @@
 			t2.is_category AS isCategory
 		FROM
 			activity_coupons_record t
-		LEFT JOIN activity_coupons_relation_store t1 ON t.coupons_id = t1.coupons_id
+<!-- 		LEFT JOIN activity_coupons_relation_store t1 ON t.coupons_id = t1.coupons_id -->
 		LEFT JOIN activity_coupons t2 ON t.coupons_id = t2.id
 		WHERE
 			t.collect_user_id = #{userId}
@@ -572,19 +572,17 @@
 			     AND (
 			       <!-- 服务店代金券查询 -->
 			       <if test="storeType == 4">
-				   ( (t1.store_id = #{storeId} AND t2.area_type = 3) OR
-		                (t1.store_id = #{storeId} AND t2.area_type = 1
-		                   <if test="addressId != null and addressId != '' ">
-		                      AND EXISTS(SELECT 1 FROM activity_coupons_area aca LEFT JOIN member_consignee_address mca ON mca.id = #{addressId} 
-		                      WHERE aca.coupons_id = t2.id AND ((aca.type = 0 AND aca.area_id = mca.city_id) OR (aca.type = 1 AND aca.area_id = mca.province_id)))
-		                   </if>
-		                ))
-					  OR (t2.area_type = 0                     
-		            )
+			       t2.area_type = 0 OR
+				   ( (t2.area_type = 3 AND (EXISTS (SELECT 1 FROM activity_coupons_relation_store t1 WHERE t.coupons_id = t1.coupons_id AND t1.store_id = #{storeId} AND t2.area_type = 3)) ) 
+	                   <if test="addressId != null and addressId != '' ">
+	                     OR (t2.area_type = 1 AND EXISTS(SELECT 1 FROM activity_coupons_area aca LEFT JOIN member_consignee_address mca ON mca.id = #{addressId} 
+	                      WHERE aca.coupons_id = t2.id AND ((aca.type = 0 AND aca.area_id = mca.city_id) OR (aca.type = 1 AND aca.area_id = mca.province_id))))
+	                </if>
+		           )
 					</if>
 					<!-- 平台发起的代金券活动，只有云上店可以使用 -->
 					<if test="storeType == 2">
-					    t1.store_id = #{storeId}
+					    (EXISTS (SELECT 1 FROM activity_coupons_relation_store t1 WHERE t.coupons_id = t1.coupons_id AND t1.store_id = #{storeId}))
 						OR t2.area_type = 0
 					</if>
 				)
