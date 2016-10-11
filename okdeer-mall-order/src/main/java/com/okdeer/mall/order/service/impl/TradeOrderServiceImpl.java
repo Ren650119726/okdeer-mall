@@ -258,7 +258,8 @@ import net.sf.json.JsonConfig;
  *     	V1.1.0 				2016-09-27			 maojj		 商品订单详情页新增字段 
  *     	V1.1.0 				2016-09-29 			 wusw 		 添加上门服务订单详情的查询方法
  *      Bug:13961			2016-10-10			 maojj		订单详情修改订单是否支持投诉的逻辑 
- *      13960             2016-10-10            wusw               修改判断上门服务订单是否支持投诉
+ *      13960               2016-10-10            wusw               修改判断上门服务订单是否支持投诉
+ *      14026               2016-10-11            wusw      修改多个消费码验证成功，却只有一个消费码状态修改的问题
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -6127,9 +6128,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							successOrderDetailMap.put(detailConsumeVo.getOrderId(), detailConsumeVo);
 							// 放入订单id和订单项详细id
 							orderIdList.add(detailConsumeVo.getOrderId());
-							itemDetailIdList.add(detailConsumeVo.getOrderItemDetailId());
 						}
-
+						// Begin 14026 add by wusw 20161011
+						itemDetailIdList.add(detailConsumeVo.getOrderItemDetailId());
+						// End 14026 add by wusw 20161011
 						totalValiAmount = totalValiAmount.add(detailConsumeVo.getDetailActualAmount());
 						totalValiPrefAmount = totalValiPrefAmount.add(detailConsumeVo.getPreferentialPrice());
 					}
