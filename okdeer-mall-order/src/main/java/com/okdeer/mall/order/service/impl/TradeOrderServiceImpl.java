@@ -261,6 +261,7 @@ import net.sf.json.JsonConfig;
  *      13960             2016-10-10            wusw               修改判断上门服务订单是否支持投诉
  *      V1.1.0			   2016-10-10          luosm			服务店到店消费订单金额统计及订单列表
  *      14026               2016-10-11            wusw      修改多个消费码验证成功，却只有一个消费码状态修改的问题
+ *      14168               2016-10-11            wusw      修改多个消费码验证时，部分消费码不存在情况下的相应提示信息    
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -6072,6 +6073,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 			// 验证失败的消费码
 			StringBuffer failResult = new StringBuffer("");
+			// Begin 14168 add by wusw 20161011
+			// 验证成功的消费码
+			StringBuffer successResult = new StringBuffer("");
+			// End 14168 add by wusw 20161011
 			// 当前时间
 			Calendar calendar = Calendar.getInstance();
 
@@ -6091,10 +6096,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 存放验证通过的消费码对应的订单项详细id和订单id
 				List<String> itemDetailIdList = new ArrayList<String>();
 				List<String> orderIdList = new ArrayList<String>();
+				// Begin 14168 add by wusw 20161011
+				// 该店铺存在的消费码
+				List<String> existConsumeCode = new ArrayList<String>();
+				// End 14168 add by wusw 20161011
 				// 存放验证通过的消费码相应的订单库存和金额
 				Map<String, OrderItemDetailConsumeVo> successOrderDetailMap = new HashMap<String, OrderItemDetailConsumeVo>();
 				for (OrderItemDetailConsumeVo detailConsumeVo : orderDetailList) {
 					String consumeCode = detailConsumeVo.getConsumeCode();
+					// Begin 14168 add by wusw 20161011
+					existConsumeCode.add(consumeCode);
+					// End 14168 add by wusw 20161011
 					// 没有找到订单信息
 					if (detailConsumeVo == null || StringUtils.isEmpty(detailConsumeVo.getOrderId())
 							|| StringUtils.isEmpty(detailConsumeVo.getOrderItemId())
@@ -6116,6 +6128,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						failResult.append(consumeCode + "|抱歉,消费码已过期;");
 						continue;
 					} else {
+						// Begin 14168 add by wusw 20161011
+						successResult.append(consumeCode + "|验证成功;");
+						// End 14168 add by wusw 20161011
 						// 如果是同一个订单的消费码，将该订单需要修改库存的数量和调整云钱包金额的价格进行累加（到店消费订单与其订单项是一对一关系）
 						if (successOrderDetailMap.containsKey(detailConsumeVo.getOrderId())) {
 							OrderItemDetailConsumeVo oldConsumeVo = successOrderDetailMap
@@ -6138,6 +6153,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						totalValiPrefAmount = totalValiPrefAmount.add(detailConsumeVo.getPreferentialPrice());
 					}
 				}
+				// Begin 14168 add by wusw 20161011
+				// 判断哪些消费码不存在
+				consumeCodes.removeAll(existConsumeCode);
+				if (CollectionUtils.isNotEmpty(consumeCodes)) {
+					StringBuffer noExistConsumeCodeStr = new StringBuffer("");
+					for (String noExistConsumeCode:consumeCodes) {
+						noExistConsumeCodeStr.append(noExistConsumeCode);
+						failResult.append(noExistConsumeCodeStr.toString()+"|消费码不存在;");
+					}					
+				}
+				// End 14168 add by wusw 20161011
 				if (CollectionUtils.isNotEmpty(orderIdList)) {
 
 					String bossId = storeInfoService.getBossIdByStoreId(storeId);
@@ -6232,12 +6258,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			} else {
 				throw new ServiceException(REQUEST_PARAM_FAIL);
 			}
-			if (StringUtils.isEmpty(failResult.toString())) {
-				resultMap.put("success", "");
-			} else {
-				// 验证失败的消费码信息,多条以逗号隔开。信息与消费码以|隔开
-				resultMap.put("failure", failResult.toString());
-			}
+			// Begin 14168 add by wusw 20161011
+			// 验证失败和成功的消费码信息,分别多条以逗号隔开。信息与消费码以|隔开
+			resultMap.put("success", successResult.toString());
+			resultMap.put("failure", failResult.toString());
+			// End 14168 add by wusw 20161011
+			
 		} catch (StockException se) {
 			throw se;
 		} catch (Exception e) {
