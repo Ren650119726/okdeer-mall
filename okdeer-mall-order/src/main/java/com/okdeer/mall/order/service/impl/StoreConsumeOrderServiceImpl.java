@@ -1101,7 +1101,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			tradeOrderRefundsCertificateService.addCertificate(certificate);
 
 			// 更新到店消费的退款单信息
-			this.updateStoreConsumeRefunds(order,orderRefunds, waitRefundDetailList);
+			this.updateStoreConsumeRefunds(order, orderRefunds, waitRefundDetailList);
 
 			// 特惠活动释放限购数量
 			for (TradeOrderRefundsItem refundsItem : orderRefunds.getTradeOrderRefundsItem()) {
@@ -1141,7 +1141,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 					.selectByOrderItemId(refundsItem.getOrderItemId());
 			boolean isAllChange = true;
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
-				if (tradeOrderItemDetail.getStatus() != ConsumeStatusEnum.noConsume
+				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.noConsume
 						&& !refundDetailIds.contains(tradeOrderItemDetail.getId())) {
 					isAllChange = false;
 				}
@@ -1154,7 +1154,11 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			}
 			detailList = null;
 		}
-		tradeOrderItemMapper.updateCompleteById(ids);
+
+		if (ids.size() > 0) {
+			tradeOrderItemMapper.updateCompleteById(ids);
+		}
+		
 		// 更新订单状态
 		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
 				.selectByOrderItemDetailByOrderId(orderRefunds.getOrderId());
@@ -1192,10 +1196,10 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			if (isHasWaitConsume) {
 				order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_CONSUME);
 			} else {
-				if(isHasConsumed){
+				if (isHasConsumed) {
 					// 变成已经消费
 					order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_EVALUATE);
-				}else{
+				} else {
 					order.setConsumerCodeStatus(ConsumerCodeStatusEnum.REFUNDED);
 				}
 			}
