@@ -5,14 +5,14 @@
 		<id column="id" property="id" jdbcType="VARCHAR"/>
 		<result column="random_code" property="randomCode" jdbcType="VARCHAR"/>
 		<result column="code_type" property="codeType" jdbcType="INTEGER"/>
-		<result column="disable" property="disabled" javaType="com.okdeer.base.common.enums.Disabled" jdbcType="TINYINT"/>
+		<result column="disabled" property="disabled" javaType="com.okdeer.base.common.enums.Disabled" jdbcType="TINYINT"/>
 		<result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
 		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
 	</resultMap>
 
 	<!-- 基本字段 -->
 	<sql id="base_column">
-		id, random_code, code_type, disable, create_time, update_time
+		id, random_code, code_type, disabled, create_time, update_time
 	</sql>
 	
 	<insert id="saveSysRandCodeRecord" parameterType="com.okdeer.mall.system.entity.SysRandCodeRecord">
@@ -28,7 +28,7 @@
 				code_type, 
 			</if>			
 			<if test="disabled != null">
-				disable, 
+				disabled, 
 			</if>			
 			<if test="createTime != null">
 				create_time, 
