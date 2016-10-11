@@ -3136,7 +3136,7 @@
 	<select id="selectServiceOrderAmount" parameterType="java.util.Map"
 		resultType="java.math.BigDecimal">
 		SELECT
-			sum(tr.income)
+			sum(td.actual_amount)
 		FROM
 			trade_order tr,trade_order_item_detail td
 		WHERE
@@ -3218,7 +3218,7 @@
 		(
 		SELECT
 			tr.order_no AS tradeNo,
-			tr.income,
+			td.actual_amount AS income,
 			td.use_time AS tradeTime,
 			0 AS types
 		FROM
