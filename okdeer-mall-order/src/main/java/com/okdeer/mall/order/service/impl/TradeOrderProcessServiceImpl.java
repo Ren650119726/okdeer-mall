@@ -40,6 +40,7 @@ import com.okdeer.mall.order.entity.TradeOrderThirdRelation;
 import com.okdeer.mall.order.enums.AppraiseEnum;
 import com.okdeer.mall.order.enums.CompainStatusEnum;
 import com.okdeer.mall.order.enums.OrderComplete;
+import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
@@ -453,6 +454,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         tradeOrder.setIsComplete(OrderComplete.NO);
         tradeOrder.setTradeNum(TradeNumUtil.getTradeNum());
         tradeOrder.setActivityItemId(reqDto.getCouponId());
+        tradeOrder.setIsShow(OrderIsShowEnum.yes);
         tradeOrderMapper.insertSelective(tradeOrder);
         
         // 创建订单项
