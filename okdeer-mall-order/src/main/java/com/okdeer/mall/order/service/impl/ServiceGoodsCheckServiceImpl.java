@@ -175,7 +175,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 					// 到店消费提示信息与上门服务提示信息不一样
 					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_BUY);
 				} else {
-					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS);
+					resp.setResult(ResultCodeEnum.SERV_GOODS_IS_UPDATE);
 				}
 				
 				req.setComplete(true);
