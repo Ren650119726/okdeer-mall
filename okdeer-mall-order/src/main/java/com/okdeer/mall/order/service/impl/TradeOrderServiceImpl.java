@@ -260,6 +260,7 @@ import net.sf.json.JsonConfig;
  *      Bug:13961			2016-10-10			 maojj		订单详情修改订单是否支持投诉的逻辑 
  *      13960             2016-10-10            wusw               修改判断上门服务订单是否支持投诉
  *      V1.1.0			   2016-10-10          luosm			服务店到店消费订单金额统计及订单列表
+ *      14026               2016-10-11            wusw      修改多个消费码验证成功，却只有一个消费码状态修改的问题
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -4176,8 +4177,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @date 2016年10月10日
 	 */
 	private String isSupportComplain(UserTradeOrderDetailVo userOrderDetail) {
-		// isSupportComplain 0:支持，1：不支持
-		String isSupportComplain = "1";
+		// isSupportComplain 0:不支持，1：支持。默认为不支持
+		String isSupportComplain = "0";
 		if (userOrderDetail.getCompainStatus() == CompainStatusEnum.HAVE_COMPAIN) {
 			return isSupportComplain;
 		}
@@ -4185,15 +4186,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			case CANCELED:
 				if (userOrderDetail.getPayWay() == PayWayEnum.PAY_ONLINE
 						&& userOrderDetail.getTradeOrderPay() != null) {
-					isSupportComplain = "0";
+					isSupportComplain = "1";
 				} else if (userOrderDetail.getPayWay() == PayWayEnum.CASH_DELIERY) {
-					isSupportComplain = "0";
+					isSupportComplain = "1";
 				}
 				break;
 			case REFUSED:
 			case HAS_BEEN_SIGNED:
 			case TRADE_CLOSED:
-				isSupportComplain = "0";
+				isSupportComplain = "1";
 				break;
 			default:
 				break;
@@ -4447,9 +4448,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						&& orders.getStatus() != OrderStatusEnum.BUYER_PAYING) {
 					json.put("isSupportComplain", 1);
 				} else {
-					if (orders.getStatus() == OrderStatusEnum.CANCELED && orders.getReason().contains("超时")) {
-						json.put("isSupportComplain", 0);
-					}
+					json.put("isSupportComplain", 0);
 				}
 			} else if (orders.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
 				json.put("isSupportComplain", 1);
@@ -6128,11 +6127,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						} else {
 							detailConsumeVo.setNum(1);
 							successOrderDetailMap.put(detailConsumeVo.getOrderId(), detailConsumeVo);
-							// 放入订单id和订单项详细id
+							// 放入订单id
 							orderIdList.add(detailConsumeVo.getOrderId());
-							itemDetailIdList.add(detailConsumeVo.getOrderItemDetailId());
 						}
-
+						// Begin 14026 add by wusw 20161011
+						// 放入订单项详细id
+						itemDetailIdList.add(detailConsumeVo.getOrderItemDetailId());
+						// End 14026 add by wusw 20161011
 						totalValiAmount = totalValiAmount.add(detailConsumeVo.getDetailActualAmount());
 						totalValiPrefAmount = totalValiPrefAmount.add(detailConsumeVo.getPreferentialPrice());
 					}
