@@ -589,6 +589,7 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
         String code = redisTemplate.boundListOps(RedisKeyConstants.MALL_RANDCODE).rightPop();
         invitationCode.setInvitationCode(code);
         invitationCode.setInvitationUserNum(0);
+        invitationCode.setFirstOrderUserNum(0);
         invitationCode.setCreateTime(new Date());
         invitationCode.setUpdateTime(new Date());
         
