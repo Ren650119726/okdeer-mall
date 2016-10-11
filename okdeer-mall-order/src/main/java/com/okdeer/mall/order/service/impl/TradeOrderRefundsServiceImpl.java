@@ -408,11 +408,9 @@ public class TradeOrderRefundsServiceImpl
 			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_agree_timeout, orderRefunds.getId());
 		}
 
-		// 实物订单、团购订单、服务订单、到店消费订单发送保存系统消息 update by zhaoqc
+		// 实物订单、团购订单、服务订单发送保存系统消息 update by zhaoqc
 		if (orderRefunds.getType() == OrderTypeEnum.SERVICE_ORDER
-				|| orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER
-				|| orderRefunds.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
-				|| orderRefunds.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+				|| orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 			// 保存系统消息
 			saveSysMsg(orderRefunds);
 			// 推送消息给POS和商家中心
@@ -2146,6 +2144,7 @@ public class TradeOrderRefundsServiceImpl
 	private void updateStoreConsumeRefunds(TradeOrderRefunds orderRefunds) throws Exception {
 
 		List<String> ids = Lists.newArrayList();
+
 		for (TradeOrderRefundsItem refundsItem : orderRefunds.getTradeOrderRefundsItem()) {
 			// 设置消费码为已退款
 			int result = tradeOrderItemDetailService.updateStatusWithRefund(refundsItem.getOrderItemId());
@@ -2168,8 +2167,11 @@ public class TradeOrderRefundsServiceImpl
 		// 是否消费码全部退款
 		boolean isAllRefund = true;
 		if (CollectionUtils.isNotEmpty(detailList)) {
+
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
-				if (tradeOrderItemDetail.getStatus() != ConsumeStatusEnum.refund && !ids.contains(tradeOrderItemDetail.getOrderItemId())) {
+				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.consumed
+						|| tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.expired) {
+					// 如果消费码有已经消费或者过期的状态，就不是全部退款了
 					isAllRefund = false;
 				}
 			}
@@ -2178,6 +2180,9 @@ public class TradeOrderRefundsServiceImpl
 		if (isAllRefund) {
 			// 如果全部退款了，将订单状态改为已经退款
 			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.REFUNDED);
+		} else {
+			//变成已经消费
+			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_EVALUATE);
 		}
 
 		// 判断所有的订单项是否全部完成了，如果全部完成了，就更改订单isComplete为已经完成
@@ -2214,16 +2219,15 @@ public class TradeOrderRefundsServiceImpl
 						if (CollectionUtils.isNotEmpty(itemDetailList)) {
 							for (TradeOrderItemDetail itemDetailVo : itemDetailList) {
 								if (StringUtils.isNotBlank(itemDetailVo.getConsumeCode())) {
-									String first = itemDetailVo.getConsumeCode().substring(0,2);
-									String end = itemDetailVo.getConsumeCode().substring(6,8);
+									String first = itemDetailVo.getConsumeCode().substring(0, 2);
+									String end = itemDetailVo.getConsumeCode().substring(6, 8);
 									itemDetailVo.setConsumeCode(first + "****" + end);
 								}
 							}
 						}
 					}
 				}
-				
-				
+
 			}
 		} else {
 			list = new ArrayList<TradeOrderRefundsVo>();

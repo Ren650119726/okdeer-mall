@@ -492,8 +492,11 @@
 		  AND record.`status` = '0' AND coupons.`area_type`=0 
    </select>
    
+   <!-- modified by maojj 2016-10-10 防止用户刷代金券。下单时将代金券状态更改为已使用时，添加状态为0的条件 -->
    <update id="updateActivityCouponsStatus" parameterType="map">
-      UPDATE activity_coupons_record set status = 1,order_id = #{orderId,jdbcType=VARCHAR} WHERE id = #{id,jdbcType=VARCHAR}
+      UPDATE activity_coupons_record set status = 1,order_id = #{orderId,jdbcType=VARCHAR} 
+      WHERE status = 0
+      AND id = #{id,jdbcType=VARCHAR}
    </update>
     
    <insert id="insertSelectiveBatch" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
