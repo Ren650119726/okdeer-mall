@@ -791,7 +791,7 @@ public class TradeOrderRefundsServiceImpl
 	@Override
 	public boolean updateWallet(TradeOrderRefunds orderRefunds) throws Exception {
 
-		orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
+		orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
 		// 构建余额支付（或添加交易记录）对象
 		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
 				buildBalancePayTrade(orderRefunds).getBytes(Charsets.UTF_8));
