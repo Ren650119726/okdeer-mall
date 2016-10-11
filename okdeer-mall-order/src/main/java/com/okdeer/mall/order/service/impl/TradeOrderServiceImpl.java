@@ -6545,7 +6545,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			smsService.sendSms(smsVo);
 
 		} catch (Exception e) {
-			logger.error("消费订单发送短信异常，订单号：{}", tradeOrder.getId(), e.getMessage());
+			logger.error("消费订单发送短信异常，订单号：{}，异常：{}", tradeOrder.getId(), e);
 		}
 	}
 
