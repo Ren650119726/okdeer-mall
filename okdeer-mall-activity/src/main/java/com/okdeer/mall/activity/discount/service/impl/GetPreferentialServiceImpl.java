@@ -104,7 +104,12 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 			for (Coupons coupons : couponList) {
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
-					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
+					int count = 0;
+					if (StoreTypeEnum.CLOUD_STORE.equals(storeType)) {
+						count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
+					} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
+						count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
+					}
 					logger.info(LoggerConstants.LOGGER_DEBUG_INCOMING_METHOD, count, spuCategoryIds.size());
 					if (count == Constant.ZERO || count != spuCategoryIds.size()) {
 						delCouponList.add(coupons);

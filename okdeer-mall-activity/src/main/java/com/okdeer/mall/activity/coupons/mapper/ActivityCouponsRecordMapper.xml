@@ -570,13 +570,21 @@
 		<if test="type != ''">
 			AND (t2.type = 0 OR ( t2.type = #{type}
 			     AND (
-					t1.store_id = #{storeId}
-					<if test="storeType == 4 and addressId != null and addressId != '' ">
-						OR (t2.area_type = 0 OR (t2.area_type = 1 AND EXISTS(SELECT 1 FROM activity_coupons_area aca LEFT JOIN member_consignee_address mca ON mca.id = #{addressId} 
-                        WHERE aca.coupons_id = t2.id AND ((aca.type = 0 AND aca.area_id = mca.city_id) OR (aca.type = 1 AND aca.area_id = mca.province_id)))))
+			       <!-- 服务店代金券查询 -->
+			       <if test="storeType == 4">
+				   ( (t1.store_id = #{storeId} AND t2.area_type = 3) OR
+		                (t1.store_id = #{storeId} AND t2.area_type = 1
+		                   <if test="addressId != null and addressId != '' ">
+		                      AND EXISTS(SELECT 1 FROM activity_coupons_area aca LEFT JOIN member_consignee_address mca ON mca.id = #{addressId} 
+		                      WHERE aca.coupons_id = t2.id AND ((aca.type = 0 AND aca.area_id = mca.city_id) OR (aca.type = 1 AND aca.area_id = mca.province_id)))
+		                   </if>
+		                ))
+					  OR (t2.area_type = 0                     
+		            )
 					</if>
 					<!-- 平台发起的代金券活动，只有云上店可以使用 -->
 					<if test="storeType == 2">
+					    t1.store_id = #{storeId}
 						OR t2.area_type = 0
 					</if>
 				)
@@ -641,11 +649,21 @@
 	</select>
 	<!-- end by wushp 20160919 根据用户统计各种状态的代金券数量 -->
 	
-	<!-- add by tangy 20160923 根据商品ids查询商品是否符合代金券指定分类 -->
+	<!-- add by tangy 20160923 根据商品类目ids查询商品是否符合代金券指定分类 -->
     <select id="findIsContainBySpuCategoryIds" resultType="int">
         SELECT COUNT(1) FROM goods_spu_category tt
 		LEFT JOIN goods_navigate_category_association gca ON gca.spu_category_id = tt.id
 		INNER JOIN activity_coupons_category acc ON acc.coupon_id = #{couponsId} AND acc.category_id = gca.navigate_category_id
+		WHERE tt.id IN 
+        <foreach item="item" index="index" collection="spuCategoryIds" open="(" separator="," close=")">  
+  			#{item}  
+ 		</foreach>
+	</select>
+	
+	<!-- add by tangy 20161011根据商品类目ids查询商品是否符合代金券指定分类 -->
+    <select id="findServerBySpuCategoryIds" resultType="int">
+        SELECT COUNT(1) FROM goods_spu_category tt
+		INNER JOIN activity_coupons_category acc ON acc.coupon_id = #{couponsId} AND acc.category_id = tt.id AND acc.type = 2
 		WHERE tt.id IN 
         <foreach item="item" index="index" collection="spuCategoryIds" open="(" separator="," close=")">  
   			#{item}  

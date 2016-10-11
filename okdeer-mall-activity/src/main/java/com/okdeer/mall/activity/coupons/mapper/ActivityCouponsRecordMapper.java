@@ -196,14 +196,26 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	//Begin added by tangy  2016-9-23
 	/**
 	 * 
-	 * @Description: 根据商品ids查询商品是否符合代金券指定分类
-	 * @param skuIds     商品ids
+	 * @Description: 根据商品类目ids查询商品是否符合代金券指定分类
+	 * @param skuIds     商品类目ids
 	 * @param couponsId  代金券id
 	 * @return int  
 	 * @author tangy
 	 * @date 2016年9月23日
 	 */
 	int findIsContainBySpuCategoryIds(@Param("spuCategoryIds") List<String> spuCategoryIds,
+			@Param("couponsId") String couponsId);
+	
+	/**
+	 * 
+	 * @Description: 根据商品类目ids查询商品是否符合代金券指定分类
+	 * @param spuCategoryIds  商品类目ids
+	 * @param couponsId  代金券id
+	 * @return int  
+	 * @author tangy
+	 * @date 2016年9月23日
+	 */
+	int findServerBySpuCategoryIds(@Param("spuCategoryIds") List<String> spuCategoryIds,
 			@Param("couponsId") String couponsId);
 	
 	/**
