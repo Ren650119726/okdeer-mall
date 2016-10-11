@@ -4176,8 +4176,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @date 2016年10月10日
 	 */
 	private String isSupportComplain(UserTradeOrderDetailVo userOrderDetail) {
-		// isSupportComplain 0:支持，1：不支持
-		String isSupportComplain = "1";
+		// isSupportComplain 0:不支持，1：支持。默认为不支持
+		String isSupportComplain = "0";
 		if (userOrderDetail.getCompainStatus() == CompainStatusEnum.HAVE_COMPAIN) {
 			return isSupportComplain;
 		}
@@ -4185,15 +4185,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			case CANCELED:
 				if (userOrderDetail.getPayWay() == PayWayEnum.PAY_ONLINE
 						&& userOrderDetail.getTradeOrderPay() != null) {
-					isSupportComplain = "0";
+					isSupportComplain = "1";
 				} else if (userOrderDetail.getPayWay() == PayWayEnum.CASH_DELIERY) {
-					isSupportComplain = "0";
+					isSupportComplain = "1";
 				}
 				break;
 			case REFUSED:
 			case HAS_BEEN_SIGNED:
 			case TRADE_CLOSED:
-				isSupportComplain = "0";
+				isSupportComplain = "1";
 				break;
 			default:
 				break;
