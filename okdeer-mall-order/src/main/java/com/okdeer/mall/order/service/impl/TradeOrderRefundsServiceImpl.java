@@ -791,7 +791,7 @@ public class TradeOrderRefundsServiceImpl
 	@Override
 	public boolean updateWallet(TradeOrderRefunds orderRefunds) throws Exception {
 
-		orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
+		orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
 		// 构建余额支付（或添加交易记录）对象
 		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
 				buildBalancePayTrade(orderRefunds).getBytes(Charsets.UTF_8));
@@ -874,7 +874,7 @@ public class TradeOrderRefundsServiceImpl
 		payTradeVo.setTitle("订单退款(余额支付)，退款交易号：" + orderRefunds.getRefundNo());
 
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-		if (order.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+		if (order.getType() == OrderTypeEnum.PHYSICAL_ORDER || order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 			payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
 		} else {
 			payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_SERVICE_ORDER);
