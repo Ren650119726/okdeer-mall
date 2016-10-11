@@ -4447,9 +4447,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						&& orders.getStatus() != OrderStatusEnum.BUYER_PAYING) {
 					json.put("isSupportComplain", 1);
 				} else {
-					if (orders.getStatus() == OrderStatusEnum.CANCELED && orders.getReason().contains("超时")) {
-						json.put("isSupportComplain", 0);
-					}
+					json.put("isSupportComplain", 0);
 				}
 			} else if (orders.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
 				json.put("isSupportComplain", 1);
