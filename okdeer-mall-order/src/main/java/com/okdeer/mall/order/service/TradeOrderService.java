@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.order.service;
 
 import java.io.UnsupportedEncodingException;
@@ -39,6 +40,7 @@ import net.sf.json.JSONObject;
  *    重构4.1            2016-8-16            zhaoqc              新增根绝交易号修改订单状态的方法
  *    V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
  * 	  V1.1.0            2016-09-26			 luosm               查询商家版APP服务店到店消费订单信息
+ * 	  V1.1.0            2016-10-10			 luosm 				 查询服务店铺到店消费当天的交易列表,包括订单支付信息和退款信息
  */
 public interface TradeOrderService {
 
@@ -303,7 +305,7 @@ public interface TradeOrderService {
 	PageUtils<TradeOrder> findUserServiceOrderList(Map<String, Object> map, int pageNumber, int pageSize)
 			throws ServiceException;
 	// end update by wushp
-	
+
 	/**
 	 * zhongy 服务订单详细
 	 * 
@@ -346,8 +348,8 @@ public interface TradeOrderService {
 	 * @return
 	 */
 	List<TradeOrderStatusVo> getOrderCount(Map<String, Object> map);
-	
-	//start added by luosm 20160924 V1.1.1
+
+	// start added by luosm 20160924 V1.1.1
 	/***
 	 * 
 	 * @Description: 查询商家版APP服务店到店消费订单信息
@@ -357,7 +359,7 @@ public interface TradeOrderService {
 	 * @date 2016年9月24日
 	 */
 	List<TradeOrderStatusVo> selectArrivedOrderCount(Map<String, Object> map);
-	//end added by luosm 20160924 V1.1.1
+	// end added by luosm 20160924 V1.1.1
 
 	/**
 	 * 更新订单信息
@@ -417,8 +419,7 @@ public interface TradeOrderService {
 	 * @throws ServiceException
 	 */
 	/*
-	 * boolean updateWithUserEvaluate(TradeOrder tradeOrder) throws
-	 * MQClientException, ServiceException;
+	 * boolean updateWithUserEvaluate(TradeOrder tradeOrder) throws MQClientException, ServiceException;
 	 */
 
 	/**
@@ -451,7 +452,7 @@ public interface TradeOrderService {
 	 * @throws Exception
 	 */
 	void updateCancelRechargeOrder(TradeOrder tradeOrder) throws Exception;
-	
+
 	/**
 	 * 更新订单
 	 * 
@@ -630,6 +631,41 @@ public interface TradeOrderService {
 	 */
 	PageUtils<Map<String, Object>> selectOrderIncomeList(Map<String, Object> params, int pageSize, int pageNumber);
 
+	// start added by luosm 20161010 V1.1.0
+	/***
+	 * 
+	 * @Description: 查询服务店铺到店消费当天的收入-消费码已消费
+	 * @param params
+	 * @return
+	 * @author luosm
+	 * @date 2016年10月10日
+	 */
+	BigDecimal selectServiceOrderAmount(Map<String, Object> params);
+	
+	/***
+	 * 
+	 * @Description: 查询服务店铺到店消费当天的退单(负收入)
+	 * @param params
+	 * @return
+	 * @author luosm
+	 * @date 2016年10月11日
+	 */
+	BigDecimal selectServiceRefundAmount(Map<String, Object> params);
+	
+	/***
+	 * 
+	 * @Description: 查询服务店铺到店消费当天的交易列表,包括订单支付信息和退款信息
+	 * @param params
+	 * @param pageSize
+	 * @param pageNumber
+	 * @return
+	 * @author luosm
+	 * @date 2016年10月10日
+	 */
+	PageUtils<Map<String, Object>> selectServiceOrderIncomeList(Map<String, Object> params, int pageSize,
+			int pageNumber);
+	// end added by luosm 20161010 V1.1.0
+
 	/**
 	 * zengj:根据参数查询订单信息
 	 *
@@ -797,7 +833,7 @@ public interface TradeOrderService {
 	 * @param tradeOrder
 	 */
 	public void updateTradeOrderByTradeNum(TradeOrder tradeOrder) throws Exception;
-	
+
 	/**
 	 * 
 	 * @Description: 根据交易号修改充值订单状态
@@ -807,7 +843,7 @@ public interface TradeOrderService {
 	 * @date 2016年8月16日
 	 */
 	public void updateRechargeOrderByTradeNum(TradeOrder tradeOrder) throws Exception;
-	
+
 	/**
 	 * 
 	 * @desc 消费码验证
@@ -903,8 +939,8 @@ public interface TradeOrderService {
 	 * @return
 	 */
 	public List<Map<String, Object>> selectPosOrderExportList(Map<String, Object> params);
-	
-	//Begin 重构4.1      add by wusw  20160719 
+
+	// Begin 重构4.1 add by wusw 20160719
 	/**
 	 * 
 	 * @Description: 据查询条件，查询订单列表（用于财务系统，包含服务店订单，分页）
@@ -916,9 +952,9 @@ public interface TradeOrderService {
 	 * @author wusw
 	 * @date 2016年7月19日
 	 */
-	PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params, 
-			int pageNumber,int pageSize)throws ServiceException;
-	
+	PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params, int pageNumber, int pageSize)
+			throws ServiceException;
+
 	/**
 	 * 
 	 * @Description: 据查询条件，查询订单列表（用于财务系统，包含服务店订单，不分页）
@@ -928,10 +964,10 @@ public interface TradeOrderService {
 	 * @author wusw
 	 * @date 2016年7月23日
 	 */
-	List<ERPTradeOrderVo> findOrderListForFinanceByParams(Map<String, Object> params)throws ServiceException;
-	//End 重构4.1      add by wusw  20160719 
-	
-	//Begin 重构4.1      add by zhaoqc  20160730 
+	List<ERPTradeOrderVo> findOrderListForFinanceByParams(Map<String, Object> params) throws ServiceException;
+	// End 重构4.1 add by wusw 20160719
+
+	// Begin 重构4.1 add by zhaoqc 20160730
 	/**
 	 * 
 	 * @Description: 根据订单状态查询订单列表
@@ -942,10 +978,9 @@ public interface TradeOrderService {
 	 * @date 2016年7月30日
 	 */
 	Map<String, List<TradeOrder>> findRechargeOrdersByStatus(OrderStatusEnum status) throws ServiceException;
-	//End 重构4.1      add by zhaoqc  20160730 
-	
-	
-	//Begin v1.1.0    add by zengjz  20160912
+	// End 重构4.1 add by zhaoqc 20160730
+
+	// Begin v1.1.0 add by zengjz 20160912
 	/**
 	 * @Description: 按条件统计订单交易量与金额
 	 * @param params 查询参数
@@ -954,7 +989,7 @@ public interface TradeOrderService {
 	 * @date 2016年9月12日
 	 */
 	Map<String, Object> statisOrderForFinanceByParams(Map<String, Object> params);
-	
+
 	/**
 	 * @Description: 按条件统计取消订单退款交易量与金额
 	 * @param params 查询条件
@@ -964,5 +999,5 @@ public interface TradeOrderService {
 	 * @date 2016年9月17日
 	 */
 	Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params);
-	//End v1.1.0      add by zengjz  20160912
+	// End v1.1.0 add by zengjz 20160912
 }
