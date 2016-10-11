@@ -454,4 +454,9 @@
   </select>
   <!-- end added by zhaoqc  -->
   
+  <update id="updateStatusWithRefundById" parameterType="java.lang.String">
+	UPDATE trade_order_item_detail
+	SET status = 2,update_time = now()
+	WHERE id = #{id,jdbcType=VARCHAR} AND status = 0
+  </update>
 </mapper>
