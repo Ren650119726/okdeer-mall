@@ -410,8 +410,7 @@ public class TradeOrderRefundsServiceImpl
 
 		// 实物订单、团购订单、服务订单发送保存系统消息 update by zhaoqc
 		if (orderRefunds.getType() == OrderTypeEnum.SERVICE_ORDER
-				|| orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER
-				|| orderRefunds.getType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
+				|| orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 			// 保存系统消息
 			saveSysMsg(orderRefunds);
 			// 推送消息给POS和商家中心
