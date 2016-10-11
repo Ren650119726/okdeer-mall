@@ -94,7 +94,8 @@
 	
 	<!-- by:yangq 根据用户邀请码code查询用户邀请码信息 -->
 	<select id="selectInvitationByCode" resultMap="BaseResultMap" parameterType="string">
-	  SELECT <include refid="resultBaseColumn"/> FROM sys_user_invitation_code WHERE invitation_code =#{invitationCode,jdbcType=VARCHAR}
+	  SELECT id,sys_user_id,sys_buyer_user_id,user_type,invitation_code,invitation_user_num,first_order_user_num,
+		create_time,update_time FROM sys_user_invitation_code WHERE invitation_code =#{invitationCode,jdbcType=VARCHAR}
 	</select>
 	
   	<!-- 根据参数获取信息 start -->

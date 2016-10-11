@@ -126,4 +126,20 @@
       SELECT COUNT(1) FROM activity_collect_coupons_regist_record record LEFT JOIN activity_collect_coupons coupons ON record.`activity_id` = coupons.`id` WHERE record.`user_id` = #{userId,jdbcType=VARCHAR}
    </select>
    
+   <!-- begin by:yangq 保存邀请码记录 -->
+   <insert id="saveRecord" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into activity_collect_coupons_regist_record(
+			<include refid="Base_Column_List"/>
+		)values(
+            #{id},
+            #{activity_id},
+            #{user_id},
+            #{invite_id},
+            #{finish_order_time},
+            #{machine_code},
+            #{create_time}
+        )
+	</insert>
+   <!-- end by:yangq 保存邀请码记录 -->
+   
 </mapper>

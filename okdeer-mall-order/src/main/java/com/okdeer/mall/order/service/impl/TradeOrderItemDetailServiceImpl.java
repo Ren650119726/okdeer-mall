@@ -26,6 +26,7 @@ import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
  * ----------------+----------------+-------------------+-------------------------------------------
  *    V1.1.0            2016-09-26           wusw                 添加消费码验证（到店消费）相应方法
  *    V1.1.0            2016-09-29           luosm     			     根据订单id查询明细列表
+ *    V1.1.0            2016-10-11           zengjz                根据id查询详情   
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderItemDetailServiceApi")
 class TradeOrderItemDetailServiceImpl implements TradeOrderItemDetailService, TradeOrderItemDetailServiceApi {
@@ -119,4 +120,12 @@ class TradeOrderItemDetailServiceImpl implements TradeOrderItemDetailService, Tr
         return tradeOrderItemDetailMapper.checkConsumeHasExsit(storeId, consumeCode);
     }
     //End added by zhaqoc 20160929 V1.1.0
+    
+  //Begin added by zengjz 2016-10- 11 V1.1.0
+	@Override
+	public TradeOrderItemDetail findById(String id) {
+		
+		return tradeOrderItemDetailMapper.selectByPrimaryKey(id);
+	}
+	//Begin added by zengjz 2016-10- 11 V1.1.0
 }

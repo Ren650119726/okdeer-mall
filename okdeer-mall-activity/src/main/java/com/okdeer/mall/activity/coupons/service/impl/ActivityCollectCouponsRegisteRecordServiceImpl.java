@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsRegistRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsRegisteRecordService;
@@ -93,6 +94,10 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 	public int selectInvitationNum(String userId) throws Exception {
 		int result = registeRecordMapper.selectInvitationNum(userId);
 		return result;
+	}
+
+	public void saveRecord(ActivityCollectCouponsRegisteRecord registRecord) throws Exception {
+		registeRecordMapper.saveRecord(registRecord);
 	}
 
 }

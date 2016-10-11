@@ -141,6 +141,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			goodsItem.setOnline(goodsStoreSku.getOnline().ordinal());
 			// 设置商品的支付方式
 			goodsItem.setPaymentMode(getPaymentMode(goodsStoreSku.getPayType()));
+			respData.setPaymentMode(goodsItem.getPaymentMode());
 			// 商品主图信息列表
 			List<GoodsStoreSkuPicture> storeSkuPicList = goodsStoreSkuPictureService
 					.findMainByStoreSkuIds(storeSkuIdList);
@@ -158,6 +159,10 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			}
 			list.add(goodsItem);
 		}
+		if (goodsStoreSkuList.size() > 1) {
+			// 商品列表大于1，说明支持购物车，商品支付方式设为线上支付，因为线下支付只能单款商品购买
+			respData.setPaymentMode(PayWayEnum.PAY_ONLINE.ordinal());
+		}
 		// 将商品信息返回
 		respData.setList(list);
 		// 组装库存信息并返回
@@ -171,12 +176,8 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		// 检测商品信息是否有变化
 		for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
 			if (goodsStoreSku == null || goodsStoreSku.getOnline() != BSSC.PUTAWAY) {
-				if (reqData.getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
-					// 到店消费提示信息与上门服务提示信息不一样
-					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_BUY);
-				} else {
-					resp.setResult(ResultCodeEnum.SERV_GOODS_IS_UPDATE);
-				}
+				// bug 14150
+				resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_BUY);
 				
 				req.setComplete(true);
 				return;

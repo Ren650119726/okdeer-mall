@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo;
 import com.okdeer.base.dal.IBaseCrudMapper;
 
@@ -66,5 +67,6 @@ public interface ActivityCollectCouponsRegistRecordMapper extends IBaseCrudMappe
 	 * @date 2016年10月4日
 	 */
 	int selectInvitationNum(String userId) ; 
-	
+
+	void saveRecord(ActivityCollectCouponsRegisteRecord registRecord);
 }

@@ -213,25 +213,9 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 	public void insertSeckillReminde(SeckillReminde seckillReminde) throws Exception {
 		seckillRemindeMapper.insertSeckillReminde(seckillReminde);
 	}
-	
-	public static void main(String[] args) {
-		Date date = new Date();
-		Long time = date.getTime();
-		System.out.println(time);
-
-		Date d = new Date(time);
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		System.out.println(sdf.format(d));
-		
-		Date d1 = new Date(time + (60000 * 15));
-		SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		System.out.println(sdf1.format(d1));
-		
-		
-	}
 
 	@Override
-	public void sendPosMessage(SendMsgParamVo sendMsgParamVo, String skuName, Date startTime) throws Exception {
+	public void sendPosMessage(SendMsgParamVo sendMsgParamVo, String content, Date startTime) throws Exception {
 		PushMsgVo pushMsgVo = new PushMsgVo();
 		pushMsgVo.setSysCode(msgSysCode);
 		pushMsgVo.setToken(msgToken);
@@ -247,13 +231,13 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 		String msgTypeCustom = OrderMsgConstant.SECKILL_MESSAGE;
 
 		// 推送消息标题
-		String msgTitle = "您有一条推送提醒";
+		String msgTitle = "友门鹿";
 
 		pushMsgVo.setMsgTypeCustom(msgTypeCustom);
 		// 不使用模板
 		pushMsgVo.setMsgNotifyContent(msgTitle);
 		pushMsgVo.setMsgDetailType(1);
-		pushMsgVo.setMsgDetailContent(skuName);
+		pushMsgVo.setMsgDetailContent(content);
 		// 设置是否定时发送
 		pushMsgVo.setIsTiming(1);
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -261,7 +245,6 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
 		// 查询的用户信息
-
 		SysBuyerUser sysBuyerUser = sysBuyerUserMapper.selectByPrimaryKey(sendMsgParamVo.getUserId());
 		PushUserVo pushUser = new PushUserVo();
 		pushUser.setUserId(sysBuyerUser.getId());

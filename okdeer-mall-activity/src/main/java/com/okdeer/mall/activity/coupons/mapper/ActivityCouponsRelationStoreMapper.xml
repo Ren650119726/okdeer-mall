@@ -29,7 +29,6 @@
 	    FROM store_info store
 	    INNER JOIN activity_coupons_relation_store couponsStore ON couponsStore.store_id = store.id
 	    WHERE couponsStore.coupons_id = #{couponsId, jdbcType=VARCHAR}
-	    and store.type = #{type, jdbcType=TINYINT}
 	    <if test="provinceId != null and provinceId != ''">
 	      AND store.province_id = #{provinceId, jdbcType=VARCHAR}
 	    </if>
