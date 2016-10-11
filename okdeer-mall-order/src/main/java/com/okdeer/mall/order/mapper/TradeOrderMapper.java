@@ -46,6 +46,7 @@ import com.okdeer.mall.order.vo.UserTradeServiceOrderVo;
  *    V1.1.0			2016-9-23 			 zengjz				 增加查询到店消费订单列表
  *    V1.1.0            2016-09-23           wusw                添加消费码验证（到店消费）相应方法
  *    V1.1.0            2016-09-26           luosm               查询商家版APP服务店到店消费订单信息
+ *    V1.1.0			2016-10-10          luosm			服务店到店消费订单金额统计及订单列表
  */
 public interface TradeOrderMapper {
 
@@ -517,7 +518,7 @@ public interface TradeOrderMapper {
 	 * @return
 	 */
 	BigDecimal selectOrderAmount(Map<String, Object> params);
-
+	
 	/**
 	 * zengj:查询店铺当天的支出(退款) 
 	 *
@@ -525,6 +526,38 @@ public interface TradeOrderMapper {
 	 * @return
 	 */
 	BigDecimal selectRefundAmount(Map<String, Object> params);
+	
+	//start added by luosm 20161011 V1.1.0
+	/**
+	 * 
+	 * @Description: 查询服务店铺到店消费当天的收入
+	 * @param params
+	 * @return
+	 * @author luosm
+	 * @date 2016年10月10日
+	 */
+	BigDecimal selectServiceOrderAmount(Map<String, Object> params);
+	
+	/**
+	 * 
+	 * @Description: 查询服务店铺到店消费当天的退单(负收入)
+	 * @param params
+	 * @return
+	 * @author luosm
+	 * @date 2016年10月10日
+	 */
+	BigDecimal selectServiceRefundAmount(Map<String, Object> params);
+	
+	/***
+	 * 
+	 * @Description: 查询商家版APP服务店到店消费订单信息
+	 * @param params
+	 * @return
+	 * @author luosm
+	 * @date 2016年10月10日
+	 */
+	List<Map<String, Object>> selectServiceOrderIncomeList(Map<String, Object> params);
+	//end added by luosm 20161011 V1.1.0
 
 	/**
 	 * zengj:查询店铺当天的交易列表,包括订单支付信息和退款信息 
@@ -533,7 +566,7 @@ public interface TradeOrderMapper {
 	 * @return
 	 */
 	List<Map<String, Object>> selectOrderIncomeList(Map<String, Object> params);
-
+	
 	/**
 	 * zengj:根据参数查询订单信息
 	 *

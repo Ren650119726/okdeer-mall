@@ -3131,6 +3131,39 @@
 	    AND tr.type = #{type,jdbcType=TINYINT}
 		</if>
 	</select>
+	
+	<!-- luom:查询服务店铺到店消费当天的收入-消费码已消费 -->
+	<select id="selectServiceOrderAmount" parameterType="java.util.Map"
+		resultType="java.math.BigDecimal">
+		SELECT
+			sum(tr.income)
+		FROM
+			trade_order tr,trade_order_item_detail td
+		WHERE
+			tr.store_id = #{storeId, jdbcType=VARCHAR}
+		AND tr.id = td.order_id
+		AND td.`status` = 1
+		AND (
+			td.use_time BETWEEN #{startTime,jdbcType=TIMESTAMP}
+			AND #{endTime,jdbcType=TIMESTAMP}
+		)
+		AND tr.type = '5'
+	</select>
+	
+	<!-- luosm:查询服务店铺到店消费当天的退单(负收入)-->
+	<select id="selectServiceRefundAmount" parameterType="java.util.Map"
+		resultType="java.math.BigDecimal">
+		SELECT sum(r.total_income)
+			FROM
+				trade_order_refunds r
+			WHERE
+					r.store_id = #{storeId, jdbcType=VARCHAR}
+					and r.type = 5
+					
+					and (r.create_time BETWEEN #{startTime,jdbcType=TIMESTAMP}
+			AND #{endTime,jdbcType=TIMESTAMP})
+	</select>
+	
 	<!-- zengj:查询店铺当天的退单(负收入)-商家云钱包的实际扣款金额 -->
 	<select id="selectRefundAmount" parameterType="java.util.Map"
 		resultType="java.math.BigDecimal">
@@ -3177,6 +3210,47 @@
 		tradeTime DESC
 	</select>
 
+	<!-- luosm:服务店到店消费今日(昨日)营收列表 -->
+	<select id="selectServiceOrderIncomeList" parameterType="java.util.Map"
+		resultType="java.util.Map">
+		SELECT tradeNo,income,tradeTime,types
+		FROM
+		(
+		SELECT
+			tr.order_no AS tradeNo,
+			tr.income,
+			td.use_time AS tradeTime,
+			0 AS types
+		FROM
+			trade_order tr,trade_order_item_detail td
+		WHERE
+			tr.store_id = #{storeId, jdbcType=VARCHAR}
+		AND tr.id = td.order_id
+		and td.`status` = 1
+		AND (
+			td.use_time BETWEEN #{startTime,jdbcType=TIMESTAMP}
+			AND #{endTime,jdbcType=TIMESTAMP}
+			)
+		AND tr.type = '5'
+		UNION ALL
+			SELECT
+				r.refund_no AS tradeNo,
+				r.total_income as income,
+				r.create_time AS tradeTime,
+				1 AS types
+			FROM
+				trade_order_refunds r
+			WHERE
+					r.store_id = #{storeId, jdbcType=VARCHAR}
+					and r.type = 5
+					and (r.create_time BETWEEN #{startTime,jdbcType=TIMESTAMP}
+			AND #{endTime,jdbcType=TIMESTAMP})
+			
+		) AS tmp
+    	ORDER BY tradeTime DESC
+	</select>
+	
+	
 	<!-- zengj:查询提货码验证记录 -->
 	<select id="selectPickUpRecord" parameterType="java.util.Map"
 		resultType="java.util.Map">

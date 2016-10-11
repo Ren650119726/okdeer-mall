@@ -204,7 +204,7 @@
   	<!-- Bug:13700 根据邀请码修改下单人数 -->
   	<update id="updateFirstOrderNum" parameterType="map">
   		UPDATE sys_user_invitation_code 
-  		SET first_order_user_num = first_order_user_num + 1 ,
+  		SET first_order_user_num = IFNULL(first_order_user_num,0) + 1 ,
   			update_time = #{updateTime}
   		WHERE id = #{id}
   	</update>

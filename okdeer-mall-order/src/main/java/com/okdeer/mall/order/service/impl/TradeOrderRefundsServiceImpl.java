@@ -408,11 +408,9 @@ public class TradeOrderRefundsServiceImpl
 			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_agree_timeout, orderRefunds.getId());
 		}
 
-		// 实物订单、团购订单、服务订单、到店消费订单发送保存系统消息 update by zhaoqc
+		// 实物订单、团购订单、服务订单发送保存系统消息 update by zhaoqc
 		if (orderRefunds.getType() == OrderTypeEnum.SERVICE_ORDER
-				|| orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER
-				|| orderRefunds.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
-				|| orderRefunds.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+				|| orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 			// 保存系统消息
 			saveSysMsg(orderRefunds);
 			// 推送消息给POS和商家中心
@@ -793,7 +791,7 @@ public class TradeOrderRefundsServiceImpl
 	@Override
 	public boolean updateWallet(TradeOrderRefunds orderRefunds) throws Exception {
 
-		orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
+		orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
 		// 构建余额支付（或添加交易记录）对象
 		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
 				buildBalancePayTrade(orderRefunds).getBytes(Charsets.UTF_8));

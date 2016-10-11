@@ -255,7 +255,7 @@
 		AND gss.store_id = sie.store_id
 		AND sie.is_closed = 1 AND sec.start_time = (
 			SELECT s.start_time FROM activity_seckill s left JOIN activity_seckill_range r on s.id = r.activity_seckill_id 
-			 WHERE seckill_status = 0 and r.city_id = #{cityId,jdbcType=VARCHAR} ORDER BY s.start_time DESC LIMIT 1) 
+			 WHERE s.seckill_status = 0 and (r.city_id = #{cityId,jdbcType=VARCHAR} OR s.seckill_range_type = 0) ORDER BY s.start_time DESC LIMIT 1) 
 		AND sec.seckill_status = 0 
 	</select>
 	<!-- 查询定位地址是否有秒杀活动 end add by luosm 2016-7-20 -->

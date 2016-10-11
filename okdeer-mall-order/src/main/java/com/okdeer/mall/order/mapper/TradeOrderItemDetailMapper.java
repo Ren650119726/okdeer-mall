@@ -185,4 +185,15 @@ public interface TradeOrderItemDetailMapper{
 	
 	// End V1.1.0 add by zengjz 20160924
 	
+	// Begin V1.1.0 add by zengjz 20161011
+	/**
+	 * @Description: 根据id查询详情
+	 * @param id id
+	 * @return 订单项detail详情
+	 * @author zengjizu
+	 * @date 2016年10月11日
+	 */
+	TradeOrderItemDetail selectByPrimaryKey(String id);
+	
+	// End V1.1.0 add by zengjz 20161011
 }
