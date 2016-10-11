@@ -176,12 +176,8 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		// 检测商品信息是否有变化
 		for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
 			if (goodsStoreSku == null || goodsStoreSku.getOnline() != BSSC.PUTAWAY) {
-				if (reqData.getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
-					// 到店消费提示信息与上门服务提示信息不一样
-					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_BUY);
-				} else {
-					resp.setResult(ResultCodeEnum.SERV_GOODS_IS_UPDATE);
-				}
+				// bug 14150
+				resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_BUY);
 				
 				req.setComplete(true);
 				return;
