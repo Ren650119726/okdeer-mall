@@ -487,7 +487,6 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("couponsId", couponsId);
 		params.put("provinceId", provinceId);
-		params.put("type", StoreTypeEnum.CLOUD_STORE);
 		List<Map<String, Object>> cityStoreList = couponsRelationStoreMapper.selectAddressRelationStoreByParams(params);
 		if (cityStoreList != null && cityStoreList.size() > 0) {
 			for (Map<String, Object> map : cityStoreList) {
