@@ -1184,7 +1184,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.noConsume) {
 					isHasWaitConsume = true;
 				}
-				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.refund) {
+				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.consumed) {
 					isHasConsumed = true;
 				}
 			}
