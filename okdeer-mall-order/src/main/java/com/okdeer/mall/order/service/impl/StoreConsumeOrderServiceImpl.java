@@ -924,7 +924,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			totalIncome = totalIncome.add(tradeOrderRefundsItem.getIncome());
 		}
 		orderRefunds.setTotalIncome(totalIncome);
-		
+
 		// 判断非在线支付
 		if (PayWayEnum.PAY_ONLINE != order.getPayWay()) {
 			// 非线上支付
@@ -1101,7 +1101,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			tradeOrderRefundsCertificateService.addCertificate(certificate);
 
 			// 更新到店消费的退款单信息
-			this.updateStoreConsumeRefunds(orderRefunds, waitRefundDetailList);
+			this.updateStoreConsumeRefunds(order,orderRefunds, waitRefundDetailList);
 
 			// 特惠活动释放限购数量
 			for (TradeOrderRefundsItem refundsItem : orderRefunds.getTradeOrderRefundsItem()) {
@@ -1121,7 +1121,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 	}
 
 	@Transactional(rollbackFor = Exception.class)
-	private void updateStoreConsumeRefunds(TradeOrderRefunds orderRefunds,
+	private void updateStoreConsumeRefunds(TradeOrder order, TradeOrderRefunds orderRefunds,
 			List<TradeOrderItemDetail> waitRefundDetailList) throws Exception {
 
 		List<String> refundDetailIds = Lists.newArrayList();
@@ -1156,29 +1156,49 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		}
 		tradeOrderItemMapper.updateCompleteById(ids);
 		// 更新订单状态
-		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-
 		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
 				.selectByOrderItemDetailByOrderId(orderRefunds.getOrderId());
 
 		// 是否消费码全部退款
-		boolean isAllRefund = true;
+		// boolean isAllRefund = true;
+		// 是否有过期的消费码
+		boolean isHasExpired = false;
+		// 是否有未消费的
+		boolean isHasWaitConsume = false;
+		// 是否有已经消费的
+		boolean isHasConsumed = false;
 		if (CollectionUtils.isNotEmpty(detailList)) {
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
-				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.consumed
-						|| tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.expired) {
-					// 如果消费码有已经消费或者过期的状态，就不是全部退款了
-					isAllRefund = false;
+				if (refundDetailIds.contains(tradeOrderItemDetail.getId())) {
+					// 如果是这次退款的消费码直接继续判断
+					continue;
+				}
+
+				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.expired) {
+					isHasExpired = true;
+				}
+				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.noConsume) {
+					isHasWaitConsume = true;
+				}
+				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.refund) {
+					isHasConsumed = true;
 				}
 			}
 		}
 
-		if (isAllRefund) {
-			// 如果全部退款了，将订单状态改为已经退款
-			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.REFUNDED);
+		if (isHasExpired) {
+			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.EXPIRED);
 		} else {
-			// 变成已经消费
-			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_EVALUATE);
+			if (isHasWaitConsume) {
+				order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_CONSUME);
+			} else {
+				if(isHasConsumed){
+					// 变成已经消费
+					order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_EVALUATE);
+				}else{
+					order.setConsumerCodeStatus(ConsumerCodeStatusEnum.REFUNDED);
+				}
+			}
 		}
 
 		// 判断所有的订单项是否全部完成了，如果全部完成了，就更改订单isComplete为已经完成
