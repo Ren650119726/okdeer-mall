@@ -255,8 +255,8 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 	}
 
 	@Override
-	public SeckillReminde selectSeckillRemindeByUserId(String UserId) throws Exception {
-		SeckillReminde seckillReminde = seckillRemindeMapper.selectSeckillRemindeByUserId(UserId);
+	public SeckillReminde selectSeckillRemindeByActivityId(String activityId) throws Exception {
+		SeckillReminde seckillReminde = seckillRemindeMapper.selectSeckillRemindeByActivityId(activityId);
 		return seckillReminde;
 	}
 
