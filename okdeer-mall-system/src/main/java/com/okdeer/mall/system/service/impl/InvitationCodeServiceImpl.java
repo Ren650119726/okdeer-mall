@@ -68,7 +68,7 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(endTime);
 			//三个月前
-			cal.add(Calendar.DAY_OF_MONTH, -3);
+			cal.add(Calendar.MONTH, -3);
 			beginTime = cal.getTime();
 		}
 		if (beginTime != null) {
