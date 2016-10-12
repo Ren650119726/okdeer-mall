@@ -6117,9 +6117,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					.findOrderInfoByConsumeCode(params);
 
 			// 总验证金额
-			BigDecimal totalValiAmount = BigDecimal.ZERO;
+			BigDecimal totalValiAmount = new BigDecimal("0");
 			// 总优惠金额
-			BigDecimal totalValiPrefAmount = BigDecimal.ZERO;
+			BigDecimal totalValiPrefAmount = new BigDecimal("0");
 
 			if (CollectionUtils.isNotEmpty(orderDetailList)) {
 				// 存放验证通过的消费码对应的订单项详细id和订单id
@@ -6220,17 +6220,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					for (String orderId : orderIdList) {
 						// 订单中关于消费码订单项的总金额和优惠金额
 						order = tradeOrderMapper.selectByPrimaryKey(orderId);
+						
+						OrderItemDetailConsumeVo  detailConsumeVo = successOrderDetailMap.get(order.getId());
 						// 每个订单的订单项详细实付金额（当前输入验证码的订单项）
-						BigDecimal totalAmountDetail = BigDecimal.ZERO;
+						BigDecimal totalAmountDetail = detailConsumeVo.getDetailActualAmount();
 						// 每个订单的订单项详细优惠金额（当前输入验证码的订单项）
-						BigDecimal prefAmountDetail = BigDecimal.ZERO;
-						for (OrderItemDetailConsumeVo detailConsumeVo : orderDetailList) {
-							if (detailConsumeVo.getOrderId().equals( orderId)) {
-								totalAmountDetail = totalAmountDetail.add(detailConsumeVo.getDetailActualAmount());
-								prefAmountDetail = prefAmountDetail.add(detailConsumeVo.getPreferentialPrice());
-							}
-
-						}
+						BigDecimal prefAmountDetail = detailConsumeVo.getPreferentialPrice();
+						
 						tradeVoList.add(buildBalancePayTrade(order, bossId, totalAmountDetail, prefAmountDetail));
 						order = null;
 					}
