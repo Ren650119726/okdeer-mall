@@ -1,20 +1,28 @@
 package com.okdeer.mall.order.service.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
+import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
-import com.okdeer.mall.order.vo.TradeOrderReqDto;
-import com.okdeer.mall.order.vo.TradeOrderRespDto;
-import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
+import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.order.constant.OrderTipMsgConstant;
 import com.okdeer.mall.order.service.FavourCheckService;
+import com.okdeer.mall.order.vo.TradeOrderReqDto;
+import com.okdeer.mall.order.vo.TradeOrderRespDto;
 
 /**
  * ClassName: FavourCheckServiceImpl 
@@ -27,6 +35,7 @@ import com.okdeer.mall.order.service.FavourCheckService;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构V4.1			2016-07-14			maojj			优惠校验
  *		重构V4.1			2016-07-14			maojj			查询用户有效优惠
+ *		Bug:14093       2016-10-12			maojj   		优惠券校验使用品类
  */
 @Service
 public class FavourCheckServiceImpl implements FavourCheckService {
@@ -41,6 +50,14 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 	 */
 	@Resource
 	private ActivityDiscountMapper activityDiscountMapper;
+	
+	// Begin Bug:14093 added by maojj 2016-10-12
+	/**
+	 * 代金券Mapper
+	 */
+	@Resource
+	private ActivityCouponsMapper activityCouponsMapper;
+	// End Bug:14093 added by maojj 2016-10-12
 
 	/**
 	 * 校验优惠券是否有效
@@ -51,11 +68,12 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 		ActivityTypeEnum activityType = reqDto.getData().getActivityType();
 		String recordId = reqDto.getData().getRecordId();
 		String activityId = reqDto.getData().getActivityId();
-
+		StringBuilder couponsId = new StringBuilder();
+		
 		boolean isValid = true;
 		switch (activityType) {
 			case VONCHER:
-				isValid = checkCoupons(recordId);
+				isValid = checkCoupons(recordId,couponsId);
 				break;
 			case FULL_REDUCTION_ACTIVITIES:
 			case FULL_DISCOUNT_ACTIVITIES:
@@ -70,6 +88,27 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 			respDto.getResp().setIsValid(0);
 			return;
 		}
+		
+		// Begin Bug:14093 added by maojj 2016-10-12
+		// 如果使用的是代金券，如果代金券指定分类，则需要校验选购的商品是否超出代金券指定分类
+		if(activityType == ActivityTypeEnum.VONCHER){
+			// 查询代金券
+			ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsId.toString());
+			// 0全部分类 1指定分类
+			if(coupons.getIsCategory() == Constant.ONE){
+				List<String> spuCategoryIds = duplicateRemoval(reqDto.getContext().getSpuCategoryIds());
+				// 如果是指定分类。校验商品的分类
+				int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getId());
+				if (count == Constant.ZERO || count != spuCategoryIds.size()) {
+					// 购买的商品分类超出代金券限购的分类。则订单提交失败
+					respDto.setFlag(false);
+					respDto.setMessage(OrderTipMsgConstant.KIND_LIMIT_OVER);
+					respDto.getResp().setIsValid(0);
+					return;
+				}
+			}			
+		}
+		// End Bug:14093 added by maojj 2016-10-12
 
 	}
 
@@ -80,12 +119,13 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private boolean checkCoupons(String recordId) {
+	private boolean checkCoupons(String recordId,StringBuilder couponsId) {
 		boolean isValid = true;
 		ActivityCouponsRecord conpons = activityCouponsRecordMapper.selectByPrimaryKey(recordId);
-		if (conpons.getStatus() == ActivityCouponsRecordStatusEnum.EXPIRES) {
+		if (conpons.getStatus() != ActivityCouponsRecordStatusEnum.UNUSED) {
 			isValid = false;
 		}
+		couponsId.append(conpons.getCouponsId());
 		return isValid;
 	}
 
@@ -104,4 +144,22 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 		}
 		return isValid;
 	}
+	
+	// Begin Bug:14093 added by maojj 2016-10-12
+	/**
+	 * 
+	 * @Description: 去除重复
+	 * @param spuCategoryIds  商品类目id
+	 * @return List<String>  
+	 * @author tangy
+	 * @date 2016年10月5日
+	 */
+	private static List<String> duplicateRemoval(List<String> spuCategoryIds){
+		if (CollectionUtils.isNotEmpty(spuCategoryIds)) {
+			HashSet<String> hsSpuCategoryIds = new HashSet<String>(spuCategoryIds);
+			spuCategoryIds = new ArrayList<String>(hsSpuCategoryIds);
+		}
+		return spuCategoryIds;
+	}
+	// End Bug:14093 added by maojj 2016-10-12
 }
