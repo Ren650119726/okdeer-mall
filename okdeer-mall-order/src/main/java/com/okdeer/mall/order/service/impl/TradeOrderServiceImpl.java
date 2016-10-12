@@ -6225,7 +6225,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// 每个订单的订单项详细优惠金额（当前输入验证码的订单项）
 						BigDecimal prefAmountDetail = BigDecimal.ZERO;
 						for (OrderItemDetailConsumeVo detailConsumeVo : orderDetailList) {
-							if (detailConsumeVo.getOrderId() == orderId) {
+							if (detailConsumeVo.getOrderId().equals( orderId)) {
 								totalAmountDetail = totalAmountDetail.add(detailConsumeVo.getDetailActualAmount());
 								prefAmountDetail = prefAmountDetail.add(detailConsumeVo.getPreferentialPrice());
 							}
