@@ -5028,7 +5028,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrder);
 		tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.createOrder);
-		tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.createOrder);
+		
+		//到店消费订单、服务订单商家版不发送消息
+		if(tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER && tradeOrder.getType() != OrderTypeEnum.STORE_CONSUME_ORDER ){
+			tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.createOrder);
+		}
+		
 	}
 
 	@Override
