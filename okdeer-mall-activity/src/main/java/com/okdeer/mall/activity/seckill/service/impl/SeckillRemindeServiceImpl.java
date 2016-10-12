@@ -23,6 +23,7 @@ import com.okdeer.base.kafka.producer.KafkaProducer;
 import com.okdeer.mall.activity.seckill.entity.SeckillReminde;
 import com.okdeer.mall.activity.seckill.mapper.SeckillRemindeMapper;
 import com.okdeer.mall.activity.seckill.service.SeckillRemindeServiceApi;
+import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.order.constant.OrderMsgConstant;
 import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
@@ -221,27 +222,23 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 		pushMsgVo.setToken(msgToken);
 		pushMsgVo.setSendUserId(sendMsgParamVo.getUserId());
 		pushMsgVo.setServiceFkId(sendMsgParamVo.getOrderId());
-		pushMsgVo.setServiceTypes(new Integer[] { 0 });
+		pushMsgVo.setServiceTypes(new Integer[] { Constant.ZERO });
 		// 0:用户APP,2:商家APP,3POS机
-		pushMsgVo.setAppType(0);
-		pushMsgVo.setIsUseTemplate(0);
-		pushMsgVo.setMsgType(1);
+		pushMsgVo.setAppType(Constant.ZERO);
+		pushMsgVo.setIsUseTemplate(Constant.ZERO);
+		pushMsgVo.setMsgType(Constant.ONE);
 		pushMsgVo.setId(sendMsgParamVo.getStoreId());
-		// 业务消息标识
-		String msgTypeCustom = OrderMsgConstant.SECKILL_MESSAGE;
-
-		// 推送消息标题
-		String msgTitle = "友门鹿";
-
-		pushMsgVo.setMsgTypeCustom(msgTypeCustom);
+		pushMsgVo.setMsgTypeCustom(OrderMsgConstant.SECKILL_MESSAGE);
+		
 		// 不使用模板
-		pushMsgVo.setMsgNotifyContent(msgTitle);
-		pushMsgVo.setMsgDetailType(1);
+		pushMsgVo.setMsgNotifyContent("友门鹿");
+		pushMsgVo.setMsgDetailType(Constant.ONE);
 		pushMsgVo.setMsgDetailContent(content);
 		// 设置是否定时发送
-		pushMsgVo.setIsTiming(1);
+		pushMsgVo.setIsTiming(Constant.ONE);
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		pushMsgVo.setSendTime(format.format(new Date(startTime.getTime() - time)));
+		
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
 		// 查询的用户信息
@@ -249,34 +246,7 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 		PushUserVo pushUser = new PushUserVo();
 		pushUser.setUserId(sysBuyerUser.getId());
 		pushUser.setMobile(sysBuyerUser.getPhone());
-/*
-		try {
-			pushUser.setNotificationBuilderId(Integer.valueOf(notificationBuilderId));
-			// 消息信息提示
-			if (WhetherEnum.whether.equals(sysBuyerUser.getIsAccept())) {
-				// 有声音
-				pushUser.setIsexitsSound(0);
-				pushUser.setNotificationBasicStyle(Integer.valueOf(notificationBasicStyle1));
-			} else {
-				// 无声音
-				pushUser.setNotificationBasicStyle(Integer.valueOf(notificationBasicStyle2));
-				pushUser.setIsexitsSound(1);
-			}
-		} catch (Exception e) {
-			// 没有配置zookeeper，取默认的
-			pushUser.setNotificationBuilderId(defaultNotificationBuilderId);
-			// 消息信息提示
-			if (WhetherEnum.whether.equals(sysBuyerUser.getIsAccept())) {
-				// 有声音
-				pushUser.setIsexitsSound(0);
-				pushUser.setNotificationBasicStyle(defaultNotificationBasicStyle1);
-			} else {
-				// 无声音
-				pushUser.setNotificationBasicStyle(defaultNotificationBasicStyle2);
-				pushUser.setIsexitsSound(1);
-			}
-		}*/
-		pushUser.setMsgType(1);
+		pushUser.setMsgType(Constant.ONE);
 
 		userList.add(pushUser);
 		pushMsgVo.setUserList(userList);
