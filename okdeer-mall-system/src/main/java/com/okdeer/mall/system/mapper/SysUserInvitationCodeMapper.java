@@ -106,4 +106,13 @@ public interface SysUserInvitationCodeMapper extends IBaseCrudMapper {
      */
     int updateFirstOrderNum(@Param("id")String id,@Param("updateTime")Date updateTime);
     // End Bug:13700 added by maojj 2016-10-10
+    
+    /**
+     * @Description: 根据订单的买家id 去查询邀请该买家的用户邀请码主键id
+     * @param orderId  orderId
+     * @return  邀请码主键id
+     * @author zhulq
+     * @date 2016年10月12日
+     */
+    String selectIdByOrderId(@Param("orderId")String orderId);
 }

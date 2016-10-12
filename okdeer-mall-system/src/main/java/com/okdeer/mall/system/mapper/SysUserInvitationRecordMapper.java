@@ -17,7 +17,7 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *		重构4.1			 2016年9月19日 			zhulq
+ *		v1.1.0			 2016年9月19日 			zhulq
  */
 public interface SysUserInvitationRecordMapper extends IBaseCrudMapper {
 
@@ -62,4 +62,13 @@ public interface SysUserInvitationRecordMapper extends IBaseCrudMapper {
 	 * @date 2016年10月4日
 	 */
 	List<SysUserInvitationRecordVo> selectInvitationFirstOrderById(@Param("invitationCodeId") String invitationCodeId);
+	
+	/**
+	 * @Description: 判断消费码消费时改下单的用户是否是首单
+	 * @param orderId 订单id
+	 * @return 数量
+	 * @author zhulq
+	 * @date 2016年10月12日
+	 */
+	String selectIdByOrderId(@Param("orderId") String orderId);
 }

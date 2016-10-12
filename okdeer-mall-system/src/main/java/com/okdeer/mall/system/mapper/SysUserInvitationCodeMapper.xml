@@ -209,4 +209,10 @@
   			update_time = #{updateTime}
   		WHERE id = #{id}
   	</update>
+  	
+  	<select id="selectIdByOrderId" parameterType="string" resultType="string">
+  		SELECT suic.id from trade_order tr LEFT JOIN 
+		sys_user_invitation_code suic on suic.sys_buyer_user_id = tr.user_id
+		where tr.id = #{orderId, jdbcType=VARCHAR}
+  	</select>
 </mapper>
