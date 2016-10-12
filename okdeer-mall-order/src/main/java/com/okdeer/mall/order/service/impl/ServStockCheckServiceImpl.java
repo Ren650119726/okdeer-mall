@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
+import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
@@ -94,8 +95,25 @@ public class ServStockCheckServiceImpl implements RequestHandler<ServiceOrderReq
 					resp.setMessage("抱歉，该商品剩余不足，仅能购买" + stockNum + "件");
 				}
 			} else {
-				// 上门服务订单
-				resp.setResult(ResultCodeEnum.GOODS_STOCK_NOT_ENOUGH);
+				// 上门服务订单  bug14079
+				// 服务店铺扩展信息
+				StoreInfoServiceExt storeserviceExt = respData.getStoreInfoServiceExt();
+				if (storeserviceExt != null && storeserviceExt.getIsShoppingCart() == 0) {
+					// 不支持购物车
+					if (stockNum == 0) {
+						// 剩余库存为0
+						resp.setCode(233);
+						resp.setMessage("抱歉，该商品预约已满");
+					} else {
+						// 库存不足，但是还有剩余库存
+						resp.setCode(299);
+						resp.setMessage("抱歉，服务预约已满仅能预约" + stockNum + "件");
+					}
+				} else {
+					// 支持购物车，与便利店提示一致
+					resp.setResult(ResultCodeEnum.GOODS_STOCK_NOT_ENOUGH);
+				}
+				
 			}
 			req.setComplete(true);
 			return;
