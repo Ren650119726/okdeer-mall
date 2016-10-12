@@ -261,7 +261,10 @@ import net.sf.json.JsonConfig;
  *      13960             2016-10-10            wusw               修改判断上门服务订单是否支持投诉
  *      V1.1.0			   2016-10-10          luosm			服务店到店消费订单金额统计及订单列表
  *      14026               2016-10-11            wusw      修改多个消费码验证成功，却只有一个消费码状态修改的问题
- *      14168               2016-10-11            wusw      修改多个消费码验证时，部分消费码不存在情况下的相应提示信息    
+ *      14168               2016-10-11            wusw      修改多个消费码验证时，部分消费码不存在情况下的相应提示信息   
+ *      V1.1.0			    2016-10-11          luosm			bug13932 
+ *      V1.1.0 				2016-10-12			wushp			bug13735
+ *      V1.1.0              2016-10-12            wusw      修改根据订单项详细的消费码状态，修改订单消费码状态的逻辑  
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1016,7 +1019,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<TradeOrderVo> selectMallAppOrderInfo(Map<String, Object> map, int pageSize, int pageNumber) {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
-		List<TradeOrderVo> list = tradeOrderMapper.selectOrderInfo(map);
+
+		// begin added by luosm 20161011 V1.1.0
+		String storeId = map.get("storeId").toString();
+		StoreInfo store = storeInfoService.findById(storeId);
+		List<TradeOrderVo> list = null;
+		if (store.getType() == StoreTypeEnum.SERVICE_STORE) {
+			list = tradeOrderMapper.selectServiceOrderInfo(map);
+		} else {
+			list = tradeOrderMapper.selectOrderInfo(map);
+		}
+		// end added by luosm 20161011 V1.1.0
+
 		if (list != null && !list.isEmpty()) {
 			for (TradeOrderVo tradeOrderVo : list) {
 				// 查询订单项表。
@@ -1530,12 +1544,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			tradeOrderItems = tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId());
 		}
 		StockAdjustVo stockAdjustVo = new StockAdjustVo();
+		// begin update by wushp 20161012 bug13735
 		// Begin added by maojj 2016-07-26
-		String rpcId = UuidUtils.getUuid();
-		rpcIdList.add(rpcId);
-		stockAdjustVo.setRpcId(rpcId);
+		String rpcId = null;
+		//String rpcId = UuidUtils.getUuid();
+		//rpcIdList.add(rpcId);
+		//stockAdjustVo.setRpcId(rpcId);
 		// End added by maojj 2016-07-26
-
+		// begin update by wushp 20161012
 		stockAdjustVo.setOrderId(tradeOrder.getId());
 		stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
 		stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
@@ -1588,6 +1604,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			adjustDetailList.add(detail);
 
 			stockAdjustVo.setAdjustDetailList(adjustDetailList);
+			
+			// begin update by wushp 20161012 bug13735
+			rpcId = UuidUtils.getUuid();
+			rpcIdList.add(rpcId);
+			stockAdjustVo.setRpcId(rpcId);
+			// begin update by wushp 20161012
+			
 			// 如果是实物订单，走进销存库存
 			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 				stockManagerJxcService.updateStock(stockAdjustVo);
@@ -5028,7 +5051,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrder);
 		tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.createOrder);
-		tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.createOrder);
+		
+		//begin add by zengjz 2016-10-12 
+		//到店消费订单、服务订单商家版不发送消息
+		if(tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER && tradeOrder.getType() != OrderTypeEnum.STORE_CONSUME_ORDER ){
+			tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.createOrder);
+		}
+		//end add by zengjz 2016-10-12 
 	}
 
 	@Override
@@ -6158,10 +6187,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				consumeCodes.removeAll(existConsumeCode);
 				if (CollectionUtils.isNotEmpty(consumeCodes)) {
 					StringBuffer noExistConsumeCodeStr = new StringBuffer("");
-					for (String noExistConsumeCode:consumeCodes) {
+					for (String noExistConsumeCode : consumeCodes) {
 						noExistConsumeCodeStr.append(noExistConsumeCode);
-						failResult.append(noExistConsumeCodeStr.toString()+"|消费码不存在;");
-					}					
+						failResult.append(noExistConsumeCodeStr.toString() + "|消费码不存在;");
+					}
 				}
 				// End 14168 add by wusw 20161011
 				if (CollectionUtils.isNotEmpty(orderIdList)) {
@@ -6263,7 +6292,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			resultMap.put("success", successResult.toString());
 			resultMap.put("failure", failResult.toString());
 			// End 14168 add by wusw 20161011
-			
+
 		} catch (StockException se) {
 			throw se;
 		} catch (Exception e) {
@@ -6354,12 +6383,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				orderStatusCountMap.put(map.get("orderId") + "-" + map.get("status"),
 						new Integer(map.get("num").toString()));
 			}
-			// 根据统计数量，判断订单消费码状态值，如果存在已过期的，状态为已过期；如果存在未消费的，状态为未消费；否则，状态为待评价
+			// 根据统计数量，判断订单消费码状态值，如果存在已过期的，状态为已过期；如果存在未消费的，状态为未消费；如果存在已消费的，状态为待评价，否则，状态为已退款
 			List<String> expiredOrderList = new ArrayList<String>();
 			List<String> consumedList = new ArrayList<String>();
+			// Begin V1.1.0 update by wusw 20161012
+			List<String> refundsList = new ArrayList<String>();
+			// End V1.1.0 update by wusw 20161012
 			for (String orderId : orderIdList) {
 				int noConsumeCount = 0;
 				int expiredCount = 0;
+				// Begin V1.1.0 update by wusw 20161012
+				int refundsCount = 0;
+				// End V1.1.0 update by wusw 20161012
 				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal()) != null) {
 					noConsumeCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal())
 							.intValue();
@@ -6368,19 +6403,51 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					expiredCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.expired.ordinal())
 							.intValue();
 				}
+				// Begin V1.1.0 update by wusw 20161012
+				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal()) != null) {
+					refundsCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal())
+							.intValue();
+				}
 
 				if (expiredCount > 0) {
 					expiredOrderList.add(orderId);
-				} else if (noConsumeCount <= 0) {
-					consumedList.add(orderId);
+				} else {
+					 if (noConsumeCount <= 0) {
+						if (refundsCount > 0) {
+							refundsList.add(orderId);
+						} else {
+							consumedList.add(orderId);
+						}
+					 }
 				}
+				// End V1.1.0 update by wusw 20161012
 			}
 			// 更新相应的订单消费码状态
 			if (CollectionUtils.isNotEmpty(expiredOrderList)) {
 				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.EXPIRED, nowTime, expiredOrderList);
 			}
+			// Begin V1.1.0 update by wusw 20161012
+			if (CollectionUtils.isNotEmpty(refundsList)) {
+				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.REFUNDED, nowTime, refundsList);
+			}
+			// End V1.1.0 update by wusw 20161012
 			if (CollectionUtils.isNotEmpty(consumedList)) {
 				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.WAIT_EVALUATE, nowTime, consumedList);
+				for (String orderId : consumedList) {
+					String invitationCodeId = sysUserInvitationCodeMapper.selectIdByOrderId(orderId);
+					String invitationRecordId = sysUserInvitationRecordMapper.selectIdByOrderId(orderId);
+					Date now = new Date();
+					if (StringUtils.isNotBlank(invitationCodeId)) {
+						sysUserInvitationCodeMapper.updateFirstOrderNum(invitationCodeId, now);
+					}
+					if (StringUtils.isNotBlank(invitationRecordId)) {
+						SysUserInvitationRecord sysUserInvitationRecord = new SysUserInvitationRecord();
+						sysUserInvitationRecord.setId(invitationRecordId);
+						sysUserInvitationRecord.setUpdateTime(now);
+						sysUserInvitationRecord.setFirstOrderTime(now);
+						sysUserInvitationRecordMapper.updateCodeRecord(sysUserInvitationRecord);
+					}
+				}
 			}
 		}
 	}
@@ -6544,8 +6611,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			StringBuffer smsBuffer = new StringBuffer();
 			smsBuffer.append("您的").append(orderItem.getSkuName()).append("购买成功！消费码为").append(consumeCodes)
 					.append("，商家地址：").append(storeAddress).append("，商家电话：").append(storeInfoExt.getServicePhone())
-					.append("，有效期").append(DateUtils.formatDate(goodsService.getStartTime(), "")).append("至")
-					.append(DateUtils.formatDate(goodsService.getEndTime(), ""));
+					.append("，有效期").append(DateUtils.formatDate(goodsService.getStartTime(), null)).append("至")
+					.append(DateUtils.formatDate(goodsService.getEndTime(), null));
 			if (storeInfoExt.getIsAdvanceType() == 1) {
 				smsBuffer.append("，需提前").append(storeInfoExt.getAdvanceTime());
 				if (storeInfoExt.getAdvanceType() == 0) {
