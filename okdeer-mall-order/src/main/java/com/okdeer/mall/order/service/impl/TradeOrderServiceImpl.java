@@ -220,51 +220,41 @@ import net.sf.json.JsonConfig;
 
 /**
  * 
- * ClassName: TradeOrderServiceImpl 
+ * ClassName: TradeOrderServiceImpl
+ * 
  * @Description: 交易订单服务接口
  * @author maojj
  * @date 2016年10月10日
  *
- * =================================================================================================
- *     Task ID			  Date			     Author		      Description
- * ----------------+----------------+-------------------+-------------------------------------------
- *		重构4.1 				2016-7-13 			wusw 		添加服务店订单列表查询
- *      重构4.1 				2016-7-15 			wusw 		添加服务店订单详情查询,服务店订单派单的短信发送
- *      重构4.1 				2016-7-16 			zengj 		服务店订单下单后不推送消息和发送短信 
- *      重构4.1 				2016-7-17 			wusw 		服务订单管理（商城后台） 
- *      重构4.1 				2016-7-17 			wushp 		服务订单
- *      重构4.1 				2016-7-19 			wusw 		添加财务系统的订单接口（包含服务店订单情况）
- *      重构4.1 				2016-7-19 			wusw 		修改商城后台的服务订单管理，线下确认价格并当面支付的支付方式判断 
- *     	重构4.1 				2016-7-27 			wusw 		添加相应注释，修改财务系统订单接口默认参数处理，修改服务店订单导出的支付方式判断
- *     	重构4.1 				2016-7-29 			wusw 		添加设置拒绝服务原因 
- *     	重构4.1 				2016-7-29 			wusw 		添加服务店订单详情查询（商城后台）
- *     	重构4.1 				2016-7-30 			zhaoqc  	添加根据订单状态查询订单列表 
- *     	重构4.1 				2016-7-29 			wusw    	修改发货时，服务店订单超时未派单的计时消息发送
- *    	 重构4.1 				2016-8-3 			wushp 		用户app订单列表或者订单详情--再逛逛按钮 
- *     	12170 				2016-8-9 			wusw  		修改订单交易参数处理，支付方式为现金支付时包括货到付款的实物订单 
- *     	12051 				2016-8-11 			wusw 		修改活动信息 
- *     	重构4.1				2016-8-16			wusw 		修改订单发货、取消、拒收的日志描述 
- *     	重构4.1				2016-8-16 			zhaoqc 		新增根据交易号修改订单状态的方法 
- *     	重构4.1（代码评审优化）		2016-8-18 			wusw 		优化服务店订单列表和导出代码 
- *     	重构4.1				2016-8-24 			maojj 		支付成功时，才发送提货码的信息 
- *     	V1.0.3 			 	2016-09-01 			wusw  		修改自动确认收货期限为7天 
- *     	1.0.Z  				2016-09-05 			zengj 		增加订单操作记录 
- *     	1.0.Z  				2016-09-07 			zengj 		库存管理修改，采用商业管理系统校验 
- *     	V1.1.0 				2016-9-12 			zengjz		 财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口 
- *     	V1.1.0 				2016-9-24 			zhaoqc		 新增充值订单超时未支付订单取消 
- *     	V1.1.0 				2016-09-23			 wusw 		修改根据消费码查询相应订单信息的方法为批量
- *     	V1.1.0 				2016-09-24			 wusw 		消费码验证（到店消费）相应方法 
- *     	V1.1.0 				2016-09-26			 luosm		 查询商家版APP服务店到店消费订单信息 
- *     	V1.1.0 				2016-09-27			 maojj		 商品订单详情页新增字段 
- *     	V1.1.0 				2016-09-29 			 wusw 		 添加上门服务订单详情的查询方法
- *      Bug:13961			2016-10-10			 maojj		订单详情修改订单是否支持投诉的逻辑 
- *      13960             2016-10-10            wusw               修改判断上门服务订单是否支持投诉
- *      V1.1.0			   2016-10-10          luosm			服务店到店消费订单金额统计及订单列表
- *      14026               2016-10-11            wusw      修改多个消费码验证成功，却只有一个消费码状态修改的问题
- *      14168               2016-10-11            wusw      修改多个消费码验证时，部分消费码不存在情况下的相应提示信息   
- *      V1.1.0			    2016-10-11          luosm			bug13932 
- *      V1.1.0 				2016-10-12			wushp			bug13735
- *      V1.1.0              2016-10-12            wusw      修改根据订单项详细的消费码状态，修改订单消费码状态的逻辑  
+ *       =======================================================================
+ *       ========================== Task ID Date Author Description
+ *       ----------------+----------------+-------------------+-----------------
+ *       -------------------------- 重构4.1 2016-7-13 wusw 添加服务店订单列表查询 重构4.1
+ *       2016-7-15 wusw 添加服务店订单详情查询,服务店订单派单的短信发送 重构4.1 2016-7-16 zengj
+ *       服务店订单下单后不推送消息和发送短信 重构4.1 2016-7-17 wusw 服务订单管理（商城后台） 重构4.1 2016-7-17
+ *       wushp 服务订单 重构4.1 2016-7-19 wusw 添加财务系统的订单接口（包含服务店订单情况） 重构4.1 2016-7-19
+ *       wusw 修改商城后台的服务订单管理，线下确认价格并当面支付的支付方式判断 重构4.1 2016-7-27 wusw
+ *       添加相应注释，修改财务系统订单接口默认参数处理，修改服务店订单导出的支付方式判断 重构4.1 2016-7-29 wusw
+ *       添加设置拒绝服务原因 重构4.1 2016-7-29 wusw 添加服务店订单详情查询（商城后台） 重构4.1 2016-7-30
+ *       zhaoqc 添加根据订单状态查询订单列表 重构4.1 2016-7-29 wusw 修改发货时，服务店订单超时未派单的计时消息发送
+ *       重构4.1 2016-8-3 wushp 用户app订单列表或者订单详情--再逛逛按钮 12170 2016-8-9 wusw
+ *       修改订单交易参数处理，支付方式为现金支付时包括货到付款的实物订单 12051 2016-8-11 wusw 修改活动信息 重构4.1
+ *       2016-8-16 wusw 修改订单发货、取消、拒收的日志描述 重构4.1 2016-8-16 zhaoqc
+ *       新增根据交易号修改订单状态的方法 重构4.1（代码评审优化） 2016-8-18 wusw 优化服务店订单列表和导出代码 重构4.1
+ *       2016-8-24 maojj 支付成功时，才发送提货码的信息 V1.0.3 2016-09-01 wusw 修改自动确认收货期限为7天
+ *       1.0.Z 2016-09-05 zengj 增加订单操作记录 1.0.Z 2016-09-07 zengj
+ *       库存管理修改，采用商业管理系统校验 V1.1.0 2016-9-12 zengjz
+ *       财务系统订单交易接口拆分，手机充值类型订单增加字段判断,增加财务系统订单交易统计接口 V1.1.0 2016-9-24 zhaoqc
+ *       新增充值订单超时未支付订单取消 V1.1.0 2016-09-23 wusw 修改根据消费码查询相应订单信息的方法为批量 V1.1.0
+ *       2016-09-24 wusw 消费码验证（到店消费）相应方法 V1.1.0 2016-09-26 luosm
+ *       查询商家版APP服务店到店消费订单信息 V1.1.0 2016-09-27 maojj 商品订单详情页新增字段 V1.1.0
+ *       2016-09-29 wusw 添加上门服务订单详情的查询方法 Bug:13961 2016-10-10 maojj
+ *       订单详情修改订单是否支持投诉的逻辑 13960 2016-10-10 wusw 修改判断上门服务订单是否支持投诉 V1.1.0
+ *       2016-10-10 luosm 服务店到店消费订单金额统计及订单列表 14026 2016-10-11 wusw
+ *       修改多个消费码验证成功，却只有一个消费码状态修改的问题 14168 2016-10-11 wusw
+ *       修改多个消费码验证时，部分消费码不存在情况下的相应提示信息 V1.1.0 2016-10-11 luosm bug13932 V1.1.0
+ *       2016-10-12 wushp bug13735 V1.1.0 2016-10-12 wusw
+ *       修改根据订单项详细的消费码状态，修改订单消费码状态的逻辑
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1547,9 +1537,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// begin update by wushp 20161012 bug13735
 		// Begin added by maojj 2016-07-26
 		String rpcId = null;
-		//String rpcId = UuidUtils.getUuid();
-		//rpcIdList.add(rpcId);
-		//stockAdjustVo.setRpcId(rpcId);
+		// String rpcId = UuidUtils.getUuid();
+		// rpcIdList.add(rpcId);
+		// stockAdjustVo.setRpcId(rpcId);
 		// End added by maojj 2016-07-26
 		// begin update by wushp 20161012
 		stockAdjustVo.setOrderId(tradeOrder.getId());
@@ -1604,13 +1594,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			adjustDetailList.add(detail);
 
 			stockAdjustVo.setAdjustDetailList(adjustDetailList);
-			
+
 			// begin update by wushp 20161012 bug13735
 			rpcId = UuidUtils.getUuid();
 			rpcIdList.add(rpcId);
 			stockAdjustVo.setRpcId(rpcId);
 			// begin update by wushp 20161012
-			
+
 			// 如果是实物订单，走进销存库存
 			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 				stockManagerJxcService.updateStock(stockAdjustVo);
@@ -1829,7 +1819,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	// Begin Bug:13700 added by maojj 2016-10-10
 	/**
-	 * @Description: 更新邀请记录   
+	 * @Description: 更新邀请记录
 	 * @author maojj
 	 * @date 2016年10月10日
 	 */
@@ -1930,20 +1920,20 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	private String getTopicByStoreType(StoreTypeEnum storeType) {
 		switch (storeType) {
-			case AROUND_STORE:
-				return TOPIC_ORDER_AROUND;
-			case FAST_DELIVERY_STORE:
-				return TOPIC_ORDER_FAST;
-			case CLOUD_STORE:
-				return TOPIC_ORDER_CLOUD;
-			case ACTIVITY_STORE:
-				return TOPIC_ORDER_ACTIVITY;
-			// Begin 重构4.1 add by wusw
-			case SERVICE_STORE:
-				return TOPIC_ORDER_SERVICE;
-			// End 重构4.1 add by wusw
-			default:
-				break;
+		case AROUND_STORE:
+			return TOPIC_ORDER_AROUND;
+		case FAST_DELIVERY_STORE:
+			return TOPIC_ORDER_FAST;
+		case CLOUD_STORE:
+			return TOPIC_ORDER_CLOUD;
+		case ACTIVITY_STORE:
+			return TOPIC_ORDER_ACTIVITY;
+		// Begin 重构4.1 add by wusw
+		case SERVICE_STORE:
+			return TOPIC_ORDER_SERVICE;
+		// End 重构4.1 add by wusw
+		default:
+			break;
 		}
 		return null;
 	}
@@ -2168,12 +2158,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<TradeOrder> list = tradeOrderMapper.getTradeOrderByParams(map);
 		/*
-		 * if (list != null && list.size() > 0) { for (TradeOrder order : list) { if
-		 * (StringUtils.isNotEmpty(order.getActivityId()) && !"0".equals(order.getActivityId())) { if
-		 * (order.getActivityType().equals(ActivityTypeEnum. FULL_REDUCTION_ACTIVITIES)) { // 满减活动 ActivityDiscount
-		 * activityDiscount = activityDiscountMapper .selectByPrimaryKey(order.getActivityId()); if (activityDiscount !=
-		 * null && "0".equals(activityDiscount.getStoreId())) { // 所属店铺 // 运营商类型 // 没有优惠
-		 * order.setPreferentialPrice(null); } } } else { order.setPreferentialPrice(null); } } }
+		 * if (list != null && list.size() > 0) { for (TradeOrder order : list)
+		 * { if (StringUtils.isNotEmpty(order.getActivityId()) &&
+		 * !"0".equals(order.getActivityId())) { if
+		 * (order.getActivityType().equals(ActivityTypeEnum.
+		 * FULL_REDUCTION_ACTIVITIES)) { // 满减活动 ActivityDiscount
+		 * activityDiscount = activityDiscountMapper
+		 * .selectByPrimaryKey(order.getActivityId()); if (activityDiscount !=
+		 * null && "0".equals(activityDiscount.getStoreId())) { // 所属店铺 // 运营商类型
+		 * // 没有优惠 order.setPreferentialPrice(null); } } } else {
+		 * order.setPreferentialPrice(null); } } }
 		 */
 		return new PageUtils<TradeOrder>(list);
 	}
@@ -2267,7 +2261,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService#getWXOrderDetail( java.lang.String)
+	 * @see
+	 * com.okdeer.mall.trade.order.serivce.TradeOrderService#getWXOrderDetail(
+	 * java.lang.String)
 	 */
 	@Override
 	public TradeOrderVo getWXOrderDetail(String orderId) {
@@ -2340,7 +2336,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService# selectWXUnpaidOrderInfo(java.util.Map, int, int)
+	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService#
+	 * selectWXUnpaidOrderInfo(java.util.Map, int, int)
 	 */
 	@Override
 	public PageUtils<TradeOrderVo> selectWXUnpaidOrderInfo(Map<String, Object> map, int pageSize, int pageNumber)
@@ -2390,8 +2387,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService# selectWXDropShippingOrderInfo(java. util .Map, int,
-	 * int)
+	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService#
+	 * selectWXDropShippingOrderInfo(java. util .Map, int, int)
 	 */
 	@Override
 	public PageUtils<TradeOrderVo> selectWXDropShippingOrderInfo(Map<String, Object> map, int pageSize, int pageNumber)
@@ -2441,7 +2438,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService# selectWXToBeOrderInfo(java.util.Map, int, int)
+	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService#
+	 * selectWXToBeOrderInfo(java.util.Map, int, int)
 	 */
 	@Override
 	public PageUtils<TradeOrderVo> selectWXToBeOrderInfo(Map<String, Object> map, int pageSize, int pageNumber)
@@ -2741,8 +2739,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			map.put("storeId", storeId);
 		}
 		/*
-		 * if (parames.get("sellerId") != null) { String sellerId = parames.get("sellerId").toString();
-		 * map.put("sellerId", sellerId); }
+		 * if (parames.get("sellerId") != null) { String sellerId =
+		 * parames.get("sellerId").toString(); map.put("sellerId", sellerId); }
 		 */
 		if (parames.get("startTime") != null) {
 			String startTime = parames.get("startTime").toString();
@@ -3526,10 +3524,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		// ////////////// 线上-实收金额////////////////////////////
 		/*
-		 * map = getOrderMap(parames); map.put("orderResource", getOnlineOrderResource()); map.put("status",
-		 * getfinishStatus()); map.put("payWay", String.valueOf(PayWayEnum.PAY_ONLINE.ordinal())); BigDecimal
-		 * onlineActualAmout = tradeOrderMapper.getActualAmoutByParames(map); if (onlineActualAmout == null) {
-		 * onlineActualAmout = new BigDecimal(0); }
+		 * map = getOrderMap(parames); map.put("orderResource",
+		 * getOnlineOrderResource()); map.put("status", getfinishStatus());
+		 * map.put("payWay", String.valueOf(PayWayEnum.PAY_ONLINE.ordinal()));
+		 * BigDecimal onlineActualAmout =
+		 * tradeOrderMapper.getActualAmoutByParames(map); if (onlineActualAmout
+		 * == null) { onlineActualAmout = new BigDecimal(0); }
 		 */
 		BigDecimal onlineActualAmout = new BigDecimal(0);
 
@@ -3538,10 +3538,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		// //////////// 货到付款-实收金额////////////////////////////
 		/*
-		 * map = getOrderMap(parames); map.put("orderResource", getOnlineOrderResource()); map.put("paymentStatus",
-		 * String.valueOf(PaymentStatusEnum.BACK_SECTION.ordinal())); map.put("payWay",String.valueOf(
-		 * PayWayEnum.CASH_DELIERY.ordinal())); BigDecimal deliveryActualAmout =
-		 * tradeOrderMapper.getActualAmoutByParames(map); if (deliveryActualAmout == null) { deliveryActualAmout = new
+		 * map = getOrderMap(parames); map.put("orderResource",
+		 * getOnlineOrderResource()); map.put("paymentStatus",
+		 * String.valueOf(PaymentStatusEnum.BACK_SECTION.ordinal()));
+		 * map.put("payWay",String.valueOf( PayWayEnum.CASH_DELIERY.ordinal()));
+		 * BigDecimal deliveryActualAmout =
+		 * tradeOrderMapper.getActualAmoutByParames(map); if
+		 * (deliveryActualAmout == null) { deliveryActualAmout = new
 		 * BigDecimal(0); }
 		 */
 		BigDecimal deliveryActualAmout = new BigDecimal(0);
@@ -3550,9 +3553,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		// //////////// pos销售-实收金额////////////////////////////
 		/*
-		 * map = getOrderMap(parames); map.put("orderResource", getPosOrderResource()); map.put("status",
-		 * getfinishStatus()); BigDecimal posActualAmout = tradeOrderMapper.getActualAmoutByParames(map); if
-		 * (posActualAmout == null) { posActualAmout = new BigDecimal(0); }
+		 * map = getOrderMap(parames); map.put("orderResource",
+		 * getPosOrderResource()); map.put("status", getfinishStatus());
+		 * BigDecimal posActualAmout =
+		 * tradeOrderMapper.getActualAmoutByParames(map); if (posActualAmout ==
+		 * null) { posActualAmout = new BigDecimal(0); }
 		 */
 		BigDecimal posActualAmout = new BigDecimal(0);
 		posActualAmout = posOrderAmount.subtract(posRefundAmount);
@@ -3610,9 +3615,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			posAlipayAmount = new BigDecimal(0);
 		} else {
 			/*
-			 * BigDecimal posRefundAmountByPaymentMethod = this.posRefundAmountByPaymentMethod(parames,
-			 * String.valueOf(PayTypeEnum.ALIPAY.ordinal())); if (posRefundAmountByPaymentMethod != null) {
-			 * posAlipayAmount = posAlipayAmount.subtract(posRefundAmountByPaymentMethod); }
+			 * BigDecimal posRefundAmountByPaymentMethod =
+			 * this.posRefundAmountByPaymentMethod(parames,
+			 * String.valueOf(PayTypeEnum.ALIPAY.ordinal())); if
+			 * (posRefundAmountByPaymentMethod != null) { posAlipayAmount =
+			 * posAlipayAmount.subtract(posRefundAmountByPaymentMethod); }
 			 */
 		}
 		// ////////// 总支付宝额///////////////////////////
@@ -3645,9 +3652,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			posWeiXinAmount = new BigDecimal(0);
 		} else {
 			/*
-			 * BigDecimal posRefundAmountByPaymentMethod = this.posRefundAmountByPaymentMethod(parames,
-			 * String.valueOf(PayTypeEnum.WXPAY.ordinal())); if (posRefundAmountByPaymentMethod != null) {
-			 * posWeiXinAmount = posWeiXinAmount.subtract(posRefundAmountByPaymentMethod); }
+			 * BigDecimal posRefundAmountByPaymentMethod =
+			 * this.posRefundAmountByPaymentMethod(parames,
+			 * String.valueOf(PayTypeEnum.WXPAY.ordinal())); if
+			 * (posRefundAmountByPaymentMethod != null) { posWeiXinAmount =
+			 * posWeiXinAmount.subtract(posRefundAmountByPaymentMethod); }
 			 */
 		}
 		// ////////// 总微信额///////////////////////////
@@ -3655,14 +3664,21 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		totalWeiXinAmount = totalWeiXinAmount.add(onlineWeiXinAmount).add(posWeiXinAmount);
 
 		/*
-		 * //////////// 线上-京东/////////////////////////// map = getOrderMap(parames); map.put("orderResource",
-		 * getOnlineOrderResource()); map.put("status", getfinishStatus()); map.put("payType",
-		 * String.valueOf(PayTypeEnum.JDPAY.ordinal())); BigDecimal onlineJDAmount =
-		 * tradeOrderMapper.getPayAmoutByParames(map); if (onlineJDAmount == null) { onlineJDAmount = new BigDecimal(0);
-		 * } else { BigDecimal refundAmountByPaymentMethod = this.refundAmountByPaymentMethod(parames,
-		 * String.valueOf(PayTypeEnum.JDPAY.ordinal())); if (refundAmountByPaymentMethod != null) { onlineJDAmount =
-		 * onlineJDAmount.subtract(refundAmountByPaymentMethod); } } //////////// 总京东额///////////////////////////
-		 * BigDecimal totalJDAmount = new BigDecimal(0); totalJDAmount = totalJDAmount.add(onlineJDAmount);
+		 * //////////// 线上-京东/////////////////////////// map =
+		 * getOrderMap(parames); map.put("orderResource",
+		 * getOnlineOrderResource()); map.put("status", getfinishStatus());
+		 * map.put("payType", String.valueOf(PayTypeEnum.JDPAY.ordinal()));
+		 * BigDecimal onlineJDAmount =
+		 * tradeOrderMapper.getPayAmoutByParames(map); if (onlineJDAmount ==
+		 * null) { onlineJDAmount = new BigDecimal(0); } else { BigDecimal
+		 * refundAmountByPaymentMethod =
+		 * this.refundAmountByPaymentMethod(parames,
+		 * String.valueOf(PayTypeEnum.JDPAY.ordinal())); if
+		 * (refundAmountByPaymentMethod != null) { onlineJDAmount =
+		 * onlineJDAmount.subtract(refundAmountByPaymentMethod); } }
+		 * //////////// 总京东额/////////////////////////// BigDecimal totalJDAmount
+		 * = new BigDecimal(0); totalJDAmount =
+		 * totalJDAmount.add(onlineJDAmount);
 		 */
 
 		// ////////// pos销售-银联卡///////////////////////////
@@ -3675,9 +3691,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			posUnionpayAmount = new BigDecimal(0);
 		} else {
 			/*
-			 * BigDecimal posRefundAmountByPaymentMethod = this.posRefundAmountByPaymentMethod(parames,
-			 * String.valueOf(PayTypeEnum.OFFLINE_BANK.ordinal())); if (posRefundAmountByPaymentMethod != null) {
-			 * posUnionpayAmount = posUnionpayAmount.subtract(posRefundAmountByPaymentMethod); }
+			 * BigDecimal posRefundAmountByPaymentMethod =
+			 * this.posRefundAmountByPaymentMethod(parames,
+			 * String.valueOf(PayTypeEnum.OFFLINE_BANK.ordinal())); if
+			 * (posRefundAmountByPaymentMethod != null) { posUnionpayAmount =
+			 * posUnionpayAmount.subtract(posRefundAmountByPaymentMethod); }
 			 */
 		}
 		// ////////// 总银联卡额///////////////////////////
@@ -3702,9 +3720,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			deliveryCashPayAmount = new BigDecimal(0);
 		} else {
 			/*
-			 * BigDecimal deliveryRefundAmountByPaymentMethod = this.deliveryRefundAmountByPaymentMethod(parames,
-			 * String.valueOf(PayTypeEnum.CASH.ordinal())); if (deliveryRefundAmountByPaymentMethod != null) {
-			 * deliveryCashPayAmount = deliveryCashPayAmount.subtract( deliveryRefundAmountByPaymentMethod); }
+			 * BigDecimal deliveryRefundAmountByPaymentMethod =
+			 * this.deliveryRefundAmountByPaymentMethod(parames,
+			 * String.valueOf(PayTypeEnum.CASH.ordinal())); if
+			 * (deliveryRefundAmountByPaymentMethod != null) {
+			 * deliveryCashPayAmount = deliveryCashPayAmount.subtract(
+			 * deliveryRefundAmountByPaymentMethod); }
 			 */
 		}
 		deliveryCashPayAmount = deliveryCashPayAmount.subtract(deliveryRefundAmount).subtract(deliveryPlatformSubsidy);
@@ -3719,9 +3740,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			posCashPayAmount = new BigDecimal(0);
 		} else {
 			/*
-			 * BigDecimal posRefundAmountByPaymentMethod = this.posRefundAmountByPaymentMethod(parames,
-			 * String.valueOf(PayTypeEnum.CASH.ordinal())); if (posRefundAmountByPaymentMethod != null) {
-			 * posCashPayAmount = posCashPayAmount.subtract(posRefundAmountByPaymentMethod); }
+			 * BigDecimal posRefundAmountByPaymentMethod =
+			 * this.posRefundAmountByPaymentMethod(parames,
+			 * String.valueOf(PayTypeEnum.CASH.ordinal())); if
+			 * (posRefundAmountByPaymentMethod != null) { posCashPayAmount =
+			 * posCashPayAmount.subtract(posRefundAmountByPaymentMethod); }
 			 */
 		}
 		posCashPayAmount = posCashPayAmount.subtract(posRefundAmount);
@@ -3804,17 +3827,22 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/*
-	 * private BigDecimal posRefundAmountByPaymentMethod(Map<String, Object> parames, String paymentMethod) {
-	 * Map<String, Object> map = getOrderMap(parames); map.put("orderResource", getPosOrderResource());
+	 * private BigDecimal posRefundAmountByPaymentMethod(Map<String, Object>
+	 * parames, String paymentMethod) { Map<String, Object> map =
+	 * getOrderMap(parames); map.put("orderResource", getPosOrderResource());
 	 * map.put("refundsStatus", getfinishRefundsStatus()); map.put("payWay",
-	 * String.valueOf(PayWayEnum.LINE_PAY.ordinal())); map.put("paymentMethod", paymentMethod); BigDecimal
-	 * posRefundAmount = tradeOrderMapper.getRefundAmountByParames(map); return posRefundAmount; }
+	 * String.valueOf(PayWayEnum.LINE_PAY.ordinal())); map.put("paymentMethod",
+	 * paymentMethod); BigDecimal posRefundAmount =
+	 * tradeOrderMapper.getRefundAmountByParames(map); return posRefundAmount; }
 	 * 
-	 * private BigDecimal deliveryRefundAmountByPaymentMethod(Map<String, Object> parames, String paymentMethod) {
-	 * Map<String, Object> map = getOrderMap(parames); map.put("orderResource", getOnlineOrderResource());
+	 * private BigDecimal deliveryRefundAmountByPaymentMethod(Map<String,
+	 * Object> parames, String paymentMethod) { Map<String, Object> map =
+	 * getOrderMap(parames); map.put("orderResource", getOnlineOrderResource());
 	 * map.put("refundsStatus", getfinishRefundsStatus()); map.put("payWay",
-	 * String.valueOf(PayWayEnum.CASH_DELIERY.ordinal())); map.put("paymentMethod", paymentMethod); BigDecimal
-	 * deliveryRefundAmount = tradeOrderMapper.getRefundAmountByParames(map); return deliveryRefundAmount; }
+	 * String.valueOf(PayWayEnum.CASH_DELIERY.ordinal()));
+	 * map.put("paymentMethod", paymentMethod); BigDecimal deliveryRefundAmount
+	 * = tradeOrderMapper.getRefundAmountByParames(map); return
+	 * deliveryRefundAmount; }
 	 */
 
 	/**
@@ -4193,10 +4221,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// Begin Bug:13961 added by maojj 2016-10-10
 	/**
 	 * @Description: 订单是否支持投诉。
-	 * 支持投诉的条件：1、订单支付方式为：在线支付。订单状态为已取消且订单已完成支付或订单状态为交易完成或者已拒收。
-	 * 			 2、订单支付方式为：货到付款。订单状态为已取消或订单状态为交易完成或者已拒收	
-	 * @param userOrderDetail 用户订单明细
-	 * @return   
+	 *               支持投诉的条件：1、订单支付方式为：在线支付。订单状态为已取消且订单已完成支付或订单状态为交易完成或者已拒收。
+	 *               2、订单支付方式为：货到付款。订单状态为已取消或订单状态为交易完成或者已拒收
+	 * @param userOrderDetail
+	 *            用户订单明细
+	 * @return
 	 * @author maojj
 	 * @date 2016年10月10日
 	 */
@@ -4207,21 +4236,20 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			return isSupportComplain;
 		}
 		switch (userOrderDetail.getStatus()) {
-			case CANCELED:
-				if (userOrderDetail.getPayWay() == PayWayEnum.PAY_ONLINE
-						&& userOrderDetail.getTradeOrderPay() != null) {
-					isSupportComplain = "1";
-				} else if (userOrderDetail.getPayWay() == PayWayEnum.CASH_DELIERY) {
-					isSupportComplain = "1";
-				}
-				break;
-			case REFUSED:
-			case HAS_BEEN_SIGNED:
-			case TRADE_CLOSED:
+		case CANCELED:
+			if (userOrderDetail.getPayWay() == PayWayEnum.PAY_ONLINE && userOrderDetail.getTradeOrderPay() != null) {
 				isSupportComplain = "1";
-				break;
-			default:
-				break;
+			} else if (userOrderDetail.getPayWay() == PayWayEnum.CASH_DELIERY) {
+				isSupportComplain = "1";
+			}
+			break;
+		case REFUSED:
+		case HAS_BEEN_SIGNED:
+		case TRADE_CLOSED:
+			isSupportComplain = "1";
+			break;
+		default:
+			break;
 		}
 		return isSupportComplain;
 	}
@@ -4327,9 +4355,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
 		// 订单支付倒计时计算
 		/*
-		 * Integer remainingTime = orders.getRemainingTime(); if (remainingTime != null) { remainingTime = remainingTime
-		 * + 1800; json.put("remainingTime", remainingTime <= 0 ? "0" : remainingTime); } else {
-		 * json.put("remainingTime", "0"); }
+		 * Integer remainingTime = orders.getRemainingTime(); if (remainingTime
+		 * != null) { remainingTime = remainingTime + 1800;
+		 * json.put("remainingTime", remainingTime <= 0 ? "0" : remainingTime);
+		 * } else { json.put("remainingTime", "0"); }
 		 */
 		OrderStatusEnum orderStatus = orders.getStatus();
 		if (orderStatus != null && orderStatus.ordinal() == Constant.ZERO) {
@@ -5051,13 +5080,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrder);
 		tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.createOrder);
-		
-		//begin add by zengjz 2016-10-12 
-		//到店消费订单、服务订单商家版不发送消息
-		if(tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER && tradeOrder.getType() != OrderTypeEnum.STORE_CONSUME_ORDER ){
+
+		// begin add by zengjz 2016-10-12
+		// 到店消费订单、服务订单商家版不发送消息
+		if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER
+				&& tradeOrder.getType() != OrderTypeEnum.STORE_CONSUME_ORDER) {
 			tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.createOrder);
 		}
-		//end add by zengjz 2016-10-12 
+		// end add by zengjz 2016-10-12
 	}
 
 	@Override
@@ -5139,8 +5169,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<TradeOrder> result = tradeOrderMapper.selectServiceStoreOrderList(params);
 		/*
-		 * if (result == null) { result = new ArrayList<TradeOrder>(); } else { for (TradeOrder order : result) {
-		 * List<TradeOrderItem> orderItem = tradeOrderItemMapper.selectOrderItemListById(order.getId());
+		 * if (result == null) { result = new ArrayList<TradeOrder>(); } else {
+		 * for (TradeOrder order : result) { List<TradeOrderItem> orderItem =
+		 * tradeOrderItemMapper.selectOrderItemListById(order.getId());
 		 * order.setTradeOrderItem(orderItem); } }
 		 */
 		return new PageUtils<TradeOrder>(result);
@@ -5291,26 +5322,26 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	private void convertOrderStatusDdxf(PhysicsOrderVo vo) {
 		switch (vo.getStatus()) {
-			case BUYER_PAYING:
-			case UNPAID:
-				vo.setOrderStatusName("等待买家付款");
-				break;
-			case DROPSHIPPING:
-			case HAS_BEEN_SIGNED:
-			case WAIT_CONSUME:
-			case PART_CONSUME:
-				vo.setOrderStatusName("买家已付款");
-				break;
-			case CANCELED:
-			case CANCELING:
-			case TRADE_CLOSED:
-			case REFUSED:
-			case REFUSING:
-				vo.setOrderStatusName("交易关闭");
-				break;
-			default:
-				vo.setOrderStatusName(vo.getStatus().getValue());
-				break;
+		case BUYER_PAYING:
+		case UNPAID:
+			vo.setOrderStatusName("等待买家付款");
+			break;
+		case DROPSHIPPING:
+		case HAS_BEEN_SIGNED:
+		case WAIT_CONSUME:
+		case PART_CONSUME:
+			vo.setOrderStatusName("买家已付款");
+			break;
+		case CANCELED:
+		case CANCELING:
+		case TRADE_CLOSED:
+		case REFUSED:
+		case REFUSING:
+			vo.setOrderStatusName("交易关闭");
+			break;
+		default:
+			vo.setOrderStatusName(vo.getStatus().getValue());
+			break;
 		}
 	}
 
@@ -5324,27 +5355,27 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	private void convertOrderStatus(PhysicsOrderVo vo) {
 		switch (vo.getStatus()) {
-			case DROPSHIPPING:
-				vo.setOrderStatusName("待派单");
-				break;
-			case TO_BE_SIGNED:
-				vo.setOrderStatusName("已派单");
-				break;
-			case HAS_BEEN_SIGNED:
-				vo.setOrderStatusName("服务完成");
-				break;
-			case CANCELED:
-			case CANCELING:
-			case TRADE_CLOSED:
-				vo.setOrderStatusName("交易关闭");
-				break;
-			case REFUSED:
-			case REFUSING:
-				vo.setOrderStatusName("订单取消");
-				break;
-			default:
-				vo.setOrderStatusName(vo.getStatus().getValue());
-				break;
+		case DROPSHIPPING:
+			vo.setOrderStatusName("待派单");
+			break;
+		case TO_BE_SIGNED:
+			vo.setOrderStatusName("已派单");
+			break;
+		case HAS_BEEN_SIGNED:
+			vo.setOrderStatusName("服务完成");
+			break;
+		case CANCELED:
+		case CANCELING:
+		case TRADE_CLOSED:
+			vo.setOrderStatusName("交易关闭");
+			break;
+		case REFUSED:
+		case REFUSING:
+			vo.setOrderStatusName("订单取消");
+			break;
+		default:
+			vo.setOrderStatusName(vo.getStatus().getValue());
+			break;
 		}
 		if (vo.getPayWay() == PayWayEnum.PAY_ONLINE) {
 			if (vo.getPayType() != null) {
@@ -5418,30 +5449,30 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			} else {
 				List<OrderTypeEnum> typeList = new ArrayList<OrderTypeEnum>();
 				switch (params.get("type").toString()) {
-					case "0":
-						typeList.add(OrderTypeEnum.PHYSICAL_ORDER);
-						break;
-					case "1":
-						typeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
-						break;
-					case "2":
-						typeList.add(OrderTypeEnum.STORE_CONSUME_ORDER);
-						break;
-					case "3":
-						if (params.get("rechargeType") != null && "1".equals(params.get("rechargeType").toString())) {
-							// 流量充值
-							typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
-						} else if (params.get("rechargeType") != null
-								&& "0".equals(params.get("rechargeType").toString())) {
-							// 话费充值
-							typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
-						} else {
-							typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
-							typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
-						}
-						break;
-					default:
-						break;
+				case "0":
+					typeList.add(OrderTypeEnum.PHYSICAL_ORDER);
+					break;
+				case "1":
+					typeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
+					break;
+				case "2":
+					typeList.add(OrderTypeEnum.STORE_CONSUME_ORDER);
+					break;
+				case "3":
+					if (params.get("rechargeType") != null && "1".equals(params.get("rechargeType").toString())) {
+						// 流量充值
+						typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
+					} else if (params.get("rechargeType") != null
+							&& "0".equals(params.get("rechargeType").toString())) {
+						// 话费充值
+						typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
+					} else {
+						typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
+						typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
+					}
+					break;
+				default:
+					break;
 				}
 				params.put("type", typeList);
 
@@ -5464,15 +5495,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			} else {
 				List<OrderResourceEnum> orderResourceList = new ArrayList<OrderResourceEnum>();
 				switch (params.get("orderResource").toString()) {
-					case "0":
-						orderResourceList.add(OrderResourceEnum.WECHAT);
-						orderResourceList.add(OrderResourceEnum.YSCAPP);
-						break;
-					case "1":
-						orderResourceList.add(OrderResourceEnum.POS);
-						break;
-					default:
-						break;
+				case "0":
+					orderResourceList.add(OrderResourceEnum.WECHAT);
+					orderResourceList.add(OrderResourceEnum.YSCAPP);
+					break;
+				case "1":
+					orderResourceList.add(OrderResourceEnum.POS);
+					break;
+				default:
+					break;
 				}
 				params.put("orderResource", orderResourceList);
 			}
@@ -5624,24 +5655,24 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	private void convertRechargeOrderStatus(TradeOrderRechargeVo vo) {
 		switch (vo.getStatus()) {
-			case UNPAID:
-				vo.setOrderStatusName("待付款");
-				break;
-			case BUYER_PAYING:
-				vo.setOrderStatusName("付款确认中");
-				break;
-			case DROPSHIPPING:
-				vo.setOrderStatusName("充值中");
-				break;
-			case HAS_BEEN_SIGNED:
-				vo.setOrderStatusName("充值成功");
-				break;
-			case TRADE_CLOSED:
-				vo.setOrderStatusName("充值失败");
-				break;
-			default:
-				vo.setOrderStatusName(vo.getStatus().getValue());
-				break;
+		case UNPAID:
+			vo.setOrderStatusName("待付款");
+			break;
+		case BUYER_PAYING:
+			vo.setOrderStatusName("付款确认中");
+			break;
+		case DROPSHIPPING:
+			vo.setOrderStatusName("充值中");
+			break;
+		case HAS_BEEN_SIGNED:
+			vo.setOrderStatusName("充值成功");
+			break;
+		case TRADE_CLOSED:
+			vo.setOrderStatusName("充值失败");
+			break;
+		default:
+			vo.setOrderStatusName(vo.getStatus().getValue());
+			break;
 		}
 	}
 
@@ -5952,9 +5983,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			return;
 		}
 		/*
-		 * if (collCoupons.size() > 1) { // 同一时间，同一区域，只能有一个消费返券活动 logger.info(ORDER_COUPONS_NOT_ONLY, orderId, userId);
-		 * respDto.setMessage( (respDto.getMessage() == null ? "" : respDto.getMessage()) +
-		 * ORDER_COUPONS_NOT_ONLY_TIPS); return; }
+		 * if (collCoupons.size() > 1) { // 同一时间，同一区域，只能有一个消费返券活动
+		 * logger.info(ORDER_COUPONS_NOT_ONLY, orderId, userId);
+		 * respDto.setMessage( (respDto.getMessage() == null ? "" :
+		 * respDto.getMessage()) + ORDER_COUPONS_NOT_ONLY_TIPS); return; }
 		 */
 		// 活动关联的代金券
 		List<ActivityCoupons> activityCouponsList = collCoupons.get(0).getActivityCoupons();
@@ -6166,8 +6198,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 									.get(detailConsumeVo.getOrderId());
 							oldConsumeVo.setDetailActualAmount(
 									oldConsumeVo.getDetailActualAmount().add(detailConsumeVo.getDetailActualAmount()));
-							oldConsumeVo.setPreferentialPrice(oldConsumeVo.getPreferentialPrice().add(detailConsumeVo.getPreferentialPrice()));
-							
+							oldConsumeVo.setPreferentialPrice(
+									oldConsumeVo.getPreferentialPrice().add(detailConsumeVo.getPreferentialPrice()));
+
 							oldConsumeVo.setNum(oldConsumeVo.getNum().intValue() + 1);
 							successOrderDetailMap.put(detailConsumeVo.getOrderId(), oldConsumeVo);
 						} else {
@@ -6206,31 +6239,39 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						throw new ServiceException(USER_NOT_WALLET);
 					}
 
+					TradeOrder order = null;
+					List<BalancePayTradeVo> tradeVoList = Lists.newArrayList();
+
 					// 总收入金额
-					BigDecimal totalCome = totalValiAmount.add(totalValiPrefAmount);
+					BigDecimal totalCome = new BigDecimal("0");
+
+					for (String orderId : orderIdList) {
+						// 订单中关于消费码订单项的总金额和优惠金额
+						order = tradeOrderMapper.selectByPrimaryKey(orderId);
+
+						OrderItemDetailConsumeVo detailConsumeVo = successOrderDetailMap.get(order.getId());
+						// 每个订单的订单项详细实付金额（当前输入验证码的订单项）
+						BigDecimal totalAmountDetail = detailConsumeVo.getDetailActualAmount();
+						// 每个订单的订单项详细优惠金额（当前输入验证码的订单项）
+						BigDecimal prefAmountDetail = detailConsumeVo.getPreferentialPrice();
+
+						BalancePayTradeVo tradeVo = buildBalancePayTrade(order, bossId, totalAmountDetail,
+								prefAmountDetail);
+						tradeVoList.add(tradeVo);
+
+						if (tradeVo.getAmount() != null) {
+							totalCome = totalCome.add(tradeVo.getAmount());
+						}
+						if (tradeVo.getPrefeAmount() != null) {
+							totalCome = totalCome.add(tradeVo.getPrefeAmount());
+						}
+						order = null;
+					}
 
 					if (payAccount.getTotalAmount().compareTo(totalCome) < 0
 							|| payAccount.getFrozenAmount().compareTo(totalCome) < 0) {
 						// 店铺的云钱包资金异常
 						throw new ServiceException(USER_WALLET_FAIL);
-
-					}
-
-					TradeOrder order = null;
-					List<BalancePayTradeVo> tradeVoList = Lists.newArrayList();
-
-					for (String orderId : orderIdList) {
-						// 订单中关于消费码订单项的总金额和优惠金额
-						order = tradeOrderMapper.selectByPrimaryKey(orderId);
-						
-						OrderItemDetailConsumeVo  detailConsumeVo = successOrderDetailMap.get(order.getId());
-						// 每个订单的订单项详细实付金额（当前输入验证码的订单项）
-						BigDecimal totalAmountDetail = detailConsumeVo.getDetailActualAmount();
-						// 每个订单的订单项详细优惠金额（当前输入验证码的订单项）
-						BigDecimal prefAmountDetail = detailConsumeVo.getPreferentialPrice();
-						
-						tradeVoList.add(buildBalancePayTrade(order, bossId, totalAmountDetail, prefAmountDetail));
-						order = null;
 					}
 
 					String sendJson = JSON.toJSONString(tradeVoList);
@@ -6410,13 +6451,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				if (expiredCount > 0) {
 					expiredOrderList.add(orderId);
 				} else {
-					 if (noConsumeCount <= 0) {
+					if (noConsumeCount <= 0) {
 						if (refundsCount > 0) {
 							refundsList.add(orderId);
 						} else {
 							consumedList.add(orderId);
 						}
-					 }
+					}
 				}
 				// End V1.1.0 update by wusw 20161012
 			}
@@ -6449,38 +6490,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 		}
 	}
-
-	/**
-	 * 
-	 * @Description: 云钱包发送消息
-	 * @param detailConsumeVo
-	 *            订单信息
-	 * @throws Exception
-	 *             异常
-	 * @author wusw
-	 * @date 2016年9月24日
-	 */
-	private void payTradeOrderByMq(OrderItemDetailConsumeVo detailConsumeVo) throws Exception {
-
-		// 写入mq数据
-		JSONObject jsonObj = new JSONObject();
-		jsonObj.put("userId", detailConsumeVo.getStoreUserId());
-		jsonObj.put("amount", detailConsumeVo.getDetailActualAmount());
-		jsonObj.put("type", 2);
-		jsonObj.put("serviceFkId", detailConsumeVo.getOrderId());
-		jsonObj.put("remark", "订单[" + detailConsumeVo.getOrderNo() + "]");
-		// 转化Json串
-		String jsonStr = jsonObj.toString();
-
-		// 写入mq数据
-		Message message = new Message(PayMessageConstant.TOPIC_BALANCE_CHANGE, PayMessageConstant.TAG_BALANCE_CHANGE,
-				jsonStr.getBytes(Charsets.UTF_8));
-		SendResult sendResult = rocketMQProducer.send(message);
-		if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
-			throw new Exception("写mq数据失败");
-		}
-	}
-	// End V1.1.0 add by wusw 20160924
 
 	// Begin V1.1.0 add by wusw 20160929
 	/**
@@ -6527,7 +6536,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
 		tradeOrder.setUpdateTime(new Date());
 		tradeOrder.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_CONSUME);
-		//增加回款时间
+		// 增加回款时间
 		tradeOrder.setPaymentTime(new Date());
 		this.updateOrderStatus(tradeOrder);
 
