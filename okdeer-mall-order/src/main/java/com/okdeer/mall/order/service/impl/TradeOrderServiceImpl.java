@@ -1920,20 +1920,20 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	private String getTopicByStoreType(StoreTypeEnum storeType) {
 		switch (storeType) {
-		case AROUND_STORE:
-			return TOPIC_ORDER_AROUND;
-		case FAST_DELIVERY_STORE:
-			return TOPIC_ORDER_FAST;
-		case CLOUD_STORE:
-			return TOPIC_ORDER_CLOUD;
-		case ACTIVITY_STORE:
-			return TOPIC_ORDER_ACTIVITY;
-		// Begin 重构4.1 add by wusw
-		case SERVICE_STORE:
-			return TOPIC_ORDER_SERVICE;
-		// End 重构4.1 add by wusw
-		default:
-			break;
+			case AROUND_STORE:
+				return TOPIC_ORDER_AROUND;
+			case FAST_DELIVERY_STORE:
+				return TOPIC_ORDER_FAST;
+			case CLOUD_STORE:
+				return TOPIC_ORDER_CLOUD;
+			case ACTIVITY_STORE:
+				return TOPIC_ORDER_ACTIVITY;
+			// Begin 重构4.1 add by wusw
+			case SERVICE_STORE:
+				return TOPIC_ORDER_SERVICE;
+			// End 重构4.1 add by wusw
+			default:
+				break;
 		}
 		return null;
 	}
@@ -2158,16 +2158,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<TradeOrder> list = tradeOrderMapper.getTradeOrderByParams(map);
 		/*
-		 * if (list != null && list.size() > 0) { for (TradeOrder order : list)
-		 * { if (StringUtils.isNotEmpty(order.getActivityId()) &&
-		 * !"0".equals(order.getActivityId())) { if
-		 * (order.getActivityType().equals(ActivityTypeEnum.
-		 * FULL_REDUCTION_ACTIVITIES)) { // 满减活动 ActivityDiscount
-		 * activityDiscount = activityDiscountMapper
-		 * .selectByPrimaryKey(order.getActivityId()); if (activityDiscount !=
-		 * null && "0".equals(activityDiscount.getStoreId())) { // 所属店铺 // 运营商类型
-		 * // 没有优惠 order.setPreferentialPrice(null); } } } else {
-		 * order.setPreferentialPrice(null); } } }
+		 * if (list != null && list.size() > 0) { for (TradeOrder order : list) { if
+		 * (StringUtils.isNotEmpty(order.getActivityId()) && !"0".equals(order.getActivityId())) { if
+		 * (order.getActivityType().equals(ActivityTypeEnum. FULL_REDUCTION_ACTIVITIES)) { // 满减活动 ActivityDiscount
+		 * activityDiscount = activityDiscountMapper .selectByPrimaryKey(order.getActivityId()); if (activityDiscount !=
+		 * null && "0".equals(activityDiscount.getStoreId())) { // 所属店铺 // 运营商类型 // 没有优惠
+		 * order.setPreferentialPrice(null); } } } else { order.setPreferentialPrice(null); } } }
 		 */
 		return new PageUtils<TradeOrder>(list);
 	}
@@ -2261,9 +2257,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.okdeer.mall.trade.order.serivce.TradeOrderService#getWXOrderDetail(
-	 * java.lang.String)
+	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService#getWXOrderDetail( java.lang.String)
 	 */
 	@Override
 	public TradeOrderVo getWXOrderDetail(String orderId) {
@@ -2336,8 +2330,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService#
-	 * selectWXUnpaidOrderInfo(java.util.Map, int, int)
+	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService# selectWXUnpaidOrderInfo(java.util.Map, int, int)
 	 */
 	@Override
 	public PageUtils<TradeOrderVo> selectWXUnpaidOrderInfo(Map<String, Object> map, int pageSize, int pageNumber)
@@ -2387,8 +2380,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService#
-	 * selectWXDropShippingOrderInfo(java. util .Map, int, int)
+	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService# selectWXDropShippingOrderInfo(java. util .Map, int,
+	 * int)
 	 */
 	@Override
 	public PageUtils<TradeOrderVo> selectWXDropShippingOrderInfo(Map<String, Object> map, int pageSize, int pageNumber)
@@ -2438,8 +2431,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService#
-	 * selectWXToBeOrderInfo(java.util.Map, int, int)
+	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService# selectWXToBeOrderInfo(java.util.Map, int, int)
 	 */
 	@Override
 	public PageUtils<TradeOrderVo> selectWXToBeOrderInfo(Map<String, Object> map, int pageSize, int pageNumber)
@@ -2739,8 +2731,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			map.put("storeId", storeId);
 		}
 		/*
-		 * if (parames.get("sellerId") != null) { String sellerId =
-		 * parames.get("sellerId").toString(); map.put("sellerId", sellerId); }
+		 * if (parames.get("sellerId") != null) { String sellerId = parames.get("sellerId").toString();
+		 * map.put("sellerId", sellerId); }
 		 */
 		if (parames.get("startTime") != null) {
 			String startTime = parames.get("startTime").toString();
@@ -3524,12 +3516,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		// ////////////// 线上-实收金额////////////////////////////
 		/*
-		 * map = getOrderMap(parames); map.put("orderResource",
-		 * getOnlineOrderResource()); map.put("status", getfinishStatus());
-		 * map.put("payWay", String.valueOf(PayWayEnum.PAY_ONLINE.ordinal()));
-		 * BigDecimal onlineActualAmout =
-		 * tradeOrderMapper.getActualAmoutByParames(map); if (onlineActualAmout
-		 * == null) { onlineActualAmout = new BigDecimal(0); }
+		 * map = getOrderMap(parames); map.put("orderResource", getOnlineOrderResource()); map.put("status",
+		 * getfinishStatus()); map.put("payWay", String.valueOf(PayWayEnum.PAY_ONLINE.ordinal())); BigDecimal
+		 * onlineActualAmout = tradeOrderMapper.getActualAmoutByParames(map); if (onlineActualAmout == null) {
+		 * onlineActualAmout = new BigDecimal(0); }
 		 */
 		BigDecimal onlineActualAmout = new BigDecimal(0);
 
@@ -3538,13 +3528,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		// //////////// 货到付款-实收金额////////////////////////////
 		/*
-		 * map = getOrderMap(parames); map.put("orderResource",
-		 * getOnlineOrderResource()); map.put("paymentStatus",
-		 * String.valueOf(PaymentStatusEnum.BACK_SECTION.ordinal()));
-		 * map.put("payWay",String.valueOf( PayWayEnum.CASH_DELIERY.ordinal()));
-		 * BigDecimal deliveryActualAmout =
-		 * tradeOrderMapper.getActualAmoutByParames(map); if
-		 * (deliveryActualAmout == null) { deliveryActualAmout = new
+		 * map = getOrderMap(parames); map.put("orderResource", getOnlineOrderResource()); map.put("paymentStatus",
+		 * String.valueOf(PaymentStatusEnum.BACK_SECTION.ordinal())); map.put("payWay",String.valueOf(
+		 * PayWayEnum.CASH_DELIERY.ordinal())); BigDecimal deliveryActualAmout =
+		 * tradeOrderMapper.getActualAmoutByParames(map); if (deliveryActualAmout == null) { deliveryActualAmout = new
 		 * BigDecimal(0); }
 		 */
 		BigDecimal deliveryActualAmout = new BigDecimal(0);
@@ -3553,11 +3540,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		// //////////// pos销售-实收金额////////////////////////////
 		/*
-		 * map = getOrderMap(parames); map.put("orderResource",
-		 * getPosOrderResource()); map.put("status", getfinishStatus());
-		 * BigDecimal posActualAmout =
-		 * tradeOrderMapper.getActualAmoutByParames(map); if (posActualAmout ==
-		 * null) { posActualAmout = new BigDecimal(0); }
+		 * map = getOrderMap(parames); map.put("orderResource", getPosOrderResource()); map.put("status",
+		 * getfinishStatus()); BigDecimal posActualAmout = tradeOrderMapper.getActualAmoutByParames(map); if
+		 * (posActualAmout == null) { posActualAmout = new BigDecimal(0); }
 		 */
 		BigDecimal posActualAmout = new BigDecimal(0);
 		posActualAmout = posOrderAmount.subtract(posRefundAmount);
@@ -3615,11 +3600,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			posAlipayAmount = new BigDecimal(0);
 		} else {
 			/*
-			 * BigDecimal posRefundAmountByPaymentMethod =
-			 * this.posRefundAmountByPaymentMethod(parames,
-			 * String.valueOf(PayTypeEnum.ALIPAY.ordinal())); if
-			 * (posRefundAmountByPaymentMethod != null) { posAlipayAmount =
-			 * posAlipayAmount.subtract(posRefundAmountByPaymentMethod); }
+			 * BigDecimal posRefundAmountByPaymentMethod = this.posRefundAmountByPaymentMethod(parames,
+			 * String.valueOf(PayTypeEnum.ALIPAY.ordinal())); if (posRefundAmountByPaymentMethod != null) {
+			 * posAlipayAmount = posAlipayAmount.subtract(posRefundAmountByPaymentMethod); }
 			 */
 		}
 		// ////////// 总支付宝额///////////////////////////
@@ -3652,11 +3635,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			posWeiXinAmount = new BigDecimal(0);
 		} else {
 			/*
-			 * BigDecimal posRefundAmountByPaymentMethod =
-			 * this.posRefundAmountByPaymentMethod(parames,
-			 * String.valueOf(PayTypeEnum.WXPAY.ordinal())); if
-			 * (posRefundAmountByPaymentMethod != null) { posWeiXinAmount =
-			 * posWeiXinAmount.subtract(posRefundAmountByPaymentMethod); }
+			 * BigDecimal posRefundAmountByPaymentMethod = this.posRefundAmountByPaymentMethod(parames,
+			 * String.valueOf(PayTypeEnum.WXPAY.ordinal())); if (posRefundAmountByPaymentMethod != null) {
+			 * posWeiXinAmount = posWeiXinAmount.subtract(posRefundAmountByPaymentMethod); }
 			 */
 		}
 		// ////////// 总微信额///////////////////////////
@@ -3664,21 +3645,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		totalWeiXinAmount = totalWeiXinAmount.add(onlineWeiXinAmount).add(posWeiXinAmount);
 
 		/*
-		 * //////////// 线上-京东/////////////////////////// map =
-		 * getOrderMap(parames); map.put("orderResource",
-		 * getOnlineOrderResource()); map.put("status", getfinishStatus());
-		 * map.put("payType", String.valueOf(PayTypeEnum.JDPAY.ordinal()));
-		 * BigDecimal onlineJDAmount =
-		 * tradeOrderMapper.getPayAmoutByParames(map); if (onlineJDAmount ==
-		 * null) { onlineJDAmount = new BigDecimal(0); } else { BigDecimal
-		 * refundAmountByPaymentMethod =
-		 * this.refundAmountByPaymentMethod(parames,
-		 * String.valueOf(PayTypeEnum.JDPAY.ordinal())); if
-		 * (refundAmountByPaymentMethod != null) { onlineJDAmount =
-		 * onlineJDAmount.subtract(refundAmountByPaymentMethod); } }
-		 * //////////// 总京东额/////////////////////////// BigDecimal totalJDAmount
-		 * = new BigDecimal(0); totalJDAmount =
-		 * totalJDAmount.add(onlineJDAmount);
+		 * //////////// 线上-京东/////////////////////////// map = getOrderMap(parames); map.put("orderResource",
+		 * getOnlineOrderResource()); map.put("status", getfinishStatus()); map.put("payType",
+		 * String.valueOf(PayTypeEnum.JDPAY.ordinal())); BigDecimal onlineJDAmount =
+		 * tradeOrderMapper.getPayAmoutByParames(map); if (onlineJDAmount == null) { onlineJDAmount = new BigDecimal(0);
+		 * } else { BigDecimal refundAmountByPaymentMethod = this.refundAmountByPaymentMethod(parames,
+		 * String.valueOf(PayTypeEnum.JDPAY.ordinal())); if (refundAmountByPaymentMethod != null) { onlineJDAmount =
+		 * onlineJDAmount.subtract(refundAmountByPaymentMethod); } } //////////// 总京东额///////////////////////////
+		 * BigDecimal totalJDAmount = new BigDecimal(0); totalJDAmount = totalJDAmount.add(onlineJDAmount);
 		 */
 
 		// ////////// pos销售-银联卡///////////////////////////
@@ -3691,11 +3665,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			posUnionpayAmount = new BigDecimal(0);
 		} else {
 			/*
-			 * BigDecimal posRefundAmountByPaymentMethod =
-			 * this.posRefundAmountByPaymentMethod(parames,
-			 * String.valueOf(PayTypeEnum.OFFLINE_BANK.ordinal())); if
-			 * (posRefundAmountByPaymentMethod != null) { posUnionpayAmount =
-			 * posUnionpayAmount.subtract(posRefundAmountByPaymentMethod); }
+			 * BigDecimal posRefundAmountByPaymentMethod = this.posRefundAmountByPaymentMethod(parames,
+			 * String.valueOf(PayTypeEnum.OFFLINE_BANK.ordinal())); if (posRefundAmountByPaymentMethod != null) {
+			 * posUnionpayAmount = posUnionpayAmount.subtract(posRefundAmountByPaymentMethod); }
 			 */
 		}
 		// ////////// 总银联卡额///////////////////////////
@@ -3720,12 +3692,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			deliveryCashPayAmount = new BigDecimal(0);
 		} else {
 			/*
-			 * BigDecimal deliveryRefundAmountByPaymentMethod =
-			 * this.deliveryRefundAmountByPaymentMethod(parames,
-			 * String.valueOf(PayTypeEnum.CASH.ordinal())); if
-			 * (deliveryRefundAmountByPaymentMethod != null) {
-			 * deliveryCashPayAmount = deliveryCashPayAmount.subtract(
-			 * deliveryRefundAmountByPaymentMethod); }
+			 * BigDecimal deliveryRefundAmountByPaymentMethod = this.deliveryRefundAmountByPaymentMethod(parames,
+			 * String.valueOf(PayTypeEnum.CASH.ordinal())); if (deliveryRefundAmountByPaymentMethod != null) {
+			 * deliveryCashPayAmount = deliveryCashPayAmount.subtract( deliveryRefundAmountByPaymentMethod); }
 			 */
 		}
 		deliveryCashPayAmount = deliveryCashPayAmount.subtract(deliveryRefundAmount).subtract(deliveryPlatformSubsidy);
@@ -3740,11 +3709,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			posCashPayAmount = new BigDecimal(0);
 		} else {
 			/*
-			 * BigDecimal posRefundAmountByPaymentMethod =
-			 * this.posRefundAmountByPaymentMethod(parames,
-			 * String.valueOf(PayTypeEnum.CASH.ordinal())); if
-			 * (posRefundAmountByPaymentMethod != null) { posCashPayAmount =
-			 * posCashPayAmount.subtract(posRefundAmountByPaymentMethod); }
+			 * BigDecimal posRefundAmountByPaymentMethod = this.posRefundAmountByPaymentMethod(parames,
+			 * String.valueOf(PayTypeEnum.CASH.ordinal())); if (posRefundAmountByPaymentMethod != null) {
+			 * posCashPayAmount = posCashPayAmount.subtract(posRefundAmountByPaymentMethod); }
 			 */
 		}
 		posCashPayAmount = posCashPayAmount.subtract(posRefundAmount);
@@ -3827,22 +3794,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/*
-	 * private BigDecimal posRefundAmountByPaymentMethod(Map<String, Object>
-	 * parames, String paymentMethod) { Map<String, Object> map =
-	 * getOrderMap(parames); map.put("orderResource", getPosOrderResource());
+	 * private BigDecimal posRefundAmountByPaymentMethod(Map<String, Object> parames, String paymentMethod) {
+	 * Map<String, Object> map = getOrderMap(parames); map.put("orderResource", getPosOrderResource());
 	 * map.put("refundsStatus", getfinishRefundsStatus()); map.put("payWay",
-	 * String.valueOf(PayWayEnum.LINE_PAY.ordinal())); map.put("paymentMethod",
-	 * paymentMethod); BigDecimal posRefundAmount =
-	 * tradeOrderMapper.getRefundAmountByParames(map); return posRefundAmount; }
+	 * String.valueOf(PayWayEnum.LINE_PAY.ordinal())); map.put("paymentMethod", paymentMethod); BigDecimal
+	 * posRefundAmount = tradeOrderMapper.getRefundAmountByParames(map); return posRefundAmount; }
 	 * 
-	 * private BigDecimal deliveryRefundAmountByPaymentMethod(Map<String,
-	 * Object> parames, String paymentMethod) { Map<String, Object> map =
-	 * getOrderMap(parames); map.put("orderResource", getOnlineOrderResource());
+	 * private BigDecimal deliveryRefundAmountByPaymentMethod(Map<String, Object> parames, String paymentMethod) {
+	 * Map<String, Object> map = getOrderMap(parames); map.put("orderResource", getOnlineOrderResource());
 	 * map.put("refundsStatus", getfinishRefundsStatus()); map.put("payWay",
-	 * String.valueOf(PayWayEnum.CASH_DELIERY.ordinal()));
-	 * map.put("paymentMethod", paymentMethod); BigDecimal deliveryRefundAmount
-	 * = tradeOrderMapper.getRefundAmountByParames(map); return
-	 * deliveryRefundAmount; }
+	 * String.valueOf(PayWayEnum.CASH_DELIERY.ordinal())); map.put("paymentMethod", paymentMethod); BigDecimal
+	 * deliveryRefundAmount = tradeOrderMapper.getRefundAmountByParames(map); return deliveryRefundAmount; }
 	 */
 
 	/**
@@ -4236,20 +4198,21 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			return isSupportComplain;
 		}
 		switch (userOrderDetail.getStatus()) {
-		case CANCELED:
-			if (userOrderDetail.getPayWay() == PayWayEnum.PAY_ONLINE && userOrderDetail.getTradeOrderPay() != null) {
+			case CANCELED:
+				if (userOrderDetail.getPayWay() == PayWayEnum.PAY_ONLINE
+						&& userOrderDetail.getTradeOrderPay() != null) {
+					isSupportComplain = "1";
+				} else if (userOrderDetail.getPayWay() == PayWayEnum.CASH_DELIERY) {
+					isSupportComplain = "1";
+				}
+				break;
+			case REFUSED:
+			case HAS_BEEN_SIGNED:
+			case TRADE_CLOSED:
 				isSupportComplain = "1";
-			} else if (userOrderDetail.getPayWay() == PayWayEnum.CASH_DELIERY) {
-				isSupportComplain = "1";
-			}
-			break;
-		case REFUSED:
-		case HAS_BEEN_SIGNED:
-		case TRADE_CLOSED:
-			isSupportComplain = "1";
-			break;
-		default:
-			break;
+				break;
+			default:
+				break;
 		}
 		return isSupportComplain;
 	}
@@ -4355,10 +4318,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
 		// 订单支付倒计时计算
 		/*
-		 * Integer remainingTime = orders.getRemainingTime(); if (remainingTime
-		 * != null) { remainingTime = remainingTime + 1800;
-		 * json.put("remainingTime", remainingTime <= 0 ? "0" : remainingTime);
-		 * } else { json.put("remainingTime", "0"); }
+		 * Integer remainingTime = orders.getRemainingTime(); if (remainingTime != null) { remainingTime = remainingTime
+		 * + 1800; json.put("remainingTime", remainingTime <= 0 ? "0" : remainingTime); } else {
+		 * json.put("remainingTime", "0"); }
 		 */
 		OrderStatusEnum orderStatus = orders.getStatus();
 		if (orderStatus != null && orderStatus.ordinal() == Constant.ZERO) {
@@ -5169,9 +5131,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<TradeOrder> result = tradeOrderMapper.selectServiceStoreOrderList(params);
 		/*
-		 * if (result == null) { result = new ArrayList<TradeOrder>(); } else {
-		 * for (TradeOrder order : result) { List<TradeOrderItem> orderItem =
-		 * tradeOrderItemMapper.selectOrderItemListById(order.getId());
+		 * if (result == null) { result = new ArrayList<TradeOrder>(); } else { for (TradeOrder order : result) {
+		 * List<TradeOrderItem> orderItem = tradeOrderItemMapper.selectOrderItemListById(order.getId());
 		 * order.setTradeOrderItem(orderItem); } }
 		 */
 		return new PageUtils<TradeOrder>(result);
@@ -5322,26 +5283,26 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	private void convertOrderStatusDdxf(PhysicsOrderVo vo) {
 		switch (vo.getStatus()) {
-		case BUYER_PAYING:
-		case UNPAID:
-			vo.setOrderStatusName("等待买家付款");
-			break;
-		case DROPSHIPPING:
-		case HAS_BEEN_SIGNED:
-		case WAIT_CONSUME:
-		case PART_CONSUME:
-			vo.setOrderStatusName("买家已付款");
-			break;
-		case CANCELED:
-		case CANCELING:
-		case TRADE_CLOSED:
-		case REFUSED:
-		case REFUSING:
-			vo.setOrderStatusName("交易关闭");
-			break;
-		default:
-			vo.setOrderStatusName(vo.getStatus().getValue());
-			break;
+			case BUYER_PAYING:
+			case UNPAID:
+				vo.setOrderStatusName("等待买家付款");
+				break;
+			case DROPSHIPPING:
+			case HAS_BEEN_SIGNED:
+			case WAIT_CONSUME:
+			case PART_CONSUME:
+				vo.setOrderStatusName("买家已付款");
+				break;
+			case CANCELED:
+			case CANCELING:
+			case TRADE_CLOSED:
+			case REFUSED:
+			case REFUSING:
+				vo.setOrderStatusName("交易关闭");
+				break;
+			default:
+				vo.setOrderStatusName(vo.getStatus().getValue());
+				break;
 		}
 	}
 
@@ -5355,27 +5316,27 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	private void convertOrderStatus(PhysicsOrderVo vo) {
 		switch (vo.getStatus()) {
-		case DROPSHIPPING:
-			vo.setOrderStatusName("待派单");
-			break;
-		case TO_BE_SIGNED:
-			vo.setOrderStatusName("已派单");
-			break;
-		case HAS_BEEN_SIGNED:
-			vo.setOrderStatusName("服务完成");
-			break;
-		case CANCELED:
-		case CANCELING:
-		case TRADE_CLOSED:
-			vo.setOrderStatusName("交易关闭");
-			break;
-		case REFUSED:
-		case REFUSING:
-			vo.setOrderStatusName("订单取消");
-			break;
-		default:
-			vo.setOrderStatusName(vo.getStatus().getValue());
-			break;
+			case DROPSHIPPING:
+				vo.setOrderStatusName("待派单");
+				break;
+			case TO_BE_SIGNED:
+				vo.setOrderStatusName("已派单");
+				break;
+			case HAS_BEEN_SIGNED:
+				vo.setOrderStatusName("服务完成");
+				break;
+			case CANCELED:
+			case CANCELING:
+			case TRADE_CLOSED:
+				vo.setOrderStatusName("交易关闭");
+				break;
+			case REFUSED:
+			case REFUSING:
+				vo.setOrderStatusName("订单取消");
+				break;
+			default:
+				vo.setOrderStatusName(vo.getStatus().getValue());
+				break;
 		}
 		if (vo.getPayWay() == PayWayEnum.PAY_ONLINE) {
 			if (vo.getPayType() != null) {
@@ -5449,30 +5410,30 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			} else {
 				List<OrderTypeEnum> typeList = new ArrayList<OrderTypeEnum>();
 				switch (params.get("type").toString()) {
-				case "0":
-					typeList.add(OrderTypeEnum.PHYSICAL_ORDER);
-					break;
-				case "1":
-					typeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
-					break;
-				case "2":
-					typeList.add(OrderTypeEnum.STORE_CONSUME_ORDER);
-					break;
-				case "3":
-					if (params.get("rechargeType") != null && "1".equals(params.get("rechargeType").toString())) {
-						// 流量充值
-						typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
-					} else if (params.get("rechargeType") != null
-							&& "0".equals(params.get("rechargeType").toString())) {
-						// 话费充值
-						typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
-					} else {
-						typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
-						typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
-					}
-					break;
-				default:
-					break;
+					case "0":
+						typeList.add(OrderTypeEnum.PHYSICAL_ORDER);
+						break;
+					case "1":
+						typeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
+						break;
+					case "2":
+						typeList.add(OrderTypeEnum.STORE_CONSUME_ORDER);
+						break;
+					case "3":
+						if (params.get("rechargeType") != null && "1".equals(params.get("rechargeType").toString())) {
+							// 流量充值
+							typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
+						} else if (params.get("rechargeType") != null
+								&& "0".equals(params.get("rechargeType").toString())) {
+							// 话费充值
+							typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
+						} else {
+							typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
+							typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
+						}
+						break;
+					default:
+						break;
 				}
 				params.put("type", typeList);
 
@@ -5495,15 +5456,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			} else {
 				List<OrderResourceEnum> orderResourceList = new ArrayList<OrderResourceEnum>();
 				switch (params.get("orderResource").toString()) {
-				case "0":
-					orderResourceList.add(OrderResourceEnum.WECHAT);
-					orderResourceList.add(OrderResourceEnum.YSCAPP);
-					break;
-				case "1":
-					orderResourceList.add(OrderResourceEnum.POS);
-					break;
-				default:
-					break;
+					case "0":
+						orderResourceList.add(OrderResourceEnum.WECHAT);
+						orderResourceList.add(OrderResourceEnum.YSCAPP);
+						break;
+					case "1":
+						orderResourceList.add(OrderResourceEnum.POS);
+						break;
+					default:
+						break;
 				}
 				params.put("orderResource", orderResourceList);
 			}
@@ -5655,24 +5616,24 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	private void convertRechargeOrderStatus(TradeOrderRechargeVo vo) {
 		switch (vo.getStatus()) {
-		case UNPAID:
-			vo.setOrderStatusName("待付款");
-			break;
-		case BUYER_PAYING:
-			vo.setOrderStatusName("付款确认中");
-			break;
-		case DROPSHIPPING:
-			vo.setOrderStatusName("充值中");
-			break;
-		case HAS_BEEN_SIGNED:
-			vo.setOrderStatusName("充值成功");
-			break;
-		case TRADE_CLOSED:
-			vo.setOrderStatusName("充值失败");
-			break;
-		default:
-			vo.setOrderStatusName(vo.getStatus().getValue());
-			break;
+			case UNPAID:
+				vo.setOrderStatusName("待付款");
+				break;
+			case BUYER_PAYING:
+				vo.setOrderStatusName("付款确认中");
+				break;
+			case DROPSHIPPING:
+				vo.setOrderStatusName("充值中");
+				break;
+			case HAS_BEEN_SIGNED:
+				vo.setOrderStatusName("充值成功");
+				break;
+			case TRADE_CLOSED:
+				vo.setOrderStatusName("充值失败");
+				break;
+			default:
+				vo.setOrderStatusName(vo.getStatus().getValue());
+				break;
 		}
 	}
 
@@ -5983,10 +5944,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			return;
 		}
 		/*
-		 * if (collCoupons.size() > 1) { // 同一时间，同一区域，只能有一个消费返券活动
-		 * logger.info(ORDER_COUPONS_NOT_ONLY, orderId, userId);
-		 * respDto.setMessage( (respDto.getMessage() == null ? "" :
-		 * respDto.getMessage()) + ORDER_COUPONS_NOT_ONLY_TIPS); return; }
+		 * if (collCoupons.size() > 1) { // 同一时间，同一区域，只能有一个消费返券活动 logger.info(ORDER_COUPONS_NOT_ONLY, orderId, userId);
+		 * respDto.setMessage( (respDto.getMessage() == null ? "" : respDto.getMessage()) +
+		 * ORDER_COUPONS_NOT_ONLY_TIPS); return; }
 		 */
 		// 活动关联的代金券
 		List<ActivityCoupons> activityCouponsList = collCoupons.get(0).getActivityCoupons();
