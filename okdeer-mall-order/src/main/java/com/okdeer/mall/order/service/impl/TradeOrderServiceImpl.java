@@ -280,7 +280,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/**
 	 * 短信接口
 	 */
-	@Reference
+	@Reference(version = "1.0.0")
 	ISmsService smsService;
 
 	@Value("${mcm.sys.code}")
