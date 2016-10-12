@@ -159,6 +159,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 			case FORCE_SELLER_REFUND_SUCCESS:
 			case SELLER_REFUNDING:
 			case REFUND_SUCCESS:
+			case YSC_REFUND_SUCCESS:
 				isNeedWaitDeal = false;
 				break;
 			default:
