@@ -62,7 +62,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 	@Override
 	public void saveRefundTrace(TradeOrderRefunds refundsOrder){
 		// 友门鹿退款成功和待友门鹿退款合成一种轨迹，所以友门鹿退款成功不做任何处理
-		if(refundsOrder.getRefundsStatus() == null || refundsOrder.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND_SUCCESS){
+		if(refundsOrder.getRefundsStatus() == null){
 			return;
 		}
 		List<TradeOrderRefundsTrace> traceList = createTraceList(refundsOrder);
@@ -227,7 +227,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 				break;
 			case YSC_REFUND:
 				// 待友门鹿退款
-				traceStatus = RefundsTraceEnum.REFUND_SUCCESS;
+				traceStatus = RefundsTraceEnum.CUSTOMER_SERVICE_DEAL;
 				remark = OKDEER_REFUND_REMARK;
 				break;
 			case FORCE_SELLER_REFUND_SUCCESS:
@@ -240,6 +240,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 				traceStatus = RefundsTraceEnum.BUSINESS_AGREE_REFUND;
 				break;
 			case REFUND_SUCCESS : 
+			case YSC_REFUND_SUCCESS:
 				traceStatus = RefundsTraceEnum.REFUND_SUCCESS;
 				break;
 			default:
