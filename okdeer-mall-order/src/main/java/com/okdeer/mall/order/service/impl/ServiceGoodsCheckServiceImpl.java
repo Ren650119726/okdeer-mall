@@ -15,6 +15,7 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.enums.GoodsStoreSkuPayTypeEnum;
+import com.okdeer.archive.goods.store.enums.IsShopNum;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
@@ -145,8 +146,15 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			
 			GoodsStoreSkuService skuServiceEntity = goodsStoreSku.getGoodsStoreSkuService();
 			if (skuServiceEntity != null) {
-				// 起购量设置
-				goodsItem.setShopNum(skuServiceEntity.getShopNum());
+				// 是否有起购量 0：无 1：有
+				IsShopNum isShopNum = skuServiceEntity.getIsShopNum();
+				if (isShopNum != null && isShopNum.ordinal() == IsShopNum.YES.ordinal()) {
+					// 有起购量
+					goodsItem.setShopNum(skuServiceEntity.getShopNum());
+				} else {
+					// 无起购量
+					goodsItem.setShopNum(1);
+				}
 			}
 			// 商品主图信息列表
 			List<GoodsStoreSkuPicture> storeSkuPicList = goodsStoreSkuPictureService
