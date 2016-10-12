@@ -497,9 +497,11 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 	    ActivityTypeEnum activityType = reqDto.getActivityType();
 	    String recordId = reqDto.getRecordId();
 	    String couponId = reqDto.getCouponId();
+	    String userId = reqDto.getUserId();
 	    Map<String, String> map = new HashMap<String, String>();
 	    map.put("recordId", recordId);
-	    map.put("couponId", couponId);    
+	    map.put("couponId", couponId);
+	    map.put("userId", userId);
 	    RechargeCouponVo couponVo = this.couponsRecordMapper.findRechargeCouponInfo(map);
 	        
 	    boolean isValid = false;
