@@ -127,17 +127,17 @@
    </select>
    
    <!-- begin by:yangq 保存邀请码记录 -->
-   <insert id="saveRecord" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecord" useGeneratedKeys="true" keyProperty="id">
+   <insert id="saveRecord" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecord">
         insert into activity_collect_coupons_regist_record(
-			<include refid="Base_Column_List"/>
+			id, activity_id, user_id, invite_id, finish_order_time, machine_code, create_time
 		)values(
-            #{id},
-            #{activity_id},
-            #{user_id},
-            #{invite_id},
-            #{finish_order_time},
-            #{machine_code},
-            #{create_time}
+            #{id,jdbcType=VARCHAR},
+            #{activityId,jdbcType=VARCHAR},
+            #{userId,jdbcType=VARCHAR},
+            #{inviteId,jdbcType=VARCHAR},
+            #{finishOrderTime,jdbcType=TIMESTAMP},
+            #{machineCode,jdbcType=VARCHAR},
+            #{createTime,jdbcType=TIMESTAMP}
         )
 	</insert>
    <!-- end by:yangq 保存邀请码记录 -->
