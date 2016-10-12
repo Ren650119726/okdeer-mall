@@ -46,6 +46,10 @@ public interface OrderTipMsgConstant {
 	
 	String PRIVILEGE_INVALID = "对不起，该优惠已失效，提交订单失败";
 	
+	// Begin Bug:14093 added by maojj 2016-10-12
+	String KIND_LIMIT_OVER = "商品超出代金券的限用品类";
+	// End added by maojj 2016-10-12
+	
 	String SHOPPING_SUCCESS = "用户App购物车列表操作成功";
 	
 	String ORDER_SUCESS = "用户App下单成功";
