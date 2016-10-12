@@ -118,8 +118,8 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		req.getContext().put("storeSkuIdList", storeSkuIdList);
 		
 		// 数据库中对应的商品信息list
-		List<GoodsStoreSku> goodsStoreSkuList = goodsStoreSkuService.findByIds(storeSkuIdList);
-		
+		//List<GoodsStoreSku> goodsStoreSkuList = goodsStoreSkuService.findByIds(storeSkuIdList);
+		List<GoodsStoreSku> goodsStoreSkuList = goodsStoreSkuService.selectSkuByIds(storeSkuIdList);
 		if (CollectionUtils.isEmpty(goodsStoreSkuList)) {
 			resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS);
 			req.setComplete(true);
@@ -142,6 +142,12 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			// 设置商品的支付方式
 			goodsItem.setPaymentMode(getPaymentMode(goodsStoreSku.getPayType()));
 			respData.setPaymentMode(goodsItem.getPaymentMode());
+			
+			GoodsStoreSkuService skuServiceEntity = goodsStoreSku.getGoodsStoreSkuService();
+			if (skuServiceEntity != null) {
+				// 起购量设置
+				goodsItem.setShopNum(skuServiceEntity.getShopNum());
+			}
 			// 商品主图信息列表
 			List<GoodsStoreSkuPicture> storeSkuPicList = goodsStoreSkuPictureService
 					.findMainByStoreSkuIds(storeSkuIdList);
