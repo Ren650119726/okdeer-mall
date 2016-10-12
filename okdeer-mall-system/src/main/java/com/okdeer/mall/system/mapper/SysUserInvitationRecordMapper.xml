@@ -153,4 +153,10 @@
   	</select>
   	<!-- end -->
   	
+  	<!-- 消费码消费的时候 判断该 用户是否是首单 -->
+  	<select id="selectIdByOrderId" resultType="String" parameterType="string">
+  		SELECT suir.id from trade_order tr LEFT JOIN 
+		sys_user_invitation_record suir on suir.sys_buyer_user_id = tr.user_id
+		where suir.is_first_order = 0 and tr.id = #{orderId, jdbcType=VARCHAR}
+  	</select>
 </mapper>
