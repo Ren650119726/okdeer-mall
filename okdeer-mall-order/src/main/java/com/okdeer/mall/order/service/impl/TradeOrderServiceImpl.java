@@ -6544,8 +6544,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			StringBuffer smsBuffer = new StringBuffer();
 			smsBuffer.append("您的").append(orderItem.getSkuName()).append("购买成功！消费码为").append(consumeCodes)
 					.append("，商家地址：").append(storeAddress).append("，商家电话：").append(storeInfoExt.getServicePhone())
-					.append("，有效期").append(DateUtils.formatDate(goodsService.getStartTime(), "")).append("至")
-					.append(DateUtils.formatDate(goodsService.getEndTime(), ""));
+					.append("，有效期").append(DateUtils.formatDate(goodsService.getStartTime(), null)).append("至")
+					.append(DateUtils.formatDate(goodsService.getEndTime(), null));
 			if (storeInfoExt.getIsAdvanceType() == 1) {
 				smsBuffer.append("，需提前").append(storeInfoExt.getAdvanceTime());
 				if (storeInfoExt.getAdvanceType() == 0) {
