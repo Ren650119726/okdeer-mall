@@ -264,6 +264,7 @@ import net.sf.json.JsonConfig;
  *      14168               2016-10-11            wusw      修改多个消费码验证时，部分消费码不存在情况下的相应提示信息   
  *      V1.1.0			    2016-10-11          luosm			bug13932 
  *      V1.1.0 				2016-10-12			wushp			bug13735
+ *      V1.1.0              2016-10-12            wusw      修改根据订单项详细的消费码状态，修改订单消费码状态的逻辑  
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -6382,12 +6383,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				orderStatusCountMap.put(map.get("orderId") + "-" + map.get("status"),
 						new Integer(map.get("num").toString()));
 			}
-			// 根据统计数量，判断订单消费码状态值，如果存在已过期的，状态为已过期；如果存在未消费的，状态为未消费；否则，状态为待评价
+			// 根据统计数量，判断订单消费码状态值，如果存在已过期的，状态为已过期；如果存在未消费的，状态为未消费；如果存在已消费的，状态为待评价，否则，状态为已退款
 			List<String> expiredOrderList = new ArrayList<String>();
 			List<String> consumedList = new ArrayList<String>();
+			// Begin V1.1.0 update by wusw 20161012
+			List<String> refundsList = new ArrayList<String>();
+			// End V1.1.0 update by wusw 20161012
 			for (String orderId : orderIdList) {
 				int noConsumeCount = 0;
 				int expiredCount = 0;
+				// Begin V1.1.0 update by wusw 20161012
+				int refundsCount = 0;
+				// End V1.1.0 update by wusw 20161012
 				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal()) != null) {
 					noConsumeCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal())
 							.intValue();
@@ -6396,17 +6403,34 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					expiredCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.expired.ordinal())
 							.intValue();
 				}
+				// Begin V1.1.0 update by wusw 20161012
+				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal()) != null) {
+					refundsCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal())
+							.intValue();
+				}
 
 				if (expiredCount > 0) {
 					expiredOrderList.add(orderId);
-				} else if (noConsumeCount <= 0) {
-					consumedList.add(orderId);
+				} else {
+					 if (noConsumeCount <= 0) {
+						if (refundsCount > 0) {
+							refundsList.add(orderId);
+						} else {
+							consumedList.add(orderId);
+						}
+					 }
 				}
+				// End V1.1.0 update by wusw 20161012
 			}
 			// 更新相应的订单消费码状态
 			if (CollectionUtils.isNotEmpty(expiredOrderList)) {
 				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.EXPIRED, nowTime, expiredOrderList);
 			}
+			// Begin V1.1.0 update by wusw 20161012
+			if (CollectionUtils.isNotEmpty(refundsList)) {
+				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.REFUNDED, nowTime, refundsList);
+			}
+			// End V1.1.0 update by wusw 20161012
 			if (CollectionUtils.isNotEmpty(consumedList)) {
 				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.WAIT_EVALUATE, nowTime, consumedList);
 			}
