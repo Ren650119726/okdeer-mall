@@ -158,7 +158,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 			// 修改秒杀提醒设置状态
 			seckillRemindeMapper.updateRemindeStatus(activitySeckill.getId(), Constant.ZERO);
 			// 取消消息中心秒杀提醒
-			appMsgApi.deleteMsgByInfoId(activitySeckill.getId());
+			appMsgApi.cancelTimeSendMsg(activitySeckill.getId());
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
@@ -317,7 +317,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 			// 修改秒杀提醒设置状态
 			seckillRemindeMapper.updateRemindeStatus(activitySeckill.getId(), Constant.ZERO);
 			// 取消消息中心秒杀提醒
-			appMsgApi.deleteMsgByInfoId(activitySeckill.getId());
+			appMsgApi.cancelTimeSendMsg(activitySeckill.getId());
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
