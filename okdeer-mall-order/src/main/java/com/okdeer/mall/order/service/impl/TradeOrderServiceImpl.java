@@ -6166,6 +6166,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 									.get(detailConsumeVo.getOrderId());
 							oldConsumeVo.setDetailActualAmount(
 									oldConsumeVo.getDetailActualAmount().add(detailConsumeVo.getDetailActualAmount()));
+							oldConsumeVo.setPreferentialPrice(oldConsumeVo.getPreferentialPrice().add(detailConsumeVo.getPreferentialPrice()));
+							
 							oldConsumeVo.setNum(oldConsumeVo.getNum().intValue() + 1);
 							successOrderDetailMap.put(detailConsumeVo.getOrderId(), oldConsumeVo);
 						} else {
