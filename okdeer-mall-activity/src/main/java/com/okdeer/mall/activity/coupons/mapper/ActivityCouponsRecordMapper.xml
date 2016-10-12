@@ -626,7 +626,9 @@
 		LEFT join activity_coupons c on r.coupons_id=c.id
 		WHERE r.id=#{recordId, jdbcType=VARCHAR} 
 			AND c.id=#{couponId, jdbcType=VARCHAR}
+			AND r.collect_user_id = #{userId, jdbcType=VARCHAR}
 			AND r.status = 0
+			AND c.type=3
 	</select>
 	<!-- End added by zhaoqc -->
 	
