@@ -154,6 +154,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		switch (refundsStatus) {
 			case APPLY_CUSTOMER_SERVICE_INTERVENE:
 			case CUSTOMER_SERVICE_CANCEL_INTERVENE:
+			case BUYER_REPEAL_REFUND:
 			case YSC_REFUND:
 			case FORCE_SELLER_REFUND_SUCCESS:
 			case SELLER_REFUNDING:
@@ -242,6 +243,9 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 			case REFUND_SUCCESS : 
 			case YSC_REFUND_SUCCESS:
 				traceStatus = RefundsTraceEnum.REFUND_SUCCESS;
+				break;
+			case BUYER_REPEAL_REFUND:
+				traceStatus = RefundsTraceEnum.BUYER_CANCEL_REFUND;
 				break;
 			default:
 				break;
@@ -354,7 +358,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 			} else {
 				traceVo.setContent(remark);
 			}
-			traceVo.setTime(DateUtils.formatDate(trace.getOptTime(),"yyyy-MM-dd HH:mm"));
+			traceVo.setTime(DateUtils.formatDate(trace.getOptTime(),"MM-dd HH:mm"));
 			traceVo.setIsDone(1);
 			traceVoList.add(traceVo);
 			index++;
