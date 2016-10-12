@@ -862,10 +862,13 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			// Integer isStartingPrice = serviceExt.getIsStartingPrice();
 			// 已满起送价是否收取配送费，0：否，1：是
 			Integer isCollect = serviceExt.getIsCollect();
+			// 是否有起送价，0：否，1：是
+			Integer isStartingPrice = serviceExt.getIsStartingPrice();
 			// 起送价
 			BigDecimal startPrice = serviceExt.getStartingPrice();
-			if (tradeOrder.getTotalAmount().compareTo(startPrice) == -1) {
-				// 不满启动价
+			if (tradeOrder.getTotalAmount().compareTo(startPrice) == -1
+					&& isStartingPrice == 1) {
+				// 不满起送价
 				tradeOrder.setFare(BigDecimal.valueOf(distributionFee));
 				tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(tradeOrder.getFare()));
 				tradeOrder.setActualAmount(tradeOrder.getActualAmount().add(tradeOrder.getFare()));

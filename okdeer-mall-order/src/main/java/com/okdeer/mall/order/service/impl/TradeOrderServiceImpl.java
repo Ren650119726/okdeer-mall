@@ -6529,6 +6529,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
 		tradeOrder.setUpdateTime(new Date());
 		tradeOrder.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_CONSUME);
+		//增加回款时间
+		tradeOrder.setPaymentTime(new Date());
 		this.updateOrderStatus(tradeOrder);
 
 		// 创建消费码记录，如有优惠分摊优惠

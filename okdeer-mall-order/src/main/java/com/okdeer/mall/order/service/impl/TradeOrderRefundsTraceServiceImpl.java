@@ -62,7 +62,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 	@Override
 	public void saveRefundTrace(TradeOrderRefunds refundsOrder){
 		// 友门鹿退款成功和待友门鹿退款合成一种轨迹，所以友门鹿退款成功不做任何处理
-		if(refundsOrder.getRefundsStatus() == null || refundsOrder.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND_SUCCESS){
+		if(refundsOrder.getRefundsStatus() == null){
 			return;
 		}
 		List<TradeOrderRefundsTrace> traceList = createTraceList(refundsOrder);
@@ -154,10 +154,12 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		switch (refundsStatus) {
 			case APPLY_CUSTOMER_SERVICE_INTERVENE:
 			case CUSTOMER_SERVICE_CANCEL_INTERVENE:
+			case BUYER_REPEAL_REFUND:
 			case YSC_REFUND:
 			case FORCE_SELLER_REFUND_SUCCESS:
 			case SELLER_REFUNDING:
 			case REFUND_SUCCESS:
+			case YSC_REFUND_SUCCESS:
 				isNeedWaitDeal = false;
 				break;
 			default:
@@ -227,7 +229,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 				break;
 			case YSC_REFUND:
 				// 待友门鹿退款
-				traceStatus = RefundsTraceEnum.REFUND_SUCCESS;
+				traceStatus = RefundsTraceEnum.CUSTOMER_SERVICE_DEAL;
 				remark = OKDEER_REFUND_REMARK;
 				break;
 			case FORCE_SELLER_REFUND_SUCCESS:
@@ -240,7 +242,11 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 				traceStatus = RefundsTraceEnum.BUSINESS_AGREE_REFUND;
 				break;
 			case REFUND_SUCCESS : 
+			case YSC_REFUND_SUCCESS:
 				traceStatus = RefundsTraceEnum.REFUND_SUCCESS;
+				break;
+			case BUYER_REPEAL_REFUND:
+				traceStatus = RefundsTraceEnum.BUYER_CANCEL_REFUND;
 				break;
 			default:
 				break;
@@ -353,7 +359,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 			} else {
 				traceVo.setContent(remark);
 			}
-			traceVo.setTime(DateUtils.formatDate(trace.getOptTime(),"yyyy-MM-dd HH:mm"));
+			traceVo.setTime(DateUtils.formatDate(trace.getOptTime(),"MM-dd HH:mm"));
 			traceVo.setIsDone(1);
 			traceVoList.add(traceVo);
 			index++;
