@@ -247,7 +247,10 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 				BigDecimal startingPrice = serviceExt.getStartingPrice();
 				if (totalAmout.compareTo(startingPrice) == -1) {
 					// 订单总价小与起送价
-					resp.setResult(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH);
+					// resp.setResult(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH);
+					// bug14207
+					resp.setCode(227);
+					resp.setMessage("抱歉，商品金额不满起送价");
 					req.setComplete(true);
 					return;
 				}
