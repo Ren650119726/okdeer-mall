@@ -45,8 +45,9 @@ import com.okdeer.mall.order.vo.UserTradeServiceOrderVo;
  *    v1.1.0            2016-9-17            zengjz              添加财务系统统计接口
  *    V1.1.0			2016-9-23 			 zengjz				 增加查询到店消费订单列表
  *    V1.1.0            2016-09-23           wusw                添加消费码验证（到店消费）相应方法
- *    V1.1.0            2016-09-26           luosm               查询商家版APP服务店到店消费订单信息
- *    V1.1.0			2016-10-10          luosm			服务店到店消费订单金额统计及订单列表
+ *    V1.1.0            2016-09-26          luosm               查询商家版APP服务店到店消费订单信息
+ *    V1.1.0			2016-10-10          luosm				服务店到店消费订单金额统计及订单列表
+ *    V1.1.0			2016-10-11          luosm				服务店到店消费订单列表查询
  */
 public interface TradeOrderMapper {
 
@@ -266,6 +267,18 @@ public interface TradeOrderMapper {
 	 * @return
 	 */
 	List<TradeOrderVo> selectOrderInfo(Map<String, Object> map);
+	
+	//begin added by luosm V1.1.0 20161011
+	/***
+	 * 
+	 * @Description: 商家版APP服务店到店消费订单查询 
+	 * @param map
+	 * @return
+	 * @author luosm
+	 * @date 2016年10月11日
+	 */
+	List<TradeOrderVo> selectServiceOrderInfo(Map<String, Object> map);
+	//end added by luosm V1.1.0 20161011
 
 	/**
 	 * 

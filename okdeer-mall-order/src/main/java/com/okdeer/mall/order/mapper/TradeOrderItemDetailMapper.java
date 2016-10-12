@@ -195,5 +195,13 @@ public interface TradeOrderItemDetailMapper{
 	 */
 	TradeOrderItemDetail selectByPrimaryKey(String id);
 	
+	/**
+	 * @Description: 将消费码状态改为已退款
+	 * @param id 主健id
+	 * @return
+	 * @author zengjizu
+	 * @date 2016年10月11日
+	 */
+	int updateStatusWithRefundById(String id);
 	// End V1.1.0 add by zengjz 20161011
 }

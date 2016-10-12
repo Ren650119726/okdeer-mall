@@ -67,7 +67,7 @@ public class ServStockCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		// 判断库存是否满足销售
 		for (GoodsStoreSkuStock skuStock : stockList) {
 			for (TradeOrderGoodsItem item : list) {
-				if (skuStock.getStoreSkuId() == item.getSkuId()) {
+				if (skuStock.getStoreSkuId().equals(item.getSkuId())) {
 					tradeOrderStock = new TradeOrderStock();
 					tradeOrderStock.setSkuId(skuStock.getStoreSkuId());
 					tradeOrderStock.setSellableStock(skuStock.getSellable());

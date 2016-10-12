@@ -2414,6 +2414,53 @@
 		</if>
 	</select>
 
+	<!-- luosm:商家版APP服务店到店消费订单查询 -->
+	<select id="selectServiceOrderInfo" parameterType="java.util.Map"
+		resultMap="TradeOrderVo">
+		SELECT
+		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.status,tr.delivery_time,tr.type,
+		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
+		= tr.id) as goods_count,
+		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
+		goods_type_count,
+		tr.create_time,tr.activity_type,tr.activity_id,
+		(select count(1) from trade_order_refunds_item r inner join trade_order_item
+		i on r.order_item_id = i.id where i.order_id = tr.id) as refunds_count
+		FROM trade_order as tr
+		WHERE tr.store_id = #{storeId,jdbcType=VARCHAR}
+		and disabled = 0
+		<!-- 状态 -->
+		<if test="status != null">
+			AND tr.`status` IN
+			<foreach collection="status" index="index" item="item" open="("
+				close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单来源，多个时使用IN -->
+		<if test="null!=orderResources">
+			AND tr.order_resource IN
+			<foreach collection="orderResources" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单类型 -->
+		<if test="type != null">
+			AND tr.type = #{type,jdbcType=TINYINT}
+		</if>
+		<!-- 查询条件为 商品名称、订单号码、手机号码 -->
+		<if test="searchCondition != null and searchCondition != ''">
+			AND (
+			tr.order_no LIKE CONCAT('%',#{searchCondition},'%')
+			OR tr.user_phone LIKE CONCAT('%',#{searchCondition},'%')
+			OR EXISTS(SELECT 1 FROM trade_order_item i WHERE tr.id = i.order_id AND
+			i.sku_name like CONCAT('%',#{searchCondition,jdbcType=VARCHAR},'%'))
+			)
+		</if>
+			ORDER BY tr.create_time DESC
+	</select>
+
 	<!-- zengj:订单详情 -->
 	<select id="getOrderDetail" parameterType="java.lang.String"
 		resultMap="TradeOrderVo">
@@ -3136,7 +3183,7 @@
 	<select id="selectServiceOrderAmount" parameterType="java.util.Map"
 		resultType="java.math.BigDecimal">
 		SELECT
-			sum(tr.income)
+			sum(td.actual_amount)
 		FROM
 			trade_order tr,trade_order_item_detail td
 		WHERE
@@ -3218,7 +3265,7 @@
 		(
 		SELECT
 			tr.order_no AS tradeNo,
-			tr.income,
+			td.actual_amount AS income,
 			td.use_time AS tradeTime,
 			0 AS types
 		FROM

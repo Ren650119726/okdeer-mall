@@ -381,6 +381,10 @@ public class TradeOrderRefundsServiceImpl
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void insertRefunds(TradeOrderRefunds orderRefunds) throws Exception {
+		// Begin Bug:14143 added by maojj 2016-10-11 
+		// 新增退款单时，保存退款轨迹
+		tradeOrderRefundsTraceService.saveRefundTrace(orderRefunds);
+		// End added by maojj 2016-10-11
 		tradeOrderRefundsMapper.insertSelective(orderRefunds);
 	}
 
@@ -426,10 +430,6 @@ public class TradeOrderRefundsServiceImpl
 				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
 						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
-
-		// Begin 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
-		tradeOrderRefundsTraceService.saveRefundTrace(orderRefunds);
-		// End 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
 	}
 
 	@Override
@@ -618,6 +618,10 @@ public class TradeOrderRefundsServiceImpl
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public int updateRefunds(TradeOrderRefunds orderRefunds) {
+		// Begin Bug:14143 added by maojj 2016-10-11 
+		// 更改退款单状态时，保存退款轨迹
+		tradeOrderRefundsTraceService.saveRefundTrace(orderRefunds);
+		// End added by maojj 2016-10-11
 		return tradeOrderRefundsMapper.updateByPrimaryKeySelective(orderRefunds);
 	}
 
@@ -791,7 +795,7 @@ public class TradeOrderRefundsServiceImpl
 	@Override
 	public boolean updateWallet(TradeOrderRefunds orderRefunds) throws Exception {
 
-		orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
+		orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
 		// 构建余额支付（或添加交易记录）对象
 		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
 				buildBalancePayTrade(orderRefunds).getBytes(Charsets.UTF_8));
@@ -874,7 +878,7 @@ public class TradeOrderRefundsServiceImpl
 		payTradeVo.setTitle("订单退款(余额支付)，退款交易号：" + orderRefunds.getRefundNo());
 
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-		if (order.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+		if (order.getType() == OrderTypeEnum.PHYSICAL_ORDER || order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 			payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
 		} else {
 			payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_SERVICE_ORDER);
@@ -926,11 +930,6 @@ public class TradeOrderRefundsServiceImpl
 					tradeOrderRefunds.getOperator(), tradeOrderRefunds.getRefundsStatus().getName(),
 					tradeOrderRefunds.getRefundsStatus().getValue()));
 			// End 1.0.Z 增加退款单操作记录 add by zengj
-
-			// Begin 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
-			tradeOrderRefundsTraceService.saveRefundTrace(tradeOrderRefunds);
-			// End 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
-
 			// 自动撤销申请计时消息
 			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_cancel_by_agree_timeout, id);
 		} catch (Exception e) {
@@ -968,11 +967,6 @@ public class TradeOrderRefundsServiceImpl
 		tradeOrderRefundsLogMapper.insertSelective(new TradeOrderRefundsLog(tradeOrderRefunds.getId(), userId,
 				tradeOrderRefunds.getRefundsStatus().getName(), tradeOrderRefunds.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
-
-		// Begin 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
-		tradeOrderRefundsTraceService.saveRefundTrace(tradeOrderRefunds);
-		// End 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
-
 		// 售后申请计时消息
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_cancel_by_refuse_apply_timeout, id);
 	}
@@ -1050,10 +1044,6 @@ public class TradeOrderRefundsServiceImpl
 		tradeOrderRefundsLogMapper
 				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
 						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
-
-		// TODO 需要确认客服退款怎么处理 Begin 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
-		tradeOrderRefundsTraceService.saveRefundTrace(orderRefunds);
-		// End 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
 
 		// 订单完成后同步到商业管理系统
 		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
@@ -1154,10 +1144,6 @@ public class TradeOrderRefundsServiceImpl
 		tradeOrderRefundsLogMapper.insertSelective(new TradeOrderRefundsLog(refunds.getId(), refunds.getOperator(),
 				refunds.getRefundsStatus().getName(), refunds.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
-
-		// Begin 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
-		tradeOrderRefundsTraceService.saveRefundTrace(refunds);
-		// End 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
 
 		// 执行资金解冻
 		refunds.setTradeNum(TradeNumUtil.getTradeNum());
@@ -1274,10 +1260,6 @@ public class TradeOrderRefundsServiceImpl
 				tradeOrderRefunds.getOperator(), tradeOrderRefunds.getRefundsStatus().getName(),
 				tradeOrderRefunds.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
-
-		// Begin 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
-		tradeOrderRefundsTraceService.saveRefundTrace(tradeOrderRefunds);
-		// End 友门鹿1.1 实物订单增加退款轨迹记录 added by maojj 2016-09-28
 
 		// 发送超时消息
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_cancel_by_refuse_timeout, id);
