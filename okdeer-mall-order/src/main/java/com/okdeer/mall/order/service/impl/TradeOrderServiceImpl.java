@@ -261,7 +261,8 @@ import net.sf.json.JsonConfig;
  *      13960             2016-10-10            wusw               修改判断上门服务订单是否支持投诉
  *      V1.1.0			   2016-10-10          luosm			服务店到店消费订单金额统计及订单列表
  *      14026               2016-10-11            wusw      修改多个消费码验证成功，却只有一个消费码状态修改的问题
- *      14168               2016-10-11            wusw      修改多个消费码验证时，部分消费码不存在情况下的相应提示信息    
+ *      14168               2016-10-11            wusw      修改多个消费码验证时，部分消费码不存在情况下的相应提示信息   
+ *      V1.1.0			    2016-10-11          luosm			bug13932 
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1016,7 +1017,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<TradeOrderVo> selectMallAppOrderInfo(Map<String, Object> map, int pageSize, int pageNumber) {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
-		List<TradeOrderVo> list = tradeOrderMapper.selectOrderInfo(map);
+
+		// begin added by luosm 20161011 V1.1.0
+		String storeId = map.get("storeId").toString();
+		StoreInfo store = storeInfoService.findById(storeId);
+		List<TradeOrderVo> list = null;
+		if (store.getType() == StoreTypeEnum.SERVICE_STORE) {
+			list = tradeOrderMapper.selectServiceOrderInfo(map);
+		} else {
+			list = tradeOrderMapper.selectOrderInfo(map);
+		}
+		// end added by luosm 20161011 V1.1.0
+
 		if (list != null && !list.isEmpty()) {
 			for (TradeOrderVo tradeOrderVo : list) {
 				// 查询订单项表。
@@ -6158,10 +6170,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				consumeCodes.removeAll(existConsumeCode);
 				if (CollectionUtils.isNotEmpty(consumeCodes)) {
 					StringBuffer noExistConsumeCodeStr = new StringBuffer("");
-					for (String noExistConsumeCode:consumeCodes) {
+					for (String noExistConsumeCode : consumeCodes) {
 						noExistConsumeCodeStr.append(noExistConsumeCode);
-						failResult.append(noExistConsumeCodeStr.toString()+"|消费码不存在;");
-					}					
+						failResult.append(noExistConsumeCodeStr.toString() + "|消费码不存在;");
+					}
 				}
 				// End 14168 add by wusw 20161011
 				if (CollectionUtils.isNotEmpty(orderIdList)) {
@@ -6263,7 +6275,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			resultMap.put("success", successResult.toString());
 			resultMap.put("failure", failResult.toString());
 			// End 14168 add by wusw 20161011
-			
+
 		} catch (StockException se) {
 			throw se;
 		} catch (Exception e) {
