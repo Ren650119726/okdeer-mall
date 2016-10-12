@@ -263,6 +263,7 @@ import net.sf.json.JsonConfig;
  *      14026               2016-10-11            wusw      修改多个消费码验证成功，却只有一个消费码状态修改的问题
  *      14168               2016-10-11            wusw      修改多个消费码验证时，部分消费码不存在情况下的相应提示信息   
  *      V1.1.0			    2016-10-11          luosm			bug13932 
+ *      V1.1.0 				2016-10-12			wushp			bug13735
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1542,12 +1543,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			tradeOrderItems = tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId());
 		}
 		StockAdjustVo stockAdjustVo = new StockAdjustVo();
+		// begin update by wushp 20161012 bug13735
 		// Begin added by maojj 2016-07-26
-		String rpcId = UuidUtils.getUuid();
-		rpcIdList.add(rpcId);
-		stockAdjustVo.setRpcId(rpcId);
+		String rpcId = null;
+		//String rpcId = UuidUtils.getUuid();
+		//rpcIdList.add(rpcId);
+		//stockAdjustVo.setRpcId(rpcId);
 		// End added by maojj 2016-07-26
-
+		// begin update by wushp 20161012
 		stockAdjustVo.setOrderId(tradeOrder.getId());
 		stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
 		stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
@@ -1600,6 +1603,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			adjustDetailList.add(detail);
 
 			stockAdjustVo.setAdjustDetailList(adjustDetailList);
+			
+			// begin update by wushp 20161012 bug13735
+			rpcId = UuidUtils.getUuid();
+			rpcIdList.add(rpcId);
+			stockAdjustVo.setRpcId(rpcId);
+			// begin update by wushp 20161012
+			
 			// 如果是实物订单，走进销存库存
 			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 				stockManagerJxcService.updateStock(stockAdjustVo);
