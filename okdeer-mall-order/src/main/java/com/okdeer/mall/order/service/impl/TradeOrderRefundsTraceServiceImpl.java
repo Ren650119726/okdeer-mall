@@ -8,6 +8,7 @@ import static com.okdeer.mall.order.constant.RefundsTraceConstant.DEFAULT_NULL_R
 import static com.okdeer.mall.order.constant.RefundsTraceConstant.CUSTOMER_CANCEL_REMARK;
 import static com.okdeer.mall.order.constant.RefundsTraceConstant.OKDEER_REFUND_REMARK;
 import static com.okdeer.mall.order.constant.RefundsTraceConstant.FORCE_SELLER_REFUND_REMARK;
+import static com.okdeer.mall.order.constant.RefundsTraceConstant.APPLY_CUSTOMER_SERV_REAMRK;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -217,6 +218,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 			case APPLY_CUSTOMER_SERVICE_INTERVENE:
 				// 申请客服介入
 				traceStatus = RefundsTraceEnum.BUYER_APPLY_CUSTOMER_SERVICE;
+				remark = APPLY_CUSTOMER_SERV_REAMRK;
 				break;
 			case CUSTOMER_SERVICE_CANCEL_INTERVENE:
 				// 客服介入取消
