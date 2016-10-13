@@ -521,7 +521,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 				}
 
 				if (tradeOrderItem != null) {
-					detail.put("consumePrice", tradeOrderItem.getUnitPrice());
+					detail.put("consumePrice", tradeOrderItemDetail.getActualAmount());
 				} else {
 					detail.put("consumePrice", "0");
 				}
