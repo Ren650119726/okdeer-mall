@@ -546,13 +546,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			Integer pageSize) {
 		PageHelper.startPage(pageNo, pageSize, true, false);
 		List<TradeOrderRefunds> list = tradeOrderRefundsMapper.getListByParams(params);
-
-		// List<TradeOrderRefundsItem> itemList = null;
-		// for (TradeOrderRefunds tradeOrderRefunds : list) {
-		// itemList = tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(tradeOrderRefunds.getId());
-		// tradeOrderRefunds.setTradeOrderRefundsItem(itemList);
-		// itemList = null;
-		// }
 		return new PageUtils<TradeOrderRefunds>(list);
 	}
 
@@ -639,7 +632,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		// 查询未退款的消费码列表
 		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
 				.selectItemDetailByItemIdAndStatus(item.getId(), ConsumerCodeStatusEnum.WAIT_CONSUME.ordinal());
-		
+
 		if (CollectionUtils.isNotEmpty(detailList)) {
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
 				if (tradeOrderItemDetail.getOrderItemId().equals(item.getId())) {
@@ -657,6 +650,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		refundsItem.setPropertiesIndb(item.getPropertiesIndb());
 		refundsItem.setQuantity(quantity);
 		refundsItem.setAmount(refundAmount);
+		refundsItem.setPreferentialPrice(refundPrefeAmount);
 		refundsItem.setBarCode(item.getBarCode());
 		refundsItem.setMainPicUrl(item.getMainPicPrl());
 		refundsItem.setSkuName(item.getSkuName());
@@ -667,7 +661,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		refundsItem.setStoreSkuId(item.getStoreSkuId());
 		refundsItem.setUnitPrice(item.getUnitPrice());
 		refundsItem.setWeight(item.getWeight());
-		
+
 		List<TradeOrderRefundsItem> items = Lists.newArrayList(refundsItem);
 		orderRefunds.setTradeOrderRefundsItem(items);
 		orderRefunds.setTotalAmount(refundAmount);
@@ -725,7 +719,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		BigDecimal refundPrefeAmount = new BigDecimal("0.00");
 		// 查询未退款的消费码列表
 		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
-				.selectItemDetailByItemIdAndStatus(item.getId(), ConsumerCodeStatusEnum.WAIT_CONSUME.ordinal());
+				.selectItemDetailByItemIdAndStatus(item.getId(), ConsumeStatusEnum.noConsume.ordinal());
 
 		if (CollectionUtils.isNotEmpty(detailList)) {
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
@@ -741,9 +735,9 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		payTradeVo.setIncomeUserId("1");
 		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		payTradeVo.setTradeNum(order.getTradeNum());
-		payTradeVo.setTitle("到店消费订单过期");
+		payTradeVo.setTitle("[" + order.getOrderNo() + "]到店消费订单过期");
 		payTradeVo.setBusinessType(BusinessTypeEnum.CONSUME_CODE_EXPIRE);
-		payTradeVo.setExt(item.getId());
+		payTradeVo.setExt("GQ"+TradeNumUtil.getTradeNum());
 
 		payTradeVo.setServiceFkId(order.getId());
 		payTradeVo.setServiceNo(order.getOrderNo());
@@ -1150,7 +1144,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		if (ids.size() > 0) {
 			tradeOrderItemMapper.updateCompleteById(ids);
 		}
-		
+
 		// 更新订单状态
 		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
 				.selectByOrderItemDetailByOrderId(orderRefunds.getOrderId());
