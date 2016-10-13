@@ -55,7 +55,6 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
-import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
@@ -194,31 +193,30 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 
 		TradeOrder order = tradeOrderMapper.selectTradeDetailInfoById(tradeOrder.getId());
 
-		int acType = order.getActivityType().ordinal(); // 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
-		String activityId = order.getActivityItemId(); // 活动项ID
+		//int acType = order.getActivityType().ordinal(); // 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
+		//String activityId = order.getActivityItemId(); // 活动项ID
 
 		// 设置订单信息
 		PayReqestDto payReqest = new PayReqestDto();
 		payReqest.setOpenid(openId);
-		if (acType == 0) {
 
-		} else if (acType == 1) {
-			ActivityCoupons coupons = activityCouponsService.selectByPrimaryKey(activityId);
-			String belongType = coupons.getBelongType();
-			// 活动发起人ID
-			if (belongType.equals("0")) {
-				payReqest.setActivitier(yscWalletAccount);
-			} else {
-				payReqest.setActivitier(belongType);
+		// 是否平台优惠
+		boolean isPlatformPreferential = false;
+		// 优惠额退款 判断是否有优惠劵
+		if (order.getActivityType() == ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES
+				|| order.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
+				|| order.getActivityType() == ActivityTypeEnum.VONCHER) {
+			ActivityBelongType activityBelong = tradeOrderActivityService.findActivityType(order);
+			if (ActivityBelongType.OPERATOR == activityBelong || ActivityBelongType.AGENT == activityBelong) {
+				isPlatformPreferential = true;
 			}
-			// 活动优惠金额
-			payReqest.setPrefeAmount(order.getPreferentialPrice());
-		} else if (acType == 2 || acType == 3) {
-			ActivityDiscount discount = activityDiscountService.selectByPrimaryKey(order.getActivityId());
-			String storeId = discount.getStoreId();
-			// 活动发起人ID
-			payReqest.setActivitier(storeId);
-			// 活动优惠金额
+		}
+
+		// 优惠金额
+		if (isPlatformPreferential && order.getPreferentialPrice() != null
+				&& order.getPreferentialPrice().compareTo(BigDecimal.ZERO) > 0) {
+			// 优化活动发起人，比如代理商id或者运营商id
+			payReqest.setActivitier(tradeOrderActivityService.findActivityUserId(order));
 			payReqest.setPrefeAmount(order.getPreferentialPrice());
 		}
 
@@ -265,7 +263,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			payReqest.setReturnUrl("");
 			payReqest.setTradeType(PayTradeTypeEnum.WX_WXPAY);
 		}
-		logger.warn("payReqest==" + payReqest.toString());
+		logger.info("payReqest==" + payReqest.toString());
 		// 0:云钱包,1:支付宝支付,2:微信支付,3:京东支付,4:现金支付,6:微信公众号支付
 		String result = null;
 		if (paymentType == 1) { // 支付宝支付
@@ -951,7 +949,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		if (order.getType() == OrderTypeEnum.PHONE_PAY_ORDER || order.getType() == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
 			payTradeVo.setBusinessType(BusinessTypeEnum.RECHARGE_ORDER_PAY);
 			payTradeVo.setTag(PayMessageConstant.TAG_PAY_RECHARGE_ORDER_BLANCE);// 接受返回消息的tag
-		}else if (order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+		} else if (order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 			payTradeVo.setBusinessType(BusinessTypeEnum.STORE_CONSUME_ORDER);
 			payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_INSERT);// 接受返回消息的tag
 			payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
