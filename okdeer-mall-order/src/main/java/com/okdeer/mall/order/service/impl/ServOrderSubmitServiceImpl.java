@@ -285,7 +285,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 				
 				if (tradeOrder.getActualAmount().compareTo(BigDecimal.ZERO) == 0) {
 					//余额支付
-					tradeOrderPayService.payOrder(tradeOrder);
+					tradeOrderPayService.wlletPay("0",tradeOrder);
 				}else{
 					// 超时未支付的，取消订单
 					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, tradeOrder.getId());
