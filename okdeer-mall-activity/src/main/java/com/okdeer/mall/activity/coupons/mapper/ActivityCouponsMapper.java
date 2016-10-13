@@ -297,5 +297,15 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	 * @author yangq
 	 * @date 2016年10月13日
 	 */
-	ActivityCoupons selectByActivityId(String id);
+	List<ActivityCoupons> selectByActivityId(String id);
+	
+	/**
+	 * 
+	 * @Description: 查询邀请注册代金券列表
+	 * @param id
+	 * @return
+	 * @author yangq
+	 * @date 2016年10月13日
+	 */
+	int selectFaceMoney(String id);
 }
