@@ -1040,7 +1040,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		ActivityTypeEnum activityType = req.getActivityType();
 		int couponsType = req.getCouponsType();
 
-		if (activityType != ActivityTypeEnum.NO_ACTIVITY && !"".equals(couponsType)) {
+		if (activityType == ActivityTypeEnum.VONCHER ) {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("orderId", tradeOrder.getId());
 			params.put("id", req.getRecordId());
