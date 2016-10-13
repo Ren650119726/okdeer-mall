@@ -23,7 +23,9 @@ import org.springframework.util.StringUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
@@ -186,6 +188,12 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private TradeOrderServiceApi tradeOrderServiceApi;
+	
+	/**
+	 * 服务商品信息Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuServiceServiceApi goodsStoreSkuServiceServiceApi;
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
@@ -446,13 +454,14 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 * @date 2016年9月28日
 	 */
 	private List<TradeOrderItem> buildOrderItemList(TradeOrder tradeOrder, Request<ServiceOrderReq> req,
-			Response<ServiceOrderResp> resp) throws ServiceException {
+			Response<ServiceOrderResp> resp) throws Exception {
 		List<TradeOrderItem> orderItemList = new ArrayList<TradeOrderItem>();
 		// 数据库中对应的商品信息list
 		List<GoodsStoreSku> goodsStoreSkuList = (List<GoodsStoreSku>) req.getContext().get("storeSkuList");
 		// List<TradeOrderServiceGoodsItem> goodsSkuItemList =
 		// resp.getData().getList();
-		List<TradeOrderGoodsItem> goodsSkuItemList = req.getData().getList();
+		// List<TradeOrderGoodsItem> goodsSkuItemList = req.getData().getList();
+		List<TradeOrderServiceGoodsItem> goodsSkuItemList = resp.getData().getList();
 		// 订单项总金额
 		BigDecimal totalAmount = tradeOrder.getTotalAmount();
 		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
@@ -462,12 +471,12 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		int itemSize = goodsSkuItemList.size();
 		TradeOrderItem tradeOrderItem = null;
 		ComparatorChain chain = new ComparatorChain();
-		chain.addComparator(new BeanComparator("skuPrice"), false);
+		chain.addComparator(new BeanComparator("unitPrice"), false);
 		Collections.sort(goodsSkuItemList, chain);
 		// 订单类型
 		OrderTypeEnum orderType = req.getData().getOrderType();
 		// for (TradeOrderServiceGoodsItem goodsItem : goodsSkuItemList) {
-		for (TradeOrderGoodsItem goodsItem : goodsSkuItemList) {
+		for (TradeOrderServiceGoodsItem goodsItem : goodsSkuItemList) {
 			storeSku = findFromStoreSkuList(goodsStoreSkuList, goodsItem.getSkuId());
 			tradeOrderItem = new TradeOrderItem();
 			tradeOrderItem.setId(UuidUtils.getUuid());
@@ -484,7 +493,21 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			tradeOrderItem.setCompainStatus(CompainStatusEnum.NOT_COMPAIN);
 			tradeOrderItem.setAppraise(AppraiseEnum.NOT_APPROPRIATE);
 			tradeOrderItem.setCreateTime(new Date());
-			tradeOrderItem.setServiceAssurance(ConvertUtil.parseInt(storeSku.getGuaranteed()));
+			// 服务保障
+			if (req.getData().getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+				// 到店消费，取goods_store_sku_service表的is_unsubscribe是否支持退订，0：不支持，1：支持
+				GoodsStoreSkuService storeSkuService = goodsStoreSkuServiceServiceApi
+						.findGoodsStoreSkuServiceBySkuId(goodsItem.getSkuId());
+				if (storeSkuService != null && storeSkuService.getIsUnsubscribe() != null) {
+					tradeOrderItem.setServiceAssurance(storeSkuService.getIsUnsubscribe().ordinal());
+				} else {
+					tradeOrderItem.setServiceAssurance(0);
+				}
+			} else {
+				// 上门服务商品
+				tradeOrderItem.setServiceAssurance(ConvertUtil.parseInt(storeSku.getGuaranteed()));
+			}
+			
 			tradeOrderItem.setBarCode(storeSku.getBarCode());
 			tradeOrderItem.setStyleCode(storeSku.getStyleCode());
 
@@ -701,7 +724,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		ActivityTypeEnum activityType = req.getActivityType();
 		switch (activityType) {
 			case VONCHER:
-				favourAmount = getCouponsFaceValue(req);
+				favourAmount = getCouponsFaceValue(req, totalAmount);
 				break;
 			case FULL_REDUCTION_ACTIVITIES:
 				favourAmount = getDiscountValue(req.getActivityItemId());
@@ -719,20 +742,29 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	}
 
 	/**
-	 * @Description: 获取代金券面额
+	 * @Description: 获取优惠金额
 	 * @param req 订单请求对象
+	 * @param totalAmount 商品总金额
 	 * @return BigDecimal  
 	 * @author wushp
 	 * @date 2016年9月28日
 	 */
-	private BigDecimal getCouponsFaceValue(ServiceOrderReq req) {
+	private BigDecimal getCouponsFaceValue(ServiceOrderReq req, BigDecimal totalAmount) {
+		// 优惠金额
+		BigDecimal favourAmount = BigDecimal.ZERO;
 		CouponsFindVo findCondition = new CouponsFindVo();
 		findCondition.setActivityId(req.getActivityId());
 		findCondition.setActivityItemId(req.getActivityItemId());
 		findCondition.setConponsType(req.getCouponsType());
 		// 查询代金券
 		ActivityCoupons activityCoupons = activityCouponsRecordMapper.selectCouponsItem(findCondition);
-		return BigDecimal.valueOf(activityCoupons.getFaceValue());
+		// 代金券面额
+		favourAmount = BigDecimal.valueOf(activityCoupons.getFaceValue());
+		if (totalAmount.compareTo(favourAmount) == -1) {
+			// 商品总金额小于代金券面值，优惠金额设为商品总金额
+			favourAmount = totalAmount;
+		}
+		return favourAmount;
 	}
 
 	/**
@@ -868,15 +900,28 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			Integer isStartingPrice = serviceExt.getIsStartingPrice();
 			// 起送价
 			BigDecimal startPrice = serviceExt.getStartingPrice();
-			if (tradeOrder.getTotalAmount().compareTo(startPrice) == -1
-					&& isStartingPrice == 1) {
-				// 不满起送价
-				tradeOrder.setFare(BigDecimal.valueOf(distributionFee));
-				tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(tradeOrder.getFare()));
-				tradeOrder.setActualAmount(tradeOrder.getActualAmount().add(tradeOrder.getFare()));
-				tradeOrder.setIncome(tradeOrder.getIncome().add(tradeOrder.getFare()));
+			if (isStartingPrice == 1) {
+				// 有起送价 tradeOrder.getTotalAmount().compareTo(startPrice) == -1
+				if (serviceExt.getIsCollect() == 1) {
+					// 已满起送价收取配送费
+					tradeOrder.setFare(BigDecimal.valueOf(distributionFee));
+					tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(tradeOrder.getFare()));
+					tradeOrder.setActualAmount(tradeOrder.getActualAmount().add(tradeOrder.getFare()));
+					tradeOrder.setIncome(tradeOrder.getIncome().add(tradeOrder.getFare()));
+				} else {
+					// 已满起送价不收取配送费
+					BigDecimal startingPrice = serviceExt.getStartingPrice();
+					if (tradeOrder.getTotalAmount().compareTo(startingPrice) == -1) {
+						// 设置运费
+						tradeOrder.setFare(BigDecimal.valueOf(distributionFee));
+						tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(tradeOrder.getFare()));
+						tradeOrder.setActualAmount(tradeOrder.getActualAmount().add(tradeOrder.getFare()));
+						tradeOrder.setIncome(tradeOrder.getIncome().add(tradeOrder.getFare()));
+					}
+				}
+				
 			} else {
-				// 满起送价
+				// 无起送价
 				if (isCollect == 1) {
 					// 已满起送价收取配送费
 					tradeOrder.setFare(BigDecimal.valueOf(distributionFee));

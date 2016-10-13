@@ -590,7 +590,8 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			}
 		}
 	}
-
+	
+	@Transactional(rollbackFor = Exception.class)
 	private void refundOrder(TradeOrder order, TradeOrderItem item) throws Exception {
 
 		TradeOrderRefunds orderRefunds = new TradeOrderRefunds();
@@ -629,7 +630,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 
 		// 查询未退款的消费码列表
 		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
-				.selectItemDetailByItemIdAndStatus(item.getId(), ConsumerCodeStatusEnum.WAIT_CONSUME.ordinal());
+				.selectItemDetailByItemIdAndStatus(item.getId(), ConsumeStatusEnum.noConsume.ordinal());
 
 		if (CollectionUtils.isNotEmpty(detailList)) {
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {

@@ -640,6 +640,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 								exportVo.setPayType(order.getTradeOrderPay().getPayType().getValue());
 							}
 						}
+						exportVo.setOrderResource(order.getOrderResource());
 						exportVo.setBarCode(item.getBarCode() == null ? "" : item.getBarCode());
 						exportVo.setStyleCode(item.getStyleCode() == null ? "" : item.getStyleCode());
 						// 售后单状态

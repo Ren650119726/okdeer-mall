@@ -655,8 +655,15 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 	@Transactional(readOnly=true)
 	@Override
-	public ActivityCoupons selectByActivityId(String id) throws Exception {
-		ActivityCoupons result = activityCouponsMapper.selectByActivityId(id);
+	public List<ActivityCoupons> selectByActivityId(String id) throws Exception {
+		List<ActivityCoupons> result = activityCouponsMapper.selectByActivityId(id);
+		return result;
+	}
+
+	@Transactional(readOnly=true)
+	@Override
+	public int selectFaceMoney(String id) throws Exception {
+		int result = activityCouponsMapper.selectFaceMoney(id);
 		return result;
 	}
 }
