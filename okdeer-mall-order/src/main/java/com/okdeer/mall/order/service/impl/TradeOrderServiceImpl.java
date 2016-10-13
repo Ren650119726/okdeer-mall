@@ -51,8 +51,6 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
 import com.alibaba.rocketmq.client.producer.LocalTransactionState;
-import com.alibaba.rocketmq.client.producer.SendResult;
-import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
@@ -6571,13 +6569,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			if (consumeCodeSb.length() > 0) {
 				consumeCodes = consumeCodeSb.substring(0, consumeCodeSb.length() - 1);
 			}
-
+			logger.info("消费码串：{}", consumeCodes);
+			
 			// 店铺地址
 			String storeAddress = this.buildAddress(storeId);
 			// 店铺信息
 			StoreInfo storeInfo = this.storeInfoService.getStoreBaseInfoById(storeId);
 			StoreInfoExt storeInfoExt = storeInfo.getStoreInfoExt();
-
+			
 			StringBuffer smsBuffer = new StringBuffer();
 			smsBuffer.append("您的").append(orderItem.getSkuName()).append("购买成功！消费码为").append(consumeCodes)
 					.append("，商家地址：").append(storeAddress).append("，商家电话：").append(storeInfoExt.getServicePhone())
@@ -6596,6 +6595,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			smsBuffer.append("，记得要在有效期内消费噢！");
 
 			String content = smsBuffer.toString();
+			logger.info("短息内容：{}", content);
 			SmsVO smsVo = new SmsVO();
 			smsVo.setId(UuidUtils.getUuid());
 			smsVo.setUserId(tradeOrder.getUserId());
@@ -6606,8 +6606,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			smsVo.setContent(content);
 			smsVo.setSmsChannelType(3);
 			smsVo.setSendTime(DateUtils.formatDateTime(new Date()));
+			logger.info("短信息对象：{}", JSONObject.fromObject(smsVo).toString());
+			logger.info("短信发送前时间：{}", new Date().getTime());
 			smsService.sendSms(smsVo);
-
+			logger.info("短信发送后时间：{}", new Date().getTime());
+			logger.info("短信发送成功。");
 		} catch (Exception e) {
 			logger.error("消费订单发送短信异常，订单号：{}，异常：{}", tradeOrder.getId(), e);
 		}
