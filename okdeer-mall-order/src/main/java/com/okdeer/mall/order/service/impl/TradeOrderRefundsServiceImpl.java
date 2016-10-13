@@ -1412,7 +1412,7 @@ public class TradeOrderRefundsServiceImpl
 										refundsVo.getTradeOrderVo().getTradeOrderPay().getPayType().getValue());
 							}
 						}
-
+						exportVo.setOrderResource(refundsVo.getOrderResource());
 						list.add(exportVo);
 					}
 				}
