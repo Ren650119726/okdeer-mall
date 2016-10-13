@@ -2466,7 +2466,7 @@
 		resultMap="TradeOrderVo">
 		SELECT
 		tr.id,tr.store_id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.payment_status,tr.status,tr.update_time,tr.payment_time,tr.pay_way,
-		tr.activity_type,tr.activity_id,tr.pick_up_type,tr.remark,tr.delivery_time,tr.received_time,tr.income,
+		tr.activity_type,tr.activity_id,tr.pick_up_type,tr.remark,tr.delivery_time,tr.received_time,tr.income,tr.order_resource,
 		tp.id as
 		pay_id,tp.pay_type,tp.pay_time,tr.invoice,tr.pick_up_time,tr.create_time,tr.type,tr.is_complete,
 		ti.id as invoice_id,ti.head,ti.context,it.service_assurance,
