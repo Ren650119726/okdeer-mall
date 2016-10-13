@@ -205,7 +205,10 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
 		AdjustDetailVo adjustDetailVo = new AdjustDetailVo();
 		adjustDetailVo.setStoreSkuId(goods.getStoreSkuId());
-		adjustDetailVo.setNum(goods.getSaleStock());
+//		adjustDetailVo.setNum(goods.getSaleStock());
+		//begin zhangkn 和曾俊和刘玄确认过,这个值,erp那边没用,传0过去,减少对erp的干扰 
+		adjustDetailVo.setNum(0);
+		//end zhangkn
 		/*************新增字段 start **************/
 		adjustDetailVo.setGoodsName(entity.getName());
 		adjustDetailVo.setBarCode(entity.getBarCode());
