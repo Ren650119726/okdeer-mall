@@ -73,6 +73,7 @@ import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
+import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
@@ -194,6 +195,9 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceServiceApi goodsStoreSkuServiceServiceApi;
+	
+	@Reference(version = "1.0.0", check = false)
+	private TradeOrderPayServiceApi tradeOrderPayService;
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
@@ -278,8 +282,14 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 
 				}
 			} else {
-				// 超时未支付的，取消订单
-				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, tradeOrder.getId());
+				
+				if (tradeOrder.getActualAmount().compareTo(BigDecimal.ZERO) == 0) {
+					//余额支付
+					tradeOrderPayService.payOrder(tradeOrder);
+				}else{
+					// 超时未支付的，取消订单
+					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, tradeOrder.getId());
+				}
 			}
 
 			// resp.setCode(PublicResultCodeEnum.SUCCESS);
