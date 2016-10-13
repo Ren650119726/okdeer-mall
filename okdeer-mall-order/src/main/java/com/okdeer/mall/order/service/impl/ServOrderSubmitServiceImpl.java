@@ -23,7 +23,9 @@ import org.springframework.util.StringUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
@@ -186,6 +188,12 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private TradeOrderServiceApi tradeOrderServiceApi;
+	
+	/**
+	 * 服务商品信息Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuServiceServiceApi goodsStoreSkuServiceServiceApi;
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
@@ -446,13 +454,14 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 * @date 2016年9月28日
 	 */
 	private List<TradeOrderItem> buildOrderItemList(TradeOrder tradeOrder, Request<ServiceOrderReq> req,
-			Response<ServiceOrderResp> resp) throws ServiceException {
+			Response<ServiceOrderResp> resp) throws Exception {
 		List<TradeOrderItem> orderItemList = new ArrayList<TradeOrderItem>();
 		// 数据库中对应的商品信息list
 		List<GoodsStoreSku> goodsStoreSkuList = (List<GoodsStoreSku>) req.getContext().get("storeSkuList");
 		// List<TradeOrderServiceGoodsItem> goodsSkuItemList =
 		// resp.getData().getList();
-		List<TradeOrderGoodsItem> goodsSkuItemList = req.getData().getList();
+		// List<TradeOrderGoodsItem> goodsSkuItemList = req.getData().getList();
+		List<TradeOrderServiceGoodsItem> goodsSkuItemList = resp.getData().getList();
 		// 订单项总金额
 		BigDecimal totalAmount = tradeOrder.getTotalAmount();
 		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
@@ -462,12 +471,12 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		int itemSize = goodsSkuItemList.size();
 		TradeOrderItem tradeOrderItem = null;
 		ComparatorChain chain = new ComparatorChain();
-		chain.addComparator(new BeanComparator("skuPrice"), false);
+		chain.addComparator(new BeanComparator("unitPrice"), false);
 		Collections.sort(goodsSkuItemList, chain);
 		// 订单类型
 		OrderTypeEnum orderType = req.getData().getOrderType();
 		// for (TradeOrderServiceGoodsItem goodsItem : goodsSkuItemList) {
-		for (TradeOrderGoodsItem goodsItem : goodsSkuItemList) {
+		for (TradeOrderServiceGoodsItem goodsItem : goodsSkuItemList) {
 			storeSku = findFromStoreSkuList(goodsStoreSkuList, goodsItem.getSkuId());
 			tradeOrderItem = new TradeOrderItem();
 			tradeOrderItem.setId(UuidUtils.getUuid());
@@ -484,7 +493,21 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			tradeOrderItem.setCompainStatus(CompainStatusEnum.NOT_COMPAIN);
 			tradeOrderItem.setAppraise(AppraiseEnum.NOT_APPROPRIATE);
 			tradeOrderItem.setCreateTime(new Date());
-			tradeOrderItem.setServiceAssurance(ConvertUtil.parseInt(storeSku.getGuaranteed()));
+			// 服务保障
+			if (req.getData().getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+				// 到店消费，取goods_store_sku_service表的is_unsubscribe是否支持退订，0：不支持，1：支持
+				GoodsStoreSkuService storeSkuService = goodsStoreSkuServiceServiceApi
+						.findGoodsStoreSkuServiceBySkuId(goodsItem.getSkuId());
+				if (storeSkuService != null && storeSkuService.getIsUnsubscribe() != null) {
+					tradeOrderItem.setServiceAssurance(storeSkuService.getIsUnsubscribe().ordinal());
+				} else {
+					tradeOrderItem.setServiceAssurance(0);
+				}
+			} else {
+				// 上门服务商品
+				tradeOrderItem.setServiceAssurance(ConvertUtil.parseInt(storeSku.getGuaranteed()));
+			}
+			
 			tradeOrderItem.setBarCode(storeSku.getBarCode());
 			tradeOrderItem.setStyleCode(storeSku.getStyleCode());
 
