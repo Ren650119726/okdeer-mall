@@ -46,7 +46,7 @@ public interface ActivityCollectCouponsRegistRecordMapper extends IBaseCrudMappe
 	 * @author zhulq
 	 * @date 2016年9月18日
 	 */
-	List<ActivityCollectCouponsRegisteRecordVo> findByUserId(@Param("userQueryId")String userQueryId);
+	List<ActivityCollectCouponsRegisteRecordVo> findByUserId(@Param("userQueryId")String userQueryId,@Param("activityId")String activityId);
 	
 	/**
 	 * 
