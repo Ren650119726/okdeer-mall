@@ -63,10 +63,10 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 
 	@Transactional(readOnly = true)
 	@Override
-	public PageUtils<ActivityCollectCouponsRegisteRecordVo> findByUserId(String userQueryId,
+	public PageUtils<ActivityCollectCouponsRegisteRecordVo> findByUserId(String userQueryId, String activityId,
 			int pageNum, int pageSize) throws ServiceException {
 		PageHelper.startPage(pageNum, pageSize, true);
-		List<ActivityCollectCouponsRegisteRecordVo> re = registeRecordMapper.findByUserId(userQueryId);
+		List<ActivityCollectCouponsRegisteRecordVo> re = registeRecordMapper.findByUserId(userQueryId,activityId);
 		if (re == null) {
 			re = new ArrayList<ActivityCollectCouponsRegisteRecordVo>();
 		}

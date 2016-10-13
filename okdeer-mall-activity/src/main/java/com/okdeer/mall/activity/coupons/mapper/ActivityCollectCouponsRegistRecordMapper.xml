@@ -82,7 +82,7 @@
 	  LEFT JOIN sys_buyer_user D ON D.id = A.invite_id
 	  where 1 = 1
 	  <if test="ids != null">
-			AND A.activity_id  in 
+			AND A.user_id  in 
 		    <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">  
 	            #{item}   
 	        </foreach>
@@ -90,11 +90,11 @@
 	  <if test="ids == null">
 	  		<include refid="condition1" />
 	  </if>
-	 ORDER BY 
+	 ORDER BY A.create_time DESC,
 		B.start_time DESC  
    </select> 
       
-   <select id="findByUserId" parameterType="string" resultMap="extResultMap">
+   <select id="findByUserId" parameterType="map" resultMap="extResultMap">
 	  SELECT A.id,
 		A.activity_id, 
 		A.user_id,  
