@@ -78,6 +78,7 @@ import com.okdeer.mall.order.utils.OrderNoUtils;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
+import com.okdeer.mall.order.vo.TradeOrderServiceGoodsItem;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.utils.ConvertUtil;
 
@@ -325,7 +326,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		// 设置订单编号
 		setOrderNo(tradeOrder);
 		// 设置订单总金额
-		List<TradeOrderGoodsItem> list = reqData.getList();
+		//List<TradeOrderGoodsItem> list = reqData.getList();
+		List<TradeOrderServiceGoodsItem> list = resp.getData().getList();
 		tradeOrder.setTotalAmount(calculateAmount(list));
 		// 设置支付方式
 		// 如果是线下确认并当面支付，这时候订单状态是待派单
@@ -645,9 +647,9 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 * @author wushp
 	 * @date 2016年9月28日
 	 */
-	private BigDecimal calculateAmount(List<TradeOrderGoodsItem> goodsItemList) {
+	private BigDecimal calculateAmount(List<TradeOrderServiceGoodsItem> goodsItemList) {
 		BigDecimal totalAmount = new BigDecimal(0.00);
-		for (TradeOrderGoodsItem goodsItem : goodsItemList) {
+		for (TradeOrderServiceGoodsItem goodsItem : goodsItemList) {
 			totalAmount = totalAmount.add(goodsItem.getTotalAmount());
 		}
 		return totalAmount;
