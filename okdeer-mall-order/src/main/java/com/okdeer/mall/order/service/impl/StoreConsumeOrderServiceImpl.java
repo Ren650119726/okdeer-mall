@@ -291,14 +291,12 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			json.put("orderStatusName", consumerCodeStatusEnum.getValue());
 
 			// 2 订单支付倒计时计算
-			Integer remainingTime = userTradeOrderDetailVo.getRemainingTime();
-			if (remainingTime != null) {
-				remainingTime = remainingTime + 1800;
-				json.put("remainingTime", remainingTime <= 0 ? "0" : remainingTime);
-			} else {
-				json.put("remainingTime", "0");
+			long remainingTime = (userTradeOrderDetailVo.getCreateTime().getTime() + 1800000
+					- System.currentTimeMillis()) / 1000;
+			if (remainingTime < 0) {
+				remainingTime = 0;
 			}
-
+			json.put("remainingTime", remainingTime <= 0 ? 0: remainingTime);
 			// 支付信息
 			TradeOrderPay payInfo = userTradeOrderDetailVo.getTradeOrderPay();
 
@@ -737,7 +735,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		payTradeVo.setTradeNum(order.getTradeNum());
 		payTradeVo.setTitle("[" + order.getOrderNo() + "]到店消费订单过期");
 		payTradeVo.setBusinessType(BusinessTypeEnum.CONSUME_CODE_EXPIRE);
-		payTradeVo.setExt("GQ"+TradeNumUtil.getTradeNum());
+		payTradeVo.setExt("GQ" + TradeNumUtil.getTradeNum());
 
 		payTradeVo.setServiceFkId(order.getId());
 		payTradeVo.setServiceNo(order.getOrderNo());
