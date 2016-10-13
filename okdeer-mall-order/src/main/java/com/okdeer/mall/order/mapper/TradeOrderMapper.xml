@@ -2466,7 +2466,7 @@
 		resultMap="TradeOrderVo">
 		SELECT
 		tr.id,tr.store_id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.payment_status,tr.status,tr.update_time,tr.payment_time,tr.pay_way,
-		tr.activity_type,tr.activity_id,tr.pick_up_type,tr.remark,tr.delivery_time,tr.received_time,tr.income,
+		tr.activity_type,tr.activity_id,tr.pick_up_type,tr.remark,tr.delivery_time,tr.received_time,tr.income,tr.order_resource,
 		tp.id as
 		pay_id,tp.pay_type,tp.pay_time,tr.invoice,tr.pick_up_time,tr.create_time,tr.type,tr.is_complete,
 		ti.id as invoice_id,ti.head,ti.context,it.service_assurance,
@@ -3179,19 +3179,18 @@
 		</if>
 	</select>
 	
-	<!-- luom:查询服务店铺到店消费当天的收入-消费码已消费 -->
+	<!-- luom:查询服务店铺到店消费当天的收入-已付款 -->
 	<select id="selectServiceOrderAmount" parameterType="java.util.Map"
 		resultType="java.math.BigDecimal">
 		SELECT
-			sum(td.actual_amount)
+			sum(tr.income)
 		FROM
-			trade_order tr,trade_order_item_detail td
+			trade_order tr,trade_order_pay tp
 		WHERE
 			tr.store_id = #{storeId, jdbcType=VARCHAR}
-		AND tr.id = td.order_id
-		AND td.`status` = 1
+		AND tr.id = tp.order_id
 		AND (
-			td.use_time BETWEEN #{startTime,jdbcType=TIMESTAMP}
+			tp.pay_time BETWEEN #{startTime,jdbcType=TIMESTAMP}
 			AND #{endTime,jdbcType=TIMESTAMP}
 		)
 		AND tr.type = '5'
@@ -3265,19 +3264,16 @@
 		(
 		SELECT
 			tr.order_no AS tradeNo,
-			td.actual_amount AS income,
-			td.use_time AS tradeTime,
+			tr.income AS income,
+			tp.pay_time AS tradeTime,
 			0 AS types
 		FROM
-			trade_order tr,trade_order_item_detail td
+			trade_order tr,trade_order_pay tp
 		WHERE
 			tr.store_id = #{storeId, jdbcType=VARCHAR}
-		AND tr.id = td.order_id
-		and td.`status` = 1
-		AND (
-			td.use_time BETWEEN #{startTime,jdbcType=TIMESTAMP}
-			AND #{endTime,jdbcType=TIMESTAMP}
-			)
+		AND tr.id = tp.order_id
+		AND (tp.pay_time BETWEEN #{startTime,jdbcType=TIMESTAMP}
+			AND #{endTime,jdbcType=TIMESTAMP})
 		AND tr.type = '5'
 		UNION ALL
 			SELECT
