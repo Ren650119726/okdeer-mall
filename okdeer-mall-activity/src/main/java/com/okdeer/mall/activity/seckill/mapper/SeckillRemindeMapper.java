@@ -28,7 +28,7 @@ public interface SeckillRemindeMapper {
 	
 	void updateRemindeStatus(@Param("seckillId") String seckillId, @Param("settingValue") Integer settingValue);
 	
-	SeckillReminde selectSeckillRemindeByActivityId(@Param("activityId") String activityId);
+	SeckillReminde selectSeckillRemindeByActivityId(@Param("userId") String userId, @Param("activityId") String activityId);
 	
 	void updateSeckillReminde(SeckillReminde reminde);
 	

@@ -62,7 +62,8 @@
 
 	<!-- 查询秒杀提醒 -->
 	<select id="selectSeckillRemindeByActivityId" parameterType="string" resultMap="BaseResultMap">
-			SELECT <include refid="Base_Column_List"/> FROM seckill_reminde where seckill_id = #{activityId,jdbcType=VARCHAR}
+			SELECT <include refid="Base_Column_List"/> FROM seckill_reminde 
+			where seckill_id = #{activityId,jdbcType=VARCHAR} and user_id = #{userId,jdbcType=VARCHAR} 
 	</select>
 
     <!-- 更新秒杀提醒信息 -->
