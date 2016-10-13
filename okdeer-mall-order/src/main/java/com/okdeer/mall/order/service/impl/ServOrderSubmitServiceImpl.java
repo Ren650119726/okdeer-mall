@@ -724,7 +724,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		ActivityTypeEnum activityType = req.getActivityType();
 		switch (activityType) {
 			case VONCHER:
-				favourAmount = getCouponsFaceValue(req);
+				favourAmount = getCouponsFaceValue(req, totalAmount);
 				break;
 			case FULL_REDUCTION_ACTIVITIES:
 				favourAmount = getDiscountValue(req.getActivityItemId());
@@ -742,20 +742,29 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	}
 
 	/**
-	 * @Description: 获取代金券面额
+	 * @Description: 获取优惠金额
 	 * @param req 订单请求对象
+	 * @param totalAmount 商品总金额
 	 * @return BigDecimal  
 	 * @author wushp
 	 * @date 2016年9月28日
 	 */
-	private BigDecimal getCouponsFaceValue(ServiceOrderReq req) {
+	private BigDecimal getCouponsFaceValue(ServiceOrderReq req, BigDecimal totalAmount) {
+		// 优惠金额
+		BigDecimal favourAmount = BigDecimal.ZERO;
 		CouponsFindVo findCondition = new CouponsFindVo();
 		findCondition.setActivityId(req.getActivityId());
 		findCondition.setActivityItemId(req.getActivityItemId());
 		findCondition.setConponsType(req.getCouponsType());
 		// 查询代金券
 		ActivityCoupons activityCoupons = activityCouponsRecordMapper.selectCouponsItem(findCondition);
-		return BigDecimal.valueOf(activityCoupons.getFaceValue());
+		// 代金券面额
+		favourAmount = BigDecimal.valueOf(activityCoupons.getFaceValue());
+		if (totalAmount.compareTo(favourAmount) == -1) {
+			// 商品总金额小于代金券面值，优惠金额设为商品总金额
+			favourAmount = totalAmount;
+		}
+		return favourAmount;
 	}
 
 	/**
@@ -891,15 +900,28 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			Integer isStartingPrice = serviceExt.getIsStartingPrice();
 			// 起送价
 			BigDecimal startPrice = serviceExt.getStartingPrice();
-			if (tradeOrder.getTotalAmount().compareTo(startPrice) == -1
-					&& isStartingPrice == 1) {
-				// 不满起送价
-				tradeOrder.setFare(BigDecimal.valueOf(distributionFee));
-				tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(tradeOrder.getFare()));
-				tradeOrder.setActualAmount(tradeOrder.getActualAmount().add(tradeOrder.getFare()));
-				tradeOrder.setIncome(tradeOrder.getIncome().add(tradeOrder.getFare()));
+			if (isStartingPrice == 1) {
+				// 有起送价 tradeOrder.getTotalAmount().compareTo(startPrice) == -1
+				if (serviceExt.getIsCollect() == 1) {
+					// 已满起送价收取配送费
+					tradeOrder.setFare(BigDecimal.valueOf(distributionFee));
+					tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(tradeOrder.getFare()));
+					tradeOrder.setActualAmount(tradeOrder.getActualAmount().add(tradeOrder.getFare()));
+					tradeOrder.setIncome(tradeOrder.getIncome().add(tradeOrder.getFare()));
+				} else {
+					// 已满起送价不收取配送费
+					BigDecimal startingPrice = serviceExt.getStartingPrice();
+					if (tradeOrder.getTotalAmount().compareTo(startingPrice) == -1) {
+						// 设置运费
+						tradeOrder.setFare(BigDecimal.valueOf(distributionFee));
+						tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(tradeOrder.getFare()));
+						tradeOrder.setActualAmount(tradeOrder.getActualAmount().add(tradeOrder.getFare()));
+						tradeOrder.setIncome(tradeOrder.getIncome().add(tradeOrder.getFare()));
+					}
+				}
+				
 			} else {
-				// 满起送价
+				// 无起送价
 				if (isCollect == 1) {
 					// 已满起送价收取配送费
 					tradeOrder.setFare(BigDecimal.valueOf(distributionFee));
