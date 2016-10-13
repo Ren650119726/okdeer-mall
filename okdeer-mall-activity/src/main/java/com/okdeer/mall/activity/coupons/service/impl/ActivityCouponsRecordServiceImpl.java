@@ -518,4 +518,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
     public List<RechargeCouponVo> findValidRechargeCoupons(Map<String, Object> params) {
         return activityCouponsRecordMapper.findValidRechargeCoupons(params);
     }
+
+	@Override
+	public void insertSelective(ActivityCouponsRecord couponsRecord) throws Exception {
+		activityCouponsRecordMapper.insertSelective(couponsRecord);
+	}
 }

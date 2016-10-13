@@ -288,4 +288,14 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	 * @date 2016年9月27日
 	 */
 	//List<CouponsInfoQuery> findForCouponsCenter(Map<String,Object> map);
+	
+	/**
+	 * 
+	 * @Description: 查询面额
+	 * @param id
+	 * @return
+	 * @author yangq
+	 * @date 2016年10月13日
+	 */
+	ActivityCoupons selectByActivityId(String id);
 }

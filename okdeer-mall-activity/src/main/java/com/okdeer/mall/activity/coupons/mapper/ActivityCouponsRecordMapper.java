@@ -227,5 +227,14 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 */
 	List<Map<String, Object>> findByCategoryNames(@Param("couponIds") List<String> couponIds);
 	//End added by tangy
+	
+	/**
+     * 
+     * @Description: 保存注册邀请码注册 </p>
+     * @param couponsRecord
+     * @author yangq
+     * @date 2016年10月12日
+     */
+    void saveActivityCouponsRecord(ActivityCouponsRecord couponsRecord);
 
 }
