@@ -452,4 +452,13 @@
 	       WHERE used_num > 0 AND id = #{id,jdbcType=VARCHAR}
 	</update>
 	
+	<!-- begin yangq -->
+	<select id="selectByActivityId" parameterType="java.lang.String" resultMap="CouponsResultMap">
+	
+		SELECT ac.id,ac.type,ac.is_category, ac.name,ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, ac.used_num, ac.remain_num, ac.arrive_limit, 
+	          ac.valid_day, ac.every_limit,ac.is_cash_delivery, ac.is_category_limit, ac.code,ac.exchange_code, ac.area_type FROM activity_collect_coupons acc LEFT JOIN activity_coupons ac ON acc.`id` = ac.`activity_id` WHERE acc.`id` = #{id,jdbcType=VARCHAR}
+	
+	</select>
+	<!-- end yangq -->
+	
 </mapper>

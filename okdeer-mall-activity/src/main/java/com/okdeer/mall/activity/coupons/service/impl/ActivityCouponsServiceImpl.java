@@ -652,4 +652,11 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		}
 		return cityMap;
 	}
+
+	@Transactional(readOnly=true)
+	@Override
+	public ActivityCoupons selectByActivityId(String id) throws Exception {
+		ActivityCoupons result = activityCouponsMapper.selectByActivityId(id);
+		return result;
+	}
 }

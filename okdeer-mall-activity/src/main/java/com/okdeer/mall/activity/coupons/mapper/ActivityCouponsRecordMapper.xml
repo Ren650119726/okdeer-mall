@@ -686,4 +686,23 @@
  		GROUP BY tt.coupon_id
 	</select>
     <!-- end by tangy 20160923 根据商品ids查询商品是否符合代金券指定分类 -->
+    
+   <!-- begin by:yangq 保存邀请码记录 -->
+   <insert id="saveActivityCouponsRecord" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
+        insert into activity_coupons_record(
+			id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id, valid_time,status,order_id,room_id
+		)values(
+            #{id,jdbcType=VARCHAR},
+            #{collectType,jdbcType=INTEGER},
+            #{couponsCollectId,jdbcType=VARCHAR},
+            #{collectTime,jdbcType=TIMESTAMP},
+            #{collectUserId,jdbcType=VARCHAR},
+            #{validTime,jdbcType=VARCHAR},
+            #{status,jdbcType=INTEGER},
+            #{orderId,jdbcType=VARCHAR},
+            #{roomId,jdbcType=VARCHAR}
+        )
+	</insert>
+   <!-- end by:yangq 保存邀请码记录 -->
+    
 </mapper> 

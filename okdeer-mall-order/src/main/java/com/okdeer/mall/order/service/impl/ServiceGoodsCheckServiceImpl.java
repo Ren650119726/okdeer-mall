@@ -25,6 +25,7 @@ import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
@@ -191,7 +192,14 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
 			if (goodsStoreSku == null || goodsStoreSku.getOnline() != BSSC.PUTAWAY) {
 				// bug 14150
-				resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_BUY);
+				if (reqData.getOrderType().ordinal() == OrderTypeEnum.SERVICE_STORE_ORDER.ordinal()) {
+					// 上门服务
+					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS);
+				} else {
+					// 到店消费
+					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_BUY);
+				}
+				
 				
 				req.setComplete(true);
 				return;
@@ -247,10 +255,15 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 				BigDecimal startingPrice = serviceExt.getStartingPrice();
 				if (totalAmout.compareTo(startingPrice) == -1) {
 					// 订单总价小与起送价
-					// resp.setResult(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH);
-					// bug14207
-					resp.setCode(227);
-					resp.setMessage("抱歉，商品金额不满起送价");
+					if (req.getOrderOptType().ordinal() == OrderOptTypeEnum.ORDER_SUBMIT.ordinal()) {
+						// 提交订单
+						resp.setResult(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH);
+					} else {
+						// 确认订单
+						// bug14207
+						resp.setCode(227);
+						resp.setMessage("抱歉，商品金额不满起送价");
+					}
 					req.setComplete(true);
 					return;
 				}
