@@ -211,7 +211,8 @@
   	
   	<select id="selectIdByOrderId" parameterType="string" resultType="string">
   		SELECT suic.id from trade_order tr LEFT JOIN 
-		sys_user_invitation_code suic on suic.sys_buyer_user_id = tr.user_id
+		sys_user_invitation_code suic on suic.sys_buyer_user_id = tr.user_id LEFT JOIN
+		sys_buyer_user user on user.id = suic.sys_buyer_user_id
 		where tr.id = #{orderId, jdbcType=VARCHAR}
   	</select>
 </mapper>
