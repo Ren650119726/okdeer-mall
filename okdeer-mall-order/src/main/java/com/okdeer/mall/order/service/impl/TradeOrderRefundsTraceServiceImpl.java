@@ -19,10 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsTrace;
+import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsLogisticsEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
@@ -337,11 +339,11 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		TradeOrderRefunds refundsOrder =tradeOrderRefundsMapper.selectByPrimaryKey(refundsId);
 		if(refundsOrder == null){
 			// 如果未找到退款单ID，表示该请求数据不对，返回错误代码。
-			resp.setCode(ResultCodeEnum.FAIL.ordinal());
+			resp.setCode(ResultCodeEnum.FAIL.getCode());
 			return resp;
 		}
 		// 设置当前退款单所处的状态
-		respData.setRefundStatus(refundsOrder.getRefundsStatus().ordinal());
+		respData.setRefundStatus(OrderAppStatusAdaptor.convertAppRefundStatus(refundsOrder.getRefundsStatus()));
 		// 根据退款单ID查询退款轨迹列表
 		List<TradeOrderRefundsTrace> traceList = tradeOrderRefundsTraceMapper.findRefundsTrace(refundsId);
 		// 定义返回给App的退款轨迹列表
@@ -349,6 +351,17 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		RefundsTraceVo traceVo = null;
 		int index = 0;
 		int size = traceList.size();
+		// Begin added by maojj 2016-10-13 增加对历史退款单的处理。因为历史退款单没有轨迹记录。
+		// 判断是否为历史退款单。如果是，则直接返回
+		if(isHistory(traceList)){
+			// 如果是历史退款单，直接响应。
+			resp.setCode(ResultCodeEnum.SUCCESS.getCode());
+			// 是否为历史退款单，0：否，1：是
+			respData.setIsHistory(Constant.ONE);
+			resp.setData(respData);
+			return resp;
+		}
+		// End added by maojj 2016-10-13 
 		for (TradeOrderRefundsTrace trace : traceList) {
 			traceVo = new RefundsTraceVo();
 			traceVo.setTitle(trace.getTraceStatus().getDesc());
@@ -368,5 +381,26 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		resp.setData(respData);
 		resp.setCode(ResultCodeEnum.SUCCESS.getCode());
 		return resp;
+	}
+	
+	/**
+	 * @Description: 是否为历史退款单
+	 * @param traceList 退款轨迹列表
+	 * @return   
+	 * @author maojj
+	 * @date 2016年10月13日
+	 */
+	private boolean isHistory(List<TradeOrderRefundsTrace> traceList){
+		if(CollectionUtils.isEmpty(traceList)){
+			// 没有任何轨迹，则认为是历史退款单
+			return true;
+		}
+		TradeOrderRefundsTrace firstNode = traceList.get(0);
+		if(firstNode.getTraceStatus() != RefundsTraceEnum.REFUND_APPLY){
+			// 如果第一个轨迹节点不是提交退款申请状态，也认为是历史退款单
+			return true;
+		}else{
+			return false;
+		}
 	}
 }
