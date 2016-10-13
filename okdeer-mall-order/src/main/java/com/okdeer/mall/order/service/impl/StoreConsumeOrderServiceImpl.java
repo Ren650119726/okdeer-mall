@@ -628,8 +628,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		orderRefunds.setUserId(order.getUserId());
 		orderRefunds.setCreateTime(new Date());
 		orderRefunds.setUpdateTime(new Date());
-		BigDecimal totalIncome = new BigDecimal("0.00");
-
 		// 退款金额
 		BigDecimal refundAmount = new BigDecimal("0.00");
 		// 退款优惠金额
@@ -641,7 +639,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		// 查询未退款的消费码列表
 		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
 				.selectItemDetailByItemIdAndStatus(item.getId(), ConsumerCodeStatusEnum.WAIT_CONSUME.ordinal());
-
+		
 		if (CollectionUtils.isNotEmpty(detailList)) {
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
 				if (tradeOrderItemDetail.getOrderItemId().equals(item.getId())) {
@@ -669,19 +667,13 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		refundsItem.setStoreSkuId(item.getStoreSkuId());
 		refundsItem.setUnitPrice(item.getUnitPrice());
 		refundsItem.setWeight(item.getWeight());
-		refundsItem.setIncome(item.getIncome());
-
-		if (item.getIncome() != null) {
-			totalIncome = totalIncome.add(item.getIncome());
-		}
-
+		
 		List<TradeOrderRefundsItem> items = Lists.newArrayList(refundsItem);
 		orderRefunds.setTradeOrderRefundsItem(items);
 		orderRefunds.setTotalAmount(refundAmount);
 		orderRefunds.setTotalPreferentialPrice(refundPrefeAmount);
-		orderRefunds.setTotalIncome(totalIncome);
 		// 调用退款操作
-		tradeOrderRefundsService.insertRefunds(orderRefunds, buildRefundCertificate(refundsId));
+		this.refundConsumeCode(order, orderRefunds, buildRefundCertificate(refundsId), detailList);
 	}
 
 	private TradeOrderRefundsCertificateVo buildRefundCertificate(String refundsId) {
