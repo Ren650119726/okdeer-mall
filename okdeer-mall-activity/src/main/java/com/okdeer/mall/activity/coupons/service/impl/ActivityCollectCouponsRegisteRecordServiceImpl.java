@@ -90,12 +90,14 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		return result;
 	}
 
+	@Transactional(readOnly=true)
 	@Override
 	public int selectInvitationNum(String userId) throws Exception {
 		int result = registeRecordMapper.selectInvitationNum(userId);
 		return result;
 	}
 
+	@Transactional(rollbackFor = Exception.class)
 	public void saveRecord(ActivityCollectCouponsRegisteRecord registRecord) throws Exception {
 		registeRecordMapper.saveRecord(registRecord);
 	}
