@@ -920,7 +920,7 @@
 	<!-- zengj:查询售后单详细信息 -->
 	<select id="selectRefundOrderDetailById" resultMap="TradeOrderRefundsVo2"
 		parameterType="java.lang.String">
-		SELECT refunds.refunds_status,refunds.update_time,refunds.order_id as order_id,
+		SELECT refunds.refunds_status,refunds.update_time,refunds.order_id as order_id,refunds.order_resource,
 		trade.type as order_type,refunds.total_income,
 		refunds.id,refunds.refund_no,refunds.logistics_type,refunds.refuse_reson,refunds.memo,refunds.create_time,refunds.refund_money_time,refunds.total_amount,
 		refunds.total_preferential_price,refunds.refunds_reason,trade.received_time,
