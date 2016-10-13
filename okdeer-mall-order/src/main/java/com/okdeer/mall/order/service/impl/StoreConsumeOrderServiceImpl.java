@@ -291,14 +291,12 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			json.put("orderStatusName", consumerCodeStatusEnum.getValue());
 
 			// 2 订单支付倒计时计算
-			Integer remainingTime = userTradeOrderDetailVo.getRemainingTime();
-			if (remainingTime != null) {
-				remainingTime = remainingTime + 1800;
-				json.put("remainingTime", remainingTime <= 0 ? "0" : remainingTime);
-			} else {
-				json.put("remainingTime", "0");
+			long remainingTime = (userTradeOrderDetailVo.getCreateTime().getTime() + 1800000
+					- System.currentTimeMillis()) / 1000;
+			if (remainingTime < 0) {
+				remainingTime = 0;
 			}
-
+			json.put("remainingTime", remainingTime <= 0 ? 0: remainingTime);
 			// 支付信息
 			TradeOrderPay payInfo = userTradeOrderDetailVo.getTradeOrderPay();
 
@@ -546,13 +544,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			Integer pageSize) {
 		PageHelper.startPage(pageNo, pageSize, true, false);
 		List<TradeOrderRefunds> list = tradeOrderRefundsMapper.getListByParams(params);
-
-		// List<TradeOrderRefundsItem> itemList = null;
-		// for (TradeOrderRefunds tradeOrderRefunds : list) {
-		// itemList = tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(tradeOrderRefunds.getId());
-		// tradeOrderRefunds.setTradeOrderRefundsItem(itemList);
-		// itemList = null;
-		// }
 		return new PageUtils<TradeOrderRefunds>(list);
 	}
 
@@ -628,8 +619,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		orderRefunds.setUserId(order.getUserId());
 		orderRefunds.setCreateTime(new Date());
 		orderRefunds.setUpdateTime(new Date());
-		BigDecimal totalIncome = new BigDecimal("0.00");
-
 		// 退款金额
 		BigDecimal refundAmount = new BigDecimal("0.00");
 		// 退款优惠金额
@@ -659,6 +648,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		refundsItem.setPropertiesIndb(item.getPropertiesIndb());
 		refundsItem.setQuantity(quantity);
 		refundsItem.setAmount(refundAmount);
+		refundsItem.setPreferentialPrice(refundPrefeAmount);
 		refundsItem.setBarCode(item.getBarCode());
 		refundsItem.setMainPicUrl(item.getMainPicPrl());
 		refundsItem.setSkuName(item.getSkuName());
@@ -669,19 +659,13 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		refundsItem.setStoreSkuId(item.getStoreSkuId());
 		refundsItem.setUnitPrice(item.getUnitPrice());
 		refundsItem.setWeight(item.getWeight());
-		refundsItem.setIncome(item.getIncome());
-
-		if (item.getIncome() != null) {
-			totalIncome = totalIncome.add(item.getIncome());
-		}
 
 		List<TradeOrderRefundsItem> items = Lists.newArrayList(refundsItem);
 		orderRefunds.setTradeOrderRefundsItem(items);
 		orderRefunds.setTotalAmount(refundAmount);
 		orderRefunds.setTotalPreferentialPrice(refundPrefeAmount);
-		orderRefunds.setTotalIncome(totalIncome);
 		// 调用退款操作
-		tradeOrderRefundsService.insertRefunds(orderRefunds, buildRefundCertificate(refundsId));
+		this.refundConsumeCode(order, orderRefunds, buildRefundCertificate(refundsId), detailList);
 	}
 
 	private TradeOrderRefundsCertificateVo buildRefundCertificate(String refundsId) {
@@ -733,7 +717,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		BigDecimal refundPrefeAmount = new BigDecimal("0.00");
 		// 查询未退款的消费码列表
 		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
-				.selectItemDetailByItemIdAndStatus(item.getId(), ConsumerCodeStatusEnum.WAIT_CONSUME.ordinal());
+				.selectItemDetailByItemIdAndStatus(item.getId(), ConsumeStatusEnum.noConsume.ordinal());
 
 		if (CollectionUtils.isNotEmpty(detailList)) {
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
@@ -749,9 +733,9 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		payTradeVo.setIncomeUserId("1");
 		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		payTradeVo.setTradeNum(order.getTradeNum());
-		payTradeVo.setTitle("到店消费订单过期");
+		payTradeVo.setTitle("[" + order.getOrderNo() + "]到店消费订单过期");
 		payTradeVo.setBusinessType(BusinessTypeEnum.CONSUME_CODE_EXPIRE);
-		payTradeVo.setExt(item.getId());
+		payTradeVo.setExt("GQ" + TradeNumUtil.getTradeNum());
 
 		payTradeVo.setServiceFkId(order.getId());
 		payTradeVo.setServiceNo(order.getOrderNo());
@@ -1158,7 +1142,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		if (ids.size() > 0) {
 			tradeOrderItemMapper.updateCompleteById(ids);
 		}
-		
+
 		// 更新订单状态
 		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
 				.selectByOrderItemDetailByOrderId(orderRefunds.getOrderId());
