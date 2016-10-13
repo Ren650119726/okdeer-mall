@@ -396,7 +396,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 			return true;
 		}
 		TradeOrderRefundsTrace firstNode = traceList.get(0);
-		if(firstNode.getTraceStatus() != RefundsTraceEnum.REFUND_APPLY){
+		if(firstNode.getTraceStatus() != RefundsTraceEnum.REFUND_APPLY && firstNode.getTraceStatus() != RefundsTraceEnum.RETURN_REFUND_APPLY  ){
 			// 如果第一个轨迹节点不是提交退款申请状态，也认为是历史退款单
 			return true;
 		}else{
