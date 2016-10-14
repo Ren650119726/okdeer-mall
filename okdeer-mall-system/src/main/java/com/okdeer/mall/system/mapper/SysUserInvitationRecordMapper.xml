@@ -154,11 +154,14 @@
   	<!-- end -->
   	
   	<!-- 消费码消费的时候 判断该 用户是否是首单 -->
-  	<select id="selectIdByOrderId" resultType="String" parameterType="string">
-  		SELECT suir.id from trade_order tr LEFT JOIN 
+  	<select id="selectIdByOrderId" parameterType="string" resultMap="BaseResultMap">
+  		SELECT 
+		<include refid="resultBaseColumn" />
+		from trade_order tr LEFT JOIN 
 		sys_user_invitation_record suir on suir.sys_buyer_user_id = tr.user_id
 		LEFT JOIN 
 		sys_buyer_user user on user.id = suir.sys_buyer_user_id
 		where suir.is_first_order = 0 and tr.id = #{orderId, jdbcType=VARCHAR}
+<!-- 		and tr.consumer_code_status = 1 -->
   	</select>
 </mapper>
