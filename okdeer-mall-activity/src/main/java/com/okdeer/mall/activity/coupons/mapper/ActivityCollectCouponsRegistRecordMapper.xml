@@ -110,6 +110,9 @@
 	  <if test="userQueryId != null and userQueryId != ''">
             AND A.user_id = #{userQueryId}
       </if>
+      <if test="activityId != null and activityId != ''">
+            AND A.activity_id = #{activityId}
+      </if>
 	  ORDER BY 
 		A.create_time 
 	  DESC 
