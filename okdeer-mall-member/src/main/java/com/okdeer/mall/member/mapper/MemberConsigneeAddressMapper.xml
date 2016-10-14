@@ -92,6 +92,9 @@
     <if test="null != roomId and roomId != ''">
         AND addr.room_id = #{roomId}
   	</if>
+  	<if test="null != communityId and communityId != ''">
+        AND addr.community_id = #{communityId}
+  	</if>
   	<if test="null != isDefault">
         AND addr.is_default = #{isDefault}
   	</if>
@@ -440,6 +443,98 @@
       province_name = #{provinceName,jdbcType=VARCHAR}
     where id = #{id,jdbcType=VARCHAR}
   </update>
+  
+  <!--luosm:根据小区id批量修改省市区名，小区名  added 20161014-->
+  <update id="updateByCommunityIds" parameterType="com.okdeer.mall.member.member.entity.MemberConsigneeAddress">
+	  UPDATE member_consignee_address
+	  <set >
+      <if test="userId != null and userId != ''" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="consigneeName != null and consigneeName != ''" >
+        consignee_name = #{consigneeName,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceId != null and provinceId != ''" >
+        province_id = #{provinceId,jdbcType=VARCHAR},
+      </if>
+      <if test="cityId != null and cityId != ''" >
+        city_id = #{cityId,jdbcType=VARCHAR},
+      </if>
+      <if test="areaId != null and areaId != ''" >
+        area_id = #{areaId,jdbcType=VARCHAR},
+      </if>
+      <if test="area != null and area != ''" >
+        area = #{area,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null and address != ''" >
+        address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="zipCode != null and zipCode != ''" >
+        zip_code = #{zipCode,jdbcType=VARCHAR},
+      </if>
+      <if test="telephone != null and telephone != ''" >
+        telephone = #{telephone,jdbcType=VARCHAR},
+      </if>
+      <if test="mobile != null and mobile != ''" >
+        mobile = #{mobile,jdbcType=VARCHAR},
+      </if>
+      <if test="isDefault != null " >
+        is_default = #{isDefault,jdbcType=TINYINT},
+      </if>
+      <if test="source != null " >
+        source = #{source,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null " >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUserId != null and createUserId != ''" >
+        create_user_id = #{createUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null " >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null and updateUserId != ''" >
+        update_user_id = #{updateUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="disabled != null " >
+        disabled = #{disabled,jdbcType=TINYINT},
+      </if>
+      <if test="roomId != null and roomId != ''" >
+        room_id = #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null " >
+        type = #{type,jdbcType=TINYINT},
+      </if>
+      <if test="remark != null and remark != ''" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="companyName != null and companyName != ''" >
+        company_name = #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="longitude != null " >
+        longitude = #{longitude,jdbcType=DOUBLE},
+      </if>
+      <if test="latitude != null " >
+        latitude = #{latitude,jdbcType=DOUBLE},
+      </if>
+      <if test="areaExt != null and areaExt != ''" >
+        area_ext = #{areaExt,jdbcType=VARCHAR},
+      </if>
+      <if test="areaName != null and areaName != ''" >
+        area_name = #{areaName,jdbcType=VARCHAR},
+      </if>
+      <if test="cityName != null and cityName != ''" >
+        city_name = #{cityName,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceName != null and provinceName != ''" >
+        province_name = #{provinceName,jdbcType=VARCHAR},
+      </if>
+      <if test="useTime != null " >
+        use_time = #{useTime,jdbcType=TIMESTAMP},
+      </if>
+     </set>
+	  WHERE community_id = #{communityId,jdbcType=VARCHAR}
+   </update>
   
    <!-- 批量删除 （逻辑删除） -->
   <update id="deleteByIds">
