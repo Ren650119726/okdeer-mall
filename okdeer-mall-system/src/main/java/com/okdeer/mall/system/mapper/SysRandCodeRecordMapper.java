@@ -34,4 +34,10 @@ public interface SysRandCodeRecordMapper {
      * @return 随机码实体
      */
     SysRandCodeRecord findRecordByRandCode(@Param("randomCode") String randomCode);
+    
+    /**
+     * 获取一个可用的验证码
+     */
+    SysRandCodeRecord getOneRandCode();
+    
 }

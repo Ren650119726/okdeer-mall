@@ -94,4 +94,10 @@
 		</if>	
 	</select>
 	
+	<select id="getOneRandCode" resultMap="randCodeBaseMap">
+		select <include refid="base_column" /> 
+		from sys_rand_code_record  
+		where disabled=0 limit 1
+	</select>
+	
 </mapper>
