@@ -70,5 +70,5 @@ public interface SysUserInvitationRecordMapper extends IBaseCrudMapper {
 	 * @author zhulq
 	 * @date 2016年10月12日
 	 */
-	String selectIdByOrderId(@Param("orderId") String orderId);
+	SysUserInvitationRecord selectIdByOrderId(@Param("orderId") String orderId);
 }

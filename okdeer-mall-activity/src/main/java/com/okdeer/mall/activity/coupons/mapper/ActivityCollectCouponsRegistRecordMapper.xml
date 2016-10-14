@@ -46,7 +46,8 @@
   								resultMap="extResultMap">
 	SELECT A.activity_id, 
 <!-- 		count(A.id) as total_num, -->
-		A.user_id,  
+		A.user_id,
+		CONCAT(A.user_id,A.activity_id) AS id, 
 		C.login_name AS invite_login_name,
 	    B.name AS activity_name, 
 		B.start_time as begin_time, 
@@ -63,7 +64,7 @@
 	  B.start_time DESC, invite_num DESC	  
    </select> 	
    
-     <select id="findRegisteRecordForExport" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo" 
+  <select id="findRegisteRecordForExport" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo" 
   								resultMap="extResultMap">
 	SELECT A.id,
 		A.activity_id, 
@@ -82,7 +83,7 @@
 	  LEFT JOIN sys_buyer_user D ON D.id = A.invite_id
 	  where 1 = 1
 	  <if test="ids != null">
-			AND A.user_id  in 
+			AND CONCAT(A.user_id,B.id)  in 
 		    <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">  
 	            #{item}   
 	        </foreach>
@@ -109,6 +110,9 @@
 	  where 1 = 1
 	  <if test="userQueryId != null and userQueryId != ''">
             AND A.user_id = #{userQueryId}
+      </if>
+      <if test="activityId != null and activityId != ''">
+            AND A.activity_id = #{activityId}
       </if>
 	  ORDER BY 
 		A.create_time 

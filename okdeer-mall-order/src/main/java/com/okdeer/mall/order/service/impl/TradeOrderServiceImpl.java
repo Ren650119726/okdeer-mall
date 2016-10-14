@@ -6431,21 +6431,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// End V1.1.0 update by wusw 20161012
 			if (CollectionUtils.isNotEmpty(consumedList)) {
 				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.WAIT_EVALUATE, nowTime, consumedList);
-				for (String orderId : consumedList) {
-					String invitationCodeId = sysUserInvitationCodeMapper.selectIdByOrderId(orderId);
-					String invitationRecordId = sysUserInvitationRecordMapper.selectIdByOrderId(orderId);
-					Date now = new Date();
-					if (StringUtils.isNotBlank(invitationCodeId)) {
-						sysUserInvitationCodeMapper.updateFirstOrderNum(invitationCodeId, now);
-					}
-					if (StringUtils.isNotBlank(invitationRecordId)) {
-						SysUserInvitationRecord sysUserInvitationRecord = new SysUserInvitationRecord();
-						sysUserInvitationRecord.setId(invitationRecordId);
-						sysUserInvitationRecord.setUpdateTime(now);
-						sysUserInvitationRecord.setFirstOrderTime(now);
-						sysUserInvitationRecordMapper.updateCodeRecord(sysUserInvitationRecord);
-					}
-				}
 			}
 		}
 	}
