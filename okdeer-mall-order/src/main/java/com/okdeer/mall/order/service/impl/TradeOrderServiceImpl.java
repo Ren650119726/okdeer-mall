@@ -6548,6 +6548,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			itemDetail = null;
 		}
 
+		// 确认收货，更新用户邀请记录
+		updateInvitationRecord(tradeOrder.getUserId());
+		
 		// 用户支付成功，发送消费码短信
 		try {
 			String consumeCodes = null;
@@ -6730,4 +6733,5 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		return tradeOrderMapper.selectServiceRefundAmount(params);
 	}
 	// end added by luosm 20161010 V1.1.0
+	
 }
