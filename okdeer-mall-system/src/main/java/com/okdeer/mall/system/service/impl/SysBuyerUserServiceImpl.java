@@ -73,6 +73,11 @@ import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
  * @version 1.0.0
  * @copyright ©2005-2020 yschome.com Inc. All rights reserved
  * 
+ *=================================================================================================
+ *     Task ID            Date               Author           Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *     V1.1.0          2016年10月14日                          zhaoqc          修改注册生成邀请码的问题
+ * 
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.system.service.SysBuyerUserServiceApi")
 class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUserService, SysBuyerUserServiceApi {
@@ -587,7 +592,14 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
         invitationCode.setSysBuyerUserId(userId);
         invitationCode.setUserType(InvitationUserType.phoneUser);
         String code = redisTemplate.boundListOps(RedisKeyConstants.MALL_RANDCODE).rightPop();
-        invitationCode.setInvitationCode(code);
+        SysRandCodeRecord sysRandCodeRecord = null;
+        if(StringUtils.isEmpty(code)) {
+            sysRandCodeRecord = this.sysRandCodeRecordMapper.getOneRandCode();
+            invitationCode.setInvitationCode(sysRandCodeRecord.getRandomCode());
+        } else {
+            invitationCode.setInvitationCode(code); 
+        }
+        
         invitationCode.setInvitationUserNum(0);
         invitationCode.setFirstOrderUserNum(0);
         invitationCode.setCreateTime(new Date());
@@ -596,15 +608,15 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
         //生成邀请码
         this.invitationCodeService.saveCode(invitationCode);
         
-        //在商城库将消费码设置为不可用
-        SysRandCodeRecord sysRandCodeRecord = this.sysRandCodeRecordMapper.findRecordByRandCode(code);
-        if(sysRandCodeRecord != null) {
-            sysRandCodeRecord.setDisabled(Disabled.invalid);
-            sysRandCodeRecord.setUpdateTime(new Date());
-            
-            this.sysRandCodeRecordMapper.updateSysRandCodeRecord(sysRandCodeRecord);
+        if(sysRandCodeRecord == null) {
+            sysRandCodeRecord = this.sysRandCodeRecordMapper.findRecordByRandCode(code);
         }
         
+        //在商城库将消费码设置为不可用
+        sysRandCodeRecord.setDisabled(Disabled.invalid);
+        sysRandCodeRecord.setUpdateTime(new Date());
+     
+        this.sysRandCodeRecordMapper.updateSysRandCodeRecord(sysRandCodeRecord);
         return invitationCode;
     }
     //End add by zhaoqc 2016.10.05
