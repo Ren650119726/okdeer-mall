@@ -45,6 +45,7 @@ import com.okdeer.mall.member.service.MemberConsigneeAddressService;
  * ----------------+----------------+-------------------+-------------------------------------------
  *     重构4.1          2016年7月25日                               zengj				添加查询用户收货地址列表，针对服务订单 方法
  *     12978           2016年8月19日                               wusw				修改获取收货地址的详细地址（用于商城后台会员详情）
+ *     V1.1.0          2016-10-14     		luosm               根据小区id批量修改省市区名，小区名 
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi")
 public class MemberConsigneeAddressServiceImpl
@@ -195,6 +196,19 @@ public class MemberConsigneeAddressServiceImpl
 		memberConsigneeAddress.setUpdateUserId(currentOperateUser.getId());
 		memberConsigneeAddressMapper.updateByPrimaryKeySelective(memberConsigneeAddress);
 	}
+	
+	//begin added by luosm V1.1.0 20161014
+	/**
+	 * 
+	 * 根据小区id批量修改省市区名，小区名 
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateByCommunityIdsConsigneeAddress(MemberConsigneeAddress memberConsigneeAddress) {
+		
+		memberConsigneeAddressMapper.updateByCommunityIds(memberConsigneeAddress);
+	}
+	//end added by luosm V1.1.0 20161014
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)

@@ -24,6 +24,18 @@ import com.okdeer.base.common.utils.PageUtils;
  * @author wusw
  * @date 2015年12月9日 上午9:19:13
  */
+/***
+ * 
+ * ClassName: MemberConsigneeAddressService 
+ * @Description: TODO
+ * @author luosm
+ * @date 2016年10月14日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *	   V1.1.0          2016-10-14     		luosm               根据小区id批量修改省市区名，小区名
+ */
 public interface MemberConsigneeAddressService {
 
 	/**
@@ -117,6 +129,18 @@ public interface MemberConsigneeAddressService {
 	 * @throws ServiceException 异常类
 	 */
 	void deleteByIds(List<String> ids, String updateUserId);
+	
+	//begin added by luosm 20161014 V1.1.0
+	/***
+	 * 
+	 * @Description: 根据小区id批量修改省市区名，小区名 
+	 * @param memberConsigneeAddress
+	 * @param currentOperateUser
+	 * @author luosm
+	 * @date 2016年10月14日
+	 */
+	void updateByCommunityIdsConsigneeAddress(MemberConsigneeAddress memberConsigneeAddress);
+	//end added by luosm 20161014 V1.1.0
 
 	/**
 	 * 根据ID批量删除店铺地址

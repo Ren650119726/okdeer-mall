@@ -24,6 +24,7 @@ import com.okdeer.mall.member.member.vo.UserAddressVo;
  * ----------------+----------------+-------------------+-------------------------------------------
  *     重构4.1          2016年7月25日                               zengj				添加查询用户收货地址列表，针对服务订单 方法
  *     1.1            2016年9月24日                               maojj				添加查询用户地址，针对秒杀
+ *     V1.1.0          2016-10-14           luosm               根据小区id批量修改省市区名，小区名 
  */
 public interface MemberConsigneeAddressMapper extends IBaseCrudMapper {
 
@@ -35,6 +36,18 @@ public interface MemberConsigneeAddressMapper extends IBaseCrudMapper {
 	 */
 	void deleteByIds(@Param("ids") List<String> ids,@Param("disabled") Disabled disabled,
            @Param("updateTime") Date updatTime,@Param("updateUserId") String updateUserId);
+	
+	//begin added by luosm 20161014 V1.1.0
+	/***
+	 * 
+	 * @Description: 根据小区id批量修改省市区名，小区名 
+	 * @param communityIds
+	 * @param params
+	 * @author luosm
+	 * @date 2016年10月14日
+	 */
+	void updateByCommunityIds(MemberConsigneeAddress memberConsigneeAddress);
+	//end added by luosm 20161014 V1.1.0
 	
 	/**
 	 * 根据userId查询会员收货地址
