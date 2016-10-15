@@ -44,7 +44,6 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 	private ELGoodsServiceApi elGoodsServiceApi;
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
 	public void process(JobExecutionMultipleShardingContext arg0) {
 		try {
 			logger.info("特惠活动定时器开始");
