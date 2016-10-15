@@ -68,6 +68,7 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 									}
 								}
 							}
+							Thread.sleep(5000);
 							// 把所有店铺商品online改成上架
 							if (goodsStoreSkuIds.size() > 0) {
 								elGoodsServiceApi.saveGoodsToELApi(goodsStoreSkuIds,1);
@@ -88,6 +89,7 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 									}
 								}
 							}
+							Thread.sleep(5000);
 							// 把所有店铺商品online改成下架
 							if (goodsStoreSkuIds.size() > 0) {
 								elGoodsServiceApi.saveGoodsToELApi(goodsStoreSkuIds,1);
