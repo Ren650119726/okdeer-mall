@@ -6548,9 +6548,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			itemDetail = null;
 		}
 
-		// 确认收货，更新用户邀请记录
-		updateInvitationRecord(tradeOrder.getUserId());
-		
 		// 用户支付成功，发送消费码短信
 		try {
 			String consumeCodes = null;
@@ -6570,15 +6567,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					.append("，商家地址：").append(storeAddress).append("，商家电话：").append(storeInfoExt.getServicePhone())
 					.append("，有效期").append(DateUtils.formatDate(goodsService.getStartTime(), null)).append("至")
 					.append(DateUtils.formatDate(goodsService.getEndTime(), null));
-			if (storeInfoExt.getIsAdvanceType() == 1) {
-				smsBuffer.append("，需提前").append(storeInfoExt.getAdvanceTime());
-				if (storeInfoExt.getAdvanceType() == 0) {
-					// 提前N小时预约
-					smsBuffer.append("小时预约");
-				} else if (storeInfoExt.getAdvanceType() == 1) {
-					// 提前N天预约
-					smsBuffer.append("天预约");
-				}
+			if(storeInfoExt.getIsAdvanceType() != null) {
+    			if (storeInfoExt.getIsAdvanceType() == 1) {
+    				smsBuffer.append("，需提前").append(storeInfoExt.getAdvanceTime());
+    				if (storeInfoExt.getAdvanceType() == 0) {
+    					// 提前N小时预约
+    					smsBuffer.append("小时预约");
+    				} else if (storeInfoExt.getAdvanceType() == 1) {
+    					// 提前N天预约
+    					smsBuffer.append("天预约");
+    				}
+    			}
 			}
 			smsBuffer.append("，记得要在有效期内消费噢！");
 
@@ -6733,5 +6732,4 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		return tradeOrderMapper.selectServiceRefundAmount(params);
 	}
 	// end added by luosm 20161010 V1.1.0
-	
 }
