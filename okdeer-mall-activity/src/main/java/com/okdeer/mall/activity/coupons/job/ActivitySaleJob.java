@@ -35,6 +35,7 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 	@Transactional(rollbackFor = Exception.class)
 	public void process(JobExecutionMultipleShardingContext arg0) {
 		try {
+			logger.info("特惠活动定时器开始");
 			List<ActivitySale> list = activitySaleService.listByTask();
 
 			if (list != null && list.size() > 0) {
@@ -57,6 +58,7 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 
 				}
 			}
+			logger.info("特惠活动定时器结束");
 		} catch (Exception e) {
 			logger.error("特惠活动定时器异常", e);
 		}
