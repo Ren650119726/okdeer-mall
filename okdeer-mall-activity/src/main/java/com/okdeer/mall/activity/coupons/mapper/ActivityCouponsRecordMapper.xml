@@ -228,6 +228,27 @@
 	  DESC 
    </select> 
    
+   <!-- begin yangq 获取用户的邀请记录 -->
+   <select id="selectAllRecordsByUserId" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo" resultMap="RecordVoMap">
+	  select A.id, A.collect_type, A.coupons_id, A.coupons_collect_id, A.collect_time, A.collect_user_id, B.name, B.activity_id, B.arrive_limit, 
+             B.valid_day, A.valid_time, A.STATUS, A.order_id, A.room_id, C.name as activity_name, D.login_name as user_name, B.face_value, B.belong_type 
+      FROM activity_coupons_record A
+      LEFT JOIN activity_coupons B ON B.id = A.coupons_id
+      LEFT JOIN activity_collect_coupons C ON C.id = B.activity_id
+      LEFT JOIN sys_buyer_user D ON D.id = A.collect_user_id   
+      WHERE 1 = 1 
+      <if test="couponsCollectId != null and couponsCollectId != ''">
+            AND A.coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR}
+      </if>
+	  <if test="collectUserId != null">
+			AND A.collect_user_id = #{collectUserId,jdbcType=VARCHAR} 
+	  </if>  
+	  ORDER BY 
+		A.collect_time 
+	  DESC 
+   </select> 
+   <!-- end yangq 获取用户的邀请记录 -->
+   
    <!-- 根据记录id查询订单相关信息 added by tangy -->
    <select id="findOrderByRecordId" resultMap="RecordVoMap">
 	  select T.order_no, A.id
