@@ -529,9 +529,5 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		return record;
 	}
 
-	@Override
-	public List<ActivityCouponsRecordQueryVo> findMyCouponsDetail(String currentOperateUserId) throws Exception {
-		
-		return null;
-	}
+	
 }
