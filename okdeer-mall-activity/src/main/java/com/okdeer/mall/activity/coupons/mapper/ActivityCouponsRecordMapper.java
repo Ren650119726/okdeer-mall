@@ -28,6 +28,7 @@ import com.okdeer.mall.order.vo.RechargeCouponVo;
  * 		V1.1.0			2016-09-19			wushp			V1.1.0
  *      V1.1.0          2016-09-21          zhaoqc          添加充值获取代金券的方法
  *		V1.1.0			2016-09-23			tangy			代金券指定分类使用
+ *      V1.1.0			2016-10-15			yangq           查询邀请记录列表
  */
 public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 
@@ -236,5 +237,15 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
      * @date 2016年10月12日
      */
     void saveActivityCouponsRecord(ActivityCouponsRecord couponsRecord);
+    
+    /**
+     * 
+     * @Description: 查询邀请记录列表
+     * @param couponsRecord
+     * @return
+     * @author yangq
+     * @date 2016年10月15日
+     */
+    List<ActivityCouponsRecord> selectAllRecordsByUserId(ActivityCouponsRecord couponsRecord);
 
 }

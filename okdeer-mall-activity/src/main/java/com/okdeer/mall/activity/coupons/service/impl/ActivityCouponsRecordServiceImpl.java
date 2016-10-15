@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -524,4 +522,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	public void insertSelective(ActivityCouponsRecord couponsRecord) throws Exception {
 		activityCouponsRecordMapper.insertSelective(couponsRecord);
 	}
+
+	@Override
+	public List<ActivityCouponsRecord> selectActivityCouponsRecord(ActivityCouponsRecord couponsRecord) throws Exception {
+		List<ActivityCouponsRecord> record = activityCouponsRecordMapper.selectAllRecordsByUserId(couponsRecord);
+		return record;
+	}
+
+	
 }
