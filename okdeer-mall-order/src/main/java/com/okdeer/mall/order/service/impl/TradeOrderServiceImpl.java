@@ -6562,7 +6562,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			itemDetail = null;
 		}
 
-		// 用户支付成功，发送消费码短信
+		// 确认收货，更新用户邀请记录
+	    updateInvitationRecord(tradeOrder.getUserId()); 
+		
+		//用户支付成功，发送消费码短信
 		try {
 			String consumeCodes = null;
 			if (consumeCodeSb.length() > 0) {
