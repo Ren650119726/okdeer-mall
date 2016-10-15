@@ -130,7 +130,7 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(endTimeRecord);
 			//三个月前
-			cal.add(Calendar.DAY_OF_MONTH, -3);
+			cal.add(Calendar.MONTH, -3);
 			beginTimeRecord = cal.getTime();
 		}
 		if (beginTimeRecord != null) {
@@ -162,7 +162,7 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(endTimeRecord);
 			//三个月前
-			cal.add(Calendar.DAY_OF_MONTH, -3);
+			cal.add(Calendar.MONTH, -3);
 			beginTimeRecord = cal.getTime();
 		}
 		if (beginTimeRecord != null) {
