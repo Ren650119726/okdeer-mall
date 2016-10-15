@@ -28,6 +28,7 @@ import com.okdeer.base.common.utils.PageUtils;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构4.1			 2016年9月18日 			zhulq
+ *		V1.1.0			2016-10-15 			wushp			V1.1.0
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsRegisteRecordServiceApi")
 public class ActivityCollectCouponsRegisteRecordServiceImpl 
@@ -101,5 +102,18 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 	public void saveRecord(ActivityCollectCouponsRegisteRecord registRecord) throws Exception {
 		registeRecordMapper.saveRecord(registRecord);
 	}
+
+	// begin add by wushp 20161015
+	@Transactional(readOnly = true)
+	@Override
+	public ActivityCollectCouponsRegisteRecord selectByInviteId(String inviteId) throws Exception {
+		return registeRecordMapper.selectByInviteId(inviteId);
+	}
+
+	@Override
+	public int updateByPrimaryKeySelective(ActivityCollectCouponsRegisteRecord registRecord) throws Exception {
+		return registeRecordMapper.updateByPrimaryKeySelective(registRecord);
+	}
+	// end add by wushp 20161015
 
 }
