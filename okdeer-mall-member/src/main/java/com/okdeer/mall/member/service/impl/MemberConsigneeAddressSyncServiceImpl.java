@@ -330,13 +330,15 @@ public class MemberConsigneeAddressSyncServiceImpl extends AbstractRocketMQSubsc
 		}
 		
 		if(!StringUtils.isEmpty(json.getString("latitude"))){
-			address.setLongitude(Double.valueOf(json.getString("latitude")));
+			address.setLatitude(Double.valueOf(json.getString("latitude")));
 		}else{
 			logger.info("latitude 为空");
 			return null;
 		}
 		
-
+		if(!StringUtils.isEmpty(json.getString("address"))){
+			address.setAddress(json.getString("address"));
+		}
 		return address;
 	}
 	//end added by luosm V1.1.0 20161014
