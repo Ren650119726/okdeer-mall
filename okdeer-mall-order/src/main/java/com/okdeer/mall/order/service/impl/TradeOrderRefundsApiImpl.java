@@ -291,7 +291,7 @@ public class TradeOrderRefundsApiImpl implements ITradeOrderRefundsApi {
         refundsMoney.setBuyerUserName(getBuyserName(refunds.getUserId()));
         refundsMoney.setStoreUserId(storeInfoService.getBossIdByStoreId(refunds.getStoreId()));
         refundsMoney.setCreateTime(refunds.getCreateTime());
-        refundsMoney.setOutTradeNo(refunds.getTradeNum());
+        refundsMoney.setOutTradeNo(order.getTradeNum());
         // refundsMoney.setTransactionId(transactionId);
         TradeOrderPay orderPay = tradeOrderPayService.selectByOrderId(refunds.getOrderId());
         refundsMoney.setTransactionNo(orderPay.getReturns());
