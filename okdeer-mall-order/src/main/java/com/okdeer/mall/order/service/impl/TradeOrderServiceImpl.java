@@ -253,6 +253,7 @@ import net.sf.json.JsonConfig;
  *       修改多个消费码验证时，部分消费码不存在情况下的相应提示信息 V1.1.0 2016-10-11 luosm bug13932 V1.1.0
  *       2016-10-12 wushp bug13735 V1.1.0 2016-10-12 wusw
  *       修改根据订单项详细的消费码状态，修改订单消费码状态的逻辑
+ *       14375             2016-10-15        wusw        修改实物订单详情的支付剩余时间计算（由于服务器的数据库时间有误，导致sql计算有误）
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -3996,13 +3997,26 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
 
 		// 2 订单支付倒计时计算
-		Integer remainingTime = orders.getRemainingTime();
-		if (remainingTime != null) {
-			remainingTime = remainingTime + 1800;
-			json.put("remainingTime", remainingTime <= 0 ? "0" : remainingTime);
+		// Begin 14375 add by wusw 20161015
+		if (orders.getStatus() != null && orders.getStatus().ordinal() == Constant.ZERO) {
+			// 状态为未付款
+			// 订单创建时间
+			Date createTime = orders.getCreateTime();
+			Date currentDate = new Date();
+			// 支付到期毫秒
+			long endTimes = createTime.getTime() + (Constant.THIRTH * 60 * 1000);
+			long remainingTime = (endTimes - currentDate.getTime()) / 1000;
+			// 支付剩余时间（精确）
+			if (remainingTime > 0) {
+				json.put("remainingTime", remainingTime);
+			} else {
+				json.put("remainingTime", 0);
+			}
 		} else {
-			json.put("remainingTime", "0");
+			// 状态为非未付款
+			json.put("remainingTime", 0);
 		}
+		// End 14375 add by wusw 20161015
 		// 交易号
 		json.put("tradeNum", orders.getTradeNum() == null ? "" : orders.getTradeNum());
 		json.put("pickUpType", orders.getPickUpType() == null ? "" : orders.getPickUpType().ordinal());
