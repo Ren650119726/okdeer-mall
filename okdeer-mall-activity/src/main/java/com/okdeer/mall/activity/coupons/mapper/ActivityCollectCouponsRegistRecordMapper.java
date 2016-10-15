@@ -18,6 +18,7 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构4.1			 2016年9月18日 			zhulq
+ *		V1.1.0			2016-10-15 			wushp			V1.1.0
  */
 public interface ActivityCollectCouponsRegistRecordMapper extends IBaseCrudMapper {
 
@@ -69,4 +70,16 @@ public interface ActivityCollectCouponsRegistRecordMapper extends IBaseCrudMappe
 	int selectInvitationNum(String userId) ; 
 
 	void saveRecord(ActivityCollectCouponsRegisteRecord registRecord);
+	
+	// begin add by wushp 20161015
+	/**
+	 * 
+	 * @Description: 根据被邀请人查询邀请注册记录
+	 * @param inviteId 被邀请人用户id
+	 * @return ActivityCollectCouponsRegisteRecord
+	 * @author wushp
+	 * @date 2016年10月15日
+	 */
+	ActivityCollectCouponsRegisteRecord selectByInviteId(String inviteId);
+	// end add by wushp 20161015
 }
