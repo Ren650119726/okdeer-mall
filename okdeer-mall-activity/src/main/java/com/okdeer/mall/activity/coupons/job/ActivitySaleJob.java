@@ -57,42 +57,11 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 							idList.add(a.getId());
 							activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.ing.getValue(),
 									a.getStoreId(), "0");
-
-							List<String> goodsStoreSkuIds = new ArrayList<String>();
-							for (String id : idList) {
-								List<ActivitySaleGoods> asgList = activitySaleService.listActivitySaleGoods(id);
-								if (asgList != null && asgList.size() > 0) {
-									for (ActivitySaleGoods asg : asgList) {
-										goodsStoreSkuIds.add(asg.getStoreSkuId());
-									}
-								}
-							}
-							Thread.sleep(5000);
-							// 把所有店铺商品online改成上架
-							if (goodsStoreSkuIds.size() > 0) {
-								elGoodsServiceApi.saveGoodsToELApi(goodsStoreSkuIds,1,1);
-							}
-							
 						} else if (a.getStatus() == ActivitySaleStatus.ing.getValue()) {
 							List<String> idList = new ArrayList<String>();
 							idList.add(a.getId());
 							activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.end.getValue(),
 									a.getStoreId(), "0");
-							
-							List<String> goodsStoreSkuIds = new ArrayList<String>();
-							for (String id : idList) {
-								List<ActivitySaleGoods> asgList = activitySaleService.listActivitySaleGoods(id);
-								if (asgList != null && asgList.size() > 0) {
-									for (ActivitySaleGoods asg : asgList) {
-										goodsStoreSkuIds.add(asg.getStoreSkuId());
-									}
-								}
-							}
-							Thread.sleep(5000);
-							// 把所有店铺商品online改成下架
-							if (goodsStoreSkuIds.size() > 0) {
-								elGoodsServiceApi.saveGoodsToELApi(goodsStoreSkuIds,1,0);
-							}
 						}
 					} catch (Exception e) {
 						logger.error("特惠活动定时器异常" + a.getId(), e);
