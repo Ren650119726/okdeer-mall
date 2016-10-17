@@ -4,9 +4,10 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo;
-import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.activity.coupons.vo.InvitationRegisterRecordVo;
 
 /**
  * ClassName: ActivityCollectCouponsRegistRecordMapper 
@@ -19,6 +20,7 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构4.1			 2016年9月18日 			zhulq
  *		V1.1.0			2016-10-15 			wushp			V1.1.0
+ *		Bug:14408		 2016年10月17日 	    maojj			邀请注册送代金券活动首页显示邀请记录（包括成功邀请人数、获得奖励、被邀请人头像、是否完成首单）
  */
 public interface ActivityCollectCouponsRegistRecordMapper extends IBaseCrudMapper {
 
@@ -82,4 +84,9 @@ public interface ActivityCollectCouponsRegistRecordMapper extends IBaseCrudMappe
 	 */
 	ActivityCollectCouponsRegisteRecord selectByInviteId(String inviteId);
 	// end add by wushp 20161015
+	
+	// Begin Bug:14408 added by maojj 2016-10-17
+	List<InvitationRegisterRecordVo> findInviteRegisterRecord(@Param("userId")String userId,@Param("activityId")String activityId);
+	// End Bug:14408 added by maojj 2016-10-17
+
 }

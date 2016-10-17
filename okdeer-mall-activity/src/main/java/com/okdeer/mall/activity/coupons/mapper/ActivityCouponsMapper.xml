@@ -461,7 +461,7 @@
 	
 	<!-- begin yangq 获取面额 -->
 	<select id="selectFaceMoney" parameterType="java.lang.String" resultType="int">
-		SELECT sum(ac.face_value) FROM activity_collect_coupons acc LEFT JOIN activity_coupons ac ON acc.`id` = ac.`activity_id` WHERE acc.`id` = #{id,jdbcType=VARCHAR}	
+		SELECT sum(ac.face_value) FROM activity_collect_coupons acc LEFT JOIN activity_coupons ac ON acc.`id` = ac.`activity_id` WHERE acc.`id` = #{id,jdbcType=VARCHAR} AND acc.status = 1	
 	</select>
 	<!-- end yangq 获取面额 -->
 	

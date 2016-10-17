@@ -174,4 +174,19 @@
 	    </set>
 	    where id = #{id,jdbcType=VARCHAR}
   </update>
+  
+  <!-- Begin Bug:14408 added by maojj 2016-10-17 -->
+  <select id="findInviteRegisterRecord" parameterType="map" resultType = "com.okdeer.mall.activity.coupons.vo.InvitationRegisterRecordVo">
+	  	SELECT
+			buyer.phone AS inviteesPhone,
+			buyer.pic_url AS picUrl,
+			record.finish_order_time AS finishOrderTime
+		FROM
+			activity_collect_coupons_regist_record record
+		LEFT JOIN sys_buyer_user buyer ON record.invite_id = buyer.id
+		WHERE
+			record.activity_id = #{activityId}
+		AND record.user_id = #{userId}
+  </select>
+  <!-- End Bug:14408 added by maojj 2016-10-17 -->
 </mapper>
