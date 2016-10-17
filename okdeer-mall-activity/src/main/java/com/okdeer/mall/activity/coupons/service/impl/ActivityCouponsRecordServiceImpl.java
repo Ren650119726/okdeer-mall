@@ -2,6 +2,7 @@ package com.okdeer.mall.activity.coupons.service.impl;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -144,55 +145,70 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		return activityCouponsRecordMapper.selectCountByParams(activityCouponsRecord);
 	}
 
+	// begin update by　zhulq  2016-10-17  新增方法提供给之前的版本
 	@Override
 	@Transactional(readOnly = true)
 	public List<ActivityCouponsRecordQueryVo> findMyCouponsDetailByParams(ActivityCouponsRecordStatusEnum status,
-			String currentOperateUserId) throws ServiceException {
+			String currentOperateUserId,Boolean flag) throws ServiceException {
 		ActivityCouponsRecord activityCouponsRecord = new ActivityCouponsRecord();
 		activityCouponsRecord.setStatus(status);
 		activityCouponsRecord.setCollectUserId(currentOperateUserId);
 		List<ActivityCouponsRecordQueryVo> voList = new ArrayList<>();
-		voList = activityCouponsRecordMapper.selectMyCouponsDetailByParams(activityCouponsRecord);
-		if (voList != null && voList.size() > 0) {
-			for (ActivityCouponsRecordQueryVo vo : voList) {
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(vo.getValidTime());
-				cal.add(Calendar.DATE, -1); // 减1天
-				vo.setValidTime(cal.getTime());
-				ActivityCoupons activityCoupons = vo.getActivityCoupons();
-				if (activityCoupons.getType() == 1) {
-					if (activityCoupons.getIsCategory() == 1) {
-						String categoryNames = "";
-						//CouponsInfoQuery couponsInfo = activityCouponsMapper.findNavCategoryByCouponsId(activityCoupons.getId());
-						List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
-						if (cates != null) {
-					    	for (ActivityCouponsCategory category : cates) {
-					    		if (StringUtils.isNotBlank(categoryNames)) {
-						    		categoryNames =  categoryNames + "、" ;	
-					    		}	
-					    		categoryNames = categoryNames + category.getCategoryName();
-					    	}
-					    }
-						activityCoupons.setCategoryNames(categoryNames);
+		SimpleDateFormat format = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss"); 
+		Date validTime = null;
+		try {
+			validTime = format.parse("2016-10-19 23:59:59");
+			// true  新的版本的请求
+			if (flag) {
+				voList = activityCouponsRecordMapper.selectMyCouponsDetailByParams(activityCouponsRecord);
+			} else {	
+				activityCouponsRecord.setValidTime(validTime);
+				voList = activityCouponsRecordMapper.selectMyCouponsDetailByParamsOld(activityCouponsRecord);
+			}
+			if (voList != null && voList.size() > 0) {
+				for (ActivityCouponsRecordQueryVo vo : voList) {
+					Calendar cal = Calendar.getInstance();
+					cal.setTime(vo.getValidTime());
+					// 减1天
+					cal.add(Calendar.DATE, -1); 
+					vo.setValidTime(cal.getTime());
+					ActivityCoupons activityCoupons = vo.getActivityCoupons();
+					if (activityCoupons.getType() == 1) {
+						if (activityCoupons.getIsCategory() == 1) {
+							String categoryNames = "";
+							//CouponsInfoQuery couponsInfo = activityCouponsMapper.findNavCategoryByCouponsId(activityCoupons.getId());
+							List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
+							if (cates != null) {
+						    	for (ActivityCouponsCategory category : cates) {
+						    		if (StringUtils.isNotBlank(categoryNames)) {
+							    		categoryNames =  categoryNames + "、" ;	
+						    		}	
+						    		categoryNames = categoryNames + category.getCategoryName();
+						    	}
+						    }
+							activityCoupons.setCategoryNames(categoryNames);
+						}
+					} else if (activityCoupons.getType() == 2) {
+						if (activityCoupons.getIsCategory() == 1) {
+							String categoryNames = "";
+							//CouponsInfoQuery couponsInfo = activityCouponsMapper.findSpuCategoryByCouponsId(activityCoupons.getId());
+							List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
+							if (cates != null) {
+						    	for (ActivityCouponsCategory category : cates) {
+						    		if (StringUtils.isNotBlank(categoryNames)) {
+							    		categoryNames =  categoryNames + "、" ;	
+						    		}	
+						    		categoryNames = categoryNames + category.getCategoryName();						    		
+						    	}
+						    }
+							activityCoupons.setCategoryNames(categoryNames);
+						}
+						
 					}
-				} else if (activityCoupons.getType() == 2) {
-					if (activityCoupons.getIsCategory() == 1) {
-						String categoryNames = "";
-						//CouponsInfoQuery couponsInfo = activityCouponsMapper.findSpuCategoryByCouponsId(activityCoupons.getId());
-						List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
-						if (cates != null) {
-					    	for (ActivityCouponsCategory category : cates) {
-					    		if (StringUtils.isNotBlank(categoryNames)) {
-						    		categoryNames =  categoryNames + "、" ;	
-					    		}	
-					    		categoryNames = categoryNames + category.getCategoryName();						    		
-					    	}
-					    }
-						activityCoupons.setCategoryNames(categoryNames);
-					}
-					
 				}
 			}
+		} catch (ParseException e) {
+			throw new ServiceException("获取我的代金券列表异常", e);
 		}
 		return voList;
 

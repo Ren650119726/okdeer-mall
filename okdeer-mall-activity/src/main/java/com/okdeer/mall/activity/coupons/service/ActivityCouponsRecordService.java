@@ -66,7 +66,7 @@ public interface ActivityCouponsRecordService {
 	 * @throws ServiceException
 	 */
 	List<ActivityCouponsRecordQueryVo> findMyCouponsDetailByParams(ActivityCouponsRecordStatusEnum status,
-			String currentOperateUserId) throws ServiceException;
+			String currentOperateUserId,Boolean flag) throws ServiceException;
 
 	/**
 	 * 

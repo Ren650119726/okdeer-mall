@@ -415,6 +415,35 @@
     ORDER BY record.collect_time DESC
   </select> 
   
+  <!-- add by zhulq  新增aql  使用于以前的版本 我的代金券 -->
+  <select id="selectMyCouponsDetailByParamsOld" resultMap="couponsAndLimitCategoryDetailMap" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
+   SELECT 
+   coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
+   coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
+   coupons.type AS type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, 
+   coupons.id as couponsId,record.id,record.collect_time,record.valid_time,  		
+   CASE
+   WHEN coupons.type = 1 THEN nav.name
+   WHEN coupons.type = 2 THEN spu.name
+   ELSE '' END as category_name
+   FROM activity_coupons_record record
+   LEFT JOIN activity_coupons coupons ON record.coupons_id = coupons.id
+   LEFT JOIN activity_coupons_category category ON category.coupon_id = coupons.id	
+   LEFT JOIN goods_navigate_category nav ON nav.id = category.category_id
+   LEFT JOIN goods_spu_category spu ON spu.id = category.category_id
+   WHERE 1=1  
+   <if test="collectUserId != null and collectUserId != ''">
+     AND record.collect_user_id = #{collectUserId,jdbcType=VARCHAR}
+   </if>
+   <if test="status != null">
+     AND record.`status` = #{status,jdbcType=TINYINT}
+   </if>
+   <if test="validTime != null">
+			<![CDATA[ AND coupons.create_time <= #{validTime}]]> 
+   </if>
+    ORDER BY record.collect_time DESC
+  </select>
+  
   <!-- yangq:根据领取人id、领取状态，店铺ID，查询领取的代金券详细信息 -->
   <select id="selectCouponsDetailByStoreId" resultMap="couponsAndLimitCategoryDetailMap"  parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
 	   SELECT coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,

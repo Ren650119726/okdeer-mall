@@ -248,4 +248,13 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
      */
     List<ActivityCouponsRecord> selectAllRecordsByUserId(ActivityCouponsRecord couponsRecord);
 
+    /**
+     * 
+     * @Description: 1.0.0 查询我的代金券
+     * @param activityCouponsRecord 代金卷记录
+     * @return List
+     * @author zhulq
+     * @date 2016年10月17日
+     */
+	List<ActivityCouponsRecordQueryVo> selectMyCouponsDetailByParamsOld(ActivityCouponsRecord activityCouponsRecord);
 }
