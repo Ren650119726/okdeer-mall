@@ -914,7 +914,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 	 * @date 2016年10月15日
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	public void firstOrderReturnCoupons(String tradeNum) throws Exception{
+	public void firstOrderReturnCoupons(String tradeNum) throws Exception {
 		TradeOrder tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
 		// Begin 判断订单状态为不是待买家支付中，就过掉该消息 add by zengj 
 		if (tradeOrder == null || StringUtils.isBlank(tradeOrder.getUserId())) {
@@ -969,6 +969,11 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 				// 已经达到限领数量
 				return;
 			}
+			
+			// 首单完成时间
+			registeRecord.setFinishOrderTime(new Date());
+			// 代金券活动邀请注册记录表更新首单完成时间
+			couponsRegisteRecordServiceApi.updateByPrimaryKeySelective(registeRecord);
 			
 			// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 			ActivityCouponsRecord activityCouponsRecord = new ActivityCouponsRecord();
