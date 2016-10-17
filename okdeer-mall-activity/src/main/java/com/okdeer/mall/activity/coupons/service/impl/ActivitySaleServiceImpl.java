@@ -62,7 +62,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 
-
 	// @Reference(version = "1.0.0", check = false)
 	// private StockManagerServiceApi stockManagerServiceApi;
 
@@ -79,7 +78,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	 */
 	@Autowired
 	RollbackMQProducer rollbackMQProducer;
-
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -205,10 +203,10 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
 		AdjustDetailVo adjustDetailVo = new AdjustDetailVo();
 		adjustDetailVo.setStoreSkuId(goods.getStoreSkuId());
-//		adjustDetailVo.setNum(goods.getSaleStock());
-		//begin zhangkn 和曾俊和刘玄确认过,这个值,erp那边没用,传0过去,减少对erp的干扰 
+		// adjustDetailVo.setNum(goods.getSaleStock());
+		// begin zhangkn 和曾俊和刘玄确认过,这个值,erp那边没用,传0过去,减少对erp的干扰
 		adjustDetailVo.setNum(0);
-		//end zhangkn
+		// end zhangkn
 		/*************新增字段 start **************/
 		adjustDetailVo.setGoodsName(entity.getName());
 		adjustDetailVo.setBarCode(entity.getBarCode());
@@ -349,7 +347,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			params.put("ids", ids);
 			params.put("status", status);
 			activitySaleMapper.updateBatchStatus(params);
-
+			
 			// 如果状态时进行中,要把活动关联的所有商品状态改为上架
 			if (status == ActivitySaleStatus.ing.getValue()) {
 				List<String> goodsStoreSkuIds = new ArrayList<String>();

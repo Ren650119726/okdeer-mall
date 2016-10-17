@@ -98,7 +98,7 @@
 	        user_id = #{userId,jdbcType=VARCHAR}, 
 	      </if> 
 	    </set>
-	    WHERE user_id = #{userId,jdbcType=VARCHAR}
+	    WHERE id = #{id,jdbcType=VARCHAR}
   </update>
 
 

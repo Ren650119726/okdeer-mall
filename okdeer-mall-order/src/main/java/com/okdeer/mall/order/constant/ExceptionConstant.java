@@ -175,4 +175,6 @@ public interface ExceptionConstant {
 	/*
 	 * 订单相关提示 end
 	 */
+	
+	public static final String COUPONS_REGISTE_RETURN_FAIL = "订单处理邀请注册首单送券异常，tradeNum={}，异常信息{}";
 }

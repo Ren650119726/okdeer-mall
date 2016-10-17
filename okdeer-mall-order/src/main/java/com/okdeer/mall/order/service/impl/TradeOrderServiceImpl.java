@@ -70,6 +70,7 @@ import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
+import com.okdeer.archive.goods.store.enums.IsAppointment;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
@@ -6563,9 +6564,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 
 		// 确认收货，更新用户邀请记录
-		updateInvitationRecord(tradeOrder.getUserId());
+	    updateInvitationRecord(tradeOrder.getUserId()); 
 		
-		// 用户支付成功，发送消费码短信
+		//用户支付成功，发送消费码短信
 		try {
 			String consumeCodes = null;
 			if (consumeCodeSb.length() > 0) {
@@ -6580,19 +6581,34 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			StoreInfoExt storeInfoExt = storeInfo.getStoreInfoExt();
 			
 			StringBuffer smsBuffer = new StringBuffer();
-			smsBuffer.append("您的").append(orderItem.getSkuName()).append("购买成功！消费码为").append(consumeCodes)
-					.append("，商家地址：").append(storeAddress).append("，商家电话：").append(storeInfoExt.getServicePhone())
-					.append("，有效期").append(DateUtils.formatDate(goodsService.getStartTime(), null)).append("至")
-					.append(DateUtils.formatDate(goodsService.getEndTime(), null));
-			if (storeInfoExt.getIsAdvanceType() == 1) {
-				smsBuffer.append("，需提前").append(storeInfoExt.getAdvanceTime());
-				if (storeInfoExt.getAdvanceType() == 0) {
-					// 提前N小时预约
-					smsBuffer.append("小时预约");
-				} else if (storeInfoExt.getAdvanceType() == 1) {
-					// 提前N天预约
-					smsBuffer.append("天预约");
-				}
+			smsBuffer.append("您的")
+			         .append(orderItem.getSkuName())
+			         .append("购买成功！消费码为")
+			         .append(consumeCodes)
+					 .append("，商家地址：")
+					 .append(storeAddress)
+					 .append("，商家电话：")
+					 .append(storeInfoExt.getServicePhone())
+					 .append("，有效期").append(DateUtils.formatDate(goodsService.getStartTime(), null))
+					 .append("至")
+					 .append(DateUtils.formatDate(goodsService.getEndTime(), null));
+			//服务预约是服务商品设置的预约时间
+			IsAppointment isAppointment = goodsService.getIsAppointment();
+			if(isAppointment != null) {
+			    if(isAppointment == IsAppointment.NEED) {
+			        Float appointmentHour = goodsService.getAppointmentHour();
+			        int appointHour = 0;
+			        if(appointmentHour != null) {
+			            appointHour = appointmentHour.intValue();
+			        }
+			        smsBuffer.append("，需提前")
+			                 .append(appointHour)
+			                 .append("小时预约");
+			    } else {
+			        smsBuffer.append("，无需预约");
+			    }
+			} else {
+			    smsBuffer.append("，无需预约"); 
 			}
 			smsBuffer.append("，记得要在有效期内消费噢！");
 
@@ -6621,13 +6637,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	private String buildAddress(String storeId) throws Exception {
 		MemberConsigneeAddress memberConsignee = memberConsigneeAddressService.getSellerDefaultAddress(storeId);
 		StringBuilder storeAddr = new StringBuilder();
-		storeAddr.append(memberConsignee.getProvinceName()).append(memberConsignee.getCityName())
-				.append(memberConsignee.getAreaName()).append(memberConsignee.getAreaExt())
-				.append(memberConsignee.getAddress());
+		storeAddr.append(memberConsignee.getProvinceName() == null ? "" : memberConsignee.getProvinceName())
+		         .append(memberConsignee.getCityName() == null ? "" : memberConsignee.getCityName())
+				 .append(memberConsignee.getAreaName() == null ? "" : memberConsignee.getAreaName())
+				 .append(memberConsignee.getAreaExt() == null ? "" : memberConsignee.getAreaExt())
+				 .append(memberConsignee.getAddress() == null ? "" : memberConsignee.getAddress());
 		if (StringUtils.isBlank(memberConsignee.getProvinceName())) {
 			storeAddr = new StringBuilder();
-			storeAddr.append(memberConsignee.getArea().trim());
-			storeAddr.append(memberConsignee.getAddress());
+			storeAddr.append(memberConsignee.getArea() == null ? "" : memberConsignee.getArea().trim());
+			storeAddr.append(memberConsignee.getAddress() == null ? "" : memberConsignee.getAddress());
 		}
 		return storeAddr.toString();
 	}
@@ -6747,5 +6765,4 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		return tradeOrderMapper.selectServiceRefundAmount(params);
 	}
 	// end added by luosm 20161010 V1.1.0
-	
 }

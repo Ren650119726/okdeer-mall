@@ -365,7 +365,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		goodsStoreSku.setActivityName("");
 		goodsStoreSku.setIsActivity(IsActivity.ABSTENTION);
 		goodsStoreSku.setActivityType(StoreActivityTypeEnum.NONE);
-		goodsStoreSku.setUpdateTime(new Date());
+		//goodsStoreSku.setUpdateTime(new Date());
 
 		String rpcId = UuidUtils.getUuid();
 		rpcIdBySkuList.add(rpcId);
@@ -389,7 +389,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		storeSku.setActivityName("秒杀活动");
 		storeSku.setIsActivity(IsActivity.ATTEND);
 		storeSku.setActivityType(StoreActivityTypeEnum.SECKILL);
-		storeSku.setUpdateTime(new Date());
+		//storeSku.setUpdateTime(new Date());
 
 		// RPCID
 		String rpcId = UuidUtils.getUuid();

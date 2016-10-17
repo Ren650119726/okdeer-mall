@@ -146,4 +146,32 @@
 	</insert>
    <!-- end by:yangq 保存邀请码记录 -->
    
+   <!-- 根据被邀请人查询邀请注册记录 -->
+   <select id="selectByInviteId" parameterType="java.lang.String" resultMap="BaseResultMap">
+   		SELECT <include refid="Base_Column_List"></include> 
+   		FROM activity_collect_coupons_regist_record
+   		WHERE invite_id = #{inviteId}
+   </select>
+   
+   <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecord" >
+	    update activity_collect_coupons_regist_record
+	    <set >
+	      <if test="activityId != null" >
+	        activity_id = #{activityId},
+	      </if>
+	      <if test="userId != null" >
+	        user_id = #{userId},
+	      </if>
+	      <if test="inviteId != null" >
+	        invite_id = #{inviteId},
+	      </if>
+	      <if test="finishOrderTime != null" >
+	        finish_order_time = #{finishOrderTime},
+	      </if>
+	      <if test="machineCode != null" >
+	        machine_code = #{machineCode},
+	      </if>
+	    </set>
+	    where id = #{id,jdbcType=VARCHAR}
+  </update>
 </mapper>
