@@ -188,30 +188,42 @@
  
  <!-- 查询指定开始时间、结束时间有交集、指定区域有交集的记录数量   add by zhongy-->
    <select id="selectCountByDistrict" resultType="int">
-     SELECT count(1)
-     FROM activity_recommend a 
-     LEFT JOIN activity_recommend_range arr ON a.id = arr.activity_recommend_id
-	  WHERE a.disabled !=1
-	  AND (a.recommend_status = 0 OR a.recommend_status = 1)
-      <if test="null!=params" >
-	      AND ((a.start_time <![CDATA[>=]]> #{params.startTime,jdbcType=TIMESTAMP} 
-	      AND a.start_time <![CDATA[<]]> #{params.endTime,jdbcType=TIMESTAMP})
-	             OR (a.start_time <![CDATA[<=]]> #{params.startTime,jdbcType=TIMESTAMP} AND a.end_time <![CDATA[>]]> #{params.startTime,jdbcType=TIMESTAMP})
-	             OR (a.start_time <![CDATA[<=]]> #{params.startTime,jdbcType=TIMESTAMP} AND a.end_time <![CDATA[>=]]> #{params.endTime,jdbcType=TIMESTAMP}))
-	      <if test="params.id != null and params.id != ''">
-	        AND a.id != #{params.id,jdbcType=VARCHAR}
-	      </if>
-	      <if test="params.areaType.name == 'area'">  
-	        AND (
-	            <if test="params.areaIds != null ">
-			    arr.city_id in  
-			     <foreach collection="params.areaIds" open="(" close=")" index="index" item="item"  separator=",">
-		            #{item}
-		          </foreach>
-	             </if>
-	            )
-		 </if> 
-      </if>
+      SELECT count(1)
+		FROM
+		activity_recommend
+		rec
+		LEFT JOIN
+		activity_recommend_range
+		ran ON rec.id = ran.activity_recommend_id
+		WHERE rec.disabled = 0
+		AND (rec.recommend_status = 0 OR rec.recommend_status = 1)
+		AND ((rec.start_time <![CDATA[>=]]>
+		#{params.startTime,jdbcType=TIMESTAMP}
+		AND rec.start_time <![CDATA[<]]>
+		#{params.endTime,jdbcType=TIMESTAMP})
+		OR (rec.start_time <![CDATA[<=]]>
+		#{params.startTime,jdbcType=TIMESTAMP} AND rec.end_time <![CDATA[>]]>
+		#{params.startTime,jdbcType=TIMESTAMP})
+		OR (rec.start_time <![CDATA[<=]]>
+		#{params.startTime,jdbcType=TIMESTAMP} AND rec.end_time <![CDATA[>=]]>
+		#{params.endTime,jdbcType=TIMESTAMP})) 
+		<if test="params.id != null and params.id != ''">
+			AND rec.id != #{params.id,jdbcType=VARCHAR}
+		</if>
+		<if test="params.isFlag != null and params.isFlag != ''">
+			AND rec.recommend_range_type = 0 
+		</if>
+		<if test="params.rangeType.name == 'area'">
+			AND (
+			<if test="params.areaIds != null ">
+				ran.city_id in
+				<foreach collection="params.areaIds" open="(" close=")"
+					index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			)
+		</if>
    </select>
    
    <!--根据用户定位城市名称查询推荐活动 start  add by zhongy-->

@@ -101,7 +101,7 @@ public class ActivityRecommendServiceImpl implements ActivityRecommendServiceApi
 
 	@Transactional(rollbackFor = ServiceException.class)
 	@Override
-	public Integer checkForm(ActivityRecommendVo activityRecommendVo) throws ServiceException {
+	public boolean checkForm(ActivityRecommendVo activityRecommendVo) throws ServiceException {
 		logger.info(LogConstants.INCOMING_METHOD, activityRecommendVo);
 		String id = activityRecommendVo.getId();
 		Date startTime = activityRecommendVo.getStartTime();
@@ -120,7 +120,25 @@ public class ActivityRecommendServiceImpl implements ActivityRecommendServiceApi
 		params.put("endTime", endTime);
 		params.put("areaIds", areaIds);
 		params.put("areaType", areaType);
-		return activityRecommendMapper.selectCountByDistrict(params);
+		
+		Boolean flag = true;
+		if (AreaType.area == areaType) {
+			// 当前区域是否存在有推荐活动
+			Integer countOne = activityRecommendMapper.selectCountByDistrict(params);
+			// 同一个时间是否有推荐活动存在
+			params.put("areaIds", null);
+			params.put("rangeType", AreaType.national);
+			// 排除选择全国的推荐活动
+			params.put("isFlag", "Y");
+			Integer countTwo = activityRecommendMapper.selectCountByDistrict(params);
+			flag = countOne > 0 || countTwo > 0 ? false : true;
+		} else {
+			// 同一个时间是否有推荐活动存在（全国）
+			Integer count = activityRecommendMapper.selectCountByDistrict(params);
+			flag = count > 0 ? false : true;
+		}
+		return flag;
+		// return activityRecommendMapper.selectCountByDistrict(params);
 	}
 
 	/**
