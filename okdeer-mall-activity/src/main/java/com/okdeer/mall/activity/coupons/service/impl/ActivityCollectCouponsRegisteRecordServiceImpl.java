@@ -247,10 +247,14 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 			couponsRecord.setCouponsCollectId(activityId);
 			couponsRecord.setCollectTime(new Date());
 			couponsRecord.setCollectUserId(inviteesId);
-			SimpleDateFormat format = new SimpleDateFormat("YYYY-mm-dd HH:mm:ss");
-			Calendar c = Calendar.getInstance();
-			c.add(Calendar.DATE, coupons.getValidDay());
-			couponsRecord.setValidTime(format.parse(format.format(new Date())));
+			Date date = new Date();
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(date);
+			calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0,
+					0, 0);
+			calendar.set(Calendar.MILLISECOND, 0);
+			calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
+			couponsRecord.setValidTime(calendar.getTime());
 			couponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
 			couponsRecordList.add(couponsRecord);
 		}
