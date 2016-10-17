@@ -6596,8 +6596,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			IsAppointment isAppointment = goodsService.getIsAppointment();
 			if(isAppointment != null) {
 			    if(isAppointment == IsAppointment.NEED) {
+			        Float appointmentHour = goodsService.getAppointmentHour();
+			        int appointHour = 0;
+			        if(appointmentHour != null) {
+			            appointHour = appointmentHour.intValue();
+			        }
 			        smsBuffer.append("，需提前")
-			                 .append(goodsService.getAppointmentHour())
+			                 .append(appointHour)
 			                 .append("小时预约");
 			    } else {
 			        smsBuffer.append("，无需预约");
