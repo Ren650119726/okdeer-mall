@@ -157,7 +157,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		SimpleDateFormat format = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss"); 
 		Date validTime = null;
 		try {
-			validTime = format.parse("2016-10-20 23:59:59");
+			validTime = format.parse("2016-10-19 23:59:59");
 			// true  新的版本的请求
 			if (flag) {
 				voList = activityCouponsRecordMapper.selectMyCouponsDetailByParams(activityCouponsRecord);

@@ -439,7 +439,7 @@
      AND record.`status` = #{status,jdbcType=TINYINT}
    </if>
    <if test="validTime != null">
-			<![CDATA[ AND record.valid_time <= #{validTime}]]> 
+			<![CDATA[ AND coupons.create_time <= #{validTime}]]> 
    </if>
     ORDER BY record.collect_time DESC
   </select>
