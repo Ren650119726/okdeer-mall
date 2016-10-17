@@ -347,13 +347,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			params.put("ids", ids);
 			params.put("status", status);
 			activitySaleMapper.updateBatchStatus(params);
-			// 验完删除
-			for (String id : ids) {
-				ActivitySale as = activitySaleMapper.get(id);
-				if (as != null)
-					log.info("修改状态之后，立马查询：" + as.getId() + " " + as.getStatus() + " " + as.getUpdateTime());
-			}
-			// 验完删除
+			
 			// 如果状态时进行中,要把活动关联的所有商品状态改为上架
 			if (status == ActivitySaleStatus.ing.getValue()) {
 				List<String> goodsStoreSkuIds = new ArrayList<String>();
