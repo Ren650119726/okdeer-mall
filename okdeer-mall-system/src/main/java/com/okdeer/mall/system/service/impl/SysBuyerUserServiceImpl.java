@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysBuyerUserThirdparty;
@@ -620,4 +621,43 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
         return invitationCode;
     }
     //End add by zhaoqc 2016.10.05
+    
+    // Begin added by maojj 2016-10-17
+    /**
+     * @Description: 验证码校验
+     * @param requestParam   
+     * @author maojj
+     * @date 2016年10月17日
+     */
+    @Override
+    public Map<String,Object> checkVerifyCode(Map<String, Object> requestParam) throws Exception{
+    	Map<String,Object> checkResult = new HashMap<String,Object>();
+    	checkResult.put("resultCode", ResultCodeEnum.SUCCESS);
+    	// 用户手机号码
+    	String phone = String.valueOf(requestParam.get("phone"));
+    	// 验证码业务类型，对应枚举VerifyCodeBussinessTypeEnum
+    	String bussinessTypeSearch = String.valueOf(requestParam.get("bussinessTypeSearch"));
+    	// 查询类型：0：语音，1：短信
+    	String typeSearch = String.valueOf(requestParam.get("typeSearch"));
+    	// 用户输入的验证码
+    	String verifyCode = String.valueOf(requestParam.get("verifyCode"));
+    	Map<String, Object> params = new HashMap<String, Object>();
+		params.put("phoneSearch", phone);
+		params.put("typeSearch", typeSearch);
+		params.put("bussinessTypeSearch", bussinessTypeSearch);
+		SysSmsVerifyCode sysSmsVerifyCode = sysSmsVerifyCodeService.findLatestByParams(params);
+		if (sysSmsVerifyCode == null || !verifyCode.equals(sysSmsVerifyCode.getVerifyCode())) {
+			// 如果验证码不存在或者验证码不匹配，则提示验证码错误
+	    	checkResult.put("resultCode", ResultCodeEnum.VERIFY_CODE_ERROR);
+			return checkResult;
+		} else if (sysSmsVerifyCode.getStatus() == 1) {
+			// 如果验证码已使用，则提示无效验证码
+			checkResult.put("resultCode", ResultCodeEnum.VERIFY_CODE_INVALID);
+			return checkResult;
+		}
+		// 校验成功，将验证码ID返回到请求参数中。用于业务处理成功之后，将验证码更改为已使用状态
+		checkResult.put("verifyCodeId", sysSmsVerifyCode.getId());
+		return checkResult;
+    }
+    // End added by maojj 2016-10-17
 }
