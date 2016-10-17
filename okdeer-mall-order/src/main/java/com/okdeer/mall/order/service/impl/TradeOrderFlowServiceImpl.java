@@ -4427,11 +4427,11 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		List<AdjustDetailVo> detailList = new ArrayList<AdjustDetailVo>();
 		// 0:云钱包,1:支付宝支付,2:微信支付,3:京东支付,4:现金支付,5:友门鹿垫付,6:网银支付,7:银行转账
 		// 现金,网银支付是POS_PLACE_ORDER, 支付宝,微信扫码是PLACE_ORDER("下订单"),
-		if (payWay.equals("1") || payWay.equals("2")) {
-			stockVo.setStockOperateEnum(StockOperateEnum.PLACE_ORDER);
-		} else {
+//		if (payWay.equals("1") || payWay.equals("2")) {
+//			stockVo.setStockOperateEnum(StockOperateEnum.PLACE_ORDER);
+//		} else {
 			stockVo.setStockOperateEnum(StockOperateEnum.POS_PLACE_ORDER);
-		}
+//		}
 
 		for (int i = 0; i < array.size(); i++) {
 
