@@ -431,15 +431,12 @@
    LEFT JOIN activity_coupons_category category ON category.coupon_id = coupons.id	
    LEFT JOIN goods_navigate_category nav ON nav.id = category.category_id
    LEFT JOIN goods_spu_category spu ON spu.id = category.category_id
-   WHERE 1=1  
+   WHERE coupons.create_time &lt;= '2016-10-19 23:59:59'
    <if test="collectUserId != null and collectUserId != ''">
      AND record.collect_user_id = #{collectUserId,jdbcType=VARCHAR}
    </if>
    <if test="status != null">
      AND record.`status` = #{status,jdbcType=TINYINT}
-   </if>
-   <if test="validTime != null">
-			<![CDATA[ AND coupons.create_time <= #{validTime}]]> 
    </if>
     ORDER BY record.collect_time DESC
   </select>
@@ -754,5 +751,21 @@
         )
 	</insert>
    <!-- end by:yangq 保存邀请码记录 -->
+   
+   <!-- begin added by maojj 20161018 查询用户参与邀请注册送代金券领取的总金额 -->
+   <select id="findTotalRewardAmount" parameterType="map" resultType="java.lang.Integer">
+   		SELECT
+			sum(t1.face_value)
+		FROM
+			activity_coupons_record t0
+		LEFT JOIN activity_coupons t1 ON t0.coupons_id = t1.id
+		WHERE
+			t0.coupons_collect_id = #{activityId}
+		AND t0.collect_user_id = #{userId}
+		<if test="limitDate != null">
+			AND t0.collect_time &gt; #{limitDate}
+		</if>
+   </select>
+   <!-- End added by maojj 20161018 -->
     
 </mapper> 
