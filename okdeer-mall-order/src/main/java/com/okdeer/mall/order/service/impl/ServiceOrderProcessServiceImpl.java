@@ -1357,7 +1357,6 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	@Override
 	public Response<ServiceOrderResp> confirmSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
 			throws OrderException, Exception {
-		// TODO 测试完成之后去除该注释
 		resp.setData(new ServiceOrderResp());
 		req.setOrderOptType(OrderOptTypeEnum.ORDER_SETTLEMENT);
 		confirmSeckillOrderChain.process(req, resp);

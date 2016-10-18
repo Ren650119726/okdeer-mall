@@ -25,7 +25,6 @@ import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.common.consts.RedisKeyConstants;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRecord;
@@ -161,7 +160,6 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 //			redisTemplateWrapper.decr(seckillStockKey);
 			stringRedisTemplate.boundValueOps(seckillStockKey).increment(-1);
 		} catch (Exception e) {
-			//TODO
 			if(rpcId != null){
 				rollbackMQProducer.sendStockRollbackMsg(rpcId);
 //				redisTemplateWrapper.incr(seckillStockKey);
@@ -206,7 +204,7 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		tradeOrder.setUpdateTime(new Date());
 		// 设置订单编号
 		setOrderNo(tradeOrder);
-		// 设置订单总金额 TODO
+		// 设置订单总金额 
 		BigDecimal skuPrice = (BigDecimal) req.getContext().get("skuPrice");
 		BigDecimal seckillPrice = (BigDecimal) req.getContext().get("seckillPrice");
 		BigDecimal favourPrice = skuPrice.subtract(seckillPrice);
