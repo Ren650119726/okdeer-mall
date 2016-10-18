@@ -431,15 +431,12 @@
    LEFT JOIN activity_coupons_category category ON category.coupon_id = coupons.id	
    LEFT JOIN goods_navigate_category nav ON nav.id = category.category_id
    LEFT JOIN goods_spu_category spu ON spu.id = category.category_id
-   WHERE 1=1  
+   WHERE coupons.create_time &lt;= '2016-10-19 23:59:59'
    <if test="collectUserId != null and collectUserId != ''">
      AND record.collect_user_id = #{collectUserId,jdbcType=VARCHAR}
    </if>
    <if test="status != null">
      AND record.`status` = #{status,jdbcType=TINYINT}
-   </if>
-   <if test="validTime != null">
-			<![CDATA[ AND coupons.create_time <= #{validTime}]]> 
    </if>
     ORDER BY record.collect_time DESC
   </select>
