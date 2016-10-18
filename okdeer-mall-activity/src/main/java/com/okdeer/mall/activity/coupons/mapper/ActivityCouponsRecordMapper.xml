@@ -198,11 +198,12 @@
   
    <select id="selectAllRecords" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo" resultMap="RecordVoMap">
 	  select A.id, A.collect_type, A.coupons_id, A.coupons_collect_id, A.collect_time, A.collect_user_id, B.name, B.activity_id, B.arrive_limit, 
-             B.valid_day, A.valid_time, A.STATUS, A.order_id, A.room_id, C.name as activity_name, D.login_name as user_name, B.face_value, B.belong_type 
+             B.valid_day, A.valid_time, A.STATUS, A.order_id, T.order_no, A.room_id, C.name as activity_name, D.login_name as user_name, B.face_value, B.belong_type 
       FROM activity_coupons_record A
       LEFT JOIN activity_coupons B ON B.id = A.coupons_id
       LEFT JOIN activity_collect_coupons C ON C.id = B.activity_id
       LEFT JOIN sys_buyer_user D ON D.id = A.collect_user_id   
+      LEFT JOIN trade_order T ON T.id = A.order_id
       WHERE 1 = 1 
       <if test="name != null and name != ''">
             AND B.name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
@@ -655,7 +656,7 @@
 		WHERE t.collect_user_id = #{userId}
 			and t.status = 0
 			and c.disabled = 0 
-			and (c.arrive_limit &lt;= #{orderAmount} or c.arrive_limit =  0) 
+			and c.arrive_limit &lt;= #{orderAmount}
 			and c.type = 3
 		ORDER BY c.face_value DESC, t.valid_time
 	</select>

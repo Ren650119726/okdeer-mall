@@ -119,14 +119,14 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				cal.add(Calendar.DATE, -1); // 减1天
 				vo.setValidTime(cal.getTime());
 			}
-			if (CollectionUtils.isNotEmpty(recordIds)) {
+/*			if (CollectionUtils.isNotEmpty(recordIds)) {
 				List<ActivityCouponsRecordVo> list = activityCouponsRecordMapper.findOrderByRecordId(recordIds);
 				for (ActivityCouponsRecordVo recordVo : recordInfos) {
 					for (ActivityCouponsRecordVo record : list) {
 						recordVo.setOrderNo(record.getOrderNo());
 					}
 				}
-			}
+			}*/
 		}
 		PageUtils<ActivityCouponsRecordVo> pageUtils = new PageUtils<ActivityCouponsRecordVo>(recordInfos);
 		return pageUtils;
