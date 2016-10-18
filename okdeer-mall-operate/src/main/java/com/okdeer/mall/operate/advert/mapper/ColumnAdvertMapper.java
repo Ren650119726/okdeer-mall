@@ -32,6 +32,7 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		广告修改			2016-7-15			zhulq	            广告模块修改
  *		广告修改			2016-8-3			zhulq	            广告上架时候判断一定是审核通过
+ *		v1.1.0			2016-10-18			zhulq        获取默认广告
  */
 @Repository
 public interface ColumnAdvertMapper extends IBaseCrudMapper {
@@ -163,4 +164,15 @@ public interface ColumnAdvertMapper extends IBaseCrudMapper {
 	 */
 	List<ColumnAdvert> findMobileDoorAdvert(Map<String,Object> params);
 	//end 广告张数的限制  审核代理商上传的张数   	add by zhulq  2016-7-16
+	
+	// begin  add　　by zhulq  获取默认的广告图片  2016-10-18
+	/** 
+	 * @Description: 获取默认的广告图片
+	 * @param map  map
+	 * @return ColumnAdvert
+	 * @author zhulq
+	 * @date 2016年10月18日
+	 */
+	ColumnAdvert listDefaultForPos(Map<String,Object> map);
+	// begin  add　　by zhulq  获取默认的广告图片  2016-10-18
 }
