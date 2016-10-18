@@ -64,6 +64,7 @@ import com.okdeer.mall.operate.advert.service.ColumnAdvertService;
  *		广告修改将			2016-8-6			zhulq	  修改job 根据时间 将广告状态置成 开始  结束  现在已经不用停用和过期两个状态了
  *		广告修改将			2016-8-8			zhulq	  修改job 将列加上对应的表弟额前缀
  * 		广告修改将			2016-9-1			zhulq	  修改结束广告时候重新给图片赋值  
+ * 		v1.1.0          2016-10-18		zhulq    获取默认的广告图片
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.advert.service.IColumnAdvertServiceApi")
 public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdvertServiceApi {
@@ -564,4 +565,10 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		return this.advertMapper.findMobileDoorAdvert(params);
 	}
 
+	// begin  add　　by zhulq  获取默认的广告图片  2016-10-18
+	@Override
+	public ColumnAdvert listDefaultForPos(Map<String, Object> map) {
+		return advertMapper.listDefaultForPos(map);
+	}
+	// end  add　　by zhulq  获取默认的广告图片  2016-10-18
 }
