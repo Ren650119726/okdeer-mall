@@ -700,7 +700,8 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		
 		// begin add by wushp 20161015
 		try {
-			orderReturnCouponsService.firstOrderReturnCoupons(tradeNum);
+			TradeOrder tradeOrder = tradeOrderService.getByTradeNum(tradeNum);
+			orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
 		} catch (Exception e) {
 			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;

@@ -91,8 +91,7 @@ public class OrderReturnCouponsServiceImpl implements OrderReturnCouponsService 
 	
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public void firstOrderReturnCoupons(String tradeNum) throws Exception {
-		TradeOrder tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
+	public void firstOrderReturnCoupons(TradeOrder tradeOrder) throws Exception {
 		if (tradeOrder == null || StringUtils.isBlank(tradeOrder.getUserId())) {
 			return;
 		}
