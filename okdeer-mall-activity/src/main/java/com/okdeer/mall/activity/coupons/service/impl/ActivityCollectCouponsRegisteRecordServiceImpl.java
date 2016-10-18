@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.esotericsoftware.minlog.Log;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.archive.system.entity.SysSmsVerifyCode;
 import com.okdeer.base.common.exception.ServiceException;
@@ -21,6 +22,7 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.ca.api.buyeruser.entity.SysBuyerUserDto;
+import com.okdeer.common.consts.LogConstants;
 import com.okdeer.common.consts.StaticConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo;
@@ -231,6 +233,7 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		return totalReward == null ? 0 : totalReward.intValue();
 	}
 	
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void receiveInviteRegistFavour(Map<String, Object> requestParam) throws Exception {
 		// 邀请人Id
@@ -266,6 +269,11 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		List<ActivityCouponsRecord> couponsRecordList = new ArrayList<ActivityCouponsRecord>();
 		ActivityCouponsRecord couponsRecord = null;
 		for(ActivityCoupons coupons : couponslist){
+			if (coupons.getRemainNum() <= 0) {
+				// 如果代金券已经被领完，则直接跳过
+				continue;
+			}
+			
 			couponsRecord = new ActivityCouponsRecord();
 			couponsRecord.setId(UuidUtils.getUuid());
 			couponsRecord.setCollectType(ActivityCouponsType.invite_regist);
@@ -281,7 +289,14 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 			calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
 			couponsRecord.setValidTime(calendar.getTime());
 			couponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
-			couponsRecordList.add(couponsRecord);
+			try {
+				// 用户成功领取代金券，需要修改代金券剩余数量
+				activityCouponsMapper.updateRemainNum(coupons.getId());
+				// 剩余数量更改成功，则给用户送代金券。否则不送
+				couponsRecordList.add(couponsRecord);
+			} catch (Exception e) {
+				Log.error(LogConstants.ERROR_EXCEPTION,e.getMessage());
+			}
 		}
 		
 		// 保存邀请记录
