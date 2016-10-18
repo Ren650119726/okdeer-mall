@@ -688,11 +688,14 @@
 	<select id="listForPos" resultMap="columnAdvertRsMap" parameterType="map">
 		select c.* from column_advert c
 		LEFT JOIN column_advert_area area ON area.advert_id = c.id
-		LEFT JOIN column_advert_approval app ON app.advert_id = c.id
+		INNER JOIN column_advert_approval app ON app.advert_id = c.id
 			where app.status = 1
 			and c.position_id = (select id from column_advert_position p where p.name = 'POS机广告')
 			and c.disabled = 0 
 			and c.status = 1
+			<if test="picUrl != null and picUrl != ''">
+			  AND c.pic_url != #{picUrl,jdbcType=VARCHAR}
+			</if>
 			<if test="provinceId != null and provinceId != ''">
 	    	AND (c.area_type =  #{nationalAreaType,jdbcType=TINYINT}
 	      	  OR (c.area_type = #{districtAreaType,jdbcType=TINYINT}
@@ -702,6 +705,18 @@
 	         	  )
 	       	 )
 	    	</if>
+	</select>
+	
+	<select id="listDefaultForPos" resultMap="columnAdvertRsMap" parameterType="map">
+		select c.* from column_advert c
+		INNER JOIN column_advert_approval app ON app.advert_id = c.id
+			where app.status = 1
+			and c.position_id = (select id from column_advert_position p where p.name = 'POS机广告')
+			and c.disabled = 0 
+			and c.status = 1
+			<if test="picUrl != null and picUrl != ''">
+			  AND c.pic_url = #{picUrl,jdbcType=VARCHAR}
+			</if>
 	</select>
 	
 	<select id="getAdvertByTradeNum" resultMap="columnAdvertRsMap">
