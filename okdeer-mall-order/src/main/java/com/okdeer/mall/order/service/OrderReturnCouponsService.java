@@ -1,7 +1,5 @@
 package com.okdeer.mall.order.service;
 
-import com.okdeer.mall.order.entity.TradeOrder;
-
 /**
  * ClassName: OrderReturnCouponsService 
  * @Description: 订单返券service
@@ -18,10 +16,10 @@ public interface OrderReturnCouponsService {
 	/**
 	 * 
 	 * @Description: 邀请注册首单送券
-	 * @param tradeOrder 订单
+	 * @param tradeNum 订单交易号
 	 * @throws Exception 异常
 	 * @author wushp
 	 * @date 2016年10月18日
 	 */
-	void firstOrderReturnCoupons(TradeOrder tradeOrder) throws Exception;
+	void firstOrderReturnCoupons(String tradeNum) throws Exception;
 }

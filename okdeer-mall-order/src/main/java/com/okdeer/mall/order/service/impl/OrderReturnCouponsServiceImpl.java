@@ -83,9 +83,16 @@ public class OrderReturnCouponsServiceImpl implements OrderReturnCouponsService 
 	@Autowired
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
 	
+	/**
+	 * 订单mapper
+	 */
+	@Resource
+	private TradeOrderMapper tradeOrderMapper;
+	
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public void firstOrderReturnCoupons(TradeOrder tradeOrder) throws Exception {
+	public void firstOrderReturnCoupons(String tradeNum) throws Exception {
+		TradeOrder tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
 		if (tradeOrder == null || StringUtils.isBlank(tradeOrder.getUserId())) {
 			return;
 		}

@@ -617,8 +617,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 		
 		// begin add by wushp 20161015  
 		try {
-			TradeOrder tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
-			orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+			orderReturnCouponsService.firstOrderReturnCoupons(tradeNum);
 		} catch (Exception e) {
 			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
