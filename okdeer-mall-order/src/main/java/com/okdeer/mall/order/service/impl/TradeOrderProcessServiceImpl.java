@@ -291,6 +291,157 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 		chain.process(reqDto, respDto);
 		return respDto;
 	}
+	
+	/**
+     * @Description: 生成手机充值订单
+     * @param reqJsonStr 请求json串
+     * @return 下单结果
+     * @throws Exception 异常   
+     * @author zhaoqc
+     * @date 2016年7月21日
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public TradeOrderRespDto addRechargeTradeOrderV100(String reqJsonStr) throws Exception {
+        TradeOrderRespDto respDto = new TradeOrderRespDto();
+        boolean flag = false;
+        RechargeOrderReqDto reqDto = JsonMapper.nonDefaultMapper().fromJson(reqJsonStr, RechargeOrderReqDto.class);
+        //创建订单
+        TradeOrder tradeOrder = new TradeOrder();
+        TradeOrderItem tradeOrderItem = new TradeOrderItem();
+        String orderId = UuidUtils.getUuid();
+        tradeOrder.setId(orderId);
+        tradeOrder.setStatus(OrderStatusEnum.UNPAID);
+        setOrderNo(tradeOrder);
+        
+        BigDecimal totalAmount = reqDto.getTotalAmount();
+        OrderTypeEnum orderType = OrderTypeEnum.enumValueOf(reqDto.getRechargeType());
+        String rechargeMobile = reqDto.getRechargeMobile();
+        String inprice = null;
+        //充值订单金额第三方平台查询
+        if (OrderTypeEnum.PHONE_PAY_ORDER.equals(orderType)) {
+            String url = "http://" + userid +".api2.ofpay.com/telquery.do?userid=" + userid + "&userpws=" + userpws
+                    + "&phoneno=" + rechargeMobile + "&version=" + version + "&pervalue=" + totalAmount.intValue();
+            //请求欧飞平台查询商品价格
+            String xml = HttpClientUtil.get(url, "GB2312");
+            JSONObject respJson = Xml2JsonUtil.xml2Json(xml, "GB2312"); 
+            JSONObject cardInfo = respJson.getJSONObject("cardinfo");
+            int retCode = cardInfo.getInt("retcode");
+            if(retCode == 1) {
+                inprice = String.format("%.2f", cardInfo.getDouble("inprice"));
+                logger.info("订单生成===订单Id：{}，订单号：{}，向欧飞平台查询话费充值面值结果{}", orderId, tradeOrder.getOrderNo(), inprice);            
+                //将从第三方平台上查到的商品信息赋值给订单项
+                tradeOrderItem.setSkuName(cardInfo.getString("cardname"));
+                //记录充值话费的面额
+                tradeOrderItem.setStoreSkuId(totalAmount.toString());
+                //将cardid赋值给cardid
+                tradeOrderItem.setStoreSpuId(cardInfo.getString("cardid"));
+                flag = true;
+            } 
+        } else if(OrderTypeEnum.TRAFFIC_PAY_ORDER.equals(orderType)) {
+            String url = "http://" + userid + ".api2.ofpay.com/mobinfo.do?mobilenum=" + rechargeMobile.substring(0, 7);
+            String resp = HttpClientUtil.get(url, "GB2312");
+            String discount = null;
+            if(!StringUtils.isNullOrEmpty(resp)) {
+                logger.info("流量充值号码{}归属地运营商查询返回：{}", rechargeMobile, resp);
+                String respArr[] = resp.split("\\|");
+                try {
+                    if ("移动".equals(respArr[2])) {
+                        discount = cmccDiscount;
+                    } else if ("联通".equals(respArr[2])) {
+                        discount = cuccDiscount;
+                    } else if ("电信".equals(respArr[2])) {
+                        discount = ctccDiscount;
+                    }
+                    
+                    String pid = reqDto.getPid();
+                    String arr[] = pid.split("\\|");
+                    String perValue = arr[0];
+                    String flowValue = arr[1];
+                    url = "http://" + userid + ".api2.ofpay.com/flowCheck.do?userid=" + userid + "&userpws=" + userpws + "&phoneno=" + rechargeMobile
+                             + "&range=" + range + "&effectStartTime=" + effectStartTime + "&effectTime=" + effectTime + "&version=" + version 
+                             + "&perValue=" + perValue + "&flowValue=" + flowValue;
+                    String xml = HttpClientUtil.get(url, "GB2312");
+                    JSONObject respJson = Xml2JsonUtil.xml2Json(xml, "GB2312"); 
+                    JSONObject queryinfo = respJson.getJSONObject("queryinfo");
+                    int retCode = queryinfo.getInt("retcode");
+                    if(retCode == 1) {
+                        inprice = stringMultiply(perValue, discount);
+                        tradeOrderItem.setStoreSkuId(perValue + "|" + flowValue);
+                        tradeOrderItem.setSkuName(queryinfo.getString("productname"));
+                        flag = true;
+                    } 
+                } catch (Exception e) {
+                    logger.info("订单生成===订单:{}，订单号{}，手机号{}获取欧飞平台商品信息出现异常{}！",orderId, tradeOrder.getOrderNo(), rechargeMobile, e);
+                }
+            } 
+        }
+        
+        //检查商品信息是否发生变化
+        if(!flag) {
+            respDto.setFlag(false);
+            respDto.setMessage(OrderTipMsgConstant.GOODS_IS_CHANGE);
+            return respDto;
+        }
+        
+        BigDecimal actualAmount = new BigDecimal(inprice);
+        
+        tradeOrder.setTotalAmount(totalAmount);
+        tradeOrder.setPreferentialPrice(BigDecimal.ZERO);
+        tradeOrder.setActualAmount(actualAmount);
+        tradeOrderItem.setUnitPrice(totalAmount);
+        tradeOrderItem.setTotalAmount(totalAmount);
+        tradeOrderItem.setActualAmount(actualAmount);
+        tradeOrderItem.setPreferentialPrice(BigDecimal.ZERO);
+        
+        tradeOrder.setFare(new BigDecimal(0.00));
+        tradeOrder.setUserId(reqDto.getUserId());
+        setUserPhone(tradeOrder, reqDto.getUserId());
+        tradeOrder.setStoreName("友门鹿欧飞手机充值店");
+        tradeOrder.setSellerId("0");
+        tradeOrder.setStoreId("0");
+        tradeOrder.setPid("0");
+        tradeOrder.setType(orderType);
+        tradeOrder.setPickUpType(PickUpTypeEnum.DELIVERY_DOOR);
+        tradeOrder.setPickUpCode("");
+        tradeOrder.setActivityType(ActivityTypeEnum.NO_ACTIVITY);
+        tradeOrder.setActivityId(reqDto.getActivityId());
+        tradeOrder.setInvoice(WithInvoiceEnum.NONE);
+        tradeOrder.setDisabled(Disabled.valid);
+        tradeOrder.setCreateTime(new Date());
+        tradeOrder.setUpdateTime(new Date());
+        tradeOrder.setOrderResource(OrderResourceEnum.YSCAPP);
+        tradeOrder.setPayWay(PayWayEnum.PAY_ONLINE);
+        tradeOrder.setIsComplete(OrderComplete.NO);
+        tradeOrder.setTradeNum(TradeNumUtil.getTradeNum());
+        tradeOrder.setActivityItemId(reqDto.getCouponId());
+        tradeOrder.setIsShow(OrderIsShowEnum.yes);
+        tradeOrderMapper.insertSelective(tradeOrder);
+        
+        // 创建订单项
+        tradeOrderItem.setId(UuidUtils.getUuid());
+        tradeOrderItem.setOrderId(orderId);
+        tradeOrderItem.setQuantity(1);
+        tradeOrderItem.setSpuType(GoodsTypeEnum.SERVICE_GOODS);
+        tradeOrderItem.setStatus(OrderItemStatusEnum.NO_REFUND);
+        tradeOrderItem.setCompainStatus(CompainStatusEnum.NOT_COMPAIN);
+        tradeOrderItem.setAppraise(AppraiseEnum.NOT_APPROPRIATE);
+        tradeOrderItem.setCreateTime(new Date());
+        tradeOrderItem.setServiceAssurance(0);
+        tradeOrderItem.setRechargeMobile(rechargeMobile);
+        tradeOrderItemMapper.insertSelective(tradeOrderItem);
+        
+        TradeOrderResp resp = respDto.getResp();
+        resp.setOrderId(orderId);
+        resp.setOrderNo(tradeOrder.getOrderNo());
+        resp.setOrderPrice(tradeOrder.getActualAmount());
+        resp.setTradeNum(tradeOrder.getTradeNum());
+        resp.setOrderType(orderType.ordinal());
+        respDto.setResp(resp);
+        respDto.setFlag(true);
+        respDto.setMessage(OrderTipMsgConstant.ORDER_SUCESS);
+        return respDto; 
+    }
 
 	/**
 	 * @Description: 生成手机充值订单
@@ -302,7 +453,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public TradeOrderRespDto addRechargeTradeOrder(String reqJsonStr) throws Exception {
+	public TradeOrderRespDto addRechargeTradeOrderV110(String reqJsonStr) throws Exception {
 		TradeOrderRespDto respDto = new TradeOrderRespDto();
         boolean flag = false;
         RechargeOrderReqDto reqDto = JsonMapper.nonDefaultMapper().fromJson(reqJsonStr, RechargeOrderReqDto.class);
@@ -314,7 +465,6 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         tradeOrder.setStatus(OrderStatusEnum.UNPAID);
         setOrderNo(tradeOrder);
         
-        //BigDecimal totalAmount = reqDto.getTotalAmount();
         //查询话费或者流量套餐的字典配置
         String packageId = reqDto.getPackageId();
         SysDict sysDict = this.sysDictService.loadById(packageId);
