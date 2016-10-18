@@ -72,6 +72,7 @@ import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.GenerateNumericalService;
+import com.okdeer.mall.order.service.OrderReturnCouponsService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
@@ -198,6 +199,11 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	
 	@Reference(version = "1.0.0", check = false)
 	private TradeOrderPayServiceApi tradeOrderPayService;
+	
+	// Begin added by maojj 2016-10-18 
+	@Resource
+	private OrderReturnCouponsService orderReturnCouponsService;
+	// End added by maojj 2016-10-18
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
@@ -248,6 +254,12 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			// 线下确认价格并支付
 			if (tradeOrder.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
 				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime(), "yyyy-MM-dd HH:mm");
+				
+				// Begin V1.1.0 added by maojj 2016-10-18
+				// 如果线下确认价格并支付，则下单时，给邀请人返回邀请注册活动代金券。 
+				orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+				// End V1.1.0 added by maojj 2016-10-18
+				
 				// 预约服务时间过后2小时未派单的自动取消订单
 				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
 						(DateUtils.addHours(serviceTime, 2).getTime() - DateUtils.getSysDate().getTime()) / 1000);
