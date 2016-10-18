@@ -65,6 +65,7 @@ import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.service.GenerateNumericalService;
+import com.okdeer.mall.order.service.OrderReturnCouponsService;
 import com.okdeer.mall.order.service.TradeOrderAddService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
@@ -101,6 +102,7 @@ import net.sf.json.JSONObject;
  *		1.0.Z			2016-09-05			zengj			增加订单操作记录
   *     1.0.Z	        2016年9月07日                    	zengj           库存管理修改，采用商业管理系统校验
   *     Bug:13906		2016-10-10			maojj			添加订单实付金额为0的处理
+  *     V1.1.0			2016-10-18			maojj			添加邀请送代金券返券流程（针对货到付款的订单）
  */
 @Service
 public class TradeOrderAddServiceImpl implements TradeOrderAddService {
@@ -211,6 +213,11 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	@Reference(version = "1.0.0", check = false)
 	private TradeOrderPayServiceApi tradeOrderPayService;
 	// End Bug:13906 added by maojj 2016-10-10
+	
+	// Begin added by maojj 2016-10-18 
+	@Resource
+	private OrderReturnCouponsService orderReturnCouponsService;
+	// End added by maojj 2016-10-18
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -244,6 +251,15 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 				tradeOrderPayService.wlletPay(String.valueOf(tradeOrder.getActualAmount()), tradeOrder);
 			}
 			// End Bug:13906 added by maojj 2016-10-10
+			
+			// Begin V1.1.0 added by maojj 2016-10-18
+			// 支付方式：0：在线支付、1:货到付款、6：微信支付
+			if(req.getPayType() == 1){
+				// 如果支付方式为货到付款，则下单时，给邀请人返回邀请注册活动代金券。 
+				orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+			}
+			// End V1.1.0 added by maojj 2016-10-18
+			
 			resp.setOrderId(tradeOrder.getId());
 			resp.setOrderNo(tradeOrder.getOrderNo());
 			resp.setOrderPrice(tradeOrder.getActualAmount());
