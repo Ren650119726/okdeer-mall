@@ -754,5 +754,21 @@
         )
 	</insert>
    <!-- end by:yangq 保存邀请码记录 -->
+   
+   <!-- begin added by maojj 20161018 查询用户参与邀请注册送代金券领取的总金额 -->
+   <select id="findTotalRewardAmount" parameterType="map" resultType="java.lang.Integer">
+   		SELECT
+			sum(t1.face_value)
+		FROM
+			activity_coupons_record t0
+		LEFT JOIN activity_coupons t1 ON t0.coupons_id = t1.id
+		WHERE
+			t0.coupons_collect_id = #{activityId}
+		AND t0.collect_user_id = #{userId}
+		<if test="limitDate != null">
+			AND t0.collect_time &gt; #{limitDate}
+		</if>
+   </select>
+   <!-- End added by maojj 20161018 -->
     
 </mapper> 
