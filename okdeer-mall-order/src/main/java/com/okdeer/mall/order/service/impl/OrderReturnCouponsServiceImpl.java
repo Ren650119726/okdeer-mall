@@ -108,6 +108,11 @@ public class OrderReturnCouponsServiceImpl implements OrderReturnCouponsService 
 			return;
 		}
 		
+		// 首单完成时间
+		registeRecord.setFinishOrderTime(new Date());
+		// 代金券活动邀请注册记录表更新首单完成时间
+		couponsRegisteRecordServiceApi.updateByPrimaryKeySelective(registeRecord);
+		
 		// 代金券活动
 		ActivityCollectCoupons collectCoupons = activityCollectCouponsServiceApi.get(registeRecord.getActivityId());
 		if (collectCoupons == null || collectCoupons.getType() != 3 || collectCoupons.getStatus() != 1) {
@@ -144,11 +149,6 @@ public class OrderReturnCouponsServiceImpl implements OrderReturnCouponsService 
 				// 已经达到限领数量
 				return;
 			}
-			
-			// 首单完成时间
-			registeRecord.setFinishOrderTime(new Date());
-			// 代金券活动邀请注册记录表更新首单完成时间
-			couponsRegisteRecordServiceApi.updateByPrimaryKeySelective(registeRecord);
 			
 			// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 			ActivityCouponsRecord activityCouponsRecord = new ActivityCouponsRecord();
