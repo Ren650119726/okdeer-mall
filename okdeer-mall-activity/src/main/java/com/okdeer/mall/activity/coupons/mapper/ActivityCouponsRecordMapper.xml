@@ -656,7 +656,7 @@
 		WHERE t.collect_user_id = #{userId}
 			and t.status = 0
 			and c.disabled = 0 
-			and (c.arrive_limit &lt;= #{orderAmount} or c.arrive_limit =  0) 
+			and c.arrive_limit &lt;= #{orderAmount}
 			and c.type = 3
 		ORDER BY c.face_value DESC, t.valid_time
 	</select>

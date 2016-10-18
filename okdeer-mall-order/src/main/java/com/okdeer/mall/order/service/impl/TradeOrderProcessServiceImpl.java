@@ -682,7 +682,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 	    if (couponVo != null) {
 	       String arrivalStr = couponVo.getArrive();
 	       BigDecimal arrival = new BigDecimal(arrivalStr);
-	       if (orderAmount.compareTo(arrival) == 0 || orderAmount.compareTo(arrival) == 1) {
+	       if (orderAmount.compareTo(arrival) == 1) {
 	          if(couponVo.getStatus() == ActivityCouponsRecordStatusEnum.UNUSED) {
 	              isValid = true;
 	          }
