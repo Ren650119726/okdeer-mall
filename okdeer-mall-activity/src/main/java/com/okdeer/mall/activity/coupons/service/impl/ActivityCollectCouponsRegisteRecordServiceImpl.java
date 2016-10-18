@@ -1,12 +1,13 @@
 package com.okdeer.mall.activity.coupons.service.impl;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +33,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsRegisteRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsRegisteRecordServiceApi;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.vo.InvitationRegisterRecordVo;
 import com.okdeer.mall.activity.coupons.vo.InvitationRegisterVo;
 import com.okdeer.mall.system.service.SysBuyerUserService;
@@ -72,8 +74,17 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 	@Autowired
 	private SysBuyerUserService sysBuyerUserService;
 	
+	/**
+	 * 代金券领取记录Mapper
+	 */
 	@Autowired
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+	
+	/**
+	 * 代金券领取记录service
+	 */
+	@Autowired
+	private ActivityCouponsRecordService activityCouponsRecordService;
 	
 	/**
 	 * 用户信息图片域名
@@ -166,15 +177,13 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		int totalFavour = activityCouponsMapper.selectFaceMoney(activityId);
 		// 获取用户邀请注册记录
 		List<InvitationRegisterRecordVo> invitationRecordList = registeRecordMapper.findInviteRegisterRecord(userId, activityId);
-		// 完善买家头像图片地址信息并获取成功下单的总人数
-		Integer orderedNum = parseInviteRecordList(invitationRecordList);
+		// 完善买家头像图片地址信息
+		fillPicUrl(invitationRecordList);
 		// 邀请成功的总人数
 		Integer totalInvitation = invitationRecordList.size();
-		// 邀请注册获取的总奖励
-		Integer rewardAmount = totalFavour * orderedNum;
-		
 		inviteRegisterVo.setTotalFavour(totalFavour);
-		inviteRegisterVo.setRewardAmount(rewardAmount);
+		// 邀请注册获取的总奖励
+		inviteRegisterVo.setRewardAmount(getRewardAmount(userId, activityId));
 		inviteRegisterVo.setTotalInvitation(totalInvitation);
 		inviteRegisterVo.setActivityId(activityId);
 		inviteRegisterVo.setInvitationRecordList(invitationRecordList);
@@ -188,8 +197,7 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 	 * @author maojj
 	 * @date 2016年10月17日
 	 */
-	private int parseInviteRecordList(List<InvitationRegisterRecordVo> invitationRecordList){
-		int orderedNum = 0;
+	private void fillPicUrl(List<InvitationRegisterRecordVo> invitationRecordList){
 		String picUrl = null;
 		// 图片格式：图片域名+图片名称
 		String picUrlFormat = "%s%s";
@@ -197,19 +205,36 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 			// 如果买家用户没有图片，则取默认图片值
 			picUrl = StringUtils.isEmpty(record.getPicUrl()) ? StaticConstants.USER_PIC_DEFAULT : record.getPicUrl();
 			record.setPicUrl(String.format(picUrlFormat, userInfoPicServerUrl,picUrl));
-			if(record.getIsCompleteOrder() == 1){
-				orderedNum++;
-			}
 		}
-		return orderedNum;
+	}
+	
+	/**
+	 * @Description: 获取邀请人领取的总奖励金额
+	 * @param userId
+	 * @param activityId
+	 * @return   
+	 * @author maojj
+	 * @date 2016年10月18日
+	 */
+	private int getRewardAmount(String userId,String activityId){
+		// 查询用户作为被邀请人参与代金券活动邀请注册记录
+		ActivityCollectCouponsRegisteRecord registerRecord = registeRecordMapper.selectByInviteId(userId);
+		// 用户作为被邀请人注册之后领取的活动代金券作为总奖励 
+		Date limitDate = registerRecord == null ? null : registerRecord.getCreateTime();
+		// 构建查询总奖励的条件
+		Map<String,Object> params = new HashMap<String,Object>();
+		params.put("userId", userId);
+		params.put("activityId", activityId);
+		params.put("limitDate", limitDate);
+		// 查询邀请人领取的总奖励金额
+		Integer totalReward = activityCouponsRecordMapper.findTotalRewardAmount(params);
+		return totalReward == null ? 0 : totalReward.intValue();
 	}
 	
 	@Override
 	public void receiveInviteRegistFavour(Map<String, Object> requestParam) throws Exception {
 		// 邀请人Id
 		String userId = String.valueOf(requestParam.get("userId"));
-		// 验证码
-		String verifyCode = String.valueOf(requestParam.get("verifyCode"));
 		// 邀请注册活动Id
 		String activityId = String.valueOf(requestParam.get("activityId"));
 		// 被邀请人手机号码
@@ -225,14 +250,15 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		sysSmsVerifyCodeUpdate.setId(verifyCodeId);
 		sysSmsVerifyCodeUpdate.setStatus(1);
 		// 保存被邀请人用户信息并更新验证码
-		String inviteesId = sysBuyerUserService.addSysBuyerSync(sysBuyerUserDto, sysSmsVerifyCodeUpdate, null);
+		String inviteesId = sysBuyerUserService.addSysBuyerSync410(sysBuyerUserDto, sysSmsVerifyCodeUpdate, null);
 		// 创建代金券活动邀请注册记录
+		Date currentDate = new Date();
 		ActivityCollectCouponsRegisteRecord registRecord = new ActivityCollectCouponsRegisteRecord();
 		registRecord.setId(UuidUtils.getUuid());
 		registRecord.setActivityId(activityId);
 		registRecord.setUserId(userId);
 		registRecord.setInviteId(inviteesId);
-		registRecord.setCreateTime(new Date());
+		registRecord.setCreateTime(currentDate);
 		
 		// 查询注册活动所赠送的代金券信息
 		List<ActivityCoupons> couponslist = activityCouponsMapper.selectByActivityId(activityId);
@@ -245,11 +271,10 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 			couponsRecord.setCollectType(ActivityCouponsType.invite_regist);
 			couponsRecord.setCouponsId(coupons.getId());
 			couponsRecord.setCouponsCollectId(activityId);
-			couponsRecord.setCollectTime(new Date());
+			couponsRecord.setCollectTime(currentDate);
 			couponsRecord.setCollectUserId(inviteesId);
-			Date date = new Date();
 			Calendar calendar = Calendar.getInstance();
-			calendar.setTime(date);
+			calendar.setTime(currentDate);
 			calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0,
 					0, 0);
 			calendar.set(Calendar.MILLISECOND, 0);
@@ -263,6 +288,34 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		registeRecordMapper.saveRecord(registRecord);
 		// 保存用户领取代金券记录
 		activityCouponsRecordMapper.insertSelectiveBatch(couponsRecordList);
+		// 用户参与注册送代金券活动
+		getRegisterCoupons(inviteesId);
+	}
+	
+	private void getRegisterCoupons(String userId) throws ServiceException{
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("type", 1);// 注册活动
+		List<ActivityCoupons> lstActivityCoupons = null;
+		List<ActivityCoupons> lstActivityCouponFilter = null;
+		lstActivityCoupons = activityCouponsMapper.listCouponsByType(map);
+		if (CollectionUtils.isEmpty(lstActivityCoupons)) {
+			// 没有注册送代金券的活动
+			return;
+		}
+
+		lstActivityCouponFilter = new ArrayList<ActivityCoupons>();
+		for (ActivityCoupons activityCoupons : lstActivityCoupons) {
+			int remainNum = activityCoupons.getRemainNum();// 剩余总数量
+			if (remainNum > 0) {
+				lstActivityCouponFilter.add(activityCoupons);
+			}
+		}
+
+		if (CollectionUtils.isEmpty(lstActivityCouponFilter)) {
+			// 活动代金券已经全部被领完
+			return;
+		}
+		activityCouponsRecordService.drawCouponsRecord(lstActivityCouponFilter, ActivityCouponsType.sign, userId);
 	}
 	// End Bug:14408 added by maojj 2016-10-17
 }

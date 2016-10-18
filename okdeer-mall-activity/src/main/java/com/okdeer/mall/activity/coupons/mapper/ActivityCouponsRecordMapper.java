@@ -29,6 +29,7 @@ import com.okdeer.mall.order.vo.RechargeCouponVo;
  *      V1.1.0          2016-09-21          zhaoqc          添加充值获取代金券的方法
  *		V1.1.0			2016-09-23			tangy			代金券指定分类使用
  *      V1.1.0			2016-10-15			yangq           查询邀请记录列表
+ *      V1.1.0			2016-10-18			maojj			查询用户参与邀请注册送代金券领取的总奖励
  */
 public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 
@@ -257,4 +258,15 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
      * @date 2016年10月17日
      */
 	List<ActivityCouponsRecordQueryVo> selectMyCouponsDetailByParamsOld(ActivityCouponsRecord activityCouponsRecord);
+	
+	// Begin added by maojj 2016-10-18
+	/**
+	 * @Description: 查询用户参与邀请送代金券领取的总奖励
+	 * @param params
+	 * @return   
+	 * @author maojj
+	 * @date 2016年10月18日
+	 */
+	Integer findTotalRewardAmount(Map<String,Object> params);
+	// End added by maojj 2016-10-18
 }

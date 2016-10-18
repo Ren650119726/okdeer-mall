@@ -6,6 +6,7 @@
  */    
 package com.okdeer.mall.activity.coupons.mapper;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,5 +92,15 @@ public class ActivityCouponsRecordMapperTest {
 		
 		List<FullSubtract> discountList = activityDiscountMapper.findValidFullSubtract(queryCondition);
 		System.out.println(">>>>>>>>>>>>" + JSONArray.fromObject(discountList));
+	}
+	
+	@Test
+	public void testFindTotalRewardAmount(){
+		Map<String,Object> params = new HashMap<String,Object>();
+		params.put("userId", "8a94e4cb57d2c9e50157d2c9e5c50000");
+		params.put("activityId", "8a8080a057d17cdc0157d17cdc370000");
+		params.put("limitDate", new Date());
+		Integer total = activityCouponsRecordMapper.findTotalRewardAmount(params);
+		System.out.println("total>>>>>>>>>>>" + total);
 	}
 }
