@@ -302,7 +302,7 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		// 保存邀请记录
 		registeRecordMapper.saveRecord(registRecord);
 		// 保存用户领取代金券记录
-		if(CollectionUtils.isNotEmpty(couponsRecordList)){
+		if (CollectionUtils.isNotEmpty(couponsRecordList)) {
 			activityCouponsRecordMapper.insertSelectiveBatch(couponsRecordList);
 		}
 		// 用户参与注册送代金券活动
