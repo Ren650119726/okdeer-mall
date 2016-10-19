@@ -372,7 +372,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
                         flag = true;
                     } 
                 } catch (Exception e) {
-                    logger.info("订单生成===订单:{}，订单号{}，手机号{}获取欧飞平台商品信息出现异常{}！",orderId, tradeOrder.getOrderNo(), rechargeMobile, e);
+                    logger.error("订单生成===订单:{}，订单号{}，手机号{}获取欧飞平台商品信息出现异常{}！",orderId, tradeOrder.getOrderNo(), rechargeMobile, e);
                 }
             } 
         }
@@ -531,7 +531,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
                         flag = true;
                     } 
                 } catch (Exception e) {
-                    logger.info("订单生成===订单:{}，订单号{}，手机号{}获取欧飞平台商品信息出现异常{}！",orderId, tradeOrder.getOrderNo(), rechargeMobile, e);
+                    logger.error("订单生成===订单:{}，订单号{}，手机号{}获取欧飞平台商品信息出现异常{}！",orderId, tradeOrder.getOrderNo(), rechargeMobile, e);
                 }
             } 
         }
@@ -713,7 +713,6 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 		SysBuyerUser buyerUser = sysBuyerUserMapper.selectByPrimaryKey(userId);
 		if (buyerUser == null) {
 			logger.error("根据{}查询买家信息，buyerUser 为空-------->{}", userId, CodeStatistical.getLineInfo());
-			logger.info("根据{}查询买家信息 ，buyerUser 为空-------->{}", userId, CodeStatistical.getLineInfo());
 			throw new ServiceException("查询查询买家信息异常：buyerUser 为空-------->" + CodeStatistical.getLineInfo());
 		}
 		tradeOrder.setUserPhone(buyerUser.getPhone());

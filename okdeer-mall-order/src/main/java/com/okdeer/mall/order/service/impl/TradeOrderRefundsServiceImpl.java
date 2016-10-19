@@ -1719,7 +1719,6 @@ public class TradeOrderRefundsServiceImpl
 						StoreMemberRelation queryParams = new StoreMemberRelation();
 						queryParams.setStoreId(tradeOrder.getStoreId());
 						queryParams.setMemberType(StoreUserTypeEnum.STORE_KEEPER);
-						logger.info("StoreId:" + tradeOrder.getStoreId());
 						StoreMemberRelation storeMemberRelation = null;
 						try {
 							storeMemberRelation = storeMemberRelationService.findByTypeStoreId(queryParams);
@@ -1727,7 +1726,7 @@ public class TradeOrderRefundsServiceImpl
 								throw new Exception("店铺没有老板信息！");
 							}
 						} catch (Exception e) {
-							logger.info("查询店铺老板信息异常{}", e);
+							logger.error("查询店铺老板信息异常{}", e);
 							throw new Exception("店铺信息异常，请与管理员联系！");
 						}
 

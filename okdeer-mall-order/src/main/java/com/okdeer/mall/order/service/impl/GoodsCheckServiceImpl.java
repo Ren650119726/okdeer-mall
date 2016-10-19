@@ -116,7 +116,7 @@ public class GoodsCheckServiceImpl implements GoodsCheckService {
 		// 当前店铺商品信息
 		List<GoodsStoreSku> currentStoreSkuList = goodsStoreSkuServiceApi.findStoreSkuForOrder(skuIdList);
 		if (currentStoreSkuList.size() != itemList.size()) {
-			logger.info("店铺商品库中查询商品记录与请求商品记录不匹配{}", CodeStatistical.getLineInfo());
+			logger.error("店铺商品库中查询商品记录与请求商品记录不匹配{}", CodeStatistical.getLineInfo());
 			throw new ServiceException("店铺商品库中查询商品记录与请求商品记录不匹配" + CodeStatistical.getLineInfo());
 		}
 		return currentStoreSkuList;
