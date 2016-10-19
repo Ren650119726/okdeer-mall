@@ -229,7 +229,7 @@ public class ActivityGroupGoodsServiceImpl implements ActivityGroupGoodsServiceA
 			stockManagerServiceApi.updateStock(stockAdjustVo);
 			logger.info("商家中心修改团购活动商品完成:");
 		} catch (Exception e) {
-			logger.info("商家中心修改团购活动商品发生异常:", e);
+			logger.error("商家中心修改团购活动商品发生异常:", e);
 		}
 	}
 

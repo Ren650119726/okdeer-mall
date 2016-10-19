@@ -360,7 +360,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			GoodsStoreSku storeSku = goodsStoreSkuService.getGoodsStoreSkuUpdateTime(map); // 查询商品是否发生变化
 			if (storeSku == null) {
 				logger.error("查询商品是否发生变化", "storeSku 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询商品是否发生变化  storeSku 为空-------->" + CodeStatistical.getLineInfo());
 				throw new ServiceException("查询商品是否发生变化异常：storeSku 为空-------->" + CodeStatistical.getLineInfo());
 			}
 
@@ -389,7 +388,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			GoodsStoreSkuDetailVo detailVo = goodsStoreSkuService.selectDetailBySkuId(skuId); // 查询商品详细信息
 			if (detailVo == null) {
 				logger.error("查询商品详细信息", "detailVo 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询商品详细信息 detailVo 为空-------->" + CodeStatistical.getLineInfo());
 				throw new ServiceException("查询商品详细信息异常：detailVo 为空-------->" + CodeStatistical.getLineInfo());
 			}
 			int activityType = detailVo.getActivityType().ordinal(); // 活动类型(0无,1:团购,2:特惠)
@@ -407,7 +405,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 					ActivitySaleGoods activitySaleGoods = activitySaleGoodsService.selectActivitySaleByParams(saleMap); // 特惠商品信息查看
 					if (activitySaleGoods == null) {
 						logger.error("查询特惠商品信息", "activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
-						logger.info("查询特惠商品信息 activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
 						throw new ServiceException(
 								"查询特惠商品信息异常：activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
 					}
@@ -434,7 +431,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 					ActivitySaleGoods activitySaleGoods = activitySaleGoodsService.selectActivitySaleByParams(saleMap); // 特惠商品信息查看
 					if (activitySaleGoods == null) {
 						logger.error("查询特惠商品信息", "activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
-						logger.info("查询特惠商品信息 activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
 						throw new ServiceException(
 								"查询特惠商品信息异常：activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
 					}
@@ -491,7 +487,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			GoodsStoreSku storeSku = goodsStoreSkuService.getGoodsStoreSkuUpdateTime(map); // 查询商品是否发生变化
 			if (storeSku == null) {
 				logger.error("查询商品是否发生变化", "storeSku 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询商品是否发生变化  storeSku 为空-------->" + CodeStatistical.getLineInfo());
 				throw new ServiceException("查询商品是否发生变化异常：storeSku 为空-------->" + CodeStatistical.getLineInfo());
 			}
 			long beforeTime = update.getTime(); // 保存在App端的商品修改时间
@@ -504,7 +499,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			// 查询商品详细信息
 			if (detailVo == null) {
 				logger.error("查询商品详细信息", "detailVo 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询商品详细信息 detailVo 为空-------->" + CodeStatistical.getLineInfo());
 				throw new ServiceException("查询商品详细信息异常：detailVo 为空-------->" + CodeStatistical.getLineInfo());
 			}
 			int activityType = detailVo.getActivityType().ordinal(); // 活动类型(0无,1:团购,2:特惠)
@@ -572,7 +566,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 		if (storeInfo == null) {
 			logger.error("查询店铺信息", "storeInfo 为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询店铺信息 storeInfo 为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询店铺信息异常：storeInfo 为空-------->" + CodeStatistical.getLineInfo());
 		}
 
@@ -617,7 +610,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		StoreInfo store = storeInfoService.selectDefaultAddressById(storeId); // 店铺默认地址查询
 		if (store == null) {
 			logger.error("查询店铺默认地址", "store为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询店铺默认地址 store为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询店铺默认地址异常：store为空-------->" + CodeStatistical.getLineInfo());
 		}
 
@@ -668,7 +660,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 							GoodsStoreSkuDetailVo detailVo = goodsStoreSkuService.selectDetailBySkuId(skuId); // 查询商品详细信息
 							if (detailVo == null) {
 								logger.error("查询商品详细信息", "detailVo 为空-------->" + CodeStatistical.getLineInfo());
-								logger.info("查询商品详细信息 detailVo 为空-------->" + CodeStatistical.getLineInfo());
 								throw new Exception("查询商品详细信息异常：detailVo 为空-------->" + CodeStatistical.getLineInfo());
 							}
 							String activityId = detailVo.getActivityId(); // 活动ID
@@ -682,8 +673,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 								if (activitySaleGoods == null) {
 									logger.error("查询特惠商品信息",
 											"activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
-									logger.info(
-											"查询特惠商品信息 activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
 									throw new Exception(
 											"查询特惠商品信息异常：activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
 								}
@@ -799,7 +788,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		StoreInfo stores = storeInfoService.selectDefaultAddressById(storeId); // 店铺默认地址查询
 		if (stores == null) {
 			logger.error("查询店铺默认地址", "store为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询店铺默认地址 store为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询店铺默认地址异常：store为空-------->" + CodeStatistical.getLineInfo());
 		}
 
@@ -864,7 +852,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			GoodsStoreSku storeSkuPr = goodsStoreSkuService.selectGoodsStoreSkuDetail(skuId); // 查询店铺商品详细信息
 			if (storeSkuPr == null) {
 				logger.error("查询店铺商品详细信息", "storeSkuPr 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询店铺商品详细信息 storeSkuPr 为空-------->" + CodeStatistical.getLineInfo());
 				throw new Exception("查询店铺商品详细信息异常：storeSkuPr 为空-------->" + CodeStatistical.getLineInfo());
 			}
 
@@ -873,7 +860,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			GoodsStoreSku storeSku = goodsStoreSkuService.getGoodsStoreSkuUpdateTime(map); // 查询商品详细信息
 			if (storeSku == null) {
 				logger.error("查询商品是否发生变化", "storeSku 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询商品是否发生变化 storeSku 为空-------->" + CodeStatistical.getLineInfo());
 				throw new Exception("查询商品是否发生变化异常: storeSku 为空-------->" + CodeStatistical.getLineInfo());
 			}
 
@@ -975,13 +961,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		String storeId = jsonData.getString("storeId"); // 店铺ID
 		// String storeName = jsonData.getString("storeName"); // 店铺名称
 		String orderResource = jsonData.getString("orderResource"); // 订单来源
-		logger.info("into<><><><><><><><><><><><><><><><><><><><><><>" + orderResource);
-		logger.info("into<><><><><><><><><><><><><><><><><><><><><><>" + orderResource);
-		logger.info("into<><><><><><><><><><><><><><><><><><><><><><>" + orderResource);
-		logger.info("into<><><><><><><><><><><><><><><><><><><><><><>" + orderResource);
-		logger.info("into<><><><><><><><><><><><><><><><><><><><><><>" + orderResource);
-		logger.info("into<><><><><><><><><><><><><><><><><><><><><><>" + orderResource);
-		String type = jsonData.getString("type"); // 订单类型
+		String type = jsonData.getString("type"); // 订单类型                  error
 		String remark = jsonData.getString("remark"); // 备注
 
 		String payType = jsonData.getString("payType"); // 支付方式：1:货到付款、0：在线支付
@@ -1024,7 +1004,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 		if (storeInfo == null) {
 			logger.error("查询店铺信息", "storeInfo 为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询店铺信息 storeInfo 为空-------->" + CodeStatistical.getLineInfo());
 			throw new ServiceException("查询店铺信息异常：storeInfo 为空-------->" + CodeStatistical.getLineInfo());
 		}
 
@@ -1098,7 +1077,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 							GoodsStoreSkuDetailVo detailVo = goodsStoreSkuService.selectDetailBySkuId(skuId); // 查询商品详细信息
 							if (detailVo == null) {
 								logger.error("查询商品详细信息", "detailVo 为空-------->" + CodeStatistical.getLineInfo());
-								logger.info("查询商品详细信息 detailVo 为空-------->" + CodeStatistical.getLineInfo());
 								throw new Exception("查询商品详细信息异常：detailVo 为空-------->" + CodeStatistical.getLineInfo());
 							}
 							String activityIds = detailVo.getActivityId(); // 活动ID
@@ -1112,8 +1090,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 								if (activitySaleGoods == null) {
 									logger.error("查询特惠商品信息",
 											"activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
-									logger.info(
-											"查询特惠商品信息 activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
 									throw new Exception(
 											"查询特惠商品信息异常：activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
 								}
@@ -2384,15 +2360,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 	private SaveTradeOrderInfo saveTradeOrderInfo(SaveTradeOrderInfoInParam saveInParam) throws Exception {
 
-		logger.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-		logger.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-		logger.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-		logger.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-		logger.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-		logger.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-		logger.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-		logger.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-
 		SaveTradeOrderInfo orderInfo = new SaveTradeOrderInfo();
 		TradeOrder order = new TradeOrder();
 		StoreInfo store = storeInfoService.selectStoreBaseInfoById(saveInParam.getStoreId());
@@ -2410,17 +2377,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		order.setId(saveInParam.getOrder().getId());
 
 		String orderRes = saveInParam.getOrderResource();
-		logger.info("<><><><><><><><><><><><><><><><><><><>");
-		logger.info("<><><><><><><><><><><><><><><><><><><>");
-		logger.info("<><><><><><><><><><><><><><><><><><><>");
-		logger.info("<><><><><><><><><><><><><><><><><><><>");
-		logger.info("<><><><><><><><><><><><><><><><><><><>");
-		logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-		logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-		logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-		logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-		logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-		logger.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" + orderRes);
 		if (orderRes.equals("1")) {
 			order.setOrderResource(OrderResourceEnum.WECHAT);
 			order.setStatus(OrderStatusEnum.UNPAID);
@@ -2534,7 +2490,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		SysBuyerUser buyerUser = sysBuyerUserMapper.selectByPrimaryKey(userId);
 		if (buyerUser == null) {
 			logger.error("查询买家信息", "buyerUser 为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询买家信息 buyerUser 为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询查询买家信息异常：buyerUser 为空-------->" + CodeStatistical.getLineInfo());
 		}
 
@@ -2736,7 +2691,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			GoodsStoreSku storeSkuPr = goodsStoreSkuService.selectGoodsStoreSkuDetail(skuId); // 查询店铺商品详细信息
 			if (storeSkuPr == null) {
 				logger.error("查询店铺商品详细信息", "storeSkuPr 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询店铺商品详细信息 storeSkuPr 为空-------->" + CodeStatistical.getLineInfo());
 				throw new ServiceException("查询店铺商品详细信息异常：storeSkuPr 为空-------->" + CodeStatistical.getLineInfo());
 			}
 			int actiType = storeSkuPr.getActivityType().ordinal(); // 活动类型(0无,1:团购,2:特惠)
@@ -2758,7 +2712,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			GoodsStoreSku storeSku = goodsStoreSkuService.getGoodsStoreSkuUpdateTime(map); // 查询商品是否发生变化
 			if (storeSku == null) {
 				logger.error("查询商品是否发生变化", "storeSku 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询商品是否发生变化 storeSku 为空-------->" + CodeStatistical.getLineInfo());
 				throw new ServiceException("查询商品是否发生变化异常: storeSku 为空-------->" + CodeStatistical.getLineInfo());
 			}
 			BigDecimal singlesPriceSum = null;
@@ -2774,7 +2727,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 				GoodsStoreSkuStock skuStock = goodsStoreSkuStockService.selectSingleSkuStock(skuId); // 查询便利店商品库存数量
 				if (skuStock == null) {
 					logger.error("查询便利店商品库存数量", "skuStock 为空------->" + CodeStatistical.getLineInfo());
-					logger.info("查询便利店商品库存数量 skuStock 为空------->" + CodeStatistical.getLineInfo());
 					throw new ServiceException("查询便利店商品库存数量异常：skuStock 为空-------->" + CodeStatistical.getLineInfo());
 				}
 
@@ -2788,7 +2740,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 				GoodsStoreSkuStock skuStock = goodsStoreSkuStockService.selectSingleSkuStock(skuId); // 查询便利店商品库存数量
 				if (skuStock == null) {
 					logger.error("查询便利店商品库存数量", "skuStock 为空------->" + CodeStatistical.getLineInfo());
-					logger.info("查询便利店商品库存数量 skuStock 为空------->" + CodeStatistical.getLineInfo());
 					throw new ServiceException("查询便利店商品库存数量异常：skuStock 为空-------->" + CodeStatistical.getLineInfo());
 				}
 
@@ -2799,7 +2750,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 				ActivitySaleGoods saleGoods = activitySaleGoodsService.selectActivitySaleByParams(mapSale); // 查询特惠活动商品信息
 				if (saleGoods == null) {
 					logger.error("查询特惠活动商品信息", "saleGoods 为空-------->" + CodeStatistical.getLineInfo());
-					logger.info("查询特惠活动商品信息 saleGoods 为空-------->" + CodeStatistical.getLineInfo());
 					throw new ServiceException("查询特惠活动商品信息异常：saleGoods 为空-------->" + CodeStatistical.getLineInfo());
 				}
 
@@ -2838,10 +2788,10 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 				Response r = e.response;
 				// statusCode:614返回状态码，图片已存在
 				if (614 == r.statusCode) {
-					logger.info("商品图片在订单中已存在");
+					logger.error("商品图片在订单中已存在");
 					// statusCode:612返回状态码,图片不存在状态
 				} else if (612 == r.statusCode) {
-					logger.info("商品图片在订单中不存在");
+					logger.error("商品图片在订单中不存在");
 				} else {
 					logger.error("将图片从商品库目录copy到订单图片目录异常", e.getMessage());
 					throw new ServiceException("将图片从标准商品库目录copy到店铺图片目录异常!");
@@ -3103,7 +3053,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			GoodsStoreSku storeSku = goodsStoreSkuService.selectGoodsStoreSkuDetail(skuId);
 			if (storeSku == null) {
 				logger.error("查询店铺商品信息", "storeSku 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询店铺商品信息 storeSku 为空-------->" + CodeStatistical.getLineInfo());
 				throw new Exception("查询店铺商品信息信息异常：storeSku 为空-------->" + CodeStatistical.getLineInfo());
 			}
 			int actiType = storeSku.getActivityType().ordinal(); // 活动类型(0无,1:团购,2:特惠)
@@ -3141,7 +3090,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 				ActivitySaleGoods saleGoods = activitySaleGoodsService.selectActivitySaleByParams(map);
 				if (saleGoods == null) {
 					logger.error("查询特惠活动商品信息", "saleGooods 为空-------->" + CodeStatistical.getLineInfo());
-					logger.info("查询特惠活动商品信息 saleGooods 为空-------->" + CodeStatistical.getLineInfo());
 					throw new Exception("查询特惠活动商品信息异常：saleGoods 为空-------->" + CodeStatistical.getLineInfo());
 				}
 				BigDecimal skuPrice = saleGoods.getSalePrice(); // 商品价格
@@ -3204,7 +3152,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		ActivityGroup activityGroup = activityGroupService.selectGroupStatus(activityId); // 查询团购活动时间
 		if (activityGroup == null) {
 			logger.error("查询团购活动时间", "activityGroup 为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询团购活动时间 activityGroup 为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询团购活动时间异常：activityGroup 为空-------->" + CodeStatistical.getLineInfo());
 		}
 		int status = Integer.valueOf(activityGroup.getStatus()); // 团购活动状态(0:未开始,1:已开始,2:已结束,3:已失效)
@@ -3213,7 +3160,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		ActivityGroupGoods activityGroupGoods = activityGroupGoodsService.selectActivityGroupLimitNum(map); // 查询团购商品的限购数
 		if (activityGroupGoods == null) {
 			logger.error("查询团购商品的限购数", "activityGroupGoods 为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询团购商品的限购数 activityGroupGoods 为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询团购商品的限购数异常：activityGroupGoods 为空-------->" + CodeStatistical.getLineInfo());
 		}
 		int limitNum = activityGroupGoods.getLimitNum(); // 团购活动商品限购数量
@@ -3222,7 +3168,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		GoodsStoreSku goodsStoreSku = goodsStoreSkuService.selectGoodsStoreSkuDetail(storeSkuId); // 查询商品信息
 		if (goodsStoreSku == null) {
 			logger.error("查询商品信息", "goodsStoreSku 为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询商品信息 goodsStoreSku 为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询商品信息异常：goodsStoreSku 为空-------->" + CodeStatistical.getLineInfo());
 		}
 		int violation = goodsStoreSku.getOnline().ordinal(); // 上下架标识 0:下架、1:上架
@@ -3239,7 +3184,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		StoreInfo sInfo = storeInfoService.selectStoreBaseInfoById(storeId); // 查询店铺信息
 		if (sInfo == null) {
 			logger.error("查询店铺信息", "sInfo 为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询店铺信息 sInfo 为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询店铺信息异常：sInfo 为空-------->" + CodeStatistical.getLineInfo());
 		}
 		String sId = sInfo.getId(); // 店铺ID
@@ -3380,7 +3324,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		ActivityGroup activityGroup = activityGroupService.selectGroupStatus(activityId); // 查询团购活动时间
 		if (activityGroup == null) {
 			logger.error("查询团购活动时间", "activityGroup 为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询团购活动时间 activityGroup 为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询团购活动时间异常：activityGroup 为空-------->" + CodeStatistical.getLineInfo());
 		}
 		int status = Integer.valueOf(activityGroup.getStatus()); // 团购活动状态(0:未开始,1:已开始,2:已结束,3:已失效)
@@ -3388,21 +3331,18 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		ActivityGroupGoods activityGroupGoods = activityGroupGoodsService.selectActivityGroupLimitNum(map); // 查询团购商品的限购数
 		if (activityGroupGoods == null) {
 			logger.error("查询团购商品的限购数", "activityGroupGoods 为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询团购商品的限购数 activityGroupGoods 为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询团购商品的限购数异常：activityGroupGoods 为空-------->" + CodeStatistical.getLineInfo());
 		}
 
 		GoodsStoreSku goodsStoreSku = goodsStoreSkuService.selectGoodsStoreSkuDetail(skuId); // 查询商品信息
 		if (goodsStoreSku == null) {
 			logger.error("查询商品信息", "goodsStoreSku 为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询商品信息 goodsStoreSku 为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询商品信息异常：goodsStoreSku 为空-------->" + CodeStatistical.getLineInfo());
 		}
 
 		StoreInfo sInfo = storeInfoService.selectStoreBaseInfoById(storeId); // 查询店铺信息
 		if (sInfo == null) {
 			logger.error("查询店铺信息", "sInfo 为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询店铺信息 sInfo 为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询店铺信息异常：sInfo 为空-------->" + CodeStatistical.getLineInfo());
 		}
 		String myStoreName = sInfo.getStoreName();
@@ -3486,8 +3426,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 										if (activityGroup == null) {
 											logger.error("查询团购活动时间",
 													"activityGroup 为空-------->" + CodeStatistical.getLineInfo());
-											logger.info("查询团购活动时间 activityGroup 为空-------->"
-													+ CodeStatistical.getLineInfo());
 											throw new Exception("查询团购活动时间异常：activityGroup 为空-------->"
 													+ CodeStatistical.getLineInfo());
 										}
@@ -3506,7 +3444,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 										StoreInfo st = storeInfoService.selectDefaultAddressById(storeId); // 店铺默认地址查询
 										if (st == null) {
 											logger.error("店铺默认地址查询", "st 为空-------->" + CodeStatistical.getLineInfo());
-											logger.info("店铺默认地址查询 st 为空-------->" + CodeStatistical.getLineInfo());
 											throw new Exception(
 													"查询团购活动时间异常：st 为空-------->" + CodeStatistical.getLineInfo());
 										}
@@ -3520,8 +3457,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 									if (activityGroup == null) {
 										logger.error("查询团购活动时间",
 												"activityGroup 为空-------->" + CodeStatistical.getLineInfo());
-										logger.info(
-												"查询团购活动时间 activityGroup 为空-------->" + CodeStatistical.getLineInfo());
 										throw new Exception(
 												"查询团购活动时间异常：activityGroup 为空-------->" + CodeStatistical.getLineInfo());
 									}
@@ -3543,7 +3478,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 								GoodsStoreSku storeSku = goodsStoreSkuService.selectGoodsStoreSkuDetail(skuId); // 查询商品详细信息
 								if (storeSku == null) {
 									logger.error("查询商品详细信息", "storeSku 为空-------->" + CodeStatistical.getLineInfo());
-									logger.info("查询商品详细信息 storeSku 为空-------->" + CodeStatistical.getLineInfo());
 									throw new Exception(
 											"查询商品详细信息异常：storeSku 为空-------->" + CodeStatistical.getLineInfo());
 								}
@@ -3568,10 +3502,10 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 									Response r = e.response;
 									// statusCode:614返回状态码，图片已存在
 									if (614 == r.statusCode) {
-										logger.info("商品图片在订单中已存在");
+										logger.error("商品图片在订单中已存在");
 										// statusCode:612返回状态码,图片不存在状态
 									} else if (612 == r.statusCode) {
-										logger.info("商品图片在订单中不存在");
+										logger.error("商品图片在订单中不存在");
 									} else {
 										logger.error("将图片从商品库目录copy到订单图片目录异常", e.getMessage());
 										throw new ServiceException("将图片从标准商品库目录copy到店铺图片目录异常!");
@@ -3642,7 +3576,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 								SysBuyerUser buyerUser = sysBuyerUserMapper.selectByPrimaryKey(userId); // 查询买家用户信息
 								if (buyerUser == null) {
 									logger.error("查询买家用户信息", "buyerUser 为空-------->" + CodeStatistical.getLineInfo());
-									logger.info("查询买家用户信息 buyerUser 为空-------->" + CodeStatistical.getLineInfo());
 									throw new Exception(
 											"查询买家用户信息异常：buyerUser 为空-------->" + CodeStatistical.getLineInfo());
 								}
@@ -3803,8 +3736,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 									if (activityGroup == null) {
 										logger.error("查询团购活动时间",
 												"activityGroup 为空-------->" + CodeStatistical.getLineInfo());
-										logger.info(
-												"查询团购活动时间 activityGroup 为空-------->" + CodeStatistical.getLineInfo());
 										throw new Exception(
 												"查询团购活动时间异常：activityGroup 为空-------->" + CodeStatistical.getLineInfo());
 									}
@@ -3823,7 +3754,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 									StoreInfo st = storeInfoService.selectDefaultAddressById(storeId); // 店铺默认地址查询
 									if (st == null) {
 										logger.error("店铺默认地址查询", "st 为空-------->" + CodeStatistical.getLineInfo());
-										logger.info("店铺默认地址查询 st 为空-------->" + CodeStatistical.getLineInfo());
 										throw new Exception(
 												"查询团购活动时间异常：st 为空-------->" + CodeStatistical.getLineInfo());
 									}
@@ -3837,7 +3767,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 								if (activityGroup == null) {
 									logger.error("查询团购活动时间",
 											"activityGroup 为空-------->" + CodeStatistical.getLineInfo());
-									logger.info("查询团购活动时间 activityGroup 为空-------->" + CodeStatistical.getLineInfo());
 									throw new Exception(
 											"查询团购活动时间异常：activityGroup 为空-------->" + CodeStatistical.getLineInfo());
 								}
@@ -3859,7 +3788,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 							GoodsStoreSku storeSku = goodsStoreSkuService.selectGoodsStoreSkuDetail(skuId); // 查询商品详细信息
 							if (storeSku == null) {
 								logger.error("查询商品详细信息", "storeSku 为空-------->" + CodeStatistical.getLineInfo());
-								logger.info("查询商品详细信息 storeSku 为空-------->" + CodeStatistical.getLineInfo());
 								throw new Exception("查询商品详细信息异常：storeSku 为空-------->" + CodeStatistical.getLineInfo());
 							}
 							String propertiesIndb = "";
@@ -3883,10 +3811,10 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 								Response r = e.response;
 								// statusCode:614返回状态码，图片已存在
 								if (614 == r.statusCode) {
-									logger.info("商品图片在订单中已存在");
+									logger.error("商品图片在订单中已存在");
 									// statusCode:612返回状态码,图片不存在状态
 								} else if (612 == r.statusCode) {
-									logger.info("商品图片在订单中不存在");
+									logger.error("商品图片在订单中不存在");
 								} else {
 									logger.error("将图片从商品库目录copy到订单图片目录异常", e.getMessage());
 									throw new ServiceException("将图片从标准商品库目录copy到店铺图片目录异常!");
@@ -3957,7 +3885,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 							SysBuyerUser buyerUser = sysBuyerUserMapper.selectByPrimaryKey(userId); // 查询买家用户信息
 							if (buyerUser == null) {
 								logger.error("查询买家用户信息", "buyerUser 为空-------->" + CodeStatistical.getLineInfo());
-								logger.info("查询买家用户信息 buyerUser 为空-------->" + CodeStatistical.getLineInfo());
 								throw new Exception("查询买家用户信息异常：buyerUser 为空-------->" + CodeStatistical.getLineInfo());
 							}
 							int orType = Integer.valueOf(type);
@@ -4127,7 +4054,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			GoodsStoreSku storeSku = goodsStoreSkuService.getGoodsStoreSkuUpdateTime(map); // 查询商品是否发生变化
 			if (storeSku == null) {
 				logger.error("查询商品是否发生变化", "storeSku 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询商品是否发生变化 storeSku 为空-------->" + CodeStatistical.getLineInfo());
 				throw new Exception("查询商品是否发生变化异常：storeSku 为空-------->" + CodeStatistical.getLineInfo());
 			}
 			Date beforeUpdateTime = storeSku.getUpdateTime();
@@ -4212,7 +4138,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		StoreInfo store = storeInfoService.selectStoreBaseInfoById(storeId); // 查询店铺基本信息
 		if (store == null) {
 			logger.error("查询店铺基本信息", "store 为空-------->" + CodeStatistical.getLineInfo());
-			logger.info("查询店铺基本信息 store 为空-------->" + CodeStatistical.getLineInfo());
 			throw new Exception("查询店铺基本信息异常：store 为空-------->" + CodeStatistical.getLineInfo());
 		}
 		String myStoreName = store.getStoreName();
@@ -4354,7 +4279,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			}
 			if (skuStock == null) {
 				logger.error("查询店铺商品库存数量", "skuStock 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询店铺商品库存数量 skuStock 为空-------->" + CodeStatistical.getLineInfo());
 				throw new Exception("查询店铺商品库存数量异常：skuStock 为空-------->" + CodeStatistical.getLineInfo());
 			}
 			int sellable = skuStock.getSellable();
@@ -4455,7 +4379,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			GoodsStoreSku storeSku = storeSkuList.get(i); // 查询店铺商品信息
 			if (storeSku == null) {
 				logger.error("查询店铺商品信息", "storeSku 为空-------->" + CodeStatistical.getLineInfo());
-				logger.info("查询特惠商品信息 activitySaleGoods 为空-------->" + CodeStatistical.getLineInfo());
 				throw new Exception("查询店铺商品信息异常： storeSku 为空-------->" + CodeStatistical.getLineInfo());
 			}
 
