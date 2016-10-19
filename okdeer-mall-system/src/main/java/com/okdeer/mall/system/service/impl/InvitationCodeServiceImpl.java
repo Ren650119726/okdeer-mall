@@ -287,4 +287,9 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
         return 0;
     }
 
+	@Override
+	public SysUserInvitationCode findById(String id) throws Exception {
+		return sysUserInvitationCodeMapper.selectById(id);
+	}
+
 }

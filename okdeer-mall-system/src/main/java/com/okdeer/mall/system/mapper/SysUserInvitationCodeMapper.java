@@ -115,4 +115,13 @@ public interface SysUserInvitationCodeMapper extends IBaseCrudMapper {
      * @date 2016年10月12日
      */
     String selectIdByOrderId(@Param("orderId")String orderId);
+    
+    /**
+     * @Description: 根据id 获取邀请码 
+     * @param id 主键id
+     * @return SysUserInvitationCode
+     * @author zhulq
+     * @date 2016年10月19日
+     */
+    SysUserInvitationCode selectById(@Param("id")String id);
 }

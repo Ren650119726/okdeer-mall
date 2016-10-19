@@ -301,7 +301,7 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		
 		// 保存邀请记录
 		registeRecordMapper.saveRecord(registRecord);
-		// 保存用户领取代金券记录。判断是否给用户赠送代金券
+		// 保存用户领取代金券记录
 		if (CollectionUtils.isNotEmpty(couponsRecordList)) {
 			activityCouponsRecordMapper.insertSelectiveBatch(couponsRecordList);
 		}

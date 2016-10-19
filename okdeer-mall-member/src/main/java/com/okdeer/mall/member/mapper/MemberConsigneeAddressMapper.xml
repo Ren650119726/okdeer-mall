@@ -793,16 +793,11 @@
 		FROM member_consignee_address t
 		LEFT JOIN store_server_area t1 
 		ON t.province_id = t1.province_id 
-		AND (t1.area_type = 2 OR (t.city_id = t1.city_id AND (t.area_id is null OR t.area_id = t1.area_id)))
+		AND (t1.area_type = 2 OR (t.city_id = t1.city_id AND (t1.area_type = 1 OR t.area_id is null OR t.area_id = '' OR t.area_id = t1.area_id)))
 		AND t1.store_id=#{storeId}
 		WHERE t.user_id = #{userId}
 		AND t.disabled=0
-		ORDER BY t.update_time,
-				 CASE t1.type 
-					WHEN 0 THEN 0
-					WHEN 1 THEN IF(distance(t.longitude,t.latitude,t1.longitude,t1.latitude)>t1.distance*1000,1,0)
-					ELSE 1
-				 END DESC
+		ORDER BY t.update_time DESC
   </select>
   
   <!-- 根据活动服务范围查询用户地址信息 -->
@@ -827,7 +822,7 @@
 		AND t1.activity_seckill_id = #{activitySeckillId}
 		WHERE t.user_id = #{userId}
 		AND t.disabled=0
-		ORDER BY t.update_time,IF(t1.id is null,1,0) DESC
+		ORDER BY t.update_time DESC
   </select>
   
   <!-- 根据服务范围查询用户地址 -->
@@ -867,15 +862,10 @@
 			AND ssa.store_id = #{storeId}
 		)t1 ON t.province_id = t1.province_id 
 		AND t.city_id = t1.city_id
-		AND (t1.area_type = 2 OR t.area_id is null OR t.area_id = t1.area_id)
+		AND (t1.area_type IN(1, 2) OR t.area_id is null OR t.area_id = '' OR t.area_id = t1.area_id)
 		WHERE t.user_id = #{userId}
 		AND t.disabled=0
-		ORDER BY t.update_time ,
-				 CASE t1.type 
-					 WHEN 0 THEN 0
-					 WHEN 1 THEN IF(distance(t.longitude,t.latitude,t1.longitude,t1.latitude)>t1.distance*1000,'1','0')
-					 ELSE 1
-				 END DESC
+		ORDER BY t.update_time DESC
   </select>
   
   <!-- 根据用户Id查询用户地址 -->
