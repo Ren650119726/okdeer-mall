@@ -436,11 +436,9 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 * @date 2016年7月14日
 	 */
 	private void setOrderNo(TradeOrder tradeOrder) throws ServiceException {
-		// String orderNo =
-		// generateNumericalService.generateOrderNo(OrderNoUtils.SERV_ORDER_PREFIXE,
-		// "",
-		// OrderNoUtils.ONLINE_POS_ID);
-		String orderNo = generateNumericalService.generateNumberAndSave(OrderNoUtils.SERV_ORDER_PREFIXE);
+		String orderNo = generateNumericalService.generateOrderNo(OrderNoUtils.SERV_ORDER_PREFIXE, "",
+				OrderNoUtils.ONLINE_POS_ID);
+		//String orderNo = generateNumericalService.generateNumberAndSave(OrderNoUtils.SERV_ORDER_PREFIXE);
 		tradeOrder.setOrderNo(orderNo);
 	}
 
