@@ -215,4 +215,10 @@
 		sys_buyer_user user on user.id = suic.sys_buyer_user_id
 		where tr.id = #{orderId, jdbcType=VARCHAR}
   	</select>
+  	
+  	<!-- add by zhulq 新增根据id获取实体 -->
+  	<select id="selectById" parameterType="string" resultMap="BaseResultMap">
+  		 SELECT id,invitation_user_num,first_order_user_num,create_time,
+  		 update_time FROM sys_user_invitation_code WHERE id =#{id,jdbcType=VARCHAR}
+  	</select>
 </mapper>
