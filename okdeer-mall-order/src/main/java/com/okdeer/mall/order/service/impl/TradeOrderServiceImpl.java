@@ -4916,7 +4916,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// stockManagerService.updateStock(stockAdjustVo);
 				// stockMQProducer.sendMessage(stockAdjustVo);
 			} catch (Exception e) {
-				logger.info("pos 发货锁定库存发生异常", e);
+				logger.error("pos 发货锁定库存发生异常", e);
 				// added by maojj
 				rollbackMQProducer.sendStockRollbackMsg(rpcId);
 				throw e;
@@ -4926,7 +4926,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			try {
 				this.updateWithConfirm(tradeOrder);
 			} catch (Exception e) {
-				logger.info("pos 发货发生异常", e);
+				logger.error("pos 发货发生异常", e);
 				throw new ServiceException("发货失败", e);
 			}
 		}

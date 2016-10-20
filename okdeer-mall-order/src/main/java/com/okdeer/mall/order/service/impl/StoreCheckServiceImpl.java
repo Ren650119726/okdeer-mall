@@ -60,7 +60,7 @@ public class StoreCheckServiceImpl implements StoreCheckService {
 		// 查询店铺信息
 		StoreInfo storeInfo = storeInfoServiceApi.selectStoreBaseInfoById(storeId);
 		if (storeInfo == null) {
-			logger.info("根据店铺Id{}查询店铺信息为空-------->{}", storeId, CodeStatistical.getLineInfo());
+			logger.error("根据店铺Id{}查询店铺信息为空-------->{}", storeId, CodeStatistical.getLineInfo());
 			throw new ServiceException("查询店铺信息异常：storeInfo 为空-------->" + CodeStatistical.getLineInfo());
 		}
 		StoreInfoExt storeExt = storeInfo.getStoreInfoExt();
