@@ -673,7 +673,25 @@ public class ActivityCollectCouponsServiceImpl
 				//代金券金额
 				resultMap.put("couponPrice", String.valueOf(activityCoupon.getFaceValue()));
 				//使用范围
-				resultMap.put("usableRange", "限便利店");
+				String usableRange = "";
+				//Begin 开门红包代金券根据类型返回文案 added by tangy  2016-10-20
+				switch (activityCoupon.getType().intValue()) {
+					case 0:
+						usableRange = "友门鹿通用";
+						break;
+					case 1:
+						usableRange = "限便利店专用";
+						break;					
+					case 2:
+						usableRange = "限服务店专用";
+						break;
+					case 3:
+						usableRange = "限手机充值专用";
+						break;
+					default:
+						break;
+				}
+				resultMap.put("usableRange", usableRange);
 			}
 			
 		} 		
