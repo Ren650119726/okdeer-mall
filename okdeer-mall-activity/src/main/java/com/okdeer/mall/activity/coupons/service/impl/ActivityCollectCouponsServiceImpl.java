@@ -686,7 +686,7 @@ public class ActivityCollectCouponsServiceImpl
 						usableRange = "限服务店专用";
 						break;
 					case 3:
-						usableRange = "限手机充值专用";
+						usableRange = "限话费充值";
 						break;
 					default:
 						break;
