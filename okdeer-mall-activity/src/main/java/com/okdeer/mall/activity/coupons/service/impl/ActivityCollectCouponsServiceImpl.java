@@ -677,7 +677,7 @@ public class ActivityCollectCouponsServiceImpl
 				//Begin 开门红包代金券根据类型返回文案 added by tangy  2016-10-20
 				switch (activityCoupon.getType().intValue()) {
 					case 0:
-						usableRange = "友门鹿通用";
+						usableRange = "友门鹿代金券";
 						break;
 					case 1:
 						usableRange = "限便利店专用";
