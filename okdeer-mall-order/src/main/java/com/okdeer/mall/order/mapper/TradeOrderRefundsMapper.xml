@@ -1010,11 +1010,11 @@
 		</if>
 		<!-- 退款单来源，单个时用等于 -->
 		<if test="null!=orderResource">
-			AND tr.order_resource = #{orderResource,jdbcType=TINYINT}
+			AND o.order_resource = #{orderResource,jdbcType=TINYINT}
 		</if>
 		<!-- 退款单来源，多个时使用IN -->
 		<if test="null!=orderResources">
-			AND tr.order_resource IN
+			AND o.order_resource IN
 			<foreach collection="orderResources" index="index" item="item"
 				open="(" close=")" separator=",">
 				#{item}
@@ -1058,7 +1058,7 @@
 		order_create_time,o.user_phone,o.actual_amount,o.fare,o.pay_way,o.payment_time,pay.id
 		as pay_id,pay.pay_type,pay.pay_time,
 		tr.id,tr.refund_no,tr.payment_method,su.login_name,su.user_name,tr.operator,tr.create_time,
-		tr.total_amount,tr.refunds_status,tr.total_income,tr.order_resource
+		tr.total_amount,tr.refunds_status,tr.total_income,o.order_resource
 		FROM trade_order_refunds AS tr
 		LEFT JOIN sys_user su ON su.id=tr.operator
 		LEFT JOIN trade_order AS o ON o.order_no = tr.order_no
