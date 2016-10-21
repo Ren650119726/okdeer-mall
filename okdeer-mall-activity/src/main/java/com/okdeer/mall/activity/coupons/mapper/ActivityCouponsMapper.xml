@@ -250,6 +250,9 @@
              <if test="totalNum != null">
                 total_num = #{totalNum, jdbcType=INTEGER},
              </if>
+             <if test="remainNum != null">
+                remain_num = #{remainNum, jdbcType=INTEGER},
+             </if>
              <if test="validDay != null">
                 valid_day = #{validDay, jdbcType=INTEGER},
              </if>
