@@ -333,7 +333,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
                 //将从第三方平台上查到的商品信息赋值给订单项
                 tradeOrderItem.setSkuName(cardInfo.getString("cardname"));
                 //记录充值话费的面额
-                tradeOrderItem.setStoreSkuId(totalAmount.toString());
+                tradeOrderItem.setStoreSkuId(String.valueOf(totalAmount.intValue()));
                 //将cardid赋值给cardid
                 tradeOrderItem.setStoreSpuId(cardInfo.getString("cardid"));
                 flag = true;
