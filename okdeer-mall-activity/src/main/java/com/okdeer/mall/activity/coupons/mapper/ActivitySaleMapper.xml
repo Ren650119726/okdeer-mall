@@ -273,5 +273,13 @@
 	<select id="selectById" resultMap="ActivitySale" parameterType="string">
         select <include refid="columns"/> from activity_sale where id = #{id} and disabled = 0 and status = 1
     </select>
+    
+    <select id="listByStoreId" parameterType="map" resultMap="ActivitySale">
+    	select <include refid="columns"/> from activity_sale s where 1 = 1 
+		<if test="storeId != null and storeId != ''">
+    		and store_id = #{storeId}
+    	</if>
+    	and status = 1
+    </select>
 
 </mapper>

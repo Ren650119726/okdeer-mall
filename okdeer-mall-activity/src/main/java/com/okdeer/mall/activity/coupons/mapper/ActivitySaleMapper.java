@@ -79,4 +79,14 @@ public interface ActivitySaleMapper {
 	 * @return
 	 */
 	ActivitySale getAcSaleStatus(String id);
+	
+	/**
+	 * @Description: TODO
+	 * @param map
+	 * @return
+	 * @author zhangkn
+	 * @date 2016年10月21日
+	 */
+	List<ActivitySale> listByStoreId(Map<String,Object> map);
+	
 }

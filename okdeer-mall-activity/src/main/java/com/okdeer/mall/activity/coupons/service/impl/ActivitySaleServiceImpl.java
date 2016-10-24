@@ -497,4 +497,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	public List<ActivitySale> listByTask() {
 		return activitySaleMapper.listByTask();
 	}
+	
+	@Override
+	public List<ActivitySale> listByStoreId(Map<String,Object> map) {
+		return activitySaleMapper.listByStoreId(map);
+	}
 }
