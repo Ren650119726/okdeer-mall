@@ -58,4 +58,13 @@ public interface ActivitySaleService {
 	int selectActivitySale(String activityId);
 
 	List<ActivitySale> listByTask();
+	
+	/**
+	 * @Description: 通过店铺id查询正在进行中的特惠活动
+	 * @param map
+	 * @return
+	 * @author zhangkn
+	 * @date 2016年10月21日
+	 */
+	List<ActivitySale> listByStoreId(Map<String,Object> map);
 }
