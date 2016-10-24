@@ -94,7 +94,9 @@
     </select>
     
     <select id="findFwdFirstSpuCategoryList" resultType="string" parameterType="map">
-    	select spu_category_id from goods_spu_category_industry where industry_id = '8a9410d556916b01015692493bf90aa9';
+    	select spu_category_id from goods_spu_category_industry where industry_id in ( 
+			select s.industry_id from store_info s where s.disabled = 0 and s.type = 4 and s.audit_status = 1 
+		)
     </select>
     
 
@@ -247,6 +249,9 @@
              </if>
              <if test="totalNum != null">
                 total_num = #{totalNum, jdbcType=INTEGER},
+             </if>
+             <if test="remainNum != null">
+                remain_num = #{remainNum, jdbcType=INTEGER},
              </if>
              <if test="validDay != null">
                 valid_day = #{validDay, jdbcType=INTEGER},

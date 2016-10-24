@@ -593,7 +593,7 @@
 	<select id="findActivityCollectCouponsByCity" resultMap="couponsAndLimitCategoryDetailMap" parameterType="string">
 	    SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time, collect.daily_circulation,
 	           coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
-	           coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num
+	           coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num, coupons.type as coupons_type
 	    FROM activity_collect_coupons collect 
 	    LEFT JOIN activity_coupons coupons ON coupons.activity_id = collect.id
 	    WHERE collect.disabled = 0 AND collect.type=2 AND ( collect.belong_type = '0' or collect.approval_status = 1 ) AND collect.status = 1 AND coupons.remain_num > 0

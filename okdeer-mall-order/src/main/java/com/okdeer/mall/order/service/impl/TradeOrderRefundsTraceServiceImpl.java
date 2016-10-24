@@ -342,7 +342,13 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 			resp.setCode(ResultCodeEnum.FAIL.getCode());
 			return resp;
 		}
+		// Begin added by maojj 2016-10-19
 		// 设置当前退款单所处的状态
+		if(refundsOrder.getRefundsStatus() == RefundsStatusEnum.SELLER_REFUNDING){
+			// 退款中的状态返回app为等待买家退货。这块的处理主要是为了显示“退款成功”的虚节点。不具备业务意义。
+			refundsOrder.setRefundsStatus(RefundsStatusEnum.WAIT_BUYER_RETURN_GOODS);
+		}
+		// End added by maojj 2016-10-19
 		respData.setRefundStatus(OrderAppStatusAdaptor.convertAppRefundStatus(refundsOrder.getRefundsStatus()));
 		// 根据退款单ID查询退款轨迹列表
 		List<TradeOrderRefundsTrace> traceList = tradeOrderRefundsTraceMapper.findRefundsTrace(refundsId);
