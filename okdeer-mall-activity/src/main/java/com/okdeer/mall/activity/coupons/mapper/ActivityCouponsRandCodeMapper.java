@@ -33,4 +33,13 @@ public interface ActivityCouponsRandCodeMapper extends IBaseCrudMapper {
 	 * @date 2016年10月25日
 	 */
 	Set<String> findExistCodeSet(Set<String> randCodeSet);
+	
+	/**
+	 * @Description: 根据随机码 
+	 * @param randCode randCode
+	 * @return int
+	 * @author zhulq
+	 * @date 2016年10月25日
+	 */
+	ActivityCouponsRandCode selectByRandCode(String randCode);
 }

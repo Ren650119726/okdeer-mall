@@ -762,4 +762,20 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		int result = activityCouponsMapper.selectFaceMoney(id);
 		return result;
 	}
+
+	@Override
+	public int findByExchangeCode(String exchangeCode) throws Exception {
+		ActivityCoupons activity = activityCouponsMapper.selectByExchangeCode(exchangeCode);
+		if (activity != null) {
+			return 1;
+		} else {
+			return 0;
+		}
+
+	}
+
+	@Override
+	public int findByRandCode(String exchangeCode) throws Exception {
+		return activityCouponsMapper.selectByRandCode(exchangeCode);
+	}
 }

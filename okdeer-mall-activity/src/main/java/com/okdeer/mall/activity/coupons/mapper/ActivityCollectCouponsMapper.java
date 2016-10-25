@@ -175,4 +175,15 @@ public interface ActivityCollectCouponsMapper {
 	//Begin added by zhaoqc 2016-09-29
 	List<ActivityCollectCouponsSimpleVo> findRecommendAcvititys();
 	//End added by zhaoqc 2016-09-29
+	
+	// add by zhulq 2016-10-25
+	/**
+	 * @Description: 获取代金卷广告活动的代金卷
+	 * @param map 参数
+	 * @return List
+	 * @author zhulq
+	 * @date 2016年10月25日
+	 */
+	List<ActivityCollectCouponsVo> selectRandCodeVoucher(Map<String,Object> map);
+	// add by zhulq 2016-10-25
 }

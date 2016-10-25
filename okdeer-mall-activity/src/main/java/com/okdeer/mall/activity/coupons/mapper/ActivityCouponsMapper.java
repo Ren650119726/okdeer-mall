@@ -308,4 +308,13 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	 * @date 2016年10月13日
 	 */
 	int selectFaceMoney(String id);
+	
+	/**
+	 * @Description: 根据随机码查询是否存在代金券
+	 * @param exchangeCode 随机码
+	 * @return int
+	 * @author zhulq
+	 * @date 2016年10月25日
+	 */
+	int selectByRandCode(String exchangeCode);
 }

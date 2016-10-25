@@ -37,6 +37,8 @@
 	  <result property="identityLimit" column="identity_limit" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.discount.enums.IdentityLimit"/>
       <result column="refund_type" property="refundType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundType" />
       <result property="dailyCirculation" column="daily_circulation" jdbcType="TINYINT" />
+      <result property="startTime" column="start_time" jdbcType="TIMESTAMP" />
+	  <result property="endTime" column="end_time" jdbcType="TIMESTAMP" />
       <!-- 代金券信息 -->
       <collection property="activityCoupons" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCoupons">	
 		<id property="id" column="couponsId" javaType="string" jdbcType="VARCHAR"/>
@@ -335,15 +337,7 @@
 	</select>   
 	<!-- wusw:根据店铺id、活动状态、客户端限制类型等，获取代金券领券活动及代金券信息 -->
 	<select id="selectByStoreAndLimitType" resultMap="couponsAndLimitCategoryDetailMap" parameterType="map">
-<!-- 	   SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time,
-              coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
-              coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num,
-              coupons.type AS coupons_type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type
-		FROM activity_collect_coupons collect
-		LEFT JOIN activity_collect_area area ON area.collect_coupons_id = collect.id
-		LEFT JOIN activity_coupons coupons ON coupons.activity_id = collect.id
-		WHERE collect.disabled = 0 AND ( collect.belong_type = '0' or collect.approval_status = 1 ) -->
-		SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time,
+		SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time,collect.end_time,
               coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
               coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num,
               coupons.type AS coupons_type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, coupons.id as couponsId,
@@ -666,4 +660,28 @@
 		and disabled=0
 	</select>
 	
+	<!-- 获取广告代金卷活动所以的代金卷 2016-10-25 add by zhulq -->
+	<select id="selectRandCodeVoucher" resultMap="couponsAndLimitCategoryDetailMap" parameterType="map">
+		SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time,collect.end_time,
+              coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
+              coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num,
+              coupons.type AS coupons_type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, coupons.id as couponsId
+		FROM activity_collect_coupons collect
+		INNER JOIN activity_coupons coupons ON coupons.activity_id = collect.id
+		INNER JOIN activity_coupons_rand_code code ON code.coupons_id = coupons.id
+		WHERE collect.disabled = 0 AND ( collect.belong_type = '0' or collect.approval_status = 1 )
+			AND collect.area_type = 0  
+			AND coupons.is_rand_code = 1
+			AND code.is_exchange = 0
+		<if test="randCode != null and randCode != ''">
+		    AND code.rand_code = #{randCode,jdbcType=VARCHAR}
+		</if>
+		<if test="type != null">
+		 	AND collect.type = #{type,jdbcType=TINYINT}
+		</if>
+		<if test="status != null">
+		 	AND collect.`status` = #{status,jdbcType=TINYINT}
+		</if>
+	  </select>
+		
 </mapper>

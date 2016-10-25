@@ -723,7 +723,7 @@ public class ActivityCollectCouponsServiceImpl
     public ActivityCollectCouponsSimpleVo findRecommendAcvitity() {
         List<ActivityCollectCouponsSimpleVo> simpleVos = this.activityCollectCouponsMapper.findRecommendAcvititys();
         ActivityCollectCouponsSimpleVo simpleVo = null;
-        if(CollectionUtils.isEmpty(simpleVos)) {
+        if (CollectionUtils.isEmpty(simpleVos)) {
             simpleVo = new ActivityCollectCouponsSimpleVo();
             simpleVo.setVoucher(false);
         } else {
@@ -732,5 +732,21 @@ public class ActivityCollectCouponsServiceImpl
         }
         return simpleVo;
     }
+
+	@Override
+	public List<ActivityCollectCouponsVo> findRandCodeVoucherList(Map<String, Object> params) throws ServiceException {
+		List<ActivityCollectCouponsVo> result = activityCollectCouponsMapper.selectRandCodeVoucher(params);
+		if (result != null && result.size() > 0) {
+			for (ActivityCollectCouponsVo vo : result) {
+				if (vo.getStartTime() != null) {
+					vo.setStartTimeStr(DateUtils.formatDate(vo.getStartTime(), "yyyy年MM月dd日"));
+				}
+				if (vo.getEndTime() != null) {
+					vo.setEndTimeStr(DateUtils.formatDate(vo.getEndTime(), "yyyy年MM月dd日"));
+				}
+			}
+		}
+		return result;
+	}
 	
 }

@@ -171,5 +171,14 @@
 			#{item}
 		</foreach>
 	</select>
+	
+	<select id="selectByRandCode" parameterType="string" resultMap="activityCouponsRandCodeMap">
+		SELECT <include refid="columns" />
+		FROM activity_coupons_rand_code
+		where 1 = 1
+		<if test="randCode != null and randCode != ''">
+			and	rand_code = #{randCode, jdbcType=VARCHAR},
+		</if>
+	</select>
 </mapper>
 

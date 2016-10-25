@@ -30,6 +30,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRandCode;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
@@ -39,6 +40,7 @@ import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
@@ -78,6 +80,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Autowired
 	private ActivityCollectCouponsMapper activityCollectCouponsMapper;
 
+	/**
+	 * 代金券随机码
+	 */
+	@Autowired
+	private ActivityCouponsRandCodeMapper activityCouponsRandCodeMapper;
+	
 	@Reference(version = "1.0.0", check = false)
 	private IPayTradeServiceApi payTradeServiceApi;
 
@@ -333,20 +341,21 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsMapper
 				.get(activityCoupons.getActivityId());
 		if (activityCollectCoupons.getStatus().intValue() != 1) {
-			map.put("code", 103);
+			map.put("code", 105);
 			map.put("msg", "活动已结束！");
 			return map;
 		}
 
 		// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 		ActivityCouponsRecord activityCouponsRecord = new ActivityCouponsRecord();
+		Date collectTime = DateUtils.getDateStart(new Date());
 		activityCouponsRecord.setCouponsId(activityCoupons.getId());
 		activityCouponsRecord.setCouponsCollectId(activityCoupons.getActivityId());
 		activityCouponsRecord.setCollectType(activityCouponsType);
 		activityCouponsRecord.setCollectUserId(null);
-		// 获取指定代金券已被领取数量
-		// int receivedRecordCount =
-		// activityCouponsRecordMapper.selectCountByParams(activityCouponsRecord);
+		activityCouponsRecord.setCollectTime(collectTime);		
+		// 当前日期已经领取的数量
+		int dailyCirculation = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecord);
 		// 获取当前登陆用户已领取的指定代金券数量
 		int currentRecordCount = 0;
 		if (!StringUtils.isEmpty(currentOperatUserId)) {
@@ -357,6 +366,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			// 剩余数量小于0 显示已领完
 			map.put("code", 101);
 			map.put("msg", "该代金券已经领完了！");
+			return map;
+		} else if (dailyCirculation >= Integer.parseInt(activityCollectCoupons.getDailyCirculation())) {
+			map.put("code", 104);
+			map.put("msg", "来迟啦！券已抢完，明天早点哦");
 			return map;
 		} else {
 			if (currentRecordCount >= activityCoupons.getEveryLimit().intValue()) {
@@ -384,6 +397,17 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 				activityCouponsRecordMapper.insertSelective(activityCouponsRecord);
 				activityCouponsMapper.updateRemainNum(activityCoupons.getId());
+				//如果领取成功更新随机码表
+				String radeCode = activityCoupons.getRandCode();
+				if (radeCode != null) {
+					ActivityCouponsRandCode activityCouponsRandCode	= activityCouponsRandCodeMapper.selectByRandCode(radeCode);
+					if (activityCouponsRandCode != null) {
+						activityCouponsRandCode.setIsExchange(1);
+						activityCouponsRandCode.setUpdateTime(date);
+						activityCouponsRandCode.setUpdateUserId(currentOperatUserId);
+						activityCouponsRandCodeMapper.updateByPrimaryKey(activityCouponsRandCode);
+					}
+				}
 				map.put("code", 100);
 				map.put("msg", successMsg);
 				return map;
@@ -534,6 +558,33 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	public List<ActivityCouponsRecord> selectActivityCouponsRecord(ActivityCouponsRecord couponsRecord) throws Exception {
 		List<ActivityCouponsRecord> record = activityCouponsRecordMapper.selectAllRecordsByUserId(couponsRecord);
 		return record;
+	}
+
+	@Override
+	public JSONObject addRecordForRandCode(Map<String, Object> params, String randCode, String currentOperatUserId,
+			ActivityCouponsType activityCouponsType) throws ServiceException {
+		Map<String, Object> map = new HashMap<String, Object>();
+		//如果随机码为空即不进行检验
+		String radeCode = (String)params.get("randCode");
+		if (StringUtils.isNotBlank(radeCode)) {
+			List<ActivityCollectCouponsVo> result = activityCollectCouponsMapper.selectRandCodeVoucher(params);
+			// 判断输入的随机码是否正确
+			if (result != null && result.size() > 0) {
+				ActivityCoupons activityCoupons = result.get(0).getActivityCoupons().get(0);
+				activityCoupons.setRandCode(radeCode);
+				// 根据数量的判断，插入代金券领取记录
+				map = this.insertRecordByJudgeNum(activityCoupons, currentOperatUserId, "恭喜你，优惠券兑换成功！",
+						activityCouponsType);
+			} else {
+				map.put("code", 103);
+				map.put("msg", "您输入的抵扣券随机码无效！");
+			}
+		} else {
+			map.put("code", 103);
+			map.put("msg", "您输入的抵扣券随机码无效！");
+		}
+		
+		return JSONObject.fromObject(map);
 	}
 
 	

@@ -476,4 +476,11 @@
 	</select>
 	<!-- end yangq 获取面额 -->
 	
+	<select id="selectByRandCode" parameterType="string" resultType="int">
+	  SELECT COUNT(1) FROM activity_coupons a
+	  LEFT JOIN activity_coupons_rand_code r
+	  on r.coupons_id = a.id		
+	  where a.is_rand_code = 1 
+	  AND r.rand_code = #{exchangeCode,jdbcType=VARCHAR}
+	</select>
 </mapper>
