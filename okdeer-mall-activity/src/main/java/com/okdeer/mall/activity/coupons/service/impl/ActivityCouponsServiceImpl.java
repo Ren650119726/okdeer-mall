@@ -3,8 +3,12 @@ package com.okdeer.mall.activity.coupons.service.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +26,7 @@ import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreAgentCommunityServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -32,6 +37,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCommunity;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsLimitCategory;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRandCode;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRelationStore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
@@ -40,12 +46,14 @@ import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsLimitCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.common.entity.AreaScTreeVo;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.DistrictType;
+import com.okdeer.mall.common.utils.RandomStringUtil;
 
 /**
  * 代金券管理实现类
@@ -97,6 +105,21 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private IAddressService addressService;
+	
+	// Begin added by maojj 2016-10-25
+	/**
+	 * 保存数据库的最大值。用于随机码生成
+	 */
+	@Resource
+	private ActivityCouponsRandCodeMapper activityCouponsRandCodeMapper;
+	
+	private static final int MAX_NUM = 1000;
+	
+	/**
+	 * 随机数长度
+	 */
+	private static final int RAND_CODE_LENGTH = 8;
+	// End added by maojj 2016-10-25
 
 	@Override
 	public List<AreaScTreeVo> getStoreInfoByCityId(StoreInfo parStoreInfo) {
@@ -139,8 +162,81 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			activityCouponsMapper.insert(coupons);
 			this.addRelatedInfo(coupons);
 		}
+		
+		// Begin added by maojj 2016-10-25
+		// 如果代金券设置了需要生成随机码，则根据代金券的发行量生成随机码
+		if (coupons.getIsRandCode() == WhetherEnum.whether.ordinal()) {
+			// 需要生成随机码，则生成随机码并保存
+			generateRandCodeAndSave(coupons);
+		}
+		// End added by maojj 2016-10-25
 	}
-
+	
+	/**
+	 * @Description: 根据发行量生成随机码并保存到数据库
+	 * @param coupons   
+	 * @author maojj
+	 * @date 2016年10月25日
+	 */
+	private void generateRandCodeAndSave(ActivityCoupons coupons){
+		// 随机码
+		Set<String> randCodeSet = null;
+		List<ActivityCouponsRandCode> couponsRandCodeList = null;
+		ActivityCouponsRandCode couponsRandCode = null;
+		// 总发行量
+		int totalNum = coupons.getTotalNum().intValue();
+		// 根据总发行量，1000条处理一次的规则生成随机码并保存
+		// 循环处理次数
+		int loopNum = totalNum%MAX_NUM == 0 ? totalNum/MAX_NUM : totalNum/MAX_NUM + 1;
+		// 生成随机码的数量
+		int randCodeNum = 0;
+		for (int i = 0; i < loopNum; i++) {
+			randCodeNum = (i+1)*MAX_NUM > totalNum ? (totalNum - i*MAX_NUM) : MAX_NUM;
+			randCodeSet = new HashSet<String>();
+			// 增加随机数
+			addRandCode(randCodeSet,randCodeNum);
+			couponsRandCodeList = new ArrayList<ActivityCouponsRandCode>();
+			for(String randCode : randCodeSet){
+				couponsRandCode = new ActivityCouponsRandCode();
+				couponsRandCode.setId(UuidUtils.getUuid());
+				couponsRandCode.setCouponsId(coupons.getId());
+				couponsRandCode.setRandCode(randCode);
+				couponsRandCode.setIsExchange(WhetherEnum.not.ordinal());
+				couponsRandCode.setCreateUserId(coupons.getCreateUserId());
+				couponsRandCode.setCreateTime(coupons.getCreateTime());
+				
+				couponsRandCodeList.add(couponsRandCode);
+			}
+			activityCouponsRandCodeMapper.batchInsert(couponsRandCodeList);
+		}
+	}
+	
+	/**
+	 * @Description: 随机N个不重复的随机数
+	 * @param randCodeSet 随机数的Set集合。利用set的无重复特性
+	 * @param randCodeNum 需要生成的随机数的数量
+	 * @author maojj
+	 * @date 2016年10月25日
+	 */
+	private void addRandCode(Set<String> randCodeSet,int randCodeNum){
+		for(int i=0;i<randCodeNum-randCodeSet.size();i++){
+			randCodeSet.add(RandomStringUtil.getRandomNumStr(RAND_CODE_LENGTH));
+		}
+		int setSize = randCodeSet.size();
+		// 如果存入Set的数量小于指定生成的个数，则递归调用，直到达到指定数值。
+		if(setSize < randCodeNum){
+			addRandCode(randCodeSet,randCodeNum);
+		}
+		// 查询activity_coupons_rand_code中已经存在的随机数，从集合中剔除，并继续添加随机数
+		Set<String> existRandCode = activityCouponsRandCodeMapper.findExistCodeSet(randCodeSet);
+		if(CollectionUtils.isNotEmpty(existRandCode)){
+			// 从生成的集合中移除已存在的code
+			randCodeSet.removeAll(existRandCode);
+			// 如果有已经存的code，移除之后，需要继续添加。
+			addRandCode(randCodeSet,randCodeNum);
+		}
+	}
+	
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void addCouponsLimitCategory(List<ActivityCouponsLimitCategory> activityCouponsLimitCategoryList)

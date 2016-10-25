@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper">
+
+	<!-- 属性映射 -->
+	<resultMap id="activityCouponsRandCodeMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRandCode">
+		<result property="id" column="id" />
+		<result property="couponsId" column="coupons_id" />
+		<result property="randCode" column="rand_code" />
+		<result property="isExchange" column="is_exchange" />
+		<result property="createUserId" column="create_user_id" />
+		<result property="createTime" column="create_time" />
+		<result property="updateUserId" column="update_user_id" />
+		<result property="updateTime" column="update_time" />
+	</resultMap>
+
+	<!-- 查询公共列 -->
+	<sql id="columns">
+		id,
+		coupons_id,
+		rand_code,
+		is_exchange,
+		create_user_id,
+		create_time,
+		update_user_id,
+		update_time
+	</sql>
+
+	<!-- 查询条件 -->
+	<sql id="condition">
+		<if test="null!=params">
+		</if>
+	</sql>
+	
+	<!-- 新增 -->
+	<insert id="insert" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRandCode">
+		INSERT INTO activity_coupons_rand_code 
+			<trim prefix="(" suffix=")" suffixOverrides="," >
+				<if test="id != null" >
+					id,
+				</if>
+				<if test="couponsId != null" >
+					coupons_id,
+				</if>
+				<if test="randCode != null" >
+					rand_code,
+				</if>
+				<if test="isExchange != null" >
+					is_exchange,
+				</if>
+				<if test="createUserId != null" >
+					create_user_id,
+				</if>
+				<if test="createTime != null" >
+					create_time,
+				</if>
+				<if test="updateUserId != null" >
+					update_user_id,
+				</if>
+				<if test="updateTime != null" >
+					update_time,
+				</if>
+			</trim>
+		VALUES 
+			<trim prefix="(" suffix=")" suffixOverrides="," >
+				<if test="id != null" >
+					#{id, jdbcType=VARCHAR},
+				</if>
+				<if test="couponsId != null" >
+					#{couponsId, jdbcType=VARCHAR},
+				</if>
+				<if test="randCode != null" >
+					#{randCode, jdbcType=VARCHAR},
+				</if>
+				<if test="isExchange != null" >
+					#{isExchange, jdbcType=BIT},
+				</if>
+				<if test="createUserId != null" >
+					#{createUserId, jdbcType=VARCHAR},
+				</if>
+				<if test="createTime != null" >
+					#{createTime, jdbcType=TIMESTAMP},
+				</if>
+				<if test="updateUserId != null" >
+					#{updateUserId, jdbcType=VARCHAR},
+				</if>
+				<if test="updateTime != null" >
+					#{updateTime, jdbcType=TIMESTAMP},
+				</if>
+			</trim>
+	</insert>
+
+	<!-- 批量新增 -->
+	<insert id="batchInsert" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRandCode">
+		INSERT INTO activity_coupons_rand_code (
+		id,
+		coupons_id,
+		rand_code,
+		is_exchange,
+		create_user_id,
+		create_time,
+		update_user_id,
+		update_time
+		) VALUES 
+		<foreach collection="list" item="item" separator=",">
+		(
+			#{item.id, jdbcType=VARCHAR},
+			#{item.couponsId, jdbcType=VARCHAR},
+			#{item.randCode, jdbcType=VARCHAR},
+			#{item.isExchange, jdbcType=BIT},
+			#{item.createUserId, jdbcType=VARCHAR},
+			#{item.createTime, jdbcType=TIMESTAMP},
+			#{item.updateUserId, jdbcType=VARCHAR},
+			#{item.updateTime, jdbcType=TIMESTAMP}
+		)
+		</foreach>
+	</insert>
+
+	<!-- 更新 -->
+	<update id="updateByPrimaryKey" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRandCode">
+		UPDATE activity_coupons_rand_code
+		<set>
+			<if test="couponsId != null">
+				coupons_id = #{couponsId, jdbcType=VARCHAR},
+			</if>
+			<if test="randCode != null">
+				rand_code = #{randCode, jdbcType=VARCHAR},
+			</if>
+			<if test="isExchange != null">
+				is_exchange = #{isExchange, jdbcType=BIT},
+			</if>
+			<if test="createUserId != null">
+				create_user_id = #{createUserId, jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateUserId != null">
+				update_user_id = #{updateUserId, jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		WHERE
+		id = #{id} 
+	</update>
+
+
+	<!-- 根据主键查询 -->
+	<select id="selectByPrimaryKey" parameterType="string" resultMap="activityCouponsRandCodeMap">
+		SELECT <include refid="columns" />
+		FROM activity_coupons_rand_code
+		id = #{id} 
+	</select>
+
+	<!-- 根据参数查询 -->
+	<select id="selectByParams" parameterType="string" resultMap="activityCouponsRandCodeMap">
+		SELECT <include refid="columns" />
+		FROM activity_coupons_rand_code
+		<include refid="condition" />
+	</select>
+	
+	<!-- 查询已经存在的随机码 -->
+	<select id="findExistCodeSet" parameterType="java.util.Set" resultType="java.util.Set">
+		SELECT rand_code
+		FROM activity_coupons_rand_code
+		WHERE rand_code IN
+		<foreach collection="collection" item="item" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+	</select>
+</mapper>
+
