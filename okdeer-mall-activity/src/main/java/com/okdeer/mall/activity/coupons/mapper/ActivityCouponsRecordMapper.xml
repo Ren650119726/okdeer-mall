@@ -343,6 +343,20 @@
 	     AND collect_time = #{collectTime}
 	  </if>	  
 	</select>
+	
+	  <!-- zhulq:根据随机码查询代金券领取记录信息 -->
+	<select id="selectCountByRandCode" resultType="int" parameterType="string">
+		  SELECT
+		  	 count(1)
+		  FROM activity_coupons_record r 
+		  inner join  activity_coupons c on r.coupons_id= c.id
+		  inner join  activity_coupons_rand_code rc on rc.coupons_id = c.id
+		  WHERE  1=1 
+		  <!-- 代金券领取活动（注册活动）id -->
+		  <if test="randCode != null and randCode != ''">
+		    	and rc.rand_code =  #{randCode,jdbcType=VARCHAR}
+		  </if>
+	</select>
   
    <!-- wusw:代金券领取活动、代金券、限制类目等关联信息 -->
     <resultMap id="couponsAndLimitCategoryDetailMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo" extends="BaseResultMap">
