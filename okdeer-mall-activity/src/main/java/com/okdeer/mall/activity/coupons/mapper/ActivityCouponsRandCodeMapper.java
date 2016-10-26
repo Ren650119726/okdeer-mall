@@ -3,6 +3,8 @@ package com.okdeer.mall.activity.coupons.mapper;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRandCode;
 
@@ -41,5 +43,5 @@ public interface ActivityCouponsRandCodeMapper extends IBaseCrudMapper {
 	 * @author zhulq
 	 * @date 2016年10月25日
 	 */
-	ActivityCouponsRandCode selectByRandCode(String randCode);
+	ActivityCouponsRandCode selectByRandCode(@Param("randCode") String randCode);
 }

@@ -341,6 +341,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		if (!checkRandCode(map, userId, record, activityCoupons)) {
 			return map;
 		}
+		record.setCollectUserId(userId);
 		//更新保存领取代金劵记录
 		updateCouponsRecode(record, activityCoupons);
 		//更新随机码表记录
@@ -374,6 +375,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		if (!checkExchangeCode(map, userId, record, activityCoupons)) {
 			return map;
 		}
+		record.setCollectUserId(userId);
 		//更新保存领取代金劵记录
 		updateCouponsRecode(record, activityCoupons);
 		map.put("code", 100);
