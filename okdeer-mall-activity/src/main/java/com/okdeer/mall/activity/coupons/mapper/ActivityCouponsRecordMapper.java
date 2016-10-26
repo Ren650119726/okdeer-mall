@@ -269,4 +269,11 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 */
 	Integer findTotalRewardAmount(Map<String,Object> params);
 	// End added by maojj 2016-10-18
+	/**
+	 * zhulq:根据随机码查询代金券领取记录信息 
+	 * @param randCode
+	 * @return
+	 */
+	Integer selectCountByRandCode(String randCode);
+	
 }

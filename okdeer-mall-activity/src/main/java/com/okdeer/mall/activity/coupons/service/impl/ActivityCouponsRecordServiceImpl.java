@@ -535,8 +535,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	private boolean checkRandCode(Map<String, Object> map,String userId,
 			ActivityCouponsRecord recode,ActivityCoupons coupons) {
 		if (!StringUtils.isEmpty(userId)) {
-			recode.setCollectUserId(userId);
-			int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(recode);
+			int currentRecordCount = activityCouponsRecordMapper.selectCountByRandCode(coupons.getRandCode());
 			if (currentRecordCount >= 1) {
 				// 已领取
 				map.put("code", 102);
