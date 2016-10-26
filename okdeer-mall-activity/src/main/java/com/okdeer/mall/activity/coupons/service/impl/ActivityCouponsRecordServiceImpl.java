@@ -474,18 +474,21 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		// 判断活动是否已结束
 		ActivityCollectCoupons collect = activityCollectCouponsMapper
 				.get(coupons.getActivityId());
-		if (collect.getStatus().intValue() != 1) {
+		if (collect == null || collect.getStatus().intValue() != 1) {
 			map.put("code", 105);
 			map.put("msg", "活动已结束！");
 			return false;
 		}
 		// 当前日期已经领取的数量
 		int dailyCirculation = activityCouponsRecordMapper.selectCountByParams(record);
-		// 获取当前登陆用户已领取的指定代金券数量
-		if (dailyCirculation >= Integer.parseInt(collect.getDailyCirculation())) {
-			map.put("code", 104);
-			map.put("msg", "来迟啦！券已抢完，明天早点哦");
-			return false;
+		if(collect.getDailyCirculation() != null){
+			// 获取当前登陆用户已领取的指定代金券数量
+			if (dailyCirculation >= Integer.parseInt(collect.getDailyCirculation())) {
+				map.put("code", 104);
+				map.put("msg", "来迟啦！券已抢完，明天早点哦");
+				return false;
+			}
+			
 		}
 		return true;
 	}
