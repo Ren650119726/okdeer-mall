@@ -734,19 +734,25 @@ public class ActivityCollectCouponsServiceImpl
     }
 
 	@Override
-	public List<ActivityCollectCouponsVo> findRandCodeVoucherList(Map<String, Object> params) throws ServiceException {
-		List<ActivityCollectCouponsVo> result = activityCollectCouponsMapper.selectRandCodeVoucher(params);
+	public ActivityCollectCouponsVo findRandCodeVoucherList(Map<String, Object> params) throws ServiceException {
+		List<ActivityCollectCouponsVo> result = activityCollectCouponsMapper.selectAdvertVoucher(params);
 		if (result != null && result.size() > 0) {
-			for (ActivityCollectCouponsVo vo : result) {
-				if (vo.getStartTime() != null) {
-					vo.setStartTimeStr(DateUtils.formatDate(vo.getStartTime(), "yyyy年MM月dd日"));
-				}
-				if (vo.getEndTime() != null) {
-					vo.setEndTimeStr(DateUtils.formatDate(vo.getEndTime(), "yyyy年MM月dd日"));
-				}
+			ActivityCollectCouponsVo vo = result.get(0);
+			params.put("collectId", vo.getId());
+			if (activityCollectCouponsMapper.selectCountByUserId(params) >= 1) {
+				vo.setIsReceive(true);
+			}else{
+				vo.setIsReceive(false);
 			}
+			if (vo.getStartTime() != null) {
+				vo.setStartTimeStr(DateUtils.formatDate(vo.getStartTime(), "yyyy年MM月dd日"));
+			}
+			if (vo.getEndTime() != null) {
+				vo.setEndTimeStr(DateUtils.formatDate(vo.getEndTime(), "yyyy年MM月dd日"));
+			}
+			return vo;
 		}
-		return result;
+		return null;
 	}
 	
 }
