@@ -676,9 +676,6 @@
 		<if test="randCode != null and randCode != ''">
 		    AND code.rand_code = #{randCode,jdbcType=VARCHAR}
 		</if>
-		<if test="type != null">
-		 	AND collect.type = #{type,jdbcType=TINYINT}
-		</if>
 		<if test="status != null">
 		 	AND collect.`status` = #{status,jdbcType=TINYINT}
 		</if>

@@ -304,12 +304,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	public JSONObject addRecordForExchangeCode(Map<String, Object> params, String exchangeCode,
 			String currentOperatUserId, ActivityCouponsType activityCouponsType) throws ServiceException {
 		Map<String, Object> map = new HashMap<String, Object>();
-
-		// ActivityCoupons activityCoupons =
-		// activityCouponsMapper.selectByExchangeCode(exchangeCode);
-
 		List<ActivityCollectCouponsVo> result = activityCollectCouponsMapper.selectByStoreAndLimitType(params);
-
 		// 判断输入的优惠码是否正确
 		if (result != null && result.size() > 0) {
 			ActivityCoupons activityCoupons = result.get(0).getActivityCoupons().get(0);
@@ -322,98 +317,235 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		}
 		return JSONObject.fromObject(map);
 	}
-
+	
 	/**
-	 * 
-	 * 判断当前登陆用户领取的指定代金券数量是否已经超过限领数量，所有用户领取的指定代金券总数量是否已经超过代金券的总发行数量，否则，插入代金券领取记录
-	 *
-	 * @param couponsCollectRecord
-	 * @param activityCoupons
-	 * @param currentOperatUserId
-	 * @return
+	 * 根据随机码进行领取代金劵
+	 * @param activityCoupons 活动信息
+	 * @param userId 用户id
+	 * @param successMsg 成功提示语
+	 * @param activityCouponsType  活动类型
+	 * @author zhulq
+	 * @date 2016年10月26日
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	public Map<String, Object> insertRecordByJudgeNum(ActivityCoupons activityCoupons, String currentOperatUserId,
+	public Map<String, Object> insertRecordByRandCode(ActivityCoupons activityCoupons, String userId,
 			String successMsg, ActivityCouponsType activityCouponsType) {
 		Map<String, Object> map = new HashMap<String, Object>();
-
-		// 判断活动是否已结束
-		ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsMapper
-				.get(activityCoupons.getActivityId());
-		if (activityCollectCoupons.getStatus().intValue() != 1) {
-			map.put("code", 105);
-			map.put("msg", "活动已结束！");
+		// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
+		ActivityCouponsRecord record = new ActivityCouponsRecord();
+		//进行公共代金劵领取校验
+		if (!checkRecordPubilc(map, activityCoupons, userId,activityCouponsType,record)) {
 			return map;
 		}
-
-		// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
-		ActivityCouponsRecord activityCouponsRecord = new ActivityCouponsRecord();
-		Date collectTime = DateUtils.getDateStart(new Date());
-		activityCouponsRecord.setCouponsId(activityCoupons.getId());
-		activityCouponsRecord.setCouponsCollectId(activityCoupons.getActivityId());
-		activityCouponsRecord.setCollectType(activityCouponsType);
-		activityCouponsRecord.setCollectUserId(null);
-		activityCouponsRecord.setCollectTime(collectTime);		
-		// 当前日期已经领取的数量
-		int dailyCirculation = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecord);
-		// 获取当前登陆用户已领取的指定代金券数量
-		int currentRecordCount = 0;
-		if (!StringUtils.isEmpty(currentOperatUserId)) {
-			activityCouponsRecord.setCollectUserId(currentOperatUserId);
-			currentRecordCount = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecord);
+		//检验随机码是否可以领取
+		if (!checkRandCode(map, userId, record, activityCoupons)) {
+			return map;
 		}
+		//更新保存领取代金劵记录
+		updateCouponsRecode(record, activityCoupons);
+		//更新随机码表记录
+		updateRandCode(activityCoupons.getRandCode(), userId);
+		
+		map.put("code", 100);
+		map.put("msg", successMsg);
+		return map;
+	}
+	
+	/**
+	 * 判断当前登陆用户领取的指定代金券数量是否已经超过限领数量，所有用户领取的指定代金券总数量是否已经超过代金券的总发行数量，否则，插入代金券领取记录
+	 * @param activityCoupons 活动信息
+	 * @param userId 用户id
+	 * @param successMsg 成功提示语
+	 * @param activityCouponsType  活动类型
+	 * @author zhulq
+	 * @date 2016年10月26日
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public Map<String, Object> insertRecordByJudgeNum(ActivityCoupons activityCoupons, String userId,
+			String successMsg, ActivityCouponsType activityCouponsType) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
+		ActivityCouponsRecord record = new ActivityCouponsRecord();
+		//进行公共代金劵领取校验
+		if (!checkRecordPubilc(map, activityCoupons, userId,activityCouponsType,record)) {
+			return map;
+		}
+		//检验优惠码的领取
+		if (!checkExchangeCode(map, userId, record, activityCoupons)) {
+			return map;
+		}
+		//更新保存领取代金劵记录
+		updateCouponsRecode(record, activityCoupons);
+		map.put("code", 100);
+		map.put("msg", successMsg);
+		return map;
+	}
+	
+	/**
+	 * 进行公共代金劵领取校验
+	 * @Description: TODO
+	 * @param map 返回结果
+	 * @param activityCoupons 活动信息
+	 * @param userId 用户id
+	 * @param activityCouponsType 活动类型
+	 * @param record 代金劵记录对象
+	 * @author zhulq
+	 * @date 2016年10月26日
+	 */
+	private boolean checkRecordPubilc(Map<String, Object> map,ActivityCoupons activityCoupons,String userId,
+			 ActivityCouponsType activityCouponsType,ActivityCouponsRecord record) {
 		if (activityCoupons.getRemainNum() <= 0) {
 			// 剩余数量小于0 显示已领完
 			map.put("code", 101);
 			map.put("msg", "该代金券已经领完了！");
-			return map;
-		} else if (dailyCirculation >= Integer.parseInt(activityCollectCoupons.getDailyCirculation())) {
-			map.put("code", 104);
-			map.put("msg", "来迟啦！券已抢完，明天早点哦");
-			return map;
-		} else {
-			if (currentRecordCount >= activityCoupons.getEveryLimit().intValue()) {
-				// 已领取
-				map.put("code", 102);
-				map.put("msg", "每人限领" + activityCoupons.getEveryLimit() + "张，不要贪心哦！");
-				return map;
-			} else {
-				// 立即领取
-				activityCouponsRecord.setId(UuidUtils.getUuid());
-
-				Date date = new Date();
-				Calendar calendar = Calendar.getInstance();
-				calendar.setTime(date);
-				calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0,
-						0, 0);
-				calendar.set(Calendar.MILLISECOND, 0);
-				activityCouponsRecord.setCollectTime(calendar.getTime());
-
-				activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
-
-				calendar.add(Calendar.DAY_OF_YEAR, activityCoupons.getValidDay());
-
-				activityCouponsRecord.setValidTime(calendar.getTime());
-
-				activityCouponsRecordMapper.insertSelective(activityCouponsRecord);
-				activityCouponsMapper.updateRemainNum(activityCoupons.getId());
-				//如果领取成功更新随机码表
-				String radeCode = activityCoupons.getRandCode();
-				if (radeCode != null) {
-					ActivityCouponsRandCode activityCouponsRandCode	= activityCouponsRandCodeMapper.selectByRandCode(radeCode);
-					if (activityCouponsRandCode != null) {
-						activityCouponsRandCode.setIsExchange(1);
-						activityCouponsRandCode.setUpdateTime(date);
-						activityCouponsRandCode.setUpdateUserId(currentOperatUserId);
-						activityCouponsRandCodeMapper.updateByPrimaryKey(activityCouponsRandCode);
-					}
-				}
-				map.put("code", 100);
-				map.put("msg", successMsg);
-				return map;
+			return false;
+		}
+		Date collectTime = DateUtils.getDateStart(new Date());
+		record.setCouponsId(activityCoupons.getId());
+		record.setCouponsCollectId(activityCoupons.getActivityId());
+		record.setCollectType(activityCouponsType);
+		record.setCollectUserId(null);
+		record.setCollectTime(collectTime);	
+		//校验代金卷的日领取量
+		if (!checkDaliyRecord(map, record, activityCoupons)) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * 更新随机码表记录
+	 * @Description: TODO
+	 * @param radeCode 随机码 
+	 * @param userId 用户id
+	 * @author zhulq
+	 * @date 2016年10月26日
+	 */
+	private void updateRandCode(String radeCode,String userId) {
+		//如果领取成功更新随机码表
+		if (StringUtils.isNotBlank(radeCode)) {
+			ActivityCouponsRandCode couponsRandCode	= activityCouponsRandCodeMapper.selectByRandCode(radeCode);
+			if (couponsRandCode != null) {
+				couponsRandCode.setIsExchange(1);
+				couponsRandCode.setUpdateTime(new Date());
+				couponsRandCode.setUpdateUserId(userId);
+				activityCouponsRandCodeMapper.updateByPrimaryKey(couponsRandCode);
 			}
 		}
+	}
+	
+	/**
+	 * 更新保存领取代金劵记录
+	 * @Description: TODO
+	 * @param record 代金劵信息
+	 * @param coupons 活动信息
+	 * @author zhulq
+	 * @date 2016年10月26日
+	 */
+	private void updateCouponsRecode(ActivityCouponsRecord record,ActivityCoupons coupons) {
+		// 立即领取
+		record.setId(UuidUtils.getUuid());
+		Date date = new Date();
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), 
+				calendar.get(Calendar.DATE), 0,	0, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		record.setCollectTime(calendar.getTime());
+		record.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
+		calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
+		record.setValidTime(calendar.getTime());
 
+		activityCouponsRecordMapper.insertSelective(record);
+		activityCouponsMapper.updateRemainNum(coupons.getId());
+	}
+	
+	/**
+	 * 校验代金卷的日领取量
+	 * @Description: TODO
+	 * @param map 返回结果
+	 * @param record 代金卷记录对象
+	 * @param collect 活动信息
+	 * @author zhulq
+	 * @date 2016年10月26日
+	 */
+	private boolean checkDaliyRecord(Map<String, Object> map,
+								ActivityCouponsRecord record,ActivityCoupons coupons) {
+		// 判断活动是否已结束
+		ActivityCollectCoupons collect = activityCollectCouponsMapper
+				.get(coupons.getActivityId());
+		if (collect.getStatus().intValue() != 1) {
+			map.put("code", 105);
+			map.put("msg", "活动已结束！");
+			return false;
+		}
+		// 当前日期已经领取的数量
+		int dailyCirculation = activityCouponsRecordMapper.selectCountByParams(record);
+		// 获取当前登陆用户已领取的指定代金券数量
+		if (dailyCirculation >= Integer.parseInt(collect.getDailyCirculation())) {
+			map.put("code", 104);
+			map.put("msg", "来迟啦！券已抢完，明天早点哦");
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * 检验优惠码的领取
+	 * @Description: TODO
+	 * @param map 返回结果
+	 * @param userId 用户id
+	 * @param record 代金卷记录对象
+	 * @param coupons 代金卷信息
+	 * @author zhulq
+	 * @date 2016年10月26日
+	 */
+	private boolean checkExchangeCode(Map<String, Object> map,String userId,
+			ActivityCouponsRecord record,ActivityCoupons coupons) {
+		if (!StringUtils.isEmpty(userId)) {
+			record.setCollectUserId(userId);
+			int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(record);
+			if (currentRecordCount >= coupons.getEveryLimit().intValue()) {
+				// 已领取
+				map.put("code", 102);
+				map.put("msg", "每人限领" + coupons.getEveryLimit() + "张，不要贪心哦！");
+				return false;
+			}
+		} else {
+			map.put("code", 104);
+			map.put("msg", "请登录后再领取");
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * 检验优惠码的领取
+	 * @Description: TODO
+	 * @param map 返回结果
+	 * @param userId 用户id
+	 * @param record 代金卷记录对象
+	 * @param coupons 代金卷信息
+	 * @author zhulq
+	 * @date 2016年10月26日
+	 */
+	private boolean checkRandCode(Map<String, Object> map,String userId,
+			ActivityCouponsRecord recode,ActivityCoupons coupons) {
+		if (!StringUtils.isEmpty(userId)) {
+			recode.setCollectUserId(userId);
+			int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(recode);
+			if (currentRecordCount >= 1) {
+				// 已领取
+				map.put("code", 102);
+				map.put("msg", "你已经领取过代金券了，每人限领一张,你可以去充值哦!");
+				return false;
+			}
+		} else {
+			map.put("code", 104);
+			map.put("msg", "请登录后再领取");
+			return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -573,7 +705,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				ActivityCoupons activityCoupons = result.get(0).getActivityCoupons().get(0);
 				activityCoupons.setRandCode(radeCode);
 				// 根据数量的判断，插入代金券领取记录
-				map = this.insertRecordByJudgeNum(activityCoupons, currentOperatUserId, "恭喜你，优惠券兑换成功！",
+				map = this.insertRecordByRandCode(activityCoupons, currentOperatUserId, "恭喜你，优惠券兑换成功！",
 						activityCouponsType);
 			} else {
 				map.put("code", 103);
