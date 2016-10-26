@@ -695,7 +695,6 @@
 		FROM activity_collect_coupons collect
 		INNER JOIN activity_coupons coupons ON coupons.activity_id = collect.id
 		WHERE collect.disabled = 0 AND ( collect.belong_type = '0' or collect.approval_status = 1 )
-			AND collect.area_type = 0  
 		<if test="status != null">
 		 	AND collect.`status` = #{status,jdbcType=TINYINT}
 		</if>
@@ -704,14 +703,13 @@
 		</if>
 	  </select>
 	  
+	  <!-- 判断广告代金卷是否已经被改用户领取 add by zhulq-->
 	  <select id="selectCountByUserId" resultType="int" parameterType="map">
 		SELECT count(1)
 		FROM activity_collect_coupons collect
 		INNER JOIN activity_coupons coupons ON coupons.activity_id = collect.id
 		INNER JOIN activity_coupons_record r ON coupons.id = r.coupons_id
 		WHERE collect.disabled = 0 AND ( collect.belong_type = '0' or collect.approval_status = 1 )
-			AND collect.area_type = 0 
-			 
 		<if test="status != null">
 		 	AND collect.`status` = #{status,jdbcType=TINYINT}
 		</if>
