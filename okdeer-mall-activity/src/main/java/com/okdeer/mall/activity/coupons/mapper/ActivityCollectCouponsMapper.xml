@@ -352,6 +352,7 @@
 		LEFT JOIN goods_navigate_category nav ON nav.id = category.category_id
 		LEFT JOIN goods_spu_category spu ON spu.id = category.category_id
 		WHERE collect.disabled = 0 AND ( collect.belong_type = '0' or collect.approval_status = 1 )
+		AND coupons.is_rand_code = 0
 		<if test="exchangeCode != null and exchangeCode != ''">
 		  AND coupons.exchange_code = #{exchangeCode,jdbcType=VARCHAR}
 		</if>
