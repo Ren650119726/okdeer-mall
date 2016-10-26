@@ -348,10 +348,8 @@
 	<select id="selectCountByRandCode" resultType="int" parameterType="string">
 		  SELECT
 		  	 count(1)
-		  FROM activity_coupons_record r 
-		  inner join  activity_coupons c on r.coupons_id= c.id
-		  inner join  activity_coupons_rand_code rc on rc.coupons_id = c.id
-		  WHERE  1=1 
+		  FROM  activity_coupons_rand_code rc 
+		  WHERE rc.is_exchange=1 
 		  <!-- 代金券领取活动（注册活动）id -->
 		  <if test="randCode != null and randCode != ''">
 		    	and rc.rand_code =  #{randCode,jdbcType=VARCHAR}

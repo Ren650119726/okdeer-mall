@@ -274,6 +274,6 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @param randCode
 	 * @return
 	 */
-	Integer selectCountByRandCode(String randCode);
+	Integer selectCountByRandCode(@Param("randCode")String randCode);
 	
 }
