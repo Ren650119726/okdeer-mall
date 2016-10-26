@@ -628,6 +628,10 @@
 			<if test="everyLimitNull != null and everyLimitNull != ''">
 				and (s.every_limit is null or s.every_limit = 0)
 			</if>
+			
+			<if test="isRandCode != null and isRandCode != ''">
+				and (s.is_rand_code = #{isRandCode})
+			</if>
 		)
 		<!-- 如果是修改调用接口,就加载之前该活动已经关联的代金券 -->
 		<if test="activityId != null and activityId != ''">
