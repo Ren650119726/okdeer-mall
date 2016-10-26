@@ -178,7 +178,7 @@ public interface ActivityCollectCouponsMapper {
 	
 	// add by zhulq 2016-10-25
 	/**
-	 * @Description: 获取代金卷广告活动的代金卷
+	 * @Description: 获取随机码的代金卷
 	 * @param map 参数
 	 * @return List
 	 * @author zhulq
@@ -186,4 +186,20 @@ public interface ActivityCollectCouponsMapper {
 	 */
 	List<ActivityCollectCouponsVo> selectRandCodeVoucher(Map<String,Object> map);
 	// add by zhulq 2016-10-25
+	
+	/**
+	 * @Description: 获取广告活动的代金卷
+	 * @param map 参数
+	 * @return List
+	 * @author zhulq
+	 * @date 2016年10月25日
+	 */
+	List<ActivityCollectCouponsVo> selectAdvertVoucher(Map<String,Object> map);
+	
+	/**
+	 * 判断该要用户是否已经领取广告代金劵
+	 * @param map 参数
+	 * @return
+	 */
+	int selectCountByUserId(Map<String,Object> map);
 }
