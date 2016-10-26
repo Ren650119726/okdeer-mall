@@ -611,7 +611,8 @@
 		s.total_num as totalNum,
 		s.valid_day as validDay,
 		s.arrive_limit as arriveLimit,
-		s.every_limit as everyLimit
+		s.every_limit as everyLimit,
+		s.is_rand_code as isRandCode
 		 from activity_coupons s
 		where s.disabled = 0 
 		and 
