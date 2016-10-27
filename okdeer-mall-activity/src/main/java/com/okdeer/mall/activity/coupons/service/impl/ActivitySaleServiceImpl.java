@@ -402,7 +402,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				}
 				// 手动关闭或者定时器结束都要把未卖完的数量释放库存
 				// 和erp同步库存
-				this.syncGoodsStockBatch(saleGoodsList, "", storeId, StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
+				if(CollectionUtils.isNotEmpty(saleGoodsList)){
+					this.syncGoodsStockBatch(saleGoodsList, "", storeId, StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
+				}
 			}
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
