@@ -611,7 +611,8 @@
 		s.total_num as totalNum,
 		s.valid_day as validDay,
 		s.arrive_limit as arriveLimit,
-		s.every_limit as everyLimit
+		s.every_limit as everyLimit,
+		s.is_rand_code as isRandCode
 		 from activity_coupons s
 		where s.disabled = 0 
 		and 
@@ -675,7 +676,6 @@
 		INNER JOIN activity_coupons coupons ON coupons.activity_id = collect.id
 		INNER JOIN activity_coupons_rand_code code ON code.coupons_id = coupons.id
 		WHERE collect.disabled = 0 AND ( collect.belong_type = '0' or collect.approval_status = 1 )
-			AND collect.area_type = 0  
 			AND coupons.is_rand_code = 1
 			AND code.is_exchange = 0
 		<if test="randCode != null and randCode != ''">

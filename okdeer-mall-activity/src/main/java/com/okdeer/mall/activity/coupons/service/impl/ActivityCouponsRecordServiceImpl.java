@@ -341,6 +341,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		if (!checkRandCode(map, userId, record, activityCoupons)) {
 			return map;
 		}
+		record.setCollectUserId(userId);
 		//更新保存领取代金劵记录
 		updateCouponsRecode(record, activityCoupons);
 		//更新随机码表记录
@@ -374,6 +375,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		if (!checkExchangeCode(map, userId, record, activityCoupons)) {
 			return map;
 		}
+		record.setCollectUserId(userId);
 		//更新保存领取代金劵记录
 		updateCouponsRecode(record, activityCoupons);
 		map.put("code", 100);
@@ -474,18 +476,21 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		// 判断活动是否已结束
 		ActivityCollectCoupons collect = activityCollectCouponsMapper
 				.get(coupons.getActivityId());
-		if (collect.getStatus().intValue() != 1) {
+		if (collect == null || collect.getStatus().intValue() != 1) {
 			map.put("code", 105);
 			map.put("msg", "活动已结束！");
 			return false;
 		}
 		// 当前日期已经领取的数量
 		int dailyCirculation = activityCouponsRecordMapper.selectCountByParams(record);
-		// 获取当前登陆用户已领取的指定代金券数量
-		if (dailyCirculation >= Integer.parseInt(collect.getDailyCirculation())) {
-			map.put("code", 104);
-			map.put("msg", "来迟啦！券已抢完，明天早点哦");
-			return false;
+		if(collect.getDailyCirculation() != null){
+			// 获取当前登陆用户已领取的指定代金券数量
+			if (dailyCirculation >= Integer.parseInt(collect.getDailyCirculation())) {
+				map.put("code", 104);
+				map.put("msg", "来迟啦！券已抢完，明天早点哦");
+				return false;
+			}
+			
 		}
 		return true;
 	}
@@ -532,8 +537,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	private boolean checkRandCode(Map<String, Object> map,String userId,
 			ActivityCouponsRecord recode,ActivityCoupons coupons) {
 		if (!StringUtils.isEmpty(userId)) {
-			recode.setCollectUserId(userId);
-			int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(recode);
+			int currentRecordCount = activityCouponsRecordMapper.selectCountByRandCode(coupons.getRandCode());
 			if (currentRecordCount >= 1) {
 				// 已领取
 				map.put("code", 102);
