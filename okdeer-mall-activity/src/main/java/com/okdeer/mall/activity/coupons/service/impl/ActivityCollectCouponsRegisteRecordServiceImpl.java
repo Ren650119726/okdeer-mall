@@ -235,7 +235,7 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 	
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public void receiveInviteRegistFavour(Map<String, Object> requestParam) throws Exception {
+	public String receiveInviteRegistFavour(Map<String, Object> requestParam) throws Exception {
 		// 邀请人Id
 		String userId = String.valueOf(requestParam.get("userId"));
 		// 邀请注册活动Id
@@ -307,6 +307,8 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		}
 		// 用户参与注册送代金券活动
 		getRegisterCoupons(inviteesId);
+		
+		return inviteesId;
 	}
 	
 	private void getRegisterCoupons(String userId) throws ServiceException{
