@@ -509,6 +509,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			ActivityCouponsRecord record,ActivityCoupons coupons) {
 		if (!StringUtils.isEmpty(userId)) {
 			record.setCollectUserId(userId);
+			record.setCollectTime(null);
 			int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(record);
 			if (currentRecordCount >= coupons.getEveryLimit().intValue()) {
 				// 已领取
