@@ -26,6 +26,9 @@ import com.google.common.base.Charsets;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.exception.StockException;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.constant.OrderMessageConstant;
@@ -47,9 +50,6 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessServiceApi;
 import com.okdeer.mall.order.utils.OrderNoUtils;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.framework.mq.RocketMQProducer;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -396,11 +396,24 @@ public class TradeOrderCompleteProcessServiceImpl
 			// 店铺优惠金额
 			BigDecimal storePreferentialPrice = BigDecimal.ZERO;
 			// 订单金额如果不等于店家收入金额，说明是店铺有优惠
-			if (order.getTotalAmount().compareTo(order.getIncome()) != 0) {
-				storePreferentialPrice = order.getPreferentialPrice();
+			//Begin 排除平台优惠 update by tangy  2016-10-28
+			if (order.getTotalAmount().compareTo(order.getIncome()) != 0 
+					&& !"1".equals(orderItem.getActivityType())) {
+				storePreferentialPrice = orderItem.getPreferentialPrice();
 			}
+			
 			// 实际单价=原单价减去店铺优惠
 			BigDecimal actualPrice = orderItem.getUnitPrice().subtract(storePreferentialPrice);
+			if (orderItem.getQuantity() != null && orderItem.getQuantity().intValue() > 0) {
+				actualPrice = orderItem.getUnitPrice().subtract(
+						storePreferentialPrice.divide(new BigDecimal(orderItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
+			} else if (orderItem.getWeight() != null 
+					&& storePreferentialPrice.compareTo(BigDecimal.ZERO) == 1) {
+				actualPrice = orderItem.getUnitPrice().subtract(
+						storePreferentialPrice.divide(orderItem.getWeight(), 4, BigDecimal.ROUND_HALF_UP));
+			} 
+			//End added by tangy
+
 			// 货号
 			// item.put("skuCode", goods.geta);
 			// 销售类型

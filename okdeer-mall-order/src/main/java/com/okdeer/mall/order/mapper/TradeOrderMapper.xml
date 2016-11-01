@@ -2829,7 +2829,7 @@
 				tt.fare AS deliverFee
 				FROM trade_order tt LEFT JOIN trade_order_pay tp ON tp.order_id = tt.id
 				WHERE tt.store_id = #{storeId,jdbcType=VARCHAR} 
-				AND tt.disabled = 0 	
+				AND tt.disabled = 0 AND tt.shipments_user_id = #{userId,jdbcType=VARCHAR} 
 				AND (
 				(((tt.order_resource = 2 OR tt.pay_way = 0) AND tt.`status` IN(3, 5))
 					AND tt.delivery_time > #{startTime,jdbcType=TIMESTAMP}

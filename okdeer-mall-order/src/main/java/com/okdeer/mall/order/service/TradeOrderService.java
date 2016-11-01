@@ -9,6 +9,8 @@ import java.util.Map;
 
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
@@ -22,8 +24,6 @@ import com.okdeer.mall.order.vo.TradeOrderQueryVo;
 import com.okdeer.mall.order.vo.TradeOrderStatisticsVo;
 import com.okdeer.mall.order.vo.TradeOrderStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderVo;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.PageUtils;
 
 import net.sf.json.JSONObject;
 
@@ -561,6 +561,7 @@ public interface TradeOrderService {
 	 */
 	BigDecimal findCashCount(String storeId, Date start, Date end);
 
+	//Begin 添加查询条件 update by tangy  2016-10-31
 	/**
 	 * Pos交班统计
 	 *
@@ -568,8 +569,9 @@ public interface TradeOrderService {
 	 * @param start
 	 * @param end
 	 */
-	Map<String, BigDecimal> findShiftCount(String storeId, Date start, Date end);
-
+	Map<String, BigDecimal> findShiftCount(String storeId, Date start, Date end, String userId);
+	//End added by tangy
+	
 	/**
 	 * 根据交班获取Pos交班统计
 	 * 
