@@ -553,7 +553,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			if (currentRecordCount >= coupons.getEveryLimit().intValue()) {
 				// 已领取
 				map.put("code", 102);
-				map.put("msg", "每人限领" + coupons.getEveryLimit() + "张，你可以去充值哦!");
+				map.put("msg", "每人限领" + coupons.getEveryLimit() + "张，不要贪心哦！!");
 				return false;
 			}
 		} else {
