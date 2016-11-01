@@ -8,6 +8,8 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsImage;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
@@ -17,8 +19,6 @@ import com.okdeer.mall.order.vo.TradeOrderRefundsChargeVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsQueryVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsVo;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * @DESC: 
@@ -190,6 +190,7 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 */
 	BigDecimal findPosSum(Map<String, Object> params);
 
+	//Begin 添加查询条件 update by tangy  2016-10-31
 	/**
 	 * 根据店铺id、时间段查询订单统计数据
 	 * @param storeId      店铺id
@@ -200,8 +201,9 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	PosShiftExchange findPosShiftExchangeByStoreId(@Param("storeId")
 	String storeId, @Param("startTime")
 	Date startTime, @Param("endTime")
-	Date endTime);
-
+	Date endTime, @Param("userId") String userId);
+	//End added by tangy
+	
 	/**
 	 * 退货单列表(pos销售查询用)
 	 * @author zhangkeneng

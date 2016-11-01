@@ -2522,13 +2522,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @param storeId
 	 *            店铺ID
 	 */
-	public Map<String, BigDecimal> findShiftCount(String storeId, Date start, Date end) {
+	public Map<String, BigDecimal> findShiftCount(String storeId, Date start, Date end, String userId) {
 		// 订单数据统计
-		PosShiftExchange posShiftExchange = tradeOrderMapper.findPosShiftExchangeByStoreId(storeId, start, end);
+		//Begin 添加查询条件 update by tangy  2016-10-31
+		PosShiftExchange posShiftExchange = tradeOrderMapper.findPosShiftExchangeByStoreId(storeId, start, end, userId);
 		logger.info("posShiftExchange:" + JSONObject.fromObject(posShiftExchange));
 		// 退款订单统计
 		PosShiftExchange posShiftExchangeRefund = tradeOrderRefundsMapper.findPosShiftExchangeByStoreId(storeId, start,
-				end);
+				end, userId);
+		//End added by tangy
 		logger.info("posShiftExchangeRefund:" + JSONObject.fromObject(posShiftExchangeRefund));
 
 		Map<String, BigDecimal> shiftCount = Maps.newHashMap();
@@ -2591,11 +2593,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			logger.info("根据交班获取Pos交班统计  storeId:" + posShiftExchange.getStoreId() + "==loginTime:"
 					+ posShiftExchange.getLoginTime());
 			// 订单数据统计
+			//Begin 添加查询条件 update by tangy  2016-10-31
 			PosShiftExchange posShiftExchange2 = tradeOrderMapper.findPosShiftExchangeByStoreId(
-					posShiftExchange.getStoreId(), posShiftExchange.getLoginTime(), new Date());
+					posShiftExchange.getStoreId(), posShiftExchange.getLoginTime(), new Date(), posShiftExchange.getUserId());
 			// 退款订单统计
 			PosShiftExchange posShiftExchangeRefund = tradeOrderRefundsMapper.findPosShiftExchangeByStoreId(
-					posShiftExchange.getStoreId(), posShiftExchange.getLoginTime(), new Date());
+					posShiftExchange.getStoreId(), posShiftExchange.getLoginTime(), new Date(), posShiftExchange.getUserId());
+			//End added by tangy
 			// 线上订单总额
 			BigDecimal onlineOrderTotal = posShiftExchange2.getOnlineOrderTotal();
 			// 线上支付退款

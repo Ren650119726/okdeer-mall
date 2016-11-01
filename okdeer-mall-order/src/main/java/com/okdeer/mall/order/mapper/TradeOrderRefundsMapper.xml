@@ -1494,7 +1494,7 @@
 				CASE WHEN t2.order_resource = 2 AND tt.payment_method = 4 THEN tt.total_income ELSE 0 END AS posTotalCashRefund
 				FROM trade_order_refunds tt
 				LEFT JOIN trade_order t2 ON (t2.id = tt.order_id and t2.disabled = 0)
-				WHERE tt.store_id = #{storeId,jdbcType=VARCHAR} AND tt.refunds_status IN(6, 13)
+				WHERE tt.store_id = #{storeId,jdbcType=VARCHAR} AND tt.refunds_status IN(6, 13) AND tt.operator = #{userId,jdbcType=VARCHAR}
 				AND tt.refund_money_time > #{startTime,jdbcType=TIMESTAMP} 
 				AND tt.refund_money_time <= #{endTime,jdbcType=TIMESTAMP}
 			) aa
