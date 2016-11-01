@@ -439,6 +439,7 @@ public interface TradeOrderMapper {
 	 */
 	BigDecimal findPosSum(Map<String, Object> map);
 
+	//Begin 添加查询条件 update by tangy  2016-10-31
 	/**
 	 * 根据店铺id、时间段查询订单统计数据
 	 * @param storeId      店铺id
@@ -447,8 +448,9 @@ public interface TradeOrderMapper {
 	 * @return  交班统计
 	 */
 	PosShiftExchange findPosShiftExchangeByStoreId(@Param("storeId") String storeId, @Param("startTime") Date startTime,
-			@Param("endTime") Date endTime);
-
+			@Param("endTime") Date endTime, @Param("userId") String userId);
+	//End added by tangy
+	
 	////////////////////////////// 销售统计
 	////////////////////////////// start///////////////////////////////////////////////
 	/**
