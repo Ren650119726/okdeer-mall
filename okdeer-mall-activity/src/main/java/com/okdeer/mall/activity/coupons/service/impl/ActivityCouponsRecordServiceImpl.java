@@ -341,7 +341,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		if (!checkRandCode(map, userId, record, activityCoupons)) {
 			return map;
 		}
-		record.setCollectUserId(userId);
+		//record.setCollectUserId(userId);
 		//更新保存领取代金劵记录
 		updateCouponsRecode(record, activityCoupons);
 		//更新随机码表记录
@@ -509,6 +509,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			ActivityCouponsRecord record,ActivityCoupons coupons) {
 		if (!StringUtils.isEmpty(userId)) {
 			record.setCollectUserId(userId);
+			record.setCollectTime(null);
 			int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(record);
 			if (currentRecordCount >= coupons.getEveryLimit().intValue()) {
 				// 已领取
@@ -535,13 +536,24 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @date 2016年10月26日
 	 */
 	private boolean checkRandCode(Map<String, Object> map,String userId,
-			ActivityCouponsRecord recode,ActivityCoupons coupons) {
+			ActivityCouponsRecord record,ActivityCoupons coupons) {
 		if (!StringUtils.isEmpty(userId)) {
-			int currentRecordCount = activityCouponsRecordMapper.selectCountByRandCode(coupons.getRandCode());
-			if (currentRecordCount >= 1) {
+			//判断该随机码的代金卷是否已经被领取了
+			int count = activityCouponsRecordMapper.selectCountByRandCode(coupons.getRandCode());
+			if (count >= 1) {
+				// 已领取
+				map.put("code", 106);
+				map.put("msg", "相同随机码的代金券已经被领取了!");
+				return false;
+			}
+			//判断 该用户是否还能领卷该类代金卷
+			record.setCollectUserId(userId);
+			record.setCollectTime(null);
+			int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(record);
+			if (currentRecordCount >= coupons.getEveryLimit().intValue()) {
 				// 已领取
 				map.put("code", 102);
-				map.put("msg", "你已经领取过代金券了，每人限领一张,你可以去充值哦!");
+				map.put("msg", "每人限领" + coupons.getEveryLimit() + "张，你可以去充值哦!");
 				return false;
 			}
 		} else {
