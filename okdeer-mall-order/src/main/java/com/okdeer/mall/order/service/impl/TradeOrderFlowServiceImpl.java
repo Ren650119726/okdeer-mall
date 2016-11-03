@@ -4261,83 +4261,79 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		// List<GoodsStoreSkuStock> stuStockList =
 		// goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(list);
 		List<GoodsStoreSkuStock> stuStockList = stockManagerJxcService.findGoodsStockInfoList(list);
-
-		for (int i = 0; i < array.size(); i++) {
-			JSONObject objss = array.getJSONObject(i);
-
-			String skuId = objss.getString("skuId");
-
+		//Begin update by tangy  2016-11-3
+		// pos支持负库存
+//		for (int i = 0; i < array.size(); i++) {
+//			JSONObject objss = array.getJSONObject(i);
+//			String skuId = objss.getString("skuId");
 			// GoodsStoreSkuStock skuStock =
 			// goodsStoreSkuStockService.selectSingleSkuStock(list); //
-			GoodsStoreSkuStock skuStock = null;
-			// 查询店铺商品库存数量
-			for (GoodsStoreSkuStock tmp : stuStockList) {
-				if (skuId.equals(tmp.getStoreSkuId())) {
-					skuStock = tmp;
-					break;
-				}
-			}
-			if (skuStock == null) {
-				logger.error("查询店铺商品库存数量", "skuStock 为空-------->" + CodeStatistical.getLineInfo());
-				throw new Exception("查询店铺商品库存数量异常：skuStock 为空-------->" + CodeStatistical.getLineInfo());
-			}
-			int sellable = skuStock.getSellable();
+//			GoodsStoreSkuStock skuStock = null;
+//			// 查询店铺商品库存数量
+//			for (GoodsStoreSkuStock tmp : stuStockList) {
+//				if (skuId.equals(tmp.getStoreSkuId())) {
+//					skuStock = tmp;
+//					break;
+//				}
+//			}
+//			if (skuStock == null) {
+//				logger.error("查询店铺商品库存数量", "skuStock 为空-------->" + CodeStatistical.getLineInfo());
+//				throw new Exception("查询店铺商品库存数量异常：skuStock 为空-------->" + CodeStatistical.getLineInfo());
+//			}
+//			int sellable = skuStock.getSellable();
+//
+//			String skuNum = objss.getString("skuNum");
+//			String skuWeight = objss.getString("skuWeight");
+//			String meteringMethod = objss.getString("meteringMethod"); // 是否计件与称重
 
-			String skuNum = objss.getString("skuNum");
-			String skuWeight = objss.getString("skuWeight");
-			String meteringMethod = objss.getString("meteringMethod"); // 是否计件与称重
-
-			int meter = Integer.valueOf(meteringMethod);
-
-			if (meter == 1) {
-				OrderStock stockNum = new OrderStock();
-				stockNum.setId(skuId);
-				stockNum.setCount(Integer.valueOf(skuNum));
-				stockNum.setSellable(sellable);
-				stockNumList.add(stockNum);
-				isStock = CalculateOrderStock.calculateSingleOrderStock(stockNumList); // 计件库存异动
-			} else if (meter == 0 || meter == 2) {
-				OrderStock stockWeight = new OrderStock();
-				stockWeight.setId(skuId);
-				stockWeight.setCount((new BigDecimal(skuWeight).multiply(new BigDecimal(1000)).intValue()));
-				stockWeight.setSellable(sellable);
-				stockWeightList.add(stockWeight);
-				isStock = CalculateOrderStock.calculateSingleOrderStock(stockWeightList); // 称重、无条码库存异动
-			}
-
-			if (!skuNum.equals("")) {
-				buyNum = Integer.valueOf(objss.getString("skuNum"));
-			} else if (!skuWeight.equals("")) {
-				BigDecimal bigSkuWeight = new BigDecimal(skuWeight);
-				buyNum = bigSkuWeight.multiply(new BigDecimal(1000)).intValue();
-			}
-			soleStock.add(buyNum);
-		}
-		stock = goodsStoreSkuService.getGoodsStoreSkuSelleabed(list); // 查询可销售库存是否发生变化
-		Map<String, Object> map = new HashMap<String, Object>();
-		String msg = "";
-		for (int i = 0; i < stock.size(); i++) {
-			int num = soleStock.get(i);
-			GoodsStoreSku storeSku = stock.get(i);
-			String skuId = storeSku.getId(); // 商品ID
-			int selleabed = stockManagerJxcService.findGoodsStockInfo(skuId).getSellable();// storeSku.getGoodsStoreSkuStock().getSellable();
-			// //
-			// 商品实际库存
-			//Begin update by tangy  2016-11-3
-			// pos支持负库存
-			if (num > selleabed) { // 库存不足
-				// 商品:***** 条码:******库存不足
-				msg += "商品:" + storeSku.getName() + " 条码：" + storeSku.getBarCode() + " 库存不足\n";
+//			int meter = Integer.valueOf(meteringMethod);
+//
+//			if (meter == 1) {
+//				OrderStock stockNum = new OrderStock();
+//				stockNum.setId(skuId);
+//				stockNum.setCount(Integer.valueOf(skuNum));
+//				stockNum.setSellable(sellable);
+//				stockNumList.add(stockNum);
+//				isStock = CalculateOrderStock.calculateSingleOrderStock(stockNumList); // 计件库存异动
+//			} else if (meter == 0 || meter == 2) {
+//				OrderStock stockWeight = new OrderStock();
+//				stockWeight.setId(skuId);
+//				stockWeight.setCount((new BigDecimal(skuWeight).multiply(new BigDecimal(1000)).intValue()));
+//				stockWeight.setSellable(sellable);
+//				stockWeightList.add(stockWeight);
+//				isStock = CalculateOrderStock.calculateSingleOrderStock(stockWeightList); // 称重、无条码库存异动
+//			}
+//
+//			if (!skuNum.equals("")) {
+//				buyNum = Integer.valueOf(objss.getString("skuNum"));
+//			} else if (!skuWeight.equals("")) {
+//				BigDecimal bigSkuWeight = new BigDecimal(skuWeight);
+//				buyNum = bigSkuWeight.multiply(new BigDecimal(1000)).intValue();
+//			}
+//			soleStock.add(buyNum);
+//		}
+//		stock = goodsStoreSkuService.getGoodsStoreSkuSelleabed(list); // 查询可销售库存是否发生变化
+//		Map<String, Object> map = new HashMap<String, Object>();
+//		String msg = "";
+//		for (int i = 0; i < stock.size(); i++) {
+//			int num = soleStock.get(i);
+//			GoodsStoreSku storeSku = stock.get(i);
+//			String skuId = storeSku.getId(); // 商品ID
+//			int selleabed = stockManagerJxcService.findGoodsStockInfo(skuId).getSellable();// storeSku.getGoodsStoreSkuStock().getSellable();
+//			// //
+//			// 商品实际库存
+//			if (num > selleabed) { // 库存不足
+//				// 商品:***** 条码:******库存不足
+//				msg += "商品:" + storeSku.getName() + " 条码：" + storeSku.getBarCode() + " 库存不足\n";
 //				map.put("msg", storeSku.getName() + ",库存不足");
 //				map.put("skuId", skuId);
 //				map.put("sellableStock", selleabed);
 //				objList.add(map);
 //				obj.put("detail", objList);
-				logger.info(msg);
-			}
-			//End added by tangy
-		}
-
+//				logger.info(msg);
+//			}
+//		}
+		//End added by tangy
 		List<StockAdjustVo> stockAdjustList = new ArrayList<StockAdjustVo>();
 
 		// 张克能优化,一次用list in的方式,避免在循环里多次调用selectGoodsStoreSkuDetailNotPri方法
@@ -4500,8 +4496,8 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		}
 		stockVo.setAdjustDetailList(detailList);
 		order.setTradeOrderItem(orderItemList);
-
-		obj.put("message", msg);
+        
+		obj.put("message", "");
 		Date nowDate = new Date();
 		long lnDate = nowDate.getTime();
 		SimpleDateFormat formats = new SimpleDateFormat("YYYY-MM-dd");
