@@ -63,7 +63,6 @@ public class PosPayResultStatusSubscriber extends AbstractRocketMQSubscriber
 
 	@Override
 	public String getTopic() {
-		logger.info("初始化mq.......................");
 		return "topic_pos_pay_result";
 	}
 

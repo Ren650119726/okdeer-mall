@@ -34,20 +34,19 @@
 		<dependency>
 			<groupId>com.okdeer.ca</groupId>
 			<artifactId>okdeer-ca-api</artifactId>
-			<version>${ca.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.okdeer.base</groupId>
 			<artifactId>okdeer-base-framework</artifactId>
 		</dependency>
-		<dependency>
+<!-- 		<dependency>
 			<groupId>com.okdeer.base</groupId>
 			<artifactId>okdeer-base-manager</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.okdeer.base</groupId>
 			<artifactId>okdeer-base-dal</artifactId>
-		</dependency>
+		</dependency> -->
 
 		<dependency>
 			<groupId>org.mybatis.spring.boot</groupId>
