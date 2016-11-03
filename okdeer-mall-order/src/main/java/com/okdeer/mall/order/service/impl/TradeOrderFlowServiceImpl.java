@@ -50,6 +50,9 @@ import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreBranchesServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
@@ -129,9 +132,6 @@ import com.okdeer.mall.system.mq.StockMQProducer;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 import com.qiniu.util.Auth;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.UuidUtils;
 import com.yschome.file.FileUtil;
 
 import net.sf.json.JSONArray;
@@ -4323,15 +4323,19 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			int selleabed = stockManagerJxcService.findGoodsStockInfo(skuId).getSellable();// storeSku.getGoodsStoreSkuStock().getSellable();
 			// //
 			// 商品实际库存
+			//Begin update by tangy  2016-11-3
+			// pos支持负库存
 			if (num > selleabed) { // 库存不足
 				// 商品:***** 条码:******库存不足
 				msg += "商品:" + storeSku.getName() + " 条码：" + storeSku.getBarCode() + " 库存不足\n";
-				map.put("msg", storeSku.getName() + ",库存不足");
-				map.put("skuId", skuId);
-				map.put("sellableStock", selleabed);
-				objList.add(map);
-				obj.put("detail", objList);
+//				map.put("msg", storeSku.getName() + ",库存不足");
+//				map.put("skuId", skuId);
+//				map.put("sellableStock", selleabed);
+//				objList.add(map);
+//				obj.put("detail", objList);
+				logger.info(msg);
 			}
+			//End added by tangy
 		}
 
 		List<StockAdjustVo> stockAdjustList = new ArrayList<StockAdjustVo>();
