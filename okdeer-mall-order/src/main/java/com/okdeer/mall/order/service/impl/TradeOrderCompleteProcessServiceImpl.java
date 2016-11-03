@@ -484,7 +484,7 @@ public class TradeOrderCompleteProcessServiceImpl
 			// 货号
 			// item.put("skuCode", goods.geta);
 			// 销售类型
-			item.put("saleType", ORDER_TYPE_A);
+			item.put("saleType", ORDER_TYPE_B);
 			// 商品数量
 			item.put("saleNum", orderRefundsItem.getQuantity() == null ? orderRefundsItem.getWeight()
 					: orderRefundsItem.getQuantity());
