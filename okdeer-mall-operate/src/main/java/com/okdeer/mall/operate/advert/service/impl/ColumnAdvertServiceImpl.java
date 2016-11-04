@@ -571,4 +571,11 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		return advertMapper.listDefaultForPos(map);
 	}
 	// end  add　　by zhulq  获取默认的广告图片  2016-10-18
+	
+	// begin  add　　by zhangkn  获取广告商品列表
+	@Override
+	public List<Map<String,Object>> listGoodsForAdvert(Map<String, Object> map){
+		return advertMapper.listGoodsForAdvert(map);
+	}
+	// end  add　　by zhangkn  获取广告商品列表
 }
