@@ -23,6 +23,7 @@ import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.common.message.Message;
 import com.google.common.base.Charsets;
+import com.mysql.fabric.xmlrpc.base.Data;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.exception.StockException;
@@ -274,7 +275,10 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 店铺优惠金额
 		BigDecimal storePreferentialPrice = BigDecimal.ZERO;
 		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
-		if (order.getTotalAmount().compareTo(order.getIncome()) != 0) {
+		//Begin 排除平台优惠 update by tangy  2016-11-4
+		if (order.getTotalAmount().compareTo(order.getIncome()) != 0 
+				&& !ActivityTypeEnum.VONCHER.equals(order.getActivityType())) {
+			//End added by tangy
 			storePreferentialPrice = order.getPreferentialPrice();
 		}
 		// 店铺优惠金额
@@ -295,6 +299,8 @@ public class TradeOrderCompleteProcessServiceImpl
 		orderInfo.put("createrId", order.getCreateUserId());
 		// 创建时间
 		orderInfo.put("createTime", order.getCreateTime());
+		// 收货时间
+		orderInfo.put("completeTime", order.getDeliveryTime() == null ? new Data() : order.getDeliveryTime());
 		// 进销存那边的优惠类型0:无活动 ;1：代金券；2：其他
 		int activityType = 0;
 		// 活动类型为代金券活动
@@ -339,7 +345,7 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 原价金额=商品实际金额和运费
 		refunds.put("totalAmount", orderRefunds.getTotalAmount());
 		// 商家实收金额
-		refunds.put("amount", orderRefunds.getTotalAmount());
+		refunds.put("amount", orderRefunds.getTotalIncome());
 		// 店铺优惠金额
 		BigDecimal storePreferentialPrice = BigDecimal.ZERO;
 		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
@@ -364,6 +370,8 @@ public class TradeOrderCompleteProcessServiceImpl
 		refunds.put("createrId", orderRefunds.getUserId());
 		// 创建时间
 		refunds.put("createTime", orderRefunds.getCreateTime());
+		// 退款时间
+		refunds.put("completeTime", orderRefunds.getRefundMoneyTime());
 		return refunds;
 	}
 
@@ -398,7 +406,7 @@ public class TradeOrderCompleteProcessServiceImpl
 			// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 			//Begin 排除平台优惠 update by tangy  2016-10-28
 			if (order.getTotalAmount().compareTo(order.getIncome()) != 0 
-					&& !"1".equals(orderItem.getActivityType())) {
+					&& !ActivityTypeEnum.VONCHER.equals(orderItem.getActivityType())) {
 				storePreferentialPrice = orderItem.getPreferentialPrice();
 			}
 			
@@ -477,10 +485,18 @@ public class TradeOrderCompleteProcessServiceImpl
 			BigDecimal storePreferentialPrice = BigDecimal.ZERO;
 			// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 			if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0) {
-				storePreferentialPrice = orderRefunds.getTotalPreferentialPrice();
+				storePreferentialPrice = orderRefundsItem.getPreferentialPrice();
 			}
 			// 实际单价=原单价减去店铺优惠
 			BigDecimal actualPrice = orderRefundsItem.getUnitPrice().subtract(storePreferentialPrice);
+			if (orderRefundsItem.getQuantity() != null && orderRefundsItem.getQuantity().intValue() > 0) {
+				actualPrice = orderRefundsItem.getUnitPrice().subtract(
+						orderRefundsItem.getPreferentialPrice().divide(new BigDecimal(orderRefundsItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
+			} else if (orderRefundsItem.getWeight() != null 
+					&& orderRefundsItem.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+				actualPrice = orderRefundsItem.getUnitPrice().subtract(
+						orderRefundsItem.getPreferentialPrice().divide(orderRefundsItem.getWeight(), 4, BigDecimal.ROUND_HALF_UP));
+			} 		
 			// 货号
 			// item.put("skuCode", goods.geta);
 			// 销售类型
