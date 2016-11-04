@@ -194,7 +194,7 @@ public class TradeOrderCompleteProcessServiceImpl
 
 		orderInfo.put("orderItemList", orderItemList);
 		orderInfo.put("orderPayInfo", orderPayInfo);
-
+        logger.info("==============================orderInfo:", orderInfo.toString());
 		// 发送消息
 		this.send(OrderMessageConstant.TOPIC_ORDER_COMPLETE, OrderMessageConstant.TAG_ORDER_COMPLETE,
 				orderInfo.toString());
