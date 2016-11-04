@@ -587,7 +587,7 @@
 		pick_up_time,order_resource, is_complete,
 		status, total_amount, actual_amount, preferential_price, fare, activity_type,
 		activity_id, activity_item_id,pay_way,
-		remark, invoice, disabled, create_time,
+		remark, invoice, disabled, create_time, received_time, delivery_time,
 		update_time,is_show,pospay,reason,trade_num,user_phone,payment_status,payment_time,income,seller_id,shipments_user_id,consumer_code_status
 	</sql>
 
