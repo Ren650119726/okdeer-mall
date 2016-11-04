@@ -749,4 +749,47 @@
 	    </if>
 	    ORDER BY ca.create_time DESC limit 1
 	</select>
+	
+	<!-- add by zhangkn -->
+	<select id="listGoodsForAdvert" resultType="map" parameterType="map">
+		select 
+		CAST(se.is_collect AS SIGNED) as addSendPrice,
+		CAST(se.is_support_purchase AS SIGNED) as canConfirmOrder,
+		se.starting_price as fullPrice,
+		sku.`name` as goodsName,
+		sku.id as goodsStoreSkuId,
+		CAST(se.is_starting_price AS SIGNED) as hasFullPrice,
+		CAST(se.is_distribution_fee AS SIGNED) as hasSendPrice,
+		CAST(se.is_shopping_cart AS SIGNED) as isSupportCart,
+		sku.market_price as marketPrice,
+		pic.url as picUrl,
+		sku.online_price as onlinePrice,
+		stock.sellable as sellable,
+		se.distribution_fee as sendPrice,
+		sku.store_id as skuStoreId,
+		CAST(sku.type AS SIGNED) as skuType,
+		service.is_shop_num as isShopNum,
+		service.shop_num as startBuyNum,
+		si.store_name as storeName,
+		sku.update_time as updateTime	,
+		css.column_server_id as serverColumnId,
+		cs .server_name as serverColumnName
+	
+		from goods_store_sku sku
+		LEFT JOIN store_info si on (sku.store_id = si.id)
+		LEFT JOIN goods_store_sku_stock stock on (sku.id = stock.store_sku_id)
+		LEFT JOIN goods_store_sku_picture pic on (sku.id = pic.store_sku_id and pic.type = 1)
+		LEFT JOIN goods_store_sku_service service on (sku.id = service.store_sku_id)
+		LEFT JOIN store_info_ext ext on (si.id = ext.store_id)
+		LEFT JOIN store_service_ext se on (si.id = se.store_id)
+		LEFT JOIN column_server_store css on (css.store_id = si.id)
+		LEFT JOIN column_server cs on (css.column_server_id = cs.id)
+		where 1 = 1 
+		<if test="goodsIdList != null">
+		 and sku.id in 
+	    <foreach collection="goodsIdList" index="index" item="item" open="(" close=")" separator=",">
+        	#{item}
+        </foreach>
+        </if>
+	</select>
 </mapper>
