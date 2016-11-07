@@ -418,13 +418,17 @@ public class TradeOrderCompleteProcessServiceImpl
 			item.put("skuId", goods.getSkuId());
 			// 店铺优惠金额
 			BigDecimal storePreferentialPrice = BigDecimal.ZERO;
+			// 平台优惠金额
+			BigDecimal platDiscountAmount = BigDecimal.ZERO;
 			// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 			//Begin 排除平台优惠 update by tangy  2016-10-28
 			if (order.getTotalAmount().compareTo(order.getIncome()) != 0 
 					&& !ActivityTypeEnum.VONCHER.equals(orderItem.getActivityType())) {
 				storePreferentialPrice = orderItem.getPreferentialPrice();
+			} else if (ActivityTypeEnum.VONCHER.equals(orderItem.getActivityType())) {
+				platDiscountAmount = orderItem.getPreferentialPrice();
 			}
-			
+			item.put("platDiscountAmount", platDiscountAmount);
 			// 实际单价=原单价减去店铺优惠
 			BigDecimal actualPrice = orderItem.getUnitPrice().subtract(storePreferentialPrice);
 			if (orderItem.getQuantity() != null && orderItem.getQuantity().intValue() > 0) {
@@ -498,20 +502,27 @@ public class TradeOrderCompleteProcessServiceImpl
 			item.put("skuId", goods.getSkuId());
 			// 店铺优惠金额
 			BigDecimal storePreferentialPrice = BigDecimal.ZERO;
+			//Begin update by tangy  2016-11-7
+			// 平台优惠金额
+			BigDecimal platDiscountAmount = BigDecimal.ZERO;
 			// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 			if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0) {
 				storePreferentialPrice = orderRefundsItem.getPreferentialPrice();
+			} else if (orderRefundsItem.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+				platDiscountAmount = orderRefundsItem.getPreferentialPrice();
 			}
 			// 实际单价=原单价减去店铺优惠
-			BigDecimal actualPrice = orderRefundsItem.getUnitPrice().subtract(storePreferentialPrice);
-			if (orderRefundsItem.getQuantity() != null && orderRefundsItem.getQuantity().intValue() > 0) {
+			BigDecimal actualPrice = orderRefundsItem.getUnitPrice();
+			if (orderRefundsItem.getQuantity() != null && orderRefundsItem.getQuantity().intValue() > 0
+					&& platDiscountAmount.compareTo(BigDecimal.ZERO) == 1) {
 				actualPrice = orderRefundsItem.getUnitPrice().subtract(
-						storePreferentialPrice.divide(new BigDecimal(orderRefundsItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
+						platDiscountAmount.divide(new BigDecimal(orderRefundsItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
 			} else if (orderRefundsItem.getWeight() != null 
-					&& orderRefundsItem.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+					&& platDiscountAmount.compareTo(BigDecimal.ZERO) == 1) {
 				actualPrice = orderRefundsItem.getUnitPrice().subtract(
-						storePreferentialPrice.divide(orderRefundsItem.getWeight(), 4, BigDecimal.ROUND_HALF_UP));
-			} 		
+						platDiscountAmount.divide(orderRefundsItem.getWeight(), 4, BigDecimal.ROUND_HALF_UP));
+			} 	
+			//End update by tangy
 			// 货号
 			// item.put("skuCode", goods.geta);
 			// 销售类型
@@ -535,8 +546,10 @@ public class TradeOrderCompleteProcessServiceImpl
 							.multiply(orderRefundsItem.getWeight() == null
 									? BigDecimal.valueOf(orderRefundsItem.getQuantity()) : orderRefundsItem.getWeight())
 							.setScale(2, BigDecimal.ROUND_FLOOR));
+			// 平台优惠金额
+			item.put("platDiscountAmount", storePreferentialPrice);
 			// 店铺优惠金额
-			item.put("discountAmount", storePreferentialPrice);
+			item.put("discountAmount", platDiscountAmount);
 			// item.put("activityType", order.getActivityType().ordinal());
 			// item.put("activityId", order.getActivityId());
 			// item.put("activityItemId", order.getActivityItemId());
