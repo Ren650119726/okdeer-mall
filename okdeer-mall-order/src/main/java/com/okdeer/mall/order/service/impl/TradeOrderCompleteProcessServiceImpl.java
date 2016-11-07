@@ -491,11 +491,11 @@ public class TradeOrderCompleteProcessServiceImpl
 			BigDecimal actualPrice = orderRefundsItem.getUnitPrice().subtract(storePreferentialPrice);
 			if (orderRefundsItem.getQuantity() != null && orderRefundsItem.getQuantity().intValue() > 0) {
 				actualPrice = orderRefundsItem.getUnitPrice().subtract(
-						orderRefundsItem.getPreferentialPrice().divide(new BigDecimal(orderRefundsItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
+						storePreferentialPrice.divide(new BigDecimal(orderRefundsItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
 			} else if (orderRefundsItem.getWeight() != null 
 					&& orderRefundsItem.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
 				actualPrice = orderRefundsItem.getUnitPrice().subtract(
-						orderRefundsItem.getPreferentialPrice().divide(orderRefundsItem.getWeight(), 4, BigDecimal.ROUND_HALF_UP));
+						storePreferentialPrice.divide(orderRefundsItem.getWeight(), 4, BigDecimal.ROUND_HALF_UP));
 			} 		
 			// 货号
 			// item.put("skuCode", goods.geta);
