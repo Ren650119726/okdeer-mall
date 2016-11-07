@@ -299,8 +299,6 @@ public class TradeOrderCompleteProcessServiceImpl
 		orderInfo.put("createrId", order.getCreateUserId());
 		// 创建时间
 		orderInfo.put("createTime", order.getCreateTime());
-		logger.info("=============", order.getDeliveryTime());
-		logger.info("=============", order.getDeliveryTime() == null ? new Data() : order.getDeliveryTime());
 		// 收货时间
 		orderInfo.put("completeTime", order.getDeliveryTime() == null ? new Data() : order.getDeliveryTime());
 		// 进销存那边的优惠类型0:无活动 ;1：代金券；2：其他
