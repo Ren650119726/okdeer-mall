@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderTraceMapper">
+
+	<!-- 属性映射 -->
+	<resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderTrace">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+        <result column="trace_status" property="traceStatus" jdbcType="TINYINT" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+        <result column="opt_time" property="optTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<!-- 查询公共列 -->
+	<sql id="Base_Column_List">
+		id,
+		order_id,
+		trace_status,
+		remark,
+		opt_time
+	</sql>
+	
+	<!-- 根据主键查询 -->
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        SELECT <include refid="Base_Column_List" />
+        FROM trade_order_trace
+        WHERE id = #{id,jdbcType=VARCHAR}
+    </select>
+
+	<!-- 新增 -->
+	<insert id="add" parameterType="com.okdeer.mall.order.entity.TradeOrderTrace">
+		INSERT INTO trade_order_trace 
+			<trim prefix="(" suffix=")" suffixOverrides="," >
+				<if test="id != null" >
+					id,
+				</if>
+				<if test="orderId != null" >
+					order_id,
+				</if>
+				<if test="traceStatus != null" >
+					trace_status,
+				</if>
+				<if test="remark != null" >
+					remark,
+				</if>
+				<if test="optTime != null" >
+					opt_time,
+				</if>
+			</trim>
+		VALUES 
+			<trim prefix="(" suffix=")" suffixOverrides="," >
+				<if test="id != null" >
+					#{id, jdbcType=VARCHAR},
+				</if>
+				<if test="orderId != null" >
+					#{orderId, jdbcType=VARCHAR},
+				</if>
+				<if test="traceStatus != null" >
+					#{traceStatus, jdbcType=TINYINT},
+				</if>
+				<if test="remark != null" >
+					#{remark, jdbcType=VARCHAR},
+				</if>
+				<if test="optTime != null" >
+					#{optTime, jdbcType=TIMESTAMP},
+				</if>
+			</trim>
+	</insert>
+
+	<!-- 更新 -->
+	<update id="update" parameterType="com.okdeer.mall.order.entity.TradeOrderTrace">
+		UPDATE trade_order_trace
+		<set>
+			<if test="orderId != null">
+				order_id = #{orderId, jdbcType=VARCHAR},
+			</if>
+			<if test="traceStatus != null">
+				trace_status = #{traceStatus, jdbcType=TINYINT},
+			</if>
+			<if test="remark != null">
+				remark = #{remark, jdbcType=VARCHAR},
+			</if>
+			<if test="optTime != null">
+				opt_time = #{optTime, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		WHERE
+		id = #{id} 
+	</update>
+
+	<delete id="delete" parameterType="java.lang.String" >
+        DELETE FROM trade_order_trace
+        WHERE id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <!-- 根据订单Id查询轨迹列表  -->
+    <select id="findTraceList" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        SELECT <include refid="Base_Column_List" />
+        FROM trade_order_trace
+        WHERE order_id = #{orderId,jdbcType=VARCHAR}
+    </select>
+</mapper>
+
