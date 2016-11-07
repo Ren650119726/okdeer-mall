@@ -386,7 +386,8 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 创建时间
 		refunds.put("createTime", orderRefunds.getCreateTime());
 		// 退款时间
-		refunds.put("completeTime", orderRefunds.getRefundMoneyTime());
+		refunds.put("completeTime", orderRefunds.getRefundMoneyTime() == null 
+				? orderRefunds.getUpdateTime() : orderRefunds.getRefundMoneyTime());
 		return refunds;
 	}
 
