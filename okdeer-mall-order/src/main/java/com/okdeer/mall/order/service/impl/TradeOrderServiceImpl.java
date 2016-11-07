@@ -717,9 +717,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void receivableOrder(String[] ids) throws ServiceException {
+	public void receivableOrder(String[] ids, String paymentUserId) throws ServiceException {
 		if (ids != null && ids.length > 0) {
-			tradeOrderMapper.updatePaymentStatusByIds(ids, PaymentStatusEnum.BACK_SECTION, new Date());
+			tradeOrderMapper.updatePaymentStatusByIds(ids, PaymentStatusEnum.BACK_SECTION, new Date(), paymentUserId);
 		}
 	}
 

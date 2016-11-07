@@ -2039,7 +2039,8 @@
 		UPDATE trade_order
 		SET payment_status = #{paymentStatus,jdbcType=TINYINT},
 		payment_time = #{paymentTime,jdbcType=TIMESTAMP},
-		update_time = #{paymentTime,jdbcType=TIMESTAMP}
+		update_time = #{paymentTime,jdbcType=TIMESTAMP},
+		payment_user_id = #{paymentUserId,jdbcType=TIMESTAMP}
 		WHERE
 		<if test="ids != null ">
 			id in
