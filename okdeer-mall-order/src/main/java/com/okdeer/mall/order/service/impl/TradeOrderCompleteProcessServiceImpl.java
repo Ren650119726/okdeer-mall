@@ -276,11 +276,18 @@ public class TradeOrderCompleteProcessServiceImpl
 		BigDecimal storePreferentialPrice = BigDecimal.ZERO;
 		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 		//Begin 排除平台优惠 update by tangy  2016-11-4
+		// 平台优惠金额
+		BigDecimal platDiscountAmount = BigDecimal.ZERO;
 		if (order.getTotalAmount().compareTo(order.getIncome()) != 0 
 				&& !ActivityTypeEnum.VONCHER.equals(order.getActivityType())) {
 			//End added by tangy
 			storePreferentialPrice = order.getPreferentialPrice();
+		} else if (ActivityTypeEnum.VONCHER.equals(order.getActivityType())) {
+			platDiscountAmount = order.getPreferentialPrice();
 		}
+		
+		// 平台优惠金额
+		orderInfo.put("platDiscountAmount", platDiscountAmount);
 		// 店铺优惠金额
 		orderInfo.put("discountAmount", storePreferentialPrice);
 		// 运费
@@ -348,12 +355,20 @@ public class TradeOrderCompleteProcessServiceImpl
 		refunds.put("amount", orderRefunds.getTotalIncome());
 		// 店铺优惠金额
 		BigDecimal storePreferentialPrice = BigDecimal.ZERO;
+		// 店铺优惠金额
+		BigDecimal platDiscountAmount = BigDecimal.ZERO;
 		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 		if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0) {
 			storePreferentialPrice = orderRefunds.getTotalPreferentialPrice();
+		} else if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) == 0
+				&& orderRefunds.getTotalPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+			platDiscountAmount = orderRefunds.getTotalPreferentialPrice();
 		}
+		
+		// 平台优惠金额
+		refunds.put("platDiscountAmount", storePreferentialPrice);
 		// 店铺优惠金额
-		refunds.put("discountAmount", storePreferentialPrice);
+		refunds.put("discountAmount", platDiscountAmount);
 		// 运费
 		// orderInfo.put("freightAmount", refundOrder.getFare());
 		// （会员）买家ID
