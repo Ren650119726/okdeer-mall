@@ -1544,6 +1544,9 @@
 		<if test="null != endCreateTime and '' != endCreateTime">
 		    <![CDATA[ AND r.refund_money_time <= #{endCreateTime} ]]>
 		</if>
+		<if test="null != userId and '' != userId">
+		    <![CDATA[ AND r.operator = #{userId} ]]>
+		</if>
 		order by r.create_time desc
 	</select>
 	<!-- zengj:查询店铺内所有的退单数 V1.1.0 update by wusw 20160928 -->

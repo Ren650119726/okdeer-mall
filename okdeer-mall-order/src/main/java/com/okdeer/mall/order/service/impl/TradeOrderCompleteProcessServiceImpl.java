@@ -509,7 +509,8 @@ public class TradeOrderCompleteProcessServiceImpl
 			// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 			if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0) {
 				storePreferentialPrice = orderRefundsItem.getPreferentialPrice();
-			} else if (orderRefundsItem.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+			} else if (orderRefundsItem.getPreferentialPrice() != null 
+					&& orderRefundsItem.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
 				platDiscountAmount = orderRefundsItem.getPreferentialPrice();
 			}
 			// 实际单价=原单价减去店铺优惠
