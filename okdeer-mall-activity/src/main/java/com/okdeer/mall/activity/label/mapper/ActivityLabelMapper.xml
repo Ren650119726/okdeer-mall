@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.okdeer.mall.activity.label.mapper.ActivityLabelMapper">
+
+	<resultMap type="com.okdeer.mall.activity.label.entity.ActivityLabel" id="ActivityLabel" >
+		<result property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="status" column="status" />
+		<result property="startTime" column="start_time" />
+		<result property="endTime" column="end_time" />
+		<result property="createTime" column="create_time" />
+		<result property="createUserId" column="create_user_id" />
+		<result property="updateTime" column="update_time" />
+		<result property="updateUserId" column="update_user_id" />
+		
+		<!-- 上面是数据库属性,下面是自己扩展的属性 -->
+<!-- 		<result property="good" column="update_user_id" /> -->
+	</resultMap>
+	
+	<sql id="columns">
+		id,name,status,start_time,end_time,create_time,create_user_id,update_time,update_user_id
+	</sql>
+
+    <select id="list" parameterType="java.util.Map" resultMap="ActivityLabel">
+		select 
+			s.id,
+			s.name,
+			s.status,
+			s.start_time,
+			s.end_time,
+			s.create_time,
+			s.create_user_id,
+			s.update_time,
+			s.update_user_id,
+			(select count(*) from activity_label_goods where activity_id = s.id) as goodsCount
+			from activity_label s where 1 = 1 
+		<if test="name != null and name != ''">
+			and s.name like concat('%',#{name},'%' )
+		</if>
+		<if test="createStartTime != null and createStartTime != ''">
+			and s.create_time &gt;= #{createStartTime}
+		</if>
+		<if test="createEndTime != null and createEndTime != ''">
+			and s.create_time &lt;= #{createEndTime}
+		</if>
+		<if test="activityStartStartTime != null and activityStartStartTime != ''">
+			and s.start_time &gt;= #{activityStartStartTime}
+		</if>
+		<if test="activityStartEndTime != null and activityStartEndTime != ''">
+			and s.start_time &lt;= #{activityStartEndTime}
+		</if>
+		<if test="activityEndStartTime != null and activityEndStartTime != ''">
+			and s.end_time &gt;= #{activityEndStartTime}
+		</if>
+		<if test="activityEndEndTime != null and activityEndEndTime != ''">
+			and s.end_time &lt;= #{activityEndEndTime}
+		</if>
+		<if test="status != null and status != ''">
+			and s.status = #{status}
+		</if>
+		order by s.create_time desc
+	</select>
+	
+	<select id="listGoods" parameterType="map" resultType="map">
+		select 
+			s.id,
+			s.name,
+			si.store_name as storeName,
+			s.online_price as onlinePrice,
+			s.sale_num as saleNum,
+			s.update_time as updateTime
+			from goods_store_sku s 
+			left join store_info si on (s.store_id = si.id) 
+			where s.disabled = 0 
+			and s.type in (3,4) 
+			<if test="goodsName != null and goodsName != ''">
+				and s.name like concat('%',#{goodsName},'%' )
+			</if>
+			<if test="storeName != null and storeName != ''">
+				and si.store_name like concat('%',#{storeName},'%' )
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				and s.id like concat('%',#{goodsId},'%' )
+			</if>
+			<if test="goodsIdList != null">
+				and s.id in
+				<foreach item="item" index="index" collection="goodsIdList" open="(" separator="," close=")">  
+	  				#{item}  
+	 			</foreach>  
+ 			</if>
+		order by s.update_time desc 
+	</select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.label.entity.ActivityLabel">
+        INSERT INTO activity_label 
+	    <trim prefix="(" suffix=")" suffixOverrides="," >
+	      <if test="id != null and id != ''" >id,</if>
+	      <if test="name != null and name != ''" >name,</if>
+	      <if test="status != null" >status,</if>
+	      <if test="startTime != null" >start_time,</if>
+	      <if test="endTime != null" >end_time,</if>
+	      <if test="createTime != null" >create_time,</if>
+	      <if test="createUserId != null and createUserId != ''" >create_user_id,</if>
+	      <if test="updateTime != null" >update_Time,</if>
+	      <if test="updateUserId != null and updateUserId != ''" >update_user_id,</if>
+	    </trim>
+	    <trim prefix="values (" suffix=")" suffixOverrides="," >
+	      <if test="id != null and id != ''" >#{id},</if>
+	      <if test="name != null and name != ''" >#{name},</if>
+	      <if test="status != null" >#{status},</if>
+	      <if test="startTime != null" > #{startTime},</if>
+	      <if test="endTime != null" > #{endTime},</if>
+	      <if test="createTime != null" >#{createTime},</if>
+	      <if test="createUserId != null and createUserId != ''" >#{createUserId},</if>
+	      <if test="updateTime != null" >#{updateTime},</if>
+	      <if test="updateUserId != null and updateUserId != ''" >#{updateUserId},</if>
+	    </trim>
+	</insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.label.entity.ActivityLabel">
+        update activity_label set
+			<if test="name != null">
+				name = #{name},
+			</if>
+			<if test="status != null">
+				status = #{status},
+			</if>
+			<if test="startTime != null">
+				start_time = #{startTime},
+			</if>
+			<if test="endTime != null">
+				end_time = #{endTime},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime},
+			</if>
+			<if test="createUserId != null">
+				create_user_id = #{createUserId},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime},
+			</if>
+			<if test="updateUserId != null">
+				update_user_id = #{updateUserId},
+			</if>
+        id = #{id}
+        where id = #{id}
+    </update>
+
+    <select id="get" resultMap="ActivityLabel" parameterType="string">
+        select <include refid="columns"/> from activity_label where id = #{value} 
+    </select>
+
+    <update id="updateBatchStatus" parameterType="map">
+    	update activity_label set status = #{status} where id in 
+		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">  
+  			#{item}  
+ 		</foreach>  
+<!--  		未开始或者进行中的才关闭,其他状态的不管 -->
+ 		and (status = 0 or status = 1)
+    </update>
+
+	<select id="listByJob" parameterType="map" resultMap="ActivityLabel">
+		select s.* from activity_label s where 
+		(s.`status` = 0 and  s.start_time &lt;= NOW())
+		OR
+		(s.`status` = 1 and  s.end_time &lt;= NOW())
+	</select>   
+	
+<!-- 	用于判断某个时间段内活动是否冲突 -->
+	<select id="countTimeQuantum"  parameterType="map" resultType="int">
+		select count(*) from activity_label c
+	    where 1 = 1 
+<!-- 	    未开始或者进行中 -->
+	    and (c.status = 1 or c.status = 0)
+		AND 
+		(
+			#{startTime} BETWEEN c.start_time and c.end_time 
+      		OR 
+      		#{endTime} BETWEEN c.start_time and c.end_time 
+      		OR 
+     		(c.start_time &gt;= #{startTime} and c.end_time &lt;= #{endTime})
+    	)
+<!-- 	    如果是修改,就忽略自己本身这条记录 -->
+	    <if test="id != null and id != ''">
+	    	and c.id != #{id}
+	    </if>
+    </select>
+</mapper>
