@@ -147,16 +147,16 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.operate.advert.service.ColumnAdvertService#findAcrossTimeAdvertQty
 	 */
-	//begin 广告张数的限制  重写findAcrossTimeAdvertQty方法	add by zhulq  2016-7-15
-	//begin 将省市信息全部放进areaIdList add by zhulq  2016-8-1
+	// begin 广告张数的限制 重写findAcrossTimeAdvertQty方法 add by zhulq 2016-7-15
+	// begin 将省市信息全部放进areaIdList add by zhulq 2016-8-1
 	@Transactional(readOnly = true)
 	@Override
-	public int findAcrossTimeAdvertQty(ColumnAdvert advert,List<String> areaIdList) {
+	public int findAcrossTimeAdvertQty(ColumnAdvert advert, List<String> areaIdList) {
 		return this.advertMapper.findAcrossTimeAdvertQty(advert);
 	}
-	//begin 广告张数的限制  重写findAcrossTimeAdvertQty方法	add by zhulq  2016-7-15
-	//end 将省市信息全部放进areaIdList	add by zhulq  2016-8-1
-	
+	// begin 广告张数的限制 重写findAcrossTimeAdvertQty方法 add by zhulq 2016-7-15
+	// end 将省市信息全部放进areaIdList add by zhulq 2016-8-1
+
 	/**
 	 * @desc 创建广告
 	 *
@@ -169,19 +169,20 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	public void addColumnAdvert(ColumnAdvert advert, ColumnAdvertInfo advertInfo, SysUser currentUser) {
 		String[] idArr = null;
 		String[] areas = null;
-		// begin update by  zhulq  修改结束广告时候重新给图片赋值    2016-9-1 
+		// begin update by zhulq 修改结束广告时候重新给图片赋值 2016-9-1
 		String advertId = advert.getId();
 		// 创建广告
 		if (StringUtils.isBlank(advertId)) {
 			advertId = UuidUtils.getUuid();
 			advert.setId(advertId);
 		}
-		//end  update by  zhulq  修改结束广告时候重新给图片赋值    2016-9-1 
+		// end update by zhulq 修改结束广告时候重新给图片赋值 2016-9-1
 		advert.setIsPay(AdvertIsPayEnum.NOT_PAID);
-		//begin 去掉缴费  	add by zhulq 2016-7-14
-		/*String tradeNum = TradeNumUtil.getTradeNum();
-		advert.setTradeNum(tradeNum);*/
-		//end 去掉缴费  	add by zhulq 2016-7-14
+		// begin 去掉缴费 add by zhulq 2016-7-14
+		/*
+		 * String tradeNum = TradeNumUtil.getTradeNum(); advert.setTradeNum(tradeNum);
+		 */
+		// end 去掉缴费 add by zhulq 2016-7-14
 		advert.setStatus(AdvertStatusEnum.NOT_STARTING);
 		advert.setDisabled(Disabled.valid);
 		advert.setCreateTime(new Date());
@@ -190,12 +191,12 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		advert.setUpdateUserId(currentUser.getId());
 		advert.setPv(0);
 		String targetUrl = advert.getTargetUrl();
-		if(!StringUtils.isNullOrEmpty(targetUrl)) {
+		if (!StringUtils.isNullOrEmpty(targetUrl)) {
 			targetUrl = StringEscapeUtils.unescapeHtml3(targetUrl);
 			advert.setTargetUrl(targetUrl);
 		}
 		this.advertMapper.insert(advert);
-		
+
 		// 创建广告商信息
 		String advertInfoId = advertInfo.getId();
 		if (StringUtils.isBlank(advertInfoId)) {
@@ -237,8 +238,8 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		String dataIds = advert.getDataIds();
 		if (!StringUtils.isNullOrEmpty(dataIds)) {
 			idArr = dataIds.split(",");
-			//begin 出掉小区     add by zhulq 2016-7-14
-			//begin 将选择的省信息保存     add by zhulq 2016-7-14
+			// begin 出掉小区 add by zhulq 2016-7-14
+			// begin 将选择的省信息保存 add by zhulq 2016-7-14
 			if (idArr != null && idArr.length > 0) {
 				if (AreaType.area.equals(areaType)) {
 					List<ColumnAdvertArea> advertAreaList = new ArrayList<ColumnAdvertArea>();
@@ -257,10 +258,10 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 						advertAreaList.add(advertArea);
 					}
 					this.advertAreaMapper.insertAdvertAreaBatch(advertAreaList);
-				} 
+				}
 			}
-			//end 出掉小区     add by zhulq 2016-7-14
-			//end 将选择的省信息保存     add by zhulq 2016-7-14
+			// end 出掉小区 add by zhulq 2016-7-14
+			// end 将选择的省信息保存 add by zhulq 2016-7-14
 		}
 	}
 
@@ -279,7 +280,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		advert.setUpdateTime(new Date());
 		advert.setUpdateUserId(userId);
 		String targetUrl = advert.getTargetUrl();
-		if(!StringUtils.isNullOrEmpty(targetUrl)) {
+		if (!StringUtils.isNullOrEmpty(targetUrl)) {
 			targetUrl = StringEscapeUtils.unescapeHtml3(targetUrl);
 			advert.setTargetUrl(targetUrl);
 		}
@@ -290,7 +291,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		advertInfo.setUpdateUserId(userId);
 		this.advertInfoMapper.updateByPrimaryKeySelective(advertInfo);
 
-		//begin 将选择的省信息保存 之前的删除    add by zhulq 2016-7-15
+		// begin 将选择的省信息保存 之前的删除 add by zhulq 2016-7-15
 		// 修改所选范围与广告关系
 		this.advertAreaMapper.deleteByAdvertId(advert.getId());
 		AreaType areaType = advert.getAreaType();
@@ -299,7 +300,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		String[] areas = null;
 		if (!StringUtils.isNullOrEmpty(dataIds)) {
 			idArr = dataIds.split(",");
-			//begin 出掉小区     add by zhulq 2016-7-14
+			// begin 出掉小区 add by zhulq 2016-7-14
 			if (idArr != null && idArr.length > 0) {
 				if (AreaType.area.equals(areaType)) {
 					List<ColumnAdvertArea> advertAreaList = new ArrayList<ColumnAdvertArea>();
@@ -318,10 +319,10 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 						advertAreaList.add(advertArea);
 					}
 					this.advertAreaMapper.insertAdvertAreaBatch(advertAreaList);
-				} 
+				}
 			}
-			//end 出掉小区     add by zhulq 2016-7-14
-			//end 将选择的省信息保存 之前的删除     add by zhulq 2016-7-15
+			// end 出掉小区 add by zhulq 2016-7-14
+			// end 将选择的省信息保存 之前的删除 add by zhulq 2016-7-15
 		}
 	}
 
@@ -439,12 +440,12 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void offShelfAdvert(ColumnAdvert advert, SysUser currentUser) {
-		// begin 广告下架后状态是结束   add by  zhulq  2016-8-1
+		// begin 广告下架后状态是结束 add by zhulq 2016-8-1
 		advert.setStatus(AdvertStatusEnum.FINISH);
 		advert.setOffShelfTime(new Date());
 		advert.setUpdateTime(new Date());
 		advert.setEndTime(new Date());
-		// begin 广告下架后状态是结束   add by  zhulq  2016-8-1
+		// begin 广告下架后状态是结束 add by zhulq 2016-8-1
 		advert.setUpdateUserId(currentUser.getId());
 
 		this.advertMapper.updateByPrimaryKeySelective(advert);
@@ -485,7 +486,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	@Override
 	public int updateAdvertInfo(ColumnAdvert advert) {
 		String targetUrl = advert.getTargetUrl();
-		if(!StringUtils.isNullOrEmpty(targetUrl)) {
+		if (!StringUtils.isNullOrEmpty(targetUrl)) {
 			targetUrl = StringEscapeUtils.unescapeHtml3(targetUrl);
 			advert.setTargetUrl(targetUrl);
 		}
@@ -499,9 +500,9 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	@Transactional(rollbackFor = Exception.class)
 	public void updateAdvertStatusByJob() {
 		// 查询开始时间小于当前时间状态为未开始的广告改为进行中
-		//begin 将列加上对应的表的前缀    add by zhulq    2016-8-8
+		// begin 将列加上对应的表的前缀 add by zhulq 2016-8-8
 		List<ColumnAdvert> adverts = this.advertMapper.getAdvertForJob(0, new Date(), "ca.start_time", "<=");
-		//end 将列加上对应的表的前缀     add by zhulq    2016-8-8
+		// end 将列加上对应的表的前缀 add by zhulq 2016-8-8
 		// 将状态改为进行中
 		if (adverts != null && !adverts.isEmpty()) {
 			for (ColumnAdvert advert : adverts) {
@@ -519,18 +520,15 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 				this.advertMapper.updateByPrimaryKeySelective(advert);
 			}
 		}
-		
-		//begin 现在已经不涉及缴费了    add by zhulq    2016-8-6
+
+		// begin 现在已经不涉及缴费了 add by zhulq 2016-8-6
 		// 查询未交费结束时间小于等于的当前时间状态改为已过期
-/*		adverts = this.advertMapper.getAdvertStartForJob(1, new Date(), "end_time", "<=");
-		// 将状态改为已过期
-		if (adverts != null && !adverts.isEmpty()) {
-			for (ColumnAdvert advert : adverts) {
-				advert.setStatus(AdvertStatusEnum.OUT_OF_DATE);
-				this.advertMapper.updateByPrimaryKeySelective(advert);
-			}
-		}*/
-		//end 现在已经不涉及缴费了    add by zhulq    2016-8-6
+		/*
+		 * adverts = this.advertMapper.getAdvertStartForJob(1, new Date(), "end_time", "<="); // 将状态改为已过期 if (adverts !=
+		 * null && !adverts.isEmpty()) { for (ColumnAdvert advert : adverts) {
+		 * advert.setStatus(AdvertStatusEnum.OUT_OF_DATE); this.advertMapper.updateByPrimaryKeySelective(advert); } }
+		 */
+		// end 现在已经不涉及缴费了 add by zhulq 2016-8-6
 	}
 
 	/**
@@ -565,17 +563,28 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		return this.advertMapper.findMobileDoorAdvert(params);
 	}
 
-	// begin  add　　by zhulq  获取默认的广告图片  2016-10-18
+	// begin add by zhulq 获取默认的广告图片 2016-10-18
 	@Override
 	public ColumnAdvert listDefaultForPos(Map<String, Object> map) {
 		return advertMapper.listDefaultForPos(map);
 	}
-	// end  add　　by zhulq  获取默认的广告图片  2016-10-18
-	
-	// begin  add　　by zhangkn  获取广告商品列表
+	// end add by zhulq 获取默认的广告图片 2016-10-18
+
+	// begin add by zhangkn 获取广告商品列表
 	@Override
-	public List<Map<String,Object>> listGoodsForAdvert(Map<String, Object> map){
+	public List<Map<String, Object>> listGoodsForAdvert(Map<String, Object> map) {
 		return advertMapper.listGoodsForAdvert(map);
 	}
-	// end  add　　by zhangkn  获取广告商品列表
+	// end add by zhangkn 获取广告商品列表
+
+	
+	// begin  add　　by zengjz  修改广告的排序值
+	@Override
+	public void updateSort(String id, int sort) {
+		ColumnAdvert columnAdvert = new ColumnAdvert();
+		columnAdvert.setId(id);
+		columnAdvert.setSort(sort);
+		advertMapper.updateByPrimaryKeySelective(columnAdvert);
+	}
+	// end  add　　by zengjz  修改广告的排序值
 }
