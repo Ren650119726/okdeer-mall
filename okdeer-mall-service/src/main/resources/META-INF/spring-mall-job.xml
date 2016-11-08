@@ -57,4 +57,7 @@
 	<job:simple id="rechargingOrderDealWithJob" class="com.okdeer.mall.order.job.RechargingOrderDealWithJob" registry-center-ref="regCenter" cron="0 */10 * * * ?" sharding-total-count="1"></job:simple>
 	<!-- 到店消费订单消费码过期处理 -->
 	<job:simple id="storeConsumeOrderExpireJob" class="com.okdeer.mall.order.job.StoreConsumeOrderExpireJob" registry-center-ref="regCenter" cron="0 */1 * * * ?" sharding-total-count="1"></job:simple>
+	
+	<!-- 每隔半个小时执行运营后台服务标签的定时任务 -->
+	<job:simple id="activityLabelJob" class="com.okdeer.mall.activity.label.job.ActivityLabelJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
 </beans>
