@@ -84,8 +84,7 @@ public interface TradeOrderItemMapper{
 	 */
 	int selectCountByOrderIdDetailStatus(Map<String,Object> params);
 	
-	List<TradeOrderItem> getItemDetailByOrderIdAndSkuId(@Param("orderId") String orderId,
-			@Param("storeSkuId") String storeSkuId);
+	
 	
 	/**
 	 * 根据订单项ID查询该订单项的信息
