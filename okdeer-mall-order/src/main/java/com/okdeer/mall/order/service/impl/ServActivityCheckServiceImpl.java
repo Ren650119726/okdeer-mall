@@ -109,7 +109,7 @@ public class ServActivityCheckServiceImpl implements RequestHandler<ServiceOrder
 			if (coupons.getIsCategory() == Constant.ONE) {
 				List<String> spuCategoryIds = duplicateRemoval((List<String>) req.getContext().get("spuCategoryIds"));
 				// 如果是指定分类。校验商品的分类
-				int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getId());
+				int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getId());
 				if (count == Constant.ZERO || count != spuCategoryIds.size()) {
 					// 购买的商品分类超出代金券限购的分类。则订单提交失败
 					resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
