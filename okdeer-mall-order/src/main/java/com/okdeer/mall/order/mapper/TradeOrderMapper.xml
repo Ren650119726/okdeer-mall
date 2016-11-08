@@ -2325,12 +2325,12 @@
 		END
 	</select>
 	
-	<!-- luosm:V1.1.0获取服务店到店消费订单总数，根据订单状态分组 -->
+	<!-- luosm:V1.1.0获取服务店到店消费订单总数，根据订单状态分组 update by wusw 20161108 已取消标签也统计拒收、已拒收、交易关闭的订单 -->
    <select id="selectArrivedOrderCount" parameterType="java.util.Map" resultMap="TradeOrderStatusVoMap">
       SELECT CASE
 				WHEN `status` IN (0,11) THEN 0
 				WHEN `status` IN (5,6) THEN 5
-				WHEN `status` IN (2, 12) THEN 2
+				WHEN `status` IN (2, 12,4,13,6) THEN 2
 				ELSE `STATUS`
 			 END AS `status`,count(1) as `count` FROM trade_order 
      	WHERE store_id = #{storeId,jdbcType=VARCHAR} 
@@ -2343,12 +2343,11 @@
 			</foreach>
 		</if>
 		and `status` >= 0
-		and type =5
       GROUP BY 
 	  CASE
 		WHEN `status` IN (0,11) THEN 0
 		WHEN `status` IN (5,6) THEN 5
-		WHEN `status` IN (2, 12) THEN 2
+		WHEN `status` IN (2, 12,4,13,6) THEN 2
 		ELSE `STATUS`
 	  END
    </select>
