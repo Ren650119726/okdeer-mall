@@ -24,6 +24,10 @@
 		<result column="pv" property="pv" jdbcType="INTEGER"/>
 		<result column="on_shelf_time" property="onShelfTime" jdbcType="TIMESTAMP"/>
 		<result column="off_shelf_time" property="offShelfTime" jdbcType="TIMESTAMP"/>
+		<!-- begin add by zengjz 2016-11-07 增加字段-->
+		<result column="business_id" property="businessId" jdbcType="VARCHAR"/>
+		<result column="sort" property="sort" jdbcType="INTEGER"/>
+		<!-- end add by zengjz 2016-11-07 增加字段-->
 	</resultMap>
 
 	<resultMap type="com.okdeer.mall.advert.entity.ColumnAdvertVo" id="columnAdvertVoRsMap" extends="columnAdvertRsMap">
@@ -75,7 +79,7 @@
 	<sql id="base_column_list">
 		id, position_id, belong_type, name, target_type, target, target_url, pic_url,
 		area_type, start_time, end_time, is_pay, trade_num, status, create_time, create_user_id,
-		update_time, update_user_id, disabled, pv, on_shelf_time, off_shelf_time
+		update_time, update_user_id, disabled, pv, on_shelf_time, off_shelf_time,business_id,sort
 	</sql>
 	
 	<select id="selectByPrimaryKey" resultMap="columnAdvertRsMap">
@@ -88,7 +92,8 @@
 	<select id="getAdvertForJob" resultMap="columnAdvertRsMap">
 		SELECT ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
 		ca.area_type, ca.start_time, ca.end_time, ca.is_pay, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
-		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, caa.status as appStatus
+		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, caa.status as appStatus,
+		ca.business_id,ca.sort
 		FROM column_advert ca LEFT JOIN column_advert_approval caa ON caa.advert_id = ca.id
 		WHERE caa.status = 1  
 		<if test="status != null">
@@ -103,7 +108,8 @@
 	<select id="getAdvertStartForJob" resultMap="columnAdvertRsMap">
 		SELECT ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
 		ca.area_type, ca.start_time, ca.end_time, ca.is_pay, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
-		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, caa.status as appStatus
+		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, caa.status as appStatus,
+		ca.business_id,ca.sort
 		FROM column_advert ca LEFT JOIN column_advert_approval caa ON caa.advert_id = ca.id
 		WHERE 1 = 1  
 		<if test="status != null">
@@ -378,7 +384,15 @@
 			</if>
 			<if test="offShelfTime != null">
 				off_shelf_time
-			</if>									
+			</if>
+			<!-- begin add by zengjz 2016-11-07 增加字段-->
+			<if test="businessId != null">
+				business_id, 
+			</if>
+			<if test="sort != null">
+				sort
+			</if>
+			<!-- end add by zengjz 2016-11-07 增加字段-->											
 		</trim>
 		VALUES
 		<trim prefix="(" suffix=")" suffixOverrides=",">
@@ -447,7 +461,16 @@
 			</if>
 			<if test="offShelfTime != null">
 				#{offShelfTime, jdbcType=TIMESTAMP}
-			</if>				
+			</if>
+			
+			<!-- begin add by zengjz 2016-11-07 增加字段-->
+			<if test="businessId != null">
+				#{businessId, jdbcType=VARCHAR}, 
+			</if>
+			<if test="sort != null">
+				#{sort, jdbcType=TINYINT}
+			</if>
+			<!-- end add by zengjz 2016-11-07 增加字段-->				
 		</trim>
 	</insert>
 	
@@ -517,6 +540,14 @@
 			<if test="offShelfTime != null">
 				off_shelf_time = #{offShelfTime, jdbcType=TIMESTAMP}
 			</if>
+			<!-- begin add by zengjz 2016-11-07 增加字段-->
+			<if test="businessId != null">
+				business_id = #{businessId, jdbcType=VARCHAR}, 
+			</if>
+			<if test="sort != null">
+				sort = #{sort, jdbcType=TINYINT}
+			</if>
+			<!-- end add by zengjz 2016-11-07 增加字段-->
 		</set>
 		WHERE id = #{id,jdbcType=VARCHAR}
 	</update>
@@ -535,7 +566,8 @@
 			ca.area_type,
 			ca.on_shelf_time,
 			ca.start_time,
-			ca.create_time
+			ca.create_time,
+			ca.business_id,ca.sort
 		FROM
 			column_advert ca 
 			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
@@ -729,7 +761,7 @@
 	<select id="findMobileDoorAdvert" resultMap="columnAdvertRsMap" parameterType="map">
 		SELECT ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
 			   ca.area_type, ca.start_time, ca.end_time, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
-			   ca.update_time, ca.disabled
+			   ca.update_time, ca.disabled,ca.business_id,ca.sort
 		FROM column_advert ca
 		LEFT JOIN column_advert_area area ON area.advert_id = ca.id
 		LEFT JOIN column_advert_position po ON po.id = ca.position_id
