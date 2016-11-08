@@ -137,7 +137,7 @@ public interface TradeOrderService {
 	 * @param ids
 	 * @throws ServiceException
 	 */
-	void receivableOrder(String[] ids) throws ServiceException;
+	void receivableOrder(String[] ids, String paymentUserId) throws ServiceException;
 
 	/**
 	 * 
