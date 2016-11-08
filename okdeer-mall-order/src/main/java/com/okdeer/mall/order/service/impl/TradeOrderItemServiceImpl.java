@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.service.TradeOrderItemServiceApi;
@@ -47,6 +49,25 @@ class TradeOrderItemServiceImpl implements TradeOrderItemService, TradeOrderItem
 	@Override
 	public List<TradeOrderItemDetailVo> getItemDetailByOrderId(String orderId) throws ServiceException {
 		return tradeOrderItemMapper.selectItemDetailByOrderId(orderId);
+	}
+	
+	/**
+	 * @Description: 根据订单id，商品id获取订单项信息
+	 * @param orderId 订单id
+	 * @param storeSkuId 商品id
+	 * @return List<TradeOrderItem> 订单项信息
+	 * @throws ServiceException 抛出异常
+	 * @author lijun
+	 * @date 2016年11月8日
+	 */
+	@Override
+	public TradeOrderItem getItemDetailByOrderIdAndSkuId(String orderId, String storeSkuId)
+			throws ServiceException {
+		List<TradeOrderItem> tradeOrderItemList = tradeOrderItemMapper.getItemDetailByOrderIdAndSkuId(orderId, storeSkuId);
+		if(CollectionUtils.isNotEmpty(tradeOrderItemList)){
+			return tradeOrderItemList.get(0);
+		}
+		return null;
 	}
 
 	@Override

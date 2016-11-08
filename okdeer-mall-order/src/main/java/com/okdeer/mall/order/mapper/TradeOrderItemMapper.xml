@@ -143,6 +143,13 @@
     WHERE id = #{id,jdbcType=VARCHAR}
   </select>
   
+  <select id="getItemDetailByOrderIdAndSkuId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM trade_order_item
+    WHERE order_id = #{orderId,jdbcType=VARCHAR} and store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
+  </select>
+  
   <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
     SELECT 
     <include refid="Base_Column_List" />
