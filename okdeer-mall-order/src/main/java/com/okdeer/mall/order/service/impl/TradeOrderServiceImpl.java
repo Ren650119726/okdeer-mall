@@ -255,6 +255,7 @@ import net.sf.json.JsonConfig;
  *       2016-10-12 wushp bug13735 V1.1.0 2016-10-12 wusw
  *       修改根据订单项详细的消费码状态，修改订单消费码状态的逻辑
  *       14375             2016-10-15        wusw        修改实物订单详情的支付剩余时间计算（由于服务器的数据库时间有误，导致sql计算有误）
+ *       V1.2.0            2016-11-08	     zengjz      优化方法
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -678,14 +679,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @author wusw
 	 */
 	@Override
-	public List<TradeOrderQueryVo> findShippedOrderByParams(Map<String, Object> params, int pageNumber, int pageSize)
+	public List<TradeOrderQueryVo> findShippedOrderByParams(Map<String, Object> params)
 			throws ServiceException {
-		// PageHelper.startPage(pageNumber, pageSize);
 		List<TradeOrderQueryVo> result = tradeOrderMapper.selectShippedOrderByParams(params);
 		if (result == null) {
 			result = new ArrayList<TradeOrderQueryVo>();
 		}
-		// return new PageUtils<TradeOrderQueryVo>(result);
 		return result;
 	}
 

@@ -2031,6 +2031,11 @@
 				AND A.create_time <![CDATA[ <= ]]>
 				#{params.createTimeEnd,jdbcType=TIMESTAMP}
 			</if>
+			<!-- begin add by zengjz 2016-11-08 增加最大查询数量 -->
+			<if test="params.num != null and params.num !=0 ">
+			   LIMIT #{num,jdbcType=TINYINT}
+			</if>
+			<!-- end add by zengjz 2016-11-08 增加最大查询数量 -->
 		</if>
 	</select>
 
