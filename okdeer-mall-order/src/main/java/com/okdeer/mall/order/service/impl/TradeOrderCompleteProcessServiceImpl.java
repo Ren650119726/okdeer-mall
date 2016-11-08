@@ -350,7 +350,7 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 订单来源
 		refunds.put("orderResource", orderRefunds.getOrderResource().ordinal());
 		// 原价金额=商品实际金额和运费
-		refunds.put("totalAmount", orderRefunds.getTotalAmount());
+		refunds.put("totalAmount", orderRefunds.getTotalAmount().add(orderRefunds.getTotalPreferentialPrice()));
 		// 商家实收金额
 		refunds.put("amount", orderRefunds.getTotalIncome());
 		// 店铺优惠金额
