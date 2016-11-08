@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
@@ -26,6 +27,8 @@ import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.discount.service.GetPreferentialService;
 import com.okdeer.mall.activity.discount.service.IGetPreferentialServiceApi;
 import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.Discount;
 import com.okdeer.mall.order.vo.FullSubtract;
@@ -67,6 +70,12 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 	@Resource
 	private ActivityDiscountMapper activityDiscountMapper;
 	
+	/**
+	 * 收货地址服务接口
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
+	
 	@Override
 	public PreferentialVo findPreferentialByUser(String userId, StoreInfo storeInfo, BigDecimal totalAmount,
 			List<String> skuIdList, String addressId) throws Exception {
@@ -83,6 +92,17 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 		} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
 			queryCondition.put("type", Constant.TWO);
 			queryCondition.put("addressId", addressId);
+			//到店服务商品根据店铺地址查询
+			if (CollectionUtils.isNotEmpty(skuIdList) && skuIdList.size() == 1) {
+				GoodsStoreSku sku = goodsStoreSkuServiceApi.getById(skuIdList.get(0));
+				if (SpuTypeEnum.fwdDdxfSpu.equals(sku.getSpuTypeEnum())) {
+					MemberConsigneeAddress address = memberConsigneeAddressService.findByStoreId(storeInfo.getId());
+					if (address != null) {
+						queryCondition.put("addressId", address.getId());
+					}
+				}
+			}
+
 		}
 		// 获取用户有效的代金券
 		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);
