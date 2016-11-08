@@ -41,6 +41,7 @@ import net.sf.json.JSONObject;
  *    V1.1.0             2016-09-23           wusw               修改根据消费码查询相应订单信息的方法为批量
  * 	  V1.1.0            2016-09-26			 luosm               查询商家版APP服务店到店消费订单信息
  * 	  V1.1.0            2016-10-10			 luosm 				 查询服务店铺到店消费当天的交易列表,包括订单支付信息和退款信息
+ *    V1.2.0            2016-11-08			 zengjz 			 优化方法
  */
 public interface TradeOrderService {
 
@@ -112,7 +113,7 @@ public interface TradeOrderService {
 	 * @return
 	 * @throws ServiceException
 	 */
-	List<TradeOrderQueryVo> findShippedOrderByParams(Map<String, Object> params, int pageNumber, int pageSize)
+	List<TradeOrderQueryVo> findShippedOrderByParams(Map<String, Object> params)
 			throws ServiceException;
 
 	/**
