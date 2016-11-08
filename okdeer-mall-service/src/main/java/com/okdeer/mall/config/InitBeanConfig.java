@@ -153,11 +153,10 @@ public class InitBeanConfig {
 		chain.addHandlerChain(serviceGoodsCheckService);
 		// 第四步：库存校验
 		chain.addHandlerChain(servStockCheckService);
-		// 第五步：活动查询
-		chain.addHandlerChain(servActivityQueryService);
-		// 第六步：获取服务地址地址
+		// 第五步：获取服务地址地址
 		chain.addHandlerChain(servAddressSearchService);
-		
+		// 第六步：活动查询
+		chain.addHandlerChain(servActivityQueryService);
 		return chain;
 	}
 	
