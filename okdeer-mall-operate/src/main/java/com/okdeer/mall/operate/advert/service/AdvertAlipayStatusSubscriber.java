@@ -26,7 +26,7 @@ import com.okdeer.mall.advert.entity.AdvertResponseResult;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.enums.AdvertIsPayEnum;
 import com.okdeer.mall.operate.advert.constant.AdvertMessageConstant;
-import com.okdeer.mall.system.utils.mapper.JsonMapper;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 
 /**
  * 广告缴费 状态同步

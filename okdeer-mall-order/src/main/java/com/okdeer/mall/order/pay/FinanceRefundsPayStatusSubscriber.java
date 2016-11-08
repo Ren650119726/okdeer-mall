@@ -33,7 +33,7 @@ import com.okdeer.mall.order.pay.entity.FinanceResponseResult;
 import com.okdeer.mall.order.pay.entity.RefuseFinanceResponseResult;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.mall.system.utils.mapper.JsonMapper;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 
