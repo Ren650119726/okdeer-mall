@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.okdeer.mall.activity.label.mapper.ActivityLabelGoodsMapper">
+
+	<resultMap type="com.okdeer.mall.activity.label.entity.ActivityLabelGoods" id="ActivityLabelGoods" >
+		<result property="id" column="id" />
+		<result property="activityId" column="activity_id" />
+		<result property="goodsId" column="goods_id" />
+		<result property="sort" column="sort" />
+	</resultMap>
+	
+	<sql id="columns">
+		id,activity_id,goods_id,sort
+	</sql>
+
+    <select id="listByActivityId" parameterType="string" resultMap="ActivityLabelGoods">
+		select 
+			s.id,
+			s.activity_id,
+			s.goods_id,
+			s.sort, 
+			sku.name as goodsName,
+			si.store_name as storeName
+			from activity_label_goods s
+			left join goods_store_sku sku on (sku.id = s.goods_id)
+			left join store_info si on (si.id = sku.store_id) 
+			where s.activity_id = #{value}
+		order by sort
+	</select>
+
+    <insert id="addBatch" parameterType="list">
+        insert into activity_label_goods(
+			<include refid="columns"/>
+		)values
+		<foreach collection="list" item="item" index="index" separator="," >
+        (
+            #{item.id},
+            #{item.activityId},
+            #{item.goodsId},
+            #{item.sort}
+        )
+		</foreach>
+	</insert>
+
+    <delete id="deleteByActivityId" parameterType="string">
+        delete from activity_label_goods where activity_id = #{value} 
+    </delete>
+    
+</mapper>
