@@ -90,7 +90,7 @@ import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.JsonDateValueProcessor;
-import com.okdeer.mall.system.utils.mapper.JsonMapper;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;

@@ -717,9 +717,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void receivableOrder(String[] ids) throws ServiceException {
+	public void receivableOrder(String[] ids, String paymentUserId) throws ServiceException {
 		if (ids != null && ids.length > 0) {
-			tradeOrderMapper.updatePaymentStatusByIds(ids, PaymentStatusEnum.BACK_SECTION, new Date());
+			tradeOrderMapper.updatePaymentStatusByIds(ids, PaymentStatusEnum.BACK_SECTION, new Date(), paymentUserId);
 		}
 	}
 
@@ -5833,8 +5833,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderId);
 		// 订单状态(0:等待买家付款,1:待发货,2:已取消,3:已发货,4:已拒收,5:已签收(交易完成),6:交易关闭),7:取消中,8:拒收中，11支付确认中
 		int orderStatus = tradeOrder.getStatus().ordinal();
-		if (!(orderStatus == 1 || orderStatus == 11 || orderStatus == 5)) {
-			// 只有支付完成、货到付款、支付确认中的订单，也就是状态为1或者11的订单才返券
+		if (orderStatus == 0) {
 			// 实付为0的到店消费订单，状态为5交易完成的， 也返券
 			logger.info(ORDER_COUPONS_STATUS_CHANGE, orderStatus, orderId, userId);
 			respDto.setMessage(
@@ -5847,26 +5846,23 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		Map<String, Object> map = new HashMap<String, Object>();
 		String storeId = tradeOrder.getStoreId();
 		StoreInfo storeInfo = storeInfoServiceApi.selectByPrimaryKey(storeId);
-		String provinceId = storeInfo.getProvinceId();
-		String cityId = storeInfo.getCityId();
+		//如果店铺信息存在即设置省市ID start 涂志定
+		if(storeInfo != null){
+			// 服务店订单 ，活动范围判定：物流地址
+			map.put("provinceId", storeInfo.getProvinceId());
+			map.put("cityId", storeInfo.getCityId());
+		}
+		//end 涂志定
 		// 订单实付金额
 		map.put("limitAmout", tradeOrder.getActualAmount());
 		if (orderType == 0) {
-			// 实物订单
-			// 订单类型
+			// 实物订单 订单类型
 			map.put("orderType", ActivityCollectOrderTypeEnum.PHYSICAL_ORDER.getValue());
-			map.put("provinceId", provinceId);
-			map.put("cityId", cityId);
 			// 获取消费返券信息并赠送代金券
 			getOrderCouponsInfo(orderId, userId, map, respDto);
 		} else if (orderType == 2 || orderType == 5) {
-			// 服务店订单 ，活动范围判定：物流地址
-			map.put("provinceId", provinceId);
-			map.put("cityId", cityId);
-
 			// 订单类型
 			map.put("orderType", ActivityCollectOrderTypeEnum.SERVICE_STORE_ORDER.getValue());
-
 			// 获取消费返券信息并赠送代金券
 			getOrderCouponsInfo(orderId, userId, map, respDto);
 		} else if (orderType == 3 || orderType == 4) {

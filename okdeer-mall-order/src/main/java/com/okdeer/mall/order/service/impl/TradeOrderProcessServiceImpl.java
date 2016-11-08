@@ -73,7 +73,7 @@ import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
-import com.okdeer.mall.system.utils.mapper.JsonMapper;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 
 import net.sf.json.JSONObject;
 

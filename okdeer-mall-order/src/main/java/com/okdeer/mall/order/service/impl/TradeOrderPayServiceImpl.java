@@ -79,7 +79,7 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
-import com.okdeer.mall.system.utils.mapper.JsonMapper;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 
 /**
  * @DESC:

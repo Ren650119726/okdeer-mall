@@ -587,7 +587,7 @@
 		pick_up_time,order_resource, is_complete,
 		status, total_amount, actual_amount, preferential_price, fare, activity_type,
 		activity_id, activity_item_id,pay_way,
-		remark, invoice, disabled, create_time,
+		remark, invoice, disabled, create_time, received_time, delivery_time,
 		update_time,is_show,pospay,reason,trade_num,user_phone,payment_status,payment_time,income,seller_id,shipments_user_id,consumer_code_status
 	</sql>
 
@@ -1219,6 +1219,9 @@
 				open="(" separator="," close=")">
 				#{item}
 			</foreach>
+		</if>
+		<if test="userId != null and userId != ''">
+			AND ((o.shipments_user_id = #{userId} AND o.pay_way <![CDATA[ <> ]]> 1) OR (o.payment_user_id = #{userId} AND o.pay_way = 1))
 		</if>
 		order by o.create_time ${createTimeSort}
 
@@ -2036,7 +2039,8 @@
 		UPDATE trade_order
 		SET payment_status = #{paymentStatus,jdbcType=TINYINT},
 		payment_time = #{paymentTime,jdbcType=TIMESTAMP},
-		update_time = #{paymentTime,jdbcType=TIMESTAMP}
+		update_time = #{paymentTime,jdbcType=TIMESTAMP},
+		payment_user_id = #{paymentUserId,jdbcType=TIMESTAMP}
 		WHERE
 		<if test="ids != null ">
 			id in
@@ -2829,13 +2833,15 @@
 				tt.fare AS deliverFee
 				FROM trade_order tt LEFT JOIN trade_order_pay tp ON tp.order_id = tt.id
 				WHERE tt.store_id = #{storeId,jdbcType=VARCHAR} 
-				AND tt.disabled = 0 AND tt.shipments_user_id = #{userId,jdbcType=VARCHAR} 
+				AND tt.disabled = 0  
 				AND (
 				(((tt.order_resource = 2 OR tt.pay_way = 0) AND tt.`status` IN(3, 5))
+				    AND tt.shipments_user_id = #{userId,jdbcType=VARCHAR}
 					AND tt.delivery_time > #{startTime,jdbcType=TIMESTAMP}
 				    AND tt.delivery_time <= #{endTime,jdbcType=TIMESTAMP}
 				)  OR
 				(tt.pay_way = 1 AND tt.payment_status = 1
+				    AND tt.payment_user_id = #{userId,jdbcType=VARCHAR}
 			     	AND tt.payment_time > #{startTime,jdbcType=TIMESTAMP} 
 				 	AND tt.payment_time <= #{endTime,jdbcType=TIMESTAMP}
 				))
@@ -3874,6 +3880,9 @@
 		#{startTime,jdbcType=TIMESTAMP})
 		and store_id = #{storeId,jdbcType=VARCHAR}
 		AND disabled = 0
+		<if test="userId != null and userId != ''">
+			AND ((shipments_user_id = #{userId} AND pay_way <![CDATA[ <> ]]> 1) OR (payment_user_id = #{userId} AND pay_way = 1))
+		</if>
 	</select>
 
 	<!-- zengj:统计退款金额及退款优惠金额 -POS销售统计 -->
@@ -3908,6 +3917,9 @@
 		and r.refund_money_time >= #{startTime,jdbcType=TIMESTAMP}
 		and r.store_id = #{storeId,jdbcType=VARCHAR}
 		AND o.disabled = 0
+		<if test="userId != null and userId != ''">
+			AND r.operator = #{userId}
+		</if>
 	</select>
 
 	<!-- zengj:统计优惠金额 -POS销售统计 -->
@@ -3927,6 +3939,9 @@
 		and pay_way in(0,1)
 		and store_id = #{storeId,jdbcType=VARCHAR}
 		AND disabled = 0
+		<if test="userId != null and userId != ''">
+			AND ((shipments_user_id = #{userId} AND pay_way <![CDATA[ <> ]]> 1) OR (payment_user_id = #{userId} AND pay_way = 1))
+		</if>
 	</select>
 
 	<!-- zengj:统计代金券金额 -POS销售统计 -->
@@ -3943,6 +3958,9 @@
 		and pay_way in(0,1)
 		and store_id = #{storeId,jdbcType=VARCHAR}
 		AND disabled = 0
+	    <if test="userId != null and userId != ''">
+			AND ((shipments_user_id = #{userId} AND pay_way <![CDATA[ <> ]]> 1) OR (payment_user_id = #{userId} AND pay_way = 1))
+		</if>
 	</select>
 
 	<!-- zengj:统计配送费金额 -POS销售统计 -->
@@ -3956,6 +3974,9 @@
 		and pay_way in(0,1)
 		and store_id = #{storeId,jdbcType=VARCHAR}
 		AND disabled = 0
+		<if test="userId != null and userId != ''">
+			AND ((shipments_user_id = #{userId} AND pay_way <![CDATA[ <> ]]> 1) OR (payment_user_id = #{userId} AND pay_way = 1))
+		</if>
 	</select>
 
 	<!-- tzd:统计订单各支付方式金额 -->
@@ -3976,6 +3997,9 @@
 		AND o.`delivery_time` >=#{startTime,jdbcType=TIMESTAMP}
 		AND o.`store_id`=#{storeId,jdbcType=VARCHAR}
 		AND o.disabled = 0
+		<if test="userId != null and userId != ''">
+			AND ((o.shipments_user_id = #{userId} AND o.pay_way <![CDATA[ <> ]]> 1) OR (o.payment_user_id = #{userId} AND o.pay_way = 1))
+		</if>
 	</select>
 
 	<!-- tzd:统计退款各支付方式金额 -->
@@ -3997,6 +4021,9 @@
 		AND o.`delivery_time` >= #{startTime,jdbcType=TIMESTAMP}
 		AND o.`store_id`=#{storeId,jdbcType=VARCHAR}
 		AND o.disabled = 0
+		<if test="userId != null and userId != ''">
+			AND r.operator = #{userId}
+		</if>
 	</select>
 
 	<!-- tzd:统计线上线下订单数量 -->
@@ -4020,6 +4047,9 @@
 		o.`payment_time` >=#{startTime,jdbcType=TIMESTAMP})
 		AND o.`store_id`=#{storeId,jdbcType=VARCHAR}
 		AND o.disabled = 0
+		<if test="userId != null and userId != ''">
+			AND ((o.shipments_user_id = #{userId} AND pay_way <![CDATA[ <> ]]> 1) OR (o.payment_user_id = #{userId} AND pay_way = 1))
+		</if>
 	</select>
 	<!-- zengj:查询导出POS销售单列表 -->
 	<select id="selectPosOrderExportList" resultType="java.util.Map"

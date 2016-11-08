@@ -37,14 +37,14 @@
 			<groupId>com.okdeer.base</groupId>
 			<artifactId>okdeer-base-framework</artifactId>
 		</dependency>
-		<dependency>
+<!-- 		<dependency>
 			<groupId>com.okdeer.base</groupId>
 			<artifactId>okdeer-base-manager</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.okdeer.base</groupId>
 			<artifactId>okdeer-base-dal</artifactId>
-		</dependency>
+		</dependency> -->
 		<dependency>
 		  <groupId>com.okdeer.pay</groupId>
 		  <artifactId>pay-api</artifactId>

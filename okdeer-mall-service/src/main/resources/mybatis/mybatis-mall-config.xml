@@ -110,6 +110,7 @@
    		
    		<!-- Begin 友门鹿1.1 added by maojj 2016-09-28增加退款轨迹枚举  -->
    		<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.order.enums.RefundsTraceEnum"/>
+   		<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.order.enums.OrderTraceEnum"/>
    		<!-- End 友门鹿1.1 added by maojj 2016-09-28增加退款轨迹枚举  -->
    		
    		<!-- Begin V1.1.0 add by zhulq 20160930 -->
