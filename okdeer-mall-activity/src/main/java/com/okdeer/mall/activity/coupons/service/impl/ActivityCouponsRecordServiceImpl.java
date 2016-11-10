@@ -340,7 +340,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 */
 	public void insertCopyRecords(String userId){
 		try{
-			activityCouponsRecordBeforeMapper.insertCopyRecords(userId);
+			activityCouponsRecordBeforeMapper.insertCopyRecords(userId,new Date());
 		}catch (Exception e) {
 			//捕获异常不影响注册流程
 			log.error("将预代金劵送到用户的账户中出现异常！",e);

@@ -27,7 +27,7 @@
     FROM 	          
  		activity_coupons_record_before r 
  		INNER JOIN sys_buyer_user u ON r.`collect_user` = u.`phone`
- 	WHERE r.valid_time > NOW()
+ 	WHERE r.valid_time &gt; #{nowDate,jdbcType=TIMESTAMP}
 	 	<if test="userId != null and userId != ''">
 	  		AND  u.id = #{userId,jdbcType=VARCHAR}
 	  	</if>
