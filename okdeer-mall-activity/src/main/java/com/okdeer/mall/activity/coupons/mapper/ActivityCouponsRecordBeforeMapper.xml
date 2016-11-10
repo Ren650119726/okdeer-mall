@@ -21,7 +21,7 @@
     SELECT 
     	DISTINCT
     	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 
-    	  u.id,r.valid_time, r.status, r.order_id,r.room_id
+    	  u.id as collect_user_id,r.valid_time, r.status, r.order_id,r.room_id
     FROM 	          
  		activity_coupons_record_before r 
  		INNER JOIN sys_buyer_user u ON r.`collect_user` = u.`phone`
