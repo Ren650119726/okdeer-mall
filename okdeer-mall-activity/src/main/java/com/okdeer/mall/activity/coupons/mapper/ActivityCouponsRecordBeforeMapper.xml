@@ -17,7 +17,7 @@
   </resultMap>
   
   <!-- 返回到代金劵预领取记录字段  tuzhiding  -->
-  <insert id="getCopyRecords" resultMap="BaseResultMap" >
+  <select id="getCopyRecords" resultMap="BaseResultMap" >
     SELECT 
     	DISTINCT
     	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 
@@ -29,7 +29,7 @@
 	 	<if test="userId != null and userId != ''">
 	  		AND  u.id = #{userId,jdbcType=VARCHAR}
 	  	</if>
- </insert>
+ </select>
  
  	
  
