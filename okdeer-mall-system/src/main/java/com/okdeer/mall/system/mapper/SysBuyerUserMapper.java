@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysBuyerUserPointsExt;
 import com.okdeer.archive.system.entity.SysMemberExtVo;
+import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
@@ -69,4 +70,12 @@ public interface SysBuyerUserMapper extends IBaseCrudMapper {
 	 * @date 2016年9月9日
 	 */
 	List<SysBuyerUser> findByIds(@Param("ids") List<String> ids);
+	
+	/**
+	 * 根据手机号查询用户信息
+	 * @param phone 手机号
+	 * tuzhiding
+	 * @return
+	 */
+	List<SysBuyerUser> selectUserByPhone(@Param("phone") String phone);
 }

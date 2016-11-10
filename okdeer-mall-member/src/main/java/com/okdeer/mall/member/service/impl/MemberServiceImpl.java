@@ -68,6 +68,22 @@ public class MemberServiceImpl implements MemberServiceApi {
 		SysBuyerUser sysBuyerUser = sysBuyerUserMapper.selectByPrimaryKey(id);
 		return sysBuyerUser;
 	}
+	/**
+	 * 根据手机号查询用户信息
+	 * 防止一个号码出现多个用户记录取其中一个
+	 * @param phone 手机号
+	 * tuzhiding
+	 * @return
+	 */
+	@Override
+	public SysBuyerUser selectUserByPhone(String phone) throws ServiceException {
+		List<SysBuyerUser> sysBuyerUser = sysBuyerUserMapper.selectUserByPhone(phone);
+		//防止一个号码出现多个用户记录取其中一个
+		if(sysBuyerUser != null && sysBuyerUser.size() > 0 ){
+			return sysBuyerUser.get(0);
+		}
+		return null;
+	}
 
 	@Override
 	public PageUtils<SysBuyerUserPointsExt> pointsExtSelectByParams(Map<String, Object> map, Integer pageNumber,

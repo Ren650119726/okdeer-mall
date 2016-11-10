@@ -11,7 +11,7 @@
 	</resultMap>
 	
 	<sql id="columns">
-		id,ip,machine_code,user_id,create_time
+		id,ip,machine_code,user_id,advert_id,operate_name,create_time
 	</sql>
 	
 	<insert id="save" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityPageView">
@@ -22,6 +22,8 @@
             #{ip},
             #{machineCode},
             #{userId},
+            #{advertId},
+            #{operateName},
             #{createTime}
         )
 	</insert>

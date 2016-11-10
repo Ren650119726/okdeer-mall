@@ -578,4 +578,16 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		return advertMapper.listGoodsForAdvert(map);
 	}
 	// end  add　　by zhangkn  获取广告商品列表
+	
+	/**
+	 * 根据活动url查询广告信息
+	 * @param targetUrl 活动url
+	 * tuzhiding
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	@Override
+	public ColumnAdvert getAdvertForTargetURl(String targetUrl) {
+		return this.advertMapper.getAdvertForTargetURl(targetUrl);
+	}
 }
