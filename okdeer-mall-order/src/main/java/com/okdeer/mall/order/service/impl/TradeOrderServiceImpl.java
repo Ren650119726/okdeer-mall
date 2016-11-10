@@ -5995,7 +5995,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		
 		// Begin added by maojj 2016-11-10
-		if(orderTime != null || orderTime.before(collCoupons.get(0).getStartTime())){
+		if(orderTime != null && orderTime.before(collCoupons.get(0).getStartTime())){
 			// 如果下单时间在活动开始时间之前，则不送代金券
 			logger.info(ORDER_COUPONS_NOT_ACTIVITY, orderId, userId);
 			respDto.setMessage(
