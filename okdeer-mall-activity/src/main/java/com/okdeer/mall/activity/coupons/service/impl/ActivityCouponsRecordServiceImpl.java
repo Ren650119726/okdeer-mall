@@ -304,7 +304,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		//根据用户手机号码及活动id查询该号码是否领取过 
 		if (activityCouponsRecordBeforeMapper.countCouponsAllId(phone, collectId) > 0) {
 			map.put("code", 102);
-			map.put("msg", "每人限领1张，不要贪心哦！");
+			map.put("msg", "您已经领取了，快去友门鹿app注册使用吧！");
 			checkFlag = false;
 		}else{
 			//根据代金劵列表逐个领取，当出现一个代金劵领取异常即反馈错误给前端
@@ -628,6 +628,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		}
 		// 当前日期已经领取的数量
 		int dailyCirculation = activityCouponsRecordMapper.selectCountByParams(record);
+		// 当前代金劵日已经预领取领取的数量
+		int dailyBefore = activityCouponsRecordBeforeMapper.getCountByDayParams(record);
+		dailyCirculation = dailyCirculation + dailyBefore;
 		if(collect.getDailyCirculation() != null){
 			// 获取当前登陆用户已领取的指定代金券数量
 			if (dailyCirculation >= Integer.parseInt(collect.getDailyCirculation())) {
@@ -635,7 +638,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				map.put("msg", "来迟啦！券已抢完，明天早点哦");
 				return false;
 			}
-			
 		}
 		return true;
 	}

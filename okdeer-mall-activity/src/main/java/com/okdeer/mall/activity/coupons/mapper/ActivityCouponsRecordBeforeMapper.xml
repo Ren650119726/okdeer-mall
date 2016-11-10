@@ -61,5 +61,32 @@
 		  	AND c.id = #{collectId,jdbcType=VARCHAR}
 		  </if>
    </select>
+   
+    <!-- tuzhiding:查询代金劵每日领取数量 -->
+	<select id="getCountByDayParams" resultType="int" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
+	  SELECT count(1)
+	  FROM activity_coupons_record_before 
+	  WHERE  1=1
+	  <!-- 代金券领取活动（注册活动）id -->
+	  <if test="couponsCollectId != null and couponsCollectId != ''">
+	    AND coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR}
+	  </if>
+	  <!-- 代金券id -->
+	  <if test="couponsId != null and couponsId != ''">
+	    AND coupons_id = #{couponsId,jdbcType=VARCHAR}
+	  </if>
+	  <!-- 活动类型 -->
+	  <if test="collectType != null">
+	     AND collect_type = #{collectType,jdbcType=TINYINT}
+	  </if>
+	  <!-- 领取状态 -->
+	  <if test="status != null">
+	     AND `status` = #{status,jdbcType=TINYINT}
+	  </if>
+	  <!-- 领取时间-->
+	  <if test="collectTime != null">
+	     AND collect_time = #{collectTime}
+	  </if>	  
+	</select>
       
 </mapper> 

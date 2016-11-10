@@ -87,7 +87,9 @@
 	<select id="getAdvertForTargetURl" resultMap="columnAdvertRsMap">
 		SELECT <include refid="base_column_list" />
 		FROM column_advert
-		WHERE target_url  LIKE CONCAT('%',#{targetUrl},'%')
+		WHERE 
+		disabled =0 AND
+		target_url  LIKE CONCAT('%',#{targetUrl},'%')
 	</select>
 	
 <!-- update by  zhulq 将未开始的广告置成开始 必须要审核通过  -->

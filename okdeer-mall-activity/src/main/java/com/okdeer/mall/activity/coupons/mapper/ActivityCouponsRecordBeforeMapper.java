@@ -1,11 +1,10 @@
 package com.okdeer.mall.activity.coupons.mapper;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 
 /**
  * @DESC: 代金劵预领取记录操作类
@@ -21,6 +20,10 @@ public interface ActivityCouponsRecordBeforeMapper extends IBaseCrudMapper {
 
 	
 	int insertCopyRecords(@Param("userId")String userId) throws ServiceException;
+	
+	int getCountByDayParams(ActivityCouponsRecord activityCouponsRecord);
+	
+	
 	/**
 	 * 根据代金劵活动id代金劵预领取统计
 	 * tuzhiding
