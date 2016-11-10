@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.label.entity.ActivityLabel;
 import com.okdeer.mall.activity.label.entity.ActivityLabelGoods;
 import com.okdeer.mall.activity.label.mapper.ActivityLabelGoodsMapper;
@@ -30,7 +32,7 @@ import com.okdeer.mall.activity.label.service.ActivityLabelService;
  *		重构4.1			 2016年11月8日 			zhagnkn
  */
 @Service
-public class ActivityLabelServiceImpl implements ActivityLabelService {
+public class ActivityLabelServiceImpl extends BaseServiceImpl implements ActivityLabelService {
 
 	private static final Logger log = Logger.getLogger(ActivityLabelServiceImpl.class);
 
@@ -38,6 +40,11 @@ public class ActivityLabelServiceImpl implements ActivityLabelService {
 	private ActivityLabelMapper activityLabelMapper;
 	@Autowired
 	private ActivityLabelGoodsMapper activityLabelGoodsMapper;
+	
+	@Override
+	public IBaseMapper getBaseMapper() {
+		return activityLabelMapper;
+	}
 	
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -133,23 +140,5 @@ public class ActivityLabelServiceImpl implements ActivityLabelService {
 	@Override
 	public List<ActivityLabelGoods> listActivityLabelGoods(String activityId) throws Exception {
 		return activityLabelGoodsMapper.listByActivityId(activityId);
-	}
-
-	@Override
-	public <Entity> int add(Entity entity) throws Exception {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public <Entity> int update(Entity entity) throws Exception {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int delete(String id) throws Exception {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 }

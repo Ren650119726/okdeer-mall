@@ -45,36 +45,6 @@
 		order by s.create_time desc
 	</select>
 	
-	<select id="listGoods" parameterType="map" resultType="map">
-		select 
-			s.id,
-			s.name,
-			si.store_name as storeName,
-			s.online_price as onlinePrice,
-			pic.url as url,
-			cate.`name` as categoryName
-			from goods_store_sku s 
-			left join store_info si on (s.store_id = si.id) 
-			left join goods_store_sku_picture pic on (pic.store_sku_id = s.id and pic.type = 1)
-			left join goods_store_spu spu on (s.store_spu_id = spu.id)
-			left join goods_spu_category cate on (spu.spu_category_id = cate.id)
-			where s.disabled = 0 
-			and s.type in (3,4) 
-			<if test="goodsName != null and goodsName != ''">
-				and s.name like concat('%',#{goodsName},'%' )
-			</if>
-			<if test="storeName != null and storeName != ''">
-				and si.store_name like concat('%',#{storeName},'%' )
-			</if>
-			<if test="goodsIdList != null">
-				and s.id in
-				<foreach item="item" index="index" collection="goodsIdList" open="(" separator="," close=")">  
-	  				#{item}  
-	 			</foreach>  
- 			</if>
-		order by s.update_time desc 
-	</select>
-
     <insert id="add" parameterType="com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommend">
         INSERT INTO activity_service_goods_recommend
 	    <trim prefix="(" suffix=")" suffixOverrides="," >
@@ -139,6 +109,42 @@
     <select id="findById" resultMap="ActivityServiceGoodsRecommend" parameterType="string">
         select <include refid="columns"/> from activity_service_goods_recommend where id = #{value} 
     </select>
+    
+    <select id="delete" parameterType="string">
+        delete from activity_service_goods_recommend where id = #{value} 
+    </select>
+    
+    <!-- 上面是标准的crud -->
+    
+    <select id="listGoods" parameterType="map" resultType="map">
+		select 
+			s.id,
+			s.name,
+			si.store_name as storeName,
+			s.online_price as onlinePrice,
+			pic.url as url,
+			cate.`name` as categoryName
+			from goods_store_sku s 
+			left join store_info si on (s.store_id = si.id) 
+			left join goods_store_sku_picture pic on (pic.store_sku_id = s.id and pic.type = 1)
+			left join goods_store_spu spu on (s.store_spu_id = spu.id)
+			left join goods_spu_category cate on (spu.spu_category_id = cate.id)
+			where s.disabled = 0 
+			and s.type in (3,4) 
+			<if test="goodsName != null and goodsName != ''">
+				and s.name like concat('%',#{goodsName},'%' )
+			</if>
+			<if test="storeName != null and storeName != ''">
+				and si.store_name like concat('%',#{storeName},'%' )
+			</if>
+			<if test="goodsIdList != null">
+				and s.id in
+				<foreach item="item" index="index" collection="goodsIdList" open="(" separator="," close=")">  
+	  				#{item}  
+	 			</foreach>  
+ 			</if>
+		order by s.update_time desc 
+	</select>
 
     <update id="updateBatchStatus" parameterType="map">
     	update activity_service_goods_recommend set status = #{status} where id in 

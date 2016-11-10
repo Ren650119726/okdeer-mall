@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.label.entity.ActivityLabel;
 
 /**
@@ -13,35 +14,7 @@ import com.okdeer.mall.activity.label.entity.ActivityLabel;
  * @date 2016-11-04 下午3:12:43
  * @copyright ©2005-2020 yschome.com Inc. All rights reserved
  */
-public interface ActivityLabelMapper {
-	
-	/**
-	 * @Description: 保存
-	 * @param activityLabel 标签对象
-	 * @throws Exception
-	 * @author YSCGD
-	 * @date 2016年11月4日
-	 */
-	void add(ActivityLabel activityLabel) throws Exception;
-
-	/**
-	 * @Description: 修改
-	 * @param activityLabel
-	 * @param goodsIds
-	 * @throws Exception
-	 * @author YSCGD
-	 * @date 2016年11月4日
-	 */
-	void update(ActivityLabel activityLabel) throws Exception;
-
-	/**
-	 * @Description: 通过id取对象
-	 * @param id
-	 * @return
-	 * @author YSCGD
-	 * @date 2016年11月4日
-	 */
-	ActivityLabel findById(String id);
+public interface ActivityLabelMapper extends IBaseMapper{
 	
 	/**
 	 * @Description: 查询标签列表

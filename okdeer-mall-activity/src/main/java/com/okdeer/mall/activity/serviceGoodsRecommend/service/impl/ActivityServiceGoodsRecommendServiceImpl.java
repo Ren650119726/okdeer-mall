@@ -15,6 +15,8 @@ import com.github.pagehelper.PageHelper;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommend;
 import com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommendArea;
 import com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommendGoods;
@@ -35,7 +37,7 @@ import com.okdeer.mall.activity.serviceGoodsRecommend.service.ActivityServiceGoo
  *		重构4.1			 2016年11月8日 			zhagnkn
  */
 @Service
-public class ActivityServiceGoodsRecommendServiceImpl
+public class ActivityServiceGoodsRecommendServiceImpl extends BaseServiceImpl
 		implements ActivityServiceGoodsRecommendService{
 
 	private static final Logger log = Logger.getLogger(ActivityServiceGoodsRecommendServiceImpl.class);
@@ -48,6 +50,12 @@ public class ActivityServiceGoodsRecommendServiceImpl
 	private ActivityServiceGoodsRecommendAreaMapper recommendAreaMapper;
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
+	
+	
+	@Override
+	public IBaseMapper getBaseMapper() {
+		return recommendMapper;
+	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -180,18 +188,4 @@ public class ActivityServiceGoodsRecommendServiceImpl
 		return recommendAreaMapper.listByActivityId(activityId);
 	}
 
-	@Override
-	public <Entity> int add(Entity entity) throws Exception {
-		return 0;
-	}
-
-	@Override
-	public <Entity> int update(Entity entity) throws Exception {
-		return 0;
-	}
-
-	@Override
-	public int delete(String id) throws Exception {
-		return 0;
-	}
 }
