@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper" >
+  
+  <!-- 返回到代金劵预领取记录  -->
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="collect_type" property="collectType" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsType" jdbcType="TINYINT" />
+    <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
+    <result column="coupons_collect_id" property="couponsCollectId" jdbcType="VARCHAR" />
+    <result column="collect_time" property="collectTime" jdbcType="TIMESTAMP" />
+    <result column="collect_user" property="collectUser" jdbcType="VARCHAR" />
+    <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
+    <result column="status" property="status" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum" jdbcType="TINYINT" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="room_id" property="roomId" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <!-- 返回到代金劵预领取记录字段  tuzhiding  -->
+  <insert id="insertCopyRecords">
+    INSERT INTO activity_coupons_record (id, collect_type, coupons_id, coupons_collect_id, 
+    					collect_time, collect_user_id, valid_time, STATUS, order_id, room_id)
+    SELECT 
+    	DISTINCT
+    	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 
+    	  u.id,r.valid_time, r.status, r.order_id,r.room_id
+    FROM 	          
+ 		activity_coupons_record_before r 
+ 		INNER JOIN sys_buyer_user u ON r.`collect_user` = u.`phone`
+ 	WHERE r.valid_time > NOW()
+	 	<if test="userId != null and userId != ''">
+	  		AND  u.id = #{userId,jdbcType=VARCHAR}
+	  	</if>
+ </insert>
+ 
+  <!-- 插入代金劵预领取记录字段 tuzhiding  -->
+  <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore" >
+    insert into activity_coupons_record_before (id, collect_type, coupons_id, 
+      coupons_collect_id, collect_time, collect_user, 
+      valid_time, status, order_id, 
+      room_id)
+    values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=BIT}, #{couponsId,jdbcType=VARCHAR}, 
+      #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUser,jdbcType=VARCHAR}, 
+      #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=BIT}, #{orderId,jdbcType=VARCHAR}, 
+      #{roomId,jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- 根据代金劵活动id代金劵预领取统计  -->
+  <select id="countCouponsAllId" resultType="int" >
+     SELECT 
+		  count(1)
+		FROM
+		  activity_coupons_record_before r 
+		  inner JOIN activity_collect_coupons c 
+		    ON r.coupons_collect_id = c.id 
+		WHERE c.disabled = 0  
+		  <if test="collectUser != null and collectUser != ''">
+		  	AND r.collect_user = #{collectUser,jdbcType=VARCHAR}
+		  </if>
+		  <if test="collectId != null and collectId != ''">
+		  	AND c.id = #{collectId,jdbcType=VARCHAR}
+		  </if>
+   </select>
+      
+</mapper> 
