@@ -1615,8 +1615,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						isWeigh = true;
 					}
 					BigDecimal number = convertScaleToKg(item.getQuantity(), isWeigh);
-					// 优惠单价
-					BigDecimal price = item.getUnitPrice().subtract(item.getPreferentialPrice().divide(number, 4, BigDecimal.ROUND_HALF_UP));
+					// 优惠单价.订单实际收入除以商品数量得到的价格
+					BigDecimal price = item.getIncome().divide(number, 4, BigDecimal.ROUND_HALF_UP);
 					detail.setPrice(price);
 				}
 				// add by 便利店优惠金额单价  lijun 20161110 end
