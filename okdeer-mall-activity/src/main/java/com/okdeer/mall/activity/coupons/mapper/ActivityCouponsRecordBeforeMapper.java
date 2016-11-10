@@ -23,7 +23,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 public interface ActivityCouponsRecordBeforeMapper extends IBaseCrudMapper {
 
 	
-	List<ActivityCouponsRecord> getCopyRecords(@Param("userId")String userId,@Param("nowDate")Date nowDate) throws ServiceException;
+	List<ActivityCouponsRecord> getCopyRecords(@Param("userId")String userId,@Param("nowDate")Date nowDate,@Param("phone")String phone) throws ServiceException;
 	
 	int getCountByDayParams(ActivityCouponsRecord activityCouponsRecord);
 	

@@ -338,9 +338,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * 注册送完代金劵后将预代金劵送到用户的账户中
 	 *  @param userId 用户id
 	 */
-	public void insertCopyRecords(String userId){
+	public void insertCopyRecords(String userId,String phone){
 		try{
-			List<ActivityCouponsRecord> list = activityCouponsRecordBeforeMapper.getCopyRecords(userId,new Date());
+			List<ActivityCouponsRecord> list = activityCouponsRecordBeforeMapper.getCopyRecords(userId,new Date(),phone);
 			if(list != null && list.size() > 0 ){
 				activityCouponsRecordMapper.insertSelectiveBatch(list);
 			}
