@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.skinmanager.mapper.SkinManagerMapper" >
+  <resultMap id="SkinResultMap" type="com.okdeer.mall.operate.entity.SkinManagerVo" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="activity_name" property="activityName" jdbcType="VARCHAR" />
+    <result column="skin_module" property="skinModule" jdbcType="VARCHAR" javaType="com.okdeer.mall.operate.enums.SkinModule"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+    <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+    <result column="status" property="status" jdbcType="VARCHAR" javaType="com.okdeer.mall.operate.enums.SkinManagerStatus"/>
+	<collection property="detail" ofType="com.okdeer.mall.operate.entity.SkinManagerDetailVo" >
+	       <id  column="id" property="detailId" jdbcType="VARCHAR" /> 
+	       <result column="skin_manager_id" property="skinManagerId" jdbcType="VARCHAR" />
+	       <result column="module_name" property="moduleName" jdbcType="VARCHAR" />
+	       <result column="init_module" property="initModule" jdbcType="VARCHAR" />
+	       <result column="init_img" property="initImg" jdbcType="VARCHAR" />
+	       <result column="selected_img" property="selectedImg" jdbcType="VARCHAR" />
+	</collection > 
+  </resultMap>
+ <!--  <resultMap type="com.okdeer.mall.operate.entity.SkinManagerVo" id="SkinResultMap" extends="baseResultMap">
+	  
+  </resultMap> -->
+  <sql id="Base_Column_List" >
+    id,activity_name,skin_module,create_time,start_time,end_time,status
+  </sql>
+  <sql id="Get_Column_List" >
+    id,name,start_time,end_time,type,is_cash_delivery,identity_limit,status,store_id
+  </sql>
+
+     <!-- 根据条件搜索皮肤列表 -->
+  <select id="findSkinList" resultMap="SkinResultMap" parameterType="com.okdeer.mall.operate.entity.SkinManagerVo">
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM operate_skin_manager 
+     WHERE 1=1
+       <!-- 未被删除的 -->
+       AND disabled = 0
+       <!-- 活动名称 -->
+       <if test="activityName != null and activityName != ''">
+         AND activity_name LIKE CONCAT('%',#{activityName,jdbcType=VARCHAR},'%') 
+       </if>
+       <!-- 活动状态 -->
+       <if test="status != null">
+         AND status = #{status,jdbcType=VARCHAR}
+       </if>
+       <!-- 创建时间 -->
+       <if test="createTimeStart != null">
+         AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="createTimeEnd != null">
+         AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <!-- 活动开始时间 -->
+       <if test="startTime != null">
+         AND start_time <![CDATA[ >= ]]> #{startTime,jdbcType=TIMESTAMP}
+       </if>
+       <!-- 活动结束时间 -->
+       <if test="endTime != null">
+         AND end_time <![CDATA[ <= ]]> #{endTime,jdbcType=TIMESTAMP}
+       </if>
+       ORDER BY create_time DESC
+  </select>
+  
+ 
+   <!-- 由于mybatis升级,判断是否为字符串写法不支持   modify  by  wusw  20160721 -->
+  <!-- 增加活动皮肤 -->
+  <insert id="addSkin" parameterType="com.okdeer.mall.operate.entity.SkinManagerVo" >
+    INSERT INTO operate_skin_manager
+      (id,
+	  activity_name,
+	  skin_module,
+	  start_time,
+	  end_time,
+	  create_time,
+	  create_user_id,
+	  update_time,
+	  update_user_id,
+	  status
+	  ) 
+  	values(#{id,jdbcType=VARCHAR},
+	  #{activityName,jdbcType=VARCHAR},
+	  #{skinModule,jdbcType=VARCHAR},
+	  #{startTime,jdbcType=TIMESTAMP},
+	  #{endTime,jdbcType=TIMESTAMP},
+	  #{createTime,jdbcType=TIMESTAMP},
+	  #{createUserId,jdbcType=VARCHAR},
+	  #{updateTime,jdbcType=TIMESTAMP},
+	  #{updateUserId,jdbcType=VARCHAR},
+	  #{status,jdbcType=VARCHAR}
+	  )
+  </insert>
+  <!-- 增加活动皮肤详细 -->
+  <insert id="addSkinDetail">
+    INSERT INTO operate_skin_manager_detail(
+	    id,
+		skin_manager_id,
+		module_name,
+		init_module,
+		init_img_url,
+		selected_img_url,
+		create_time,
+		create_user_id,
+		update_time,
+		update_user_id
+		)
+	values
+	 <foreach collection="detail" item="d" separator=",">
+         <trim>
+             (
+		  #{d.detailId,jdbcType=VARCHAR},
+		  #{d.skinManagerId,jdbcType=VARCHAR},
+		  #{d.moduleName,jdbcType=VARCHAR},
+		  #{d.initModule,jdbcType=VARCHAR},
+		  #{d.initImgUrl,jdbcType=VARCHAR},
+		  #{d.selectedImgUrl,jdbcType=VARCHAR},
+		  #{d.createTime,jdbcType=TIMESTAMP},
+		  #{d.createUserId,jdbcType=VARCHAR},
+		  #{d.updateTime,jdbcType=TIMESTAMP},
+		  #{d.updateUserId,jdbcType=VARCHAR}
+	  		)
+	     </trim>
+     </foreach>
+  </insert>
+ <!-- 修改皮肤信息 -->
+  <update id="updateSkin"  parameterType="com.okdeer.mall.operate.entity.SkinManagerVo" >
+    UPDATE operate_skin_manager_detail
+    <set >
+      <if test="activityName != null and activityName != ''" >
+        activity_name = #{activityName,jdbcType=VARCHAR},
+      </if>
+      <if test="skinModule != null and skinModule != ''" >
+        skin_module = #{skinModule,jdbcType=TINYINT},
+      </if>
+      <if test="startTime != null" >
+        start_time = #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null" >
+        end_time = #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUserId != null and updateUserId != ''" >
+        update_user_id = #{updateUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  <!-- 修改皮肤详细信息 -->
+  <update id="updateSkinDetail" parameterType="java.util.List" >
+	      <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+				 UPDATE operate_skin_manager_detail
+				 <set >
+				      <if test="moduleName != null and moduleName != ''" >
+				        module_name = #{item.moduleName,jdbcType=VARCHAR},
+				      </if>
+				      <if test="initModule != null and initModule != ''" >
+				        init_module = #{item.initModule,jdbcType=VARCHAR},
+				      </if>
+				      <if test="initImg != null">
+				        init_img = #{item.initImg,jdbcType=VARCHAR},
+				      </if>
+				      <if test="selectedImg != null" >
+				        selected_img = #{item.selectedImg,jdbcType=VARCHAR},
+				      </if>
+				      <if test="updateUserId != null and updateUserId != ''" >
+				        update_user_id = #{item.updateUserId,jdbcType=VARCHAR},
+				      </if>
+				      <if test="updateTime != null" >
+				        update_time = #{item.updateTime,jdbcType=TIMESTAMP},
+				      </if>
+			    </set>
+			    WHERE id = #{id,jdbcType=VARCHAR}
+		 </foreach>
+		 
+    </update>
+  <!-- 根据主键ID获取活动信息 -->
+  <select id="getSkinById" resultMap="SkinResultMap" parameterType="java.lang.String">
+      SELECT
+       <include refid="Base_Column_List" />
+     FROM operate_skin_manager 
+     WHERE disabled = 0 and id = #{id,jdbcType=VARCHAR}
+  </select>
+ 
+  <!--根据皮肤id,逻辑活动皮肤  -->
+  <update id="deleteSkinById" parameterType="com.okdeer.mall.operate.entity.SkinManagerVo">
+	 UPDATE operate_skin_manager
+	 SET disabled = 1,
+	     update_time = #{updateTime,jdbcType=TIMESTAMP},
+	     update_user_id = #{updateUserId,jdbcType=VARCHAR}
+	 WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  <!--根据皮肤id,关闭活动皮肤  -->
+  <update id="closeSkinById" parameterType="com.okdeer.mall.operate.entity.SkinManagerVo">
+	 UPDATE operate_skin_manager
+	 SET status = #{status,jdbcType=VARCHAR},
+	     update_time = #{updateTime,jdbcType=TIMESTAMP},
+	     update_user_id = #{updateUserId,jdbcType=VARCHAR}
+	 WHERE disabled = 0 and id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+ <!-- 查询某固定时间段内是否有运行中的皮肤 -->
+   <select id="selectSkinByTime" resultType="int" parameterType="com.okdeer.mall.operate.entity.SkinManagerVo" >
+    SELECT 	count(1)
+     FROM operate_skin_manager 
+     <!-- 未被删除的 -->
+     WHERE disabled = 0
+       <!-- 状态为未开始和进行中 -->
+       AND status <![CDATA[ >= ]]> 2      
+       AND (#{startTime,jdbcType=TIMESTAMP} BETWEEN start_time and end_time 
+       OR #{endTime,jdbcType=TIMESTAMP} BETWEEN start_time and end_time 
+       OR (start_time <![CDATA[ >= ]]> #{startTime,jdbcType=TIMESTAMP} and end_time <![CDATA[ <= ]]> #{endTime,jdbcType=TIMESTAMP}))
+  </select>
+  
+  
+</mapper>
