@@ -75,6 +75,14 @@
     from sys_buyer_user
     where id = #{id,jdbcType=VARCHAR}
   </select>
+   <!-- 根据会员手机号码查询会员信息 -->
+   <select id="selectUserByPhone" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from sys_buyer_user
+    where phone = #{phone,jdbcType=VARCHAR}
+  </select>
+  
   <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
     SELECT 
     <include refid="Base_Column_List" />

@@ -132,7 +132,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @param lstRecords
 	 * @return
 	 */
-	public int insertSelectiveBatch(List<ActivityCouponsRecord> lstRecords);
+	public int insertSelectiveBatch(List<ActivityCouponsRecord> list);
 
 	/**
 	 * 
