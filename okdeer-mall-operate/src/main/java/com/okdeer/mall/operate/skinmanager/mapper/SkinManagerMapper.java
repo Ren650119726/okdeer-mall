@@ -112,4 +112,13 @@ public interface SkinManagerMapper extends IBaseCrudMapper{
 	 */
 	public SkinManagerVo getSkinById(String skinId);
 
+	/**
+	 * @Description: 通过活动皮肤名称查询 用于校验
+	 * @param skinManagerVo
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月10日
+	 */
+	public int selectSkinCountByName(SkinManagerVo skinManagerVo);
+
 }

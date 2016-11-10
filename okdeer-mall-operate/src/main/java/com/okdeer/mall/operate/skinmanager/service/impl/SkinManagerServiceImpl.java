@@ -157,6 +157,6 @@ public class SkinManagerServiceImpl implements ISkinManagerServiceApi {
 	@Override
 	public int selectSkinCountByName(SkinManagerVo skinManagerVo) {
 		// TODO Auto-generated method stub
-		return 0;
+		return skinManagerMapper.selectSkinCountByName(skinManagerVo);
 	}
 }
