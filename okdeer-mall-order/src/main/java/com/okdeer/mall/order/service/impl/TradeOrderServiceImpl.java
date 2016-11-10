@@ -5869,7 +5869,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderId);
 		// 订单状态(0:等待买家付款,1:待发货,2:已取消,3:已发货,4:已拒收,5:已签收(交易完成),6:交易关闭),7:取消中,8:拒收中，11支付确认中
 		int orderStatus = tradeOrder.getStatus().ordinal();
-		if (orderStatus == 0) {
+		if (orderStatus == 0 || orderStatus == 2 || orderStatus == 11 || orderStatus == 12 ) {
 			// 实付为0的到店消费订单，状态为5交易完成的， 也返券
 			logger.info(ORDER_COUPONS_STATUS_CHANGE, orderStatus, orderId, userId);
 			respDto.setMessage(
