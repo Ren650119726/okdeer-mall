@@ -772,11 +772,17 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 				}
 
 				tradeOrderPay.setReturns(result.getFlowNo());
+				// Begin V1.2 modified by maojj 2016-11-09
 				if (orderType == 1) {
+					// 团购服务订单
 					tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
+				} else if (orderType == OrderTypeEnum.SERVICE_STORE_ORDER.ordinal() ){
+					// 上门服务订单
+					tradeOrder.setStatus(OrderStatusEnum.WAIT_RECEIVE_ORDER);
 				} else {
 					tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
 				}
+				// End V1.2 modified by maojj 2016-11-09
 				tradeOrder.setTradeNum(result.getTradeNum());
 				tradeOrder.setTradeOrderPay(tradeOrderPay);
 				updateWithApply(tradeOrder);
