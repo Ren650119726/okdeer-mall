@@ -7,7 +7,7 @@
 package com.okdeer.mall.operate.skinmanager.service;
 
 import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.mall.operate.entity.SkinManagerVo;
+import com.okdeer.mall.operate.dto.SkinManagerDto;
 
 /**
  * ClassName: ISkinManagerService 
@@ -22,6 +22,7 @@ import com.okdeer.mall.operate.entity.SkinManagerVo;
  */
 
 public interface ISkinManagerService {
+
 	/**
 	 * 
 	 * @Description: 根据条件查询皮肤列表
@@ -30,7 +31,7 @@ public interface ISkinManagerService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public PageUtils<SkinManagerVo> findSkinList(SkinManagerVo skinManagerVo,int pageNumber,int pageSize);
+	public PageUtils<SkinManagerDto> findSkinList(SkinManagerDto skinManagerVo,int pageNumber,int pageSize);
 	
 	/**
 	 * 
@@ -40,27 +41,7 @@ public interface ISkinManagerService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public int addSkin(SkinManagerVo skinManagerVo,String userId);
-	
-	/**
-	 * 
-	 * @Description: 增加活动皮肤详细
-	 * @param skinManagerVo
-	 * @return   
-	 * @author xuzq01
-	 * @date 2016年11月3日
-	 */
-	public int addSkinDetail(SkinManagerVo skinManagerVo);
-	
-	/**
-	 * 
-	 * @Description: 编辑修改皮肤
-	 * @param skinManagerVo
-	 * @return   
-	 * @author xuzq01
-	 * @date 2016年11月3日
-	 */
-	public int updateSkin(SkinManagerVo skinManagerVo,String userId);
+	public void addSkin(SkinManagerDto skinManagerVo,String userId);
 	
 	/**
 	 * 
@@ -70,17 +51,18 @@ public interface ISkinManagerService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public int updateSkinDetail(SkinManagerVo skinManagerVo);
+	public void updateSkin(SkinManagerDto skinManagerVo,String userId);
 	
 	/**
 	 * 
-	 * @Description: 通过id获取皮肤
+	 * @Description: TODO
 	 * @param skinId
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年11月4日
 	 */
-	public SkinManagerVo getSkinById(String skinId);
+	public SkinManagerDto getSkinById(String skinId);
+	
 	/**
 	 * 
 	 * @Description: 逻辑删除活动皮肤
@@ -89,7 +71,7 @@ public interface ISkinManagerService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public int deleteSkinById(String skinId);
+	public void deleteSkinById(String skinId,String userId);
 	
 	/**
 	 * 
@@ -99,8 +81,7 @@ public interface ISkinManagerService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public int closeSkinById(String skinId);
-	
+	public void closeSkinById(String skinId,String userId);
 	/**
 	 * 
 	 * @Description: 通过时间查询皮肤 校验在同一时间内是否存在另外一个活动
@@ -109,5 +90,14 @@ public interface ISkinManagerService {
 	 * @author xuzq01
 	 * @date 2016年11月4日
 	 */
-	public int selectSkinByTime(SkinManagerVo skinManagerVo);
+	public int selectSkinByTime(SkinManagerDto skinManagerVo);
+
+	/**
+	 * @Description: 通过名称查询皮肤数量
+	 * @param skinManagerVo
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月8日
+	 */
+	public int selectSkinCountByName(SkinManagerDto skinManagerVo);
 }

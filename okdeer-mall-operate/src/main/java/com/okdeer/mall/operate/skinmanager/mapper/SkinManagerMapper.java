@@ -11,8 +11,8 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseCrudMapper;
-import com.okdeer.mall.operate.entity.SkinManagerDetailVo;
-import com.okdeer.mall.operate.entity.SkinManagerVo;
+import com.okdeer.mall.operate.dto.SkinManagerDetailDto;
+import com.okdeer.mall.operate.dto.SkinManagerDto;
 
 /**
  * ClassName: SkinManagerMapper 
@@ -36,7 +36,7 @@ public interface SkinManagerMapper extends IBaseCrudMapper{
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public List<SkinManagerVo> findSkinList(SkinManagerVo skinManagerVo);
+	public List<SkinManagerDto> findSkinList(SkinManagerDto skinManagerVo);
 	
 	/**
 	 * 
@@ -46,7 +46,7 @@ public interface SkinManagerMapper extends IBaseCrudMapper{
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public int addSkin(SkinManagerVo skinManagerVo);
+	public int addSkin(SkinManagerDto skinManagerVo);
 	/**
 	 * 
 	 * @Description: 编辑修改皮肤
@@ -55,35 +55,35 @@ public interface SkinManagerMapper extends IBaseCrudMapper{
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public int updateSkin(SkinManagerVo skinManagerVo);
+	public int updateSkin(SkinManagerDto skinManagerVo);
 	
 	/**
 	 * 
 	 * @Description: 修改皮肤详情
+	 * @param detail
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月3日
+	 */
+	public int updateSkinDetail(@Param(value = "detail") List<SkinManagerDetailDto> detail);
+	/**
+	 * 
+	 * @Description: 逻辑删除活动皮肤
 	 * @param skinManagerVo
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public int updateSkinDetail(SkinManagerDetailVo skinManagerDetailVo);
-	/**
-	 * 
-	 * @Description: 逻辑删除活动皮肤
-	 * @param skinId
-	 * @return   
-	 * @author xuzq01
-	 * @date 2016年11月3日
-	 */
-	public int deleteSkinById(SkinManagerVo skinManagerVo);
+	public int deleteSkinById(SkinManagerDto skinManagerVo);
 	
 	/**
 	 * @Description: 修改状态 关闭活动皮肤
-	 * @param skinId
+	 * @param skinManagerVo
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年11月5日
 	 */
-	public int closeSkinById(SkinManagerVo skinManagerVo);
+	public int closeSkinById(SkinManagerDto skinManagerVo);
 	
 	/**
 	 * 
@@ -93,16 +93,16 @@ public interface SkinManagerMapper extends IBaseCrudMapper{
 	 * @author xuzq01
 	 * @date 2016年11月4日
 	 */
-	public int selectSkinByTime(SkinManagerVo skinManagerVo);
+	public int selectSkinByTime(SkinManagerDto skinManagerVo);
 
 	/**
-	 * @Description: TODO
-	 * @param skinManagerVo
+	 * @Description: 添加活动皮肤详细
+	 * @param detail
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年11月5日
 	 */
-	public int addSkinDetail(@Param(value = "detail") List<SkinManagerDetailVo> detail);
+	public int addSkinDetail(@Param(value = "detail") List<SkinManagerDetailDto> detail);
 
 	/**
 	 * @Description: 通过id获取活动皮肤 用于修改功能
@@ -110,7 +110,7 @@ public interface SkinManagerMapper extends IBaseCrudMapper{
 	 * @author xuzq01
 	 * @date 2016年11月9日
 	 */
-	public SkinManagerVo getSkinById(String skinId);
+	public SkinManagerDto getSkinById(String skinId);
 
 	/**
 	 * @Description: 通过活动皮肤名称查询 用于校验
@@ -119,6 +119,6 @@ public interface SkinManagerMapper extends IBaseCrudMapper{
 	 * @author xuzq01
 	 * @date 2016年11月10日
 	 */
-	public int selectSkinCountByName(SkinManagerVo skinManagerVo);
+	public int selectSkinCountByName(SkinManagerDto skinManagerVo);
 
 }

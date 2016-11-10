@@ -148,8 +148,8 @@
     WHERE id = #{id,jdbcType=VARCHAR}
   </update>
   <!-- 修改皮肤详细信息 -->
-  <update id="updateSkinDetail" parameterType="java.util.List" >
-	      <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+  <update id="updateSkinDetail" >
+	      <foreach collection="detail" item="item" index="index" open="" close="" separator=";">
 				 UPDATE operate_skin_manager_detail
 				 <set >
 				      <if test="moduleName != null and moduleName != ''" >
@@ -158,11 +158,11 @@
 				      <if test="initModule != null and initModule != ''" >
 				        init_module = #{item.initModule,jdbcType=VARCHAR},
 				      </if>
-				      <if test="initImg != null">
-				        init_img = #{item.initImg,jdbcType=VARCHAR},
+				      <if test="initImgUrl != null">
+				        init_img_url = #{item.initImgUrl,jdbcType=VARCHAR},
 				      </if>
-				      <if test="selectedImg != null" >
-				        selected_img = #{item.selectedImg,jdbcType=VARCHAR},
+				      <if test="selectedImgUrl != null" >
+				        selected_img_url = #{item.selectedImgUrl,jdbcType=VARCHAR},
 				      </if>
 				      <if test="updateUserId != null and updateUserId != ''" >
 				        update_user_id = #{item.updateUserId,jdbcType=VARCHAR},
@@ -171,7 +171,7 @@
 				        update_time = #{item.updateTime,jdbcType=TIMESTAMP},
 				      </if>
 			    </set>
-			    WHERE id = #{id,jdbcType=VARCHAR}
+			    WHERE disabled = 0 and id = #{detailId,jdbcType=VARCHAR}
 		 </foreach>
 		 
     </update>
@@ -207,7 +207,7 @@
      <!-- 未被删除的 -->
      WHERE disabled = 0
        <!-- 状态为未开始和进行中 -->
-       AND status <![CDATA[ >= ]]> 2      
+       AND status ='underWay'    
        AND (#{startTime,jdbcType=TIMESTAMP} BETWEEN start_time and end_time 
        OR #{endTime,jdbcType=TIMESTAMP} BETWEEN start_time and end_time 
        OR (start_time <![CDATA[ >= ]]> #{startTime,jdbcType=TIMESTAMP} and end_time <![CDATA[ <= ]]> #{endTime,jdbcType=TIMESTAMP}))
