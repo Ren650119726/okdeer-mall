@@ -5895,18 +5895,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 实物订单 订单类型
 			map.put("orderType", ActivityCollectOrderTypeEnum.PHYSICAL_ORDER.getValue());
 			// 获取消费返券信息并赠送代金券
-			getOrderCouponsInfo(orderId, userId, map, respDto);
+			getOrderCouponsInfo(orderId, userId, map, respDto,tradeOrder.getCreateTime());
 		} else if (orderType == 2 || orderType == 5) {
 			// 订单类型
 			map.put("orderType", ActivityCollectOrderTypeEnum.SERVICE_STORE_ORDER.getValue());
 			// 获取消费返券信息并赠送代金券
-			getOrderCouponsInfo(orderId, userId, map, respDto);
+			getOrderCouponsInfo(orderId, userId, map, respDto,tradeOrder.getCreateTime());
 		} else if (orderType == 3 || orderType == 4) {
 			// 充值订单
 			// 订单类型
 			map.put("orderType", ActivityCollectOrderTypeEnum.MOBILE_PAY_ORDER.getValue());
 			// 获取消费返券信息并赠送代金券
-			getOrderCouponsInfo(orderId, userId, map, respDto);
+			getOrderCouponsInfo(orderId, userId, map, respDto,tradeOrder.getCreateTime());
 		}
 	}
 
@@ -5963,7 +5963,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		map.put("provinceId", provinceId);
 		map.put("cityId", cityId);
 		// 获取消费返券信息并赠送代金券
-		getOrderCouponsInfo(orderId, userId, map, respDto);
+		getOrderCouponsInfo(orderId, userId, map, respDto,null);
 	}
 
 	/**
@@ -5983,7 +5983,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @date 2016年9月23日
 	 */
 	private void getOrderCouponsInfo(String orderId, String userId, Map<String, Object> map,
-			OrderCouponsRespDto respDto) throws ServiceException {
+			OrderCouponsRespDto respDto,Date orderTime) throws ServiceException {
 		// 查询是否有符合消费返券的活动（活动代金券）
 		List<ActivityCollectCouponsOrderVo> collCoupons = activityCollectCouponsService.findCollCouponsLinks(map);
 		if (CollectionUtils.isEmpty(collCoupons)) {
@@ -5993,6 +5993,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					(respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_NOT_ACTIVITY_TIPS);
 			return;
 		}
+		
+		// Begin added by maojj 2016-11-10
+		if(orderTime != null && orderTime.before(collCoupons.get(0).getStartTime())){
+			// 如果下单时间在活动开始时间之前，则不送代金券
+			logger.info(ORDER_COUPONS_NOT_ACTIVITY, orderId, userId);
+			respDto.setMessage(
+					(respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_NOT_ACTIVITY_TIPS);
+			return;
+		}
+		// End added by maojj 2016-11-10
+		
 		/*
 		 * if (collCoupons.size() > 1) { // 同一时间，同一区域，只能有一个消费返券活动 logger.info(ORDER_COUPONS_NOT_ONLY, orderId, userId);
 		 * respDto.setMessage( (respDto.getMessage() == null ? "" : respDto.getMessage()) +
