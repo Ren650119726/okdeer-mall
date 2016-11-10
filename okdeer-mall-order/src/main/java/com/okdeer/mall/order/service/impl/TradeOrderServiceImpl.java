@@ -69,8 +69,10 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuPlu;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
+import com.okdeer.archive.goods.store.enums.MeteringMethod;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
@@ -1604,6 +1606,21 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			// 如果是实物订单，走进销存库存
 			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+				
+				// add by 便利店优惠金额单价  lijun 20161110 begin
+				if (item.getPreferentialPrice() != null
+						&& item.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+					boolean isWeigh = false;
+					if(item.getWeight() != null){
+						isWeigh = true;
+					}
+					BigDecimal number = convertScaleToKg(item.getQuantity(), isWeigh);
+					// 优惠单价
+					BigDecimal price = item.getUnitPrice().subtract(item.getPreferentialPrice().divide(number, 4, BigDecimal.ROUND_HALF_UP));
+					detail.setPrice(price);
+				}
+				// add by 便利店优惠金额单价  lijun 20161110 end
+				
 				stockManagerJxcService.updateStock(stockAdjustVo);
 			} else {
 				// 否则走商城库存
@@ -4989,6 +5006,25 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			detail.setStyleCode(item.getStyleCode());
 			detail.setBarCode(item.getBarCode());
 			detail.setNum(item.getQuantity());
+			
+			// add by 便利店优惠金额单价 lijun begin
+			if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED
+					&& tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+				if (item.getPreferentialPrice() != null
+						&& item.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+					boolean isWeigh = false;
+					if (item.getWeight() != null) {
+						isWeigh = true;
+					}
+					BigDecimal number = convertScaleToKg(item.getQuantity(), isWeigh);
+					// 优惠单价
+					BigDecimal price = item.getUnitPrice()
+							.subtract(item.getPreferentialPrice().divide(number, 4, BigDecimal.ROUND_HALF_UP));
+					detail.setPrice(price);
+				}
+			}
+			// add by 便利店优惠金额单价  lijun end
+			
 			adjustDetailList.add(detail);
 		}
 		stockAdjustVo.setAdjustDetailList(adjustDetailList);
@@ -6765,4 +6801,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		return tradeOrderMapper.selectServiceRefundAmount(params);
 	}
 	// end added by luosm 20161010 V1.1.0
+	
+	
+	/**
+	 * 如果是称重会转换成千克
+	 */
+	private BigDecimal convertScaleToKg(Integer value, boolean isWeigh) {
+		if (value == null) {
+			return null;
+		}
+		if (isWeigh) {
+			return BigDecimal.valueOf(value).divide(BigDecimal.valueOf(1000)).setScale(4, BigDecimal.ROUND_FLOOR);
+		} else {
+			return BigDecimal.valueOf(value);
+		}
+	}
 }
