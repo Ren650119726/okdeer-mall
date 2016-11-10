@@ -341,7 +341,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	public void insertCopyRecords(String userId){
 		try{
 			List<ActivityCouponsRecord> list = activityCouponsRecordBeforeMapper.getCopyRecords(userId,new Date());
-			if(list != null){
+			if(list != null && list.size() > 0 ){
 				activityCouponsRecordMapper.insertSelectiveBatch(list);
 			}
 		}catch (Exception e) {
