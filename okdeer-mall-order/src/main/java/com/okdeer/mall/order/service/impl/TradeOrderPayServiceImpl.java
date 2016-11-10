@@ -49,6 +49,7 @@ import com.okdeer.api.pay.pay.dto.PayTradeDto;
 import com.okdeer.api.pay.service.IPayServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.RocketMQProducer;
@@ -509,7 +510,14 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			}
 		}
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
-		payTradeVo.setAmount(order.getActualAmount());
+		// Begin V1.2 modified by maojj 2016-11-09
+		if(order.getIsBreach() == WhetherEnum.whether){
+			// 如果订单需要支付违约金，则退款金额为：实付金额-收取的违约金
+			payTradeVo.setAmount(order.getActualAmount().subtract(order.getBreachMoney()));
+		}else{
+			payTradeVo.setAmount(order.getActualAmount());
+		}
+		// End V1.2 modified by maojj 2016-11-09
 		payTradeVo.setIncomeUserId(order.getUserId());
 		payTradeVo.setTradeNum(order.getTradeNum());
 		payTradeVo.setTitle("取消订单(余额支付)，交易号：" + order.getTradeNum());
