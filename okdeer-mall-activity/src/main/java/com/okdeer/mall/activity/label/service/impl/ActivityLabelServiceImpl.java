@@ -4,24 +4,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.alibaba.dubbo.config.annotation.Reference;
-import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.label.entity.ActivityLabel;
 import com.okdeer.mall.activity.label.entity.ActivityLabelGoods;
-import com.okdeer.mall.activity.label.enums.ActivityLabelStatus;
 import com.okdeer.mall.activity.label.mapper.ActivityLabelGoodsMapper;
 import com.okdeer.mall.activity.label.mapper.ActivityLabelMapper;
-import com.okdeer.mall.activity.label.service.ActivityLabelServiceApi;
+import com.okdeer.mall.activity.label.service.ActivityLabelService;
 
 /**
  * ClassName: ActivityLabelServiceImpl 
@@ -34,9 +29,8 @@ import com.okdeer.mall.activity.label.service.ActivityLabelServiceApi;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构4.1			 2016年11月8日 			zhagnkn
  */
-@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.label.service.ActivityLabelServiceApi")
-public class ActivityLabelServiceImpl
-		implements ActivityLabelServiceApi {
+@Service
+public class ActivityLabelServiceImpl implements ActivityLabelService {
 
 	private static final Logger log = Logger.getLogger(ActivityLabelServiceImpl.class);
 
@@ -44,9 +38,7 @@ public class ActivityLabelServiceImpl
 	private ActivityLabelMapper activityLabelMapper;
 	@Autowired
 	private ActivityLabelGoodsMapper activityLabelGoodsMapper;
-	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
-
+	
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void add(ActivityLabel activityLabel,List<String> goodsIds) throws Exception {
@@ -88,8 +80,8 @@ public class ActivityLabelServiceImpl
 	}
 
 	@Transactional(readOnly = true)
-	public ActivityLabel get(String id) {
-		return activityLabelMapper.get(id);
+	public ActivityLabel findById(String id) {
+		return activityLabelMapper.findById(id);
 	}
 	
 	@Override
@@ -141,5 +133,23 @@ public class ActivityLabelServiceImpl
 	@Override
 	public List<ActivityLabelGoods> listActivityLabelGoods(String activityId) throws Exception {
 		return activityLabelGoodsMapper.listByActivityId(activityId);
+	}
+
+	@Override
+	public <Entity> int add(Entity entity) throws Exception {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public <Entity> int update(Entity entity) throws Exception {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int delete(String id) throws Exception {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }
