@@ -4439,6 +4439,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							: storeInfo.getStoreInfoExt().getServicePhone();
 			// End 客服电话优先取store_info_ext表中的service_phone，如为空再选店铺号码 add by zengj
 		}
+		// v1.2新增返回字段  店铺id
+		json.put("shopId", storeId);
 		// 店铺名称
 		json.put("orderShopName", storeName);
 		// 店铺的服务电话
