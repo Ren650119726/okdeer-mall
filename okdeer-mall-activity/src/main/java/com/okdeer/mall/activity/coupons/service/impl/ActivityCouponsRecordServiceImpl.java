@@ -32,6 +32,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRandCode;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
@@ -41,6 +42,7 @@ import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
@@ -67,6 +69,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	@Autowired
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+	
+	@Autowired
+	ActivityCouponsRecordBeforeMapper activityCouponsRecordBeforeMapper;
 
 	/**
 	 * 代金券管理mapper
@@ -227,7 +232,121 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		return JSONObject.fromObject(map);
 
 	}
+	
+	/**
+	 * 根据活动ID领取代金劵
+	 * @param collectId 活动id集合
+	 * @param userId 用户id
+	 * @param activityCouponsType 活动类型
+	 * @return tuzhiding 
+	 * @throws ServiceException
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public JSONObject addRecordsByCollectId(String collectId, String userId,
+			ActivityCouponsType activityCouponsType) throws ServiceException {
+		Map<String, Object> map = new HashMap<String, Object>();
+		//循环代金劵id进行送劵
+		List<ActivityCoupons> activityCoupons = activityCouponsMapper.selectByActivityId(collectId);
+		Map<String,ActivityCouponsRecord> reMap = new HashMap<String,ActivityCouponsRecord>();
+		
+		//校验成功标识
+		boolean checkFlag = false ;
+		//根据代金劵列表逐个领取，当出现一个代金劵领取异常即反馈错误给前端
+		for(ActivityCoupons coupons : activityCoupons){
+			// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
+			ActivityCouponsRecord record = new ActivityCouponsRecord();
+			//进行公共代金劵领取校验
+			if (!checkRecordPubilc(map, coupons,activityCouponsType,record)) {
+				checkFlag = false;
+				break;
+			}
+			//检验优惠码的领取
+			if (!checkExchangeCode(map, userId, record, coupons)) {
+				checkFlag = false;
+				break;
+			}
+			record.setCollectUserId(userId);
+			reMap.put(coupons.getId(), record);
+			checkFlag = true;
+		}
+		//判断是否是成功，成功则进行批量保存代金劵
+		if(checkFlag){
+			//循环进行代金劵插入
+			for(ActivityCoupons coupons : activityCoupons){
+				updateCouponsRecode(reMap.get(coupons.getId()), coupons);
+			}
+			map.put("code", 100);
+			map.put("msg", "恭喜你，领取成功！");
+		}
+		return JSONObject.fromObject(map);
 
+	}
+	
+	/**
+	 * 根据活动ID及用户手机号码领取代金劵
+	 * @param collectId 活动id集合
+	 * @param phone 用户手机号码
+	 * @param activityCouponsType 活动类型
+	 * @return tuzhiding 
+	 * @throws ServiceException
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public JSONObject addBeforeRecords(String collectId, String phone,
+			ActivityCouponsType activityCouponsType) throws ServiceException {
+		Map<String, Object> map = new HashMap<String, Object>();
+		//循环代金劵id进行送劵
+		List<ActivityCoupons> activityCoupons = activityCouponsMapper.selectByActivityId(collectId);
+		Map<String,ActivityCouponsRecordBefore> reMap = new HashMap<String,ActivityCouponsRecordBefore>();
+		//校验成功标识
+		boolean checkFlag = false ;
+		//根据用户手机号码及活动id查询该号码是否领取过 
+		if (activityCouponsRecordBeforeMapper.countCouponsAllId(phone, collectId) > 0) {
+			map.put("code", 102);
+			map.put("msg", "每人限领1张，不要贪心哦！");
+			checkFlag = false;
+		}else{
+			//根据代金劵列表逐个领取，当出现一个代金劵领取异常即反馈错误给前端
+			for(ActivityCoupons coupons : activityCoupons){
+				// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
+				ActivityCouponsRecordBefore record = new ActivityCouponsRecordBefore();
+				//进行公共代金劵领取校验
+				if (!checkRecordPubilc(map, coupons,activityCouponsType,record)) {
+					checkFlag = false;
+					break;
+				}
+				
+				record.setCollectUser(phone);
+				reMap.put(coupons.getId(), record);
+				checkFlag = true;
+			}
+		}
+		//判断是否是成功，成功则进行批量保存代金劵
+		if(checkFlag){
+			//循环进行代金劵插入
+			for(ActivityCoupons coupons : activityCoupons){
+				insertRecodeBefore(reMap.get(coupons.getId()), coupons);
+			}
+			map.put("code", 100);
+			map.put("msg", "恭喜你，领取成功！");
+		}
+		return JSONObject.fromObject(map);
+
+	}
+	/**
+	 * 注册送完代金劵后将预代金劵送到用户的账户中
+	 *  @param userId 用户id
+	 */
+	public void insertCopyRecords(String userId){
+		try{
+			activityCouponsRecordBeforeMapper.insertCopyRecords(userId);
+		}catch (Exception e) {
+			//捕获异常不影响注册流程
+			log.error("将预代金劵送到用户的账户中出现异常！",e);
+		}
+	};
+	 
 	/**
 	 * DESC: 领取活动优惠券
 	 * 
@@ -334,7 +453,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 		ActivityCouponsRecord record = new ActivityCouponsRecord();
 		//进行公共代金劵领取校验
-		if (!checkRecordPubilc(map, activityCoupons, userId,activityCouponsType,record)) {
+		if (!checkRecordPubilc(map, activityCoupons,activityCouponsType,record)) {
 			return map;
 		}
 		//检验随机码是否可以领取
@@ -368,7 +487,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 		ActivityCouponsRecord record = new ActivityCouponsRecord();
 		//进行公共代金劵领取校验
-		if (!checkRecordPubilc(map, activityCoupons, userId,activityCouponsType,record)) {
+		if (!checkRecordPubilc(map, activityCoupons,activityCouponsType,record)) {
 			return map;
 		}
 		//检验优惠码的领取
@@ -394,7 +513,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @author zhulq
 	 * @date 2016年10月26日
 	 */
-	private boolean checkRecordPubilc(Map<String, Object> map,ActivityCoupons activityCoupons,String userId,
+	private boolean checkRecordPubilc(Map<String, Object> map,ActivityCoupons activityCoupons,
 			 ActivityCouponsType activityCouponsType,ActivityCouponsRecord record) {
 		if (activityCoupons.getRemainNum() <= 0) {
 			// 剩余数量小于0 显示已领完
@@ -459,6 +578,32 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		record.setValidTime(calendar.getTime());
 
 		activityCouponsRecordMapper.insertSelective(record);
+		activityCouponsMapper.updateRemainNum(coupons.getId());
+	}
+	
+	/**
+	 * 更新保存预领取代金劵记录
+	 * @Description: TODO
+	 * @param record 代金劵信息
+	 * @param coupons 活动信息
+	 * @author tuzhiding
+	 * @date 2016年10月26日
+	 */
+	private void insertRecodeBefore(ActivityCouponsRecordBefore record,ActivityCoupons coupons) {
+		// 立即领取
+		record.setId(UuidUtils.getUuid());
+		Date date = new Date();
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), 
+				calendar.get(Calendar.DATE), 0,	0, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		record.setCollectTime(calendar.getTime());
+		record.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
+		calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
+		record.setValidTime(calendar.getTime());
+
+		activityCouponsRecordBeforeMapper.insertSelective(record);
 		activityCouponsMapper.updateRemainNum(coupons.getId());
 	}
 	
