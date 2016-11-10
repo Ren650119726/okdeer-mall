@@ -69,6 +69,7 @@
 		<result column="breach_percent" property="breachPercent" jdbcType="TINYINT" />
 		<result column="breach_money" property="breachMoney" jdbcType="DECIMAL" />
 		<result column="cancel_type" property="cancelType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderCancelType" />
+		<result column="accept_time" property="acceptTime" jdbcType="TIMESTAMP" />
 		<!-- End V1.2 added by maojj 2016-11-09 增加违约金相关字段 -->
 		<association property="tradeOrderLogistics"
 			javaType="com.okdeer.mall.order.entity.TradeOrderLogistics">
@@ -1513,6 +1514,9 @@
 			<if test="cancelType != null">
 				cancel_type,
 			</if>
+			<if test="acceptTime != null">
+				accept_time,
+			</if>
 			<!-- End V1.2 added by maojj 2016-11-09 -->
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -1634,6 +1638,9 @@
 			<if test="cancelType != null">
 				#{cancelType,jdbcType=TINYINT},
 			</if>
+			<if test="acceptTime != null">
+				#{acceptTime,jdbcType=TIMESTAMP},
+			</if>
 			<!-- End V1.2 added by maojj 2016-11-09 -->
 		</trim>
 	</insert>
@@ -1706,6 +1713,14 @@
 			<if test="isShow != null">
 				is_show = #{isShow,jdbcType=TINYINT},
 			</if>
+			<!-- Begin V1.2 added by maojj 2016-11-10 -->
+			<if test="isBreach != null">
+				is_breach = #{isBreach,jdbcType=TINYINT},
+			</if>
+			<if test="acceptTime != null">
+				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
+			</if>
+			<!-- End V1.2 added by maojj 2016-11-10 -->
 		</set>
 		where trade_num = #{tradeNum,jdbcType=VARCHAR}
 
@@ -1778,6 +1793,14 @@
 			<if test="isShow != null">
 				is_show = #{isShow,jdbcType=TINYINT},
 			</if>
+			<!-- Begin V1.2 added by maojj 2016-11-10 -->
+			<if test="isBreach != null">
+				is_breach = #{isBreach,jdbcType=TINYINT},
+			</if>
+			<if test="acceptTime != null">
+				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
+			</if>
+			<!-- End V1.2 added by maojj 2016-11-10 -->
 		</set>
 		where trade_num = #{tradeNum,jdbcType=VARCHAR}
 		<if test="status = 11">
@@ -1857,6 +1880,14 @@
 			<if test="consumerCodeStatus !=null">
 				consumer_code_status = #{consumerCodeStatus,jdbcType=BIT},
 			</if>
+			<!-- Begin V1.2 added by maojj 2016-11-10 -->
+			<if test="isBreach != null">
+				is_breach = #{isBreach,jdbcType=TINYINT},
+			</if>
+			<if test="acceptTime != null">
+				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
+			</if>
+			<!-- End V1.2 added by maojj 2016-11-10 -->
 		</set>
 		where id = #{id,jdbcType=VARCHAR}
 	</update>
@@ -2463,8 +2494,8 @@
 		SELECT
 		tr.id,tr.store_id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.payment_status,tr.status,tr.update_time,tr.payment_time,tr.pay_way,
 		tr.activity_type,tr.activity_id,tr.pick_up_type,tr.remark,tr.delivery_time,tr.received_time,tr.income,tr.order_resource,
-		tp.id as
-		pay_id,tp.pay_type,tp.pay_time,tr.invoice,tr.pick_up_time,tr.create_time,tr.type,tr.is_complete,
+		tp.id as pay_id,tp.pay_type,tp.pay_time,tr.invoice,tr.pick_up_time,tr.create_time,tr.type,tr.is_complete,
+		tr.is_breach,tr.breach_percent,tr.breach_money,tr.accept_time,
 		ti.id as invoice_id,ti.head,ti.context,it.service_assurance,
 		it.id as
 		item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,tr.reason,it.properties_indb,
