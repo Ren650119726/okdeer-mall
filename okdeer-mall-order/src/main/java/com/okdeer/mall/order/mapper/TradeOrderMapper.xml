@@ -61,7 +61,16 @@
 		<result column="compain_status" property="compainStatus"
 			jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.CompainStatusEnum" />
 		<!-- add by zengjiz 2016-9-22 增加消费码状态字断 -->
-		<result column="consumer_code_status" property="consumerCodeStatus" jdbcType="TINYINT" />	
+		<result column="consumer_code_status" property="consumerCodeStatus" jdbcType="TINYINT" />
+		<!-- Begin V1.2 added by maojj 2016-11-09 增加违约金相关字段 -->	
+		<result column="is_breach" property="isBreach" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.WhetherEnum" />
+		<result column="is_breach_money" property="isBreachMoney" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.WhetherEnum" />
+		<result column="breach_time" property="breachTime" jdbcType="TINYINT" />
+		<result column="breach_percent" property="breachPercent" jdbcType="TINYINT" />
+		<result column="breach_money" property="breachMoney" jdbcType="DECIMAL" />
+		<result column="cancel_type" property="cancelType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderCancelType" />
+		<result column="accept_time" property="acceptTime" jdbcType="TIMESTAMP" />
+		<!-- End V1.2 added by maojj 2016-11-09 增加违约金相关字段 -->
 		<association property="tradeOrderLogistics"
 			javaType="com.okdeer.mall.order.entity.TradeOrderLogistics">
 			<result column="logistics_id" property="id" jdbcType="VARCHAR" />
@@ -78,58 +87,7 @@
 		</association>
 	</resultMap>
 
-	<resultMap id="BaseTradeOrderDetail" type="com.okdeer.mall.order.entity.TradeOrder">
-		<id column="id" property="id" jdbcType="VARCHAR" />
-		<result column="user_phone" property="userPhone" jdbcType="VARCHAR" />
-		<result column="user_id" property="userId" jdbcType="VARCHAR" />
-		<result column="store_id" property="storeId" jdbcType="VARCHAR" />
-		<result column="pid" property="pid" jdbcType="VARCHAR" />
-		<result column="order_no" property="orderNo" jdbcType="VARCHAR" />
-		<result column="type" property="type" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
-		<result column="pick_up_type" property="pickUpType" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.PickUpTypeEnum" />
-		<result column="pick_up_code" property="pickUpCode" jdbcType="VARCHAR" />
-		<result column="pick_up_time" property="pickUpTime" jdbcType="VARCHAR" />
-		<result column="order_resource" property="orderResource"
-			jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderResourceEnum" />
-		<result column="status" property="status" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.OrderStatusEnum" />
-		<result column="total_amount" property="totalAmount" jdbcType="DECIMAL" />
-		<result column="actual_amount" property="actualAmount"
-			jdbcType="DECIMAL" />
-		<result column="preferential_price" property="preferentialPrice"
-			jdbcType="DECIMAL" />
-		<result column="fare" property="fare" jdbcType="DECIMAL" />
-		<result column="activity_type" property="activityType"
-			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
-		<result column="activity_id" property="activityId" jdbcType="VARCHAR" />
-		<result column="remark" property="remark" jdbcType="VARCHAR" />
-		<result column="invoice" property="invoice" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.WithInvoiceEnum" />
-		<result column="disabled" property="disabled" jdbcType="TINYINT"
-			javaType="com.okdeer.base.common.enums.Disabled" />
-		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
-		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
-		<result column="payment_time" property="paymentTime" jdbcType="TIMESTAMP" />
-		<result column="payment_status" property="paymentStatus"
-			jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.PaymentStatusEnum" />
-		<result column="delivery_time" property="deliveryTime"
-			jdbcType="TIMESTAMP" />
-		<result column="received_time" property="receivedTime"
-			jdbcType="TIMESTAMP" />
-		<result column="pay_way" property="payWay" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.PayWayEnum" />
-		<result column="reason" property="reason" jdbcType="VARCHAR" />
-		<result column="pospay" property="pospay" jdbcType="VARCHAR" />
-		<result column="activity_item_id" property="activityItemId"
-			jdbcType="VARCHAR" />
-		<result column="pick_up_id" property="pickUpId" jdbcType="VARCHAR" />
-		<result column="trade_num" property="tradeNum" jdbcType="VARCHAR" />
-		<result column="is_show" property="isShow" jdbcType="TINYINT"
-			javaType="com.okdeer.mall.order.enums.OrderIsShowEnum" />
-		<result column="compain_status" property="compainStatus"
-			jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.CompainStatusEnum" />
+	<resultMap id="BaseTradeOrderDetail" type="com.okdeer.mall.order.entity.TradeOrder" extends="BaseResultMap">
 		<collection property="tradeOrderItem"
 			ofType="com.okdeer.mall.order.entity.TradeOrderItem">
 			<result column="order_id" property="orderId" jdbcType="VARCHAR" />
@@ -172,14 +130,6 @@
 		<result column="actualCashTotal" property="actualCashTotal"
 			jdbcType="DECIMAL" />
 	</resultMap>
-
-	<!-- 用户订单列表查询 zhongy start -->
-	<!-- <resultMap id="UserTradeOrderMap" type="com.okdeer.mall.order.vo.UserTradeOrderVo" 
-		extends="BaseResultMap"> <result column="store_id" property="storeId" jdbcType="VARCHAR" 
-		/> <result column="store_name" property="storeName" jdbcType="VARCHAR" /> 
-		</resultMap> -->
-	<!-- 用户订单列表查询 zhongy end -->
-
 
 	<!-- 用户app订单详细 zhongy start -->
 	<resultMap id="UserTradeOrderDetailMap"
@@ -588,7 +538,8 @@
 		status, total_amount, actual_amount, preferential_price, fare, activity_type,
 		activity_id, activity_item_id,pay_way,
 		remark, invoice, disabled, create_time, received_time, delivery_time,
-		update_time,is_show,pospay,reason,trade_num,user_phone,payment_status,payment_time,income,seller_id,shipments_user_id,consumer_code_status
+		update_time,is_show,pospay,reason,trade_num,user_phone,payment_status,payment_time,income,seller_id,shipments_user_id,consumer_code_status,
+		is_breach,is_breach_money,breach_time,breach_percent,breach_money,cancel_type
 	</sql>
 
 	<sql id="order_column_list">
@@ -1544,6 +1495,29 @@
 			<if test="shipmentsUserId != null">
 				shipments_user_id,
 			</if>
+			<!-- Begin V1.2 added by maojj 2016-11-09 -->
+			<if test="isBreach != null">
+				is_breach,
+			</if>
+			<if test="isBreachMoney != null">
+				is_breach_money,
+			</if>
+			<if test="breachTime != null">
+				breach_time,
+			</if>
+			<if test="breachPercent != null">
+				breach_percent,
+			</if>
+			<if test="breachMoney != null">
+				breach_money,
+			</if>
+			<if test="cancelType != null">
+				cancel_type,
+			</if>
+			<if test="acceptTime != null">
+				accept_time,
+			</if>
+			<!-- End V1.2 added by maojj 2016-11-09 -->
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -1643,8 +1617,31 @@
 				#{deliveryTime,jdbcType=VARCHAR},
 			</if>
 			<if test="shipmentsUserId != null">
-				#{shipmentsUserId,jdbcType=VARCHAR}
+				#{shipmentsUserId,jdbcType=VARCHAR},
 			</if>
+			<!-- Begin V1.2 added by maojj 2016-11-09 -->
+			<if test="isBreach != null">
+				#{isBreach,jdbcType=TINYINT},
+			</if>
+			<if test="isBreachMoney != null">
+				#{isBreachMoney,jdbcType=TINYINT},
+			</if>
+			<if test="breachTime != null">
+				#{breachTime,jdbcType=TINYINT},
+			</if>
+			<if test="breachPercent != null">
+				#{breachPercent,jdbcType=TINYINT},
+			</if>
+			<if test="breachMoney != null">
+				#{breachMoney,jdbcType=DECIMAL},
+			</if>
+			<if test="cancelType != null">
+				#{cancelType,jdbcType=TINYINT},
+			</if>
+			<if test="acceptTime != null">
+				#{acceptTime,jdbcType=TIMESTAMP},
+			</if>
+			<!-- End V1.2 added by maojj 2016-11-09 -->
 		</trim>
 	</insert>
 
@@ -1716,6 +1713,14 @@
 			<if test="isShow != null">
 				is_show = #{isShow,jdbcType=TINYINT},
 			</if>
+			<!-- Begin V1.2 added by maojj 2016-11-10 -->
+			<if test="isBreach != null">
+				is_breach = #{isBreach,jdbcType=TINYINT},
+			</if>
+			<if test="acceptTime != null">
+				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
+			</if>
+			<!-- End V1.2 added by maojj 2016-11-10 -->
 		</set>
 		where trade_num = #{tradeNum,jdbcType=VARCHAR}
 
@@ -1788,6 +1793,14 @@
 			<if test="isShow != null">
 				is_show = #{isShow,jdbcType=TINYINT},
 			</if>
+			<!-- Begin V1.2 added by maojj 2016-11-10 -->
+			<if test="isBreach != null">
+				is_breach = #{isBreach,jdbcType=TINYINT},
+			</if>
+			<if test="acceptTime != null">
+				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
+			</if>
+			<!-- End V1.2 added by maojj 2016-11-10 -->
 		</set>
 		where trade_num = #{tradeNum,jdbcType=VARCHAR}
 		<if test="status = 11">
@@ -1867,6 +1880,14 @@
 			<if test="consumerCodeStatus !=null">
 				consumer_code_status = #{consumerCodeStatus,jdbcType=BIT},
 			</if>
+			<!-- Begin V1.2 added by maojj 2016-11-10 -->
+			<if test="isBreach != null">
+				is_breach = #{isBreach,jdbcType=TINYINT},
+			</if>
+			<if test="acceptTime != null">
+				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
+			</if>
+			<!-- End V1.2 added by maojj 2016-11-10 -->
 		</set>
 		where id = #{id,jdbcType=VARCHAR}
 	</update>
@@ -2424,7 +2445,7 @@
 	<select id="selectServiceOrderInfo" parameterType="java.util.Map"
 		resultMap="TradeOrderVo">
 		SELECT
-		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.status,tr.delivery_time,tr.type,
+		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.status,tr.delivery_time,tr.type,tr.is_breach,
 		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
 		= tr.id) as goods_count,
 		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
@@ -2473,8 +2494,8 @@
 		SELECT
 		tr.id,tr.store_id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.payment_status,tr.status,tr.update_time,tr.payment_time,tr.pay_way,
 		tr.activity_type,tr.activity_id,tr.pick_up_type,tr.remark,tr.delivery_time,tr.received_time,tr.income,tr.order_resource,
-		tp.id as
-		pay_id,tp.pay_type,tp.pay_time,tr.invoice,tr.pick_up_time,tr.create_time,tr.type,tr.is_complete,
+		tp.id as pay_id,tp.pay_type,tp.pay_time,tr.invoice,tr.pick_up_time,tr.create_time,tr.type,tr.is_complete,
+		tr.is_breach,tr.breach_percent,tr.breach_money,tr.accept_time,
 		ti.id as invoice_id,ti.head,ti.context,it.service_assurance,
 		it.id as
 		item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,tr.reason,it.properties_indb,

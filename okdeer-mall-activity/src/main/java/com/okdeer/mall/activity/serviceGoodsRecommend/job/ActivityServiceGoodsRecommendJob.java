@@ -1,4 +1,4 @@
-package com.okdeer.mall.activity.label.job;
+package com.okdeer.mall.activity.serviceGoodsRecommend.job;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
-import com.okdeer.mall.activity.label.entity.ActivityLabel;
-import com.okdeer.mall.activity.label.enums.ActivityLabelStatus;
-import com.okdeer.mall.activity.label.service.ActivityLabelApi;
+import com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommend;
+import com.okdeer.mall.activity.serviceGoodsRecommend.enums.ActivityServiceGoodsRecommendStatus;
+import com.okdeer.mall.activity.serviceGoodsRecommend.service.ActivityServiceGoodsRecommendApi;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 
 /**
@@ -23,12 +23,12 @@ import com.okdeer.mall.common.utils.RobotUserUtil;
  * @copyright ©2005-2020 yschome.com Inc. All rights reserved
  */
 @Service
-public class ActivityLabelJob extends AbstractSimpleElasticJob {
+public class ActivityServiceGoodsRecommendJob extends AbstractSimpleElasticJob {
 
-	private static final Logger log = LoggerFactory.getLogger(ActivityLabelJob.class);
+	private static final Logger log = LoggerFactory.getLogger(ActivityServiceGoodsRecommendJob.class);
 
 	@Autowired
-	private ActivityLabelApi activityLabelService;
+	private ActivityServiceGoodsRecommendApi recommendService;
 	
 	
 	//本来放在service事务里面,后来改为单个活动为一个事务,所以把循环放在这里
@@ -36,21 +36,21 @@ public class ActivityLabelJob extends AbstractSimpleElasticJob {
 	@Transactional(rollbackFor = Exception.class)
 	public void process(JobExecutionMultipleShardingContext arg0) {
 		try{
-			log.info("服务标签管理定时器开始");
+			log.info("服务商品推荐定时器开始");
 			
-			List<ActivityLabel> accList = activityLabelService.listByJob();
+			List<ActivityServiceGoodsRecommend> accList = recommendService.listByJob();
 			if(accList != null && accList.size() > 0){
 				
 				List<String> listIdNoStart = new ArrayList<String>();
 				List<String> listIdIng = new ArrayList<String>();
 				
-				for(ActivityLabel a : accList){
+				for(ActivityServiceGoodsRecommend a : accList){
 					//未开始的 
-					if(a.getStatus() == ActivityLabelStatus.noStart.getValue()){
+					if(a.getStatus() == ActivityServiceGoodsRecommendStatus.noStart.getValue()){
 						listIdNoStart.add(a.getId());
 					}
 					//进行中的改为已结束的
-					else if(a.getStatus() == ActivityLabelStatus.ing.getValue()){
+					else if(a.getStatus() == ActivityServiceGoodsRecommendStatus.ing.getValue()){
 						listIdIng.add(a.getId());
 					}
 				}
@@ -62,9 +62,9 @@ public class ActivityLabelJob extends AbstractSimpleElasticJob {
 				if(listIdNoStart != null && listIdNoStart.size() > 0){
 					for(String id : listIdNoStart){
 						try{
-							activityLabelService.updateBatchStatus(id,  ActivityLabelStatus.ing.getValue(), updateUserId, updateTime);
+							recommendService.updateBatchStatus(id,  ActivityServiceGoodsRecommendStatus.ing.getValue(), updateUserId, updateTime);
 						}catch(Exception e){
-							log.error("服务标签管理"+id+"job异常 改为进行中:",e);
+							log.error("服务商品推荐"+id+"job异常 改为进行中:",e);
 						}
 						
 					}
@@ -73,16 +73,16 @@ public class ActivityLabelJob extends AbstractSimpleElasticJob {
 				if(listIdIng != null && listIdIng.size() > 0){
 					for(String id : listIdIng){
 						try{
-							activityLabelService.updateBatchStatus(id,  ActivityLabelStatus.end.getValue(), updateUserId, updateTime);
+							recommendService.updateBatchStatus(id,  ActivityServiceGoodsRecommendStatus.end.getValue(), updateUserId, updateTime);
 						}catch(Exception e){
-							log.error("服务标签管理"+id+"job异常 改为已经结束:",e);
+							log.error("服务商品推荐"+id+"job异常 改为已经结束:",e);
 						}
 					}
 				}
 			}
-			log.info("服务标签管理定时器结束");
+			log.info("服务商品推荐定时器结束");
 		}catch(Exception e){
-			log.error("服务标签管理job异常",e);
+			log.error("服务商品推荐job异常",e);
 		}
 		
 	}

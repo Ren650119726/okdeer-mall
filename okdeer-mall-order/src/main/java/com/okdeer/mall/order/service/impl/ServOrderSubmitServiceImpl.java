@@ -35,6 +35,7 @@ import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -65,7 +66,6 @@ import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
-import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
@@ -98,6 +98,7 @@ import net.sf.json.JSONObject;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *		V1.1.0			2016年9月28日				wushp		服务订单下单(上门服务，到店消费)
+ *		V1.2			2016年11月9日				maojj		服务订单下单增加违约金判断
  */
 @Service("servOrderSubmitService")
 public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderReq, ServiceOrderResp> {
@@ -205,6 +206,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	private OrderReturnCouponsService orderReturnCouponsService;
 	// End added by maojj 2016-10-18
 
+	@SuppressWarnings("unchecked")
 	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
@@ -232,15 +234,6 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			saveActivityDiscountRecord(tradeOrder.getId(), reqData);
 			// 保存订单和订单项信息，并发送消息
 			tradeOrderService.insertTradeOrder(tradeOrder);
-			/*
-			 * 实付金额为0的到店消费订单，在controller调用生成消费码的接口
-			 * if (tradeOrder.getActualAmount().compareTo(BigDecimal.ZERO) == 0
-			 *		&& reqData.getOrderType() != null 
-			 *		&& reqData.getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
-			 *	// 实付金额为0的到店消费订单，生成消费码
-			 *	tradeOrderServiceApi.dealWithStoreConsumeOrder(tradeOrder, null, PayTypeEnum.WALLET.ordinal());
-			 *	}
-			 */			
 			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUserId(),
 					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
 
@@ -265,21 +258,6 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 						(DateUtils.addHours(serviceTime, 2).getTime() - DateUtils.getSysDate().getTime()) / 1000);
 
 				List<GoodsStoreSku> goodsStoreSkuList = (List<GoodsStoreSku>) req.getContext().get("storeSkuList");
-				/*
-				 * List<TradeOrderServiceGoodsItem> list = respData.getList();
-				 * 
-				 * for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) { for
-				 * (TradeOrderServiceGoodsItem goodsItem : list) { if
-				 * (goodsStoreSku.getId().equals(goodsItem.getSkuId())) { int
-				 * skuNum = goodsItem.getSkuNum(); goodsStoreSku.setSaleNum(
-				 * (goodsStoreSku.getSaleNum() == null ? 0 :
-				 * goodsStoreSku.getSaleNum()) + skuNum);
-				 * 
-				 * this.goodsStoreSkuService.updateByPrimaryKeySelective(
-				 * goodsStoreSku); } }
-				 * 
-				 * }
-				 */
 				List<TradeOrderGoodsItem> list = req.getData().getList();
 				for (GoodsStoreSku goodsStoreSku : goodsStoreSkuList) {
 					for (TradeOrderGoodsItem goodsItem : list) {
@@ -332,6 +310,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		TradeOrder tradeOrder = new TradeOrder();
 
 		ServiceOrderReq reqData = req.getData();
+		StoreInfoServiceExt servExt = resp.getData().getStoreInfoServiceExt();
 
 		tradeOrder.setId(UuidUtils.getUuid());
 		tradeOrder.setUserId(reqData.getUserId());
@@ -388,10 +367,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		// 解析提货类型
 		parsePickType(tradeOrder, reqData, resp);
 		tradeOrder.setPickUpCode(null);
-
 		// 设置发票
 		setTradeOrderInvoice(tradeOrder, reqData);
-		// tradeOrder.setPospay();
 		// 根据请求构建订单项列表
 		List<TradeOrderItem> orderItemList = buildOrderItemList(tradeOrder, req, resp);
 		// 设置订单项
@@ -400,31 +377,22 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		if (address != null) {
 			tradeOrder.setTradeOrderLogistics(buildTradeOrderLogistics(tradeOrder.getId(), address));
 		}
+		// Begin V1.2 added by maojj 2016-11-08
+		// 订单默认未违约
+		tradeOrder.setIsBreach(WhetherEnum.not);
+		// 店铺设置是否有违约金
+		tradeOrder.setIsBreachMoney(WhetherEnum.enumOrdinalOf(servExt.getIsBreachMoney()));
+		// 店铺设置收取违约金的时间限制
+		tradeOrder.setBreachTime(servExt.getBreachTime());
+		// 店铺设置违约金的百分比
+		tradeOrder.setBreachPercent(servExt.getBreachPercent());
+		if(tradeOrder.getIsBreachMoney() == WhetherEnum.whether){
+			// 如果店铺设置了违约金，计算订单应该收取的违约金存入订单记录中
+			tradeOrder.setBreachMoney(tradeOrder.getIncome().multiply(BigDecimal.valueOf(tradeOrder.getBreachPercent())));
+		}
+		// End V1.2 added by maojj 2016-11-08
+		
 		return tradeOrder;
-	}
-
-	/**
-	 * 
-	 * @Description: 设置上门服务订单属性
-	 * @param tradeOrder 订单
-	 * @author wushp
-	 * @date 2016年9月28日
-	 */
-	private void parseconsumeOrder(TradeOrder tradeOrder) {
-		tradeOrder.setPickUpType(PickUpTypeEnum.TO_STORE_PICKUP);
-	}
-
-	/**
-	 * 
-	 * @Description: 设置到店消费服务订单属性
-	 * @param tradeOrder 订单
-	 * @author wushp
-	 * @date 2016年9月28日
-	 */
-	private void parseStoreOrder(TradeOrder tradeOrder) {
-		tradeOrder.setPickUpType(PickUpTypeEnum.DELIVERY_DOOR);
-		// 设置运费
-		tradeOrder.setFare(BigDecimal.ZERO);
 	}
 
 	/**
@@ -473,6 +441,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 * @author wushp
 	 * @date 2016年9月28日
 	 */
+	@SuppressWarnings("unchecked")
 	private List<TradeOrderItem> buildOrderItemList(TradeOrder tradeOrder, Request<ServiceOrderReq> req,
 			Response<ServiceOrderResp> resp) throws Exception {
 		List<TradeOrderItem> orderItemList = new ArrayList<TradeOrderItem>();
@@ -639,11 +608,11 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 * @author wushp
 	 * @date 2016年9月28日
 	 */
+	@SuppressWarnings("unchecked")
 	private StockAdjustVo buildStockAdjustVo(TradeOrder order, Request<ServiceOrderReq> req,
 			Response<ServiceOrderResp> resp) {
 		Map<String, Object> context = req.getContext();
 		ServiceOrderReq reqData = req.getData();
-		ServiceOrderResp respData = resp.getData();
 		List<GoodsStoreSku> storeSkuList = (List<GoodsStoreSku>) context.get("storeSkuList");
 
 		StockAdjustVo stockAjustVo = new StockAdjustVo();
@@ -903,25 +872,14 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		tradeOrder.setFare(BigDecimal.ZERO);
 		// 服务店扩展信息
 		StoreInfoServiceExt serviceExt = resp.getData().getStoreInfoServiceExt();
-		// 配送费
-		// Double distributionFee = serviceExt.getDistributionFee();
-		// 是否支持购物车，0：否，1：是
-		// Integer isShoppingCart = serviceExt.getIsShoppingCart();
-		// 是否有配送费，0：否，1：是
-		// Integer isDistributionFee = serviceExt.getIsDistributionFee();
 		if (serviceExt != null && serviceExt.getIsShoppingCart() == 1 && serviceExt.getIsDistributionFee() == 1) {
 			// 配送费
 			Double distributionFee = serviceExt.getDistributionFee();
-			// 是否有起送价，0：否，1：是
-			// Integer isStartingPrice = serviceExt.getIsStartingPrice();
 			// 已满起送价是否收取配送费，0：否，1：是
 			Integer isCollect = serviceExt.getIsCollect();
 			// 是否有起送价，0：否，1：是
 			Integer isStartingPrice = serviceExt.getIsStartingPrice();
-			// 起送价
-			BigDecimal startPrice = serviceExt.getStartingPrice();
 			if (isStartingPrice == 1) {
-				// 有起送价 tradeOrder.getTotalAmount().compareTo(startPrice) == -1
 				if (serviceExt.getIsCollect() == 1) {
 					// 已满起送价收取配送费
 					tradeOrder.setFare(BigDecimal.valueOf(distributionFee));

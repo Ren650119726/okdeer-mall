@@ -60,4 +60,6 @@
 	
 	<!-- 每隔半个小时执行运营后台服务标签的定时任务 -->
 	<job:simple id="activityLabelJob" class="com.okdeer.mall.activity.label.job.ActivityLabelJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
+	<!-- 每隔半个小时执行运营后台服务商品推荐的定时任务 -->
+	<job:simple id="activityServiceGoodsRecommendJob" class="com.okdeer.mall.activity.serviceGoodsRecommend.job.ActivityServiceGoodsRecommendJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
 </beans>

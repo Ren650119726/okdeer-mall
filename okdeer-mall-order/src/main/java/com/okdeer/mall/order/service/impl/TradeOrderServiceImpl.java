@@ -155,6 +155,7 @@ import com.okdeer.mall.order.enums.CompainStatusEnum;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
+import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.OrderPayTypeEnum;
@@ -186,6 +187,7 @@ import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
+import com.okdeer.mall.order.service.TradeOrderTraceService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.JsonDateValueProcessor;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
@@ -256,6 +258,7 @@ import net.sf.json.JsonConfig;
  *       修改根据订单项详细的消费码状态，修改订单消费码状态的逻辑
  *       14375             2016-10-15        wusw        修改实物订单详情的支付剩余时间计算（由于服务器的数据库时间有误，导致sql计算有误）
  *       V1.2.0            2016-11-08	     zengjz      优化方法
+ *       V1.2.0			   2016-11-09	     maojj       订单状态发生变化时，增加轨迹保存的流程
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -587,6 +590,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Resource
 	private SysUserInvitationCodeMapper sysUserInvitationCodeMapper;
 	// End Bug:13700 added by maojj 2016-10-10
+	
+	// Begin V1.2 added by maojj 2016-11-09
+	/**
+	 * 订单轨迹服务
+	 */
+	@Resource
+	private TradeOrderTraceService tradeOrderTraceService;
+	// End V1.2 added by maojj 2016-11-09
 
 	@Override
 	public PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize)
@@ -1191,6 +1202,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		if (entity instanceof TradeOrder) {
 			TradeOrder tradeOrder = (TradeOrder) entity;
+			// Begin V1.2.0 added by maojj 2016-11-09
+			tradeOrderTraceService.saveOrderTrace(tradeOrder);
+			// End V1.2.0 added by maojj 2016-11-09
 			tradeOrderMapper.insertSelective(tradeOrder);
 			TradeOrderPay tradeOrderPay = tradeOrder.getTradeOrderPay();
 			TradeOrderLogistics orderLogistics = tradeOrder.getTradeOrderLogistics();
@@ -1400,7 +1414,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				TradeOrder oldOrder = this.findOrderDetail(tradeOrder.getId());
 				tradeOrder.setCurrentStatus(oldOrder.getStatus());
 				// 订单状态为已发货或者待发货，全部变为取消中
-				if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()) {
+				if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus() || OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
 					if (oldOrder.getPayWay() == PayWayEnum.PAY_ONLINE) {
 						tradeOrder.setStatus(OrderStatusEnum.CANCELING);
 					} else {
@@ -1447,7 +1461,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					params.put("storeSkuId", item.getStoreSkuId());
 					activitySaleRecordService.updateDisabledByOrderId(params);
 				}
-
+				
+				// Begin V1.2 added by maojj 2016-11-09
+				// 用户取消时判断是否需要收取违约金
+				boolean isBreach = isBreach(tradeOrder.getCancelType(),oldOrder);
+				if(isBreach){
+					// 如果需要收取违约金
+					tradeOrder.setIsBreach(WhetherEnum.whether);
+				}
+				// End V1.2 added by maojj 2016-11-09
+				
 				// 更新订单状态
 				Integer alterCount = this.updateOrderStatus(tradeOrder);
 				if (alterCount <= 0) {
@@ -1487,6 +1510,53 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	// End modified by maojj 2016-07-26
 
+	// Begin V1.2 added by maojj 2016-11-09
+	/**
+	 * @Description: 是否收取违约金
+	 * @param tradeOrder
+	 * @param oldOrder
+	 * @return   
+	 * @author maojj
+	 * @date 2016年11月9日
+	 */
+	private boolean isBreach(OrderCancelType cancelType,TradeOrder tradeOrder){
+		if (tradeOrder.getType() != OrderTypeEnum.SERVICE_ORDER
+				|| BigDecimal.valueOf(0.0).compareTo(tradeOrder.getActualAmount()) == 0) {
+			// 不是服务订单或者实付金额为0的，不收取违约金
+			return false;
+		}
+		if (cancelType != OrderCancelType.CANCEL_BY_BUYER || tradeOrder.getIsBreachMoney() == null
+				|| tradeOrder.getIsBreachMoney() == WhetherEnum.not) {
+			// 不是用户取消的，均不收取违约金。店铺未设置违约金的不收取。
+			return false;
+		}
+		if (tradeOrder.getStatus() == OrderStatusEnum.UNPAID || tradeOrder.getStatus() == OrderStatusEnum.BUYER_PAYING
+				|| tradeOrder.getStatus() == OrderStatusEnum.WAIT_RECEIVE_ORDER) {
+			// 未支付或者待接单状态下的，不收取违约金
+			return false;
+		}
+		// 获取订单的预约服务时间
+		String servTime = tradeOrder.getPickUpTime();
+		if(StringUtils.isEmpty(servTime) || servTime.length() < 16){
+			return false;
+		}
+		Date servDate = DateUtils.parseDate(servTime.substring(0,16));
+		// 当前时间和服务时间的时间差
+		long diffTime = servDate.getTime() - System.currentTimeMillis();
+		if(diffTime < tradeOrder.getBreachTime().intValue() * 60 * 60 * 1000){
+			return true;
+		}
+		return false;
+	}
+	
+	public static void main(String[] args){
+		String servTime = "2016-11-09 18:00";
+		Date servDate = DateUtils.parseDate(servTime.substring(0,16));
+		long betweenMinuts =  (servDate.getTime() - System.currentTimeMillis());
+		System.out.println(betweenMinuts>1*60*60*1000);
+	}
+	// End V1.2 added by maojj 2016-11-09
+	
 	/**
 	 * 获取库存操作类型
 	 * 
@@ -2124,6 +2194,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer updateOrderStatus(TradeOrder tradeOrder) throws ServiceException {
+		// 保存订单轨迹
+		tradeOrderTraceService.saveOrderTrace(tradeOrder);
 		return tradeOrderMapper.updateOrderStatus(tradeOrder);
 	}
 
@@ -4439,6 +4511,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							: storeInfo.getStoreInfoExt().getServicePhone();
 			// End 客服电话优先取store_info_ext表中的service_phone，如为空再选店铺号码 add by zengj
 		}
+		// v1.2新增返回字段  店铺id
+		json.put("shopId", storeId);
 		// 店铺名称
 		json.put("orderShopName", storeName);
 		// 店铺的服务电话
