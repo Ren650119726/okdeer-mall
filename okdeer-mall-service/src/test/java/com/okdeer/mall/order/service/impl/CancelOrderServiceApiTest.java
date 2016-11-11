@@ -9,10 +9,10 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.okdeer.mall.Application;
-import com.okdeer.mall.order.dto.CancelOrderReqDto;
-import com.okdeer.mall.order.dto.CancelOrderRespDto;
+import com.okdeer.mall.order.dto.CancelOrderDto;
+import com.okdeer.mall.order.dto.CancelOrderParamDto;
 import com.okdeer.mall.order.enums.OrderCancelType;
-import com.okdeer.mall.order.service.CancelOrderServiceApi;
+import com.okdeer.mall.order.service.CancelOrderApi;
 
 /**
  * ClassName: CancelOrderServiceApiTest 
@@ -31,7 +31,7 @@ public class CancelOrderServiceApiTest{
 	
 	
 	@Autowired
-	private CancelOrderServiceApi cancelOrderServiceApi;
+	private CancelOrderApi cancelOrderApi;
 	
 	/**
 	 * @Description: 取消订单
@@ -41,12 +41,12 @@ public class CancelOrderServiceApiTest{
 	@Test
 	public void testCancelOrder(){
 		
-		CancelOrderReqDto cancelOrderReqDto = new CancelOrderReqDto();
-		cancelOrderReqDto.setCancelType(OrderCancelType.CANCEL_BY_BUYER);
-		cancelOrderReqDto.setOrderId("000048e2276611e6aaff00163e010eb1");
-		cancelOrderReqDto.setReason("商品不好");
-		cancelOrderReqDto.setUserId("14508634421718ccdd2bf2bb49f9836b");
-		CancelOrderRespDto cancelOrderRespDto = cancelOrderServiceApi.cancelOrder(cancelOrderReqDto);
+		CancelOrderParamDto cancelOrderParamDto = new CancelOrderParamDto();
+		cancelOrderParamDto.setCancelType(OrderCancelType.CANCEL_BY_BUYER);
+		cancelOrderParamDto.setOrderId("000048e2276611e6aaff00163e010eb1");
+		cancelOrderParamDto.setReason("商品不好");
+		cancelOrderParamDto.setUserId("14508634421718ccdd2bf2bb49f9836b");
+		CancelOrderDto cancelOrderRespDto = cancelOrderApi.cancelOrder(cancelOrderParamDto);
 		System.out.println(cancelOrderRespDto.getMsg());
 		Assert.assertNotNull(cancelOrderRespDto);
 		
