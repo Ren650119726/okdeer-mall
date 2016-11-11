@@ -701,6 +701,9 @@
 		<if test="type != null">
 		 	AND collect.type = #{type,jdbcType=TINYINT}
 		</if>
+		<if test="collectId != null and collectId != ''">
+		 	AND collect.id = #{collectId,jdbcType=TINYINT}
+		</if>
 	  </select>
 	  
 	  <!-- 判断广告代金卷是否已经被改用户领取 add by zhulq-->

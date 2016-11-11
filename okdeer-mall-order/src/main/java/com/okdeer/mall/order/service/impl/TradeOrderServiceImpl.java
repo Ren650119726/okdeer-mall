@@ -69,8 +69,10 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuPlu;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
+import com.okdeer.archive.goods.store.enums.MeteringMethod;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
@@ -1673,6 +1675,21 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			// 如果是实物订单，走进销存库存
 			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+				
+				// add by 便利店优惠金额单价  lijun 20161110 begin
+				if (item.getPreferentialPrice() != null
+						&& item.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+					boolean isWeigh = false;
+					if(item.getWeight() != null){
+						isWeigh = true;
+					}
+					BigDecimal number = convertScaleToKg(item.getQuantity(), isWeigh);
+					// 优惠单价.订单实际收入除以商品数量得到的价格
+					BigDecimal price = item.getIncome().divide(number, 4, BigDecimal.ROUND_HALF_UP);
+					detail.setPrice(price);
+				}
+				// add by 便利店优惠金额单价  lijun 20161110 end
+				
 				stockManagerJxcService.updateStock(stockAdjustVo);
 			} else {
 				// 否则走商城库存
@@ -5062,6 +5079,24 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			detail.setStyleCode(item.getStyleCode());
 			detail.setBarCode(item.getBarCode());
 			detail.setNum(item.getQuantity());
+			
+			// add by 便利店优惠金额单价 lijun begin
+			if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED
+					&& tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+				if (item.getPreferentialPrice() != null
+						&& item.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+					boolean isWeigh = false;
+					if (item.getWeight() != null) {
+						isWeigh = true;
+					}
+					BigDecimal number = convertScaleToKg(item.getQuantity(), isWeigh);
+					// 优惠单价
+					BigDecimal price = item.getIncome().divide(number, 4, BigDecimal.ROUND_HALF_UP);
+					detail.setPrice(price);
+				}
+			}
+			// add by 便利店优惠金额单价  lijun end
+			
 			adjustDetailList.add(detail);
 		}
 		stockAdjustVo.setAdjustDetailList(adjustDetailList);
@@ -5906,7 +5941,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderId);
 		// 订单状态(0:等待买家付款,1:待发货,2:已取消,3:已发货,4:已拒收,5:已签收(交易完成),6:交易关闭),7:取消中,8:拒收中，11支付确认中
 		int orderStatus = tradeOrder.getStatus().ordinal();
-		if (orderStatus == 0) {
+		if (orderStatus == 0 || orderStatus == 2  || orderStatus == 12 ) {
 			// 实付为0的到店消费订单，状态为5交易完成的， 也返券
 			logger.info(ORDER_COUPONS_STATUS_CHANGE, orderStatus, orderId, userId);
 			respDto.setMessage(
@@ -5932,18 +5967,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 实物订单 订单类型
 			map.put("orderType", ActivityCollectOrderTypeEnum.PHYSICAL_ORDER.getValue());
 			// 获取消费返券信息并赠送代金券
-			getOrderCouponsInfo(orderId, userId, map, respDto);
+			getOrderCouponsInfo(orderId, userId, map, respDto,tradeOrder.getCreateTime());
 		} else if (orderType == 2 || orderType == 5) {
 			// 订单类型
 			map.put("orderType", ActivityCollectOrderTypeEnum.SERVICE_STORE_ORDER.getValue());
 			// 获取消费返券信息并赠送代金券
-			getOrderCouponsInfo(orderId, userId, map, respDto);
+			getOrderCouponsInfo(orderId, userId, map, respDto,tradeOrder.getCreateTime());
 		} else if (orderType == 3 || orderType == 4) {
 			// 充值订单
 			// 订单类型
 			map.put("orderType", ActivityCollectOrderTypeEnum.MOBILE_PAY_ORDER.getValue());
 			// 获取消费返券信息并赠送代金券
-			getOrderCouponsInfo(orderId, userId, map, respDto);
+			getOrderCouponsInfo(orderId, userId, map, respDto,tradeOrder.getCreateTime());
 		}
 	}
 
@@ -6000,7 +6035,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		map.put("provinceId", provinceId);
 		map.put("cityId", cityId);
 		// 获取消费返券信息并赠送代金券
-		getOrderCouponsInfo(orderId, userId, map, respDto);
+		getOrderCouponsInfo(orderId, userId, map, respDto,null);
 	}
 
 	/**
@@ -6020,7 +6055,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @date 2016年9月23日
 	 */
 	private void getOrderCouponsInfo(String orderId, String userId, Map<String, Object> map,
-			OrderCouponsRespDto respDto) throws ServiceException {
+			OrderCouponsRespDto respDto,Date orderTime) throws ServiceException {
 		// 查询是否有符合消费返券的活动（活动代金券）
 		List<ActivityCollectCouponsOrderVo> collCoupons = activityCollectCouponsService.findCollCouponsLinks(map);
 		if (CollectionUtils.isEmpty(collCoupons)) {
@@ -6030,6 +6065,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					(respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_NOT_ACTIVITY_TIPS);
 			return;
 		}
+		
+		// Begin added by maojj 2016-11-10
+		if(orderTime != null && orderTime.before(collCoupons.get(0).getStartTime())){
+			// 如果下单时间在活动开始时间之前，则不送代金券
+			logger.info(ORDER_COUPONS_NOT_ACTIVITY, orderId, userId);
+			respDto.setMessage(
+					(respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_NOT_ACTIVITY_TIPS);
+			return;
+		}
+		// End added by maojj 2016-11-10
+		
 		/*
 		 * if (collCoupons.size() > 1) { // 同一时间，同一区域，只能有一个消费返券活动 logger.info(ORDER_COUPONS_NOT_ONLY, orderId, userId);
 		 * respDto.setMessage( (respDto.getMessage() == null ? "" : respDto.getMessage()) +
@@ -6838,4 +6884,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		return tradeOrderMapper.selectServiceRefundAmount(params);
 	}
 	// end added by luosm 20161010 V1.1.0
+	
+	
+	/**
+	 * 如果是称重会转换成千克
+	 */
+	private BigDecimal convertScaleToKg(Integer value, boolean isWeigh) {
+		if (value == null) {
+			return null;
+		}
+		if (isWeigh) {
+			return BigDecimal.valueOf(value).divide(BigDecimal.valueOf(1000)).setScale(4, BigDecimal.ROUND_FLOOR);
+		} else {
+			return BigDecimal.valueOf(value);
+		}
+	}
 }
