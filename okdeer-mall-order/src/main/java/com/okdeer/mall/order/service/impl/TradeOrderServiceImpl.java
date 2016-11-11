@@ -5018,8 +5018,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					}
 					BigDecimal number = convertScaleToKg(item.getQuantity(), isWeigh);
 					// 优惠单价
-					BigDecimal price = item.getUnitPrice()
-							.subtract(item.getPreferentialPrice().divide(number, 4, BigDecimal.ROUND_HALF_UP));
+					BigDecimal price = item.getIncome().divide(number, 4, BigDecimal.ROUND_HALF_UP);
 					detail.setPrice(price);
 				}
 			}
