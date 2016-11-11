@@ -761,7 +761,7 @@ public class TradeOrderRefundsServiceImpl
 			detail.setNum(quantity);
 			
 			// add by 便利店优惠金额单价  lijun 20161110 begin
-			if (order.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+			if (orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 				BigDecimal number = null;
 				if (item.getWeight() != null) {
 					number = BigDecimal.valueOf(quantity).divide(BigDecimal.valueOf(1000)).setScale(4, BigDecimal.ROUND_FLOOR);
