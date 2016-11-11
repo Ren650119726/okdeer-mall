@@ -9,7 +9,7 @@
     <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
     <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
     <result column="status" property="status" jdbcType="VARCHAR" javaType="com.okdeer.mall.operate.enums.SkinManagerStatus"/>
-	<collection property="detail" ofType="com.okdeer.mall.operate.dto.SkinManagerDetailDto" >
+	<collection property="detail" ofType="com.okdeer.mall.operate.entity.SkinManagerDetail" >
 	       <id  column="id" property="detailId" jdbcType="VARCHAR" /> 
 	       <result column="skin_manager_id" property="skinManagerId" jdbcType="VARCHAR" />
 	       <result column="module_name" property="moduleName" jdbcType="VARCHAR" />
