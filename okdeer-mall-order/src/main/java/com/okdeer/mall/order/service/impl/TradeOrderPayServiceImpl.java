@@ -194,8 +194,8 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 
 		TradeOrder order = tradeOrderMapper.selectTradeDetailInfoById(tradeOrder.getId());
 
-		//int acType = order.getActivityType().ordinal(); // 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
-		//String activityId = order.getActivityItemId(); // 活动项ID
+		// int acType = order.getActivityType().ordinal(); // 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
+		// String activityId = order.getActivityItemId(); // 活动项ID
 
 		// 设置订单信息
 		PayReqestDto payReqest = new PayReqestDto();
@@ -491,6 +491,21 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
 				throw new Exception("取消订单余额支付发送消息失败");
 			}
+		} else if (tradeOrder.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
+				&& tradeOrder.getIsBreach() == WhetherEnum.whether
+				&& (com.okdeer.mall.order.enums.PayTypeEnum.ALIPAY == orderPay.getPayType()
+						|| com.okdeer.mall.order.enums.PayTypeEnum.WXPAY == orderPay.getPayType())) {
+			// 如果是上门服务订单，并且违约了，还是第三方支付订单，需要赔偿违约金给商家
+			// 构建支付违约金信息
+			String tradesPaymentJson = buildBreachMoneyPay(tradeOrder);
+
+			Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
+					tradesPaymentJson.getBytes(Charsets.UTF_8));
+			// 发送消息
+			SendResult sendResult = rocketMQProducer.send(msg);
+			if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
+				throw new Exception("取消订单违约金收入发送消息失败");
+			}
 		}
 		return true;
 	}
@@ -511,20 +526,26 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		}
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 		// Begin V1.2 modified by maojj 2016-11-09
-		if(order.getIsBreach() == WhetherEnum.whether){
+		if (order.getIsBreach() == WhetherEnum.whether) {
 			// 如果订单需要支付违约金，则退款金额为：实付金额-收取的违约金
 			payTradeVo.setAmount(order.getActualAmount().subtract(order.getBreachMoney()));
-		}else{
+		} else {
 			payTradeVo.setAmount(order.getActualAmount());
 		}
+		//用于云钱包校验是否需要收取违约金
+		payTradeVo.setCheckAmount(order.getActualAmount());
 		// End V1.2 modified by maojj 2016-11-09
 		payTradeVo.setIncomeUserId(order.getUserId());
 		payTradeVo.setTradeNum(order.getTradeNum());
 		payTradeVo.setTitle("取消订单(余额支付)，交易号：" + order.getTradeNum());
-		payTradeVo.setBusinessType(BusinessTypeEnum.CANCEL_ORDER);
+		
+		if (order.getType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
+			payTradeVo.setBusinessType(BusinessTypeEnum.SERVICE_STORE_ORDER_CANCEL);
+		} else {
+			payTradeVo.setBusinessType(BusinessTypeEnum.CANCEL_ORDER);
+		}
 		payTradeVo.setServiceFkId(order.getId());
 		payTradeVo.setServiceNo(order.getOrderNo());
-		payTradeVo.setRemark("无");
 		// 支付人:友门鹿
 		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		// 优惠金额
@@ -537,7 +558,28 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_CANCEL);
 		return JSONObject.toJSONString(payTradeVo);
 	}
-
+	
+	/**
+	 * @Description: 构建违约金消息
+	 * @param order 订单信息
+	 * @return
+	 * @throws ServiceException
+	 * @author zengjizu
+	 * @date 2016年11月11日
+	 */
+	private String buildBreachMoneyPay(TradeOrder order) throws ServiceException {
+		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+		payTradeVo.setAmount(order.getBreachMoney());
+		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
+		payTradeVo.setTradeNum(order.getTradeNum());
+		payTradeVo.setTitle("取消订单违约金收入[" + order.getTradeNum()+"]");
+		payTradeVo.setBusinessType(BusinessTypeEnum.PAY_BREACH_FEE);
+		payTradeVo.setServiceFkId(order.getId());
+		payTradeVo.setServiceNo(order.getOrderNo());
+		// 接受返回消息的tag
+		payTradeVo.setTag(null);
+		return JSONObject.toJSONString(payTradeVo);
+	}
 	/**
 	 * 确认订单付款
 	 */
