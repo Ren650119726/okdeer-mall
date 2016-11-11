@@ -50,9 +50,6 @@ import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreBranchesServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
@@ -132,6 +129,9 @@ import com.okdeer.mall.system.mq.StockMQProducer;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 import com.qiniu.util.Auth;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.yschome.file.FileUtil;
 
 import net.sf.json.JSONArray;
@@ -4286,7 +4286,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 //			String skuWeight = objss.getString("skuWeight");
 //			String meteringMethod = objss.getString("meteringMethod"); // 是否计件与称重
 //			int meter = Integer.valueOf(meteringMethod);
-//
+
 //			if (meter == 1) {
 //				OrderStock stockNum = new OrderStock();
 //				stockNum.setId(skuId);
