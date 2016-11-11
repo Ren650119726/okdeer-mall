@@ -559,7 +559,7 @@
       AND id = #{id,jdbcType=VARCHAR}
    </update>
     
-   <insert id="insertSelectiveBatch" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
+   <insert id="insertSelectiveBatch" parameterType="list" >
     insert into activity_coupons_record
         (id, collect_type, coupons_id, coupons_collect_id, collect_time, 
          collect_user_id, valid_time, status, order_id, room_id) values

@@ -7,7 +7,6 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -153,9 +152,9 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 		// 订单取消原因
 		String reason = tradeOrder.getReason();
 		// 判断订单取消类型：0：系统取消，1：用户取消，2：商家取消
-		OrderCancelType cancelType = judgeCancelType(reason);
+		OrderCancelType cancelType = tradeOrder.getCancelType();
 		// TODO 是否有违约金 0:否，1:是
-		Integer isBreakContrace = 0;
+		WhetherEnum isBreach = tradeOrder.getIsBreach();
 		// 查询当前订单
 		TradeOrder currentOrder = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
 		switch (currentOrder.getStatus()) {
@@ -177,11 +176,11 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 				break;
 			case DROPSHIPPING:
 				if (cancelType == OrderCancelType.CANCEL_BY_BUYER) {
-					if (isBreakContrace == 0) {
-						remark = String.format(OrderTraceConstant.CANCEL_BY_USER, reason);
-					} else {
+					if (isBreach == WhetherEnum.whether) {
 						// TODO 第二个参数时违约金的百分比
-						remark = String.format(OrderTraceConstant.CANCEL_BY_USER_BREAK_CONTRACT, reason, "");
+						remark = String.format(OrderTraceConstant.CANCEL_BY_USER_BREAK_CONTRACT, reason, tradeOrder.getBreachPercent());
+					} else {
+						remark = String.format(OrderTraceConstant.CANCEL_BY_USER, reason);
 					}
 				} else if (cancelType == OrderCancelType.CANCEL_BY_SELLER) {
 					remark = String.format(OrderTraceConstant.CANCEL_BY_SELLER, reason);
@@ -193,25 +192,6 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 				break;
 		}
 		return remark;
-	}
-
-	/**
-	 * @Description: 根据取消原因判断取消类型
-	 * @param reason
-	 * @return   
-	 * @author maojj
-	 * @date 2016年11月7日
-	 */
-	private OrderCancelType judgeCancelType(String reason) {
-		OrderCancelType cancelType = null;
-		if (StringUtils.isEmpty(reason) || reason.contains(OrderCancelType.CANCEL_BY_SELLER.getDesc())) {
-			cancelType = OrderCancelType.CANCEL_BY_SELLER;
-		} else if (reason.contains(OrderCancelType.CANCEL_BY_BUYER.getDesc())) {
-			cancelType = OrderCancelType.CANCEL_BY_BUYER;
-		} else if (reason.contains(OrderCancelType.CANCEL_BY_SYSTEM.getDesc())) {
-			cancelType = OrderCancelType.CANCEL_BY_SYSTEM;
-		}
-		return cancelType;
 	}
 
 	@Override

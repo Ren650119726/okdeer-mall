@@ -10,10 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
-import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsStatus;
 import com.okdeer.mall.activity.label.entity.ActivityLabel;
 import com.okdeer.mall.activity.label.enums.ActivityLabelStatus;
-import com.okdeer.mall.activity.label.service.ActivityLabelServiceApi;
+import com.okdeer.mall.activity.label.service.ActivityLabelApi;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 
 /**
@@ -29,7 +28,7 @@ public class ActivityLabelJob extends AbstractSimpleElasticJob {
 	private static final Logger log = LoggerFactory.getLogger(ActivityLabelJob.class);
 
 	@Autowired
-	private ActivityLabelServiceApi activityLabelService;
+	private ActivityLabelApi activityLabelService;
 	
 	
 	//本来放在service事务里面,后来改为单个活动为一个事务,所以把循环放在这里
@@ -51,7 +50,7 @@ public class ActivityLabelJob extends AbstractSimpleElasticJob {
 						listIdNoStart.add(a.getId());
 					}
 					//进行中的改为已结束的
-					else if(a.getStatus() == ActivityCollectCouponsStatus.ing.getValue()){
+					else if(a.getStatus() == ActivityLabelStatus.ing.getValue()){
 						listIdIng.add(a.getId());
 					}
 				}
@@ -63,7 +62,7 @@ public class ActivityLabelJob extends AbstractSimpleElasticJob {
 				if(listIdNoStart != null && listIdNoStart.size() > 0){
 					for(String id : listIdNoStart){
 						try{
-							activityLabelService.updateBatchStatus(id,  ActivityCollectCouponsStatus.ing.getValue(), updateUserId, updateTime);
+							activityLabelService.updateBatchStatus(id,  ActivityLabelStatus.ing.getValue(), updateUserId, updateTime);
 						}catch(Exception e){
 							log.error("服务标签管理"+id+"job异常 改为进行中:",e);
 						}
@@ -74,7 +73,7 @@ public class ActivityLabelJob extends AbstractSimpleElasticJob {
 				if(listIdIng != null && listIdIng.size() > 0){
 					for(String id : listIdIng){
 						try{
-							activityLabelService.updateBatchStatus(id,  ActivityCollectCouponsStatus.end.getValue(), updateUserId, updateTime);
+							activityLabelService.updateBatchStatus(id,  ActivityLabelStatus.end.getValue(), updateUserId, updateTime);
 						}catch(Exception e){
 							log.error("服务标签管理"+id+"job异常 改为已经结束:",e);
 						}

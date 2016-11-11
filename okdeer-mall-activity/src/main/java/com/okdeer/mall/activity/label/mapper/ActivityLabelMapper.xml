@@ -13,8 +13,6 @@
 		<result property="updateTime" column="update_time" />
 		<result property="updateUserId" column="update_user_id" />
 		
-		<!-- 上面是数据库属性,下面是自己扩展的属性 -->
-<!-- 		<result property="good" column="update_user_id" /> -->
 	</resultMap>
 	
 	<sql id="columns">
@@ -61,36 +59,6 @@
 		order by s.create_time desc
 	</select>
 	
-	<select id="listGoods" parameterType="map" resultType="map">
-		select 
-			s.id,
-			s.name,
-			si.store_name as storeName,
-			s.online_price as onlinePrice,
-			s.sale_num as saleNum,
-			s.update_time as updateTime
-			from goods_store_sku s 
-			left join store_info si on (s.store_id = si.id) 
-			where s.disabled = 0 
-			and s.type in (3,4) 
-			<if test="goodsName != null and goodsName != ''">
-				and s.name like concat('%',#{goodsName},'%' )
-			</if>
-			<if test="storeName != null and storeName != ''">
-				and si.store_name like concat('%',#{storeName},'%' )
-			</if>
-			<if test="goodsId != null and goodsId != ''">
-				and s.id like concat('%',#{goodsId},'%' )
-			</if>
-			<if test="goodsIdList != null">
-				and s.id in
-				<foreach item="item" index="index" collection="goodsIdList" open="(" separator="," close=")">  
-	  				#{item}  
-	 			</foreach>  
- 			</if>
-		order by s.update_time desc 
-	</select>
-
     <insert id="add" parameterType="com.okdeer.mall.activity.label.entity.ActivityLabel">
         INSERT INTO activity_label 
 	    <trim prefix="(" suffix=")" suffixOverrides="," >
@@ -147,9 +115,43 @@
         where id = #{id}
     </update>
 
-    <select id="get" resultMap="ActivityLabel" parameterType="string">
+    <select id="findById" resultMap="ActivityLabel" parameterType="string">
         select <include refid="columns"/> from activity_label where id = #{value} 
     </select>
+    
+    <delete id="delete" parameterType="string">
+        delete from activity_label where id = #{value} 
+    </delete>
+    
+    <select id="listGoods" parameterType="map" resultType="map">
+		select 
+			s.id,
+			s.name,
+			si.store_name as storeName,
+			s.online_price as onlinePrice,
+			s.sale_num as saleNum,
+			s.update_time as updateTime
+			from goods_store_sku s 
+			left join store_info si on (s.store_id = si.id) 
+			where s.disabled = 0 
+			and s.type in (3,4) 
+			<if test="goodsName != null and goodsName != ''">
+				and s.name like concat('%',#{goodsName},'%' )
+			</if>
+			<if test="storeName != null and storeName != ''">
+				and si.store_name like concat('%',#{storeName},'%' )
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				and s.id like concat('%',#{goodsId},'%' )
+			</if>
+			<if test="goodsIdList != null">
+				and s.id in
+				<foreach item="item" index="index" collection="goodsIdList" open="(" separator="," close=")">  
+	  				#{item}  
+	 			</foreach>  
+ 			</if>
+		order by s.update_time desc 
+	</select>
 
     <update id="updateBatchStatus" parameterType="map">
     	update activity_label set status = #{status} where id in 

@@ -587,4 +587,16 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		advertMapper.updateByPrimaryKeySelective(columnAdvert);
 	}
 	// end  add　　by zengjz  修改广告的排序值
+	
+	/**
+	 * 根据活动url查询广告信息
+	 * @param targetUrl 活动url
+	 * tuzhiding
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	@Override
+	public ColumnAdvert getAdvertForTargetURl(String targetUrl) {
+		return this.advertMapper.getAdvertForTargetURl(targetUrl);
+	}
 }

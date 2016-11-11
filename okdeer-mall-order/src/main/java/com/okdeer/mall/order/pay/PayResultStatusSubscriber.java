@@ -393,11 +393,17 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 				tradeOrderPay.setOrderId(tradeOrder.getId());
 				tradeOrderPay.setPayTime(new Date());
 				tradeOrderPay.setPayType(PayTypeEnum.WALLET);
+				// Begin V1.2 modified by maojj 2016-11-09
 				if (orderType == 1) {
+					// 团购服务订单
 					tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
+				} else if (orderType == OrderTypeEnum.SERVICE_STORE_ORDER.ordinal() ){
+					// 上门服务订单
+					tradeOrder.setStatus(OrderStatusEnum.WAIT_RECEIVE_ORDER);
 				} else {
 					tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
 				}
+				// End V1.2 modified by maojj 2016-11-09
 				tradeOrder.setUpdateTime(new Date());
 				tradeOrder.setTradeOrderPay(tradeOrderPay);
 			} else {

@@ -759,6 +759,21 @@ public class TradeOrderRefundsServiceImpl
 				}
 			}
 			detail.setNum(quantity);
+			
+			// add by 便利店优惠金额单价  lijun 20161110 begin
+			if (orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+				BigDecimal number = null;
+				if (item.getWeight() != null) {
+					number = BigDecimal.valueOf(quantity).divide(BigDecimal.valueOf(1000)).setScale(4, BigDecimal.ROUND_FLOOR);
+				}else{
+					number = BigDecimal.valueOf(quantity);
+				}
+				// 优惠单价
+				BigDecimal price = item.getIncome().divide(number, 4, BigDecimal.ROUND_HALF_UP);
+				detail.setPrice(price);
+			}
+			// add by 便利店优惠金额单价  lijun 20161110 end
+			
 			adjustDetailList.add(detail);
 		}
 		stockAdjustVo.setAdjustDetailList(adjustDetailList);

@@ -186,5 +186,13 @@ public interface ColumnAdvertMapper extends IBaseCrudMapper {
 	 */
 	List<Map<String,Object>> listGoodsForAdvert(Map<String, Object> map);
 	// end  add　　by zhangkn  获取广告商品列表
+	
+	/**
+	 * 根据活动url查询广告信息
+	 * @param targetUrl 活动url
+	 * tuzhiding
+	 * @return
+	 */
+	ColumnAdvert getAdvertForTargetURl(@Param("targetUrl") String targetUrl);
 }
 

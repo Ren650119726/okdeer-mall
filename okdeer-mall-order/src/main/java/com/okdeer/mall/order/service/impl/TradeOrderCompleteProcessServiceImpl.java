@@ -350,7 +350,7 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 订单来源
 		refunds.put("orderResource", orderRefunds.getOrderResource().ordinal());
 		// 原价金额=商品实际金额和运费
-		refunds.put("totalAmount", orderRefunds.getTotalAmount());
+		refunds.put("totalAmount", orderRefunds.getTotalAmount().add(orderRefunds.getTotalPreferentialPrice()));
 		// 商家实收金额
 		refunds.put("amount", orderRefunds.getTotalIncome());
 		// 店铺优惠金额
@@ -509,7 +509,8 @@ public class TradeOrderCompleteProcessServiceImpl
 			// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 			if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0) {
 				storePreferentialPrice = orderRefundsItem.getPreferentialPrice();
-			} else if (orderRefundsItem.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+			} else if (orderRefundsItem.getPreferentialPrice() != null 
+					&& orderRefundsItem.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
 				platDiscountAmount = orderRefundsItem.getPreferentialPrice();
 			}
 			// 实际单价=原单价减去店铺优惠
