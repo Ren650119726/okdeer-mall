@@ -100,9 +100,11 @@ public class ServActivityQueryServiceImpl implements RequestHandler<ServiceOrder
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
 					int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
-					if (count > Constant.ZERO) {
+					// Begin 2016-11-18 modified by maojj 
+					if (count == Constant.ZERO || count != spuCategoryIds.size()) {
 						delCouponList.add(coupons);
 					}
+					// End 2016-11-18 modified by maojj 
 				}
 			}
 			//删除不符合指定分类使用的代金券
@@ -141,7 +143,11 @@ public class ServActivityQueryServiceImpl implements RequestHandler<ServiceOrder
 					logger.error(LoggerConstants.LOGGER_ERROR_EXCEPTION, e);
 				}
 			}else {
-				queryCondition.put("addressId", reqDto.getAddressId());
+				if(respData.getDefaultAddress() != null){
+					queryCondition.put("addressId", respData.getDefaultAddress().getAddressId());
+				}else{
+					queryCondition.put("addressId", "");
+				}
 			}
 			//End added by tangy
 		}

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper" >
+  
+  <!-- 返回到代金劵预领取记录  -->
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="collect_type" property="collectType" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsType" jdbcType="TINYINT" />
+    <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
+    <result column="coupons_collect_id" property="couponsCollectId" jdbcType="VARCHAR" />
+    <result column="collect_time" property="collectTime" jdbcType="TIMESTAMP" />
+    <result column="collect_user_id" property="collectUserId" jdbcType="VARCHAR" />
+    <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
+    <result column="status" property="status" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum" jdbcType="TINYINT" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="room_id" property="roomId" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <!-- 返回到代金劵预领取记录字段  tuzhiding  -->
+  <select id="getCopyRecords" resultMap="BaseResultMap" >
+    SELECT 
+    	DISTINCT
+    	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 
+    	  #{userId,jdbcType=VARCHAR} as collect_user_id,r.valid_time, r.status, r.order_id,r.room_id
+    FROM 	          
+ 		activity_coupons_record_before r 
+ 	WHERE 
+ 		r.`collect_user` = #{phone,jdbcType=VARCHAR}
+ 		AND r.valid_time &gt; #{nowDate,jdbcType=TIMESTAMP}
+ </select>
+ 
+ 	
+ 
+  <!-- 插入代金劵预领取记录字段 tuzhiding  -->
+  <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore" >
+    insert into activity_coupons_record_before (id, collect_type, coupons_id, 
+      coupons_collect_id, collect_time, collect_user, 
+      valid_time, status, order_id, 
+      room_id)
+    values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=BIT}, #{couponsId,jdbcType=VARCHAR}, 
+      #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUser,jdbcType=VARCHAR}, 
+      #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=BIT}, #{orderId,jdbcType=VARCHAR}, 
+      #{roomId,jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- 根据代金劵活动id代金劵预领取统计  -->
+  <select id="countCouponsAllId" resultType="int" >
+     SELECT 
+		  count(1)
+		FROM
+		  activity_coupons_record_before r 
+		  inner JOIN activity_collect_coupons c 
+		    ON r.coupons_collect_id = c.id 
+		WHERE c.disabled = 0  
+		  <if test="collectUser != null and collectUser != ''">
+		  	AND r.collect_user = #{collectUser,jdbcType=VARCHAR}
+		  </if>
+		  <if test="collectId != null and collectId != ''">
+		  	AND c.id = #{collectId,jdbcType=VARCHAR}
+		  </if>
+   </select>
+   
+    <!-- tuzhiding:查询代金劵每日领取数量 -->
+	<select id="getCountByDayParams" resultType="int" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
+	  SELECT count(1)
+	  FROM activity_coupons_record_before  b left join activity_coupons_record c on b.id =c.id
+	  WHERE  c.id is null
+	  <!-- 代金券领取活动（注册活动）id -->
+	  <if test="couponsCollectId != null and couponsCollectId != ''">
+	    AND b.coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR}
+	  </if>
+	  <!-- 代金券id -->
+	  <if test="couponsId != null and couponsId != ''">
+	    AND b.coupons_id = #{couponsId,jdbcType=VARCHAR}
+	  </if>
+	  <!-- 活动类型 -->
+	  <if test="collectType != null">
+	     AND b.collect_type = #{collectType,jdbcType=TINYINT}
+	  </if>
+	  <!-- 领取状态 -->
+	  <if test="status != null">
+	     AND b.`status` = #{status,jdbcType=TINYINT}
+	  </if>
+	  <!-- 领取时间-->
+	  <if test="collectTime != null">
+	     AND b.collect_time = #{collectTime}
+	  </if>	  
+	</select>
+      
+</mapper> 

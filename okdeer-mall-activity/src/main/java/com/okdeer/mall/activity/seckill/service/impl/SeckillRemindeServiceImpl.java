@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.system.entity.SysBuyerUser;
-import com.okdeer.archive.system.entity.SysUser;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.kafka.producer.KafkaProducer;
 import com.okdeer.mall.activity.seckill.entity.SeckillReminde;
 import com.okdeer.mall.activity.seckill.mapper.SeckillRemindeMapper;
@@ -29,14 +29,10 @@ import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
-import com.okdeer.mall.system.mapper.SysUserMapper;
-import com.okdeer.mall.system.utils.mapper.JsonMapper;
 
 /**
  * ClassName: SeckillRemindeServiceImpl 
- * @Description: TODO
- * @author yangq
- * @date 2016年9月28日
+ * @Dcom.okdeer.base.common.utils.mapper.JsonMapper016年9月28日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description

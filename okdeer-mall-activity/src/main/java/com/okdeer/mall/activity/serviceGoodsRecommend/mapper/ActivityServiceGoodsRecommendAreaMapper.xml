@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.okdeer.mall.activity.serviceGoodsRecommend.mapper.ActivityServiceGoodsRecommendAreaMapper">
+
+	<resultMap type="com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommendArea" id="ActivityServiceGoodsRecommendArea" >
+		<result property="id" column="id" />
+		<result property="activityId" column="activity_id" />
+		<result property="areaId" column="area_id" />
+		<result property="type" column="type" />
+	</resultMap>
+	
+	<sql id="columns">
+		id,activity_id,area_id,type
+	</sql>
+
+    <select id="listByActivityId" parameterType="string" resultMap="ActivityServiceGoodsRecommendArea">
+		select 
+			<include refid="columns"/>
+			from activity_service_goods_recommend_area 
+			where activity_id = #{value}
+	</select>
+
+    <insert id="addBatch" parameterType="list">
+        insert into activity_service_goods_recommend_area(
+			<include refid="columns"/>
+		)values
+		<foreach collection="list" item="item" index="index" separator="," >
+        (
+            #{item.id},
+            #{item.activityId},
+            #{item.areaId},
+            #{item.type}
+        )
+		</foreach>
+	</insert>
+
+    <delete id="deleteByActivityId" parameterType="string">
+        delete from activity_service_goods_recommend_area where activity_id = #{value} 
+    </delete>
+    
+</mapper>

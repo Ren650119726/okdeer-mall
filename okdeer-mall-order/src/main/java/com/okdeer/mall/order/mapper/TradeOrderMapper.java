@@ -183,7 +183,7 @@ public interface TradeOrderMapper {
 	 * @param paymentTime
 	 */
 	void updatePaymentStatusByIds(@Param("ids") String[] ids, @Param("paymentStatus") PaymentStatusEnum paymentStatus,
-			@Param("paymentTime") Date paymentTime);
+			@Param("paymentTime") Date paymentTime, @Param("paymentUserId") String paymentUserId);
 
 	/**
 	 * 

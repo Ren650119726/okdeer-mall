@@ -24,6 +24,10 @@
 		<result column="pv" property="pv" jdbcType="INTEGER"/>
 		<result column="on_shelf_time" property="onShelfTime" jdbcType="TIMESTAMP"/>
 		<result column="off_shelf_time" property="offShelfTime" jdbcType="TIMESTAMP"/>
+		<!-- begin add by zengjz 2016-11-07 增加字段-->
+		<result column="business_id" property="businessId" jdbcType="VARCHAR"/>
+		<result column="sort" property="sort" jdbcType="INTEGER"/>
+		<!-- end add by zengjz 2016-11-07 增加字段-->
 	</resultMap>
 
 	<resultMap type="com.okdeer.mall.advert.entity.ColumnAdvertVo" id="columnAdvertVoRsMap" extends="columnAdvertRsMap">
@@ -75,7 +79,7 @@
 	<sql id="base_column_list">
 		id, position_id, belong_type, name, target_type, target, target_url, pic_url,
 		area_type, start_time, end_time, is_pay, trade_num, status, create_time, create_user_id,
-		update_time, update_user_id, disabled, pv, on_shelf_time, off_shelf_time
+		update_time, update_user_id, disabled, pv, on_shelf_time, off_shelf_time,business_id,sort
 	</sql>
 	
 	<select id="selectByPrimaryKey" resultMap="columnAdvertRsMap">
@@ -83,12 +87,21 @@
 		FROM column_advert
 		WHERE id = #{id,jdbcType=VARCHAR}
 	</select>
+	<!-- tuzhiding 根据连接url查出对应广告活动 -->
+	<select id="getAdvertForTargetURl" resultMap="columnAdvertRsMap">
+		SELECT <include refid="base_column_list" />
+		FROM column_advert
+		WHERE 
+		disabled =0 AND
+		target_url  LIKE CONCAT('%',#{targetUrl},'%')
+	</select>
 	
 <!-- update by  zhulq 将未开始的广告置成开始 必须要审核通过  -->
 	<select id="getAdvertForJob" resultMap="columnAdvertRsMap">
 		SELECT ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
 		ca.area_type, ca.start_time, ca.end_time, ca.is_pay, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
-		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, caa.status as appStatus
+		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, caa.status as appStatus,
+		ca.business_id,ca.sort
 		FROM column_advert ca LEFT JOIN column_advert_approval caa ON caa.advert_id = ca.id
 		WHERE caa.status = 1  
 		<if test="status != null">
@@ -103,7 +116,8 @@
 	<select id="getAdvertStartForJob" resultMap="columnAdvertRsMap">
 		SELECT ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
 		ca.area_type, ca.start_time, ca.end_time, ca.is_pay, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
-		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, caa.status as appStatus
+		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, caa.status as appStatus,
+		ca.business_id,ca.sort
 		FROM column_advert ca LEFT JOIN column_advert_approval caa ON caa.advert_id = ca.id
 		WHERE 1 = 1  
 		<if test="status != null">
@@ -378,7 +392,15 @@
 			</if>
 			<if test="offShelfTime != null">
 				off_shelf_time
-			</if>									
+			</if>
+			<!-- begin add by zengjz 2016-11-07 增加字段-->
+			<if test="businessId != null">
+				business_id, 
+			</if>
+			<if test="sort != null">
+				sort
+			</if>
+			<!-- end add by zengjz 2016-11-07 增加字段-->											
 		</trim>
 		VALUES
 		<trim prefix="(" suffix=")" suffixOverrides=",">
@@ -447,7 +469,16 @@
 			</if>
 			<if test="offShelfTime != null">
 				#{offShelfTime, jdbcType=TIMESTAMP}
-			</if>				
+			</if>
+			
+			<!-- begin add by zengjz 2016-11-07 增加字段-->
+			<if test="businessId != null">
+				#{businessId, jdbcType=VARCHAR}, 
+			</if>
+			<if test="sort != null">
+				#{sort, jdbcType=TINYINT}
+			</if>
+			<!-- end add by zengjz 2016-11-07 增加字段-->				
 		</trim>
 	</insert>
 	
@@ -517,6 +548,14 @@
 			<if test="offShelfTime != null">
 				off_shelf_time = #{offShelfTime, jdbcType=TIMESTAMP}
 			</if>
+			<!-- begin add by zengjz 2016-11-07 增加字段-->
+			<if test="businessId != null">
+				business_id = #{businessId, jdbcType=VARCHAR}, 
+			</if>
+			<if test="sort != null">
+				sort = #{sort, jdbcType=TINYINT}
+			</if>
+			<!-- end add by zengjz 2016-11-07 增加字段-->
 		</set>
 		WHERE id = #{id,jdbcType=VARCHAR}
 	</update>
@@ -535,7 +574,8 @@
 			ca.area_type,
 			ca.on_shelf_time,
 			ca.start_time,
-			ca.create_time
+			ca.create_time,
+			ca.business_id,ca.sort
 		FROM
 			column_advert ca 
 			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
@@ -729,7 +769,7 @@
 	<select id="findMobileDoorAdvert" resultMap="columnAdvertRsMap" parameterType="map">
 		SELECT ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
 			   ca.area_type, ca.start_time, ca.end_time, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
-			   ca.update_time, ca.disabled
+			   ca.update_time, ca.disabled,ca.business_id,ca.sort
 		FROM column_advert ca
 		LEFT JOIN column_advert_area area ON area.advert_id = ca.id
 		LEFT JOIN column_advert_position po ON po.id = ca.position_id
@@ -748,5 +788,48 @@
 	        )
 	    </if>
 	    ORDER BY ca.create_time DESC limit 1
+	</select>
+	
+	<!-- add by zhangkn -->
+	<select id="listGoodsForAdvert" resultType="map" parameterType="map">
+		select 
+		CAST(se.is_collect AS SIGNED) as addSendPrice,
+		CAST(se.is_support_purchase AS SIGNED) as canConfirmOrder,
+		se.starting_price as fullPrice,
+		sku.`name` as goodsName,
+		sku.id as goodsStoreSkuId,
+		CAST(se.is_starting_price AS SIGNED) as hasFullPrice,
+		CAST(se.is_distribution_fee AS SIGNED) as hasSendPrice,
+		CAST(se.is_shopping_cart AS SIGNED) as isSupportCart,
+		sku.market_price as marketPrice,
+		pic.url as picUrl,
+		sku.online_price as onlinePrice,
+		stock.sellable as sellable,
+		se.distribution_fee as sendPrice,
+		sku.store_id as skuStoreId,
+		CAST(sku.type AS SIGNED) as skuType,
+		service.is_shop_num as isShopNum,
+		service.shop_num as startBuyNum,
+		si.store_name as storeName,
+		sku.update_time as updateTime	,
+		css.column_server_id as serverColumnId,
+		cs .server_name as serverColumnName
+	
+		from goods_store_sku sku
+		LEFT JOIN store_info si on (sku.store_id = si.id)
+		LEFT JOIN goods_store_sku_stock stock on (sku.id = stock.store_sku_id)
+		LEFT JOIN goods_store_sku_picture pic on (sku.id = pic.store_sku_id and pic.type = 1)
+		LEFT JOIN goods_store_sku_service service on (sku.id = service.store_sku_id)
+		LEFT JOIN store_info_ext ext on (si.id = ext.store_id)
+		LEFT JOIN store_service_ext se on (si.id = se.store_id)
+		LEFT JOIN column_server_store css on (css.store_id = si.id)
+		LEFT JOIN column_server cs on (css.column_server_id = cs.id)
+		where 1 = 1 
+		<if test="goodsIdList != null">
+		 and sku.id in 
+	    <foreach collection="goodsIdList" index="index" item="item" open="(" close=")" separator=",">
+        	#{item}
+        </foreach>
+        </if>
 	</select>
 </mapper>
