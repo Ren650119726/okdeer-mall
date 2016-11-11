@@ -1172,11 +1172,7 @@
 			</foreach>
 		</if>
 		<if test="userId != null and userId != ''">
-<<<<<<< HEAD
-			AND o.shipments_user_id = #{userId}
-=======
 			AND ((o.shipments_user_id = #{userId} AND o.pay_way <![CDATA[ <> ]]> 1) OR (o.payment_user_id = #{userId} AND o.pay_way = 1))
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 		</if>
 		order by o.create_time ${createTimeSort}
 
@@ -3910,11 +3906,7 @@
 		and store_id = #{storeId,jdbcType=VARCHAR}
 		AND disabled = 0
 		<if test="userId != null and userId != ''">
-<<<<<<< HEAD
-			AND shipments_user_id = #{userId}
-=======
 			AND ((shipments_user_id = #{userId} AND pay_way <![CDATA[ <> ]]> 1) OR (payment_user_id = #{userId} AND pay_way = 1))
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 		</if>
 	</select>
 
@@ -3973,11 +3965,7 @@
 		and store_id = #{storeId,jdbcType=VARCHAR}
 		AND disabled = 0
 		<if test="userId != null and userId != ''">
-<<<<<<< HEAD
-			AND shipments_user_id = #{userId}
-=======
 			AND ((shipments_user_id = #{userId} AND pay_way <![CDATA[ <> ]]> 1) OR (payment_user_id = #{userId} AND pay_way = 1))
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 		</if>
 	</select>
 
@@ -3996,11 +3984,7 @@
 		and store_id = #{storeId,jdbcType=VARCHAR}
 		AND disabled = 0
 	    <if test="userId != null and userId != ''">
-<<<<<<< HEAD
-			AND shipments_user_id = #{userId}
-=======
 			AND ((shipments_user_id = #{userId} AND pay_way <![CDATA[ <> ]]> 1) OR (payment_user_id = #{userId} AND pay_way = 1))
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 		</if>
 	</select>
 
@@ -4016,11 +4000,7 @@
 		and store_id = #{storeId,jdbcType=VARCHAR}
 		AND disabled = 0
 		<if test="userId != null and userId != ''">
-<<<<<<< HEAD
-			AND shipments_user_id = #{userId}
-=======
 			AND ((shipments_user_id = #{userId} AND pay_way <![CDATA[ <> ]]> 1) OR (payment_user_id = #{userId} AND pay_way = 1))
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 		</if>
 	</select>
 
@@ -4043,11 +4023,7 @@
 		AND o.`store_id`=#{storeId,jdbcType=VARCHAR}
 		AND o.disabled = 0
 		<if test="userId != null and userId != ''">
-<<<<<<< HEAD
-			AND o.shipments_user_id = #{userId}
-=======
 			AND ((o.shipments_user_id = #{userId} AND o.pay_way <![CDATA[ <> ]]> 1) OR (o.payment_user_id = #{userId} AND o.pay_way = 1))
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 		</if>
 	</select>
 
@@ -4097,11 +4073,7 @@
 		AND o.`store_id`=#{storeId,jdbcType=VARCHAR}
 		AND o.disabled = 0
 		<if test="userId != null and userId != ''">
-<<<<<<< HEAD
-			AND o.shipments_user_id = #{userId}
-=======
 			AND ((o.shipments_user_id = #{userId} AND pay_way <![CDATA[ <> ]]> 1) OR (o.payment_user_id = #{userId} AND pay_way = 1))
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 		</if>
 	</select>
 	<!-- zengj:查询导出POS销售单列表 -->
