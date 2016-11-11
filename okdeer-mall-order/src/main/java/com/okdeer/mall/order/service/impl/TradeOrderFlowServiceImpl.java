@@ -4285,8 +4285,8 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 //			String skuNum = objss.getString("skuNum");
 //			String skuWeight = objss.getString("skuWeight");
 //			String meteringMethod = objss.getString("meteringMethod"); // 是否计件与称重
+		
 //			int meter = Integer.valueOf(meteringMethod);
-
 //			if (meter == 1) {
 //				OrderStock stockNum = new OrderStock();
 //				stockNum.setId(skuId);
