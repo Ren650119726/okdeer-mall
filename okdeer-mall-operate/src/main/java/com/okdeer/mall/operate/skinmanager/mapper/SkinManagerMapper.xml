@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.okdeer.mall.operate.skinmanager.mapper.SkinManagerMapper" >
-  <resultMap id="SkinResultMap" type="com.okdeer.mall.operate.entity.SkinManagerVo" >
+  <resultMap id="SkinResultMap" type="com.okdeer.mall.operate.dto.SkinManagerDto" >
     <id column="id" property="id" jdbcType="VARCHAR" />
     <result column="activity_name" property="activityName" jdbcType="VARCHAR" />
     <result column="skin_module" property="skinModule" jdbcType="VARCHAR" javaType="com.okdeer.mall.operate.enums.SkinModule"/>
@@ -9,7 +9,7 @@
     <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
     <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
     <result column="status" property="status" jdbcType="VARCHAR" javaType="com.okdeer.mall.operate.enums.SkinManagerStatus"/>
-	<collection property="detail" ofType="com.okdeer.mall.operate.entity.SkinManagerDetailVo" >
+	<collection property="detail" ofType="com.okdeer.mall.operate.dto.SkinManagerDetailDto" >
 	       <id  column="id" property="detailId" jdbcType="VARCHAR" /> 
 	       <result column="skin_manager_id" property="skinManagerId" jdbcType="VARCHAR" />
 	       <result column="module_name" property="moduleName" jdbcType="VARCHAR" />
@@ -18,9 +18,7 @@
 	       <result column="selected_img" property="selectedImg" jdbcType="VARCHAR" />
 	</collection > 
   </resultMap>
- <!--  <resultMap type="com.okdeer.mall.operate.entity.SkinManagerVo" id="SkinResultMap" extends="baseResultMap">
 	  
-  </resultMap> -->
   <sql id="Base_Column_List" >
     id,activity_name,skin_module,create_time,start_time,end_time,status
   </sql>
@@ -29,7 +27,7 @@
   </sql>
 
      <!-- 根据条件搜索皮肤列表 -->
-  <select id="findSkinList" resultMap="SkinResultMap" parameterType="com.okdeer.mall.operate.entity.SkinManagerVo">
+  <select id="findSkinList" resultMap="SkinResultMap" parameterType="com.okdeer.mall.operate.dto.SkinManagerDto">
     SELECT 
     <include refid="Base_Column_List" />
      FROM operate_skin_manager 
@@ -65,7 +63,7 @@
  
    <!-- 由于mybatis升级,判断是否为字符串写法不支持   modify  by  wusw  20160721 -->
   <!-- 增加活动皮肤 -->
-  <insert id="addSkin" parameterType="com.okdeer.mall.operate.entity.SkinManagerVo" >
+  <insert id="addSkin" parameterType="com.okdeer.mall.operate.dto.SkinManagerDto" >
     INSERT INTO operate_skin_manager
       (id,
 	  activity_name,
@@ -123,7 +121,7 @@
      </foreach>
   </insert>
  <!-- 修改皮肤信息 -->
-  <update id="updateSkin"  parameterType="com.okdeer.mall.operate.entity.SkinManagerVo" >
+  <update id="updateSkin"  parameterType="com.okdeer.mall.operate.dto.SkinManagerDto" >
     UPDATE operate_skin_manager_detail
     <set >
       <if test="activityName != null and activityName != ''" >
@@ -184,7 +182,7 @@
   </select>
  
   <!--根据皮肤id,逻辑活动皮肤  -->
-  <update id="deleteSkinById" parameterType="com.okdeer.mall.operate.entity.SkinManagerVo">
+  <update id="deleteSkinById" parameterType="com.okdeer.mall.operate.dto.SkinManagerDto">
 	 UPDATE operate_skin_manager
 	 SET disabled = 1,
 	     update_time = #{updateTime,jdbcType=TIMESTAMP},
@@ -192,7 +190,7 @@
 	 WHERE id = #{id,jdbcType=VARCHAR}
   </update>
   <!--根据皮肤id,关闭活动皮肤  -->
-  <update id="closeSkinById" parameterType="com.okdeer.mall.operate.entity.SkinManagerVo">
+  <update id="closeSkinById" parameterType="com.okdeer.mall.operate.dto.SkinManagerDto">
 	 UPDATE operate_skin_manager
 	 SET status = #{status,jdbcType=VARCHAR},
 	     update_time = #{updateTime,jdbcType=TIMESTAMP},
@@ -201,7 +199,7 @@
   </update>
   
  <!-- 查询某固定时间段内是否有运行中的皮肤 -->
-   <select id="selectSkinByTime" resultType="int" parameterType="com.okdeer.mall.operate.entity.SkinManagerVo" >
+   <select id="selectSkinByTime" resultType="int" parameterType="com.okdeer.mall.operate.dto.SkinManagerDto" >
     SELECT 	count(1)
      FROM operate_skin_manager 
      <!-- 未被删除的 -->
@@ -213,7 +211,7 @@
        OR (start_time <![CDATA[ >= ]]> #{startTime,jdbcType=TIMESTAMP} and end_time <![CDATA[ <= ]]> #{endTime,jdbcType=TIMESTAMP}))
   </select>
    <!-- 根据名称查询是否有运行中的皮肤 -->
-   <select id="selectSkinCountByName" resultType="int" parameterType="com.okdeer.mall.operate.entity.SkinManagerVo" >
+   <select id="selectSkinCountByName" resultType="int" parameterType="com.okdeer.mall.operate.dto.SkinManagerDto" >
     SELECT 	count(1)
      FROM operate_skin_manager 
      <!-- 未被删除的 -->

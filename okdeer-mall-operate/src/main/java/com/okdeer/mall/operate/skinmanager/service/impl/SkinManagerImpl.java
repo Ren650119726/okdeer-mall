@@ -17,15 +17,17 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.mall.operate.dto.SkinManagerDetailDto;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
+import com.okdeer.mall.operate.entity.SkinManager;
+import com.okdeer.mall.operate.entity.SkinManagerDetail;
 import com.okdeer.mall.operate.enums.SkinManagerStatus;
 import com.okdeer.mall.operate.enums.SkinModule;
 import com.okdeer.mall.operate.service.ISkinManagerApi;
 import com.okdeer.mall.operate.skinmanager.mapper.SkinManagerMapper;
 
 /**
- * ClassName: ISkinManagerServiceImpl 
+ * ClassName: SkinManagerImpl 
  * @Description: 皮肤管理服务实现类
  * @author xuzq01
  * @date 2016年11月4日
@@ -33,6 +35,7 @@ import com.okdeer.mall.operate.skinmanager.mapper.SkinManagerMapper;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
+ *	    V1.2开发			2016-11-4			xuzq01	                        皮肤管理服务实现类
  *
  */
 @Service(version="1.0.0", interfaceName = "com.okdeer.mall.operate.service.ISkinManagerApi")
@@ -48,9 +51,10 @@ public class SkinManagerImpl implements ISkinManagerApi {
 	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#findSkinList(com.okdeer.mall.operate.dto.SkinManagerDto)
 	 */
 	@Override
-	public PageUtils<SkinManagerDto> findSkinList(SkinManagerDto skinManagerVo,int pageNumber,int pageSize) {
+	public PageUtils<SkinManagerDto> findSkinList(SkinManagerDto skinManagerDto,int pageNumber,int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true);
-		List<SkinManagerDto> result = skinManagerMapper.findSkinList(skinManagerVo);
+		SkinManager skinManager= BeanMapper.map(skinManagerDto, SkinManager.class);
+		List<SkinManagerDto> result = skinManagerMapper.findSkinList(skinManager);
 		if (result == null) {
 			result = new ArrayList<SkinManagerDto>();
 		}
@@ -63,18 +67,20 @@ public class SkinManagerImpl implements ISkinManagerApi {
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void addSkin(SkinManagerDto skinManagerVo,String userId) {
+	public void addSkin(SkinManagerDto skinManagerDto,String userId) {
 		String skinManagerId = UuidUtils.getUuid();
-		skinManagerVo.setId(skinManagerId);
-		skinManagerVo.setStatus(SkinManagerStatus.NOSTART);
-		skinManagerVo.setSkinModule(SkinModule.APP);
-		skinManagerVo.setCreateUserId(userId);
-		skinManagerVo.setUpdateUserId(userId);
+		skinManagerDto.setId(skinManagerId);
+		skinManagerDto.setStatus(SkinManagerStatus.NOSTART);
+		skinManagerDto.setSkinModule(SkinModule.APP);
+		skinManagerDto.setCreateUserId(userId);
+		skinManagerDto.setUpdateUserId(userId);
 		Date date = new Date();
-		skinManagerVo.setCreateTime(date);
-		skinManagerVo.setUpdateTime(date);
-		skinManagerMapper.addSkin(skinManagerVo);
-		List<SkinManagerDetailDto> detail = skinManagerVo.getDetail();
+		skinManagerDto.setCreateTime(date);
+		skinManagerDto.setUpdateTime(date);
+		SkinManager skinManager= BeanMapper.map(skinManagerDto, SkinManager.class);
+		skinManagerMapper.add(skinManager);
+		
+		List<SkinManagerDetail> detail = skinManagerDto.getDetail();
 		
 		for(int i=0;i<detail.size();i++){
 			detail.get(i).setSkinManagerId(skinManagerId);
@@ -94,7 +100,7 @@ public class SkinManagerImpl implements ISkinManagerApi {
 	 */
 	@Override
 	public SkinManagerDto getSkinById(String skinId) {
-		return skinManagerMapper.getSkinById(skinId);
+		return skinManagerMapper.findById(skinId);
 	}
 
 	/**
@@ -103,12 +109,13 @@ public class SkinManagerImpl implements ISkinManagerApi {
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateSkin(SkinManagerDto skinManagerVo, String userId) {
-		skinManagerVo.setUpdateUserId(userId);
+	public void updateSkin(SkinManagerDto skinManagerDto, String userId) {
+		skinManagerDto.setUpdateUserId(userId);
 		Date date = new Date();
-		skinManagerVo.setUpdateTime(date);
-		skinManagerMapper.updateSkin(skinManagerVo);
-		List<SkinManagerDetailDto> detail = skinManagerVo.getDetail();
+		skinManagerDto.setUpdateTime(date);
+		SkinManager skinManager= BeanMapper.map(skinManagerDto, SkinManager.class);
+		skinManagerMapper.update(skinManager);
+		List<SkinManagerDetail> detail = skinManagerDto.getDetail();
 		
 		for(int i=0;i<detail.size();i++){
 			detail.get(i).setUpdateTime(date);
@@ -124,12 +131,13 @@ public class SkinManagerImpl implements ISkinManagerApi {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteSkinById(String skinId,String userId) {
-		SkinManagerDto skinManagerVo = new SkinManagerDto();
-		skinManagerVo.setUpdateUserId(userId);
-		skinManagerVo.setId(skinId);
+		SkinManagerDto skinManagerDto = new SkinManagerDto();
+		skinManagerDto.setUpdateUserId(userId);
+		skinManagerDto.setId(skinId);
 		Date date = new Date();
-		skinManagerVo.setUpdateTime(date);
-		skinManagerMapper.deleteSkinById(skinManagerVo);
+		skinManagerDto.setUpdateTime(date);
+		SkinManager skinManager= BeanMapper.map(skinManagerDto, SkinManager.class);
+		skinManagerMapper.deleteSkinById(skinManager);
 	}
 
 	/**
@@ -139,13 +147,14 @@ public class SkinManagerImpl implements ISkinManagerApi {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void closeSkinById(String skinId,String userId) {
-		SkinManagerDto skinManagerVo = new SkinManagerDto();
-		skinManagerVo.setUpdateUserId(userId);
-		skinManagerVo.setId(skinId);
-		skinManagerVo.setStatus(SkinManagerStatus.COMPLETE);
+		SkinManagerDto skinManagerDto = new SkinManagerDto();
+		skinManagerDto.setUpdateUserId(userId);
+		skinManagerDto.setId(skinId);
+		skinManagerDto.setStatus(SkinManagerStatus.COMPLETE);
 		Date date = new Date();
-		skinManagerVo.setUpdateTime(date);
-		skinManagerMapper.closeSkinById(skinManagerVo);
+		skinManagerDto.setUpdateTime(date);
+		SkinManager skinManager= BeanMapper.map(skinManagerDto, SkinManager.class);
+		skinManagerMapper.closeSkinById(skinManager);
 	}
 
 	/**
@@ -153,8 +162,9 @@ public class SkinManagerImpl implements ISkinManagerApi {
 	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#updateSkinStatus(java.lang.String)
 	 */
 	@Override
-	public int selectSkinByTime(SkinManagerDto skinManagerVo){
-		return skinManagerMapper.selectSkinByTime(skinManagerVo);
+	public int selectSkinByTime(SkinManagerDto skinManagerDto){
+		SkinManager skinManager= BeanMapper.map(skinManagerDto, SkinManager.class);
+		return skinManagerMapper.selectSkinByTime(skinManager);
 	}
 
 	/**
@@ -162,7 +172,8 @@ public class SkinManagerImpl implements ISkinManagerApi {
 	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#selectSkinCountByName(com.okdeer.mall.operate.dto.SkinManagerDto)
 	 */
 	@Override
-	public int selectSkinCountByName(SkinManagerDto skinManagerVo) {
-		return skinManagerMapper.selectSkinCountByName(skinManagerVo);
+	public int selectSkinCountByName(SkinManagerDto skinManagerDto) {
+		SkinManager skinManager= BeanMapper.map(skinManagerDto, SkinManager.class);
+		return skinManagerMapper.selectSkinCountByName(skinManager);
 	}
 }
