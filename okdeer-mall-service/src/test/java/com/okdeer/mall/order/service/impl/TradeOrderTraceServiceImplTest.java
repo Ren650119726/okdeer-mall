@@ -118,7 +118,7 @@ public class TradeOrderTraceServiceImplTest extends BaseServiceTest{
 	public void testFindOrderTrace() {
 		TradeOrder order = new TradeOrder();
 		order.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
-		given(this.tradeOrderMapper.selectByPrimaryKey(anyString())).willReturn(order);
+		given(this.tradeOrderMapper.selectByPrimaryKey("8a8080a05793e3b501579406efe4008e")).willReturn(order);
 		Response<RefundsTraceResp> resp = tradeOrderTraceService.findOrderTrace(orderId);
 		System.out.println(JsonMapper.nonDefaultMapper().toJson(resp));
 	}
