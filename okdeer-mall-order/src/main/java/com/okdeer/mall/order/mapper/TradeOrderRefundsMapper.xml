@@ -53,6 +53,7 @@
       <result column="amount" property="amount" jdbcType="DECIMAL" />
       <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
       <result column="sty_code" property="styleCode" jdbcType="VARCHAR" />
+      <result column="income" property="income" javaType="DECIMAL" />
     </collection>
     
   </resultMap>
