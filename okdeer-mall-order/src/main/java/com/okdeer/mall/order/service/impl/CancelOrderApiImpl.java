@@ -33,7 +33,7 @@ import com.okdeer.mall.order.service.TradeOrderService;
  * ----------------+----------------+-------------------+-------------------------------------------
  *    v1.2.0            2016-11-10          zengjz            取消订单服务实现
  */
-@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.CancelOrderServiceApi")
+@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.CancelOrderApi")
 public class CancelOrderApiImpl implements CancelOrderApi {
 
 	private static final Logger logger = LoggerFactory.getLogger(CancelOrderApiImpl.class);
