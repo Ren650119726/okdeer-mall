@@ -178,7 +178,7 @@
     	refunds.total_amount, refunds.total_preferential_price, refunds.create_time, refunds.update_time,refunds.type,
 		refunds.operator, refunds.refunds_status, refunds.order_resource, refunds.logistics_type, refunds.refund_money_time,
 		item.refunds_id,item.order_item_id,item.sku_name,item.properties_indb,item.store_sku_id,
-		item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code
+		item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code,item.income
 		FROM trade_order_refunds refunds
 		LEFT JOIN trade_order_refunds_item item ON item.refunds_id = refunds.id
 		where refunds.id = #{id,jdbcType=VARCHAR}
