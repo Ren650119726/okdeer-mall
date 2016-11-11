@@ -293,10 +293,14 @@
 			jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderResourceEnum" />
 		<result column="pay_type" property="payType" jdbcType="TINYINT"
 			javaType="com.okdeer.mall.order.enums.PayTypeEnum" />
+		<!-- begin add by zengjz 增加是否有违约金相关字段 -->
+		<result column="is_breach" property="isBreach" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.WhetherEnum" />
+		<result column="breach_money" property="breachMoney" jdbcType="DECIMAL" />
+		<!-- end add by zengjz 增加是否有违约金相关字段 -->
 	</resultMap>
 	<!-- 订单列表 -财务系统接口调用 -luosm end -->
 	<sql id="Erp_column_list">
-		id,order_no,type,store_name,user_phone,total_amount,actual_amount,preferential_price,create_time,pay_way,status
+		id,order_no,type,store_name,user_phone,total_amount,actual_amount,preferential_price,create_time,pay_way,status,is_breach,breach_money
 	</sql>
 
 	<resultMap id="TradeOrderItemMap" type="com.okdeer.mall.order.entity.TradeOrderItem">
@@ -2149,7 +2153,10 @@
 		<result column="activity_id" property="activityId" jdbcType="VARCHAR" />
 		<result column="activity_type" property="activityType"
 			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
-
+		<!-- begin add by zengjz 增加是否有违约金相关字段 -->	
+		<result column="is_breach" property="isBreach" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.WhetherEnum" />
+		<result column="breach_money" property="breachMoney" jdbcType="DECIMAL" />
+		<!-- begin add by zengjz 增加是否有违约金相关字段 -->
 	</resultMap>
 
 	<!-- wusw:查询微信或支付宝支付的，订单状态处于已取消、已拒收、取消中、拒收中的订单 （主要用于财务系统接口） 12508 update 
@@ -2168,6 +2175,10 @@
 		trade.create_time,
 		trade.update_time,
 		trade.order_resource,
+		<!-- begin add by zengjz 增加是否有违约金相关字段 -->
+		trade.is_breach,
+		trade.breach_money,
+		<!-- end add by zengjz 增加是否有违约金相关字段 -->
 		pay.pay_type,
 		pay.pay_amount,
 		pay.`returns`,
@@ -4714,7 +4725,11 @@
 		trade.create_time,
 		trade.order_resource,
 		trade.status,
-		pay.pay_type
+		pay.pay_type,
+		<!-- begin add by zengjz 增加是否有违约金相关字段 -->
+		trade.is_breach,
+		trade.breach_money
+		<!-- end add by zengjz 增加是否有违约金相关字段 -->
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN store_info store ON store.id = trade.store_id

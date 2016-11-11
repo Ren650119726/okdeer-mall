@@ -31,6 +31,7 @@ import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
@@ -570,7 +571,15 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					dto.setHandTime(vo.getHandTime());
 				}
 				dto.setStatus(vo.getStatus());
-				dto.setRefundAmount(vo.getRefundAmount());
+				
+				//begin add by zengjz   增加违约金的处理
+				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null){
+					dto.setRefundAmount(vo.getRefundAmount().subtract(vo.getBreachMoney()));
+				}else{
+					dto.setRefundAmount(vo.getRefundAmount());
+				}
+				//end add by zengjz   增加违约金的处理
+				
 				dto.setThirdTransNo(vo.getThirdTransNo());
 				dto.setPayType(vo.getPayType());
 
@@ -620,7 +629,14 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					dto.setHandTime(vo.getHandTime());
 				}
 				dto.setStatus(vo.getStatus());
-				dto.setRefundAmount(vo.getRefundAmount());
+				
+				//begin add by zengjz   增加违约金的处理
+				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null){
+					dto.setRefundAmount(vo.getRefundAmount().subtract(vo.getBreachMoney()));
+				}else{
+					dto.setRefundAmount(vo.getRefundAmount());
+				}
+				//end add by zengjz   增加违约金的处理
 				dto.setThirdTransNo(vo.getThirdTransNo());
 				dto.setPayType(vo.getPayType());
 				dto.setOrderResource(vo.getOrderResource());
@@ -651,9 +667,15 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				dto.setOrderId(vo.getOrderId());
 				dto.setOrderNo(vo.getOrderNo());
 				dto.setTradeNo(vo.getTradeNum());
-				dto.setTotalFee(vo.getRealMoney().multiply(new BigDecimal("100")).intValue());
-				dto.setRefundFee(vo.getRefundAmount().multiply(new BigDecimal("100")).intValue());
-
+				
+				//begin add by zengjz   增加违约金的处理
+				dto.setTotalFee(vo.getRealMoney());
+				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null){
+					dto.setRefundFee(vo.getRefundAmount().subtract(vo.getBreachMoney()));
+				}else{
+					dto.setRefundFee(vo.getRefundAmount());
+				}
+				//end add by zengjz   增加违约金的处理
 				// 用于活动的相关查询
 				TradeOrder order = new TradeOrder();
 				order.setId(vo.getOrderId());
