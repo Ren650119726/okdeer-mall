@@ -154,12 +154,12 @@
 <!--  		未开始或者进行中的才关闭,其他状态的不管 -->
  		and (status = 0 or status = 1)
     </update>
-
+	<!-- 1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束 tuzhiding-->
 	<select id="listByJob" parameterType="map" resultMap="ActivityServiceGoodsRecommend">
 		select s.* from activity_service_goods_recommend s where 
-		(s.`status` = 0 and  s.start_time &lt;= NOW())
+		(s.`status` = 0 and  s.start_time &lt;= #{nowTime})
 		OR
-		(s.`status` = 1 and  s.end_time &lt;= NOW())
+		(s.`status` = 1 and  s.end_time &lt;= #{nowTime})
 	</select>   
 	
 <!-- 	用于判断某个时间段内活动是否冲突 -->

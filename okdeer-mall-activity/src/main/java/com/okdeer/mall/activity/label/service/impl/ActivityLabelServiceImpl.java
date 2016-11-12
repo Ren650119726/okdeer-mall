@@ -118,17 +118,29 @@ public class ActivityLabelServiceImpl extends BaseServiceImpl implements Activit
 	}
 
 	/**
-	 * @desc 查询出需要跑job的活动
+	 * 1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束
+	 * @author tuzhd
+	 * @param map 传递参数
 	 * @return
 	 */
 	@Transactional(readOnly = true)
-	public List<ActivityLabel> listByJob() {
-		return activityLabelMapper.listByJob();
+	public List<ActivityLabel> listByJob(Map<String,Object> map) {
+		return activityLabelMapper.listByJob(map);
 	}
-
+	
+	/**
+	 * @Description: 根据id修改服务标签活动状态
+	 * @param id
+	 * @param status 活动状态 0 未开始 ，1：进行中2:已结束 3 已关闭
+	 * @param updateUserId 修改人
+	 * @param updateTime 修改时间
+	 * @throws Exception
+	 * @author tuzhiding
+	 * @date 2016年11月12日
+	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateBatchStatus(String id, int status, String updateUserId, Date updateTime) throws Exception {
+	public void updateStatusById(String id, int status, String updateUserId, Date updateTime) throws Exception {
 		//修改主表信息
 		ActivityLabel c = new ActivityLabel();
 		c.setId(id);
