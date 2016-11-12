@@ -130,9 +130,11 @@
 			si.store_name as storeName,
 			s.online_price as onlinePrice,
 			s.sale_num as saleNum,
-			s.update_time as updateTime
+			s.update_time as updateTime,
+			service.product_no as productNo
 			from goods_store_sku s 
 			left join store_info si on (s.store_id = si.id) 
+			left join goods_store_sku_service service on (s.id = service.store_sku_id) 
 			where s.disabled = 0 
 			and s.type in (3,4) 
 			<if test="goodsName != null and goodsName != ''">
@@ -141,8 +143,8 @@
 			<if test="storeName != null and storeName != ''">
 				and si.store_name like concat('%',#{storeName},'%' )
 			</if>
-			<if test="goodsId != null and goodsId != ''">
-				and s.id like concat('%',#{goodsId},'%' )
+			<if test="productNo != null and productNo != ''">
+				and service.product_no like concat('%',#{productNo},'%' )
 			</if>
 			<if test="goodsIdList != null">
 				and s.id in
