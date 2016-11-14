@@ -4,7 +4,7 @@
  *@Date: 2016年7月14日 
  *@Copyright: ©2014-2020 www.yschome.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.order.constant;  
+package com.okdeer.mall.order.constant.text;  
 
 
 /**

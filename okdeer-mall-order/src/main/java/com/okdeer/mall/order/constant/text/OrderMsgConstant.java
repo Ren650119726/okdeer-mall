@@ -5,7 +5,7 @@
  * @Date: 2016年4月23日 
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的 
  */ 
-package com.okdeer.mall.order.constant;
+package com.okdeer.mall.order.constant.text;
 
 /**
  * 消息表示 

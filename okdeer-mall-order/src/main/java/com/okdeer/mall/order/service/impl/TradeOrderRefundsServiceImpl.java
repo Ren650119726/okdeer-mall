@@ -76,7 +76,7 @@ import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
-import com.okdeer.mall.order.constant.PayMessageConstant;
+import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;

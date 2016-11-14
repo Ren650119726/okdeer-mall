@@ -1,4 +1,4 @@
-package com.okdeer.mall.order.service.impl;
+package com.okdeer.mall.order.handler.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,7 +23,7 @@ import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
-import com.okdeer.mall.order.constant.OrderTipMsgConstant;
+import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;

@@ -78,7 +78,7 @@ import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.enums.ServerStatus;
-import com.okdeer.mall.order.constant.ExceptionConstant;
+import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;

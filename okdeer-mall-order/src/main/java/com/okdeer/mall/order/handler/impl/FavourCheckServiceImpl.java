@@ -1,4 +1,4 @@
-package com.okdeer.mall.order.service.impl;
+package com.okdeer.mall.order.handler.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,8 +19,8 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.common.consts.Constant;
-import com.okdeer.mall.order.constant.OrderTipMsgConstant;
-import com.okdeer.mall.order.service.FavourCheckService;
+import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
+import com.okdeer.mall.order.handler.FavourCheckService;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
 
