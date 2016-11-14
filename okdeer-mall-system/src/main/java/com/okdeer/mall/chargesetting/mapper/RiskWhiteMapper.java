@@ -6,8 +6,32 @@
  */
 package com.okdeer.mall.chargesetting.mapper;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.chargesetting.dto.WhiteManagerDto;
+import com.okdeer.mall.chargesetting.entity.RiskWhite;
 
 public interface RiskWhiteMapper extends IBaseMapper {
+
+	/**
+	 * @Description: TODO
+	 * @param whiteManagerDto
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月14日
+	 */
+	List<RiskWhite> findWhiteList(WhiteManagerDto whiteManagerDto);
+
+	/**
+	 * @Description: TODO
+	 * @param whiteManagerDto
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月14日
+	 */
+	int selectWhiteByAccount(@Param(value = "telephoneAccount") String telephoneAccount);
 
 }
