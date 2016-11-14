@@ -6,8 +6,15 @@
  */    
 package com.okdeer.mall.operate.skinmanager.service;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
+import com.okdeer.mall.operate.entity.SkinManager;
+import com.okdeer.mall.operate.entity.SkinManagerDetail;
 
 /**
  * ClassName: ISkinManagerService 
@@ -21,7 +28,7 @@ import com.okdeer.mall.operate.dto.SkinManagerDto;
  *
  */
 
-public interface ISkinManagerService {
+public interface ISkinManagerService extends IBaseService {
 
 	/**
 	 * 
@@ -31,37 +38,8 @@ public interface ISkinManagerService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public PageUtils<SkinManagerDto> findSkinList(SkinManagerDto skinManagerVo,int pageNumber,int pageSize);
+	public PageUtils<SkinManagerDto> findSkinList(SkinManagerDto skinManagerDto,int pageNumber,int pageSize);
 	
-	/**
-	 * 
-	 * @Description: 增加活动皮肤
-	 * @param skinManagerVo
-	 * @return   
-	 * @author xuzq01
-	 * @date 2016年11月3日
-	 */
-	public void addSkin(SkinManagerDto skinManagerVo,String userId);
-	
-	/**
-	 * 
-	 * @Description: 修改皮肤详情
-	 * @param skinManagerVo
-	 * @return   
-	 * @author xuzq01
-	 * @date 2016年11月3日
-	 */
-	public void updateSkin(SkinManagerDto skinManagerVo,String userId);
-	
-	/**
-	 * 
-	 * @Description: TODO
-	 * @param skinId
-	 * @return   
-	 * @author xuzq01
-	 * @date 2016年11月4日
-	 */
-	public SkinManagerDto getSkinById(String skinId);
 	
 	/**
 	 * 
@@ -100,4 +78,26 @@ public interface ISkinManagerService {
 	 * @date 2016年11月8日
 	 */
 	public int selectSkinCountByName(SkinManagerDto skinManagerVo);
+
+
+	/**
+	 * @Description: TODO
+	 * @param skinManager
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月14日
+	 */
+	public int add(SkinManager skinManager);
+
+
+	/**
+	 * @Description: TODO
+	 * @param skinManager
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月14日
+	 */
+	public int update(SkinManager skinManager);
+
+
 }
