@@ -124,4 +124,13 @@ public interface ActivityServiceGoodsRecommendService extends IBaseService{
 	 * @date 2016年11月7日
 	 */
 	List<ActivityServiceGoodsRecommendArea> listActivityArea(String activityId) throws Exception;
+	
+	 /**
+	 * @Description: 查询微信推荐商品列表
+	 * @param map 传递查询参数
+	 * @return  List<Map<String,Object>>
+	 * @author zhangkn
+	 * @date 2016年11月14日
+	 */
+	public List<Map<String,Object>> listRecommendGoodsFowWx(Map<String,Object> map);
 }

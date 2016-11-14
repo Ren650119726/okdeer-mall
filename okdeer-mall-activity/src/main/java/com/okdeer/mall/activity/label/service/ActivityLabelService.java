@@ -113,4 +113,13 @@ public interface ActivityLabelService extends IBaseService{
 	 * @date 2016年11月7日
 	 */
 	List<ActivityLabelGoods> listActivityLabelGoods(String activityId) throws Exception;
+	
+	/**
+	 * @Description: 通过商品idList获取商品的标签列表
+	 * @param skuIdList  商品idlist
+	 * @return Map<String,List<String>> key是商品id,value是List<String>标签列表
+	 * @author zhangkn
+	 * @date 2016年11月14日
+	 */
+	Map<String,List<String>> listLabelNameBySkuIds(List<String> skuIdList);
 }

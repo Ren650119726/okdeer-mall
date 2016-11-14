@@ -2,6 +2,7 @@ package com.okdeer.mall.activity.label.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
@@ -152,5 +153,27 @@ public class ActivityLabelServiceImpl extends BaseServiceImpl implements Activit
 	@Override
 	public List<ActivityLabelGoods> listActivityLabelGoods(String activityId) throws Exception {
 		return activityLabelGoodsMapper.listByActivityId(activityId);
+	}
+
+	@Override
+	public Map<String,List<String>> listLabelNameBySkuIds(List<String> skuIdList) {
+		//所有商品的标签集合
+		Map<String,List<String>> labelList = new LinkedHashMap<String, List<String>>();
+		
+		List<Map<String,Object>> allLabelList = activityLabelMapper.listLabelNameBySkuIds(skuIdList);
+		if(CollectionUtils.isNotEmpty(allLabelList)){
+			for(String id : skuIdList){
+				//每个商品的标签集合
+				List<String> goodsLabelList = new ArrayList<String>();
+				for(Map<String,Object> label : allLabelList){
+					if(id.equals(label.get("skuId").toString())){
+						goodsLabelList.add(label.get("labelName") != null ?
+							label.get("labelName").toString() : "");
+					}
+				}
+				labelList.put(id, goodsLabelList);
+			}
+		}
+		return labelList;
 	}
 }
