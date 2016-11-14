@@ -6,7 +6,7 @@
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的 
  */
 
-package com.okdeer.mall.order.constant;
+package com.okdeer.mall.order.constant.mq;
 
 /**
  * 消息常量

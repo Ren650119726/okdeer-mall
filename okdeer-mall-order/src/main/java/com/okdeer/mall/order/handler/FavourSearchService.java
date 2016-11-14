@@ -1,6 +1,4 @@
-package com.okdeer.mall.order.service;
-
-import com.okdeer.mall.order.handler.ProcessHandler;
+package com.okdeer.mall.order.handler;
 
 /**
  * ClassName: FavourSearchService 

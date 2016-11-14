@@ -48,7 +48,7 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.kafka.producer.KafkaProducer;
 import com.okdeer.mall.common.enums.IsRead;
 import com.okdeer.mall.common.enums.MsgType;
-import com.okdeer.mall.order.constant.OrderMsgConstant;
+import com.okdeer.mall.order.constant.text.OrderMsgConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;

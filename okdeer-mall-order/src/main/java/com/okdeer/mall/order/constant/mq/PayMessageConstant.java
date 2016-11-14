@@ -10,7 +10,7 @@
  *     v1.1.0            2016-9-24          wusw			  云钱包解冻金额修改
  */
 
-package com.okdeer.mall.order.constant;
+package com.okdeer.mall.order.constant.mq;
 
 /**
  * 消息常量

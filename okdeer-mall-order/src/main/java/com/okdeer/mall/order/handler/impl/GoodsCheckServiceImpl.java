@@ -1,4 +1,4 @@
-package com.okdeer.mall.order.service.impl;
+package com.okdeer.mall.order.handler.impl;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -22,9 +22,9 @@ import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.common.utils.DateUtils;
-import com.okdeer.mall.order.constant.OrderTipMsgConstant;
+import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
-import com.okdeer.mall.order.service.GoodsCheckService;
+import com.okdeer.mall.order.handler.GoodsCheckService;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.vo.TradeOrderContext;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;

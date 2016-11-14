@@ -1,4 +1,4 @@
-package com.okdeer.mall.order.service.impl;
+package com.okdeer.mall.order.handler.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +14,7 @@ import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
-import com.okdeer.mall.order.constant.ExceptionConstant;
+import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
