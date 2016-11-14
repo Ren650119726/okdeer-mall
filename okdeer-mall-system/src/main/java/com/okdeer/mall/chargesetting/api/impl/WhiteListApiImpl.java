@@ -89,5 +89,23 @@ public class WhiteListApiImpl implements IWhiteListApi {
 			e.printStackTrace();
 		}
 	}
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.chargesetting.service.IWhiteListApi#add(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void add(String account, String id) {
+		// TODO Auto-generated method stub
+		
+	}
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.chargesetting.service.IWhiteListApi#selectWhiteByAccount(java.lang.String)
+	 */
+	@Override
+	public int selectWhiteByAccount(String account) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
 }
