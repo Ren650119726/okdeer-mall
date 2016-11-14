@@ -20,10 +20,12 @@
 			s.goods_id,
 			s.sort, 
 			sku.name as goodsName,
-			si.store_name as storeName
+			si.store_name as storeName,
+			service.product_no as productNo
 			from activity_label_goods s
 			left join goods_store_sku sku on (sku.id = s.goods_id)
 			left join store_info si on (si.id = sku.store_id) 
+			left join goods_store_sku_service service on (sku.id = service.store_sku_id) 
 			where s.activity_id = #{value}
 		order by sort
 	</select>

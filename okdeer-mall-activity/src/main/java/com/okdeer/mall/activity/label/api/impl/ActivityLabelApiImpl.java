@@ -57,18 +57,29 @@ public class ActivityLabelApiImpl implements ActivityLabelApi{
 	}
 
 	/**
-	 * @desc 查询出需要跑job的活动
+	 * 1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束
+	 * @author tuzhd
+	 * @param map 传递参数
 	 * @return
 	 */
 	@Transactional(readOnly = true)
-	public List<ActivityLabel> listByJob() {
-		return labelService.listByJob();
+	public List<ActivityLabel> listByJob(Map<String,Object> map)  {
+		return labelService.listByJob(map);
 	}
-
+	/**
+	 * @Description: 根据id修改服务标签活动状态
+	 * @param id
+	 * @param status 活动状态 0 未开始 ，1：进行中2:已结束 3 已关闭
+	 * @param updateUserId 修改人
+	 * @param updateTime 修改时间
+	 * @throws Exception
+	 * @author tuzhiding
+	 * @date 2016年11月12日
+	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateBatchStatus(String id, int status, String updateUserId, Date updateTime) throws Exception {
-		labelService.updateBatchStatus(id, status, updateUserId, updateTime);
+	public void updateStatusById(String id, int status, String updateUserId, Date updateTime) throws Exception {
+		labelService.updateStatusById(id, status, updateUserId, updateTime);
 	}
 
 	@Override

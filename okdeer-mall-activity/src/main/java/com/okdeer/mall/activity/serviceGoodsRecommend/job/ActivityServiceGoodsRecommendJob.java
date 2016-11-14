@@ -1,13 +1,17 @@
 package com.okdeer.mall.activity.serviceGoodsRecommend.job;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
 import com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommend;
@@ -16,11 +20,16 @@ import com.okdeer.mall.activity.serviceGoodsRecommend.service.ActivityServiceGoo
 import com.okdeer.mall.common.utils.RobotUserUtil;
 
 /**
- * @pr mall
- * @desc 修改代金券活动活动状态job
- * @author zhangkn
- * @date 2016年1月28日 下午1:59:59
- * @copyright ©2005-2020 yschome.com Inc. All rights reserved
+ * 
+ * ClassName: 服务商品推荐定时器处理 
+ * @Description: TODO
+ * @author tuzhd
+ * @date 2016年11月12日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			    Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *		V1.2		  2016年11月12日		   tuzhiding		     服务商品推荐定时器
  */
 @Service
 public class ActivityServiceGoodsRecommendJob extends AbstractSimpleElasticJob {
@@ -38,48 +47,35 @@ public class ActivityServiceGoodsRecommendJob extends AbstractSimpleElasticJob {
 		try{
 			log.info("服务商品推荐定时器开始");
 			
-			List<ActivityServiceGoodsRecommend> accList = recommendService.listByJob();
-			if(accList != null && accList.size() > 0){
-				
-				List<String> listIdNoStart = new ArrayList<String>();
-				List<String> listIdIng = new ArrayList<String>();
-				
+			Map<String,Object> map = new HashMap<String,Object>();
+			Date nowTime = new Date();
+			map.put("nowTime", nowTime);
+			//1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束
+			List<ActivityServiceGoodsRecommend> accList = recommendService.listByJob(map);
+			//获得系统当前系统用户id
+			String updateUserId = RobotUserUtil.getRobotUser().getId();
+			
+			
+			//需要更新状态的活动新不为空进行定时任务处理
+			if(CollectionUtils.isNotEmpty(accList)){
 				for(ActivityServiceGoodsRecommend a : accList){
-					//未开始的 
-					if(a.getStatus() == ActivityServiceGoodsRecommendStatus.noStart.getValue()){
-						listIdNoStart.add(a.getId());
-					}
-					//进行中的改为已结束的
-					else if(a.getStatus() == ActivityServiceGoodsRecommendStatus.ing.getValue()){
-						listIdIng.add(a.getId());
-					}
-				}
-				
-				String updateUserId = RobotUserUtil.getRobotUser().getId();
-				Date updateTime = new Date();
-				
-				//改为进行中
-				if(listIdNoStart != null && listIdNoStart.size() > 0){
-					for(String id : listIdNoStart){
-						try{
-							recommendService.updateBatchStatus(id,  ActivityServiceGoodsRecommendStatus.ing.getValue(), updateUserId, updateTime);
-						}catch(Exception e){
-							log.error("服务商品推荐"+id+"job异常 改为进行中:",e);
-						}
+					try{
+						//未开始的 
+						if(a.getStatus() == ActivityServiceGoodsRecommendStatus.noStart.getValue()){
+							//根据id修改服务商品活动状态
+							recommendService.updateStatusById(a.getId(), ActivityServiceGoodsRecommendStatus.ing.getValue(), updateUserId, nowTime);
 						
-					}
-				}
-				//改为已经结束
-				if(listIdIng != null && listIdIng.size() > 0){
-					for(String id : listIdIng){
-						try{
-							recommendService.updateBatchStatus(id,  ActivityServiceGoodsRecommendStatus.end.getValue(), updateUserId, updateTime);
-						}catch(Exception e){
-							log.error("服务商品推荐"+id+"job异常 改为已经结束:",e);
+						//进行中的改为已结束的
+						}else if(a.getStatus() == ActivityServiceGoodsRecommendStatus.ing.getValue()){
+							//根据id修改服务商品活动状态
+							recommendService.updateStatusById(a.getId(), ActivityServiceGoodsRecommendStatus.end.getValue(), updateUserId, nowTime);
 						}
+					}catch(Exception e){
+						log.error(a.getStatus()+"状态服务标签管理"+a.getId()+"job修改异常 :",e);
 					}
 				}
 			}
+			
 			log.info("服务商品推荐定时器结束");
 		}catch(Exception e){
 			log.error("服务商品推荐job异常",e);

@@ -77,16 +77,16 @@ public interface ActivityServiceGoodsRecommendService extends IBaseService{
 	PageUtils<Map<String,Object>> listGoods(Map<String,Object> map,int pageNumber,int pageSize) throws Exception;
 	
 	/**
-	 * @Description: 批量修改状态
+	 * @Description: 根据id修改服务商品活动状态
 	 * @param id
 	 * @param status 活动状态 0 未开始 ，1：进行中2:已结束 3 已关闭
 	 * @param updateUserId 修改人
 	 * @param updateTime 修改时间
 	 * @throws Exception
-	 * @author zhangkn
+	 * @author tuzhiding
 	 * @date 2016年11月4日
 	 */
-	void updateBatchStatus(String id,int status,String updateUserId,Date updateTime) throws Exception;
+	void updateStatusById(String id,int status,String updateUserId,Date updateTime) throws Exception;
 	
 	/**
 	 * @desc 用于判断某个时间段内活动是否冲突
@@ -96,10 +96,14 @@ public interface ActivityServiceGoodsRecommendService extends IBaseService{
 	int countTimeQuantum(Map<String,Object> map);
 	
 	/**
-	 * @desc 查询出需要跑job的活动
-	 * @return
+	 * 1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束
+	 * @Description: TODO
+	 * @param map 传递查询参数
+	 * @return List<ActivityServiceGoodsRecommend>  
+	 * @author tuzhd
+	 * @date 2016年11月12日
 	 */
-	List<ActivityServiceGoodsRecommend> listByJob();
+	public List<ActivityServiceGoodsRecommend>  listByJob(Map<String,Object> map);
 	
 	/**
 	 * @Description: 通过活动id获取关联商品列表
