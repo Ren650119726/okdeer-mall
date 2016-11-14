@@ -22,12 +22,14 @@
 			sku.name as goodsName,
 			si.store_name as storeName,
 			cate.`name` as categoryName,
-			sku.online_price as onlinePrice
+			sku.online_price as onlinePrice,
+			service.product_no as productNo
 			from activity_service_goods_recommend_goods s
 			left join goods_store_sku sku on (sku.id = s.goods_id)
 			left join store_info si on (si.id = sku.store_id) 
 			left join goods_store_spu spu on (sku.store_spu_id = spu.id)
 			left join goods_spu_category cate on (spu.spu_category_id = cate.id)
+			left join goods_store_sku_service service on (sku.id = service.store_sku_id) 
 			where s.activity_id = #{value}
 		order by sort desc 
 	</select>
