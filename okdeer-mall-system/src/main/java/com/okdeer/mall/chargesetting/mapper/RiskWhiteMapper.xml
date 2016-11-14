@@ -3,11 +3,11 @@
 <mapper namespace="com.okdeer.mall.chargesetting.mapper.RiskWhiteMapper" >
     <resultMap id="BaseResultMap" type="com.okdeer.mall.chargesetting.entity.RiskWhite" >
         <id column="id" property="id" jdbcType="VARCHAR" />
-        <result column="telephone_account" property="telephone_account" jdbcType="VARCHAR" />
-        <result column="create_time" property="create_time" jdbcType="TIMESTAMP" />
-        <result column="create_user_id" property="create_user_id" jdbcType="VARCHAR" />
-        <result column="update_time" property="update_time" jdbcType="TIMESTAMP" />
-        <result column="update_user_id" property="update_user_id" jdbcType="VARCHAR" />
+        <result column="telephone_account" property="telephoneAccount" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
         <result column="disabled" property="disabled" jdbcType="BIT" />
     </resultMap>
 
@@ -15,7 +15,33 @@
         id, telephone_account, create_time, create_user_id, update_time, update_user_id, 
         disabled
     </sql>
-
+   <!-- 根据条件搜索皮肤列表 -->
+  <select id="findWhiteList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.chargesetting.dto.WhiteManagerDto">
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM risk_white 
+     WHERE 1=1
+       <!-- 未被删除的 -->
+       AND disabled = 0
+       <!-- 活动名称 -->
+       <if test="telephoneAccount != null and telephoneAccount != ''">
+         AND telephone_account LIKE CONCAT('%',#{telephoneAccount,jdbcType=VARCHAR},'%') 
+       </if>
+       <!-- 创建时间 -->
+       <if test="createTimeStart != null">
+         AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="createTimeEnd != null">
+         AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       ORDER BY create_time DESC
+  </select>
+  <select id="selectWhiteByAccount" resultType="int" parameterType="java.lang.String" >
+        select count(1)  
+          from risk_white
+        where telephone_account = #{telephoneAccount,jdbcType=VARCHAR}
+  </select>
+  <!-- 自动工具生成 -->
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
         select 
         <include refid="Base_Column_List" />
@@ -99,7 +125,7 @@
     </update>
 
     <delete id="delete" parameterType="java.lang.String" >
-        delete from risk_white
+        update risk_white set disabled =1 
         where id = #{id,jdbcType=VARCHAR}
     </delete>
 
