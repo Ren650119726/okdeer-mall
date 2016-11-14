@@ -4,12 +4,12 @@ package com.okdeer.mall.order.service.impl;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_EXECUTE_CANCEL_FAIL;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_CHANGE;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_CHANGE_ID;
-import static com.okdeer.mall.order.constant.OrderMessageConstant.TAG_ORDER_CANCEL;
-import static com.okdeer.mall.order.constant.OrderMessageConstant.TOPIC_ORDER_ACTIVITY;
-import static com.okdeer.mall.order.constant.OrderMessageConstant.TOPIC_ORDER_AROUND;
-import static com.okdeer.mall.order.constant.OrderMessageConstant.TOPIC_ORDER_CLOUD;
-import static com.okdeer.mall.order.constant.OrderMessageConstant.TOPIC_ORDER_FAST;
-import static com.okdeer.mall.order.constant.OrderMessageConstant.TOPIC_ORDER_SERVICE;
+import static com.okdeer.mall.order.constant.mq.OrderMessageConstant.TAG_ORDER_CANCEL;
+import static com.okdeer.mall.order.constant.mq.OrderMessageConstant.TOPIC_ORDER_ACTIVITY;
+import static com.okdeer.mall.order.constant.mq.OrderMessageConstant.TOPIC_ORDER_AROUND;
+import static com.okdeer.mall.order.constant.mq.OrderMessageConstant.TOPIC_ORDER_CLOUD;
+import static com.okdeer.mall.order.constant.mq.OrderMessageConstant.TOPIC_ORDER_FAST;
+import static com.okdeer.mall.order.constant.mq.OrderMessageConstant.TOPIC_ORDER_SERVICE;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

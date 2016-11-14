@@ -200,4 +200,55 @@
 			)
 		</if>
     </select>
+    
+    <!-- 微信推荐商品列表 -->
+    <select id="listRecommendGoodsFowWx" parameterType="map" resultType="map">
+    	select 
+		pic.url ,
+		sku.id as goodsStoreSkuId,
+		sku.store_id as storeId,
+		sku.name as goodsName,
+		stock.sellable,
+		stock.locked,
+		sku.market_price as marketPrice,
+		sku.online_price as onlinePrice,
+		CAST(service.is_shop_num AS SIGNED) as isShopNum,
+		service.shop_num as shopNum
+		
+		from 
+		activity_service_goods_recommend_goods rg 
+		left join activity_service_goods_recommend r on (r.id = rg.activity_id and r.status = 1)
+		left join goods_store_sku sku on (rg.goods_id = sku.id)
+		left join goods_store_sku_picture pic on (sku.id = pic.store_sku_id and pic.type = 1)
+		left join goods_store_sku_stock stock on (sku.id = stock.store_sku_id) 
+		left join goods_store_sku_service service on (service.store_sku_id = sku.id)
+		
+		where 
+		sku.disabled = 0
+		and sku.`status` = 1
+		and sku.`online` = 1
+		and sku.`type` in (3,4)
+		and service.audit_status = 1
+		and 
+		(
+			r.area_type = 0
+			or
+			(
+				r.area_type = 1 and (
+						r.id in( 
+							select activity_id from activity_service_goods_recommend_area area 
+							where area.activity_id = r.id
+							and 
+							(
+								(area.area_id = #{cityId} and area.type = 0) 
+									OR
+								(area.area_id = #{provinceId} and area.type = 1) 
+							)
+						)
+				)
+			)
+		)
+		order by sku.operate_sort desc, sku.create_time desc
+		limit #{length} 
+    </select>
 </mapper>

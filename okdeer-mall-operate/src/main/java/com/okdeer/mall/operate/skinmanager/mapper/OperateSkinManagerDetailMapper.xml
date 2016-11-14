@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.skinmanager.mapper.OperateSkinManagerDetailMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.SkinManagerDetail" >
+        <id column="id" property="detailId" jdbcType="VARCHAR" />
+        <result column="skin_manager_id" property="skinManagerId" jdbcType="VARCHAR" />
+        <result column="module_name" property="moduleName" jdbcType="VARCHAR" />
+        <result column="init_module" property="initModule" jdbcType="VARCHAR" />
+        <result column="init_img_url" property="initImgUrl" jdbcType="VARCHAR" />
+        <result column="selected_img_url" property="selectedImgUrl" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, skin_manager_id, module_name, init_module, init_img_url, selected_img_url, create_time, 
+        create_user_id, update_time, update_user_id, disabled
+    </sql>
+    
+     <!-- 增加活动皮肤详细 -->
+  <insert id="addSkinDetail">
+    INSERT INTO operate_skin_manager_detail(
+	    id,
+		skin_manager_id,
+		module_name,
+		init_module,
+		init_img_url,
+		selected_img_url,
+		create_time,
+		create_user_id,
+		update_time,
+		update_user_id
+		)
+	values
+	 <foreach collection="detail" item="d" separator=",">
+         <trim>
+             (
+		  #{d.detailId,jdbcType=VARCHAR},
+		  #{d.skinManagerId,jdbcType=VARCHAR},
+		  #{d.moduleName,jdbcType=VARCHAR},
+		  #{d.initModule,jdbcType=VARCHAR},
+		  #{d.initImgUrl,jdbcType=VARCHAR},
+		  #{d.selectedImgUrl,jdbcType=VARCHAR},
+		  #{d.createTime,jdbcType=TIMESTAMP},
+		  #{d.createUserId,jdbcType=VARCHAR},
+		  #{d.updateTime,jdbcType=TIMESTAMP},
+		  #{d.updateUserId,jdbcType=VARCHAR}
+	  		)
+	     </trim>
+     </foreach>
+  </insert>
+	<!-- 修改皮肤详细信息 -->
+  <update id="updateSkinDetail" >
+	      <foreach collection="detail" item="item" index="index" open="" close="" separator=";">
+				 UPDATE operate_skin_manager_detail
+				 <set >
+				      <if test="moduleName != null and moduleName != ''" >
+				        module_name = #{item.moduleName,jdbcType=VARCHAR},
+				      </if>
+				      <if test="initModule != null and initModule != ''" >
+				        init_module = #{item.initModule,jdbcType=VARCHAR},
+				      </if>
+				      <if test="initImgUrl != null">
+				        init_img_url = #{item.initImgUrl,jdbcType=VARCHAR},
+				      </if>
+				      <if test="selectedImgUrl != null" >
+				        selected_img_url = #{item.selectedImgUrl,jdbcType=VARCHAR},
+				      </if>
+				      <if test="updateUserId != null and updateUserId != ''" >
+				        update_user_id = #{item.updateUserId,jdbcType=VARCHAR},
+				      </if>
+				      <if test="updateTime != null" >
+				        update_time = #{item.updateTime,jdbcType=TIMESTAMP},
+				      </if>
+			    </set>
+			    WHERE disabled = 0 and id = #{detailId,jdbcType=VARCHAR}
+		 </foreach>
+		 
+    </update>
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from operate_skin_manager_detail
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.operate.entity.SkinManagerDetail" >
+        insert into operate_skin_manager_detail
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="skin_manager_id != null" >
+                skin_manager_id,
+            </if>
+            <if test="module_name != null" >
+                module_name,
+            </if>
+            <if test="init_module != null" >
+                init_module,
+            </if>
+            <if test="init_img_url != null" >
+                init_img_url,
+            </if>
+            <if test="selected_img_url != null" >
+                selected_img_url,
+            </if>
+            <if test="create_time != null" >
+                create_time,
+            </if>
+            <if test="create_user_id != null" >
+                create_user_id,
+            </if>
+            <if test="update_time != null" >
+                update_time,
+            </if>
+            <if test="update_user_id != null" >
+                update_user_id,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="skin_manager_id != null" >
+                #{skin_manager_id,jdbcType=VARCHAR},
+            </if>
+            <if test="module_name != null" >
+                #{module_name,jdbcType=VARCHAR},
+            </if>
+            <if test="init_module != null" >
+                #{init_module,jdbcType=VARCHAR},
+            </if>
+            <if test="init_img_url != null" >
+                #{init_img_url,jdbcType=VARCHAR},
+            </if>
+            <if test="selected_img_url != null" >
+                #{selected_img_url,jdbcType=VARCHAR},
+            </if>
+            <if test="create_time != null" >
+                #{create_time,jdbcType=TIMESTAMP},
+            </if>
+            <if test="create_user_id != null" >
+                #{create_user_id,jdbcType=VARCHAR},
+            </if>
+            <if test="update_time != null" >
+                #{update_time,jdbcType=TIMESTAMP},
+            </if>
+            <if test="update_user_id != null" >
+                #{update_user_id,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.operate.entity.SkinManagerDetail" >
+        update operate_skin_manager_detail
+        <set >
+            <if test="skin_manager_id != null" >
+                skin_manager_id = #{skin_manager_id,jdbcType=VARCHAR},
+            </if>
+            <if test="module_name != null" >
+                module_name = #{module_name,jdbcType=VARCHAR},
+            </if>
+            <if test="init_module != null" >
+                init_module = #{init_module,jdbcType=VARCHAR},
+            </if>
+            <if test="init_img_url != null" >
+                init_img_url = #{init_img_url,jdbcType=VARCHAR},
+            </if>
+            <if test="selected_img_url != null" >
+                selected_img_url = #{selected_img_url,jdbcType=VARCHAR},
+            </if>
+            <if test="create_time != null" >
+                create_time = #{create_time,jdbcType=TIMESTAMP},
+            </if>
+            <if test="create_user_id != null" >
+                create_user_id = #{create_user_id,jdbcType=VARCHAR},
+            </if>
+            <if test="update_time != null" >
+                update_time = #{update_time,jdbcType=TIMESTAMP},
+            </if>
+            <if test="update_user_id != null" >
+                update_user_id = #{update_user_id,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from operate_skin_manager_detail
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

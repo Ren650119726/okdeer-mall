@@ -26,8 +26,6 @@ public class ServiceOrderProcessServiceImplTest {
 	
 	@Resource
 	private ServiceOrderProcessServiceApi serviceOrderProcessService;
-	
-	
 
 	@Test
 	public void testConfirmSeckillOrder() {

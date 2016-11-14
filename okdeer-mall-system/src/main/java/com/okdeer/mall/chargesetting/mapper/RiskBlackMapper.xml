@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.chargesetting.mapper.RiskBlackMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.chargesetting.entity.RiskBlack" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="login_account" property="login_account" jdbcType="VARCHAR" />
+        <result column="payment_account" property="payment_account" jdbcType="VARCHAR" />
+        <result column="recharge_account" property="recharge_account" jdbcType="VARCHAR" />
+        <result column="terminal_id" property="terminal_id" jdbcType="VARCHAR" />
+        <result column="payment_type" property="payment_type" jdbcType="BIT" />
+        <result column="create_time" property="create_time" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="create_user_id" jdbcType="VARCHAR" />
+        <result column="update_time" property="update_time" jdbcType="TIMESTAMP" />
+        <result column="update_user_time" property="update_user_time" jdbcType="VARCHAR" />
+        <result column="disabled" property="disabled" jdbcType="BIT" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, login_account, payment_account, recharge_account, terminal_id, payment_type, 
+        create_time, create_user_id, update_time, update_user_time, disabled
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from risk_black
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.chargesetting.entity.RiskBlack" >
+        insert into risk_black
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="login_account != null" >
+                login_account,
+            </if>
+            <if test="payment_account != null" >
+                payment_account,
+            </if>
+            <if test="recharge_account != null" >
+                recharge_account,
+            </if>
+            <if test="terminal_id != null" >
+                terminal_id,
+            </if>
+            <if test="payment_type != null" >
+                payment_type,
+            </if>
+            <if test="create_time != null" >
+                create_time,
+            </if>
+            <if test="create_user_id != null" >
+                create_user_id,
+            </if>
+            <if test="update_time != null" >
+                update_time,
+            </if>
+            <if test="update_user_time != null" >
+                update_user_time,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="login_account != null" >
+                #{login_account,jdbcType=VARCHAR},
+            </if>
+            <if test="payment_account != null" >
+                #{payment_account,jdbcType=VARCHAR},
+            </if>
+            <if test="recharge_account != null" >
+                #{recharge_account,jdbcType=VARCHAR},
+            </if>
+            <if test="terminal_id != null" >
+                #{terminal_id,jdbcType=VARCHAR},
+            </if>
+            <if test="payment_type != null" >
+                #{payment_type,jdbcType=BIT},
+            </if>
+            <if test="create_time != null" >
+                #{create_time,jdbcType=TIMESTAMP},
+            </if>
+            <if test="create_user_id != null" >
+                #{create_user_id,jdbcType=VARCHAR},
+            </if>
+            <if test="update_time != null" >
+                #{update_time,jdbcType=TIMESTAMP},
+            </if>
+            <if test="update_user_time != null" >
+                #{update_user_time,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.chargesetting.entity.RiskBlack" >
+        update risk_black
+        <set >
+            <if test="login_account != null" >
+                login_account = #{login_account,jdbcType=VARCHAR},
+            </if>
+            <if test="payment_account != null" >
+                payment_account = #{payment_account,jdbcType=VARCHAR},
+            </if>
+            <if test="recharge_account != null" >
+                recharge_account = #{recharge_account,jdbcType=VARCHAR},
+            </if>
+            <if test="terminal_id != null" >
+                terminal_id = #{terminal_id,jdbcType=VARCHAR},
+            </if>
+            <if test="payment_type != null" >
+                payment_type = #{payment_type,jdbcType=BIT},
+            </if>
+            <if test="create_time != null" >
+                create_time = #{create_time,jdbcType=TIMESTAMP},
+            </if>
+            <if test="create_user_id != null" >
+                create_user_id = #{create_user_id,jdbcType=VARCHAR},
+            </if>
+            <if test="update_time != null" >
+                update_time = #{update_time,jdbcType=TIMESTAMP},
+            </if>
+            <if test="update_user_time != null" >
+                update_user_time = #{update_user_time,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from risk_black
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

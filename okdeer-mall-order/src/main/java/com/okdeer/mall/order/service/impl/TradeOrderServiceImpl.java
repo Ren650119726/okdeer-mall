@@ -140,8 +140,8 @@ import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
-import com.okdeer.mall.order.constant.OrderMessageConstant;
-import com.okdeer.mall.order.constant.PayMessageConstant;
+import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
+import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -5152,7 +5152,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
 		tradeOrderMapper.updateTradeOrderByTradeNum(tradeOrder);
-
+		// Begin V1.2 added by maojj 2016-11-14
+		// 保存订单轨迹
+		tradeOrderTraceService.saveOrderTrace(tradeOrder);
+		// End V1.2 added by maojj 2016-11-14
 		// Begin added by maojj 2016-08-24 提货码支付成功后才生成
 		if (order.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
 			order.setPickUpCode(tradeOrder.getPickUpCode());

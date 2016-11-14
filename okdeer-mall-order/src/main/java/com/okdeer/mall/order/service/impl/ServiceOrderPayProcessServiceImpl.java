@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
@@ -25,7 +26,6 @@ import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.api.pay.pay.dto.PayResponseDto;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.mall.order.constant.ExceptionConstant;
 import com.okdeer.mall.order.pay.entity.ResponseResult;
 import com.okdeer.mall.order.service.ServiceOrderPayProcessService;
 import com.okdeer.mall.order.service.TradeOrderPayService;

@@ -1,14 +1,17 @@
 package com.okdeer.mall.activity.serviceGoodsRecommend.api.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.mall.activity.label.service.ActivityLabelService;
 import com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommend;
 import com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommendArea;
 import com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommendGoods;
@@ -20,6 +23,8 @@ public class ActivityServiceGoodsRecommendApiImpl implements ActivityServiceGood
 
 	@Autowired
 	ActivityServiceGoodsRecommendService recommendService;
+	@Autowired
+	ActivityLabelService labelService;
 	
 	/**
 	 * @Description: 保存
@@ -141,5 +146,33 @@ public class ActivityServiceGoodsRecommendApiImpl implements ActivityServiceGood
 	 */
 	public List<ActivityServiceGoodsRecommendArea> listActivityArea(String activityId) throws Exception{
 		return recommendService.listActivityArea(activityId);
+	}
+	
+	/**
+	 * @Description: 查询微信推荐商品列表
+	 * @param map 传递查询参数
+	 * @return  List<Map<String,Object>>
+	 * @author zhangkn
+	 * @date 2016年11月14日
+	 */
+	public List<Map<String,Object>> listRecommendGoodsFowWx(Map<String,Object> map){
+		List<Map<String,Object>> goodsList = recommendService.listRecommendGoodsFowWx(map);
+		//把商品id累加出来,一次得到所有商品所属的标签,避免多次连接数据库
+		if(CollectionUtils.isNotEmpty(goodsList)){
+			List<String> skuIdList = new ArrayList<String>();
+			for(Map<String,Object> goods : goodsList){
+				skuIdList.add(goods.get("goodsStoreSkuId").toString());
+			}
+			
+			//所有商品的标签集合
+			Map<String,List<String>> allLabelMap  = labelService.listLabelNameBySkuIds(skuIdList);
+			if(allLabelMap != null && allLabelMap.size() > 0){
+				//每个商品的标签集合
+				for(Map<String,Object> goods : goodsList){
+					goods.put("labelList", allLabelMap.get(goods.get("goodsStoreSkuId").toString()));
+				}
+			}
+		}
+		return goodsList;
 	}
 }

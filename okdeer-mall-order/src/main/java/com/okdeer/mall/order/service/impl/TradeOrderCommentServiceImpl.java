@@ -37,7 +37,7 @@ import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
-import com.okdeer.mall.order.constant.OrderMessageConstant;
+import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderComment;
 import com.okdeer.mall.order.entity.TradeOrderCommentImage;

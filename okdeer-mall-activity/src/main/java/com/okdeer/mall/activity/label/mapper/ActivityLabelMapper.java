@@ -1,9 +1,9 @@
 package com.okdeer.mall.activity.label.mapper;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.okdeer.base.common.exception.ServiceException;
@@ -58,6 +58,14 @@ public interface ActivityLabelMapper extends IBaseMapper{
 	 * @return
 	 */
 	@Transactional(readOnly = true)
-	public List<ActivityLabel> listByJob(Map<String,Object> map);
+	List<ActivityLabel> listByJob(Map<String,Object> map);
 	
+	/**
+	 * @Description: 通过商品idList获取商品的标签列表
+	 * @param skuIdList  商品idlist
+	 * @return List<Map<String,Object>> 结果集两列分别是skuId,labelName
+	 * @author zhangkn
+	 * @date 2016年11月14日
+	 */
+	List<Map<String,Object>> listLabelNameBySkuIds(@Param("skuIdList") List<String> skuIdList);
 }
