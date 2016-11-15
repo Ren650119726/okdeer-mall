@@ -62,7 +62,7 @@ public interface TimerMessageConstant {
         /**
          * 发货超时处理 3天
          */
-        tag_delivery_timeout(3 * 24 * 60 * 60L),
+        tag_delivery_timeout(1 * 24 * 60 * 60L),
 
         /**
          * 发货超时处理(团购) 14天

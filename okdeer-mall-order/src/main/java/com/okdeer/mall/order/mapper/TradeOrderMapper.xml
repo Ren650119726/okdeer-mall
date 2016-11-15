@@ -408,6 +408,11 @@
 		<result column="pay_way" property="payWay" jdbcType="TINYINT"
 			javaType="com.okdeer.mall.order.enums.PayWayEnum" />
 		<result column="pick_up_time" property="pickUpTime" jdbcType="VARCHAR" />
+		<!-- Begin V1.2 added by maojj 2016-11-15 -->
+		<result column="area" property="servAddr" jdbcType="VARCHAR"/>
+		<result column="preferential_price" property="favourAmount" jdbcType="DECIMAL"/>
+		<result column="remark" property="remark" jdbcType="VARCHAR"/>
+		<!-- End V1.2 added by maojj 2016-11-15 -->
 	</resultMap>
 
 	<!-- 服务订单列表Vo zhongy start -->
@@ -4487,17 +4492,20 @@
 	<!-- 服务店订单列表查询（商城后台） add by wusw 20160717 -->
 	<select id="selectServiceStoreListForOperate" resultMap="PhysicsOrderVoMap"
 		parameterType="map">
-		SELECT tr.id,
-		tr.order_no,
-		tr.store_name,
-		tr.pay_way,
-		tr.actual_amount,
-		tr.user_phone,
-		tr.create_time,
-		tr.status,
-		tr.pick_up_time,
-		op.pay_type,
-		op.pay_time
+		SELECT 	tr.id,
+				tr.order_no,
+				tr.store_name,
+				tr.pay_way,
+				tr.actual_amount,
+				tr.user_phone,
+				tr.create_time,
+				tr.status,
+				tr.pick_up_time,
+				tr.preferential_price,
+				tr.remark,
+				op.pay_type,
+				op.pay_time,
+				tol.area
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		WHERE 1=1
@@ -4598,18 +4606,18 @@
 	<!-- add by zhulq 充值订单列表数据 start -->
 	<select id="selectRechargeOrder" resultMap="RechargeOrderVoMap"
 		parameterType="com.okdeer.mall.order.entity.TradeOrderRechargeVo">
-		SELECT tr.id,
-		tr.status,
-		tr.actual_amount,
-		tr.order_no,
-		tr.type,
-		tr.create_time,
-		op.pay_type,
-		op.pay_time,
-		tr.user_id,
-		tri.sku_name,
-		tri.recharge_mobile,
-		tr.user_phone
+		SELECT  tr.id,
+				tr.status,
+				tr.actual_amount,
+				tr.order_no,
+				tr.type,
+				tr.create_time,
+				op.pay_type,
+				op.pay_time,
+				tr.user_id,
+				tr.user_phone,
+				tri.sku_name,
+				tri.recharge_mobile
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN trade_order_item tri ON tr.id = tri.order_id
