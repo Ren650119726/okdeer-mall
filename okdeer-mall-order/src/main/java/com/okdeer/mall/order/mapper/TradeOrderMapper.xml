@@ -4508,6 +4508,7 @@
 				tol.area
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
+		LEFT JOIN trade_order_logistics tol ON tr.id = tol.order_id
 		WHERE 1=1
 		<!-- 订单类型 -->
 		<if test="null != type">
