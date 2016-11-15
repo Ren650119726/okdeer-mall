@@ -6606,21 +6606,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public void dealWithStoreConsumeOrder(TradeOrder tradeOrder, String flowNo, int payType) throws Exception {
+	public void dealWithStoreConsumeOrder(TradeOrder tradeOrder) throws Exception {
 		List<TradeOrderItem> orderItems = this.tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
 		TradeOrderItem orderItem = orderItems.get(0);
-
-		// 添加支付方式
-		insertTradeOrderPay(tradeOrder, flowNo, payType);
-
-		// 修改订单状态，将订单的状态改为已完成
-		tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
-		tradeOrder.setUpdateTime(new Date());
-		tradeOrder.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_CONSUME);
-		// 增加回款时间
-		tradeOrder.setPaymentTime(new Date());
-		this.updateOrderStatus(tradeOrder);
-
 		// 创建消费码记录，如有优惠分摊优惠
 		GoodsStoreSkuService goodsService = this.goodsStoreSkuServiceService
 				.selectByStoreSkuId(orderItem.getStoreSkuId());

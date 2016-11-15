@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +26,6 @@ import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
@@ -119,12 +120,6 @@ public class RechargingOrderDealWithJob extends AbstractSimpleElasticJob {
 	@Reference(version="1.0.0")
 	private TradeOrderRefundsServiceApi tradeOrderRefundsService;
 	
-	/**
-	 * 订单service
-	 */
-	@Reference(version="1.0.0", check=false)
-	private TradeOrderServiceApi tradeOrderServiceApi;
-	
 	@Override
 	public void process(JobExecutionMultipleShardingContext arg0) {
         try {
@@ -213,7 +208,7 @@ public class RechargingOrderDealWithJob extends AbstractSimpleElasticJob {
 					//充值成功
 					logger.info("PHONEFEE===手机话费订单{}充值状态查询结果为充值成功，修改订单状态为充值成功！", order.getTradeNum());
 					order.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
-					this.tradeOrderServiceApi.updataRechargeOrderStatus(order, sporderId);
+					this.tradeOrderService.updataRechargeOrderStatus(order, sporderId);
 				} else if (gameState == 9) {
 					logger.info("PHONEFEE===手机话费订单{}充值状态查询结果为充值失败，创建话费充值失败退款！", order.getTradeNum());
 					//失败，走退款流程， 创建退款单
@@ -255,7 +250,7 @@ public class RechargingOrderDealWithJob extends AbstractSimpleElasticJob {
 							//充值成功
 							logger.info("DATAPLAN===订单号：{}手机流量充值状态查询结果为充值成功，修改订单状态为充值成功！", uorderid);
 							order.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
-							this.tradeOrderServiceApi.updataRechargeOrderStatus(order, sporderId);
+							this.tradeOrderService.updataRechargeOrderStatus(order, sporderId);
 						} else if (gameState == 9) {
 							//失败，走退款流程， 创建退款单
 							logger.info("DATAPLAN===订单号：{}手机流量充值状态查询结果为充值失败，创建流量充值失败退款！", uorderid);
