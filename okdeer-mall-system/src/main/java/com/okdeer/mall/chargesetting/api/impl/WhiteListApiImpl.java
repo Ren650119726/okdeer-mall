@@ -22,19 +22,19 @@ import com.okdeer.mall.chargesetting.service.IWhiteListService;
 
 /**
  * ClassName: IWhiteListApiImpl 
- * @Description: TODO
+ * @Description: 白名单api实现类
  * @author xuzq01
  * @date 2016年11月14日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ *		V1.2          2016年11月14日                       xuzq01              	白名单api实现类
  */
 @Service(version="1.0.0")
 public class WhiteListApiImpl implements IWhiteListApi {
 	
-	@Autowired
+	@Autowired 
 	IWhiteListService whiteListService;
 	/**
 	 * (non-Javadoc)
@@ -46,37 +46,7 @@ public class WhiteListApiImpl implements IWhiteListApi {
 		
 		return whiteListService.findWhiteList(whiteManagerDto, pageNumber, pageSize);
 	}
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.chargesetting.service.IWhiteListApi#add(com.okdeer.mall.chargesetting.dto.WhiteManagerDto, java.lang.String)
-	 */
-	@Override
-	public void add(WhiteManagerDto whiteManagerDto, String userId) {
-		String whiteId = UuidUtils.getUuid();
-		whiteManagerDto.setId(whiteId);
-		whiteManagerDto.setCreateUserId(userId);
-		whiteManagerDto.setUpdateUserId(userId);
-		Date date = new Date();
-		whiteManagerDto.setCreateTime(date);
-		whiteManagerDto.setUpdateTime(date);
-		RiskWhite riskWhite= BeanMapper.map(whiteManagerDto, RiskWhite.class);
-		try {
-			whiteListService.add(riskWhite);
-		} catch (Exception e) {
-			
-			e.printStackTrace();
-		}
-		
-	}
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.chargesetting.service.IWhiteListApi#selectWhiteByAccount(com.okdeer.mall.chargesetting.dto.WhiteManagerDto)
-	 */
-	@Override
-	public int selectWhiteByAccount(WhiteManagerDto whiteManagerDto) {
-		
-		return whiteListService.selectWhiteByAccount(whiteManagerDto);
-	}
+
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.chargesetting.service.IWhiteListApi#delete(java.lang.String, java.lang.String)
@@ -91,12 +61,22 @@ public class WhiteListApiImpl implements IWhiteListApi {
 	}
 	/**
 	 * (non-Javadoc)
+	 * @throws Exception 
 	 * @see com.okdeer.mall.chargesetting.service.IWhiteListApi#add(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void add(String account, String id) {
-		// TODO Auto-generated method stub
-		
+	public void add(String account, String userId) throws Exception {
+		String whiteId = UuidUtils.getUuid();
+		Date date = new Date();
+		RiskWhite riskWhite = new RiskWhite();
+		riskWhite.setId(whiteId);
+		riskWhite.setTelephoneAccount(account);
+		riskWhite.setCreateUserId(userId);
+		riskWhite.setUpdateUserId(userId);
+		riskWhite.setCreateTime(date);
+		riskWhite.setUpdateTime(date);
+		riskWhite.setDisabled(0);
+		whiteListService.add(riskWhite);
 	}
 	/**
 	 * (non-Javadoc)
@@ -104,8 +84,7 @@ public class WhiteListApiImpl implements IWhiteListApi {
 	 */
 	@Override
 	public int selectWhiteByAccount(String account) {
-		// TODO Auto-generated method stub
-		return 0;
+		return whiteListService.selectWhiteByAccount(account);
 	}
 
 }

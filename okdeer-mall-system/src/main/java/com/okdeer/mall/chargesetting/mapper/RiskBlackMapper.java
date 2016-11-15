@@ -6,8 +6,20 @@
  */
 package com.okdeer.mall.chargesetting.mapper;
 
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.chargesetting.dto.BlackManagerDto;
+import com.okdeer.mall.chargesetting.entity.RiskBlack;
 
 public interface RiskBlackMapper extends IBaseMapper {
+
+	/**
+	 * @Description: TODO
+	 * @param blackManagerDto
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月15日
+	 */
+	PageUtils<RiskBlack> findBlackList(BlackManagerDto blackManagerDto);
 
 }

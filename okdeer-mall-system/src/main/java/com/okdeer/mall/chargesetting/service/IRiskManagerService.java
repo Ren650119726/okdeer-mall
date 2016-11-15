@@ -1,40 +1,39 @@
 /** 
  *@Project: okdeer-mall-system 
  *@Author: xuzq01
- *@Date: 2016年11月14日 
+ *@Date: 2016年11月15日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
 package com.okdeer.mall.chargesetting.service;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.chargesetting.dto.WhiteManagerDto;
-import com.okdeer.mall.chargesetting.entity.RiskWhite;
+import com.okdeer.mall.chargesetting.dto.UserManagerDto;
+import com.okdeer.mall.chargesetting.entity.RiskUserManager;
 
 /**
- * ClassName: IWhiteListService 
- * @Description: 白名单管理service
+ * ClassName: IRiskManagerService 
+ * @Description: 风控人员管理service
  * @author xuzq01
- * @date 2016年11月14日
+ * @date 2016年11月15日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *		v1.2			2016年11月14日		xuzq01				白名单管理service
+ *		v1.2			2016年11月15日		xuzq01				风控人员管理service
  */
 
-public interface IWhiteListService extends IBaseService{
-	
-	public PageUtils<RiskWhite> findWhiteList(WhiteManagerDto whiteManagerDto, Integer pageNumber,
-			Integer pageSize);
+public interface IRiskManagerService extends IBaseService {
 
 	/**
 	 * @Description: TODO
-	 * @param whiteManagerDto
+	 * @param userManagerDto
+	 * @param pageNumber
+	 * @param pageSize
 	 * @return   
 	 * @author xuzq01
-	 * @date 2016年11月14日
+	 * @date 2016年11月15日
 	 */
-	public int selectWhiteByAccount(String account);
-	
+	PageUtils<RiskUserManager> findUserList(UserManagerDto userManagerDto, Integer pageNumber, Integer pageSize);
+
 }
