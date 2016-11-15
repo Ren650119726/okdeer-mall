@@ -8,100 +8,48 @@
 
 package com.okdeer.mall.order.pay;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
-import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
-import com.alibaba.rocketmq.client.producer.LocalTransactionState;
-import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
-import com.alibaba.rocketmq.client.producer.TransactionSendResult;
-import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
-import com.google.common.collect.Iterables;
-import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
-import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
+import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
-import com.okdeer.archive.store.entity.StoreAgentCommunity;
-import com.okdeer.archive.store.entity.StoreInfo;
-import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
-import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
-import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecord;
-import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
-import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
-import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
-import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
-import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
-import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
-import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsRegisteRecordServiceApi;
-import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi;
-import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
-import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
-import com.okdeer.mall.activity.group.entity.ActivityGroup;
-import com.okdeer.mall.activity.group.service.ActivityGroupService;
-import com.okdeer.mall.common.utils.HttpClientUtil;
-import com.okdeer.mall.common.utils.LockUtil;
-import com.okdeer.mall.common.utils.RandomStringUtil;
-import com.okdeer.mall.common.utils.Xml2JsonUtil;
-import com.okdeer.mall.common.utils.security.MD5;
-import com.okdeer.mall.order.constant.ExceptionConstant;
-import com.okdeer.mall.order.constant.OrderMessageConstant;
-import com.okdeer.mall.order.constant.PayMessageConstant;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
+import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
+import com.okdeer.mall.order.constant.mq.PayMessageConstant;
+import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
-import com.okdeer.mall.order.entity.TradeOrderItem;
-import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderLog;
-import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
-import com.okdeer.mall.order.enums.ConsumeStatusEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
-import com.okdeer.mall.order.enums.OrderTypeEnum;
-import com.okdeer.mall.order.enums.PayTypeEnum;
-import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
-import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
+import com.okdeer.mall.order.pay.callback.AbstractPayResultHandler;
+import com.okdeer.mall.order.pay.callback.PayResultHandlerFactory;
 import com.okdeer.mall.order.pay.entity.ResponseResult;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
-import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
-import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.order.utils.JsonDateValueProcessor;
-import com.okdeer.base.common.utils.mapper.JsonMapper;
-import com.okdeer.api.pay.enums.TradeErrorEnum;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.DateUtils;
-import com.okdeer.base.common.utils.StringUtils;
-import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
-import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
-import com.okdeer.base.framework.mq.RocketMqResult;
-
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
 
 /**
  * 余额支付结果消息订阅处理
@@ -119,16 +67,14 @@ import net.sf.json.JsonConfig;
  *     重构4.1          2016年8月24日                               maojj				余额支付成功，如果是到店自提，生成提货码
  *     重构4.1          2016年9月22日                              zhaoqc             V1.0.0移动代码
  *     V1.1.0          2016年10月5日                              zhaoqc             新增余额支付到店消费订单处理  
- *     V1.1.0			2016-10-15			   wushp				邀请注册首单返券
+ *     V1.1.0			2016-10-15		   wushp				邀请注册首单返券
+ *     V1.2.0 		    2016-11-14		   maojj			代码优化
  */
 @Service
 public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		implements PayMessageConstant, OrderMessageConstant {
 
 	private static final Logger logger = LoggerFactory.getLogger(PayResultStatusSubscriber.class);
-
-	@Autowired
-	private TradeOrderLogisticsService tradeOrderLogisticsService;
 
 	@Autowired
 	public TradeOrderRefundsService tradeOrderRefundsService;
@@ -154,17 +100,9 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	@Resource
 	private TradeOrderItemDetailMapper tradeOrderItemDetailMapper;
 
-	@Autowired
-	private ActivityGroupService activityGroupService;
 
 	@Reference(version = "1.0.0", check = false)
 	private StoreInfoServiceApi storeInfoService;
-
-	@Autowired
-	private TradeOrderTimer tradeOrderTimer;
-
-	@Autowired
-	private RocketMQTransactionProducer rocketMQTransactionProducer;
 
 	// Begin 12002 add by zengj
 	/**
@@ -181,82 +119,6 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	@Resource
 	private TradeOrderLogService tradeOrderLogService;
 	// End 1.0.Z 增加订单操作记录Service add by zengj
-
-	/**
-     * okdeer.recharge.partner
-     */
-    @Value("${okdeer.recharge.partner}")
-    private String partner;
-	/**
-	 * 开放平台Id
-	 */
-	@Value("${juhe.openId}")
-	private String openId;
-
-	/**
-	 * 话费充值appKey
-	 */
-	@Value("${juhe.phonefee.appKey}")
-	private String appKey;
-
-	/**
-	 * 流量充值appKey
-	 */
-	@Value("${juhe.dataplan.appKey}")
-	private String dataPlanKey;
-
-	/**
-	 * 话费充值充值url
-	 */
-	@Value("${phonefee.onlineOrder}")
-	private String submitOrderUrl;
-
-	/**
-	 * 流量套餐充值url
-	 */
-	@Value("${dataplan.onlineOrder}")
-	private String dataplanOrderUrl;
-	/*************欧飞网充值配置*********************/
-    /**
-     * ofpay.userid
-     */
-    @Value("${ofpay.userid}")
-    private String userid;
-    /**
-     * ofpay.userpws
-     */
-    @Value("${ofpay.userpws}")
-    private String userpws;
-    /**
-     * ofpay.keyStr
-     */
-    @Value("${ofpay.keyStr}")
-    private String keyStr;
-    /**
-     * ofpay.returl
-     */
-    @Value("${ofpay.returl}")
-    private String returl;
-    /**
-     * ofpay.version
-     */
-    @Value("${ofpay.version}")
-    private String version;
-    /**
-     * ofpay.dataplan.range
-     */
-    @Value("${ofpay.dataplan.range}")
-    private String range;
-    /**
-     * ofpay.dataplan.effectStartTime
-     */
-    @Value("${ofpay.dataplan.effectStartTime}")
-    private String effectStartTime;
-    /**
-     * ofpay.dataplan.effectTime
-     */
-    @Value("${ofpay.dataplan.effectTime}")
-    private String effectTime;
     
     // begin add by wushp 20161018
  	/**
@@ -265,6 +127,11 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
  	@Autowired
  	private OrderReturnCouponsService orderReturnCouponsService;
  	// end add by wushp 20161018
+ 	
+ 	// Begin V1.2 added by maojj 2016-11-14
+ 	@Resource
+	private PayResultHandlerFactory payResultHandlerFactory;
+ 	// End V1.2 added by maojj 2016-11-14
     
 	@Override
 	public String getTopic() {
@@ -294,355 +161,18 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			case TAG_PAY_RESULT_REFUND:
 				// 订单退款
 				return refundProcessResult(message);
-			case TAG_PAY_RECHARGE_ORDER_BLANCE:
-				return dealWithRechargeOrderPayResult(message);
 			default:
 				break;
 		}
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 	}
 
-	public synchronized void inserts(TradeOrder tradeOrder, ResponseResult result) throws Exception {
-		List<TradeOrderItem> orderItem = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
-		TradeOrderItem item = orderItem.get(0);
-		String storeSkuId = item.getStoreSkuId();
-		int orderType = tradeOrder.getType().ordinal(); // 订单类型(0:实物订单,1:服务订单)
-
-		tradeOrder.setTradeOrderItem(orderItem);
-		int activityType = tradeOrder.getActivityType().ordinal(); // 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
-		String activityId = tradeOrder.getActivityId();
-		if (activityType == 4) { // 团购活动
-			int skuNum = orderItem.get(0).getQuantity(); // 购买数量
-			GoodsStoreSkuService skuService = new GoodsStoreSkuService();
-			ActivityGroup activityGroup = new ActivityGroup();
-			if (orderType == 1) {
-				skuService = goodsStoreSkuServiceService.selectByStoreSkuId(storeSkuId);
-			} else if (orderType == 0) {
-				activityGroup = activityGroupService.selectServiceTime(activityId); // 查询团购活动时间
-			}
-
-			List<TradeOrderItemDetail> orderItemDetailList = new ArrayList<TradeOrderItemDetail>();
-			for (int i = 0; i < skuNum; i++) {
-				String OrderItemId = orderItem.get(0).getId();
-				List<TradeOrderItemDetail> itemDetail = tradeOrderItemDetailMapper.selectByOrderItemById(OrderItemId);
-				if (itemDetail.size() < skuNum) {
-					TradeOrderItemDetail orderItemDetail = new TradeOrderItemDetail();
-					orderItemDetail.setConsumeCode(RandomStringUtil.getRandomInt(8));
-					orderItemDetail.setCreateTime(new Date());
-					if (orderType == 1) {
-						orderItemDetail.setEndTime(skuService.getEndTime());
-						orderItemDetail.setStartTime(skuService.getStartTime());
-					} else if (orderType == 0) {
-						orderItemDetail.setEndTime(activityGroup.getEndTime());
-						orderItemDetail.setStartTime(activityGroup.getStartTime());
-					}
-					orderItemDetail.setId(UuidUtils.getUuid());
-					orderItemDetail.setOrderItemId(orderItem.get(0).getId());
-					orderItemDetail.setStatus(ConsumeStatusEnum.noConsume);
-					orderItemDetailList.add(orderItemDetail);
-				}
-			}
-			if (result.getCode().equals(TradeErrorEnum.SUCCESS.getName())) {
-				TradeOrderPay tradeOrderPay = new TradeOrderPay();
-				tradeOrderPay.setId(UuidUtils.getUuid());
-				tradeOrderPay.setCreateTime(new Date());
-				tradeOrderPay.setPayAmount(tradeOrder.getActualAmount());
-				tradeOrderPay.setOrderId(tradeOrder.getId());
-				tradeOrderPay.setPayTime(new Date());
-				tradeOrderPay.setPayType(PayTypeEnum.WALLET);
-				if (orderType == 1) {
-					tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
-					tradeOrder.setDeliveryTime(new Date());
-				} else {
-					tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
-				}
-				tradeOrder.setUpdateTime(new Date());
-				tradeOrder.setTradeOrderPay(tradeOrderPay);
-			} else {
-				logger.error("严重问题：订单支付失败,订单编号为：" + tradeOrder.getOrderNo());
-			}
-			if (orderItemDetailList.size() > 0) {
-				tradeOrderItemDetailMapper.insertBatch(orderItemDetailList);
-			}
-			updateWithApply(tradeOrder);
-		} else {
-			if (result.getCode().equals(TradeErrorEnum.SUCCESS.getName())) {
-
-				// Begin 12002 add by zengj
-				if (tradeOrder.getType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
-					// 线上支付的，支付完成，销量增加
-					GoodsStoreSku goodsStoreSku = this.goodsStoreSkuService.getById(item.getStoreSkuId());
-					if (goodsStoreSku != null) {
-						goodsStoreSku.setSaleNum((goodsStoreSku.getSaleNum() == null ? 0 : goodsStoreSku.getSaleNum())
-								+ item.getQuantity());
-						goodsStoreSkuService.updateByPrimaryKeySelective(goodsStoreSku);
-					}
-				}
-				// End 12002 add by zengj
-
-				// Begin added by maojj 2016-08-24 付款成功生成提货码
-				if (tradeOrder.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
-					tradeOrder.setPickUpCode(RandomStringUtil.getRandomInt(6));
-				}
-				// Begin added by maojj 2016-08-24 付款成功生成提货码
-
-				TradeOrderPay tradeOrderPay = new TradeOrderPay();
-				tradeOrderPay.setId(UuidUtils.getUuid());
-				tradeOrderPay.setCreateTime(new Date());
-				tradeOrderPay.setPayAmount(tradeOrder.getActualAmount());
-				tradeOrderPay.setOrderId(tradeOrder.getId());
-				tradeOrderPay.setPayTime(new Date());
-				tradeOrderPay.setPayType(PayTypeEnum.WALLET);
-				// Begin V1.2 modified by maojj 2016-11-09
-				if (orderType == 1) {
-					// 团购服务订单
-					tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
-				} else if (orderType == OrderTypeEnum.SERVICE_STORE_ORDER.ordinal() ){
-					// 上门服务订单
-					tradeOrder.setStatus(OrderStatusEnum.WAIT_RECEIVE_ORDER);
-				} else {
-					tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
-				}
-				// End V1.2 modified by maojj 2016-11-09
-				tradeOrder.setUpdateTime(new Date());
-				tradeOrder.setTradeOrderPay(tradeOrderPay);
-			} else {
-				logger.error("严重问题：订单支付失败,订单编号为：" + tradeOrder.getOrderNo());
-				// Begin added by maojj 2016-08-22 订单支付失败，将订单状态更改为代付款状态
-				tradeOrder.setStatus(OrderStatusEnum.UNPAID);
-				// Begin added by maojj 2016-08-22
-			}
-			updateWithApply(tradeOrder);
-		}
-	}
-
-	private StoreInfo getStoreInfo(String storeId) throws Exception {
-		return storeInfoService.getStoreBaseInfoById(storeId);
-	}
-
-	/**
-	 * 订单支付并发送消息(快送同步)
-	 * @param tradeOrder
-	 * @return
-	 */
-	public boolean updateWithApply(TradeOrder tradeOrder) throws Exception {
-		JsonConfig jsonConfig = new JsonConfig();
-		jsonConfig.registerJsonValueProcessor(Date.class, new JsonDateValueProcessor());
-		tradeOrder.setTradeOrderLogistics(tradeOrderLogisticsService.findByOrderId(tradeOrder.getId()));
-		StoreInfo storeInfo = getStoreInfo(tradeOrder.getStoreId());
-		JSONObject json = JSONObject.fromObject(tradeOrder, jsonConfig);
-		json.put("storeType", storeInfo.getType());
-		List<StoreAgentCommunity> communitys = storeInfoService.getAgentCommunitysByStoreId(tradeOrder.getStoreId());
-		if (!Iterables.isEmpty(communitys)) {
-			json.put("storeAgentCommunity", communitys.get(0));
-		}
-
-		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_APPLY,
-				json.toString().getBytes(Charsets.UTF_8));
-		// 发送事务消息
-		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, tradeOrder,
-				new LocalTransactionExecuter() {
-
-					@Override
-					public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
-						try {
-							tradeOrderService.updateMyOrderStatus((TradeOrder) object);
-							return LocalTransactionState.COMMIT_MESSAGE;
-						} catch (Exception e) {
-							logger.error("执行支付回调失败", e);
-							return LocalTransactionState.ROLLBACK_MESSAGE;
-						}
-					}
-				}, new TransactionCheckListener() {
-
-					@Override
-					public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
-						return LocalTransactionState.COMMIT_MESSAGE;
-					}
-				});
-		return RocketMqResult.returnResult(sendResult);
-	}
-
-	/**
-	 * 确认话费充值订单支付结果消息处理
-	 */
-	private ConsumeConcurrentlyStatus dealWithRechargeOrderPayResult(MessageExt message) {
-		String tradeNum = null;
-		try {
-			String msg = new String(message.getBody(), Charsets.UTF_8);
-			logger.info("订单支付状态消息:" + msg);
-			ResponseResult result = JsonMapper.nonEmptyMapper().fromJson(msg, ResponseResult.class);
-			tradeNum = result.getTradeNum();
-			if (StringUtils.isEmpty(result.getTradeNum())) {
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-			}
-
-			// 查询订单消息
-			TradeOrder tradeOrder = tradeOrderService.getByTradeNum(tradeNum);
-			if (tradeOrder == null) {
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-			}
-			if (tradeOrder.getStatus() == OrderStatusEnum.DROPSHIPPING
-					|| tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-			}
-			List<TradeOrderItem> tradeOrderItems = tradeOrderItemService.selectOrderItemByOrderId(tradeOrder.getId());
-			if (tradeOrderItems.isEmpty()) {
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-			}
-
-			insertTradeOrderPay(tradeOrder);
-			synchronized (LockUtil.getInitialize().synObject(tradeNum)) {
-				// 调用第三方聚合充值平台
-				TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
-				String phoneno = tradeOrderItem.getRechargeMobile();
-				int cardnum = tradeOrder.getTotalAmount().intValue();
-				String orderid = tradeOrder.getTradeNum();
-				String pid = tradeOrderItem.getStoreSkuId();
-				OrderTypeEnum orderType = tradeOrder.getType();
-				int partnerNum = Integer.parseInt(partner);
-                if(partnerNum == 1) {
-                    //调用第三方聚合充值平台
-                    String sign = null;
-                    String url = null;
-                    if (orderType == OrderTypeEnum.PHONE_PAY_ORDER) {
-                        //话费充值
-                        sign = MD5.md5(openId + appKey + phoneno + cardnum + orderid);
-                        url = submitOrderUrl + "?key=" + appKey + "&phoneno=" + phoneno + "&orderid=" + orderid + "&cardnum=" + cardnum + "&sign=" + sign;
-                        String resp = HttpClientUtil.get(url);
-                        JSONObject respJson = JSONObject.fromObject(resp);
-                        int errorCode = respJson.getInt("error_code");
-                        if (errorCode == 0) {
-                            JSONObject resultJson = respJson.getJSONObject("result");
-                            int gameState = Integer.parseInt(resultJson.getString("game_state"));
-                            if(gameState == 9) {
-                                //充值失败，走退款流程
-                                this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
-                            } else if (gameState == 0) {
-                                updateTradeOrderStatus(tradeOrder);
-                            }
-                        } else {
-                            //充值失败，走退款流程
-                            this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
-                        }
-                    } else if(orderType == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
-                        //流量充值
-                        sign = MD5.md5(openId + dataPlanKey + phoneno + pid + orderid);
-                        url = dataplanOrderUrl + "?key=" + dataPlanKey + "&phone=" + phoneno + "&pid=" + pid + "&orderid=" + orderid + "&sign=" + sign;
-                        
-                        String resp = HttpClientUtil.get(url);
-                        JSONObject respJson = JSONObject.fromObject(resp);
-                        int errorCode = respJson.getInt("error_code");
-                        if(errorCode != 0) {
-                            //充值聚合订单提交失败，走退款流程
-                            this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
-                        } else {
-                            updateTradeOrderStatus(tradeOrder);
-                        }
-                    }
-                } else if (partnerNum == 2) {
-                    if (orderType == OrderTypeEnum.PHONE_PAY_ORDER) {
-                        String ordertime = orderid.substring(0, 14);
-                        String sign = MD5.md5(userid + userpws + pid + cardnum + orderid + ordertime + phoneno + keyStr).toUpperCase();
-                        String url = "http://" + userid + ".api2.ofpay.com/onlineorder.do?userid=" + userid + "&userpws=" + userpws 
-                                + "&cardid=" + pid + "&cardnum=" + cardnum + "&sporder_id=" + orderid + "&sporder_time=" + ordertime
-                                + "&game_userid=" + phoneno + "&md5_str=" + sign + "&ret_url=" + returl + "&version=" + version;
-                        String xml = HttpClientUtil.get(url, "GB2312");
-                        JSONObject respJson = Xml2JsonUtil.xml2Json(xml, "GB2312");
-                        JSONObject orderinfo = respJson.getJSONObject("orderinfo");
-                        logger.info("*******手机话费充值订单{}，返回参数：{}***********", orderid, orderinfo);
-                        int retcode = orderinfo.getInt("retcode");
-                        if (retcode == 1) {
-                            int gameState = orderinfo.getInt("game_state");
-                            if (gameState == 0) {
-                                //充值请求订单生成成功，支付成功
-                                logger.info("PHONEFEE===手机话费充值订单{}请求返回状态为充值中，修改订单状态为充值中！", orderid);
-                                updateTradeOrderStatus(tradeOrder, orderinfo.getString("orderid"));
-                            } else if (gameState == 9) {
-                                //充值请求订单失败，走退款流程
-                                logger.info("PHONEFEE===手机话费充值订单{}请求同步返回状态为失败，创建充值退款单！", orderid);
-                                this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
-                            }
-                        } else {
-                            //欧飞订单提交失败，走退款流程
-                            logger.info("PHONEFEE==OFPAY==手机话费充值订单{}请求充值返回码为：{}，创建充值退款单！",orderid, retcode);
-                            this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
-                        }
-                    } else if(orderType == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
-                        String arr[] = pid.split("\\|");
-                        String perValue = arr[0];
-                        String flowValue = arr[1];
-                        String sign = MD5.md5(userid + userpws + phoneno + perValue + flowValue + range + effectStartTime + effectTime + orderid + keyStr).toUpperCase();
-                        String url = "http://" + userid + ".api2.ofpay.com/flowOrder.do?userid=" + userid + "&userpws=" + userpws
-                                + "&phoneno=" + phoneno + "&perValue=" + perValue + "&flowValue=" + flowValue + "&range=" + range
-                                + "&effectStartTime=" + effectStartTime + "&effectTime=" + effectTime + "&sporderId=" + orderid
-                                + "&md5Str=" + sign + "&version=" + version + "&retUrl=" + returl; 
-                        String xml = HttpClientUtil.get(url, "GB2312");
-                        JSONObject respJson = Xml2JsonUtil.xml2Json(xml, "GB2312");
-                        JSONObject orderinfo = respJson.getJSONObject("orderinfo");
-                        logger.info("***********手机流量充值订单{},返回参数{}***************", orderid, orderinfo);
-                        int retcode = orderinfo.getInt("retcode");
-                        if (retcode == 1) {
-                            int gameState = orderinfo.getInt("game_state");
-                            if (gameState == 0) {
-                                //充值订单请求成功
-                                logger.info("DATAPLAN===手机流量充值订单{}请求返回状态为充值中，修改订单状态为充值中！", orderid);
-                                updateTradeOrderStatus(tradeOrder, orderinfo.getString("orderid"));
-                            } else if(gameState == 9) {
-                                //充值订单请求失败
-                                logger.info("DATAPLAN===手机流量充值订单{}请求同步返回状态为失败，创建充值退款单！", orderid);
-                                this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
-                            }
-                        } else {
-                            //欧飞订单提交失败，走退款流程
-                            logger.info("DATAPLAN==OFPAY==手机流量充值订单{}请求充值返回码为：{}，创建充值退款单！", orderid, retcode);
-                        }
-                    }
-                }
-            }
-			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-		} catch (Exception e) {
-			logger.error("充值订单支付状态消息处理失败", e);
-			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
-		} finally {
-			if (tradeNum != null) {
-				LockUtil.getInitialize().unLock(tradeNum);
-			}
-		}
-	}
-
-	private void insertTradeOrderPay(TradeOrder tradeOrder) throws Exception {
-		// 新增支付方式记录
-		TradeOrderPay tradeOrderPay = new TradeOrderPay();
-		tradeOrderPay.setId(UuidUtils.getUuid());
-		tradeOrderPay.setCreateTime(new Date());
-		tradeOrderPay.setPayAmount(tradeOrder.getActualAmount());
-		tradeOrderPay.setOrderId(tradeOrder.getId());
-		tradeOrderPay.setPayTime(new Date());
-		tradeOrderPay.setPayType(PayTypeEnum.WALLET);
-		this.tradeOrderPayService.insertSelective(tradeOrderPay);
-	}
-
-	private void updateTradeOrderStatus(TradeOrder tradeOrder) throws Exception {
-		// 修改订单状态为代发货
-		tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
-		tradeOrder.setUpdateTime(new Date());
-		this.tradeOrderService.updateRechargeOrderByTradeNum(tradeOrder);
-	}
-	
-    private void updateTradeOrderStatus(TradeOrder tradeOrder, String sporderId) throws ServiceException {
-        //修改订单状态为代发货
-        tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
-        tradeOrder.setUpdateTime(new Date());
-        
-        this.tradeOrderService.updataRechargeOrderStatus(tradeOrder, sporderId);
-    }
-
 	/**
 	 * 订单支付消息处理
 	 */
 	private ConsumeConcurrentlyStatus insertProcessResult(MessageExt message) {
 		String tradeNum = null;
+		TradeOrder tradeOrder = null;
 		try {
 			String msg = new String(message.getBody(), Charsets.UTF_8);
 			logger.info("订单支付状态消息:" + msg);
@@ -651,54 +181,9 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
 			tradeNum = result.getTradeNum();
-			TradeOrder tradeOrder = tradeOrderService.getByTradeNum(result.getTradeNum());
-			// Begin 判断订单状态为不是待买家支付中，就过掉该消息 add by zengj
-			if (tradeOrder == null || (tradeOrder.getStatus() != OrderStatusEnum.UNPAID
-					&& tradeOrder.getStatus() != OrderStatusEnum.BUYER_PAYING)) {
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-			}
-			// End 判断订单状态为不是待买家支付中，就过掉该消息 add by zengj
-
-			// Begin 重构4.1 add by zengj
-			// 判断是否是服务店订单，如果是服务店订单走单独流程
-			if (tradeOrder.getType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
-			    inserts(tradeOrder, result);
-			    
-				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime(), "yyyy-MM-dd HH:mm");
-				// 预约服务时间过后2小时未派单的自动取消订单
-				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
-						(DateUtils.addHours(serviceTime, 2).getTime() - DateUtils.getSysDate().getTime()) / 1000);
-			}else if (tradeOrder.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
-			    //到店消费的订单 处理
-                synchronized(LockUtil.getInitialize().synObject(tradeOrder.getTradeNum())) {
-                   this.tradeOrderService.dealWithStoreConsumeOrder(tradeOrder, null, PayTypeEnum.WALLET.ordinal());
-                }
-			} else {
-			    inserts(tradeOrder, result);
-			    
-				// End 重构4.1 add by zengj
-				// 发送计时消息
-				if (ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()) {
-					if (tradeOrder.getType() == OrderTypeEnum.SERVICE_ORDER) {
-						List<TradeOrderItem> orderItem = tradeOrderItemMapper
-								.selectOrderItemListById(tradeOrder.getId());
-						if (orderItem != null && !Iterables.isEmpty(orderItem)) {
-							for (TradeOrderItem item : orderItem) {
-								GoodsStoreSkuService sku = goodsStoreSkuServiceService
-										.selectBySkuId(item.getStoreSkuId());
-								long delayTimeMillis = (sku.getEndTime().getTime() - System.currentTimeMillis()) / 1000;
-								tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_service_order_refund_timeout,
-										tradeOrder.getId(), delayTimeMillis);
-							}
-						}
-					} else {
-						tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_group_timeout,
-								tradeOrder.getId());
-					}
-				} else {
-					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_timeout, tradeOrder.getId());
-				}
-			}
+			tradeOrder = tradeOrderService.getByTradeNum(result.getTradeNum());
+			AbstractPayResultHandler handler = payResultHandlerFactory.getByOrderType(tradeOrder.getType());
+			handler.handler(tradeOrder, result);
 		} catch (Exception e) {
 			logger.error("订单支付状态消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
@@ -706,7 +191,6 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		
 		// begin add by wushp 20161015
 		try {
-			TradeOrder tradeOrder = tradeOrderService.getByTradeNum(tradeNum);
 			orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
 		} catch (Exception e) {
 			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
@@ -830,32 +314,4 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		}
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 	}
-
-	/**
-	 * 根据店铺类型获取TOPIC
-	 *
-	 * @param storeType
-	 * @return
-	 */
-	private String getTopicByStoreType(StoreTypeEnum storeType) {
-		switch (storeType) {
-			case AROUND_STORE:
-				return TOPIC_ORDER_AROUND;
-			case FAST_DELIVERY_STORE:
-				return TOPIC_ORDER_FAST;
-			case CLOUD_STORE:
-				return TOPIC_ORDER_CLOUD;
-			case ACTIVITY_STORE:
-				return TOPIC_ORDER_ACTIVITY;
-			// Begin 重构4.1 add by zengj
-			case SERVICE_STORE:
-				return TOPIC_ORDER_SERVICE;
-			// End 重构4.1 add by zengj
-
-			default:
-				break;
-		}
-		return null;
-	}
-	
 }

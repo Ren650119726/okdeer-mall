@@ -16,8 +16,8 @@ import com.okdeer.mall.order.vo.TradeOrderContext;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
-import com.okdeer.mall.order.constant.OrderTipMsgConstant;
-import com.okdeer.mall.order.service.StoreExtProcessService;
+import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
+import com.okdeer.mall.order.handler.StoreExtProcessService;
 
 /**
  * ClassName: StoreExtProcessServiceImpl 

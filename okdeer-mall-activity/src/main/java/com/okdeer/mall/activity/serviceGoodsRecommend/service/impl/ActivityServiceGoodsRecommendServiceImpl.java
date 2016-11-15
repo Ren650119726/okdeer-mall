@@ -202,4 +202,9 @@ public class ActivityServiceGoodsRecommendServiceImpl extends BaseServiceImpl
 		return recommendAreaMapper.listByActivityId(activityId);
 	}
 
+	@Override
+	public List<Map<String, Object>> listRecommendGoodsFowWx(Map<String, Object> map) {
+		return recommendMapper.listRecommendGoodsFowWx(map);
+	}
+
 }

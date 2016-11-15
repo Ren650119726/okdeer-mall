@@ -204,6 +204,10 @@ public class ConvertUtil {
 		return format(str,DEFAULT_NULL_STR);
 	}
 	
+	public static Integer format(Integer intVal){
+		return intVal == null ? Integer.valueOf(0) : intVal;
+	}
+	
 	/**
 	 * @Description: 格式化字符串对象
 	 * @param str

@@ -140,8 +140,8 @@ import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
-import com.okdeer.mall.order.constant.OrderMessageConstant;
-import com.okdeer.mall.order.constant.PayMessageConstant;
+import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
+import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -5152,7 +5152,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
 		tradeOrderMapper.updateTradeOrderByTradeNum(tradeOrder);
-
+		// Begin V1.2 added by maojj 2016-11-14
+		// 保存订单轨迹
+		tradeOrderTraceService.saveOrderTrace(tradeOrder);
+		// End V1.2 added by maojj 2016-11-14
 		// Begin added by maojj 2016-08-24 提货码支付成功后才生成
 		if (order.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
 			order.setPickUpCode(tradeOrder.getPickUpCode());
@@ -6603,21 +6606,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public void dealWithStoreConsumeOrder(TradeOrder tradeOrder, String flowNo, int payType) throws Exception {
+	public void dealWithStoreConsumeOrder(TradeOrder tradeOrder) throws Exception {
 		List<TradeOrderItem> orderItems = this.tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
 		TradeOrderItem orderItem = orderItems.get(0);
-
-		// 添加支付方式
-		insertTradeOrderPay(tradeOrder, flowNo, payType);
-
-		// 修改订单状态，将订单的状态改为已完成
-		tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
-		tradeOrder.setUpdateTime(new Date());
-		tradeOrder.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_CONSUME);
-		// 增加回款时间
-		tradeOrder.setPaymentTime(new Date());
-		this.updateOrderStatus(tradeOrder);
-
 		// 创建消费码记录，如有优惠分摊优惠
 		GoodsStoreSkuService goodsService = this.goodsStoreSkuServiceService
 				.selectByStoreSkuId(orderItem.getStoreSkuId());

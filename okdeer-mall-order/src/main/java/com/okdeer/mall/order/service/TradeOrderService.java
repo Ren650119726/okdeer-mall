@@ -1003,4 +1003,25 @@ public interface TradeOrderService {
 	 */
 	Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params);
 	// End v1.1.0 add by zengjz 20160912
+	
+	// Begin 重构4.1 add by zhaoqc 20160722
+	/**
+	 * @Description: 添加充值订单状态更改
+	 * @param tradeOrder 订单
+	 * @param sporderId 第三方平台订单号
+	 * @throws ServiceException   
+	 * @return 
+	 * @author zhaoqc
+	 * @date 2016年7月22日
+	 */
+	void updataRechargeOrderStatus(TradeOrder tradeOrder, String sporderId) throws ServiceException;
+	// End 重构4.1 add by zhaoqc 20160722
+	
+	/**
+     * 创建订单支付方式
+     * @param tradeOrder
+     * @param result
+     * @throws Exception
+     */
+    public void dealWithStoreConsumeOrder(TradeOrder tradeOrder) throws Exception;
 }

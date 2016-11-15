@@ -1,6 +1,5 @@
 package com.okdeer.mall.activity.serviceGoodsRecommend.mapper;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -58,5 +57,14 @@ public interface ActivityServiceGoodsRecommendMapper extends IBaseMapper{
 	 * @date 2016年11月12日
 	 */
 	public List<ActivityServiceGoodsRecommend>  listByJob(Map<String,Object> map);
+	
+	/**
+	 * @Description: 查询微信推荐商品列表
+	 * @param map 传递查询参数
+	 * @return  List<Map<String,Object>>
+	 * @author zhangkn
+	 * @date 2016年11月14日
+	 */
+	public List<Map<String,Object>> listRecommendGoodsFowWx(Map<String,Object> map);
 	
 }

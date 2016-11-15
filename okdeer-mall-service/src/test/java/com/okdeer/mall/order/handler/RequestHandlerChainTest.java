@@ -10,7 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.okdeer.mall.Application;
-import com.okdeer.mall.order.service.impl.ServOrderAddServiceImpl;
+import com.okdeer.mall.order.handler.impl.ServOrderAddServiceImpl;
 import com.okdeer.mall.order.thread.SeckillQueue;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
