@@ -3,16 +3,16 @@
 <mapper namespace="com.okdeer.mall.chargesetting.mapper.RiskBlackMapper" >
     <resultMap id="BaseResultMap" type="com.okdeer.mall.chargesetting.entity.RiskBlack" >
         <id column="id" property="id" jdbcType="VARCHAR" />
-        <result column="login_account" property="login_account" jdbcType="VARCHAR" />
-        <result column="payment_account" property="payment_account" jdbcType="VARCHAR" />
-        <result column="recharge_account" property="recharge_account" jdbcType="VARCHAR" />
-        <result column="terminal_id" property="terminal_id" jdbcType="VARCHAR" />
-        <result column="payment_type" property="payment_type" jdbcType="BIT" />
-        <result column="create_time" property="create_time" jdbcType="TIMESTAMP" />
-        <result column="create_user_id" property="create_user_id" jdbcType="VARCHAR" />
-        <result column="update_time" property="update_time" jdbcType="TIMESTAMP" />
-        <result column="update_user_time" property="update_user_time" jdbcType="VARCHAR" />
-        <result column="disabled" property="disabled" jdbcType="BIT" />
+        <result column="login_account" property="loginAccount" jdbcType="VARCHAR" />
+        <result column="payment_account" property="paymentAccount" jdbcType="VARCHAR" />
+        <result column="recharge_account" property="rechargeAccount" jdbcType="VARCHAR" />
+        <result column="terminal_id" property="terminalId" jdbcType="VARCHAR" />
+        <result column="payment_type" property="paymentType" jdbcType="BIT" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_time" property="updateUserTime" jdbcType="VARCHAR" />
+        <result column="disabled" property="disabled" jdbcType="TINYINT" />
     </resultMap>
 
     <sql id="Base_Column_List" >
@@ -139,7 +139,7 @@
     </update>
 
     <delete id="delete" parameterType="java.lang.String" >
-        delete from risk_black
+       update risk_black set disabled=1
         where id = #{id,jdbcType=VARCHAR}
     </delete>
 

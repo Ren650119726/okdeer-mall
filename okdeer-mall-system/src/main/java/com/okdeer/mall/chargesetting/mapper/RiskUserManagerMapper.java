@@ -6,8 +6,22 @@
  */
 package com.okdeer.mall.chargesetting.mapper;
 
+import java.util.List;
+
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.chargesetting.dto.UserManagerDto;
+import com.okdeer.mall.chargesetting.entity.RiskUserManager;
 
 public interface RiskUserManagerMapper extends IBaseMapper {
+
+
+	/**
+	 * @Description: TODO
+	 * @param userManagerDto
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月15日
+	 */
+	List<RiskUserManager> findUserList(UserManagerDto userManagerDto);
 
 }

@@ -65,8 +65,8 @@ public class WhiteListServiceImpl extends BaseServiceImpl implements IWhiteListS
 	 * @see com.okdeer.mall.chargesetting.service.IWhiteListService#selectWhiteByAccount(com.okdeer.mall.chargesetting.dto.WhiteManagerDto)
 	 */
 	@Override
-	public int selectWhiteByAccount(WhiteManagerDto whiteManagerDto) {
-		return riskWhiteMapper.selectWhiteByAccount(whiteManagerDto.getTelephoneAccount());
+	public int selectWhiteByAccount(String account) {
+		return riskWhiteMapper.selectWhiteByAccount(account);
 	}
 
 	/**
