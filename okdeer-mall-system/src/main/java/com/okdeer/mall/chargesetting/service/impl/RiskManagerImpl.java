@@ -7,6 +7,7 @@
 package com.okdeer.mall.chargesetting.service.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -102,6 +103,16 @@ public class RiskManagerImpl extends BaseServiceImpl implements IRiskManagerServ
 			result = new ArrayList<RiskUserManager>();
 		}
 		return new PageUtils<RiskUserManager>(result);
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.chargesetting.service.IRiskManagerService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
+	 */
+	@Override
+	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime) {
+		riskUserManagerMapper.deleteBatchByIds(ids,updateUserId,updateTime);
+		
 	}
 	
 }
