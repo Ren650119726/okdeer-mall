@@ -1,15 +1,8 @@
 
 package com.okdeer.mall.order.service.impl;
 
-import static com.okdeer.common.consts.DescriptConstants.ORDER_EXECUTE_CANCEL_FAIL;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_CHANGE;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_CHANGE_ID;
-import static com.okdeer.mall.order.constant.mq.OrderMessageConstant.TAG_ORDER_CANCEL;
-import static com.okdeer.mall.order.constant.mq.OrderMessageConstant.TOPIC_ORDER_ACTIVITY;
-import static com.okdeer.mall.order.constant.mq.OrderMessageConstant.TOPIC_ORDER_AROUND;
-import static com.okdeer.mall.order.constant.mq.OrderMessageConstant.TOPIC_ORDER_CLOUD;
-import static com.okdeer.mall.order.constant.mq.OrderMessageConstant.TOPIC_ORDER_FAST;
-import static com.okdeer.mall.order.constant.mq.OrderMessageConstant.TOPIC_ORDER_SERVICE;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -27,24 +20,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
-import com.alibaba.rocketmq.client.producer.LocalTransactionState;
-import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
-import com.alibaba.rocketmq.client.producer.TransactionSendResult;
-import com.alibaba.rocketmq.common.message.Message;
-import com.alibaba.rocketmq.common.message.MessageExt;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
-import com.okdeer.archive.store.entity.StoreInfo;
-import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
-import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
-import com.okdeer.base.framework.mq.RocketMqResult;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
@@ -58,16 +41,14 @@ import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.service.CancelOrderService;
 import com.okdeer.mall.order.service.StockOperateService;
 import com.okdeer.mall.order.service.TradeMessageService;
-import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
-
-import net.sf.json.JSONObject;
 
 /**
  * ClassName: CancelOrderServiceImpl 
@@ -87,10 +68,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 
 	@Reference(version = "1.0.0", check = false)
 	private StoreInfoServiceApi storeInfoService;
-
-	@Autowired
-	private RocketMQTransactionProducer rocketMQTransactionProducer;
-
+	
 	@Autowired
 	private TradeOrderItemMapper tradeOrderItemMapper;
 
@@ -134,10 +112,10 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	private RollbackMQProducer rollbackMQProducer;
 
 	/**
-	 * 订单操作记录Service
+	 * 订单操作记录mapper
 	 */
-	@Resource
-	private TradeOrderLogService tradeOrderLogService;
+	@Autowired
+	private TradeOrderLogMapper tradeOrderLogMapper;
 
 	/**
 	 * 订单轨迹服务
@@ -161,50 +139,20 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public boolean cancelOrder(TradeOrder tradeOrder, boolean isBuyerOperate) throws Exception {
-
 		tradeOrder.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId()));
-
-		final JSONObject json = new JSONObject();
-		json.put("id", tradeOrder.getId());
-		json.put("reason", tradeOrder.getReason());
-		json.put("status", tradeOrder.getStatus());
+		String operator = null;
 		if (isBuyerOperate) {
-			json.put("operator", tradeOrder.getUserId());
+			operator = tradeOrder.getUserId();
 		} else {
-			json.put("operator", tradeOrder.getUpdateUserId());
+			operator =  tradeOrder.getUpdateUserId();
 		}
-		json.put("isBuyerOperator", isBuyerOperate);
-		StoreInfo storeInfo = storeInfoService.getStoreBaseInfoById(tradeOrder.getStoreId());
-
-		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_CANCEL,
-				json.toString().getBytes(Charsets.UTF_8));
-		// 发送事务消息
-		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, tradeOrder,
-				new LocalTransactionExecuter() {
-
-					@Override
-					public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
-						try {
-							updateCancelOrder((TradeOrder) object, json.optString("operator"));
-							return LocalTransactionState.COMMIT_MESSAGE;
-						} catch (Exception e) {
-							logger.error(ORDER_EXECUTE_CANCEL_FAIL, e);
-							return LocalTransactionState.ROLLBACK_MESSAGE;
-						}
-					}
-				}, new TransactionCheckListener() {
-
-					@Override
-					public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
-						return LocalTransactionState.COMMIT_MESSAGE;
-					}
-				});
-		return RocketMqResult.returnResult(sendResult);
+		updateCancelOrder(tradeOrder,operator);
+		return true;
 
 	}
 
 	@Transactional(rollbackFor = Exception.class)
-	private void updateCancelOrder(TradeOrder tradeOrder, String operator) throws Exception {
+	private void updateCancelOrder(TradeOrder tradeOrder,String operator) throws Exception {
 		List<String> rpcIdList = new ArrayList<String>();
 		try {
 			// 判断是否付款，如果付款需要先退款--->取消订单完成
@@ -252,12 +200,15 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				activitySaleRecordService.updateDisabledByOrderId(params);
 			}
 
-			// 用户取消时判断是否需要收取违约金
-			boolean isBreach = isBreach(tradeOrder.getCancelType(), oldOrder);
-			if (isBreach) {
-				// 如果需要收取违约金
-				tradeOrder.setIsBreach(WhetherEnum.whether);
-			}
+			
+			// 保存订单操作日志信息
+			TradeOrderLog tradeOrderLog = new TradeOrderLog();
+			tradeOrderLog.setId(UuidUtils.getUuid());
+			tradeOrderLog.setOperate(tradeOrder.getStatus().getValue() + "---" + tradeOrder.getStatus().getName());
+			tradeOrderLog.setOperateUser(operator);
+			tradeOrderLog.setRecordTime(new Date());
+			tradeOrderLog.setOrderId(tradeOrder.getId());
+			tradeOrderLogMapper.insertSelective(tradeOrderLog);
 			
 			// 保存订单轨迹
 			tradeOrderTraceService.saveOrderTrace(tradeOrder);
@@ -268,21 +219,22 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			if (alterCount <= 0) {
 				throw new Exception(ORDER_STATUS_CHANGE_ID + tradeOrder.getOrderNo());
 			}
-
-			// 保存订单操作日志
-			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), operator,
-					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+			
 			// 发送短信
 			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
 					|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()) {
 				tradeMessageService.sendSmsByCancel(oldOrder, oldOrder.getStatus());
 			}
-
+			
 			// 回收库存
 			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
-			// 给ERP发消息去生成出入库单据
-			// stockMQProducer.sendMessage(stockAdjustList);
-
+			
+			// 用户取消时判断是否需要收取违约金
+			boolean isBreach = isBreach(tradeOrder.getCancelType(), oldOrder);
+			if (isBreach) {
+				// 如果需要收取违约金
+				tradeOrder.setIsBreach(WhetherEnum.whether);
+			}
 			// 最后一步退款，避免出现发送了消息，后续操作失败了，无法回滚资金
 			this.tradeOrderPayService.cancelOrderPay(tradeOrder);
 
@@ -292,28 +244,14 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			throw e;
 		}
 	}
-
-	/**
-	 * 根据店铺类型获取TOPIC
-	 */
-	private String getTopicByStoreType(StoreTypeEnum storeType) {
-		switch (storeType) {
-			case AROUND_STORE:
-				return TOPIC_ORDER_AROUND;
-			case FAST_DELIVERY_STORE:
-				return TOPIC_ORDER_FAST;
-			case CLOUD_STORE:
-				return TOPIC_ORDER_CLOUD;
-			case ACTIVITY_STORE:
-				return TOPIC_ORDER_ACTIVITY;
-			case SERVICE_STORE:
-				return TOPIC_ORDER_SERVICE;
-			default:
-				break;
-		}
-		return null;
+	
+	
+	@Transactional(rollbackFor = Exception.class)
+	public void updateWithUserRefuse(TradeOrder tradeOrder) throws Exception {
+		tradeOrder.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId()));
+		updateCancelOrder(tradeOrder,tradeOrder.getUpdateUserId());
 	}
-
+	
 	/**
 	 * @Description: 是否收取违约金
 	 * @param cancelType 取消类型

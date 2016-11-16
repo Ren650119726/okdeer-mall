@@ -6,12 +6,15 @@ import java.util.List;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 
 /**
- * @DESC: 
- * @author YSCGD
- * @date  2016-02-05 15:22:58
- * @version 1.0.0
- * @copyright ©2005-2020 yschome.com Inc. All rights reserved
- * 
+ * ClassName: TradeOrderItemDetailService 
+ * @Description: 订单项明细service
+ * @author zengjizu
+ * @date 2016年11月14日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *   v1.2.0             2016-11-14           zengjz           增加根据id查询的方法
  */
 public interface TradeOrderItemDetailService {
 
@@ -81,4 +84,13 @@ public interface TradeOrderItemDetailService {
 	 * @return
 	 */
 	TradeOrderItemDetail checkConsumeHasExsit(String storeId, String consumeCode);
+	
+	/**
+	 * @Description: 根据id 查询详情
+	 * @param detailId 主键id
+	 * @return 详情信息
+	 * @author zengjizu
+	 * @date 2016年11月14日
+	 */
+	TradeOrderItemDetail findById(String detailId);
 }

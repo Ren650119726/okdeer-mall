@@ -402,16 +402,6 @@ public interface TradeOrderService {
 	boolean updateWithConfirm(TradeOrder tradeOrder) throws Exception;
 
 	/**
-	 * 用户拒收
-	 *
-	 * @param tradeOrder
-	 * @return
-	 * @throws MQClientException
-	 * @throws ServiceException
-	 */
-	boolean updateWithUserRefuse(TradeOrder tradeOrder) throws Exception;
-
-	/**
 	 * 用户评价
 	 *
 	 * @param tradeOrder
@@ -439,12 +429,6 @@ public interface TradeOrderService {
 	 */
 	void updateOrderShipment(TradeOrderOperateParamVo param) throws Exception;
 
-	/**
-	 * @desc 取消订单
-	 * @param tradeOrder
-	 * @throws ServiceException
-	 */
-	boolean updateCancelOrder(TradeOrder tradeOrder, boolean isBuyerOperate) throws Exception;
 
 	/**
 	 * 

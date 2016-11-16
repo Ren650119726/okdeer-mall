@@ -50,6 +50,7 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.service.CancelOrderService;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.TradeOrderCommentService;
 import com.okdeer.mall.order.service.TradeOrderItemDetailService;
@@ -123,13 +124,19 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 	 */
 	@Resource
 	private TradeOrderItemMapper tradeOrderItemMapper;
-
+	
+	
 	/**
 	 * 
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceServiceApi goodsStoreSkuServiceService;
 
+	
+	@Autowired
+	private CancelOrderService cancelOrderService;
+	
+	
 	@Override
 	public String getTopic() {
 		return TOPIC_ORDER_TIMER;
@@ -212,7 +219,10 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				order.setUpdateTime(new Date());
 				order.setUpdateUserId(RobotUserUtil.getRobotUser().getId());
 				order.setReason("超时未支付，系统取消订单");
-				tradeOrderService.updateCancelOrder(order, false);
+				
+				//begin add by zengjz 取消订单换接口类
+				cancelOrderService.cancelOrder(order, false);
+				//end add by zengjz 取消订单换接口类
 			}
 		} catch (Exception e) {
 			logger.error("订单支付超时取消订单异常", e);
@@ -296,7 +306,9 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 					order.setReason("超时未发货，系统取消订单");
 				}
 				//End 13166和13165    update by wusw  20160830
-				tradeOrderService.updateCancelOrder(order, false);
+				//begin add by zengjz 取消订单换接口类
+				cancelOrderService.cancelOrder(order, false);
+				//end add by zengjz 取消订单换接口类
 			}
 		} catch (Exception e) {
 			logger.error("发货超时自动取消订单异常", e);

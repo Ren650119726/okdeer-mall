@@ -11,6 +11,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.okdeer.mall.Application;
 import com.okdeer.mall.order.dto.CancelOrderDto;
 import com.okdeer.mall.order.dto.CancelOrderParamDto;
+import com.okdeer.mall.order.dto.UserRefuseDto;
+import com.okdeer.mall.order.dto.UserRefuseParamDto;
 import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.service.CancelOrderApi;
 
@@ -50,6 +52,16 @@ public class CancelOrderServiceApiTest{
 		System.out.println(cancelOrderRespDto.getMsg());
 		Assert.assertNotNull(cancelOrderRespDto);
 		
+	}
+	
+	@Test
+	public void testUserRefuse(){
+		UserRefuseParamDto userRefuseParamDto = new UserRefuseParamDto();
+		userRefuseParamDto.setOrderId("8a94e4cb5862e252015862e378e70001");
+		userRefuseParamDto.setReason("不想要了");
+		userRefuseParamDto.setUserId("14527626891242d4d00a207c4d69bd80");
+		UserRefuseDto userRefuseDto =  cancelOrderApi.userRefuse(userRefuseParamDto);
+		Assert.assertNotNull(userRefuseDto);
 	}
 
 }

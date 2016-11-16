@@ -1,5 +1,5 @@
 
-package com.okdeer.mall.order.service.impl;
+package com.okdeer.mall.order.api;
 
 import static com.okdeer.common.consts.DescriptConstants.ORDER_CANCEL_ERROR;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_CANCEL_SUCCESS;
@@ -13,8 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.common.consts.DescriptConstants;
 import com.okdeer.mall.order.dto.CancelOrderDto;
 import com.okdeer.mall.order.dto.CancelOrderParamDto;
+import com.okdeer.mall.order.dto.UserRefuseDto;
+import com.okdeer.mall.order.dto.UserRefuseParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
@@ -50,22 +53,24 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 		CancelOrderDto cancelOrderDto = new CancelOrderDto();
 		try {
 			TradeOrder tradeOrder = tradeorderService.selectById(cancelOrderParamDto.getOrderId());
-			
-			//校验订单状态
-			if (tradeOrder.getStatus() != OrderStatusEnum.UNPAID && tradeOrder.getStatus() != OrderStatusEnum.DROPSHIPPING && tradeOrder.getStatus() != OrderStatusEnum.WAIT_RECEIVE_ORDER) {
-				//判断状态如果不是等于待支付或者待发货、待接单
+			// 校验订单状态
+			if (tradeOrder.getStatus() != OrderStatusEnum.UNPAID
+					&& tradeOrder.getStatus() != OrderStatusEnum.DROPSHIPPING
+					&& tradeOrder.getStatus() != OrderStatusEnum.WAIT_RECEIVE_ORDER) {
+				// 判断状态如果不是等于待支付或者待发货、待接单
 				cancelOrderDto.setStatus(1);
 				cancelOrderDto.setMsg(ORDER_STATUS_NOT_MATCHED);
 				return cancelOrderDto;
 			}
-			
-			if (cancelOrderParamDto.getCancelType() == OrderCancelType.CANCEL_BY_BUYER && !tradeOrder.getUserId().equals(cancelOrderParamDto.getUserId())) {
-				//如果是用户取消，判断是否是当前用户的订单
+
+			if (cancelOrderParamDto.getCancelType() == OrderCancelType.CANCEL_BY_BUYER
+					&& !tradeOrder.getUserId().equals(cancelOrderParamDto.getUserId())) {
+				// 如果是用户取消，判断是否是当前用户的订单
 				cancelOrderDto.setStatus(1);
 				cancelOrderDto.setMsg(ORDER_NOT_EXSITS);
 				return cancelOrderDto;
 			}
-			
+
 			boolean isBuyerOperate = false;
 			if (cancelOrderParamDto.getCancelType() == OrderCancelType.CANCEL_BY_BUYER) {
 				// 判断是否是用户取消
@@ -88,6 +93,29 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 			cancelOrderDto.setMsg(ORDER_CANCEL_ERROR);
 		}
 		return cancelOrderDto;
+	}
+
+	@Override
+	public UserRefuseDto userRefuse(UserRefuseParamDto userRefuseParamDto) {
+		
+		UserRefuseDto userRefuseDto = new UserRefuseDto();
+		try {
+			// 根据订单ID查询订单信息
+			TradeOrder tradeOrder = tradeorderService.selectById(userRefuseParamDto.getOrderId());
+			tradeOrder.setUpdateTime(new Date());
+			tradeOrder.setUpdateUserId(userRefuseParamDto.getUserId());
+			tradeOrder.setStatus(OrderStatusEnum.REFUSED);
+			tradeOrder.setReason(userRefuseParamDto.getReason());
+			tradeOrder.setSellerId(userRefuseParamDto.getUserId());
+			cancelOrderService.updateWithUserRefuse(tradeOrder);
+			userRefuseDto.setStatus(0);
+			userRefuseDto.setMsg("拒收成功");
+		} catch (Exception e) {
+			logger.error(DescriptConstants.SYS_ERROR, e);
+			userRefuseDto.setStatus(1);
+			userRefuseDto.setMsg(DescriptConstants.SYS_ERROR);
+		}
+		return userRefuseDto;
 	}
 
 }
