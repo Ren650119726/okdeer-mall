@@ -6,6 +6,7 @@
  */
 package com.okdeer.mall.chargesetting.mapper;
 
+import java.util.Date;
 import java.util.List;
 
 import com.okdeer.base.dal.IBaseMapper;
@@ -16,12 +17,22 @@ public interface RiskUserManagerMapper extends IBaseMapper {
 
 
 	/**
-	 * @Description: TODO
+	 * @Description: 查找列表
 	 * @param userManagerDto
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年11月15日
 	 */
 	List<RiskUserManager> findUserList(UserManagerDto userManagerDto);
+
+	/**
+	 * @Description: 批量逻辑删除人员
+	 * @param ids
+	 * @param updateUserId
+	 * @param updateTime   
+	 * @author xuzq01
+	 * @date 2016年11月15日
+	 */
+	void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime);
 
 }

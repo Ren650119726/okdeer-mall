@@ -6,6 +6,9 @@
  */    
 package com.okdeer.mall.chargesetting.service;
 
+import java.util.Date;
+import java.util.List;
+
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.chargesetting.dto.UserManagerDto;
@@ -35,5 +38,15 @@ public interface IRiskManagerService extends IBaseService {
 	 * @date 2016年11月15日
 	 */
 	PageUtils<RiskUserManager> findUserList(UserManagerDto userManagerDto, Integer pageNumber, Integer pageSize);
+
+	/**
+	 * @Description: TODO
+	 * @param ids
+	 * @param updateUserId
+	 * @param updateTime   
+	 * @author xuzq01
+	 * @date 2016年11月15日
+	 */
+	void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime);
 
 }
