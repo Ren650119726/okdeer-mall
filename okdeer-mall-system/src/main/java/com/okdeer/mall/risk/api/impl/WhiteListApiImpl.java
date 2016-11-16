@@ -4,20 +4,20 @@
  *@Date: 2016年11月14日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.chargesetting.api.impl;
+package com.okdeer.mall.risk.api.impl;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.common.utils.mapper.BeanMapper;
-import com.okdeer.mall.chargesetting.dto.WhiteManagerDto;
-import com.okdeer.mall.chargesetting.entity.RiskWhite;
-import com.okdeer.mall.chargesetting.service.IWhiteListApi;
-import com.okdeer.mall.chargesetting.service.IWhiteListService;
+import com.okdeer.mall.risk.dto.WhiteManagerDto;
+import com.okdeer.mall.risk.entity.RiskWhite;
+import com.okdeer.mall.risk.service.IWhiteListApi;
+import com.okdeer.mall.risk.service.IWhiteListService;
 
 
 /**
@@ -38,7 +38,7 @@ public class WhiteListApiImpl implements IWhiteListApi {
 	IWhiteListService whiteListService;
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.chargesetting.service.IWhiteListApi#findWhiteList(com.okdeer.mall.chargesetting.dto.WhiteManagerDto, java.lang.Integer, java.lang.Integer)
+	 * @see com.okdeer.mall.risk.service.IWhiteListApi#findWhiteList(com.okdeer.mall.risk.dto.WhiteManagerDto, java.lang.Integer, java.lang.Integer)
 	 */
 	@Override
 	public PageUtils<RiskWhite> findWhiteList(WhiteManagerDto whiteManagerDto, Integer pageNumber,
@@ -49,7 +49,7 @@ public class WhiteListApiImpl implements IWhiteListApi {
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.chargesetting.service.IWhiteListApi#delete(java.lang.String, java.lang.String)
+	 * @see com.okdeer.mall.risk.service.IWhiteListApi#delete(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void delete(String whiteId, String userId) {
@@ -62,7 +62,7 @@ public class WhiteListApiImpl implements IWhiteListApi {
 	/**
 	 * (non-Javadoc)
 	 * @throws Exception 
-	 * @see com.okdeer.mall.chargesetting.service.IWhiteListApi#add(java.lang.String, java.lang.String)
+	 * @see com.okdeer.mall.risk.service.IWhiteListApi#add(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void add(String account, String userId) throws Exception {
@@ -80,11 +80,44 @@ public class WhiteListApiImpl implements IWhiteListApi {
 	}
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.chargesetting.service.IWhiteListApi#selectWhiteByAccount(java.lang.String)
+	 * @see com.okdeer.mall.risk.service.IWhiteListApi#selectWhiteByAccount(java.lang.String)
 	 */
 	@Override
 	public int selectWhiteByAccount(String account) {
 		return whiteListService.selectWhiteByAccount(account);
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.IWhiteListApi#addBatch(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void addBatch(String telephoneAccount, String id) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @throws Exception 
+	 * @see com.okdeer.mall.risk.service.IWhiteListApi#deleteById(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void deleteById(String accountId, String id) throws Exception {
+		whiteListService.delete(accountId);
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.IWhiteListApi#deleteBatchByIds(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void deleteBatchByIds(String accountIds, String updateUserId) {
+		Date updateTime = new Date();
+		List<String> ids = (List<String>) java.util.Arrays.asList(accountIds.split(","));; 
+		
+		whiteListService.deleteBatchByIds(ids,updateUserId,updateTime);
+		
 	}
 
 }

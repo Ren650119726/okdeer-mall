@@ -4,14 +4,14 @@
  * @Date 2016-11-11 Created
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的
  */
-package com.okdeer.mall.chargesetting.mapper;
+package com.okdeer.mall.risk.mapper;
 
 import java.util.Date;
 import java.util.List;
 
 import com.okdeer.base.dal.IBaseMapper;
-import com.okdeer.mall.chargesetting.dto.UserManagerDto;
-import com.okdeer.mall.chargesetting.entity.RiskUserManager;
+import com.okdeer.mall.risk.dto.UserManagerDto;
+import com.okdeer.mall.risk.entity.RiskUserManager;
 
 public interface RiskUserManagerMapper extends IBaseMapper {
 

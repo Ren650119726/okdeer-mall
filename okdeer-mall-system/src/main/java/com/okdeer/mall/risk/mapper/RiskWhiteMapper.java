@@ -4,15 +4,16 @@
  * @Date 2016-11-11 Created
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的
  */
-package com.okdeer.mall.chargesetting.mapper;
+package com.okdeer.mall.risk.mapper;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
-import com.okdeer.mall.chargesetting.dto.WhiteManagerDto;
-import com.okdeer.mall.chargesetting.entity.RiskWhite;
+import com.okdeer.mall.risk.dto.WhiteManagerDto;
+import com.okdeer.mall.risk.entity.RiskWhite;
 
 public interface RiskWhiteMapper extends IBaseMapper {
 
@@ -33,5 +34,15 @@ public interface RiskWhiteMapper extends IBaseMapper {
 	 * @date 2016年11月14日
 	 */
 	int selectWhiteByAccount(@Param(value = "telephoneAccount") String telephoneAccount);
+
+	/**
+	 * @Description: TODO
+	 * @param ids
+	 * @param updateUserId
+	 * @param updateTime   
+	 * @author xuzq01
+	 * @date 2016年11月16日
+	 */
+	void deleteBatchByIds(@Param("ids")List<String> ids,@Param("updateUserId") String updateUserId,@Param("updateTime") Date updateTime);
 
 }

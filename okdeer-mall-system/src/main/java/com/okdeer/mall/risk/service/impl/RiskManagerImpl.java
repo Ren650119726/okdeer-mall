@@ -4,13 +4,12 @@
  *@Date: 2016年11月4日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.chargesetting.service.impl;
+package com.okdeer.mall.risk.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -18,11 +17,10 @@ import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.chargesetting.dto.UserManagerDto;
-import com.okdeer.mall.chargesetting.entity.RiskUserManager;
-import com.okdeer.mall.chargesetting.entity.RiskWhite;
-import com.okdeer.mall.chargesetting.mapper.RiskUserManagerMapper;
-import com.okdeer.mall.chargesetting.service.IRiskManagerService;
+import com.okdeer.mall.risk.dto.UserManagerDto;
+import com.okdeer.mall.risk.entity.RiskUserManager;
+import com.okdeer.mall.risk.mapper.RiskUserManagerMapper;
+import com.okdeer.mall.risk.service.IRiskManagerService;
 
 /**
  * ClassName: ISkinManagerServiceApi 
@@ -92,7 +90,7 @@ public class RiskManagerImpl extends BaseServiceImpl implements IRiskManagerServ
 
 	/**
 	 * 获取风控人员list
-	 * @see com.okdeer.mall.chargesetting.service.IRiskManagerService#findUserList(com.okdeer.mall.chargesetting.dto.UserManagerDto, java.lang.Integer, java.lang.Integer)
+	 * @see com.okdeer.mall.risk.service.IRiskManagerService#findUserList(com.okdeer.mall.risk.dto.UserManagerDto, java.lang.Integer, java.lang.Integer)
 	 */
 	@Override
 	public PageUtils<RiskUserManager> findUserList(UserManagerDto userManagerDto, Integer pageNumber,
@@ -107,7 +105,7 @@ public class RiskManagerImpl extends BaseServiceImpl implements IRiskManagerServ
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.chargesetting.service.IRiskManagerService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
+	 * @see com.okdeer.mall.risk.service.IRiskManagerService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
 	 */
 	@Override
 	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime) {

@@ -1,35 +1,44 @@
+
 /** 
  *@Project: okdeer-mall-api 
  *@Author: xuzq01
  *@Date: 2016年11月4日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.chargesetting.service.impl;
+package com.okdeer.mall.risk.service.impl;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.chargesetting.mapper.RiskBlackMapper;
-import com.okdeer.mall.chargesetting.service.IActiveRecorderService;
+import com.okdeer.mall.risk.dto.BlackManagerDto;
+import com.okdeer.mall.risk.entity.RiskBlack;
+import com.okdeer.mall.risk.entity.RiskUserManager;
+import com.okdeer.mall.risk.mapper.RiskBlackMapper;
+import com.okdeer.mall.risk.service.IBlackListService;
 
 /**
- * ClassName: ISkinManagerServiceApi 
- * @Description: 拦截记录service实现类
+ * ClassName: IBlackListApi 
+ * @Description: 黑名单管理service实现类
  * @author xuzq01
  * @date 2016年11月4日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *		v1.2			2016年11月15日		xuzq01				拦截记录service实现类
+ *		v1.2			2016年11月4日			xuzq01				白名单管理service
  */
 @Service
-public class ActiveRecorderImpl extends BaseServiceImpl implements IActiveRecorderService{
+public class BlackListServiceImpl extends BaseServiceImpl implements IBlackListService{
 
-	private static final Logger LOGGER = Logger.getLogger(WhiteListServiceImpl.class);
+	//private static final Logger LOGGER = Logger.getLogger(WhiteListServiceImpl.class);
 	
 	/**
 	 * 获取皮肤mapper
@@ -42,8 +51,7 @@ public class ActiveRecorderImpl extends BaseServiceImpl implements IActiveRecord
 	 */
 	@Override
 	public <Entity> int add(Entity entity) throws Exception {
-		// TODO Auto-generated method stub
-		return 0;
+		return riskBlackMapper.add(entity);
 	}
 
 	/**
@@ -52,8 +60,7 @@ public class ActiveRecorderImpl extends BaseServiceImpl implements IActiveRecord
 	 */
 	@Override
 	public <Entity> int update(Entity entity) throws Exception {
-		// TODO Auto-generated method stub
-		return 0;
+		return riskBlackMapper.update(entity);
 	}
 
 	/**
@@ -62,8 +69,7 @@ public class ActiveRecorderImpl extends BaseServiceImpl implements IActiveRecord
 	 */
 	@Override
 	public int delete(String id) throws Exception {
-		// TODO Auto-generated method stub
-		return 0;
+		return riskBlackMapper.delete(id);
 	}
 
 	/**
@@ -72,9 +78,24 @@ public class ActiveRecorderImpl extends BaseServiceImpl implements IActiveRecord
 	 */
 	@Override
 	public <Entity> Entity findById(String id) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		return riskBlackMapper.findById(id);
 	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.IBlackListService#findBlackList(com.okdeer.mall.risk.dto.BlackManagerDto, java.lang.Integer, java.lang.Integer)
+	 */
+	@Override
+	public PageUtils<RiskBlack> findBlackList(BlackManagerDto blackManagerDto, Integer pageNumber, Integer pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true);
+		List<RiskBlack> result = riskBlackMapper.findBlackList(blackManagerDto);
+		if (result == null) {
+			result = new ArrayList<RiskBlack>();
+		}
+		return new PageUtils<RiskBlack>(result);
+		
+	}
+
 
 	/**
 	 * (non-Javadoc)
@@ -82,9 +103,16 @@ public class ActiveRecorderImpl extends BaseServiceImpl implements IActiveRecord
 	 */
 	@Override
 	public IBaseMapper getBaseMapper() {
-		// TODO Auto-generated method stub
-		return null;
+		return riskBlackMapper;
 	}
-	
-	
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.IBlackListService#addBath(java.util.List)
+	 */
+	@Override
+	public void addBath(List<RiskBlack> riskBlackList) {
+		// TODO Auto-generated method stub
+		
+	}
 }

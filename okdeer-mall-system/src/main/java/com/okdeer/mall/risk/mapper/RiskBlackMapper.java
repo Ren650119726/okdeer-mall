@@ -4,12 +4,14 @@
  * @Date 2016-11-11 Created
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的
  */
-package com.okdeer.mall.chargesetting.mapper;
+package com.okdeer.mall.risk.mapper;
+
+import java.util.List;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
-import com.okdeer.mall.chargesetting.dto.BlackManagerDto;
-import com.okdeer.mall.chargesetting.entity.RiskBlack;
+import com.okdeer.mall.risk.dto.BlackManagerDto;
+import com.okdeer.mall.risk.entity.RiskBlack;
 
 public interface RiskBlackMapper extends IBaseMapper {
 
@@ -20,6 +22,6 @@ public interface RiskBlackMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年11月15日
 	 */
-	PageUtils<RiskBlack> findBlackList(BlackManagerDto blackManagerDto);
+	List<RiskBlack> findBlackList(BlackManagerDto blackManagerDto);
 
 }

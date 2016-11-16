@@ -4,15 +4,15 @@
  *@Date: 2016年11月15日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.chargesetting.service;
+package com.okdeer.mall.risk.service;
 
 import java.util.Date;
 import java.util.List;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.chargesetting.dto.UserManagerDto;
-import com.okdeer.mall.chargesetting.entity.RiskUserManager;
+import com.okdeer.mall.risk.dto.UserManagerDto;
+import com.okdeer.mall.risk.entity.RiskUserManager;
 
 /**
  * ClassName: IRiskManagerService 

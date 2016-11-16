@@ -1,39 +1,35 @@
-
 /** 
  *@Project: okdeer-mall-api 
  *@Author: xuzq01
  *@Date: 2016年11月4日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.chargesetting.service.impl;
+package com.okdeer.mall.risk.service.impl;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.chargesetting.dto.BlackManagerDto;
-import com.okdeer.mall.chargesetting.entity.RiskBlack;
-import com.okdeer.mall.chargesetting.mapper.RiskBlackMapper;
-import com.okdeer.mall.chargesetting.service.IBlackListService;
+import com.okdeer.mall.risk.mapper.RiskBlackMapper;
+import com.okdeer.mall.risk.service.IActiveRecorderService;
 
 /**
- * ClassName: IBlackListApi 
- * @Description: 黑名单管理service实现类
+ * ClassName: ISkinManagerServiceApi 
+ * @Description: 拦截记录service实现类
  * @author xuzq01
  * @date 2016年11月4日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *		v1.2			2016年11月4日			xuzq01				白名单管理service
+ *		v1.2			2016年11月15日		xuzq01				拦截记录service实现类
  */
 @Service
-public class BlackListServiceImpl extends BaseServiceImpl implements IBlackListService{
+public class ActiveRecorderImpl extends BaseServiceImpl implements IActiveRecorderService{
 
-	//private static final Logger LOGGER = Logger.getLogger(WhiteListServiceImpl.class);
+	private static final Logger LOGGER = Logger.getLogger(WhiteListServiceImpl.class);
 	
 	/**
 	 * 获取皮肤mapper
@@ -46,7 +42,8 @@ public class BlackListServiceImpl extends BaseServiceImpl implements IBlackListS
 	 */
 	@Override
 	public <Entity> int add(Entity entity) throws Exception {
-		return riskBlackMapper.add(entity);
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	/**
@@ -55,7 +52,8 @@ public class BlackListServiceImpl extends BaseServiceImpl implements IBlackListS
 	 */
 	@Override
 	public <Entity> int update(Entity entity) throws Exception {
-		return riskBlackMapper.update(entity);
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	/**
@@ -64,7 +62,8 @@ public class BlackListServiceImpl extends BaseServiceImpl implements IBlackListS
 	 */
 	@Override
 	public int delete(String id) throws Exception {
-		return riskBlackMapper.delete(id);
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	/**
@@ -73,18 +72,9 @@ public class BlackListServiceImpl extends BaseServiceImpl implements IBlackListS
 	 */
 	@Override
 	public <Entity> Entity findById(String id) throws Exception {
-		return riskBlackMapper.findById(id);
+		// TODO Auto-generated method stub
+		return null;
 	}
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.chargesetting.service.IBlackListService#findBlackList(com.okdeer.mall.chargesetting.dto.BlackManagerDto, java.lang.Integer, java.lang.Integer)
-	 */
-	@Override
-	public PageUtils<RiskBlack> findBlackList(BlackManagerDto blackManagerDto, Integer pageNumber, Integer pageSize) {
-		return riskBlackMapper.findBlackList(blackManagerDto);
-	}
-
 
 	/**
 	 * (non-Javadoc)
@@ -92,6 +82,9 @@ public class BlackListServiceImpl extends BaseServiceImpl implements IBlackListS
 	 */
 	@Override
 	public IBaseMapper getBaseMapper() {
-		return riskBlackMapper;
+		// TODO Auto-generated method stub
+		return null;
 	}
+	
+	
 }
