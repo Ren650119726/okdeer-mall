@@ -44,42 +44,7 @@ public class ActivityServiceGoodsRecommendJob extends AbstractSimpleElasticJob {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void process(JobExecutionMultipleShardingContext arg0) {
-		try{
-			log.info("服务商品推荐定时器开始");
-			
-			Map<String,Object> map = new HashMap<String,Object>();
-			Date nowTime = new Date();
-			map.put("nowTime", nowTime);
-			//1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束
-			List<ActivityServiceGoodsRecommend> accList = recommendService.listByJob(map);
-			//获得系统当前系统用户id
-			String updateUserId = RobotUserUtil.getRobotUser().getId();
-			
-			
-			//需要更新状态的活动新不为空进行定时任务处理
-			if(CollectionUtils.isNotEmpty(accList)){
-				for(ActivityServiceGoodsRecommend a : accList){
-					try{
-						//未开始的 
-						if(a.getStatus() == ActivityServiceGoodsRecommendStatus.noStart.getValue()){
-							//根据id修改服务商品活动状态
-							recommendService.updateStatusById(a.getId(), ActivityServiceGoodsRecommendStatus.ing.getValue(), updateUserId, nowTime);
-						
-						//进行中的改为已结束的
-						}else if(a.getStatus() == ActivityServiceGoodsRecommendStatus.ing.getValue()){
-							//根据id修改服务商品活动状态
-							recommendService.updateStatusById(a.getId(), ActivityServiceGoodsRecommendStatus.end.getValue(), updateUserId, nowTime);
-						}
-					}catch(Exception e){
-						log.error(a.getStatus()+"状态服务标签管理"+a.getId()+"job修改异常 :",e);
-					}
-				}
-			}
-			
-			log.info("服务商品推荐定时器结束");
-		}catch(Exception e){
-			log.error("服务商品推荐job异常",e);
-		}
-		
+		//服务商品推荐定时器 job 执行方法
+		recommendService.processServiceGoodsJob();
 	}
 }
