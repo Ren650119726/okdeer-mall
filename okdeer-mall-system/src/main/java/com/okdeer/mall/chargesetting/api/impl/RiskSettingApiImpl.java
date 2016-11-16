@@ -11,7 +11,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.chargesetting.entity.RiskSetting;
-import com.okdeer.mall.chargesetting.service.IRiskSettingApi;
+import com.okdeer.mall.chargesetting.service.RiskSettingApi;
 import com.okdeer.mall.chargesetting.service.IRiskSettingService;
 
 
@@ -27,7 +27,7 @@ import com.okdeer.mall.chargesetting.service.IRiskSettingService;
  *
  */
 @Service(version="1.0.0")
-public class RiskSettingApiImpl implements IRiskSettingApi {
+public class RiskSettingApiImpl implements RiskSettingApi {
 	
 	@Autowired
 	IRiskSettingService settingService;
