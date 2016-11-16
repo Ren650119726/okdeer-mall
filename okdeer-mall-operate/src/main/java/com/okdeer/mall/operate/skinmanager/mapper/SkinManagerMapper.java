@@ -12,7 +12,7 @@ import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
 import com.okdeer.mall.operate.entity.SkinManager;
 
-public interface OperateSkinManagerMapper extends IBaseMapper {
+public interface SkinManagerMapper extends IBaseMapper {
 	/**
 	 * 
 	 * @Description: 根据条件查询皮肤列表
@@ -46,7 +46,7 @@ public interface OperateSkinManagerMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年11月14日
 	 */
-	public int selectSkinByTime(SkinManager skinManager);
+	public int findSkinByTime(SkinManager skinManager);
 
 	/**
 	 * @Description: TODO
@@ -55,6 +55,6 @@ public interface OperateSkinManagerMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年11月14日
 	 */
-	public int selectSkinCountByName(SkinManager skinManager);
+	public int findSkinCountByName(SkinManager skinManager);
 	
 }

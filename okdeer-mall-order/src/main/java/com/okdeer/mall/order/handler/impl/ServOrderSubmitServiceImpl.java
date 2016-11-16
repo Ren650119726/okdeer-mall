@@ -380,12 +380,14 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		// Begin V1.2 added by maojj 2016-11-08
 		// 订单默认未违约
 		tradeOrder.setIsBreach(WhetherEnum.not);
-		// 店铺设置是否有违约金
-		tradeOrder.setIsBreachMoney(WhetherEnum.enumOrdinalOf(servExt.getIsBreachMoney()));
-		// 店铺设置收取违约金的时间限制
-		tradeOrder.setBreachTime(servExt.getBreachTime());
-		// 店铺设置违约金的百分比
-		tradeOrder.setBreachPercent(servExt.getBreachPercent());
+		if(servExt != null){
+			// 店铺设置是否有违约金
+			tradeOrder.setIsBreachMoney(WhetherEnum.enumOrdinalOf(servExt.getIsBreachMoney()));
+			// 店铺设置收取违约金的时间限制
+			tradeOrder.setBreachTime(servExt.getBreachTime());
+			// 店铺设置违约金的百分比
+			tradeOrder.setBreachPercent(servExt.getBreachPercent());
+		}
 		if(tradeOrder.getIsBreachMoney() == WhetherEnum.whether){
 			// 如果店铺设置了违约金，计算订单应该收取的违约金存入订单记录中
 			tradeOrder.setBreachMoney(tradeOrder.getIncome().multiply(BigDecimal.valueOf(tradeOrder.getBreachPercent())));
