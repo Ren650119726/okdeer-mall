@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.operate.entity.SkinManagerDetail;
-import com.okdeer.mall.operate.skinmanager.mapper.OperateSkinManagerDetailMapper;
+import com.okdeer.mall.operate.skinmanager.mapper.SkinManagerDetailMapper;
 import com.okdeer.mall.operate.skinmanager.service.ISkinManagerDetailService;
 
 
@@ -33,7 +33,7 @@ public class SkinManagerDetailServiceImpl implements ISkinManagerDetailService {
 	 * 获取皮肤详细mapper
 	 */
 	@Autowired
-	private OperateSkinManagerDetailMapper skinManagerDetailMapper;
+	private SkinManagerDetailMapper skinManagerDetailMapper;
 	
 	/**
 	 * (non-Javadoc)

@@ -175,4 +175,17 @@ public class ActivityServiceGoodsRecommendApiImpl implements ActivityServiceGood
 		}
 		return goodsList;
 	}
+	
+	
+	/**
+	 * 服务商品推荐定时器 job 执行方法
+	 * @Description: TODO   
+	 * @return void  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月16日
+	 */
+	public void processServiceGoodsJob(){
+		recommendService.processServiceGoodsJob();
+	}
 }

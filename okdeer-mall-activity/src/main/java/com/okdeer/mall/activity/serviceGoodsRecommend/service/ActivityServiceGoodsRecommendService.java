@@ -133,4 +133,14 @@ public interface ActivityServiceGoodsRecommendService extends IBaseService{
 	 * @date 2016年11月14日
 	 */
 	public List<Map<String,Object>> listRecommendGoodsFowWx(Map<String,Object> map);
+	
+	/**
+	 * 服务商品推荐定时器 job 执行方法
+	 * @Description: TODO   
+	 * @return void  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月16日
+	 */
+	public void processServiceGoodsJob();
 }
