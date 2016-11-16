@@ -2,6 +2,7 @@ package com.okdeer.mall.activity.serviceGoodsRecommend.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
@@ -20,10 +21,12 @@ import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommend;
 import com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommendArea;
 import com.okdeer.mall.activity.serviceGoodsRecommend.entity.ActivityServiceGoodsRecommendGoods;
+import com.okdeer.mall.activity.serviceGoodsRecommend.enums.ActivityServiceGoodsRecommendStatus;
 import com.okdeer.mall.activity.serviceGoodsRecommend.mapper.ActivityServiceGoodsRecommendAreaMapper;
 import com.okdeer.mall.activity.serviceGoodsRecommend.mapper.ActivityServiceGoodsRecommendGoodsMapper;
 import com.okdeer.mall.activity.serviceGoodsRecommend.mapper.ActivityServiceGoodsRecommendMapper;
 import com.okdeer.mall.activity.serviceGoodsRecommend.service.ActivityServiceGoodsRecommendService;
+import com.okdeer.mall.common.utils.RobotUserUtil;
 
 /**
  * ClassName: ActivityLabelServiceImpl 
@@ -207,4 +210,50 @@ public class ActivityServiceGoodsRecommendServiceImpl extends BaseServiceImpl
 		return recommendMapper.listRecommendGoodsFowWx(map);
 	}
 
+	/**
+	 * 服务商品推荐定时器 job 执行方法
+	 * @Description: TODO   
+	 * @return void  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月16日
+	 */
+	public void processServiceGoodsJob(){
+		try{
+			log.info("服务商品推荐定时器开始");
+			
+			Map<String,Object> map = new HashMap<String,Object>();
+			Date nowTime = new Date();
+			map.put("nowTime", nowTime);
+			//1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束
+			List<ActivityServiceGoodsRecommend> accList = listByJob(map);
+			//获得系统当前系统用户id
+			String updateUserId = RobotUserUtil.getRobotUser().getId();
+			
+			
+			//需要更新状态的活动新不为空进行定时任务处理
+			if(CollectionUtils.isNotEmpty(accList)){
+				for(ActivityServiceGoodsRecommend a : accList){
+					try{
+						//未开始的 
+						if(a.getStatus() == ActivityServiceGoodsRecommendStatus.noStart.getValue()){
+							//根据id修改服务商品活动状态
+							updateStatusById(a.getId(), ActivityServiceGoodsRecommendStatus.ing.getValue(), updateUserId, nowTime);
+						
+						//进行中的改为已结束的
+						}else if(a.getStatus() == ActivityServiceGoodsRecommendStatus.ing.getValue()){
+							//根据id修改服务商品活动状态
+							updateStatusById(a.getId(), ActivityServiceGoodsRecommendStatus.end.getValue(), updateUserId, nowTime);
+						}
+					}catch(Exception e){
+						log.error(a.getStatus()+"状态服务标签管理"+a.getId()+"job修改异常 :",e);
+					}
+				}
+			}
+			
+			log.info("服务商品推荐定时器结束");
+		}catch(Exception e){
+			log.error("服务商品推荐job异常",e);
+		}
+	}
 }
