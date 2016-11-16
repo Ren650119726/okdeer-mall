@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.chargesetting.entity.RiskSetting;
 import com.okdeer.mall.chargesetting.service.RiskSettingApi;
-import com.okdeer.mall.chargesetting.service.IRiskSettingService;
+import com.okdeer.mall.chargesetting.service.RiskSettingService;
 
 
 /**
@@ -30,7 +30,7 @@ import com.okdeer.mall.chargesetting.service.IRiskSettingService;
 public class RiskSettingApiImpl implements RiskSettingApi {
 	
 	@Autowired
-	IRiskSettingService settingService;
+	RiskSettingService settingService;
 
 	@Override
 	public List<RiskSetting> list(Map<String, Object> params) throws Exception {

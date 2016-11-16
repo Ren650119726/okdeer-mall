@@ -19,7 +19,7 @@ import com.okdeer.mall.chargesetting.entity.RiskSetting;
 import com.okdeer.mall.chargesetting.entity.RiskSettingDetail;
 import com.okdeer.mall.chargesetting.mapper.RiskSettingDetailMapper;
 import com.okdeer.mall.chargesetting.mapper.RiskSettingMapper;
-import com.okdeer.mall.chargesetting.service.IRiskSettingService;
+import com.okdeer.mall.chargesetting.service.RiskSettingService;
 
 /**
  * ClassName: RiskSettingServiceImpl 
@@ -33,7 +33,7 @@ import com.okdeer.mall.chargesetting.service.IRiskSettingService;
  *
  */
 @Service
-public class RiskSettingServiceImpl implements IRiskSettingService{
+public class RiskSettingServiceImpl implements RiskSettingService{
 
 	@Autowired
 	RiskSettingMapper settingMapper;

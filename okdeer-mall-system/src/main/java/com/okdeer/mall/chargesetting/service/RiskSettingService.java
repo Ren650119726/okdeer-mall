@@ -24,7 +24,7 @@ import com.okdeer.mall.chargesetting.entity.RiskSetting;
  *
  */
 
-public interface IRiskSettingService extends IBaseService{
+public interface RiskSettingService extends IBaseService{
 	
 	/**
 	 * @Description: 风控设置列表
