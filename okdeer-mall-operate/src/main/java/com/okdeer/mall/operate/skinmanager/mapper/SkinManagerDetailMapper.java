@@ -12,7 +12,7 @@ import java.util.List;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.operate.entity.SkinManagerDetail;
 
-public interface OperateSkinManagerDetailMapper extends IBaseMapper {
+public interface SkinManagerDetailMapper extends IBaseMapper {
 
 	/**
 	 * @Description: TODO

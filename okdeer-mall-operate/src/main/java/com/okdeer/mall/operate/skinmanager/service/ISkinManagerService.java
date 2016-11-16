@@ -3,18 +3,13 @@
  *@Author: xuzq01
  *@Date: 2016年11月4日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
- */    
+ */
 package com.okdeer.mall.operate.skinmanager.service;
-
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
 import com.okdeer.mall.operate.entity.SkinManager;
-import com.okdeer.mall.operate.entity.SkinManagerDetail;
 
 /**
  * ClassName: ISkinManagerService 
@@ -38,9 +33,8 @@ public interface ISkinManagerService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public PageUtils<SkinManagerDto> findSkinList(SkinManagerDto skinManagerDto,int pageNumber,int pageSize);
-	
-	
+	public PageUtils<SkinManagerDto> findSkinList(SkinManagerDto skinManagerDto, int pageNumber, int pageSize);
+
 	/**
 	 * 
 	 * @Description: 逻辑删除活动皮肤
@@ -49,8 +43,8 @@ public interface ISkinManagerService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public void deleteSkinById(String skinId,String userId);
-	
+	public void deleteSkinById(String skinId, String userId);
+
 	/**
 	 * 
 	 * @Description: 修改状态 关闭活动皮肤 
@@ -59,7 +53,8 @@ public interface ISkinManagerService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public void closeSkinById(String skinId,String userId);
+	public void closeSkinById(String skinId, String userId);
+
 	/**
 	 * 
 	 * @Description: 通过时间查询皮肤 校验在同一时间内是否存在另外一个活动
@@ -68,7 +63,7 @@ public interface ISkinManagerService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月4日
 	 */
-	public int selectSkinByTime(SkinManagerDto skinManagerVo);
+	public int findSkinByTime(SkinManagerDto skinManagerVo);
 
 	/**
 	 * @Description: 通过名称查询皮肤数量
@@ -77,27 +72,5 @@ public interface ISkinManagerService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月8日
 	 */
-	public int selectSkinCountByName(SkinManagerDto skinManagerVo);
-
-
-	/**
-	 * @Description: TODO
-	 * @param skinManager
-	 * @return   
-	 * @author xuzq01
-	 * @date 2016年11月14日
-	 */
-	public int add(SkinManager skinManager);
-
-
-	/**
-	 * @Description: TODO
-	 * @param skinManager
-	 * @return   
-	 * @author xuzq01
-	 * @date 2016年11月14日
-	 */
-	public int update(SkinManager skinManager);
-
-
+	public int findSkinCountByName(SkinManagerDto skinManagerVo);
 }
