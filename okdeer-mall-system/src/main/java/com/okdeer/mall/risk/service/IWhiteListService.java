@@ -4,12 +4,15 @@
  *@Date: 2016年11月14日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.chargesetting.service;
+package com.okdeer.mall.risk.service;
+
+import java.util.Date;
+import java.util.List;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.chargesetting.dto.WhiteManagerDto;
-import com.okdeer.mall.chargesetting.entity.RiskWhite;
+import com.okdeer.mall.risk.dto.WhiteManagerDto;
+import com.okdeer.mall.risk.entity.RiskWhite;
 
 /**
  * ClassName: IWhiteListService 
@@ -25,6 +28,16 @@ import com.okdeer.mall.chargesetting.entity.RiskWhite;
 
 public interface IWhiteListService extends IBaseService{
 	
+	/**
+	 * 
+	 * @Description: TODO
+	 * @param whiteManagerDto
+	 * @param pageNumber
+	 * @param pageSize
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月16日
+	 */
 	public PageUtils<RiskWhite> findWhiteList(WhiteManagerDto whiteManagerDto, Integer pageNumber,
 			Integer pageSize);
 
@@ -36,5 +49,15 @@ public interface IWhiteListService extends IBaseService{
 	 * @date 2016年11月14日
 	 */
 	public int selectWhiteByAccount(String account);
+
+	/**
+	 * @Description: TODO
+	 * @param ids
+	 * @param updateUserId
+	 * @param updateTime   
+	 * @author xuzq01
+	 * @date 2016年11月16日
+	 */
+	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime);
 	
 }

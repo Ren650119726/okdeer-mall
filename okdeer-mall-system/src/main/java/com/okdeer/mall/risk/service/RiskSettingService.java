@@ -4,13 +4,13 @@
  *@Date: 2016年11月14日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.chargesetting.service;
+package com.okdeer.mall.risk.service;
 
 import java.util.List;
 import java.util.Map;
 
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.chargesetting.entity.RiskSetting;
+import com.okdeer.mall.risk.entity.RiskSetting;
 
 /**
  * ClassName: IRiskSettingService 

@@ -4,25 +4,25 @@
  *@Date: 2016年11月4日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.chargesetting.service.impl;
+package com.okdeer.mall.risk.service.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.chargesetting.dto.WhiteManagerDto;
-import com.okdeer.mall.chargesetting.entity.RiskWhite;
-import com.okdeer.mall.chargesetting.mapper.RiskWhiteMapper;
-import com.okdeer.mall.chargesetting.service.IWhiteListService;
-import com.okdeer.mall.operate.dto.SkinManagerDto;
+import com.okdeer.mall.risk.dto.WhiteManagerDto;
+import com.okdeer.mall.risk.entity.RiskWhite;
+import com.okdeer.mall.risk.mapper.RiskWhiteMapper;
+import com.okdeer.mall.risk.service.IWhiteListService;
 
 /**
  * ClassName: ISkinManagerServiceApi 
@@ -47,7 +47,7 @@ public class WhiteListServiceImpl extends BaseServiceImpl implements IWhiteListS
 	RiskWhiteMapper riskWhiteMapper;
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.chargesetting.service.IWhiteListService#findWhiteList(com.okdeer.mall.chargesetting.dto.WhiteManagerDto, java.lang.Integer, java.lang.Integer)
+	 * @see com.okdeer.mall.risk.service.IWhiteListService#findWhiteList(com.okdeer.mall.risk.dto.WhiteManagerDto, java.lang.Integer, java.lang.Integer)
 	 */
 	@Override
 	public PageUtils<RiskWhite> findWhiteList(WhiteManagerDto whiteManagerDto, Integer pageNumber,
@@ -62,7 +62,7 @@ public class WhiteListServiceImpl extends BaseServiceImpl implements IWhiteListS
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.chargesetting.service.IWhiteListService#selectWhiteByAccount(com.okdeer.mall.chargesetting.dto.WhiteManagerDto)
+	 * @see com.okdeer.mall.risk.service.IWhiteListService#selectWhiteByAccount(com.okdeer.mall.risk.dto.WhiteManagerDto)
 	 */
 	@Override
 	public int selectWhiteByAccount(String account) {
@@ -75,8 +75,17 @@ public class WhiteListServiceImpl extends BaseServiceImpl implements IWhiteListS
 	 */
 	@Override
 	public IBaseMapper getBaseMapper() {
-		// TODO Auto-generated method stub
-		return null;
+		return riskWhiteMapper;
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.IWhiteListService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
+	 */
+	@Override
+	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime) {
+		riskWhiteMapper.deleteBatchByIds(ids,updateUserId,updateTime);
+		
 	}
 	
 }

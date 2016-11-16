@@ -4,7 +4,7 @@
  *@Date: 2016年11月15日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.chargesetting.api.impl;
+package com.okdeer.mall.risk.api.impl;
 
 import java.util.Date;
 import java.util.List;
@@ -14,10 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.mall.chargesetting.dto.UserManagerDto;
-import com.okdeer.mall.chargesetting.entity.RiskUserManager;
-import com.okdeer.mall.chargesetting.service.IRiskManagerApi;
-import com.okdeer.mall.chargesetting.service.IRiskManagerService;
+import com.okdeer.mall.risk.dto.UserManagerDto;
+import com.okdeer.mall.risk.entity.RiskUserManager;
+import com.okdeer.mall.risk.service.IRiskManagerApi;
+import com.okdeer.mall.risk.service.IRiskManagerService;
 
 
 /**
@@ -38,7 +38,7 @@ public class RiskManagerApiImpl implements IRiskManagerApi {
 	IRiskManagerService riskManagerService;
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.chargesetting.service.IRiskManagerApi#findUserList(com.okdeer.mall.chargesetting.dto.UserManagerDto, java.lang.Integer, java.lang.Integer)
+	 * @see com.okdeer.mall.risk.service.IRiskManagerApi#findUserList(com.okdeer.mall.risk.dto.UserManagerDto, java.lang.Integer, java.lang.Integer)
 	 */
 	@Override
 	public PageUtils<RiskUserManager> findUserList(UserManagerDto userManagerDto, Integer pageNumber,
@@ -49,7 +49,7 @@ public class RiskManagerApiImpl implements IRiskManagerApi {
 	/**
 	 * (non-Javadoc)
 	 * @throws Exception 
-	 * @see com.okdeer.mall.chargesetting.service.IRiskManagerApi#addUser(java.lang.String, java.lang.String)
+	 * @see com.okdeer.mall.risk.service.IRiskManagerApi#addUser(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void addUser(RiskUserManager riskUserManager, String createUserId) throws Exception {
@@ -68,7 +68,7 @@ public class RiskManagerApiImpl implements IRiskManagerApi {
 	/**
 	 * 根据id逻辑删除风控人员
 	 * @throws Exception 
-	 * @see com.okdeer.mall.chargesetting.service.IRiskManagerApi#deleteBatchByIds(java.lang.String, java.lang.String)
+	 * @see com.okdeer.mall.risk.service.IRiskManagerApi#deleteBatchByIds(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void deleteBatchByIds(String userIds, String updateUserId) throws Exception {
@@ -82,7 +82,7 @@ public class RiskManagerApiImpl implements IRiskManagerApi {
 	/**
 	 * (non-Javadoc)
 	 * @throws Exception 
-	 * @see com.okdeer.mall.chargesetting.service.IRiskManagerApi#findUserById(java.lang.String)
+	 * @see com.okdeer.mall.risk.service.IRiskManagerApi#findUserById(java.lang.String)
 	 */
 	@Override
 	public RiskUserManager findUserById(String id) throws Exception {
@@ -93,7 +93,7 @@ public class RiskManagerApiImpl implements IRiskManagerApi {
 	/**
 	 * (non-Javadoc)
 	 * @throws Exception 
-	 * @see com.okdeer.mall.chargesetting.service.IRiskManagerApi#updateUser(com.okdeer.mall.chargesetting.dto.UserManagerDto, java.lang.String)
+	 * @see com.okdeer.mall.risk.service.IRiskManagerApi#updateUser(com.okdeer.mall.risk.dto.UserManagerDto, java.lang.String)
 	 */
 	@Override
 	public void updateUser(RiskUserManager riskUserManager, String updateUserId) throws Exception {
@@ -106,7 +106,7 @@ public class RiskManagerApiImpl implements IRiskManagerApi {
 	/**
 	 * (non-Javadoc)
 	 * @throws Exception 
-	 * @see com.okdeer.mall.chargesetting.service.IRiskManagerApi#deleteUserById(java.lang.String, java.lang.String)
+	 * @see com.okdeer.mall.risk.service.IRiskManagerApi#deleteUserById(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void deleteUserById(String userId, String id) throws Exception {

@@ -4,7 +4,7 @@
  *@Date: 2016年11月15日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.chargesetting.service;
+package com.okdeer.mall.risk.service;
 
 import com.okdeer.base.service.IBaseService;
 

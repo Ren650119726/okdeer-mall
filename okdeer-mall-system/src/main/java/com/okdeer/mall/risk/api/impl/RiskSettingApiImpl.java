@@ -4,15 +4,17 @@
  *@Date: 2016年11月14日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.chargesetting.api.impl;
+package com.okdeer.mall.risk.api.impl;
 
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.mall.chargesetting.entity.RiskSetting;
-import com.okdeer.mall.chargesetting.service.RiskSettingApi;
-import com.okdeer.mall.chargesetting.service.RiskSettingService;
+import com.okdeer.mall.risk.entity.RiskSetting;
+import com.okdeer.mall.risk.service.RiskSettingApi;
+import com.okdeer.mall.risk.service.RiskSettingService;
 
 
 /**

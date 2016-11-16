@@ -4,22 +4,23 @@
  *@Date: 2016年11月4日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.chargesetting.service.impl;
+package com.okdeer.mall.risk.service.impl;
 
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.okdeer.mall.chargesetting.entity.RiskSetting;
-import com.okdeer.mall.chargesetting.entity.RiskSettingDetail;
-import com.okdeer.mall.chargesetting.mapper.RiskSettingDetailMapper;
-import com.okdeer.mall.chargesetting.mapper.RiskSettingMapper;
-import com.okdeer.mall.chargesetting.service.RiskSettingService;
+import com.okdeer.mall.risk.entity.RiskSetting;
+import com.okdeer.mall.risk.entity.RiskSettingDetail;
+import com.okdeer.mall.risk.mapper.RiskSettingDetailMapper;
+import com.okdeer.mall.risk.mapper.RiskSettingMapper;
+import com.okdeer.mall.risk.service.RiskSettingService;
 
 /**
  * ClassName: RiskSettingServiceImpl 
