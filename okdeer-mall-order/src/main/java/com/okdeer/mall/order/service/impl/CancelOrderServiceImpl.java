@@ -36,6 +36,7 @@ import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLog;
+import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
@@ -223,6 +224,9 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			// 发送短信
 			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
 					|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()) {
+				//查询支付信息
+				TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(oldOrder.getId());
+				oldOrder.setTradeOrderPay(tradeOrderPay);
 				tradeMessageService.sendSmsByCancel(oldOrder, oldOrder.getStatus());
 			}
 			

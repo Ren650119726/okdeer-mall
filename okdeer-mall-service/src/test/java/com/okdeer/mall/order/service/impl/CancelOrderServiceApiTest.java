@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.okdeer.mall.Application;
@@ -41,13 +42,14 @@ public class CancelOrderServiceApiTest{
 	 * @date 2016年11月11日
 	 */
 	@Test
+	@Rollback(value=true)
 	public void testCancelOrder(){
 		
 		CancelOrderParamDto cancelOrderParamDto = new CancelOrderParamDto();
 		cancelOrderParamDto.setCancelType(OrderCancelType.CANCEL_BY_BUYER);
-		cancelOrderParamDto.setOrderId("000048e2276611e6aaff00163e010eb1");
+		cancelOrderParamDto.setOrderId("8a8080a25867791701586c1a9c2c0070");
 		cancelOrderParamDto.setReason("商品不好");
-		cancelOrderParamDto.setUserId("14508634421718ccdd2bf2bb49f9836b");
+		cancelOrderParamDto.setUserId("145312257950d7a66015194e478d8594");
 		CancelOrderDto cancelOrderRespDto = cancelOrderApi.cancelOrder(cancelOrderParamDto);
 		System.out.println(cancelOrderRespDto.getMsg());
 		Assert.assertNotNull(cancelOrderRespDto);
