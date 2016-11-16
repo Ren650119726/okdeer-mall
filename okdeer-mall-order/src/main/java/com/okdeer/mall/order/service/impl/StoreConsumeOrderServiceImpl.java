@@ -1,8 +1,7 @@
-
 package com.okdeer.mall.order.service.impl;
 
-import static com.okdeer.common.consts.DescriptConstants.ORDER_EXECUTE_CANCEL_FAIL;
-import static com.okdeer.mall.order.constant.mq.PayMessageConstant.*;
+import static com.okdeer.mall.order.constant.mq.PayMessageConstant.TAG_PAY_TRADE_MALL;
+import static com.okdeer.mall.order.constant.mq.PayMessageConstant.TOPIC_BALANCE_PAY_TRADE;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -12,18 +11,14 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.alibaba.dubbo.config.annotation.Service;
-import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
 import com.alibaba.rocketmq.client.producer.LocalTransactionState;
 import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
@@ -37,30 +32,19 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
-import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
-import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.StockManagerServiceApi;
-import com.okdeer.archive.stock.vo.AdjustDetailVo;
-import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.service.IStoreInfoExtServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
-import com.okdeer.mall.activity.coupons.entity.ActivitySale;
-import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
-import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
-import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
-import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.RobotUserUtil;
@@ -82,14 +66,10 @@ import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
-import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
-import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
-import com.okdeer.mall.order.enums.SendMsgType;
-import com.okdeer.mall.order.job.StoreConsumeOrderExpireJob;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
@@ -97,19 +77,18 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsLogMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.service.GenerateNumericalService;
+import com.okdeer.mall.order.service.StockOperateService;
 import com.okdeer.mall.order.service.StoreConsumeOrderService;
-import com.okdeer.mall.order.service.StoreConsumeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderRefundsCertificateService;
-import com.okdeer.mall.order.service.TradeOrderRefundsService;
-import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.order.timer.constant.TimerMessageConstant;
 import com.okdeer.mall.order.vo.ExpireStoreConsumerOrderVo;
-import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
 import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * ClassName: ConsumerCodeOrderServiceImpl
@@ -124,9 +103,10 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
  *       v1.1.0             2016-9-20            zengjz             增加查询消费码订单列表
  *       V1.1.0             2016-10-8            zhaoqc             新增通过消费码消费状态判断订单能否投诉
  *       13960             2016-10-10            wusw               修改通过订单消费码状态判断订单是否支持投诉
+ *       v1.2.0            2016-11-15            zengjz             删除一些无用的代码
  */
-@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.StoreConsumeOrderServiceApi")
-public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi, StoreConsumeOrderService {
+@Service
+public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 
 	private static final Logger logger = LoggerFactory.getLogger(StoreConsumeOrderServiceImpl.class);
 
@@ -153,13 +133,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceServiceApi goodsStoreSkuServiceServiceApi;
-
-	/**
-	 * 售后service
-	 */
-	@Autowired
-	private TradeOrderRefundsService tradeOrderRefundsService;
-
 	/**
 	 * 单号生成器
 	 */
@@ -187,17 +160,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 	@Autowired
 	private ActivitySaleRecordService activitySaleRecordService;
 
-	/**
-	 * 秒杀活动service
-	 */
-	@Autowired
-	private ActivitySeckillService sctivitySeckillService;
-
-	/**
-	 * 特惠Dao
-	 */
-	@Autowired
-	private ActivitySaleMapper activitySaleMapper;
 
 	@Reference(version = "1.0.0", check = false)
 	private StockManagerServiceApi serviceStockManagerService;
@@ -213,6 +175,12 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 	 */
 	@Autowired
 	private TradeMessageService tradeMessageService;
+	
+	/**
+	 * 库存操作service
+	 */
+	@Resource
+	private StockOperateService stockOperateService;
 
 	@Override
 	public PageUtils<TradeOrder> findStoreConsumeOrderList(Map<String, Object> map, Integer pageNo, Integer pageSize) {
@@ -593,6 +561,110 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 	}
 	
 	@Transactional(rollbackFor = Exception.class)
+	private void expireOrder(TradeOrder order, TradeOrderItem item) throws Exception {
+
+		// 构建余额支付（或添加交易记录）对象
+		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
+				buildBalancePayTrade(order, item).getBytes(Charsets.UTF_8));
+		// 发送事务消息
+		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, order, new LocalTransactionExecuter() {
+
+			@Override
+			public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
+				try {
+					// 执行同意退款操作
+					updateOrderStatus(order, item);
+				} catch (Exception e) {
+					logger.error("执行同意退款操作异常", e);
+					return LocalTransactionState.ROLLBACK_MESSAGE;
+				}
+				return LocalTransactionState.COMMIT_MESSAGE;
+			}
+		}, new TransactionCheckListener() {
+			@Override
+			public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
+				return LocalTransactionState.COMMIT_MESSAGE;
+			}
+		});
+		RocketMqResult.returnResult(sendResult);
+	}
+	
+	/**
+	 * @Description: 构建到店消费过期退款到平台的消息
+	 * @param order 订单信息
+	 * @param item 订单项信息
+	 * @return
+	 * @throws ServiceException
+	 * @author zengjizu
+	 * @date 2016年11月15日
+	 */
+	private String buildBalancePayTrade(TradeOrder order, TradeOrderItem item) throws ServiceException {
+		// 退款金额
+		BigDecimal refundAmount = new BigDecimal("0.00");
+		// 退款优惠金额
+		BigDecimal refundPrefeAmount = new BigDecimal("0.00");
+		// 查询未退款的消费码列表
+		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
+				.selectItemDetailByItemIdAndStatus(item.getId(), ConsumeStatusEnum.noConsume.ordinal());
+
+		if (CollectionUtils.isNotEmpty(detailList)) {
+			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
+				if (tradeOrderItemDetail.getOrderItemId().equals(item.getId())) {
+					refundAmount = refundAmount.add(tradeOrderItemDetail.getActualAmount());
+					refundPrefeAmount = refundPrefeAmount.add(tradeOrderItemDetail.getPreferentialPrice());
+				}
+			}
+		}
+
+		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+		payTradeVo.setAmount(refundAmount);
+		payTradeVo.setIncomeUserId("1");
+		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
+		payTradeVo.setTradeNum(order.getTradeNum());
+		payTradeVo.setTitle("[" + order.getOrderNo() + "]到店消费订单过期");
+		payTradeVo.setBusinessType(BusinessTypeEnum.CONSUME_CODE_EXPIRE);
+		payTradeVo.setExt("GQ" + TradeNumUtil.getTradeNum());
+
+		payTradeVo.setServiceFkId(order.getId());
+		payTradeVo.setServiceNo(order.getOrderNo());
+		// payTradeVo.setRemark("关联订单号：" + order.getOrderNo());
+		// 优惠额退款 判断是否有优惠劵
+		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
+		if (activityResource == ActivityBelongType.OPERATOR
+				|| activityResource == ActivityBelongType.AGENT && (refundPrefeAmount.compareTo(BigDecimal.ZERO) > 0)) {
+			payTradeVo.setPrefeAmount(refundPrefeAmount);
+			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
+		}
+		// 接受返回消息的tag
+		payTradeVo.setTag(null);
+		return JSONObject.fromObject(payTradeVo).toString();
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	private void updateOrderStatus(TradeOrder order, TradeOrderItem item) throws Exception {
+		List<String> rpcIdList = new ArrayList<String>();
+		try {
+			// 更新消费码为全部过期状态
+			int result = tradeOrderItemDetailMapper.updateStatusWithExpire(item.getId());
+			if (result < 1) {
+				// 如果没有更新到，说明已经处理过了，需要回滚本次事务
+				throw new Exception("更新消费码状态失败");
+			}
+			// 更新订单的的消费状态为已过期
+			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.EXPIRED);
+			// 更新订单状态
+			tradeOrderMapper.updateOrderStatus(order);
+			// 回收库存
+			order.setTradeOrderItem(Lists.newArrayList(item));
+			stockOperateService.recycleStockByOrder(order, rpcIdList);
+		} catch (Exception e) {
+			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			throw e;
+		}
+	}
+	
+	
+	@Transactional(rollbackFor = Exception.class)
 	private void refundOrder(TradeOrder order, TradeOrderItem item) throws Exception {
 
 		TradeOrderRefunds orderRefunds = new TradeOrderRefunds();
@@ -681,218 +753,13 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		certificate.setRemark("到店消费商品超时未消费，系统自动退款");
 		return certificate;
 	}
-
-	@Transactional(rollbackFor = Exception.class)
-	private void expireOrder(TradeOrder order, TradeOrderItem item) throws Exception {
-
-		// 构建余额支付（或添加交易记录）对象
-		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
-				buildBalancePayTrade(order, item).getBytes(Charsets.UTF_8));
-		// 发送事务消息
-		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, order, new LocalTransactionExecuter() {
-
-			@Override
-			public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
-				try {
-					// 执行同意退款操作
-					updateOrderStatus(order, item);
-				} catch (Exception e) {
-					logger.error("执行同意退款操作异常", e);
-					return LocalTransactionState.ROLLBACK_MESSAGE;
-				}
-				return LocalTransactionState.COMMIT_MESSAGE;
-			}
-		}, new TransactionCheckListener() {
-
-			@Override
-			public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
-				return LocalTransactionState.COMMIT_MESSAGE;
-			}
-		});
-		RocketMqResult.returnResult(sendResult);
-	}
-
-	private String buildBalancePayTrade(TradeOrder order, TradeOrderItem item) throws ServiceException {
-		// 退款金额
-		BigDecimal refundAmount = new BigDecimal("0.00");
-		// 退款优惠金额
-		BigDecimal refundPrefeAmount = new BigDecimal("0.00");
-		// 查询未退款的消费码列表
-		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
-				.selectItemDetailByItemIdAndStatus(item.getId(), ConsumeStatusEnum.noConsume.ordinal());
-
-		if (CollectionUtils.isNotEmpty(detailList)) {
-			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
-				if (tradeOrderItemDetail.getOrderItemId().equals(item.getId())) {
-					refundAmount = refundAmount.add(tradeOrderItemDetail.getActualAmount());
-					refundPrefeAmount = refundPrefeAmount.add(tradeOrderItemDetail.getPreferentialPrice());
-				}
-			}
-		}
-
-		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
-		payTradeVo.setAmount(refundAmount);
-		payTradeVo.setIncomeUserId("1");
-		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
-		payTradeVo.setTradeNum(order.getTradeNum());
-		payTradeVo.setTitle("[" + order.getOrderNo() + "]到店消费订单过期");
-		payTradeVo.setBusinessType(BusinessTypeEnum.CONSUME_CODE_EXPIRE);
-		payTradeVo.setExt("GQ" + TradeNumUtil.getTradeNum());
-
-		payTradeVo.setServiceFkId(order.getId());
-		payTradeVo.setServiceNo(order.getOrderNo());
-		// payTradeVo.setRemark("关联订单号：" + order.getOrderNo());
-		// 优惠额退款 判断是否有优惠劵
-		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
-		if (activityResource == ActivityBelongType.OPERATOR
-				|| activityResource == ActivityBelongType.AGENT && (refundPrefeAmount.compareTo(BigDecimal.ZERO) > 0)) {
-			payTradeVo.setPrefeAmount(refundPrefeAmount);
-			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
-		}
-		// 接受返回消息的tag
-		payTradeVo.setTag(null);
-		return JSONObject.fromObject(payTradeVo).toString();
-	}
-
-	@Transactional(rollbackFor = Exception.class)
-	private void updateOrderStatus(TradeOrder order, TradeOrderItem item) throws Exception {
-		List<String> rpcIdList = new ArrayList<String>();
-		try {
-			// 更新消费码为全部过期状态
-			int result = tradeOrderItemDetailMapper.updateStatusWithExpire(item.getId());
-			if (result < 1) {
-				// 如果没有更新到，说明已经处理过了，需要回滚本次事务
-				throw new Exception("更新消费码状态失败");
-			}
-			List<String> updateIds = Lists.newArrayList();
-			updateIds.add(item.getId());
-			tradeOrderItemMapper.updateCompleteById(updateIds);
-			// 更新订单的的消费状态为已过期
-			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.EXPIRED);
-
-			List<TradeOrderItem> itemList = order.getTradeOrderItem();
-
-			// 判断是否所有订单项都已经完成，如果都已经完成了，就将订单的IsComplete字断改为 已经完成
-			boolean isAllComplete = true;
-			for (TradeOrderItem tradeOrderItem : itemList) {
-				if (tradeOrderItem.getIsComplete() != OrderComplete.NO
-						&& !tradeOrderItem.getId().equals(item.getId())) {
-					isAllComplete = false;
-				}
-			}
-
-			if (isAllComplete) {
-				order.setIsComplete(OrderComplete.YES);
-			}
-			// 更新订单状态
-			tradeOrderMapper.updateOrderStatus(order);
-
-			// 回收库存
-			List<StockAdjustVo> stockAdjustList = recycleStockInfo(order, item, rpcIdList);
-		} catch (Exception e) {
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
-			throw e;
-		}
-
-	}
-
-	private List<StockAdjustVo> recycleStockInfo(TradeOrder tradeOrder, TradeOrderItem item, List<String> rpcIdList)
-			throws Exception {
-		List<StockAdjustVo> stockAdjustList = new ArrayList<StockAdjustVo>();
-
-		List<TradeOrderItem> tradeOrderItems = tradeOrder.getTradeOrderItem();
-		if (tradeOrderItems == null) {
-			tradeOrderItems = tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId());
-		}
-		StockAdjustVo stockAdjustVo = new StockAdjustVo();
-		String rpcId = UuidUtils.getUuid();
-		rpcIdList.add(rpcId);
-		stockAdjustVo.setRpcId(rpcId);
-
-		stockAdjustVo.setOrderId(tradeOrder.getId());
-		stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
-		stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
-		stockAdjustVo.setOrderType(tradeOrder.getType());
-		stockAdjustVo.setStoreId(tradeOrder.getStoreId());
-
-		stockAdjustVo.setStockOperateEnum(StockOperateEnum.RETURN_OF_GOODS);
-		stockAdjustVo.setUserId(tradeOrder.getUserId());
-		// 判断是否是团购和特惠商品
-		boolean isGoodActivity = ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()
-				|| isAttendSale(tradeOrder.getId(), item.getStoreSkuId());
-
-		// 如果秒杀活动已经结束，则当成普通商品
-		if (ActivityTypeEnum.SECKILL_ACTIVITY == tradeOrder.getActivityType()) {
-			isGoodActivity = true;
-			ActivitySeckill seckill = sctivitySeckillService.findSeckillById(tradeOrder.getActivityId());
-			SeckillStatusEnum seckillStatus = seckill.getSeckillStatus();
-			if (seckillStatus.ordinal() == SeckillStatusEnum.end.ordinal()
-					|| seckillStatus.ordinal() == SeckillStatusEnum.closed.ordinal()) {
-				// 如果秒杀活动已经结束，则当成普通商品
-				isGoodActivity = false;
-			}
-		}
-		// 判断是否是特惠活动，如果是，则判断特惠活动是否正在进行中，不在进行中则当成普通的商品减库存
-		String saleId = findSaleId(tradeOrder.getId(), item.getStoreSkuId());
-		if (!StringUtils.isNullOrEmpty(saleId)) {
-			isGoodActivity = true;
-			ActivitySale entity = activitySaleMapper.get(saleId);
-			if (entity.getStatus() != 1) {
-				isGoodActivity = false;
-			}
-		}
-
-		AdjustDetailVo detail = new AdjustDetailVo();
-		detail.setStoreSkuId(item.getStoreSkuId());
-		detail.setGoodsSkuId("");
-		detail.setMultipleSkuId("");
-		detail.setGoodsName(item.getSkuName());
-		detail.setPrice(item.getUnitPrice());
-		detail.setPropertiesIndb(item.getPropertiesIndb());
-		detail.setStyleCode(item.getStyleCode());
-		detail.setBarCode(item.getBarCode());
-		detail.setNum(item.getQuantity());
-		detail.setIsEvent(isGoodActivity);
-		List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
-		adjustDetailList.add(detail);
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
-
-		// 走商城库存
-		serviceStockManagerService.updateStock(stockAdjustVo);
-
-		stockAdjustList.add(stockAdjustVo);
-		return stockAdjustList;
-	}
-
-	/**
-	 * 订单商品是否参与特惠活动
-	 */
-	public boolean isAttendSale(String orderId, String storeGoodSkuId) {
-		Map<String, Object> map = Maps.newHashMap();
-		map.put("orderId", orderId);
-		map.put("saleGoodsId", storeGoodSkuId);
-		int count = activitySaleRecordService.selectOrderGoodsCount(map);
-		return count > 0;
-	}
-
-	/**
-	 * 订单商品是否参与特惠活动
-	 */
-	public String findSaleId(String orderId, String storeGoodSkuId) {
-		Map<String, Object> map = Maps.newHashMap();
-		map.put("orderId", orderId);
-		map.put("saleGoodsId", storeGoodSkuId);
-		String saleId = activitySaleRecordService.selectOrderGoodsActivity(map);
-		return saleId;
-	}
-
+	
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void refundConsumeCode(TradeOrder order, TradeOrderRefunds orderRefunds,
 			TradeOrderRefundsCertificateVo certificate, List<TradeOrderItemDetail> waitRefundDetailList)
 			throws Exception {
 		orderRefunds.setTradeNum(TradeNumUtil.getTradeNum());
-
 		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
 
 		// 是否需要算优惠金额
@@ -910,28 +777,24 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 			totalIncome = totalIncome.add(tradeOrderRefundsItem.getIncome());
 		}
 		orderRefunds.setTotalIncome(totalIncome);
-
-		// 判断非在线支付
-		if (PayWayEnum.PAY_ONLINE != order.getPayWay()) {
-			// 非线上支付
-			orderRefunds.setRefundMoneyTime(new Date());
-			orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
-			this.updateOrderInfo(order, orderRefunds, certificate, waitRefundDetailList);
-		} else if (PayTypeEnum.ALIPAY == orderRefunds.getPaymentMethod()
-				|| PayTypeEnum.WXPAY == orderRefunds.getPaymentMethod()) {
-			// 原路返回
-			orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
-			this.updateWalletByThird(order, orderRefunds, certificate, waitRefundDetailList);
-		} else {
-			// 余额退款
-			this.updateWallet(order, orderRefunds, certificate, waitRefundDetailList);
-		}
+		
 		// 增加退款单操作记录
 		tradeOrderRefundsLogMapper
 				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
 						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
 		// 发送短信
 		tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
+		
+		if (PayTypeEnum.ALIPAY == orderRefunds.getPaymentMethod()
+				|| PayTypeEnum.WXPAY == orderRefunds.getPaymentMethod()) {
+			// 支付宝和微信原路返回
+			orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
+			this.updateWalletByThird(order, orderRefunds, certificate, waitRefundDetailList);
+		} else {
+			// 余额退款
+			this.updateWallet(order, orderRefunds, certificate, waitRefundDetailList);
+		}
+	
 	}
 
 	@Transactional(rollbackFor = Exception.class)
@@ -1097,7 +960,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 				activitySaleRecordService.updateDisabledByOrderId(params);
 			}
 			// 回收库存
-			List<StockAdjustVo> stockAdjustList = recycleBuildStock(order, orderRefunds, rpcIdList);
+			stockOperateService.recycleStockByRefund(order, orderRefunds, rpcIdList);
 			// 发消息给ERP生成库存单据 added by maojj
 		} catch (Exception e) {
 			// 发消息回滚库存的修改 added by maojj
@@ -1149,8 +1012,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailMapper
 				.selectByOrderItemDetailByOrderId(orderRefunds.getOrderId());
 
-		// 是否消费码全部退款
-		// boolean isAllRefund = true;
 		// 是否有过期的消费码
 		boolean isHasExpired = false;
 		// 是否有未消费的
@@ -1160,10 +1021,9 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		if (CollectionUtils.isNotEmpty(detailList)) {
 			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
 				if (refundDetailIds.contains(tradeOrderItemDetail.getId())) {
-					// 如果是这次退款的消费码直接继续判断
+					//如果是这次退款的消费码直接继续判断
 					continue;
 				}
-
 				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.expired) {
 					isHasExpired = true;
 				}
@@ -1177,86 +1037,22 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderServiceApi
 		}
 
 		if (isHasExpired) {
+			//如果已经有过期的就将消费码状态改为已过期
 			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.EXPIRED);
 		} else {
 			if (isHasWaitConsume) {
+				//有待消费的就改为待消费
 				order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_CONSUME);
 			} else {
 				if (isHasConsumed) {
 					// 变成已经消费
 					order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_EVALUATE);
 				} else {
+					//全部退款
 					order.setConsumerCodeStatus(ConsumerCodeStatusEnum.REFUNDED);
 				}
 			}
 		}
-
-		// 判断所有的订单项是否全部完成了，如果全部完成了，就更改订单isComplete为已经完成
-		List<TradeOrderItem> itemList = tradeOrderItemMapper.selectOrderItemListById(order.getId());
-		boolean isComplete = true;
-		if (CollectionUtils.isNotEmpty(itemList)) {
-			for (TradeOrderItem tradeOrderItem : itemList) {
-				if (tradeOrderItem.getIsComplete() != OrderComplete.YES && !ids.contains(tradeOrderItem.getId())) {
-					isComplete = false;
-				}
-			}
-		}
-
-		if (isComplete) {
-			order.setIsComplete(OrderComplete.YES);
-		}
 		tradeOrderMapper.updateByPrimaryKeySelective(order);
-	}
-
-	private List<StockAdjustVo> recycleBuildStock(TradeOrder order, TradeOrderRefunds orderRefunds,
-			List<String> rpcIdList) throws Exception {
-		List<StockAdjustVo> stockAdjustList = new ArrayList<StockAdjustVo>();
-		List<TradeOrderRefundsItem> tradeOrderRefundsItems = orderRefunds.getTradeOrderRefundsItem();
-
-		StockAdjustVo stockAdjustVo = new StockAdjustVo();
-		String rpcId = UuidUtils.getUuid();
-		rpcIdList.add(rpcId);
-		stockAdjustVo.setRpcId(rpcId);
-		stockAdjustVo.setOrderId(orderRefunds.getOrderId());
-		stockAdjustVo.setOrderNo(orderRefunds.getOrderNo());
-		stockAdjustVo.setOrderResource(orderRefunds.getOrderResource());
-		stockAdjustVo.setOrderType(orderRefunds.getType());
-		stockAdjustVo.setStoreId(orderRefunds.getStoreId());
-
-		stockAdjustVo.setStockOperateEnum(StockOperateEnum.RETURN_OF_GOODS);
-		// }
-		stockAdjustVo.setUserId(orderRefunds.getUserId());
-		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
-		// End 一个订单只调一次库存 add by zengj
-		for (TradeOrderRefundsItem item : tradeOrderRefundsItems) {
-
-			AdjustDetailVo detail = new AdjustDetailVo();
-			detail.setStoreSkuId(item.getStoreSkuId());
-			detail.setGoodsSkuId("");
-			detail.setMultipleSkuId("");
-			detail.setGoodsName(item.getSkuName());
-			detail.setPrice(item.getUnitPrice());
-			detail.setPropertiesIndb(item.getPropertiesIndb());
-			detail.setStyleCode(item.getStyleCode());
-			detail.setBarCode(item.getBarCode());
-			detail.setSpuType(SpuTypeEnum.fwdDdxfSpu);
-			detail.setIsEvent(order.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY
-					|| isAttendSale(orderRefunds.getOrderId(), item.getStoreSkuId()));
-			Integer quantity = item.getQuantity();
-			if (quantity == null) {
-				if (item.getWeight() != null) {
-					quantity = item.getWeight().multiply(new BigDecimal(1000)).intValue();
-					detail.setIsWeightSku("Y");
-				}
-			}
-			detail.setNum(quantity);
-			adjustDetailList.add(detail);
-		}
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
-
-		stockAdjustList.add(stockAdjustVo);
-		// 否则走商城库存
-		serviceStockManagerService.updateStock(stockAdjustVo);
-		return stockAdjustList;
 	}
 }

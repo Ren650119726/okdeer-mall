@@ -32,7 +32,6 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
@@ -40,13 +39,7 @@ import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
-import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.enums.MeteringMethod;
-import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
-import com.okdeer.archive.stock.vo.AdjustDetailVo;
-import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreMemberRelation;
 import com.okdeer.archive.store.enums.StoreUserTypeEnum;
 import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
@@ -57,7 +50,6 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
@@ -87,9 +79,6 @@ import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLog;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
 import com.okdeer.mall.order.enums.ActivityBelongType;
-import com.okdeer.mall.order.enums.ConsumeStatusEnum;
-import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
-import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
@@ -105,12 +94,12 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsLogMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsLogisticsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.service.GenerateNumericalService;
+import com.okdeer.mall.order.service.StockOperateService;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderDisputeLogService;
 import com.okdeer.mall.order.service.TradeOrderDisputeService;
-import com.okdeer.mall.order.service.TradeOrderItemDetailService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundsCertificateService;
@@ -238,17 +227,13 @@ public class TradeOrderRefundsServiceImpl
 	@Resource
 	private TradeOrderRefundsCertificateService tradeOrderRefundsCertificateService;
 
-	@Resource
-	private TradeOrderItemDetailService tradeOrderItemDetailService;
+
 
 	@Reference(version = "1.0.0", check = false)
 	private IPayTradeServiceApi payTradeServiceApi;
 
 	@Autowired
 	private RocketMQTransactionProducer rocketMQTransactionProducer;
-
-	@Autowired
-	private RocketMQProducer rocketMqProducer;
 
 	@Reference(version = "1.0.0", check = false)
 	private StoreInfoServiceApi storeInfoService;
@@ -271,15 +256,7 @@ public class TradeOrderRefundsServiceImpl
 	@Autowired
 	private ActivityCouponsMapper activityCouponsMapper;
 
-	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi stockManagerService;
-
 	// Begin 1.0.Z add by zengj
-	/**
-	 * 库存管理Service
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerJxcService;
 
 	/**
 	 * 订单完成后同步商业管理系统Service
@@ -334,6 +311,9 @@ public class TradeOrderRefundsServiceImpl
 
 	// End 友门鹿1.1 added by maojj 2016-09-28
 
+	@Resource
+	private StockOperateService stockOperateService;
+
 	/**
 	 * 根据主键查询退款单
 	 *
@@ -381,7 +361,7 @@ public class TradeOrderRefundsServiceImpl
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void insertRefunds(TradeOrderRefunds orderRefunds) throws Exception {
-		// Begin Bug:14143 added by maojj 2016-10-11 
+		// Begin Bug:14143 added by maojj 2016-10-11
 		// 新增退款单时，保存退款轨迹
 		tradeOrderRefundsTraceService.saveRefundTrace(orderRefunds);
 		// End added by maojj 2016-10-11
@@ -402,34 +382,24 @@ public class TradeOrderRefundsServiceImpl
 		// 保存退款凭证
 		tradeOrderRefundsCertificateService.addCertificate(certificate);
 
-		// 服务订单：调用退款
-		if (orderRefunds.getType() == OrderTypeEnum.SERVICE_ORDER
-				|| orderRefunds.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
-			orderRefunds.setTradeNum(TradeNumUtil.getTradeNum());
-			doRefundPay(orderRefunds);
-		} else if (orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
-			// 自动同意申请计时消息
-			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_agree_timeout, orderRefunds.getId());
-		}
-
-		// 实物订单、团购订单、服务订单发送保存系统消息 update by zhaoqc
-		if (orderRefunds.getType() == OrderTypeEnum.SERVICE_ORDER
-				|| orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
-			// 保存系统消息
-			saveSysMsg(orderRefunds);
-			// 推送消息给POS和商家中心
-			SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(orderRefunds);
-			// 推送消息给POS
-			tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.applyReturn);
-			// 推送消息给商家版APP
-			tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.applyReturn);
-		}
+		// 保存系统消息
+		saveSysMsg(orderRefunds);
+		// 推送消息给POS和商家中心
+		SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(orderRefunds);
+		// 推送消息给POS
+		tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.applyReturn);
+		// 推送消息给商家版APP
+		tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.applyReturn);
 
 		// Begin 1.0.Z 增加退款单操作记录 add by zengj
 		tradeOrderRefundsLogMapper
 				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
 						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
+
+		// 自动同意申请计时消息
+		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_agree_timeout, orderRefunds.getId());
+
 	}
 
 	@Override
@@ -494,16 +464,6 @@ public class TradeOrderRefundsServiceImpl
 		// 创建退款单，退款单项和凭证
 		this.insertRefunds(refunds, certificate);
 
-		// 充值订单,余额支付退款
-		// if (isOldWayBack(orderRefunds.getPaymentMethod())) {
-		// 原路返回
-		// String remark = "同意退款";
-		// } else {
-		// 余额支付退款
-		if (refunds.getPaymentMethod().equals(PayTypeEnum.WALLET)) {
-			this.updateRechargeWallet(refunds);
-		}
-
 		// 如果有优惠，则返还优惠信息
 		if (tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER) {
 			Map<String, Object> params = Maps.newHashMap();
@@ -520,49 +480,6 @@ public class TradeOrderRefundsServiceImpl
 			}
 		}
 
-	}
-
-	public void updateRechargeWallet(TradeOrderRefunds orderRefunds) throws Exception {
-		// 添加交易记录
-		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
-				buildRechargeBalancePayTrade(orderRefunds).getBytes("UTF-8"));
-
-		rocketMqProducer.send(msg);
-		// 发送事务消息
-		/*
-		 * TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, orderRefunds, new
-		 * LocalTransactionExecuter() {
-		 * 
-		 * @Override public LocalTransactionState executeLocalTransactionBranch(Message msg, Object arg) { //执行同意退款操作
-		 * 
-		 * 
-		 * return null; } }, new TransactionCheckListener() {
-		 * 
-		 * @Override public LocalTransactionState checkLocalTransactionState(MessageExt msg) { return
-		 * LocalTransactionState.COMMIT_MESSAGE; } } ); return RocketMqResult.returnResult(sendResult);
-		 */
-	}
-
-	// 构建支付对象
-	private String buildRechargeBalancePayTrade(TradeOrderRefunds orderRefunds) throws Exception {
-		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
-		payTradeVo.setAmount(orderRefunds.getTotalAmount());
-		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
-		// payTradeVo.setPayUserId("");
-		payTradeVo.setTradeNum(orderRefunds.getTradeNum());
-		payTradeVo.setTitle("充值订单退款(余额支付)，退款交易号：" + orderRefunds.getRefundNo());
-
-		// TradeOrder order =
-		// tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-		// 业务类型
-		payTradeVo.setBusinessType(BusinessTypeEnum.RECHARGE_ORDER_REFUND);
-		payTradeVo.setServiceFkId(orderRefunds.getId());
-		payTradeVo.setServiceNo(orderRefunds.getOrderNo());
-		payTradeVo.setRemark("关联订单号：" + orderRefunds.getOrderNo());
-		// 接受返回消息的tag
-		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_REFUND);
-
-		return JSONObject.fromObject(payTradeVo).toString();
 	}
 
 	/**
@@ -618,7 +535,7 @@ public class TradeOrderRefundsServiceImpl
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public int updateRefunds(TradeOrderRefunds orderRefunds) {
-		// Begin Bug:14143 added by maojj 2016-10-11 
+		// Begin Bug:14143 added by maojj 2016-10-11
 		// 更改退款单状态时，保存退款轨迹
 		tradeOrderRefundsTraceService.saveRefundTrace(orderRefunds);
 		// End added by maojj 2016-10-11
@@ -645,24 +562,12 @@ public class TradeOrderRefundsServiceImpl
 	 * @desc 保存退款单相关数据
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	private void save(TradeOrderRefunds orderRefunds) throws Exception {
+	private void save(TradeOrder order,TradeOrderRefunds orderRefunds) throws Exception {
 		List<String> rpcIdList = new ArrayList<String>();
 		try {
 			// 更新订单状态
 			updateRefunds(orderRefunds);
-
-			// 服务订单修改消费码状态
-			if (orderRefunds.getType() == OrderTypeEnum.SERVICE_ORDER) {
-				for (TradeOrderRefundsItem refundsItem : orderRefunds.getTradeOrderRefundsItem()) {
-					// 设置消费码为已退款
-					tradeOrderItemDetailService.updateStatusWithRefund(refundsItem.getOrderItemId());
-				}
-			} else if (orderRefunds.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
-				// 更新到店消费的退款单信息
-				this.updateStoreConsumeRefunds(orderRefunds);
-			}
-
-			TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
+			
 			if (order.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY) {
 				// 团购活动释放限购数量
 				activityGroupRecordService.updateDisabledByOrderId(orderRefunds.getOrderId());
@@ -680,7 +585,7 @@ public class TradeOrderRefundsServiceImpl
 			addRefundsCerticate(orderRefunds.getId(), remark, orderRefunds.getOperator());
 
 			// 回收库存
-			List<StockAdjustVo> stockAdjustList = recycleBuildStock(orderRefunds, rpcIdList);
+			stockOperateService.recycleStockByRefund(order, orderRefunds, rpcIdList);
 			// 发消息给ERP生成库存单据 added by maojj
 			// stockMQProducer.sendMessage(stockAdjustList);
 		} catch (Exception e) {
@@ -691,124 +596,9 @@ public class TradeOrderRefundsServiceImpl
 	}
 
 	/**
-	 * 修改退单库存
-	 * 
-	 * @param tradeOrder
-	 *            订单
-	 * @return StockAdjustVo
-	 */
-	private List<StockAdjustVo> recycleBuildStock(TradeOrderRefunds orderRefunds, List<String> rpcIdList)
-			throws Exception {
-		// Begin added by maojj 2016-07-26
-		List<StockAdjustVo> stockAdjustList = new ArrayList<StockAdjustVo>();
-		// End added by maojj 2016-07-26
-		List<TradeOrderRefundsItem> tradeOrderRefundsItems = orderRefunds.getTradeOrderRefundsItem();
-		if (Iterables.isEmpty(tradeOrderRefundsItems)) {
-			tradeOrderRefundsItems = tradeOrderRefundsItemService
-					.getTradeOrderRefundsItemByRefundsId(orderRefunds.getId());
-		}
-		// Begin 一个订单只调一次库存 add by zengj
-		StockAdjustVo stockAdjustVo = new StockAdjustVo();
-		// Begin added by maojj 2016-07-26
-		String rpcId = UuidUtils.getUuid();
-		rpcIdList.add(rpcId);
-		stockAdjustVo.setRpcId(rpcId);
-		// End added by maojj 2016-07-26
-		stockAdjustVo.setOrderId(orderRefunds.getOrderId());
-		stockAdjustVo.setOrderNo(orderRefunds.getOrderNo());
-		stockAdjustVo.setOrderResource(orderRefunds.getOrderResource());
-		stockAdjustVo.setOrderType(orderRefunds.getType());
-		stockAdjustVo.setStoreId(orderRefunds.getStoreId());
-		// 取消销售单
-		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-		// if (order.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY
-		// || isAttendSale(orderRefunds.getOrderId(), item.getStoreSkuId())) {
-		// stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_RETURN_OF_GOODS);
-		// } else {
-		// 操作类型都默认是普通商品的，然后如果里面有活动商品，在商品详情中有isEvent判断
-		stockAdjustVo.setStockOperateEnum(StockOperateEnum.RETURN_OF_GOODS);
-		// }
-		stockAdjustVo.setUserId(orderRefunds.getUserId());
-		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
-		// End 一个订单只调一次库存 add by zengj
-		for (TradeOrderRefundsItem item : tradeOrderRefundsItems) {
-
-			AdjustDetailVo detail = new AdjustDetailVo();
-			detail.setStoreSkuId(item.getStoreSkuId());
-			detail.setGoodsSkuId("");
-			detail.setMultipleSkuId("");
-			detail.setGoodsName(item.getSkuName());
-			detail.setPrice(item.getUnitPrice());
-			detail.setPropertiesIndb(item.getPropertiesIndb());
-			detail.setStyleCode(item.getStyleCode());
-			detail.setBarCode(item.getBarCode());
-			detail.setSpuType(
-					order.getType() == OrderTypeEnum.SERVICE_ORDER ? SpuTypeEnum.serviceSpu : SpuTypeEnum.physicalSpu);
-			detail.setIsEvent(order.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY
-					|| isAttendSale(orderRefunds.getOrderId(), item.getStoreSkuId()));
-			Integer quantity;
-			if (order.getType() == OrderTypeEnum.SERVICE_ORDER) {
-				quantity = tradeOrderItemDetailService.selectUnConsumerCount(item.getOrderItemId());
-			} else {
-				quantity = item.getQuantity();
-			}
-			if (quantity == null) {
-				if (item.getWeight() != null) {
-					quantity = item.getWeight().multiply(new BigDecimal(1000)).intValue();
-					detail.setIsWeightSku("Y");
-				}
-			}
-			detail.setNum(quantity);
-			
-			// add by 便利店优惠金额单价  lijun 20161110 begin
-			if (orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
-				BigDecimal number = null;
-				if (item.getWeight() != null) {
-					number = BigDecimal.valueOf(quantity).divide(BigDecimal.valueOf(1000)).setScale(4, BigDecimal.ROUND_FLOOR);
-				}else{
-					number = BigDecimal.valueOf(quantity);
-				}
-				// 优惠单价
-				BigDecimal price = item.getIncome().divide(number, 4, BigDecimal.ROUND_HALF_UP);
-				detail.setPrice(price);
-			}
-			// add by 便利店优惠金额单价  lijun 20161110 end
-			
-			adjustDetailList.add(detail);
-		}
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
-
-		// Begin added by maojj 2016-07-26
-		stockAdjustList.add(stockAdjustVo);
-		// End added by maojj 2016-07-26
-		// 实物订单走进销存库存
-		if (orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
-			stockManagerJxcService.updateStock(stockAdjustVo);
-		} else {
-			// 否则走商城库存
-			stockManagerService.updateStock(stockAdjustVo);
-		}
-		return stockAdjustList;
-	}
-
-	// End modified by maojj 2016-07-26
-
-	/**
-	 * 订单商品是否参与特惠活动
-	 */
-	public boolean isAttendSale(String orderId, String storeGoodSkuId) {
-		Map<String, Object> map = Maps.newHashMap();
-		map.put("orderId", orderId);
-		map.put("saleGoodsId", storeGoodSkuId);
-		int count = activitySaleRecordService.selectOrderGoodsCount(map);
-		return count > 0;
-	}
-
-	/**
 	 * @desc 执行退款更新云钱包余额
 	 */
-	@Override
-	public boolean updateWallet(TradeOrderRefunds orderRefunds) throws Exception {
+	private boolean updateWallet(TradeOrder order, TradeOrderRefunds orderRefunds) throws Exception {
 
 		orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
 		// 构建余额支付（或添加交易记录）对象
@@ -822,7 +612,7 @@ public class TradeOrderRefundsServiceImpl
 					public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
 						try {
 							// 执行同意退款操作
-							save((TradeOrderRefunds) object);
+							save(order,(TradeOrderRefunds) object);
 						} catch (Exception e) {
 							logger.error("执行同意退款操作异常", e);
 							return LocalTransactionState.ROLLBACK_MESSAGE;
@@ -843,27 +633,13 @@ public class TradeOrderRefundsServiceImpl
 	/**
 	 * 构建支付对象
 	 */
-	private String buildBalanceThirdPayTrade(TradeOrderRefunds orderRefunds) throws Exception {
-
-		BigDecimal amount = BigDecimal.ZERO;
-		if (OrderTypeEnum.SERVICE_ORDER == orderRefunds.getType()) {
-			List<TradeOrderRefundsItem> items = orderRefunds.getTradeOrderRefundsItem();
-			for (TradeOrderRefundsItem item : items) {
-				int unConsumerCount = tradeOrderItemDetailService.selectUnConsumerCount(item.getOrderItemId());
-				amount = amount.add(item.getUnitPrice().multiply(BigDecimal.valueOf(unConsumerCount)));
-			}
-		} else {
-			amount = orderRefunds.getTotalAmount();
-		}
-
+	private String buildBalanceThirdPayTrade(TradeOrder order,TradeOrderRefunds orderRefunds) throws Exception {
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
-		payTradeVo.setAmount(amount);
+		payTradeVo.setAmount(orderRefunds.getTotalAmount());
 		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
 		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(orderRefunds.getStoreId()));
 		payTradeVo.setTradeNum(orderRefunds.getTradeNum());
 		payTradeVo.setTitle("订单退款，退款交易号：" + orderRefunds.getRefundNo());
-
-		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
 		payTradeVo.setBusinessType(BusinessTypeEnum.AGREEN_REFUND);
 		payTradeVo.setServiceFkId(orderRefunds.getId());
 		payTradeVo.setServiceNo(orderRefunds.getOrderNo());
@@ -893,11 +669,8 @@ public class TradeOrderRefundsServiceImpl
 		payTradeVo.setTitle("订单退款(余额支付)，退款交易号：" + orderRefunds.getRefundNo());
 
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-		if (order.getType() == OrderTypeEnum.PHYSICAL_ORDER || order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
-			payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
-		} else {
-			payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_SERVICE_ORDER);
-		}
+		payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
+		
 		payTradeVo.setServiceFkId(orderRefunds.getId());
 		payTradeVo.setServiceNo(orderRefunds.getOrderNo());
 		payTradeVo.setRemark("关联订单号：" + orderRefunds.getOrderNo());
@@ -1010,69 +783,43 @@ public class TradeOrderRefundsServiceImpl
 	}
 
 	/**
-	 * @Description: 自动退款
-	 * @param id 退款单id
-	 * @param userId 用户id
-	 * @throws Exception
-	 * @author zengjizu
-	 * @date 2016年9月29日
-	 */
-	@Transactional(rollbackFor = Exception.class)
-	public void autoRefundPayment(TradeOrderRefunds orderRefunds) throws Exception {
-
-		orderRefunds.setTradeNum(TradeNumUtil.getTradeNum());
-		// 执行退款操作
-		doRefundPay(orderRefunds);
-	}
-
-	/**
 	 * 执行退款操作
 	 */
 	private void doRefundPay(TradeOrderRefunds orderRefunds) throws Exception {
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-		if (Iterables.isEmpty(orderRefunds.getTradeOrderRefundsItem())) {
-			orderRefunds.setTradeOrderRefundsItem(
-					tradeOrderRefundsItemService.getTradeOrderRefundsItemByRefundsId(orderRefunds.getId()));
-		}
-		// 判断非在线支付
-		if (PayWayEnum.PAY_ONLINE != order.getPayWay()) {
-			// 非线上支付
-			orderRefunds.setRefundMoneyTime(new Date());
-			orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
-			this.save(orderRefunds);
-		} else if (isOldWayBack(orderRefunds.getPaymentMethod())) {
-			// 原路返回
-			orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
-			// 判断实物订单：先更新卖家余额，后由财务处理退款操作
-			if (order.getType() == OrderTypeEnum.PHYSICAL_ORDER
-					|| order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
-				this.updateWalletByThird(orderRefunds);
-			} else {
-				this.save(orderRefunds);
-			}
-		} else {
-			// 余额退款
-			this.updateWallet(orderRefunds);
-		}
-
 		// Begin 1.0.Z 增加退款单操作记录 add by zengj
 		tradeOrderRefundsLogMapper
 				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
 						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
-
 		// 订单完成后同步到商业管理系统
 		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
 		// End 1.0.Z 增加退款单操作记录 add by zengj
 		// 发送短信
 		this.tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
+
+		// 判断非在线支付
+		if (PayWayEnum.PAY_ONLINE != order.getPayWay()) {
+			// 非线上支付
+			orderRefunds.setRefundMoneyTime(new Date());
+			orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
+			this.save(order,orderRefunds);
+		} else if (isOldWayBack(orderRefunds.getPaymentMethod())) {
+			// 原路返回
+			orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
+			this.updateWalletByThird(order,orderRefunds);
+		} else {
+			// 余额退款
+			this.updateWallet(order,orderRefunds);
+		}
+
 	}
 
 	@Transactional(rollbackFor = Exception.class)
-	private boolean updateWalletByThird(TradeOrderRefunds orderRefunds) throws Exception {
+	private boolean updateWalletByThird(TradeOrder order, TradeOrderRefunds orderRefunds) throws Exception {
 
 		// 构建余额支付（或添加交易记录）对象
 		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
-				buildBalanceThirdPayTrade(orderRefunds).getBytes(Charsets.UTF_8));
+				buildBalanceThirdPayTrade(order,orderRefunds).getBytes(Charsets.UTF_8));
 		// 发送事务消息
 		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, orderRefunds,
 				new LocalTransactionExecuter() {
@@ -1081,7 +828,7 @@ public class TradeOrderRefundsServiceImpl
 					public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
 						try {
 							// 执行同意退款操作
-							save((TradeOrderRefunds) object);
+							save(order,(TradeOrderRefunds) object);
 						} catch (Exception e) {
 							logger.error("执行同意退款操作异常", e);
 							return LocalTransactionState.ROLLBACK_MESSAGE;
@@ -1128,8 +875,9 @@ public class TradeOrderRefundsServiceImpl
 				refunds.getRefundsStatus().getName(), refunds.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
 		if (RefundsStatusEnum.YSC_REFUND == status) {
+			TradeOrder order = tradeOrderMapper.selectByPrimaryKey(refunds.getOrderId());
 			// 更新退款单
-			this.save(refunds);
+			this.save(order,refunds);
 			// 发送短信
 			this.tradeMessageService.sendSmsByYschomePay(refunds);
 		} else if (RefundsStatusEnum.FORCE_SELLER_REFUND == status) {
@@ -1202,10 +950,8 @@ public class TradeOrderRefundsServiceImpl
 				|| order.getActivityType() == ActivityTypeEnum.VONCHER) {
 			ActivityBelongType activityBelong = tradeOrderActivityService.findActivityType(order);
 			if (ActivityBelongType.SELLER == activityBelong) {
-				// totalAmount = refunds.getTotalAmount();
+				
 			} else {
-				// totalAmount =
-				// refunds.getTotalAmount().add(refunds.getTotalPreferentialPrice());
 				preferentialPrice = refunds.getTotalPreferentialPrice();
 			}
 		}
@@ -1488,14 +1234,6 @@ public class TradeOrderRefundsServiceImpl
 	public TradeOrderRefundsQueryVo findDetailById(String id) throws Exception {
 
 		TradeOrderRefundsQueryVo refundsVo = tradeOrderRefundsMapper.selectDetailById(id);
-		// if
-		// (StringUtils.isNotEmpty(refundsVo.getTradeOrderItem().getMainPicPrl()))
-		// {
-		// refundsVo.getTradeOrderItem()
-		// .setMainPicPrl(storeImagePrefix +
-		// refundsVo.getTradeOrderItem().getMainPicPrl());
-		// }
-
 		// 拼接退款凭证图片前缀
 		List<String> certificateImg = tradeOrderRefundsCertificateMapper.findImageByRefundsId(refundsVo.getId());
 		refundsVo.setTradeOrderRefundsCertificateImgs(certificateImg);
@@ -1782,7 +1520,7 @@ public class TradeOrderRefundsServiceImpl
 				tradeOrderRefunds.setTradeOrderRefundsItem(tradeOrderRefundsItems);
 				logger.info("POS线下退货tradeOrderRefunds" + JSONObject.fromObject(tradeOrderRefunds));
 				// 回收库存
-				List<StockAdjustVo> stockAdjustList = recycleBuildStock(tradeOrderRefunds, rpcIdList);
+				stockOperateService.recycleStockByRefund(tradeOrder, tradeOrderRefunds, rpcIdList);
 
 				// 添加退款操作记录
 				addRefundsCerticate(tradeOrderRefunds.getId(), "", userId);
@@ -1816,11 +1554,6 @@ public class TradeOrderRefundsServiceImpl
 	public PageUtils<TradeOrderRefundsVo> findPageByFinance(Map<String, Object> map, int pageNumber, int pageSize)
 			throws Exception {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
-
-		// Begin add by zengjz 2016-9-14 增加退款状态查询条件
-		convertParamsForFinanceRefund(map);
-		// End add by zengjz 2016-9-14 增加退款状态查询条件
-
 		List<TradeOrderRefundsVo> list = tradeOrderRefundsMapper.selectRefundsByFinance(map);
 		return new PageUtils<TradeOrderRefundsVo>(list);
 	}
@@ -1832,9 +1565,7 @@ public class TradeOrderRefundsServiceImpl
 
 	@Override
 	public Integer findCountByFinance(Map<String, Object> map) throws Exception {
-		// Begin add by zengjz 2016-9-14 增加退款状态查询条件
-		convertParamsForFinanceRefund(map);
-		// End add by zengjz 2016-9-14 增加退款状态查询条件
+
 		return tradeOrderRefundsMapper.selectRefundsCountByFinance(map);
 	}
 
@@ -1975,10 +1706,6 @@ public class TradeOrderRefundsServiceImpl
 		return tradeOrderRefundsMapper.selectPosRefundExportList(params);
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.order.service.TradeOrderRefundsServiceApi#findByOrderId(java.lang.String)
-	 */
 	@Transactional(readOnly = true)
 	@Override
 	public List<TradeOrderRefunds> findByOrderId(String orderId) {
@@ -1986,10 +1713,6 @@ public class TradeOrderRefundsServiceImpl
 	}
 
 	// Begin 重构4.1 add by wusw 20160722
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.order.service.TradeOrderService#findCountChargeForFinance(java.util.Map)
-	 */
 	@Override
 	public Integer findCountChargeForFinance() {
 		// 默认订单类型为话费充值、流量充值订单
@@ -2009,194 +1732,28 @@ public class TradeOrderRefundsServiceImpl
 		return tradeOrderRefundsMapper.findCountChargeForFinance(params);
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.order.service.TradeOrderRefundsService#findeChargeRefundsByParams(java.util.Map)
-	 */
 	@Override
 	public PageUtils<TradeOrderRefundsChargeVo> findeChargeRefundsByParams(Map<String, Object> params, int pageNumber,
 			int pageSize) throws Exception {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
-		// 参数处理（例如设置默认参数等）
-		this.convertParamsForFinance(params);
 		List<TradeOrderRefundsChargeVo> result = tradeOrderRefundsMapper.findeChargeRefundsByParams(params);
 		return new PageUtils<TradeOrderRefundsChargeVo>(result);
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.order.service.TradeOrderRefundsService#findeChargeRefundsListByParams(java.util.Map, int, int)
-	 */
 	@Override
 	public List<TradeOrderRefundsChargeVo> findeChargeRefundsListByParams(Map<String, Object> params) throws Exception {
-		// 参数处理（例如设置默认参数等）
-		this.convertParamsForFinance(params);
 		return tradeOrderRefundsMapper.findeChargeRefundsByParams(params);
 	}
-
-	/**
-	 * 
-	 * @Description: 充值订单列表参数处理（用于财务系统）
-	 * @param params   
-	 * @return void 
-	 * @author wusw
-	 * @date 2016年7月22日
-	 */
-	private void convertParamsForFinance(Map<String, Object> params) {
-		if (params == null) {
-			params = new HashMap<String, Object>();
-		}
-		// 如果没有选择支付方式，默认查询第三方支付的充值订单
-		if (params.get("paymentMethod") == null || StringUtils.isBlank(params.get("paymentMethod").toString())) {
-			List<Integer> paymentMethodList = new ArrayList<Integer>();
-			paymentMethodList.add(PayTypeEnum.ALIPAY.ordinal());
-			paymentMethodList.add(PayTypeEnum.WXPAY.ordinal());
-			params.put("paymentMethod", paymentMethodList);
-		} else {
-			List<Integer> paymentMethodList = new ArrayList<Integer>();
-			paymentMethodList.add(new Integer(params.get("paymentMethod").toString()));
-			params.put("paymentMethod", paymentMethodList);
-		}
-		if (params.get("startTime") == null || StringUtils.isBlank(params.get("startTime").toString())) {
-			params.remove("startTime");
-		}
-		if (params.get("endTime") == null || StringUtils.isBlank(params.get("endTime").toString())) {
-			params.remove("endTime");
-		}
-		// 默认订单类型为话费充值、流量充值订单
-		List<OrderTypeEnum> typeList = new ArrayList<OrderTypeEnum>();
-		typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
-		typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
-		params.put("type", typeList);
-		// 默认退款状态为退款中和退款完成
-		List<RefundsStatusEnum> refundsStatusList = new ArrayList<RefundsStatusEnum>();
-		refundsStatusList.add(RefundsStatusEnum.SELLER_REFUNDING);
-		refundsStatusList.add(RefundsStatusEnum.REFUND_SUCCESS);
-		params.put("refundsStatus", refundsStatusList);
-		params.put("disabled", Disabled.valid);
-	}
-
 	// End 重构4.1 add by wusw 20160722
 
 	// Begin add by zengjz 2016-9-14
 
 	@Override
 	public Map<String, Object> statisRefundsByParams(Map<String, Object> params) throws Exception {
-		convertParamsForFinanceRefund(params);
 		Map<String, Object> result = tradeOrderRefundsMapper.statisRefundsByFinance(params);
 		return result;
 	}
-
-	/**
-	 * @Description: 财务系统退款订单参数转换
-	 * @param map   查询参数
-	 * @author zengjizu
-	 * @date 2016年9月17日
-	 */
-	private void convertParamsForFinanceRefund(Map<String, Object> map) {
-		// 退款类型参数 : complain客诉订单退款 refunds:普通订单退款
-		String type = (String) map.get("type");
-		// 退款状态参数： 0:退款中 1:退款完成 默认为空，全部
-		String status = (String) map.get("status");
-		List<String> statusList = Lists.newArrayList();
-
-		/*
-		 * 退货/退款状态:(0:等待卖家确认,1:买家撤销退款,2:等待买家退货,3:等待卖家收货,4:待卖家退款,5:卖家拒绝退款,6:退款成功, 7
-		 * :卖家拒绝申请,8:申请客服介入,9:客户介入取消,10:云上城退款,11:(纠纷单)云上城退款成功),12:强制卖家退款,13强制卖家退款成功 ,14卖家退款中'
-		 */
-
-		if (type != null && "complain".equals(type)) {
-
-			if (status != null && "0".equals(status)) {
-				statusList.add("10");
-			} else if (status != null && "1".equals(status)) {
-				statusList.add("11");
-			} else {
-				statusList.add("10");
-				statusList.add("11");
-			}
-
-		} else if (type != null && "refunds".equals(type)) {
-
-			if (status != null && "0".equals(status)) {
-				statusList.add("14");
-				statusList.add("12");
-			} else if (status != null && "1".equals(status)) {
-				statusList.add("6");
-				statusList.add("13");
-			} else {
-				statusList.add("14");
-				statusList.add("6");
-				statusList.add("12");
-				statusList.add("13");
-			}
-
-		}
-		map.put("statusList", statusList);
-	}
 	// End add by zengjz 2016-9-14
-
-	@Transactional(rollbackFor = Exception.class)
-	private void updateStoreConsumeRefunds(TradeOrderRefunds orderRefunds) throws Exception {
-
-		List<String> ids = Lists.newArrayList();
-
-		for (TradeOrderRefundsItem refundsItem : orderRefunds.getTradeOrderRefundsItem()) {
-			// 设置消费码为已退款
-			int result = tradeOrderItemDetailService.updateStatusWithRefund(refundsItem.getOrderItemId());
-
-			if (result < 1) {
-				throw new Exception("更新消费码状态失败!");
-			}
-			// 更新订单项状态为已完成
-			TradeOrderItem tradeOrderItem = tradeOrderItemService.selectByPrimaryKey(refundsItem.getOrderItemId());
-			tradeOrderItem.setIsComplete(OrderComplete.YES);
-			ids.add(tradeOrderItem.getId());
-		}
-		tradeOrderItemService.updateWithComplete(ids);
-		// 更新订单状态
-		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-
-		List<TradeOrderItemDetail> detailList = tradeOrderItemDetailService
-				.selectByOrderItemDetailByOrderId(orderRefunds.getOrderId());
-
-		// 是否消费码全部退款
-		boolean isAllRefund = true;
-		if (CollectionUtils.isNotEmpty(detailList)) {
-
-			for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
-				if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.consumed
-						|| tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.expired) {
-					// 如果消费码有已经消费或者过期的状态，就不是全部退款了
-					isAllRefund = false;
-				}
-			}
-		}
-
-		if (isAllRefund) {
-			// 如果全部退款了，将订单状态改为已经退款
-			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.REFUNDED);
-		} else {
-			//变成已经消费
-			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_EVALUATE);
-		}
-
-		// 判断所有的订单项是否全部完成了，如果全部完成了，就更改订单isComplete为已经完成
-		List<TradeOrderItem> itemList = tradeOrderItemService.selectOrderItemByOrderId(order.getId());
-		boolean isComplete = true;
-		if (CollectionUtils.isNotEmpty(itemList)) {
-			for (TradeOrderItem tradeOrderItem : itemList) {
-				if (tradeOrderItem.getIsComplete() != OrderComplete.YES && !ids.contains(tradeOrderItem.getId())) {
-					isComplete = false;
-				}
-			}
-		}
-
-		if (isComplete) {
-			order.setIsComplete(OrderComplete.YES);
-		}
-		tradeOrderMapper.updateByPrimaryKeySelective(order);
-	}
 
 	@Override
 	public PageUtils<TradeOrderRefundsVo> findOrderRefundByParams(Map<String, Object> map, int pageNumber,
@@ -2204,8 +1761,7 @@ public class TradeOrderRefundsServiceImpl
 		if (pageNumber > 0) {
 			PageHelper.startPage(pageNumber == 0 ? 1 : pageNumber, pageSize, pageNumber != 0, false);
 		}
-		List<TradeOrderRefundsVo> list = null;
-		list = tradeOrderRefundsMapper.searchOrderRefundByParams(map);
+		List<TradeOrderRefundsVo> list = tradeOrderRefundsMapper.searchOrderRefundByParams(map);
 		if (CollectionUtils.isNotEmpty(list)) {
 			for (TradeOrderRefundsVo vo : list) {
 				List<TradeOrderRefundsItem> itemList = vo.getTradeOrderRefundsItem();

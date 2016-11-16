@@ -63,10 +63,7 @@ public interface TradeOrderRefundsService {
 	 */
 	void alterRefunds(TradeOrderRefunds orderRefunds, TradeOrderRefundsCertificateVo certificate);
 
-	/**
-	 * 支付并更新
-	 */
-	boolean updateWallet(TradeOrderRefunds orderRefunds) throws Exception;
+
 
 	/**
 	 * 卖家同意退款申请
@@ -379,6 +376,4 @@ public interface TradeOrderRefundsService {
 	// Begin v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
 	Map<String, Object> statisRefundsByParams(Map<String, Object> params) throws Exception;
 	// End v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
-	
-	void autoRefundPayment(TradeOrderRefunds tradeOrderRefunds) throws Exception;
 }
