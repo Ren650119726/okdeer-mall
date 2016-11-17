@@ -6,11 +6,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.okdeer.mall.Application;
 import com.okdeer.mall.order.dto.CancelOrderDto;
 import com.okdeer.mall.order.dto.CancelOrderParamDto;
+import com.okdeer.mall.order.dto.UserRefuseDto;
+import com.okdeer.mall.order.dto.UserRefuseParamDto;
 import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.service.CancelOrderApi;
 
@@ -39,17 +42,28 @@ public class CancelOrderServiceApiTest{
 	 * @date 2016年11月11日
 	 */
 	@Test
+	@Rollback(value=true)
 	public void testCancelOrder(){
 		
 		CancelOrderParamDto cancelOrderParamDto = new CancelOrderParamDto();
 		cancelOrderParamDto.setCancelType(OrderCancelType.CANCEL_BY_BUYER);
-		cancelOrderParamDto.setOrderId("000048e2276611e6aaff00163e010eb1");
+		cancelOrderParamDto.setOrderId("8a8080a25867791701586c1a9c2c0070");
 		cancelOrderParamDto.setReason("商品不好");
-		cancelOrderParamDto.setUserId("14508634421718ccdd2bf2bb49f9836b");
+		cancelOrderParamDto.setUserId("145312257950d7a66015194e478d8594");
 		CancelOrderDto cancelOrderRespDto = cancelOrderApi.cancelOrder(cancelOrderParamDto);
 		System.out.println(cancelOrderRespDto.getMsg());
 		Assert.assertNotNull(cancelOrderRespDto);
 		
+	}
+	
+	@Test
+	public void testUserRefuse(){
+		UserRefuseParamDto userRefuseParamDto = new UserRefuseParamDto();
+		userRefuseParamDto.setOrderId("8a94e4cb5862e252015862e378e70001");
+		userRefuseParamDto.setReason("不想要了");
+		userRefuseParamDto.setUserId("14527626891242d4d00a207c4d69bd80");
+		UserRefuseDto userRefuseDto =  cancelOrderApi.userRefuse(userRefuseParamDto);
+		Assert.assertNotNull(userRefuseDto);
 	}
 
 }

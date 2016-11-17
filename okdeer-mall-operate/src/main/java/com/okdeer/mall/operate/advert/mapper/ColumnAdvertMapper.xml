@@ -141,7 +141,7 @@
 	
 	<select id="findColumnAdvertPage" resultMap="columnAdvertVoRsMap" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertQueryVo">     
         SELECT ca.id,ca.name,ca.create_time,ca.start_time, ca.end_time, ai.cost, ca.status, 
-       		   ca.pv, pa.full_name as agentName,ap.name AS positionName,ai.advertiser, aap.approval_time 
+       		   ca.pv, pa.full_name as agentName,ap.name AS positionName,ai.advertiser, aap.approval_time,ai.sort 
 		FROM column_advert_position ap, column_advert_approval aap, column_advert ca
 		LEFT JOIN psms_agent pa ON ca.belong_type = pa.id
 		LEFT JOIN column_advert_info ai ON ca.id = ai.advert_id

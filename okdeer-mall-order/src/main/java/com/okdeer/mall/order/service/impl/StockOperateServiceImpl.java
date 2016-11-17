@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.service.StockManagerServiceApi;
@@ -28,6 +29,8 @@ import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.entity.TradeOrderRefunds;
+import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.service.StockOperateService;
@@ -46,7 +49,6 @@ import com.okdeer.mall.order.service.StockOperateService;
 @Service
 public class StockOperateServiceImpl implements StockOperateService {
 
-	
 	@Reference(version = "1.0.0", check = false)
 	private StockManagerServiceApi serviceStockManagerService;
 
@@ -55,27 +57,25 @@ public class StockOperateServiceImpl implements StockOperateService {
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private StockManagerJxcServiceApi stockManagerJxcService;
-	
-	
+
 	/**
 	 * 秒杀活动service
 	 */
 	@Autowired
 	private ActivitySeckillService sctivitySeckillService;
-	
+
 	/**
 	 * 特惠Dao
 	 */
 	@Autowired
 	private ActivitySaleMapper activitySaleMapper;
-	
+
 	/**
 	 * 特惠活动记录信息mapper
 	 */
 	@Autowired
 	private ActivitySaleRecordService activitySaleRecordService;
-	
-	
+
 	/**
 	 * @Description: 根据订单回收库存
 	 * @param tradeOrder
@@ -89,15 +89,16 @@ public class StockOperateServiceImpl implements StockOperateService {
 		List<StockAdjustVo> stockAdjustList = new ArrayList<StockAdjustVo>();
 
 		List<TradeOrderItem> tradeOrderItems = tradeOrder.getTradeOrderItem();
-		
+
 		StockAdjustVo stockAdjustVo = new StockAdjustVo();
-		String rpcId = null;
+		String rpcId = UuidUtils.getUuid();
+		rpcIdList.add(rpcId);
 		stockAdjustVo.setOrderId(tradeOrder.getId());
 		stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
 		stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
 		stockAdjustVo.setOrderType(tradeOrder.getType());
 		stockAdjustVo.setStoreId(tradeOrder.getStoreId());
-		
+
 		stockAdjustVo.setStockOperateEnum(getStockOperateType(tradeOrder.getStatus(), Boolean.FALSE));
 		stockAdjustVo.setUserId(tradeOrder.getUserId());
 		for (TradeOrderItem item : tradeOrderItems) {
@@ -138,18 +139,8 @@ public class StockOperateServiceImpl implements StockOperateService {
 			detail.setNum(item.getQuantity());
 			detail.setIsEvent(isGoodActivity);
 			List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
-			adjustDetailList.add(detail);
-
-			stockAdjustVo.setAdjustDetailList(adjustDetailList);
-
-			rpcId = UuidUtils.getUuid();
-			rpcIdList.add(rpcId);
-			stockAdjustVo.setRpcId(rpcId);
-
-			// 如果是实物订单，走进销存库存
 			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
-
-				//便利店优惠金额单价
+				// 便利店优惠金额单价
 				if (item.getPreferentialPrice() != null
 						&& item.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
 					boolean isWeigh = false;
@@ -161,19 +152,106 @@ public class StockOperateServiceImpl implements StockOperateService {
 					BigDecimal price = item.getIncome().divide(number, 4, BigDecimal.ROUND_HALF_UP);
 					detail.setPrice(price);
 				}
-				//便利店优惠金额单价
-				stockManagerJxcService.updateStock(stockAdjustVo);
-			} else {
-				// 否则走商城库存
-				serviceStockManagerService.updateStock(stockAdjustVo);
 			}
+
+			adjustDetailList.add(detail);
+			stockAdjustVo.setAdjustDetailList(adjustDetailList);
+			stockAdjustVo.setRpcId(rpcId);
 			stockAdjustList.add(stockAdjustVo);
+		}
+
+		// 如果是实物订单，走进销存库存
+		if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+			// 便利店优惠金额单价
+			stockManagerJxcService.updateStock(stockAdjustVo);
+		} else {
+			// 否则走商城库存
+			serviceStockManagerService.updateStock(stockAdjustVo);
 		}
 
 		return stockAdjustList;
 	}
 
-	
+	@Override
+	public List<StockAdjustVo> recycleStockByRefund(TradeOrder tradeOrder, TradeOrderRefunds orderRefunds,
+			List<String> rpcIdList) throws Exception {
+		List<StockAdjustVo> stockAdjustList = new ArrayList<StockAdjustVo>();
+		List<TradeOrderRefundsItem> tradeOrderRefundsItems = orderRefunds.getTradeOrderRefundsItem();
+
+		// 一个订单只调一次库存
+		StockAdjustVo stockAdjustVo = new StockAdjustVo();
+		String rpcId = UuidUtils.getUuid();
+		rpcIdList.add(rpcId);
+		stockAdjustVo.setRpcId(rpcId);
+		stockAdjustVo.setOrderId(orderRefunds.getOrderId());
+		stockAdjustVo.setOrderNo(orderRefunds.getOrderNo());
+		stockAdjustVo.setOrderResource(orderRefunds.getOrderResource());
+		stockAdjustVo.setOrderType(orderRefunds.getType());
+		stockAdjustVo.setStoreId(orderRefunds.getStoreId());
+		// 操作类型都默认是普通商品的，然后如果里面有活动商品，在商品详情中有isEvent判断
+		stockAdjustVo.setStockOperateEnum(StockOperateEnum.RETURN_OF_GOODS);
+		stockAdjustVo.setUserId(orderRefunds.getUserId());
+		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
+
+		AdjustDetailVo detail = null;
+		for (TradeOrderRefundsItem item : tradeOrderRefundsItems) {
+
+			detail = new AdjustDetailVo();
+			detail.setStoreSkuId(item.getStoreSkuId());
+			detail.setGoodsSkuId("");
+			detail.setMultipleSkuId("");
+			detail.setGoodsName(item.getSkuName());
+			detail.setPrice(item.getUnitPrice());
+			detail.setPropertiesIndb(item.getPropertiesIndb());
+			detail.setStyleCode(item.getStyleCode());
+			detail.setBarCode(item.getBarCode());
+
+			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+				detail.setSpuType(SpuTypeEnum.physicalSpu);
+			}else if(tradeOrder.getType() == OrderTypeEnum.SERVICE_STORE_ORDER){
+				detail.setSpuType(SpuTypeEnum.fwdSpu);
+			}else if(tradeOrder.getType() == OrderTypeEnum.STORE_CONSUME_ORDER){
+				detail.setSpuType(SpuTypeEnum.fwdDdxfSpu);
+			}
+			detail.setIsEvent(tradeOrder.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY
+					|| isAttendSale(orderRefunds.getOrderId(), item.getStoreSkuId()));
+			
+			Integer quantity = item.getQuantity();
+			if (quantity == null) {
+				if (item.getWeight() != null) {
+					quantity = item.getWeight().multiply(new BigDecimal(1000)).intValue();
+					detail.setIsWeightSku("Y");
+				}
+			}
+			detail.setNum(quantity);
+
+			// add by 便利店优惠金额单价 lijun 20161110 begin
+			if (orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+				boolean isWeigh = false;
+				if (item.getWeight() != null) {
+					isWeigh = true;
+				}
+				BigDecimal number = convertScaleToKg(item.getQuantity(), isWeigh);
+				// 优惠单价.订单实际收入除以商品数量得到的价格
+				BigDecimal price = item.getIncome().divide(number, 4, BigDecimal.ROUND_HALF_UP);
+				detail.setPrice(price);
+			}
+			// 便利店优惠金额单价
+
+			adjustDetailList.add(detail);
+		}
+		stockAdjustVo.setAdjustDetailList(adjustDetailList);
+		stockAdjustList.add(stockAdjustVo);
+		// 实物订单走进销存库存
+		if (orderRefunds.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+			stockManagerJxcService.updateStock(stockAdjustVo);
+		} else {
+			// 否则走商城库存
+			serviceStockManagerService.updateStock(stockAdjustVo);
+		}
+		return stockAdjustList;
+	}
+
 	/**
 	 * 获取库存操作类型
 	 * 
@@ -205,8 +283,7 @@ public class StockOperateServiceImpl implements StockOperateService {
 			}
 		}
 	}
-	
-	
+
 	/**
 	 * @Description: 订单商品是否参与特惠活动
 	 * @param orderId 订单id
@@ -222,7 +299,7 @@ public class StockOperateServiceImpl implements StockOperateService {
 		int count = activitySaleRecordService.selectOrderGoodsCount(map);
 		return count > 0;
 	}
-	
+
 	/**
 	 * @Description: 订单商品是否参与特惠活动
 	 * @param orderId 订单id
@@ -238,8 +315,7 @@ public class StockOperateServiceImpl implements StockOperateService {
 		String saleId = activitySaleRecordService.selectOrderGoodsActivity(map);
 		return saleId;
 	}
-	
-	
+
 	/**
 	 * @Description: 如果是称重会转换成千克
 	 * @param value 值
@@ -258,4 +334,5 @@ public class StockOperateServiceImpl implements StockOperateService {
 			return BigDecimal.valueOf(value);
 		}
 	}
+
 }

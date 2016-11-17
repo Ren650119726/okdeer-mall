@@ -86,4 +86,16 @@ public class ActivityLabelApiImpl implements ActivityLabelApi{
 	public List<ActivityLabelGoods> listActivityLabelGoods(String activityId) throws Exception {
 		return labelService.listActivityLabelGoods(activityId);
 	}
+	
+	/**
+	 * 执行服务标签的JOB 任务
+	 * @Description: TODO   
+	 * @return void  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月16日
+	 */
+	public void processLabelJob(){
+		labelService.processLabelJob();
+	}
 }

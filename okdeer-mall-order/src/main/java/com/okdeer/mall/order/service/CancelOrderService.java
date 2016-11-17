@@ -22,4 +22,12 @@ public interface CancelOrderService {
 	 * @date 2016年11月10日
 	 */
 	boolean cancelOrder(TradeOrder order,boolean isBuyerOperate)  throws Exception;
+	
+	/**
+	 * @Description: 用户拒收订单
+	 * @param order 订单信息
+	 * @author zengjizu
+	 * @date 2016年11月16日
+	 */
+	void updateWithUserRefuse(TradeOrder order) throws Exception;
 }

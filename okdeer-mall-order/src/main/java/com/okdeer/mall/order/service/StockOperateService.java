@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderRefunds;
 
 /**
  * ClassName: StockOperateService 
@@ -28,4 +29,15 @@ public interface StockOperateService {
 	 */
 	List<StockAdjustVo> recycleStockByOrder(TradeOrder tradeOrder,List<String> rpcIdList) throws Exception ;
 	
+	/**
+	 * @Description: 根据退款单回收库存
+	 * @param tradeOrder 订单信息
+	 * @param orderRefunds 退款单信息
+	 * @param rpcIdList
+	 * @return
+	 * @throws Exception
+	 * @author zengjizu
+	 * @date 2016年11月15日
+	 */
+	List<StockAdjustVo> recycleStockByRefund(TradeOrder tradeOrder,TradeOrderRefunds orderRefunds, List<String> rpcIdList) throws Exception ;
 }

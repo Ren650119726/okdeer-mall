@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.skinmanager.mapper.SkinManagerMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.SkinManager" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_name" property="activityName" jdbcType="VARCHAR" />
+        <result column="skin_type" property="skinType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.AppSkinType"/>
+        <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+        <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled"/>
+        <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.SkinManagerStatus"/>
+    </resultMap>
+    
+    <resultMap type="com.okdeer.mall.operate.dto.SkinManagerDto" id="SkinDetailResultMap">
+    	<id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_name" property="activityName" jdbcType="VARCHAR" />
+        <result column="skin_type" property="skinType" jdbcType="TINYINT"/>
+        <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+        <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.SkinManagerStatus"/>
+		<collection property="detailList" ofType="com.okdeer.mall.operate.entity.SkinManagerDetail">
+	        <result column="tab_type" property="tabType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.AppTabType"/>
+	        <result column="unselected_pic_url" property="unselectedPicUrl" jdbcType="VARCHAR" />
+	        <result column="selected_pic_url" property="selectedPicUrl" jdbcType="VARCHAR" />
+		</collection>
+    </resultMap>
+	
+    <sql id="Base_Column_List" >
+        id, activity_name, skin_type, start_time, end_time, create_time, create_user_id, 
+        update_time, update_user_id, disabled, status
+    </sql>
+    
+    <!-- 皮肤明细列表 -->
+    <sql id="skinDetailColumn">
+    	sm.id, sm.activity_name, sm.skin_type, sm.start_time, sm.end_time, sm.create_time, sm.create_user_id, 
+        sm.update_time, sm.update_user_id, sm.status,
+        smd.tab_type,smd.unselected_pic_url,smd.selected_pic_url
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from skin_manager
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.operate.entity.SkinManager" >
+        insert into skin_manager
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="activityName != null" >
+                activity_name,
+            </if>
+            <if test="skinType != null" >
+                skin_type,
+            </if>
+            <if test="startTime != null" >
+                start_time,
+            </if>
+            <if test="endTime != null" >
+                end_time,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+            <if test="status != null" >
+                status,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="activityName != null" >
+                #{activityName,jdbcType=VARCHAR},
+            </if>
+            <if test="skinType != null" >
+                #{skinType,jdbcType=TINYINT},
+            </if>
+            <if test="startTime != null" >
+                #{startTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null" >
+                #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=TINYINT},
+            </if>
+            <if test="status != null" >
+                #{status,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.operate.entity.SkinManager" >
+        update skin_manager
+        <set >
+            <if test="activityName != null" >
+                activity_name = #{activityName,jdbcType=VARCHAR},
+            </if>
+            <if test="skinType != null" >
+                skin_type = #{skinType,jdbcType=TINYINT},
+            </if>
+            <if test="startTime != null" >
+                start_time = #{startTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null" >
+                end_time = #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=TINYINT},
+            </if>
+            <if test="status != null" >
+                status = #{status,jdbcType=TINYINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from skin_manager
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <!-- 根据条件搜索皮肤列表 -->
+ 	<select id="findSkinList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.operate.dto.SkinManagerParamDto">
+    	SELECT  <include refid="Base_Column_List" />
+     	FROM skin_manager 
+     	WHERE 1=1
+	       <!-- 未被删除的 -->
+	       AND disabled = 0
+	       <!-- 活动名称 -->
+	       <if test="activityName != null and activityName != ''">
+	         AND activity_name LIKE CONCAT('%',#{activityName,jdbcType=VARCHAR},'%') 
+	       </if>
+	       <!-- 活动状态 -->
+	       <if test="status != null">
+	         AND status = #{status,jdbcType=TINYINT}
+	       </if>
+	       <!-- 创建时间 -->
+	       <if test="createTimeStart != null">
+	         AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+	       </if>
+	       <if test="createTimeEnd != null">
+	         AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+	       </if>
+	       <!-- 活动开始时间 -->
+	       <if test="startTime != null">
+	         AND start_time <![CDATA[ >= ]]> #{startTime,jdbcType=TIMESTAMP}
+	       </if>
+	       <!-- 活动结束时间 -->
+	       <if test="endTime != null">
+	         AND end_time <![CDATA[ <= ]]> #{endTime,jdbcType=TIMESTAMP}
+	       </if>
+	     ORDER BY create_time DESC
+  	</select>
+  	
+  	<!--根据皮肤id,逻辑活动皮肤  -->
+  	<update id="deleteSkinById" parameterType="com.okdeer.mall.operate.dto.SkinManagerDto">
+	 	UPDATE skin_manager
+	 	SET disabled = 1,
+	     	update_time = #{updateTime,jdbcType=TIMESTAMP},
+	     	update_user_id = #{updateUserId,jdbcType=VARCHAR}
+	 	WHERE id = #{id,jdbcType=VARCHAR}
+  	</update>
+  	
+ 	<!--根据皮肤id,关闭活动皮肤  -->
+  	<update id="closeSkinById" parameterType="com.okdeer.mall.operate.dto.SkinManagerDto">
+	 	UPDATE skin_manager
+	 	SET status = #{status,jdbcType=VARCHAR},
+	     	update_time = #{updateTime,jdbcType=TIMESTAMP},
+	     	update_user_id = #{updateUserId,jdbcType=VARCHAR}
+	 	WHERE disabled = 0 and id = #{id,jdbcType=VARCHAR}
+  	</update>
+  
+ 	<!-- 查询某固定时间段内是否有运行中的皮肤 -->
+   	<select id="findSkinByTime" resultType="int" parameterType="com.okdeer.mall.operate.dto.SkinManagerDto" >
+    	SELECT 	count(1)
+     	FROM skin_manager 
+     	<!-- 未被删除的 -->
+     	WHERE disabled = 0
+       	AND (#{startTime,jdbcType=TIMESTAMP} BETWEEN start_time and end_time 
+       	OR #{endTime,jdbcType=TIMESTAMP} BETWEEN start_time and end_time 
+       	OR (start_time <![CDATA[ >= ]]> #{startTime,jdbcType=TIMESTAMP} AND end_time <![CDATA[ <= ]]> #{endTime,jdbcType=TIMESTAMP}))
+       	<if test="id != null and id != '' ">
+       		AND id != #{id}
+       	</if>
+  	</select>
+  	
+   	<!-- 根据名称查询是否有运行中的皮肤 -->
+   	<select id="findSkinCountByName" resultType="int" parameterType="com.okdeer.mall.operate.dto.SkinManagerDto" >
+    	SELECT 	count(1)
+     	FROM skin_manager 
+     	<!-- 未被删除的 -->
+    	 WHERE disabled = 0 and activity_name=#{activityName,jdbcType=VARCHAR}
+     </select>
+     
+     <select id="findSkinDetailByParam" parameterType="com.okdeer.mall.operate.dto.SkinManagerParamDto" resultMap="SkinDetailResultMap">
+     	SELECT <include refid="skinDetailColumn"/>
+     	FROM skin_manager sm
+     	LEFT JOIN skin_manager_detail smd ON sm.id = smd.skin_manager_id
+     	WHERE sm.id = #{id}
+     	<where>
+     		<if test="id != null and id != ''">
+     			AND sm.id = #{id}
+     		</if>
+     		<if test="status != null">
+     			AND sm.status = #{status}
+     		</if>
+     	</where>
+     </select>
+</mapper>

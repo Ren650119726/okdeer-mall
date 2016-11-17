@@ -61,6 +61,7 @@ import com.okdeer.mall.order.dto.TradeOrderPayDto;
 import com.okdeer.mall.order.dto.TradeOrderPayQueryDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryDto;
 import com.okdeer.mall.order.exception.ExceedRangeException;
+import com.okdeer.mall.order.service.CancelOrderService;
 import com.okdeer.mall.order.service.ITradeOrderServiceApi;
 import com.okdeer.mall.common.vo.PageResultVo;
 
@@ -79,6 +80,7 @@ import com.okdeer.mall.common.vo.PageResultVo;
  *    12170            2016-8-6              wusw                修改财务系统的订单交易接口关于货到付款订单的支付方式判断处理
  *    12051            2016-8-11             wusw                修改商品金额总计
  *    v1.1.0            2016-9-17            zengjz              增加财务系统统计交易订单数量、金额接口
+ *    v1.2.0           2016-11-16            zengjz              取消订单接口更换
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.ITradeOrderServiceApi")
 public class TradeOrderApiImpl implements ITradeOrderServiceApi {
@@ -112,6 +114,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	@Reference(version = "1.0.0", check = false)
 	private IStoreMemberRelationServiceApi storeMemberRelationService;
 
+	/**
+	 * 订单取消service
+	 */
+	@Resource
+	private CancelOrderService cancelOrderService;
+	
 	/**
 	 * @desc 订单详情（快送同步）（订单、支付、物流、订单项等信息）
 	 */
@@ -179,11 +187,11 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			tradeOrder.setReason(reason);
 		}
 		if (tradeOrder.getStatus() == OrderStatusEnum.CANCELED) {
-			this.tradeOrderService.updateCancelOrder(tradeOrder, false);
+			cancelOrderService.cancelOrder(tradeOrder, false);
 		} else if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
 			this.tradeOrderService.updateWithConfirm(tradeOrder);
 		} else if (tradeOrder.getStatus() == OrderStatusEnum.REFUSED) {
-			this.tradeOrderService.updateWithUserRefuse(tradeOrder);
+			cancelOrderService.updateWithUserRefuse(tradeOrder);
 		}
 		return true;
 	}
@@ -215,11 +223,13 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		tradeOrder.setUpdateTime(new Date());
 
 		if (tradeOrder.getStatus() == OrderStatusEnum.CANCELED) {
-			this.tradeOrderService.updateCancelOrder(tradeOrder, false);
+			//modify by zengjz 将取消订单的接口换成 cancelOrderService
+			cancelOrderService.cancelOrder(tradeOrder, false);
 		} else if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
 			this.tradeOrderService.updateWithConfirm(tradeOrder);
 		} else if (tradeOrder.getStatus() == OrderStatusEnum.REFUSED) {
-			this.tradeOrderService.updateWithUserRefuse(tradeOrder);
+			//modify by zengjz 将取消订单的接口换成 cancelOrderService
+			cancelOrderService.updateWithUserRefuse(tradeOrder);
 		} else if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {
 			TradeOrderOperateParamVo param = new TradeOrderOperateParamVo();
 			param.setOrderId(orderId);
