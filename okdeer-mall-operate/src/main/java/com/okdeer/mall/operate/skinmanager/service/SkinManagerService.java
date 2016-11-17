@@ -6,10 +6,15 @@
  */
 package com.okdeer.mall.operate.skinmanager.service;
 
+import java.util.Date;
+
+import org.springframework.transaction.annotation.Transactional;
+
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
 import com.okdeer.mall.operate.dto.SkinManagerParamDto;
+import com.okdeer.mall.operate.enums.SkinManagerStatus;
 
 /**
  * ClassName: ISkinManagerService 
@@ -100,4 +105,27 @@ public interface SkinManagerService extends IBaseService {
 	 */
 	void add(SkinManagerDto skinManagerDto);
 	// End V1.2.0 added by maojj 2016-11-16
+	
+	
+	/**
+	 * 执行换肤活动管理 JOB 任务
+	 * @Description: TODO   
+	 * @return void  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月16日
+	 */
+	public void processSkinActivityJob();
+	
+	/**
+	 * @Description: 根据id换肤活动管理状态
+	 * @param id
+	 * @param status 活动状态 0 未开始 ，1：进行中2:已结束 
+	 * @param updateUserId 修改人
+	 * @param updateTime 修改时间
+	 * @throws Exception
+	 * @author tuzhiding
+	 * @date 2016年11月12日
+	 */
+	public void updateStatusById(String id, SkinManagerStatus status, String updateUserId, Date updateTime) throws Exception;
 }

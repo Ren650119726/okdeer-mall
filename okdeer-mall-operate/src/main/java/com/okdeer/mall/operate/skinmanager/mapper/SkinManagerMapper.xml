@@ -255,4 +255,12 @@
      		</if>
      	</where>
      </select>
+     
+    <!-- 1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束-->
+	<select id="listByJob" parameterType="map" resultMap="BaseResultMap">
+		select s.* from skin_manager s where 
+		(s.`status` = 0 and  s.start_time &lt;= #{nowTime})
+		OR
+		(s.`status` = 1 and  s.end_time &lt;= #{nowTime})
+	</select> 
 </mapper>
