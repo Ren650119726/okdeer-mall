@@ -245,7 +245,6 @@
      	SELECT <include refid="skinDetailColumn"/>
      	FROM skin_manager sm
      	LEFT JOIN skin_manager_detail smd ON sm.id = smd.skin_manager_id
-     	WHERE sm.id = #{id}
      	<where>
      		<if test="id != null and id != ''">
      			AND sm.id = #{id}
