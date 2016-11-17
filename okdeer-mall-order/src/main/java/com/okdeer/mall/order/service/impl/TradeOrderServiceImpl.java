@@ -214,6 +214,7 @@ import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 import com.okdeer.mall.system.mapper.SysUserInvitationRecordMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
+import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
@@ -3666,7 +3667,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("orderAmount", orders.getTotalAmount() == null ? "0" : orders.getTotalAmount());
 		json.put("actualAmount", orders.getActualAmount() == null ? "0" : orders.getActualAmount());
 		json.put("orderNo", orders.getOrderNo() == null ? "" : orders.getOrderNo());
-		json.put("cancelReason", orders.getReason() == null ? "" : orders.getReason());
+		json.put("cancelReason", getCancelReason(orders));
 		json.put("orderSubmitOrderTime", orders.getCreateTime() != null
 				? DateUtils.formatDate(orders.getCreateTime(), "yyyy-MM-dd HH:mm:ss") : "");
 		json.put("orderDeliveryTime", orders.getDeliveryTime() != null
@@ -3996,7 +3997,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 订单实付金额
 		json.put("actualAmount", orders.getActualAmount() == null ? "0" : orders.getActualAmount());
 		// 服务取消原因
-		json.put("cancelReason", orders.getReason() == null ? "" : orders.getReason());
+		json.put("cancelReason", getCancelReason(orders));
 		int orderStatus1 = json.getInt("orderStatus");
 		if (orderStatus1 == OrderStatusEnum.CANCELED.ordinal()) {
 			// 服务取消时间
@@ -4165,6 +4166,23 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		return json;
 	}
 
+	/**
+	 * @Description: 获取取消原因
+	 * @param order
+	 * @return   
+	 * @author maojj
+	 * @date 2016年11月17日
+	 */
+	private String getCancelReason(UserTradeOrderDetailVo order){
+		String cancelReason = "";
+		if(order.getCancelType() == null || order.getCancelType() == OrderCancelType.CANCEL_BY_HISTORY){
+			cancelReason = ConvertUtil.format(order.getReason());
+		}else{
+			cancelReason = String.format("(%s)%s", order.getCancelType().getDesc(),ConvertUtil.format(order.getReason()));
+		}
+		return cancelReason;
+	}
+	
 	/**
 	 * 
 	 * @desc 查询买家实物订单各状态订单数量
