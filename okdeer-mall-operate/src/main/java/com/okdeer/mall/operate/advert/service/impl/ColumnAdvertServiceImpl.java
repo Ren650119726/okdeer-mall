@@ -196,7 +196,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 			targetUrl = StringEscapeUtils.unescapeHtml3(targetUrl);
 			advert.setTargetUrl(targetUrl);
 		}
-		this.advertMapper.insertSelective(advert);
+		this.advertMapper.insert(advert);
 
 		// 创建广告商信息
 		String advertInfoId = advertInfo.getId();
