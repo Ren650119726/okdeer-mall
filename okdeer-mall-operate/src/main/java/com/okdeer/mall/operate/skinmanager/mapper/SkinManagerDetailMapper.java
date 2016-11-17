@@ -31,5 +31,12 @@ public interface SkinManagerDetailMapper extends IBaseMapper {
 	 * @date 2016年11月14日
 	 */
 	public int updateBatch(List<SkinManagerDetail> detail);
+	
+	/**
+	 * @Description: 根据皮肤管理Id删除皮肤详情   
+	 * @author maojj
+	 * @date 2016年11月16日
+	 */
+	void deleteBySkinId(String skinId);
 
 }
