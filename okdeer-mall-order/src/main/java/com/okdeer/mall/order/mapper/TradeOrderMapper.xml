@@ -708,6 +708,13 @@
 			AND EXISTS(SELECT 1 FROM trade_order_item i WHERE tr.id = i.order_id AND
 			i.sku_name like CONCAT('%',#{skuName,jdbcType=VARCHAR},'%'))
 		</if>
+		<if test="barCode != null and barCode != ''">
+			AND EXISTS(
+				SELECT 1 FROM trade_order_item toi 
+				WHERE tr.id = toi.order_id 
+				AND LOCATE(#{barCode},toi.bar_code) > 0
+			)
+		</if>
 		<if test="null != payType">
 			<!-- 如果支付方式是现金支付的，付款表是没记录的，所以需要查询货到付款和线下支付的订单 -->
 			<if test="payType == 4">
