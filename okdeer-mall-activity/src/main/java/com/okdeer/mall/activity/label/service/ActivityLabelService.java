@@ -4,8 +4,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
@@ -122,4 +120,14 @@ public interface ActivityLabelService extends IBaseService{
 	 * @date 2016年11月14日
 	 */
 	Map<String,List<String>> listLabelNameBySkuIds(List<String> skuIdList);
+	
+	/**
+	 * 执行服务标签的JOB 任务
+	 * @Description: TODO   
+	 * @return void  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月16日
+	 */
+	void processLabelJob();
 }

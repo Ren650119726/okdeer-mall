@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.risk.mapper.RiskBlackMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.risk.entity.RiskBlack" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="account" property="account" jdbcType="VARCHAR" />
+        <result column="account_type" property="accountType" jdbcType="NUMERIC" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="disabled" property="disabled" jdbcType="NUMERIC" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, account, account_type, 
+        create_time, create_user_id, update_time, update_user_id, disabled
+    </sql>
+ <!-- 根据条件搜索皮肤列表 -->
+  <select id="findBlackList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.risk.dto.BlackManagerDto">
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM risk_black 
+     WHERE 1=1
+       <!-- 未被删除的 -->
+       AND disabled = 0
+       <!-- 账号 -->
+       <if test="account != null and account != ''">
+         AND account LIKE CONCAT('%',#{account,jdbcType=VARCHAR},'%') 
+       </if>
+       <!-- 支付宝账号 -->
+       <if test="accountAlipay != null and accountAlipay != ''">
+         AND account LIKE CONCAT('%',#{accountAlipay,jdbcType=VARCHAR},'%') 
+       </if>
+       <!-- 微信账号 -->
+       <if test="accountWeChat != null and accountWeChat != ''">
+         AND account LIKE CONCAT('%',#{accountWeChat,jdbcType=VARCHAR},'%') 
+       </if>
+       <!-- 账号类型 -->
+       <if test="accountType != null and accountType != ''">
+	       <!-- 账号类型为1 支付类型时查询微信和支付宝两张账号类型 -->
+	       <choose>
+			   <when test="accountType == 1">
+			   		AND account_type in (1,4)
+			   </when>
+			  <otherwise>
+				 AND account_type = #{accountType,jdbcType=NUMERIC}
+			  </otherwise>
+		</choose>
+	       <!-- <if test="accountType == 1">
+	       	 AND account_type in (1,4)
+	       </if>
+	       <if test="accountType !== 1">
+	       	  AND account_type = #{accountType,jdbcType=NUMERIC}
+	       </if> -->
+       </if>
+       <!-- 创建时间 -->
+       <if test="createTimeStart != null">
+         AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="createTimeEnd != null">
+         AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       ORDER BY create_time DESC
+  </select>
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from risk_black
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskBlack" >
+        insert into risk_black
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="account != null" >
+                account,
+            </if>
+            <if test="accountType != null" >
+                account_type,
+            </if>
+           <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="account != null" >
+                #{account,jdbcType=VARCHAR},
+            </if>
+            <if test="accountType != null" >
+                #{accountType,jdbcType=NUMERIC},
+            </if>
+             <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=NUMERIC},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.risk.entity.RiskBlack" >
+        update risk_black
+        <set >
+            <if test="account != null" >
+                account = #{account,jdbcType=VARCHAR},
+            </if>
+            <if test="accountType != null" >
+                account_type = #{accountType,jdbcType=BIT},
+            </if>
+           <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=NUMERIC},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+       update risk_black set disabled=1
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

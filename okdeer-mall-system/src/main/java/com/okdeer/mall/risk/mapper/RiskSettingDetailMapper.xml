@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.risk.mapper.RiskSettingDetailMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.risk.entity.RiskSettingDetail" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="risk_setting_id" property="riskSettingId" jdbcType="VARCHAR" />
+        <result column="user_type" property="userType" jdbcType="VARCHAR" />
+        <result column="max_recharge" property="maxRecharge" jdbcType="INTEGER" />
+        <result column="max_recharge_time" property="maxRechargeTime" jdbcType="INTEGER" />
+        <result column="max_recharge_number" property="maxRechargeNumber" jdbcType="INTEGER" />
+        <result column="max_login_time" property="maxLoginTime" jdbcType="INTEGER" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, risk_setting_id, user_type, max_recharge, max_recharge_time, max_recharge_number, 
+        max_login_time
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from risk_setting_detail
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskSettingDetail" >
+        insert into risk_setting_detail
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="riskSettingId != null" >
+                risk_setting_id,
+            </if>
+            <if test="userType != null" >
+                user_type,
+            </if>
+            <if test="maxRecharge != null" >
+                max_recharge,
+            </if>
+            <if test="maxRechargeTime != null" >
+                max_recharge_time,
+            </if>
+            <if test="maxRechargeNumber != null" >
+                max_recharge_number,
+            </if>
+            <if test="maxLoginTime != null" >
+                max_login_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="riskSettingId != null" >
+                #{riskSettingId,jdbcType=VARCHAR},
+            </if>
+            <if test="userType != null" >
+                #{userType,jdbcType=VARCHAR},
+            </if>
+            <if test="maxRecharge != null" >
+                #{maxRecharge,jdbcType=INTEGER},
+            </if>
+            <if test="maxRechargeTime != null" >
+                #{maxRechargeTime,jdbcType=INTEGER},
+            </if>
+            <if test="maxRechargeNumber != null" >
+                #{maxRechargeNumber,jdbcType=INTEGER},
+            </if>
+            <if test="maxLoginTime != null" >
+                #{maxLoginTime,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.risk.entity.RiskSettingDetail" >
+        update risk_setting_detail
+        <set >
+            <if test="riskSettingId != null" >
+                risk_setting_id = #{riskSettingId,jdbcType=VARCHAR},
+            </if>
+            <if test="userType != null" >
+                user_type = #{userType,jdbcType=VARCHAR},
+            </if>
+            <if test="maxRecharge != null" >
+                max_recharge = #{maxRecharge,jdbcType=INTEGER},
+            </if>
+            <if test="maxRechargeTime != null" >
+                max_recharge_time = #{maxRechargeTime,jdbcType=INTEGER},
+            </if>
+            <if test="maxRechargeNumber != null" >
+                max_recharge_number = #{maxRechargeNumber,jdbcType=INTEGER},
+            </if>
+            <if test="maxLoginTime != null" >
+                max_login_time = #{maxLoginTime,jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from risk_setting_detail
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="deleteBySettingId" parameterType="java.lang.String" >
+        delete from risk_setting_detail
+        where risk_setting_id = #{value}
+    </delete>
+    
+    <select id="listBySettingId" parameterType="string" resultMap="BaseResultMap">
+    	select <include refid="Base_Column_List"/> from risk_setting_detail
+    		where risk_setting_id = #{value}
+    </select>
+    
+
+</mapper>

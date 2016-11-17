@@ -119,7 +119,9 @@
    		<!-- Begin V1.2.0 added by maojj 2016-11-09 -->
    		<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.order.enums.OrderTraceEnum"/>
  		<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.order.enums.OrderCancelType"/>
- 		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.base.common.enums.WhetherEnum"/>
+ 		<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.AppSkinType"/>
+		<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.AppTabType"/>
+ 		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.operate.enums.SkinManagerStatus"/>
    		<!-- End V1.2.0 added by maojj 2016-11-09 -->
     </typeHandlers>
 </configuration>
