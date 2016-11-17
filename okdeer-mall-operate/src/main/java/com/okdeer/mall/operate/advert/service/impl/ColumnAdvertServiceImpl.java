@@ -189,6 +189,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		advert.setCreateUserId(currentUser.getId());
 		advert.setUpdateTime(new Date());
 		advert.setUpdateUserId(currentUser.getId());
+		advert.setSort(0);
 		advert.setPv(0);
 		String targetUrl = advert.getTargetUrl();
 		if (!StringUtils.isNullOrEmpty(targetUrl)) {
