@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.okdeer.mall.chargesetting.mapper.RiskSettingDetailMapper" >
-    <resultMap id="BaseResultMap" type="com.okdeer.mall.chargesetting.entity.RiskSettingDetail" >
+<mapper namespace="com.okdeer.mall.risk.mapper.RiskSettingDetailMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.risk.entity.RiskSettingDetail" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="risk_setting_id" property="riskSettingId" jdbcType="VARCHAR" />
         <result column="user_type" property="userType" jdbcType="VARCHAR" />
@@ -23,7 +23,7 @@
         where id = #{id,jdbcType=VARCHAR}
     </select>
 
-    <insert id="add" parameterType="com.okdeer.mall.chargesetting.entity.RiskSettingDetail" >
+    <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskSettingDetail" >
         insert into risk_setting_detail
         <trim prefix="(" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -73,7 +73,7 @@
         </trim>
     </insert>
 
-    <update id="update" parameterType="com.okdeer.mall.chargesetting.entity.RiskSettingDetail" >
+    <update id="update" parameterType="com.okdeer.mall.risk.entity.RiskSettingDetail" >
         update risk_setting_detail
         <set >
             <if test="riskSettingId != null" >
