@@ -8,10 +8,14 @@ package com.okdeer.mall.operate.skinmanager.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -22,6 +26,8 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.activity.label.entity.ActivityLabel;
+import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
 import com.okdeer.mall.operate.dto.SkinManagerParamDto;
 import com.okdeer.mall.operate.entity.SkinManager;
@@ -45,7 +51,8 @@ import com.okdeer.mall.operate.skinmanager.service.SkinManagerService;
  */
 @Service
 public class SkinManagerServiceImpl extends BaseServiceImpl implements SkinManagerService {
-
+	private static final Logger log = Logger.getLogger(SkinManagerServiceImpl.class); 
+	
 	/**
 	 * 获取皮肤mapper
 	 */
@@ -191,4 +198,71 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements SkinManag
 		skinManagerDetailMapper.addBatch(detailList);
 		
 	}
+	
+	
+	/**
+	 * 执行换肤活动管理 JOB 任务
+	 * @Description: TODO   
+	 * @return void  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月16日
+	 */
+	public void processSkinActivityJob(){
+		try{
+			log.info("执行换肤活动管理 定时器开始");
+			Map<String,Object> map = new HashMap<String,Object>();
+			Date nowTime = new Date();
+			map.put("nowTime", nowTime);
+			//1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束
+			List<SkinManager> accList = skinManagerMapper.listByJob(map);;
+			//获得系统当前系统用户id
+			String updateUserId = RobotUserUtil.getRobotUser().getId();
+			//需要更新状态的活动新不为空进行定时任务处理
+			if(CollectionUtils.isNotEmpty(accList)){
+				for(SkinManager a : accList){
+					try{
+						//将未开始的改为开始 
+						if(a.getStatus().ordinal() == SkinManagerStatus.NOSTART.ordinal()){
+							//根据id修改换肤活动管理状态
+							updateStatusById(a.getId(),  SkinManagerStatus.UNDERWAY, updateUserId, nowTime);
+						
+						//将进行中的改为已结束的
+						}else if(a.getStatus().ordinal() == SkinManagerStatus.UNDERWAY.ordinal()){
+							//根据id修改换肤活动管理状态
+							updateStatusById(a.getId(),  SkinManagerStatus.COMPLETE, updateUserId, nowTime);
+						}
+					}catch(Exception e){
+						log.error(a.getStatus()+"状态换肤活动管理"+a.getId()+"job修改异常 :",e);
+					}
+				}
+			}
+			log.info("执行换肤活动管理 定时器结束");
+		}catch(Exception e){
+			log.error("执行换肤活动管理 job异常",e);
+		}
+	}
+	
+	
+	/**
+	 * @Description: 根据id换肤活动管理状态
+	 * @param id
+	 * @param status 活动状态 0 未开始 ，1：进行中2:已结束 
+	 * @param updateUserId 修改人
+	 * @param updateTime 修改时间
+	 * @throws Exception
+	 * @author tuzhiding
+	 * @date 2016年11月12日
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateStatusById(String id, SkinManagerStatus status, String updateUserId, Date updateTime) throws Exception {
+		//修改主表信息
+		SkinManager c = new SkinManager();
+		c.setId(id);
+		c.setStatus(status);
+		c.setUpdateTime(updateTime);
+		skinManagerMapper.update(c);
+	}
+	
 }

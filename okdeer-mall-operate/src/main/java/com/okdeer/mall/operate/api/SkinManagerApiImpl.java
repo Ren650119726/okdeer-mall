@@ -82,5 +82,17 @@ public class SkinManagerApiImpl implements SkinManagerApi {
 	public int findSkinByTime(SkinManagerDto skinManagerDto) {
 		return skinManagerService.findSkinByTime(skinManagerDto);
 	}
+	
+	/**
+	 * 执行换肤活动管理 JOB 任务
+	 * @Description: TODO   
+	 * @return void  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月16日
+	 */
+	public void processSkinActivityJob(){
+		skinManagerService.processSkinActivityJob();
+	}
 
 }
