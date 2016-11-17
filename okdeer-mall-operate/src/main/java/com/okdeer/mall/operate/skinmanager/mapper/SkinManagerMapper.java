@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
+import com.okdeer.mall.operate.dto.SkinManagerParamDto;
 import com.okdeer.mall.operate.entity.SkinManager;
 
 public interface SkinManagerMapper extends IBaseMapper {
@@ -21,10 +22,10 @@ public interface SkinManagerMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public List<SkinManagerDto> findSkinList(SkinManagerDto skinManager);
+	public List<SkinManagerDto> findSkinList(SkinManagerParamDto paramDto);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 逻辑删除
 	 * @param skinManager   
 	 * @author xuzq01
 	 * @date 2016年11月14日
@@ -32,7 +33,7 @@ public interface SkinManagerMapper extends IBaseMapper {
 	public void deleteSkinById(SkinManager skinManager);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 关闭皮肤活动
 	 * @param skinManager   
 	 * @author xuzq01
 	 * @date 2016年11月14日
@@ -40,7 +41,7 @@ public interface SkinManagerMapper extends IBaseMapper {
 	public void closeSkinById(SkinManager skinManager);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 根据时间查找皮肤活动
 	 * @param skinManager
 	 * @return   
 	 * @author xuzq01
@@ -49,7 +50,7 @@ public interface SkinManagerMapper extends IBaseMapper {
 	public int findSkinByTime(SkinManager skinManager);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 根据名称查询皮肤活动
 	 * @param skinManager
 	 * @return   
 	 * @author xuzq01
@@ -57,4 +58,13 @@ public interface SkinManagerMapper extends IBaseMapper {
 	 */
 	public int findSkinCountByName(SkinManager skinManager);
 	
+	
+	/**
+	 * @Description: 根据换肤活动Id查询换肤活动明细
+	 * @param id
+	 * @return   
+	 * @author maojj
+	 * @date 2016年11月16日
+	 */
+	SkinManagerDto findSkinDetailByParam(SkinManagerParamDto param);
 }

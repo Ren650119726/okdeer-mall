@@ -9,7 +9,7 @@ package com.okdeer.mall.operate.skinmanager.service;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
-import com.okdeer.mall.operate.entity.SkinManager;
+import com.okdeer.mall.operate.dto.SkinManagerParamDto;
 
 /**
  * ClassName: ISkinManagerService 
@@ -20,10 +20,10 @@ import com.okdeer.mall.operate.entity.SkinManager;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ *	   V1.2.0			2016-11-16			maojj			换肤功能修改
  */
 
-public interface ISkinManagerService extends IBaseService {
+public interface SkinManagerService extends IBaseService {
 
 	/**
 	 * 
@@ -33,7 +33,7 @@ public interface ISkinManagerService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public PageUtils<SkinManagerDto> findSkinList(SkinManagerDto skinManagerDto, int pageNumber, int pageSize);
+	public PageUtils<SkinManagerDto> findSkinList(SkinManagerParamDto paramDto);
 
 	/**
 	 * 
@@ -73,4 +73,31 @@ public interface ISkinManagerService extends IBaseService {
 	 * @date 2016年11月8日
 	 */
 	public int findSkinCountByName(SkinManagerDto skinManagerVo);
+	
+	// Begin V1.2.0 added by maojj 2016-11-16
+	/**
+	 * @Description: 根据换肤活动id查询活动明细
+	 * @param id
+	 * @return   
+	 * @author maojj
+	 * @date 2016年11月16日
+	 */
+	SkinManagerDto findSkinDetailByParam(SkinManagerParamDto paramDto);
+	
+	/**
+	 * @Description: 修改皮肤管理
+	 * @param skinDto   
+	 * @author maojj
+	 * @date 2016年11月16日
+	 */
+	void update(SkinManagerDto skinManagerDto);
+	
+	/**
+	 * @Description: 新增皮肤活动
+	 * @param skinManagerDto   
+	 * @author maojj
+	 * @date 2016年11月17日
+	 */
+	void add(SkinManagerDto skinManagerDto);
+	// End V1.2.0 added by maojj 2016-11-16
 }

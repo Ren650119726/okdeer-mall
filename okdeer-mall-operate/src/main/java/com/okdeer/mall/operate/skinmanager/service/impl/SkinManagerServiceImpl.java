@@ -10,20 +10,26 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.Resource;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
+import com.okdeer.mall.operate.dto.SkinManagerParamDto;
 import com.okdeer.mall.operate.entity.SkinManager;
+import com.okdeer.mall.operate.entity.SkinManagerDetail;
 import com.okdeer.mall.operate.enums.SkinManagerStatus;
+import com.okdeer.mall.operate.skinmanager.mapper.SkinManagerDetailMapper;
 import com.okdeer.mall.operate.skinmanager.mapper.SkinManagerMapper;
-import com.okdeer.mall.operate.skinmanager.service.ISkinManagerService;
+import com.okdeer.mall.operate.skinmanager.service.SkinManagerService;
 
 /**
  * ClassName: SkinManagerImpl 
@@ -38,21 +44,25 @@ import com.okdeer.mall.operate.skinmanager.service.ISkinManagerService;
  *
  */
 @Service
-public class SkinManagerServiceImpl extends BaseServiceImpl implements ISkinManagerService {
+public class SkinManagerServiceImpl extends BaseServiceImpl implements SkinManagerService {
 
 	/**
 	 * 获取皮肤mapper
 	 */
-	@Autowired
+	@Resource
 	private SkinManagerMapper skinManagerMapper;
+	
+	@Resource
+	private SkinManagerDetailMapper skinManagerDetailMapper;
+	
 	/**
 	 * 获取列表
-	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#findSkinList(com.okdeer.mall.operate.dto.SkinManagerDto)
+	 * @see com.okdeer.mall.operate.service.SkinManagerApi#findSkinList(com.okdeer.mall.operate.dto.SkinManagerDto)
 	 */
 	@Override
-	public PageUtils<SkinManagerDto> findSkinList(SkinManagerDto skinManagerDto,int pageNumber,int pageSize) {
-		PageHelper.startPage(pageNumber, pageSize, true);
-		List<SkinManagerDto> result = skinManagerMapper.findSkinList(skinManagerDto);
+	public PageUtils<SkinManagerDto> findSkinList(SkinManagerParamDto paramDto) {
+		PageHelper.startPage(paramDto.getPageNumber(), paramDto.getPageSize(), true);
+		List<SkinManagerDto> result = skinManagerMapper.findSkinList(paramDto);
 		if (result == null) {
 			result = new ArrayList<SkinManagerDto>();
 		}
@@ -60,18 +70,8 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements ISkinMana
 	}
 	
 	/**
-	 * 获取活动皮肤对象
-	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#addSkin(com.okdeer.mall.operate.dto.SkinManagerDto)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public SkinManagerDto findById(String skinId) {
-		return skinManagerMapper.findById(skinId);
-	}
-
-	/**
 	 * 逻辑删除活动皮肤
-	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#deleteSkin(java.lang.String)
+	 * @see com.okdeer.mall.operate.service.SkinManagerApi#deleteSkin(java.lang.String)
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -87,7 +87,7 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements ISkinMana
 
 	/**
 	 * 关闭活动皮肤
-	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#updateSkinStatus(java.lang.String)
+	 * @see com.okdeer.mall.operate.service.SkinManagerApi#updateSkinStatus(java.lang.String)
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -104,7 +104,7 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements ISkinMana
 
 	/**
 	 * 根据时间查询是否有满足条件的活动皮肤
-	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#updateSkinStatus(java.lang.String)
+	 * @see com.okdeer.mall.operate.service.SkinManagerApi#updateSkinStatus(java.lang.String)
 	 */
 	@Override
 	public int findSkinByTime(SkinManagerDto skinManagerDto){
@@ -114,12 +114,17 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements ISkinMana
 
 	/**
 	 * 通过名称获取存在皮肤数量
-	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#selectSkinCountByName(com.okdeer.mall.operate.dto.SkinManagerDto)
+	 * @see com.okdeer.mall.operate.service.SkinManagerApi#selectSkinCountByName(com.okdeer.mall.operate.dto.SkinManagerDto)
 	 */
 	@Override
 	public int findSkinCountByName(SkinManagerDto skinManagerDto) {
 		SkinManager skinManager= BeanMapper.map(skinManagerDto, SkinManager.class);
 		return skinManagerMapper.findSkinCountByName(skinManager);
+	}
+	
+	@Override
+	public SkinManagerDto findSkinDetailByParam(SkinManagerParamDto paramDto) {
+		return skinManagerMapper.findSkinDetailByParam(paramDto);
 	}
 
 	/**
@@ -131,5 +136,59 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements ISkinMana
 		return skinManagerMapper;
 	}
 
-	
+	@Override
+	@Transactional(rollbackFor=Exception.class)
+	public void update(SkinManagerDto skinManagerDto) {
+		Date currentDate = new Date();
+		skinManagerDto.setUpdateTime(currentDate);
+		SkinManager skinManager = BeanMapper.map(skinManagerDto, SkinManager.class);
+		skinManager.setStatus(SkinManagerStatus.NOSTART);
+		// 先删除皮肤图片详情
+		skinManagerDetailMapper.deleteBySkinId(skinManager.getId());
+		// 修改皮肤活动信息
+		skinManagerMapper.update(skinManager);
+		// 新增修改后的图片信息
+		List<SkinManagerDetail> detailList = skinManagerDto.getDetailList();
+
+		for(SkinManagerDetail detail : detailList){
+			detail.setId(UuidUtils.getUuid());
+			detail.setSkinManagerId(skinManager.getId());
+			detail.setCreateTime(currentDate);
+			detail.setCreateUserId(skinManager.getUpdateUserId());
+			detail.setUpdateTime(currentDate);
+			detail.setUpdateUserId(skinManager.getUpdateUserId());
+			detail.setDisabled(Disabled.valid);
+		}
+		skinManagerDetailMapper.addBatch(detailList);
+	}
+
+	@Override
+	@Transactional(rollbackFor=Exception.class)
+	public void add(SkinManagerDto skinManagerDto) {
+		String skinManagerId = UuidUtils.getUuid();
+		String userId = skinManagerDto.getCreateUserId();
+		Date date = new Date();
+
+		skinManagerDto.setId(skinManagerId);
+		skinManagerDto.setStatus(SkinManagerStatus.NOSTART);
+		skinManagerDto.setCreateUserId(userId);
+		skinManagerDto.setUpdateUserId(userId);
+		skinManagerDto.setCreateTime(date);
+		skinManagerDto.setUpdateTime(date);
+		SkinManager skinManager = BeanMapper.map(skinManagerDto, SkinManager.class);
+		skinManagerMapper.add(skinManager);
+		List<SkinManagerDetail> detailList = skinManagerDto.getDetailList();
+
+		for(SkinManagerDetail detail : detailList){
+			detail.setId(UuidUtils.getUuid());
+			detail.setSkinManagerId(skinManagerId);
+			detail.setCreateTime(date);
+			detail.setCreateUserId(userId);
+			detail.setUpdateTime(date);
+			detail.setUpdateUserId(userId);
+			detail.setDisabled(Disabled.valid);
+		}
+		skinManagerDetailMapper.addBatch(detailList);
+		
+	}
 }
