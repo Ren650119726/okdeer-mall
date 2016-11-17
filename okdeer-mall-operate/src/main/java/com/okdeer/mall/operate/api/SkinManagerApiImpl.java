@@ -156,4 +156,34 @@ public class SkinManagerApiImpl implements ISkinManagerApi {
 		return skinManagerService.findSkinByTime(skinManagerDto);
 	}
 
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#getSkinById(java.lang.String)
+	 */
+	@Override
+	public SkinManagerDto getSkinById(String skinId) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#selectSkinCountByName(com.okdeer.mall.operate.dto.SkinManagerDto)
+	 */
+	@Override
+	public int selectSkinCountByName(SkinManagerDto skinManagerDto) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#selectSkinByTime(com.okdeer.mall.operate.dto.SkinManagerDto)
+	 */
+	@Override
+	public int selectSkinByTime(SkinManagerDto skinManagerDto) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }
