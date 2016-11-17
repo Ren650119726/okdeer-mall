@@ -16,17 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
 import com.okdeer.mall.operate.entity.SkinManager;
-import com.okdeer.mall.operate.entity.SkinManagerDetail;
 import com.okdeer.mall.operate.enums.SkinManagerStatus;
-import com.okdeer.mall.operate.enums.SkinModule;
-import com.okdeer.mall.operate.skinmanager.mapper.OperateSkinManagerDetailMapper;
-import com.okdeer.mall.operate.skinmanager.mapper.OperateSkinManagerMapper;
+import com.okdeer.mall.operate.skinmanager.mapper.SkinManagerMapper;
 import com.okdeer.mall.operate.skinmanager.service.ISkinManagerService;
 
 /**
@@ -48,7 +44,7 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements ISkinMana
 	 * 获取皮肤mapper
 	 */
 	@Autowired
-	private OperateSkinManagerMapper skinManagerMapper;
+	private SkinManagerMapper skinManagerMapper;
 	/**
 	 * 获取列表
 	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#findSkinList(com.okdeer.mall.operate.dto.SkinManagerDto)
@@ -62,17 +58,6 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements ISkinMana
 		}
 		return new PageUtils<SkinManagerDto>(result);
 	}
-
-	/**
-	 * 增加皮肤
-	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#addSkin(com.okdeer.mall.operate.dto.SkinManagerDto)
-	 */
-	@Transactional(rollbackFor = Exception.class)
-	@Override
-	public int add(SkinManager skinManager) {
-		return skinManagerMapper.add(skinManager);
-	}
-	
 	
 	/**
 	 * 获取活动皮肤对象
@@ -82,16 +67,6 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements ISkinMana
 	@Override
 	public SkinManagerDto findById(String skinId) {
 		return skinManagerMapper.findById(skinId);
-	}
-
-	/**
-	 * 更新活动皮肤
-	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#updateSkin(com.okdeer.mall.operate.dto.SkinManagerDto)
-	 */
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public int update(SkinManager skinManager) {
-		return skinManagerMapper.update(skinManager);
 	}
 
 	/**
@@ -132,9 +107,9 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements ISkinMana
 	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#updateSkinStatus(java.lang.String)
 	 */
 	@Override
-	public int selectSkinByTime(SkinManagerDto skinManagerDto){
+	public int findSkinByTime(SkinManagerDto skinManagerDto){
 		SkinManager skinManager= BeanMapper.map(skinManagerDto, SkinManager.class);
-		return skinManagerMapper.selectSkinByTime(skinManager);
+		return skinManagerMapper.findSkinByTime(skinManager);
 	}
 
 	/**
@@ -142,9 +117,9 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements ISkinMana
 	 * @see com.okdeer.mall.operate.service.ISkinManagerApi#selectSkinCountByName(com.okdeer.mall.operate.dto.SkinManagerDto)
 	 */
 	@Override
-	public int selectSkinCountByName(SkinManagerDto skinManagerDto) {
+	public int findSkinCountByName(SkinManagerDto skinManagerDto) {
 		SkinManager skinManager= BeanMapper.map(skinManagerDto, SkinManager.class);
-		return skinManagerMapper.selectSkinCountByName(skinManager);
+		return skinManagerMapper.findSkinCountByName(skinManager);
 	}
 
 	/**
