@@ -190,4 +190,9 @@
 		    WHERE disabled = 0 and id = #{id,jdbcType=VARCHAR}
 		 </foreach>
 	</update>
+	
+	<delete id="deleteBySkinId" parameterType="java.lang.String" >
+        delete from skin_manager_detail
+        where skin_manager_id = #{skinId,jdbcType=VARCHAR}
+    </delete>
 </mapper>
