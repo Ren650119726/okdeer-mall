@@ -301,7 +301,7 @@
 	      ca.target_url, ci.advertiser, ci.contact,ci.phone,ca.position_id,
 	      ci.id AS advertInfoId,ci.cost, ci.protocol_url,ca.position_id,
 	      caa.id as aaId, caa.area_id, caa.type, ca.area_type,ca.belong_type,
-	      aap.id AS approvalId, aap.status AS auditStatus, aap.log, ca.status
+	      aap.id AS approvalId, aap.status AS auditStatus, aap.log, ca.status,ca.business_id,ca.sort
        FROM column_advert_position cp
        LEFT JOIN column_advert ca ON ca.position_id = cp.id
        LEFT JOIN column_advert_approval aap ON aap.advert_id = ca.id
