@@ -467,10 +467,6 @@
 			<if test="onShelfTime != null">
 				#{onShelfTime, jdbcType=TIMESTAMP}, 
 			</if>
-			<if test="offShelfTime != null">
-				#{offShelfTime, jdbcType=TIMESTAMP}
-			</if>
-			
 			<!-- begin add by zengjz 2016-11-07 增加字段-->
 			<if test="businessId != null">
 				#{businessId, jdbcType=VARCHAR}, 
