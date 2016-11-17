@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.okdeer.mall.chargesetting.mapper.RiskSettingMapper" >
-    <resultMap id="BaseResultMap" type="com.okdeer.mall.chargesetting.entity.RiskSetting" >
+<mapper namespace="com.okdeer.mall.risk.mapper.RiskSettingMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.risk.entity.RiskSetting" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="is_coupon" property="isCoupon" jdbcType="INTEGER" />
         <result column="limit_type" property="limitType" jdbcType="INTEGER" />
@@ -24,7 +24,7 @@
         where id = #{id,jdbcType=VARCHAR}
     </select>
 
-    <insert id="add" parameterType="com.okdeer.mall.chargesetting.entity.RiskSetting" >
+    <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskSetting" >
         insert into risk_setting
         <trim prefix="(" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -80,7 +80,7 @@
         </trim>
     </insert>
 
-    <update id="update" parameterType="com.okdeer.mall.chargesetting.entity.RiskSetting" >
+    <update id="update" parameterType="com.okdeer.mall.risk.entity.RiskSetting" >
         update risk_setting
         <set >
             <if test="isCoupon != null" >
