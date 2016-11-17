@@ -395,7 +395,7 @@
 				business_id, 
 			</if>
 			<if test="sort != null">
-				sort
+				sort,
 			</if>
 			<!-- end add by zengjz 2016-11-07 增加字段-->											
 		</trim>
@@ -469,7 +469,7 @@
 				#{businessId, jdbcType=VARCHAR}, 
 			</if>
 			<if test="sort != null">
-				#{sort, jdbcType=TINYINT}
+				#{sort, jdbcType=TINYINT},
 			</if>
 			<!-- end add by zengjz 2016-11-07 增加字段-->				
 		</trim>
