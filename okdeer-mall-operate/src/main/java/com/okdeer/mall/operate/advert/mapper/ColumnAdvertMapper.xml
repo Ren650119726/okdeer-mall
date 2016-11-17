@@ -314,14 +314,14 @@
 	<insert id="insert" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
 		INSERT INTO column_advert(id, position_id, belong_type, name, target_type, target_url, pic_url,
 				area_type, start_time, end_time, is_pay, trade_num, status, create_time, create_user_id,
-				update_time, update_user_id, disabled, pv, target, on_shelf_time, off_shelf_time)
+				update_time, update_user_id, disabled, pv, target, on_shelf_time, off_shelf_time,business_id,sort)
 		VALUES (#{id, jdbcType=VARCHAR}, #{positionId, jdbcType=VARCHAR}, #{belongType, jdbcType=VARCHAR}, 
 				#{name, jdbcType=VARCHAR}, #{targetType, jdbcType=TINYINT}, #{targetUrl, jdbcType=VARCHAR}, 
 				#{picUrl, jdbcType=VARCHAR}, #{areaType, jdbcType=TINYINT}, #{startTime, jdbcType=TIMESTAMP}, 
 				#{endTime, jdbcType=TIMESTAMP}, #{isPay, jdbcType=TINYINT}, #{tradeNum, jdbcType=VARCHAR}, #{status, jdbcType=TINYINT}, 
 				#{createTime, jdbcType=TIMESTAMP}, #{createUserId, jdbcType=VARCHAR}, #{updateTime, jdbcType=TIMESTAMP}, 
 				#{updateUserId, jdbcType=VARCHAR}, #{disabled, jdbcType=INTEGER}, #{pv, jdbcType=INTEGER}, 
-				#{target, jdbcType=TINYINT}, #{onShelfTime, jdbcType=TIMESTAMP}, #{offShelfTime, jdbcType=TIMESTAMP})
+				#{target, jdbcType=TINYINT}, #{onShelfTime, jdbcType=TIMESTAMP}, #{offShelfTime, jdbcType=TIMESTAMP},#{businessId, jdbcType=VARCHAR},#{sort, jdbcType=INTEGER})
 	</insert>
 	
 	<insert id="insertSelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
