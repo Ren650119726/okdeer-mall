@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.StockManagerServiceApi;
@@ -125,13 +126,9 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		String seckillStockKey = RedisKeyConstants.SECKILL_STOCK + req.getData().getSkuId();
 		try {
 			ServiceOrderResp respData = resp.getData();
-			// 判断服务地址是否存在
-			MemberConsigneeAddress address = memberConsigneeAddressMapper
-					.selectByPrimaryKey(req.getData().getAddressId());
-			// 服务地址不存在
-			if (address == null) {
-				resp.setResult(ResultCodeEnum.ADDRESS_NOT_EXSITS);
-				req.setComplete(true);
+			// 用户地址
+			MemberConsigneeAddress address = findUserAddr(req, resp);
+			if(!resp.isSuccess()){
 				return;
 			}
 			// 根据请求构建订单
@@ -168,6 +165,31 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 			throw e;
 		}finally{
 			req.setComplete(true);
+		}
+	}
+	
+	/**
+	 * @Description: 查找用户地址
+	 * @param req
+	 * @param resp
+	 * @return   
+	 * @author maojj
+	 * @date 2016年11月18日
+	 */
+	public MemberConsigneeAddress findUserAddr(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp){
+		// 商品类型
+		SpuTypeEnum skuType = (SpuTypeEnum)req.getContext().get("skuType");
+		if(skuType == SpuTypeEnum.fwdDdxfSpu){
+			// 如果是到店消费的商品，则没有用户地址
+			return null;
+		}else{
+			MemberConsigneeAddress address = memberConsigneeAddressMapper.selectByPrimaryKey(req.getData().getAddressId());
+			// 服务地址不存在
+			if (address == null) {
+				resp.setResult(ResultCodeEnum.ADDRESS_NOT_EXSITS);
+				req.setComplete(true);
+			}
+			return address;
 		}
 	}
 
@@ -230,7 +252,9 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		List<TradeOrderItem> orderItemList = buildOrderItemList(tradeOrder, req);
 		// 设置订单项
 		tradeOrder.setTradeOrderItem(orderItemList);
-		tradeOrder.setTradeOrderLogistics(buildTradeOrderLogistics(tradeOrder.getId(), address));
+		if (address != null) {
+			tradeOrder.setTradeOrderLogistics(buildTradeOrderLogistics(tradeOrder.getId(), address));
+		}
 		return tradeOrder;
 	}
 

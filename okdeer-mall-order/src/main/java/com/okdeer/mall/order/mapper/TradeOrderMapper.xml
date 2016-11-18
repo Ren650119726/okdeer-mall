@@ -4473,6 +4473,7 @@
 		tr.invoice,
 		tr.create_time,
 		tr.is_complete,
+		tr.cancel_type,
 		tp.pay_type,
 		tp.pay_time,
 		ti.head,
