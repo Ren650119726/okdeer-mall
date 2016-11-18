@@ -7,6 +7,7 @@
 package com.okdeer.mall.risk.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
@@ -37,4 +38,13 @@ public interface RiskBlackService extends IBaseService {
 	 * @date 2016年11月16日
 	 */
 	public void addBath(List<RiskBlack> riskBlackList);
+	
+	/**
+	 * @Description: 通过参数获取黑名单列表
+	 * @param map
+	 * @return
+	 * @author zhangkn
+	 * @date 2016年11月18日
+	 */
+	List<RiskBlack> findBlackListByParams(Map<String,Object> map);
 }
