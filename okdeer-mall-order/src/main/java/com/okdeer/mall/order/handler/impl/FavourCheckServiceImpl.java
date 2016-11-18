@@ -1,12 +1,9 @@
 package com.okdeer.mall.order.handler.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -96,7 +93,7 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 			ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsId.toString());
 			// 0全部分类 1指定分类
 			if(coupons.getIsCategory() == Constant.ONE){
-				List<String> spuCategoryIds = duplicateRemoval(reqDto.getContext().getSpuCategoryIds());
+				Set<String> spuCategoryIds = reqDto.getContext().getSpuCategoryIds();
 				// 如果是指定分类。校验商品的分类
 				int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getId());
 				if (count == Constant.ZERO || count != spuCategoryIds.size()) {
@@ -144,22 +141,4 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 		}
 		return isValid;
 	}
-	
-	// Begin Bug:14093 added by maojj 2016-10-12
-	/**
-	 * 
-	 * @Description: 去除重复
-	 * @param spuCategoryIds  商品类目id
-	 * @return List<String>  
-	 * @author tangy
-	 * @date 2016年10月5日
-	 */
-	private static List<String> duplicateRemoval(List<String> spuCategoryIds){
-		if (CollectionUtils.isNotEmpty(spuCategoryIds)) {
-			HashSet<String> hsSpuCategoryIds = new HashSet<String>(spuCategoryIds);
-			spuCategoryIds = new ArrayList<String>(hsSpuCategoryIds);
-		}
-		return spuCategoryIds;
-	}
-	// End Bug:14093 added by maojj 2016-10-12
 }

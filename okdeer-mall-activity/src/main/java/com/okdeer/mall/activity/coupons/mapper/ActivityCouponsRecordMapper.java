@@ -2,6 +2,7 @@ package com.okdeer.mall.activity.coupons.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -205,7 +206,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @author tangy
 	 * @date 2016年9月23日
 	 */
-	int findIsContainBySpuCategoryIds(@Param("spuCategoryIds") List<String> spuCategoryIds,
+	int findIsContainBySpuCategoryIds(@Param("spuCategoryIds") Set<String> spuCategoryIds,
 			@Param("couponsId") String couponsId);
 	
 	/**
@@ -217,7 +218,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @author tangy
 	 * @date 2016年9月23日
 	 */
-	int findServerBySpuCategoryIds(@Param("spuCategoryIds") List<String> spuCategoryIds,
+	int findServerBySpuCategoryIds(@Param("spuCategoryIds") Set<String> spuCategoryIds,
 			@Param("couponsId") String couponsId);
 	
 	/**

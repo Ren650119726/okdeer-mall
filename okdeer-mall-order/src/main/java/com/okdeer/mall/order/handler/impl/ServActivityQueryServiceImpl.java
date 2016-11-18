@@ -1,10 +1,10 @@
-package com.okdeer.mall.order.service.impl;
+package com.okdeer.mall.order.handler.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -94,7 +94,7 @@ public class ServActivityQueryServiceImpl implements RequestHandler<ServiceOrder
 		//排除不符合的代金券
 		if (CollectionUtils.isNotEmpty(couponList)) {
 			//商品类目id集
-			List<String> spuCategoryIds = duplicateRemoval((List<String>)req.getContext().get("spuCategoryIds")); 
+			Set<String> spuCategoryIds = (Set<String>)req.getContext().get("spuCategoryIds"); 
 			List<Coupons> delCouponList = new ArrayList<Coupons>();
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
@@ -154,21 +154,4 @@ public class ServActivityQueryServiceImpl implements RequestHandler<ServiceOrder
 		}
 		return queryCondition;
 	}
-
-	/**
-	 * 
-	 * @Description: 去除重复
-	 * @param spuCategoryIds  商品类目id
-	 * @return List<String>  
-	 * @author tangy
-	 * @date 2016年10月5日
-	 */
-	private static List<String> duplicateRemoval(List<String> spuCategoryIds){
-		if (CollectionUtils.isNotEmpty(spuCategoryIds)) {
-			HashSet<String> hsSpuCategoryIds = new HashSet<String>(spuCategoryIds);
-			spuCategoryIds = new ArrayList<String>(hsSpuCategoryIds);
-		}
-		return spuCategoryIds;
-	}
-
 }
