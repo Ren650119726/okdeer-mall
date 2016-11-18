@@ -607,6 +607,37 @@
   </select>
   <!-- 距离是否超出范围查询  add by luosm end 2016-07-14-->
   
+  <!-- 根据店铺id和经纬度判断是否在服务范围内 add by chenzc start 2016/11/18 -->
+  <select id="comfirmDistance" resultMap="DistanceResultMap" parameterType="map">
+	SELECT CASE WHEN distance  <![CDATA[<=]]> se.service_scope*1000 THEN '0'
+   		ELSE '1'
+		END
+		AS beyondType 
+	FROM(
+		SELECT 
+		  ROUND(
+		    6378.138 * 2 * ASIN(
+		      SQRT(
+		        POW(
+		          SIN((s.latitude * PI() / 180- #{latitude} * PI() / 180) / 2),
+		          2
+		        ) + COS(s.latitude * PI() / 180) * COS(#{latitude} * PI() / 180) * POW(
+		          SIN((s.longitude * PI() / 180 - #{longitude} * PI() / 180) / 2),
+		          2
+		        )
+		      )
+		    ) * 1000
+		  ) AS distance,
+		  s.id AS storeId
+		FROM
+		  store_info s
+		  WHERE s.id = #{storeId,jdbcType=VARCHAR}
+		) sudo 
+      LEFT JOIN store_info_ext AS se ON sudo.storeId = se.store_id 
+      WHERE se.store_id = #{storeId,jdbcType=VARCHAR}
+  </select>
+  <!-- 根据店铺id和经纬度判断是否在服务范围内 add by chenzc end 2016/11/18 -->
+  
      <!-- 距离是否超出范围查询  add by yangqin start  13062 update by wusw 20160823-->
   <select id="selectByWxDistance" resultMap="DistanceResultMap" parameterType="map">
 	SELECT DISTINCT sudo.id,sudo.consignee_name,sudo.area,sudo.address,sudo.mobile,sudo.room_id,sudo.community_id,sudo.source,sudo.longitude,sudo.latitude,sudo.distance,sudo.area_ext,sudo.area_name,sudo.city_name,sudo.province_name,
