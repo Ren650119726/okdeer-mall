@@ -12,7 +12,8 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
-import com.okdeer.mall.risk.dto.WhiteManagerDto;
+import com.okdeer.mall.risk.dto.RiskWhiteDto;
+import com.okdeer.mall.risk.entity.RiskBlack;
 import com.okdeer.mall.risk.entity.RiskWhite;
 
 public interface RiskWhiteMapper extends IBaseMapper {
@@ -24,7 +25,7 @@ public interface RiskWhiteMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年11月14日
 	 */
-	List<RiskWhite> findWhiteList(WhiteManagerDto whiteManagerDto);
+	List<RiskWhite> findWhiteList(RiskWhiteDto whiteManagerDto);
 
 	/**
 	 * @Description: TODO
@@ -44,5 +45,12 @@ public interface RiskWhiteMapper extends IBaseMapper {
 	 * @date 2016年11月16日
 	 */
 	void deleteBatchByIds(@Param("ids")List<String> ids,@Param("updateUserId") String updateUserId,@Param("updateTime") Date updateTime);
-
+	
+	/**
+	 * @Description: TODO
+	 * @param riskBlackList   
+	 * @author xuzq01
+	 * @date 2016年11月17日
+	 */
+	void addBatch(@Param(value = "riskWhiteList")List<RiskWhite> riskWhiteList);
 }

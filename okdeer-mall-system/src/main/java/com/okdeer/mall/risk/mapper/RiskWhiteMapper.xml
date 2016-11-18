@@ -4,6 +4,7 @@
     <resultMap id="BaseResultMap" type="com.okdeer.mall.risk.entity.RiskWhite" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="telephone_account" property="telephoneAccount" jdbcType="VARCHAR" />
+         <result column="account_type" property="accountType" jdbcType="NUMERIC" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
@@ -12,10 +13,28 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, telephone_account, create_time, create_user_id, update_time, update_user_id, 
+        id, telephone_account,account_type, create_time, create_user_id, update_time, update_user_id, 
         disabled
     </sql>
-    
+      <!-- 批量加入白名单 -->
+    <insert  id="addBatch"  parameterType="java.util.List">
+		insert into risk_white 
+		 (id, telephone_account,account_type, create_time, 
+		 create_user_id, update_time, update_user_id, 
+         disabled
+		 )   
+	    values  
+	    <foreach collection="riskW hiteList" item="item" index="index" separator="," >  
+	        (#{item.id},
+	        #{item.telephoneAccount},
+	         #{item.accountType},
+	        #{item.createTime},
+	        #{item.createUserId},
+	        #{item.updateTime},
+	        #{item.updateUserId},
+	        #{item.disabled})  
+	    </foreach>  
+    </insert>
      <!-- 批量删除 （逻辑删除） -->
   <update id="deleteBatchByIds">
 	 UPDATE risk_white 
@@ -34,7 +53,7 @@
      </if>  
    </update>
    <!-- 根据条件搜索皮肤列表 -->
-  <select id="findWhiteList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.risk.dto.WhiteManagerDto">
+  <select id="findWhiteList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.risk.dto.RiskWhiteDto">
     SELECT 
     <include refid="Base_Column_List" />
      FROM risk_white 

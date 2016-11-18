@@ -15,14 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.mall.risk.dto.BlackManagerDto;
+import com.okdeer.mall.risk.dto.RiskBlackDto;
 import com.okdeer.mall.risk.entity.RiskBlack;
-import com.okdeer.mall.risk.service.IBlackListApi;
-import com.okdeer.mall.risk.service.IBlackListService;
+import com.okdeer.mall.risk.service.RiskBlackApi;
+import com.okdeer.mall.risk.service.RiskBlackService;
 
 
 /**
- * ClassName: BlackListApiImpl 
+ * ClassName: RiskBlackApiImpl 
  * @Description: 黑名单管理api实现类
  * @author xuzq01
  * @date 2016年11月15日
@@ -33,14 +33,14 @@ import com.okdeer.mall.risk.service.IBlackListService;
  *		v1.2			2016年11月15日		xuzq01				黑名单管理api实现类
  */
 @Service(version="1.0.0")
-public class BlackListApiImpl implements IBlackListApi {
+public class RiskBlackApiImpl implements RiskBlackApi {
 
 	@Autowired 
-	IBlackListService blackListService;
+	RiskBlackService blackListService;
 	/**
 	 * (non-Javadoc)
 	 * @throws Exception 
-	 * @see com.okdeer.mall.risk.service.IBlackListApi#deleteBlackById(java.lang.String, java.lang.String)
+	 * @see com.okdeer.mall.risk.service.RiskBlackApi#deleteBlackById(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void deleteBlackById(String accountId, String id) throws Exception {
@@ -49,17 +49,17 @@ public class BlackListApiImpl implements IBlackListApi {
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.risk.service.IBlackListApi#findBlackList(com.okdeer.mall.risk.dto.BlackManagerDto, java.lang.Integer, java.lang.Integer)
+	 * @see com.okdeer.mall.risk.service.RiskBlackApi#findBlackList(com.okdeer.mall.risk.dto.RiskBlackDto, java.lang.Integer, java.lang.Integer)
 	 */
 	@Override
-	public PageUtils<RiskBlack> findBlackList(BlackManagerDto blackManagerDto, Integer pageNumber, Integer pageSize) {
+	public PageUtils<RiskBlack> findBlackList(RiskBlackDto blackManagerDto, Integer pageNumber, Integer pageSize) {
 		return blackListService.findBlackList(blackManagerDto, pageNumber, pageSize);
 	}
 
 	/**
 	 * (non-Javadoc)
 	 * @throws Exception 
-	 * @see com.okdeer.mall.risk.service.IBlackListApi#addBlack(java.lang.String, java.lang.String)
+	 * @see com.okdeer.mall.risk.service.RiskBlackApi#addBlack(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void addBlack(RiskBlack riskBlack,String userId) throws Exception {
@@ -77,11 +77,26 @@ public class BlackListApiImpl implements IBlackListApi {
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.risk.service.IBlackListApi#addBlackBatch(java.lang.String, java.lang.String)
+	 * @see com.okdeer.mall.risk.service.RiskBlackApi#addBlackBatch(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void addBlackBatch(String riskBlack, String id) {
+	public void addBlackBatch(RiskBlackDto blackManagerDto, String userId) {
+		
 		List<RiskBlack> riskBlackList = new ArrayList<RiskBlack>();
+		List<String> accountNameList = (List<String>) java.util.Arrays.asList(blackManagerDto.getAccount().split(","));
+		for(String account:accountNameList){
+			RiskBlack riskBlack = new RiskBlack();
+			Date date = new Date();
+			riskBlack.setId(UuidUtils.getUuid());
+			riskBlack.setAccount(account);
+			riskBlack.setAccountType(blackManagerDto.getAccountType());
+			riskBlack.setDisabled(0);
+			riskBlack.setCreateTime(date);
+			riskBlack.setUpdateTime(date);
+			riskBlack.setCreateUserId(userId);
+			riskBlack.setUpdateUserId(userId);
+			riskBlackList.add(riskBlack);
+		}
 		blackListService.addBath(riskBlackList);
 
 	}

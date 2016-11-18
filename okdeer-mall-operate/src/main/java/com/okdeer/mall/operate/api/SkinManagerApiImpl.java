@@ -1,8 +1,8 @@
 /** 
- *@Project: okdeer-mall-operate 
+ *@Project: okdeermalloperate 
  *@Author: xuzq01
  *@Date: 2016年11月14日 
- *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
+ *@Copyright: ©20142020 www.okdeer.com Inc. All rights reserved. 
  */
 package com.okdeer.mall.operate.api;
 
@@ -17,19 +17,21 @@ import com.okdeer.mall.operate.service.SkinManagerApi;
 import com.okdeer.mall.operate.skinmanager.service.SkinManagerService;
 
 /**
+ * 
  * ClassName: SkinManagerApiImpl 
- * @Description: 
+ * @Description: 换肤管理api实现类
  * @author xuzq01
- * @date 2016年11月14日
+ * @date 2016年11月18日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ *		V1.2			2016年11月18日		xuzq01				换肤管理api实现类
  */
 @Service(version = "1.0.0")
 public class SkinManagerApiImpl implements SkinManagerApi {
 
+	
 	@Autowired
 	SkinManagerService skinManagerService;
 
