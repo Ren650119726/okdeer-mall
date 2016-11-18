@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -294,6 +295,12 @@ public class MemberConsigneeAddressServiceImpl
 		List<MemberConsigneeAddressVo> list = memberConsigneeAddressMapper.selectByDistance(userId, storeId);
 
 		return list;
+	}
+	
+	@Override
+	public MemberConsigneeAddressVo comfirmDistance(Double latitude, Double longitude, 
+			String storeId) throws ServiceException {
+		return memberConsigneeAddressMapper.comfirmDistance(latitude, longitude, storeId);
 	}
 
 	/**

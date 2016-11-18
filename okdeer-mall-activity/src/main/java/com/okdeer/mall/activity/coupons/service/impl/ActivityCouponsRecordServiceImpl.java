@@ -501,7 +501,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		//更新保存领取代金劵记录
 		updateCouponsRecode(record, activityCoupons);
 		map.put("code", 100);
-		map.put("msg", successMsg);
+		map.put("message", successMsg);
+		map.put("data", null);
 		return map;
 	}
 	
@@ -521,7 +522,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		if (activityCoupons.getRemainNum() <= 0) {
 			// 剩余数量小于0 显示已领完
 			map.put("code", 101);
-			map.put("msg", "该代金券已经领完了！");
+			map.put("message", "该代金券已经领完了！");
+			map.put("data", null);
 			return false;
 		}
 		Date collectTime = DateUtils.getDateStart(new Date());
@@ -626,7 +628,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				.get(coupons.getActivityId());
 		if (collect == null || collect.getStatus().intValue() != 1) {
 			map.put("code", 105);
-			map.put("msg", "活动已结束！");
+			map.put("message", "活动已结束！");
+			map.put("data", null);
 			return false;
 		}
 		// 当前日期已经领取的数量
@@ -638,7 +641,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			// 获取当前登陆用户已领取的指定代金券数量
 			if (dailyCirculation >= Integer.parseInt(collect.getDailyCirculation())) {
 				map.put("code", 104);
-				map.put("msg", "来迟啦！券已抢完，明天早点哦");
+				map.put("message", "来迟啦！券已抢完，明天早点哦");
+				map.put("data", null);
 				return false;
 			}
 		}
@@ -664,12 +668,14 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			if (currentRecordCount >= coupons.getEveryLimit().intValue()) {
 				// 已领取
 				map.put("code", 102);
-				map.put("msg", "每人限领" + coupons.getEveryLimit() + "张，不要贪心哦！");
+				map.put("message", "每人限领" + coupons.getEveryLimit() + "张，不要贪心哦！");
+				map.put("data", null);
 				return false;
 			}
 		} else {
 			map.put("code", 104);
-			map.put("msg", "请登录后再领取");
+			map.put("message", "请登录后再领取");
+			map.put("data", null);
 			return false;
 		}
 		return true;

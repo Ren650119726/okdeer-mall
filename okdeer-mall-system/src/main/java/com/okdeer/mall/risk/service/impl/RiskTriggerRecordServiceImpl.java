@@ -6,11 +6,15 @@
  */    
 package com.okdeer.mall.risk.service.impl;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.risk.entity.RiskTriggerRecord;
 import com.okdeer.mall.risk.mapper.RiskTriggerRecordMapper;
 import com.okdeer.mall.risk.service.RiskTriggerRecordService;
 
@@ -35,6 +39,17 @@ public class RiskTriggerRecordServiceImpl extends BaseServiceImpl implements Ris
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return riskTriggerRecordMapper;
+	}
+	
+	@Override
+	public List<RiskTriggerRecord> list(Map<String,Object> params) throws Exception{
+		List<RiskTriggerRecord> result = riskTriggerRecordMapper.list(params);
+		return result;
+	}
+
+	@Override
+	public void deleteBatch(List<String> ids) throws Exception{
+		riskTriggerRecordMapper.deleteBatch(ids);
 	}
 
 }
