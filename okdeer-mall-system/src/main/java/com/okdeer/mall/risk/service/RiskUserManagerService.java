@@ -11,11 +11,11 @@ import java.util.List;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.risk.dto.UserManagerDto;
+import com.okdeer.mall.risk.dto.RiskUserManagerDto;
 import com.okdeer.mall.risk.entity.RiskUserManager;
 
 /**
- * ClassName: IRiskManagerService 
+ * ClassName: RiskUserManagerService 
  * @Description: 风控人员管理service
  * @author xuzq01
  * @date 2016年11月15日
@@ -26,7 +26,7 @@ import com.okdeer.mall.risk.entity.RiskUserManager;
  *		v1.2			2016年11月15日		xuzq01				风控人员管理service
  */
 
-public interface IRiskManagerService extends IBaseService {
+public interface RiskUserManagerService extends IBaseService {
 
 	/**
 	 * @Description: TODO
@@ -37,7 +37,7 @@ public interface IRiskManagerService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月15日
 	 */
-	PageUtils<RiskUserManager> findUserList(UserManagerDto userManagerDto, Integer pageNumber, Integer pageSize);
+	PageUtils<RiskUserManager> findUserList(RiskUserManagerDto userManagerDto, Integer pageNumber, Integer pageSize);
 
 	/**
 	 * @Description: TODO

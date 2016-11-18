@@ -17,7 +17,7 @@
         create_time, create_user_id, update_time, update_user_id, disabled
     </sql>
  <!-- 根据条件搜索皮肤列表 -->
-  <select id="findBlackList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.risk.dto.BlackManagerDto">
+  <select id="findBlackList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.risk.dto.RiskBlackDto">
     SELECT 
     <include refid="Base_Column_List" />
      FROM risk_black 
@@ -36,16 +36,15 @@
        <if test="accountWeChat != null and accountWeChat != ''">
          AND account LIKE CONCAT('%',#{accountWeChat,jdbcType=VARCHAR},'%') 
        </if>
-       <!-- 账号类型 -->
-       <if test="accountType != null and accountType != ''">
-	       <!-- 账号类型为1 支付类型时查询微信和支付宝两张账号类型 -->
+       <!-- 账号类型 账号类型为1 支付类型时查询微信和支付宝两张账号类型  -->
+       <if test="accountType != null">
 	       <choose>
 			   <when test="accountType == 1">
 			   		AND account_type in (1,4)
 			   </when>
-			  <otherwise>
+				 <otherwise>
 				 AND account_type = #{accountType,jdbcType=NUMERIC}
-			  </otherwise>
+		 		</otherwise>
 		</choose>
 	       <!-- <if test="accountType == 1">
 	       	 AND account_type in (1,4)
@@ -69,7 +68,44 @@
         from risk_black
         where id = #{id,jdbcType=VARCHAR}
     </select>
-
+     <!-- 批量加入黑名单 -->
+    <insert  id="addBatch"  parameterType="java.util.List">
+		insert into risk_black
+		 (id,account,account_type,
+		 create_time, create_user_id, 
+		 update_time, update_user_id, 
+		 disabled
+		 )   
+	    values  
+	    <foreach collection="riskBlackList" item="item" index="index" separator="," >  
+	        (#{item.id},
+	        #{item.account},
+	        #{item.accountType},
+	        #{item.createTime},
+	        #{item.createUserId},
+	        #{item.updateTime},
+	        #{item.updateUserId},
+	        #{item.disabled}
+	        )  
+	    </foreach>  
+    </insert>
+     <!-- 批量删除 （逻辑删除） -->
+  <update id="deleteBatchByIds">
+	 UPDATE risk_black 
+	 SET disabled = 1,
+	     update_time = #{updateTime,jdbcType=TIMESTAMP},
+	     update_user_id = #{updateUserId,jdbcType=VARCHAR}
+	 WHERE 
+	 <if test="ids != null ">
+		 id  in 
+		 <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+	        #{item}
+	     </foreach>
+     </if>
+     <if test="ids == null ">
+       1 = 2
+     </if>  
+   </update>
     <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskBlack" >
         insert into risk_black
         <trim prefix="(" suffix=")" suffixOverrides="," >
