@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.risk.mapper.RiskOrderRecordMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.risk.entity.RiskOrderRecord" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="login_name" property="loginName" jdbcType="VARCHAR" />
+        <result column="device_id" property="deviceId" jdbcType="VARCHAR" />
+        <result column="pay_account" property="payAccount" jdbcType="VARCHAR" />
+        <result column="pay_account_type" property="payAccountType" jdbcType="TINYINT" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="tel" property="tel" jdbcType="VARCHAR" />
+        <result column="face_price" property="facePrice" jdbcType="DECIMAL" />
+        <result column="is_preferential" property="isPreferential" jdbcType="TINYINT" javaType="com.okdeer.mall.risk.enums.IsPreferential" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, login_name, device_id, pay_account, pay_account_type, create_time, tel, face_price, 
+        is_preferential
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from risk_order_record
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskOrderRecord" >
+        insert into risk_order_record
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="loginName != null" >
+                login_name,
+            </if>
+            <if test="deviceId != null" >
+                device_id,
+            </if>
+            <if test="payAccount != null" >
+                pay_account,
+            </if>
+            <if test="payAccountType != null" >
+                pay_account_type,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="tel != null" >
+                tel,
+            </if>
+            <if test="facePrice != null" >
+                face_price,
+            </if>
+            <if test="isPreferential != null" >
+                is_preferential,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="loginName != null" >
+                #{loginName,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceId != null" >
+                #{deviceId,jdbcType=VARCHAR},
+            </if>
+            <if test="payAccount != null" >
+                #{payAccount,jdbcType=VARCHAR},
+            </if>
+            <if test="payAccountType != null" >
+                #{payAccountType,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="tel != null" >
+                #{tel,jdbcType=VARCHAR},
+            </if>
+            <if test="facePrice != null" >
+                #{facePrice,jdbcType=DECIMAL},
+            </if>
+            <if test="isPreferential != null" >
+                #{isPreferential,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.risk.entity.RiskOrderRecord" >
+        update risk_order_record
+        <set >
+            <if test="loginName != null" >
+                login_name = #{loginName,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceId != null" >
+                device_id = #{deviceId,jdbcType=VARCHAR},
+            </if>
+            <if test="payAccount != null" >
+                pay_account = #{payAccount,jdbcType=VARCHAR},
+            </if>
+            <if test="payAccountType != null" >
+                pay_account_type = #{payAccountType,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="tel != null" >
+                tel = #{tel,jdbcType=VARCHAR},
+            </if>
+            <if test="facePrice != null" >
+                face_price = #{facePrice,jdbcType=DECIMAL},
+            </if>
+            <if test="isPreferential != null" >
+                is_preferential = #{isPreferential,jdbcType=TINYINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from risk_order_record
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <resultMap id="Record_ResultMap" type="com.okdeer.mall.risk.po.RiskOrderRecordPo" >
+        <result column="count" property="count" jdbcType="VARCHAR" />
+        <result column="facePriceTotal" property="facePriceTotal" jdbcType="DECIMAL" />
+<!-- 	    <collection property="tels" ofType="java.lang.String">
+	      <result column="tels" property="tels" jdbcType="VARCHAR" />
+	    </collection> -->
+    </resultMap>
+    
+    <select id="findByLoginName" resultMap="Record_ResultMap" parameterType="java.lang.String" >
+		SELECT
+			count(1) as count,
+			IFNULL(sum(r.face_price), 0) as facePriceTotal
+			<!-- r.tel as tels -->
+	    FROM
+			risk_order_record r
+      	where login_name = #{loginName,jdbcType=VARCHAR}
+    </select>
+    <select id="findTelsByLoginName" resultType="java.lang.String" parameterType="java.lang.String" >
+		SELECT
+			r.tel
+	    FROM
+			risk_order_record r
+      	where r.login_name = #{loginName,jdbcType=VARCHAR}
+    </select>
+</mapper>

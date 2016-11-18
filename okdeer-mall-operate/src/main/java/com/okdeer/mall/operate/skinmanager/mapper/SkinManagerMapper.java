@@ -7,8 +7,12 @@
 package com.okdeer.mall.operate.skinmanager.mapper;
 
 import java.util.List;
+import java.util.Map;
+
+import org.springframework.transaction.annotation.Transactional;
 
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.activity.label.entity.ActivityLabel;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
 import com.okdeer.mall.operate.dto.SkinManagerParamDto;
 import com.okdeer.mall.operate.entity.SkinManager;
@@ -67,4 +71,12 @@ public interface SkinManagerMapper extends IBaseMapper {
 	 * @date 2016年11月16日
 	 */
 	SkinManagerDto findSkinDetailByParam(SkinManagerParamDto param);
+	
+	/**
+	 * 1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束
+	 * @author tuzhd
+	 * @param map 传递参数
+	 * @return
+	 */
+	public List<SkinManager> listByJob(Map<String,Object> map) ;
 }

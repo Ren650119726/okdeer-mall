@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -115,11 +116,10 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 			List<Coupons> delCouponList = new ArrayList<Coupons>();
 			List<String> couponIds = new ArrayList<String>();
 			List<GoodsStoreSku> goodsStoreSkus = goodsStoreSkuServiceApi.findStoreSkuForOrder(skuIdList);
-			HashSet<String> hsSpuCategoryIds = new HashSet<String>();
+			Set<String> spuCategoryIds = new HashSet<String>();
 			for (GoodsStoreSku goodsStoreSku : goodsStoreSkus) {
-				hsSpuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
+				spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
 			}
-			List<String> spuCategoryIds = new ArrayList<String>(hsSpuCategoryIds);
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
 				//是否指定分类使用

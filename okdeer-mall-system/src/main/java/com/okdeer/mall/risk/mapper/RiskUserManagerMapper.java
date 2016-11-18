@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.okdeer.base.dal.IBaseMapper;
-import com.okdeer.mall.risk.dto.UserManagerDto;
+import com.okdeer.mall.risk.dto.RiskUserManagerDto;
 import com.okdeer.mall.risk.entity.RiskUserManager;
 
 public interface RiskUserManagerMapper extends IBaseMapper {
@@ -23,7 +23,7 @@ public interface RiskUserManagerMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年11月15日
 	 */
-	List<RiskUserManager> findUserList(UserManagerDto userManagerDto);
+	List<RiskUserManager> findUserList(RiskUserManagerDto userManagerDto);
 
 	/**
 	 * @Description: 批量逻辑删除人员

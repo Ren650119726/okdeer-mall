@@ -10,11 +10,11 @@ import java.util.List;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.risk.dto.BlackManagerDto;
+import com.okdeer.mall.risk.dto.RiskBlackDto;
 import com.okdeer.mall.risk.entity.RiskBlack;
 
 /**
- * ClassName: IBlackListService 
+ * ClassName: RiskBlackService 
  * @Description: 黑名单管理service
  * @author xuzq01
  * @date 2016年11月15日
@@ -25,9 +25,9 @@ import com.okdeer.mall.risk.entity.RiskBlack;
  *		v1.2			2016年11月15日		xuzq01				黑名单管理service
  */
 
-public interface IBlackListService extends IBaseService {
+public interface RiskBlackService extends IBaseService {
 	
-	public PageUtils<RiskBlack> findBlackList(BlackManagerDto blackManagerDto, Integer pageNumber,
+	public PageUtils<RiskBlack> findBlackList(RiskBlackDto blackManagerDto, Integer pageNumber,
 			Integer pageSize);
 
 	/**

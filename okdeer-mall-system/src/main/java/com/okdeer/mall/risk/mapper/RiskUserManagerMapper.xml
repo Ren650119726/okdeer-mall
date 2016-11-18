@@ -20,7 +20,7 @@
         create_user_id, update_time, update_user_id, disabled
     </sql>
 	<!-- 获取风控人员列表列表 -->
-  <select id="findUserList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.risk.dto.UserManagerDto">
+  <select id="findUserList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.risk.dto.RiskUserManagerDto">
     SELECT 
     <include refid="Base_Column_List" />
      FROM risk_user_manager 
