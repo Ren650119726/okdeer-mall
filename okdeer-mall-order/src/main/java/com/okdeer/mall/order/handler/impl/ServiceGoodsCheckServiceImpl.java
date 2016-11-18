@@ -3,7 +3,9 @@ package com.okdeer.mall.order.handler.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -34,7 +36,6 @@ import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
 import com.okdeer.mall.order.vo.TradeOrderServiceGoodsItem;
-import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * ClassName: ServiceGoodsCheckServiceImpl 
@@ -184,7 +185,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		this.buildRespGoodsStock(req, resp);
 		
 		// 商品类目id
-		List<String> spuCategoryIds = new ArrayList<String>();
+		Set<String> spuCategoryIds = new HashSet<String>();
 		// 订单总价
 		BigDecimal totalAmout = BigDecimal.ZERO;
 		Date goodsUpdateTime = null;

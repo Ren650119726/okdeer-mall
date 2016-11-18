@@ -518,6 +518,7 @@
 			javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum" />
 		<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
 		<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+		<result column="article_no" property="articleNo" jdbcType="VARCHAR" />
 		<!-- 订单项详情信息，服务订单特有属性 -->
 		<collection property="tradeOrderItemDetails"
 			ofType="com.okdeer.mall.order.entity.TradeOrderItemDetail">
@@ -633,6 +634,7 @@
 				javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum" />
 			<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
 			<result column="weight" property="weight" jdbcType="DECIMAL" />
+			<result column="article_no" property="articleNo" jdbcType="VARCHAR" />
 			<!-- 订单项详情信息，服务订单特有属性 -->
 			<collection property="tradeOrderItemDetails"
 				ofType="com.okdeer.mall.order.entity.TradeOrderItemDetail">
@@ -953,31 +955,33 @@
 	<select id="selectRefundsItemList" parameterType="java.util.Map"
 		resultMap="tradeOrderRefundsItemVo2">
 		SELECT
-		ri.id as item_id,
-		ri.refunds_id,
-		ri.order_item_id,
-		ri.sku_name,
-		ri.properties_indb,
-		ri.main_pic_prl,
-		ri.spu_type,
-		ri.amount,
-		ri.preferential_price,
-		ri.income,
-		ri.quantity,
-		ri.bar_code,
-		ri.style_code,
-		ri.status,
-		ri.unit_price,
-		ri.store_sku_id,
-		d.id as detail_id,
-		d.consume_code,
-		d.status as detail_status,
-		d.start_time,
-		d.end_time,
-		d.use_time,
-		ri.weight
+			ri.id as item_id,
+			ri.refunds_id,
+			ri.order_item_id,
+			ri.sku_name,
+			ri.properties_indb,
+			ri.main_pic_prl,
+			ri.spu_type,
+			ri.amount,
+			ri.preferential_price,
+			ri.income,
+			ri.quantity,
+			ri.bar_code,
+			ri.style_code,
+			ri.status,
+			ri.unit_price,
+			ri.store_sku_id,
+			d.id as detail_id,
+			d.consume_code,
+			d.status as detail_status,
+			d.start_time,
+			d.end_time,
+			d.use_time,
+			ri.weight,
+			sku.article_no
 		FROM trade_order_refunds_item ri
 		LEFT JOIN trade_order_item_detail d on ri.order_item_id = d.order_item_id
+		LEFT JOIN goods_store_sku sku ON ri.store_sku_id = sku.id
 		where ri.refunds_id = #{refundsId,jdbcType=VARCHAR}
 		ORDER BY ri.id ASC
 	</select>

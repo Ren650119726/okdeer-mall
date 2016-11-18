@@ -11,11 +11,11 @@ import java.util.List;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.risk.dto.WhiteManagerDto;
+import com.okdeer.mall.risk.dto.RiskWhiteDto;
 import com.okdeer.mall.risk.entity.RiskWhite;
 
 /**
- * ClassName: IWhiteListService 
+ * ClassName: RiskWhiteService 
  * @Description: 白名单管理service
  * @author xuzq01
  * @date 2016年11月14日
@@ -26,7 +26,7 @@ import com.okdeer.mall.risk.entity.RiskWhite;
  *		v1.2			2016年11月14日		xuzq01				白名单管理service
  */
 
-public interface IWhiteListService extends IBaseService{
+public interface RiskWhiteService extends IBaseService{
 	
 	/**
 	 * 
@@ -38,7 +38,7 @@ public interface IWhiteListService extends IBaseService{
 	 * @author xuzq01
 	 * @date 2016年11月16日
 	 */
-	public PageUtils<RiskWhite> findWhiteList(WhiteManagerDto whiteManagerDto, Integer pageNumber,
+	public PageUtils<RiskWhite> findWhiteList(RiskWhiteDto whiteManagerDto, Integer pageNumber,
 			Integer pageSize);
 
 	/**
@@ -59,5 +59,13 @@ public interface IWhiteListService extends IBaseService{
 	 * @date 2016年11月16日
 	 */
 	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime);
+
+	/**
+	 * @Description: TODO
+	 * @param riskWhiteList   
+	 * @author xuzq01
+	 * @date 2016年11月17日
+	 */
+	public void addBatch(List<RiskWhite> riskWhiteList);
 	
 }

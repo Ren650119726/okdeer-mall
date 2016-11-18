@@ -7,12 +7,16 @@ import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.base.common.exception.ServiceException;
 
 /**
- * @DESC: 
- * @author YSCGD
- * @date  2016-02-05 15:22:58
- * @version 1.0.0
- * @copyright ©2005-2020 yschome.com Inc. All rights reserved
  * 
+ * ClassName: TradeOrderPayService 
+ * @Description: TODO
+ * @author zengjizu
+ * @date 2016年11月18日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *     v1.2.0            2016-11-18         zengjz           增加服务订单确认调用云钱包方法
  */
 public interface TradeOrderPayService {
 
@@ -90,5 +94,16 @@ public interface TradeOrderPayService {
 	 * 订单完成更新余额（售后期满）
 	 */
 	boolean updateBalanceByFinish(TradeOrder tradeOrder) throws Exception;
+	
+	//bigein add by zengjz  2016-11-18 增加服务订单确认调用云钱包方法
+	/**
+	 * @Description: 服务订单确认服务完成是资金流变动
+	 * @param tradeOrder 订单信息
+	 * @author zengjizu
+	 * @date 2016年11月18日
+	 */
+	void confirmStoreServiceOrderPay(TradeOrder tradeOrder) throws Exception ;
+	
+	//end add by zengjz  2016-11-18 增加服务订单确认调用云钱包方法
 
 }

@@ -3,7 +3,9 @@ package com.okdeer.mall.order.handler.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -161,7 +163,7 @@ public class GoodsCheckServiceImpl implements GoodsCheckService {
 		}
 		//Begin added by tangy  2016-9-23
 		// 商品类目id
-		List<String> spuCategoryIds = new ArrayList<String>();
+		Set<String> spuCategoryIds = new HashSet<String>();
 		//End added by tangy
 		// 将商品分为特惠商品和正常商品
 		for (GoodsStoreSku storeSku : storeSkuList) {

@@ -10,7 +10,7 @@
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="tel" property="tel" jdbcType="VARCHAR" />
         <result column="face_price" property="facePrice" jdbcType="DECIMAL" />
-        <result column="is_preferential" property="isPreferential" jdbcType="TINYINT" />
+        <result column="is_preferential" property="isPreferential" jdbcType="TINYINT" javaType="com.okdeer.mall.risk.enums.IsPreferential" />
     </resultMap>
 
     <sql id="Base_Column_List" >
@@ -122,5 +122,29 @@
         delete from risk_order_record
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-
+    
+    <resultMap id="Record_ResultMap" type="com.okdeer.mall.risk.po.RiskOrderRecordPo" >
+        <result column="count" property="count" jdbcType="VARCHAR" />
+        <result column="facePriceTotal" property="facePriceTotal" jdbcType="DECIMAL" />
+<!-- 	    <collection property="tels" ofType="java.lang.String">
+	      <result column="tels" property="tels" jdbcType="VARCHAR" />
+	    </collection> -->
+    </resultMap>
+    
+    <select id="findByLoginName" resultMap="Record_ResultMap" parameterType="java.lang.String" >
+		SELECT
+			count(1) as count,
+			IFNULL(sum(r.face_price), 0) as facePriceTotal
+			<!-- r.tel as tels -->
+	    FROM
+			risk_order_record r
+      	where login_name = #{loginName,jdbcType=VARCHAR}
+    </select>
+    <select id="findTelsByLoginName" resultType="java.lang.String" parameterType="java.lang.String" >
+		SELECT
+			r.tel
+	    FROM
+			risk_order_record r
+      	where r.login_name = #{loginName,jdbcType=VARCHAR}
+    </select>
 </mapper>

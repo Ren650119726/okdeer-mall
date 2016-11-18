@@ -6,7 +6,11 @@
  */
 package com.okdeer.mall.risk.mapper;
 
+import java.util.List;
+import java.util.Set;
+
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.risk.po.RiskOrderRecordPo;
 
 /**
  * ClassName: RiskOrderRecordMapper 
@@ -21,4 +25,14 @@ import com.okdeer.base.dal.IBaseMapper;
  */
 public interface RiskOrderRecordMapper extends IBaseMapper {
 
+	
+	RiskOrderRecordPo findByLoginName(String loginName);
+
+	/**
+	 * @Description: TODO
+	 * @param loginName   
+	 * @author guocp
+	 * @date 2016年11月17日
+	 */
+	Set<String> findTelsByLoginName(String loginName);
 }

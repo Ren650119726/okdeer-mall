@@ -326,7 +326,7 @@
 		<result column="weight" property="weight" jdbcType="DECIMAL" />
 		<result column="income" property="income" jdbcType="DECIMAL" />
 		<result column="categoryName" property="categoryName" jdbcType="VARCHAR" />
-
+		<result column="article_no" property="articleNo" jdbcType="VARCHAR" />
 		<association property="tradeOrderRefunds"
 			javaType="com.okdeer.mall.order.entity.TradeOrderRefunds">
 			<result column="refunds_id" property="id" />
@@ -4262,6 +4262,7 @@
 			<result column="trade_num" property="trade_num" jdbcType="VARCHAR" />
 			<result column="weight" property="weight" jdbcType="DECIMAL" />
 			<result column="income" property="income" jdbcType="DECIMAL" />
+			<result column="article_no" property="articleNo" jdbcType="VARCHAR" />
 			<!-- 订单项详情信息，服务订单特有属性 -->
 			<collection property="tradeOrderItemDetails"
 				ofType="com.okdeer.mall.order.entity.TradeOrderItemDetail">
@@ -4302,7 +4303,7 @@
 		refunds_id,tor.refund_no,tori.weight,it.total_amount,category.name AS
 		categoryName,
 		td.id as detail_id,td.status as
-		detail_status,td.start_time,td.end_time,td.consume_code
+		detail_status,td.start_time,td.end_time,td.consume_code,sku.article_no
 		FROM trade_order AS tr
 		LEFT JOIN trade_order_item it ON tr.id=it.order_id
 		LEFT JOIN goods_store_sku sku ON it.store_sku_id = sku.id

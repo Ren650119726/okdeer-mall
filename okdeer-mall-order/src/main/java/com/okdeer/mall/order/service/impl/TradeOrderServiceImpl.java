@@ -18,11 +18,7 @@ import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT_
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE_TIPS;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_SUCCESS_TIPS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_EXECUTE_CANCEL_FAIL;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_EXECUTE_REFUSE_FAIL;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_NOT_EXSITS_DELETE;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_CHANGE;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_CHANGE_ID;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_OVERDUE;
 import static com.okdeer.common.consts.DescriptConstants.REQUEST_PARAM_FAIL;
 import static com.okdeer.common.consts.DescriptConstants.USER_NOT_WALLET;
@@ -69,10 +65,8 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
-import com.okdeer.archive.goods.store.entity.GoodsStoreSkuPlu;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
-import com.okdeer.archive.goods.store.enums.MeteringMethod;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
@@ -123,13 +117,9 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.group.entity.ActivityGroup;
-import com.okdeer.mall.activity.group.service.ActivityGroupRecordService;
 import com.okdeer.mall.activity.group.service.ActivityGroupService;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
-import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillMapper;
-import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
-import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
@@ -233,6 +223,7 @@ import net.sf.json.JsonConfig;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *      v.1.2.0           2016-11-16        zengjz            删减一些无用的代码
+ *      V.1.2.0           2016-11-18        maojj             POS订单导出新增货号信息
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -614,6 +605,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						exportVo.setOrderResource(order.getOrderResource());
 						exportVo.setBarCode(item.getBarCode() == null ? "" : item.getBarCode());
 						exportVo.setStyleCode(item.getStyleCode() == null ? "" : item.getStyleCode());
+						// Begin V1.2 added by maojj 2016-11-18
+						// 货号
+						exportVo.setArticleNo(ConvertUtil.format(item.getArticleNo()));
+						// End V1.2 added by maojj 2016-11-18
 						// 售后单状态
 						if (item.getRefundsStatus() != null) {
 							exportVo.setAfterService(orderRefundsStatusMap.get(item.getRefundsStatus().getName()));
@@ -1443,8 +1438,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					tradeOrder.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId()));
 				}
 				// 给卖家打款
-				this.tradeOrderPayService.confirmOrderPay(tradeOrder);
-
+				//begin modify by zengjz 判断是否是服务店订单 
+				if (OrderTypeEnum.SERVICE_STORE_ORDER == tradeOrder.getType()) {
+					//服务店商品走另外的资金流程
+					this.tradeOrderPayService.confirmStoreServiceOrderPay(tradeOrder);
+				} else {
+					this.tradeOrderPayService.confirmOrderPay(tradeOrder);
+				}
+				//begin modify by zengjz 判断是否是服务店订单
 				// begin update by wushp
 				if (tradeOrder.getType().ordinal() == 2) {
 					// 服务店订单，没有售后时间，确认订单完成即送积分
@@ -4173,16 +4174,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @author maojj
 	 * @date 2016年11月17日
 	 */
-	private String getCancelReason(UserTradeOrderDetailVo order){
+	private String getCancelReason(UserTradeOrderDetailVo order) {
 		String cancelReason = "";
-		if(order.getCancelType() == null || order.getCancelType() == OrderCancelType.CANCEL_BY_HISTORY){
+		if (order.getCancelType() == null || order.getCancelType() == OrderCancelType.CANCEL_BY_HISTORY) {
 			cancelReason = ConvertUtil.format(order.getReason());
-		}else{
-			cancelReason = String.format("(%s)%s", order.getCancelType().getDesc(),ConvertUtil.format(order.getReason()));
+		} else {
+			cancelReason = String.format("(%s)%s", order.getCancelType().getDesc(),
+					ConvertUtil.format(order.getReason()));
 		}
 		return cancelReason;
 	}
-	
+
 	/**
 	 * 
 	 * @desc 查询买家实物订单各状态订单数量
