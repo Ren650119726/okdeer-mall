@@ -9,6 +9,9 @@ package com.okdeer.mall.risk.entity;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.okdeer.mall.risk.enums.IsPreferential;
+import com.okdeer.mall.risk.enums.PayAccountType;
+
 /**
  * 风控记录
  * 
@@ -36,7 +39,7 @@ public class RiskOrderRecord {
     /**
      * 支付帐号类型：0支付宝，1微信
      */
-    private Byte payAccountType;
+    private PayAccountType payAccountType;
     /**
      * 创建时间
      */
@@ -52,7 +55,7 @@ public class RiskOrderRecord {
     /**
      * 是否使用优惠
      */
-    private Byte isPreferential;
+    private IsPreferential isPreferential;
 
 
     public String getId() {
@@ -87,11 +90,11 @@ public class RiskOrderRecord {
         this.payAccount = payAccount;
     }
 
-    public Byte getPayAccountType() {
+    public PayAccountType getPayAccountType() {
         return payAccountType;
     }
 
-    public void setPayAccountType(Byte payAccountType) {
+    public void setPayAccountType(PayAccountType payAccountType) {
         this.payAccountType = payAccountType;
     }
 
@@ -119,11 +122,11 @@ public class RiskOrderRecord {
         this.facePrice = facePrice;
     }
 
-    public Byte getIsPreferential() {
+    public IsPreferential getIsPreferential() {
         return isPreferential;
     }
 
-    public void setIsPreferential(Byte isPreferential) {
+    public void setIsPreferential(IsPreferential isPreferential) {
         this.isPreferential = isPreferential;
     }
 }
