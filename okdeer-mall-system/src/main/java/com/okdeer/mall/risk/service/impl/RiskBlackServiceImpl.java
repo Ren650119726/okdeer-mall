@@ -9,8 +9,8 @@ package com.okdeer.mall.risk.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +21,6 @@ import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.risk.dto.RiskBlackDto;
 import com.okdeer.mall.risk.entity.RiskBlack;
-import com.okdeer.mall.risk.entity.RiskUserManager;
 import com.okdeer.mall.risk.mapper.RiskBlackMapper;
 import com.okdeer.mall.risk.service.RiskBlackService;
 
@@ -82,5 +81,10 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	public void addBath(List<RiskBlack> riskBlackList) {
 		riskBlackMapper.addBatch(riskBlackList);
 		
+	}
+	
+	@Override
+	public List<RiskBlack> findBlackListByParams(Map<String,Object> map){
+		return riskBlackMapper.findBlackListByParams(map);
 	}
 }

@@ -9,6 +9,7 @@ package com.okdeer.mall.risk.entity;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.okdeer.mall.risk.enums.IsPreferential;
 import com.okdeer.mall.risk.enums.PayAccountType;
 import com.okdeer.mall.risk.enums.TriggerType;
 import com.okdeer.mall.risk.enums.TriggerWay;
@@ -62,9 +63,9 @@ public class RiskTriggerRecord {
      */
     private BigDecimal facePrice;
     /**
-     * 是否使用优惠
+     * 是否使用优惠 0 否 1 是
      */
-    private Byte isPreferential;
+    private IsPreferential isPreferential;
 
 
     public String getId() {
@@ -147,11 +148,11 @@ public class RiskTriggerRecord {
         this.facePrice = facePrice;
     }
 
-    public Byte getIsPreferential() {
+    public IsPreferential getIsPreferential() {
         return isPreferential;
     }
 
-    public void setIsPreferential(Byte isPreferential) {
+    public void setIsPreferential(IsPreferential isPreferential) {
         this.isPreferential = isPreferential;
     }
 }
