@@ -645,7 +645,8 @@
 			ca.area_type,
 			ca.on_shelf_time,
 			ca.start_time,
-			ca.create_time
+			ca.create_time,
+			ca.business_id,ca.sort
 		FROM
 			column_advert ca 
 			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 

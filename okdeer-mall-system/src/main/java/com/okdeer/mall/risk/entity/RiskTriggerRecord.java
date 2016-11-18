@@ -9,6 +9,10 @@ package com.okdeer.mall.risk.entity;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.okdeer.mall.risk.enums.PayAccountType;
+import com.okdeer.mall.risk.enums.TriggerType;
+import com.okdeer.mall.risk.enums.TriggerWay;
+
 /**
  * 风控触发记录
  * 
@@ -36,15 +40,15 @@ public class RiskTriggerRecord {
     /**
      * 支付帐号类型：0支付宝，1微信
      */
-    private Byte payAccountType;
+    private PayAccountType payAccountType;
     /**
      * 触发类型：0次数，1笔数，2充值号码数，3设备登入用户数
      */
-    private Byte triggerType;
+    private TriggerType triggerType;
     /**
      * 触发动作：0 提醒，1禁止下单
      */
-    private Byte triggerWay;
+    private TriggerWay triggerWay;
     /**
      * 触发时间
      */
@@ -95,27 +99,27 @@ public class RiskTriggerRecord {
         this.payAccount = payAccount;
     }
 
-    public Byte getPayAccountType() {
+    public PayAccountType getPayAccountType() {
         return payAccountType;
     }
 
-    public void setPayAccountType(Byte payAccountType) {
+    public void setPayAccountType(PayAccountType payAccountType) {
         this.payAccountType = payAccountType;
     }
 
-    public Byte getTriggerType() {
+    public TriggerType getTriggerType() {
         return triggerType;
     }
 
-    public void setTriggerType(Byte triggerType) {
+    public void setTriggerType(TriggerType triggerType) {
         this.triggerType = triggerType;
     }
 
-    public Byte getTriggerWay() {
+    public TriggerWay getTriggerWay() {
         return triggerWay;
     }
 
-    public void setTriggerWay(Byte triggerWay) {
+    public void setTriggerWay(TriggerWay triggerWay) {
         this.triggerWay = triggerWay;
     }
 
