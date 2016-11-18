@@ -31,6 +31,7 @@ import com.okdeer.mall.operate.skinmanager.service.SkinManagerService;
 @Service(version = "1.0.0")
 public class SkinManagerApiImpl implements SkinManagerApi {
 
+	
 	@Autowired
 	SkinManagerService skinManagerService;
 
