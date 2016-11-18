@@ -9,20 +9,22 @@ package com.okdeer.mall.risk.enums;
 import com.okdeer.base.common.enums.BaseEnum;
 
 /**
- * ClassName: IsPreferential 
- * @Description: 是否使用优惠枚举
+ * ClassName: TriggerType 
+ * @Description: 触发类型
  * @author guocp
- * @date 2016年11月17日
+ * @date 2016年11月18日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *
  */
-public enum IsPreferential implements BaseEnum<IsPreferential, Integer> {
+public enum TriggerType implements BaseEnum<TriggerType, Integer> {
 
-	NO(0, "否"), 
-	YES(1, "是");
+	COUNT_LIMIT(0, "次数上限"), 
+	TOTAL_LIMIT(1, "额度上限"), 
+	TEL_LIMIT(2, "充值号码上限"), 
+	DEVICE_LIMIT(3, "设备登入用户上限");
 
 	/**
 	 * 编码
@@ -34,7 +36,7 @@ public enum IsPreferential implements BaseEnum<IsPreferential, Integer> {
 	 */
 	private String desc;
 
-	private IsPreferential(Integer code, String desc) {
+	private TriggerType(Integer code, String desc) {
 		this.code = code;
 		this.desc = desc;
 	}

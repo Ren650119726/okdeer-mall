@@ -9,8 +9,8 @@ package com.okdeer.mall.risk.enums;
 import com.okdeer.base.common.enums.BaseEnum;
 
 /**
- * ClassName: IsPreferential 
- * @Description: 是否使用优惠枚举
+ * ClassName: TriggerWay 
+ * @Description: 触发方式枚举
  * @author guocp
  * @date 2016年11月17日
  *
@@ -19,10 +19,11 @@ import com.okdeer.base.common.enums.BaseEnum;
  * ----------------+----------------+-------------------+-------------------------------------------
  *
  */
-public enum IsPreferential implements BaseEnum<IsPreferential, Integer> {
 
-	NO(0, "否"), 
-	YES(1, "是");
+public enum TriggerWay implements BaseEnum<TriggerWay, Integer> {
+
+	NOTICE(0, "提醒"), 
+	FORBID(1, "禁止下单");
 
 	/**
 	 * 编码
@@ -34,7 +35,7 @@ public enum IsPreferential implements BaseEnum<IsPreferential, Integer> {
 	 */
 	private String desc;
 
-	private IsPreferential(Integer code, String desc) {
+	private TriggerWay(Integer code, String desc) {
 		this.code = code;
 		this.desc = desc;
 	}
