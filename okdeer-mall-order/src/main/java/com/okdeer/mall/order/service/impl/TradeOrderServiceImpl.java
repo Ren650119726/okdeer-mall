@@ -1438,8 +1438,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					tradeOrder.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId()));
 				}
 				// 给卖家打款
-				this.tradeOrderPayService.confirmOrderPay(tradeOrder);
-
+				//begin modify by zengjz 判断是否是服务店订单 
+				if (OrderTypeEnum.SERVICE_STORE_ORDER == tradeOrder.getType()) {
+					//服务店商品走另外的资金流程
+					this.tradeOrderPayService.confirmStoreServiceOrderPay(tradeOrder);
+				} else {
+					this.tradeOrderPayService.confirmOrderPay(tradeOrder);
+				}
+				//begin modify by zengjz 判断是否是服务店订单
 				// begin update by wushp
 				if (tradeOrder.getType().ordinal() == 2) {
 					// 服务店订单，没有售后时间，确认订单完成即送积分
@@ -4168,16 +4174,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @author maojj
 	 * @date 2016年11月17日
 	 */
-	private String getCancelReason(UserTradeOrderDetailVo order){
+	private String getCancelReason(UserTradeOrderDetailVo order) {
 		String cancelReason = "";
-		if(order.getCancelType() == null || order.getCancelType() == OrderCancelType.CANCEL_BY_HISTORY){
+		if (order.getCancelType() == null || order.getCancelType() == OrderCancelType.CANCEL_BY_HISTORY) {
 			cancelReason = ConvertUtil.format(order.getReason());
-		}else{
-			cancelReason = String.format("(%s)%s", order.getCancelType().getDesc(),ConvertUtil.format(order.getReason()));
+		} else {
+			cancelReason = String.format("(%s)%s", order.getCancelType().getDesc(),
+					ConvertUtil.format(order.getReason()));
 		}
 		return cancelReason;
 	}
-	
+
 	/**
 	 * 
 	 * @desc 查询买家实物订单各状态订单数量
