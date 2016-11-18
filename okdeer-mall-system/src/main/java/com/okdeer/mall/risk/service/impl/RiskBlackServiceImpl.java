@@ -8,6 +8,7 @@
 package com.okdeer.mall.risk.service.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -96,5 +97,17 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	@Override
 	public List<RiskBlack> findBlackListByParams(Map<String,Object> map){
 		return riskBlackMapper.findBlackListByParams(map);
+	}
+
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskBlackService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime) {
+		riskBlackMapper.deleteBatchByIds(ids,updateUserId,updateTime);
+		
 	}
 }

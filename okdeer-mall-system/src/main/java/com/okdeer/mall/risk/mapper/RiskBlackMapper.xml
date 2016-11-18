@@ -37,7 +37,7 @@
          AND account LIKE CONCAT('%',#{accountWeChat,jdbcType=VARCHAR},'%') 
        </if>
        <!-- 账号类型 账号类型为1 支付类型时查询微信和支付宝两张账号类型  -->
-       <if test="accountType != null">
+       <if test="accountType != null and accountType != -1" >
 	       <choose>
 			   <when test="accountType == 1">
 			   		AND account_type in (1,4)

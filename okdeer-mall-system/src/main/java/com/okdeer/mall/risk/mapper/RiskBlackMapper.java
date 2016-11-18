@@ -43,7 +43,7 @@ public interface RiskBlackMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年11月17日
 	 */
-	void addBatch(@Param(value = "riskBlackList")List<RiskBlack> riskBlackList);
+	void addBatch(@Param(value = "riskList")List<RiskBlack> riskList);
 	
 	/**
 	 * @Description: 通过参数获取黑名单列表
