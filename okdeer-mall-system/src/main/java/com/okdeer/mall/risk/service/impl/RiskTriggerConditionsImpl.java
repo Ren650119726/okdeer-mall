@@ -6,11 +6,15 @@
  */    
 package com.okdeer.mall.risk.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.okdeer.mall.risk.entity.RiskOrderRecord;
-import com.okdeer.mall.risk.service.RiskConditionsTrigger;
+import com.okdeer.mall.risk.po.RiskOrderRecordPo;
 import com.okdeer.mall.risk.service.RiskOrderRecordService;
+import com.okdeer.mall.risk.service.RiskTriggerConditions;
 
 
 /**
@@ -24,7 +28,8 @@ import com.okdeer.mall.risk.service.RiskOrderRecordService;
  * ----------------+----------------+-------------------+-------------------------------------------
  *
  */
-public class RiskConditionsTriggerImpl implements RiskConditionsTrigger {
+@Service
+public class RiskTriggerConditionsImpl implements RiskTriggerConditions {
 
 	@Autowired
 	private RiskOrderRecordService riskOrderRecordService;
@@ -35,7 +40,12 @@ public class RiskConditionsTriggerImpl implements RiskConditionsTrigger {
 		//新增订单记录
 		riskOrderRecordService.add(riskOrder);
 		
+		//判断是否触发次数限制
+		RiskOrderRecordPo list = riskOrderRecordService.findByLoginName(riskOrder.getLoginName());
 		
+		List<RiskOrderRecordPo> list1 = riskOrderRecordService.findByDeviceId(riskOrder.getDeviceId());
+		
+		List<RiskOrderRecordPo> list2 = riskOrderRecordService.findByPayAccount(riskOrder.getPayAccount());
 		return false;
 	}
 

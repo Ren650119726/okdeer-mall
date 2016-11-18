@@ -20,7 +20,7 @@ import com.okdeer.mall.risk.entity.RiskOrderRecord;
  *
  */
 
-public interface RiskConditionsTrigger {
+public interface RiskTriggerConditions {
 
 	/**
 	 * 是否触发风控

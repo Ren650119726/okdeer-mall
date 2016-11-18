@@ -9,6 +9,8 @@ package com.okdeer.mall.risk.entity;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.okdeer.mall.risk.enums.IsPreferential;
+
 /**
  * 风控记录
  * 
@@ -52,7 +54,7 @@ public class RiskOrderRecord {
     /**
      * 是否使用优惠
      */
-    private Byte isPreferential;
+    private IsPreferential isPreferential;
 
 
     public String getId() {
@@ -119,11 +121,11 @@ public class RiskOrderRecord {
         this.facePrice = facePrice;
     }
 
-    public Byte getIsPreferential() {
+    public IsPreferential getIsPreferential() {
         return isPreferential;
     }
 
-    public void setIsPreferential(Byte isPreferential) {
+    public void setIsPreferential(IsPreferential isPreferential) {
         this.isPreferential = isPreferential;
     }
 }
