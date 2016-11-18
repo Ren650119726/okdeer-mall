@@ -11,16 +11,17 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.risk.dto.UserManagerDto;
+import com.okdeer.mall.risk.dto.RiskUserManagerDto;
 import com.okdeer.mall.risk.entity.RiskUserManager;
 import com.okdeer.mall.risk.mapper.RiskUserManagerMapper;
-import com.okdeer.mall.risk.service.IRiskManagerService;
+import com.okdeer.mall.risk.service.RiskUserManagerService;
 
 /**
  * ClassName: ISkinManagerServiceApi 
@@ -34,50 +35,16 @@ import com.okdeer.mall.risk.service.IRiskManagerService;
  *		v1.2			2016年11月15日		xuzq01				风控管理人员service实现类
  */
 @Service
-public class RiskManagerImpl extends BaseServiceImpl implements IRiskManagerService{
+public class RiskUserManagerImpl extends BaseServiceImpl implements RiskUserManagerService{
 	
-	//private static final Logger LOGGER = Logger.getLogger(RiskManagerImpl.class);
+	//private static final Logger LOGGER = Logger.getLogger(RiskUserManagerImpl.class);
 	
 	/**
 	 * 风控管理mapper
 	 */
 	@Autowired
 	RiskUserManagerMapper riskUserManagerMapper;
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.IBaseService#add(java.lang.Object)
-	 */
-	@Override
-	public <Entity> int add(Entity entity) throws Exception {
-		return riskUserManagerMapper.add(entity);
-	}
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.IBaseService#update(java.lang.Object)
-	 */
-	@Override
-	public <Entity> int update(Entity entity) throws Exception {
-		return riskUserManagerMapper.update(entity);
-	}
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.IBaseService#delete(java.lang.String)
-	 */
-	@Override
-	public int delete(String id) throws Exception {
-		return riskUserManagerMapper.delete(id);
-	}
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.IBaseService#findById(java.lang.String)
-	 */
-	@Override
-	public <Entity> Entity findById(String id) throws Exception {
-		return riskUserManagerMapper.findById(id);
-	}
+	
 
 	/**
 	 * (non-Javadoc)
@@ -90,10 +57,10 @@ public class RiskManagerImpl extends BaseServiceImpl implements IRiskManagerServ
 
 	/**
 	 * 获取风控人员list
-	 * @see com.okdeer.mall.risk.service.IRiskManagerService#findUserList(com.okdeer.mall.risk.dto.UserManagerDto, java.lang.Integer, java.lang.Integer)
+	 * @see com.okdeer.mall.risk.service.RiskUserManagerService#findUserList(com.okdeer.mall.risk.dto.RiskUserManagerDto, java.lang.Integer, java.lang.Integer)
 	 */
 	@Override
-	public PageUtils<RiskUserManager> findUserList(UserManagerDto userManagerDto, Integer pageNumber,
+	public PageUtils<RiskUserManager> findUserList(RiskUserManagerDto userManagerDto, Integer pageNumber,
 			Integer pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true);
 		List<RiskUserManager> result = riskUserManagerMapper.findUserList(userManagerDto);
@@ -105,9 +72,10 @@ public class RiskManagerImpl extends BaseServiceImpl implements IRiskManagerServ
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.risk.service.IRiskManagerService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
+	 * @see com.okdeer.mall.risk.service.RiskUserManagerService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
 	 */
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime) {
 		riskUserManagerMapper.deleteBatchByIds(ids,updateUserId,updateTime);
 		
