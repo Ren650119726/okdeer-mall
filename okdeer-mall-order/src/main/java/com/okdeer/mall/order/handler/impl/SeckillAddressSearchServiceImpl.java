@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
@@ -41,12 +40,6 @@ public class SeckillAddressSearchServiceImpl implements RequestHandler<ServiceOr
 	private MemberConsigneeAddressMapper memberConsigneeAddressMapper;
 	
 	/**
-	 * 店铺信息查询Service
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoServiceApi;
-	
-	/**
 	 * 地址service
 	 */
 	@Reference(version = "1.0.0", check = false)
@@ -55,54 +48,58 @@ public class SeckillAddressSearchServiceImpl implements RequestHandler<ServiceOr
 	@Override
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
 		ServiceOrderResp respData = resp.getData();
-		
-		// 区域类型：0全国，1区域
-		String seckillRangeType = String.valueOf(req.getContext().get("seckillRangeType"));
-		String storeAreaType = String.valueOf(req.getContext().get("storeAreaType"));
-		String userId = req.getData().getUserId();
-		// 有效的地址列表
-		List<UserAddressVo> addrList = null;
-		Map<String,Object> condition = new HashMap<String,Object>();
-		condition.put("userId", userId);
-		if("0".equals(seckillRangeType) && "0".equals(storeAreaType)){
-			// 如果秒杀区域类型和店铺服务区域都是全国范围，则用户地址均有效
-			addrList = memberConsigneeAddressMapper.findAddrWithUserId(userId);
-		}else if("0".equals(seckillRangeType) && "1".equals(storeAreaType)){
-			// 如果秒杀区域类型为全国范围，服务店铺服务范围为区域，则按照店铺服务范围查询用户地址
-			condition.put("storeId", req.getData().getStoreId());
-			addrList = memberConsigneeAddressMapper.findAddrWithStoreServRange(condition);
-		}else if("1".equals(seckillRangeType) && "0".equals(storeAreaType)){
-			// 如果秒杀区域类型为区域，服务店铺服务范围为全国，则按照秒杀服务范围查询
-			condition.put("activitySeckillId", req.getData().getSeckillId());
-			addrList = memberConsigneeAddressMapper.findAddrWithSeckillServRange(condition);
-		}else if("1".equals(seckillRangeType) && "1".equals(storeAreaType)){
-			// 如果秒杀区域类型和店铺服务区域类型都是区域，则按照两者的交集查询用户地址
-			condition.put("storeId", req.getData().getStoreId());
-			condition.put("activitySeckillId", req.getData().getSeckillId());
-			addrList = memberConsigneeAddressMapper.findAddrWithServRange(condition);
+		SpuTypeEnum skuType = (SpuTypeEnum)req.getContext().get("skuType");
+		if(skuType == SpuTypeEnum.fwdDdxfSpu){
+			// 到店消费，返回店铺地址
+			processConsumeToStore(req.getData().getStoreId(),respData);
+		}else{
+			// 上门服务，返回用户有效的地址
+			processServToDoor(req,respData);
 		}
-		if(!CollectionUtils.isEmpty(addrList)){
-			for(UserAddressVo addr : addrList){
+	}
+	
+	
+	/**
+	 * @Description: 处理到店消费。如果秒杀商品是到店消费的，则返回店铺地址
+	 * @param storeId
+	 * @param respData   
+	 * @author maojj
+	 * @date 2016年11月18日
+	 */
+	private void processConsumeToStore(String storeId, ServiceOrderResp respData) throws Exception {
+		// 到店消费的商品，需要返回店铺地址
+		MemberConsigneeAddress storeAddrObj = memberConsigneeAddressService.findByStoreId(storeId);
+		StringBuilder storeAddr = new StringBuilder();
+		storeAddr.append(ConvertUtil.format(storeAddrObj.getProvinceName()))
+				.append(ConvertUtil.format(storeAddrObj.getCityName()))
+				.append(ConvertUtil.format(storeAddrObj.getAreaName()))
+				.append(ConvertUtil.format(storeAddrObj.getAreaExt()));
+		respData.getStoreInfo().setAddress(storeAddr.toString());
+	}
+	
+	/**
+	 * @Description: 处理上门服务
+	 * @param req
+	 * @param respData   
+	 * @author maojj
+	 * @date 2016年11月18日
+	 */
+	private void processServToDoor(Request<ServiceOrderReq> req,ServiceOrderResp respData){
+		// 区域类型：0全国，1区域
+		Map<String,Object> condition = new HashMap<String,Object>();
+		condition.put("userId", req.getData().getUserId());
+		condition.put("storeId", req.getData().getStoreId());
+		condition.put("activitySeckillId", req.getData().getSeckillId());
+		condition.put("seckillRangeType", req.getContext().get("seckillRangeType"));
+		condition.put("storeAreaType", req.getContext().get("storeAreaType"));
+		List<UserAddressVo> userAddrList = memberConsigneeAddressService.findUserAddr(condition);
+		if(!CollectionUtils.isEmpty(userAddrList)){
+			for(UserAddressVo addr : userAddrList){
 				if(addr.getIsOutRange() == 0){
 					respData.setDefaultAddress(addr);
 					break;
 				}
 			}
 		}
-		
-		// 查询店铺地址
-		SpuTypeEnum skuType = (SpuTypeEnum)req.getContext().get("skuType");
-		if(skuType == SpuTypeEnum.fwdDdxfSpu){
-			// 到店消费的商品，需要返回店铺地址
-			MemberConsigneeAddress storeAddrObj = memberConsigneeAddressService.findByStoreId(req.getData().getStoreId());
-			StringBuilder storeAddr = new StringBuilder();
-			storeAddr.append(ConvertUtil.format(storeAddrObj.getProvinceName()))
-					.append(ConvertUtil.format(storeAddrObj.getCityName()))
-					.append(ConvertUtil.format(storeAddrObj.getAreaName()))
-					.append(ConvertUtil.format(storeAddrObj.getAreaExt()));
-			respData.getStoreInfo().setAddress(storeAddr.toString());
-		}
-		req.setComplete(true);
 	}
-	
 }
