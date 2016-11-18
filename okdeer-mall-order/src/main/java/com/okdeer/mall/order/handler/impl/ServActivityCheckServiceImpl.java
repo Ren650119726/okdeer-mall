@@ -3,6 +3,7 @@ package com.okdeer.mall.order.handler.impl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -23,7 +24,6 @@ import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
-import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
@@ -69,7 +69,6 @@ public class ServActivityCheckServiceImpl implements RequestHandler<ServiceOrder
 	@Override
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
 		ServiceOrderReq reqData = req.getData();
-		ServiceOrderResp respData = resp.getData();
 		// 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
 		ActivityTypeEnum activityType = reqData.getActivityType();
 		if (activityType == null) {
@@ -107,7 +106,7 @@ public class ServActivityCheckServiceImpl implements RequestHandler<ServiceOrder
 			ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsId.toString());
 			// 0全部分类 1指定分类
 			if (coupons.getIsCategory() == Constant.ONE) {
-				List<String> spuCategoryIds = duplicateRemoval((List<String>) req.getContext().get("spuCategoryIds"));
+				Set<String> spuCategoryIds = (Set<String>) req.getContext().get("spuCategoryIds");
 				// 如果是指定分类。校验商品的分类
 				int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getId());
 				if (count == Constant.ZERO || count != spuCategoryIds.size()) {
@@ -122,22 +121,6 @@ public class ServActivityCheckServiceImpl implements RequestHandler<ServiceOrder
 		
 	}
 	
-	/**
-	 * 
-	 * @Description: 去除重复
-	 * @param spuCategoryIds  商品类目id
-	 * @return List  
-	 * @author wushp
-	 * @date 2016年10月5日
-	 */
-	private static List<String> duplicateRemoval(List<String> spuCategoryIds){
-		if (CollectionUtils.isNotEmpty(spuCategoryIds)) {
-			HashSet<String> hsSpuCategoryIds = new HashSet<String>(spuCategoryIds);
-			spuCategoryIds = new ArrayList<String>(hsSpuCategoryIds);
-		}
-		return spuCategoryIds;
-	}
-
 	/**
 	 * @Description: 校验优惠券
 	 * @param recordId 代金券领取记录ID

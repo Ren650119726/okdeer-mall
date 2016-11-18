@@ -12,8 +12,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -1327,7 +1329,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 			// 当前店铺商品信息
 			List<GoodsStoreSku> currentStoreSkuList = goodsStoreSkuServiceApi.findStoreSkuForOrder(skuIdList);
             //商品类型ids
-			List<String> spuCategoryIds = new ArrayList<String>();
+			Set<String> spuCategoryIds = new HashSet<String>();
 			if (CollectionUtils.isNotEmpty(currentStoreSkuList)) {
 				for (GoodsStoreSku goodsStoreSku : currentStoreSkuList) {
 					spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
