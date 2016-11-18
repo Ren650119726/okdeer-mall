@@ -11,6 +11,7 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.common.consts.DescriptConstants;
@@ -120,7 +121,7 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 
 	@Override
 	public boolean isBreach(String orderId) throws Exception {
-		
+		Assert.hasText(orderId);
 		return cancelOrderService.isBreach(orderId) ;
 	}
 

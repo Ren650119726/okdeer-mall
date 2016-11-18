@@ -66,4 +66,15 @@ public class CancelOrderServiceApiTest{
 		Assert.assertNotNull(userRefuseDto);
 	}
 
+	@Test
+	public void testIsBreach(){
+		String orderId = "8a94e4cb5862e252015862e378e70001";
+		try {
+			boolean bln = cancelOrderApi.isBreach(orderId);
+			System.out.println(bln);
+			Assert.assertTrue(true);
+		} catch (Exception e) {
+			Assert.assertTrue(false);
+		}
+	}
 }
