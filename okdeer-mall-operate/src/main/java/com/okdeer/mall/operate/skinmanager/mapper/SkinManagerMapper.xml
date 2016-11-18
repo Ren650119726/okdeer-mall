@@ -14,10 +14,35 @@
         <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled"/>
         <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.SkinManagerStatus"/>
     </resultMap>
-
+    
+    <resultMap type="com.okdeer.mall.operate.dto.SkinManagerDto" id="SkinDetailResultMap">
+    	<id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_name" property="activityName" jdbcType="VARCHAR" />
+        <result column="skin_type" property="skinType" jdbcType="TINYINT"/>
+        <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+        <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.SkinManagerStatus"/>
+		<collection property="detailList" ofType="com.okdeer.mall.operate.entity.SkinManagerDetail">
+	        <result column="tab_type" property="tabType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.AppTabType"/>
+	        <result column="unselected_pic_url" property="unselectedPicUrl" jdbcType="VARCHAR" />
+	        <result column="selected_pic_url" property="selectedPicUrl" jdbcType="VARCHAR" />
+		</collection>
+    </resultMap>
+	
     <sql id="Base_Column_List" >
         id, activity_name, skin_type, start_time, end_time, create_time, create_user_id, 
         update_time, update_user_id, disabled, status
+    </sql>
+    
+    <!-- 皮肤明细列表 -->
+    <sql id="skinDetailColumn">
+    	sm.id, sm.activity_name, sm.skin_type, sm.start_time, sm.end_time, sm.create_time, sm.create_user_id, 
+        sm.update_time, sm.update_user_id, sm.status,
+        smd.tab_type,smd.unselected_pic_url,smd.selected_pic_url
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -101,7 +126,7 @@
         </trim>
     </insert>
 
-    <update id="updata" parameterType="com.okdeer.mall.operate.entity.SkinManager" >
+    <update id="update" parameterType="com.okdeer.mall.operate.entity.SkinManager" >
         update skin_manager
         <set >
             <if test="activityName != null" >
@@ -144,7 +169,7 @@
     </delete>
     
     <!-- 根据条件搜索皮肤列表 -->
- 	<select id="findSkinList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.operate.dto.SkinManagerDto">
+ 	<select id="findSkinList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.operate.dto.SkinManagerParamDto">
     	SELECT  <include refid="Base_Column_List" />
      	FROM skin_manager 
      	WHERE 1=1
@@ -200,11 +225,12 @@
      	FROM skin_manager 
      	<!-- 未被删除的 -->
      	WHERE disabled = 0
-       	<!-- 状态为进行中 -->
-       	AND status = 1    
        	AND (#{startTime,jdbcType=TIMESTAMP} BETWEEN start_time and end_time 
        	OR #{endTime,jdbcType=TIMESTAMP} BETWEEN start_time and end_time 
        	OR (start_time <![CDATA[ >= ]]> #{startTime,jdbcType=TIMESTAMP} AND end_time <![CDATA[ <= ]]> #{endTime,jdbcType=TIMESTAMP}))
+       	<if test="id != null and id != '' ">
+       		AND id != #{id}
+       	</if>
   	</select>
   	
    	<!-- 根据名称查询是否有运行中的皮肤 -->
@@ -214,4 +240,26 @@
      	<!-- 未被删除的 -->
     	 WHERE disabled = 0 and activity_name=#{activityName,jdbcType=VARCHAR}
      </select>
+     
+     <select id="findSkinDetailByParam" parameterType="com.okdeer.mall.operate.dto.SkinManagerParamDto" resultMap="SkinDetailResultMap">
+     	SELECT <include refid="skinDetailColumn"/>
+     	FROM skin_manager sm
+     	LEFT JOIN skin_manager_detail smd ON sm.id = smd.skin_manager_id
+     	<where>
+     		<if test="id != null and id != ''">
+     			AND sm.id = #{id}
+     		</if>
+     		<if test="status != null">
+     			AND sm.status = #{status}
+     		</if>
+     	</where>
+     </select>
+     
+    <!-- 1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束-->
+	<select id="listByJob" parameterType="map" resultMap="BaseResultMap">
+		select s.* from skin_manager s where 
+		(s.`status` = 0 and  s.start_time &lt;= #{nowTime})
+		OR
+		(s.`status` = 1 and  s.end_time &lt;= #{nowTime})
+	</select> 
 </mapper>

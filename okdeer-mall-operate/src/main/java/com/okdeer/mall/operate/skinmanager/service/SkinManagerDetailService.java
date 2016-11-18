@@ -25,7 +25,7 @@ import com.okdeer.mall.operate.entity.SkinManagerDetail;
  *
  */
 
-public interface ISkinManagerDetailService extends IBaseService {
+public interface SkinManagerDetailService extends IBaseService {
 	
 	/**
 	 * @Description: 添加活动皮肤详细
