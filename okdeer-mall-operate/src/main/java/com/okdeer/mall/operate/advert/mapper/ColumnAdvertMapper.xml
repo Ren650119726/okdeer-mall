@@ -141,7 +141,7 @@
 	
 	<select id="findColumnAdvertPage" resultMap="columnAdvertVoRsMap" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertQueryVo">     
         SELECT ca.id,ca.name,ca.create_time,ca.start_time, ca.end_time, ai.cost, ca.status, 
-       		   ca.pv, pa.full_name as agentName,ap.name AS positionName,ai.advertiser, aap.approval_time,ai.sort 
+       		   ca.pv, pa.full_name as agentName,ap.name AS positionName,ai.advertiser, aap.approval_time,ca.sort 
 		FROM column_advert_position ap, column_advert_approval aap, column_advert ca
 		LEFT JOIN psms_agent pa ON ca.belong_type = pa.id
 		LEFT JOIN column_advert_info ai ON ca.id = ai.advert_id
@@ -301,7 +301,7 @@
 	      ca.target_url, ci.advertiser, ci.contact,ci.phone,ca.position_id,
 	      ci.id AS advertInfoId,ci.cost, ci.protocol_url,ca.position_id,
 	      caa.id as aaId, caa.area_id, caa.type, ca.area_type,ca.belong_type,
-	      aap.id AS approvalId, aap.status AS auditStatus, aap.log, ca.status
+	      aap.id AS approvalId, aap.status AS auditStatus, aap.log, ca.status,ca.business_id,ca.sort
        FROM column_advert_position cp
        LEFT JOIN column_advert ca ON ca.position_id = cp.id
        LEFT JOIN column_advert_approval aap ON aap.advert_id = ca.id
@@ -314,14 +314,14 @@
 	<insert id="insert" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
 		INSERT INTO column_advert(id, position_id, belong_type, name, target_type, target_url, pic_url,
 				area_type, start_time, end_time, is_pay, trade_num, status, create_time, create_user_id,
-				update_time, update_user_id, disabled, pv, target, on_shelf_time, off_shelf_time)
+				update_time, update_user_id, disabled, pv, target, on_shelf_time, off_shelf_time,business_id,sort)
 		VALUES (#{id, jdbcType=VARCHAR}, #{positionId, jdbcType=VARCHAR}, #{belongType, jdbcType=VARCHAR}, 
 				#{name, jdbcType=VARCHAR}, #{targetType, jdbcType=TINYINT}, #{targetUrl, jdbcType=VARCHAR}, 
 				#{picUrl, jdbcType=VARCHAR}, #{areaType, jdbcType=TINYINT}, #{startTime, jdbcType=TIMESTAMP}, 
 				#{endTime, jdbcType=TIMESTAMP}, #{isPay, jdbcType=TINYINT}, #{tradeNum, jdbcType=VARCHAR}, #{status, jdbcType=TINYINT}, 
 				#{createTime, jdbcType=TIMESTAMP}, #{createUserId, jdbcType=VARCHAR}, #{updateTime, jdbcType=TIMESTAMP}, 
 				#{updateUserId, jdbcType=VARCHAR}, #{disabled, jdbcType=INTEGER}, #{pv, jdbcType=INTEGER}, 
-				#{target, jdbcType=TINYINT}, #{onShelfTime, jdbcType=TIMESTAMP}, #{offShelfTime, jdbcType=TIMESTAMP})
+				#{target, jdbcType=TINYINT}, #{onShelfTime, jdbcType=TIMESTAMP}, #{offShelfTime, jdbcType=TIMESTAMP},#{businessId, jdbcType=VARCHAR},#{sort, jdbcType=INTEGER})
 	</insert>
 	
 	<insert id="insertSelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
@@ -390,15 +390,12 @@
 			<if test="onShelfTime != null">
 				on_shelf_time, 
 			</if>
-			<if test="offShelfTime != null">
-				off_shelf_time
-			</if>
 			<!-- begin add by zengjz 2016-11-07 增加字段-->
 			<if test="businessId != null">
 				business_id, 
 			</if>
 			<if test="sort != null">
-				sort
+				sort,
 			</if>
 			<!-- end add by zengjz 2016-11-07 增加字段-->											
 		</trim>
@@ -467,16 +464,12 @@
 			<if test="onShelfTime != null">
 				#{onShelfTime, jdbcType=TIMESTAMP}, 
 			</if>
-			<if test="offShelfTime != null">
-				#{offShelfTime, jdbcType=TIMESTAMP}
-			</if>
-			
 			<!-- begin add by zengjz 2016-11-07 增加字段-->
 			<if test="businessId != null">
 				#{businessId, jdbcType=VARCHAR}, 
 			</if>
 			<if test="sort != null">
-				#{sort, jdbcType=TINYINT}
+				#{sort, jdbcType=TINYINT},
 			</if>
 			<!-- end add by zengjz 2016-11-07 增加字段-->				
 		</trim>
