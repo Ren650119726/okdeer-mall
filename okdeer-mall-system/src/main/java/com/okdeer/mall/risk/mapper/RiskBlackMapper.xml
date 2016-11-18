@@ -77,7 +77,7 @@
 		 disabled
 		 )   
 	    values  
-	    <foreach collection="riskBlackList" item="item" index="index" separator="," >  
+	    <foreach collection="riskList" item="item" index="index" separator="," >  
 	        (#{item.id},
 	        #{item.account},
 	        #{item.accountType},
@@ -106,6 +106,13 @@
        1 = 2
      </if>  
    </update>
+   
+   <select id="findCountByAccount" resultType="java.lang.Integer" parameterType="com.okdeer.mall.risk.entity.RiskBlack" >
+        select count(1) 
+        from risk_black
+        where account = #{account,jdbcType=VARCHAR} and account_type=#{accountType,jdbcType=NUMERIC}
+    </select>
+    
     <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskBlack" >
         insert into risk_black
         <trim prefix="(" suffix=")" suffixOverrides="," >

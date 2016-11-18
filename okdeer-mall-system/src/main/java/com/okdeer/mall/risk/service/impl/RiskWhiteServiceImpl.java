@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.ibatis.annotations.Param;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,15 +25,15 @@ import com.okdeer.mall.risk.mapper.RiskWhiteMapper;
 import com.okdeer.mall.risk.service.RiskWhiteService;
 
 /**
- * ClassName: ISkinManagerServiceApi 
- * @Description: TODO
+ * ClassName: RiskWhiteServiceImpl 
+ * @Description: 白名单service实现类
  * @author xuzq01
  * @date 2016年11月4日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ *     V1.2			  2016年11月4日		 xuzq01			     白名单service实现类
  */
 @Service
 public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteService{
@@ -97,7 +96,17 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void addBatch(List<RiskWhite> riskWhiteList) {
-		riskWhiteMapper.addBatch(riskWhiteList);		
+		//查询是否存在白名单数据 存在直接更新 不存在批量增加
+		List<RiskWhite>  riskList = new ArrayList<RiskWhite>();
+		for(RiskWhite riskWhite:riskWhiteList){
+			int count = riskWhiteMapper.findCountByAccount(riskWhite);
+			if(count>0){
+				riskWhiteMapper.update(riskWhite);
+			}else{
+				riskList.add(riskWhite);
+			}
+		}
+		riskWhiteMapper.addBatch(riskList);		
 	}
 	
 }

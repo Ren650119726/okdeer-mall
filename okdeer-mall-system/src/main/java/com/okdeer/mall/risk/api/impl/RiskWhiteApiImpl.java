@@ -16,7 +16,6 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.risk.dto.RiskWhiteDto;
-import com.okdeer.mall.risk.entity.RiskBlack;
 import com.okdeer.mall.risk.entity.RiskWhite;
 import com.okdeer.mall.risk.service.RiskWhiteApi;
 import com.okdeer.mall.risk.service.RiskWhiteService;
@@ -76,6 +75,7 @@ public class RiskWhiteApiImpl implements RiskWhiteApi {
 			Date date = new Date();
 			riskWhite.setId(UuidUtils.getUuid());
 			riskWhite.setTelephoneAccount(accountName);
+			riskWhite.setAccountType(0);
 			riskWhite.setCreateUserId(userId);
 			riskWhite.setUpdateUserId(userId);
 			riskWhite.setCreateTime(date);

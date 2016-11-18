@@ -54,4 +54,15 @@ public interface RiskBlackMapper extends IBaseMapper {
 	 */
 	List<RiskBlack> findBlackListByParams(Map<String,Object> map);
 
+	/**
+	 * @Description: TODO
+	 * @param riskBlack
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月18日
+	 */
+	int findCountByAccount(RiskBlack riskBlack);
+	
+	
+
 }

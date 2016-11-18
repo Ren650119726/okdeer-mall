@@ -79,8 +79,18 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void addBath(List<RiskBlack> riskBlackList) {
-		riskBlackMapper.addBatch(riskBlackList);
-		
+		//查询是否存在白名单数据 存在直接更新 不存在批量增加
+		List<RiskBlack>  riskList = new ArrayList<RiskBlack>();
+		for(RiskBlack riskBlack:riskBlackList){
+			int count = riskBlackMapper.findCountByAccount(riskBlack);
+			if(count>0){
+				riskBlackMapper.update(riskBlack);
+			}else{
+				riskList.add(riskBlack);
+			}
+		}
+	riskBlackMapper.addBatch(riskList);
+	
 	}
 	
 	@Override
