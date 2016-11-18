@@ -532,11 +532,11 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		if (order.getIsBreach() == WhetherEnum.whether) {
 			// 如果订单需要支付违约金，则退款金额为：实付金额-收取的违约金
 			payTradeVo.setAmount(order.getActualAmount().subtract(order.getBreachMoney()));
+			// 用于云钱包校验是否需要收取违约金
+			payTradeVo.setCheckAmount(order.getActualAmount());
 		} else {
 			payTradeVo.setAmount(order.getActualAmount());
 		}
-		// 用于云钱包校验是否需要收取违约金
-		payTradeVo.setCheckAmount(order.getActualAmount());
 		// End V1.2 modified by maojj 2016-11-09
 		payTradeVo.setIncomeUserId(order.getUserId());
 		payTradeVo.setTradeNum(order.getTradeNum());
