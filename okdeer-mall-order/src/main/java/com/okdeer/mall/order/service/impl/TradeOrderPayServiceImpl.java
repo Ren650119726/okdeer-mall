@@ -83,12 +83,15 @@ import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 
 /**
- * @DESC:
- * @author YSCGD
- * @date 2016-02-05 15:22:58
- * @version 1.0.0
- * @copyright ©2005-2020 yschome.com Inc. All rights reserved
- * 
+ * ClassName: TradeOrderPayServiceImpl 
+ * @Description: 支付想关的调用
+ * @author zengjizu
+ * @date 2016年11月18日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *     v1.2.0            2016-11-18         zengjz           增加服务订单确认调用云钱包方法、提取除共用的设置优惠信息的方法
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderPayServiceApi")
 public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrderPayServiceApi {
@@ -532,13 +535,13 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		} else {
 			payTradeVo.setAmount(order.getActualAmount());
 		}
-		//用于云钱包校验是否需要收取违约金
+		// 用于云钱包校验是否需要收取违约金
 		payTradeVo.setCheckAmount(order.getActualAmount());
 		// End V1.2 modified by maojj 2016-11-09
 		payTradeVo.setIncomeUserId(order.getUserId());
 		payTradeVo.setTradeNum(order.getTradeNum());
 		payTradeVo.setTitle("取消订单(余额支付)，交易号：" + order.getTradeNum());
-		
+
 		if (order.getType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
 			payTradeVo.setBusinessType(BusinessTypeEnum.SERVICE_STORE_ORDER_CANCEL);
 		} else {
@@ -558,7 +561,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_CANCEL);
 		return JSONObject.toJSONString(payTradeVo);
 	}
-	
+
 	/**
 	 * @Description: 构建违约金消息
 	 * @param order 订单信息
@@ -572,7 +575,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payTradeVo.setAmount(order.getBreachMoney());
 		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		payTradeVo.setTradeNum(order.getTradeNum());
-		payTradeVo.setTitle("取消订单违约金收入[" + order.getTradeNum()+"]");
+		payTradeVo.setTitle("取消订单违约金收入[" + order.getTradeNum() + "]");
 		payTradeVo.setBusinessType(BusinessTypeEnum.PAY_BREACH_FEE);
 		payTradeVo.setServiceFkId(order.getId());
 		payTradeVo.setServiceNo(order.getOrderNo());
@@ -580,6 +583,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payTradeVo.setTag(null);
 		return JSONObject.toJSONString(payTradeVo);
 	}
+
 	/**
 	 * 确认订单付款
 	 */
@@ -694,7 +698,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
 			payTradeVo.setPrefeAmount(preferentialAmount);
 		}
-		payTradeVo.setRemark("无");
 		// 接受返回消息的tag
 		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_CONFIRM);
 		return JSONObject.toJSONString(payTradeVo);
@@ -886,7 +889,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
 			payTradeVo.setPrefeAmount(preferentialAmount);
 		}
-		payTradeVo.setRemark("无");
 		// 接受返回消息的tag
 		payTradeVo.setTag(null);
 		return JSONObject.toJSONString(payTradeVo);
@@ -963,35 +965,11 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	private BalancePayTradeVo buildBalancePay(TradeOrder order) throws ServiceException {
 
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
-
-		// 优惠额支付 判断是否有优惠劵
-		if (!order.getActivityId().equals("") && order.getActivityType().ordinal() != 4
-				&& order.getActivityType().ordinal() != 0) {
-			if (ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES == order.getActivityType()
-					|| ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES == order.getActivityType()) {
-				// 满折:店铺；满减活动：店铺、运营商
-				ActivityDiscount discount = activityDiscountService.selectByPrimaryKey(order.getActivityId());
-				if (!ActivityCollectCoupons.OPERATOR_CODE.equals(discount.getStoreId())) {
-					payTradeVo.setActivitier(discount.getStoreId());
-				} else {
-					// 运营商
-					payTradeVo.setActivitier(yscWalletAccount);
-				}
-
-			} else if (ActivityTypeEnum.VONCHER == order.getActivityType()) {
-				// 代金卷：运营商、代理商
-				ActivityCollectCoupons coupons = activityCollectCouponsService.get(order.getActivityId());
-				// 判断是否代理商发的
-				if (!ActivityCollectCoupons.OPERATOR_CODE.equals(coupons.getBelongType())) {
-					// TODO 代理商ID coupons.getBelongType()
-					payTradeVo.setActivitier(coupons.getBelongType());
-				} else {
-					// 运营商
-					payTradeVo.setActivitier(yscWalletAccount);
-				}
-			}
-		}
-
+		
+		//begin modify by zengjz 将设置优惠金额部分提取出来共用
+		setActiveAmount(order, payTradeVo);
+		//end modify by zengjz 将设置优惠金额部分提取出来共用
+		
 		payTradeVo.setAmount(order.getActualAmount()); // 交易金额
 		payTradeVo.setPayUserId(order.getUserId());// 用户id
 		payTradeVo.setTradeNum(order.getTradeNum());// 交易号
@@ -1007,11 +985,9 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			payTradeVo.setBusinessType(BusinessTypeEnum.ORDER_PAY);// 业务类型
 			payTradeVo.setTag("tag_pay_result_mall_insert");// 接受返回消息的tag
 		}
-
 		payTradeVo.setServiceFkId(order.getId());// 服务单id
 		payTradeVo.setServiceNo(order.getOrderNo());// 服务单号，例如订单号、退单号
 		payTradeVo.setRemark("订单");// 备注信息
-		payTradeVo.setPrefeAmount(order.getPreferentialPrice());// 优惠金额
 
 		return payTradeVo;
 
@@ -1068,4 +1044,70 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		return tradeOrderPayMapper.selectTradeOrderPayByOrderId(orderId);
 	}
 
+	
+	//bigein add by zengjz  2016-11-18 增加服务订单确认调用云钱包方法
+	@Override
+	public void confirmStoreServiceOrderPay(TradeOrder tradeOrder) throws Exception {
+		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+		payTradeVo.setAmount(tradeOrder.getActualAmount());
+		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(tradeOrder.getStoreId()));
+		payTradeVo.setTradeNum(tradeOrder.getTradeNum());
+		payTradeVo.setTitle("订单确认服务完成[" + tradeOrder.getOrderNo() + "]");
+		payTradeVo.setBusinessType(BusinessTypeEnum.CONFIRM_SERVICE_ORDER_FINSH);
+		payTradeVo.setServiceFkId(tradeOrder.getId());
+		payTradeVo.setServiceNo(tradeOrder.getOrderNo());
+		// 接受返回消息的tag
+		payTradeVo.setTag(null);
+		// 设置优惠金额信息
+		setActiveAmount(tradeOrder, payTradeVo);
+		String sendJson = JSONObject.toJSONString(payTradeVo);
+		// 发送MQ消息
+		Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
+				sendJson.getBytes(Charsets.UTF_8));
+		SendResult sendResult = rocketMQProducer.send(msg);
+		if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
+			throw new Exception("确认订单付款发送消息失败");
+		}
+	}
+	//end add by zengjz  2016-11-18 增加服务订单确认调用云钱包方法
+	
+	/**
+	 * @Description: 设置优惠金额
+	 * @param order 订单信息
+	 * @param payTradeVo 云钱包数据发送对象
+	 * @author zengjizu
+	 * @date 2016年11月18日
+	 */
+	private void setActiveAmount(TradeOrder order, BalancePayTradeVo payTradeVo) {
+		// 优惠额支付 判断是否有优惠劵
+		if (!order.getActivityId().equals("") && order.getActivityType().ordinal() != 4
+				&& order.getActivityType().ordinal() != 0) {
+			if (ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES == order.getActivityType()
+					|| ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES == order.getActivityType()) {
+				// 满折:店铺；满减活动：店铺、运营商
+				ActivityDiscount discount = activityDiscountService.selectByPrimaryKey(order.getActivityId());
+				if (!ActivityCollectCoupons.OPERATOR_CODE.equals(discount.getStoreId())) {
+					payTradeVo.setActivitier(discount.getStoreId());
+				} else {
+					// 运营商
+					payTradeVo.setActivitier(yscWalletAccount);
+				}
+				// 优惠金额
+				payTradeVo.setPrefeAmount(order.getPreferentialPrice());
+			} else if (ActivityTypeEnum.VONCHER == order.getActivityType()) {
+				// 代金卷：运营商、代理商
+				ActivityCollectCoupons coupons = activityCollectCouponsService.get(order.getActivityId());
+				// 判断是否代理商发的
+				if (!ActivityCollectCoupons.OPERATOR_CODE.equals(coupons.getBelongType())) {
+					// TODO 代理商ID coupons.getBelongType()
+					payTradeVo.setActivitier(coupons.getBelongType());
+				} else {
+					// 运营商
+					payTradeVo.setActivitier(yscWalletAccount);
+				}
+				// 优惠金额
+				payTradeVo.setPrefeAmount(order.getPreferentialPrice());
+			}
+		}
+	}
 }
