@@ -125,5 +125,8 @@
    		<!-- End V1.2.0 added by maojj 2016-11-09 -->
    		
  		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.risk.enums.IsPreferential"/>
+ 		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.risk.enums.PayAccountType"/>
+ 		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.risk.enums.TriggerType"/>
+ 		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.risk.enums.TriggerWay"/>
     </typeHandlers>
 </configuration>
