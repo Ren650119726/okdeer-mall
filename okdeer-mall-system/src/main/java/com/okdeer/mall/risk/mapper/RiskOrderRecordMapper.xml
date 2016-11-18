@@ -10,7 +10,7 @@
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="tel" property="tel" jdbcType="VARCHAR" />
         <result column="face_price" property="facePrice" jdbcType="DECIMAL" />
-        <result column="is_preferential" property="isPreferential" jdbcType="com.okdeer.mall.risk.enums.IsPreferential" />
+        <result column="is_preferential" property="isPreferential" jdbcType="com.okdeer.mall.risk.enums.                                   " />
     </resultMap>
 
     <sql id="Base_Column_List" >
