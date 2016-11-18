@@ -29,7 +29,7 @@ import com.okdeer.mall.risk.service.IActiveRecorderService;
 @Service
 public class ActiveRecorderImpl extends BaseServiceImpl implements IActiveRecorderService{
 
-	private static final Logger LOGGER = Logger.getLogger(WhiteListServiceImpl.class);
+	private static final Logger LOGGER = Logger.getLogger(ActiveRecorderImpl.class);
 	
 	/**
 	 * 获取皮肤mapper
