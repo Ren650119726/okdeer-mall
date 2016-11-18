@@ -118,4 +118,10 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 		return userRefuseDto;
 	}
 
+	@Override
+	public boolean isBreach(String orderId) throws Exception {
+		
+		return cancelOrderService.isBreach(orderId) ;
+	}
+
 }
