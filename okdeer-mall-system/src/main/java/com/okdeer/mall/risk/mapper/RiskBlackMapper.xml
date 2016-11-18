@@ -194,5 +194,21 @@
        update risk_black set disabled=1
         where id = #{id,jdbcType=VARCHAR}
     </delete>
+    
+    <!-- 根据条件搜索皮肤列表 -->
+  <select id="findBlackListByParams" resultMap="BaseResultMap" parameterType="com.okdeer.mall.risk.dto.RiskBlackDto">
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM risk_black 
+     WHERE 1=1
+       AND disabled = 0
+       <if test="account != null and account != ''">
+         AND account = #{account} 
+       </if>
+       <if test="accountType != null">
+         AND account_type = #{accountType} 
+       </if>
+       ORDER BY create_time DESC
+  </select>
 
 </mapper>

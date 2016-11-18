@@ -9,12 +9,14 @@ package com.okdeer.mall.risk.api.impl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.risk.dto.RiskBlackDto;
 import com.okdeer.mall.risk.entity.RiskBlack;
 import com.okdeer.mall.risk.service.RiskBlackApi;
@@ -98,7 +100,33 @@ public class RiskBlackApiImpl implements RiskBlackApi {
 			riskBlackList.add(riskBlack);
 		}
 		blackListService.addBath(riskBlackList);
-
+	}
+	
+	@Override
+	public void addBlackBatch(List<RiskBlackDto> blackDtoList, String userId){
+		
+		List<RiskBlack> riskBlackList = new ArrayList<RiskBlack>();
+		for(RiskBlackDto dto : blackDtoList){
+			RiskBlack riskBlack = new RiskBlack();
+			Date date = new Date();
+			riskBlack.setId(UuidUtils.getUuid());
+			riskBlack.setAccount(dto.getAccount());
+			riskBlack.setAccountType(dto.getAccountType());
+			riskBlack.setDisabled(0);
+			riskBlack.setCreateTime(date);
+			riskBlack.setUpdateTime(date);
+			riskBlack.setCreateUserId(userId);
+			riskBlack.setUpdateUserId(userId);
+			riskBlackList.add(riskBlack);
+		}
+		blackListService.addBath(riskBlackList);
+	}
+	
+	@Override
+	public List<RiskBlackDto> findBlackListByParams(Map<String,Object> map){
+		List<RiskBlack> list = blackListService.findBlackListByParams(map);
+		List<RiskBlackDto> dtoList = BeanMapper.mapList(list, RiskBlackDto.class);
+		return dtoList;
 	}
 
 }

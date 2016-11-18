@@ -6,13 +6,13 @@
         <result column="login_name" property="loginName" jdbcType="VARCHAR" />
         <result column="device_id" property="deviceId" jdbcType="VARCHAR" />
         <result column="pay_account" property="payAccount" jdbcType="VARCHAR" />
-        <result column="pay_account_type" property="payAccountType" jdbcType="TINYINT" />
-        <result column="trigger_type" property="triggerType" jdbcType="TINYINT" />
-        <result column="trigger_way" property="triggerWay" jdbcType="TINYINT" />
+        <result column="pay_account_type" property="payAccountType" jdbcType="TINYINT" javaType="com.okdeer.mall.risk.enums.PayAccountType"/>
+        <result column="trigger_type" property="triggerType" jdbcType="TINYINT" javaType="com.okdeer.mall.risk.enums.TriggerType"/>
+        <result column="trigger_way" property="triggerWay" jdbcType="TINYINT" javaType="com.okdeer.mall.risk.enums.TriggerWay"/>
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="tel" property="tel" jdbcType="VARCHAR" />
         <result column="face_price" property="facePrice" jdbcType="DECIMAL" />
-        <result column="is_preferential" property="isPreferential" jdbcType="TINYINT" />
+        <result column="is_preferential" property="isPreferential" jdbcType="TINYINT" javaType="com.okdeer.mall.risk.enums.IsPreferential"/>
     </resultMap>
 
     <sql id="Base_Column_List" >
@@ -142,5 +142,56 @@
         delete from risk_trigger_record
         where id = #{id,jdbcType=VARCHAR}
     </delete>
+    
+    <select id="list" parameterType="java.util.Map" resultMap="BaseResultMap">
+		select 
+			<include refid="Base_Column_List"/> 
+			from risk_trigger_record 
+		where 1 = 1 
+		<if test="loginName != null and loginName != ''">
+			and login_name like concat('%',#{loginName},'%' )
+		</if>
+		<if test="deviceId != null and deviceId != ''">
+			and device_id like concat('%',#{deviceId},'%' )
+		</if>
+		<if test="tel != null and tel != ''">
+			and tel like concat('%',#{tel},'%' )
+		</if>
+		<if test="createStartTime != null and createStartTime != ''">
+			and create_time &gt;= #{createStartTime}
+		</if>
+		<if test="createEndTime != null and createEndTime != ''">
+			and create_time &lt;= #{createEndTime}
+		</if>
+		<if test="triggerType != null and triggerType != ''">
+			and trigger_type = #{triggerType}
+		</if>
+		<if test="triggerWay != null and triggerWay != ''">
+			and trigger_Way = #{triggerWay}
+		</if>
+		<if test="isPreferential != null and isPreferential != ''">
+			and is_preferential = #{isPreferential}
+		</if>
+		<if test="payAccount != null and payAccount != ''">
+			and pay_account like concat('%',#{payAccount},'%' )
+		</if>
+		<if test="payAccountTypeList != null and payAccountTypeList.size > 0">
+			and pay_account_type in 
+				<foreach item="item" index="index" collection="payAccountTypeList" open="(" separator="," close=")">  
+	  				#{item}  
+	 			</foreach>  
+		</if>
+		order by create_time desc
+	</select>
+	
+	<delete id="deleteBatch" parameterType="list">
+		<if test="ids != null and ids.size > 0">
+			delete from risk_trigger_record
+			where id in 
+				<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">  
+	  				#{item}  
+	 			</foreach>  
+		</if>
+	</delete>
 
 </mapper>

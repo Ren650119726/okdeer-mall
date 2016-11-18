@@ -86,6 +86,16 @@ public interface MemberConsigneeAddressMapper extends IBaseCrudMapper {
 	 */
 	List<MemberConsigneeAddressVo> selectByDistance(@Param("userId") String id,@Param("storeId") String storeId);
 	
+	/**
+	 * 
+	 * @Description: 用户app：根据店铺id和经纬度判断是否在服务范围内
+	 * @return MemberConsigneeAddressVo 结果
+	 * @author chenzc
+	 * @date 2016年11月18日
+	 */
+	MemberConsigneeAddressVo comfirmDistance(@Param("latitude") Double latitude,
+			@Param("longitude") Double longitude,@Param("storeId") String storeId);
+	
 	/***
 	 * 用户微信接口
 	 * 微信用户根据id查询收货地址

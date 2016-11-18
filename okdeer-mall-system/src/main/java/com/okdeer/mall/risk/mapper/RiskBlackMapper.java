@@ -8,6 +8,7 @@ package com.okdeer.mall.risk.mapper;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -43,5 +44,14 @@ public interface RiskBlackMapper extends IBaseMapper {
 	 * @date 2016年11月17日
 	 */
 	void addBatch(@Param(value = "riskBlackList")List<RiskBlack> riskBlackList);
+	
+	/**
+	 * @Description: 通过参数获取黑名单列表
+	 * @param map
+	 * @return
+	 * @author zhangkn
+	 * @date 2016年11月18日
+	 */
+	List<RiskBlack> findBlackListByParams(Map<String,Object> map);
 
 }

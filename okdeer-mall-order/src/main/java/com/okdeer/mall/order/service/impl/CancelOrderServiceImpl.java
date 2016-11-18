@@ -294,4 +294,13 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		return false;
 	}
 
+	@Override
+	public boolean isBreach(String orderId) throws Exception {
+		TradeOrder  tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderId);
+		if(tradeOrder == null){
+			throw new Exception("订单不存在");
+		}
+		return isBreach(OrderCancelType.CANCEL_BY_BUYER , tradeOrder);
+	}
+
 }
