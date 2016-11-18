@@ -120,6 +120,7 @@ import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysMsgMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 import net.sf.json.JSONObject;
 
@@ -1163,6 +1164,8 @@ public class TradeOrderRefundsServiceImpl
 						exportVo.setUnitPrice(item.getUnitPrice());
 						// 买家
 						exportVo.setUserPhone(refundsVo.getUserPhone());
+						// 货号
+						exportVo.setArticleNo(ConvertUtil.format(item.getArticleNo()));
 						if (!OrderStatusEnum.UNPAID.equals(refundsVo.getTradeOrderVo().getStatus())
 								&& !OrderStatusEnum.BUYER_PAYING.equals(refundsVo.getTradeOrderVo().getStatus())) {
 							// 支付方式
