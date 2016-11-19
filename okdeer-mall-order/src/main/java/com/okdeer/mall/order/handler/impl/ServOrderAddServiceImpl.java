@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.StockManagerServiceApi;
@@ -125,13 +126,9 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		String seckillStockKey = RedisKeyConstants.SECKILL_STOCK + req.getData().getSkuId();
 		try {
 			ServiceOrderResp respData = resp.getData();
-			// 判断服务地址是否存在
-			MemberConsigneeAddress address = memberConsigneeAddressMapper
-					.selectByPrimaryKey(req.getData().getAddressId());
-			// 服务地址不存在
-			if (address == null) {
-				resp.setResult(ResultCodeEnum.ADDRESS_NOT_EXSITS);
-				req.setComplete(true);
+			// 用户地址
+			MemberConsigneeAddress address = findUserAddr(req, resp);
+			if(!resp.isSuccess()){
 				return;
 			}
 			// 根据请求构建订单
@@ -143,9 +140,11 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 			// 更新库存
 			rpcId = UuidUtils.getUuid();
 			toUpdateStock(tradeOrder, req, rpcId);
-			// 更新地址信息,更新用户使用时间
-			address.setUseTime(DateUtils.getSysDate());
-			memberConsigneeAddressMapper.updateByPrimaryKeySelective(address);
+			if(address != null){
+				// 更新地址信息,更新用户使用时间
+				address.setUseTime(DateUtils.getSysDate());
+				memberConsigneeAddressMapper.updateByPrimaryKeySelective(address);
+			}
 			// 超时未支付的，取消订单
 			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, tradeOrder.getId());
 
@@ -170,6 +169,31 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 			req.setComplete(true);
 		}
 	}
+	
+	/**
+	 * @Description: 查找用户地址
+	 * @param req
+	 * @param resp
+	 * @return   
+	 * @author maojj
+	 * @date 2016年11月18日
+	 */
+	public MemberConsigneeAddress findUserAddr(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp){
+		// 商品类型
+		SpuTypeEnum skuType = (SpuTypeEnum)req.getContext().get("skuType");
+		if(skuType == SpuTypeEnum.fwdDdxfSpu){
+			// 如果是到店消费的商品，则没有用户地址
+			return null;
+		}else{
+			MemberConsigneeAddress address = memberConsigneeAddressMapper.selectByPrimaryKey(req.getData().getAddressId());
+			// 服务地址不存在
+			if (address == null) {
+				resp.setResult(ResultCodeEnum.ADDRESS_NOT_EXSITS);
+				req.setComplete(true);
+			}
+			return address;
+		}
+	}
 
 	/**
 	 * @Description: 构建订单
@@ -189,7 +213,6 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		tradeOrder.setStoreName((String) req.getContext().get("storeName"));
 		tradeOrder.setSellerId(reqData.getStoreId());
 		tradeOrder.setRemark(reqData.getRemark());
-		tradeOrder.setType(OrderTypeEnum.SERVICE_STORE_ORDER);
 		tradeOrder.setPid("0");
 		tradeOrder.setActivityType(ActivityTypeEnum.SECKILL_ACTIVITY);
 		tradeOrder.setActivityId(reqData.getSeckillId());
@@ -202,6 +225,8 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		tradeOrder.setDisabled(Disabled.valid);
 		tradeOrder.setCreateTime(new Date());
 		tradeOrder.setUpdateTime(new Date());
+		// 解析商品类型。根据商品类型设置订单类型和提货类型
+		parseSkuType(tradeOrder,req);
 		// 设置订单编号
 		setOrderNo(tradeOrder);
 		// 设置订单总金额 
@@ -218,9 +243,6 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		// 解析支付方式
 		tradeOrder.setStatus(OrderStatusEnum.UNPAID);
 		tradeOrder.setPayWay(PayWayEnum.PAY_ONLINE);
-		// 解析提货类型
-		tradeOrder.setPickUpType(PickUpTypeEnum.DELIVERY_DOOR);
-		tradeOrder.setPickUpTime(reqData.getServiceTime());
 		// 设置运费
 		tradeOrder.setFare(BigDecimal.ZERO);
 		// 设置发票
@@ -230,7 +252,9 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		List<TradeOrderItem> orderItemList = buildOrderItemList(tradeOrder, req);
 		// 设置订单项
 		tradeOrder.setTradeOrderItem(orderItemList);
-		tradeOrder.setTradeOrderLogistics(buildTradeOrderLogistics(tradeOrder.getId(), address));
+		if (address != null) {
+			tradeOrder.setTradeOrderLogistics(buildTradeOrderLogistics(tradeOrder.getId(), address));
+		}
 		return tradeOrder;
 	}
 
@@ -246,6 +270,26 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		String orderNo = generateNumericalService.generateOrderNo(OrderNoUtils.SERV_ORDER_PREFIXE,
 				"", OrderNoUtils.ONLINE_POS_ID);
 		tradeOrder.setOrderNo(orderNo);
+	}
+	
+	/**
+	 * @Description: 根据商品类型设置订单类型和提货类型
+	 * @param tradeOrder
+	 * @param skuType   
+	 * @author maojj
+	 * @date 2016年11月18日
+	 */
+	private void parseSkuType(TradeOrder tradeOrder,Request<ServiceOrderReq> req){
+		// 商品类型
+		SpuTypeEnum skuType = (SpuTypeEnum)req.getContext().get("skuType");
+		if(skuType == SpuTypeEnum.fwdDdxfSpu){
+			tradeOrder.setType(OrderTypeEnum.STORE_CONSUME_ORDER);
+			tradeOrder.setPickUpType(PickUpTypeEnum.TO_STORE_PICKUP);
+		}else{
+			tradeOrder.setType(OrderTypeEnum.SERVICE_STORE_ORDER);
+			tradeOrder.setPickUpType(PickUpTypeEnum.DELIVERY_DOOR);
+			tradeOrder.setPickUpTime(req.getData().getServiceTime());
+		}
 	}
 
 	/**
