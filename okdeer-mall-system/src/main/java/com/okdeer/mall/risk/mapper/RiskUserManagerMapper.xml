@@ -40,11 +40,11 @@
          AND telephone =#{telephone,jdbcType=VARCHAR}
        </if>
        <!-- 是否接收邮件 -->
-       <if test="isAcceptMail != null and isAcceptMail != ''">
+       <if test="isAcceptMail != null and isAcceptMail != -1">
          AND is_accept_mail=#{isAcceptMail,jdbcType=NUMERIC}
        </if>
        <!-- 是否接收邮件 -->
-       <if test="isAcceptMessage != null and isAcceptMessage != ''">
+       <if test="isAcceptMessage != null and isAcceptMessage != -1">
          AND is_accept_message=#{isAcceptMessage,jdbcType=NUMERIC}
        </if>
        <!-- 创建时间 -->

@@ -129,4 +129,17 @@ public class RiskBlackApiImpl implements RiskBlackApi {
 		return dtoList;
 	}
 
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskBlackApi#deleteBatchByIds(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void deleteBatchByIds(String accountIds, String updateUserId) {
+		Date updateTime = new Date();
+		List<String> ids = (List<String>) java.util.Arrays.asList(accountIds.split(","));; 
+		
+		blackListService.deleteBatchByIds(ids,updateUserId,updateTime);
+		
+	}
+
 }

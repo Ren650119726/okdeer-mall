@@ -9,6 +9,8 @@ package com.okdeer.mall.risk.mapper;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.risk.dto.RiskUserManagerDto;
 import com.okdeer.mall.risk.entity.RiskUserManager;
@@ -33,6 +35,6 @@ public interface RiskUserManagerMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年11月15日
 	 */
-	void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime);
+	void deleteBatchByIds(@Param("ids")List<String> ids,@Param("updateUserId") String updateUserId,@Param("updateTime") Date updateTime);
 
 }

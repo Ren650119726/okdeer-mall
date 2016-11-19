@@ -52,5 +52,14 @@ public interface RiskWhiteMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年11月17日
 	 */
-	void addBatch(@Param(value = "riskWhiteList")List<RiskWhite> riskWhiteList);
+	void addBatch(@Param(value = "riskList")List<RiskWhite> riskList);
+
+	/**
+	 * @Description: TODO
+	 * @param riskWhite
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月18日
+	 */
+	int findCountByAccount(RiskWhite riskWhite);
 }

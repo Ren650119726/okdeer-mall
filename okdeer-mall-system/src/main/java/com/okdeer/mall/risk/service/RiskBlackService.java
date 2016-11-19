@@ -6,6 +6,7 @@
  */    
 package com.okdeer.mall.risk.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -47,4 +48,14 @@ public interface RiskBlackService extends IBaseService {
 	 * @date 2016年11月18日
 	 */
 	List<RiskBlack> findBlackListByParams(Map<String,Object> map);
+
+	/**
+	 * @Description: TODO
+	 * @param ids
+	 * @param updateUserId
+	 * @param updateTime   
+	 * @author xuzq01
+	 * @date 2016年11月18日
+	 */
+	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime);
 }

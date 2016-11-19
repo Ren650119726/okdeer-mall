@@ -24,7 +24,7 @@
          disabled
 		 )   
 	    values  
-	    <foreach collection="riskW hiteList" item="item" index="index" separator="," >  
+	    <foreach collection="riskList" item="item" index="index" separator="," >  
 	        (#{item.id},
 	        #{item.telephoneAccount},
 	         #{item.accountType},
@@ -84,6 +84,11 @@
         <include refid="Base_Column_List" />
         from risk_white
         where id = #{id,jdbcType=VARCHAR}
+    </select>
+    <select id="findCountByAccount" resultType="java.lang.Integer"  parameterType="com.okdeer.mall.risk.entity.RiskWhite" >
+        select count(1) 
+        from risk_white
+        where telephone_account = #{telephoneAccount,jdbcType=VARCHAR}
     </select>
 
     <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskWhite" >
