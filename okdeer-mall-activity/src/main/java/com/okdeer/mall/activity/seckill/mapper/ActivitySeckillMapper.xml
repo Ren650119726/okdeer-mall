@@ -108,6 +108,11 @@
 		<if test="null != storeName and storeName != ''">
 			AND store.store_name LIKE CONCAT('%',#{storeName,jdbcType=VARCHAR},'%')
 		</if>
+		<!-- add by mengsj begin V1.2.0 -->
+		<if test="null != productNo and productNo != ''">
+			AND service.product_no LIKE CONCAT('%',#{productNo,jdbcType=VARCHAR},'%')
+		</if>
+		<!-- add by mengsj end V1.2.0 -->
 		<if test="null != seckillName and seckillName != ''">
 			AND seckill.seckill_name LIKE
 			CONCAT('%',#{seckillName,jdbcType=VARCHAR},'%')
