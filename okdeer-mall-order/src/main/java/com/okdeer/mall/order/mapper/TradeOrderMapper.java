@@ -1080,4 +1080,15 @@ public interface TradeOrderMapper {
 	UserTradeOrderDetailVo findStoreConsumeOrderById(String orderId);
 	
 	// End V1.1.0 add by zengjz 20160923
+	
+    //Begin V1.2 added by tangy  2016-11-21
+	/**
+	 * @Description: 查询回款记录订单导出的列表
+	 * @param map
+	 * @return List<TradeOrder>  
+	 * @author tangy
+	 * @date 2016年11月21日
+	 */
+	List<TradeOrder> findExportList(Map<String, Object> map);
+	//End added by tangy
 }
