@@ -277,4 +277,14 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 */
 	Integer selectCountByRandCode(@Param("randCode")String randCode);
 	
+	/**
+	 * 1、当代金券设置的领取后的有效期大于3天，则在代金券结束前第三天发送；2、当代金券设置的领取后的有效期大于1天小于或等于3天，
+	 * 则在代金券的有效期最后一天发送；当代金券设置的领取后的有效期等于1天，则不会发送推送和短线
+	 * @Description: TODO
+	 * @return List<String>  
+	 * @author tuzhd
+	 * @date 2016年11月21日
+	 */
+	public List<Map<String,Object>> getIsNoticeUser();
+	
 }
