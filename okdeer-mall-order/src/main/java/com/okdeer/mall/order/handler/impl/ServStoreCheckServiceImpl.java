@@ -1,5 +1,10 @@
 package com.okdeer.mall.order.handler.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -9,8 +14,10 @@ import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.order.dto.TimeInterval;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.ServStoreInfo;
@@ -37,6 +44,8 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private StoreInfoServiceApi storeInfoService;
+	
+	private static final Pattern pattern = Pattern.compile("(\\d{2}:\\d{2}-\\d{2}:\\d{2},*)*");
 
 	@Override
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
@@ -114,6 +123,8 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		}
 		// 设置店铺客服电话
 		servStoreInfo.setServicePhone(storeInfo.getStoreInfoExt().getServicePhone());
+		// 解析时间店铺下单模式
+		parseOrderTimeModel(servStoreInfo,storeInfo.getStoreInfoServiceExt());
 		return servStoreInfo;
 	}
 	
@@ -121,13 +132,44 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 	 * 提取店铺发票信息
 	 */
 	private Integer extractIsInvoice(StoreInfoExt storeExt){
-		return storeExt.getIsInvoice() == null ? Integer.valueOf(0) : storeExt.getIsInvoice().ordinal();
+		return storeExt.getIsInvoice() == null ? Integer.valueOf(Constant.ZERO) : storeExt.getIsInvoice().ordinal();
 	}
 	
 	/**
 	 * 是否提前预约
 	 */
 	private boolean isAdvance(StoreInfoExt storeExt){
-		return Integer.valueOf(1).equals(storeExt.getIsAdvanceType());
+		return Integer.valueOf(Constant.ONE).equals(storeExt.getIsAdvanceType());
+	}
+	
+	private void parseOrderTimeModel(ServStoreInfo servStoreInfo,StoreInfoServiceExt storeServExt){
+		Integer orderTimeModel = storeServExt.getOrderTimeModel();
+		if (orderTimeModel == null){
+			return;
+		}
+		// 下单时间模式，0：按时间点，1：按时间段
+		servStoreInfo.setTimeType(orderTimeModel);
+		String timePoint = storeServExt.getTimePoint();
+		if (orderTimeModel.intValue() == Constant.ZERO){
+			// 按时间周期
+			servStoreInfo.setTimePeriod(timePoint);
+		}else{
+			// 按时间段
+			List<TimeInterval> timeList = new ArrayList<TimeInterval>();
+			TimeInterval time = null;
+			if(StringUtils.isEmpty(timePoint) || !pattern.matcher(timePoint).matches()){
+				return;
+			}
+			String[] timeIntervals = timePoint.split(",");
+			for(String timeInterVal : timeIntervals){
+				String[] times = timeInterVal.split("-");
+				time = new TimeInterval();
+				time.setStartTime(times[0]);
+				time.setEndTime(times[1]);
+				
+				timeList.add(time);
+			}
+			servStoreInfo.setTimeList(timeList);
+		}
 	}
 }
