@@ -55,9 +55,9 @@ public interface TimerMessageConstant {
         tag_pay_timeout(30 * 60L),
 
         /**
-         * 充值支付超时处理10分钟
+         * 充值支付超时处理30分钟
          */
-        tag_recharge_pay_timeout(10 * 60L),
+        tag_recharge_pay_timeout(30 * 60L),
         
         /**
          * 发货超时处理 3天
