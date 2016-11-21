@@ -45,11 +45,6 @@ public class RiskUserManagerImpl extends BaseServiceImpl implements RiskUserMana
 	@Autowired
 	RiskUserManagerMapper riskUserManagerMapper;
 	
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
-	 */
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return riskUserManagerMapper;

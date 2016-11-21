@@ -99,7 +99,7 @@ public class RiskBlackApiImpl implements RiskBlackApi {
 			riskBlack.setUpdateUserId(userId);
 			riskBlackList.add(riskBlack);
 		}
-		blackListService.addBath(riskBlackList);
+		blackListService.addBatch(riskBlackList);
 	}
 	
 	@Override
@@ -119,7 +119,7 @@ public class RiskBlackApiImpl implements RiskBlackApi {
 			riskBlack.setUpdateUserId(userId);
 			riskBlackList.add(riskBlack);
 		}
-		blackListService.addBath(riskBlackList);
+		blackListService.addBatch(riskBlackList);
 	}
 	
 	@Override
@@ -137,9 +137,28 @@ public class RiskBlackApiImpl implements RiskBlackApi {
 	public void deleteBatchByIds(String accountIds, String updateUserId) {
 		Date updateTime = new Date();
 		List<String> ids = (List<String>) java.util.Arrays.asList(accountIds.split(","));; 
-		
 		blackListService.deleteBatchByIds(ids,updateUserId,updateTime);
 		
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @throws Exception 
+	 * @see com.okdeer.mall.risk.service.RiskBlackApi#findById(java.lang.String)
+	 */
+	@Override
+	public RiskBlack findById(String accountId) throws Exception {
+		return blackListService.findById(accountId);
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @throws Exception 
+	 * @see com.okdeer.mall.risk.service.RiskBlackApi#updateBlack(com.okdeer.mall.risk.entity.RiskBlack)
+	 */
+	@Override
+	public void updateBlack(RiskBlack riskBlack) throws Exception {
+		blackListService.update(riskBlack);	
 	}
 
 }

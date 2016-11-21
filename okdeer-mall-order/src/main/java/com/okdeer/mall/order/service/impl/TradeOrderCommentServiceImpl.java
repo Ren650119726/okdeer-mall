@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
+import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,26 +37,32 @@ import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
-import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
-import com.okdeer.mall.order.entity.TradeOrder;
-import com.okdeer.mall.order.entity.TradeOrderComment;
-import com.okdeer.mall.order.entity.TradeOrderCommentImage;
-import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
-import com.okdeer.mall.order.enums.OrderTypeEnum;
-import com.okdeer.mall.order.service.TradeOrderCommentServiceApi;
-import com.okdeer.mall.order.vo.TradeOrderCommentVo;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
+import com.okdeer.mall.order.constant.OrderTraceConstant;
+import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
+import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderComment;
+import com.okdeer.mall.order.entity.TradeOrderCommentImage;
+import com.okdeer.mall.order.entity.TradeOrderTrace;
+import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
+import com.okdeer.mall.order.enums.OrderTraceEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.mapper.TradeOrderCommentImageMapper;
 import com.okdeer.mall.order.mapper.TradeOrderCommentMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.service.TradeOrderCommentService;
+import com.okdeer.mall.order.service.TradeOrderCommentServiceApi;
+import com.okdeer.mall.order.service.TradeOrderTraceService;
+import com.okdeer.mall.order.vo.TradeOrderCommentVo;
 import com.okdeer.mall.system.service.SysBuyerUserService;
+
+import net.sf.json.JSONObject;
 
 /**
  * 商品评论实现类
@@ -113,6 +119,9 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 	 */
 	@Autowired
 	private TradeOrderMapper tradeOrderMapper;
+	
+	@Resource
+	private TradeOrderTraceService tradeOrderTraceService;
 
 	@Override
 	public TradeOrderCommentVo findById(String id) throws ServiceException {
@@ -284,6 +293,17 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 								tradeOrderMapper.updateByPrimaryKeySelective(tempTradeOrder);
 							}
 							//end add by zengjz  到店消费评价增加逻辑
+							
+							// Begin V1.2 added by maojj 2016-11-21
+							// 上门服务商品需要修改轨迹信息
+							if (tradeOrder.getType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
+								TradeOrderTrace tradeTrace = new TradeOrderTrace();
+								tradeTrace.setOrderId(tradeOrder.getId());
+								tradeTrace.setTraceStatus(OrderTraceEnum.COMPLETED);
+								tradeTrace.setRemark(OrderTraceConstant.COMPLETED_APPRAISE_REMARK);
+								tradeOrderTraceService.updateRemarkAfterAppraise(tradeTrace);
+							}
+							// End V1.2 added by maojj 2016-11-21
 						} catch (ServiceException e) {
 							logger.error("提交评价异常", e.getMessage());
 							return LocalTransactionState.ROLLBACK_MESSAGE;

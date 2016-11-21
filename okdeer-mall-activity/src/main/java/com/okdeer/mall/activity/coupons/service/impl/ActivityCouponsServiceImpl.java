@@ -825,7 +825,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 					storeList.add(storeInfo);
 					/*resultMap.put(addressCity.getName(), storeList);*/
 					AddressCityVo addressCityVo = new AddressCityVo();
-					addressCityVo.setStores(storeInfo);
+					addressCityVo.setStores(storeList);
 					addressCityVo.setId(addressCity.getId().toString());
 					addressCityVo.setCityName(addressCity.getName());
 					listVo.add(addressCityVo);

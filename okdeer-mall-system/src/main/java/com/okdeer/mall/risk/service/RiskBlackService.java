@@ -9,6 +9,7 @@ package com.okdeer.mall.risk.service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
@@ -38,7 +39,7 @@ public interface RiskBlackService extends IBaseService {
 	 * @param riskBlackList 
 	 * @date 2016年11月16日
 	 */
-	public void addBath(List<RiskBlack> riskBlackList);
+	public void addBatch(List<RiskBlack> riskBlackList);
 	
 	/**
 	 * @Description: 通过参数获取黑名单列表
@@ -58,4 +59,40 @@ public interface RiskBlackService extends IBaseService {
 	 * @date 2016年11月18日
 	 */
 	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime);
+	
+	/**
+	 * 
+	 * @Description: 所有黑名单的充值手机号
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	public Set<String> findAllBlackMobile();
+	
+	/**
+	 * 
+	 * @Description: 所有黑名单设备
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	public Set<String> findAllBlackDevice();
+	
+	/**
+	 * 
+	 * @Description: 所有黑名单支付账号
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	public Set<String> findAllBlackPayAccount();
+	
+	/**
+	 * 
+	 * @Description: 所有黑名单登录账号
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	public Set<String> findAllBlackLoginAccount();
 }

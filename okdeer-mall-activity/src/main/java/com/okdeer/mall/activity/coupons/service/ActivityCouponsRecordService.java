@@ -144,4 +144,14 @@ public interface ActivityCouponsRecordService {
 	ActivityCouponsRecord selectByPrimaryKey(String id);
 	
 	void updateActivityCouponsStatus(Map<String,Object> params);
+	
+	/**
+	 * 执行代金劵提醒JOB
+	 * @Description: TODO   
+	 * @return void  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月21日
+	 */
+	public void procesRecordNoticeJob();
 }

@@ -5073,4 +5073,66 @@
 			#{endTime,jdbcType=TIMESTAMP}
 		</if>
 	</select>
+	
+    <!-- tangy 查询历史回款记录导出 -->
+	<select id="findExportList" resultMap="RealOrderMap"
+		parameterType="java.util.Map">
+		SELECT
+		<include refid="order_pay_column_list" />
+		FROM trade_order tr
+		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
+		LEFT JOIN sys_user su ON su.id=tr.seller_id
+		WHERE 1=1
+		<!-- 是否逻辑删除 -->
+		<if test="disabled != null">
+			AND tr.disabled = #{disabled,jdbcType=TINYINT}
+		</if>
+		<!-- 店铺id -->
+		<if test="storeId != null and storeId != ''">
+			AND tr.store_id = #{storeId,jdbcType=VARCHAR}
+		</if>
+		<!-- 订单状态 -->
+		AND tr.`status` in (3,4,5,6)
+		<!-- 提货类型 -->
+		<if test="pickUpType != null">
+			AND tr.pick_up_type = #{pickUpType,jdbcType=TINYINT}
+		</if>
+		<!-- 回款状态 -->
+		<if test="paymentStatus != null">
+			AND tr.payment_status = #{paymentStatus,jdbcType=TINYINT}
+		</if>
+		<!-- 支付方式 -->
+		<if test="payWay != null">
+			AND tr.pay_way = #{payWay,jdbcType=TINYINT}
+		</if>
+		<!-- 订单编号 -->
+		<if test="orderNo != null and orderNo != ''">
+			AND tr.order_no LIKE CONCAT('%',#{orderNo},'%')
+		</if>
+		<!-- 下单时间 -->
+		<if test="createTimeStart != null">
+			AND tr.create_time <![CDATA[ >= ]]>
+			#{createTimeStart,jdbcType=TIMESTAMP}
+		</if>
+		<!-- 下单时间 -->
+		<if test="createTimeEnd != null">
+			AND tr.create_time <![CDATA[ <= ]]>
+			#{createTimeEnd,jdbcType=TIMESTAMP}
+		</if>
+		<if test="skuName != null and skuName != ''">
+			AND EXISTS(SELECT 1 FROM trade_order_item B WHERE tr.id = B.order_id AND
+			B.sku_name like CONCAT('%',#{skuName,jdbcType=VARCHAR},'%'))
+		</if>
+		<if test="null != orderIds and orderIds.size > 0 ">
+			AND tr.id IN
+			<foreach collection="orderIds" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		ORDER BY tr.create_time DESC
+		<if test="maxSize != null and maxSize > 0">
+			limit #{maxSize,jdbcType=INTEGER}
+		</if>
+	</select>
 </mapper>

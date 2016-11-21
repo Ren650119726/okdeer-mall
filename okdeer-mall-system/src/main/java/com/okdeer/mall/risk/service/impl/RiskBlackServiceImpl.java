@@ -9,9 +9,13 @@ package com.okdeer.mall.risk.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,38 +43,99 @@ import com.okdeer.mall.risk.service.RiskBlackService;
 @Service
 public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackService{
 
-	//private static final Logger LOGGER = Logger.getLogger(RiskWhiteServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RiskBlackServiceImpl.class);
 	
+	private String sync = "sync";
 	/**
-	 * 获取皮肤mapper
+	 * 获取黑名单管理mapper
 	 */
 	@Autowired
 	RiskBlackMapper riskBlackMapper;
 	
+	/**
+	 * 黑名单充值手机号
+	 */
+	private Set<String> blackMobiles = null;
+	
+	/**
+	 * 黑名单设备
+	 */
+	private Set<String> blackDevices = null;
+	
+	/**
+	 * 黑名单支付账号
+	 */
+	private Set<String> blackPayAccounts = null;
+	
+	/**
+	 * 黑名单登录账号
+	 */
+	private Set<String> blackLoginAccounts = null;
+	
+	/**
+	 * 是否初始化
+	 */
+	private boolean isInitialize = false;
+	
+	@Override
+	public IBaseMapper getBaseMapper() {
+		return riskBlackMapper;
+	}
 
 	/**
-	 * (non-Javadoc)
+	 * 检查初始数据或初始化
+	 * @author guocp
+	 * @date 2016年11月18日
+	 */
+	private void initialize() {
+		if (!isInitialize) {
+			synchronized (sync) {
+				if (!isInitialize) {
+					try {
+						doInitialize();
+						isInitialize = true;
+					} catch (Exception e) {
+						LOGGER.error("风控获取白名单初始设置异常", e);
+					}
+				}
+			}
+		}
+	}
+
+	public void resetSetting() {
+		synchronized (sync) {
+			isInitialize = false;
+		}
+	}
+	/**
+	 * 初始数据
+	 * @throws Exception   
+	 * @author xuzq01
+	 * @date 2016年11月18日
+	 */
+	private void doInitialize() throws Exception {
+		// 初始化设置对象
+		this.blackMobiles = getBlackSet(riskBlackMapper.findAllBlackMobile());
+		this.blackDevices = getBlackSet(riskBlackMapper.findAllBlackDevice());
+		this.blackPayAccounts = getBlackSet(riskBlackMapper.findAllBlackPayAccount());
+		this.blackLoginAccounts = getBlackSet(riskBlackMapper.findAllBlackLoginAccount());
+	}
+	
+
+	/**
+	 * 获取管理名单列表
 	 * @see com.okdeer.mall.risk.service.RiskBlackService#findBlackList(com.okdeer.mall.risk.dto.RiskBlackDto, java.lang.Integer, java.lang.Integer)
 	 */
 	@Override
-	public PageUtils<RiskBlack> findBlackList(RiskBlackDto blackManagerDto, Integer pageNumber, Integer pageSize) {
+	public PageUtils<RiskBlack> findBlackList(RiskBlackDto riskBlackDto, Integer pageNumber, Integer pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true);
-		List<RiskBlack> result = riskBlackMapper.findBlackList(blackManagerDto);
+		LOGGER.info("query RiskBlack params:"+riskBlackDto);
+		List<RiskBlack> result = riskBlackMapper.findBlackList(riskBlackDto);
 		if (result == null) {
 			result = new ArrayList<RiskBlack>();
 		}
 		return new PageUtils<RiskBlack>(result);
 		
-	}
-
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
-	 */
-	@Override
-	public IBaseMapper getBaseMapper() {
-		return riskBlackMapper;
 	}
 
 	/**
@@ -79,8 +144,8 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void addBath(List<RiskBlack> riskBlackList) {
-		//查询是否存在白名单数据 存在直接更新 不存在批量增加
+	public void addBatch(List<RiskBlack> riskBlackList) {
+		//查询是否存在黑名单数据 存在直接更新 不存在批量增加
 		List<RiskBlack>  riskList = new ArrayList<RiskBlack>();
 		for(RiskBlack riskBlack:riskBlackList){
 			int count = riskBlackMapper.findCountByAccount(riskBlack);
@@ -109,5 +174,61 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime) {
 		riskBlackMapper.deleteBatchByIds(ids,updateUserId,updateTime);
 		
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskBlackService#findAllBlackMobile()
+	 */
+	@Override
+	public Set<String> findAllBlackMobile() {
+		if (!isInitialize) {
+			initialize();
+		}
+		return blackMobiles;
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskBlackService#findAllBlackDevice()
+	 */
+	@Override
+	public Set<String> findAllBlackDevice() {
+		if (!isInitialize) {
+			initialize();
+		}
+		return blackDevices;
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskBlackService#findAllBlackPayAccount()
+	 */
+	@Override
+	public Set<String> findAllBlackPayAccount() {
+		if (!isInitialize) {
+			initialize();
+		}
+		return blackPayAccounts;
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskBlackService#findAllBlackLoginAccount()
+	 */
+	@Override
+	public Set<String> findAllBlackLoginAccount() {
+		if (!isInitialize) {
+			initialize();
+		}
+		return blackLoginAccounts;
+	}
+	
+	private Set<String> getBlackSet(Set<RiskBlack> blackSet){
+		Set<String> set = new HashSet<String>();
+		for(RiskBlack black : blackSet){
+			set.add(black.getAccount());
+		}
+		return set;
 	}
 }

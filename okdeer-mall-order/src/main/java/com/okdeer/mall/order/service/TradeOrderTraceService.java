@@ -2,6 +2,7 @@ package com.okdeer.mall.order.service;
 
 import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderTrace;
 import com.okdeer.mall.order.vo.RefundsTraceResp;
 
 /**
@@ -33,4 +34,12 @@ public interface TradeOrderTraceService {
 	 * @date 2016年11月7日
 	 */
 	public Response<RefundsTraceResp> findOrderTrace(String orderId);
+	
+	/**
+	 * @Description: 订单完成评论之后修改备注信息
+	 * @param trace   
+	 * @author maojj
+	 * @date 2016年11月21日
+	 */
+	void updateRemarkAfterAppraise(TradeOrderTrace trace);
 }

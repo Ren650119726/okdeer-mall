@@ -6411,4 +6411,67 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			return BigDecimal.valueOf(value);
 		}
 	}
+	
+	@Override
+	public List<TradeOrderExportVo> findExportList(Map<String, Object> map) {
+		// 查询订单信息
+		List<TradeOrder> orderPay = tradeOrderMapper.findExportList(map);
+		List<TradeOrderExportVo> exportList = new ArrayList<TradeOrderExportVo>();
+		if (orderPay != null) {
+			// 退款单状态Map
+			Map<String, String> orderRefundsStatusMap = RefundsStatusEnum.convertViewStatus();
+			for (int i = 0; i < orderPay.size(); i++) {
+				TradeOrder order = orderPay.get(i);
+				// 订单状态Map
+				Map<String, String> orderStatusMap = OrderStatusEnum.convertViewStatus(order.getType());
+				String id = order.getId();
+				map.put("orderId", id);
+				// 订单项信息
+				List<TradeOrderItem> orderItemList = order.getTradeOrderItem();
+				if (orderItemList != null) {
+					for (TradeOrderItem item : orderItemList) {
+						if (item == null) {
+							continue;
+						}
+						TradeOrderExportVo exportVo = new TradeOrderExportVo();
+						// 实付款取订单的实际付款金额(2016-5-3 13:43:35确认于高沛)
+						exportVo.setActualAmount(order.getActualAmount());
+						exportVo.setUserId(order.getUserId());
+						exportVo.setCreateTime(DateUtils.formatDate(order.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
+						exportVo.setOrderNo(order.getOrderNo());
+						exportVo.setQuantity(item.getQuantity() == null ? "" : item.getQuantity().toString());
+						exportVo.setUserPhone(order.getUserPhone());
+						exportVo.setSkuName(item.getSkuName());
+						exportVo.setCategoryName(item.getCategoryName());
+						exportVo.setStatus(orderStatusMap.get(order.getStatus().getName()));
+						exportVo.setUnitPrice(item.getUnitPrice());
+						exportVo.setTotalAmount(order.getTotalAmount());
+						if (!OrderStatusEnum.UNPAID.equals(order.getStatus())
+								&& !OrderStatusEnum.BUYER_PAYING.equals(order.getStatus())) {
+							// 支付方式
+							if (order.getTradeOrderPay() == null) {
+								exportVo.setPayType(order.getPayWay().getValue());
+							} else {
+								exportVo.setPayType(order.getTradeOrderPay().getPayType().getValue());
+							}
+						}
+						exportVo.setOrderResource(order.getOrderResource());
+						exportVo.setBarCode(item.getBarCode() == null ? "" : item.getBarCode());
+						exportVo.setStyleCode(item.getStyleCode() == null ? "" : item.getStyleCode());
+						// Begin V1.2 added by maojj 2016-11-18
+						// 货号
+						exportVo.setArticleNo(ConvertUtil.format(item.getArticleNo()));
+						// End V1.2 added by maojj 2016-11-18
+						// 售后单状态
+						if (item.getRefundsStatus() != null) {
+							exportVo.setAfterService(orderRefundsStatusMap.get(item.getRefundsStatus().getName()));
+						}
+						exportVo.setOperator(order.getSysUser() == null ? null : order.getSysUser().getLoginName());
+						exportList.add(exportVo);
+					}
+				}
+			}
+		}
+		return exportList;
+	}
 }
