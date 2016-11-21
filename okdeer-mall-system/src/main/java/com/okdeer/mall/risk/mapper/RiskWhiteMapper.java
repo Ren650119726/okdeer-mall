@@ -8,6 +8,7 @@ package com.okdeer.mall.risk.mapper;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -53,4 +54,13 @@ public interface RiskWhiteMapper extends IBaseMapper {
 	 * @date 2016年11月18日
 	 */
 	int findCountByAccount(RiskWhite riskWhite);
+
+
+	/**
+	 * @Description: 返回所有白名单
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	Set<RiskWhite> findAllWhite();
 }
