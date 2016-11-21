@@ -20,8 +20,11 @@ import org.mockito.Mock;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.order.constant.OrderTraceConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderTrace;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTraceEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
@@ -51,9 +54,12 @@ public class TradeOrderTraceServiceImplTest extends BaseServiceTest{
 	
 	private List<TradeOrder> tradeOrderList;
 	
-	public TradeOrderTraceServiceImplTest(String orderId,List<TradeOrder> tradeOrder){
+	private TradeOrderTrace tradeOrderTrace;
+	
+	public TradeOrderTraceServiceImplTest(String orderId,List<TradeOrder> tradeOrder,TradeOrderTrace tradeOrderTrace){
 		this.orderId = orderId;
 		this.tradeOrderList = tradeOrder;
+		this.tradeOrderTrace= tradeOrderTrace;
 	}
 	
 	@Parameters
@@ -101,9 +107,15 @@ public class TradeOrderTraceServiceImplTest extends BaseServiceTest{
 		orderList.add(order4);
 		orderList.add(order5);
 		
+		TradeOrderTrace tradeTrace = new TradeOrderTrace();
+		tradeTrace.setOrderId("8a94e4cb58867e4c0158868501510018");
+		tradeTrace.setTraceStatus(OrderTraceEnum.COMPLETED);
+		tradeTrace.setRemark(OrderTraceConstant.COMPLETED_APPRAISE_REMARK);
+		
 		return Arrays.asList(new Object[][]{
-			{"8a8080a05793e3b501579406efe4008e",orderList}
+			{"8a8080a05793e3b501579406efe4008e",orderList,tradeTrace}
 		});
+		
 		
 	}
 	
@@ -121,6 +133,12 @@ public class TradeOrderTraceServiceImplTest extends BaseServiceTest{
 		given(this.tradeOrderMapper.selectByPrimaryKey("8a8080a05793e3b501579406efe4008e")).willReturn(order);
 		Response<RefundsTraceResp> resp = tradeOrderTraceService.findOrderTrace(orderId);
 		System.out.println(JsonMapper.nonDefaultMapper().toJson(resp));
+	}
+	
+
+	@Test
+	public void testUpdateRemarkAfterAppraise() {
+		tradeOrderTraceService.updateRemarkAfterAppraise(tradeOrderTrace);
 	}
 
 }

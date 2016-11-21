@@ -9,6 +9,7 @@ package com.okdeer.mall.risk.mapper;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -73,6 +74,38 @@ public interface RiskBlackMapper extends IBaseMapper {
 	 * @date 2016年11月18日
 	 */
 	int findCountByAccount(RiskBlack riskBlack);
+
+	/**
+	 * @Description: TODO
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	Set<RiskBlack> findAllBlackMobile();
+
+	/**
+	 * @Description: TODO
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	Set<RiskBlack> findAllBlackDevice();
+
+	/**
+	 * @Description: TODO
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	Set<RiskBlack> findAllBlackPayAccount();
+
+	/**
+	 * @Description: TODO
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	Set<RiskBlack> findAllBlackLoginAccount();
 	
 	
 

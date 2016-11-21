@@ -317,4 +317,9 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 		traceVo.setIsDone(WhetherEnum.not.ordinal());
 		return traceVo;
 	}
+
+	@Override
+	public void updateRemarkAfterAppraise(TradeOrderTrace trace) {
+		tradeOrderTraceMapper.updateRemarkAfterAppraise(trace);
+	}
 }
