@@ -98,6 +98,7 @@
         SELECT <include refid="Base_Column_List" />
         FROM trade_order_trace
         WHERE order_id = #{orderId,jdbcType=VARCHAR}
+        ORDER BY trace_status
     </select>
 </mapper>
 
