@@ -8,6 +8,7 @@ package com.okdeer.mall.risk.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
@@ -58,5 +59,14 @@ public interface RiskWhiteService extends IBaseService{
 	 * @date 2016年11月17日
 	 */
 	public void addBatch(List<RiskWhite> riskWhiteList);
+	
+	/**
+	 * 
+	 * @Description: 所有白名单
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	public Set<RiskWhite> findAllWhite();
 	
 }

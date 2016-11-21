@@ -9,6 +9,7 @@ package com.okdeer.mall.risk.service.impl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,15 +41,62 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 	
 	private static final Logger LOGGER = Logger.getLogger(RiskWhiteServiceImpl.class);
 	
+	private String sync = "sync";
 	/**
 	 * 获取皮肤mapper
 	 */
 	@Autowired
 	RiskWhiteMapper riskWhiteMapper;
-
+	
+	/**
+	 * 白名单列表
+	 */
+	private Set<RiskWhite> whites = null;
+	
+	/**
+	 * 是否初始化
+	 */
+	private boolean isInitialize = false;
+	
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return riskWhiteMapper;
+	}
+
+	/**
+	 * 检查初始数据或初始化
+	 * @author guocp
+	 * @date 2016年11月18日
+	 */
+	private void initialize() {
+		if (!isInitialize) {
+			synchronized (sync) {
+				if (!isInitialize) {
+					try {
+						doInitialize();
+						isInitialize = true;
+					} catch (Exception e) {
+						LOGGER.error("风控获取白名单初始设置异常", e);
+					}
+				}
+			}
+		}
+	}
+
+	public void resetSetting() {
+		synchronized (sync) {
+			isInitialize = false;
+		}
+	}
+	/**
+	 * 初始数据
+	 * @throws Exception   
+	 * @author xuzq01
+	 * @date 2016年11月18日
+	 */
+	private void doInitialize() throws Exception {
+		// 初始化设置对象
+		this.whites = riskWhiteMapper.findAllWhite();
 	}
 	/**
 	 * (non-Javadoc)
@@ -94,6 +142,17 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 			}
 		}
 		riskWhiteMapper.addBatch(riskList);		
+	}
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskWhiteService#findAllWhite()
+	 */
+	@Override
+	public Set<RiskWhite> findAllWhite() {
+		if (!isInitialize) {
+			initialize();
+		}
+		return whites;
 	}
 	
 }

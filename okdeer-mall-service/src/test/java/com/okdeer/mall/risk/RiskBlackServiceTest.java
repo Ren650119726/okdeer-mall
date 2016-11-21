@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -25,6 +26,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.Application;
 import com.okdeer.mall.risk.dto.RiskBlackDto;
+import com.okdeer.mall.risk.entity.RiskBlack;
 import com.okdeer.mall.risk.entity.RiskBlack;
 import com.okdeer.mall.risk.service.RiskBlackService;
 
@@ -105,5 +107,28 @@ public class RiskBlackServiceTest {
 		String updateUserId ="1213";
 		Date updateTime = new Date();
 		riskBlackService.deleteBatchByIds(ids, updateUserId, updateTime);
+	}
+	@Test
+	public void findAllBlackMobileTest(){
+		Set<RiskBlack> riskBlackSet = riskBlackService.findAllBlackMobile();
+		assertTrue(riskBlackSet.size()>0);
+	}
+	
+	@Test
+	public void findAllBlackDeviceTest(){
+		Set<RiskBlack> riskBlackSet = riskBlackService.findAllBlackDevice();
+		assertTrue(riskBlackSet.size()>0);
+	}
+	
+	@Test
+	public void findAllBlackPayAccountTest(){
+		Set<RiskBlack> riskBlackSet = riskBlackService.findAllBlackPayAccount();
+		assertTrue(riskBlackSet.size()>0);
+	}
+	
+	@Test
+	public void findAllBlackLoginAccountTest(){
+		Set<RiskBlack> riskBlackSet = riskBlackService.findAllBlackLoginAccount();
+		assertTrue(riskBlackSet.size()>0);
 	}
 }

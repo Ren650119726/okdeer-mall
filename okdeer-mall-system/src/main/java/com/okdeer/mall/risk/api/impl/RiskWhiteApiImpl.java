@@ -32,7 +32,7 @@ import com.okdeer.mall.risk.service.RiskWhiteService;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		V1.2          2016年11月14日                       xuzq01              	白名单api实现类
  */
-@Service(version="1.0.0")
+@Service(version="1.2.0")
 public class RiskWhiteApiImpl implements RiskWhiteApi {
 	
 	@Autowired 
@@ -50,24 +50,11 @@ public class RiskWhiteApiImpl implements RiskWhiteApi {
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.risk.service.RiskWhiteApi#delete(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public void delete(String whiteId, String userId) {
-		try {
-			whiteListService.delete(whiteId);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	/**
-	 * (non-Javadoc)
 	 * @throws Exception 
 	 * @see com.okdeer.mall.risk.service.RiskWhiteApi#add(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void add(String account, String userId) throws Exception {
-
 		List<RiskWhite> riskWhiteList = new ArrayList<RiskWhite>();
 		List<String> accountNameList = (List<String>) java.util.Arrays.asList(account.trim().split(","));
 		for(String accountName:accountNameList){
@@ -84,16 +71,6 @@ public class RiskWhiteApiImpl implements RiskWhiteApi {
 			riskWhiteList.add(riskWhite);
 		}
 		whiteListService.addBatch(riskWhiteList);
-	}
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.risk.service.RiskWhiteApi#addBatch(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public void addBatch(String telephoneAccount, String id) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	/**
@@ -117,6 +94,28 @@ public class RiskWhiteApiImpl implements RiskWhiteApi {
 		
 		whiteListService.deleteBatchByIds(ids,updateUserId,updateTime);
 		
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @throws Exception 
+	 * @see com.okdeer.mall.risk.service.RiskWhiteApi#findWhiteById(java.lang.String)
+	 */
+	@Override
+	public RiskWhite findWhiteById(String accountId) throws Exception {
+		return whiteListService.findById(accountId);
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @throws Exception 
+	 * @see com.okdeer.mall.risk.service.RiskWhiteApi#updateWhite(com.okdeer.mall.risk.entity.RiskWhite)
+	 */
+	@Override
+	public void updateWhite(RiskWhite riskWhite) throws Exception {
+		Date updateTime = new Date();
+		riskWhite.setUpdateTime(updateTime);
+		whiteListService.update(riskWhite);
 	}
 
 }

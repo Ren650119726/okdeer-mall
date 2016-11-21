@@ -9,6 +9,7 @@ package com.okdeer.mall.risk.service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
@@ -58,4 +59,40 @@ public interface RiskBlackService extends IBaseService {
 	 * @date 2016年11月18日
 	 */
 	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime);
+	
+	/**
+	 * 
+	 * @Description: 所有黑名单的充值手机号
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	public Set<RiskBlack> findAllBlackMobile();
+	
+	/**
+	 * 
+	 * @Description: 所有黑名单设备
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	public Set<RiskBlack> findAllBlackDevice();
+	
+	/**
+	 * 
+	 * @Description: 所有黑名单支付账号
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	public Set<RiskBlack> findAllBlackPayAccount();
+	
+	/**
+	 * 
+	 * @Description: 所有黑名单登录账号
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	public Set<RiskBlack> findAllBlackLoginAccount();
 }
