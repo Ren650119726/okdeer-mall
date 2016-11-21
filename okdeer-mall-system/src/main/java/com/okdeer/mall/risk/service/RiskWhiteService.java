@@ -43,15 +43,6 @@ public interface RiskWhiteService extends IBaseService{
 
 	/**
 	 * @Description: TODO
-	 * @param whiteManagerDto
-	 * @return   
-	 * @author xuzq01
-	 * @date 2016年11月14日
-	 */
-	public int selectWhiteByAccount(String account);
-
-	/**
-	 * @Description: TODO
 	 * @param ids
 	 * @param updateUserId
 	 * @param updateTime   

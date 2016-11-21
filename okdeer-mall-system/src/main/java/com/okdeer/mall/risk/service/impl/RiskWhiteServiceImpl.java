@@ -45,6 +45,11 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 	 */
 	@Autowired
 	RiskWhiteMapper riskWhiteMapper;
+
+	@Override
+	public IBaseMapper getBaseMapper() {
+		return riskWhiteMapper;
+	}
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.risk.service.RiskWhiteService#findWhiteList(com.okdeer.mall.risk.dto.RiskWhiteDto, java.lang.Integer, java.lang.Integer)
@@ -58,24 +63,6 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 			result = new ArrayList<RiskWhite>();
 		}
 		return new PageUtils<RiskWhite>(result);
-	}
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.risk.service.RiskWhiteService#selectWhiteByAccount(com.okdeer.mall.risk.dto.RiskWhiteDto)
-	 */
-	@Override
-	public int selectWhiteByAccount(String account) {
-		return riskWhiteMapper.selectWhiteByAccount(account);
-	}
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
-	 */
-	@Override
-	public IBaseMapper getBaseMapper() {
-		return riskWhiteMapper;
 	}
 
 	/**

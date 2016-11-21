@@ -13,7 +13,6 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.risk.dto.RiskWhiteDto;
-import com.okdeer.mall.risk.entity.RiskBlack;
 import com.okdeer.mall.risk.entity.RiskWhite;
 
 public interface RiskWhiteMapper extends IBaseMapper {
@@ -27,14 +26,6 @@ public interface RiskWhiteMapper extends IBaseMapper {
 	 */
 	List<RiskWhite> findWhiteList(RiskWhiteDto whiteManagerDto);
 
-	/**
-	 * @Description: TODO
-	 * @param whiteManagerDto
-	 * @return   
-	 * @author xuzq01
-	 * @date 2016年11月14日
-	 */
-	int selectWhiteByAccount(@Param(value = "telephoneAccount") String telephoneAccount);
 
 	/**
 	 * @Description: TODO

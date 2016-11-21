@@ -12,6 +12,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,38 +41,33 @@ import com.okdeer.mall.risk.service.RiskBlackService;
 @Service
 public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackService{
 
-	//private static final Logger LOGGER = Logger.getLogger(RiskWhiteServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RiskBlackServiceImpl.class);
 	
 	/**
-	 * 获取皮肤mapper
+	 * 获取黑名单管理mapper
 	 */
 	@Autowired
 	RiskBlackMapper riskBlackMapper;
 	
-
+	@Override
+	public IBaseMapper getBaseMapper() {
+		return riskBlackMapper;
+	}
+	
 	/**
-	 * (non-Javadoc)
+	 * 获取管理名单列表
 	 * @see com.okdeer.mall.risk.service.RiskBlackService#findBlackList(com.okdeer.mall.risk.dto.RiskBlackDto, java.lang.Integer, java.lang.Integer)
 	 */
 	@Override
-	public PageUtils<RiskBlack> findBlackList(RiskBlackDto blackManagerDto, Integer pageNumber, Integer pageSize) {
+	public PageUtils<RiskBlack> findBlackList(RiskBlackDto riskBlackDto, Integer pageNumber, Integer pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true);
-		List<RiskBlack> result = riskBlackMapper.findBlackList(blackManagerDto);
+		LOGGER.info("query RiskBlack params:"+riskBlackDto);
+		List<RiskBlack> result = riskBlackMapper.findBlackList(riskBlackDto);
 		if (result == null) {
 			result = new ArrayList<RiskBlack>();
 		}
 		return new PageUtils<RiskBlack>(result);
 		
-	}
-
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
-	 */
-	@Override
-	public IBaseMapper getBaseMapper() {
-		return riskBlackMapper;
 	}
 
 	/**
@@ -79,8 +76,8 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void addBath(List<RiskBlack> riskBlackList) {
-		//查询是否存在白名单数据 存在直接更新 不存在批量增加
+	public void addBatch(List<RiskBlack> riskBlackList) {
+		//查询是否存在黑名单数据 存在直接更新 不存在批量增加
 		List<RiskBlack>  riskList = new ArrayList<RiskBlack>();
 		for(RiskBlack riskBlack:riskBlackList){
 			int count = riskBlackMapper.findCountByAccount(riskBlack);
