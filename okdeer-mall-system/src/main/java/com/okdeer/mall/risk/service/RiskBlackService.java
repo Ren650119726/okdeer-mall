@@ -38,7 +38,7 @@ public interface RiskBlackService extends IBaseService {
 	 * @param riskBlackList 
 	 * @date 2016年11月16日
 	 */
-	public void addBath(List<RiskBlack> riskBlackList);
+	public void addBatch(List<RiskBlack> riskBlackList);
 	
 	/**
 	 * @Description: 通过参数获取黑名单列表

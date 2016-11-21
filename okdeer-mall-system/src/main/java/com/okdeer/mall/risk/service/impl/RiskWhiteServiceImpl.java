@@ -62,15 +62,6 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.risk.service.RiskWhiteService#selectWhiteByAccount(com.okdeer.mall.risk.dto.RiskWhiteDto)
-	 */
-	@Override
-	public int selectWhiteByAccount(String account) {
-		return riskWhiteMapper.selectWhiteByAccount(account);
-	}
-
-	/**
-	 * (non-Javadoc)
 	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
 	 */
 	@Override

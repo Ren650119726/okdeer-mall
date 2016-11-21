@@ -91,7 +91,7 @@ public class RiskWhiteApiImpl implements RiskWhiteApi {
 	 */
 	@Override
 	public int selectWhiteByAccount(String account) {
-		return whiteListService.selectWhiteByAccount(account);
+		return whiteListService.findWhiteByAccount(account);
 	}
 
 	/**
