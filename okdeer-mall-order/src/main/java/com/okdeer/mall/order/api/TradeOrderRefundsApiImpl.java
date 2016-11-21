@@ -532,8 +532,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 			refundsMoney.setRefundStatus(refunds.getRefundsStatus().ordinal());
 			refundsMoney.setOrderResource(order.getOrderResource().ordinal());
 			// 元*100 = 分
-			refundsMoney.setTotalAmount(order.getActualAmount().multiply(new BigDecimal("100")).intValue());
-			refundsMoney.setRefundAmount(refunds.getTotalAmount().multiply(new BigDecimal("100")).intValue());
+			refundsMoney.setTotalAmount(order.getActualAmount());
+			refundsMoney.setRefundAmount(refunds.getTotalAmount());
 			refundsMoney.setReason(refunds.getRefundsReason());
 			refundsMoney.setPaymentMethod(refunds.getPaymentMethod().ordinal());
 			// refundsMoney.setApplicant(refunds.getOperator());
@@ -572,8 +572,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		refundsMoney.setRefundStatus(refunds.getRefundsStatus().ordinal());
 		refundsMoney.setOrderResource(order.getOrderResource().ordinal());
 		// 元*100 = 分
-		refundsMoney.setTotalAmount(order.getActualAmount().multiply(new BigDecimal("100")).intValue());
-		refundsMoney.setRefundAmount(refunds.getTotalAmount().multiply(new BigDecimal("100")).intValue());
+		refundsMoney.setTotalAmount(order.getActualAmount());
+		refundsMoney.setRefundAmount(refunds.getTotalAmount());
 		refundsMoney.setReason(refunds.getRefundsReason());
 		if (refunds.getPaymentMethod() != null) {
 			refundsMoney.setPaymentMethod(refunds.getPaymentMethod().ordinal());
