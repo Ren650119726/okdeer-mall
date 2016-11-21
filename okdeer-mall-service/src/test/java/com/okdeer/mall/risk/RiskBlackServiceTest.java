@@ -108,27 +108,27 @@ public class RiskBlackServiceTest {
 		Date updateTime = new Date();
 		riskBlackService.deleteBatchByIds(ids, updateUserId, updateTime);
 	}
-	/*@Test
+	@Test
 	public void findAllBlackMobileTest(){
-		Set<RiskBlack> riskBlackSet = riskBlackService.findAllBlackMobile();
+		Set<String> riskBlackSet = riskBlackService.findAllBlackMobile();
 		assertTrue(riskBlackSet.size()>0);
 	}
 	
 	@Test
 	public void findAllBlackDeviceTest(){
-		Set<RiskBlack> riskBlackSet = riskBlackService.findAllBlackDevice();
+		Set<String> riskBlackSet = riskBlackService.findAllBlackDevice();
 		assertTrue(riskBlackSet.size()>0);
 	}
 	
 	@Test
 	public void findAllBlackPayAccountTest(){
-		Set<RiskBlack> riskBlackSet = riskBlackService.findAllBlackPayAccount();
+		Set<String> riskBlackSet = riskBlackService.findAllBlackPayAccount();
 		assertTrue(riskBlackSet.size()>0);
 	}
 	
 	@Test
 	public void findAllBlackLoginAccountTest(){
-		Set<RiskBlack> riskBlackSet = riskBlackService.findAllBlackLoginAccount();
+		Set<String> riskBlackSet = riskBlackService.findAllBlackLoginAccount();
 		assertTrue(riskBlackSet.size()>0);
-	}*/
+	}
 }
