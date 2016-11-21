@@ -100,5 +100,12 @@
         WHERE order_id = #{orderId,jdbcType=VARCHAR}
         ORDER BY trace_status
     </select>
+    
+    <!-- updateRemarkAfterAppraise -->
+    <update id="updateRemarkAfterAppraise" parameterType="com.okdeer.mall.order.entity.TradeOrderTrace">
+    	UPDATE trade_order_trace SET remark = #{remark} 
+    	WHERE trace_status = #{traceStatus,jdbcType=TINYINT} 
+    	AND order_id = #{orderId,jdbcType=VARCHAR} 
+    </update>
 </mapper>
 
