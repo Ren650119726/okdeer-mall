@@ -85,14 +85,6 @@ public class RiskWhiteApiImpl implements RiskWhiteApi {
 		}
 		whiteListService.addBatch(riskWhiteList);
 	}
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.risk.service.RiskWhiteApi#selectWhiteByAccount(java.lang.String)
-	 */
-	@Override
-	public int selectWhiteByAccount(String account) {
-		return whiteListService.selectWhiteByAccount(account);
-	}
 
 	/**
 	 * (non-Javadoc)

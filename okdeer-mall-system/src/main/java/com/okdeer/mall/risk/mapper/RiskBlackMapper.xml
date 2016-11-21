@@ -16,7 +16,7 @@
         id, account, account_type, 
         create_time, create_user_id, update_time, update_user_id, disabled
     </sql>
- <!-- 根据条件搜索皮肤列表 -->
+ <!-- 根据条件搜索黑名单列表 -->
   <select id="findBlackList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.risk.dto.RiskBlackDto">
     SELECT 
     <include refid="Base_Column_List" />
@@ -110,7 +110,7 @@
    <select id="findCountByAccount" resultType="java.lang.Integer" parameterType="com.okdeer.mall.risk.entity.RiskBlack" >
         select count(1) 
         from risk_black
-        where account = #{account,jdbcType=VARCHAR} and account_type=#{accountType,jdbcType=NUMERIC}
+        where disabled = 0 and account = #{account,jdbcType=VARCHAR} and account_type=#{accountType,jdbcType=NUMERIC}
     </select>
     
     <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskBlack" >

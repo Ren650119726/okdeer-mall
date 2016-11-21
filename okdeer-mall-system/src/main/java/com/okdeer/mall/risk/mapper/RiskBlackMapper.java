@@ -15,7 +15,18 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.risk.dto.RiskBlackDto;
 import com.okdeer.mall.risk.entity.RiskBlack;
-
+/**
+ * 
+ * ClassName: RiskBlackMapper 
+ * @Description: 黑名单的dao接口类
+ * @author xuzq01
+ * @date 2016年11月21日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *		V1.2			2016年11月21日	xuzq01				黑名单的dao接口类
+ */
 public interface RiskBlackMapper extends IBaseMapper {
 
 	/**

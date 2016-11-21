@@ -99,7 +99,7 @@ public class RiskBlackApiImpl implements RiskBlackApi {
 			riskBlack.setUpdateUserId(userId);
 			riskBlackList.add(riskBlack);
 		}
-		blackListService.addBath(riskBlackList);
+		blackListService.addBatch(riskBlackList);
 	}
 	
 	@Override
@@ -119,7 +119,7 @@ public class RiskBlackApiImpl implements RiskBlackApi {
 			riskBlack.setUpdateUserId(userId);
 			riskBlackList.add(riskBlack);
 		}
-		blackListService.addBath(riskBlackList);
+		blackListService.addBatch(riskBlackList);
 	}
 	
 	@Override
