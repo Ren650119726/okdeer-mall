@@ -54,18 +54,23 @@
 			pic.url AS storeSkuUrl,
 			sku.online_price AS storeSkuPrice,
 			store.id AS storeId,
-			store.store_name AS storeName 
+			store.store_name AS storeName,
+			service.product_no productNo 
 		FROM
 			<include refid="BASE_TABLE_NAME"/> cho
 		LEFT JOIN <include refid="TABLE_STORE_SKU"/> sku ON cho.goods_store_sku_id = sku.id
 		LEFT JOIN <include refid="TABLE_STORE_SKU_PIC"/> pic ON sku.id = pic.store_sku_id AND pic.type = 1 
 		LEFT JOIN <include refid="TABLE_STORE_INFO"/> store ON sku.store_id = store.id
+		LEFT JOIN goods_store_sku_service service ON service.store_sku_id = sku.id
 		WHERE 1 = 1 
 		<if test="null != storeSkuName and storeSkuName != ''">
 	          AND sku.`name` LIKE CONCAT('%',#{storeSkuName,jdbcType=VARCHAR},'%') 
 	      </if> 
 	      <if test="null != storeName and storeName != ''">
 	          AND store.store_name LIKE CONCAT('%',#{storeName,jdbcType=VARCHAR},'%') 
+	      </if>
+	      <if test="null != productNo and productNo != ''">
+	          AND service.product_no LIKE CONCAT('%',#{productNo,jdbcType=VARCHAR},'%') 
 	      </if>
 	      <!-- start  update by zhongy 20160805 -->
 		  <if test="startTime !=null">
