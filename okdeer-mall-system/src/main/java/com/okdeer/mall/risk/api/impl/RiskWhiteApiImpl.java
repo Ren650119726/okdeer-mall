@@ -32,7 +32,7 @@ import com.okdeer.mall.risk.service.RiskWhiteService;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		V1.2          2016年11月14日                       xuzq01              	白名单api实现类
  */
-@Service(version="1.2.0")
+@Service(version="1.0.0")
 public class RiskWhiteApiImpl implements RiskWhiteApi {
 	
 	@Autowired 

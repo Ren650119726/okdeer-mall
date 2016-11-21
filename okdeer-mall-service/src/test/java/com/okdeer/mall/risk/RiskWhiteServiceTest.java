@@ -99,7 +99,7 @@ public class RiskWhiteServiceTest {
 	
 	@Test
 	public void findAllWhiteTest() {
-		Set<RiskWhite> riskWhiteSet = riskWhiteService.findAllWhite();
+		Set<String> riskWhiteSet = riskWhiteService.findAllWhite();
 		assertTrue(riskWhiteSet.size()>0);
 	}
 	

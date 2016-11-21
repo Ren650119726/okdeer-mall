@@ -67,7 +67,7 @@ public interface RiskBlackService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月21日
 	 */
-	public Set<RiskBlack> findAllBlackMobile();
+	public Set<String> findAllBlackMobile();
 	
 	/**
 	 * 
@@ -76,7 +76,7 @@ public interface RiskBlackService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月21日
 	 */
-	public Set<RiskBlack> findAllBlackDevice();
+	public Set<String> findAllBlackDevice();
 	
 	/**
 	 * 
@@ -85,7 +85,7 @@ public interface RiskBlackService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月21日
 	 */
-	public Set<RiskBlack> findAllBlackPayAccount();
+	public Set<String> findAllBlackPayAccount();
 	
 	/**
 	 * 
@@ -94,5 +94,5 @@ public interface RiskBlackService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月21日
 	 */
-	public Set<RiskBlack> findAllBlackLoginAccount();
+	public Set<String> findAllBlackLoginAccount();
 }

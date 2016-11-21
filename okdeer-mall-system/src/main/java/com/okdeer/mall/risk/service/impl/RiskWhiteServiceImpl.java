@@ -8,6 +8,7 @@ package com.okdeer.mall.risk.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -21,6 +22,7 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.risk.dto.RiskWhiteDto;
+import com.okdeer.mall.risk.entity.RiskBlack;
 import com.okdeer.mall.risk.entity.RiskWhite;
 import com.okdeer.mall.risk.mapper.RiskWhiteMapper;
 import com.okdeer.mall.risk.service.RiskWhiteService;
@@ -51,7 +53,7 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 	/**
 	 * 白名单列表
 	 */
-	private Set<RiskWhite> whites = null;
+	private Set<String> whites = null;
 	
 	/**
 	 * 是否初始化
@@ -96,8 +98,9 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 	 */
 	private void doInitialize() throws Exception {
 		// 初始化设置对象
-		this.whites = riskWhiteMapper.findAllWhite();
+		this.whites = getBlackSet(riskWhiteMapper.findAllWhite());
 	}
+
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.risk.service.RiskWhiteService#findWhiteList(com.okdeer.mall.risk.dto.RiskWhiteDto, java.lang.Integer, java.lang.Integer)
@@ -148,11 +151,18 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 	 * @see com.okdeer.mall.risk.service.RiskWhiteService#findAllWhite()
 	 */
 	@Override
-	public Set<RiskWhite> findAllWhite() {
+	public Set<String> findAllWhite() {
 		if (!isInitialize) {
 			initialize();
 		}
 		return whites;
 	}
 	
+	private Set<String> getBlackSet(Set<RiskWhite> whiteSet){
+		Set<String> set = new HashSet<String>();
+		for(RiskWhite white : whiteSet){
+			set.add(white.getTelephoneAccount());
+		}
+		return set;
+	}
 }

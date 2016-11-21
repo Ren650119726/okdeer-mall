@@ -9,6 +9,7 @@ package com.okdeer.mall.risk.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +26,6 @@ import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.risk.dto.RiskBlackDto;
 import com.okdeer.mall.risk.entity.RiskBlack;
-import com.okdeer.mall.risk.entity.RiskWhite;
 import com.okdeer.mall.risk.mapper.RiskBlackMapper;
 import com.okdeer.mall.risk.service.RiskBlackService;
 
@@ -55,22 +55,22 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	/**
 	 * 黑名单充值手机号
 	 */
-	private Set<RiskBlack> blackMobiles = null;
+	private Set<String> blackMobiles = null;
 	
 	/**
 	 * 黑名单设备
 	 */
-	private Set<RiskBlack> blackDevices = null;
+	private Set<String> blackDevices = null;
 	
 	/**
 	 * 黑名单支付账号
 	 */
-	private Set<RiskBlack> blackPayAccounts = null;
+	private Set<String> blackPayAccounts = null;
 	
 	/**
 	 * 黑名单登录账号
 	 */
-	private Set<RiskBlack> blackLoginAccounts = null;
+	private Set<String> blackLoginAccounts = null;
 	
 	/**
 	 * 是否初始化
@@ -115,12 +115,13 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	 */
 	private void doInitialize() throws Exception {
 		// 初始化设置对象
-		this.blackMobiles = riskBlackMapper.findAllBlackMobile();
-		this.blackDevices = riskBlackMapper.findAllBlackDevice();
-		this.blackPayAccounts = riskBlackMapper.findAllBlackPayAccount();
-		this.blackLoginAccounts = riskBlackMapper.findAllBlackLoginAccount();
+		this.blackMobiles = getBlackSet(riskBlackMapper.findAllBlackMobile());
+		this.blackDevices = getBlackSet(riskBlackMapper.findAllBlackDevice());
+		this.blackPayAccounts = getBlackSet(riskBlackMapper.findAllBlackPayAccount());
+		this.blackLoginAccounts = getBlackSet(riskBlackMapper.findAllBlackLoginAccount());
 	}
 	
+
 	/**
 	 * 获取管理名单列表
 	 * @see com.okdeer.mall.risk.service.RiskBlackService#findBlackList(com.okdeer.mall.risk.dto.RiskBlackDto, java.lang.Integer, java.lang.Integer)
@@ -180,7 +181,7 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	 * @see com.okdeer.mall.risk.service.RiskBlackService#findAllBlackMobile()
 	 */
 	@Override
-	public Set<RiskBlack> findAllBlackMobile() {
+	public Set<String> findAllBlackMobile() {
 		if (!isInitialize) {
 			initialize();
 		}
@@ -192,7 +193,7 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	 * @see com.okdeer.mall.risk.service.RiskBlackService#findAllBlackDevice()
 	 */
 	@Override
-	public Set<RiskBlack> findAllBlackDevice() {
+	public Set<String> findAllBlackDevice() {
 		if (!isInitialize) {
 			initialize();
 		}
@@ -204,7 +205,7 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	 * @see com.okdeer.mall.risk.service.RiskBlackService#findAllBlackPayAccount()
 	 */
 	@Override
-	public Set<RiskBlack> findAllBlackPayAccount() {
+	public Set<String> findAllBlackPayAccount() {
 		if (!isInitialize) {
 			initialize();
 		}
@@ -216,10 +217,18 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	 * @see com.okdeer.mall.risk.service.RiskBlackService#findAllBlackLoginAccount()
 	 */
 	@Override
-	public Set<RiskBlack> findAllBlackLoginAccount() {
+	public Set<String> findAllBlackLoginAccount() {
 		if (!isInitialize) {
 			initialize();
 		}
 		return blackLoginAccounts;
+	}
+	
+	private Set<String> getBlackSet(Set<RiskBlack> blackSet){
+		Set<String> set = new HashSet<String>();
+		for(RiskBlack black : blackSet){
+			set.add(black.getAccount());
+		}
+		return set;
 	}
 }

@@ -67,6 +67,6 @@ public interface RiskWhiteService extends IBaseService{
 	 * @author xuzq01
 	 * @date 2016年11月21日
 	 */
-	public Set<RiskWhite> findAllWhite();
+	public Set<String> findAllWhite();
 	
 }

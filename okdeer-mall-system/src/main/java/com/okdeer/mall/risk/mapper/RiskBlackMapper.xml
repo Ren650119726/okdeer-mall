@@ -16,7 +16,7 @@
         id, account, account_type, 
         create_time, create_user_id, update_time, update_user_id, disabled
     </sql>
-    <!-- 查找所有充值号码 -->
+    <!-- chaz -->
     <select id="findAllBlackMobile" resultMap="BaseResultMap" >
 	    SELECT 
 	    <include refid="Base_Column_List" />
@@ -24,7 +24,6 @@
 	     WHERE disabled = 0 and account_type=2
 	       ORDER BY create_time DESC
 	  </select>
-	  <!-- 查找所有设备 -->
    <select id="findAllBlackDevice" resultMap="BaseResultMap" >
     SELECT 
     <include refid="Base_Column_List" />
@@ -32,7 +31,6 @@
      WHERE disabled = 0 and account_type=3
        ORDER BY create_time DESC
   </select>
-  <!-- 查找所有支付账号 -->
    <select id="findAllBlackPayAccount" resultMap="BaseResultMap" >
     SELECT 
     <include refid="Base_Column_List" />
@@ -40,7 +38,6 @@
      WHERE disabled = 0 and account_type=1 or account_type=4
        ORDER BY create_time DESC
   </select>
-  <!-- 查找所有登录账号-->
    <select id="findAllBlackLoginAccount" resultMap="BaseResultMap" >
     SELECT 
     <include refid="Base_Column_List" />
@@ -92,7 +89,7 @@
         select 
         <include refid="Base_Column_List" />
         from risk_black
-        where disabled = 0 and id = #{id,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=VARCHAR}
     </select>
      <!-- 批量加入黑名单 -->
     <insert  id="addBatch"  parameterType="java.util.List">

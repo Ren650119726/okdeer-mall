@@ -108,7 +108,7 @@ public class RiskBlackServiceTest {
 		Date updateTime = new Date();
 		riskBlackService.deleteBatchByIds(ids, updateUserId, updateTime);
 	}
-	@Test
+	/*@Test
 	public void findAllBlackMobileTest(){
 		Set<RiskBlack> riskBlackSet = riskBlackService.findAllBlackMobile();
 		assertTrue(riskBlackSet.size()>0);
@@ -130,5 +130,5 @@ public class RiskBlackServiceTest {
 	public void findAllBlackLoginAccountTest(){
 		Set<RiskBlack> riskBlackSet = riskBlackService.findAllBlackLoginAccount();
 		assertTrue(riskBlackSet.size()>0);
-	}
+	}*/
 }
