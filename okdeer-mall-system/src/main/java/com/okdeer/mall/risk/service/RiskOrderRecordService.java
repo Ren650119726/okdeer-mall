@@ -3,12 +3,13 @@
  *@Author: guocp
  *@Date: 2016年11月17日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
- */    
+ */
 package com.okdeer.mall.risk.service;
 
 import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.risk.enums.IsPreferential;
 import com.okdeer.mall.risk.po.RiskOrderRecordPo;
 
 /**
@@ -23,7 +24,7 @@ import com.okdeer.mall.risk.po.RiskOrderRecordPo;
  *
  */
 
-public interface RiskOrderRecordService extends IBaseService{
+public interface RiskOrderRecordService extends IBaseService {
 
 	/**
 	 * 根据登入名查询订单记录
@@ -31,7 +32,7 @@ public interface RiskOrderRecordService extends IBaseService{
 	 * @author guocp
 	 * @date 2016年11月17日
 	 */
-	RiskOrderRecordPo findByLoginName(String loginName);
+	RiskOrderRecordPo findByLoginName(String loginName, IsPreferential isPreferential);
 
 	/**
 	 * 根据设备号查询订单记录
@@ -39,7 +40,7 @@ public interface RiskOrderRecordService extends IBaseService{
 	 * @author guocp
 	 * @date 2016年11月17日
 	 */
-	List<RiskOrderRecordPo> findByDeviceId(String deviceId);
+	RiskOrderRecordPo findByDeviceId(String deviceId, IsPreferential isPreferential);
 
 	/**
 	 * 根据支付帐号查询订单记录
@@ -47,6 +48,6 @@ public interface RiskOrderRecordService extends IBaseService{
 	 * @author guocp
 	 * @date 2016年11月17日
 	 */
-	List<RiskOrderRecordPo> findByPayAccount(String payAccount);
+	RiskOrderRecordPo findByPayAccount(String payAccount, IsPreferential isPreferential);
 
 }

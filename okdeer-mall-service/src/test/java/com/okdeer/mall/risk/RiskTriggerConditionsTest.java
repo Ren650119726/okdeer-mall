@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.risk.entity.RiskOrderRecord;
+import com.okdeer.mall.risk.enums.IsPreferential;
 import com.okdeer.mall.risk.service.RiskTriggerConditions;
 
 
@@ -48,8 +49,9 @@ public class RiskTriggerConditionsTest extends BaseServiceTest {
 		riskOrder.setFacePrice(new BigDecimal("60"));
 		riskOrder.setTel("18682310941");
 		riskOrder.setCreateTime(new Date());
+		riskOrder.setIsPreferential(IsPreferential.YES);
 		boolean istrigger = riskTriggerConditions.isTrigger(riskOrder);
-		assertEquals(false, istrigger);
+		assertEquals(true, istrigger);
 	}
 	
 	
