@@ -86,7 +86,8 @@
 		sku.`online_price` AS storeSkuPrice,
 		pic.url AS storeSkuUrl,
 		store.id AS storeId,
-		store.store_name AS storeName
+		store.store_name AS storeName,
+		service.product_no productNo
 		FROM
 		<include refid="BASE_TABLE_NAME" />
 		seckill
@@ -99,6 +100,7 @@
 		LEFT JOIN
 		<include refid="TABLE_STORE_INFO" />
 		store ON sku.store_id = store.id
+		LEFT JOIN goods_store_sku_service service ON service.store_sku_id = sku.id
 		WHERE 1 = 1
 		<if test="null != skuName and skuName != ''">
 			AND sku.`name` LIKE CONCAT('%',#{skuName,jdbcType=VARCHAR},'%')
