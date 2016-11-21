@@ -49,7 +49,11 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	@Autowired
 	RiskBlackMapper riskBlackMapper;
 	
-
+	@Override
+	public IBaseMapper getBaseMapper() {
+		return riskBlackMapper;
+	}
+	
 	/**
 	 * 获取管理名单列表
 	 * @see com.okdeer.mall.risk.service.RiskBlackService#findBlackList(com.okdeer.mall.risk.dto.RiskBlackDto, java.lang.Integer, java.lang.Integer)
@@ -64,16 +68,6 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 		}
 		return new PageUtils<RiskBlack>(result);
 		
-	}
-
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
-	 */
-	@Override
-	public IBaseMapper getBaseMapper() {
-		return riskBlackMapper;
 	}
 
 	/**
