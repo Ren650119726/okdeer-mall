@@ -265,7 +265,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	 * @date 2016年11月9日
 	 */
 	private boolean isBreach(OrderCancelType cancelType, TradeOrder tradeOrder) {
-		if (tradeOrder.getType() != OrderTypeEnum.SERVICE_ORDER
+		if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER
 				|| BigDecimal.valueOf(0.0).compareTo(tradeOrder.getActualAmount()) == 0) {
 			// 不是服务订单或者实付金额为0的，不收取违约金
 			return false;
