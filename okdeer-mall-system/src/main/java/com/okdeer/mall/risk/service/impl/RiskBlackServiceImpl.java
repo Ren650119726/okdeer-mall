@@ -8,6 +8,7 @@
 package com.okdeer.mall.risk.service.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -79,12 +80,34 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void addBath(List<RiskBlack> riskBlackList) {
-		riskBlackMapper.addBatch(riskBlackList);
-		
+		//查询是否存在白名单数据 存在直接更新 不存在批量增加
+		List<RiskBlack>  riskList = new ArrayList<RiskBlack>();
+		for(RiskBlack riskBlack:riskBlackList){
+			int count = riskBlackMapper.findCountByAccount(riskBlack);
+			if(count>0){
+				riskBlackMapper.update(riskBlack);
+			}else{
+				riskList.add(riskBlack);
+			}
+		}
+	riskBlackMapper.addBatch(riskList);
+	
 	}
 	
 	@Override
 	public List<RiskBlack> findBlackListByParams(Map<String,Object> map){
 		return riskBlackMapper.findBlackListByParams(map);
+	}
+
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskBlackService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime) {
+		riskBlackMapper.deleteBatchByIds(ids,updateUserId,updateTime);
+		
 	}
 }

@@ -43,7 +43,7 @@ public interface RiskBlackMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年11月17日
 	 */
-	void addBatch(@Param(value = "riskBlackList")List<RiskBlack> riskBlackList);
+	void addBatch(@Param(value = "riskList")List<RiskBlack> riskList);
 	
 	/**
 	 * @Description: 通过参数获取黑名单列表
@@ -53,5 +53,16 @@ public interface RiskBlackMapper extends IBaseMapper {
 	 * @date 2016年11月18日
 	 */
 	List<RiskBlack> findBlackListByParams(Map<String,Object> map);
+
+	/**
+	 * @Description: TODO
+	 * @param riskBlack
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月18日
+	 */
+	int findCountByAccount(RiskBlack riskBlack);
+	
+	
 
 }
