@@ -143,7 +143,9 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 				riskList.add(riskWhite);
 			}
 		}
-		riskWhiteMapper.addBatch(riskList);	
+		if(riskList.size()>0){
+			riskWhiteMapper.addBatch(riskList);	
+		}
 		resetSetting();
 	}
 	/**
