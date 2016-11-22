@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.risk.enums.IsPreferential;
 import com.okdeer.mall.risk.mapper.RiskOrderRecordMapper;
 import com.okdeer.mall.risk.po.RiskOrderRecordPo;
 import com.okdeer.mall.risk.service.RiskOrderRecordService;
@@ -40,22 +41,26 @@ public class RiskOrderRecordServiceImpl extends BaseServiceImpl implements RiskO
 	}
 
 	@Override
-	public RiskOrderRecordPo findByLoginName(String loginName) {
-		RiskOrderRecordPo record = riskOrderRecordMapper.findByLoginName(loginName);
-		record.setTels(riskOrderRecordMapper.findTelsByLoginName(loginName));;
+	public RiskOrderRecordPo findByLoginName(String loginName, IsPreferential isPreferential) {
+		RiskOrderRecordPo record = riskOrderRecordMapper.findByParam(loginName, "loginName", isPreferential.getCode());
+		record.setTels(riskOrderRecordMapper.findTelsByParam(loginName, "loginName", isPreferential.getCode()));
 		return record;
 	}
 
 	@Override
-	public List<RiskOrderRecordPo> findByDeviceId(String deviceId) {
-		// TODO Auto-generated method stub
-		return null;
+	public RiskOrderRecordPo findByDeviceId(String deviceId, IsPreferential isPreferential) {
+		RiskOrderRecordPo record = riskOrderRecordMapper.findByParam(deviceId, "deviceId", isPreferential.getCode());
+		record.setTels(riskOrderRecordMapper.findTelsByParam(deviceId, "deviceId", isPreferential.getCode()));
+		record.setLoginNames(riskOrderRecordMapper.findLoginNamesByParam(deviceId, isPreferential.getCode()));
+		return record;
 	}
 
 	@Override
-	public List<RiskOrderRecordPo> findByPayAccount(String payAccount) {
-		// TODO Auto-generated method stub
-		return null;
+	public RiskOrderRecordPo findByPayAccount(String payAccount, IsPreferential isPreferential) {
+		RiskOrderRecordPo record = riskOrderRecordMapper.findByParam(payAccount, "payAccount",
+				isPreferential.getCode());
+		record.setTels(riskOrderRecordMapper.findTelsByParam(payAccount, "payAccount", isPreferential.getCode()));
+		return record;
 	}
 
 }

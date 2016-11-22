@@ -126,6 +126,7 @@ import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
+import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
@@ -190,6 +191,8 @@ import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.OrderCouponsRespDto;
 import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
+import com.okdeer.mall.order.vo.RefundsTraceResp;
+import com.okdeer.mall.order.vo.RefundsTraceVo;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.order.vo.TradeOrderCommentVo;
 import com.okdeer.mall.order.vo.TradeOrderExportVo;
@@ -1717,7 +1720,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 发送计时消息
 			// Begin 重构4.1 add by wusw 20160801
 			if (storeInfo.getType() == StoreTypeEnum.SERVICE_STORE) {
-				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime(), "yyyy-MM-dd HH:mm");
+				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
 				// 服务店订单，预约服务时间过后24小时未派单的自动确认收货
 				// tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout,
 				// tradeOrder.getId(),
@@ -4166,6 +4169,21 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			json.put("orderItems", item);
 		}
 		// End V1.1.0 add by wusw 20160929
+		// Begin V1.2.0 add by chenzc 20161122
+		// 获取订单状态列表
+		Response<RefundsTraceResp> orderTrace = tradeOrderTraceService.findOrderTrace(orders.getId());
+		List<RefundsTraceVo> traceList = orderTrace.getData().getTraceList();
+		// 获取最后一条订单状态的描述
+		String orderStatusRemark = "";
+		for (RefundsTraceVo vo : traceList) {
+			if (vo.getIsDone() == 1) {
+				orderStatusRemark = vo.getContent();
+			} else {
+				break;
+			}
+		}
+		json.put("orderStatusRemark", orderStatusRemark);
+		// End V1.2.0 add by chenzc 20161122
 		json.put("height", 126);
 		json.put("width", 126);
 		return json;
@@ -6153,7 +6171,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 查询店铺扩展信息
 		String storeId = orders.getStoreInfo().getId();
 		StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
-
+		
 		orders.setItems(tradeOrderItems);
 		JSONObject json = this.getServiceJsonObj(orders, appraise, storeInfoExt, true);
 		return json;

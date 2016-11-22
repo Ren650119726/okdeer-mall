@@ -79,9 +79,9 @@ public abstract class AbstractPayResultHandler {
 	@Transactional
 	public ConsumeConcurrentlyStatus handler(TradeOrder tradeOrder,PayResponseDto respDto) throws Exception{
 		// 第一步 幂等性校验，防止重复消费
-		if(isConsumed(tradeOrder)){
-			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-		}
+//		if(isConsumed(tradeOrder)){
+//			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+//		}
 		// 第二步 设置订单支付记录
 		TradeOrderPay tradeOrderPay = buildTradeOrderPay(tradeOrder.getId(),respDto);
 		// 第三步 设置订单状态
@@ -89,7 +89,7 @@ public abstract class AbstractPayResultHandler {
 		// 订单前置处理
 		preProcessOrder(tradeOrder);
 		// 处理订单项
-		processOrderItem(tradeOrder);
+		processOrderItem(tradeOrder,respDto);
 		// 第四步 更新订单状态
 		updateOrderStatus(tradeOrder);
 		// 第五步 保存订单支付记录
@@ -104,6 +104,8 @@ public abstract class AbstractPayResultHandler {
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 	}
 	
+
+
 	/**
 	 * @Description: 余额支付
 	 * @param tradeOrder
@@ -262,6 +264,17 @@ public abstract class AbstractPayResultHandler {
 	 */
 	public void preProcessOrder(TradeOrder tradeOrder) throws Exception{
 		// 模板方法，留给具体的实现类处理
+	}
+	
+	/**
+	 * 重载方法
+	 * @param tradeOrder
+	 * @param respDto   
+	 * @author guocp
+	 * @date 2016年11月22日
+	 */
+	protected void processOrderItem(TradeOrder tradeOrder, PayResponseDto respDto) throws Exception {
+		processOrderItem(tradeOrder,null);
 	}
 	
 	/**
