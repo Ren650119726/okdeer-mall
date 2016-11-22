@@ -95,7 +95,7 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 						doInitialize();
 						isInitialize = true;
 					} catch (Exception e) {
-						LOGGER.error("风控获取白名单初始设置异常", e);
+						LOGGER.error("风控获取黑名单初始设置异常", e);
 					}
 				}
 			}
@@ -156,7 +156,7 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 			}
 		}
 	riskBlackMapper.addBatch(riskList);
-	
+	resetSetting();
 	}
 	
 	@Override
@@ -173,7 +173,7 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime) {
 		riskBlackMapper.deleteBatchByIds(ids,updateUserId,updateTime);
-		
+		resetSetting();
 	}
 
 	/**
