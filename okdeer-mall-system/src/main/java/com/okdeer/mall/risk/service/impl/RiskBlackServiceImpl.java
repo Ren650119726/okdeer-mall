@@ -4,7 +4,7 @@
  *@Author: xuzq01
  *@Date: 2016年11月4日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
- */    
+ */
 package com.okdeer.mall.risk.service.impl;
 
 import java.util.ArrayList;
@@ -41,42 +41,43 @@ import com.okdeer.mall.risk.service.RiskBlackService;
  *		v1.2			2016年11月4日			xuzq01				白名单管理service
  */
 @Service
-public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackService{
+public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RiskBlackServiceImpl.class);
-	
+
 	private String sync = "sync";
+
 	/**
 	 * 获取黑名单管理mapper
 	 */
 	@Autowired
 	RiskBlackMapper riskBlackMapper;
-	
+
 	/**
 	 * 黑名单充值手机号
 	 */
 	private Set<String> blackMobiles = null;
-	
+
 	/**
 	 * 黑名单设备
 	 */
 	private Set<String> blackDevices = null;
-	
+
 	/**
 	 * 黑名单支付账号
 	 */
 	private Set<String> blackPayAccounts = null;
-	
+
 	/**
 	 * 黑名单登录账号
 	 */
 	private Set<String> blackLoginAccounts = null;
-	
+
 	/**
 	 * 是否初始化
 	 */
 	private boolean isInitialize = false;
-	
+
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return riskBlackMapper;
@@ -84,7 +85,7 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 
 	/**
 	 * 检查初始数据或初始化
-	 * @author guocp
+	 * @author xuzq01
 	 * @date 2016年11月18日
 	 */
 	private void initialize() {
@@ -107,6 +108,7 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 			isInitialize = false;
 		}
 	}
+
 	/**
 	 * 初始数据
 	 * @throws Exception   
@@ -120,7 +122,6 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 		this.blackPayAccounts = getBlackSet(riskBlackMapper.findAllBlackPayAccount());
 		this.blackLoginAccounts = getBlackSet(riskBlackMapper.findAllBlackLoginAccount());
 	}
-	
 
 	/**
 	 * 获取管理名单列表
@@ -129,13 +130,13 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	@Override
 	public PageUtils<RiskBlack> findBlackList(RiskBlackDto riskBlackDto, Integer pageNumber, Integer pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true);
-		LOGGER.info("query RiskBlack params:"+riskBlackDto);
+		LOGGER.info("query RiskBlack params:" + riskBlackDto);
 		List<RiskBlack> result = riskBlackMapper.findBlackList(riskBlackDto);
 		if (result == null) {
 			result = new ArrayList<RiskBlack>();
 		}
 		return new PageUtils<RiskBlack>(result);
-		
+
 	}
 
 	/**
@@ -145,25 +146,26 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void addBatch(List<RiskBlack> riskBlackList) {
-		//查询是否存在黑名单数据 存在直接更新 不存在批量增加
-		List<RiskBlack>  riskList = new ArrayList<RiskBlack>();
-		for(RiskBlack riskBlack:riskBlackList){
+		// 查询是否存在黑名单数据 存在直接更新 不存在批量增加
+		List<RiskBlack> riskList = new ArrayList<RiskBlack>();
+		for (RiskBlack riskBlack : riskBlackList) {
 			int count = riskBlackMapper.findCountByAccount(riskBlack);
-			if(count>0){
+			if (count > 0) {
 				riskBlackMapper.update(riskBlack);
-			}else{
+			} else {
 				riskList.add(riskBlack);
 			}
 		}
-	riskBlackMapper.addBatch(riskList);
-	resetSetting();
-	}
-	
-	@Override
-	public List<RiskBlack> findBlackListByParams(Map<String,Object> map){
-		return riskBlackMapper.findBlackListByParams(map);
+		if(riskList.size()>0){
+			riskBlackMapper.addBatch(riskList);
+		}
+		resetSetting();
 	}
 
+	@Override
+	public List<RiskBlack> findBlackListByParams(Map<String, Object> map) {
+		return riskBlackMapper.findBlackListByParams(map);
+	}
 
 	/**
 	 * (non-Javadoc)
@@ -172,7 +174,7 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime) {
-		riskBlackMapper.deleteBatchByIds(ids,updateUserId,updateTime);
+		riskBlackMapper.deleteBatchByIds(ids, updateUserId, updateTime);
 		resetSetting();
 	}
 
@@ -223,10 +225,10 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 		}
 		return blackLoginAccounts;
 	}
-	
-	private Set<String> getBlackSet(Set<RiskBlack> blackSet){
+
+	private Set<String> getBlackSet(Set<RiskBlack> blackSet) {
 		Set<String> set = new HashSet<String>();
-		for(RiskBlack black : blackSet){
+		for (RiskBlack black : blackSet) {
 			set.add(black.getAccount());
 		}
 		return set;
