@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.okdeer.api.pay.pay.dto.PayResponseDto;
 import com.okdeer.mall.common.utils.HttpClientUtil;
 import com.okdeer.mall.common.utils.Xml2JsonUtil;
 import com.okdeer.mall.common.utils.security.MD5;
@@ -33,7 +34,7 @@ public class PhoneOrderPayHandler extends AbstractPhoneRechargePayHandler {
 	}
 
 	@Override
-	protected void processOrderItem(TradeOrder tradeOrder) throws Exception {
+	protected void processOrderItem(TradeOrder tradeOrder, PayResponseDto respDto) throws Exception {
 		List<TradeOrderItem> tradeOrderItems = tradeOrderItemService.selectOrderItemByOrderId(tradeOrder.getId());
 		if (tradeOrderItems.isEmpty()) {
 			return;
@@ -42,6 +43,13 @@ public class PhoneOrderPayHandler extends AbstractPhoneRechargePayHandler {
 		String phoneno = tradeOrderItem.getRechargeMobile();
 		String cardnum = tradeOrderItem.getStoreSkuId();
 		String orderid = tradeOrder.getTradeNum();
+
+		// 风控验证
+		if (isTrigger(tradeOrder,respDto,phoneno)) {
+			refunds(tradeOrder, tradeOrderItem);
+			return;
+		}
+
 		// 1是聚合，2是欧飞
 		int partnerNum = Integer.parseInt(partner);
 		if (partnerNum == 1) {
@@ -150,18 +158,10 @@ public class PhoneOrderPayHandler extends AbstractPhoneRechargePayHandler {
 			} else {
 				// 欧飞订单提交失败，走退款流程
 				logger.info("PHONEFEE==OFPAY==手机话费充值订单{}请求充值返回码为：{}，创建充值退款单！", orderid, retcode);
-				this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
-
-				// 发送失败短信
-				String content = failureMsg;
-				int idx = content.indexOf("#");
-				content = content.replaceFirst(String.valueOf(content.charAt(idx)), userPhone);
-				idx = content.indexOf("#");
-				content = content.replaceFirst(String.valueOf(content.charAt(idx)), tradeOrderItem.getSkuName());
-
-				SmsVO smsVo = createSmsVo(userPhone, content);
-				this.smsService.sendSms(smsVo);
+				refunds(tradeOrder, tradeOrderItem);
 			}
 		}
 	}
+
+
 }

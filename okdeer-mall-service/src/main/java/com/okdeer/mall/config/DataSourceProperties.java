@@ -7,6 +7,8 @@
 package com.okdeer.mall.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 
 /**
@@ -20,45 +22,46 @@ import org.springframework.stereotype.Service;
  * ----------------+----------------+-------------------+-------------------------------------------
  *
  */
-@Service
+@Configuration
+@ConfigurationProperties(prefix=DataSourceProperties.PREFIX)
 public class DataSourceProperties {
 
 	public static final String PREFIX = "spring.datasource";
 
-	@Value("${spring.datasource.driverClass}")
+	//@Value("${spring.datasource.driverClass}")
 	private String driverClass;
 
-	@Value("${spring.datasource.url}")
+	//@Value("${spring.datasource.url}")
 	private String url;
 
-	@Value("${spring.datasource.username}")
+	//@Value("${spring.datasource.username}")
 	private String username;
 
-	@Value("${spring.datasource.password}")
+	//@Value("${spring.datasource.password}")
 	private String password;
 
-	@Value("${spring.datasource.validationQuery}")
+	//@Value("${spring.datasource.validationQuery}")
 	private String validationQuery;
 
-	@Value("${spring.datasource.poolPreparedStatements}")
+	//@Value("${spring.datasource.poolPreparedStatements}")
 	private boolean poolPreparedStatements = true;
 
-	@Value("${spring.datasource.maxPoolPreparedStatementPerConnectionSize}")
+	//@Value("${spring.datasource.maxPoolPreparedStatementPerConnectionSize}")
 	private int maxPoolPreparedStatementPerConnectionSize = 20;
 
-	@Value("${spring.datasource.initialSize}")
+	//@Value("${spring.datasource.initialSize}")
 	private int initialSize = 20;
 
-	@Value("${spring.datasource.maxActive}")
+	//@Value("${spring.datasource.maxActive}")
 	private int maxActive = 100;
 
-	@Value("${spring.datasource.maxWait}")
+	//@Value("${spring.datasource.maxWait}")
 	private int maxWait = 60000;
 
-	@Value("${spring.datasource.filters}")
+	//@Value("${spring.datasource.filters}")
 	private String filters;
 
-	@Value("${spring.datasource.connectionProperties}")
+	//@Value("${spring.datasource.connectionProperties}")
 	private String connectionProperties;
 
 	/**

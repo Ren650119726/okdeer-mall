@@ -4,21 +4,41 @@ import java.util.Date;
 
 import javax.annotation.Resource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.api.pay.pay.dto.PayResponseDto;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.redis.IRedisTemplateWrapper;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
+import com.okdeer.mall.risk.entity.RiskOrderRecord;
+import com.okdeer.mall.risk.enums.IsPreferential;
+import com.okdeer.mall.risk.enums.PayAccountType;
+import com.okdeer.mall.risk.service.RiskTriggerConditions;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
 public abstract class AbstractPhoneRechargePayHandler extends AbstractPayResultHandler{
 
+	//存储设备ID--用于风控记录设备号
+	private static final String MALL_ORDER_DEVICEID_KEY = "MALL:ORDER:DEVICE:";
+	
+	@Resource
+	private IRedisTemplateWrapper<String, String> redisTemplateWrapper;
+	
+	@Autowired
+	private RiskTriggerConditions riskTriggerConditions;
+	
 	@Resource
 	protected TradeOrderItemService tradeOrderItemService;
 
@@ -182,5 +202,85 @@ public abstract class AbstractPhoneRechargePayHandler extends AbstractPayResultH
 		smsVo.setSmsChannelType(3);
 		smsVo.setSendTime(DateUtils.formatDateTime(new Date()));
 		return smsVo;
+	}
+	
+	/**
+	 * 执行退款流程
+	 * @param tradeOrder
+	 * @param tradeOrderItem
+	 * @param userPhone
+	 * @throws Exception   
+	 * @author guocp
+	 * @date 2016年11月22日
+	 */
+	protected void refunds(TradeOrder tradeOrder, TradeOrderItem tradeOrderItem) throws Exception {
+
+		this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
+
+		// 发送失败短信
+		String content = failureMsg;
+		int idx = content.indexOf("#");
+		content = content.replaceFirst(String.valueOf(content.charAt(idx)), tradeOrder.getUserPhone());
+		idx = content.indexOf("#");
+		content = content.replaceFirst(String.valueOf(content.charAt(idx)), tradeOrderItem.getSkuName());
+
+		SmsVO smsVo = createSmsVo(tradeOrder.getUserPhone(), content);
+		this.smsService.sendSms(smsVo);
+	}
+
+	/**
+	 * 判断是否触发风控
+	 * @param tradeOrder   
+	 * @author guocp
+	 * @param respDto 
+	 * @param phoneno 
+	 * @return 
+	 * @throws Exception 
+	 * @date 2016年11月22日
+	 */
+	protected boolean isTrigger(TradeOrder tradeOrder, PayResponseDto respDto, String phoneno) throws Exception {
+		
+		if(tradeOrder.getType()==OrderTypeEnum.PHONE_PAY_ORDER){
+			RiskOrderRecord riskOrder = new RiskOrderRecord();
+			riskOrder.setId(UuidUtils.getUuid());
+			riskOrder.setCreateTime(tradeOrder.getCreateTime());
+			riskOrder.setDeviceId(getDeviceId(tradeOrder.getId()));
+			riskOrder.setFacePrice(tradeOrder.getTotalAmount());
+			riskOrder.setIsPreferential(
+					tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER ? IsPreferential.YES : IsPreferential.NO);
+			riskOrder.setLoginName(tradeOrder.getUserPhone());
+			riskOrder.setPayAccount(respDto.getAccountId());
+			riskOrder.setPayAccountType(getPayType(tradeOrder.getTradeOrderPay().getPayType()));
+			riskOrder.setTel(phoneno);
+			return riskTriggerConditions.isTrigger(riskOrder);
+		}
+		return false;
+	}
+
+	/**
+	 * 获取支付类型
+	 * @param payType
+	 * @return   
+	 * @author guocp
+	 * @date 2016年11月22日
+	 */
+	protected PayAccountType getPayType(PayTypeEnum payType) {
+		if (payType == PayTypeEnum.ALIPAY) {
+			return PayAccountType.ALIPAY;
+		} else if (payType == PayTypeEnum.WXPAY) {
+			return PayAccountType.WECHAT;
+		}
+		return PayAccountType.OTHER;
+	}
+	
+	/**
+	 * 获取设备号
+	 * @param tradeOrderId
+	 * @return   
+	 * @author guocp
+	 * @date 2016年11月22日
+	 */
+	protected String getDeviceId(String tradeOrderId){
+		return redisTemplateWrapper.get(MALL_ORDER_DEVICEID_KEY+tradeOrderId);
 	}
 }
