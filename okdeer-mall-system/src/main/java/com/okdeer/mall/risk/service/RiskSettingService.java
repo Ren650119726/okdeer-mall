@@ -11,6 +11,8 @@ import java.util.Map;
 
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.risk.entity.RiskSetting;
+import com.okdeer.mall.risk.enums.IsPreferential;
+import com.okdeer.mall.risk.po.RiskLimitInfo;
 
 /**
  * ClassName: IRiskSettingService 
@@ -45,4 +47,30 @@ public interface RiskSettingService extends IBaseService{
 	 * @date 2016年11月16日
 	 */
 	void addBatch(List<RiskSetting> settingList,Integer isCoupon) throws Exception;
+	
+	
+	/**
+	 * 获取提醒限制设置
+	 * @param isPreferential
+	 * @return   
+	 * @author guocp
+	 * @date 2016年11月19日
+	 */
+	RiskLimitInfo getWarnLimit(IsPreferential isPreferential);
+
+	/**
+	 * 获取禁止下单限制设置
+	 * @param isPreferential
+	 * @return   
+	 * @author guocp
+	 * @date 2016年11月19日
+	 */
+	RiskLimitInfo getForbidLimit(IsPreferential isPreferential);
+
+	/**
+	 * 重置设置
+	 * @author guocp
+	 * @date 2016年11月19日
+	 */
+	void retrySetting();
 }

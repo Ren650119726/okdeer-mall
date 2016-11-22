@@ -10,7 +10,6 @@ import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 /**
  * tuzhdiing 代金劵提醒
  * ClassName: ActivityCouponsRecordJob 
- * @Description: TODO
  * @author tuzhd
  * @date 2016年11月21日
  *

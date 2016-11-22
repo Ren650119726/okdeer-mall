@@ -39,7 +39,7 @@ public class RiskTriggerConditionsTest extends BaseServiceTest {
 	@Autowired
 	private RiskTriggerConditions riskTriggerConditions;
 	
-	@Test//(timeout=1000)
+	@Test(timeout=1000)
 	public void testIsTrigger() throws Exception{
 		RiskOrderRecord riskOrder = new RiskOrderRecord();
 		riskOrder.setId(UuidUtils.getUuid());
@@ -51,7 +51,7 @@ public class RiskTriggerConditionsTest extends BaseServiceTest {
 		riskOrder.setCreateTime(new Date());
 		riskOrder.setIsPreferential(IsPreferential.YES);
 		boolean istrigger = riskTriggerConditions.isTrigger(riskOrder);
-		assertEquals(true, istrigger);
+		assertEquals(false, istrigger);
 	}
 	
 	

@@ -29,8 +29,8 @@ import com.okdeer.mall.risk.po.RiskLimitInfo;
 import com.okdeer.mall.risk.po.RiskLimitInfoDetail;
 import com.okdeer.mall.risk.po.RiskOrderRecordPo;
 import com.okdeer.mall.risk.service.RiskBlackService;
-import com.okdeer.mall.risk.service.RiskLimitService;
 import com.okdeer.mall.risk.service.RiskOrderRecordService;
+import com.okdeer.mall.risk.service.RiskSettingService;
 import com.okdeer.mall.risk.service.RiskTriggerConditions;
 import com.okdeer.mall.risk.service.RiskWhiteService;
 
@@ -54,7 +54,7 @@ public class RiskTriggerConditionsImpl implements RiskTriggerConditions {
 	private RiskOrderRecordService riskOrderRecordService;
 
 	@Autowired
-	private RiskLimitService riskLimitService;
+	private RiskSettingService riskSettingService;
 
 	@Autowired
 	private RiskBlackService riskBlackService;
@@ -71,12 +71,14 @@ public class RiskTriggerConditionsImpl implements RiskTriggerConditions {
 		// 新增订单记录
 		riskOrderRecordService.add(riskOrder);
 
-		Set<String> blacksMobiles = riskBlackService.findAllBlackMobile();
-		Set<String> blacksDevices = riskBlackService.findAllBlackDevice();
-		Set<String> blacksPayAccounts = riskBlackService.findAllBlackPayAccount();
+		Set<String> blackLoginAccount = riskBlackService.findAllBlackLoginAccount();
+		Set<String> blackMobiles = riskBlackService.findAllBlackMobile();
+		Set<String> blackDevices = riskBlackService.findAllBlackDevice();
+		Set<String> blackPayAccounts = riskBlackService.findAllBlackPayAccount();
 		// 判断黑名单
-		if (blacksMobiles.contains(riskOrder.getLoginName()) || blacksDevices.contains(riskOrder.getDeviceId())
-				|| blacksPayAccounts.contains(riskOrder.getPayAccount())) {
+		if (blackLoginAccount.contains(riskOrder.getLoginName()) || blackMobiles.contains(riskOrder.getTel())
+				|| blackDevices.contains(riskOrder.getDeviceId())
+				|| blackPayAccounts.contains(riskOrder.getPayAccount())) {
 			return true;
 		}
 		// 判断白名单
@@ -106,44 +108,37 @@ public class RiskTriggerConditionsImpl implements RiskTriggerConditions {
 
 		TriggerType triggerType = null;
 		TriggerWay triggerWay = TriggerWay.FORBID;
-		boolean isTrigger = false;
 		// 禁止下单操作
-		RiskLimitInfo forbidLimitInfo = riskLimitService.getForbidLimit(riskOrder.getIsPreferential());
+		RiskLimitInfo forbidLimitInfo = riskSettingService.getForbidLimit(riskOrder.getIsPreferential());
 
 		// 用户登入账号验证
-		if (!isTrigger) {
+		if (triggerType==null) {
 			triggerType = filter(loginNameRecord, forbidLimitInfo.getUserLimitInfoDetail());
-			isTrigger = true;
 		}
 		// 用户设备号验证
-		if (!isTrigger) {
+		if (triggerType==null) {
 			triggerType = filter(deviceRecord, forbidLimitInfo.getDeviceLimitInfoDetail());
-			isTrigger = true;
 		}
 		// 用户支付账号验证
-		if (!isTrigger) {
+		if (triggerType==null) {
 			triggerType = filter(payAccountRecord, forbidLimitInfo.getPayAccountLimitInfoDetail());
-			isTrigger = true;
 		}
 
 		// ******* 提醒操作 **********
-		if (!isTrigger) {
+		if (triggerType==null) {
 			triggerWay = TriggerWay.NOTICE;
-			RiskLimitInfo warnLimitInfo = riskLimitService.getWarnLimit(riskOrder.getIsPreferential());
+			RiskLimitInfo warnLimitInfo = riskSettingService.getWarnLimit(riskOrder.getIsPreferential());
 			// 用户登入账号验证
-			if (!isTrigger) {
+			if (triggerType==null) {
 				triggerType = filter(loginNameRecord, warnLimitInfo.getUserLimitInfoDetail());
-				isTrigger = true;
 			}
 			// 用户设备号验证
-			if (!isTrigger) {
+			if (triggerType==null) {
 				triggerType = filter(deviceRecord, warnLimitInfo.getDeviceLimitInfoDetail());
-				isTrigger = true;
 			}
 			// 用户支付账号验证
-			if (!isTrigger) {
+			if (triggerType==null) {
 				triggerType = filter(payAccountRecord, warnLimitInfo.getPayAccountLimitInfoDetail());
-				isTrigger = true;
 			}
 		}
 
@@ -151,7 +146,7 @@ public class RiskTriggerConditionsImpl implements RiskTriggerConditions {
 		if (triggerType != null) {
 			sendTriggerMessage(riskOrder, triggerType, triggerWay);
 		}
-		return isTrigger && triggerWay == TriggerWay.FORBID;
+		return triggerType!=null && triggerWay == TriggerWay.FORBID;
 	}
 
 	/**
@@ -166,26 +161,26 @@ public class RiskTriggerConditionsImpl implements RiskTriggerConditions {
 		TriggerType triggerType = null;
 		if (detail != null) {
 			// 判断用户下单次数上限
-			if (detail.getMaxRechargeTime() != null) {
+			if (triggerType==null && detail.getMaxRechargeTime() != null) {
 				if (riskOrders.getCount() > detail.getMaxRechargeTime()) {
 					triggerType = TriggerType.COUNT_LIMIT;
 				}
 			}
 			// 判断用户下单额度上限
-			if (detail.getMaxRecharge() != null) {
+			if (triggerType==null && detail.getMaxRecharge() != null) {
 				if (riskOrders.getFacePriceTotal()
 						.compareTo(BigDecimal.valueOf(detail.getMaxRecharge().longValue())) > 0) {
 					triggerType = TriggerType.TOTAL_LIMIT;
 				}
 			}
 			// 判断用户充值手机号上限
-			if (detail.getMaxRechargeNumber() != null) {
+			if (triggerType==null && detail.getMaxRechargeNumber() != null) {
 				if (riskOrders.getTels().size() > detail.getMaxRechargeNumber()) {
 					triggerType = TriggerType.TEL_LIMIT;
 				}
 			}
 			// 判断设备登入用户上限
-			if (detail.getMaxLoginTime() != null) {
+			if (triggerType==null && detail.getMaxLoginTime() != null) {
 				if (riskOrders.getLoginNames().size() > detail.getMaxLoginTime()) {
 					triggerType = TriggerType.DEVICE_LIMIT;
 				}
