@@ -22,7 +22,6 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.risk.dto.RiskWhiteDto;
-import com.okdeer.mall.risk.entity.RiskBlack;
 import com.okdeer.mall.risk.entity.RiskWhite;
 import com.okdeer.mall.risk.mapper.RiskWhiteMapper;
 import com.okdeer.mall.risk.service.RiskWhiteService;
@@ -124,7 +123,7 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime) {
 		riskWhiteMapper.deleteBatchByIds(ids,updateUserId,updateTime);
-		
+		resetSetting();
 	}
 
 	/**
@@ -144,7 +143,10 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 				riskList.add(riskWhite);
 			}
 		}
-		riskWhiteMapper.addBatch(riskList);		
+		if(riskList.size()>0){
+			riskWhiteMapper.addBatch(riskList);	
+		}
+		resetSetting();
 	}
 	/**
 	 * (non-Javadoc)

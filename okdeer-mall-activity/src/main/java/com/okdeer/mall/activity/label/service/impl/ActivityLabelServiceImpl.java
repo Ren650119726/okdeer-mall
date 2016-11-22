@@ -180,6 +180,11 @@ public class ActivityLabelServiceImpl extends BaseServiceImpl implements Activit
 		return labelList;
 	}
 	
+	@Override
+	public List<Map<String,Object>> listLabelNameBySkuId(List<String> skuIdList) {
+		return activityLabelMapper.listLabelNameBySkuIds(skuIdList);
+	}
+	
 	/**
 	 * 执行服务标签管理 JOB 任务
 	 * @Description: TODO   

@@ -122,6 +122,15 @@ public interface ActivityLabelService extends IBaseService{
 	Map<String,List<String>> listLabelNameBySkuIds(List<String> skuIdList);
 	
 	/**
+	 * @Description: 通过商品id获取商品的标签列表
+	 * @param skuIdList  商品idlist
+	 * @return Map<String,List<String>> key是商品id,value是List<String>标签列表
+	 * @author chenzc
+	 * @date 2016年11月22日
+	 */
+	List<Map<String,Object>> listLabelNameBySkuId(List<String> skuIdList);
+	
+	/**
 	 * 执行服务标签的JOB 任务
 	 * @Description: TODO   
 	 * @return void  

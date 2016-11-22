@@ -75,6 +75,13 @@ public interface TimerMessageConstant {
          */
         tag_delivery_server_timeout(0L),
         //end by wangf01 2016.07.21
+        
+        // Begin V1.2.0 added by maojj 2016-11-22
+        /**
+         * 服务订单接单超时处理，时间自定义
+         */
+        tag_accept_server_timeout(0L),
+        // End V1.2.0 added by maojj 2016-11-22
 
         /**
          * 收货超时处理 1天
