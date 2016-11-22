@@ -87,6 +87,11 @@ public class ActivityLabelApiImpl implements ActivityLabelApi{
 		return labelService.listActivityLabelGoods(activityId);
 	}
 	
+	@Override
+	public List<Map<String,Object>> listLabelNameBySkuId(List<String> skuIdList) throws Exception {
+		return labelService.listLabelNameBySkuId(skuIdList);
+	}
+	
 	/**
 	 * 执行服务标签的JOB 任务
 	 * @Description: TODO   
