@@ -141,5 +141,14 @@ public interface PayMessageConstant {
 	 * 到店消费验证tag
 	 */
 	String TAG_CONSUME_CODE_VALI = "tag_consume_code_vali";
+	
+	/**
+	 * 订单状态改变
+	 */
+	String TOPIC_ORDER_STATUS_CHANGE = "top_order_status_change";
+	/**
+	 * 订单取消tag
+	 */
+	String TAG_ORDER_CANCELED = "tag_order_canceled";
 
 }
