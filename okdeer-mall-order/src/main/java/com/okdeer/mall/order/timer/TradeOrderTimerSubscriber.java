@@ -34,6 +34,7 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
+import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
@@ -164,6 +165,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				return processPayTimeout(content, tag);
 			case tag_delivery_timeout:
 			case tag_delivery_group_timeout:
+			case tag_accept_server_timeout:
 				return processDeliveryTimeout(content, tag);
 			// begin add by wangf01 2016.08.08
 			// 服务店铺发货超时自动取消
@@ -221,6 +223,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				order.setReason("超时未支付，系统取消订单");
 				
 				//begin add by zengjz 取消订单换接口类
+				order.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
 				cancelOrderService.cancelOrder(order, false);
 				//end add by zengjz 取消订单换接口类
 			}
@@ -268,7 +271,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 		Long currentTime = System.currentTimeMillis();
 		try {
 			// begin 判断是否是服务订单的发货超时 add by wangf01 2016.08.15
-			if (tag == Tag.tag_delivery_server_timeout) {
+			if (tag == Tag.tag_delivery_server_timeout || tag == Tag.tag_accept_server_timeout) {
 				// 根据id查询订单信息，获取服务时间用于计算超时时间
 				TradeOrder order = tradeOrderService.selectById(timeoutMsg.getKey());
 				// 服务订单服务时间
@@ -307,9 +310,20 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				}
 				//End 13166和13165    update by wusw  20160830
 				//begin add by zengjz 取消订单换接口类
+				order.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
 				cancelOrderService.cancelOrder(order, false);
 				//end add by zengjz 取消订单换接口类
+			} 
+			// Begin V1.2 added by maojj 2016-11-22
+			else if (order.getStatus() == OrderStatusEnum.WAIT_RECEIVE_ORDER) {
+				logger.info("接单超时自动取消订单,订单号：" + order.getOrderNo());
+				order.setUpdateTime(new Date());
+				order.setUpdateUserId(RobotUserUtil.getRobotUser().getId());
+				order.setReason("超时未接单，系统取消订单");
+				order.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
+				cancelOrderService.cancelOrder(order, false);
 			}
+			// End V1.2 added by maojj 2016-11-22
 		} catch (Exception e) {
 			logger.error("发货超时自动取消订单异常", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
