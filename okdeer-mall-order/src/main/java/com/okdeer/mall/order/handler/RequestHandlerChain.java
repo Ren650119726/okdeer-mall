@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
 
 public class RequestHandlerChain<Q,R> {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(ProcessHandlerChain.class);
+
 	/**
 	 * 请求处理链
 	 */
@@ -27,7 +32,9 @@ public class RequestHandlerChain<Q,R> {
 			return;
 		}
 		for (RequestHandler<Q,R> handler : handlerChain) {
+			long beginTime = System.currentTimeMillis();
 			handler.process(req, resp);
+			LOG.info("订单操作类型为：{}，执行流程：{}，耗时：{}" , req.getOrderOptType().getDescription(),handler.getClass().getSimpleName(),System.currentTimeMillis()-beginTime);
 			if (!resp.isSuccess()) {
 				return;
 			}
