@@ -2,7 +2,6 @@
 package com.okdeer.mall.order.service.impl;
 
 import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_CHANGE;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_CHANGE_ID;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -327,7 +326,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	private void sendCancelMsg(String tradeNum) throws Exception {
 		Map<String, String> msgMap = Maps.newHashMap();
 		msgMap.put("tradeNum", tradeNum);
-		Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
+		Message msg = new Message(PayMessageConstant.TOPIC_ORDER_STATUS_CHANGE, PayMessageConstant.TAG_ORDER_CANCELED,
 				JSONObject.toJSONString(msgMap).getBytes(Charsets.UTF_8));
 		SendResult sendResult = rocketMQProducer.send(msg);
 		if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
