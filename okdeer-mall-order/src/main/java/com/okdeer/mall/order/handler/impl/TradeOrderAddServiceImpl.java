@@ -32,6 +32,9 @@ import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.service.StoreBranchesServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
@@ -81,9 +84,6 @@ import com.okdeer.mall.order.vo.TradeOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.UuidUtils;
 
 import net.sf.json.JSONObject;
 
@@ -244,9 +244,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
 			// End 1.0.Z 增加订单操作记录 add by zengj
 			// 更新库存 -- 放到最后执行
-			long beginTime = System.currentTimeMillis();
 			toUpdateStock(tradeOrder, reqDto, rpcIdList);
-			logger.info("提交订单调用ERP修改库存耗时：{}",System.currentTimeMillis() - beginTime);
 			// Begin Bug:13906 added by maojj 2016-10-10
 			// 如果订单实付金额为0，调用余额支付进行支付。
 			if(tradeOrder.getActualAmount().compareTo(BigDecimal.valueOf(0.0)) == 0){

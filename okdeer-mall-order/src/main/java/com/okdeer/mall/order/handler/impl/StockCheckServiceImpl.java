@@ -118,9 +118,7 @@ public class StockCheckServiceImpl implements StockCheckService {
 			storeSkuIdList.add(goodsItem.getSkuId());
 		}
 		// 查询库存集合
-		long beginTime = System.currentTimeMillis();
 		List<GoodsStoreSkuStock> stockList = stockManagerService.findGoodsStockInfoList(storeSkuIdList);
-		logger.info("订单操作类型：{}，库存检查调用ERP库存查询耗时：{}",reqDto.getOrderOptType().getDescription(),System.currentTimeMillis()-beginTime);
 		// End 1.0.Z add by zengj
 
 		for (TradeOrderGoodsItem goodsItem : req.getList()) {
