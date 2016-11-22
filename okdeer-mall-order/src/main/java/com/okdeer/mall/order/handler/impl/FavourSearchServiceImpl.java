@@ -77,7 +77,6 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 		// 获取用户有效的满减
 		List<FullSubtract> fullSubtractList = activityDiscountMapper.findValidFullSubtract(queryCondition);
 		//Begin added by tangy  2016-9-23
-		long beginTime = System.currentTimeMillis();
 		//排除不符合的代金券
 		if (CollectionUtils.isNotEmpty(couponList)) {
 			//商品类目id集
@@ -99,7 +98,6 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 				couponList.removeAll(delCouponList);
 			}
 		}
-		logger.info("确认订单，查询有效的优惠券，筛选指定分类总耗时：{}",System.currentTimeMillis() - beginTime);
 		//End added by tangy
 		resp.setCouponList(couponList);
 		resp.setDiscountList(discountList);
