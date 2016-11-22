@@ -2,7 +2,6 @@
 package com.okdeer.mall.order.service.impl;
 
 import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_CHANGE;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_CHANGE_ID;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -20,6 +19,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.rocketmq.client.producer.SendResult;
+import com.alibaba.rocketmq.client.producer.SendStatus;
+import com.alibaba.rocketmq.common.message.Message;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
@@ -28,11 +32,13 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
 import com.okdeer.mall.activity.group.service.ActivityGroupRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
+import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLog;
@@ -131,6 +137,12 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	private StockOperateService stockOperateService;
 
 	/**
+	 * 消息发送对象
+	 */
+	@Resource
+	private RocketMQProducer rocketMQProducer;
+
+	/**
 	 * @Description: 取消订单
 	 * @param order 订单
 	 * @author zengjizu
@@ -219,11 +231,10 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				// 如果需要收取违约金
 				tradeOrder.setIsBreach(WhetherEnum.whether);
 			}
-			
-			
+
 			// 更新订单状态
 			tradeOrderMapper.updateByPrimaryKeySelective(tradeOrder);
-			
+
 			// 发送短信
 			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
 					|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()) {
@@ -235,6 +246,12 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 
 			// 回收库存
 			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
+
+			// 发消息到云钱包，关闭订单
+			if (OrderStatusEnum.UNPAID == oldOrder.getStatus()) {
+				// 只有待支付订单状态需要关闭
+				sendCancelMsg(tradeOrder.getTradeNum());
+			}
 
 			// 最后一步退款，避免出现发送了消息，后续操作失败了，无法回滚资金
 			this.tradeOrderPayService.cancelOrderPay(tradeOrder);
@@ -298,5 +315,22 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		}
 		return isBreach(OrderCancelType.CANCEL_BY_BUYER, tradeOrder);
 	}
-
+	
+	/**
+	 * @Description: 订单取消发送消息到云钱包
+	 * @param tradeNum 商户订单号
+	 * @throws Exception
+	 * @author zengjizu
+	 * @date 2016年11月22日
+	 */
+	private void sendCancelMsg(String tradeNum) throws Exception {
+		Map<String, String> msgMap = Maps.newHashMap();
+		msgMap.put("tradeNum", tradeNum);
+		Message msg = new Message(PayMessageConstant.TOPIC_ORDER_STATUS_CHANGE, PayMessageConstant.TAG_ORDER_CANCELED,
+				JSONObject.toJSONString(msgMap).getBytes(Charsets.UTF_8));
+		SendResult sendResult = rocketMQProducer.send(msg);
+		if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
+			throw new Exception("发送消息到云钱包失败");
+		}
+	}
 }

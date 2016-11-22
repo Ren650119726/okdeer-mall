@@ -49,6 +49,11 @@ public class RiskUserManagerImpl extends BaseServiceImpl implements RiskUserMana
 	public IBaseMapper getBaseMapper() {
 		return riskUserManagerMapper;
 	}
+	
+	@Override
+	public List<RiskUserManager> findUserList(RiskUserManagerDto userManagerDto) {
+		return riskUserManagerMapper.findUserList(userManagerDto);
+	}
 
 	/**
 	 * 获取风控人员list
@@ -75,5 +80,5 @@ public class RiskUserManagerImpl extends BaseServiceImpl implements RiskUserMana
 		riskUserManagerMapper.deleteBatchByIds(ids,updateUserId,updateTime);
 		
 	}
-	
+
 }

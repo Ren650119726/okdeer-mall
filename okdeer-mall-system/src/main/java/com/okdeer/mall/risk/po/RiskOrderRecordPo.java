@@ -3,11 +3,10 @@
  *@Author: guocp
  *@Date: 2016年11月17日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
- */    
+ */
 package com.okdeer.mall.risk.po;
 
 import java.math.BigDecimal;
-import java.util.Set;
 import java.util.Set;
 
 /**
@@ -22,28 +21,27 @@ import java.util.Set;
  *
  */
 public class RiskOrderRecordPo {
-	
+
 	/**
 	 * 下单次数
 	 */
 	Integer count;
-	
+
 	/**
 	 * 总面额
 	 */
 	BigDecimal facePriceTotal;
-	
+
 	/**
 	 * 充值手机号列表
 	 */
 	Set<String> tels;
-	
+
 	/**
 	 * 登入帐号列表
 	 */
 	Set<String> loginNames;
 
-	
 	/**
 	 * @return the count
 	 */
@@ -51,7 +49,6 @@ public class RiskOrderRecordPo {
 		return count;
 	}
 
-	
 	/**
 	 * @param count the count to Set
 	 */
@@ -59,7 +56,6 @@ public class RiskOrderRecordPo {
 		this.count = count;
 	}
 
-	
 	/**
 	 * @return the facePriceTotal
 	 */
@@ -67,7 +63,6 @@ public class RiskOrderRecordPo {
 		return facePriceTotal;
 	}
 
-	
 	/**
 	 * @param facePriceTotal the facePriceTotal to Set
 	 */
@@ -75,7 +70,6 @@ public class RiskOrderRecordPo {
 		this.facePriceTotal = facePriceTotal;
 	}
 
-	
 	/**
 	 * @return the tels
 	 */
@@ -83,7 +77,6 @@ public class RiskOrderRecordPo {
 		return tels;
 	}
 
-	
 	/**
 	 * @param tels the tels to Set
 	 */
@@ -91,7 +84,6 @@ public class RiskOrderRecordPo {
 		this.tels = tels;
 	}
 
-	
 	/**
 	 * @return the loginNames
 	 */
@@ -99,15 +91,11 @@ public class RiskOrderRecordPo {
 		return loginNames;
 	}
 
-	
 	/**
 	 * @param loginNames the loginNames to Set
 	 */
 	public void setLoginNames(Set<String> loginNames) {
 		this.loginNames = loginNames;
 	}
-	
-	
-	
-	
+
 }
