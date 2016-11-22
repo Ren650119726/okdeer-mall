@@ -25,6 +25,7 @@ import static com.okdeer.common.consts.DescriptConstants.USER_NOT_WALLET;
 import static com.okdeer.common.consts.DescriptConstants.USER_WALLET_FAIL;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -91,6 +92,7 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
@@ -180,7 +182,9 @@ import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
+import com.okdeer.mall.order.timer.TimeoutMessage;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
+import com.okdeer.mall.order.timer.constant.TimerMessageConstant;
 import com.okdeer.mall.order.utils.JsonDateValueProcessor;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.OrderCouponsRespDto;
@@ -6473,5 +6477,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 		}
 		return exportList;
+	}
+
+	@Override
+	public void acceptOrder(TradeOrder tradeOrder) throws Exception {
+		this.updateOrderStatus(tradeOrder);
+		// 预约服务时间
+		Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
+		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
+				(DateUtils.addHours(serviceTime, 2).getTime() - System.currentTimeMillis()) / 1000);
 	}
 }

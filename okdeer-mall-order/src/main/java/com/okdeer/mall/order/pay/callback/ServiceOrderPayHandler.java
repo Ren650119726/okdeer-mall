@@ -39,9 +39,9 @@ public class ServiceOrderPayHandler extends AbstractPayResultHandler{
 	@Override
 	public void sendTimerMessage(TradeOrder tradeOrder) throws Exception {
 		// 预约服务时间
-		Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime(), "yyyy-MM-dd HH:mm");
-		// 预约服务时间过后2小时未派单的自动取消订单
-		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
+		Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
+		// 预约服务时间过后2小时未接单的自动取消
+		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_accept_server_timeout, tradeOrder.getId(),
 				(DateUtils.addHours(serviceTime, 2).getTime() - System.currentTimeMillis()) / 1000);
 	}
 
