@@ -246,7 +246,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			}
 			// 线下确认价格并支付
 			if (tradeOrder.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
-				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime(), "yyyy-MM-dd HH:mm");
+				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
 				
 				// Begin V1.1.0 added by maojj 2016-10-18
 				// 如果线下确认价格并支付，则下单时，给邀请人返回邀请注册活动代金券。 
@@ -390,7 +390,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		}
 		if(tradeOrder.getIsBreachMoney() == WhetherEnum.whether){
 			// 如果店铺设置了违约金，计算订单应该收取的违约金存入订单记录中
-			tradeOrder.setBreachMoney(tradeOrder.getIncome().multiply(BigDecimal.valueOf(tradeOrder.getBreachPercent())));
+			tradeOrder.setBreachMoney(tradeOrder.getIncome().multiply(BigDecimal.valueOf(tradeOrder.getBreachPercent())).divide(BigDecimal.valueOf(100),2, BigDecimal.ROUND_UP));
 		}
 		// End V1.2 added by maojj 2016-11-08
 		

@@ -27,4 +27,12 @@ public interface TradeOrderTraceMapper extends IBaseMapper {
 	 * @date 2016年11月7日
 	 */
 	List<TradeOrderTrace> findTraceList(String orderId);
+	
+	/**
+	 * @Description: 根据订单Id修改评论之后的备注信息
+	 * @param trace   
+	 * @author maojj
+	 * @date 2016年11月21日
+	 */
+	void updateRemarkAfterAppraise(TradeOrderTrace trace);
 }

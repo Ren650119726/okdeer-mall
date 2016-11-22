@@ -16,6 +16,35 @@
         id, account, account_type, 
         create_time, create_user_id, update_time, update_user_id, disabled
     </sql>
+    <!-- chaz -->
+    <select id="findAllBlackMobile" resultMap="BaseResultMap" >
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	     FROM risk_black 
+	     WHERE disabled = 0 and account_type=2
+	       ORDER BY create_time DESC
+	  </select>
+   <select id="findAllBlackDevice" resultMap="BaseResultMap" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM risk_black 
+     WHERE disabled = 0 and account_type=3
+       ORDER BY create_time DESC
+  </select>
+   <select id="findAllBlackPayAccount" resultMap="BaseResultMap" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM risk_black 
+     WHERE disabled = 0 and account_type=1 or account_type=4
+       ORDER BY create_time DESC
+  </select>
+   <select id="findAllBlackLoginAccount" resultMap="BaseResultMap" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM risk_black 
+     WHERE disabled = 0 and account_type=0
+       ORDER BY create_time DESC
+  </select>
  <!-- 根据条件搜索黑名单列表 -->
   <select id="findBlackList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.risk.dto.RiskBlackDto">
     SELECT 
@@ -37,21 +66,15 @@
          AND account LIKE CONCAT('%',#{accountWeChat,jdbcType=VARCHAR},'%') 
        </if>
        <!-- 账号类型 账号类型为1 支付类型时查询微信和支付宝两张账号类型  -->
-       <if test="accountType != null and accountType != -1" >
+       <if test="accountType != null" >
 	       <choose>
-			   <when test="accountType == 1">
+			   <when test="accountType == -1">
 			   		AND account_type in (1,4)
 			   </when>
 				 <otherwise>
 				 AND account_type = #{accountType,jdbcType=NUMERIC}
 		 		</otherwise>
-		</choose>
-	       <!-- <if test="accountType == 1">
-	       	 AND account_type in (1,4)
-	       </if>
-	       <if test="accountType !== 1">
-	       	  AND account_type = #{accountType,jdbcType=NUMERIC}
-	       </if> -->
+			</choose>
        </if>
        <!-- 创建时间 -->
        <if test="createTimeStart != null">

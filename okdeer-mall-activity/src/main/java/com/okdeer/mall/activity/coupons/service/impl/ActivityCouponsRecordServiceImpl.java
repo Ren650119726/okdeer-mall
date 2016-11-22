@@ -9,9 +9,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -26,6 +29,8 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.base.kafka.producer.KafkaProducer;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -46,7 +51,13 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
+import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.order.constant.OrderMsgConstant;
+import com.okdeer.mall.order.vo.PushMsgVo;
+import com.okdeer.mall.order.vo.PushUserVo;
 import com.okdeer.mall.order.vo.RechargeCouponVo;
+import com.okdeer.mcm.entity.SmsVO;
+import com.okdeer.mcm.service.ISmsService;
 
 import net.sf.json.JSONObject;
 
@@ -61,6 +72,7 @@ import net.sf.json.JSONObject;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		V4.1			2016-07-04			maojj			事务控制使用注解
  *		V1.1.0			2016-9-19		wushp				各种状态代金券数量统计
+ *		V1.2			 2016-11-21			tuzhd			  代金劵提醒定时任务
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi")
 class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceApi, ActivityCouponsRecordService {
@@ -93,6 +105,30 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	
 	@Reference(version = "1.0.0", check = false)
 	private IPayTradeServiceApi payTradeServiceApi;
+	
+	/**
+	 * 消息系统CODE
+	 */
+	@Value("${mcm.sys.code}")
+	private String msgSysCode;
+
+	/**
+	 * 消息token
+	 */
+	@Value("${mcm.sys.token}")
+	private String msgToken;
+
+	/**取消订单短信1*/
+	@Value("${sms.coupons.notice}")
+	private String smsIsNoticeCouponsRecordStyle;
+	
+	@Resource
+	private KafkaProducer kafkaProducer;
+	/**
+	 * 短信  service
+	 */
+	@Reference
+	private ISmsService smsService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -892,5 +928,111 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		return JSONObject.fromObject(map);
 	}
 
+	/**
+	 * 1、当代金券设置的领取后的有效期大于3天，则在代金券结束前第三天发送；2、当代金券设置的领取后的有效期大于1天小于或等于3天，
+	 * 则在代金券的有效期最后一天发送；当代金券设置的领取后的有效期等于1天，则不会发送推送和短线
+	 * @Description: TODO
+	 * @return List<String>  
+	 * @author tuzhd
+	 * @date 2016年11月21日
+	 */
+	private List<Map<String,Object>> getIsNoticeUser(){
+		return activityCouponsRecordMapper.getIsNoticeUser();
+	}
+	
+	/**
+	 * 执行代金劵提醒JOB
+	 * @Description: TODO   
+	 * @return void  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月21日
+	 */
+	public void procesRecordNoticeJob(){
+		List<Map<String,Object>> list = getIsNoticeUser();
+		//存在需要提醒的对象
+		if(CollectionUtils.isNotEmpty(list)){
+			for(Map<String,Object> user:list){
+				String userId = (String)user.get("id");
+				String phone = (String)user.get("phone");
+				sendMsg(phone);
+				sendPosMessage(userId, phone);
+			}
+		}
+	}
+	
+	/**
+	 * 根据手机号发送短信
+	 * @Description: TODO
+	 * @param mobile   手机号码
+	 * @author tuzhd
+	 * @date 2016年11月21日
+	 */
+	private void sendMsg(String phone) {
+		try{
+			SmsVO sms = new SmsVO();
+			sms.setContent(smsIsNoticeCouponsRecordStyle);
+			sms.setSysCode(msgSysCode);
+			sms.setId(UuidUtils.getUuid());
+			sms.setMobile(phone);
+			sms.setToken(msgToken);
+			sms.setIsTiming(0);
+			sms.setSmsChannelType(3);
+			sms.setSendTime(DateUtils.formatDateTime(new Date()));
+			smsService.sendSms(sms);
+		}catch(Exception e){
+			//捕获异常不影响发送流程
+			log.error("代金劵到期提醒发送短信异常！"+phone,e);
+		}
+	}
+	
+	/**
+	 * 根据用户id及手机号码进行消息发送 代金劵到期提醒功能
+	 * @Description: TODO
+	 * @param userId
+	 * @param phone
+	 * @throws Exception   
+	 * @return void  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月21日
+	 */
+	private void sendPosMessage(String userId,String phone) {
+		try{
+			PushMsgVo pushMsgVo = new PushMsgVo();
+			pushMsgVo.setSysCode(msgSysCode);
+			pushMsgVo.setToken(msgToken);
+			pushMsgVo.setSendUserId(userId);
+			pushMsgVo.setServiceFkId(userId);
+			pushMsgVo.setServiceTypes(new Integer[] { Constant.ZERO });
+			// 0:用户APP,2:商家APP,3POS机
+			pushMsgVo.setAppType(Constant.ZERO);
+			pushMsgVo.setIsUseTemplate(Constant.ZERO);
+			pushMsgVo.setMsgType(Constant.ONE);
+			pushMsgVo.setMsgTypeCustom(OrderMsgConstant.COUPONS_MESSAGE);
+			
+			// 不使用模板
+			pushMsgVo.setMsgNotifyContent("友门鹿");
+			pushMsgVo.setMsgDetailType(Constant.ONE);
+			pushMsgVo.setMsgDetailContent(smsIsNoticeCouponsRecordStyle);
+			// 设置是否定时发送
+			pushMsgVo.setIsTiming(Constant.ZERO);
+			
+			// 发送用户
+			List<PushUserVo> userList = new ArrayList<PushUserVo>();
+			// 查询的用户信息
+			PushUserVo pushUser = new PushUserVo();
+			pushUser.setUserId(userId);
+			pushUser.setMobile(phone);
+			pushUser.setMsgType(Constant.ONE);
+	
+			userList.add(pushUser);
+			pushMsgVo.setUserList(userList);
+			kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushMsgVo));
+		}catch(Exception e){
+			//捕获异常不影响发送流程
+			log.error("代金劵到期提醒发送消息异常！"+phone,e);
+		}
+	}
 	
 }

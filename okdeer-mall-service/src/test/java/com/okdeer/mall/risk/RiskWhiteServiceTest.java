@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -46,7 +47,7 @@ public class RiskWhiteServiceTest {
 	@Resource
 	private RiskWhiteService riskWhiteService;
 	
-	@Test
+	//@Test
 	public void findWhiteListTest() {
 		RiskWhiteDto riskWhiteDto = new RiskWhiteDto();
 		riskWhiteDto.setAccountType(0);
@@ -57,7 +58,7 @@ public class RiskWhiteServiceTest {
 		assertTrue(list.getList().size()>0);
 	}
 	
-	@Test
+	//@Test
 	@Rollback
 	public void addBatchTest() {
 		Date date = new Date();
@@ -85,7 +86,7 @@ public class RiskWhiteServiceTest {
 		riskWhiteService.addBatch(riskWhiteList);
 	}
 	
-	@Test
+	//@Test
 	@Rollback
 	public void deleteBatchByIdsTest() {
 		List<String> ids = new ArrayList<String>();
@@ -95,4 +96,11 @@ public class RiskWhiteServiceTest {
 		Date updateTime = new Date();
 		riskWhiteService.deleteBatchByIds(ids, updateUserId, updateTime);
 	}
+	
+	@Test
+	public void findAllWhiteTest() {
+		Set<String> riskWhiteSet = riskWhiteService.findAllWhite();
+		assertTrue(riskWhiteSet.size()>0);
+	}
+	
 }
