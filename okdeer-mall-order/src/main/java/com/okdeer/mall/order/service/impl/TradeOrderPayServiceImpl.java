@@ -1,10 +1,6 @@
 
 package com.okdeer.mall.order.service.impl;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -52,6 +48,7 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
@@ -80,7 +77,6 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
-import com.okdeer.base.common.utils.mapper.JsonMapper;
 
 /**
  * ClassName: TradeOrderPayServiceImpl 
@@ -192,14 +188,14 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	}
 
 	@Override
-	public Map<String, Object> getMapInfo(int paymentType, TradeOrder tradeOrder, String ip, String filePath,
+	public Map<String, Object> getMapInfo(int paymentType, TradeOrder tradeOrder, String ip,
 			String openId) throws Exception {
 
 		TradeOrder order = tradeOrderMapper.selectTradeDetailInfoById(tradeOrder.getId());
-
-		// int acType = order.getActivityType().ordinal(); // 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
-		// String activityId = order.getActivityItemId(); // 活动项ID
-
+		
+		if(order.getStatus() != OrderStatusEnum.UNPAID){
+			throw new Exception("订单状态已经非待支付状态");
+		}
 		// 设置订单信息
 		PayReqestDto payReqest = new PayReqestDto();
 		payReqest.setOpenid(openId);
@@ -255,16 +251,12 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payReqest.setServiceId(tradeOrder.getId());
 		// 支付类型 0:云钱包,1:支付宝支付,2:微信支付,3:京东支付,4:现金支付
 		if (1 == paymentType) {
-			payReqest.setReturnUrl("http://202.104.122.130:62032/yscpay/alipay/return");
 			payReqest.setTradeType(PayTradeTypeEnum.APP_ALIPAY);
 		} else if (2 == paymentType) {
-			payReqest.setReturnUrl("http://202.104.122.130:62032/yscpay/alipay/return");
 			payReqest.setTradeType(PayTradeTypeEnum.APP_WXPAY);
 		} else if (3 == paymentType) {
-			payReqest.setReturnUrl("http://202.104.122.130:62032/yscpay/alipay/return");
 			payReqest.setTradeType(PayTradeTypeEnum.WAP_JDPAY);
 		} else if (6 == paymentType) {
-			payReqest.setReturnUrl("");
 			payReqest.setTradeType(PayTradeTypeEnum.WX_WXPAY);
 		}
 		logger.info("payReqest==" + payReqest.toString());
@@ -282,11 +274,11 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			result = ipayServiceApi.appPay(payReqest);
 		}
 
-		return getStrToMap(result, paymentType, tradeOrder.getId(), filePath);
+		return getStrToMap(result, paymentType, tradeOrder.getId());
 	}
 
-	private Map<String, Object> getStrToMap(String str, int paymentType, String orderId, String filePath) {
-		logger.error("支付信息：{}", str);
+	private Map<String, Object> getStrToMap(String str, int paymentType, String orderId) {
+		logger.info("支付信息：{}", str);
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("orderId", orderId);
 		// 0:云钱包,1:支付宝支付,2:微信支付,3:京东支付,4:现金支付
@@ -299,53 +291,12 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 				return null;
 			}
 			result.putAll((JSONObject) obj.get("data"));
-		} else if (3 == paymentType) {
-			if (!createHtml(orderId, str, filePath)) {
-				return null;
-			}
-			result.put("url", "/trade/jdPay?orderId=" + orderId);
-		} else if (6 == paymentType) {
+		}else if (6 == paymentType) {
 			JSONObject obj = JSONObject.parseObject(str);
 			result.putAll((JSONObject) obj.get("data"));
 		}
 		result.put("paymentType", paymentType);
 		return result;
-	}
-
-	/**
-	 * 生成html代码
-	 * 
-	 * @param orderId 订单ID
-	 * @param html html字符串
-	 */
-	public static boolean createHtml(String orderId, String html, String filePath) {
-		long beginDate = (new Date()).getTime();
-		File formFile = new File(filePath);
-
-		if (!formFile.exists()) {
-			formFile.mkdir();
-			File files = new File(filePath + "/" + orderId + ".html");
-			BufferedWriter writer = null;
-			try {
-				if (!files.exists()) {
-					files.createNewFile();
-				}
-				writer = new BufferedWriter(new FileWriter(files));
-				writer.write(html);
-			} catch (IOException e) {
-				logger.error("生成京东页面异常：{}", e);
-				return false;
-			} finally {
-				try {
-					writer.flush();
-					writer.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		logger.error("共用时：：{}", ((new Date()).getTime() - beginDate) + "ms");
-		return true;
 	}
 
 	/**

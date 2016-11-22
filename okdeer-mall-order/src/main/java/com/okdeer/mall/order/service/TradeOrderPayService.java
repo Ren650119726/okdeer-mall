@@ -32,17 +32,6 @@ public interface TradeOrderPayService {
 	void insertOrderPay(TradeOrderPay tradeOrderPay) throws ServiceException;
 
 	/**
-	 * 获取支付信息
-	 * @param paymentType 支付类别
-	 * @param ip 客户端IP地址
-	 * @param filePath 页面保存路径
-	 * @param openId 微信授权openId
-	 * @throws Exception 异常
-	 */
-	public Map<String, Object> getMapInfo(int paymentType, TradeOrder tradeOrder, String ip, String filePath,
-			String openId) throws Exception;
-
-	/**
 	 * 取消订单支付
 	 * @return 
 	 * @throws Exception 
