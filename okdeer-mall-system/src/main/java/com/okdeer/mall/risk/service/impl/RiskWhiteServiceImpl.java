@@ -138,7 +138,7 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 		for(RiskWhite riskWhite:riskWhiteList){
 			int count = riskWhiteMapper.findCountByAccount(riskWhite);
 			if(count>0){
-				riskWhiteMapper.update(riskWhite);
+				riskWhiteMapper.updateByAccount(riskWhite);
 			}else{
 				riskList.add(riskWhite);
 			}

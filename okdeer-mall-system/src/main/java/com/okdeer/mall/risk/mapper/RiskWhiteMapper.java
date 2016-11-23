@@ -63,4 +63,13 @@ public interface RiskWhiteMapper extends IBaseMapper {
 	 * @date 2016年11月21日
 	 */
 	Set<RiskWhite> findAllWhite();
+
+
+	/**
+	 * @Description: 根据账号更新白名单
+	 * @param riskWhite   
+	 * @author xuzq01
+	 * @date 2016年11月23日
+	 */
+	void updateByAccount(RiskWhite riskWhite);
 }
