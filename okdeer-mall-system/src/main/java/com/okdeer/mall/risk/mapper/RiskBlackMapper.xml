@@ -136,6 +136,30 @@
         where disabled = 0 and account = #{account,jdbcType=VARCHAR} and account_type=#{accountType,jdbcType=NUMERIC}
     </select>
     
+    <update id="updateByAccount" parameterType="com.okdeer.mall.risk.entity.RiskBlack" >
+        update risk_black
+        <set >
+            <if test="account != null" >
+                account = #{account,jdbcType=VARCHAR},
+            </if>
+            <if test="accountType != null" >
+                account_type = #{accountType,jdbcType=BIT},
+            </if>
+          
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=NUMERIC},
+            </if>
+        </set>
+        where disabled = 0 and account = #{account,jdbcType=VARCHAR} 
+        		and account_type=#{accountType,jdbcType=NUMERIC}
+    </update>
+    
     <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskBlack" >
         insert into risk_black
         <trim prefix="(" suffix=")" suffixOverrides="," >

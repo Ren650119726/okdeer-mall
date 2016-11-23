@@ -151,7 +151,7 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 		for (RiskBlack riskBlack : riskBlackList) {
 			int count = riskBlackMapper.findCountByAccount(riskBlack);
 			if (count > 0) {
-				riskBlackMapper.update(riskBlack);
+				riskBlackMapper.updateByAccount(riskBlack);
 			} else {
 				riskList.add(riskBlack);
 			}
