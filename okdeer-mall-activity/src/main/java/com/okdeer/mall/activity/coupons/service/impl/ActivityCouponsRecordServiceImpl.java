@@ -1013,7 +1013,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			pushMsgVo.setMsgDetailLinkUrl("voucher/html/myVoucherList");
 			
 			// 不使用模板
-			pushMsgVo.setMsgNotifyContent("友门鹿");
+			pushMsgVo.setMsgNotifyContent(smsIsNoticeCouponsRecordStyle);
 			pushMsgVo.setMsgDetailType(Constant.ONE);
 			pushMsgVo.setMsgDetailContent(smsIsNoticeCouponsRecordStyle);
 			// 设置是否定时发送
