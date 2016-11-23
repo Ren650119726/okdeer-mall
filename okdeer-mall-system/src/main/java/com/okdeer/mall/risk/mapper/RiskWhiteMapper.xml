@@ -85,9 +85,32 @@
  <select id="findCountByAccount" resultType="java.lang.Integer"  parameterType="com.okdeer.mall.risk.entity.RiskWhite" >
         select count(1) 
         from risk_white
-        where telephone_account = #{telephoneAccount,jdbcType=VARCHAR} 
+        where disabled =0 and telephone_account = #{telephoneAccount,jdbcType=VARCHAR} 
         		and account_type =#{accountType,jdbcType=NUMERIC} 
     </select>
+    <!-- 根据账号和类型更新白名单 -->
+    <update id="updateByAccount" parameterType="com.okdeer.mall.risk.entity.RiskWhite" >
+        update risk_white
+        <set >
+            <if test="telephoneAccount != null" >
+                telephone_account = #{telephoneAccount,jdbcType=VARCHAR},
+            </if>
+             <if test="accountType != null" >
+            	account_type =#{accountType,jdbcType=NUMERIC}
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=NUMERIC},
+            </if>
+        </set>
+        where disabled = 0 and telephone_account = #{telephoneAccount,jdbcType=VARCHAR} 
+        		and account_type =#{accountType,jdbcType=NUMERIC}
+    </update>
   <!-- 自动工具生成 -->
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
         select 
