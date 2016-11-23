@@ -13,7 +13,6 @@ import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityDrawPrizeService;
 import com.okdeer.mall.activity.coupons.service.ActivityDrawPrizeServiceApi;
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
-import com.okdeer.mall.member.member.service.SysBuyerExtServiceApi;
 import com.okdeer.mall.member.service.SysBuyerExtService;
 
 import net.sf.json.JSONObject;
