@@ -3676,6 +3676,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("actualAmount", orders.getActualAmount() == null ? "0" : orders.getActualAmount());
 		json.put("orderNo", orders.getOrderNo() == null ? "" : orders.getOrderNo());
 		json.put("cancelReason", getCancelReason(orders));
+		if (orders.getStatus() != null && orders.getStatus() == OrderStatusEnum.CANCELED) {
+			json.put("cancelType", orders.getCancelType().ordinal());
+		}
 		json.put("orderSubmitOrderTime", orders.getCreateTime() != null
 				? DateUtils.formatDate(orders.getCreateTime(), "yyyy-MM-dd HH:mm:ss") : "");
 		json.put("orderDeliveryTime", orders.getDeliveryTime() != null
