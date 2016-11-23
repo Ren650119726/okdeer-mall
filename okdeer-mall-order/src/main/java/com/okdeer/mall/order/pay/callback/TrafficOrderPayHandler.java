@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.api.pay.pay.dto.PayResponseDto;
+import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.HttpClientUtil;
 import com.okdeer.mall.common.utils.Xml2JsonUtil;
 import com.okdeer.mall.common.utils.security.MD5;
@@ -68,9 +69,20 @@ public class TrafficOrderPayHandler extends AbstractPhoneRechargePayHandler {
 					+ "&phoneno=" + phoneno + "&perValue=" + perValue + "&flowValue=" + flowValue + "&range=" + range
 					+ "&effectStartTime=" + effectStartTime + "&effectTime=" + effectTime + "&sporderId=" + orderid
 					+ "&md5Str=" + sign + "&version=" + version + "&retUrl=" + returl;
-			String xml = HttpClientUtil.get(url, "GB2312");
-			JSONObject respJson = Xml2JsonUtil.xml2Json(xml, "GB2312");
-			JSONObject orderinfo = respJson.getJSONObject("orderinfo");
+			
+			
+//			String xml = HttpClientUtil.get(url, "GB2312");
+//			JSONObject respJson = Xml2JsonUtil.xml2Json(xml, "GB2312");
+//			JSONObject orderinfo = respJson.getJSONObject("orderinfo");
+			/**
+			 * 充值模拟数据
+			 */
+			JSONObject orderinfo = new JSONObject();
+			orderinfo.put("retcode", 1);
+			orderinfo.put("game_state", 0);
+			orderinfo.put("orderid",DateUtils.getDateRandom());
+			
+			
 			logger.info("***********手机流量充值订单{},返回参数{}***************", orderid, orderinfo);
 			int retcode = orderinfo.getInt("retcode");
 			String userPhone = tradeOrder.getUserPhone();
