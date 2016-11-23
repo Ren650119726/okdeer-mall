@@ -554,6 +554,7 @@
 		</if>
 		WHERE
 			app.status = 1
+			AND ca.target_type = 1
 			AND ca.status = 1
 			<!-- 查询运营商的 -->
 			and ca.belong_type = 0
@@ -631,6 +632,7 @@
 		</if>
 		WHERE
 			app.status = 1
+			AND ca.target_type = 1
 			AND ca.status = 1
 			<!-- 查询代理商的 -->
 			and ca.belong_type > 0

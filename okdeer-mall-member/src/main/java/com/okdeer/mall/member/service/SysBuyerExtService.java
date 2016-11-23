@@ -43,4 +43,21 @@ public interface SysBuyerExtService {
 	 * @return
 	 */
 	int insertSelective(SysBuyerExt sysBuyerExt) throws ServiceException;
+	
+	
+	/**
+	 * @Description: 重置已经抽奖机会为0的用户，将抽奖机会重置为1次
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月22日
+	 */
+	public void updateUserPrizeCount();
+	
+	/**
+	 * @Description: 根据用户id 抽奖之后将其抽奖机会-1
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月22日
+	 */
+	void updateCutPrizeCount(String userId);
 }
