@@ -93,16 +93,16 @@ public class PhoneOrderPayHandler extends AbstractPhoneRechargePayHandler {
 					+ version;
 			
 			
-//			String xml = HttpClientUtil.get(url, "GB2312");
-//			JSONObject respJson = Xml2JsonUtil.xml2Json(xml, "GB2312");
-//			JSONObject orderinfo = respJson.getJSONObject("orderinfo");
+			String xml = HttpClientUtil.get(url, "GB2312");
+			JSONObject respJson = Xml2JsonUtil.xml2Json(xml, "GB2312");
+			JSONObject orderinfo = respJson.getJSONObject("orderinfo");
 			/**
 			 * 充值模拟数据
 			 */
-			JSONObject orderinfo = new JSONObject();
-			orderinfo.put("retcode", 1);
-			orderinfo.put("game_state", 0);
-			orderinfo.put("orderid",DateUtils.getDateRandom());
+//			JSONObject orderinfo = new JSONObject();
+//			orderinfo.put("retcode", 1);
+//			orderinfo.put("game_state", 0);
+//			orderinfo.put("orderid",DateUtils.getDateRandom());
 			
 			logger.info("*******手机话费充值订单{}，返回参数：{}***********", orderid, orderinfo);
 			int retcode = orderinfo.getInt("retcode");
