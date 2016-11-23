@@ -6,6 +6,7 @@
  */
 package com.okdeer.mall.risk.entity;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -20,9 +21,10 @@ import com.okdeer.mall.risk.enums.TriggerWay;
  * @author guocp
  * @version 1.0 2016-11-17
  */
-public class RiskTriggerRecord {
+public class RiskTriggerRecord implements Serializable{
 
-    /**
+	private static final long serialVersionUID = 7485146875794351978L;
+	/**
      * 主键
      */
     private String id;

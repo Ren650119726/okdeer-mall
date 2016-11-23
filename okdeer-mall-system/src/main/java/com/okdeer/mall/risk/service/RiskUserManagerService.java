@@ -29,7 +29,16 @@ import com.okdeer.mall.risk.entity.RiskUserManager;
 public interface RiskUserManagerService extends IBaseService {
 
 	/**
-	 * @Description: TODO
+	 * 查询风控管理人员列表
+	 * @param userManagerDto
+	 * @return   
+	 * @author guocp
+	 * @date 2016年11月19日
+	 */
+	List<RiskUserManager> findUserList(RiskUserManagerDto userManagerDto);
+	
+	/**
+	 * @Description: 查询风控管理人员列表(分页)
 	 * @param userManagerDto
 	 * @param pageNumber
 	 * @param pageSize

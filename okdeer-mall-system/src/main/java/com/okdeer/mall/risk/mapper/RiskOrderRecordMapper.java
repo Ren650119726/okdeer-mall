@@ -6,8 +6,9 @@
  */
 package com.okdeer.mall.risk.mapper;
 
-import java.util.List;
 import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.risk.po.RiskOrderRecordPo;
@@ -25,14 +26,31 @@ import com.okdeer.mall.risk.po.RiskOrderRecordPo;
  */
 public interface RiskOrderRecordMapper extends IBaseMapper {
 
-	
-	RiskOrderRecordPo findByLoginName(String loginName);
+	/**
+	 * 根据参数类型和值查询风控订单记录
+	 * @param value
+	 * @param typeName
+	 * @return   
+	 * @author guocp
+	 * @date 2016年11月18日
+	 */
+	RiskOrderRecordPo findByParam(@Param("value") String value, @Param("paramType") String paramType,
+			@Param("isPreferential") int isPreferential);
 
 	/**
-	 * @Description: TODO
+	 * 根据参数类型和值查询充值号码列表
 	 * @param loginName   
 	 * @author guocp
 	 * @date 2016年11月17日
 	 */
-	Set<String> findTelsByLoginName(String loginName);
+	Set<String> findTelsByParam(@Param("value") String value, @Param("paramType") String paramType,
+			@Param("isPreferential") int isPreferential);
+
+	/**
+	 * 根据参数类型和值查询登入手机号码列表
+	 * @param loginName   
+	 * @author guocp
+	 * @date 2016年11月17日
+	 */
+	Set<String> findLoginNamesByParam(@Param("deviceId") String deviceId, @Param("isPreferential") int isPreferential);
 }

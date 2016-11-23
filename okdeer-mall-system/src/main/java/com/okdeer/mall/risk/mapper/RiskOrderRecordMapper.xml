@@ -131,20 +131,48 @@
 	    </collection> -->
     </resultMap>
     
-    <select id="findByLoginName" resultMap="Record_ResultMap" parameterType="java.lang.String" >
+    <select id="findByParam" resultMap="Record_ResultMap" >
 		SELECT
 			count(1) as count,
 			IFNULL(sum(r.face_price), 0) as facePriceTotal
-			<!-- r.tel as tels -->
 	    FROM
 			risk_order_record r
-      	where login_name = #{loginName,jdbcType=VARCHAR}
+      	where is_preferential = #{isPreferential,jdbcType=INTEGER}
+      	<if test="'loginName' == paramType">
+      		AND login_name = #{value,jdbcType=VARCHAR}
+      	</if>
+      	<if test="'deviceId' == paramType">
+      		AND device_id = #{value,jdbcType=VARCHAR}
+      	</if>
+      	<if test="'payAccount' == paramType">
+      		AND pay_account = #{value,jdbcType=VARCHAR}
+      	</if>
     </select>
-    <select id="findTelsByLoginName" resultType="java.lang.String" parameterType="java.lang.String" >
+    
+    <select id="findTelsByParam" resultType="java.lang.String" >
 		SELECT
 			r.tel
 	    FROM
 			risk_order_record r
-      	where r.login_name = #{loginName,jdbcType=VARCHAR}
+      	where is_preferential = #{isPreferential,jdbcType=INTEGER}
+      	<if test="'loginName' == paramType">
+      		AND login_name = #{value,jdbcType=VARCHAR}
+      	</if>
+      	<if test="'deviceId' == paramType">
+      		AND device_id = #{value,jdbcType=VARCHAR}
+      	</if>
+      	<if test="'payAccount' == paramType">
+      		AND pay_account = #{value,jdbcType=VARCHAR}
+      	</if>
+    </select>
+    
+    <select id="findLoginNamesByParam" resultType="java.lang.String" >
+		SELECT
+			r.login_name
+	    FROM
+			risk_order_record r
+      	where 
+      		device_id = #{deviceId,jdbcType=VARCHAR}
+      		AND is_preferential = #{isPreferential,jdbcType=INTEGER}
     </select>
 </mapper>
