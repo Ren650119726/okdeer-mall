@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
 import com.okdeer.mall.member.member.service.SysBuyerExtServiceApi;
+import com.okdeer.mall.member.service.SysBuyerExtService;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.member.mapper.SysBuyerExtMapper;
 
@@ -24,7 +25,7 @@ import com.okdeer.mall.member.mapper.SysBuyerExtMapper;
  * @date 2015年11月20日 下午5:13:29
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.member.member.service.SysBuyerExtServiceApi")
-public class SysBuyerExtServiceImpl implements SysBuyerExtServiceApi {
+public class SysBuyerExtServiceImpl implements SysBuyerExtServiceApi,SysBuyerExtService {
 
 	/**
 	 * 自动注入会员扩展实体
@@ -48,6 +49,30 @@ public class SysBuyerExtServiceImpl implements SysBuyerExtServiceApi {
 	@Transactional(rollbackFor = Exception.class)
 	public int insertSelective(SysBuyerExt sysBuyerExt) throws ServiceException {
 		return sysBuyerExtMapper.insertSelective(sysBuyerExt);
+	}
+	
+	/**
+	 * @Description: 重置已经抽奖机会为0的用户，将抽奖机会重置为1次
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月22日
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateUserPrizeCount(){
+		sysBuyerExtMapper.updateUserPrizeCount();
+	}
+	
+	/**
+	 * @Description: 根据用户id 抽奖之后将其抽奖机会-1
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年11月22日
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateCutPrizeCount(String userId){
+		sysBuyerExtMapper.updateCutPrizeCount(userId);
 	}
 
 }
