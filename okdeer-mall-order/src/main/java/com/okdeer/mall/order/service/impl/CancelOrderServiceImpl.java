@@ -237,7 +237,8 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 
 			// 发送短信
 			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
-					|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()) {
+					|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus() 
+					|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
 				// 查询支付信息
 				TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(oldOrder.getId());
 				oldOrder.setTradeOrderPay(tradeOrderPay);
