@@ -68,6 +68,7 @@ public class RiskTriggerConditionsImpl implements RiskTriggerConditions {
 	@Override
 	public boolean isTrigger(RiskOrderRecord riskOrder) throws Exception {
 
+		log.debug("进入风控条件检测中,订单信息：{}",JsonMapper.nonDefaultMapper().toJson(riskOrder));
 		// 新增订单记录
 		riskOrderRecordService.add(riskOrder);
 
@@ -79,11 +80,13 @@ public class RiskTriggerConditionsImpl implements RiskTriggerConditions {
 		if (blackLoginAccount.contains(riskOrder.getLoginName()) || blackMobiles.contains(riskOrder.getTel())
 				|| blackDevices.contains(riskOrder.getDeviceId())
 				|| blackPayAccounts.contains(riskOrder.getPayAccount())) {
+			log.info("充值订单人员在黑名单中，跳过风控，用户登入名：{}",riskOrder.getLoginName());
 			return true;
 		}
 		// 判断白名单
 		Set<String> whites = riskWhiteService.findAllWhite();
 		if (whites.contains(riskOrder.getLoginName())) {
+			log.info("充值订单人员在白名单中，跳过风控，用户登入名：{}",riskOrder.getLoginName());
 			return false;
 		}
 
@@ -144,6 +147,7 @@ public class RiskTriggerConditionsImpl implements RiskTriggerConditions {
 
 		// 是否触发风控
 		if (triggerType != null) {
+			log.info("用户：{}充值触发风控，触发类型：{}",riskOrder.getLoginName(),triggerType.getDesc());
 			sendTriggerMessage(riskOrder, triggerType, triggerWay);
 		}
 		return triggerType!=null && triggerWay == TriggerWay.FORBID;
