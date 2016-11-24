@@ -84,6 +84,7 @@ public abstract class AbstractPayResultHandler {
 //		}
 		// 第二步 设置订单支付记录
 		TradeOrderPay tradeOrderPay = buildTradeOrderPay(tradeOrder.getId(),respDto);
+		tradeOrder.setTradeOrderPay(tradeOrderPay);
 		// 第三步 设置订单状态
 		setOrderStatus(tradeOrder);
 		// 订单前置处理
