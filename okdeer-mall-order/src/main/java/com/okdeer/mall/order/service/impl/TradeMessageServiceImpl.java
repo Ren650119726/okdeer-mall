@@ -7,6 +7,7 @@
  */
 package com.okdeer.mall.order.service.impl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -716,7 +717,13 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			Map<String, String> params = Maps.newHashMap();
 			params.put("#1", order.getOrderNo());
 			params.put("#2", order.getReason());
-			params.put("#3", order.getActualAmount().toString());
+			//实付金额
+			BigDecimal actualAmount = order.getActualAmount();
+			//扣除违约金
+			if (WhetherEnum.whether.equals(order.getIsBreach())) {
+				actualAmount.subtract(order.getBreachMoney());
+			}
+			params.put("#3", actualAmount.toString());
 
 			// 查询用户电话号码
 			String mobile = sysBuyerUserService.selectMemberMobile(order.getUserId());

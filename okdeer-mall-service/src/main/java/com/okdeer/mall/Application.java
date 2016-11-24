@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication(exclude=DataSourceAutoConfiguration.class)
-@ComponentScan(basePackages="com.okdeer")
+@ComponentScan(basePackages="com.okdeer.mall")
 public class Application {
 
 	private static final Logger logger = LoggerFactory.getLogger(Application.class);

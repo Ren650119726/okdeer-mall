@@ -106,6 +106,14 @@ public interface RiskBlackMapper extends IBaseMapper {
 	 * @date 2016年11月21日
 	 */
 	Set<RiskBlack> findAllBlackLoginAccount();
+
+	/**
+	 * @Description: 根据账号和类型更新黑名单
+	 * @param riskBlack   
+	 * @author xuzq01
+	 * @date 2016年11月23日
+	 */
+	void updateByAccount(RiskBlack riskBlack);
 	
 	
 
