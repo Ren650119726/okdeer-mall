@@ -79,9 +79,9 @@ public abstract class AbstractPayResultHandler {
 	@Transactional
 	public ConsumeConcurrentlyStatus handler(TradeOrder tradeOrder,PayResponseDto respDto) throws Exception{
 		// 第一步 幂等性校验，防止重复消费
-//		if(isConsumed(tradeOrder)){
-//			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-//		}
+		if(isConsumed(tradeOrder)){
+			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+		}
 		// 第二步 设置订单支付记录
 		TradeOrderPay tradeOrderPay = buildTradeOrderPay(tradeOrder.getId(),respDto);
 		tradeOrder.setTradeOrderPay(tradeOrderPay);
