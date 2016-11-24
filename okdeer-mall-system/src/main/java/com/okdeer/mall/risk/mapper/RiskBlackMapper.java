@@ -9,13 +9,25 @@ package com.okdeer.mall.risk.mapper;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.risk.dto.RiskBlackDto;
 import com.okdeer.mall.risk.entity.RiskBlack;
-
+/**
+ * 
+ * ClassName: RiskBlackMapper 
+ * @Description: 黑名单的dao接口类
+ * @author xuzq01
+ * @date 2016年11月21日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *		V1.2			2016年11月21日	xuzq01				黑名单的dao接口类
+ */
 public interface RiskBlackMapper extends IBaseMapper {
 
 	/**
@@ -62,6 +74,46 @@ public interface RiskBlackMapper extends IBaseMapper {
 	 * @date 2016年11月18日
 	 */
 	int findCountByAccount(RiskBlack riskBlack);
+
+	/**
+	 * @Description: TODO
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	Set<RiskBlack> findAllBlackMobile();
+
+	/**
+	 * @Description: TODO
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	Set<RiskBlack> findAllBlackDevice();
+
+	/**
+	 * @Description: TODO
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	Set<RiskBlack> findAllBlackPayAccount();
+
+	/**
+	 * @Description: TODO
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	Set<RiskBlack> findAllBlackLoginAccount();
+
+	/**
+	 * @Description: 根据账号和类型更新黑名单
+	 * @param riskBlack   
+	 * @author xuzq01
+	 * @date 2016年11月23日
+	 */
+	void updateByAccount(RiskBlack riskBlack);
 	
 	
 

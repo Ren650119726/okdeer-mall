@@ -9,6 +9,7 @@ import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
 
 public class RequestHandlerChain<Q,R> {
+	
 	/**
 	 * 请求处理链
 	 */

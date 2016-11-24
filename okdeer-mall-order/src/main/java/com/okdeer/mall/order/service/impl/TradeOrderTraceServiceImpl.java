@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -80,7 +81,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 		List<TradeOrderTrace> traceList = new ArrayList<TradeOrderTrace>();
 		// 构建操作轨迹
 		TradeOrderTrace optTrace = buildOptTrace(tradeOrder);
-		if (optTrace != null) {
+		if (optTrace != null && optTrace.getTraceStatus() != null) {
 			traceList.add(optTrace);
 		}
 		if (tradeOrder.getStatus() == OrderStatusEnum.UNPAID) {
@@ -122,8 +123,10 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 				trace.setRemark(OrderTraceConstant.SET_OUT_REMARK);
 				break;
 			case CANCELED:
-				trace.setTraceStatus(OrderTraceEnum.CANCELED);
-				trace.setRemark(getCancelRemark(tradeOrder));
+			case CANCELING:
+			case REFUSING:
+			case REFUSED:
+				processCancelTrace(trace,tradeOrder);
 				break;
 			case HAS_BEEN_SIGNED:
 				trace.setTraceStatus(OrderTraceEnum.COMPLETED);
@@ -147,7 +150,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 	 * @author maojj
 	 * @date 2016年11月7日
 	 */
-	private String getCancelRemark(TradeOrder tradeOrder) {
+	private void processCancelTrace(TradeOrderTrace trace,TradeOrder tradeOrder) {
 		String remark = "";
 		// 订单取消原因
 		String reason = tradeOrder.getReason();
@@ -191,7 +194,10 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 			default:
 				break;
 		}
-		return remark;
+		if(StringUtils.isNotEmpty(remark)){
+			trace.setTraceStatus(OrderTraceEnum.CANCELED);
+			trace.setRemark(remark);
+		}
 	}
 
 	@Override
@@ -310,5 +316,10 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 		traceVo.setContent(content);
 		traceVo.setIsDone(WhetherEnum.not.ordinal());
 		return traceVo;
+	}
+
+	@Override
+	public void updateRemarkAfterAppraise(TradeOrderTrace trace) {
+		tradeOrderTraceMapper.updateRemarkAfterAppraise(trace);
 	}
 }

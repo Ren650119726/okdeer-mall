@@ -25,6 +25,7 @@ import static com.okdeer.common.consts.DescriptConstants.USER_NOT_WALLET;
 import static com.okdeer.common.consts.DescriptConstants.USER_WALLET_FAIL;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -91,6 +92,7 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
@@ -124,6 +126,7 @@ import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
+import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
@@ -180,12 +183,16 @@ import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
+import com.okdeer.mall.order.timer.TimeoutMessage;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
+import com.okdeer.mall.order.timer.constant.TimerMessageConstant;
 import com.okdeer.mall.order.utils.JsonDateValueProcessor;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.OrderCouponsRespDto;
 import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
+import com.okdeer.mall.order.vo.RefundsTraceResp;
+import com.okdeer.mall.order.vo.RefundsTraceVo;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.order.vo.TradeOrderCommentVo;
 import com.okdeer.mall.order.vo.TradeOrderExportVo;
@@ -224,6 +231,7 @@ import net.sf.json.JsonConfig;
  * ----------------+----------------+-------------------+-------------------------------------------
  *      v.1.2.0           2016-11-16        zengjz            删减一些无用的代码
  *      V.1.2.0           2016-11-18        maojj             POS订单导出新增货号信息
+ *      V1.2.0            2016-11-24        wusw              修改订单数量统计的问题
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1713,7 +1721,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 发送计时消息
 			// Begin 重构4.1 add by wusw 20160801
 			if (storeInfo.getType() == StoreTypeEnum.SERVICE_STORE) {
-				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime(), "yyyy-MM-dd HH:mm");
+				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
 				// 服务店订单，预约服务时间过后24小时未派单的自动确认收货
 				// tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout,
 				// tradeOrder.getId(),
@@ -3669,6 +3677,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("actualAmount", orders.getActualAmount() == null ? "0" : orders.getActualAmount());
 		json.put("orderNo", orders.getOrderNo() == null ? "" : orders.getOrderNo());
 		json.put("cancelReason", getCancelReason(orders));
+		if (orders.getStatus() != null && orders.getStatus() == OrderStatusEnum.CANCELED) {
+			json.put("cancelType", orders.getCancelType().ordinal());
+		}
 		json.put("orderSubmitOrderTime", orders.getCreateTime() != null
 				? DateUtils.formatDate(orders.getCreateTime(), "yyyy-MM-dd HH:mm:ss") : "");
 		json.put("orderDeliveryTime", orders.getDeliveryTime() != null
@@ -4162,6 +4173,21 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			json.put("orderItems", item);
 		}
 		// End V1.1.0 add by wusw 20160929
+		// Begin V1.2.0 add by chenzc 20161122
+		// 获取订单状态列表
+		Response<RefundsTraceResp> orderTrace = tradeOrderTraceService.findOrderTrace(orders.getId());
+		List<RefundsTraceVo> traceList = orderTrace.getData().getTraceList();
+		// 获取最后一条订单状态的描述
+		String orderStatusRemark = "";
+		for (RefundsTraceVo vo : traceList) {
+			if (vo.getIsDone() == 1) {
+				orderStatusRemark = vo.getContent();
+			} else {
+				break;
+			}
+		}
+		json.put("orderStatusRemark", orderStatusRemark);
+		// End V1.2.0 add by chenzc 20161122
 		json.put("height", 126);
 		json.put("width", 126);
 		return json;
@@ -4820,11 +4846,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			throws ServiceException {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<TradeOrder> result = tradeOrderMapper.selectServiceStoreOrderList(params);
-		/*
-		 * if (result == null) { result = new ArrayList<TradeOrder>(); } else { for (TradeOrder order : result) {
-		 * List<TradeOrderItem> orderItem = tradeOrderItemMapper.selectOrderItemListById(order.getId());
-		 * order.setTradeOrderItem(orderItem); } }
-		 */
+		// Begin V1.2.0(订单数量统计有问题) add by wusw 20161124
+		if (result == null) {
+			result = new ArrayList<TradeOrder>();
+		} else {
+			for (TradeOrder order : result) {
+				List<TradeOrderItem> orderItem = tradeOrderItemMapper.selectOrderItemListById(order.getId());
+				order.setTradeOrderItem(orderItem);
+			}
+		}
+		// End V1.2.0(订单数量统计有问题) add by wusw 20161124
 		return new PageUtils<TradeOrder>(result);
 	}
 
@@ -6149,7 +6180,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 查询店铺扩展信息
 		String storeId = orders.getStoreInfo().getId();
 		StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
-
+		
 		orders.setItems(tradeOrderItems);
 		JSONObject json = this.getServiceJsonObj(orders, appraise, storeInfoExt, true);
 		return json;
@@ -6410,5 +6441,77 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		} else {
 			return BigDecimal.valueOf(value);
 		}
+	}
+	
+	@Override
+	public List<TradeOrderExportVo> findExportList(Map<String, Object> map) {
+		// 查询订单信息
+		List<TradeOrder> orderPay = tradeOrderMapper.findExportList(map);
+		List<TradeOrderExportVo> exportList = new ArrayList<TradeOrderExportVo>();
+		if (orderPay != null) {
+			// 退款单状态Map
+			Map<String, String> orderRefundsStatusMap = RefundsStatusEnum.convertViewStatus();
+			for (int i = 0; i < orderPay.size(); i++) {
+				TradeOrder order = orderPay.get(i);
+				// 订单状态Map
+				Map<String, String> orderStatusMap = OrderStatusEnum.convertViewStatus(order.getType());
+				String id = order.getId();
+				map.put("orderId", id);
+				// 订单项信息
+				List<TradeOrderItem> orderItemList = order.getTradeOrderItem();
+				if (orderItemList != null) {
+					for (TradeOrderItem item : orderItemList) {
+						if (item == null) {
+							continue;
+						}
+						TradeOrderExportVo exportVo = new TradeOrderExportVo();
+						// 实付款取订单的实际付款金额(2016-5-3 13:43:35确认于高沛)
+						exportVo.setActualAmount(order.getActualAmount());
+						exportVo.setUserId(order.getUserId());
+						exportVo.setCreateTime(DateUtils.formatDate(order.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
+						exportVo.setOrderNo(order.getOrderNo());
+						exportVo.setQuantity(item.getQuantity() == null ? "" : item.getQuantity().toString());
+						exportVo.setUserPhone(order.getUserPhone());
+						exportVo.setSkuName(item.getSkuName());
+						exportVo.setCategoryName(item.getCategoryName());
+						exportVo.setStatus(orderStatusMap.get(order.getStatus().getName()));
+						exportVo.setUnitPrice(item.getUnitPrice());
+						exportVo.setTotalAmount(order.getTotalAmount());
+						if (!OrderStatusEnum.UNPAID.equals(order.getStatus())
+								&& !OrderStatusEnum.BUYER_PAYING.equals(order.getStatus())) {
+							// 支付方式
+							if (order.getTradeOrderPay() == null) {
+								exportVo.setPayType(order.getPayWay().getValue());
+							} else {
+								exportVo.setPayType(order.getTradeOrderPay().getPayType().getValue());
+							}
+						}
+						exportVo.setOrderResource(order.getOrderResource());
+						exportVo.setBarCode(item.getBarCode() == null ? "" : item.getBarCode());
+						exportVo.setStyleCode(item.getStyleCode() == null ? "" : item.getStyleCode());
+						// Begin V1.2 added by maojj 2016-11-18
+						// 货号
+						exportVo.setArticleNo(ConvertUtil.format(item.getArticleNo()));
+						// End V1.2 added by maojj 2016-11-18
+						// 售后单状态
+						if (item.getRefundsStatus() != null) {
+							exportVo.setAfterService(orderRefundsStatusMap.get(item.getRefundsStatus().getName()));
+						}
+						exportVo.setOperator(order.getSysUser() == null ? null : order.getSysUser().getLoginName());
+						exportList.add(exportVo);
+					}
+				}
+			}
+		}
+		return exportList;
+	}
+
+	@Override
+	public void acceptOrder(TradeOrder tradeOrder) throws Exception {
+		this.updateOrderStatus(tradeOrder);
+		// 预约服务时间
+		Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
+		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
+				(DateUtils.addHours(serviceTime, 2).getTime() - System.currentTimeMillis()) / 1000);
 	}
 }

@@ -16,7 +16,36 @@
         id, account, account_type, 
         create_time, create_user_id, update_time, update_user_id, disabled
     </sql>
- <!-- 根据条件搜索皮肤列表 -->
+    <!-- chaz -->
+    <select id="findAllBlackMobile" resultMap="BaseResultMap" >
+	    SELECT 
+	    <include refid="Base_Column_List" />
+	     FROM risk_black 
+	     WHERE disabled = 0 and account_type=2
+	       ORDER BY create_time DESC
+	  </select>
+   <select id="findAllBlackDevice" resultMap="BaseResultMap" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM risk_black 
+     WHERE disabled = 0 and account_type=3
+       ORDER BY create_time DESC
+  </select>
+   <select id="findAllBlackPayAccount" resultMap="BaseResultMap" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM risk_black 
+     WHERE disabled = 0 and account_type=1 or account_type=4
+       ORDER BY create_time DESC
+  </select>
+   <select id="findAllBlackLoginAccount" resultMap="BaseResultMap" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM risk_black 
+     WHERE disabled = 0 and account_type=0
+       ORDER BY create_time DESC
+  </select>
+ <!-- 根据条件搜索黑名单列表 -->
   <select id="findBlackList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.risk.dto.RiskBlackDto">
     SELECT 
     <include refid="Base_Column_List" />
@@ -37,21 +66,15 @@
          AND account LIKE CONCAT('%',#{accountWeChat,jdbcType=VARCHAR},'%') 
        </if>
        <!-- 账号类型 账号类型为1 支付类型时查询微信和支付宝两张账号类型  -->
-       <if test="accountType != null and accountType != -1" >
+       <if test="accountType != null" >
 	       <choose>
-			   <when test="accountType == 1">
+			   <when test="accountType == -1">
 			   		AND account_type in (1,4)
 			   </when>
 				 <otherwise>
 				 AND account_type = #{accountType,jdbcType=NUMERIC}
 		 		</otherwise>
-		</choose>
-	       <!-- <if test="accountType == 1">
-	       	 AND account_type in (1,4)
-	       </if>
-	       <if test="accountType !== 1">
-	       	  AND account_type = #{accountType,jdbcType=NUMERIC}
-	       </if> -->
+			</choose>
        </if>
        <!-- 创建时间 -->
        <if test="createTimeStart != null">
@@ -110,8 +133,32 @@
    <select id="findCountByAccount" resultType="java.lang.Integer" parameterType="com.okdeer.mall.risk.entity.RiskBlack" >
         select count(1) 
         from risk_black
-        where account = #{account,jdbcType=VARCHAR} and account_type=#{accountType,jdbcType=NUMERIC}
+        where disabled = 0 and account = #{account,jdbcType=VARCHAR} and account_type=#{accountType,jdbcType=NUMERIC}
     </select>
+    
+    <update id="updateByAccount" parameterType="com.okdeer.mall.risk.entity.RiskBlack" >
+        update risk_black
+        <set >
+            <if test="account != null" >
+                account = #{account,jdbcType=VARCHAR},
+            </if>
+            <if test="accountType != null" >
+                account_type = #{accountType,jdbcType=BIT},
+            </if>
+          
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=NUMERIC},
+            </if>
+        </set>
+        where disabled = 0 and account = #{account,jdbcType=VARCHAR} 
+        		and account_type=#{accountType,jdbcType=NUMERIC}
+    </update>
     
     <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskBlack" >
         insert into risk_black

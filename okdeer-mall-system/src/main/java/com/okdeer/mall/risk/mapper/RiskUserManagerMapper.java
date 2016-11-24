@@ -14,7 +14,18 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.risk.dto.RiskUserManagerDto;
 import com.okdeer.mall.risk.entity.RiskUserManager;
-
+/**
+ * 
+ * ClassName: RiskUserManagerMapper 
+ * @Description: 风控人员管理dao接口类
+ * @author xuzq01
+ * @date 2016年11月21日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *		v1.2		 2016年11月21日		xuzq01				风控人员管理dao接口类
+ */
 public interface RiskUserManagerMapper extends IBaseMapper {
 
 

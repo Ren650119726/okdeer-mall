@@ -781,4 +781,25 @@
    </select>
    <!-- End added by maojj 20161018 -->
     
+  <!-- 1、当代金券设置的领取后的有效期大于3天，则在代金券结束前第三天发送；2、当代金券设置的领取后的有效期大于1天小于或等于3天 tuzhiding-->
+  <select id="getIsNoticeUser" resultType="java.util.Map" >
+  		select 
+			distinct u.`phone`,u.id
+		from 
+			(select 
+			  	s.`id`,s.collect_user_id,s.`valid_time` ,s.`collect_time`,
+				CASE WHEN  datediff(s.`valid_time`,s.`collect_time`) > 3 AND datediff(s.`valid_time`,now()) = 3 THEN
+					1
+				WHEN (datediff(s.`valid_time`,s.`collect_time`) between 1 AND 3) AND datediff(s.`valid_time`,now()) = 1 THEN 
+					1
+				ELSE 
+					0
+			 	END isMsg 	  
+			from `activity_coupons_record` s 
+			where s.`status` = 0 
+			      and s.`valid_time` > now()
+			) v 
+			INNER JOIN sys_buyer_user u ON v.collect_user_id =u.id
+		where isMsg = 1
+  </select> 
 </mapper> 

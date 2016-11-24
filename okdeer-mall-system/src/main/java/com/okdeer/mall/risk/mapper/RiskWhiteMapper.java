@@ -8,12 +8,12 @@ package com.okdeer.mall.risk.mapper;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.risk.dto.RiskWhiteDto;
-import com.okdeer.mall.risk.entity.RiskBlack;
 import com.okdeer.mall.risk.entity.RiskWhite;
 
 public interface RiskWhiteMapper extends IBaseMapper {
@@ -27,14 +27,6 @@ public interface RiskWhiteMapper extends IBaseMapper {
 	 */
 	List<RiskWhite> findWhiteList(RiskWhiteDto whiteManagerDto);
 
-	/**
-	 * @Description: TODO
-	 * @param whiteManagerDto
-	 * @return   
-	 * @author xuzq01
-	 * @date 2016年11月14日
-	 */
-	int selectWhiteByAccount(@Param(value = "telephoneAccount") String telephoneAccount);
 
 	/**
 	 * @Description: TODO
@@ -62,4 +54,22 @@ public interface RiskWhiteMapper extends IBaseMapper {
 	 * @date 2016年11月18日
 	 */
 	int findCountByAccount(RiskWhite riskWhite);
+
+
+	/**
+	 * @Description: 返回所有白名单
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月21日
+	 */
+	Set<RiskWhite> findAllWhite();
+
+
+	/**
+	 * @Description: 根据账号更新白名单
+	 * @param riskWhite   
+	 * @author xuzq01
+	 * @date 2016年11月23日
+	 */
+	void updateByAccount(RiskWhite riskWhite);
 }
