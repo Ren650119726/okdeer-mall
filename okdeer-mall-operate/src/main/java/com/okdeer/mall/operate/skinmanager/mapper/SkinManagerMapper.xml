@@ -225,6 +225,7 @@
      	FROM skin_manager 
      	<!-- 未被删除的 -->
      	WHERE disabled = 0
+     	AND status in (0,1)
        	AND (#{startTime,jdbcType=TIMESTAMP} BETWEEN start_time and end_time 
        	OR #{endTime,jdbcType=TIMESTAMP} BETWEEN start_time and end_time 
        	OR (start_time <![CDATA[ >= ]]> #{startTime,jdbcType=TIMESTAMP} AND end_time <![CDATA[ <= ]]> #{endTime,jdbcType=TIMESTAMP}))
