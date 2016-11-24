@@ -18,4 +18,5 @@
 	<dubbo:annotation package="com.okdeer.mall"/>
 	
 	<dubbo:reference id="costPaymentServiceApi" interface="com.okdeer.api.psms.finance.service.ICostPaymentServiceApi" version="1.0.0" check="false"/>
+	<dubbo:reference id="smsService" interface="com.okdeer.mcm.service.ISmsService" version="1.0.0" check="false"/>
 </beans>
