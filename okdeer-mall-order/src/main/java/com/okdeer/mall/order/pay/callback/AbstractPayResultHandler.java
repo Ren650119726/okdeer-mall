@@ -76,15 +76,16 @@ public abstract class AbstractPayResultHandler {
 	 * @author maojj
 	 * @date 2016年11月14日
 	 */
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public ConsumeConcurrentlyStatus handler(TradeOrder tradeOrder,PayResponseDto respDto) throws Exception{
 		// 第一步 幂等性校验，防止重复消费
 		if(isConsumed(tradeOrder)){
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 		}
-		// 第二步 设置订单支付记录
+		// 第二步 生成订单支付记录并保存
 		TradeOrderPay tradeOrderPay = buildTradeOrderPay(tradeOrder.getId(),respDto);
 		tradeOrder.setTradeOrderPay(tradeOrderPay);
+		tradeOrderPayMapper.insertSelective(tradeOrderPay);
 		// 第三步 设置订单状态
 		setOrderStatus(tradeOrder);
 		// 订单前置处理
@@ -93,13 +94,11 @@ public abstract class AbstractPayResultHandler {
 		processOrderItem(tradeOrder,respDto);
 		// 第四步 更新订单状态
 		updateOrderStatus(tradeOrder);
-		// 第五步 保存订单支付记录
-		tradeOrderPayMapper.insertSelective(tradeOrderPay);
 		// 订单后置处理
 		postProcessOrder(tradeOrder);
-		// 第六步 发送通知消息
+		// 第五步 发送通知消息
 		sendNotifyMessage(tradeOrder);
-		// 第七步 发送超时消息
+		// 第六步 发送超时消息
 		sendTimerMessage(tradeOrder);
 		
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
@@ -114,6 +113,7 @@ public abstract class AbstractPayResultHandler {
 	 * @author maojj
 	 * @date 2016年11月14日
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	public void handler(TradeOrder tradeOrder,ResponseResult respResult) throws Exception{
 		// 第一步 幂等性校验，防止重复消费
 		if(isConsumed(tradeOrder)){
@@ -121,8 +121,10 @@ public abstract class AbstractPayResultHandler {
 		}
 		// 判断支付结果
 		if (respResult.getCode().equals(TradeErrorEnum.SUCCESS.getName())) {
-			// 第二步 设置订单支付记录
+			// 第二步 设置订单支付记录并保存
 			TradeOrderPay tradeOrderPay = buildTradeOrderPay(tradeOrder,respResult);
+			tradeOrder.setTradeOrderPay(tradeOrderPay);
+			tradeOrderPayMapper.insertSelective(tradeOrderPay);
 			// 第三步 设置订单状态
 			setOrderStatus(tradeOrder);
 			// 订单前置处理
@@ -131,13 +133,11 @@ public abstract class AbstractPayResultHandler {
 			processOrderItem(tradeOrder);
 			// 第四步 更新订单状态
 			updateOrderStatus(tradeOrder);
-			// 第五步 保存订单支付记录
-			tradeOrderPayMapper.insertSelective(tradeOrderPay);
 			// 订单后置处理
 			postProcessOrder(tradeOrder);
-			// 第六步 发送通知消息
+			// 第五步 发送通知消息
 			sendNotifyMessage(tradeOrder);
-			// 第七步 发送超时消息
+			// 第六步 发送超时消息
 			sendTimerMessage(tradeOrder);
 		}else{
 			// 如果支付失败，只需更改订单状态
@@ -161,21 +161,6 @@ public abstract class AbstractPayResultHandler {
 	}
 	
 	/**
-	 * @Description: 根据交易流水查询订单记录
-	 * @param tradeNum
-	 * @return   
-	 * @author maojj
-	 * @date 2016年11月14日
-	 */
-	protected TradeOrder findByTradeNum(String tradeNum){
-		if (StringUtils.isEmpty(tradeNum)) {
-			return null;
-		}
-		//tradeOrderMapper.findByTradeNum(tradeNum);
-		return null;
-	}
-	
-	/**
 	 * @Description: 幂等性校验，为防止重复消费，根据订单状态和交易记录判断消息是否已经被消费
 	 * @param tradeOrder
 	 * @return   
@@ -196,6 +181,14 @@ public abstract class AbstractPayResultHandler {
 		return false;
 	}
 	
+	/**
+	 * @Description: 根据第三方支付结果生成订单支付记录
+	 * @param orderId
+	 * @param respDto
+	 * @return   
+	 * @author maojj
+	 * @date 2016年11月24日
+	 */
 	protected TradeOrderPay buildTradeOrderPay(String orderId,PayResponseDto respDto){
 		TradeOrderPay tradeOrderPay = new TradeOrderPay();
 		tradeOrderPay.setId(UuidUtils.getUuid());
@@ -209,6 +202,14 @@ public abstract class AbstractPayResultHandler {
 		return tradeOrderPay;
 	}
 	
+	/**
+	 * @Description: 根据余额支付结果生成订单支付记录
+	 * @param tradeOrder
+	 * @param respResult
+	 * @return   
+	 * @author maojj
+	 * @date 2016年11月24日
+	 */
 	protected TradeOrderPay buildTradeOrderPay(TradeOrder tradeOrder,ResponseResult respResult){
 		TradeOrderPay tradeOrderPay = new TradeOrderPay();
 		tradeOrderPay.setId(UuidUtils.getUuid());
@@ -221,6 +222,12 @@ public abstract class AbstractPayResultHandler {
 		return tradeOrderPay;
 	}
 	
+	/**
+	 * @Description: 设置订单支付成功后的状态
+	 * @param tradeOrder   
+	 * @author maojj
+	 * @date 2016年11月24日
+	 */
 	protected void setOrderStatus(TradeOrder tradeOrder){
 		switch (tradeOrder.getType()) {
 			case PHYSICAL_ORDER:
@@ -242,6 +249,13 @@ public abstract class AbstractPayResultHandler {
 		}
 	}
 	
+	/**
+	 * @Description: 发送通知消息
+	 * @param tradeOrder
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2016年11月24日
+	 */
 	protected void sendNotifyMessage(TradeOrder tradeOrder) throws Exception{
 		tradeMessageService.saveSysMsg(tradeOrder, SendMsgType.createOrder);
 		// 发送消息
@@ -289,10 +303,24 @@ public abstract class AbstractPayResultHandler {
 		// 模板方法，留给具体的实现类处理
 	}
 	
+	/**
+	 * @Description: 更新订单状态
+	 * @param tradeOrder
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2016年11月24日
+	 */
 	protected void updateOrderStatus(TradeOrder tradeOrder) throws Exception{
 		tradeOrderService.updateOrderStatus(tradeOrder);
 	}
 	
+	/**
+	 * @Description: 发送超时消息
+	 * @param tradeOrder
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2016年11月24日
+	 */
 	public void sendTimerMessage(TradeOrder tradeOrder) throws Exception{
 		// 模板方法，留给具体的实现类处理
 	}
