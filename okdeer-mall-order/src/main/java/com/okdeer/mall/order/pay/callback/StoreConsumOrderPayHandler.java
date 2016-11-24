@@ -29,4 +29,13 @@ public class StoreConsumOrderPayHandler extends AbstractPayResultHandler{
 		tradeOrderService.dealWithStoreConsumeOrder(tradeOrder);
 	}
 	
+	@Override
+	protected void updateOrderStatus(TradeOrder tradeOrder) throws Exception {
+		// 到店消费的处理全部在processOrderItem中完成
+	}
+	
+	@Override
+	protected void sendNotifyMessage(TradeOrder tradeOrder) throws Exception {
+		// 店消费的处理全部在processOrderItem中完成
+	}
 }
