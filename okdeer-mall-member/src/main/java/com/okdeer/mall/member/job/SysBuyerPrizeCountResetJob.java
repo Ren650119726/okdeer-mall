@@ -1,6 +1,7 @@
 package com.okdeer.mall.member.job;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
@@ -17,6 +18,7 @@ import com.okdeer.mall.member.service.SysBuyerExtService;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		V1.1.5		   2016-11-22			tuzhiding		  重置用户抽奖机会定时JOB
  */
+@Service
 public class SysBuyerPrizeCountResetJob extends AbstractSimpleElasticJob {
 	@Autowired
 	SysBuyerExtService sysBuyerExtService;
