@@ -127,7 +127,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	/**
 	 * 短信  service
 	 */
-	@Reference
+	@Reference(version = "1.0.0")
 	private ISmsService smsService;
 
 	@Override
@@ -1010,7 +1010,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			pushMsgVo.setIsUseTemplate(Constant.ZERO);
 			pushMsgVo.setMsgType(Constant.ONE);
 			pushMsgVo.setMsgTypeCustom(OrderMsgConstant.COUPONS_MESSAGE);
-			pushMsgVo.setMsgDetailLinkUrl("voucher/html/myVoucherList");
+			pushMsgVo.setMsgDetailType(Constant.ZERO);
+			pushMsgVo.setMsgDetailLinkUrl("/voucher/html/myVoucherList");
 			
 			// 不使用模板
 			pushMsgVo.setMsgNotifyContent(smsIsNoticeCouponsRecordStyle);
