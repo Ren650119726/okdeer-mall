@@ -31,10 +31,10 @@ public class TrafficOrderPayHandler extends AbstractPhoneRechargePayHandler {
 		String pid = tradeOrderItem.getStoreSkuId();
 
 		// 风控验证
-		if (isTrigger(tradeOrder, respDto, phoneno)) {
-			refunds(tradeOrder, tradeOrderItem);
-			return;
-		}
+//		if (isTrigger(tradeOrder, respDto, phoneno)) {
+//			refunds(tradeOrder, tradeOrderItem);
+//			return;
+//		}
 
 		// 流量充值
 		int partnerNum = Integer.parseInt(partner);
@@ -71,17 +71,9 @@ public class TrafficOrderPayHandler extends AbstractPhoneRechargePayHandler {
 					+ "&md5Str=" + sign + "&version=" + version + "&retUrl=" + returl;
 			
 			
-//			String xml = HttpClientUtil.get(url, "GB2312");
-//			JSONObject respJson = Xml2JsonUtil.xml2Json(xml, "GB2312");
-//			JSONObject orderinfo = respJson.getJSONObject("orderinfo");
-			/**
-			 * 充值模拟数据
-			 */
-			JSONObject orderinfo = new JSONObject();
-			orderinfo.put("retcode", 1);
-			orderinfo.put("game_state", 0);
-			orderinfo.put("orderid",DateUtils.getDateRandom());
-			
+			String xml = HttpClientUtil.get(url, "GB2312");
+			JSONObject respJson = Xml2JsonUtil.xml2Json(xml, "GB2312");
+			JSONObject orderinfo = respJson.getJSONObject("orderinfo");
 			
 			logger.info("***********手机流量充值订单{},返回参数{}***************", orderid, orderinfo);
 			int retcode = orderinfo.getInt("retcode");
