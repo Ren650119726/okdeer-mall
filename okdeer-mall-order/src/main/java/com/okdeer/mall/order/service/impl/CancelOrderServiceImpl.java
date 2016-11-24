@@ -233,7 +233,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			}
 
 			// 更新订单状态
-			tradeOrderMapper.updateByPrimaryKeySelective(tradeOrder);
+			tradeOrderMapper.updateOrderStatus(tradeOrder);
 
 			// 发送短信
 			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()

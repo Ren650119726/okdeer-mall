@@ -164,6 +164,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 			TradeOrderItemDetail tradeOrderItemDetail = null;
 			int invalidCount = 0;
+			// 已消费的消费码id集合
+			List<String> consumedIds = new ArrayList<String>();
 			for (String detailId : detailIds) {
 				tradeOrderItemDetail = tradeOrderItemDetailService.findById(detailId);
 
@@ -176,6 +178,10 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 				if (tradeOrderItemDetail.getStatus() != ConsumeStatusEnum.noConsume) {
 					// 如果状态不是未消费，invalidCount＋1；
 					invalidCount++;
+					// 如果状态是已消费，则加入id集合
+					if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.consumed) {
+						consumedIds.add(detailId);
+					}
 				}
 				waitRefundDetailList.add(tradeOrderItemDetail);
 				refundAmount = refundAmount.add(tradeOrderItemDetail.getActualAmount());
@@ -183,6 +189,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 				quantity++;
 				tradeOrderItemDetail = null;
 			}
+			// 封装ids
+			consumerApplyDto.setConsumedIds(consumedIds);
 
 			if (invalidCount > 0) {
 				// 判断失效数量
