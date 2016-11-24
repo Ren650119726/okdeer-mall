@@ -27,6 +27,7 @@ import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.mall.risk.entity.RiskTriggerRecord;
 import com.okdeer.mall.risk.entity.RiskUserManager;
+import com.okdeer.mall.risk.enums.IsPreferential;
 import com.okdeer.mall.risk.mq.constants.RiskTriggerTopic;
 import com.okdeer.mall.risk.service.RiskTriggerRecordService;
 import com.okdeer.mall.risk.service.RiskUserManagerService;
@@ -54,20 +55,20 @@ public class RiskTriggerSubscriber {
 	// 是否启用
 	private static final int YES = 1;
 
-	//发送短信间隔时间（分钟）
+	// 发送短信间隔时间（分钟）
 	private static final long INTERCEPT_TIME = 12 * 60;
-	//记录发送短信间隔redis key
+
+	// 记录发送短信间隔redis key
 	private static final String RISK_RISK_TRIGGER_MSG = "MALL:RISK:TRIGGER:MSG";
 
 	@Value(value = "${sms.risk.notice}")
 	private String risk_msg_template;
-	
+
 	@Value(value = "${email.risk.notice.title}")
 	private String risk_email_template_title;
-	
+
 	@Value(value = "${email.risk.notice.content}")
 	private String risk_email_template_content;
-	
 
 	@Value("${mcm.sys.code}")
 	private String mcmSysCode;
@@ -139,13 +140,16 @@ public class RiskTriggerSubscriber {
 			}
 			// 发送邮件
 			if (riskUser.getIsAcceptMail() == YES) {
-				sendEmail(riskUser.getEmail());
+				sendEmail(riskUser.getEmail(), triggerRecord);
 			}
 		}
 	}
 
-	private void sendEmail(final String email) {
-		String content = risk_email_template_content;
+	private void sendEmail(final String email, RiskTriggerRecord triggerRecord) {
+		String content = risk_email_template_content.replace("#1",
+				DateUtils.formatDateTime(triggerRecord.getCreateTime())
+						.replace("#2", triggerRecord.getIsPreferential() == IsPreferential.NO ? "没有" : "")
+						.replace("#3", "").replace("#3", triggerRecord.getTriggerType().getDesc()));
 		EmailVO emailVo = new EmailVO();
 		emailVo.setContent(content);
 		emailVo.setEmail(email);
