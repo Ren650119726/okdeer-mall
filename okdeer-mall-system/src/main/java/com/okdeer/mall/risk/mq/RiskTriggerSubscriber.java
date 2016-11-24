@@ -146,10 +146,10 @@ public class RiskTriggerSubscriber {
 	}
 
 	private void sendEmail(final String email, RiskTriggerRecord triggerRecord) {
-		String content = risk_email_template_content.replace("#1",
-				DateUtils.formatDateTime(triggerRecord.getCreateTime())
-						.replace("#2", triggerRecord.getIsPreferential() == IsPreferential.NO ? "没有" : "")
-						.replace("#3", "").replace("#3", triggerRecord.getTriggerType().getDesc()));
+		String content = risk_email_template_content
+				.replace("#1", DateUtils.formatDateTime(triggerRecord.getCreateTime()))
+				.replace("#2", triggerRecord.getIsPreferential() == IsPreferential.NO ? "没有" : "").replace("#3", "")
+				.replace("#4", triggerRecord.getTriggerType().getDesc());
 		EmailVO emailVo = new EmailVO();
 		emailVo.setContent(content);
 		emailVo.setEmail(email);
