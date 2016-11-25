@@ -244,7 +244,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 					|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
 				// 查询支付信息
 				TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(oldOrder.getId());
-				oldOrder.setTradeOrderPay(tradeOrderPay);
+				tradeOrder.setTradeOrderPay(tradeOrderPay);
 				tradeMessageService.sendSmsByCancel(tradeOrder, oldOrder.getStatus());
 			}
 			// 发消息到云钱包，关闭订单
