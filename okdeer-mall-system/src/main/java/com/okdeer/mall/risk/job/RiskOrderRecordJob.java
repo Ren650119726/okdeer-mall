@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
 import com.okdeer.base.common.utils.DateUtils;
-import com.okdeer.mall.risk.service.RiskTriggerRecordService;
+import com.okdeer.mall.risk.service.RiskOrderRecordService;
 
 /**
  * ClassName: RiskOrderRecordJob 
@@ -42,14 +42,14 @@ public class RiskOrderRecordJob extends AbstractSimpleElasticJob{
 	 * 注入动作记录service
 	 */
 	@Autowired
-	RiskTriggerRecordService riskTriggerRecordService;
+	RiskOrderRecordService riskOrderRecordService;
 	
 	@Override
 	public void process(JobExecutionMultipleShardingContext shardingContext) {
 		try {
 			logger.info("定时清理动作记录开始-----" + DateUtils.getDateTime());
 			Date createTime = getZeroTime();
-			riskTriggerRecordService.deleteByTime(createTime);
+			riskOrderRecordService.deleteByTime(createTime);
 		} catch (Exception e) {
 			logger.warn("清理动作记录异常", e);
 		} finally {

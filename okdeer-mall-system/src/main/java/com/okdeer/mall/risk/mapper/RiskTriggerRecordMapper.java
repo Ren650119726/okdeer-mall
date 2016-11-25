@@ -6,7 +6,6 @@
  */
 package com.okdeer.mall.risk.mapper;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -36,10 +35,4 @@ public interface RiskTriggerRecordMapper extends IBaseMapper {
 	 */
 	void deleteBatch(@Param("ids") List<String> ids) throws Exception;
 
-	/**
-	 * @Description: TODO   
-	 * @author xuzq01
-	 * @date 2016年11月25日
-	 */
-	void deleteByTime(@Param("createTime") Date createTime);
 }
