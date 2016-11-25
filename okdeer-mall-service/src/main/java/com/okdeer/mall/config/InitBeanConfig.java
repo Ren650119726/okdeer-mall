@@ -106,7 +106,7 @@ public class InitBeanConfig {
 	public RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> confirmSeckillOrderChain() {
 		RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> chain = new RequestHandlerChain<ServiceOrderReq, ServiceOrderResp>();
 		// 第一步 ：服务栏目校验
-		chain.addHandlerChain(servColumnCheckService);
+//		chain.addHandlerChain(servColumnCheckService);
 		// 第二步：服务店铺校验
 		chain.addHandlerChain(servStoreCheckService);
 		// 第三步：秒杀活动校验
@@ -122,7 +122,7 @@ public class InitBeanConfig {
 	public RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> submitSeckillOrderChain() {
 		RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> chain = new RequestHandlerChain<ServiceOrderReq, ServiceOrderResp>();
 		// 第一步 ：服务栏目校验
-		chain.addHandlerChain(servColumnCheckService);
+//		chain.addHandlerChain(servColumnCheckService);
 		// 第二步：服务店铺校验
 		chain.addHandlerChain(servStoreCheckService);
 		// 第三步：秒杀活动校验
