@@ -4573,6 +4573,8 @@
 		tr.invoice,
 		tr.reason,
 		tr.create_time,
+		tr.is_breach,
+		tr.breach_money,
 		op.pay_type,
 		op.pay_time,
 		op.pay_amount,
