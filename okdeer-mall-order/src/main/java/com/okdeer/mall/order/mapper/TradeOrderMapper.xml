@@ -2630,6 +2630,9 @@
 			<if test="consumerCodeStatus !=null">
 				consumer_code_status = #{consumerCodeStatus,jdbcType=BIT},
 			</if>
+			<if test="isBreach != null">
+				is_breach = #{isBreach,jdbcType=TINYINT},
+			</if>
 		</set>
 		WHERE id = #{id,jdbcType=VARCHAR}
 		<if test="currentStatus != null">
