@@ -11,11 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
-import com.okdeer.mall.operate.entity.ServerColumn;
-import com.okdeer.mall.operate.entity.ServerColumnArea;
-import com.okdeer.mall.operate.entity.ServerColumnQueryVo;
-import com.okdeer.mall.operate.entity.ServerColumnStore;
-import com.okdeer.mall.operate.service.IServerColumnServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
@@ -24,6 +19,11 @@ import com.okdeer.mall.operate.column.mapper.ServerColumnAreaMapper;
 import com.okdeer.mall.operate.column.mapper.ServerColumnMapper;
 import com.okdeer.mall.operate.column.mapper.ServerColumnStoreMapper;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
+import com.okdeer.mall.operate.entity.ServerColumn;
+import com.okdeer.mall.operate.entity.ServerColumnArea;
+import com.okdeer.mall.operate.entity.ServerColumnQueryVo;
+import com.okdeer.mall.operate.entity.ServerColumnStore;
+import com.okdeer.mall.operate.service.IServerColumnServiceApi;
 
 /**
  * 
@@ -247,8 +247,8 @@ public class ServerColumnServiceImpl implements ServerColumnService, IServerColu
 	 * @date 2016年7月19日
 	 */
 	@Override
-	public List<ServerColumn> findByRangeType(String cityId) throws ServiceException {
-		return serverColumnMapper.findByRangeType(cityId);
+	public List<ServerColumn> findByRangeType(String cityId,String provinceId) throws ServiceException {
+		return serverColumnMapper.findByRangeType(cityId,provinceId);
 	}
 	// End 重构4.1 added by luosm 2016-07-21
 }

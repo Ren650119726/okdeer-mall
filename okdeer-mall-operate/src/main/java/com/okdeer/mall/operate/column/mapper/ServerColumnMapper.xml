@@ -150,7 +150,7 @@
 		SELECT 1 FROM store_info si
 		LEFT JOIN column_server_store css ON css.store_id = si.id
 		LEFT JOIN store_server_area ssa ON ssa.store_id = si.id
-		WHERE (si.area_type = 0 OR ssa.city_id = #{cityId,jdbcType=VARCHAR})
+		WHERE (si.area_type = 0 OR (ssa.area_type = 2 AND ssa.province_id = #{provinceId,jdbcType=VARCHAR}) OR ssa.city_id = #{cityId,jdbcType=VARCHAR})
 		AND tt.content_type = 0
 		AND css.column_server_id = tt.id
 		))
