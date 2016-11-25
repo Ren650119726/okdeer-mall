@@ -538,15 +538,12 @@
 			<if test="onShelfTime != null">
 				on_shelf_time = #{onShelfTime, jdbcType=TIMESTAMP}, 
 			</if>
-			<if test="offShelfTime != null">
-				off_shelf_time = #{offShelfTime, jdbcType=TIMESTAMP}
-			</if>
 			<!-- begin add by zengjz 2016-11-07 增加字段-->
 			<if test="businessId != null">
 				business_id = #{businessId, jdbcType=VARCHAR}, 
 			</if>
 			<if test="sort != null">
-				sort = #{sort, jdbcType=TINYINT}
+				sort = #{sort, jdbcType=TINYINT},
 			</if>
 			<!-- end add by zengjz 2016-11-07 增加字段-->
 		</set>
