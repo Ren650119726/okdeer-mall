@@ -254,9 +254,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			payReqest.setTradeType(PayTradeTypeEnum.APP_ALIPAY);
 		} else if (2 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.APP_WXPAY);
-		} else if (3 == paymentType) {
-			payReqest.setTradeType(PayTradeTypeEnum.WAP_JDPAY);
-		} else if (6 == paymentType) {
+		}else if (6 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.WX_WXPAY);
 		}
 		logger.info("payReqest==" + payReqest.toString());
