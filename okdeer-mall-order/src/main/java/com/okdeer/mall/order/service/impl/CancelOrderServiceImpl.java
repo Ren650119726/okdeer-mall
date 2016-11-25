@@ -229,7 +229,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			boolean isBreach = isBreach(tradeOrder.getCancelType(), oldOrder);
 			if (isBreach) {
 				// 如果需要收取违约金
-				tradeOrder.setIsBreach(WhetherEnum.whether);
+				tradeOrder.setIsBreachMoney(WhetherEnum.whether);
 			}
 
 			// 更新订单状态
