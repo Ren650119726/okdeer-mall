@@ -6,6 +6,7 @@
  */    
 package com.okdeer.mall.risk.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +51,16 @@ public class RiskTriggerRecordServiceImpl extends BaseServiceImpl implements Ris
 	@Override
 	public void deleteBatch(List<String> ids) throws Exception{
 		riskTriggerRecordMapper.deleteBatch(ids);
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskTriggerRecordService#deleteByTime()
+	 */
+	@Override
+	public void deleteByTime(Date createTime) throws Exception {
+		riskTriggerRecordMapper.deleteByTime(createTime);
+		
 	}
 
 }

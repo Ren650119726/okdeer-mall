@@ -6,7 +6,6 @@
  */
 package com.okdeer.mall.risk.service;
 
-import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.risk.enums.IsPreferential;

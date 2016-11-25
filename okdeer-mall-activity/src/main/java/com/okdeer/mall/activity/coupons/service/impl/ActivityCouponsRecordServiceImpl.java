@@ -1035,5 +1035,27 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			log.error("代金劵到期提醒发送消息异常！"+phone,e);
 		}
 	}
+
+	@Override
+	public int findCouponsRemain(String userId,String couponsId) {
+		ActivityCoupons activityCoupons = activityCouponsMapper.selectById(couponsId);
+		ActivityCouponsRecord activityCouponsRecord = new ActivityCouponsRecord();
+		activityCouponsRecord.setCouponsId(couponsId);
+		activityCouponsRecord.setCollectType(ActivityCouponsType.coupons);
+		activityCouponsRecord.setCollectUserId(userId);
+		int	currentRecordCount = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecord);
+		if (activityCoupons.getRemainNum() <= 0) {
+			// 剩余数量小于0 显示已领完
+			return 0;
+		} else {
+			if (currentRecordCount >= activityCoupons.getEveryLimit().intValue()) {
+				// 已领取
+				return 1;
+			} else {
+				// 立即领取
+				return 2;
+			}
+		}
+	}
 	
 }
