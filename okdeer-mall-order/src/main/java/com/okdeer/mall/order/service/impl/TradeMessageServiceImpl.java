@@ -5,6 +5,7 @@
  * @Date: 2016年4月27日 
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的 
  */
+
 package com.okdeer.mall.order.service.impl;
 
 import java.math.BigDecimal;
@@ -234,6 +235,12 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 */
 	@Value("${sms.service.store.cancel.style3}")
 	private String smsServiceStoreCancelStyle3;
+
+	@Value("${sms.service.store.cancel.style4}")
+	private String smsServiceStoreCancelStyle4;
+
+	@Value("${sms.service.store.cancel.style5}")
+	private String smsServiceStoreCancelStyle5;
 	// End 重构4.1 add by wusw
 
 	/**
@@ -717,11 +724,12 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			Map<String, String> params = Maps.newHashMap();
 			params.put("#1", order.getOrderNo());
 			params.put("#2", order.getReason());
-			//实付金额
+			// 实付金额
 			BigDecimal actualAmount = order.getActualAmount();
-			//扣除违约金
+			// 扣除违约金
 			if (WhetherEnum.whether.equals(order.getIsBreach())) {
 				actualAmount = actualAmount.subtract(order.getBreachMoney());
+				params.put("#4", order.getBreachMoney().toString());
 			}
 			params.put("#3", actualAmount.toString());
 
@@ -734,10 +742,26 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 				if (PayWayEnum.PAY_ONLINE == order.getPayWay()) {
 					TradeOrderPay payment = order.getTradeOrderPay();
 					if (PayTypeEnum.ALIPAY == payment.getPayType() || PayTypeEnum.WXPAY == payment.getPayType()) {
-						this.sendSms(mobile, smsServiceStoreCancelStyle1, params);
+						
+						//add by zengjz 判断是有违约金 2016-11-25
+						if (WhetherEnum.whether == order.getIsBreach()) {
+							this.sendSms(mobile, smsServiceStoreCancelStyle4, params);
+						} else {
+							this.sendSms(mobile, smsServiceStoreCancelStyle1, params);
+						}
+						//end by zengjz 判断是有违约金 2016-11-25
+						
 					} else if (PayTypeEnum.WALLET == payment.getPayType()
 							|| PayTypeEnum.JDPAY == payment.getPayType()) {
-						this.sendSms(mobile, smsServiceStoreCancelStyle2, params);
+						
+						//add by zengjz 判断是有违约金 2016-11-25
+						if (WhetherEnum.whether == order.getIsBreach()) {
+							this.sendSms(mobile, smsServiceStoreCancelStyle5, params);
+						} else {
+							this.sendSms(mobile, smsServiceStoreCancelStyle2, params);
+						}
+						//end by zengjz 判断是有违约金 2016-11-25
+
 					} // Begin 重构4.1 add by wusw 20160720
 				} else if (PayWayEnum.OFFLINE_CONFIRM_AND_PAY == order.getPayWay()) {
 					this.sendSms(mobile, smsServiceStoreCancelStyle3, params);
