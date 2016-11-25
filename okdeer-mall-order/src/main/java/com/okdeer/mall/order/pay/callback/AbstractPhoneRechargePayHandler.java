@@ -142,8 +142,8 @@ public abstract class AbstractPhoneRechargePayHandler extends AbstractPayResultH
 	/**
 	 * 短信接口
 	 */
-	@Reference(version = "1.0.0", check = false)
-	ISmsService smsService;
+	@Autowired
+	public ISmsService smsService;
 
 	@Value("${mcm.sys.code}")
 	protected String mcmSysCode;

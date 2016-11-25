@@ -289,7 +289,7 @@ public abstract class AbstractPayResultHandler {
 	 * @date 2016年11月22日
 	 */
 	protected void processOrderItem(TradeOrder tradeOrder, PayResponseDto respDto) throws Exception {
-		processOrderItem(tradeOrder,null);
+		processOrderItem(tradeOrder);
 	}
 	
 	/**

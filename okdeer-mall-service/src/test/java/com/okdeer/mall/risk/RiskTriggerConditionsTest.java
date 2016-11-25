@@ -19,6 +19,7 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.risk.entity.RiskOrderRecord;
 import com.okdeer.mall.risk.enums.IsPreferential;
+import com.okdeer.mall.risk.enums.PayAccountType;
 import com.okdeer.mall.risk.service.RiskTriggerConditions;
 
 
@@ -39,20 +40,20 @@ public class RiskTriggerConditionsTest extends BaseServiceTest {
 	@Autowired
 	private RiskTriggerConditions riskTriggerConditions;
 	
-	@Test(timeout=1000)
+	@Test//(timeout=1000)
 	public void testIsTrigger() throws Exception{
 		RiskOrderRecord riskOrder = new RiskOrderRecord();
 		riskOrder.setId(UuidUtils.getUuid());
-		riskOrder.setLoginName("186");
-		riskOrder.setDeviceId("123");
-		riskOrder.setPayAccount("123");
-		riskOrder.setFacePrice(new BigDecimal("60"));
-		riskOrder.setTel("18682310941");
+		riskOrder.setLoginName("13510797332");
+		riskOrder.setDeviceId("742344a14405");
+		riskOrder.setPayAccount("2088412478571351");
+		riskOrder.setPayAccountType(PayAccountType.ALIPAY);
+		riskOrder.setFacePrice(new BigDecimal("1.50"));
+		riskOrder.setTel("13510797332");
 		riskOrder.setCreateTime(new Date());
-		riskOrder.setIsPreferential(IsPreferential.YES);
+		riskOrder.setIsPreferential(IsPreferential.NO);
 		boolean istrigger = riskTriggerConditions.isTrigger(riskOrder);
 		assertEquals(false, istrigger);
 	}
-	
 	
 }

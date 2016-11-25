@@ -231,6 +231,7 @@ import net.sf.json.JsonConfig;
  * ----------------+----------------+-------------------+-------------------------------------------
  *      v.1.2.0           2016-11-16        zengjz            删减一些无用的代码
  *      V.1.2.0           2016-11-18        maojj             POS订单导出新增货号信息
+ *      V1.2.0            2016-11-24        wusw              修改订单数量统计的问题
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -4845,11 +4846,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			throws ServiceException {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<TradeOrder> result = tradeOrderMapper.selectServiceStoreOrderList(params);
-		/*
-		 * if (result == null) { result = new ArrayList<TradeOrder>(); } else { for (TradeOrder order : result) {
-		 * List<TradeOrderItem> orderItem = tradeOrderItemMapper.selectOrderItemListById(order.getId());
-		 * order.setTradeOrderItem(orderItem); } }
-		 */
+		// Begin V1.2.0(订单数量统计有问题) add by wusw 20161124
+		if (result == null) {
+			result = new ArrayList<TradeOrder>();
+		} else {
+			for (TradeOrder order : result) {
+				List<TradeOrderItem> orderItem = tradeOrderItemMapper.selectOrderItemListById(order.getId());
+				order.setTradeOrderItem(orderItem);
+			}
+		}
+		// End V1.2.0(订单数量统计有问题) add by wusw 20161124
 		return new PageUtils<TradeOrder>(result);
 	}
 
