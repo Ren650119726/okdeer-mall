@@ -600,7 +600,7 @@
 		<!-- 排序规则：当定位的地址不属于签约小区时，则默认获取当前城市下的区域广告，
 		区域广告只能有运营商发布，按照广告列表中的生效时间获取最多5张广告，如果有排序值，
 		默认优先按照排序值进行广告展示 ，tips:没有排序值，按上架时间倒叙-->
-<!-- 		ORDER BY ca.on_shelf_time desc -->
+		ORDER BY ca.sort DESC, ca.create_time DESC
 		</if>
 		<if test="communityId != null and communityId != ''">
 		 AND (
@@ -624,7 +624,7 @@
 			1、优先展示代理商广告，
 			2、然后展示运营商发布到小区的广告，
 			3、最后展示运营商发布的范围广告 -->
-<!-- 		ORDER BY ca.belong_type desc,ca.area_type desc,ca.start_time desc,ca.create_time desc -->
+		ORDER BY ca.sort DESC, ca.create_time DESC
 	    </if>
 	    <!-- 运营商只查询前5条 -->
 	    limit 5
@@ -678,7 +678,7 @@
 		<!-- 排序规则：当定位的地址不属于签约小区时，则默认获取当前城市下的区域广告，
 		区域广告只能有运营商发布，按照广告列表中的生效时间获取最多5张广告，如果有排序值，
 		默认优先按照排序值进行广告展示 ，tips:没有排序值，按上架时间倒叙-->
-<!-- 		ORDER BY ca.on_shelf_time desc -->
+		ORDER BY ca.sort DESC, ca.create_time DESC
 		</if>
 		<if test="communityId != null and communityId != ''">
 		 AND (
@@ -702,7 +702,7 @@
 				1、优先展示代理商广告，
 				2、然后展示运营商发布到小区的广告，
 				3、最后展示运营商发布的范围广告 -->
-<!-- 			ORDER BY ca.belong_type desc,ca.area_type desc,ca.start_time desc,ca.create_time desc -->
+		ORDER BY ca.sort DESC, ca.create_time DESC
 	    </if>
 	     <!-- 代理商只查询前两条 -->
 		 limit 2
