@@ -130,6 +130,6 @@ public interface ServerColumnMapper {
 	 * @author luosm
 	 * @date 2016年7月19日
 	 */
-	List<ServerColumn> findByRangeType(@Param("cityId")String cityId);
+	List<ServerColumn> findByRangeType(@Param("cityId")String cityId,@Param("provinceId")String provinceId);
 	//end add by luosm 2016-07-19
 }
