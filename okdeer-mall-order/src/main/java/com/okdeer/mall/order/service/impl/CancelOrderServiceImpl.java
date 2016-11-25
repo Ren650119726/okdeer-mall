@@ -229,12 +229,12 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			boolean isBreach = isBreach(tradeOrder.getCancelType(), oldOrder);
 			if (isBreach) {
 				// 如果需要收取违约金
-				tradeOrder.setIsBreachMoney(WhetherEnum.whether);
+				tradeOrder.setIsBreach(WhetherEnum.whether);
 			}
 
 			// 更新订单状态
 			tradeOrderMapper.updateOrderStatus(tradeOrder);
-
+			tradeOrderMapper.updateByPrimaryKeySelective(tradeOrder);
 			// 回收库存
 			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
 
@@ -245,7 +245,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				// 查询支付信息
 				TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(oldOrder.getId());
 				oldOrder.setTradeOrderPay(tradeOrderPay);
-				tradeMessageService.sendSmsByCancel(oldOrder, oldOrder.getStatus());
+				tradeMessageService.sendSmsByCancel(tradeOrder, oldOrder.getStatus());
 			}
 			// 发消息到云钱包，关闭订单
 			if (OrderStatusEnum.UNPAID == oldOrder.getStatus()) {
