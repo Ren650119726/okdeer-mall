@@ -2344,19 +2344,7 @@
 		resultMap="TradeOrderStatusVoMap">
 		SELECT CASE
 		WHEN `status` IN (0,11) THEN 0
-		WHEN `status` IN (1) THEN 1
-		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (6) THEN 5
-		WHEN `status` IN (5) THEN
-			CASE type 
-			WHEN 5 THEN
-				CASE  
-				WHEN consumer_code_status IN (1) THEN 1
-				WHEN consumer_code_status IN (2,3,4,5) THEN 5
-				WHEN consumer_code_status IN (0) THEN 0
-				END 
-			ELSE 5 end
-		WHEN `status` IN (2,4,12,13) THEN 2
+		WHEN `status` IN (2,4,12,13,6) THEN 2
 		ELSE `STATUS`
 		END AS `status`,count(1) as `count` FROM trade_order
 		WHERE store_id = #{storeId,jdbcType=VARCHAR}
@@ -2376,19 +2364,7 @@
 		GROUP BY
 		CASE
 		WHEN `status` IN (0,11) THEN 0
-		WHEN `status` IN (1) THEN 1
-		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (6) THEN 5
-		WHEN `status` IN (5) THEN
-			CASE type 
-			WHEN 5 THEN
-				CASE  
-				WHEN consumer_code_status IN (1) THEN 1
-				WHEN consumer_code_status IN (2,3,4,5) THEN 5
-				WHEN consumer_code_status IN (0) THEN 0
-				END 
-			ELSE 5 end
-		WHEN `status` IN (2,4,12,13) THEN 2
+		WHEN `status` IN (2,4,12,13,6) THEN 2
 		ELSE `STATUS`
 		END
 	</select>
@@ -2502,19 +2478,7 @@
 		<if test="status != null">
 			AND CASE
 				WHEN tr.status IN (0,11) THEN 0
-				WHEN tr.status IN (1) THEN 1
-				WHEN tr.status IN (3) THEN 3
-				WHEN tr.status IN (6) THEN 5
-				WHEN tr.status IN (5) THEN
-					CASE tr.type 
-					WHEN 5 THEN
-						CASE  
-						WHEN tr.consumer_code_status IN (1) THEN 1
-						WHEN tr.consumer_code_status IN (2,3,4,5) THEN 5
-						WHEN tr.consumer_code_status IN (0) THEN 0
-						END 
-					ELSE 5 end
-				WHEN tr.status IN (2,4,12,13) THEN 2
+				WHEN tr.status IN (2,4,12,13,6) THEN 2
 				ELSE tr.status
 				END 
 			IN
