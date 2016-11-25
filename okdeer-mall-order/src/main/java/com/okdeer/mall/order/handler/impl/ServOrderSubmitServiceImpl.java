@@ -339,9 +339,9 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		List<TradeOrderServiceGoodsItem> list = resp.getData().getList();
 		tradeOrder.setTotalAmount(calculateAmount(list));
 		// 设置支付方式
-		// 如果是线下确认并当面支付，这时候订单状态是待派单
+		// 如果是线下确认并当面支付，这时候订单状态是待接单
 		if (reqData.getPayWay().equals(PayWayEnum.OFFLINE_CONFIRM_AND_PAY)) {
-			tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
+			tradeOrder.setStatus(OrderStatusEnum.WAIT_RECEIVE_ORDER);
 			tradeOrder.setPayWay(PayWayEnum.OFFLINE_CONFIRM_AND_PAY);
 		} else {
 			// 否则是等待买家付款
