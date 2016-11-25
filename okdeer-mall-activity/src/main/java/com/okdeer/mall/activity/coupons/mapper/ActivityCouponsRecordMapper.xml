@@ -790,7 +790,7 @@
 			  	s.`id`,s.collect_user_id,s.`valid_time` ,s.`collect_time`,
 				CASE WHEN  datediff(s.`valid_time`,s.`collect_time`) > 3 AND datediff(s.`valid_time`,now()) = 3 THEN
 					1
-				WHEN (datediff(s.`valid_time`,s.`collect_time`) between 1 AND 3) AND datediff(s.`valid_time`,now()) = 1 THEN 
+				WHEN (datediff(s.`valid_time`,s.`collect_time`) between 2 AND 3) AND datediff(s.`valid_time`,now()) = 1 THEN 
 					1
 				ELSE 
 					0

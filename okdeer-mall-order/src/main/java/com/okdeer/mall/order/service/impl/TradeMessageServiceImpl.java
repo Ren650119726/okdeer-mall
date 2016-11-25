@@ -721,7 +721,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			BigDecimal actualAmount = order.getActualAmount();
 			//扣除违约金
 			if (WhetherEnum.whether.equals(order.getIsBreach())) {
-				actualAmount.subtract(order.getBreachMoney());
+				actualAmount = actualAmount.subtract(order.getBreachMoney());
 			}
 			params.put("#3", actualAmount.toString());
 

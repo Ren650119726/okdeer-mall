@@ -134,6 +134,6 @@ public interface ServerColumnService {
 	 * @author luosm
 	 * @date 2016年7月19日
 	 */
-	List<ServerColumn> findByRangeType(String cityId) throws ServiceException;
+	List<ServerColumn> findByRangeType(String cityId,String provinceId) throws ServiceException;
 	// end add by luosm 2016-07-19
 }

@@ -95,4 +95,23 @@ public interface RiskBlackService extends IBaseService {
 	 * @date 2016年11月21日
 	 */
 	public Set<String> findAllBlackLoginAccount();
+
+	/**
+	 * @Description: TODO
+	 * @param riskBlack
+	 * @return
+	 * @throws Exception   
+	 * @author xuzq01
+	 * @date 2016年11月25日
+	 */
+	int add(RiskBlack riskBlack) throws Exception;
+
+	/**
+	 * @Description: TODO
+	 * @param riskBlack
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月25日
+	 */
+	int update(RiskBlack riskBlack);
 }
