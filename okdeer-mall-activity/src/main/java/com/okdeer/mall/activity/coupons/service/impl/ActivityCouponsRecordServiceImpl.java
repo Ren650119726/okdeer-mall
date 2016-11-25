@@ -470,8 +470,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			map = this.insertRecordByJudgeNum(activityCoupons, currentOperatUserId, "恭喜你，优惠券兑换成功！",
 					activityCouponsType);
 		} else {
-			map.put("data", null);
-			map.put("message", "您输入的抵扣券优惠码错误！");
+			map.put("msg", "您输入的抵扣券优惠码错误！");
 			map.put("code", 103);
 		}
 		return JSONObject.fromObject(map);
