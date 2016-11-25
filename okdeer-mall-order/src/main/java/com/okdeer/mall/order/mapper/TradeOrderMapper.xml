@@ -2318,7 +2318,7 @@
 		SELECT
 		trade.id,trade.order_no,trade.trade_num,trade.actual_amount,trade.preferential_price,trade.order_resource,
 		trade.user_id,trade.store_id,trade.`status`,trade.reason,trade.activity_id,trade.activity_type,
-		pay.pay_type,pay.`returns`,pay.pay_amount
+		pay.pay_type,pay.`returns`,pay.pay_amount,trade.is_breach,trade.breach_money
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON trade.id = pay.order_id
 		WHERE
