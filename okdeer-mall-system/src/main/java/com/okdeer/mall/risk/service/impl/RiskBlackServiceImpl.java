@@ -138,7 +138,14 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 		return new PageUtils<RiskBlack>(result);
 
 	}
-
+	
+	@Override
+	public int add(RiskBlack riskBlack) throws Exception {
+		int result=  riskBlackMapper.add(riskBlack);
+		resetSetting();
+		return result;
+	}
+	
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.risk.service.RiskBlackService#addBath(java.util.List)
@@ -166,7 +173,29 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	public List<RiskBlack> findBlackListByParams(Map<String, Object> map) {
 		return riskBlackMapper.findBlackListByParams(map);
 	}
-
+	
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskWhiteService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public int update(RiskBlack riskBlack) {
+		int result = riskBlackMapper.update(riskBlack);
+		resetSetting();
+		return result;
+	}
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskWhiteService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public int delete(String id) {
+		int result = riskBlackMapper.delete(id);
+		resetSetting();
+		return result;
+	}
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.risk.service.RiskBlackService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)

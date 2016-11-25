@@ -4174,16 +4174,20 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		// End V1.1.0 add by wusw 20160929
 		// Begin V1.2.0 add by chenzc 20161122
-		// 获取订单状态列表
-		Response<RefundsTraceResp> orderTrace = tradeOrderTraceService.findOrderTrace(orders.getId());
-		List<RefundsTraceVo> traceList = orderTrace.getData().getTraceList();
 		// 获取最后一条订单状态的描述
 		String orderStatusRemark = "";
-		for (RefundsTraceVo vo : traceList) {
-			if (vo.getIsDone() == 1) {
-				orderStatusRemark = vo.getContent();
-			} else {
-				break;
+		// 获取订单状态列表
+		Response<RefundsTraceResp> orderTrace = tradeOrderTraceService.findOrderTrace(orders.getId());
+		if (null != orderTrace) {
+			List<RefundsTraceVo> traceList = orderTrace.getData().getTraceList();
+			if (null != traceList) {
+				for (RefundsTraceVo vo : traceList) {
+					if (vo.getIsDone() == 1) {
+						orderStatusRemark = vo.getContent();
+					} else {
+						break;
+					}
+				}
 			}
 		}
 		json.put("orderStatusRemark", orderStatusRemark);
