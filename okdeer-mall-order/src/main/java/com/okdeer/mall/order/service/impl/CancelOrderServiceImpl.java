@@ -235,19 +235,18 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			// 更新订单状态
 			tradeOrderMapper.updateOrderStatus(tradeOrder);
 
+			// 回收库存
+			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
+
 			// 发送短信
 			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
-					|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus() 
+					|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()
 					|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
 				// 查询支付信息
 				TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(oldOrder.getId());
 				oldOrder.setTradeOrderPay(tradeOrderPay);
 				tradeMessageService.sendSmsByCancel(oldOrder, oldOrder.getStatus());
 			}
-
-			// 回收库存
-			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
-
 			// 发消息到云钱包，关闭订单
 			if (OrderStatusEnum.UNPAID == oldOrder.getStatus()) {
 				// 只有待支付订单状态需要关闭
@@ -316,7 +315,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		}
 		return isBreach(OrderCancelType.CANCEL_BY_BUYER, tradeOrder);
 	}
-	
+
 	/**
 	 * @Description: 订单取消发送消息到云钱包
 	 * @param tradeNum 商户订单号
