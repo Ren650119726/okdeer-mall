@@ -69,5 +69,8 @@
 
 	<!-- 执行批量重置用户抽奖次数-->
 	<job:simple id="sysBuyerPrizeCountResetJob" class="com.okdeer.mall.member.job.SysBuyerPrizeCountResetJob" registry-center-ref="regCenter" cron="0 0 0 * * ?" sharding-total-count="1"></job:simple>
-
+	
+	<!-- 每隔一天删除风控动作记录定时任务 -->
+	<job:simple id="RiskOrderRecordJob" class="com.okdeer.mall.risk.job.RiskOrderRecordJob" registry-center-ref="regCenter" cron="0 0 0 * * ?"   sharding-total-count="1"/>
+	
 </beans>
