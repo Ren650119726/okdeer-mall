@@ -1737,6 +1737,9 @@
 			<if test="acceptTime != null">
 				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
 			</if>
+			<if test="cancelType != null">
+				cancel_type = #{cancelType,jdbcType=TINYINT},
+			</if>
 			<!-- End V1.2 added by maojj 2016-11-10 -->
 		</set>
 		where trade_num = #{tradeNum,jdbcType=VARCHAR}
@@ -1903,6 +1906,9 @@
 			</if>
 			<if test="acceptTime != null">
 				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="cancelType != null">
+				cancel_type = #{cancelType,jdbcType=TINYINT},
 			</if>
 			<!-- End V1.2 added by maojj 2016-11-10 -->
 		</set>
@@ -2632,6 +2638,9 @@
 			</if>
 			<if test="isBreach != null">
 				is_breach = #{isBreach,jdbcType=TINYINT},
+			</if>
+			<if test="cancelType != null">
+				cancel_type = #{cancelType,jdbcType=TINYINT},
 			</if>
 		</set>
 		WHERE id = #{id,jdbcType=VARCHAR}
