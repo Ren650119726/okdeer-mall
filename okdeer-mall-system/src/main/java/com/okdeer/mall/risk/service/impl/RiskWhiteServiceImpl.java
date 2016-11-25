@@ -117,6 +117,19 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 
 	/**
 	 * (non-Javadoc)
+	 * @return 
+	 * @see com.okdeer.mall.risk.service.RiskWhiteService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public int delete(String id) throws Exception {
+		int result = riskWhiteMapper.delete(id);
+		resetSetting();
+		return result;
+	}
+	
+	/**
+	 * (non-Javadoc)
 	 * @see com.okdeer.mall.risk.service.RiskWhiteService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
 	 */
 	@Override
@@ -125,7 +138,7 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 		riskWhiteMapper.deleteBatchByIds(ids,updateUserId,updateTime);
 		resetSetting();
 	}
-
+	
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.risk.service.RiskWhiteService#addBatch(java.util.List)
