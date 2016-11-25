@@ -7,6 +7,8 @@
 package com.okdeer.mall.risk.service.impl;
 
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -60,6 +62,15 @@ public class RiskOrderRecordServiceImpl extends BaseServiceImpl implements RiskO
 				isPreferential.getCode());
 		record.setTels(riskOrderRecordMapper.findTelsByParam(payAccount, "payAccount", isPreferential.getCode()));
 		return record;
+	}
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskTriggerRecordService#deleteByTime()
+	 */
+	@Override
+	public void deleteByTime(Date createTime) throws Exception {
+		riskOrderRecordMapper.deleteByTime(createTime);
+		
 	}
 
 }

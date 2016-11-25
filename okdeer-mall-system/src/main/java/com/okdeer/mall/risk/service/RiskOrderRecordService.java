@@ -7,6 +7,8 @@
 package com.okdeer.mall.risk.service;
 
 
+import java.util.Date;
+
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.risk.enums.IsPreferential;
 import com.okdeer.mall.risk.po.RiskOrderRecordPo;
@@ -49,4 +51,13 @@ public interface RiskOrderRecordService extends IBaseService {
 	 */
 	RiskOrderRecordPo findByPayAccount(String payAccount, IsPreferential isPreferential);
 
+	/**
+	 * 
+	 * @Description: 根据时间直接删除动作记录
+	 * @throws Exception   
+	 * @author xuzq01
+	 * @param date 
+	 * @date 2016年11月25日
+	 */
+	void deleteByTime(Date createTime) throws Exception;
 }

@@ -47,13 +47,4 @@ public interface RiskTriggerRecordService extends IBaseService {
 	 */
 	void deleteBatch(List<String> ids) throws Exception; 
 	
-	/**
-	 * 
-	 * @Description: 根据时间直接删除动作记录
-	 * @throws Exception   
-	 * @author xuzq01
-	 * @param date 
-	 * @date 2016年11月25日
-	 */
-	void deleteByTime(Date createTime) throws Exception;
 }

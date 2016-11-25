@@ -53,14 +53,4 @@ public class RiskTriggerRecordServiceImpl extends BaseServiceImpl implements Ris
 		riskTriggerRecordMapper.deleteBatch(ids);
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.risk.service.RiskTriggerRecordService#deleteByTime()
-	 */
-	@Override
-	public void deleteByTime(Date createTime) throws Exception {
-		riskTriggerRecordMapper.deleteByTime(createTime);
-		
-	}
-
 }

@@ -122,6 +122,12 @@
         delete from risk_order_record
         where id = #{id,jdbcType=VARCHAR}
     </delete>
+     
+    <!-- 定时删除昨天的动作记录 -->
+    <delete id="deleteByTime" parameterType="DATE" >
+        delete from risk_order_record
+        where  create_time &lt;= #{createTime}
+    </delete>
     
     <resultMap id="Record_ResultMap" type="com.okdeer.mall.risk.po.RiskOrderRecordPo" >
         <result column="count" property="count" jdbcType="VARCHAR" />
