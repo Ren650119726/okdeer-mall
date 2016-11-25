@@ -209,7 +209,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 			// 订单详情
 			TradeOrder order = tradeOrderService.selectById(orderId);
-
+			TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(orderId);
+			order.setTradeOrderPay(tradeOrderPay);
 			// 订单项详情
 			TradeOrderItem tradeOrderItem = tradeOrderItemService.selectByPrimaryKey(orderItemId);
 
@@ -217,7 +218,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 			// //如果订单的购买者不是当前申请退款的用户，则不让退款
 			// return resultDataMap(DescriptConstants.ORDER_NOT_EXSITS, PublicResultCodeEnum.FAIL);
 			// }
-
+			
 			TradeOrderRefunds orderRefunds = buildRefund(order, tradeOrderItem, refundAmount, refundPrefeAmount,
 					quantity);
 			// 退款单来源
@@ -261,7 +262,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 			
 			// 订单详情
 			TradeOrder order = tradeOrderService.selectById(orderId);
-
+			TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(orderId);
+			order.setTradeOrderPay(tradeOrderPay);
 			// 订单项详情
 			TradeOrderItem tradeOrderItem = tradeOrderItemService.selectByPrimaryKey(orderItemId);
 
