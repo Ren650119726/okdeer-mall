@@ -22,7 +22,7 @@ import net.sf.json.JSONObject;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ * v1.2.0            2016-11-28          zengjz             根据退款单项id查询订单明细列表
  */
 public interface StoreConsumeOrderService {
 
@@ -105,4 +105,17 @@ public interface StoreConsumeOrderService {
 	 * @date 2016年9月24日
 	 */
 	List<TradeOrderItemDetail> getStoreConsumeOrderDetailList(String orderId,int status);
+	
+
+	//begin V1.2.0 add by zengjz 20161128
+	/**
+	 * @Description: 根据退款单项id查询订单明细列表
+	 * @param refundItemId 退款单项id
+	 * @return
+	 * @author zengjizu
+	 * @date 2016年11月28日
+	 */
+	List<TradeOrderItemDetail> findRefundTradeOrderItemDetailList(String refundItemId);
+	
+	//end V1.2.0 add by zengjz 20161128
 }

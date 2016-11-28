@@ -459,4 +459,13 @@
 	SET status = 2,update_time = now()
 	WHERE id = #{id,jdbcType=VARCHAR} AND status = 0
   </update>
+  
+  <!-- begin 根据退款单项id查询订单明细列表 V1.1.0 add by zengjz 20161128-->
+  <select id="findRefundTradeOrderItemDetailList"  resultMap="BaseResultMap">
+     select 
+         <include refid="Base_Column_List" />
+         from trade_order_item_detail where id in(select order_item_detail_id from trade_order_refunds_item_detail 
+         where refund_item_id = #{refundItemId})
+  </select>
+   <!-- end 根据退款单项id查询订单明细列表 V1.1.0 add by zengjz 20161128-->
 </mapper>
