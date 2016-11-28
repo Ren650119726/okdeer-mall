@@ -223,6 +223,6 @@
 		where 
 		al.`status` = 1
 		and sku.id = #{skuId}
-		order by al.create_time
+		order by al.create_time DESC
     </select>
 </mapper>
