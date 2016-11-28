@@ -6114,18 +6114,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				orderStatusCountMap.put(map.get("orderId") + "-" + map.get("status"),
 						new Integer(map.get("num").toString()));
 			}
+			
+			// begin modify by zengjz 2016-11-28 修改判断逻辑
 			// 根据统计数量，判断订单消费码状态值，如果存在已过期的，状态为已过期；如果存在未消费的，状态为未消费；如果存在已消费的，状态为待评价，否则，状态为已退款
 			List<String> expiredOrderList = new ArrayList<String>();
 			List<String> consumedList = new ArrayList<String>();
-			// Begin V1.1.0 update by wusw 20161012
 			List<String> refundsList = new ArrayList<String>();
-			// End V1.1.0 update by wusw 20161012
+			List<String> noconsumedList = new ArrayList<String>();
 			for (String orderId : orderIdList) {
 				int noConsumeCount = 0;
 				int expiredCount = 0;
-				// Begin V1.1.0 update by wusw 20161012
 				int refundsCount = 0;
-				// End V1.1.0 update by wusw 20161012
+				int consumedCount = 0;
+				
 				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal()) != null) {
 					noConsumeCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal())
 							.intValue();
@@ -6134,11 +6135,36 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					expiredCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.expired.ordinal())
 							.intValue();
 				}
-				// Begin V1.1.0 update by wusw 20161012
+				
 				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal()) != null) {
 					refundsCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal())
 							.intValue();
 				}
+				
+				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.consumed.ordinal()) != null) {
+					consumedCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal())
+							.intValue();
+				}
+				
+				
+				if (expiredCount > 0) {
+					//如果已经有过期的就将消费码状态改为已过期
+					expiredOrderList.add(orderId);
+				} else {
+					if (noConsumeCount > 0) {
+						//有待消费的就改为待消费
+						noconsumedList.add(orderId);
+					} else {
+						if (consumedCount > 0) {
+							// 变成已经消费
+							consumedList.add(orderId);
+						} else {
+							//全部退款
+							refundsList.add(orderId);
+						}
+					}
+				}
+				
 
 				if (expiredCount > 0) {
 					expiredOrderList.add(orderId);
@@ -6151,20 +6177,25 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						}
 					}
 				}
-				// End V1.1.0 update by wusw 20161012
 			}
 			// 更新相应的订单消费码状态
 			if (CollectionUtils.isNotEmpty(expiredOrderList)) {
 				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.EXPIRED, nowTime, expiredOrderList);
 			}
-			// Begin V1.1.0 update by wusw 20161012
+			
 			if (CollectionUtils.isNotEmpty(refundsList)) {
 				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.REFUNDED, nowTime, refundsList);
 			}
-			// End V1.1.0 update by wusw 20161012
+			
+			if (CollectionUtils.isNotEmpty(noconsumedList)) {
+				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.WAIT_CONSUME, nowTime, consumedList);
+			}
+			
 			if (CollectionUtils.isNotEmpty(consumedList)) {
 				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.WAIT_EVALUATE, nowTime, consumedList);
 			}
+			
+			// end modify by zengjz 2016-11-28 修改判断逻辑
 		}
 	}
 
