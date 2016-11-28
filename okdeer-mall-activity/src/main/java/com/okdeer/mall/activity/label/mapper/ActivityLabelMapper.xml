@@ -210,5 +210,6 @@
  				#{item}  
 			</foreach>  
 		</if>
+		order by al.create_time desc 
     </select>
 </mapper>
