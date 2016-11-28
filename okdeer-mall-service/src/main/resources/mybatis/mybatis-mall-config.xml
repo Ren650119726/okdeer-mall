@@ -11,6 +11,7 @@
 
     <typeHandlers>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.base.common.enums.WhetherEnum"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.YesOrNoEnum"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.base.common.enums.Disabled"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.UserType"/>
         <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.common.enums.AreaType"/>
