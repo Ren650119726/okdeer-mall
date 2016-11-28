@@ -25,7 +25,6 @@ import static com.okdeer.common.consts.DescriptConstants.USER_NOT_WALLET;
 import static com.okdeer.common.consts.DescriptConstants.USER_WALLET_FAIL;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -92,7 +91,6 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
@@ -111,7 +109,6 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsOrderRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
@@ -183,9 +180,7 @@ import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
-import com.okdeer.mall.order.timer.TimeoutMessage;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.order.timer.constant.TimerMessageConstant;
 import com.okdeer.mall.order.utils.JsonDateValueProcessor;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.OrderCouponsRespDto;
@@ -232,6 +227,7 @@ import net.sf.json.JsonConfig;
  *      v.1.2.0           2016-11-16        zengjz            删减一些无用的代码
  *      V.1.2.0           2016-11-18        maojj             POS订单导出新增货号信息
  *      V1.2.0            2016-11-24        wusw              修改订单数量统计的问题
+ *      v1.2.0            2016-11-28       zengjz             修改判断验证码逻辑
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -298,13 +294,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Resource
 	private ActivityDiscountMapper activityDiscountMapper;
 
-	// begin add by wangf01 2016.08.06
-	/**
-	 * 特惠Dao
-	 */
-	@Autowired
-	private ActivitySaleMapper activitySaleMapper;
-	// end add by wangf01 2016.08.06
 
 	@Autowired
 	private ActivityCouponsRecordService activityCouponsRecordService;
@@ -6114,18 +6103,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				orderStatusCountMap.put(map.get("orderId") + "-" + map.get("status"),
 						new Integer(map.get("num").toString()));
 			}
+			
+			// begin modify by zengjz 2016-11-28 修改判断逻辑
 			// 根据统计数量，判断订单消费码状态值，如果存在已过期的，状态为已过期；如果存在未消费的，状态为未消费；如果存在已消费的，状态为待评价，否则，状态为已退款
-			List<String> expiredOrderList = new ArrayList<String>();
-			List<String> consumedList = new ArrayList<String>();
-			// Begin V1.1.0 update by wusw 20161012
-			List<String> refundsList = new ArrayList<String>();
-			// End V1.1.0 update by wusw 20161012
 			for (String orderId : orderIdList) {
 				int noConsumeCount = 0;
 				int expiredCount = 0;
-				// Begin V1.1.0 update by wusw 20161012
-				int refundsCount = 0;
-				// End V1.1.0 update by wusw 20161012
+				int consumedCount = 0;
+				
 				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal()) != null) {
 					noConsumeCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal())
 							.intValue();
@@ -6134,37 +6119,37 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					expiredCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.expired.ordinal())
 							.intValue();
 				}
-				// Begin V1.1.0 update by wusw 20161012
-				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal()) != null) {
-					refundsCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal())
+				
+				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.consumed.ordinal()) != null) {
+					consumedCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.consumed.ordinal())
 							.intValue();
 				}
-
+				
+				
+				TradeOrder order = new TradeOrder();
+				order.setId(orderId);
+				order.setUpdateTime(new Date());
 				if (expiredCount > 0) {
-					expiredOrderList.add(orderId);
+					//如果已经有过期的就将消费码状态改为已过期
+					order.setConsumerCodeStatus(ConsumerCodeStatusEnum.EXPIRED);
 				} else {
-					if (noConsumeCount <= 0) {
-						if (refundsCount > 0) {
-							refundsList.add(orderId);
+					if (noConsumeCount > 0) {
+						//有待消费的就改为待消费
+						order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_CONSUME);
+					} else {
+						if (consumedCount > 0) {
+							// 变成已经消费
+							order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_EVALUATE);
 						} else {
-							consumedList.add(orderId);
+							//全部退款
+							order.setConsumerCodeStatus(ConsumerCodeStatusEnum.REFUNDED);
 						}
 					}
 				}
-				// End V1.1.0 update by wusw 20161012
+				tradeOrderMapper.updateByPrimaryKeySelective(order);
 			}
-			// 更新相应的订单消费码状态
-			if (CollectionUtils.isNotEmpty(expiredOrderList)) {
-				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.EXPIRED, nowTime, expiredOrderList);
-			}
-			// Begin V1.1.0 update by wusw 20161012
-			if (CollectionUtils.isNotEmpty(refundsList)) {
-				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.REFUNDED, nowTime, refundsList);
-			}
-			// End V1.1.0 update by wusw 20161012
-			if (CollectionUtils.isNotEmpty(consumedList)) {
-				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.WAIT_EVALUATE, nowTime, consumedList);
-			}
+			
+			// end modify by zengjz 2016-11-28 修改判断逻辑
 		}
 	}
 
