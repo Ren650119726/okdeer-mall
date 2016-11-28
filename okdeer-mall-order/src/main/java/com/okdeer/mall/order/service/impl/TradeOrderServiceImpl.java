@@ -25,7 +25,6 @@ import static com.okdeer.common.consts.DescriptConstants.USER_NOT_WALLET;
 import static com.okdeer.common.consts.DescriptConstants.USER_WALLET_FAIL;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -92,7 +91,6 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
@@ -183,9 +181,7 @@ import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
-import com.okdeer.mall.order.timer.TimeoutMessage;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.order.timer.constant.TimerMessageConstant;
 import com.okdeer.mall.order.utils.JsonDateValueProcessor;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.OrderCouponsRespDto;
@@ -232,6 +228,7 @@ import net.sf.json.JsonConfig;
  *      v.1.2.0           2016-11-16        zengjz            删减一些无用的代码
  *      V.1.2.0           2016-11-18        maojj             POS订单导出新增货号信息
  *      V1.2.0            2016-11-24        wusw              修改订单数量统计的问题
+ *      v1.2.0            2016-11-28       zengjz             修改判断验证码逻辑
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
