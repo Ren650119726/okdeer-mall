@@ -181,8 +181,8 @@ public class ActivityLabelServiceImpl extends BaseServiceImpl implements Activit
 	}
 	
 	@Override
-	public List<Map<String,Object>> listLabelNameBySkuId(List<String> skuIdList) {
-		return activityLabelMapper.listLabelNameBySkuIds(skuIdList);
+	public List<Map<String,Object>> findLabelBySkuId(String skuId) {
+		return activityLabelMapper.findLabelBySkuId(skuId);
 	}
 	
 	/**

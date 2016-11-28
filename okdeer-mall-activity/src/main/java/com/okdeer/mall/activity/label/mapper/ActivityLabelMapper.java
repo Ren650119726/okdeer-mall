@@ -68,4 +68,13 @@ public interface ActivityLabelMapper extends IBaseMapper{
 	 * @date 2016年11月14日
 	 */
 	List<Map<String,Object>> listLabelNameBySkuIds(@Param("skuIdList") List<String> skuIdList);
+	
+	/**
+	 * @Description: 通过商品id获取商品的标签列表
+	 * @param skuId 商品id
+	 * @return List<Map<String,Object>> 结果集两列分别是skuId,labelName
+	 * @author chenzc
+	 * @date 2016年11月28日
+	 */
+	List<Map<String,Object>> findLabelBySkuId(@Param("skuId") String skuId);
 }
