@@ -128,7 +128,7 @@ public interface ActivityLabelService extends IBaseService{
 	 * @author chenzc
 	 * @date 2016年11月22日
 	 */
-	List<Map<String,Object>> listLabelNameBySkuId(List<String> skuIdList);
+	List<Map<String,Object>> findLabelBySkuId(String skuId);
 	
 	/**
 	 * 执行服务标签的JOB 任务
