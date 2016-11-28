@@ -6106,10 +6106,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			
 			// begin modify by zengjz 2016-11-28 修改判断逻辑
 			// 根据统计数量，判断订单消费码状态值，如果存在已过期的，状态为已过期；如果存在未消费的，状态为未消费；如果存在已消费的，状态为待评价，否则，状态为已退款
-			List<String> expiredOrderList = new ArrayList<String>();
-			List<String> consumedList = new ArrayList<String>();
-			List<String> refundsList = new ArrayList<String>();
-			List<String> noconsumedList = new ArrayList<String>();
 			for (String orderId : orderIdList) {
 				int noConsumeCount = 0;
 				int expiredCount = 0;
@@ -6125,7 +6121,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 				
 				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.consumed.ordinal()) != null) {
-					consumedCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal())
+					consumedCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.consumed.ordinal())
 							.intValue();
 				}
 				
@@ -6143,7 +6139,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					} else {
 						if (consumedCount > 0) {
 							// 变成已经消费
-							consumedList.add(orderId);
 							order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_EVALUATE);
 						} else {
 							//全部退款
