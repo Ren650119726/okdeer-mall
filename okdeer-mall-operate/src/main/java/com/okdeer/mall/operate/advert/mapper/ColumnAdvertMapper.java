@@ -9,18 +9,19 @@
 package com.okdeer.mall.operate.advert.mapper;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.advert.entity.AdvertDetailVo;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.entity.ColumnAdvertCommunity;
 import com.okdeer.mall.advert.entity.ColumnAdvertQueryVo;
 import com.okdeer.mall.advert.entity.ColumnAdvertVo;
-import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * 广告Mapper
@@ -194,5 +195,16 @@ public interface ColumnAdvertMapper extends IBaseCrudMapper {
 	 * @return
 	 */
 	ColumnAdvert getAdvertForTargetURl(@Param("targetUrl") String targetUrl);
+	
+	//Begin V1.2 added by tangy  2016-11-28
+	/**
+	 * @Description:    广告区域统计
+	 * @param advert    广告信息 
+	 * @return HashMap<String,Integer>  
+	 * @author tangy
+	 * @date 2016年11月28日
+	 */
+	List<HashMap<String, Integer>> findAdvertRestrictByArea(ColumnAdvert advert);
+	//End added by tangy
 }
 
