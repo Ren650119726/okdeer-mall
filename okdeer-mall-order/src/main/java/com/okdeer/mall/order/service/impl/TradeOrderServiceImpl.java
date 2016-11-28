@@ -109,7 +109,6 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsOrderRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
@@ -295,13 +294,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Resource
 	private ActivityDiscountMapper activityDiscountMapper;
 
-	// begin add by wangf01 2016.08.06
-	/**
-	 * 特惠Dao
-	 */
-	@Autowired
-	private ActivitySaleMapper activitySaleMapper;
-	// end add by wangf01 2016.08.06
 
 	@Autowired
 	private ActivityCouponsRecordService activityCouponsRecordService;
@@ -6121,7 +6113,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			for (String orderId : orderIdList) {
 				int noConsumeCount = 0;
 				int expiredCount = 0;
-				int refundsCount = 0;
 				int consumedCount = 0;
 				
 				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal()) != null) {
@@ -6133,63 +6124,34 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							.intValue();
 				}
 				
-				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal()) != null) {
-					refundsCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal())
-							.intValue();
-				}
-				
 				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.consumed.ordinal()) != null) {
 					consumedCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.refund.ordinal())
 							.intValue();
 				}
 				
 				
+				TradeOrder order = new TradeOrder();
+				order.setId(orderId);
+				order.setUpdateTime(new Date());
 				if (expiredCount > 0) {
 					//如果已经有过期的就将消费码状态改为已过期
-					expiredOrderList.add(orderId);
+					order.setConsumerCodeStatus(ConsumerCodeStatusEnum.EXPIRED);
 				} else {
 					if (noConsumeCount > 0) {
 						//有待消费的就改为待消费
-						noconsumedList.add(orderId);
+						order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_CONSUME);
 					} else {
 						if (consumedCount > 0) {
 							// 变成已经消费
 							consumedList.add(orderId);
+							order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_EVALUATE);
 						} else {
 							//全部退款
-							refundsList.add(orderId);
+							order.setConsumerCodeStatus(ConsumerCodeStatusEnum.REFUNDED);
 						}
 					}
 				}
-				
-
-				if (expiredCount > 0) {
-					expiredOrderList.add(orderId);
-				} else {
-					if (noConsumeCount <= 0) {
-						if (refundsCount > 0) {
-							refundsList.add(orderId);
-						} else {
-							consumedList.add(orderId);
-						}
-					}
-				}
-			}
-			// 更新相应的订单消费码状态
-			if (CollectionUtils.isNotEmpty(expiredOrderList)) {
-				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.EXPIRED, nowTime, expiredOrderList);
-			}
-			
-			if (CollectionUtils.isNotEmpty(refundsList)) {
-				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.REFUNDED, nowTime, refundsList);
-			}
-			
-			if (CollectionUtils.isNotEmpty(noconsumedList)) {
-				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.WAIT_CONSUME, nowTime, consumedList);
-			}
-			
-			if (CollectionUtils.isNotEmpty(consumedList)) {
-				tradeOrderMapper.updateConsumerStatusByIds(ConsumerCodeStatusEnum.WAIT_EVALUATE, nowTime, consumedList);
+				tradeOrderMapper.updateByPrimaryKeySelective(order);
 			}
 			
 			// end modify by zengjz 2016-11-28 修改判断逻辑
