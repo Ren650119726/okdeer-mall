@@ -75,6 +75,11 @@
 			<result column="community_id" property="communityId" jdbcType="VARCHAR"/>
 		</collection>
 	</resultMap>
+		
+	<resultMap id="getAllSetAreaResult" type="HashMap">
+	    <result property="key" column="areaId" jdbcType="VARCHAR"/>
+	    <result property="value" column="areaNum" jdbcType="INTEGER" />
+	</resultMap>
 	
 	<sql id="base_column_list">
 		id, position_id, belong_type, name, target_type, target, target_url, pic_url,
@@ -823,5 +828,41 @@
         	#{item}
         </foreach>
         </if>
+	</select>
+	
+	<!-- Begin 广告区域统计 added by tangy  2016-11-28 -->
+	<select id="findAdvertRestrictByArea" resultMap="getAllSetAreaResult" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
+		SELECT 
+		CASE WHEN caa.area_id <![CDATA[ <> ]]> '' THEN  caa.area_id
+		ELSE '0' END AS areaId, COUNT(1) AS areaNum
+		FROM column_advert ca
+		LEFT JOIN column_advert_position ap ON ca.position_id = ap.id
+		LEFT JOIN column_advert_area caa ON caa.advert_id = ca.id
+		LEFT JOIN column_advert_approval app ON app.advert_id = ca.id
+		WHERE ca.disabled = 0 AND ca.status IN(0, 1)	
+		<choose>
+		    <when test="belongType != null and belongType == '0'.toString()">
+		    AND ca.belong_type = 0
+		    </when>
+		    <otherwise>  
+		    AND ca.belong_type <![CDATA[ <> ]]> 0 AND app.status = 1
+            </otherwise> 
+		</choose>
+	    AND ((#{startTime} BETWEEN ca.start_time AND ca.end_time) OR #{endTime} BETWEEN ca.start_time AND ca.end_time)
+	    <if test="positionId != null and positionId !=''">
+	   	   AND ap.id = #{positionId, jdbcType=VARCHAR}
+	    </if>   
+	    <if test="id != null and id != ''">
+	   	   AND ca.id != #{id,jdbcType=VARCHAR}
+	    </if> 
+        <if test="areaIdList != null" >      
+            AND (ca.area_type = 0 OR caa.area_id in  
+			<foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+ 	  		 		 #{item}
+  		 	</foreach>
+  		 	 )
+		  </if> 
+	    GROUP BY caa.area_id
+        ORDER BY COUNT(1) DESC                
 	</select>
 </mapper>

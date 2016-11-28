@@ -11,9 +11,12 @@ package com.okdeer.mall.operate.advert.service.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,7 @@ import com.okdeer.mall.advert.entity.AdvertDetailVo;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.entity.ColumnAdvertApproval;
 import com.okdeer.mall.advert.entity.ColumnAdvertArea;
+import com.okdeer.mall.advert.entity.ColumnAdvertAreaVo;
 import com.okdeer.mall.advert.entity.ColumnAdvertCommunity;
 import com.okdeer.mall.advert.entity.ColumnAdvertInfo;
 import com.okdeer.mall.advert.entity.ColumnAdvertQueryVo;
@@ -599,5 +603,102 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	@Override
 	public ColumnAdvert getAdvertForTargetURl(String targetUrl) {
 		return this.advertMapper.getAdvertForTargetURl(targetUrl);
+	}
+	
+	@Override
+	public String findRestrictByArea(ColumnAdvert columnAdvert, Map<String, ColumnAdvertAreaVo> areaMap) {
+		String result = null;
+		//范围类型，0：全国，1：区域范围，2：小区范围 3.店铺
+		if ((AreaType.area.equals(columnAdvert.getAreaType()) 
+				|| AreaType.national.equals(columnAdvert.getAreaType()))
+				&& areaMap != null) {
+			Iterator it = areaMap.keySet().iterator(); 
+			while(it.hasNext()){ 
+			    String key = (String) it.next();
+			    ColumnAdvertAreaVo vo = areaMap.get(key);
+			    List<String> areaIds = new ArrayList<String>();
+			    //根据类型获取查询条件
+			    if ("1".equals(vo.getType())) {
+			    	areaIds.addAll(vo.getAreaIds());
+				} else {
+					areaIds.add(vo.getpId());
+				}
+			    areaIds.add(vo.getId());
+			    columnAdvert.setAreaIdList(areaIds);
+			    List<HashMap<String, Integer>> map = advertMapper.findAdvertRestrictByArea(columnAdvert);
+			    Map<String, Integer> areaRetMap = new HashMap<String, Integer>();
+			    if (map != null) {
+				    for (HashMap<String, Integer> hashMap : map) {
+				    	String areaId = String.valueOf(hashMap.get("key"));
+				    	String areaNum = String.valueOf(hashMap.get("value"));
+				    	areaRetMap.put(areaId, Integer.valueOf(areaNum));
+					}
+				    
+				    //地区最大值
+				    Integer maxArea = 0;
+				    if ("1".equals(vo.getType())) {
+						for (String id : vo.getAreaIds()) {
+							Integer value = areaRetMap.get(id);
+							if (value != null && value.intValue() > maxArea) {
+								maxArea = areaRetMap.get(id);
+							}
+						}
+					} else {
+						if (areaRetMap.get(vo.getpId()) != null) {
+							maxArea = areaRetMap.get(vo.getpId());
+						}
+					}
+				    
+				    //全国区域
+				    if (areaRetMap.get("0") != null) {
+						maxArea += areaRetMap.get("0");
+					}
+				    //区域
+				    if (areaRetMap.get(vo.getId()) != null) {
+						maxArea += areaRetMap.get(vo.getId());
+					}
+				    
+				    result = validateAcrossQty(columnAdvert, maxArea);
+				    if (StringUtils.isNotBlank(result)) {
+				    	return result;
+					}
+			     }			    
+			} 
+		}
+		return result;
+	}
+	
+	/**
+	 * @Description: 判断广告数是否已满
+	 * @param advert 广告信息
+	 * @param arcossTimeAdvertQty 地区已有最大数
+	 * @return String  
+	 * @author tangy
+	 * @date 2016年11月28日
+	 */
+	private String validateAcrossQty(ColumnAdvert advert, Integer arcossTimeAdvertQty) {
+		Integer advertType = advert.getAdvertType();
+		if (!"0".equals(advert.getBelongType())) {
+			if (arcossTimeAdvertQty >= 2) {
+				return "用户版APP首页广告，同一区域的同一时间段内代理商最多只能发布2个，请重新选择！";
+			}
+		} else {
+			if (advertType == 1) {
+				// 用户版APP闪屏广告, 同一时间段内最多只能上传一张，且时间不能交叉
+				if (arcossTimeAdvertQty >= 1) {
+					return "用户版APP闪屏广告，同一时间段内最多只能发布一个，请重新选择！";
+				}
+			} else if (advertType == 2) {
+				// 在同一时间段内最多运营商能上传5张，且时间不能产生交叉；
+				if (arcossTimeAdvertQty >= 5) {
+					return "用户版APP首页广告，同一区域的同一时间段内运营商最多只能发布五个，请重新选择！";
+				}
+			} else if (advertType == 4) {
+				if (arcossTimeAdvertQty >= 1) {
+					return "手机开门页广告，同一区域的同一时间段内最多只能发布一个，请重新选择！";
+				}
+			}
+		}	
+		return null;
 	}
 }
