@@ -35,9 +35,9 @@
        <if test="email != null and email != ''">
          AND email LIKE CONCAT('%',#{email,jdbcType=VARCHAR},'%') 
        </if>
-       <!-- 手机号-->
+       <!-- 手机号 模糊查询-->
        <if test="telephone != null and telephone != ''">
-         AND telephone =#{telephone,jdbcType=VARCHAR}
+         AND telephone LIKE CONCAT('%',#{telephone,jdbcType=VARCHAR},'%')
        </if>
        <!-- 是否接收邮件 -->
        <if test="isAcceptMail != null and isAcceptMail != -1">
