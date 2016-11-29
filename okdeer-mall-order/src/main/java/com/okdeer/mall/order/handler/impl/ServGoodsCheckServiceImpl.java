@@ -5,6 +5,7 @@ import java.util.Date;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuPicture;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
@@ -75,7 +76,7 @@ public class ServGoodsCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		}
 		// Begin V1.2 added by maojj 2016-11-25
 		// 判断到店消费商品是否已过有效期
-		if (reqData.getOrderType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+		if (goodsStoreSku.getSpuTypeEnum() == SpuTypeEnum.fwdDdxfSpu) {
 			GoodsStoreSkuService skuService = goodsStoreSkuServiceServiceApi.selectBySkuId(goodsStoreSku.getId());
 			if (skuService == null) {
 				resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS_1);
@@ -84,7 +85,9 @@ public class ServGoodsCheckServiceImpl implements RequestHandler<ServiceOrderReq
 			}
 			
 			Date endTime = skuService.getEndTime();
-			if (new Date().compareTo(endTime) == 0 || new Date().compareTo(endTime) == 1) {
+			Date beginTime = skuService.getStartTime();
+			Date currentDate = new Date();
+			if (currentDate.before(beginTime) || currentDate.after(endTime)) {
 				// 服务商品已过期，不能预约
 				resp.setResult(ResultCodeEnum.SERV_GOODS_EXP);
 				req.setComplete(true);
