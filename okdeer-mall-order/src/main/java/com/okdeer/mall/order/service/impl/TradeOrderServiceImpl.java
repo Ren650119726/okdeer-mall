@@ -153,6 +153,7 @@ import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.OrderPayTypeEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTraceEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
@@ -4183,7 +4184,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			if (null != traceList) {
 				for (RefundsTraceVo vo : traceList) {
 					if (vo.getIsDone() == 1) {
-						orderStatusRemark = vo.getContent();
+						OrderTraceEnum traceStatus = vo.getTraceStatus();
+						// 如果订单已完成并且已评价，则用这个文案
+						if (OrderTraceEnum.COMPLETED.equals(traceStatus) && appraise > 0) {
+							orderStatusRemark = "订单服务完成,任何意见和吐槽,都欢迎联系我们";
+						} else if (OrderTraceEnum.CANCELED.equals(traceStatus) ||
+								OrderTraceEnum.SUBMIT_ORDER.equals(traceStatus)) {
+							orderStatusRemark = vo.getContent();
+						} else {
+							orderStatusRemark = traceStatus.getRemark();
+						}
 					} else {
 						break;
 					}
