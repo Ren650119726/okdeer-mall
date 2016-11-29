@@ -59,6 +59,7 @@ import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
+import com.okdeer.mall.order.entity.TradeOrderRefundsItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLog;
 import com.okdeer.mall.order.enums.ActivityBelongType;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
@@ -73,6 +74,7 @@ import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsItemDetailMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsLogMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
@@ -104,6 +106,7 @@ import net.sf.json.JSONObject;
  *       V1.1.0             2016-10-8            zhaoqc             新增通过消费码消费状态判断订单能否投诉
  *       13960             2016-10-10            wusw               修改通过订单消费码状态判断订单是否支持投诉
  *       v1.2.0            2016-11-15            zengjz             删除一些无用的代码
+ *        v1.2.0            2016-11-28          zengjz             根据退款单项id查询订单明细列表
  */
 @Service
 public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
@@ -124,6 +127,9 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 
 	@Autowired
 	private TradeOrderRefundsItemMapper tradeOrderRefundsItemMapper;
+	
+	@Autowired
+	private TradeOrderRefundsItemDetailMapper tradeOrderRefundsItemDetailMapper;
 
 	@Reference(version = "1.0.0", check = false)
 	private IStoreInfoExtServiceApi storeInfoExtService;
@@ -946,6 +952,18 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			tradeOrderRefundsMapper.insertSelective(orderRefunds);
 			// 批量保存退款单项
 			tradeOrderRefundsItemMapper.insert(orderRefunds.getTradeOrderRefundsItem());
+			
+			List<TradeOrderRefundsItemDetail> tradeOrderRefundsItemDetailList = Lists.newArrayList();
+			TradeOrderRefundsItemDetail tradeOrderRefundsItemDetail = null;
+			for (TradeOrderItemDetail detail : waitRefundDetailList) {
+				tradeOrderRefundsItemDetail = new TradeOrderRefundsItemDetail();
+				tradeOrderRefundsItemDetail.setId(UuidUtils.getUuid());
+				tradeOrderRefundsItemDetail.setOrderItemDetailId(detail.getId());
+				tradeOrderRefundsItemDetail.setRefundItemId(orderRefunds.getTradeOrderRefundsItem().get(0).getId());
+				tradeOrderRefundsItemDetailList.add(tradeOrderRefundsItemDetail); 
+			}
+			//保存退款单明细表
+			tradeOrderRefundsItemDetailMapper.batchAdd(tradeOrderRefundsItemDetailList);
 			// 保存退款凭证
 			tradeOrderRefundsCertificateService.addCertificate(certificate);
 
@@ -1055,4 +1073,13 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 		}
 		tradeOrderMapper.updateByPrimaryKeySelective(order);
 	}
+
+	//begin V1.2.0 add by zengjz 20161128
+	@Override
+	public List<TradeOrderItemDetail> findRefundTradeOrderItemDetailList(String refundItemId) {
+		
+		
+		return tradeOrderItemDetailMapper.findRefundTradeOrderItemDetailList(refundItemId);
+	}
+	//end V1.2.0 add by zengjz 20161128
 }
