@@ -37,7 +37,7 @@
        </if>
        <!-- 手机号-->
        <if test="telephone != null and telephone != ''">
-         AND telephone =#{telephone,jdbcType=VARCHAR}
+         AND telephone LIKE CONCAT('%',#{telephone,jdbcType=VARCHAR},'%')
        </if>
        <!-- 是否接收邮件 -->
        <if test="isAcceptMail != null and isAcceptMail != -1">
