@@ -223,6 +223,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 		for (TradeOrderTrace trace : traceList) {
 			traceVo = new RefundsTraceVo();
 			traceVo.setTitle(trace.getTraceStatus().getDesc());
+			traceVo.setTraceStatus(trace.getTraceStatus());
 			traceVo.setContent(trace.getRemark());
 			traceVo.setTime(DateUtils.formatDate(trace.getOptTime(), "MM-dd HH:mm"));
 			// 是否已完成 0：否，1：是
