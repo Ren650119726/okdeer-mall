@@ -2630,6 +2630,9 @@
 			<if test="deliveryTime != null">
 				delivery_time = #{deliveryTime,jdbcType=TIMESTAMP},
 			</if>
+			<if test="acceptTime != null">
+				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
+			</if>
 			<if test="shipmentsUserId != null">
 				shipments_user_id = #{shipmentsUserId,jdbcType=VARCHAR},
 			</if>
