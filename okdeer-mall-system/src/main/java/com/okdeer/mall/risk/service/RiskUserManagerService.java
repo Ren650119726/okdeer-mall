@@ -58,4 +58,13 @@ public interface RiskUserManagerService extends IBaseService {
 	 */
 	void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime);
 
+	/**
+	 * @Description: TODO
+	 * @param riskUserManager
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年11月29日
+	 */
+	int findCountByTelephoneOrEmail(RiskUserManager riskUserManager);
+
 }
