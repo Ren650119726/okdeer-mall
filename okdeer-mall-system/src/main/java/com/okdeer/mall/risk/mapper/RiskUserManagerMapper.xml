@@ -35,7 +35,7 @@
        <if test="email != null and email != ''">
          AND email LIKE CONCAT('%',#{email,jdbcType=VARCHAR},'%') 
        </if>
-       <!-- 手机号-->
+       <!-- 手机号 模糊查询-->
        <if test="telephone != null and telephone != ''">
          AND telephone LIKE CONCAT('%',#{telephone,jdbcType=VARCHAR},'%')
        </if>
