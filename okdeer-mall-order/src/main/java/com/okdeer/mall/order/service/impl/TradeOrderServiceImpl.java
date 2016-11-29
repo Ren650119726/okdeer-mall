@@ -1111,7 +1111,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				map.clear();
 				map.put("orderId", orderId);
 			}
-			// Begin 15486 add by wusw 20161119
+			// Begin 15486 add by wusw 20161129
 			// 如果是服务店订单，直接查询投诉信息，如果不是，已完成状态的订单才能查询投诉信息
 			if (tradeOrderVo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER || tradeOrderVo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 				tradeOrderVo.setTradeOrderComplainVoList(tradeOrderComplainMapper.findOrderComplainByParams(orderId));
@@ -1122,7 +1122,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					tradeOrderVo.setTradeOrderComplainVoList(tradeOrderComplainMapper.findOrderComplainByParams(orderId));
 				}
 			}
-			// End 15486 add by wusw 20161119
+			// End 15486 add by wusw 20161129
 
 			// 获取订单活动信息
 			Map<String, Object> activityMap = getActivity(tradeOrderVo.getActivityType(), tradeOrderVo.getActivityId());
