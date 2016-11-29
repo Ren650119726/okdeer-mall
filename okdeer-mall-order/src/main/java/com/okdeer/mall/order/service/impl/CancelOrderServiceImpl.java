@@ -177,7 +177,14 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
 					|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
 				if (oldOrder.getPayWay() == PayWayEnum.PAY_ONLINE) {
-					tradeOrder.setStatus(OrderStatusEnum.CANCELING);
+					//begin modify by zengjz 违约金逻辑判断
+					if (oldOrder.getBreachPercent() != null && oldOrder.getBreachPercent().intValue() == 100) {
+						//如果违约金是百分白的话，直接把订单状态改为取消完成
+						tradeOrder.setStatus(OrderStatusEnum.CANCELED);
+					} else {
+						tradeOrder.setStatus(OrderStatusEnum.CANCELING);
+					}
+					//end modify by zengjz 违约金逻辑判断
 				} else {
 					tradeOrder.setStatus(OrderStatusEnum.CANCELED);
 				}
