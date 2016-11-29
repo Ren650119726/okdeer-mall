@@ -4027,6 +4027,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 下单时间
 		json.put("orderSubmitOrderTime", orders.getCreateTime() != null
 				? DateUtils.formatDate(orders.getCreateTime(), "yyyy-MM-dd HH:mm:ss") : "");
+		// Begin V1.2 added by maojj 2016-11-29
+		// 服务订单接单时间
+		String deliveryTime =  orders.getDeliveryTime() != null
+				? DateUtils.formatDate(orders.getDeliveryTime(), "yyyy-MM-dd HH:mm:ss") : "";
+		json.put("orderAcceptTime", orders.getAcceptTime() != null
+				? DateUtils.formatDate(orders.getAcceptTime(), "yyyy-MM-dd HH:mm:ss") : deliveryTime);
+		// End V1.2 added by maojj 2016-11-29
 		// 出发时间--对应实物订单发货时间
 		json.put("orderDeliveryTime", orders.getDeliveryTime() != null
 				? DateUtils.formatDate(orders.getDeliveryTime(), "yyyy-MM-dd HH:mm:ss") : "");
