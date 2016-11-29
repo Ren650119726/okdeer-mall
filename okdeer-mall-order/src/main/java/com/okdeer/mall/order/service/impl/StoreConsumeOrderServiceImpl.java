@@ -788,8 +788,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 		tradeOrderRefundsLogMapper
 				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
 						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
-		// 发送短信
-		tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
 		
 		if (PayTypeEnum.ALIPAY == orderRefunds.getPaymentMethod()
 				|| PayTypeEnum.WXPAY == orderRefunds.getPaymentMethod()) {
@@ -980,6 +978,9 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			// 回收库存
 			stockOperateService.recycleStockByRefund(order, orderRefunds, rpcIdList);
 			// 发消息给ERP生成库存单据 added by maojj
+			
+			// 发送短信
+			tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
 		} catch (Exception e) {
 			// 发消息回滚库存的修改 added by maojj
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
