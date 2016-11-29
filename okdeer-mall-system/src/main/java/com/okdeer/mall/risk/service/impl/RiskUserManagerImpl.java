@@ -81,4 +81,13 @@ public class RiskUserManagerImpl extends BaseServiceImpl implements RiskUserMana
 		
 	}
 
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskUserManagerService#findCountByTelephoneOrEmail(com.okdeer.mall.risk.entity.RiskUserManager)
+	 */
+	@Override
+	public int findCountByTelephoneOrEmail(RiskUserManager riskUserManager) {
+		return riskUserManagerMapper.findCountByTelephoneOrEmail(riskUserManager);
+	}
+
 }

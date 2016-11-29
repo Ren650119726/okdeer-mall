@@ -80,6 +80,11 @@
         where disabled = 0 and id = #{id,jdbcType=VARCHAR}
     </select>
 
+	<select id="findCountByTelephoneOrEmail" resultType="java.lang.Integer" parameterType="com.okdeer.mall.risk.entity.RiskUserManager">
+        select count(1)        
+        from risk_user_manager
+        where disabled = 0 and telephone = #{telephone,jdbcType=VARCHAR} or email= #{email,jdbcType=VARCHAR}
+    </select>
     <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskUserManager" >
         insert into risk_user_manager
         <trim prefix="(" suffix=")" suffixOverrides="," >

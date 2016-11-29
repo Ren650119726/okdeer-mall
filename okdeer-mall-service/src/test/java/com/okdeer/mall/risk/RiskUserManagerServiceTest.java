@@ -48,7 +48,7 @@ public class RiskUserManagerServiceTest {
 	@Resource
 	private RiskUserManagerService riskUserManagerService;
 	
-	@Test
+	//@Test
 	public void findUserListTest() {
 		RiskUserManagerDto userManagerDto = new RiskUserManagerDto();
 		//userManagerDto.setEmail("34534654");
@@ -71,6 +71,16 @@ public class RiskUserManagerServiceTest {
 		String updateUserId ="1213";
 		Date updateTime = new Date();
 		riskUserManagerService.deleteBatchByIds(ids, updateUserId, updateTime);
+	}
+	@Test
+	@Rollback
+	public void findCountByTelephoneOrEmailTest() {
+		RiskUserManager riskUserManager= new RiskUserManager();
+		riskUserManager.setTelephone("13566666664");
+		riskUserManager.setEmail("123@qq.com");
+		
+		int count = riskUserManagerService.findCountByTelephoneOrEmail(riskUserManager);
+		assertTrue(count>0);
 	}
 	
 }
