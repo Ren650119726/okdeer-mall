@@ -3988,10 +3988,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 状态为未付款
 			// 订单创建时间
 			Date createTime = orders.getCreateTime();
-			Date currentDate = new Date();
 			// 支付到期毫秒
 			long endTimes = createTime.getTime() + (Constant.THIRTH * 60 * 1000);
-			long remainingTime = (endTimes - currentDate.getTime()) / 1000;
+			long remainingTime = (endTimes - System.currentTimeMillis()) / 1000;
 			// 支付剩余时间（精确）
 			if (remainingTime > 0) {
 				json.put("remainingTime", remainingTime);
@@ -4156,6 +4155,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
 					// 购买商品的数量
 					item.put("quantity", tradeOrderItem.getQuantity());
+					item.put("itemId", tradeOrderItem.getId());
 					itemArray.add(item);
 				}
 				json.put("orderItems", itemArray);
