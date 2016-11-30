@@ -289,7 +289,7 @@
 	<!-- 查询商品在定位地址是否存在秒杀活动 add by zengj 2016-7-18 11:55:30 -->
 	<select id="findSecKillByGoodsId" parameterType="java.util.Map"
 		resultMap="BaseResultMap">
-		SELECT
+		SELECT 
 		<include refid="Base_Column_List" />
 		FROM activity_seckill sec
 		where sec.seckill_status = 1
@@ -302,6 +302,8 @@
 		where sr.activity_seckill_id = sec.id
 		AND sr.city_id = #{cityId,jdbcType=VARCHAR})
 		)
+		ORDER BY sec.start_time ASC
+		LIMIT 1
 	</select>
 
 	<!-- 根据状态查询秒杀活动的集合 add by lijun 20160718 -->
