@@ -44,17 +44,17 @@ public class ServColumnCheckServiceImpl implements RequestHandler<ServiceOrderRe
 		ServerColumn serverColumn = serverColumnService.findById(reqData.getColumnServerId());
 		
 		// 服务栏目不存在
-//		if (serverColumn == null || serverColumn.getDisabled() == Disabled.invalid) {
-//			resp.setResult(ResultCodeEnum.SERVER_COLUMN_NOT_EXISTS);
-//			req.setComplete(true);
-//			return;
-//		}
+		if (serverColumn == null || serverColumn.getDisabled() == Disabled.invalid) {
+			resp.setResult(ResultCodeEnum.SERVER_COLUMN_NOT_EXISTS);
+			req.setComplete(true);
+			return;
+		}
 		// 服务栏目已关闭
-//		if (serverColumn.getServerStatus() == ServerStatus.close) {
-//			resp.setResult(ResultCodeEnum.SERVER_COLUMN_IS_CLOSED);
-//			req.setComplete(true);
-//			return;
-//		}
+		if (serverColumn.getServerStatus() == ServerStatus.close) {
+			resp.setResult(ResultCodeEnum.SERVER_COLUMN_IS_CLOSED);
+			req.setComplete(true);
+			return;
+		}
 		// 设置响应信息
 		if(req.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT && null != serverColumn){
 			respData.setServerColumnId(serverColumn.getId());
