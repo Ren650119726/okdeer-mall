@@ -271,17 +271,25 @@
 	<!-- 在当前时间范围内查询秒杀活动详情 begin add by luosm 2016-7-20 -->
 	<select id="findAppUserSecKillBySeckill" parameterType="string"
 		resultMap="SeckillItemResultMap">
-		SELECT se.id,se.store_sku_id,g.online_price as store_sku_price,se.seckill_status,se.start_time,TIME_TO_SEC(TIMEDIFF(se.end_time,NOW())) as seckill_time_left
-		,se.seckill_name,se.seckill_num,se.seckill_alias ,se.pic_url,se.seckill_price,
-		ROUND((se.seckill_num-sale.num)/(se.seckill_num+se.start_num),2) as
-		remain_stock_ratio FROM
-		(select count(1) as num
-		from activity_seckill_record ad
-		where order_disabled = 0
-		and ad.activity_seckill_id = #{id,jdbcType=VARCHAR})as sale,
-		`activity_seckill` se , goods_store_sku g
-		WHERE se.store_sku_id = g.id
-		and se.id = #{id,jdbcType=VARCHAR}
+		SELECT
+			sec.id,
+			sec.store_sku_id,
+			sku.online_price AS store_sku_price,
+			sec.seckill_status,
+			sec.start_time,
+			TIME_TO_SEC(TIMEDIFF(sec.end_time, NOW())) AS seckill_time_left,
+			sec.seckill_name,
+			sec.seckill_num,
+			sec.seckill_alias,
+			sec.pic_url,
+			sec.seckill_price,
+			ROUND(stock.locked/( sec.seckill_num + sec.start_num ), 6) AS remain_stock_ratio
+		FROM
+			activity_seckill sec
+		INNER JOIN goods_store_sku sku ON sec.store_sku_id = sku.id
+		INNER JOIN goods_store_sku_stock stock ON sec.store_sku_id = stock.store_sku_id
+		WHERE
+			sec.id = #{id,jdbcType=VARCHAR}
 	</select>
 	<!-- 查询定位地址是否有秒杀活动 end add by luosm 2016-7-20 -->
 

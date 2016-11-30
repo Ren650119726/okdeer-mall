@@ -527,11 +527,17 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			}
 			tradeOrderItem.setPreferentialPrice(favourItem);
 			// 设置实付金额
-			tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(favourItem));
-			// 设置订单项收入
-			setOrderItemIncome(tradeOrderItem, tradeOrder);
+			if (req.getData().getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
+				// 线下支付的实付金额为0
+				tradeOrderItem.setActualAmount(BigDecimal.valueOf(0));
+				tradeOrderItem.setIncome(BigDecimal.valueOf(0));
+			} else {
+				tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(favourItem));
+				// 设置订单项收入
+				setOrderItemIncome(tradeOrderItem, tradeOrder);
+			}
 			if (tradeOrderItem.getActualAmount().compareTo(BigDecimal.ZERO) == 0
-					&& orderType != null && orderType.ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+					&& orderType == OrderTypeEnum.STORE_CONSUME_ORDER ) {
 				// 实付金额为0的到店消费订单，设置服务保障为无
 				tradeOrderItem.setServiceAssurance(0);
 			}
@@ -877,7 +883,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		tradeOrder.setFare(BigDecimal.ZERO);
 		// 服务店扩展信息
 		StoreInfoServiceExt serviceExt = resp.getData().getStoreInfoServiceExt();
-		if (serviceExt != null && serviceExt.getIsShoppingCart() == 1 && serviceExt.getIsDistributionFee() == 1) {
+		// 线下支付确认的没有运费
+		if (reqDto.getPayWay() != PayWayEnum.OFFLINE_CONFIRM_AND_PAY && serviceExt != null && serviceExt.getIsShoppingCart() == 1 && serviceExt.getIsDistributionFee() == 1) {
 			// 配送费
 			Double distributionFee = serviceExt.getDistributionFee();
 			// 已满起送价是否收取配送费，0：否，1：是
