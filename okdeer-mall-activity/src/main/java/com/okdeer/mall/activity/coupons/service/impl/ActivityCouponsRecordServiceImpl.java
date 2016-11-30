@@ -1003,7 +1003,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			pushMsgVo.setToken(msgToken);
 			pushMsgVo.setSendUserId(userId);
 			pushMsgVo.setServiceFkId(userId);
-			pushMsgVo.setServiceTypes(new Integer[] { Constant.ZERO });
+			pushMsgVo.setServiceTypes(new Integer[] { Constant.TWO });
 			// 0:用户APP,2:商家APP,3POS机
 			pushMsgVo.setAppType(Constant.ZERO);
 			pushMsgVo.setIsUseTemplate(Constant.ZERO);
