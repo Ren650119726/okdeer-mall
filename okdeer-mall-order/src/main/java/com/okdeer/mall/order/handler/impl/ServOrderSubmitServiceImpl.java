@@ -343,14 +343,17 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		if (reqData.getPayWay().equals(PayWayEnum.OFFLINE_CONFIRM_AND_PAY)) {
 			tradeOrder.setStatus(OrderStatusEnum.WAIT_RECEIVE_ORDER);
 			tradeOrder.setPayWay(PayWayEnum.OFFLINE_CONFIRM_AND_PAY);
+			//线下确认并当面支付的订单实付金额、收入均为0
+			tradeOrder.setActualAmount(BigDecimal.valueOf(0));
+			tradeOrder.setIncome(BigDecimal.valueOf(0));
+			tradeOrder.setPreferentialPrice(BigDecimal.valueOf(0));
 		} else {
 			// 否则是等待买家付款
 			tradeOrder.setStatus(OrderStatusEnum.UNPAID);
 			tradeOrder.setPayWay(PayWayEnum.PAY_ONLINE);
+			// 解析优惠活动(优惠金额,实付金额,店铺总收入)
+			parseFavour(tradeOrder, reqData);
 		}
-
-		// 解析优惠活动(优惠金额,实付金额,店铺总收入)
-		parseFavour(tradeOrder, reqData);
 
 		OrderTypeEnum orderType = reqData.getOrderType();
 		switch (orderType) {
@@ -687,8 +690,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		// 如果总金额<优惠金额，则实付为0，否则实付金额为总金额-优惠金额
 		if (totalAmount.compareTo(favourAmount) == -1 || totalAmount.compareTo(favourAmount) == 0) {
 			tradeOrder.setActualAmount(new BigDecimal(0.0));
-			// 实付金额为0时，订单状态为待派单
-			tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
+			// 实付金额为0时，订单状态为待接单
+			tradeOrder.setStatus(OrderStatusEnum.WAIT_RECEIVE_ORDER);
 			OrderTypeEnum orderType = reqData.getOrderType();
 			// 到店消费订单，实付金额为0时，订单状态为5（交易完成）
 			if (orderType != null && orderType.ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
