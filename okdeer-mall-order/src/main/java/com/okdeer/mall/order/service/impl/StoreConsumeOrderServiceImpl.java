@@ -678,7 +678,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 		TradeOrderRefunds orderRefunds = new TradeOrderRefunds();
 		String refundsId = UuidUtils.getUuid();
 		orderRefunds.setId(refundsId);
-		orderRefunds.setRefundNo(generateNumericalService.generateNumber("XT"));
+		orderRefunds.setRefundNo(generateNumericalService.generateOrderNo("XT"));
 		orderRefunds.setOrderId(order.getId());
 		orderRefunds.setOrderNo(order.getOrderNo());
 		orderRefunds.setStoreId(order.getStoreId());
