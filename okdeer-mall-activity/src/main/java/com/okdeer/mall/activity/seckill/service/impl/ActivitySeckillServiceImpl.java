@@ -159,6 +159,10 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 			seckillRemindeMapper.updateRemindeStatus(activitySeckill.getId(), Constant.ZERO);
 			// 取消消息中心秒杀提醒
 			appMsgApi.cancelTimeSendMsg(activitySeckill.getId());
+			// Begin added by maojj 2016-12-01
+			// 删除缓存的秒杀商品库存键
+			stringRedisTemplate.delete(RedisKeyConstants.SECKILL_STOCK + activitySeckill.getStoreSkuId());
+			// End added by maojj 2016-12-01
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
@@ -196,9 +200,8 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 			this.lockActivitySkuStock(activitySeckillFormVo, rpcIdByStockList);
 			
 			// 设置redis缓存信息
-			Long millisecond = DateUtils.getMilliseconds(activitySeckillFormVo.getStartTime(), activitySeckillFormVo.getEndTime());
 			stringRedisTemplate.boundValueOps(RedisKeyConstants.SECKILL_STOCK + activitySeckillFormVo.getStoreSkuId())
-					.set(String.valueOf(activitySeckillFormVo.getSeckillNum()), millisecond, TimeUnit.MILLISECONDS);	
+					.set(String.valueOf(activitySeckillFormVo.getSeckillNum()));	
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
@@ -243,10 +246,8 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 			
 			// 设置Redis缓存
 			stringRedisTemplate.delete(redisKeyByDel);
-			// 设置redis缓存信息
-			Long millisecond = DateUtils.getMilliseconds(activitySeckillFormVo.getStartTime(), activitySeckillFormVo.getEndTime());
 			stringRedisTemplate.boundValueOps(RedisKeyConstants.SECKILL_STOCK + activitySeckillFormVo.getStoreSkuId())
-					.set(String.valueOf(activitySeckillFormVo.getSeckillNum()), millisecond, TimeUnit.MILLISECONDS);
+					.set(String.valueOf(activitySeckillFormVo.getSeckillNum()));
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
@@ -318,6 +319,10 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 			seckillRemindeMapper.updateRemindeStatus(activitySeckill.getId(), Constant.ZERO);
 			// 取消消息中心秒杀提醒
 			appMsgApi.cancelTimeSendMsg(activitySeckill.getId());
+			// Begin added by maojj 2016-12-01
+			// 删除缓存的秒杀商品库存键
+			stringRedisTemplate.delete(RedisKeyConstants.SECKILL_STOCK + activitySeckill.getStoreSkuId());
+			// End added by maojj 2016-12-01
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
