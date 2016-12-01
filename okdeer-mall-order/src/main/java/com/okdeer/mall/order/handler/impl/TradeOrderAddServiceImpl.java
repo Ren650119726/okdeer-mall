@@ -269,7 +269,8 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			resp.setIsOrder(1);
 			respDto.setMessage(OrderTipMsgConstant.ORDER_SUCESS);
 		} catch (Exception e) {
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			// 现在实物订单库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
+			// rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 	}
