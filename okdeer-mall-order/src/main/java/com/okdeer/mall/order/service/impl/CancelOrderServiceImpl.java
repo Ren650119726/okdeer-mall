@@ -229,9 +229,6 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			tradeOrderLog.setOrderId(tradeOrder.getId());
 			tradeOrderLogMapper.insertSelective(tradeOrderLog);
 
-			// 保存订单轨迹
-			tradeOrderTraceService.saveOrderTrace(tradeOrder);
-
 			// 用户取消时判断是否需要收取违约金
 			boolean isBreach = isBreach(tradeOrder.getCancelType(), oldOrder);
 			if (isBreach) {
@@ -239,6 +236,8 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				tradeOrder.setIsBreach(WhetherEnum.whether);
 			}
 
+			// 保存订单轨迹
+			tradeOrderTraceService.saveOrderTrace(tradeOrder);
 			// 更新订单状态
 			tradeOrderMapper.updateOrderStatus(tradeOrder);
 			tradeOrderMapper.updateByPrimaryKeySelective(tradeOrder);
