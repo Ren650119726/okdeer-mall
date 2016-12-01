@@ -997,6 +997,11 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	//bigein add by zengjz  2016-11-18 增加服务订单确认调用云钱包方法
 	@Override
 	public void confirmStoreServiceOrderPay(TradeOrder tradeOrder) throws Exception {
+		
+		if (tradeOrder.getPayWay() != PayWayEnum.PAY_ONLINE) {
+			return ;
+		}
+		
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 		payTradeVo.setAmount(tradeOrder.getActualAmount());
 		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(tradeOrder.getStoreId()));
