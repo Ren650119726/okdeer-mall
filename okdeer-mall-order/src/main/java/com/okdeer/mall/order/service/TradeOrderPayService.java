@@ -1,6 +1,5 @@
 package com.okdeer.mall.order.service;
 
-import java.util.Map;
 
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderPay;
@@ -44,15 +43,7 @@ public interface TradeOrderPayService {
 	 */
 	boolean confirmOrderPay(TradeOrder tradeOrder) throws Exception;
 
-	/**
-	 * 余额支付</p>
-	 * 
-	 * @author yangq
-	 * @param tradeOrder
-	 * @return
-	 * @throws Exception
-	 */
-	public boolean payOrder(TradeOrder tradeOrder) throws Exception;
+	
 
 	/**
 	 * 验证云钱包用户名是否正确</p>
