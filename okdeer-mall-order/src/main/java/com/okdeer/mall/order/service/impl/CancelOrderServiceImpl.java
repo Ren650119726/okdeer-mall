@@ -244,7 +244,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
 
 			// 发送短信
-			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
+			if ((OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus() && tradeOrder.getCancelType() != OrderCancelType.CANCEL_BY_BUYER)
 					|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()
 					|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
 				// 查询支付信息
