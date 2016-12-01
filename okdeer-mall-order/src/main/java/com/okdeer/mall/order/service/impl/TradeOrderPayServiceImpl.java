@@ -61,6 +61,7 @@ import com.okdeer.mall.order.enums.ActivityBelongType;
 import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
@@ -309,7 +310,8 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			return true;
 		}
 		// 判断非取消中状态和拒绝中的状态则不需要退款
-		if (OrderStatusEnum.CANCELING != tradeOrder.getStatus() && OrderStatusEnum.REFUSING != tradeOrder.getStatus()) {
+		if (OrderTypeEnum.SERVICE_STORE_ORDER != tradeOrder.getType() && OrderStatusEnum.CANCELING != tradeOrder.getStatus() && OrderStatusEnum.REFUSING != tradeOrder.getStatus()) {
+			//服务订单已经取消也需要退违约金
 			return true;
 		}
 
@@ -329,7 +331,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 						|| com.okdeer.mall.order.enums.PayTypeEnum.WXPAY == orderPay.getPayType())) {
 			// 如果是上门服务订单，并且违约了，还是第三方支付订单，需要赔偿违约金给商家
 			// 构建支付违约金信息
-			String tradesPaymentJson = buildBreachMoneyPay(tradeOrder);
+			String tradesPaymentJson = buildBreachMoneyPay(tradeOrder,orderPay.getPayType());
 
 			Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
 					tradesPaymentJson.getBytes(Charsets.UTF_8));
@@ -399,11 +401,12 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	 * @author zengjizu
 	 * @date 2016年11月11日
 	 */
-	private String buildBreachMoneyPay(TradeOrder order) throws ServiceException {
+	private String buildBreachMoneyPay(TradeOrder order,PayTypeEnum payType) throws ServiceException {
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 		payTradeVo.setAmount(order.getBreachMoney());
 		// 增加一个校验金额字段用于云钱包判断用户是否被全部扣除了实付金额
 		payTradeVo.setCheckAmount(order.getActualAmount());
+		payTradeVo.setExt(payType.getName());
 		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		payTradeVo.setTradeNum(order.getTradeNum());
 		payTradeVo.setTitle("取消订单违约金收入[" + order.getTradeNum() + "]");
