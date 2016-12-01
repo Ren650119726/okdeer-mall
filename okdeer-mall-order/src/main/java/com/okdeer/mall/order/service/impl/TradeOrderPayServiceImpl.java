@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
 import com.alibaba.rocketmq.client.producer.LocalTransactionState;
 import com.alibaba.rocketmq.client.producer.SendResult;
@@ -33,15 +32,11 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.okdeer.api.pay.enums.AmountUpdateType;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.enums.PayTradeServiceTypeEnum;
 import com.okdeer.api.pay.enums.PayTradeTypeEnum;
-import com.okdeer.api.pay.enums.PayTypeEnum;
 import com.okdeer.api.pay.enums.SystemEnum;
 import com.okdeer.api.pay.pay.dto.PayReqestDto;
-import com.okdeer.api.pay.pay.dto.PayTradeDto;
 import com.okdeer.api.pay.service.IPayServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
@@ -52,11 +47,9 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
-import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
-import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -188,12 +181,12 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	}
 
 	@Override
-	public Map<String, Object> getMapInfo(int paymentType, TradeOrder tradeOrder, String ip,
-			String openId) throws Exception {
+	public Map<String, Object> getMapInfo(int paymentType, TradeOrder tradeOrder, String ip, String openId)
+			throws Exception {
 
 		TradeOrder order = tradeOrderMapper.selectTradeDetailInfoById(tradeOrder.getId());
-		
-		if(order.getStatus() != OrderStatusEnum.UNPAID){
+
+		if (order.getStatus() != OrderStatusEnum.UNPAID) {
 			throw new Exception("订单状态已经非待支付状态");
 		}
 		// 设置订单信息
@@ -254,7 +247,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			payReqest.setTradeType(PayTradeTypeEnum.APP_ALIPAY);
 		} else if (2 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.APP_WXPAY);
-		}else if (6 == paymentType) {
+		} else if (6 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.WX_WXPAY);
 		}
 		logger.info("payReqest==" + payReqest.toString());
@@ -289,125 +282,12 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 				return null;
 			}
 			result.putAll((JSONObject) obj.get("data"));
-		}else if (6 == paymentType) {
+		} else if (6 == paymentType) {
 			JSONObject obj = JSONObject.parseObject(str);
 			result.putAll((JSONObject) obj.get("data"));
 		}
 		result.put("paymentType", paymentType);
 		return result;
-	}
-
-	/**
-	 * 
-	 * @author yangq
-	 * @desc 更新订单并支付
-	 * @param tradeOrder
-	 * @return
-	 * @throws MQClientException
-	 * @throws ServiceException
-	 */
-	@Transactional(rollbackFor = Exception.class)
-	public boolean updateAndPay(TradeOrder tradeOrder) throws Exception {
-
-		tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
-
-		JSONObject jsonObject = new JSONObject();
-		List<PayTradeDto> payTrades = buildPay(tradeOrder);
-
-		jsonObject.put("list", payTrades);
-		jsonObject.put("topic_pay", PayMessageConstant.TOPIC_PAY);
-
-		String json = JsonMapper.nonDefaultMapper().toJson(jsonObject);
-		Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_RESULT_THIRD,
-				json.getBytes(Charsets.UTF_8));
-		// 发送事务消息
-		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, tradeOrder,
-				new LocalTransactionExecuter() {
-
-					@Override
-					public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
-						insertTradeOrderPayLog((TradeOrder) object);
-						return LocalTransactionState.COMMIT_MESSAGE;
-					}
-				}, new TransactionCheckListener() {
-
-					public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
-						return LocalTransactionState.COMMIT_MESSAGE;
-					}
-				});
-		return RocketMqResult.returnResult(sendResult);
-	}
-
-	/**
-	 * 构建支付对象
-	 */
-	private List<PayTradeDto> buildPay(TradeOrder order) throws ServiceException {
-
-		List<PayTradeDto> payTrades = Lists.newArrayList();
-
-		// 优惠额退款 判断是否有优惠劵
-		if (order.getPreferentialPrice().compareTo(BigDecimal.ZERO) > 0) {
-			PayTradeDto payUserPrivilege = new PayTradeDto();
-			payUserPrivilege.setAmount(order.getActualAmount());
-			payUserPrivilege.setAmountUpdateType(AmountUpdateType.LOG_ONLY);
-			payUserPrivilege.setPayType(PayTypeEnum.ALIPAY);
-			payUserPrivilege.setServiceFkId(order.getId());
-			payUserPrivilege.setServiceNo(order.getOrderNo());
-			// payUserPrivilege.setServiceType(PayServiceTypeEnum.ORDER);
-			payUserPrivilege.setTitle("订单下单");
-			payUserPrivilege.setAmount(order.getPreferentialPrice());
-
-			if (ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES == order.getActivityType()
-					|| ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES == order.getActivityType()) {
-				// 满折:店铺；满减活动：店铺、运营商
-				ActivityDiscount discount = activityDiscountService.selectByPrimaryKey(order.getActivityId());
-				if (!ActivityCollectCoupons.OPERATOR_CODE.equals(discount.getStoreId())) {
-					payUserPrivilege.setUserId(discount.getStoreId());
-				} else {
-					// 运营商
-					payUserPrivilege.setUserId(yscWalletAccount);
-				}
-
-			} else if (ActivityTypeEnum.VONCHER == order.getActivityType()) {
-				// 代金卷：运营商、代理商
-				ActivityCollectCoupons coupons = activityCollectCouponsService.get(order.getActivityId());
-				// 判断是否代理商发的
-				if (!ActivityCollectCoupons.OPERATOR_CODE.equals(coupons.getBelongType())) {
-					// TODO 代理商ID coupons.getBelongType()
-					payUserPrivilege.setUserId("");
-				} else {
-					// 运营商
-					payUserPrivilege.setUserId(yscWalletAccount);
-				}
-			}
-			payTrades.add(payUserPrivilege);
-		}
-
-		// 买家帐户余额更改
-		PayTradeDto payTrade = new PayTradeDto();
-		payTrade.setAmount(order.getActualAmount());
-		payTrade.setAmountUpdateType(AmountUpdateType.LOG_ONLY);
-		payTrade.setPayType(PayTypeEnum.ALIPAY);
-		payTrade.setServiceFkId(order.getId());
-		payTrade.setServiceNo(order.getOrderNo());
-		// payTrade.setServiceType(PayServiceTypeEnum.ORDER);
-		payTrade.setTitle("订单支付");
-		payTrade.setUserId(order.getUserId());
-
-		// 卖家账户余额更改
-		PayTradeDto payTradeSeller = new PayTradeDto();
-		payTradeSeller.setServiceFkId(order.getId());
-		payTradeSeller.setServiceNo(order.getOrderNo());
-		// payTradeSeller.setServiceType(PayServiceTypeEnum.ORDER);
-		payTradeSeller.setTitle("订单支付");
-		payTradeSeller.setAmountUpdateType(AmountUpdateType.UPDATE_FROZEN);
-		payTradeSeller.setPayType(PayTypeEnum.ALIPAY);
-		payTradeSeller.setAmount(order.getTotalAmount().negate());
-		payTradeSeller.setUserId(order.getUserId());
-
-		payTrades.add(payTrade);
-		payTrades.add(payTradeSeller);
-		return payTrades;
 	}
 
 	/**
@@ -522,7 +402,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	private String buildBreachMoneyPay(TradeOrder order) throws ServiceException {
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 		payTradeVo.setAmount(order.getBreachMoney());
-		//增加一个校验金额字段用于云钱包判断用户是否被全部扣除了实付金额
+		// 增加一个校验金额字段用于云钱包判断用户是否被全部扣除了实付金额
 		payTradeVo.setCheckAmount(order.getActualAmount());
 		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		payTradeVo.setTradeNum(order.getTradeNum());
@@ -864,12 +744,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	}
 
 	@Override
-	public boolean payOrder(TradeOrder tradeOrder) throws Exception {
-		boolean flag = updateOrderAndPay(tradeOrder);
-		return flag;
-	}
-
-	@Override
 	public boolean wlletPay(String orderMoney, TradeOrder order) throws Exception {
 
 		TradeOrderPay orderPay = new TradeOrderPay();
@@ -888,7 +762,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 
 		String json = JsonMapper.nonEmptyMapper().toJson(payTrade);
 
-		System.out.println(json);
+		logger.info("发送余额支付信息到云钱包:{}", json);
 
 		Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
 				json.getBytes(Charsets.UTF_8));
@@ -916,11 +790,11 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	private BalancePayTradeVo buildBalancePay(TradeOrder order) throws ServiceException {
 
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
-		
-		//begin modify by zengjz 将设置优惠金额部分提取出来共用
+
+		// begin modify by zengjz 将设置优惠金额部分提取出来共用
 		setActiveAmount(order, payTradeVo);
-		//end modify by zengjz 将设置优惠金额部分提取出来共用
-		
+		// end modify by zengjz 将设置优惠金额部分提取出来共用
+
 		payTradeVo.setAmount(order.getActualAmount()); // 交易金额
 		payTradeVo.setPayUserId(order.getUserId());// 用户id
 		payTradeVo.setTradeNum(order.getTradeNum());// 交易号
@@ -944,66 +818,19 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 
 	}
 
-	/**
-	 * 余额支付更新数据并支付
-	 * </p>
-	 * 
-	 * @author yangq
-	 * 
-	 * @param tradeOrder
-	 * @return
-	 * @throws Exception
-	 */
-	public boolean updateOrderAndPay(TradeOrder tradeOrder) throws Exception {
-
-		TradeOrder order = new TradeOrder();
-
-		order.setStatus(OrderStatusEnum.ALREADY_CONSUME);
-
-		List<PayTradeDto> payTrades = buildPay(order);
-
-		JSONObject jsonObject = new JSONObject();
-		jsonObject.put("list", payTrades);
-		jsonObject.put("tag_pay_trade_result", PayMessageConstant.TAG_PAY_RESULT_REFUND);
-
-		String json = JsonMapper.nonEmptyMapper().toJson(jsonObject);
-
-		Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
-				json.getBytes(Charsets.UTF_8));
-
-		// 发送事务消息
-		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, tradeOrder,
-				new LocalTransactionExecuter() {
-
-					@Override
-					public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
-						insertTradeOrderPayLog((TradeOrder) object);
-						return LocalTransactionState.COMMIT_MESSAGE;
-					}
-				}, new TransactionCheckListener() {
-
-					public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
-						return LocalTransactionState.COMMIT_MESSAGE;
-					}
-				});
-		return RocketMqResult.returnResult(sendResult);
-
-	}
-
 	@Override
 	public int selectTradeOrderPayByOrderId(String orderId) throws Exception {
 		return tradeOrderPayMapper.selectTradeOrderPayByOrderId(orderId);
 	}
 
-	
-	//bigein add by zengjz  2016-11-18 增加服务订单确认调用云钱包方法
+	// bigein add by zengjz 2016-11-18 增加服务订单确认调用云钱包方法
 	@Override
 	public void confirmStoreServiceOrderPay(TradeOrder tradeOrder) throws Exception {
-		
+
 		if (tradeOrder.getPayWay() != PayWayEnum.PAY_ONLINE) {
-			return ;
+			return;
 		}
-		
+
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 		payTradeVo.setAmount(tradeOrder.getActualAmount());
 		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(tradeOrder.getStoreId()));
@@ -1025,8 +852,8 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			throw new Exception("确认订单付款发送消息失败");
 		}
 	}
-	//end add by zengjz  2016-11-18 增加服务订单确认调用云钱包方法
-	
+	// end add by zengjz 2016-11-18 增加服务订单确认调用云钱包方法
+
 	/**
 	 * @Description: 设置优惠金额
 	 * @param order 订单信息
@@ -1035,35 +862,12 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	 * @date 2016年11月18日
 	 */
 	private void setActiveAmount(TradeOrder order, BalancePayTradeVo payTradeVo) {
-		// 优惠额支付 判断是否有优惠劵
-		if (!order.getActivityId().equals("") && order.getActivityType().ordinal() != 4
-				&& order.getActivityType().ordinal() != 0) {
-			if (ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES == order.getActivityType()
-					|| ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES == order.getActivityType()) {
-				// 满折:店铺；满减活动：店铺、运营商
-				ActivityDiscount discount = activityDiscountService.selectByPrimaryKey(order.getActivityId());
-				if (!ActivityCollectCoupons.OPERATOR_CODE.equals(discount.getStoreId())) {
-					payTradeVo.setActivitier(discount.getStoreId());
-				} else {
-					// 运营商
-					payTradeVo.setActivitier(yscWalletAccount);
-				}
-				// 优惠金额
-				payTradeVo.setPrefeAmount(order.getPreferentialPrice());
-			} else if (ActivityTypeEnum.VONCHER == order.getActivityType()) {
-				// 代金卷：运营商、代理商
-				ActivityCollectCoupons coupons = activityCollectCouponsService.get(order.getActivityId());
-				// 判断是否代理商发的
-				if (!ActivityCollectCoupons.OPERATOR_CODE.equals(coupons.getBelongType())) {
-					// TODO 代理商ID coupons.getBelongType()
-					payTradeVo.setActivitier(coupons.getBelongType());
-				} else {
-					// 运营商
-					payTradeVo.setActivitier(yscWalletAccount);
-				}
-				// 优惠金额
-				payTradeVo.setPrefeAmount(order.getPreferentialPrice());
-			}
+		// 优惠额退款 判断是否有优惠劵
+		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
+		if (activityResource == ActivityBelongType.OPERATOR || activityResource == ActivityBelongType.AGENT
+				&& (order.getPreferentialPrice().compareTo(BigDecimal.ZERO) > 0)) {
+			payTradeVo.setPrefeAmount(order.getPreferentialPrice());
+			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
 		}
 	}
 }
