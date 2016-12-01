@@ -522,6 +522,8 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	private String buildBreachMoneyPay(TradeOrder order) throws ServiceException {
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 		payTradeVo.setAmount(order.getBreachMoney());
+		//增加一个校验金额字段用于云钱包判断用户是否被全部扣除了实付金额
+		payTradeVo.setCheckAmount(order.getActualAmount());
 		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		payTradeVo.setTradeNum(order.getTradeNum());
 		payTradeVo.setTitle("取消订单违约金收入[" + order.getTradeNum() + "]");
