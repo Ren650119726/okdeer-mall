@@ -660,6 +660,8 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.EXPIRED);
 			// 更新订单状态
 			tradeOrderMapper.updateOrderStatus(order);
+			//消费过期的数量
+			item.setQuantity(result);
 			// 回收库存
 			order.setTradeOrderItem(Lists.newArrayList(item));
 			stockOperateService.recycleStockByOrder(order, rpcIdList);
