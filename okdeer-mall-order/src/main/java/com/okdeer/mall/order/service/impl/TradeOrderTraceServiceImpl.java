@@ -28,6 +28,7 @@ import com.okdeer.mall.order.mapper.TradeOrderTraceMapper;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
 import com.okdeer.mall.order.vo.RefundsTraceResp;
 import com.okdeer.mall.order.vo.RefundsTraceVo;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * ClassName: TradeOrderTraceServiceImpl 
@@ -211,7 +212,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 					if (cancelType == OrderCancelType.CANCEL_BY_BUYER) {
 						if (isBreach == WhetherEnum.whether) {
 							// TODO 第二个参数时违约金的百分比
-							remark = String.format(OrderTraceConstant.CANCEL_BY_USER_BREAK_CONTRACT, reason, tradeOrder.getBreachPercent(),tradeOrder.getBreachMoney());
+							remark = String.format(OrderTraceConstant.CANCEL_BY_USER_BREAK_CONTRACT, reason, tradeOrder.getBreachPercent(),ConvertUtil.format(tradeOrder.getBreachMoney()));
 						} else {
 							remark = String.format(OrderTraceConstant.CANCEL_BY_USER, reason);
 						}
@@ -230,7 +231,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 			trace.setRemark(remark);
 		}
 	}
-
+	
 	@Override
 	public Response<RefundsTraceResp> findOrderTrace(String orderId) {
 		Response<RefundsTraceResp> resp = new Response<RefundsTraceResp>();
