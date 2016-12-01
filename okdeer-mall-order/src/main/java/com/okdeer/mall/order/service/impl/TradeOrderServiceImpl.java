@@ -153,6 +153,7 @@ import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.OrderPayTypeEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTraceEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
@@ -228,6 +229,7 @@ import net.sf.json.JsonConfig;
  *      V.1.2.0           2016-11-18        maojj             POS订单导出新增货号信息
  *      V1.2.0            2016-11-24        wusw              修改订单数量统计的问题
  *      v1.2.0            2016-11-28       zengjz             修改判断验证码逻辑
+ *      15486             2016-11-29        wusw              如果是服务店订单，直接查询投诉信息，如果不是，已完成状态的订单才能查询投诉信息
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1109,9 +1111,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 				map.clear();
 				map.put("orderId", orderId);
-				// 订单状态已完成后才能有投诉信息
-				tradeOrderVo.setTradeOrderComplainVoList(tradeOrderComplainMapper.findOrderComplainByParams(orderId));
 			}
+			// Begin 15486 add by wusw 20161129
+			// 如果是服务店订单，直接查询投诉信息，如果不是，已完成状态的订单才能查询投诉信息
+			if (tradeOrderVo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER || tradeOrderVo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+				tradeOrderVo.setTradeOrderComplainVoList(tradeOrderComplainMapper.findOrderComplainByParams(orderId));
+			} else {
+				// 订单状态已完成后才能有投诉信息
+				if (OrderStatusEnum.HAS_BEEN_SIGNED.equals(tradeOrderVo.getStatus())
+						|| OrderStatusEnum.TRADE_CLOSED.equals(tradeOrderVo.getStatus())) {
+					tradeOrderVo.setTradeOrderComplainVoList(tradeOrderComplainMapper.findOrderComplainByParams(orderId));
+				}
+			}
+			// End 15486 add by wusw 20161129
 
 			// 获取订单活动信息
 			Map<String, Object> activityMap = getActivity(tradeOrderVo.getActivityType(), tradeOrderVo.getActivityId());
@@ -1492,7 +1504,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
-			rollbackMQProducer.sendStockRollbackMsg(rpcId);
+			// rollbackMQProducer.sendStockRollbackMsg(rpcId);
 			throw e;
 		}
 	}
@@ -3976,10 +3988,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 状态为未付款
 			// 订单创建时间
 			Date createTime = orders.getCreateTime();
-			Date currentDate = new Date();
 			// 支付到期毫秒
 			long endTimes = createTime.getTime() + (Constant.THIRTH * 60 * 1000);
-			long remainingTime = (endTimes - currentDate.getTime()) / 1000;
+			long remainingTime = (endTimes - System.currentTimeMillis()) / 1000;
 			// 支付剩余时间（精确）
 			if (remainingTime > 0) {
 				json.put("remainingTime", remainingTime);
@@ -4015,6 +4026,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 下单时间
 		json.put("orderSubmitOrderTime", orders.getCreateTime() != null
 				? DateUtils.formatDate(orders.getCreateTime(), "yyyy-MM-dd HH:mm:ss") : "");
+		// Begin V1.2 added by maojj 2016-11-29
+		// 服务订单接单时间
+		String deliveryTime =  orders.getDeliveryTime() != null
+				? DateUtils.formatDate(orders.getDeliveryTime(), "yyyy-MM-dd HH:mm:ss") : "";
+		json.put("orderAcceptTime", orders.getAcceptTime() != null
+				? DateUtils.formatDate(orders.getAcceptTime(), "yyyy-MM-dd HH:mm:ss") : deliveryTime);
+		// End V1.2 added by maojj 2016-11-29
 		// 出发时间--对应实物订单发货时间
 		json.put("orderDeliveryTime", orders.getDeliveryTime() != null
 				? DateUtils.formatDate(orders.getDeliveryTime(), "yyyy-MM-dd HH:mm:ss") : "");
@@ -4137,6 +4155,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
 					// 购买商品的数量
 					item.put("quantity", tradeOrderItem.getQuantity());
+					item.put("itemId", tradeOrderItem.getId());
 					itemArray.add(item);
 				}
 				json.put("orderItems", itemArray);
@@ -4172,7 +4191,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			if (null != traceList) {
 				for (RefundsTraceVo vo : traceList) {
 					if (vo.getIsDone() == 1) {
-						orderStatusRemark = vo.getContent();
+						OrderTraceEnum traceStatus = vo.getTraceStatus();
+						// 如果订单已完成并且已评价，则用这个文案
+						if (OrderTraceEnum.COMPLETED.equals(traceStatus) && appraise > 0) {
+							orderStatusRemark = "订单服务完成,任何意见和吐槽,都欢迎联系我们";
+						} else if (OrderTraceEnum.CANCELED.equals(traceStatus) ||
+								OrderTraceEnum.SUBMIT_ORDER.equals(traceStatus)) {
+							orderStatusRemark = vo.getContent();
+						} else {
+							orderStatusRemark = traceStatus.getRemark();
+						}
 					} else {
 						break;
 					}
@@ -4499,7 +4527,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			resultMap.put("failure", failResult.toString());
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			// 现在实物订单库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
+			// rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 
@@ -4592,7 +4621,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			} catch (Exception e) {
 				logger.error("pos 发货锁定库存发生异常", e);
 				// added by maojj
-				rollbackMQProducer.sendStockRollbackMsg(rpcId);
+				// rollbackMQProducer.sendStockRollbackMsg(rpcId);
 				throw e;
 			}
 

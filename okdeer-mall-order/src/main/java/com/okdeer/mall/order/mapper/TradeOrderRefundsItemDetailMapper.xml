@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderRefundsItemDetailMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderRefundsItemDetail" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="refund_item_id" property="refundItemId" jdbcType="VARCHAR" />
+        <result column="order_item_detail_id" property="orderItemDetailId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, refund_item_id, order_item_detail_id
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from trade_order_refunds_item_detail
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.order.entity.TradeOrderRefundsItemDetail" >
+        insert into trade_order_refunds_item_detail
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="refundItemId != null" >
+                refund_item_id,
+            </if>
+            <if test="orderItemDetailId != null" >
+                order_item_detail_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="refundItemId != null" >
+                #{refundItemId,jdbcType=VARCHAR},
+            </if>
+            <if test="orderItemDetailId != null" >
+                #{orderItemDetailId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.order.entity.TradeOrderRefundsItemDetail" >
+        update trade_order_refunds_item_detail
+        <set >
+            <if test="refundItemId != null" >
+                refund_item_id = #{refundItemId,jdbcType=VARCHAR},
+            </if>
+            <if test="orderItemDetailId != null" >
+                order_item_detail_id = #{orderItemDetailId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from trade_order_refunds_item_detail
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+	
+	 <!-- 批量插入退款单项明细信息 start -->
+    <insert id="batchAdd" parameterType="java.util.List">
+        INSERT INTO trade_order_refunds_item_detail
+        <!-- 批量插入 14 个参数 -->
+        (id,refund_item_id,order_item_detail_id)
+        VALUES
+        <foreach collection="list"  index="index" item="s" separator=",">
+            <trim prefix="(" suffix=")">
+                #{s.id,jdbcType=VARCHAR},
+                #{s.refundItemId,jdbcType=VARCHAR},
+                #{s.orderItemDetailId,jdbcType=VARCHAR}
+            </trim>
+        </foreach>
+    </insert>
+    <!-- 批量插入退款单项明细信息 end -->
+</mapper>

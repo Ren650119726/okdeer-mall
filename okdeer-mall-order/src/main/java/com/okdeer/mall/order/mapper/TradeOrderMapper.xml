@@ -1097,7 +1097,7 @@
 		SELECT
 		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,
 		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,
-		o.update_time,o.pay_way,o.cancel_type,
+		o.update_time,o.pay_way,o.cancel_type,o.accept_time,
 		logistics.consignee_name,logistics.telephone,logistics.mobile,logistics.area,logistics.address,
 		logistics.type as
 		logistics_type,logistics.logistics_no,logistics.logistics_company_name,
@@ -2629,6 +2629,9 @@
 			</if>
 			<if test="deliveryTime != null">
 				delivery_time = #{deliveryTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="acceptTime != null">
+				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
 			</if>
 			<if test="shipmentsUserId != null">
 				shipments_user_id = #{shipmentsUserId,jdbcType=VARCHAR},
@@ -4612,7 +4615,9 @@
 		<!-- LEFT JOIN trade_order_refunds trf ON tr.id = trf.order_id -->
 		WHERE (tr.status = 1 OR tr.status = 5 OR tr.status = 6 OR tr.status =
 		0 OR tr.status = 11 OR tr.status = 2)
-		AND tr.is_show=1
+		<if test="isShow != null">
+			AND tr.is_show = #{isShow,jdbcType=TINYINT}
+		</if>
 		<!-- 充值类型选择 流量或者话费 -->
 		<if test="ids != null">
 			AND tr.id in

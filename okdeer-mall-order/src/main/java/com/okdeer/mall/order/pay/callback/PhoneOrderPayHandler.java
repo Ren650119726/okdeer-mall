@@ -39,6 +39,7 @@ public class PhoneOrderPayHandler extends AbstractPhoneRechargePayHandler {
 		if (tradeOrderItems.isEmpty()) {
 			return;
 		}
+		tradeOrder.setTradeOrderItem(tradeOrderItems);
 		TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
 		String phoneno = tradeOrderItem.getRechargeMobile();
 		String cardnum = tradeOrderItem.getStoreSkuId();

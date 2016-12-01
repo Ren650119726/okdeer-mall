@@ -1,5 +1,6 @@
 package com.okdeer.mall.order.pay.callback;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.annotation.Resource;
@@ -7,7 +8,6 @@ import javax.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.api.pay.pay.dto.PayResponseDto;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
@@ -28,17 +28,17 @@ import com.okdeer.mall.risk.service.RiskTriggerConditions;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
-public abstract class AbstractPhoneRechargePayHandler extends AbstractPayResultHandler{
+public abstract class AbstractPhoneRechargePayHandler extends AbstractPayResultHandler {
 
-	//存储设备ID--用于风控记录设备号
+	// 存储设备ID--用于风控记录设备号
 	private static final String MALL_ORDER_DEVICEID_KEY = "MALL:ORDER:DEVICE:";
-	
+
 	@Resource
 	private IRedisTemplateWrapper<String, String> redisTemplateWrapper;
-	
+
 	@Autowired
 	private RiskTriggerConditions riskTriggerConditions;
-	
+
 	@Resource
 	protected TradeOrderItemService tradeOrderItemService;
 
@@ -150,7 +150,7 @@ public abstract class AbstractPhoneRechargePayHandler extends AbstractPayResultH
 
 	@Value("${mcm.sys.token}")
 	protected String mcmSysToken;
-	
+
 	@Override
 	protected boolean isConsumed(TradeOrder tradeOrder) {
 		if (tradeOrder == null || tradeOrder.getStatus() == OrderStatusEnum.DROPSHIPPING
@@ -165,17 +165,17 @@ public abstract class AbstractPhoneRechargePayHandler extends AbstractPayResultH
 		}
 		return false;
 	}
-	
+
 	@Override
 	protected void updateOrderStatus(TradeOrder tradeOrder) throws Exception {
 		// 手机充值需要根据第三方返回结果确定是否更新订单状态，走的是独立的流程。所以该方法此处不做任何处理
 	}
-	
+
 	@Override
 	protected void sendNotifyMessage(TradeOrder tradeOrder) throws Exception {
 		// 手机充值无须发送通知消息
 	}
-	
+
 	protected void updateTradeOrderStatus(TradeOrder tradeOrder) throws Exception {
 		// 修改订单状态为代发货
 		tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
@@ -203,7 +203,7 @@ public abstract class AbstractPhoneRechargePayHandler extends AbstractPayResultH
 		smsVo.setSendTime(DateUtils.formatDateTime(new Date()));
 		return smsVo;
 	}
-	
+
 	/**
 	 * 执行退款流程
 	 * @param tradeOrder
@@ -239,13 +239,17 @@ public abstract class AbstractPhoneRechargePayHandler extends AbstractPayResultH
 	 * @date 2016年11月22日
 	 */
 	protected boolean isTrigger(TradeOrder tradeOrder, PayResponseDto respDto, String phoneno) throws Exception {
-		
-		if(tradeOrder.getType()==OrderTypeEnum.PHONE_PAY_ORDER){
+
+		if (tradeOrder.getType() == OrderTypeEnum.PHONE_PAY_ORDER) {
 			RiskOrderRecord riskOrder = new RiskOrderRecord();
 			riskOrder.setId(UuidUtils.getUuid());
 			riskOrder.setCreateTime(tradeOrder.getCreateTime());
 			riskOrder.setDeviceId(getDeviceId(tradeOrder.getId()));
-			riskOrder.setFacePrice(tradeOrder.getTotalAmount());
+			if (tradeOrder.getTradeOrderItem() == null || tradeOrder.getTradeOrderItem().size() <= 0) {
+				throw new Exception("风控过滤异常，订单项为空");
+			}
+			String priceStr = tradeOrder.getTradeOrderItem().get(0).getStoreSkuId();
+			riskOrder.setFacePrice(new BigDecimal(priceStr));
 			riskOrder.setIsPreferential(
 					tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER ? IsPreferential.YES : IsPreferential.NO);
 			riskOrder.setLoginName(tradeOrder.getUserPhone());
@@ -272,7 +276,7 @@ public abstract class AbstractPhoneRechargePayHandler extends AbstractPayResultH
 		}
 		return PayAccountType.OTHER;
 	}
-	
+
 	/**
 	 * 获取设备号
 	 * @param tradeOrderId
@@ -280,7 +284,7 @@ public abstract class AbstractPhoneRechargePayHandler extends AbstractPayResultH
 	 * @author guocp
 	 * @date 2016年11月22日
 	 */
-	protected String getDeviceId(String tradeOrderId){
-		return redisTemplateWrapper.get(MALL_ORDER_DEVICEID_KEY+tradeOrderId);
+	protected String getDeviceId(String tradeOrderId) {
+		return redisTemplateWrapper.get(MALL_ORDER_DEVICEID_KEY + tradeOrderId);
 	}
 }

@@ -2392,7 +2392,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		}
 
 		String orderNo = "";
-		orderNo = generateNumericalService.generateNumber("XS"); // 订单编号生成
+		orderNo = generateNumericalService.generateOrderNo("XS"); // 订单编号生成
 		logger.info("~~~~~~~~生成订单编号：~~~~~~~~~~" + orderNo);
 
 		int pick = Integer.valueOf(saveInParam.getPickType()); // 提货类型
@@ -3379,7 +3379,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 							} else {
 								order.setId(UuidUtils.getUuid());
 								int actType = Integer.valueOf(activityType);
-								String orderNo = generateNumericalService.generateNumber("XS"); // 订单编号生成
+								String orderNo = generateNumericalService.generateOrderNo("XS"); // 订单编号生成
 
 								TradeOrderItem orderItem = new TradeOrderItem();
 								orderItem.setId(UuidUtils.getUuid());
@@ -3691,7 +3691,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 						} else {
 							order.setId(UuidUtils.getUuid());
 							int actType = Integer.valueOf(activityType);
-							String orderNo = generateNumericalService.generateNumber("XS"); // 订单编号生成
+							String orderNo = generateNumericalService.generateOrderNo("XS"); // 订单编号生成
 
 							TradeOrderItem orderItem = new TradeOrderItem();
 							orderItem.setId(UuidUtils.getUuid());

@@ -343,14 +343,17 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		if (reqData.getPayWay().equals(PayWayEnum.OFFLINE_CONFIRM_AND_PAY)) {
 			tradeOrder.setStatus(OrderStatusEnum.WAIT_RECEIVE_ORDER);
 			tradeOrder.setPayWay(PayWayEnum.OFFLINE_CONFIRM_AND_PAY);
+			//线下确认并当面支付的订单实付金额、收入均为0
+			tradeOrder.setActualAmount(BigDecimal.valueOf(0));
+			tradeOrder.setIncome(BigDecimal.valueOf(0));
+			tradeOrder.setPreferentialPrice(BigDecimal.valueOf(0));
 		} else {
 			// 否则是等待买家付款
 			tradeOrder.setStatus(OrderStatusEnum.UNPAID);
 			tradeOrder.setPayWay(PayWayEnum.PAY_ONLINE);
+			// 解析优惠活动(优惠金额,实付金额,店铺总收入)
+			parseFavour(tradeOrder, reqData);
 		}
-
-		// 解析优惠活动(优惠金额,实付金额,店铺总收入)
-		parseFavour(tradeOrder, reqData);
 
 		OrderTypeEnum orderType = reqData.getOrderType();
 		switch (orderType) {
@@ -390,7 +393,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		}
 		if(tradeOrder.getIsBreachMoney() == WhetherEnum.whether){
 			// 如果店铺设置了违约金，计算订单应该收取的违约金存入订单记录中
-			tradeOrder.setBreachMoney(tradeOrder.getIncome().multiply(BigDecimal.valueOf(tradeOrder.getBreachPercent())).divide(BigDecimal.valueOf(100),2, BigDecimal.ROUND_UP));
+			tradeOrder.setBreachMoney(tradeOrder.getActualAmount().multiply(BigDecimal.valueOf(tradeOrder.getBreachPercent())).divide(BigDecimal.valueOf(100),2, BigDecimal.ROUND_UP));
 		}
 		// End V1.2 added by maojj 2016-11-08
 		
@@ -524,11 +527,17 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			}
 			tradeOrderItem.setPreferentialPrice(favourItem);
 			// 设置实付金额
-			tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(favourItem));
-			// 设置订单项收入
-			setOrderItemIncome(tradeOrderItem, tradeOrder);
+			if (req.getData().getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
+				// 线下支付的实付金额为0
+				tradeOrderItem.setActualAmount(BigDecimal.valueOf(0));
+				tradeOrderItem.setIncome(BigDecimal.valueOf(0));
+			} else {
+				tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(favourItem));
+				// 设置订单项收入
+				setOrderItemIncome(tradeOrderItem, tradeOrder);
+			}
 			if (tradeOrderItem.getActualAmount().compareTo(BigDecimal.ZERO) == 0
-					&& orderType != null && orderType.ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+					&& orderType == OrderTypeEnum.STORE_CONSUME_ORDER ) {
 				// 实付金额为0的到店消费订单，设置服务保障为无
 				tradeOrderItem.setServiceAssurance(0);
 			}
@@ -687,11 +696,11 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		// 如果总金额<优惠金额，则实付为0，否则实付金额为总金额-优惠金额
 		if (totalAmount.compareTo(favourAmount) == -1 || totalAmount.compareTo(favourAmount) == 0) {
 			tradeOrder.setActualAmount(new BigDecimal(0.0));
-			// 实付金额为0时，订单状态为待派单
-			tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
+			// 实付金额为0时，订单状态为未支付
+			tradeOrder.setStatus(OrderStatusEnum.UNPAID);
 			OrderTypeEnum orderType = reqData.getOrderType();
 			// 到店消费订单，实付金额为0时，订单状态为5（交易完成）
-			if (orderType != null && orderType.ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
+			if (orderType == OrderTypeEnum.STORE_CONSUME_ORDER) {
 				tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
 			}
 		} else {
@@ -874,7 +883,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		tradeOrder.setFare(BigDecimal.ZERO);
 		// 服务店扩展信息
 		StoreInfoServiceExt serviceExt = resp.getData().getStoreInfoServiceExt();
-		if (serviceExt != null && serviceExt.getIsShoppingCart() == 1 && serviceExt.getIsDistributionFee() == 1) {
+		// 线下支付确认的没有运费
+		if (reqDto.getPayWay() != PayWayEnum.OFFLINE_CONFIRM_AND_PAY && serviceExt != null && serviceExt.getIsShoppingCart() == 1 && serviceExt.getIsDistributionFee() == 1) {
 			// 配送费
 			Double distributionFee = serviceExt.getDistributionFee();
 			// 已满起送价是否收取配送费，0：否，1：是

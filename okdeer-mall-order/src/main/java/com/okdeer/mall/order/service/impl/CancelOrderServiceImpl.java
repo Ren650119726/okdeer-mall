@@ -173,11 +173,25 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			BeanUtils.copyProperties(tradeOrder, oldOrder);
 			tradeOrder.setCurrentStatus(oldOrder.getStatus());
 
+			// 用户取消时判断是否需要收取违约金
+			boolean isBreach = isBreach(tradeOrder.getCancelType(), oldOrder);
+			if (isBreach) {
+				// 如果需要收取违约金
+				tradeOrder.setIsBreach(WhetherEnum.whether);
+			}
+
 			// 订单状态为已发货或者待发货，全部变为取消中
 			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
 					|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
 				if (oldOrder.getPayWay() == PayWayEnum.PAY_ONLINE) {
-					tradeOrder.setStatus(OrderStatusEnum.CANCELING);
+					// begin modify by zengjz 违约金逻辑判断
+					if (isBreach && oldOrder.getBreachPercent() != null && oldOrder.getBreachPercent().intValue() == 100) {
+						// 如果违约金是百分白的话，直接把订单状态改为取消完成
+						tradeOrder.setStatus(OrderStatusEnum.CANCELED);
+					} else {
+						tradeOrder.setStatus(OrderStatusEnum.CANCELING);
+					}
+					// end modify by zengjz 违约金逻辑判断
 				} else {
 					tradeOrder.setStatus(OrderStatusEnum.CANCELED);
 				}
@@ -224,17 +238,8 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 
 			// 保存订单轨迹
 			tradeOrderTraceService.saveOrderTrace(tradeOrder);
-
-			// 用户取消时判断是否需要收取违约金
-			boolean isBreach = isBreach(tradeOrder.getCancelType(), oldOrder);
-			if (isBreach) {
-				// 如果需要收取违约金
-				tradeOrder.setIsBreach(WhetherEnum.whether);
-			}
-
 			// 更新订单状态
 			tradeOrderMapper.updateOrderStatus(tradeOrder);
-			tradeOrderMapper.updateByPrimaryKeySelective(tradeOrder);
 			// 回收库存
 			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
 
@@ -258,7 +263,10 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 
 		} catch (Exception e) {
 			// 通知回滚库存修改
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
+			if (tradeOrder.getType() != OrderTypeEnum.PHYSICAL_ORDER){
+				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			}
 			throw e;
 		}
 	}

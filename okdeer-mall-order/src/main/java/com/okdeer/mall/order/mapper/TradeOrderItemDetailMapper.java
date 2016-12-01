@@ -23,6 +23,7 @@ import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
  *    V1.1.0            2016-09-23           wusw                 添加消费码验证（到店消费）相应方法
  *    V1.1.0            2016-09-24           wusw                 添加消费码验证（到店消费）相应方法
  *    V1.1.0            2016-09-29           zhaoqc               查询验证码在店铺中是否存在
+ *    v1.2.0            2016-11-28          zengjz             根据退款单项id查询订单明细列表
  */
 public interface TradeOrderItemDetailMapper{
 
@@ -204,4 +205,16 @@ public interface TradeOrderItemDetailMapper{
 	 */
 	int updateStatusWithRefundById(String id);
 	// End V1.1.0 add by zengjz 20161011
+	
+	// begin V1.2.0 add by zengjz 20161128
+	/**
+	 * @Description: 根据退款单项id查询订单明细列表
+	 * @param refundItemId 退款单项id
+	 * @return
+	 * @author zengjizu
+	 * @date 2016年11月28日
+	 */
+	List<TradeOrderItemDetail> findRefundTradeOrderItemDetailList(@Param("refundItemId")String refundItemId);
+	
+	// End V1.2.0 add by zengjz 20161128
 }
