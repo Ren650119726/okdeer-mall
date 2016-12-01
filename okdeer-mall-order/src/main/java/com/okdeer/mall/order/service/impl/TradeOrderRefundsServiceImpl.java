@@ -427,7 +427,7 @@ public class TradeOrderRefundsServiceImpl
 		refunds.setStoreId("");
 		refunds.setOrderId(tradeOrder.getId());
 
-		refunds.setRefundNo(this.generateNumericalService.generateNumber("XT"));
+		refunds.setRefundNo(this.generateNumericalService.generateOrderNo("XT"));
 		refunds.setTradeNum(TradeNumUtil.getTradeNum());
 		refunds.setOrderNo(tradeOrder.getOrderNo());
 		refunds.setStatus(OrderItemStatusEnum.ALL_REFUND);

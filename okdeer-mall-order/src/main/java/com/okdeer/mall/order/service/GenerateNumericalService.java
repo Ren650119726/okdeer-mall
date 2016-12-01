@@ -51,4 +51,6 @@ public interface GenerateNumericalService{
 	 */
 	String generateOrderNo(String prefix, String branchCode, String posId);
 	// End 1.0.Z 调整订单编号生成规则 add by zengj
+	
+	String generateOrderNo(String prefix);
 }
