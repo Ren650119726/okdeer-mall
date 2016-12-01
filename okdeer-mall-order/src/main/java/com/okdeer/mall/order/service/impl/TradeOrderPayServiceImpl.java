@@ -309,7 +309,8 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			return true;
 		}
 		// 判断非取消中状态和拒绝中的状态则不需要退款
-		if (OrderStatusEnum.CANCELING != tradeOrder.getStatus() && OrderStatusEnum.REFUSING != tradeOrder.getStatus()) {
+		if (OrderTypeEnum.SERVICE_STORE_ORDER != tradeOrder.getType() && OrderStatusEnum.CANCELING != tradeOrder.getStatus() && OrderStatusEnum.REFUSING != tradeOrder.getStatus()) {
+			//服务订单已经取消也需要退违约金
 			return true;
 		}
 
