@@ -4195,6 +4195,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// 如果订单已完成并且已评价，则用这个文案
 						if (OrderTraceEnum.COMPLETED.equals(traceStatus) && appraise > 0) {
 							orderStatusRemark = "订单服务完成,任何意见和吐槽,都欢迎联系我们";
+						} else if (OrderTraceEnum.WAIT_RECEIVE.equals(traceStatus) && 
+								orders.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
+							// 如果订单带派单并且是线下支付的，则用这个文案
+							orderStatusRemark = "等待商家接单,线下确认价格并当面支付";
 						} else if (OrderTraceEnum.CANCELED.equals(traceStatus) ||
 								OrderTraceEnum.SUBMIT_ORDER.equals(traceStatus)) {
 							orderStatusRemark = vo.getContent();
