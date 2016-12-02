@@ -1504,7 +1504,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
-			rollbackMQProducer.sendStockRollbackMsg(rpcId);
+			// rollbackMQProducer.sendStockRollbackMsg(rpcId);
 			throw e;
 		}
 	}
@@ -4527,7 +4527,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			resultMap.put("failure", failResult.toString());
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			// 现在实物订单库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
+			// rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 
@@ -4620,7 +4621,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			} catch (Exception e) {
 				logger.error("pos 发货锁定库存发生异常", e);
 				// added by maojj
-				rollbackMQProducer.sendStockRollbackMsg(rpcId);
+				// rollbackMQProducer.sendStockRollbackMsg(rpcId);
 				throw e;
 			}
 

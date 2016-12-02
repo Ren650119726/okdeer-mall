@@ -124,7 +124,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			activitySaleGoodsMapper.saveBatch(asgList);
 
 		} catch (Exception e) {
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
+			// 现在库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
+			// rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
 			throw e;
 		}
@@ -317,7 +318,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
 					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 		} catch (Exception e) {
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
+			// 现在实物订单库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
+			// rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
 			rollbackMQProducer.sendSkuBatchRollbackMsg(rpcIdByBathSkuList);
 			throw e;
@@ -407,7 +409,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				}
 			}
 		} catch (Exception e) {
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
+			// 现在库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
+			//rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuBatchRollbackMsg(rpcIdByBathSkuList);
 			throw e;
 		}
@@ -474,7 +477,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			rpcIdBySkuList.add(rpcId);
 			goodsStoreSkuServiceApi.updateByPrimaryKeySelective(goodsStoreSku);
 		} catch (Exception e) {
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
+			// 现在库存放入商业管理系统管理。那边没提供补偿机制，不发送库存回滚的消息
+			//rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
 			throw e;
 		}

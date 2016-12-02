@@ -51,7 +51,7 @@ public class RiskBlackServiceTest {
 	@Resource
 	private RiskBlackService riskBlackService;
 	
-	@Test
+	//@Test
 	public void findBlackListTest() {
 		RiskBlackDto riskBlackDto = new RiskBlackDto();
 		riskBlackDto.setAccountType(0);
@@ -108,27 +108,39 @@ public class RiskBlackServiceTest {
 		Date updateTime = new Date();
 		riskBlackService.deleteBatchByIds(ids, updateUserId, updateTime);
 	}
-	@Test
+	//@Test
 	public void findAllBlackMobileTest(){
 		Set<String> riskBlackSet = riskBlackService.findAllBlackMobile();
 		assertTrue(riskBlackSet.size()>0);
 	}
 	
-	@Test
+	//@Test
 	public void findAllBlackDeviceTest(){
 		Set<String> riskBlackSet = riskBlackService.findAllBlackDevice();
 		assertTrue(riskBlackSet.size()>0);
 	}
 	
-	@Test
+	//@Test
 	public void findAllBlackPayAccountTest(){
 		Set<String> riskBlackSet = riskBlackService.findAllBlackPayAccount();
 		assertTrue(riskBlackSet.size()>0);
 	}
 	
-	@Test
+	//@Test
 	public void findAllBlackLoginAccountTest(){
 		Set<String> riskBlackSet = riskBlackService.findAllBlackLoginAccount();
 		assertTrue(riskBlackSet.size()>0);
+	}
+	//测试删除时缓存是否更新
+	@Test
+	@Rollback
+	public void findAllBlackDeviceTest2() throws Exception{
+		
+		Set<String> Set1 = riskBlackService.findAllBlackDevice();
+		String id="8a94e40558b3c9040158b3e03eca0054";
+		int count = riskBlackService.delete(id);
+		assertTrue(count>0);
+		Set<String> Set2 = riskBlackService.findAllBlackDevice();
+		assertTrue(Set1.size()==Set2.size());
 	}
 }

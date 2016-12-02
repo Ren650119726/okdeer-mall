@@ -68,6 +68,7 @@ import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
@@ -666,7 +667,10 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			order.setTradeOrderItem(Lists.newArrayList(item));
 			stockOperateService.recycleStockByOrder(order, rpcIdList);
 		} catch (Exception e) {
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
+			if (order.getType() != OrderTypeEnum.PHYSICAL_ORDER){
+				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			}
 			throw e;
 		}
 	}
@@ -985,7 +989,10 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
 		} catch (Exception e) {
 			// 发消息回滚库存的修改 added by maojj
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
+			if (orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER){
+				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			}
 			throw e;
 		}
 	}

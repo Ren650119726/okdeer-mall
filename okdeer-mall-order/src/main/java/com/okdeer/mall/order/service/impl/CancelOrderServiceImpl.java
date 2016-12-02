@@ -263,7 +263,10 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 
 		} catch (Exception e) {
 			// 通知回滚库存修改
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
+			if (tradeOrder.getType() != OrderTypeEnum.PHYSICAL_ORDER){
+				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			}
 			throw e;
 		}
 	}
