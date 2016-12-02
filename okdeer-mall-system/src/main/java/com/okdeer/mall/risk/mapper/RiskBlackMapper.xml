@@ -35,7 +35,7 @@
     SELECT 
     <include refid="Base_Column_List" />
      FROM risk_black 
-     WHERE disabled = 0 and account_type=1 or account_type=4
+     WHERE disabled = 0 and (account_type=1 or account_type=4)
        ORDER BY create_time DESC
   </select>
    <select id="findAllBlackLoginAccount" resultMap="BaseResultMap" >

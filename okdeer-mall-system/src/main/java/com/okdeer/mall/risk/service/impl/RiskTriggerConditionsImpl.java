@@ -80,6 +80,10 @@ public class RiskTriggerConditionsImpl implements RiskTriggerConditions {
 		if (blackLoginAccount.contains(riskOrder.getLoginName()) || blackMobiles.contains(riskOrder.getTel())
 				|| blackDevices.contains(riskOrder.getDeviceId())
 				|| blackPayAccounts.contains(riskOrder.getPayAccount())) {
+			log.info("============登录账号================"+blackLoginAccount.contains(riskOrder.getLoginName()));
+			log.info("=============充值号码==============="+blackMobiles.contains(riskOrder.getTel()));
+			log.info("===============设备id============="+blackDevices.contains(riskOrder.getDeviceId()));
+			log.info("=============支付账号==============="+blackPayAccounts.contains(riskOrder.getPayAccount()));
 			log.info("充值订单人员在黑名单中，跳过风控，用户登入名：{}",riskOrder.getLoginName());
 			return true;
 		}
