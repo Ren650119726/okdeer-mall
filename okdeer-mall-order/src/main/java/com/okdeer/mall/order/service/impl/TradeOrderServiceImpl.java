@@ -4195,6 +4195,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// 如果订单已完成并且已评价，则用这个文案
 						if (OrderTraceEnum.COMPLETED.equals(traceStatus) && appraise > 0) {
 							orderStatusRemark = "订单服务完成,任何意见和吐槽,都欢迎联系我们";
+						} else if (OrderTraceEnum.WAIT_RECEIVE.equals(traceStatus) && 
+								orders.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
+							// 如果订单带派单并且是线下支付的，则用这个文案
+							orderStatusRemark = "等待商家接单,线下确认价格并当面支付";
 						} else if (OrderTraceEnum.CANCELED.equals(traceStatus) ||
 								OrderTraceEnum.SUBMIT_ORDER.equals(traceStatus)) {
 							orderStatusRemark = vo.getContent();
@@ -4368,6 +4372,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 支付信息
 		TradeOrderPay tradeOrderPay = tradeOrderPayMapper.selectByOrderId(orderId);
 		tradeOrder.setTradeOrderPay(tradeOrderPay);
+		
+		// 发票信息
+		TradeOrderInvoice tradeOrderInvoice = tradeOrderInvoiceMapper.selectByOrderId(orderId);
+		tradeOrder.setTradeOrderInvoice(tradeOrderInvoice);
+
+		// 收货信息
+		TradeOrderLogistics tradeOrderLogistics = tradeOrderLogisticsMapper.selectByOrderId(orderId);
+		tradeOrder.setTradeOrderLogistics(tradeOrderLogistics);
 
 		// 交易订单项消费详细表(仅服务型商品有)
 		List<TradeOrderItemDetail> tradeOrderItemDetail = tradeOrderItemDetailMapper.selectByOrderItemId(orderId);
@@ -6531,5 +6543,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
 				(DateUtils.addHours(serviceTime, 2).getTime() - System.currentTimeMillis()) / 1000);
+		// 服务店接单给用户发送通知短信
+		tradeMessageService.sendSmsAfterAcceptOrder(tradeOrder);
 	}
 }
