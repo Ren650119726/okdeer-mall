@@ -4373,6 +4373,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 支付信息
 		TradeOrderPay tradeOrderPay = tradeOrderPayMapper.selectByOrderId(orderId);
 		tradeOrder.setTradeOrderPay(tradeOrderPay);
+		
+		// 发票信息
+		TradeOrderInvoice tradeOrderInvoice = tradeOrderInvoiceMapper.selectByOrderId(orderId);
+		tradeOrder.setTradeOrderInvoice(tradeOrderInvoice);
+
+		// 收货信息
+		TradeOrderLogistics tradeOrderLogistics = tradeOrderLogisticsMapper.selectByOrderId(orderId);
+		tradeOrder.setTradeOrderLogistics(tradeOrderLogistics);
 
 		// 交易订单项消费详细表(仅服务型商品有)
 		List<TradeOrderItemDetail> tradeOrderItemDetail = tradeOrderItemDetailMapper.selectByOrderItemId(orderId);
