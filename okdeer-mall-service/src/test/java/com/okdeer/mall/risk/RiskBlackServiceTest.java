@@ -120,19 +120,26 @@ public class RiskBlackServiceTest {
 		assertTrue(riskBlackSet.size()>0);
 	}
 	
-	//@Test
-	public void findAllBlackPayAccountTest(){
-		Set<String> riskBlackSet = riskBlackService.findAllBlackPayAccount();
-		assertTrue(riskBlackSet.size()>0);
+	@Test
+	public void findAllBlackPayAccountTest() throws Exception{
+		Set<String> Set1 = riskBlackService.findAllBlackPayAccount();
+		String id="8a94e40558a8a6770158a8e3a92f0003";
+		int count = riskBlackService.delete(id);
+		Set<String> Set2 = riskBlackService.findAllBlackPayAccount();
+		assertTrue(Set1.size()==Set2.size());
 	}
 	
 	//@Test
-	public void findAllBlackLoginAccountTest(){
-		Set<String> riskBlackSet = riskBlackService.findAllBlackLoginAccount();
-		assertTrue(riskBlackSet.size()>0);
+	public void findAllBlackLoginAccountTest() throws Exception{
+		
+		Set<String> Set1 = riskBlackService.findAllBlackLoginAccount();
+		String id="8a94e40558a8a6770158a8e3a92f0003";
+		int count = riskBlackService.delete(id);
+		Set<String> Set2 = riskBlackService.findAllBlackLoginAccount();
+		assertTrue(Set1.size()==Set2.size());
 	}
 	//测试删除时缓存是否更新
-	@Test
+	//@Test
 	@Rollback
 	public void findAllBlackDeviceTest2() throws Exception{
 		
