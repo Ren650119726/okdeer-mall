@@ -259,8 +259,10 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			}
 
 			// 最后一步退款，避免出现发送了消息，后续操作失败了，无法回滚资金
-			this.tradeOrderPayService.cancelOrderPay(tradeOrder);
-
+			if(OrderStatusEnum.UNPAID != oldOrder.getStatus()){
+				//如果不是支付中的状态是需要退款给用户的
+				this.tradeOrderPayService.cancelOrderPay(tradeOrder);
+			}
 		} catch (Exception e) {
 			// 通知回滚库存修改
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
@@ -331,8 +333,11 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	private void sendCancelMsg(String tradeNum) throws Exception {
 		Map<String, String> msgMap = Maps.newHashMap();
 		msgMap.put("tradeNum", tradeNum);
+		
+		String sendStr = JSONObject.toJSONString(msgMap);
+		logger.debug("发送消息到云钱包{}",sendStr);
 		Message msg = new Message(PayMessageConstant.TOPIC_ORDER_STATUS_CHANGE, PayMessageConstant.TAG_ORDER_CANCELED,
-				JSONObject.toJSONString(msgMap).getBytes(Charsets.UTF_8));
+				sendStr.getBytes(Charsets.UTF_8));
 		SendResult sendResult = rocketMQProducer.send(msg);
 		if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
 			throw new Exception("发送消息到云钱包失败");
