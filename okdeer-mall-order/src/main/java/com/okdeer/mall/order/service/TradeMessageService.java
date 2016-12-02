@@ -115,4 +115,14 @@ public interface TradeMessageService {
 	 */
 	void sendSmsByServiceStoreShipments(TradeOrder order);
 	// End 重构4.1 add by wusw
+	
+	// Begin V1.2 added by maojj 2016-12-02
+	/**
+	 * @Description: 接单成功发送通知短信（服务店）
+	 * @param order   
+	 * @author maojj
+	 * @date 2016年12月2日
+	 */
+	void sendSmsAfterAcceptOrder(TradeOrder order);
+	// End V1.2 added by maojj 2016-12-02
 }

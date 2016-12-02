@@ -6535,5 +6535,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
 				(DateUtils.addHours(serviceTime, 2).getTime() - System.currentTimeMillis()) / 1000);
+		// 服务店接单给用户发送通知短信
+		tradeMessageService.sendSmsAfterAcceptOrder(tradeOrder);
 	}
 }
