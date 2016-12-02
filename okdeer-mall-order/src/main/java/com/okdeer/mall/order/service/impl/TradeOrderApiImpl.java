@@ -498,6 +498,36 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 			tradeOrderDto.setTradeOrderPay(tradeOrderPayDto);// 付款时间
 		}
+		//add by mengsj begin 收货信息
+		TradeOrderLogisticsDto tradeOrderLogisticsDto = new TradeOrderLogisticsDto();
+		if (order.getTradeOrderLogistics() != null) {
+			TradeOrderLogistics tradeOrderLogistics = order.getTradeOrderLogistics();
+			tradeOrderLogisticsDto.setConsigneeName(tradeOrderLogistics.getConsigneeName());
+			tradeOrderLogisticsDto.setMobile(tradeOrderLogistics.getMobile());
+			tradeOrderLogisticsDto.setArea(tradeOrderLogistics.getArea());
+			tradeOrderLogisticsDto.setAddress(tradeOrderLogistics.getAddress());
+
+			tradeOrderDto.setTradeOrderLogistics(tradeOrderLogisticsDto);
+		}
+		if (order.getRemark() != null) {
+			tradeOrderDto.setRemark(order.getRemark());
+		}
+		// 送货信息
+		tradeOrderDto.setPickUpType(order.getPickUpType().ordinal());
+		if (StringUtils.isNotEmpty(order.getPickUpTime())) {
+			tradeOrderDto.setPickUpTime(order.getPickUpTime());
+		}
+		// 发票信息
+		if (order.getInvoice() == WithInvoiceEnum.HAS) {
+			TradeOrderInvoiceDto tradeOrderInvoiceDto = new TradeOrderInvoiceDto();
+			TradeOrderInvoice tradeOrderInvoice = order.getTradeOrderInvoice();
+			tradeOrderInvoiceDto.setHead(tradeOrderInvoice.getHead());
+			tradeOrderInvoiceDto.setContext(tradeOrderInvoice.getContext());
+
+			tradeOrderDto.setTradeOrderInvoice(tradeOrderInvoiceDto);
+		}
+		//add by mengsj end
+		
 		// Begin 12051 add by wusw 20160811
 		BigDecimal totalAmount = new BigDecimal(0.00);
 		// End 12051 add by wusw 20160811
