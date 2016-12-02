@@ -106,6 +106,9 @@ public class StockOperateServiceImpl implements StockOperateService {
 			stockAdjustVo.setStockOperateEnum(getStockOperateType(tradeOrder.getStatus(), Boolean.FALSE));
 		}
 		stockAdjustVo.setUserId(tradeOrder.getUserId());
+		
+		List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
+		
 		for (TradeOrderItem item : tradeOrderItems) {
 			// 判断是否是团购和特惠商品
 			boolean isGoodActivity = ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()
@@ -150,7 +153,7 @@ public class StockOperateServiceImpl implements StockOperateService {
 			}else if(tradeOrder.getType() == OrderTypeEnum.STORE_CONSUME_ORDER){
 				detail.setSpuType(SpuTypeEnum.fwdDdxfSpu);
 			}
-			List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
+			
 			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 				// 便利店优惠金额单价
 				if (item.getPreferentialPrice() != null
@@ -167,11 +170,11 @@ public class StockOperateServiceImpl implements StockOperateService {
 			}
 
 			adjustDetailList.add(detail);
-			stockAdjustVo.setAdjustDetailList(adjustDetailList);
-			stockAdjustVo.setRpcId(rpcId);
-			stockAdjustList.add(stockAdjustVo);
 		}
-
+		
+		stockAdjustVo.setAdjustDetailList(adjustDetailList);
+		stockAdjustVo.setRpcId(rpcId);
+		stockAdjustList.add(stockAdjustVo);
 		// 如果是实物订单，走进销存库存
 		if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 			// 便利店优惠金额单价
