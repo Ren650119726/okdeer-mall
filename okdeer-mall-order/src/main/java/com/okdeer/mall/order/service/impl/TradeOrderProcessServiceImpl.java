@@ -20,15 +20,18 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
 import com.okdeer.archive.system.entity.SysBuyerUser;
+import com.okdeer.archive.system.entity.SysDict;
+import com.okdeer.archive.system.service.ISysDictServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.archive.system.entity.SysDict;
-import com.okdeer.archive.system.service.ISysDictServiceApi;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.enums.CouponsType;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.common.utils.HttpClientUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
@@ -69,11 +72,11 @@ import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.vo.RechargeCouponVo;
 import com.okdeer.mall.order.vo.RechargeOrderReqDto;
+import com.okdeer.mall.order.vo.TradeOrderReq;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderResp;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
-import com.okdeer.base.common.utils.mapper.JsonMapper;
 
 import net.sf.json.JSONObject;
 
@@ -228,6 +231,16 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
      */
     @Resource
     private TradeOrderTimer tradeOrderTimer;
+    /**
+     * 代金券Mapper
+     */
+    @Resource
+    private ActivityCouponsMapper activityCouponsMapper;
+    /**
+     * 代金券记录Mapper
+     */
+    @Resource
+    private ActivityCouponsRecordMapper activityCouponsRecordMapper;
     
 	/**
 	 * 结算操作时的数据校验
@@ -283,7 +296,6 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 		// 第四步：校验用户选择的优惠是否有效
 		handlerChain.add(favourCheckService);
 		// 第五步：订单新增处理
-		handlerChain.add(tradeOrderAddService);
 
 		// 创建处理链对象
 		ProcessHandlerChain chain = ProcessHandlerChain.getInstance(handlerChain);
@@ -564,6 +576,15 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
             couponRecord.setStatus(ActivityCouponsRecordStatusEnum.USED);
            
             this.couponsRecordMapper.updateByPrimaryKeySelective(couponRecord);
+            
+            //增加优惠券已使用数量
+            TradeOrderReq req = new TradeOrderReq();
+            req.setActivityType(activityType.ordinal());
+            req.setCouponsType(CouponsType.hfcz.ordinal());
+            req.setRecordId(couponRecord.getId());
+            req.setActivityItemId(reqDto.getCouponId());
+            
+            updateActivityCoupons(tradeOrder, req);
         }
         
         tradeOrder.setTotalAmount(totalAmount);
@@ -634,6 +655,35 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         respDto.setMessage(OrderTipMsgConstant.ORDER_SUCESS);
         return respDto;
 	}
+	
+	/**
+     * @Description: 更新代金券
+     * @param tradeOrder 交易订单
+     * @param req 请求对象
+     * @return void  
+     * @author maojj
+     * @date 2016年7月14日
+     */
+    private void updateActivityCoupons(TradeOrder tradeOrder, TradeOrderReq req) throws Exception{
+        ActivityTypeEnum activityType = req.getActivityType();
+        int couponsType = req.getCouponsType();
+
+        if (activityType == ActivityTypeEnum.VONCHER ) {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("orderId", tradeOrder.getId());
+            params.put("id", req.getRecordId());
+            params.put("collectUserId", tradeOrder.getUserPhone());
+            params.put("couponsId", req.getActivityItemId());
+            params.put("collectType", couponsType);
+            // 更新代金券状态
+            int updateResult = activityCouponsRecordMapper.updateActivityCouponsStatus(params);
+            if(updateResult == 0){
+                throw new Exception("代金券已使用或者已过期");
+            }
+            // 修改代金券使用数量
+            activityCouponsMapper.updateActivityCouponsUsedNum(req.getActivityItemId());
+        }
+    }
 	
 	/**
 	 * 
