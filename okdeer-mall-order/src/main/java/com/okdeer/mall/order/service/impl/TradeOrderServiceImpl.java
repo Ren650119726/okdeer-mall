@@ -65,6 +65,7 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
@@ -6294,6 +6295,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			itemDetail = null;
 		}
+		// Begin added by maojj 2016-12-02
+		// 线上支付的，支付完成，销量增加
+		GoodsStoreSku goodsStoreSku = this.goodsStoreSkuService.getById(orderItem.getStoreSkuId());
+		if (goodsStoreSku != null) {
+			goodsStoreSku.setSaleNum(ConvertUtil.format(goodsStoreSku.getSaleNum()) + orderItem.getQuantity());
+			goodsStoreSkuService.updateByPrimaryKeySelective(goodsStoreSku);
+		}
+		// End added by maojj 2016-12-02
 
 		// 确认收货，更新用户邀请记录
 		updateInvitationRecord(tradeOrder.getUserId());
