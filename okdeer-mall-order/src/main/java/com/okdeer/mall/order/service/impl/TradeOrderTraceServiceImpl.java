@@ -188,7 +188,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 			} else if (cancelType == OrderCancelType.CANCEL_BY_SELLER) {
 				remark = String.format(OrderTraceConstant.CANCEL_BY_SELLER_OFFLINE_CONFIRM, reason);
 			} else if (cancelType == OrderCancelType.CANCEL_BY_SYSTEM) {
-				remark = OrderTraceConstant.CANCEL_BY_SELLER_TIMEOUT;
+				remark = OrderTraceConstant.CANCEL_BY_SELLER_TIMEOUT_OFFLINE_CONFIRM;
 			}
 		} else {
 			switch (currentOrder.getStatus()) {
