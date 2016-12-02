@@ -296,7 +296,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 		// 第四步：校验用户选择的优惠是否有效
 		handlerChain.add(favourCheckService);
 		// 第五步：订单新增处理
-
+		handlerChain.add(tradeOrderAddService);
 		// 创建处理链对象
 		ProcessHandlerChain chain = ProcessHandlerChain.getInstance(handlerChain);
 		// 处理上述五步流程，任何一个流程返回false，则流程中断
