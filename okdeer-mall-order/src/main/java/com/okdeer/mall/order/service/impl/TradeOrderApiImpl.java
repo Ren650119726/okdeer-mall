@@ -177,12 +177,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	public boolean updateOrderStatus(String orderId, String status, String reason) throws Exception {
 		logger.info("订单同步状态" + "，orderId:" + orderId + "，status:" + status + "，reason:" + reason);
 		TradeOrder tradeOrder = tradeOrderService.selectById(orderId);
-		OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
-		if (orderStatus == null) {
-			throw new Exception("订单状态status为空或名字错误异常");
-		}
-		tradeOrder.setCurrentStatus(tradeOrder.getStatus());
-		tradeOrder.setStatus(orderStatus);
+//		OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
+//		if (orderStatus == null) {
+//			throw new Exception("订单状态status为空或名字错误异常");
+//		}
+//		tradeOrder.setCurrentStatus(tradeOrder.getStatus());
+//		tradeOrder.setStatus(orderStatus);
 		if (StringUtils.isNotEmpty(reason)) {
 			tradeOrder.setReason(reason);
 		}
@@ -208,12 +208,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		logger.info(
 				"确认收货订单同步状态" + "，orderId:" + orderId + "，status:" + status + "，reason:" + reason + "userId" + userId);
 		TradeOrder tradeOrder = tradeOrderService.selectById(orderId);
-		OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
-		if (orderStatus == null) {
-			throw new Exception("订单状态status为空或名字错误异常");
-		}
-		tradeOrder.setCurrentStatus(tradeOrder.getStatus());
-		tradeOrder.setStatus(orderStatus);
+//		OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
+//		if (orderStatus == null) {
+//			throw new Exception("订单状态status为空或名字错误异常");
+//		}
+//		tradeOrder.setCurrentStatus(tradeOrder.getStatus());
+//		tradeOrder.setStatus(orderStatus);
 		if (StringUtils.isNotEmpty(reason)) {
 			tradeOrder.setReason(reason);
 		}
