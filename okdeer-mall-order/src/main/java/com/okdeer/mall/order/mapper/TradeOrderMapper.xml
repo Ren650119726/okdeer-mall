@@ -607,7 +607,8 @@
 		o.fare,
 		o.actual_amount AS actualAmount,
 		o.activity_id AS activityId,
-		o.activity_type AS activityType
+		o.activity_type AS activityType,
+		o.invoice as invoice
 		FROM
 		trade_order o
 		LEFT JOIN store_info i ON o.store_id = i.id
