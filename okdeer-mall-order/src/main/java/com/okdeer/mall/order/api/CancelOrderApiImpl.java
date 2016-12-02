@@ -105,7 +105,6 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 			TradeOrder tradeOrder = tradeorderService.selectById(userRefuseParamDto.getOrderId());
 			tradeOrder.setUpdateTime(new Date());
 			tradeOrder.setUpdateUserId(userRefuseParamDto.getUserId());
-			tradeOrder.setStatus(OrderStatusEnum.REFUSED);
 			tradeOrder.setReason(userRefuseParamDto.getReason());
 			tradeOrder.setSellerId(userRefuseParamDto.getUserId());
 			cancelOrderService.updateWithUserRefuse(tradeOrder);
