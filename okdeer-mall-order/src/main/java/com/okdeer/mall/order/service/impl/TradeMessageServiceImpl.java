@@ -720,7 +720,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	public void sendSmsByCancel(TradeOrder order, OrderStatusEnum status) {
 
 		// 取消订单发送短信
-		if (status == OrderStatusEnum.DROPSHIPPING) {
+		if (status == OrderStatusEnum.DROPSHIPPING || status == OrderStatusEnum.WAIT_RECEIVE_ORDER) {
 			Map<String, String> params = Maps.newHashMap();
 			params.put("#1", order.getOrderNo());
 			params.put("#2", order.getReason());
