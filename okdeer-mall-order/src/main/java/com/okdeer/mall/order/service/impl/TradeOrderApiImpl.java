@@ -614,9 +614,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				
 				//begin add by zengjz   增加违约金的处理
 				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null){
-					dto.setRefundAmount(vo.getRefundAmount().subtract(vo.getBreachMoney()));
+					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
 				}else{
-					dto.setRefundAmount(vo.getRefundAmount());
+					dto.setRefundAmount(vo.getRealMoney());
 				}
 				//end add by zengjz   增加违约金的处理
 				
@@ -672,9 +672,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				
 				//begin add by zengjz   增加违约金的处理
 				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null){
-					dto.setRefundAmount(vo.getRefundAmount().subtract(vo.getBreachMoney()));
+					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
 				}else{
-					dto.setRefundAmount(vo.getRefundAmount());
+					dto.setRefundAmount(vo.getRealMoney());
 				}
 				//end add by zengjz   增加违约金的处理
 				dto.setThirdTransNo(vo.getThirdTransNo());
