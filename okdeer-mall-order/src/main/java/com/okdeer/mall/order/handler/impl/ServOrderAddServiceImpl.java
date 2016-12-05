@@ -242,7 +242,7 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		// 设置订单实付金额
 		tradeOrder.setActualAmount(seckillPrice);
 		// 设置店铺总收入
-		tradeOrder.setIncome(skuPrice);
+		tradeOrder.setIncome(seckillPrice);
 		// 设置违约金信息
 		// Begin V1.2 added by maojj 2016-11-29
 		// 订单默认未违约
