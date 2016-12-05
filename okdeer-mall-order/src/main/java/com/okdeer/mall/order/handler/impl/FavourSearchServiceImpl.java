@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
@@ -60,7 +62,13 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 	 */
 	@Resource
 	private ActivityDiscountMapper activityDiscountMapper;
-
+	
+	/**
+	 * 导航类目
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsNavigateCategoryServiceApi goodsNavigateCategoryServiceApi;
+	
 	/**
 	 * 查找用户有效的优惠记录
 	 * 注：平台发起的满减、代金券活动，只有云上店可以使用，其它类型的店铺均不可使用
@@ -82,13 +90,20 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 			//商品类目id集
 			Set<String> spuCategoryIds = reqDto.getContext().getSpuCategoryIds();
 			List<Coupons> delCouponList = new ArrayList<Coupons>();
+			//商品关联导航类目
+			List<String> navigateCategoryIds = goodsNavigateCategoryServiceApi.findNavigateCategoryBySkuIds(spuCategoryIds);
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue() && CollectionUtils.isNotEmpty(spuCategoryIds)) {
-					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
-					logger.info(LoggerConstants.LOGGER_DEBUG_INCOMING_METHOD, count, spuCategoryIds.size());
-					if (count == Constant.ZERO || count != spuCategoryIds.size()) {
+//					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
+//					logger.info(LoggerConstants.LOGGER_DEBUG_INCOMING_METHOD, count, spuCategoryIds.size());
+//					if (count == Constant.ZERO || count != spuCategoryIds.size()) {
+//						delCouponList.add(coupons);
+//					}
+					List<String> ids = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
+					boolean bool = ids.containsAll(navigateCategoryIds);
+					if (!bool) {
 						delCouponList.add(coupons);
 					}
 				}

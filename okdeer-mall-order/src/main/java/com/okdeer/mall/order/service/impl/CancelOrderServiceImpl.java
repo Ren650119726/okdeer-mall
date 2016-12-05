@@ -185,7 +185,8 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 					|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
 				if (oldOrder.getPayWay() == PayWayEnum.PAY_ONLINE) {
 					// begin modify by zengjz 违约金逻辑判断
-					if (isBreach && oldOrder.getBreachPercent() != null && oldOrder.getBreachPercent().intValue() == 100) {
+					if (isBreach && oldOrder.getBreachPercent() != null
+							&& oldOrder.getBreachPercent().intValue() == 100) {
 						// 如果违约金是百分白的话，直接把订单状态改为取消完成
 						tradeOrder.setStatus(OrderStatusEnum.CANCELED);
 					} else {
@@ -208,7 +209,8 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				throw new Exception(ORDER_STATUS_CHANGE);
 			}
 
-			if (tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER) {
+			if (tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER
+					&& OrderCancelType.CANCEL_BY_BUYER != tradeOrder.getCancelType()) {
 				// 释放所有代金卷
 				activityCouponsRecordService.updateUseStatus(tradeOrder.getId());
 			} else if (tradeOrder.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY) {
@@ -244,9 +246,10 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
 
 			// 发送短信
-			if (tradeOrder.getCancelType() != OrderCancelType.CANCEL_BY_BUYER && (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
-					|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()
-					|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus())) {
+			if (tradeOrder.getCancelType() != OrderCancelType.CANCEL_BY_BUYER
+					&& (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
+							|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()
+							|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus())) {
 				// 查询支付信息
 				TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(oldOrder.getId());
 				tradeOrder.setTradeOrderPay(tradeOrderPay);
@@ -259,14 +262,14 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			}
 
 			// 最后一步退款，避免出现发送了消息，后续操作失败了，无法回滚资金
-			if(OrderStatusEnum.UNPAID != oldOrder.getStatus()){
-				//如果不是支付中的状态是需要退款给用户的
+			if (OrderStatusEnum.UNPAID != oldOrder.getStatus()) {
+				// 如果不是支付中的状态是需要退款给用户的
 				this.tradeOrderPayService.cancelOrderPay(tradeOrder);
 			}
 		} catch (Exception e) {
 			// 通知回滚库存修改
 			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
-			if (tradeOrder.getType() != OrderTypeEnum.PHYSICAL_ORDER){
+			if (tradeOrder.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
 				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			}
 			throw e;
@@ -336,9 +339,9 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	private void sendCancelMsg(String tradeNum) throws Exception {
 		Map<String, String> msgMap = Maps.newHashMap();
 		msgMap.put("tradeNum", tradeNum);
-		
+
 		String sendStr = JSONObject.toJSONString(msgMap);
-		logger.debug("发送消息到云钱包{}",sendStr);
+		logger.debug("发送消息到云钱包{}", sendStr);
 		Message msg = new Message(PayMessageConstant.TOPIC_ORDER_STATUS_CHANGE, PayMessageConstant.TAG_ORDER_CANCELED,
 				sendStr.getBytes(Charsets.UTF_8));
 		SendResult sendResult = rocketMQProducer.send(msg);
