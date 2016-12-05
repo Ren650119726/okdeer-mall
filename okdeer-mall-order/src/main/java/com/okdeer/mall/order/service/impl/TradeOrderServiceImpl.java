@@ -65,6 +65,7 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
@@ -230,6 +231,7 @@ import net.sf.json.JsonConfig;
  *      V1.2.0            2016-11-24        wusw              修改订单数量统计的问题
  *      v1.2.0            2016-11-28       zengjz             修改判断验证码逻辑
  *      15486             2016-11-29        wusw              如果是服务店订单，直接查询投诉信息，如果不是，已完成状态的订单才能查询投诉信息
+ *      15698             2016-12-05        wusw              订单详情，优惠活动要考虑秒杀活动类型查询
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1068,7 +1070,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 特惠活动只有店铺能发
 					activitySource = ActivitySourceEnum.STORE;
 				}
+			} 
+			// Begin 15698 add by wusw 20161205
+			else if (ActivityTypeEnum.SECKILL_ACTIVITY.equals(activityType)) {
+				ActivitySeckill activitySeckill = activitySeckillMapper.findByPrimaryKey(activityId);
+				if (activitySeckill != null) {
+					activityName = activitySeckill.getSeckillName();
+				}
 			}
+			// End 15698 add by wusw 20161205
 		}
 		map.put("activityName", activityName);
 		map.put("activitySource", activitySource);
@@ -1504,7 +1514,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
-			rollbackMQProducer.sendStockRollbackMsg(rpcId);
+			// rollbackMQProducer.sendStockRollbackMsg(rpcId);
 			throw e;
 		}
 	}
@@ -3988,10 +3998,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 状态为未付款
 			// 订单创建时间
 			Date createTime = orders.getCreateTime();
-			Date currentDate = new Date();
 			// 支付到期毫秒
 			long endTimes = createTime.getTime() + (Constant.THIRTH * 60 * 1000);
-			long remainingTime = (endTimes - currentDate.getTime()) / 1000;
+			long remainingTime = (endTimes - System.currentTimeMillis()) / 1000;
 			// 支付剩余时间（精确）
 			if (remainingTime > 0) {
 				json.put("remainingTime", remainingTime);
@@ -4156,6 +4165,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
 					// 购买商品的数量
 					item.put("quantity", tradeOrderItem.getQuantity());
+					item.put("itemId", tradeOrderItem.getId());
 					itemArray.add(item);
 				}
 				json.put("orderItems", itemArray);
@@ -4195,6 +4205,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// 如果订单已完成并且已评价，则用这个文案
 						if (OrderTraceEnum.COMPLETED.equals(traceStatus) && appraise > 0) {
 							orderStatusRemark = "订单服务完成,任何意见和吐槽,都欢迎联系我们";
+						} else if (OrderTraceEnum.WAIT_RECEIVE.equals(traceStatus) && 
+								orders.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
+							// 如果订单带派单并且是线下支付的，则用这个文案
+							orderStatusRemark = "等待商家接单,线下确认价格并当面支付";
 						} else if (OrderTraceEnum.CANCELED.equals(traceStatus) ||
 								OrderTraceEnum.SUBMIT_ORDER.equals(traceStatus)) {
 							orderStatusRemark = vo.getContent();
@@ -4368,6 +4382,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 支付信息
 		TradeOrderPay tradeOrderPay = tradeOrderPayMapper.selectByOrderId(orderId);
 		tradeOrder.setTradeOrderPay(tradeOrderPay);
+		
+		// 发票信息
+		TradeOrderInvoice tradeOrderInvoice = tradeOrderInvoiceMapper.selectByOrderId(orderId);
+		tradeOrder.setTradeOrderInvoice(tradeOrderInvoice);
+
+		// 收货信息
+		TradeOrderLogistics tradeOrderLogistics = tradeOrderLogisticsMapper.selectByOrderId(orderId);
+		tradeOrder.setTradeOrderLogistics(tradeOrderLogistics);
 
 		// 交易订单项消费详细表(仅服务型商品有)
 		List<TradeOrderItemDetail> tradeOrderItemDetail = tradeOrderItemDetailMapper.selectByOrderItemId(orderId);
@@ -4527,7 +4549,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			resultMap.put("failure", failResult.toString());
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			// 现在实物订单库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
+			// rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 
@@ -4620,7 +4643,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			} catch (Exception e) {
 				logger.error("pos 发货锁定库存发生异常", e);
 				// added by maojj
-				rollbackMQProducer.sendStockRollbackMsg(rpcId);
+				// rollbackMQProducer.sendStockRollbackMsg(rpcId);
 				throw e;
 			}
 
@@ -6281,6 +6304,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			itemDetail = null;
 		}
+		// Begin added by maojj 2016-12-02
+		// 线上支付的，支付完成，销量增加
+		GoodsStoreSku goodsStoreSku = this.goodsStoreSkuService.getById(orderItem.getStoreSkuId());
+		if (goodsStoreSku != null) {
+			goodsStoreSku.setSaleNum(ConvertUtil.format(goodsStoreSku.getSaleNum()) + orderItem.getQuantity());
+			goodsStoreSkuService.updateByPrimaryKeySelective(goodsStoreSku);
+		}
+		// End added by maojj 2016-12-02
 
 		// 确认收货，更新用户邀请记录
 		updateInvitationRecord(tradeOrder.getUserId());
@@ -6530,5 +6561,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
 				(DateUtils.addHours(serviceTime, 2).getTime() - System.currentTimeMillis()) / 1000);
+		// 服务店接单给用户发送通知短信
+		tradeMessageService.sendSmsAfterAcceptOrder(tradeOrder);
 	}
 }

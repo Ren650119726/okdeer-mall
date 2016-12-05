@@ -68,6 +68,7 @@ import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
@@ -660,11 +661,16 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			order.setConsumerCodeStatus(ConsumerCodeStatusEnum.EXPIRED);
 			// 更新订单状态
 			tradeOrderMapper.updateOrderStatus(order);
+			//消费过期的数量
+			item.setQuantity(result);
 			// 回收库存
 			order.setTradeOrderItem(Lists.newArrayList(item));
 			stockOperateService.recycleStockByOrder(order, rpcIdList);
 		} catch (Exception e) {
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
+			if (order.getType() != OrderTypeEnum.PHYSICAL_ORDER){
+				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			}
 			throw e;
 		}
 	}
@@ -676,7 +682,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 		TradeOrderRefunds orderRefunds = new TradeOrderRefunds();
 		String refundsId = UuidUtils.getUuid();
 		orderRefunds.setId(refundsId);
-		orderRefunds.setRefundNo(generateNumericalService.generateNumber("XT"));
+		orderRefunds.setRefundNo(generateNumericalService.generateOrderNo("XT"));
 		orderRefunds.setOrderId(order.getId());
 		orderRefunds.setOrderNo(order.getOrderNo());
 		orderRefunds.setStoreId(order.getStoreId());
@@ -983,7 +989,10 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
 		} catch (Exception e) {
 			// 发消息回滚库存的修改 added by maojj
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
+			if (orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER){
+				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			}
 			throw e;
 		}
 	}

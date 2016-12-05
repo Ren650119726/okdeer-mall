@@ -98,9 +98,17 @@ public class StockOperateServiceImpl implements StockOperateService {
 		stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
 		stockAdjustVo.setOrderType(tradeOrder.getType());
 		stockAdjustVo.setStoreId(tradeOrder.getStoreId());
-
-		stockAdjustVo.setStockOperateEnum(getStockOperateType(tradeOrder.getStatus(), Boolean.FALSE));
+		
+		if(OrderTypeEnum.STORE_CONSUME_ORDER == tradeOrder.getType()){
+			//如果是到店消费的话，就使用退活方式还库存
+			stockAdjustVo.setStockOperateEnum(StockOperateEnum.RETURN_OF_GOODS);
+		}else{
+			stockAdjustVo.setStockOperateEnum(getStockOperateType(tradeOrder.getStatus(), Boolean.FALSE));
+		}
 		stockAdjustVo.setUserId(tradeOrder.getUserId());
+		
+		List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
+		
 		for (TradeOrderItem item : tradeOrderItems) {
 			// 判断是否是团购和特惠商品
 			boolean isGoodActivity = ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()
@@ -138,7 +146,14 @@ public class StockOperateServiceImpl implements StockOperateService {
 			detail.setBarCode(item.getBarCode());
 			detail.setNum(item.getQuantity());
 			detail.setIsEvent(isGoodActivity);
-			List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
+			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+				detail.setSpuType(SpuTypeEnum.physicalSpu);
+			}else if(tradeOrder.getType() == OrderTypeEnum.SERVICE_STORE_ORDER){
+				detail.setSpuType(SpuTypeEnum.fwdSpu);
+			}else if(tradeOrder.getType() == OrderTypeEnum.STORE_CONSUME_ORDER){
+				detail.setSpuType(SpuTypeEnum.fwdDdxfSpu);
+			}
+			
 			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 				// 便利店优惠金额单价
 				if (item.getPreferentialPrice() != null
@@ -155,11 +170,11 @@ public class StockOperateServiceImpl implements StockOperateService {
 			}
 
 			adjustDetailList.add(detail);
-			stockAdjustVo.setAdjustDetailList(adjustDetailList);
-			stockAdjustVo.setRpcId(rpcId);
-			stockAdjustList.add(stockAdjustVo);
 		}
-
+		
+		stockAdjustVo.setAdjustDetailList(adjustDetailList);
+		stockAdjustVo.setRpcId(rpcId);
+		stockAdjustList.add(stockAdjustVo);
 		// 如果是实物订单，走进销存库存
 		if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 			// 便利店优惠金额单价

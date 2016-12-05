@@ -427,7 +427,7 @@ public class TradeOrderRefundsServiceImpl
 		refunds.setStoreId("");
 		refunds.setOrderId(tradeOrder.getId());
 
-		refunds.setRefundNo(this.generateNumericalService.generateNumber("XT"));
+		refunds.setRefundNo(this.generateNumericalService.generateOrderNo("XT"));
 		refunds.setTradeNum(TradeNumUtil.getTradeNum());
 		refunds.setOrderNo(tradeOrder.getOrderNo());
 		refunds.setStatus(OrderItemStatusEnum.ALL_REFUND);
@@ -591,7 +591,10 @@ public class TradeOrderRefundsServiceImpl
 			// stockMQProducer.sendMessage(stockAdjustList);
 		} catch (Exception e) {
 			// 发消息回滚库存的修改 added by maojj
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
+			if(orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER){
+				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			}
 			throw e;
 		}
 	}
@@ -859,6 +862,10 @@ public class TradeOrderRefundsServiceImpl
 		}
 
 		TradeOrderRefunds refunds = this.findById(refundsId);
+		
+		List<TradeOrderRefundsItem> refundItemList = tradeOrderRefundsItemService.getTradeOrderRefundsItemByRefundsId(refundsId);
+		refunds.setTradeOrderRefundsItem(refundItemList);
+		
 		logger.error("客服处理更新订单状态：refundsId =" + refundsId + ",status=" + status.ordinal() + ",userId" + userId
 				+ ",退款单状态=" + refunds.getRefundsStatus());
 		// Begin added by maojj 2016-08-18
@@ -1371,6 +1378,7 @@ public class TradeOrderRefundsServiceImpl
 	public String updateTradeRefundsWithOfflinePos(List<TradeOrderRefundsItem> items, String orderNo, String refundNo,
 			String userId, Date currenTime) throws Exception {
 		String result = "退款成功";
+		TradeOrderRefunds tradeOrderRefunds = new TradeOrderRefunds();
 		List<String> rpcIdList = new ArrayList<String>();
 		try {
 			if (items != null && items.size() > 0) {
@@ -1378,7 +1386,6 @@ public class TradeOrderRefundsServiceImpl
 				TradeOrderItem orderItem = tradeOrderItemService.selectByPrimaryKey(items.get(0).getId());
 				TradeOrder tradeOrder = tradeOrderMapper.selectOrderPayInvoiceById(orderItem.getOrderId());
 
-				TradeOrderRefunds tradeOrderRefunds = new TradeOrderRefunds();
 				tradeOrderRefunds.setId(UuidUtils.getUuid());
 				tradeOrderRefunds.setUserId(userId);
 				tradeOrderRefunds.setStoreId(tradeOrder.getStoreId());
@@ -1536,7 +1543,10 @@ public class TradeOrderRefundsServiceImpl
 			}
 		} catch (Exception e) {
 			// 发消息回滚库存的更改 added by maojj
-			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
+			if (tradeOrderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER){
+				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			}
 			throw e;
 		}
 		return result;

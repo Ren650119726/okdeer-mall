@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
+import javax.annotation.Resource;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -20,6 +22,7 @@ import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.risk.entity.RiskOrderRecord;
 import com.okdeer.mall.risk.enums.IsPreferential;
 import com.okdeer.mall.risk.enums.PayAccountType;
+import com.okdeer.mall.risk.service.RiskBlackService;
 import com.okdeer.mall.risk.service.RiskTriggerConditions;
 
 
@@ -40,7 +43,13 @@ public class RiskTriggerConditionsTest extends BaseServiceTest {
 	@Autowired
 	private RiskTriggerConditions riskTriggerConditions;
 	
-	@Test//(timeout=1000)
+	/**
+	 * 黑名单管理service类
+	 */
+	@Autowired
+	private RiskBlackService riskBlackService;
+	
+	//@Test//(timeout=1000)
 	public void testIsTrigger() throws Exception{
 		RiskOrderRecord riskOrder = new RiskOrderRecord();
 		riskOrder.setId(UuidUtils.getUuid());
@@ -56,4 +65,22 @@ public class RiskTriggerConditionsTest extends BaseServiceTest {
 		assertEquals(false, istrigger);
 	}
 	
+	//测试问题 黑名单删除但是依然被限制问题
+	@Test//(timeout=1000)
+	public void testIsTrigger2() throws Exception{
+		String id="8a94e40558a8a6770158a8e3a92f0003";
+		riskBlackService.delete(id);
+		RiskOrderRecord riskOrder = new RiskOrderRecord();
+		riskOrder.setId(UuidUtils.getUuid());
+		riskOrder.setLoginName("18682441937");
+		riskOrder.setDeviceId("e0191d965725");
+		riskOrder.setPayAccount("fdgh45_t67");
+		riskOrder.setPayAccountType(PayAccountType.ALIPAY);
+		riskOrder.setFacePrice(new BigDecimal("1.50"));
+		riskOrder.setTel("18682441937");
+		riskOrder.setCreateTime(new Date());
+		riskOrder.setIsPreferential(IsPreferential.NO);
+		boolean istrigger = riskTriggerConditions.isTrigger(riskOrder);
+		assertEquals(false, istrigger);
+	}
 }

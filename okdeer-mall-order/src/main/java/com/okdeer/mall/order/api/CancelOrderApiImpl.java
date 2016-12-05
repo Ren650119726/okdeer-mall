@@ -35,7 +35,7 @@ import com.okdeer.mall.order.service.TradeOrderService;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *    v1.2.0            2016-11-10          zengjz            取消订单服务实现
+ *    v1.2.0            2016-11-10          zengjz            取消订单服务实现    
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.CancelOrderApi")
 public class CancelOrderApiImpl implements CancelOrderApi {
@@ -105,7 +105,6 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 			TradeOrder tradeOrder = tradeorderService.selectById(userRefuseParamDto.getOrderId());
 			tradeOrder.setUpdateTime(new Date());
 			tradeOrder.setUpdateUserId(userRefuseParamDto.getUserId());
-			tradeOrder.setStatus(OrderStatusEnum.REFUSED);
 			tradeOrder.setReason(userRefuseParamDto.getReason());
 			tradeOrder.setSellerId(userRefuseParamDto.getUserId());
 			cancelOrderService.updateWithUserRefuse(tradeOrder);

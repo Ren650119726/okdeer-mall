@@ -225,7 +225,8 @@ public class TradeOrderCompleteProcessServiceImpl
 		if (orderRefunds.getRefundsStatus() != RefundsStatusEnum.REFUND_SUCCESS
 				&& orderRefunds.getRefundsStatus() != RefundsStatusEnum.SELLER_REFUNDING
 				&& orderRefunds.getRefundsStatus() != RefundsStatusEnum.FORCE_SELLER_REFUND_SUCCESS
-				&& orderRefunds.getRefundsStatus() != RefundsStatusEnum.YSC_REFUND_SUCCESS) {
+				&& orderRefunds.getRefundsStatus() != RefundsStatusEnum.YSC_REFUND_SUCCESS
+				&& orderRefunds.getRefundsStatus() != RefundsStatusEnum.WAIT_SELLER_REFUND) {
 			logger.error(LogConstants.ORDER_STATUS_NO_MATCHING, refundsId, RefundsStatusEnum.REFUND_SUCCESS.getName(),
 					orderRefunds.getRefundsStatus().getName());
 			throw new ServiceException(LogConstants.ORDER_STATUS_NO_MATCHING);

@@ -198,7 +198,7 @@
     <select id="listLabelNameBySkuIds" parameterType="list" resultType="map">
     	select 
 		alg.goods_id as skuId,
-		al .name  as labelName
+		al.name as labelName
 		from activity_label_goods alg 
 		LEFT JOIN goods_store_sku sku on (alg.goods_id = sku.id)
 		LEFT JOIN activity_label al on (alg.activity_id = al.id)

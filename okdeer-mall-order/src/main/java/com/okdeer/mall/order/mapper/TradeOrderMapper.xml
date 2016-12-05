@@ -607,7 +607,8 @@
 		o.fare,
 		o.actual_amount AS actualAmount,
 		o.activity_id AS activityId,
-		o.activity_type AS activityType
+		o.activity_type AS activityType,
+		o.invoice as invoice
 		FROM
 		trade_order o
 		LEFT JOIN store_info i ON o.store_id = i.id
@@ -2202,7 +2203,6 @@
 		pay.pay_amount,
 		pay.`returns`,
 		store.store_name,
-		agent.full_name,
 		CASE trade.`status` WHEN 2 THEN 1 WHEN 4 THEN 1 WHEN 12 THEN 0 WHEN 13
 		THEN 0 END AS statusSort
 		FROM trade_order trade
@@ -2210,8 +2210,6 @@
 		trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN store_info
 		store ON store.id = trade.store_id
-		LEFT JOIN psms_agent agent ON
-		agent.id = store.agent_id
 		WHERE 1=1
 		<!-- trade.disabled = 0 -->
 		<if test="params != null">
@@ -4615,7 +4613,9 @@
 		<!-- LEFT JOIN trade_order_refunds trf ON tr.id = trf.order_id -->
 		WHERE (tr.status = 1 OR tr.status = 5 OR tr.status = 6 OR tr.status =
 		0 OR tr.status = 11 OR tr.status = 2)
-		AND tr.is_show=1
+		<if test="isShow != null">
+			AND tr.is_show = #{isShow,jdbcType=TINYINT}
+		</if>
 		<!-- 充值类型选择 流量或者话费 -->
 		<if test="ids != null">
 			AND tr.id in
@@ -4863,13 +4863,13 @@
 
 	<select id="statisOrderCannelRefundByParams" parameterType="map"
 		resultType="map">
-		SELECT IFNULL(sum(total_amount),0) as totalAmount,count(1) as count
+		SELECT case trade.is_breach  when 0 then  IFNULL(sum(actual_amount),0) 
+		when 1 then IFNULL(sum(actual_amount - trade.breach_money),0) end as totalAmount,
+		count(1) as count
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id =
 		trade.id
 		LEFT JOIN store_info store ON store.id = trade.store_id
-		LEFT
-		JOIN psms_agent agent ON agent.id = store.agent_id
 		WHERE 1=1
 		<!-- trade.disabled = 0 -->
 		<if test="params != null">

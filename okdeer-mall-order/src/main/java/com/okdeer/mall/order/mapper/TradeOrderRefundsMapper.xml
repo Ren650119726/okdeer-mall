@@ -877,8 +877,8 @@
 	<select id="selectDetailById" resultMap="RefundsOnlineDetailMap"
 		parameterType="java.lang.String">
 		SELECT
-		refunds.id,refunds.total_amount,refunds.refunds_status,refunds.total_income,refunds.total_preferential_price,
-		item.main_pic_prl,item.sku_name,item.amount,item.unit_price,item.quantity,item.preferential_price,item.`properties_indb`,
+		refunds.id,refunds.store_id,refunds.total_amount,refunds.refunds_status,refunds.total_income,refunds.total_preferential_price,
+		item.main_pic_prl,item.sku_name,item.store_sku_id,item.amount,item.unit_price,item.quantity,item.preferential_price,item.`properties_indb`,
 		refunds.refund_no,refunds.memo,refunds.create_time,refunds.total_amount,"退货退款"
 		AS refunds_type,refunds.order_id,refunds.delivery_time,
 		refunds.refunds_reason,refunds.refuse_reson,refunds.logistics_type,refunds.payment_method,refunds.status,refunds.refund_money_time,
