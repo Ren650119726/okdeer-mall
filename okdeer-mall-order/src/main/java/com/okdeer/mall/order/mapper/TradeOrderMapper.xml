@@ -2211,8 +2211,6 @@
 		trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN store_info
 		store ON store.id = trade.store_id
-		LEFT JOIN psms_agent agent ON
-		agent.id = store.agent_id
 		WHERE 1=1
 		<!-- trade.disabled = 0 -->
 		<if test="params != null">
@@ -4866,13 +4864,13 @@
 
 	<select id="statisOrderCannelRefundByParams" parameterType="map"
 		resultType="map">
-		SELECT IFNULL(sum(total_amount),0) as totalAmount,count(1) as count
+		SELECT case trade.is_breach  when 0 then  IFNULL(sum(actual_amount),0) 
+		when 1 then IFNULL(sum(actual_amount - trade.breach_money),0) end as totalAmount,
+		count(1) as count
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id =
 		trade.id
 		LEFT JOIN store_info store ON store.id = trade.store_id
-		LEFT
-		JOIN psms_agent agent ON agent.id = store.agent_id
 		WHERE 1=1
 		<!-- trade.disabled = 0 -->
 		<if test="params != null">
