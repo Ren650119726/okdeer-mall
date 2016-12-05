@@ -862,6 +862,10 @@ public class TradeOrderRefundsServiceImpl
 		}
 
 		TradeOrderRefunds refunds = this.findById(refundsId);
+		
+		List<TradeOrderRefundsItem> refundItemList = tradeOrderRefundsItemService.getTradeOrderRefundsItemByRefundsId(refundsId);
+		refunds.setTradeOrderRefundsItem(refundItemList);
+		
 		logger.error("客服处理更新订单状态：refundsId =" + refundsId + ",status=" + status.ordinal() + ",userId" + userId
 				+ ",退款单状态=" + refunds.getRefundsStatus());
 		// Begin added by maojj 2016-08-18

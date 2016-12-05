@@ -2203,7 +2203,6 @@
 		pay.pay_amount,
 		pay.`returns`,
 		store.store_name,
-		agent.full_name,
 		CASE trade.`status` WHEN 2 THEN 1 WHEN 4 THEN 1 WHEN 12 THEN 0 WHEN 13
 		THEN 0 END AS statusSort
 		FROM trade_order trade

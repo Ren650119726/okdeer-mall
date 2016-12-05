@@ -231,6 +231,7 @@ import net.sf.json.JsonConfig;
  *      V1.2.0            2016-11-24        wusw              修改订单数量统计的问题
  *      v1.2.0            2016-11-28       zengjz             修改判断验证码逻辑
  *      15486             2016-11-29        wusw              如果是服务店订单，直接查询投诉信息，如果不是，已完成状态的订单才能查询投诉信息
+ *      15698             2016-12-05        wusw              订单详情，优惠活动要考虑秒杀活动类型查询
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1069,7 +1070,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 特惠活动只有店铺能发
 					activitySource = ActivitySourceEnum.STORE;
 				}
+			} 
+			// Begin 15698 add by wusw 20161205
+			else if (ActivityTypeEnum.SECKILL_ACTIVITY.equals(activityType)) {
+				ActivitySeckill activitySeckill = activitySeckillMapper.findByPrimaryKey(activityId);
+				if (activitySeckill != null) {
+					activityName = activitySeckill.getSeckillName();
+				}
 			}
+			// End 15698 add by wusw 20161205
 		}
 		map.put("activityName", activityName);
 		map.put("activitySource", activitySource);
