@@ -128,8 +128,6 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 				spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
 			}
 			
-			//商品关联导航类目
-			List<String> navigateCategoryIds = goodsNavigateCategoryServiceApi.findNavigateCategoryBySkuIds(spuCategoryIds);
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
 				//是否指定分类使用
@@ -138,7 +136,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 					if (StoreTypeEnum.CLOUD_STORE.equals(storeType)) {
 						//count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
 						List<String> ids = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
-						boolean bool = ids.containsAll(navigateCategoryIds);
+						boolean bool = ids.containsAll(spuCategoryIds);
 						if (bool) {
 							count = spuCategoryIds.size();
 						}

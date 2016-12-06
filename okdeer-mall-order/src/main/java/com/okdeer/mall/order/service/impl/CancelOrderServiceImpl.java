@@ -209,10 +209,14 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				throw new Exception(ORDER_STATUS_CHANGE);
 			}
 
-			if (tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER
-					&& OrderCancelType.CANCEL_BY_BUYER != tradeOrder.getCancelType()) {
-				// 释放所有代金卷
-				activityCouponsRecordService.updateUseStatus(tradeOrder.getId());
+			if (tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER) {
+				if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER
+						|| OrderStatusEnum.DROPSHIPPING != oldOrder.getStatus()
+						|| (OrderCancelType.CANCEL_BY_BUYER != tradeOrder.getCancelType())) {
+					// 如果实物订单或者不是待服务状态或者不是用户取消的就需要释放代金卷
+					// 释放所有代金卷
+					activityCouponsRecordService.updateUseStatus(tradeOrder.getId());
+				}
 			} else if (tradeOrder.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY) {
 				// 团购活动释放限购数量
 				activityGroupRecordService.updateDisabledByOrderId(tradeOrder.getId());
@@ -241,7 +245,11 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			// 保存订单轨迹
 			tradeOrderTraceService.saveOrderTrace(tradeOrder);
 			// 更新订单状态
-			tradeOrderMapper.updateOrderStatus(tradeOrder);
+			Integer updateRows = tradeOrderMapper.updateOrderStatus(tradeOrder);
+			if(updateRows == null || updateRows.intValue() == 0){
+				throw new Exception(ORDER_STATUS_CHANGE);
+			}
+			
 			// 回收库存
 			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
 

@@ -1692,8 +1692,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			tradeOrder.setDeliveryTime(new Date());
 			// 发货人ID
 			tradeOrder.setShipmentsUserId(param.getUserId());
+			// Begin Bug:15707 added by maojj 2016-12-06 
+			// 更新时判断订单状态是否发生变化，以保证数据的一致性。类似乐观锁的处理机制
+			tradeOrder.setCurrentStatus(tradeOrder.getCurrentStatus());
+			// End Bug:15707 added by maojj 2016-12-06
 			// 更新订单信息
-			this.updateOrderStatus(tradeOrder);
+			Integer updateRows = this.updateOrderStatus(tradeOrder);
+			// Begin Bug:15707 added by maojj 2016-12-06 
+			// 更新时判断订单状态是否发生变化，以保证数据的一致性。类似乐观锁的处理机制
+			if(updateRows == null || updateRows.intValue() == 0){
+				// 如果更新影响行数为0，则意味着订单状态已经发生变化。抛出异常终止业务处理
+				throw new ServiceException(ORDER_STATUS_OVERDUE);
+			}
+			// End Bug:15707 added by maojj 2016-12-06
 
 			// 判断是否有物流信息
 			if (StringUtils.isNotBlank(param.getLogisticsCompanyName())) {
