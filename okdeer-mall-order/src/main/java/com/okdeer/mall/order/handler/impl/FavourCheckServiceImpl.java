@@ -107,6 +107,7 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 				List<String> navigateCategoryIds = goodsNavigateCategoryServiceApi.findNavigateCategoryBySkuIds(spuCategoryIds);
 				// 如果是指定分类。校验商品的分类
 				// int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getId());
+				// 15719  商品关联导航类目需求变更兼容
 				List<String> ids = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getId());
 				boolean bool = ids.containsAll(navigateCategoryIds);
 				if (!bool) {
