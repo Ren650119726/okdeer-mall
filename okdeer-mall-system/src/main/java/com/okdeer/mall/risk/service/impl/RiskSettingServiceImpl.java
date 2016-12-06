@@ -3,10 +3,10 @@
  *@Author: xuzq01
  *@Date: 2016年11月4日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
- */    
+ */
 package com.okdeer.mall.risk.service.impl;
 
-
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.base.framework.mq.IMQMessageReceive;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.annotation.RocketMQListener;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.risk.entity.RiskSetting;
 import com.okdeer.mall.risk.entity.RiskSettingDetail;
@@ -43,11 +48,14 @@ import com.okdeer.mall.risk.service.RiskSettingService;
  *
  */
 @Service
-public class RiskSettingServiceImpl extends BaseServiceImpl implements RiskSettingService{
-	
+public class RiskSettingServiceImpl extends BaseServiceImpl implements RiskSettingService,IMQMessageReceive {
+
 	private final static Logger logger = LoggerFactory.getLogger(RiskSettingServiceImpl.class);
 
 	private String sync = "sync";
+
+	private final static String TOPIC = "topic_risk_setting_notity";
+
 	/**
 	 * 未使用优惠提醒限制明细
 	 */
@@ -72,70 +80,72 @@ public class RiskSettingServiceImpl extends BaseServiceImpl implements RiskSetti
 	 * 是否初始化
 	 */
 	private boolean isInitialize = false;
-	
+
+	@Autowired
+	private RocketMQProducer producer;
+
 	@Autowired
 	private RiskSettingMapper settingMapper;
+
 	@Autowired
 	private RiskSettingDetailMapper detailMapper;
-	
+
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return settingMapper;
 	}
-	
+
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void addBatch(List<RiskSetting> settingList,Integer isCoupon) throws Exception{
-		
+	public void addBatch(List<RiskSetting> settingList, Integer isCoupon) throws Exception {
+
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("isCoupon", isCoupon);
 		List<RiskSetting> oldList = settingMapper.list(params);
-		if(CollectionUtils.isNotEmpty(oldList)){
-			//先删除detail老数据
-			for(RiskSetting setting : oldList){
+		if (CollectionUtils.isNotEmpty(oldList)) {
+			// 先删除detail老数据
+			for (RiskSetting setting : oldList) {
 				detailMapper.deleteBySettingId(setting.getId());
 			}
 		}
-		//再删除主表setting数据
+		// 再删除主表setting数据
 		settingMapper.deleteByIsCoupon(isCoupon);
-		
-		//删除完了再批量添加
-		if(CollectionUtils.isNotEmpty(settingList)){
-			//detail表删除记录
-			for(RiskSetting setting : settingList){
+
+		// 删除完了再批量添加
+		if (CollectionUtils.isNotEmpty(settingList)) {
+			// detail表删除记录
+			for (RiskSetting setting : settingList) {
 				detailMapper.deleteBySettingId(setting.getId());
 			}
-			
-			//批量插入新纪录,(后台功能,使用频率非常少,数据量也不大,循环插入性能也不会有多大问题)
-			for(RiskSetting setting : settingList){
+
+			// 批量插入新纪录,(后台功能,使用频率非常少,数据量也不大,循环插入性能也不会有多大问题)
+			for (RiskSetting setting : settingList) {
 				settingMapper.add(setting);
-				
+
 				List<RiskSettingDetail> detailList = setting.getDetailList();
-				if(CollectionUtils.isNotEmpty(detailList)){
-					for(RiskSettingDetail detail : detailList){
+				if (CollectionUtils.isNotEmpty(detailList)) {
+					for (RiskSettingDetail detail : detailList) {
 						detailMapper.add(detail);
 					}
 				}
 			}
 		}
-		
-		//重置本地设置项 gcp
+
+		// 重置本地设置项 gcp
 		retrySetting();
 	}
-	
 
 	@Override
 	public List<RiskSetting> list(Map<String, Object> params) throws Exception {
-		//风控setting列表以及每个setting的明细
+		// 风控setting列表以及每个setting的明细
 		List<RiskSetting> settingList = settingMapper.list(params);
-		if(CollectionUtils.isNotEmpty(settingList)){
-			for(RiskSetting setting : settingList){
+		if (CollectionUtils.isNotEmpty(settingList)) {
+			for (RiskSetting setting : settingList) {
 				setting.setDetailList(detailMapper.listBySettingId(setting.getId()));
 			}
 		}
 		return settingList;
 	}
-	
 
 	/**
 	 * 检查初始数据或初始化
@@ -159,9 +169,22 @@ public class RiskSettingServiceImpl extends BaseServiceImpl implements RiskSetti
 
 	@Override
 	public void retrySetting() {
+		MQMessage anMessage = new MQMessage(TOPIC, (Serializable) "refresh");
+		try {
+			producer.sendMessage(anMessage);
+		} catch (Exception e) {
+			logger.error("更新风控设置发送消息异常", e);
+		}
+	}
+
+	@Override
+	@RocketMQListener(tag = "*", topic = TOPIC, consumer = "broadcastRocketMQConsumer")
+	public ConsumeConcurrentlyStatus onReceive(MQMessage message) {
+		logger.info("接收到风控设置更新消息");
 		synchronized (sync) {
 			isInitialize = false;
 		}
+		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 	}
 
 	/**
