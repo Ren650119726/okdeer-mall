@@ -103,13 +103,11 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 			// 0全部分类 1指定分类
 			if(coupons.getIsCategory() == Constant.ONE){
 				Set<String> spuCategoryIds = reqDto.getContext().getSpuCategoryIds();
-				//商品关联导航类目
-				List<String> navigateCategoryIds = goodsNavigateCategoryServiceApi.findNavigateCategoryBySkuIds(spuCategoryIds);
 				// 如果是指定分类。校验商品的分类
 				// int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getId());
 				// 15719  商品关联导航类目需求变更兼容
 				List<String> ids = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getId());
-				boolean bool = ids.containsAll(navigateCategoryIds);
+				boolean bool = ids.containsAll(spuCategoryIds);
 				if (!bool) {
 					// 购买的商品分类超出代金券限购的分类。则订单提交失败
 					respDto.setFlag(false);

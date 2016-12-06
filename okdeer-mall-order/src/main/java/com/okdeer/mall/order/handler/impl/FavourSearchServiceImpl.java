@@ -90,8 +90,6 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 			//商品类目id集
 			Set<String> spuCategoryIds = reqDto.getContext().getSpuCategoryIds();
 			List<Coupons> delCouponList = new ArrayList<Coupons>();
-			//商品关联导航类目
-			List<String> navigateCategoryIds = goodsNavigateCategoryServiceApi.findNavigateCategoryBySkuIds(spuCategoryIds);
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
 				//是否指定分类使用
@@ -102,7 +100,7 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 //						delCouponList.add(coupons);
 //					}
 					List<String> ids = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
-					boolean bool = ids.containsAll(navigateCategoryIds);
+					boolean bool = ids.containsAll(spuCategoryIds);
 					if (!bool) {
 						delCouponList.add(coupons);
 					}
