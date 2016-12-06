@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.base.framework.mq.IMQMessageReceive;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
 import com.okdeer.base.framework.mq.message.MQMessage;
@@ -47,7 +48,7 @@ import com.okdeer.mall.risk.service.RiskSettingService;
  *
  */
 @Service
-public class RiskSettingServiceImpl extends BaseServiceImpl implements RiskSettingService {
+public class RiskSettingServiceImpl extends BaseServiceImpl implements RiskSettingService,IMQMessageReceive {
 
 	private final static Logger logger = LoggerFactory.getLogger(RiskSettingServiceImpl.class);
 

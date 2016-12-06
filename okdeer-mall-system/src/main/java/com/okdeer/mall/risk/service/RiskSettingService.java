@@ -82,5 +82,5 @@ public interface RiskSettingService extends IBaseService{
 	 * @author guocp
 	 * @date 2016年12月5日
 	 */
-	ConsumeConcurrentlyStatus onReceive(MQMessage message);
+//	ConsumeConcurrentlyStatus onReceive(MQMessage message);
 }
