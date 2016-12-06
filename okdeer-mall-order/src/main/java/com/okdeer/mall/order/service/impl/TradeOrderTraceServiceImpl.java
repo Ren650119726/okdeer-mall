@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.WhetherEnum;
@@ -53,6 +54,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 	private TradeOrderMapper tradeOrderMapper;
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void saveOrderTrace(TradeOrder tradeOrder) {
 		// 只有上门服务的订单需要保存订单轨迹。
 		if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER) {
