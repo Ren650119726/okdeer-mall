@@ -70,8 +70,7 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		// begin add by wushp 20160927 
 		// 上门服务订单，如果商家中心设置起送价，不满起送价不可下单，提示
 		// 提示‘抱歉，订单不满起送价，请重新结算’且页面跳回至购物车页面，购物车页面刷新，获取最新的起送价、配送费信息 
-		OrderTypeEnum orderType = reqData.getOrderType();
-		if (orderType != null && orderType.ordinal() == OrderTypeEnum.SERVICE_STORE_ORDER.ordinal()) {
+		if ( reqData.getOrderType() == null || reqData.getOrderType() == OrderTypeEnum.SERVICE_STORE_ORDER ) {
 			// 上门服务订单
 			StoreInfoServiceExt serviceExt = storeInfo.getStoreInfoServiceExt();
 			// 返回服务店铺扩展信息
