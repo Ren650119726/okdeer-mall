@@ -242,10 +242,13 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			tradeOrderLog.setOrderId(tradeOrder.getId());
 			tradeOrderLogMapper.insertSelective(tradeOrderLog);
 
+			// 更新订单状态
+			Integer updateRows = tradeOrderMapper.updateOrderStatus(tradeOrder);
+			if(updateRows == null || updateRows.intValue() == 0){
+				throw new Exception(ORDER_STATUS_CHANGE);
+			}
 			// 保存订单轨迹
 			tradeOrderTraceService.saveOrderTrace(tradeOrder);
-			// 更新订单状态
-			tradeOrderMapper.updateOrderStatus(tradeOrder);
 			// 回收库存
 			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
 
