@@ -729,6 +729,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 	
 	@Override
 	public PageResultVo<OrderRefundsDto> findeChargeRefundsByParams(Map<String, Object> params) throws Exception {
+		// 参数处理（例如设置默认参数等）
+		this.convertParamsForFinance(params);
 		int pageSize = Integer.valueOf(params.get("pageSize").toString());
 		int pageNumber = Integer.valueOf(params.get("pageNumber").toString());
 		PageUtils<TradeOrderRefundsChargeVo> page = tradeOrderRefundsService.findeChargeRefundsByParams(params,
