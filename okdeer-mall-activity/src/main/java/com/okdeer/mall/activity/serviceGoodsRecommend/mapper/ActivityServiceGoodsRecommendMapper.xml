@@ -204,21 +204,24 @@
     <!-- 微信推荐商品列表 -->
     <select id="listRecommendGoodsFowWx" parameterType="map" resultType="map">
     	select 
-		pic.url ,
+		pic.url,
 		sku.id as goodsStoreSkuId,
 		sku.store_id as storeId,
 		sku.name as goodsName,
+		sku.alias AS alias,
 		stock.sellable,
 		stock.locked,
 		sku.market_price as marketPrice,
 		sku.online_price as onlinePrice,
 		CAST(service.is_shop_num AS SIGNED) as isShopNum,
-		service.shop_num as shopNum
-		
+		IFNULL(store.logo_url,'') AS logoUrl,
+		IFNULL(store.store_name,'') as storeName,
+		service.shop_num as shopNum		
 		from 
 		activity_service_goods_recommend_goods rg 
 		left join activity_service_goods_recommend r on (r.id = rg.activity_id and r.status = 1)
 		left join goods_store_sku sku on (rg.goods_id = sku.id)
+		left join store_info store ON sku.store_id = store.id
 		left join goods_store_sku_picture pic on (sku.id = pic.store_sku_id and pic.type = 1)
 		left join goods_store_sku_stock stock on (sku.id = stock.store_sku_id) 
 		left join goods_store_sku_service service on (service.store_sku_id = sku.id)
