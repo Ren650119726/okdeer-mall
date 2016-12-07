@@ -795,8 +795,7 @@ public class TradeOrderRefundsServiceImpl
 		tradeOrderRefundsLogMapper
 				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
 						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
-		// 订单完成后同步到商业管理系统
-		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
+	
 		// End 1.0.Z 增加退款单操作记录 add by zengj
 		// 发送短信
 		this.tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
@@ -815,6 +814,9 @@ public class TradeOrderRefundsServiceImpl
 			// 余额退款
 			this.updateWallet(order,orderRefunds);
 		}
+		
+		// 订单完成后同步到商业管理系统
+		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
 
 	}
 
