@@ -4,7 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
 
@@ -20,6 +23,8 @@ import com.okdeer.mall.order.vo.TradeOrderRespDto;
  * 		重构V4.1			2016-07-14			maojj			 请求处理链对象
  */
 public class ProcessHandlerChain {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ProcessHandlerChain.class);
 
 	/**
 	 * 请求处理链
@@ -39,7 +44,9 @@ public class ProcessHandlerChain {
 			return;
 		}
 		for (ProcessHandler handler : handlerChain) {
+			long beginTime = System.currentTimeMillis();
 			handler.process(reqDto, respDto);
+			logger.debug(LogConstants.ORDER_FLOWER_CONSUME_TIME, reqDto.getOrderOptType(),handler.getClass().getSimpleName(),System.currentTimeMillis()-beginTime);
 			if (!respDto.isFlag()) {
 				return;
 			}
