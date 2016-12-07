@@ -3894,6 +3894,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			case REFUSED:
 			case HAS_BEEN_SIGNED:
 			case TRADE_CLOSED:
+			case CANCELING:
+			case REFUSING:
 				isSupportComplain = "1";
 				break;
 			default:
