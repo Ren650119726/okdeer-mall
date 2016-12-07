@@ -216,7 +216,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 							// TODO 第二个参数时违约金的百分比
 							remark = String.format(OrderTraceConstant.CANCEL_BY_USER_BREAK_CONTRACT, reason, tradeOrder.getBreachPercent(),ConvertUtil.format(tradeOrder.getBreachMoney()));
 						} else {
-							remark = String.format(OrderTraceConstant.CANCEL_BY_USER, reason);
+							remark = String.format(OrderTraceConstant.CANCEL_BY_USER_DROPSHIPPING, reason);
 						}
 					} else if (cancelType == OrderCancelType.CANCEL_BY_SELLER) {
 						remark = String.format(OrderTraceConstant.CANCEL_BY_SELLER, reason);
