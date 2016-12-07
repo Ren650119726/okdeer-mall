@@ -7,6 +7,7 @@
  */
 package com.okdeer.mall.risk.service.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -20,9 +21,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.base.framework.mq.IMQMessageReceive;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.annotation.RocketMQListener;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.risk.dto.RiskBlackDto;
 import com.okdeer.mall.risk.entity.RiskBlack;
@@ -38,15 +44,20 @@ import com.okdeer.mall.risk.service.RiskBlackService;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *		v1.2			2016年11月4日			xuzq01				白名单管理service
+ *		v1.2			2016年11月4日			xuzq01				黑名单管理service
  */
 @Service
-public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackService {
+public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackService,IMQMessageReceive {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RiskBlackServiceImpl.class);
 
 	private String sync = "sync";
 
+	private final static String TOPIC = "topic_risk_black_notity";
+	
+	@Autowired
+	private RocketMQProducer producer;
+	
 	/**
 	 * 获取黑名单管理mapper
 	 */
@@ -104,11 +115,24 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	}
 
 	public void resetSetting() {
-		synchronized (sync) {
-			isInitialize = false;
+		MQMessage anMessage = new MQMessage(TOPIC, (Serializable) "refresh");
+		try {
+			producer.sendMessage(anMessage);
+		} catch (Exception e) {
+			LOGGER.error("更新风控黑名单设置发送消息异常", e);
 		}
 	}
 
+	@Override
+	@RocketMQListener(tag = "*", topic = TOPIC, consumer = "broadcastRocketMQConsumer")
+	public ConsumeConcurrentlyStatus onReceive(MQMessage message) {
+		LOGGER.info("接收到风控黑名单更新消息");
+		synchronized (sync) {
+			isInitialize = false;
+		}
+		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+	}
+	
 	/**
 	 * 初始数据
 	 * @throws Exception   
@@ -138,7 +162,14 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 		return new PageUtils<RiskBlack>(result);
 
 	}
-
+	
+	@Override
+	public int add(RiskBlack riskBlack) throws Exception {
+		int result=  riskBlackMapper.add(riskBlack);
+		resetSetting();
+		return result;
+	}
+	
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.risk.service.RiskBlackService#addBath(java.util.List)
@@ -166,7 +197,29 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	public List<RiskBlack> findBlackListByParams(Map<String, Object> map) {
 		return riskBlackMapper.findBlackListByParams(map);
 	}
-
+	
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskWhiteService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public int update(RiskBlack riskBlack) {
+		int result = riskBlackMapper.update(riskBlack);
+		resetSetting();
+		return result;
+	}
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskWhiteService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public int delete(String id) {
+		int result = riskBlackMapper.delete(id);
+		resetSetting();
+		return result;
+	}
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.risk.service.RiskBlackService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
@@ -233,4 +286,5 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 		}
 		return set;
 	}
+
 }

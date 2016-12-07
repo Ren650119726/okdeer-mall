@@ -6,6 +6,7 @@
  */    
 package com.okdeer.mall.risk.service.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -17,9 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.base.framework.mq.IMQMessageReceive;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.annotation.RocketMQListener;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.risk.dto.RiskWhiteDto;
 import com.okdeer.mall.risk.entity.RiskWhite;
@@ -38,11 +44,17 @@ import com.okdeer.mall.risk.service.RiskWhiteService;
  *     V1.2			  2016年11月4日		 xuzq01			     白名单service实现类
  */
 @Service
-public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteService{
+public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteService,IMQMessageReceive {
 	
 	private static final Logger LOGGER = Logger.getLogger(RiskWhiteServiceImpl.class);
 	
 	private String sync = "sync";
+	
+	private final static String TOPIC = "topic_risk_white_notity";
+	
+	@Autowired
+	private RocketMQProducer producer;
+	
 	/**
 	 * 获取皮肤mapper
 	 */
@@ -85,10 +97,24 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 	}
 
 	public void resetSetting() {
+		MQMessage anMessage = new MQMessage(TOPIC, (Serializable) "refresh");
+		try {
+			producer.sendMessage(anMessage);
+		} catch (Exception e) {
+			LOGGER.error("更新风控白名单设置发送消息异常", e);
+		}
+	}
+	
+	@Override
+	@RocketMQListener(tag = "*", topic = TOPIC, consumer = "broadcastRocketMQConsumer")
+	public ConsumeConcurrentlyStatus onReceive(MQMessage message) {
+		LOGGER.info("接收到风控白名单更新消息");
 		synchronized (sync) {
 			isInitialize = false;
 		}
+		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 	}
+	
 	/**
 	 * 初始数据
 	 * @throws Exception   
@@ -117,6 +143,19 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 
 	/**
 	 * (non-Javadoc)
+	 * @return 
+	 * @see com.okdeer.mall.risk.service.RiskWhiteService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public int delete(String id) throws Exception {
+		int result = riskWhiteMapper.delete(id);
+		resetSetting();
+		return result;
+	}
+	
+	/**
+	 * (non-Javadoc)
 	 * @see com.okdeer.mall.risk.service.RiskWhiteService#deleteBatchByIds(java.util.List, java.lang.String, java.util.Date)
 	 */
 	@Override
@@ -125,7 +164,7 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 		riskWhiteMapper.deleteBatchByIds(ids,updateUserId,updateTime);
 		resetSetting();
 	}
-
+	
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.risk.service.RiskWhiteService#addBatch(java.util.List)
@@ -167,4 +206,5 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 		}
 		return set;
 	}
+
 }

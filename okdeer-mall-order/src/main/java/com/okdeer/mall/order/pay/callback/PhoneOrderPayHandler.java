@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.api.pay.pay.dto.PayResponseDto;
-import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.HttpClientUtil;
 import com.okdeer.mall.common.utils.Xml2JsonUtil;
 import com.okdeer.mall.common.utils.security.MD5;
@@ -18,7 +17,7 @@ import net.sf.json.JSONObject;
 
 @Service("phoneOrderPayHandler")
 public class PhoneOrderPayHandler extends AbstractPhoneRechargePayHandler {
-
+	
 	@Override
 	protected boolean isConsumed(TradeOrder tradeOrder) {
 		if (tradeOrder == null || tradeOrder.getStatus() == OrderStatusEnum.DROPSHIPPING
@@ -40,6 +39,7 @@ public class PhoneOrderPayHandler extends AbstractPhoneRechargePayHandler {
 		if (tradeOrderItems.isEmpty()) {
 			return;
 		}
+		tradeOrder.setTradeOrderItem(tradeOrderItems);
 		TradeOrderItem tradeOrderItem = tradeOrderItems.get(0);
 		String phoneno = tradeOrderItem.getRechargeMobile();
 		String cardnum = tradeOrderItem.getStoreSkuId();

@@ -247,6 +247,7 @@
      	FROM skin_manager sm
      	LEFT JOIN skin_manager_detail smd ON sm.id = smd.skin_manager_id
      	<where>
+     		AND sm.disabled = 0
      		<if test="id != null and id != ''">
      			AND sm.id = #{id}
      		</if>

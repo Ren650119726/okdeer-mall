@@ -3,6 +3,8 @@ package com.okdeer.mall.activity.coupons.service;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -154,4 +156,14 @@ public interface ActivityCouponsRecordService {
 	 * @date 2016年11月21日
 	 */
 	public void procesRecordNoticeJob();
+	
+	/**
+	 * 根据活动ID领取代金劵
+	 * @param collectId 活动id集合
+	 * @param userId 用户id
+	 * @param activityCouponsType 活动类型
+	 * @return tuzhiding 
+	 * @throws ServiceException
+	 */
+	public JSONObject addRecordsByCollectId(String collectId, String userId,ActivityCouponsType activityCouponsType)throws ServiceException;
 }

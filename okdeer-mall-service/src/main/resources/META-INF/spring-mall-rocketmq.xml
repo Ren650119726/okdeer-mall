@@ -24,8 +24,10 @@
 	<bean id="rocketMQProducer" class="com.okdeer.base.framework.mq.RocketMQProducer"/>
 	<!-- 事务消息生产者 -->
 	<bean id="rocketMQTransactionProducer" class="com.okdeer.base.framework.mq.RocketMQTransactionProducer" />
-
+	<!-- 集群消费者 -->
 	<bean id="rocketMQConsumer" class="com.okdeer.base.framework.mq.RocketMQConsumer"/>
+	<!-- 广播消费者 -->
+	<bean id="broadcastRocketMQConsumer" class="com.okdeer.base.framework.mq.BroadcastRocketMQConsumer"/>
 	
 	
 	<!-- 用户同步dao -->

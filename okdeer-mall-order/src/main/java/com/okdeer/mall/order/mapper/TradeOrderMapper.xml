@@ -607,7 +607,8 @@
 		o.fare,
 		o.actual_amount AS actualAmount,
 		o.activity_id AS activityId,
-		o.activity_type AS activityType
+		o.activity_type AS activityType,
+		o.invoice as invoice
 		FROM
 		trade_order o
 		LEFT JOIN store_info i ON o.store_id = i.id
@@ -1097,7 +1098,7 @@
 		SELECT
 		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,
 		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,
-		o.update_time,o.pay_way,o.cancel_type,
+		o.update_time,o.pay_way,o.cancel_type,o.accept_time,
 		logistics.consignee_name,logistics.telephone,logistics.mobile,logistics.area,logistics.address,
 		logistics.type as
 		logistics_type,logistics.logistics_no,logistics.logistics_company_name,
@@ -1737,6 +1738,9 @@
 			<if test="acceptTime != null">
 				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
 			</if>
+			<if test="cancelType != null">
+				cancel_type = #{cancelType,jdbcType=TINYINT},
+			</if>
 			<!-- End V1.2 added by maojj 2016-11-10 -->
 		</set>
 		where trade_num = #{tradeNum,jdbcType=VARCHAR}
@@ -1903,6 +1907,9 @@
 			</if>
 			<if test="acceptTime != null">
 				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="cancelType != null">
+				cancel_type = #{cancelType,jdbcType=TINYINT},
 			</if>
 			<!-- End V1.2 added by maojj 2016-11-10 -->
 		</set>
@@ -2196,7 +2203,6 @@
 		pay.pay_amount,
 		pay.`returns`,
 		store.store_name,
-		agent.full_name,
 		CASE trade.`status` WHEN 2 THEN 1 WHEN 4 THEN 1 WHEN 12 THEN 0 WHEN 13
 		THEN 0 END AS statusSort
 		FROM trade_order trade
@@ -2204,8 +2210,6 @@
 		trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN store_info
 		store ON store.id = trade.store_id
-		LEFT JOIN psms_agent agent ON
-		agent.id = store.agent_id
 		WHERE 1=1
 		<!-- trade.disabled = 0 -->
 		<if test="params != null">
@@ -2312,7 +2316,7 @@
 		SELECT
 		trade.id,trade.order_no,trade.trade_num,trade.actual_amount,trade.preferential_price,trade.order_resource,
 		trade.user_id,trade.store_id,trade.`status`,trade.reason,trade.activity_id,trade.activity_type,
-		pay.pay_type,pay.`returns`,pay.pay_amount
+		pay.pay_type,pay.`returns`,pay.pay_amount,trade.is_breach,trade.breach_money
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON trade.id = pay.order_id
 		WHERE
@@ -2344,19 +2348,7 @@
 		resultMap="TradeOrderStatusVoMap">
 		SELECT CASE
 		WHEN `status` IN (0,11) THEN 0
-		WHEN `status` IN (1) THEN 1
-		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (6) THEN 5
-		WHEN `status` IN (5) THEN
-			CASE type 
-			WHEN 5 THEN
-				CASE  
-				WHEN consumer_code_status IN (1) THEN 1
-				WHEN consumer_code_status IN (2,3,4,5) THEN 5
-				WHEN consumer_code_status IN (0) THEN 0
-				END 
-			ELSE 5 end
-		WHEN `status` IN (2,4,12,13) THEN 2
+		WHEN `status` IN (2,4,12,13,6) THEN 2
 		ELSE `STATUS`
 		END AS `status`,count(1) as `count` FROM trade_order
 		WHERE store_id = #{storeId,jdbcType=VARCHAR}
@@ -2376,19 +2368,7 @@
 		GROUP BY
 		CASE
 		WHEN `status` IN (0,11) THEN 0
-		WHEN `status` IN (1) THEN 1
-		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (6) THEN 5
-		WHEN `status` IN (5) THEN
-			CASE type 
-			WHEN 5 THEN
-				CASE  
-				WHEN consumer_code_status IN (1) THEN 1
-				WHEN consumer_code_status IN (2,3,4,5) THEN 5
-				WHEN consumer_code_status IN (0) THEN 0
-				END 
-			ELSE 5 end
-		WHEN `status` IN (2,4,12,13) THEN 2
+		WHEN `status` IN (2,4,12,13,6) THEN 2
 		ELSE `STATUS`
 		END
 	</select>
@@ -2502,19 +2482,7 @@
 		<if test="status != null">
 			AND CASE
 				WHEN tr.status IN (0,11) THEN 0
-				WHEN tr.status IN (1) THEN 1
-				WHEN tr.status IN (3) THEN 3
-				WHEN tr.status IN (6) THEN 5
-				WHEN tr.status IN (5) THEN
-					CASE tr.type 
-					WHEN 5 THEN
-						CASE  
-						WHEN tr.consumer_code_status IN (1) THEN 1
-						WHEN tr.consumer_code_status IN (2,3,4,5) THEN 5
-						WHEN tr.consumer_code_status IN (0) THEN 0
-						END 
-					ELSE 5 end
-				WHEN tr.status IN (2,4,12,13) THEN 2
+				WHEN tr.status IN (2,4,12,13,6) THEN 2
 				ELSE tr.status
 				END 
 			IN
@@ -2660,11 +2628,20 @@
 			<if test="deliveryTime != null">
 				delivery_time = #{deliveryTime,jdbcType=TIMESTAMP},
 			</if>
+			<if test="acceptTime != null">
+				accept_time = #{acceptTime,jdbcType=TIMESTAMP},
+			</if>
 			<if test="shipmentsUserId != null">
 				shipments_user_id = #{shipmentsUserId,jdbcType=VARCHAR},
 			</if>
 			<if test="consumerCodeStatus !=null">
 				consumer_code_status = #{consumerCodeStatus,jdbcType=BIT},
+			</if>
+			<if test="isBreach != null">
+				is_breach = #{isBreach,jdbcType=TINYINT},
+			</if>
+			<if test="cancelType != null">
+				cancel_type = #{cancelType,jdbcType=TINYINT},
 			</if>
 		</set>
 		WHERE id = #{id,jdbcType=VARCHAR}
@@ -4597,6 +4574,8 @@
 		tr.invoice,
 		tr.reason,
 		tr.create_time,
+		tr.is_breach,
+		tr.breach_money,
 		op.pay_type,
 		op.pay_time,
 		op.pay_amount,
@@ -4634,7 +4613,9 @@
 		<!-- LEFT JOIN trade_order_refunds trf ON tr.id = trf.order_id -->
 		WHERE (tr.status = 1 OR tr.status = 5 OR tr.status = 6 OR tr.status =
 		0 OR tr.status = 11 OR tr.status = 2)
-		AND tr.is_show=1
+		<if test="isShow != null">
+			AND tr.is_show = #{isShow,jdbcType=TINYINT}
+		</if>
 		<!-- 充值类型选择 流量或者话费 -->
 		<if test="ids != null">
 			AND tr.id in
@@ -4882,13 +4863,13 @@
 
 	<select id="statisOrderCannelRefundByParams" parameterType="map"
 		resultType="map">
-		SELECT IFNULL(sum(total_amount),0) as totalAmount,count(1) as count
+		SELECT case trade.is_breach  when 0 then  IFNULL(sum(actual_amount),0) 
+		when 1 then IFNULL(sum(actual_amount - trade.breach_money),0) end as totalAmount,
+		count(1) as count
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id =
 		trade.id
 		LEFT JOIN store_info store ON store.id = trade.store_id
-		LEFT
-		JOIN psms_agent agent ON agent.id = store.agent_id
 		WHERE 1=1
 		<!-- trade.disabled = 0 -->
 		<if test="params != null">

@@ -40,10 +40,9 @@ public class RollbackMQProducer {
 	 * @date 2016年7月26日
 	 */
 	public void sendStockRollbackMsg(List<String> rpcIdList) throws Exception {
-		// 现在库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
-		// for (String rpcId : rpcIdList) {
-		// this.sendStockRollbackMsg(rpcId);
-		// }
+		 for (String rpcId : rpcIdList) {
+			 this.sendStockRollbackMsg(rpcId);
+		 }
 	}
 
 	/**
@@ -54,12 +53,11 @@ public class RollbackMQProducer {
 	 * @date 2016年7月26日
 	 */
 	public void sendStockRollbackMsg(String rpcId) throws Exception {
-		// 现在库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
-		// if (rpcId == null) {
-		// return;
-		// }
-		// this.send(rpcId, RollBackConstant.TOPIC_STOCK_ROLLBACK,
-		// RollBackConstant.TAGS_STOCK_ROLLBACK);
+		 if (rpcId == null) {
+			 return;
+		 }
+		 this.send(rpcId, RollBackConstant.TOPIC_STOCK_ROLLBACK,
+		 RollBackConstant.TAGS_STOCK_ROLLBACK);
 	}
 
 	/**

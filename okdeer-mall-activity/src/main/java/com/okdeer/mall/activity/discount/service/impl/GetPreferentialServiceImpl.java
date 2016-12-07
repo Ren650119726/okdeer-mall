@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
@@ -77,6 +78,12 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 	@Reference(version = "1.0.0", check = false)
 	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
 	
+	/**
+	 * 导航类目
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsNavigateCategoryServiceApi goodsNavigateCategoryServiceApi;
+	
 	@Override
 	public PreferentialVo findPreferentialByUser(String userId, StoreInfo storeInfo, BigDecimal totalAmount,
 			List<String> skuIdList, String addressId) throws Exception {
@@ -120,13 +127,19 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 			for (GoodsStoreSku goodsStoreSku : goodsStoreSkus) {
 				spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
 			}
+			
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
 					int count = 0;
 					if (StoreTypeEnum.CLOUD_STORE.equals(storeType)) {
-						count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
+						//count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
+						List<String> ids = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
+						boolean bool = ids.containsAll(spuCategoryIds);
+						if (bool) {
+							count = spuCategoryIds.size();
+						}
 					} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
 						count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
 					}

@@ -2,6 +2,7 @@ package com.okdeer.mall.order.service.impl;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -9,6 +10,7 @@ import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.WhetherEnum;
@@ -21,11 +23,13 @@ import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTraceEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.mapper.TradeOrderTraceMapper;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
 import com.okdeer.mall.order.vo.RefundsTraceResp;
 import com.okdeer.mall.order.vo.RefundsTraceVo;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * ClassName: TradeOrderTraceServiceImpl 
@@ -50,6 +54,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 	private TradeOrderMapper tradeOrderMapper;
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void saveOrderTrace(TradeOrder tradeOrder) {
 		// 只有上门服务的订单需要保存订单轨迹。
 		if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER) {
@@ -79,6 +84,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 	 */
 	private List<TradeOrderTrace> buildTraceList(TradeOrder tradeOrder) {
 		List<TradeOrderTrace> traceList = new ArrayList<TradeOrderTrace>();
+		Date currentDate = new Date();
 		// 构建操作轨迹
 		TradeOrderTrace optTrace = buildOptTrace(tradeOrder);
 		if (optTrace != null && optTrace.getTraceStatus() != null) {
@@ -90,6 +96,20 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 			trace.setTraceStatus(OrderTraceEnum.WAIT_PAID);
 			trace.setRemark(OrderTraceConstant.WAIT_PAID_REMARK);
 			traceList.add(trace);
+		}
+		if (tradeOrder.getStatus() == OrderStatusEnum.WAIT_RECEIVE_ORDER && tradeOrder.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY){
+			// 如果是线下确认并当面支付的订单，需要记录提交订单和待付款的轨迹。
+			TradeOrderTrace placeOrderTrace = new TradeOrderTrace(tradeOrder.getId());
+			placeOrderTrace.setOptTime(currentDate);
+			placeOrderTrace.setTraceStatus(OrderTraceEnum.SUBMIT_ORDER);
+			placeOrderTrace.setRemark(String.format(OrderTraceConstant.SUBMIT_ORDER_REMARK, tradeOrder.getOrderNo()));
+			traceList.add(placeOrderTrace);
+			
+			TradeOrderTrace waitPaidTrace = new TradeOrderTrace(tradeOrder.getId());
+			waitPaidTrace.setOptTime(currentDate);
+			waitPaidTrace.setTraceStatus(OrderTraceEnum.WAIT_PAID);
+			waitPaidTrace.setRemark(OrderTraceConstant.WAIT_PAID_OFFLINE_CONFIRM_REMARK);
+			traceList.add(waitPaidTrace);
 		}
 		return traceList;
 	}
@@ -112,7 +132,11 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 				break;
 			case WAIT_RECEIVE_ORDER:
 				trace.setTraceStatus(OrderTraceEnum.WAIT_RECEIVE);
-				trace.setRemark(OrderTraceConstant.WAIT_RECEIVE_REMARK);
+				if (tradeOrder.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
+					trace.setRemark(OrderTraceConstant.WAIT_RECEIVE_OFFLINE_CONFIRM_REMARK);
+				} else {
+					trace.setRemark(OrderTraceConstant.WAIT_RECEIVE_REMARK);
+				}
 				break;
 			case DROPSHIPPING:
 				trace.setTraceStatus(OrderTraceEnum.WAIT_DISPATCHED);
@@ -160,46 +184,56 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 		WhetherEnum isBreach = tradeOrder.getIsBreach();
 		// 查询当前订单
 		TradeOrder currentOrder = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
-		switch (currentOrder.getStatus()) {
-			case UNPAID:
-				if (cancelType == OrderCancelType.CANCEL_BY_BUYER) {
-					remark = String.format(OrderTraceConstant.CANCEL_ON_UNPAID, reason);
-				} else {
-					remark = OrderTraceConstant.CANCEL_ON_TIMEOUT;
-				}
-				break;
-			case WAIT_RECEIVE_ORDER:
-				if (cancelType == OrderCancelType.CANCEL_BY_BUYER) {
-					remark = String.format(OrderTraceConstant.CANCEL_BY_USER, reason);
-				} else if (cancelType == OrderCancelType.CANCEL_BY_SELLER) {
-					remark = String.format(OrderTraceConstant.CANCEL_BY_SELLER, reason);
-				} else if (cancelType == OrderCancelType.CANCEL_BY_SYSTEM) {
-					remark = OrderTraceConstant.CANCEL_BY_SELLER_TIMEOUT;
-				}
-				break;
-			case DROPSHIPPING:
-				if (cancelType == OrderCancelType.CANCEL_BY_BUYER) {
-					if (isBreach == WhetherEnum.whether) {
-						// TODO 第二个参数时违约金的百分比
-						remark = String.format(OrderTraceConstant.CANCEL_BY_USER_BREAK_CONTRACT, reason, tradeOrder.getBreachPercent());
+		if (currentOrder.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
+			if (cancelType == OrderCancelType.CANCEL_BY_BUYER) {
+				remark = String.format(OrderTraceConstant.CANCEL_ON_UNPAID, reason);
+			} else if (cancelType == OrderCancelType.CANCEL_BY_SELLER) {
+				remark = String.format(OrderTraceConstant.CANCEL_BY_SELLER_OFFLINE_CONFIRM, reason);
+			} else if (cancelType == OrderCancelType.CANCEL_BY_SYSTEM) {
+				remark = OrderTraceConstant.CANCEL_BY_SELLER_TIMEOUT_OFFLINE_CONFIRM;
+			}
+		} else {
+			switch (currentOrder.getStatus()) {
+				case UNPAID:
+					if (cancelType == OrderCancelType.CANCEL_BY_BUYER) {
+						remark = String.format(OrderTraceConstant.CANCEL_ON_UNPAID, reason);
 					} else {
-						remark = String.format(OrderTraceConstant.CANCEL_BY_USER, reason);
+						remark = OrderTraceConstant.CANCEL_ON_TIMEOUT;
 					}
-				} else if (cancelType == OrderCancelType.CANCEL_BY_SELLER) {
-					remark = String.format(OrderTraceConstant.CANCEL_BY_SELLER, reason);
-				} else if (cancelType == OrderCancelType.CANCEL_BY_SYSTEM) {
-					remark = OrderTraceConstant.CANCEL_BY_SELLER_TIMEOUT;
-				}
-				break;
-			default:
-				break;
+					break;
+				case WAIT_RECEIVE_ORDER:
+					if (cancelType == OrderCancelType.CANCEL_BY_BUYER) {
+						remark = String.format(OrderTraceConstant.CANCEL_BY_USER, reason);
+					} else if (cancelType == OrderCancelType.CANCEL_BY_SELLER) {
+						remark = String.format(OrderTraceConstant.CANCEL_BY_SELLER, reason);
+					} else if (cancelType == OrderCancelType.CANCEL_BY_SYSTEM) {
+						remark = OrderTraceConstant.CANCEL_BY_SELLER_TIMEOUT;
+					}
+					break;
+				case DROPSHIPPING:
+					if (cancelType == OrderCancelType.CANCEL_BY_BUYER) {
+						if (isBreach == WhetherEnum.whether) {
+							// TODO 第二个参数时违约金的百分比
+							remark = String.format(OrderTraceConstant.CANCEL_BY_USER_BREAK_CONTRACT, reason, tradeOrder.getBreachPercent(),ConvertUtil.format(tradeOrder.getBreachMoney()));
+						} else {
+							remark = String.format(OrderTraceConstant.CANCEL_BY_USER, reason);
+						}
+					} else if (cancelType == OrderCancelType.CANCEL_BY_SELLER) {
+						remark = String.format(OrderTraceConstant.CANCEL_BY_SELLER, reason);
+					} else if (cancelType == OrderCancelType.CANCEL_BY_SYSTEM) {
+						remark = OrderTraceConstant.CANCEL_BY_SELLER_TIMEOUT;
+					}
+					break;
+				default:
+					break;
+			}
 		}
 		if(StringUtils.isNotEmpty(remark)){
 			trace.setTraceStatus(OrderTraceEnum.CANCELED);
 			trace.setRemark(remark);
 		}
 	}
-
+	
 	@Override
 	public Response<RefundsTraceResp> findOrderTrace(String orderId) {
 		Response<RefundsTraceResp> resp = new Response<RefundsTraceResp>();
@@ -223,6 +257,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 		for (TradeOrderTrace trace : traceList) {
 			traceVo = new RefundsTraceVo();
 			traceVo.setTitle(trace.getTraceStatus().getDesc());
+			traceVo.setTraceStatus(trace.getTraceStatus());
 			traceVo.setContent(trace.getRemark());
 			traceVo.setTime(DateUtils.formatDate(trace.getOptTime(), "MM-dd HH:mm"));
 			// 是否已完成 0：否，1：是

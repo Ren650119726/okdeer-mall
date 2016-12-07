@@ -21,8 +21,10 @@ import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
+import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -132,7 +134,7 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 				return;
 			}
 			// 根据请求构建订单
-			TradeOrder tradeOrder = buildTradeOrder(req, address);
+			TradeOrder tradeOrder = buildTradeOrder(req, address,resp);
 			// 保存用户秒杀记录
 			activitySeckillRecordMapper.add(buildSeckillRecord(req.getData(), tradeOrder));
 			// 保存订单和订单项信息，并发送消息
@@ -201,10 +203,11 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 	 * @author maojj
 	 * @date 2016年9月23日
 	 */
-	public TradeOrder buildTradeOrder(Request<ServiceOrderReq> req, MemberConsigneeAddress address) throws Exception {
+	public TradeOrder buildTradeOrder(Request<ServiceOrderReq> req, MemberConsigneeAddress address,Response<ServiceOrderResp> resp) throws Exception {
 		TradeOrder tradeOrder = new TradeOrder();
 
 		ServiceOrderReq reqData = req.getData();
+		StoreInfoServiceExt servExt = resp.getData().getStoreInfoServiceExt();
 
 		tradeOrder.setId(UuidUtils.getUuid());
 		tradeOrder.setUserId(reqData.getUserId());
@@ -239,7 +242,24 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		// 设置订单实付金额
 		tradeOrder.setActualAmount(seckillPrice);
 		// 设置店铺总收入
-		tradeOrder.setIncome(skuPrice);
+		tradeOrder.setIncome(seckillPrice);
+		// 设置违约金信息
+		// Begin V1.2 added by maojj 2016-11-29
+		// 订单默认未违约
+		tradeOrder.setIsBreach(WhetherEnum.not);
+		if(servExt != null){
+			// 店铺设置是否有违约金
+			tradeOrder.setIsBreachMoney(WhetherEnum.enumOrdinalOf(servExt.getIsBreachMoney()));
+			// 店铺设置收取违约金的时间限制
+			tradeOrder.setBreachTime(servExt.getBreachTime());
+			// 店铺设置违约金的百分比
+			tradeOrder.setBreachPercent(servExt.getBreachPercent());
+		}
+		if(tradeOrder.getIsBreachMoney() == WhetherEnum.whether){
+			// 如果店铺设置了违约金，计算订单应该收取的违约金存入订单记录中
+			tradeOrder.setBreachMoney(tradeOrder.getActualAmount().multiply(BigDecimal.valueOf(tradeOrder.getBreachPercent())).divide(BigDecimal.valueOf(100),2, BigDecimal.ROUND_UP));
+		}
+		// End V1.2 added by maojj 2016-11-29
 		// 解析支付方式
 		tradeOrder.setStatus(OrderStatusEnum.UNPAID);
 		tradeOrder.setPayWay(PayWayEnum.PAY_ONLINE);

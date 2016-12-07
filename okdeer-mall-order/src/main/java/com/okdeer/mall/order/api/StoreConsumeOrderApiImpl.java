@@ -107,4 +107,20 @@ public class StoreConsumeOrderApiImpl implements StoreConsumeOrderServiceApi {
 		return storeConsumeOrderService.getStoreConsumeOrderDetailList(orderId, status);
 	}
 
+	
+	//begin V1.2.0 add by zengjz 20161128
+	/**
+	 * @Description: 根据退款单项id查询订单明细列表
+	 * @param refundItemId 退款单项id
+	 * @return
+	 * @author zengjizu
+	 * @date 2016年11月28日
+	 */
+	@Override
+	public List<TradeOrderItemDetail> findRefundTradeOrderItemDetailList(String refundItemId) {
+		
+		
+		return storeConsumeOrderService.findRefundTradeOrderItemDetailList(refundItemId);
+	}
+	//end V1.2.0 add by zengjz 20161128
 }

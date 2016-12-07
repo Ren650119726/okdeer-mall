@@ -470,8 +470,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			map = this.insertRecordByJudgeNum(activityCoupons, currentOperatUserId, "恭喜你，优惠券兑换成功！",
 					activityCouponsType);
 		} else {
-			map.put("data", null);
-			map.put("message", "您输入的抵扣券优惠码错误！");
+			map.put("msg", "您输入的抵扣券优惠码错误！");
 			map.put("code", 103);
 		}
 		return JSONObject.fromObject(map);
@@ -1004,7 +1003,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			pushMsgVo.setToken(msgToken);
 			pushMsgVo.setSendUserId(userId);
 			pushMsgVo.setServiceFkId(userId);
-			pushMsgVo.setServiceTypes(new Integer[] { Constant.ZERO });
+			pushMsgVo.setServiceTypes(new Integer[] { Constant.TWO });
 			// 0:用户APP,2:商家APP,3POS机
 			pushMsgVo.setAppType(Constant.ZERO);
 			pushMsgVo.setIsUseTemplate(Constant.ZERO);
@@ -1034,6 +1033,28 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		}catch(Exception e){
 			//捕获异常不影响发送流程
 			log.error("代金劵到期提醒发送消息异常！"+phone,e);
+		}
+	}
+
+	@Override
+	public int findCouponsRemain(String userId,String couponsId) {
+		ActivityCoupons activityCoupons = activityCouponsMapper.selectById(couponsId);
+		ActivityCouponsRecord activityCouponsRecord = new ActivityCouponsRecord();
+		activityCouponsRecord.setCouponsId(couponsId);
+		activityCouponsRecord.setCollectType(ActivityCouponsType.coupons);
+		activityCouponsRecord.setCollectUserId(userId);
+		int	currentRecordCount = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecord);
+		if (activityCoupons.getRemainNum() <= 0) {
+			// 剩余数量小于0 显示已领完
+			return 0;
+		} else {
+			if (currentRecordCount >= activityCoupons.getEveryLimit().intValue()) {
+				// 已领取
+				return 1;
+			} else {
+				// 立即领取
+				return 2;
+			}
 		}
 	}
 	

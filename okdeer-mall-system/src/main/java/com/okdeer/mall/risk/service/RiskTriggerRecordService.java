@@ -6,6 +6,7 @@
  */    
 package com.okdeer.mall.risk.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -45,4 +46,5 @@ public interface RiskTriggerRecordService extends IBaseService {
 	 * @date 2016年11月17日
 	 */
 	void deleteBatch(List<String> ids) throws Exception; 
+	
 }

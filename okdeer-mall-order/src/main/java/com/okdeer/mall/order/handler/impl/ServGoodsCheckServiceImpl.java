@@ -5,17 +5,21 @@ import java.util.Date;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuPicture;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.enums.GoodsStoreSkuPayTypeEnum;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
@@ -48,6 +52,9 @@ public class ServGoodsCheckServiceImpl implements RequestHandler<ServiceOrderReq
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuPictureServiceApi goodsStoreSkuPictureService;
 	
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuServiceServiceApi goodsStoreSkuServiceServiceApi;
+	
 	@Override
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
 		ServiceOrderReq reqData = req.getData();
@@ -67,6 +74,28 @@ public class ServGoodsCheckServiceImpl implements RequestHandler<ServiceOrderReq
 			req.setComplete(true);
 			return;
 		}
+		// Begin V1.2 added by maojj 2016-11-25
+		// 判断到店消费商品是否已过有效期
+		if (goodsStoreSku.getSpuTypeEnum() == SpuTypeEnum.fwdDdxfSpu) {
+			GoodsStoreSkuService skuService = goodsStoreSkuServiceServiceApi.selectBySkuId(goodsStoreSku.getId());
+			if (skuService == null) {
+				resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS_1);
+				req.setComplete(true);
+				return;
+			}
+			
+			Date endTime = skuService.getEndTime();
+			Date beginTime = skuService.getStartTime();
+			Date currentDate = new Date();
+			if (currentDate.before(beginTime) || currentDate.after(endTime)) {
+				// 服务商品已过期，不能预约
+				resp.setResult(ResultCodeEnum.SERV_GOODS_EXP);
+				req.setComplete(true);
+				return;
+			} 
+		}
+		// End V1.2 added by maojj 2016-11-25
+		
 		// 查询商品主图信息
 		GoodsStoreSkuPicture goodsStoreSkuPicture = goodsStoreSkuPictureService
 				.findMainPicByStoreSkuId(reqData.getSkuId());

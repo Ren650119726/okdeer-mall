@@ -114,4 +114,13 @@ public class RiskUserManagerApiImpl implements RiskUserManagerApi {
 		
 	}
 
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.risk.service.RiskUserManagerApi#findCountByTelephoneOrEmail(com.okdeer.mall.risk.entity.RiskUserManager)
+	 */
+	@Override
+	public int findCountByTelephoneOrEmail(RiskUserManager riskUserManager) {
+		return riskManagerService.findCountByTelephoneOrEmail(riskUserManager);
+	}
+
 }

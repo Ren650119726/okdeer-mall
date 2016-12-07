@@ -56,7 +56,7 @@ public class ServColumnCheckServiceImpl implements RequestHandler<ServiceOrderRe
 			return;
 		}
 		// 设置响应信息
-		if(req.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT){
+		if(req.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT && null != serverColumn){
 			respData.setServerColumnId(serverColumn.getId());
 		}
 	}

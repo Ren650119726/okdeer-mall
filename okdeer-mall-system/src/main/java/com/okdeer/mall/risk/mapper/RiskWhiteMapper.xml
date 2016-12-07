@@ -80,7 +80,7 @@
        <if test="createTimeEnd != null">
          AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
        </if>
-       ORDER BY create_time DESC
+       ORDER BY update_time DESC,id DESC
   </select>
  <select id="findCountByAccount" resultType="java.lang.Integer"  parameterType="com.okdeer.mall.risk.entity.RiskWhite" >
         select count(1) 
@@ -96,7 +96,7 @@
                 telephone_account = #{telephoneAccount,jdbcType=VARCHAR},
             </if>
              <if test="accountType != null" >
-            	account_type =#{accountType,jdbcType=NUMERIC}
+            	account_type =#{accountType,jdbcType=NUMERIC},
             </if>
             <if test="updateTime != null" >
                 update_time = #{updateTime,jdbcType=TIMESTAMP},

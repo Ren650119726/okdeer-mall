@@ -15,7 +15,6 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.api.pay.pay.dto.PayResponseDto;
-import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -289,7 +288,7 @@ public abstract class AbstractPayResultHandler {
 	 * @date 2016年11月22日
 	 */
 	protected void processOrderItem(TradeOrder tradeOrder, PayResponseDto respDto) throws Exception {
-		processOrderItem(tradeOrder,null);
+		processOrderItem(tradeOrder);
 	}
 	
 	/**

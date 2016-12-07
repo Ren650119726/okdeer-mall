@@ -68,12 +68,13 @@ public class SeckillAddressSearchServiceImpl implements RequestHandler<ServiceOr
 	 */
 	private void processConsumeToStore(String storeId, ServiceOrderResp respData) throws Exception {
 		// 到店消费的商品，需要返回店铺地址
-		MemberConsigneeAddress storeAddrObj = memberConsigneeAddressService.findByStoreId(storeId);
+		MemberConsigneeAddress storeAddrObj = memberConsigneeAddressService.getSellerDefaultAddress(storeId);
 		StringBuilder storeAddr = new StringBuilder();
 		storeAddr.append(ConvertUtil.format(storeAddrObj.getProvinceName()))
 				.append(ConvertUtil.format(storeAddrObj.getCityName()))
 				.append(ConvertUtil.format(storeAddrObj.getAreaName()))
-				.append(ConvertUtil.format(storeAddrObj.getAreaExt()));
+				.append(ConvertUtil.format(storeAddrObj.getAreaExt()))
+				.append(ConvertUtil.format(storeAddrObj.getAddress()));
 		respData.getStoreInfo().setAddress(storeAddr.toString());
 	}
 	

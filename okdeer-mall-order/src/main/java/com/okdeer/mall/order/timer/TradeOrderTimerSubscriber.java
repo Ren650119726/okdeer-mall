@@ -304,7 +304,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				order.setUpdateUserId(RobotUserUtil.getRobotUser().getId());
 				//Begin 13166和13165    update by wusw  20160830
 				if (order.getType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
-					order.setReason("超时未派单，系统取消订单");
+					order.setReason("商家超时未派单，系统取消");
 				} else {
 					order.setReason("超时未发货，系统取消订单");
 				}
@@ -319,7 +319,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				logger.info("接单超时自动取消订单,订单号：" + order.getOrderNo());
 				order.setUpdateTime(new Date());
 				order.setUpdateUserId(RobotUserUtil.getRobotUser().getId());
-				order.setReason("超时未接单，系统取消订单");
+				order.setReason("商家超时未接单，系统取消");
 				order.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
 				cancelOrderService.cancelOrder(order, false);
 			}
@@ -645,7 +645,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 		TradeOrderRefunds orderRefunds = new TradeOrderRefunds();
 		String refundsId = UuidUtils.getUuid();
 		orderRefunds.setId(refundsId);
-		orderRefunds.setRefundNo(generateNumericalService.generateNumber("XT"));
+		orderRefunds.setRefundNo(generateNumericalService.generateOrderNo("XT"));
 		orderRefunds.setOrderId(order.getId());
 		orderRefunds.setOrderNo(order.getOrderNo());
 		orderRefunds.setStoreId(order.getStoreId());

@@ -6,6 +6,7 @@
  */
 package com.okdeer.mall.risk.mapper;
 
+import java.util.Date;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
@@ -53,4 +54,11 @@ public interface RiskOrderRecordMapper extends IBaseMapper {
 	 * @date 2016年11月17日
 	 */
 	Set<String> findLoginNamesByParam(@Param("deviceId") String deviceId, @Param("isPreferential") int isPreferential);
+	
+	/**
+	 * @Description: TODO   
+	 * @author xuzq01
+	 * @date 2016年11月25日
+	 */
+	void deleteByTime(@Param("createTime") Date createTime);
 }

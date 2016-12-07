@@ -209,4 +209,15 @@ class GenerateNumericalServiceImpl implements GenerateNumericalService, Generate
 		return newOrderNo.toString();
 	}
 	// End 1.0.Z 调整订单编号生成规则 add by zengj
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.order.service.GenerateNumericalServiceApi#generateOrderNo(java.lang.String)
+	 */
+	@Override
+	public String generateOrderNo(String prefix) {
+		return generateOrderNo(prefix,"","");
+	}
+	
+	
 }

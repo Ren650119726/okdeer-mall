@@ -35,7 +35,7 @@
     SELECT 
     <include refid="Base_Column_List" />
      FROM risk_black 
-     WHERE disabled = 0 and account_type=1 or account_type=4
+     WHERE disabled = 0 and (account_type=1 or account_type=4)
        ORDER BY create_time DESC
   </select>
    <select id="findAllBlackLoginAccount" resultMap="BaseResultMap" >
@@ -57,15 +57,17 @@
        <if test="account != null and account != ''">
          AND account LIKE CONCAT('%',#{account,jdbcType=VARCHAR},'%') 
        </if>
-       <!-- 支付宝账号 -->
+       <!-- 支付宝账号  -->
        <if test="accountAlipay != null and accountAlipay != ''">
          AND account LIKE CONCAT('%',#{accountAlipay,jdbcType=VARCHAR},'%') 
+         AND account_type = 4
        </if>
        <!-- 微信账号 -->
        <if test="accountWeChat != null and accountWeChat != ''">
          AND account LIKE CONCAT('%',#{accountWeChat,jdbcType=VARCHAR},'%') 
+         AND account_type = 1
        </if>
-       <!-- 账号类型 账号类型为1 支付类型时查询微信和支付宝两张账号类型  -->
+       <!-- 账号类型 账号类型为-1 支付类型时查询微信和支付宝两张账号类型  -->
        <if test="accountType != null" >
 	       <choose>
 			   <when test="accountType == -1">
@@ -83,7 +85,7 @@
        <if test="createTimeEnd != null">
          AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
        </if>
-       ORDER BY create_time DESC
+       ORDER BY update_time DESC,id DESC
   </select>
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
         select 

@@ -1,11 +1,14 @@
 package com.okdeer.mall.order.handler.impl;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
 
+import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
@@ -55,7 +58,13 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 	@Resource
 	private ActivityCouponsMapper activityCouponsMapper;
 	// End Bug:14093 added by maojj 2016-10-12
-
+	
+	/**
+	 * 导航类目
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsNavigateCategoryServiceApi goodsNavigateCategoryServiceApi;
+	
 	/**
 	 * 校验优惠券是否有效
 	 */
@@ -95,8 +104,11 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 			if(coupons.getIsCategory() == Constant.ONE){
 				Set<String> spuCategoryIds = reqDto.getContext().getSpuCategoryIds();
 				// 如果是指定分类。校验商品的分类
-				int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getId());
-				if (count == Constant.ZERO || count != spuCategoryIds.size()) {
+				// int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getId());
+				// 15719  商品关联导航类目需求变更兼容
+				List<String> ids = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getId());
+				boolean bool = ids.containsAll(spuCategoryIds);
+				if (!bool) {
 					// 购买的商品分类超出代金券限购的分类。则订单提交失败
 					respDto.setFlag(false);
 					respDto.setMessage(OrderTipMsgConstant.KIND_LIMIT_OVER);

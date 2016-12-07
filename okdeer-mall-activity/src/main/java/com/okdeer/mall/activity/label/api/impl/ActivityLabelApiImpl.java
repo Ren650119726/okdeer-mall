@@ -88,8 +88,8 @@ public class ActivityLabelApiImpl implements ActivityLabelApi{
 	}
 	
 	@Override
-	public List<Map<String,Object>> listLabelNameBySkuId(List<String> skuIdList) throws Exception {
-		return labelService.listLabelNameBySkuId(skuIdList);
+	public List<Map<String,Object>> findLabelBySkuId(String skuId) throws Exception {
+		return labelService.findLabelBySkuId(skuId);
 	}
 	
 	/**

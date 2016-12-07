@@ -209,7 +209,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 			// 订单详情
 			TradeOrder order = tradeOrderService.selectById(orderId);
-
+			TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(orderId);
+			order.setTradeOrderPay(tradeOrderPay);
 			// 订单项详情
 			TradeOrderItem tradeOrderItem = tradeOrderItemService.selectByPrimaryKey(orderItemId);
 
@@ -217,7 +218,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 			// //如果订单的购买者不是当前申请退款的用户，则不让退款
 			// return resultDataMap(DescriptConstants.ORDER_NOT_EXSITS, PublicResultCodeEnum.FAIL);
 			// }
-
+			
 			TradeOrderRefunds orderRefunds = buildRefund(order, tradeOrderItem, refundAmount, refundPrefeAmount,
 					quantity);
 			// 退款单来源
@@ -261,7 +262,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 			
 			// 订单详情
 			TradeOrder order = tradeOrderService.selectById(orderId);
-
+			TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(orderId);
+			order.setTradeOrderPay(tradeOrderPay);
 			// 订单项详情
 			TradeOrderItem tradeOrderItem = tradeOrderItemService.selectByPrimaryKey(orderItemId);
 
@@ -314,7 +316,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		TradeOrderRefunds orderRefunds = new TradeOrderRefunds();
 		String refundsId = UuidUtils.getUuid();
 		orderRefunds.setId(refundsId);
-		orderRefunds.setRefundNo(generateNumericalService.generateNumber("XT"));
+		orderRefunds.setRefundNo(generateNumericalService.generateOrderNo("XT"));
 		orderRefunds.setOrderId(order.getId());
 		orderRefunds.setOrderNo(order.getOrderNo());
 		orderRefunds.setStoreId(order.getStoreId());
@@ -727,6 +729,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 	
 	@Override
 	public PageResultVo<OrderRefundsDto> findeChargeRefundsByParams(Map<String, Object> params) throws Exception {
+		// 参数处理（例如设置默认参数等）
+		this.convertParamsForFinance(params);
 		int pageSize = Integer.valueOf(params.get("pageSize").toString());
 		int pageNumber = Integer.valueOf(params.get("pageNumber").toString());
 		PageUtils<TradeOrderRefundsChargeVo> page = tradeOrderRefundsService.findeChargeRefundsByParams(params,

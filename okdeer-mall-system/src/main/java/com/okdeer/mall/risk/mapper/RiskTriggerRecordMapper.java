@@ -34,4 +34,5 @@ public interface RiskTriggerRecordMapper extends IBaseMapper {
 	 * @date 2016年11月17日
 	 */
 	void deleteBatch(@Param("ids") List<String> ids) throws Exception;
+
 }

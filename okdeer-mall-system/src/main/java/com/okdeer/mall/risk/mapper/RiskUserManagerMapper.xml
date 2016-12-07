@@ -35,9 +35,9 @@
        <if test="email != null and email != ''">
          AND email LIKE CONCAT('%',#{email,jdbcType=VARCHAR},'%') 
        </if>
-       <!-- 手机号-->
+       <!-- 手机号 模糊查询-->
        <if test="telephone != null and telephone != ''">
-         AND telephone =#{telephone,jdbcType=VARCHAR}
+         AND telephone LIKE CONCAT('%',#{telephone,jdbcType=VARCHAR},'%')
        </if>
        <!-- 是否接收邮件 -->
        <if test="isAcceptMail != null and isAcceptMail != -1">
@@ -80,6 +80,11 @@
         where disabled = 0 and id = #{id,jdbcType=VARCHAR}
     </select>
 
+	<select id="findCountByTelephoneOrEmail" resultType="java.lang.Integer" parameterType="com.okdeer.mall.risk.entity.RiskUserManager">
+        select count(1)        
+        from risk_user_manager
+        where disabled = 0 and (telephone = #{telephone,jdbcType=VARCHAR} or email= #{email,jdbcType=VARCHAR})
+    </select>
     <insert id="add" parameterType="com.okdeer.mall.risk.entity.RiskUserManager" >
         insert into risk_user_manager
         <trim prefix="(" suffix=")" suffixOverrides="," >

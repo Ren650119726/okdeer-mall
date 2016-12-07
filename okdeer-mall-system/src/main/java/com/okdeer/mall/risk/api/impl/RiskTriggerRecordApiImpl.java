@@ -39,13 +39,19 @@ public class RiskTriggerRecordApiImpl implements RiskTriggerRecordApi {
 	RiskTriggerRecordService recordService;
 
 	@Override
-	public PageUtils<RiskTriggerRecordDto> list(Map<String,Object> params,int pageNumber,int pageSize) 
+ 	public PageUtils<RiskTriggerRecordDto> list(Map<String,Object> params,int pageNumber,int pageSize) 
 			throws Exception {
 		PageHelper.startPage(pageNumber, pageSize, true);
 		List<RiskTriggerRecord> list = recordService.list(params);
+		PageUtils<RiskTriggerRecord> page = new PageUtils<RiskTriggerRecord>(list);
 		
+		//因为实体类不同,只能把page对象复制成另一个page对象
 		List<RiskTriggerRecordDto> dtoList = BeanMapper.mapList(list, RiskTriggerRecordDto.class);
-		return new PageUtils<RiskTriggerRecordDto>(dtoList);
+		PageUtils<RiskTriggerRecordDto> dtoPage = new PageUtils<RiskTriggerRecordDto>(dtoList);
+		page.setList(null);
+		BeanMapper.copy(page, dtoPage);
+		dtoPage.setList(dtoList);
+		return dtoPage;
 	}
 	
 	@Override

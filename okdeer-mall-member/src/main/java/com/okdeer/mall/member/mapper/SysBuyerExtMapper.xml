@@ -7,10 +7,10 @@
     <result column="is_accept_msg" property="isAcceptMsg" jdbcType="TINYINT" />
     <result column="position" property="position" jdbcType="VARCHAR" />
     <result column="point_val" property="pointVal" jdbcType="TINYINT" />
-    
+    <result column="prize_count" property="prizeCount" jdbcType="TINYINT" />
   </resultMap>
   <sql id="Base_Column_List" >
-    id, user_id, is_accept_msg, position,point_val
+    id, user_id, is_accept_msg, position,point_val,prize_count
   </sql>
   
   <!-- 根据会员用户id查询会员扩展信息 -->
@@ -94,6 +94,15 @@
   </insert>
   
   
-  
+  <!-- 重置已经抽奖机会为0的用户，将抽奖机会重置为1次 tuzhiding -->
+  <update id="updateUserPrizeCount" >
+    	UPDATE sys_buyer_ext SET prize_count = 1 WHERE prize_count = 0;
+  </update>
+   <!-- 将抽奖一次后抽奖机会递减 tuzhiding -->
+  <update id="updateCutPrizeCount" parameterType="java.lang.String" >
+    	UPDATE sys_buyer_ext 
+    	SET prize_count = prize_count - 1 
+    	WHERE prize_count > 0 AND user_id=#{userId,jdbcType=VARCHAR};
+  </update>
   
 </mapper>

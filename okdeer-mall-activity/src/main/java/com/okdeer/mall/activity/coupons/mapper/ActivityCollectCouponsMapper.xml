@@ -612,7 +612,8 @@
 		s.valid_day as validDay,
 		s.arrive_limit as arriveLimit,
 		s.every_limit as everyLimit,
-		s.is_rand_code as isRandCode
+		s.is_rand_code as isRandCode,
+		s.exchange_code as exchangeCode
 		 from activity_coupons s
 		where s.disabled = 0 
 		and 

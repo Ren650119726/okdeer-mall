@@ -75,6 +75,11 @@
 			<result column="community_id" property="communityId" jdbcType="VARCHAR"/>
 		</collection>
 	</resultMap>
+		
+	<resultMap id="getAllSetAreaResult" type="HashMap">
+	    <result property="key" column="areaId" jdbcType="VARCHAR"/>
+	    <result property="value" column="areaNum" jdbcType="INTEGER" />
+	</resultMap>
 	
 	<sql id="base_column_list">
 		id, position_id, belong_type, name, target_type, target, target_url, pic_url,
@@ -538,15 +543,12 @@
 			<if test="onShelfTime != null">
 				on_shelf_time = #{onShelfTime, jdbcType=TIMESTAMP}, 
 			</if>
-			<if test="offShelfTime != null">
-				off_shelf_time = #{offShelfTime, jdbcType=TIMESTAMP}
-			</if>
 			<!-- begin add by zengjz 2016-11-07 增加字段-->
 			<if test="businessId != null">
 				business_id = #{businessId, jdbcType=VARCHAR}, 
 			</if>
 			<if test="sort != null">
-				sort = #{sort, jdbcType=TINYINT}
+				sort = #{sort, jdbcType=TINYINT},
 			</if>
 			<!-- end add by zengjz 2016-11-07 增加字段-->
 		</set>
@@ -603,7 +605,7 @@
 		<!-- 排序规则：当定位的地址不属于签约小区时，则默认获取当前城市下的区域广告，
 		区域广告只能有运营商发布，按照广告列表中的生效时间获取最多5张广告，如果有排序值，
 		默认优先按照排序值进行广告展示 ，tips:没有排序值，按上架时间倒叙-->
-		ORDER BY ca.on_shelf_time desc
+		ORDER BY ca.sort DESC, ca.create_time DESC
 		</if>
 		<if test="communityId != null and communityId != ''">
 		 AND (
@@ -627,7 +629,7 @@
 			1、优先展示代理商广告，
 			2、然后展示运营商发布到小区的广告，
 			3、最后展示运营商发布的范围广告 -->
-		ORDER BY ca.belong_type desc,ca.area_type desc,ca.start_time desc,ca.create_time desc
+		ORDER BY ca.sort DESC, ca.create_time DESC
 	    </if>
 	    <!-- 运营商只查询前5条 -->
 	    limit 5
@@ -681,7 +683,7 @@
 		<!-- 排序规则：当定位的地址不属于签约小区时，则默认获取当前城市下的区域广告，
 		区域广告只能有运营商发布，按照广告列表中的生效时间获取最多5张广告，如果有排序值，
 		默认优先按照排序值进行广告展示 ，tips:没有排序值，按上架时间倒叙-->
-		ORDER BY ca.on_shelf_time desc
+		ORDER BY ca.sort DESC, ca.create_time DESC
 		</if>
 		<if test="communityId != null and communityId != ''">
 		 AND (
@@ -705,7 +707,7 @@
 				1、优先展示代理商广告，
 				2、然后展示运营商发布到小区的广告，
 				3、最后展示运营商发布的范围广告 -->
-			ORDER BY ca.belong_type desc,ca.area_type desc,ca.start_time desc,ca.create_time desc
+		ORDER BY ca.sort DESC, ca.create_time DESC
 	    </if>
 	     <!-- 代理商只查询前两条 -->
 		 limit 2
@@ -715,7 +717,8 @@
 			1、优先展示代理商广告，
 			2、然后展示运营商发布到小区的广告，
 			3、最后展示运营商发布的范围广告 -->
-		ORDER BY obj.belong_type desc,obj.area_type desc,obj.start_time desc,obj.create_time desc
+<!-- 		ORDER BY obj.belong_type desc,obj.area_type desc,obj.start_time desc,obj.create_time desc -->
+		ORDER BY sort DESC, create_time DESC
 	</select>
 	
 
@@ -825,5 +828,41 @@
         	#{item}
         </foreach>
         </if>
+	</select>
+	
+	<!-- Begin 广告区域统计 added by tangy  2016-11-28 -->
+	<select id="findAdvertRestrictByArea" resultMap="getAllSetAreaResult" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
+		SELECT 
+		CASE WHEN caa.area_id <![CDATA[ <> ]]> '' THEN  caa.area_id
+		ELSE '0' END AS areaId, COUNT(1) AS areaNum
+		FROM column_advert ca
+		LEFT JOIN column_advert_position ap ON ca.position_id = ap.id
+		LEFT JOIN column_advert_area caa ON caa.advert_id = ca.id
+		LEFT JOIN column_advert_approval app ON app.advert_id = ca.id
+		WHERE ca.disabled = 0 AND ca.status IN(0, 1)	
+		<choose>
+		    <when test="belongType != null and belongType == '0'.toString()">
+		    AND ca.belong_type = 0
+		    </when>
+		    <otherwise>  
+		    AND ca.belong_type <![CDATA[ <> ]]> 0 AND app.status = 1
+            </otherwise> 
+		</choose>
+	    AND ((#{startTime} BETWEEN ca.start_time AND ca.end_time) OR #{endTime} BETWEEN ca.start_time AND ca.end_time)
+	    <if test="positionId != null and positionId !=''">
+	   	   AND ap.id = #{positionId, jdbcType=VARCHAR}
+	    </if>   
+	    <if test="id != null and id != ''">
+	   	   AND ca.id != #{id,jdbcType=VARCHAR}
+	    </if> 
+        <if test="areaIdList != null" >      
+            AND (ca.area_type = 0 OR caa.area_id in  
+			<foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+ 	  		 		 #{item}
+  		 	</foreach>
+  		 	 )
+		  </if> 
+	    GROUP BY caa.area_id
+        ORDER BY COUNT(1) DESC                
 	</select>
 </mapper>
