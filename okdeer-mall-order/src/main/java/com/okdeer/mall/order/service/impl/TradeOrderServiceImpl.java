@@ -1627,9 +1627,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Transactional(rollbackFor = Exception.class)
 	public void updateOrderShipment(TradeOrderOperateParamVo param) throws ServiceException, Exception {
 		String rpcId = null;
+		TradeOrder tradeOrder = null;
 		try {
 			// 根据订单ID查询出订单信息
-			TradeOrder tradeOrder = this.tradeOrderMapper.selectTradeDetailInfoById(param.getOrderId());
+			tradeOrder = this.tradeOrderMapper.selectTradeDetailInfoById(param.getOrderId());
 			// 判断订单是否存在
 			if (tradeOrder == null || !tradeOrder.getStoreId().equals(param.getStoreId())) {
 				// Begin 重构4.1 update by wusw 20160816
@@ -1772,7 +1773,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// stockMQProducer.sendMessage(stockAdjustVo);
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
-			// rollbackMQProducer.sendStockRollbackMsg(rpcId);
+			if (tradeOrder != null && tradeOrder.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
+				rollbackMQProducer.sendStockRollbackMsg(rpcId);
+			}
 			throw e;
 		}
 	}
@@ -3891,6 +3894,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			case REFUSED:
 			case HAS_BEEN_SIGNED:
 			case TRADE_CLOSED:
+			case CANCELING:
+			case REFUSING:
 				isSupportComplain = "1";
 				break;
 			default:
@@ -6566,13 +6571,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void acceptOrder(TradeOrder tradeOrder) throws Exception {
 		this.updateOrderStatus(tradeOrder);
 		// 预约服务时间
 		Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
-		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
-				(DateUtils.addHours(serviceTime, 2).getTime() - System.currentTimeMillis()) / 1000);
 		// 服务店接单给用户发送通知短信
 		tradeMessageService.sendSmsAfterAcceptOrder(tradeOrder);
+		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
+				(DateUtils.addHours(serviceTime, 2).getTime() - System.currentTimeMillis()) / 1000);
 	}
 }
