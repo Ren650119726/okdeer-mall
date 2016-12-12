@@ -4320,8 +4320,30 @@
 			<result column="context" property="context" jdbcType="VARCHAR" />
 		</association>
 		<!-- 订单项信息 -->
-		<collection property="tradeOrderItem"
-			ofType="com.okdeer.mall.order.entity.TradeOrderItem">
+<!-- 		<collection property="tradeOrderItem" -->
+<!-- 			ofType="com.okdeer.mall.order.entity.TradeOrderItem"> -->
+<!-- 			<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" /> -->
+<!-- 			<result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" /> -->
+<!-- 			<result column="sku_name" property="skuName" jdbcType="VARCHAR" /> -->
+<!-- 			<result column="properties_indb" property="propertiesIndb" -->
+<!-- 				jdbcType="VARCHAR" /> -->
+<!-- 			<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" /> -->
+<!-- 			<result column="quantity" property="quantity" jdbcType="INTEGER" /> -->
+<!-- 			<result column="actual_amount" property="actualAmount" -->
+<!-- 				jdbcType="DECIMAL" /> -->
+<!-- 		</collection> -->
+        <!-- 2016-12-12 by tangy 修复线上上门服务导出异常问题 -->
+		<association property="tradeOrderItem" column="id"
+			select="findOrderItemByOrderId">
+		</association>
+		<!-- End 2016-12-12 by tangy -->
+	</resultMap>
+	
+	<!-- 2016-12-12 by tangy 修复线上上门服务导出异常问题 -->
+	<resultMap id="TradeOrderItemResultMap"
+		type="com.okdeer.mall.order.entity.TradeOrderItem">
+		    <id column="id" property="id" jdbcType="VARCHAR" />
+		    <id column="order_id" property="orderId" jdbcType="VARCHAR" />
 			<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
 			<result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
 			<result column="sku_name" property="skuName" jdbcType="VARCHAR" />
@@ -4331,9 +4353,17 @@
 			<result column="quantity" property="quantity" jdbcType="INTEGER" />
 			<result column="actual_amount" property="actualAmount"
 				jdbcType="DECIMAL" />
-		</collection>
 	</resultMap>
-
+	
+	<!-- 根据订单id查询订单项信息 -->
+	<select id="findOrderItemByOrderId" resultMap="TradeOrderItemResultMap"
+		parameterType="java.lang.String">
+		SELECT id, order_id, store_sku_id, main_pic_prl, sku_name, properties_indb, unit_price, quantity, actual_amount
+		FROM trade_order_item 
+		WHERE order_id = #{orderId,jdbcType=VARCHAR}
+	</select>
+    <!-- End 2016-12-12 by tangy -->
+    
 	<!-- 服务店订单列表查询 add by wusw 重构4.1（代码评审优化） update by wusw 20160818 订单数量统计有问题 update by wusw 20161124-->
 	<select id="selectServiceStoreOrderList" resultMap="ServiceStoreOrderMap"
 		parameterType="java.util.Map">
