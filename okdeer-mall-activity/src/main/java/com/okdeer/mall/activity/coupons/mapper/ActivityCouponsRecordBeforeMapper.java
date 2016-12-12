@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
+import com.okdeer.mall.activity.prize.dto.InviteSuccessInfoDto;
 
 /**
  * @DESC: 代金劵预领取记录操作类
@@ -36,5 +37,14 @@ public interface ActivityCouponsRecordBeforeMapper extends IBaseCrudMapper {
 	 * @return
 	 */
 	Integer countCouponsAllId(@Param("collectUser")String collectUser,@Param("collectId")String collectId);
+	/**
+	 * 
+	 * @Description: 查询用户的邀请信息
+	 * @param inviteUserId
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年12月10日
+	 */
+	List<InviteSuccessInfoDto> findInviteInfoByInviteUserId(String inviteUserId);
 	
 }

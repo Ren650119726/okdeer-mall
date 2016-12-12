@@ -51,6 +51,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
+import com.okdeer.mall.activity.prize.dto.InviteSuccessInfoDto;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.order.constant.OrderMsgConstant;
 import com.okdeer.mall.order.vo.PushMsgVo;
@@ -1056,6 +1057,28 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				return 2;
 			}
 		}
+	}
+
+	@Override
+	public List<InviteSuccessInfoDto> findInviteInfoByInviteUserId(String inviteUserId) {
+		List<InviteSuccessInfoDto> infoList  = activityCouponsRecordBeforeMapper.findInviteInfoByInviteUserId(inviteUserId);
+		if(infoList.size()>0){
+			int i=0;
+			for(InviteSuccessInfoDto dto:infoList){
+				//订单交易状态 已签收(交易完成)
+				if(dto.getStatus()== 5){
+					i++;
+				}
+			}
+			infoList.get(0).setInviteOrderCount(i);
+			infoList.get(0).setInviteCount(infoList.size());
+		}else{
+			InviteSuccessInfoDto dto = new InviteSuccessInfoDto();
+			dto.setInviteCount(0);
+			dto.setInviteOrderCount(0);
+			infoList.add(dto);
+		}
+		return infoList;
 	}
 	
 }

@@ -78,7 +78,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
 		}
 		//根据序号获取代金劵id 执行送奖
 		JSONObject json = activityCouponsRecordService.addRecordsByCollectId(ids[prizeNo.intValue()], userId, ActivityCouponsType.advert_coupons);
-		json.put("prizeNo", prizeNo);
+		json.put("prizeNo", prizeNo); 
 		return json;
 		
 	}

@@ -464,6 +464,13 @@
     WHERE id = #{id,jdbcType=VARCHAR}
   </select>
   
+   <!-- 通过手机号查询用户是否存在 xuzq01 邀请有礼-->
+  <select id="findCountByPhone" resultType="java.lang.Integer" parameterType="java.lang.String" >
+    SELECT count(1)
+    FROM sys_buyer_user 
+    WHERE disabled=0 and phone = #{phone,jdbcType=VARCHAR}
+  </select>
+  
   <!-- 根据用户ID集合查询积分信息 add by zengj -->
   <select id="findExtByUserIds" resultMap="BuyerUserExtMap" parameterType="list">
     select id,user_id,point_val from sys_buyer_ext

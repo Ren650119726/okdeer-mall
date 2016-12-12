@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.prize.mapper.ActivityPrizeRecordMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="prize_id" property="prizeId" jdbcType="VARCHAR" />
+        <result column="user_id" property="userId" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="is_offer" property="isOffer" jdbcType="INTEGER" />
+        <result column="prize_offer_time" property="prizeOfferTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="disabled" property="disabled" jdbcType="INTEGER" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, prize_id, user_id, create_time, is_offer, prize_offer_time, update_user_id, update_time, 
+        disabled
+    </sql>
+    <!-- 查询我的奖品 -->
+	<select id="findByUserId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_prize_record
+        where disabled=0  and user_id = #{userId,jdbcType=VARCHAR}
+        order by create_time DESC
+    </select>
+    <!-- 轮播显示最新的中奖记录 -->
+    <select id="findPrizeRecord" resultMap="BaseResultMap" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_prize_record where disabled=0 
+        order by create_time DESC limit 0,10
+    </select>
+    <!-- 通过奖品id查询奖品中奖数量 -->
+    <select id="findCountByPrizeId" resultType="java.lang.Integer" parameterType="java.lang.String" >
+        select  count(1)
+        from activity_draw_record
+        where disabled=0 and prize_id = #{prize_id,jdbcType=VARCHAR} 
+    </select>
+    
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_prize_record
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord" >
+        insert into activity_prize_record
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="prizeId != null" >
+                prize_id,
+            </if>
+            <if test="userId != null" >
+                user_id,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="isOffer != null" >
+                is_offer,
+            </if>
+            <if test="prizeOfferTime != null" >
+                prize_offer_time,
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="prizeId != null" >
+                #{prizeId,jdbcType=VARCHAR},
+            </if>
+            <if test="userId != null" >
+                #{userId,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isOffer != null" >
+                #{isOffer,jdbcType=INTEGER},
+            </if>
+            <if test="prizeOfferTime != null" >
+                #{prizeOfferTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord" >
+        update activity_prize_record
+        <set >
+            <if test="prizeId != null" >
+                prize_id = #{prizeId,jdbcType=VARCHAR},
+            </if>
+            <if test="userId != null" >
+                user_id = #{userId,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isOffer != null" >
+                is_offer = #{isOffer,jdbcType=INTEGER},
+            </if>
+            <if test="prizeOfferTime != null" >
+                prize_offer_time = #{prizeOfferTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_prize_record
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>
