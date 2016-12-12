@@ -344,7 +344,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				// 根据id查询订单信息，获取服务时间用于计算超时时间
 				TradeOrder order = tradeOrderService.selectById(timeoutMsg.getKey());
 				// 服务订单服务时间
-				Date serverTime = DateUtils.parseDate(order.getPickUpTime(), "yyyy-MM-dd HH:mm");
+				Date serverTime = DateUtils.parseDate(order.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
 				// 服务时间+24小时为确认收货超时时间
 				serverTime = DateUtils.addHours(serverTime, 24);
 				// 服务超时时间大于当前时间，则发送推迟执行消息，直到超时时间达到再进行消费
