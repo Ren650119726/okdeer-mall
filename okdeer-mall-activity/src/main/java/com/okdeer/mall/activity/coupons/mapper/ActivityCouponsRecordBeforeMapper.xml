@@ -5,6 +5,7 @@
   <!-- 返回到代金劵预领取记录  -->
   <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
     <id column="id" property="id" jdbcType="VARCHAR" />
+     <result column="invite_user_id" property="inviteUserId" jdbcType="VARCHAR" />
     <result column="collect_type" property="collectType" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsType" jdbcType="TINYINT" />
     <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
     <result column="coupons_collect_id" property="couponsCollectId" jdbcType="VARCHAR" />
@@ -15,7 +16,11 @@
     <result column="order_id" property="orderId" jdbcType="VARCHAR" />
     <result column="room_id" property="roomId" jdbcType="VARCHAR" />
   </resultMap>
-  
+  <!-- 邀请信息  -->
+  <resultMap id="InviteResultMap" type="com.okdeer.mall.activity.prize.dto.InviteSuccessInfoDto" >
+     <result column="collect_user" property="phone" jdbcType="VARCHAR" />
+     <result column="status" property="status"  jdbcType="TINYINT" />
+  </resultMap>
   <!-- 返回到代金劵预领取记录字段  tuzhiding  -->
   <select id="getCopyRecords" resultMap="BaseResultMap" >
     SELECT 
@@ -29,7 +34,18 @@
  		AND r.valid_time &gt; #{nowDate,jdbcType=TIMESTAMP}
  </select>
  
- 	
+ 	<!-- 查找用户邀请信息 xuzq01  -->
+  <select id="findInviteInfoByInviteUserId" resultMap="InviteResultMap" >
+   SELECT 
+    	r.collect_user ,trade.status
+    FROM 	          
+ 		activity_coupons_record_before r inner join sys_buyer_user u 
+ 		        on r.invite_user_id = u.phone left join trade_order trade
+ 		        on u.id = trade.user_id 
+ 	WHERE 
+ 		r.invite_user_id = #{inviteUserId,jdbcType=VARCHAR} 
+ 		order by u.create_time desc limit 0,5
+ </select>
  
   <!-- 插入代金劵预领取记录字段 tuzhiding  -->
   <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore" >
