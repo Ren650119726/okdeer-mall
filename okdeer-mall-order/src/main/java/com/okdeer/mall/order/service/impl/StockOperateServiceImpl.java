@@ -246,7 +246,13 @@ public class StockOperateServiceImpl implements StockOperateService {
 				if (item.getWeight() != null) {
 					isWeigh = true;
 				}
+				
 				BigDecimal number = convertScaleToKg(item.getQuantity(), isWeigh);
+				//如果是称重,用重量,如果是计件,用数量
+				if(isWeigh){
+					number = item.getWeight();
+				}
+				
 				// 优惠单价.订单实际收入除以商品数量得到的价格
 				BigDecimal price = item.getIncome().divide(number, 4, BigDecimal.ROUND_HALF_UP);
 				detail.setPrice(price);
