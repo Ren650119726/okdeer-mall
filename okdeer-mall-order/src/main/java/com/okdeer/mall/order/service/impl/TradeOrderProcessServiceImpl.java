@@ -574,8 +574,8 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
             ActivityCouponsRecord couponRecord = this.couponsRecordMapper.selectByPrimaryKey(reqDto.getRecordId());
             couponRecord.setOrderId(orderId);
             couponRecord.setStatus(ActivityCouponsRecordStatusEnum.USED);
-           
-            this.couponsRecordMapper.updateByPrimaryKeySelective(couponRecord);
+            // 两次更新导致使用代金券充值失败
+//            this.couponsRecordMapper.updateByPrimaryKeySelective(couponRecord);
             
             //增加优惠券已使用数量
             TradeOrderReq req = new TradeOrderReq();
