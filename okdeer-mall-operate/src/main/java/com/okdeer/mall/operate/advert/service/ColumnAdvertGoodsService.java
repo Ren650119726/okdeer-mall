@@ -4,12 +4,12 @@
  *@Date: 2016年12月8日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.activity.prize.service;
+package com.okdeer.mall.operate.advert.service;
 
 import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.activity.prize.entity.ColumnAdvertGoods;
+import com.okdeer.mall.advert.entity.ColumnAdvertGoods;
 
 /**
  * ClassName: ColumnAdvertGoodsApiImpl 

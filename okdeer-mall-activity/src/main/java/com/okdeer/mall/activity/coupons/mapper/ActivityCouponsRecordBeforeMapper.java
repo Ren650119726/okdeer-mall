@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
-import com.okdeer.mall.activity.prize.dto.InviteSuccessInfoDto;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
 
 /**
  * @DESC: 代金劵预领取记录操作类
@@ -24,10 +24,21 @@ import com.okdeer.mall.activity.prize.dto.InviteSuccessInfoDto;
 public interface ActivityCouponsRecordBeforeMapper extends IBaseCrudMapper {
 
 	
-	List<ActivityCouponsRecord> getCopyRecords(@Param("userId")String userId,@Param("nowDate")Date nowDate,@Param("phone")String phone) throws ServiceException;
+	List<ActivityCouponsRecord> getCopyRecords(@Param("userId")String userId,
+			@Param("nowDate")Date nowDate,@Param("phone")String phone) throws ServiceException;
 	
 	int getCountByDayParams(ActivityCouponsRecord activityCouponsRecord);
 	
+	/**
+	 * @Description: 根据用户id判断完成首单的用户是否 有效完成邀请
+	 * 1、是否完成首单
+	 * 2、活动是否未结束
+	 * @param userId 用户id
+	 * @return List<ActivityCouponsRecord>  
+	 * @author tuzhd
+	 * @date 2016年12月13日
+	 */
+	List<ActivityCouponsRecordBefore> findRecordVaildByUserId(@Param("phone")String phone);
 	
 	/**
 	 * 根据代金劵活动id代金劵预领取统计
@@ -45,6 +56,15 @@ public interface ActivityCouponsRecordBeforeMapper extends IBaseCrudMapper {
 	 * @author xuzq01
 	 * @date 2016年12月10日
 	 */
-	List<InviteSuccessInfoDto> findInviteInfoByInviteUserId(String inviteUserId);
+	List<ActivityCouponsRecordBefore> findInviteInfoByInviteUserId(@Param("inviteUserId")String inviteUserId);
+	
+	/**
+	 * 根据邀请号码查询 已成功邀请的次数
+	 * tuzhiding
+	 * @param collectUser 用户信息
+	 * @param collectId  代金劵活动id
+	 * @return
+	 */
+  	public Integer findInviteUserCount(@Param("inviteUserId")String inviteUserId,@Param("activityId")String activityId);
 	
 }

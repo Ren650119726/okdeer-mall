@@ -6,18 +6,14 @@
  */    
 package com.okdeer.mall.activity.prize.api.impl;
 
-import java.text.ParseException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordApi;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
-
-import net.sf.json.JSONObject;
 
 /**
  * ClassName: ActivityPrizeRecordApiImpl 
@@ -54,9 +50,5 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 		return activityPrizeRecordService.findCountByPrizeId(prizeId);
 	}
 
-	@Override
-	public JSONObject getCoupon(ActivityCouponsRecord activityCouponsRecord) throws ParseException {
-		return activityPrizeRecordService.getCoupon(activityCouponsRecord);
-	}
 
 }
