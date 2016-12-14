@@ -31,6 +31,7 @@ import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
+import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 
@@ -93,6 +94,9 @@ public class PosPayResultStatusSubscriber extends AbstractRocketMQSubscriber
 				editOrder.setId(editOrder.getId());
 				editOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
 				editOrder.setUpdateTime(new Date());
+				//add by zhangkn 2016-12-12
+				editOrder.setDisabled(Disabled.valid);
+				//end by zhangkn 2016-12-12
 				tradeOrderService.updateByPrimaryKeySelective(editOrder);
 
 				// pay表插入数据
