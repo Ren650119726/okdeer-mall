@@ -16,10 +16,12 @@
     <result column="order_id" property="orderId" jdbcType="VARCHAR" />
     <result column="room_id" property="roomId" jdbcType="VARCHAR" />
   </resultMap>
-  <!-- 邀请信息  -->
-  <resultMap id="InviteResultMap" type="com.okdeer.mall.activity.prize.dto.InviteSuccessInfoDto" >
-     <result column="collect_user" property="phone" jdbcType="VARCHAR" />
-     <result column="status" property="status"  jdbcType="TINYINT" />
+  
+  <resultMap id="BaseBeforeMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore" extends="BaseResultMap">
+  	 <result column="is_complete" property="isComplete" javaType="com.okdeer.base.common.enums.WhetherEnum" jdbcType="TINYINT" />
+     <result column="invite_user_id" property="inviteUserId" jdbcType="VARCHAR" />
+     <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+     <result column="collect_user" property="collectUser" jdbcType="VARCHAR" />
   </resultMap>
   <!-- 返回到代金劵预领取记录字段  tuzhiding  -->
   <select id="getCopyRecords" resultMap="BaseResultMap" >
@@ -34,29 +36,28 @@
  		AND r.valid_time &gt; #{nowDate,jdbcType=TIMESTAMP}
  </select>
  
- 	<!-- 查找用户邀请信息 xuzq01  -->
-  <select id="findInviteInfoByInviteUserId" resultMap="InviteResultMap" >
-   SELECT 
-    	r.collect_user ,trade.status
-    FROM 	          
- 		activity_coupons_record_before r inner join sys_buyer_user u 
- 		        on r.invite_user_id = u.phone left join trade_order trade
- 		        on u.id = trade.user_id 
- 	WHERE 
- 		r.invite_user_id = #{inviteUserId,jdbcType=VARCHAR} 
- 		order by u.create_time desc limit 0,5
+  <!-- 查找用户邀请信息 xuzq01  -->
+  <select id="findInviteInfoByInviteUserId" resultMap="BaseBeforeMap" >
+      SELECT 
+    	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 
+    	  r.valid_time, r.status, r.order_id,collect_user,
+    	  r.room_id,is_complete,invite_user_id,activity_id
+	  FROM
+		  activity_coupons_record_before r 
+	  WHERE r.is_complete = 1  
+		  AND invite_user_id = #{inviteUserId,jdbcType=VARCHAR}
+ 	  order by r.collect_time 
  </select>
  
   <!-- 插入代金劵预领取记录字段 tuzhiding  -->
   <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore" >
     insert into activity_coupons_record_before (id, collect_type, coupons_id, 
       coupons_collect_id, collect_time, collect_user, 
-      valid_time, status, order_id, 
-      room_id)
+      valid_time, status, order_id, room_id, invite_user_id,is_complete,activity_id)
     values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=BIT}, #{couponsId,jdbcType=VARCHAR}, 
       #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUser,jdbcType=VARCHAR}, 
       #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=BIT}, #{orderId,jdbcType=VARCHAR}, 
-      #{roomId,jdbcType=VARCHAR})
+      #{roomId,jdbcType=VARCHAR},#{inviteUserId,jdbcType=VARCHAR},#{isComplete,jdbcType=TINYINT},#{activityId,jdbcType=VARCHAR})
   </insert>
   
   <!-- 根据代金劵活动id代金劵预领取统计  -->
@@ -102,5 +103,33 @@
 	     AND b.collect_time = #{collectTime}
 	  </if>	  
 	</select>
+	
+	
+ <!-- 根据用户id判断完成首单的用户是否 有效完成邀请 tuzhiding  -->
+ <select id="findRecordVaildByUserId" resultMap="BaseBeforeMap" >
+    SELECT 
+    	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 
+    	  r.valid_time, r.status, r.order_id,
+    	  r.room_id,is_complete,invite_user_id,activity_id
+    FROM 	          
+ 		activity_coupons_record_before r 
+ 	WHERE r.is_complete = 0 
+ 		  AND invite_user_id is not null
+ 		  AND activity_id is not null
+ 		  AND r.`collect_user` = #{phone,jdbcType=VARCHAR}
+	FOR UPDATE 
+		
+ </select>
+
+  <!-- 根据邀请号码查询 已成功邀请的次数  -->
+  <select id="findInviteUserCount" resultType="int" >
+      SELECT 
+		  count(1)
+	  FROM
+		  activity_coupons_record_before r 
+	  WHERE r.is_complete = 1  
+		  AND invite_user_id = #{inviteUserId,jdbcType=VARCHAR}
+		  AND activity_id =#{activityId,jdbcType=VARCHAR}
+   </select>
       
 </mapper> 

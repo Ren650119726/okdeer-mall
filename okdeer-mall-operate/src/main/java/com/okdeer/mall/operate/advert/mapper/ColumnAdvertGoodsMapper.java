@@ -4,12 +4,12 @@
  * @Date 2016-12-08 Created
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的
  */
-package com.okdeer.mall.activity.prize.mapper;
+package com.okdeer.mall.operate.advert.mapper;
 
 import java.util.List;
 
 import com.okdeer.base.dal.IBaseMapper;
-import com.okdeer.mall.activity.prize.entity.ColumnAdvertGoods;
+import com.okdeer.mall.advert.entity.ColumnAdvertGoods;
 
 /**
  * ClassName: ColumnAdvertGoodsMapper 

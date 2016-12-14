@@ -6,14 +6,10 @@
  */    
 package com.okdeer.mall.activity.prize.service;
 
-import java.text.ParseException;
 import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
-
-import net.sf.json.JSONObject;
 
 /**
  * ClassName: ActivityPrizeRecordApiImpl 
@@ -35,13 +31,4 @@ public interface ActivityPrizeRecordService extends IBaseService {
 	
 	int findCountByPrizeId(String prizeId);
 
-	/**
-	 * @Description: TODO
-	 * @param activityCouponsRecord TODO
-	 * @return   
-	 * @author xuzq01
-	 * @throws ParseException 
-	 * @date 2016年12月9日
-	 */
-	JSONObject getCoupon(ActivityCouponsRecord activityCouponsRecord) throws ParseException;
 }

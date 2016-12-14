@@ -4,7 +4,7 @@
  *@Date: 2016年12月8日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */    
-package com.okdeer.mall.activity.prize.service.impl;
+package com.okdeer.mall.operate.advert.service.impl;
 
 import java.util.List;
 
@@ -13,9 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.activity.prize.entity.ColumnAdvertGoods;
-import com.okdeer.mall.activity.prize.mapper.ColumnAdvertGoodsMapper;
-import com.okdeer.mall.activity.prize.service.ColumnAdvertGoodsService;
+import com.okdeer.mall.advert.entity.ColumnAdvertGoods;
+import com.okdeer.mall.operate.advert.mapper.ColumnAdvertGoodsMapper;
+import com.okdeer.mall.operate.advert.service.ColumnAdvertGoodsService;
 
 /**
  * ClassName: ColumnAdvertGoodsApiImpl 

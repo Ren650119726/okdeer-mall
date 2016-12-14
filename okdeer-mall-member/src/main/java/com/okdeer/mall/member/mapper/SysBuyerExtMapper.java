@@ -1,5 +1,10 @@
 package com.okdeer.mall.member.mapper;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
 
 
@@ -57,6 +62,13 @@ public interface SysBuyerExtMapper {
 	 */
 	void updateCutPrizeCount(String userId);
 	
-	
+	/**
+	 * @Description: 给用户添加抽奖次数 count
+	 * @param userId 用户id
+	 * @param count  抽奖次数
+	 * @author tuzhd
+	 * @date 2016年12月13日
+	 */
+	void updateAddPrizeCount(@Param("userId") String userId,@Param("count") int count);	
 	
 }

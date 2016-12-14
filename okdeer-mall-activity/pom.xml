@@ -31,6 +31,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.okdeer.mall</groupId>
+			<artifactId>okdeer-mall-operate</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.okdeer.mall</groupId>
 			<artifactId>okdeer-mall-api</artifactId>
 		</dependency>
 		<dependency>

@@ -24,6 +24,7 @@ import static com.okdeer.common.consts.DescriptConstants.REQUEST_PARAM_FAIL;
 import static com.okdeer.common.consts.DescriptConstants.USER_NOT_WALLET;
 import static com.okdeer.common.consts.DescriptConstants.USER_WALLET_FAIL;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -92,9 +93,11 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -174,6 +177,7 @@ import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper;
+import com.okdeer.mall.order.mq.constants.TradeOrderTopic;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
@@ -1397,40 +1401,23 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 确认收货并发送消息(快送同步)
+	 * 确认收货并发送消息
+	 * @TZD 修改 2016-12-12
+	 * @UPDATE  去掉事务消息，快送服务已经不提供，重新添加完成消息，用于活动使用完成处理业务
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public boolean updateWithConfirm(TradeOrder tradeOrder) throws Exception {
-		JSONObject json = new JSONObject();
-		json.put("id", tradeOrder.getId());
-		json.put("operator", tradeOrder.getUpdateUserId());
-		json.put("isBuyerOperator", true);
-		StoreInfo storeInfo = getStoreInfo(tradeOrder.getStoreId());
-		Message msg = new Message(getTopicByStoreType(storeInfo.getType()), TAG_ORDER_CONFIRM,
-				json.toString().getBytes(Charsets.UTF_8));
-		// 发送事务消息
-		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, tradeOrder,
-				new LocalTransactionExecuter() {
-
-					@Override
-					public LocalTransactionState executeLocalTransactionBranch(Message msg, Object entity) {
-						try {
-							updateWithConfirm(entity);
-							return LocalTransactionState.COMMIT_MESSAGE;
-						} catch (Exception e) {
-							logger.error("执行确认收货失败", e);
-							return LocalTransactionState.ROLLBACK_MESSAGE;
-						}
-					}
-				}, new TransactionCheckListener() {
-
-					@Override
-					public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
-						return LocalTransactionState.COMMIT_MESSAGE;
-					}
-				});
-		return RocketMqResult.returnResult(sendResult);
+		MQMessage anMessage = new MQMessage(TradeOrderTopic.ORDER_COMPLETE_TOCPIC, (Serializable) tradeOrder);
+		try {
+			updateWithConfirm(tradeOrder);
+			rocketMQProducer.sendMessage(anMessage);
+		} catch (Exception e) {
+			logger.error("完成订单发送消息异常{}",JsonMapper.nonEmptyMapper().toJson(tradeOrder), e);
+			return false;
+		}
+		return true;
+		
 	}
 
 	// Begin modified by maojj 2016-07-26 添加分布式事务处理机制
@@ -4608,6 +4595,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		TradeOrder orders = tradeOrderMapper.selectByParamsTrade(tradeOrder.getTradeNum());
 		tradeOrder.setId(orders.getId());
 		tradeOrderMapper.updateTradeOrderByTradeNum(tradeOrder);
+		
+		//添加充值成功 修改订单状态为完成时发送消息
+		if(tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED){
+			MQMessage anMessage = new MQMessage(TradeOrderTopic.ORDER_COMPLETE_TOCPIC, (Serializable)tradeOrder);
+			try {
+				rocketMQProducer.sendMessage(anMessage);
+			} catch (Exception e) {
+				logger.error("完成订单发送消息异常{}",JsonMapper.nonEmptyMapper().toJson(tradeOrder), e);
+			}
+		}
+		
 	}
 
 	@Override

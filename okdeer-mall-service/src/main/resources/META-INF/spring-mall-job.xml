@@ -67,9 +67,9 @@
 	<!-- 每天11点执行运营后台服务商品推荐的定时任务 -->
 	<job:simple id="couponsRecordNoticeJob" class="com.okdeer.mall.activity.coupons.job.ActivityCouponsRecordNoticeJob" registry-center-ref="regCenter" cron="0 0 11 * * ?"   sharding-total-count="1"/>
 
-	<!-- 执行批量重置用户抽奖次数-->
-	<job:simple id="sysBuyerPrizeCountResetJob" class="com.okdeer.mall.member.job.SysBuyerPrizeCountResetJob" registry-center-ref="regCenter" cron="0 0 0 * * ?" sharding-total-count="1"></job:simple>
-	
+	<!-- 执行批量重置用户抽奖次数  邀新活动启动后屏蔽该活动-->
+	<!-- <job:simple id="sysBuyerPrizeCountResetJob" class="com.okdeer.mall.member.job.SysBuyerPrizeCountResetJob" registry-center-ref="regCenter" cron="0 0 0 * * ?" sharding-total-count="1"></job:simple>
+	 -->
 	<!-- 每隔一天删除风控动作记录定时任务 -->
 	<job:simple id="riskOrderRecordJob" class="com.okdeer.mall.risk.job.RiskOrderRecordJob" registry-center-ref="regCenter" cron="0 0 0 * * ?"   sharding-total-count="1"/>
 	
