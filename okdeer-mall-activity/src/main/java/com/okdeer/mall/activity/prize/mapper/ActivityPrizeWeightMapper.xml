@@ -3,7 +3,7 @@
 <mapper namespace="com.okdeer.mall.activity.prize.mapper.ActivityPrizeWeightMapper" >
     <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight" >
         <id column="id" property="id" jdbcType="VARCHAR" />
-        <result column="coupon_id" property="couponId" jdbcType="VARCHAR" />
+        <result column="collect_id" property="collectId" jdbcType="VARCHAR" />
         <result column="prize_name" property="prizeName" jdbcType="VARCHAR" />
         <result column="prize_number" property="prizeNumber" jdbcType="INTEGER" />
         <result column="weight" property="weight" jdbcType="INTEGER" />
@@ -11,20 +11,23 @@
         <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="order_no" property="orderNo" jdbcType="INTEGER" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
         <result column="disabled" property="disabled" jdbcType="INTEGER" />
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, prize_name, weight, weight_deno, create_user_id, create_time, update_user_id, 
-        update_time, disabled
+        id, prize_name, weight, weight_deno,prize_number,collect_id, create_user_id, create_time,
+        update_user_id,activity_id,order_no, update_time, disabled
     </sql>
-    
-	<select id="findAll" resultMap="BaseResultMap">
+    <!-- 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 -->
+	<select id="findPrizesByactivityId" resultMap="BaseResultMap">
         select 
         <include refid="Base_Column_List" />
         from activity_prize_weight
-        where disabled=0
+        where disabled=0 and activity_id = #{activityId,jdbcType=VARCHAR}
+        ORDER BY order_no
     </select>
     
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -49,6 +52,9 @@
             <if test="weightDeno != null" >
                 weight_deno,
             </if>
+            <if test="prizeNumber != null">
+            	prize_number,
+            </if>
             <if test="createUserId != null" >
                 create_user_id,
             </if>
@@ -57,6 +63,12 @@
             </if>
             <if test="updateUserId != null" >
                 update_user_id,
+            </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
+            <if test="orderNo != null" >
+                order_no,
             </if>
             <if test="updateTime != null" >
                 update_time,
@@ -78,6 +90,9 @@
             <if test="weightDeno != null" >
                 #{weightDeno,jdbcType=INTEGER},
             </if>
+            <if test="prizeNumber != null" >
+                #{prizeNumber,jdbcType=INTEGER},
+            </if>
             <if test="createUserId != null" >
                 #{createUserId,jdbcType=VARCHAR},
             </if>
@@ -86,6 +101,12 @@
             </if>
             <if test="updateUserId != null" >
                 #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="orderNo != null" >
+                #{orderNo,jdbcType=INTEGER},
             </if>
             <if test="updateTime != null" >
                 #{updateTime,jdbcType=TIMESTAMP},
@@ -125,6 +146,12 @@
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
+    </update>
+    <!-- 根据活动id扣减奖品数量 tuzhd -->
+    <update id="updatePrizesNumber" parameterType="string" >
+        update activity_prize_weight
+        set prize_number = prize_number-1
+        where prize_number > 0 and id = #{id,jdbcType=VARCHAR}
     </update>
 
     <delete id="delete" parameterType="java.lang.String" >

@@ -53,6 +53,8 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
+import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.member.service.MemberService;
@@ -142,6 +144,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	private SysBuyerExtService sysBuyerExtService;
 	@Autowired
 	private MemberService memberService;
+	//中奖记录表Service
+	@Autowired
+	ActivityPrizeRecordService activityPrizeRecordService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -1075,6 +1080,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @date 2016年12月13日
 	 */
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void addInviteUserHandler(String userId,String[] collectCouponsIds) throws Exception{
 		//根据邀新活动，代金劵预领取表中的邀请人及被邀手机号码，确定该订单是否属于活动时间
 		SysBuyerUser user = memberService.selectByPrimaryKey(userId);
@@ -1113,6 +1119,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 					//根据代金劵活动ID领取代金劵
 					addRecordsByCollectId(collectId,record.getInviteUserId(),
 										ActivityCouponsType.advert_coupons);
+					//领取后并插入一次奖励 中奖纪录
+					activityPrizeRecordService.addPrizeRecord(collectId, record.getInviteUserId(), record.getActivityId(),null);
 				}
 			
 			}

@@ -23,4 +23,14 @@ import com.okdeer.base.service.IBaseService;
 public interface ActivityDrawRecordService extends IBaseService {
 
 	int findCountByUserIdAndActivityId(String userId,String activityId);
+	
+	/**
+	 * @Description:插入用户抽奖记录
+	 * @param userId
+	 * @param activityId
+	 * @return int  
+	 * @author tuzhd
+	 * @date 2016年12月14日
+	 */
+	public int addDrawRecord(String userId,String activityId);
 }

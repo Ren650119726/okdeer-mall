@@ -8,6 +8,9 @@ package com.okdeer.mall.activity.prize.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
 /**
@@ -25,11 +28,20 @@ import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
 public interface ActivityPrizeWeightMapper extends IBaseMapper {
 
 	/**
-	 * 
-	 * @Description: 查询所有奖品的比重信息
-	 * @return   
-	 * @author xuzq01
-	 * @date 2016年12月8日
+	 * 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 
+	 * @param activityId 活动id
+	 * @return List<ActivityPrizeWeight>  
+	 * @author tuzhd
+	 * @date 2016年12月14日
 	 */
-	public List<ActivityPrizeWeight> findAll();
+	public List<ActivityPrizeWeight> findPrizesByactivityId(@Param("activityId")String activityId);
+	
+	/**
+	 * 根据活动id扣减奖品数量
+	 * @param id 奖品id
+	 * @author tuzhd
+	 * @date 2016年12月14日
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public int updatePrizesNumber(String id);
 }

@@ -34,10 +34,20 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 	 */
 	@Autowired
 	ActivityPrizeRecordService activityPrizeRecordService;
-
+	
+	/**
+	 * @Description: TODO
+	 * @param userId
+	 * @param activityId 活动id 广告活动id 以后会是对应
+	 * @return   
+	 * @return List<ActivityPrizeRecord>  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2016年12月15日
+	 */
 	@Override
-	public List<ActivityPrizeRecord> findByUserId(String userId) {
-		return activityPrizeRecordService.findByUserId(userId);
+	public List<ActivityPrizeRecord> findByUserId(String userId,String activityId) {
+		return activityPrizeRecordService.findByUserId(userId,activityId);
 	}
 
 	@Override

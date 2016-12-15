@@ -25,10 +25,12 @@ import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
 
 public interface ActivityPrizeRecordService extends IBaseService {
 
-	List<ActivityPrizeRecord> findByUserId(String userId);
+	public List<ActivityPrizeRecord> findByUserId(String userId,String activityId);
 	
 	List<ActivityPrizeRecord> findPrizeRecord();
 	
 	int findCountByPrizeId(String prizeId);
+	
+	public int addPrizeRecord(String collectId,String userId,String activityId,String prizeId);
 
 }
