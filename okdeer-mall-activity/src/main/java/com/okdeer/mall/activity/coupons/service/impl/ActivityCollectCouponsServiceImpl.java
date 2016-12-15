@@ -338,6 +338,7 @@ public class ActivityCollectCouponsServiceImpl
 
 		// 先删除老记录
 		activityCollectAreaMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
+		activityCollectCommunityMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
 		
 		if(activityCollectCoupons.getType() == ActivityCollectCouponsType.OPEN_DOOR.getValue() ||
 				   activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue() ||	
