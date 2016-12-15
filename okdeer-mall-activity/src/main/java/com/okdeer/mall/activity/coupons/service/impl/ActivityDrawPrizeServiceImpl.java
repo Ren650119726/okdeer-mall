@@ -102,7 +102,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  	 * @return
  	 */
  	private Integer isHadPrize(double[] iArr,int weightDeno){
- 		double randonNo =  Math.random() * 10000;
+ 		double randonNo =  Math.random() * weightDeno;
  		double count = 0;
 		//循环增加各个奖品的概率，判断是否中奖
 		for (int  i = 0 ; i < iArr.length ; i++) {
