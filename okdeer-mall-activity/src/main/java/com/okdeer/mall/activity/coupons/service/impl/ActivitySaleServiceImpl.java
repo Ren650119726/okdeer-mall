@@ -462,7 +462,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			// 活动名字
 			goodsStoreSku.setActivityName("");
 			// 活动id
-			goodsStoreSku.setActivityId("");
+			//added by liyb01 2016-12-14 fix bug 16075 
+			goodsStoreSku.setActivityId("0");
+			//ended by liyb01 2016-12-14
 			// 已经参加活动
 			goodsStoreSku.setIsActivity(IsActivity.ABSTENTION);
 			// 活动类型
