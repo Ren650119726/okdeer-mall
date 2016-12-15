@@ -8,6 +8,8 @@ package com.okdeer.mall.activity.prize.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
 
@@ -33,7 +35,7 @@ public interface ActivityPrizeRecordMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年12月8日
 	 */
-	public List<ActivityPrizeRecord> findByUserId(String userId);
+	public List<ActivityPrizeRecord> findByUserId(@Param("userId")String userId,@Param("activityId")String activityId);
 	
 	/**
 	 * 

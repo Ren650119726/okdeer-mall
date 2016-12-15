@@ -5,6 +5,8 @@
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="prize_id" property="prizeId" jdbcType="VARCHAR" />
         <result column="user_id" property="userId" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="collect_id" property="collectId" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="is_offer" property="isOffer" jdbcType="INTEGER" />
         <result column="prize_offer_time" property="prizeOfferTime" jdbcType="TIMESTAMP" />
@@ -14,15 +16,16 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, prize_id, user_id, create_time, is_offer, prize_offer_time, update_user_id, update_time, 
+        id, prize_id, user_id,activity_id,collect_id,create_time, is_offer, prize_offer_time, update_user_id, update_time, 
         disabled
     </sql>
-    <!-- 查询我的奖品 -->
-	<select id="findByUserId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    <!-- 根据用户id及活动id查询该活动用户获得的奖品记录 -->
+	<select id="findByUserId" resultMap="BaseResultMap" >
         select 
         <include refid="Base_Column_List" />
         from activity_prize_record
         where disabled=0  and user_id = #{userId,jdbcType=VARCHAR}
+        	  and activity_id =#{activityId,jdbcType=VARCHAR}
         order by create_time DESC
     </select>
     <!-- 轮播显示最新的中奖记录 -->
@@ -58,6 +61,12 @@
             <if test="userId != null" >
                 user_id,
             </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
+            <if test="collectId != null" >
+                collect_id,
+            </if>
             <if test="createTime != null" >
                 create_time,
             </if>
@@ -87,6 +96,12 @@
             <if test="userId != null" >
                 #{userId,jdbcType=VARCHAR},
             </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="collectId != null" >
+                #{collectId,jdbcType=VARCHAR},
+            </if>
             <if test="createTime != null" >
                 #{createTime,jdbcType=TIMESTAMP},
             </if>
@@ -111,18 +126,6 @@
     <update id="update" parameterType="com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord" >
         update activity_prize_record
         <set >
-            <if test="prizeId != null" >
-                prize_id = #{prizeId,jdbcType=VARCHAR},
-            </if>
-            <if test="userId != null" >
-                user_id = #{userId,jdbcType=VARCHAR},
-            </if>
-            <if test="createTime != null" >
-                create_time = #{createTime,jdbcType=TIMESTAMP},
-            </if>
-            <if test="isOffer != null" >
-                is_offer = #{isOffer,jdbcType=INTEGER},
-            </if>
             <if test="prizeOfferTime != null" >
                 prize_offer_time = #{prizeOfferTime,jdbcType=TIMESTAMP},
             </if>

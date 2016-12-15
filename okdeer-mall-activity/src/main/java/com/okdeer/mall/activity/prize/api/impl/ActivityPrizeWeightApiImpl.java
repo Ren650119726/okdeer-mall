@@ -35,9 +35,16 @@ public class ActivityPrizeWeightApiImpl implements ActivityPrizeWeightApi{
 	@Autowired
 	ActivityPrizeWeightService activityPrizeWeightService;
 
+	/**
+	 * 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 
+	 * @param activityId 活动id
+	 * @return List<ActivityPrizeWeight>  
+	 * @author tuzhd
+	 * @date 2016年12月14日
+	 */
 	@Override
-	public List<ActivityPrizeWeight> findAll() {
-		return activityPrizeWeightService.findAll();
+	public List<ActivityPrizeWeight> findPrizesByactivityId(String activityId){
+		return activityPrizeWeightService.findPrizesByactivityId(activityId);
 	}
 
 }

@@ -6,11 +6,15 @@
  */    
 package com.okdeer.mall.activity.prize.service.impl;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.activity.prize.entity.ActivityDrawRecord;
 import com.okdeer.mall.activity.prize.mapper.ActivityDrawRecordMapper;
 import com.okdeer.mall.activity.prize.service.ActivityDrawRecordService;
 
@@ -42,6 +46,24 @@ public class ActivityDrawRecordServiceImpl extends BaseServiceImpl implements Ac
 	@Override
 	public int findCountByUserIdAndActivityId(String userId, String activityId) {
 		return activityDrawRecordMapper.findCountByUserIdAndActivityId(userId, activityId);
+	}
+	/**
+	 * @Description:插入用户抽奖记录
+	 * @param userId
+	 * @param activityId
+	 * @return int  
+	 * @author tuzhd
+	 * @date 2016年12月14日
+	 */
+	@Override
+	public int addDrawRecord(String userId,String activityId) {
+		ActivityDrawRecord r = new ActivityDrawRecord();
+		r.setId(UuidUtils.getUuid());
+		r.setActivityId(activityId);
+		r.setUserId(userId);
+		r.setCreateTime(new Date());
+		r.setDisabled(0);
+		return activityDrawRecordMapper.add(r);
 	}
 
 }
