@@ -9,6 +9,40 @@
 		<result property="status" column="status" />
 		<result property="code" column="code" />
 	</resultMap>
+	
+	<insert id="add" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsThirdCode">
+		insert into activity_coupons_third_code(
+			<include refid="columns"/>
+		)values (
+			#{id},
+            #{couponsId},
+            #{status},
+            #{code}
+		)
+	</insert>
+	
+	<update id="update" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsThirdCode">
+        update activity_coupons_third_code set
+			<if test="couponsId != null">
+				name = #{couponsId},
+			</if>
+			<if test="status != null">
+				status = #{status},
+			</if>
+			<if test="code != null">
+				code = #{code},
+			</if>
+		id = #{id}
+        where id = #{id}
+    </update>
+	
+	<delete id="delete" parameterType="string">
+		delete from activity_coupons_third_code where id = #{value}
+	</delete>
+	
+	<select id="findById" parameterType="string" resultMap="ActivityCouponsThirdCode">
+		select <include refid="columns"/> from activity_coupons_third_code where id = #{value}
+	</select>
 
     <sql id="columns">
 		id,coupons_id,status,code
