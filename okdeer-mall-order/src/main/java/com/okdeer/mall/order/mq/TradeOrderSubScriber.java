@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
 import com.okdeer.base.framework.mq.message.MQMessage;
@@ -39,16 +40,17 @@ public class TradeOrderSubScriber {
 	 * @date 2016年12月12日
 	 */
 	@RocketMQListener(topic = TradeOrderTopic.ORDER_COMPLETE_TOCPIC, tag = "*")
-	public void trigger(MQMessage enMessage) {
+	public ConsumeConcurrentlyStatus trigger(MQMessage enMessage) {
 
 		TradeOrder tradeOrder = (TradeOrder) enMessage.getContent();
 		logger.debug("订单完成后处理开始：{}", JsonMapper.nonEmptyMapper().toJson(tradeOrder));
 		try {
 			//处理订单完成后的业务功能之一  邀新活动 被邀用户下单完成后给 邀请人送代金劵及抽奖次数
 			activityInviteHandler(tradeOrder);
-
+			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 		} catch (Exception e) {
 			logger.error("订单完成后处理业务异常：{}",JsonMapper.nonEmptyMapper().toJson(tradeOrder), e);
+			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
 		}
 	}
 	
