@@ -41,6 +41,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsLimitCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRandCode;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRelationStore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsThirdCode;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
@@ -49,6 +50,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsLimitCategoryMappe
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.activity.coupons.vo.AddressCityVo;
@@ -72,6 +74,11 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	 */
 	@Autowired
 	private ActivityCouponsMapper activityCouponsMapper;
+	/**
+	 * 注入代金券管理mapper
+	 */
+	@Autowired
+	private ActivityCouponsThirdCodeMapper activityCouponsThirdCodeMapper;
 
 	/**
 	 * 注入代金券分类mapper
@@ -164,8 +171,26 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		} else if (coupons.getType() == CouponsType.fwd.getValue()) {
 			activityCouponsMapper.insert(coupons);
 			this.addRelatedInfo(coupons);
+		} else if (coupons.getType() == CouponsType.yyhz.getValue()) {
+			activityCouponsMapper.insert(coupons);
+			//批量插入excel导入的兑换码
+			if(CollectionUtils.isNotEmpty(coupons.getYiyeCodeList())){
+				List<ActivityCouponsThirdCode> acList = new ArrayList<ActivityCouponsThirdCode>();
+				for(String code : coupons.getYiyeCodeList()){
+					ActivityCouponsThirdCode a = new ActivityCouponsThirdCode();
+					a.setCode(code);
+					a.setCouponsId(coupons.getId());
+					a.setId(UuidUtils.getUuid());
+					//默认为未领取
+					a.setStatus(0);
+					acList.add(a);
+				}
+				activityCouponsThirdCodeMapper.saveBatch(acList);
+			}
+		} else if (coupons.getType() == CouponsType.film.getValue()) {
+			activityCouponsMapper.insert(coupons);
+			this.addRelatedInfo(coupons);
 		}
-		
 		// Begin added by maojj 2016-10-25
 		// 如果代金券设置了需要生成随机码，则根据代金券的发行量生成随机码
 		if (coupons.getIsRandCode() == WhetherEnum.whether.ordinal()) {
@@ -290,7 +315,18 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 	@Override
 	public CouponsInfoQuery getCouponsInfoById(String id) throws ServiceException {
-		return activityCouponsMapper.selectCouponsById(id);
+		CouponsInfoQuery c = activityCouponsMapper.selectCouponsById(id);
+		if(c != null){
+			//如果是异业代金券,加载兑换码列表
+			if(c.getType() == 4){
+				Map<String,Object> param = new HashMap<String, Object>();
+				param.put("couponsId", id);
+				List<ActivityCouponsThirdCode> list = 
+						activityCouponsThirdCodeMapper.listByParam(param);
+				c.setThirdCodeList(list);
+			}
+		}
+		return c;
 	}
 
 	@Override
@@ -308,9 +344,11 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Transactional(rollbackFor = Exception.class)
 	public void updateCoupons(CouponsInfoQuery coupons) throws ServiceException {
 		// 0：便利店和服务店，1：便利店 2 服务店 3 充值
-		if (coupons.getType() == CouponsType.bldfwd.getValue() || coupons.getType() == CouponsType.hfcz.getValue()) {
+		if (coupons.getType() == CouponsType.bldfwd.getValue() || coupons.getType() == CouponsType.hfcz.getValue()
+				|| coupons.getType() == CouponsType.yyhz.getValue()) {
 			activityCouponsMapper.updateCoupons(coupons);
-		} else if (coupons.getType() == CouponsType.bld.getValue() || coupons.getType() == CouponsType.fwd.getValue()) {
+		} else if (coupons.getType() == CouponsType.bld.getValue() || coupons.getType() == CouponsType.fwd.getValue()
+			|| coupons.getType() == CouponsType.film.getValue()) {
 			activityCouponsMapper.updateCoupons(coupons);
 
 			// 删掉老数据
@@ -327,6 +365,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			activitycoupons.setCategoryLimitIds(coupons.getCategoryLimitIds());
 			activitycoupons.setType(coupons.getType());
 			activitycoupons.setCategoryIds(coupons.getCategoryIds());
+			activitycoupons.setStartTime(coupons.getStartTime());
+			activitycoupons.setEndTime(coupons.getEndTime());
 			this.addRelatedInfo(activitycoupons);
 		}
 	}
@@ -362,6 +402,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			this.deleteCouponsRelationStroe(id);
 		}
 		activityCouponsMapper.deleteByIds(id);
+		
+		//如果是异业合作代金券,要把关联的兑换码都删除 (就算不是这种类型,调用删除方法也不影响)
+		activityCouponsThirdCodeMapper.deleteByCouponsId(id);
 	}
 
 	@Override
