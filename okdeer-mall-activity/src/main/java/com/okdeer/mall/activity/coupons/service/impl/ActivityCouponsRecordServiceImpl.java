@@ -53,7 +53,6 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
-import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.common.consts.Constant;
@@ -1011,7 +1010,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			pushMsgVo.setMsgType(Constant.ONE);
 			pushMsgVo.setMsgTypeCustom(OrderMsgConstant.COUPONS_MESSAGE);
 			pushMsgVo.setMsgDetailType(Constant.ZERO);
-			pushMsgVo.setMsgDetailLinkUrl("/voucher/html/myVoucherList");
+			pushMsgVo.setMsgDetailLinkUrl("/voucher/V1.2.0/goMyVoucher");
 			
 			// 不使用模板
 			pushMsgVo.setMsgNotifyContent(smsIsNoticeCouponsRecordStyle);
