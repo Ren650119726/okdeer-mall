@@ -44,8 +44,7 @@
     	  r.room_id,is_complete,invite_user_id,activity_id
 	  FROM
 		  activity_coupons_record_before r 
-	  WHERE r.is_complete = 1  
-		  AND invite_user_id = #{inviteUserId,jdbcType=VARCHAR}
+	  WHERE invite_user_id = #{inviteUserId,jdbcType=VARCHAR}
  	  order by r.collect_time 
  </select>
  
