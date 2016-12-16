@@ -1093,7 +1093,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				ColumnAdvert columnAdvert = columnAdvertService.findAdvertById(record.getActivityId());
 				//判断活动是否结束 结束时间大于当前时间未结束
 				if(columnAdvert.getEndTime().getTime() <= new Date().getTime()){
-					continue;
+					return;
 				}
 				//执行 给邀请人送代金劵及抽奖次数 1
 				sysBuyerExtService.updateAddPrizeCount(record.getInviteUserId(), 1);
@@ -1107,19 +1107,18 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				activityCouponsRecordBeforeMapper.updateByPrimaryKey(record);
 				
 				//超过4位不送代金劵 根据 邀请次数奖项给邀请人发放奖项代金劵
-				if(inviteCount > collectCouponsIds.length){
-					continue;
-				}
-				String collectCouponsId  = collectCouponsIds[inviteCount];
-				
-				//一次可以送多张代金劵
-				String[] collectIds = collectCouponsId.split(",");
-				for(String collectId : collectIds){
-					//根据代金劵活动ID领取代金劵
-					addRecordsByCollectId(collectId,record.getInviteUserId(),
-										ActivityCouponsType.advert_coupons);
-					//领取后并插入一次奖励 中奖纪录
-					activityPrizeRecordService.addPrizeRecord(collectId, record.getInviteUserId(), record.getActivityId(),null);
+				if(inviteCount <= collectCouponsIds.length){
+					String collectCouponsId  = collectCouponsIds[inviteCount];
+					
+					//一次可以送多张代金劵
+					String[] collectIds = collectCouponsId.split(",");
+					for(String collectId : collectIds){
+						//根据代金劵活动ID领取代金劵
+						addRecordsByCollectId(collectId,record.getInviteUserId(),
+											ActivityCouponsType.advert_coupons);
+						//领取后并插入一次奖励 中奖纪录
+						activityPrizeRecordService.addPrizeRecord(collectId, record.getInviteUserId(), record.getActivityId(),null);
+					}
 				}
 			
 			}
