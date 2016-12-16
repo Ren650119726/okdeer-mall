@@ -63,9 +63,8 @@ public class TradeOrderSubScriber {
 		//修改订单状态为完成时 进行业务处理
 		if(tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED){
 			//邀请人获得的代金劵奖励id, 每层id中逗号隔开
-			String[] collectCouponsId ={"8a80809e582e643a01583d5563710002","8a80809e582e643a01583d5563710002",
-					"8a80809e582e643a01583d5563710002","8a80809e582e643a01583d5563710002"};
-			
+			String[] collectCouponsId ={"8a8080a358e6869c0159017a97a50021","8a8080a358e6869c0159017926ed001d,8a8080a358e6869c015901773ff0001a,8a8080a358e6869c0159017ad5cf0022",
+					"8a8080a358e6869c0159017926ed001d,8a8080a358e6869c015901773ff0001a,8a8080a358e6869c0159017bbf5c0024","8a8080a358e6869c0159017a97a50021"};
 			activityCouponsRecordService.addInviteUserHandler(tradeOrder.getUserId(),collectCouponsId);
 		}
 	}
