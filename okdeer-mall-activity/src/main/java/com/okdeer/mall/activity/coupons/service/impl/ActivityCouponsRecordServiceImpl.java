@@ -1101,13 +1101,13 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				//用户的邀请次数
 				int inviteCount = activityCouponsRecordBeforeMapper.
 						findInviteUserCount(record.getInviteUserId(), record.getActivityId());
-				
+				log.info("已成功邀请到"+inviteCount+"个用户");
 				//修改预领取记录 为已完成邀请
 				record.setIsComplete(WhetherEnum.whether);
 				activityCouponsRecordBeforeMapper.updateByPrimaryKey(record);
 				
 				//超过4位不送代金劵 根据 邀请次数奖项给邀请人发放奖项代金劵
-				if(inviteCount <= collectCouponsIds.length){
+				if(inviteCount < collectCouponsIds.length){
 					String collectCouponsId  = collectCouponsIds[inviteCount];
 					
 					//一次可以送多张代金劵
