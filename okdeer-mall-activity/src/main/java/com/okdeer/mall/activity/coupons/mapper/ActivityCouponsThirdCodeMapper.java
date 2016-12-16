@@ -2,6 +2,8 @@ package com.okdeer.mall.activity.coupons.mapper;
 
 import java.util.List;
 import java.util.Map;
+
+import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsThirdCode;
 
 /**
@@ -15,7 +17,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsThirdCode;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构4.1			 2016年12月12日 			zhangkn    新增查询对应类目名称
  */
-public interface ActivityCouponsThirdCodeMapper{
+public interface ActivityCouponsThirdCodeMapper extends IBaseCrudMapper{
 	
 	/**
 	 * @Description: 批量插入
