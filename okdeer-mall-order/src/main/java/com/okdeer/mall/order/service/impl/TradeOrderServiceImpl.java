@@ -1410,7 +1410,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public boolean updateWithConfirm(TradeOrder tradeOrder) throws Exception {
 		MQMessage anMessage = new MQMessage(TradeOrderTopic.ORDER_COMPLETE_TOCPIC, (Serializable) tradeOrder);
 		try {
-			updateWithConfirm(tradeOrder);
+			updateWithConfirmNew(tradeOrder);
 			rocketMQProducer.sendMessage(anMessage);
 		} catch (Exception e) {
 			logger.error("完成订单发送消息异常{}",JsonMapper.nonEmptyMapper().toJson(tradeOrder), e);
@@ -1428,7 +1428,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 *            订单对象
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	private void updateWithConfirm(Object entity) throws Exception {
+	private void updateWithConfirmNew(Object entity) throws Exception {
 		String rpcId = null;
 		try {
 			if (entity instanceof TradeOrder) {
