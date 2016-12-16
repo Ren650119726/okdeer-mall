@@ -554,6 +554,9 @@
 	<select id="findCollectCouponsAreaList" parameterType="java.util.Map" resultType="int">
 		SELECT count(0) FROM activity_collect_coupons collectCoupons
 		LEFT JOIN activity_collect_area area ON collectCoupons.id = area.collect_coupons_id
+		LEFT JOIN activity_collect_community comm ON collectCoupons.id = comm.collect_coupons_id
+		LEFT JOIN psms_small_community_info psms ON psms.id = comm.community_id
+		
 		WHERE collectCoupons.disabled = 0
 		<!-- 未开始或者进行中 -->
 		AND (collectCoupons.status = 1 or collectCoupons.status = 0)
@@ -572,12 +575,37 @@
 		<if test="type != null">
 			AND collectCoupons.type = #{type}
 		</if>
+		<!-- 1是选择了地区 2是选择了小区 -->
 		<if test="areaType == 1">
 			<if test="associateIdList != null">
-				AND area.area_id in  
+			AND
+			(
+				 area.area_id in  
 				<foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
 					#{item}
 				</foreach>
+				or
+				psms.city_id in  
+				<foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
+					#{item}
+				</foreach>
+			)
+			</if>
+		</if>
+		<if test="areaType == 2">
+			<if test="associateIdList != null">
+			AND
+			(
+				 area.area_id in  
+				<foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
+					#{item}
+				</foreach>
+				or
+				comm.community_id in 
+				<foreach collection="communityIdList" open="(" close=")" index="index" item="item"  separator=",">
+					#{item}
+				</foreach>
+			)
 			</if>
 		</if>
 		
