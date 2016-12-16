@@ -130,5 +130,42 @@
 		  AND invite_user_id = #{inviteUserId,jdbcType=VARCHAR}
 		  AND activity_id =#{activityId,jdbcType=VARCHAR}
    </select>
+  <!-- 根据id更新代金预领取记录  -->
+   <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore" >
+        update activity_coupons_record_before
+        <set >
+          <if test="collectType != null" >
+	        	collect_type = #{collectType,jdbcType=BIT},
+	      </if>
+	      <if test="couponsId != null" >
+	        coupons_id = #{couponsId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="couponsCollectId != null" >
+	        coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="collectTime != null" >
+	        collect_time = #{collectTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="collectUserId != null" >
+	        collect_user_id = #{collectUserId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="validTime != null" >
+	        valid_time = #{validTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="status != null" >
+	        status = #{status,jdbcType=BIT},
+	      </if>
+	      <if test="orderId != null" >
+	        order_id = #{orderId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="roomId != null" >
+	        room_id = #{roomId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="isComplete != null" >
+	        is_complete = #{isComplete,jdbcType=TINYINT},
+	      </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>    
       
 </mapper> 
