@@ -125,12 +125,11 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  	 * @param activityId 活动id
  	 * @param userId 用户id
  	 * @return JSONObject 抽奖获取奖品
- 	 * @param prizeActivityId 奖项活动id
  	 * @author tuzhd
  	 * @date 2016年12月14日
  	 */
  	@Transactional(rollbackFor = Exception.class)
- 	public JSONObject processPrizeByUser(String userId,String activityId,String prizeActivityId)throws ServiceException{
+ 	public JSONObject processPrizeByUser(String userId,String activityId)throws ServiceException{
  		SysBuyerExt user = sysBuyerExtService.findByUserId(userId);
 		Map<String,Object> map =  new HashMap<String,Object>();
 		//用户抽奖次数存在让其抽奖否则
@@ -140,22 +139,21 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
 			map.put("msg", "您已经没有抽奖机会哦，可以邀请好友获得抽奖机吧！");
 			return JSONObject.fromObject(map);
 		}
-		return addProcessPrize(userId, activityId,prizeActivityId);
+		return addProcessPrize(userId, activityId);
  	}
  	/**
  	 * @Description: 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 
  	 * @param activityId 活动id
  	 * @param userId 用户id
- 	 * @param prizeActivityId 奖项活动id
  	 * @return JSONObject 抽奖获取奖品
  	 * @author tuzhd
  	 * @date 2016年12月14日
  	 */
  	@Transactional(rollbackFor = Exception.class)
- 	private JSONObject addProcessPrize(String userId,String activityId,String prizeActivityId)throws ServiceException{
+ 	private JSONObject addProcessPrize(String userId,String activityId)throws ServiceException{
  		Map<String,Object> map =  new HashMap<String,Object>();
  		//根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 
- 		List<ActivityPrizeWeight> list = activityPrizeWeightService.findPrizesByactivityId(prizeActivityId);
+ 		List<ActivityPrizeWeight> list = activityPrizeWeightService.findPrizesByactivityId(activityId);
  		if(CollectionUtils.isNotEmpty(list)){
  			//权限比重集合
  			double[] weight = new double[list.size()];
