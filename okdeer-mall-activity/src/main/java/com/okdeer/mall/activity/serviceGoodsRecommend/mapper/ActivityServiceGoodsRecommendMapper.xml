@@ -236,6 +236,17 @@
 		and ext.is_closed = 1
 		and 
 		(
+			<!-- 3：上门服务店服务商品 没有服务时间、4：到店消费服务商品 有服务时间', -->
+			(
+				sku.type = 4 and 
+				#{nowTime} &gt;= service.start_time and
+				#{nowTime} &lt;= service.end_time
+			)
+			or
+			sku.type = 3
+		)
+		and 
+		(
 			r.area_type = 0
 			or
 			(
