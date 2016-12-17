@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.okdeer.mall.activity.serviceLimit.mapper.ActivityServiceLimitMapper">
+
+ 	<resultMap type="com.okdeer.mall.activity.serviceLimit.entity.ActivityServiceLimit" id="ActivityServiceLimit" > 
+		<result property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="status" column="status" />
+		<result property="storeId" column="store_id" />
+		<result property="startTime" column="start_time" />
+		<result property="endTime" column="end_time" />
+		<result property="limit" column="limit" />
+		<result property="createTime" column="create_time" />
+		<result property="createUserId" column="create_user_id" />
+		<result property="updateTime" column="update_time" />
+		<result property="updateUserId" column="update_user_id" />
+		<result property="disabled" column="disabled" />
+	</resultMap>
+
+    <sql id="columns">
+		id,name,status,store_id,start_time,end_time,`limit`,create_time,create_user_id,update_time,update_user_id,disabled
+	</sql>
+	
+	<insert id="add" parameterType="com.okdeer.mall.activity.serviceLimit.entity.ActivityServiceLimit">
+        insert into activity_service_limit(
+			<include refid="columns"/>
+		)values(
+            #{id},
+            #{name},
+            #{status},
+            #{storeId},
+            #{startTime},
+            #{endTime},
+            #{limit},
+            #{createTime},
+            #{createUserId},
+            #{updateTime},
+            #{updateUserId},
+            #{disabled}
+        )
+	</insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.serviceLimit.entity.ActivityServiceLimit">
+        update activity_service_limit set
+			<if test="name != null">
+				name = #{name},
+			</if>
+			<if test="status != status">
+				status = #{status},
+			</if>
+			<if test="storeId != null">
+				store_id = #{storeId},
+			</if>
+			<if test="startTime != null">
+				start_time = #{startTime},
+			</if>
+			<if test="endTime != null">
+				end_time = #{endTime},
+			</if>
+			<if test="limit != null">
+				`limit` = #{limit},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime},
+			</if>
+			<if test="createUserId != null">
+				create_user_id = #{createUserId},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime},
+			</if>
+			<if test="updateUserId != null">
+				update_user_id = #{updateUserId},
+			</if>
+			<if test="disabled != null">
+				disabled = #{disabled},
+			</if>
+        id = #{id}
+        where id = #{id}
+    </update>
+
+    <select id="findById" resultMap="ActivityServiceLimit" parameterType="string">
+        select <include refid="columns"/> from activity_service_limit where id = #{value} and disabled = 0 
+    </select>
+
+    <select id="list" parameterType="map" resultMap="ActivityServiceLimit">
+		select <include refid="columns"/>
+		,(select count(*) from activity_service_limit_goods alg where alg.activity_id = s.id) as activityLimitGoodsCount 
+		from activity_service_limit s
+		where disabled = 0 and s.store_id = #{storeId}
+		<if test="activityName != null and activityName != ''">
+			and name like concat('%',#{activityName},'%' )
+		</if>
+		<if test="createStartTime != null and createStartTime != ''">
+			and create_time &gt;= #{createStartTime}
+		</if>
+		<if test="createEndTime != null and createEndTime != ''">
+			and create_time &lt;= #{createEndTime}
+		</if>
+		
+		
+		<if test="startStartTime != null and startStartTime != '' ">
+			and start_time &gt;= #{startStartTime}
+		</if>
+		<if test="startEndTime != null and startEndTime != ''">
+			and start_time &lt;= #{startEndTime}
+		</if>
+		
+		<if test="endStartTime != null and endStartTime != ''">
+			and end_time &gt;= #{endStartTime}
+		</if>
+		<if test="endEndTime != null and endEndTime != ''">
+			and end_time &lt;= #{endEndTime}
+		</if>
+		
+		<if test="status != null and status != ''">
+			and status = #{status}
+		</if>
+		order by create_time desc
+	</select>
+	
+    <select id="listGoodsStoreSku" parameterType="map" resultType="map">
+	select 		
+				s.id,
+				s.name,
+				s.properties_indb as propertiesIndb,
+				service.product_no as productNo,
+				CAST(s.type AS SIGNED)  as skuType,
+				s.offline_price as offlinePrice,
+				s.online_price as onlinePrice,
+				s.market_price as marketPrice,
+				s.create_time as createTime,
+				s.sku_id as skuId,
+				s.sale_num as saleNum,
+				d.`name` AS categoryName,
+				p.url as url,
+				f.sellable,
+				f.actual,
+				f.locked
+				<!-- 如果活动主键不为空,需要关联活动商品表,把限购数量,库存,价格等关联出来 -->
+				<if test="id != null and id != ''">
+					,
+					alg.trade_max as tradeMax,
+					alg.activity_stock as activityStock,
+					alg.activity_price as activityPrice,
+					alg.sort as sort,
+					alg.id as activityLimitGoodsId
+				</if>
+				
+		from goods_store_sku s
+		left JOIN goods_store_spu spu on s.store_spu_id = spu.id
+		LEFT JOIN goods_spu_category d ON spu.spu_category_id = d.`id` 
+		LEFT JOIN goods_spu_category_spu_type e ON d.`id` = e.`spu_category_id` 
+		LEFT JOIN goods_store_sku_stock f ON s.`id` = f.`store_sku_id`
+		LEFT JOIN goods_store_sku_picture p ON (p.`store_sku_id` = f.`store_sku_id` AND p.`type` = '1')
+		LEFT JOIN goods_store_sku_service service ON (s.id = service.store_sku_id)
+		<!-- 如果是修改的话,要关联activity_service_limit_goods -->
+		<if test="id != null and id != ''">
+			left join activity_service_limit_goods alg  on ( alg.activity_id = #{id} and alg.store_sku_id = s.id) 
+		</if>
+		
+		where s.disabled = 0 
+		and s.status = 1
+		and s.violation = 0
+		and service.audit_status = 1
+		and s.store_id = #{storeId}
+		 
+		<!-- 要筛选出未绑定活动的,如果是修改的话,自己所属的商品ids也要筛选出来 -->
+		<if test="isNotJoinActivity != null">
+		and(
+				(s.is_activity = 0 or s.is_activity is null) 
+				<!-- 如果是编辑,用or 把自己本身关联的商品也查出来 -->
+				<if test="editGoodsIds != null">
+				or s.id in 
+					<foreach item="item" index="index" collection="editGoodsIds" open="(" separator="," close=")">  
+			  			#{item}  
+			 		</foreach>  
+				</if>
+			)
+		</if>
+		
+		<if test="goodsName != null and goodsName != ''">
+			and s.name like concat('%',#{goodsName},'%' )
+		</if>
+		<if test="categoryName != null and categoryName != ''">
+			and d.`name` like concat('%',#{categoryName},'%' )
+		</if>
+		<if test="productNo != null and productNo != ''">
+			and service.product_no like concat('%',#{productNo},'%' )
+		</if>
+		<if test="online != null and online != ''">
+			and s.online = #{online}
+		</if>
+		<if test="skuType != null and skuType != ''">
+			and s.type = #{skuType}
+		</if>
+		<if test="goodsIds != null">
+			and s.id in 
+			<foreach item="item" index="index" collection="goodsIds" open="(" separator="," close=")">  
+	  			#{item}  
+	 		</foreach>  
+		</if>
+		
+		order by 
+		<if test="id != null and id != ''">
+			alg.sort desc,
+		</if>
+		s.update_time desc
+	</select>
+
+    <select id="validateExist" parameterType="map" resultType="int">
+    	select count(*) from activity_service_limit s
+    	where s.disabled = 0 
+    	and s.store_id = #{storeId}
+    	<!-- 未开始0,进行中1的才算存在-->
+    	and (s.status = 0 or s.status = 1)
+		AND 
+		(
+			#{startTime} BETWEEN s.start_time and s.end_time 
+       		OR 
+       		#{endTime} BETWEEN s.start_time and s.end_time 
+       		OR 
+       		(start_time &gt;= #{startTime} and end_time &lt;= #{endTime})
+       	)
+    	<if test="id != null and id != ''">
+    		and s.id != #{id}
+    	</if>
+    </select>
+
+     <update id="updateBatchStatus" parameterType="map">
+    	update activity_service_limit set status = #{status} where id in 
+		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">  
+  			#{item}  
+ 		</foreach>  
+    </update>
+    
+    <select id="listByJob" parameterType="map" resultMap="ActivityServiceLimit">
+    	select s.* from activity_service_limit s where 
+		(s.`status` = 0 and  s.start_time &lt;= #{nowTime})
+		OR
+		(s.`status` = 1 and  s.end_time &lt;= #{nowTime});
+    </select>
+</mapper>
