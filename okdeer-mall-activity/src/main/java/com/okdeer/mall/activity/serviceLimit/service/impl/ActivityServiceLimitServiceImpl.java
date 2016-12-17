@@ -29,7 +29,6 @@ import com.okdeer.mall.activity.serviceLimit.entity.ActivityServiceLimitGoods;
 import com.okdeer.mall.activity.serviceLimit.mapper.ActivityServiceLimitGoodsMapper;
 import com.okdeer.mall.activity.serviceLimit.mapper.ActivityServiceLimitMapper;
 import com.okdeer.mall.activity.serviceLimit.service.ActivityServiceLimitService;
-import com.okdeer.mall.common.utils.RobotUserUtil;
 
 /**
  * ClassName: ActivityLabelServiceImpl 
@@ -41,6 +40,7 @@ import com.okdeer.mall.common.utils.RobotUserUtil;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构4.1			 2016年11月8日 			zhagnkn
+ *		v1.3.0          2016-12-17           zengjz          增加根据店铺id查询限购活动方法
  */
 @Service
 public class ActivityServiceLimitServiceImpl extends BaseServiceImpl
@@ -272,6 +272,20 @@ public class ActivityServiceLimitServiceImpl extends BaseServiceImpl
 			}
 		}
 		log.info("促销限购活动定时器结束");
+	}
+
+	
+	/**
+	 * @Description: 根据店铺id查询限购活动
+	 * @param storeIdList 店铺id列表
+	 * @return  活动列表
+	 * @author zengjizu
+	 * @date 2016年12月17日
+	 */
+	@Override
+	public List<ActivityServiceLimit> findByStoreIds(List<String> storeIdList) {
+		
+		return limitMapper.findByStoreIds(storeIdList);
 	}
 	
 }

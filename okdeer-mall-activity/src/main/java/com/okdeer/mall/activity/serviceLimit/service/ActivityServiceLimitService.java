@@ -17,6 +17,7 @@ import com.okdeer.mall.activity.serviceLimit.entity.ActivityServiceLimitGoods;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *		V1.3			 2016年12月9日 			zhagnkn
+ *		v1.3.0          2016-12-17           zengjz          增加根据店铺id查询限购活动方法
  */
 public interface ActivityServiceLimitService extends IBaseService{
 	
@@ -115,4 +116,13 @@ public interface ActivityServiceLimitService extends IBaseService{
 	 * @date 2016年12月12日
 	 */
 	void processJob();
+	
+	/**
+	 * @Description: 根据店铺id查询限购活动
+	 * @param storeIdList 店铺id列表
+	 * @return  活动列表
+	 * @author zengjizu
+	 * @date 2016年12月17日
+	 */
+	List<ActivityServiceLimit> findByStoreIds(List<String> storeIdList);
 }

@@ -2,6 +2,9 @@ package com.okdeer.mall.activity.serviceLimit.mapper;
 
 import java.util.List;
 import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.serviceLimit.entity.ActivityServiceLimit;
 
@@ -66,5 +69,14 @@ public interface ActivityServiceLimitMapper extends IBaseMapper{
 	 * @date 2016年10月21日
 	 */
 	List<ActivityServiceLimit> listByJob(Map<String,Object> map);
+	
+	/**
+	 * @Description: 根据店铺id查询限购活动方法
+	 * @param storeIdList
+	 * @return
+	 * @author zengjizu
+	 * @date 2016年12月17日
+	 */
+	List<ActivityServiceLimit> findByStoreIds(@Param("storeIdList") List<String> storeIdList);
 	
 }
