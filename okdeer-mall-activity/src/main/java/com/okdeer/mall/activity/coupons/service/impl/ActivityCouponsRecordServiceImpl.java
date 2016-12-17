@@ -1090,11 +1090,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			}
 			//查询用户的手机邀请预领取记录
 			for(ActivityCouponsRecordBefore record : list){
-				ColumnAdvert columnAdvert = columnAdvertService.findAdvertById(record.getActivityId());
+				/*ColumnAdvert columnAdvert = columnAdvertService.findAdvertById(record.getActivityId());
 				//判断活动是否结束 结束时间大于当前时间未结束
 				if(columnAdvert.getEndTime().getTime() <= new Date().getTime()){
 					return;
-				}
+				}*/
 				//执行 给邀请人送代金劵及抽奖次数 1
 				sysBuyerExtService.updateAddPrizeCount(record.getInviteUserId(), 1);
 				
