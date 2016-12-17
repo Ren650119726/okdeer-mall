@@ -241,4 +241,16 @@
 		OR
 		(s.`status` = 1 and  s.end_time &lt;= #{nowTime});
     </select>
+    
+    <select id="findByStoreIds" parameterType="java.util.List" resultMap="ActivityServiceLimit">
+    	select 
+    	<include refid="columns" />
+    	from activity_service_limit where 
+    	store_id in
+		<foreach item="item" index="index" collection="storeIdList" open="(" separator="," close=")">  
+  			#{item}  
+ 		</foreach>
+ 		and status = 1 and disabled = 0
+ 		order by create_time desc
+    </select>
 </mapper>
