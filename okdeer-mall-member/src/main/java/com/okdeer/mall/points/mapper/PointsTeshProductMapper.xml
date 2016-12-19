@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.points.mapper.PointsTeshProductMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.points.entity.PointsTeshProduct" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="sku_code" property="skuCode" jdbcType="VARCHAR" />
+        <result column="main_pic_url" property="mainPicUrl" jdbcType="VARCHAR" />
+        <result column="product_code" property="productCode" jdbcType="VARCHAR" />
+        <result column="product_name" property="productName" jdbcType="VARCHAR" />
+        <result column="product_shelves" property="productShelves" jdbcType="TINYINT" />
+        <result column="product_id" property="productId" jdbcType="VARCHAR" />
+        <result column="product_desc" property="productDesc" jdbcType="LONGVARCHAR" />
+        <result column="brand_code" property="brandCode" jdbcType="VARCHAR" />
+        <result column="brand_name" property="brandName" jdbcType="VARCHAR" />
+        <result column="first_cat_code" property="firstCatCode" jdbcType="VARCHAR" />
+        <result column="first_cat_bame" property="firstCatBame" jdbcType="VARCHAR" />
+        <result column="second_cat_code" property="secondCatCode" jdbcType="VARCHAR" />
+        <result column="second_cat_name" property="secondCatName" jdbcType="VARCHAR" />
+        <result column="category_code" property="categoryCode" jdbcType="VARCHAR" />
+        <result column="category_name" property="categoryName" jdbcType="VARCHAR" />
+        <result column="marker_price" property="markerPrice" jdbcType="DECIMAL" />
+        <result column="dist_price" property="distPrice" jdbcType="DECIMAL" />
+        <result column="product_density" property="productDensity" jdbcType="VARCHAR" />
+        <result column="product_height" property="productHeight" jdbcType="VARCHAR" />
+        <result column="product_long" property="productLong" jdbcType="VARCHAR" />
+        <result column="product_producer" property="productProducer" jdbcType="VARCHAR" />
+        <result column="product_weight" property="productWeight" jdbcType="VARCHAR" />
+        <result column="product_width" property="productWidth" jdbcType="VARCHAR" />
+        <result column="color_name" property="colorName" jdbcType="VARCHAR" />
+        <result column="color_value" property="colorValue" jdbcType="VARCHAR" />
+        <result column="size_name" property="sizeName" jdbcType="VARCHAR" />
+        <result column="size_value" property="sizeValue" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="INTEGER" />
+        <result column="scores" property="scores" jdbcType="INTEGER" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled"/>
+        <result column="sync_time" property="syncTime" jdbcType="TIMESTAMP" />
+        <result column="publish_time" property="publishTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, sku_code, main_pic_url, product_code, product_name, product_shelves, product_id, 
+        product_desc, brand_code, brand_name, first_cat_code, first_cat_bame, second_cat_code, 
+        second_cat_name, category_code, category_name, marker_price, dist_price, product_density, 
+        product_height, product_long, product_producer, product_weight, product_width, color_name, 
+        color_value, size_name, size_value, status, scores, create_time, create_user_id, 
+        update_time, update_user_id, disabled, sync_time, publish_time
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from points_tesh_product
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.points.entity.PointsTeshProduct" >
+        insert into points_tesh_product
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="skuCode != null" >
+                sku_code,
+            </if>
+            <if test="mainPicUrl != null" >
+                main_pic_url,
+            </if>
+            <if test="productCode != null" >
+                product_code,
+            </if>
+            <if test="productName != null" >
+                product_name,
+            </if>
+            <if test="productShelves != null" >
+                product_shelves,
+            </if>
+            <if test="productId != null" >
+                product_id,
+            </if>
+            <if test="productDesc != null" >
+                product_desc,
+            </if>
+            <if test="brandCode != null" >
+                brand_code,
+            </if>
+            <if test="brandName != null" >
+                brand_name,
+            </if>
+            <if test="firstCatCode != null" >
+                first_cat_code,
+            </if>
+            <if test="firstCatBame != null" >
+                first_cat_bame,
+            </if>
+            <if test="secondCatCode != null" >
+                second_cat_code,
+            </if>
+            <if test="secondCatName != null" >
+                second_cat_name,
+            </if>
+            <if test="categoryCode != null" >
+                category_code,
+            </if>
+            <if test="categoryName != null" >
+                category_name,
+            </if>
+            <if test="markerPrice != null" >
+                marker_price,
+            </if>
+            <if test="distPrice != null" >
+                dist_price,
+            </if>
+            <if test="productDensity != null" >
+                product_density,
+            </if>
+            <if test="productHeight != null" >
+                product_height,
+            </if>
+            <if test="productLong != null" >
+                product_long,
+            </if>
+            <if test="productProducer != null" >
+                product_producer,
+            </if>
+            <if test="productWeight != null" >
+                product_weight,
+            </if>
+            <if test="productWidth != null" >
+                product_width,
+            </if>
+            <if test="colorName != null" >
+                color_name,
+            </if>
+            <if test="colorValue != null" >
+                color_value,
+            </if>
+            <if test="sizeName != null" >
+                size_name,
+            </if>
+            <if test="sizeValue != null" >
+                size_value,
+            </if>
+            <if test="status != null" >
+                status,
+            </if>
+            <if test="scores != null" >
+                scores,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+            <if test="syncTime != null" >
+                sync_time,
+            </if>
+            <if test="publishTime != null" >
+                publish_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="skuCode != null" >
+                #{skuCode,jdbcType=VARCHAR},
+            </if>
+            <if test="mainPicUrl != null" >
+                #{mainPicUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="productCode != null" >
+                #{productCode,jdbcType=VARCHAR},
+            </if>
+            <if test="productName != null" >
+                #{productName,jdbcType=VARCHAR},
+            </if>
+            <if test="productShelves != null" >
+                #{productShelves,jdbcType=TINYINT},
+            </if>
+            <if test="productId != null" >
+                #{productId,jdbcType=VARCHAR},
+            </if>
+            <if test="productDesc != null" >
+                #{productDesc,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="brandCode != null" >
+                #{brandCode,jdbcType=VARCHAR},
+            </if>
+            <if test="brandName != null" >
+                #{brandName,jdbcType=VARCHAR},
+            </if>
+            <if test="firstCatCode != null" >
+                #{firstCatCode,jdbcType=VARCHAR},
+            </if>
+            <if test="firstCatBame != null" >
+                #{firstCatBame,jdbcType=VARCHAR},
+            </if>
+            <if test="secondCatCode != null" >
+                #{secondCatCode,jdbcType=VARCHAR},
+            </if>
+            <if test="secondCatName != null" >
+                #{secondCatName,jdbcType=VARCHAR},
+            </if>
+            <if test="categoryCode != null" >
+                #{categoryCode,jdbcType=VARCHAR},
+            </if>
+            <if test="categoryName != null" >
+                #{categoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="markerPrice != null" >
+                #{markerPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="distPrice != null" >
+                #{distPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="productDensity != null" >
+                #{productDensity,jdbcType=VARCHAR},
+            </if>
+            <if test="productHeight != null" >
+                #{productHeight,jdbcType=VARCHAR},
+            </if>
+            <if test="productLong != null" >
+                #{productLong,jdbcType=VARCHAR},
+            </if>
+            <if test="productProducer != null" >
+                #{productProducer,jdbcType=VARCHAR},
+            </if>
+            <if test="productWeight != null" >
+                #{productWeight,jdbcType=VARCHAR},
+            </if>
+            <if test="productWidth != null" >
+                #{productWidth,jdbcType=VARCHAR},
+            </if>
+            <if test="colorName != null" >
+                #{colorName,jdbcType=VARCHAR},
+            </if>
+            <if test="colorValue != null" >
+                #{colorValue,jdbcType=VARCHAR},
+            </if>
+            <if test="sizeName != null" >
+                #{sizeName,jdbcType=VARCHAR},
+            </if>
+            <if test="sizeValue != null" >
+                #{sizeValue,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null" >
+                #{status,jdbcType=INTEGER},
+            </if>
+            <if test="scores != null" >
+                #{scores,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=TINYINT},
+            </if>
+            <if test="syncTime != null" >
+                #{syncTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="publishTime != null" >
+                #{publishTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.points.entity.PointsTeshProduct" >
+        update points_tesh_product
+        <set >
+            <if test="skuCode != null" >
+                sku_code = #{skuCode,jdbcType=VARCHAR},
+            </if>
+            <if test="mainPicUrl != null" >
+                main_pic_url = #{mainPicUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="productCode != null" >
+                product_code = #{productCode,jdbcType=VARCHAR},
+            </if>
+            <if test="productName != null" >
+                product_name = #{productName,jdbcType=VARCHAR},
+            </if>
+            <if test="productShelves != null" >
+                product_shelves = #{productShelves,jdbcType=TINYINT},
+            </if>
+            <if test="productId != null" >
+                product_id = #{productId,jdbcType=VARCHAR},
+            </if>
+            <if test="productDesc != null" >
+                product_desc = #{productDesc,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="brandCode != null" >
+                brand_code = #{brandCode,jdbcType=VARCHAR},
+            </if>
+            <if test="brandName != null" >
+                brand_name = #{brandName,jdbcType=VARCHAR},
+            </if>
+            <if test="firstCatCode != null" >
+                first_cat_code = #{firstCatCode,jdbcType=VARCHAR},
+            </if>
+            <if test="firstCatBame != null" >
+                first_cat_bame = #{firstCatBame,jdbcType=VARCHAR},
+            </if>
+            <if test="secondCatCode != null" >
+                second_cat_code = #{secondCatCode,jdbcType=VARCHAR},
+            </if>
+            <if test="secondCatName != null" >
+                second_cat_name = #{secondCatName,jdbcType=VARCHAR},
+            </if>
+            <if test="categoryCode != null" >
+                category_code = #{categoryCode,jdbcType=VARCHAR},
+            </if>
+            <if test="categoryName != null" >
+                category_name = #{categoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="markerPrice != null" >
+                marker_price = #{markerPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="distPrice != null" >
+                dist_price = #{distPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="productDensity != null" >
+                product_density = #{productDensity,jdbcType=VARCHAR},
+            </if>
+            <if test="productHeight != null" >
+                product_height = #{productHeight,jdbcType=VARCHAR},
+            </if>
+            <if test="productLong != null" >
+                product_long = #{productLong,jdbcType=VARCHAR},
+            </if>
+            <if test="productProducer != null" >
+                product_producer = #{productProducer,jdbcType=VARCHAR},
+            </if>
+            <if test="productWeight != null" >
+                product_weight = #{productWeight,jdbcType=VARCHAR},
+            </if>
+            <if test="productWidth != null" >
+                product_width = #{productWidth,jdbcType=VARCHAR},
+            </if>
+            <if test="colorName != null" >
+                color_name = #{colorName,jdbcType=VARCHAR},
+            </if>
+            <if test="colorValue != null" >
+                color_value = #{colorValue,jdbcType=VARCHAR},
+            </if>
+            <if test="sizeName != null" >
+                size_name = #{sizeName,jdbcType=VARCHAR},
+            </if>
+            <if test="sizeValue != null" >
+                size_value = #{sizeValue,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null" >
+                status = #{status,jdbcType=INTEGER},
+            </if>
+            <if test="scores != null" >
+                scores = #{scores,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=TINYINT},
+            </if>
+            <if test="syncTime != null" >
+                sync_time = #{syncTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="publishTime != null" >
+                publish_time = #{publishTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from points_tesh_product
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>
