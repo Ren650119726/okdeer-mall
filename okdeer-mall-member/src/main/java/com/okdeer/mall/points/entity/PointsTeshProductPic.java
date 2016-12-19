@@ -1,13 +1,15 @@
 /*
  * Copyright(C) 2016-2021 okdeer.com Inc. All rights reserved
- * IntegralTeshProductPic.java
+ * PointsTeshProductPic.java
  * @Date 2016-12-19 Created
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的
  */
-package com.okdeer.mall.integral.entity;
+package com.okdeer.mall.points.entity;
+
+import com.okdeer.base.common.enums.WhetherEnum;
 
 /**
- * ClassName: IntegralTeshProductPic 
+ * ClassName: PointsTeshProductPic 
  * @Description: 特奢汇商品图片实体类
  * @author zengjizu
  * @date 2016年12月19日
@@ -17,7 +19,7 @@ package com.okdeer.mall.integral.entity;
  * ----------------+----------------+-------------------+-------------------------------------------
  *
  */
-public class IntegralTeshProductPic {
+public class PointsTeshProductPic {
 
     /**
      * 主键
@@ -27,6 +29,10 @@ public class IntegralTeshProductPic {
      * 商品id
      */
     private String productId;
+    
+    /**
+     * 图片名称
+     */
     private String imageName;
     /**
      * 七牛存储图片
@@ -39,7 +45,7 @@ public class IntegralTeshProductPic {
     /**
      * 是否主图0:是1:否
      */
-    private Boolean isMain;
+    private WhetherEnum isMain;
 
 
     public String getId() {
@@ -82,11 +88,15 @@ public class IntegralTeshProductPic {
         this.imagePath = imagePath;
     }
 
-    public Boolean getIsMain() {
-        return isMain;
-    }
+	
+	public WhetherEnum getIsMain() {
+		return isMain;
+	}
 
-    public void setIsMain(Boolean isMain) {
-        this.isMain = isMain;
-    }
+	
+	public void setIsMain(WhetherEnum isMain) {
+		this.isMain = isMain;
+	}
+
+  
 }

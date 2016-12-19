@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.okdeer.mall.integral.mapper.IntegralTeshProductPicMapper" >
-    <resultMap id="BaseResultMap" type="com.okdeer.mall.integral.entity.IntegralTeshProductPic" >
+<mapper namespace="com.okdeer.mall.points.mapper.PointsTeshProductPicMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.points.entity.PointsTeshProductPic" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="product_id" property="productId" jdbcType="VARCHAR" />
         <result column="image_name" property="imageName" jdbcType="VARCHAR" />
         <result column="new_image_path" property="newImagePath" jdbcType="VARCHAR" />
         <result column="image_path" property="imagePath" jdbcType="VARCHAR" />
-        <result column="is_main" property="isMain" jdbcType="BIT" />
+        <result column="is_main" property="isMain" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.WhetherEnum"/>
     </resultMap>
 
     <sql id="Base_Column_List" >
@@ -17,12 +17,12 @@
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
         select 
         <include refid="Base_Column_List" />
-        from integral_tesh_product_pic
+        from points_tesh_product_pic
         where id = #{id,jdbcType=VARCHAR}
     </select>
 
-    <insert id="add" parameterType="com.okdeer.mall.integral.entity.IntegralTeshProductPic" >
-        insert into integral_tesh_product_pic
+    <insert id="add" parameterType="com.okdeer.mall.points.entity.PointsTeshProductPic" >
+        insert into points_tesh_product_pic
         <trim prefix="(" suffix=")" suffixOverrides="," >
             <if test="id != null" >
                 id,
@@ -60,13 +60,13 @@
                 #{imagePath,jdbcType=VARCHAR},
             </if>
             <if test="isMain != null" >
-                #{isMain,jdbcType=BIT},
+                #{isMain,jdbcType=TINYINT},
             </if>
         </trim>
     </insert>
 
-    <update id="update" parameterType="com.okdeer.mall.integral.entity.IntegralTeshProductPic" >
-        update integral_tesh_product_pic
+    <update id="update" parameterType="com.okdeer.mall.points.entity.PointsTeshProductPic" >
+        update points_tesh_product_pic
         <set >
             <if test="productId != null" >
                 product_id = #{productId,jdbcType=VARCHAR},
@@ -81,14 +81,14 @@
                 image_path = #{imagePath,jdbcType=VARCHAR},
             </if>
             <if test="isMain != null" >
-                is_main = #{isMain,jdbcType=BIT},
+                is_main = #{isMain,jdbcType=TINYINT},
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
     </update>
 
     <delete id="delete" parameterType="java.lang.String" >
-        delete from integral_tesh_product_pic
+        delete from points_tesh_product_pic
         where id = #{id,jdbcType=VARCHAR}
     </delete>
 
