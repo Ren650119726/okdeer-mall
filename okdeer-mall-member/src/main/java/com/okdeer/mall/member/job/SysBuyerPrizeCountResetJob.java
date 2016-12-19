@@ -25,8 +25,8 @@ public class SysBuyerPrizeCountResetJob extends AbstractSimpleElasticJob {
 	
 	@Override
 	public void process(JobExecutionMultipleShardingContext shardingContext) {
-		//执行批量重置用户抽奖次数
-		sysBuyerExtService.updateUserPrizeCount();
+		//执行批量重置用户抽奖次数  邀新活动启动后屏蔽该活动
+		//sysBuyerExtService.updateUserPrizeCount();
 	}
 
 }

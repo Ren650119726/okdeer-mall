@@ -5,6 +5,7 @@
   <!-- 返回到代金劵预领取记录  -->
   <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
     <id column="id" property="id" jdbcType="VARCHAR" />
+     <result column="invite_user_id" property="inviteUserId" jdbcType="VARCHAR" />
     <result column="collect_type" property="collectType" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsType" jdbcType="TINYINT" />
     <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
     <result column="coupons_collect_id" property="couponsCollectId" jdbcType="VARCHAR" />
@@ -16,6 +17,12 @@
     <result column="room_id" property="roomId" jdbcType="VARCHAR" />
   </resultMap>
   
+  <resultMap id="BaseBeforeMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore" extends="BaseResultMap">
+  	 <result column="is_complete" property="isComplete" javaType="com.okdeer.base.common.enums.WhetherEnum" jdbcType="TINYINT" />
+     <result column="invite_user_id" property="inviteUserId" jdbcType="VARCHAR" />
+     <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+     <result column="collect_user" property="collectUser" jdbcType="VARCHAR" />
+  </resultMap>
   <!-- 返回到代金劵预领取记录字段  tuzhiding  -->
   <select id="getCopyRecords" resultMap="BaseResultMap" >
     SELECT 
@@ -29,18 +36,27 @@
  		AND r.valid_time &gt; #{nowDate,jdbcType=TIMESTAMP}
  </select>
  
- 	
+  <!-- 查找用户邀请信息 xuzq01  -->
+  <select id="findInviteInfoByInviteUserId" resultMap="BaseBeforeMap" >
+      SELECT 
+    	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 
+    	  r.valid_time, r.status, r.order_id,collect_user,
+    	  r.room_id,is_complete,invite_user_id,activity_id
+	  FROM
+		  activity_coupons_record_before r 
+	  WHERE invite_user_id = #{inviteUserId,jdbcType=VARCHAR}
+ 	  order by r.collect_time 
+ </select>
  
   <!-- 插入代金劵预领取记录字段 tuzhiding  -->
   <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore" >
     insert into activity_coupons_record_before (id, collect_type, coupons_id, 
       coupons_collect_id, collect_time, collect_user, 
-      valid_time, status, order_id, 
-      room_id)
+      valid_time, status, order_id, room_id, invite_user_id,is_complete,activity_id)
     values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=BIT}, #{couponsId,jdbcType=VARCHAR}, 
       #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUser,jdbcType=VARCHAR}, 
       #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=BIT}, #{orderId,jdbcType=VARCHAR}, 
-      #{roomId,jdbcType=VARCHAR})
+      #{roomId,jdbcType=VARCHAR},#{inviteUserId,jdbcType=VARCHAR},#{isComplete,jdbcType=TINYINT},#{activityId,jdbcType=VARCHAR})
   </insert>
   
   <!-- 根据代金劵活动id代金劵预领取统计  -->
@@ -86,5 +102,70 @@
 	     AND b.collect_time = #{collectTime}
 	  </if>	  
 	</select>
+	
+	
+ <!-- 根据用户id判断完成首单的用户是否 有效完成邀请 tuzhiding  -->
+ <select id="findRecordVaildByUserId" resultMap="BaseBeforeMap" >
+    SELECT 
+    	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 
+    	  r.valid_time, r.status, r.order_id,
+    	  r.room_id,is_complete,invite_user_id,activity_id
+    FROM 	          
+ 		activity_coupons_record_before r 
+ 	WHERE r.is_complete = 0 
+ 		  AND invite_user_id is not null
+ 		  AND activity_id is not null
+ 		  AND r.`collect_user` = #{phone,jdbcType=VARCHAR}
+	FOR UPDATE 
+		
+ </select>
+
+  <!-- 根据邀请号码查询 已成功邀请的次数  -->
+  <select id="findInviteUserCount" resultType="int" >
+      SELECT 
+		  count(1)
+	  FROM
+		  activity_coupons_record_before r 
+	  WHERE r.is_complete = 1  
+		  AND invite_user_id = #{inviteUserId,jdbcType=VARCHAR}
+		  AND activity_id =#{activityId,jdbcType=VARCHAR}
+   </select>
+  <!-- 根据id更新代金预领取记录  -->
+   <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore" >
+        update activity_coupons_record_before
+        <set >
+          <if test="collectType != null" >
+	        	collect_type = #{collectType,jdbcType=BIT},
+	      </if>
+	      <if test="couponsId != null" >
+	        coupons_id = #{couponsId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="couponsCollectId != null" >
+	        coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="collectTime != null" >
+	        collect_time = #{collectTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="collectUserId != null" >
+	        collect_user_id = #{collectUserId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="validTime != null" >
+	        valid_time = #{validTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="status != null" >
+	        status = #{status,jdbcType=BIT},
+	      </if>
+	      <if test="orderId != null" >
+	        order_id = #{orderId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="roomId != null" >
+	        room_id = #{roomId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="isComplete != null" >
+	        is_complete = #{isComplete,jdbcType=TINYINT},
+	      </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>    
       
 </mapper> 

@@ -22,10 +22,10 @@ import com.github.pagehelper.PageHelper;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysBuyerUserPointsExt;
 import com.okdeer.archive.system.entity.SysMemberExtVo;
-import com.okdeer.archive.system.entity.TmpExample;
-import com.okdeer.mall.member.member.service.MemberServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.mall.member.member.service.MemberServiceApi;
+import com.okdeer.mall.member.service.MemberService;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 
 /**
@@ -35,7 +35,7 @@ import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
  * @date 2015年11月24日 下午3:18:08
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.member.member.service.MemberServiceApi")
-public class MemberServiceImpl implements MemberServiceApi {
+public class MemberServiceImpl implements MemberService,MemberServiceApi {
 
 	/**
 	 * 自动注入会员dao
