@@ -24,6 +24,8 @@ import com.google.common.collect.Maps;
 import com.okdeer.api.pay.account.dto.PayUpdateAmountDto;
 import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
+import com.okdeer.archive.system.entity.SysBuyerUser;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
@@ -51,7 +53,12 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
+import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
+import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.member.service.MemberService;
+import com.okdeer.mall.member.service.SysBuyerExtService;
+import com.okdeer.mall.operate.advert.service.ColumnAdvertService;
 import com.okdeer.mall.order.constant.OrderMsgConstant;
 import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
@@ -83,7 +90,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
 	
 	@Autowired
-	ActivityCouponsRecordBeforeMapper activityCouponsRecordBeforeMapper;
+	private ActivityCouponsRecordBeforeMapper activityCouponsRecordBeforeMapper;
 
 	/**
 	 * 代金券管理mapper
@@ -129,6 +136,16 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 */
 	@Reference(version = "1.0.0")
 	private ISmsService smsService;
+	
+	@Autowired
+	private ColumnAdvertService columnAdvertService;
+	@Autowired
+	private SysBuyerExtService sysBuyerExtService;
+	@Autowired
+	private MemberService memberService;
+	//中奖记录表Service
+	@Autowired
+	ActivityPrizeRecordService activityPrizeRecordService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -324,12 +341,14 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @param collectId 活动id集合
 	 * @param phone 用户手机号码
 	 * @param activityCouponsType 活动类型
+	 * @param userId 	邀请的用户id 没有null
+	 * @param advertId 	广告活动id
 	 * @return tuzhiding 
 	 * @throws ServiceException
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public JSONObject addBeforeRecords(String collectId, String phone,
+	public JSONObject addBeforeRecords(String collectId, String phone,String userId,String advertId,
 			ActivityCouponsType activityCouponsType) throws ServiceException {
 		Map<String, Object> map = new HashMap<String, Object>();
 		//循环代金劵id进行送劵
@@ -352,8 +371,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 					checkFlag = false;
 					break;
 				}
-				
+				//预领取记录中 手机号码 、 邀请人id 、广告活动id
 				record.setCollectUser(phone);
+				record.setInviteUserId(userId);
+				record.setActivityId(advertId);
+				record.setIsComplete(WhetherEnum.not);
 				reMap.put(coupons.getId(), record);
 				checkFlag = true;
 			}
@@ -803,28 +825,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 
 	// 活动已经关闭 、 已经结束（未被使用的）
-	/*
-	 * @Override public void setRefundStatus() throws Exception{ Date date = new
-	 * Date(); Map<String,Object> params = new HashMap<>(); // 将活动的退款状态改为
-	 * 未领取的已经退款 params.put("closed",
-	 * ActivityCollectCouponsStatus.closed.ordinal()); params.put("end",
-	 * ActivityCollectCouponsStatus.end.ordinal()); params.put("refundType",
-	 * RefundType.UNREFUND); //所以关闭 结束 领取了的代金卷 没有退款的
-	 * List<ActivityCollectCouponsRecordVo> activityCollectCouponsList =
-	 * activityCollectCouponsMapper.selectByUnusedOrExpires(params); if
-	 * (activityCollectCouponsList != null && activityCollectCouponsList.size()
-	 * > 0) { for(ActivityCollectCouponsRecordVo activityCollectCouponsRecordVo
-	 * : activityCollectCouponsList){ List<ActivityCouponsRecordVo>
-	 * activityCouponsRecordVoList = null; activityCouponsRecordVoList =
-	 * activityCollectCouponsRecordVo.getActivityCouponsRecordVo(); String id =
-	 * activityCollectCouponsRecordVo.getId(); if (activityCouponsRecordVoList
-	 * != null && activityCouponsRecordVoList.size() > 0) { Date validTime =
-	 * activityCouponsRecordVoList.get(0).getValidTime(); //String id =
-	 * activityCouponsRecordVoList.get(0).getCouponsCollectId(); int res =
-	 * validTime.compareTo(date); if ((res == 0) || (res == -1)) { try{
-	 * updateRefundStatus(activityCouponsRecordVoList,id); }catch(Exception e){
-	 * log.error("更改代金卷状态"+id,e); } } } } } }
-	 */
 	@Transactional(rollbackFor = Exception.class)
 	public void updateRefundStatus(List<ActivityCouponsRecordVo> couponsRecordVoList, String id) throws Exception {
 		BigDecimal faceValueTotal = new BigDecimal("0");
@@ -1010,7 +1010,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			pushMsgVo.setMsgType(Constant.ONE);
 			pushMsgVo.setMsgTypeCustom(OrderMsgConstant.COUPONS_MESSAGE);
 			pushMsgVo.setMsgDetailType(Constant.ZERO);
-			pushMsgVo.setMsgDetailLinkUrl("/voucher/html/myVoucherList");
+			pushMsgVo.setMsgDetailLinkUrl("/voucher/V1.2.0/goMyVoucher");
 			
 			// 不使用模板
 			pushMsgVo.setMsgNotifyContent(smsIsNoticeCouponsRecordStyle);
@@ -1056,6 +1056,75 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				return 2;
 			}
 		}
+	}
+
+	/**
+	 * 根据邀请人id查询邀请记录信息
+	 * (non-Javadoc)
+	 * @see findInviteInfoByInviteUserId(java.lang.String)
+	 */
+	@Override
+	public List<ActivityCouponsRecordBefore> findInviteInfoByInviteUserId(String inviteUserId) {
+		return activityCouponsRecordBeforeMapper.findInviteInfoByInviteUserId(inviteUserId);
+	}
+	
+
+	/**
+	 * @Description: 邀新活动 被邀用户下单完成后给 邀请人送代金劵及抽奖次数 
+	 * 1、是否完成首单
+	 * 2、活动是否未结束
+	 * @param userId 被邀请人id
+	 * @param collectCouponsIds 邀请人获得的代金劵奖励id
+	 * @author tuzhd
+	 * @date 2016年12月13日
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void addInviteUserHandler(String userId,String[] collectCouponsIds) throws Exception{
+		//根据邀新活动，代金劵预领取表中的邀请人及被邀手机号码，确定该订单是否属于活动时间
+		SysBuyerUser user = memberService.selectByPrimaryKey(userId);
+		if(user != null){
+			List<ActivityCouponsRecordBefore> list  = activityCouponsRecordBeforeMapper.findRecordVaildByUserId(user.getPhone());
+			if(list == null){
+				return;
+			}
+			//查询用户的手机邀请预领取记录
+			for(ActivityCouponsRecordBefore record : list){
+				/*ColumnAdvert columnAdvert = columnAdvertService.findAdvertById(record.getActivityId());
+				//判断活动是否结束 结束时间大于当前时间未结束
+				if(columnAdvert.getEndTime().getTime() <= new Date().getTime()){
+					return;
+				}*/
+				//执行 给邀请人送代金劵及抽奖次数 1
+				sysBuyerExtService.updateAddPrizeCount(record.getInviteUserId(), 1);
+				
+				//用户的邀请次数
+				int inviteCount = activityCouponsRecordBeforeMapper.
+						findInviteUserCount(record.getInviteUserId(), record.getActivityId());
+				log.info("已成功邀请到"+inviteCount+"个用户");
+				//修改预领取记录 为已完成邀请
+				record.setIsComplete(WhetherEnum.whether);
+				activityCouponsRecordBeforeMapper.updateByPrimaryKey(record);
+				
+				//超过4位不送代金劵 根据 邀请次数奖项给邀请人发放奖项代金劵
+				if(inviteCount < collectCouponsIds.length){
+					String collectCouponsId  = collectCouponsIds[inviteCount];
+					
+					//一次可以送多张代金劵
+					String[] collectIds = collectCouponsId.split(",");
+					for(String collectId : collectIds){
+						//根据代金劵活动ID领取代金劵
+						addRecordsByCollectId(collectId,record.getInviteUserId(),
+											ActivityCouponsType.advert_coupons);
+						//领取后并插入一次奖励 中奖纪录
+						activityPrizeRecordService.addPrizeRecord(collectId, record.getInviteUserId(), record.getActivityId(),null);
+					}
+				}
+			
+			}
+			
+		}
+					
 	}
 	
 }

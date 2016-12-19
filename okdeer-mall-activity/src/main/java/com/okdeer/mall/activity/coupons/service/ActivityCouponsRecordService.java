@@ -3,8 +3,6 @@ package com.okdeer.mall.activity.coupons.service;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -166,4 +164,15 @@ public interface ActivityCouponsRecordService {
 	 * @throws ServiceException
 	 */
 	public JSONObject addRecordsByCollectId(String collectId, String userId,ActivityCouponsType activityCouponsType)throws ServiceException;
+	
+	/**
+	 * @Description: 邀新活动 被邀用户下单完成后给 邀请人送代金劵及抽奖次数 
+	 * 1、是否完成首单
+	 * 2、活动是否未结束
+	 * @param userId 被邀请人id
+	 * @param collectCouponsIds 邀请人获得的代金劵奖励id
+	 * @author tuzhd
+	 * @date 2016年12月13日
+	 */
+	public void addInviteUserHandler(String userId,String[] collectCouponsIds)  throws Exception;
 }
