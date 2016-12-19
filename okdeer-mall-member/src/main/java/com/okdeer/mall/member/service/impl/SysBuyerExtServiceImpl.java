@@ -8,6 +8,7 @@
 
 package com.okdeer.mall.member.service.impl;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,5 +75,18 @@ public class SysBuyerExtServiceImpl implements SysBuyerExtServiceApi,SysBuyerExt
 	public void updateCutPrizeCount(String userId){
 		sysBuyerExtMapper.updateCutPrizeCount(userId);
 	}
-
+	
+	/**
+	 * @Description: 给用户添加抽奖次数 count
+	 * @param userId 用户id
+	 * @param count  抽奖次数
+	 * @author tuzhd
+	 * @date 2016年12月13日
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateAddPrizeCount(String userId,int count){
+		sysBuyerExtMapper.updateAddPrizeCount(userId, count);
+	}
+	
 }

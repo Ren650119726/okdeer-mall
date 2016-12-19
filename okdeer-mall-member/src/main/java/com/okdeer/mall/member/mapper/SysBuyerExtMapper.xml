@@ -105,4 +105,11 @@
     	WHERE prize_count > 0 AND user_id=#{userId,jdbcType=VARCHAR};
   </update>
   
+  <!-- 给用户添加抽奖次数 tuzhiding -->
+  <update id="updateAddPrizeCount"  >
+    	UPDATE sys_buyer_ext 
+    	SET prize_count = prize_count + #{count,jdbcType=VARCHAR}
+    	WHERE user_id=#{userId,jdbcType=VARCHAR};
+  </update>
+  
 </mapper>

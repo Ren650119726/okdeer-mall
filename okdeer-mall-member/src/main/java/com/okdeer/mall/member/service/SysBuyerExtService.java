@@ -9,6 +9,9 @@
 package com.okdeer.mall.member.service;
 
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
+
+import org.springframework.transaction.annotation.Transactional;
+
 import com.okdeer.base.common.exception.ServiceException;
 
 
@@ -60,4 +63,13 @@ public interface SysBuyerExtService {
 	 * @date 2016年11月22日
 	 */
 	void updateCutPrizeCount(String userId);
+	
+	/**
+	 * @Description: 给用户添加抽奖次数 count
+	 * @param userId 用户id
+	 * @param count  抽奖次数
+	 * @author tuzhd
+	 * @date 2016年12月13日
+	 */
+	public void updateAddPrizeCount(String userId,int count);
 }
