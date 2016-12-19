@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.points.mapper.PointsTeshProductPicMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.points.entity.PointsTeshProductPic" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="product_id" property="productId" jdbcType="VARCHAR" />
+        <result column="image_name" property="imageName" jdbcType="VARCHAR" />
+        <result column="new_image_path" property="newImagePath" jdbcType="VARCHAR" />
+        <result column="image_path" property="imagePath" jdbcType="VARCHAR" />
+        <result column="is_main" property="isMain" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.WhetherEnum"/>
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, product_id, image_name, new_image_path, image_path, is_main
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from points_tesh_product_pic
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.points.entity.PointsTeshProductPic" >
+        insert into points_tesh_product_pic
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="productId != null" >
+                product_id,
+            </if>
+            <if test="imageName != null" >
+                image_name,
+            </if>
+            <if test="newImagePath != null" >
+                new_image_path,
+            </if>
+            <if test="imagePath != null" >
+                image_path,
+            </if>
+            <if test="isMain != null" >
+                is_main,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="productId != null" >
+                #{productId,jdbcType=VARCHAR},
+            </if>
+            <if test="imageName != null" >
+                #{imageName,jdbcType=VARCHAR},
+            </if>
+            <if test="newImagePath != null" >
+                #{newImagePath,jdbcType=VARCHAR},
+            </if>
+            <if test="imagePath != null" >
+                #{imagePath,jdbcType=VARCHAR},
+            </if>
+            <if test="isMain != null" >
+                #{isMain,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.points.entity.PointsTeshProductPic" >
+        update points_tesh_product_pic
+        <set >
+            <if test="productId != null" >
+                product_id = #{productId,jdbcType=VARCHAR},
+            </if>
+            <if test="imageName != null" >
+                image_name = #{imageName,jdbcType=VARCHAR},
+            </if>
+            <if test="newImagePath != null" >
+                new_image_path = #{newImagePath,jdbcType=VARCHAR},
+            </if>
+            <if test="imagePath != null" >
+                image_path = #{imagePath,jdbcType=VARCHAR},
+            </if>
+            <if test="isMain != null" >
+                is_main = #{isMain,jdbcType=TINYINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from points_tesh_product_pic
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>
