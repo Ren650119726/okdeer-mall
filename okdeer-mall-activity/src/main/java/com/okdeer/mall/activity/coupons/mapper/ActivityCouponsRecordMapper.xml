@@ -11,7 +11,8 @@
     <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
     <result column="status" property="status" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum" jdbcType="TINYINT" />
     <result column="order_id" property="orderId" jdbcType="VARCHAR" />
-    <result column="room_id" property="roomId" jdbcType="VARCHAR" />
+    <result column="room_id" property="roomId" jdbcType="VARCHAR" />   
+    <result column="thrid_code" property="thridCode" jdbcType="VARCHAR" />
   </resultMap>
   
    <resultMap id="VoResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo" extends="BaseResultMap">
@@ -21,7 +22,7 @@
   </resultMap>
   <sql id="Base_Column_List" >
     id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id, 
-    valid_time, status, order_id, room_id
+    valid_time, status, order_id, room_id,thrid_code
   </sql>
   <sql id="condition" >
     <if test="null!=params" >
@@ -89,6 +90,9 @@
       <if test="roomId != null" >
         room_id,
       </if>
+      <if test="thridCode != null" >
+        thrid_code,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -120,6 +124,9 @@
       </if>
       <if test="roomId != null" >
         #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="thridCode != null" >
+        #{thridCode,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -189,7 +196,7 @@
   
   <sql id="BaseSelectSQL">
          id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id,
-         valid_time, STATUS, order_id, room_id
+         valid_time, STATUS, order_id, room_id, thrid_code
   </sql>
   
   <sql id="couponsVo">
