@@ -7,7 +7,7 @@
         <result column="main_pic_url" property="mainPicUrl" jdbcType="VARCHAR" />
         <result column="product_code" property="productCode" jdbcType="VARCHAR" />
         <result column="product_name" property="productName" jdbcType="VARCHAR" />
-        <result column="product_shelves" property="productShelves" jdbcType="BIT" />
+        <result column="product_shelves" property="productShelves" jdbcType="TINYINT" />
         <result column="product_id" property="productId" jdbcType="VARCHAR" />
         <result column="product_desc" property="productDesc" jdbcType="LONGVARCHAR" />
         <result column="brand_code" property="brandCode" jdbcType="VARCHAR" />
@@ -189,7 +189,7 @@
                 #{productName,jdbcType=VARCHAR},
             </if>
             <if test="productShelves != null" >
-                #{productShelves,jdbcType=BIT},
+                #{productShelves,jdbcType=TINYINT},
             </if>
             <if test="productId != null" >
                 #{productId,jdbcType=VARCHAR},
@@ -303,7 +303,7 @@
                 product_name = #{productName,jdbcType=VARCHAR},
             </if>
             <if test="productShelves != null" >
-                product_shelves = #{productShelves,jdbcType=BIT},
+                product_shelves = #{productShelves,jdbcType=TINYINT},
             </if>
             <if test="productId != null" >
                 product_id = #{productId,jdbcType=VARCHAR},

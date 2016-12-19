@@ -53,7 +53,7 @@ public class PointsTeshProduct {
 	/**
 	 * 1:上架0：下架
 	 */
-	private Boolean productShelves;
+	private Integer productShelves;
 
 	/**
 	 * 商品id
@@ -250,11 +250,11 @@ public class PointsTeshProduct {
 		this.productName = productName;
 	}
 
-	public Boolean getProductShelves() {
+	public Integer getProductShelves() {
 		return productShelves;
 	}
 
-	public void setProductShelves(Boolean productShelves) {
+	public void setProductShelves(Integer productShelves) {
 		this.productShelves = productShelves;
 	}
 
