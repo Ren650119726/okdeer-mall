@@ -139,6 +139,7 @@ public interface ActivityCollectCouponsMapper {
 	// end add by wushp 2016-07-14
 	
 	//Begin 根据城市查询代金券活动  added by tangy  2016-7-22
+	// modiby by zengjz  增加小区id查询参数
 	/**
 	 * 
 	 * @Description: 根据城市查询代金券活动  
@@ -148,7 +149,8 @@ public interface ActivityCollectCouponsMapper {
 	 * @author tangy
 	 * @date 2016年7月22日
 	 */
-	ActivityCollectCouponsVo findActivityCollectCouponsByCity(@Param("provinceId") String provinceId, @Param("cityId") String cityId);
+	ActivityCollectCouponsVo findActivityCollectCouponsByCity(@Param("provinceId") String provinceId,
+			@Param("cityId") String cityId, @Param("communityId") String communityId);
 	//End added by tangy
 	
 	/**

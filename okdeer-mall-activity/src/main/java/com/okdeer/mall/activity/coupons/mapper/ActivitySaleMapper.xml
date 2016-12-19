@@ -182,7 +182,7 @@
 			<if test="name != null">
 				name = #{name},
 			</if>
-			<if test="status != status">
+			<if test="status != null">
 				status = #{status},
 			</if>
 			<if test="storeId != null">

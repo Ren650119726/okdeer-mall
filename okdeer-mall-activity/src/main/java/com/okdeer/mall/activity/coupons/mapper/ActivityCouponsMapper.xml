@@ -27,6 +27,9 @@
         <result property="type" column="type" javaType="integer" jdbcType="INTEGER"/>
         <result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/> 
         <result property="isRandCode" column="is_rand_code" javaType="integer" jdbcType="INTEGER"/> 
+        <result property="description" column="description" javaType="string" jdbcType="VARCHAR"/> 
+        <result property="startTime" column="start_time" javaType="date" jdbcType="TIMESTAMP"/> 
+        <result property="endTime" column="end_time" javaType="date" jdbcType="TIMESTAMP"/> 
     </resultMap>
     
     <resultMap id="CouponsVoResultMap" type="com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery" extends="CouponsResultMap">
@@ -208,7 +211,7 @@
 	   SELECT ac.id,ac.type,ac.is_category, ac.name,ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, ac.used_num, ac.remain_num, ac.arrive_limit, 
 	          ac.valid_day, ac.every_limit,ac.is_cash_delivery, ac.is_category_limit, ac.code,ac.exchange_code, ac.area_type, 
 	          ac.create_user_id, ac.create_time, ac.update_user_id, ac.update_time, ac.disabled, a.area_id, a.type as activityCouponsAreaType, c.community_id,
-	          c.community_name, c.city_id, e.store_name_area, e.storeCityId, e.store_id,ac.is_rand_code
+	          c.community_name, c.city_id, e.store_name_area, e.storeCityId, e.store_id,ac.is_rand_code,ac.description,ac.start_time,ac.end_time
 	  FROM activity_coupons ac 
 	  left join activity_coupons_area a on a.coupons_id = ac.id
 	  left join (SELECT b.id, b.coupons_id, b.community_id, ps.name AS community_name, ps.city_id 
@@ -226,14 +229,15 @@
 	     remain_num, arrive_limit, valid_day,
 	     every_limit, is_cash_delivery, is_category_limit,
 	     exchange_code, area_type, create_user_id, 
-	     create_time, update_user_id, update_time, disabled,type,is_category,is_rand_code)
+	     create_time, update_user_id, update_time, disabled,type,is_category,is_rand_code,description,start_time,end_time)
 	     VALUES(#{id, jdbcType=VARCHAR}, #{name, jdbcType=VARCHAR}, #{belongType, jdbcType=VARCHAR},
 	     #{faceValue, jdbcType=INTEGER}, #{totalNum, jdbcType=INTEGER}, #{usedNum, jdbcType=INTEGER},
 	     #{totalNum, jdbcType=INTEGER}, #{arriveLimit, jdbcType=INTEGER}, #{validDay, jdbcType=INTEGER}, 
 		 #{everyLimit, jdbcType=INTEGER}, #{isCashDelivery, jdbcType=TINYINT}, #{isCategoryLimit, jdbcType=TINYINT},
 		 #{exchangeCode, jdbcType=VARCHAR}, #{areaType, jdbcType=TINYINT}, #{createUserId, jdbcType=VARCHAR},  
 		 #{createTime, jdbcType=TIMESTAMP}, #{updateUserId, jdbcType=VARCHAR}, #{updateTime, jdbcType=TIMESTAMP}, #{disabled, jdbcType=TINYINT},
-		 #{type, jdbcType=INTEGER},#{isCategory, jdbcType=INTEGER},#{isRandCode, jdbcType=INTEGER})
+		 #{type, jdbcType=INTEGER},#{isCategory, jdbcType=INTEGER},#{isRandCode, jdbcType=INTEGER},#{description, jdbcType=VARCHAR},
+		 #{startTime, jdbcType=TIMESTAMP},#{endTime, jdbcType=TIMESTAMP})
 	</insert> 
 	
     <update id="updateCoupons" parameterType="com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery">
@@ -284,6 +288,15 @@
         		is_rand_code = #{isRandCode,jdbcType=INTEGER},
      		 </if>
  		      <!-- End added by maojj 2016-10-25 -->
+ 		      <if test="description != null" >
+        		description = #{description, jdbcType=VARCHAR},
+     		   </if>
+ 		      <if test="startTime != null" >
+        		start_time = #{startTime,jdbcType=TIMESTAMP},
+     		 </if>
+     		 <if test="endTime != null" >
+        		end_time = #{endTime,jdbcType=TIMESTAMP}
+     		 </if>
 	       </set>
 	       WHERE id = #{id,jdbcType=VARCHAR}
 	</update>

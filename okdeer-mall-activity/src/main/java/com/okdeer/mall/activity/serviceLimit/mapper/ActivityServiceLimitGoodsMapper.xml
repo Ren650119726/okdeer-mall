@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.okdeer.mall.activity.serviceLimit.mapper.ActivityServiceLimitGoodsMapper">
+
+	<resultMap type="com.okdeer.mall.activity.serviceLimit.entity.ActivityServiceLimitGoods" id="ActivityServiceLimitGoods" >
+		<result property="id" column="id" />
+		<result property="storeSkuId" column="store_sku_id" />
+		<result property="activityId" column="activity_id" />
+		<result property="tradeMax" column="trade_max" />
+		<result property="activityStock" column="activity_stock" />
+		<result property="activityPrice" column="activity_price" />
+		<result property="sort" column="sort" />
+	</resultMap>
+
+    <sql id="columns">
+		id,store_sku_id,activity_id,trade_max,activity_stock,activity_price,sort
+	</sql>
+
+    <insert id="addBatch" parameterType="list">
+        insert into activity_service_limit_goods(
+			<include refid="columns"/>
+		)values
+		<foreach collection="list" item="item" index="index" separator="," >
+        (
+            #{item.id},
+            #{item.storeSkuId},
+            #{item.activityId},
+            #{item.tradeMax},
+            #{item.activityStock},
+            #{item.activityPrice},
+            #{item.sort}
+        )
+		</foreach>
+	</insert>
+
+    <delete id="deleteByActivityId" parameterType="string">
+        delete from activity_service_limit_goods where activity_id = #{value} 
+    </delete>
+    
+    <delete id="delete" parameterType="string">
+        delete from activity_service_limit_goods where id = #{value} 
+    </delete>
+    
+    <select id="findById" parameterType="string" resultMap="ActivityServiceLimitGoods">
+        select <include refid="columns"/> from activity_service_limit_goods where id = #{value} 
+    </select>
+    
+    <select id="listByActivityId" parameterType="string" resultMap="ActivityServiceLimitGoods">
+    	select <include refid="columns"/> from activity_service_limit_goods s
+		where s.activity_id = #{value}
+		order by s.sort desc
+    </select>
+
+</mapper>

@@ -58,7 +58,18 @@ import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.system.mapper.SysUserMapper;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
-
+/**
+ * 
+ * ClassName: ActivityCollectCouponsServiceImpl 
+ * @Description: 活动管理实现类
+ * @author zengjizu
+ * @date 2016年12月16日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *    v1.3.0            2016-12-16           zengjz          开门领取代金券增加小区参数   
+ */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi")
 public class ActivityCollectCouponsServiceImpl
 		implements ActivityCollectCouponsService, ActivityCollectCouponsServiceApi {
@@ -605,13 +616,16 @@ public class ActivityCollectCouponsServiceImpl
 	
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public Map<String, String> saveCouponInfo(String userId, String provinceId, String cityId) throws ServiceException {
+	public Map<String, String> saveCouponInfo(String userId, String provinceId, String cityId,String communityId) throws ServiceException {
 		Map<String, String> resultMap = new HashMap<String, String>();
 		if (StringUtils.isBlank(userId) || StringUtils.isBlank(cityId)) {
 			throw new ServiceException("请求参数为空!");
 		}
 		
-		ActivityCollectCouponsVo activityCollectCouponsVo = activityCollectCouponsMapper.findActivityCollectCouponsByCity(provinceId, cityId);
+		//begin  modify by zengjz   2016-12-16 开门领取代金券增加小区参数
+		ActivityCollectCouponsVo activityCollectCouponsVo = activityCollectCouponsMapper.findActivityCollectCouponsByCity(provinceId, cityId , communityId);
+		//end    modify by zengjz   2016-12-16 开门领取代金券增加小区参数
+		
 		if (activityCollectCouponsVo != null 
 				&& activityCollectCouponsVo.getActivityCoupons() != null
 				&& activityCollectCouponsVo.getActivityCoupons().size() > 0) {

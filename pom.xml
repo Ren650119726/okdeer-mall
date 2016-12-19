@@ -19,7 +19,7 @@
 		<java.version>1.8</java.version>
 		<base.version>0.0.2-SNAPSHOT</base.version>
 		<ca.version>1.0.0-SNAPSHOT</ca.version>
-		<mall.version>0.0.3-SNAPSHOT</mall.version>
+		<mall.version>0.0.4-SNAPSHOT</mall.version>
 		<yscapi.version>0.0.4-SNAPSHOT</yscapi.version>
 	</properties>
 
