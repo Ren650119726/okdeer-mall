@@ -498,7 +498,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		
 		// Begin added by maojj 2016-12-19 商业系统POS推送对接
 		sendMsgParamVo.setSendMsgType(sendMsgType.ordinal());
-		Message posMsg = new Message(TOPIC_ONLINE_ORDER_TOPOS,TAG_ONLINE_ORDER_TOPOS,JsonMapper.nonDefaultMapper().toJson(sendMsgParamVo).getBytes(Charsets.UTF_8));
+		Message posMsg = new Message(TOPIC_ONLINE_ORDER_TOPOS,TAG_ONLINE_ORDER_TOPOS,sendMsgParamVo.getOrderId(),JsonMapper.nonDefaultMapper().toJson(sendMsgParamVo).getBytes(Charsets.UTF_8));
 		rocketMQProducer.send(posMsg);
 		// End added by maojj 2016-12-19 商业系统POS推送对接
 	}
