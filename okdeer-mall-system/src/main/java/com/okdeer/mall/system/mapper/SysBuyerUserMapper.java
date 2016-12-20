@@ -78,4 +78,13 @@ public interface SysBuyerUserMapper extends IBaseCrudMapper {
 	 * @return
 	 */
 	List<SysBuyerUser> selectUserByPhone(@Param("phone") String phone);
+
+	/**
+	 * @Description: 通过手机号查询用户是否存在
+	 * @param telphone
+	 * @return   
+	 * @author xuzq01
+	 * @date 2016年12月9日
+	 */
+	int findCountByPhone(String telphone);
 }

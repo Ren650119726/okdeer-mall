@@ -7,6 +7,7 @@
     <result column="coupons_collect_id" property="couponsCollectId" jdbcType="VARCHAR" />
     <result column="collect_time" property="collectTime" jdbcType="TIMESTAMP" />
     <result column="collect_user_id" property="collectUserId" jdbcType="VARCHAR" />
+    <result column="collect_user" property="collectUserPhone" jdbcType="VARCHAR" />
     <result column="order_id" property="orderId" jdbcType="VARCHAR" />
   </resultMap>
   
