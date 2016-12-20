@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.aliyun.oss.ServiceException;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.common.utils.HttpClientUtil;
@@ -94,14 +94,14 @@ public class PointsTeshSynchronServiceImpl implements PointsTeshSynchronService 
 	private TeshSynchronLogService teshSynchronLogService;
 	
 	@Override
-	public void synchron() {
+	public void synchron() throws ServiceException {
 		// TODO Auto-generated method stub
-		
+		teshSynchronLogService.findBySynchronTime(DateUtils.getDate());
 	}
 	
 	@SuppressWarnings({ "static-access", "unchecked" })
 	@Override
-	public PageUtils<TeshProductVo> findTeshProductByAll(Integer pageNo, Integer pageSize) {
+	public PageUtils<TeshProductVo> findTeshProductByAll(Integer pageNo, Integer pageSize) throws ServiceException {
 		// 参数验证
 		if (pageNo == null || pageSize == null) {
 			List<TeshProductVo> teshProductVos = new ArrayList<TeshProductVo>();
@@ -142,9 +142,9 @@ public class PointsTeshSynchronServiceImpl implements PointsTeshSynchronService 
 		return pageList;
 	}
 
-	@SuppressWarnings({ "static-access", "unchecked", "rawtypes" })
+	@SuppressWarnings({ "static-access", "rawtypes" })
 	@Override
-	public List<TeshProductDetailVo> findDetailBySkuCodes(List<String> skuCodes) {
+	public List<TeshProductDetailVo> findDetailBySkuCodes(List<String> skuCodes) throws ServiceException {
 		if (CollectionUtils.isEmpty(skuCodes)) {
 			return new ArrayList<TeshProductDetailVo>();
 		}
@@ -185,7 +185,6 @@ public class PointsTeshSynchronServiceImpl implements PointsTeshSynchronService 
 					teshProductVos.add(teshProductDetailVo);
 				}
 			}
-			teshProductVos = JSONArray.fromObject(data);
 		} else {
 			throw new ServiceException(TeshCodeMsgConstant.TESH_CODE_FAILURES);
 		}
@@ -201,9 +200,10 @@ public class PointsTeshSynchronServiceImpl implements PointsTeshSynchronService 
      * @param pageSize  每页数
 	 * @return JSONObject  
 	 * @author tangy
+	 * @throws ServiceException 
 	 * @date 2016年12月17日
 	 */
-	private JSONObject getRequestJson(String timestamp, String action, String data){
+	private JSONObject getRequestJson(String timestamp, String action, String data) throws ServiceException{
 		JSONObject json = new JSONObject();
 		json.put(TeshConstant.TESH_PARAM_ACTION, action);
 		json.put(TeshConstant.TESH_PARAM_APP_KEY, appkey);
