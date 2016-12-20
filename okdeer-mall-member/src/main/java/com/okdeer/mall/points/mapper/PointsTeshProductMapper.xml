@@ -406,5 +406,42 @@
         delete from points_tesh_product
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-
+	
+	<select id="findList"  resultMap="BaseResultMap"
+		parameterType="com.okdeer.mall.points.entity.PointsTeshProductQuery">
+		select 
+		<include refid="Base_Column_List" />
+		from points_tesh_product where 1=1
+		
+		<if test="productCode !=null and productCode !=''">
+			and product_code like CONCAT('%',#{productCode,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="skuCode !=null and skuCode !=''">
+			and sku_code like CONCAT('%',#{skuCode,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="productName !=null and productName !=''">
+			and product_name like CONCAT('%',#{productName,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="categoryName !=null and categoryName !=''">
+			and category_name like CONCAT('%',#{categoryName,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="brandName !=null and brandName !=''">
+			and brand_name like CONCAT('%',#{brandName,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="productShelves !=null">
+			and product_shelves = #{productShelves,jdbcType=TINYINT}
+		</if>
+		<if test="status !=null">
+			and status = #{status,jdbcType=TINYINT}
+		</if>
+		<if test="publishStartTime != null">
+            <![CDATA[ AND publish_time >= #{publishStartTime} ]]>
+		</if>
+		<if test="publishEndTime != null">
+            <![CDATA[ AND publish_time <= #{publishEndTime} ]]>
+		</if>
+		<if test="limitNum != null and limitNum !=0 ">
+			LIMIT #{limitNum,jdbcType=TINYINT}
+		</if>
+	</select>
 </mapper>
