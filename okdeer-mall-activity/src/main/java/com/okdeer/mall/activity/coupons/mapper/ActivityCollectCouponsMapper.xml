@@ -58,6 +58,10 @@
         <result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/>
         <result property="areaType" column="coupons_area_type" javaType="com.okdeer.mall.common.enums.AreaType"
                    jdbcType="TINYINT"/>
+        <!-- add by zhulq  2016-12-19 异业代金卷新增字段 -->
+	    <result property="description" column="description" javaType="string" jdbcType="VARCHAR"/> 
+        <result property="startTime" column="start_time_coupons" javaType="date" jdbcType="TIMESTAMP"/> 
+        <result property="endTime" column="end_time_coupons" javaType="date" jdbcType="TIMESTAMP"/>           
         <collection property="activityCouponsCategory" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory">
 	       <id column="categoryid" property="id" jdbcType="VARCHAR" />
            <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
@@ -341,6 +345,7 @@
               coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
               coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num,
               coupons.type AS coupons_type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, coupons.id as couponsId,
+              coupons.description AS description,coupons.start_time AS start_time_coupons,coupons.end_time AS end_time_coupons,
 		CASE
 		WHEN coupons.type = 1 THEN nav.name
 		WHEN coupons.type = 2 THEN spu.name

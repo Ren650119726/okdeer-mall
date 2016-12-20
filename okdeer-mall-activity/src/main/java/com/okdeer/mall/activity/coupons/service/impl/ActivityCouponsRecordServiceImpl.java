@@ -42,6 +42,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsThirdCode;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
@@ -51,6 +52,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
@@ -80,6 +82,7 @@ import net.sf.json.JSONObject;
  *		V4.1			2016-07-04			maojj			事务控制使用注解
  *		V1.1.0			2016-9-19		wushp				各种状态代金券数量统计
  *		V1.2			 2016-11-21			tuzhd			  代金劵提醒定时任务
+ *		V1.3			2016-12-19          zhulq				异业代金卷领取成功后操作
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi")
 class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceApi, ActivityCouponsRecordService {
@@ -109,6 +112,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 */
 	@Autowired
 	private ActivityCouponsRandCodeMapper activityCouponsRandCodeMapper;
+	
+	/**
+	 * 异业代金券兑换码
+	 */
+	@Autowired
+	ActivityCouponsThirdCodeMapper activityCouponsThirdCodeMapper;
 	
 	@Reference(version = "1.0.0", check = false)
 	private IPayTradeServiceApi payTradeServiceApi;
@@ -639,9 +648,27 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		record.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
 		calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
 		record.setValidTime(calendar.getTime());
-
+		// begin v1.3 领取异业代金券时候操作
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("couponsId", coupons.getId());
+		map.put("status", 0);
+		map.put("length", 1);
+		List<ActivityCouponsThirdCode> thirdCodeList = activityCouponsThirdCodeMapper.listByParam(map);
+		if (thirdCodeList != null && thirdCodeList.size() > 0) {
+			ActivityCouponsThirdCode activityCouponsThirdCode = thirdCodeList.get(0);
+			if (activityCouponsThirdCode != null) {
+				String code = activityCouponsThirdCode.getCode();
+				record.setThridCode(code);
+				activityCouponsThirdCode.setStatus(1);
+				//更新代金卷兑换码状态
+				activityCouponsThirdCodeMapper.update(activityCouponsThirdCode);
+			}
+		}
+		//将代金卷兑换码写入记录表  
 		activityCouponsRecordMapper.insertSelective(record);
 		activityCouponsMapper.updateRemainNum(coupons.getId());
+		//begin add by zhulq 2016-12-19 异业代金卷领取成功操作
+		
 	}
 	
 	/**
