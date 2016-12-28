@@ -51,25 +51,25 @@ public class PointsTeshSynchronServiceImpl implements PointsTeshSynchronService 
 	/**
 	 * URL
 	 */
-	@Value("${teshUrl}")
+	//@Value("${teshUrl}")
 	private String teshUrl;
 	
 	/**
 	 * 公钥
 	 */
-	@Value("${teshAPPSecret}")
+	//@Value("${teshAPPSecret}")
 	private String appSecret;
 	
 	/**
 	 * app类型
 	 */
-	@Value("${teshAppkey}")
+	//@Value("${teshAppkey}")
 	private String appkey;
 	
 	/**
 	 * 合作商编号
 	 */
-	@Value("${teshDistCode}")
+	//@Value("${teshDistCode}")
 	private String distCode;
 	
 	/**
