@@ -264,7 +264,7 @@
 				)
 			)
 		)
-		order by sku.operate_sort desc, sku.create_time desc
+		order by rg.sort desc, sku.create_time desc
 		limit #{length} 
     </select>
 </mapper>
