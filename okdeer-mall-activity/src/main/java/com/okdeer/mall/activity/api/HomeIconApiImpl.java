@@ -41,7 +41,7 @@ import com.okdeer.mall.activity.service.HomeIconService;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- * 		  1 		   2016-12-30        tangzj02                     添加
+ * 	   友门鹿2.0        2016-12-28        tangzj02                     添加
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.service.HomeIconApi")
 public class HomeIconApiImpl implements HomeIconApi {

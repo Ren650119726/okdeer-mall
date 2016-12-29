@@ -20,7 +20,7 @@ import com.okdeer.mall.activity.entity.HomeIconArea;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- * 		  1 		   2016-12-28        tangzj02                     添加
+ * 	        友门鹿2.0       2016-12-28        tangzj02                     添加
  */
 
 public interface HomeIconAreaService extends IBaseService {
