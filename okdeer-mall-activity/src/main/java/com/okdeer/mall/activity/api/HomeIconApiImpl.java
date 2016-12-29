@@ -25,12 +25,12 @@ import com.okdeer.mall.activity.dto.HomeIconParamDto;
 import com.okdeer.mall.activity.entity.HomeIcon;
 import com.okdeer.mall.activity.entity.HomeIconArea;
 import com.okdeer.mall.activity.entity.HomeIconGoods;
+import com.okdeer.mall.activity.enums.HomeIconTaskScope;
+import com.okdeer.mall.activity.enums.HomeIconTaskType;
 import com.okdeer.mall.activity.service.HomeIconApi;
 import com.okdeer.mall.activity.service.HomeIconAreaService;
 import com.okdeer.mall.activity.service.HomeIconGoodsService;
 import com.okdeer.mall.activity.service.HomeIconService;
-import com.okdeer.mall.operate.enums.HomeIconTaskScope;
-import com.okdeer.mall.operate.enums.HomeIconTaskType;
 
 /**
  * ClassName: HomeIconApiImpl 
