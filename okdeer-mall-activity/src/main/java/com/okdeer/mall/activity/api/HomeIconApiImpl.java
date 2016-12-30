@@ -25,7 +25,7 @@ import com.okdeer.mall.activity.dto.HomeIconParamDto;
 import com.okdeer.mall.activity.entity.HomeIcon;
 import com.okdeer.mall.activity.entity.HomeIconArea;
 import com.okdeer.mall.activity.entity.HomeIconGoods;
-import com.okdeer.mall.activity.enums.HomeIconTaskScope;
+import com.okdeer.mall.activity.enums.SelectAreaType;
 import com.okdeer.mall.activity.enums.HomeIconTaskType;
 import com.okdeer.mall.activity.service.HomeIconApi;
 import com.okdeer.mall.activity.service.HomeIconAreaService;
@@ -41,7 +41,7 @@ import com.okdeer.mall.activity.service.HomeIconService;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- * 		  1 		   2016-12-30        tangzj02                     添加
+ * 	   友门鹿2.0        2016-12-28        tangzj02                     添加
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.service.HomeIconApi")
 public class HomeIconApiImpl implements HomeIconApi {
@@ -149,12 +149,12 @@ public class HomeIconApiImpl implements HomeIconApi {
 			return new BaseResult("HomeIconDto信息不完整");
 		}
 
-		if (HomeIconTaskScope.city.getCode().equals(dto.getTaskScope())
+		if (SelectAreaType.city.getCode().equals(dto.getTaskScope())
 				&& (null == dto.getCityIds() || 0 == dto.getCityIds().size())) {
 			return new BaseResult("城市ID集合 当任务范围未1:按城市选择任务范围时， 不允许为空");
 		}
 
-		if (HomeIconTaskType.Product.getCode().equals(dto.getTaskType())
+		if (HomeIconTaskType.goods.getCode().equals(dto.getTaskType())
 				&& (null == dto.getProductIds() || 0 == dto.getProductIds().size())) {
 			return new BaseResult("商品ID集合   当任务内容  0:指定指定商品推荐时， 不允许为空");
 		}
@@ -173,7 +173,7 @@ public class HomeIconApiImpl implements HomeIconApi {
 		}
 
 		// 插入任务范围关联数据
-		if (HomeIconTaskScope.city.getCode().equals(dto.getTaskScope())) {
+		if (SelectAreaType.city.getCode().equals(dto.getTaskScope())) {
 			List<HomeIconArea> areaList = new ArrayList<>();
 			HomeIconArea Area = null;
 			for (String item : dto.getCityIds()) {
@@ -189,7 +189,7 @@ public class HomeIconApiImpl implements HomeIconApi {
 		}
 
 		// 插入任务类型关联数据
-		if (HomeIconTaskType.Product.getCode().equals(dto.getTaskType())) {
+		if (HomeIconTaskType.goods.getCode().equals(dto.getTaskType())) {
 			List<HomeIconGoods> productList = new ArrayList<>();
 			HomeIconGoods product = null;
 			for (String item : dto.getProductIds()) {
