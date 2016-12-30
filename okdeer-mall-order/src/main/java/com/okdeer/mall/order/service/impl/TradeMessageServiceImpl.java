@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Value;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.rocketmq.common.message.Message;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
@@ -47,6 +49,7 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.kafka.producer.KafkaProducer;
 import com.okdeer.mall.common.enums.IsRead;
 import com.okdeer.mall.common.enums.MsgType;
@@ -93,6 +96,7 @@ import com.okdeer.mcm.service.ISmsService;
  *    重构4.1             2016-8-11            maojj              订单消息推送 --POS时，修改json转换方式
  *    Bug:13029          2016-8-22            maojj              修改推送的详细内容
  *    V1.2				2016-12-02		     maojj				添加服务店接单通知短信
+ *    商业系统对接			2016-12-19			 maojj				POS消息同时推送到商业系统
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeMessageServiceApi")
 public class TradeMessageServiceImpl implements TradeMessageService, TradeMessageServiceApi {
@@ -317,6 +321,16 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 
 	@Autowired
 	private TradeOrderComplainService tradeOrderComplainService;
+	
+	// Begin 商业系统POS推送对接  added by maojj 2016-12-19
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
+	
+	private static final String TOPIC_ONLINE_ORDER_TOPOS = "topic_online_order_topos";
+	
+	private static final String TAG_ONLINE_ORDER_TOPOS = "tag_online_order_topos";
+
+	// End added by maojj 2016-12-19
 
 	private void sendMessage(Object entity) {
 		// Begin modified by maojj 2016-08-22 修改json转换方式
@@ -481,6 +495,12 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		// Begin modified by maojj 2016-08-18 修改json转换方式
 		kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushMsgVo));
 		// End modified by maojj 2016-08-18
+		
+		// Begin added by maojj 2016-12-19 商业系统POS推送对接
+		sendMsgParamVo.setSendMsgType(sendMsgType.ordinal());
+		Message posMsg = new Message(TOPIC_ONLINE_ORDER_TOPOS,TAG_ONLINE_ORDER_TOPOS,sendMsgParamVo.getOrderId(),JsonMapper.nonDefaultMapper().toJson(sendMsgParamVo).getBytes(Charsets.UTF_8));
+		rocketMQProducer.send(posMsg);
+		// End added by maojj 2016-12-19 商业系统POS推送对接
 	}
 
 	/**

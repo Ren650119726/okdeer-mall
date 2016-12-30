@@ -6,7 +6,11 @@
  */
 package com.okdeer.mall.points.mapper;
 
+import java.util.List;
+
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.points.entity.PointsTeshProduct;
+import com.okdeer.mall.points.entity.PointsTeshProductQuery;
 
 /**
  * ClassName: PointsTeshProductMapper 
@@ -20,5 +24,7 @@ import com.okdeer.base.dal.IBaseMapper;
  *
  */
 public interface PointsTeshProductMapper extends IBaseMapper {
+	
+	List<PointsTeshProduct> findList(PointsTeshProductQuery pointsTeshProductQuery);
 
 }

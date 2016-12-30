@@ -222,6 +222,7 @@
 		left join activity_service_goods_recommend r on (r.id = rg.activity_id and r.status = 1)
 		left join goods_store_sku sku on (rg.goods_id = sku.id)
 		left join store_info store ON sku.store_id = store.id
+		left join store_info_ext ext ON sku.store_id = ext.store_id
 		left join goods_store_sku_picture pic on (sku.id = pic.store_sku_id and pic.type = 1)
 		left join goods_store_sku_stock stock on (sku.id = stock.store_sku_id) 
 		left join goods_store_sku_service service on (service.store_sku_id = sku.id)
@@ -232,6 +233,18 @@
 		and sku.`online` = 1
 		and sku.`type` in (3,4)
 		and service.audit_status = 1
+		and ext.is_closed = 1
+		and 
+		(
+			<!-- 3：上门服务店服务商品 没有服务时间、4：到店消费服务商品 有服务时间', -->
+			(
+				sku.type = 4 and 
+				#{nowTime} &gt;= service.start_time and
+				#{nowTime} &lt;= service.end_time
+			)
+			or
+			sku.type = 3
+		)
 		and 
 		(
 			r.area_type = 0
@@ -251,7 +264,7 @@
 				)
 			)
 		)
-		order by sku.operate_sort desc, sku.create_time desc
+		order by rg.sort desc, sku.create_time desc
 		limit #{length} 
     </select>
 </mapper>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.points.mapper.TeshSynchronLogMapper" >
+  <resultMap id="BaseResultMap" type="com.okdeer.mall.points.entity.TeshSynchronLog" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="synchron_time" property="synchronTime" jdbcType="TIMESTAMP" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="success_num" property="successNum" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, synchron_time, status, success_num, create_time, remark
+  </sql>
+ 
+  <insert id="insert" parameterType="com.okdeer.mall.points.entity.TeshSynchronLog" >
+    insert into points_tesh_synchron_log (id, synchron_time, status, success_num, create_time, remark)
+    values (#{id,jdbcType=VARCHAR}, #{synchronTime,jdbcType=TIMESTAMP}, #{status,jdbcType=INTEGER}, 
+            #{successNum,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{remark,jdbcType=VARCHAR})
+  </insert>
+</mapper>
