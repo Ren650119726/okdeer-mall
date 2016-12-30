@@ -13,13 +13,13 @@ import org.springframework.stereotype.Service;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.activity.dto.AppServiceGoodsRecommendParamDto;
-import com.okdeer.mall.activity.entity.AppServiceGoodsRecommend;
-import com.okdeer.mall.activity.mapper.AppServiceGoodsRecommendMapper;
-import com.okdeer.mall.activity.service.AppServiceGoodsRecommendService;
+import com.okdeer.mall.activity.dto.AppRecommendParamDto;
+import com.okdeer.mall.activity.entity.ActivityAppRecommend;
+import com.okdeer.mall.activity.mapper.ActivityAppRecommendMapper;
+import com.okdeer.mall.activity.service.ActivityAppRecommendService;
 
 /**
- * ClassName: AppServiceGoodsRecommendServiceImpl 
+ * ClassName: ActivityAppRecommendServiceImpl 
  * @Description: APP端服务商品推荐服务实现
  * @author tangzj02
  * @date 2016年12月29日
@@ -30,10 +30,10 @@ import com.okdeer.mall.activity.service.AppServiceGoodsRecommendService;
  * 	        友门鹿2.0       2016-12-29        tangzj02                     添加
  */
 @Service
-public class AppServiceGoodsRecommendServiceImpl extends BaseServiceImpl implements AppServiceGoodsRecommendService {
+public class ActivityAppRecommendServiceImpl extends BaseServiceImpl implements ActivityAppRecommendService {
 
 	@Autowired
-	private AppServiceGoodsRecommendMapper appServiceGoodsRecommendMapper;
+	private ActivityAppRecommendMapper appRecommendMapper;
 
 	/**
 	 * (non-Javadoc)
@@ -41,25 +41,25 @@ public class AppServiceGoodsRecommendServiceImpl extends BaseServiceImpl impleme
 	 */
 	@Override
 	public IBaseMapper getBaseMapper() {
-		return appServiceGoodsRecommendMapper;
+		return appRecommendMapper;
 	}
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.activity.service.AppServiceGoodsRecommendService#deleteByIds(java.util.List)
+	 * @see com.okdeer.mall.activity.service.ActivityAppRecommendService#deleteByIds(java.util.List)
 	 */
 	@Override
 	public int deleteByIds(List<String> ids) throws Exception {
-		return appServiceGoodsRecommendMapper.deleteByIds(ids);
+		return appRecommendMapper.deleteByIds(ids);
 	}
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.activity.service.AppServiceGoodsRecommendService#findList(com.okdeer.mall.activity.dto.AppServiceGoodsRecommendParamDto)
+	 * @see com.okdeer.mall.activity.service.ActivityAppRecommendService#findList(com.okdeer.mall.activity.dto.AppRecommendParamDto)
 	 */
 	@Override
-	public List<AppServiceGoodsRecommend> findList(AppServiceGoodsRecommendParamDto paramDto) throws Exception {
-		return appServiceGoodsRecommendMapper.findList(paramDto);
+	public List<ActivityAppRecommend> findList(AppRecommendParamDto paramDto) throws Exception {
+		return appRecommendMapper.findList(paramDto);
 	}
 
 }

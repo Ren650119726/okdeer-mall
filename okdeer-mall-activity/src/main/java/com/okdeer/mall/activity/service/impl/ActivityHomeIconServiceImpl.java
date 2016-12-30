@@ -13,10 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.activity.dto.HomeIconParamDto;
-import com.okdeer.mall.activity.entity.HomeIcon;
-import com.okdeer.mall.activity.mapper.HomeIconMapper;
-import com.okdeer.mall.activity.service.HomeIconService;
+import com.okdeer.mall.activity.dto.ActivityHomeIconParamDto;
+import com.okdeer.mall.activity.entity.ActivityHomeIcon;
+import com.okdeer.mall.activity.mapper.ActivityHomeIconMapper;
+import com.okdeer.mall.activity.service.ActivityHomeIconService;
 
 /**
  * ClassName: HomeIconServiceImpl 
@@ -31,10 +31,10 @@ import com.okdeer.mall.activity.service.HomeIconService;
  */
 
 @Service
-public class HomeIconServiceImpl extends BaseServiceImpl implements HomeIconService {
+public class ActivityHomeIconServiceImpl extends BaseServiceImpl implements ActivityHomeIconService {
 
 	@Autowired
-	private HomeIconMapper homeIconMapper;
+	private ActivityHomeIconMapper activityhomeIconMapper;
 
 	/**
 	 * (non-Javadoc)
@@ -42,16 +42,16 @@ public class HomeIconServiceImpl extends BaseServiceImpl implements HomeIconServ
 	 */
 	@Override
 	public IBaseMapper getBaseMapper() {
-		return homeIconMapper;
+		return activityhomeIconMapper;
 	}
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.operate.service.HomeIconService#findList(com.okdeer.mall.activity.dto.HomeIconParamDto)
+	 * @see com.okdeer.mall.operate.service.ActivityHomeIconService#findList(com.okdeer.mall.activity.dto.ActivityHomeIconParamDto)
 	 */
 	@Override
-	public List<HomeIcon> findList(HomeIconParamDto paramDto) {
-		return homeIconMapper.findList(paramDto);
+	public List<ActivityHomeIcon> findList(ActivityHomeIconParamDto paramDto) {
+		return activityhomeIconMapper.findList(paramDto);
 	}
 
 }

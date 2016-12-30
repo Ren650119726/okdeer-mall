@@ -1,109 +1,140 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.okdeer.mall.activity.mapper.ActivitySelectAreaMapper">
-	<resultMap id="BaseResultMap"
-		type="com.okdeer.mall.activity.entity.ActivitySelectArea">
-		<id column="id" property="id" jdbcType="VARCHAR" />
-		<result column="activity_id" property="activityId" jdbcType="VARCHAR" />
-		<result column="activity_type" property="activityType" jdbcType="TINYINT" />
-		<result column="area_id" property="areaId" jdbcType="VARCHAR" />
-		<result column="area_type" property="areaType" jdbcType="TINYINT" />
-	</resultMap>
+<mapper namespace="com.okdeer.mall.activity.mapper.ActivitySelectAreaMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.entity.ActivitySelectArea" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="activity_type" property="activityType" jdbcType="TINYINT" />
+        <result column="province_id" property="provinceId" jdbcType="VARCHAR" />
+        <result column="province_name" property="provinceName" jdbcType="VARCHAR" />
+        <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+        <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+        <result column="area_type" property="areaType" jdbcType="TINYINT" />
+    </resultMap>
 
-	<sql id="Base_Column_List">
-		id, activity_id, activity_type, area_id, area_type
-	</sql>
+    <sql id="Base_Column_List" >
+        id, activity_id, activity_type, province_id, province_name, city_id, city_name, area_type
+    </sql>
 
-	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
-		select
-		<include refid="Base_Column_List" />
-		from activity_select_area
-		where id = #{id,jdbcType=VARCHAR}
-	</select>
-	
-	<select id="findListByActivityId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_select_area
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="findListByActivityId" resultMap="BaseResultMap" parameterType="java.lang.String" >
         select 
         <include refid="Base_Column_List" />
         from activity_select_area
         where activity_id = #{activityId}
     </select>
 
-	<insert id="add" parameterType="com.okdeer.mall.activity.entity.ActivitySelectArea">
-		insert into activity_select_area
-		<trim prefix="(" suffix=")" suffixOverrides=",">
-			<if test="id != null">
-				id,
-			</if>
-			<if test="activityId != null">
-				activity_id,
-			</if>
-			<if test="activityType != null">
-				activity_type,
-			</if>
-			<if test="areaId != null">
-				area_id,
-			</if>
-			<if test="areaType != null">
-				area_type,
-			</if>
-		</trim>
-		<trim prefix="values (" suffix=")" suffixOverrides=",">
-			<if test="id != null">
-				#{id,jdbcType=VARCHAR},
-			</if>
-			<if test="activityId != null">
-				#{activityId,jdbcType=VARCHAR},
-			</if>
-			<if test="activityType != null">
-				#{activityType,jdbcType=TINYINT},
-			</if>
-			<if test="areaId != null">
-				#{areaId,jdbcType=VARCHAR},
-			</if>
-			<if test="areaType != null">
-				#{areaType,jdbcType=TINYINT},
-			</if>
-		</trim>
-	</insert>
-
-	<insert id="insertMore" parameterType="java.util.List">
+    <insert id="add" parameterType="com.okdeer.mall.activity.entity.ActivitySelectArea" >
+        insert into activity_select_area
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
+            <if test="activityType != null" >
+                activity_type,
+            </if>
+            <if test="provinceId != null" >
+                province_id,
+            </if>
+            <if test="provinceName != null" >
+                province_name,
+            </if>
+            <if test="cityId != null" >
+                city_id,
+            </if>
+            <if test="cityName != null" >
+                city_name,
+            </if>
+            <if test="areaType != null" >
+                area_type,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityType != null" >
+                #{activityType,jdbcType=TINYINT},
+            </if>
+            <if test="provinceId != null" >
+                #{provinceId,jdbcType=VARCHAR},
+            </if>
+            <if test="provinceName != null" >
+                #{provinceName,jdbcType=VARCHAR},
+            </if>
+            <if test="cityId != null" >
+                #{cityId,jdbcType=VARCHAR},
+            </if>
+            <if test="cityName != null" >
+                #{cityName,jdbcType=VARCHAR},
+            </if>
+            <if test="areaType != null" >
+                #{areaType,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+    
+    <insert id="insertMore" parameterType="java.util.List">
 		INSERT INTO activity_select_area (
-		id, activity_id, activity_type, area_id, area_type
+			 id, activity_id, activity_type, province_id, province_name, 
+			 city_id, city_name, area_type
 		) VALUES
 		<foreach collection="list" index="index" item="item"
 			separator=",">
 			(
 			#{item.id}, #{item.activityId}, #{item.activityType},
-			#{item.areaId}, #{item.areaType}
+			#{item.provinceId}, #{item.provinceName},
+			#{item.cityId}, #{item.cityName}, #{item.areaType}
 			)
 		</foreach>
 	</insert>
 
-	<update id="update" parameterType="com.okdeer.mall.activity.entity.ActivitySelectArea">
-		update activity_select_area
-		<set>
-			<if test="activityId != null">
-				activity_id = #{activityId,jdbcType=VARCHAR},
-			</if>
-			<if test="activityType != null">
-				activity_type = #{activityType,jdbcType=TINYINT},
-			</if>
-			<if test="areaId != null">
-				area_id = #{areaId,jdbcType=VARCHAR},
-			</if>
-			<if test="areaType != null">
-				area_type = #{areaType,jdbcType=TINYINT},
-			</if>
-		</set>
-		where id = #{id,jdbcType=VARCHAR}
-	</update>
+    <update id="update" parameterType="com.okdeer.mall.activity.entity.ActivitySelectArea" >
+        update activity_select_area
+        <set >
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityType != null" >
+                activity_type = #{activityType,jdbcType=TINYINT},
+            </if>
+            <if test="provinceId != null" >
+                province_id = #{provinceId,jdbcType=VARCHAR},
+            </if>
+            <if test="provinceName != null" >
+                province_name = #{provinceName,jdbcType=VARCHAR},
+            </if>
+            <if test="cityId != null" >
+                city_id = #{cityId,jdbcType=VARCHAR},
+            </if>
+            <if test="cityName != null" >
+                city_name = #{cityName,jdbcType=VARCHAR},
+            </if>
+            <if test="areaType != null" >
+                area_type = #{areaType,jdbcType=TINYINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
 
-	<delete id="delete" parameterType="java.lang.String">
-		delete from activity_select_area
-		where id = #{id,jdbcType=VARCHAR}
-	</delete>
-
-	<delete id="deleteByActivityId" parameterType="java.lang.String">
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_select_area
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="deleteByActivityId" parameterType="java.lang.String">
 		delete from activity_select_area
 		where activity_id = #{activityId}
 	</delete>

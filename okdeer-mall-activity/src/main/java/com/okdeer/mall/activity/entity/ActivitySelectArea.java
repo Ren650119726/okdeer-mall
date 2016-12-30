@@ -7,7 +7,7 @@
 package com.okdeer.mall.activity.entity;
 
 /**
- * 活动城市关联表(按城市选择任务范围才有关联)
+ * 活动与地区关联表(按城市选择任务范围才有关联)
  * 
  * @author tangzj02
  * @version 1.0 2016-12-30
@@ -27,11 +27,23 @@ public class ActivitySelectArea {
      */
     private Integer activityType;
     /**
-     * 省ID/城市ID
+     * 省ID
      */
-    private String areaId;
+    private String provinceId;
     /**
-     * 1:城市 2:省
+     * 省名称
+     */
+    private String provinceName;
+    /**
+     * 城市ID(如果没有城市，这表示选择的是全省)
+     */
+    private String cityId;
+    /**
+     * 城市名称
+     */
+    private String cityName;
+    /**
+     * 1:城市  2:省
      */
     private Integer areaType;
 
@@ -60,12 +72,36 @@ public class ActivitySelectArea {
         this.activityType = activityType;
     }
 
-    public String getAreaId() {
-        return areaId;
+    public String getProvinceId() {
+        return provinceId;
     }
 
-    public void setAreaId(String areaId) {
-        this.areaId = areaId;
+    public void setProvinceId(String provinceId) {
+        this.provinceId = provinceId;
+    }
+
+    public String getProvinceName() {
+        return provinceName;
+    }
+
+    public void setProvinceName(String provinceName) {
+        this.provinceName = provinceName;
+    }
+
+    public String getCityId() {
+        return cityId;
+    }
+
+    public void setCityId(String cityId) {
+        this.cityId = cityId;
+    }
+
+    public String getCityName() {
+        return cityName;
+    }
+
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
     }
 
     public Integer getAreaType() {

@@ -1,5 +1,5 @@
 /** 
- *@Project: okdeer-third-service 
+ *@Project: okdeer-mall-service 
  *@Author: tangzj02
  *@Date: 2016年12月30日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
@@ -18,9 +18,9 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.okdeer.mall.Application;
-import com.okdeer.mall.activity.dto.HomeIconParamDto;
-import com.okdeer.mall.activity.entity.HomeIcon;
-import com.okdeer.mall.activity.service.HomeIconService;
+import com.okdeer.mall.activity.dto.ActivityHomeIconParamDto;
+import com.okdeer.mall.activity.entity.ActivityHomeIcon;
+import com.okdeer.mall.activity.service.ActivityHomeIconService;
 
 /**
  * ClassName: HomeIconApiTest 
@@ -35,25 +35,25 @@ import com.okdeer.mall.activity.service.HomeIconService;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
-public class HomeIconServiceTest {
+public class ActivityHomeIconServiceTest {
 
 	/** 日志对象 */
-	private static final Logger log = LoggerFactory.getLogger(HomeIconServiceTest.class);
+	private static final Logger log = LoggerFactory.getLogger(ActivityHomeIconServiceTest.class);
 
 	@Autowired
-	private HomeIconService homeIconService;
+	private ActivityHomeIconService homeIconService;
 
 	@Test
 	public void testFindList() {
 		try {
 			log.info("测试获取首页ICON列表");
-			HomeIconParamDto paramDto = new HomeIconParamDto();
+			ActivityHomeIconParamDto paramDto = new ActivityHomeIconParamDto();
 			paramDto.setAddStartTime(new Date());
 			paramDto.setAddEndTime(new Date());
 			paramDto.setUpdateStartTime(new Date());
 			paramDto.setUpdateEndTime(new Date());
-			List<HomeIcon> list = homeIconService.findList(paramDto);
-			log.info("list.size : ", list.size());
+			List<ActivityHomeIcon> list = homeIconService.findList(paramDto);
+//			Assert.assertNotNull(list);
 		} catch (Exception e) {
 			log.error("查询首页ICON列表异常:{}", e);
 		}

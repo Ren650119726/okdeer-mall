@@ -9,11 +9,11 @@ package com.okdeer.mall.activity.service;
 import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.activity.dto.AppServiceGoodsRecommendParamDto;
-import com.okdeer.mall.activity.entity.AppServiceGoodsRecommend;
+import com.okdeer.mall.activity.dto.AppRecommendParamDto;
+import com.okdeer.mall.activity.entity.ActivityAppRecommend;
 
 /**
- * ClassName: AppServiceGoodsRecommendService 
+ * ClassName: ActivityAppRecommendService 
  * @Description: APP端服务商品推荐服务
  * @author tangzj02
  * @date 2016年12月29日
@@ -24,7 +24,7 @@ import com.okdeer.mall.activity.entity.AppServiceGoodsRecommend;
  *		友门鹿2.0		  2016年12月29日		tangzj02		  添加
  */
 
-public interface AppServiceGoodsRecommendService extends IBaseService {
+public interface ActivityAppRecommendService extends IBaseService {
 
 	/**
 	 * @Description: 根据app端服务商品推荐ID进行删除
@@ -40,10 +40,10 @@ public interface AppServiceGoodsRecommendService extends IBaseService {
 	 * @Description: 查询App端服务商品推荐列表
 	 * @param paramDto 查询参数
 	 * @throws Exception   
-	 * @return List<AppServiceGoodsRecommend>  
+	 * @return List<ActivityAppRecommend>  
 	 * @author tangzj02
 	 * @date 2016年12月29日
 	 */
-	List<AppServiceGoodsRecommend> findList(AppServiceGoodsRecommendParamDto paramDto) throws Exception;
+	List<ActivityAppRecommend> findList(AppRecommendParamDto paramDto) throws Exception;
 
 }
