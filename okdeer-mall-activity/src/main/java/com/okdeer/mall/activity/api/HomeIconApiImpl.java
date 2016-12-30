@@ -189,7 +189,7 @@ public class HomeIconApiImpl implements HomeIconApi {
 		}
 
 		// 插入任务类型关联数据
-		if (HomeIconTaskType.Product.getCode().equals(dto.getTaskType())) {
+		if (HomeIconTaskType.goods.getCode().equals(dto.getTaskType())) {
 			List<HomeIconGoods> productList = new ArrayList<>();
 			HomeIconGoods product = null;
 			for (String item : dto.getProductIds()) {
