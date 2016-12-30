@@ -59,9 +59,6 @@ public class HomeIconApiImpl implements HomeIconApi {
 	@Autowired
 	private ActivitySelectAreaService activitySelectAreaService;
 
-	@Reference(version = "1.0.0", check = false)
-	private IAddressService addressService;
-
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.activity.service.HomeIconApi#findList(com.okdeer.mall.activity.dto.HomeIconParamDto)
