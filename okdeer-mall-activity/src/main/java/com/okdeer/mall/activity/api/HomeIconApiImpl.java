@@ -25,7 +25,7 @@ import com.okdeer.mall.activity.dto.HomeIconParamDto;
 import com.okdeer.mall.activity.entity.HomeIcon;
 import com.okdeer.mall.activity.entity.HomeIconArea;
 import com.okdeer.mall.activity.entity.HomeIconGoods;
-import com.okdeer.mall.activity.enums.HomeIconTaskScope;
+import com.okdeer.mall.activity.enums.SelectAreaType;
 import com.okdeer.mall.activity.enums.HomeIconTaskType;
 import com.okdeer.mall.activity.service.HomeIconApi;
 import com.okdeer.mall.activity.service.HomeIconAreaService;
@@ -149,7 +149,7 @@ public class HomeIconApiImpl implements HomeIconApi {
 			return new BaseResult("HomeIconDto信息不完整");
 		}
 
-		if (HomeIconTaskScope.city.getCode().equals(dto.getTaskScope())
+		if (SelectAreaType.city.getCode().equals(dto.getTaskScope())
 				&& (null == dto.getCityIds() || 0 == dto.getCityIds().size())) {
 			return new BaseResult("城市ID集合 当任务范围未1:按城市选择任务范围时， 不允许为空");
 		}
@@ -173,7 +173,7 @@ public class HomeIconApiImpl implements HomeIconApi {
 		}
 
 		// 插入任务范围关联数据
-		if (HomeIconTaskScope.city.getCode().equals(dto.getTaskScope())) {
+		if (SelectAreaType.city.getCode().equals(dto.getTaskScope())) {
 			List<HomeIconArea> areaList = new ArrayList<>();
 			HomeIconArea Area = null;
 			for (String item : dto.getCityIds()) {
