@@ -20,14 +20,14 @@ import com.okdeer.mall.activity.service.HomeIconService;
 
 /**
  * ClassName: HomeIconServiceImpl 
- * @Description: TODO
+ * @Description: 首页ICON的服务实现
  * @author tangzj02
  * @date 2016年12月28日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ * * 	        友门鹿2.0        2016-12-28        tangzj02                     添加
  */
 
 @Service

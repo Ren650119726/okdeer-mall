@@ -30,6 +30,31 @@
         from activity_app_service_goods_recommend
         where id = #{id,jdbcType=VARCHAR}
     </select>
+    
+    <select id="findList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.dto.HomeIconParamDto">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM activity_app_service_goods_recommend
+        WHERE disabled = 0
+        <if test="title != null and title != ''">
+			AND title LIKE CONCAT('%',#{title},'%')
+		</if>
+		<if test="null != place">
+			AND place = place
+		</if>
+		<if test="null != addStartTime">
+			AND create_time &gt;= #{addStartTime}
+		</if>
+		<if test="null != addEndTime">
+			AND create_time &lt;= #{addEndTime}
+		</if>
+		<if test="null != updateStartTime">
+			AND update_time &gt;= #{updateStartTime}
+		</if>
+		<if test="null != updateEndTime">
+			AND update_time &lt;= #{updateEndTime}
+		</if>
+    </select>
 
     <insert id="add" parameterType="com.okdeer.mall.activity.entity.AppServiceGoodsRecommend" >
         insert into activity_app_service_goods_recommend
@@ -176,6 +201,15 @@
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
+    </update>
+    
+    <update id="deleteByIds" parameterType="java.lang.String">
+        UPDATE activity_app_service_goods_recommend
+        SET  status = #{status,jdbcType=TINYINT}
+        WHERE id IN 
+        <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+				#{item}
+		</foreach>
     </update>
 
     <delete id="delete" parameterType="java.lang.String" >
