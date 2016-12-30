@@ -49,8 +49,8 @@ public class ActivitySelectAreaServiceImpl extends BaseServiceImpl implements Ac
 	 * @see com.okdeer.mall.operate.service.ActivitySelectAreaService#findListByActivityId(java.lang.String)
 	 */
 	@Override
-	public List<ActivitySelectArea> findListByActivityId(String iconId) throws Exception {
-		return activitySelectAreaMapper.findListByActivityId(iconId);
+	public List<ActivitySelectArea> findListByActivityId(String activityId) throws Exception {
+		return activitySelectAreaMapper.findListByActivityId(activityId);
 	}
 
 	/**
@@ -58,8 +58,8 @@ public class ActivitySelectAreaServiceImpl extends BaseServiceImpl implements Ac
 	 * @see com.okdeer.mall.operate.service.ActivitySelectAreaService#deleteByActivityId(java.lang.String)
 	 */
 	@Override
-	public int deleteByActivityId(String iconId) throws Exception {
-		return activitySelectAreaMapper.deleteByActivityId(iconId);
+	public int deleteByActivityId(String activityId) throws Exception {
+		return activitySelectAreaMapper.deleteByActivityId(activityId);
 	}
 
 	/**
