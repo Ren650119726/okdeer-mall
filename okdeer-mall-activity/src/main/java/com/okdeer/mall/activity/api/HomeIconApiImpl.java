@@ -154,7 +154,7 @@ public class HomeIconApiImpl implements HomeIconApi {
 			return new BaseResult("城市ID集合 当任务范围未1:按城市选择任务范围时， 不允许为空");
 		}
 
-		if (HomeIconTaskType.Product.getCode().equals(dto.getTaskType())
+		if (HomeIconTaskType.goods.getCode().equals(dto.getTaskType())
 				&& (null == dto.getProductIds() || 0 == dto.getProductIds().size())) {
 			return new BaseResult("商品ID集合   当任务内容  0:指定指定商品推荐时， 不允许为空");
 		}
