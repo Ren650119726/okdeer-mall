@@ -1,7 +1,7 @@
 /** 
  *@Project: okdeer-third-service 
  *@Author: tangzj02
- *@Date: 2016年12月19日 
+ *@Date: 2016年12月30日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */
 package com.okdeer.mall.activity.homeIcon;
@@ -24,14 +24,14 @@ import com.okdeer.mall.activity.service.HomeIconService;
 
 /**
  * ClassName: HomeIconApiTest 
- * @Description: TODO
+ * @Description: 首页ICON服务测试
  * @author tangzj02
- * @date 2016年12月29日
+ * @date 2016年12月30日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ * 	        友门鹿2.0       2016-12-30         tangzj02                        添加
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
@@ -46,6 +46,7 @@ public class HomeIconServiceTest {
 	@Test
 	public void testFindList() {
 		try {
+			log.info("测试获取首页ICON列表");
 			HomeIconParamDto paramDto = new HomeIconParamDto();
 			paramDto.setAddStartTime(new Date());
 			paramDto.setAddEndTime(new Date());
