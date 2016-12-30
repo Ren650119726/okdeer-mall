@@ -154,7 +154,7 @@ public class HomeIconApiImpl implements HomeIconApi {
 		}
 
 		if (SelectAreaType.city.getCode().equals(dto.getTaskScope())
-				&& (null == dto.getCityIds() || 0 == dto.getCityIds().size())) {
+				&& (null == dto.getAreaIds() || 0 == dto.getAreaIds().size())) {
 			return new BaseResult("城市ID集合 当任务范围未1:按城市选择任务范围时， 不允许为空");
 		}
 
@@ -182,7 +182,7 @@ public class HomeIconApiImpl implements HomeIconApi {
 		if (SelectAreaType.city.getCode().equals(dto.getTaskScope())) {
 			List<ActivitySelectArea> areaList = new ArrayList<>();
 			ActivitySelectArea Area = null;
-			for (String item : dto.getCityIds()) {
+			for (String item : dto.getAreaIds()) {
 				Area = new ActivitySelectArea();
 				Area.setId(UuidUtils.getUuid());
 				Area.setActivityId(entity.getId());
