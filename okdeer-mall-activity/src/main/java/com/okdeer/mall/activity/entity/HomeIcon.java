@@ -16,161 +16,172 @@ import java.util.Date;
  */
 public class HomeIcon {
 
-    /**
-     * 主键
-     */
-    private String id;
-    /**
-     * ICON名称
-     */
-    private String name;
-    /**
-     * ICON位置 1:首页ICON一 2:首页ICON二 3:首页ICON三 ......
-     */
-    private Boolean place;
-    /**
-     * ICON图片
-     */
-    private String iconUrl;
-    /**
-     * 二级页面顶部图片
-     */
-    private String bannerUrl;
-    /**
-     * 冗余字段
-     */
-    private String taskContent;
-    /**
-     * 任务内容  0:指定指定商品推荐  1: 自助买单 2:分类 
-     */
-    private Boolean taskType;
-    /**
-     * 任务范围 0:全国  1:按城市选择任务范围
-     */
-    private Boolean taskScope;
-    /**
-     * 创建人
-     */
-    private String createUserId;
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-    /**
-     * 更新人
-     */
-    private String updateUserId;
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
-    /**
-     * 是否删除(0：否 1：是)
-     */
-    private Boolean disabled;
+	/**
+	 * 主键
+	 */
+	private String id;
 
+	/**
+	 * ICON名称
+	 */
+	private String name;
 
-    public String getId() {
-        return id;
-    }
+	/**
+	 * ICON位置 1:首页ICON一 2:首页ICON二 3:首页ICON三 ......
+	 */
+	private Integer place;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	/**
+	 * ICON图片
+	 */
+	private String iconUrl;
 
-    public String getName() {
-        return name;
-    }
+	/**
+	 * 二级页面顶部图片
+	 */
+	private String bannerUrl;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	/**
+	 * 用于列表中区域字段内容显示
+	 */
+	private String taskContent;
 
-    public Boolean getPlace() {
-        return place;
-    }
+	/**
+	 * 任务内容  0:指定指定商品推荐  1: 自助买单 2:分类 
+	 */
+	private Integer taskType;
 
-    public void setPlace(Boolean place) {
-        this.place = place;
-    }
+	/**
+	 * 任务范围 0:全国  1:按城市选择任务范围
+	 */
+	private Integer taskScope;
 
-    public String getIconUrl() {
-        return iconUrl;
-    }
+	/**
+	 * 创建人
+	 */
+	private String createUserId;
 
-    public void setIconUrl(String iconUrl) {
-        this.iconUrl = iconUrl;
-    }
+	/**
+	 * 创建时间
+	 */
+	private Date createTime;
 
-    public String getBannerUrl() {
-        return bannerUrl;
-    }
+	/**
+	 * 更新人
+	 */
+	private String updateUserId;
 
-    public void setBannerUrl(String bannerUrl) {
-        this.bannerUrl = bannerUrl;
-    }
+	/**
+	 * 更新时间
+	 */
+	private Date updateTime;
 
-    public String getTaskContent() {
-        return taskContent;
-    }
+	/**
+	 * 是否删除(0：否 1：是)
+	 */
+	private Integer disabled;
 
-    public void setTaskContent(String taskContent) {
-        this.taskContent = taskContent;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public Boolean getTaskType() {
-        return taskType;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public void setTaskType(Boolean taskType) {
-        this.taskType = taskType;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public Boolean getTaskScope() {
-        return taskScope;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setTaskScope(Boolean taskScope) {
-        this.taskScope = taskScope;
-    }
+	public Integer getPlace() {
+		return place;
+	}
 
-    public String getCreateUserId() {
-        return createUserId;
-    }
+	public void setPlace(Integer place) {
+		this.place = place;
+	}
 
-    public void setCreateUserId(String createUserId) {
-        this.createUserId = createUserId;
-    }
+	public String getIconUrl() {
+		return iconUrl;
+	}
 
-    public Date getCreateTime() {
-        return createTime;
-    }
+	public void setIconUrl(String iconUrl) {
+		this.iconUrl = iconUrl;
+	}
 
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
+	public String getBannerUrl() {
+		return bannerUrl;
+	}
 
-    public String getUpdateUserId() {
-        return updateUserId;
-    }
+	public void setBannerUrl(String bannerUrl) {
+		this.bannerUrl = bannerUrl;
+	}
 
-    public void setUpdateUserId(String updateUserId) {
-        this.updateUserId = updateUserId;
-    }
+	public String getTaskContent() {
+		return taskContent;
+	}
 
-    public Date getUpdateTime() {
-        return updateTime;
-    }
+	public void setTaskContent(String taskContent) {
+		this.taskContent = taskContent;
+	}
 
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
+	public Integer getTaskType() {
+		return taskType;
+	}
 
-    public Boolean getDisabled() {
-        return disabled;
-    }
+	public void setTaskType(Integer taskType) {
+		this.taskType = taskType;
+	}
 
-    public void setDisabled(Boolean disabled) {
-        this.disabled = disabled;
-    }
+	public Integer getTaskScope() {
+		return taskScope;
+	}
+
+	public void setTaskScope(Integer taskScope) {
+		this.taskScope = taskScope;
+	}
+
+	public String getCreateUserId() {
+		return createUserId;
+	}
+
+	public void setCreateUserId(String createUserId) {
+		this.createUserId = createUserId;
+	}
+
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
+	public String getUpdateUserId() {
+		return updateUserId;
+	}
+
+	public void setUpdateUserId(String updateUserId) {
+		this.updateUserId = updateUserId;
+	}
+
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
+
+	public Integer getDisabled() {
+		return disabled;
+	}
+
+	public void setDisabled(Integer disabled) {
+		this.disabled = disabled;
+	}
 }
