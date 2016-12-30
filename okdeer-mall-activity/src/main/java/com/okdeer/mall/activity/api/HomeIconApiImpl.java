@@ -59,7 +59,7 @@ public class HomeIconApiImpl implements HomeIconApi {
 	@Autowired
 	private ActivitySelectAreaService activitySelectAreaService;
 
-	@Autowired
+	@Reference(version = "1.0.0", check = false)
 	private IAddressService addressService;
 
 	/**
