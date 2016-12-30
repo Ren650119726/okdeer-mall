@@ -17,18 +17,19 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.utils.BaseResult;
-import com.okdeer.mall.activity.dto.HomeIconAreaDto;
+import com.okdeer.mall.activity.dto.ActivitySelectAreaDto;
 import com.okdeer.mall.activity.dto.HomeIconDto;
 import com.okdeer.mall.activity.dto.HomeIconGoodsDto;
 import com.okdeer.mall.activity.dto.HomeIconParamDto;
+import com.okdeer.mall.activity.entity.ActivitySelectArea;
 import com.okdeer.mall.activity.entity.HomeIcon;
-import com.okdeer.mall.activity.entity.HomeIconArea;
 import com.okdeer.mall.activity.entity.HomeIconGoods;
-import com.okdeer.mall.activity.enums.SelectAreaType;
 import com.okdeer.mall.activity.enums.HomeIconTaskType;
+import com.okdeer.mall.activity.enums.SelectAreaType;
+import com.okdeer.mall.activity.service.ActivitySelectAreaService;
 import com.okdeer.mall.activity.service.HomeIconApi;
-import com.okdeer.mall.activity.service.HomeIconAreaService;
 import com.okdeer.mall.activity.service.HomeIconGoodsService;
 import com.okdeer.mall.activity.service.HomeIconService;
 
@@ -56,7 +57,10 @@ public class HomeIconApiImpl implements HomeIconApi {
 	private HomeIconGoodsService homeIconGoodsService;
 
 	@Autowired
-	private HomeIconAreaService homeIconAreaService;
+	private ActivitySelectAreaService activitySelectAreaService;
+
+	@Autowired
+	private IAddressService addressService;
 
 	/**
 	 * (non-Javadoc)
@@ -93,15 +97,15 @@ public class HomeIconApiImpl implements HomeIconApi {
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.activity.service.HomeIconApi#findHomeIconAreaDtoListByHomeIcon(java.lang.String)
+	 * @see com.okdeer.mall.activity.service.HomeIconApi#findActivitySelectAreaDtoListByActivityId(java.lang.String)
 	 */
 	@Override
-	public List<HomeIconAreaDto> findHomeIconAreaDtoListByHomeIcon(String iconId) throws Exception {
-		List<HomeIconAreaDto> dtoList = new ArrayList<>();
+	public List<ActivitySelectAreaDto> findActivitySelectAreaDtoListByActivityId(String iconId) throws Exception {
+		List<ActivitySelectAreaDto> dtoList = new ArrayList<>();
 		if (StringUtils.isNotBlank(iconId)) {
-			List<HomeIconArea> sourceList = homeIconAreaService.findListByHomeIcon(iconId);
+			List<ActivitySelectArea> sourceList = activitySelectAreaService.findListByActivityId(iconId);
 			if (sourceList != null) {
-				dtoList = BeanMapper.mapList(sourceList, HomeIconAreaDto.class);
+				dtoList = BeanMapper.mapList(sourceList, ActivitySelectAreaDto.class);
 			}
 		}
 		return dtoList;
@@ -159,11 +163,13 @@ public class HomeIconApiImpl implements HomeIconApi {
 			return new BaseResult("商品ID集合   当任务内容  0:指定指定商品推荐时， 不允许为空");
 		}
 
+		// TODO 需要判断是否已经存在同一区域、同一位置的数据
+
 		// 复制属性信息
 		HomeIcon entity = BeanMapper.map(dto, HomeIcon.class);
 		if (StringUtils.isNotBlank(entity.getId())) {
 			// 删除之前的插入的关联数据
-			homeIconAreaService.deleteByHomeIconId(entity.getId());
+			activitySelectAreaService.deleteByActivityId(entity.getId());
 			homeIconGoodsService.deleteByHomeIconId(entity.getId());
 			homeIconService.update(entity);
 		} else {
@@ -174,17 +180,17 @@ public class HomeIconApiImpl implements HomeIconApi {
 
 		// 插入任务范围关联数据
 		if (SelectAreaType.city.getCode().equals(dto.getTaskScope())) {
-			List<HomeIconArea> areaList = new ArrayList<>();
-			HomeIconArea Area = null;
+			List<ActivitySelectArea> areaList = new ArrayList<>();
+			ActivitySelectArea Area = null;
 			for (String item : dto.getCityIds()) {
-				Area = new HomeIconArea();
+				Area = new ActivitySelectArea();
 				Area.setId(UuidUtils.getUuid());
-				Area.setIconId(entity.getId());
-				Area.setCityId(item);
+				Area.setActivityId(entity.getId());
+				Area.setAreaId(item);
 				areaList.add(Area);
 			}
 			if (areaList.size() > 0) {
-				homeIconAreaService.insertMore(areaList);
+				activitySelectAreaService.insertMore(areaList);
 			}
 		}
 
