@@ -26,15 +26,12 @@
     where id = #{id,jdbcType=VARCHAR}
   </select>
   
-  <select id="selectByCode" resultMap="BaseResultMap" parameterType="com.okdeer.mall.member.points.entity.PointsRule" >
+  <select id="selectByCode" resultMap="BaseResultMap" parameterType="string" >
     SELECT 
     <include refid="Base_Column_List" />
     FROM points_rule
     WHERE disabled = 0 
     AND code = #{code,jdbcType=VARCHAR}
-    <if test="id != null and id != ''" >
-      AND id != #{id,jdbcType=VARCHAR}
-    </if>
   </select>
   
   <select id="queryByParam" resultMap="BaseResultMap" parameterType="map" >

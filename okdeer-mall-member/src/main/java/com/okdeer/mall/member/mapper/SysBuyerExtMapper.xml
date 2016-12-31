@@ -8,9 +8,11 @@
     <result column="position" property="position" jdbcType="VARCHAR" />
     <result column="point_val" property="pointVal" jdbcType="TINYINT" />
     <result column="prize_count" property="prizeCount" jdbcType="TINYINT" />
+    <result column="growth_val" property="growthVal" jdbcType="TINYINT" />
+    <result column="rank_code" property="rankCode" jdbcType="VARCHAR" />
   </resultMap>
   <sql id="Base_Column_List" >
-    id, user_id, is_accept_msg, position,point_val,prize_count
+    id, user_id, is_accept_msg, position,point_val,prize_count,growth_val,rank_code
   </sql>
   
   <!-- 根据会员用户id查询会员扩展信息 -->
@@ -33,6 +35,12 @@
       <if test="pointVal != null" >
         point_val = #{pointVal,jdbcType=INTEGER},
       </if>
+      <if test="growthVal != null" >
+        growth_val = #{growthVal,jdbcType=INTEGER},
+      </if>
+      <if test="rankCode != null" >
+        rank_code = #{rankCode,jdbcType=VARCHAR},
+      </if>
     </set>
     WHERE user_id = #{userId,jdbcType=VARCHAR} AND id = #{id,jdbcType=VARCHAR} 
   </update>
@@ -49,6 +57,12 @@
       </if>
       <if test="pointVal != null" >
         point_val = #{pointVal,jdbcType=INTEGER},
+      </if>
+      <if test="growthVal != null" >
+        growth_val = #{growthVal,jdbcType=INTEGER},
+      </if>
+      <if test="rankCode != null" >
+        rank_code = #{rankCode,jdbcType=VARCHAR},
       </if>
     </set>
     WHERE user_id = #{userId,jdbcType=VARCHAR}
@@ -73,6 +87,12 @@
       <if test="pointVal != null" >
         point_val,
       </if>
+      <if test="growthVal != null" >
+        growth_val,
+      </if>
+      <if test="rankCode != null" >
+        rank_code,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -89,6 +109,12 @@
       </if>
       <if test="pointVal != null" >
         #{pointVal,jdbcType=INTEGER},
+      </if>
+      <if test="growthVal != null" >
+        #{growthVal,jdbcType=INTEGER},
+      </if>
+      <if test="rankCode != null" >
+        #{rankCode,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -112,4 +138,9 @@
     	WHERE user_id=#{userId,jdbcType=VARCHAR};
   </update>
   
+  <select id="findByUserIdForUpdate" resultMap="BaseResultMap" parameterType="java.lang.String" >
+  	 SELECT 
+    <include refid="Base_Column_List" />
+     FROM sys_buyer_ext WHERE  user_id=#{userId,jdbcType=VARCHAR} for update
+  </select>
 </mapper>
