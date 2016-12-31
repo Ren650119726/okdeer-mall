@@ -9,10 +9,10 @@ package com.okdeer.mall.activity.service;
 import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.activity.entity.HomeIconGoods;
+import com.okdeer.mall.activity.entity.ActivityHomeIconGoods;
 
 /**
- * ClassName: HomeIconService 
+ * ClassName: ActivityHomeIconGoodsService 
  * @Description: 首页ICON与商品关联服务
  * @author tangzj02
  * @date 2016年12月30日
@@ -20,19 +20,19 @@ import com.okdeer.mall.activity.entity.HomeIconGoods;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- * 		  1 		   2016-12-30        tangzj02                     添加
+ * 	        友门鹿2.0       2016-12-30        tangzj02                     添加
  */
 
-public interface HomeIconGoodsService extends IBaseService {
+public interface ActivityHomeIconGoodsService extends IBaseService {
 
 	/**
 	 * @Description: 根据首页ICONID查询数据
-	 * @return List<HomeIconGoods>  
+	 * @return List<ActivityHomeIconGoods>  
 	 * @throws Exception
 	 * @author tangzj02
 	 * @date 2016年12月28日
 	 */
-	List<HomeIconGoods> findListByHomeIcon(String iconId) throws Exception;
+	List<ActivityHomeIconGoods> findListByHomeIconId(String iconId) throws Exception;
 
 	/**
 	 * @Description: 根据首页ICONID删除数据
@@ -52,6 +52,6 @@ public interface HomeIconGoodsService extends IBaseService {
 	 * @author tangzj02
 	 * @date 2016年12月28日
 	 */
-	int insertMore(List<HomeIconGoods> list) throws Exception;
+	int insertMore(List<ActivityHomeIconGoods> list) throws Exception;
 
 }

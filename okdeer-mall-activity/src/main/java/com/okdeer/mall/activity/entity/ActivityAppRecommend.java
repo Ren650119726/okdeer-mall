@@ -1,7 +1,7 @@
 /*
  * Copyright(C) 2016-2021 okdeer.com Inc. All rights reserved
- * AppServiceGoodsRecommend.java
- * @Date 2016-12-29 Created
+ * ActivityAppRecommend.java
+ * @Date 2016-12-30 Created
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的
  */
 package com.okdeer.mall.activity.entity;
@@ -12,9 +12,9 @@ import java.util.Date;
  * APP端服务商品推荐表
  * 
  * @author tangzj02
- * @version 1.0 2016-12-29
+ * @version 1.0 2016-12-30
  */
-public class AppServiceGoodsRecommend {
+public class ActivityAppRecommend {
 
 	private String id;
 

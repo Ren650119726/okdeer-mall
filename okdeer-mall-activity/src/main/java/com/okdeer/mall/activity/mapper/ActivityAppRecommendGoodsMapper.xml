@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.okdeer.mall.activity.mapper.ActivityAppRecommendGoodsMapper">
+	<resultMap id="BaseResultMap"
+		type="com.okdeer.mall.activity.entity.ActivityAppRecommendGoods">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="recommend_id" property="recommendId" jdbcType="VARCHAR" />
+		<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="INTEGER" />
+		<result column="is_show" property="isShow" jdbcType="TINYINT" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, recommend_id, store_sku_id, sort, is_show
+	</sql>
+
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from activity_app_recommend_goods
+		where id = #{id,jdbcType=VARCHAR}
+	</select>
+
+	<select id="findList" resultMap="BaseResultMap"
+		parameterType="com.okdeer.mall.activity.dto.AppRecommendGoodsParamDto">
+		select
+		<include refid="Base_Column_List" />
+		from activity_app_recommend_goods
+		<where>
+			<if test="recommendId != null">
+				AND recommend_id = #{recommendId}
+			</if>
+			<if test="isShow != null">
+				AND is_show = #{isShow}
+			</if>
+		</where>
+		ORDER BY sort desc
+	</select>
+
+	<select id="findListByRecommendId" resultMap="BaseResultMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from activity_app_recommend_goods
+		where recommend_id = #{recommendId}
+		ORDER BY sort desc
+	</select>
+
+	<insert id="add"
+		parameterType="com.okdeer.mall.activity.entity.ActivityAppRecommendGoods">
+		insert into activity_app_recommend_goods
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="recommendId != null">
+				recommend_id,
+			</if>
+			<if test="storeSkuId != null">
+				store_sku_id,
+			</if>
+			<if test="sort != null">
+				sort,
+			</if>
+			<if test="isShow != null">
+				is_show,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="recommendId != null">
+				#{recommendId,jdbcType=VARCHAR},
+			</if>
+			<if test="storeSkuId != null">
+				#{storeSkuId,jdbcType=VARCHAR},
+			</if>
+			<if test="sort != null">
+				#{sort,jdbcType=INTEGER},
+			</if>
+			<if test="isShow != null">
+				#{isShow,jdbcType=TINYINT},
+			</if>
+		</trim>
+	</insert>
+	
+	<insert id="insertMore" parameterType="java.util.List">
+		INSERT INTO activity_app_recommend_goods (
+			id, recommend_id, store_sku_id, sort, is_show
+        ) VALUES
+		<foreach collection="list" index="index" item="item" separator=",">
+			(
+				#{item.id}, #{item.recommendId}, #{item.storeSkuId},
+				#{item.sort}, #{item.isShow}
+			)
+		</foreach>
+	</insert>
+
+	<update id="update"
+		parameterType="com.okdeer.mall.activity.entity.ActivityAppRecommendGoods">
+		update activity_app_recommend_goods
+		<set>
+			<if test="recommendId != null">
+				recommend_id = #{recommendId,jdbcType=VARCHAR},
+			</if>
+			<if test="storeSkuId != null">
+				store_sku_id = #{storeSkuId,jdbcType=VARCHAR},
+			</if>
+			<if test="sort != null">
+				sort = #{sort,jdbcType=INTEGER},
+			</if>
+			<if test="isShow != null">
+				is_show = #{isShow,jdbcType=TINYINT},
+			</if>
+		</set>
+		where id = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<delete id="delete" parameterType="java.lang.String">
+		delete from
+		activity_app_recommend_goods
+		where id = #{id,jdbcType=VARCHAR}
+	</delete>
+	
+	<delete id="deleteByRecommendId" parameterType="java.lang.String">
+		delete from
+		activity_app_recommend_goods
+		where recommend_id = #{recommendId}
+	</delete>
+
+</mapper>

@@ -232,6 +232,9 @@
        	<if test="id != null and id != '' ">
        		AND id != #{id}
        	</if>
+       	<if test="skinType != null ">
+       		AND skin_type = #{skinType,jdbcType=TINYINT}
+       	</if>
   	</select>
   	
    	<!-- 根据名称查询是否有运行中的皮肤 -->

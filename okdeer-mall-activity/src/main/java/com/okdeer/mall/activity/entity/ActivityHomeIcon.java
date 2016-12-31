@@ -1,7 +1,7 @@
 /*
  * Copyright(C) 2016-2021 okdeer.com Inc. All rights reserved
- * HomeIcon.java
- * @Date 2016-12-29 Created
+ * ActivityHomeIcon.java
+ * @Date 2016-12-30 Created
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的
  */
 package com.okdeer.mall.activity.entity;
@@ -12,9 +12,9 @@ import java.util.Date;
  * 
  * 
  * @author tangzj02
- * @version 1.0 2016-12-29
+ * @version 1.0 2016-12-30
  */
-public class HomeIcon {
+public class ActivityHomeIcon {
 
     /**
      * 主键
@@ -27,7 +27,7 @@ public class HomeIcon {
     /**
      * ICON位置 1:首页ICON一 2:首页ICON二 3:首页ICON三 ......
      */
-    private Boolean place;
+    private Integer place;
     /**
      * ICON图片
      */
@@ -37,17 +37,17 @@ public class HomeIcon {
      */
     private String bannerUrl;
     /**
-     * 冗余字段
+     * 用于列表中区域字段内容显示
      */
     private String taskContent;
     /**
      * 任务内容  0:指定指定商品推荐  1: 自助买单 2:分类 
      */
-    private Boolean taskType;
+    private Integer taskType;
     /**
      * 任务范围 0:全国  1:按城市选择任务范围
      */
-    private Boolean taskScope;
+    private Integer taskScope;
     /**
      * 创建人
      */
@@ -67,7 +67,7 @@ public class HomeIcon {
     /**
      * 是否删除(0：否 1：是)
      */
-    private Boolean disabled;
+    private Integer disabled;
 
 
     public String getId() {
@@ -86,11 +86,11 @@ public class HomeIcon {
         this.name = name;
     }
 
-    public Boolean getPlace() {
+    public Integer getPlace() {
         return place;
     }
 
-    public void setPlace(Boolean place) {
+    public void setPlace(Integer place) {
         this.place = place;
     }
 
@@ -118,19 +118,19 @@ public class HomeIcon {
         this.taskContent = taskContent;
     }
 
-    public Boolean getTaskType() {
+    public Integer getTaskType() {
         return taskType;
     }
 
-    public void setTaskType(Boolean taskType) {
+    public void setTaskType(Integer taskType) {
         this.taskType = taskType;
     }
 
-    public Boolean getTaskScope() {
+    public Integer getTaskScope() {
         return taskScope;
     }
 
-    public void setTaskScope(Boolean taskScope) {
+    public void setTaskScope(Integer taskScope) {
         this.taskScope = taskScope;
     }
 
@@ -166,11 +166,11 @@ public class HomeIcon {
         this.updateTime = updateTime;
     }
 
-    public Boolean getDisabled() {
+    public Integer getDisabled() {
         return disabled;
     }
 
-    public void setDisabled(Boolean disabled) {
+	public void setDisabled(Integer disabled) {
         this.disabled = disabled;
     }
 }
