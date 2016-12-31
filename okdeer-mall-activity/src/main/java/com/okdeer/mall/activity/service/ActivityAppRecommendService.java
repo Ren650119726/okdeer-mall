@@ -8,9 +8,13 @@ package com.okdeer.mall.activity.service;
 
 import java.util.List;
 
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.activity.dto.ActivityAppRecommendDto;
 import com.okdeer.mall.activity.dto.AppRecommendParamDto;
 import com.okdeer.mall.activity.entity.ActivityAppRecommend;
+import com.okdeer.mall.operate.dto.SkinManagerDto;
+import com.okdeer.mall.operate.dto.SkinManagerParamDto;
 
 /**
  * ClassName: ActivityAppRecommendService 
@@ -46,4 +50,13 @@ public interface ActivityAppRecommendService extends IBaseService {
 	 */
 	List<ActivityAppRecommend> findList(AppRecommendParamDto paramDto) throws Exception;
 
+	/**
+	 * 
+	 * @Description: 根据条件查询服务商品运营列表
+	 * @param paramDto 入参
+	 * @return PageUtils
+	 * @author zhulq
+	 * @date 2016年12月31日
+	 */
+	PageUtils<ActivityAppRecommendDto> findPageList(AppRecommendParamDto paramDto);
 }
