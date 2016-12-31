@@ -1,5 +1,5 @@
 /** 
- *@Project: okdeer-third-service 
+ *@Project: okdeer-mall-service
  *@Author: tangzj02
  *@Date: 2016年12月30日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
@@ -40,10 +40,10 @@ import com.okdeer.mall.activity.service.ActivitySelectAreaService;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class activitySelectAreaServiceTest {
+public class ActivitySelectAreaServiceTest {
 
 	/** 日志对象 */
-	private static final Logger log = LoggerFactory.getLogger(activitySelectAreaServiceTest.class);
+	private static final Logger log = LoggerFactory.getLogger(ActivitySelectAreaServiceTest.class);
 
 	@Autowired
 	private ActivitySelectAreaService activitySelectAreaService;
@@ -59,11 +59,14 @@ public class activitySelectAreaServiceTest {
 				area.setId(UuidUtils.getUuid());
 				area.setActivityType(1);
 				area.setActivityId("1");
-				area.setAreaId(i + "");
+				area.setProvinceId(i + "");
+				area.setProvinceName("测试省名称");
 				if (i > 5) {
 					area.setAreaType(SelectAreaType.province.getCode());
 				} else {
 					area.setAreaType(SelectAreaType.city.getCode());
+					area.setCityId(1 + "");
+					area.setCityName("测试测试名称");
 				}
 				list.add(area);
 			}
