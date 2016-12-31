@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
@@ -259,5 +260,10 @@ public class ActivityAppRecommendApiImpl implements ActivityAppRecommendApi {
 			return 0;
 		}
 		return activityAppRecommendService.deleteByIds(ids);
+	}
+
+	@Override
+	public PageUtils<ActivityAppRecommendDto> findPageList(AppRecommendParamDto paramDto) {
+		return activityAppRecommendService.findPageList(paramDto);
 	}
 }

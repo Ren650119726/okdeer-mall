@@ -6,17 +6,23 @@
  */
 package com.okdeer.mall.activity.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.activity.dto.ActivityAppRecommendDto;
 import com.okdeer.mall.activity.dto.AppRecommendParamDto;
 import com.okdeer.mall.activity.entity.ActivityAppRecommend;
 import com.okdeer.mall.activity.mapper.ActivityAppRecommendMapper;
 import com.okdeer.mall.activity.service.ActivityAppRecommendService;
+import com.okdeer.mall.operate.dto.SkinManagerDto;
 
 /**
  * ClassName: ActivityAppRecommendServiceImpl 
@@ -60,6 +66,17 @@ public class ActivityAppRecommendServiceImpl extends BaseServiceImpl implements 
 	@Override
 	public List<ActivityAppRecommend> findList(AppRecommendParamDto paramDto) throws Exception {
 		return appRecommendMapper.findList(paramDto);
+	}
+
+	@Override
+	public PageUtils<ActivityAppRecommendDto> findPageList(AppRecommendParamDto paramDto) {
+		PageHelper.startPage(paramDto.getPageNumber(), paramDto.getPageSize(), true);
+		List<ActivityAppRecommend> result = appRecommendMapper.findList(paramDto);
+		if (result == null) {
+			result = new ArrayList<ActivityAppRecommend>();
+		}
+		List<ActivityAppRecommendDto> list = BeanMapper.mapList(result, ActivityAppRecommendDto.class);
+		return new PageUtils<ActivityAppRecommendDto>(list);
 	}
 
 }
