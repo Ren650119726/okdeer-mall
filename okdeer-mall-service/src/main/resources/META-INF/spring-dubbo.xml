@@ -11,7 +11,10 @@
 
 	<!-- 使用zookeeper注册中心暴露服务地址 -->
 	<dubbo:registry protocol="zookeeper" address="${dubbo.registry.address}"  file="${dubbo.registry.file}"/>
-	<dubbo:consumer timeout="${dubbo.consumer.timeout}" check="false"  retries="${dubbo.consumer.retries}"/>
+	
+	<dubbo:consumer filter="catTransaction" timeout="${dubbo.consumer.timeout}" check="false"  retries="${dubbo.consumer.retries}"/>
+	
+	<dubbo:provider filter="catTransaction" />	
 		
 	<dubbo:protocol name="dubbo" port="${dubbo.port}" />
 	
