@@ -128,9 +128,12 @@ import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.constant.MessageConstant;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
+import com.okdeer.mall.member.points.dto.AddPointsParamDto;
+import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
@@ -205,7 +208,6 @@ import com.okdeer.mall.order.vo.TradeOrderStatisticsVo;
 import com.okdeer.mall.order.vo.TradeOrderStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderVo;
 import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
-import com.okdeer.mall.points.service.PointsBuriedService;
 import com.okdeer.mall.system.entity.SysUserInvitationRecord;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
@@ -302,7 +304,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Resource
 	private ActivityDiscountMapper activityDiscountMapper;
 
-
 	@Autowired
 	private ActivityCouponsRecordService activityCouponsRecordService;
 
@@ -385,12 +386,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	@Reference(version = "1.0.0", check = false)
 	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
-
-	/**
-	 * 订单消费赠送积分service
-	 */
-	@Autowired
-	private PointsBuriedService pointsBuriedService;
 
 	/**
 	 * 特惠活动记录信息mapper
@@ -1074,7 +1069,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 特惠活动只有店铺能发
 					activitySource = ActivitySourceEnum.STORE;
 				}
-			} 
+			}
 			// Begin 15698 add by wusw 20161205
 			else if (ActivityTypeEnum.SECKILL_ACTIVITY.equals(activityType)) {
 				ActivitySeckill activitySeckill = activitySeckillMapper.findByPrimaryKey(activityId);
@@ -1128,13 +1123,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 			// Begin 15486 add by wusw 20161129
 			// 如果是服务店订单，直接查询投诉信息，如果不是，已完成状态的订单才能查询投诉信息
-			if (tradeOrderVo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER || tradeOrderVo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+			if (tradeOrderVo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
+					|| tradeOrderVo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 				tradeOrderVo.setTradeOrderComplainVoList(tradeOrderComplainMapper.findOrderComplainByParams(orderId));
 			} else {
 				// 订单状态已完成后才能有投诉信息
 				if (OrderStatusEnum.HAS_BEEN_SIGNED.equals(tradeOrderVo.getStatus())
 						|| OrderStatusEnum.TRADE_CLOSED.equals(tradeOrderVo.getStatus())) {
-					tradeOrderVo.setTradeOrderComplainVoList(tradeOrderComplainMapper.findOrderComplainByParams(orderId));
+					tradeOrderVo
+							.setTradeOrderComplainVoList(tradeOrderComplainMapper.findOrderComplainByParams(orderId));
 				}
 			}
 			// End 15486 add by wusw 20161129
@@ -1413,11 +1410,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			updateWithConfirmNew(tradeOrder);
 			rocketMQProducer.sendMessage(anMessage);
 		} catch (Exception e) {
-			logger.error("完成订单发送消息异常{}",JsonMapper.nonEmptyMapper().toJson(tradeOrder), e);
+			logger.error("完成订单发送消息异常{}", JsonMapper.nonEmptyMapper().toJson(tradeOrder), e);
 			return false;
 		}
 		return true;
-		
+
 	}
 
 	// Begin modified by maojj 2016-07-26 添加分布式事务处理机制
@@ -1444,18 +1441,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					tradeOrder.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId()));
 				}
 				// 给卖家打款
-				//begin modify by zengjz 判断是否是服务店订单 
+				// begin modify by zengjz 判断是否是服务店订单
 				if (OrderTypeEnum.SERVICE_STORE_ORDER == tradeOrder.getType()) {
-					//服务店商品走另外的资金流程
+					// 服务店商品走另外的资金流程
 					this.tradeOrderPayService.confirmStoreServiceOrderPay(tradeOrder);
 				} else {
 					this.tradeOrderPayService.confirmOrderPay(tradeOrder);
 				}
-				//begin modify by zengjz 判断是否是服务店订单
+				// begin modify by zengjz 判断是否是服务店订单
 				// begin update by wushp
 				if (tradeOrder.getType().ordinal() == 2) {
 					// 服务店订单，没有售后时间，确认订单完成即送积分
-					pointsBuriedService.doConsumePoints(tradeOrder.getUserId(), tradeOrder.getActualAmount());
+					addPoint(tradeOrder.getUserId(), tradeOrder.getId(), tradeOrder.getActualAmount());
 				} else {
 					// 赠送积分计时消息
 					if (ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()) {
@@ -1552,7 +1549,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 判断无售后
 		if (list == null || Iterables.isEmpty(list)) {
 			if (order.getPayWay() == PayWayEnum.PAY_ONLINE) {
-				pointsBuriedService.doConsumePoints(order.getUserId(), order.getActualAmount());
+				addPoint(order.getUserId(), order.getId(), order.getActualAmount());
 			}
 		}
 		// 更新余额
@@ -1680,15 +1677,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			tradeOrder.setDeliveryTime(new Date());
 			// 发货人ID
 			tradeOrder.setShipmentsUserId(param.getUserId());
-			// Begin Bug:15707 added by maojj 2016-12-06 
+			// Begin Bug:15707 added by maojj 2016-12-06
 			// 更新时判断订单状态是否发生变化，以保证数据的一致性。类似乐观锁的处理机制
 			tradeOrder.setCurrentStatus(tradeOrder.getCurrentStatus());
 			// End Bug:15707 added by maojj 2016-12-06
 			// 更新订单信息
 			Integer updateRows = this.updateOrderStatus(tradeOrder);
-			// Begin Bug:15707 added by maojj 2016-12-06 
+			// Begin Bug:15707 added by maojj 2016-12-06
 			// 更新时判断订单状态是否发生变化，以保证数据的一致性。类似乐观锁的处理机制
-			if(updateRows == null || updateRows.intValue() == 0){
+			if (updateRows == null || updateRows.intValue() == 0) {
 				// 如果更新影响行数为0，则意味着订单状态已经发生变化。抛出异常终止业务处理
 				throw new ServiceException(ORDER_STATUS_OVERDUE);
 			}
@@ -1731,7 +1728,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 发送计时消息
 			// Begin 重构4.1 add by wusw 20160801
 			if (storeInfo.getType() == StoreTypeEnum.SERVICE_STORE) {
-				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
+				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0, 16), "yyyy-MM-dd HH:mm");
 				// 服务店订单，预约服务时间过后24小时未派单的自动确认收货
 				// tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout,
 				// tradeOrder.getId(),
@@ -4041,7 +4038,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				? DateUtils.formatDate(orders.getCreateTime(), "yyyy-MM-dd HH:mm:ss") : "");
 		// Begin V1.2 added by maojj 2016-11-29
 		// 服务订单接单时间
-		String deliveryTime =  orders.getDeliveryTime() != null
+		String deliveryTime = orders.getDeliveryTime() != null
 				? DateUtils.formatDate(orders.getDeliveryTime(), "yyyy-MM-dd HH:mm:ss") : "";
 		json.put("orderAcceptTime", orders.getAcceptTime() != null
 				? DateUtils.formatDate(orders.getAcceptTime(), "yyyy-MM-dd HH:mm:ss") : deliveryTime);
@@ -4208,12 +4205,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// 如果订单已完成并且已评价，则用这个文案
 						if (OrderTraceEnum.COMPLETED.equals(traceStatus) && appraise > 0) {
 							orderStatusRemark = "订单服务完成,任何意见和吐槽,都欢迎联系我们";
-						} else if (OrderTraceEnum.WAIT_RECEIVE.equals(traceStatus) && 
-								orders.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
+						} else if (OrderTraceEnum.WAIT_RECEIVE.equals(traceStatus)
+								&& orders.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
 							// 如果订单带派单并且是线下支付的，则用这个文案
 							orderStatusRemark = "等待商家接单,线下确认价格并当面支付";
-						} else if (OrderTraceEnum.CANCELED.equals(traceStatus) ||
-								OrderTraceEnum.SUBMIT_ORDER.equals(traceStatus)) {
+						} else if (OrderTraceEnum.CANCELED.equals(traceStatus)
+								|| OrderTraceEnum.SUBMIT_ORDER.equals(traceStatus)) {
 							orderStatusRemark = vo.getContent();
 						} else {
 							orderStatusRemark = traceStatus.getRemark();
@@ -4385,7 +4382,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 支付信息
 		TradeOrderPay tradeOrderPay = tradeOrderPayMapper.selectByOrderId(orderId);
 		tradeOrder.setTradeOrderPay(tradeOrderPay);
-		
+
 		// 发票信息
 		TradeOrderInvoice tradeOrderInvoice = tradeOrderInvoiceMapper.selectByOrderId(orderId);
 		tradeOrder.setTradeOrderInvoice(tradeOrderInvoice);
@@ -4526,8 +4523,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					payTradeVo.setIncomeUserId(storeUserId);// 收款人，根据业务不同设置不同的id
 
 					// 消费完，增加积分
-					pointsBuriedService.doConsumePoints(data.get("userId").toString(), unitPrice);
-
+					addPoint(data.get("userId").toString(), data.get("detailId").toString(), unitPrice);
+					
 					serviceStockManagerService.updateStock(stockAdjustVo);
 					// 调用dubbo接口
 					BaseResultDto result = payTradeServiceApi.balanceTrade(payTradeVo);
@@ -4595,17 +4592,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		TradeOrder orders = tradeOrderMapper.selectByParamsTrade(tradeOrder.getTradeNum());
 		tradeOrder.setId(orders.getId());
 		tradeOrderMapper.updateTradeOrderByTradeNum(tradeOrder);
-		
-		//添加充值成功 修改订单状态为完成时发送消息
-		if(tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED){
-			MQMessage anMessage = new MQMessage(TradeOrderTopic.ORDER_COMPLETE_TOCPIC, (Serializable)tradeOrder);
+
+		// 添加充值成功 修改订单状态为完成时发送消息
+		if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
+			MQMessage anMessage = new MQMessage(TradeOrderTopic.ORDER_COMPLETE_TOCPIC, (Serializable) tradeOrder);
 			try {
 				rocketMQProducer.sendMessage(anMessage);
 			} catch (Exception e) {
-				logger.error("完成订单发送消息异常{}",JsonMapper.nonEmptyMapper().toJson(tradeOrder), e);
+				logger.error("完成订单发送消息异常{}", JsonMapper.nonEmptyMapper().toJson(tradeOrder), e);
 			}
 		}
-		
+
 	}
 
 	@Override
@@ -6038,8 +6035,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 											OrderItemDetailConsumeVo consumeVo = successOrderDetailMap.get(orderId);
 											// 消费完，增加积分
-											pointsBuriedService.doConsumePoints(consumeVo.getUserId(),
-													consumeVo.getDetailActualAmount());
+											addPoint(consumeVo.getUserId(), consumeVo.getOrderItemDetailId(), consumeVo.getDetailActualAmount());
 											// 修改库存
 											updateServiceStoreStock(consumeVo, rpcIdList,
 													StockOperateEnum.SEND_OUT_GOODS, userId, storeId);
@@ -6168,14 +6164,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				orderStatusCountMap.put(map.get("orderId") + "-" + map.get("status"),
 						new Integer(map.get("num").toString()));
 			}
-			
+
 			// begin modify by zengjz 2016-11-28 修改判断逻辑
 			// 根据统计数量，判断订单消费码状态值，如果存在已过期的，状态为已过期；如果存在未消费的，状态为未消费；如果存在已消费的，状态为待评价，否则，状态为已退款
 			for (String orderId : orderIdList) {
 				int noConsumeCount = 0;
 				int expiredCount = 0;
 				int consumedCount = 0;
-				
+
 				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal()) != null) {
 					noConsumeCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.noConsume.ordinal())
 							.intValue();
@@ -6184,36 +6180,35 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					expiredCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.expired.ordinal())
 							.intValue();
 				}
-				
+
 				if (orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.consumed.ordinal()) != null) {
 					consumedCount = orderStatusCountMap.get(orderId + "-" + ConsumeStatusEnum.consumed.ordinal())
 							.intValue();
 				}
-				
-				
+
 				TradeOrder order = new TradeOrder();
 				order.setId(orderId);
 				order.setUpdateTime(new Date());
 				if (expiredCount > 0) {
-					//如果已经有过期的就将消费码状态改为已过期
+					// 如果已经有过期的就将消费码状态改为已过期
 					order.setConsumerCodeStatus(ConsumerCodeStatusEnum.EXPIRED);
 				} else {
 					if (noConsumeCount > 0) {
-						//有待消费的就改为待消费
+						// 有待消费的就改为待消费
 						order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_CONSUME);
 					} else {
 						if (consumedCount > 0) {
 							// 变成已经消费
 							order.setConsumerCodeStatus(ConsumerCodeStatusEnum.WAIT_EVALUATE);
 						} else {
-							//全部退款
+							// 全部退款
 							order.setConsumerCodeStatus(ConsumerCodeStatusEnum.REFUNDED);
 						}
 					}
 				}
 				tradeOrderMapper.updateByPrimaryKeySelective(order);
 			}
-			
+
 			// end modify by zengjz 2016-11-28 修改判断逻辑
 		}
 	}
@@ -6234,7 +6229,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 查询店铺扩展信息
 		String storeId = orders.getStoreInfo().getId();
 		StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
-		
+
 		orders.setItems(tradeOrderItems);
 		JSONObject json = this.getServiceJsonObj(orders, appraise, storeInfoExt, true);
 		return json;
@@ -6504,7 +6499,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			return BigDecimal.valueOf(value);
 		}
 	}
-	
+
 	@Override
 	public List<TradeOrderExportVo> findExportList(Map<String, Object> map) {
 		// 查询订单信息
@@ -6573,10 +6568,33 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public void acceptOrder(TradeOrder tradeOrder) throws Exception {
 		this.updateOrderStatus(tradeOrder);
 		// 预约服务时间
-		Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0,16), "yyyy-MM-dd HH:mm");
+		Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0, 16), "yyyy-MM-dd HH:mm");
 		// 服务店接单给用户发送通知短信
 		tradeMessageService.sendSmsAfterAcceptOrder(tradeOrder);
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
 				(DateUtils.addHours(serviceTime, 2).getTime() - System.currentTimeMillis()) / 1000);
+	}
+
+	/**
+	 * @Description: 订单消费添加积分，发送消息
+	 * @param userId 用户id
+	 * @param orderId 订单id
+	 * @param amount 金额
+	 * @author zengjizu
+	 * @throws Exception 
+	 * @date 2016年12月31日
+	 */
+	private void addPoint(String userId, String orderId, BigDecimal amount) throws Exception {
+		if (amount.compareTo(BigDecimal.ONE) >= 0) {
+			// 只有当金额大于1块钱的时候才赠送积分与成长值
+			AddPointsParamDto addPointsParamDto = new AddPointsParamDto();
+			addPointsParamDto.setAmount(amount);
+			addPointsParamDto.setBusinessType(1);
+			addPointsParamDto.setPointsRuleCode(PointsRuleCode.APP_CONSUME);
+			addPointsParamDto.setUserId(userId);
+			addPointsParamDto.setBusinessId(orderId);
+			MQMessage anMessage = new MQMessage(MessageConstant.POINT_TOPIC, (Serializable) addPointsParamDto);
+			rocketMQProducer.sendMessage(anMessage);
+		}
 	}
 }

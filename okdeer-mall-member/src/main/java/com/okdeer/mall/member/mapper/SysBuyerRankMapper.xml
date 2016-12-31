@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.member.mapper.SysBuyerRankMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.member.entity.SysBuyerRank" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="rank_code" property="rankCode" jdbcType="VARCHAR" />
+        <result column="from_val" property="fromVal" jdbcType="INTEGER" />
+        <result column="to_val" property="toVal" jdbcType="INTEGER" />
+        <result column="point_benefit" property="pointBenefit" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.WhetherEnum" />
+        <result column="point_benefit_val" property="pointBenefitVal" jdbcType="DECIMAL" />
+        <result column="taste_chance" property="tasteChance" jdbcType="TINYINT"  javaType="com.okdeer.base.common.enums.WhetherEnum" />
+        <result column="ico_url" property="icoUrl" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, name, rank_code, from_val, to_val, point_benefit, point_benefit_val, taste_chance, 
+        ico_url
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from sys_buyer_rank
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.member.entity.SysBuyerRank" >
+        insert into sys_buyer_rank
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="name != null" >
+                name,
+            </if>
+            <if test="rankCode != null" >
+                rank_code,
+            </if>
+            <if test="fromVal != null" >
+                from_val,
+            </if>
+            <if test="toVal != null" >
+                to_val,
+            </if>
+            <if test="pointBenefit != null" >
+                point_benefit,
+            </if>
+            <if test="pointBenefitVal != null" >
+                point_benefit_val,
+            </if>
+            <if test="tasteChance != null" >
+                taste_chance,
+            </if>
+            <if test="icoUrl != null" >
+                ico_url,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null" >
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="rankCode != null" >
+                #{rankCode,jdbcType=VARCHAR},
+            </if>
+            <if test="fromVal != null" >
+                #{fromVal,jdbcType=INTEGER},
+            </if>
+            <if test="toVal != null" >
+                #{toVal,jdbcType=INTEGER},
+            </if>
+            <if test="pointBenefit != null" >
+                #{pointBenefit,jdbcType=TINYINT},
+            </if>
+            <if test="pointBenefitVal != null" >
+                #{pointBenefitVal,jdbcType=DECIMAL},
+            </if>
+            <if test="tasteChance != null" >
+                #{tasteChance,jdbcType=TINYINT},
+            </if>
+            <if test="icoUrl != null" >
+                #{icoUrl,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.member.entity.SysBuyerRank" >
+        update sys_buyer_rank
+        <set >
+            <if test="name != null" >
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="rankCode != null" >
+                rank_code = #{rankCode,jdbcType=VARCHAR},
+            </if>
+            <if test="fromVal != null" >
+                from_val = #{fromVal,jdbcType=INTEGER},
+            </if>
+            <if test="toVal != null" >
+                to_val = #{toVal,jdbcType=INTEGER},
+            </if>
+            <if test="pointBenefit != null" >
+                point_benefit = #{pointBenefit,jdbcType=TINYINT},
+            </if>
+            <if test="pointBenefitVal != null" >
+                point_benefit_val = #{pointBenefitVal,jdbcType=DECIMAL},
+            </if>
+            <if test="tasteChance != null" >
+                taste_chance = #{tasteChance,jdbcType=TINYINT},
+            </if>
+            <if test="icoUrl != null" >
+                ico_url = #{icoUrl,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from sys_buyer_rank
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+	
+	<select id="findByRankCode" parameterType="string" resultMap="BaseResultMap">
+		 select  <include refid="Base_Column_List" />  from sys_buyer_rank  where rank_code = #{rankCode,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="findByGrowth" parameterType="int" resultMap="BaseResultMap">
+		select 	<include refid="Base_Column_List" /> from  	sys_buyer_rank 	
+		where  <![CDATA[from_val <= #{growth,jdbcType=INTEGER} ]]>  AND <![CDATA[ to_val >= #{growth,jdbcType=INTEGER} ]]>
+	</select>
+</mapper>

@@ -31,7 +31,7 @@ public interface PointsRuleMapper{
 	 * @param pointsRule pointsRule
 	 * @return 返回查询积分规则
 	 */
-	PointsRule selectByCode(PointsRule pointsRule);
+	PointsRule selectByCode(@Param("code") String code);
 	
 	/**
 	 * 查询所有积分规则

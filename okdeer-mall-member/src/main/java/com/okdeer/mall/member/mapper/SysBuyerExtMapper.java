@@ -1,10 +1,7 @@
 package com.okdeer.mall.member.mapper;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Param;
 
-import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
 
 
@@ -69,6 +66,15 @@ public interface SysBuyerExtMapper {
 	 * @author tuzhd
 	 * @date 2016年12月13日
 	 */
-	void updateAddPrizeCount(@Param("userId") String userId,@Param("count") int count);	
+	void updateAddPrizeCount(@Param("userId") String userId,@Param("count") int count);
+	
+	/**
+	 * @Description: 根据用户id查询用户扩展信息（带锁）
+	 * @param userId 用户id
+	 * @return 用户扩展信息
+	 * @author zengjizu
+	 * @date 2016年12月31日
+	 */
+	SysBuyerExt findByUserIdForUpdate(@Param("userId") String userId);	
 	
 }

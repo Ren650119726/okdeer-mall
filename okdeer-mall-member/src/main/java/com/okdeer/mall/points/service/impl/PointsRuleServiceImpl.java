@@ -98,7 +98,7 @@ public class PointsRuleServiceImpl implements PointsRuleServiceApi {
 	public void add(PointsRule pointsRule) throws ServiceException {
 		logger.debug("添加积分规则请求参数,pointsRule={}", pointsRule);
 		// 1 校验code是否重复
-		PointsRule rule = pointsRuleMapper.selectByCode(pointsRule);
+		PointsRule rule = pointsRuleMapper.selectByCode(pointsRule.getCode());
 		if (rule != null) {
 			throw new ServiceException("该积分规则" + pointsRule.getCode() + "已存在");
 		}
@@ -116,7 +116,7 @@ public class PointsRuleServiceImpl implements PointsRuleServiceApi {
 	public void addSelective(PointsRule pointsRule) throws ServiceException {
 		logger.debug("按需添加积分规则请求参数,pointsRule={}", pointsRule);
 		// 1 校验code是否重复
-		PointsRule rule = pointsRuleMapper.selectByCode(pointsRule);
+		PointsRule rule = pointsRuleMapper.selectByCode(pointsRule.getCode());
 		if (rule != null) {
 			throw new ServiceException("该积分规则" + pointsRule.getCode() + "已存在");
 		}
@@ -195,7 +195,7 @@ public class PointsRuleServiceImpl implements PointsRuleServiceApi {
 				/**
 				 * 3.2 根据积分规则编码code查询规则
 				 */
-				PointsRule pointRule = pointsRuleMapper.selectByCode(pointsRule);
+				PointsRule pointRule = pointsRuleMapper.selectByCode(pointsRule.getCode());
 				if (null == pointRule) {
 					return buyerId;
 				}
@@ -232,6 +232,6 @@ public class PointsRuleServiceImpl implements PointsRuleServiceApi {
 
 	@Override
 	public PointsRule selectByCode(PointsRule pointsRule) throws ServiceException {
-		return pointsRuleMapper.selectByCode(pointsRule);
+		return pointsRuleMapper.selectByCode(pointsRule.getCode());
 	}
 }
