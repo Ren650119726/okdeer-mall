@@ -12,10 +12,14 @@
 		<result property="salePrice" column="sale_price" />
 		<result property="sort" column="sort" />
 		<result property="disabled" column="disabled" />
+		<result property="createTime" column="create_time" />
+		<result property="createUserId" column="create_user_id" />
+		<result property="updateTime" column="update_time" />
+		<result property="updateUserId" column="update_user_id" />
 	</resultMap>
 
     <sql id="columns">
-		id,store_sku_id,sale_id,trade_max,sale_stock,sale_price,sort,disabled
+		id,store_sku_id,sale_id,trade_max,sale_stock,sale_price,sort,disabled,create_time,create_user_id,update_time,update_user_id
 	</sql>
 
     <insert id="saveBatch" parameterType="list">
@@ -31,7 +35,11 @@
             #{item.saleStock},
             #{item.salePrice},
             #{item.sort},
-            #{item.disabled}
+            #{item.disabled},
+            #{item.createTime},
+            #{item.createUserId},
+            #{item.updateTime},
+            #{item.updateUserId}
         )
 		</foreach>
 	</insert>
@@ -82,4 +90,36 @@
 		</foreach>
 	</select>
 	<!-- End added by maojj 2016-07-15 -->
+	
+	<!-- added by mengsj begin 2017-01-03 -->
+	<select id="findSaleGoodsByParams" parameterType="com.okdeer.mall.activity.dto.ActivitySaleGoodsParamDto" resultType="com.okdeer.mall.activity.coupons.entity.ActivitySaleGoodsBo">
+		SELECT <include refid="columns" />, 
+				sku.name skuName,
+				sku_pic.url picUrl,
+				cat.name skuCategoryName,
+				sku.bar_code as barCode,
+				sku.online_price as onlinePrice,
+				record.sale_num	saleNum			
+		FROM activity_sale_goods sg
+			LEFT JOIN goods_store_sku sku ON sg.store_sku_id = sku.id
+			LEFT JOIN goods_store_sku_picture sku_pic ON (sku_pic.store_sku_id = sku.id AND sku_pic.type = 1)
+			LEFT JOIN goods_store_spu spu ON spu.id = sku.store_spu_id
+			LEFT JOIN goods_spu_category cat ON spu.spu_category_id = cat.id
+			LEFT JOIN goods_store_sku_stock stock ON sg.id = stock.store_sku_id
+			LEFT JOIN (select count(1) as sale_num from activity_sale_record rc WHERE rc.sale_goods_id = sg.id) record ON sg.sale_id = record.sale_id
+		WHERE sg.sale_id = #{activityId,jdbcType=VARCHAR} 
+		<if test="skuName != null and skuName!=''">
+			AND sku.name CONCAT('%', #{skuName,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="skuCategoryName != null and skuCategoryName != ''">
+			AND cat.name CONCAT('%', #{skuCategoryName,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="barCode != null and barCode != ''">
+			AND sku.bar_code CONCAT('%', #{barCode,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="scareBuyStatus != null and scareBuyStatus != ''">
+			AND sg.disabled = #{scareBuyStatus}
+		</if>
+	</select>
+	<!-- added by mengsj end 2017-01-03 -->
 </mapper>

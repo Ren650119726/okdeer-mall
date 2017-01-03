@@ -6,6 +6,8 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
+import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoodsBo;
+import com.okdeer.mall.activity.dto.ActivitySaleGoodsParamDto;
 
 /**
  * @DESC: 特惠活动商品dao
@@ -63,6 +65,28 @@ public interface ActivitySaleGoodsMapper {
 	 * @return
 	 */
 	ActivitySaleGoods  selectActivitySaleByParams(Map<String,Object> map);
+	
+	
+	/**
+	 * 通过页面查询参数查找低价抢购商品
+	 * @Description: 
+	 * @param param
+	 * @return List<ActivitySaleGoods>
+	 * @throws
+	 * @author mengsj
+	 * @date 2016年12月31日
+	 */
+	List<ActivitySaleGoodsBo> findSaleGoodsByParams(@Param("param")ActivitySaleGoodsParamDto param);
+	
+	/**
+	 * 批量设置低价抢购商品
+	 * @Description:
+	 * @param saleGoods
+	 * @throws Exception void
+	 * @author mengsj
+	 * @date 2016年12月31日
+	 */
+	void updateBatch(@Param("list")List<ActivitySaleGoods> saleGoods) throws Exception;
 	
 	/**
 	 * @desc 通过主键获取对象

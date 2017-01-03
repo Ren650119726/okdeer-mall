@@ -1,5 +1,6 @@
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -7,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsServiceApi;
+import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoodsBo;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsService;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsServiceApi;
+import com.okdeer.mall.activity.dto.ActivitySaleGoodsParamDto;
 
 /**
  * 
@@ -34,6 +37,12 @@ public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi,
 	@Override
 	public ActivitySaleGoods selectActivitySaleByParams(Map<String, Object> params) {
 		return activitySaleGoodsMapper.selectActivitySaleByParams(params);
+	}
+
+	@Override
+	public List<ActivitySaleGoodsBo> findSaleGoodsByParams(
+			ActivitySaleGoodsParamDto param) {
+		return activitySaleGoodsMapper.findSaleGoodsByParams(param);
 	}
 
 }
