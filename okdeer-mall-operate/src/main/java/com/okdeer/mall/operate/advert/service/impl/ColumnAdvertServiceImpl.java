@@ -16,7 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +26,12 @@ import com.github.pagehelper.PageHelper;
 import com.okdeer.archive.system.entity.PsmsSmallCommunityInfo;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.IPsmsSmallCommunityInfoServiceApi;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto;
 import com.okdeer.mall.advert.entity.AdvertDetailVo;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.entity.ColumnAdvertApproval;
@@ -41,16 +46,9 @@ import com.okdeer.mall.advert.enums.AdvertStatusEnum;
 import com.okdeer.mall.advert.service.IColumnAdvertServiceApi;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.AuditStatusEnum;
-import com.okdeer.mall.common.enums.DistrictType;
 import com.okdeer.mall.common.enums.UserType;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.StringUtils;
-import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.operate.advert.mapper.ColumnAdvertApprovalMapper;
 import com.okdeer.mall.operate.advert.mapper.ColumnAdvertAreaMapper;
-import com.okdeer.mall.operate.advert.mapper.ColumnAdvertCommunityMapper;
 import com.okdeer.mall.operate.advert.mapper.ColumnAdvertInfoMapper;
 import com.okdeer.mall.operate.advert.mapper.ColumnAdvertMapper;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertService;
@@ -90,12 +88,6 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	 */
 	@Autowired
 	private ColumnAdvertAreaMapper advertAreaMapper;
-
-	/**
-	 * 店铺小区关系Mapper注入
-	 */
-	@Autowired
-	private ColumnAdvertCommunityMapper advertCommunityMapper;
 
 	/**
 	 * 物业平台小区信息Service
@@ -705,5 +697,11 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 			}
 		}	
 		return null;
+	}
+
+	@Override
+	public List<ColumnAdvert> findForApp(ColumnAdvertQueryParamDto advertQueryParamDto) {
+		
+		return advertMapper.findForApp(advertQueryParamDto);
 	}
 }
