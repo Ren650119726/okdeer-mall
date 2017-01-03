@@ -82,7 +82,7 @@ import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.IStoreInfoExtServiceApi;
-import com.okdeer.archive.store.service.StoreInfoApi;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.PsmsAgent;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.archive.system.service.IPsmsAgentServiceApi;
@@ -344,7 +344,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	private TradeOrderLogisticsMapper tradeOrderLogisticsMapper;
 
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoApi storeInfoService;
+	private StoreInfoServiceApi storeInfoService;
 
 	@Autowired
 	private RocketMQTransactionProducer rocketMQTransactionProducer;
@@ -449,7 +449,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * 店铺信息Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	StoreInfoApi storeInfoServiceApi;
+	StoreInfoServiceApi storeInfoServiceApi;
 
 	/**
 	 * 代理商Service

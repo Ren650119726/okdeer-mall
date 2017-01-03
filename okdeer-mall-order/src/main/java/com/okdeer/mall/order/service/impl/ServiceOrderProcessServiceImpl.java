@@ -46,7 +46,7 @@ import com.okdeer.archive.store.enums.PublicResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.IStoreServerAreaServiceApi;
-import com.okdeer.archive.store.service.StoreInfoApi;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.DateUtils;
@@ -215,7 +215,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	 * 店铺信息Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoApi storeInfoService;
+	private StoreInfoServiceApi storeInfoService;
 
 	/**
 	 * 商品信息Service

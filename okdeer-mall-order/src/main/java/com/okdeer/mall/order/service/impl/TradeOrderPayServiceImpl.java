@@ -39,7 +39,7 @@ import com.okdeer.api.pay.enums.SystemEnum;
 import com.okdeer.api.pay.pay.dto.PayReqestDto;
 import com.okdeer.api.pay.service.IPayServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
-import com.okdeer.archive.store.service.StoreInfoApi;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -128,7 +128,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	private TradeOrderActivityService tradeOrderActivityService;
 
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoApi storeInfoService;
+	private StoreInfoServiceApi storeInfoService;
 
 	/**
 	 * 支付接口

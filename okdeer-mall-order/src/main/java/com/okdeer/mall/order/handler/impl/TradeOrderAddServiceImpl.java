@@ -31,7 +31,7 @@ import com.okdeer.archive.store.entity.StoreBranches;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.service.StoreBranchesServiceApi;
-import com.okdeer.archive.store.service.StoreInfoApi;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -131,7 +131,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	 * 店铺信息Dubbo接口
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoApi storeInfoServiceApi;
+	private StoreInfoServiceApi storeInfoServiceApi;
 
 	/**
 	 * 买家用户Mapper
