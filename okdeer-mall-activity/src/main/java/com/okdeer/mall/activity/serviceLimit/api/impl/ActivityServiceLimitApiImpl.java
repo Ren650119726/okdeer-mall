@@ -11,7 +11,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.store.entity.StoreInfo;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.serviceLimit.dto.StoreActivityLimitDto;
 import com.okdeer.mall.activity.serviceLimit.entity.ActivityServiceLimit;
@@ -26,7 +26,7 @@ public class ActivityServiceLimitApiImpl implements ActivityServiceLimitApi {
 	ActivityServiceLimitService limitService;
 
 	@Reference(version = "1.0.0")
-	private StoreInfoServiceApi storeInfoServiceApi;
+	private StoreInfoApi storeInfoServiceApi;
 
 	@Override
 	public void add(ActivityServiceLimit activityLimit, List<ActivityServiceLimitGoods> asgList) throws Exception {

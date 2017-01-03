@@ -48,7 +48,7 @@ import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreBranches;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreBranchesServiceApi;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -163,7 +163,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 	private GoodsStoreSkuServiceApi goodsStoreSkuService;
 
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoService;
+	private StoreInfoApi storeInfoService;
 
 	@Value("${storeImagePrefix}")
 	private String storeImagePrefix;

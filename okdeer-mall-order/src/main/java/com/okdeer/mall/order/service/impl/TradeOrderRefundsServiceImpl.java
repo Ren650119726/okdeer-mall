@@ -43,7 +43,7 @@ import com.okdeer.archive.goods.store.enums.MeteringMethod;
 import com.okdeer.archive.store.entity.StoreMemberRelation;
 import com.okdeer.archive.store.enums.StoreUserTypeEnum;
 import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.archive.system.entity.SysMsg;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.DateUtils;
@@ -237,7 +237,7 @@ public class TradeOrderRefundsServiceImpl
 	private RocketMQTransactionProducer rocketMQTransactionProducer;
 
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoService;
+	private StoreInfoApi storeInfoService;
 
 	@Autowired
 	private TradeOrderActivityService tradeOrderActivityService;

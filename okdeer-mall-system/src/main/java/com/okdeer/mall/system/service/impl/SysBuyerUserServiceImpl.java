@@ -22,7 +22,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysBuyerUserThirdparty;
 import com.okdeer.archive.system.entity.SysSmsVerifyCode;
@@ -138,7 +138,7 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	// @Autowired
 	// StoreInfoMapper storeInfoMapper;
 	@Reference(version = "1.0.0", check = false)
-	StoreInfoServiceApi storeInfoServiceApi;
+	StoreInfoApi storeInfoServiceApi;
 
 	/**
 	 * 用户中心系统用户接口注入

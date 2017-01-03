@@ -35,7 +35,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
@@ -92,7 +92,7 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 	 * 店铺信息Mapper注入
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoService;
+	private StoreInfoApi storeInfoService;
 
 	/**
 	 * 买家用户Mapper注入

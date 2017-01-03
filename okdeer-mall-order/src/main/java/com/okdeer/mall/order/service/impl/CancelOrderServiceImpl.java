@@ -26,7 +26,7 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
@@ -74,7 +74,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	private static final Logger logger = LoggerFactory.getLogger(CancelOrderServiceImpl.class);
 
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoService;
+	private StoreInfoApi storeInfoService;
 
 	@Autowired
 	private TradeOrderItemMapper tradeOrderItemMapper;

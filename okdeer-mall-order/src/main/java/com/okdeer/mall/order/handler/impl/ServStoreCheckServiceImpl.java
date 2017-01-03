@@ -13,7 +13,7 @@ import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
@@ -43,7 +43,7 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 	 * 店铺调用接口
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoService;
+	private StoreInfoApi storeInfoService;
 	
 	private static final Pattern pattern = Pattern.compile("(\\d{2}:\\d{2}-\\d{2}:\\d{2},*)*");
 
