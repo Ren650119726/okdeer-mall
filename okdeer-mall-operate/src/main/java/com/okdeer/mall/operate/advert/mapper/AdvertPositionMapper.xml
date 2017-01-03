@@ -59,4 +59,9 @@
 		WHERE id = #{id,jdbcType=VARCHAR}
 	</update>
 	
+	<select id="findByType"  resultMap="positionResultMap" >
+		SELECT <include refid="base_column_list" />
+		FROM column_advert_position
+		WHERE type = #{advertType, jdbcType=TINYINT}
+	</select>
 </mapper>

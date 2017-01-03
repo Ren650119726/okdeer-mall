@@ -10,10 +10,12 @@ package com.okdeer.mall.operate.advert.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import com.okdeer.mall.advert.entity.AdvertPosition;
 import com.okdeer.mall.advert.entity.AdvertPositionQueryVo;
+import com.okdeer.mall.advert.enums.AdvertTypeEnum;
 import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
@@ -22,7 +24,6 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  * @author zhaoqc
  * @date 2016年1月22日 上午11:35:46
  */
-@Repository
 public interface AdvertPositionMapper extends IBaseCrudMapper {
 	
 	/**
@@ -32,5 +33,14 @@ public interface AdvertPositionMapper extends IBaseCrudMapper {
 	 * @return 广告位列表
 	 */
 	List<AdvertPosition> findAdvertPositions(AdvertPositionQueryVo queryVo);
+	
+	/**
+	 * @Description: 根据类型查找广告位
+	 * @param advertType 广告类型
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年1月3日
+	 */
+	AdvertPosition findByType(@Param("advertType") AdvertTypeEnum advertType);
 	
 }

@@ -17,6 +17,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto;
 import com.okdeer.mall.advert.entity.AdvertDetailVo;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.entity.ColumnAdvertCommunity;
@@ -206,5 +207,14 @@ public interface ColumnAdvertMapper extends IBaseCrudMapper {
 	 */
 	List<HashMap<String, Integer>> findAdvertRestrictByArea(ColumnAdvert advert);
 	//End added by tangy
+	
+	/**
+	 * @Description: 查询广告列表给app接口
+	 * @param advertQueryParamDto 查询参数
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年1月3日
+	 */
+	List<ColumnAdvert> findForApp(ColumnAdvertQueryParamDto advertQueryParamDto);
 }
 

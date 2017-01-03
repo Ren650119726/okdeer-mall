@@ -13,6 +13,7 @@ import java.util.Map;
 
 import com.okdeer.archive.system.entity.PsmsSmallCommunityInfo;
 import com.okdeer.archive.system.entity.SysUser;
+import com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto;
 import com.okdeer.mall.advert.entity.AdvertDetailVo;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.entity.ColumnAdvertApproval;
@@ -213,5 +214,14 @@ public interface ColumnAdvertService {
 	 * @return 广告审核信息
 	 */
 	ColumnAdvertApproval getApprovalByAdvertId(String advertId);
+	
+	/**
+	 * @Description: 查询广告列表给前端app
+	 * @param advertQueryParamDto 查询参数
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年1月3日
+	 */
+	List<ColumnAdvert> findForApp(ColumnAdvertQueryParamDto advertQueryParamDto);
 	
 }

@@ -13,6 +13,7 @@ import java.util.List;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.mall.advert.entity.AdvertPosition;
 import com.okdeer.mall.advert.entity.AdvertPositionQueryVo;
+import com.okdeer.mall.advert.enums.AdvertTypeEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 
@@ -59,5 +60,15 @@ public interface AdvertPositionService {
 	 * @return 广告位列表
 	 */
 	List<AdvertPosition> findAllAdvertPositions();
+	
+	/**
+	 * 
+	 * @Description: TODO
+	 * @param advertType
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年1月3日
+	 */
+	AdvertPosition findByType(AdvertTypeEnum advertType);
 
 }
