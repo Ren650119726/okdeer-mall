@@ -136,5 +136,4 @@ public class MemberServiceImpl implements MemberService,MemberServiceApi {
 		}
 		return null;
 	}
-
 }
