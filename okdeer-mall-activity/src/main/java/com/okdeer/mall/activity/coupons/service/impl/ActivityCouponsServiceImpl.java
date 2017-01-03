@@ -24,7 +24,7 @@ import com.okdeer.archive.store.entity.StoreAgentCommunity;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreAgentCommunityServiceApi;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
@@ -90,7 +90,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	 * 店铺信息serviceApi注入
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoServiceApi;
+	private StoreInfoApi storeInfoServiceApi;
 
 	/**
 	 * 代金券关联店铺Mapper注入

@@ -20,7 +20,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.store.entity.StoreInfo;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
@@ -135,7 +135,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 	private TradeOrderRefundsCertificateService tradeOrderRefundsCertificateService;
 	
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoService;
+	private StoreInfoApi storeInfoService;
 	
 	
 	@Override

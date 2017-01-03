@@ -37,7 +37,7 @@ import com.okdeer.archive.store.entity.StoreMemberRelation;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.enums.StoreUserTypeEnum;
 import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.archive.system.entity.SysMsg;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.pos.service.PosShiftExchangeServiceApi;
@@ -290,7 +290,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 * 店铺信息Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoService;
+	private StoreInfoApi storeInfoService;
 
 	/**
 	 * 订单项Service

@@ -22,7 +22,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysBuyerUserThirdparty;
 import com.okdeer.archive.system.entity.SysSmsVerifyCode;
@@ -51,7 +51,6 @@ import com.okdeer.mall.member.member.service.SysBuyerExtServiceApi;
 import com.okdeer.mall.member.points.entity.PointsRecord;
 import com.okdeer.mall.member.points.entity.PointsRule;
 import com.okdeer.mall.member.points.enums.PointsRuleCode;
-import com.okdeer.mall.member.points.service.PointsBuriedServiceApi;
 import com.okdeer.mall.member.points.service.PointsRecordServiceApi;
 import com.okdeer.mall.member.points.service.PointsRuleServiceApi;
 import com.okdeer.mall.system.entity.BuyerUserVo;
@@ -89,11 +88,6 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	private SysBuyerUserMapper sysBuyerUserMapper;
 
 	// begin by wangf01 2016.07.27
-	/**
-	 * 登录送积分
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private PointsBuriedServiceApi pointsBuriedService;
 
 	/**
 	 * 系统用户登陆信息日志
@@ -144,7 +138,7 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	// @Autowired
 	// StoreInfoMapper storeInfoMapper;
 	@Reference(version = "1.0.0", check = false)
-	StoreInfoServiceApi storeInfoServiceApi;
+	StoreInfoApi storeInfoServiceApi;
 
 	/**
 	 * 用户中心系统用户接口注入

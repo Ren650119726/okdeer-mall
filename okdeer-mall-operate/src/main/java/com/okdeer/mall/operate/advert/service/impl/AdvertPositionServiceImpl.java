@@ -19,6 +19,7 @@ import com.github.pagehelper.PageHelper;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.mall.advert.entity.AdvertPosition;
 import com.okdeer.mall.advert.entity.AdvertPositionQueryVo;
+import com.okdeer.mall.advert.enums.AdvertTypeEnum;
 import com.okdeer.mall.advert.service.IAdvertPositionServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
@@ -96,6 +97,11 @@ public class AdvertPositionServiceImpl implements AdvertPositionService, IAdvert
 	@Override
 	public List<AdvertPosition> findAllAdvertPositions() {
 		return this.positionMapper.findAdvertPositions(new AdvertPositionQueryVo());
+	}
+
+	@Override
+	public AdvertPosition findByType(AdvertTypeEnum advertType) {
+		return positionMapper.findByType(advertType);
 	}
 
 }

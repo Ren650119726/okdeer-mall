@@ -38,7 +38,7 @@ import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.service.IStoreInfoExtServiceApi;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -150,7 +150,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 	private RocketMQTransactionProducer rocketMQTransactionProducer;
 
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoService;
+	private StoreInfoApi storeInfoService;
 
 	@Autowired
 	private TradeOrderActivityService tradeOrderActivityService;

@@ -153,5 +153,51 @@
      ORDER BY create_time DESC
   </select>
   
+  <!-- 统计纪录数 -->
+  <select id="statisRecordCount" resultType="int" parameterType="com.okdeer.mall.points.bo.StatisRecordParamBo">
+  		SELECT count(1) from points_record WHERE 1=1
+	  	<if test="userId != null and userId != ''">
+	  		and user_id = #{userId,jdbcType=VARCHAR}
+	  	</if>
+	  	<if test="code != null and code != ''">
+	  		and code = #{code,jdbcType=VARCHAR}
+	  	</if>
+	  	<if test="startTime !=null and startTime != ''">
+	  		 <![CDATA[ AND create_time >= #{startTime,jdbcType=VARCHAR} ]]>
+	  	</if>
+	  	<if test="endTime !=null and endTime != ''">
+	  		 <![CDATA[ AND create_time >= #{endTime,jdbcType=VARCHAR} ]]>
+	  	</if>
+	  	<if test="existsCodeList != null and existsCodeList.size() > 0">
+	  		and code not in 
+	  		<foreach collection="existsCodeList" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+	  	</if>
+  </select>
   
+   <!-- 统计积分 -->
+  <select id="statisRecordPoint" resultType="int" parameterType="com.okdeer.mall.points.bo.StatisRecordParamBo">
+  		SELECT IFNULL(sum(point_val),0) from points_record  WHERE  1=1
+	  	<if test="userId != null and userId != ''">
+	  		and user_id = #{userId,jdbcType=VARCHAR}
+	  	</if>
+	  	<if test="code != null and code != ''">
+	  		and code = #{code,jdbcType=VARCHAR}
+	  	</if>
+	  	<if test="startTime !=null and startTime != ''">
+	  		 <![CDATA[ AND create_time >= #{startTime,jdbcType=VARCHAR} ]]>
+	  	</if>
+	  	<if test="endTime !=null and endTime != ''">
+	  		 <![CDATA[ AND create_time >= #{endTime,jdbcType=VARCHAR} ]]>
+	  	</if>
+	  	<if test="existsCodeList != null and existsCodeList.size() > 0">
+	  		and code not in 
+	  		<foreach collection="existsCodeList" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+	  	</if>
+  </select>
 </mapper>

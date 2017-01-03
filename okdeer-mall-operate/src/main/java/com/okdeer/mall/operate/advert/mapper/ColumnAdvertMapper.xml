@@ -865,4 +865,37 @@
 	    GROUP BY caa.area_id
         ORDER BY COUNT(1) DESC                
 	</select>
+	
+	<select id="findForApp" parameterType="com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto" resultMap="columnAdvertRsMap">
+		SELECT <include refid="base_column_list" />
+		FROM column_advert WHERE 1 = 1
+		<if test="positionId != null and positionId != ''">
+			and position_id = #{positionId,jdbcType=VARCHAR}
+		</if>
+		<if test="advertStatus != null">
+			and status = #{advertStatus,jdbcType=TINYINT}
+		</if>
+		and area_type = 1
+		union all 
+		SELECT <include refid="base_column_list" />
+		FROM column_advert ca WHERE 1 = 1
+		<if test="positionId != null and positionId != ''">
+			and ca.position_id = #{positionId,jdbcType=VARCHAR}
+		</if>
+		<if test="advertStatus != null">
+			and ca.status = #{advertStatus,jdbcType=TINYINT}
+		</if>
+		and ca.area_type = 0
+		and  exists (
+			select 1 from column_advert_area caa where  ca.id=caa.advert_id
+			<if test="cityId != null and cityId !='' ">
+				and (
+					 (caa.type = 0 and caa.area_id = #{cityId,jdbcType=VARCHAR}) 
+					 <if test="provinceId != null and provinceId !='' ">
+						or ( caa.type = 1 and caa.area_id = #{provinceId,jdbcType=VARCHAR} )
+					</if>
+				)
+			</if>
+		)
+	</select>
 </mapper>
