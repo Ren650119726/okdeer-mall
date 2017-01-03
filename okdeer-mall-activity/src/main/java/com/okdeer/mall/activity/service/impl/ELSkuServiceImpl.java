@@ -17,7 +17,11 @@ import com.google.common.base.Charsets;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
+import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
+import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
+import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.activity.service.ELSkuService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -37,6 +41,12 @@ import static com.okdeer.common.consts.ELTopicTagConstants.*;
  */
 @Service
 public class ELSkuServiceImpl implements ELSkuService {
+
+	/**
+	 * 注入秒杀活动service
+	 */
+	@Autowired
+	ActivitySeckillService activitySeckillService;
 
 	/**
 	 * 事务消息注入
@@ -79,7 +89,7 @@ public class ELSkuServiceImpl implements ELSkuService {
 	}
 
 	@Override
-	public boolean syncSeckillToEL(int syncType) throws Exception {
+	public boolean syncSeckillToEL(ActivitySeckill activity, SeckillStatusEnum status, int syncType) throws Exception {
 		String json = JsonMapper.nonEmptyMapper().toJson("");
 		String tag = "";
 		switch (syncType) {
@@ -101,6 +111,18 @@ public class ELSkuServiceImpl implements ELSkuService {
 			@Override
 			public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
 				// 业务方法
+				try {
+					switch (status){
+						case ing:
+								activitySeckillService.updateSeckillStatus(activity.getId(), status);
+							break;
+						case end:
+								activitySeckillService.updateSeckillByEnd(activity);
+							break;
+					}
+				} catch (Exception e) {
+					return LocalTransactionState.ROLLBACK_MESSAGE;
+				}
 				return LocalTransactionState.COMMIT_MESSAGE;
 			}
 		}, new TransactionCheckListener() {
