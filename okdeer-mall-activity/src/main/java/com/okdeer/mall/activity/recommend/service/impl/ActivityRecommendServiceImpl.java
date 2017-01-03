@@ -25,7 +25,7 @@ import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.vo.GoodsStoreSkuRecommendActivityVo;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
-import com.okdeer.archive.store.service.StoreInfoApi;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.recommend.entity.ActivityRecommend;
 import com.okdeer.mall.activity.recommend.entity.ActivityRecommendGoods;
@@ -69,7 +69,7 @@ public class ActivityRecommendServiceImpl implements ActivityRecommendServiceApi
 	 * 自动注入storeInfoServiceApi
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoApi storeInfoServiceApi;
+	private StoreInfoServiceApi storeInfoServiceApi;
 
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;

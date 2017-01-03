@@ -12,7 +12,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.archive.store.entity.StoreInfo;
-import com.okdeer.archive.store.service.StoreInfoApi;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.mall.activity.coupons.enums.CashDelivery;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountArea;
@@ -100,7 +100,7 @@ public class ActivityDiscountServiceImpl implements ActivityDiscountServiceApi, 
 	 * 店铺基本信息mapper
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoApi storeInfoServiceApi;
+	private StoreInfoServiceApi storeInfoServiceApi;
 
 	/**
 	 * 
