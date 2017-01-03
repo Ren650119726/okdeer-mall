@@ -3,6 +3,8 @@ package com.okdeer.mall.activity.coupons.mapper;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 
 /**
@@ -88,5 +90,16 @@ public interface ActivitySaleMapper {
 	 * @date 2016年10月21日
 	 */
 	List<ActivitySale> listByStoreId(Map<String,Object> map);
+	
+	/**
+	 * 根据店铺id查找低价抢购活动
+	 * @Description: 
+	 * @param storeId
+	 * @param actType
+	 * @return ActivitySale
+	 * @author mengsj
+	 * @date 2016年12月31日
+	 */
+	ActivitySale findByActivitySaleByStoreId(@Param("storeId")String storeId,@Param("actType")Integer actType);
 	
 }
