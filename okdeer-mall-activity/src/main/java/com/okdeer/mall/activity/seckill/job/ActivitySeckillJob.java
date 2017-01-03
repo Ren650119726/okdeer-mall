@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.okdeer.common.utils.ELOperateEnum;
+import com.okdeer.mall.activity.service.ELSkuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +52,9 @@ public class ActivitySeckillJob extends AbstractSimpleElasticJob {
 	 */
 	@Autowired
 	ActivitySeckillService activitySeckillService;
+
+	@Autowired
+	private ELSkuService elSkuService;
 	
 	@Override
 	public void process(JobExecutionMultipleShardingContext shardingContext) {
@@ -70,7 +75,8 @@ public class ActivitySeckillJob extends AbstractSimpleElasticJob {
 					//当前时间已超过活动开始时间，修改活动状态已失效
 					if (nowTime.getTime() >= startTime.getTime()) {
 						// 更新活动状态
-						activitySeckillService.updateSeckillStatus(activitySeckill.getId(), SeckillStatusEnum.ing);
+						elSkuService.syncSeckillToEL(activitySeckill, SeckillStatusEnum.ing, ELOperateEnum.ADD.ordinal());
+						//activitySeckillService.updateSeckillStatus(activitySeckill.getId(), SeckillStatusEnum.ing);
 					}
 				}
 			}
@@ -87,7 +93,8 @@ public class ActivitySeckillJob extends AbstractSimpleElasticJob {
 					//当前时间已超过活动结束时间，修改活动状态已失效
 					if (nowTime.getTime() >= endTime.getTime()) {
 						// 更新活动状态（修改状态、解除商品关系、释放库存）
-						activitySeckillService.updateSeckillByEnd(activitySeckill);
+						elSkuService.syncSeckillToEL(activitySeckill, SeckillStatusEnum.end, ELOperateEnum.DELETE.ordinal());
+						//activitySeckillService.updateSeckillByEnd(activitySeckill);
 					}
 				}
 			}
