@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.store.entity.StoreInfo;
-import com.okdeer.archive.store.service.StoreInfoApi;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.mall.common.vo.Request;
 import com.okdeer.mall.common.vo.Response;
@@ -50,7 +50,7 @@ public class ServAddressSearchServiceImpl implements RequestHandler<ServiceOrder
 	 * 店铺信息查询Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoApi storeInfoServiceApi;
+	private StoreInfoServiceApi storeInfoServiceApi;
 	
 	/**
 	 * 地址service
