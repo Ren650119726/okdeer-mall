@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.vo.TradeOrderContext;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
@@ -40,7 +40,7 @@ public class StoreExtProcessServiceImpl implements StoreExtProcessService {
 	 * 店铺信息查询Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoServiceApi;
+	private StoreInfoApi storeInfoServiceApi;
 
 	@Override
 	public void process(TradeOrderReqDto reqDto, TradeOrderRespDto respDto) throws Exception {

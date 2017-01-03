@@ -33,7 +33,7 @@ import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
@@ -160,7 +160,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 * 店铺信息Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoService;
+	private StoreInfoApi storeInfoService;
 
 	/**
 	 * 代金券Mapper

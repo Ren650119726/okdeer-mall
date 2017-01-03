@@ -28,7 +28,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.store.entity.StoreMemberRelation;
 import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
@@ -97,7 +97,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	private TradeOrderItemService tradeOrderItemService;
 
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoService;
+	private StoreInfoApi storeInfoService;
 
 	@Autowired
 	private TradeOrderActivityService tradeOrderActivityService;

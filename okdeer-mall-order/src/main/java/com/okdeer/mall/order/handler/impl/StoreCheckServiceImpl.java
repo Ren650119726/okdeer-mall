@@ -11,7 +11,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
@@ -46,7 +46,7 @@ public class StoreCheckServiceImpl implements StoreCheckService {
 	 * 店铺Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoServiceApi;
+	private StoreInfoApi storeInfoServiceApi;
 
 	/**
 	 * 检查商品信息是否发生变化并获取商品最新信息返回给app

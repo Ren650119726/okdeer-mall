@@ -26,7 +26,7 @@ import com.google.common.base.Charsets;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreInfoApi;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
@@ -102,7 +102,7 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 
 
 	@Reference(version = "1.0.0", check = false)
-	private StoreInfoServiceApi storeInfoService;
+	private StoreInfoApi storeInfoService;
 
 	// Begin 12002 add by zengj
 	/**
