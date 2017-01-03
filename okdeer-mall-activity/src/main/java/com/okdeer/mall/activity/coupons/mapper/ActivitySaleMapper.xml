@@ -16,6 +16,7 @@
 		<result property="updateTime" column="update_time" />
 		<result property="updateUserId" column="update_user_id" />
 		<result property="disabled" column="disabled" />
+		<result property="type" column="type" />
 	</resultMap>
 
     <sql id="columns">
@@ -160,7 +161,7 @@
 
     <insert id="save" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySale">
         insert into activity_sale(
-			<include refid="columns"/>
+			<include refid="columns"/>,type
 		)values(
             #{id},
             #{name},
@@ -173,7 +174,8 @@
             #{createUserId},
             #{updateTime},
             #{updateUserId},
-            #{disabled}
+            #{disabled},
+            #{type}
         )
 	</insert>
 
@@ -281,5 +283,18 @@
     	</if>
     	and status = 1
     </select>
+
+	<select id="findByActivitySaleByStoreId" parameterType="Object"
+		resultMap="ActivitySale">
+		select
+		<include refid="columns" />
+		from activity_sale s where 1 = 1
+		<if test="storeId != null and storeId != ''">
+			and store_id = #{storeId}
+		</if>
+		<if test="type != null and type != ''">
+			and type = #{type}
+		</if>
+	</select>
 
 </mapper>
