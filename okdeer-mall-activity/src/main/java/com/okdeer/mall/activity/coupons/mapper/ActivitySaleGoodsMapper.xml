@@ -148,7 +148,7 @@
 	<!-- added by mengsj end 2017-01-03 -->
 	
 	<!-- 根据活动ID和店铺商品id查询活动商品信息 Begin added by maojj 2016-12-31 -->
-	<select id="findActivityGoodsList" parameterType="map" resultMap="ActivitySaleGoods">
+	<select id="findBySaleIdsAndSkuIds" parameterType="map" resultMap="ActivitySaleGoods">
 		SELECT <include refid="columns" />
 		FROM activity_sale_goods
 		WHERE sale_id IN
