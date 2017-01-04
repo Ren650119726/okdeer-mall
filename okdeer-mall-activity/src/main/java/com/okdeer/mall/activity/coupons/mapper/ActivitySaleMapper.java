@@ -104,7 +104,11 @@ public interface ActivitySaleMapper {
 	 * @author mengsj
 	 * @date 2016年12月31日
 	 */
+<<<<<<< HEAD
 	ActivitySale findByActivitySaleByStoreId(@Param("storeId")String storeId,@Param("actType")Integer actType, @Param("status"));
+=======
+	ActivitySale findByActivitySaleByStoreId(@Param("storeId")String storeId,@Param("type")Integer actType);
+>>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 	
 	// Begin V2.0 added by maojj 2016-12-31 
 	/**

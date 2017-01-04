@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
-import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoodsBo;
 import com.okdeer.mall.activity.dto.ActivitySaleGoodsParamDto;
@@ -79,19 +78,6 @@ public interface ActivitySaleGoodsMapper {
 	 * @date 2016年12月31日
 	 */
 	List<ActivitySaleGoodsBo> findSaleGoodsByParams(@Param("param")ActivitySaleGoodsParamDto param);
-	
-	/**
-	 * 通过页面查询参数查找低价抢购商品-分页
-	 * @Description: 
-	 * @param param
-	 * @param pageSize
-	 * @param pageNum
-	 * @return PageUtils<ActivitySaleGoodsBo>
-	 * @throws
-	 * @author mengsj
-	 * @date 2017年1月4日
-	 */
-	PageUtils<ActivitySaleGoodsBo> findSaleGoodsPageByParams(@Param("param")ActivitySaleGoodsParamDto param, @Param("pageSize")Integer pageSize, @Param("pageNum")Integer pageNum);
 	
 	/**
 	 * 批量设置低价抢购商品-暂时没用到,未实现
