@@ -284,16 +284,18 @@
     	and status = 1
     </select>
 
-	<select id="findByActivitySaleByStoreId" parameterType="Object"
-		resultMap="ActivitySale">
+	<select id="findByActivitySaleByStoreId" parameterType="Object" resultMap="ActivitySale">
 		select
 		<include refid="columns" />
 		from activity_sale s where 1 = 1
 		<if test="storeId != null and storeId != ''">
 			and store_id = #{storeId}
 		</if>
-		<if test="type != null and type != ''">
-			and type = #{type}
+		<if test="actType != null">
+			and type = #{actType}
+		</if>
+		<if test="status != null">
+			and status = #{status}
 		</if>
 	</select>
 

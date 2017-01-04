@@ -51,7 +51,7 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
  *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi")
-//@org.springframework.stereotype.Service
+// @org.springframework.stereotype.Service
 public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, ActivitySaleService {
 
 	private static final Logger log = Logger.getLogger(ActivitySaleServiceImpl.class);
@@ -110,13 +110,13 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// 已经参加活动
 				goodsStoreSku.setIsActivity(IsActivity.ATTEND);
 				// 活动类型
-				//modify by mengsj begin  增加活动类型判断
-				if(activitySale.getType() == ActivityTypeEnum.LOW_PRICE){
+				// modify by mengsj begin 增加活动类型判断
+				if (activitySale.getType() == ActivityTypeEnum.LOW_PRICE) {
 					goodsStoreSku.setActivityType(StoreActivityTypeEnum.LOW_PRICE);
-				}else{
+				} else {
 					goodsStoreSku.setActivityType(StoreActivityTypeEnum.PRIVLIEGE);
 				}
-				//modify by mengsj end
+				// modify by mengsj end
 				// 记录rpcId
 				String rpcId = UuidUtils.getUuid();
 				goodsStoreSku.setRpcId(rpcId);
@@ -303,13 +303,13 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// 已经参加活动
 				goodsStoreSku.setIsActivity(IsActivity.ATTEND);
 				// 活动类型
-				//modify by mengsj begin  增加活动类型判断
-				if(activitySale.getType() == ActivityTypeEnum.LOW_PRICE){
+				// modify by mengsj begin 增加活动类型判断
+				if (activitySale.getType() == ActivityTypeEnum.LOW_PRICE) {
 					goodsStoreSku.setActivityType(StoreActivityTypeEnum.LOW_PRICE);
-				}else{
+				} else {
 					goodsStoreSku.setActivityType(StoreActivityTypeEnum.PRIVLIEGE);
 				}
-				//modify by mengsj end
+				// modify by mengsj end
 
 				goodsStoreSku.setRpcId(rpcId);
 				goodsStoreSku.setMethodName(this.getClass().getName() + ".update");
@@ -363,7 +363,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			params.put("ids", ids);
 			params.put("status", status);
 			activitySaleMapper.updateBatchStatus(params);
-			
+
 			// 如果状态时进行中,要把活动关联的所有商品状态改为上架
 			if (status == ActivitySaleStatus.ing.getValue()) {
 				List<String> goodsStoreSkuIds = new ArrayList<String>();
@@ -418,13 +418,14 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				}
 				// 手动关闭或者定时器结束都要把未卖完的数量释放库存
 				// 和erp同步库存
-				if(CollectionUtils.isNotEmpty(saleGoodsList)){
-					this.syncGoodsStockBatch(saleGoodsList, "", storeId, StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
+				if (CollectionUtils.isNotEmpty(saleGoodsList)) {
+					this.syncGoodsStockBatch(saleGoodsList, "", storeId, StockOperateEnum.ACTIVITY_END,
+							rpcIdByStockList);
 				}
 			}
 		} catch (Exception e) {
 			// 现在库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
-			//rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
+			// rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuBatchRollbackMsg(rpcIdByBathSkuList);
 			throw e;
 		}
@@ -476,9 +477,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			// 活动名字
 			goodsStoreSku.setActivityName("");
 			// 活动id
-			//added by liyb01 2016-12-14 fix bug 16075 
+			// added by liyb01 2016-12-14 fix bug 16075
 			goodsStoreSku.setActivityId("0");
-			//ended by liyb01 2016-12-14
+			// ended by liyb01 2016-12-14
 			// 已经参加活动
 			goodsStoreSku.setIsActivity(IsActivity.ABSTENTION);
 			// 活动类型
@@ -494,7 +495,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			goodsStoreSkuServiceApi.updateByPrimaryKeySelective(goodsStoreSku);
 		} catch (Exception e) {
 			// 现在库存放入商业管理系统管理。那边没提供补偿机制，不发送库存回滚的消息
-			//rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
+			// rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
 			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
 			throw e;
 		}
@@ -519,18 +520,30 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	public List<ActivitySale> listByTask() {
 		return activitySaleMapper.listByTask();
 	}
-	
+
 	@Override
-	public List<ActivitySale> listByStoreId(Map<String,Object> map) {
+	public List<ActivitySale> listByStoreId(Map<String, Object> map) {
 		return activitySaleMapper.listByStoreId(map);
 	}
 
 	@Override
-	public ActivitySale findActivitySaleByStoreId(String storeId,
-			Integer activiType) {
-		if(StringUtils.isNotBlank(storeId) && activiType != null){
-			return activitySaleMapper.findByActivitySaleByStoreId(storeId, activiType);
+	public ActivitySale findActivitySaleByStoreId(String storeId, Integer activiType) {
+		if (StringUtils.isNotBlank(storeId) && activiType != null) {
+			return activitySaleMapper.findByActivitySaleByStoreId(storeId, activiType, null);
 		}
 		return new ActivitySale();
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi#findLowPriceActivitySaleByStoreId(java.lang.String)
+	 */
+	@Override
+	public ActivitySale findLowPriceActivitySaleByStoreId(String storeId) throws Exception {
+		if (StringUtils.isBlank(storeId)) {
+			return null;
+		}
+		return activitySaleMapper.findByActivitySaleByStoreId(storeId, ActivityTypeEnum.LOW_PRICE.ordinal(),
+				ActivitySaleStatus.ing.getValue());
 	}
 }
