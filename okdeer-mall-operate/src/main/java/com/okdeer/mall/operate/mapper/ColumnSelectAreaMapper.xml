@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.mapper.ColumnSelectAreaMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.ColumnSelectArea" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="column_id" property="columnId" jdbcType="VARCHAR" />
+        <result column="column_type" property="columnType" jdbcType="TINYINT" />
+        <result column="province_id" property="provinceId" jdbcType="VARCHAR" />
+        <result column="province_name" property="provinceName" jdbcType="VARCHAR" />
+        <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+        <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+        <result column="area_type" property="areaType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.SelectAreaType"/>
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, column_id, column_type, province_id, province_name, city_id, city_name, area_type
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_select_area
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="findListByColumnId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_select_area
+        where column_id = #{columnId}
+    </select>
+    
+     <select id="findColumnIdsByCity" resultType="java.lang.String" >
+        SELECT column_id
+		FROM column_select_area
+		WHERE column_type = #{columnType} AND city_id = #{cityId}
+		UNION
+		SELECT column_id
+		FROM column_select_area
+		WHERE column_type = #{columnType} AND province_id = #{provinceId} AND city_id = 0
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnSelectArea" >
+        insert into column_select_area
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="columnId != null" >
+                column_id,
+            </if>
+            <if test="columnType != null" >
+                column_type,
+            </if>
+            <if test="provinceId != null" >
+                province_id,
+            </if>
+            <if test="provinceName != null" >
+                province_name,
+            </if>
+            <if test="cityId != null" >
+                city_id,
+            </if>
+            <if test="cityName != null" >
+                city_name,
+            </if>
+            <if test="areaType != null" >
+                area_type,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="columnId != null" >
+                #{columnId,jdbcType=VARCHAR},
+            </if>
+            <if test="columnType != null" >
+                #{columnType,jdbcType=TINYINT},
+            </if>
+            <if test="provinceId != null" >
+                #{provinceId,jdbcType=VARCHAR},
+            </if>
+            <if test="provinceName != null" >
+                #{provinceName,jdbcType=VARCHAR},
+            </if>
+            <if test="cityId != null" >
+                #{cityId,jdbcType=VARCHAR},
+            </if>
+            <if test="cityName != null" >
+                #{cityName,jdbcType=VARCHAR},
+            </if>
+            <if test="areaType != null" >
+                #{areaType,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+    
+    <insert id="insertMore" parameterType="java.util.List">
+		INSERT INTO column_select_area (
+			 id, column_id, column_type, province_id, province_name, 
+			 city_id, city_name, area_type
+		) VALUES
+		<foreach collection="list" index="index" item="item" separator=",">
+			(
+			#{item.id,jdbcType=VARCHAR}, #{item.columnId,jdbcType=VARCHAR}, #{item.columnType},
+			#{item.provinceId,jdbcType=VARCHAR}, #{item.provinceName,jdbcType=VARCHAR},
+			#{item.cityId,jdbcType=VARCHAR}, #{item.cityName,jdbcType=VARCHAR}, #{item.areaType,jdbcType=TINYINT}
+			)
+		</foreach>
+	</insert>
+
+    <update id="update" parameterType="com.okdeer.mall.operate.entity.ColumnSelectArea">
+		update column_select_area
+        <set >
+            <if test="columnId != null" >
+                column_id = #{columnId,jdbcType=VARCHAR},
+            </if>
+            <if test="columnType != null" >
+                column_type = #{columnType,jdbcType=TINYINT},
+            </if>
+            <if test="provinceId != null" >
+                province_id = #{provinceId,jdbcType=VARCHAR},
+            </if>
+            <if test="provinceName != null" >
+                province_name = #{provinceName,jdbcType=VARCHAR},
+            </if>
+            <if test="cityId != null" >
+                city_id = #{cityId,jdbcType=VARCHAR},
+            </if>
+            <if test="cityName != null" >
+                city_name = #{cityName,jdbcType=VARCHAR},
+            </if>
+            <if test="areaType != null" >
+                area_type = #{areaType,jdbcType=TINYINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from column_select_area
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="deleteByColumnId" parameterType="java.lang.String">
+		delete from column_select_area
+		where column_id = #{columnId}
+	</delete>
+
+</mapper>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.mapper.ColumnHomeIconGoodsMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.ColumnHomeIconGoods" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="home_icon_id" property="homeIconId" jdbcType="VARCHAR" />
+        <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, home_icon_id, store_sku_id
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_home_icon_goods
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="findListByHomeIconId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_home_icon_goods
+        where home_icon_id = #{homeIconId}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnHomeIconGoods" >
+        insert into column_home_icon_goods
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="homeIconId != null" >
+                home_icon_id,
+            </if>
+            <if test="storeSkuId != null" >
+                store_sku_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="homeIconId != null" >
+                #{homeIconId,jdbcType=VARCHAR},
+            </if>
+            <if test="storeSkuId != null" >
+                #{storeSkuId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    
+    <insert id="insertMore" parameterType="java.util.List">
+		INSERT INTO column_home_icon_goods (
+			id, home_icon_id, store_sku_id
+        ) VALUES
+		<foreach collection="list" index="index" item="item" separator=",">
+			(
+				#{item.id}, #{item.homeIconId}, #{item.storekuId}
+			)
+		</foreach>
+	</insert>
+
+    <update id="update" parameterType="com.okdeer.mall.operate.entity.ColumnHomeIconGoods" >
+        update column_home_icon_goods
+        <set >
+            <if test="homeIconId != null" >
+                home_icon_id = #{homeIconId,jdbcType=VARCHAR},
+            </if>
+            <if test="storeSkuId != null" >
+                store_sku_id = #{storeSkuId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from column_home_icon_goods
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="deleteByHomeIconId" parameterType="java.lang.String" >
+        delete from column_home_icon_goods
+        where  home_icon_id = #{homeIconId}
+    </delete>
+
+</mapper>
