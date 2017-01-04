@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoodsBo;
 import com.okdeer.mall.activity.dto.ActivitySaleGoodsParamDto;
@@ -79,7 +80,20 @@ public interface ActivitySaleGoodsMapper {
 	List<ActivitySaleGoodsBo> findSaleGoodsByParams(@Param("param")ActivitySaleGoodsParamDto param);
 	
 	/**
-	 * 批量设置低价抢购商品
+	 * 通过页面查询参数查找低价抢购商品-分页
+	 * @Description: 
+	 * @param param
+	 * @param pageSize
+	 * @param pageNum
+	 * @return PageUtils<ActivitySaleGoodsBo>
+	 * @throws
+	 * @author mengsj
+	 * @date 2017年1月4日
+	 */
+	PageUtils<ActivitySaleGoodsBo> findSaleGoodsPageByParams(@Param("param")ActivitySaleGoodsParamDto param, @Param("pageSize")Integer pageSize, @Param("pageNum")Integer pageNum);
+	
+	/**
+	 * 批量设置低价抢购商品-暂时没用到,未实现
 	 * @Description:
 	 * @param saleGoods
 	 * @throws Exception void
@@ -87,6 +101,16 @@ public interface ActivitySaleGoodsMapper {
 	 * @date 2016年12月31日
 	 */
 	void updateBatch(@Param("list")List<ActivitySaleGoods> saleGoods) throws Exception;
+	
+	/**
+	 * 关闭低价抢购商品
+	 * @Description:
+	 * @param saleGoods void
+	 * @throws
+	 * @author mengsj
+	 * @date 2017年1月3日
+	 */
+	void updateById(ActivitySaleGoods saleGoods) throws Exception;
 	
 	/**
 	 * @desc 通过主键获取对象
@@ -108,4 +132,5 @@ public interface ActivitySaleGoodsMapper {
 	 */
 	List<ActivitySaleGoods> findActivityGoodsList(@Param("saleId")String saleId,@Param("storeSkuIds")List<String> storeSkuIds);
 	// End added by maojj 2016-07-14
+
 }
