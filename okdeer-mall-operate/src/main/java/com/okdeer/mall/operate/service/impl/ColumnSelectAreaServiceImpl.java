@@ -6,6 +6,7 @@
  */
 package com.okdeer.mall.operate.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,18 @@ public class ColumnSelectAreaServiceImpl extends BaseServiceImpl implements Colu
 
 	/**
 	 * (non-Javadoc)
+	 * @see com.okdeer.mall.operate.service.ColumnSelectAreaService#findListByColumnIds(java.util.List)
+	 */
+	@Override
+	public List<ColumnSelectArea> findListByColumnIds(List<String> columnIds) throws Exception {
+		if (null == columnIds || columnIds.size() == 0) {
+			return new ArrayList<>();
+		}
+		return selectAreaMapper.findListByColumnIds(columnIds);
+	}
+
+	/**
+	 * (non-Javadoc)
 	 * @see com.okdeer.mall.operate.service.ColumnSelectAreaService#deleteByColumnId(java.lang.String)
 	 */
 	@Override
@@ -79,5 +92,4 @@ public class ColumnSelectAreaServiceImpl extends BaseServiceImpl implements Colu
 	public List<String> findColumnIdsByCity(String provinceId, String cityId, Integer columnType) throws Exception {
 		return selectAreaMapper.findColumnIdsByCity(provinceId, cityId, columnType);
 	}
-
 }
