@@ -91,8 +91,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			// 先保存特惠主对象
 			activitySaleMapper.save(activitySale);
 			// 库存同步--库存出错的几率更大。先处理库存
-			/*this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
-					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);*/
+			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
+					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 			// 再保存特惠商品列表
 			for (ActivitySaleGoods a : asgList) {
 				a.setDisabled(Disabled.valid);
@@ -168,17 +168,18 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
 		for (ActivitySaleGoods goods : goodsList) {
 			GoodsStoreSku entity = goodsStoreSkuServiceApi.getById(goods.getStoreSkuId());
-
-			AdjustDetailVo adjustDetailVo = new AdjustDetailVo();
-			adjustDetailVo.setStoreSkuId(goods.getStoreSkuId());
-			adjustDetailVo.setNum(goods.getSaleStock());
-			/*************新增字段 start **************/
-			adjustDetailVo.setGoodsName(entity.getName());
-			adjustDetailVo.setBarCode(entity.getBarCode());
-			adjustDetailVo.setStyleCode(entity.getStyleCode());
-			adjustDetailVo.setPrice(goods.getSalePrice());
-			/*************新增字段 end  **************/
-			adjustDetailList.add(adjustDetailVo);
+			if(goods.getSaleStock() > 0){
+				AdjustDetailVo adjustDetailVo = new AdjustDetailVo();
+				adjustDetailVo.setStoreSkuId(goods.getStoreSkuId());
+				adjustDetailVo.setNum(goods.getSaleStock());
+				/*************新增字段 start **************/
+				adjustDetailVo.setGoodsName(entity.getName());
+				adjustDetailVo.setBarCode(entity.getBarCode());
+				adjustDetailVo.setStyleCode(entity.getStyleCode());
+				adjustDetailVo.setPrice(goods.getSalePrice());
+				/*************新增字段 end  **************/
+				adjustDetailList.add(adjustDetailVo);
+			}
 		}
 		stockAdjustVo.setAdjustDetailList(adjustDetailList);
 		stockAdjustVo.setStockOperateEnum(soe);
