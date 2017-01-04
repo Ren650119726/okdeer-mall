@@ -141,4 +141,24 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		return homeIconService.findListByCityId(provinceId, cityId);
 	}
 
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.operate.service.ColumnHomeIconApi#findHomeIconGoodsIdsByHomeIconId(java.lang.String)
+	 */
+	@Override
+	public List<String> findHomeIconGoodsIdsByHomeIconId(String homeIconId) throws Exception {
+		if (StringUtils.isBlank(homeIconId)) {
+			return new ArrayList<>();
+		}
+		List<ColumnHomeIconGoods> sourceList = homeIconGoodsService.findListByHomeIconId(homeIconId);
+		if (sourceList == null) {
+			return new ArrayList<>();
+		}
+		List<String> storeSkuIds = new ArrayList<>();
+		for (ColumnHomeIconGoods item : sourceList) {
+			storeSkuIds.add(item.getId());
+		}
+		return storeSkuIds;
+	}
+
 }
