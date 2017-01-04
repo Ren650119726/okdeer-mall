@@ -25,6 +25,16 @@ public interface ColumnSelectAreaMapper extends IBaseMapper {
 	List<ColumnSelectArea> findListByColumnId(String columnId);
 
 	/**
+	 * @Description: 根据栏目ID集合查询数据
+	 * @param columnIds  栏目ID集合
+	 * @return List<ColumnSelectArea>  
+	 * @throws Exception
+	 * @author tangzj02
+	 * @date 2016年12月28日
+	 */
+	List<ColumnSelectArea> findListByColumnIds(@Param("columnIds")List<String> columnIds) throws Exception;
+
+	/**
 	 * @Description: 根据栏目ID删除数据
 	 * @param columnId 栏目ID   
 	 * @return int 删除记录  
