@@ -28,7 +28,7 @@ import com.okdeer.mall.operate.entity.ColumnSelectArea;
 public interface ColumnSelectAreaService extends IBaseService {
 
 	/**
-	 * @Description: 根据活动ID查询数据
+	 * @Description: 根据栏目ID查询数据
 	 * @param columnId  栏目ID
 	 * @return List<ColumnSelectArea>  
 	 * @throws Exception
@@ -36,9 +36,19 @@ public interface ColumnSelectAreaService extends IBaseService {
 	 * @date 2016年12月28日
 	 */
 	List<ColumnSelectArea> findListByColumnId(String columnId) throws Exception;
+	
+	/**
+	 * @Description: 根据栏目ID集合查询数据
+	 * @param columnIds  栏目ID集合
+	 * @return List<ColumnSelectArea>  
+	 * @throws Exception
+	 * @author tangzj02
+	 * @date 2016年12月28日
+	 */
+	List<ColumnSelectArea> findListByColumnIds(List<String> columnIds) throws Exception;
 
 	/**
-	 * @Description: 根据活动ID删除数据
+	 * @Description: 根据栏目ID删除数据
 	 * @param columnId 栏目ID 
 	 * @return int 删除记录  
 	 * @author tangzj02

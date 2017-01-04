@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.common.utils.BaseResult;
 import com.okdeer.mall.Application;
 import com.okdeer.mall.operate.dto.HomeIconDto;
@@ -57,33 +58,49 @@ public class ColumnHomeIconApiTest {
 			HomeIconDto dto = new HomeIconDto();
 			// dto.setId(UuidUtils.getUuid());
 			dto.setBannerUrl("www.okdeer.com");
-			// dto.setGoodsIds("1,2,3,4");
+
+			List<String> goodsList = new ArrayList<>();
+			for (int i = 10; i < 15; i++) {
+				goodsList.add(i + "");
+			}
+			dto.setGoodsIds(goodsList);
 			dto.setIconUrl("www.okdeer.com");
 			dto.setName("单元测试数据");
 			dto.setPlace(HomeIconPlace.five);
-			dto.setTaskType(HomeIconTaskType.classify);
+			dto.setTaskType(HomeIconTaskType.goods);
+			dto.setTaskScope(SelectAreaType.city);
 
-			// dto.setTaskScope(0);
-			dto.setTaskScope(SelectAreaType.nationwide);
 			List<SelectAreaDto> areaList = new ArrayList<>();
 			SelectAreaDto areaDto1 = new SelectAreaDto();
 			areaDto1.setAreaType(SelectAreaType.city);
-			areaDto1.setCityId("0");
-			areaDto1.setProvinceId("1");
+			areaDto1.setCityId(DateUtils.getDateRandom());
+			areaDto1.setProvinceId(DateUtils.getDateRandom());
 			areaDto1.setProvinceName("测试省");
 			areaList.add(areaDto1);
 			SelectAreaDto areaDto2 = new SelectAreaDto();
-			areaDto2.setAreaType(SelectAreaType.nationwide);
-			areaDto2.setCityId("20");
-			areaDto2.setProvinceId("2");
+			areaDto2.setAreaType(SelectAreaType.city);
+			areaDto2.setCityId(DateUtils.getDateRandom());
+			areaDto2.setProvinceId(DateUtils.getDateRandom());
 			areaDto2.setProvinceName("测试城市");
 			areaList.add(areaDto2);
 			dto.setAreaList(areaList);
 			BaseResult result = homeIconService.save(dto);
-			Assert.assertTrue("测试API服务 = 保存首页ICON失败", result.getStatus().equals("0"));
+			Assert.assertNotNull("测试API服务 = 保存首页ICON失败", result);
 			log.info("测试API服务 - 保存首页ICON ：{}", result);
 		} catch (Exception e) {
 			log.error("测试API服务 = 保存首页ICON异常:{}", e);
+		}
+	}
+
+	@Test
+	public void testFindById() {
+		try {
+			log.info("测试API服务 - 根据ID查询首页ICON");
+			HomeIconDto result = homeIconService.findById("8a94e7ce5967277d015967277ff70002");
+			Assert.assertNotNull("测试API服务 = 根据ID查询首页ICON失败", result);
+			log.info("测试API服务 - 根据ID查询首页ICON ：{}", result);
+		} catch (Exception e) {
+			log.error("测试API服务 = 根据ID查询首页ICON异常:{}", e);
 		}
 	}
 
@@ -102,4 +119,5 @@ public class ColumnHomeIconApiTest {
 			log.error("测试API服务 = 查询首页ICON列表异常:{}", e);
 		}
 	}
+
 }

@@ -10,9 +10,12 @@ import java.util.List;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.common.utils.BaseResult;
 import com.okdeer.mall.operate.dto.AppRecommendDto;
 import com.okdeer.mall.operate.dto.AppRecommendParamDto;
 import com.okdeer.mall.operate.entity.ColumnAppRecommend;
+import com.okdeer.mall.operate.entity.ColumnAppRecommendGoods;
+import com.okdeer.mall.operate.entity.ColumnSelectArea;
 
 /**
  * ClassName: ColumnAppRecommendService 
@@ -58,4 +61,17 @@ public interface ColumnAppRecommendService extends IBaseService {
 	 * @date 2016年12月31日
 	 */
 	PageUtils<AppRecommendDto> findListPage(AppRecommendParamDto paramDto) throws Exception;
+
+	/**
+	 * @Description: 编辑或者添加APP端服务商品推荐
+	 * @param entity APP端服务商品推荐信息
+	 * @param areaList 地区集合信息
+	 * @param goodsList 推荐服务商品信息
+	 * @return BaseResult  
+	 * @throws Exception 
+	 * @author tangzj02
+	 * @date 2017年1月4日
+	 */
+	BaseResult save(ColumnAppRecommend entity, List<ColumnSelectArea> areaList, List<ColumnAppRecommendGoods> goodsList)
+			throws Exception;
 }

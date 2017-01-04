@@ -9,9 +9,11 @@ package com.okdeer.mall.operate.service;
 import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.common.utils.BaseResult;
 import com.okdeer.mall.operate.dto.HomeIconDto;
 import com.okdeer.mall.operate.dto.HomeIconParamDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIcon;
+import com.okdeer.mall.operate.entity.ColumnSelectArea;
 
 /**
  * ClassName: ColumnHomeIconService 
@@ -47,5 +49,17 @@ public interface ColumnHomeIconService extends IBaseService {
 	 * @date 2017年01月04日
 	 */
 	List<HomeIconDto> findListByCityId(String provinceId, String cityId) throws Exception;
+
+	/**
+	 * @Description: 编辑或者添加首页ICON
+	 * @param entity 首页ICON信息
+	 * @param areaList 地区集合信息
+	 * @param goodsList 推荐商品信息
+	 * @return BaseResult  
+	 * @throws Exception 
+	 * @author tangzj02
+	 * @date 2017年1月4日
+	 */
+	BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> goodsIds) throws Exception;
 
 }

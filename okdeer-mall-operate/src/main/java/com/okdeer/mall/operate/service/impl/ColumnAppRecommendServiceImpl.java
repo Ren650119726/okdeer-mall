@@ -14,14 +14,25 @@ import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.common.utils.BaseResult;
 import com.okdeer.mall.operate.dto.AppRecommendDto;
 import com.okdeer.mall.operate.dto.AppRecommendParamDto;
 import com.okdeer.mall.operate.entity.ColumnAppRecommend;
+import com.okdeer.mall.operate.entity.ColumnAppRecommendGoods;
+import com.okdeer.mall.operate.entity.ColumnSelectArea;
+import com.okdeer.mall.operate.enums.AppRecommendPlace;
+import com.okdeer.mall.operate.enums.AppRecommendStatus;
+import com.okdeer.mall.operate.enums.ColumnType;
+import com.okdeer.mall.operate.enums.SelectAreaType;
 import com.okdeer.mall.operate.mapper.ColumnAppRecommendMapper;
+import com.okdeer.mall.operate.service.ColumnAppRecommendGoodsService;
 import com.okdeer.mall.operate.service.ColumnAppRecommendService;
+import com.okdeer.mall.operate.service.ColumnSelectAreaService;
 
 /**
  * ClassName: ColumnAppRecommendServiceImpl 
@@ -39,6 +50,12 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 
 	@Autowired
 	private ColumnAppRecommendMapper appRecommendMapper;
+
+	@Autowired
+	private ColumnAppRecommendGoodsService appRecommendGoodsService;
+
+	@Autowired
+	private ColumnSelectAreaService selectAreaService;
 
 	/**
 	 * (non-Javadoc)
@@ -76,6 +93,132 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 		}
 		List<AppRecommendDto> list = BeanMapper.mapList(result, AppRecommendDto.class);
 		return new PageUtils<AppRecommendDto>(list);
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @throws Exception 
+	 * @see com.okdeer.mall.operate.service.ColumnAppRecommendService#save(com.okdeer.mall.operate.entity.ColumnAppRecommend, java.util.List, java.util.List)
+	 */
+	@Override
+	public BaseResult save(ColumnAppRecommend entity, List<ColumnSelectArea> areaList,
+			List<ColumnAppRecommendGoods> goodsList) throws Exception {
+		if (entity == null) {
+			return new BaseResult("ActivityAppRecommendDto信息不能为空");
+		}
+
+		if (null == entity.getPlace() || null == entity.getAreaType()
+				|| !StringUtils.isNotEmptyAll(entity.getTitle(), entity.getCoverPicUrl())) {
+			return new BaseResult("ActivityAppRecommendDto信息不完整");
+		}
+
+		if (SelectAreaType.city.equals(entity.getAreaType()) && (null == areaList || 0 == areaList.size())) {
+			return new BaseResult("按城市选择任务范围时， 区域不允许为空");
+		}
+
+		if (null == goodsList || 0 == goodsList.size()) {
+			return new BaseResult("关联商品不允许为空");
+		}
+
+		String recommendId = StringUtils.isBlank(entity.getId()) ? UuidUtils.getUuid() : entity.getId();
+
+		if (isRepeatArea(entity.getId(), entity.getAreaType(), entity.getPlace(), areaList)) {
+			return new BaseResult("首页在同一个区域只能添加一个正在展示的服务推荐");
+		}
+
+		// 统计需要展示的商品数
+		int showGoodsCount = 0;
+		for (ColumnAppRecommendGoods item : goodsList) {
+			item.setId(UuidUtils.getUuid());
+			item.setRecommendId(recommendId);
+			if (item.getIsShow().equals(1)) {
+				showGoodsCount++;
+			}
+		}
+
+		// 修改APP端服务推荐
+		entity.setGoodsCount(goodsList.size());
+		entity.setShowGoodsCount(showGoodsCount);
+		if (StringUtils.isNotBlank(entity.getId())) {
+			// 删除之前的插入的关联数据
+			selectAreaService.deleteByColumnId(entity.getId());
+			appRecommendGoodsService.deleteByRecommendId(entity.getId());
+			appRecommendMapper.update(entity);
+		} else {
+			entity.setId(recommendId);
+			appRecommendMapper.add(entity);
+		}
+
+		if (null != goodsList && goodsList.size() > 0) {
+			appRecommendGoodsService.insertMore(goodsList);
+		}
+
+		if (SelectAreaType.city.equals(entity.getAreaType())) {
+			for (ColumnSelectArea item : areaList) {
+				if (SelectAreaType.province.equals(item.getAreaType())) {
+					item.setCityId("0");
+				}
+				item.setId(UuidUtils.getUuid());
+				item.setColumnId(recommendId);
+				item.setColumnType(ColumnType.appRecommend.ordinal());
+			}
+			selectAreaService.insertMore(areaList);
+		}
+		return new BaseResult();
+	}
+
+	private boolean isRepeatArea(String recommendId, SelectAreaType areaType, AppRecommendPlace place,
+			List<ColumnSelectArea> areaList) throws Exception {
+		if (place.getValue().equals(AppRecommendPlace.find.getValue())) {
+			return false;
+		}
+		// 查询首页是否已经存在数据
+		AppRecommendParamDto paramDto = new AppRecommendParamDto();
+		paramDto.setStatus(AppRecommendStatus.show);
+		paramDto.setPlace(place);
+		// 设置排除自己
+		paramDto.setExcludeId(recommendId);
+		List<ColumnAppRecommend> list = appRecommendMapper.findList(paramDto);
+		// 未查出数据则表示首页还未发布过
+		if (null == list || list.size() == 0) {
+			return false;
+		}
+		// 如果当前设置任务范围是全国
+		if (SelectAreaType.nationwide.getValue().equals(place.getValue())) {
+			return true;
+		}
+		List<String> columnIds = new ArrayList<>();
+		for (ColumnAppRecommend item : list) {
+			columnIds.add(item.getId());
+		}
+
+		// 已保存省ID集合(全省)
+		List<String> dbProvinceIds = new ArrayList<>();
+		// 已保存省ID集合(部分城市)
+		List<String> dbPartProvinceIds = new ArrayList<>();
+		// 已保存选城市ID集合
+		List<String> dbCityIds = new ArrayList<>();
+		// 查询已存在的
+		List<ColumnSelectArea> abAareaList = selectAreaService.findListByColumnIds(columnIds);
+		for (ColumnSelectArea item : abAareaList) {
+			if (SelectAreaType.province.equals(item.getAreaType())) {
+				dbProvinceIds.add(item.getProvinceId());
+			} else {
+				dbPartProvinceIds.add(item.getProvinceId());
+				dbCityIds.add(item.getCityId());
+			}
+		}
+
+		for (ColumnSelectArea item : areaList) {
+			if (SelectAreaType.province.equals(item.getAreaType())) {
+				if (dbProvinceIds.add(item.getProvinceId()) || dbPartProvinceIds.add(item.getProvinceId())) {
+					return true;
+				}
+			} else if (SelectAreaType.city.equals(item.getAreaType()) && dbCityIds.add(item.getCityId())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }
