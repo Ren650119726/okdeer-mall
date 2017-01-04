@@ -10,6 +10,8 @@ package com.okdeer.mall.activity.service;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 
+import java.util.List;
+
 /**
  * ClassName: ELSkuService 
  * @Description: 搜素引擎商品-service
@@ -34,7 +36,7 @@ public interface ELSkuService {
 	 * @date 2017年1月2日
 	 * @version v2.0.0
 	 */
-	boolean syncSaleToEL(int syncType) throws Exception;
+	boolean syncSaleToEL(List<String> activityIds, int status, String storeId, String createUserId, int syncType) throws Exception;
 
 	/**
 	 * 
