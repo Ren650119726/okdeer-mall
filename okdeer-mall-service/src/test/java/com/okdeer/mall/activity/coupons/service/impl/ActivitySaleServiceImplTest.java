@@ -30,7 +30,7 @@ public class ActivitySaleServiceImplTest extends ApplicationTests {
 		ActivitySale activitySale = new ActivitySale();
 		String saleId = UuidUtils.getUuid();
 		activitySale.setId(saleId);
-		activitySale.setName("低价抢购");
+		activitySale.setName("低价抢购-未同步库存");
 		activitySale.setStatus(ActivitySaleStatus.ing.getValue());
 		activitySale.setLimit(2);
 		activitySale.setStoreId("56583c03276511e6aaff00163e010eb1");
@@ -46,7 +46,7 @@ public class ActivitySaleServiceImplTest extends ApplicationTests {
 		ActivitySaleGoods goods1 = new ActivitySaleGoods();
 		goods1.setId(UuidUtils.getUuid());
 		goods1.setSaleId(saleId);
-		goods1.setStoreSkuId("8a986822550ac0ae01550afe3fd900a3");
+		goods1.setStoreSkuId("8a986822550ac0ae01550ad630b30076");
 		goods1.setDisabled(Disabled.valid);
 		goods1.setTradeMax(3);
 		goods1.setCreateTime(new Date());
