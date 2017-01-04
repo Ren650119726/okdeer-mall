@@ -51,6 +51,30 @@
     <delete id="deleteById" parameterType="string">
         delete from activity_sale_goods where id = #{value} 
     </delete>
+
+	<update id="updateById" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods">
+		update activity_sale_goods set		
+		<if test="tradeMax != null">
+			trade_max = #{tradeMax},
+		</if>
+		<if test="saleStock != null">
+			sale_stock = #{saleStock},
+		</if>
+		<if test="sort != null">
+			sort = #{sort},
+		</if>
+		<if test="disabled != null">
+			disabled = #{disabled},
+		</if>
+		<if test="updateTime != null">
+			update_time = #{updateTime},
+		</if>
+		<if test="updateUserId != null">
+			update_user_id = #{updateUserId},
+		</if>
+		1=1
+		where id = #{id}
+	</update>
     
     <select id="get" parameterType="string" resultMap="ActivitySaleGoods">
         select <include refid="columns"/> from activity_sale_goods where id = #{value} 

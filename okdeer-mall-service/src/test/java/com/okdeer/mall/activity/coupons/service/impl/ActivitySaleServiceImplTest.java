@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.ApplicationTests;
@@ -22,6 +23,7 @@ public class ActivitySaleServiceImplTest extends ApplicationTests {
 	
 	@Autowired
 	private ActivitySaleServiceApi service;
+	
 	@Test
 	public void testSave() {
 		
@@ -44,7 +46,7 @@ public class ActivitySaleServiceImplTest extends ApplicationTests {
 		ActivitySaleGoods goods1 = new ActivitySaleGoods();
 		goods1.setId(UuidUtils.getUuid());
 		goods1.setSaleId(saleId);
-		goods1.setGoodsSkuId("8a986822550ac0ae01550afe3fd900a3");
+		goods1.setStoreSkuId("8a986822550ac0ae01550afe3fd900a3");
 		goods1.setDisabled(Disabled.valid);
 		goods1.setTradeMax(3);
 		goods1.setCreateTime(new Date());
