@@ -25,6 +25,7 @@ import com.okdeer.mall.operate.dto.HomeIconParamDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIcon;
 import com.okdeer.mall.operate.entity.ColumnHomeIconGoods;
 import com.okdeer.mall.operate.entity.ColumnSelectArea;
+import com.okdeer.mall.operate.enums.ColumnType;
 import com.okdeer.mall.operate.enums.HomeIconPlace;
 import com.okdeer.mall.operate.enums.HomeIconTaskType;
 import com.okdeer.mall.operate.enums.SelectAreaType;
@@ -142,7 +143,7 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		List<ColumnSelectArea> areaList = null;
 		if (SelectAreaType.city.equals(dto.getTaskScope())) {
 			if (null == dto.getAreaList() || 0 == dto.getAreaList().size()) {
-				return new BaseResult("城市ID集合 当任务范围未1:按城市选择任务范围时， 不允许为空");
+				return new BaseResult("城市ID集合 当任务范围为1:按城市选择任务范围时， 不允许为空");
 			} else {
 				areaList = BeanMapper.mapList(dto.getAreaList(), ColumnSelectArea.class);
 			}
@@ -202,6 +203,7 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 				item.setColumnType(2);
 				item.setId(UuidUtils.getUuid());
 				item.setColumnId(homeIconId);
+				item.setColumnType(ColumnType.homeIcon.ordinal());
 			}
 			selectAreaService.insertMore(areaList);
 		}
@@ -225,7 +227,7 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 	}
 
 	private boolean isRepeatArea(String homeIconId, SelectAreaType taskScope, HomeIconPlace place,
-			List<ColumnSelectArea> areaList) {
+			List<ColumnSelectArea> areaList) throws Exception {
 		// 查询是否已经存在使用了相同的ICON位置数据
 		HomeIconParamDto paramDto = new HomeIconParamDto();
 		paramDto.setPlace(place);
@@ -264,6 +266,15 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.operate.service.ColumnHomeIconApi#findListByCityId(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public List<HomeIconDto> findListByCityId(String provinceId, String cityId) throws Exception {
+		return homeIconService.findListByCityId(provinceId, cityId);
 	}
 
 }

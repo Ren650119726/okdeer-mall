@@ -2,18 +2,22 @@ package com.okdeer.mall.activity.coupons.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 
 /**
- * @DESC:特惠活动dao
+ * ClassName: ActivitySaleMapper 
+ * @Description: 特惠活动dao
  * @author zhangkn
  * @date  2015-11-25 16:24:57
- * @version 1.0.0
- * @copyright ©2005-2020 yschome.com Inc. All rights reserved
- * 
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *		友门鹿1.2.5		2016年12月31日				maojj		 增加根据活动id列表查询的方法
  */
 public interface ActivitySaleMapper {
 	
@@ -100,6 +104,16 @@ public interface ActivitySaleMapper {
 	 * @author mengsj
 	 * @date 2016年12月31日
 	 */
-	ActivitySale findByActivitySaleByStoreId(@Param("storeId")String storeId,@Param("actType")Integer actType);
+	ActivitySale findByActivitySaleByStoreId(@Param("storeId")String storeId,@Param("actType")Integer actType, @Param("status") Integer status);
 	
+	// Begin V2.0 added by maojj 2016-12-31 
+	/**
+	 * @Description: 根据活动Id列表查询正在进行中的活动列表
+	 * @param saleIds
+	 * @return   
+	 * @author maojj
+	 * @date 2016年12月31日
+	 */
+	List<ActivitySale> findBySaleIds(Set<String> idList);
+	// End V2.0 added by maojj 2016-12-31 
 }

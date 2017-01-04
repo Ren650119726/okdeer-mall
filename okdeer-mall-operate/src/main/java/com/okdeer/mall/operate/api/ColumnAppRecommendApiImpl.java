@@ -28,6 +28,7 @@ import com.okdeer.mall.operate.entity.ColumnAppRecommend;
 import com.okdeer.mall.operate.entity.ColumnAppRecommendGoods;
 import com.okdeer.mall.operate.entity.ColumnSelectArea;
 import com.okdeer.mall.operate.enums.AppRecommendStatus;
+import com.okdeer.mall.operate.enums.ColumnType;
 import com.okdeer.mall.operate.enums.SelectAreaType;
 import com.okdeer.mall.operate.service.ColumnAppRecommendApi;
 import com.okdeer.mall.operate.service.ColumnAppRecommendGoodsService;
@@ -183,6 +184,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 				item.setId(UuidUtils.getUuid());
 				item.setColumnId(recommendId);
 				item.setAreaType(SelectAreaType.city);
+				item.setColumnType(ColumnType.appRecommend.ordinal());
 			}
 			List<ColumnSelectArea> areaList = BeanMapper.mapList(dto.getAreaList(), ColumnSelectArea.class);
 			selectAreaService.insertMore(areaList);
@@ -247,7 +249,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 			return new ArrayList<AppRecommendDto>();
 		}
 		// 根据城市查询相应的服务商品推荐栏位
-		List<String> ids = selectAreaService.findColumnIdsByCity(cityId, provinceId, 2);
+		List<String> ids = selectAreaService.findColumnIdsByCity(cityId, provinceId, ColumnType.appRecommend.ordinal());
 		if (null == ids || ids.size() == 0) {
 			return new ArrayList<AppRecommendDto>();
 		}

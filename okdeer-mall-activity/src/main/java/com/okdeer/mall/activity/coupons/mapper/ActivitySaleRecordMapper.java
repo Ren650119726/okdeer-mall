@@ -3,9 +3,12 @@ package com.okdeer.mall.activity.coupons.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 
 /**
  * @DESC: 特惠活动记录mapper
@@ -86,4 +89,16 @@ public interface ActivitySaleRecordMapper extends IBaseCrudMapper {
 	 */
 	int batchInsert(List<ActivitySaleRecord> recordList);
 	// End added by maojj 2016-07-14
+	
+	// Begin V2.0 added by maojj 2017-01-03
+	/**
+	 * @Description: 查询用户参与指定活动列表的购买记录
+	 * @param userId
+	 * @param saleIdList
+	 * @return   
+	 * @author maojj
+	 * @date 2017年1月3日
+	 */
+	List<ActivitySaleRecord> findSaleRecord(@Param("userId")String userId,@Param("saleIdList")Set<String> saleIdList);
+	// End added by maojj 2017-01-03
 }

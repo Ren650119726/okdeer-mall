@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.github.pagehelper.PageHelper;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.base.common.enums.Disabled;
@@ -69,7 +70,10 @@ public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi,
 	public PageUtils<ActivitySaleGoodsBo> findSaleGoodsByParams(
 			ActivitySaleGoodsParamDto param, Integer pageSize,
 			Integer pageNum) {
-		return activitySaleGoodsMapper.findSaleGoodsPageByParams(param,pageSize,pageNum);
+		List<ActivitySaleGoodsBo> list = activitySaleGoodsMapper.findSaleGoodsByParams(param);
+		PageHelper.startPage(pageNum, pageSize, true, false);
+		PageUtils<ActivitySaleGoodsBo> page = new PageUtils<ActivitySaleGoodsBo>(list);
+		return page;
 	}
 
 }
