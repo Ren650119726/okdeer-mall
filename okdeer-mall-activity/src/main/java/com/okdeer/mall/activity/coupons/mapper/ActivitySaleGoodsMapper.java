@@ -2,6 +2,7 @@ package com.okdeer.mall.activity.coupons.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -132,5 +133,16 @@ public interface ActivitySaleGoodsMapper {
 	 */
 	List<ActivitySaleGoods> findActivityGoodsList(@Param("saleId")String saleId,@Param("storeSkuIds")List<String> storeSkuIds);
 	// End added by maojj 2016-07-14
-
+	
+	// Begin V2.0 added by maojj 2016-12-31
+	/**
+	 * @Description: 根据活动ID列表和店铺商品id查询活动商品信息
+	 * @param saleId
+	 * @param storeSkuIds
+	 * @return   
+	 * @author maojj
+	 * @date 2016年12月31日
+	 */
+	List<ActivitySaleGoods> findBySaleIdsAndSkuIds(@Param("saleIds")Set<String> saleIds,@Param("storeSkuIds")List<String> storeSkuIds);
+	// End added by maojj 2016-12-31
 }
