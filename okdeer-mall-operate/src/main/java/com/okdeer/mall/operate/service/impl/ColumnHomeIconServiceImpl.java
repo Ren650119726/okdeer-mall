@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.DateUtils;
@@ -109,6 +110,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 	 * @throws Exception 
 	 * @see com.okdeer.mall.operate.service.ColumnHomeIconService#save(com.okdeer.mall.operate.entity.ColumnHomeIcon, java.util.List, java.util.List)
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> goodsIds)
 			throws Exception {
@@ -172,7 +174,6 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 				if (SelectAreaType.province.equals(item.getAreaType())) {
 					item.setCityId("0");
 				}
-				item.setColumnType(2);
 				item.setId(UuidUtils.getUuid());
 				item.setColumnId(homeIconId);
 				item.setColumnType(ColumnType.homeIcon.ordinal());

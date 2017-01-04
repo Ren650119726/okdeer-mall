@@ -22,6 +22,7 @@ import com.okdeer.mall.operate.dto.AppRecommendDto;
 import com.okdeer.mall.operate.dto.AppRecommendGoodsDto;
 import com.okdeer.mall.operate.dto.AppRecommendGoodsParamDto;
 import com.okdeer.mall.operate.dto.AppRecommendParamDto;
+import com.okdeer.mall.operate.dto.SelectAreaDto;
 import com.okdeer.mall.operate.entity.ColumnAppRecommend;
 import com.okdeer.mall.operate.entity.ColumnAppRecommendGoods;
 import com.okdeer.mall.operate.entity.ColumnSelectArea;
@@ -93,6 +94,24 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		}
 		// 复制APP端服务商品推荐信息
 		AppRecommendDto dto = BeanMapper.map(recommend, AppRecommendDto.class);
+		// 查询商品关联信息
+		List<AppRecommendGoodsDto> goodsDtoList = null;
+		List<ColumnAppRecommendGoods> goodsList = appRecommendGoodsService.findListByRecommendId(dto.getId());
+		if (null == goodsList) {
+			goodsDtoList = new ArrayList<>();
+		} else {
+			goodsDtoList = BeanMapper.mapList(goodsList, AppRecommendGoodsDto.class);
+		}
+		dto.setGoodsList(goodsDtoList);
+		// 查询地区关联信息
+		List<SelectAreaDto> areaDtoList = null;
+		List<ColumnSelectArea> areaList = selectAreaService.findListByColumnId(dto.getId());
+		if (null == areaList) {
+			areaDtoList = new ArrayList<>();
+		} else {
+			areaDtoList = BeanMapper.mapList(areaList, SelectAreaDto.class);
+		}
+		dto.setAreaList(areaDtoList);
 		return dto;
 	}
 

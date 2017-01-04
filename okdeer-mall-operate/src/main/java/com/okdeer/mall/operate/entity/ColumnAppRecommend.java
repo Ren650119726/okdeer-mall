@@ -92,16 +92,6 @@ public class ColumnAppRecommend {
 	 */
 	private Integer disabled;
 
-	/**
-	 * 省ID
-	 */
-	private String provinceId;
-
-	/**
-	 * 城市ID(如果没有城市，这表示选择的是全省)
-	 */
-	private String cityId;
-
 	public String getId() {
 		return id;
 	}
@@ -221,21 +211,4 @@ public class ColumnAppRecommend {
 	public void setDisabled(Integer disabled) {
 		this.disabled = disabled;
 	}
-
-	public String getProvinceId() {
-		return provinceId;
-	}
-
-	public void setProvinceId(String provinceId) {
-		this.provinceId = provinceId;
-	}
-
-	public String getCityId() {
-		return cityId;
-	}
-
-	public void setCityId(String cityId) {
-		this.cityId = cityId;
-	}
-
 }
