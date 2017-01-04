@@ -46,9 +46,10 @@ public class ActivitySaleServiceImplTest extends ApplicationTests {
 		ActivitySaleGoods goods1 = new ActivitySaleGoods();
 		goods1.setId(UuidUtils.getUuid());
 		goods1.setSaleId(saleId);
-		goods1.setStoreSkuId("8a986822550ac0ae01550ad630b30076");
+		goods1.setStoreSkuId("8a94e420593f4ec701593f5545dc0012");
 		goods1.setDisabled(Disabled.valid);
-		goods1.setTradeMax(3);
+		goods1.setTradeMax(1);
+		goods1.setSaleStock(1);
 		goods1.setCreateTime(new Date());
 		goods1.setUpdateTime(goods1.getCreateTime());
 		goods1.setCreateUserId("15dbcb06276411e6aaff00163e010eb1");
@@ -65,7 +66,12 @@ public class ActivitySaleServiceImplTest extends ApplicationTests {
 
 	@Test
 	public void testUpdate() {
-		fail("Not yet implemented");
+		try {
+			String saleGoodsId = "8a94e71f5968724c01596872523b0004";
+			service.closeSaleGoods(saleGoodsId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
