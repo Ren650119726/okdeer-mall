@@ -20,6 +20,8 @@ import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
 
 import javax.annotation.Resource;
 
+import com.okdeer.mall.activity.coupons.enums.ActivitySaleStatus;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,16 +43,18 @@ import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.activity.service.ELSkuService;
 
+import java.util.List;
+
 /**
- * ClassName: ELSkuServiceImpl 
- * @Description: 搜素引擎商品-service-impl
+ * ClassName: ELSkuServiceImpl
+ *
  * @author wangf01
+ * @Description: 搜素引擎商品-service-impl
  * @date 2017年1月2日
- *
+ * <p>
  * =================================================================================================
- *     Task ID			  Date			     Author		      Description
+ * Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
  */
 @Service
 public class ELSkuServiceImpl implements ELSkuService {
@@ -67,14 +71,19 @@ public class ELSkuServiceImpl implements ELSkuService {
     ActivitySeckillService activitySeckillService;
 
     /**
+     * 注入特惠活动service
+     */
+    @Autowired
+    private ActivitySaleService activitySaleService;
+
+    /**
      * 事务消息注入
      */
     @Resource
     private RocketMQTransactionProducer rocketMQTransactionProducer;
 
     @Override
-    public boolean syncSaleToEL(int syncType) throws Exception {
-        String json = JsonMapper.nonEmptyMapper().toJson("");
+    public boolean syncSaleToEL(List<String> activityIds, int status, String storeId, String createUserId, int syncType) throws Exception {
         String tag = "";
         switch (syncType) {
             case 0:
@@ -87,14 +96,28 @@ public class ELSkuServiceImpl implements ELSkuService {
                 tag = TAG_SALE_EL_DEL;
                 break;
         }
+
+        ActivityMessageParamDto activityMessageParamDto = new ActivityMessageParamDto();
+        activityMessageParamDto.setActivityIds(activityIds);
+        if (status == 1) {
+            activityMessageParamDto.setUpdateStatus(0);
+        } else if (status == 2) {
+            activityMessageParamDto.setUpdateStatus(1);
+        }
+        String json = JsonMapper.nonEmptyMapper().toJson(activityMessageParamDto);
         Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
 
         // 发送事务消息
-        TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, null, new LocalTransactionExecuter() {
+        TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, activityMessageParamDto, new LocalTransactionExecuter() {
 
             @Override
             public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
                 // 业务方法
+                try {
+                    activitySaleService.updateBatchStatus(activityIds, status, storeId, createUserId);
+                } catch (Exception e) {
+                    logger.error("业务发生异常", e);
+                }
                 return LocalTransactionState.COMMIT_MESSAGE;
             }
         }, new TransactionCheckListener() {
@@ -171,7 +194,6 @@ public class ELSkuServiceImpl implements ELSkuService {
 
     @Override
     public boolean syncLowPriceToEL(int syncType) throws Exception {
-        String json = JsonMapper.nonEmptyMapper().toJson("");
         String tag = "";
         switch (syncType) {
             case 0:
@@ -184,10 +206,14 @@ public class ELSkuServiceImpl implements ELSkuService {
                 tag = TAG_LOWPRICE_EL_DEL;
                 break;
         }
+
+        ActivityMessageParamDto activityMessageParamDto = new ActivityMessageParamDto();
+
+        String json = JsonMapper.nonEmptyMapper().toJson(activityMessageParamDto);
         Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
 
         // 发送事务消息
-        TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, null, new LocalTransactionExecuter() {
+        TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, activityMessageParamDto, new LocalTransactionExecuter() {
 
             @Override
             public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
