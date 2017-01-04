@@ -11,8 +11,10 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -70,6 +72,7 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.activity.service.ColumnAppRecommendService#deleteByIds(java.util.List)
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public int deleteByIds(List<String> ids) throws Exception {
 		return appRecommendMapper.deleteByIds(ids);
@@ -100,6 +103,7 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 	 * @throws Exception 
 	 * @see com.okdeer.mall.operate.service.ColumnAppRecommendService#save(com.okdeer.mall.operate.entity.ColumnAppRecommend, java.util.List, java.util.List)
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public BaseResult save(ColumnAppRecommend entity, List<ColumnSelectArea> areaList,
 			List<ColumnAppRecommendGoods> goodsList) throws Exception {
@@ -143,9 +147,11 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 			// 删除之前的插入的关联数据
 			selectAreaService.deleteByColumnId(entity.getId());
 			appRecommendGoodsService.deleteByRecommendId(entity.getId());
+			entity.setUpdateTime(DateUtils.getSysDate());
 			appRecommendMapper.update(entity);
 		} else {
 			entity.setId(recommendId);
+			entity.setCreateTime(DateUtils.getSysDate());
 			appRecommendMapper.add(entity);
 		}
 

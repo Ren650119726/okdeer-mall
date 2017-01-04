@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.dal.IBaseMapper;
@@ -70,6 +71,7 @@ public class ColumnSelectAreaServiceImpl extends BaseServiceImpl implements Colu
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.operate.service.ColumnSelectAreaService#deleteByColumnId(java.lang.String)
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public int deleteByColumnId(String columnId) throws Exception {
 		return selectAreaMapper.deleteByColumnId(columnId);
@@ -79,6 +81,7 @@ public class ColumnSelectAreaServiceImpl extends BaseServiceImpl implements Colu
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.operate.service.ColumnSelectAreaService#insertMore(java.util.List)
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public int insertMore(List<ColumnSelectArea> areaList) throws Exception {
 		return selectAreaMapper.insertMore(areaList);

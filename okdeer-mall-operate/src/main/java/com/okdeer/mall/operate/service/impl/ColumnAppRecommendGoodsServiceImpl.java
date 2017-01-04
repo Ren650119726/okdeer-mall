@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.dal.IBaseMapper;
@@ -68,6 +69,7 @@ public class ColumnAppRecommendGoodsServiceImpl extends BaseServiceImpl implemen
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.activity.service.ColumnAppRecommendGoodsService#deleteByRecommendId(java.lang.String)
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public int deleteByRecommendId(String recommendId) throws Exception {
 		if (StringUtils.isBlank(recommendId)) {
@@ -80,6 +82,7 @@ public class ColumnAppRecommendGoodsServiceImpl extends BaseServiceImpl implemen
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.activity.service.ColumnAppRecommendGoodsService#insertMore(java.util.List)
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public int insertMore(List<ColumnAppRecommendGoods> goodsList) throws Exception {
 		return appRecommendGoodsMapper.insertMore(goodsList);

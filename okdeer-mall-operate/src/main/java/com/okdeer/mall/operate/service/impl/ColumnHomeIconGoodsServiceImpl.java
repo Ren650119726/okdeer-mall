@@ -9,6 +9,7 @@ package com.okdeer.mall.operate.service.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.dal.IBaseMapper;
@@ -57,6 +58,7 @@ public class ColumnHomeIconGoodsServiceImpl extends BaseServiceImpl implements C
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.operate.service.ColumnHomeIconGoodsService#deleteByHomeIconId(java.lang.String)
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public int deleteByHomeIconId(String iconId) throws Exception {
 		return homeIconGoodsMapper.deleteByHomeIconId(iconId);
@@ -66,6 +68,7 @@ public class ColumnHomeIconGoodsServiceImpl extends BaseServiceImpl implements C
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.operate.service.ColumnHomeIconGoodsService#insertMore(java.util.List)
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public int insertMore(List<ColumnHomeIconGoods> list) throws Exception {
 		return homeIconGoodsMapper.insertMore(list);

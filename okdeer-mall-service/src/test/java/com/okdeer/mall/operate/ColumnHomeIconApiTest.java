@@ -66,7 +66,7 @@ public class ColumnHomeIconApiTest {
 			dto.setGoodsIds(goodsList);
 			dto.setIconUrl("www.okdeer.com");
 			dto.setName("单元测试数据");
-			dto.setPlace(HomeIconPlace.five);
+			dto.setPlace(HomeIconPlace.four);
 			dto.setTaskType(HomeIconTaskType.goods);
 			dto.setTaskScope(SelectAreaType.city);
 
@@ -75,13 +75,15 @@ public class ColumnHomeIconApiTest {
 			areaDto1.setAreaType(SelectAreaType.city);
 			areaDto1.setCityId(DateUtils.getDateRandom());
 			areaDto1.setProvinceId(DateUtils.getDateRandom());
-			areaDto1.setProvinceName("测试省");
+			areaDto1.setProvinceName("测试省1");
+			areaDto1.setCityName("测试城市1");
 			areaList.add(areaDto1);
 			SelectAreaDto areaDto2 = new SelectAreaDto();
 			areaDto2.setAreaType(SelectAreaType.city);
 			areaDto2.setCityId(DateUtils.getDateRandom());
 			areaDto2.setProvinceId(DateUtils.getDateRandom());
-			areaDto2.setProvinceName("测试城市");
+			areaDto2.setProvinceName("测试省2");
+			areaDto2.setCityName("测试城市2");
 			areaList.add(areaDto2);
 			dto.setAreaList(areaList);
 			BaseResult result = homeIconService.save(dto);
