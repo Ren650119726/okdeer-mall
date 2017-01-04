@@ -14,9 +14,11 @@ import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
+import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
@@ -90,7 +92,6 @@ public class ELSkuServiceImpl implements ELSkuService {
 
 	@Override
 	public boolean syncSeckillToEL(ActivitySeckill activity, SeckillStatusEnum status, int syncType) throws Exception {
-		String json = JsonMapper.nonEmptyMapper().toJson("");
 		String tag = "";
 		switch (syncType) {
 			case 0:
@@ -103,10 +104,25 @@ public class ELSkuServiceImpl implements ELSkuService {
 				tag = TAG_SECKILL_EL_DEL;
 				break;
 		}
+		ActivityMessageParamDto activityMessageParamDto = new ActivityMessageParamDto();
+		activityMessageParamDto.setActivityId(activity.getId());
+
+		switch (status){
+			case ing:
+				// 0为开始 1为关闭
+				activityMessageParamDto.setUpdateStatus(0);
+				break;
+			case end:
+				// 0为开始 1为关闭
+				activityMessageParamDto.setUpdateStatus(1);
+				break;
+		}
+
+		String json = JsonMapper.nonEmptyMapper().toJson(activityMessageParamDto);
 		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
 
 		// 发送事务消息
-		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, null, new LocalTransactionExecuter() {
+		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, activityMessageParamDto, new LocalTransactionExecuter() {
 
 			@Override
 			public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
@@ -114,9 +130,11 @@ public class ELSkuServiceImpl implements ELSkuService {
 				try {
 					switch (status){
 						case ing:
+								//未开始活动，时间开始之后变更状态为已开始
 								activitySeckillService.updateSeckillStatus(activity.getId(), status);
 							break;
 						case end:
+								//已开始活动，时间到期之后变更状态为已结束
 								activitySeckillService.updateSeckillByEnd(activity);
 							break;
 					}
