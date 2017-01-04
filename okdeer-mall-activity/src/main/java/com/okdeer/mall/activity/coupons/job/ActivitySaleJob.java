@@ -6,6 +6,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import com.okdeer.common.utils.ELOperateEnum;
+import com.okdeer.mall.activity.service.ELSkuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,12 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 
 	private static final Logger logger = LoggerFactory.getLogger(ActivitySaleJob.class);
 
+	/**
+	 * 搜索引擎消费注入
+     */
+	@Autowired
+	private ELSkuService elSkuService;
+
 	@Autowired
 	private ActivitySaleService activitySaleService;
 
@@ -53,15 +61,20 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 				for (ActivitySale a : list) {
 					try {
 						if (a.getStatus() == ActivitySaleStatus.noStart.getValue()) {
+							// 未开始改为进行中
 							List<String> idList = new ArrayList<String>();
 							idList.add(a.getId());
-							activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.ing.getValue(),
-									a.getStoreId(), "0");
+							elSkuService.syncSaleToEL(idList, ActivitySaleStatus.ing.getValue(),
+									a.getStoreId(), "0", ELOperateEnum.UPDATE.ordinal());
+							//activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.ing.getValue(), a.getStoreId(), "0");
 						} else if (a.getStatus() == ActivitySaleStatus.ing.getValue()) {
+							// 进行中改为已关闭
 							List<String> idList = new ArrayList<String>();
 							idList.add(a.getId());
-							activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.end.getValue(),
-									a.getStoreId(), "0");
+							elSkuService.syncSaleToEL(idList, ActivitySaleStatus.end.getValue(),
+									a.getStoreId(), "0", ELOperateEnum.UPDATE.ordinal());
+							//activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.end.getValue(),
+							//		a.getStoreId(), "0");
 						}
 					} catch (Exception e) {
 						logger.error("特惠活动定时器异常" + a.getId(), e);
