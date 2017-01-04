@@ -1,11 +1,29 @@
-/** 
- *@Project: okdeer-archive-goods 
- *@Author: wangf01
- *@Date: 2017年1月2日 
- *@Copyright: ©2014-2020 www.yschome.com Inc. All rights reserved. 
+/**
+ * @Project: okdeer-archive-goods
+ * @Author: wangf01
+ * @Date: 2017年1月2日
+ * @Copyright: ©2014-2020 www.yschome.com Inc. All rights reserved.
  */
 
 package com.okdeer.mall.activity.service.impl;
+
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_ADD;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_DEL;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_ADD;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_DEL;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SECKILL_EL_ADD;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SECKILL_EL_DEL;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SECKILL_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
 import com.alibaba.rocketmq.client.producer.LocalTransactionState;
@@ -18,17 +36,10 @@ import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
-import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.activity.service.ELSkuService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
-
-import static com.okdeer.common.consts.ELTopicTagConstants.*;
 
 /**
  * ClassName: ELSkuServiceImpl 
@@ -44,146 +55,152 @@ import static com.okdeer.common.consts.ELTopicTagConstants.*;
 @Service
 public class ELSkuServiceImpl implements ELSkuService {
 
-	/**
-	 * 注入秒杀活动service
-	 */
-	@Autowired
-	ActivitySeckillService activitySeckillService;
+    /**
+     * 日志
+     */
+    private static final Logger logger = LoggerFactory.getLogger(ELSkuServiceImpl.class);
 
-	/**
-	 * 事务消息注入
-	 */
-	@Resource
-	private RocketMQTransactionProducer rocketMQTransactionProducer;
+    /**
+     * 注入秒杀活动service
+     */
+    @Autowired
+    ActivitySeckillService activitySeckillService;
 
-	@Override
-	public boolean syncSaleToEL(int syncType) throws Exception {
-		String json = JsonMapper.nonEmptyMapper().toJson("");
-		String tag = "";
-		switch (syncType) {
-			case 0:
-				tag = TAG_SALE_EL_ADD;
-				break;
-			case 1:
-				tag = TAG_SALE_EL_UPDATE;
-				break;
-			case 2:
-				tag = TAG_SALE_EL_DEL;
-				break;
-		}
-		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
+    /**
+     * 事务消息注入
+     */
+    @Resource
+    private RocketMQTransactionProducer rocketMQTransactionProducer;
 
-		// 发送事务消息
-		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, null, new LocalTransactionExecuter() {
+    @Override
+    public boolean syncSaleToEL(int syncType) throws Exception {
+        String json = JsonMapper.nonEmptyMapper().toJson("");
+        String tag = "";
+        switch (syncType) {
+            case 0:
+                tag = TAG_SALE_EL_ADD;
+                break;
+            case 1:
+                tag = TAG_SALE_EL_UPDATE;
+                break;
+            case 2:
+                tag = TAG_SALE_EL_DEL;
+                break;
+        }
+        Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
 
-			@Override
-			public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
-				// 业务方法
-				return LocalTransactionState.COMMIT_MESSAGE;
-			}
-		}, new TransactionCheckListener() {
+        // 发送事务消息
+        TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, null, new LocalTransactionExecuter() {
 
-			public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
-				return LocalTransactionState.COMMIT_MESSAGE;
-			}
-		});
-		return RocketMqResult.returnResult(sendResult);
-	}
+            @Override
+            public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
+                // 业务方法
+                return LocalTransactionState.COMMIT_MESSAGE;
+            }
+        }, new TransactionCheckListener() {
 
-	@Override
-	public boolean syncSeckillToEL(ActivitySeckill activity, SeckillStatusEnum status, int syncType) throws Exception {
-		String tag = "";
-		switch (syncType) {
-			case 0:
-				tag = TAG_SECKILL_EL_ADD;
-				break;
-			case 1:
-				tag = TAG_SECKILL_EL_UPDATE;
-				break;
-			case 2:
-				tag = TAG_SECKILL_EL_DEL;
-				break;
-		}
-		ActivityMessageParamDto activityMessageParamDto = new ActivityMessageParamDto();
-		activityMessageParamDto.setActivityId(activity.getId());
+            public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
+                return LocalTransactionState.COMMIT_MESSAGE;
+            }
+        });
+        return RocketMqResult.returnResult(sendResult);
+    }
 
-		switch (status){
-			case ing:
-				// 0为开始 1为关闭
-				activityMessageParamDto.setUpdateStatus(0);
-				break;
-			case end:
-				// 0为开始 1为关闭
-				activityMessageParamDto.setUpdateStatus(1);
-				break;
-		}
+    @SuppressWarnings("incomplete-switch")
+    @Override
+    public boolean syncSeckillToEL(ActivitySeckill activity, SeckillStatusEnum status, int syncType) throws Exception {
+        String tag = "";
+        switch (syncType) {
+            case 0:
+                tag = TAG_SECKILL_EL_ADD;
+                break;
+            case 1:
+                tag = TAG_SECKILL_EL_UPDATE;
+                break;
+            case 2:
+                tag = TAG_SECKILL_EL_DEL;
+                break;
+        }
+        ActivityMessageParamDto activityMessageParamDto = new ActivityMessageParamDto();
+        activityMessageParamDto.setActivityId(activity.getId());
 
-		String json = JsonMapper.nonEmptyMapper().toJson(activityMessageParamDto);
-		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
+        switch (status) {
+            case ing:
+                // 0为开始 1为关闭
+                activityMessageParamDto.setUpdateStatus(0);
+                break;
+            case end:
+                // 0为开始 1为关闭
+                activityMessageParamDto.setUpdateStatus(1);
+                break;
+        }
 
-		// 发送事务消息
-		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, activityMessageParamDto, new LocalTransactionExecuter() {
+        String json = JsonMapper.nonEmptyMapper().toJson(activityMessageParamDto);
+        Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
 
-			@Override
-			public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
-				// 业务方法
-				try {
-					switch (status){
-						case ing:
-								//未开始活动，时间开始之后变更状态为已开始
-								activitySeckillService.updateSeckillStatus(activity.getId(), status);
-							break;
-						case end:
-								//已开始活动，时间到期之后变更状态为已结束
-								activitySeckillService.updateSeckillByEnd(activity);
-							break;
-					}
-				} catch (Exception e) {
-					return LocalTransactionState.ROLLBACK_MESSAGE;
-				}
-				return LocalTransactionState.COMMIT_MESSAGE;
-			}
-		}, new TransactionCheckListener() {
+        // 发送事务消息
+        TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, null, new LocalTransactionExecuter() {
 
-			public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
-				return LocalTransactionState.COMMIT_MESSAGE;
-			}
-		});
-		return RocketMqResult.returnResult(sendResult);
-	}
+            @Override
+            public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
+                // 业务方法
+                try {
+                    switch (status) {
+                        case ing:
+                            //未开始活动，时间开始之后变更状态为已开始
+                            activitySeckillService.updateSeckillStatus(activity.getId(), status);
+                            break;
+                        case end:
+                            //已开始活动，时间到期之后变更状态为已结束
+                            activitySeckillService.updateSeckillByEnd(activity);
+                            break;
+                    }
+                } catch (Exception e) {
+                    logger.error("业务发生异常", e);
+                }
+                return LocalTransactionState.COMMIT_MESSAGE;
+            }
+        }, new TransactionCheckListener() {
 
-	@Override
-	public boolean syncLowPriceToEL(int syncType) throws Exception {
-		String json = JsonMapper.nonEmptyMapper().toJson("");
-		String tag = "";
-		switch (syncType) {
-			case 0:
-				tag = TAG_LOWPRICE_EL_ADD;
-				break;
-			case 1:
-				tag = TAG_LOWPRICE_EL_UPDATE;
-				break;
-			case 2:
-				tag = TAG_LOWPRICE_EL_DEL;
-				break;
-		}
-		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
+            public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
+                return LocalTransactionState.COMMIT_MESSAGE;
+            }
+        });
+        return RocketMqResult.returnResult(sendResult);
+    }
 
-		// 发送事务消息
-		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, null, new LocalTransactionExecuter() {
+    @Override
+    public boolean syncLowPriceToEL(int syncType) throws Exception {
+        String json = JsonMapper.nonEmptyMapper().toJson("");
+        String tag = "";
+        switch (syncType) {
+            case 0:
+                tag = TAG_LOWPRICE_EL_ADD;
+                break;
+            case 1:
+                tag = TAG_LOWPRICE_EL_UPDATE;
+                break;
+            case 2:
+                tag = TAG_LOWPRICE_EL_DEL;
+                break;
+        }
+        Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
 
-			@Override
-			public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
-				// 业务方法
-				return LocalTransactionState.COMMIT_MESSAGE;
-			}
-		}, new TransactionCheckListener() {
+        // 发送事务消息
+        TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, null, new LocalTransactionExecuter() {
 
-			public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
-				return LocalTransactionState.COMMIT_MESSAGE;
-			}
-		});
-		return RocketMqResult.returnResult(sendResult);
-	}
+            @Override
+            public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
+                // 业务方法
+                return LocalTransactionState.COMMIT_MESSAGE;
+            }
+        }, new TransactionCheckListener() {
+
+            public LocalTransactionState checkLocalTransactionState(MessageExt msg) {
+                return LocalTransactionState.COMMIT_MESSAGE;
+            }
+        });
+        return RocketMqResult.returnResult(sendResult);
+    }
 
 }
