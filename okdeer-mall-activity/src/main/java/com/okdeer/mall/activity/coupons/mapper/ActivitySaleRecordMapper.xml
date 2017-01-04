@@ -230,4 +230,19 @@
      </foreach>
   </insert>
   <!-- End added by maojj 2016-07-15 -->
+  
+  <!-- Begin added by maojj 2017-01-03 -->
+  <!-- 查询用户购买特惠商品记录列表-->
+  <select id="findSaleRecord" parameterType="map" resultMap="BaseResultMap">
+  	SELECT sale_goods_id,sum(sale_goods_num) sale_goods_num
+  	FROM activity_sale_record 
+  	WHERE user_id = #{userId,jdbcType=VARCHAR} 
+  	AND sale_id IN
+  	<foreach collection="saleIdList" item="item" separator="," open="(" close=")">
+  		#{item}
+  	</foreach>
+  	AND order_disabled = 0
+  	GROUP BY sale_goods_id
+  </select>
+  <!-- End added by maojj 2017-01-03 -->
 </mapper>
