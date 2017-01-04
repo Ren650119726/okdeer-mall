@@ -2,6 +2,7 @@ package com.okdeer.mall.activity.coupons.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -79,7 +80,7 @@ public interface ActivitySaleGoodsMapper {
 	List<ActivitySaleGoodsBo> findSaleGoodsByParams(@Param("param")ActivitySaleGoodsParamDto param);
 	
 	/**
-	 * 批量设置低价抢购商品
+	 * 批量设置低价抢购商品-暂时没用到,未实现
 	 * @Description:
 	 * @param saleGoods
 	 * @throws Exception void
@@ -87,6 +88,16 @@ public interface ActivitySaleGoodsMapper {
 	 * @date 2016年12月31日
 	 */
 	void updateBatch(@Param("list")List<ActivitySaleGoods> saleGoods) throws Exception;
+	
+	/**
+	 * 关闭低价抢购商品
+	 * @Description:
+	 * @param saleGoods void
+	 * @throws
+	 * @author mengsj
+	 * @date 2017年1月3日
+	 */
+	void updateById(ActivitySaleGoods saleGoods) throws Exception;
 	
 	/**
 	 * @desc 通过主键获取对象
@@ -108,4 +119,16 @@ public interface ActivitySaleGoodsMapper {
 	 */
 	List<ActivitySaleGoods> findActivityGoodsList(@Param("saleId")String saleId,@Param("storeSkuIds")List<String> storeSkuIds);
 	// End added by maojj 2016-07-14
+	
+	// Begin V2.0 added by maojj 2016-12-31
+	/**
+	 * @Description: 根据活动ID列表和店铺商品id查询活动商品信息
+	 * @param saleId
+	 * @param storeSkuIds
+	 * @return   
+	 * @author maojj
+	 * @date 2016年12月31日
+	 */
+	List<ActivitySaleGoods> findBySaleIdsAndSkuIds(@Param("saleIds")Set<String> saleIds,@Param("storeSkuIds")List<String> storeSkuIds);
+	// End added by maojj 2016-12-31
 }

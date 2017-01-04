@@ -51,6 +51,30 @@
     <delete id="deleteById" parameterType="string">
         delete from activity_sale_goods where id = #{value} 
     </delete>
+
+	<update id="updateById" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods">
+		update activity_sale_goods set		
+		<if test="tradeMax != null">
+			trade_max = #{tradeMax},
+		</if>
+		<if test="saleStock != null">
+			sale_stock = #{saleStock},
+		</if>
+		<if test="sort != null">
+			sort = #{sort},
+		</if>
+		<if test="disabled != null">
+			disabled = #{disabled},
+		</if>
+		<if test="updateTime != null">
+			update_time = #{updateTime},
+		</if>
+		<if test="updateUserId != null">
+			update_user_id = #{updateUserId},
+		</if>
+		1=1
+		where id = #{id}
+	</update>
     
     <select id="get" parameterType="string" resultMap="ActivitySaleGoods">
         select <include refid="columns"/> from activity_sale_goods where id = #{value} 
@@ -122,4 +146,19 @@
 		</if>
 	</select>
 	<!-- added by mengsj end 2017-01-03 -->
+	
+	<!-- 根据活动ID和店铺商品id查询活动商品信息 Begin added by maojj 2016-12-31 -->
+	<select id="findBySaleIdsAndSkuIds" parameterType="map" resultMap="ActivitySaleGoods">
+		SELECT <include refid="columns" />
+		FROM activity_sale_goods
+		WHERE sale_id IN
+		<foreach collection="saleIds" item="item" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+		AND store_sku_id IN
+		<foreach collection="storeSkuIds" item="item" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+	</select>
+	<!-- End added by maojj 2016-12-31 -->
 </mapper>
