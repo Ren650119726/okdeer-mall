@@ -75,6 +75,15 @@ public interface SysBuyerExtMapper {
 	 * @author zengjizu
 	 * @date 2016年12月31日
 	 */
-	SysBuyerExt findByUserIdForUpdate(@Param("userId") String userId);	
+	SysBuyerExt findByUserIdForUpdate(@Param("userId") String userId);
+	
+	/**
+	 * @Description: 更新用户积分
+	 * @param userId 用户id 
+	 * @param reducePoint 积分值(正数是加，负数是减少积分)
+	 * @author zengjizu
+	 * @date 2017年1月5日
+	 */
+	int updatePoint(@Param("userId")String userId, @Param("reducePoint") int reducePoint);
 	
 }
