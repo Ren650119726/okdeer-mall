@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.common.utils.BaseResult;
@@ -70,6 +72,21 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 			dtoList = BeanMapper.mapList(sourceList, HomeIconDto.class);
 		}
 		return dtoList;
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.operate.service.ColumnHomeIconApi#findListPage(com.okdeer.mall.operate.dto.HomeIconParamDto)
+	 */
+	@Override
+	public PageUtils<HomeIconDto> findListPage(HomeIconParamDto paramDto) throws Exception {
+		PageHelper.startPage(paramDto.getPageNumber(), paramDto.getPageSize(), true);
+		List<ColumnHomeIcon> result = homeIconService.findList(paramDto);
+		if (result == null) {
+			result = new ArrayList<ColumnHomeIcon>();
+		}
+		List<HomeIconDto> list = BeanMapper.mapList(result, HomeIconDto.class);
+		return new PageUtils<HomeIconDto>(list);
 	}
 
 	/**
@@ -196,5 +213,4 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		}
 		return storeSkuIds;
 	}
-
 }
