@@ -94,7 +94,7 @@ public class ColumnSelectAreaServiceTest {
 		try {
 			log.info("测试获取活动与地区列表");
 			List<ColumnSelectArea> list = selectAreaService.findListByColumnId("1");
-			Assert.assertNotNull(list);
+			Assert.assertTrue("测试获取活动与地区列表失败", list.size() > 0);
 		} catch (Exception e) {
 			log.error("查询活动与地区列表异常:{}", e);
 		}

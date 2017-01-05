@@ -23,6 +23,7 @@ import com.okdeer.mall.Application;
 import com.okdeer.mall.operate.dto.AppRecommendDto;
 import com.okdeer.mall.operate.dto.AppRecommendGoodsDto;
 import com.okdeer.mall.operate.dto.AppRecommendParamDto;
+import com.okdeer.mall.operate.enums.AppRecommendPlace;
 import com.okdeer.mall.operate.service.ColumnAppRecommendApi;
 
 /**
@@ -46,17 +47,27 @@ public class ColumnAppRecommendApiTest {
 	@Autowired
 	private ColumnAppRecommendApi columnAppRecommendApi;
 
-	private String recommendId = "8a94e7ce5968c3f4015968c471d50005";
-
 	@Test
 	public void testFindById() {
 		try {
 			log.info("测试API服务 - 根据ID查询APP端服务商品推荐");
-			AppRecommendDto result = columnAppRecommendApi.findById(recommendId);
+			AppRecommendDto result = columnAppRecommendApi.findById("8a94e7ce5968c3f4015968c471d50005");
 			Assert.assertNotNull("测试API服务 = 根据ID查询APP端服务商品推荐失败", result);
 			log.info("测试API服务 - 根据ID查询APP端服务商品推荐 ：{}", result);
 		} catch (Exception e) {
 			log.error("测试API服务 = 根据ID查询APP端服务商品推荐异常:{}", e);
+		}
+	}
+
+	@Test
+	public void testFindListByCity() {
+		try {
+			log.info("测试API服务 - 根据城市ID和位置查询APP端服务商品推荐列表");
+			List<AppRecommendDto> result = columnAppRecommendApi.findListByCity("1", "1", AppRecommendPlace.find);
+			Assert.assertNotNull("测试API服务 = 根据城市ID和位置查询APP端服务商品推荐列表失败", result);
+			log.info("测试API服务 - 根据城市ID和位置查询APP端服务商品推荐列表 ：{}", result);
+		} catch (Exception e) {
+			log.error("测试API服务 = 根据城市ID和位置查询APP端服务商品推荐列表异常:{}", e);
 		}
 	}
 
@@ -81,7 +92,7 @@ public class ColumnAppRecommendApiTest {
 		try {
 			log.info("测试API服务 -  查询APP端服务商品推荐与商品关联列表");
 			List<AppRecommendGoodsDto> list = columnAppRecommendApi
-					.findAppRecommendGoodsDtoListByRecommendId(recommendId);
+					.findAppRecommendGoodsDtoListByRecommendId("8a94e7ce5968c3f4015968c471d50005");
 			Assert.assertNotNull("测试API服务 =  查询APP端服务商品推荐与商品关联列表失败", list);
 		} catch (Exception e) {
 			log.error("测试API服务 =  查询APP端服务商品推荐与商品关联列表异常:{}", e);
