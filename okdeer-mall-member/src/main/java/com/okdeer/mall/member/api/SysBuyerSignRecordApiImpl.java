@@ -14,7 +14,7 @@ import com.okdeer.mall.member.member.dto.SignResultDto;
 import com.okdeer.mall.member.member.service.SysBuyerSignRecordApi;
 import com.okdeer.mall.member.service.SysBuyerSignRecordService;
 
-@Service(interfaceName = "com.okdeer.mall.member.member.service.SysBuyerSignRecordApi")
+@Service(interfaceName = "com.okdeer.mall.member.member.service.SysBuyerSignRecordApi",version="1.0.0")
 public class SysBuyerSignRecordApiImpl implements SysBuyerSignRecordApi {
 
 	@Autowired

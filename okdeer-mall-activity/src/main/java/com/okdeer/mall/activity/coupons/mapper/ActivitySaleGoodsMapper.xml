@@ -72,7 +72,7 @@
 		<if test="updateUserId != null">
 			update_user_id = #{updateUserId},
 		</if>
-		1=1
+		id = #{id}
 		where id = #{id}
 	</update>
     
@@ -93,10 +93,16 @@
 <!-- 根据店铺商品的id和活动id去查询单个记录  addBy  zhulq -->
 <select id="selectByObject" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods" resultMap="ActivitySaleGoods">
      SELECT id, store_sku_id, sale_price, trade_max, sale_id, disabled 
-     FROM activity_sale_goods
-     WHERE disabled = #{disabled}
-     AND store_sku_id = #{storeSkuId}
-     AND sale_id = #{saleId}
+     FROM activity_sale_goods WHERE 1=1
+     <if test="disabled != null">
+	      AND disabled = #{disabled}
+     </if>
+     <if test="storeSkuId != null">
+	     AND store_sku_id = #{storeSkuId}
+     </if>
+     <if test="saleId != null">
+	     AND sale_id = #{saleId}
+     </if>
 </select>
 
 	<select id="selectActivitySaleByParams" parameterType="map" resultMap="ActivitySaleGoods">
@@ -117,7 +123,18 @@
 	
 	<!-- added by mengsj begin 2017-01-03 -->
 	<select id="findSaleGoodsByParams" parameterType="com.okdeer.mall.activity.dto.ActivitySaleGoodsParamDto" resultType="com.okdeer.mall.activity.coupons.entity.ActivitySaleGoodsBo">
-		SELECT <include refid="columns" />, 
+		SELECT  sg.id,
+				sg.store_sku_id storeSkuId,
+				sg.sale_id saleId,
+				sg.trade_max tradeMax,
+				sg.sale_stock saleStock,
+				sg.sale_price salePrice,
+				sg.sort sort,
+				sg.disabled disabled,
+				sg.create_time createTime,
+				sg.create_user_id createUserId,
+				sg.update_time updateTime,
+				sg.update_user_id updateUserId, 
 				sku.name skuName,
 				sku_pic.url picUrl,
 				cat.name skuCategoryName,
@@ -129,20 +146,20 @@
 			LEFT JOIN goods_store_sku_picture sku_pic ON (sku_pic.store_sku_id = sku.id AND sku_pic.type = 1)
 			LEFT JOIN goods_store_spu spu ON spu.id = sku.store_spu_id
 			LEFT JOIN goods_spu_category cat ON spu.spu_category_id = cat.id
-			LEFT JOIN goods_store_sku_stock stock ON sg.id = stock.store_sku_id
-			LEFT JOIN (select count(1) as sale_num from activity_sale_record rc WHERE rc.sale_goods_id = sg.id) record ON sg.sale_id = record.sale_id
-		WHERE sg.sale_id = #{activityId,jdbcType=VARCHAR} 
-		<if test="skuName != null and skuName!=''">
-			AND sku.name CONCAT('%', #{skuName,jdbcType=VARCHAR},'%')
+			LEFT JOIN goods_store_sku_stock stock ON sku.id = stock.store_sku_id
+			LEFT JOIN (select count(1) as sale_num,sale_goods_id,sale_id  from activity_sale_record rc GROUP BY sale_id,sale_goods_id) record ON (sg.sale_id = record.sale_id AND record.sale_goods_id = sg.id)
+		WHERE sg.sale_id = #{param.activityId,jdbcType=VARCHAR} 
+		<if test="param.skuName != null and param.skuName!=''">
+			AND sku.name CONCAT('%', #{param.skuName,jdbcType=VARCHAR},'%')
 		</if>
-		<if test="skuCategoryName != null and skuCategoryName != ''">
-			AND cat.name CONCAT('%', #{skuCategoryName,jdbcType=VARCHAR},'%')
+		<if test="param.skuCategoryName != null and param.skuCategoryName != ''">
+			AND cat.name CONCAT('%', #{param.skuCategoryName,jdbcType=VARCHAR},'%')
 		</if>
-		<if test="barCode != null and barCode != ''">
-			AND sku.bar_code CONCAT('%', #{barCode,jdbcType=VARCHAR},'%')
+		<if test="param.barCode != null and param.barCode != ''">
+			AND sku.bar_code CONCAT('%', #{param.barCode,jdbcType=VARCHAR},'%')
 		</if>
-		<if test="scareBuyStatus != null and scareBuyStatus != ''">
-			AND sg.disabled = #{scareBuyStatus}
+		<if test="param.scareBuyStatus != null and param.scareBuyStatus != ''">
+			AND sg.disabled = #{param.scareBuyStatus}
 		</if>
 	</select>
 	<!-- added by mengsj end 2017-01-03 -->

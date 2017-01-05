@@ -253,10 +253,10 @@
     </update>
     
     <select id="listByTask" parameterType="map" resultMap="ActivitySale">
-    	select s.* from activity_sale s where 
+    	select s.* from activity_sale s where type = 5 and (
 		(s.`status` = 0 and  s.start_time &lt;= NOW())
 		OR
-		(s.`status` = 1 and  s.end_time &lt;= NOW());
+		(s.`status` = 1 and  s.end_time &lt;= NOW()));
     </select>
 
 	<select id="selectActivitySale" parameterType="string" resultType="int">

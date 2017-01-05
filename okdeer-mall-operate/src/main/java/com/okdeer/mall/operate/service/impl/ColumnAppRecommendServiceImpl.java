@@ -11,8 +11,10 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -70,6 +72,7 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.activity.service.ColumnAppRecommendService#deleteByIds(java.util.List)
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public int deleteByIds(List<String> ids) throws Exception {
 		return appRecommendMapper.deleteByIds(ids);
@@ -100,6 +103,7 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 	 * @throws Exception 
 	 * @see com.okdeer.mall.operate.service.ColumnAppRecommendService#save(com.okdeer.mall.operate.entity.ColumnAppRecommend, java.util.List, java.util.List)
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public BaseResult save(ColumnAppRecommend entity, List<ColumnSelectArea> areaList,
 			List<ColumnAppRecommendGoods> goodsList) throws Exception {
@@ -143,9 +147,11 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 			// 删除之前的插入的关联数据
 			selectAreaService.deleteByColumnId(entity.getId());
 			appRecommendGoodsService.deleteByRecommendId(entity.getId());
+			entity.setUpdateTime(DateUtils.getSysDate());
 			appRecommendMapper.update(entity);
 		} else {
 			entity.setId(recommendId);
+			entity.setCreateTime(DateUtils.getSysDate());
 			appRecommendMapper.add(entity);
 		}
 
@@ -169,7 +175,7 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 
 	private boolean isRepeatArea(String recommendId, SelectAreaType areaType, AppRecommendPlace place,
 			List<ColumnSelectArea> areaList) throws Exception {
-		if (place.getValue().equals(AppRecommendPlace.find.getValue())) {
+		if (place.equals(AppRecommendPlace.find)) {
 			return false;
 		}
 		// 查询首页是否已经存在数据
@@ -184,7 +190,7 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 			return false;
 		}
 		// 如果当前设置任务范围是全国
-		if (SelectAreaType.nationwide.getValue().equals(place.getValue())) {
+		if (SelectAreaType.nationwide.equals(areaType)) {
 			return true;
 		}
 		List<String> columnIds = new ArrayList<>();
@@ -200,6 +206,7 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 		List<String> dbCityIds = new ArrayList<>();
 		// 查询已存在的
 		List<ColumnSelectArea> abAareaList = selectAreaService.findListByColumnIds(columnIds);
+		// 将在同一位置已发布过推荐的省、城市ID放入集合中
 		for (ColumnSelectArea item : abAareaList) {
 			if (SelectAreaType.province.equals(item.getAreaType())) {
 				dbProvinceIds.add(item.getProvinceId());
@@ -209,12 +216,13 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 			}
 		}
 
+		// 判断当前发布的区域是否与数据库中的数据有重复或有交集
 		for (ColumnSelectArea item : areaList) {
 			if (SelectAreaType.province.equals(item.getAreaType())) {
-				if (dbProvinceIds.add(item.getProvinceId()) || dbPartProvinceIds.add(item.getProvinceId())) {
+				if (dbProvinceIds.contains(item.getProvinceId()) || dbPartProvinceIds.contains(item.getProvinceId())) {
 					return true;
 				}
-			} else if (SelectAreaType.city.equals(item.getAreaType()) && dbCityIds.add(item.getCityId())) {
+			} else if (SelectAreaType.city.equals(item.getAreaType()) && dbCityIds.contains(item.getCityId())) {
 				return true;
 			}
 		}

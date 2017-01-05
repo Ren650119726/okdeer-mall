@@ -21,10 +21,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.common.utils.BaseResult;
 import com.okdeer.mall.Application;
 import com.okdeer.mall.operate.dto.AppRecommendParamDto;
 import com.okdeer.mall.operate.entity.ColumnAppRecommend;
+import com.okdeer.mall.operate.entity.ColumnAppRecommendGoods;
+import com.okdeer.mall.operate.entity.ColumnSelectArea;
+import com.okdeer.mall.operate.enums.AppRecommendPlace;
+import com.okdeer.mall.operate.enums.AppRecommendStatus;
+import com.okdeer.mall.operate.enums.SelectAreaType;
 import com.okdeer.mall.operate.service.ColumnAppRecommendService;
 
 /**
@@ -48,9 +55,59 @@ public class ColumnAppRecommendServiceTest {
 
 	@Autowired
 	private ColumnAppRecommendService recommendService;
+	
+	private String id = UuidUtils.getUuid();
 
 	@Test
-	public void testFindList() {
+	public void test1Save() {
+		try {
+			log.info("测试保存APP端服务商品推荐信息");
+			ColumnAppRecommend entity = new ColumnAppRecommend();
+			entity.setTitle("测试服务推荐");
+			entity.setAreaType(SelectAreaType.city);
+			entity.setCoverPicUrl("www.okdeer.com");
+			entity.setPlace(AppRecommendPlace.find);
+			entity.setStatus(AppRecommendStatus.show);
+			
+			List<ColumnSelectArea> areaList = new ArrayList<>(); 
+			ColumnSelectArea area1 = new ColumnSelectArea();
+			area1.setAreaType(SelectAreaType.city);
+			area1.setCityId(DateUtils.getDateRandom());
+			area1.setProvinceId(DateUtils.getDateRandom());
+			area1.setProvinceName("测试省1");
+			area1.setCityName("测试城市1");
+			areaList.add(area1);
+			ColumnSelectArea area2 = new ColumnSelectArea();
+			area2.setAreaType(SelectAreaType.city);
+			area2.setCityId(DateUtils.getDateRandom());
+			area2.setProvinceId(DateUtils.getDateRandom());
+			area2.setProvinceName("测试省2");
+			area2.setCityName("测试城市2");
+			areaList.add(area2);
+			
+			List<ColumnAppRecommendGoods> goodsList = new ArrayList<>();
+			ColumnAppRecommendGoods goods1 = new ColumnAppRecommendGoods();
+			goods1.setIsShow(1);
+			goods1.setStoreSkuId(UuidUtils.getUuid());
+			goods1.setSort(0);
+			goodsList.add(goods1);
+			ColumnAppRecommendGoods goods2 = new ColumnAppRecommendGoods();
+			goods2.setIsShow(1);
+			goods2.setStoreSkuId(UuidUtils.getUuid());
+			goods2.setSort(0);
+			goodsList.add(goods2);
+			
+			BaseResult result = recommendService.save(entity, areaList, goodsList);
+			id = entity.getId();
+			log.info("保存APP端服务商品推荐信息 ：{}", result);
+			Assert.assertNotNull("测试保存APP端服务商品推荐信息失败", result);
+		} catch (Exception e) {
+			log.error("测试保存APP端服务商品推荐信息异常:{}", e);
+		}
+	}
+	
+	@Test
+	public void test2FindList() {
 		try {
 			log.info("测试获取APP端服务商品推荐与商品关联列表");
 			AppRecommendParamDto paramDto = new AppRecommendParamDto();
@@ -66,12 +123,13 @@ public class ColumnAppRecommendServiceTest {
 	}
 
 	@Test
-	public void testDeleteByIds() {
+	public void test3DeleteByIds() {
 		try {
 			List<String> ids = new ArrayList<>();
 			for (int i = 1; i < 10; i++) {
 				ids.add(UuidUtils.getUuid());
 			}
+			ids.add(id);
 			log.info("测试根据APP端服务商品推荐ID删除数据");
 			Integer result = recommendService.deleteByIds(ids);
 			Assert.assertNotNull("根据APP端服务商品推荐ID删除数据失败", result);

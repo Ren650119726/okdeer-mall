@@ -87,4 +87,13 @@ public interface PointsRecordMapper {
 	 * @date 2016年12月30日
 	 */
 	int statisRecordPoint(StatisRecordParamBo paramBo);
+	
+	/**
+	 * @Description: 根据业务id 查询记录数
+	 * @param referentId 业务id
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年1月5日
+	 */
+	int findCountByReferentId(@Param("referentId")String referentId);
 }

@@ -35,7 +35,7 @@
         <include refid="Base_Column_List" />
         from column_select_area
         <where>
-			<if test="ids != null and ids.size() > 0">
+			<if test="columnIds != null and columnIds.size() > 0">
 				column_id IN
 				<foreach collection="columnIds" index="index" item="item" open="(" separator="," close=")">
 					#{item}

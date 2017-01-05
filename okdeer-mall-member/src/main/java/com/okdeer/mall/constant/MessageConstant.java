@@ -18,6 +18,11 @@ public class MessageConstant {
 	 * 积分topic
 	 */
 	public static final String POINT_TOPIC = "point_topic";
+	
+	/**
+	 * 消费积分topic
+	 */
+	public static final String CONSUM_POINT_TOPIC = "consum_point_topic";
 //	/**
 //	 * 添加积分tag
 //	 */

@@ -10,16 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.common.utils.BaseResult;
-import com.okdeer.mall.operate.dto.HomeIconDto;
 import com.okdeer.mall.operate.dto.HomeIconParamDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIcon;
 import com.okdeer.mall.operate.entity.ColumnHomeIconGoods;
@@ -77,40 +76,12 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 
 	/**
 	 * (non-Javadoc)
-	 * @see com.okdeer.mall.operate.service.ColumnHomeIconService#findListByCityId(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public List<HomeIconDto> findListByCityId(String provinceId, String cityId) throws Exception {
-		if (!StringUtils.isNotEmptyAll(provinceId, cityId)) {
-			return new ArrayList<HomeIconDto>();
-		}
-		// 根据城市查询相应的首页ICON栏位
-		List<String> ids = selectAreaService.findColumnIdsByCity(cityId, provinceId, ColumnType.homeIcon.ordinal());
-		if (null == ids || ids.size() == 0) {
-			return new ArrayList<HomeIconDto>();
-		}
-
-		// 设置首页ICON查询参数
-		HomeIconParamDto paramDto = new HomeIconParamDto();
-		paramDto.setIds(ids);
-		// 查询首页ICON列表
-		List<ColumnHomeIcon> sourceList = findList(paramDto);
-		List<HomeIconDto> dtoList = null;
-		if (null == sourceList) {
-			dtoList = new ArrayList<HomeIconDto>();
-		} else {
-			dtoList = BeanMapper.mapList(sourceList, HomeIconDto.class);
-		}
-		return dtoList;
-	}
-
-	/**
-	 * (non-Javadoc)
 	 * @throws Exception 
 	 * @see com.okdeer.mall.operate.service.ColumnHomeIconService#save(com.okdeer.mall.operate.entity.ColumnHomeIcon, java.util.List, java.util.List)
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> goodsIds)
+	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> storeSkuIds)
 			throws Exception {
 		if (entity == null) {
 			return new BaseResult("HomeIconDto信息不能为空");
@@ -124,7 +95,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 			return new BaseResult("城市ID集合 当任务范围为1:按城市选择任务范围时， 不允许为空");
 		}
 
-		if (HomeIconTaskType.goods.equals(entity.getTaskType()) && (null == goodsIds || 0 == goodsIds.size())) {
+		if (HomeIconTaskType.goods.equals(entity.getTaskType()) && (null == storeSkuIds || 0 == storeSkuIds.size())) {
 			return new BaseResult("商品ID集合   当任务内容  0:指定指定商品推荐时， 不允许为空");
 		}
 
@@ -172,7 +143,6 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 				if (SelectAreaType.province.equals(item.getAreaType())) {
 					item.setCityId("0");
 				}
-				item.setColumnType(2);
 				item.setId(UuidUtils.getUuid());
 				item.setColumnId(homeIconId);
 				item.setColumnType(ColumnType.homeIcon.ordinal());
@@ -184,7 +154,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		if (HomeIconTaskType.goods.equals(entity.getTaskType())) {
 			List<ColumnHomeIconGoods> goodsList = new ArrayList<>();
 			ColumnHomeIconGoods goods = null;
-			for (String item : goodsIds) {
+			for (String item : storeSkuIds) {
 				goods = new ColumnHomeIconGoods();
 				goods.setId(UuidUtils.getUuid());
 				goods.setHomeIconId(entity.getId());
@@ -226,6 +196,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		List<String> dbCityIds = new ArrayList<>();
 		// 查询已存在的
 		List<ColumnSelectArea> dbAreList = selectAreaService.findListByColumnIds(columnIds);
+		// 将已经存在省、城市ID放入集合中
 		for (ColumnSelectArea item : dbAreList) {
 			if (SelectAreaType.province.equals(item.getAreaType())) {
 				dbProvinceIds.add(item.getProvinceId());
@@ -234,12 +205,13 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 				dbCityIds.add(item.getCityId());
 			}
 		}
+		// 和已经保存区域进行判断是否有重复或者是交集
 		for (ColumnSelectArea item : areaList) {
 			if (SelectAreaType.province.equals(item.getAreaType())) {
-				if (dbProvinceIds.add(item.getProvinceId()) || dbPartProvinceIds.add(item.getProvinceId())) {
+				if (dbProvinceIds.contains(item.getProvinceId()) || dbPartProvinceIds.contains(item.getProvinceId())) {
 					return true;
 				}
-			} else if (SelectAreaType.city.equals(item.getAreaType()) && dbCityIds.add(item.getCityId())) {
+			} else if (SelectAreaType.city.equals(item.getAreaType()) && dbCityIds.contains(item.getCityId())) {
 				return true;
 			}
 		}
