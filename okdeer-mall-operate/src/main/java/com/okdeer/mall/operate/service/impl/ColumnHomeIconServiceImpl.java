@@ -208,10 +208,10 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		// 和已经保存区域进行判断是否有重复或者是交集
 		for (ColumnSelectArea item : areaList) {
 			if (SelectAreaType.province.equals(item.getAreaType())) {
-				if (dbProvinceIds.add(item.getProvinceId()) || dbPartProvinceIds.add(item.getProvinceId())) {
+				if (dbProvinceIds.contains(item.getProvinceId()) || dbPartProvinceIds.contains(item.getProvinceId())) {
 					return true;
 				}
-			} else if (SelectAreaType.city.equals(item.getAreaType()) && dbCityIds.add(item.getCityId())) {
+			} else if (SelectAreaType.city.equals(item.getAreaType()) && dbCityIds.contains(item.getCityId())) {
 				return true;
 			}
 		}

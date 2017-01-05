@@ -219,10 +219,10 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 		// 判断当前发布的区域是否与数据库中的数据有重复或有交集
 		for (ColumnSelectArea item : areaList) {
 			if (SelectAreaType.province.equals(item.getAreaType())) {
-				if (dbProvinceIds.add(item.getProvinceId()) || dbPartProvinceIds.add(item.getProvinceId())) {
+				if (dbProvinceIds.contains(item.getProvinceId()) || dbPartProvinceIds.contains(item.getProvinceId())) {
 					return true;
 				}
-			} else if (SelectAreaType.city.equals(item.getAreaType()) && dbCityIds.add(item.getCityId())) {
+			} else if (SelectAreaType.city.equals(item.getAreaType()) && dbCityIds.contains(item.getCityId())) {
 				return true;
 			}
 		}
