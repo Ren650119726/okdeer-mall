@@ -1,10 +1,8 @@
 package com.okdeer.mall.activity.coupons.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -12,16 +10,10 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
-import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoodsBo;
-import com.okdeer.mall.activity.coupons.enums.ScareBuyStatus;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsServiceApi;
 import com.okdeer.mall.activity.dto.ActivitySaleGoodsParamDto;
@@ -74,6 +66,13 @@ public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi,
 		PageHelper.startPage(pageNum, pageSize, true, false);
 		PageUtils<ActivitySaleGoodsBo> page = new PageUtils<ActivitySaleGoodsBo>(list);
 		return page;
+	}
+
+	@Override
+	public ActivitySaleGoods selectBySkuId(String storeSkuId) {
+		ActivitySaleGoods goods = new ActivitySaleGoods();
+		goods.setStoreSkuId(storeSkuId);
+		return activitySaleGoodsMapper.selectByObject(goods);
 	}
 
 }
