@@ -124,10 +124,10 @@ import com.okdeer.mall.activity.group.service.ActivityGroupService;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillMapper;
 import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
-import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.constant.MessageConstant;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
@@ -1226,18 +1226,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public boolean insertTradeOrder(TradeOrder tradeOrder) throws Exception {
-
-		JsonConfig jsonConfig = new JsonConfig();
-		jsonConfig.registerJsonValueProcessor(Date.class, new JsonDateValueProcessor());
-
-		StoreInfo storeInfo = getStoreInfo(tradeOrder.getStoreId());
-		JSONObject json = JSONObject.fromObject(tradeOrder, jsonConfig);
-		json.put("storeType", storeInfo.getType());
-		List<StoreAgentCommunity> communitys = storeInfoService.getAgentCommunitysByStoreId(tradeOrder.getStoreId());
-		if (!Iterables.isEmpty(communitys)) {
-			json.put("storeAgentCommunity", communitys.get(0));
-		}
-		return insertOrderAndSendMsg(storeInfo, json, tradeOrder);
+		insertOrder(tradeOrder);
+		return true;
 	}
 
 	/**

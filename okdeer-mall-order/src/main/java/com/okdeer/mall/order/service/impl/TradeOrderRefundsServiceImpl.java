@@ -39,6 +39,7 @@ import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.enums.MeteringMethod;
 import com.okdeer.archive.store.entity.StoreMemberRelation;
 import com.okdeer.archive.store.enums.StoreUserTypeEnum;
@@ -446,7 +447,7 @@ public class TradeOrderRefundsServiceImpl
 		refundsItem.setOrderItemId(tradeOrderItem.getId());
 		refundsItem.setSkuName(tradeOrderItem.getSkuName());
 		refundsItem.setMainPicUrl("");
-		refundsItem.setSpuType(GoodsTypeEnum.SERVICE_GOODS);
+		refundsItem.setSpuType(SpuTypeEnum.serviceSpu);
 		refundsItem.setAmount(tradeOrder.getActualAmount());
 		refundsItem.setPreferentialPrice(new BigDecimal("0"));
 		refundsItem.setQuantity(1);

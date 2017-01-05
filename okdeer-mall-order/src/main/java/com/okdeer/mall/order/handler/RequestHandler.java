@@ -1,7 +1,7 @@
 package com.okdeer.mall.order.handler;
 
-import com.okdeer.mall.common.vo.Request;
-import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.common.dto.Request;
+import com.okdeer.mall.common.dto.Response;
 /**
  * ClassName: ServOrderProcessHandler 
  * @Description: 服务栏目处理操作接口

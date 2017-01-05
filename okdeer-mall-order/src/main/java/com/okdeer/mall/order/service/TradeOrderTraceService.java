@@ -1,6 +1,6 @@
 package com.okdeer.mall.order.service;
 
-import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderTrace;
 import com.okdeer.mall.order.vo.RefundsTraceResp;

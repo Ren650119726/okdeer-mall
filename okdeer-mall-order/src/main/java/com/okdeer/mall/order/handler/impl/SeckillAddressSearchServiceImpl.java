@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
-import com.okdeer.mall.common.vo.Request;
-import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.common.dto.Request;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;

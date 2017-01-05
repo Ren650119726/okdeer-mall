@@ -22,6 +22,7 @@ import org.springframework.util.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
@@ -815,7 +816,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			tradeOrderItem.setSkuName(storeSku.getName());
 			setPropertiesIndb(tradeOrderItem, storeSku.getPropertiesIndb());
 			tradeOrderItem.setMainPicPrl(storeSku.getGoodsStoreSkuPicture().getUrl());
-			tradeOrderItem.setSpuType(GoodsTypeEnum.SINGLE_GOODS);
+			tradeOrderItem.setSpuType(SpuTypeEnum.physicalSpu);
 			tradeOrderItem.setUnitPrice(goodsItem.getSkuPrice());
 			tradeOrderItem.setQuantity(goodsItem.getSkuNum());
 			tradeOrderItem.setStatus(OrderItemStatusEnum.NO_REFUND);
@@ -824,7 +825,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			tradeOrderItem.setCreateTime(new Date());
 			tradeOrderItem.setServiceAssurance(
 					StringUtils.isEmpty(storeSku.getGuaranteed()) ? 0 : Integer.valueOf(storeSku.getGuaranteed()));
-			tradeOrderItem.setActivityType(String.valueOf(req.getActivityType().ordinal()));
+			tradeOrderItem.setActivityType(req.getActivityType().ordinal());
 			tradeOrderItem.setActivityId(req.getActivityId());
 			tradeOrderItem.setBarCode(storeSku.getBarCode());
 			tradeOrderItem.setStyleCode(storeSku.getStyleCode());

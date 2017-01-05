@@ -14,7 +14,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.okdeer.mall.Application;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
-import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsLogisticsEnum;
