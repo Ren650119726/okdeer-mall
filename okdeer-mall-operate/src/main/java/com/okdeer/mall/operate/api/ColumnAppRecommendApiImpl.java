@@ -240,11 +240,14 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		AppRecommendParamDto paramDto = new AppRecommendParamDto();
 		paramDto.setIds(ids);
 		paramDto.setPlace(place);
+
 		// 查询服务商品推荐
 		List<AppRecommendDto> dtoList = findList(paramDto);
+
 		// 设置推荐服务商品关联信息查询参数
 		AppRecommendGoodsParamDto goodsParamDto = new AppRecommendGoodsParamDto();
 		goodsParamDto.setRecommendIds(ids);
+
 		// 查询推荐服务商品关联信息
 		List<ColumnAppRecommendGoods> goodsList = appRecommendGoodsService.findList(goodsParamDto);
 		List<AppRecommendGoodsDto> goodsDtoList = null;
@@ -255,37 +258,16 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		}
 		// 组装数据
 		for (AppRecommendDto dto : dtoList) {
-			// 初始化服务商品推荐中中的商品关联集合
-			if (null == dto.getGoodsList()) {
-				dto.setGoodsList(new ArrayList<>());
-			}
+			// 初始化服务商品推荐中的商品关联集合
+			dto.setGoodsList(new ArrayList<>());
+			dto.setStoreSkuIds(new ArrayList<>());
 			for (AppRecommendGoodsDto goodsDto : goodsDtoList) {
 				if (dto.getId().equals(goodsDto.getRecommendId())) {
 					dto.getGoodsList().add(goodsDto);
+					dto.getStoreSkuIds().add(goodsDto.getStoreSkuId());
 				}
 			}
 		}
 		return dtoList;
-	}
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.operate.service.ColumnAppRecommendApi#findAppRecommendGoodsDtoListByCity(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public List<AppRecommendGoodsDto> findAppRecommendGoodsDtoListByCity(String provinceId, String cityId)
-			throws Exception {
-		if (!StringUtils.isNotEmptyAll(provinceId, cityId)) {
-			return new ArrayList<AppRecommendGoodsDto>();
-		}
-
-		// 根据城市查询相应的服务商品推荐栏位
-		List<String> ids = selectAreaService.findColumnIdsByCity(cityId, provinceId, null);
-		if (null == ids || ids.size() == 0) {
-			return new ArrayList<AppRecommendGoodsDto>();
-		}
-		AppRecommendGoodsParamDto paramDto = new AppRecommendGoodsParamDto();
-		paramDto.setRecommendIds(ids);
-		return findAppRecommendGoodsDtoList(paramDto);
 	}
 }
