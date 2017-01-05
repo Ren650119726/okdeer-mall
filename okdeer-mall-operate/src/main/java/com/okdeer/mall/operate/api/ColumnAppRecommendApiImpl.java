@@ -94,6 +94,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		}
 		// 复制APP端服务商品推荐信息
 		AppRecommendDto dto = BeanMapper.map(recommend, AppRecommendDto.class);
+
 		// 查询商品关联信息
 		List<AppRecommendGoodsDto> goodsDtoList = null;
 		List<ColumnAppRecommendGoods> goodsList = appRecommendGoodsService.findListByRecommendId(dto.getId());
@@ -103,6 +104,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 			goodsDtoList = BeanMapper.mapList(goodsList, AppRecommendGoodsDto.class);
 		}
 		dto.setGoodsList(goodsDtoList);
+
 		// 查询地区关联信息
 		List<SelectAreaDto> areaDtoList = null;
 		List<ColumnSelectArea> areaList = selectAreaService.findListByColumnId(dto.getId());
@@ -157,13 +159,16 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 	 */
 	@Override
 	public BaseResult save(AppRecommendDto dto) throws Exception {
+		// 复制推荐信息
 		ColumnAppRecommend entity = BeanMapper.map(dto, ColumnAppRecommend.class);
+		// 复制推荐地区信息
 		List<ColumnSelectArea> areaList = null;
 		if (null == dto.getAreaList()) {
 			areaList = new ArrayList<>();
 		} else {
 			areaList = BeanMapper.mapList(dto.getAreaList(), ColumnSelectArea.class);
 		}
+		// 复制关联商品信息
 		List<ColumnAppRecommendGoods> goodsList = null;
 		if (null == dto.getGoodsList()) {
 			goodsList = new ArrayList<>();
