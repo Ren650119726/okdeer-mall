@@ -3,6 +3,8 @@ package com.okdeer.mall.activity.coupons.service;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -12,6 +14,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.common.enums.UseUserType;
 
 import net.sf.json.JSONObject;
 
@@ -175,4 +178,14 @@ public interface ActivityCouponsRecordService {
 	 * @date 2016年12月13日
 	 */
 	public void addInviteUserHandler(String userId,String[] collectCouponsIds)  throws Exception;
+	
+	/**
+	 * @Description:  tuzhd根据用户id查询其是否存在已使用的新用户专享代金劵 用于首单条件判断
+	 * @param useUserType 使用用户类型
+	 * @param userId 用户id
+	 * @return int  统计结果
+	 * @author tuzhd
+	 * @date 2016年12月31日
+	 */
+	public int findCouponsCountByUser(UseUserType useUserType,String userId);
 }

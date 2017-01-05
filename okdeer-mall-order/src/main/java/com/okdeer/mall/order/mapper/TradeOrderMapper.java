@@ -1091,4 +1091,15 @@ public interface TradeOrderMapper {
 	 */
 	List<TradeOrder> findExportList(Map<String, Object> map);
 	//End added by tangy
+	
+	/**
+	 * @Description: tuzhd根据用户id查询其支付完成的订单总量 用于首单条件判断
+	 * @param status 符合条件的状态集合
+	 * @param userId 用户id
+	 * @return int 返回统计值
+	 * @author tuzhd
+	 * @date 2016年12月31日
+	 */
+	int selectCountByUserStatus(@Param("userId")String userId);
+	
 }

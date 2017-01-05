@@ -1,4 +1,4 @@
-package com.okdeer.mall.activity.discount.service.impl;
+package com.okdeer.mall.order.service.impl;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -26,11 +26,15 @@ import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.entity.PreferentialVo;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
-import com.okdeer.mall.activity.discount.service.GetPreferentialService;
 import com.okdeer.mall.activity.discount.service.IGetPreferentialServiceApi;
 import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.common.enums.UseClientType;
+import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
-import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
+import com.okdeer.mall.member.service.MemberConsigneeAddressService;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.service.GetPreferentialService;
+import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.Discount;
 import com.okdeer.mall.order.vo.FullSubtract;
@@ -75,18 +79,21 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 	/**
 	 * 收货地址服务接口
 	 */
-	@Reference(version = "1.0.0", check = false)
-	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
+	@Resource
+	private MemberConsigneeAddressService memberConsigneeAddressService;
 	
 	/**
 	 * 导航类目
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private GoodsNavigateCategoryServiceApi goodsNavigateCategoryServiceApi;
+
+	@Resource
+	private TradeOrderService tradeOrderService;
 	
 	@Override
 	public PreferentialVo findPreferentialByUser(String userId, StoreInfo storeInfo, BigDecimal totalAmount,
-			List<String> skuIdList, String addressId) throws Exception {
+			List<String> skuIdList, String addressId,OrderResourceEnum orderResourceEnum) throws Exception {
 		PreferentialVo preferentialVo = new PreferentialVo();
 		StoreTypeEnum storeType = storeInfo.getType();
 		Map<String, Object> queryCondition = new HashMap<String, Object>();
@@ -112,6 +119,14 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 			}
 
 		}
+		if(orderResourceEnum != null){
+			if(orderResourceEnum == OrderResourceEnum.WECHAT){
+				queryCondition.put("useClientType", UseClientType.ONlY_WECHAT_USE);
+			}else if(orderResourceEnum == OrderResourceEnum.YSCAPP){
+				queryCondition.put("useClientType", UseClientType.ONlY_APP_USE);
+			}
+		}
+		
 		// 获取用户有效的代金券
 		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);
 		// 获取用户有效的折扣
@@ -127,9 +142,16 @@ public class GetPreferentialServiceImpl implements GetPreferentialService, IGetP
 			for (GoodsStoreSku goodsStoreSku : goodsStoreSkus) {
 				spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
 			}
-			
+			//先确定新用户专享代金券是否能使用 tuzhd
+			boolean isNewUser = tradeOrderService.checkUserUseCoupons((String)queryCondition.get("userId"));
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
+				//如果此券为新用户专享。且不能使用 该券不显示 tuzhd
+				if(!isNewUser && UseUserType.ONlY_NEW_USER == coupons.getUseUserType()){
+					delCouponList.add(coupons);
+					continue;
+				}
+				
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
 					int count = 0;

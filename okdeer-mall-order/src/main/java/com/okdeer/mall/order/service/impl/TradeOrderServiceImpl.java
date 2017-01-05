@@ -125,6 +125,7 @@ import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillMapper;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.LogisticsType;
+import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.common.vo.Response;
@@ -6579,4 +6580,36 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_server_timeout, tradeOrder.getId(),
 				(DateUtils.addHours(serviceTime, 2).getTime() - System.currentTimeMillis()) / 1000);
 	}
+	
+	
+	/**
+	 * @Description: tuzhd根据用户id查询其支付完成的订单总量 用于首单条件判断
+	 * @param userId 用户id
+	 * @return int 返回统计值
+	 * @author tuzhd
+	 * @date 2016年12月31日
+	 */
+	public int selectCountByUserStatus(String userId){
+		return tradeOrderMapper.selectCountByUserStatus( userId);
+	}
+	
+	/**
+	 * @Description: 校验用户使用新人专享代金券时 是否符合新用户及未使用该类型代金券的条件
+	 * @param userId
+	 * @return boolean  不符合新用户专享条件返回false，否则为true
+	 * @author tuzhd
+	 * @date 2016年12月31日
+	 */
+	public boolean checkUserUseCoupons(String userId){
+		//根据用户id查询其支付完成的订单总量 用于首单条件判断
+		int orderCount = selectCountByUserStatus(userId);
+		if(orderCount == 0 ){
+			//根据用户id查询其是否存在已使用的新用户专享代金劵  用于首单条件判断 
+			if(activityCouponsRecordMapper.findCouponsCountByUser(UseUserType.ONlY_NEW_USER, userId) == 0){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }
