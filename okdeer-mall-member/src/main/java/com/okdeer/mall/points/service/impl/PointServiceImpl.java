@@ -114,7 +114,7 @@ public class PointServiceImpl implements PointsService {
 
 		if (pointVal > 0) {
 			// 添加积分详细记录
-			addPointsRecord(userId, pointsRule.getCode(), pointVal);
+			addPointsRecord(userId, pointsRule.getCode(), pointVal,pointsRule.getName());
 			result.setMsg("领取成功");
 			result.setStatus(0);
 			result.setPointVal(pointVal);
@@ -333,12 +333,13 @@ public class PointServiceImpl implements PointsService {
 	 * @param pointVal 获得积分
 	 * @throws ServiceException 返回异常
 	 */
-	private void addPointsRecord(String userId, String code, Integer pointVal) throws ServiceException {
+	private void addPointsRecord(String userId, String code, Integer pointVal,String description) throws ServiceException {
 		logger.debug("添加积分记录请求参数，userId={}，code={},pointVal={}", userId, code, pointVal);
 		PointsRecord pointsRecord = new PointsRecord();
 		pointsRecord.setId(UuidUtils.getUuid());
 		pointsRecord.setUserId(userId);
 		pointsRecord.setCode(code);
+		pointsRecord.setDescription(description);
 		pointsRecord.setPointVal(pointVal);
 		pointsRecord.setType((byte) 0);
 		pointsRecord.setCreateTime(new Date());
