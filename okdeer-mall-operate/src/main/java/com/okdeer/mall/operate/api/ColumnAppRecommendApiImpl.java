@@ -29,6 +29,7 @@ import com.okdeer.mall.operate.entity.ColumnSelectArea;
 import com.okdeer.mall.operate.enums.AppRecommendPlace;
 import com.okdeer.mall.operate.enums.AppRecommendStatus;
 import com.okdeer.mall.operate.enums.ColumnType;
+import com.okdeer.mall.operate.enums.GoodsShowStatus;
 import com.okdeer.mall.operate.service.ColumnAppRecommendApi;
 import com.okdeer.mall.operate.service.ColumnAppRecommendGoodsService;
 import com.okdeer.mall.operate.service.ColumnAppRecommendService;
@@ -263,16 +264,20 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		}
 		// 组装数据
 		for (AppRecommendDto dto : dtoList) {
-			// 初始化服务商品推荐中的商品关联集合
+			// 初始化服务商品推荐中的全部商品关联集合
 			dto.setGoodsList(new ArrayList<>());
+			// 初始化服务商品推荐中的全部商品ID集合
 			dto.setStoreSkuIds(new ArrayList<>());
+			// 初始化服务商品推荐中的展示商品关联集合
 			dto.setShowGoodsList(new ArrayList<>());
+			// 初始化服务商品推荐中的展示商品ID集合
 			dto.setShowStoreSkuIds(new ArrayList<>());
 			for (AppRecommendGoodsDto goodsDto : goodsDtoList) {
 				if (dto.getId().equals(goodsDto.getRecommendId())) {
 					dto.getGoodsList().add(goodsDto);
 					dto.getStoreSkuIds().add(goodsDto.getStoreSkuId());
-					if (goodsDto.getIsShow().equals(1)) {
+					// 判断商品是否需要展示
+					if (goodsDto.getIsShow().equals(GoodsShowStatus.show.ordinal())) {
 						dto.getShowGoodsList().add(goodsDto);
 						dto.getShowStoreSkuIds().add(goodsDto.getStoreSkuId());
 					}
