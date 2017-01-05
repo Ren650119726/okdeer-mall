@@ -12,6 +12,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
 import com.okdeer.mall.operate.dto.SkinManagerParamDto;
+import com.okdeer.mall.operate.enums.AppSkinType;
 import com.okdeer.mall.operate.enums.SkinManagerStatus;
 import com.okdeer.mall.operate.service.SkinManagerApi;
 import com.okdeer.mall.operate.skinmanager.service.SkinManagerService;
@@ -59,9 +60,10 @@ public class SkinManagerApiImpl implements SkinManagerApi {
 	}
 	
 	@Override
-	public SkinManagerDto findSkinDetailUnderWay() {
+	public SkinManagerDto findSkinDetailUnderWay(AppSkinType skinType) {
 		SkinManagerParamDto paramDto = new SkinManagerParamDto();
-		paramDto.setStatus(SkinManagerStatus.UNDERWAY);;
+		paramDto.setStatus(SkinManagerStatus.UNDERWAY);
+		paramDto.setSkinType(skinType);
 		return skinManagerService.findSkinDetailByParam(paramDto);
 	}
 
