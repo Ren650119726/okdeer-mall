@@ -63,7 +63,7 @@ public class ColumnHomeIconApiTest {
 			for (int i = 10; i < 15; i++) {
 				goodsList.add(i + "");
 			}
-			dto.setGoodsIds(goodsList);
+			dto.setStoreSkuIds(goodsList);
 			dto.setIconUrl("www.okdeer.com");
 			dto.setName("单元测试数据");
 			dto.setPlace(HomeIconPlace.four);

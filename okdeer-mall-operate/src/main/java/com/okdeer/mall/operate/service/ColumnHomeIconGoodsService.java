@@ -26,13 +26,22 @@ import com.okdeer.mall.operate.entity.ColumnHomeIconGoods;
 public interface ColumnHomeIconGoodsService extends IBaseService {
 
 	/**
-	 * @Description: 根据首页ICONID查询数据
+	 * @Description: 根据首页ICONID 查询数据
 	 * @return List<ColumnHomeIconGoods>  
 	 * @throws Exception
 	 * @author tangzj02
 	 * @date 2016年12月28日
 	 */
-	List<ColumnHomeIconGoods> findListByHomeIconId(String iconId) throws Exception;
+	List<ColumnHomeIconGoods> findListByHomeIconId(String homeIconId) throws Exception;
+
+	/**
+	 * @Description: 根据首页ICON ID集合 查询数据
+	 * @return List<ColumnHomeIconGoods>  
+	 * @throws Exception
+	 * @author tangzj02
+	 * @date 2017年01月05日
+	 */
+	List<ColumnHomeIconGoods> findListByHomeIconIds(List<String> homeIconIds) throws Exception;
 
 	/**
 	 * @Description: 根据首页ICONID删除数据
@@ -42,7 +51,7 @@ public interface ColumnHomeIconGoodsService extends IBaseService {
 	 * @throws Exception
 	 * @date 2016年12月28日
 	 */
-	int deleteByHomeIconId(String iconId) throws Exception;
+	int deleteByHomeIconId(String homeIconId) throws Exception;
 
 	/**
 	 * @Description: 批量插入数据

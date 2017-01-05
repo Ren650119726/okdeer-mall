@@ -257,6 +257,9 @@
      		<if test="status != null">
      			AND sm.status = #{status}
      		</if>
+     		<if test="skinType != null">
+     			AND sm.skin_type = #{skinType,jdbcType=TINYINT}
+     		</if>
      	</where>
      </select>
      

@@ -24,6 +24,20 @@
         from column_home_icon_goods
         where home_icon_id = #{homeIconId}
     </select>
+    
+    <select id="findListByHomeIconIds" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_home_icon_goods
+        <where>
+			<if test="homeIconIds != null and homeIconIds.size() > 0">
+				home_icon_id IN
+				<foreach collection="homeIconIds" index="index" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+    </select>
 
     <insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnHomeIconGoods" >
         insert into column_home_icon_goods
@@ -57,7 +71,7 @@
         ) VALUES
 		<foreach collection="list" index="index" item="item" separator=",">
 			(
-				#{item.id}, #{item.homeIconId}, #{item.storekuId}
+				#{item.id}, #{item.homeIconId}, #{item.storeSkuId}
 			)
 		</foreach>
 	</insert>

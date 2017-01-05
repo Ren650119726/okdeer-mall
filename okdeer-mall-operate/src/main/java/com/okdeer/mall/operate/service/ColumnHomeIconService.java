@@ -10,7 +10,6 @@ import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.common.utils.BaseResult;
-import com.okdeer.mall.operate.dto.HomeIconDto;
 import com.okdeer.mall.operate.dto.HomeIconParamDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIcon;
 import com.okdeer.mall.operate.entity.ColumnSelectArea;
@@ -38,17 +37,6 @@ public interface ColumnHomeIconService extends IBaseService {
 	 * @date 2016年12月28日
 	 */
 	List<ColumnHomeIcon> findList(HomeIconParamDto paramDto) throws Exception;
-
-	/**
-	 * @Description: 根据城市查询首页ICON记录列表
-	 * @param provinceId 省ID
-	 * @param cityId 城市ID
-	 * @throws Exception   
-	 * @return HomeIconDto  
-	 * @author tangzj02
-	 * @date 2017年01月04日
-	 */
-	List<HomeIconDto> findListByCityId(String provinceId, String cityId) throws Exception;
 
 	/**
 	 * @Description: 编辑或者添加首页ICON
