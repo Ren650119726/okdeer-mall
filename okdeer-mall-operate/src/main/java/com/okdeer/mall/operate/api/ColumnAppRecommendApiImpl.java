@@ -266,10 +266,16 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 			// 初始化服务商品推荐中的商品关联集合
 			dto.setGoodsList(new ArrayList<>());
 			dto.setStoreSkuIds(new ArrayList<>());
+			dto.setShowGoodsList(new ArrayList<>());
+			dto.setShowStoreSkuIds(new ArrayList<>());
 			for (AppRecommendGoodsDto goodsDto : goodsDtoList) {
 				if (dto.getId().equals(goodsDto.getRecommendId())) {
 					dto.getGoodsList().add(goodsDto);
 					dto.getStoreSkuIds().add(goodsDto.getStoreSkuId());
+					if (goodsDto.getIsShow().equals(1)) {
+						dto.getShowGoodsList().add(goodsDto);
+						dto.getShowStoreSkuIds().add(goodsDto.getStoreSkuId());
+					}
 				}
 			}
 		}

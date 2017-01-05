@@ -59,7 +59,7 @@
 			AND update_time &lt;= #{updateEndTime}
 		</if>
 		<if test="ids != null and ids.size() > 0">
-			id IN
+			AND id IN
 			<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
 				#{item}
 			</foreach>

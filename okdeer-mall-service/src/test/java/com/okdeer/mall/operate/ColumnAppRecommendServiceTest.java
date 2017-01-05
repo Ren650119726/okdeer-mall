@@ -7,7 +7,6 @@
 package com.okdeer.mall.operate;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
@@ -55,8 +54,6 @@ public class ColumnAppRecommendServiceTest {
 
 	@Autowired
 	private ColumnAppRecommendService recommendService;
-	
-	private String id = UuidUtils.getUuid();
 
 	@Test
 	public void test1Save() {
@@ -68,8 +65,8 @@ public class ColumnAppRecommendServiceTest {
 			entity.setCoverPicUrl("www.okdeer.com");
 			entity.setPlace(AppRecommendPlace.find);
 			entity.setStatus(AppRecommendStatus.show);
-			
-			List<ColumnSelectArea> areaList = new ArrayList<>(); 
+
+			List<ColumnSelectArea> areaList = new ArrayList<>();
 			ColumnSelectArea area1 = new ColumnSelectArea();
 			area1.setAreaType(SelectAreaType.city);
 			area1.setCityId(DateUtils.getDateRandom());
@@ -84,7 +81,7 @@ public class ColumnAppRecommendServiceTest {
 			area2.setProvinceName("测试省2");
 			area2.setCityName("测试城市2");
 			areaList.add(area2);
-			
+
 			List<ColumnAppRecommendGoods> goodsList = new ArrayList<>();
 			ColumnAppRecommendGoods goods1 = new ColumnAppRecommendGoods();
 			goods1.setIsShow(1);
@@ -96,27 +93,28 @@ public class ColumnAppRecommendServiceTest {
 			goods2.setStoreSkuId(UuidUtils.getUuid());
 			goods2.setSort(0);
 			goodsList.add(goods2);
-			
+
 			BaseResult result = recommendService.save(entity, areaList, goodsList);
-			id = entity.getId();
 			log.info("保存APP端服务商品推荐信息 ：{}", result);
-			Assert.assertNotNull("测试保存APP端服务商品推荐信息失败", result);
+			Assert.assertTrue("测试保存APP端服务商品推荐信息失败", result.getStatus().equals("0"));
 		} catch (Exception e) {
 			log.error("测试保存APP端服务商品推荐信息异常:{}", e);
 		}
 	}
-	
+
 	@Test
 	public void test2FindList() {
 		try {
 			log.info("测试获取APP端服务商品推荐与商品关联列表");
 			AppRecommendParamDto paramDto = new AppRecommendParamDto();
-			paramDto.setAddStartTime(new Date());
-			paramDto.setAddEndTime(new Date());
-			paramDto.setUpdateStartTime(new Date());
-			paramDto.setUpdateEndTime(new Date());
+			List<String> ids = new ArrayList<>();
+			ids.add("8a94e7ce5968c3f4015968c471d50005");
+			// paramDto.setAddStartTime(new Date());
+			// paramDto.setAddEndTime(new Date());
+			// paramDto.setUpdateStartTime(new Date());
+			// paramDto.setUpdateEndTime(new Date());
 			List<ColumnAppRecommend> list = recommendService.findList(paramDto);
-			Assert.assertNotNull("获取APP端服务商品推荐与商品关联列表失败", list);
+			Assert.assertTrue("获取APP端服务商品推荐与商品关联列表失败", list.size() > 0);
 		} catch (Exception e) {
 			log.error("查询获取APP端服务商品推荐与商品关联列表异常:{}", e);
 		}
@@ -126,10 +124,7 @@ public class ColumnAppRecommendServiceTest {
 	public void test3DeleteByIds() {
 		try {
 			List<String> ids = new ArrayList<>();
-			for (int i = 1; i < 10; i++) {
-				ids.add(UuidUtils.getUuid());
-			}
-			ids.add(id);
+			ids.add("1");
 			log.info("测试根据APP端服务商品推荐ID删除数据");
 			Integer result = recommendService.deleteByIds(ids);
 			Assert.assertNotNull("根据APP端服务商品推荐ID删除数据失败", result);
