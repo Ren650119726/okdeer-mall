@@ -1,20 +1,13 @@
 
 package com.okdeer.mall.activity.coupons.service.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.rocketmq.common.message.Message;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
+import com.google.common.base.Charsets;
+import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.enums.IsActivity;
@@ -28,6 +21,7 @@ import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.enums.ActivitySaleStatus;
@@ -37,6 +31,14 @@ import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+
+import static com.okdeer.common.consts.ELTopicTagConstants.*;
 
 /**
  * 
@@ -55,6 +57,12 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
 public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, ActivitySaleService {
 
 	private static final Logger log = Logger.getLogger(ActivitySaleServiceImpl.class);
+
+	/**
+	 * mq注入
+	 */
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
 
 	@Autowired
 	private ActivitySaleMapper activitySaleMapper;
@@ -82,9 +90,16 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Autowired
 	RollbackMQProducer rollbackMQProducer;
 
-	@Override
-	@Transactional(rollbackFor = Exception.class)
 	public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
+		save(activitySale,asgList);
+	}
+
+	public void update(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
+		update(activitySale,asgList);
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	public void saveOld(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		try {
@@ -232,9 +247,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		log.info("特惠活动时同步erp完成:");
 	}
 
-	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void update(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
+	public void updateOld(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		List<String> rpcIdByBathSkuList = new ArrayList<String>();
@@ -583,5 +597,24 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		}
 		return activitySaleMapper.findByActivitySaleByStoreId(storeId, ActivityTypeEnum.LOW_PRICE.ordinal(),
 				ActivitySaleStatus.ing.getValue());
+	}
+
+	/**
+	 * 发送消息同步数据到搜索引擎执行
+	 * @param paramDto ActivityMessageParamDto
+	 * @param type Integer
+	 * @throws Exception
+	 */
+	private void structureProducer(ActivityMessageParamDto paramDto, Integer type) throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		String json = mapper.writeValueAsString(paramDto);
+		String tag = "";
+		if (type == 0) {
+			tag = TAG_LOWPRICE_EL_ADD;
+		} else if (type == 1) {
+			tag = TAG_LOWPRICE_EL_UPDATE;
+		}
+		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
+		rocketMQProducer.send(msg);
 	}
 }
