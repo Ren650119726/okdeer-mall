@@ -26,6 +26,7 @@ import com.okdeer.mall.member.mapper.SysBuyerRankRecordMapper;
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
 import com.okdeer.mall.member.member.enums.RankCode;
 import com.okdeer.mall.member.points.dto.AddPointsParamDto;
+import com.okdeer.mall.member.points.dto.ConsumPointParamDto;
 import com.okdeer.mall.member.points.entity.PointsRecord;
 import com.okdeer.mall.member.points.entity.PointsRule;
 import com.okdeer.mall.member.points.enums.PointsRuleCode;
@@ -87,6 +88,18 @@ public class PointServiceImpl implements PointsService {
 	public AddPointsResult addPoints(AddPointsParamDto addPointsParamDto) throws Exception {
 
 		AddPointsResult result = new AddPointsResult();
+		// 锁住数据，避免出现脏数据
+		SysBuyerExt sysBuyerExt = sysBuyerExtMapper.findByUserIdForUpdate(addPointsParamDto.getUserId());
+		// 校验是否重复消费消息
+		boolean checkRepeatResult = checkRepeat(addPointsParamDto.getBusinessId());
+		if (checkRepeatResult) {
+			// 消费过消息了，直接返回，不做处理
+			logger.error("重复扣积分了!");
+			result.setMsg("积分重复扣取");
+			result.setStatus(1);
+			return result;
+		}
+
 		// 查询积分规则
 		PointsRule pointsRule = pointsRuleMapper.selectByCode(addPointsParamDto.getPointsRuleCode().getCode());
 		// 校验领取规则
@@ -94,9 +107,8 @@ public class PointServiceImpl implements PointsService {
 		if (!checkResult) {
 			return result;
 		}
-
+		
 		String userId = addPointsParamDto.getUserId();
-		SysBuyerExt sysBuyerExt = sysBuyerExtMapper.selectByUserId(userId);
 		// 获取应得积分
 		int pointVal = getPoints(addPointsParamDto, pointsRule, sysBuyerExt);
 
@@ -252,7 +264,7 @@ public class PointServiceImpl implements PointsService {
 			paramBo.setStartTime(today + " 00:00:00");
 			paramBo.setEndTime(today + " 23:59:59");
 			if (!pointsRule.getCode().equals(PointsRuleCode.APP_CONSUME.getCode())) {
-				//如果不是app消费积分类型，需要排除app消费的积分,
+				// 如果不是app消费积分类型，需要排除app消费的积分,
 				List<String> existsCodeList = Lists.newArrayList();
 				existsCodeList.add(PointsRuleCode.APP_CONSUME.getCode());
 				paramBo.setExistsCodeList(existsCodeList);
@@ -276,11 +288,12 @@ public class PointServiceImpl implements PointsService {
 	 */
 	private void updateUserExt(String userId, Integer pointVal, Integer growthVal) throws ServiceException {
 		logger.debug("更新总积分请求参数，userId={}，pointVal={}", userId, pointVal);
-		
-		if(growthVal == null){
+
+		if (growthVal == null) {
 			growthVal = 0;
 		}
-		SysBuyerExt sysBuyerExt = sysBuyerExtMapper.findByUserIdForUpdate(userId);
+		SysBuyerExt sysBuyerExt = sysBuyerExtMapper.selectByUserId(userId);
+		
 		if (sysBuyerExt == null) {
 			// 用户扩展信息还不存在
 			sysBuyerExt = new SysBuyerExt();
@@ -330,5 +343,72 @@ public class PointServiceImpl implements PointsService {
 		pointsRecord.setType((byte) 0);
 		pointsRecord.setCreateTime(new Date());
 		pointsRecordMapper.insert(pointsRecord);
+	}
+
+	/**
+	 * @Description: 消费积分
+	 * @param consumPointParamDto 消费积分参数
+	 * @author zengjizu
+	 * @date 2017年1月5日
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void consumPoint(ConsumPointParamDto consumPointParamDto) throws Exception {
+		// 锁住数据，避免出现脏数据
+		SysBuyerExt sysBuyerExt = sysBuyerExtMapper.findByUserIdForUpdate(consumPointParamDto.getUserId());
+		// 校验是否重复消费消息
+		boolean checkRepeatResult = checkRepeat(consumPointParamDto.getBusinessId());
+		if (checkRepeatResult) {
+			// 消费过消息了，直接返回，不做处理
+			return;
+		}
+		// 校验用户积分是否够
+		if (sysBuyerExt == null || sysBuyerExt.getPointVal() == null
+				|| sysBuyerExt.getPointVal().compareTo(consumPointParamDto.getPointVal()) < 0) {
+			throw new Exception("用户积分不够");
+		}
+
+		// 更新用户积分
+		int reducePoint = new BigDecimal(consumPointParamDto.getPointVal()).multiply(new BigDecimal("-1")).intValue();
+		updateUserPoint(consumPointParamDto.getUserId(), reducePoint);
+		// 添加积分消费记录
+		PointsRecord pointsRecord = new PointsRecord();
+		pointsRecord.setId(UuidUtils.getUuid());
+		pointsRecord.setUserId(consumPointParamDto.getUserId());
+		pointsRecord.setPointVal(reducePoint);
+		pointsRecord.setType((byte) 1);
+		pointsRecord.setDescription(consumPointParamDto.getDescription());
+		pointsRecord.setCreateTime(new Date());
+		pointsRecordMapper.insert(pointsRecord);
+	}
+
+	/**
+	 * @Description: 更新用户积分
+	 * @param userId 用户id
+	 * @param pointVal 积分
+	 * @throws Exception
+	 * @author zengjizu
+	 * @date 2017年1月5日
+	 */
+	private void updateUserPoint(String userId, int pointVal) throws Exception {
+		int count = sysBuyerExtMapper.updatePoint(userId, pointVal);
+		if (count < 0) {
+			throw new Exception("用户积分不够");
+		}
+	}
+
+	/**
+	 * @Description: 校验数据是否重复
+	 * @param businessId 业务id
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年1月5日
+	 */
+	private boolean checkRepeat(String businessId) {
+		int count = pointsRecordMapper.findCountByReferentId(businessId);
+		if (count > 0) {
+			return true;
+		}
+		return false;
 	}
 }

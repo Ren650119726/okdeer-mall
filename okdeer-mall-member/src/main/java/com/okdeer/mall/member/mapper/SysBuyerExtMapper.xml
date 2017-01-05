@@ -138,9 +138,16 @@
     	WHERE user_id=#{userId,jdbcType=VARCHAR};
   </update>
   
+  <!-- 查询用户信息（带锁） -->
   <select id="findByUserIdForUpdate" resultMap="BaseResultMap" parameterType="java.lang.String" >
   	 SELECT 
     <include refid="Base_Column_List" />
      FROM sys_buyer_ext WHERE  user_id=#{userId,jdbcType=VARCHAR} for update
   </select>
+  
+  <!-- 更新用户积分 -->
+    <update id="updatePoint" >
+    	UPDATE sys_buyer_ext SET point_val = point_val + #{reducePoint,jdbcType=INTEGER}  
+    	WHERE user_id = #{userId,jdbcType=VARCHAR} AND (point_val + #{reducePoint,jdbcType=INTEGER}) <![CDATA[ >= ]]> 0;
+  </update>
 </mapper>
