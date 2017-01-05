@@ -12,9 +12,13 @@ import javax.annotation.Resource;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.base.BaseTest;
 import com.okdeer.mall.order.service.TradeOrderProcessServiceApi;
+import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
+
+import net.sf.json.JSONObject;
 
 /**
  * ClassName: TradeOrderProcessServiceImplTest 
@@ -44,7 +48,7 @@ public class TradeOrderProcessServiceImplTest extends BaseTest{
 		// 结算入参
 		String requestStr = "{\"data\": {\"storeId\": \"5646258e276511e6aaff00163e010eb1\",\"startMoney\": \"1.00\",\"list\": [{\"skuNum\": \"1\",\"skuPrice\": \"0.01\",\"skuId\": \"001f3c6e276511e6aaff00163e010eb1\",\"updateTime\": \"2016-10-07 19:08:03\",\"isPrivilege\": \"0\"}],\"userId\": \"14527626891242d4d00a207c4d69bd80\",\"fare\": \"5.00\"}}";
 		try {
-			TradeOrderRespDto respDto = tradeOrderProcessServiceApi.validateStoreSkuStock(requestStr);
+			TradeOrderRespDto respDto = tradeOrderProcessServiceApi.validateStoreSkuStock(JsonMapper.nonDefaultMapper().fromJson(requestStr, TradeOrderReqDto.class));
 			//Assert.assertNull("should be null", respDto); // 查看对象是否为空
 			Assert.assertNotNull("should not be null", respDto); // 查看对象是否不为空
 		} catch (Exception e) {
