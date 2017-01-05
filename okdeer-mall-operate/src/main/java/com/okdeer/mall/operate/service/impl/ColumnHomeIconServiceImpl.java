@@ -94,6 +94,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		// 设置首页ICON查询参数
 		HomeIconParamDto paramDto = new HomeIconParamDto();
 		paramDto.setIds(ids);
+
 		// 查询首页ICON列表
 		List<ColumnHomeIcon> sourceList = findList(paramDto);
 		List<HomeIconDto> dtoList = null;
@@ -227,6 +228,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		List<String> dbCityIds = new ArrayList<>();
 		// 查询已存在的
 		List<ColumnSelectArea> dbAreList = selectAreaService.findListByColumnIds(columnIds);
+		// 将已经存在省、城市ID放入集合中
 		for (ColumnSelectArea item : dbAreList) {
 			if (SelectAreaType.province.equals(item.getAreaType())) {
 				dbProvinceIds.add(item.getProvinceId());
@@ -235,6 +237,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 				dbCityIds.add(item.getCityId());
 			}
 		}
+		// 和已经保存区域进行判断是否有重复或者是交集
 		for (ColumnSelectArea item : areaList) {
 			if (SelectAreaType.province.equals(item.getAreaType())) {
 				if (dbProvinceIds.add(item.getProvinceId()) || dbPartProvinceIds.add(item.getProvinceId())) {

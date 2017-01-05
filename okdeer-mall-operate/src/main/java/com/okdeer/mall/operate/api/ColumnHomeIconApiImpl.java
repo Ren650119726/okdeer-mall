@@ -105,11 +105,11 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 	 * @see com.okdeer.mall.operate.service.ColumnSelectAreaApi#deleteById(java.lang.String)
 	 */
 	@Override
-	public BaseResult deleteById(String iconId) throws Exception {
-		if (StringUtils.isBlank(iconId)) {
+	public BaseResult deleteById(String homeIconId) throws Exception {
+		if (StringUtils.isBlank(homeIconId)) {
 			return new BaseResult("homeIconId不能为空");
 		}
-		int result = homeIconService.delete(iconId);
+		int result = homeIconService.delete(homeIconId);
 		if (result > 0) {
 			return new BaseResult();
 		}
