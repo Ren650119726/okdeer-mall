@@ -22,6 +22,7 @@ import org.springframework.util.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
@@ -49,9 +50,9 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRecordMapper;
+import com.okdeer.mall.common.dto.Request;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.utils.TradeNumUtil;
-import com.okdeer.mall.common.vo.Request;
-import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -480,7 +481,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			tradeOrderItem.setSkuName(storeSku.getName());
 			tradeOrderItem.setPropertiesIndb(parseProperties(storeSku.getPropertiesIndb()));
 			tradeOrderItem.setMainPicPrl(goodsItem.getSkuIcon());
-			tradeOrderItem.setSpuType(GoodsTypeEnum.SERVICE_GOODS);
+			tradeOrderItem.setSpuType(SpuTypeEnum.serviceSpu);
 			tradeOrderItem.setUnitPrice(storeSku.getOnlinePrice());
 			tradeOrderItem.setQuantity(goodsItem.getSkuNum());
 			tradeOrderItem.setStatus(OrderItemStatusEnum.NO_REFUND);

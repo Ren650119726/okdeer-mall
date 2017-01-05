@@ -15,8 +15,8 @@ import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.mall.common.consts.Constant;
-import com.okdeer.mall.common.vo.Request;
-import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.common.dto.Request;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.dto.TimeInterval;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
@@ -54,13 +54,13 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		// 服务店铺不存在
 		StoreInfo storeInfo = storeInfoService.getStoreInfoById(reqData.getStoreId());
 		if (storeInfo == null || storeInfo.getStoreInfoExt() == null) {
-			resp.setResult(ResultCodeEnum.SERVER_STORE_NOT_EXISTS);
+			resp.setResult(ResultCodeEnum.STORE_NOT_EXISTS);
 			req.setComplete(true);
 			return;
 		}
 		// 店铺已关闭
 		if (StoreStatusEnum.OPENING != storeInfo.getStoreInfoExt().getIsClosed()) {
-			resp.setResult(ResultCodeEnum.SERVER_STORE_IS_CLOSED);
+			resp.setResult(ResultCodeEnum.STORE_IS_CLOSED);
 			req.setComplete(true);
 			return;
 		}

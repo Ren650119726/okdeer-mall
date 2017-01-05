@@ -19,7 +19,7 @@ import org.mockito.Mock;
 
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.base.BaseServiceTest;
-import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.constant.OrderTraceConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderTrace;

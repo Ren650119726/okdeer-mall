@@ -3,8 +3,8 @@ package com.okdeer.mall.order.api;
 import javax.annotation.Resource;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.service.TradeOrderTraceApi;
 import com.okdeer.mall.order.vo.RefundsTraceResp;
 
