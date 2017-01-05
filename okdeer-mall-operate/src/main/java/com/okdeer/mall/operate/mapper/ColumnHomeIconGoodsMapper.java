@@ -25,6 +25,15 @@ public interface ColumnHomeIconGoodsMapper extends IBaseMapper {
 	List<ColumnHomeIconGoods> findListByHomeIconId(String homeIconId);
 
 	/**
+	 * @Description: 根据首页ICON ID集合 查询数据
+	 * @return List<ColumnHomeIconGoods>  
+	 * @throws Exception
+	 * @author tangzj02
+	 * @date 2017年01月05日
+	 */
+	List<ColumnHomeIconGoods> findListByHomeIconIds(@Param("homeIconIds") List<String> homeIconIds);
+
+	/**
 	 * @Description: 根据首页ICONID删除数据
 	 * @param homeIconId   
 	 * @return int 删除记录  
