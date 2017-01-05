@@ -356,6 +356,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 
 	}
 	
+	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void closeSaleGoods(String saleGoodsId) throws Exception {
 		/**
 		 * 1;将低价商品标记为失效
