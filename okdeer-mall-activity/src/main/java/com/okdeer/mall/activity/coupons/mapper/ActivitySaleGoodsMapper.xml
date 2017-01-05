@@ -93,10 +93,16 @@
 <!-- 根据店铺商品的id和活动id去查询单个记录  addBy  zhulq -->
 <select id="selectByObject" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods" resultMap="ActivitySaleGoods">
      SELECT id, store_sku_id, sale_price, trade_max, sale_id, disabled 
-     FROM activity_sale_goods
-     WHERE disabled = #{disabled}
-     AND store_sku_id = #{storeSkuId}
-     AND sale_id = #{saleId}
+     FROM activity_sale_goods WHERE 1=1
+     <if test="disabled != null">
+	      AND disabled = #{disabled}
+     </if>
+     <if test="storeSkuId != null">
+	     AND store_sku_id = #{storeSkuId}
+     </if>
+     <if test="saleId != null">
+	     AND sale_id = #{saleId}
+     </if>
 </select>
 
 	<select id="selectActivitySaleByParams" parameterType="map" resultMap="ActivitySaleGoods">
