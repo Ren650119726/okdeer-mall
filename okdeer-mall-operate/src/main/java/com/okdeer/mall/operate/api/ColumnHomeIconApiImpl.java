@@ -23,9 +23,11 @@ import com.okdeer.mall.operate.dto.HomeIconParamDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIcon;
 import com.okdeer.mall.operate.entity.ColumnHomeIconGoods;
 import com.okdeer.mall.operate.entity.ColumnSelectArea;
+import com.okdeer.mall.operate.enums.ColumnType;
 import com.okdeer.mall.operate.service.ColumnHomeIconApi;
 import com.okdeer.mall.operate.service.ColumnHomeIconGoodsService;
 import com.okdeer.mall.operate.service.ColumnHomeIconService;
+import com.okdeer.mall.operate.service.ColumnSelectAreaService;
 
 /**
  * ClassName: HomeIconApiImpl 
@@ -49,6 +51,9 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 
 	@Autowired
 	private ColumnHomeIconGoodsService homeIconGoodsService;
+
+	@Autowired
+	private ColumnSelectAreaService selectAreaService;
 
 	/**
 	 * (non-Javadoc)
@@ -97,6 +102,16 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 			return null;
 		}
 		HomeIconDto dto = BeanMapper.map(source, HomeIconDto.class);
+
+		// 查询商品关联信息
+		List<ColumnHomeIconGoods> goodsList = homeIconGoodsService.findListByHomeIconId(homeIconId);
+		List<HomeIconGoodsDto> goodsDtoList = null;
+		if (goodsList == null) {
+			goodsDtoList = new ArrayList<>();
+		} else {
+			goodsDtoList = BeanMapper.mapList(goodsList, HomeIconGoodsDto.class);
+		}
+		dto.setGoodsList(goodsDtoList);
 		return dto;
 	}
 
@@ -129,7 +144,7 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		} else {
 			areaList = BeanMapper.mapList(dto.getAreaList(), ColumnSelectArea.class);
 		}
-		return homeIconService.save(entity, areaList, dto.getGoodsIds());
+		return homeIconService.save(entity, areaList, dto.getStoreSkuIds());
 	}
 
 	/**
@@ -138,7 +153,28 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 	 */
 	@Override
 	public List<HomeIconDto> findListByCityId(String provinceId, String cityId) throws Exception {
-		return homeIconService.findListByCityId(provinceId, cityId);
+		if (!StringUtils.isNotEmptyAll(provinceId, cityId)) {
+			return new ArrayList<HomeIconDto>();
+		}
+		// 根据城市查询相应的首页ICON栏位
+		List<String> ids = selectAreaService.findColumnIdsByCity(cityId, provinceId, ColumnType.homeIcon.ordinal());
+		if (null == ids || ids.size() == 0) {
+			return new ArrayList<HomeIconDto>();
+		}
+
+		// 设置首页ICON查询参数
+		HomeIconParamDto paramDto = new HomeIconParamDto();
+		paramDto.setIds(ids);
+
+		// 查询首页ICON列表
+		List<HomeIconDto> sourceList = findList(paramDto);
+		List<HomeIconDto> dtoList = null;
+		if (null == sourceList) {
+			dtoList = new ArrayList<HomeIconDto>();
+		} else {
+			dtoList = BeanMapper.mapList(sourceList, HomeIconDto.class);
+		}
+		return dtoList;
 	}
 
 	/**

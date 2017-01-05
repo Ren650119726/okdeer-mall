@@ -56,6 +56,15 @@ public class ColumnHomeIconGoodsServiceImpl extends BaseServiceImpl implements C
 
 	/**
 	 * (non-Javadoc)
+	 * @see com.okdeer.mall.operate.service.ColumnHomeIconGoodsService#findListByHomeIconIds(java.util.List)
+	 */
+	@Override
+	public List<ColumnHomeIconGoods> findListByHomeIconIds(List<String> homeIconIds) throws Exception {
+		return homeIconGoodsMapper.findListByHomeIconIds(homeIconIds);
+	}
+
+	/**
+	 * (non-Javadoc)
 	 * @see com.okdeer.mall.operate.service.ColumnHomeIconGoodsService#deleteByHomeIconId(java.lang.String)
 	 */
 	@Transactional(rollbackFor = Exception.class)
@@ -73,5 +82,4 @@ public class ColumnHomeIconGoodsServiceImpl extends BaseServiceImpl implements C
 	public int insertMore(List<ColumnHomeIconGoods> list) throws Exception {
 		return homeIconGoodsMapper.insertMore(list);
 	}
-
 }
