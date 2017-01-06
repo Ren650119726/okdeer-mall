@@ -107,14 +107,16 @@ public class PointServiceImpl implements PointsService {
 		if (!checkResult) {
 			return result;
 		}
-		
+
 		String userId = addPointsParamDto.getUserId();
 		// 获取应得积分
 		int pointVal = getPoints(addPointsParamDto, pointsRule, sysBuyerExt);
 
 		if (pointVal > 0) {
 			// 添加积分详细记录
-			addPointsRecord(userId, pointsRule.getCode(), pointVal,pointsRule.getName());
+			String description = StringUtils.isBlank(addPointsParamDto.getDescription()) ? pointsRule.getRemark()
+					: addPointsParamDto.getDescription();
+			addPointsRecord(userId, pointsRule.getCode(), pointVal, description);
 			result.setMsg("领取成功");
 			result.setStatus(0);
 			result.setPointVal(pointVal);
@@ -293,7 +295,7 @@ public class PointServiceImpl implements PointsService {
 			growthVal = 0;
 		}
 		SysBuyerExt sysBuyerExt = sysBuyerExtMapper.selectByUserId(userId);
-		
+
 		if (sysBuyerExt == null) {
 			// 用户扩展信息还不存在
 			sysBuyerExt = new SysBuyerExt();
@@ -333,7 +335,8 @@ public class PointServiceImpl implements PointsService {
 	 * @param pointVal 获得积分
 	 * @throws ServiceException 返回异常
 	 */
-	private void addPointsRecord(String userId, String code, Integer pointVal,String description) throws ServiceException {
+	private void addPointsRecord(String userId, String code, Integer pointVal, String description)
+			throws ServiceException {
 		logger.debug("添加积分记录请求参数，userId={}，code={},pointVal={}", userId, code, pointVal);
 		PointsRecord pointsRecord = new PointsRecord();
 		pointsRecord.setId(UuidUtils.getUuid());
