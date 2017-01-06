@@ -125,11 +125,11 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		}
 
 		// 修改首页ICON
+		entity.setUpdateTime(DateUtils.getSysDate());
 		if (StringUtils.isNotBlank(entity.getId())) {
 			// 删除之前的插入的关联数据
 			selectAreaService.deleteByColumnId(entity.getId());
 			homeIconGoodsService.deleteByHomeIconId(entity.getId());
-			entity.setUpdateTime(DateUtils.getSysDate());
 			homeIconMapper.update(entity);
 		} else {
 			entity.setId(homeIconId);

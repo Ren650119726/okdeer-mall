@@ -143,11 +143,11 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 		// 修改APP端服务推荐
 		entity.setGoodsCount(goodsList.size());
 		entity.setShowGoodsCount(showGoodsCount);
+		entity.setUpdateTime(DateUtils.getSysDate());
 		if (StringUtils.isNotBlank(entity.getId())) {
 			// 删除之前的插入的关联数据
 			selectAreaService.deleteByColumnId(entity.getId());
 			appRecommendGoodsService.deleteByRecommendId(entity.getId());
-			entity.setUpdateTime(DateUtils.getSysDate());
 			appRecommendMapper.update(entity);
 		} else {
 			entity.setId(recommendId);
