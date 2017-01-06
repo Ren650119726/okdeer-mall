@@ -49,7 +49,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 
 	@Override
 	public void updateBatchStatus(List<String> ids, int status, String storeId,
-			String createUserId) throws Exception {
+			String createUserId,Integer activityType) throws Exception {
 		activitySaleService.updateBatchStatus(ids, status, storeId, createUserId);
 	}
 
