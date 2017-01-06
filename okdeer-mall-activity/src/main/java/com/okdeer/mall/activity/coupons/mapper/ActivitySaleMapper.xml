@@ -56,6 +56,9 @@
 		<if test="status != null and status != ''">
 			and status = #{status}
 		</if>
+		<if test="type != null and type != ''">
+			and type = #{type}
+		</if>
 		order by create_time desc
 	</select>
 	
@@ -213,6 +216,9 @@
 			</if>
 			<if test="disabled != null">
 				disabled = #{disabled},
+			</if>
+			<if test="type != null">
+				type = #{type},
 			</if>
         id = #{id}
         where id = #{id}
