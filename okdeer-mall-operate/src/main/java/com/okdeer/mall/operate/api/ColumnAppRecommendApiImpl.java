@@ -238,7 +238,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 			return new ArrayList<AppRecommendDto>();
 		}
 		// 根据城市查询相应的服务商品推荐栏位
-		List<String> ids = selectAreaService.findColumnIdsByCity(cityId, provinceId, ColumnType.appRecommend.ordinal());
+		List<String> ids = selectAreaService.findColumnIdsByCity(provinceId, cityId, ColumnType.appRecommend.ordinal());
 		if (null == ids || ids.size() == 0) {
 			return new ArrayList<AppRecommendDto>();
 		}
