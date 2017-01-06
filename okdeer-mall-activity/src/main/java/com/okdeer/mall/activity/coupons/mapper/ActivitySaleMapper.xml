@@ -155,9 +155,16 @@
 	 		</foreach>  
 		</if>
 		
+		<if test="skuType != null">
+			and s.type = #{skuType}
+		</if>
+		<if test="notSkuType != null">
+			and s.type != #{notSkuType}
+		</if>
+		
 		order by 
 		<if test="id != null and id != ''">
-			asg.sort asc,
+			asg.sort desc,
 		</if>
 		s.create_time desc
 	</select>
@@ -235,9 +242,11 @@
     <select id="validateExist" parameterType="map" resultType="int">
     	select count(*) from activity_sale s
     	where s.disabled = 0 
-    	and s.create_user_id = #{createUserId}
+    	and s.store_id = #{storeId}
     	<!-- 未开始0,进行中1的才算存在-->
     	and (s.status = 0 or s.status = 1)
+		<!-- 特惠 -->
+		<if test="type == 5">
 		AND 
 		(
 			#{startTime} BETWEEN s.start_time and s.end_time 
@@ -246,8 +255,12 @@
        		OR 
        		(start_time &gt;= #{startTime} and end_time &lt;= #{endTime})
        	)
+       	</if>
     	<if test="id != null and id != ''">
     		and s.id != #{id}
+    	</if>
+    	<if test="type != null">
+    		and s.type = #{type}
     	</if>
     </select>
 
