@@ -2,6 +2,8 @@ package com.okdeer.mall.activity.coupons.api;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
@@ -11,6 +13,7 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivitySaleELServiceApi")
 public class ActivitySaleServiceApiImpl implements ActivitySaleELServiceApi {
 	
+	@Autowired
 	private ActivitySaleService activitySaleService;
 	@Override
 	public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList)
