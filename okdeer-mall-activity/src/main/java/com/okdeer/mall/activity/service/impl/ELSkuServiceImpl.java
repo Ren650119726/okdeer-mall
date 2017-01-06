@@ -154,6 +154,7 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
 				// 0为开始 1为关闭
 				activityMessageParamDto.setUpdateStatus(0);
 				break;
+			case closed:
 			case end:
 				// 0为开始 1为关闭
 				activityMessageParamDto.setUpdateStatus(1);
@@ -164,7 +165,7 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
 		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
 
 		// 发送事务消息
-		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, null, new LocalTransactionExecuter() {
+		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, activityMessageParamDto, new LocalTransactionExecuter() {
 
 			@Override
 			public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
@@ -178,6 +179,9 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
 						case end:
 							// 已开始活动，时间到期之后变更状态为已结束
 							activitySeckillService.updateSeckillByEnd(activity);
+							break;
+						case closed:
+							activitySeckillService.saveByCloseSeckill(activity);
 							break;
 					}
 				} catch (Exception e) {

@@ -92,4 +92,6 @@ public interface ActivitySeckillService {
 	 */
 	ActivitySeckillItemVo findAppUserSecKillBySeckill(String id) throws Exception;
 	// end add by luosm 2016-07-22
+
+	void saveByCloseSeckill(ActivitySeckill activitySeckill) throws Exception;
 }
