@@ -31,7 +31,7 @@ public class ColumnHomeIcon {
 	private String name;
 
 	/**
-	 * ICON位置 1:首页ICON一 2:首页ICON二 3:首页ICON三 ......
+	 * ICON位置 0:首页ICON一 1:首页ICON二  2:首页ICON三 ......（必填）
 	 */
 	private HomeIconPlace place;
 
