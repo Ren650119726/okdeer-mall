@@ -90,16 +90,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Autowired
 	RollbackMQProducer rollbackMQProducer;
 
-	public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
-		saveOld(activitySale,asgList);
-	}
-
-	public void update(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
-		updateOld(activitySale,asgList);
-	}
-
 	@Transactional(rollbackFor = Exception.class)
-	public void saveOld(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
+	public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		try {
@@ -248,7 +240,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	}
 
 	@Transactional(rollbackFor = Exception.class)
-	public void updateOld(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
+	public void update(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		List<String> rpcIdByBathSkuList = new ArrayList<String>();
