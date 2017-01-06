@@ -22,6 +22,7 @@ import com.okdeer.common.utils.BaseResult;
 import com.okdeer.mall.operate.dto.HomeIconDto;
 import com.okdeer.mall.operate.dto.HomeIconGoodsDto;
 import com.okdeer.mall.operate.dto.HomeIconParamDto;
+import com.okdeer.mall.operate.dto.SelectAreaDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIcon;
 import com.okdeer.mall.operate.entity.ColumnHomeIconGoods;
 import com.okdeer.mall.operate.entity.ColumnSelectArea;
@@ -129,6 +130,17 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 			goodsDtoList = BeanMapper.mapList(goodsList, HomeIconGoodsDto.class);
 		}
 		dto.setGoodsList(goodsDtoList);
+		
+		//查询关联区域
+		List<ColumnSelectArea> areaList = selectAreaService.findListByColumnId(homeIconId);
+		List<SelectAreaDto> aradDtos = null;
+		if(areaList != null && !areaList.isEmpty()) {
+		    aradDtos = BeanMapper.mapList(areaList, SelectAreaDto.class);
+		} else {
+		    aradDtos = new ArrayList<SelectAreaDto>();
+		}
+		dto.setAreaList(aradDtos);
+		
 		return dto;
 	}
 
