@@ -1,6 +1,7 @@
 package com.okdeer.mall.activity.coupons.api;
 
 import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_UPDATE;
 import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
 import static com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum.LOW_PRICE;
 
@@ -28,7 +29,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 	 */
 	@Autowired
 	private RocketMQProducer rocketMQProducer;
-	
+
 	@Autowired
 	private ActivitySaleService activitySaleService;
 	@Override
@@ -37,7 +38,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 		activitySaleService.save(activitySale, asgList);
 		if(activitySale.getType() == LOW_PRICE){
 			List<String> list = asgList.stream().map(e -> e.getStoreSkuId()).collect(Collectors.toList());
-			structureProducer(list);
+			structureProducer(list,TAG_LOWPRICE_EL_UPDATE);
 		}
 	}
 
@@ -51,19 +52,30 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 	public void updateBatchStatus(List<String> ids, int status, String storeId,
 			String createUserId,Integer activityType) throws Exception {
 		activitySaleService.updateBatchStatus(ids, status, storeId, createUserId);
+        // 5:特惠 7:低价
+		switch (activityType){
+			case 5:
+                structureProducer(ids,TAG_SALE_EL_UPDATE);
+				break;
+			case 7:
+                structureProducer(ids,TAG_LOWPRICE_EL_UPDATE);
+				break;
+		}
 	}
 
 	/**
 	 * 发送消息同步数据到搜索引擎执行
-	 * @param list
+	 * @param list List<String>
+     * @param tag String
 	 * @throws Exception
 	 */
-	private void structureProducer(List<String> list) throws Exception {
+	private void structureProducer(List<String> list,String tag) throws Exception {
 		ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
 		paramDto.setSkuIds(list);
+        paramDto.setUpdateStatus(1);
 		ObjectMapper mapper = new ObjectMapper();
 		String json = mapper.writeValueAsString(paramDto);
-		Message msg = new Message(TOPIC_GOODS_SYNC_EL, TAG_LOWPRICE_EL_UPDATE,json.getBytes(Charsets.UTF_8));
+		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag,json.getBytes(Charsets.UTF_8));
 		rocketMQProducer.send(msg);
 	}
 }
