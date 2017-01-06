@@ -23,9 +23,4 @@ public class ActivitySaleServiceApiImpl implements ActivitySaleELServiceApi {
 			List<ActivitySaleGoods> asgList) throws Exception {
 		activitySaleService.update(ActivitySale, asgList);
 	}
-	
-	@Override
-	public void closeSaleGoods(String saleGoodsId) throws Exception {
-		activitySaleService.closeSaleGoods(saleGoodsId);
-	}
 }
