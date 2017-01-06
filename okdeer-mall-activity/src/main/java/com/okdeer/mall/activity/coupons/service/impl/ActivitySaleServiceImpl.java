@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -105,8 +106,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			// 先保存特惠主对象
 			activitySaleMapper.save(activitySale);
 			// 库存同步--库存出错的几率更大。先处理库存
-			/*this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
-					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);*/
+			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
+					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 			// 再保存特惠商品列表
 			for (ActivitySaleGoods a : asgList) {
 				a.setDisabled(Disabled.valid);
@@ -336,15 +337,15 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			}
 			activitySaleGoodsMapper.saveBatch(asgList);
 			// 同步差集部分商品，也就是原来是特惠商品，然后本次编辑没勾选，所以这批商品需要释放库存。
-			/*if (CollectionUtils.isNotEmpty(saleGoodsList)) {
+			if (CollectionUtils.isNotEmpty(saleGoodsList)) {
 				// 库存同步
 				this.syncGoodsStockBatch(saleGoodsList, activitySale.getCreateUserId(), activitySale.getStoreId(),
 						StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
-			}*/
+			}
 			// 新加商品的库存同步，需要增加锁定库存
 			// 库存同步
-			/*this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
-					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);*/
+			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
+					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 		} catch (Exception e) {
 			// 现在实物订单库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
 			// rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
@@ -432,9 +433,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				}
 				// 手动关闭或者定时器结束都要把未卖完的数量释放库存
 				// 和erp同步库存
-				/*if(CollectionUtils.isNotEmpty(saleGoodsList)){
+				if(CollectionUtils.isNotEmpty(saleGoodsList)){
 					this.syncGoodsStockBatch(saleGoodsList, "", storeId, StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
-				}*/
+				}
 			}
 		} catch (Exception e) {
 			// 现在库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
