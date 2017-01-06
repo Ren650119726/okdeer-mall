@@ -174,7 +174,7 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 			return new ArrayList<HomeIconDto>();
 		}
 		// 根据城市查询相应的首页ICON栏位
-		List<String> ids = selectAreaService.findColumnIdsByCity(cityId, provinceId, ColumnType.homeIcon.ordinal());
+		List<String> ids = selectAreaService.findColumnIdsByCity(provinceId, cityId, ColumnType.homeIcon.ordinal());
 		if (null == ids || ids.size() == 0) {
 			return new ArrayList<HomeIconDto>();
 		}
