@@ -356,45 +356,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	}
 	
 	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public void closeSaleGoods(String saleGoodsId) throws Exception {
-		/**
-		 * 1;将低价商品标记为失效
-		 * 2;修改 改店铺商品sku活动字段清空
-		 * 3;释放店铺商品库存
-		 * 4;同步该店铺商品库存到erp
-		 */
-		List<String> rpcIdByStockList = new ArrayList<String>();
-		List<String> rpcIdBySkuList = new ArrayList<String>();
-		List<String> rpcIdByBathSkuList = new ArrayList<String>();
-		try{
-			//将低价商品标记为失效
-			ActivitySaleGoods saleGoods = activitySaleGoodsMapper.get(saleGoodsId);
-			ActivitySale sale = activitySaleMapper.get(saleGoods.getSaleId());
-			ActivitySaleGoods temp = new ActivitySaleGoods();
-			temp.setId(saleGoods.getId());
-			temp.setDisabled(Disabled.invalid);
-			activitySaleGoodsMapper.updateById(temp);
-			// 店铺商品表也要先把关联活动清空
-			String rcpId = UuidUtils.getUuid();
-			rpcIdByBathSkuList.add(rcpId);
-			goodsStoreSkuServiceApi.updateActivityByActivityIds(new String[] { saleGoods.getSaleId() }, rcpId);
-			//同步该店铺商品库存到erp
-			// 库存同步
-			this.syncGoodsStock(saleGoods, sale.getCreateUserId(), sale.getStoreId(),
-					StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
-			
-		}catch (Exception e) {
-			// 现在实物订单库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
-			// rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
-			log.error("关闭低价抢购商品"+saleGoodsId+"失败，事务回滚",e);
-			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
-			rollbackMQProducer.sendSkuBatchRollbackMsg(rpcIdByBathSkuList);
-			throw e;
-		}
-	}
-
-	@Override
 	public ActivitySale get(String id) {
 		return activitySaleMapper.get(id);
 	}

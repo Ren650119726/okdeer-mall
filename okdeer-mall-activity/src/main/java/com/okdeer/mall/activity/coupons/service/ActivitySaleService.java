@@ -67,15 +67,4 @@ public interface ActivitySaleService {
 	 * @date 2016年10月21日
 	 */
 	List<ActivitySale> listByStoreId(Map<String,Object> map);
-	
-	/**
-	 * 将低价抢购商品关闭
-	 * @Description:
-	 * @param saleGoodsId
-	 * @throws Exception void
-	 * @throws
-	 * @author mengsj
-	 * @date 2017年1月3日
-	 */
-	public void closeSaleGoods(String saleGoodsId) throws Exception;
 }
