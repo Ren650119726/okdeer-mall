@@ -27,7 +27,7 @@ public class ColumnSelectArea {
 	private String columnId;
 
 	/**
-	 * 栏位类型 1:首页ICON 2:APP端服务商品推荐
+	 * 栏位类型 0:首页ICON 1:APP端服务商品推荐
 	 */
 	private Integer columnType;
 
