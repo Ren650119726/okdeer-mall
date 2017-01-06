@@ -87,7 +87,7 @@
 		from activity_sale_goods s
 		left join goods_store_sku gss on (s.store_sku_id = gss.id)
 		where s.sale_id = #{value}
-		order by s.sort asc
+		order by s.sort desc
     </select>
 
 <!-- 根据店铺商品的id和活动id去查询单个记录  addBy  zhulq -->
