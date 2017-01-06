@@ -104,7 +104,7 @@ public interface ActivitySaleMapper {
 	 * @author mengsj
 	 * @date 2016年12月31日
 	 */
-	ActivitySale findByActivitySaleByStoreId(@Param("storeId")String storeId,@Param("type")Integer actType, @Param("status") Integer status);
+	ActivitySale findByActivitySaleByStoreId(@Param("storeId")String storeId,@Param("actType")Integer actType, @Param("status") Integer status);
 	
 	// Begin V2.0 added by maojj 2016-12-31 
 	/**

@@ -589,9 +589,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 
 	@Override
 	public ActivitySale findActivitySaleByStoreId(String storeId,
-			Integer activiType) {
+			Integer activiType,Integer status) {
 		if(StringUtils.isNotBlank(storeId) && activiType != null){
-			return activitySaleMapper.findByActivitySaleByStoreId(storeId, activiType, null);
+			return activitySaleMapper.findByActivitySaleByStoreId(storeId, activiType, status);
 		}
 		return new ActivitySale();
 	}

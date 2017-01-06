@@ -217,6 +217,9 @@
 			<if test="disabled != null">
 				disabled = #{disabled},
 			</if>
+			<if test="type != null">
+				type = #{type},
+			</if>
         id = #{id}
         where id = #{id}
     </update>
