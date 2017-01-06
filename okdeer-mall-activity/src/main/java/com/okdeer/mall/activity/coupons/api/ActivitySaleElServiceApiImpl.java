@@ -11,7 +11,7 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleELServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivitySaleELServiceApi")
-public class ActivitySaleServiceApiImpl implements ActivitySaleELServiceApi {
+public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 	
 	@Autowired
 	private ActivitySaleService activitySaleService;
