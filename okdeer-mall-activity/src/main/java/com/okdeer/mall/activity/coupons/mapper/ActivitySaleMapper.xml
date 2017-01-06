@@ -26,7 +26,8 @@
 		select <include refid="columns"/>
 		,(select count(*) from activity_sale_goods asg where asg.sale_id = s.id) as activitySaleGoodsCount 
 		from activity_sale s
-		where disabled = 0 and s.create_user_id = #{createUserId}
+		where disabled = 0 
+		and s.store_id = #{storeId}
 		<if test="saleName != null and saleName != ''">
 			and name like concat('%',#{saleName},'%' )
 		</if>
