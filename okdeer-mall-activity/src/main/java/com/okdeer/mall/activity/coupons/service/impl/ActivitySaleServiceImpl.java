@@ -91,11 +91,11 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	RollbackMQProducer rollbackMQProducer;
 
 	public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
-		save(activitySale,asgList);
+		saveOld(activitySale,asgList);
 	}
 
 	public void update(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
-		update(activitySale,asgList);
+		updateOld(activitySale,asgList);
 	}
 
 	@Transactional(rollbackFor = Exception.class)
