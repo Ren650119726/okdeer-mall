@@ -1,6 +1,22 @@
 
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_ADD;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_DEL;
+import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.common.message.Message;
@@ -31,14 +47,6 @@ import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-
-import static com.okdeer.common.consts.ELTopicTagConstants.*;
 
 /**
  * 
@@ -53,7 +61,6 @@ import static com.okdeer.common.consts.ELTopicTagConstants.*;
  *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi")
-@org.springframework.stereotype.Service
 public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, ActivitySaleService {
 
 	private static final Logger log = Logger.getLogger(ActivitySaleServiceImpl.class);
@@ -90,16 +97,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Autowired
 	RollbackMQProducer rollbackMQProducer;
 
-	public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
-		saveOld(activitySale,asgList);
-	}
-
-	public void update(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
-		updateOld(activitySale,asgList);
-	}
-
 	@Transactional(rollbackFor = Exception.class)
-	public void saveOld(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
+	public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		try {
@@ -248,7 +247,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	}
 
 	@Transactional(rollbackFor = Exception.class)
-	public void updateOld(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
+	public void update(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		List<String> rpcIdByBathSkuList = new ArrayList<String>();
@@ -337,15 +336,15 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			}
 			activitySaleGoodsMapper.saveBatch(asgList);
 			// 同步差集部分商品，也就是原来是特惠商品，然后本次编辑没勾选，所以这批商品需要释放库存。
-			if (CollectionUtils.isNotEmpty(saleGoodsList)) {
+			/*if (CollectionUtils.isNotEmpty(saleGoodsList)) {
 				// 库存同步
 				this.syncGoodsStockBatch(saleGoodsList, activitySale.getCreateUserId(), activitySale.getStoreId(),
 						StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
-			}
+			}*/
 			// 新加商品的库存同步，需要增加锁定库存
 			// 库存同步
-			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
-					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
+			/*this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
+					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);*/
 		} catch (Exception e) {
 			// 现在实物订单库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
 			// rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
