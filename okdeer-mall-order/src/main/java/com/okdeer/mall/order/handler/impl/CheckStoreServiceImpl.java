@@ -135,7 +135,6 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		if(!resp.isSuccess() || paramDto.getOrderType() != PlaceOrderTypeEnum.CVS_ORDER){
 			return;
 		}
-		
 		switch (paramDto.getOrderOptType()) {
 			case ORDER_SETTLEMENT:
 				checkTimeWhenSettlement(resp, storeInfo.getStoreInfoExt());

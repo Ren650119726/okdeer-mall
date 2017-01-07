@@ -1,6 +1,7 @@
 package com.okdeer.mall.order.bo;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import org.springframework.util.StringUtils;
 
@@ -121,10 +122,28 @@ public class CurrentStoreSkuBo {
 	 */
 	private SpuTypeEnum spuType;
 
+	/******************************服务店商品需要返回的信息**********************************************/
+	private int saleNum;
+
+	/**
+	 * 商品支付方式
+	 */
+	private int paymentMode;
+
+	/**
+	 * 服务商品起购量
+	 */
+	private Integer shopNum;
+
 	/**
 	 * 商品最后更新时间
 	 */
 	private String updateTime;
+
+	/**
+	 * 到店消费商品有效截止时间
+	 */
+	private Date endTime;
 
 	public BigDecimal getTotalAmount() {
 		BigDecimal totalAmount = BigDecimal.valueOf(0);
@@ -325,6 +344,38 @@ public class CurrentStoreSkuBo {
 
 	public void setLimitBuyNum(Integer limitBuyNum) {
 		this.limitBuyNum = limitBuyNum;
+	}
+
+	public int getPaymentMode() {
+		return paymentMode;
+	}
+
+	public void setPaymentMode(int paymentMode) {
+		this.paymentMode = paymentMode;
+	}
+
+	public Integer getShopNum() {
+		return shopNum;
+	}
+
+	public void setShopNum(Integer shopNum) {
+		this.shopNum = shopNum;
+	}
+
+	public Date getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(Date endTime) {
+		this.endTime = endTime;
+	}
+
+	public int getSaleNum() {
+		return saleNum;
+	}
+
+	public void setSaleNum(int saleNum) {
+		this.saleNum = saleNum;
 	}
 
 }

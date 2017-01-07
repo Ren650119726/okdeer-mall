@@ -1,5 +1,6 @@
 package com.okdeer.mall.order.handler.impl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,8 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
@@ -86,9 +89,9 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		ResultCodeEnum checkResult = isChange(paramDto, parserBo);
 		if (checkResult != ResultCodeEnum.SUCCESS) {
 			resp.setResult(checkResult);
-			// TODO
 		}
-
+		// 计算运费
+		calculateFare(paramDto,parserBo);
 		// 缓存商品解析结果
 		paramDto.put("parserBo", parserBo);
 
@@ -198,5 +201,18 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 			}
 		}
 		return checkResult;
+	}
+	
+	private void calculateFare(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo){
+		StoreInfoExt storeExt = ((StoreInfo)paramDto.get("storeInfo")).getStoreInfoExt();
+		// 店铺起送价
+		BigDecimal startPrice = storeExt.getStartPrice() == null ? new BigDecimal(0.0) : storeExt.getStartPrice();
+		// 店铺运费
+		BigDecimal fare = storeExt.getFreight() == null ? new BigDecimal(0.0) : storeExt.getFreight();
+		// 获取订单总金额
+		BigDecimal totalAmount = parserBo.getTotalItemAmount();
+		if (totalAmount.compareTo(startPrice) == -1) {
+			parserBo.setFare(fare);
+		} 
 	}
 }

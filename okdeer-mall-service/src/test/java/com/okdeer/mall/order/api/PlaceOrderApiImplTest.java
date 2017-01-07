@@ -18,6 +18,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.okdeer.ca.common.mapper.JsonMapper;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
@@ -86,7 +87,7 @@ public class PlaceOrderApiImplTest extends BaseServiceTest {
 	@Test
 	public void testConfirmOrder() throws Exception {
 		Response<PlaceOrderDto> resp = placeOrderApi.confirmOrder(confirmReq);
-		System.out.println(JSONObject.toJSON(resp));
+		System.out.println(JsonMapper.nonDefaultMapper().toJson(resp));
 	}
 
 	@Test

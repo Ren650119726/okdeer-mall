@@ -53,7 +53,7 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerService;
+	private StockManagerJxcServiceApi stockManagerJxcServiceApi;
 	
 	/**
 	 * 店铺商品库存Service
@@ -83,7 +83,11 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			}
 		}
 		// 查询库存集合
-		List<GoodsStoreSkuStock> stockList = stockManagerService.findGoodsStockInfoList(parserBo.getSkuIdList());
+		List<GoodsStoreSkuStock> stockList = stockManagerJxcServiceApi.findGoodsStockInfoList(parserBo.getSkuIdList());
+		if(stockList.size() != parserBo.getSkuIdList().size() - parserBo.getComboSkuIdList().size()){
+			resp.setResult(ResultCodeEnum.GOODS_NOT_MATCH);
+			return;
+		}
 		parserBo.loadStockList(stockList);
 		// 查询组合商品库存
 		if(CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())){
