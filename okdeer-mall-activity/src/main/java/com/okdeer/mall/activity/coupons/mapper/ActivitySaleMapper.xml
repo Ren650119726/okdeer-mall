@@ -270,7 +270,7 @@
     </select>
 
      <update id="updateBatchStatus" parameterType="map">
-    	update activity_sale set status = #{status} where id in 
+    	update activity_sale set status = #{status} <if test="endTime != null">,end_Time = #{endTime}</if> where id in 
 		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">  
   			#{item}  
  		</foreach>  
