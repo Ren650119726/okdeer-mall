@@ -48,6 +48,8 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
 import com.alibaba.rocketmq.client.producer.LocalTransactionState;
+import com.alibaba.rocketmq.client.producer.SendResult;
+import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
@@ -4514,7 +4516,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 					// 消费完，增加积分
 					addPoint(data.get("userId").toString(), data.get("detailId").toString(), unitPrice);
-					
+
 					serviceStockManagerService.updateStock(stockAdjustVo);
 					// 调用dubbo接口
 					BaseResultDto result = payTradeServiceApi.balanceTrade(payTradeVo);
@@ -5279,6 +5281,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// End 重构4.1 add by wusw 20160723
 
 	// Begin 重构4.1 add by zhaoqc 20160722
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void updataRechargeOrderStatus(TradeOrder tradeOrder, String sporderId) throws ServiceException {
 		// 修改订单状态
@@ -5289,6 +5292,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		relation.setOrderId(tradeOrder.getId());
 		relation.setThirdOrderNo(sporderId);
 		this.tradeOrderThirdRelationMapper.insertSelective(relation);
+
+		try {
+			// 添加消费积分
+			addPoint(tradeOrder.getUserId(), tradeOrder.getId(), tradeOrder.getActualAmount());
+		} catch (Exception e) {
+			throw new ServiceException(e);
+		}
+
 	}
 
 	// End 重构4.1 add by zhaoqc 20160722
@@ -6025,7 +6036,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 											OrderItemDetailConsumeVo consumeVo = successOrderDetailMap.get(orderId);
 											// 消费完，增加积分
-											addPoint(consumeVo.getUserId(), consumeVo.getOrderItemDetailId(), consumeVo.getDetailActualAmount());
+											addPoint(consumeVo.getUserId(), consumeVo.getOrderItemDetailId(),
+													consumeVo.getDetailActualAmount());
 											// 修改库存
 											updateServiceStoreStock(consumeVo, rpcIdList,
 													StockOperateEnum.SEND_OUT_GOODS, userId, storeId);
@@ -6584,7 +6596,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			addPointsParamDto.setUserId(userId);
 			addPointsParamDto.setBusinessId(orderId);
 			MQMessage anMessage = new MQMessage(MessageConstant.POINT_TOPIC, (Serializable) addPointsParamDto);
-			rocketMQProducer.sendMessage(anMessage);
+			SendResult sendResult = rocketMQProducer.sendMessage(anMessage);
+			if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
+				logger.info("发送消费积分消息成功，发送数据：{},topic:{}", JsonMapper.nonDefaultMapper().toJson(addPointsParamDto),
+						MessageConstant.POINT_TOPIC);
+			} else {
+				logger.error("发送消费积分消息失败,topic:{}", MessageConstant.POINT_TOPIC);
+			}
 		}
 	}
 }
