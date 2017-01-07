@@ -27,6 +27,7 @@ import com.okdeer.mall.member.member.entity.SysBuyerExt;
 import com.okdeer.mall.member.member.enums.RankCode;
 import com.okdeer.mall.member.points.dto.AddPointsParamDto;
 import com.okdeer.mall.member.points.dto.ConsumPointParamDto;
+import com.okdeer.mall.member.points.dto.RefundPointParamDto;
 import com.okdeer.mall.member.points.entity.PointsRecord;
 import com.okdeer.mall.member.points.entity.PointsRule;
 import com.okdeer.mall.member.points.enums.PointsRuleCode;
@@ -116,7 +117,7 @@ public class PointServiceImpl implements PointsService {
 			// 添加积分详细记录
 			String description = StringUtils.isBlank(addPointsParamDto.getDescription()) ? pointsRule.getRemark()
 					: addPointsParamDto.getDescription();
-			addPointsRecord(userId, pointsRule.getCode(), pointVal, description);
+			addPointsRecord(userId, pointsRule.getCode(), pointVal, description, 0);
 			result.setMsg("领取成功");
 			result.setStatus(0);
 			result.setPointVal(pointVal);
@@ -133,8 +134,18 @@ public class PointServiceImpl implements PointsService {
 			growthVal = (int) Math.floor(addPointsParamDto.getAmount().doubleValue());
 			addRankRecord(addPointsParamDto, growthVal);
 		}
+
 		// 更新用户的积分值和成长值
-		updateUserExt(userId, pointVal, growthVal);
+		if (sysBuyerExt == null) {
+			addUserExt(userId, pointVal, growthVal);
+		} else {
+			// 更新用户成长值
+			updateUserGrowth(userId, growthVal);
+			// 更新用户积分
+			updateUserPoint(userId, pointVal);
+			// 更新用户的会员等级
+			updateUserExt(userId);
+		}
 		return result;
 	}
 
@@ -146,16 +157,8 @@ public class PointServiceImpl implements PointsService {
 	 * @date 2016年12月30日
 	 */
 	private void addRankRecord(AddPointsParamDto addPointsParamDto, int growthVal) {
-		SysBuyerRankRecord buyerRankRecord = new SysBuyerRankRecord();
-		buyerRankRecord.setBusinessId(addPointsParamDto.getBusinessId());
-		buyerRankRecord.setBusinessType(addPointsParamDto.getBusinessType());
-		buyerRankRecord.setConsumeAmount(addPointsParamDto.getAmount());
-		buyerRankRecord.setCreateTime(new Date());
-		buyerRankRecord.setGrowthVal(growthVal);
-		buyerRankRecord.setId(UuidUtils.getUuid());
-		buyerRankRecord.setUserId(addPointsParamDto.getUserId());
-		sysBuyerRankRecordMapper.add(buyerRankRecord);
-
+		addRankRecord(addPointsParamDto.getUserId(), addPointsParamDto.getBusinessId(), 1,
+				addPointsParamDto.getAmount(), growthVal);
 	}
 
 	/**
@@ -280,76 +283,6 @@ public class PointServiceImpl implements PointsService {
 	}
 
 	/**
-	 * @Description: 更新用户的积分值和成长值
-	 * @param userId
-	 * @param pointVal
-	 * @param growthVal
-	 * @throws ServiceException
-	 * @author zengjizu
-	 * @date 2016年12月31日
-	 */
-	private void updateUserExt(String userId, Integer pointVal, Integer growthVal) throws ServiceException {
-		logger.debug("更新总积分请求参数，userId={}，pointVal={}", userId, pointVal);
-
-		if (growthVal == null) {
-			growthVal = 0;
-		}
-		SysBuyerExt sysBuyerExt = sysBuyerExtMapper.selectByUserId(userId);
-
-		if (sysBuyerExt == null) {
-			// 用户扩展信息还不存在
-			sysBuyerExt = new SysBuyerExt();
-			sysBuyerExt.setId(UuidUtils.getUuid());
-			sysBuyerExt.setUserId(userId);
-			sysBuyerExt.setPointVal(pointVal);
-			sysBuyerExt.setGrowthVal(growthVal);
-			SysBuyerRank sysBuyerRank = sysBuyerRankMapper.findByGrowth(growthVal);
-			if (sysBuyerRank == null) {
-				sysBuyerExt.setRankCode(RankCode.FE.getCode());
-			} else {
-				sysBuyerExt.setRankCode(sysBuyerRank.getRankCode());
-			}
-			sysBuyerExt.setRankCode(sysBuyerRank.getRankCode());
-			sysBuyerExtMapper.insertSelective(sysBuyerExt);
-		} else {
-			// 更新会员的成长值和会员等级
-			int currentGorwth = sysBuyerExt.getGrowthVal() == null ? 0 : sysBuyerExt.getGrowthVal();
-			int val = growthVal + currentGorwth;
-			sysBuyerExt.setGrowthVal(val);
-			SysBuyerRank sysBuyerRank = sysBuyerRankMapper.findByGrowth(val);
-			if (sysBuyerRank == null) {
-				sysBuyerExt.setRankCode(RankCode.FE.getCode());
-			} else {
-				sysBuyerExt.setRankCode(sysBuyerRank.getRankCode());
-			}
-			int currentSumPoints = sysBuyerExt.getPointVal();
-			sysBuyerExt.setPointVal(pointVal + currentSumPoints);
-			sysBuyerExtMapper.updateByPrimaryKeySelective(sysBuyerExt);
-		}
-	}
-
-	/**
-	 * 添加积分记录对象
-	 * @param userId 请求参数
-	 * @param rule 请求规则
-	 * @param pointVal 获得积分
-	 * @throws ServiceException 返回异常
-	 */
-	private void addPointsRecord(String userId, String code, Integer pointVal, String description)
-			throws ServiceException {
-		logger.debug("添加积分记录请求参数，userId={}，code={},pointVal={}", userId, code, pointVal);
-		PointsRecord pointsRecord = new PointsRecord();
-		pointsRecord.setId(UuidUtils.getUuid());
-		pointsRecord.setUserId(userId);
-		pointsRecord.setCode(code);
-		pointsRecord.setDescription(description);
-		pointsRecord.setPointVal(pointVal);
-		pointsRecord.setType((byte) 0);
-		pointsRecord.setCreateTime(new Date());
-		pointsRecordMapper.insert(pointsRecord);
-	}
-
-	/**
 	 * @Description: 消费积分
 	 * @param consumPointParamDto 消费积分参数
 	 * @author zengjizu
@@ -376,14 +309,50 @@ public class PointServiceImpl implements PointsService {
 		int reducePoint = new BigDecimal(consumPointParamDto.getPointVal()).multiply(new BigDecimal("-1")).intValue();
 		updateUserPoint(consumPointParamDto.getUserId(), reducePoint);
 		// 添加积分消费记录
-		PointsRecord pointsRecord = new PointsRecord();
-		pointsRecord.setId(UuidUtils.getUuid());
-		pointsRecord.setUserId(consumPointParamDto.getUserId());
-		pointsRecord.setPointVal(reducePoint);
-		pointsRecord.setType((byte) 1);
-		pointsRecord.setDescription(consumPointParamDto.getDescription());
-		pointsRecord.setCreateTime(new Date());
-		pointsRecordMapper.insert(pointsRecord);
+		addPointsRecord(consumPointParamDto.getUserId(), reducePoint, consumPointParamDto.getDescription(), 1);
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void refundPoint(RefundPointParamDto refundPointParamDto) throws Exception {
+		// 锁住数据，避免出现脏数据
+		SysBuyerExt sysBuyerExt = sysBuyerExtMapper.findByUserIdForUpdate(refundPointParamDto.getUserId());
+		// 校验是否重复消费消息
+		boolean checkRepeatResult = checkRepeat(refundPointParamDto.getBusinessId());
+		if (checkRepeatResult) {
+			// 消费过消息了，直接返回，不做处理
+			return;
+		}
+		// 校验用户积分是否够
+		if (sysBuyerExt == null || sysBuyerExt.getPointVal() == null || sysBuyerExt.getPointVal() < 0) {
+			throw new Exception("用户积分不够");
+		}
+
+		// 扣减的成长值
+		int growthVal = (int) Math.floor(refundPointParamDto.getAmount().doubleValue());
+		if (sysBuyerExt.getGrowthVal() < growthVal) {
+			growthVal = sysBuyerExt.getGrowthVal();
+		}
+		int reduceGrowthVal = new BigDecimal(growthVal).multiply(new BigDecimal("-1")).intValue();
+		// 更新用户成长值
+		updateUserGrowth(sysBuyerExt.getUserId(), reduceGrowthVal);
+		// 添加成长值记录
+		addRankRecord(sysBuyerExt.getUserId(), refundPointParamDto.getBusinessId(), 2, refundPointParamDto.getAmount(),
+				reduceGrowthVal);
+		// 计算扣减的积分
+		PointsRule pointsRule = pointsRuleMapper.selectByCode(sysBuyerExt.getRankCode());
+		int limitPointVal = pointsRule.getPointVal();
+		int pointVal = (int) Math.floor(refundPointParamDto.getAmount().doubleValue()) * limitPointVal;
+		if (sysBuyerExt.getPointVal() < pointVal) {
+			pointVal = sysBuyerExt.getPointVal();
+		}
+		int reducePoint = new BigDecimal(pointVal).multiply(new BigDecimal("-1")).intValue();
+		// 更新用户积分
+		updateUserPoint(sysBuyerExt.getUserId(), reducePoint);
+		// 添加积分扣减记录
+		addPointsRecord(sysBuyerExt.getUserId(), reducePoint, refundPointParamDto.getDescription(), 1);
+		// 更新用户等级
+		updateUserExt(sysBuyerExt.getUserId());
 	}
 
 	/**
@@ -402,6 +371,21 @@ public class PointServiceImpl implements PointsService {
 	}
 
 	/**
+	 * @Description: 更新用户积分
+	 * @param userId 用户id
+	 * @param pointVal 积分
+	 * @throws Exception
+	 * @author zengjizu
+	 * @date 2017年1月5日
+	 */
+	private void updateUserGrowth(String userId, int growthVal) throws Exception {
+		int count = sysBuyerExtMapper.updateGrowth(userId, growthVal);
+		if (count < 0) {
+			throw new Exception("用户成长值不够");
+		}
+	}
+
+	/**
 	 * @Description: 校验数据是否重复
 	 * @param businessId 业务id
 	 * @return
@@ -414,5 +398,117 @@ public class PointServiceImpl implements PointsService {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * @Description: 添加积分记录
+	 * @param userId 用户id 
+	 * @param pointVal 积分值
+	 * @param description 描述
+	 * @param type 类型
+	 * @throws ServiceException
+	 * @author zengjizu
+	 * @date 2017年1月7日
+	 */
+	private void addPointsRecord(String userId, Integer pointVal, String description, int type)
+			throws ServiceException {
+		addPointsRecord(userId, null, pointVal, description, type);
+	}
+
+	/**
+	 * @Description: 添加积分记录
+	 * @param userId 用户id
+	 * @param code 规则code
+	 * @param pointVal 积分值
+	 * @param description 文案描述
+	 * @param type 类型 
+	 * @throws ServiceException
+	 * @author zengjizu
+	 * @date 2017年1月7日
+	 */
+	private void addPointsRecord(String userId, String code, Integer pointVal, String description, int type)
+			throws ServiceException {
+		logger.debug("添加积分记录请求参数，userId={}，code={},pointVal={},description={}", userId, code, pointVal, description);
+		PointsRecord pointsRecord = new PointsRecord();
+		pointsRecord.setId(UuidUtils.getUuid());
+		pointsRecord.setUserId(userId);
+		pointsRecord.setCode(code);
+		pointsRecord.setDescription(description);
+		pointsRecord.setPointVal(pointVal);
+		pointsRecord.setType((byte) type);
+		pointsRecord.setCreateTime(new Date());
+		pointsRecordMapper.insert(pointsRecord);
+	}
+
+	/**
+	 * @Description: 添加用户的扩展信息（当用户没有扩展信息时）
+	 * @param userId 
+	 * @param pointVal
+	 * @param growthVal
+	 * @throws ServiceException
+	 * @author zengjizu
+	 * @date 2016年12月31日
+	 */
+	private void addUserExt(String userId, Integer pointVal, Integer growthVal) throws ServiceException {
+		if (growthVal == null) {
+			growthVal = 0;
+		}
+		if (pointVal == null) {
+			pointVal = 0;
+		}
+		// 用户扩展信息还不存在
+		SysBuyerExt sysBuyerExt = new SysBuyerExt();
+		sysBuyerExt.setId(UuidUtils.getUuid());
+		sysBuyerExt.setUserId(userId);
+		sysBuyerExt.setPointVal(pointVal);
+		sysBuyerExt.setGrowthVal(growthVal);
+		SysBuyerRank sysBuyerRank = sysBuyerRankMapper.findByGrowth(growthVal);
+		if (sysBuyerRank == null) {
+			sysBuyerExt.setRankCode(RankCode.FE.getCode());
+		} else {
+			sysBuyerExt.setRankCode(sysBuyerRank.getRankCode());
+		}
+		sysBuyerExtMapper.insertSelective(sysBuyerExt);
+	}
+
+	/**
+	 * @Description: 更新用户信息
+	 * @param userId 用户id
+	 * @throws ServiceException
+	 * @author zengjizu
+	 * @date 2016年12月31日
+	 */
+	private void updateUserExt(String userId) throws ServiceException {
+		logger.debug("更新总积分请求参数，userId={}", userId);
+		SysBuyerExt sysBuyerExt = sysBuyerExtMapper.selectByUserId(userId);
+		// 更新会员等级
+		int currentGorwth = sysBuyerExt.getGrowthVal();
+		SysBuyerRank sysBuyerRank = sysBuyerRankMapper.findByGrowth(currentGorwth);
+		if (sysBuyerRank != null) {
+			sysBuyerExt.setRankCode(sysBuyerRank.getRankCode());
+		}
+		sysBuyerExtMapper.updateByPrimaryKeySelective(sysBuyerExt);
+	}
+
+	/**
+	 * @Description: 添加用户成长值记录
+	 * @param userId 用户id
+	 * @param bussinessId 业务id
+	 * @param type 类型 1:加成长值 2:减成长值
+	 * @param amount 金额
+	 * @param growthVal 成长值
+	 * @author zengjizu
+	 * @date 2017年1月7日
+	 */
+	private void addRankRecord(String userId, String bussinessId, int type, BigDecimal amount, int growthVal) {
+		SysBuyerRankRecord buyerRankRecord = new SysBuyerRankRecord();
+		buyerRankRecord.setBusinessId(bussinessId);
+		buyerRankRecord.setBusinessType(type);
+		buyerRankRecord.setConsumeAmount(amount);
+		buyerRankRecord.setCreateTime(new Date());
+		buyerRankRecord.setGrowthVal(growthVal);
+		buyerRankRecord.setId(UuidUtils.getUuid());
+		buyerRankRecord.setUserId(userId);
+		sysBuyerRankRecordMapper.add(buyerRankRecord);
 	}
 }

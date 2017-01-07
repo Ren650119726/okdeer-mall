@@ -23,6 +23,10 @@ public class MessageConstant {
 	 * 消费积分topic
 	 */
 	public static final String CONSUM_POINT_TOPIC = "consum_point_topic";
+	/**
+	 * 退款扣减积分topic
+	 */
+	public static final String REFUND_POINT_TOPIC = "refund_point_topic";
 //	/**
 //	 * 添加积分tag
 //	 */
