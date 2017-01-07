@@ -690,9 +690,9 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 					return "手机开门页广告，同一区域的同一时间段内最多只能发布一个，请重新选择！";
 				}
 			} else if (advertType == 5) {
-				// 在同一时间段内最多运营商能上传5张，且时间不能产生交叉；
-				if (arcossTimeAdvertQty >= 5) {
-					return "用户版APP首页分割广告，同一区域的同一时间段内运营商最多只能发布五个，请重新选择！";
+				// 在同一时间段内最多运营商能上传1张，且时间不能产生交叉；
+				if (arcossTimeAdvertQty >= 1) {
+					return "用户版APP首页分割广告，同一区域的同一时间段内运营商最多只能发布一个，请重新选择！";
 				}
 			}
 		}	
