@@ -370,13 +370,17 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateBatchStatus(List<String> ids, int status, String storeId, String createUserId) throws Exception {
+	public void updateBatchStatus(List<String> ids, int status, String storeId, String createUserId,Integer activityType) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdByBathSkuList = new ArrayList<String>();
 		try {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("ids", ids);
 			params.put("status", status);
+			//modify by mengsj 如果是低价抢购活动，关闭时设置活动结束时间为当前日期
+			if(activityType == ActivityTypeEnum.LOW_PRICE.ordinal() && status == ActivitySaleStatus.closed.ordinal()){
+				params.put("endTime", new Date());
+			}
 			activitySaleMapper.updateBatchStatus(params);
 			
 			// 如果状态时进行中,要把活动关联的所有商品状态改为上架
