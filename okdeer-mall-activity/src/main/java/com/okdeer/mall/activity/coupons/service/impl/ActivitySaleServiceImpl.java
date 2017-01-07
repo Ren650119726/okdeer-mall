@@ -296,6 +296,11 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				a.setDisabled(Disabled.valid);
 				a.setSaleId(activitySale.getId());
 				a.setId(UuidUtils.getUuid());
+				
+				a.setCreateTime(activitySale.getUpdateTime());
+				a.setUpdateTime(activitySale.getUpdateTime());
+				a.setCreateUserId(activitySale.getUpdateUserId());
+				a.setUpdateUserId(activitySale.getUpdateUserId());
 
 				// 记录rpcId
 				String rpcId = UuidUtils.getUuid();
