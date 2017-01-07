@@ -204,4 +204,8 @@
   <select id="findCountByReferentId" parameterType="string" resultType="int" >
   		SELECT count(1) from points_record WHERE  referent_id = #{referentId,jdbcType=VARCHAR}
   </select>
+  
+  <select id="findByReferentId" parameterType="string" resultMap="BaseResultMap">
+  		SELECT <include refid="Base_Column_List" /> from points_record WHERE  referent_id = #{referentId,jdbcType=VARCHAR}
+  </select>
 </mapper>

@@ -7,8 +7,11 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.member.points.dto.AddPointsParamDto;
 import com.okdeer.mall.member.points.dto.AddPointsResultDto;
+import com.okdeer.mall.member.points.dto.PointQueryParamDto;
+import com.okdeer.mall.member.points.dto.PointQueryResultDto;
 import com.okdeer.mall.member.points.service.PointsApi;
 import com.okdeer.mall.points.bo.AddPointsResult;
+import com.okdeer.mall.points.bo.PointQueryResult;
 import com.okdeer.mall.points.service.PointsService;
 
 /**
@@ -32,6 +35,13 @@ public class PointsApiImpl implements PointsApi {
 	public AddPointsResultDto addPoints(AddPointsParamDto addPointsParamDto) throws Exception {
 		AddPointsResult result = pointsService.addPoints(addPointsParamDto);
 		AddPointsResultDto dto = BeanMapper.map(result, AddPointsResultDto.class);
+		return dto;
+	}
+
+	@Override
+	public PointQueryResultDto findUserPoint(PointQueryParamDto pointQueryParamDto) {
+		PointQueryResult result = pointsService.findUserPoint(pointQueryParamDto);
+		PointQueryResultDto dto = BeanMapper.map(result, PointQueryResultDto.class);
 		return dto;
 	}
 }
