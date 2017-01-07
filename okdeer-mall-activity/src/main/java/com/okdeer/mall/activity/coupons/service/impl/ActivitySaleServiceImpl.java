@@ -66,12 +66,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 
 	private static final Logger log = Logger.getLogger(ActivitySaleServiceImpl.class);
 
-	/**
-	 * mq注入
-	 */
-	@Autowired
-	private RocketMQProducer rocketMQProducer;
-
 	@Autowired
 	private ActivitySaleMapper activitySaleMapper;
 
@@ -472,17 +466,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		return activitySaleMapper.validateExist(map);
 	}
 
-	public void deleteActivitySaleGoods(String storeId, String createUserId, String activitySaleGoodsId,
-										String goodsStoreSkuId) throws Exception {
-		deleteActivitySaleGoodsOld(storeId,createUserId,activitySaleGoodsId,goodsStoreSkuId);
-		// 发送消息，同步数据到搜索引擎
-		ActivityMessageParamDto activityMessageParamDto = new ActivityMessageParamDto();
-		activityMessageParamDto.setSkuIds(Arrays.asList(goodsStoreSkuId));
-		structureProducer(activityMessageParamDto , 0);
-	}
-
 	@Transactional(rollbackFor = Exception.class)
-	public void deleteActivitySaleGoodsOld(String storeId, String createUserId, String activitySaleGoodsId,
+	public void deleteActivitySaleGoods(String storeId, String createUserId, String activitySaleGoodsId,
 			String goodsStoreSkuId) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
@@ -572,26 +557,5 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		}
 		return activitySaleMapper.findByActivitySaleByStoreId(storeId, ActivityTypeEnum.LOW_PRICE.ordinal(),
 				ActivitySaleStatus.ing.getValue());
-	}
-
-	/**
-	 * 发送消息同步数据到搜索引擎执行
-	 * @param paramDto ActivityMessageParamDto
-	 * @param type Integer
-	 * @throws Exception
-	 */
-	private void structureProducer(ActivityMessageParamDto paramDto, Integer type) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		String json = mapper.writeValueAsString(paramDto);
-		String tag = "";
-		if (type == 0) {
-			tag = TAG_SALE_EL_DEL;
-		} else if (type == 1) {
-			tag = TAG_LOWPRICE_EL_ADD;
-		} else if (type == 2) {
-			tag = TAG_LOWPRICE_EL_UPDATE;
-		}
-		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
-		rocketMQProducer.send(msg);
 	}
 }
