@@ -51,7 +51,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 	@Override
 	public void updateBatchStatus(List<String> ids, int status, String storeId,
 			String createUserId,Integer activityType) throws Exception {
-		activitySaleService.updateBatchStatus(ids, status, storeId, createUserId);
+		activitySaleService.updateBatchStatus(ids, status, storeId, createUserId,activityType);
         // 5:特惠 7:低价
 		switch (activityType){
 			case 5:

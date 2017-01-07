@@ -116,7 +116,7 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
 					public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
 						// 业务方法
 						try {
-							activitySaleService.updateBatchStatus(activityIds, status, storeId, createUserId);
+							activitySaleService.updateBatchStatus(activityIds, status, storeId, createUserId,null);
 						} catch (Exception e) {
 							logger.error("业务发生异常", e);
 						}
