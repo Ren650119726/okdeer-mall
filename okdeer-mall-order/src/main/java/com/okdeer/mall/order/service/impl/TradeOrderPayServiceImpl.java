@@ -32,6 +32,7 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
+import com.okdeer.api.pay.enums.ApplicationEnum;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.enums.PayTradeServiceTypeEnum;
 import com.okdeer.api.pay.enums.PayTradeTypeEnum;
@@ -52,6 +53,8 @@ import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
+import com.okdeer.mall.order.dto.PayInfoDto;
+import com.okdeer.mall.order.dto.PayInfoParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLog;
@@ -310,8 +313,10 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			return true;
 		}
 		// 判断非取消中状态和拒绝中的状态则不需要退款
-		if (OrderTypeEnum.SERVICE_STORE_ORDER != tradeOrder.getType() && OrderStatusEnum.CANCELING != tradeOrder.getStatus() && OrderStatusEnum.REFUSING != tradeOrder.getStatus()) {
-			//服务订单已经取消也需要退违约金
+		if (OrderTypeEnum.SERVICE_STORE_ORDER != tradeOrder.getType()
+				&& OrderStatusEnum.CANCELING != tradeOrder.getStatus()
+				&& OrderStatusEnum.REFUSING != tradeOrder.getStatus()) {
+			// 服务订单已经取消也需要退违约金
 			return true;
 		}
 
@@ -331,7 +336,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 						|| com.okdeer.mall.order.enums.PayTypeEnum.WXPAY == orderPay.getPayType())) {
 			// 如果是上门服务订单，并且违约了，还是第三方支付订单，需要赔偿违约金给商家
 			// 构建支付违约金信息
-			String tradesPaymentJson = buildBreachMoneyPay(tradeOrder,orderPay.getPayType());
+			String tradesPaymentJson = buildBreachMoneyPay(tradeOrder, orderPay.getPayType());
 
 			Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
 					tradesPaymentJson.getBytes(Charsets.UTF_8));
@@ -401,7 +406,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	 * @author zengjizu
 	 * @date 2016年11月11日
 	 */
-	private String buildBreachMoneyPay(TradeOrder order,PayTypeEnum payType) throws ServiceException {
+	private String buildBreachMoneyPay(TradeOrder order, PayTypeEnum payType) throws ServiceException {
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 		payTradeVo.setAmount(order.getBreachMoney());
 		// 增加一个校验金额字段用于云钱包判断用户是否被全部扣除了实付金额
@@ -873,5 +878,102 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			payTradeVo.setPrefeAmount(order.getPreferentialPrice());
 			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
 		}
+	}
+
+	@Override
+	public PayInfoDto getPayInfo(PayInfoParamDto payInfoParamDto) throws Exception {
+		TradeOrder order = tradeOrderMapper.selectTradeDetailInfoById(payInfoParamDto.getOrderId());
+		if (order.getStatus() != OrderStatusEnum.UNPAID) {
+			throw new Exception("订单状态已经非待支付状态");
+		}
+		PayReqestDto payReqest = buildPayRequest(payInfoParamDto, order);
+		logger.info("payReqest==" + payReqest.toString());
+		String result = iPayServiceApi.appPay(payReqest);
+		PayInfoDto payInfoDto = new PayInfoDto();
+		payInfoDto.setOrderId(order.getId());
+		payInfoDto.setPaymentType(payInfoParamDto.getPaymentType());
+		payInfoDto.setData(result);
+		return payInfoDto;
+	}
+	
+	/**
+	 * @Description: 构建云钱包请求参数
+	 * @param payInfoParamDto
+	 * @param order
+	 * @return
+	 * @throws ServiceException
+	 * @author zengjizu
+	 * @date 2017年1月4日
+	 */
+	private PayReqestDto buildPayRequest(PayInfoParamDto payInfoParamDto,TradeOrder order) throws ServiceException {
+		// 设置订单信息
+		PayReqestDto payReqest = new PayReqestDto();
+		payReqest.setOpenid(payInfoParamDto.getOpenId());
+		if (payInfoParamDto.getClientType() == null || "0".equals(payInfoParamDto.getClientType())) {
+			payReqest.setApplicationEnum(ApplicationEnum.BUTLER);
+		} else {
+			payReqest.setApplicationEnum(ApplicationEnum.CONVENIENCE_STORE);
+		}
+
+		// 是否平台优惠
+		boolean isPlatformPreferential = false;
+		// 优惠额退款 判断是否有优惠劵
+		if (order.getActivityType() == ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES
+				|| order.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
+				|| order.getActivityType() == ActivityTypeEnum.VONCHER) {
+			ActivityBelongType activityBelong = tradeOrderActivityService.findActivityType(order);
+			if (ActivityBelongType.OPERATOR == activityBelong || ActivityBelongType.AGENT == activityBelong) {
+				isPlatformPreferential = true;
+			}
+		}
+
+		// 优惠金额
+		if (isPlatformPreferential && order.getPreferentialPrice() != null
+				&& order.getPreferentialPrice().compareTo(BigDecimal.ZERO) > 0) {
+			// 优化活动发起人，比如代理商id或者运营商id
+			payReqest.setActivitier(tradeOrderActivityService.findActivityUserId(order));
+			payReqest.setPrefeAmount(order.getPreferentialPrice());
+		}
+
+		BigDecimal actualAmount = order.getActualAmount();
+		String tradeNum = order.getTradeNum();
+
+		// 买家ID
+		payReqest.setUserId(order.getUserId());
+		// 订单编号
+		payReqest.setServiceNo(order.getOrderNo());
+		// 交易号
+		payReqest.setTradeNum(tradeNum);
+		// 交易名称
+		payReqest.setTradeName("订单支付");
+		// 交易金额
+		payReqest.setTradeAmount(actualAmount);
+		// 用户端IP
+		payReqest.setIp(payInfoParamDto.getIp());
+		// 交易描述
+		payReqest.setTradeDescription("订单支付");
+		// 业务类型
+		if (order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+			payReqest.setServiceType(PayTradeServiceTypeEnum.STORE_CONSUME_ORDER);
+			payReqest.setReceiver(storeInfoService.getBossIdByStoreId(order.getStoreId()));
+		} else {
+			payReqest.setServiceType(PayTradeServiceTypeEnum.ORDER);
+		}
+
+		// 系统类型
+		payReqest.setSystemEnum(SystemEnum.MALL);
+		// 业务ID，如订单ID，服务ID
+		payReqest.setServiceId(order.getId());
+
+		int paymentType = payInfoParamDto.getPaymentType();
+		// 支付类型 0:云钱包,1:支付宝支付,2:微信支付,3:京东支付,4:现金支付
+		if (1 == paymentType) {
+			payReqest.setTradeType(PayTradeTypeEnum.APP_ALIPAY);
+		} else if (2 == paymentType) {
+			payReqest.setTradeType(PayTradeTypeEnum.APP_WXPAY);
+		} else if (6 == paymentType) {
+			payReqest.setTradeType(PayTradeTypeEnum.WX_WXPAY);
+		}
+		return payReqest;
 	}
 }

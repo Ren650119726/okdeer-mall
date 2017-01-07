@@ -10,7 +10,7 @@ import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
 import com.okdeer.base.framework.mq.message.MQMessage;
-import com.okdeer.mall.constant.MessageConstant;
+import com.okdeer.common.consts.PointConstants;
 import com.okdeer.mall.member.points.dto.AddPointsParamDto;
 import com.okdeer.mall.member.points.dto.ConsumPointParamDto;
 import com.okdeer.mall.member.points.dto.RefundPointParamDto;
@@ -35,7 +35,7 @@ public class PointsSubScriber {
 	@Autowired
 	private PointsService pointsService;
 	
-	@RocketMQListener(topic = MessageConstant.POINT_TOPIC, tag = "*")
+	@RocketMQListener(topic = PointConstants.POINT_TOPIC, tag = "*")
 	public ConsumeConcurrentlyStatus addPoint(MQMessage enMessage) {
 
 		AddPointsParamDto addPointsParamDto = (AddPointsParamDto) enMessage.getContent();
@@ -57,7 +57,7 @@ public class PointsSubScriber {
 	 * @author zengjizu
 	 * @date 2017年1月6日
 	 */
-	@RocketMQListener(topic = MessageConstant.CONSUM_POINT_TOPIC, tag = "*")
+	@RocketMQListener(topic = PointConstants.CONSUM_POINT_TOPIC, tag = "*")
 	public ConsumeConcurrentlyStatus consumPoint(MQMessage enMessage) {
 
 		ConsumPointParamDto consumPointParamDto = (ConsumPointParamDto) enMessage.getContent();
@@ -72,7 +72,7 @@ public class PointsSubScriber {
 		}
 	}
 	
-	@RocketMQListener(topic = MessageConstant.REFUND_POINT_TOPIC, tag = "*")
+	@RocketMQListener(topic = PointConstants.REFUND_POINT_TOPIC, tag = "*")
 	public ConsumeConcurrentlyStatus refundPoint(MQMessage enMessage) {
 
 		RefundPointParamDto refundPointParamDto = (RefundPointParamDto) enMessage.getContent();

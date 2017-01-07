@@ -22,10 +22,14 @@ import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
+import com.okdeer.mall.common.enums.UseClientType;
+import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
+import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.Discount;
 import com.okdeer.mall.order.vo.FullSubtract;
@@ -78,6 +82,12 @@ public class ServActivityQueryServiceImpl implements RequestHandler<ServiceOrder
 	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
 	//End added by tangy
 	
+	/**
+	 * 订单服务类
+	 */
+	@Resource
+	private TradeOrderService tradeOrderService;
+	
 	@Override
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
 		ServiceOrderReq reqData = req.getData();
@@ -85,6 +95,15 @@ public class ServActivityQueryServiceImpl implements RequestHandler<ServiceOrder
 		
 		//构建优惠查询请求条件
 		Map<String, Object> queryCondition = buildFindFavourCondition(reqData,respData);
+		
+		OrderResourceEnum  orderResourceEnum = req.getOrderResource();//获得客户端类型
+		if(orderResourceEnum != null){
+			if(orderResourceEnum == OrderResourceEnum.WECHAT){
+				queryCondition.put("useClientType", UseClientType.ONlY_WECHAT_USE);
+			}else if(orderResourceEnum == OrderResourceEnum.YSCAPP){
+				queryCondition.put("useClientType", UseClientType.ONlY_APP_USE);
+			}
+		}
 		// 获取用户有效的代金券
 		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);
 		// 获取用户有效的折扣
@@ -96,8 +115,17 @@ public class ServActivityQueryServiceImpl implements RequestHandler<ServiceOrder
 			//商品类目id集
 			Set<String> spuCategoryIds = (Set<String>)req.getContext().get("spuCategoryIds"); 
 			List<Coupons> delCouponList = new ArrayList<Coupons>();
+			
+			//先确定新用户专享代金券是否能使用 tuzhd
+			boolean isNewUser = tradeOrderService.checkUserUseCoupons((String)queryCondition.get("userId"));
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
+				//如果此券为新用户专享。且不能使用 该券不显示 tuzhd
+				if(!isNewUser && UseUserType.ONlY_NEW_USER == coupons.getUseUserType()){
+					delCouponList.add(coupons);
+					continue;
+				}
+				
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
 					int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
