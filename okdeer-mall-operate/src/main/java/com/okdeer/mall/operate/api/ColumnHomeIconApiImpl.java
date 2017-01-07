@@ -173,7 +173,7 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		} else {
 			areaList = BeanMapper.mapList(dto.getAreaList(), ColumnSelectArea.class);
 		}
-		return homeIconService.save(entity, areaList, dto.getStoreSkuIds());
+		return homeIconService.save(entity, areaList, dto.getSkuIds());
 	}
 
 	/**
