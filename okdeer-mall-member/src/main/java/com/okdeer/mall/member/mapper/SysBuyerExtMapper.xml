@@ -150,4 +150,10 @@
     	UPDATE sys_buyer_ext SET point_val = point_val + #{reducePoint,jdbcType=INTEGER}  
     	WHERE user_id = #{userId,jdbcType=VARCHAR} AND (point_val + #{reducePoint,jdbcType=INTEGER}) <![CDATA[ >= ]]> 0;
   </update>
+  
+   <!-- 更新用户成长值 -->
+    <update id="updateGrowth" >
+    	UPDATE sys_buyer_ext SET growth_val = growth_val + #{growthVal,jdbcType=INTEGER}  
+    	WHERE user_id = #{userId,jdbcType=VARCHAR} AND (growth_val + #{growthVal,jdbcType=INTEGER}) <![CDATA[ >= ]]> 0;
+  </update>
 </mapper>

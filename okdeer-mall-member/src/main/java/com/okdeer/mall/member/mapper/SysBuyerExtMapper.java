@@ -78,12 +78,22 @@ public interface SysBuyerExtMapper {
 	SysBuyerExt findByUserIdForUpdate(@Param("userId") String userId);
 	
 	/**
-	 * @Description: 更新用户积分
+	 * @Description: 更新用户积分(避免扣减出现数据错误，不使用update方法)
 	 * @param userId 用户id 
 	 * @param reducePoint 积分值(正数是加，负数是减少积分)
 	 * @author zengjizu
 	 * @date 2017年1月5日
 	 */
 	int updatePoint(@Param("userId")String userId, @Param("reducePoint") int reducePoint);
+	
+	/**
+	 * @Description: 更新用户成长值(避免扣减出现数据错误，不使用update方法)
+	 * @param userId 用户id
+	 * @param growthVal 成长值
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年1月7日
+	 */
+	int updateGrowth(@Param("userId")String userId, @Param("growthVal") int growthVal);
 	
 }
