@@ -57,6 +57,7 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.common.consts.PointConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
@@ -71,7 +72,6 @@ import com.okdeer.mall.common.enums.IsRead;
 import com.okdeer.mall.common.enums.MsgType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
-import com.okdeer.mall.constant.MessageConstant;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.points.dto.RefundPointParamDto;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
@@ -1833,13 +1833,13 @@ public class TradeOrderRefundsServiceImpl
 			refundPointParamDto.setBusinessId(refunds.getId());
 			refundPointParamDto.setDescription("商品退款");
 			refundPointParamDto.setUserId(order.getUserId());
-			MQMessage anMessage = new MQMessage(MessageConstant.POINT_TOPIC, (Serializable) refundPointParamDto);
+			MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) refundPointParamDto);
 			SendResult sendResult = rocketMQProducer.sendMessage(anMessage);
 			if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
 				logger.info("扣减积分消息发送成功，发送数据为：{},topic:{}", JsonMapper.nonDefaultMapper().toJson(refundPointParamDto),
-						MessageConstant.POINT_TOPIC);
+						PointConstants.POINT_TOPIC);
 			} else {
-				logger.info("扣减积分消息发送失败，topic：{}", MessageConstant.POINT_TOPIC);
+				logger.info("扣减积分消息发送失败，topic：{}", PointConstants.POINT_TOPIC);
 			}
 		}
 	}
