@@ -54,7 +54,7 @@ public class ColumnHomeIconGoodsServiceTest {
 			ColumnHomeIconGoods goods = new ColumnHomeIconGoods();
 			goods.setId("1");
 			goods.setHomeIconId("1");
-			goods.setStoreSkuId("1");
+			goods.setSkuId("1");
 			list.add(goods);
 			int result = homeIconGoodsService.insertMore(list);
 			Assert.assertTrue("测试  批量插入首页icon数据失败", result > 0);
