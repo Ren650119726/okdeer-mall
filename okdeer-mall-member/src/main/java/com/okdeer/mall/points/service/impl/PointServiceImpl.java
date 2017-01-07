@@ -27,11 +27,13 @@ import com.okdeer.mall.member.member.entity.SysBuyerExt;
 import com.okdeer.mall.member.member.enums.RankCode;
 import com.okdeer.mall.member.points.dto.AddPointsParamDto;
 import com.okdeer.mall.member.points.dto.ConsumPointParamDto;
+import com.okdeer.mall.member.points.dto.PointQueryParamDto;
 import com.okdeer.mall.member.points.dto.RefundPointParamDto;
 import com.okdeer.mall.member.points.entity.PointsRecord;
 import com.okdeer.mall.member.points.entity.PointsRule;
 import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.points.bo.AddPointsResult;
+import com.okdeer.mall.points.bo.PointQueryResult;
 import com.okdeer.mall.points.bo.StatisRecordParamBo;
 import com.okdeer.mall.points.mapper.PointsRecordMapper;
 import com.okdeer.mall.points.mapper.PointsRuleMapper;
@@ -111,7 +113,7 @@ public class PointServiceImpl implements PointsService {
 
 		String userId = addPointsParamDto.getUserId();
 		// 获取应得积分
-		int pointVal = getPoints(addPointsParamDto, pointsRule, sysBuyerExt);
+		int pointVal = getPoints(addPointsParamDto.getUserId(),addPointsParamDto.getAmount(), pointsRule, sysBuyerExt);
 
 		if (pointVal > 0) {
 			// 添加积分详细记录
@@ -223,13 +225,15 @@ public class PointServiceImpl implements PointsService {
 
 	/**
 	 * @Description: 获取应得积分
-	 * @param addPointsParamDto
-	 * @param pointsRule
+	 * @param userId 用户id
+	 * @param amount 金额信息
+	 * @param pointsRule 规则信息
+	 * @param sysBuyerExt 用户信息
 	 * @return
 	 * @author zengjizu
-	 * @date 2016年12月30日
+	 * @date 2017年1月7日
 	 */
-	private int getPoints(AddPointsParamDto addPointsParamDto, PointsRule pointsRule, SysBuyerExt sysBuyerExt) {
+	private int getPoints(String userId, BigDecimal amount, PointsRule pointsRule, SysBuyerExt sysBuyerExt) {
 		// 数据词典查询日积分总额限制
 		int totalPointLimit = 0;
 
@@ -241,10 +245,10 @@ public class PointServiceImpl implements PointsService {
 		}
 
 		int pointVal = 0;
-		if (addPointsParamDto.getPointsRuleCode() == PointsRuleCode.APP_CONSUME) {
+		if (pointsRule.getCode() == PointsRuleCode.APP_CONSUME.getCode()) {
 			// app消费另外计算积分
 			int limitPointVal = pointsRule.getPointVal();
-			pointVal = (int) Math.floor(addPointsParamDto.getAmount().doubleValue()) * limitPointVal;
+			pointVal = (int) Math.floor(amount.doubleValue()) * limitPointVal;
 		} else {
 			pointVal = pointsRule.getPointVal();
 		}
@@ -264,7 +268,7 @@ public class PointServiceImpl implements PointsService {
 		if (totalPointLimit != 0) {
 			// 条件查询当天获得汇总积分
 			StatisRecordParamBo paramBo = new StatisRecordParamBo();
-			paramBo.setUserId(addPointsParamDto.getUserId());
+			paramBo.setUserId(userId);
 			String today = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 			paramBo.setStartTime(today + " 00:00:00");
 			paramBo.setEndTime(today + " 23:59:59");
@@ -340,9 +344,10 @@ public class PointServiceImpl implements PointsService {
 		addRankRecord(sysBuyerExt.getUserId(), refundPointParamDto.getBusinessId(), 2, refundPointParamDto.getAmount(),
 				reduceGrowthVal);
 		// 计算扣减的积分
-		PointsRule pointsRule = pointsRuleMapper.selectByCode(sysBuyerExt.getRankCode());
-		int limitPointVal = pointsRule.getPointVal();
-		int pointVal = (int) Math.floor(refundPointParamDto.getAmount().doubleValue()) * limitPointVal;
+		PointsRule pointsRule = pointsRuleMapper.selectByCode(PointsRuleCode.APP_CONSUME.getCode());
+		int pointVal = getPoints(sysBuyerExt.getUserId(), refundPointParamDto.getAmount(), pointsRule,
+				sysBuyerExt);
+		
 		if (sysBuyerExt.getPointVal() < pointVal) {
 			pointVal = sysBuyerExt.getPointVal();
 		}
@@ -353,6 +358,49 @@ public class PointServiceImpl implements PointsService {
 		addPointsRecord(sysBuyerExt.getUserId(), reducePoint, refundPointParamDto.getDescription(), 1);
 		// 更新用户等级
 		updateUserExt(sysBuyerExt.getUserId());
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public PointQueryResult findUserPoint(PointQueryParamDto pointQueryParamDto) {
+		// 锁住数据，避免出现脏数据
+		PointQueryResult pointQueryResult = new PointQueryResult();
+
+		SysBuyerExt sysBuyerExt = sysBuyerExtMapper.findByUserIdForUpdate(pointQueryParamDto.getUserId());
+
+		// 查询积分记录
+		PointsRecord pointsRecord = pointsRecordMapper.findByReferentId(pointQueryParamDto.getBusinessId());
+
+		if (pointsRecord != null) {
+			pointQueryResult.setPointVal(Math.abs(pointsRecord.getPointVal().intValue()));
+			pointQueryResult.setUserPointVal(sysBuyerExt.getPointVal());
+			return pointQueryResult;
+		}
+
+		//查询不到积分记录，就计算出该次会获得多少积分
+		PointsRule pointsRule = pointsRuleMapper.selectByCode(PointsRuleCode.APP_CONSUME.getCode());
+		int pointVal = getPoints(pointQueryParamDto.getUserId(), pointQueryParamDto.getAmount(), pointsRule,
+				sysBuyerExt);
+		pointQueryResult.setPointVal(pointVal);
+
+		if (sysBuyerExt == null) {
+			pointQueryResult.setUserPointVal(0);
+		} else {
+			pointQueryResult.setUserPointVal(sysBuyerExt.getPointVal());
+		}
+
+		// 1为加积分 2:减积分
+		if (pointQueryParamDto.getType() == 1) {
+			pointQueryResult.setUserPointVal(pointQueryResult.getUserPointVal() + pointVal);
+		} else {
+			pointQueryResult.setUserPointVal(pointQueryResult.getUserPointVal() - pointVal);
+		}
+
+		// 小于0就返回0
+		if (pointQueryResult.getUserPointVal() < 0) {
+			pointQueryResult.setUserPointVal(0);
+		}
+		return pointQueryResult;
 	}
 
 	/**
@@ -511,4 +559,5 @@ public class PointServiceImpl implements PointsService {
 		buyerRankRecord.setUserId(userId);
 		sysBuyerRankRecordMapper.add(buyerRankRecord);
 	}
+
 }

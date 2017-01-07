@@ -3,8 +3,10 @@ package com.okdeer.mall.points.service;
 
 import com.okdeer.mall.member.points.dto.AddPointsParamDto;
 import com.okdeer.mall.member.points.dto.ConsumPointParamDto;
+import com.okdeer.mall.member.points.dto.PointQueryParamDto;
 import com.okdeer.mall.member.points.dto.RefundPointParamDto;
 import com.okdeer.mall.points.bo.AddPointsResult;
+import com.okdeer.mall.points.bo.PointQueryResult;
 
 /**
  * ClassName: PointsService 
@@ -44,5 +46,14 @@ public interface PointsService {
 	 * @date 2017年1月6日
 	 */
 	void refundPoint(RefundPointParamDto refundPointParamDto) throws Exception;
+	
+	/**
+	 * @Description: 查询用户积分
+	 * @param pointQueryParamDto 查询参数
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年1月7日
+	 */
+	PointQueryResult findUserPoint(PointQueryParamDto pointQueryParamDto);
 
 }
