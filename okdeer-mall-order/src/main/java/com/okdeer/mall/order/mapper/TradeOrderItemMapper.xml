@@ -11,7 +11,7 @@
     <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
     <result column="style_code" property="styleCode" jdbcType="VARCHAR" />
     <result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
-    <result column="spu_type" property="spuType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.base.enums.GoodsTypeEnum"/>
+    <result column="spu_type" property="spuType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum"/>
     <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
     <result column="quantity" property="quantity" jdbcType="INTEGER" />
     <result column="weight" property="weight" jdbcType="DECIMAL" />
@@ -51,7 +51,7 @@
     <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
     <result column="style_code" property="styleCode" jdbcType="VARCHAR" />
     <result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
-    <result column="spu_type" property="spuType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.base.enums.GoodsTypeEnum"/>
+    <result column="spu_type" property="spuType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum"/>
     <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
     <result column="quantity" property="quantity" jdbcType="INTEGER" />
     <result column="weight" property="weight" jdbcType="DECIMAL" />

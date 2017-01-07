@@ -14,7 +14,9 @@ import com.okdeer.archive.goods.assemble.dto.GoodsStoreAssembleDto;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
+import com.okdeer.archive.goods.store.enums.IsShopNum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
@@ -93,12 +95,22 @@ public class StoreSkuParserBo {
 	/**
 	 * 订单项总金额
 	 */
-	private BigDecimal totalItemAmount;
+	private BigDecimal totalItemAmount = BigDecimal.valueOf(0.0);
+	
+	/**
+	 * 订单项总数量
+	 */
+	private int totalQuantity = 0;
 
 	/**
 	 * 商品类目Id
 	 */
 	private Set<String> categoryIdSet = new HashSet<String>();
+	
+	/**
+	 * 订单运费
+	 */
+	private BigDecimal fare = BigDecimal.valueOf(0.0);
 
 	public StoreSkuParserBo(List<GoodsStoreSku> currentSkuList) {
 		this.currentSkuList = currentSkuList;
@@ -123,11 +135,36 @@ public class StoreSkuParserBo {
 			currentSku.setMultipleSkuId(storeSku.getMultipleSkuId());
 			currentSku.setPropertiesIndb(storeSku.getPropertiesIndb());
 			currentSku.setSpuType(storeSku.getSpuTypeEnum());
-			currentSku.setMainPicUrl(storeSku.getGoodsStoreSkuPicture().getUrl());
 			currentSku.setGuaranteed(storeSku.getGuaranteed());
 			currentSku.setTradeMax(storeSku.getTradeMax());
-
 			currentSku.setOnline(storeSku.getOnline());
+			currentSku.setSaleNum(storeSku.getSaleNum());
+			
+			GoodsStoreSkuService skuServiceEntity = storeSku.getGoodsStoreSkuService();
+			if (skuServiceEntity != null) {
+				// 是否有起购量 0：无 1：有
+				IsShopNum isShopNum = skuServiceEntity.getIsShopNum();
+				if (isShopNum== IsShopNum.YES) {
+					// 有起购量
+					currentSku.setShopNum(skuServiceEntity.getShopNum());
+				} else {
+					// 无起购量
+					currentSku.setShopNum(1);
+				}
+				currentSku.setEndTime(skuServiceEntity.getEndTime());
+				if(storeSku.getSpuTypeEnum() == SpuTypeEnum.fwdDdxfSpu){
+					// 到店消费，取goods_store_sku_service表的is_unsubscribe是否支持退订，0：不支持，1：支持
+					if (skuServiceEntity.getIsUnsubscribe() != null) {
+						currentSku.setGuaranteed(String.valueOf(skuServiceEntity.getIsUnsubscribe().ordinal()));
+					} else {
+						currentSku.setGuaranteed("0");
+					}
+				}
+			}
+			if(storeSku.getGoodsStoreSkuPicture() != null){
+				currentSku.setMainPicUrl(storeSku.getGoodsStoreSkuPicture().getUrl());
+			}
+			
 			if (this.currentActivitySkuMap.containsKey(storeSku.getId())) {
 				ActivitySaleGoods actGoods = this.currentActivitySkuMap.get(storeSku.getId());
 				ActivitySale actInfo = this.activityMap.get(actGoods.getSaleId());
@@ -210,7 +247,6 @@ public class StoreSkuParserBo {
 	 * @date 2017年1月4日
 	 */
 	public void loadBuySkuList(List<PlaceOrderItemDto> buySkuList) {
-		this.totalItemAmount = BigDecimal.valueOf(0);
 		CurrentStoreSkuBo skuBo = null;
 		for (PlaceOrderItemDto item : buySkuList) {
 			skuBo = this.currentSkuMap.get(item.getStoreSkuId());
@@ -218,12 +254,15 @@ public class StoreSkuParserBo {
 			skuBo.setSkuActQuantity(item.getSkuActQuantity());
 			skuBo.setUpdateTime(item.getUpdateTime());
 
-			totalItemAmount = totalItemAmount
+			this.totalItemAmount = totalItemAmount
 					.add(skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getQuantity())));
+			this.totalQuantity += skuBo.getQuantity();
 			if (skuBo.getSkuActQuantity() > 0) {
-				totalItemAmount = totalItemAmount
+				this.totalItemAmount = totalItemAmount
 						.add(skuBo.getActPrice().multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity())));
+				this.totalQuantity += skuBo.getSkuActQuantity();
 			}
+			
 		}
 	}
 
@@ -454,5 +493,17 @@ public class StoreSkuParserBo {
 	
 	public Map<String, List<GoodsStoreSkuAssembleDto>> getComboSkuMap() {
 		return comboSkuMap;
+	}
+	
+	public int getTotalQuantity() {
+		return totalQuantity;
+	}
+
+	public void setFare(BigDecimal fare){
+		this.fare = fare;
+	}
+	
+	public BigDecimal getFare() {
+		return fare;
 	}
 }

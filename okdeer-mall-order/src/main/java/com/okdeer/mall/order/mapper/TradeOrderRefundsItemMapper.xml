@@ -18,7 +18,7 @@
 	    <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
 	    <result column="properties_indb" property="propertiesIndb" jdbcType="VARCHAR" />
 	    <result column="main_pic_prl" property="mainPicUrl" jdbcType="VARCHAR" />
-	    <result column="spu_type" property="spuType" jdbcType="VARCHAR" javaType="com.okdeer.archive.goods.base.enums.GoodsTypeEnum"/>
+	    <result column="spu_type" property="spuType" jdbcType="VARCHAR" javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum"/>
 	    <result column="amount" property="amount" jdbcType="DECIMAL" />
 	    <result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
 	    <result column="income" property="income" jdbcType="DECIMAL" />

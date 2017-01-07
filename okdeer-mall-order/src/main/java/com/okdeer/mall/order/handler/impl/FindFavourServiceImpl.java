@@ -16,14 +16,18 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
+import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
+import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.member.member.vo.UserAddressVo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.Discount;
@@ -75,7 +79,7 @@ public class FindFavourServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 		
 		//构建优惠查询请求条件
-		Map<String, Object> queryCondition = buildFindFavourCondition(paramDto);
+		Map<String, Object> queryCondition = buildFindFavourCondition(paramDto,resp.getData());
 		// 获取用户有效的代金券
 		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);
 		// 获取用户有效的折扣
@@ -108,17 +112,17 @@ public class FindFavourServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		resp.getData().setFullSubtractList(fullSubtractList);
 	}
 
-	private Map<String, Object> buildFindFavourCondition(PlaceOrderParamDto req) {
+	private Map<String, Object> buildFindFavourCondition(PlaceOrderParamDto paramDto,PlaceOrderDto orderDto) {
 		// 订单总金额
-		BigDecimal totalAmount = req.getTotalAmount();
+		BigDecimal totalAmount = paramDto.getTotalAmount();
 		// 订单总金额存入上下文，后续流程需要使用
-		req.put("totalAmount", totalAmount);
+		paramDto.put("totalAmount", totalAmount);
 		// 获取店铺类型
-		StoreTypeEnum storeType = ((StoreInfo)req.get("storeInfo")).getType();
+		StoreTypeEnum storeType = ((StoreInfo)paramDto.get("storeInfo")).getType();
 
 		Map<String, Object> queryCondition = new HashMap<String, Object>();
-		queryCondition.put("userId", req.getUserId());
-		queryCondition.put("storeId", req.getStoreId());
+		queryCondition.put("userId", paramDto.getUserId());
+		queryCondition.put("storeId", paramDto.getStoreId());
 		queryCondition.put("totalAmount", totalAmount);
 		queryCondition.put("storeType", storeType.ordinal());
 		//根据店铺类型查询代金券
@@ -126,7 +130,12 @@ public class FindFavourServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			queryCondition.put("type", Constant.ONE);
 		} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
 			queryCondition.put("type", Constant.TWO);
-			queryCondition.put("addressId", req.get("addressId"));
+			UserAddressVo addr = orderDto.getUserAddrInfo();
+		    if (addr != null) {
+		    	queryCondition.put("addressId", addr.getAddressId());
+			}else {
+				queryCondition.put("addressId", "");
+			}
 		}
 		return queryCondition;
 	}
