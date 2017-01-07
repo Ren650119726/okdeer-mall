@@ -107,12 +107,12 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 	public BaseResult save(ColumnAppRecommend entity, List<ColumnSelectArea> areaList,
 			List<ColumnAppRecommendGoods> goodsList) throws Exception {
 		if (entity == null) {
-			return new BaseResult("ActivityAppRecommendDto信息不能为空");
+			return new BaseResult("服务商品推荐信息不能为空");
 		}
 
 		if (null == entity.getPlace() || null == entity.getAreaType()
 				|| !StringUtils.isNotEmptyAll(entity.getTitle(), entity.getCoverPicUrl())) {
-			return new BaseResult("ActivityAppRecommendDto信息不完整");
+			return new BaseResult("服务商品推荐信息不完整");
 		}
 
 		if (SelectAreaType.city.equals(entity.getAreaType()) && (null == areaList || 0 == areaList.size())) {
@@ -128,7 +128,7 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 		String recommendId = StringUtils.isBlank(entity.getId()) ? UuidUtils.getUuid() : entity.getId();
 
 		if (isRepeatArea(entity.getId(), entity.getAreaType(), entity.getPlace(), areaList)) {
-			return new BaseResult("首页在同一个区域只能添加一个正在展示的服务推荐");
+			return new BaseResult("首页栏位在同一个区域只能添加一个正在展示的服务推荐");
 		}
 
 		// 统计需要展示的商品数
