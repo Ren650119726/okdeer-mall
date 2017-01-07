@@ -27,9 +27,14 @@
         <result property="type" column="type" javaType="integer" jdbcType="INTEGER"/>
         <result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/> 
         <result property="isRandCode" column="is_rand_code" javaType="integer" jdbcType="INTEGER"/> 
+<<<<<<< HEAD
         <result property="description" column="description" javaType="string" jdbcType="VARCHAR"/> 
         <result property="startTime" column="start_time" javaType="date" jdbcType="TIMESTAMP"/> 
         <result property="endTime" column="end_time" javaType="date" jdbcType="TIMESTAMP"/> 
+=======
+        <result property="useUserType" column="use_user_type"  javaType="com.okdeer.mall.common.enums.UseUserType" jdbcType="TINYINT"/> 
+        <result property="useClientType" column="use_client_type" javaType="com.okdeer.mall.common.enums.UseClientType" jdbcType="TINYINT"/> 
+>>>>>>> refs/remotes/upstream/master_V1.2.3
     </resultMap>
     
     <resultMap id="CouponsVoResultMap" type="com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery" extends="CouponsResultMap">
@@ -211,7 +216,11 @@
 	   SELECT ac.id,ac.type,ac.is_category, ac.name,ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, ac.used_num, ac.remain_num, ac.arrive_limit, 
 	          ac.valid_day, ac.every_limit,ac.is_cash_delivery, ac.is_category_limit, ac.code,ac.exchange_code, ac.area_type, 
 	          ac.create_user_id, ac.create_time, ac.update_user_id, ac.update_time, ac.disabled, a.area_id, a.type as activityCouponsAreaType, c.community_id,
+<<<<<<< HEAD
 	          c.community_name, c.city_id, e.store_name_area, e.storeCityId, e.store_id,ac.is_rand_code,ac.description,ac.start_time,ac.end_time
+=======
+	          c.community_name, c.city_id, e.store_name_area, e.storeCityId, e.store_id,ac.is_rand_code,ac.use_user_type,ac.use_client_type
+>>>>>>> refs/remotes/upstream/master_V1.2.3
 	  FROM activity_coupons ac 
 	  left join activity_coupons_area a on a.coupons_id = ac.id
 	  left join (SELECT b.id, b.coupons_id, b.community_id, ps.name AS community_name, ps.city_id 
@@ -229,15 +238,25 @@
 	     remain_num, arrive_limit, valid_day,
 	     every_limit, is_cash_delivery, is_category_limit,
 	     exchange_code, area_type, create_user_id, 
+<<<<<<< HEAD
 	     create_time, update_user_id, update_time, disabled,type,is_category,is_rand_code,description,start_time,end_time)
+=======
+	     create_time, update_user_id, update_time, disabled,
+	     type,is_category,is_rand_code,use_user_type,use_client_type)
+>>>>>>> refs/remotes/upstream/master_V1.2.3
 	     VALUES(#{id, jdbcType=VARCHAR}, #{name, jdbcType=VARCHAR}, #{belongType, jdbcType=VARCHAR},
 	     #{faceValue, jdbcType=INTEGER}, #{totalNum, jdbcType=INTEGER}, #{usedNum, jdbcType=INTEGER},
 	     #{totalNum, jdbcType=INTEGER}, #{arriveLimit, jdbcType=INTEGER}, #{validDay, jdbcType=INTEGER}, 
 		 #{everyLimit, jdbcType=INTEGER}, #{isCashDelivery, jdbcType=TINYINT}, #{isCategoryLimit, jdbcType=TINYINT},
 		 #{exchangeCode, jdbcType=VARCHAR}, #{areaType, jdbcType=TINYINT}, #{createUserId, jdbcType=VARCHAR},  
 		 #{createTime, jdbcType=TIMESTAMP}, #{updateUserId, jdbcType=VARCHAR}, #{updateTime, jdbcType=TIMESTAMP}, #{disabled, jdbcType=TINYINT},
+<<<<<<< HEAD
 		 #{type, jdbcType=INTEGER},#{isCategory, jdbcType=INTEGER},#{isRandCode, jdbcType=INTEGER},#{description, jdbcType=VARCHAR},
 		 #{startTime, jdbcType=TIMESTAMP},#{endTime, jdbcType=TIMESTAMP})
+=======
+		 #{type, jdbcType=INTEGER},#{isCategory, jdbcType=INTEGER},#{isRandCode, jdbcType=INTEGER},
+		 #{useUserType, jdbcType=TINYINT},#{useClientType, jdbcType=TINYINT}) 
+>>>>>>> refs/remotes/upstream/master_V1.2.3
 	</insert> 
 	
     <update id="updateCoupons" parameterType="com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery">
@@ -288,6 +307,7 @@
         		is_rand_code = #{isRandCode,jdbcType=INTEGER},
      		 </if>
  		      <!-- End added by maojj 2016-10-25 -->
+<<<<<<< HEAD
  		      <if test="description != null" >
         		description = #{description, jdbcType=VARCHAR},
      		   </if>
@@ -296,6 +316,13 @@
      		 </if>
      		 <if test="endTime != null" >
         		end_time = #{endTime,jdbcType=TIMESTAMP}
+=======
+ 		      <if test="useUserType != null" >
+        		use_user_type = #{useUserType,jdbcType=TINYINT},
+     		 </if>
+     		 <if test="useClientType != null" >
+        		use_client_type = #{useClientType,jdbcType=TINYINT},
+>>>>>>> refs/remotes/upstream/master_V1.2.3
      		 </if>
 	       </set>
 	       WHERE id = #{id,jdbcType=VARCHAR}

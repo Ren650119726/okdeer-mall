@@ -21,7 +21,11 @@ import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.common.enums.UseClientType;
+import com.okdeer.mall.common.enums.UseUserType;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.handler.FavourSearchService;
+import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.Discount;
 import com.okdeer.mall.order.vo.FullSubtract;
@@ -70,6 +74,12 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 	private GoodsNavigateCategoryServiceApi goodsNavigateCategoryServiceApi;
 	
 	/**
+	 * 订单服务类
+	 */
+	@Resource
+	private TradeOrderService tradeOrderService;
+	
+	/**
 	 * 查找用户有效的优惠记录
 	 * 注：平台发起的满减、代金券活动，只有云上店可以使用，其它类型的店铺均不可使用
 	 */
@@ -78,6 +88,15 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 		TradeOrderResp resp = respDto.getResp();
 		//构建优惠查询请求条件
 		Map<String, Object> queryCondition = buildFindFavourCondition(reqDto);
+		OrderResourceEnum  orderResourceEnum = reqDto.getData().getOrderResource();//获得客户端类型
+		if(orderResourceEnum != null){
+			if(orderResourceEnum == OrderResourceEnum.WECHAT){
+				queryCondition.put("useClientType", UseClientType.ONlY_WECHAT_USE);
+			}else if(orderResourceEnum == OrderResourceEnum.YSCAPP){
+				queryCondition.put("useClientType", UseClientType.ONlY_APP_USE);
+			}
+		}
+		
 		// 获取用户有效的代金券
 		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);
 		// 获取用户有效的折扣
@@ -90,8 +109,17 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 			//商品类目id集
 			Set<String> spuCategoryIds = reqDto.getContext().getSpuCategoryIds();
 			List<Coupons> delCouponList = new ArrayList<Coupons>();
+			
+			//先确定新用户专享代金券是否能使用 tuzhd
+			boolean isNewUser = tradeOrderService.checkUserUseCoupons((String)queryCondition.get("userId"));
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
+				//如果此券为新用户专享。且不能使用 该券不显示 tuzhd
+				if(!isNewUser && UseUserType.ONlY_NEW_USER == coupons.getUseUserType()){
+					delCouponList.add(coupons);
+					continue;
+				}
+				
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue() && CollectionUtils.isNotEmpty(spuCategoryIds)) {
 //					int count = activityCouponsRecordMapper.findIsContainBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
@@ -145,5 +173,6 @@ public class FavourSearchServiceImpl implements FavourSearchService {
 		}
 		//End added by tangy
 		return queryCondition;
-	}	
+	}
+	
 }

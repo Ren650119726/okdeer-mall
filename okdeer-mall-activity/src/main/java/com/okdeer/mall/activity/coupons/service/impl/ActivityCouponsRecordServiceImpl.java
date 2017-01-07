@@ -56,8 +56,8 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
-import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.member.service.MemberService;
 import com.okdeer.mall.member.service.SysBuyerExtService;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertService;
@@ -1152,6 +1152,18 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			
 		}
 					
+	}
+	
+	/**
+	 * @Description:  tuzhd根据用户id查询其是否存在已使用的新用户专享代金劵 用于首单条件判断
+	 * @param useUserType 使用用户类型
+	 * @param userId 用户id
+	 * @return int  统计结果
+	 * @author tuzhd
+	 * @date 2016年12月31日
+	 */
+	public int findCouponsCountByUser(UseUserType useUserType,String userId){
+		return activityCouponsRecordMapper.findCouponsCountByUser(useUserType, userId);
 	}
 	
 }

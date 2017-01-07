@@ -5146,4 +5146,16 @@
 			limit #{maxSize,jdbcType=INTEGER}
 		</if>
 	</select>
+	
+	<!-- tuzhd根据用户id查询其支付完成的订单总量 用于首单条件判断 -->
+	<select id="selectCountByUserStatus" resultType="int">
+		SELECT COUNT(1)
+		FROM trade_order trade
+		WHERE 
+			<!-- 订单状态 -->
+			 trade.`status` = 5
+			<if test="null != userId and ''!= userId">
+				AND trade.user_id = #{userId,jdbcType=VARCHAR} 
+			</if>
+	</select>
 </mapper>

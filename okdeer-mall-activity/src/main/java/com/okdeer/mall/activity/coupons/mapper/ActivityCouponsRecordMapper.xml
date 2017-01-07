@@ -187,6 +187,8 @@
         <result property="validDay" column="valid_day" javaType="integer" jdbcType="INTEGER"/>  
         <result property="orderNo" column="order_no" javaType="string" jdbcType="VARCHAR"/>
         <result property="belongType" column="belong_type" javaType="string" jdbcType="VARCHAR"/> 
+        <result property="useUserType" column="use_user_type"  javaType="com.okdeer.mall.common.enums.UseUserType" jdbcType="TINYINT"/> 
+        <result property="useClientType" column="use_client_type" javaType="com.okdeer.mall.common.enums.UseClientType" jdbcType="TINYINT"/> 
   </resultMap>
   
   <resultMap id="CouponsFindMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCoupons">
@@ -205,7 +207,8 @@
   
    <select id="selectAllRecords" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo" resultMap="RecordVoMap">
 	  select A.id, A.collect_type, A.coupons_id, A.coupons_collect_id, A.collect_time, A.collect_user_id, B.name, B.activity_id, B.arrive_limit, 
-             B.valid_day, A.valid_time, A.STATUS, A.order_id, T.order_no, A.room_id, C.name as activity_name, D.login_name as user_name, B.face_value, B.belong_type 
+             B.valid_day, A.valid_time, A.STATUS, A.order_id, T.order_no, A.room_id, C.name as activity_name, D.login_name as user_name, 
+             B.face_value, B.belong_type, B.use_user_type, B.use_client_type 
       FROM activity_coupons_record A
       LEFT JOIN activity_coupons B ON B.id = A.coupons_id
       LEFT JOIN activity_collect_coupons C ON C.id = B.activity_id
@@ -383,6 +386,8 @@
         <result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/>
         <result property="areaType" column="coupons_area_type" javaType="com.okdeer.mall.common.enums.AreaType"
                    jdbcType="TINYINT"/>
+        <result property="useUserType" column="use_user_type"  javaType="com.okdeer.mall.common.enums.UseUserType" jdbcType="TINYINT"/> 
+        <result property="useClientType" column="use_client_type" javaType="com.okdeer.mall.common.enums.UseClientType" jdbcType="TINYINT"/> 
         <collection property="activityCouponsCategory" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory">
 	       <id column="categoryid" property="id" jdbcType="VARCHAR" />
            <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
@@ -415,7 +420,7 @@
    coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
    coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
    coupons.type AS type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, 
-   coupons.id as couponsId,record.id,record.collect_time,record.valid_time,  		
+   coupons.id as couponsId,record.id,record.collect_time,record.valid_time,coupons.use_user_type,coupons.use_client_type, 		
    CASE
    WHEN coupons.type = 1 THEN nav.name
    WHEN coupons.type = 2 THEN spu.name
@@ -441,7 +446,7 @@
    coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
    coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
    coupons.type AS type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, 
-   coupons.id as couponsId,record.id,record.collect_time,record.valid_time,  		
+   coupons.id as couponsId,record.id,record.collect_time,record.valid_time,coupons.use_user_type,coupons.use_client_type,   		
    CASE
    WHEN coupons.type = 1 THEN nav.name
    WHEN coupons.type = 2 THEN spu.name
@@ -625,15 +630,19 @@
 			t.collect_type AS couponsType,
 			t2.id AS activityItemId ,
 			FORMAT(t2.arrive_limit,2) AS arrive,
-			t2.is_category AS isCategory
+			t2.is_category AS isCategory,
+			t2.use_user_type as useUserType,
+			t2.use_client_type as useClientType
 		FROM
 			activity_coupons_record t
-<!-- 		LEFT JOIN activity_coupons_relation_store t1 ON t.coupons_id = t1.coupons_id -->
-		LEFT JOIN activity_coupons t2 ON t.coupons_id = t2.id
+			LEFT JOIN activity_coupons t2 ON t.coupons_id = t2.id
 		WHERE
 			t.collect_user_id = #{userId}
 		AND t.status = 0
 		AND t2.disabled = 0
+		<if test="useClientType != null" >
+       		AND (t2.use_client_type = 0 or t2.use_client_type = #{useClientType,jdbcType=TINYINT})
+    	</if>
 		<if test="type != ''">
 			AND (t2.type = 0 OR ( t2.type = #{type}
 			     AND (
@@ -809,4 +818,19 @@
 			INNER JOIN sys_buyer_user u ON v.collect_user_id =u.id
 		where isMsg = 1
   </select> 
+  
+  <!-- tuzhd根据用户id查询其是否存在已使用的新用户专享代金劵 用于首单条件判断 -->
+  <select id="findCouponsCountByUser" resultType="int">
+		SELECT COUNT(1)
+		FROM activity_coupons_record r left join activity_coupons c on r.coupons_id =c.id
+		WHERE r.status=1
+			<!-- 新用户专享代金劵 -->
+			<if test="useUserType != null" >
+	       		AND c.use_user_type = #{useUserType,jdbcType=TINYINT}
+	    	</if>
+			<if test="null != userId and ''!= userId">
+				AND r.collect_user_id = #{userId,jdbcType=VARCHAR} 
+			</if>
+   </select>
+  
 </mapper> 
