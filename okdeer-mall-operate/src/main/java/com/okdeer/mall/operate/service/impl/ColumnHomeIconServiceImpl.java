@@ -158,7 +158,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 				goods = new ColumnHomeIconGoods();
 				goods.setId(UuidUtils.getUuid());
 				goods.setHomeIconId(entity.getId());
-				goods.setStoreSkuId(item);
+				goods.setSkuId(item);
 				goodsList.add(goods);
 			}
 			if (goodsList.size() > 0) {

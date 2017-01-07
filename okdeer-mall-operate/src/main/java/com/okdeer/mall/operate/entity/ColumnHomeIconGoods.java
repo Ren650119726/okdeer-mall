@@ -46,7 +46,7 @@ public class ColumnHomeIconGoods {
 		return skuId;
 	}
 
-	public void setStoreSkuId(String skuId) {
+	public void setSkuId(String skuId) {
 		this.skuId = skuId;
 	}
 }
