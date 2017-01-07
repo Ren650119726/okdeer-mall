@@ -4,6 +4,7 @@ package com.okdeer.mall.order.service.impl;
 import static com.okdeer.common.consts.DescriptConstants.UPDATE_REFUNDS_STATUS_FAILE;
 import static com.okdeer.common.consts.LogConstants.CUSTOMER_SERVICE_INTERVENE_FAIL;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,6 +25,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
 import com.alibaba.rocketmq.client.producer.LocalTransactionState;
+import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
@@ -38,7 +40,6 @@ import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
-import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.enums.MeteringMethod;
 import com.okdeer.archive.store.entity.StoreMemberRelation;
@@ -51,8 +52,11 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
@@ -67,7 +71,9 @@ import com.okdeer.mall.common.enums.IsRead;
 import com.okdeer.mall.common.enums.MsgType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
+import com.okdeer.mall.constant.MessageConstant;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.member.points.dto.RefundPointParamDto;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -229,13 +235,14 @@ public class TradeOrderRefundsServiceImpl
 	@Resource
 	private TradeOrderRefundsCertificateService tradeOrderRefundsCertificateService;
 
-
-
 	@Reference(version = "1.0.0", check = false)
 	private IPayTradeServiceApi payTradeServiceApi;
 
 	@Autowired
 	private RocketMQTransactionProducer rocketMQTransactionProducer;
+
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
 
 	@Reference(version = "1.0.0", check = false)
 	private StoreInfoServiceApi storeInfoService;
@@ -564,12 +571,12 @@ public class TradeOrderRefundsServiceImpl
 	 * @desc 保存退款单相关数据
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	private void save(TradeOrder order,TradeOrderRefunds orderRefunds) throws Exception {
+	private void save(TradeOrder order, TradeOrderRefunds orderRefunds) throws Exception {
 		List<String> rpcIdList = new ArrayList<String>();
 		try {
 			// 更新订单状态
 			updateRefunds(orderRefunds);
-			
+
 			if (order.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY) {
 				// 团购活动释放限购数量
 				activityGroupRecordService.updateDisabledByOrderId(orderRefunds.getOrderId());
@@ -590,10 +597,16 @@ public class TradeOrderRefundsServiceImpl
 			stockOperateService.recycleStockByRefund(order, orderRefunds, rpcIdList);
 			// 发消息给ERP生成库存单据 added by maojj
 			// stockMQProducer.sendMessage(stockAdjustList);
+
+			// add by zengjz 2017-1-7 增加退款减少积分的逻辑
+			// 扣减积分与成长值
+			reduceUserPoint(order, orderRefunds);
+			// end by zengjz 2017-1-7 增加退款减少积分的逻辑
+
 		} catch (Exception e) {
 			// 发消息回滚库存的修改 added by maojj
 			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
-			if(orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER){
+			if (orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
 				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			}
 			throw e;
@@ -617,7 +630,7 @@ public class TradeOrderRefundsServiceImpl
 					public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
 						try {
 							// 执行同意退款操作
-							save(order,(TradeOrderRefunds) object);
+							save(order, (TradeOrderRefunds) object);
 						} catch (Exception e) {
 							logger.error("执行同意退款操作异常", e);
 							return LocalTransactionState.ROLLBACK_MESSAGE;
@@ -638,7 +651,7 @@ public class TradeOrderRefundsServiceImpl
 	/**
 	 * 构建支付对象
 	 */
-	private String buildBalanceThirdPayTrade(TradeOrder order,TradeOrderRefunds orderRefunds) throws Exception {
+	private String buildBalanceThirdPayTrade(TradeOrder order, TradeOrderRefunds orderRefunds) throws Exception {
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 		payTradeVo.setAmount(orderRefunds.getTotalAmount());
 		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
@@ -675,7 +688,7 @@ public class TradeOrderRefundsServiceImpl
 
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
 		payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
-		
+
 		payTradeVo.setServiceFkId(orderRefunds.getId());
 		payTradeVo.setServiceNo(orderRefunds.getOrderNo());
 		payTradeVo.setRemark("关联订单号：" + orderRefunds.getOrderNo());
@@ -796,7 +809,7 @@ public class TradeOrderRefundsServiceImpl
 		tradeOrderRefundsLogMapper
 				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
 						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
-	
+
 		// End 1.0.Z 增加退款单操作记录 add by zengj
 		// 发送短信
 		this.tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
@@ -806,16 +819,16 @@ public class TradeOrderRefundsServiceImpl
 			// 非线上支付
 			orderRefunds.setRefundMoneyTime(new Date());
 			orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
-			this.save(order,orderRefunds);
+			this.save(order, orderRefunds);
 		} else if (isOldWayBack(orderRefunds.getPaymentMethod())) {
 			// 原路返回
 			orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
-			this.updateWalletByThird(order,orderRefunds);
+			this.updateWalletByThird(order, orderRefunds);
 		} else {
 			// 余额退款
-			this.updateWallet(order,orderRefunds);
+			this.updateWallet(order, orderRefunds);
 		}
-		
+
 		// 订单完成后同步到商业管理系统
 		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
 
@@ -826,7 +839,7 @@ public class TradeOrderRefundsServiceImpl
 
 		// 构建余额支付（或添加交易记录）对象
 		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
-				buildBalanceThirdPayTrade(order,orderRefunds).getBytes(Charsets.UTF_8));
+				buildBalanceThirdPayTrade(order, orderRefunds).getBytes(Charsets.UTF_8));
 		// 发送事务消息
 		TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, orderRefunds,
 				new LocalTransactionExecuter() {
@@ -835,7 +848,7 @@ public class TradeOrderRefundsServiceImpl
 					public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
 						try {
 							// 执行同意退款操作
-							save(order,(TradeOrderRefunds) object);
+							save(order, (TradeOrderRefunds) object);
 						} catch (Exception e) {
 							logger.error("执行同意退款操作异常", e);
 							return LocalTransactionState.ROLLBACK_MESSAGE;
@@ -865,10 +878,11 @@ public class TradeOrderRefundsServiceImpl
 		}
 
 		TradeOrderRefunds refunds = this.findById(refundsId);
-		
-		List<TradeOrderRefundsItem> refundItemList = tradeOrderRefundsItemService.getTradeOrderRefundsItemByRefundsId(refundsId);
+
+		List<TradeOrderRefundsItem> refundItemList = tradeOrderRefundsItemService
+				.getTradeOrderRefundsItemByRefundsId(refundsId);
 		refunds.setTradeOrderRefundsItem(refundItemList);
-		
+
 		logger.error("客服处理更新订单状态：refundsId =" + refundsId + ",status=" + status.ordinal() + ",userId" + userId
 				+ ",退款单状态=" + refunds.getRefundsStatus());
 		// Begin added by maojj 2016-08-18
@@ -888,7 +902,7 @@ public class TradeOrderRefundsServiceImpl
 		if (RefundsStatusEnum.YSC_REFUND == status) {
 			TradeOrder order = tradeOrderMapper.selectByPrimaryKey(refunds.getOrderId());
 			// 更新退款单
-			this.save(order,refunds);
+			this.save(order, refunds);
 			// 发送短信
 			this.tradeMessageService.sendSmsByYschomePay(refunds);
 		} else if (RefundsStatusEnum.FORCE_SELLER_REFUND == status) {
@@ -961,7 +975,7 @@ public class TradeOrderRefundsServiceImpl
 				|| order.getActivityType() == ActivityTypeEnum.VONCHER) {
 			ActivityBelongType activityBelong = tradeOrderActivityService.findActivityType(order);
 			if (ActivityBelongType.SELLER == activityBelong) {
-				
+
 			} else {
 				preferentialPrice = refunds.getTotalPreferentialPrice();
 			}
@@ -1547,7 +1561,7 @@ public class TradeOrderRefundsServiceImpl
 		} catch (Exception e) {
 			// 发消息回滚库存的更改 added by maojj
 			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
-			if (tradeOrderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER){
+			if (tradeOrderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
 				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			}
 			throw e;
@@ -1801,5 +1815,32 @@ public class TradeOrderRefundsServiceImpl
 			list = new ArrayList<TradeOrderRefundsVo>();
 		}
 		return new PageUtils<TradeOrderRefundsVo>(list);
+	}
+
+	/**
+	 * @Description: 扣减用户积分
+	 * @param order 订单信息
+	 * @param refunds 退款信息
+	 * @author zengjizu
+	 * @throws Exception 
+	 * @date 2017年1月7日
+	 */
+	private void reduceUserPoint(TradeOrder order, TradeOrderRefunds refunds) throws Exception {
+		if (PayWayEnum.PAY_ONLINE == order.getPayWay()) {
+			// 线上支付需要扣减积分与成长值
+			RefundPointParamDto refundPointParamDto = new RefundPointParamDto();
+			refundPointParamDto.setAmount(refunds.getTotalAmount());
+			refundPointParamDto.setBusinessId(refunds.getId());
+			refundPointParamDto.setDescription("商品退款");
+			refundPointParamDto.setUserId(order.getUserId());
+			MQMessage anMessage = new MQMessage(MessageConstant.POINT_TOPIC, (Serializable) refundPointParamDto);
+			SendResult sendResult = rocketMQProducer.sendMessage(anMessage);
+			if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
+				logger.info("扣减积分消息发送成功，发送数据为：{},topic:{}", JsonMapper.nonDefaultMapper().toJson(refundPointParamDto),
+						MessageConstant.POINT_TOPIC);
+			} else {
+				logger.info("扣减积分消息发送失败，topic：{}", MessageConstant.POINT_TOPIC);
+			}
+		}
 	}
 }
