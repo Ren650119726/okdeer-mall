@@ -246,6 +246,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		AppRecommendParamDto paramDto = new AppRecommendParamDto();
 		paramDto.setIds(ids);
 		paramDto.setPlace(place);
+		paramDto.setSortType(1);
 
 		// 查询服务商品推荐
 		List<AppRecommendDto> dtoList = findList(paramDto);
