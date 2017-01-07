@@ -100,6 +100,7 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.common.consts.PointConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -130,7 +131,6 @@ import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
-import com.okdeer.mall.constant.MessageConstant;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
@@ -6595,13 +6595,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			addPointsParamDto.setPointsRuleCode(PointsRuleCode.APP_CONSUME);
 			addPointsParamDto.setUserId(userId);
 			addPointsParamDto.setBusinessId(orderId);
-			MQMessage anMessage = new MQMessage(MessageConstant.POINT_TOPIC, (Serializable) addPointsParamDto);
+			MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDto);
 			SendResult sendResult = rocketMQProducer.sendMessage(anMessage);
 			if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
 				logger.info("发送消费积分消息成功，发送数据：{},topic:{}", JsonMapper.nonDefaultMapper().toJson(addPointsParamDto),
-						MessageConstant.POINT_TOPIC);
+						PointConstants.POINT_TOPIC);
 			} else {
-				logger.error("发送消费积分消息失败,topic:{}", MessageConstant.POINT_TOPIC);
+				logger.error("发送消费积分消息失败,topic:{}", PointConstants.POINT_TOPIC);
 			}
 		}
 	}
