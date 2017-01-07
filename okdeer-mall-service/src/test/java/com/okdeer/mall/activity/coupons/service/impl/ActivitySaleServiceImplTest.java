@@ -67,7 +67,7 @@ public class ActivitySaleServiceImplTest extends ApplicationTests {
 	public void testUpdate() {
 		try {
 			String saleGoodsId = "8a94e71f5968724c01596872523b0004";
-			service.closeSaleGoods(saleGoodsId);
+//			service.closeSaleGoods(saleGoodsId);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
