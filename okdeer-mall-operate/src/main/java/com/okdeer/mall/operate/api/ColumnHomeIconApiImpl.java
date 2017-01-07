@@ -151,7 +151,7 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 	@Override
 	public BaseResult deleteById(String homeIconId) throws Exception {
 		if (StringUtils.isBlank(homeIconId)) {
-			return new BaseResult("homeIconId不能为空");
+			return new BaseResult("id不能为空");
 		}
 		int result = homeIconService.delete(homeIconId);
 		if (result > 0) {
