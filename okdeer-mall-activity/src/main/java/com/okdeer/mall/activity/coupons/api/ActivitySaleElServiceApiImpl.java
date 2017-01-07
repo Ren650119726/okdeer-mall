@@ -38,7 +38,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 		activitySaleService.save(activitySale, asgList);
 		if(activitySale.getType() == LOW_PRICE){
 			List<String> list = asgList.stream().map(e -> e.getStoreSkuId()).collect(Collectors.toList());
-			structureProducer(list,TAG_LOWPRICE_EL_UPDATE);
+			structureProducer(list,TAG_LOWPRICE_EL_UPDATE,0);
 		}
 	}
 
@@ -55,10 +55,10 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         // 5:特惠 7:低价
 		switch (activityType){
 			case 5:
-                structureProducer(ids,TAG_SALE_EL_UPDATE);
+                structureProducer(ids,TAG_SALE_EL_UPDATE,1);
 				break;
 			case 7:
-                structureProducer(ids,TAG_LOWPRICE_EL_UPDATE);
+                structureProducer(ids,TAG_LOWPRICE_EL_UPDATE,1);
 				break;
 		}
 	}
@@ -69,10 +69,10 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
      * @param tag String
 	 * @throws Exception
 	 */
-	private void structureProducer(List<String> list,String tag) throws Exception {
+	private void structureProducer(List<String> list,String tag,Integer updateStatus) throws Exception {
 		ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
 		paramDto.setSkuIds(list);
-        paramDto.setUpdateStatus(1);
+        paramDto.setUpdateStatus(updateStatus);
 		ObjectMapper mapper = new ObjectMapper();
 		String json = mapper.writeValueAsString(paramDto);
 		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag,json.getBytes(Charsets.UTF_8));
