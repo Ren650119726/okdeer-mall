@@ -13,6 +13,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
+import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.RechargeCouponVo;
 
@@ -286,5 +287,16 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @date 2016年11月21日
 	 */
 	public List<Map<String,Object>> getIsNoticeUser();
+	
+	
+	/**
+	 * @Description:  tuzhd根据用户id查询其是否存在已使用的新用户专享代金劵 用于首单条件判断
+	 * @param useUserType 使用用户类型
+	 * @param userId 用户id
+	 * @return int  统计结果
+	 * @author tuzhd
+	 * @date 2016年12月31日
+	 */
+	public int findCouponsCountByUser(@Param("useUserType")UseUserType useUserType,@Param("userId")String userId);
 	
 }

@@ -13,9 +13,10 @@
     </sql>
 	
 	<select id="findByAdvertId" resultMap="BaseResultMap" parameterType="java.lang.String" >
-        select 
-        <include refid="Base_Column_List" />
-        from column_advert_goods
+        select s.id, s.advert_id, if(k.id is NULL,s.goods_id,k.id) goods_id, s.create_time
+        from column_advert_goods s
+			 LEFT JOIN goods_store_sku_service gs on s.goods_id = gs.product_no
+			 LEFT JOIN goods_store_sku k on k.id = gs.store_sku_id
         where advert_id = #{advertId,jdbcType=VARCHAR}
         order by create_time 
     </select>

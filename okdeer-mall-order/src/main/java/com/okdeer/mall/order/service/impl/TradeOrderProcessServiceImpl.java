@@ -246,9 +246,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 	 * 结算操作时的数据校验
 	 */
 	@Override
-	public TradeOrderRespDto validateStoreSkuStock(String requestStr) throws Exception {
-		// 交易订单请求
-		TradeOrderReqDto reqDto = JsonMapper.nonDefaultMapper().fromJson(requestStr, TradeOrderReqDto.class);
+	public TradeOrderRespDto validateStoreSkuStock(TradeOrderReqDto reqDto) throws Exception {
 		// Begin added by maojj 2016-08-10 Bug:12572
 		reqDto.setOrderOptType(OrderOptTypeEnum.ORDER_SETTLEMENT);
 		// End added by maojj 2016-08-190
