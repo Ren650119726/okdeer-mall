@@ -65,7 +65,14 @@
 				#{item}
 			</foreach>
 		</if>
-		order by sort DESC
+		<choose>  
+            <when test="sortType == 1">  
+               ORDER BY sort , update_time DESC
+            </when>  
+            <otherwise>  
+                ORDER BY status , update_time DESC
+            </otherwise>  
+        </choose>  
 	</select>
 
 	<insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnAppRecommend">
