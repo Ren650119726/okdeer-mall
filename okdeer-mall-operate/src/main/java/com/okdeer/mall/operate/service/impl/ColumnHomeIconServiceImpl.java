@@ -87,7 +87,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 			return new BaseResult("HomeIconDto信息不能为空");
 		}
 		if (null == entity.getPlace() || null == entity.getTaskScope() || null == entity.getTaskType()
-				|| !StringUtils.isNotEmptyAll(entity.getName(), entity.getIconUrl())) {
+				|| !StringUtils.isNotEmptyAll(entity.getName())) {
 			return new BaseResult("首页ICON信息不完整");
 		}
 
