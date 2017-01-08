@@ -176,6 +176,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				adjustDetailVo.setNum(goods.getSaleStock());
 				if(entity.getSpuTypeEnum() == SpuTypeEnum.assembleSpu){
 					//如果是组合商品,不需要同步进销存的库存
+					adjustDetailVo.setGoodsName(entity.getName());
+					adjustDetailVo.setBarCode(entity.getBarCode());
 					assDtailList.add(adjustDetailVo);
 				}else{
 					/*************新增字段 start **************/
@@ -188,14 +190,15 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				}
 			}
 		}
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
 		stockAdjustVo.setStockOperateEnum(soe);
 		//更新商城活动库存
 		if(assDtailList.size() > 0){
+			stockAdjustVo.setAdjustDetailList(assDtailList);
 			stockManagerServiceApi.updateStock(stockAdjustVo);
 		}
 		log.info("特惠活动时同步erp库存开始:");
 		if(adjustDetailList.size() > 0){
+			stockAdjustVo.setAdjustDetailList(adjustDetailList);
 			stockManagerJxcServiceApi.updateStock(stockAdjustVo);
 		}
 		log.info("特惠活动时同步erp完成:");
