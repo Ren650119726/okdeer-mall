@@ -9,8 +9,10 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -44,6 +46,12 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
+	
+	/**
+	 * 店铺商品库存Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockService;
 
 	@Override
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
@@ -63,6 +71,8 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 		paramDto.put("parserBo", parserBo);
 		parserBo.parseCurrentSku();
 		parserBo.loadBuySkuList(paramDto.getSkuList());
+		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(skuIdList);
+		parserBo.loadStockList(stockList);
 		// 检查商品信息是否发生变化
 		ResultCodeEnum checkResult = isChange(paramDto, parserBo);
 		// 检查商品信息是否发生变化

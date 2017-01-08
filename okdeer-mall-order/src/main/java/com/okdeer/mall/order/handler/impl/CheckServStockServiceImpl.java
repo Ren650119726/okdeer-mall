@@ -1,12 +1,7 @@
 package com.okdeer.mall.order.handler.impl;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 
-import com.alibaba.dubbo.config.annotation.Reference;
-import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -22,19 +17,10 @@ import com.okdeer.mall.order.handler.RequestHandler;
 @Service("checkServStockService")
 public class CheckServStockServiceImpl implements RequestHandler<PlaceOrderParamDto, PlaceOrderDto> {
 
-	/**
-	 * 店铺商品库存Service
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockService;
-
 	@Override
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
 		PlaceOrderParamDto paramDto = req.getData();
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
-		List<String> skuIdList = parserBo.getSkuIdList();
-		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(skuIdList);
-		parserBo.loadStockList(stockList);
 		for (CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()) {
 			if (storeSkuBo.getQuantity() > storeSkuBo.getSellable()) {
 				// 库存不足

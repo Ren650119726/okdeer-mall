@@ -8,7 +8,10 @@
 package com.okdeer.mall.order.service.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -24,6 +27,8 @@ import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.common.message.Message;
 import com.google.common.base.Charsets;
 import com.mysql.fabric.xmlrpc.base.Data;
+import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.exception.StockException;
@@ -32,6 +37,7 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -117,6 +123,8 @@ public class TradeOrderCompleteProcessServiceImpl
 
 	/** * pos支付方式:微信 */
 	private static final String WECHATPAY = "微信";
+	
+	private StockAdjustVoBuilder stockAdjustVoBuilder;
 
 	/**
 	 * 
@@ -137,6 +145,10 @@ public class TradeOrderCompleteProcessServiceImpl
 		if (tradeOrder == null || CollectionUtils.isEmpty(tradeOrderItemList)) {
 			throw new ServiceException(LogConstants.ORDER_NOT_EXISTS);
 		}
+		// Begin V2.0 added by maojj 2017-01-08
+		// 低价商品和组合商品需要进行拆分，对订单项列表进行拆分
+		splitItemList(tradeOrderItemList);
+		// End V2.0 added by maojj 2017-01-08
 
 		// 判断订单状态是否为已完成
 		if (tradeOrder.getStatus() != OrderStatusEnum.HAS_BEEN_SIGNED) {
@@ -624,4 +636,57 @@ public class TradeOrderCompleteProcessServiceImpl
 			throw new StockException("写mq数据失败");
 		}
 	}
+	
+	// Begin V2.0 added by maojj 2017-01-08
+	private void splitItemList(List<TradeOrderItem> itemList) throws Exception{
+		Map<String,List<GoodsStoreSkuAssembleDto>> comboSkuMap = stockAdjustVoBuilder.parseComboSku(itemList);
+		Iterator<TradeOrderItem> itemIt = itemList.iterator();
+		TradeOrderItem item = null;
+		List<TradeOrderItem> splitItemList = new ArrayList<TradeOrderItem>();
+		TradeOrderItem splitItem = null;
+		
+		while(itemIt.hasNext()){
+			item = itemIt.next();
+			if(item.getSpuType() == SpuTypeEnum.assembleSpu){
+				// 如果是组合商品，对订单项进行拆分
+				List<GoodsStoreSkuAssembleDto> comboDetailList = comboSkuMap.get(item.getStoreSkuId());
+				for(GoodsStoreSkuAssembleDto comboDto : comboDetailList){
+					splitItem = new TradeOrderItem();
+					splitItem.setId(UuidUtils.getUuid());
+					splitItem.setOrderId(item.getOrderId());
+					splitItem.setActivityType(item.getActivityType());
+					splitItem.setPreferentialPrice(comboDto.getOnlinePrice().subtract(comboDto.getUnitPrice()));
+					splitItem.setUnitPrice(comboDto.getOnlinePrice());
+					splitItem.setQuantity(comboDto.getQuantity()*item.getQuantity());
+					splitItem.setCreateTime(item.getCreateTime());
+					splitItemList.add(splitItem);
+				}
+				itemIt.remove();
+			}else if(item.getActivityQuantity() > 0){
+				// 如果是低价且购买了低价商品，对商品进行拆分
+				splitItem = new TradeOrderItem();
+				splitItem.setId(UuidUtils.getUuid());
+				splitItem.setOrderId(item.getOrderId());
+				splitItem.setActivityType(ActivityTypeEnum.LOW_PRICE.ordinal());
+				splitItem.setPreferentialPrice(item.getUnitPrice().subtract(item.getActivityPrice()));
+				splitItem.setUnitPrice(item.getUnitPrice());
+				splitItem.setQuantity(item.getActivityQuantity());
+				splitItem.setCreateTime(item.getCreateTime());
+				splitItemList.add(splitItem);
+				
+				splitItem = new TradeOrderItem();
+				splitItem.setId(UuidUtils.getUuid());
+				splitItem.setOrderId(item.getOrderId());
+				splitItem.setActivityType(ActivityTypeEnum.NO_ACTIVITY.ordinal());
+				splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
+				splitItem.setUnitPrice(item.getUnitPrice());
+				splitItem.setQuantity(item.getQuantity() - item.getActivityQuantity());
+				splitItem.setCreateTime(item.getCreateTime());
+				splitItemList.add(splitItem);
+				itemIt.remove();
+			}
+		}
+		itemList.addAll(splitItemList);
+	}
+	// End V2.0 added by maojj 2017-01-08
 }
