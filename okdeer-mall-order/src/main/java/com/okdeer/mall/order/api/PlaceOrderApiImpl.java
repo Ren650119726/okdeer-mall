@@ -66,32 +66,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				break;
 		}
 		handlerChain.process(req, resp);
-		resp.getData().setCurrentTime(System.currentTimeMillis());
-		if (req.getData().getOrderType() != PlaceOrderTypeEnum.CVS_ORDER) {
-			fillResponse(req, resp);
-		} else if (!resp.isSuccess()) {
-			fillResponse(req, resp);
-		} else {
-			PlaceOrderParamDto paramDto = req.getData();
-			StoreInfo storeInfo = (StoreInfo) paramDto.get("storeInfo");
-			StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
-			AppStoreDto appStoreDto = AppAdapter.convert(storeInfo);
-			if (parserBo != null) {
-				appStoreDto.setFreight(parserBo.getFare());
-				if (paramDto.getOrderType() != PlaceOrderTypeEnum.CVS_ORDER) {
-					List<CurrentStoreSkuBo> skuList = new ArrayList<CurrentStoreSkuBo>();
-					if (CollectionUtils.isNotEmpty(parserBo.getCurrentSkuMap().values())) {
-						skuList.addAll(parserBo.getCurrentSkuMap().values());
-						if (skuList.size() > 1) {
-							resp.getData().setPaymentMode(PayWayEnum.PAY_ONLINE.ordinal());
-						} else {
-							resp.getData().setPaymentMode(skuList.get(0).getPaymentMode());
-						}
-					}
-				}
-			}
-			resp.getData().setStoreInfo(appStoreDto);
-		}
+		fillResponse(req, resp);
 		return resp;
 	}
 
@@ -105,9 +80,24 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			appStoreDto.setFreight(parserBo.getFare());
 		}
 		resp.getData().setStoreInfo(appStoreDto);
-		resp.getData().setSkuList(AppAdapter.convert(parserBo));
-		resp.getData().setStoreServExt(AppAdapter.convertAppStoreServiceExtDto(storeInfo));
-		resp.getData().setSeckillInfo(AppAdapter.convert(seckillInfo));
+		if(req.getData().getOrderType() != PlaceOrderTypeEnum.CVS_ORDER){
+			resp.getData().setStoreServExt(AppAdapter.convertAppStoreServiceExtDto(storeInfo));
+			resp.getData().setSkuList(AppAdapter.convert(parserBo));
+			resp.getData().setSeckillInfo(AppAdapter.convert(seckillInfo));
+			List<CurrentStoreSkuBo> skuList = new ArrayList<CurrentStoreSkuBo>();
+			if (CollectionUtils.isNotEmpty(parserBo.getCurrentSkuMap().values())) {
+				skuList.addAll(parserBo.getCurrentSkuMap().values());
+				if (skuList.size() > 1) {
+					resp.getData().setPaymentMode(PayWayEnum.PAY_ONLINE.ordinal());
+				} else {
+					resp.getData().setPaymentMode(skuList.get(0).getPaymentMode());
+				}
+			}
+		}
+		if(!resp.isSuccess() && req.getData().getOrderType() == PlaceOrderTypeEnum.CVS_ORDER){
+			resp.getData().setSkuList(AppAdapter.convert(parserBo));
+		}
+		resp.getData().setCurrentTime(System.currentTimeMillis());
 
 	}
 

@@ -68,6 +68,7 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
@@ -140,6 +141,7 @@ import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
+import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -551,6 +553,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Resource
 	private TradeOrderTraceService tradeOrderTraceService;
 	// End V1.2 added by maojj 2016-11-09
+	
+	@Resource
+	private StockAdjustVoBuilder stockAdjustVoBuilder;
 
 	@Override
 	public PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize)
@@ -1471,11 +1476,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 				// 锁定库存
 				// Begin modified by maojj 2016-07-26
-				rpcId = UuidUtils.getUuid();
-				stockAdjustVo = buildDeliveryStock(tradeOrder, rpcId);
 				// 只有实物店才同步商品，走进销存库存,服务商品是派单时就扣了库存
 				if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+					rpcId = UuidUtils.getUuid();
+					stockAdjustVo = stockAdjustVoBuilder.buildJxcStock(tradeOrder, rpcId);
 					stockManagerJxcService.updateStock(stockAdjustVo);
+					// 如果有组合商品，需要修改商城的组合商品库存
+					rpcId = UuidUtils.getUuid();
+					stockAdjustVo = stockAdjustVoBuilder.buildComboStock(tradeOrder, rpcId, StockOperateEnum.PLACE_ORDER_COMPLETE);
+					if(stockAdjustVo != null){
+						serviceStockManagerService.updateStock(stockAdjustVo);
+					}
 					// 订单完成后同步到商业管理系统
 					tradeOrderCompleteProcessService.orderCompleteSyncToJxc(tradeOrder.getId());
 					// End 1.0.Z 增加订单操作记录 add by zengj
@@ -6637,5 +6648,4 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		return false;
 	}
-	
 }
