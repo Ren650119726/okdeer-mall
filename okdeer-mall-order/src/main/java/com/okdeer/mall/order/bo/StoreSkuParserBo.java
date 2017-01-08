@@ -169,6 +169,8 @@ public class StoreSkuParserBo {
 				ActivitySaleGoods actGoods = this.currentActivitySkuMap.get(storeSku.getId());
 				ActivitySale actInfo = this.activityMap.get(actGoods.getSaleId());
 				currentSku.setActivityType(actInfo.getType().ordinal());
+				currentSku.setLimitBuyNum(actGoods.getTradeMax());
+
 				if (actInfo.getType() == ActivityTypeEnum.LOW_PRICE) {
 					// 如果是低价，保存商品的线上价格为线上价格，活动价格为活动价格
 					currentSku.setOnlinePrice(storeSku.getOnlinePrice());
@@ -207,13 +209,12 @@ public class StoreSkuParserBo {
 		}
 	}
 
-	public void setSaleGoodsList(List<ActivitySaleGoods> saleGoodsList) {
+	public void loadSaleGoodsList(List<ActivitySaleGoods> saleGoodsList) {
 		if (CollectionUtils.isEmpty(saleGoodsList)) {
 			return;
 		}
 		for (ActivitySaleGoods saleGoods : saleGoodsList) {
 			this.currentActivitySkuMap.put(saleGoods.getStoreSkuId(), saleGoods);
-			this.getCurrentStoreSkuBo(saleGoods.getStoreSkuId()).setLimitBuyNum(saleGoods.getTradeMax());
 		}
 	}
 
@@ -250,7 +251,7 @@ public class StoreSkuParserBo {
 		CurrentStoreSkuBo skuBo = null;
 		for (PlaceOrderItemDto item : buySkuList) {
 			skuBo = this.currentSkuMap.get(item.getStoreSkuId());
-			skuBo.setQuantity(item.getQuantity());
+			skuBo.setQuantity(item.getQuantity() - item.getSkuActQuantity());
 			skuBo.setSkuActQuantity(item.getSkuActQuantity());
 			skuBo.setUpdateTime(item.getUpdateTime());
 

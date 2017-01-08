@@ -11,12 +11,13 @@ import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.order.dto.AppStoreDto;
 import com.okdeer.mall.order.dto.AppStoreServiceExtDto;
 import com.okdeer.mall.order.dto.AppStoreSkuDto;
+import com.okdeer.mall.order.dto.SeckillInfoDto;
 import com.okdeer.mall.order.dto.TimeInterval;
-import com.okdeer.mall.order.vo.ServStoreInfo;
 
 /**
  * ClassName: StoreInfoAdapter 
@@ -132,9 +133,21 @@ public class AppAdapter {
 			dto.setOnline(skuBo.getOnline().ordinal());
 			dto.setLimitBuyNum(skuBo.getLimitBuyNum());
 			dto.setUpdateTime(skuBo.getUpdateTime());
-			
+			dto.setMainPicUrl(skuBo.getMainPicUrl());
 			dtoList.add(dto);
 		}
 		return dtoList;
+	}
+	
+	public static SeckillInfoDto convert(ActivitySeckill seckill){
+		if(seckill == null){
+			return null;
+		}
+		SeckillInfoDto seckillInfo = new SeckillInfoDto();
+		seckillInfo.setId(seckill.getId());
+		seckillInfo.setSeckillPrice(seckill.getSeckillPrice());
+		seckillInfo.setSeckillStatus(seckill.getSeckillStatus().ordinal());
+		seckillInfo.setSeckillRangeType(seckill.getSeckillRangeType().ordinal());
+		return seckillInfo;
 	}
 }

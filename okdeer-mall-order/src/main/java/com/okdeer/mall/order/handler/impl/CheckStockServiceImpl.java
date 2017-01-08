@@ -49,18 +49,6 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	@Resource
 	private ActivitySaleRecordMapper activitySaleRecordMapper;
 
-	/**
-	 * 库存管理Service
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerJxcServiceApi;
-	
-	/**
-	 * 店铺商品库存Service
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockService;
-
 	@Override
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
 		PlaceOrderParamDto paramDto = req.getData();
@@ -81,18 +69,6 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				resp.setResult(ResultCodeEnum.KIND_IS_OUT);
 				return;
 			}
-		}
-		// 查询库存集合
-		List<GoodsStoreSkuStock> stockList = stockManagerJxcServiceApi.findGoodsStockInfoList(parserBo.getSkuIdList());
-		if(stockList.size() != parserBo.getSkuIdList().size() - parserBo.getComboSkuIdList().size()){
-			resp.setResult(ResultCodeEnum.GOODS_NOT_MATCH);
-			return;
-		}
-		parserBo.loadStockList(stockList);
-		// 查询组合商品库存
-		if(CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())){
-			List<GoodsStoreSkuStock> comboStockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(parserBo.getComboSkuIdList());
-			parserBo.loadStockList(comboStockList);
 		}
 		
 		if (isOutOfStock(parserBo)) {
