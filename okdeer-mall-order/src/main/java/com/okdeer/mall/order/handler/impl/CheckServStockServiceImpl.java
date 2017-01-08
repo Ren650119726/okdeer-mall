@@ -26,26 +26,14 @@ public class CheckServStockServiceImpl implements RequestHandler<PlaceOrderParam
 				// 库存不足
 				if (paramDto.getSkuType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 					// 到店消费
-					if (storeSkuBo.getSellable() == 0) {
-						resp.setResult(ResultCodeEnum.SERV_GOODS_SOLD_OUT);
-					} else {
-						resp.setCode(ResultCodeEnum.SERV_GOODS_NOT_ENOUGH.getCode());
-						resp.setMessage(String.format(ResultCodeEnum.SERV_GOODS_NOT_ENOUGH.getDesc(),
-								storeSkuBo.getSellable()));
-					}
+					resp.setResult(ResultCodeEnum.GOODS_STOCK_NOT_ENOUGH);
 				} else {
 					// 上门服务订单
 					StoreInfoServiceExt storeserviceExt = ((StoreInfo) paramDto.get("storeInfo"))
 							.getStoreInfoServiceExt();
 					if (storeserviceExt != null && storeserviceExt.getIsShoppingCart() == 0) {
 						// 不支持购物车
-						if (storeSkuBo.getSellable() == 0) {
-							resp.setResult(ResultCodeEnum.SERV_GOODS_SOLD_OUT_FW);
-						} else {
-							resp.setCode(ResultCodeEnum.SERV_GOODS_NOT_ENOUGH_FW.getCode());
-							resp.setMessage(String.format(ResultCodeEnum.SERV_GOODS_NOT_ENOUGH_FW.getDesc(),
-									storeSkuBo.getSellable()));
-						}
+						resp.setResult(ResultCodeEnum.GOODS_STOCK_NOT_ENOUGH);
 					} else {
 						// 支持购物车，与便利店提示一致
 						resp.setResult(ResultCodeEnum.GOODS_STOCK_NOT_ENOUGH);

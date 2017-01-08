@@ -45,7 +45,7 @@ public class ServColumnCheckServiceImpl implements RequestHandler<ServiceOrderRe
 		
 		// 服务栏目不存在
 		if (serverColumn == null || serverColumn.getDisabled() == Disabled.invalid) {
-			resp.setResult(ResultCodeEnum.SERVER_COLUMN_NOT_EXISTS);
+			resp.setResult(ResultCodeEnum.SERVER_COLUMN_IS_CLOSED);
 			req.setComplete(true);
 			return;
 		}
