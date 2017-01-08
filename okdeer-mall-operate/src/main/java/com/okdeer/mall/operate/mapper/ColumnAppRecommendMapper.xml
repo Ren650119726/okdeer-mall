@@ -229,7 +229,7 @@
 
 	<update id="deleteByIds" parameterType="java.lang.String">
 		UPDATE column_app_recommend
-		SET disabled = 0
+		SET disabled = 1
 		WHERE id IN
 		<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
 			#{item}
