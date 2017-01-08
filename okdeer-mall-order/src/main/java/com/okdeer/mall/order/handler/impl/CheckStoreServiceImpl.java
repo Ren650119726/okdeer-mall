@@ -1,6 +1,8 @@
 package com.okdeer.mall.order.handler.impl;
 
-import static com.okdeer.archive.store.enums.ResultCodeEnum.*;
+import static com.okdeer.archive.store.enums.ResultCodeEnum.CVS_DELIVERY_TOMORROW;
+import static com.okdeer.archive.store.enums.ResultCodeEnum.CVS_IS_PAUSE;
+import static com.okdeer.archive.store.enums.ResultCodeEnum.STORE_IS_CLOSED;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -18,7 +20,6 @@ import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
-import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 /**
@@ -72,7 +73,7 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 		
 		if(storeInfo == null || storeInfo.getStoreInfoExt() == null){
-			resp.setResult(STORE_NOT_EXISTS);
+			resp.setResult(STORE_IS_CLOSED);
 		}
 	}
 	
@@ -89,15 +90,7 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 		
 		if (storeInfo.getStoreInfoExt().getIsClosed() ==  StoreStatusEnum.CLOSED) {
-			if(paramDto.getOrderType() == PlaceOrderTypeEnum.CVS_ORDER){
-				if(paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT){
-					resp.setResult(CVS_IS_CLOSED_SETTLEMENT);
-				}else{
-					resp.setResult(CVS_IS_CLOSED);
-				}
-			}else{
-				resp.setResult(STORE_IS_CLOSED);
-			}
+			resp.setResult(STORE_IS_CLOSED);
 		}
 	}
 	
@@ -115,11 +108,7 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 		
 		if (storeInfo.getStoreInfoExt().getIsBusiness() == WhetherEnum.not) {
-			if(paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT){
-				resp.setResult(CVS_IS_PAUSE_SETTLEMENT);
-			}else{
-				resp.setResult(CVS_IS_PAUSE);
-			}
+			resp.setResult(CVS_IS_PAUSE);
 		}
 	}
 	
@@ -161,7 +150,7 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 		// 判定当前时间是否在营业时间范围内
 		if (!isBusiness(storeExt.getServiceStartTime(), storeExt.getServiceEndTime())) {
-			resp.setResult(CVS_IS_SHUT_SETTLEMENT);
+			resp.setResult(CVS_IS_PAUSE);
 		}
 	}
 
@@ -185,7 +174,7 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				// 店铺非营业时间接单
 				resp.setResult(CVS_DELIVERY_TOMORROW);
 			} else {
-				resp.setResult(CVS_IS_SHUT);
+				resp.setResult(CVS_IS_PAUSE);
 			}
 		}
 	}

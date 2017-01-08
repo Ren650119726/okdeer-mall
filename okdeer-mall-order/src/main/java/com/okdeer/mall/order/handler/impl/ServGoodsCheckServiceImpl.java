@@ -63,14 +63,14 @@ public class ServGoodsCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		// 判断商品信息是否有更新
 		GoodsStoreSku goodsStoreSku = goodsStoreSkuService.getById(reqData.getSkuId());
 		if (goodsStoreSku == null || goodsStoreSku.getOnline() != BSSC.PUTAWAY) {
-			resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS);
+			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
 			req.setComplete(true);
 			return;
 		}
 		Date goodsUpdateTime = DateUtils.parseDate(reqData.getGoodsUpdateTime());
 		// 商品信息有更新
 		if (goodsStoreSku.getUpdateTime().getTime() != goodsUpdateTime.getTime()) {
-			resp.setResult(ResultCodeEnum.SERV_GOODS_IS_UPDATE);
+			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
 			req.setComplete(true);
 			return;
 		}
@@ -79,7 +79,7 @@ public class ServGoodsCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		if (goodsStoreSku.getSpuTypeEnum() == SpuTypeEnum.fwdDdxfSpu) {
 			GoodsStoreSkuService skuService = goodsStoreSkuServiceServiceApi.selectBySkuId(goodsStoreSku.getId());
 			if (skuService == null) {
-				resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS_1);
+				resp.setResult(ResultCodeEnum.SERV_GOODS_EXP);
 				req.setComplete(true);
 				return;
 			}
