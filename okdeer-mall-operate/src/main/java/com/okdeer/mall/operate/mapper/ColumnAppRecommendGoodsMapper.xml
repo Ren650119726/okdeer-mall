@@ -100,8 +100,7 @@
 		</foreach>
 	</insert>
 
-	<update id="update"
-		parameterType="com.okdeer.mall.operate.entity.ColumnAppRecommendGoods">
+	<update id="update" parameterType="com.okdeer.mall.operate.entity.ColumnAppRecommendGoods">
 		update column_app_recommend_goods
 		<set>
 			<if test="recommendId != null">
