@@ -287,4 +287,23 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		}
 		return dtoList;
 	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.operate.service.ColumnAppRecommendApi#findShowAppRecommendGoodsDtoList(java.util.List)
+	 */
+	@Override
+	public List<AppRecommendGoodsDto> findShowAppRecommendGoodsDtoList(List<String> storeSkuIds) throws Exception {
+		if (null == storeSkuIds || storeSkuIds.size() == 0) {
+			return new ArrayList<AppRecommendGoodsDto>();
+		}
+		List<ColumnAppRecommendGoods> goodsList = appRecommendGoodsService.findShowListByStoreSkuIds(storeSkuIds);
+		List<AppRecommendGoodsDto> dtoList = null;
+		if (null == goodsList) {
+			dtoList = new ArrayList<AppRecommendGoodsDto>();
+		} else {
+			dtoList = BeanMapper.mapList(goodsList, AppRecommendGoodsDto.class);
+		}
+		return dtoList;
+	}
 }
