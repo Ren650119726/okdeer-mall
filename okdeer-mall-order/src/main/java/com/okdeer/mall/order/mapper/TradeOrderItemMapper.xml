@@ -28,6 +28,10 @@
     <result column="sty_code" property="styleCode" jdbcType="VARCHAR" />
     <result column="is_complete" property="isComplete" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderComplete" />
     <result column="recharge_mobile" property="rechargeMobile" jdbcType="VARCHAR" />
+    <!-- Begin V2.0 added by maojj 2017-01-07 -->
+    <result column="activity_price" property="activityPrice" jdbcType="DECIMAL" />
+    <result column="activity_quantity" property="activityQuantity" jdbcType="TINYINT" />
+    <!-- End V2.0 added by maojj 2017-01-07 -->
     <association property="tradeOrderRefunds" javaType="com.okdeer.mall.order.entity.TradeOrderRefunds">
     	<result column="refoundId" property="id" jdbcType="VARCHAR" />
 	    <result column="refunds_status" property="refundsStatus" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundsStatusEnum" />
@@ -72,7 +76,7 @@
   <sql id="Base_Column_List" >
     id, order_id, store_spu_id, store_sku_id, sku_name,properties_indb, main_pic_prl, bar_code,
     spu_type, unit_price, quantity,weight,service_assurance,total_amount,income, actual_amount, preferential_price, 
-    status, appraise,compain_status,create_time,income,recharge_mobile,is_complete
+    status, appraise,compain_status,create_time,income,recharge_mobile,is_complete,activity_price,activity_quantity
   </sql>
   
   <sql id="condition" >
@@ -93,7 +97,7 @@
     SELECT 
     T.id, T.order_id, T.store_spu_id, T.store_sku_id, T.sku_name, T.properties_indb, T.main_pic_prl, T.bar_code,
     T.spu_type, T.unit_price, T.quantity, T.weight, T.service_assurance, T.total_amount, T.income, T.actual_amount, T.preferential_price, 
-    R.status, T.appraise, T.compain_status, T.create_time, T.income, T.recharge_mobile
+    R.status, T.appraise, T.compain_status, T.create_time, T.income, T.recharge_mobile,T.activity_price,T.activity_quantity
     FROM trade_order_item T
     LEFT JOIN trade_order_refunds_item R
     on T.id = R.order_item_id 
@@ -114,7 +118,7 @@
        SELECT 
 	    item.id, item.order_id, item.store_spu_id, item.store_sku_id, item.sku_name,item.properties_indb, item.main_pic_prl, 
 	    item.spu_type, item.unit_price, item.quantity,item.service_assurance,item.total_amount, item.actual_amount, item.preferential_price, 
-	    item.status, item.appraise,item.compain_status,item.create_time,item.recharge_mobile,
+	    item.status, item.appraise,item.compain_status,item.create_time,item.recharge_mobile,item.activity_price,item.activity_quantity,
 	    refound.id as refoundId,refound.refunds_status,refound.total_amount as refund_total_amount
 	    FROM trade_order_item item left join trade_order_refunds_item refundItem on item.id = refundItem.order_item_id
 	    left join trade_order_refunds refound on refound.id = refundItem.refunds_id
@@ -128,7 +132,7 @@
 	SELECT 
 		item.id, item.order_id, item.store_spu_id, item.store_sku_id, item.sku_name,item.properties_indb, item.main_pic_prl, 
 		item.spu_type, item.unit_price, item.quantity,item.service_assurance,item.total_amount, item.actual_amount, item.preferential_price, 
-		item.status, item.appraise,item.compain_status,item.create_time,item.recharge_mobile
+		item.status, item.appraise,item.compain_status,item.create_time,item.recharge_mobile,item.activity_price,item.activity_quantity
 	FROM trade_order_item item 
 	WHERE item.order_id = #{orderId,jdbcType=VARCHAR}
   </select>
@@ -159,13 +163,13 @@
       main_pic_prl, spu_type, unit_price, 
       quantity,weight, total_amount, actual_amount, 
       preferential_price, status, appraise, 
-      create_time, recharge_mobile)
+      create_time, recharge_mobile,activity_price,activity_quantity)
     values (#{id,jdbcType=VARCHAR}, #{orderId,jdbcType=VARCHAR}, #{storeSpuId,jdbcType=VARCHAR}, 
       #{storeSkuId,jdbcType=VARCHAR}, #{skuName,jdbcType=VARCHAR}, #{propertiesIndb,jdbcType=VARCHAR}, 
       #{mainPicPrl,jdbcType=VARCHAR}, #{spuType,jdbcType=VARCHAR}, #{unitPrice,jdbcType=DECIMAL}, 
       #{quantity,jdbcType=INTEGER},#{weight,jdbcType=DECIMAL}, #{totalAmount,jdbcType=DECIMAL}, #{actualAmount,jdbcType=DECIMAL}, 
       #{preferentialPrice,jdbcType=DECIMAL}, #{status,jdbcType=BIT}, #{appraise,jdbcType=BIT}, 
-      #{createTime,jdbcType=TIMESTAMP}, #{rechargeMobile, jdbcType=VARCHAR})
+      #{createTime,jdbcType=TIMESTAMP}, #{rechargeMobile, jdbcType=VARCHAR}, #{activityPrice,jdbcType=DECIMAL}, #{activityQuantity,jdbcType=INTEGER})
   </insert>
   
   <!-- begin 重构4.1 added by zhangkn -->
@@ -197,7 +201,9 @@
 			weight,
 			income,
 			recharge_mobile,
-			is_complete
+			is_complete,
+			activity_price,
+			activity_quantity
 		)values
 		<foreach collection="list" item="item" index="index" separator="," >
         (
@@ -227,7 +233,10 @@
 			#{item.weight,jdbcType=DECIMAL},
 			#{item.income,jdbcType=DECIMAL},
 			#{item.rechargeMobile,jdbcType=VARCHAR},
-			#{item.isComplete,jdbcType=INTEGER}
+			#{item.isComplete,jdbcType=INTEGER},
+			
+			#{item.activityPrice,jdbcType=DECIMAL},
+			#{item.activityQuantity,jdbcType=INTEGER}
         )
 		</foreach>
   </insert>
@@ -306,7 +315,13 @@
         activity_type,
       </if>
       <if test="rechargeMobile != null">
-      	recharge_mobile
+      	recharge_mobile,
+      </if>
+      <if test="activityPrice != null">
+      	activity_price,
+      </if>
+      <if test="activityQuantity != null">
+      	activity_quantity,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
@@ -380,7 +395,13 @@
         #{activityType,jdbcType=TINYINT},
       </if>
       <if test="rechargeMobile != null">
-      	#{rechargeMobile,jdbcType=VARCHAR}
+      	#{rechargeMobile,jdbcType=VARCHAR},
+      </if>
+      <if test="activityPrice != null">
+      	#{activityPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="activityQuantity != null">
+      	#{activityQuantity,jdbcType=INTEGER},
       </if>
     </trim>
   </insert>
@@ -470,14 +491,14 @@
     item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, 
     item.status, item.appraise, item.create_time,detail.status AS itemDetailStatus,detail.consume_code,
-    detail.start_time,detail.end_time,item.service_assurance,item.income,item.recharge_mobile
+    detail.start_time,detail.end_time,item.service_assurance,item.income,item.recharge_mobile,item.activity_price,item.activity_quantity
   </sql>
   
   <!-- wusw:订单项和订单项详细字段 -->
   <sql id="Item_Column_List" >
     item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, item.service_assurance,
-    item.status, item.appraise, item.create_time,item.income,item.recharge_mobile,item.is_complete
+    item.status, item.appraise, item.create_time,item.income,item.recharge_mobile,item.is_complete,item.activity_price,item.activity_quantity
   </sql>
   
   <!-- wusw:订单项和订单项信息resultMap  -->

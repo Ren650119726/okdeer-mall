@@ -9,6 +9,7 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.bo.AppAdapter;
@@ -31,12 +32,19 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> confirmServOrderService;
+	
+	@Resource
+	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> confirmSeckillOrderService;
 
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitOrderService;
 
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitServOrderService;
+	
+
+	@Resource
+	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitSeckillOrderService;
 
 	@Override
 	public Response<PlaceOrderDto> confirmOrder(Request<PlaceOrderParamDto> req) throws Exception {
@@ -44,10 +52,18 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		resp.setData(new PlaceOrderDto());
 		req.getData().setOrderOptType(OrderOptTypeEnum.ORDER_SETTLEMENT);
 		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> handlerChain = null;
-		if (req.getData().getOrderType() == PlaceOrderTypeEnum.CVS_ORDER) {
-			handlerChain = confirmOrderService;
-		} else {
-			handlerChain = confirmServOrderService;
+		switch (req.getData().getOrderType()) {
+			case CVS_ORDER:
+				handlerChain = confirmOrderService;
+				break;
+			case SRV_ORDER:
+				handlerChain = confirmServOrderService;
+				break;
+			case SECKILL_ORDER:
+				handlerChain = confirmSeckillOrderService;
+				break;
+			default:
+				break;
 		}
 		handlerChain.process(req, resp);
 		resp.getData().setCurrentTime(System.currentTimeMillis());
@@ -82,6 +98,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	private void fillResponse(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) {
 		PlaceOrderParamDto paramDto = req.getData();
 		StoreInfo storeInfo = (StoreInfo) paramDto.get("storeInfo");
+		ActivitySeckill seckillInfo = (ActivitySeckill) paramDto.get("seckillInfo");
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
 		AppStoreDto appStoreDto = AppAdapter.convert(storeInfo);
 		if (parserBo != null) {
@@ -90,6 +107,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		resp.getData().setStoreInfo(appStoreDto);
 		resp.getData().setSkuList(AppAdapter.convert(parserBo));
 		resp.getData().setStoreServExt(AppAdapter.convertAppStoreServiceExtDto(storeInfo));
+		resp.getData().setSeckillInfo(AppAdapter.convert(seckillInfo));
 
 	}
 
@@ -99,10 +117,18 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		resp.setData(new PlaceOrderDto());
 		req.getData().setOrderOptType(OrderOptTypeEnum.ORDER_SUBMIT);
 		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> handlerChain = null;
-		if (req.getData().getOrderType() == PlaceOrderTypeEnum.CVS_ORDER) {
-			handlerChain = submitOrderService;
-		} else {
-			handlerChain = submitServOrderService;
+		switch (req.getData().getOrderType()) {
+			case CVS_ORDER:
+				handlerChain = submitOrderService;
+				break;
+			case SRV_ORDER:
+				handlerChain = submitServOrderService;
+				break;
+			case SECKILL_ORDER:
+				handlerChain = submitSeckillOrderService;
+				break;
+			default:
+				break;
 		}
 		handlerChain.process(req, resp);
 		resp.getData().setCurrentTime(System.currentTimeMillis());

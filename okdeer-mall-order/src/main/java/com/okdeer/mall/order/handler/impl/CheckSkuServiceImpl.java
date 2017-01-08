@@ -15,8 +15,11 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
+import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -68,6 +71,18 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 	@Resource
 	private ActivitySaleGoodsMapper activitySaleGoodsMapper;
 	
+	/**
+	 * 库存管理Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private StockManagerJxcServiceApi stockManagerJxcServiceApi;
+	
+	/**
+	 * 店铺商品库存Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockService;
+	
 
 	@Override
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
@@ -85,6 +100,19 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		StoreSkuParserBo parserBo = parseCurrentSkuList(currentSkuList);
 		parserBo.setSkuIdList(skuIdList);
 		parserBo.loadBuySkuList(paramDto.getSkuList());
+		// 查询库存集合
+		List<GoodsStoreSkuStock> stockList = stockManagerJxcServiceApi.findGoodsStockInfoList(parserBo.getSkuIdList());
+		if(stockList.size() != parserBo.getSkuIdList().size() - parserBo.getComboSkuIdList().size()){
+			resp.setResult(ResultCodeEnum.GOODS_NOT_MATCH);
+			return;
+		}
+		parserBo.loadStockList(stockList);
+		// 查询组合商品库存
+		if(CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())){
+			List<GoodsStoreSkuStock> comboStockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(parserBo.getComboSkuIdList());
+			parserBo.loadStockList(comboStockList);
+		}
+		
 		// 检查商品信息是否发生变化
 		ResultCodeEnum checkResult = isChange(paramDto, parserBo);
 		if (checkResult != ResultCodeEnum.SUCCESS) {
@@ -121,7 +149,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 				activitySkuList.addAll(activitySaleGoodsMapper.findActivityGoodsList(entry.getKey(), entry.getValue()));
 			}
 		}
-		parserBo.setSaleGoodsList(activitySkuList);
+		parserBo.loadSaleGoodsList(activitySkuList);
 		parserBo.setActivitySkuMap(activitySkuMap);
 		// 解析当前商品信息。商品存在活动则获取活动价格。不存在活动则获取线上销售价
 		parserBo.parseCurrentSku();

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.mapper.SysBuyerExpectRecordMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.SysBuyerExpectRecord" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="category_ids" property="categoryIds" jdbcType="VARCHAR" />
+        <result column="category_names" property="categoryNames" jdbcType="VARCHAR" />
+        <result column="latitude" property="latitude" jdbcType="DOUBLE" />
+        <result column="longitude" property="longitude" jdbcType="DOUBLE" />
+        <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+        <result column="user_id" property="userId" jdbcType="VARCHAR" />
+        <result column="user_phone" property="userPhone" jdbcType="VARCHAR" />
+        <result column="machine_code" property="machineCode" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, category_ids, category_names, latitude, longitude, city_name, user_id, user_phone, 
+        machine_code, create_time
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from sys_buyer_expect_record
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="findNumberByMachineCode" resultType="int" >
+        select COUNT(1)
+        from sys_buyer_expect_record
+        where machine_code = #{machineCode,jdbcType=VARCHAR};
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.operate.entity.SysBuyerExpectRecord" >
+        insert into sys_buyer_expect_record
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="categoryIds != null" >
+                category_ids,
+            </if>
+            <if test="categoryNames != null" >
+                category_names,
+            </if>
+            <if test="latitude != null" >
+                latitude,
+            </if>
+            <if test="longitude != null" >
+                longitude,
+            </if>
+            <if test="cityName != null" >
+                city_name,
+            </if>
+            <if test="userId != null" >
+                user_id,
+            </if>
+            <if test="userPhone != null" >
+                user_phone,
+            </if>
+            <if test="machineCode != null" >
+                machine_code,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="categoryIds != null" >
+                #{categoryIds,jdbcType=VARCHAR},
+            </if>
+            <if test="categoryNames != null" >
+                #{categoryNames,jdbcType=VARCHAR},
+            </if>
+            <if test="latitude != null" >
+                #{latitude,jdbcType=DOUBLE},
+            </if>
+            <if test="longitude != null" >
+                #{longitude,jdbcType=DOUBLE},
+            </if>
+            <if test="cityName != null" >
+                #{cityName,jdbcType=VARCHAR},
+            </if>
+            <if test="userId != null" >
+                #{userId,jdbcType=VARCHAR},
+            </if>
+            <if test="userPhone != null" >
+                #{userPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="machineCode != null" >
+                #{machineCode,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.operate.entity.SysBuyerExpectRecord" >
+        update sys_buyer_expect_record
+        <set >
+            <if test="categoryIds != null" >
+                category_ids = #{categoryIds,jdbcType=VARCHAR},
+            </if>
+            <if test="categoryNames != null" >
+                category_names = #{categoryNames,jdbcType=VARCHAR},
+            </if>
+            <if test="latitude != null" >
+                latitude = #{latitude,jdbcType=DOUBLE},
+            </if>
+            <if test="longitude != null" >
+                longitude = #{longitude,jdbcType=DOUBLE},
+            </if>
+            <if test="cityName != null" >
+                city_name = #{cityName,jdbcType=VARCHAR},
+            </if>
+            <if test="userId != null" >
+                user_id = #{userId,jdbcType=VARCHAR},
+            </if>
+            <if test="userPhone != null" >
+                user_phone = #{userPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="machineCode != null" >
+                machine_code = #{machineCode,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from sys_buyer_expect_record
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

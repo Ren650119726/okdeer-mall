@@ -6,14 +6,15 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
@@ -24,9 +25,6 @@ import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.handler.RequestHandler;
-import com.okdeer.mall.order.vo.ServiceOrderReq;
-import com.okdeer.mall.order.vo.ServiceOrderResp;
-import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * ClassName: FindUserAddressServiceImpl 
@@ -117,6 +115,66 @@ public class FindUserAddrServiceImpl implements RequestHandler<PlaceOrderParamDt
 	 * @date 2017年1月6日
 	 */
 	private UserAddressVo findUserServAddr(PlaceOrderParamDto paramDto) throws Exception {
+		UserAddressVo userAddressVo = null;
+		switch (paramDto.getOrderType()) {
+			case SRV_ORDER:
+				userAddressVo = findUserAddrForServ(paramDto);
+				break;
+			case SECKILL_ORDER:
+				userAddressVo = findUserAddrForSeckill(paramDto);
+				break;
+			default:
+				break;
+		}
+		return userAddressVo;
+	}
+	
+	private UserAddressVo findStoreServAddr(String storeId) throws Exception{
+		MemberConsigneeAddress memberConsignee = memberConsigneeAddressService.getSellerDefaultAddress(storeId);
+		UserAddressVo userAddressVo = null;
+		if (memberConsignee != null) {
+			userAddressVo = BeanMapper.map(memberConsignee, UserAddressVo.class);
+		}
+		return userAddressVo;
+	}
+	
+	/**
+	 * @Description: 查询用户秒杀的有效地址
+	 * @param paramDto   
+	 * @author maojj
+	 * @date 2017年1月7日
+	 */
+	private UserAddressVo findUserAddrForSeckill(PlaceOrderParamDto paramDto){
+		UserAddressVo userAddr = null;
+		ActivitySeckill seckillInfo = (ActivitySeckill)paramDto.get("seckillInfo");
+		StoreInfo storeInfo = (StoreInfo)paramDto.get("storeInfo");
+		// 区域类型：0全国，1区域
+		Map<String,Object> condition = new HashMap<String,Object>();
+		condition.put("userId", paramDto.getUserId());
+		condition.put("storeId", paramDto.getStoreId());
+		condition.put("activitySeckillId", seckillInfo.getId());
+		condition.put("seckillRangeType", seckillInfo.getSeckillRangeType().ordinal());
+		condition.put("storeAreaType", storeInfo.getAreaType());
+		List<UserAddressVo> userAddrList = memberConsigneeAddressService.findUserAddr(condition);
+		if(!CollectionUtils.isEmpty(userAddrList)){
+			for(UserAddressVo addr : userAddrList){
+				if(addr.getIsOutRange() == 0){
+					userAddr = addr;
+					break;
+				}
+			}
+		}
+		return userAddr;
+	}
+	
+	/**
+	 * @Description: 服务店普通商品下单
+	 * @param paramDto
+	 * @return   
+	 * @author maojj
+	 * @date 2017年1月7日
+	 */
+	private UserAddressVo findUserAddrForServ(PlaceOrderParamDto paramDto){
 		// 构建查询参数
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("userId", paramDto.getUserId());
@@ -128,15 +186,6 @@ public class FindUserAddrServiceImpl implements RequestHandler<PlaceOrderParamDt
 			return null;
 		} 
 		UserAddressVo userAddressVo = BeanMapper.map(map, UserAddressVo.class);
-		return userAddressVo;
-	}
-	
-	private UserAddressVo findStoreServAddr(String storeId) throws Exception{
-		MemberConsigneeAddress memberConsignee = memberConsigneeAddressService.getSellerDefaultAddress(storeId);
-		UserAddressVo userAddressVo = null;
-		if (memberConsignee != null) {
-			userAddressVo = BeanMapper.map(memberConsignee, UserAddressVo.class);
-		}
 		return userAddressVo;
 	}
 }

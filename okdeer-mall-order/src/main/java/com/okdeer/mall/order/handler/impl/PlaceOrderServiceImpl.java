@@ -387,60 +387,30 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
 
 		for (CurrentStoreSkuBo storeSku : parserBo.getCurrentSkuMap().values()) {
-			if (storeSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()) {
-				if (storeSku.getSpuType() != SpuTypeEnum.assembleSpu) {
-					// 如果是低价，需要将订单商品拆分为两条记录去发起库存变更请求
-					if (storeSku.getSkuActQuantity() > 0) {
-						adjustDetailVo = buildDetailVo(storeSku, true, true);
-						adjustDetailList.add(adjustDetailVo);
-					}
-					if (storeSku.getQuantity() > 0) {
-						adjustDetailVo = buildDetailVo(storeSku, false, false);
-						adjustDetailList.add(adjustDetailVo);
-					}
-				} else {
-					// 如果是组合商品，需要对组合商品进行拆分
-					List<GoodsStoreSkuAssembleDto> comboDetailList = parserBo.getComboSkuMap().get(storeSku.getId());
-					for (GoodsStoreSkuAssembleDto comboDetail : comboDetailList) {
-						if (storeSku.getSkuActQuantity() > 0) {
-							int buyActNum = comboDetail.getQuantity() * storeSku.getSkuActQuantity();
-							adjustDetailVo = buildDetailVo(comboDetail, true, buyActNum);
-							adjustDetailList.add(adjustDetailVo);
-						}
-						if (storeSku.getQuantity() > 0) {
-							int buyNum = comboDetail.getQuantity() * storeSku.getQuantity();
-							adjustDetailVo = buildDetailVo(comboDetail, false, buyNum);
-							adjustDetailList.add(adjustDetailVo);
-						}
-					}
-				}
-
-			} else if (storeSku.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()) {
-				if (storeSku.getSpuType() != SpuTypeEnum.assembleSpu) {
-					adjustDetailVo = buildDetailVo(storeSku, false, true);
+			if(storeSku.getSpuType() == SpuTypeEnum.assembleSpu){
+				// 如果是组合商品，对商品进行拆分.组合商品只能加入活动才能售卖
+				List<GoodsStoreSkuAssembleDto> comboDetailList = parserBo.getComboSkuMap().get(storeSku.getId());
+				for (GoodsStoreSkuAssembleDto comboDetail : comboDetailList) {
+					int buyNum = comboDetail.getQuantity() * (storeSku.getQuantity() + storeSku.getSkuActQuantity());
+					adjustDetailVo = buildDetailVo(comboDetail, true, buyNum);
 					adjustDetailList.add(adjustDetailVo);
-				} else {
-					// 如果是组合商品，需要对组合商品进行拆分
-					List<GoodsStoreSkuAssembleDto> comboDetailList = parserBo.getComboSkuMap().get(storeSku.getId());
-					for (GoodsStoreSkuAssembleDto comboDetail : comboDetailList) {
-						int buyNum = comboDetail.getQuantity() * storeSku.getQuantity();
-						adjustDetailVo = buildDetailVo(comboDetail, true, buyNum);
-						adjustDetailList.add(adjustDetailVo);
-					}
 				}
-			} else {
-				if (storeSku.getSpuType() != SpuTypeEnum.assembleSpu) {
+			}else if(storeSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+				// 如果是低价，需要将订单商品拆分为两条记录去发起库存变更请求
+				if (storeSku.getSkuActQuantity() > 0) {
+					adjustDetailVo = buildDetailVo(storeSku, true, true);
+					adjustDetailList.add(adjustDetailVo);
+				}
+				if (storeSku.getQuantity() > 0) {
 					adjustDetailVo = buildDetailVo(storeSku, false, false);
 					adjustDetailList.add(adjustDetailVo);
-				} else {
-					// 如果是组合商品，需要对组合商品进行拆分
-					List<GoodsStoreSkuAssembleDto> comboDetailList = parserBo.getComboSkuMap().get(storeSku.getId());
-					for (GoodsStoreSkuAssembleDto comboDetail : comboDetailList) {
-						int buyNum = comboDetail.getQuantity() * storeSku.getQuantity();
-						adjustDetailVo = buildDetailVo(comboDetail, false, buyNum);
-						adjustDetailList.add(adjustDetailVo);
-					}
 				}
+			}else if (storeSku.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()) {
+				adjustDetailVo = buildDetailVo(storeSku, false, true);
+				adjustDetailList.add(adjustDetailVo);
+			}else {
+				adjustDetailVo = buildDetailVo(storeSku, false, false);
+				adjustDetailList.add(adjustDetailVo);
 			}
 		}
 

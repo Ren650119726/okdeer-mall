@@ -30,6 +30,12 @@ public class PlaceOrderServiceConfig {
 	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  checkStockService;
 	
 	/**
+	 * 优惠信息校验
+	 */
+	@Resource
+	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  checkFavourService;
+	
+	/**
 	 * 用户地址查询的service
 	 */
 	@Resource
@@ -59,6 +65,18 @@ public class PlaceOrderServiceConfig {
 	@Resource
 	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  checkServStockService;
 	
+	/**
+	 * 校验服务商品库存
+	 */
+	@Resource
+	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  checkSecKillService;
+	
+	/**
+	 * 校验服务商品库存
+	 */
+	@Resource
+	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  placeSeckillOrderService;
+	
 	@Bean(name="confirmOrderService")
 	public RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> confirmOrderService() {
 		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> chain = new RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto>();
@@ -85,7 +103,7 @@ public class PlaceOrderServiceConfig {
 		// 第三步：校验商品库存
 		chain.addHandlerChain(checkStockService);
 		// 第四步：校验用户优惠信息
-		// chain.addHandlerChain(findFavourService);
+	    chain.addHandlerChain(checkFavourService);
 		// 第五步：生成订单
 		chain.addHandlerChain(placeOrderService);
 		return chain;
@@ -117,9 +135,37 @@ public class PlaceOrderServiceConfig {
 		// 第三步：校验商品库存
 		chain.addHandlerChain(checkServStockService);
 		// 第四步：校验用户优惠信息
-		// chain.addHandlerChain(findFavourService);
+        chain.addHandlerChain(checkFavourService);
 		// 第五步：生成订单
 		chain.addHandlerChain(placeOrderService);
+		return chain;
+	}
+	
+	@Bean(name="confirmSeckillOrderService")
+	public RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> confirmSeckillOrderService() {
+		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> chain = new RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto>();
+		// 第一步 ：校验店铺
+		chain.addHandlerChain(checkStoreService);
+		// 第三步：校验秒杀
+		chain.addHandlerChain(checkSecKillService);
+		// 第二步：检查秒杀商品
+		chain.addHandlerChain(checkServSkuService);
+		// 第四步：查询最优用户地址
+		chain.addHandlerChain(findUserAddrService);
+		return chain;
+	}
+	
+	@Bean(name="submitSeckillOrderService")
+	public RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitSeckillOrderService() {
+		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> chain = new RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto>();
+		// 第一步 ：校验店铺
+		chain.addHandlerChain(checkStoreService);
+		// 第三步：校验秒杀
+		chain.addHandlerChain(checkSecKillService);
+		// 第二步：检查秒杀商品
+		chain.addHandlerChain(checkServSkuService);
+		// 第四步：生成订单
+		chain.addHandlerChain(placeSeckillOrderService);
 		return chain;
 	}
 }
