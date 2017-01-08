@@ -41,10 +41,9 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 
 /**
- * 
  * ClassName: ActivitySaleServiceImpl 
  * @Description: 特惠活动服务
- * @author zengj
+ * @author zengj 
  * @date 2016年9月7日
  *
  * =================================================================================================
