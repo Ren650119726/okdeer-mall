@@ -136,3 +136,72 @@ submit start---
 	}
 }
 submit end---
+confirm start---
+{
+	"data": {
+		"storeId": "8a8080a0578e482f01578e9bc99f0028",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"userPhone" : "18613138749",
+		"lng": "113.9511498388759",
+		"lat": "22.55400291367245",
+		"provinceName": "广东省",
+		"cityName": "深圳市",
+		"areaName": "南山区",
+		"orderType": 2,
+		"skuType":2,
+		"channel":3,
+		"seckillId": "8a94e7a3596caa2001596cb166960002",
+		"isCheckTime":1,
+		"skuList": [{
+			"storeSkuId": "8a80808c57b17c0a0157b1a002e80015",
+			"quantity": "1",
+			"skuPrice": "1",
+			"skuActType" : 0,
+			"skuActPrice": 0.0,
+			"skuActQuantity" : 0,
+			"updateTime": "2017-01-06 16:29:52"
+		}]
+	}
+}
+confirm end---
+submit start---
+{
+	"data": {
+		"storeId": "8a8080a0578e482f01578e9bc99f0028",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"userPhone" : "18613138749",
+		"lng": "113.9511498388759",
+		"lat": "22.55400291367245",
+		"provinceName": "广东省",
+		"cityName": "深圳市",
+		"areaName": "南山区",
+		"orderType": 2,
+		"skuType":2,
+		"channel":3,
+		"seckillId": "8a94e7a3596caa2001596cb166960002",
+		"isCheckTime":1,
+		"skuList": [{
+			"storeSkuId": "8a80808c57b17c0a0157b1a002e80015",
+			"quantity": "1",
+			"skuPrice": "1",
+			"skuActType" : 0,
+			"skuActPrice": 0.0,
+			"skuActQuantity" : 0,
+			"updateTime": "2016-12-19 14:41:16"
+		}],
+		"userAddrId":"2c93d08556bbbe1a0156bc0282fd000c",
+		"activityType":6,
+		"activityId":"2c9380d55948988201596db53e97583a",
+		"activityItemId":"",
+		"couponsType":0,
+		"recordId":"",
+		"remark":"速度发货",
+		"isInvoice":0,
+		"invoiceHead":"",
+		"invoiceContent":"",
+		"payType":0,
+		"pickType":0,
+		"pickTime":"2017-01-08 15:00-18:00",
+	}
+}
+submit end---

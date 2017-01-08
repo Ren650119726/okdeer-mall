@@ -14,6 +14,7 @@ import java.util.Map;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.vo.MemberConsigneeAddressVo;
+import com.okdeer.mall.member.member.vo.UserAddressVo;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 
@@ -278,4 +279,16 @@ public interface MemberConsigneeAddressService {
 	 */
 	Map<String, Object> findUserDefilatSeckillAddress(Map<String, Object> params);
 	// End 12395 add by zengj
+	
+	// Begin V2.0 added by maojj 2017-01-07
+	/**
+	 * 
+	 * @Description: TODO
+	 * @param params
+	 * @return   
+	 * @author maojj
+	 * @date 2017年1月7日
+	 */
+	public List<UserAddressVo> findUserAddr(Map<String, Object> params);
+	// End V2.0 added by maojj 2017-01-07
 }
