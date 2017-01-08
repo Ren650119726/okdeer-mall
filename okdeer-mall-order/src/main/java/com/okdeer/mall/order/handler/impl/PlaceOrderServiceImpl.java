@@ -218,15 +218,11 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 */
 	private void updateActivityCoupons(TradeOrder tradeOrder, PlaceOrderParamDto req) throws Exception {
 		ActivityTypeEnum activityType = req.getActivityType();
-		int couponsType = req.getCouponsType();
 
 		if (activityType == ActivityTypeEnum.VONCHER) {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("orderId", tradeOrder.getId());
-			params.put("id", req.getRecordId());
-			params.put("collectUserId", tradeOrder.getUserPhone());
-			params.put("couponsId", req.getActivityItemId());
-			params.put("collectType", couponsType);
+			params.put("id", req.getActivityId());
 			// 更新代金券状态
 			int updateResult = activityCouponsRecordMapper.updateActivityCouponsStatus(params);
 			if (updateResult == 0) {
@@ -310,6 +306,9 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	}
 
 	public void updateLastUseAddr(MemberConsigneeAddress userUseAddr) {
+		if(userUseAddr == null){
+			return;
+		}
 		userUseAddr.setUseTime(DateUtils.getSysDate());
 		memberConsigneeAddressMapper.updateByPrimaryKeySelective(userUseAddr);
 	}

@@ -169,6 +169,7 @@ public class StoreSkuParserBo {
 				ActivitySaleGoods actGoods = this.currentActivitySkuMap.get(storeSku.getId());
 				ActivitySale actInfo = this.activityMap.get(actGoods.getSaleId());
 				currentSku.setActivityType(actInfo.getType().ordinal());
+				currentSku.setActivityId(actInfo.getId());
 				currentSku.setLimitBuyNum(actGoods.getTradeMax());
 
 				if (actInfo.getType() == ActivityTypeEnum.LOW_PRICE) {

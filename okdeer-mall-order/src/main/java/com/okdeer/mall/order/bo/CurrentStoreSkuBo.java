@@ -102,6 +102,8 @@ public class CurrentStoreSkuBo {
 	 */
 	private int activityType;
 
+	private String activityId;
+
 	/**
 	 * 是否上架
 	 */
@@ -376,6 +378,14 @@ public class CurrentStoreSkuBo {
 
 	public void setSaleNum(int saleNum) {
 		this.saleNum = saleNum;
+	}
+
+	public String getActivityId() {
+		return activityId;
+	}
+
+	public void setActivityId(String activityId) {
+		this.activityId = activityId;
 	}
 
 }
