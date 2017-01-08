@@ -18,7 +18,6 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.common.utils.BaseResult;
@@ -88,14 +87,14 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public PageUtils<AppRecommendDto> findListPage(AppRecommendParamDto paramDto) throws Exception {
 		PageHelper.startPage(paramDto.getPageNumber(), paramDto.getPageSize(), true);
 		List<ColumnAppRecommend> result = appRecommendMapper.findList(paramDto);
 		if (result == null) {
 			result = new ArrayList<ColumnAppRecommend>();
 		}
-		List<AppRecommendDto> list = BeanMapper.mapList(result, AppRecommendDto.class);
-		return new PageUtils<AppRecommendDto>(list);
+		return new PageUtils<ColumnAppRecommend>(result).toBean(AppRecommendDto.class);
 	}
 
 	/**
@@ -108,12 +107,12 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 	public BaseResult save(ColumnAppRecommend entity, List<ColumnSelectArea> areaList,
 			List<ColumnAppRecommendGoods> goodsList) throws Exception {
 		if (entity == null) {
-			return new BaseResult("ActivityAppRecommendDto信息不能为空");
+			return new BaseResult("服务商品推荐信息不能为空");
 		}
 
 		if (null == entity.getPlace() || null == entity.getAreaType()
 				|| !StringUtils.isNotEmptyAll(entity.getTitle(), entity.getCoverPicUrl())) {
-			return new BaseResult("ActivityAppRecommendDto信息不完整");
+			return new BaseResult("服务商品推荐信息不完整");
 		}
 
 		if (SelectAreaType.city.equals(entity.getAreaType()) && (null == areaList || 0 == areaList.size())) {
@@ -122,12 +121,14 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 
 		if (null == goodsList || 0 == goodsList.size()) {
 			return new BaseResult("关联商品不允许为空");
+		} else if (goodsList.size() < 3 || goodsList.size() > 20) {
+			return new BaseResult("推荐商品数量不能少于3款，同时不超过20款");
 		}
 
 		String recommendId = StringUtils.isBlank(entity.getId()) ? UuidUtils.getUuid() : entity.getId();
 
 		if (isRepeatArea(entity.getId(), entity.getAreaType(), entity.getPlace(), areaList)) {
-			return new BaseResult("首页在同一个区域只能添加一个正在展示的服务推荐");
+			return new BaseResult("首页栏位在同一个区域只能添加一个正在展示的服务推荐");
 		}
 
 		// 统计需要展示的商品数
@@ -140,14 +141,18 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 			}
 		}
 
+		if (showGoodsCount < 3 || showGoodsCount > 10) {
+			return new BaseResult("封面展示商品不能少于3款，同时不超过10款");
+		}
+
 		// 修改APP端服务推荐
 		entity.setGoodsCount(goodsList.size());
 		entity.setShowGoodsCount(showGoodsCount);
+		entity.setUpdateTime(DateUtils.getSysDate());
 		if (StringUtils.isNotBlank(entity.getId())) {
 			// 删除之前的插入的关联数据
 			selectAreaService.deleteByColumnId(entity.getId());
 			appRecommendGoodsService.deleteByRecommendId(entity.getId());
-			entity.setUpdateTime(DateUtils.getSysDate());
 			appRecommendMapper.update(entity);
 		} else {
 			entity.setId(recommendId);

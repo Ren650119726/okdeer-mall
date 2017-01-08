@@ -17,17 +17,19 @@
 		<result property="updateUserId" column="update_user_id" />
 		<result property="disabled" column="disabled" />
 		<result property="type" column="type" />
+		<result property="h5Url" column="h5_url" />
 	</resultMap>
 
     <sql id="columns">
-		id,name,status,store_id,start_time,end_time,`limit`,create_time,create_user_id,update_time,update_user_id,disabled,type
+		id,name,status,store_id,start_time,end_time,`limit`,create_time,create_user_id,update_time,update_user_id,disabled,type,h5_url
 	</sql>
 
     <select id="list" parameterType="map" resultMap="ActivitySale">
 		select <include refid="columns"/>
 		,(select count(*) from activity_sale_goods asg where asg.sale_id = s.id) as activitySaleGoodsCount 
 		from activity_sale s
-		where disabled = 0 and s.store_id = #{storeId}
+		where disabled = 0 
+		and s.store_id = #{storeId}
 		<if test="saleName != null and saleName != ''">
 			and name like concat('%',#{saleName},'%' )
 		</if>
@@ -55,6 +57,9 @@
 		
 		<if test="status != null and status != ''">
 			and status = #{status}
+		</if>
+		<if test="type != null and type != ''">
+			and type = #{type}
 		</if>
 		order by create_time desc
 	</select>
@@ -152,9 +157,16 @@
 	 		</foreach>  
 		</if>
 		
+		<if test="skuType != null">
+			and s.type = #{skuType}
+		</if>
+		<if test="notSkuType != null">
+			and s.type != #{notSkuType}
+		</if>
+		
 		order by 
 		<if test="id != null and id != ''">
-			asg.sort asc,
+			asg.sort desc,
 		</if>
 		s.create_time desc
 	</select>
@@ -175,7 +187,8 @@
             #{updateTime},
             #{updateUserId},
             #{disabled},
-            #{type}
+            #{type},
+            #{h5Url}
         )
 	</insert>
 
@@ -214,6 +227,12 @@
 			<if test="disabled != null">
 				disabled = #{disabled},
 			</if>
+			<if test="type != null">
+				type = #{type},
+			</if>
+			<if test="h5Url != null">
+				h5_url = #{h5Url},
+			</if>
         id = #{id}
         where id = #{id}
     </update>
@@ -229,9 +248,11 @@
     <select id="validateExist" parameterType="map" resultType="int">
     	select count(*) from activity_sale s
     	where s.disabled = 0 
-    	and s.create_user_id = #{createUserId}
+    	and s.store_id = #{storeId}
     	<!-- 未开始0,进行中1的才算存在-->
     	and (s.status = 0 or s.status = 1)
+		<!-- 特惠 -->
+		<if test="type == 5">
 		AND 
 		(
 			#{startTime} BETWEEN s.start_time and s.end_time 
@@ -240,13 +261,17 @@
        		OR 
        		(start_time &gt;= #{startTime} and end_time &lt;= #{endTime})
        	)
+       	</if>
     	<if test="id != null and id != ''">
     		and s.id != #{id}
+    	</if>
+    	<if test="type != null">
+    		and s.type = #{type}
     	</if>
     </select>
 
      <update id="updateBatchStatus" parameterType="map">
-    	update activity_sale set status = #{status} where id in 
+    	update activity_sale set status = #{status} <if test="endTime != null">,end_Time = #{endTime}</if> where id in 
 		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">  
   			#{item}  
  		</foreach>  

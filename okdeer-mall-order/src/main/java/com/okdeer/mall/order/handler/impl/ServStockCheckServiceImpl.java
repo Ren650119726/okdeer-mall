@@ -11,8 +11,8 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
-import com.okdeer.mall.common.vo.Request;
-import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.common.dto.Request;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.utils.TradeOrderStock;
@@ -89,7 +89,7 @@ public class ServStockCheckServiceImpl implements RequestHandler<ServiceOrderReq
 					&& req.getData().getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
 				// 到店消费订单
 				if (stockNum == 0) {
-					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_ENOUGH);
+					resp.setResult(ResultCodeEnum.SERV_GOODS_SOLD_OUT);
 				} else {
 					resp.setCode(299);
 					resp.setMessage("抱歉，该商品剩余不足，仅能购买" + stockNum + "件");

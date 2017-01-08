@@ -30,7 +30,7 @@ import org.springframework.util.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
@@ -2827,7 +2827,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			}
 
 			tradeOrderItem.setMainPicPrl(mainPicPrl);
-			tradeOrderItem.setSpuType(GoodsTypeEnum.SINGLE_GOODS);
+			tradeOrderItem.setSpuType(SpuTypeEnum.physicalSpu);
 			tradeOrderItem.setAppraise(AppraiseEnum.NOT_APPROPRIATE);
 			// 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
 			int actType = amountInParam.getActType();
@@ -2901,10 +2901,10 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 				tradeOrderItem.setPreferentialPrice(new BigDecimal("0.00"));
 				tradeOrderItem.setActualAmount(singlesPriceSum);
 				tradeOrderItem.setIncome(singlesPriceSum);
-				tradeOrderItem.setActivityType("0");
+				tradeOrderItem.setActivityType(0);
 				tradeOrderItem.setActivityId("0");
 			}
-			tradeOrderItem.setActivityType(amountInParam.getActivityType());
+			//tradeOrderItem.setActivityType(amountInParam.getActivityType());
 			tradeOrderItem.setActivityId(amountInParam.getActivityId());
 			tradeOrderItem.setBarCode(barCode);
 			tradeOrderItem.setStyleCode(styleCode);
@@ -3384,7 +3384,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 								TradeOrderItem orderItem = new TradeOrderItem();
 								orderItem.setId(UuidUtils.getUuid());
 								orderItem.setActivityId(activityId);
-								orderItem.setActivityType(activityType);
+								//orderItem.setActivityType(activityType);
 								BigDecimal groupPrice = new BigDecimal(activityGroupGoods.getGourpPrice());
 								BigDecimal bigSkuNum = new BigDecimal(skuNum);
 
@@ -3538,14 +3538,14 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 								}
 
 								orderItem.setMainPicPrl(mainPicPrl);
-								orderItem.setSpuType(GoodsTypeEnum.SINGLE_GOODS);
+								orderItem.setSpuType(SpuTypeEnum.serviceSpu);
 								orderItem.setAppraise(AppraiseEnum.NOT_APPROPRIATE);
 
 								orderItem.setPreferentialPrice(new BigDecimal("0.00"));
 								orderItem.setActualAmount(skuPriceSum);
 								orderItem.setActivityId(activityId);
 
-								orderItem.setActivityType(activityType);
+								//orderItem.setActivityType(activityType);
 								orderItem.setBarCode(barCode);
 								orderItem.setStyleCode(styleCode);
 								orderItem.setCompainStatus(CompainStatusEnum.NOT_COMPAIN);
@@ -3696,7 +3696,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 							TradeOrderItem orderItem = new TradeOrderItem();
 							orderItem.setId(UuidUtils.getUuid());
 							orderItem.setActivityId(activityId);
-							orderItem.setActivityType(activityType);
+							//orderItem.setActivityType(activityType);
 							BigDecimal groupPrice = new BigDecimal(activityGroupGoods.getGourpPrice());
 							BigDecimal bigSkuNum = new BigDecimal(skuNum);
 							orderItem.setActualAmount(groupPrice.multiply(bigSkuNum));
@@ -3847,14 +3847,14 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 							}
 
 							orderItem.setMainPicPrl(mainPicPrl);
-							orderItem.setSpuType(GoodsTypeEnum.SINGLE_GOODS);
+							orderItem.setSpuType(SpuTypeEnum.physicalSpu);
 							orderItem.setAppraise(AppraiseEnum.NOT_APPROPRIATE);
 
 							orderItem.setPreferentialPrice(new BigDecimal("0.00"));
 							orderItem.setActualAmount(skuPriceSum);
 							orderItem.setActivityId(activityId);
 
-							orderItem.setActivityType(activityType);
+							//orderItem.setActivityType(activityType);
 							orderItem.setBarCode(barCode);
 							orderItem.setStyleCode(styleCode);
 							orderItem.setCompainStatus(CompainStatusEnum.NOT_COMPAIN);
@@ -4484,11 +4484,11 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 			int intSpuType = Integer.valueOf(spuType);
 
 			if (intSpuType == 0) {
-				orderItem.setSpuType(GoodsTypeEnum.SINGLE_GOODS);
+				orderItem.setSpuType(SpuTypeEnum.physicalSpu);
 			} else if (intSpuType == 1) {
-				orderItem.setSpuType(GoodsTypeEnum.SERVICE_GOODS);
+				orderItem.setSpuType(SpuTypeEnum.serviceSpu);
 			} else if (intSpuType == 2) {
-				orderItem.setSpuType(GoodsTypeEnum.NO_BAR_CODE_GOODS);
+				orderItem.setSpuType(SpuTypeEnum.notBarCodeSpu);
 			}
 
 			orderItem.setServiceAssurance(Integer.valueOf(serviceAssurance));

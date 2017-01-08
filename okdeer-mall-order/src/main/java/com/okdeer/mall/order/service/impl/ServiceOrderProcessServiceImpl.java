@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuPicture;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
@@ -70,11 +70,11 @@ import com.okdeer.mall.activity.seckill.service.ActivitySeckillRangeService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.common.dto.Request;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.enums.RangeTypeEnum;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.common.vo.OrderQueue;
-import com.okdeer.mall.common.vo.Request;
-import com.okdeer.mall.common.vo.Response;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
@@ -783,7 +783,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		tradeOrderItem.setSkuName(goodsStoreSku.getName());
 		tradeOrderItem.setPropertiesIndb(propertiesIndb);
 		tradeOrderItem.setMainPicPrl(goodsStoreSkuPicture.getUrl());
-		tradeOrderItem.setSpuType(GoodsTypeEnum.SERVICE_GOODS);
+		tradeOrderItem.setSpuType(SpuTypeEnum.serviceSpu);
 		tradeOrderItem.setUnitPrice(orderReq.getUnitPrice());
 		tradeOrderItem.setQuantity(orderReq.getSkuNum());
 		// 商品总额=商品单价*数量

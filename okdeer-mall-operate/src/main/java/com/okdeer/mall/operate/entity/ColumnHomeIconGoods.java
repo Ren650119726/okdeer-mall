@@ -14,38 +14,39 @@ package com.okdeer.mall.operate.entity;
  */
 public class ColumnHomeIconGoods {
 
-    private String id;
-    /**
-     * 首页ICON记录ID(home_icon)
-     */
-    private String homeIconId;
-    /**
-     * 商品ID（关联goods_store_sku表）
-     */
-    private String storeSkuId;
+	private String id;
 
+	/**
+	 * 首页ICON记录ID(home_icon)
+	 */
+	private String homeIconId;
 
-    public String getId() {
-        return id;
-    }
+	/**
+	 * 商品ID（关联goods_sku表）
+	 */
+	private String skuId;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public String getHomeIconId() {
-        return homeIconId;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public void setHomeIconId(String homeIconId) {
-        this.homeIconId = homeIconId;
-    }
+	public String getHomeIconId() {
+		return homeIconId;
+	}
 
-    public String getStoreSkuId() {
-        return storeSkuId;
-    }
+	public void setHomeIconId(String homeIconId) {
+		this.homeIconId = homeIconId;
+	}
 
-    public void setStoreSkuId(String storeSkuId) {
-        this.storeSkuId = storeSkuId;
-    }
+	public String getSkuId() {
+		return skuId;
+	}
+
+	public void setSkuId(String skuId) {
+		this.skuId = skuId;
+	}
 }

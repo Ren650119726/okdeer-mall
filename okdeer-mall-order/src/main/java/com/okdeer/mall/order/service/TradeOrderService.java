@@ -1008,4 +1008,21 @@ public interface TradeOrderService {
      * @throws Exception
      */
     public void dealWithStoreConsumeOrder(TradeOrder tradeOrder) throws Exception;
+    
+    /**
+	 * @Description: tuzhd根据用户id查询其支付完成的订单总量 用于首单条件判断
+	 * @param userId 用户id
+	 * @return int 返回统计值
+	 * @author tuzhd
+	 * @date 2016年12月31日
+	 */
+	public int selectCountByUserStatus(String userId);
+	/**
+	 * @Description: 校验用户使用新人专享代金券时 是否符合新用户及未使用该类型代金券的条件
+	 * @param userId
+	 * @return boolean  不符合新用户专享条件返回false，否则为true
+	 * @author tuzhd
+	 * @date 2016年12月31日
+	 */
+	public boolean checkUserUseCoupons(String userId);
 }

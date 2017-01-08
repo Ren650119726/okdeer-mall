@@ -47,7 +47,7 @@ public class CancelOrderServiceApiTest{
 		
 		CancelOrderParamDto cancelOrderParamDto = new CancelOrderParamDto();
 		cancelOrderParamDto.setCancelType(OrderCancelType.CANCEL_BY_BUYER);
-		cancelOrderParamDto.setOrderId("8a8080a25867791701586c1a9c2c0070");
+		cancelOrderParamDto.setOrderId("8a94e4095884c533015886145e99000f");
 		cancelOrderParamDto.setReason("商品不好");
 		cancelOrderParamDto.setUserId("145312257950d7a66015194e478d8594");
 		CancelOrderDto cancelOrderRespDto = cancelOrderApi.cancelOrder(cancelOrderParamDto);
@@ -68,7 +68,7 @@ public class CancelOrderServiceApiTest{
 
 	@Test
 	public void testIsBreach(){
-		String orderId = "8a94e4cb5862e252015862e378e70001";
+		String orderId = "8a94e4095884c533015886145e99000f";
 		try {
 			boolean bln = cancelOrderApi.isBreach(orderId);
 			System.out.println(bln);

@@ -100,7 +100,7 @@
 			<result column="style_code" property="styleCode" jdbcType="VARCHAR" />
 			<result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
 			<result column="spu_type" property="spuType" jdbcType="TINYINT"
-				javaType="com.okdeer.archive.goods.base.enums.GoodsTypeEnum" />
+				javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum" />
 			<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
 			<result column="quantity" property="quantity" jdbcType="INTEGER" />
 			<result column="weight" property="weight" jdbcType="DECIMAL" />
@@ -234,7 +234,7 @@
 			<result column="style_code" property="styleCode" jdbcType="VARCHAR" />
 			<result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
 			<result column="spu_type" property="spuType" jdbcType="TINYINT"
-				javaType="com.okdeer.archive.goods.base.enums.GoodsTypeEnum" />
+				javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum" />
 			<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
 			<result column="quantity" property="quantity" jdbcType="INTEGER" />
 			<result column="service_assurance" property="serviceAssurance"
@@ -3839,7 +3839,7 @@
 			<result column="style_code" property="styleCode" jdbcType="VARCHAR" />
 			<result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
 			<result column="spu_type" property="spuType" jdbcType="TINYINT"
-				javaType="com.okdeer.archive.goods.base.enums.GoodsTypeEnum" />
+				javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum" />
 			<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
 			<result column="quantity" property="quantity" jdbcType="INTEGER" />
 			<result column="service_assurance" property="serviceAssurance"
@@ -4217,7 +4217,7 @@
 			<result column="style_code" property="styleCode" jdbcType="VARCHAR" />
 			<result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
 			<result column="spu_type" property="spuType" jdbcType="TINYINT"
-				javaType="com.okdeer.archive.goods.base.enums.GoodsTypeEnum" />
+				javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum" />
 			<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
 			<result column="quantity" property="quantity" jdbcType="INTEGER" />
 			<result column="service_assurance" property="serviceAssurance"
@@ -5145,5 +5145,17 @@
 		<if test="maxSize != null and maxSize > 0">
 			limit #{maxSize,jdbcType=INTEGER}
 		</if>
+	</select>
+	
+	<!-- tuzhd根据用户id查询其支付完成的订单总量 用于首单条件判断 -->
+	<select id="selectCountByUserStatus" resultType="int">
+		SELECT COUNT(1)
+		FROM trade_order trade
+		WHERE 
+			<!-- 订单状态 -->
+			 trade.`status` = 5
+			<if test="null != userId and ''!= userId">
+				AND trade.user_id = #{userId,jdbcType=VARCHAR} 
+			</if>
 	</select>
 </mapper>

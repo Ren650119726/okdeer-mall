@@ -1,6 +1,23 @@
 
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_ADD;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_DEL;
+import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.common.message.Message;
@@ -31,14 +48,6 @@ import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-
-import static com.okdeer.common.consts.ELTopicTagConstants.*;
 
 /**
  * 
@@ -53,16 +62,9 @@ import static com.okdeer.common.consts.ELTopicTagConstants.*;
  *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi")
-@org.springframework.stereotype.Service
 public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, ActivitySaleService {
 
 	private static final Logger log = Logger.getLogger(ActivitySaleServiceImpl.class);
-
-	/**
-	 * mq注入
-	 */
-	@Autowired
-	private RocketMQProducer rocketMQProducer;
 
 	@Autowired
 	private ActivitySaleMapper activitySaleMapper;
@@ -90,16 +92,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Autowired
 	RollbackMQProducer rollbackMQProducer;
 
-	public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
-		save(activitySale,asgList);
-	}
-
-	public void update(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
-		update(activitySale,asgList);
-	}
-
 	@Transactional(rollbackFor = Exception.class)
-	public void saveOld(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
+	public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		try {
@@ -248,7 +242,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	}
 
 	@Transactional(rollbackFor = Exception.class)
-	public void updateOld(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
+	public void update(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		List<String> rpcIdByBathSkuList = new ArrayList<String>();
@@ -302,6 +296,11 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				a.setDisabled(Disabled.valid);
 				a.setSaleId(activitySale.getId());
 				a.setId(UuidUtils.getUuid());
+				
+				a.setCreateTime(activitySale.getUpdateTime());
+				a.setUpdateTime(activitySale.getUpdateTime());
+				a.setCreateUserId(activitySale.getUpdateUserId());
+				a.setUpdateUserId(activitySale.getUpdateUserId());
 
 				// 记录rpcId
 				String rpcId = UuidUtils.getUuid();
@@ -357,45 +356,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	}
 	
 	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public void closeSaleGoods(String saleGoodsId) throws Exception {
-		/**
-		 * 1;将低价商品标记为失效
-		 * 2;修改 改店铺商品sku活动字段清空
-		 * 3;释放店铺商品库存
-		 * 4;同步该店铺商品库存到erp
-		 */
-		List<String> rpcIdByStockList = new ArrayList<String>();
-		List<String> rpcIdBySkuList = new ArrayList<String>();
-		List<String> rpcIdByBathSkuList = new ArrayList<String>();
-		try{
-			//将低价商品标记为失效
-			ActivitySaleGoods saleGoods = activitySaleGoodsMapper.get(saleGoodsId);
-			ActivitySale sale = activitySaleMapper.get(saleGoods.getSaleId());
-			ActivitySaleGoods temp = new ActivitySaleGoods();
-			temp.setId(saleGoods.getId());
-			temp.setDisabled(Disabled.invalid);
-			activitySaleGoodsMapper.updateById(temp);
-			// 店铺商品表也要先把关联活动清空
-			String rcpId = UuidUtils.getUuid();
-			rpcIdByBathSkuList.add(rcpId);
-			goodsStoreSkuServiceApi.updateActivityByActivityIds(new String[] { saleGoods.getSaleId() }, rcpId);
-			//同步该店铺商品库存到erp
-			// 库存同步
-			this.syncGoodsStock(saleGoods, sale.getCreateUserId(), sale.getStoreId(),
-					StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
-			
-		}catch (Exception e) {
-			// 现在实物订单库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
-			// rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
-			log.error("关闭低价抢购商品"+saleGoodsId+"失败，事务回滚",e);
-			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
-			rollbackMQProducer.sendSkuBatchRollbackMsg(rpcIdByBathSkuList);
-			throw e;
-		}
-	}
-
-	@Override
 	public ActivitySale get(String id) {
 		return activitySaleMapper.get(id);
 	}
@@ -409,13 +369,17 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateBatchStatus(List<String> ids, int status, String storeId, String createUserId) throws Exception {
+	public void updateBatchStatus(List<String> ids, int status, String storeId, String createUserId,Integer activityType) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdByBathSkuList = new ArrayList<String>();
 		try {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("ids", ids);
 			params.put("status", status);
+			//modify by mengsj 如果是低价抢购活动，关闭时设置活动结束时间为当前日期
+			if(activityType == ActivityTypeEnum.LOW_PRICE.ordinal() && status == ActivitySaleStatus.closed.ordinal()){
+				params.put("endTime", new Date());
+			}
 			activitySaleMapper.updateBatchStatus(params);
 			
 			// 如果状态时进行中,要把活动关联的所有商品状态改为上架
@@ -507,17 +471,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		return activitySaleMapper.validateExist(map);
 	}
 
-	public void deleteActivitySaleGoods(String storeId, String createUserId, String activitySaleGoodsId,
-										String goodsStoreSkuId) throws Exception {
-		deleteActivitySaleGoodsOld(storeId,createUserId,activitySaleGoodsId,goodsStoreSkuId);
-		// 发送消息，同步数据到搜索引擎
-		ActivityMessageParamDto activityMessageParamDto = new ActivityMessageParamDto();
-		activityMessageParamDto.setSkuIds(Arrays.asList(goodsStoreSkuId));
-		structureProducer(activityMessageParamDto , 0);
-	}
-
 	@Transactional(rollbackFor = Exception.class)
-	public void deleteActivitySaleGoodsOld(String storeId, String createUserId, String activitySaleGoodsId,
+	public void deleteActivitySaleGoods(String storeId, String createUserId, String activitySaleGoodsId,
 			String goodsStoreSkuId) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
@@ -589,9 +544,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 
 	@Override
 	public ActivitySale findActivitySaleByStoreId(String storeId,
-			Integer activiType) {
+			Integer activiType,Integer status) {
 		if(StringUtils.isNotBlank(storeId) && activiType != null){
-			return activitySaleMapper.findByActivitySaleByStoreId(storeId, activiType, null);
+			return activitySaleMapper.findByActivitySaleByStoreId(storeId, activiType, status);
 		}
 		return new ActivitySale();
 	}
@@ -607,26 +562,5 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		}
 		return activitySaleMapper.findByActivitySaleByStoreId(storeId, ActivityTypeEnum.LOW_PRICE.ordinal(),
 				ActivitySaleStatus.ing.getValue());
-	}
-
-	/**
-	 * 发送消息同步数据到搜索引擎执行
-	 * @param paramDto ActivityMessageParamDto
-	 * @param type Integer
-	 * @throws Exception
-	 */
-	private void structureProducer(ActivityMessageParamDto paramDto, Integer type) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		String json = mapper.writeValueAsString(paramDto);
-		String tag = "";
-		if (type == 0) {
-			tag = TAG_SALE_EL_DEL;
-		} else if (type == 1) {
-			tag = TAG_LOWPRICE_EL_ADD;
-		} else if (type == 2) {
-			tag = TAG_LOWPRICE_EL_UPDATE;
-		}
-		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
-		rocketMQProducer.send(msg);
 	}
 }

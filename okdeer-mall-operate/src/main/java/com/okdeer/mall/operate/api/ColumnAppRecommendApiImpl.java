@@ -29,6 +29,7 @@ import com.okdeer.mall.operate.entity.ColumnSelectArea;
 import com.okdeer.mall.operate.enums.AppRecommendPlace;
 import com.okdeer.mall.operate.enums.AppRecommendStatus;
 import com.okdeer.mall.operate.enums.ColumnType;
+import com.okdeer.mall.operate.enums.GoodsShowStatus;
 import com.okdeer.mall.operate.service.ColumnAppRecommendApi;
 import com.okdeer.mall.operate.service.ColumnAppRecommendGoodsService;
 import com.okdeer.mall.operate.service.ColumnAppRecommendService;
@@ -237,7 +238,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 			return new ArrayList<AppRecommendDto>();
 		}
 		// 根据城市查询相应的服务商品推荐栏位
-		List<String> ids = selectAreaService.findColumnIdsByCity(cityId, provinceId, ColumnType.appRecommend.ordinal());
+		List<String> ids = selectAreaService.findColumnIdsByCity(provinceId, cityId, ColumnType.appRecommend.ordinal());
 		if (null == ids || ids.size() == 0) {
 			return new ArrayList<AppRecommendDto>();
 		}
@@ -245,6 +246,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		AppRecommendParamDto paramDto = new AppRecommendParamDto();
 		paramDto.setIds(ids);
 		paramDto.setPlace(place);
+		paramDto.setSortType(1);
 
 		// 查询服务商品推荐
 		List<AppRecommendDto> dtoList = findList(paramDto);
@@ -263,13 +265,23 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		}
 		// 组装数据
 		for (AppRecommendDto dto : dtoList) {
-			// 初始化服务商品推荐中的商品关联集合
+			// 初始化服务商品推荐中的全部商品关联集合
 			dto.setGoodsList(new ArrayList<>());
+			// 初始化服务商品推荐中的全部商品ID集合
 			dto.setStoreSkuIds(new ArrayList<>());
+			// 初始化服务商品推荐中的展示商品关联集合
+			dto.setShowGoodsList(new ArrayList<>());
+			// 初始化服务商品推荐中的展示商品ID集合
+			dto.setShowStoreSkuIds(new ArrayList<>());
 			for (AppRecommendGoodsDto goodsDto : goodsDtoList) {
 				if (dto.getId().equals(goodsDto.getRecommendId())) {
 					dto.getGoodsList().add(goodsDto);
 					dto.getStoreSkuIds().add(goodsDto.getStoreSkuId());
+					// 判断商品是否需要展示
+					if (goodsDto.getIsShow().equals(GoodsShowStatus.show.ordinal())) {
+						dto.getShowGoodsList().add(goodsDto);
+						dto.getShowStoreSkuIds().add(goodsDto.getStoreSkuId());
+					}
 				}
 			}
 		}

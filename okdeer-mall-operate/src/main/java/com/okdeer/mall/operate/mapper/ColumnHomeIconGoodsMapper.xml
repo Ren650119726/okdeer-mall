@@ -4,11 +4,11 @@
     <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.ColumnHomeIconGoods" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="home_icon_id" property="homeIconId" jdbcType="VARCHAR" />
-        <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+        <result column="sku_id" property="skuId" jdbcType="VARCHAR" />
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, home_icon_id, store_sku_id
+        id, home_icon_id, sku_id
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -48,8 +48,8 @@
             <if test="homeIconId != null" >
                 home_icon_id,
             </if>
-            <if test="storeSkuId != null" >
-                store_sku_id,
+            <if test="skuId != null" >
+                sku_id,
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
@@ -59,19 +59,19 @@
             <if test="homeIconId != null" >
                 #{homeIconId,jdbcType=VARCHAR},
             </if>
-            <if test="storeSkuId != null" >
-                #{storeSkuId,jdbcType=VARCHAR},
+            <if test="skuId != null" >
+                #{skuId,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
     
     <insert id="insertMore" parameterType="java.util.List">
 		INSERT INTO column_home_icon_goods (
-			id, home_icon_id, store_sku_id
+			id, home_icon_id, sku_id
         ) VALUES
 		<foreach collection="list" index="index" item="item" separator=",">
 			(
-				#{item.id}, #{item.homeIconId}, #{item.storeSkuId}
+				#{item.id}, #{item.homeIconId}, #{item.skuId}
 			)
 		</foreach>
 	</insert>
@@ -82,8 +82,8 @@
             <if test="homeIconId != null" >
                 home_icon_id = #{homeIconId,jdbcType=VARCHAR},
             </if>
-            <if test="storeSkuId != null" >
-                store_sku_id = #{storeSkuId,jdbcType=VARCHAR},
+            <if test="skuId != null" >
+                sku_id = #{skuId,jdbcType=VARCHAR},
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}

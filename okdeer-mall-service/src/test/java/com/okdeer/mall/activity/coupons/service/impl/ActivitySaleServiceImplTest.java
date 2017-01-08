@@ -9,7 +9,6 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.ApplicationTests;
@@ -17,12 +16,12 @@ import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.enums.ActivitySaleStatus;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleELServiceApi;
 
 public class ActivitySaleServiceImplTest extends ApplicationTests {
 	
 	@Autowired
-	private ActivitySaleServiceApi service;
+	private ActivitySaleELServiceApi service;
 	
 	@Test
 	public void testSave() {
@@ -68,7 +67,7 @@ public class ActivitySaleServiceImplTest extends ApplicationTests {
 	public void testUpdate() {
 		try {
 			String saleGoodsId = "8a94e71f5968724c01596872523b0004";
-			service.closeSaleGoods(saleGoodsId);
+//			service.closeSaleGoods(saleGoodsId);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -8,8 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.okdeer.common.consts.LogConstants;
-import com.okdeer.mall.common.vo.Request;
-import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.common.dto.Request;
+import com.okdeer.mall.common.dto.Response;
 
 public class RequestHandlerChain<Q,R> {
 	

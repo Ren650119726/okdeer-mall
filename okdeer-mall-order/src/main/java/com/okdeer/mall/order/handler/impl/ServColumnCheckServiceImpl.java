@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.mall.common.vo.Request;
-import com.okdeer.mall.common.vo.Response;
+import com.okdeer.mall.common.dto.Request;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.enums.ServerStatus;

@@ -48,6 +48,8 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
 import com.alibaba.rocketmq.client.producer.LocalTransactionState;
+import com.alibaba.rocketmq.client.producer.SendResult;
+import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
@@ -98,6 +100,7 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.common.consts.PointConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -124,11 +127,11 @@ import com.okdeer.mall.activity.group.service.ActivityGroupService;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillMapper;
 import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.enums.LogisticsType;
+import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
-import com.okdeer.mall.common.vo.Response;
-import com.okdeer.mall.constant.MessageConstant;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
@@ -1226,18 +1229,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public boolean insertTradeOrder(TradeOrder tradeOrder) throws Exception {
-
-		JsonConfig jsonConfig = new JsonConfig();
-		jsonConfig.registerJsonValueProcessor(Date.class, new JsonDateValueProcessor());
-
-		StoreInfo storeInfo = getStoreInfo(tradeOrder.getStoreId());
-		JSONObject json = JSONObject.fromObject(tradeOrder, jsonConfig);
-		json.put("storeType", storeInfo.getType());
-		List<StoreAgentCommunity> communitys = storeInfoService.getAgentCommunitysByStoreId(tradeOrder.getStoreId());
-		if (!Iterables.isEmpty(communitys)) {
-			json.put("storeAgentCommunity", communitys.get(0));
-		}
-		return insertOrderAndSendMsg(storeInfo, json, tradeOrder);
+		insertOrder(tradeOrder);
+		return true;
 	}
 
 	/**
@@ -4524,7 +4517,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 					// 消费完，增加积分
 					addPoint(data.get("userId").toString(), data.get("detailId").toString(), unitPrice);
-					
+
 					serviceStockManagerService.updateStock(stockAdjustVo);
 					// 调用dubbo接口
 					BaseResultDto result = payTradeServiceApi.balanceTrade(payTradeVo);
@@ -5289,6 +5282,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// End 重构4.1 add by wusw 20160723
 
 	// Begin 重构4.1 add by zhaoqc 20160722
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void updataRechargeOrderStatus(TradeOrder tradeOrder, String sporderId) throws ServiceException {
 		// 修改订单状态
@@ -5299,6 +5293,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		relation.setOrderId(tradeOrder.getId());
 		relation.setThirdOrderNo(sporderId);
 		this.tradeOrderThirdRelationMapper.insertSelective(relation);
+
+		try {
+			// 添加消费积分
+			addPoint(tradeOrder.getUserId(), tradeOrder.getId(), tradeOrder.getActualAmount());
+		} catch (Exception e) {
+			throw new ServiceException(e);
+		}
+
 	}
 
 	// End 重构4.1 add by zhaoqc 20160722
@@ -6035,7 +6037,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 											OrderItemDetailConsumeVo consumeVo = successOrderDetailMap.get(orderId);
 											// 消费完，增加积分
-											addPoint(consumeVo.getUserId(), consumeVo.getOrderItemDetailId(), consumeVo.getDetailActualAmount());
+											addPoint(consumeVo.getUserId(), consumeVo.getOrderItemDetailId(),
+													consumeVo.getDetailActualAmount());
 											// 修改库存
 											updateServiceStoreStock(consumeVo, rpcIdList,
 													StockOperateEnum.SEND_OUT_GOODS, userId, storeId);
@@ -6593,8 +6596,46 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			addPointsParamDto.setPointsRuleCode(PointsRuleCode.APP_CONSUME);
 			addPointsParamDto.setUserId(userId);
 			addPointsParamDto.setBusinessId(orderId);
-			MQMessage anMessage = new MQMessage(MessageConstant.POINT_TOPIC, (Serializable) addPointsParamDto);
-			rocketMQProducer.sendMessage(anMessage);
+			MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDto);
+			SendResult sendResult = rocketMQProducer.sendMessage(anMessage);
+			if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
+				logger.info("发送消费积分消息成功，发送数据：{},topic:{}", JsonMapper.nonDefaultMapper().toJson(addPointsParamDto),
+						PointConstants.POINT_TOPIC);
+			} else {
+				logger.error("发送消费积分消息失败,topic:{}", PointConstants.POINT_TOPIC);
+			}
 		}
 	}
+	
+	
+	/**
+	 * @Description: tuzhd根据用户id查询其支付完成的订单总量 用于首单条件判断
+	 * @param userId 用户id
+	 * @return int 返回统计值
+	 * @author tuzhd
+	 * @date 2016年12月31日
+	 */
+	public int selectCountByUserStatus(String userId){
+		return tradeOrderMapper.selectCountByUserStatus( userId);
+	}
+	
+	/**
+	 * @Description: 校验用户使用新人专享代金券时 是否符合新用户及未使用该类型代金券的条件
+	 * @param userId
+	 * @return boolean  不符合新用户专享条件返回false，否则为true
+	 * @author tuzhd
+	 * @date 2016年12月31日
+	 */
+	public boolean checkUserUseCoupons(String userId){
+		//根据用户id查询其支付完成的订单总量 用于首单条件判断
+		int orderCount = selectCountByUserStatus(userId);
+		if(orderCount == 0 ){
+			//根据用户id查询其是否存在已使用的新用户专享代金劵  用于首单条件判断 
+			if(activityCouponsRecordMapper.findCouponsCountByUser(UseUserType.ONlY_NEW_USER, userId) == 0){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }

@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -88,15 +88,15 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		}
 		if (null == entity.getPlace() || null == entity.getTaskScope() || null == entity.getTaskType()
 				|| !StringUtils.isNotEmptyAll(entity.getName(), entity.getIconUrl())) {
-			return new BaseResult("HomeIconDto信息不完整");
+			return new BaseResult("首页ICON信息不完整");
 		}
 
 		if (SelectAreaType.city.equals(entity.getTaskScope()) && (null == areaList || 0 == areaList.size())) {
-			return new BaseResult("城市ID集合 当任务范围为1:按城市选择任务范围时， 不允许为空");
+			return new BaseResult("当任务范围为“按城市选择任务范围”时， 区域列表不允许为空");
 		}
 
 		if (HomeIconTaskType.goods.equals(entity.getTaskType()) && (null == storeSkuIds || 0 == storeSkuIds.size())) {
-			return new BaseResult("商品ID集合   当任务内容  0:指定指定商品推荐时， 不允许为空");
+			return new BaseResult("当任务内容为“指定商品推荐”时， 商品列表不允许为空");
 		}
 
 		// 设置首页ICONID
@@ -125,11 +125,11 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		}
 
 		// 修改首页ICON
+		entity.setUpdateTime(DateUtils.getSysDate());
 		if (StringUtils.isNotBlank(entity.getId())) {
 			// 删除之前的插入的关联数据
 			selectAreaService.deleteByColumnId(entity.getId());
 			homeIconGoodsService.deleteByHomeIconId(entity.getId());
-			entity.setUpdateTime(DateUtils.getSysDate());
 			homeIconMapper.update(entity);
 		} else {
 			entity.setId(homeIconId);
@@ -158,7 +158,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 				goods = new ColumnHomeIconGoods();
 				goods.setId(UuidUtils.getUuid());
 				goods.setHomeIconId(entity.getId());
-				goods.setStoreSkuId(item);
+				goods.setSkuId(item);
 				goodsList.add(goods);
 			}
 			if (goodsList.size() > 0) {

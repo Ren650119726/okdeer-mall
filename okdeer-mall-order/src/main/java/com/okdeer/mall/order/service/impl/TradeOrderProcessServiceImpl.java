@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.archive.goods.base.enums.GoodsTypeEnum;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysDict;
 import com.okdeer.archive.system.service.ISysDictServiceApi;
@@ -246,9 +246,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 	 * 结算操作时的数据校验
 	 */
 	@Override
-	public TradeOrderRespDto validateStoreSkuStock(String requestStr) throws Exception {
-		// 交易订单请求
-		TradeOrderReqDto reqDto = JsonMapper.nonDefaultMapper().fromJson(requestStr, TradeOrderReqDto.class);
+	public TradeOrderRespDto validateStoreSkuStock(TradeOrderReqDto reqDto) throws Exception {
 		// Begin added by maojj 2016-08-10 Bug:12572
 		reqDto.setOrderOptType(OrderOptTypeEnum.ORDER_SETTLEMENT);
 		// End added by maojj 2016-08-190
@@ -434,7 +432,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         tradeOrderItem.setId(UuidUtils.getUuid());
         tradeOrderItem.setOrderId(orderId);
         tradeOrderItem.setQuantity(1);
-        tradeOrderItem.setSpuType(GoodsTypeEnum.SERVICE_GOODS);
+        tradeOrderItem.setSpuType(SpuTypeEnum.serviceSpu);
         tradeOrderItem.setStatus(OrderItemStatusEnum.NO_REFUND);
         tradeOrderItem.setCompainStatus(CompainStatusEnum.NOT_COMPAIN);
         tradeOrderItem.setAppraise(AppraiseEnum.NOT_APPROPRIATE);
@@ -632,7 +630,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         tradeOrderItem.setId(UuidUtils.getUuid());
         tradeOrderItem.setOrderId(orderId);
         tradeOrderItem.setQuantity(1);
-        tradeOrderItem.setSpuType(GoodsTypeEnum.SERVICE_GOODS);
+        tradeOrderItem.setSpuType(SpuTypeEnum.serviceSpu);
         tradeOrderItem.setStatus(OrderItemStatusEnum.NO_REFUND);
         tradeOrderItem.setCompainStatus(CompainStatusEnum.NOT_COMPAIN);
         tradeOrderItem.setAppraise(AppraiseEnum.NOT_APPROPRIATE);
