@@ -77,7 +77,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
 		AppStoreDto appStoreDto = AppAdapter.convert(storeInfo);
 		if (parserBo != null) {
-			appStoreDto.setFreight(parserBo.getFare());
+			resp.getData().setOrderFare(parserBo.getFare());
 		}
 		resp.getData().setStoreInfo(appStoreDto);
 		if(req.getData().getOrderType() != PlaceOrderTypeEnum.CVS_ORDER){

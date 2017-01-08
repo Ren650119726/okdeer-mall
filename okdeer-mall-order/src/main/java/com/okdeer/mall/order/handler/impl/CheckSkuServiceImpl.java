@@ -36,7 +36,6 @@ import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
-import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 
 /**
