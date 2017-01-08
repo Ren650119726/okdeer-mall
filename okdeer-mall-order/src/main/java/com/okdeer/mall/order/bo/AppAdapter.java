@@ -120,20 +120,8 @@ public class AppAdapter {
 		List<AppStoreSkuDto> dtoList = new ArrayList<AppStoreSkuDto>();
 		AppStoreSkuDto dto = null;
 		for(CurrentStoreSkuBo skuBo : parserBo.getCurrentSkuMap().values()){
-			dto = new AppStoreSkuDto();
-			dto.setId(skuBo.getId());
-			dto.setName(skuBo.getName());
-			dto.setOnlinePrice(skuBo.getOnlinePrice());
-			dto.setActPrice(skuBo.getActPrice());
-			dto.setTradeMax(skuBo.getTradeMax());
-			dto.setSellable(skuBo.getSellable());
-			dto.setLocked(skuBo.getLocked());
-			dto.setLimitKind(skuBo.getLimitKind());
-			dto.setActivityType(skuBo.getActivityType());
+			dto = BeanMapper.map(skuBo, AppStoreSkuDto.class);
 			dto.setOnline(skuBo.getOnline().ordinal());
-			dto.setLimitBuyNum(skuBo.getLimitBuyNum());
-			dto.setUpdateTime(skuBo.getUpdateTime());
-			dto.setMainPicUrl(skuBo.getMainPicUrl());
 			dtoList.add(dto);
 		}
 		return dtoList;

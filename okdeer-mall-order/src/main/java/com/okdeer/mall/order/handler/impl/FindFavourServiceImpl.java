@@ -16,19 +16,20 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
-import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
-import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.common.enums.UseClientType;
+import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.member.member.vo.UserAddressVo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
-import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
+import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.Discount;
 import com.okdeer.mall.order.vo.FullSubtract;
@@ -66,6 +67,12 @@ public class FindFavourServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	private GoodsNavigateCategoryServiceApi goodsNavigateCategoryServiceApi;
 	
 	/**
+	 * 订单服务类
+	 */
+	@Resource
+	private TradeOrderService tradeOrderService;
+	
+	/**
 	 * 查找用户有效的优惠记录
 	 * 注：平台发起的满减、代金券活动，只有云上店可以使用，其它类型的店铺均不可使用
 	 */
@@ -91,8 +98,15 @@ public class FindFavourServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			//商品类目id集
 			Set<String> spuCategoryIds = ((StoreSkuParserBo)paramDto.get("parserBo")).getCategoryIdSet();
 			List<Coupons> delCouponList = new ArrayList<Coupons>();
+			//先确定新用户专享代金券是否能使用 tuzhd
+			boolean isNewUser = tradeOrderService.checkUserUseCoupons((String)queryCondition.get("userId"));
 			//判断筛选指定分类使用代金券
 			for (Coupons coupons : couponList) {
+				//如果此券为新用户专享。且不能使用 该券不显示 tuzhd
+				if(!isNewUser && UseUserType.ONlY_NEW_USER == coupons.getUseUserType()){
+					delCouponList.add(coupons);
+					continue;
+				}
 				//是否指定分类使用
 				if (Constant.ONE == coupons.getIsCategory().intValue() && CollectionUtils.isNotEmpty(spuCategoryIds)) {
 					List<String> ids = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
@@ -135,6 +149,14 @@ public class FindFavourServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		    	queryCondition.put("addressId", addr.getAddressId());
 			}else {
 				queryCondition.put("addressId", "");
+			}
+		}
+		OrderResourceEnum orderResourceEnum = paramDto.getChannel();//获得客户端类型
+		if(orderResourceEnum != null){
+			if(orderResourceEnum == OrderResourceEnum.WECHAT){
+				queryCondition.put("useClientType", UseClientType.ONlY_WECHAT_USE);
+			}else if(orderResourceEnum == OrderResourceEnum.CVSAPP || orderResourceEnum == OrderResourceEnum.YSCAPP){
+				queryCondition.put("useClientType", UseClientType.ONlY_APP_USE);
 			}
 		}
 		return queryCondition;
