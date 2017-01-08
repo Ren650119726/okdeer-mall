@@ -460,9 +460,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				tradeOrderItemDto.setUnitPrice(item.getUnitPrice());
 				tradeOrderItemDto.setQuantity(item.getQuantity());
 				tradeOrderItemDto.setTotalAmount(item.getTotalAmount());
-				for(GoodsStoreSku goodsStoreSku : storeSkuList){
-					if(item.getStoreSkuId().equals(goodsStoreSku.getId())){
-						tradeOrderItemDto.setUnit(goodsStoreSku.getUnit());
+				if(null != storeSkuList){
+					for(GoodsStoreSku goodsStoreSku : storeSkuList){
+						if(item.getStoreSkuId().equals(goodsStoreSku.getId())){
+							tradeOrderItemDto.setUnit(goodsStoreSku.getUnit());
+							break;
+						}
 					}
 				}
 				itemDtoList.add(tradeOrderItemDto);
@@ -569,9 +572,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				tradeOrderItemDto.setUnitPrice(item.getUnitPrice());
 				tradeOrderItemDto.setQuantity(item.getQuantity());
 				tradeOrderItemDto.setTotalAmount(item.getTotalAmount());
-				for(GoodsStoreSku goodsStoreSku : storeSkuList){
-					if(item.getStoreSkuId().equals(goodsStoreSku.getId())){
-						tradeOrderItemDto.setUnit(goodsStoreSku.getUnit());
+				if(null != storeSkuList){
+					for(GoodsStoreSku goodsStoreSku : storeSkuList){
+						if(item.getStoreSkuId().equals(goodsStoreSku.getId())){
+							tradeOrderItemDto.setUnit(goodsStoreSku.getUnit());
+							break;
+						}
 					}
 				}
 				itemDtoList.add(tradeOrderItemDto);
