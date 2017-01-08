@@ -586,7 +586,7 @@ public class TradeOrderBuilder {
 		List<CurrentStoreSkuBo> goodsItemList = new ArrayList<CurrentStoreSkuBo>();
 		goodsItemList.addAll(skuBoSet);
 		ComparatorChain chain = new ComparatorChain();
-		chain.addComparator(new BeanComparator("skuPrice"), false);
+		chain.addComparator(new BeanComparator("onlinePrice"), false);
 		Collections.sort(goodsItemList, chain);
 
 		for (CurrentStoreSkuBo skuBo : goodsItemList) {
