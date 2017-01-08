@@ -102,9 +102,9 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
 		ActivityMessageParamDto activityMessageParamDto = new ActivityMessageParamDto();
 		activityMessageParamDto.setActivityIds(activityIds);
 		if (status == 1) {
-			activityMessageParamDto.setUpdateStatus(0);
+			activityMessageParamDto.setUpdateStatus("0");
 		} else if (status == 2) {
-			activityMessageParamDto.setUpdateStatus(1);
+			activityMessageParamDto.setUpdateStatus("1");
 		}
 		String json = JsonMapper.nonEmptyMapper().toJson(activityMessageParamDto);
 		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
@@ -151,16 +151,11 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
 		ActivityMessageParamDto activityMessageParamDto = new ActivityMessageParamDto();
 		activityMessageParamDto.setActivityId(activity.getId());
 
-		switch (status) {
-			case ing:
-				// 0为开始 1为关闭
-				activityMessageParamDto.setUpdateStatus(0);
-				break;
-			case closed:
-			case end:
-				// 0为开始 1为关闭
-				activityMessageParamDto.setUpdateStatus(1);
-				break;
+		if (status == SeckillStatusEnum.ing) {
+			// 0为开始 1为关闭
+			activityMessageParamDto.setUpdateStatus("0");
+		} else {
+			activityMessageParamDto.setUpdateStatus("1");
 		}
 
 		String json = JsonMapper.nonEmptyMapper().toJson(activityMessageParamDto);
