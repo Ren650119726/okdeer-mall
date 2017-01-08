@@ -26,6 +26,8 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreMemberRelation;
 import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
@@ -119,6 +121,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	 */
 	@Resource
 	private CancelOrderService cancelOrderService;
+	
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 	
 	/**
 	 * @desc 订单详情（快送同步）（订单、支付、物流、订单项等信息）
@@ -433,11 +438,20 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		 * tradeOrderItemDto.setQuantity(tradeOrderItem.getQuantity());
 		 * tradeOrderItemDto.setTotalAmount(tradeOrderItem.getTotalAmount());
 		 */
+		
+		List<String> storeSkuIds = new ArrayList<String>();
+		if (order.getTradeOrderItem() != null) {
+			for (TradeOrderItem item : order.getTradeOrderItem()) {
+				storeSkuIds.add(item.getStoreSkuId());
+			}
+		}
+		
 		// Begin 12051 add by wusw 20160811
 		BigDecimal totalAmount = new BigDecimal(0.00);
 		// End 12051 add by wusw 20160811
 		List<TradeOrderItemDto> itemDtoList = new ArrayList<TradeOrderItemDto>();
 		if (order.getTradeOrderItem() != null) {
+			List<GoodsStoreSku> storeSkuList = goodsStoreSkuServiceApi.findByIds(storeSkuIds);
 			for (TradeOrderItem item : order.getTradeOrderItem()) {
 				TradeOrderItemDto tradeOrderItemDto = new TradeOrderItemDto();
 				tradeOrderItemDto.setMainPicPrl(item.getMainPicPrl());
@@ -446,6 +460,11 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				tradeOrderItemDto.setUnitPrice(item.getUnitPrice());
 				tradeOrderItemDto.setQuantity(item.getQuantity());
 				tradeOrderItemDto.setTotalAmount(item.getTotalAmount());
+				for(GoodsStoreSku goodsStoreSku : storeSkuList){
+					if(item.getStoreSkuId().equals(goodsStoreSku.getId())){
+						tradeOrderItemDto.setUnit(goodsStoreSku.getUnit());
+					}
+				}
 				itemDtoList.add(tradeOrderItemDto);
 				tradeOrderDto.setTradeOrderItem(itemDtoList);
 				// Begin 12051 add by wusw 20160811
@@ -528,12 +547,20 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		}
 		//add by mengsj end
 		
+		List<String> storeSkuIds = new ArrayList<String>();
+		if (order.getTradeOrderItem() != null) {
+			for (TradeOrderItem item : order.getTradeOrderItem()) {
+				storeSkuIds.add(item.getStoreSkuId());
+			}
+		}
+		
 		// Begin 12051 add by wusw 20160811
 		BigDecimal totalAmount = new BigDecimal(0.00);
 		// End 12051 add by wusw 20160811
 		// 商品信息
 		List<TradeOrderItemDto> itemDtoList = new ArrayList<TradeOrderItemDto>();
 		if (order.getTradeOrderItem() != null) {
+			List<GoodsStoreSku> storeSkuList = goodsStoreSkuServiceApi.findByIds(storeSkuIds);
 			for (TradeOrderItem item : order.getTradeOrderItem()) {
 				TradeOrderItemDto tradeOrderItemDto = new TradeOrderItemDto();
 				tradeOrderItemDto.setMainPicPrl(item.getMainPicPrl());
@@ -542,9 +569,13 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				tradeOrderItemDto.setUnitPrice(item.getUnitPrice());
 				tradeOrderItemDto.setQuantity(item.getQuantity());
 				tradeOrderItemDto.setTotalAmount(item.getTotalAmount());
+				for(GoodsStoreSku goodsStoreSku : storeSkuList){
+					if(item.getStoreSkuId().equals(goodsStoreSku.getId())){
+						tradeOrderItemDto.setUnit(goodsStoreSku.getUnit());
+					}
+				}
 				itemDtoList.add(tradeOrderItemDto);
 				tradeOrderDto.setTradeOrderItem(itemDtoList);
-
 				// Begin 12051 add by wusw 20160811
 				BigDecimal quantity = new BigDecimal(item.getQuantity());
 				BigDecimal itemAmount = item.getUnitPrice().multiply(quantity);
