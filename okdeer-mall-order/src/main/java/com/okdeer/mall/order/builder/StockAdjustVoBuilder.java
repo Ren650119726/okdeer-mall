@@ -25,6 +25,7 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.service.TradeOrderItemService;
@@ -156,6 +157,31 @@ public class StockAdjustVoBuilder {
 	public Map<String,List<GoodsStoreSkuAssembleDto>> parseComboSku(List<TradeOrderItem> itemList) throws Exception {
 		List<String> comboIdList = new ArrayList<String>();
 		 for(TradeOrderItem item : itemList){
+			 if(item.getSpuType() == SpuTypeEnum.assembleSpu){
+				 // 如果是组合商品
+				 comboIdList.add(item.getStoreSkuId());
+			 }
+		 }
+		if(CollectionUtils.isEmpty(comboIdList)){
+			return null;
+		}
+		Map<String,List<GoodsStoreSkuAssembleDto>> comboSkuMap = new HashMap<String, List<GoodsStoreSkuAssembleDto>>();
+		List<GoodsStoreAssembleDto> comboDtoList = goodsStoreSkuAssembleApi
+				.findByAssembleSkuIds(comboIdList);
+		for (GoodsStoreAssembleDto dto : comboDtoList) {
+			for (GoodsStoreSkuAssembleDto detail : dto.getGoodsStoreSkuAssembleDtos()) {
+				if (!comboSkuMap.containsKey(detail.getAssembleSkuId())) {
+					comboSkuMap.put(detail.getAssembleSkuId(), new ArrayList<GoodsStoreSkuAssembleDto>());
+				}
+				comboSkuMap.get(detail.getAssembleSkuId()).add(detail);
+			}
+		}
+		return comboSkuMap;
+	}
+	
+	public Map<String,List<GoodsStoreSkuAssembleDto>> parseComboSkuForRefund(List<TradeOrderRefundsItem> itemList) throws Exception {
+		List<String> comboIdList = new ArrayList<String>();
+		 for(TradeOrderRefundsItem item : itemList){
 			 if(item.getSpuType() == SpuTypeEnum.assembleSpu){
 				 // 如果是组合商品
 				 comboIdList.add(item.getStoreSkuId());

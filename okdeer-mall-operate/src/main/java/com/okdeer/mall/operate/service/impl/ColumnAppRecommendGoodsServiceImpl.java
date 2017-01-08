@@ -88,4 +88,13 @@ public class ColumnAppRecommendGoodsServiceImpl extends BaseServiceImpl implemen
 		return appRecommendGoodsMapper.insertMore(goodsList);
 	}
 
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.operate.service.ColumnAppRecommendGoodsService#findShowListByStoreSkuIds(java.util.List)
+	 */
+	@Override
+	public List<ColumnAppRecommendGoods> findShowListByStoreSkuIds(List<String> storeSkuIds) throws Exception {
+		return appRecommendGoodsMapper.findShowListByStoreSkuIds(storeSkuIds);
+	}
+
 }

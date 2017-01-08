@@ -62,7 +62,7 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 		List<GoodsStoreSku> currentSkuList = findCurrentSkuList(skuIdList);
 		// 判断商品列表与请求清单是否一致
 		if (currentSkuList.size() != skuIdList.size()) {
-			resp.setResult(ResultCodeEnum.GOODS_NOT_MATCH);
+			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
 			return;
 		}
 		StoreSkuParserBo parserBo = new StoreSkuParserBo(currentSkuList);
@@ -109,9 +109,9 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 			if (currentSku.getOnline() == BSSC.UNSHELVE) {
 				// 商品下架
 				if (paramDto.getSkuType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
-					checkResult = ResultCodeEnum.SERV_GOODS_NOT_BUY;
+					checkResult = ResultCodeEnum.SERV_GOODS_EXP;
 				} else {
-					checkResult = ResultCodeEnum.SERV_GOODS_NOT_EXSITS;
+					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 				}
 			} else if (paramDto.getSkuType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 				// 判断到店消费商品是否已过有效期

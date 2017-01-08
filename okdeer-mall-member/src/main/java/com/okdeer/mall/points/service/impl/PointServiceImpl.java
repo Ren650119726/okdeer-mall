@@ -141,8 +141,10 @@ public class PointServiceImpl implements PointsService {
 		if (sysBuyerExt == null) {
 			addUserExt(userId, pointVal, growthVal);
 		} else {
-			// 更新用户成长值
-			updateUserGrowth(userId, growthVal);
+			if(growthVal != null){
+				// 更新用户成长值
+				updateUserGrowth(userId, growthVal);
+			}
 			// 更新用户积分
 			updateUserPoint(userId, pointVal);
 			// 更新用户的会员等级
@@ -426,7 +428,10 @@ public class PointServiceImpl implements PointsService {
 	 * @author zengjizu
 	 * @date 2017年1月5日
 	 */
-	private void updateUserGrowth(String userId, int growthVal) throws Exception {
+	private void updateUserGrowth(String userId, Integer growthVal) throws Exception {
+		if(growthVal == null){
+			return ;
+		}
 		int count = sysBuyerExtMapper.updateGrowth(userId, growthVal);
 		if (count < 0) {
 			throw new Exception("用户成长值不够");

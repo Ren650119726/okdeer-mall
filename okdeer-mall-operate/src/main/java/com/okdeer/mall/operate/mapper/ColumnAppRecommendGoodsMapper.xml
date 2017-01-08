@@ -41,13 +41,28 @@
 		ORDER BY sort desc
 	</select>
 
-	<select id="findListByRecommendId" resultMap="BaseResultMap"
-		parameterType="java.lang.String">
+	<select id="findListByRecommendId" resultMap="BaseResultMap" parameterType="java.lang.String">
 		select
 		<include refid="Base_Column_List" />
 		from column_app_recommend_goods
 		where recommend_id = #{recommendId}
 		ORDER BY sort desc
+	</select>
+	
+	<select id="findShowListByStoreSkuIds" resultMap="BaseResultMap" parameterType="java.util.List">
+		SELECT
+			goods.id, goods.recommend_id, goods.store_sku_id, goods.sort, goods.is_show
+		FROM  column_app_recommend_goods goods 
+		INNER JOIN column_app_recommend recommend ON recommend.id = goods.recommend_id
+		WHERE recommend. STATUS = 0
+		  AND recommend.disabled = 0
+		  AND goods.is_show = 1
+		  <if test="storeSkuIds != null and storeSkuIds.size() > 0">
+			AND goods.store_sku_id IN
+			<foreach collection="storeSkuIds" index="index" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
 	</select>
 
 	<insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnAppRecommendGoods">

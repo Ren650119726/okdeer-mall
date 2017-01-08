@@ -54,7 +54,7 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		// 服务店铺不存在
 		StoreInfo storeInfo = storeInfoService.getStoreInfoById(reqData.getStoreId());
 		if (storeInfo == null || storeInfo.getStoreInfoExt() == null) {
-			resp.setResult(ResultCodeEnum.STORE_NOT_EXISTS);
+			resp.setResult(ResultCodeEnum.STORE_IS_CLOSED);
 			req.setComplete(true);
 			return;
 		}
