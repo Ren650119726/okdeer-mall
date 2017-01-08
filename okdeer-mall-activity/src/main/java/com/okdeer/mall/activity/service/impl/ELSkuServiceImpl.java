@@ -23,6 +23,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import com.okdeer.mall.activity.el.service.ELSkuApi;
+import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,6 +129,7 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
 						return LocalTransactionState.COMMIT_MESSAGE;
 					}
 				});
+		logger.info("特惠定时任务调用搜索引擎同步消息：msg{}", JSONObject.fromObject(msg).toString());
 		return RocketMqResult.returnResult(sendResult);
 	}
 
@@ -195,6 +197,7 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
 				return LocalTransactionState.COMMIT_MESSAGE;
 			}
 		});
+		logger.info("秒杀定时任务调用搜索引擎同步消息：msg{}", JSONObject.fromObject(msg).toString());
 		return RocketMqResult.returnResult(sendResult);
 	}
 
@@ -233,6 +236,7 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
 						return LocalTransactionState.COMMIT_MESSAGE;
 					}
 				});
+		logger.info("低价定时任务调用搜索引擎同步消息：msg{}", JSONObject.fromObject(msg).toString());
 		return RocketMqResult.returnResult(sendResult);
 	}
 
