@@ -81,7 +81,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				break;
 		}
 		if (!isValid) {
-			resp.setResult(ResultCodeEnum.FAVOUR_INVALID);
+			resp.setResult(ResultCodeEnum.FAVOUR_NOT_SUPPORT);
 			return;
 		}
 	}

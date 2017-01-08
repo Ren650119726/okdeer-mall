@@ -53,13 +53,13 @@ public class CheckSecKillServiceImpl implements RequestHandler<PlaceOrderParamDt
 		ActivitySeckill activitySeckill = activitySeckillService.findSeckillById(paramDto.getSeckillId());
 		// 活动不存在
 		if (activitySeckill == null) {
-			resp.setResult(ResultCodeEnum.ACTIVITY_NOT_EXISTS);
+			resp.setResult(ResultCodeEnum.ACTIVITY_IS_END);
 			req.setComplete(true);
 			return;
 		}
 		// 活动已关闭
 		if (activitySeckill.getSeckillStatus() == SeckillStatusEnum.closed) {
-			resp.setResult(ResultCodeEnum.ACTIVITY_IS_CLOSED);
+			resp.setResult(ResultCodeEnum.ACTIVITY_IS_END);
 			req.setComplete(true);
 			return;
 		}
@@ -71,7 +71,7 @@ public class CheckSecKillServiceImpl implements RequestHandler<PlaceOrderParamDt
 		}
 		// 活动商品和欲购买商品不一致
 		if (!activitySeckill.getStoreSkuId().equals(paramDto.getSkuList().get(0).getStoreSkuId())) {
-			resp.setResult(ResultCodeEnum.ACTIVITY_GOODS_NOT_SUPPORT);
+			resp.setResult(ResultCodeEnum.ACTIVITY_IS_END);
 			req.setComplete(true);
 			return;
 		}
