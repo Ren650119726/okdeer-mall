@@ -68,6 +68,7 @@
 	select 		
 				s.id,
 				s.name,
+				CAST(spu.type AS SIGNED)  as skuType,
 				s.properties_indb as propertiesIndb,
 				s.bar_code as barCode,
 				s.style_code as styleCode,
