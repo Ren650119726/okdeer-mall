@@ -48,7 +48,7 @@ public class ServStockCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		
 		Map<String, Object> context = req.getContext();
 		if (!context.containsKey("storeSkuIdList")) {
-			resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS);
+			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
 			req.setComplete(true);
 			return;
 		}
@@ -89,7 +89,7 @@ public class ServStockCheckServiceImpl implements RequestHandler<ServiceOrderReq
 					&& req.getData().getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
 				// 到店消费订单
 				if (stockNum == 0) {
-					resp.setResult(ResultCodeEnum.SERV_GOODS_SOLD_OUT);
+					resp.setResult(ResultCodeEnum.GOODS_STOCK_NOT_ENOUGH);
 				} else {
 					resp.setCode(299);
 					resp.setMessage("抱歉，该商品剩余不足，仅能购买" + stockNum + "件");

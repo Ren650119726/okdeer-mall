@@ -93,7 +93,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		List<GoodsStoreSku> currentSkuList = findCurrentSkuList(skuIdList);
 		// 判断商品列表与请求清单是否一致
 		if (currentSkuList.size() != skuIdList.size()) {
-			resp.setResult(ResultCodeEnum.GOODS_NOT_MATCH);
+			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
 			return;
 		}
 		// 解析当前店铺商品列表。获取当前商品的价格、库存、限购数量
@@ -103,7 +103,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		// 查询库存集合
 		List<GoodsStoreSkuStock> stockList = stockManagerJxcServiceApi.findGoodsStockInfoList(parserBo.getSkuIdList());
 		if(stockList.size() != parserBo.getSkuIdList().size() - parserBo.getComboSkuIdList().size()){
-			resp.setResult(ResultCodeEnum.GOODS_NOT_MATCH);
+			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
 			return;
 		}
 		parserBo.loadStockList(stockList);
@@ -207,19 +207,9 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 			CurrentStoreSkuBo currentSku = parserBo.getCurrentStoreSkuBo(item.getStoreSkuId());
 			// 检查是否下架
 			if (currentSku.getOnline() == BSSC.UNSHELVE) {
-				// 商品下架
-				if (req.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
-					checkResult = ResultCodeEnum.GOODS_IS_OFFLINE_SETTLEMENT;
-				} else {
-					checkResult = ResultCodeEnum.GOODS_IS_OFFLINE;
-				}
+				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 			} else if (currentSku.getOnlinePrice().compareTo(item.getSkuPrice()) != 0 || (currentSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && currentSku.getActPrice().compareTo(item.getSkuActPrice()) != 0)) {
-				// 商品价格发生变化
-				if (req.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
-					checkResult = ResultCodeEnum.GOODS_IS_OFFLINE_SETTLEMENT;
-				} else {
-					checkResult = ResultCodeEnum.GOODS_IS_OFFLINE_SETTLEMENT;
-				}
+				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 			} else if (!currentSku.getUpdateTime().equals(item.getUpdateTime())) {
 				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 			}
