@@ -52,6 +52,7 @@ public class AppAdapter {
 		if(storeInfo.getStoreInfoServiceExt() != null){
 			BeanMapper.copy(storeInfo.getStoreInfoServiceExt(), dto);
 		}
+		dto.setId(storeInfo.getId());
 		return dto;
 	}
 	
