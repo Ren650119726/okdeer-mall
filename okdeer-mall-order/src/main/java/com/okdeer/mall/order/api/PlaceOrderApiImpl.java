@@ -23,6 +23,7 @@ import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandlerChain;
 import com.okdeer.mall.order.service.PlaceOrderApi;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.PlaceOrderApi")
 public class PlaceOrderApiImpl implements PlaceOrderApi {
@@ -77,7 +78,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
 		AppStoreDto appStoreDto = AppAdapter.convert(storeInfo);
 		if (parserBo != null) {
-			resp.getData().setOrderFare(parserBo.getFare());
+			resp.getData().setOrderFare(ConvertUtil.format(parserBo.getFare()));
 		}
 		resp.getData().setStoreInfo(appStoreDto);
 		if(req.getData().getOrderType() != PlaceOrderTypeEnum.CVS_ORDER){
