@@ -60,6 +60,7 @@ import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 import net.sf.json.JSONObject;
 
@@ -203,7 +204,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 		resp.getData().setOrderId(tradeOrder.getId());
 		resp.getData().setOrderNo(tradeOrder.getOrderNo());
-		resp.getData().setOrderPrice(tradeOrder.getActualAmount());
+		resp.getData().setOrderPrice(ConvertUtil.format(tradeOrder.getActualAmount()));
 		resp.getData().setTradeNum(tradeOrder.getTradeNum());
 		// 订单倒计时
 		resp.getData().setLimitTime(60 * 30);

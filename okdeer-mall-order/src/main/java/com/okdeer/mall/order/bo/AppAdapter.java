@@ -21,6 +21,7 @@ import com.okdeer.mall.order.dto.AppStoreServiceExtDto;
 import com.okdeer.mall.order.dto.AppStoreSkuDto;
 import com.okdeer.mall.order.dto.SeckillInfoDto;
 import com.okdeer.mall.order.dto.TimeInterval;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * ClassName: StoreInfoAdapter 
@@ -50,12 +51,15 @@ public class AppAdapter {
 		}
 		AppStoreDto dto = BeanMapper.map(storeInfo, AppStoreDto.class);
 		if(storeInfo.getStoreInfoExt() != null){
-			BeanMapper.copy(storeInfo.getStoreInfoExt(), dto);
-			if(isBusiness(storeInfo.getStoreInfoExt().getServiceStartTime(),storeInfo.getStoreInfoExt().getServiceEndTime())){
+			StoreInfoExt storeExt = storeInfo.getStoreInfoExt();
+			BeanMapper.copy(storeExt, dto);
+			if(isBusiness(storeExt.getServiceStartTime(),storeExt.getServiceEndTime())){
 				dto.setIsRest(1);
 			}else {
 				dto.setIsRest(0);
 			}
+			dto.setFreight(ConvertUtil.format(storeExt.getFreight()));
+			dto.setStartPrice(ConvertUtil.format(storeExt.getStartPrice()));
 		}
 		if(storeInfo.getStoreInfoServiceExt() != null){
 			BeanMapper.copy(storeInfo.getStoreInfoServiceExt(), dto);
@@ -118,7 +122,8 @@ public class AppAdapter {
 		}
 		StoreInfoExt storeExt = storeInfo.getStoreInfoExt();
 		StoreInfoServiceExt storeServExt = storeInfo.getStoreInfoServiceExt();
-		AppStoreServiceExtDto dto = BeanMapper.map(storeInfo.getStoreInfoServiceExt(), AppStoreServiceExtDto.class);
+		AppStoreServiceExtDto dto = BeanMapper.map(storeServExt, AppStoreServiceExtDto.class);
+		dto.setStartPrice(ConvertUtil.format(storeServExt.getStartingPrice()));
 		if(isAdvance(storeExt)){
 			// 预约类型（0：提前多少小时下单 1：只能下当前日期多少天后的订单）
 			if(Integer.valueOf(0).equals(storeExt.getAdvanceType())){
@@ -179,6 +184,8 @@ public class AppAdapter {
 		for(CurrentStoreSkuBo skuBo : parserBo.getCurrentSkuMap().values()){
 			dto = BeanMapper.map(skuBo, AppStoreSkuDto.class);
 			dto.setOnline(skuBo.getOnline().ordinal());
+			dto.setOnlinePrice(ConvertUtil.format(skuBo.getOnlinePrice()));
+			dto.setActPrice(ConvertUtil.format(skuBo.getActPrice()));
 			dtoList.add(dto);
 		}
 		return dtoList;
@@ -190,7 +197,7 @@ public class AppAdapter {
 		}
 		SeckillInfoDto seckillInfo = new SeckillInfoDto();
 		seckillInfo.setId(seckill.getId());
-		seckillInfo.setSeckillPrice(seckill.getSeckillPrice());
+		seckillInfo.setSeckillPrice(ConvertUtil.format(seckill.getSeckillPrice()));
 		seckillInfo.setSeckillStatus(seckill.getSeckillStatus().ordinal());
 		seckillInfo.setSeckillRangeType(seckill.getSeckillRangeType().ordinal());
 		return seckillInfo;
