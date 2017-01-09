@@ -8,10 +8,6 @@ import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.dubbo.config.annotation.Reference;
-import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
-import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
@@ -26,7 +22,6 @@ import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
-import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 
 /**
@@ -72,11 +67,7 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 		
 		if (isOutOfStock(parserBo)) {
-			if (req.getData().getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
-				resp.setResult(ResultCodeEnum.STOCK_NOT_ENOUGH_SETTLEMENT);
-			} else {
-				resp.setResult(ResultCodeEnum.STOCK_NOT_ENOUGH);
-			}
+			resp.setResult(ResultCodeEnum.GOODS_STOCK_NOT_ENOUGH);
 		}
 
 	}

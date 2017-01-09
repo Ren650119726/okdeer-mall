@@ -42,13 +42,38 @@
 			<groupId>com.okdeer.base</groupId>
 			<artifactId>okdeer-base-zookeeper-conf</artifactId>
 			<version>${base.version}</version>
-			<exclusions>
+<!-- 			<exclusions>
 				<exclusion>
 					<artifactId>spring-boot-starter-web</artifactId>
 					<groupId>org.springframework.boot</groupId>
 				</exclusion>
-			</exclusions>
+			</exclusions> -->
 		</dependency>
+		<!-- web 请求支持. -->
+		<dependency>
+			<groupId>com.okdeer.base</groupId>
+			<artifactId>okdeer-base-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc-portlet</artifactId>
+		</dependency>
+		<!-- web 请求支持 end. -->
+		
 		<dependency>
 			<groupId>com.okdeer.mall</groupId>
 			<artifactId>okdeer-mall-member</artifactId>
@@ -67,7 +92,6 @@
 		<dependency>
 			<groupId>com.okdeer.ca</groupId>
 			<artifactId>okdeer-ca-client</artifactId>
-			<version>${ca.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>okdeer-base-framework</artifactId>
@@ -100,10 +124,6 @@
 			<artifactId>spring-cloud-cluster-redis</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-cluster-zookeeper</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-redis</artifactId>
 		</dependency>
@@ -116,6 +136,11 @@
 			</dependency> <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-devtools</artifactId> 
 			<optional>true</optional> </dependency> -->
 
+<!-- 		<dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-actuator</artifactId>
+	    </dependency> -->
+    
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

@@ -9,8 +9,10 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -44,6 +46,12 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
+	
+	/**
+	 * 店铺商品库存Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockService;
 
 	@Override
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
@@ -54,7 +62,7 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 		List<GoodsStoreSku> currentSkuList = findCurrentSkuList(skuIdList);
 		// 判断商品列表与请求清单是否一致
 		if (currentSkuList.size() != skuIdList.size()) {
-			resp.setResult(ResultCodeEnum.GOODS_NOT_MATCH);
+			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
 			return;
 		}
 		StoreSkuParserBo parserBo = new StoreSkuParserBo(currentSkuList);
@@ -63,6 +71,8 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 		paramDto.put("parserBo", parserBo);
 		parserBo.parseCurrentSku();
 		parserBo.loadBuySkuList(paramDto.getSkuList());
+		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(skuIdList);
+		parserBo.loadStockList(stockList);
 		// 检查商品信息是否发生变化
 		ResultCodeEnum checkResult = isChange(paramDto, parserBo);
 		// 检查商品信息是否发生变化
@@ -99,9 +109,9 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 			if (currentSku.getOnline() == BSSC.UNSHELVE) {
 				// 商品下架
 				if (paramDto.getSkuType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
-					checkResult = ResultCodeEnum.SERV_GOODS_NOT_BUY;
+					checkResult = ResultCodeEnum.SERV_GOODS_EXP;
 				} else {
-					checkResult = ResultCodeEnum.SERV_GOODS_NOT_EXSITS;
+					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 				}
 			} else if (paramDto.getSkuType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 				// 判断到店消费商品是否已过有效期

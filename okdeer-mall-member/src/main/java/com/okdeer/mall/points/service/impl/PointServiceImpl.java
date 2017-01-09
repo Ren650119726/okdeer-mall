@@ -119,7 +119,7 @@ public class PointServiceImpl implements PointsService {
 			// 添加积分详细记录
 			String description = StringUtils.isBlank(addPointsParamDto.getDescription()) ? pointsRule.getRemark()
 					: addPointsParamDto.getDescription();
-			addPointsRecord(userId, pointsRule.getCode(), pointVal, description, 0);
+			addPointsRecord(userId, pointsRule.getCode(), pointVal, description, 0,addPointsParamDto.getBusinessId());
 			result.setMsg("领取成功");
 			result.setStatus(0);
 			result.setPointVal(pointVal);
@@ -141,8 +141,10 @@ public class PointServiceImpl implements PointsService {
 		if (sysBuyerExt == null) {
 			addUserExt(userId, pointVal, growthVal);
 		} else {
-			// 更新用户成长值
-			updateUserGrowth(userId, growthVal);
+			if(growthVal != null){
+				// 更新用户成长值
+				updateUserGrowth(userId, growthVal);
+			}
 			// 更新用户积分
 			updateUserPoint(userId, pointVal);
 			// 更新用户的会员等级
@@ -245,7 +247,7 @@ public class PointServiceImpl implements PointsService {
 		}
 
 		int pointVal = 0;
-		if (pointsRule.getCode() == PointsRuleCode.APP_CONSUME.getCode()) {
+		if (pointsRule.getCode() .equals(PointsRuleCode.APP_CONSUME.getCode())) {
 			// app消费另外计算积分
 			int limitPointVal = pointsRule.getPointVal();
 			pointVal = (int) Math.floor(amount.doubleValue()) * limitPointVal;
@@ -313,7 +315,7 @@ public class PointServiceImpl implements PointsService {
 		int reducePoint = new BigDecimal(consumPointParamDto.getPointVal()).multiply(new BigDecimal("-1")).intValue();
 		updateUserPoint(consumPointParamDto.getUserId(), reducePoint);
 		// 添加积分消费记录
-		addPointsRecord(consumPointParamDto.getUserId(), reducePoint, consumPointParamDto.getDescription(), 1);
+		addPointsRecord(consumPointParamDto.getUserId(), reducePoint, consumPointParamDto.getDescription(), 1,consumPointParamDto.getBusinessId());
 	}
 
 	@Override
@@ -355,7 +357,7 @@ public class PointServiceImpl implements PointsService {
 		// 更新用户积分
 		updateUserPoint(sysBuyerExt.getUserId(), reducePoint);
 		// 添加积分扣减记录
-		addPointsRecord(sysBuyerExt.getUserId(), reducePoint, refundPointParamDto.getDescription(), 1);
+		addPointsRecord(sysBuyerExt.getUserId(), reducePoint, refundPointParamDto.getDescription(), 1,refundPointParamDto.getBusinessId());
 		// 更新用户等级
 		updateUserExt(sysBuyerExt.getUserId());
 	}
@@ -426,7 +428,10 @@ public class PointServiceImpl implements PointsService {
 	 * @author zengjizu
 	 * @date 2017年1月5日
 	 */
-	private void updateUserGrowth(String userId, int growthVal) throws Exception {
+	private void updateUserGrowth(String userId, Integer growthVal) throws Exception {
+		if(growthVal == null){
+			return ;
+		}
 		int count = sysBuyerExtMapper.updateGrowth(userId, growthVal);
 		if (count < 0) {
 			throw new Exception("用户成长值不够");
@@ -458,9 +463,9 @@ public class PointServiceImpl implements PointsService {
 	 * @author zengjizu
 	 * @date 2017年1月7日
 	 */
-	private void addPointsRecord(String userId, Integer pointVal, String description, int type)
+	private void addPointsRecord(String userId, Integer pointVal, String description, int type,String referentId)
 			throws ServiceException {
-		addPointsRecord(userId, null, pointVal, description, type);
+		addPointsRecord(userId, null, pointVal, description, type,referentId);
 	}
 
 	/**
@@ -474,7 +479,7 @@ public class PointServiceImpl implements PointsService {
 	 * @author zengjizu
 	 * @date 2017年1月7日
 	 */
-	private void addPointsRecord(String userId, String code, Integer pointVal, String description, int type)
+	private void addPointsRecord(String userId, String code, Integer pointVal, String description, int type,String referentId)
 			throws ServiceException {
 		logger.debug("添加积分记录请求参数，userId={}，code={},pointVal={},description={}", userId, code, pointVal, description);
 		PointsRecord pointsRecord = new PointsRecord();
@@ -484,6 +489,7 @@ public class PointServiceImpl implements PointsService {
 		pointsRecord.setDescription(description);
 		pointsRecord.setPointVal(pointVal);
 		pointsRecord.setType((byte) type);
+		pointsRecord.setReferentId(referentId);
 		pointsRecord.setCreateTime(new Date());
 		pointsRecordMapper.insert(pointsRecord);
 	}

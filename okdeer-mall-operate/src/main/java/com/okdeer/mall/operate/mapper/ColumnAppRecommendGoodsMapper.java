@@ -37,6 +37,16 @@ public interface ColumnAppRecommendGoodsMapper extends IBaseMapper {
 	List<ColumnAppRecommendGoods> findListByRecommendId(String recommendId);
 
 	/**
+	 * @Description: 根据服务店商品ID查询需要需要展示商品关联信息
+	 * @param storeSkuIds 服务店商品ID集合
+	 * @throws Exception   
+	 * @return List<AppRecommendGoodsDto>  
+	 * @author tangzj02
+	 * @date 2017年1月8日
+	 */
+	List<ColumnAppRecommendGoods> findShowListByStoreSkuIds(@Param("storeSkuIds") List<String> storeSkuIds);
+	
+	/**
 	 * @Description: 根据推荐ID删除数据
 	 * @param id  服务商品推荐ID  
 	 * @return int 成功删除数  
