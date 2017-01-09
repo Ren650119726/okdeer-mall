@@ -253,6 +253,10 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		if (dtoList.size() == 0) {
 			return dtoList;
 		}
+		ids.clear();
+		for(AppRecommendDto item : dtoList){
+			ids.add(item.getId());
+		}
 
 		// 设置推荐服务商品关联信息查询参数
 		AppRecommendGoodsParamDto goodsParamDto = new AppRecommendGoodsParamDto();
