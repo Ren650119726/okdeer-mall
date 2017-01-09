@@ -99,13 +99,18 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		StoreSkuParserBo parserBo = parseCurrentSkuList(currentSkuList);
 		parserBo.setSkuIdList(skuIdList);
 		parserBo.loadBuySkuList(paramDto.getSkuList());
-		// 查询库存集合
-		List<GoodsStoreSkuStock> stockList = stockManagerJxcServiceApi.findGoodsStockInfoList(parserBo.getSkuIdList());
-		if(stockList.size() != parserBo.getSkuIdList().size() - parserBo.getComboSkuIdList().size()){
-			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
-			return;
+		
+		// 获取非组合商品列表
+		List<String> excludeComboList = parserBo.extraSkuListExcludeCombo();
+		if(CollectionUtils.isNotEmpty(excludeComboList)){
+			// 查询商业系统库存集合
+			List<GoodsStoreSkuStock> stockList = stockManagerJxcServiceApi.findGoodsStockInfoList(excludeComboList);
+			if(CollectionUtils.isEmpty(stockList) || stockList.size() != excludeComboList.size()){
+				resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
+				return;
+			}
+			parserBo.loadStockList(stockList);
 		}
-		parserBo.loadStockList(stockList);
 		// 查询组合商品库存
 		if(CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())){
 			List<GoodsStoreSkuStock> comboStockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(parserBo.getComboSkuIdList());
