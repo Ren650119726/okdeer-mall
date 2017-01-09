@@ -239,17 +239,20 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		}
 		// 根据城市查询相应的服务商品推荐栏位
 		List<String> ids = selectAreaService.findColumnIdsByCity(provinceId, cityId, ColumnType.appRecommend.ordinal());
-		if (null == ids || ids.size() == 0) {
-			return new ArrayList<AppRecommendDto>();
-		}
 		// 设置服务商品推荐参数
 		AppRecommendParamDto paramDto = new AppRecommendParamDto();
-		paramDto.setIds(ids);
+		if (null != ids && ids.size() > 0) {
+			paramDto.setIds(ids);
+		}
 		paramDto.setPlace(place);
 		paramDto.setSortType(1);
+		paramDto.setContainNationwide(true);
 
 		// 查询服务商品推荐
 		List<AppRecommendDto> dtoList = findList(paramDto);
+		if (dtoList.size() == 0) {
+			return dtoList;
+		}
 
 		// 设置推荐服务商品关联信息查询参数
 		AppRecommendGoodsParamDto goodsParamDto = new AppRecommendGoodsParamDto();
