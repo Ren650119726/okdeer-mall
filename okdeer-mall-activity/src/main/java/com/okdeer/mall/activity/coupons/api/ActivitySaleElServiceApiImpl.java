@@ -79,7 +79,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 	private void structureProducer(List<String> list,String tag,Integer updateStatus) throws Exception {
 		ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
 		paramDto.setSkuIds(list);
-        paramDto.setUpdateStatus(updateStatus);
+        paramDto.setUpdateStatus(String.valueOf(updateStatus));
 		ObjectMapper mapper = new ObjectMapper();
 		String json = mapper.writeValueAsString(paramDto);
 		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag,json.getBytes(Charsets.UTF_8));

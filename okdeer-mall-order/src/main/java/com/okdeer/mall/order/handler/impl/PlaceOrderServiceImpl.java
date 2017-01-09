@@ -306,6 +306,9 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	}
 
 	public void updateLastUseAddr(MemberConsigneeAddress userUseAddr) {
+		if(userUseAddr == null){
+			return;
+		}
 		userUseAddr.setUseTime(DateUtils.getSysDate());
 		memberConsigneeAddressMapper.updateByPrimaryKeySelective(userUseAddr);
 	}
