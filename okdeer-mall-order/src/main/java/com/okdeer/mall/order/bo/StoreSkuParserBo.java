@@ -403,6 +403,19 @@ public class StoreSkuParserBo {
 		}
 		return lowFavour;
 	}
+	
+	public List<String> extraSkuListExcludeCombo(){
+		if(CollectionUtils.isEmpty(this.comboSkuIdList)){
+			return this.skuIdList;
+		}
+		List<String> excludeComboList = new ArrayList<String>();
+		for(String skuId : this.skuIdList){
+			if(!this.comboSkuIdList.contains(skuId)){
+				excludeComboList.add(skuId);
+			}
+		}
+		return excludeComboList;
+	}
 
 	public Map<String, List<String>> getActivitySkuMap() {
 		return activitySkuMap;

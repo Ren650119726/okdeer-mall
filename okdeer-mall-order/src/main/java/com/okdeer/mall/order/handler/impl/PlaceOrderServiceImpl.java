@@ -393,7 +393,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				List<GoodsStoreSkuAssembleDto> comboDetailList = parserBo.getComboSkuMap().get(storeSku.getId());
 				for (GoodsStoreSkuAssembleDto comboDetail : comboDetailList) {
 					int buyNum = comboDetail.getQuantity() * (storeSku.getQuantity() + storeSku.getSkuActQuantity());
-					adjustDetailVo = buildDetailVo(comboDetail, true, buyNum);
+					adjustDetailVo = buildDetailVo(comboDetail, false, buyNum);
 					adjustDetailList.add(adjustDetailVo);
 				}
 			}else if(storeSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
