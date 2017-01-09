@@ -23,7 +23,7 @@
 	<sql id="Base_Column_List">
 		id, title, place, cover_pic_url, cover_skip_url, goods_count,
 		show_goods_count, sort, status, area_type, create_user_id, 
-		create_time, update_user_id, update_time,disabled
+		create_time, update_user_id, update_time, disabled
 	</sql>
 
 	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
@@ -38,11 +38,17 @@
 		<include refid="Base_Column_List" />
 		FROM column_app_recommend
 		WHERE disabled = 0
+		<if test="excludeId != null and excludeId != ''">
+			AND id != #{excludeId}
+		</if>
 		<if test="title != null and title != ''">
 			AND title LIKE CONCAT('%',#{title},'%')
 		</if>
 		<if test="null != place">
 			AND place = #{place}
+		</if>
+		<if test="null != areaType">
+			AND area_type = #{areaType}
 		</if>
 		<if test="null != addStartTime">
 			AND create_time &gt;= #{addStartTime}

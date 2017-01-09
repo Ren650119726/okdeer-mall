@@ -189,7 +189,18 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 		paramDto.setPlace(place);
 		// 设置排除自己
 		paramDto.setExcludeId(recommendId);
+		paramDto.setAreaType(SelectAreaType.nationwide);
+		// 根据位置查询设置范围为全国的数据
 		List<ColumnAppRecommend> list = appRecommendMapper.findList(paramDto);
+		if (null != list && list.size() > 0) {
+			// 如果同一位置中有设置范围是全国的则表示已经重复
+			return true;
+		}
+
+		// 清空参数中的地区范围
+		paramDto.setAreaType(null);
+		// 查询位置设置范围为各省和城市的数据
+		list = appRecommendMapper.findList(paramDto);
 		// 未查出数据则表示首页还未发布过
 		if (null == list || list.size() == 0) {
 			return false;
