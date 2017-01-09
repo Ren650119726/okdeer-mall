@@ -187,13 +187,13 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		}
 		// 根据城市查询相应的首页ICON栏位
 		List<String> ids = selectAreaService.findColumnIdsByCity(provinceId, cityId, ColumnType.homeIcon.ordinal());
-		if (null == ids || ids.size() == 0) {
-			return new ArrayList<HomeIconDto>();
-		}
 
 		// 设置首页ICON查询参数
 		HomeIconParamDto paramDto = new HomeIconParamDto();
-		paramDto.setIds(ids);
+		if (null != ids && ids.size() > 0) {
+			paramDto.setIds(ids);
+		}
+		paramDto.setContainNationwide(true);
 
 		// 查询首页ICON列表
 		List<HomeIconDto> sourceList = findList(paramDto);
