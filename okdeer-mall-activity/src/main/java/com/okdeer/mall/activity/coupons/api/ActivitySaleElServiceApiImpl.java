@@ -55,14 +55,16 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 	public void updateBatchStatus(List<String> ids, int status, String storeId,
 			String createUserId,Integer activityType) throws Exception {
 		List<String> storeSkuIdList = activitySaleService.updateBatchStatus(ids, status, storeId, createUserId,activityType);
-        // 5:特惠 7:低价
-		switch (activityType){
-			case 5:
-                structureProducer(storeSkuIdList,TAG_SALE_EL_UPDATE,1);
-				break;
-			case 7:
-                structureProducer(storeSkuIdList,TAG_LOWPRICE_EL_UPDATE,1);
-				break;
+		if(storeSkuIdList!=null && storeSkuIdList.size()>0){
+			// 5:特惠 7:低价
+			switch (activityType){
+				case 5:
+					structureProducer(storeSkuIdList,TAG_SALE_EL_UPDATE,1);
+					break;
+				case 7:
+					structureProducer(storeSkuIdList,TAG_LOWPRICE_EL_UPDATE,1);
+					break;
+			}
 		}
 	}
 
