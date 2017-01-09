@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.activity.coupons.service.impl;
 
 import java.util.List;
@@ -29,16 +30,18 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsServiceApi")
 public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi, ActivitySaleGoodsService {
 
+	@SuppressWarnings("unused")
 	private static final Logger log = Logger.getLogger(ActivitySaleServiceImpl.class);
-	
+
 	@Autowired
 	private ActivitySaleGoodsMapper activitySaleGoodsMapper;
+
 	/**
 	 * 回滚MQ
 	 */
 	@Autowired
 	RollbackMQProducer rollbackMQProducer;
-	
+
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 
@@ -53,14 +56,12 @@ public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi,
 	}
 
 	@Override
-	public List<ActivitySaleGoodsBo> findSaleGoodsByParams(
-			ActivitySaleGoodsParamDto param) {
+	public List<ActivitySaleGoodsBo> findSaleGoodsByParams(ActivitySaleGoodsParamDto param) {
 		return activitySaleGoodsMapper.findSaleGoodsByParams(param);
 	}
 
 	@Override
-	public PageUtils<ActivitySaleGoodsBo> findSaleGoodsByParams(
-			ActivitySaleGoodsParamDto param, Integer pageSize,
+	public PageUtils<ActivitySaleGoodsBo> findSaleGoodsByParams(ActivitySaleGoodsParamDto param, Integer pageSize,
 			Integer pageNum) {
 		List<ActivitySaleGoodsBo> list = activitySaleGoodsMapper.findSaleGoodsByParams(param);
 		PageHelper.startPage(pageNum, pageSize, true, false);
