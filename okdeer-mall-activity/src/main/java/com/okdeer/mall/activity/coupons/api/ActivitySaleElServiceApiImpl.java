@@ -51,7 +51,11 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         activitySaleService.save(activitySale, asgList);
         if (activitySale.getType() == LOW_PRICE) {
             List<String> list = asgList.stream().map(e -> e.getStoreSkuId()).collect(Collectors.toList());
-            structureProducer(list, TAG_LOWPRICE_EL_UPDATE, 0);
+            ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
+            paramDto.setActivityId(activitySale.getId());
+            paramDto.setSkuIds(list);
+            paramDto.setUpdateStatus(String.valueOf(0));
+            structureProducer(paramDto, TAG_LOWPRICE_EL_UPDATE);
         }
     }
 
@@ -70,14 +74,18 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
             param.setActivityId(id);
             List<ActivitySaleGoodsBo> goodsBoList = activitySaleGoodsServiceApi.findSaleGoodsByParams(param);
             if (goodsBoList != null && goodsBoList.size() > 0) {
+                ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
+                paramDto.setUpdateStatus(String.valueOf(1));
+                paramDto.setActivityId(id);
                 List<String> skuIds = goodsBoList.stream().map(m -> m.getStoreSkuId()).collect(Collectors.toList());
+                paramDto.setSkuIds(skuIds);
                 // 5:特惠 7:低价
                 switch (activityType) {
                     case 5:
-                        structureProducer(skuIds, TAG_SALE_EL_UPDATE, 1);
+                        structureProducer(paramDto, TAG_SALE_EL_UPDATE);
                         break;
                     case 7:
-                        structureProducer(skuIds, TAG_LOWPRICE_EL_UPDATE, 1);
+                        structureProducer(paramDto, TAG_LOWPRICE_EL_UPDATE);
                         break;
                 }
             }
@@ -89,20 +97,20 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         activitySaleService.deleteActivitySaleGoods(storeId, createUserId, activitySaleGoodsId, goodsStoreSkuId);
         // 发送消息，同步数据到搜索引擎
         List<String> list = Arrays.asList(goodsStoreSkuId);
-        structureProducer(list, TAG_SALE_EL_DEL, 0);
+        ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
+        paramDto.setUpdateStatus(String.valueOf(0));
+        paramDto.setSkuIds(list);
+        structureProducer(paramDto, TAG_SALE_EL_DEL);
     }
 
     /**
      * 发送消息同步数据到搜索引擎执行
      *
-     * @param list List<String>
+     * @param paramDto ActivityMessageParamDto
      * @param tag  String
      * @throws Exception
      */
-    private void structureProducer(List<String> list, String tag, Integer updateStatus) throws Exception {
-        ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
-        paramDto.setSkuIds(list);
-        paramDto.setUpdateStatus(String.valueOf(updateStatus));
+    private void structureProducer(ActivityMessageParamDto paramDto, String tag) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(paramDto);
         Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
