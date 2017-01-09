@@ -207,7 +207,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 			// 检查是否下架
 			if (currentSku.getOnline() == BSSC.UNSHELVE) {
 				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
-			} else if (currentSku.getOnlinePrice().compareTo(item.getSkuPrice()) != 0 || (currentSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && currentSku.getActPrice().compareTo(item.getSkuActPrice()) != 0)) {
+			} else if (currentSku.getOnlinePrice().compareTo(item.getSkuPrice()) != 0 || (currentSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && currentSku.getSkuActQuantity() > 0 && item.getSkuActPrice().compareTo(currentSku.getActPrice()) != 0)) {
 				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 			} else if (!currentSku.getUpdateTime().equals(item.getUpdateTime())) {
 				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;

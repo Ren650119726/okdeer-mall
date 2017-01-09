@@ -1,6 +1,8 @@
 package com.okdeer.mall.order.bo;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -13,11 +15,13 @@ import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.order.dto.AppStoreDto;
 import com.okdeer.mall.order.dto.AppStoreServiceExtDto;
 import com.okdeer.mall.order.dto.AppStoreSkuDto;
 import com.okdeer.mall.order.dto.SeckillInfoDto;
 import com.okdeer.mall.order.dto.TimeInterval;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * ClassName: StoreInfoAdapter 
@@ -47,13 +51,69 @@ public class AppAdapter {
 		}
 		AppStoreDto dto = BeanMapper.map(storeInfo, AppStoreDto.class);
 		if(storeInfo.getStoreInfoExt() != null){
-			BeanMapper.copy(storeInfo.getStoreInfoExt(), dto);
+			StoreInfoExt storeExt = storeInfo.getStoreInfoExt();
+			BeanMapper.copy(storeExt, dto);
+			if(isBusiness(storeExt.getServiceStartTime(),storeExt.getServiceEndTime())){
+				dto.setIsRest(1);
+			}else {
+				dto.setIsRest(0);
+			}
+			dto.setFreight(ConvertUtil.format(storeExt.getFreight()));
+			dto.setStartPrice(ConvertUtil.format(storeExt.getStartPrice()));
 		}
 		if(storeInfo.getStoreInfoServiceExt() != null){
 			BeanMapper.copy(storeInfo.getStoreInfoServiceExt(), dto);
 		}
 		dto.setId(storeInfo.getId());
+		
+		
 		return dto;
+	}
+	
+	/**
+	 * @Description: 判断当前时间是否再营业时间范围内
+	 * @param servStartTime 店铺营业开始时间
+	 * @param servEndTime  店铺营业结束时间
+	 * @return boolean  
+	 * @author maojj
+	 * @date 2016年7月14日
+	 */
+	private static boolean isBusiness(String servStartTime, String servEndTime) {
+		// 当前时间
+		Date currentDate = getCurrentDate();
+		// 服务开始时间
+		Date startTime = DateUtils.parseDate(servStartTime);
+		Date endTime = DateUtils.parseDate(servEndTime);
+		if (startTime.before(endTime)) {
+			// 不跨天营业
+			if ((currentDate.after(startTime)) && (endTime.after(currentDate))) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			// 跨天营业
+			if (currentDate.after(startTime) || endTime.after(currentDate)) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
+	/**
+	 * @Description: 获取当前时间小时分钟数
+	 * @return Date  
+	 * @author maojj
+	 * @date 2016年7月14日
+	 */
+	private static Date getCurrentDate() {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		int hour = cal.get(Calendar.HOUR_OF_DAY);
+		int minute = cal.get(Calendar.MINUTE);
+		String hourMinute = hour + ":" + minute;
+		return DateUtils.parseDate(hourMinute);
 	}
 	
 	public static AppStoreServiceExtDto convertAppStoreServiceExtDto(StoreInfo storeInfo){
@@ -62,7 +122,8 @@ public class AppAdapter {
 		}
 		StoreInfoExt storeExt = storeInfo.getStoreInfoExt();
 		StoreInfoServiceExt storeServExt = storeInfo.getStoreInfoServiceExt();
-		AppStoreServiceExtDto dto = BeanMapper.map(storeInfo.getStoreInfoServiceExt(), AppStoreServiceExtDto.class);
+		AppStoreServiceExtDto dto = BeanMapper.map(storeServExt, AppStoreServiceExtDto.class);
+		dto.setStartPrice(ConvertUtil.format(storeServExt.getStartingPrice()));
 		if(isAdvance(storeExt)){
 			// 预约类型（0：提前多少小时下单 1：只能下当前日期多少天后的订单）
 			if(Integer.valueOf(0).equals(storeExt.getAdvanceType())){
@@ -123,6 +184,8 @@ public class AppAdapter {
 		for(CurrentStoreSkuBo skuBo : parserBo.getCurrentSkuMap().values()){
 			dto = BeanMapper.map(skuBo, AppStoreSkuDto.class);
 			dto.setOnline(skuBo.getOnline().ordinal());
+			dto.setOnlinePrice(ConvertUtil.format(skuBo.getOnlinePrice()));
+			dto.setActPrice(ConvertUtil.format(skuBo.getActPrice()));
 			dtoList.add(dto);
 		}
 		return dtoList;
@@ -134,7 +197,7 @@ public class AppAdapter {
 		}
 		SeckillInfoDto seckillInfo = new SeckillInfoDto();
 		seckillInfo.setId(seckill.getId());
-		seckillInfo.setSeckillPrice(seckill.getSeckillPrice());
+		seckillInfo.setSeckillPrice(ConvertUtil.format(seckill.getSeckillPrice()));
 		seckillInfo.setSeckillStatus(seckill.getSeckillStatus().ordinal());
 		seckillInfo.setSeckillRangeType(seckill.getSeckillRangeType().ordinal());
 		return seckillInfo;
