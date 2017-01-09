@@ -290,14 +290,14 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 		//Begin 排除平台优惠 update by tangy  2016-11-4
 		// 平台优惠金额
+		// Begin modified by maojj 2017-01-09
 		BigDecimal platDiscountAmount = BigDecimal.ZERO;
-		if (order.getTotalAmount().compareTo(order.getIncome()) != 0 
-				&& !ActivityTypeEnum.VONCHER.equals(order.getActivityType())) {
-			//End added by tangy
-			storePreferentialPrice = order.getPreferentialPrice();
-		} else if (ActivityTypeEnum.VONCHER.equals(order.getActivityType())) {
+		if (order.getActualAmount().compareTo(order.getIncome()) != 0 ) {
 			platDiscountAmount = order.getPreferentialPrice();
+		} else {
+			storePreferentialPrice = order.getPreferentialPrice();
 		}
+		// End modified by maojj 2017-01-09
 		
 		// 平台优惠金额
 		orderInfo.put("platDiscountAmount", platDiscountAmount);
