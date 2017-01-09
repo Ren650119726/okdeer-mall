@@ -83,6 +83,7 @@ import com.okdeer.mall.common.vo.PageResultVo;
  *    12051            2016-8-11             wusw                修改商品金额总计
  *    v1.1.0            2016-9-17            zengjz              增加财务系统统计交易订单数量、金额接口
  *    v1.2.0           2016-11-16            zengjz              取消订单接口更换
+ *    V2.0.0            2017-01-09           wusw                修改订单查询和导出的线上订单包括订单来源为友门鹿便利店(CVS)的订单
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.ITradeOrderServiceApi")
 public class TradeOrderApiImpl implements ITradeOrderServiceApi {
@@ -817,7 +818,10 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			dto.setCreateTime(vo.getCreateTime());
 			if (vo.getOrderResource() != null) {
 				if (vo.getOrderResource() == OrderResourceEnum.YSCAPP
-						|| vo.getOrderResource() == OrderResourceEnum.WECHAT) {
+						|| vo.getOrderResource() == OrderResourceEnum.WECHAT
+						// Begin V2.0.0 add by wusw 20170109
+						|| vo.getOrderResource() == OrderResourceEnum.CVSAPP) {
+					    // End V2.0.0 add by wusw 20170109
 					dto.setOrderResource(0);
 				} else {
 					dto.setOrderResource(1);
@@ -873,7 +877,10 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			dto.setCreateTime(vo.getCreateTime());
 			if (vo.getOrderResource() != null) {
 				if (vo.getOrderResource() == OrderResourceEnum.YSCAPP
-						|| vo.getOrderResource() == OrderResourceEnum.WECHAT) {
+						|| vo.getOrderResource() == OrderResourceEnum.WECHAT						
+						// Begin V2.0.0 add by wusw 20170109
+						|| vo.getOrderResource() == OrderResourceEnum.CVSAPP) {
+				        // End V2.0.0 add by wusw 20170109
 					dto.setOrderResource(0);
 				} else {
 					dto.setOrderResource(1);
