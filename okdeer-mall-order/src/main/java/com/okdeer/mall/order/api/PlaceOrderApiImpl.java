@@ -91,7 +91,11 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				if (skuList.size() > 1) {
 					resp.getData().setPaymentMode(PayWayEnum.PAY_ONLINE.ordinal());
 				} else {
-					resp.getData().setPaymentMode(skuList.get(0).getPaymentMode());
+					if(skuList.get(0).getPaymentMode() == 1){
+						resp.getData().setPaymentMode(4);
+					}else{
+						resp.getData().setPaymentMode(skuList.get(0).getPaymentMode());
+					}
 				}
 			}
 		}
