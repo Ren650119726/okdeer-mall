@@ -38,6 +38,9 @@
 		<include refid="Base_Column_List" />
 		FROM column_app_recommend
 		WHERE disabled = 0
+		<if test="excludeId != null and excludeId != ''">
+			AND id != #{excludeId}
+		</if>
 		<if test="title != null and title != ''">
 			AND title LIKE CONCAT('%',#{title},'%')
 		</if>
