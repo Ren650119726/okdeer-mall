@@ -124,6 +124,7 @@ public class TradeOrderCompleteProcessServiceImpl
 	/** * pos支付方式:微信 */
 	private static final String WECHATPAY = "微信";
 	
+	@Resource
 	private StockAdjustVoBuilder stockAdjustVoBuilder;
 
 	/**
@@ -209,7 +210,7 @@ public class TradeOrderCompleteProcessServiceImpl
         logger.info("==============================orderInfo:", orderInfo.toString());
 		// 发送消息
 		this.send(OrderMessageConstant.TOPIC_ORDER_COMPLETE, OrderMessageConstant.TAG_ORDER_COMPLETE,
-				orderInfo.toString());
+				orderInfo.toString(),tradeOrder.getId());
 
 	}
 
@@ -251,7 +252,7 @@ public class TradeOrderCompleteProcessServiceImpl
 		orderRefundsInfo.put("orderRefundsItemList", orderRefundsItemList);
 		// 发送消息
 		this.send(OrderMessageConstant.TOPIC_REFUND_ORDER_COMPLETE, OrderMessageConstant.TAG_REFUND_ORDER_COMPLETE,
-				orderRefundsInfo.toString());
+				orderRefundsInfo.toString(),orderRefunds.getId());
 	}
 
 	/**
@@ -626,11 +627,12 @@ public class TradeOrderCompleteProcessServiceImpl
 	 * @author zengj
 	 * @date 2016年9月6日
 	 */
-	private void send(String topic, String tag, String msg) throws Exception {
+	private void send(String topic, String tag, String msg,String key) throws Exception {
 		if (logger.isInfoEnabled()) {
 			logger.info(LogConstants.ORDER_OR_REFUNDS_COMPLETE_MSG_PARAM, tag, msg);
 		}
-		Message message = new Message(topic, tag, msg.getBytes(Charsets.UTF_8));
+		Message message = new Message(topic, tag, key,msg.getBytes(Charsets.UTF_8));
+		message.setKeys(key);
 		SendResult sendResult = rocketMqProducer.send(message);
 		if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
 			throw new StockException("写mq数据失败");
