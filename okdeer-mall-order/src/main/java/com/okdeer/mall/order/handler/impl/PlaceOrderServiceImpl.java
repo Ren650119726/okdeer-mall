@@ -52,6 +52,7 @@ import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
@@ -167,7 +168,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		// 根据请求构建订单
 		TradeOrder tradeOrder = tradeOrderBoBuilder.build(paramDto);
 		MemberConsigneeAddress userUseAddr = (MemberConsigneeAddress) paramDto.get("userUseAddr");
-		if (paramDto.getSkuType() != OrderTypeEnum.STORE_CONSUME_ORDER && userUseAddr == null) {
+		if (paramDto.getPickType() == PickUpTypeEnum.DELIVERY_DOOR && userUseAddr == null) {
 			resp.setResult(ResultCodeEnum.ADDRESS_NOT_EXSITS);
 			return;
 		}
