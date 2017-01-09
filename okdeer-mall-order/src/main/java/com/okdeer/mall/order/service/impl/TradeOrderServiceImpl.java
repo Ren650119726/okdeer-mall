@@ -1449,9 +1449,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 				// begin modify by zengjz 判断是否是服务店订单
 				// begin update by wushp
+				
+				//添加积分
+				addPoint(tradeOrder.getUserId(), tradeOrder.getId(), tradeOrder.getActualAmount());
 				if (tradeOrder.getType().ordinal() == 2) {
 					// 服务店订单，没有售后时间，确认订单完成即送积分
-					addPoint(tradeOrder.getUserId(), tradeOrder.getId(), tradeOrder.getActualAmount());
+					//addPoint(tradeOrder.getUserId(), tradeOrder.getId(), tradeOrder.getActualAmount());
 				} else {
 					// 赠送积分计时消息
 					if (ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()) {
@@ -1550,13 +1553,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		Map<String, Object> params = Maps.newHashMap();
 		params.put("orderNo", order.getOrderNo());
-		List<TradeOrderRefunds> list = tradeOrderRefundsMapper.selectByParams(params);
-		// 判断无售后
-		if (list == null || Iterables.isEmpty(list)) {
-			if (order.getPayWay() == PayWayEnum.PAY_ONLINE) {
-				addPoint(order.getUserId(), order.getId(), order.getActualAmount());
-			}
-		}
+//		List<TradeOrderRefunds> list = tradeOrderRefundsMapper.selectByParams(params);
+//		// 判断无售后
+//		if (list == null || Iterables.isEmpty(list)) {
+//			if (order.getPayWay() == PayWayEnum.PAY_ONLINE) {
+//				addPoint(order.getUserId(), order.getId(), order.getActualAmount());
+//			}
+//		}
 		// 更新余额
 		if (tradeOrderPayService.isServiceAssurance(order)) {
 			tradeOrderPayService.updateBalanceByFinish(order);
