@@ -25,7 +25,7 @@ public interface ActivitySaleService {
 
 	PageUtils<ActivitySale> pageList(Map<String, Object> map, Integer pageNumber, Integer pageSize);
 
-	void updateBatchStatus(List<String> ids, int status, String storeId, String createUserId,Integer activityType) throws Exception;
+	List<String> updateBatchStatus(List<String> ids, int status, String storeId, String createUserId,Integer activityType) throws Exception;
 
 	List<Map<String, Object>> listGoodsStoreSku(Map<String, Object> map);
 

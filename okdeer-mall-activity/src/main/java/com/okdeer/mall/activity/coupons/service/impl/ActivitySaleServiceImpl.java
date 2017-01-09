@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -375,9 +376,10 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateBatchStatus(List<String> ids, int status, String storeId, String createUserId,Integer activityType) throws Exception {
+	public List<String> updateBatchStatus(List<String> ids, int status, String storeId, String createUserId,Integer activityType) throws Exception {
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdByBathSkuList = new ArrayList<String>();
+		List<String> storeSkuIdList = Lists.newArrayList();
 		try {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("ids", ids);
@@ -396,6 +398,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 					if (asgList != null && asgList.size() > 0) {
 						for (ActivitySaleGoods a : asgList) {
 							goodsStoreSkuIds.add(a.getStoreSkuId());
+							storeSkuIdList.add(a.getStoreSkuId());
 						}
 					}
 				}
@@ -452,6 +455,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			rollbackMQProducer.sendSkuBatchRollbackMsg(rpcIdByBathSkuList);
 			throw e;
 		}
+		return storeSkuIdList;
 	}
 
 	@Override
