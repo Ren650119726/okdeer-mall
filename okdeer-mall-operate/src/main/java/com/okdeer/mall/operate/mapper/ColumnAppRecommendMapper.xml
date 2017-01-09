@@ -59,12 +59,29 @@
 		<if test="null != status">
 			AND status = #{status}
 		</if>
-		<if test="ids != null and ids.size() > 0">
-			AND id IN
-			<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
-				#{item}
-			</foreach>
-		</if>
+		<choose>  
+            <when test="isContainNationwide == true and ids != null and ids.size() > 0">  
+               AND (
+               		area_type = 0  
+               		OR id IN
+					<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+               )
+            </when>
+             <when test="isContainNationwide == true">  
+               AND area_type = 0
+            </when>   
+            <otherwise>  
+               <if test="ids != null and ids.size() > 0">
+					AND id IN
+					<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+				</if>
+            </otherwise>  
+        </choose>  
+		
 		<choose>  
             <when test="sortType == 1">  
                ORDER BY sort , update_time DESC
