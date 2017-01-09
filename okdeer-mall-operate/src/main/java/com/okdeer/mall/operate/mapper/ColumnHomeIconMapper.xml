@@ -43,6 +43,9 @@
 		<if test="null != taskType">
 			AND task_type = #{taskType}
 		</if>
+		<if test="null != taskScope">
+			AND task_scope = #{taskScope}
+		</if>
 		<if test="null != place">
 			AND place = #{place}
 		</if>
