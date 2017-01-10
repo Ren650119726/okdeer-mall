@@ -372,11 +372,10 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 店铺优惠金额
 		BigDecimal platDiscountAmount = BigDecimal.ZERO;
 		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
-		if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0) {
-			storePreferentialPrice = orderRefunds.getTotalPreferentialPrice();
-		} else if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) == 0
-				&& orderRefunds.getTotalPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+		if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0 ) {
 			platDiscountAmount = orderRefunds.getTotalPreferentialPrice();
+		} else {
+			storePreferentialPrice = orderRefunds.getTotalPreferentialPrice();
 		}
 		
 		// 平台优惠金额
@@ -437,11 +436,10 @@ public class TradeOrderCompleteProcessServiceImpl
 			BigDecimal platDiscountAmount = BigDecimal.ZERO;
 			// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 			//Begin 排除平台优惠 update by tangy  2016-10-28
-			if (order.getTotalAmount().compareTo(order.getIncome()) != 0 
-					&& !ActivityTypeEnum.VONCHER.equals(orderItem.getActivityType())) {
-				storePreferentialPrice = orderItem.getPreferentialPrice();
-			} else if (ActivityTypeEnum.VONCHER.equals(orderItem.getActivityType())) {
+			if (order.getActualAmount().compareTo(order.getIncome()) != 0 ) {
 				platDiscountAmount = orderItem.getPreferentialPrice();
+			} else {
+				storePreferentialPrice = orderItem.getPreferentialPrice();
 			}
 			item.put("platDiscountAmount", platDiscountAmount);
 			// 实际单价=原单价减去店铺优惠
@@ -657,9 +655,10 @@ public class TradeOrderCompleteProcessServiceImpl
 					splitItem.setId(UuidUtils.getUuid());
 					splitItem.setOrderId(item.getOrderId());
 					splitItem.setActivityType(item.getActivityType());
-					splitItem.setPreferentialPrice(comboDto.getOnlinePrice().subtract(comboDto.getUnitPrice()));
-					splitItem.setUnitPrice(comboDto.getOnlinePrice());
+					splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
+					splitItem.setUnitPrice(comboDto.getUnitPrice());
 					splitItem.setQuantity(comboDto.getQuantity()*item.getQuantity());
+					splitItem.setStoreSkuId(comboDto.getStoreSkuId());
 					splitItem.setCreateTime(item.getCreateTime());
 					splitItemList.add(splitItem);
 				}
@@ -674,6 +673,7 @@ public class TradeOrderCompleteProcessServiceImpl
 				splitItem.setUnitPrice(item.getUnitPrice());
 				splitItem.setQuantity(item.getActivityQuantity());
 				splitItem.setCreateTime(item.getCreateTime());
+				splitItem.setStoreSkuId(item.getStoreSkuId());
 				splitItemList.add(splitItem);
 				
 				splitItem = new TradeOrderItem();
@@ -684,6 +684,7 @@ public class TradeOrderCompleteProcessServiceImpl
 				splitItem.setUnitPrice(item.getUnitPrice());
 				splitItem.setQuantity(item.getQuantity() - item.getActivityQuantity());
 				splitItem.setCreateTime(item.getCreateTime());
+				splitItem.setStoreSkuId(item.getStoreSkuId());
 				splitItemList.add(splitItem);
 				itemIt.remove();
 			}
