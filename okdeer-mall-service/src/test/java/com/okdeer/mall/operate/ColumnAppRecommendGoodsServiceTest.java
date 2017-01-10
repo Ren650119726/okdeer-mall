@@ -109,5 +109,18 @@ public class ColumnAppRecommendGoodsServiceTest {
 			log.error("根据推荐ID删除与商品关联数据异常:{}", e);
 		}
 	}
+	
+	@Test
+	public void test5FindShowListByStoreSkuIds() {
+		try {
+			log.info("测试根据服务店商品ID查询需要需要展示商品关联信息");
+			List<String> ids = new ArrayList<String>();
+			ids.add("1");
+			List<ColumnAppRecommendGoods> result = recommendGoodsService.findShowListByStoreSkuIds(ids);
+			Assert.assertNotNull("根据根据服务店商品ID查询需要需要展示商品关联信息失败", result);
+		} catch (Exception e) {
+			log.error("根据根据服务店商品ID查询需要需要展示商品关联信息异常:{}", e);
+		}
+	}
 
 }

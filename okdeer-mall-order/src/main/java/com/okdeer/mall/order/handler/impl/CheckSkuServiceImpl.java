@@ -36,7 +36,6 @@ import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
-import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 
 /**
@@ -93,20 +92,25 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		List<GoodsStoreSku> currentSkuList = findCurrentSkuList(skuIdList);
 		// 判断商品列表与请求清单是否一致
 		if (currentSkuList.size() != skuIdList.size()) {
-			resp.setResult(ResultCodeEnum.GOODS_NOT_MATCH);
+			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
 			return;
 		}
 		// 解析当前店铺商品列表。获取当前商品的价格、库存、限购数量
 		StoreSkuParserBo parserBo = parseCurrentSkuList(currentSkuList);
 		parserBo.setSkuIdList(skuIdList);
 		parserBo.loadBuySkuList(paramDto.getSkuList());
-		// 查询库存集合
-		List<GoodsStoreSkuStock> stockList = stockManagerJxcServiceApi.findGoodsStockInfoList(parserBo.getSkuIdList());
-		if(stockList.size() != parserBo.getSkuIdList().size() - parserBo.getComboSkuIdList().size()){
-			resp.setResult(ResultCodeEnum.GOODS_NOT_MATCH);
-			return;
+		
+		// 获取非组合商品列表
+		List<String> excludeComboList = parserBo.extraSkuListExcludeCombo();
+		if(CollectionUtils.isNotEmpty(excludeComboList)){
+			// 查询商业系统库存集合
+			List<GoodsStoreSkuStock> stockList = stockManagerJxcServiceApi.findGoodsStockInfoList(excludeComboList);
+			if(CollectionUtils.isEmpty(stockList) || stockList.size() != excludeComboList.size()){
+				resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
+				return;
+			}
+			parserBo.loadStockList(stockList);
 		}
-		parserBo.loadStockList(stockList);
 		// 查询组合商品库存
 		if(CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())){
 			List<GoodsStoreSkuStock> comboStockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(parserBo.getComboSkuIdList());
@@ -207,19 +211,9 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 			CurrentStoreSkuBo currentSku = parserBo.getCurrentStoreSkuBo(item.getStoreSkuId());
 			// 检查是否下架
 			if (currentSku.getOnline() == BSSC.UNSHELVE) {
-				// 商品下架
-				if (req.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
-					checkResult = ResultCodeEnum.GOODS_IS_OFFLINE_SETTLEMENT;
-				} else {
-					checkResult = ResultCodeEnum.GOODS_IS_OFFLINE;
-				}
-			} else if (currentSku.getOnlinePrice().compareTo(item.getSkuPrice()) != 0 || (currentSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && currentSku.getActPrice().compareTo(item.getSkuActPrice()) != 0)) {
-				// 商品价格发生变化
-				if (req.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
-					checkResult = ResultCodeEnum.GOODS_IS_OFFLINE_SETTLEMENT;
-				} else {
-					checkResult = ResultCodeEnum.GOODS_IS_OFFLINE_SETTLEMENT;
-				}
+				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+			} else if (currentSku.getOnlinePrice().compareTo(item.getSkuPrice()) != 0 || (currentSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && currentSku.getSkuActQuantity() > 0 && item.getSkuActPrice().compareTo(currentSku.getActPrice()) != 0)) {
+				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 			} else if (!currentSku.getUpdateTime().equals(item.getUpdateTime())) {
 				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 			}

@@ -1,13 +1,7 @@
 
 package com.okdeer.mall.activity.coupons.service.impl;
 
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_ADD;
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_UPDATE;
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_DEL;
-import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -20,17 +14,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
-import com.alibaba.rocketmq.common.message.Message;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
-import com.google.common.base.Charsets;
-import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.enums.IsActivity;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
+import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
@@ -38,7 +30,6 @@ import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.enums.ActivitySaleStatus;
@@ -50,10 +41,9 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 
 /**
- * 
  * ClassName: ActivitySaleServiceImpl 
  * @Description: 特惠活动服务
- * @author zengj
+ * @author zengj 
  * @date 2016年9月7日
  *
  * =================================================================================================
@@ -75,15 +65,15 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 
-	// @Reference(version = "1.0.0", check = false)
-	// private StockManagerServiceApi stockManagerServiceApi;
+	 @Reference(version = "1.0.0", check = false)
+	 private StockManagerServiceApi stockManagerServiceApi;
 
 	// Begin 1.0.Z add by zengj
 	/**
 	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerServiceApi;
+	private StockManagerJxcServiceApi stockManagerJxcServiceApi;
 	// End 1.0.Z add by zengj
 
 	/**
@@ -174,27 +164,43 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		stockAdjustVo.setMethodName(this.getClass().getName() + ".syncGoodsStock");
 		/***********************/
 		/***********************/
+		//非组合商品
 		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
+		//组合商品
+		List<AdjustDetailVo> assDtailList = new ArrayList<AdjustDetailVo>();
 		for (ActivitySaleGoods goods : goodsList) {
 			GoodsStoreSku entity = goodsStoreSkuServiceApi.getById(goods.getStoreSkuId());
 			if(goods.getSaleStock() > 0){
 				AdjustDetailVo adjustDetailVo = new AdjustDetailVo();
 				adjustDetailVo.setStoreSkuId(goods.getStoreSkuId());
 				adjustDetailVo.setNum(goods.getSaleStock());
-				/*************新增字段 start **************/
-				adjustDetailVo.setGoodsName(entity.getName());
-				adjustDetailVo.setBarCode(entity.getBarCode());
-				adjustDetailVo.setStyleCode(entity.getStyleCode());
-				adjustDetailVo.setPrice(goods.getSalePrice());
-				/*************新增字段 end  **************/
-				adjustDetailList.add(adjustDetailVo);
+				if(entity.getSpuTypeEnum() == SpuTypeEnum.assembleSpu){
+					//如果是组合商品,不需要同步进销存的库存
+					adjustDetailVo.setGoodsName(entity.getName());
+					adjustDetailVo.setBarCode(entity.getBarCode());
+					assDtailList.add(adjustDetailVo);
+				}else{
+					/*************新增字段 start **************/
+					adjustDetailVo.setGoodsName(entity.getName());
+					adjustDetailVo.setBarCode(entity.getBarCode());
+					adjustDetailVo.setStyleCode(entity.getStyleCode());
+					adjustDetailVo.setPrice(goods.getSalePrice());
+					/*************新增字段 end  **************/
+					adjustDetailList.add(adjustDetailVo);
+				}
 			}
 		}
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
 		stockAdjustVo.setStockOperateEnum(soe);
-
+		//更新商城活动库存
+		if(assDtailList.size() > 0){
+			stockAdjustVo.setAdjustDetailList(assDtailList);
+			stockManagerServiceApi.updateStock(stockAdjustVo);
+		}
 		log.info("特惠活动时同步erp库存开始:");
-		stockManagerServiceApi.updateStock(stockAdjustVo);
+		if(adjustDetailList.size() > 0){
+			stockAdjustVo.setAdjustDetailList(adjustDetailList);
+			stockManagerJxcServiceApi.updateStock(stockAdjustVo);
+		}
 		log.info("特惠活动时同步erp完成:");
 	}
 
@@ -237,7 +243,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		stockAdjustVo.setStockOperateEnum(soe);
 
 		log.info("特惠活动时同步erp库存开始:");
-		stockManagerServiceApi.updateStock(stockAdjustVo);
+		stockManagerJxcServiceApi.updateStock(stockAdjustVo);
 		log.info("特惠活动时同步erp完成:");
 	}
 
@@ -377,7 +383,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			params.put("ids", ids);
 			params.put("status", status);
 			//modify by mengsj 如果是低价抢购活动，关闭时设置活动结束时间为当前日期
-			if(activityType == ActivityTypeEnum.LOW_PRICE.ordinal() && status == ActivitySaleStatus.closed.ordinal()){
+			if(activityType != null && activityType == ActivityTypeEnum.LOW_PRICE.ordinal() && status == ActivitySaleStatus.closed.ordinal()){
 				params.put("endTime", new Date());
 			}
 			activitySaleMapper.updateBatchStatus(params);

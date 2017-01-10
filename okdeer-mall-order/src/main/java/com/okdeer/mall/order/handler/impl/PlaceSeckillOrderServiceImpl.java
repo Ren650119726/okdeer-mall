@@ -34,6 +34,7 @@ import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * ClassName: PlaceSeckillOrderServiceImpl 
@@ -114,7 +115,7 @@ public class PlaceSeckillOrderServiceImpl implements RequestHandler<PlaceOrderPa
 			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, tradeOrder.getId());
 			respData.setOrderId(tradeOrder.getId());
 			respData.setOrderNo(tradeOrder.getOrderNo());
-			respData.setOrderPrice(tradeOrder.getActualAmount());
+			respData.setOrderPrice(ConvertUtil.format(tradeOrder.getActualAmount()));
 			respData.setTradeNum(tradeOrder.getTradeNum());
 			respData.setLimitTime(1800);
 

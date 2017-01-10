@@ -66,12 +66,11 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		ActivityTypeEnum activityType = paramDto.getActivityType();
 		String recordId = paramDto.getRecordId();
 		String activityId = paramDto.getActivityId();
-		StringBuilder couponsId = new StringBuilder();
 
 		boolean isValid = true;
 		switch (activityType) {
 			case VONCHER:
-				isValid = checkCoupons(recordId, couponsId);
+				isValid = checkCoupons(recordId);
 				break;
 			case FULL_REDUCTION_ACTIVITIES:
 			case FULL_DISCOUNT_ACTIVITIES:
@@ -81,7 +80,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				break;
 		}
 		if (!isValid) {
-			resp.setResult(ResultCodeEnum.FAVOUR_INVALID);
+			resp.setResult(ResultCodeEnum.FAVOUR_NOT_SUPPORT);
 			return;
 		}
 	}
@@ -93,13 +92,12 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private boolean checkCoupons(String recordId, StringBuilder couponsId) {
+	private boolean checkCoupons(String recordId) {
 		boolean isValid = true;
 		ActivityCouponsRecord conpons = activityCouponsRecordMapper.selectByPrimaryKey(recordId);
 		if (conpons.getStatus() != ActivityCouponsRecordStatusEnum.UNUSED) {
 			isValid = false;
 		}
-		couponsId.append(conpons.getCouponsId());
 		return isValid;
 	}
 

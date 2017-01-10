@@ -610,8 +610,14 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setCreateTime(new Date());
 			tradeOrderItem.setServiceAssurance(
 					StringUtils.isEmpty(skuBo.getGuaranteed()) ? 0 : Integer.valueOf(skuBo.getGuaranteed()));
-			tradeOrderItem.setActivityType(paramDto.getActivityType().ordinal());
-			tradeOrderItem.setActivityId(paramDto.getActivityId());
+			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0){
+				tradeOrderItem.setActivityType(skuBo.getActivityType());
+				tradeOrderItem.setActivityId(skuBo.getActivityId());
+			}else{
+				tradeOrderItem.setActivityType(paramDto.getActivityType().ordinal());
+				tradeOrderItem.setActivityId(paramDto.getActivityId());
+			}
+			
 			tradeOrderItem.setBarCode(skuBo.getBarCode());
 			tradeOrderItem.setStyleCode(skuBo.getStyleCode());
 

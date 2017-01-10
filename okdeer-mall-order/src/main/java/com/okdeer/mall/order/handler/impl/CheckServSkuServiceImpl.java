@@ -62,7 +62,7 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 		List<GoodsStoreSku> currentSkuList = findCurrentSkuList(skuIdList);
 		// 判断商品列表与请求清单是否一致
 		if (currentSkuList.size() != skuIdList.size()) {
-			resp.setResult(ResultCodeEnum.GOODS_NOT_MATCH);
+			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
 			return;
 		}
 		StoreSkuParserBo parserBo = new StoreSkuParserBo(currentSkuList);
@@ -109,9 +109,9 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 			if (currentSku.getOnline() == BSSC.UNSHELVE) {
 				// 商品下架
 				if (paramDto.getSkuType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
-					checkResult = ResultCodeEnum.SERV_GOODS_NOT_BUY;
+					checkResult = ResultCodeEnum.SERV_GOODS_EXP;
 				} else {
-					checkResult = ResultCodeEnum.SERV_GOODS_NOT_EXSITS;
+					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 				}
 			} else if (paramDto.getSkuType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 				// 判断到店消费商品是否已过有效期
@@ -132,13 +132,13 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 	public ResultCodeEnum checkFare(PlaceOrderParamDto paramDto, StoreSkuParserBo parserBo) {
 		ResultCodeEnum checkResult = ResultCodeEnum.SUCCESS;
 		if (paramDto.getSkuType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
+			// 商品总金额
+			BigDecimal totalAmount = parserBo.getTotalItemAmount();
 			// 服务店扩展信息
 			StoreInfoServiceExt serviceExt = ((StoreInfo) paramDto.get("storeInfo")).getStoreInfoServiceExt();
 			if (serviceExt != null && serviceExt.getIsShoppingCart() == 1 && serviceExt.getIsStartingPrice() == 1
 					&& serviceExt.getIsSupportPurchase() == 0) {
 				BigDecimal startingPrice = serviceExt.getStartingPrice();
-				// 商品总金额
-				BigDecimal totalAmount = parserBo.getTotalItemAmount();
 				if (totalAmount.compareTo(startingPrice) == -1) {
 					// 订单总价小与起送价
 					if (paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT) {
@@ -148,33 +148,32 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 						checkResult = ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH_SUBMIT;
 					}
 				}
-
-				if (serviceExt != null && serviceExt.getIsShoppingCart() == 1
-						&& serviceExt.getIsDistributionFee() == 1) {
-					// 支持购物车并且有配送费
-					if (serviceExt.getIsStartingPrice() == 1) {
-						// 有起送价
-						if (serviceExt.getIsCollect() == 1) {
-							// 已满起送价收取配送费
-							parserBo.setFare(BigDecimal.valueOf(serviceExt.getDistributionFee()));
-						} else {
-							if (totalAmount.compareTo(startingPrice) == -1) {
-								// 设置运费
-								parserBo.setFare(BigDecimal.valueOf(serviceExt.getDistributionFee()));
-							}
-						}
-
+			}
+			if (serviceExt != null && serviceExt.getIsShoppingCart() == 1 && serviceExt.getIsDistributionFee() == 1) {
+				// 支持购物车并且有配送费
+				if (serviceExt.getIsStartingPrice() == 1) {
+					// 有起送价
+					if (serviceExt.getIsCollect() == 1) {
+						// 已满起送价收取配送费
+						parserBo.setFare(BigDecimal.valueOf(serviceExt.getDistributionFee()));
 					} else {
-						// 没有起送价
-						if (serviceExt.getIsCollect() == 1) {
-							// 已满起送价收取配送费，0：否，1：是
+						if (totalAmount.compareTo(serviceExt.getStartingPrice()) == -1) {
 							// 设置运费
 							parserBo.setFare(BigDecimal.valueOf(serviceExt.getDistributionFee()));
 						}
-
 					}
+
+				} else {
+					// 没有起送价
+					if (serviceExt.getIsCollect() == 1) {
+						// 已满起送价收取配送费，0：否，1：是
+						// 设置运费
+						parserBo.setFare(BigDecimal.valueOf(serviceExt.getDistributionFee()));
+					}
+
 				}
 			}
+
 		}
 		return checkResult;
 	}

@@ -68,6 +68,7 @@ import com.okdeer.mall.order.vo.RechargeCouponVo;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
+import ch.qos.logback.core.util.StringCollectionUtil;
 import net.sf.json.JSONObject;
 
 /**
@@ -234,7 +235,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		} else {	
 			voList = activityCouponsRecordMapper.selectMyCouponsDetailByParamsOld(activityCouponsRecord);
 		}
-		if (voList != null && voList.size() > 0) {
+		if (!CollectionUtils.isEmpty(voList)) {
 			for (ActivityCouponsRecordQueryVo vo : voList) {
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(vo.getValidTime());
@@ -242,37 +243,38 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				cal.add(Calendar.DATE, -1); 
 				vo.setValidTime(cal.getTime());
 				ActivityCoupons activityCoupons = vo.getActivityCoupons();
-				if (activityCoupons.getType() == 1) {
-					if (activityCoupons.getIsCategory() == 1) {
-						String categoryNames = "";
-						//CouponsInfoQuery couponsInfo = activityCouponsMapper.findNavCategoryByCouponsId(activityCoupons.getId());
-						List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
-						if (cates != null) {
-					    	for (ActivityCouponsCategory category : cates) {
-					    		if (StringUtils.isNotBlank(categoryNames)) {
-						    		categoryNames =  categoryNames + "、" ;	
-					    		}	
-					    		categoryNames = categoryNames + category.getCategoryName();
-					    	}
-					    }
-						activityCoupons.setCategoryNames(categoryNames);
+				Integer couponsType = activityCoupons.getType();
+				if (couponsType != null) {
+					if (activityCoupons.getType() == 1) {
+						if (activityCoupons.getIsCategory() == 1) {
+							String categoryNames = "";
+							List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
+							if (cates != null) {
+						    	for (ActivityCouponsCategory category : cates) {
+						    		if (StringUtils.isNotBlank(categoryNames)) {
+							    		categoryNames =  categoryNames + "、" ;	
+						    		}	
+						    		categoryNames = categoryNames + category.getCategoryName();
+						    	}
+						    }
+							activityCoupons.setCategoryNames(categoryNames);
+						}
+					} else if (activityCoupons.getType() == 2) {
+						if (activityCoupons.getIsCategory() == 1) {
+							String categoryNames = "";
+							List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
+							if (cates != null) {
+						    	for (ActivityCouponsCategory category : cates) {
+						    		if (StringUtils.isNotBlank(categoryNames)) {
+							    		categoryNames =  categoryNames + "、" ;	
+						    		}	
+						    		categoryNames = categoryNames + category.getCategoryName();						    		
+						    	}
+						    }
+							activityCoupons.setCategoryNames(categoryNames);
+						}
+						
 					}
-				} else if (activityCoupons.getType() == 2) {
-					if (activityCoupons.getIsCategory() == 1) {
-						String categoryNames = "";
-						//CouponsInfoQuery couponsInfo = activityCouponsMapper.findSpuCategoryByCouponsId(activityCoupons.getId());
-						List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
-						if (cates != null) {
-					    	for (ActivityCouponsCategory category : cates) {
-					    		if (StringUtils.isNotBlank(categoryNames)) {
-						    		categoryNames =  categoryNames + "、" ;	
-					    		}	
-					    		categoryNames = categoryNames + category.getCategoryName();						    		
-					    	}
-					    }
-						activityCoupons.setCategoryNames(categoryNames);
-					}
-					
 				}
 			}
 		}

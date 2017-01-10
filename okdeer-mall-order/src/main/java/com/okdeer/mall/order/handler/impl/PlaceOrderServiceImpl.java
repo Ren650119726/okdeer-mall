@@ -52,6 +52,7 @@ import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
@@ -59,6 +60,7 @@ import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 import net.sf.json.JSONObject;
 
@@ -167,7 +169,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		// 根据请求构建订单
 		TradeOrder tradeOrder = tradeOrderBoBuilder.build(paramDto);
 		MemberConsigneeAddress userUseAddr = (MemberConsigneeAddress) paramDto.get("userUseAddr");
-		if (paramDto.getSkuType() != OrderTypeEnum.STORE_CONSUME_ORDER && userUseAddr == null) {
+		if (paramDto.getPickType() == PickUpTypeEnum.DELIVERY_DOOR && userUseAddr == null) {
 			resp.setResult(ResultCodeEnum.ADDRESS_NOT_EXSITS);
 			return;
 		}
@@ -202,7 +204,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 		resp.getData().setOrderId(tradeOrder.getId());
 		resp.getData().setOrderNo(tradeOrder.getOrderNo());
-		resp.getData().setOrderPrice(tradeOrder.getActualAmount());
+		resp.getData().setOrderPrice(ConvertUtil.format(tradeOrder.getActualAmount()));
 		resp.getData().setTradeNum(tradeOrder.getTradeNum());
 		// 订单倒计时
 		resp.getData().setLimitTime(60 * 30);
@@ -218,15 +220,11 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 */
 	private void updateActivityCoupons(TradeOrder tradeOrder, PlaceOrderParamDto req) throws Exception {
 		ActivityTypeEnum activityType = req.getActivityType();
-		int couponsType = req.getCouponsType();
 
 		if (activityType == ActivityTypeEnum.VONCHER) {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("orderId", tradeOrder.getId());
-			params.put("id", req.getRecordId());
-			params.put("collectUserId", tradeOrder.getUserPhone());
-			params.put("couponsId", req.getActivityItemId());
-			params.put("collectType", couponsType);
+			params.put("id", req.getActivityId());
 			// 更新代金券状态
 			int updateResult = activityCouponsRecordMapper.updateActivityCouponsStatus(params);
 			if (updateResult == 0) {
@@ -310,6 +308,9 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	}
 
 	public void updateLastUseAddr(MemberConsigneeAddress userUseAddr) {
+		if(userUseAddr == null){
+			return;
+		}
 		userUseAddr.setUseTime(DateUtils.getSysDate());
 		memberConsigneeAddressMapper.updateByPrimaryKeySelective(userUseAddr);
 	}
@@ -392,7 +393,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				List<GoodsStoreSkuAssembleDto> comboDetailList = parserBo.getComboSkuMap().get(storeSku.getId());
 				for (GoodsStoreSkuAssembleDto comboDetail : comboDetailList) {
 					int buyNum = comboDetail.getQuantity() * (storeSku.getQuantity() + storeSku.getSkuActQuantity());
-					adjustDetailVo = buildDetailVo(comboDetail, true, buyNum);
+					adjustDetailVo = buildDetailVo(comboDetail, false, buyNum);
 					adjustDetailList.add(adjustDetailVo);
 				}
 			}else if(storeSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){

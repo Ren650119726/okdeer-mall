@@ -875,7 +875,7 @@
 		<if test="advertStatus != null">
 			and status = #{advertStatus,jdbcType=TINYINT}
 		</if>
-		and area_type = 1
+		and area_type = 0
 		union all 
 		SELECT <include refid="base_column_list" />
 		FROM column_advert ca WHERE 1 = 1
@@ -885,7 +885,7 @@
 		<if test="advertStatus != null">
 			and ca.status = #{advertStatus,jdbcType=TINYINT}
 		</if>
-		and ca.area_type = 0
+		and ca.area_type = 1
 		and  exists (
 			select 1 from column_advert_area caa where  ca.id=caa.advert_id
 			<if test="cityId != null and cityId !='' ">

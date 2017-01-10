@@ -111,7 +111,7 @@ public class ServActivityCheckServiceImpl implements RequestHandler<ServiceOrder
 				int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getId());
 				if (count == Constant.ZERO || count != spuCategoryIds.size()) {
 					// 购买的商品分类超出代金券限购的分类。则订单提交失败
-					resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
+					resp.setResult(ResultCodeEnum.FAVOUR_NOT_SUPPORT);
 					req.setComplete(true);
 					return;
 				}
