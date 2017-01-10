@@ -433,7 +433,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 						}
 
 						// 把所有店铺商品online改成下架
-						if (goodsStoreSkuIds.size() > 0) {
+						if (goodsStoreSkuIds.size() > 0 && activityType != null && activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal() ) {
 							Date date = new Date();
 							goodsStoreSkuServiceApi.updateBatchOnline(goodsStoreSkuIds, BSSC.UNSHELVE.ordinal(), date);
 						}
