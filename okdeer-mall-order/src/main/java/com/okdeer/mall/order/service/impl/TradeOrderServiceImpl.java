@@ -243,6 +243,7 @@ import net.sf.json.JsonConfig;
  *      v1.2.0            2016-11-28       zengjz             修改判断验证码逻辑
  *      15486             2016-11-29        wusw              如果是服务店订单，直接查询投诉信息，如果不是，已完成状态的订单才能查询投诉信息
  *      15698             2016-12-05        wusw              订单详情，优惠活动要考虑秒杀活动类型查询
+ *      V2.0.0            2017-01-09           wusw           修改订单查询和导出的线上订单包括订单来源为友门鹿便利店(CVS)的订单
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1448,9 +1449,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 				// begin modify by zengjz 判断是否是服务店订单
 				// begin update by wushp
+				
+				//添加积分
+				addPoint(tradeOrder.getUserId(), tradeOrder.getId(), tradeOrder.getActualAmount());
 				if (tradeOrder.getType().ordinal() == 2) {
 					// 服务店订单，没有售后时间，确认订单完成即送积分
-					addPoint(tradeOrder.getUserId(), tradeOrder.getId(), tradeOrder.getActualAmount());
+					//addPoint(tradeOrder.getUserId(), tradeOrder.getId(), tradeOrder.getActualAmount());
 				} else {
 					// 赠送积分计时消息
 					if (ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()) {
@@ -1549,13 +1553,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		Map<String, Object> params = Maps.newHashMap();
 		params.put("orderNo", order.getOrderNo());
-		List<TradeOrderRefunds> list = tradeOrderRefundsMapper.selectByParams(params);
-		// 判断无售后
-		if (list == null || Iterables.isEmpty(list)) {
-			if (order.getPayWay() == PayWayEnum.PAY_ONLINE) {
-				addPoint(order.getUserId(), order.getId(), order.getActualAmount());
-			}
-		}
+//		List<TradeOrderRefunds> list = tradeOrderRefundsMapper.selectByParams(params);
+//		// 判断无售后
+//		if (list == null || Iterables.isEmpty(list)) {
+//			if (order.getPayWay() == PayWayEnum.PAY_ONLINE) {
+//				addPoint(order.getUserId(), order.getId(), order.getActualAmount());
+//			}
+//		}
 		// 更新余额
 		if (tradeOrderPayService.isServiceAssurance(order)) {
 			tradeOrderPayService.updateBalanceByFinish(order);
@@ -5239,6 +5243,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					case "0":
 						orderResourceList.add(OrderResourceEnum.WECHAT);
 						orderResourceList.add(OrderResourceEnum.YSCAPP);
+						// Begin V2.0.0 add by wusw 20170109
+						orderResourceList.add(OrderResourceEnum.CVSAPP);
+						// End V2.0.0 add by wusw 20170109
 						break;
 					case "1":
 						orderResourceList.add(OrderResourceEnum.POS);

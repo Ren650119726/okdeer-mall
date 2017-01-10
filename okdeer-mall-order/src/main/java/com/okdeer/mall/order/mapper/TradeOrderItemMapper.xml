@@ -540,17 +540,19 @@
       <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
    	  <result column="use_time" property="useTime" jdbcType="TIMESTAMP" />
    	  <result column="refund_money_time" property="refundMoneyTime" jdbcType="TIMESTAMP" />
+   	  <result column="unit" property="unit" jdbcType="VARCHAR" />
    </resultMap>
   
   <!-- wusw:根据订单id，查询订单项和订单项消费信息 -->
   <select id="selectItemDetailByOrderId" resultMap="orderItemDetailMap" parameterType="java.lang.String">
-     SELECT  item.sku_name,item.main_pic_prl,item.properties_indb,item.unit_price,item.quantity,item.total_amount,
+     SELECT item.sku_name,item.main_pic_prl,item.properties_indb,item.unit_price,item.quantity,item.total_amount,
             detail.consume_code,detail.status,detail.start_time,detail.end_time,detail.use_time,
-						tor.refund_money_time
+			tor.refund_money_time, storeSku.unit
     FROM trade_order_item item
-    LEFT JOIN trade_order_item_detail detail ON item.id = detail.order_item_id
+   		LEFT JOIN trade_order_item_detail detail ON item.id = detail.order_item_id
 		LEFT JOIN trade_order_refunds_item tori on tori.order_item_id = detail.order_item_id
 		LEFT JOIN trade_order_refunds tor on tor.id = tori.refunds_id
+		LEFT JOIN goods_store_sku storeSku on storeSku.id = item.store_sku_id 
     WHERE item.order_id = #{orderId,jdbcType=VARCHAR}
   </select>
   

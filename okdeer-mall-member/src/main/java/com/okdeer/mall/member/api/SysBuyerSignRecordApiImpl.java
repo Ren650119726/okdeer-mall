@@ -33,7 +33,7 @@ public class SysBuyerSignRecordApiImpl implements SysBuyerSignRecordApi {
 		SignResultDto dto = new SignResultDto();
 		if (count > 0) {
 			// 已经签到过了
-			dto.setMsg("今天已经签到过了");
+			dto.setMsg("今天已签到，明天再来");
 			dto.setStatus(1);
 			return dto;
 		}

@@ -139,6 +139,9 @@ public class StoreSkuParserBo {
 			currentSku.setTradeMax(storeSku.getTradeMax());
 			currentSku.setOnline(storeSku.getOnline());
 			currentSku.setSaleNum(storeSku.getSaleNum());
+			if(storeSku.getPayType() != null){
+				currentSku.setPaymentMode(storeSku.getPayType().ordinal());
+			}
 			
 			GoodsStoreSkuService skuServiceEntity = storeSku.getGoodsStoreSkuService();
 			if (skuServiceEntity != null) {
@@ -402,6 +405,19 @@ public class StoreSkuParserBo {
 			}
 		}
 		return lowFavour;
+	}
+	
+	public List<String> extraSkuListExcludeCombo(){
+		if(CollectionUtils.isEmpty(this.comboSkuIdList)){
+			return this.skuIdList;
+		}
+		List<String> excludeComboList = new ArrayList<String>();
+		for(String skuId : this.skuIdList){
+			if(!this.comboSkuIdList.contains(skuId)){
+				excludeComboList.add(skuId);
+			}
+		}
+		return excludeComboList;
 	}
 
 	public Map<String, List<String>> getActivitySkuMap() {
