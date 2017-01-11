@@ -8,8 +8,10 @@ package com.okdeer.mall.operate.service;
 
 import java.util.List;
 
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.operate.dto.AppRecommendGoodsParamDto;
+import com.okdeer.mall.operate.dto.ServerGoodsChoolseDto;
 import com.okdeer.mall.operate.entity.ColumnAppRecommendGoods;
 
 /**
@@ -75,5 +77,15 @@ public interface ColumnAppRecommendGoodsService extends IBaseService {
 	 * @date 2017年1月8日
 	 */
 	List<ColumnAppRecommendGoods> findShowListByStoreSkuIds(List<String> storeSkuIds) throws Exception;
+
+	/**
+	 * @Description: 服务商品运营栏位添加时候选择商品列表
+	 * @param serverGoodsChoolseDto  ServerGoodsChoolseDto
+	 * @return 列表
+	 * @throws Exception 异常
+	 * @author zhulq
+	 * @date 2017年1月11日
+	 */
+	PageUtils<ServerGoodsChoolseDto> findServerGoodsChoolseList(ServerGoodsChoolseDto serverGoodsChoolseDto) throws Exception;
 
 }

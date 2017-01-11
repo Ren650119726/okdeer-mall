@@ -24,6 +24,7 @@ import com.okdeer.mall.operate.dto.AppRecommendGoodsDto;
 import com.okdeer.mall.operate.dto.AppRecommendGoodsParamDto;
 import com.okdeer.mall.operate.dto.AppRecommendParamDto;
 import com.okdeer.mall.operate.dto.SelectAreaDto;
+import com.okdeer.mall.operate.dto.ServerGoodsChoolseDto;
 import com.okdeer.mall.operate.entity.ColumnAppRecommend;
 import com.okdeer.mall.operate.entity.ColumnAppRecommendGoods;
 import com.okdeer.mall.operate.entity.ColumnSelectArea;
@@ -314,5 +315,12 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 			dtoList = BeanMapper.mapList(goodsList, AppRecommendGoodsDto.class);
 		}
 		return dtoList;
+	}
+
+	@Override
+	public PageUtils<ServerGoodsChoolseDto> findServerGoodsChoolseList(ServerGoodsChoolseDto serverGoodsChoolseDto)
+			throws Exception {
+		//appRecommendGoodsService.fi
+		return null;
 	}
 }
