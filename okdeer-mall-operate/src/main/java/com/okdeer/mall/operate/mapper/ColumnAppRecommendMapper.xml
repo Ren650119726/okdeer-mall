@@ -90,10 +90,10 @@
 		
 		<choose>  
             <when test="sortType == 1">  
-               ORDER BY sort , update_time DESC
+               ORDER BY sort DESC, update_time DESC
             </when>  
             <otherwise>  
-                ORDER BY status , update_time DESC
+                ORDER BY status DESC, update_time DESC
             </otherwise>  
         </choose>  
 	</select>
@@ -252,7 +252,7 @@
 
 	<update id="deleteByIds" parameterType="java.lang.String">
 		UPDATE column_app_recommend
-		SET disabled = 1
+		SET status = 1 AND disabled = 1
 		WHERE id IN
 		<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
 			#{item}

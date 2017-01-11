@@ -88,7 +88,11 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		}
 		if (null == entity.getPlace() || null == entity.getTaskScope() || null == entity.getTaskType()
 				|| !StringUtils.isNotEmptyAll(entity.getName())) {
-			return new BaseResult("首页ICON信息不完整");
+			return new BaseResult("ICON信息不完整");
+		}
+		
+		if(entity.getName().length() > 4){
+			return new BaseResult("ICON名称不能大于4个字符");
 		}
 
 		if (SelectAreaType.city.equals(entity.getTaskScope()) && (null == areaList || 0 == areaList.size())) {

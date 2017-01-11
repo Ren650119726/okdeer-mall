@@ -576,11 +576,7 @@ public class TradeOrderRefundsServiceImpl
 		try {
 			// 更新订单状态
 			updateRefunds(orderRefunds);
-
-			if (order.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY) {
-				// 团购活动释放限购数量
-				activityGroupRecordService.updateDisabledByOrderId(orderRefunds.getOrderId());
-			}
+			
 			// 特惠活动释放限购数量
 			for (TradeOrderRefundsItem refundsItem : orderRefunds.getTradeOrderRefundsItem()) {
 				Map<String, Object> params = Maps.newHashMap();
@@ -595,16 +591,17 @@ public class TradeOrderRefundsServiceImpl
 
 			// 回收库存
 			stockOperateService.recycleStockByRefund(order, orderRefunds, rpcIdList);
-			// 发消息给ERP生成库存单据 added by maojj
-			// stockMQProducer.sendMessage(stockAdjustList);
-
-			// add by zengjz 2017-1-7 增加退款减少积分的逻辑
+			
+			// 订单完成后同步到商业管理系统
+			tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
+			
+			// 发送短信
+			this.tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
+			
 			// 扣减积分与成长值
 			reduceUserPoint(order, orderRefunds);
-			// end by zengjz 2017-1-7 增加退款减少积分的逻辑
 
 		} catch (Exception e) {
-			// 发消息回滚库存的修改 added by maojj
 			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
 			if (orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
 				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
@@ -810,9 +807,6 @@ public class TradeOrderRefundsServiceImpl
 				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
 						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
 
-		// End 1.0.Z 增加退款单操作记录 add by zengj
-		// 发送短信
-		this.tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
 
 		// 判断非在线支付
 		if (PayWayEnum.PAY_ONLINE != order.getPayWay()) {
@@ -828,9 +822,6 @@ public class TradeOrderRefundsServiceImpl
 			// 余额退款
 			this.updateWallet(order, orderRefunds);
 		}
-
-		// 订单完成后同步到商业管理系统
-		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
 
 	}
 
