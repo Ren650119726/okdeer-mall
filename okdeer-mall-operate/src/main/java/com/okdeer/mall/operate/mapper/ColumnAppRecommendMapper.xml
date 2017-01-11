@@ -90,10 +90,10 @@
 		
 		<choose>  
             <when test="sortType == 1">  
-               ORDER BY sort , update_time DESC
+               ORDER BY sort DESC, update_time DESC
             </when>  
             <otherwise>  
-                ORDER BY status , update_time DESC
+                ORDER BY status DESC, update_time DESC
             </otherwise>  
         </choose>  
 	</select>
