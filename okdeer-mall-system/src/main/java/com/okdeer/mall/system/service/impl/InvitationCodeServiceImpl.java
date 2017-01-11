@@ -308,7 +308,12 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 		invatitationInfo.setInvitationUserNum(invatitationInfo.getInvitationUserNum() + 1);
 		invatitationInfo.setUpdateTime(new Date());
 		this.sysUserInvitationCodeMapper.updateCode(invatitationInfo);
-		addPoint(userId,invitationRecord.getId());
+		
+		if(invatitationInfo.getUserType() == InvitationUserType.phoneUser){
+			//用户类型的邀请，給用户添加积分
+			addPoint(invatitationInfo.getSysBuyerUserId(),invitationRecord.getId());
+		}
+		
 		return 0;
 	}
 
