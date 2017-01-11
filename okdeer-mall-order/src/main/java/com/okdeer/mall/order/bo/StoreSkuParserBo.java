@@ -139,6 +139,7 @@ public class StoreSkuParserBo {
 			currentSku.setTradeMax(storeSku.getTradeMax());
 			currentSku.setOnline(storeSku.getOnline());
 			currentSku.setSaleNum(storeSku.getSaleNum());
+			currentSku.setUnit(storeSku.getUnit());
 			if(storeSku.getPayType() != null){
 				currentSku.setPaymentMode(storeSku.getPayType().ordinal());
 			}
