@@ -107,12 +107,11 @@ public class ColumnAppRecommendGoodsServiceImpl extends BaseServiceImpl implemen
 	public PageUtils<ServerGoodsChoolseDto> findServerGoodsChoolseList(ServerGoodsChoolseDto serverGoodsChoolseDto)
 			throws Exception {
 		PageHelper.startPage(serverGoodsChoolseDto.getPageNumber(), serverGoodsChoolseDto.getPageSize(), true);
-		//List<ServerGoodsChoolseDto> result = appRecommendGoodsMapper.findServerGoodsList(serverGoodsChoolseDto);
-/*		if (result == null) {
+		List<ServerGoodsChoolseDto> result = appRecommendGoodsMapper.findServerGoodsList(serverGoodsChoolseDto);
+		if (result == null) {
 			result = new ArrayList<ServerGoodsChoolseDto>();
 		}
-		return new PageUtils<ServerGoodsChoolseDto>(result);*/
-		return null;
+		return new PageUtils<ServerGoodsChoolseDto>(result);
 	}
 
 }

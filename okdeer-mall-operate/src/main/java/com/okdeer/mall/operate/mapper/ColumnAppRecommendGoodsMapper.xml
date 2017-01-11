@@ -146,7 +146,7 @@
 		where recommend_id = #{recommendId}
 	</delete>
 
-    <select id="listGoods" parameterType="com.okdeer.mall.operate.dto.ServerGoodsChoolseDto" resultType="com.okdeer.mall.operate.dto.ServerGoodsChoolseDto">
+    <select id="findServerGoodsList" parameterType="com.okdeer.mall.operate.dto.ServerGoodsChoolseDto" resultType="com.okdeer.mall.operate.dto.ServerGoodsChoolseDto">
 		select 
 			s.id,
 			s.name,
@@ -163,7 +163,7 @@
 			left join goods_spu_category cate on (spu.spu_category_id = cate.id)
 			left join goods_store_sku_service service on (s.id = service.store_sku_id) 
 			left join goods_store_sku_stock stock on (stock.store_sku_id = s.id)
-			where s.disabled = 0 
+			where s.disabled = 0 and s.online = 1
 			and s.type in (3,4) 
 			<if test="goodsName != null and goodsName != ''">
 				and s.name like concat('%',#{goodsName},'%' )

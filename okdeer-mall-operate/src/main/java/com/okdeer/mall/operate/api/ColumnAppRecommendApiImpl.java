@@ -321,7 +321,6 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 	@Override
 	public PageUtils<ServerGoodsChoolseDto> findServerGoodsChoolseList(ServerGoodsChoolseDto serverGoodsChoolseDto)
 			throws Exception {
-		//appRecommendGoodsService.fi
-		return null;
+		return appRecommendGoodsService.findServerGoodsChoolseList(serverGoodsChoolseDto);		
 	}
 }
