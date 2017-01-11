@@ -111,12 +111,6 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 	 */
 	@Autowired
 	SysBuyerUserService sysBuyerUserService;
-	
-	/**
-	 * 积分注入
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private PointsApi pointsApi;
 
 	/**
 	 * 自动注入订单项
