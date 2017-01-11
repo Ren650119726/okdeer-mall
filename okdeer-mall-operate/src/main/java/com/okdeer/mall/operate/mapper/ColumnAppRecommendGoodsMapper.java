@@ -12,6 +12,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.operate.dto.AppRecommendGoodsParamDto;
+import com.okdeer.mall.operate.dto.ServerGoodsChoolseDto;
 import com.okdeer.mall.operate.entity.ColumnAppRecommendGoods;
 
 public interface ColumnAppRecommendGoodsMapper extends IBaseMapper {
@@ -63,4 +64,13 @@ public interface ColumnAppRecommendGoodsMapper extends IBaseMapper {
 	 * @date 2016年12月30日
 	 */
 	int insertMore(@Param("list") List<ColumnAppRecommendGoods> list);
+	
+	/**
+	 * @Description: 
+	 * @param serverGoodsChoolseDto serverGoodsChoolseDto
+	 * @return serverGoodsChoolseDto集合
+	 * @author zhulq
+	 * @date 2017年1月11日
+	 */
+	List<ServerGoodsChoolseDto> findServerGoodsList(ServerGoodsChoolseDto serverGoodsChoolseDto);
 }
