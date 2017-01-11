@@ -592,14 +592,14 @@ public class TradeOrderRefundsServiceImpl
 			// 回收库存
 			stockOperateService.recycleStockByRefund(order, orderRefunds, rpcIdList);
 			
-			// 扣减积分与成长值
-			reduceUserPoint(order, orderRefunds);
-			
 			// 订单完成后同步到商业管理系统
 			tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
 			
 			// 发送短信
 			this.tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
+			
+			// 扣减积分与成长值
+			reduceUserPoint(order, orderRefunds);
 
 		} catch (Exception e) {
 			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
