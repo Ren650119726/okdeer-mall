@@ -210,6 +210,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		ColumnAppRecommend entity = new ColumnAppRecommend();
 		entity.setId(id);
 		entity.setSort(sort);
+		entity.setUpdateTime(DateUtils.getSysDate());
 		return appRecommendService.update(entity);
 	}
 
