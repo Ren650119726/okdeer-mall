@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
@@ -193,6 +194,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		ColumnAppRecommend entity = new ColumnAppRecommend();
 		entity.setId(id);
 		entity.setStatus(AppRecommendStatus.close);
+		entity.setUpdateTime(DateUtils.getSysDate());
 		return appRecommendService.update(entity);
 	}
 
@@ -208,6 +210,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		ColumnAppRecommend entity = new ColumnAppRecommend();
 		entity.setId(id);
 		entity.setSort(sort);
+		entity.setUpdateTime(DateUtils.getSysDate());
 		return appRecommendService.update(entity);
 	}
 
@@ -318,7 +321,6 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 	@Override
 	public PageUtils<ServerGoodsChoolseDto> findServerGoodsChoolseList(ServerGoodsChoolseDto serverGoodsChoolseDto)
 			throws Exception {
-		//appRecommendGoodsService.fi
-		return null;
+		return appRecommendGoodsService.findServerGoodsChoolseList(serverGoodsChoolseDto);		
 	}
 }
