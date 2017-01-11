@@ -76,8 +76,8 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 				ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
 				paramDto.setUpdateStatus(String.valueOf(1));
 				paramDto.setActivityId(id);
-				List<String> skuIds = goodsBoList.stream().map(m -> m.getStoreSkuId()).collect(Collectors.toList());
-				paramDto.setSkuIds(skuIds);
+				/*List<String> skuIds = goodsBoList.stream().map(m -> m.getStoreSkuId()).collect(Collectors.toList());
+				paramDto.setSkuIds(skuIds);*/
 				// 5:特惠 7:低价
 				switch (activityType) {
 					case 5:
