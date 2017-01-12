@@ -98,6 +98,49 @@
         </choose>  
 	</select>
 
+
+	<select id="findListByAreas" resultMap="BaseResultMap" parameterType="com.okdeer.mall.operate.dto.AppRecommendParamDto">
+		SELECT
+			recommend.id, recommend.title, recommend.place, recommend.cover_pic_url, recommend.cover_skip_url, 
+			recommend.goods_count, show_goods_count, recommend.sort, recommend.status, recommend.area_type, 
+			recommend.create_user_id, recommend.create_time, recommend.update_user_id, recommend.update_time, 
+			recommend.disabled
+		FROM column_app_recommend recommend 
+			 LEFT JOIN column_select_area area ON recommend.id = area.column_id 
+		WHERE recommend.disabled = 0 AND recommend.status = 0
+		<if test="excludeId != null and excludeId != ''">
+			AND recommend.id != #{excludeId}
+		</if>
+		<if test="null != place">
+			AND recommend.place = #{place}
+		</if>
+		<choose>  
+            <when test="provinceIds != null and provinceIds.size() > 0 and cityIds != null and cityIds.size() > 0">  
+               AND ((area.city_id = 0 AND area.province_id IN
+					<foreach collection="provinceIds" index="index" item="item" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+                ) OR area.city_id IN
+					<foreach collection="cityIds" index="index" item="item" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+               )
+            </when>
+            <when test="provinceIds != null and provinceIds.size() > 0">  
+           		AND area.province_id IN
+				<foreach collection="provinceIds" index="index" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+            </when>   
+            <when test="cityIds != null and cityIds.size() > 0">  
+                AND area.city_id IN
+				<foreach collection="cityIds" index="index" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+            </when>  
+        </choose>  
+	</select>
+
 	<insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnAppRecommend">
 		insert into column_app_recommend
 		<trim prefix="(" suffix=")" suffixOverrides=",">
@@ -252,8 +295,8 @@
 
 	<update id="deleteByIds" parameterType="java.lang.String">
 		UPDATE column_app_recommend
-		SET status = 1 AND disabled = 1
-		WHERE id IN
+		SET disabled = 1
+		WHERE status = 1 AND id IN
 		<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
 			#{item}
 		</foreach>
