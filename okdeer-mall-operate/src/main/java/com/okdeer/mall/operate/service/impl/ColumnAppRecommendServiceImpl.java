@@ -223,58 +223,27 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 		}
 
 		// 判断当前发布的区域是否与数据库中的数据有重复或有交集
+		// 省ID集合(全省，以及部分城市的省ID)
+		List<String> provinceIds = new ArrayList<>();
+		// 城市ID集合
+		List<String> cityIds = new ArrayList<>();
+		for (ColumnSelectArea item : areaList) {
+			if (SelectAreaType.province.equals(item.getAreaType())) {
+				provinceIds.add(item.getProvinceId());
+			} else {
+				provinceIds.add(item.getProvinceId());
+				cityIds.add(item.getCityId());
+			}
+		}
+		paramDto.setProvinceIds(provinceIds);
+		paramDto.setCityIds(cityIds);
+		list = appRecommendMapper.findListByAreas(paramDto);
 		if (AppRecommendPlace.home.equals(place)) {
-			List<String> columnIds = new ArrayList<>();
-			for (ColumnAppRecommend item : list) {
-				columnIds.add(item.getId());
-			}
-
-			// 已保存省ID集合(全省)
-			List<String> dbProvinceIds = new ArrayList<>();
-			// 已保存省ID集合(部分城市)
-			List<String> dbPartProvinceIds = new ArrayList<>();
-			// 已保存选城市ID集合
-			List<String> dbCityIds = new ArrayList<>();
-			// 查询已存在的
-			List<ColumnSelectArea> dbAareaList = selectAreaService.findListByColumnIds(columnIds);
-			// 将在同一位置已发布过推荐的省、城市ID放入集合中
-			for (ColumnSelectArea item : dbAareaList) {
-				if (SelectAreaType.province.equals(item.getAreaType())) {
-					dbProvinceIds.add(item.getProvinceId());
-				} else {
-					dbPartProvinceIds.add(item.getProvinceId());
-					dbCityIds.add(item.getCityId());
-				}
-			}
-
-			for (ColumnSelectArea item : areaList) {
-				if (AppRecommendPlace.home.equals(place)) {
-					if ((dbProvinceIds.contains(item.getProvinceId())
-							|| dbPartProvinceIds.contains(item.getProvinceId()))
-							&& SelectAreaType.province.equals(item.getAreaType())) {
-						return true;
-					} else if (SelectAreaType.city.equals(item.getAreaType()) && dbCityIds.contains(item.getCityId())) {
-						return true;
-					}
-				}
+			if (null != list && list.size() > 0) {
+				return true;
 			}
 		} else if (AppRecommendPlace.find.equals(place)) {
-			// 已保存省ID集合(全省)
-			List<String> provinceIds = new ArrayList<>();
-			// 已保存城市ID集合
-			List<String> cityIds = new ArrayList<>();
-			for (ColumnSelectArea item : areaList) {
-				if (SelectAreaType.province.equals(item.getAreaType())) {
-					provinceIds.add(item.getProvinceId());
-				} else {
-					provinceIds.add(item.getProvinceId());
-					cityIds.add(item.getCityId());
-				}
-			}
-			paramDto.setProvinceIds(provinceIds);
-			paramDto.setCityIds(cityIds);
-			list = appRecommendMapper.findListByAreas(paramDto);
-			if(null != list){
+			if (null != list) {
 				findRecommendCount = findRecommendCount + list.size();
 			}
 		}
