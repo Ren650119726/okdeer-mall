@@ -6,6 +6,8 @@
  */
 package com.okdeer.mall.activity.prize.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 
 /**
@@ -31,7 +33,7 @@ public interface ActivityDrawRecordMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年12月8日
 	 */
-	public int findCountByUserIdAndActivityId(String userId,String activityId);
+	public int findCountByUserIdAndActivityId(@Param("userId")String userId,@Param("activityId")String activityId);
 	
 	
 

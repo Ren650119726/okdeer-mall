@@ -762,7 +762,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		} else {
 			//map.put("data", null);
 			map.put("msg", "请登录后再领取");
-			map.put("code", 104);
+			map.put("code", 4);
 			return false;
 		}
 		return true;
