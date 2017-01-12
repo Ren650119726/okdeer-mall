@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.system.service.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,6 +35,8 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.EncryptionUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.service.BaseCrudServiceImpl;
 import com.okdeer.ca.api.buyeruser.entity.SysBuyerUserConditionDto;
 import com.okdeer.ca.api.buyeruser.entity.SysBuyerUserDto;
@@ -42,12 +45,14 @@ import com.okdeer.ca.api.buyeruser.service.ISysBuyerUserApi;
 import com.okdeer.ca.api.common.ApiException;
 import com.okdeer.ca.api.sysuser.entity.SysUserDto;
 import com.okdeer.ca.api.sysuser.service.ISysUserApi;
+import com.okdeer.common.consts.PointConstants;
 import com.okdeer.common.consts.RedisKeyConstants;
 import com.okdeer.mall.common.utils.security.DESUtils;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
 import com.okdeer.mall.member.member.service.SysBuyerExtServiceApi;
+import com.okdeer.mall.member.points.dto.AddPointsParamDto;
 import com.okdeer.mall.member.points.entity.PointsRecord;
 import com.okdeer.mall.member.points.entity.PointsRule;
 import com.okdeer.mall.member.points.enums.PointsRuleCode;
@@ -170,6 +175,11 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	 */
 	@Autowired
 	private SysRandCodeRecordMapper sysRandCodeRecordMapper;
+	
+	/**
+	 * mq
+	 */
+	private RocketMQProducer rocketMQProducer;
 	
 	@Override
 	public IBaseCrudMapper init() {
@@ -552,6 +562,14 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 			resultBuyerUserVo.setInvitationCode(invitationCode.getInvitationCode());
 			// 判断用户是否第一次注册登录，如果是则返回1
 			resultBuyerUserVo.setIsOneLogin("1");
+			
+			// 注册送积分
+			AddPointsParamDto addPointsParamDto = new AddPointsParamDto();
+			addPointsParamDto.setPointsRuleCode(PointsRuleCode.REGISTER);
+			addPointsParamDto.setUserId(userId);
+			addPointsParamDto.setBusinessId(UuidUtils.getUuid());
+			MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDto);
+			rocketMQProducer.sendMessage(anMessage);
 		} else {
 			// 查询手机用户信息
 			sysBuyerUserItemDto = sysBuyerUserApi.login(mobilePhone, null);
