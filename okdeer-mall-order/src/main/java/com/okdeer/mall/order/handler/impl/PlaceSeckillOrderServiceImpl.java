@@ -7,6 +7,7 @@ import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
@@ -90,6 +91,7 @@ public class PlaceSeckillOrderServiceImpl implements RequestHandler<PlaceOrderPa
 	private TradeOrderBuilder tradeOrderBuilder;
 
 	@Override
+	@Transactional(rollbackFor=Exception.class)
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
 		String rpcId = null;
 		try {
@@ -144,6 +146,9 @@ public class PlaceSeckillOrderServiceImpl implements RequestHandler<PlaceOrderPa
 	}
 
 	public void updateLastUseAddr(MemberConsigneeAddress userUseAddr) {
+		if(userUseAddr == null){
+			return;
+		}
 		userUseAddr.setUseTime(DateUtils.getSysDate());
 		memberConsigneeAddressMapper.updateByPrimaryKeySelective(userUseAddr);
 	}

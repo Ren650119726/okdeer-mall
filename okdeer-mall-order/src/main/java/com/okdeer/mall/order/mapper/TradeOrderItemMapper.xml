@@ -31,6 +31,7 @@
     <!-- Begin V2.0 added by maojj 2017-01-07 -->
     <result column="activity_price" property="activityPrice" jdbcType="DECIMAL" />
     <result column="activity_quantity" property="activityQuantity" jdbcType="TINYINT" />
+    <result column="unit" property="unit" jdbcType="VARCHAR" />
     <!-- End V2.0 added by maojj 2017-01-07 -->
     <association property="tradeOrderRefunds" javaType="com.okdeer.mall.order.entity.TradeOrderRefunds">
     	<result column="refoundId" property="id" jdbcType="VARCHAR" />
@@ -163,13 +164,14 @@
       main_pic_prl, spu_type, unit_price, 
       quantity,weight, total_amount, actual_amount, 
       preferential_price, status, appraise, 
-      create_time, recharge_mobile,activity_price,activity_quantity)
+      create_time, recharge_mobile,activity_price,activity_quantity,unit)
     values (#{id,jdbcType=VARCHAR}, #{orderId,jdbcType=VARCHAR}, #{storeSpuId,jdbcType=VARCHAR}, 
       #{storeSkuId,jdbcType=VARCHAR}, #{skuName,jdbcType=VARCHAR}, #{propertiesIndb,jdbcType=VARCHAR}, 
       #{mainPicPrl,jdbcType=VARCHAR}, #{spuType,jdbcType=VARCHAR}, #{unitPrice,jdbcType=DECIMAL}, 
       #{quantity,jdbcType=INTEGER},#{weight,jdbcType=DECIMAL}, #{totalAmount,jdbcType=DECIMAL}, #{actualAmount,jdbcType=DECIMAL}, 
       #{preferentialPrice,jdbcType=DECIMAL}, #{status,jdbcType=BIT}, #{appraise,jdbcType=BIT}, 
-      #{createTime,jdbcType=TIMESTAMP}, #{rechargeMobile, jdbcType=VARCHAR}, #{activityPrice,jdbcType=DECIMAL}, #{activityQuantity,jdbcType=INTEGER})
+      #{createTime,jdbcType=TIMESTAMP}, #{rechargeMobile, jdbcType=VARCHAR},
+      #{activityPrice,jdbcType=DECIMAL}, #{activityQuantity,jdbcType=INTEGER},#{unit,jdbcType=VARCHAR})
   </insert>
   
   <!-- begin 重构4.1 added by zhangkn -->
@@ -203,7 +205,8 @@
 			recharge_mobile,
 			is_complete,
 			activity_price,
-			activity_quantity
+			activity_quantity,
+			unit
 		)values
 		<foreach collection="list" item="item" index="index" separator="," >
         (
@@ -236,7 +239,8 @@
 			#{item.isComplete,jdbcType=INTEGER},
 			
 			#{item.activityPrice,jdbcType=DECIMAL},
-			#{item.activityQuantity,jdbcType=INTEGER}
+			#{item.activityQuantity,jdbcType=INTEGER},
+			#{item.unit,jdbcType=VARCHAR}
         )
 		</foreach>
   </insert>
@@ -323,6 +327,9 @@
       <if test="activityQuantity != null">
       	activity_quantity,
       </if>
+      <if test="unit != null">
+      	unit,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -402,6 +409,9 @@
       </if>
       <if test="activityQuantity != null">
       	#{activityQuantity,jdbcType=INTEGER},
+      </if>
+       <if test="unit != null">
+      	#{unit,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>

@@ -111,6 +111,16 @@ public class StoreSkuParserBo {
 	 * 订单运费
 	 */
 	private BigDecimal fare = BigDecimal.valueOf(0.0);
+	
+	/**
+	 * 是否是低价活动订单
+	 */
+	private boolean isLowFavour;
+	
+	/**
+	 * 低价活动Id 
+	 */
+	private String lowActivityId;
 
 	public StoreSkuParserBo(List<GoodsStoreSku> currentSkuList) {
 		this.currentSkuList = currentSkuList;
@@ -267,6 +277,9 @@ public class StoreSkuParserBo {
 				this.totalItemAmount = totalItemAmount
 						.add(skuBo.getActPrice().multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity())));
 				this.totalQuantity += skuBo.getSkuActQuantity();
+				
+				this.lowActivityId = skuBo.getActivityId();
+				this.isLowFavour = true;
 			}
 			
 		}
@@ -374,21 +387,6 @@ public class StoreSkuParserBo {
 			}
 		}
 		return totalAdd;
-	}
-
-	/**
-	 * @Description: 判断是否有低价优惠
-	 * @return   
-	 * @author maojj
-	 * @date 2017年1月4日
-	 */
-	public boolean isLowFavour() {
-		for (CurrentStoreSkuBo skuBo : this.currentSkuMap.values()) {
-			if (skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/**
@@ -525,4 +523,14 @@ public class StoreSkuParserBo {
 	public BigDecimal getFare() {
 		return fare;
 	}
+
+	public boolean isLowFavour() {
+		return isLowFavour;
+	}
+	
+	public String getLowActivityId() {
+		return lowActivityId;
+	}
+	
+	
 }

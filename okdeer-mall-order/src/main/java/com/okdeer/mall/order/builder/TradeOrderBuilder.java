@@ -154,8 +154,13 @@ public class TradeOrderBuilder {
 		tradeOrder.setSellerId(paramDto.getStoreId());
 		tradeOrder.setType(paramDto.getSkuType());
 		tradeOrder.setPid("0");
-		tradeOrder.setActivityType(paramDto.getActivityType());
-		tradeOrder.setActivityId(paramDto.getActivityId());
+		if(parserBo.isLowFavour()){
+			tradeOrder.setActivityType(ActivityTypeEnum.LOW_PRICE);
+			tradeOrder.setActivityId(parserBo.getLowActivityId());
+		}else{
+			tradeOrder.setActivityType(paramDto.getActivityType());
+			tradeOrder.setActivityId(paramDto.getActivityId());
+		}
 		tradeOrder.setActivityItemId(paramDto.getActivityItemId());
 		tradeOrder.setRemark(paramDto.getRemark());
 		tradeOrder.setInvoice(paramDto.getIsInvoice());
@@ -620,6 +625,7 @@ public class TradeOrderBuilder {
 			
 			tradeOrderItem.setBarCode(skuBo.getBarCode());
 			tradeOrderItem.setStyleCode(skuBo.getStyleCode());
+			tradeOrderItem.setUnit(skuBo.getUnit());
 
 			// 订单项总金额
 			BigDecimal totalAmountOfItem = skuBo.getTotalAmount();
