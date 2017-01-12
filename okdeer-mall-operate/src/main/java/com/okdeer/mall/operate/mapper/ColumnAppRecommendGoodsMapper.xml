@@ -149,7 +149,7 @@
     <select id="findServerGoodsList" parameterType="com.okdeer.mall.operate.dto.ServerGoodsChoolseDto" resultType="com.okdeer.mall.operate.dto.ServerGoodsChoolseDto">
 		select 
 			s.id,
-			s.name,
+			s.name as skuName,
 			si.store_name as storeName,
 			s.online_price as onlinePrice,
 			pic.url as url,
@@ -165,7 +165,7 @@
 			left join goods_store_sku_stock stock on (stock.store_sku_id = s.id)
 			where s.disabled = 0 and s.online = 1
 			and s.type in (3,4) 
-			<if test="goodsName != null and goodsName != ''">
+			<if test="skuName != null and skuName != ''">
 				and s.name like concat('%',#{goodsName},'%' )
 			</if>
 			<if test="storeName != null and storeName != ''">

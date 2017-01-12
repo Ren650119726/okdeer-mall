@@ -55,7 +55,7 @@ public class ActivityChoicenessServiceApiImpl implements ActivityChoicenessServi
     @Override
     public List<String> addByBatch(List<String> storeSkuIds) throws Exception {
         List<String> ids = activityChoicenessService.addByBatch(storeSkuIds);
-        if (CollectionUtils.isNotEmpty(ids)){
+        if (CollectionUtils.isNotEmpty(ids)) {
             structureProducer(ids);
         }
         return ids;
@@ -64,7 +64,7 @@ public class ActivityChoicenessServiceApiImpl implements ActivityChoicenessServi
     @Override
     public List<String> deleteByIds(List<String> choicenessIds) throws Exception {
         List<String> ids = activityChoicenessService.deleteByIds(choicenessIds);
-        if (CollectionUtils.isNotEmpty(ids)){
+        if (CollectionUtils.isNotEmpty(ids)) {
             structureProducer(ids);
         }
         return ids;
@@ -78,7 +78,7 @@ public class ActivityChoicenessServiceApiImpl implements ActivityChoicenessServi
     @Override
     public List<String> updateChoicenessStatus(String activityId, String sortValue) throws Exception {
         List<String> ids = activityChoicenessService.updateChoicenessStatus(activityId, sortValue);
-        if (CollectionUtils.isNotEmpty(ids)){
+        if (CollectionUtils.isNotEmpty(ids)) {
             structureProducer(ids);
         }
         return ids;

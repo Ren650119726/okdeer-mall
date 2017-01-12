@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -251,4 +252,12 @@ public class ServerColumnServiceImpl implements ServerColumnService, IServerColu
 		return serverColumnMapper.findByRangeType(cityId,provinceId);
 	}
 	// End 重构4.1 added by luosm 2016-07-21
+
+	@Override
+	public List<String> findStoreIdsByIds(List<String> storeIds) throws ServiceException {
+		if (CollectionUtils.isEmpty(storeIds)) {
+			return storeIds;
+		}
+		return serverColumnMapper.findStoreIdsByIds(storeIds);
+	}
 }
