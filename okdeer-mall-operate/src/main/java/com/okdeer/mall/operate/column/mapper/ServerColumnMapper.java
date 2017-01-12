@@ -132,4 +132,17 @@ public interface ServerColumnMapper {
 	 */
 	List<ServerColumn> findByRangeType(@Param("cityId")String cityId,@Param("provinceId")String provinceId);
 	//end add by luosm 2016-07-19
+	
+	/**
+	 * 
+	 * @Description: 根据店铺ids查询判断是否有关联服务栏目
+	 * @param storeIds     店铺ids
+	 * @throws ServiceException    
+	 * @return List<String>  有关联的店铺ids
+	 * @author tangy
+	 * @date 2017年1月12日
+	 */
+	List<String> findStoreIdsByIds(@Param("storeIds")List<String> storeIds) throws ServiceException;
+	
+	
 }

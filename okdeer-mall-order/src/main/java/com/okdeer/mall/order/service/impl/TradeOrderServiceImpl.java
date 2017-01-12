@@ -244,6 +244,7 @@ import net.sf.json.JsonConfig;
  *      15486             2016-11-29        wusw              如果是服务店订单，直接查询投诉信息，如果不是，已完成状态的订单才能查询投诉信息
  *      15698             2016-12-05        wusw              订单详情，优惠活动要考虑秒杀活动类型查询
  *      V2.0.0            2017-01-09           wusw           修改订单查询和导出的线上订单包括订单来源为友门鹿便利店(CVS)的订单
+ *      V2.0.0            2017-01-12        wusw              修改低价商品订单的优惠显示问题
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1070,12 +1071,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						activitySource = ActivitySourceEnum.AGENT;
 					}
 				}
-			} else if (ActivityTypeEnum.SALE_ACTIVITIES.equals(activityType)) {
-				// 特惠活动
+			} else if (ActivityTypeEnum.SALE_ACTIVITIES.equals(activityType)
+					// Begin V2.0.0 add by wusw 20170112 修改低价商品订单的优惠显示问题
+					|| ActivityTypeEnum.LOW_PRICE.equals(activityType)) {
+				    // End V2.0.0 add by wusw 20170112 修改低价商品订单的优惠显示问题
+				// 特惠活动或低价抢购活动
 				ActivitySale activitySale = activitySaleService.get(activityId);
 				if (activitySale != null) {
 					activityName = activitySale.getName();
-					// 特惠活动只有店铺能发
+					// 特惠活动或低价抢购活动只有店铺能发
 					activitySource = ActivitySourceEnum.STORE;
 				}
 			}

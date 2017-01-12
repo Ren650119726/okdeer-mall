@@ -24,6 +24,7 @@ import com.okdeer.mall.operate.dto.AppRecommendGoodsDto;
 import com.okdeer.mall.operate.dto.AppRecommendGoodsParamDto;
 import com.okdeer.mall.operate.dto.AppRecommendParamDto;
 import com.okdeer.mall.operate.dto.SelectAreaDto;
+import com.okdeer.mall.operate.dto.ServerGoodsChoolseDto;
 import com.okdeer.mall.operate.entity.ColumnAppRecommend;
 import com.okdeer.mall.operate.entity.ColumnAppRecommendGoods;
 import com.okdeer.mall.operate.entity.ColumnSelectArea;
@@ -209,6 +210,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		ColumnAppRecommend entity = new ColumnAppRecommend();
 		entity.setId(id);
 		entity.setSort(sort);
+		entity.setUpdateTime(DateUtils.getSysDate());
 		return appRecommendService.update(entity);
 	}
 
@@ -249,6 +251,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		paramDto.setPlace(place);
 		paramDto.setSortType(1);
 		paramDto.setContainNationwide(true);
+		paramDto.setStatus(AppRecommendStatus.show);
 
 		// 查询服务商品推荐
 		List<AppRecommendDto> dtoList = findList(paramDto);
@@ -314,5 +317,11 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 			dtoList = BeanMapper.mapList(goodsList, AppRecommendGoodsDto.class);
 		}
 		return dtoList;
+	}
+
+	@Override
+	public PageUtils<ServerGoodsChoolseDto> findServerGoodsChoolseList(ServerGoodsChoolseDto serverGoodsChoolseDto)
+			throws Exception {
+		return appRecommendGoodsService.findServerGoodsChoolseList(serverGoodsChoolseDto);		
 	}
 }

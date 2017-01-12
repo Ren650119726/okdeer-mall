@@ -146,4 +146,40 @@
 		where recommend_id = #{recommendId}
 	</delete>
 
+    <select id="findServerGoodsList" parameterType="com.okdeer.mall.operate.dto.ServerGoodsChoolseDto" resultType="com.okdeer.mall.operate.dto.ServerGoodsChoolseDto">
+		select 
+			s.id,
+			s.name as skuName,
+			si.store_name as storeName,
+			s.online_price as onlinePrice,
+			pic.url as url,
+			cate.`name` as categoryName,
+			service.product_no as productNo,
+			stock.sellable
+			from goods_store_sku s 
+			left join store_info si on (s.store_id = si.id) 
+			left join goods_store_sku_picture pic on (pic.store_sku_id = s.id and pic.type = 1)
+			left join goods_store_spu spu on (s.store_spu_id = spu.id)
+			left join goods_spu_category cate on (spu.spu_category_id = cate.id)
+			left join goods_store_sku_service service on (s.id = service.store_sku_id) 
+			left join goods_store_sku_stock stock on (stock.store_sku_id = s.id)
+			where s.disabled = 0 and s.online = 1
+			and s.type in (3,4) 
+			<if test="skuName != null and skuName != ''">
+				and s.name like concat('%',#{goodsName},'%' )
+			</if>
+			<if test="storeName != null and storeName != ''">
+				and si.store_name like concat('%',#{storeName},'%' )
+			</if>
+			<if test="productNo != null and productNo != ''">
+				and service.product_no like concat('%',#{productNo},'%' )
+			</if>
+			<if test="goodsIdList != null">
+				and s.id in
+				<foreach item="item" index="index" collection="goodsIdList" open="(" separator="," close=")">  
+	  				#{item}  
+	 			</foreach>  
+ 			</if>
+		order by s.update_time desc 
+	</select>
 </mapper>

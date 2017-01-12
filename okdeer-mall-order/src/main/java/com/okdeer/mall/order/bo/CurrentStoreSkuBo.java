@@ -124,6 +124,11 @@ public class CurrentStoreSkuBo {
 	 */
 	private SpuTypeEnum spuType;
 
+	/**
+	 * 
+	 */
+	private String unit;
+
 	/******************************服务店商品需要返回的信息**********************************************/
 	private int saleNum;
 
@@ -386,6 +391,14 @@ public class CurrentStoreSkuBo {
 
 	public void setActivityId(String activityId) {
 		this.activityId = activityId;
+	}
+
+	public String getUnit() {
+		return unit;
+	}
+
+	public void setUnit(String unit) {
+		this.unit = unit;
 	}
 
 }
