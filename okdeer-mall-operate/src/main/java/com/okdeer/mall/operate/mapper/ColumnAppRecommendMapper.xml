@@ -93,7 +93,7 @@
                ORDER BY sort DESC, update_time DESC
             </when>  
             <otherwise>  
-                ORDER BY status DESC, update_time DESC
+                ORDER BY status ACS, update_time DESC
             </otherwise>  
         </choose>  
 	</select>
