@@ -279,6 +279,7 @@ public class PointServiceImpl implements PointsService {
 				List<String> existsCodeList = Lists.newArrayList();
 				existsCodeList.add(PointsRuleCode.APP_CONSUME.getCode());
 				paramBo.setExistsCodeList(existsCodeList);
+				paramBo.setType(0);
 			}
 			int currentSum = pointsRecordMapper.statisRecordPoint(paramBo);
 			// 天限制积分 > 当天获得汇总积分 + 当前规则积分

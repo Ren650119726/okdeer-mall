@@ -42,7 +42,10 @@ public class ActivityDrawRecordServiceImpl extends BaseServiceImpl implements Ac
 	public IBaseMapper getBaseMapper() {
 		return activityDrawRecordMapper;
 	}
-	
+	/**
+	 * 根据用户id及活动id查询抽奖次数
+	 * (non-Javadoc)
+	 */
 	@Override
 	public int findCountByUserIdAndActivityId(String userId, String activityId) {
 		return activityDrawRecordMapper.findCountByUserIdAndActivityId(userId, activityId);

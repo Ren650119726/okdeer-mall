@@ -425,6 +425,8 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 						tradeOrderItem.getActualAmount() == null ? "0" : tradeOrderItem.getActualAmount());
 				itemObject.put("skuPreferPrice",
 						tradeOrderItem.getPreferentialPrice() == null ? "0" : tradeOrderItem.getPreferentialPrice());
+				itemObject.put("unit",
+						tradeOrderItem.getUnit() == null ? "0" : tradeOrderItem.getUnit());
 
 				goodsStoreSkuService = goodsStoreSkuServiceServiceApi
 						.selectByStoreSkuId(tradeOrderItem.getStoreSkuId());
