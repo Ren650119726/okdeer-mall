@@ -39,6 +39,7 @@ public class ActivityChoicenessServiceApiImpl implements ActivityChoicenessServi
     /**
      * 注入精选服务-service
      */
+    @Autowired
     private ActivityChoicenessService activityChoicenessService;
 
     /**
