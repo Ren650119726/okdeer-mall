@@ -41,6 +41,8 @@ public class StatisRecordParamBo {
 	 */
 	private List<String> existsCodeList;
 
+	private Integer type;
+
 	public String getUserId() {
 		return userId;
 	}
@@ -79,6 +81,14 @@ public class StatisRecordParamBo {
 
 	public void setExistsCodeList(List<String> existsCodeList) {
 		this.existsCodeList = existsCodeList;
+	}
+
+	public Integer getType() {
+		return type;
+	}
+
+	public void setType(Integer type) {
+		this.type = type;
 	}
 
 }

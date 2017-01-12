@@ -199,6 +199,9 @@
 				#{item}
 			</foreach>
 	  	</if>
+	  	<if test="type !=null">
+	  		 AND type = #{type,jdbcType=TINYINT}
+	  	</if>
   </select>
   
   <select id="findCountByReferentId" parameterType="string" resultType="int" >
