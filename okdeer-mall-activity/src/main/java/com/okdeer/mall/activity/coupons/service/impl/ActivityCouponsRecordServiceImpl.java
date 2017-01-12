@@ -651,7 +651,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
 		record.setValidTime(calendar.getTime());
 		// begin v1.3 领取异业代金券时候操作
-		HashMap<String, Object> map = new HashMap<String, Object>();
+/*		HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put("couponsId", coupons.getId());
 		map.put("status", 0);
 		map.put("length", 1);
@@ -665,7 +665,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				//更新代金卷兑换码状态
 				activityCouponsThirdCodeMapper.update(activityCouponsThirdCode);
 			}
-		}
+		}*/
 		//将代金卷兑换码写入记录表  
 		activityCouponsRecordMapper.insertSelective(record);
 		activityCouponsMapper.updateRemainNum(coupons.getId());
@@ -762,7 +762,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		} else {
 			//map.put("data", null);
 			map.put("msg", "请登录后再领取");
-			map.put("code", 104);
+			map.put("code", 4);
 			return false;
 		}
 		return true;
