@@ -251,6 +251,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		paramDto.setPlace(place);
 		paramDto.setSortType(1);
 		paramDto.setContainNationwide(true);
+		paramDto.setStatus(AppRecommendStatus.show);
 
 		// 查询服务商品推荐
 		List<AppRecommendDto> dtoList = findList(paramDto);
