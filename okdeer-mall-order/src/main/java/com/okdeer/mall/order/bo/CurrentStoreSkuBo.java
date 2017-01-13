@@ -154,12 +154,7 @@ public class CurrentStoreSkuBo {
 
 	public BigDecimal getTotalAmount() {
 		BigDecimal totalAmount = BigDecimal.valueOf(0);
-		if (quantity > 0) {
-			totalAmount = totalAmount.add(onlinePrice.multiply(BigDecimal.valueOf(quantity)));
-		}
-		if (skuActQuantity > 0) {
-			totalAmount = totalAmount.add(actPrice.multiply(BigDecimal.valueOf(skuActQuantity)));
-		}
+		totalAmount = totalAmount.add(onlinePrice.multiply(BigDecimal.valueOf(quantity)));
 		return totalAmount;
 	}
 
