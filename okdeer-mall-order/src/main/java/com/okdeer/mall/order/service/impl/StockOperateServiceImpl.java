@@ -560,7 +560,7 @@ public class StockOperateServiceImpl implements StockOperateService {
 							.multiply(new BigDecimal(item.getQuantity())).intValue();
 					detail.setNum(qutity);
 					detail.setIsEvent(false);
-					detail.setSpuType(SpuTypeEnum.assembleSpu);
+					detail.setSpuType(goodsStoreSkuAssembleDto.getSpuTypeEnum());
 
 					// 便利店优惠金额单价
 					if (item.getPreferentialPrice() != null
