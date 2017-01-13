@@ -4178,6 +4178,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 购买商品的数量
 					item.put("quantity", tradeOrderItem.getQuantity());
 					item.put("itemId", tradeOrderItem.getId());
+					item.put("unit", tradeOrderItem.getUnit());
 					itemArray.add(item);
 				}
 				json.put("orderItems", itemArray);
@@ -4197,6 +4198,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
 					// 购买商品的数量
 					item.put("quantity", tradeOrderItem.getQuantity());
+					item.put("unit", tradeOrderItem.getUnit());
 				}
 			}
 			// 商品信息
