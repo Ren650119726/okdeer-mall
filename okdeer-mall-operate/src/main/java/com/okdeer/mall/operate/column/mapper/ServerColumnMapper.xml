@@ -179,6 +179,18 @@
 		ORDER BY server_status, sort DESC, create_time DESC
 	</select>
 
+    <!-- 根据店铺ids查询判断是否有关联服务栏目 -->
+    <select id="findStoreIdsByIds" resultType="string" >
+	    SELECT DISTINCT css.store_id FROM column_server_store css 
+		LEFT JOIN column_server cs ON cs.id = css.column_server_id
+		WHERE cs.disabled = 0 AND cs.server_status = 0 
+		AND css.store_id IN
+		 <foreach collection="storeIds" index="index" item="item"
+			 open="(" close=")" separator=",">
+			 #{item}
+	    </foreach>
+    </select>
+
 	<!-- 根据主键id删除服务栏目信息 -->
 	<update id="deleteById">
 		UPDATE column_server

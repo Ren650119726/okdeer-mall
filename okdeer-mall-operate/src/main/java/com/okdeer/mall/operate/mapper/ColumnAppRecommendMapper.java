@@ -33,4 +33,13 @@ public interface ColumnAppRecommendMapper extends IBaseMapper {
 	 * @date 2016年12月29日
 	 */
 	List<ColumnAppRecommend> findList(AppRecommendParamDto paramDto);
+
+	/**
+	 * @Description: 根据省、城市ID集合查询服务推荐列表
+	 * @param paramDto 查询参数
+	 * @return List<ColumnAppRecommend>  
+	 * @author tangzj02
+	 * @date 2017年1月12日
+	 */
+	List<ColumnAppRecommend> findListByAreas(AppRecommendParamDto paramDto);
 }

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
@@ -161,12 +162,29 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  			String[] ids = new String[list.size()];
  			//代金劵活动id
  			String[] couponIds =new String[list.size()];
+ 			String[] prizeNameArr =new String[list.size()];
+ 			//概率分母
  			int weightDeno = list.get(0).getWeightDeno();
+ 			//默认概率序号
+ 			int defaultNo = 0;
+ 			//已经无奖品数量的奖项概率和 
+ 			double sumWeight = 0;
  			for(int i = 0;i < list.size();i++){
- 				weight[i] = (double)list.get(i).getWeight();
- 				ids[i] = list.get(i).getId();
- 				couponIds[i] = list.get(i).getCollectId();
+ 				ActivityPrizeWeight prizeWeight = list.get(i);
+ 				weight[i] = (double)prizeWeight.getWeight();
+ 				if(prizeWeight.getPrizeNumber() <= 0 && prizeWeight.getIsDefaultWeight() != WhetherEnum.whether){
+ 					sumWeight = sumWeight + weight[i];
+ 					weight[i] = 0;
+ 				}
+ 				if(prizeWeight.getIsDefaultWeight() == WhetherEnum.whether){
+ 					defaultNo = i;
+ 				}
+ 				ids[i] = prizeWeight.getId();
+ 				couponIds[i] = prizeWeight.getCollectId();
+ 				prizeNameArr[i] = prizeWeight.getPrizeName();
  			}
+ 			//将 无奖品数量的奖项概率和 加到默认奖项 概率中
+ 			weight[defaultNo] = weight[defaultNo] + sumWeight;
  			//根据中奖概率执行中奖 
  			Integer  prizeNo = isHadPrize(weight,weightDeno);
  			//根据用户id 抽奖之后将其抽奖机会-1,根据产品要求即使代金劵另外也扣抽奖机会
@@ -185,12 +203,11 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  			String couponId = couponIds[prizeNo.intValue()]; 
  			String id =ids[prizeNo.intValue()];
  			JSONObject json = null;
- 			//根据序号获取代金劵id 执行送奖
- 			if(StringUtils.isNotBlank(couponId)){
+ 			//根据活动奖品扣减数量级返回 记录结果
+			json = activityPrizeWeightService.updatePrizesNumber(id);
+ 			//根据序号获取代金劵id 执行送奖 //奖品库存扣减成功后去领取代金券
+ 			if(StringUtils.isNotBlank(couponId) && (int)json.get("code")==100){
  				json = activityCouponsRecordService.addRecordsByCollectId(couponId, userId, ActivityCouponsType.advert_coupons);
- 			}else{
- 				//根据活动实物奖品扣减数量级返回 记录结果
- 				json = activityPrizeWeightService.updatePrizesNumber(id);
  			}
  			//如果奖品扣减成功 -- 写入中奖记录抽奖记录
  			Object code = json.get("code");
@@ -198,8 +215,39 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  				activityPrizeRecordService.addPrizeRecord(couponId, userId, activityId,id);
  			}
  			json.put("prizeNo", prizeNo); 
+ 			json.put("prizeName", prizeNameArr[prizeNo]); 
  			return json;
  		}
  		return null;
  	}
+ 	
+ 	/**
+ 	 * 
+ 	 * @Description: 查询用户的已抽及剩余抽奖次数
+ 	 * @param userId 用户id
+ 	 * @param activityId 活动id
+ 	 * @return JSONObject  
+ 	 * @author tuzhd
+ 	 * @throws ServiceException 
+ 	 * @date 2017年1月11日
+ 	 */
+	public JSONObject findPrizeCount(String userId,String activityId) throws ServiceException{
+		JSONObject json  = new JSONObject();
+		
+		int prizeCount = 0;
+		int hadCount = 0;
+		if(StringUtils.isNotBlank(userId)){
+			SysBuyerExt user = sysBuyerExtService.findByUserId(userId);
+			hadCount = user.getPrizeCount();
+		}
+		if(StringUtils.isNotBlank(activityId)){
+			//根据用户id及活动id查询抽奖次数
+			prizeCount = activityDrawRecordService.findCountByUserIdAndActivityId(userId, activityId);
+		}
+		//已抽数量
+		json.put("prizeCount", prizeCount);
+		//剩余抽奖次数
+		json.put("hadCount", hadCount);
+		return json;
+	}
 }

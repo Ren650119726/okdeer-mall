@@ -56,7 +56,6 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Charsets;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.account.dto.PayAccountDto;
@@ -68,7 +67,6 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
-import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
@@ -80,7 +78,6 @@ import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
-import com.okdeer.archive.store.entity.StoreAgentCommunity;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
@@ -195,7 +192,6 @@ import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.order.utils.JsonDateValueProcessor;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.OrderCouponsRespDto;
 import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
@@ -225,7 +221,6 @@ import com.okdeer.mcm.service.ISmsService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
 
 /**
  * 
@@ -244,6 +239,7 @@ import net.sf.json.JsonConfig;
  *      15486             2016-11-29        wusw              如果是服务店订单，直接查询投诉信息，如果不是，已完成状态的订单才能查询投诉信息
  *      15698             2016-12-05        wusw              订单详情，优惠活动要考虑秒杀活动类型查询
  *      V2.0.0            2017-01-09           wusw           修改订单查询和导出的线上订单包括订单来源为友门鹿便利店(CVS)的订单
+ *      V2.0.0            2017-01-12        wusw              修改低价商品订单的优惠显示问题
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1070,12 +1066,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						activitySource = ActivitySourceEnum.AGENT;
 					}
 				}
-			} else if (ActivityTypeEnum.SALE_ACTIVITIES.equals(activityType)) {
-				// 特惠活动
+			} else if (ActivityTypeEnum.SALE_ACTIVITIES.equals(activityType)
+					// Begin V2.0.0 add by wusw 20170112 修改低价商品订单的优惠显示问题
+					|| ActivityTypeEnum.LOW_PRICE.equals(activityType)) {
+				    // End V2.0.0 add by wusw 20170112 修改低价商品订单的优惠显示问题
+				// 特惠活动或低价抢购活动
 				ActivitySale activitySale = activitySaleService.get(activityId);
 				if (activitySale != null) {
 					activityName = activitySale.getName();
-					// 特惠活动只有店铺能发
+					// 特惠活动或低价抢购活动只有店铺能发
 					activitySource = ActivitySourceEnum.STORE;
 				}
 			}
@@ -4174,6 +4173,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 购买商品的数量
 					item.put("quantity", tradeOrderItem.getQuantity());
 					item.put("itemId", tradeOrderItem.getId());
+					item.put("unit", tradeOrderItem.getUnit());
 					itemArray.add(item);
 				}
 				json.put("orderItems", itemArray);
@@ -4193,6 +4193,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
 					// 购买商品的数量
 					item.put("quantity", tradeOrderItem.getQuantity());
+					item.put("unit", tradeOrderItem.getUnit());
 				}
 			}
 			// 商品信息
