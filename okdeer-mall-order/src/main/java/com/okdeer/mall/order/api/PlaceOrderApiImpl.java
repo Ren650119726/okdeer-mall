@@ -87,14 +87,14 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			resp.getData().setSkuList(AppAdapter.convert(parserBo));
 			resp.getData().setSeckillInfo(AppAdapter.convert(seckillInfo));
 			List<CurrentStoreSkuBo> skuList = new ArrayList<CurrentStoreSkuBo>();
-			if (CollectionUtils.isNotEmpty(parserBo.getCurrentSkuMap().values())) {
+			if (parserBo != null && CollectionUtils.isNotEmpty(parserBo.getCurrentSkuMap().values())) {
 				skuList.addAll(parserBo.getCurrentSkuMap().values());
 				if (skuList.size() > 1) {
 					resp.getData().setPaymentMode(PayWayEnum.PAY_ONLINE.ordinal());
 				} else {
-					if(skuList.get(0).getPaymentMode() == 1){
+					if (skuList.get(0).getPaymentMode() == 1) {
 						resp.getData().setPaymentMode(4);
-					}else{
+					} else {
 						resp.getData().setPaymentMode(skuList.get(0).getPaymentMode());
 					}
 				}
