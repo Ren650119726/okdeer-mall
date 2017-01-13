@@ -83,7 +83,11 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 	 */
 	@Override
 	public List<ColumnAppRecommend> findList(AppRecommendParamDto paramDto) throws Exception {
-		return appRecommendMapper.findList(paramDto);
+		List<ColumnAppRecommend> list = appRecommendMapper.findList(paramDto);
+		if (null == list) {
+			list = new ArrayList<>();
+		}
+		return list;
 	}
 
 	@Override
@@ -128,7 +132,11 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 		String recommendId = StringUtils.isBlank(entity.getId()) ? UuidUtils.getUuid() : entity.getId();
 
 		if (isRepeatArea(entity.getId(), entity.getAreaType(), entity.getPlace(), areaList)) {
-			return new BaseResult("首页栏位在同一个区域只能添加一个正在展示的服务推荐");
+			if (AppRecommendPlace.home.equals(entity.getPlace())) {
+				return new BaseResult("首页栏位在同一个区域只能添加一个正在展示的服务推荐");
+			} else if (AppRecommendPlace.find.equals(entity.getPlace())) {
+				return new BaseResult("发现栏位在同一个区域只能添加五个正在展示的服务推荐");
+			}
 		}
 
 		// 统计需要展示的商品数
@@ -180,9 +188,6 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 
 	private boolean isRepeatArea(String recommendId, SelectAreaType areaType, AppRecommendPlace place,
 			List<ColumnSelectArea> areaList) throws Exception {
-		if (place.equals(AppRecommendPlace.find)) {
-			return false;
-		}
 		// 查询首页是否已经存在数据
 		AppRecommendParamDto paramDto = new AppRecommendParamDto();
 		paramDto.setStatus(AppRecommendStatus.show);
@@ -192,55 +197,58 @@ public class ColumnAppRecommendServiceImpl extends BaseServiceImpl implements Co
 		paramDto.setAreaType(SelectAreaType.nationwide);
 		// 根据位置查询设置范围为全国的数据
 		List<ColumnAppRecommend> list = appRecommendMapper.findList(paramDto);
-		if (null != list && list.size() > 0) {
+		// 发现模块中推荐的个数
+		int findRecommendCount = list.size();
+		if (place.equals(AppRecommendPlace.home) && list.size() > 0) {
 			// 如果同一位置中有设置范围是全国的则表示已经重复
+			return true;
+		} else if (place.equals(AppRecommendPlace.find) && list.size() > 5) {
+			// 如果同一位置中有5个设置范围是全国的则表示已经重复
 			return true;
 		}
 
 		// 清空参数中的地区范围
 		paramDto.setAreaType(null);
 		// 查询位置设置范围为各省和城市的数据
-		list = appRecommendMapper.findList(paramDto);
-		// 未查出数据则表示首页还未发布过
+		list = findList(paramDto);
+		// 未查出数据则表示首页、和发现还未发布过推荐
 		if (null == list || list.size() == 0) {
 			return false;
 		}
 		// 如果当前设置任务范围是全国
-		if (SelectAreaType.nationwide.equals(areaType)) {
+		if (AppRecommendPlace.home.equals(place) && SelectAreaType.nationwide.equals(areaType)) {
 			return true;
-		}
-		List<String> columnIds = new ArrayList<>();
-		for (ColumnAppRecommend item : list) {
-			columnIds.add(item.getId());
-		}
-
-		// 已保存省ID集合(全省)
-		List<String> dbProvinceIds = new ArrayList<>();
-		// 已保存省ID集合(部分城市)
-		List<String> dbPartProvinceIds = new ArrayList<>();
-		// 已保存选城市ID集合
-		List<String> dbCityIds = new ArrayList<>();
-		// 查询已存在的
-		List<ColumnSelectArea> abAareaList = selectAreaService.findListByColumnIds(columnIds);
-		// 将在同一位置已发布过推荐的省、城市ID放入集合中
-		for (ColumnSelectArea item : abAareaList) {
-			if (SelectAreaType.province.equals(item.getAreaType())) {
-				dbProvinceIds.add(item.getProvinceId());
-			} else {
-				dbPartProvinceIds.add(item.getProvinceId());
-				dbCityIds.add(item.getCityId());
-			}
+		} else if (AppRecommendPlace.find.equals(place) && SelectAreaType.nationwide.equals(areaType)) {
+			return (findRecommendCount + list.size()) > 5;
 		}
 
 		// 判断当前发布的区域是否与数据库中的数据有重复或有交集
+		// 省ID集合(全省，以及部分城市的省ID)
+		List<String> provinceIds = new ArrayList<>();
+		// 城市ID集合
+		List<String> cityIds = new ArrayList<>();
 		for (ColumnSelectArea item : areaList) {
 			if (SelectAreaType.province.equals(item.getAreaType())) {
-				if (dbProvinceIds.contains(item.getProvinceId()) || dbPartProvinceIds.contains(item.getProvinceId())) {
-					return true;
-				}
-			} else if (SelectAreaType.city.equals(item.getAreaType()) && dbCityIds.contains(item.getCityId())) {
+				provinceIds.add(item.getProvinceId());
+			} else {
+				provinceIds.add(item.getProvinceId());
+				cityIds.add(item.getCityId());
+			}
+		}
+		paramDto.setProvinceIds(provinceIds);
+		paramDto.setCityIds(cityIds);
+		list = appRecommendMapper.findListByAreas(paramDto);
+		if (AppRecommendPlace.home.equals(place)) {
+			if (null != list && list.size() > 0) {
 				return true;
 			}
+		} else if (AppRecommendPlace.find.equals(place)) {
+			if (null != list) {
+				findRecommendCount = findRecommendCount + list.size();
+			}
+		}
+		if (AppRecommendPlace.find.equals(place) && findRecommendCount >= 5) {
+			return true;
 		}
 		return false;
 	}

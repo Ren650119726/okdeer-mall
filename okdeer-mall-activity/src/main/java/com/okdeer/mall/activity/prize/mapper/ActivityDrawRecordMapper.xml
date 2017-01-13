@@ -13,7 +13,7 @@
         id, user_id, activity_id, create_time, disabled
     </sql>
 
-	<select id="findCountByUserIdAndActivityId" resultType="java.lang.Integer" parameterType="java.lang.String" >
+	<select id="findCountByUserIdAndActivityId" resultType="java.lang.Integer" >
         select  count(1)
         from activity_draw_record
         where disabled=0 and user_id = #{userId,jdbcType=VARCHAR} and activity_id = #{activityId,jdbcType=VARCHAR}
