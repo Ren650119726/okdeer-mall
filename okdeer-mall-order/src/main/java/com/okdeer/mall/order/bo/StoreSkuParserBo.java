@@ -126,6 +126,11 @@ public class StoreSkuParserBo {
 	 * 低价活动Id 
 	 */
 	private String lowActivityId;
+	
+	/**
+	 * 购买请求中是否存在低价购买信息
+	 */
+	private boolean isExistLowBuy;
 
 	public StoreSkuParserBo(List<GoodsStoreSku> currentSkuList) {
 		this.currentSkuList = currentSkuList;
@@ -278,6 +283,9 @@ public class StoreSkuParserBo {
 			this.totalItemAmount = totalItemAmount
 					.add(skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getQuantity())));
 			this.totalQuantity += skuBo.getQuantity();
+			if(item.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal() && item.getSkuActQuantity()>0){
+				this.isExistLowBuy = true;
+			}
 		}
 	}
 
@@ -531,5 +539,9 @@ public class StoreSkuParserBo {
 
 	public BigDecimal getTotalLowFavour() {
 		return totalLowFavour;
+	}
+
+	public boolean isExistLowBuy() {
+		return isExistLowBuy;
 	}
 }
