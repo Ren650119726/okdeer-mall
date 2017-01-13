@@ -255,17 +255,19 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			for (String storeSkuId : entry.getValue()) {
 				storeSkuBo = parserBo.getCurrentStoreSkuBo(storeSkuId);
 				
-				if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && storeSkuBo.getSkuActQuantity() > 0){
-					record = new ActivitySaleRecord();
-					record.setId(UuidUtils.getUuid());
-					record.setStroeId(req.getStoreId());
-					record.setSaleGoodsId(storeSkuId);
-					record.setSaleGoodsNum(storeSkuBo.getSkuActQuantity());
-					record.setUserId(req.getUserId());
-					record.setSaleId(entry.getKey());
-					record.setOrderId(orderId);
-					record.setOrderDisabled(Disabled.valid);
-					recordList.add(record);
+				if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+					if(storeSkuBo.getSkuActQuantity() > 0){
+						record = new ActivitySaleRecord();
+						record.setId(UuidUtils.getUuid());
+						record.setStroeId(req.getStoreId());
+						record.setSaleGoodsId(storeSkuId);
+						record.setSaleGoodsNum(storeSkuBo.getSkuActQuantity());
+						record.setUserId(req.getUserId());
+						record.setSaleId(entry.getKey());
+						record.setOrderId(orderId);
+						record.setOrderDisabled(Disabled.valid);
+						recordList.add(record);
+					}
 				}else{
 					record = new ActivitySaleRecord();
 					record.setId(UuidUtils.getUuid());
