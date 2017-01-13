@@ -392,16 +392,15 @@ public class PointServiceImpl implements PointsService {
 			pointQueryResult.setUserPointVal(sysBuyerExt.getPointVal());
 		}
 
-		if (pointQueryResult.getUserPointVal().intValue() < pointVal) {
-			pointQueryResult.setPointVal(pointQueryResult.getUserPointVal());
-		} else {
-			pointQueryResult.setPointVal(pointVal);
-		}
+		pointQueryResult.setPointVal(pointVal);
 
 		// 1为加积分 2:减积分
 		if (pointQueryParamDto.getType() == 1) {
 			pointQueryResult.setUserPointVal(pointQueryResult.getUserPointVal() + pointVal);
 		} else {
+			if (pointQueryResult.getUserPointVal().intValue() < pointVal) {
+				pointQueryResult.setPointVal(pointQueryResult.getUserPointVal());
+			}
 			pointQueryResult.setUserPointVal(pointQueryResult.getUserPointVal() - pointVal);
 		}
 
