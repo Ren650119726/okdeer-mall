@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
@@ -23,6 +24,7 @@ import com.okdeer.mall.operate.dto.AppRecommendGoodsDto;
 import com.okdeer.mall.operate.dto.AppRecommendGoodsParamDto;
 import com.okdeer.mall.operate.dto.AppRecommendParamDto;
 import com.okdeer.mall.operate.dto.SelectAreaDto;
+import com.okdeer.mall.operate.dto.ServerGoodsChoolseDto;
 import com.okdeer.mall.operate.entity.ColumnAppRecommend;
 import com.okdeer.mall.operate.entity.ColumnAppRecommendGoods;
 import com.okdeer.mall.operate.entity.ColumnSelectArea;
@@ -192,6 +194,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		ColumnAppRecommend entity = new ColumnAppRecommend();
 		entity.setId(id);
 		entity.setStatus(AppRecommendStatus.close);
+		entity.setUpdateTime(DateUtils.getSysDate());
 		return appRecommendService.update(entity);
 	}
 
@@ -207,6 +210,7 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		ColumnAppRecommend entity = new ColumnAppRecommend();
 		entity.setId(id);
 		entity.setSort(sort);
+		entity.setUpdateTime(DateUtils.getSysDate());
 		return appRecommendService.update(entity);
 	}
 
@@ -239,17 +243,25 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 		}
 		// 根据城市查询相应的服务商品推荐栏位
 		List<String> ids = selectAreaService.findColumnIdsByCity(provinceId, cityId, ColumnType.appRecommend.ordinal());
-		if (null == ids || ids.size() == 0) {
-			return new ArrayList<AppRecommendDto>();
-		}
 		// 设置服务商品推荐参数
 		AppRecommendParamDto paramDto = new AppRecommendParamDto();
-		paramDto.setIds(ids);
+		if (null != ids && ids.size() > 0) {
+			paramDto.setIds(ids);
+		}
 		paramDto.setPlace(place);
 		paramDto.setSortType(1);
+		paramDto.setContainNationwide(true);
+		paramDto.setStatus(AppRecommendStatus.show);
 
 		// 查询服务商品推荐
 		List<AppRecommendDto> dtoList = findList(paramDto);
+		if (dtoList.size() == 0) {
+			return dtoList;
+		}
+		ids.clear();
+		for(AppRecommendDto item : dtoList){
+			ids.add(item.getId());
+		}
 
 		// 设置推荐服务商品关联信息查询参数
 		AppRecommendGoodsParamDto goodsParamDto = new AppRecommendGoodsParamDto();
@@ -305,5 +317,11 @@ public class ColumnAppRecommendApiImpl implements ColumnAppRecommendApi {
 			dtoList = BeanMapper.mapList(goodsList, AppRecommendGoodsDto.class);
 		}
 		return dtoList;
+	}
+
+	@Override
+	public PageUtils<ServerGoodsChoolseDto> findServerGoodsChoolseList(ServerGoodsChoolseDto serverGoodsChoolseDto)
+			throws Exception {
+		return appRecommendGoodsService.findServerGoodsChoolseList(serverGoodsChoolseDto);		
 	}
 }

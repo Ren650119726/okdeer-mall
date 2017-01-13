@@ -6,16 +6,22 @@
  */
 package com.okdeer.mall.operate.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.operate.dto.AppRecommendDto;
 import com.okdeer.mall.operate.dto.AppRecommendGoodsParamDto;
+import com.okdeer.mall.operate.dto.ServerGoodsChoolseDto;
+import com.okdeer.mall.operate.entity.ColumnAppRecommend;
 import com.okdeer.mall.operate.entity.ColumnAppRecommendGoods;
 import com.okdeer.mall.operate.mapper.ColumnAppRecommendGoodsMapper;
 import com.okdeer.mall.operate.service.ColumnAppRecommendGoodsService;
@@ -95,6 +101,17 @@ public class ColumnAppRecommendGoodsServiceImpl extends BaseServiceImpl implemen
 	@Override
 	public List<ColumnAppRecommendGoods> findShowListByStoreSkuIds(List<String> storeSkuIds) throws Exception {
 		return appRecommendGoodsMapper.findShowListByStoreSkuIds(storeSkuIds);
+	}
+
+	@Override
+	public PageUtils<ServerGoodsChoolseDto> findServerGoodsChoolseList(ServerGoodsChoolseDto serverGoodsChoolseDto)
+			throws Exception {
+		PageHelper.startPage(serverGoodsChoolseDto.getPageNumber(), serverGoodsChoolseDto.getPageSize(), true);
+		List<ServerGoodsChoolseDto> result = appRecommendGoodsMapper.findServerGoodsList(serverGoodsChoolseDto);
+		if (result == null) {
+			result = new ArrayList<ServerGoodsChoolseDto>();
+		}
+		return new PageUtils<ServerGoodsChoolseDto>(result);
 	}
 
 }

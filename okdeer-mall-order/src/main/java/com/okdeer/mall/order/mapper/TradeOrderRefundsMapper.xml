@@ -54,6 +54,7 @@
       <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
       <result column="sty_code" property="styleCode" jdbcType="VARCHAR" />
       <result column="income" property="income" javaType="DECIMAL" />
+      <result column="spu_type" property="spuType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum"/>
     </collection>
     
   </resultMap>
@@ -178,7 +179,7 @@
     	refunds.id, refunds.user_id, refunds.store_id, refunds.refund_no, refunds.order_id,refunds.order_no, trade_num, refunds.payment_method,
     	refunds.total_amount, refunds.total_preferential_price, refunds.create_time, refunds.update_time,refunds.type,
 		refunds.operator, refunds.refunds_status, refunds.order_resource, refunds.logistics_type, refunds.refund_money_time,
-		item.refunds_id,item.order_item_id,item.sku_name,item.properties_indb,item.store_sku_id,
+		item.refunds_id,item.order_item_id,item.sku_name,item.spu_type,item.properties_indb,item.store_sku_id,
 		item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code,item.income
 		FROM trade_order_refunds refunds
 		LEFT JOIN trade_order_refunds_item item ON item.refunds_id = refunds.id

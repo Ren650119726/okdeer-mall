@@ -68,6 +68,7 @@ import com.okdeer.mall.order.vo.RechargeCouponVo;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
+import ch.qos.logback.core.util.StringCollectionUtil;
 import net.sf.json.JSONObject;
 
 /**
@@ -234,7 +235,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		} else {	
 			voList = activityCouponsRecordMapper.selectMyCouponsDetailByParamsOld(activityCouponsRecord);
 		}
-		if (voList != null && voList.size() > 0) {
+		if (!CollectionUtils.isEmpty(voList)) {
 			for (ActivityCouponsRecordQueryVo vo : voList) {
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(vo.getValidTime());
@@ -242,37 +243,38 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				cal.add(Calendar.DATE, -1); 
 				vo.setValidTime(cal.getTime());
 				ActivityCoupons activityCoupons = vo.getActivityCoupons();
-				if (activityCoupons.getType() == 1) {
-					if (activityCoupons.getIsCategory() == 1) {
-						String categoryNames = "";
-						//CouponsInfoQuery couponsInfo = activityCouponsMapper.findNavCategoryByCouponsId(activityCoupons.getId());
-						List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
-						if (cates != null) {
-					    	for (ActivityCouponsCategory category : cates) {
-					    		if (StringUtils.isNotBlank(categoryNames)) {
-						    		categoryNames =  categoryNames + "、" ;	
-					    		}	
-					    		categoryNames = categoryNames + category.getCategoryName();
-					    	}
-					    }
-						activityCoupons.setCategoryNames(categoryNames);
+				Integer couponsType = activityCoupons.getType();
+				if (couponsType != null) {
+					if (activityCoupons.getType() == 1) {
+						if (activityCoupons.getIsCategory() == 1) {
+							String categoryNames = "";
+							List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
+							if (cates != null) {
+						    	for (ActivityCouponsCategory category : cates) {
+						    		if (StringUtils.isNotBlank(categoryNames)) {
+							    		categoryNames =  categoryNames + "、" ;	
+						    		}	
+						    		categoryNames = categoryNames + category.getCategoryName();
+						    	}
+						    }
+							activityCoupons.setCategoryNames(categoryNames);
+						}
+					} else if (activityCoupons.getType() == 2) {
+						if (activityCoupons.getIsCategory() == 1) {
+							String categoryNames = "";
+							List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
+							if (cates != null) {
+						    	for (ActivityCouponsCategory category : cates) {
+						    		if (StringUtils.isNotBlank(categoryNames)) {
+							    		categoryNames =  categoryNames + "、" ;	
+						    		}	
+						    		categoryNames = categoryNames + category.getCategoryName();						    		
+						    	}
+						    }
+							activityCoupons.setCategoryNames(categoryNames);
+						}
+						
 					}
-				} else if (activityCoupons.getType() == 2) {
-					if (activityCoupons.getIsCategory() == 1) {
-						String categoryNames = "";
-						//CouponsInfoQuery couponsInfo = activityCouponsMapper.findSpuCategoryByCouponsId(activityCoupons.getId());
-						List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
-						if (cates != null) {
-					    	for (ActivityCouponsCategory category : cates) {
-					    		if (StringUtils.isNotBlank(categoryNames)) {
-						    		categoryNames =  categoryNames + "、" ;	
-					    		}	
-					    		categoryNames = categoryNames + category.getCategoryName();						    		
-					    	}
-					    }
-						activityCoupons.setCategoryNames(categoryNames);
-					}
-					
 				}
 			}
 		}
@@ -649,7 +651,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
 		record.setValidTime(calendar.getTime());
 		// begin v1.3 领取异业代金券时候操作
-		HashMap<String, Object> map = new HashMap<String, Object>();
+/*		HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put("couponsId", coupons.getId());
 		map.put("status", 0);
 		map.put("length", 1);
@@ -663,7 +665,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				//更新代金卷兑换码状态
 				activityCouponsThirdCodeMapper.update(activityCouponsThirdCode);
 			}
-		}
+		}*/
 		//将代金卷兑换码写入记录表  
 		activityCouponsRecordMapper.insertSelective(record);
 		activityCouponsMapper.updateRemainNum(coupons.getId());
@@ -760,7 +762,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		} else {
 			//map.put("data", null);
 			map.put("msg", "请登录后再领取");
-			map.put("code", 104);
+			map.put("code", 4);
 			return false;
 		}
 		return true;

@@ -23,6 +23,7 @@ import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandlerChain;
 import com.okdeer.mall.order.service.PlaceOrderApi;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.PlaceOrderApi")
 public class PlaceOrderApiImpl implements PlaceOrderApi {
@@ -77,7 +78,8 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
 		AppStoreDto appStoreDto = AppAdapter.convert(storeInfo);
 		if (parserBo != null) {
-			resp.getData().setOrderFare(parserBo.getFare());
+			resp.getData().setOrderFare(ConvertUtil.format(parserBo.getFare()));
+			resp.getData().setFavour(ConvertUtil.format(parserBo.getTotalLowFavour()));
 		}
 		resp.getData().setStoreInfo(appStoreDto);
 		if(req.getData().getOrderType() != PlaceOrderTypeEnum.CVS_ORDER){
@@ -90,7 +92,11 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				if (skuList.size() > 1) {
 					resp.getData().setPaymentMode(PayWayEnum.PAY_ONLINE.ordinal());
 				} else {
-					resp.getData().setPaymentMode(skuList.get(0).getPaymentMode());
+					if(skuList.get(0).getPaymentMode() == 1){
+						resp.getData().setPaymentMode(4);
+					}else{
+						resp.getData().setPaymentMode(skuList.get(0).getPaymentMode());
+					}
 				}
 			}
 		}
@@ -98,7 +104,6 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			resp.getData().setSkuList(AppAdapter.convert(parserBo));
 		}
 		resp.getData().setCurrentTime(System.currentTimeMillis());
-
 	}
 
 	@Override

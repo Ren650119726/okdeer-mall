@@ -52,6 +52,7 @@ import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
@@ -59,6 +60,7 @@ import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 import net.sf.json.JSONObject;
 
@@ -167,7 +169,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		// 根据请求构建订单
 		TradeOrder tradeOrder = tradeOrderBoBuilder.build(paramDto);
 		MemberConsigneeAddress userUseAddr = (MemberConsigneeAddress) paramDto.get("userUseAddr");
-		if (paramDto.getSkuType() != OrderTypeEnum.STORE_CONSUME_ORDER && userUseAddr == null) {
+		if (paramDto.getPickType() == PickUpTypeEnum.DELIVERY_DOOR && userUseAddr == null) {
 			resp.setResult(ResultCodeEnum.ADDRESS_NOT_EXSITS);
 			return;
 		}
@@ -202,7 +204,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 		resp.getData().setOrderId(tradeOrder.getId());
 		resp.getData().setOrderNo(tradeOrder.getOrderNo());
-		resp.getData().setOrderPrice(tradeOrder.getActualAmount());
+		resp.getData().setOrderPrice(ConvertUtil.format(tradeOrder.getActualAmount()));
 		resp.getData().setTradeNum(tradeOrder.getTradeNum());
 		// 订单倒计时
 		resp.getData().setLimitTime(60 * 30);
@@ -222,7 +224,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		if (activityType == ActivityTypeEnum.VONCHER) {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("orderId", tradeOrder.getId());
-			params.put("id", req.getActivityId());
+			params.put("id", req.getRecordId());
 			// 更新代金券状态
 			int updateResult = activityCouponsRecordMapper.updateActivityCouponsStatus(params);
 			if (updateResult == 0) {
@@ -252,17 +254,31 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		for (Map.Entry<String, List<String>> entry : activitySkuMap.entrySet()) {
 			for (String storeSkuId : entry.getValue()) {
 				storeSkuBo = parserBo.getCurrentStoreSkuBo(storeSkuId);
-
-				record = new ActivitySaleRecord();
-				record.setId(UuidUtils.getUuid());
-				record.setStroeId(req.getStoreId());
-				record.setSaleGoodsId(storeSkuId);
-				record.setSaleGoodsNum(storeSkuBo.getQuantity());
-				record.setUserId(req.getUserId());
-				record.setSaleId(entry.getKey());
-				record.setOrderId(orderId);
-				record.setOrderDisabled(Disabled.valid);
-				recordList.add(record);
+				
+				if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && storeSkuBo.getSkuActQuantity() > 0){
+					record = new ActivitySaleRecord();
+					record.setId(UuidUtils.getUuid());
+					record.setStroeId(req.getStoreId());
+					record.setSaleGoodsId(storeSkuId);
+					record.setSaleGoodsNum(storeSkuBo.getSkuActQuantity());
+					record.setUserId(req.getUserId());
+					record.setSaleId(entry.getKey());
+					record.setOrderId(orderId);
+					record.setOrderDisabled(Disabled.valid);
+					recordList.add(record);
+				}else{
+					record = new ActivitySaleRecord();
+					record.setId(UuidUtils.getUuid());
+					record.setStroeId(req.getStoreId());
+					record.setSaleGoodsId(storeSkuId);
+					record.setSaleGoodsNum(storeSkuBo.getQuantity());
+					record.setUserId(req.getUserId());
+					record.setSaleId(entry.getKey());
+					record.setOrderId(orderId);
+					record.setOrderDisabled(Disabled.valid);
+					recordList.add(record);
+				}
+				
 			}
 		}
 
@@ -390,8 +406,8 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				// 如果是组合商品，对商品进行拆分.组合商品只能加入活动才能售卖
 				List<GoodsStoreSkuAssembleDto> comboDetailList = parserBo.getComboSkuMap().get(storeSku.getId());
 				for (GoodsStoreSkuAssembleDto comboDetail : comboDetailList) {
-					int buyNum = comboDetail.getQuantity() * (storeSku.getQuantity() + storeSku.getSkuActQuantity());
-					adjustDetailVo = buildDetailVo(comboDetail, true, buyNum);
+					int buyNum = comboDetail.getQuantity() * storeSku.getQuantity();
+					adjustDetailVo = buildDetailVo(comboDetail, false, buyNum);
 					adjustDetailList.add(adjustDetailVo);
 				}
 			}else if(storeSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
@@ -400,7 +416,8 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 					adjustDetailVo = buildDetailVo(storeSku, true, true);
 					adjustDetailList.add(adjustDetailVo);
 				}
-				if (storeSku.getQuantity() > 0) {
+				if (storeSku.getQuantity()-storeSku.getSkuActQuantity() > 0) {
+					storeSku.setQuantity(storeSku.getQuantity()-storeSku.getSkuActQuantity());
 					adjustDetailVo = buildDetailVo(storeSku, false, false);
 					adjustDetailList.add(adjustDetailVo);
 				}
@@ -492,24 +509,9 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
 		for (String storeSkuId : parserBo.getComboSkuIdList()) {
 			CurrentStoreSkuBo skuBo = parserBo.getCurrentStoreSkuBo(storeSkuId);
-			if (skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()) {
-				// 如果是低价，需要将订单商品拆分为两条记录去发起库存变更请求
-				if (skuBo.getSkuActQuantity() > 0) {
-					adjustDetailVo = buildDetailVo(skuBo, true, true);
-					adjustDetailList.add(adjustDetailVo);
-				}
-				if (skuBo.getQuantity() > 0) {
-					adjustDetailVo = buildDetailVo(skuBo, false, false);
-					adjustDetailList.add(adjustDetailVo);
-				}
-			} else if (skuBo.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()) {
-				// 如果是特惠
-				adjustDetailVo = buildDetailVo(skuBo, false, true);
-				adjustDetailList.add(adjustDetailVo);
-			} else {
-				adjustDetailVo = buildDetailVo(skuBo, false, false);
-				adjustDetailList.add(adjustDetailVo);
-			}
+			// 组合商品只能加入活动才能被购买。
+			adjustDetailVo = buildDetailVo(skuBo, false, true);
+			adjustDetailList.add(adjustDetailVo);
 		}
 
 		stockAjustVo.setAdjustDetailList(adjustDetailList);

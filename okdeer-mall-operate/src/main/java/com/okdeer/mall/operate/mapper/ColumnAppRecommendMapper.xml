@@ -23,7 +23,7 @@
 	<sql id="Base_Column_List">
 		id, title, place, cover_pic_url, cover_skip_url, goods_count,
 		show_goods_count, sort, status, area_type, create_user_id, 
-		create_time, update_user_id, update_time,disabled
+		create_time, update_user_id, update_time, disabled
 	</sql>
 
 	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
@@ -38,11 +38,17 @@
 		<include refid="Base_Column_List" />
 		FROM column_app_recommend
 		WHERE disabled = 0
+		<if test="excludeId != null and excludeId != ''">
+			AND id != #{excludeId}
+		</if>
 		<if test="title != null and title != ''">
 			AND title LIKE CONCAT('%',#{title},'%')
 		</if>
 		<if test="null != place">
 			AND place = #{place}
+		</if>
+		<if test="null != areaType">
+			AND area_type = #{areaType}
 		</if>
 		<if test="null != addStartTime">
 			AND create_time &gt;= #{addStartTime}
@@ -59,19 +65,79 @@
 		<if test="null != status">
 			AND status = #{status}
 		</if>
-		<if test="ids != null and ids.size() > 0">
-			AND id IN
-			<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
-				#{item}
-			</foreach>
-		</if>
+		<choose>  
+            <when test="isContainNationwide == true and ids != null and ids.size() > 0">  
+               AND (
+               		area_type = 0  
+               		OR id IN
+					<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+               )
+            </when>
+             <when test="isContainNationwide == true">  
+               AND area_type = 0
+            </when>   
+            <otherwise>  
+               <if test="ids != null and ids.size() > 0">
+					AND id IN
+					<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+				</if>
+            </otherwise>  
+        </choose>  
+		
 		<choose>  
             <when test="sortType == 1">  
-               ORDER BY sort , update_time DESC
+               ORDER BY sort DESC, update_time DESC
             </when>  
             <otherwise>  
-                ORDER BY status , update_time DESC
+                ORDER BY status ASC, update_time DESC
             </otherwise>  
+        </choose>  
+	</select>
+
+
+	<select id="findListByAreas" resultMap="BaseResultMap" parameterType="com.okdeer.mall.operate.dto.AppRecommendParamDto">
+		SELECT
+			recommend.id, recommend.title, recommend.place, recommend.cover_pic_url, recommend.cover_skip_url, 
+			recommend.goods_count, show_goods_count, recommend.sort, recommend.status, recommend.area_type, 
+			recommend.create_user_id, recommend.create_time, recommend.update_user_id, recommend.update_time, 
+			recommend.disabled
+		FROM column_app_recommend recommend 
+			 LEFT JOIN column_select_area area ON recommend.id = area.column_id 
+		WHERE recommend.disabled = 0 AND recommend.status = 0
+		<if test="excludeId != null and excludeId != ''">
+			AND recommend.id != #{excludeId}
+		</if>
+		<if test="null != place">
+			AND recommend.place = #{place}
+		</if>
+		<choose>  
+            <when test="provinceIds != null and provinceIds.size() > 0 and cityIds != null and cityIds.size() > 0">  
+               AND ((area.city_id = 0 AND area.province_id IN
+					<foreach collection="provinceIds" index="index" item="item" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+                ) OR area.city_id IN
+					<foreach collection="cityIds" index="index" item="item" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+               )
+            </when>
+            <when test="provinceIds != null and provinceIds.size() > 0">  
+           		AND area.province_id IN
+				<foreach collection="provinceIds" index="index" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+            </when>   
+            <when test="cityIds != null and cityIds.size() > 0">  
+                AND area.city_id IN
+				<foreach collection="cityIds" index="index" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+            </when>  
         </choose>  
 	</select>
 
@@ -230,7 +296,7 @@
 	<update id="deleteByIds" parameterType="java.lang.String">
 		UPDATE column_app_recommend
 		SET disabled = 1
-		WHERE id IN
+		WHERE status = 1 AND id IN
 		<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
 			#{item}
 		</foreach>

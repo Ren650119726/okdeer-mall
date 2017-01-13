@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.member.mapper.SysAppAccessRecordMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.member.entity.SysAppAccessRecord" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+        <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+        <result column="app_type" property="appType" jdbcType="TINYINT" />
+        <result column="app_version" property="appVersion" jdbcType="VARCHAR" />
+        <result column="brand" property="brand" jdbcType="VARCHAR" />
+        <result column="screen" property="screen" jdbcType="VARCHAR" />
+        <result column="network" property="network" jdbcType="VARCHAR" />
+        <result column="machine_code" property="machineCode" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, city_id, city_name, app_type, app_version, brand, screen, network, machine_code, 
+        create_time
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from sys_app_access_record
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="findBySysAppAccessRecord" resultMap="BaseResultMap" parameterType="com.okdeer.mall.member.entity.SysAppAccessRecord" >
+        select 
+        <include refid="Base_Column_List" />
+        from sys_app_access_record
+        <where>
+            <if test="cityId != null" >
+                AND city_id = #{cityId}
+            </if>
+            <if test="cityName != null" >
+                AND city_name = #{cityName}
+            </if>
+            <if test="appType != null" >
+                AND app_type = #{appType}
+            </if>
+            <if test="appVersion != null" >
+                AND app_version = #{appVersion}
+            </if>
+            <if test="brand != null" >
+                AND brand = #{brand}
+            </if>
+            <if test="screen != null" >
+                AND screen = #{screen}
+            </if>
+            <if test="network != null" >
+                AND network = #{network}
+            </if>
+            <if test="machineCode != null" >
+                AND machine_code = #{machineCode}
+            </if>
+        </where>
+    </select>   
+
+    <insert id="add" parameterType="com.okdeer.mall.member.entity.SysAppAccessRecord" >
+        insert into sys_app_access_record
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="cityId != null" >
+                city_id,
+            </if>
+            <if test="cityName != null" >
+                city_name,
+            </if>
+            <if test="appType != null" >
+                app_type,
+            </if>
+            <if test="appVersion != null" >
+                app_version,
+            </if>
+            <if test="brand != null" >
+                brand,
+            </if>
+            <if test="screen != null" >
+                screen,
+            </if>
+            <if test="network != null" >
+                network,
+            </if>
+            <if test="machineCode != null" >
+                machine_code,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="cityId != null" >
+                #{cityId,jdbcType=VARCHAR},
+            </if>
+            <if test="cityName != null" >
+                #{cityName,jdbcType=VARCHAR},
+            </if>
+            <if test="appType != null" >
+                #{appType,jdbcType=TINYINT},
+            </if>
+            <if test="appVersion != null" >
+                #{appVersion,jdbcType=VARCHAR},
+            </if>
+            <if test="brand != null" >
+                #{brand,jdbcType=VARCHAR},
+            </if>
+            <if test="screen != null" >
+                #{screen,jdbcType=VARCHAR},
+            </if>
+            <if test="network != null" >
+                #{network,jdbcType=VARCHAR},
+            </if>
+            <if test="machineCode != null" >
+                #{machineCode,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.member.entity.SysAppAccessRecord" >
+        update sys_app_access_record
+        <set >
+            <if test="cityId != null" >
+                city_id = #{cityId,jdbcType=VARCHAR},
+            </if>
+            <if test="cityName != null" >
+                city_name = #{cityName,jdbcType=VARCHAR},
+            </if>
+            <if test="appType != null" >
+                app_type = #{appType,jdbcType=TINYINT},
+            </if>
+            <if test="appVersion != null" >
+                app_version = #{appVersion,jdbcType=VARCHAR},
+            </if>
+            <if test="brand != null" >
+                brand = #{brand,jdbcType=VARCHAR},
+            </if>
+            <if test="screen != null" >
+                screen = #{screen,jdbcType=VARCHAR},
+            </if>
+            <if test="network != null" >
+                network = #{network,jdbcType=VARCHAR},
+            </if>
+            <if test="machineCode != null" >
+                machine_code = #{machineCode,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from sys_app_access_record
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

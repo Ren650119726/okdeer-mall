@@ -88,7 +88,11 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		}
 		if (null == entity.getPlace() || null == entity.getTaskScope() || null == entity.getTaskType()
 				|| !StringUtils.isNotEmptyAll(entity.getName())) {
-			return new BaseResult("首页ICON信息不完整");
+			return new BaseResult("ICON信息不完整");
+		}
+		
+		if(entity.getName().length() > 4){
+			return new BaseResult("ICON名称不能大于4个字符");
 		}
 
 		if (SelectAreaType.city.equals(entity.getTaskScope()) && (null == areaList || 0 == areaList.size())) {
@@ -175,7 +179,17 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		paramDto.setPlace(place);
 		// 设置排除自己
 		paramDto.setExcludeId(homeIconId);
+		paramDto.setTaskScope(SelectAreaType.nationwide);
+		// 根据位置查询设置范围为全国的数据
 		List<ColumnHomeIcon> list = homeIconMapper.findList(paramDto);
+		if (null != list && list.size() > 0) {
+			// 如果同一位置中有设置范围是全国的则表示已经重复
+			return true;
+		}
+		// 清空参数中的地区范围
+		paramDto.setTaskScope(null);
+		// 查询位置设置范围为各省和城市的数据
+		list = homeIconMapper.findList(paramDto);
 		// 未查出数据则表示当前ICON位置还未发布过
 		if (null == list || list.size() == 0) {
 			return false;

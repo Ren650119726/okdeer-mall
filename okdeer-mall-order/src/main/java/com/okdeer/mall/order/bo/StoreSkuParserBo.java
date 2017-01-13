@@ -111,6 +111,21 @@ public class StoreSkuParserBo {
 	 * 订单运费
 	 */
 	private BigDecimal fare = BigDecimal.valueOf(0.0);
+	
+	/**
+	 * 是否是低价活动订单
+	 */
+	private boolean isLowFavour;
+	
+	/**
+	 * 低价优惠总金额
+	 */
+	private BigDecimal totalLowFavour = BigDecimal.valueOf(0.0);
+	
+	/**
+	 * 低价活动Id 
+	 */
+	private String lowActivityId;
 
 	public StoreSkuParserBo(List<GoodsStoreSku> currentSkuList) {
 		this.currentSkuList = currentSkuList;
@@ -139,6 +154,10 @@ public class StoreSkuParserBo {
 			currentSku.setTradeMax(storeSku.getTradeMax());
 			currentSku.setOnline(storeSku.getOnline());
 			currentSku.setSaleNum(storeSku.getSaleNum());
+			currentSku.setUnit(storeSku.getUnit());
+			if(storeSku.getPayType() != null){
+				currentSku.setPaymentMode(storeSku.getPayType().ordinal());
+			}
 			
 			GoodsStoreSkuService skuServiceEntity = storeSku.getGoodsStoreSkuService();
 			if (skuServiceEntity != null) {
@@ -252,19 +271,13 @@ public class StoreSkuParserBo {
 		CurrentStoreSkuBo skuBo = null;
 		for (PlaceOrderItemDto item : buySkuList) {
 			skuBo = this.currentSkuMap.get(item.getStoreSkuId());
-			skuBo.setQuantity(item.getQuantity() - item.getSkuActQuantity());
+			skuBo.setQuantity(item.getQuantity());
 			skuBo.setSkuActQuantity(item.getSkuActQuantity());
 			skuBo.setUpdateTime(item.getUpdateTime());
 
 			this.totalItemAmount = totalItemAmount
 					.add(skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getQuantity())));
 			this.totalQuantity += skuBo.getQuantity();
-			if (skuBo.getSkuActQuantity() > 0) {
-				this.totalItemAmount = totalItemAmount
-						.add(skuBo.getActPrice().multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity())));
-				this.totalQuantity += skuBo.getSkuActQuantity();
-			}
-			
 		}
 	}
 
@@ -307,6 +320,24 @@ public class StoreSkuParserBo {
 				this.comboSkuMap.get(detail.getAssembleSkuId()).add(detail);
 			}
 		}
+	}
+	
+	/**
+	 * @Description: 解析是否存在低价优惠
+	 * @return   
+	 * @author maojj
+	 * @date 2017年1月4日
+	 */
+	public boolean parseLowFavour() {
+		for (CurrentStoreSkuBo skuBo : this.currentSkuMap.values()) {
+			if (skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0) {
+				this.isLowFavour = true;
+				this.lowActivityId = skuBo.getActivityId();
+				this.totalLowFavour = this.totalLowFavour.add(skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
+						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity())));
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -371,37 +402,18 @@ public class StoreSkuParserBo {
 		}
 		return totalAdd;
 	}
-
-	/**
-	 * @Description: 判断是否有低价优惠
-	 * @return   
-	 * @author maojj
-	 * @date 2017年1月4日
-	 */
-	public boolean isLowFavour() {
-		for (CurrentStoreSkuBo skuBo : this.currentSkuMap.values()) {
-			if (skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0) {
-				return true;
+	
+	public List<String> extraSkuListExcludeCombo(){
+		if(CollectionUtils.isEmpty(this.comboSkuIdList)){
+			return this.skuIdList;
+		}
+		List<String> excludeComboList = new ArrayList<String>();
+		for(String skuId : this.skuIdList){
+			if(!this.comboSkuIdList.contains(skuId)){
+				excludeComboList.add(skuId);
 			}
 		}
-		return false;
-	}
-
-	/**
-	 * @Description: 计算低价优惠金额
-	 * @return   
-	 * @author maojj
-	 * @date 2017年1月4日
-	 */
-	public BigDecimal countLowFavour() {
-		BigDecimal lowFavour = BigDecimal.valueOf(0);
-		for (CurrentStoreSkuBo skuBo : this.currentSkuMap.values()) {
-			if (skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0) {
-				lowFavour = lowFavour.add(skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
-						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity())));
-			}
-		}
-		return lowFavour;
+		return excludeComboList;
 	}
 
 	public Map<String, List<String>> getActivitySkuMap() {
@@ -507,5 +519,17 @@ public class StoreSkuParserBo {
 	
 	public BigDecimal getFare() {
 		return fare;
+	}
+
+	public boolean isLowFavour() {
+		return isLowFavour;
+	}
+	
+	public String getLowActivityId() {
+		return lowActivityId;
+	}
+
+	public BigDecimal getTotalLowFavour() {
+		return totalLowFavour;
 	}
 }

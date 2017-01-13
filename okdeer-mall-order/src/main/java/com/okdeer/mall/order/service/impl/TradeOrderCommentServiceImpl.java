@@ -8,6 +8,7 @@
 
 package com.okdeer.mall.order.service.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,8 +42,14 @@ import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
+import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.common.consts.PointConstants;
+import com.okdeer.mall.member.points.dto.AddPointsParamDto;
+import com.okdeer.mall.member.points.enums.PointsRuleCode;
+import com.okdeer.mall.member.points.service.PointsApi;
 import com.okdeer.mall.order.constant.OrderTraceConstant;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -113,6 +120,9 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 
 	@Autowired
 	private RocketMQTransactionProducer rocketMQTransactionProducer;
+	
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
 
 	/**
 	 * 自动注入订单项
@@ -304,7 +314,20 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 								tradeOrderTraceService.updateRemarkAfterAppraise(tradeTrace);
 							}
 							// End V1.2 added by maojj 2016-11-21
-						} catch (ServiceException e) {
+							
+							// Begin V2.0 added by chenzc 2017-1-10
+							// 评论成功后并且评论字数大于10个字则添加积分
+							List<TradeOrderCommentVo> commentList = (List<TradeOrderCommentVo>)tradeOrderCommentVoList;
+							if (commentList.get(0).getContent().length() >= 10) {
+								AddPointsParamDto addPointsParamDto = new AddPointsParamDto();
+								addPointsParamDto.setPointsRuleCode(PointsRuleCode.GOODS_EVALUATE);
+								addPointsParamDto.setUserId(commentList.get(0).getUserId());
+								addPointsParamDto.setBusinessId(UuidUtils.getUuid());
+								MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDto);
+								rocketMQProducer.sendMessage(anMessage);
+							}
+							// End V2.0 added by chenzc 2017-1-10
+						} catch (Exception e) {
 							logger.error("提交评价异常", e.getMessage());
 							return LocalTransactionState.ROLLBACK_MESSAGE;
 						}

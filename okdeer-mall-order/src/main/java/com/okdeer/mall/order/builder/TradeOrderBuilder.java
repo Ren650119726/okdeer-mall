@@ -154,8 +154,13 @@ public class TradeOrderBuilder {
 		tradeOrder.setSellerId(paramDto.getStoreId());
 		tradeOrder.setType(paramDto.getSkuType());
 		tradeOrder.setPid("0");
-		tradeOrder.setActivityType(paramDto.getActivityType());
-		tradeOrder.setActivityId(paramDto.getActivityId());
+		if(parserBo.isLowFavour()){
+			tradeOrder.setActivityType(ActivityTypeEnum.LOW_PRICE);
+			tradeOrder.setActivityId(parserBo.getLowActivityId());
+		}else{
+			tradeOrder.setActivityType(paramDto.getActivityType());
+			tradeOrder.setActivityId(paramDto.getActivityId());
+		}
 		tradeOrder.setActivityItemId(paramDto.getActivityItemId());
 		tradeOrder.setRemark(paramDto.getRemark());
 		tradeOrder.setInvoice(paramDto.getIsInvoice());
@@ -186,7 +191,7 @@ public class TradeOrderBuilder {
 		// 解析优惠活动
 		parseFavour(tradeOrder, paramDto);
 		// 设置订单实付金额
-		setActualAmount(tradeOrder,parserBo.isLowFavour(),paramDto.getOrderType());
+		setActualAmount(tradeOrder);
 		// 设置店铺总收入
 		setIncome(tradeOrder,parserBo.isLowFavour(),paramDto.getOrderType());
 		// 处理配送费
@@ -329,24 +334,7 @@ public class TradeOrderBuilder {
 	 */
 	public void parseFavour(TradeOrder tradeOrder,PlaceOrderParamDto paramDto) throws ServiceException{
 		// 优惠金额
-		BigDecimal favourAmount = new BigDecimal(0.0);
-		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
-
-		if(paramDto.getOrderType() == PlaceOrderTypeEnum.SECKILL_ORDER){
-			// 如果是秒杀订单。优惠是活动价格-商品原价
-			ActivitySeckill seckillInfo = (ActivitySeckill)paramDto.get("seckillInfo");
-			favourAmount = parserBo.getCurrentStoreSkuBo(seckillInfo.getStoreSkuId()).getOnlinePrice().subtract(seckillInfo.getSeckillPrice());
-			// 设置订单优惠金额
-			tradeOrder.setPreferentialPrice(favourAmount);
-			return;
-		}
-		// 是否有低价优惠
-		boolean isLowFavour = parserBo.isLowFavour();
-		if(isLowFavour){
-			favourAmount = parserBo.countLowFavour();
-		}else{
-			favourAmount = getFavourAmount(paramDto, tradeOrder.getTotalAmount());	
-		}
+		BigDecimal favourAmount = getFavourAmount(paramDto, tradeOrder.getTotalAmount());	
 		// 设置订单优惠金额
 		tradeOrder.setPreferentialPrice(favourAmount);
 	}
@@ -355,7 +343,12 @@ public class TradeOrderBuilder {
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
 		BigDecimal favourAmount = new BigDecimal(0.0);
 		if(parserBo.isLowFavour()){
-			return parserBo.countLowFavour();
+			return parserBo.getTotalLowFavour();
+		}else if(paramDto.getOrderType() == PlaceOrderTypeEnum.SECKILL_ORDER){
+			// 如果是秒杀订单。优惠是活动价格-商品原价
+			ActivitySeckill seckillInfo = (ActivitySeckill)paramDto.get("seckillInfo");
+			favourAmount = parserBo.getCurrentStoreSkuBo(seckillInfo.getStoreSkuId()).getOnlinePrice().subtract(seckillInfo.getSeckillPrice());
+			return favourAmount;
 		}
 		// 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
 		ActivityTypeEnum activityType = paramDto.getActivityType();
@@ -426,18 +419,7 @@ public class TradeOrderBuilder {
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private void setActualAmount(TradeOrder tradeOrder,boolean isLowFavour,PlaceOrderTypeEnum orderType) {
-		if(orderType == PlaceOrderTypeEnum.SECKILL_ORDER){
-			// 如果是秒杀
-			tradeOrder.setActualAmount(tradeOrder.getTotalAmount().subtract(tradeOrder.getPreferentialPrice()));
-			return;
-		}
-		if(isLowFavour){
-			// 如果有低价优惠
-			tradeOrder.setActualAmount(tradeOrder.getTotalAmount());
-			tradeOrder.setTotalAmount(tradeOrder.getActualAmount().add(tradeOrder.getPreferentialPrice()));
-			return;
-		}
+	private void setActualAmount(TradeOrder tradeOrder) {
 		BigDecimal totalAmount = tradeOrder.getTotalAmount();
 		BigDecimal favourAmount = tradeOrder.getPreferentialPrice();
 		// 如果总金额<优惠金额，则实付为0，优惠为订单总金额，否则实付金额为总金额-优惠金额，优惠为优惠金额
@@ -461,18 +443,12 @@ public class TradeOrderBuilder {
 	 */
 	private void setIncome(TradeOrder tradeOrder,boolean isLowFavour,PlaceOrderTypeEnum orderType) {
 		
-		if(orderType == PlaceOrderTypeEnum.SECKILL_ORDER){
-			// 如果是秒杀
+		if(orderType == PlaceOrderTypeEnum.SECKILL_ORDER || isLowFavour){
+			// 如果是秒杀 或者是低价优惠
 			tradeOrder.setIncome(tradeOrder.getActualAmount());
 			return;
 		}
 
-		if(isLowFavour){
-			// 有低价优惠
-			tradeOrder.setIncome(tradeOrder.getActualAmount());
-			return;
-		}
-		
 		ActivityTypeEnum activityType = tradeOrder.getActivityType();
 		
 		switch (activityType) {
@@ -601,7 +577,7 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setMainPicPrl(skuBo.getMainPicUrl());
 			tradeOrderItem.setSpuType(skuBo.getSpuType());
 			tradeOrderItem.setUnitPrice(skuBo.getOnlinePrice());
-			tradeOrderItem.setQuantity(skuBo.getQuantity() + skuBo.getSkuActQuantity());
+			tradeOrderItem.setQuantity(skuBo.getQuantity());
 			tradeOrderItem.setActivityPrice(skuBo.getActPrice());
 			tradeOrderItem.setActivityQuantity(skuBo.getSkuActQuantity());
 			tradeOrderItem.setStatus(OrderItemStatusEnum.NO_REFUND);
@@ -620,6 +596,7 @@ public class TradeOrderBuilder {
 			
 			tradeOrderItem.setBarCode(skuBo.getBarCode());
 			tradeOrderItem.setStyleCode(skuBo.getStyleCode());
+			tradeOrderItem.setUnit(skuBo.getUnit());
 
 			// 订单项总金额
 			BigDecimal totalAmountOfItem = skuBo.getTotalAmount();
@@ -639,6 +616,9 @@ public class TradeOrderBuilder {
 						favourItem = totalAmountOfItem;
 					}
 				}
+			}else if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0){
+				favourItem = skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
+						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity()));
 			}
 			// 设置优惠金额
 			tradeOrderItem.setPreferentialPrice(favourItem);
@@ -665,8 +645,12 @@ public class TradeOrderBuilder {
 	}
 	
 	public void setOrderItemIncome(TradeOrderItem tradeOrderItem, TradeOrder tradeOrder){
+		if(tradeOrderItem.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+			// 如果是低价优惠
+			tradeOrderItem.setIncome(tradeOrderItem.getActualAmount());
+			return;
+		}
 		ActivityTypeEnum activityType = tradeOrder.getActivityType();
-
 		switch (activityType) {
 			case NO_ACTIVITY:
 			case VONCHER:
@@ -681,8 +665,6 @@ public class TradeOrderBuilder {
 				}
 				break;
 			case FULL_DISCOUNT_ACTIVITIES:
-				tradeOrderItem.setIncome(tradeOrderItem.getActualAmount());
-				break;
 			case SECKILL_ACTIVITY:
 				tradeOrderItem.setIncome(tradeOrderItem.getActualAmount());
 				break;

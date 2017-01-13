@@ -7,6 +7,7 @@ import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
@@ -34,6 +35,7 @@ import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * ClassName: PlaceSeckillOrderServiceImpl 
@@ -89,6 +91,7 @@ public class PlaceSeckillOrderServiceImpl implements RequestHandler<PlaceOrderPa
 	private TradeOrderBuilder tradeOrderBuilder;
 
 	@Override
+	@Transactional(rollbackFor=Exception.class)
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
 		String rpcId = null;
 		try {
@@ -114,7 +117,7 @@ public class PlaceSeckillOrderServiceImpl implements RequestHandler<PlaceOrderPa
 			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, tradeOrder.getId());
 			respData.setOrderId(tradeOrder.getId());
 			respData.setOrderNo(tradeOrder.getOrderNo());
-			respData.setOrderPrice(tradeOrder.getActualAmount());
+			respData.setOrderPrice(ConvertUtil.format(tradeOrder.getActualAmount()));
 			respData.setTradeNum(tradeOrder.getTradeNum());
 			respData.setLimitTime(1800);
 
@@ -143,6 +146,9 @@ public class PlaceSeckillOrderServiceImpl implements RequestHandler<PlaceOrderPa
 	}
 
 	public void updateLastUseAddr(MemberConsigneeAddress userUseAddr) {
+		if(userUseAddr == null){
+			return;
+		}
 		userUseAddr.setUseTime(DateUtils.getSysDate());
 		memberConsigneeAddressMapper.updateByPrimaryKeySelective(userUseAddr);
 	}

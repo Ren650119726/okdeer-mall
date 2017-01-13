@@ -241,10 +241,15 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		adjustDetailList.add(adjustDetailVo);
 		stockAdjustVo.setAdjustDetailList(adjustDetailList);
 		stockAdjustVo.setStockOperateEnum(soe);
-
-		log.info("特惠活动时同步erp库存开始:");
-		stockManagerJxcServiceApi.updateStock(stockAdjustVo);
-		log.info("特惠活动时同步erp完成:");
+		//modify by mengsj 如果是组合商品，则不需要同步进销存的库存 ，修改商城库存即可
+		if(entity.getSpuTypeEnum() == SpuTypeEnum.assembleSpu){
+			adjustDetailVo.setNum(goods.getSaleStock());
+			stockManagerServiceApi.updateStock(stockAdjustVo);
+		}else{
+			log.info("特惠活动时同步erp库存开始:");
+			stockManagerJxcServiceApi.updateStock(stockAdjustVo);
+			log.info("特惠活动时同步erp完成:");
+		}
 	}
 
 	@Transactional(rollbackFor = Exception.class)
@@ -383,7 +388,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			params.put("ids", ids);
 			params.put("status", status);
 			//modify by mengsj 如果是低价抢购活动，关闭时设置活动结束时间为当前日期
-			if(activityType == ActivityTypeEnum.LOW_PRICE.ordinal() && status == ActivitySaleStatus.closed.ordinal()){
+			if(activityType != null && activityType == ActivityTypeEnum.LOW_PRICE.ordinal() && status == ActivitySaleStatus.closed.ordinal()){
 				params.put("endTime", new Date());
 			}
 			activitySaleMapper.updateBatchStatus(params);
@@ -433,7 +438,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 						}
 
 						// 把所有店铺商品online改成下架
-						if (goodsStoreSkuIds.size() > 0) {
+						if (goodsStoreSkuIds.size() > 0 && activityType != null && activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal() ) {
 							Date date = new Date();
 							goodsStoreSkuServiceApi.updateBatchOnline(goodsStoreSkuIds, BSSC.UNSHELVE.ordinal(), date);
 						}

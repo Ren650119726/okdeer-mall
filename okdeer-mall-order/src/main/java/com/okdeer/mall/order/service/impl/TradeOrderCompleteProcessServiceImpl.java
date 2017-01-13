@@ -124,6 +124,7 @@ public class TradeOrderCompleteProcessServiceImpl
 	/** * pos支付方式:微信 */
 	private static final String WECHATPAY = "微信";
 	
+	@Resource
 	private StockAdjustVoBuilder stockAdjustVoBuilder;
 
 	/**
@@ -209,7 +210,7 @@ public class TradeOrderCompleteProcessServiceImpl
         logger.info("==============================orderInfo:", orderInfo.toString());
 		// 发送消息
 		this.send(OrderMessageConstant.TOPIC_ORDER_COMPLETE, OrderMessageConstant.TAG_ORDER_COMPLETE,
-				orderInfo.toString());
+				orderInfo.toString(),tradeOrder.getId());
 
 	}
 
@@ -251,7 +252,7 @@ public class TradeOrderCompleteProcessServiceImpl
 		orderRefundsInfo.put("orderRefundsItemList", orderRefundsItemList);
 		// 发送消息
 		this.send(OrderMessageConstant.TOPIC_REFUND_ORDER_COMPLETE, OrderMessageConstant.TAG_REFUND_ORDER_COMPLETE,
-				orderRefundsInfo.toString());
+				orderRefundsInfo.toString(),orderRefunds.getId());
 	}
 
 	/**
@@ -290,14 +291,14 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 		//Begin 排除平台优惠 update by tangy  2016-11-4
 		// 平台优惠金额
+		// Begin modified by maojj 2017-01-09
 		BigDecimal platDiscountAmount = BigDecimal.ZERO;
-		if (order.getTotalAmount().compareTo(order.getIncome()) != 0 
-				&& !ActivityTypeEnum.VONCHER.equals(order.getActivityType())) {
-			//End added by tangy
-			storePreferentialPrice = order.getPreferentialPrice();
-		} else if (ActivityTypeEnum.VONCHER.equals(order.getActivityType())) {
+		if (order.getActualAmount().compareTo(order.getIncome()) != 0 ) {
 			platDiscountAmount = order.getPreferentialPrice();
+		} else {
+			storePreferentialPrice = order.getPreferentialPrice();
 		}
+		// End modified by maojj 2017-01-09
 		
 		// 平台优惠金额
 		orderInfo.put("platDiscountAmount", platDiscountAmount);
@@ -371,11 +372,10 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 店铺优惠金额
 		BigDecimal platDiscountAmount = BigDecimal.ZERO;
 		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
-		if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0) {
-			storePreferentialPrice = orderRefunds.getTotalPreferentialPrice();
-		} else if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) == 0
-				&& orderRefunds.getTotalPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+		if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0 ) {
 			platDiscountAmount = orderRefunds.getTotalPreferentialPrice();
+		} else {
+			storePreferentialPrice = orderRefunds.getTotalPreferentialPrice();
 		}
 		
 		// 平台优惠金额
@@ -436,11 +436,10 @@ public class TradeOrderCompleteProcessServiceImpl
 			BigDecimal platDiscountAmount = BigDecimal.ZERO;
 			// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 			//Begin 排除平台优惠 update by tangy  2016-10-28
-			if (order.getTotalAmount().compareTo(order.getIncome()) != 0 
-					&& !ActivityTypeEnum.VONCHER.equals(orderItem.getActivityType())) {
-				storePreferentialPrice = orderItem.getPreferentialPrice();
-			} else if (ActivityTypeEnum.VONCHER.equals(orderItem.getActivityType())) {
+			if (order.getActualAmount().compareTo(order.getIncome()) != 0 ) {
 				platDiscountAmount = orderItem.getPreferentialPrice();
+			} else {
+				storePreferentialPrice = orderItem.getPreferentialPrice();
 			}
 			item.put("platDiscountAmount", platDiscountAmount);
 			// 实际单价=原单价减去店铺优惠
@@ -626,11 +625,12 @@ public class TradeOrderCompleteProcessServiceImpl
 	 * @author zengj
 	 * @date 2016年9月6日
 	 */
-	private void send(String topic, String tag, String msg) throws Exception {
+	private void send(String topic, String tag, String msg,String key) throws Exception {
 		if (logger.isInfoEnabled()) {
 			logger.info(LogConstants.ORDER_OR_REFUNDS_COMPLETE_MSG_PARAM, tag, msg);
 		}
-		Message message = new Message(topic, tag, msg.getBytes(Charsets.UTF_8));
+		Message message = new Message(topic, tag, key,msg.getBytes(Charsets.UTF_8));
+		message.setKeys(key);
 		SendResult sendResult = rocketMqProducer.send(message);
 		if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
 			throw new StockException("写mq数据失败");
@@ -655,9 +655,10 @@ public class TradeOrderCompleteProcessServiceImpl
 					splitItem.setId(UuidUtils.getUuid());
 					splitItem.setOrderId(item.getOrderId());
 					splitItem.setActivityType(item.getActivityType());
-					splitItem.setPreferentialPrice(comboDto.getOnlinePrice().subtract(comboDto.getUnitPrice()));
-					splitItem.setUnitPrice(comboDto.getOnlinePrice());
+					splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
+					splitItem.setUnitPrice(comboDto.getUnitPrice());
 					splitItem.setQuantity(comboDto.getQuantity()*item.getQuantity());
+					splitItem.setStoreSkuId(comboDto.getStoreSkuId());
 					splitItem.setCreateTime(item.getCreateTime());
 					splitItemList.add(splitItem);
 				}
@@ -672,6 +673,7 @@ public class TradeOrderCompleteProcessServiceImpl
 				splitItem.setUnitPrice(item.getUnitPrice());
 				splitItem.setQuantity(item.getActivityQuantity());
 				splitItem.setCreateTime(item.getCreateTime());
+				splitItem.setStoreSkuId(item.getStoreSkuId());
 				splitItemList.add(splitItem);
 				
 				splitItem = new TradeOrderItem();
@@ -682,6 +684,7 @@ public class TradeOrderCompleteProcessServiceImpl
 				splitItem.setUnitPrice(item.getUnitPrice());
 				splitItem.setQuantity(item.getQuantity() - item.getActivityQuantity());
 				splitItem.setCreateTime(item.getCreateTime());
+				splitItem.setStoreSkuId(item.getStoreSkuId());
 				splitItemList.add(splitItem);
 				itemIt.remove();
 			}
