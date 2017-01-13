@@ -79,6 +79,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		AppStoreDto appStoreDto = AppAdapter.convert(storeInfo);
 		if (parserBo != null) {
 			resp.getData().setOrderFare(ConvertUtil.format(parserBo.getFare()));
+			resp.getData().setFavour(ConvertUtil.format(parserBo.getTotalLowFavour()));
 		}
 		resp.getData().setStoreInfo(appStoreDto);
 		if(req.getData().getOrderType() != PlaceOrderTypeEnum.CVS_ORDER){
@@ -103,7 +104,6 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			resp.getData().setSkuList(AppAdapter.convert(parserBo));
 		}
 		resp.getData().setCurrentTime(System.currentTimeMillis());
-
 	}
 
 	@Override
