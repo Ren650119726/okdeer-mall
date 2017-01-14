@@ -1,6 +1,5 @@
 package com.okdeer.mall.order.api;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,9 +107,8 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		}
 		if (resp.isSuccess() && req.getData().getOrderType() == PlaceOrderTypeEnum.CVS_ORDER
 				&& StringUtils.isEmpty(resp.getMessage())
-				&& parserBo != null && parserBo.isExistLowBuy() 
-				&& parserBo.getTotalLowFavour().compareTo(BigDecimal.valueOf(0.0))==0){
-			// 如果用户购买了低价商品，且没有优惠，且没有其他提示，则说明当前低价活动已关闭，给出响应的提示语
+				&& parserBo != null && parserBo.isCloseLow()){
+			// 低价活动已关闭，给出响应的提示语
 			resp.setMessage(ResultCodeEnum.LOW_IS_CLOSED.getDesc());
 		}
 		resp.getData().setCurrentTime(System.currentTimeMillis());

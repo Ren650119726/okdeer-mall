@@ -128,10 +128,10 @@ public class StoreSkuParserBo {
 	private String lowActivityId;
 	
 	/**
-	 * 购买请求中是否存在低价购买信息
+	 * 低价活动已关闭
 	 */
-	private boolean isExistLowBuy;
-
+	private boolean isCloseLow;
+	
 	public StoreSkuParserBo(List<GoodsStoreSku> currentSkuList) {
 		this.currentSkuList = currentSkuList;
 	}
@@ -283,8 +283,9 @@ public class StoreSkuParserBo {
 			this.totalItemAmount = totalItemAmount
 					.add(skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getQuantity())));
 			this.totalQuantity += skuBo.getQuantity();
-			if(item.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal() && item.getSkuActQuantity()>0){
-				this.isExistLowBuy = true;
+			if(item.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal() && item.getSkuActQuantity()>0 && skuBo.getActivityType()==ActivityTypeEnum.NO_ACTIVITY.ordinal()){
+				// 如果购买请求中，存在商品为低价商品类型，但是经过后台解析之后，该商品活动类型为未参加活动商品，则标识低价活动当前已经结束。
+				this.isCloseLow = true;
 			}
 		}
 	}
@@ -541,7 +542,8 @@ public class StoreSkuParserBo {
 		return totalLowFavour;
 	}
 
-	public boolean isExistLowBuy() {
-		return isExistLowBuy;
+	public boolean isCloseLow() {
+		return isCloseLow;
 	}
+
 }
