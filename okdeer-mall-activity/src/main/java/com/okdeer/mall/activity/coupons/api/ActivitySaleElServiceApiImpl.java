@@ -50,6 +50,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 		if (activitySale.getType() == LOW_PRICE) {
 			List<String> list = asgList.stream().map(e -> e.getStoreSkuId()).collect(Collectors.toList());
 			ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
+            paramDto.setActivityId(activitySale.getId());
 			paramDto.setSkuIds(list);
 			paramDto.setUpdateStatus(String.valueOf(0));
 			logger.info("低价活动创建信息：paramDto{}", JSONObject.fromObject(paramDto).toString());
@@ -72,6 +73,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 			List<ActivitySaleGoodsBo> goodsBoList = activitySaleGoodsServiceApi.findSaleGoodsByParams(param);
 			if (CollectionUtils.isNotEmpty(goodsBoList)) {
 				ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
+                paramDto.setActivityId(id);
 				paramDto.setUpdateStatus(String.valueOf(1));
 				List<String> skuIds = goodsBoList.stream().map(m -> m.getStoreSkuId()).collect(Collectors.toList());
 				paramDto.setSkuIds(skuIds);
