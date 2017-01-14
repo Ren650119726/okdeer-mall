@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.constraints.Null;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -432,8 +434,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 						List<String> goodsSkuIds = new ArrayList<String>();
 
 						for (ActivitySaleGoods asg : asgList) {
-							GoodsStoreSku sku = goodsStoreSkuServiceApi.getById(asg.getGoodsSkuId());
-							if(sku.getSpuTypeEnum() == SpuTypeEnum.assembleSpu){
+							GoodsStoreSku sku = goodsStoreSkuServiceApi.getById(asg.getStoreSkuId());
+							if(sku != null && sku.getSpuTypeEnum() == SpuTypeEnum.assembleSpu){
 								goodsSkuIds.add(asg.getStoreSkuId());
 							}
 							goodsStoreSkuIds.add(asg.getStoreSkuId());
