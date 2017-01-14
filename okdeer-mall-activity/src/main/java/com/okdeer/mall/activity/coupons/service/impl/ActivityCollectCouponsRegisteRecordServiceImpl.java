@@ -1,5 +1,6 @@
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.esotericsoftware.minlog.Log;
 import com.github.pagehelper.PageHelper;
@@ -21,8 +23,11 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.ca.api.buyeruser.entity.SysBuyerUserDto;
 import com.okdeer.common.consts.LogConstants;
+import com.okdeer.common.consts.PointConstants;
 import com.okdeer.common.consts.StaticConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo;
@@ -38,6 +43,8 @@ import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsRegisteRec
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.vo.InvitationRegisterRecordVo;
 import com.okdeer.mall.activity.coupons.vo.InvitationRegisterVo;
+import com.okdeer.mall.member.points.dto.AddPointsParamDto;
+import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.system.service.SysBuyerUserService;
 
 /**
@@ -87,6 +94,12 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 	 */
 	@Autowired
 	private ActivityCouponsRecordService activityCouponsRecordService;
+	
+	/**
+	 * mq
+	 */
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
 	
 	/**
 	 * 用户信息图片域名
@@ -307,6 +320,22 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		}
 		// 用户参与注册送代金券活动
 		getRegisterCoupons(inviteesId);
+		
+		// 邀请人添加成功邀请好友积分
+		AddPointsParamDto addPointsParamDto = new AddPointsParamDto();
+		addPointsParamDto.setPointsRuleCode(PointsRuleCode.INVITE_REGISTER);
+		addPointsParamDto.setUserId(userId);
+		addPointsParamDto.setBusinessId(UuidUtils.getUuid());
+		MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDto);
+		rocketMQProducer.sendMessage(anMessage);
+		
+		// 被邀请人添加注册积分
+		AddPointsParamDto addPointsParamDtoNew = new AddPointsParamDto();
+		addPointsParamDtoNew.setPointsRuleCode(PointsRuleCode.REGISTER);
+		addPointsParamDtoNew.setUserId(inviteesId);
+		addPointsParamDtoNew.setBusinessId(UuidUtils.getUuid());
+		MQMessage anMessageNew = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDtoNew);
+		rocketMQProducer.sendMessage(anMessageNew);
 		
 		return inviteesId;
 	}
