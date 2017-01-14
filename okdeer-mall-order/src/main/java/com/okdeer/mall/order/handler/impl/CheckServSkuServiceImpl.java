@@ -109,9 +109,9 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 			if (currentSku.getOnline() == BSSC.UNSHELVE) {
 				// 商品下架
 				if (paramDto.getSkuType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
-					checkResult = ResultCodeEnum.SERV_GOODS_EXP;
-				} else {
 					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				} else {
+					checkResult = ResultCodeEnum.SERV_GOODS_EXP;
 				}
 			} else if (paramDto.getSkuType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 				// 判断到店消费商品是否已过有效期
@@ -120,6 +120,8 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 					// 服务商品已过期，不能预约
 					checkResult = ResultCodeEnum.SERV_GOODS_EXP;
 				}
+			} else if(!currentSku.getUpdateTime().equals(item.getUpdateTime())){
+				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 			}
 
 			if (checkResult != ResultCodeEnum.SUCCESS) {
