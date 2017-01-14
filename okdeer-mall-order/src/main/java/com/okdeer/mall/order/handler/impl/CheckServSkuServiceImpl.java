@@ -120,7 +120,8 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 					// 服务商品已过期，不能预约
 					checkResult = ResultCodeEnum.SERV_GOODS_EXP;
 				}
-			} else if(!currentSku.getUpdateTime().equals(item.getUpdateTime())){
+			} 
+ 			if(checkResult == ResultCodeEnum.SUCCESS && !currentSku.getUpdateTime().equals(item.getUpdateTime())){
 				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 			}
 
