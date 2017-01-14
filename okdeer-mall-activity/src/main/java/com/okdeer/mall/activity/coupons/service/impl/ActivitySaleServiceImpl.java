@@ -427,8 +427,15 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 						saleGoodsList.addAll(asgList);
 						// 所有店铺商品id
 						List<String> goodsStoreSkuIds = new ArrayList<String>();
+						
+						//组合商品skuid列表
+						List<String> goodsSkuIds = new ArrayList<String>();
 
 						for (ActivitySaleGoods asg : asgList) {
+							GoodsStoreSku sku = goodsStoreSkuServiceApi.getById(asg.getGoodsSkuId());
+							if(sku.getSpuTypeEnum() == SpuTypeEnum.assembleSpu){
+								goodsSkuIds.add(asg.getStoreSkuId());
+							}
 							goodsStoreSkuIds.add(asg.getStoreSkuId());
 
 							// // 手动关闭或者定时器结束都要把未卖完的数量释放库存
@@ -437,10 +444,15 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 							// StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
 						}
 
-						// 把所有店铺商品online改成下架
-						if (goodsStoreSkuIds.size() > 0 && activityType != null && activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal() ) {
+						// 如果是特惠活动，把所有店铺商品online改成下架
+						if (goodsStoreSkuIds.size() > 0 && activityType != null && activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()) {
 							Date date = new Date();
 							goodsStoreSkuServiceApi.updateBatchOnline(goodsStoreSkuIds, BSSC.UNSHELVE.ordinal(), date);
+						}
+						if(goodsSkuIds.size() > 0 && activityType != null && activityType == ActivityTypeEnum.LOW_PRICE.ordinal()){
+							//如果是低价抢购活动并且商品是组合商品，则把关联的组合商品下架
+							Date date = new Date();
+							goodsStoreSkuServiceApi.updateBatchOnline(goodsSkuIds, BSSC.UNSHELVE.ordinal(), date);
 						}
 
 					}
