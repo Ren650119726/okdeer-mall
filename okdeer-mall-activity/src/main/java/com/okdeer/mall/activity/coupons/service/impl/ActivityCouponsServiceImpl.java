@@ -403,8 +403,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		}
 		activityCouponsMapper.deleteByIds(id);
 		
-		//如果是异业合作代金券,要把关联的兑换码都删除 (就算不是这种类型,调用删除方法也不影响)
-		activityCouponsThirdCodeMapper.deleteByCouponsId(id);
+		//如果是异业合作代金券,要把关联的兑换码都删除 (异业的现在2.0.0不需要)
+		//activityCouponsThirdCodeMapper.deleteByCouponsId(id);
 	}
 
 	@Override
