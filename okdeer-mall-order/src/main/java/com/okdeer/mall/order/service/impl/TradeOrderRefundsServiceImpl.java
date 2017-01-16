@@ -67,7 +67,6 @@ import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
-import com.okdeer.mall.activity.group.service.ActivityGroupRecordService;
 import com.okdeer.mall.common.enums.IsRead;
 import com.okdeer.mall.common.enums.MsgType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
@@ -283,12 +282,6 @@ public class TradeOrderRefundsServiceImpl
 	 */
 	@Autowired
 	private ActivitySaleRecordService activitySaleRecordService;
-
-	/**
-	 * 特惠活动Mapper
-	 */
-	@Autowired
-	private ActivityGroupRecordService activityGroupRecordService;
 
 	@Autowired
 	private TradeOrderTimer tradeOrderTimer;
@@ -591,9 +584,6 @@ public class TradeOrderRefundsServiceImpl
 
 			// 回收库存
 			stockOperateService.recycleStockByRefund(order, orderRefunds, rpcIdList);
-
-			// 订单完成后同步到商业管理系统
-			tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
 
 			// 发送短信
 			this.tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
@@ -1830,5 +1820,15 @@ public class TradeOrderRefundsServiceImpl
 		} else {
 			logger.info("扣减积分消息发送失败，topic：{}", PointConstants.REFUND_POINT_TOPIC);
 		}
+	}
+
+	@Override
+	public void refundSuccess(TradeOrderRefunds orderRefunds) throws Exception {
+		this.updateRefunds(orderRefunds);
+		tradeOrderRefundsLogMapper
+				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
+						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
+		// 订单完成后同步到商业管理系统
+		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
 	}
 }
