@@ -36,6 +36,8 @@ import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.OrderOptTypeEnum;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 
 /**
@@ -226,6 +228,10 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 	}
 	
 	private void calculateFare(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo){
+		if(paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT && paramDto.getPickType() == PickUpTypeEnum.TO_STORE_PICKUP){
+			// 如果是提交订单，且是到店自提，不计算运费
+			return;
+		}
 		StoreInfoExt storeExt = ((StoreInfo)paramDto.get("storeInfo")).getStoreInfoExt();
 		// 店铺起送价
 		BigDecimal startPrice = storeExt.getStartPrice() == null ? new BigDecimal(0.0) : storeExt.getStartPrice();
