@@ -25,6 +25,7 @@ import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 
 /**
@@ -134,6 +135,11 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 
 	public ResultCodeEnum checkFare(PlaceOrderParamDto paramDto, StoreSkuParserBo parserBo) {
 		ResultCodeEnum checkResult = ResultCodeEnum.SUCCESS;
+		// 秒杀订单不收取运费
+		if(paramDto.getOrderType() == PlaceOrderTypeEnum.SECKILL_ORDER){
+			return checkResult;
+		}
+		
 		if (paramDto.getSkuType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
 			// 商品总金额
 			BigDecimal totalAmount = parserBo.getTotalItemAmount();
