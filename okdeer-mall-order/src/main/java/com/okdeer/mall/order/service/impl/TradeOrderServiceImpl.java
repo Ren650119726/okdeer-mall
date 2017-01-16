@@ -1486,7 +1486,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					stockManagerJxcService.updateStock(stockAdjustVo);
 					// 如果有组合商品，需要修改商城的组合商品库存
 					rpcId = UuidUtils.getUuid();
-					stockAdjustVo = stockAdjustVoBuilder.buildComboStock(tradeOrder, rpcId, StockOperateEnum.PLACE_ORDER_COMPLETE);
+					stockAdjustVo = stockAdjustVoBuilder.buildComboStock(tradeOrder, rpcId, StockOperateEnum.SEND_OUT_GOODS);
 					if(stockAdjustVo != null){
 						serviceStockManagerService.updateStock(stockAdjustVo);
 					}

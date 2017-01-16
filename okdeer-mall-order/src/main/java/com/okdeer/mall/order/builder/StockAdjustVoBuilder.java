@@ -71,7 +71,7 @@ public class StockAdjustVoBuilder {
 		}
 		StockAdjustVo stockAdjustVo = new StockAdjustVo();
 		stockAdjustVo.setRpcId(rpcId);
-		stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_ORDER_COMPLETE);
+		stockAdjustVo.setStockOperateEnum(operateType);
 		loadTradeOrder(stockAdjustVo,tradeOrder);
 		stockAdjustVo.setAdjustDetailList(adjustDetailList);
 		return stockAdjustVo;
