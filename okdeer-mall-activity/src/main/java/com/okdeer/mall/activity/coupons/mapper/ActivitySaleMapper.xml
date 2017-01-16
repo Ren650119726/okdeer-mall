@@ -307,6 +307,9 @@
 		<if test="storeId != null and storeId != ''">
     		and store_id = #{storeId}
     	</if>
+    	<if test="actType != null">
+			and type = #{actType}
+		</if>
     	and status = 1
     </select>
 
