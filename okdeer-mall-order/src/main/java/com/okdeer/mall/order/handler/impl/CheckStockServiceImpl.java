@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.quartz.impl.matchers.StringMatcher.StringOperatorName;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -176,7 +175,7 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 					storeSkuBo.setSkuActQuantity(storeSkuBo.getLocked());
 					resp.setMessage(ResultCodeEnum.LOW_BUY_IS_OUT.getDesc());
 				}
-				if(storeSkuBo.getTradeMax() != null && storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity() > storeSkuBo.getTradeMax().intValue()){
+				if(storeSkuBo.getTradeMax() != null && storeSkuBo.getTradeMax().intValue() > 0 && storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity() > storeSkuBo.getTradeMax().intValue()){
 					// 如果原价商品限购，检查原价商品购买数量是否超过限购。
 					resp.setCode(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getCode());
 					resp.setMessage(String.format(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getDesc(), storeSkuBo.getName()));
