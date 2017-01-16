@@ -116,9 +116,9 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 				// 商品下架
 				if (paramDto.getSkuType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
 					if(buyKindSize > 1){
-						checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
+						checkResult = ResultCodeEnum.PART_SERV_GOODS_IS_OFFLINE;
 					}else{
-						checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+						checkResult = ResultCodeEnum.SERV_GOODS_IS_OFFLINE;
 					}
 				} else {
 					if(buyKindSize > 1){
