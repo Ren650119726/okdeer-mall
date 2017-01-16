@@ -1,13 +1,9 @@
 package com.okdeer.mall.order.handler.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -111,7 +107,7 @@ public class ServActivityCheckServiceImpl implements RequestHandler<ServiceOrder
 				int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getId());
 				if (count == Constant.ZERO || count != spuCategoryIds.size()) {
 					// 购买的商品分类超出代金券限购的分类。则订单提交失败
-					resp.setResult(ResultCodeEnum.FAVOUR_NOT_SUPPORT);
+					resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
 					req.setComplete(true);
 					return;
 				}

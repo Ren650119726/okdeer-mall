@@ -63,7 +63,11 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 		List<GoodsStoreSku> currentSkuList = findCurrentSkuList(skuIdList);
 		// 判断商品列表与请求清单是否一致
 		if (currentSkuList.size() != skuIdList.size()) {
-			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
+			if (paramDto.getSkuList().size() > 1) {
+				resp.setResult(ResultCodeEnum.PART_GOODS_IS_CHANGE);
+			} else {
+				resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
+			}
 			return;
 		}
 		StoreSkuParserBo parserBo = new StoreSkuParserBo(currentSkuList);
@@ -103,6 +107,7 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 
 	public ResultCodeEnum isChange(PlaceOrderParamDto paramDto, StoreSkuParserBo parserBo) {
 		ResultCodeEnum checkResult = ResultCodeEnum.SUCCESS;
+		int buyKindSize = paramDto.getSkuList().size();
 		// 检查商品信息是否发生变化
 		for (PlaceOrderItemDto item : paramDto.getSkuList()) {
 			CurrentStoreSkuBo currentSku = parserBo.getCurrentStoreSkuBo(item.getStoreSkuId());
@@ -110,20 +115,36 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 			if (currentSku.getOnline() == BSSC.UNSHELVE) {
 				// 商品下架
 				if (paramDto.getSkuType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
-					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+					if(buyKindSize > 1){
+						checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
+					}else{
+						checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+					}
 				} else {
-					checkResult = ResultCodeEnum.SERV_GOODS_EXP;
+					if(buyKindSize > 1){
+						checkResult = ResultCodeEnum.PART_SERV_GOODS_EXP;
+					}else{
+						checkResult = ResultCodeEnum.SERV_GOODS_EXP;
+					}
 				}
 			} else if (paramDto.getSkuType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 				// 判断到店消费商品是否已过有效期
 				Date endTime = currentSku.getEndTime();
 				if (endTime == null || new Date().after(endTime)) {
 					// 服务商品已过期，不能预约
-					checkResult = ResultCodeEnum.SERV_GOODS_EXP;
+					if(buyKindSize > 1){
+						checkResult = ResultCodeEnum.PART_SERV_GOODS_EXP;
+					}else{
+						checkResult = ResultCodeEnum.SERV_GOODS_EXP;
+					}
 				}
 			} 
  			if(checkResult == ResultCodeEnum.SUCCESS && !currentSku.getUpdateTime().equals(item.getUpdateTime())){
-				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+ 				if(buyKindSize > 1){
+					checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
+				}else{
+					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				}
 			}
 
 			if (checkResult != ResultCodeEnum.SUCCESS) {
@@ -152,9 +173,9 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 					// 订单总价小与起送价
 					if (paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT) {
 						// 提交订单
-						checkResult = ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH;
-					} else {
 						checkResult = ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH_SUBMIT;
+					} else {
+						checkResult = ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH;
 					}
 				}
 			}
