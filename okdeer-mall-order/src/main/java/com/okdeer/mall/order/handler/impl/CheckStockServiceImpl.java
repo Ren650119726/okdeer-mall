@@ -56,13 +56,11 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 					activitySkuMap.keySet());
 			parserBo.loadBuyRecordList(buyRecordList);
 			// 检查是否超出限款
-			if (isOutOfLimitKind(parserBo)) {
-				resp.setResult(ResultCodeEnum.KIND_IS_OUT);
+			if (isOutOfLimitKind(parserBo,resp)) {
 				return;
 			}
 			// 检查是否超出限购
 			if (isOutOfLimitBuy(parserBo, paramDto.getSkuList(),resp)) {
-				resp.setResult(ResultCodeEnum.BUY_IS_OUT);
 				return;
 			}
 		}
@@ -81,7 +79,7 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 * @author maojj
 	 * @date 2017年1月4日
 	 */
-	public boolean isOutOfLimitKind(StoreSkuParserBo parserBo) {
+	public boolean isOutOfLimitKind(StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp) {
 		boolean isOutOfLimitKind = false;
 		// 活动商品映射信息
 		List<ActivitySale> activityList = parserBo.getActivityList();
@@ -94,8 +92,17 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				// 活动有限款限制
 				int totalAdd = parserBo.countAddKindNum(sale.getId());
 				if (totalAdd > limit - parserBo.getBuyKind(sale.getId())) {
-					// 购买限款数大于特惠活动限款数量
+					if(sale.getType() == ActivityTypeEnum.LOW_PRICE){
+						// 购买限款数大于特惠活动限款数量
+						resp.setCode(ResultCodeEnum.KIND_IS_OUT.getCode());
+						resp.setMessage(String.format(ResultCodeEnum.KIND_IS_OUT.getDesc(), limit));
+					}else{
+						// 购买限款数大于特惠活动限款数量
+						resp.setCode(ResultCodeEnum.LOW_KIND_IS_OUT.getCode());
+						resp.setMessage(String.format(ResultCodeEnum.LOW_KIND_IS_OUT.getDesc(), limit));
+					}
 					isOutOfLimitKind = true;
+					break;
 				}
 			}
 		}
@@ -141,6 +148,8 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				}else if (skuBo.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()){
 					// 特惠商品超出限款不能进行购买
 					if ( skuBo.getQuantity() > tradeMax - boughtNum) {
+						resp.setCode(ResultCodeEnum.BUY_IS_OUT.getCode());
+						resp.setMessage(String.format(ResultCodeEnum.BUY_IS_OUT.getDesc(), tradeMax));
 						isOutOfLimit = true;
 						break; 
 					}
@@ -159,6 +168,7 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 * @date 2017年1月4日
 	 */
 	private boolean isOutOfStock(StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp) {
+		int kindSize = parserBo.getCurrentSkuMap().values().size();
 		for (CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()) {
 			if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
 				if(storeSkuBo.getSkuActQuantity() > 0 && storeSkuBo.getSkuActQuantity() > storeSkuBo.getLocked()){
@@ -166,14 +176,23 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 					storeSkuBo.setSkuActQuantity(storeSkuBo.getLocked());
 					resp.setMessage(ResultCodeEnum.LOW_BUY_IS_OUT.getDesc());
 				}
-				
+				if(storeSkuBo.getTradeMax() != null && storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity() > storeSkuBo.getTradeMax().intValue()){
+					// 如果原价商品限购，检查原价商品购买数量是否超过限购。
+					resp.setCode(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getCode());
+					resp.setMessage(String.format(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getDesc(), storeSkuBo.getName()));
+					return true;
+				}
 				if(storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity() > storeSkuBo.getSellable()){
 					resp.setCode(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getCode());
 					resp.setMessage(String.format(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getDesc(), storeSkuBo.getName()));
 					return true;
 				}
 			}else if(storeSkuBo.getQuantity() > storeSkuBo.getSellable()){
-				resp.setResult(ResultCodeEnum.GOODS_STOCK_NOT_ENOUGH);
+				if(kindSize > 1){
+					resp.setResult(ResultCodeEnum.PART_GOODS_STOCK_NOT_ENOUGH);
+				}else{
+					resp.setResult(ResultCodeEnum.STOCK_NOT_ENOUGH);
+				}
 				return true;
 			}
 		}

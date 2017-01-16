@@ -208,16 +208,30 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 	
 	public ResultCodeEnum isChange(PlaceOrderParamDto req,StoreSkuParserBo parserBo){
 		ResultCodeEnum checkResult = ResultCodeEnum.SUCCESS;
+		// 购买商品款数
+		int kindSize = req.getSkuList().size();
 		// 检查商品信息是否发生变化
 		for (PlaceOrderItemDto item : req.getSkuList()) {
 			CurrentStoreSkuBo currentSku = parserBo.getCurrentStoreSkuBo(item.getStoreSkuId());
 			// 检查是否下架
 			if (currentSku.getOnline() == BSSC.UNSHELVE) {
-				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				if(kindSize > 1){
+					checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
+				}else{
+					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				}
 			} else if (currentSku.getOnlinePrice().compareTo(item.getSkuPrice()) != 0 || (currentSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && currentSku.getSkuActQuantity() > 0 && item.getSkuActPrice().compareTo(currentSku.getActPrice()) != 0)) {
-				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				if(kindSize > 1){
+					checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
+				}else{
+					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				}
 			} else if (!currentSku.getUpdateTime().equals(item.getUpdateTime())) {
-				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				if(kindSize > 1){
+					checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
+				}else{
+					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				}
 			}
 			
 			if(checkResult != ResultCodeEnum.SUCCESS){
