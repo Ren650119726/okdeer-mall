@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.quartz.impl.matchers.StringMatcher.StringOperatorName;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -66,9 +67,7 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			}
 		}
 		
-		if (isOutOfStock(parserBo,resp)) {
-			resp.setResult(ResultCodeEnum.GOODS_STOCK_NOT_ENOUGH);
-		}else{
+		if (!isOutOfStock(parserBo,resp)) {
 			// 库存检查通过，则解析低价优惠信息
 			parserBo.parseLowFavour();
 		}
@@ -169,9 +168,12 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				}
 				
 				if(storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity() > storeSkuBo.getSellable()){
+					resp.setCode(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getCode());
+					resp.setMessage(String.format(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getDesc(), storeSkuBo.getName()));
 					return true;
 				}
 			}else if(storeSkuBo.getQuantity() > storeSkuBo.getSellable()){
+				resp.setResult(ResultCodeEnum.GOODS_STOCK_NOT_ENOUGH);
 				return true;
 			}
 		}

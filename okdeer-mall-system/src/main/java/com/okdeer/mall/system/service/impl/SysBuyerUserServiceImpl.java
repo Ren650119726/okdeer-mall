@@ -179,6 +179,7 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	/**
 	 * mq
 	 */
+	@Autowired
 	private RocketMQProducer rocketMQProducer;
 	
 	@Override

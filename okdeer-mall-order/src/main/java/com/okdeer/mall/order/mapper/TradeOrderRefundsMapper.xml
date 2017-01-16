@@ -54,6 +54,7 @@
       <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
       <result column="sty_code" property="styleCode" jdbcType="VARCHAR" />
       <result column="income" property="income" javaType="DECIMAL" />
+      <result column="spu_type" property="spuType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum"/>
     </collection>
     
   </resultMap>
@@ -178,7 +179,7 @@
     	refunds.id, refunds.user_id, refunds.store_id, refunds.refund_no, refunds.order_id,refunds.order_no, trade_num, refunds.payment_method,
     	refunds.total_amount, refunds.total_preferential_price, refunds.create_time, refunds.update_time,refunds.type,
 		refunds.operator, refunds.refunds_status, refunds.order_resource, refunds.logistics_type, refunds.refund_money_time,
-		item.refunds_id,item.order_item_id,item.sku_name,item.properties_indb,item.store_sku_id,
+		item.refunds_id,item.order_item_id,item.sku_name,item.spu_type,item.properties_indb,item.store_sku_id,
 		item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code,item.income
 		FROM trade_order_refunds refunds
 		LEFT JOIN trade_order_refunds_item item ON item.refunds_id = refunds.id
@@ -1796,14 +1797,14 @@
 	</select>
 	<!-- end add by zengjz 2016-09-14 添加退款单统计金额、数量 -->
 	
-	<!-- add by zengjz 2016-9-24 根据用户id查询退款单列表,实物订单与到店消费订单 -->
+	<!-- add by zengjz 2016-9-24 根据用户id查询退款单列表,实物订单与到店消费订单  17091 update by wusw 20170116-->
 	<select id="getListByParams" resultMap="BaseResultMap"
 		parameterType="map">
 		SELECT
 		refunds.id,refunds.user_id, refunds.refunds_status,refunds.payment_method,refunds.type,refunds.total_amount,refunds.total_preferential_price,refunds.refund_no,refunds.order_id,refunds.order_no,
 		refunds.trade_num,refunds.create_time,refunds.refund_money_time,refunds.update_time,
 		item.refunds_id,item.status as item_status,item.order_item_id,item.sku_name,item.properties_indb,
-        item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code,
+        item.main_pic_prl,item.unit_price,item.quantity,item.amount,item.bar_code,item.style_code,item.store_sku_id,
 		store.id as store_id,store.store_name,store.mobile as
 		store_mobile,store.area as store_area,store.address as store_address
 		FROM trade_order_refunds refunds

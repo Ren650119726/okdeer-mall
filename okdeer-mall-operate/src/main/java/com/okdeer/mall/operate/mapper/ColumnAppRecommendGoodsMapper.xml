@@ -166,7 +166,7 @@
 			where s.disabled = 0 and s.online = 1
 			and s.type in (3,4) 
 			<if test="skuName != null and skuName != ''">
-				and s.name like concat('%',#{goodsName},'%' )
+				and s.name like concat('%',#{skuName},'%' )
 			</if>
 			<if test="storeName != null and storeName != ''">
 				and si.store_name like concat('%',#{storeName},'%' )

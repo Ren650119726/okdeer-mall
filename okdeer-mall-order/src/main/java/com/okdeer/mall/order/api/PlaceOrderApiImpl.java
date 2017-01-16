@@ -6,9 +6,11 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
@@ -87,14 +89,14 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			resp.getData().setSkuList(AppAdapter.convert(parserBo));
 			resp.getData().setSeckillInfo(AppAdapter.convert(seckillInfo));
 			List<CurrentStoreSkuBo> skuList = new ArrayList<CurrentStoreSkuBo>();
-			if (CollectionUtils.isNotEmpty(parserBo.getCurrentSkuMap().values())) {
+			if (parserBo != null && CollectionUtils.isNotEmpty(parserBo.getCurrentSkuMap().values())) {
 				skuList.addAll(parserBo.getCurrentSkuMap().values());
 				if (skuList.size() > 1) {
 					resp.getData().setPaymentMode(PayWayEnum.PAY_ONLINE.ordinal());
 				} else {
-					if(skuList.get(0).getPaymentMode() == 1){
+					if (skuList.get(0).getPaymentMode() == 1) {
 						resp.getData().setPaymentMode(4);
-					}else{
+					} else {
 						resp.getData().setPaymentMode(skuList.get(0).getPaymentMode());
 					}
 				}
@@ -102,6 +104,12 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		}
 		if(!resp.isSuccess() && req.getData().getOrderType() == PlaceOrderTypeEnum.CVS_ORDER){
 			resp.getData().setSkuList(AppAdapter.convert(parserBo));
+		}
+		if (resp.isSuccess() && req.getData().getOrderType() == PlaceOrderTypeEnum.CVS_ORDER
+				&& StringUtils.isEmpty(resp.getMessage())
+				&& parserBo != null && parserBo.isCloseLow()){
+			// 低价活动已关闭，给出响应的提示语
+			resp.setMessage(ResultCodeEnum.LOW_IS_CLOSED.getDesc());
 		}
 		resp.getData().setCurrentTime(System.currentTimeMillis());
 	}

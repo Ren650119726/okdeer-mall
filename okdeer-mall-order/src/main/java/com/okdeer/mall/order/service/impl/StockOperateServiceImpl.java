@@ -159,6 +159,11 @@ public class StockOperateServiceImpl implements StockOperateService {
 
 		if (CollectionUtils.isNotEmpty(assembleAdjustDetailList)) {
 			// 组合商品还需要更新商城库的库存
+			// Begin Bug:17007 added by maojj 2017-01-14.便利店商品只有在确认收货之后，才会扣减订单占用。所以便利店商品拒收流程等同于取消流程。
+			if (stockAdjustVo.getStockOperateEnum() == StockOperateEnum.REFUSED_SIGN
+					|| stockAdjustVo.getStockOperateEnum() == StockOperateEnum.ACTIVITY_REFUSED_SIGN) {
+				stockAdjustVo.setStockOperateEnum(StockOperateEnum.CANCEL_ORDER);
+			}
 			stockAdjustVo.setAdjustDetailList(assembleAdjustDetailList);
 			serviceStockManagerService.updateStock(stockAdjustVo);
 		}
@@ -560,7 +565,7 @@ public class StockOperateServiceImpl implements StockOperateService {
 							.multiply(new BigDecimal(item.getQuantity())).intValue();
 					detail.setNum(qutity);
 					detail.setIsEvent(false);
-					detail.setSpuType(SpuTypeEnum.assembleSpu);
+					detail.setSpuType(goodsStoreSkuAssembleDto.getSpuTypeEnum());
 
 					// 便利店优惠金额单价
 					if (item.getPreferentialPrice() != null

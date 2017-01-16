@@ -4521,7 +4521,7 @@
 				tr.remark,
 				op.pay_type,
 				op.pay_time,
-				tol.area
+				CONCAT(tol.area,tol.address) as area
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN trade_order_logistics tol ON tr.id = tol.order_id
