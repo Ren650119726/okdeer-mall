@@ -113,6 +113,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// 活动类型
 				//modify by mengsj begin  增加活动类型判断
 				if(activitySale.getType() == ActivityTypeEnum.LOW_PRICE){
+					//如果是低价活动，需要把商品改为上架状态，因为上个低价活动关闭时，已把该商品下架了
+					goodsStoreSku.setOnline(BSSC.PUTAWAY);
 					goodsStoreSku.setActivityType(StoreActivityTypeEnum.LOW_PRICE);
 				}else{
 					goodsStoreSku.setActivityType(StoreActivityTypeEnum.PRIVLIEGE);
