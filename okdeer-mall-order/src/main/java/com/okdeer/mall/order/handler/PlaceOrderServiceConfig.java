@@ -146,11 +146,13 @@ public class PlaceOrderServiceConfig {
 		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> chain = new RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto>();
 		// 第一步 ：校验店铺
 		chain.addHandlerChain(checkStoreService);
-		// 第三步：校验秒杀
+		// 第二步：校验秒杀
 		chain.addHandlerChain(checkSecKillService);
-		// 第二步：检查秒杀商品
+		// 第三步：检查秒杀商品
 		chain.addHandlerChain(checkServSkuService);
-		// 第四步：查询最优用户地址
+		// 第四步：校验商品库存
+		chain.addHandlerChain(checkServStockService);
+		// 第五步：查询最优用户地址
 		chain.addHandlerChain(findUserAddrService);
 		return chain;
 	}
@@ -160,11 +162,13 @@ public class PlaceOrderServiceConfig {
 		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> chain = new RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto>();
 		// 第一步 ：校验店铺
 		chain.addHandlerChain(checkStoreService);
-		// 第三步：校验秒杀
+		// 第二步：校验秒杀
 		chain.addHandlerChain(checkSecKillService);
-		// 第二步：检查秒杀商品
+		// 第三步：检查秒杀商品
 		chain.addHandlerChain(checkServSkuService);
-		// 第四步：生成订单
+		// 第四步：校验商品库存
+		chain.addHandlerChain(checkServStockService);
+		// 第五步：生成订单
 		chain.addHandlerChain(placeSeckillOrderService);
 		return chain;
 	}
