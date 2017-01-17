@@ -73,6 +73,13 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		return resp;
 	}
 
+	/**
+	 * @Description: 填充响应结果
+	 * @param req
+	 * @param resp   
+	 * @author maojj
+	 * @date 2017年1月17日
+	 */
 	private void fillResponse(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) {
 		PlaceOrderParamDto paramDto = req.getData();
 		StoreInfo storeInfo = (StoreInfo) paramDto.get("storeInfo");
@@ -135,6 +142,10 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		}
 		handlerChain.process(req, resp);
 		resp.getData().setCurrentTime(System.currentTimeMillis());
+		if(!resp.isSuccess()){
+			// 如果处理失败
+			fillResponse(req, resp);
+		}
 		return resp;
 	}
 }
