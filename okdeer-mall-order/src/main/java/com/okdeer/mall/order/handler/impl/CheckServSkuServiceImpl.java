@@ -77,6 +77,8 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 		parserBo.loadBuySkuList(paramDto.getSkuList());
 		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(skuIdList);
 		parserBo.loadStockList(stockList);
+		// 检查请求的商品类型
+		checkSkuType(paramDto,parserBo);
 		// 检查商品信息是否发生变化
 		ResultCodeEnum checkResult = isChange(paramDto, parserBo);
 		// 检查商品信息是否发生变化
@@ -104,6 +106,28 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 		return goodsStoreSkuServiceApi.selectSkuByIds(skuIdList);
 	}
 
+	/**
+	 * @Description: 检查服务商品类型
+	 * @param paramDto
+	 * @param parserBo   
+	 * @author maojj
+	 * @date 2017年1月17日
+	 */
+	public void checkSkuType(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo){
+		// 多个商品，商品类型均是一种类型，获取第一个即可判定。仅仅只对服务店商品做检查更新
+		CurrentStoreSkuBo skuBo = parserBo.getCurrentStoreSkuBo(paramDto.getSkuList().get(0).getStoreSkuId());
+		switch (skuBo.getSpuType()) {
+			case fwdSpu:
+				paramDto.updateSkuType(OrderTypeEnum.SERVICE_STORE_ORDER);
+				break;
+			case fwdDdxfSpu:
+				paramDto.updateSkuType(OrderTypeEnum.STORE_CONSUME_ORDER);
+				break;
+			default:
+				break;
+		}
+	}
+	
 	public ResultCodeEnum isChange(PlaceOrderParamDto paramDto, StoreSkuParserBo parserBo) {
 		ResultCodeEnum checkResult = ResultCodeEnum.SUCCESS;
 		int buyKindSize = paramDto.getSkuList().size();
