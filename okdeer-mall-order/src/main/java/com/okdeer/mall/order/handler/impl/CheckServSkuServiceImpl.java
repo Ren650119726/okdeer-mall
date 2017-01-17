@@ -23,6 +23,7 @@ import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.OrderType;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
@@ -74,6 +75,9 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 		// 缓存商品解析结果
 		paramDto.put("parserBo", parserBo);
 		parserBo.parseCurrentSku();
+		if(paramDto.getOrderType() == PlaceOrderTypeEnum.SECKILL_ORDER){
+			parserBo.processSeckill();
+		}
 		parserBo.loadBuySkuList(paramDto.getSkuList());
 		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(skuIdList);
 		parserBo.loadStockList(stockList);
