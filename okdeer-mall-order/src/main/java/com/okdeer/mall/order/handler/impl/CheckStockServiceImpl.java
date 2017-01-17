@@ -93,12 +93,12 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				if (totalAdd > limit - parserBo.getBuyKind(sale.getId())) {
 					if(sale.getType() == ActivityTypeEnum.LOW_PRICE){
 						// 购买限款数大于特惠活动限款数量
-						resp.setCode(ResultCodeEnum.KIND_IS_OUT.getCode());
-						resp.setMessage(String.format(ResultCodeEnum.KIND_IS_OUT.getDesc(), limit));
-					}else{
-						// 购买限款数大于特惠活动限款数量
 						resp.setCode(ResultCodeEnum.LOW_KIND_IS_OUT.getCode());
 						resp.setMessage(String.format(ResultCodeEnum.LOW_KIND_IS_OUT.getDesc(), limit));
+					}else{
+						// 购买限款数大于特惠活动限款数量
+						resp.setCode(ResultCodeEnum.KIND_IS_OUT.getCode());
+						resp.setMessage(String.format(ResultCodeEnum.KIND_IS_OUT.getDesc(), limit));
 					}
 					isOutOfLimitKind = true;
 					break;
