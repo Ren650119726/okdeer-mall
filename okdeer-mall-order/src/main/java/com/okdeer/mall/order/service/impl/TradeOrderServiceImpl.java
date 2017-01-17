@@ -3690,8 +3690,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			json.put("pickUpTime", strPickUpTime == null ? "" : strPickUpTime);
 		}
 		json.put("remark", orders.getRemark() == null ? "" : orders.getRemark());
-		json.put("orderAmount", orders.getTotalAmount() == null ? "0" : orders.getTotalAmount());
-		json.put("actualAmount", orders.getActualAmount() == null ? "0" : orders.getActualAmount());
+		json.put("orderAmount", orders.getTotalAmount() == null ? "0" : orders.getTotalAmount().toString());
+		json.put("actualAmount", orders.getActualAmount() == null ? "0" : orders.getActualAmount().toString());
 		json.put("orderNo", orders.getOrderNo() == null ? "" : orders.getOrderNo());
 		json.put("cancelReason", getCancelReason(orders));
 		if (orders.getStatus() != null && orders.getStatus() == OrderStatusEnum.CANCELED) {
@@ -3704,8 +3704,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("orderConfirmGoodTime", orders.getReceivedTime() != null
 				? DateUtils.formatDate(orders.getReceivedTime(), "yyyy-MM-dd HH:mm:ss") : "");
 		json.put("activityType", orders.getActivityType() == null ? "" : orders.getActivityType().ordinal());
-		json.put("preferentialPrice", orders.getPreferentialPrice() == null ? "" : orders.getPreferentialPrice());
-		json.put("fare", orders.getFare() == null ? "" : orders.getFare());
+		json.put("preferentialPrice", orders.getPreferentialPrice() == null ? "" : orders.getPreferentialPrice().toString());
+		json.put("fare", orders.getFare() == null ? "" : orders.getFare().toString());
 		// 订单评价类型0：未评价，1：已评价
 		json.put("orderIsComment", appraise > 0 ? Constant.ONE : Constant.ZERO);
 		// 订单投诉状态
@@ -3814,13 +3814,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				item.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
 				item.put("productId", tradeOrderItem.getStoreSkuId() == null ? "" : tradeOrderItem.getStoreSkuId());
 				item.put("mainPicPrl", tradeOrderItem.getMainPicPrl() == null ? "" : tradeOrderItem.getMainPicPrl());
-				item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
+				item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice().toString());
 
 				item.put("quantity", tradeOrderItem.getQuantity());
-				item.put("skuTotalAmount", tradeOrderItem.getTotalAmount());
-				item.put("skuActualAmount", tradeOrderItem.getActualAmount());
+				item.put("skuTotalAmount", tradeOrderItem.getTotalAmount().toString());
+				item.put("skuActualAmount", tradeOrderItem.getActualAmount().toString());
 				item.put("preferentialPrice",
-						tradeOrderItem.getPreferentialPrice() == null ? "0" : tradeOrderItem.getPreferentialPrice());
+						tradeOrderItem.getPreferentialPrice() == null ? "0" : tradeOrderItem.getPreferentialPrice().toString());
 				// 服务保障
 				String serviceAssurance = "0";
 				// 订单是否完成
@@ -3847,7 +3847,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 				item.put("refundId", refundId);
 				item.put("refundStatus", refundStatus);
-				item.put("refundAmount", refundAmount);
+				item.put("refundAmount", refundAmount.toString());
 				array.add(item);
 			}
 		}
