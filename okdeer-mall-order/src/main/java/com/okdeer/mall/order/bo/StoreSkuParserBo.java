@@ -217,6 +217,17 @@ public class StoreSkuParserBo {
 			}
 		}
 	}
+	
+	/**
+	 * @Description: 处理秒杀商品   
+	 * @author maojj
+	 * @date 2017年1月17日
+	 */
+	public void processSeckill(){
+		for(CurrentStoreSkuBo skuBo : this.currentSkuMap.values()){
+			skuBo.setActivityType(ActivityTypeEnum.SECKILL_ACTIVITY.ordinal());
+		}
+	}
 
 	/**
 	 * @Description: 加载活动商品列表
