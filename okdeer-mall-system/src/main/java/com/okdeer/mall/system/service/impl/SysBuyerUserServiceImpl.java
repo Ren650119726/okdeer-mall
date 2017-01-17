@@ -572,14 +572,6 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 			resultBuyerUserVo.setInvitationCode(invitationCode.getInvitationCode());
 			// 判断用户是否第一次注册登录，如果是则返回1
 			resultBuyerUserVo.setIsOneLogin("1");
-			
-			// 注册送积分
-			AddPointsParamDto addPointsParamDto = new AddPointsParamDto();
-			addPointsParamDto.setPointsRuleCode(PointsRuleCode.REGISTER);
-			addPointsParamDto.setUserId(userId);
-			addPointsParamDto.setBusinessId(UuidUtils.getUuid());
-			MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDto);
-			rocketMQProducer.sendMessage(anMessage);
 		} else {
 			// 查询手机用户信息
 			sysBuyerUserItemDto = sysBuyerUserApi.login(mobilePhone, null);
