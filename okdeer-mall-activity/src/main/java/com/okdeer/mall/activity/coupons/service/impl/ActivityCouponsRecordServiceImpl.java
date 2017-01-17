@@ -946,11 +946,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 						activityCouponsType);
 			} else {
 				map.put("code", 103);
-				map.put("msg", "您输入的抵扣券随机码无效！");
+				map.put("msg", "您输入的抵扣券优惠码错误！");
 			}
 		} else {
 			map.put("code", 103);
-			map.put("msg", "您输入的抵扣券随机码无效！");
+			map.put("msg", "您输入的抵扣券优惠码错误！");
 		}
 		
 		return JSONObject.fromObject(map);
