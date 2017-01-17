@@ -240,6 +240,7 @@ import net.sf.json.JSONObject;
  *      15698             2016-12-05        wusw              订单详情，优惠活动要考虑秒杀活动类型查询
  *      V2.0.0            2017-01-09           wusw           修改订单查询和导出的线上订单包括订单来源为友门鹿便利店(CVS)的订单
  *      V2.0.0            2017-01-12        wusw              修改低价商品订单的优惠显示问题
+ *      V2.0.0            2017-01-17        wusw              修改服务订单详情的商品规格为null判断
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -4173,7 +4174,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 购买商品的数量
 					item.put("quantity", tradeOrderItem.getQuantity());
 					item.put("itemId", tradeOrderItem.getId());
-					item.put("unit", tradeOrderItem.getUnit());
+					// Begin V2.0.0 add by wusw 20170117
+					if (tradeOrderItem.getUnit() != null) {
+						item.put("unit", tradeOrderItem.getUnit());
+					} else {
+						item.put("unit", "");
+					}
+					// End V2.0.0 add by wusw 20170117
 					itemArray.add(item);
 				}
 				json.put("orderItems", itemArray);
@@ -4193,7 +4200,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
 					// 购买商品的数量
 					item.put("quantity", tradeOrderItem.getQuantity());
-					item.put("unit", tradeOrderItem.getUnit());
+					// Begin V2.0.0 add by wusw 20170117
+					if (tradeOrderItem.getUnit() != null) {
+						item.put("unit", tradeOrderItem.getUnit());
+					} else {
+						item.put("unit", "");
+					}
+					// End V2.0.0 add by wusw 20170117
 				}
 			}
 			// 商品信息
