@@ -23,7 +23,6 @@ import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
-import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
@@ -170,13 +169,7 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 					&& serviceExt.getIsSupportPurchase() == 0) {
 				BigDecimal startingPrice = serviceExt.getStartingPrice();
 				if (totalAmount.compareTo(startingPrice) == -1) {
-					// 订单总价小与起送价
-					if (paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT) {
-						// 提交订单
-						checkResult = ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH_SUBMIT;
-					} else {
-						checkResult = ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH;
-					}
+					checkResult = ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH;
 				}
 			}
 			if (serviceExt != null && serviceExt.getIsShoppingCart() == 1 && serviceExt.getIsDistributionFee() == 1) {
