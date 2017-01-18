@@ -1748,11 +1748,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 服务店派单发送短信
 				tradeMessageService.sendSmsByServiceStoreShipments(tradeOrder);
 			} else {// End 重构4.1 add by wusw 20160801
-				if (ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()) {
-					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_group_timeout, tradeOrder.getId());
+				
+				if (tradeOrder.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP){ 
+					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_take_goods_timeout, tradeOrder.getId());
 				} else {
 					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
 				}
+				
 			}
 
 			// 只有便利店发货才需要短信
@@ -4642,8 +4644,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateOrderDelivery(TradeOrder tradeOrder) throws Exception {
-		String rpcId = null;
-		StockAdjustVo stockAdjustVo = null;
 		if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {// 发货
 			this.updateOrderStatus(tradeOrder);
 			Map<String, Object> map = new HashMap<String, Object>();
@@ -4652,16 +4652,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			tradeOrder.setTradeOrderItem(tradeOrderItem);
 			// 锁定库存
 			try {
-				rpcId = UuidUtils.getUuid();
-				stockAdjustVo = buildDeliveryStock(tradeOrder, rpcId);
-
 				// 发送计时消息
-				if (ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()) {
-					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_group_timeout, tradeOrder.getId());
+				if (tradeOrder.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP){ 
+					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_take_goods_timeout, tradeOrder.getId());
 				} else {
 					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
 				}
-
 				// Begin 1.0.Z 增加订单操作记录 add by zengj
 				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
 						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));

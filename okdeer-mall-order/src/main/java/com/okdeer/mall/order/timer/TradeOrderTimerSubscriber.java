@@ -179,6 +179,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 			// end add by wangf01 2016.08.08
 			case tag_confirm_group_timeout:
 			case tag_confirm_timeout:
+			case tag_take_goods_timeout:
 				return processConfirmTimeout(content, tag);
 			case tag_finish_timeout:
 			case tag_finish_group_timeout:
