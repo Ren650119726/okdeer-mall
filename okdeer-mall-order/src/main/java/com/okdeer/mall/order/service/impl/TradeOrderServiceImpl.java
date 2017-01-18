@@ -6628,13 +6628,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			addPointsParamDto.setPointsRuleCode(PointsRuleCode.APP_CONSUME);
 			addPointsParamDto.setUserId(userId);
 			addPointsParamDto.setBusinessId(orderId);
-			MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDto);
+			MQMessage anMessage = new MQMessage(PointConstants.TOPIC_POINT_ADD, (Serializable) addPointsParamDto);
 			SendResult sendResult = rocketMQProducer.sendMessage(anMessage);
 			if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
 				logger.info("发送消费积分消息成功，发送数据：{},topic:{}", JsonMapper.nonDefaultMapper().toJson(addPointsParamDto),
-						PointConstants.POINT_TOPIC);
+						PointConstants.TOPIC_POINT_ADD);
 			} else {
-				logger.error("发送消费积分消息失败,topic:{}", PointConstants.POINT_TOPIC);
+				logger.error("发送消费积分消息失败,topic:{}", PointConstants.TOPIC_POINT_ADD);
 			}
 		}
 	}

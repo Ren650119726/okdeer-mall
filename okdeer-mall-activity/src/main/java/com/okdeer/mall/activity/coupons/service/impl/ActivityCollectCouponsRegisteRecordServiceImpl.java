@@ -326,7 +326,7 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		addPointsParamDto.setPointsRuleCode(PointsRuleCode.INVITE_REGISTER);
 		addPointsParamDto.setUserId(userId);
 		addPointsParamDto.setBusinessId(UuidUtils.getUuid());
-		MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDto);
+		MQMessage anMessage = new MQMessage(PointConstants.TOPIC_POINT_ADD, (Serializable) addPointsParamDto);
 		rocketMQProducer.sendMessage(anMessage);
 		
 		// 被邀请人添加注册积分
@@ -334,7 +334,7 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 		addPointsParamDtoNew.setPointsRuleCode(PointsRuleCode.REGISTER);
 		addPointsParamDtoNew.setUserId(inviteesId);
 		addPointsParamDtoNew.setBusinessId(UuidUtils.getUuid());
-		MQMessage anMessageNew = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDtoNew);
+		MQMessage anMessageNew = new MQMessage(PointConstants.TOPIC_POINT_ADD, (Serializable) addPointsParamDtoNew);
 		rocketMQProducer.sendMessage(anMessageNew);
 		
 		return inviteesId;
