@@ -181,7 +181,10 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 					resp.setMessage(String.format(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getDesc(), storeSkuBo.getName()));
 					return true;
 				}
-				if(storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity() > storeSkuBo.getSellable()){
+				// 购买原价商品数量
+				int buyPrimeNum = storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity();
+				// 如果原价购买大于0，则需要检查原价购买的是否超过可售数量
+				if( buyPrimeNum > 0 &&  buyPrimeNum > storeSkuBo.getSellable()){
 					resp.setCode(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getCode());
 					resp.setMessage(String.format(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getDesc(), storeSkuBo.getName()));
 					return true;
