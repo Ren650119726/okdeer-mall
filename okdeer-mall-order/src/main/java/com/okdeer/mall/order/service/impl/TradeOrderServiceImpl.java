@@ -1748,13 +1748,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 服务店派单发送短信
 				tradeMessageService.sendSmsByServiceStoreShipments(tradeOrder);
 			} else {// End 重构4.1 add by wusw 20160801
-				
-				if (tradeOrder.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP){ 
-					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_take_goods_timeout, tradeOrder.getId());
-				} else {
-					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
-				}
-				
+				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
 			}
 
 			// 只有便利店发货才需要短信
@@ -4653,11 +4647,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 锁定库存
 			try {
 				// 发送计时消息
-				if (tradeOrder.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP){ 
-					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_take_goods_timeout, tradeOrder.getId());
-				} else {
-					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
-				}
+				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
 				// Begin 1.0.Z 增加订单操作记录 add by zengj
 				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
 						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
