@@ -1812,13 +1812,13 @@ public class TradeOrderRefundsServiceImpl
 		refundPointParamDto.setBusinessId(refunds.getId());
 		refundPointParamDto.setDescription("商品退款");
 		refundPointParamDto.setUserId(order.getUserId());
-		MQMessage anMessage = new MQMessage(PointConstants.REFUND_POINT_TOPIC, (Serializable) refundPointParamDto);
+		MQMessage anMessage = new MQMessage(PointConstants.TOPIC_POINT_REFUND, (Serializable) refundPointParamDto);
 		SendResult sendResult = rocketMQProducer.sendMessage(anMessage);
 		if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
 			logger.info("扣减积分消息发送成功，发送数据为：{},topic:{}", JsonMapper.nonDefaultMapper().toJson(refundPointParamDto),
-					PointConstants.REFUND_POINT_TOPIC);
+					PointConstants.TOPIC_POINT_REFUND);
 		} else {
-			logger.info("扣减积分消息发送失败，topic：{}", PointConstants.REFUND_POINT_TOPIC);
+			logger.info("扣减积分消息发送失败，topic：{}", PointConstants.TOPIC_POINT_REFUND);
 		}
 	}
 
