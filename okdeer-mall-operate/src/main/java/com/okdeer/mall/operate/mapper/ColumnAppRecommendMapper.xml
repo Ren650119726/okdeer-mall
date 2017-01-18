@@ -139,6 +139,7 @@
 				</foreach>
             </when>  
         </choose>  
+        GROUP BY recommend.id
 	</select>
 
 	<insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnAppRecommend">
