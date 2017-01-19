@@ -37,22 +37,39 @@ import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.PlaceOrderApi")
 public class PlaceOrderApiImpl implements PlaceOrderApi {
 
+	/**
+	 * 便利店确认订单Service
+	 */
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> confirmOrderService;
 
+	/**
+	 * 服务店确认订单Service
+	 */
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> confirmServOrderService;
 	
+	/**
+	 * 秒杀确认订单Service
+	 */
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> confirmSeckillOrderService;
 
+	/**
+	 * 便利店提交订单Service
+	 */
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitOrderService;
 
+	/**
+	 * 服务店提交订单Service
+	 */
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitServOrderService;
 	
-
+	/**
+	 * 秒杀提交订单Service
+	 */
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitSeckillOrderService;
 
@@ -66,6 +83,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	public Response<PlaceOrderDto> confirmOrder(Request<PlaceOrderParamDto> req) throws Exception {
 		Response<PlaceOrderDto> resp = new Response<PlaceOrderDto>();
 		resp.setData(new PlaceOrderDto());
+		// 设置订单操作类型
 		req.getData().setOrderOptType(OrderOptTypeEnum.ORDER_SETTLEMENT);
 		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> handlerChain = null;
 		switch (req.getData().getOrderType()) {
@@ -82,6 +100,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				break;
 		}
 		handlerChain.process(req, resp);
+		// 填充响应结果
 		fillResponse(req, resp);
 		return resp;
 	}
@@ -95,20 +114,27 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	 */
 	private void fillResponse(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
 		PlaceOrderParamDto paramDto = req.getData();
+		// 店铺信息
 		StoreInfo storeInfo = (StoreInfo) paramDto.get("storeInfo");
+		// 秒杀信息
 		ActivitySeckill seckillInfo = (ActivitySeckill) paramDto.get("seckillInfo");
+		// 解析请求之后的店铺商品信息
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
+		// 返回App店铺信息
 		AppStoreDto appStoreDto = AppAdapter.convert(storeInfo);
 		if (parserBo != null) {
 			resp.getData().setOrderFare(ConvertUtil.format(parserBo.getFare()));
 			resp.getData().setFavour(ConvertUtil.format(parserBo.getTotalLowFavour()));
 		}
+		// 设置返回给App的店铺信息
 		resp.getData().setStoreInfo(appStoreDto);
+		// 设置返回给App的商品信息
+		resp.getData().setSkuList(AppAdapter.convert(parserBo));
 		if(req.getData().getOrderType() != PlaceOrderTypeEnum.CVS_ORDER){
 			resp.getData().setStoreServExt(AppAdapter.convertAppStoreServiceExtDto(storeInfo));
-			resp.getData().setSkuList(AppAdapter.convert(parserBo));
 			resp.getData().setSeckillInfo(AppAdapter.convert(seckillInfo));
 			List<CurrentStoreSkuBo> skuList = new ArrayList<CurrentStoreSkuBo>();
+			// 服务商品判定支付方式：如果多个商品，一定是线上支付。单个商品，根据商品设置的支付方式进行处理
 			if (parserBo != null && CollectionUtils.isNotEmpty(parserBo.getCurrentSkuMap().values())) {
 				skuList.addAll(parserBo.getCurrentSkuMap().values());
 				if (skuList.size() > 1) {
@@ -121,9 +147,6 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 					}
 				}
 			}
-		}
-		if(!resp.isSuccess() && req.getData().getOrderType() == PlaceOrderTypeEnum.CVS_ORDER){
-			resp.getData().setSkuList(AppAdapter.convert(parserBo));
 		}
 		// 商品信息发生变化丢消息
 		if(resp.getCode() == ResultCodeEnum.GOODS_IS_CHANGE.getCode() || resp.getCode() == ResultCodeEnum.PART_GOODS_IS_CHANGE.getCode()){
