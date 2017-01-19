@@ -1,16 +1,13 @@
 package com.okdeer.mall.order.api;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Resource;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.rocketmq.common.message.Message;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
+import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
@@ -26,6 +23,16 @@ import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandlerChain;
 import com.okdeer.mall.order.service.PlaceOrderApi;
 import com.okdeer.mall.system.utils.ConvertUtil;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_GOODS_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
 
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.PlaceOrderApi")
 public class PlaceOrderApiImpl implements PlaceOrderApi {
@@ -60,12 +67,17 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitServOrderService;
 	
-
 	/**
 	 * 秒杀提交订单Service
 	 */
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitSeckillOrderService;
+
+	/**
+	 * mq注入
+	 */
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
 
 	@Override
 	public Response<PlaceOrderDto> confirmOrder(Request<PlaceOrderParamDto> req) throws Exception {
@@ -100,7 +112,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	 * @author maojj
 	 * @date 2017年1月17日
 	 */
-	private void fillResponse(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) {
+	private void fillResponse(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
 		PlaceOrderParamDto paramDto = req.getData();
 		// 店铺信息
 		StoreInfo storeInfo = (StoreInfo) paramDto.get("storeInfo");
@@ -135,6 +147,10 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 					}
 				}
 			}
+		}
+		// 商品信息发生变化丢消息
+		if(resp.getCode() == ResultCodeEnum.GOODS_IS_CHANGE.getCode() || resp.getCode() == ResultCodeEnum.PART_GOODS_IS_CHANGE.getCode()){
+			structureProducer(parserBo.getSkuIdList(),TAG_GOODS_EL_UPDATE);
 		}
 		if (resp.isSuccess() && req.getData().getOrderType() == PlaceOrderTypeEnum.CVS_ORDER
 				&& StringUtils.isEmpty(resp.getMessage())
@@ -171,5 +187,20 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			fillResponse(req, resp);
 		}
 		return resp;
+	}
+
+	/**
+	 * 发送消息同步数据到搜索引擎执行
+	 *
+	 * @param list List<String>
+	 * @throws Exception
+	 */
+	private void structureProducer(List<String> list, String tag) throws Exception {
+		ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
+		paramDto.setSkuIds(list);
+		ObjectMapper mapper = new ObjectMapper();
+		String json = mapper.writeValueAsString(paramDto);
+		Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
+		rocketMQProducer.send(msg);
 	}
 }
