@@ -104,7 +104,7 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 * @date 2016年12月31日
 	 */
 	private void checkIsBusiness(Response<PlaceOrderDto> resp,PlaceOrderParamDto paramDto, StoreInfo storeInfo){
-		if(!resp.isSuccess() || paramDto.getOrderType() != PlaceOrderTypeEnum.CVS_ORDER){
+		if(!resp.isSuccess()){
 			return;
 		}
 		
