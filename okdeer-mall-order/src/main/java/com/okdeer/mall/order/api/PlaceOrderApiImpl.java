@@ -91,9 +91,9 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			resp.getData().setFavour(ConvertUtil.format(parserBo.getTotalLowFavour()));
 		}
 		resp.getData().setStoreInfo(appStoreDto);
+		resp.getData().setSkuList(AppAdapter.convert(parserBo));
 		if(req.getData().getOrderType() != PlaceOrderTypeEnum.CVS_ORDER){
 			resp.getData().setStoreServExt(AppAdapter.convertAppStoreServiceExtDto(storeInfo));
-			resp.getData().setSkuList(AppAdapter.convert(parserBo));
 			resp.getData().setSeckillInfo(AppAdapter.convert(seckillInfo));
 			List<CurrentStoreSkuBo> skuList = new ArrayList<CurrentStoreSkuBo>();
 			if (parserBo != null && CollectionUtils.isNotEmpty(parserBo.getCurrentSkuMap().values())) {
