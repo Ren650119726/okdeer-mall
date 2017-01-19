@@ -14,7 +14,6 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleELServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.dto.ActivitySaleGoodsParamDto;
-import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +52,6 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
             paramDto.setActivityId(activitySale.getId());
             paramDto.setSkuIds(list);
             paramDto.setUpdateStatus(String.valueOf(0));
-            logger.info("低价活动创建信息：paramDto{}", JSONObject.fromObject(paramDto).toString());
             structureProducer(paramDto, TAG_LOWPRICE_EL_UPDATE);
         }
     }
@@ -66,7 +64,6 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         paramDto.setActivityId(ActivitySale.getId());
         paramDto.setSkuIds(list);
         paramDto.setUpdateStatus(String.valueOf(0));
-        logger.info("特惠活动编辑商品信息：paramDto{}", JSONObject.fromObject(paramDto).toString());
         structureProducer(paramDto, TAG_LOWPRICE_EL_UPDATE);
     }
 
@@ -120,7 +117,6 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(paramDto);
         Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
-        logger.info("便利店活动消息：msg{}", mapper.writeValueAsString(msg));
         rocketMQProducer.send(msg);
     }
 }
