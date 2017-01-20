@@ -126,7 +126,12 @@ public class StoreSkuParserBo {
 	 * 低价活动Id 
 	 */
 	private String lowActivityId;
-
+	
+	/**
+	 * 低价活动已关闭
+	 */
+	private boolean isCloseLow;
+	
 	public StoreSkuParserBo(List<GoodsStoreSku> currentSkuList) {
 		this.currentSkuList = currentSkuList;
 	}
@@ -212,6 +217,17 @@ public class StoreSkuParserBo {
 			}
 		}
 	}
+	
+	/**
+	 * @Description: 处理秒杀商品   
+	 * @author maojj
+	 * @date 2017年1月17日
+	 */
+	public void processSeckill(){
+		for(CurrentStoreSkuBo skuBo : this.currentSkuMap.values()){
+			skuBo.setActivityType(ActivityTypeEnum.SECKILL_ACTIVITY.ordinal());
+		}
+	}
 
 	/**
 	 * @Description: 加载活动商品列表
@@ -273,11 +289,14 @@ public class StoreSkuParserBo {
 			skuBo = this.currentSkuMap.get(item.getStoreSkuId());
 			skuBo.setQuantity(item.getQuantity());
 			skuBo.setSkuActQuantity(item.getSkuActQuantity());
-			skuBo.setUpdateTime(item.getUpdateTime());
 
 			this.totalItemAmount = totalItemAmount
 					.add(skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getQuantity())));
 			this.totalQuantity += skuBo.getQuantity();
+			if(item.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal() && item.getSkuActQuantity()>0 && skuBo.getActivityType()==ActivityTypeEnum.NO_ACTIVITY.ordinal()){
+				// 如果购买请求中，存在商品为低价商品类型，但是经过后台解析之后，该商品活动类型为未参加活动商品，则标识低价活动当前已经结束。
+				this.isCloseLow = true;
+			}
 		}
 	}
 
@@ -532,4 +551,9 @@ public class StoreSkuParserBo {
 	public BigDecimal getTotalLowFavour() {
 		return totalLowFavour;
 	}
+
+	public boolean isCloseLow() {
+		return isCloseLow;
+	}
+
 }

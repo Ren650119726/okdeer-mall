@@ -124,7 +124,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 		//List<GoodsStoreSku> goodsStoreSkuList = goodsStoreSkuService.findByIds(storeSkuIdList);
 		List<GoodsStoreSku> goodsStoreSkuList = goodsStoreSkuService.selectSkuByIds(storeSkuIdList);
 		if (CollectionUtils.isEmpty(goodsStoreSkuList)) {
-			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
+			resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS);
 			req.setComplete(true);
 			return;
 		}
@@ -195,11 +195,12 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 				// bug 14150
 				if (reqData.getOrderType().ordinal() == OrderTypeEnum.SERVICE_STORE_ORDER.ordinal()) {
 					// 上门服务
-					resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
+					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS);
 				} else {
 					// 到店消费
-					resp.setResult(ResultCodeEnum.SERV_GOODS_EXP);
+					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_BUY);
 				}
+				
 				
 				req.setComplete(true);
 				return;
@@ -209,7 +210,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 			if (reqData.getOrderType().ordinal() == OrderTypeEnum.STORE_CONSUME_ORDER.ordinal()) {
 				GoodsStoreSkuService skuService = goodsStoreSkuServiceServiceApi.selectBySkuId(goodsStoreSku.getId());
 				if (skuService == null) {
-					resp.setResult(ResultCodeEnum.SERV_GOODS_EXP);
+					resp.setResult(ResultCodeEnum.SERV_GOODS_NOT_EXSITS_1);
 					req.setComplete(true);
 					return;
 				}
@@ -233,7 +234,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 					goodsUpdateTime = DateUtils.parseDate(item.getUpdateTime());
 					// 商品信息有更新
 					if (goodsStoreSku.getUpdateTime().getTime() != goodsUpdateTime.getTime()) {
-						resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
+						resp.setResult(ResultCodeEnum.SERV_GOODS_IS_UPDATE);
 						req.setComplete(true);
 						return;
 					}

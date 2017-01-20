@@ -113,13 +113,13 @@ public class PointServiceImpl implements PointsService {
 
 		String userId = addPointsParamDto.getUserId();
 		// 获取应得积分
-		int pointVal = getPoints(addPointsParamDto.getUserId(),addPointsParamDto.getAmount(), pointsRule, sysBuyerExt);
+		int pointVal = getPoints(addPointsParamDto.getUserId(), addPointsParamDto.getAmount(), pointsRule, sysBuyerExt);
 
 		if (pointVal > 0) {
 			// 添加积分详细记录
 			String description = StringUtils.isBlank(addPointsParamDto.getDescription()) ? pointsRule.getRemark()
 					: addPointsParamDto.getDescription();
-			addPointsRecord(userId, pointsRule.getCode(), pointVal, description, 0,addPointsParamDto.getBusinessId());
+			addPointsRecord(userId, pointsRule.getCode(), pointVal, description, 0, addPointsParamDto.getBusinessId());
 			result.setMsg("领取成功");
 			result.setStatus(0);
 			result.setPointVal(pointVal);
@@ -141,7 +141,7 @@ public class PointServiceImpl implements PointsService {
 		if (sysBuyerExt == null) {
 			addUserExt(userId, pointVal, growthVal);
 		} else {
-			if(growthVal != null){
+			if (growthVal != null) {
 				// 更新用户成长值
 				updateUserGrowth(userId, growthVal);
 			}
@@ -247,7 +247,7 @@ public class PointServiceImpl implements PointsService {
 		}
 
 		int pointVal = 0;
-		if (pointsRule.getCode() .equals(PointsRuleCode.APP_CONSUME.getCode())) {
+		if (pointsRule.getCode().equals(PointsRuleCode.APP_CONSUME.getCode())) {
 			// app消费另外计算积分
 			int limitPointVal = pointsRule.getPointVal();
 			pointVal = (int) Math.floor(amount.doubleValue()) * limitPointVal;
@@ -316,7 +316,8 @@ public class PointServiceImpl implements PointsService {
 		int reducePoint = new BigDecimal(consumPointParamDto.getPointVal()).multiply(new BigDecimal("-1")).intValue();
 		updateUserPoint(consumPointParamDto.getUserId(), reducePoint);
 		// 添加积分消费记录
-		addPointsRecord(consumPointParamDto.getUserId(), reducePoint, consumPointParamDto.getDescription(), 1,consumPointParamDto.getBusinessId());
+		addPointsRecord(consumPointParamDto.getUserId(), reducePoint, consumPointParamDto.getDescription(), 1,
+				consumPointParamDto.getBusinessId());
 	}
 
 	@Override
@@ -348,9 +349,8 @@ public class PointServiceImpl implements PointsService {
 				reduceGrowthVal);
 		// 计算扣减的积分
 		PointsRule pointsRule = pointsRuleMapper.selectByCode(PointsRuleCode.APP_CONSUME.getCode());
-		int pointVal = getPoints(sysBuyerExt.getUserId(), refundPointParamDto.getAmount(), pointsRule,
-				sysBuyerExt);
-		
+		int pointVal = getPoints(sysBuyerExt.getUserId(), refundPointParamDto.getAmount(), pointsRule, sysBuyerExt);
+
 		if (sysBuyerExt.getPointVal() < pointVal) {
 			pointVal = sysBuyerExt.getPointVal();
 		}
@@ -358,7 +358,8 @@ public class PointServiceImpl implements PointsService {
 		// 更新用户积分
 		updateUserPoint(sysBuyerExt.getUserId(), reducePoint);
 		// 添加积分扣减记录
-		addPointsRecord(sysBuyerExt.getUserId(), reducePoint, refundPointParamDto.getDescription(), 1,refundPointParamDto.getBusinessId());
+		addPointsRecord(sysBuyerExt.getUserId(), reducePoint, refundPointParamDto.getDescription(), 1,
+				refundPointParamDto.getBusinessId());
 		// 更新用户等级
 		updateUserExt(sysBuyerExt.getUserId());
 	}
@@ -380,11 +381,10 @@ public class PointServiceImpl implements PointsService {
 			return pointQueryResult;
 		}
 
-		//查询不到积分记录，就计算出该次会获得多少积分
+		// 查询不到积分记录，就计算出该次会获得多少积分
 		PointsRule pointsRule = pointsRuleMapper.selectByCode(PointsRuleCode.APP_CONSUME.getCode());
 		int pointVal = getPoints(pointQueryParamDto.getUserId(), pointQueryParamDto.getAmount(), pointsRule,
 				sysBuyerExt);
-		pointQueryResult.setPointVal(pointVal);
 
 		if (sysBuyerExt == null) {
 			pointQueryResult.setUserPointVal(0);
@@ -392,10 +392,15 @@ public class PointServiceImpl implements PointsService {
 			pointQueryResult.setUserPointVal(sysBuyerExt.getPointVal());
 		}
 
+		pointQueryResult.setPointVal(pointVal);
+
 		// 1为加积分 2:减积分
 		if (pointQueryParamDto.getType() == 1) {
 			pointQueryResult.setUserPointVal(pointQueryResult.getUserPointVal() + pointVal);
 		} else {
+			if (pointQueryResult.getUserPointVal().intValue() < pointVal) {
+				pointQueryResult.setPointVal(pointQueryResult.getUserPointVal());
+			}
 			pointQueryResult.setUserPointVal(pointQueryResult.getUserPointVal() - pointVal);
 		}
 
@@ -430,8 +435,8 @@ public class PointServiceImpl implements PointsService {
 	 * @date 2017年1月5日
 	 */
 	private void updateUserGrowth(String userId, Integer growthVal) throws Exception {
-		if(growthVal == null){
-			return ;
+		if (growthVal == null) {
+			return;
 		}
 		int count = sysBuyerExtMapper.updateGrowth(userId, growthVal);
 		if (count < 0) {
@@ -464,9 +469,9 @@ public class PointServiceImpl implements PointsService {
 	 * @author zengjizu
 	 * @date 2017年1月7日
 	 */
-	private void addPointsRecord(String userId, Integer pointVal, String description, int type,String referentId)
+	private void addPointsRecord(String userId, Integer pointVal, String description, int type, String referentId)
 			throws ServiceException {
-		addPointsRecord(userId, null, pointVal, description, type,referentId);
+		addPointsRecord(userId, null, pointVal, description, type, referentId);
 	}
 
 	/**
@@ -480,8 +485,8 @@ public class PointServiceImpl implements PointsService {
 	 * @author zengjizu
 	 * @date 2017年1月7日
 	 */
-	private void addPointsRecord(String userId, String code, Integer pointVal, String description, int type,String referentId)
-			throws ServiceException {
+	private void addPointsRecord(String userId, String code, Integer pointVal, String description, int type,
+			String referentId) throws ServiceException {
 		logger.debug("添加积分记录请求参数，userId={}，code={},pointVal={},description={}", userId, code, pointVal, description);
 		PointsRecord pointsRecord = new PointsRecord();
 		pointsRecord.setId(UuidUtils.getUuid());

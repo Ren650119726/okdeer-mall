@@ -35,7 +35,7 @@ public class PointsSubScriber {
 	@Autowired
 	private PointsService pointsService;
 	
-	@RocketMQListener(topic = PointConstants.POINT_TOPIC, tag = "*")
+	@RocketMQListener(topic = PointConstants.TOPIC_POINT_ADD, tag = "*")
 	public ConsumeConcurrentlyStatus addPoint(MQMessage enMessage) {
 
 		AddPointsParamDto addPointsParamDto = (AddPointsParamDto) enMessage.getContent();
@@ -57,7 +57,7 @@ public class PointsSubScriber {
 	 * @author zengjizu
 	 * @date 2017年1月6日
 	 */
-	@RocketMQListener(topic = PointConstants.CONSUM_POINT_TOPIC, tag = "*")
+	@RocketMQListener(topic = PointConstants.TOPIC_POINT_CONSUM, tag = "*")
 	public ConsumeConcurrentlyStatus consumPoint(MQMessage enMessage) {
 
 		ConsumPointParamDto consumPointParamDto = (ConsumPointParamDto) enMessage.getContent();
@@ -72,17 +72,17 @@ public class PointsSubScriber {
 		}
 	}
 	
-	@RocketMQListener(topic = PointConstants.REFUND_POINT_TOPIC, tag = "*")
+	@RocketMQListener(topic = PointConstants.TOPIC_POINT_REFUND, tag = "*")
 	public ConsumeConcurrentlyStatus refundPoint(MQMessage enMessage) {
 
 		RefundPointParamDto refundPointParamDto = (RefundPointParamDto) enMessage.getContent();
-		logger.debug("消费积分请求参数：{}", JsonMapper.nonEmptyMapper().toJson(refundPointParamDto));
+		logger.debug("退款积分请求参数：{}", JsonMapper.nonEmptyMapper().toJson(refundPointParamDto));
 		try {
 			//消费积分积分
 			pointsService.refundPoint(refundPointParamDto);
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 		} catch (Exception e) {
-			logger.error("消费积分处理异常：{}", JsonMapper.nonEmptyMapper().toJson(refundPointParamDto), e);
+			logger.error("退款积分处理异常：{}", JsonMapper.nonEmptyMapper().toJson(refundPointParamDto), e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
 		}
 	}

@@ -663,7 +663,7 @@ public class TradeOrderCompleteProcessServiceImpl
 					splitItemList.add(splitItem);
 				}
 				itemIt.remove();
-			}else if(item.getActivityQuantity() > 0){
+			}else if(item.getActivityQuantity() != null && item.getActivityQuantity() > 0){
 				// 如果是低价且购买了低价商品，对商品进行拆分
 				splitItem = new TradeOrderItem();
 				splitItem.setId(UuidUtils.getUuid());

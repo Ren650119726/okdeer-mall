@@ -56,7 +56,6 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Charsets;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.account.dto.PayAccountDto;
@@ -68,7 +67,6 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
-import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
@@ -80,7 +78,6 @@ import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
-import com.okdeer.archive.store.entity.StoreAgentCommunity;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
@@ -195,7 +192,6 @@ import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.order.utils.JsonDateValueProcessor;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.OrderCouponsRespDto;
 import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
@@ -225,7 +221,6 @@ import com.okdeer.mcm.service.ISmsService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
 
 /**
  * 
@@ -245,6 +240,7 @@ import net.sf.json.JsonConfig;
  *      15698             2016-12-05        wusw              订单详情，优惠活动要考虑秒杀活动类型查询
  *      V2.0.0            2017-01-09           wusw           修改订单查询和导出的线上订单包括订单来源为友门鹿便利店(CVS)的订单
  *      V2.0.0            2017-01-12        wusw              修改低价商品订单的优惠显示问题
+ *      V2.0.0            2017-01-17        wusw              修改服务订单详情的商品规格为null判断
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -1491,7 +1487,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					stockManagerJxcService.updateStock(stockAdjustVo);
 					// 如果有组合商品，需要修改商城的组合商品库存
 					rpcId = UuidUtils.getUuid();
-					stockAdjustVo = stockAdjustVoBuilder.buildComboStock(tradeOrder, rpcId, StockOperateEnum.PLACE_ORDER_COMPLETE);
+					stockAdjustVo = stockAdjustVoBuilder.buildComboStock(tradeOrder, rpcId, StockOperateEnum.SEND_OUT_GOODS);
 					if(stockAdjustVo != null){
 						serviceStockManagerService.updateStock(stockAdjustVo);
 					}
@@ -1752,11 +1748,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 服务店派单发送短信
 				tradeMessageService.sendSmsByServiceStoreShipments(tradeOrder);
 			} else {// End 重构4.1 add by wusw 20160801
-				if (ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()) {
-					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_group_timeout, tradeOrder.getId());
-				} else {
-					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
-				}
+				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
 			}
 
 			// 只有便利店发货才需要短信
@@ -3694,8 +3686,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			json.put("pickUpTime", strPickUpTime == null ? "" : strPickUpTime);
 		}
 		json.put("remark", orders.getRemark() == null ? "" : orders.getRemark());
-		json.put("orderAmount", orders.getTotalAmount() == null ? "0" : orders.getTotalAmount());
-		json.put("actualAmount", orders.getActualAmount() == null ? "0" : orders.getActualAmount());
+		json.put("orderAmount", orders.getTotalAmount() == null ? "0" : orders.getTotalAmount().toString());
+		json.put("actualAmount", orders.getActualAmount() == null ? "0" : orders.getActualAmount().toString());
 		json.put("orderNo", orders.getOrderNo() == null ? "" : orders.getOrderNo());
 		json.put("cancelReason", getCancelReason(orders));
 		if (orders.getStatus() != null && orders.getStatus() == OrderStatusEnum.CANCELED) {
@@ -3708,8 +3700,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("orderConfirmGoodTime", orders.getReceivedTime() != null
 				? DateUtils.formatDate(orders.getReceivedTime(), "yyyy-MM-dd HH:mm:ss") : "");
 		json.put("activityType", orders.getActivityType() == null ? "" : orders.getActivityType().ordinal());
-		json.put("preferentialPrice", orders.getPreferentialPrice() == null ? "" : orders.getPreferentialPrice());
-		json.put("fare", orders.getFare() == null ? "" : orders.getFare());
+		json.put("preferentialPrice", orders.getPreferentialPrice() == null ? "" : orders.getPreferentialPrice().toString());
+		json.put("fare", orders.getFare() == null ? "" : orders.getFare().toString());
 		// 订单评价类型0：未评价，1：已评价
 		json.put("orderIsComment", appraise > 0 ? Constant.ONE : Constant.ZERO);
 		// 订单投诉状态
@@ -3818,13 +3810,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				item.put("skuName", tradeOrderItem.getSkuName() == null ? "" : tradeOrderItem.getSkuName());
 				item.put("productId", tradeOrderItem.getStoreSkuId() == null ? "" : tradeOrderItem.getStoreSkuId());
 				item.put("mainPicPrl", tradeOrderItem.getMainPicPrl() == null ? "" : tradeOrderItem.getMainPicPrl());
-				item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
+				item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice().toString());
 
 				item.put("quantity", tradeOrderItem.getQuantity());
-				item.put("skuTotalAmount", tradeOrderItem.getTotalAmount());
-				item.put("skuActualAmount", tradeOrderItem.getActualAmount());
+				item.put("skuTotalAmount", tradeOrderItem.getTotalAmount().toString());
+				item.put("skuActualAmount", tradeOrderItem.getActualAmount().toString());
 				item.put("preferentialPrice",
-						tradeOrderItem.getPreferentialPrice() == null ? "0" : tradeOrderItem.getPreferentialPrice());
+						tradeOrderItem.getPreferentialPrice() == null ? "0" : tradeOrderItem.getPreferentialPrice().toString());
 				// 服务保障
 				String serviceAssurance = "0";
 				// 订单是否完成
@@ -3851,7 +3843,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 				item.put("refundId", refundId);
 				item.put("refundStatus", refundStatus);
-				item.put("refundAmount", refundAmount);
+				item.put("refundAmount", refundAmount.toString());
 				array.add(item);
 			}
 		}
@@ -4178,7 +4170,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 购买商品的数量
 					item.put("quantity", tradeOrderItem.getQuantity());
 					item.put("itemId", tradeOrderItem.getId());
-					item.put("unit", tradeOrderItem.getUnit());
+					// Begin V2.0.0 add by wusw 20170117
+					if (tradeOrderItem.getUnit() != null) {
+						item.put("unit", tradeOrderItem.getUnit());
+					} else {
+						item.put("unit", "");
+					}
+					// End V2.0.0 add by wusw 20170117
 					itemArray.add(item);
 				}
 				json.put("orderItems", itemArray);
@@ -4198,7 +4196,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					item.put("unitPrice", tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice());
 					// 购买商品的数量
 					item.put("quantity", tradeOrderItem.getQuantity());
-					item.put("unit", tradeOrderItem.getUnit());
+					// Begin V2.0.0 add by wusw 20170117
+					if (tradeOrderItem.getUnit() != null) {
+						item.put("unit", tradeOrderItem.getUnit());
+					} else {
+						item.put("unit", "");
+					}
+					// End V2.0.0 add by wusw 20170117
 				}
 			}
 			// 商品信息
@@ -4634,8 +4638,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateOrderDelivery(TradeOrder tradeOrder) throws Exception {
-		String rpcId = null;
-		StockAdjustVo stockAdjustVo = null;
 		if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {// 发货
 			this.updateOrderStatus(tradeOrder);
 			Map<String, Object> map = new HashMap<String, Object>();
@@ -4644,16 +4646,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			tradeOrder.setTradeOrderItem(tradeOrderItem);
 			// 锁定库存
 			try {
-				rpcId = UuidUtils.getUuid();
-				stockAdjustVo = buildDeliveryStock(tradeOrder, rpcId);
-
 				// 发送计时消息
-				if (ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()) {
-					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_group_timeout, tradeOrder.getId());
-				} else {
-					tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
-				}
-
+				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
 				// Begin 1.0.Z 增加订单操作记录 add by zengj
 				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
 						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
@@ -6620,13 +6614,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			addPointsParamDto.setPointsRuleCode(PointsRuleCode.APP_CONSUME);
 			addPointsParamDto.setUserId(userId);
 			addPointsParamDto.setBusinessId(orderId);
-			MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDto);
+			MQMessage anMessage = new MQMessage(PointConstants.TOPIC_POINT_ADD, (Serializable) addPointsParamDto);
 			SendResult sendResult = rocketMQProducer.sendMessage(anMessage);
 			if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
 				logger.info("发送消费积分消息成功，发送数据：{},topic:{}", JsonMapper.nonDefaultMapper().toJson(addPointsParamDto),
-						PointConstants.POINT_TOPIC);
+						PointConstants.TOPIC_POINT_ADD);
 			} else {
-				logger.error("发送消费积分消息失败,topic:{}", PointConstants.POINT_TOPIC);
+				logger.error("发送消费积分消息失败,topic:{}", PointConstants.TOPIC_POINT_ADD);
 			}
 		}
 	}

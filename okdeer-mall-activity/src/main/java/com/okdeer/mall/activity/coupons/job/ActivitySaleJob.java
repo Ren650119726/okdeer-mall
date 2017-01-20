@@ -1,28 +1,22 @@
 
 package com.okdeer.mall.activity.coupons.job;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Resource;
-
+import com.alibaba.dubbo.config.annotation.Reference;
+import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
+import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
+import com.okdeer.archive.goods.store.service.ELGoodsServiceApi;
 import com.okdeer.common.utils.ELOperateEnum;
+import com.okdeer.mall.activity.coupons.entity.ActivitySale;
+import com.okdeer.mall.activity.coupons.enums.ActivitySaleStatus;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.service.ELSkuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.dubbo.config.annotation.Reference;
-import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
-import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
-import com.okdeer.archive.goods.store.service.ELGoodsServiceApi;
-import com.okdeer.mall.activity.coupons.entity.ActivitySale;
-import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
-import com.okdeer.mall.activity.coupons.enums.ActivitySaleStatus;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsService;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @pr mall
@@ -66,6 +60,7 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 							idList.add(a.getId());
 							elSkuService.syncSaleToEL(idList, ActivitySaleStatus.ing.getValue(),
 									a.getStoreId(), "0", ELOperateEnum.UPDATE.ordinal());
+							logger.info("开启特惠活动信息（同步搜索引擎-开启）：activityIds{}",idList);
 							//activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.ing.getValue(), a.getStoreId(), "0");
 						} else if (a.getStatus() == ActivitySaleStatus.ing.getValue()) {
 							// 进行中改为已关闭
@@ -73,6 +68,7 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 							idList.add(a.getId());
 							elSkuService.syncSaleToEL(idList, ActivitySaleStatus.end.getValue(),
 									a.getStoreId(), "0", ELOperateEnum.UPDATE.ordinal());
+							logger.info("关闭特惠活动信息（同步搜索引擎-关闭）：activityIds{}",idList);
 							//activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.end.getValue(),
 							//		a.getStoreId(), "0");
 						}

@@ -32,7 +32,7 @@ public class MemberApiTest extends BaseServiceTest {
 	 */
 	@Test
 	public void testFindSysUserExtInfo() {
-		String userId = "8a80808d57c260880157c2afe51c0030";
+		String userId = "8a80808d57c260880157c2afe51c003033";
 		try {
 			SysBuyerExtDto dto = memberApi.findSysUserExtInfo(userId);
 			Assert.assertTrue(dto != null);

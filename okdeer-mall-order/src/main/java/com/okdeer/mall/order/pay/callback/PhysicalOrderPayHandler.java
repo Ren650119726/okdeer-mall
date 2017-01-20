@@ -22,11 +22,13 @@ public class PhysicalOrderPayHandler extends AbstractPayResultHandler {
 	@Override
 	public void sendTimerMessage(TradeOrder tradeOrder) throws Exception {
 		// 发送计时消息
-		if (tradeOrder.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY) {
-			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_group_timeout, tradeOrder.getId());
+		
+		if (tradeOrder.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP){ 
+			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_take_goods_timeout, tradeOrder.getId());
 		} else {
 			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_timeout, tradeOrder.getId());
 		}
+		
 	}
 
 }
