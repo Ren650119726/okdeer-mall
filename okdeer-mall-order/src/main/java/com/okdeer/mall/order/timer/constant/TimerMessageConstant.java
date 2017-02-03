@@ -91,7 +91,7 @@ public interface TimerMessageConstant {
         /**
          * 到店提货超时
          */
-        tag_take_goods_timeout(2 * 60L),
+        tag_take_goods_timeout(3 * 24 * 60 * 60L),
 
         /**
          * 收货超时处理(团购) 7天
