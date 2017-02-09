@@ -16,9 +16,10 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
-import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto;
 import com.okdeer.mall.advert.entity.AdvertDetailVo;
+import com.okdeer.mall.advert.entity.AdvertGoodsVo;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.entity.ColumnAdvertCommunity;
 import com.okdeer.mall.advert.entity.ColumnAdvertQueryVo;
@@ -37,7 +38,7 @@ import com.okdeer.mall.advert.entity.ColumnAdvertVo;
  *		v1.1.0			2016-10-18			zhulq        获取默认广告
  */
 @Repository
-public interface ColumnAdvertMapper extends IBaseCrudMapper {
+public interface ColumnAdvertMapper extends IBaseMapper {
 
 	/**
 	 * 获取广告列表
@@ -216,5 +217,15 @@ public interface ColumnAdvertMapper extends IBaseCrudMapper {
 	 * @date 2017年1月3日
 	 */
 	List<ColumnAdvert> findForApp(ColumnAdvertQueryParamDto advertQueryParamDto);
+	
+	/**
+	 * @Description: 根据广告id获取广告商品列表
+	 * @param advertId  广告id
+	 * @return list
+	 * @author xuzq01
+	 * @param storeId 
+	 * @date 2017年02月08日
+	 */
+	List<AdvertGoodsVo> findAdvertGoodsByAdvertId(@Param("advertId")String advertId, @Param("storeId")String storeId);
 }
 
