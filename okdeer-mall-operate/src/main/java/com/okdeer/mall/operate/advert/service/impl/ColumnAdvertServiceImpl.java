@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.archive.system.entity.PsmsSmallCommunityInfo;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.IPsmsSmallCommunityInfoServiceApi;
@@ -33,7 +34,6 @@ import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto;
 import com.okdeer.mall.advert.entity.AdvertDetailVo;
-import com.okdeer.mall.advert.entity.AdvertGoodsVo;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.entity.ColumnAdvertApproval;
 import com.okdeer.mall.advert.entity.ColumnAdvertArea;
@@ -691,7 +691,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	}
 
 	@Override
-	public List<AdvertGoodsVo> findAdvertGoodsByAdvertId(String advertId, String storeId) {
+	public List<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(String advertId, String storeId) {
 		return advertMapper.findAdvertGoodsByAdvertId(advertId, storeId);
 	}
 }

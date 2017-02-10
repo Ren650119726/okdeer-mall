@@ -16,6 +16,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto;
 import com.okdeer.mall.advert.entity.AdvertDetailVo;
@@ -226,6 +227,6 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	 * @param storeId 
 	 * @date 2017年02月08日
 	 */
-	List<AdvertGoodsVo> findAdvertGoodsByAdvertId(@Param("advertId")String advertId, @Param("storeId")String storeId);
+	List<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(@Param("advertId")String advertId, @Param("storeId")String storeId);
 }
 

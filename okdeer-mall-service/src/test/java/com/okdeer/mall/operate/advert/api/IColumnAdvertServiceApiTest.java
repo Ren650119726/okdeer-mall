@@ -7,7 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.okdeer.mall.advert.entity.AdvertGoodsVo;
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.mall.advert.service.IColumnAdvertServiceApi;
 import com.okdeer.mall.base.BaseServiceTest;
 
@@ -43,8 +43,8 @@ public class IColumnAdvertServiceApiTest extends BaseServiceTest {
 	@Test
 	public void findAdvertGoodsByAdvertIdTest() {
 		String advertId = "100002";
-		String storeId = "8a284fd056c2991b0156c33f1e530259";
-		List<AdvertGoodsVo> voList = advertServiceApi.findAdvertGoodsByAdvertId(advertId,storeId);
+		String storeId = "56583c03276511e6aaff00163e010eb1";
+		List<GoodsStoreActivitySkuDto> voList = advertServiceApi.findAdvertGoodsByAdvertId(advertId,storeId);
 		Assert.assertTrue(voList.size()>0);
 
 	}
