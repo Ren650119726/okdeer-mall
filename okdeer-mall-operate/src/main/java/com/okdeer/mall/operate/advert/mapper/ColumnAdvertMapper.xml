@@ -75,29 +75,32 @@
 			<result column="community_id" property="communityId" jdbcType="VARCHAR"/>
 		</collection>
 	</resultMap>
-	<resultMap type="com.okdeer.mall.advert.entity.AdvertGoodsVo" id="advertGoodsMap" >
-		<result column="addSendPrice" property="addSendPrice" jdbcType="TINYINT"/>
-		<result column="canConfirmOrder" property="canConfirmOrder" jdbcType="TINYINT"/>
-		<result column="fullPrice" property="fullPrice" jdbcType="DECIMAL"/>
-		<result column="goodsName" property="goodsName" jdbcType="VARCHAR"/>
-		<result column="goodsStoreSkuId" property="goodsStoreSkuId" jdbcType="VARCHAR" />
-		<result column="hasFullPrice" property="hasFullPrice" jdbcType="TINYINT" />
-		<result column="hasSendPrice" property="hasSendPrice" jdbcType="TINYINT"/>
-		<result column="isSupportCart" property="isSupportCart" jdbcType="TINYINT"/>
-		<result column="marketPrice" property="marketPrice" jdbcType="DECIMAL" />
-		<result column="picUrl" property="picUrl" jdbcType="VARCHAR"/>
-		<result column="onlinePrice" property="onlinePrice" jdbcType="DECIMAL"/>
-		<result column="sellable" property="sellable" jdbcType="INTEGER" />
-		<result column="sendPrice" property="sendPrice" jdbcType="DECIMAL"/>
-		<result column="skuStoreId" property="skuStoreId" jdbcType="VARCHAR" />
-		<result column="skuType" property="skuType" jdbcType="TINYINT"/>
-		<result column="isShopNum" property="isShopNum" jdbcType="TINYINT"/>
-		<result column="startBuyNum" property="startBuyNum" jdbcType="TINYINT"/>
-		<result column="storeName" property="storeName" jdbcType="VARCHAR"/>
-		<result column="updateTime" property="updateTime" jdbcType="TIMESTAMP" />
-		<result column="serverColumnId" property="serverColumnId" jdbcType="VARCHAR"/>
-		<result column="serverColumnName" property="serverColumnName" jdbcType="VARCHAR"/>
-	</resultMap>
+	<!-- 活动商品信息 -->
+  <resultMap id="advertGoodsMap" type="com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto" >
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="alias" property="alias" jdbcType="VARCHAR" />
+    <result column="tagType" property="tagType" jdbcType="INTEGER" />
+    <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+    <result column="onlinePrice" property="onlinePrice" jdbcType="DECIMAL" />
+    <result column="marketPrice" property="marketPrice" jdbcType="DECIMAL" />
+    <result column="sellableStock" property="sellableStock" jdbcType="INTEGER" />
+    <result column="tradeMax" property="tradeMax" jdbcType="INTEGER" />
+    <result column="limitNum" property="limitNum" jdbcType="INTEGER" />
+    <result column="guaranteed" property="guaranteed" jdbcType="INTEGER" />
+    <result column="obsolete" property="obsolete" jdbcType="INTEGER" />
+    <result column="propertiesIndb" property="propertiesIndb" jdbcType="INTEGER" />
+    <result column="activityType" property="activityType" jdbcType="INTEGER" />
+    <result column="url" property="url" jdbcType="VARCHAR" />
+    <result column="updateTime" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="store_id" property="shopId" jdbcType="VARCHAR" />
+    <result column="store_name" property="shopName" jdbcType="VARCHAR" />
+    <result column="saleName" property="saleName" jdbcType="VARCHAR" />
+    <result column="h5_url" property="h5Url" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="isPrivliege" property="isPrivliege" jdbcType="INTEGER" />
+    <result column="sale_price" property="salePrice" jdbcType="DECIMAL" />
+  </resultMap>
 		
 	<resultMap id="getAllSetAreaResult" type="HashMap">
 	    <result property="key" column="areaId" jdbcType="VARCHAR"/>
