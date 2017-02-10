@@ -923,46 +923,50 @@
 	</select>
 	<!-- begin 根据广告id获取广告商品列表 xuzq01 20170208-->
 	<select id="findAdvertGoodsByAdvertId" resultMap="advertGoodsMap" parameterType="String">
-		select 
-		CAST(se.is_collect AS SIGNED) as addSendPrice,
-		CAST(se.is_support_purchase AS SIGNED) as canConfirmOrder,
-		se.starting_price as fullPrice,
-		CAST(se.is_starting_price AS SIGNED) as hasFullPrice,
-		CAST(se.is_distribution_fee AS SIGNED) as hasSendPrice,
-		CAST(se.is_shopping_cart AS SIGNED) as isSupportCart,
-		se.distribution_fee as sendPrice,
-		sku.name as goodsName,
-		sku.id as goodsStoreSkuId,
-		sku.market_price as marketPrice,
-		sku.online_price as onlinePrice,
-		sku.store_id as skuStoreId,
-		CAST(sku.type AS SIGNED) as skuType,
-		sku.update_time as updateTime,
-		service.is_shop_num as isShopNum,
-		service.shop_num as startBuyNum,
-		si.store_name as storeName,
-		css.column_server_id as serverColumnId,
-		pic.url as picUrl,
-		stock.sellable as sellable,
-		cs .server_name as serverColumnName
-	
-		from column_advert_goods s
-	    LEFT JOIN goods_store_sku_service service on s.goods_id = service.product_no
-	    LEFT JOIN goods_store_sku sku on sku.id = service.store_sku_id
-		LEFT JOIN store_info si on (sku.store_id = si.id)
-		LEFT JOIN goods_store_sku_stock stock on (sku.id = stock.store_sku_id)
-		LEFT JOIN goods_store_sku_picture pic on (sku.id = pic.store_sku_id and pic.type = 1)
-		LEFT JOIN store_info_ext ext on (si.id = ext.store_id)
-		LEFT JOIN store_service_ext se on (si.id = se.store_id)
-		LEFT JOIN column_server_store css on (css.store_id = si.id)
-		LEFT JOIN column_server cs on (css.column_server_id = cs.id)
-		where 1 = 1 
-		<if test="advertId != null">
-		 	and s.advert_id = #{advertId,jdbcType=VARCHAR}
-        </if>
-        <if test="storeId != null">
-		 	and sku.store_id = #{storeId,jdbcType=VARCHAR}
-        </if>
-	</select>
+		SELECT DISTINCT
+        sku.id,
+		sku.name,
+		sku.alias,
+		sku.activity_id,
+		IFNULL(sku.tag_type,0) AS tagType,
+		sku.bar_code,
+	    saleGoods.sale_price AS onlinePrice,
+	    sku.market_price AS marketPrice,
+	    IF(sku.activity_type = 2 and sale.status = 1, '1','0') AS isPrivliege,
+	    stock.locked AS sellableStock,
+	    saleGoods.trade_max AS tradeMax,
+	    sale.`limit` AS limitNum,
+	    sale.name as saleName,
+	    sale.h5_url, 
+        saleGoods.sale_price,
+		IFNULL(sku.guaranteed,0) AS guaranteed,
+		IFNULL(sku.obsolete,0) AS obsolete,
+		sku.properties_indb AS propertiesIndb, 		
+		sku.activity_type AS activityType,
+		picture.url,
+		sku.update_time AS updateTime,
+        sku.store_id,
+        sku.type,
+        si.store_name,
+        <![CDATA[ CASE WHEN stock.locked > 0 THEN 1 ELSE 0 END AS lockedSort ]]>
+	FROM column_advert_goods s
+ 	LEFT JOIN goods_store_sku sku on s.goods_id = sku.id
+    LEFT JOIN goods_store_sku_plu plu ON plu.store_sku_id = sku.id AND plu.type = 1 AND plu.disabled = 0
+	LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
+	LEFT JOIN goods_store_sku_stock stock ON stock.`store_sku_id` = sku.`id`
+    LEFT JOIN activity_sale sale ON sale.store_id = sku.store_id
+    LEFT JOIN activity_sale_goods saleGoods ON saleGoods.store_sku_id = sku.id AND saleGoods.sale_id = sale.id 
+	LEFT JOIN store_info si ON si.id = sku.store_id
+	WHERE sku.disabled = 0
+	AND stock.disabled = 0
+	AND sale.disabled = 0 
+  	AND saleGoods.disabled = 0
+	AND sale.status = 1
+	AND sku.status = 1
+	AND sku.violation = 0
+	AND sku.online = 1
+	AND sku.store_id = #{storeId,jdbcType=VARCHAR}
+  	AND s.advert_id=#{advertId,jdbcType=VARCHAR}
+	ORDER BY lockedSort DESC, saleGoods.sort DESC, sku.online_price DESC,sku.update_time DESC
 	<!-- end 根据广告id获取广告商品列表 xuzq01 20170208-->
 </mapper>
