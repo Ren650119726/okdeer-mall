@@ -961,9 +961,6 @@
 	AND sku.id NOT IN(SELECT asg.store_sku_id 
 	    FROM `activity_sale_goods` asg 
 	    INNER JOIN `activity_sale` s ON s.`id` = asg.`sale_id` AND s.status = 1 AND s.disabled = 0)
-	AND sku.id NOT IN(SELECT alpg.store_sku_id 
-	    FROM `activity_low_price_goods` alpg 
-	    INNER JOIN `activity_low_price` alp ON alp.`id` = alpg.`activity_low_price_id` AND alp.status = 1)
 	<![CDATA[AND stock.sellable > 0]]>
 	AND sku.store_id = #{storeId,jdbcType=VARCHAR}
   	AND s.advert_id=#{advertId,jdbcType=VARCHAR}
