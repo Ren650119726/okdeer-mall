@@ -943,7 +943,7 @@
 		sku.activity_type AS activityType,
 	    advert.target_url AS h5_url, 
 		picture.url,
-		stock.locked AS sellableStock,
+		stock.sellable AS sellableStock,
         si.store_name,
         <![CDATA[ CASE WHEN stock.locked > 0 THEN 1 ELSE 0 END AS lockedSort ]]>
 	FROM column_advert_goods s

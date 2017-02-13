@@ -691,7 +691,10 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	}
 
 	@Override
-	public List<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(String advertId, String storeId) {
-		return advertMapper.findAdvertGoodsByAdvertId(advertId, storeId);
+	public PageUtils<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(String advertId, String storeId, 
+			Integer pageNumber, Integer pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true);
+		List<GoodsStoreActivitySkuDto> list = advertMapper.findAdvertGoodsByAdvertId(advertId, storeId);
+		return new PageUtils<GoodsStoreActivitySkuDto>(list);
 	}
 }
