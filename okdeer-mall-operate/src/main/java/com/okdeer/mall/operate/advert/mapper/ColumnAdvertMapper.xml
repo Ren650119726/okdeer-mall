@@ -936,6 +936,7 @@
 		sku.update_time AS updateTime,
         sku.store_id,
         sku.type,
+        sku.online_price AS onlinePrice,
 		sku.market_price AS marketPrice,
 		IFNULL(sku.guaranteed,0) AS guaranteed,
 		IFNULL(sku.obsolete,0) AS obsolete,
