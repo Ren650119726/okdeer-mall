@@ -938,6 +938,7 @@
         sku.type,
         sku.online_price AS onlinePrice,
 		sku.market_price AS marketPrice,
+		sku.trade_max AS tradeMax,
 		IFNULL(sku.guaranteed,0) AS guaranteed,
 		IFNULL(sku.obsolete,0) AS obsolete,
 		sku.properties_indb AS propertiesIndb, 		
@@ -957,7 +958,7 @@
 	AND sku.`status` = 1
 	AND sku.violation = 0
 	AND sku.`online` = 1
-	AND stock.sellable != 0
+	<![CDATA[AND stock.sellable > 0]]>
 	AND sku.store_id = #{storeId,jdbcType=VARCHAR}
   	AND s.advert_id=#{advertId,jdbcType=VARCHAR}
 	ORDER BY lockedSort DESC,  sku.online_price DESC,sku.update_time DESC
