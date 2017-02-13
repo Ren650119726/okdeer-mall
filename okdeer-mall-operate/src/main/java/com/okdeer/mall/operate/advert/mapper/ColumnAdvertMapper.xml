@@ -941,14 +941,12 @@
 		IFNULL(sku.obsolete,0) AS obsolete,
 		sku.properties_indb AS propertiesIndb, 		
 		sku.activity_type AS activityType,
-	    advert.target_url AS h5_url, 
 		picture.url,
 		stock.sellable AS sellableStock,
         si.store_name,
         <![CDATA[ CASE WHEN stock.locked > 0 THEN 1 ELSE 0 END AS lockedSort ]]>
 	FROM column_advert_goods s
  	LEFT JOIN goods_store_sku sku on s.goods_id = sku.bar_code
- 	LEFT JOIN  column_advert advert on advert.id=s.advert_id
     LEFT JOIN goods_store_sku_plu plu ON plu.store_sku_id = sku.id AND plu.type = 1 AND plu.disabled = 0
 	LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
 	LEFT JOIN goods_store_sku_stock stock ON stock.`store_sku_id` = sku.`id`
@@ -958,10 +956,9 @@
 	AND sku.`status` = 1
 	AND sku.violation = 0
 	AND sku.`online` = 1
-	AND advert.`status`= 1
 	AND sku.store_id = #{storeId,jdbcType=VARCHAR}
   	AND s.advert_id=#{advertId,jdbcType=VARCHAR}
-	ORDER BY lockedSort DESC, advert.sort DESC, sku.online_price DESC,sku.update_time DESC
+	ORDER BY lockedSort DESC,  sku.online_price DESC,sku.update_time DESC
 	</select>
 	<!-- end 根据广告id获取广告商品列表 xuzq01 20170208-->
 </mapper>
