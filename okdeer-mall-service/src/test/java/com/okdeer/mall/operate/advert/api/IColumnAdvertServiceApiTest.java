@@ -43,8 +43,8 @@ public class IColumnAdvertServiceApiTest extends BaseServiceTest {
 	}
 	@Test
 	public void findAdvertGoodsByAdvertIdTest() {
-		String advertId = "100002";
-		String storeId = "56583c03276511e6aaff00163e010eb1";
+		String advertId = "100005";
+		String storeId = "8a9868f655c5821701561fd6281e33b3";
 		Integer pageNumber = 1;
 		Integer pageSize = 20;
 		PageUtils<GoodsStoreActivitySkuDto> voList = advertServiceApi.findAdvertGoodsByAdvertId(advertId,storeId,pageNumber,pageSize);
