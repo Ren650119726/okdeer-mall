@@ -958,6 +958,8 @@
 	AND sku.`status` = 1
 	AND sku.violation = 0
 	AND sku.`online` = 1
+	AND sku.id NOT IN(SELECT asg.store_sku_id FROM `activity_sale_goods` asg)
+	AND sku.id NOT IN(SELECT alpg.store_sku_id FROM `activity_low_price_goods` alpg)
 	<![CDATA[AND stock.sellable > 0]]>
 	AND sku.store_id = #{storeId,jdbcType=VARCHAR}
   	AND s.advert_id=#{advertId,jdbcType=VARCHAR}
