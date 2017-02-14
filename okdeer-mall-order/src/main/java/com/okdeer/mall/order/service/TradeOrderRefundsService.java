@@ -50,13 +50,15 @@ public interface TradeOrderRefundsService {
 
 	/**
 	 * 更新退款单状态
+	 * @throws Exception 
 	 */
-	int updateRefunds(TradeOrderRefunds tradeOrderRefunds);
+	int updateRefunds(TradeOrderRefunds tradeOrderRefunds) throws Exception;
 
 	/**
 	 * 用户更新退款单
+	 * @throws Exception 
 	 */
-	void updateRefunds(TradeOrderRefunds orderRefunds, TradeOrderRefundsCertificateVo certificate);
+	void updateRefunds(TradeOrderRefunds orderRefunds, TradeOrderRefundsCertificateVo certificate) throws Exception;
 
 	/**
 	 * 用户修改退单申请
@@ -376,4 +378,13 @@ public interface TradeOrderRefundsService {
 	// Begin v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
 	Map<String, Object> statisRefundsByParams(Map<String, Object> params) throws Exception;
 	// End v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
+	
+	/**
+	 * @Description: 财务后台退款成功后处理
+	 * @param orderRefunds
+	 * @throws Exception
+	 * @author zengjizu
+	 * @date 2017年1月16日
+	 */
+	void refundSuccess(TradeOrderRefunds orderRefunds) throws Exception;
 }

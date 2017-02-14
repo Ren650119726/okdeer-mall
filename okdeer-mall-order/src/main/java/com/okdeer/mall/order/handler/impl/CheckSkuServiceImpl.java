@@ -36,6 +36,8 @@ import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.OrderOptTypeEnum;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 
 /**
@@ -206,16 +208,30 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 	
 	public ResultCodeEnum isChange(PlaceOrderParamDto req,StoreSkuParserBo parserBo){
 		ResultCodeEnum checkResult = ResultCodeEnum.SUCCESS;
+		// 购买商品款数
+		int kindSize = req.getSkuList().size();
 		// 检查商品信息是否发生变化
 		for (PlaceOrderItemDto item : req.getSkuList()) {
 			CurrentStoreSkuBo currentSku = parserBo.getCurrentStoreSkuBo(item.getStoreSkuId());
 			// 检查是否下架
 			if (currentSku.getOnline() == BSSC.UNSHELVE) {
-				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				if(kindSize > 1){
+					checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
+				}else{
+					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				}
 			} else if (currentSku.getOnlinePrice().compareTo(item.getSkuPrice()) != 0 || (currentSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && currentSku.getSkuActQuantity() > 0 && item.getSkuActPrice().compareTo(currentSku.getActPrice()) != 0)) {
-				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				if(kindSize > 1){
+					checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
+				}else{
+					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				}
 			} else if (!currentSku.getUpdateTime().equals(item.getUpdateTime())) {
-				checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				if(kindSize > 1){
+					checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
+				}else{
+					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
+				}
 			}
 			
 			if(checkResult != ResultCodeEnum.SUCCESS){
@@ -226,6 +242,10 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 	}
 	
 	private void calculateFare(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo){
+		if(paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT && paramDto.getPickType() == PickUpTypeEnum.TO_STORE_PICKUP){
+			// 如果是提交订单，且是到店自提，不计算运费
+			return;
+		}
 		StoreInfoExt storeExt = ((StoreInfo)paramDto.get("storeInfo")).getStoreInfoExt();
 		// 店铺起送价
 		BigDecimal startPrice = storeExt.getStartPrice() == null ? new BigDecimal(0.0) : storeExt.getStartPrice();

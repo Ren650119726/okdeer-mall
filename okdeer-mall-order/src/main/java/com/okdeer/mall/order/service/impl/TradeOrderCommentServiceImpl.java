@@ -49,7 +49,6 @@ import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.common.consts.PointConstants;
 import com.okdeer.mall.member.points.dto.AddPointsParamDto;
 import com.okdeer.mall.member.points.enums.PointsRuleCode;
-import com.okdeer.mall.member.points.service.PointsApi;
 import com.okdeer.mall.order.constant.OrderTraceConstant;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -323,7 +322,7 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 								addPointsParamDto.setPointsRuleCode(PointsRuleCode.GOODS_EVALUATE);
 								addPointsParamDto.setUserId(commentList.get(0).getUserId());
 								addPointsParamDto.setBusinessId(UuidUtils.getUuid());
-								MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDto);
+								MQMessage anMessage = new MQMessage(PointConstants.TOPIC_POINT_ADD, (Serializable) addPointsParamDto);
 								rocketMQProducer.sendMessage(anMessage);
 							}
 							// End V2.0 added by chenzc 2017-1-10

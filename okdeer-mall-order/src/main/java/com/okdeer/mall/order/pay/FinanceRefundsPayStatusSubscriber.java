@@ -25,7 +25,6 @@ import com.google.common.base.Charsets;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
-import com.okdeer.mall.order.entity.TradeOrderRefundsLog;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsLogMapper;
@@ -122,12 +121,8 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 				orderRefunds.setRefundsStatus(RefundsStatusEnum.FORCE_SELLER_REFUND_SUCCESS);
 			}
 			orderRefunds.setRefundMoneyTime(new Date());
-			tradeOrderRefundsService.updateRefunds(orderRefunds);
-			// Begin 1.0.Z 增加订单操作记录 add by zengj
-			tradeOrderRefundsLogMapper
-					.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
-							orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
-			// End 1.0.Z 增加订单操作记录 add by zengj
+			
+			tradeOrderRefundsService.refundSuccess(orderRefunds);
 			logger.info("=============修改退款的订单的状态成功=============");
 		} catch (Exception e) {
 			logger.error("退款单支付状态同步消息处理失败", e);

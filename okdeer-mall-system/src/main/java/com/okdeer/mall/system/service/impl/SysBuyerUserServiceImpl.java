@@ -58,6 +58,7 @@ import com.okdeer.mall.member.points.entity.PointsRule;
 import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.member.points.service.PointsRecordServiceApi;
 import com.okdeer.mall.member.points.service.PointsRuleServiceApi;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.system.entity.BuyerUserVo;
 import com.okdeer.mall.system.entity.SysRandCodeRecord;
 import com.okdeer.mall.system.entity.SysUserInvitationCode;
@@ -549,6 +550,14 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 			PropertyUtils.copyProperties(sysBuyerUserDto, buyerUserVo);
 			sysBuyerUserDto.setLoginName(mobilePhone);
 			sysBuyerUserDto.setPhone(mobilePhone);
+			
+			// 添加用户来源，clientType:0是管家版app，3是便利店app
+			String clientType = requestMap.get("clientType").toString();
+			if (StringUtils.isNotBlank(clientType) && "0".equals(clientType)) {
+				sysBuyerUserDto.setDataSource(String.valueOf(OrderResourceEnum.YSCAPP.ordinal()));
+			} else if (StringUtils.isNotBlank(clientType) && "3".equals(clientType)) {
+				sysBuyerUserDto.setDataSource(String.valueOf(OrderResourceEnum.CVSAPP.ordinal()));
+			}
 			String userId = sysBuyerUserService.addSysBuyerSync410(sysBuyerUserDto, sysSmsVerifyCodeUpdate, null);
 
 			//Begin added by zhaoqc
@@ -563,14 +572,6 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 			resultBuyerUserVo.setInvitationCode(invitationCode.getInvitationCode());
 			// 判断用户是否第一次注册登录，如果是则返回1
 			resultBuyerUserVo.setIsOneLogin("1");
-			
-			// 注册送积分
-			AddPointsParamDto addPointsParamDto = new AddPointsParamDto();
-			addPointsParamDto.setPointsRuleCode(PointsRuleCode.REGISTER);
-			addPointsParamDto.setUserId(userId);
-			addPointsParamDto.setBusinessId(UuidUtils.getUuid());
-			MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDto);
-			rocketMQProducer.sendMessage(anMessage);
 		} else {
 			// 查询手机用户信息
 			sysBuyerUserItemDto = sysBuyerUserApi.login(mobilePhone, null);

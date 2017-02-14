@@ -12,7 +12,8 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.account.dto.PayUpdateAmountDto;
 import com.okdeer.api.pay.common.dto.BaseResultDto;
@@ -88,7 +90,7 @@ import net.sf.json.JSONObject;
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi")
 class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceApi, ActivityCouponsRecordService {
 
-	private static final Logger log = Logger.getLogger(ActivityCouponsRecordServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ActivityCouponsRecordServiceImpl.class);
 
 	@Autowired
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
@@ -946,11 +948,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 						activityCouponsType);
 			} else {
 				map.put("code", 103);
-				map.put("msg", "您输入的抵扣券随机码无效！");
+				map.put("msg", "您输入的抵扣券优惠码错误！");
 			}
 		} else {
 			map.put("code", 103);
-			map.put("msg", "您输入的抵扣券随机码无效！");
+			map.put("msg", "您输入的抵扣券优惠码错误！");
 		}
 		
 		return JSONObject.fromObject(map);
@@ -979,13 +981,39 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	public void procesRecordNoticeJob(){
 		List<Map<String,Object>> list = getIsNoticeUser();
 		//存在需要提醒的对象
+		List<PushUser> pushUsers = Lists.newArrayList();
 		if(CollectionUtils.isNotEmpty(list)){
-			for(Map<String,Object> user:list){
-				String userId = (String)user.get("id");
-				String phone = (String)user.get("phone");
-				sendMsg(phone);
-				sendPosMessage(userId, phone);
-			}
+			list.forEach(user->pushUsers.add(new PushUser((String)user.get("id"), (String)user.get("phone"))));
+			pushUsers.forEach(user->{
+				sendMsg(user.userId);
+			});
+			sendPosMessage(pushUsers);
+			log.info("代金卷提醒发送列表：{}",JsonMapper.nonEmptyMapper().toJson(pushUsers));
+		}
+	}
+	
+	public class PushUser{
+		PushUser(String userId,String phone){
+			this.userId = userId;
+			this.phone = phone;
+		}
+		String userId;
+		String phone;
+		
+		public String getUserId() {
+			return userId;
+		}
+		
+		public void setUserId(String userId) {
+			this.userId = userId;
+		}
+		
+		public String getPhone() {
+			return phone;
+		}
+		
+		public void setPhone(String phone) {
+			this.phone = phone;
 		}
 	}
 	
@@ -1025,13 +1053,13 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @author tuzhd
 	 * @date 2016年11月21日
 	 */
-	private void sendPosMessage(String userId,String phone) {
+	private void sendPosMessage(List<PushUser> pushUsers) {
 		try{
 			PushMsgVo pushMsgVo = new PushMsgVo();
 			pushMsgVo.setSysCode(msgSysCode);
 			pushMsgVo.setToken(msgToken);
-			pushMsgVo.setSendUserId(userId);
-			pushMsgVo.setServiceFkId(userId);
+//			pushMsgVo.setSendUserId(userId);
+//			pushMsgVo.setServiceFkId(userId);
 			pushMsgVo.setServiceTypes(new Integer[] { Constant.TWO });
 			// 0:用户APP,2:商家APP,3POS机
 			pushMsgVo.setAppType(Constant.ZERO);
@@ -1050,18 +1078,19 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			
 			// 发送用户
 			List<PushUserVo> userList = new ArrayList<PushUserVo>();
+			pushUsers.forEach(user->{
+				PushUserVo pushUser = new PushUserVo();
+				pushUser.setUserId(user.userId);
+				pushUser.setMobile(user.phone);
+				pushUser.setMsgType(Constant.ONE);
+				userList.add(pushUser);
+			});
 			// 查询的用户信息
-			PushUserVo pushUser = new PushUserVo();
-			pushUser.setUserId(userId);
-			pushUser.setMobile(phone);
-			pushUser.setMsgType(Constant.ONE);
-	
-			userList.add(pushUser);
 			pushMsgVo.setUserList(userList);
 			kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushMsgVo));
 		}catch(Exception e){
 			//捕获异常不影响发送流程
-			log.error("代金劵到期提醒发送消息异常！"+phone,e);
+			log.error("代金劵到期提醒发送消息异常！",e);
 		}
 	}
 

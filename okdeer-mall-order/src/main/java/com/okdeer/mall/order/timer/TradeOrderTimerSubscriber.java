@@ -166,6 +166,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 			case tag_delivery_timeout:
 			case tag_delivery_group_timeout:
 			case tag_accept_server_timeout:
+			case tag_take_goods_timeout:	
 				return processDeliveryTimeout(content, tag);
 			// begin add by wangf01 2016.08.08
 			// 服务店铺发货超时自动取消

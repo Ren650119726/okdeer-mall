@@ -26,7 +26,7 @@ public class ActivityServiceLimitJob extends AbstractSimpleElasticJob {
 	@Override
 	public void process(JobExecutionMultipleShardingContext arg0) {
 		try {
-			limitService.processJob();
+//			limitService.processJob();
 		} catch (Exception e) {
 			logger.error("促销限购活动定时器异常", e);
 		}

@@ -1,5 +1,7 @@
 package com.okdeer.mall.order.handler.impl;
 
+import static com.okdeer.archive.store.enums.ResultCodeEnum.CVS_IS_PAUSE;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -14,6 +16,7 @@ import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
@@ -54,16 +57,25 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		// 服务店铺不存在
 		StoreInfo storeInfo = storeInfoService.getStoreInfoById(reqData.getStoreId());
 		if (storeInfo == null || storeInfo.getStoreInfoExt() == null) {
-			resp.setResult(ResultCodeEnum.STORE_IS_CLOSED);
+			resp.setResult(ResultCodeEnum.SERVER_STORE_NOT_EXISTS);
 			req.setComplete(true);
 			return;
 		}
 		// 店铺已关闭
 		if (StoreStatusEnum.OPENING != storeInfo.getStoreInfoExt().getIsClosed()) {
-			resp.setResult(ResultCodeEnum.STORE_IS_CLOSED);
+			resp.setResult(ResultCodeEnum.SERVER_STORE_IS_CLOSED);
 			req.setComplete(true);
 			return;
 		}
+		
+		// Begin V2.0 added by maojj 2017-01-19
+		// 店铺已暂停
+		if (storeInfo.getStoreInfoExt().getIsBusiness() == WhetherEnum.not) {
+			resp.setResult(CVS_IS_PAUSE);
+			req.setComplete(true);
+			return;
+		}
+		// End V2.0 added by maojj 2017-01-19
 		
 		req.getContext().put("storeName", storeInfo.getStoreName());
 		req.getContext().put("storeAreaType", storeInfo.getAreaType());

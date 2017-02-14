@@ -65,8 +65,8 @@ public class AppAdapter {
 			BeanMapper.copy(storeInfo.getStoreInfoServiceExt(), dto);
 		}
 		dto.setId(storeInfo.getId());
-		
-		
+		// 店铺详细地址
+		dto.setAddress(ConvertUtil.format(storeInfo.getArea()).replaceAll(" ", "") + storeInfo.getAddress());
 		return dto;
 	}
 	

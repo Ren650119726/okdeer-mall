@@ -2,7 +2,6 @@
 package com.okdeer.mall.system.service.impl;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,7 +29,6 @@ import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 import com.okdeer.mall.system.mapper.SysUserInvitationRecordMapper;
 import com.okdeer.mall.system.service.InvitationCodeService;
 import com.okdeer.mall.system.service.InvitationCodeServiceApi;
-import com.okdeer.archive.store.service.MessageConstant;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
@@ -336,13 +334,13 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 		addPointsParamDto.setPointsRuleCode(PointsRuleCode.INVITE_REGISTER);
 		addPointsParamDto.setUserId(userId);
 		addPointsParamDto.setBusinessId(businessId);
-		MQMessage anMessage = new MQMessage(PointConstants.POINT_TOPIC, (Serializable) addPointsParamDto);
+		MQMessage anMessage = new MQMessage(PointConstants.TOPIC_POINT_ADD, (Serializable) addPointsParamDto);
 		SendResult sendResult = rocketMQProducer.sendMessage(anMessage);
 		if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
-			logger.info("发送消费积分消息成功，发送数据：{},topic:{}", JsonMapper.nonDefaultMapper().toJson(addPointsParamDto),
-					PointConstants.POINT_TOPIC);
+			logger.info("发送添加积分消息成功，发送数据：{},topic:{}", JsonMapper.nonDefaultMapper().toJson(addPointsParamDto),
+					PointConstants.TOPIC_POINT_ADD);
 		} else {
-			logger.error("发送消费积分消息失败,topic:{}", PointConstants.POINT_TOPIC);
+			logger.error("发送添加积分消息失败,topic:{}", PointConstants.TOPIC_POINT_ADD);
 		}
 	}
 }

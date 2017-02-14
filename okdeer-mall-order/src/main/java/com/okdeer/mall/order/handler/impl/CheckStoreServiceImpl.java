@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
+import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
@@ -73,7 +74,7 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 		
 		if(storeInfo == null || storeInfo.getStoreInfoExt() == null){
-			resp.setResult(STORE_IS_CLOSED);
+			resp.setResult(ResultCodeEnum.SERVER_STORE_NOT_EXISTS);
 		}
 	}
 	
@@ -103,7 +104,7 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 * @date 2016年12月31日
 	 */
 	private void checkIsBusiness(Response<PlaceOrderDto> resp,PlaceOrderParamDto paramDto, StoreInfo storeInfo){
-		if(!resp.isSuccess() || paramDto.getOrderType() != PlaceOrderTypeEnum.CVS_ORDER){
+		if(!resp.isSuccess()){
 			return;
 		}
 		
