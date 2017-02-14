@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -223,8 +224,8 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * 
- * ClassName: TradeOrderServiceImpl 
+ *
+ * ClassName: TradeOrderServiceImpl
  * @Description: 交易订单服务接口
  * @author zengjizu
  * @date 2016年11月15日
@@ -551,7 +552,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Resource
 	private TradeOrderTraceService tradeOrderTraceService;
 	// End V1.2 added by maojj 2016-11-09
-	
+
 	@Resource
 	private StockAdjustVoBuilder stockAdjustVoBuilder;
 
@@ -563,7 +564,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @desc 查询订单导出的列表
 	 */
 	public List<TradeOrderExportVo> selectExportList(Map<String, Object> map) {
@@ -794,7 +795,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * @desc 根据订单id，获取订单、支付信息
-	 * 
+	 *
 	 * @author wusw
 	 */
 	@Override
@@ -805,7 +806,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * @desc 根据订单id，获取订单详细信息（包括订单基本信息、支付信息、发票信息、店铺基本信息等）
-	 * 
+	 *
 	 * @author wusw
 	 */
 	@Override
@@ -840,7 +841,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @Description: 运营后台查询实物订单列表-sql优化后
 	 * @param vo
 	 *            查询参数
@@ -903,7 +904,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @Description: 构建实物订单实体
 	 * @param result
 	 *            查询后的实物订单对象
@@ -965,7 +966,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @desc 商家APP订单查询
 	 *
 	 * @param map
@@ -1015,7 +1016,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 获取活动信息
-	 * 
+	 *
 	 * @author zengj
 	 * @param activityType活动类型
 	 * @param activityId
@@ -1094,7 +1095,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @desc 获取订单详情信息
 	 *
 	 * @param orderId
@@ -1167,7 +1168,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	// start added by luosm 20160924 V1.1.1
 	/***
-	 * 
+	 *
 	 * 查询商家版APP服务店到店消费订单信息
 	 */
 	@Override
@@ -1303,7 +1304,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// Begin modified by maojj 2016-07-26 添加分布式事务处理机制
 
 	/**
-	 * 
+	 *
 	 * @desc 取消充值超时未支付订单
 	 * @param tradeOrder
 	 * @throws ServiceException
@@ -1339,7 +1340,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 构建服务型订单库存VO
-	 * 
+	 *
 	 * @author zengj
 	 * @param tradeOrder
 	 *            订单
@@ -1449,7 +1450,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 				// begin modify by zengjz 判断是否是服务店订单
 				// begin update by wushp
-				
+
 				//添加积分
 				addPoint(tradeOrder.getUserId(), tradeOrder.getId(), tradeOrder.getActualAmount());
 				if (tradeOrder.getType().ordinal() == 2) {
@@ -1597,7 +1598,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 更新订单支付信息
-	 * 
+	 *
 	 * @author yangq
 	 */
 	@Transactional(rollbackFor = Exception.class)
@@ -1807,6 +1808,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public PageUtils<TradeOrder> getOnlineTradeOrderList(Map<String, Object> map, int pageNumber, int pageSize)
 			throws ServiceException {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
+        // begin add 兼容未升级的pos机系统 by wangf01 2017-1-24
+		if (map.containsKey("orderResource")){
+			List<Integer> statusList = (List<Integer>)map.get("orderResource");
+			if(CollectionUtils.isNotEmpty(statusList) && statusList.size()>0){
+			    // 添加友门鹿便利店类型查询
+                statusList.add(OrderResourceEnum.CVSAPP.ordinal());
+                // 集合去重
+                statusList.stream().distinct().collect(Collectors.toList());
+                map.put("orderResource",statusList);
+			}
+		}
+        // end add 兼容未升级的pos机系统 by wangf01 2017-1-24
 		List<TradeOrder> list = tradeOrderMapper.getTradeOrderByParams(map);
 		/*
 		 * if (list != null && list.size() > 0) { for (TradeOrder order : list) { if
@@ -1907,7 +1920,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService#getWXOrderDetail( java.lang.String)
 	 */
 	@Override
@@ -1980,7 +1993,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService# selectWXUnpaidOrderInfo(java.util.Map, int, int)
 	 */
 	@Override
@@ -2030,7 +2043,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService# selectWXDropShippingOrderInfo(java. util .Map, int,
 	 * int)
 	 */
@@ -2081,7 +2094,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.trade.order.serivce.TradeOrderService# selectWXToBeOrderInfo(java.util.Map, int, int)
 	 */
 	@Override
@@ -2292,7 +2305,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 在线订单来源
-	 * 
+	 *
 	 * @return List
 	 */
 	private List<Integer> getOnlineOrderResource() {
@@ -2304,7 +2317,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * pos订单来源
-	 * 
+	 *
 	 * @return List
 	 */
 	private List<Integer> getPosOrderResource() {
@@ -2315,7 +2328,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 订单状态 （已发货和已签收）
-	 * 
+	 *
 	 * @return List
 	 */
 	private List<Integer> getfinishStatus() {
@@ -2327,7 +2340,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 退款订单状态（已退款和强制卖家退款）
-	 * 
+	 *
 	 * @return List
 	 */
 	private List<Integer> getfinishRefundsStatus() {
@@ -2339,7 +2352,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 活动类型（平台）
-	 * 
+	 *
 	 * @return List
 	 */
 	private List<Integer> getPlatformDiscountActivityType() {
@@ -2351,7 +2364,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 活动类型（店铺）
-	 * 
+	 *
 	 * @return List
 	 */
 	private List<Integer> getDiscountActivityType() {
@@ -2365,7 +2378,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 活动类型（代金券）
-	 * 
+	 *
 	 * @return List
 	 */
 	private List<Integer> getVcheronActivityType() {
@@ -2376,7 +2389,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 获取统计条件map
-	 * 
+	 *
 	 * @param parames
 	 *            Map
 	 * @return Map
@@ -2404,7 +2417,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 统计订单数量
-	 * 
+	 *
 	 * @author zengj
 	 * @param json
 	 *            组装的json对象
@@ -2440,7 +2453,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 统计订单金额
-	 * 
+	 *
 	 * @author zengj
 	 * @param json
 	 *            组装的json对象
@@ -2483,7 +2496,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 统计订单退款金额及需退款的优惠金额
-	 * 
+	 *
 	 * @author zengj
 	 * @param json
 	 *            组装的json对象
@@ -2557,7 +2570,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 统计订单代金券金额
-	 * 
+	 *
 	 * @author zengj
 	 * @param json
 	 *            组装的json对象
@@ -2607,7 +2620,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 统计订单优惠金额
-	 * 
+	 *
 	 * @author zengj
 	 * @param json
 	 *            组装的json对象
@@ -2695,7 +2708,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 统计配送费金额
-	 * 
+	 *
 	 * @author zengj
 	 * @param json
 	 *            组装的json对象
@@ -2731,7 +2744,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 统计各种支付方式金额及实收
-	 * 
+	 *
 	 * @author zengj
 	 * @param json
 	 *            组装的json对象
@@ -2911,7 +2924,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 销售统计
-	 * 
+	 *
 	 * @desc TODO Add a description
 	 * @author zengj
 	 * @param parames
@@ -2942,7 +2955,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 该方法暂时废弃，采用getSaleOrderStatisticsNew
-	 * 
+	 *
 	 * @desc TODO Add a description
 	 * @param parames
 	 * @return
@@ -3456,7 +3469,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * map.put("refundsStatus", getfinishRefundsStatus()); map.put("payWay",
 	 * String.valueOf(PayWayEnum.LINE_PAY.ordinal())); map.put("paymentMethod", paymentMethod); BigDecimal
 	 * posRefundAmount = tradeOrderMapper.getRefundAmountByParames(map); return posRefundAmount; }
-	 * 
+	 *
 	 * private BigDecimal deliveryRefundAmountByPaymentMethod(Map<String, Object> parames, String paymentMethod) {
 	 * Map<String, Object> map = getOrderMap(parames); map.put("orderResource", getOnlineOrderResource());
 	 * map.put("refundsStatus", getfinishRefundsStatus()); map.put("payWay",
@@ -3467,7 +3480,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/**
 	 * 查询订单实际金额-用于今日营收的实际收入(商家云钱包的实际入账金额) 注：该退款金额包括活动金额，如果该退款单参与的活动是运营商发布的，该金额=
 	 * 订单实付金额+活动优惠金额， 如果该退款单参与的活动是商家发布的。那么该金额=订单实付金额
-	 * 
+	 *
 	 * @author zengj
 	 * @param params
 	 * @return
@@ -3480,7 +3493,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/**
 	 * 查询退款负收入金额-用于今日营收的负增长(商家云钱包的实际扣款金额) 注：该退款金额包括活动金额，如果该退款单参与的活动是运营商发布的，该金额=
 	 * 订单实付金额+活动优惠金额， 如果该退款单参与的活动是商家发布的。那么该金额=订单实付金额
-	 * 
+	 *
 	 * @author zengj
 	 * @param params
 	 * @return
@@ -3491,9 +3504,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * 今日（昨日）营收列表查询
-	 * 
+	 *
 	 * @author zengj
 	 * @param params
 	 * @param pageSize
@@ -3556,7 +3569,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * zengj:提货码验证记录
 	 *
 	 * @param params
@@ -3595,7 +3608,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * zengj:查询消费码订单总额
 	 *
 	 * @param params
@@ -3607,7 +3620,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * zengj:根据消费码查询订单信息
 	 *
 	 * @param params
@@ -3966,7 +3979,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @Description: 服务订单详细组装返回数据
 	 * @param orders
 	 *            订单信息
@@ -4249,7 +4262,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/**
 	 * @Description: 获取取消原因
 	 * @param order
-	 * @return   
+	 * @return
 	 * @author maojj
 	 * @date 2016年11月17日
 	 */
@@ -4265,7 +4278,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @desc 查询买家实物订单各状态订单数量
 	 * @author zengj
 	 * @param userId
@@ -4278,7 +4291,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	// begin add by wushp 20160823
 	/**
-	 * 
+	 *
 	 * @desc 微信查询买家实物订单各状态订单数量
 	 * @author wushp
 	 * @param userI
@@ -4292,7 +4305,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// end add by wushp 20160823
 
 	/**
-	 * 
+	 *
 	 * @desc 查询买家服务订单各状态订单数量
 	 * @author zengj
 	 * @param userId
@@ -4305,7 +4318,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * DESC: 首页交易订单统计
-	 * 
+	 *
 	 * @author LIU.W
 	 * @param storeId
 	 * @return
@@ -4321,7 +4334,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * DESC: 右下角弹窗交易订单统计
-	 * 
+	 *
 	 * @author LIU.W
 	 * @param storeId
 	 *            店铺ID
@@ -4425,7 +4438,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/**
 	 * 根据条件查询订单交易号
 	 * </p>
-	 * 
+	 *
 	 * @author yangq
 	 * @param params
 	 * @return
@@ -4438,7 +4451,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	// Begin modified by maojj 2016-07-26 添加分布式事务处理机制
 	/**
-	 * 
+	 *
 	 * @desc 消费码验证
 	 * @author zengj
 	 * @param userId
@@ -4679,7 +4692,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 修改发货库存
-	 * 
+	 *
 	 * @param tradeOrder
 	 *            订单
 	 * @return StockAdjustVo
@@ -4865,7 +4878,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 更新订单信息
-	 * 
+	 *
 	 * @param tradeOrder
 	 */
 	@Override
@@ -4876,7 +4889,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 货币格式化,保留两位小数
-	 * 
+	 *
 	 * @param b
 	 */
 	private String moneyFormat(BigDecimal b) {
@@ -4888,7 +4901,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 查询导出POS销售单列表
-	 * 
+	 *
 	 * @desc TODO Add a description
 	 * @author zengj
 	 * @param params
@@ -4901,7 +4914,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// Begin 重构4.1 add by wusw
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#selectServiceStoreOrderByParams(java.util.Map)
 	 */
 	@Override
@@ -4927,7 +4940,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// Begin 重构4.1 add by wusw
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findServiceStoreOrderForExport(java.util.Map)
 	 */
 	@Override
@@ -4973,7 +4986,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// Begin 重构4.1 add by wusw
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findServiceStoreOrderDetail(java.lang.String)
 	 */
 	@Override
@@ -4997,7 +5010,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// Begin 重构4.1 add by zhulq
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findRechargeOrder
 	 */
 	@Transactional(readOnly = true)
@@ -5017,7 +5030,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// Begin 重构4.1 add by wusw
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findServiceStoreOrderForOperateByParams(java.util.Map,
 	 *      int, int)
 	 */
@@ -5042,7 +5055,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findServiceStoreOrderForOperateExport(java.util.Map)
 	 */
 	@Override
@@ -5058,7 +5071,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @Description: 服务店订单状态和支付方式转换
 	 * @param vo
 	 * @return void
@@ -5091,7 +5104,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @Description: 服务店订单状态和支付方式转换
 	 * @param vo
 	 * @return void
@@ -5137,7 +5150,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findRechargeOrderByParams(java.util.Map)
 	 */
 	@Override
@@ -5147,7 +5160,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findRechargeOrderDetail(java.lang.String)
 	 */
 	@Transactional(readOnly = true)
@@ -5159,7 +5172,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// Begin 重构4.1 add by wusw 20160719
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderService#findOrderByParams(java.util.Map,
 	 *      int, int)
 	 */
@@ -5177,7 +5190,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @Description: 财务系统订单 接口参数处理
 	 * @param params
 	 * @return void
@@ -5287,7 +5300,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// Begin 重构4.1 add by wusw 20160723
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderService#findOrderListForFinanceByParams(java.util.Map)
 	 */
 	@Override
@@ -5326,7 +5339,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// Begin 重构4.1 add by wusw 20160729
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findServiceStoreOrderDetailForOperate(java.lang.String)
 	 */
 	@Override
@@ -5357,7 +5370,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// begin 重构4.1 add by wushp 20160803
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findStoreDetailByOrder(java.lang.String)
 	 */
 	@Override
@@ -5437,7 +5450,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findRechargeOrderForExport()
 	 */
 	@Transactional(readOnly = true)
@@ -5457,7 +5470,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	// Begin 12051 add by wusw 20160811
 	/**
-	 * 
+	 *
 	 * @Description: 根据id，获取活动名称
 	 * @param activityId
 	 *            活动id
@@ -5494,7 +5507,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// End 12051 add by wusw 20160811
 
 	/**
-	 * 
+	 *
 	 * @Description: 查询POS确认收货订单列表
 	 * @param storeId
 	 *            店铺ID
@@ -5709,7 +5722,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @Description: 获取消费返券信息并赠送代金券
 	 * @param orderId
 	 *            订单id
@@ -5845,7 +5858,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @Description: 消费返券插入代金券记录以及更新剩余的代金券
 	 * @param lstCouponsRecords
 	 *            代金券领取记录list
@@ -6105,7 +6118,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @Description: 修改库存
 	 * @param detailConsumeVo
 	 *            订单信息
@@ -6166,7 +6179,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * @Description: 修改订单消费码状态
 	 * @param orderIdList
 	 *            订单id集合
@@ -6237,7 +6250,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// Begin V1.1.0 add by wusw 20160929
 	/**
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findUserVisitServiceOrderDetail(java.lang.String)
 	 */
 	@Override
@@ -6259,7 +6272,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	/**
 	 * 到店消费订单处理
-	 * 
+	 *
 	 * @param tradeOrder
 	 *            订单
 	 * @param result
@@ -6478,7 +6491,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	// start added by luosm 20161010 V1.1.0
 	/**
-	 * 
+	 *
 	 * 查询商家版APP服务店到店消费订单信息
 	 */
 	@Override
@@ -6489,7 +6502,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * 查询服务店铺到店消费当天的收入-消费码已消费
 	 */
 	@Override
@@ -6498,7 +6511,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 
+	 *
 	 * 查询服务店铺到店消费当天的退单(负收入)
 	 */
 	@Override
@@ -6602,7 +6615,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @param orderId 订单id
 	 * @param amount 金额
 	 * @author zengjizu
-	 * @throws Exception 
+	 * @throws Exception
 	 * @date 2016年12月31日
 	 */
 	private void addPoint(String userId, String orderId, BigDecimal amount) throws Exception {
@@ -6624,8 +6637,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 		}
 	}
-	
-	
+
+
 	/**
 	 * @Description: tuzhd根据用户id查询其支付完成的订单总量 用于首单条件判断
 	 * @param userId 用户id
@@ -6636,7 +6649,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public int selectCountByUserStatus(String userId){
 		return tradeOrderMapper.selectCountByUserStatus( userId);
 	}
-	
+
 	/**
 	 * @Description: 校验用户使用新人专享代金券时 是否符合新用户及未使用该类型代金券的条件
 	 * @param userId
@@ -6648,7 +6661,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		//根据用户id查询其支付完成的订单总量 用于首单条件判断
 		int orderCount = selectCountByUserStatus(userId);
 		if(orderCount == 0 ){
-			//根据用户id查询其是否存在已使用的新用户专享代金劵  用于首单条件判断 
+			//根据用户id查询其是否存在已使用的新用户专享代金劵  用于首单条件判断
 			if(activityCouponsRecordMapper.findCouponsCountByUser(UseUserType.ONlY_NEW_USER, userId) == 0){
 				return true;
 			}
