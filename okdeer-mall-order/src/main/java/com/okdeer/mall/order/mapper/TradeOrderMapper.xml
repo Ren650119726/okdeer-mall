@@ -527,7 +527,13 @@
 		<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
 		<result column="quantity" property="quantity" jdbcType="INTEGER" />
 		<result column="user_id" property="userId" jdbcType="VARCHAR" />
-		<result column="user_phone" property="userPhone" jdbcType="VARCHAR" />
+		<result column="user_phone" property="userPhone" jdbcType="VARCHAR" />		
+		<result column="complete_time" property="completeTime" jdbcType="TIMESTAMP" />
+		<result column="activity_type" property="activityType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderActivityType" />
+		<result column="activity_name" property="activityName" jdbcType="VARCHAR" />
+		<result column="invitation_user_name" property="invitationUserName" jdbcType="VARCHAR" />
+		<result column="locate_address" property="locateAddress" jdbcType="VARCHAR" />
+		<result column="order_resource" property="orderResource" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderResourceEnum" />
 	</resultMap>
 	<!-- add by zhulq -->
 
@@ -575,6 +581,41 @@
 		</if>
 	</sql>
 
+  	<sql id="condition_recharge">
+		<if test="null == orderType">
+			AND (tr.type = 3 or tr.type = 4)
+		</if>
+		<if test="null != orderType">
+			AND tr.type = #{orderType,jdbcType=TINYINT}
+		</if>
+		<!-- 付款类型选择 -->
+		<if test="null != payType">
+			AND op.pay_type = #{payType,jdbcType=TINYINT}
+		</if>
+		<!-- 订单状态 -->
+		<if test="null != status">
+			AND tr.status = #{status,jdbcType=TINYINT}
+		</if>
+		<if test="null != rechargePhone and rechargePhone != ''">
+			AND tri.recharge_mobile = #{rechargePhone,jdbcType=VARCHAR}
+		</if>
+		<if test="orderNo != null and orderNo != ''">
+			AND tr.order_no = #{orderNo,jdbcType=VARCHAR}
+		</if>
+		<if test="null != startTime">
+			AND tr.create_time &gt;= #{startTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="null != endTime">
+			AND tr.create_time &lt;= #{endTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="userId != null and userId != ''">
+			AND tr.user_id = #{userId,jdbcType=VARCHAR}
+		</if>
+		<if test="userPhone != null and userPhone != ''">
+			AND tr.user_phone = #{userPhone,jdbcType=VARCHAR}
+		</if>
+	</sql>
+	
 	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
 		parameterType="java.lang.String">
 		select
@@ -4655,87 +4696,73 @@
 			</foreach>
 		</if>
 		<if test="ids == null">
-			<if test="null == orderType">
-				AND (tr.type = 3 or tr.type = 4)
-			</if>
-			<if test="null != orderType">
-				AND tr.type = #{orderType,jdbcType=TINYINT}
-			</if>
-			<!-- 付款类型选择 -->
-			<if test="null != payType">
-				AND op.pay_type = #{payType,jdbcType=TINYINT}
-			</if>
-			<!-- 订单状态 -->
-			<if test="null != status">
-				AND tr.status = #{status,jdbcType=TINYINT}
-			</if>
-			<if test="null != rechargePhone and rechargePhone != ''">
-				AND tri.recharge_mobile = #{rechargePhone,jdbcType=VARCHAR}
-			</if>
-			<if test="orderNo != null and orderNo != ''">
-				AND tr.order_no = #{orderNo,jdbcType=VARCHAR}
-			</if>
-			<if test="null != startTime">
-				AND tr.create_time &gt;= #{startTime,jdbcType=TIMESTAMP}
-			</if>
-			<if test="null != endTime">
-				AND tr.create_time &lt;= #{endTime,jdbcType=TIMESTAMP}
-			</if>
-			<if test="userId != null and userId != ''">
-				AND tr.user_id = #{userId,jdbcType=VARCHAR}
-			</if>
-			<if test="userPhone != null and userPhone != ''">
-				AND tr.user_phone = #{userPhone,jdbcType=VARCHAR}
-			</if>
+			<include refid="condition_recharge" />
 		</if>
 		ORDER BY tr.create_time DESC
 	</select>
 	<!-- add by zhulq 充值订单列表数据 end -->
 	<!-- 充值订单列表查询（商城后台导出） add by zhulq 20160718 -->
 	<select id="selectRechargeOrderExport" resultMap="RechargeOrderVoMap"
-		parameterType="map">
+		parameterType="com.okdeer.mall.order.entity.TradeOrderRechargeVo">
 		SELECT tr.id,
-		tr.status,
-		tr.actual_amount,
-		tr.order_no,
-		tr.type,
-		tr.create_time,
-		op.pay_type,
-		tri.sku_name,
-		tri.recharge_mobile
-		FROM trade_order tr
-		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
-		LEFT JOIN trade_order_item tri ON tr.id = tri.order_id
-		<!-- LEFT JOIN trade_order_refunds trf ON tr.id = trf.order_id -->
-		WHERE 1=1
+		      tr. STATUS,
+		      tr.actual_amount,
+	          tr.order_no,
+	          tr.type,
+	          tr.create_time,
+	          op.pay_type,
+	          op.pay_time,
+	          tr.user_id,
+	          tr.user_phone,
+	          tri.sku_name,
+	          tri.recharge_mobile,
+	          ac.NAME AS activity_name,
+	          tr.preferential_price,
+	          suic.sys_user_id,
+	          suic.sys_buyer_user_id,
+	          suir.sys_buyer_user_id,
+	      CASE
+              WHEN suic.user_type = 0 THEN suser.login_name
+              WHEN suic.user_type = 1 THEN buser.login_name
+		      ELSE ''
+		      END AS invitation_user_name,
+         CASE
+              WHEN tr. STATUS = 5 THEN tr.update_time
+              ELSE ''
+              END AS complete_time,
+              tr.order_resource
+        FROM  trade_order tr
+        LEFT JOIN trade_order_pay op ON tr.id = op.order_id
+        LEFT JOIN trade_order_item tri ON tr.id = tri.order_id
+        LEFT JOIN trade_order_refunds trf ON tr.id = trf.order_id
+        LEFT JOIN activity_coupons ac ON ac.id = tr.activity_id
+        LEFT JOIN sys_user_invitation_record suir ON suir.sys_buyer_user_id = tr.user_id
+        LEFT JOIN sys_user_invitation_code suic ON suir.invitation_code_id = suic.id
+        LEFT JOIN sys_user suser ON suic.sys_user_id = suser.id
+        LEFT JOIN sys_buyer_user buser ON suic.sys_buyer_user_id = buser.id
+      WHERE
+	   (
+		tr. STATUS = 1
+		OR tr. STATUS = 5
+		OR tr. STATUS = 6
+		OR tr. STATUS = 0
+		OR tr. STATUS = 11
+		OR tr. STATUS = 2
+	 )
+		<if test="isShow != null">
+			AND tr.is_show = #{isShow,jdbcType=TINYINT}
+		</if>
 		<!-- 充值类型选择 流量或者话费 -->
-		<if test="null == orderType">
-			AND (tr.type = 3 or tr.type = 4)
+		<if test="ids != null">
+			AND tr.id in
+			<foreach collection="ids" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
 		</if>
-		<if test="null != orderType">
-			AND tr.type = #{orderType,jdbcType=TINYINT}
+		<if test="ids == null">
+			<include refid="condition_recharge" />
 		</if>
-		<!-- 付款类型选择 -->
-		<if test="null != payType">
-			AND op.pay_type = #{payType,jdbcType=TINYINT}
-		</if>
-		<!-- 订单状态 -->
-		<if test="null != status">
-			AND tr.status = #{status,jdbcType=TINYINT}
-		</if>
-		<if test="null != rechargePhone and rechargePhone != ''">
-			AND tri.recharge_mobile = #{rechargePhone,jdbcType=VARCHAR}
-		</if>
-		<if test="orderNo != null and orderNo != ''">
-			AND tr.order_no = #{orderNo,jdbcType=VARCHAR}
-		</if>
-		<if test="null != startTime">
-			AND tr.create_time &gt;= #{startTime,jdbcType=TIMESTAMP}
-		</if>
-		<if test="null != endTime">
-			AND tr.create_time &lt;= #{endTime,jdbcType=TIMESTAMP}
-		</if>
-
 		ORDER BY tr.create_time DESC
 	</select>
 
