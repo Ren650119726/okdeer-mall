@@ -744,7 +744,7 @@
 		</if>
 	</sql>
 
-
+    <!-- update by wusw 20170215 增加活动类型参数查询 -->
 	<sql id="order_paytype_condition">
 		<if test="null!=skuName and '' !=skuName">
 			AND EXISTS(SELECT 1 FROM trade_order_item i WHERE tr.id = i.order_id AND
@@ -814,6 +814,9 @@
 				open="(" close=")" separator=",">
 				#{item}
 			</foreach>
+		</if>
+		<if test="activityType != null">
+		   AND tr.activity_type = #{activityType}
 		</if>
 	</sql>
 
@@ -3818,7 +3821,7 @@
 	</select>
 	<!-- 查询订单列表 ERP接口 luosm end -->
 
-	<!-- zengj:订单列表查询 -->
+	<!-- zengj:订单列表查询  update by wusw 20170215 修改排序规则和增加活动类型参数-->
 	<select id="selectOrderList" resultMap="TradeOrderMap"
 		parameterType="java.util.Map">
 		SELECT
@@ -3828,8 +3831,25 @@
 		LEFT JOIN sys_user su ON su.id=tr.seller_id
 		WHERE 1=1
 		<include refid="order_paytype_condition" />
-		<!-- 引用排序sql -->
-		<include refid="order_paytype_orderby" />
+		<if test="orderTimeSort != null and orderTimeSort != ''">
+	       <if test="orderTimeSort == 1">
+	         ORDER BY tr.create_time DESC
+	       </if>
+	       <if test="orderTimeSort == 2">
+	         ORDER BY tr.create_time ASC
+	       </if>
+	       <if test="orderTimeSort == 3">
+	         ORDER BY tr.delivery_time DESC
+	       </if>
+	       <if test="orderTimeSort == 4">
+	         ORDER BY tr.delivery_time ASC
+	       </if>
+	    </if> 
+	    <if test="orderTimeSort == null or orderTimeSort == ''">
+	      <!-- 引用排序sql -->
+		  <include refid="order_paytype_orderby" />
+	    </if>
+		
 	</select>
 	<!-- zengj:订单项信息查询 -->
 	<select id="selectOrderItemList" parameterType="java.util.Map"
@@ -4294,7 +4314,7 @@
 		</collection>
 	</resultMap>
 
-	<!-- wusw:实物订单列表查询 （商家中心） -->
+	<!-- wusw:实物订单列表查询 （商家中心）update by wusw 20170215 增加按时间排序规则和订单活动类型查询参数-->
 	<select id="selectRealOrderList" resultMap="RealOrderMap"
 		parameterType="java.util.Map">
 		SELECT
@@ -4304,8 +4324,24 @@
 		LEFT JOIN sys_user su ON su.id=tr.seller_id
 		WHERE 1=1
 		<include refid="order_paytype_condition" />
-		<!-- 引用排序sql -->
-		<include refid="order_paytype_orderby" />
+		<if test="orderTimeSort != null and orderTimeSort != ''">
+	       <if test="orderTimeSort == 1">
+	         ORDER BY tr.create_time DESC
+	       </if>
+	       <if test="orderTimeSort == 2">
+	         ORDER BY tr.create_time ASC
+	       </if>
+	       <if test="orderTimeSort == 3">
+	         ORDER BY tr.delivery_time DESC
+	       </if>
+	       <if test="orderTimeSort == 4">
+	         ORDER BY tr.delivery_time ASC
+	       </if>
+	    </if> 
+	    <if test="orderTimeSort == null or orderTimeSort == ''">
+	       	<!-- 引用排序sql -->
+			<include refid="order_paytype_orderby" />
+	    </if>
 
 		<!-- add by zengj 导出专用 -->
 		<if test="maxSize != null and maxSize > 0">
