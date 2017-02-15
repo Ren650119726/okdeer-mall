@@ -1,6 +1,12 @@
 package com.okdeer.mall.order.mapper;
 
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
@@ -20,4 +26,26 @@ public interface TradeOrderLogisticsMapper extends IBaseCrudMapper {
 	 * @return 返回查询结果集
 	 */
 	TradeOrderLogistics selectByOrderId(String orderId);
+	
+	//Begin V2.1.0 added by luosm 20170215
+	/***
+	 * 
+	 * @Description: 根据订单ID集合查询物流信息
+	 * @param orderIds
+	 * @return
+	 * @author luosm
+	 * @date 2017年2月14日
+	 */
+	List<TradeOrderLogistics> selectByOrderIds(@Param("orderIds") List<String> orderIds);
+	
+	/***
+	 * 
+	 * @Description: 根据城市id查询订单id集合
+	 * @param cityId
+	 * @return
+	 * @author luosm
+	 * @date 2017年2月15日
+	 */
+	List<String> selectByCityId(String cityId);
+	//End V2.1.0 added by luosm 20170215
 }
