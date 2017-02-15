@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.archive.system.entity.PsmsSmallCommunityInfo;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.IPsmsSmallCommunityInfoServiceApi;
@@ -139,10 +140,6 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		return new PageUtils<ColumnAdvertVo>(advertList);
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.operate.advert.service.ColumnAdvertService#findAcrossTimeAdvertQty
-	 */
 	// begin 广告张数的限制 重写findAcrossTimeAdvertQty方法 add by zhulq 2016-7-15
 	// begin 将省市信息全部放进areaIdList add by zhulq 2016-8-1
 	@Transactional(readOnly = true)
@@ -192,7 +189,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 			targetUrl = StringEscapeUtils.unescapeHtml3(targetUrl);
 			advert.setTargetUrl(targetUrl);
 		}
-		this.advertMapper.insert(advert);
+		this.advertMapper.add(advert);
 
 		// 创建广告商信息
 		String advertInfoId = advertInfo.getId();
@@ -281,7 +278,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 			targetUrl = StringEscapeUtils.unescapeHtml3(targetUrl);
 			advert.setTargetUrl(targetUrl);
 		}
-		this.advertMapper.updateByPrimaryKeySelective(advert);
+		this.advertMapper.update(advert);
 
 		// 修改广告商信息
 		advertInfo.setUpdateTime(new Date());
@@ -393,7 +390,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	 */
 	@Override
 	public ColumnAdvert findAdvertById(String id) {
-		return this.advertMapper.selectByPrimaryKey(id);
+		return this.advertMapper.findById(id);
 	}
 
 	/**
@@ -425,7 +422,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		advert.setStartTime(advertVo.getStartTime());
 		advert.setUpdateUserId(currentUser.getId());
 
-		this.advertMapper.updateByPrimaryKeySelective(advert);
+		this.advertMapper.update(advert);
 	}
 
 	/**
@@ -445,7 +442,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		// begin 广告下架后状态是结束 add by zhulq 2016-8-1
 		advert.setUpdateUserId(currentUser.getId());
 
-		this.advertMapper.updateByPrimaryKeySelective(advert);
+		this.advertMapper.update(advert);
 	}
 
 	@Override
@@ -475,10 +472,6 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		return this.advertMapper.getAdvertByTradeNum(tradeNum);
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.operate.advert.service.ColumnAdvertService#updateAdvertInfo(com.okdeer.mall.advert.entity.ColumnAdvert)
-	 */
 	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public int updateAdvertInfo(ColumnAdvert advert) {
@@ -487,7 +480,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 			targetUrl = StringEscapeUtils.unescapeHtml3(targetUrl);
 			advert.setTargetUrl(targetUrl);
 		}
-		return this.advertMapper.updateByPrimaryKeySelective(advert);
+		return this.advertMapper.update(advert);
 	}
 
 	/**
@@ -504,7 +497,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		if (adverts != null && !adverts.isEmpty()) {
 			for (ColumnAdvert advert : adverts) {
 				advert.setStatus(AdvertStatusEnum.STARTING);
-				this.advertMapper.updateByPrimaryKeySelective(advert);
+				this.advertMapper.update(advert);
 			}
 		}
 
@@ -514,7 +507,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		if (adverts != null && !adverts.isEmpty()) {
 			for (ColumnAdvert advert : adverts) {
 				advert.setStatus(AdvertStatusEnum.FINISH);
-				this.advertMapper.updateByPrimaryKeySelective(advert);
+				this.advertMapper.update(advert);
 			}
 		}
 
@@ -523,7 +516,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		/*
 		 * adverts = this.advertMapper.getAdvertStartForJob(1, new Date(), "end_time", "<="); // 将状态改为已过期 if (adverts !=
 		 * null && !adverts.isEmpty()) { for (ColumnAdvert advert : adverts) {
-		 * advert.setStatus(AdvertStatusEnum.OUT_OF_DATE); this.advertMapper.updateByPrimaryKeySelective(advert); } }
+		 * advert.setStatus(AdvertStatusEnum.OUT_OF_DATE); this.advertMapper.update(advert); } }
 		 */
 		// end 现在已经不涉及缴费了 add by zhulq 2016-8-6
 	}
@@ -540,20 +533,12 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		return this.advertApprovalMapper.getApprovalByAdvertId(advertId);
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.advert.service.IColumnAdvertServiceApi#findAcrossTimeAdvert()
-	 */
 	@Transactional(readOnly = true)
 	@Override
 	public int findAcrossTimeAdvert(ColumnAdvert advert, List<String> areaIdList) {
 		return this.advertMapper.findAcrossTimeAdvert(advert);
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.advert.service.IColumnAdvertServiceApi#findMobileDoorAdvertByMap(java.util.Map)
-	 */
 	@Transactional(readOnly = true)
 	@Override
 	public List<ColumnAdvert> findMobileDoorAdvertByMap(Map<String, Object> params) {
@@ -581,7 +566,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		ColumnAdvert columnAdvert = new ColumnAdvert();
 		columnAdvert.setId(id);
 		columnAdvert.setSort(sort);
-		advertMapper.updateByPrimaryKeySelective(columnAdvert);
+		advertMapper.update(columnAdvert);
 	}
 	// end  add　　by zengjz  修改广告的排序值
 	
@@ -703,5 +688,13 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	public List<ColumnAdvert> findForApp(ColumnAdvertQueryParamDto advertQueryParamDto) {
 		
 		return advertMapper.findForApp(advertQueryParamDto);
+	}
+
+	@Override
+	public PageUtils<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(String advertId, String storeId, 
+			Integer pageNumber, Integer pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true);
+		List<GoodsStoreActivitySkuDto> list = advertMapper.findAdvertGoodsByAdvertId(advertId, storeId);
+		return new PageUtils<GoodsStoreActivitySkuDto>(list);
 	}
 }

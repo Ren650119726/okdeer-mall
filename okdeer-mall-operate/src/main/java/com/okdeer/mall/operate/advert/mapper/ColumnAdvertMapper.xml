@@ -75,6 +75,32 @@
 			<result column="community_id" property="communityId" jdbcType="VARCHAR"/>
 		</collection>
 	</resultMap>
+	<!-- 活动商品信息 -->
+  <resultMap id="advertGoodsMap" type="com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto" >
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="alias" property="alias" jdbcType="VARCHAR" />
+    <result column="tagType" property="tagType" jdbcType="INTEGER" />
+    <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+    <result column="onlinePrice" property="onlinePrice" jdbcType="DECIMAL" />
+    <result column="marketPrice" property="marketPrice" jdbcType="DECIMAL" />
+    <result column="sellableStock" property="sellableStock" jdbcType="INTEGER" />
+    <result column="tradeMax" property="tradeMax" jdbcType="INTEGER" />
+    <result column="limitNum" property="limitNum" jdbcType="INTEGER" />
+    <result column="guaranteed" property="guaranteed" jdbcType="INTEGER" />
+    <result column="obsolete" property="obsolete" jdbcType="INTEGER" />
+    <result column="propertiesIndb" property="propertiesIndb" jdbcType="INTEGER" />
+    <result column="activityType" property="activityType" jdbcType="INTEGER" />
+    <result column="url" property="url" jdbcType="VARCHAR" />
+    <result column="updateTime" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="store_id" property="shopId" jdbcType="VARCHAR" />
+    <result column="store_name" property="shopName" jdbcType="VARCHAR" />
+    <result column="saleName" property="saleName" jdbcType="VARCHAR" />
+    <result column="h5_url" property="h5Url" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="isPrivliege" property="isPrivliege" jdbcType="INTEGER" />
+    <result column="sale_price" property="salePrice" jdbcType="DECIMAL" />
+  </resultMap>
 		
 	<resultMap id="getAllSetAreaResult" type="HashMap">
 	    <result property="key" column="areaId" jdbcType="VARCHAR"/>
@@ -87,7 +113,7 @@
 		update_time, update_user_id, disabled, pv, on_shelf_time, off_shelf_time,business_id,sort
 	</sql>
 	
-	<select id="selectByPrimaryKey" resultMap="columnAdvertRsMap">
+	<select id="findById" resultMap="columnAdvertRsMap">
 		SELECT <include refid="base_column_list" />
 		FROM column_advert
 		WHERE id = #{id,jdbcType=VARCHAR}
@@ -329,7 +355,7 @@
 				#{target, jdbcType=TINYINT}, #{onShelfTime, jdbcType=TIMESTAMP}, #{offShelfTime, jdbcType=TIMESTAMP},#{businessId, jdbcType=VARCHAR},#{sort, jdbcType=INTEGER})
 	</insert>
 	
-	<insert id="insertSelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
+	<insert id="add" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
 		INSERT INTO column_advert
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -480,7 +506,7 @@
 		</trim>
 	</insert>
 	
-	<update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
+	<update id="update" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
 		UPDATE column_advert
 		<set>
 			<if test="positionId != null">
@@ -898,4 +924,47 @@
 			</if>
 		)
 	</select>
+	<!-- begin 根据广告id获取广告商品列表 xuzq01 20170208-->
+	<select id="findAdvertGoodsByAdvertId" resultMap="advertGoodsMap" parameterType="String">
+		SELECT DISTINCT
+        sku.id,
+		sku.name,
+		sku.alias,
+		sku.activity_id,
+		IFNULL(sku.tag_type,0) AS tagType,
+		sku.bar_code,
+		sku.update_time AS updateTime,
+        sku.store_id,
+        sku.type,
+        sku.online_price AS onlinePrice,
+		sku.market_price AS marketPrice,
+		sku.trade_max AS tradeMax,
+		IFNULL(sku.guaranteed,0) AS guaranteed,
+		IFNULL(sku.obsolete,0) AS obsolete,
+		sku.properties_indb AS propertiesIndb, 		
+		sku.activity_type AS activityType,
+		picture.url,
+		stock.sellable AS sellableStock,
+        si.store_name,
+        <![CDATA[ CASE WHEN stock.locked > 0 THEN 1 ELSE 0 END AS lockedSort ]]>
+	FROM column_advert_goods s
+ 	LEFT JOIN goods_store_sku sku on s.goods_id = sku.bar_code
+    LEFT JOIN goods_store_sku_plu plu ON plu.store_sku_id = sku.id AND plu.type = 1 AND plu.disabled = 0
+	LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
+	LEFT JOIN goods_store_sku_stock stock ON stock.`store_sku_id` = sku.`id`
+    LEFT JOIN store_info si ON si.id = sku.store_id
+	WHERE sku.disabled = 0
+	AND stock.disabled = 0
+	AND sku.`status` = 1
+	AND sku.violation = 0
+	AND sku.`online` = 1
+	AND sku.id NOT IN(SELECT asg.store_sku_id 
+	    FROM `activity_sale_goods` asg 
+	    INNER JOIN `activity_sale` s ON s.`id` = asg.`sale_id` AND s.status = 1 AND s.disabled = 0)
+	<![CDATA[AND stock.sellable > 0]]>
+	AND sku.store_id = #{storeId,jdbcType=VARCHAR}
+  	AND s.advert_id=#{advertId,jdbcType=VARCHAR}
+	ORDER BY lockedSort DESC,  sku.online_price DESC,sku.update_time DESC
+	</select>
+	<!-- end 根据广告id获取广告商品列表 xuzq01 20170208-->
 </mapper>
