@@ -4738,7 +4738,7 @@
 	</select>
 	<!-- add by zhulq 充值订单列表数据 end -->
 	<!-- 充值订单列表查询（商城后台导出） add by zhulq 20160718 -->
-	<select id="selectRechargeOrderExport" resultMap="RechargeOrderVoMap"
+	<select id="findRechargeOrderExport" resultMap="RechargeOrderVoMap"
 		parameterType="com.okdeer.mall.order.entity.TradeOrderRechargeVo">
 		SELECT tr.id,
 		      tr. STATUS,
