@@ -5459,7 +5459,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (vo.getIds() != null && vo.getIds().length <= 0) {
 			vo.setIds(null);
 		}
-		List<TradeOrderRechargeVo> result = tradeOrderMapper.selectRechargeOrderExport(vo);
+		List<TradeOrderRechargeVo> result = tradeOrderMapper.findRechargeOrderExport(vo);
 		if (CollectionUtils.isNotEmpty(result)) {
 			for (TradeOrderRechargeVo rechargeVo : result) {
 				this.convertRechargeOrderStatus(rechargeVo);
