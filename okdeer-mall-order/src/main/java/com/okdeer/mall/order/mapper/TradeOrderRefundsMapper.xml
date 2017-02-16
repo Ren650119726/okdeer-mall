@@ -987,7 +987,7 @@
 		ORDER BY ri.id ASC
 	</select>
 
-	<!-- zengj:退款单查询条件 -->
+	<!-- zengj:退款单查询条件  update by wusw 20170215 增加订单活动类型参数查询-->
 	<sql id="refund_condition">
 		<if test="null!=skuName and '' !=skuName">
 			AND exists (select 1 from trade_order_refunds_item ri where
@@ -1055,9 +1055,12 @@
 				#{item}
 			</foreach>
 		</if>
+		<if test="activityType != null">
+		   AND o.activity_type = #{activityType}
+		</if>
 	</sql>
 
-	<!-- zengj:查询退款单信息 -->
+	<!-- zengj:查询退款单信息  update by wusw 20170215 修改排序规则和增加订单活动类型参数-->
 	<select id="searchOrderRefundByParams" parameterType="map"
 		resultMap="TradeOrderRefundsVo2">
 		SELECT o.id AS order_id,o.order_no,o.create_time as
@@ -1071,22 +1074,38 @@
 		LEFT JOIN trade_order_pay as pay on pay.order_id = o.id
 		WHERE 1=1
 		<include refid="refund_condition" />
-		<!-- 根据不同页签排序不相同 -->
-		<if test="tabs != null and tabs != ''">
-			<!-- 售后申请页签 根据申请时间倒叙排列 -->
-			<if test="tabs == 'apply'">
+		<if test="orderTimeSort != null and orderTimeSort != ''">
+	       <if test="orderTimeSort == 1">
+	         ORDER BY o.create_time DESC
+	       </if>
+	       <if test="orderTimeSort == 2">
+	         ORDER BY o.create_time ASC
+	       </if>
+	       <if test="orderTimeSort == 3">
+	         ORDER BY o.delivery_time DESC
+	       </if>
+	       <if test="orderTimeSort == 4">
+	         ORDER BY o.delivery_time ASC
+	       </if>
+	    </if> 
+	    <if test="orderTimeSort == null or orderTimeSort == ''">
+	    	<!-- 根据不同页签排序不相同 -->
+			<if test="tabs != null and tabs != ''">
+				<!-- 售后申请页签 根据申请时间倒叙排列 -->
+				<if test="tabs == 'apply'">
+					ORDER BY tr.create_time desc
+				</if>
+				<!-- 已拒绝页签 根据拒绝时间倒叙排列,拒绝时间=最后修改时间 ；已同意页签 根据同意时间倒叙排列,同意时间=最后修改时间；已完成页签 
+					根据操作时间倒叙排列,操作时间=最后修改时间 -->
+				<if test="tabs == 'rejected' or tabs == 'agree' or tabs == 'done'">
+					ORDER BY tr.update_time desc
+				</if>
+			</if>
+			<!-- 默认排序 -->
+			<if test="tabs == null or tabs == ''">
 				ORDER BY tr.create_time desc
 			</if>
-			<!-- 已拒绝页签 根据拒绝时间倒叙排列,拒绝时间=最后修改时间 ；已同意页签 根据同意时间倒叙排列,同意时间=最后修改时间；已完成页签 
-				根据操作时间倒叙排列,操作时间=最后修改时间 -->
-			<if test="tabs == 'rejected' or tabs == 'agree' or tabs == 'done'">
-				ORDER BY tr.update_time desc
-			</if>
-		</if>
-		<!-- 默认排序 -->
-		<if test="tabs == null or tabs == ''">
-			ORDER BY tr.create_time desc
-		</if>
+	    </if>
 
 		<!-- add by zengj 导出专用 -->
 		<if test="maxSize != null and maxSize > 0">

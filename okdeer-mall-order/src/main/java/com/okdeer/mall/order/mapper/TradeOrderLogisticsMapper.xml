@@ -17,6 +17,12 @@
     <result column="logistics_company_name" property="logisticsCompanyName" jdbcType="VARCHAR" />
     <result column="logistics_no" property="logisticsNo" jdbcType="VARCHAR" />
   </resultMap>
+  
+  <!-- 只包含orderId结果集 V2.1.0 luosm 20170215 -->
+  <resultMap id="OrderIdResultMap" type="java.lang.String" >
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+  </resultMap>
+  
   <sql id="Base_Column_List" >
     id, order_id, type, consignee_name, province_id, city_id, area_id, area, address, 
     zip_code, telephone, mobile, logistics_company_name, logistics_no
@@ -35,6 +41,30 @@
     <include refid="Base_Column_List" />
     from trade_order_logistics
     where order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  
+   <!-- 根据OrderID集合查询物流信息  by luosm V2.1.0 20170215-->
+  <select id="selectByOrderIds" resultMap="BaseResultMap" parameterType="list" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM trade_order_logistics WHERE 1=1 
+     <if test="orderIds != null">
+          AND order_id  in 
+          <foreach collection="orderIds" index="index" item="item" open="(" separator="," close=")">  
+              #{item}   
+          </foreach>
+      </if>
+      <!-- 如果ID集合为空，不查询任何数据,1=2会报错 -->
+      <if test="orderIds == null">
+       AND id = 'a'
+      </if>
+  </select>
+  <!-- 根据城市id查询订单id  by luosm V2.1.0 20170215-->
+  <select id="selectByCityId" resultMap="OrderIdResultMap" parameterType="java.lang.String" >
+    select 
+    order_id
+    from trade_order_logistics
+    where city_id = #{cityId,jdbcType=VARCHAR}
   </select>
   
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >

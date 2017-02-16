@@ -946,7 +946,8 @@ public interface TradeOrderMapper {
 	 * @author zhulq
 	 * @date 2016年7月18日
 	 */
-	List<TradeOrderRechargeVo> selectRechargeOrderExport(Map<String, Object> map);
+	//List<TradeOrderRechargeVo> selectRechargeOrderExport(Map<String, Object> map);	
+	List<TradeOrderRechargeVo> findRechargeOrderExport(TradeOrderRechargeVo vo);
 	// End 重构4.1 add by zhulq 2016-7-18
 
 	// Begin 重构4.1 订单详情 add by zhulq 2016-7-18

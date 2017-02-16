@@ -44,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.druid.util.Utils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
@@ -99,6 +100,8 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.bdp.address.entity.Address;
+import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
@@ -188,6 +191,7 @@ import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
+import com.okdeer.mall.order.service.TradeOrderLogisticsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
@@ -220,6 +224,7 @@ import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
+import ch.qos.logback.classic.pattern.Util;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -555,6 +560,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	@Resource
 	private StockAdjustVoBuilder stockAdjustVoBuilder;
+	
+	//Begin V2.1.0 added by luosm 2017-02-14
+	@Reference(version = "1.0.0", check = false)
+	private IAddressService addressService;
+	//End V2.1.0 added by luosm 2017-02-14
 
 	@Override
 	public PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize)
@@ -859,11 +869,23 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<PhysicsOrderVo> findOrderBackStageNew(PhysicsOrderVo vo, int pageNumber, int pageSize)
 			throws ServiceException {
-		PageHelper.startPage(pageNumber, pageSize, true, false);
+		//Begin V2.1.0 added by luosm 20170215
+		if(StringUtils.isNotEmpty(vo.getCityName())){
+		Address address = addressService.getByName(vo.getCityName());
+		if(address!=null){
+		List<String> list= this.tradeOrderLogisticsMapper.selectByCityId(String.valueOf(address.getId()));
+		String[] ids = new String[list.size()];
+		ids = list.toArray(ids);
+		vo.setIds(list.toArray(ids));
+		}
+		}
+		//End V2.1.0 added by luosm 20170215
+		
 		// 避免数组ids不为空，但是长度为0的情况
 		if (vo.getIds() != null && vo.getIds().length <= 0) {
 			vo.setIds(null);
 		}
+		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<PhysicsOrderVo> result = tradeOrderMapper.selectOrderBackStageNew(vo);
 		// 如果有订单信息
 		if (CollectionUtils.isNotEmpty(result)) {
@@ -925,6 +947,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		List<TradeOrderPay> orderPayList = null;
 		// 代理商集合
 		List<PsmsAgent> agentList = null;
+		
+		//Begin V2.1.0 added by luosm 20170215
+		//物流信息集合
+		List<TradeOrderLogistics> addressList = null;
+		//End V2.1.0 added by luosm 20170215
+		
 		if (CollectionUtils.isNotEmpty(storeIds)) {
 			storeInfoList = this.storeInfoService.selectByIds(storeIds);
 		}
@@ -934,6 +962,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (CollectionUtils.isNotEmpty(agentIds)) {
 			agentList = this.psmsAgentServiceApi.selectByIds(agentIds);
 		}
+		
+		//Begin V2.1.0 added by luosm 20170215
+		if(CollectionUtils.isNotEmpty(orderIds)){
+			addressList = this.tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
+		}
+		//End V2.1.0 added by luosm 20170215
+		
 		// 循环将对应信息加入到订单实体中
 		for (PhysicsOrderVo order : result) {
 			if (CollectionUtils.isNotEmpty(storeInfoList)) {
@@ -962,6 +997,21 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					}
 				}
 			}
+			
+			//Begin V2.1.0 added by luosm 20170215
+			if (CollectionUtils.isNotEmpty(addressList)) {
+				for (TradeOrderLogistics tradeOrderLogistics : addressList) {
+					if (tradeOrderLogistics.getCityId()!=null&&StringUtils.isNotEmpty(order.getId()) && order.getId().equals(tradeOrderLogistics.getOrderId())) {
+						Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
+						order.setCityName(address.getName());
+					}
+					if(tradeOrderLogistics != null&& StringUtils.isNotEmpty(order.getId())&& order.getId().equals(tradeOrderLogistics.getOrderId())){
+						String area = (tradeOrderLogistics.getArea()!=null?tradeOrderLogistics.getArea():"");
+						order.setAddress(area+tradeOrderLogistics.getAddress());
+					}
+				}
+			}
+			//End V2.1.0 added by luosm 20170215
 		}
 	}
 
@@ -5037,6 +5087,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<PhysicsOrderVo> findServiceStoreOrderForOperateByParams(Map<String, Object> params, int pageNumber,
 			int pageSize) throws ServiceException {
+		//Begin V2.1.0 added by luosm 20170215
+		String cityName = (String) params.get("cityName");
+		if(StringUtils.isNotEmpty(cityName)){
+			Address address = addressService.getByName(cityName);
+			if(address!=null){
+			List<String> list= this.tradeOrderLogisticsMapper.selectByCityId(String.valueOf(address.getId()));
+			params.put("ids", list);
+			}
+			}
+		//End V2.1.0 added by luosm 20170215
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<PhysicsOrderVo> result = tradeOrderMapper.selectServiceStoreListForOperate(params);
 		if (result == null) {
@@ -5144,6 +5204,23 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			vo.setOrderPayTypeName("线下确认价格并当面支付");
 		}
 		// End 重构4.1 add by wusw 20160720
+		
+		//Begin V2.1.0 added by luosm 20170215
+		TradeOrderLogistics tradeOrderLogistics = null;
+		if(StringUtils.isNotEmpty(vo.getId())){
+			tradeOrderLogistics=tradeOrderLogisticsMapper.selectByOrderId(vo.getId());
+			if(tradeOrderLogistics!=null&&StringUtils.isNotEmpty(tradeOrderLogistics.getCityId())){
+				Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
+				if(address!=null){
+					vo.setCityName(address.getName());
+				}
+			}
+			if(tradeOrderLogistics!=null&&vo.getId().equals(tradeOrderLogistics.getOrderId())){
+				String area = (tradeOrderLogistics.getArea()!=null?tradeOrderLogistics.getArea():"");
+			    vo.setAddress(area+tradeOrderLogistics.getAddress());
+			}
+		}
+		//End V2.1.0 added by luosm 20170215
 	}
 
 	// End 重构4.1 add by wusw
@@ -5153,10 +5230,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findRechargeOrderByParams(java.util.Map)
 	 */
-	@Override
+	/*@Override
 	public List<TradeOrderRechargeVo> findRechargeOrderByParams(Map<String, Object> params) throws ServiceException {
 		return tradeOrderMapper.selectRechargeOrderExport(params);
-	}
+	}*/
 
 	/**
 	 * (non-Javadoc)
@@ -5459,7 +5536,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (vo.getIds() != null && vo.getIds().length <= 0) {
 			vo.setIds(null);
 		}
-		List<TradeOrderRechargeVo> result = tradeOrderMapper.selectRechargeOrder(vo);
+		List<TradeOrderRechargeVo> result = tradeOrderMapper.findRechargeOrderExport(vo);
 		if (CollectionUtils.isNotEmpty(result)) {
 			for (TradeOrderRechargeVo rechargeVo : result) {
 				this.convertRechargeOrderStatus(rechargeVo);

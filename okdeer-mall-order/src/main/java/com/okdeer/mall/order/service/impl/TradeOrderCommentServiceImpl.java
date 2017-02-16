@@ -34,10 +34,13 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
+import com.okdeer.archive.store.dto.StoreOrderCommentDto;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.archive.store.service.StoreOrderCommentServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
+import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
@@ -75,6 +78,10 @@ import net.sf.json.JSONObject;
  * @project yschome-mall
  * @author zhongy
  * @date 2016年1月30日 上午10:59:07
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *    V2.1.0           2017-02-16          wusw              修改原来的订单评价方法，保存店铺评分记录
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderCommentServiceApi")
 public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, TradeOrderCommentServiceApi,
@@ -131,6 +138,14 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 	
 	@Resource
 	private TradeOrderTraceService tradeOrderTraceService;
+	
+	// Begin V2.1.0 add by wusw 20170216
+	/**
+	 * 店铺评分service的api
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private StoreOrderCommentServiceApi storeOrderCommentServiceApi;
+	// End V2.1.0 add by wusw 20170216
 
 	@Override
 	public TradeOrderCommentVo findById(String id) throws ServiceException {
@@ -271,7 +286,7 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public boolean updateUserEvaluate(List<TradeOrderCommentVo> tradeOrderCommentVoList) throws Exception {
+	public boolean updateUserEvaluate(List<TradeOrderCommentVo> tradeOrderCommentVoList,StoreOrderCommentDto storeOrderCommentDto) throws Exception {
 
 		TradeOrderCommentVo TradeOrderCommentVo = tradeOrderCommentVoList.get(0);
 		final TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(TradeOrderCommentVo.getOrderId());
@@ -292,6 +307,10 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 						// todo 执行本地业务
 						try {
 							addCommentByBatch((List<TradeOrderCommentVo>) tradeOrderCommentVoList);
+							
+							// Begin V2.1 add by wusw 20170216 保存店铺评分
+							addStoreOrderComment(storeOrderCommentDto);
+							// End V2.1 add by wusw 20170216 保存店铺评分
 							
 							//begin add by zengjz  到店消费评价增加逻辑
 							//到店消费订单需要更改消费码的状态，更改为已经完成
@@ -395,5 +414,25 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 	 * 
 	 * }
 	 */
+	
+	// Begin V2.1 add by wusw 20170216 添加保存店铺评分方法
+	/**
+	 * 
+	 * @Description: TODO
+	 * @param dto
+	 * @throws ServiceException
+	 * @author wusw
+	 * @date 2017年2月16日
+	 */
+	private void addStoreOrderComment(StoreOrderCommentDto dto) throws ServiceException {
+		if (dto != null) {
+			dto.setId(UuidUtils.getUuid());
+			dto.setDisabled(Disabled.valid);
+			dto.setCreateTime(new Date());
+			storeOrderCommentServiceApi.add(dto);	
+		}
+	}
+	
+	// End V2.1 add by wusw 20170216 添加保存店铺评分方法
 
 }
