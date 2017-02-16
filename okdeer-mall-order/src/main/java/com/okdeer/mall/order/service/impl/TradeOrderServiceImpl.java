@@ -5256,6 +5256,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params, int pageNumber,
 			int pageSize) throws ServiceException {
+		// Begin V2.1.0 added by luosm 20170216
+				String cityName = (String) params.get("cityName");
+				if (StringUtils.isNotEmpty(cityName)) {
+					Address address = addressService.getByName(cityName);
+					if (address != null) {
+						params.put("cityId", address.getId());
+					}
+				}
+				// End V2.1.0 added by luosm 20170216
 		PageHelper.startPage(pageNumber, pageSize);
 		// 参数转换处理（例如订单状态）
 		this.convertParams(params);
