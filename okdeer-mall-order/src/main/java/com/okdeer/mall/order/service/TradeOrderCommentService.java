@@ -12,6 +12,7 @@ import java.util.List;
 
 import com.okdeer.mall.order.entity.TradeOrderComment;
 import com.okdeer.mall.order.vo.TradeOrderCommentVo;
+import com.okdeer.archive.store.dto.StoreOrderCommentDto;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 
@@ -20,6 +21,10 @@ import com.okdeer.base.common.utils.PageUtils;
  * @project yschome-mall
  * @author zhongy
  * @date 2016年1月30日 上午10:43:18
+ *  =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *    V2.1.0           2017-02-16          wusw              在原来的订单评价方法中，增加店铺评分参数
  */
 public interface TradeOrderCommentService {
 
@@ -91,8 +96,9 @@ public interface TradeOrderCommentService {
 	 */
 	List<TradeOrderCommentVo> findOrderCommentByOrderId(String orderId) throws ServiceException;
 
-	boolean updateUserEvaluate(List<TradeOrderCommentVo> tradeOrderCommentVoList) throws Exception;
-
+	// Begin V2.1 add by wusw 20170216 增加店铺评分参数
+	boolean updateUserEvaluate(List<TradeOrderCommentVo> tradeOrderCommentVoList,StoreOrderCommentDto storeOrderCommentDto) throws Exception;
+	// End V2.1 add by wusw 20170216  增加店铺评分参数
 	/**
 	 * 根据订单项查询评价
 	 * @return
