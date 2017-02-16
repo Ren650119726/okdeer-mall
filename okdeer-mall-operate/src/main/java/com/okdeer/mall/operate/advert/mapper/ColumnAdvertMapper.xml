@@ -490,7 +490,7 @@
 				#{pv, jdbcType=INTEGER},
 			</if>
 			<if test="target != null">
-				#{target, jdbcType=TINYINT}
+				#{target, jdbcType=TINYINT},
 			</if>
 			<if test="onShelfTime != null">
 				#{onShelfTime, jdbcType=TIMESTAMP}, 

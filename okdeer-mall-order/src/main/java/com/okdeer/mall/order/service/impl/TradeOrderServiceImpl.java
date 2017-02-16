@@ -5153,10 +5153,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 *
 	 * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findRechargeOrderByParams(java.util.Map)
 	 */
-	@Override
+	/*@Override
 	public List<TradeOrderRechargeVo> findRechargeOrderByParams(Map<String, Object> params) throws ServiceException {
 		return tradeOrderMapper.selectRechargeOrderExport(params);
-	}
+	}*/
 
 	/**
 	 * (non-Javadoc)
@@ -5459,7 +5459,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (vo.getIds() != null && vo.getIds().length <= 0) {
 			vo.setIds(null);
 		}
-		List<TradeOrderRechargeVo> result = tradeOrderMapper.selectRechargeOrder(vo);
+		List<TradeOrderRechargeVo> result = tradeOrderMapper.findRechargeOrderExport(vo);
 		if (CollectionUtils.isNotEmpty(result)) {
 			for (TradeOrderRechargeVo rechargeVo : result) {
 				this.convertRechargeOrderStatus(rechargeVo);
