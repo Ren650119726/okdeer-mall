@@ -28,6 +28,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
+import com.okdeer.archive.store.dto.StoreOrderCommentDto;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -46,6 +47,7 @@ import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.vo.TradeOrderCommentVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
 import com.okdeer.base.common.constant.LoggerConstants;
+import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
@@ -71,6 +73,7 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
  * ----------------+----------------+-------------------+-------------------------------------------
  *   添加判断是否服务订单超时                2016-08-15         wangf01          服务订单超时规则判断，发货超时（服务时间+2小时），收货超时（服务时间+24小时）
  *   13166和13165          2016-08-30         wusw             修改服务店订单自动取消的取消原因的后台文案和短信文案
+ *     V2.1.0           2017-02-16           wusw           订单超时，店铺评分默认五颗星
  *   
  */
 @Service
@@ -444,8 +447,21 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 					comment.setStatus(WhetherEnum.whether);
 					commentList.add(comment);
 				}
+				// Begin V2.1 add by wusw 20170216
+				//订单超时，店铺评分默认五颗星
+				StoreOrderCommentDto storeCommentDto = new StoreOrderCommentDto();
+				storeCommentDto.setId(UuidUtils.getUuid());
+				storeCommentDto.setStoreId(order.getStoreId());
+				storeCommentDto.setUserId(order.getUserId());
+				storeCommentDto.setOrderId(order.getId());
+				storeCommentDto.setDeliverySpeed("5");
+				storeCommentDto.setGoodsQuality("5");
+				storeCommentDto.setServiceAttitude("5");
+				storeCommentDto.setDisabled(Disabled.valid);
+				storeCommentDto.setCreateTime(createTime);
 				logger.info("订单完成自动好评,订单号：" + order.getOrderNo());
-				tradeOrderCommentService.updateUserEvaluate(commentList);
+				tradeOrderCommentService.updateUserEvaluate(commentList,storeCommentDto);
+				// End V2.1 add by wusw 20170216
 			}
 		} catch (Exception e) {
 			logger.error("订单完成自动好评异常", e);
