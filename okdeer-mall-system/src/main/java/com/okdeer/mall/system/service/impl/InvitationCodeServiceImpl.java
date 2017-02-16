@@ -14,10 +14,23 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.archive.system.entity.SysBuyerUser;
+import com.okdeer.archive.system.entity.SysUser;
+import com.okdeer.archive.system.service.ISysUserServiceApi;
+import com.okdeer.base.common.enums.WhetherEnum;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.common.consts.PointConstants;
 import com.okdeer.mall.member.points.dto.AddPointsParamDto;
 import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.system.entity.SysUserInvitationCode;
@@ -29,15 +42,7 @@ import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 import com.okdeer.mall.system.mapper.SysUserInvitationRecordMapper;
 import com.okdeer.mall.system.service.InvitationCodeService;
 import com.okdeer.mall.system.service.InvitationCodeServiceApi;
-import com.okdeer.base.common.enums.WhetherEnum;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.DateUtils;
-import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.common.utils.mapper.JsonMapper;
-import com.okdeer.base.framework.mq.RocketMQProducer;
-import com.okdeer.base.framework.mq.message.MQMessage;
-import com.okdeer.common.consts.PointConstants;
+import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
 
 /**
  * ClassName: InvitationCodeServiceImpl 
@@ -55,6 +60,19 @@ import com.okdeer.common.consts.PointConstants;
 public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, InvitationCodeService {
 
 	private static final Logger logger = LoggerFactory.getLogger(InvitationCodeServiceImpl.class);
+	
+	/**
+	 * 系统用户
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private ISysUserServiceApi sysUserService;
+	
+	/**
+	 * 买家用户
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private SysBuyerUserServiceApi sysBuyerUserService;
+	
 	/**
 	 * 邀请码mapper
 	 */
@@ -343,4 +361,35 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 			logger.error("发送添加积分消息失败,topic:{}", PointConstants.TOPIC_POINT_ADD);
 		}
 	}
+
+	// Begin V2.1.0 added by luosm 20170215
+	/***
+	 * 
+	 * @Description: 根据用户id获取邀请人账户名
+	 * @param userId
+	 * @return
+	 * @throws ServiceException
+	 * @author luosm
+	 * @date 2017年2月15日
+	 */
+	@Override
+	public String findInvitationNameByUserId(String userId) throws ServiceException {
+		String loginName = null;
+		SysUserInvitationRecord sysUserInvitationRecord =sysUserInvitationRecordMapper.findInvitationRecordByUserId(userId);
+		if(sysUserInvitationRecord !=null&&StringUtils.isNotEmpty(sysUserInvitationRecord.getInvitationCodeId())){
+		SysUserInvitationCode sysUserInvitationCode =sysUserInvitationCodeMapper.selectByPrimaryKey(sysUserInvitationRecord.getInvitationCodeId());
+		
+		if(sysUserInvitationCode!=null && sysUserInvitationCode.getUserType()!=null){
+		if(sysUserInvitationCode.getUserType().ordinal() == 0){
+			SysUser sysUser = sysUserService.findSysUserById(sysUserInvitationCode.getSysUserId());
+			loginName = sysUser.getLoginName();
+		}else if(sysUserInvitationCode.getUserType().ordinal() == 1){
+			SysBuyerUser sysBuyerUser = sysBuyerUserService.findByPrimaryKey(sysUserInvitationCode.getSysBuyerUserId());
+			loginName = sysBuyerUser.getLoginName();
+		  }
+		 }
+		}
+		return loginName;
+	}
+	// End V2.1.0 added by luosm 20170215
 }
