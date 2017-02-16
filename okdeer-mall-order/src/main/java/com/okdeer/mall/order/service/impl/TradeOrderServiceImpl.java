@@ -5089,13 +5089,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			int pageSize) throws ServiceException {
 		//Begin V2.1.0 added by luosm 20170215
 		String cityName = (String) params.get("cityName");
-		if(StringUtils.isNotEmpty(cityName)){
-			Address address = addressService.getByName(cityName);
-			if(address!=null){
+		Address address = addressService.getByName(cityName);
+		if(params.get("type") == OrderTypeEnum.SERVICE_STORE_ORDER){
+		 if(address!=null&&StringUtils.isNotEmpty(cityName)){
 			List<String> list= this.tradeOrderLogisticsMapper.selectByCityId(String.valueOf(address.getId()));
 			params.put("ids", list);
 			}
-			}
+		}else{
+			
+		}
 		//End V2.1.0 added by luosm 20170215
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<PhysicsOrderVo> result = tradeOrderMapper.selectServiceStoreListForOperate(params);
