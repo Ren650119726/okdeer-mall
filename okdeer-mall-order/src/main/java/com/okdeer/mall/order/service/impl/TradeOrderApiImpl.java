@@ -35,6 +35,8 @@ import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.bdp.address.entity.Address;
+import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -117,15 +119,20 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	@Reference(version = "1.0.0", check = false)
 	private IStoreMemberRelationServiceApi storeMemberRelationService;
 
+	// Begin V2.1.0 added by luosm 2017-02-16
+	@Reference(version = "1.0.0", check = false)
+	private IAddressService addressService;
+	// End V2.1.0 added by luosm 2017-02-16
+
 	/**
 	 * 订单取消service
 	 */
 	@Resource
 	private CancelOrderService cancelOrderService;
-	
+
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
-	
+
 	/**
 	 * @desc 订单详情（快送同步）（订单、支付、物流、订单项等信息）
 	 */
@@ -183,12 +190,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	public boolean updateOrderStatus(String orderId, String status, String reason) throws Exception {
 		logger.info("订单同步状态" + "，orderId:" + orderId + "，status:" + status + "，reason:" + reason);
 		TradeOrder tradeOrder = tradeOrderService.selectById(orderId);
-//		OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
-//		if (orderStatus == null) {
-//			throw new Exception("订单状态status为空或名字错误异常");
-//		}
-//		tradeOrder.setCurrentStatus(tradeOrder.getStatus());
-//		tradeOrder.setStatus(orderStatus);
+		// OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
+		// if (orderStatus == null) {
+		// throw new Exception("订单状态status为空或名字错误异常");
+		// }
+		// tradeOrder.setCurrentStatus(tradeOrder.getStatus());
+		// tradeOrder.setStatus(orderStatus);
 		if (StringUtils.isNotEmpty(reason)) {
 			tradeOrder.setReason(reason);
 		}
@@ -214,12 +221,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		logger.info(
 				"确认收货订单同步状态" + "，orderId:" + orderId + "，status:" + status + "，reason:" + reason + "userId" + userId);
 		TradeOrder tradeOrder = tradeOrderService.selectById(orderId);
-//		OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
-//		if (orderStatus == null) {
-//			throw new Exception("订单状态status为空或名字错误异常");
-//		}
-//		tradeOrder.setCurrentStatus(tradeOrder.getStatus());
-//		tradeOrder.setStatus(orderStatus);
+		// OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
+		// if (orderStatus == null) {
+		// throw new Exception("订单状态status为空或名字错误异常");
+		// }
+		// tradeOrder.setCurrentStatus(tradeOrder.getStatus());
+		// tradeOrder.setStatus(orderStatus);
 		if (StringUtils.isNotEmpty(reason)) {
 			tradeOrder.setReason(reason);
 		}
@@ -229,12 +236,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		tradeOrder.setUpdateTime(new Date());
 
 		if (tradeOrder.getStatus() == OrderStatusEnum.CANCELED) {
-			//modify by zengjz 将取消订单的接口换成 cancelOrderService
+			// modify by zengjz 将取消订单的接口换成 cancelOrderService
 			cancelOrderService.cancelOrder(tradeOrder, false);
 		} else if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
 			this.tradeOrderService.updateWithConfirm(tradeOrder);
 		} else if (tradeOrder.getStatus() == OrderStatusEnum.REFUSED) {
-			//modify by zengjz 将取消订单的接口换成 cancelOrderService
+			// modify by zengjz 将取消订单的接口换成 cancelOrderService
 			cancelOrderService.updateWithUserRefuse(tradeOrder);
 		} else if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {
 			TradeOrderOperateParamVo param = new TradeOrderOperateParamVo();
@@ -439,14 +446,14 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		 * tradeOrderItemDto.setQuantity(tradeOrderItem.getQuantity());
 		 * tradeOrderItemDto.setTotalAmount(tradeOrderItem.getTotalAmount());
 		 */
-		
+
 		List<String> storeSkuIds = new ArrayList<String>();
 		if (order.getTradeOrderItem() != null) {
 			for (TradeOrderItem item : order.getTradeOrderItem()) {
 				storeSkuIds.add(item.getStoreSkuId());
 			}
 		}
-		
+
 		// Begin 12051 add by wusw 20160811
 		BigDecimal totalAmount = new BigDecimal(0.00);
 		// End 12051 add by wusw 20160811
@@ -461,9 +468,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				tradeOrderItemDto.setUnitPrice(item.getUnitPrice());
 				tradeOrderItemDto.setQuantity(item.getQuantity());
 				tradeOrderItemDto.setTotalAmount(item.getTotalAmount());
-				if(null != storeSkuList){
-					for(GoodsStoreSku goodsStoreSku : storeSkuList){
-						if(item.getStoreSkuId().equals(goodsStoreSku.getId())){
+				if (null != storeSkuList) {
+					for (GoodsStoreSku goodsStoreSku : storeSkuList) {
+						if (item.getStoreSkuId().equals(goodsStoreSku.getId())) {
 							tradeOrderItemDto.setUnit(goodsStoreSku.getUnit());
 							break;
 						}
@@ -521,7 +528,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 			tradeOrderDto.setTradeOrderPay(tradeOrderPayDto);// 付款时间
 		}
-		//add by mengsj begin 收货信息
+		// add by mengsj begin 收货信息
 		TradeOrderLogisticsDto tradeOrderLogisticsDto = new TradeOrderLogisticsDto();
 		if (order.getTradeOrderLogistics() != null) {
 			TradeOrderLogistics tradeOrderLogistics = order.getTradeOrderLogistics();
@@ -549,15 +556,15 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 			tradeOrderDto.setTradeOrderInvoice(tradeOrderInvoiceDto);
 		}
-		//add by mengsj end
-		
+		// add by mengsj end
+
 		List<String> storeSkuIds = new ArrayList<String>();
 		if (order.getTradeOrderItem() != null) {
 			for (TradeOrderItem item : order.getTradeOrderItem()) {
 				storeSkuIds.add(item.getStoreSkuId());
 			}
 		}
-		
+
 		// Begin 12051 add by wusw 20160811
 		BigDecimal totalAmount = new BigDecimal(0.00);
 		// End 12051 add by wusw 20160811
@@ -573,9 +580,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				tradeOrderItemDto.setUnitPrice(item.getUnitPrice());
 				tradeOrderItemDto.setQuantity(item.getQuantity());
 				tradeOrderItemDto.setTotalAmount(item.getTotalAmount());
-				if(null != storeSkuList){
-					for(GoodsStoreSku goodsStoreSku : storeSkuList){
-						if(item.getStoreSkuId().equals(goodsStoreSku.getId())){
+				if (null != storeSkuList) {
+					for (GoodsStoreSku goodsStoreSku : storeSkuList) {
+						if (item.getStoreSkuId().equals(goodsStoreSku.getId())) {
 							tradeOrderItemDto.setUnit(goodsStoreSku.getUnit());
 							break;
 						}
@@ -649,15 +656,15 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					dto.setHandTime(vo.getHandTime());
 				}
 				dto.setStatus(vo.getStatus());
-				
-				//begin add by zengjz   增加违约金的处理
-				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null){
+
+				// begin add by zengjz 增加违约金的处理
+				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
 					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
-				}else{
+				} else {
 					dto.setRefundAmount(vo.getRealMoney());
 				}
-				//end add by zengjz   增加违约金的处理
-				
+				// end add by zengjz 增加违约金的处理
+
 				dto.setThirdTransNo(vo.getThirdTransNo());
 				dto.setPayType(vo.getPayType());
 
@@ -707,14 +714,14 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					dto.setHandTime(vo.getHandTime());
 				}
 				dto.setStatus(vo.getStatus());
-				
-				//begin add by zengjz   增加违约金的处理
-				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null){
+
+				// begin add by zengjz 增加违约金的处理
+				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
 					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
-				}else{
+				} else {
 					dto.setRefundAmount(vo.getRealMoney());
 				}
-				//end add by zengjz   增加违约金的处理
+				// end add by zengjz 增加违约金的处理
 				dto.setThirdTransNo(vo.getThirdTransNo());
 				dto.setPayType(vo.getPayType());
 				dto.setOrderResource(vo.getOrderResource());
@@ -745,15 +752,15 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				dto.setOrderId(vo.getOrderId());
 				dto.setOrderNo(vo.getOrderNo());
 				dto.setTradeNo(vo.getTradeNum());
-				
-				//begin add by zengjz   增加违约金的处理
+
+				// begin add by zengjz 增加违约金的处理
 				dto.setTotalFee(vo.getRealMoney());
-				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null){
+				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
 					dto.setRefundFee(vo.getRealMoney().subtract(vo.getBreachMoney()));
-				}else{
+				} else {
 					dto.setRefundFee(vo.getRealMoney());
 				}
-				//end add by zengjz   增加违约金的处理
+				// end add by zengjz 增加违约金的处理
 				// 用于活动的相关查询
 				TradeOrder order = new TradeOrder();
 				order.setId(vo.getOrderId());
@@ -821,7 +828,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 						|| vo.getOrderResource() == OrderResourceEnum.WECHAT
 						// Begin V2.0.0 add by wusw 20170109
 						|| vo.getOrderResource() == OrderResourceEnum.CVSAPP) {
-					    // End V2.0.0 add by wusw 20170109
+					// End V2.0.0 add by wusw 20170109
 					dto.setOrderResource(0);
 				} else {
 					dto.setOrderResource(1);
@@ -841,6 +848,18 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				} // End 12170 add by wusw 20160806
 					// End 重构4.1 add by wusw 20160726
 			}
+
+			// Begin V2.1.0 added by luosm 2017-02-16
+			//获取所属城市名称
+			if (StringUtils.isNotEmpty(vo.getCityId())) {
+				Address address1 = addressService.getAddressById(Long.valueOf(vo.getCityId()));
+				dto.setCityName(address1.getName());
+			}
+			//获取收货地址
+			String area = (vo.getArea()==null?"":vo.getArea());
+			String addr = (vo.getAddress()==null?"":vo.getAddress());
+			dto.setAddress(area+addr);
+			// End V2.1.0 added by luosm 2017-02-16
 			dtoList.add(dto);
 		}
 		PageResultVo<ERPTradeOrderVoDto> result = new PageResultVo<ERPTradeOrderVoDto>(page.getPageNum(),
@@ -877,10 +896,10 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			dto.setCreateTime(vo.getCreateTime());
 			if (vo.getOrderResource() != null) {
 				if (vo.getOrderResource() == OrderResourceEnum.YSCAPP
-						|| vo.getOrderResource() == OrderResourceEnum.WECHAT						
+						|| vo.getOrderResource() == OrderResourceEnum.WECHAT
 						// Begin V2.0.0 add by wusw 20170109
 						|| vo.getOrderResource() == OrderResourceEnum.CVSAPP) {
-				        // End V2.0.0 add by wusw 20170109
+					// End V2.0.0 add by wusw 20170109
 					dto.setOrderResource(0);
 				} else {
 					dto.setOrderResource(1);

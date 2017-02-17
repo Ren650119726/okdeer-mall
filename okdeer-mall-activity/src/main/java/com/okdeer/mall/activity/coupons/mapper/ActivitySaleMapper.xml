@@ -89,7 +89,8 @@
 					asg.sale_stock as saleStock,
 					asg.sale_price as salePrice,
 					asg.sort as sort,
-					asg.id as activitySaleGoodsId
+					asg.id as activitySaleGoodsId,
+					asg.security_stock as securityStock
 				</if>
 				
 		from goods_store_sku s
