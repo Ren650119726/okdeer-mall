@@ -5264,4 +5264,20 @@
 			  user_id from member_consignee_address where city_id = cityId)
 	</select>
 	
+	<!-- 根据订单id获取城市id -->
+	<select id="findCityIds">
+		SELECT
+			tr.id,
+			ad.city_id
+			from trade_order tr 
+			LEFT JOIN member_consignee_address ad ON ad.user_id = tr.store_id
+			WHERE 1 = 1
+			<if test="null != orderIds and orderIds.size > 0 ">
+			  AND tr.id IN
+			<foreach collection="orderIds" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+	</select>
 </mapper>

@@ -1113,4 +1113,15 @@ public interface TradeOrderMapper {
 	 */
 	List<String> findOrderIds(@Param("cityId")String cityId);
 	//end add by zhulq  2017-02-17  根据城市名称搜索订单列表		
+	
+	//begin V2.1 add by zhulq 2017-02-17 
+	/**
+	 * @Description: 根据订单id 获取订单所属店铺 的城市id
+	 * @param orderIds  订单id集合
+	 * @return List
+	 * @author zhulq
+	 * @date 2017年2月17日
+	 */
+	List<PhysicsOrderVo> findCityIds(@Param("orderIds")List<String> orderIds);
+	//END V2.1 add by zhulq 2017-02-17 
 }
