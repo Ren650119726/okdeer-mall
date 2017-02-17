@@ -5099,9 +5099,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			List<String> list= this.tradeOrderLogisticsMapper.selectByCityId(String.valueOf(address.getId()));
 			params.put("ids", list);
 			}
-		 }else{
-			
-		 }
+		 } else if (params.get("type") == OrderTypeEnum.STORE_CONSUME_ORDER) {
+			    List<String> list = tradeOrderMapper.findOrderIds(String.valueOf(address.getId()));
+			    params.put("ids", list);			 
+		    }
 		}
 		//End V2.1.0 added by luosm 20170215
 		PageHelper.startPage(pageNumber, pageSize, true, false);

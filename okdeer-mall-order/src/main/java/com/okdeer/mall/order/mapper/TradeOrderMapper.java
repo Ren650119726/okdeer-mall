@@ -1103,4 +1103,14 @@ public interface TradeOrderMapper {
 	 */
 	int selectCountByUserStatus(@Param("userId")String userId);
 	
+	//begin add by zhulq  2017-02-17  根据城市名称搜索订单列表	
+	/**
+	 * @Description: 根据城市获取订单id
+	 * @param cityId cityId
+	 * @return List
+	 * @author zhulq
+	 * @date 2017年2月17日
+	 */
+	List<String> findOrderIds(@Param("cityId")String cityId);
+	//end add by zhulq  2017-02-17  根据城市名称搜索订单列表		
 }
