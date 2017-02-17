@@ -418,6 +418,23 @@
 		<result column="preferential_price" property="favourAmount" jdbcType="DECIMAL"/>
 		<result column="remark" property="remark" jdbcType="VARCHAR"/>
 		<!-- End V1.2 added by maojj 2016-11-15 -->
+		
+	<!-- begin V2.1 added by zhulq 2017-02-17 -->		
+		<result column="complete_time" property="completeTime" jdbcType="TIMESTAMP"/>
+		<result column="preferential_type" property="preferentialType" jdbcType="TINYINT"
+			javaType="com.okdeer.mall.order.enums.PreferentialType"/>
+		<result column="activity_type" property="activityType" jdbcType="TINYINT"
+			javaType="com.okdeer.mall.order.enums.OrderActivityType"/>		
+		<result column="activity_name" property="activityName" jdbcType="VARCHAR"/>
+		<result column="invitation_user_name" property="invitationUserName" jdbcType="VARCHAR"/>
+		<result column="locate_address" property="locateAddress" jdbcType="VARCHAR"/>	
+		<result column="refunds_id" property="refundsId" jdbcType="VARCHAR"/>
+		<result column="whether_refund" property="whetherRefund" jdbcType="TINYINT"
+			javaType="com.okdeer.base.common.enums.WhetherEnum"/>
+		<result column="locate_address" property="locateAddress" jdbcType="VARCHAR"/>	
+		<result column="refundsAmount" property="refundsAmount" jdbcType="DECIMAL"/>
+		<result column="back_fill_amount" property="backFillAmount" jdbcType="DECIMAL"/>
+	<!-- End V2.1 added by zhulq 2017-02-17 -->
 	</resultMap>
 
 	<!-- 服务订单列表Vo zhongy start -->
@@ -4603,10 +4620,15 @@
 				tr.remark,
 				op.pay_type,
 				op.pay_time,
-				CONCAT(tol.area,tol.address) as area
+				CONCAT(tol.area,tol.address) as area,
+				CONCAT(locate.city_name,area_name) as locate_address,
+				refunds.id as refunds_id,refunds.total_amount as refunds_amount,
+				refunds.total_preferential_price as back_fill_amount				
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN trade_order_logistics tol ON tr.id = tol.order_id
+		LEFT JOIN trade_order_locate locate ON locate.order_id = tr.id
+		LEFT JOIN trade_order_refunds refunds ON refunds.order_id = tr.id
 		WHERE 1=1
 		<!-- 订单类型 -->
 		<if test="null != type">
@@ -5235,4 +5257,11 @@
 				AND trade.user_id = #{userId,jdbcType=VARCHAR} 
 			</if>
 	</select>
+	
+	<!-- 根据城市名称获取订单列表 -->
+	<select id="findOrderIds" parameterType="string" resultType="string">
+	   SELECT tr.id from trade_order tr where tr.store_id in (SELECT
+			  user_id from member_consignee_address where city_id = cityId)
+	</select>
+	
 </mapper>
