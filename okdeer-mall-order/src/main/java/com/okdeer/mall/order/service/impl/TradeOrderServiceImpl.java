@@ -6765,6 +6765,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	@Override
 	public List<PhysicsOrderVo> findCityIds(List<String> orderIds) {
-		return null;
+		return tradeOrderMapper.findCityIds(orderIds);
+	}
+
+	@Override
+	public List<PhysicsOrderVo> findInvitationInfo(List<String> userIds) {
+		return tradeOrderMapper.findInvitationInfo(userIds);
 	}
 }

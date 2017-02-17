@@ -5284,4 +5284,26 @@
 			</foreach>
 		</if>
 	</select>
+	
+	<select id="findInvitationInfo" parameterType="list" resultMap="PhysicsOrderVoMap">
+		SELECT tr.user_id,
+		      CASE
+	              WHEN suic.user_type = 0 THEN suser.login_name
+	              WHEN suic.user_type = 1 THEN buser.login_name
+			      ELSE ''
+			      END AS invitation_user_name
+		FROM trade_order tr 
+		LEFT JOIN sys_user_invitation_record suir ON suir.sys_buyer_user_id = tr.user_id
+	    LEFT JOIN sys_user_invitation_code suic ON suir.invitation_code_id = suic.id
+	    LEFT JOIN sys_user suser ON suic.sys_user_id = suser.id
+	    LEFT JOIN sys_buyer_user buser ON suic.sys_buyer_user_id = buser.id
+		WHERE 1 = 1
+		<if test="null != userIds and userIds.size > 0 ">
+			  AND tr.user_id IN
+			<foreach collection="userIds" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+	</select>
 </mapper>
