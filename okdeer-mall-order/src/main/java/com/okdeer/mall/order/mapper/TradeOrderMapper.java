@@ -1123,5 +1123,15 @@ public interface TradeOrderMapper {
 	 * @date 2017年2月17日
 	 */
 	List<PhysicsOrderVo> findCityIds(@Param("orderIds")List<String> orderIds);
+	
+	/**
+	 * @Description: 根据用户id获取改用户的邀请人登录名
+	 * @param userIds 用户集合
+	 * @return list
+	 * @author zhulq
+	 * @date 2017年2月17日
+	 */
+	List<PhysicsOrderVo> findInvitationInfo(@Param("userIds")List<String> userIds);
+	
 	//END V2.1 add by zhulq 2017-02-17 
 }
