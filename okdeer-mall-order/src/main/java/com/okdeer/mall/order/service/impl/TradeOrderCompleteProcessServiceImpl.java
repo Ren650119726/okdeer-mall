@@ -255,6 +255,7 @@ public class TradeOrderCompleteProcessServiceImpl
 	 * @date 2016年9月6日
 	 */
 	public void orderRefundsCompleteSyncToJxc(String refundsId) throws Exception {
+		logger.info("退款支付同步进销存系统:" + refundsId);
 		if (StringUtils.isBlank(refundsId)) {
 			throw new ServiceException(LogConstants.ORDER_REFUNDS_ID_IS_NULL);
 		}
