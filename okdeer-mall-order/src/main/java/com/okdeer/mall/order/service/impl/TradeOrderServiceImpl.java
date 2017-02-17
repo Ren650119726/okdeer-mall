@@ -6762,4 +6762,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		return false;
 	}
+
+	@Override
+	public List<PhysicsOrderVo> findCityIds(List<String> orderIds) {
+		return null;
+	}
 }

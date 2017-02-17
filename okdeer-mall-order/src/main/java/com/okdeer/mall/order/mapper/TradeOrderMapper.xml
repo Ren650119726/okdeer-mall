@@ -434,6 +434,7 @@
 		<result column="locate_address" property="locateAddress" jdbcType="VARCHAR"/>	
 		<result column="refundsAmount" property="refundsAmount" jdbcType="DECIMAL"/>
 		<result column="back_fill_amount" property="backFillAmount" jdbcType="DECIMAL"/>
+		<result column="user_id" property="userId" jdbcType="VARCHAR"/>
 	<!-- End V2.1 added by zhulq 2017-02-17 -->
 	</resultMap>
 
@@ -4621,9 +4622,12 @@
 				op.pay_type,
 				op.pay_time,
 				CONCAT(tol.area,tol.address) as area,
+				<!-- begin V2.1 add by zhulq 导出列表新增字段 -->
 				CONCAT(locate.city_name,area_name) as locate_address,
 				refunds.id as refunds_id,refunds.total_amount as refunds_amount,
-				refunds.total_preferential_price as back_fill_amount				
+				refunds.total_preferential_price as back_fill_amount,
+				tr.user_id	
+				<!-- end V2.1 add by zhulq 导出列表新增字段 -->			
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN trade_order_logistics tol ON tr.id = tol.order_id
@@ -5264,4 +5268,20 @@
 			  user_id from member_consignee_address where city_id = cityId)
 	</select>
 	
+	<!-- 根据订单id获取城市id -->
+	<select id="findCityIds">
+		SELECT
+			tr.id,
+			ad.city_id
+			from trade_order tr 
+			LEFT JOIN member_consignee_address ad ON ad.user_id = tr.store_id
+			WHERE 1 = 1
+			<if test="null != orderIds and orderIds.size > 0 ">
+			  AND tr.id IN
+			<foreach collection="orderIds" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+	</select>
 </mapper>
