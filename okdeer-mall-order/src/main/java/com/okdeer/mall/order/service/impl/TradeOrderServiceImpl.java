@@ -645,6 +645,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		map.put("storeId", storeId);
 		return tradeOrderMapper.selectOrderNum(map);
 	}
+	/**
+	 * 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用
+	 * @param orderStatus 订单状态集合
+	 * @param storeId 店铺id
+	 * @return
+	 */
+	@Override
+	public Integer selectOrderNumByList(List<OrderStatusEnum> orderStatus, String storeId) {
+		Map<String, Object> map = Maps.newHashMap();
+		map.put("statusList", orderStatus); 
+		map.put("storeId", storeId);
+		return tradeOrderMapper.selectOrderNumByStatus(map);
+	}
 
 	/**
 	 * @desc 根据查询条件,查询订单详细信息列表（用于历史回款记录，注意：支付状态条件为大于等于）

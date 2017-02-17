@@ -1384,6 +1384,21 @@
 		SELECT count(1) FROM trade_order WHERE store_id =
 		#{storeId,jdbcType=VARCHAR} AND status = #{status,jdbcType=BIT}
 	</select>
+	
+	<!-- 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用-->
+	<select id="selectOrderNumByStatus" resultType="java.lang.Integer"
+		parameterType="map">
+		SELECT count(1) 
+		FROM trade_order 
+		WHERE store_id = #{storeId,jdbcType=VARCHAR}
+		<if test="statusList != null and statusList.size() > 0">
+			AND status in
+			<foreach collection="statusList" index="index" item="item" open="("
+				separator="," close=")">
+				#{item,jdbcType=BIT}
+			</foreach>
+		</if> 
+	</select>
 
 	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
 		DELETE FROM trade_order
