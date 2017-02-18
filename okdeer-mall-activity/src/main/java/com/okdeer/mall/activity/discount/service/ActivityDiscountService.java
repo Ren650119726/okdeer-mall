@@ -6,12 +6,16 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountDto;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountQueryVo;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountVo;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
+import com.okdeer.mall.activity.service.FavourFilterStrategy;
+import com.okdeer.mall.order.vo.Discount;
+import com.okdeer.mall.order.vo.FullSubtract;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 
@@ -27,6 +31,7 @@ import com.okdeer.base.common.utils.PageUtils;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构V4.1 			2016-07-22			zengj			查询店铺有效的满减
+ *		友门鹿V2.1 		2017-02-17			maojj			查询店铺有效的满减
  */
 public interface ActivityDiscountService {
 	/**
@@ -345,4 +350,24 @@ public interface ActivityDiscountService {
 	 */
 	List<Map<String, Object>> findActivityDiscountByStoreId(Map<String, Object> params);
 	// End 重构4.1 add by zengj
+	
+	// Begin V2.1 added by maojj 2017-02-17
+	/**
+	 * @Description: 查询用户有效的折扣优惠
+	 * @param params 查询用户有效优惠请求对象
+	 * @return List
+	 * @author maojj
+	 * @date 2016年7月16日
+	 */
+	List<Discount> findValidDiscount(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
+	
+	/**
+	 * @Description: 查询用户有效的满减优惠
+	 * @param params 查询用户有效优惠请求对象
+	 * @return List
+	 * @author maojj
+	 * @date 2016年7月16日
+	 */
+	List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
+	// End V2.1 added by maojj 2017-02-17
 }

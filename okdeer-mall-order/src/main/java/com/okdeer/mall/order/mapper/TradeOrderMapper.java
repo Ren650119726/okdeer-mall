@@ -10,6 +10,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
@@ -48,6 +49,7 @@ import com.okdeer.mall.order.vo.UserTradeServiceOrderVo;
  *    V1.1.0            2016-09-26          luosm               查询商家版APP服务店到店消费订单信息
  *    V1.1.0			2016-10-10          luosm				服务店到店消费订单金额统计及订单列表
  *    V1.1.0			2016-10-11          luosm				服务店到店消费订单列表查询
+ *    友门鹿V2.1			2017-02-18			maojj				全部订单查询优化
  */
 public interface TradeOrderMapper {
 
@@ -1142,4 +1144,15 @@ public interface TradeOrderMapper {
 	 */
 	List<PhysicsOrderVo> findActivityInfo(@Param("orderIds")List<String> orderIds);
 	//END V2.1 add by zhulq 2017-02-17 
+	
+	// Begin V2.1 added by maojj 2017-02-18
+	/**
+	 * @Description: 查询用户订单列表
+	 * @param paramBo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年2月18日
+	 */
+	List<TradeOrder> findUserOrders(UserOrderParamBo paramBo);
+	// End V2.1 added by maojj 2017-02-18
 }

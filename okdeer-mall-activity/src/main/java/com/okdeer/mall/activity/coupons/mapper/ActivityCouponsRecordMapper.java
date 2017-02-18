@@ -7,6 +7,7 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
@@ -152,7 +153,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @author maojj
 	 * @date 2016年7月16日
 	 */
-	List<Coupons> findValidCoupons(Map<String, Object> params);
+	List<Coupons> findValidCoupons(FavourParamBO paramBO);
 
     //Begin 获取用户充值代金券列表 added by zhaoqc
     /**

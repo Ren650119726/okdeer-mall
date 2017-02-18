@@ -6,6 +6,7 @@
  */    
 package com.okdeer.mall.activity.coupons.mapper;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.okdeer.mall.Application;
+import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.Discount;
@@ -60,12 +62,12 @@ public class ActivityCouponsRecordMapperTest {
 	
 	@Test
 	public void testFindValidCoupons() {
-		Map<String,Object> queryCondition = new HashMap<String,Object>();
-		queryCondition.put("userId","141102938903bd0f97c9a9694854bd8c");
-		queryCondition.put("storeId", "141102938903bd0f97c9a9694854bd8c");
-		queryCondition.put("totalAmount", 510);
+		FavourParamBO paramBo = new FavourParamBO();
+		paramBo.setUserId("141102938903bd0f97c9a9694854bd8c");
+		paramBo.setStoreId("141102938903bd0f97c9a9694854bd8c");
+		paramBo.setTotalAmount(BigDecimal.valueOf(510));
 		
-		List<Coupons> coupons = activityCouponsRecordMapper.findValidCoupons(queryCondition);
+		List<Coupons> coupons = activityCouponsRecordMapper.findValidCoupons(paramBo);
 		System.out.println(">>>>>>>>>>>>" + JSONArray.fromObject(coupons));
 		for(Coupons bean : coupons) {
 			System.out.println(bean.getCouponPrice());
@@ -74,23 +76,22 @@ public class ActivityCouponsRecordMapperTest {
 
 	@Test
 	public void testFindValidDiscount() {
-		Map<String,Object> queryCondition = new HashMap<String,Object>();
-		queryCondition.put("userId","8a94e4dd55df05130155df0999f80004");
-		queryCondition.put("storeId", "8a94e4dd55df05130155df0999f80004");
-		queryCondition.put("totalAmount", 510);
-		
-		List<Discount> discountList = activityDiscountMapper.findValidDiscount(queryCondition);
+		FavourParamBO paramBo = new FavourParamBO();
+		paramBo.setUserId("8a94e4dd55df05130155df0999f80004");
+		paramBo.setStoreId("8a94e4dd55df05130155df0999f80004");
+		paramBo.setTotalAmount(BigDecimal.valueOf(510));
+		List<Discount> discountList = activityDiscountMapper.findValidDiscount(paramBo);
 		System.out.println(">>>>>>>>>>>>" + JSONArray.fromObject(discountList));
 	}
 	
 	@Test
 	public void testFindValidFullSubtract() {
-		Map<String,Object> queryCondition = new HashMap<String,Object>();
-		queryCondition.put("userId","8a94e4dd55df05130155df0999f80004");
-		queryCondition.put("storeId", "2c91c0865639a2f2015639b10d800039");
-		queryCondition.put("totalAmount", 510);
+		FavourParamBO paramBo = new FavourParamBO();
+		paramBo.setUserId("8a94e4dd55df05130155df0999f80004");
+		paramBo.setStoreId("2c91c0865639a2f2015639b10d800039");
+		paramBo.setTotalAmount(BigDecimal.valueOf(510));
 		
-		List<FullSubtract> discountList = activityDiscountMapper.findValidFullSubtract(queryCondition);
+		List<FullSubtract> discountList = activityDiscountMapper.findValidFullSubtract(paramBo);
 		System.out.println(">>>>>>>>>>>>" + JSONArray.fromObject(discountList));
 	}
 	

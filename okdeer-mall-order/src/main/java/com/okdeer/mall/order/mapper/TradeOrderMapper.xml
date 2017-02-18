@@ -5344,4 +5344,43 @@
 	   </if>
 	</select>
 	<!--end add by zhulq 2017-02-18 到店消费订单导出列表优化-->
+	
+	<!-- Begin V2.1 added by maojj 查找用户订单列表 -->
+	<select id="findUserOrders" parameterType="com.okdeer.mall.order.bo.UserOrderParamBo" resultMap="BaseResultMap">
+		SELECT <include refid="Base_Column_List" />,
+			   CASE status 
+			   WHEN 5 THEN SELECT COUNT(1) FROM trade_order_comment toc WHERE toc.order_id = t.id
+			   ELSE 0
+			   END AS totalComment
+		FROM trade_order t
+		<where>
+			AND t.is_show = 1
+			<if test="keyword != null and keyword != ''">
+				AND EXISTS (
+					SELECT * FROM trade_order_item t1
+					WHERE LOCATE(#{keyword},t1.sku_name) &gt; 0
+					AND t1.order_id = t.id
+				)
+			</if>
+			<if test="createTime != null and createTime != ''">
+				AND create_time &gt; #{createTime}
+			</if>
+			<!-- 待付款订单查询 -->
+			<if test="status == '1'.toString()">
+				AND status = 0
+			</if>
+			<!-- 待使用订单查询 -->
+			<if test="status == '2'.toString()">
+				AND status IN (1,3,7,8,10,11,14)
+			</if>
+			<!-- 待评价订单查询.充值和流量订单没有待评价状态 -->
+			<if test="status == '3'.toString()">
+			    AND type IN (0,1,2,5)
+				AND status = 5
+				AND totalComment = 0
+			</if>
+			AND t.user_id = #{userId}
+		</where>
+	</select>
+	<!-- End V2.1 added by maojj 查找用户订单列表-->
 </mapper>
