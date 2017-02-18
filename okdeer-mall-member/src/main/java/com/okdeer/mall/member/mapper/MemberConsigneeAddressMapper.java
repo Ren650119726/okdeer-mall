@@ -66,6 +66,28 @@ public interface MemberConsigneeAddressMapper extends IBaseCrudMapper {
 	 */
 	List<MemberConsigneeAddress> selectByParams(MemberConsigneeAddress memberConsigneeAddress);
 	
+	//Begin V2.1.0 added by luosm 20170217
+	/***
+	 * 
+	 * @Description: 根据城市id获取用户id集合
+	 * @param cityId
+	 * @return
+	 * @author luosm
+	 * @date 2017年2月17日
+	 */
+	List<String> selectByCityId(String cityId);
+	
+	/***
+	 * 
+	 * @Description: 根据用户id查询地址对象
+	 * @param userId
+	 * @return
+	 * @author luosm
+	 * @date 2017年2月18日
+	 */
+	MemberConsigneeAddress selectByOneUserId(String userId);
+	//End V2.1.0 added by luosm 20170217
+	
 	/**
 	 * 
 	 * 根据主键id删除店铺地址

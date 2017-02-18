@@ -44,6 +44,12 @@
   </resultMap>
   <!-- 经纬度距离 DistanceResultMap add by luosm end -->
   
+  <!-- Begin V2.1.0 added by luosm 20170217 -->
+  <resultMap id="userIdResultMap" type="string" >
+   <result column="user_id" property="userId" jdbcType="VARCHAR" />
+  </resultMap>
+  <!-- End V2.1.0 added by luosm 20170217 -->
+  
   <sql id="Base_Column_List" >
     id, user_id, consignee_name, province_id, city_id, area_id, area, address, zip_code, 
     telephone, mobile, is_default, source, create_time, create_user_id, update_time, 
@@ -76,6 +82,22 @@
     WHERE id = #{id,jdbcType=VARCHAR}
     and disabled = 0
   </select>
+  
+  <!-- Begin V2.1.0 added by luosm 20170217 -->
+  <select id="selectByCityId" resultMap="userIdResultMap" parameterType="java.lang.String">
+  	SELECT user_id FROM member_consignee_address WHERE 1=1 AND city_id=#{cityId,jdbcType=VARCHAR}
+     AND disabled=0 
+  </select>
+  
+   <!-- 根据用户id查询收货地址信息 -->
+  <select id="selectByOneUserId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM member_consignee_address
+    WHERE user_id = #{userId,jdbcType=VARCHAR}
+    and disabled = 0
+  </select>
+  <!-- End V2.1.0 added by luosm 20170217 -->
   
   <!-- 根据条件查询店铺地址列表 -->
   <select id="selectByParams" resultMap="BaseResultMap" parameterType="com.okdeer.mall.member.member.entity.MemberConsigneeAddress" >
@@ -562,7 +584,7 @@
      AND disabled=0 
      ORDER BY update_time DESC
   </select>
- 
+  
  <!-- 根据主键id删除店铺信息(逻辑删除) -->
  <update id="deleteById">
 	  UPDATE member_consignee_address
