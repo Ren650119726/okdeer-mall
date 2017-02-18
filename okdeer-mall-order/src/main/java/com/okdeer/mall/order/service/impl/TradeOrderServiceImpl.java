@@ -6772,4 +6772,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public List<PhysicsOrderVo> findInvitationInfo(List<String> userIds) {
 		return tradeOrderMapper.findInvitationInfo(userIds);
 	}
+
+	@Override
+	public List<PhysicsOrderVo> findActivityInfo(List<String> orderIds) {
+		return tradeOrderMapper.findActivityInfo(orderIds);
+	}
 }

@@ -1133,5 +1133,13 @@ public interface TradeOrderMapper {
 	 */
 	List<PhysicsOrderVo> findInvitationInfo(@Param("userIds")List<String> userIds);
 	
+	/**
+	 * @Description: 根据订单获取订单的优惠信息
+	 * @param orderIds 订单集合
+	 * @return List
+	 * @author zhulq
+	 * @date 2017年2月18日
+	 */
+	List<PhysicsOrderVo> findActivityInfo(@Param("orderIds")List<String> orderIds);
 	//END V2.1 add by zhulq 2017-02-17 
 }
