@@ -5275,7 +5275,7 @@
 	<!-- 根据城市名称获取订单列表 -->
 	<select id="findOrderIds" parameterType="string" resultType="string">
 	   SELECT tr.id from trade_order tr where tr.store_id in (SELECT
-			  user_id from member_consignee_address where city_id = cityId)
+			  user_id from member_consignee_address where city_id = #{cityId,jdbcType=VARCHAR})
 	</select>
 	
 	<!-- 根据订单id获取城市id -->
