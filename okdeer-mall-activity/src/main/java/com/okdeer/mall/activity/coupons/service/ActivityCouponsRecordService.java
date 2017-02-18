@@ -3,10 +3,9 @@ package com.okdeer.mall.activity.coupons.service;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ibatis.annotations.Param;
-
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
@@ -14,7 +13,9 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.common.enums.UseUserType;
+import com.okdeer.mall.order.vo.Coupons;
 
 import net.sf.json.JSONObject;
 
@@ -24,7 +25,10 @@ import net.sf.json.JSONObject;
  * @date 2016-04-08 19:39:19
  * @version 1.0.0
  * @copyright ©2005-2020 yschome.com Inc. All rights reserved
- * 
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *		友门鹿2.1 			2017年2月15日			 maojj			新增查询用户有效代金券接口
  */
 public interface ActivityCouponsRecordService {
 
@@ -188,4 +192,16 @@ public interface ActivityCouponsRecordService {
 	 * @date 2016年12月31日
 	 */
 	public int findCouponsCountByUser(UseUserType useUserType,String userId);
+	
+	// Begin V2.1 added by maojj 2017-02-15
+	/**
+	 * @Description: 查询用户有效的代金券领取记录
+	 * @param paramBo 查询条件参数
+	 * @param favourFilter 优惠过滤算法
+	 * @return   
+	 * @author maojj
+	 * @date 2017年2月15日
+	 */
+	List<Coupons> findValidCoupons(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
+	// End V2.1 added by maojj 2017-02-15
 }

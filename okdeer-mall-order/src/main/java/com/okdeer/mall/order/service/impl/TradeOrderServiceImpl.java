@@ -44,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.druid.util.Utils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
@@ -142,6 +141,7 @@ import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
+import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
@@ -191,7 +191,6 @@ import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
-import com.okdeer.mall.order.service.TradeOrderLogisticsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
@@ -224,7 +223,6 @@ import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
-import ch.qos.logback.classic.pattern.Util;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -6778,5 +6776,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public List<PhysicsOrderVo> findActivityInfo(List<String> orderIds) {
 		return tradeOrderMapper.findActivityInfo(orderIds);
+	}
+	
+	@Override
+	public List<TradeOrder> findUserOrders(UserOrderParamBo paramBo) {
+		PageHelper.startPage(paramBo.getPageNumber(), paramBo.getPageSize());
+		return tradeOrderMapper.findUserOrders(paramBo);
 	}
 }
