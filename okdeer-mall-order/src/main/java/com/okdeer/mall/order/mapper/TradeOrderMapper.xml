@@ -432,7 +432,7 @@
 		<result column="whether_refund" property="whetherRefund" jdbcType="TINYINT"
 			javaType="com.okdeer.base.common.enums.WhetherEnum"/>
 		<result column="locate_address" property="locateAddress" jdbcType="VARCHAR"/>	
-		<result column="refundsAmount" property="refundsAmount" jdbcType="DECIMAL"/>
+		<result column="refunds_amount" property="refundsAmount" jdbcType="DECIMAL"/>
 		<result column="back_fill_amount" property="backFillAmount" jdbcType="DECIMAL"/>
 		<result column="user_id" property="userId" jdbcType="VARCHAR"/>
 		<result column="activity_store_id" property="activityStoreId" jdbcType="VARCHAR"/>
@@ -4625,6 +4625,7 @@
 				CONCAT(tol.area,tol.address) as area,
 				<!-- begin V2.1 add by zhulq 导出列表新增字段 -->
 				CONCAT(locate.city_name,area_name) as locate_address,
+				tr.order_resource,
 				refunds.id as refunds_id,refunds.total_amount as refunds_amount,
 				refunds.total_preferential_price as back_fill_amount,
 				tr.user_id	
@@ -5325,6 +5326,7 @@
 		LEFT JOIN activity_coupons_record record ON record.order_id = tr.id
 		LEFT JOIN activity_coupons coupons ON coupons.id = record.coupons_id
 		LEFT JOIN activity_discount discount ON discount.id = tr.activity_id
+		LEFT JOIN activity_discount_record adr ON adr.discount_id = discount.id
 		LEFT JOIN activity_seckill seckill ON seckill.id = tr.activity_id
 		WHERE 1 = 1
 		<if test="null != orderIds and orderIds.size > 0 ">
