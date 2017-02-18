@@ -556,9 +556,16 @@
 		<result column="invitation_user_name" property="invitationUserName" jdbcType="VARCHAR" />
 		<result column="locate_address" property="locateAddress" jdbcType="VARCHAR" />
 		<result column="order_resource" property="orderResource" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderResourceEnum" />
+		<result column="city_id" property="cityId" jdbcType="VARCHAR" />
+		<result column="city_name" property="cityName" jdbcType="VARCHAR" />
 	</resultMap>
 	<!-- add by zhulq -->
 
+  <!-- add by zhulq 2017-02-18 根据城市id获取订单id集合-->
+    <resultMap id="OrderIdResultMap" type="java.lang.String" >
+      <result column="id" property="id" jdbcType="VARCHAR" />
+    </resultMap>
+  
 	<!-- 交易订单 首页 统计 -->
 	<resultMap id="TradeOrderStatisticsVoMap"
 		type="com.okdeer.mall.order.vo.TradeOrderStatisticsVo">
@@ -4744,13 +4751,20 @@
 				tr.user_id,
 				tr.user_phone,
 				tri.sku_name,
-				tri.recharge_mobile
+				tri.recharge_mobile,
+				locate.city_name
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN trade_order_item tri ON tr.id = tri.order_id
+		LEFT JOIN trade_order_locate locate ON locate.order_id = tr.id
 		<!-- LEFT JOIN trade_order_refunds trf ON tr.id = trf.order_id -->
 		WHERE (tr.status = 1 OR tr.status = 5 OR tr.status = 6 OR tr.status =
 		0 OR tr.status = 11 OR tr.status = 2)
+		<!-- begin add by  zhulq  2017-02-18  充值订单的所属城市字段查询 -->
+		<if test="cityId != null and cityId != ''">
+			AND locate.city_id = #{cityId,jdbcType=VARCHAR}
+		</if>
+		<!-- end add by  zhulq  2017-02-18  充值订单的所属城市字段查询 -->
 		<if test="isShow != null">
 			AND tr.is_show = #{isShow,jdbcType=TINYINT}
 		</if>
@@ -4797,7 +4811,8 @@
               WHEN tr. STATUS = 5 THEN tr.update_time
               ELSE ''
               END AS complete_time,
-              tr.order_resource
+              tr.order_resource,
+              locate.city_name
         FROM  trade_order tr
         LEFT JOIN trade_order_pay op ON tr.id = op.order_id
         LEFT JOIN trade_order_item tri ON tr.id = tri.order_id
@@ -4807,6 +4822,7 @@
         LEFT JOIN sys_user_invitation_code suic ON suir.invitation_code_id = suic.id
         LEFT JOIN sys_user suser ON suic.sys_user_id = suser.id
         LEFT JOIN sys_buyer_user buser ON suic.sys_buyer_user_id = buser.id
+        LEFT JOIN trade_order_locate locate ON locate.order_id = tr.id
       WHERE
 	   (
 		tr. STATUS = 1
@@ -4816,6 +4832,11 @@
 		OR tr. STATUS = 11
 		OR tr. STATUS = 2
 	 )
+	 	<!-- begin add by  zhulq  2017-02-18  充值订单的所属城市字段查询 -->
+		<if test="cityId != null and cityId != ''">
+			AND locate.city_id = #{cityId,jdbcType=VARCHAR}
+		</if>
+		<!-- end add by  zhulq  2017-02-18  充值订单的所属城市字段查询 -->
 		<if test="isShow != null">
 			AND tr.is_show = #{isShow,jdbcType=TINYINT}
 		</if>
@@ -5273,9 +5294,10 @@
 	
 	<!--begin add by zhulq 2017-02-18 到店消费订单导出列表优化-->
 	<!-- 根据城市名称获取订单列表 -->
-	<select id="findOrderIds" parameterType="string" resultType="string">
+	<select id="findOrderIds" parameterType="string" resultMap="OrderIdResultMap">
 	   SELECT tr.id from trade_order tr where tr.store_id in (SELECT
 			  user_id from member_consignee_address where city_id = #{cityId,jdbcType=VARCHAR})
+			  And tr.type = 5
 	</select>
 	
 	<!-- 根据订单id获取城市id -->
