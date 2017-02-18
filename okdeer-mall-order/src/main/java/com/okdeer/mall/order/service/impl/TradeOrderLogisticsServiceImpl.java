@@ -1,5 +1,7 @@
 package com.okdeer.mall.order.service.impl;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -20,6 +22,7 @@ import com.okdeer.mall.order.service.TradeOrderLogisticsService;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *     重构4.1          2016年7月29日                               zengj				新增添加物流信息方法
+ *     V2.1.0          2017年2月17日                             luosm				新增查询方法
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderLogisticsServiceApi")
 class TradeOrderLogisticsServiceImpl implements TradeOrderLogisticsService, TradeOrderLogisticsServiceApi {
@@ -52,4 +55,24 @@ class TradeOrderLogisticsServiceImpl implements TradeOrderLogisticsService, Trad
 		tradeOrderLogisticsMapper.insertSelective(logistics);
 	}
 	// End 重构4.1 add by zengj
+
+	// Begin V2.1.0 added by luosm 20170217
+	@Override
+	public List<TradeOrderLogistics> selectByOrderIds(List<String> orderIds) throws ServiceException {
+		
+		return tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
+	}
+
+	@Override
+	public List<String> selectByCityId(String cityId) throws ServiceException {
+		return tradeOrderLogisticsMapper.selectByCityId(cityId);
+	}
+	
+	@Override
+	public TradeOrderLogistics selectByOrderId(String orderId) throws ServiceException {
+		return tradeOrderLogisticsMapper.selectByOrderId(orderId);
+	}
+	// End V2.1.0 added by luosm 20170217
+
+	
 }
