@@ -17,6 +17,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +35,22 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
+import com.okdeer.mall.common.vo.PageResultVo;
+import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
+import com.okdeer.mall.order.dto.ERPTradeOrderVoDto;
+import com.okdeer.mall.order.dto.TradeOrderDto;
+import com.okdeer.mall.order.dto.TradeOrderInvoiceDto;
+import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
+import com.okdeer.mall.order.dto.TradeOrderItemDto;
+import com.okdeer.mall.order.dto.TradeOrderLogisticsDto;
+import com.okdeer.mall.order.dto.TradeOrderPayDto;
+import com.okdeer.mall.order.dto.TradeOrderPayQueryDto;
+import com.okdeer.mall.order.dto.TradeOrderQueryDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -49,25 +63,16 @@ import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
+import com.okdeer.mall.order.exception.ExceedRangeException;
+import com.okdeer.mall.order.service.CancelOrderService;
+import com.okdeer.mall.order.service.ITradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
+import com.okdeer.mall.order.service.TradeOrderLogisticsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
 import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
-import com.okdeer.mall.order.dto.ERPTradeOrderVoDto;
-import com.okdeer.mall.order.dto.TradeOrderDto;
-import com.okdeer.mall.order.dto.TradeOrderInvoiceDto;
-import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
-import com.okdeer.mall.order.dto.TradeOrderItemDto;
-import com.okdeer.mall.order.dto.TradeOrderLogisticsDto;
-import com.okdeer.mall.order.dto.TradeOrderPayDto;
-import com.okdeer.mall.order.dto.TradeOrderPayQueryDto;
-import com.okdeer.mall.order.dto.TradeOrderQueryDto;
-import com.okdeer.mall.order.exception.ExceedRangeException;
-import com.okdeer.mall.order.service.CancelOrderService;
-import com.okdeer.mall.order.service.ITradeOrderServiceApi;
-import com.okdeer.mall.common.vo.PageResultVo;
 
 /**
  * 订单接口
@@ -122,6 +127,18 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	// Begin V2.1.0 added by luosm 2017-02-16
 	@Reference(version = "1.0.0", check = false)
 	private IAddressService addressService;
+
+	/**
+	 * 物流service方法
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private TradeOrderLogisticsServiceApi tradeOrderLogisticsService;
+
+	/**
+	 * 地址service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
 	// End V2.1.0 added by luosm 2017-02-16
 
 	/**
@@ -810,7 +827,45 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	public PageResultVo<ERPTradeOrderVoDto> findOrderByParams(Map<String, Object> params) throws Exception {
 		int pageSize = Integer.valueOf(params.get("pageSize").toString());
 		int pageNumber = Integer.valueOf(params.get("pageNumber").toString());
+		// Begin V2.1.0 added by luosm 20170215
+		// 判断cityName是否为空
+		String cityName = null;
+		String cityId = null;
+		List<String> list = null;
+		List<String> storeIdLists = null;
+		String type = params.get("type").toString();
+		if(params.get("cityName")!=null){
+			cityName = params.get("cityName").toString();
+			if (StringUtils.isNotEmpty(cityName)&& StringUtils.isNotEmpty(type)) {
+				Address address = addressService.getByName(cityName);
+				if (address != null && (type.equals("0") || type.equals("1"))) {
+				cityId = String.valueOf(address.getId());
+				list = tradeOrderLogisticsService.selectByCityId(String.valueOf(address.getId()));
+				params.put("ids", list);
+				}else if(address != null && (type.equals("2"))){
+					cityId = String.valueOf(address.getId());
+					storeIdLists = memberConsigneeAddressService.selectByCityId(cityId);
+					params.put("storeIds", storeIdLists);
+				}
+			}
+		}
+		// End V2.1.0 added by luosm 20170215
+
 		PageUtils<ERPTradeOrderVo> page = tradeOrderService.findOrderForFinanceByParams(params, pageNumber, pageSize);
+
+		List<ERPTradeOrderVoDto> dtoList = buildERPTradeOrderVoDto(page, list);
+
+		PageResultVo<ERPTradeOrderVoDto> result = new PageResultVo<ERPTradeOrderVoDto>(page.getPageNum(),
+				page.getPageSize(), page.getTotal(), dtoList);
+
+		return result;
+	}
+
+	// End 重构4.1 add by wusw 20160719
+
+	//Begin V2.1.0 added by luosm 20170218
+	// 构建数据
+	public List<ERPTradeOrderVoDto> buildERPTradeOrderVoDto(PageUtils<ERPTradeOrderVo> page, List<String> list) {
 		List<ERPTradeOrderVoDto> dtoList = new ArrayList<ERPTradeOrderVoDto>();
 		for (ERPTradeOrderVo vo : page.getList()) {
 			ERPTradeOrderVoDto dto = new ERPTradeOrderVoDto();
@@ -850,24 +905,42 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			}
 
 			// Begin V2.1.0 added by luosm 2017-02-16
-			//获取所属城市名称
-			if (StringUtils.isNotEmpty(vo.getCityId())) {
-				Address address1 = addressService.getAddressById(Long.valueOf(vo.getCityId()));
-				dto.setCityName(address1.getName());
+			TradeOrderLogistics tradeOrderLogistics = null;
+			if(StringUtils.isNotEmpty(vo.getId())&&(vo.getType()==OrderTypeEnum.SERVICE_STORE_ORDER||vo.getType()==OrderTypeEnum.PHYSICAL_ORDER)){
+				try {
+					tradeOrderLogistics=tradeOrderLogisticsService.selectByOrderId(vo.getId());
+				} catch (ServiceException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if(tradeOrderLogistics!=null&&StringUtils.isNotEmpty(tradeOrderLogistics.getCityId())){
+					Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
+					if(address!=null){
+						dto.setCityName(address.getName());
+					}
+				}
+				if(tradeOrderLogistics!=null&&vo.getId().equals(tradeOrderLogistics.getOrderId())){
+					String area = (tradeOrderLogistics.getArea()!=null?tradeOrderLogistics.getArea():"");
+					dto.setAddress(area+tradeOrderLogistics.getAddress());
+				}
 			}
-			//获取收货地址
-			String area = (vo.getArea()==null?"":vo.getArea());
-			String addr = (vo.getAddress()==null?"":vo.getAddress());
-			dto.setAddress(area+addr);
+			
+			MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
+			if(StringUtils.isNotEmpty(vo.getStoreId())&&(vo.getType()==OrderTypeEnum.STORE_CONSUME_ORDER)){
+				memberConsigneeAddress= memberConsigneeAddressService.selectByOneUserId(vo.getStoreId());
+				if(memberConsigneeAddress!=null&&StringUtils.isNotEmpty(memberConsigneeAddress.getCityId())){
+					Address address = addressService.getAddressById(Long.valueOf(memberConsigneeAddress.getCityId()));
+					if(address!=null){
+						dto.setCityName(address.getName());
+					}
+				}
+			}
 			// End V2.1.0 added by luosm 2017-02-16
 			dtoList.add(dto);
 		}
-		PageResultVo<ERPTradeOrderVoDto> result = new PageResultVo<ERPTradeOrderVoDto>(page.getPageNum(),
-				page.getPageSize(), page.getTotal(), dtoList);
-		return result;
+		return dtoList;
 	}
-
-	// End 重构4.1 add by wusw 20160719
+	//End V2.1.0 added by luosm 20170218
 
 	/**
 	 * (non-Javadoc)
