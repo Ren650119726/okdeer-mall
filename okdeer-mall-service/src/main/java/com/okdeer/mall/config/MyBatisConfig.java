@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.TransactionManagementConfigure
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.base.dal.CatMybatisPlugins;
 
 
 @Configuration
@@ -72,8 +73,9 @@ public class MyBatisConfig implements TransactionManagementConfigurer {
         properties.setProperty("params", "count=countSql");
         pageHelper.setProperties(properties);
 
+        CatMybatisPlugins catMybatis  = new CatMybatisPlugins();
         //添加插件
-        bean.setPlugins(new Interceptor[]{pageHelper});
+        bean.setPlugins(new Interceptor[]{pageHelper,catMybatis});
 
         try {
             return bean.getObject();
