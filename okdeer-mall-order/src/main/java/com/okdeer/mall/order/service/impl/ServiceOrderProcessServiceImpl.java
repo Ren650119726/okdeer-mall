@@ -44,16 +44,17 @@ import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.PublicResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
-import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.IStoreServerAreaServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
-import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.bo.FavourParamBuilder;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
@@ -69,6 +70,7 @@ import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRangeService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
+import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
@@ -107,6 +109,7 @@ import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.thread.SeckillQueue;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.vo.Coupons;
+import com.okdeer.mall.order.vo.Favour;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
 
@@ -186,6 +189,12 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	 */
 	@Resource
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+	
+	/**
+	 * 代金券记录Mapper
+	 */
+	@Resource
+	private ActivityCouponsRecordService activityCouponsRecordService;
 	
 	/**
 	 * 订单服务Service
@@ -277,6 +286,12 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	@Resource
 	private RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> submitServiceOrderChain;
 	// end add by wushp V1.1.0 
+	
+	// Begin V2.1 added by maojj 2017-02-17
+	@Resource
+	private FavourParamBuilder favourParamBuilder;
+	// End V2.1 added by maojj 2017-02-17
+	
 	/**
 	 * @Description: 服务订单确认订单
 	 * @return JSONObject
@@ -1287,70 +1302,39 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	 * @param resultJson   返回
 	 * @return void  
 	 * @author tangy
+	 * @throws Exception 
 	 * @date 2016年9月24日
 	 */
-	private void findValidCoupons(StoreInfo storeInfo, ServiceOrderReq orderReq, BigDecimal totalAmount, JSONObject resultJson){
-		// 获取店铺类型
-		StoreTypeEnum storeType = storeInfo.getType();
-		//构建优惠查询请求条件
-		Map<String, Object> queryCondition = new HashMap<String, Object>();
-		queryCondition.put("userId", orderReq.getUserId());
-		queryCondition.put("storeId", orderReq.getStoreId());
-		queryCondition.put("totalAmount", totalAmount);
-		queryCondition.put("storeType", storeType.ordinal());
-		//根据店铺类型查询代金券
-		if (StoreTypeEnum.CLOUD_STORE.equals(storeType)) {
-			queryCondition.put("type", Constant.ONE);
-		} else if (StoreTypeEnum.SERVICE_STORE.equals(storeType)) {
-			queryCondition.put("type", Constant.TWO);
-			//Begin added by tangy  2016-10-08
-			//到店消费根据店铺地址查询代金券
-			if (OrderTypeEnum.STORE_CONSUME_ORDER.equals(orderReq.getOrderType())) {
-				try {
-					MemberConsigneeAddress mAddress = memberConsigneeAddressService.findByStoreId(orderReq.getStoreId());
-				    if (mAddress != null) {
-				    	queryCondition.put("addressId", mAddress.getId());
-					}
-				} catch (Exception e) {
-					logger.error(LoggerConstants.LOGGER_ERROR_EXCEPTION, e);
-				}
-			} else {
-				queryCondition.put("addressId", orderReq.getAddressId());
+	private void findValidCoupons(StoreInfo storeInfo, ServiceOrderReq orderReq, BigDecimal totalAmount, JSONObject resultJson) throws Exception{
+		
+		FavourParamBO paramBo = favourParamBuilder.build(storeInfo, orderReq, totalAmount);
+		List<String> skuIdList = new ArrayList<String>();
+		skuIdList.add(orderReq.getSkuId());
+		// 当前店铺商品信息
+		List<GoodsStoreSku> currentStoreSkuList = goodsStoreSkuServiceApi.findStoreSkuForOrder(skuIdList);
+        //商品类型ids
+		Set<String> spuCategoryIds = new HashSet<String>();
+		if (CollectionUtils.isNotEmpty(currentStoreSkuList)) {
+			for (GoodsStoreSku goodsStoreSku : currentStoreSkuList) {
+				spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
 			}
-			//End added by tangy
 		}
 		// 获取用户有效的代金券
-		List<Coupons> couponList = activityCouponsRecordMapper.findValidCoupons(queryCondition);
-		//排除不符合的代金券
-		if (CollectionUtils.isNotEmpty(couponList)) {
-			// 提取商品skuId
-			List<String> skuIdList = new ArrayList<String>();
-			skuIdList.add(orderReq.getSkuId());
-			// 当前店铺商品信息
-			List<GoodsStoreSku> currentStoreSkuList = goodsStoreSkuServiceApi.findStoreSkuForOrder(skuIdList);
-            //商品类型ids
-			Set<String> spuCategoryIds = new HashSet<String>();
-			if (CollectionUtils.isNotEmpty(currentStoreSkuList)) {
-				for (GoodsStoreSku goodsStoreSku : currentStoreSkuList) {
-					spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
-				}
-			}			
-			List<Coupons> delCouponList = new ArrayList<Coupons>();
-			//判断筛选指定分类使用代金券
-			for (Coupons coupons : couponList) {
-				//是否指定分类使用
-				if (Constant.ONE == coupons.getIsCategory().intValue()) {
+		List<Coupons> couponList = activityCouponsRecordService.findValidCoupons(paramBo,new FavourFilterStrategy() {
+			
+			@Override
+			public boolean accept(Favour favour) throws Exception {
+				Coupons coupons = (Coupons) favour;
+				if (Constant.ONE == coupons.getIsCategory().intValue()
+						&& CollectionUtils.isNotEmpty(paramBo.getSpuCategoryIds())) {
 					int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
 					if (count == Constant.ZERO || count != spuCategoryIds.size()) {
-						delCouponList.add(coupons);
+						return false;
 					}
 				}
+				return true;
 			}
-			//删除不符合指定分类使用的代金券
-			if (CollectionUtils.isNotEmpty(delCouponList)) {
-				couponList.removeAll(delCouponList);
-			}
-		}
+		});
 		resultJson.put("couponList", JSONArray.fromObject(couponList));
 	}
 	//End added by tangy
