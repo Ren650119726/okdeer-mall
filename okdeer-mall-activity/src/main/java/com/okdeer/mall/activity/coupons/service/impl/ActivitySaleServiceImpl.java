@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.validation.constraints.Null;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,14 +30,19 @@ import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.mall.activity.coupons.bo.ActivitySaleRemindBo;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
+import com.okdeer.mall.activity.coupons.entity.ActivitySaleRemind;
 import com.okdeer.mall.activity.coupons.enums.ActivitySaleStatus;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleRemindService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
+import com.okdeer.mall.activity.coupons.vo.ActivitySaleRemindVo;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 
 /**
@@ -52,6 +55,7 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
+ *     V2.1.0             2017年02月20日               tangy              添加活动安全库存及预警联系人
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi")
 public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, ActivitySaleService {
@@ -78,6 +82,14 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	private StockManagerJxcServiceApi stockManagerJxcServiceApi;
 	// End 1.0.Z add by zengj
 
+	//Begin V2.1.0 added by tangy  2017-02-20
+	/**
+	 * 活动商品安全库类型人
+	 */
+	@Autowired
+	private ActivitySaleRemindService activitySaleRemindService;
+	//End added by tangy
+	
 	/**
 	 * 回滚MQ
 	 */
@@ -132,6 +144,15 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// activitySale.getStoreId(),
 				// StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 			}
+			
+			//Begin V2.1.0 added 活动如果设置安全库存提醒联系人则保存  by tangy  2017-02-20
+			//删除安全库存联系人关联
+			activitySaleRemindService.deleteBySaleId(activitySale.getId());
+			if (CollectionUtils.isNotEmpty(activitySale.getActivitySaleRemindVos())) {
+				List<ActivitySaleRemind> list = BeanMapper.mapList(activitySale.getActivitySaleRemindVos(), ActivitySaleRemind.class);				
+				activitySaleRemindService.insertSelectiveBatch(list);
+			}	
+			//End added by tangy
 			activitySaleGoodsMapper.saveBatch(asgList);
 
 		} catch (Exception e) {
@@ -349,6 +370,16 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// activitySale.getStoreId(),
 				// StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 			}
+			
+			//Begin V2.1.0 added 活动如果设置安全库存提醒联系人则保存  by tangy  2017-02-20
+			//删除安全库存联系人关联
+			activitySaleRemindService.deleteBySaleId(activitySale.getId());
+			if (CollectionUtils.isNotEmpty(activitySale.getActivitySaleRemindVos())) {
+				List<ActivitySaleRemind> list = BeanMapper.mapList(activitySale.getActivitySaleRemindVos(), ActivitySaleRemind.class);				
+				activitySaleRemindService.insertSelectiveBatch(list);
+			}	
+			//End added by tangy
+			
 			activitySaleGoodsMapper.saveBatch(asgList);
 			// 同步差集部分商品，也就是原来是特惠商品，然后本次编辑没勾选，所以这批商品需要释放库存。
 			if (CollectionUtils.isNotEmpty(saleGoodsList)) {
@@ -372,7 +403,16 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	
 	@Override
 	public ActivitySale get(String id) {
-		return activitySaleMapper.get(id);
+		ActivitySale activitySale = activitySaleMapper.get(id);
+		//Begin V2.1.0 added 活动安全库存关联人  by tangy  2017-02-20
+		if (activitySale != null) {
+			List<ActivitySaleRemindBo> activitySaleRemindBos = activitySaleRemindService.findActivitySaleRemindBySaleId(activitySale.getId());
+			if (CollectionUtils.isNotEmpty(activitySaleRemindBos)) {
+				activitySale.setActivitySaleRemindVos(BeanMapper.mapList(activitySaleRemindBos, ActivitySaleRemindVo.class));
+			}
+		}
+		//End added by tangy
+		return activitySale;
 	}
 
 	@Override
