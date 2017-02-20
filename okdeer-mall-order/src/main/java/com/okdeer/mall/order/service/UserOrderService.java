@@ -1,11 +1,9 @@
 package com.okdeer.mall.order.service;
 
-import java.util.List;
-
-import com.okdeer.mall.order.bo.UserOrderBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
+import com.okdeer.mall.order.dto.AppUserOrderDto;
 
 public interface UserOrderService {
 
-	List<UserOrderBo> findUserOrders(UserOrderParamBo paramBo);
+	AppUserOrderDto findUserOrders(UserOrderParamBo paramBo) throws Exception;
 }

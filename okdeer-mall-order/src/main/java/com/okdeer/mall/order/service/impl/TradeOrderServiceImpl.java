@@ -6779,8 +6779,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 	
 	@Override
-	public List<TradeOrder> findUserOrders(UserOrderParamBo paramBo) {
-		PageHelper.startPage(paramBo.getPageNumber(), paramBo.getPageSize());
-		return tradeOrderMapper.findUserOrders(paramBo);
+	public PageUtils<TradeOrder> findUserOrders(UserOrderParamBo paramBo) {
+		PageHelper.startPage(paramBo.getPageNumber(), paramBo.getPageSize(),true);
+		return new PageUtils<TradeOrder>(tradeOrderMapper.findUserOrders(paramBo));
 	}
 }
