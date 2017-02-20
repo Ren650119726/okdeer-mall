@@ -1035,6 +1035,6 @@ public interface TradeOrderService {
 	 * @author maojj
 	 * @date 2017年2月18日
 	 */
-	List<TradeOrder> findUserOrders(UserOrderParamBo paramBo);
+	PageUtils<TradeOrder> findUserOrders(UserOrderParamBo paramBo);
 	// End V2.1 added by maojj 2017-02-18
 }

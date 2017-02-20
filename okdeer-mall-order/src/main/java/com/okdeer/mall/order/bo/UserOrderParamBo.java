@@ -36,7 +36,7 @@ public class UserOrderParamBo {
 	/**
 	 * 下单时间
 	 */
-	private String orderTime;
+	private String createTime;
 
 	/**
 	 * 查询关键字
@@ -75,12 +75,12 @@ public class UserOrderParamBo {
 		this.status = status;
 	}
 
-	public String getOrderTime() {
-		return orderTime;
+	public String getCreateTime() {
+		return createTime;
 	}
 
-	public void setOrderTime(String orderTime) {
-		this.orderTime = orderTime;
+	public void setCreateTime(String createTime) {
+		this.createTime = createTime;
 	}
 
 	public String getKeyword() {
