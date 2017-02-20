@@ -317,4 +317,16 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	 * @date 2016年10月25日
 	 */
 	int selectByRandCode(String exchangeCode);
+	
+	// Begin V2.1.0 added by luosm 20170220
+	/**
+	 * 通过订单id获取代金券信息
+	 * @Description: TODO
+	 * @param orderId
+	 * @return
+	 * @author luosm
+	 * @date 2017年2月20日
+	 */
+	List<ActivityCoupons> findByOrderId(String orderId);
+	// End V2.1.0 added by luosm 20170220
 }

@@ -17,6 +17,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,14 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
+import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivitySale;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
+import com.okdeer.mall.activity.discount.service.ActivityDiscountServiceApi;
+import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
+import com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi;
 import com.okdeer.mall.common.vo.PageResultVo;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
@@ -56,6 +65,7 @@ import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.entity.TradeOrderPay;
+import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.ActivityBelongType;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
@@ -68,6 +78,7 @@ import com.okdeer.mall.order.service.ITradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderLogisticsServiceApi;
+import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
@@ -111,6 +122,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 	@Autowired
 	private TradeOrderActivityService tradeOrderActivityService;
+	
+	@Reference(version = "1.0.0", check = false)
+	private ActivityCouponsServiceApi activityCouponsService;
 
 	/**
 	 * 用户Service
@@ -145,6 +159,18 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private InvitationCodeServiceApi invitationCodeService;
+	
+	@Reference(version = "1.0.0", check = false)
+	private ActivityDiscountServiceApi activityDiscountService;
+	
+	@Reference(version = "1.0.0", check = false)
+	private ActivitySaleServiceApi activitySaleService;
+	
+	@Reference(version = "1.0.0", check = false)
+	private ActivitySeckillServiceApi activitySeckillService;
+	
+	@Reference(version = "1.0.0", check = false)
+	private TradeOrderRefundsServiceApi tradeOrderRefundsService;
 	// End V2.1.0 added by luosm 2017-02-16
 
 	/**
@@ -935,13 +961,11 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
 			if (StringUtils.isNotEmpty(vo.getStoreId()) && (vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
 				memberConsigneeAddress = memberConsigneeAddressService.selectByOneUserId(vo.getStoreId());
-				if (memberConsigneeAddress != null && StringUtils.isNotEmpty(memberConsigneeAddress.getCityId())) {
-					Address address = addressService.getAddressById(Long.valueOf(memberConsigneeAddress.getCityId()));
-					if (address != null) {
-						dto.setCityName(address.getName());
-					}
+				if (memberConsigneeAddress != null && StringUtils.isNotEmpty(memberConsigneeAddress.getCityName())) {
+						dto.setCityName(memberConsigneeAddress.getCityName());
 				}
 			}
+			
 			// End V2.1.0 added by luosm 2017-02-16
 			dtoList.add(dto);
 		}
@@ -960,6 +984,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		if (list != null && list.size() > RECORD_NUM) {
 			throw new ExceedRangeException("查询导出订单列表超过一万条", new Throwable());
 		}
+		
 		List<ERPTradeOrderVoDto> result = new ArrayList<ERPTradeOrderVoDto>();
 		for (ERPTradeOrderVo vo : list) {
 			ERPTradeOrderVoDto dto = new ERPTradeOrderVoDto();
@@ -1037,6 +1062,123 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			if(StringUtils.isNotEmpty(inviteName)){
 			dto.setInviteName(inviteName);
 			}
+			
+			//接单时间
+			if(vo.getAcceptTime()!=null){
+				dto.setAcceptTime(vo.getAcceptTime());
+			}
+			
+			//发货时间
+			if(vo.getDeliveryTime() != null){
+				dto.setDeliveryTime(vo.getDeliveryTime());
+			}
+			
+			//收货时间
+			if(vo.getReceivedTime() != null){
+				dto.setReceivedTime(vo.getReceivedTime());
+			}
+			
+			//收入
+			dto.setIncome(vo.getIncome());
+			
+			//优惠类型
+			if(vo.getActualAmount().compareTo(vo.getIncome())==-1){
+				dto.setPreferentialType("0");//0为平台优惠
+			}else if(vo.getActualAmount().compareTo(vo.getIncome())==0){
+				dto.setPreferentialType("1");//1为店铺优惠
+			}
+			
+			//优惠金额
+			dto.setPreferentialPrice(vo.getPreferentialPrice());
+			
+			//活动类型
+			
+			switch(vo.getActivityType().ordinal()){
+				case 0:
+					dto.setActivityType(vo.getActivityType().getName());
+				    dto.setActivityName("没参加活动");
+				    break;
+				case 1:
+					//1:代金券
+					dto.setActivityType(vo.getActivityType().getName());
+					if(StringUtils.isNotEmpty(vo.getId())){
+						ActivityCoupons activityCoupons = (ActivityCoupons) activityCouponsService.findByOrderId(vo.getId());
+						if(activityCoupons!=null&& StringUtils.isNotEmpty(activityCoupons.getName())){
+							dto.setActivityName(activityCoupons.getName());//活动名称
+						}
+					}
+					break;
+				case 2:
+					//2:满减活动
+					dto.setActivityType(vo.getActivityType().getName());
+					if(StringUtils.isNotEmpty(vo.getActivityId())){
+						ActivityDiscount activityDiscount=activityDiscountService.selectByPrimaryKey(vo.getActivityId());
+						if(activityDiscount != null&&StringUtils.isNotEmpty(activityDiscount.getName())){
+							dto.setActivityName(activityDiscount.getName());//活动名称
+						}
+					}
+					break;
+				case 3:
+					//3:满折活动
+					dto.setActivityType(vo.getActivityType().getName());
+					if(StringUtils.isNotEmpty(vo.getActivityId())){
+						ActivityDiscount activityDiscount=activityDiscountService.selectByPrimaryKey(vo.getActivityId());
+						if(activityDiscount != null&&StringUtils.isNotEmpty(activityDiscount.getName())){
+							dto.setActivityName(activityDiscount.getName());//活动名称
+						}
+					}
+					break;
+				case 5:
+					//5:特惠活动
+					dto.setActivityType(vo.getActivityType().getName());
+					if(StringUtils.isNotEmpty(vo.getActivityId())){
+						ActivitySale activitySale=activitySaleService.get(vo.getActivityId());
+						if(activitySale != null&&StringUtils.isNotEmpty(activitySale.getName())){
+							dto.setActivityName(activitySale.getName());//活动名称
+						}
+					}
+					break;
+				case 6:
+					//6:秒杀活动
+					dto.setActivityType(vo.getActivityType().getName());
+					if(StringUtils.isNotEmpty(vo.getActivityId())){
+						ActivitySeckill activitySeckill=activitySeckillService.findSeckillById(vo.getActivityId());
+						if(activitySeckill != null&&StringUtils.isNotEmpty(activitySeckill.getSeckillName())){
+							dto.setActivityName(activitySeckill.getSeckillName());//活动名称
+						}
+					}
+					break;
+				case 7:
+					//7:低价活动
+					dto.setActivityType(vo.getActivityType().getName());
+					if(StringUtils.isNotEmpty(vo.getActivityId())){
+						ActivitySale activitySale=activitySaleService.get(vo.getActivityId());
+						if(activitySale != null&&StringUtils.isNotEmpty(activitySale.getName())){
+							dto.setActivityName(activitySale.getName());//活动名称
+						}
+					}
+					break;
+				default:
+					break;
+			}
+			
+			if(StringUtils.isNotEmpty(vo.getId())&&(vo.getType()==OrderTypeEnum.PHYSICAL_ORDER||vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)){
+				TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundsService.selectByOrderIdOne(vo.getId());
+				if(tradeOrderRefunds!=null){
+					dto.setIsRefundsType("是");
+					if(tradeOrderRefunds.getTotalAmount()!=null){
+						dto.setRefundPrice(tradeOrderRefunds.getTotalAmount());
+					}
+					if(tradeOrderRefunds.getTotalPreferentialPrice()!=null){
+						dto.setRefundPreferentialPrice(tradeOrderRefunds.getTotalPreferentialPrice());
+					}
+				}else{
+					dto.setIsRefundsType("否");
+				}
+			}
+			
+			
+			
 			// End V2.1.0 added by luosm 2017-02-18
 
 			result.add(dto);
