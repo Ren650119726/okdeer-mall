@@ -120,4 +120,15 @@ public interface TradeOrderItemMapper{
 	 * @date 2016年8月6日
 	 */
 	void updateCompleteById(@Param("ids") List<String> ids);
+	
+	// Begin V2.1 added by maojj 2017-02-18
+	/**
+	 * @Description: 根据订单id查询订单明细列表
+	 * @param ids
+	 * @return   
+	 * @author maojj
+	 * @date 2017年2月18日
+	 */
+	List<TradeOrderItem> findOrderItems(@Param("orderIds")List<String> orderIds);
+	// End V2.1 added by maojj 2017-02-18
 }

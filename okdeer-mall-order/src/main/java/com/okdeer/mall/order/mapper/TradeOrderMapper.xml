@@ -5371,7 +5371,7 @@
 	<select id="findUserOrders" parameterType="com.okdeer.mall.order.bo.UserOrderParamBo" resultMap="BaseResultMap">
 		SELECT <include refid="Base_Column_List" />,
 			   CASE status 
-			   WHEN 5 THEN SELECT COUNT(1) FROM trade_order_comment toc WHERE toc.order_id = t.id
+			   WHEN 5 THEN (SELECT COUNT(1) FROM trade_order_comment toc WHERE toc.order_id = t.id)
 			   ELSE 0
 			   END AS totalComment
 		FROM trade_order t
