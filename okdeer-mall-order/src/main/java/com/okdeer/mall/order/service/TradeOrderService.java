@@ -100,6 +100,14 @@ public interface TradeOrderService {
 	 * @return
 	 */
 	Integer selectOrderNum(OrderStatusEnum orderStatus, String storeId);
+	
+	/**
+	 * 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用
+	 * @param orderStatus 订单状态集合
+	 * @param storeId 店铺id
+	 * @return
+	 */
+	Integer selectOrderNumByList(List<OrderStatusEnum> orderStatus, String storeId);
 
 	TradeOrder selectById(String id) throws ServiceException;
 

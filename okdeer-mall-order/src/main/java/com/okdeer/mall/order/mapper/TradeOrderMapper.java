@@ -144,7 +144,13 @@ public interface TradeOrderMapper {
 	Integer selectOrderNum(Map<String, Object> map);
 
 	TradeOrder selectByPrimaryKey(String id);
-
+	
+	/**
+	 * 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用-->
+	 * @param map tuzhd 
+	 * @return
+	 */
+	Integer selectOrderNumByStatus(Map<String, Object> map);
 	/**
 	 * 
 	 * 根据查询条件,查询订单详细信息列表（参数为map类型，用于历史回款记录，注意：支付状态条件为大于等于）
