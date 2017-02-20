@@ -618,7 +618,7 @@
 	</select> -->
 	
 	<!-- 查询用户有效的代金券信息 Begin added by maojj -->
-	<select id="findValidCoupons" parameterType="map" resultType="com.okdeer.mall.order.vo.Coupons">
+	<select id="findValidCoupons" parameterType="com.okdeer.mall.activity.bo.FavourParamBO" resultType="com.okdeer.mall.order.vo.Coupons">
 		SELECT
 			t2.name AS couponTitle, t2.type,
 			0 AS usableRange,
@@ -640,14 +640,14 @@
 			t.collect_user_id = #{userId}
 		AND t.status = 0
 		AND t2.disabled = 0
-		<if test="useClientType != null" >
-       		AND (t2.use_client_type = 0 or t2.use_client_type = #{useClientType,jdbcType=TINYINT})
+		<if test="clientType != null" >
+       		AND (t2.use_client_type = 0 or t2.use_client_type = #{clientType,jdbcType=TINYINT})
     	</if>
-		<if test="type != ''">
-			AND (t2.type = 0 OR ( t2.type = #{type}
+		<if test="couponsType != null">
+			AND (t2.type = 0 OR ( t2.type = #{couponsType,jdbcType=TINYINT}
 			     AND (
 			       <!-- 服务店代金券查询 -->
-			       <if test="storeType == 4">
+			       <if test="storeType != null and storeType.name() == 'SERVICE_STORE'">
 			       t2.area_type = 0 OR
 				   ( (t2.area_type = 3 AND (EXISTS (SELECT 1 FROM activity_coupons_relation_store t1 WHERE t.coupons_id = t1.coupons_id AND t1.store_id = #{storeId} AND t2.area_type = 3)) ) 
 	                   <if test="addressId != null and addressId != '' ">
@@ -657,7 +657,7 @@
 		           )
 					</if>
 					<!-- 平台发起的代金券活动，只有云上店可以使用 -->
-					<if test="storeType == 2">
+					<if test="storeType != null and storeType.name() == 'CLOUD_STORE'">
 					    (EXISTS (SELECT 1 FROM activity_coupons_relation_store t1 WHERE t.coupons_id = t1.coupons_id AND t1.store_id = #{storeId}))
 						OR t2.area_type = 0
 					</if>

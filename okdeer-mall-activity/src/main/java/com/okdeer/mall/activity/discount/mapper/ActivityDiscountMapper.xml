@@ -844,7 +844,7 @@
   </select>
   
   <!-- 查询用户有效的折扣 -->
-  <select id="findValidDiscount" parameterType="map" resultType="com.okdeer.mall.order.vo.Discount">
+  <select id="findValidDiscount" parameterType="com.okdeer.mall.activity.bo.FavourParamBO" resultType="com.okdeer.mall.order.vo.Discount">
   	SELECT
 		t. NAME AS discountTitle,
 		CASE t.is_cash_delivery
@@ -870,7 +870,7 @@
   </select>
   
   <!-- 查询用户有效的满减 -->
-  <select id="findValidFullSubtract" parameterType="map" resultType="com.okdeer.mall.order.vo.FullSubtract">
+  <select id="findValidFullSubtract" parameterType="com.okdeer.mall.activity.bo.FavourParamBO" resultType="com.okdeer.mall.order.vo.FullSubtract">
   	SELECT
 		t.name AS fullSubtractTitle,
 		CASE t.is_cash_delivery
@@ -895,7 +895,7 @@
 			t.store_id=#{storeId}  
 			OR t1.store_id = #{storeId}
 			<!-- 平台发起的满减活动，只有云上店可以使用 -->
-			<if test="storeType == 2">
+			<if test="storeType!=null and storeType.name() == 'CLOUD_STORE'">
 				OR (t.store_id='0' and t.area_type = 0)  
 			</if>
 		)
