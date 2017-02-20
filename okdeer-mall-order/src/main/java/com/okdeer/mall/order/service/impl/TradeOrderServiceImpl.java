@@ -5098,10 +5098,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			params.put("ids", list);
 			}
 		 } else if (params.get("type") == OrderTypeEnum.STORE_CONSUME_ORDER) {
-			    if (address.getId() != null) {
+			    if (address != null) {
 				    List<String> list = tradeOrderMapper.findOrderIds(String.valueOf(address.getId()));
 				    params.put("ids", list);	 
-			    }		 
+			    } else {
+			    	params.put("ids", null);	
+			    }
 		    }
 		}
 		//End V2.1.0 added by luosm 20170215
