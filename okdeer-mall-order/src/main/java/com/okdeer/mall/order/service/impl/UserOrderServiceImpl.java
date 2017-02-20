@@ -16,6 +16,8 @@ import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.dto.AppUserOrderDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.entity.TradeOrderLogistics;
+import com.okdeer.mall.order.mapper.TradeOrderLogisticsMapper;
 import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.UserOrderService;
@@ -31,6 +33,9 @@ public class UserOrderServiceImpl implements UserOrderService {
 	
 	@Resource
 	private TradeOrderItemService tradeOrderItemService;
+	
+	@Resource
+	private TradeOrderLogisticsMapper tradeOrderLogisticsMapper;
 	
 	/**
      * 第三方火车票订单API
@@ -60,6 +65,10 @@ public class UserOrderServiceImpl implements UserOrderService {
 		List<TradeOrderItem> orderItemList = tradeOrderItemService.findOrderItems(orderIds);
 		// 装载订单项列表
 		loader.loadOrderItemList(orderItemList);
+		// 根据订单Id查询物流信息
+		List<TradeOrderLogistics> orderLogisticsList = tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
+		// 装载物流信息列表
+		loader.loadOrderLogisticsList(orderLogisticsList);
 		return loader.retrieveResult();
 	}
 
