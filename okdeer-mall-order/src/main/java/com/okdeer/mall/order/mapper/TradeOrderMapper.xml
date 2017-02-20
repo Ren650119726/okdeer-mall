@@ -70,6 +70,7 @@
 		<result column="breach_money" property="breachMoney" jdbcType="DECIMAL" />
 		<result column="cancel_type" property="cancelType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderCancelType" />
 		<result column="accept_time" property="acceptTime" jdbcType="TIMESTAMP" />
+		<result column="totalComment" property="totalComment" />
 		<!-- End V1.2 added by maojj 2016-11-09 增加违约金相关字段 -->
 		<association property="tradeOrderLogistics"
 			javaType="com.okdeer.mall.order.entity.TradeOrderLogistics">
@@ -582,7 +583,7 @@
 	</resultMap>
 
 	<sql id="Base_Column_List">
-		id, user_id, store_id, pid, order_no, type, pick_up_type, pick_up_code,
+		id, user_id, store_id, store_name, pid, order_no, type, pick_up_type, pick_up_code,
 		pick_up_time,order_resource, is_complete,
 		status, total_amount, actual_amount, preferential_price, fare, activity_type,
 		activity_id, activity_item_id,pay_way,
@@ -4633,7 +4634,7 @@
 				op.pay_time,
 				CONCAT(tol.area,tol.address) as area,
 				<!-- begin V2.1 add by zhulq 导出列表新增字段 -->
-				CONCAT(locate.city_name,area_name) as locate_address,
+				 CONCAT(locate.city_name,locate.area_name,locate.area_ext) as locate_address,
 				tr.order_resource,
 				tr.income,
 				tr.activity_id,
@@ -4818,7 +4819,8 @@
               ELSE ''
               END AS complete_time,
               tr.order_resource,
-              locate.city_name
+              locate.city_name,
+              CONCAT(locate.city_name,locate.area_name,locate.area_ext) AS locate_address	
         FROM  trade_order tr
         LEFT JOIN trade_order_pay op ON tr.id = op.order_id
         LEFT JOIN trade_order_item tri ON tr.id = tri.order_id
@@ -5395,17 +5397,16 @@
 			</if>
 			<!-- 待付款订单查询 -->
 			<if test="status == '1'.toString()">
-				AND status = 0
+				AND status IN (1,11)
 			</if>
 			<!-- 待使用订单查询 -->
 			<if test="status == '2'.toString()">
-				AND status IN (1,3,7,8,10,11,14)
+				AND (status IN (1 3 7 8 14) OR (type = 5 AND consumer_code_status = 1))
 			</if>
 			<!-- 待评价订单查询.充值和流量订单没有待评价状态 -->
 			<if test="status == '3'.toString()">
-			    AND type IN (0,1,2,5)
+			    AND ((type IN (0,1,2) AND totalComment = 0) OR (type = 5 AND consumer_code_status = 4))
 				AND status = 5
-				AND totalComment = 0
 			</if>
 			AND t.user_id = #{userId}
 		</where>
