@@ -5387,7 +5387,7 @@
 				)
 			</if>
 			<if test="createTime != null and createTime != ''">
-				AND create_time &gt; #{createTime}
+				AND create_time &lt; #{createTime}
 			</if>
 			<!-- 待付款订单查询 -->
 			<if test="status == '1'.toString()">
@@ -5405,6 +5405,7 @@
 			</if>
 			AND t.user_id = #{userId}
 		</where>
+		ORDER BY t.create_time desc
 	</select>
 	<!-- End V2.1 added by maojj 查找用户订单列表-->
 </mapper>
