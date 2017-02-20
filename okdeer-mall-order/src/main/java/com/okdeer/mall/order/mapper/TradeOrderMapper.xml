@@ -70,6 +70,7 @@
 		<result column="breach_money" property="breachMoney" jdbcType="DECIMAL" />
 		<result column="cancel_type" property="cancelType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderCancelType" />
 		<result column="accept_time" property="acceptTime" jdbcType="TIMESTAMP" />
+		<result column="totalComment" property="totalComment" />
 		<!-- End V1.2 added by maojj 2016-11-09 增加违约金相关字段 -->
 		<association property="tradeOrderLogistics"
 			javaType="com.okdeer.mall.order.entity.TradeOrderLogistics">
@@ -582,7 +583,7 @@
 	</resultMap>
 
 	<sql id="Base_Column_List">
-		id, user_id, store_id, pid, order_no, type, pick_up_type, pick_up_code,
+		id, user_id, store_id, store_name, pid, order_no, type, pick_up_type, pick_up_code,
 		pick_up_time,order_resource, is_complete,
 		status, total_amount, actual_amount, preferential_price, fare, activity_type,
 		activity_id, activity_item_id,pay_way,
