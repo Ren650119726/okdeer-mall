@@ -4633,7 +4633,7 @@
 				op.pay_time,
 				CONCAT(tol.area,tol.address) as area,
 				<!-- begin V2.1 add by zhulq 导出列表新增字段 -->
-				CONCAT(locate.city_name,area_name) as locate_address,
+				 CONCAT(locate.city_name,locate.area_name,locate.area_ext) as locate_address,
 				tr.order_resource,
 				tr.income,
 				tr.activity_id,
@@ -4818,7 +4818,8 @@
               ELSE ''
               END AS complete_time,
               tr.order_resource,
-              locate.city_name
+              locate.city_name,
+              CONCAT(locate.city_name,locate.area_name,locate.area_ext) AS locate_address	
         FROM  trade_order tr
         LEFT JOIN trade_order_pay op ON tr.id = op.order_id
         LEFT JOIN trade_order_item tri ON tr.id = tri.order_id
