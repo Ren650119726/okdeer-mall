@@ -6,12 +6,15 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.CollectionUtils;
+import org.junit.FixMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +36,10 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.kafka.producer.KafkaProducer;
+import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -58,12 +63,15 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
+import com.okdeer.mall.activity.service.FavourFilterStrategy;
+import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.member.service.MemberService;
 import com.okdeer.mall.member.service.SysBuyerExtService;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertService;
 import com.okdeer.mall.order.constant.OrderMsgConstant;
+import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
 import com.okdeer.mall.order.vo.RechargeCouponVo;
@@ -86,6 +94,7 @@ import net.sf.json.JSONObject;
  *		V1.1.0			2016-9-19		wushp				各种状态代金券数量统计
  *		V1.2			 2016-11-21			tuzhd			  代金劵提醒定时任务
  *		V1.3			2016-12-19          zhulq				异业代金卷领取成功后操作
+ *		V2.1			2017-02-15			maojj			增加查询用户有效的代金券记录
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi")
 class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceApi, ActivityCouponsRecordService {
@@ -158,6 +167,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	//中奖记录表Service
 	@Autowired
 	ActivityPrizeRecordService activityPrizeRecordService;
+	
+	// Begin added by maojj 2017-02-15
+	@Resource
+	private MaxFavourStrategy genericMaxFavourStrategy;
+	// End added by maojj 2017-02-15
 
 	@Override
 	@Transactional(readOnly = true)
@@ -1195,6 +1209,27 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 */
 	public int findCouponsCountByUser(UseUserType useUserType,String userId){
 		return activityCouponsRecordMapper.findCouponsCountByUser(useUserType, userId);
+	}
+
+	@Override
+	public List<Coupons> findValidCoupons(FavourParamBO paramBo, FavourFilterStrategy favourFilter) throws Exception {
+		List<Coupons> couponsList = activityCouponsRecordMapper.findValidCoupons(paramBo);
+		if(CollectionUtils.isEmpty(couponsList)){
+			return couponsList;
+		}
+		// 对集合进行数据迭代
+		Iterator<Coupons> it = couponsList.iterator();
+		Coupons coupons = null;
+		while(it.hasNext()){
+			coupons = it.next();
+			if(!favourFilter.accept(coupons)){
+				// 如果过滤器不接受该优惠，则将该优惠从列表中移除
+				it.remove();
+			}else{
+				coupons.setMaxFavourStrategy(genericMaxFavourStrategy.calMaxFavourRule(coupons, paramBo.getTotalAmount()));
+			}
+		}
+		return couponsList;
 	}
 	
 }

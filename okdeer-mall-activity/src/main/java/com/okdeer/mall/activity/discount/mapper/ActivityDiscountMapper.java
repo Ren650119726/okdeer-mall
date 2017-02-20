@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountDto;
@@ -317,7 +318,7 @@ public interface ActivityDiscountMapper extends IBaseCrudMapper {
 	 * @author maojj
 	 * @date 2016年7月16日
 	 */
-	List<Discount> findValidDiscount(Map<String,Object> params);
+	List<Discount> findValidDiscount(FavourParamBO paramBo);
 	
 	/**
 	 * @Description: 查询用户有效的满减优惠
@@ -326,7 +327,7 @@ public interface ActivityDiscountMapper extends IBaseCrudMapper {
 	 * @author maojj
 	 * @date 2016年7月16日
 	 */
-	List<FullSubtract> findValidFullSubtract(Map<String,Object> params);
+	List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo);
 	// End added by maojj 2016-07-14
 	
 	//begin 重构4.1 added by zhangkn

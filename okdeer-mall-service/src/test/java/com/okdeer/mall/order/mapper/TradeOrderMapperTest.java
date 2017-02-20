@@ -14,6 +14,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.okdeer.mall.base.BaseServiceTest;
+import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
@@ -41,10 +42,14 @@ public class TradeOrderMapperTest extends BaseServiceTest{
 	
 	private Map<String,Object> realOrderQry;
 	
-	public TradeOrderMapperTest(Map<String,Object> servOrderQry,TradeOrderRechargeVo rechargeOrderQry,Map<String,Object> realOrderQry){
+	private UserOrderParamBo userOrderQry;
+
+	
+	public TradeOrderMapperTest(Map<String,Object> servOrderQry,TradeOrderRechargeVo rechargeOrderQry,Map<String,Object> realOrderQry,UserOrderParamBo userOrderQry){
 		this.servOrderQry = servOrderQry;
 		this.rechargeOrderQry = rechargeOrderQry;
 		this.realOrderQry = realOrderQry;
+		this.userOrderQry = userOrderQry;
 	}
 	
 	@Parameters
@@ -59,8 +64,13 @@ public class TradeOrderMapperTest extends BaseServiceTest{
 		Map<String,Object> realOrderQry1 = new HashMap<String,Object>();
 		realOrderQry1.put("orderNo", "XS990170016110200001");
 		
+		UserOrderParamBo userOrderQry1 = new UserOrderParamBo();
+		userOrderQry1.setUserId("14527626891242d4d00a207c4d69bd80");
+		userOrderQry1.setStatus("0");
+		userOrderQry1.setPageSize(10);
+		
 		return Arrays.asList(new Object[][]{
-			{servOrderQry1,rechargeOrderQry1,realOrderQry1}
+			{servOrderQry1,rechargeOrderQry1,realOrderQry1,userOrderQry1}
 		});
 	}
 
@@ -82,4 +92,8 @@ public class TradeOrderMapperTest extends BaseServiceTest{
 		Assert.assertEquals("430064",orderList.get(0).getTradeOrderItem().get(0).getArticleNo());
 	}
 
+	@Test
+	public void testFindUserOrders(){
+		tradeOrderMapper.findUserOrders(userOrderQry);
+	}
 }
