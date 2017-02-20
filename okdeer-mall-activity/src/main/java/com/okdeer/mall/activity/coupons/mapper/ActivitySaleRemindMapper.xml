@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivitySaleRemindMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.bo.ActivitySaleRemindBo" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="sale_id" property="saleId" jdbcType="VARCHAR" />
+        <result column="sys_user_id" property="sysUserId" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, sale_id, sys_user_id, create_time, create_user_id
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_sale_remind
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="findActivitySaleRemindBySaleId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_sale_remind
+        where sale_id = #{saleId,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySaleRemind" >
+        insert into activity_sale_remind
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="saleId != null" >
+                sale_id,
+            </if>
+            <if test="sysUserId != null" >
+                sys_user_id,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="saleId != null" >
+                #{saleId,jdbcType=VARCHAR},
+            </if>
+            <if test="sysUserId != null" >
+                #{sysUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    
+    <insert id="insertSelectiveBatch" parameterType="list" >
+	    insert into activity_sale_remind
+	        (id, sale_id, sys_user_id, create_time, create_user_id) values
+	     <foreach collection="list" item="item" index="index" separator="," >
+	       (#{item.id,jdbcType=VARCHAR},
+	        #{item.saleId,jdbcType=BIT},
+	        #{item.sysUserId,jdbcType=VARCHAR},
+	        #{item.createTime,jdbcType=TIMESTAMP},
+	        #{item.createUserId,jdbcType=VARCHAR} 
+	        )
+	     </foreach>
+    </insert> 
+
+    <update id="update" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySaleRemind" >
+        update activity_sale_remind
+        <set >
+            <if test="saleId != null" >
+                sale_id = #{saleId,jdbcType=VARCHAR},
+            </if>
+            <if test="sysUserId != null" >
+                sys_user_id = #{sysUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_sale_remind
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+    <delete id="deleteBySaleId" parameterType="java.lang.String" >
+        delete from activity_sale_remind
+        where sale_id = #{saleId,jdbcType=VARCHAR}
+    </delete>
+</mapper>

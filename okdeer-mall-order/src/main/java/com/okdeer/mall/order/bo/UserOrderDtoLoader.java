@@ -12,6 +12,7 @@ import org.apache.commons.collections.CollectionUtils;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.common.utils.EnumAdapter;
+import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.order.dto.AppUserOrderDto;
 import com.okdeer.mall.order.dto.BaseUserOrderItemDto;
 import com.okdeer.mall.order.dto.UserOrderDto;
@@ -19,7 +20,9 @@ import com.okdeer.mall.order.dto.UserOrderItemDto;
 import com.okdeer.mall.order.dto.UserTrainOrderItem;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.enums.AppOrderTypeEnum;
+import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.third.train.dto.ThirdTrainOrderDto;
 
@@ -60,6 +63,12 @@ public class UserOrderDtoLoader {
 		this.pageSize = pageSize;
 	}
 	
+	/**
+	 * @Description: 提取结果
+	 * @return   
+	 * @author maojj
+	 * @date 2017年2月20日
+	 */
 	public AppUserOrderDto retrieveResult(){
 		AppUserOrderDto userOrderDto = new AppUserOrderDto();
 		int totalPage = totalNum/pageSize + (totalNum%pageSize == 0 ? 0 : 1);
@@ -104,7 +113,7 @@ public class UserOrderDtoLoader {
 	 * @param orderList   
 	 * @author maojj
 	 * @date 2017年2月18日
-	 */
+	 */ 
 	public void loadOrderList(PageUtils<TradeOrder> orderList){
 		List<TradeOrder> orderListTemp = orderList.getList();
 		if(CollectionUtils.isEmpty(orderListTemp)){
@@ -119,12 +128,32 @@ public class UserOrderDtoLoader {
 			orderDto.setStoreName(order.getStoreName());
 			orderDto.setOrderId(order.getId());
 			orderDto.setTotalAmount(ConvertUtil.format(order.getTotalAmount()));
-			orderDto.setActutalAmount(ConvertUtil.format(order.getActualAmount()));
+			orderDto.setActualAmount(ConvertUtil.format(order.getActualAmount()));
 			orderDto.setFare(ConvertUtil.format(order.getFare()));
-			orderDto.setOrderStatus(order.getStatus().ordinal());
 			orderDto.setType(EnumAdapter.convert(order.getType()));;
 			orderDto.setCreateTime(DateUtils.formatDate(order.getCreateTime()));
+			orderDto.setLogisticsFlag(String.valueOf(LogisticsType.NONE.ordinal()));
+			orderDto.setLogisticsNo("");
+			orderDto.setPickUpType(order.getPickUpType() == null ? "0" : String.valueOf(order.getPickUpType().ordinal()));
 			
+			// 设置返回给App的订单状态
+			switch (order.getType()) {
+				case PHYSICAL_ORDER:
+				case SERVICE_ORDER:
+				case SERVICE_STORE_ORDER:
+					orderDto.setOrderStatus(OrderAppStatusAdaptor.convertAppOrderStatus(order.getStatus()));
+					break;
+				case PHONE_PAY_ORDER:
+				case TRAFFIC_PAY_ORDER:
+					orderDto.setOrderStatus(order.getStatus().ordinal());
+				case STORE_CONSUME_ORDER:
+					orderDto.setOrderStatus(OrderAppStatusAdaptor.convertAppStoreConsumeOrderStatus(order.getStatus(), order.getConsumerCodeStatus()).ordinal());
+				default:
+					break;
+			}
+			
+			// 设置订单是否评论.0:未评论，1：已评论
+			orderDto.setOrderIsComment(order.getTotalComment() == 0 ? "0" : "1");
 			this.orderIds.add(order.getId());
 			this.orderDtoList.add(orderDto);
 			this.orderDtoMap.put(order.getId(),orderDto);
@@ -150,10 +179,12 @@ public class UserOrderDtoLoader {
 		for(ThirdTrainOrderDto order : trainOrderListTemp){
 			orderDto = new UserOrderDto();
 			orderDto.setOrderId(order.getId());
-			orderDto.setActutalAmount(ConvertUtil.format(order.getActualAmount()));
+			orderDto.setActualAmount(ConvertUtil.format(order.getActualAmount()));
 			orderDto.setOrderStatus(order.getStatus());
 			orderDto.setType(AppOrderTypeEnum.TRAIN_ORDER);
 			orderDto.setCreateTime(DateUtils.formatDate(order.getCreateTime()));
+			orderDto.setLogisticsFlag(String.valueOf(LogisticsType.NONE.ordinal()));
+			orderDto.setLogisticsNo("");
 			
 			orderItems = new ArrayList<BaseUserOrderItemDto>();
 			orderItem = new UserTrainOrderItem();
@@ -198,6 +229,29 @@ public class UserOrderDtoLoader {
 			itemDto.setRechargePhone(orderItem.getRechargeMobile());
 			
 			orderDto.getOrderItems().add(itemDto);
+		}
+	}
+	
+	/**
+	 * @Description: 加载物流列表
+	 * @param orderLogisticsList   
+	 * @author maojj
+	 * @date 2017年2月20日
+	 */
+	public void loadOrderLogisticsList(List<TradeOrderLogistics> orderLogisticsList){
+		if(CollectionUtils.isEmpty(orderLogisticsList)){
+			return;
+		}
+		UserOrderDto orderDto = null;
+		LogisticsType logisticsType = null;
+		for(TradeOrderLogistics orderLogistics : orderLogisticsList){
+			orderDto = this.orderDtoMap.get(orderLogistics.getOrderId());
+			logisticsType = orderLogistics.getType();
+			if(logisticsType == LogisticsType.HAS){
+				// 如果有物流，返回标识为有物流的标识
+				orderDto.setLogisticsFlag(String.valueOf(LogisticsType.HAS.ordinal()));
+				orderDto.setLogisticsNo(orderLogistics.getLogisticsNo());
+			}
 		}
 	}
 }
