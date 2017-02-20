@@ -4767,7 +4767,7 @@
 		WHERE (tr.status = 1 OR tr.status = 5 OR tr.status = 6 OR tr.status =
 		0 OR tr.status = 11 OR tr.status = 2)
 		<!-- begin add by  zhulq  2017-02-18  充值订单的所属城市字段查询 -->
-		<if test="cityId != null and cityId != ''">
+		<if test="cityName != null and cityName != ''">
 			AND locate.city_id = #{cityId,jdbcType=VARCHAR}
 		</if>
 		<!-- end add by  zhulq  2017-02-18  充值订单的所属城市字段查询 -->
@@ -4839,7 +4839,7 @@
 		OR tr. STATUS = 2
 	 )
 	 	<!-- begin add by  zhulq  2017-02-18  充值订单的所属城市字段查询 -->
-		<if test="cityId != null and cityId != ''">
+		<if test="cityName != null and cityName != ''">
 			AND locate.city_id = #{cityId,jdbcType=VARCHAR}
 		</if>
 		<!-- end add by  zhulq  2017-02-18  充值订单的所属城市字段查询 -->
