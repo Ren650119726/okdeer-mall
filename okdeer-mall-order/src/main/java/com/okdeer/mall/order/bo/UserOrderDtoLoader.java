@@ -134,6 +134,7 @@ public class UserOrderDtoLoader {
 			orderDto.setCreateTime(DateUtils.formatDate(order.getCreateTime()));
 			orderDto.setLogisticsFlag(String.valueOf(LogisticsType.NONE.ordinal()));
 			orderDto.setLogisticsNo("");
+			orderDto.setPickUpType(order.getPickUpType() == null ? "0" : String.valueOf(order.getPickUpType().ordinal()));
 			
 			// 设置返回给App的订单状态
 			switch (order.getType()) {
