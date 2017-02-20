@@ -17,7 +17,6 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +72,7 @@ import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
 import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
+import com.okdeer.mall.system.service.InvitationCodeServiceApi;
 
 /**
  * 订单接口
@@ -139,6 +139,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
+	
+	/***
+	 * 邀请信息
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private InvitationCodeServiceApi invitationCodeService;
 	// End V2.1.0 added by luosm 2017-02-16
 
 	/**
@@ -834,15 +840,15 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		List<String> list = null;
 		List<String> storeIdLists = null;
 		String type = params.get("type").toString();
-		if(params.get("cityName")!=null){
+		if (params.get("cityName") != null) {
 			cityName = params.get("cityName").toString();
-			if (StringUtils.isNotEmpty(cityName)&& StringUtils.isNotEmpty(type)) {
+			if (StringUtils.isNotEmpty(cityName) && StringUtils.isNotEmpty(type)) {
 				Address address = addressService.getByName(cityName);
 				if (address != null && (type.equals("0") || type.equals("1"))) {
-				cityId = String.valueOf(address.getId());
-				list = tradeOrderLogisticsService.selectByCityId(String.valueOf(address.getId()));
-				params.put("ids", list);
-				}else if(address != null && (type.equals("2"))){
+					cityId = String.valueOf(address.getId());
+					list = tradeOrderLogisticsService.selectByCityId(String.valueOf(address.getId()));
+					params.put("ids", list);
+				} else if (address != null && (type.equals("2"))) {
 					cityId = String.valueOf(address.getId());
 					storeIdLists = memberConsigneeAddressService.selectByCityId(cityId);
 					params.put("storeIds", storeIdLists);
@@ -853,7 +859,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 		PageUtils<ERPTradeOrderVo> page = tradeOrderService.findOrderForFinanceByParams(params, pageNumber, pageSize);
 
-		List<ERPTradeOrderVoDto> dtoList = buildERPTradeOrderVoDto(page, list);
+		List<ERPTradeOrderVoDto> dtoList = buildERPTradeOrderVoDto(page);
 
 		PageResultVo<ERPTradeOrderVoDto> result = new PageResultVo<ERPTradeOrderVoDto>(page.getPageNum(),
 				page.getPageSize(), page.getTotal(), dtoList);
@@ -863,9 +869,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 	// End 重构4.1 add by wusw 20160719
 
-	//Begin V2.1.0 added by luosm 20170218
+	// Begin V2.1.0 added by luosm 20170218
 	// 构建数据
-	public List<ERPTradeOrderVoDto> buildERPTradeOrderVoDto(PageUtils<ERPTradeOrderVo> page, List<String> list) {
+	public List<ERPTradeOrderVoDto> buildERPTradeOrderVoDto(PageUtils<ERPTradeOrderVo> page) {
 		List<ERPTradeOrderVoDto> dtoList = new ArrayList<ERPTradeOrderVoDto>();
 		for (ERPTradeOrderVo vo : page.getList()) {
 			ERPTradeOrderVoDto dto = new ERPTradeOrderVoDto();
@@ -906,31 +912,32 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 			// Begin V2.1.0 added by luosm 2017-02-16
 			TradeOrderLogistics tradeOrderLogistics = null;
-			if(StringUtils.isNotEmpty(vo.getId())&&(vo.getType()==OrderTypeEnum.SERVICE_STORE_ORDER||vo.getType()==OrderTypeEnum.PHYSICAL_ORDER)){
+			if (StringUtils.isNotEmpty(vo.getId()) && (vo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
+					|| vo.getType() == OrderTypeEnum.PHYSICAL_ORDER)) {
 				try {
-					tradeOrderLogistics=tradeOrderLogisticsService.selectByOrderId(vo.getId());
+					tradeOrderLogistics = tradeOrderLogisticsService.selectByOrderId(vo.getId());
 				} catch (ServiceException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				if(tradeOrderLogistics!=null&&StringUtils.isNotEmpty(tradeOrderLogistics.getCityId())){
+				if (tradeOrderLogistics != null && StringUtils.isNotEmpty(tradeOrderLogistics.getCityId())) {
 					Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
-					if(address!=null){
+					if (address != null) {
 						dto.setCityName(address.getName());
 					}
 				}
-				if(tradeOrderLogistics!=null&&vo.getId().equals(tradeOrderLogistics.getOrderId())){
-					String area = (tradeOrderLogistics.getArea()!=null?tradeOrderLogistics.getArea():"");
-					dto.setAddress(area+tradeOrderLogistics.getAddress());
+				if (tradeOrderLogistics != null && vo.getId().equals(tradeOrderLogistics.getOrderId())) {
+					String area = (tradeOrderLogistics.getArea() != null ? tradeOrderLogistics.getArea() : "");
+					dto.setAddress(area + tradeOrderLogistics.getAddress());
 				}
 			}
-			
+
 			MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
-			if(StringUtils.isNotEmpty(vo.getStoreId())&&(vo.getType()==OrderTypeEnum.STORE_CONSUME_ORDER)){
-				memberConsigneeAddress= memberConsigneeAddressService.selectByOneUserId(vo.getStoreId());
-				if(memberConsigneeAddress!=null&&StringUtils.isNotEmpty(memberConsigneeAddress.getCityId())){
+			if (StringUtils.isNotEmpty(vo.getStoreId()) && (vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
+				memberConsigneeAddress = memberConsigneeAddressService.selectByOneUserId(vo.getStoreId());
+				if (memberConsigneeAddress != null && StringUtils.isNotEmpty(memberConsigneeAddress.getCityId())) {
 					Address address = addressService.getAddressById(Long.valueOf(memberConsigneeAddress.getCityId()));
-					if(address!=null){
+					if (address != null) {
 						dto.setCityName(address.getName());
 					}
 				}
@@ -940,7 +947,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		}
 		return dtoList;
 	}
-	//End V2.1.0 added by luosm 20170218
+	// End V2.1.0 added by luosm 20170218
 
 	/**
 	 * (non-Javadoc)
@@ -949,6 +956,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	@Override
 	public List<ERPTradeOrderVoDto> findOrderListByParams(Map<String, Object> params) throws Exception {
 		List<ERPTradeOrderVo> list = tradeOrderService.findOrderListForFinanceByParams(params);
+
 		if (list != null && list.size() > RECORD_NUM) {
 			throw new ExceedRangeException("查询导出订单列表超过一万条", new Throwable());
 		}
@@ -993,6 +1001,44 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				} // End 12170 add by wusw 20160806
 					// End 重构4.1 add by wusw 20160726
 			}
+			
+			// Begin V2.1.0 added by luosm 2017-02-18
+			TradeOrderLogistics tradeOrderLogistics = null;
+			if (StringUtils.isNotEmpty(vo.getId()) && (vo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
+					|| vo.getType() == OrderTypeEnum.PHYSICAL_ORDER)) {
+				try {
+					tradeOrderLogistics = tradeOrderLogisticsService.selectByOrderId(vo.getId());
+				} catch (ServiceException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if (tradeOrderLogistics != null && StringUtils.isNotEmpty(tradeOrderLogistics.getCityId())) {
+					Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
+					if (address != null) {
+						dto.setCityName(address.getName());
+					}
+				}
+				if (tradeOrderLogistics != null && vo.getId().equals(tradeOrderLogistics.getOrderId())) {
+					String area = (tradeOrderLogistics.getArea() != null ? tradeOrderLogistics.getArea() : "");
+					dto.setAddress(area + tradeOrderLogistics.getAddress());
+				}
+			}
+
+			MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
+			if (StringUtils.isNotEmpty(vo.getStoreId()) && (vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
+				memberConsigneeAddress = memberConsigneeAddressService.selectByOneUserId(vo.getStoreId());
+				if (memberConsigneeAddress != null && StringUtils.isNotEmpty(memberConsigneeAddress.getCityName())) {
+						dto.setCityName(memberConsigneeAddress.getCityName());
+				}
+			}
+			
+			//获取邀请人姓名
+			String inviteName = invitationCodeService.findInvitationNameByUserId(vo.getUserId());
+			if(StringUtils.isNotEmpty(inviteName)){
+			dto.setInviteName(inviteName);
+			}
+			// End V2.1.0 added by luosm 2017-02-18
+
 			result.add(dto);
 		}
 		return result;
