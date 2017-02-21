@@ -184,7 +184,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 		Collections.sort(favourList, new Comparator<Favour>() {
 			@Override
 			public int compare(Favour o1, Favour o2) {
-				return o1.getMaxFavourStrategy().compareTo(o2.getMaxFavourStrategy());
+				return o2.getMaxFavourStrategy().compareTo(o1.getMaxFavourStrategy());
 			}
 		});
 		if(CollectionUtils.isEmpty(favourList)){

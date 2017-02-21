@@ -278,6 +278,12 @@
 			javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
 		<result column="store_name" property="storeName" jdbcType="VARCHAR" />
 		<!-- Begin V2.1.0 added by luosm 20170218 -->
+		<result column="activity_type" property="activityType" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
+		<result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+		<result column="income" property="income" jdbcType="DECIMAL" />
+		<result column="delivery_time" property="deliveryTime" jdbcType="TIMESTAMP" />
+		<result column="received_time" property="receivedTime" jdbcType="TIMESTAMP" />
+		<result column="accept_time" property="acceptTime" jdbcType="TIMESTAMP" />
 		<result column="store_id" property="storeId" jdbcType="VARCHAR" />
 		<result column="user_id" property="userId" jdbcType="VARCHAR" />
 		<!-- End V2.1.0 added by luosm 20170218 -->
@@ -1469,6 +1475,21 @@
 		parameterType="map">
 		SELECT count(1) FROM trade_order WHERE store_id =
 		#{storeId,jdbcType=VARCHAR} AND status = #{status,jdbcType=BIT}
+	</select>
+	
+	<!-- 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用-->
+	<select id="selectOrderNumByStatus" resultType="java.lang.Integer"
+		parameterType="map">
+		SELECT count(1) 
+		FROM trade_order 
+		WHERE store_id = #{storeId,jdbcType=VARCHAR}
+		<if test="statusList != null and statusList.size() > 0">
+			AND status in
+			<foreach collection="statusList" index="index" item="item" open="("
+				separator="," close=")">
+				#{item,jdbcType=BIT}
+			</foreach>
+		</if> 
 	</select>
 
 	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
@@ -4924,6 +4945,12 @@
 		trade.store_id,
 		trade.user_phone,
 		trade.user_id,
+		trade.income,
+		trade.activity_type,
+		trade.activity_id,
+		trade.accept_time,
+		trade.delivery_time,
+		trade.received_time,
 		trade.total_amount,
 		trade.actual_amount,
 		trade.preferential_price,
@@ -5364,10 +5391,13 @@
 	    SELECT 
 			tr.id,
 			tr.activity_type,
-			CASE 	WHEN tr.activity_type = 1 THEN coupons.name
-						WHEN tr.activity_type = 2 THEN discount.name
-						WHEN tr.activity_type = 3 THEN discount.name
-						WHEN tr.activity_type = 6 THEN seckill.seckill_name
+			CASE tr.activity_type
+				        WHEN  1 THEN coupons.name
+						WHEN  2 THEN discount.name
+						WHEN  3 THEN discount.name
+						WHEN  5 THEN sale.name
+						WHEN  6 THEN seckill.seckill_name
+						WHEN  7 THEN sale.name
 			ELSE ''
 			END AS activity_name
 		FROM trade_order tr
@@ -5375,6 +5405,7 @@
 		LEFT JOIN activity_coupons coupons ON coupons.id = record.coupons_id
 		LEFT JOIN activity_discount discount ON discount.id = tr.activity_id
 		LEFT JOIN activity_seckill seckill ON seckill.id = tr.activity_id
+		LEFT JOIN activity_sale sale ON sale.id = tr.activity_id
 		WHERE 1 = 1
 		<if test="null != orderIds and orderIds.size > 0 ">
 			  AND tr.id IN

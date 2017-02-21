@@ -65,6 +65,17 @@
            <result column="category_name" property="categoryName" jdbcType="VARCHAR" />
 	   </collection>       
     </resultMap>
+    
+    <!-- Begin V2.1.0 added by luosm 20170220 -->
+    <select id="findByOrderId" resultMap="CouponsResultMap" parameterType="string">
+      select 
+      <include refid="BaseSelectSQL" />
+      from activity_coupons cou
+      left join activity_coupons_record rec on rec.coupons_id = cou.id
+      where rec.order_id = #{orderId, jdbcType=VARCHAR}
+      and cou.disabled= 0
+    </select>
+    <!-- End V2.1.0 added by luosm 20170220 -->
 	
    <!--  add  by zhuliq -->
     <select id="findNavCategoryByCouponsId" parameterType="string" resultMap="CouponsVoResultMap">
@@ -509,4 +520,14 @@
 	  where a.is_rand_code = 1 
 	  AND r.rand_code = #{exchangeCode,jdbcType=VARCHAR}
 	</select>
+	
+	<!-- Begin V2.1.0 added by luosm 20170220 -->
+	<select id="selectOneByActivityId" parameterType="java.lang.String" resultMap="CouponsResultMap">
+	select 
+	<include refid="BaseSelectSQL" />
+	  FROM activity_coupons
+	  WHERE disabled = 0
+	  AND activity_id = #{activityId,jdbcType=VARCHAR}
+	</select>
+	<!-- End V2.1.0 added by luosm 20170220 -->
 </mapper>

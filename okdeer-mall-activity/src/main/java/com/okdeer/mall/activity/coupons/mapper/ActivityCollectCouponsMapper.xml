@@ -64,7 +64,6 @@
         <result property="endTime" column="end_time_coupons" javaType="date" jdbcType="TIMESTAMP"/>           
         <collection property="activityCouponsCategory" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory">
 	       <id column="categoryid" property="id" jdbcType="VARCHAR" />
-           <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
            <result column="category_id" property="categoryId" jdbcType="VARCHAR" />
            <result column="category_name" property="categoryName" jdbcType="VARCHAR" />
 	    </collection>  

@@ -382,10 +382,14 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 		if(sysUserInvitationCode!=null && sysUserInvitationCode.getUserType()!=null){
 		if(sysUserInvitationCode.getUserType().ordinal() == 0){
 			SysUser sysUser = sysUserService.findSysUserById(sysUserInvitationCode.getSysUserId());
+			if(sysUser != null && StringUtils.isNotEmpty(sysUser.getLoginName())){
 			loginName = sysUser.getLoginName();
+			}
 		}else if(sysUserInvitationCode.getUserType().ordinal() == 1){
 			SysBuyerUser sysBuyerUser = sysBuyerUserService.findByPrimaryKey(sysUserInvitationCode.getSysBuyerUserId());
+			if(sysBuyerUser !=null && StringUtils.isNotEmpty(sysBuyerUser.getLoginName())){
 			loginName = sysBuyerUser.getLoginName();
+			}
 		  }
 		 }
 		}
