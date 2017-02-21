@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -66,9 +67,11 @@ public class UserOrderServiceImpl implements UserOrderService {
 		// 装载订单项列表
 		loader.loadOrderItemList(orderItemList);
 		// 根据订单Id查询物流信息
-		List<TradeOrderLogistics> orderLogisticsList = tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
-		// 装载物流信息列表
-		loader.loadOrderLogisticsList(orderLogisticsList);
+		if(CollectionUtils.isNotEmpty(orderIds)){
+			List<TradeOrderLogistics> orderLogisticsList = tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
+			// 装载物流信息列表
+			loader.loadOrderLogisticsList(orderLogisticsList);
+		}
 		return loader.retrieveResult();
 	}
 
@@ -76,8 +79,8 @@ public class UserOrderServiceImpl implements UserOrderService {
 		PageUtils<ThirdTrainOrderDto> trainOrderList = new PageUtils<ThirdTrainOrderDto>(new ArrayList<ThirdTrainOrderDto>()); 
 		// 获取请求参数的关键字
 		String keyword = paramBo.getKeyword();
-		if(StringUtils.isNotEmpty(keyword) && !keyword.contains(TRAIN_KEYWORD)){
-			// 如果按照关键字搜索，且关键字中不包含火车字样，则不查询火车票列表记录
+		if(StringUtils.isNotEmpty(keyword)){
+			// 如果按照关键字搜索，则不查询火车票列表记录
 			return trainOrderList;
 		}
 		if("3".equals(paramBo.getStatus())){

@@ -130,20 +130,17 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			ActivitySaleGoods activityGoods = entry.getValue();
 			// 限购数量
 			int tradeMax = activityGoods.getTradeMax();
+			// 活动商品信息
+			skuBo = parserBo.getCurrentStoreSkuBo(activityGoods.getStoreSkuId());
 			// 限购 判定该用户购买的该店铺的该商品是否超过限定数量
 			if (tradeMax > 0) {
 				// 活动商品已购数量
 				int boughtNum = parserBo.getBoughtSkuNum(activityGoods.getStoreSkuId());
-				// 活动商品信息
-				skuBo = parserBo.getCurrentStoreSkuBo(activityGoods.getStoreSkuId());
 				if (skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()) {
-					int skuActQuantity = skuBo.getSkuActQuantity();
-					// 低价商品，超过限购数量的，则按照原价购买
-					if(skuActQuantity > tradeMax - boughtNum){
-						// 可参与活动的数量
-						skuBo.setSkuActQuantity(tradeMax - boughtNum);
-						resp.setMessage(ResultCodeEnum.LOW_BUY_IS_OUT.getDesc());
-					}
+					// 低价商品，可购买的低价数量
+					int skuActQuantity = skuBo.getQuantity() > tradeMax - boughtNum ? tradeMax - boughtNum : skuBo.getQuantity();
+					skuBo.setSkuActQuantity(skuActQuantity);
+					
 				}else if (skuBo.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()){
 					// 特惠商品超出限款不能进行购买
 					if ( skuBo.getQuantity() > tradeMax - boughtNum) {
@@ -152,6 +149,11 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 						isOutOfLimit = true;
 						break; 
 					}
+				}
+			}else{
+				if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+					// 低价不限购
+					skuBo.setSkuActQuantity(skuBo.getQuantity());
 				}
 			}
 		}
@@ -173,7 +175,6 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				if(storeSkuBo.getSkuActQuantity() > 0 && storeSkuBo.getSkuActQuantity() > storeSkuBo.getLocked()){
 					// 重新设置低价商品可参与活动的数量
 					storeSkuBo.setSkuActQuantity(storeSkuBo.getLocked());
-					resp.setMessage(ResultCodeEnum.LOW_BUY_IS_OUT.getDesc());
 				}
 				// 购买原价商品数量
 				int buyPrimeNum = storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity();
@@ -187,6 +188,16 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				if( buyPrimeNum > 0 &&  buyPrimeNum > storeSkuBo.getSellable()){
 					resp.setCode(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getCode());
 					resp.setMessage(String.format(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getDesc(), storeSkuBo.getName()));
+					return true;
+				}
+			}else if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+				// 特惠商品，判断商品购买数量和活动商品数量
+				if(storeSkuBo.getQuantity() > storeSkuBo.getSellable() || storeSkuBo.getQuantity() > storeSkuBo.getLocked()){
+					if(kindSize > 1){
+						resp.setResult(ResultCodeEnum.PART_GOODS_STOCK_NOT_ENOUGH);
+					}else{
+						resp.setResult(ResultCodeEnum.STOCK_NOT_ENOUGH);
+					}
 					return true;
 				}
 			}else if(storeSkuBo.getQuantity() > storeSkuBo.getSellable()){

@@ -264,15 +264,19 @@ public class StoreSkuParserBo {
 		CurrentStoreSkuBo storeSkuBo = null;
 		for (GoodsStoreSkuStock stock : stockList) {
 			storeSkuBo = this.getCurrentStoreSkuBo(stock.getStoreSkuId());
-			if (storeSkuBo.getActivityType() == 0) {
-				// 如果没参加活动
-				storeSkuBo.setSellable(stock.getSellable());
-			} else if (storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()) {
-				// 如果是低价
-				storeSkuBo.setSellable(stock.getSellable());
-				storeSkuBo.setLocked(stock.getLocked());
-			} else {
-				storeSkuBo.setSellable(stock.getLocked());
+			ActivityTypeEnum activityType = ActivityTypeEnum.enumValueOf(storeSkuBo.getActivityType());
+			switch (activityType) {
+				case NO_ACTIVITY:
+					// 如果没参加活动
+					storeSkuBo.setSellable(stock.getSellable());
+					break;
+				case SALE_ACTIVITIES:
+				case LOW_PRICE:
+					// 如果是低价或者特惠
+					storeSkuBo.setSellable(stock.getSellable());
+					storeSkuBo.setLocked(stock.getLocked());
+				default:
+					break;
 			}
 		}
 	}
