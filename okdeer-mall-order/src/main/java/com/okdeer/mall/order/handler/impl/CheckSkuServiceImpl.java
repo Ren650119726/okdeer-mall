@@ -101,7 +101,8 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		StoreSkuParserBo parserBo = parseCurrentSkuList(currentSkuList);
 		parserBo.setSkuIdList(skuIdList);
 		parserBo.loadBuySkuList(paramDto.getSkuList());
-		
+		// 缓存商品解析结果
+		paramDto.put("parserBo", parserBo);
 		// 获取非组合商品列表
 		List<String> excludeComboList = parserBo.extraSkuListExcludeCombo();
 		if(CollectionUtils.isNotEmpty(excludeComboList)){
@@ -126,9 +127,6 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		}
 		// 计算运费
 		calculateFare(paramDto,parserBo);
-		// 缓存商品解析结果
-		paramDto.put("parserBo", parserBo);
-
 	}
 
 	public List<GoodsStoreSku> findCurrentSkuList(List<String> skuIdList) {
