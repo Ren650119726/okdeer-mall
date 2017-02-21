@@ -43,11 +43,6 @@ public class UserOrderServiceImpl implements UserOrderService {
      */
     @Reference(version = "1.0.0", check = false)
     private ThirdTrainOrderApi thirdTrainOrderApi;
-	
-	/**
-	 * 火车票关键字
-	 */
-	private static final String TRAIN_KEYWORD = "火车";
 
 	@Override
 	public AppUserOrderDto findUserOrders(UserOrderParamBo paramBo) throws Exception {

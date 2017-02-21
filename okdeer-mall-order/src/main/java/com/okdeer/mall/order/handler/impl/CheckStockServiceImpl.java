@@ -170,6 +170,7 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 */
 	private boolean isOutOfStock(StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp) {
 		int kindSize = parserBo.getCurrentSkuMap().values().size();
+		Map<String,Integer> skuActNumMap = parserBo.getSkuActNumMap();
 		for (CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()) {
 			if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
 				if(storeSkuBo.getSkuActQuantity() > 0 && storeSkuBo.getSkuActQuantity() > storeSkuBo.getLocked()){
@@ -189,6 +190,10 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 					resp.setCode(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getCode());
 					resp.setMessage(String.format(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getDesc(), storeSkuBo.getName()));
 					return true;
+				}
+				// 如果重新分配的低价活动数量<请求的低价活动数量，则提示：部分商品超过活动限制
+				if(storeSkuBo.getSkuActQuantity() < skuActNumMap.get(storeSkuBo.getId())){
+					resp.setMessage(ResultCodeEnum.LOW_BUY_IS_OUT.getDesc());
 				}
 			}else if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
 				// 特惠商品，判断商品购买数量和活动商品数量
