@@ -745,6 +745,7 @@ public class TradeOrderBuilder {
 		tradeOrderLocate.setProviceName(paramDto.getProvinceName());
 		tradeOrderLocate.setCityName(cityName);
 		tradeOrderLocate.setAreaName(areaName);
+		tradeOrderLocate.setAreaExt(paramDto.getAreaExt());
 
 		if(StringUtils.isNotEmpty(paramDto.getCityName())){
 			Address cityAddr = addressService.getByName(cityName);
