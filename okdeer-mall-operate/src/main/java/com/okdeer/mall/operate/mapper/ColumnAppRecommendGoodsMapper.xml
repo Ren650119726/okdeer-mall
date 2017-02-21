@@ -26,7 +26,7 @@
 		from column_app_recommend_goods g 
 			inner join goods_store_sku k on store_sku_id =k.`id`
 		   	inner join store_info_ext s on k.`store_id` = s.store_id and s.is_closed=1
-		<where>
+		WHERE k.online = 1
 			<if test="recommendId != null">
 				AND g.recommend_id = #{recommendId}
 			</if>
@@ -39,7 +39,7 @@
 					#{item}
 				</foreach>
 			</if>
-		</where>
+		
 		ORDER BY g.sort desc
 	</select>
 
