@@ -90,7 +90,7 @@ public class UserOrderDtoLoader {
 		Collections.sort(this.orderDtoList,new Comparator<UserOrderDto>() {
 			@Override
 			public int compare(UserOrderDto o1, UserOrderDto o2) {
-				return o1.getCreateTime().compareTo(o2.getCreateTime());
+				return o2.getCreateTime().compareTo(o1.getCreateTime());
 			}
 		});
 		if(this.orderDtoList.size() > this.pageSize){
