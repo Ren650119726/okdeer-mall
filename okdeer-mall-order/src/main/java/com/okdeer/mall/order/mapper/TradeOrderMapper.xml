@@ -884,6 +884,14 @@
 			<if test="tabs == 'finished' or tabs == 'closed'">
 				order by tr.update_time desc
 			</if>
+			<!-- 预约时间由近到远 -->
+			<if test="tabs == 'pickuptimedesc'">
+				order by tr.pick_up_time desc
+			</if>
+			<!-- 预约时间由远到近 -->
+			<if test="tabs == 'pickuptimeasc'">
+				order by tr.pick_up_time asc
+			</if>
 		</if>
 		<!-- 默认排序 -->
 		<if test="tabs == null or tabs == ''">
@@ -4560,6 +4568,9 @@
 				open="(" close=")" separator=",">
 				#{item}
 			</foreach>
+		</if>
+		<if test="null != activityType">
+			AND tr.activity_type = #{activityType}
 		</if>
 		<!-- 引用排序sql -->
 		<include refid="order_paytype_orderby" />
