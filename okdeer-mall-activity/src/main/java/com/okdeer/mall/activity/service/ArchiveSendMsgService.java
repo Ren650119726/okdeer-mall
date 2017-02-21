@@ -10,7 +10,6 @@ import com.okdeer.archive.store.dto.GoodsStoreLableParamDto;
  * @author wangf01
  * @Description: archive-发送MQ消息-service
  * @date 2017年2月15日
- * <p>
  * =================================================================================================
  * Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
