@@ -146,8 +146,10 @@ public class UserOrderDtoLoader {
 				case PHONE_PAY_ORDER:
 				case TRAFFIC_PAY_ORDER:
 					orderDto.setOrderStatus(order.getStatus().ordinal());
+					break;
 				case STORE_CONSUME_ORDER:
 					orderDto.setOrderStatus(OrderAppStatusAdaptor.convertAppStoreConsumeOrderStatus(order.getStatus(), order.getConsumerCodeStatus()).ordinal());
+					break;
 				default:
 					break;
 			}
@@ -222,6 +224,7 @@ public class UserOrderDtoLoader {
 			itemDto = new UserOrderItemDto();
 			itemDto.setItemId(orderItem.getId());
 			itemDto.setMainPicUrl(orderItem.getMainPicPrl());
+			itemDto.setStoreSkuId(orderItem.getStoreSkuId());
 			itemDto.setSkuName(orderItem.getSkuName());
 			itemDto.setPropertiesIndb(orderItem.getPropertiesIndb());
 			itemDto.setUnitPrice(ConvertUtil.format(orderItem.getUnitPrice()));
