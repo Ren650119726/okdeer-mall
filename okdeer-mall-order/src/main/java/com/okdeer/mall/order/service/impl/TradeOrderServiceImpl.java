@@ -149,6 +149,7 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
+import com.okdeer.mall.order.entity.TradeOrderLocate;
 import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.entity.TradeOrderPay;
@@ -179,6 +180,7 @@ import com.okdeer.mall.order.mapper.TradeOrderComplainMapper;
 import com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderLocateMapper;
 import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
 import com.okdeer.mall.order.mapper.TradeOrderLogisticsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
@@ -563,6 +565,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Reference(version = "1.0.0", check = false)
 	private IAddressService addressService;
 	//End V2.1.0 added by luosm 2017-02-14
+	
+	// Begin V2.1 added by maojj 2017-02-21
+	/**
+	 * 订单定位mapper
+	 */
+	private TradeOrderLocateMapper tradeOrderLocateMapper;
+	// End V2.1 added by maojj 2017-02-21
 
 	@Override
 	public PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize)
@@ -1253,7 +1262,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			TradeOrderPay tradeOrderPay = tradeOrder.getTradeOrderPay();
 			TradeOrderLogistics orderLogistics = tradeOrder.getTradeOrderLogistics();
 			TradeOrderInvoice invoice = tradeOrder.getTradeOrderInvoice();
+			TradeOrderLocate orderLocate = tradeOrder.getTradeOrderLocate();
 			ActivitySaleRecord saleRecord = tradeOrder.getActiviySaleRecord();
+			
 			if (tradeOrderPay != null) {
 				tradeOrderPayMapper.insertSelective(tradeOrderPay);
 			}
@@ -1267,6 +1278,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				activitySaleRecordService.insertSelective(saleRecord);
 			}
 
+			// Begin V2.1 added by maojj 2017-02-21
+			if(orderLocate != null){
+				tradeOrderLocateMapper.add(orderLocate);
+			}
+			// End V2.1 added by maojj 2017-02-21
+			
+			
 			List<TradeOrderItem> itemList = tradeOrder.getTradeOrderItem();
 
 			// for (TradeOrderItem item : itemList) {
