@@ -131,7 +131,7 @@ public class UserOrderDtoLoader {
 			orderDto.setActualAmount(ConvertUtil.format(order.getActualAmount()));
 			orderDto.setFare(ConvertUtil.format(order.getFare()));
 			orderDto.setType(EnumAdapter.convert(order.getType()));;
-			orderDto.setCreateTime(DateUtils.formatDate(order.getCreateTime()));
+			orderDto.setCreateTime(DateUtils.formatDate(order.getCreateTime(),"yyyy-MM-dd HH:mm:ss"));
 			orderDto.setLogisticsFlag(String.valueOf(LogisticsType.NONE.ordinal()));
 			orderDto.setLogisticsNo("");
 			orderDto.setPickUpType(order.getPickUpType() == null ? "0" : String.valueOf(order.getPickUpType().ordinal()));
