@@ -43,7 +43,11 @@ public class ActivitySaleRemindBo implements Serializable {
      */
     private String createUserId;
 
-
+    /**
+     * 手机号码
+     */
+    private String phone;
+    
     public String getId() {
         return id;
     }
@@ -83,4 +87,12 @@ public class ActivitySaleRemindBo implements Serializable {
     public void setCreateUserId(String createUserId) {
         this.createUserId = createUserId;
     }
+	
+	public String getPhone() {
+		return phone;
+	}
+	
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
 }
