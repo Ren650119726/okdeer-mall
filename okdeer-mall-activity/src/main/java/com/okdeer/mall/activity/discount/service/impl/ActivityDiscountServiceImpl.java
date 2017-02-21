@@ -760,15 +760,6 @@ public class ActivityDiscountServiceImpl implements ActivityDiscountServiceApi, 
 		if(CollectionUtils.isEmpty(fullSubtractList)){
 			return fullSubtractList;
 		}
-		if(CollectionUtils.isEmpty(paramBo.getSpuCategoryIds()) && CollectionUtils.isNotEmpty(paramBo.getSkuIdList())){
-			// 如果商品类目为空，且商品列表不为空，则重新查询获取商品类目列表
-			List<GoodsStoreSku> goodsStoreSkus = goodsStoreSkuServiceApi.findStoreSkuForOrder(paramBo.getSkuIdList());
-			Set<String> spuCategoryIds = new HashSet<String>();
-			for (GoodsStoreSku goodsStoreSku : goodsStoreSkus) {
-				spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
-			}
-			paramBo.setSpuCategoryIds(spuCategoryIds);
-		}
 		// 对集合进行数据迭代
 		Iterator<FullSubtract> it = fullSubtractList.iterator();
 		FullSubtract fullSubtract = null;
