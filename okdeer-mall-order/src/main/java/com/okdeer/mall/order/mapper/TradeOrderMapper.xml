@@ -5428,18 +5428,18 @@
 		<where>
 			AND t.is_show = 1
 			<if test="keyword != null and keyword != ''">
-				AND EXISTS (
+				AND ( EXISTS (
 					SELECT * FROM trade_order_item t1
 					WHERE LOCATE(#{keyword},t1.sku_name) &gt; 0
 					AND t1.order_id = t.id
-				)
+					) OR  LOCATE(#{keyword},t.order_no) &gt; 0)
 			</if>
 			<if test="createTime != null and createTime != ''">
 				AND create_time &lt; #{createTime}
 			</if>
 			<!-- 待付款订单查询 -->
 			<if test="status == '1'.toString()">
-				AND status IN (1,11)
+				AND status IN (0,11)
 			</if>
 			<!-- 待使用订单查询 -->
 			<if test="status == '2'.toString()">
