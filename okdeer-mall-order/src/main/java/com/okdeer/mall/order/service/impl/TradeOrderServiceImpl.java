@@ -570,6 +570,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/**
 	 * 订单定位mapper
 	 */
+	@Resource
 	private TradeOrderLocateMapper tradeOrderLocateMapper;
 	// End V2.1 added by maojj 2017-02-21
 
