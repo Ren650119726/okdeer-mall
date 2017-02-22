@@ -935,38 +935,43 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				} // End 12170 add by wusw 20160806
 					// End 重构4.1 add by wusw 20160726
 			}
-
-			// Begin V2.1.0 added by luosm 2017-02-16
-			TradeOrderLogistics tradeOrderLogistics = null;
-			if (StringUtils.isNotEmpty(vo.getId()) && (vo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
-					|| vo.getType() == OrderTypeEnum.PHYSICAL_ORDER)) {
-				try {
-					tradeOrderLogistics = tradeOrderLogisticsService.selectByOrderId(vo.getId());
-				} catch (ServiceException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				if (tradeOrderLogistics != null && StringUtils.isNotEmpty(tradeOrderLogistics.getCityId())) {
-					Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
-					if (address != null) {
-						dto.setCityName(address.getName());
+			//begin  add by zhulq  2017-02-22  充值订单所属城市
+			if (vo.getType() == OrderTypeEnum.TRAFFIC_PAY_ORDER || vo.getType() == OrderTypeEnum.PHONE_PAY_ORDER) {
+				dto.setLocateCityName(vo.getCityName());
+		    //end  add by zhulq  2017-02-22  充值订单所属城市	
+			} else {
+				// Begin V2.1.0 added by luosm 2017-02-16
+				TradeOrderLogistics tradeOrderLogistics = null;
+				if (StringUtils.isNotEmpty(vo.getId()) && (vo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
+						|| vo.getType() == OrderTypeEnum.PHYSICAL_ORDER)) {
+					try {
+						tradeOrderLogistics = tradeOrderLogisticsService.selectByOrderId(vo.getId());
+					} catch (ServiceException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					if (tradeOrderLogistics != null && StringUtils.isNotEmpty(tradeOrderLogistics.getCityId())) {
+						Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
+						if (address != null) {
+							dto.setCityName(address.getName());
+						}
+					}
+					if (tradeOrderLogistics != null && vo.getId().equals(tradeOrderLogistics.getOrderId())) {
+						String area = (tradeOrderLogistics.getArea() != null ? tradeOrderLogistics.getArea() : "");
+						dto.setAddress(area + tradeOrderLogistics.getAddress());
 					}
 				}
-				if (tradeOrderLogistics != null && vo.getId().equals(tradeOrderLogistics.getOrderId())) {
-					String area = (tradeOrderLogistics.getArea() != null ? tradeOrderLogistics.getArea() : "");
-					dto.setAddress(area + tradeOrderLogistics.getAddress());
-				}
-			}
 
-			MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
-			if (StringUtils.isNotEmpty(vo.getStoreId()) && (vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
-				memberConsigneeAddress = memberConsigneeAddressService.selectByOneUserId(vo.getStoreId());
-				if (memberConsigneeAddress != null && StringUtils.isNotEmpty(memberConsigneeAddress.getCityName())) {
-						dto.setCityName(memberConsigneeAddress.getCityName());
+				MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
+				if (StringUtils.isNotEmpty(vo.getStoreId()) && (vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
+					memberConsigneeAddress = memberConsigneeAddressService.selectByOneUserId(vo.getStoreId());
+					if (memberConsigneeAddress != null && StringUtils.isNotEmpty(memberConsigneeAddress.getCityName())) {
+							dto.setCityName(memberConsigneeAddress.getCityName());
+					}
 				}
+				
+				// End V2.1.0 added by luosm 2017-02-16
 			}
-			
-			// End V2.1.0 added by luosm 2017-02-16
 			dtoList.add(dto);
 		}
 		return dtoList;
