@@ -164,6 +164,33 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		}
 
 	}
+	
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateSaleStock(ActivitySale activitySale, ActivitySaleGoods activitySaleGoods) throws Exception {
+		List<String> rpcIdByStockList = new ArrayList<String>();
+		List<String> rpcIdBySkuList = new ArrayList<String>();
+		ActivitySaleGoods saleGoods = activitySaleGoodsMapper.get(activitySaleGoods.getId());
+		//活动商品存在并活动库存小于修改库存
+		if (saleGoods == null || (saleGoods.getSaleStock() != null 
+				&& saleGoods.getSaleStock().intValue() >= activitySaleGoods.getSaleStock().intValue() )) {
+			return;
+		}
+		saleGoods.setSaleStock(activitySaleGoods.getSaleStock() - saleGoods.getSaleStock());
+		List<ActivitySaleGoods> list = new ArrayList<ActivitySaleGoods>();
+		list.add(saleGoods);
+		// 库存同步--库存出错的几率更大。先处理库存
+		try {
+			this.syncGoodsStockBatch(list, activitySale, activitySale.getCreateUserId(), activitySale.getStoreId(),
+					StockOperateEnum.ACTIVITY_STOCK_INCREMENT, rpcIdByStockList);
+			activitySaleGoodsMapper.updateById(activitySaleGoods);
+		} catch (Exception e) {
+			// 现在库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
+			// rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
+			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
+			throw e;
+		}
+	}
 
 	/**
 	 * 

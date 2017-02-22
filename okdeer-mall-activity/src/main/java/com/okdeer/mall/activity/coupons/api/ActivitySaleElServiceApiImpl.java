@@ -26,6 +26,18 @@ import java.util.stream.Collectors;
 import static com.okdeer.common.consts.ELTopicTagConstants.*;
 import static com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum.LOW_PRICE;
 
+/**
+ * 
+ * ClassName: ActivitySaleElServiceApiImpl 
+ * @Description: 
+ * @author tangy
+ * @date 2017年2月21日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *     V2.1.0          2017年2月21日                               tangy           增量添加活动库存     
+ */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivitySaleELServiceApi")
 public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 
@@ -118,5 +130,10 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         String json = mapper.writeValueAsString(paramDto);
         Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
         rocketMQProducer.send(msg);
+    }
+    
+    @Override
+    public void updateSaleStock(ActivitySale activitySale, ActivitySaleGoods activitySaleGoods) throws Exception {
+    	activitySaleService.updateSaleStock(activitySale, activitySaleGoods);
     }
 }

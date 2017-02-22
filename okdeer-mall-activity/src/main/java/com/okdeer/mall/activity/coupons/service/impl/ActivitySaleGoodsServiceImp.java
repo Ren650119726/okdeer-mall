@@ -47,6 +47,11 @@ public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi,
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 
 	@Override
+	public ActivitySaleGoods findById(String id) {
+		return activitySaleGoodsMapper.get(id);
+	}
+	
+	@Override
 	public ActivitySaleGoods selectByObject(ActivitySaleGoods activitySaleGoods) {
 		return activitySaleGoodsMapper.selectByObject(activitySaleGoods);
 	}
