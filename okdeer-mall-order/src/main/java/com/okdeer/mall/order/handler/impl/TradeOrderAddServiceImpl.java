@@ -1015,7 +1015,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			adjustDetailVo.setPropertiesIndb(storeSku.getPropertiesIndb());
 			adjustDetailVo.setStoreSkuId(storeSku.getId());
 			adjustDetailVo.setGoodsSkuId(storeSku.getSkuId());
-			adjustDetailVo.setPreference(isPrivilege);
+			adjustDetailVo.setIsPreference(isPrivilege);
 			adjustDetailList.add(adjustDetailVo);
 		}
 
