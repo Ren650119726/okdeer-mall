@@ -1036,7 +1036,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				dto.setLocateCityName(vo.getCityName());
 				dto.setLocation(vo.getLocation());
 				//0为平台优惠  充值只能 用代金券
-				dto.setPreferentialType("0");
+				dto.setPreferentialType("平台优惠");
 				//充值完成才有完成时间
 				if (vo.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
 					dto.setCompleteTime(vo.getUpdateTime());
