@@ -463,7 +463,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			case SALE_ACTIVITIES:
 				adjustDetailVo.setNum(storeSku.getQuantity());
 				adjustDetailVo.setPrice(storeSku.getOnlinePrice());
-				adjustDetailVo.setPreference(true);
+				adjustDetailVo.setIsPreference(true);
 				adjustDetailVo.setIsEvent(false);
 				break;
 				
