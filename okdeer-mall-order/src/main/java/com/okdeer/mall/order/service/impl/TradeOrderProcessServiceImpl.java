@@ -27,6 +27,8 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.bdp.address.entity.Address;
+import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
@@ -39,6 +41,7 @@ import com.okdeer.mall.common.utils.Xml2JsonUtil;
 import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.entity.TradeOrderLocate;
 import com.okdeer.mall.order.entity.TradeOrderThirdRelation;
 import com.okdeer.mall.order.enums.AppraiseEnum;
 import com.okdeer.mall.order.enums.CompainStatusEnum;
@@ -62,6 +65,7 @@ import com.okdeer.mall.order.handler.StoreCheckService;
 import com.okdeer.mall.order.handler.StoreExtProcessService;
 import com.okdeer.mall.order.handler.TradeOrderAddService;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderLocateMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper;
 import com.okdeer.mall.order.service.GenerateNumericalService;
@@ -241,6 +245,17 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
      */
     @Resource
     private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+    
+    
+    // Begin V2.1 added by tangzj02 2017-02-22
+ 	/** 订单定位 Service */
+    @Autowired
+ 	private TradeOrderLocateMapper tradeOrderLocateMapper;
+ 	
+ 	/** 基础数据平台地址Service */
+	@Reference(version = "1.0.0", check = false)
+	private IAddressService addressService;
+ 	// End V2.1 added by tangzj02 2017-02-22
     
 	/**
 	 * 结算操作时的数据校验
@@ -639,6 +654,14 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         tradeOrderItem.setRechargeMobile(rechargeMobile);
         tradeOrderItemMapper.insertSelective(tradeOrderItem);
         
+        // Begin V2.1 added by tangzj02 2017-02-22
+     	/** 添加订单定位信息 */
+        if(null != reqDto.getTradeOrderLocate()){
+        	reqDto.getTradeOrderLocate().setOrderId(orderId);
+        	addTradeOrderLocate(reqDto.getTradeOrderLocate());
+        }
+        // End V2.1 added by tangzj02 2017-02-22
+        
         //发送定时消息，10分钟未支付取消订单
         this.tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_recharge_pay_timeout, orderId);
         
@@ -653,6 +676,40 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         respDto.setMessage(OrderTipMsgConstant.ORDER_SUCESS);
         return respDto;
 	}
+	
+	/**
+	 * @Description: 添加定位信息
+	 * @param locate 定位信息实体   
+	 * @throws Exception
+	 * @author tangzj02
+	 * @date 2017年2月22日
+	 */
+	private void addTradeOrderLocate(TradeOrderLocate locate) throws Exception {
+		if (null == locate) {
+			return;
+		}
+		locate.setId(UuidUtils.getUuid());
+		if (StringUtils.isNotBlank(locate.getProviceName())) {
+			Address address = addressService.getByName(locate.getProviceName());
+			if (null != address) {
+				locate.setProvinceId(address.getId().toString());
+			}
+		}
+		if (StringUtils.isNotBlank(locate.getCityName())) {
+			Address address = addressService.getByName(locate.getCityName());
+			if (null != address) {
+				locate.setCityId(address.getId().toString());
+			}
+		}
+		if (StringUtils.isNotEmptyAll(locate.getCityId(), locate.getAreaName())) {
+			Address address = addressService.getByName(Long.valueOf(locate.getCityId()), locate.getAreaName());
+			if (null != address) {
+				locate.setAreaId(address.getId().toString());
+			}
+		}
+		tradeOrderLocateMapper.add(locate);
+	}
+	
 	
 	/**
      * @Description: 更新代金券
