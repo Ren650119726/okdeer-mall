@@ -890,17 +890,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			dto.setActualAmount(vo.getActualAmount());
 			dto.setPreferentialPrice(vo.getPreferentialPrice());
 			dto.setCreateTime(vo.getCreateTime());
-			if (vo.getOrderResource() != null) {
-				if (vo.getOrderResource() == OrderResourceEnum.YSCAPP
-						|| vo.getOrderResource() == OrderResourceEnum.WECHAT
-						// Begin V2.0.0 add by wusw 20170109
-						|| vo.getOrderResource() == OrderResourceEnum.CVSAPP) {
-					// End V2.0.0 add by wusw 20170109
-					dto.setOrderResource(0);
-				} else {
-					dto.setOrderResource(1);
-				}
-			}
+			dto.setOrderResource(vo.getOrderResource().ordinal());
 			dto.setStatus(vo.getStatus().ordinal());
 			if (vo.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
 				dto.setPayType(3);
