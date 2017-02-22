@@ -5368,6 +5368,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
 							typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
 						}
+						params.put("locateCityName", (String) params.get("cityName"));
 						break;
 					default:
 						break;
