@@ -34,7 +34,7 @@ import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.system.entity.SysBuyerFirstOrderRecord;
-import com.okdeer.mall.system.mapper.SysBuyerFirstOrderRecordMapper;
+import com.okdeer.mall.system.service.SysBuyerFirstOrderRecordService;
 
 /**
  * ClassName: PayResultHandler 
@@ -70,7 +70,7 @@ public abstract class AbstractPayResultHandler {
 	protected TradeOrderItemMapper tradeOrderItemMapper;
 	
 	@Resource
-	protected SysBuyerFirstOrderRecordMapper sysBuyerFirstOrderRecordMapper;
+	protected SysBuyerFirstOrderRecordService sysBuyerFirstOrderRecordService;
 
 	/**
 	 * @Description: 第三方支付结果处理
@@ -339,20 +339,20 @@ public abstract class AbstractPayResultHandler {
 	 */
 	public void postProcessOrder(TradeOrder tradeOrder) throws Exception{
 		// 订单支付成功。保存用户首单记录
-		SysBuyerFirstOrderRecord firstOrderRecord = sysBuyerFirstOrderRecordMapper.findByUserId(tradeOrder.getUserId());
-		if(firstOrderRecord != null){
+		boolean isExistsOrderRecord = sysBuyerFirstOrderRecordService.isExistsOrderRecord(tradeOrder.getUserId());
+		if(isExistsOrderRecord){
 			// 如果存在首单记录，则什么都不做。
 			return;
 		}
 		// 如果用户没有首单记录，则当前订单即为首单。
-		firstOrderRecord = new SysBuyerFirstOrderRecord();
+		SysBuyerFirstOrderRecord firstOrderRecord = new SysBuyerFirstOrderRecord();
 		firstOrderRecord.setId(UuidUtils.getUuid());
 		firstOrderRecord.setOrderId(tradeOrder.getId());
 		firstOrderRecord.setUserId(tradeOrder.getUserId());
 		
 		// 首单用户记录表，有用户唯一约束。所以高并发时，可能存在保存失败的情况。用户首单记录失败，不应该影响支付流程的正常执行。所以此处进行异常控制。
 		try {
-			sysBuyerFirstOrderRecordMapper.add(firstOrderRecord);
+			sysBuyerFirstOrderRecordService.add(firstOrderRecord);
 		} catch (Exception e) {
 			logger.error(LogConstants.ERROR_EXCEPTION,e);
 		}

@@ -21,11 +21,11 @@ import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.order.service.GetPreferentialService;
-import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.Discount;
 import com.okdeer.mall.order.vo.Favour;
 import com.okdeer.mall.order.vo.FullSubtract;
+import com.okdeer.mall.system.service.SysBuyerFirstOrderRecordService;
 
 /**
  * 
@@ -61,8 +61,8 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 	private ActivityDiscountService activityDiscountService;
 
 	@Resource
-	private TradeOrderService tradeOrderService;
-
+	private SysBuyerFirstOrderRecordService sysBuyerFirstOrderRecordService;
+	
 	/**
 	 * 导航类目
 	 */
@@ -73,14 +73,14 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 	@Override
 	public PreferentialVo findPreferentialByUser(FavourParamBO paramBo) throws Exception {
 		PreferentialVo preferentialVo = new PreferentialVo();
-		// 确定新用户专享代金券是否能使用
-		boolean isNewUser = tradeOrderService.checkUserUseCoupons(paramBo.getUserId());
+		// 确定首单用户专享代金券是否能使用
+		boolean isFirstOrderUser = sysBuyerFirstOrderRecordService.isExistsOrderRecord(paramBo.getUserId())?false:true;
 		// 获取用户有效的代金券
-		List<Coupons> couponList = getCouponsList(paramBo, isNewUser);
+		List<Coupons> couponList = getCouponsList(paramBo, isFirstOrderUser);
 		// 获取用户有效的折扣
-		List<Discount> discountList = getDiscountList(paramBo, isNewUser);
+		List<Discount> discountList = getDiscountList(paramBo, isFirstOrderUser);
 		// 获取用户有效的满减
-		List<FullSubtract> fullSubtractList = getFullSubtractList(paramBo, isNewUser);
+		List<FullSubtract> fullSubtractList = getFullSubtractList(paramBo, isFirstOrderUser);
 		// 获取线上支付最大优惠
 		Favour maxFavourOnline = getMaxFavour(couponList,discountList,fullSubtractList,true);
 		// 获取线下支付最大优惠
