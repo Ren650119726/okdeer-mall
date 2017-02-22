@@ -15,9 +15,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
 import com.okdeer.archive.store.service.ISysUserAndExtServiceApi;
-import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.base.common.utils.DateUtils;
-import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.coupons.bo.ActivitySaleRemindBo;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
@@ -90,47 +88,63 @@ public class ActivitySaleRemindApiImpl implements ActivitySaleRemindApi {
     ISmsService smsService;
      	
 	@Override
-	public void sendSafetyWarning(String storeSkuId) {
-		log.info(LoggerConstants.LOGGER_DEBUG_INCOMING_METHOD, storeSkuId);
-		if (StringUtils.isBlank(storeSkuId)) {
+	public void sendSafetyWarning(List<String> storeSkuIds) {
+		if (CollectionUtils.isEmpty(storeSkuIds)) {
 			return;
 		}	
+		// 判断是否需要短信提醒
+		for (String storeSkuId : storeSkuIds) {
+			process(storeSkuId);
+		}
+		
+	}
+	
+	/**
+	 * 
+	 * @Description: 活动安全库存预警
+	 * @param storeSkuId   活动商品id
+	 * @return void  
+	 * @author tangy
+	 * @date 2017年2月22日
+	 */
+	private void process(String storeSkuId){
 		ActivitySaleGoods activitySaleGoods = activitySaleGoodsServiceApi.selectBySkuId(storeSkuId);
 		//判断是否有设置安全库存
 		if (activitySaleGoods != null && activitySaleGoods.getSecurityStock() != null 
 				&& activitySaleGoods.getSecurityStock().intValue() > 0) {
 			//是否已提醒
-			if (activitySaleGoods.getIsRemind() == null || activitySaleGoods.getIsRemind().intValue() == 0) {
-				GoodsStoreSkuStock stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
-				//是否达到提醒条件，安全库存大于活动剩余库存
-				if (stock != null && stock.getLocked() != null 
-						&& activitySaleGoods.getSecurityStock().intValue() > stock.getLocked().intValue()) {
-					//活动安全库存联系人
-					List<ActivitySaleRemindBo> saleRemind = activitySaleRemindService.findActivitySaleRemindBySaleId(activitySaleGoods.getSaleId());
-					if (CollectionUtils.isNotEmpty(saleRemind)) {
-						//短信提醒联系人
-						List<String> phoneList = new ArrayList<String>();
-						for (ActivitySaleRemindBo activitySaleRemindBo : saleRemind) {
-							if (activitySaleRemindBo.getPhone() != null) {
-								phoneList.add(activitySaleRemindBo.getPhone());
-							}
+			if (activitySaleGoods.getIsRemind() != null && activitySaleGoods.getIsRemind().intValue() > 0) {
+				return;
+			}
+			// 库存信息
+			GoodsStoreSkuStock stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
+			//是否达到提醒条件，安全库存大于活动剩余库存
+			if (stock != null && stock.getLocked() != null 
+					&& activitySaleGoods.getSecurityStock().intValue() > stock.getLocked().intValue()) {
+				//活动安全库存联系人
+				List<ActivitySaleRemindBo> saleRemind = activitySaleRemindService.findActivitySaleRemindBySaleId(activitySaleGoods.getSaleId());
+				if (CollectionUtils.isNotEmpty(saleRemind)) {
+					//短信提醒联系人
+					List<String> phoneList = new ArrayList<String>();
+					for (ActivitySaleRemindBo activitySaleRemindBo : saleRemind) {
+						if (activitySaleRemindBo.getPhone() != null) {
+							phoneList.add(activitySaleRemindBo.getPhone());
 						}
-						//是否有需要发送提醒短信的联系人
-						if (CollectionUtils.isNotEmpty(phoneList)) {
-							activitySaleGoods.setIsRemind(1);
-							try {
-								activitySaleGoodsServiceApi.updateActivitySaleGoods(activitySaleGoods);
-							} catch (Exception e) {
-								log.error(LoggerConstants.LOGGER_ERROR_EXCEPTION, e);
-								return;
-							}
-							sendMessg(phoneList);
+					}
+					//是否有需要发送提醒短信的联系人
+					if (CollectionUtils.isNotEmpty(phoneList)) {
+						activitySaleGoods.setIsRemind(1);
+						try {
+							activitySaleGoodsServiceApi.updateActivitySaleGoods(activitySaleGoods);
+						} catch (Exception e) {
+							log.error("更新活动商品提醒状态异常,{}", e);
+							return;
 						}
+						sendMessg(phoneList);
 					}
 				}
 			}
 		}
-		log.info(LoggerConstants.LOGGER_DEBUG_QUIT_METHOD);
 	}
 
 	/**
