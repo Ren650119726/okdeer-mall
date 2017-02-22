@@ -311,6 +311,7 @@
 		<!-- V2.1.0 begin add by zhulq 增加订单所属城市 和订单当前定位 -->
 		<result column="city_name" property="cityName" jdbcType="VARCHAR" />
 		<result column="location" property="location" jdbcType="VARCHAR" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
 		<!-- V2.1.0 end add by zhulq 增加订单所属城市  -->
 	</resultMap>
 	<!-- 订单列表 -财务系统接口调用 -luosm end -->
@@ -4976,7 +4977,7 @@
 		pay.pay_type,
 		<!-- begin add by zengjz 增加是否有违约金相关字段 -->
 		trade.is_breach,
-		trade.breach_money
+		trade.breach_money,
 		<!-- end add by zengjz 增加是否有违约金相关字段 -->
 		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
 		CASE
@@ -4984,7 +4985,8 @@
               WHEN trade.type = 4 THEN locate.city_name 
 		      ELSE ''
 		END AS city_name,
-		CONCAT(locate.city_name,locate.area_name,locate.area_ext) as location
+		CONCAT(locate.city_name,locate.area_name,locate.area_ext) as location,
+		trade.update_time
 		<!-- end add by zhulq 订单所属城市 和定位地址 -->      
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
