@@ -1031,161 +1031,172 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				} // End 12170 add by wusw 20160806
 					// End 重构4.1 add by wusw 20160726
 			}
-			
-			// Begin V2.1.0 added by luosm 2017-02-18
-			TradeOrderLogistics tradeOrderLogistics = null;
-			if (StringUtils.isNotEmpty(vo.getId()) && (vo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
-					|| vo.getType() == OrderTypeEnum.PHYSICAL_ORDER)) {
-				try {
-					tradeOrderLogistics = tradeOrderLogisticsService.selectByOrderId(vo.getId());
-				} catch (ServiceException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			//begin  add by zhulq  2017-02-22  充值订单所属城市
+			if (vo.getType() == OrderTypeEnum.TRAFFIC_PAY_ORDER || vo.getType() == OrderTypeEnum.PHONE_PAY_ORDER) {
+				dto.setLocateCityName(vo.getCityName());
+				dto.setLocation(vo.getLocation());
+				//0为平台优惠  充值只能 用代金券
+				dto.setPreferentialType("0");
+				//充值完成才有完成时间
+				if (vo.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
+					dto.setCompleteTime(vo.getUpdateTime());
 				}
-				if (tradeOrderLogistics != null && StringUtils.isNotEmpty(tradeOrderLogistics.getCityId())) {
-					Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
-					if (address != null) {
-						dto.setCityName(address.getName());
+		    //end  add by zhulq  2017-02-22  充值订单所属城市	
+			} else {
+				// Begin V2.1.0 added by luosm 2017-02-18
+				TradeOrderLogistics tradeOrderLogistics = null;
+				if (StringUtils.isNotEmpty(vo.getId()) && (vo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
+						|| vo.getType() == OrderTypeEnum.PHYSICAL_ORDER)) {
+					try {
+						tradeOrderLogistics = tradeOrderLogisticsService.selectByOrderId(vo.getId());
+					} catch (ServiceException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					if (tradeOrderLogistics != null && StringUtils.isNotEmpty(tradeOrderLogistics.getCityId())) {
+						Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
+						if (address != null) {
+							dto.setCityName(address.getName());
+						}
+					}
+					if (tradeOrderLogistics != null && vo.getId().equals(tradeOrderLogistics.getOrderId())) {
+						String area = (tradeOrderLogistics.getArea() != null ? tradeOrderLogistics.getArea() : "");
+						dto.setAddress(area + tradeOrderLogistics.getAddress());
 					}
 				}
-				if (tradeOrderLogistics != null && vo.getId().equals(tradeOrderLogistics.getOrderId())) {
-					String area = (tradeOrderLogistics.getArea() != null ? tradeOrderLogistics.getArea() : "");
-					dto.setAddress(area + tradeOrderLogistics.getAddress());
-				}
-			}
 
-			MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
-			if (StringUtils.isNotEmpty(vo.getStoreId()) && (vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
-				memberConsigneeAddress = memberConsigneeAddressService.selectByOneUserId(vo.getStoreId());
-				if (memberConsigneeAddress != null && StringUtils.isNotEmpty(memberConsigneeAddress.getCityName())) {
-						dto.setCityName(memberConsigneeAddress.getCityName());
+				MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
+				if (StringUtils.isNotEmpty(vo.getStoreId()) && (vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
+					memberConsigneeAddress = memberConsigneeAddressService.selectByOneUserId(vo.getStoreId());
+					if (memberConsigneeAddress != null && StringUtils.isNotEmpty(memberConsigneeAddress.getCityName())) {
+							dto.setCityName(memberConsigneeAddress.getCityName());
+					}
 				}
-			}
-			
-			//获取邀请人姓名
-			String inviteName = invitationCodeService.findInvitationNameByUserId(vo.getUserId());
-			if(StringUtils.isNotEmpty(inviteName)){
-			dto.setInviteName(inviteName);
-			}
-			
-			//接单时间
-			if(vo.getAcceptTime()!=null){
-				dto.setAcceptTime(vo.getAcceptTime());
-			}
-			
-			//发货时间
-			if(vo.getDeliveryTime() != null){
-				dto.setDeliveryTime(vo.getDeliveryTime());
-			}
-			
-			//收货时间
-			if(vo.getReceivedTime() != null){
-				dto.setReceivedTime(vo.getReceivedTime());
-			}
-			
-			//收入
-			dto.setIncome(vo.getIncome());
-			
-			//优惠类型
-			if(vo.getActualAmount().compareTo(vo.getIncome())==-1){
-				dto.setPreferentialType("0");//0为平台优惠
-			}else if(vo.getActualAmount().compareTo(vo.getIncome())==0){
-				dto.setPreferentialType("1");//1为店铺优惠
-			}
-			
-			//优惠金额
-			dto.setPreferentialPrice(vo.getPreferentialPrice());
-			
-			//活动类型
-			
-			switch(vo.getActivityType().ordinal()){
-				case 0:
-					dto.setActivityType(vo.getActivityType().getName());
-				    dto.setActivityName("没参加活动");
-				    break;
-				case 1:
-					//1:代金券
-					dto.setActivityType(vo.getActivityType().getName());
-					if(StringUtils.isNotEmpty(vo.getId())){
-						ActivityCoupons activityCoupons = (ActivityCoupons) activityCouponsService.findByOrderId(vo.getId());
-						if(activityCoupons!=null&& StringUtils.isNotEmpty(activityCoupons.getName())){
-							dto.setActivityName(activityCoupons.getName());//活动名称
-						}
-					}
-					break;
-				case 2:
-					//2:满减活动
-					dto.setActivityType(vo.getActivityType().getName());
-					if(StringUtils.isNotEmpty(vo.getActivityId())){
-						ActivityDiscount activityDiscount=activityDiscountService.selectByPrimaryKey(vo.getActivityId());
-						if(activityDiscount != null&&StringUtils.isNotEmpty(activityDiscount.getName())){
-							dto.setActivityName(activityDiscount.getName());//活动名称
-						}
-					}
-					break;
-				case 3:
-					//3:满折活动
-					dto.setActivityType(vo.getActivityType().getName());
-					if(StringUtils.isNotEmpty(vo.getActivityId())){
-						ActivityDiscount activityDiscount=activityDiscountService.selectByPrimaryKey(vo.getActivityId());
-						if(activityDiscount != null&&StringUtils.isNotEmpty(activityDiscount.getName())){
-							dto.setActivityName(activityDiscount.getName());//活动名称
-						}
-					}
-					break;
-				case 5:
-					//5:特惠活动
-					dto.setActivityType(vo.getActivityType().getName());
-					if(StringUtils.isNotEmpty(vo.getActivityId())){
-						ActivitySale activitySale=activitySaleService.get(vo.getActivityId());
-						if(activitySale != null&&StringUtils.isNotEmpty(activitySale.getName())){
-							dto.setActivityName(activitySale.getName());//活动名称
-						}
-					}
-					break;
-				case 6:
-					//6:秒杀活动
-					dto.setActivityType(vo.getActivityType().getName());
-					if(StringUtils.isNotEmpty(vo.getActivityId())){
-						ActivitySeckill activitySeckill=activitySeckillService.findSeckillById(vo.getActivityId());
-						if(activitySeckill != null&&StringUtils.isNotEmpty(activitySeckill.getSeckillName())){
-							dto.setActivityName(activitySeckill.getSeckillName());//活动名称
-						}
-					}
-					break;
-				case 7:
-					//7:低价活动
-					dto.setActivityType(vo.getActivityType().getName());
-					if(StringUtils.isNotEmpty(vo.getActivityId())){
-						ActivitySale activitySale=activitySaleService.get(vo.getActivityId());
-						if(activitySale != null&&StringUtils.isNotEmpty(activitySale.getName())){
-							dto.setActivityName(activitySale.getName());//活动名称
-						}
-					}
-					break;
-				default:
-					break;
-			}
-			
-			if(StringUtils.isNotEmpty(vo.getId())&&(vo.getType()==OrderTypeEnum.PHYSICAL_ORDER||vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)){
-				TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundsService.selectByOrderIdOne(vo.getId());
-				if(tradeOrderRefunds!=null){
-					dto.setIsRefundsType("是");
-					if(tradeOrderRefunds.getTotalAmount()!=null){
-						dto.setRefundPrice(tradeOrderRefunds.getTotalAmount());
-					}
-					if(tradeOrderRefunds.getTotalPreferentialPrice()!=null){
-						dto.setRefundPreferentialPrice(tradeOrderRefunds.getTotalPreferentialPrice());
-					}
-				}else{
-					dto.setIsRefundsType("否");
+				
+				//获取邀请人姓名
+				String inviteName = invitationCodeService.findInvitationNameByUserId(vo.getUserId());
+				if(StringUtils.isNotEmpty(inviteName)){
+				dto.setInviteName(inviteName);
 				}
+				
+				//接单时间
+				if(vo.getAcceptTime()!=null){
+					dto.setAcceptTime(vo.getAcceptTime());
+				}
+				
+				//发货时间
+				if(vo.getDeliveryTime() != null){
+					dto.setDeliveryTime(vo.getDeliveryTime());
+				}
+				
+				//收货时间
+				if(vo.getReceivedTime() != null){
+					dto.setReceivedTime(vo.getReceivedTime());
+				}
+				
+				//收入
+				dto.setIncome(vo.getIncome());
+				
+				//优惠类型
+				if(vo.getActualAmount().compareTo(vo.getIncome())==-1){
+					dto.setPreferentialType("0");//0为平台优惠
+				}else if(vo.getActualAmount().compareTo(vo.getIncome())==0){
+					dto.setPreferentialType("1");//1为店铺优惠
+				}
+				
+				//优惠金额
+				dto.setPreferentialPrice(vo.getPreferentialPrice());
+				
+				//活动类型
+				
+				switch(vo.getActivityType().ordinal()){
+					case 0:
+						dto.setActivityType(vo.getActivityType().getName());
+					    dto.setActivityName("没参加活动");
+					    break;
+					case 1:
+						//1:代金券
+						dto.setActivityType(vo.getActivityType().getName());
+						if(StringUtils.isNotEmpty(vo.getId())){
+							ActivityCoupons activityCoupons = (ActivityCoupons) activityCouponsService.findByOrderId(vo.getId());
+							if(activityCoupons!=null&& StringUtils.isNotEmpty(activityCoupons.getName())){
+								dto.setActivityName(activityCoupons.getName());//活动名称
+							}
+						}
+						break;
+					case 2:
+						//2:满减活动
+						dto.setActivityType(vo.getActivityType().getName());
+						if(StringUtils.isNotEmpty(vo.getActivityId())){
+							ActivityDiscount activityDiscount=activityDiscountService.selectByPrimaryKey(vo.getActivityId());
+							if(activityDiscount != null&&StringUtils.isNotEmpty(activityDiscount.getName())){
+								dto.setActivityName(activityDiscount.getName());//活动名称
+							}
+						}
+						break;
+					case 3:
+						//3:满折活动
+						dto.setActivityType(vo.getActivityType().getName());
+						if(StringUtils.isNotEmpty(vo.getActivityId())){
+							ActivityDiscount activityDiscount=activityDiscountService.selectByPrimaryKey(vo.getActivityId());
+							if(activityDiscount != null&&StringUtils.isNotEmpty(activityDiscount.getName())){
+								dto.setActivityName(activityDiscount.getName());//活动名称
+							}
+						}
+						break;
+					case 5:
+						//5:特惠活动
+						dto.setActivityType(vo.getActivityType().getName());
+						if(StringUtils.isNotEmpty(vo.getActivityId())){
+							ActivitySale activitySale=activitySaleService.get(vo.getActivityId());
+							if(activitySale != null&&StringUtils.isNotEmpty(activitySale.getName())){
+								dto.setActivityName(activitySale.getName());//活动名称
+							}
+						}
+						break;
+					case 6:
+						//6:秒杀活动
+						dto.setActivityType(vo.getActivityType().getName());
+						if(StringUtils.isNotEmpty(vo.getActivityId())){
+							ActivitySeckill activitySeckill=activitySeckillService.findSeckillById(vo.getActivityId());
+							if(activitySeckill != null&&StringUtils.isNotEmpty(activitySeckill.getSeckillName())){
+								dto.setActivityName(activitySeckill.getSeckillName());//活动名称
+							}
+						}
+						break;
+					case 7:
+						//7:低价活动
+						dto.setActivityType(vo.getActivityType().getName());
+						if(StringUtils.isNotEmpty(vo.getActivityId())){
+							ActivitySale activitySale=activitySaleService.get(vo.getActivityId());
+							if(activitySale != null&&StringUtils.isNotEmpty(activitySale.getName())){
+								dto.setActivityName(activitySale.getName());//活动名称
+							}
+						}
+						break;
+					default:
+						break;
+				}
+				
+				if(StringUtils.isNotEmpty(vo.getId())&&(vo.getType()==OrderTypeEnum.PHYSICAL_ORDER||vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)){
+					TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundsService.selectByOrderIdOne(vo.getId());
+					if(tradeOrderRefunds!=null){
+						dto.setIsRefundsType("是");
+						if(tradeOrderRefunds.getTotalAmount()!=null){
+							dto.setRefundPrice(tradeOrderRefunds.getTotalAmount());
+						}
+						if(tradeOrderRefunds.getTotalPreferentialPrice()!=null){
+							dto.setRefundPreferentialPrice(tradeOrderRefunds.getTotalPreferentialPrice());
+						}
+					}else{
+						dto.setIsRefundsType("否");
+					}
+				}
+				
+				
+				
+				// End V2.1.0 added by luosm 2017-02-18
 			}
-			
-			
-			
-			// End V2.1.0 added by luosm 2017-02-18
-
 			result.add(dto);
 		}
 		return result;
