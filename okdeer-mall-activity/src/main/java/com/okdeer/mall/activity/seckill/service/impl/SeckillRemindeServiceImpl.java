@@ -29,6 +29,7 @@ import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
+import com.okdeer.mcm.constant.MsgConstant;
 
 /**
  * ClassName: SeckillRemindeServiceImpl 
@@ -218,7 +219,7 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 		pushMsgVo.setToken(msgToken);
 		pushMsgVo.setSendUserId(sendMsgParamVo.getUserId());
 		pushMsgVo.setServiceFkId(sendMsgParamVo.getOrderId());
-		pushMsgVo.setServiceTypes(new Integer[] { Constant.TWO });
+		pushMsgVo.setServiceTypes(new Integer[] { MsgConstant.ServiceTypes.MALL_OTHER });
 		// 0:用户APP,2:商家APP,3POS机
 		pushMsgVo.setAppType(Constant.ZERO);
 		pushMsgVo.setIsUseTemplate(Constant.ZERO);
