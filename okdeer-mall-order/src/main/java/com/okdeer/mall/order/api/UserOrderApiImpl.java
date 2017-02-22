@@ -1,5 +1,7 @@
 package com.okdeer.mall.order.api;
 
+import java.util.Map;
+
 import javax.annotation.Resource;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -23,4 +25,8 @@ public class UserOrderApiImpl implements UserOrderApi {
 		return userOrderService.findUserOrders(paramBo);
 	}
 
+	@Override
+	public Map<String, Object> countUserOrders(String userId) throws Exception {
+		return userOrderService.countUserOrders(userId);
+	}
 }

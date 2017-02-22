@@ -308,6 +308,10 @@
 		<result column="is_breach" property="isBreach" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.WhetherEnum" />
 		<result column="breach_money" property="breachMoney" jdbcType="DECIMAL" />
 		<!-- end add by zengjz 增加是否有违约金相关字段 -->
+		<!-- V2.1.0 begin add by zhulq 增加订单所属城市 和订单当前定位 -->
+		<result column="city_name" property="cityName" jdbcType="VARCHAR" />
+		<result column="location" property="location" jdbcType="VARCHAR" />
+		<!-- V2.1.0 end add by zhulq 增加订单所属城市  -->
 	</resultMap>
 	<!-- 订单列表 -财务系统接口调用 -luosm end -->
 	<sql id="Erp_column_list">
@@ -4974,10 +4978,25 @@
 		trade.is_breach,
 		trade.breach_money
 		<!-- end add by zengjz 增加是否有违约金相关字段 -->
+		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
+		CASE
+              WHEN trade.type = 3 THEN locate.city_name
+              WHEN trade.type = 4 THEN locate.city_name 
+		      ELSE ''
+		END AS city_name,
+		CONCAT(locate.city_name,locate.area_name,locate.area_ext) as location
+		<!-- end add by zhulq 订单所属城市 和定位地址 -->      
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN store_info store ON store.id = trade.store_id
+		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
 		WHERE 1=1
+		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
+		<if test="cityName != null and cityName != ''">
+			AND locate.city_id = #{cityId, jdbcType=VARCHAR}
+			AND (trade.type = 3 OR trade.type = 4)
+		</if>
+		<!-- end add by zhulq 订单所属城市 和定位地址 -->
 		<if test="unDisabled != null">
 			AND (trade.disabled = #{unDisabled, jdbcType=TINYINT}
 			<if test="completeStatus != null">
