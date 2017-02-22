@@ -17,6 +17,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,25 +35,21 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.mall.order.entity.TradeOrder;
-import com.okdeer.mall.order.entity.TradeOrderInvoice;
-import com.okdeer.mall.order.entity.TradeOrderItem;
-import com.okdeer.mall.order.entity.TradeOrderItemDetail;
-import com.okdeer.mall.order.entity.TradeOrderLogistics;
-import com.okdeer.mall.order.entity.TradeOrderPay;
-import com.okdeer.mall.order.enums.ActivityBelongType;
-import com.okdeer.mall.order.enums.OrderResourceEnum;
-import com.okdeer.mall.order.enums.OrderStatusEnum;
-import com.okdeer.mall.order.enums.OrderTypeEnum;
-import com.okdeer.mall.order.enums.PayWayEnum;
-import com.okdeer.mall.order.enums.WithInvoiceEnum;
-import com.okdeer.mall.order.service.TradeOrderActivityService;
-import com.okdeer.mall.order.service.TradeOrderItemService;
-import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.mall.order.vo.ERPTradeOrderVo;
-import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
-import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
+import com.okdeer.bdp.address.entity.Address;
+import com.okdeer.bdp.address.service.IAddressService;
+import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivitySale;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
+import com.okdeer.mall.activity.discount.service.ActivityDiscountServiceApi;
+import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
+import com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi;
+import com.okdeer.mall.common.vo.PageResultVo;
+import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
 import com.okdeer.mall.order.dto.ERPTradeOrderVoDto;
 import com.okdeer.mall.order.dto.TradeOrderDto;
 import com.okdeer.mall.order.dto.TradeOrderInvoiceDto;
@@ -62,10 +59,31 @@ import com.okdeer.mall.order.dto.TradeOrderLogisticsDto;
 import com.okdeer.mall.order.dto.TradeOrderPayDto;
 import com.okdeer.mall.order.dto.TradeOrderPayQueryDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryDto;
+import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderInvoice;
+import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.entity.TradeOrderItemDetail;
+import com.okdeer.mall.order.entity.TradeOrderLogistics;
+import com.okdeer.mall.order.entity.TradeOrderPay;
+import com.okdeer.mall.order.entity.TradeOrderRefunds;
+import com.okdeer.mall.order.enums.ActivityBelongType;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PayWayEnum;
+import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.exception.ExceedRangeException;
 import com.okdeer.mall.order.service.CancelOrderService;
 import com.okdeer.mall.order.service.ITradeOrderServiceApi;
-import com.okdeer.mall.common.vo.PageResultVo;
+import com.okdeer.mall.order.service.TradeOrderActivityService;
+import com.okdeer.mall.order.service.TradeOrderItemService;
+import com.okdeer.mall.order.service.TradeOrderLogisticsServiceApi;
+import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
+import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.vo.ERPTradeOrderVo;
+import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
+import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
+import com.okdeer.mall.system.service.InvitationCodeServiceApi;
 
 /**
  * 订单接口
@@ -104,6 +122,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 	@Autowired
 	private TradeOrderActivityService tradeOrderActivityService;
+	
+	@Reference(version = "1.0.0", check = false)
+	private ActivityCouponsServiceApi activityCouponsService;
 
 	/**
 	 * 用户Service
@@ -117,15 +138,50 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	@Reference(version = "1.0.0", check = false)
 	private IStoreMemberRelationServiceApi storeMemberRelationService;
 
+	// Begin V2.1.0 added by luosm 2017-02-16
+	@Reference(version = "1.0.0", check = false)
+	private IAddressService addressService;
+
+	/**
+	 * 物流service方法
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private TradeOrderLogisticsServiceApi tradeOrderLogisticsService;
+
+	/**
+	 * 地址service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
+	
+	/***
+	 * 邀请信息
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private InvitationCodeServiceApi invitationCodeService;
+	
+	@Reference(version = "1.0.0", check = false)
+	private ActivityDiscountServiceApi activityDiscountService;
+	
+	@Reference(version = "1.0.0", check = false)
+	private ActivitySaleServiceApi activitySaleService;
+	
+	@Reference(version = "1.0.0", check = false)
+	private ActivitySeckillServiceApi activitySeckillService;
+	
+	@Reference(version = "1.0.0", check = false)
+	private TradeOrderRefundsServiceApi tradeOrderRefundsService;
+	// End V2.1.0 added by luosm 2017-02-16
+
 	/**
 	 * 订单取消service
 	 */
 	@Resource
 	private CancelOrderService cancelOrderService;
-	
+
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
-	
+
 	/**
 	 * @desc 订单详情（快送同步）（订单、支付、物流、订单项等信息）
 	 */
@@ -183,12 +239,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	public boolean updateOrderStatus(String orderId, String status, String reason) throws Exception {
 		logger.info("订单同步状态" + "，orderId:" + orderId + "，status:" + status + "，reason:" + reason);
 		TradeOrder tradeOrder = tradeOrderService.selectById(orderId);
-//		OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
-//		if (orderStatus == null) {
-//			throw new Exception("订单状态status为空或名字错误异常");
-//		}
-//		tradeOrder.setCurrentStatus(tradeOrder.getStatus());
-//		tradeOrder.setStatus(orderStatus);
+		// OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
+		// if (orderStatus == null) {
+		// throw new Exception("订单状态status为空或名字错误异常");
+		// }
+		// tradeOrder.setCurrentStatus(tradeOrder.getStatus());
+		// tradeOrder.setStatus(orderStatus);
 		if (StringUtils.isNotEmpty(reason)) {
 			tradeOrder.setReason(reason);
 		}
@@ -214,12 +270,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		logger.info(
 				"确认收货订单同步状态" + "，orderId:" + orderId + "，status:" + status + "，reason:" + reason + "userId" + userId);
 		TradeOrder tradeOrder = tradeOrderService.selectById(orderId);
-//		OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
-//		if (orderStatus == null) {
-//			throw new Exception("订单状态status为空或名字错误异常");
-//		}
-//		tradeOrder.setCurrentStatus(tradeOrder.getStatus());
-//		tradeOrder.setStatus(orderStatus);
+		// OrderStatusEnum orderStatus = OrderStatusEnum.enumNameOf(status);
+		// if (orderStatus == null) {
+		// throw new Exception("订单状态status为空或名字错误异常");
+		// }
+		// tradeOrder.setCurrentStatus(tradeOrder.getStatus());
+		// tradeOrder.setStatus(orderStatus);
 		if (StringUtils.isNotEmpty(reason)) {
 			tradeOrder.setReason(reason);
 		}
@@ -229,12 +285,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		tradeOrder.setUpdateTime(new Date());
 
 		if (tradeOrder.getStatus() == OrderStatusEnum.CANCELED) {
-			//modify by zengjz 将取消订单的接口换成 cancelOrderService
+			// modify by zengjz 将取消订单的接口换成 cancelOrderService
 			cancelOrderService.cancelOrder(tradeOrder, false);
 		} else if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
 			this.tradeOrderService.updateWithConfirm(tradeOrder);
 		} else if (tradeOrder.getStatus() == OrderStatusEnum.REFUSED) {
-			//modify by zengjz 将取消订单的接口换成 cancelOrderService
+			// modify by zengjz 将取消订单的接口换成 cancelOrderService
 			cancelOrderService.updateWithUserRefuse(tradeOrder);
 		} else if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {
 			TradeOrderOperateParamVo param = new TradeOrderOperateParamVo();
@@ -439,14 +495,14 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		 * tradeOrderItemDto.setQuantity(tradeOrderItem.getQuantity());
 		 * tradeOrderItemDto.setTotalAmount(tradeOrderItem.getTotalAmount());
 		 */
-		
+
 		List<String> storeSkuIds = new ArrayList<String>();
 		if (order.getTradeOrderItem() != null) {
 			for (TradeOrderItem item : order.getTradeOrderItem()) {
 				storeSkuIds.add(item.getStoreSkuId());
 			}
 		}
-		
+
 		// Begin 12051 add by wusw 20160811
 		BigDecimal totalAmount = new BigDecimal(0.00);
 		// End 12051 add by wusw 20160811
@@ -461,9 +517,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				tradeOrderItemDto.setUnitPrice(item.getUnitPrice());
 				tradeOrderItemDto.setQuantity(item.getQuantity());
 				tradeOrderItemDto.setTotalAmount(item.getTotalAmount());
-				if(null != storeSkuList){
-					for(GoodsStoreSku goodsStoreSku : storeSkuList){
-						if(item.getStoreSkuId().equals(goodsStoreSku.getId())){
+				if (null != storeSkuList) {
+					for (GoodsStoreSku goodsStoreSku : storeSkuList) {
+						if (item.getStoreSkuId().equals(goodsStoreSku.getId())) {
 							tradeOrderItemDto.setUnit(goodsStoreSku.getUnit());
 							break;
 						}
@@ -521,7 +577,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 			tradeOrderDto.setTradeOrderPay(tradeOrderPayDto);// 付款时间
 		}
-		//add by mengsj begin 收货信息
+		// add by mengsj begin 收货信息
 		TradeOrderLogisticsDto tradeOrderLogisticsDto = new TradeOrderLogisticsDto();
 		if (order.getTradeOrderLogistics() != null) {
 			TradeOrderLogistics tradeOrderLogistics = order.getTradeOrderLogistics();
@@ -549,15 +605,15 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 			tradeOrderDto.setTradeOrderInvoice(tradeOrderInvoiceDto);
 		}
-		//add by mengsj end
-		
+		// add by mengsj end
+
 		List<String> storeSkuIds = new ArrayList<String>();
 		if (order.getTradeOrderItem() != null) {
 			for (TradeOrderItem item : order.getTradeOrderItem()) {
 				storeSkuIds.add(item.getStoreSkuId());
 			}
 		}
-		
+
 		// Begin 12051 add by wusw 20160811
 		BigDecimal totalAmount = new BigDecimal(0.00);
 		// End 12051 add by wusw 20160811
@@ -573,9 +629,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				tradeOrderItemDto.setUnitPrice(item.getUnitPrice());
 				tradeOrderItemDto.setQuantity(item.getQuantity());
 				tradeOrderItemDto.setTotalAmount(item.getTotalAmount());
-				if(null != storeSkuList){
-					for(GoodsStoreSku goodsStoreSku : storeSkuList){
-						if(item.getStoreSkuId().equals(goodsStoreSku.getId())){
+				if (null != storeSkuList) {
+					for (GoodsStoreSku goodsStoreSku : storeSkuList) {
+						if (item.getStoreSkuId().equals(goodsStoreSku.getId())) {
 							tradeOrderItemDto.setUnit(goodsStoreSku.getUnit());
 							break;
 						}
@@ -649,15 +705,15 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					dto.setHandTime(vo.getHandTime());
 				}
 				dto.setStatus(vo.getStatus());
-				
-				//begin add by zengjz   增加违约金的处理
-				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null){
+
+				// begin add by zengjz 增加违约金的处理
+				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
 					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
-				}else{
+				} else {
 					dto.setRefundAmount(vo.getRealMoney());
 				}
-				//end add by zengjz   增加违约金的处理
-				
+				// end add by zengjz 增加违约金的处理
+
 				dto.setThirdTransNo(vo.getThirdTransNo());
 				dto.setPayType(vo.getPayType());
 
@@ -707,14 +763,14 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					dto.setHandTime(vo.getHandTime());
 				}
 				dto.setStatus(vo.getStatus());
-				
-				//begin add by zengjz   增加违约金的处理
-				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null){
+
+				// begin add by zengjz 增加违约金的处理
+				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
 					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
-				}else{
+				} else {
 					dto.setRefundAmount(vo.getRealMoney());
 				}
-				//end add by zengjz   增加违约金的处理
+				// end add by zengjz 增加违约金的处理
 				dto.setThirdTransNo(vo.getThirdTransNo());
 				dto.setPayType(vo.getPayType());
 				dto.setOrderResource(vo.getOrderResource());
@@ -745,15 +801,15 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				dto.setOrderId(vo.getOrderId());
 				dto.setOrderNo(vo.getOrderNo());
 				dto.setTradeNo(vo.getTradeNum());
-				
-				//begin add by zengjz   增加违约金的处理
+
+				// begin add by zengjz 增加违约金的处理
 				dto.setTotalFee(vo.getRealMoney());
-				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null){
+				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
 					dto.setRefundFee(vo.getRealMoney().subtract(vo.getBreachMoney()));
-				}else{
+				} else {
 					dto.setRefundFee(vo.getRealMoney());
 				}
-				//end add by zengjz   增加违约金的处理
+				// end add by zengjz 增加违约金的处理
 				// 用于活动的相关查询
 				TradeOrder order = new TradeOrder();
 				order.setId(vo.getOrderId());
@@ -803,7 +859,45 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	public PageResultVo<ERPTradeOrderVoDto> findOrderByParams(Map<String, Object> params) throws Exception {
 		int pageSize = Integer.valueOf(params.get("pageSize").toString());
 		int pageNumber = Integer.valueOf(params.get("pageNumber").toString());
+		// Begin V2.1.0 added by luosm 20170215
+		// 判断cityName是否为空
+		String cityName = null;
+		String cityId = null;
+		List<String> list = null;
+		List<String> storeIdLists = null;
+		String type = params.get("type").toString();
+		if (params.get("cityName") != null) {
+			cityName = params.get("cityName").toString();
+			if (StringUtils.isNotEmpty(cityName) && StringUtils.isNotEmpty(type)) {
+				Address address = addressService.getByName(cityName);
+				if (address != null && (type.equals("0") || type.equals("1"))) {
+					cityId = String.valueOf(address.getId());
+					list = tradeOrderLogisticsService.selectByCityId(String.valueOf(address.getId()));
+					params.put("ids", list);
+				} else if (address != null && (type.equals("2"))) {
+					cityId = String.valueOf(address.getId());
+					storeIdLists = memberConsigneeAddressService.selectByCityId(cityId);
+					params.put("storeIds", storeIdLists);
+				}
+			}
+		}
+		// End V2.1.0 added by luosm 20170215
+
 		PageUtils<ERPTradeOrderVo> page = tradeOrderService.findOrderForFinanceByParams(params, pageNumber, pageSize);
+
+		List<ERPTradeOrderVoDto> dtoList = buildERPTradeOrderVoDto(page);
+
+		PageResultVo<ERPTradeOrderVoDto> result = new PageResultVo<ERPTradeOrderVoDto>(page.getPageNum(),
+				page.getPageSize(), page.getTotal(), dtoList);
+
+		return result;
+	}
+
+	// End 重构4.1 add by wusw 20160719
+
+	// Begin V2.1.0 added by luosm 20170218
+	// 构建数据
+	public List<ERPTradeOrderVoDto> buildERPTradeOrderVoDto(PageUtils<ERPTradeOrderVo> page) {
 		List<ERPTradeOrderVoDto> dtoList = new ArrayList<ERPTradeOrderVoDto>();
 		for (ERPTradeOrderVo vo : page.getList()) {
 			ERPTradeOrderVoDto dto = new ERPTradeOrderVoDto();
@@ -821,7 +915,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 						|| vo.getOrderResource() == OrderResourceEnum.WECHAT
 						// Begin V2.0.0 add by wusw 20170109
 						|| vo.getOrderResource() == OrderResourceEnum.CVSAPP) {
-					    // End V2.0.0 add by wusw 20170109
+					// End V2.0.0 add by wusw 20170109
 					dto.setOrderResource(0);
 				} else {
 					dto.setOrderResource(1);
@@ -841,14 +935,43 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				} // End 12170 add by wusw 20160806
 					// End 重构4.1 add by wusw 20160726
 			}
+
+			// Begin V2.1.0 added by luosm 2017-02-16
+			TradeOrderLogistics tradeOrderLogistics = null;
+			if (StringUtils.isNotEmpty(vo.getId()) && (vo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
+					|| vo.getType() == OrderTypeEnum.PHYSICAL_ORDER)) {
+				try {
+					tradeOrderLogistics = tradeOrderLogisticsService.selectByOrderId(vo.getId());
+				} catch (ServiceException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if (tradeOrderLogistics != null && StringUtils.isNotEmpty(tradeOrderLogistics.getCityId())) {
+					Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
+					if (address != null) {
+						dto.setCityName(address.getName());
+					}
+				}
+				if (tradeOrderLogistics != null && vo.getId().equals(tradeOrderLogistics.getOrderId())) {
+					String area = (tradeOrderLogistics.getArea() != null ? tradeOrderLogistics.getArea() : "");
+					dto.setAddress(area + tradeOrderLogistics.getAddress());
+				}
+			}
+
+			MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
+			if (StringUtils.isNotEmpty(vo.getStoreId()) && (vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
+				memberConsigneeAddress = memberConsigneeAddressService.selectByOneUserId(vo.getStoreId());
+				if (memberConsigneeAddress != null && StringUtils.isNotEmpty(memberConsigneeAddress.getCityName())) {
+						dto.setCityName(memberConsigneeAddress.getCityName());
+				}
+			}
+			
+			// End V2.1.0 added by luosm 2017-02-16
 			dtoList.add(dto);
 		}
-		PageResultVo<ERPTradeOrderVoDto> result = new PageResultVo<ERPTradeOrderVoDto>(page.getPageNum(),
-				page.getPageSize(), page.getTotal(), dtoList);
-		return result;
+		return dtoList;
 	}
-
-	// End 重构4.1 add by wusw 20160719
+	// End V2.1.0 added by luosm 20170218
 
 	/**
 	 * (non-Javadoc)
@@ -857,9 +980,11 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	@Override
 	public List<ERPTradeOrderVoDto> findOrderListByParams(Map<String, Object> params) throws Exception {
 		List<ERPTradeOrderVo> list = tradeOrderService.findOrderListForFinanceByParams(params);
+
 		if (list != null && list.size() > RECORD_NUM) {
 			throw new ExceedRangeException("查询导出订单列表超过一万条", new Throwable());
 		}
+		
 		List<ERPTradeOrderVoDto> result = new ArrayList<ERPTradeOrderVoDto>();
 		for (ERPTradeOrderVo vo : list) {
 			ERPTradeOrderVoDto dto = new ERPTradeOrderVoDto();
@@ -877,10 +1002,10 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			dto.setCreateTime(vo.getCreateTime());
 			if (vo.getOrderResource() != null) {
 				if (vo.getOrderResource() == OrderResourceEnum.YSCAPP
-						|| vo.getOrderResource() == OrderResourceEnum.WECHAT						
+						|| vo.getOrderResource() == OrderResourceEnum.WECHAT
 						// Begin V2.0.0 add by wusw 20170109
 						|| vo.getOrderResource() == OrderResourceEnum.CVSAPP) {
-				        // End V2.0.0 add by wusw 20170109
+					// End V2.0.0 add by wusw 20170109
 					dto.setOrderResource(0);
 				} else {
 					dto.setOrderResource(1);
@@ -901,6 +1026,161 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				} // End 12170 add by wusw 20160806
 					// End 重构4.1 add by wusw 20160726
 			}
+			
+			// Begin V2.1.0 added by luosm 2017-02-18
+			TradeOrderLogistics tradeOrderLogistics = null;
+			if (StringUtils.isNotEmpty(vo.getId()) && (vo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
+					|| vo.getType() == OrderTypeEnum.PHYSICAL_ORDER)) {
+				try {
+					tradeOrderLogistics = tradeOrderLogisticsService.selectByOrderId(vo.getId());
+				} catch (ServiceException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if (tradeOrderLogistics != null && StringUtils.isNotEmpty(tradeOrderLogistics.getCityId())) {
+					Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
+					if (address != null) {
+						dto.setCityName(address.getName());
+					}
+				}
+				if (tradeOrderLogistics != null && vo.getId().equals(tradeOrderLogistics.getOrderId())) {
+					String area = (tradeOrderLogistics.getArea() != null ? tradeOrderLogistics.getArea() : "");
+					dto.setAddress(area + tradeOrderLogistics.getAddress());
+				}
+			}
+
+			MemberConsigneeAddress memberConsigneeAddress = new MemberConsigneeAddress();
+			if (StringUtils.isNotEmpty(vo.getStoreId()) && (vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
+				memberConsigneeAddress = memberConsigneeAddressService.selectByOneUserId(vo.getStoreId());
+				if (memberConsigneeAddress != null && StringUtils.isNotEmpty(memberConsigneeAddress.getCityName())) {
+						dto.setCityName(memberConsigneeAddress.getCityName());
+				}
+			}
+			
+			//获取邀请人姓名
+			String inviteName = invitationCodeService.findInvitationNameByUserId(vo.getUserId());
+			if(StringUtils.isNotEmpty(inviteName)){
+			dto.setInviteName(inviteName);
+			}
+			
+			//接单时间
+			if(vo.getAcceptTime()!=null){
+				dto.setAcceptTime(vo.getAcceptTime());
+			}
+			
+			//发货时间
+			if(vo.getDeliveryTime() != null){
+				dto.setDeliveryTime(vo.getDeliveryTime());
+			}
+			
+			//收货时间
+			if(vo.getReceivedTime() != null){
+				dto.setReceivedTime(vo.getReceivedTime());
+			}
+			
+			//收入
+			dto.setIncome(vo.getIncome());
+			
+			//优惠类型
+			if(vo.getActualAmount().compareTo(vo.getIncome())==-1){
+				dto.setPreferentialType("0");//0为平台优惠
+			}else if(vo.getActualAmount().compareTo(vo.getIncome())==0){
+				dto.setPreferentialType("1");//1为店铺优惠
+			}
+			
+			//优惠金额
+			dto.setPreferentialPrice(vo.getPreferentialPrice());
+			
+			//活动类型
+			
+			switch(vo.getActivityType().ordinal()){
+				case 0:
+					dto.setActivityType(vo.getActivityType().getName());
+				    dto.setActivityName("没参加活动");
+				    break;
+				case 1:
+					//1:代金券
+					dto.setActivityType(vo.getActivityType().getName());
+					if(StringUtils.isNotEmpty(vo.getId())){
+						ActivityCoupons activityCoupons = (ActivityCoupons) activityCouponsService.findByOrderId(vo.getId());
+						if(activityCoupons!=null&& StringUtils.isNotEmpty(activityCoupons.getName())){
+							dto.setActivityName(activityCoupons.getName());//活动名称
+						}
+					}
+					break;
+				case 2:
+					//2:满减活动
+					dto.setActivityType(vo.getActivityType().getName());
+					if(StringUtils.isNotEmpty(vo.getActivityId())){
+						ActivityDiscount activityDiscount=activityDiscountService.selectByPrimaryKey(vo.getActivityId());
+						if(activityDiscount != null&&StringUtils.isNotEmpty(activityDiscount.getName())){
+							dto.setActivityName(activityDiscount.getName());//活动名称
+						}
+					}
+					break;
+				case 3:
+					//3:满折活动
+					dto.setActivityType(vo.getActivityType().getName());
+					if(StringUtils.isNotEmpty(vo.getActivityId())){
+						ActivityDiscount activityDiscount=activityDiscountService.selectByPrimaryKey(vo.getActivityId());
+						if(activityDiscount != null&&StringUtils.isNotEmpty(activityDiscount.getName())){
+							dto.setActivityName(activityDiscount.getName());//活动名称
+						}
+					}
+					break;
+				case 5:
+					//5:特惠活动
+					dto.setActivityType(vo.getActivityType().getName());
+					if(StringUtils.isNotEmpty(vo.getActivityId())){
+						ActivitySale activitySale=activitySaleService.get(vo.getActivityId());
+						if(activitySale != null&&StringUtils.isNotEmpty(activitySale.getName())){
+							dto.setActivityName(activitySale.getName());//活动名称
+						}
+					}
+					break;
+				case 6:
+					//6:秒杀活动
+					dto.setActivityType(vo.getActivityType().getName());
+					if(StringUtils.isNotEmpty(vo.getActivityId())){
+						ActivitySeckill activitySeckill=activitySeckillService.findSeckillById(vo.getActivityId());
+						if(activitySeckill != null&&StringUtils.isNotEmpty(activitySeckill.getSeckillName())){
+							dto.setActivityName(activitySeckill.getSeckillName());//活动名称
+						}
+					}
+					break;
+				case 7:
+					//7:低价活动
+					dto.setActivityType(vo.getActivityType().getName());
+					if(StringUtils.isNotEmpty(vo.getActivityId())){
+						ActivitySale activitySale=activitySaleService.get(vo.getActivityId());
+						if(activitySale != null&&StringUtils.isNotEmpty(activitySale.getName())){
+							dto.setActivityName(activitySale.getName());//活动名称
+						}
+					}
+					break;
+				default:
+					break;
+			}
+			
+			if(StringUtils.isNotEmpty(vo.getId())&&(vo.getType()==OrderTypeEnum.PHYSICAL_ORDER||vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)){
+				TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundsService.selectByOrderIdOne(vo.getId());
+				if(tradeOrderRefunds!=null){
+					dto.setIsRefundsType("是");
+					if(tradeOrderRefunds.getTotalAmount()!=null){
+						dto.setRefundPrice(tradeOrderRefunds.getTotalAmount());
+					}
+					if(tradeOrderRefunds.getTotalPreferentialPrice()!=null){
+						dto.setRefundPreferentialPrice(tradeOrderRefunds.getTotalPreferentialPrice());
+					}
+				}else{
+					dto.setIsRefundsType("否");
+				}
+			}
+			
+			
+			
+			// End V2.1.0 added by luosm 2017-02-18
+
 			result.add(dto);
 		}
 		return result;

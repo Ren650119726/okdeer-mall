@@ -13,7 +13,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -438,4 +437,18 @@ public class MemberConsigneeAddressServiceImpl
 		return addrList;
 	}
 	// End added by maojj 2016-09-24
+
+	// Begin V2.1.0 added by luosm 20170217
+	@Override
+	public List<String> selectByCityId(String cityId) throws ServiceException {
+
+		return memberConsigneeAddressMapper.selectByCityId(cityId);
+	}
+	
+	@Override
+	public MemberConsigneeAddress selectByOneUserId(String userId) {
+		return memberConsigneeAddressMapper.selectByOneUserId(userId);
+	}
+	// End V2.1.0 added by luosm 20170217
+
 }

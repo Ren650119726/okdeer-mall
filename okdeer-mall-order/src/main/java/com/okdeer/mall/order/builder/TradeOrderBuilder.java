@@ -28,6 +28,8 @@ import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.bdp.address.entity.Address;
+import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
@@ -46,6 +48,7 @@ import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.entity.TradeOrderLocate;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.enums.AppraiseEnum;
 import com.okdeer.mall.order.enums.CompainStatusEnum;
@@ -112,6 +115,14 @@ public class TradeOrderBuilder {
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private StoreInfoServiceApi storeInfoServiceApi;
+	
+	// Begin V2.1 added by maojj 2017-02-01
+	/**
+	 * 省市区地址查询接口
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private IAddressService addressService;
+	// End V2.1 added by maojj 2017-02-01
 
 	/**
 	 * @Description: 构建TradeOrderBo
@@ -129,11 +140,14 @@ public class TradeOrderBuilder {
 		TradeOrderLogistics tradeOrderLogistics = buildTradeOrderLogistics(tradeOrder,paramDto);
 		// 构建订单发票信息
 		TradeOrderInvoice tradeOrderInvoice = buildTradeOrderInvoice(tradeOrder, paramDto);
-		
+		// Begin V2.1 added by maojj 2017-02-01
+		// 构建订单定位信息
+		TradeOrderLocate tradeOrderLocate = buildTradeOrderLocate(tradeOrder.getId(),paramDto);
+		tradeOrder.setTradeOrderLocate(tradeOrderLocate);
+		// End V2.1 added by maojj 2017-02-01
 		tradeOrder.setTradeOrderItem(orderItemList);
 		tradeOrder.setTradeOrderInvoice(tradeOrderInvoice);
 		tradeOrder.setTradeOrderLogistics(tradeOrderLogistics);
-		// 构建订单物流
 		return tradeOrder;
 	}
 	
@@ -715,5 +729,37 @@ public class TradeOrderBuilder {
 			tradeOrder.setTradeOrderInvoice(orderInvoice);
 		}
 		return orderInvoice;
+	}
+	
+	public TradeOrderLocate buildTradeOrderLocate(String orderId, PlaceOrderParamDto paramDto){
+		TradeOrderLocate tradeOrderLocate = new TradeOrderLocate();
+		// 城市名称
+		String cityName = paramDto.getCityName();
+		// 区域名称
+		String areaName = paramDto.getAreaName();
+		
+		tradeOrderLocate.setId(UuidUtils.getUuid());
+		tradeOrderLocate.setOrderId(orderId);
+		tradeOrderLocate.setLongitude(paramDto.getLng());
+		tradeOrderLocate.setLatitude(paramDto.getLat());
+		tradeOrderLocate.setProviceName(paramDto.getProvinceName());
+		tradeOrderLocate.setCityName(cityName);
+		tradeOrderLocate.setAreaName(areaName);
+		tradeOrderLocate.setAreaExt(paramDto.getAreaExt());
+
+		if(StringUtils.isNotEmpty(paramDto.getCityName())){
+			Address cityAddr = addressService.getByName(cityName);
+			if(cityAddr != null){
+				tradeOrderLocate.setProvinceId(String.valueOf(cityAddr.getParentId()));
+				tradeOrderLocate.setCityId(String.valueOf(cityAddr.getId()));
+				
+				if(areaName != null){
+					Address areaAddr = addressService.getByName(cityAddr.getId(), areaName);
+					tradeOrderLocate.setAreaId(areaAddr == null ? "" : String.valueOf(areaAddr.getId()));
+				}
+			}
+		}
+		
+		return tradeOrderLocate;
 	}
 }

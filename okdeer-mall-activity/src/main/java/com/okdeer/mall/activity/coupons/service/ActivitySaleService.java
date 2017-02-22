@@ -67,4 +67,17 @@ public interface ActivitySaleService {
 	 * @date 2016年10月21日
 	 */
 	List<ActivitySale> listByStoreId(Map<String,Object> map);
+	
+	/**
+	 * 
+	 * @Description: 更新活动库存
+	 * @param activitySale      活动信息
+	 * @param activitySaleGoods 活动商品
+	 * @throws Exception   
+	 * @return void  
+	 * @author tangy
+	 * @date 2017年2月21日
+	 */
+	void updateSaleStock(ActivitySale activitySale, ActivitySaleGoods activitySaleGoods) throws Exception;
+	
 }

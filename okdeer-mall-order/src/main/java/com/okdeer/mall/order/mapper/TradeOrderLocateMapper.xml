@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderLocateMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderLocate" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+        <result column="longitude" property="longitude" jdbcType="DOUBLE" />
+        <result column="latitude" property="latitude" jdbcType="DOUBLE" />
+        <result column="province_id" property="provinceId" jdbcType="VARCHAR" />
+        <result column="provice_name" property="proviceName" jdbcType="VARCHAR" />
+        <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+        <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+        <result column="area_id" property="areaId" jdbcType="VARCHAR" />
+        <result column="area_name" property="areaName" jdbcType="VARCHAR" />
+        <result column="area_ext" property="areaExt" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, order_id, longitude, latitude, province_id, provice_name, city_id, city_name, 
+        area_id, area_name, area_ext
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from trade_order_locate
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.order.entity.TradeOrderLocate" >
+        insert into trade_order_locate
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="orderId != null" >
+                order_id,
+            </if>
+            <if test="longitude != null" >
+                longitude,
+            </if>
+            <if test="latitude != null" >
+                latitude,
+            </if>
+            <if test="provinceId != null" >
+                province_id,
+            </if>
+            <if test="proviceName != null" >
+                provice_name,
+            </if>
+            <if test="cityId != null" >
+                city_id,
+            </if>
+            <if test="cityName != null" >
+                city_name,
+            </if>
+            <if test="areaId != null" >
+                area_id,
+            </if>
+            <if test="areaName != null" >
+                area_name,
+            </if>
+            <if test="areaExt != null" >
+                area_ext,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="orderId != null" >
+                #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="longitude != null" >
+                #{longitude,jdbcType=DOUBLE},
+            </if>
+            <if test="latitude != null" >
+                #{latitude,jdbcType=DOUBLE},
+            </if>
+            <if test="provinceId != null" >
+                #{provinceId,jdbcType=VARCHAR},
+            </if>
+            <if test="proviceName != null" >
+                #{proviceName,jdbcType=VARCHAR},
+            </if>
+            <if test="cityId != null" >
+                #{cityId,jdbcType=VARCHAR},
+            </if>
+            <if test="cityName != null" >
+                #{cityName,jdbcType=VARCHAR},
+            </if>
+            <if test="areaId != null" >
+                #{areaId,jdbcType=VARCHAR},
+            </if>
+            <if test="areaName != null" >
+                #{areaName,jdbcType=VARCHAR},
+            </if>
+            <if test="areaExt != null" >
+                #{areaExt,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updata" parameterType="com.okdeer.mall.order.entity.TradeOrderLocate" >
+        update trade_order_locate
+        <set >
+            <if test="orderId != null" >
+                order_id = #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="longitude != null" >
+                longitude = #{longitude,jdbcType=DOUBLE},
+            </if>
+            <if test="latitude != null" >
+                latitude = #{latitude,jdbcType=DOUBLE},
+            </if>
+            <if test="provinceId != null" >
+                province_id = #{provinceId,jdbcType=VARCHAR},
+            </if>
+            <if test="proviceName != null" >
+                provice_name = #{proviceName,jdbcType=VARCHAR},
+            </if>
+            <if test="cityId != null" >
+                city_id = #{cityId,jdbcType=VARCHAR},
+            </if>
+            <if test="cityName != null" >
+                city_name = #{cityName,jdbcType=VARCHAR},
+            </if>
+            <if test="areaId != null" >
+                area_id = #{areaId,jdbcType=VARCHAR},
+            </if>
+            <if test="areaName != null" >
+                area_name = #{areaName,jdbcType=VARCHAR},
+            </if>
+            <if test="areaExt != null" >
+                area_ext = #{areaExt,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from trade_order_locate
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

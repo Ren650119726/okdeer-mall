@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.member.mapper.SysBuyerLocateInfoMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.member.entity.SysBuyerLocateInfo" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="user_id" property="userId" jdbcType="VARCHAR" />
+        <result column="machine_code" property="machineCode" jdbcType="VARCHAR" />
+        <result column="province_id" property="provinceId" jdbcType="VARCHAR" />
+        <result column="province_name" property="provinceName" jdbcType="VARCHAR" />
+        <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+        <result column="city_name" property="cityName" jdbcType="VARCHAR" />
+        <result column="area_id" property="areaId" jdbcType="VARCHAR" />
+        <result column="longitude" property="longitude" jdbcType="DOUBLE" />
+        <result column="latitude" property="latitude" jdbcType="DOUBLE" />
+        <result column="register_source" property="registerSource" jdbcType="TINYINT" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, user_id, machine_code, province_id, province_name, city_id, city_name, area_id, 
+        longitude, latitude, register_source, create_time, update_time
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from sys_buyer_locate_info
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.member.entity.SysBuyerLocateInfo" >
+        insert into sys_buyer_locate_info
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="userId != null" >
+                user_id,
+            </if>
+            <if test="machineCode != null" >
+                machine_code,
+            </if>
+            <if test="provinceId != null" >
+                province_id,
+            </if>
+            <if test="provinceName != null" >
+                province_name,
+            </if>
+            <if test="cityId != null" >
+                city_id,
+            </if>
+            <if test="cityName != null" >
+                city_name,
+            </if>
+            <if test="areaId != null" >
+                area_id,
+            </if>
+            <if test="longitude != null" >
+                longitude,
+            </if>
+            <if test="latitude != null" >
+                latitude,
+            </if>
+            <if test="registerSource != null" >
+                register_source,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="userId != null" >
+                #{userId,jdbcType=VARCHAR},
+            </if>
+            <if test="machineCode != null" >
+                #{machineCode,jdbcType=VARCHAR},
+            </if>
+            <if test="provinceId != null" >
+                #{provinceId,jdbcType=VARCHAR},
+            </if>
+            <if test="provinceName != null" >
+                #{provinceName,jdbcType=VARCHAR},
+            </if>
+            <if test="cityId != null" >
+                #{cityId,jdbcType=VARCHAR},
+            </if>
+            <if test="cityName != null" >
+                #{cityName,jdbcType=VARCHAR},
+            </if>
+            <if test="areaId != null" >
+                #{areaId,jdbcType=VARCHAR},
+            </if>
+            <if test="longitude != null" >
+                #{longitude,jdbcType=DOUBLE},
+            </if>
+            <if test="latitude != null" >
+                #{latitude,jdbcType=DOUBLE},
+            </if>
+            <if test="registerSource != null" >
+                #{registerSource,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.member.entity.SysBuyerLocateInfo" >
+        update sys_buyer_locate_info
+        <set >
+            <if test="userId != null" >
+                user_id = #{userId,jdbcType=VARCHAR},
+            </if>
+            <if test="machineCode != null" >
+                machine_code = #{machineCode,jdbcType=VARCHAR},
+            </if>
+            <if test="provinceId != null" >
+                province_id = #{provinceId,jdbcType=VARCHAR},
+            </if>
+            <if test="provinceName != null" >
+                province_name = #{provinceName,jdbcType=VARCHAR},
+            </if>
+            <if test="cityId != null" >
+                city_id = #{cityId,jdbcType=VARCHAR},
+            </if>
+            <if test="cityName != null" >
+                city_name = #{cityName,jdbcType=VARCHAR},
+            </if>
+            <if test="areaId != null" >
+                area_id = #{areaId,jdbcType=VARCHAR},
+            </if>
+            <if test="longitude != null" >
+                longitude = #{longitude,jdbcType=DOUBLE},
+            </if>
+            <if test="latitude != null" >
+                latitude = #{latitude,jdbcType=DOUBLE},
+            </if>
+            <if test="registerSource != null" >
+                register_source = #{registerSource,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from sys_buyer_locate_info
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+	<select id="findByUserId" parameterType="java.lang.String" resultMap="BaseResultMap">
+	    select * from sys_buyer_locate_info
+	    where user_id = #{userId}
+	</select>
+</mapper>

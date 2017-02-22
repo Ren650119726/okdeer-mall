@@ -1831,4 +1831,11 @@ public class TradeOrderRefundsServiceImpl
 		// 订单完成后同步到商业管理系统
 		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
 	}
+
+	//Begin V2.1.0 added by luosm 20170220
+	@Override
+	public TradeOrderRefunds selectByOrderIdOne(String orderId) {
+		return tradeOrderRefundsMapper.selectByOrderIdOne(orderId);
+	}
+	//End V2.1.0 added by luosm 20170220
 }

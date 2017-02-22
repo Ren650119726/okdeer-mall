@@ -10,6 +10,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
@@ -48,6 +49,7 @@ import com.okdeer.mall.order.vo.UserTradeServiceOrderVo;
  *    V1.1.0            2016-09-26          luosm               查询商家版APP服务店到店消费订单信息
  *    V1.1.0			2016-10-10          luosm				服务店到店消费订单金额统计及订单列表
  *    V1.1.0			2016-10-11          luosm				服务店到店消费订单列表查询
+ *    友门鹿V2.1			2017-02-18			maojj				全部订单查询优化
  */
 public interface TradeOrderMapper {
 
@@ -142,7 +144,13 @@ public interface TradeOrderMapper {
 	Integer selectOrderNum(Map<String, Object> map);
 
 	TradeOrder selectByPrimaryKey(String id);
-
+	
+	/**
+	 * 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用-->
+	 * @param map tuzhd 
+	 * @return
+	 */
+	Integer selectOrderNumByStatus(Map<String, Object> map);
 	/**
 	 * 
 	 * 根据查询条件,查询订单详细信息列表（参数为map类型，用于历史回款记录，注意：支付状态条件为大于等于）
@@ -1103,4 +1111,54 @@ public interface TradeOrderMapper {
 	 */
 	int selectCountByUserStatus(@Param("userId")String userId);
 	
+	//begin add by zhulq  2017-02-17  根据城市名称搜索订单列表	
+	/**
+	 * @Description: 根据城市获取订单id
+	 * @param cityId cityId
+	 * @return List
+	 * @author zhulq
+	 * @date 2017年2月17日
+	 */
+	List<String> findOrderIds(@Param("cityId")String cityId);
+	//end add by zhulq  2017-02-17  根据城市名称搜索订单列表		
+	
+	//begin V2.1 add by zhulq 2017-02-17 
+	/**
+	 * @Description: 根据订单id 获取订单所属店铺 的城市id
+	 * @param orderIds  订单id集合
+	 * @return List
+	 * @author zhulq
+	 * @date 2017年2月17日
+	 */
+	List<PhysicsOrderVo> findCityIds(@Param("orderIds")List<String> orderIds);
+	
+	/**
+	 * @Description: 根据用户id获取改用户的邀请人登录名
+	 * @param userIds 用户集合
+	 * @return list
+	 * @author zhulq
+	 * @date 2017年2月17日
+	 */
+	List<PhysicsOrderVo> findInvitationInfo(@Param("userIds")List<String> userIds);
+	
+	/**
+	 * @Description: 根据订单获取订单的优惠信息
+	 * @param orderIds 订单集合
+	 * @return List
+	 * @author zhulq
+	 * @date 2017年2月18日
+	 */
+	List<PhysicsOrderVo> findActivityInfo(@Param("orderIds")List<String> orderIds);
+	//END V2.1 add by zhulq 2017-02-17 
+	
+	// Begin V2.1 added by maojj 2017-02-18
+	/**
+	 * @Description: 查询用户订单列表
+	 * @param paramBo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年2月18日
+	 */
+	List<TradeOrder> findUserOrders(UserOrderParamBo paramBo);
+	// End V2.1 added by maojj 2017-02-18
 }

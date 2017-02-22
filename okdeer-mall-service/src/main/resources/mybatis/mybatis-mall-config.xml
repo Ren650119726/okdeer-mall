@@ -137,7 +137,9 @@
  		<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.operate.enums.AppRecommendPlace"/>
     	<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.operate.enums.HomeIconPlace"/>
     	<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.operate.enums.HomeIconTaskType"/>
-    	 <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum"/>
-    	     	 <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PreferentialType"/>
+    	<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum"/>
+    	<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PreferentialType"/>
+    	
+    	<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.CouponsType"/>
     </typeHandlers>
 </configuration>

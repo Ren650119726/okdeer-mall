@@ -3,16 +3,31 @@ package com.okdeer.mall.activity.discount.service.impl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.enums.CashDelivery;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountArea;
@@ -26,16 +41,6 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscountVo;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.enums.IdentityLimit;
 import com.okdeer.mall.activity.discount.enums.LimitClientType;
-import com.okdeer.mall.activity.discount.service.ActivityDiscountServiceApi;
-import com.okdeer.mall.common.enums.AreaType;
-import com.okdeer.mall.common.enums.DistrictType;
-import com.okdeer.mall.common.utils.RobotUserUtil;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.DateUtils;
-import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.StringUtils;
-import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountAreaMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountCommunityMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper;
@@ -43,6 +48,14 @@ import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRelationStoreMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountStoreMapper;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
+import com.okdeer.mall.activity.discount.service.ActivityDiscountServiceApi;
+import com.okdeer.mall.activity.service.FavourFilterStrategy;
+import com.okdeer.mall.activity.service.MaxFavourStrategy;
+import com.okdeer.mall.common.enums.AreaType;
+import com.okdeer.mall.common.enums.DistrictType;
+import com.okdeer.mall.common.utils.RobotUserUtil;
+import com.okdeer.mall.order.vo.Discount;
+import com.okdeer.mall.order.vo.FullSubtract;
 
 /**
  * 满减(满折)活动service实现类
@@ -101,6 +114,17 @@ public class ActivityDiscountServiceImpl implements ActivityDiscountServiceApi, 
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private StoreInfoServiceApi storeInfoServiceApi;
+	
+	// Begin added by maojj 2017-02-15
+	@Resource
+	private MaxFavourStrategy genericMaxFavourStrategy;
+	
+	/**
+	 * 店铺商品Api
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
+	// End added by maojj 2017-02-15
 
 	/**
 	 * 
@@ -707,4 +731,48 @@ public class ActivityDiscountServiceImpl implements ActivityDiscountServiceApi, 
 		return activityDiscountMapper.findActivityDiscountByStoreId(params);
 	}
 	// End 重构4.1 add by zengj
+
+	// Begin V2.1 added by maojj 2017-02-17
+	@Override
+	public List<Discount> findValidDiscount(FavourParamBO paramBo, FavourFilterStrategy favourFilter) throws Exception {
+		List<Discount> discountList = activityDiscountMapper.findValidDiscount(paramBo);
+		if(CollectionUtils.isEmpty(discountList)){
+			return discountList;
+		}
+		// 对集合进行数据迭代
+		Iterator<Discount> it = discountList.iterator();
+		Discount discount = null;
+		while(it.hasNext()){
+			discount = it.next();
+			if(!favourFilter.accept(discount)){
+				// 如果过滤器不接受该优惠，则将该优惠从列表中移除
+				it.remove();
+			}else{
+				discount.setMaxFavourStrategy(genericMaxFavourStrategy.calMaxFavourRule(discount, paramBo.getTotalAmount()));
+			}
+		}
+		return discountList;
+	}
+
+	@Override
+	public List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo, FavourFilterStrategy favourFilter) throws Exception{
+		List<FullSubtract> fullSubtractList = activityDiscountMapper.findValidFullSubtract(paramBo);
+		if(CollectionUtils.isEmpty(fullSubtractList)){
+			return fullSubtractList;
+		}
+		// 对集合进行数据迭代
+		Iterator<FullSubtract> it = fullSubtractList.iterator();
+		FullSubtract fullSubtract = null;
+		while(it.hasNext()){
+			fullSubtract = it.next();
+			if(!favourFilter.accept(fullSubtract)){
+				// 如果过滤器不接受该优惠，则将该优惠从列表中移除
+				it.remove();
+			}else{
+				fullSubtract.setMaxFavourStrategy(genericMaxFavourStrategy.calMaxFavourRule(fullSubtract, paramBo.getTotalAmount()));
+			}
+		}
+		return fullSubtractList;
+	}
+	// End V2.1 added by maojj 2017-02-17
 }

@@ -11,6 +11,7 @@ import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
@@ -99,6 +100,14 @@ public interface TradeOrderService {
 	 * @return
 	 */
 	Integer selectOrderNum(OrderStatusEnum orderStatus, String storeId);
+	
+	/**
+	 * 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用
+	 * @param orderStatus 订单状态集合
+	 * @param storeId 店铺id
+	 * @return
+	 */
+	Integer selectOrderNumByList(List<OrderStatusEnum> orderStatus, String storeId);
 
 	TradeOrder selectById(String id) throws ServiceException;
 
@@ -1025,4 +1034,26 @@ public interface TradeOrderService {
 	 * @date 2016年12月31日
 	 */
 	public boolean checkUserUseCoupons(String userId);
+	
+	// Begin V2.1 added by maojj 2017-02-18
+	/**
+	 * @Description: 查询用户订单列表
+	 * @param paramBo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年2月18日
+	 */
+	PageUtils<TradeOrder> findUserOrders(UserOrderParamBo paramBo);
+	// End V2.1 added by maojj 2017-02-18
+	
+	//Begin V2.1.0 added by luosm 20170220
+	/**
+	 * @Description: 根据订单获取订单的优惠信息
+	 * @param orderIds 订单id集合
+	 * @return List
+	 * @author zhulq
+	 * @date 2017年2月18日
+	 */
+	List<PhysicsOrderVo> findActivityInfo(List<String> orderIds);
+	//End V2.1.0 added by luosm 20170220
 }

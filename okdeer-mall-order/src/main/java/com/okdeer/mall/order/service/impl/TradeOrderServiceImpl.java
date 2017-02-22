@@ -44,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.druid.util.Utils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
@@ -142,6 +141,7 @@ import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
+import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
@@ -149,6 +149,7 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
+import com.okdeer.mall.order.entity.TradeOrderLocate;
 import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.entity.TradeOrderPay;
@@ -179,6 +180,7 @@ import com.okdeer.mall.order.mapper.TradeOrderComplainMapper;
 import com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderLocateMapper;
 import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
 import com.okdeer.mall.order.mapper.TradeOrderLogisticsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
@@ -191,7 +193,6 @@ import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
-import com.okdeer.mall.order.service.TradeOrderLogisticsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
@@ -224,7 +225,6 @@ import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
-import ch.qos.logback.classic.pattern.Util;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -565,6 +565,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Reference(version = "1.0.0", check = false)
 	private IAddressService addressService;
 	//End V2.1.0 added by luosm 2017-02-14
+	
+	// Begin V2.1 added by maojj 2017-02-21
+	/**
+	 * 订单定位mapper
+	 */
+	@Resource
+	private TradeOrderLocateMapper tradeOrderLocateMapper;
+	// End V2.1 added by maojj 2017-02-21
 
 	@Override
 	public PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize)
@@ -654,6 +662,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		map.put("status", orderStatus);
 		map.put("storeId", storeId);
 		return tradeOrderMapper.selectOrderNum(map);
+	}
+	/**
+	 * 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用
+	 * @param orderStatus 订单状态集合
+	 * @param storeId 店铺id
+	 * @return
+	 */
+	@Override
+	public Integer selectOrderNumByList(List<OrderStatusEnum> orderStatus, String storeId) {
+		Map<String, Object> map = Maps.newHashMap();
+		map.put("statusList", orderStatus); 
+		map.put("storeId", storeId);
+		return tradeOrderMapper.selectOrderNumByStatus(map);
 	}
 
 	/**
@@ -1242,7 +1263,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			TradeOrderPay tradeOrderPay = tradeOrder.getTradeOrderPay();
 			TradeOrderLogistics orderLogistics = tradeOrder.getTradeOrderLogistics();
 			TradeOrderInvoice invoice = tradeOrder.getTradeOrderInvoice();
+			TradeOrderLocate orderLocate = tradeOrder.getTradeOrderLocate();
 			ActivitySaleRecord saleRecord = tradeOrder.getActiviySaleRecord();
+			
 			if (tradeOrderPay != null) {
 				tradeOrderPayMapper.insertSelective(tradeOrderPay);
 			}
@@ -1256,6 +1279,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				activitySaleRecordService.insertSelective(saleRecord);
 			}
 
+			// Begin V2.1 added by maojj 2017-02-21
+			if(orderLocate != null){
+				tradeOrderLocateMapper.add(orderLocate);
+			}
+			// End V2.1 added by maojj 2017-02-21
+			
+			
 			List<TradeOrderItem> itemList = tradeOrder.getTradeOrderItem();
 
 			// for (TradeOrderItem item : itemList) {
@@ -5089,13 +5119,25 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			int pageSize) throws ServiceException {
 		//Begin V2.1.0 added by luosm 20170215
 		String cityName = (String) params.get("cityName");
+		//判断cityName是否为空
 		if(StringUtils.isNotEmpty(cityName)){
-			Address address = addressService.getByName(cityName);
+		 Address address = addressService.getByName(cityName);
+		 
+		 //当订单类型为服务订单时
+		 if(params.get("type") == OrderTypeEnum.SERVICE_STORE_ORDER){
 			if(address!=null){
 			List<String> list= this.tradeOrderLogisticsMapper.selectByCityId(String.valueOf(address.getId()));
 			params.put("ids", list);
 			}
-			}
+		 } else if (params.get("type") == OrderTypeEnum.STORE_CONSUME_ORDER) {
+			    if (address != null) {
+				    List<String> list = tradeOrderMapper.findOrderIds(String.valueOf(address.getId()));
+				    params.put("ids", list);	 
+			    } else {
+			    	params.put("ids", null);	
+			    }
+		    }
+		}
 		//End V2.1.0 added by luosm 20170215
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<PhysicsOrderVo> result = tradeOrderMapper.selectServiceStoreListForOperate(params);
@@ -5256,6 +5298,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params, int pageNumber,
 			int pageSize) throws ServiceException {
+		// Begin V2.1.0 added by luosm 20170216
+				String cityName = (String) params.get("cityName");
+				if (StringUtils.isNotEmpty(cityName)) {
+					Address address = addressService.getByName(cityName);
+					if (address != null) {
+						params.put("cityId", address.getId());
+					}
+				}
+				// End V2.1.0 added by luosm 20170216
 		PageHelper.startPage(pageNumber, pageSize);
 		// 参数转换处理（例如订单状态）
 		this.convertParams(params);
@@ -6744,5 +6795,26 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public List<PhysicsOrderVo> findCityIds(List<String> orderIds) {
+		return tradeOrderMapper.findCityIds(orderIds);
+	}
+
+	@Override
+	public List<PhysicsOrderVo> findInvitationInfo(List<String> userIds) {
+		return tradeOrderMapper.findInvitationInfo(userIds);
+	}
+
+	@Override
+	public List<PhysicsOrderVo> findActivityInfo(List<String> orderIds) {
+		return tradeOrderMapper.findActivityInfo(orderIds);
+	}
+	
+	@Override
+	public PageUtils<TradeOrder> findUserOrders(UserOrderParamBo paramBo) {
+		PageHelper.startPage(paramBo.getPageNumber(), paramBo.getPageSize(),true);
+		return new PageUtils<TradeOrder>(tradeOrderMapper.findUserOrders(paramBo));
 	}
 }

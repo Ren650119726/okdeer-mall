@@ -284,6 +284,16 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * @date 2016年7月19日
 	 */
 	List<TradeOrderRefunds> selectByOrderId(String orderId);
+	
+	/**
+	 * 
+	 * @Description: 根据订单id查询退款单信息
+	 * @param orderId
+	 * @return
+	 * @author luosm
+	 * @date 2017年2月20日
+	 */
+	TradeOrderRefunds selectByOrderIdOne(String orderId);
 
 	// end 根据订单id查询退款详情 add by zhulq 2019-7-19
 
