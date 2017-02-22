@@ -1,7 +1,6 @@
 
 package com.okdeer.mall.system.service.impl;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.archive.store.entity.StoreDetailVo;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
@@ -36,7 +36,6 @@ import com.okdeer.base.common.utils.EncryptionUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
-import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.service.BaseCrudServiceImpl;
 import com.okdeer.ca.api.buyeruser.entity.SysBuyerUserConditionDto;
 import com.okdeer.ca.api.buyeruser.entity.SysBuyerUserDto;
@@ -45,14 +44,14 @@ import com.okdeer.ca.api.buyeruser.service.ISysBuyerUserApi;
 import com.okdeer.ca.api.common.ApiException;
 import com.okdeer.ca.api.sysuser.entity.SysUserDto;
 import com.okdeer.ca.api.sysuser.service.ISysUserApi;
-import com.okdeer.common.consts.PointConstants;
 import com.okdeer.common.consts.RedisKeyConstants;
 import com.okdeer.mall.common.utils.security.DESUtils;
+import com.okdeer.mall.member.member.dto.SysBuyerLocateInfoDto;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
 import com.okdeer.mall.member.member.service.SysBuyerExtServiceApi;
-import com.okdeer.mall.member.points.dto.AddPointsParamDto;
+import com.okdeer.mall.member.member.service.SysBuyerLocateInfoServiceApi;
 import com.okdeer.mall.member.points.entity.PointsRecord;
 import com.okdeer.mall.member.points.entity.PointsRule;
 import com.okdeer.mall.member.points.enums.PointsRuleCode;
@@ -183,6 +182,12 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	@Autowired
 	private RocketMQProducer rocketMQProducer;
 	
+	/**
+	 * 用户定位信息api
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private SysBuyerLocateInfoServiceApi sysBuyerLocateInfoServiceApi;
+	
 	@Override
 	public IBaseCrudMapper init() {
 		return sysBuyerUserMapper;
@@ -260,6 +265,48 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 				 */
 				sysBuyerUserDto.setId(buyerId);
 				sysBuyerUserApi.save(sysBuyerUserDto);
+			}
+
+			return buyerId;
+		} catch (ApiException e) {
+			logger.error("添加用户失败!", e);
+			throw e;
+		} catch (Exception e) {
+			throw new ServiceException("添加用户失败!", e);
+		}
+	}
+	
+	/**
+	 * 
+	 * @Description: V2.1新增需求，pos机注册时保存当前店铺所在地址
+	 * @return String 
+	 * @throws 异常
+	 * @author chenzc
+	 * @date 2017年2月22日
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public String addSysBuyerSyncV210(SysBuyerUserDto sysBuyerUserDto, SysSmsVerifyCode sysSmsVerifyCodeUpdate,
+			SysBuyerUserThirdparty buyerUserThirdparty, String storeId) throws ApiException, ServiceException {
+
+		try {
+			// 原注册用户的方法
+			String buyerId = addSysBuyerSync(sysBuyerUserDto, sysSmsVerifyCodeUpdate, buyerUserThirdparty);
+			
+			// 如果传了店铺id，则保存用户注册时的所在城市
+			if (StringUtils.isNotBlank(storeId)) {
+				StoreDetailVo storeDetailVo = storeInfoServiceApi.getStoreDetailById(storeId);
+				
+				if (null != storeDetailVo) {
+					String cityId = storeDetailVo.getCityId();
+					
+					// 保存对象
+					SysBuyerLocateInfoDto dto = new SysBuyerLocateInfoDto();
+					dto.setStoreCityId(cityId);
+					dto.setUserId(buyerId);
+					dto.setRegisterSource(sysBuyerUserDto.getDataSource());
+					
+					sysBuyerLocateInfoServiceApi.save(dto);
+				}
 			}
 
 			return buyerId;

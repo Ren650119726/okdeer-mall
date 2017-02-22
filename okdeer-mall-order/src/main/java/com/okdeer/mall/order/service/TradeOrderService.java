@@ -16,6 +16,7 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
+import com.okdeer.mall.order.vo.ActivityInfoVO;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderExportVo;
@@ -1054,6 +1055,6 @@ public interface TradeOrderService {
 	 * @author zhulq
 	 * @date 2017年2月18日
 	 */
-	List<PhysicsOrderVo> findActivityInfo(List<String> orderIds);
+	List<ActivityInfoVO> findActivityInfo(List<String> orderIds);
 	//End V2.1.0 added by luosm 20170220
 }

@@ -56,7 +56,7 @@ public class SysBuyerLocateInfo {
     /**
      * 注册来源
      */
-    private Byte registerSource;
+    private String registerSource;
     /**
      * 用户首次打开APP记录时间
      */
@@ -65,6 +65,10 @@ public class SysBuyerLocateInfo {
      * 更新时间
      */
     private Date updateTime;
+    /**
+     * pos机注册时所在店铺城市id
+     */
+    private String storeCityId;
 
 
     public String getId() {
@@ -147,11 +151,11 @@ public class SysBuyerLocateInfo {
         this.latitude = latitude;
     }
 
-    public Byte getRegisterSource() {
+    public String getRegisterSource() {
         return registerSource;
     }
 
-    public void setRegisterSource(Byte registerSource) {
+    public void setRegisterSource(String registerSource) {
         this.registerSource = registerSource;
     }
 
@@ -170,4 +174,12 @@ public class SysBuyerLocateInfo {
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }
+
+	public String getStoreCityId() {
+		return storeCityId;
+	}
+
+	public void setStoreCityId(String storeCityId) {
+		this.storeCityId = storeCityId;
+	}
 }
