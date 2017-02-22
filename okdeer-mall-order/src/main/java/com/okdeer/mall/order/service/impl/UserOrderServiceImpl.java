@@ -1,13 +1,17 @@
 package com.okdeer.mall.order.service.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
@@ -42,11 +46,6 @@ public class UserOrderServiceImpl implements UserOrderService {
      */
     @Reference(version = "1.0.0", check = false)
     private ThirdTrainOrderApi thirdTrainOrderApi;
-	
-	/**
-	 * 火车票关键字
-	 */
-	private static final String TRAIN_KEYWORD = "火车";
 
 	@Override
 	public AppUserOrderDto findUserOrders(UserOrderParamBo paramBo) throws Exception {
@@ -66,9 +65,11 @@ public class UserOrderServiceImpl implements UserOrderService {
 		// 装载订单项列表
 		loader.loadOrderItemList(orderItemList);
 		// 根据订单Id查询物流信息
-		List<TradeOrderLogistics> orderLogisticsList = tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
-		// 装载物流信息列表
-		loader.loadOrderLogisticsList(orderLogisticsList);
+		if(CollectionUtils.isNotEmpty(orderIds)){
+			List<TradeOrderLogistics> orderLogisticsList = tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
+			// 装载物流信息列表
+			loader.loadOrderLogisticsList(orderLogisticsList);
+		}
 		return loader.retrieveResult();
 	}
 
@@ -76,8 +77,8 @@ public class UserOrderServiceImpl implements UserOrderService {
 		PageUtils<ThirdTrainOrderDto> trainOrderList = new PageUtils<ThirdTrainOrderDto>(new ArrayList<ThirdTrainOrderDto>()); 
 		// 获取请求参数的关键字
 		String keyword = paramBo.getKeyword();
-		if(StringUtils.isNotEmpty(keyword) && !keyword.contains(TRAIN_KEYWORD)){
-			// 如果按照关键字搜索，且关键字中不包含火车字样，则不查询火车票列表记录
+		if(StringUtils.isNotEmpty(keyword)){
+			// 如果按照关键字搜索，则不查询火车票列表记录
 			return trainOrderList;
 		}
 		if("3".equals(paramBo.getStatus())){
@@ -87,5 +88,69 @@ public class UserOrderServiceImpl implements UserOrderService {
 		ThirdOrderParamDto thirdParamDto = BeanMapper.map(paramBo, ThirdOrderParamDto.class);
 		trainOrderList = thirdTrainOrderApi.findTrainOrderList(thirdParamDto);
 		return trainOrderList;
+	}
+
+	@Override
+	public Map<String, Object> countUserOrders(String userId) throws Exception {
+		// 统计结果集合
+		Map<String, Object> resultMap = new HashMap<>();
+		// 待支付标识
+		long unPaySum = 0;
+		// 待收货标识
+		long unReceiptSum = 0;
+		// 待评价标识
+		long unAppraiseSum = 0;
+		
+		// 统计待付款
+		UserOrderParamBo paramBo = new UserOrderParamBo();
+		paramBo.setUserId(userId);
+		paramBo.setStatus("1");
+		// 查询便利店、服务店、充值订单
+		PageHelper.startPage(1, -1);
+		PageUtils<TradeOrder> unPayOrderList = tradeOrderService.findUserOrders(paramBo);
+		if (null != unPayOrderList) {
+			unPaySum += unPayOrderList.getTotal();
+		}
+		// 查询火车票订单
+		PageHelper.startPage(1, -1);
+		PageUtils<ThirdTrainOrderDto> unPayTrainOrderList = findTrainOrderList(paramBo);
+		if (null != unPayTrainOrderList) {
+			unPaySum += unPayTrainOrderList.getTotal();
+		}
+		
+		// 统计待使用
+		paramBo.setStatus("2");
+		// 查询便利店、服务店、充值订单
+		PageHelper.startPage(1, -1);
+		PageUtils<TradeOrder> unReceiptOrderList = tradeOrderService.findUserOrders(paramBo);
+		if (null != unReceiptOrderList) {
+			unReceiptSum += unReceiptOrderList.getTotal();
+		}
+		// 查询火车票订单
+		PageHelper.startPage(1, -1);
+		PageUtils<ThirdTrainOrderDto> unReceiptTrainOrderList = findTrainOrderList(paramBo);
+		if (null != unReceiptTrainOrderList) {
+			unReceiptSum += unReceiptTrainOrderList.getTotal();
+		}
+		
+		// 统计待评价
+		paramBo.setStatus("3");
+		// 查询便利店、服务店、充值订单
+		PageHelper.startPage(1, -1);
+		PageUtils<TradeOrder> unAppraiseOrderList = tradeOrderService.findUserOrders(paramBo);
+		if (null != unAppraiseOrderList) {
+			unAppraiseSum += unAppraiseOrderList.getTotal();
+		}
+		// 查询火车票订单
+		PageHelper.startPage(1, -1);
+		PageUtils<ThirdTrainOrderDto> unAppraiseTrainOrderList = findTrainOrderList(paramBo);
+		if (null != unAppraiseTrainOrderList) {
+			unAppraiseSum += unAppraiseTrainOrderList.getTotal();
+		}
+		
+		resultMap.put("unPay", String.valueOf(unPaySum));
+		resultMap.put("unReceipt", String.valueOf(unReceiptSum));
+		resultMap.put("unAppraise", String.valueOf(unAppraiseSum));
+		return resultMap;
 	}
 }
