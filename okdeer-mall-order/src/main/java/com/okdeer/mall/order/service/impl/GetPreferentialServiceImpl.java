@@ -13,6 +13,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.discount.entity.PreferentialVo;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
@@ -109,6 +110,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 			@Override
 			public boolean accept(Favour favour) throws Exception {
 				Coupons coupons = (Coupons) favour;
+				coupons.setActivityType(ActivityTypeEnum.VONCHER.ordinal());
 				if (coupons.getUseUserType() == UseUserType.ONlY_NEW_USER && !isNewUser) {
 					// 如果代金券限制首单用户。则非首单用户则不能使用
 					return false;
@@ -142,6 +144,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 
 			@Override
 			public boolean accept(Favour favour) throws Exception {
+				favour.setActivityType(ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES.ordinal());
 				return true;
 			}
 		});
@@ -161,6 +164,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 
 			@Override
 			public boolean accept(Favour favour) throws Exception {
+				favour.setActivityType(ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.ordinal());
 				return true;
 			}
 		});
@@ -184,7 +188,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 		Collections.sort(favourList, new Comparator<Favour>() {
 			@Override
 			public int compare(Favour o1, Favour o2) {
-				return o1.getMaxFavourStrategy().compareTo(o2.getMaxFavourStrategy());
+				return o2.getMaxFavourStrategy().compareTo(o1.getMaxFavourStrategy());
 			}
 		});
 		if(CollectionUtils.isEmpty(favourList)){

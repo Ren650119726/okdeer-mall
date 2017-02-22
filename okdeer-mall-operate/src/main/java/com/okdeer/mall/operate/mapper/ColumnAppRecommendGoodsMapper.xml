@@ -22,23 +22,25 @@
 
 	<select id="findList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.operate.dto.AppRecommendGoodsParamDto">
 		select
-		<include refid="Base_Column_List" />
-		from column_app_recommend_goods
-		<where>
+			g.id, g.recommend_id, g.store_sku_id, g.sort, g.is_show
+		from column_app_recommend_goods g 
+			inner join goods_store_sku k on store_sku_id =k.`id`
+		   	inner join store_info_ext s on k.`store_id` = s.store_id and s.is_closed=1
+		WHERE k.online = 1
 			<if test="recommendId != null">
-				AND recommend_id = #{recommendId}
+				AND g.recommend_id = #{recommendId}
 			</if>
 			<if test="isShow != null">
-				AND is_show = #{isShow}
+				AND g.is_show = #{isShow}
 			</if>
 			<if test="recommendIds != null and recommendIds.size() > 0">
-				AND recommend_id IN
+				AND g.recommend_id IN
 				<foreach collection="recommendIds" index="index" item="item" open="(" separator="," close=")">
 					#{item}
 				</foreach>
 			</if>
-		</where>
-		ORDER BY sort desc
+		
+		ORDER BY g.sort desc
 	</select>
 
 	<select id="findListByRecommendId" resultMap="BaseResultMap" parameterType="java.lang.String">

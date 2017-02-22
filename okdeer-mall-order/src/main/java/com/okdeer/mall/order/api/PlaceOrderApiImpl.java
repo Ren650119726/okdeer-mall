@@ -1,13 +1,27 @@
 package com.okdeer.mall.order.api;
 
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_GOODS_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.common.message.Message;
+import com.dianping.cat.Cat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
@@ -23,16 +37,6 @@ import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandlerChain;
 import com.okdeer.mall.order.service.PlaceOrderApi;
 import com.okdeer.mall.system.utils.ConvertUtil;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_GOODS_EL_UPDATE;
-import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
 
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.PlaceOrderApi")
 public class PlaceOrderApiImpl implements PlaceOrderApi {
@@ -136,7 +140,14 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			List<CurrentStoreSkuBo> skuList = new ArrayList<CurrentStoreSkuBo>();
 			// 服务商品判定支付方式：如果多个商品，一定是线上支付。单个商品，根据商品设置的支付方式进行处理
 			if (parserBo != null && CollectionUtils.isNotEmpty(parserBo.getCurrentSkuMap().values())) {
-				skuList.addAll(parserBo.getCurrentSkuMap().values());
+				for(CurrentStoreSkuBo skuBo:parserBo.getCurrentSkuMap().values()){
+					if(StringUtils.isEmpty(paramDto.getVersion()) && skuBo.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()){
+						// 如果是2.1版本之前的特惠商品，特惠商品的可售库存中存储特惠商品的锁定库存
+						skuBo.setSellable(skuBo.getLocked());;
+					}
+					skuList.add(skuBo);
+				}
+				
 				if (skuList.size() > 1) {
 					resp.getData().setPaymentMode(PayWayEnum.PAY_ONLINE.ordinal());
 				} else {
@@ -181,6 +192,8 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				break;
 		}
 		handlerChain.process(req, resp);
+		// 下单埋点
+		Cat.logMetricForCount("submitOrder");
 		resp.getData().setCurrentTime(System.currentTimeMillis());
 		if(!resp.isSuccess()){
 			// 如果处理失败

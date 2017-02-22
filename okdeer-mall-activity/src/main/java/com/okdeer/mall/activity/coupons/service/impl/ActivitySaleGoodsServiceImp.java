@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
@@ -46,6 +47,11 @@ public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi,
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 
 	@Override
+	public ActivitySaleGoods findById(String id) {
+		return activitySaleGoodsMapper.get(id);
+	}
+	
+	@Override
 	public ActivitySaleGoods selectByObject(ActivitySaleGoods activitySaleGoods) {
 		return activitySaleGoodsMapper.selectByObject(activitySaleGoods);
 	}
@@ -76,4 +82,9 @@ public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi,
 		return activitySaleGoodsMapper.selectByObject(goods);
 	}
 
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateActivitySaleGoods(ActivitySaleGoods activitySaleGoods) throws Exception {
+		activitySaleGoodsMapper.updateById(activitySaleGoods);		
+	}
 }

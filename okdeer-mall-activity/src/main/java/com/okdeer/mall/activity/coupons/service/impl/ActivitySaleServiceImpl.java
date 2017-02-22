@@ -56,6 +56,7 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
  * ----------------+----------------+-------------------+-------------------------------------------
  *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
  *     V2.1.0             2017年02月20日               tangy              添加活动安全库存及预警联系人
+ *     V2.1.0             2017年02月21日               tangy              同步erp添加字段
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi")
 public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, ActivitySaleService {
@@ -104,7 +105,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			// 先保存特惠主对象
 			activitySaleMapper.save(activitySale);
 			// 库存同步--库存出错的几率更大。先处理库存
-			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
+			this.syncGoodsStockBatch(asgList, activitySale, activitySale.getCreateUserId(), activitySale.getStoreId(),
 					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 			// 再保存特惠商品列表
 			for (ActivitySaleGoods a : asgList) {
@@ -163,6 +164,33 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		}
 
 	}
+	
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateSaleStock(ActivitySale activitySale, ActivitySaleGoods activitySaleGoods) throws Exception {
+		List<String> rpcIdByStockList = new ArrayList<String>();
+		List<String> rpcIdBySkuList = new ArrayList<String>();
+		ActivitySaleGoods saleGoods = activitySaleGoodsMapper.get(activitySaleGoods.getId());
+		//活动商品存在并活动库存小于修改库存
+		if (saleGoods == null || (saleGoods.getSaleStock() != null 
+				&& saleGoods.getSaleStock().intValue() >= activitySaleGoods.getSaleStock().intValue() )) {
+			return;
+		}
+		saleGoods.setSaleStock(activitySaleGoods.getSaleStock() - saleGoods.getSaleStock());
+		List<ActivitySaleGoods> list = new ArrayList<ActivitySaleGoods>();
+		list.add(saleGoods);
+		// 库存同步--库存出错的几率更大。先处理库存
+		try {
+			this.syncGoodsStockBatch(list, activitySale, activitySale.getCreateUserId(), activitySale.getStoreId(),
+					StockOperateEnum.ACTIVITY_STOCK_INCREMENT, rpcIdByStockList);
+			activitySaleGoodsMapper.updateById(activitySaleGoods);
+		} catch (Exception e) {
+			// 现在库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
+			// rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
+			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
+			throw e;
+		}
+	}
 
 	/**
 	 * 
@@ -176,7 +204,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	 * @author zengj
 	 * @date 2016年9月12日
 	 */
-	private void syncGoodsStockBatch(List<ActivitySaleGoods> goodsList, String userId, String storeId,
+	private void syncGoodsStockBatch(List<ActivitySaleGoods> goodsList, ActivitySale activitySale, String userId, String storeId,
 			StockOperateEnum soe, List<String> rpcIdByStockList) throws Exception {
 
 		String rpcId = UuidUtils.getUuid();
@@ -211,6 +239,11 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 					adjustDetailVo.setStyleCode(entity.getStyleCode());
 					adjustDetailVo.setPrice(goods.getSalePrice());
 					/*************新增字段 end  **************/
+					//Begin V2.1.0 added by 标识同步商品参与特惠  tangy  2017-02-21
+					if(activitySale != null && activitySale.getType() == ActivityTypeEnum.SALE_ACTIVITIES){
+						adjustDetailVo.setIsPreference(true);
+					}
+					//End added by tangy
 					adjustDetailList.add(adjustDetailVo);
 				}
 			}
@@ -384,12 +417,12 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			// 同步差集部分商品，也就是原来是特惠商品，然后本次编辑没勾选，所以这批商品需要释放库存。
 			if (CollectionUtils.isNotEmpty(saleGoodsList)) {
 				// 库存同步
-				this.syncGoodsStockBatch(saleGoodsList, activitySale.getCreateUserId(), activitySale.getStoreId(),
+				this.syncGoodsStockBatch(saleGoodsList, activitySale, activitySale.getCreateUserId(), activitySale.getStoreId(),
 						StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
 			}
 			// 新加商品的库存同步，需要增加锁定库存
 			// 库存同步
-			this.syncGoodsStockBatch(asgList, activitySale.getCreateUserId(), activitySale.getStoreId(),
+			this.syncGoodsStockBatch(asgList, activitySale, activitySale.getCreateUserId(), activitySale.getStoreId(),
 					StockOperateEnum.ACTIVITY_STOCK, rpcIdByStockList);
 		} catch (Exception e) {
 			// 现在实物订单库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
@@ -504,7 +537,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// 手动关闭或者定时器结束都要把未卖完的数量释放库存
 				// 和erp同步库存
 				if(CollectionUtils.isNotEmpty(saleGoodsList)){
-					this.syncGoodsStockBatch(saleGoodsList, "", storeId, StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
+					StockOperateEnum stockOperateEnum = activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal() ? StockOperateEnum.OVER_SALE_ORDER_INTEGRAL : StockOperateEnum.OVER_SALE_ORDER_EVENT;
+					this.syncGoodsStockBatch(saleGoodsList, null, "", storeId, stockOperateEnum, rpcIdByStockList);
 				}
 			}
 		} catch (Exception e) {

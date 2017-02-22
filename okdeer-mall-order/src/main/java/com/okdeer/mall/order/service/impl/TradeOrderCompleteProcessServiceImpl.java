@@ -37,6 +37,7 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.member.points.dto.PointQueryParamDto;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -57,6 +58,8 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessServiceApi;
 import com.okdeer.mall.order.utils.OrderNoUtils;
+import com.okdeer.mall.points.bo.PointQueryResult;
+import com.okdeer.mall.points.service.PointsService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -126,6 +129,10 @@ public class TradeOrderCompleteProcessServiceImpl
 	
 	@Resource
 	private StockAdjustVoBuilder stockAdjustVoBuilder;
+	
+	/**积分规则查询服务 */
+	@Resource
+	private PointsService pointsService;
 
 	/**
 	 * 
@@ -208,12 +215,37 @@ public class TradeOrderCompleteProcessServiceImpl
 		orderInfo.put("orderItemList", orderItemList);
 		orderInfo.put("orderPayInfo", orderPayInfo);
         logger.info("==============================orderInfo:", orderInfo.toString());
+        //根据业务订单id 获得加积分值
+        Integer pointVal = getUserPointByOrder(tradeOrder.getUserId(), orderId, tradeOrder.getActualAmount(), 1);
+        orderInfo.put("point", pointVal);
 		// 发送消息
 		this.send(OrderMessageConstant.TOPIC_ORDER_COMPLETE, OrderMessageConstant.TAG_ORDER_COMPLETE,
 				orderInfo.toString(),tradeOrder.getId());
 
 	}
-
+	
+	/**
+	 * 根据业务id(订单或退款单)获得加减积分值
+	 * @param userId 用户id
+	 * @param id 业务id  订单或退款单 id
+	 * @param amount 金额-》实付、退款金额
+	 * @param type 类型加还是减
+	 * Tuzhd
+	 * @return
+	 */
+	private Integer getUserPointByOrder (String userId,String id,BigDecimal amount,Integer type){
+		PointQueryParamDto pointQueryParamDto = new PointQueryParamDto();
+        pointQueryParamDto.setUserId(userId);
+        pointQueryParamDto.setType(type);
+        pointQueryParamDto.setBusinessId(id);
+        pointQueryParamDto.setAmount(amount);
+        PointQueryResult pointQueryResult = pointsService.findUserPoint(pointQueryParamDto);
+        //当该业务查询出的加减积分不存在返回null
+        if(pointQueryResult != null){
+        	return pointQueryResult.getPointVal();
+        }
+        return null;
+	}
 	/**
 	 * 
 	 * @Description: 退款单完成时发送MQ消息同步到商业管理系统
@@ -223,6 +255,7 @@ public class TradeOrderCompleteProcessServiceImpl
 	 * @date 2016年9月6日
 	 */
 	public void orderRefundsCompleteSyncToJxc(String refundsId) throws Exception {
+		logger.info("退款支付同步进销存系统:" + refundsId);
 		if (StringUtils.isBlank(refundsId)) {
 			throw new ServiceException(LogConstants.ORDER_REFUNDS_ID_IS_NULL);
 		}
@@ -250,6 +283,9 @@ public class TradeOrderCompleteProcessServiceImpl
 		JSONArray orderRefundsItemList = buildOrderRefundsItemList(orderRefunds, tradeOrderRefundsItemList);
 
 		orderRefundsInfo.put("orderRefundsItemList", orderRefundsItemList);
+		//根据业务退款单id 获得减积分值
+		Integer pointVal = getUserPointByOrder(orderRefunds.getUserId(), refundsId, orderRefunds.getTotalIncome(), 2);
+		orderRefundsInfo.put("point", pointVal);
 		// 发送消息
 		this.send(OrderMessageConstant.TOPIC_REFUND_ORDER_COMPLETE, OrderMessageConstant.TAG_REFUND_ORDER_COMPLETE,
 				orderRefundsInfo.toString(),orderRefunds.getId());

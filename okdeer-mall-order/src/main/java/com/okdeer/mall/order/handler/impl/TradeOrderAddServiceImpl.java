@@ -471,6 +471,8 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		// 获取买家收货地址
 		MemberConsigneeAddress address = memberConsigneeAddressMapper.selectAddressById(addressId);
 
+		tradeOrder.setPickUpId(address.getId());
+		
 		TradeOrderLogistics orderLogistics = new TradeOrderLogistics();
 		orderLogistics.setId(UuidUtils.getUuid());
 		orderLogistics.setConsigneeName(address.getConsigneeName());
@@ -1013,6 +1015,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			adjustDetailVo.setPropertiesIndb(storeSku.getPropertiesIndb());
 			adjustDetailVo.setStoreSkuId(storeSku.getId());
 			adjustDetailVo.setGoodsSkuId(storeSku.getSkuId());
+			adjustDetailVo.setIsPreference(isPrivilege);
 			adjustDetailList.add(adjustDetailVo);
 		}
 

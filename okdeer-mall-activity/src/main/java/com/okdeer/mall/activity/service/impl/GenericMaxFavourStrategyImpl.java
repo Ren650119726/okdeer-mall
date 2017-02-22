@@ -6,6 +6,7 @@ import java.text.DecimalFormat;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.Discount;
@@ -45,11 +46,31 @@ public class GenericMaxFavourStrategyImpl implements MaxFavourStrategy {
 	 * 最大上限值。用于控制一些规则属性的正序或者倒序
 	 */
 	private static final int MAX_VALUE = 9;
+	
+	/**
+	 * 满减优先级别
+	 */
+	private static final int FULLSUBTRACT_PRIORY = 3;
+	
+	/**
+	 * 代金券优先级别
+	 */
+	private static final int COUNPONS_PRIORY = 2;
+	
+	/**
+	 * 满折优先级别
+	 */
+	private static final int DISCOUNT_PRIORY = 1;
+	
+	/**
+	 * 默认优先级
+	 */
+	private static final int DEFAULT_PRIORY = 0;
 
 	/**
-	 * 计算当前优惠优先规则：1位（首单用户限制：0：否，1：是） + 6位优惠金额（4,2。左侧不足补0） 
-	 * 			 +  1位优惠类型（9-优惠类型序列） + 1位优惠来源（9-来源类型（0：平台，1：店铺））
-	 * 			 +  13位距离2050年1月1日的时间差（左侧不足补0.）
+	 * 计算当前优惠优先规则：1位（首单用户限制：0：否， ：是） + 6位优惠金额（4,2。左侧不足补0） +  13位距离2050年1月1日的时间差（左侧不足补0.）
+	 * 			1位优惠来源（9-来源类型（0：平台，1：店铺）） +  1位优惠类型（满减、优惠券、满折） 
+	 * 			 
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.activity.service.MaxFavourStrategy#calMaxFavourRule(com.okdeer.mall.order.vo.Favour)
 	 */
@@ -60,24 +81,31 @@ public class GenericMaxFavourStrategyImpl implements MaxFavourStrategy {
 		// 优惠金额
 		String favourAmount = "0.0";
 		// 优惠类型
-		int activityType = favour.getActivityType();
-		// 优惠来源
+		ActivityTypeEnum activityType = ActivityTypeEnum.enumValueOf(favour.getActivityType());
+		// 优惠类型优先级
+		int favourTypePriory = DEFAULT_PRIORY;
+		// 优惠来源。0：平台，1：店铺
 		int favourSource = 0;
 		// 优惠到期时间
 		long expireTime = DateUtils.parseDate(favour.getIndate()).getTime();
 		switch(activityType){
-			case 1:
+			case VONCHER:
+				favourTypePriory = COUNPONS_PRIORY;
 				// 代金券.代金券只能由平台发起
 				Coupons coupons = (Coupons)favour;
 				favourAmount = coupons.getCouponPrice();
 				break;
-			case 2:
+			case FULL_REDUCTION_ACTIVITIES:
+				favourTypePriory = FULLSUBTRACT_PRIORY;
 				// 满减
 				FullSubtract fullSubtract = (FullSubtract)favour;
 				favourAmount = fullSubtract.getFullSubtractPrice();
 				favourSource = fullSubtract.getType();
 				break;
-			case 3:
+			case FULL_DISCOUNT_ACTIVITIES:
+				favourTypePriory = DISCOUNT_PRIORY;
+				// 满折只能由店铺发起
+				favourSource = 1;
 				// 满折
 				Discount discount = (Discount)favour;
 				favourAmount = totalAmount.subtract(totalAmount.multiply(new BigDecimal(discount.getDiscountPrice())).divide(BigDecimal.valueOf(10)).setScale(2,
@@ -89,9 +117,9 @@ public class GenericMaxFavourStrategyImpl implements MaxFavourStrategy {
 		StringBuilder rule = new StringBuilder();
 		rule.append(firstUserLimit)
 		    .append(df.format(Double.parseDouble(favourAmount)))
-			.append(MAX_VALUE - activityType)
+		    .append(String.format(timeDiffFormat, MAX_TIME - expireTime))
 			.append(MAX_VALUE - favourSource)
-			.append(String.format(timeDiffFormat, MAX_TIME - expireTime));
+			.append(favourTypePriory);
 		return rule.toString();
 	}
 

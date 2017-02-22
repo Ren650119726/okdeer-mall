@@ -45,6 +45,7 @@ import com.okdeer.mall.order.pay.callback.AbstractPayResultHandler;
 import com.okdeer.mall.order.pay.callback.PayResultHandlerFactory;
 import com.okdeer.mall.order.pay.entity.ResponseResult;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
+import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
@@ -132,6 +133,12 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
  	@Resource
 	private PayResultHandlerFactory payResultHandlerFactory;
  	// End V1.2 added by maojj 2016-11-14
+ 	
+ 	/**
+	 * 订单完成后同步商业管理系统Service
+	 */
+	@Resource
+	private TradeOrderCompleteProcessService tradeOrderCompleteProcessService;
     
 	@Override
 	public String getTopic() {
@@ -304,6 +311,8 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 				tradeOrderRefunds.setRefundMoneyTime(new Date());
 				tradeOrderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
 				tradeOrderRefundsService.updateRefunds(tradeOrderRefunds);
+				// 订单完成后同步到商业管理系统
+				tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(tradeOrderRefunds.getId());
 			} else {
 				logger.error("退款支付状态消息处理失败,退款单编号为：" + tradeOrderRefunds.getRefundNo() + "，问题原因" + result.getMsg());
 

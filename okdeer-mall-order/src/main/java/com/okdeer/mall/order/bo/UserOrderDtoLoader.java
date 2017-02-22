@@ -46,6 +46,11 @@ public class UserOrderDtoLoader {
 	private List<String> orderIds = null;
 	
 	/**
+	 * 是否存在火车票订单
+	 */
+	private boolean isExistsTrainOrder;
+	
+	/**
 	 * 页面大小
 	 */
 	private int pageSize;
@@ -73,9 +78,13 @@ public class UserOrderDtoLoader {
 		AppUserOrderDto userOrderDto = new AppUserOrderDto();
 		int totalPage = totalNum/pageSize + (totalNum%pageSize == 0 ? 0 : 1);
 		this.orderDtoList = new ArrayList<UserOrderDto>();
-		for(Map.Entry<String, UserOrderDto> entry : this.orderDtoMap.entrySet()){
-			this.orderDtoList.add(entry.getValue());
-		}
+		this.orderDtoList.addAll(this.orderDtoMap.values());
+		Collections.sort(this.orderDtoList,new Comparator<UserOrderDto>() {
+			@Override
+			public int compare(UserOrderDto o1, UserOrderDto o2) {
+				return o2.getCreateTime().compareTo(o1.getCreateTime());
+			}
+		});
 		userOrderDto.setTotalNum(totalNum);
 		userOrderDto.setTotalPage(totalPage);
 		userOrderDto.setOrderList(this.orderDtoList);
@@ -85,16 +94,20 @@ public class UserOrderDtoLoader {
 	
 	public List<String> extraOrderIds(){
 		if(CollectionUtils.isEmpty(this.orderDtoList)){
-			return this.orderIds;
+			return null;
 		}
-		Collections.sort(this.orderDtoList,new Comparator<UserOrderDto>() {
-			@Override
-			public int compare(UserOrderDto o1, UserOrderDto o2) {
-				return o1.getCreateTime().compareTo(o2.getCreateTime());
-			}
-		});
+		if(isExistsTrainOrder && this.orderDtoList.size() > this.pageSize){
+			// 如果存在火车票订单，且订单总数量大于页面显示数量，则需要重新进行排序
+			Collections.sort(this.orderDtoList,new Comparator<UserOrderDto>() {
+				@Override
+				public int compare(UserOrderDto o1, UserOrderDto o2) {
+					return o2.getCreateTime().compareTo(o1.getCreateTime());
+				}
+			});
+		}
 		if(this.orderDtoList.size() > this.pageSize){
 			this.orderDtoList = this.orderDtoList.subList(0, this.pageSize);
+			// 订单总数量大于页面显示数量，需要刷新订单ID和缓存的map
 			// 刷新订单ID和map
 			this.orderIds = new ArrayList<String>();
 			this.orderDtoMap = new HashMap<String,UserOrderDto>();
@@ -131,7 +144,7 @@ public class UserOrderDtoLoader {
 			orderDto.setActualAmount(ConvertUtil.format(order.getActualAmount()));
 			orderDto.setFare(ConvertUtil.format(order.getFare()));
 			orderDto.setType(EnumAdapter.convert(order.getType()));;
-			orderDto.setCreateTime(DateUtils.formatDate(order.getCreateTime()));
+			orderDto.setCreateTime(DateUtils.formatDate(order.getCreateTime(),"yyyy-MM-dd HH:mm:ss"));
 			orderDto.setLogisticsFlag(String.valueOf(LogisticsType.NONE.ordinal()));
 			orderDto.setLogisticsNo("");
 			orderDto.setPickUpType(order.getPickUpType() == null ? "0" : String.valueOf(order.getPickUpType().ordinal()));
@@ -146,8 +159,10 @@ public class UserOrderDtoLoader {
 				case PHONE_PAY_ORDER:
 				case TRAFFIC_PAY_ORDER:
 					orderDto.setOrderStatus(order.getStatus().ordinal());
+					break;
 				case STORE_CONSUME_ORDER:
 					orderDto.setOrderStatus(OrderAppStatusAdaptor.convertAppStoreConsumeOrderStatus(order.getStatus(), order.getConsumerCodeStatus()).ordinal());
+					break;
 				default:
 					break;
 			}
@@ -156,7 +171,7 @@ public class UserOrderDtoLoader {
 			orderDto.setOrderIsComment(order.getTotalComment() == 0 ? "0" : "1");
 			this.orderIds.add(order.getId());
 			this.orderDtoList.add(orderDto);
-			this.orderDtoMap.put(order.getId(),orderDto);
+			this.orderDtoMap.put(order.getId(), orderDto);
 		}
 	}
 	
@@ -171,6 +186,7 @@ public class UserOrderDtoLoader {
 		if(CollectionUtils.isEmpty(trainOrderListTemp)){
 			return;
 		}
+		this.isExistsTrainOrder = true;
 		// 总数量
 		totalNum += trainOrderList.getTotal();
 		UserOrderDto orderDto = null;
@@ -198,7 +214,7 @@ public class UserOrderDtoLoader {
 			orderDto.setOrderItems(orderItems);
 			
 			this.orderDtoList.add(orderDto);
-			this.orderDtoMap.put(order.getId(),orderDto);
+			this.orderDtoMap.put(order.getId(), orderDto);
 		}
 	}
 	
@@ -222,6 +238,7 @@ public class UserOrderDtoLoader {
 			itemDto = new UserOrderItemDto();
 			itemDto.setItemId(orderItem.getId());
 			itemDto.setMainPicUrl(orderItem.getMainPicPrl());
+			itemDto.setStoreSkuId(orderItem.getStoreSkuId());
 			itemDto.setSkuName(orderItem.getSkuName());
 			itemDto.setPropertiesIndb(orderItem.getPropertiesIndb());
 			itemDto.setUnitPrice(ConvertUtil.format(orderItem.getUnitPrice()));

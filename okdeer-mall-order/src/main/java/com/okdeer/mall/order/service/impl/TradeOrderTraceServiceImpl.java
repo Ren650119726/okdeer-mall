@@ -9,6 +9,8 @@ import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.mapper.TradeOrderTraceMapper;
+import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
 import com.okdeer.mall.order.vo.RefundsTraceResp;
 import com.okdeer.mall.order.vo.RefundsTraceVo;
@@ -41,10 +44,14 @@ import com.okdeer.mall.system.utils.ConvertUtil;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *		友门鹿1.2			2016年11月4日				maojj		      订单轨迹服务实现类
+ *      友门鹿2.1         2017年2月18日                                   zhaoqc        便利店订单状态发生改变时发送通知
  */
 @Service
 public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 
+  //日志管理器
+    private static final Logger LOGGER = LoggerFactory.getLogger(TradeOrderTraceServiceImpl.class);
+    
 	private static final BigDecimal ZERO = BigDecimal.valueOf(0.0);
 
 	@Resource
@@ -53,9 +60,22 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 	@Resource
 	private TradeOrderMapper tradeOrderMapper;
 
+	@Resource
+	private TradeOrderSendMessageService sendMessageService;
+	
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void saveOrderTrace(TradeOrder tradeOrder) {
+	    //便利店实物订单状态改变时，发送通知
+	    //Begin 2017-2-18 added by zhaoqc
+	    if(tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+	        //便利店订单状态发生改变发送消息
+	        LOGGER.info("便利店订单状态发生改变向用户发送通知消息");
+	        
+	        this.sendMessageService.tradeSendMessage(tradeOrder);
+	    }
+	    //End
+	        
 		// 只有上门服务的订单需要保存订单轨迹。
 		if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER) {
 			return;
