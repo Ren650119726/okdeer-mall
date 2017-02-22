@@ -43,6 +43,7 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleRemindApi;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
@@ -218,6 +219,11 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	@Resource
 	private OrderReturnCouponsService orderReturnCouponsService;
 	// End added by maojj 2016-10-18
+	
+	// Begin V2.1 added by maojj 2017-02-22
+	@Reference(version = "1.0.0", check = false)
+	private ActivitySaleRemindApi activitySaleRemindApi;
+	// End V2.1 added by maojj 2017-02-22
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -963,6 +969,10 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			rpcIdList.add(stockAdjustVo.getRpcId());
 			// 特惠商品下单，更新库存
 			stockManagerServiceApi.updateStock(stockAdjustVo);
+			// Begin V2.1 added by maojj 2017-02-22
+			// 特惠商品下单，增加库存提醒
+			activitySaleRemindApi.sendSafetyWarning(reqDto.getContext().getActivitySkuIds());
+			// End V2.1 added by maojj 2017-02-22
 		}
 	}
 
