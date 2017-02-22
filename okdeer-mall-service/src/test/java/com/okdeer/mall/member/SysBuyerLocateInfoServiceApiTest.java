@@ -28,7 +28,8 @@ public class SysBuyerLocateInfoServiceApiTest extends BaseServiceTest {
 		dto.setCityName("不知道");
 		dto.setLongitude(123.123);
 		dto.setLatitude(234.234);
-		dto.setRegisterSource(0);
+		dto.setRegisterSource("0");
+		dto.setStoreCityId("291");
 		try {
 			sysBuyerLocateInfoServiceApiImpl.save(dto);
 		} catch (Exception e) {
