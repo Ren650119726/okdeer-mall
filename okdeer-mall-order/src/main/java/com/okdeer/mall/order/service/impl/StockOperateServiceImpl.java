@@ -525,7 +525,7 @@ public class StockOperateServiceImpl implements StockOperateService {
 		}
 		
 		detail.setIsEvent(isGoodActivity);
-		detail.setPreference(false);
+		detail.setIsPreference(false);
 		// 判断是否是特惠活动，如果是，则判断特惠活动是否正在进行中，不在进行中则当成普通的商品减库存
 		String saleId = findSaleId(tradeOrder.getId(), storeSkuId);
 		if (!StringUtils.isNullOrEmpty(saleId)) {
@@ -537,7 +537,7 @@ public class StockOperateServiceImpl implements StockOperateService {
 			}else{
 				if(ActivityTypeEnum.SALE_ACTIVITIES == entity.getType()){
 					detail.setIsEvent(false);
-					detail.setPreference(true);
+					detail.setIsPreference(true);
 				}
 			}
 		}
