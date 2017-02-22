@@ -12,14 +12,15 @@
         <result column="area_id" property="areaId" jdbcType="VARCHAR" />
         <result column="longitude" property="longitude" jdbcType="DOUBLE" />
         <result column="latitude" property="latitude" jdbcType="DOUBLE" />
-        <result column="register_source" property="registerSource" jdbcType="TINYINT" />
+        <result column="register_source" property="registerSource" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="store_city_id" property="storeCityId" jdbcType="VARCHAR" />
     </resultMap>
 
     <sql id="Base_Column_List" >
         id, user_id, machine_code, province_id, province_name, city_id, city_name, area_id, 
-        longitude, latitude, register_source, create_time, update_time
+        longitude, latitude, register_source, create_time, update_time, store_city_id
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -71,6 +72,9 @@
             <if test="updateTime != null" >
                 update_time,
             </if>
+            <if test="storeCityId != null" >
+                store_city_id,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -104,13 +108,16 @@
                 #{latitude,jdbcType=DOUBLE},
             </if>
             <if test="registerSource != null" >
-                #{registerSource,jdbcType=TINYINT},
+                #{registerSource,jdbcType=VARCHAR},
             </if>
             <if test="createTime != null" >
                 #{createTime,jdbcType=TIMESTAMP},
             </if>
             <if test="updateTime != null" >
                 #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="storeCityId != null" >
+                #{storeCityId,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -146,13 +153,16 @@
                 latitude = #{latitude,jdbcType=DOUBLE},
             </if>
             <if test="registerSource != null" >
-                register_source = #{registerSource,jdbcType=TINYINT},
+                register_source = #{registerSource,jdbcType=VARCHAR},
             </if>
             <if test="createTime != null" >
                 create_time = #{createTime,jdbcType=TIMESTAMP},
             </if>
             <if test="updateTime != null" >
                 update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="storeCityId != null" >
+                store_city_id = #{storeCityId,jdbcType=VARCHAR},
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
