@@ -32,6 +32,20 @@ public interface SysBuyerUserService{
 			SysSmsVerifyCode sysSmsVerifyCodeUpdate,
 			SysBuyerUserThirdparty buyerUserThirdparty) throws ApiException,ServiceException;
 
+	// begin add by chenzc 2017-2-22
+	/**
+	 * 
+	 * @Description: V2.1新增需求，pos机注册时保存当前店铺所在地址
+	 * @return String 
+	 * @throws 异常
+	 * @author chenzc
+	 * @date 2017年2月22日
+	 */
+	public String addSysBuyerSyncV210(SysBuyerUserDto sysBuyerUserDto, 
+			SysSmsVerifyCode sysSmsVerifyCodeUpdate,
+			SysBuyerUserThirdparty buyerUserThirdparty, String storeId) throws ApiException, ServiceException;
+	// end add by chenzc
+	
 	// begin add by wangf01 2016.08.11
 	/**
 	 * DESC: 添加买家用户信息、修改验证码状态、添加第三方平台账号与本平台账号映射

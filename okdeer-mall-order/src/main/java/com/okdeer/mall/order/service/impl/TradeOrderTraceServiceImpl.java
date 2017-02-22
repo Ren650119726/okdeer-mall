@@ -9,6 +9,8 @@ import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +49,9 @@ import com.okdeer.mall.system.utils.ConvertUtil;
 @Service
 public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 
+  //日志管理器
+    private static final Logger LOGGER = LoggerFactory.getLogger(TradeOrderTraceServiceImpl.class);
+    
 	private static final BigDecimal ZERO = BigDecimal.valueOf(0.0);
 
 	@Resource
@@ -64,6 +69,9 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 	    //便利店实物订单状态改变时，发送通知
 	    //Begin 2017-2-18 added by zhaoqc
 	    if(tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+	        //便利店订单状态发生改变发送消息
+	        LOGGER.info("便利店订单状态发生改变向用户发送通知消息");
+	        
 	        this.sendMessageService.tradeSendMessage(tradeOrder);
 	    }
 	    //End

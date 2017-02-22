@@ -198,6 +198,7 @@ import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
+import com.okdeer.mall.order.vo.ActivityInfoVO;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.OrderCouponsRespDto;
 import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
@@ -6808,7 +6809,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	@Override
-	public List<PhysicsOrderVo> findActivityInfo(List<String> orderIds) {
+	public List<ActivityInfoVO> findActivityInfo(List<String> orderIds) {
 		return tradeOrderMapper.findActivityInfo(orderIds);
 	}
 	

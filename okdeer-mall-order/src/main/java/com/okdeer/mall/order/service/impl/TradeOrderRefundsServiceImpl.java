@@ -1832,10 +1832,11 @@ public class TradeOrderRefundsServiceImpl
 		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
 	}
 
-	//Begin V2.1.0 added by luosm 20170220
+	// Begin V2.1.0 added by luosm 20170222
 	@Override
-	public TradeOrderRefunds selectByOrderIdOne(String orderId) {
-		return tradeOrderRefundsMapper.selectByOrderIdOne(orderId);
+	public List<TradeOrderRefunds> selectByOrderIds(List<String> orderIds) throws Exception {
+		return tradeOrderRefundsMapper.selectByOrderIds(orderIds);
 	}
-	//End V2.1.0 added by luosm 20170220
+	// Begin V2.1.0 added by luosm 20170222
+
 }
