@@ -222,8 +222,7 @@ public class StockOperateServiceImpl implements StockOperateService {
 				detail.setSpuType(SpuTypeEnum.fwdDdxfSpu);
 			}
 			
-			boolean isEvent = hasActivity(tradeOrder, item.getStoreSkuId());
-			detail.setIsEvent(isEvent);
+			setActivity(detail,tradeOrder, item.getStoreSkuId());
 
 			Integer quantity = item.getQuantity();
 			if (quantity == null) {
@@ -472,9 +471,9 @@ public class StockOperateServiceImpl implements StockOperateService {
 		detail.setStyleCode(item.getStyleCode());
 		detail.setBarCode(item.getBarCode());
 		detail.setNum(item.getQuantity());
-
-		boolean isGoodActivity = hasActivity(tradeOrder, item.getStoreSkuId());
-		detail.setIsEvent(isGoodActivity);
+		
+		setActivity(detail,tradeOrder, item.getStoreSkuId());
+		
 		if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 			detail.setSpuType(SpuTypeEnum.physicalSpu);
 		} else if (tradeOrder.getType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
@@ -508,7 +507,7 @@ public class StockOperateServiceImpl implements StockOperateService {
 	 * @author zengjizu
 	 * @date 2017年1月8日
 	 */
-	private boolean hasActivity(TradeOrder tradeOrder, String storeSkuId) throws Exception {
+	private void setActivity(AdjustDetailVo detail,TradeOrder tradeOrder, String storeSkuId) throws Exception {
 		// 判断是否是团购和特惠商品
 		boolean isGoodActivity = ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()
 				|| isAttendSale(tradeOrder.getId(), storeSkuId);
@@ -524,6 +523,9 @@ public class StockOperateServiceImpl implements StockOperateService {
 				isGoodActivity = false;
 			}
 		}
+		
+		detail.setIsEvent(isGoodActivity);
+		detail.setPreference(false);
 		// 判断是否是特惠活动，如果是，则判断特惠活动是否正在进行中，不在进行中则当成普通的商品减库存
 		String saleId = findSaleId(tradeOrder.getId(), storeSkuId);
 		if (!StringUtils.isNullOrEmpty(saleId)) {
@@ -531,9 +533,16 @@ public class StockOperateServiceImpl implements StockOperateService {
 			ActivitySale entity = activitySaleMapper.get(saleId);
 			if (entity.getStatus() != 1) {
 				isGoodActivity = false;
+				detail.setIsEvent(false);
+			}else{
+				if(ActivityTypeEnum.SALE_ACTIVITIES == entity.getType()){
+					detail.setIsEvent(false);
+					detail.setPreference(true);
+				}
 			}
 		}
-		return isGoodActivity;
+		
+		
 	}
 
 	
