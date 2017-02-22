@@ -5084,6 +5084,9 @@
 			#{endTime,jdbcType=TIMESTAMP}
 		</if>
 		<!-- Begin V2.1.0 added by luosm 20170218 -->
+		<if test="cityName != null and cityName != ''">
+			AND member.city_name = #{cityName, jdbcType=VARCHAR}
+		</if>
 		<if test="ids != null">
 			AND trade.id in
 			<foreach collection="ids" index="index" item="item" open="("
