@@ -327,6 +327,6 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	 * @author luosm
 	 * @date 2017年2月20日
 	 */
-	List<ActivityCoupons> findByOrderId(String orderId);
+	ActivityCoupons findByOrderId(String orderId);
 	// End V2.1.0 added by luosm 20170220
 }

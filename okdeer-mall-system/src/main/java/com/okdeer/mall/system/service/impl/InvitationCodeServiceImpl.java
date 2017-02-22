@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,7 @@ import com.okdeer.mall.member.points.dto.AddPointsParamDto;
 import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.system.entity.SysUserInvitationCode;
 import com.okdeer.mall.system.entity.SysUserInvitationCodeVo;
+import com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO;
 import com.okdeer.mall.system.entity.SysUserInvitationRecord;
 import com.okdeer.mall.system.entity.SysUserInvitationRecordVo;
 import com.okdeer.mall.system.enums.InvitationUserType;
@@ -394,6 +396,11 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 		 }
 		}
 		return loginName;
+	}
+	
+	@Override
+	public List<SysUserInvitationLoginNameVO> selectLoginNameByUserId(@Param("userIds") List<String> userIds) {
+		return sysUserInvitationCodeMapper.selectLoginNameByUserId(userIds);
 	}
 	// End V2.1.0 added by luosm 20170215
 }

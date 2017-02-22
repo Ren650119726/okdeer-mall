@@ -17,6 +17,7 @@ import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
+import com.okdeer.mall.order.vo.ActivityInfoVO;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
@@ -1142,13 +1143,14 @@ public interface TradeOrderMapper {
 	List<PhysicsOrderVo> findInvitationInfo(@Param("userIds")List<String> userIds);
 	
 	/**
-	 * @Description: 根据订单获取订单的优惠信息
-	 * @param orderIds 订单集合
-	 * @return List
+	 * 
+	 * @Description: TODO
+	 * @param orderIds
+	 * @return
 	 * @author zhulq
-	 * @date 2017年2月18日
+	 * @date 2017年2月22日
 	 */
-	List<PhysicsOrderVo> findActivityInfo(@Param("orderIds")List<String> orderIds);
+	List<ActivityInfoVO> findActivityInfo(@Param("orderIds")List<String> orderIds);
 	//END V2.1 add by zhulq 2017-02-17 
 	
 	// Begin V2.1 added by maojj 2017-02-18

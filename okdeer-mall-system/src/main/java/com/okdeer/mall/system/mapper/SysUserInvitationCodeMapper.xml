@@ -33,6 +33,18 @@
 			jdbcType="TIMESTAMP" />
 	</resultMap>
 
+    <!-- Begin V2.1.0 added by luosm 20170222 -->
+	<resultMap type="com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO"
+		id="loginNameResultMap">
+		<result column="userId" property="userId" javaType="string"
+			jdbcType="VARCHAR" />
+		<result column="sLoginName" property="sLoginName" javaType="string"
+			jdbcType="VARCHAR" />
+		<result column="bLoginName" property="bLoginName" javaType="string"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<!-- End V2.1.0 added by luosm 20170222 -->
+	
 	<!-- 邀请码表名 start -->
 	<sql id="tableBaseName">sys_user_invitation_code</sql>
 	<!-- 邀请码表名 end -->
@@ -259,4 +271,24 @@
 		SELECT id,invitation_user_num,first_order_user_num,create_time,
 		update_time FROM sys_user_invitation_code WHERE id =#{id,jdbcType=VARCHAR}
 	</select>
+	
+	<!-- Begin V2.1.0 added by luosm 20170222 -->
+	<select id="selectLoginNameByUserId" parameterType="list"  resultMap="loginNameResultMap">
+	SELECT su.login_name as sLoginName,bu.login_name as bLoginName,rec.sys_buyer_user_id as userId from sys_user_invitation_code inco 
+		LEFT JOIN sys_user_invitation_record rec on rec.invitation_code_id = inco.id
+		LEFT JOIN sys_user su on su.id = inco.sys_user_id
+		LEFT JOIN sys_buyer_user bu on bu.id = inco.sys_buyer_user_id
+	where 1 = 1
+	<if test="userIds != null">
+          AND rec.sys_buyer_user_id  in 
+          <foreach collection="userIds" index="index" item="item" open="(" separator="," close=")">  
+              #{item}   
+          </foreach>
+      </if>
+      <!-- 如果ID集合为空，不查询任何数据,1=2会报错 -->
+      <if test="userIds == null">
+       AND id = 'a'
+      </if>
+	</select>
+	<!-- End V2.1.0 added by luosm 20170222 -->
 </mapper>

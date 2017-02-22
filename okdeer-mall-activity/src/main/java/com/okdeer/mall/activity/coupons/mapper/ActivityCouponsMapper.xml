@@ -69,7 +69,7 @@
     <!-- Begin V2.1.0 added by luosm 20170220 -->
     <select id="findByOrderId" resultMap="CouponsResultMap" parameterType="string">
       select 
-      <include refid="BaseSelectSQL" />
+      cou.id,cou.name
       from activity_coupons cou
       left join activity_coupons_record rec on rec.coupons_id = cou.id
       where rec.order_id = #{orderId, jdbcType=VARCHAR}
