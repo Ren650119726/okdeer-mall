@@ -108,33 +108,45 @@ public class UserOrderServiceImpl implements UserOrderService {
 		// 查询便利店、服务店、充值订单
 		PageHelper.startPage(1, -1);
 		PageUtils<TradeOrder> unPayOrderList = tradeOrderService.findUserOrders(paramBo);
-		unPaySum += unPayOrderList.getTotal();
+		if (null != unPayOrderList) {
+			unPaySum += unPayOrderList.getTotal();
+		}
 		// 查询火车票订单
 		PageHelper.startPage(1, -1);
 		PageUtils<ThirdTrainOrderDto> unPayTrainOrderList = findTrainOrderList(paramBo);
-		unPaySum += unPayTrainOrderList.getTotal();
+		if (null != unPayTrainOrderList) {
+			unPaySum += unPayTrainOrderList.getTotal();
+		}
 		
 		// 统计待使用
 		paramBo.setStatus("2");
 		// 查询便利店、服务店、充值订单
 		PageHelper.startPage(1, -1);
 		PageUtils<TradeOrder> unReceiptOrderList = tradeOrderService.findUserOrders(paramBo);
-		unReceiptSum += unReceiptOrderList.getTotal();
+		if (null != unReceiptOrderList) {
+			unReceiptSum += unReceiptOrderList.getTotal();
+		}
 		// 查询火车票订单
 		PageHelper.startPage(1, -1);
 		PageUtils<ThirdTrainOrderDto> unReceiptTrainOrderList = findTrainOrderList(paramBo);
-		unReceiptSum += unReceiptTrainOrderList.getTotal();
+		if (null != unReceiptTrainOrderList) {
+			unReceiptSum += unReceiptTrainOrderList.getTotal();
+		}
 		
 		// 统计待评价
 		paramBo.setStatus("3");
 		// 查询便利店、服务店、充值订单
 		PageHelper.startPage(1, -1);
 		PageUtils<TradeOrder> unAppraiseOrderList = tradeOrderService.findUserOrders(paramBo);
-		unAppraiseSum += unAppraiseOrderList.getTotal();
+		if (null != unAppraiseOrderList) {
+			unAppraiseSum += unAppraiseOrderList.getTotal();
+		}
 		// 查询火车票订单
 		PageHelper.startPage(1, -1);
 		PageUtils<ThirdTrainOrderDto> unAppraiseTrainOrderList = findTrainOrderList(paramBo);
-		unAppraiseSum += unAppraiseTrainOrderList.getTotal();
+		if (null != unAppraiseTrainOrderList) {
+			unAppraiseSum += unAppraiseTrainOrderList.getTotal();
+		}
 		
 		resultMap.put("unPay", String.valueOf(unPaySum));
 		resultMap.put("unReceipt", String.valueOf(unReceiptSum));
