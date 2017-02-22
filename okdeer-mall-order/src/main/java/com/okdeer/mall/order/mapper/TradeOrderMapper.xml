@@ -1646,6 +1646,12 @@
 			<if test="acceptTime != null">
 				accept_time,
 			</if>
+			<if test="pickUpId != null">
+				pick_up_id,
+			</if>
+			<if test="clientVersion != null">
+				client_version,
+			</if>
 			<!-- End V1.2 added by maojj 2016-11-09 -->
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -1769,6 +1775,12 @@
 			</if>
 			<if test="acceptTime != null">
 				#{acceptTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="pickUpId != null">
+				#{pickUpId,jdbcType=VARCHAR},
+			</if>
+			<if test="clientVersion != null">
+				#{clientVersion,jdbcType=VARCHAR},
 			</if>
 			<!-- End V1.2 added by maojj 2016-11-09 -->
 		</trim>
