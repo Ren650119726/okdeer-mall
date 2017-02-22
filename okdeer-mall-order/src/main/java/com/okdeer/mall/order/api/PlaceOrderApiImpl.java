@@ -1,7 +1,20 @@
 package com.okdeer.mall.order.api;
 
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_GOODS_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.common.message.Message;
+import com.dianping.cat.Cat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
@@ -24,16 +37,6 @@ import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandlerChain;
 import com.okdeer.mall.order.service.PlaceOrderApi;
 import com.okdeer.mall.system.utils.ConvertUtil;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_GOODS_EL_UPDATE;
-import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
 
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.PlaceOrderApi")
 public class PlaceOrderApiImpl implements PlaceOrderApi {
@@ -189,6 +192,8 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				break;
 		}
 		handlerChain.process(req, resp);
+		// 下单埋点
+		Cat.logMetricForCount("submitOrder");
 		resp.getData().setCurrentTime(System.currentTimeMillis());
 		if(!resp.isSuccess()){
 			// 如果处理失败
