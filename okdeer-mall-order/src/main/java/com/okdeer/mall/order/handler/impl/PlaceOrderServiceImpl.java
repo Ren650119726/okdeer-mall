@@ -36,6 +36,7 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleRemindApi;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
@@ -161,6 +162,9 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
+	
+	@Reference(version = "1.0.0", check = false)
+	private ActivitySaleRemindApi activitySaleRemindApi;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -365,6 +369,8 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				StockAdjustVo mallAdjustVo = buildMallStockAdjustVo(tradeOrder, parserBo);
 				stockManagerServiceApi.updateStock(mallAdjustVo);
 			}
+			// 增加库存提醒
+			activitySaleRemindApi.sendSafetyWarning(parserBo.getSkuIdList());
 		} else {
 			// 服务订单
 			StockAdjustVo servAdjustVo = buildMallServStockAdjustVo(tradeOrder, parserBo);
