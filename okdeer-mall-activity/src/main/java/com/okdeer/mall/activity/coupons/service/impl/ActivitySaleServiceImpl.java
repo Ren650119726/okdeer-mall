@@ -164,6 +164,33 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		}
 
 	}
+	
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateSaleStock(ActivitySale activitySale, ActivitySaleGoods activitySaleGoods) throws Exception {
+		List<String> rpcIdByStockList = new ArrayList<String>();
+		List<String> rpcIdBySkuList = new ArrayList<String>();
+		ActivitySaleGoods saleGoods = activitySaleGoodsMapper.get(activitySaleGoods.getId());
+		//活动商品存在并活动库存小于修改库存
+		if (saleGoods == null || (saleGoods.getSaleStock() != null 
+				&& saleGoods.getSaleStock().intValue() >= activitySaleGoods.getSaleStock().intValue() )) {
+			return;
+		}
+		saleGoods.setSaleStock(activitySaleGoods.getSaleStock() - saleGoods.getSaleStock());
+		List<ActivitySaleGoods> list = new ArrayList<ActivitySaleGoods>();
+		list.add(saleGoods);
+		// 库存同步--库存出错的几率更大。先处理库存
+		try {
+			this.syncGoodsStockBatch(list, activitySale, activitySale.getCreateUserId(), activitySale.getStoreId(),
+					StockOperateEnum.ACTIVITY_STOCK_INCREMENT, rpcIdByStockList);
+			activitySaleGoodsMapper.updateById(activitySaleGoods);
+		} catch (Exception e) {
+			// 现在库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
+			// rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
+			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
+			throw e;
+		}
+	}
 
 	/**
 	 * 
@@ -214,7 +241,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 					/*************新增字段 end  **************/
 					//Begin V2.1.0 added by 标识同步商品参与特惠  tangy  2017-02-21
 					if(activitySale != null && activitySale.getType() == ActivityTypeEnum.SALE_ACTIVITIES){
-						adjustDetailVo.setPreference(true);
+						adjustDetailVo.setIsPreference(true);
 					}
 					//End added by tangy
 					adjustDetailList.add(adjustDetailVo);
@@ -510,7 +537,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// 手动关闭或者定时器结束都要把未卖完的数量释放库存
 				// 和erp同步库存
 				if(CollectionUtils.isNotEmpty(saleGoodsList)){
-					this.syncGoodsStockBatch(saleGoodsList, null, "", storeId, StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
+					StockOperateEnum stockOperateEnum = activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal() ? StockOperateEnum.OVER_SALE_ORDER_INTEGRAL : StockOperateEnum.OVER_SALE_ORDER_EVENT;
+					this.syncGoodsStockBatch(saleGoodsList, null, "", storeId, stockOperateEnum, rpcIdByStockList);
 				}
 			}
 		} catch (Exception e) {

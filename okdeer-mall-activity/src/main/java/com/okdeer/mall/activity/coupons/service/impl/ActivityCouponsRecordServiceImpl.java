@@ -71,6 +71,7 @@ import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
 import com.okdeer.mall.order.vo.RechargeCouponVo;
+import com.okdeer.mcm.constant.MsgConstant;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
@@ -1069,7 +1070,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			pushMsgVo.setToken(msgToken);
 //			pushMsgVo.setSendUserId(userId);
 //			pushMsgVo.setServiceFkId(userId);
-			pushMsgVo.setServiceTypes(new Integer[] { Constant.TWO });
+			pushMsgVo.setServiceTypes(new Integer[] { MsgConstant.ServiceTypes.MALL_OTHER });
 			// 0:用户APP,2:商家APP,3POS机
 			pushMsgVo.setAppType(Constant.ZERO);
 			pushMsgVo.setIsUseTemplate(Constant.ZERO);
