@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.archive.goods.base.entity.GoodsNavigateCategory;
 import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCommunity;
@@ -329,4 +330,15 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	 */
 	ActivityCoupons findByOrderId(String orderId);
 	// End V2.1.0 added by luosm 20170220
+	
+	// Begin V2.1 added by maojj 2017-02-23
+	/**
+	 * @Description: 根据代金券使用和剩余数量
+	 * @param couponsBo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年2月23日
+	 */
+	int updateCouponsNum(ActivityCouponsBo couponsBo);
+	// End V2.1 added by maojj 2017-02-23
 }

@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.order.handler.impl;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,6 +16,7 @@ import org.apache.commons.beanutils.BeanComparator;
 import org.apache.commons.collections.comparators.ComparatorChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -35,7 +37,10 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.common.consts.LogConstants;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
@@ -43,12 +48,13 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleRemindApi;
+import com.okdeer.mall.activity.coupons.mq.constants.SafetyStockTriggerTopic;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRecordMapper;
+import com.okdeer.mall.activity.mq.constants.ActivityCouponsTopic;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
@@ -221,8 +227,8 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	// End added by maojj 2016-10-18
 	
 	// Begin V2.1 added by maojj 2017-02-22
-	@Reference(version = "1.0.0", check = false)
-	private ActivitySaleRemindApi activitySaleRemindApi;
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
 	// End V2.1 added by maojj 2017-02-22
 
 	@Override
@@ -971,7 +977,18 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			stockManagerServiceApi.updateStock(stockAdjustVo);
 			// Begin V2.1 added by maojj 2017-02-22
 			// 特惠商品下单，增加库存提醒
-			activitySaleRemindApi.sendSafetyWarning(reqDto.getContext().getActivitySkuIds());
+			Map<String,String> preferenceMap = new HashMap<String,String>();
+			for(String activitySkuId : reqDto.getContext().getActivitySkuIds()){
+				preferenceMap.put(activitySkuId, reqDto.getContext().getActivityId());
+			}
+			try {
+				if(!preferenceMap.isEmpty()){
+					MQMessage msg = new MQMessage(SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER, (Serializable)preferenceMap);
+					rocketMQProducer.sendMessage(msg);
+				}
+			} catch (Exception e) {
+				logger.error("发送库存提醒消息异常：{}",e);
+			}
 			// End V2.1 added by maojj 2017-02-22
 		}
 	}
@@ -1082,8 +1099,14 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			if(updateResult == 0){
 				throw new Exception("代金券已使用或者已过期");
 			}
-			// 修改代金券使用数量
-			activityCouponsMapper.updateActivityCouponsUsedNum(req.getActivityItemId());
+			// 发送消息修改代金券使用数量
+			ActivityCouponsBo couponsBo = new ActivityCouponsBo(req.getActivityItemId(), Integer.valueOf(1));
+			MQMessage anMessage = new MQMessage(ActivityCouponsTopic.TOPIC_COUPONS_COUNT, (Serializable) couponsBo);
+			try {
+				rocketMQProducer.sendMessage(anMessage);
+			} catch (Exception e) {
+				logger.error("发送代金券使用消息时发生异常，{}",e);
+			}
 		}
 	}
 

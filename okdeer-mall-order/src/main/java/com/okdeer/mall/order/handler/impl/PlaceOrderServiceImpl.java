@@ -1,5 +1,6 @@
 package com.okdeer.mall.order.handler.impl;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,6 +11,8 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,16 +34,21 @@ import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
+import com.okdeer.mall.activity.coupons.mq.constants.SafetyStockTriggerTopic;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRemindApi;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRecordMapper;
+import com.okdeer.mall.activity.mq.constants.ActivityCouponsTopic;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
@@ -78,6 +86,8 @@ import net.sf.json.JSONObject;
  */
 @Service("placeOrderService")
 public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto, PlaceOrderDto> {
+	
+	private static final Logger log = LoggerFactory.getLogger(PlaceOrderServiceImpl.class);
 
 	@Autowired
 	private TradeOrderBuilder tradeOrderBoBuilder;
@@ -163,8 +173,8 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 	
-	@Reference(version = "1.0.0", check = false)
-	private ActivitySaleRemindApi activitySaleRemindApi;
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -234,8 +244,14 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			if (updateResult == 0) {
 				throw new Exception("代金券已使用或者已过期");
 			}
-			// 修改代金券使用数量
-			activityCouponsMapper.updateActivityCouponsUsedNum(req.getActivityItemId());
+			// 发送消息修改代金券使用数量
+			ActivityCouponsBo couponsBo = new ActivityCouponsBo(req.getActivityItemId(), Integer.valueOf(1));
+			MQMessage anMessage = new MQMessage(ActivityCouponsTopic.TOPIC_COUPONS_COUNT, (Serializable) couponsBo);
+			try {
+				rocketMQProducer.sendMessage(anMessage);
+			} catch (Exception e) {
+				log.error("发送代金券使用消息时发生异常，{}",e);
+			}
 		}
 	}
 
@@ -369,8 +385,18 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				StockAdjustVo mallAdjustVo = buildMallStockAdjustVo(tradeOrder, parserBo);
 				stockManagerServiceApi.updateStock(mallAdjustVo);
 			}
-			// 增加库存提醒
-			activitySaleRemindApi.sendSafetyWarning(parserBo.getSkuIdList());
+			
+			try {
+				// 特惠商品，商品活动映射关系
+				Map<String,String> preferenceMap = parserBo.extraPreferenceMap();
+				if(preferenceMap != null && !preferenceMap.isEmpty()){
+					// 如果存在特惠商品，则发送库存提醒消息
+					MQMessage msg = new MQMessage(SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER, (Serializable)parserBo.extraPreferenceMap());
+					rocketMQProducer.sendMessage(msg);
+				}
+			} catch (Exception e) {
+				log.error("发送库存提醒消息异常：{}",e);
+			}
 		} else {
 			// 服务订单
 			StockAdjustVo servAdjustVo = buildMallServStockAdjustVo(tradeOrder, parserBo);

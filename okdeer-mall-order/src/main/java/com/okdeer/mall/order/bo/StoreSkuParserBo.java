@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -433,6 +434,12 @@ public class StoreSkuParserBo {
 		return totalAdd;
 	}
 	
+	/**
+	 * @Description: 提取非组合商品的id列表
+	 * @return   
+	 * @author maojj
+	 * @date 2017年2月23日
+	 */
 	public List<String> extraSkuListExcludeCombo(){
 		if(CollectionUtils.isEmpty(this.comboSkuIdList)){
 			return this.skuIdList;
@@ -444,6 +451,25 @@ public class StoreSkuParserBo {
 			}
 		}
 		return excludeComboList;
+	}
+	
+	/**
+	 * @Description: 提取特惠商品信息用于发送库存提醒消息
+	 * @return ， key:storeSkuId  value:saleId 特惠活动id
+	 * @author maojj
+	 * @date 2017年2月23日
+	 */
+	public Map<String,String> extraPreferenceMap(){
+		if(this.currentActivitySkuMap.isEmpty()){
+			return null;
+		}
+		Map<String,String> resultMap = new HashMap<String,String>();
+		ActivitySaleGoods saleGoods = null;
+		for(Entry<String, ActivitySaleGoods> entry : this.currentActivitySkuMap.entrySet()){
+			saleGoods = entry.getValue();
+			resultMap.put(saleGoods.getStoreSkuId(), saleGoods.getSaleId());
+		}
+		return resultMap;
 	}
 
 	public Map<String, List<String>> getActivitySkuMap() {
