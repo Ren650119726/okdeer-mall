@@ -597,6 +597,7 @@
 		<result column="user_phone" property="userPhone" jdbcType="VARCHAR" />		
 		<result column="complete_time" property="completeTime" jdbcType="TIMESTAMP" />
 		<result column="activity_type" property="activityType" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderActivityType" />
+		<result column="activity_id" property="activityId" jdbcType="VARCHAR" />
 		<result column="activity_name" property="activityName" jdbcType="VARCHAR" />
 		<result column="invitation_user_name" property="invitationUserName" jdbcType="VARCHAR" />
 		<result column="locate_address" property="locateAddress" jdbcType="VARCHAR" />
@@ -4736,8 +4737,8 @@
 				member.area_name as aArea_name,
 				member.address as memberAddress,
 				CONCAT(tol.area,tol.address) as area,
-				<!-- begin V2.1 add by zhulq 导出列表新增字段 -->
-				 CONCAT(locate.city_name,locate.area_name,locate.area_ext) as locate_address,
+				<!-- begin V2.1 add by zhulq 导出列表新增字段 --> 
+				CONCAT(IFNULL(locate.provice_name,''),IFNULL(locate.city_name,''),IFNULL(locate.area_name,''),IFNULL(locate.area_ext,'')) as locate_address,
 				tr.order_resource,
 				tr.income,
 				tr.activity_id,
@@ -4904,6 +4905,7 @@
 	          tr.order_no,
 	          tr.type,
 	          tr.create_time,
+	          tr.activity_id,
 	          op.pay_type,
 	          op.pay_time,
 	          tr.user_id,
@@ -4926,11 +4928,11 @@
               END AS complete_time,
               tr.order_resource,
               locate.city_name,
-              CONCAT(locate.provice_name,locate.city_name,locate.area_name,locate.area_ext) AS locate_address	
+              CONCAT(IFNULL(locate.provice_name,''),IFNULL(locate.city_name,''),IFNULL(locate.area_name,''),IFNULL(locate.area_ext,'')) AS locate_address	
         FROM  trade_order tr
         LEFT JOIN trade_order_pay op ON tr.id = op.order_id
         LEFT JOIN trade_order_item tri ON tr.id = tri.order_id
-        LEFT JOIN trade_order_refunds trf ON tr.id = trf.order_id
+     <!--    LEFT JOIN trade_order_refunds trf ON tr.id = trf.order_id -->
         LEFT JOIN activity_coupons ac ON ac.id = tr.activity_id
         LEFT JOIN sys_user_invitation_record suir ON suir.sys_buyer_user_id = tr.user_id
         LEFT JOIN sys_user_invitation_code suic ON suir.invitation_code_id = suic.id
@@ -5050,7 +5052,7 @@
               WHEN trade.type = 4 THEN locate.city_name 
 		      ELSE ''
 		END AS city_name,
-		CONCAT(locate.provice_name,locate.city_name,locate.area_name,locate.area_ext) as location,
+		CONCAT(IFNULL(locate.provice_name,''),IFNULL(locate.city_name,''),IFNULL(locate.area_name,''),IFNULL(locate.area_ext,'')) as location,
 		trade.update_time
 		<!-- end add by zhulq 订单所属城市 和定位地址 -->      
 		FROM trade_order trade
