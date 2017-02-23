@@ -99,6 +99,7 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
@@ -5257,7 +5258,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (StringUtils.isNotEmpty(cityName)) {
 			cityName = cityName.trim();
 			params.put("cityName", cityName);
-		}
+		} 
 		result = tradeOrderMapper.selectServiceStoreListForOperate(params);
 		// End V2.1.0 added by luosm 20170215
 		// result = tradeOrderMapper.selectServiceStoreListForOperate(params);
