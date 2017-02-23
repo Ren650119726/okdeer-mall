@@ -67,6 +67,9 @@ import com.okdeer.mall.order.constant.OrderMsgConstant;
 import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
 import com.okdeer.mall.order.vo.RechargeCouponVo;
+import com.okdeer.mall.system.entity.SysUserInvitationCode;
+import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
+import com.okdeer.mall.system.service.InvitationCodeService;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
@@ -122,6 +125,15 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Autowired
 	ActivityCouponsThirdCodeMapper activityCouponsThirdCodeMapper;
 	
+	@Autowired
+	InvitationCodeService invitationCodeService;
+	
+	/**
+	 * 邀请码mapper
+	 */
+	@Autowired
+	private SysUserInvitationCodeMapper sysUserInvitationCodeMapper;
+	
 	@Reference(version = "1.0.0", check = false)
 	private IPayTradeServiceApi payTradeServiceApi;
 	
@@ -149,8 +161,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Reference(version = "1.0.0")
 	private ISmsService smsService;
 	
-	@Autowired
-	private ColumnAdvertService columnAdvertService;
 	@Autowired
 	private SysBuyerExtService sysBuyerExtService;
 	@Autowired
@@ -409,11 +419,34 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * 注册送完代金劵后将预代金劵送到用户的账户中
 	 *  @param userId 用户id
 	 */
-	public void insertCopyRecords(String userId,String phone){
+	public void insertCopyRecords(String userId,String phone,String machineCode){
 		try{
-			List<ActivityCouponsRecord> list = activityCouponsRecordBeforeMapper.getCopyRecords(userId,new Date(),phone);
+			List<ActivityCouponsRecordBefore> list = activityCouponsRecordBeforeMapper.getCopyRecords(userId,new Date(),phone);
 			if(list != null && list.size() > 0 ){
-				activityCouponsRecordMapper.insertSelectiveBatch(list);
+				activityCouponsRecordMapper.insertBatchRecordByBefore(list);
+				
+				//循环代金券记录，找出最后一次有效的邀请人领取记录
+				ActivityCouponsRecordBefore  lastR = null;
+				for(ActivityCouponsRecordBefore record : list){
+					if(StringUtils.isBlank(record.getInviteUserId())){
+						continue;
+					}
+					//第一个有邀请人 的预领取记录记录到 临时对象中 //当后面的预领取记录记录 领取时候大 已后面的领取邀请人为准
+					if(lastR == null || (record.getCollectTime().getTime() > lastR.getCollectTime().getTime())){
+						lastR = record;
+					}
+				}
+				//存在记录 说明该用户存在 邀请人，添加邀请人记录
+				if(lastR != null){
+					//根据用户id或用户邀请码，所以InviteUserId 可以存储用户id或邀请码
+					List<SysUserInvitationCode> listCode= sysUserInvitationCodeMapper
+							.findInvitationByIdCode(lastR.getInviteUserId(), lastR.getInviteUserId());
+					//存在邀请码及添加第一个进去，防止数据库中存在多个
+					if(listCode != null && listCode.size() > 0){
+						invitationCodeService.saveInvatationRecord(listCode.get(0), userId, machineCode);
+					}
+				}
+				
 			}
 		}catch (Exception e) {
 			//捕获异常不影响注册流程

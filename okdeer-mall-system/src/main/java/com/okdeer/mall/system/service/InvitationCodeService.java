@@ -33,4 +33,11 @@ public interface InvitationCodeService {
      * @return 用户邀请码实体
      */
     SysUserInvitationCode findInvitationCodeByUserId(String userId, InvitationUserType userType) throws ServiceException;
+    /**
+	 * 保存邀请码记录 
+	 * @param invatitationInfo 邀请人邀请码记录
+	 * @param userId 被邀请人id
+	 * @param machineCode 机器编码
+	 */
+    public int saveInvatationRecord(SysUserInvitationCode invatitationInfo, String userId, String machineCode)throws Exception;
 }
