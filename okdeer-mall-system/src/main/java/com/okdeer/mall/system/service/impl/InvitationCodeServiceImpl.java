@@ -304,13 +304,25 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 			// 邀请码不存在
 			return 1;
 		}
-
+		return  saveInvatationRecord(invatitationInfo, userId, machineCode);
+	}
+	
+	/**
+	 * 保存邀请码记录 
+	 * @param invatitationInfo 邀请人邀请码记录
+	 * @param userId 被邀请人id
+	 * @param machineCode 机器编码
+	 * @tuzhd
+	 * @return
+	 * @throws Exception 
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public int saveInvatationRecord(SysUserInvitationCode invatitationInfo, String userId, String machineCode) throws Exception{
 		SysUserInvitationRecord records = this.sysUserInvitationRecordMapper.findInvitationRecordByUserId(userId);
 		if (records != null) {
 			// 已经被邀请过，不能再次填写邀请记录
 			return 2;
 		}
-
 		// 创建邀请记录表
 		SysUserInvitationRecord invitationRecord = new SysUserInvitationRecord();
 		invitationRecord.setId(UuidUtils.getUuid());

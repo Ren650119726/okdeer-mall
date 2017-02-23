@@ -4899,7 +4899,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.createOrder);
 
 		// begin add by zengjz 2016-10-12
-		// 到店消费订单、服务订单商家版不发送消息
 		if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER
 				&& tradeOrder.getType() != OrderTypeEnum.STORE_CONSUME_ORDER) {
 			tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.createOrder);
@@ -5107,23 +5106,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 判断cityName是否为空
 		if (StringUtils.isNotEmpty(cityName)) {
 			cityName = cityName.trim();
-			Address address = addressService.getByName(cityName);
-			// 当订单类型为服务订单时
-			if (params.get("type") == OrderTypeEnum.SERVICE_STORE_ORDER) {
-				params.put("cityName", cityName);
-				result = tradeOrderMapper.selectServiceStoreListForOperate(params);
-			} else if (params.get("type") == OrderTypeEnum.STORE_CONSUME_ORDER) {
-				if (address != null) {
-					List<String> list = tradeOrderMapper.findOrderIds(String.valueOf(address.getId()));
-					if (CollectionUtils.isNotEmpty(list)) {
-						params.put("ids", list);
-						result = tradeOrderMapper.selectServiceStoreListForOperate(params);
-					}
-				}
-			}
-		} else {
-			result = tradeOrderMapper.selectServiceStoreListForOperate(params);
-		}
+			params.put("cityName", cityName);
+		} 
+		result = tradeOrderMapper.selectServiceStoreListForOperate(params);
 		// End V2.1.0 added by luosm 20170215
 		// result = tradeOrderMapper.selectServiceStoreListForOperate(params);
 		if (result == null) {
@@ -6777,5 +6762,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public PageUtils<TradeOrder> findUserOrders(UserOrderParamBo paramBo) {
 		PageHelper.startPage(paramBo.getPageNumber(), paramBo.getPageSize(), true);
 		return new PageUtils<TradeOrder>(tradeOrderMapper.findUserOrders(paramBo));
+	}
+
+	@Override
+	public List<TradeOrderRefunds> findRefundsList(List<String> orderIds) {
+		return tradeOrderRefundsMapper.selectByOrderIds(orderIds);
 	}
 }
