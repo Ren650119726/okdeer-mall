@@ -48,4 +48,14 @@ public interface InvitationCodeService {
 	 */
 	String findInvitationNameByUserId(String userId) throws ServiceException;
 	// End V2.1.0 added by luosm 20170215
+    
+    /**
+	 * 保存邀请码记录 
+	 * @param invatitationInfo 邀请人邀请码记录
+	 * @param userId 被邀请人id
+	 * @param machineCode 机器编码
+	 * @author tuzhd 2017-2-23修改添加机器编码
+	 */
+    public int saveInvatationRecord(SysUserInvitationCode invatitationInfo, String userId, String machineCode)throws Exception;
+
 }
