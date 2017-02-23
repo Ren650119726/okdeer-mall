@@ -589,6 +589,26 @@
         )
      </foreach>
   </insert> 
+  <!--  从预领取记录中批量插入代金券  tuzhd -->
+  <insert id="insertBatchRecordByBefore" parameterType="list" >
+    insert into activity_coupons_record
+        (id, collect_type, coupons_id, coupons_collect_id, collect_time, 
+         collect_user_id, valid_time, status, order_id, room_id) values
+     <foreach collection="list" item="item" index="index" separator="," >
+       (#{item.id,jdbcType=VARCHAR},
+        #{item.collectType,jdbcType=BIT},
+        #{item.couponsId,jdbcType=VARCHAR},
+        #{item.couponsCollectId,jdbcType=VARCHAR},
+        #{item.collectTime,jdbcType=TIMESTAMP},
+        #{item.collectUserId,jdbcType=VARCHAR},
+        #{item.validTime,jdbcType=TIMESTAMP},
+        #{item.status,jdbcType=BIT},
+        #{item.orderId,jdbcType=VARCHAR},
+        #{item.roomId,jdbcType=VARCHAR}
+        )
+     </foreach>
+  </insert> 
+  
   
     <!-- zhulq:根据代金券id、活动id、活动类型和领取人id，查询其他人代金券领取记录信息 -->
 <!-- 	<select id="selectOtherCountByParams" resultType="int" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">

@@ -10,6 +10,7 @@ import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
@@ -136,6 +137,14 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @return
 	 */
 	public int insertSelectiveBatch(List<ActivityCouponsRecord> list);
+	
+	/**
+	 * DESC: 从预领取记录中批量插入代金券 
+	 * @author tuzhd
+	 * @param lstRecords
+	 * @return
+	 */
+	public int insertBatchRecordByBefore(List<ActivityCouponsRecordBefore> list);
 
 	/**
 	 * 
