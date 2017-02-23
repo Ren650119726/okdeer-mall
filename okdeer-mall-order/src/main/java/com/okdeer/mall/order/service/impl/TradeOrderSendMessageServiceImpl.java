@@ -54,6 +54,32 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
         OrderStatusEnum status = tradeOrder.getStatus();
         
         PushMsgDto msgDto = new PushMsgDto();
+        
+        //根据订单的不同状态组织不同的消息通知内容
+        if(status == OrderStatusEnum.DROPSHIPPING) {
+            //卖家已接单（待发货）
+            msgDto.setMsgNotifyContent("卖家已接单");
+            msgDto.setMsgDetailContent("卖家已接单   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));          
+        } else if (status == OrderStatusEnum.TO_BE_SIGNED) {
+            //卖家已发货
+            msgDto.setMsgNotifyContent("卖家已发货");
+            msgDto.setMsgDetailContent("卖家已发货   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
+        } else if (status == OrderStatusEnum.CANCELED) {
+            //已取消
+            msgDto.setMsgNotifyContent("订单已取消");
+            msgDto.setMsgDetailContent("订单已取消   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
+        } else if (status == OrderStatusEnum.REFUSED) {
+            //已拒收
+            msgDto.setMsgNotifyContent("买家拒收");
+            msgDto.setMsgDetailContent("买家拒收   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
+        } else if (status == OrderStatusEnum.HAS_BEEN_SIGNED) {
+            //订单完成
+            msgDto.setMsgNotifyContent("买家已签收");
+            msgDto.setMsgDetailContent("买家已签收   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
+        } else {
+            return;
+        }
+        
         //主键
         msgDto.setId(UuidUtils.getUuid());
         //发送者ID
@@ -93,28 +119,6 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
         userList.add(userDto);
         msgDto.setUserList(userList);
         
-        //根据订单的不同状态组织不同的消息通知内容
-        if(status == OrderStatusEnum.DROPSHIPPING) {
-            //卖家已接单（待发货）
-            msgDto.setMsgNotifyContent("卖家已接单");
-            msgDto.setMsgDetailContent("卖家已接单   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));          
-        } else if (status == OrderStatusEnum.TO_BE_SIGNED) {
-            //卖家已发货
-            msgDto.setMsgNotifyContent("卖家已发货");
-            msgDto.setMsgDetailContent("卖家已发货   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
-        } else if (status == OrderStatusEnum.CANCELED) {
-            //已取消
-            msgDto.setMsgNotifyContent("订单已取消");
-            msgDto.setMsgDetailContent("订单已取消   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
-        } else if (status == OrderStatusEnum.REFUSED) {
-            //已拒收
-            msgDto.setMsgNotifyContent("买家拒收");
-            msgDto.setMsgDetailContent("买家拒收   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
-        } else if (status == OrderStatusEnum.HAS_BEEN_SIGNED) {
-            //订单完成
-            msgDto.setMsgNotifyContent("买家已签收");
-            msgDto.setMsgDetailContent("买家已签收   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
-        }
         LOGGER.info("发送消息体为：{}", JSONObject.fromObject(msgDto).toString());
         
         //消息发送
