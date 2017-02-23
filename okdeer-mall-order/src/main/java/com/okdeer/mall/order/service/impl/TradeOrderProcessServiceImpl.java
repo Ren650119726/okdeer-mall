@@ -689,21 +689,22 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 			return;
 		}
 		locate.setId(UuidUtils.getUuid());
+		Address address = null;
 		if (StringUtils.isNotBlank(locate.getProviceName())) {
-			Address address = addressService.getByName(locate.getProviceName());
-			if (null != address) {
+			address = addressService.getByName(locate.getProviceName());
+			if (null != address && null != address.getId()) {
 				locate.setProvinceId(address.getId().toString());
 			}
 		}
 		if (StringUtils.isNotBlank(locate.getCityName())) {
-			Address address = addressService.getByName(locate.getCityName());
-			if (null != address) {
+			address = addressService.getByName(locate.getCityName());
+			if (null != address && null != address.getId()) {
 				locate.setCityId(address.getId().toString());
 			}
 		}
 		if (StringUtils.isNotEmptyAll(locate.getCityId(), locate.getAreaName())) {
-			Address address = addressService.getByName(Long.valueOf(locate.getCityId()), locate.getAreaName());
-			if (null != address) {
+			address = addressService.getByName(Long.valueOf(locate.getCityId()), locate.getAreaName());
+			if (null != address && null != address.getId()) {
 				locate.setAreaId(address.getId().toString());
 			}
 		}
