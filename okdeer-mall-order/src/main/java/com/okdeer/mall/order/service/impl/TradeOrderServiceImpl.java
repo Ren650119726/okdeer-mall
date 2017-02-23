@@ -5359,7 +5359,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
 							typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
 						}
+						//begin add by zhulq 如果是充值订单  所属城市用 locateCityName 来判断  
 						params.put("locateCityName", (String) params.get("cityName"));
+						//begin add by zhulq 如果是充值订单  所属城市用 locateCityName 来判断
 						break;
 					default:
 						break;
