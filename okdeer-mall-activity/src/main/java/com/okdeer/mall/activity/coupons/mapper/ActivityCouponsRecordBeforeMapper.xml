@@ -24,7 +24,7 @@
      <result column="collect_user" property="collectUser" jdbcType="VARCHAR" />
   </resultMap>
   <!-- 返回到代金劵预领取记录字段  tuzhiding  -->
-  <select id="getCopyRecords" resultMap="BaseResultMap" >
+  <select id="getCopyRecords" resultMap="BaseBeforeMap" >
     SELECT 
     	DISTINCT
     	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 

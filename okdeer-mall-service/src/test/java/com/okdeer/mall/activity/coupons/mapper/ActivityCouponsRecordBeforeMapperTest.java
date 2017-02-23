@@ -11,7 +11,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.Application;
-import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
@@ -23,7 +23,7 @@ public class ActivityCouponsRecordBeforeMapperTest {
 	@Test
 	public void testGetCopyRecords() {
 		try {
-			List<ActivityCouponsRecord> list = activityCouponsRecordBeforeMapper.getCopyRecords("8a94e446584906ee0158490c33f10008", new Date(), "15813820637");
+			List<ActivityCouponsRecordBefore> list = activityCouponsRecordBeforeMapper.getCopyRecords("8a94e446584906ee0158490c33f10008", new Date(), "15813820637");
 			System.out.println(list.size());
 		} catch (ServiceException e) {
 			// TODO Auto-generated catch block
