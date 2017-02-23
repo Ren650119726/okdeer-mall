@@ -892,17 +892,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<PhysicsOrderVo> findOrderBackStageNew(PhysicsOrderVo vo, int pageNumber, int pageSize)
 			throws ServiceException {
-		// Begin V2.1.0 added by luosm 20170215
+		// Begin V2.1.0 added by luosm 20170222
 		if (StringUtils.isNotEmpty(vo.getCityName())) {
-			Address address = addressService.getByName(vo.getCityName());
-			if (address != null) {
-				List<String> list = this.tradeOrderLogisticsMapper.selectByCityId(String.valueOf(address.getId()));
-				String[] ids = new String[list.size()];
-				ids = list.toArray(ids);
-				vo.setIds(list.toArray(ids));
-			}
+			vo.setCityName(vo.getCityName().trim());
 		}
-		// End V2.1.0 added by luosm 20170215
+		// End V2.1.0 added by luosm 2017022
 
 		// 避免数组ids不为空，但是长度为0的情况
 		if (vo.getIds() != null && vo.getIds().length <= 0) {
@@ -971,11 +965,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 代理商集合
 		List<PsmsAgent> agentList = null;
 
-		// Begin V2.1.0 added by luosm 20170215
-		// 物流信息集合
-		List<TradeOrderLogistics> addressList = null;
-		// End V2.1.0 added by luosm 20170215
-
 		if (CollectionUtils.isNotEmpty(storeIds)) {
 			storeInfoList = this.storeInfoService.selectByIds(storeIds);
 		}
@@ -985,12 +974,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (CollectionUtils.isNotEmpty(agentIds)) {
 			agentList = this.psmsAgentServiceApi.selectByIds(agentIds);
 		}
-
-		// Begin V2.1.0 added by luosm 20170215
-		if (CollectionUtils.isNotEmpty(orderIds)) {
-			addressList = this.tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
-		}
-		// End V2.1.0 added by luosm 20170215
 
 		// 循环将对应信息加入到订单实体中
 		for (PhysicsOrderVo order : result) {
@@ -1022,20 +1005,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 
 			// Begin V2.1.0 added by luosm 20170215
-			if (CollectionUtils.isNotEmpty(addressList)) {
-				for (TradeOrderLogistics tradeOrderLogistics : addressList) {
-					if (tradeOrderLogistics.getCityId() != null && StringUtils.isNotEmpty(order.getId())
-							&& order.getId().equals(tradeOrderLogistics.getOrderId())) {
-						Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
-						order.setCityName(address.getName());
-					}
-					if (tradeOrderLogistics != null && StringUtils.isNotEmpty(order.getId())
-							&& order.getId().equals(tradeOrderLogistics.getOrderId())) {
-						String area = (tradeOrderLogistics.getArea() != null ? tradeOrderLogistics.getArea() : "");
-						order.setAddress(area + tradeOrderLogistics.getAddress());
-					}
-				}
-			}
+			String aProviceName = order.getaProviceName() == null ? "" : order.getaProviceName();
+			String aCityName = order.getaCityName() == null ? "" : order.getaCityName();
+			String aAreaName = order.getaAreaName() == null ? "" : order.getaAreaName();
+			String address = order.getMemberAddress() == null ? "" : order.getMemberAddress();
+			// 所属城市
+			order.setCityName(aCityName);
+			// 收货地址
+			order.setAddress(aProviceName + aCityName + aAreaName + address);
 			// End V2.1.0 added by luosm 20170215
 		}
 	}
@@ -5129,16 +5106,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		String cityName = (String) params.get("cityName");
 		// 判断cityName是否为空
 		if (StringUtils.isNotEmpty(cityName)) {
+			cityName = cityName.trim();
 			Address address = addressService.getByName(cityName);
 			// 当订单类型为服务订单时
 			if (params.get("type") == OrderTypeEnum.SERVICE_STORE_ORDER) {
-				if (address != null) {
-					List<String> list = this.tradeOrderLogisticsMapper.selectByCityId(String.valueOf(address.getId()));
-					if (CollectionUtils.isNotEmpty(list)) {
-						params.put("ids", list);
-						result = tradeOrderMapper.selectServiceStoreListForOperate(params);
-					}
-				}
+				params.put("cityName", cityName);
+				result = tradeOrderMapper.selectServiceStoreListForOperate(params);
 			} else if (params.get("type") == OrderTypeEnum.STORE_CONSUME_ORDER) {
 				if (address != null) {
 					List<String> list = tradeOrderMapper.findOrderIds(String.valueOf(address.getId()));
@@ -5152,7 +5125,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			result = tradeOrderMapper.selectServiceStoreListForOperate(params);
 		}
 		// End V2.1.0 added by luosm 20170215
-		//result = tradeOrderMapper.selectServiceStoreListForOperate(params);
+		// result = tradeOrderMapper.selectServiceStoreListForOperate(params);
 		if (result == null) {
 			result = new ArrayList<PhysicsOrderVo>();
 		} else {
@@ -5260,20 +5233,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// End 重构4.1 add by wusw 20160720
 
 		// Begin V2.1.0 added by luosm 20170215
-		TradeOrderLogistics tradeOrderLogistics = null;
-		if (StringUtils.isNotEmpty(vo.getId())) {
-			tradeOrderLogistics = tradeOrderLogisticsMapper.selectByOrderId(vo.getId());
-			if (tradeOrderLogistics != null && StringUtils.isNotEmpty(tradeOrderLogistics.getCityId())) {
-				Address address = addressService.getAddressById(Long.valueOf(tradeOrderLogistics.getCityId()));
-				if (address != null) {
-					vo.setCityName(address.getName());
-				}
-			}
-			if (tradeOrderLogistics != null && vo.getId().equals(tradeOrderLogistics.getOrderId())) {
-				String area = (tradeOrderLogistics.getArea() != null ? tradeOrderLogistics.getArea() : "");
-				vo.setAddress(area + tradeOrderLogistics.getAddress());
-			}
-		}
+		String aProviceName = vo.getaProviceName() == null ? "" : vo.getaProviceName();
+		String aCityName = vo.getaCityName() == null ? "" : vo.getaCityName();
+		String aAreaName = vo.getaAreaName() == null ? "" : vo.getaAreaName();
+		String address = vo.getMemberAddress() == null ? "" : vo.getMemberAddress();
+		// 所属城市
+		vo.setCityName(aCityName);
+		// 收货地址
+		vo.setAddress(aProviceName + aCityName + aAreaName + address);
 		// End V2.1.0 added by luosm 20170215
 	}
 
@@ -5359,9 +5326,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
 							typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
 						}
-						//begin add by zhulq 如果是充值订单  所属城市用 locateCityName 来判断  
+						// begin add by zhulq 如果是充值订单 所属城市用 locateCityName 来判断
 						params.put("locateCityName", (String) params.get("cityName"));
-						//begin add by zhulq 如果是充值订单  所属城市用 locateCityName 来判断
+						// begin add by zhulq 如果是充值订单 所属城市用 locateCityName 来判断
 						break;
 					default:
 						break;
@@ -5381,27 +5348,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 				params.put("status", statusList);
 			}
-			/*// 订单来源转换，注意线上订单包括云上城app和微信
-			if (params.get("orderResource") == null || StringUtils.isBlank(params.get("orderResource").toString())) {
-				params.remove("orderResource");
-			} else {
-				List<OrderResourceEnum> orderResourceList = new ArrayList<OrderResourceEnum>();
-				switch (params.get("orderResource").toString()) {
-					case "0":
-						orderResourceList.add(OrderResourceEnum.WECHAT);
-						orderResourceList.add(OrderResourceEnum.YSCAPP);
-						// Begin V2.0.0 add by wusw 20170109
-						orderResourceList.add(OrderResourceEnum.CVSAPP);
-						// End V2.0.0 add by wusw 20170109
-						break;
-					case "1":
-						orderResourceList.add(OrderResourceEnum.POS);
-						break;
-					default:
-						break;
-				}
-				params.put("orderResource", orderResourceList);
-			}*/
+			/*
+			 * // 订单来源转换，注意线上订单包括云上城app和微信 if (params.get("orderResource") == null ||
+			 * StringUtils.isBlank(params.get("orderResource").toString())) { params.remove("orderResource"); } else {
+			 * List<OrderResourceEnum> orderResourceList = new ArrayList<OrderResourceEnum>(); switch
+			 * (params.get("orderResource").toString()) { case "0": orderResourceList.add(OrderResourceEnum.WECHAT);
+			 * orderResourceList.add(OrderResourceEnum.YSCAPP); // Begin V2.0.0 add by wusw 20170109
+			 * orderResourceList.add(OrderResourceEnum.CVSAPP); // End V2.0.0 add by wusw 20170109 break; case "1":
+			 * orderResourceList.add(OrderResourceEnum.POS); break; default: break; } params.put("orderResource",
+			 * orderResourceList); }
+			 */
 			if (params.get("payType") == null || StringUtils.isBlank(params.get("payType").toString())) {
 				params.remove("payType");
 			} else {
