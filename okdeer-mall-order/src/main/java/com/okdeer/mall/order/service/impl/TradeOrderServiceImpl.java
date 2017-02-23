@@ -173,6 +173,7 @@ import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
+import com.okdeer.mall.order.enums.PreferentialType;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.enums.SendMsgType;
 import com.okdeer.mall.order.mapper.TradeOrderCommentMapper;
@@ -194,6 +195,7 @@ import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
+import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
@@ -216,12 +218,14 @@ import com.okdeer.mall.order.vo.TradeOrderStatisticsVo;
 import com.okdeer.mall.order.vo.TradeOrderStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderVo;
 import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
+import com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO;
 import com.okdeer.mall.system.entity.SysUserInvitationRecord;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 import com.okdeer.mall.system.mapper.SysUserInvitationRecordMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
+import com.okdeer.mall.system.service.InvitationCodeServiceApi;
 import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
@@ -361,6 +365,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	@Reference(version = "1.0.0", check = false)
 	IPayTradeServiceApi payTradeServiceApi;
+
+	/***
+	 * 邀请信息
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private InvitationCodeServiceApi invitationCodeService;
+
+	@Reference(version = "1.0.0", check = false)
+	private TradeOrderRefundsServiceApi tradeOrderRefundsService;
 
 	/**
 	 * 特惠活动Mapper
@@ -869,7 +882,145 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (vo.getIds() != null && vo.getIds().length <= 0) {
 			vo.setIds(null);
 		}
+		// Begin V2.1.0 added by luosm 20170223
+		if (StringUtils.isNotEmpty(vo.getCityName())) {
+			vo.setCityName(vo.getCityName().trim());
+		}
+		// End V2.1.0 added by luosm 20170223
 		List<PhysicsOrderVo> result = tradeOrderMapper.selectOrderBackStage(vo);
+
+		// Begin V2.1.0 added by luosm 20170223
+		// 如果有订单信息
+		if (CollectionUtils.isNotEmpty(result)) {
+			// 订单ID集合
+			List<String> orderIds = new ArrayList<String>();
+			// 用户ID集合
+			List<String> userIds = new ArrayList<String>();
+
+			// 活动id集合
+			for (PhysicsOrderVo order : result) {
+				if (StringUtils.isNotEmpty(order.getId())) {
+					orderIds.add(order.getId());
+				}
+				if (StringUtils.isNotEmpty(order.getUserId())) {
+					userIds.add(order.getUserId());
+				}
+			}
+
+			List<SysUserInvitationLoginNameVO> inviteNameLists = new ArrayList<SysUserInvitationLoginNameVO>();
+			if (CollectionUtils.isNotEmpty(userIds)) {
+				inviteNameLists = invitationCodeService.selectLoginNameByUserId(userIds);
+			}
+
+			List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
+			List<ActivityInfoVO> activityList = null;
+			if (CollectionUtils.isNotEmpty(orderIds)) {
+				try {
+					tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				activityList = this.findActivityInfo(orderIds);
+			}
+
+			for (PhysicsOrderVo orderVo : result) {
+				// 获取邀请人姓名
+				if (CollectionUtils.isNotEmpty(inviteNameLists)) {
+					for (SysUserInvitationLoginNameVO loginNameVO : inviteNameLists) {
+						if (StringUtils.isNotEmpty(loginNameVO.getsLoginName())
+								&& StringUtils.isNotEmpty(loginNameVO.getUserId())
+								&& StringUtils.isNotEmpty(orderVo.getUserId())
+								&& orderVo.getUserId().equals(loginNameVO.getUserId())) {
+							orderVo.setInvitationUserName(loginNameVO.getsLoginName());
+						}
+
+						if (StringUtils.isNotEmpty(loginNameVO.getbLoginName())
+								&& StringUtils.isNotEmpty(loginNameVO.getUserId())
+								&& StringUtils.isNotEmpty(orderVo.getUserId())
+								&& orderVo.getUserId().equals(loginNameVO.getUserId())) {
+							orderVo.setInvitationUserName(loginNameVO.getbLoginName());
+						}
+					}
+				}
+
+				// 优惠类型
+				if (orderVo.getActivityType() != null && orderVo.getActivityType().ordinal() != 0) {
+					if (orderVo.getIncome() != null && orderVo.getActualAmount().compareTo(orderVo.getIncome()) == -1) {
+						orderVo.setPreferentialType(PreferentialType.PLATFORM);// 0为平台优惠
+					} else if (orderVo.getIncome() != null
+							&& orderVo.getActualAmount().compareTo(orderVo.getIncome()) == 0) {
+						orderVo.setPreferentialType(PreferentialType.STORE);// 1为店铺优惠
+					}
+				}
+
+				// 活动类型
+				if (CollectionUtils.isNotEmpty(activityList)) {
+					for (ActivityInfoVO activityInfoVO : activityList) {
+						if (StringUtils.isNotEmpty(activityInfoVO.getOrderId())
+								&& StringUtils.isNotEmpty(orderVo.getId())
+								&& orderVo.getId().equals(activityInfoVO.getOrderId())) {
+							if (activityInfoVO.getActivityType() != null) {
+								orderVo.setActivityType(activityInfoVO.getActivityType());
+							}
+							if (StringUtils.isNotEmpty(activityInfoVO.getActivityName())) {
+								orderVo.setActivityName(activityInfoVO.getActivityName());
+							}
+						}
+					}
+				}
+
+				if (StringUtils.isNotEmpty(orderVo.getId()) && (orderVo.getOrderType() == OrderTypeEnum.PHYSICAL_ORDER
+						|| orderVo.getOrderType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
+
+					if (CollectionUtils.isNotEmpty(tradeOrderRefundsList)) {
+						orderVo.setWhetherRefund(WhetherEnum.whether);
+						BigDecimal refundPrice = new BigDecimal("0");
+						BigDecimal refundPreferentialPrice = new BigDecimal("0");
+						for (TradeOrderRefunds tradeOrderRefunds : tradeOrderRefundsList) {
+							if (StringUtils.isNotEmpty(tradeOrderRefunds.getOrderId())
+									&& StringUtils.isNotEmpty(orderVo.getId())
+									&& orderVo.getId().equals(tradeOrderRefunds.getOrderId())) {
+								if (tradeOrderRefunds.getTotalAmount() != null) {
+									refundPrice = refundPrice.add(tradeOrderRefunds.getTotalAmount());
+									// 退款总金额
+									orderVo.setRefundsAmount(refundPrice);
+								}
+								if (tradeOrderRefunds.getTotalPreferentialPrice() != null) {
+									refundPreferentialPrice = refundPreferentialPrice
+											.add(tradeOrderRefunds.getTotalPreferentialPrice());
+									// 退款优惠金额
+									orderVo.setBackFillAmount(refundPreferentialPrice);
+								}
+							}
+						}
+					} else {
+						orderVo.setWhetherRefund(WhetherEnum.not);
+					}
+				}
+
+				String lProviceName = orderVo.getlProviceName() == null ? "" : orderVo.getlProviceName();
+				String lCityName = orderVo.getlCityName() == null ? "" : orderVo.getlCityName();
+				String lAreaName = orderVo.getlAreaName() == null ? "" : orderVo.getlAreaName();
+				String areaExt = orderVo.getAreaExt() == null ? "" : orderVo.getAreaExt();
+
+				// 定位基点
+				orderVo.setLocateAddress(lProviceName + lCityName + lAreaName + areaExt);
+
+				String aProviceName = orderVo.getaProviceName() == null ? "" : orderVo.getaProviceName();
+				String aCityName = orderVo.getaCityName() == null ? "" : orderVo.getaCityName();
+				String aAreaName = orderVo.getaAreaName() == null ? "" : orderVo.getaAreaName();
+				String address = orderVo.getAddress() == null ? "" : orderVo.getAddress();
+
+				// 所属城市
+				orderVo.setCityName(aCityName);
+				// 收货地址
+				orderVo.setAddress(aProviceName + aCityName + aAreaName + address);
+
+				// 订单来源
+				orderVo.setOrderResource(orderVo.getOrderResource());
+			}
+		}
+		// End V2.1.0 added by luosm 20170223
 		return new PageUtils<PhysicsOrderVo>(result);
 	}
 
@@ -5118,12 +5269,183 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				if (params.get("type") == OrderTypeEnum.STORE_CONSUME_ORDER) {
 					this.convertOrderStatusDdxf(vo);
 				} else {
-					this.convertOrderStatus(vo);
+					// Begin V2.1.0 added by luosm 20170223
+					// 如果有订单信息
+					if (CollectionUtils.isNotEmpty(result)) {
+						// 订单ID集合
+						List<String> orderIds = new ArrayList<String>();
+						// 用户ID集合
+						List<String> userIds = new ArrayList<String>();
+
+						// 活动id集合
+						for (PhysicsOrderVo order : result) {
+							if (StringUtils.isNotEmpty(order.getId())) {
+								orderIds.add(order.getId());
+							}
+							if (StringUtils.isNotEmpty(order.getUserId())) {
+								userIds.add(order.getUserId());
+							}
+						}
+
+						List<SysUserInvitationLoginNameVO> inviteNameLists = new ArrayList<SysUserInvitationLoginNameVO>();
+						if (CollectionUtils.isNotEmpty(userIds)) {
+							inviteNameLists = invitationCodeService.selectLoginNameByUserId(userIds);
+						}
+
+						List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
+						List<ActivityInfoVO> activityList = null;
+						if (CollectionUtils.isNotEmpty(orderIds)) {
+							try {
+								tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							activityList = this.findActivityInfo(orderIds);
+						}
+						this.convertOrderStatusNew(vo, inviteNameLists, tradeOrderRefundsList, activityList);
+					}
 				}
 			}
 		}
 		return new PageUtils<PhysicsOrderVo>(result);
 	}
+
+	// Begin V2.1.0 added by luosm 20170223
+	/**
+	 *
+	 * @Description: 服务店订单状态和支付方式转换
+	 * @param vo
+	 * @return void
+	 * @author luosm
+	 * @date 2017年2月23日
+	 */
+	private void convertOrderStatusNew(PhysicsOrderVo vo, List<SysUserInvitationLoginNameVO> inviteNameLists,
+			List<TradeOrderRefunds> tradeOrderRefundsList, List<ActivityInfoVO> activityList) {
+		switch (vo.getStatus()) {
+			case DROPSHIPPING:
+				vo.setOrderStatusName("待派单");
+				break;
+			case TO_BE_SIGNED:
+				vo.setOrderStatusName("已派单");
+				break;
+			case HAS_BEEN_SIGNED:
+				vo.setOrderStatusName("服务完成");
+				break;
+			case CANCELED:
+			case CANCELING:
+			case TRADE_CLOSED:
+				vo.setOrderStatusName("交易关闭");
+				break;
+			case REFUSED:
+			case REFUSING:
+				vo.setOrderStatusName("订单取消");
+				break;
+			default:
+				vo.setOrderStatusName(vo.getStatus().getValue());
+				break;
+		}
+		if (vo.getPayWay() == PayWayEnum.PAY_ONLINE) {
+			if (vo.getPayType() != null) {
+				vo.setOrderPayTypeName(vo.getPayType().getValue());
+			}
+			// Begin 重构4.1 add by wusw 20160720
+		} else if (vo.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
+			vo.setOrderPayTypeName("线下确认价格并当面支付");
+		}
+		// End 重构4.1 add by wusw 20160720
+
+		// 获取邀请人姓名
+		if (CollectionUtils.isNotEmpty(inviteNameLists)) {
+			for (SysUserInvitationLoginNameVO loginNameVO : inviteNameLists) {
+				if (StringUtils.isNotEmpty(loginNameVO.getsLoginName())
+						&& StringUtils.isNotEmpty(loginNameVO.getUserId()) && StringUtils.isNotEmpty(vo.getUserId())
+						&& vo.getUserId().equals(loginNameVO.getUserId())) {
+					vo.setInvitationUserName(loginNameVO.getsLoginName());
+				}
+
+				if (StringUtils.isNotEmpty(loginNameVO.getbLoginName())
+						&& StringUtils.isNotEmpty(loginNameVO.getUserId()) && StringUtils.isNotEmpty(vo.getUserId())
+						&& vo.getUserId().equals(loginNameVO.getUserId())) {
+					vo.setInvitationUserName(loginNameVO.getbLoginName());
+				}
+			}
+		}
+
+		// 优惠类型
+		if (vo.getActivityType() != null && vo.getActivityType().ordinal() != 0) {
+			if (vo.getIncome() != null && vo.getActualAmount().compareTo(vo.getIncome()) == -1) {
+				vo.setPreferentialType(PreferentialType.PLATFORM);// 0为平台优惠
+			} else if (vo.getIncome() != null && vo.getActualAmount().compareTo(vo.getIncome()) == 0) {
+				vo.setPreferentialType(PreferentialType.STORE);// 1为店铺优惠
+			}
+		}
+
+		// 活动类型
+		if (CollectionUtils.isNotEmpty(activityList)) {
+			for (ActivityInfoVO activityInfoVO : activityList) {
+				if (StringUtils.isNotEmpty(activityInfoVO.getOrderId()) && StringUtils.isNotEmpty(vo.getId())
+						&& vo.getId().equals(activityInfoVO.getOrderId())) {
+					if (activityInfoVO.getActivityType() != null) {
+						vo.setActivityType(activityInfoVO.getActivityType());
+					}
+					if (StringUtils.isNotEmpty(activityInfoVO.getActivityName())) {
+						vo.setActivityName(activityInfoVO.getActivityName());
+					}
+				}
+			}
+		}
+
+		if (StringUtils.isNotEmpty(vo.getId()) && (vo.getOrderType() == OrderTypeEnum.PHYSICAL_ORDER
+				|| vo.getOrderType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
+
+			if (CollectionUtils.isNotEmpty(tradeOrderRefundsList)) {
+				vo.setWhetherRefund(WhetherEnum.whether);
+				BigDecimal refundPrice = new BigDecimal("0");
+				BigDecimal refundPreferentialPrice = new BigDecimal("0");
+				for (TradeOrderRefunds tradeOrderRefunds : tradeOrderRefundsList) {
+					if (StringUtils.isNotEmpty(tradeOrderRefunds.getOrderId()) && StringUtils.isNotEmpty(vo.getId())
+							&& vo.getId().equals(tradeOrderRefunds.getOrderId())) {
+						if (tradeOrderRefunds.getTotalAmount() != null) {
+							refundPrice = refundPrice.add(tradeOrderRefunds.getTotalAmount());
+							// 退款总金额
+							vo.setRefundsAmount(refundPrice);
+						}
+						if (tradeOrderRefunds.getTotalPreferentialPrice() != null) {
+							refundPreferentialPrice = refundPreferentialPrice
+									.add(tradeOrderRefunds.getTotalPreferentialPrice());
+							// 退款优惠金额
+							vo.setBackFillAmount(refundPreferentialPrice);
+						}
+					}
+				}
+			} else {
+				vo.setWhetherRefund(WhetherEnum.not);
+			}
+		}
+
+		String lProviceName = vo.getlProviceName() == null ? "" : vo.getlProviceName();
+		String lCityName = vo.getlCityName() == null ? "" : vo.getlCityName();
+		String lAreaName = vo.getlAreaName() == null ? "" : vo.getlAreaName();
+		String areaExt = vo.getAreaExt() == null ? "" : vo.getAreaExt();
+
+		// 定位基点
+		vo.setLocateAddress(lProviceName + lCityName + lAreaName + areaExt);
+
+		String aProviceName = vo.getaProviceName() == null ? "" : vo.getaProviceName();
+		String aCityName = vo.getaCityName() == null ? "" : vo.getaCityName();
+		String aAreaName = vo.getaAreaName() == null ? "" : vo.getaAreaName();
+		String address = vo.getAddress() == null ? "" : vo.getAddress();
+
+		// 所属城市
+		vo.setCityName(aCityName);
+		// 收货地址
+		vo.setAddress(aProviceName + aCityName + aAreaName + address);
+
+		// 订单来源
+		vo.setOrderResource(vo.getOrderResource());
+	}
+
+	// End V2.1.0 added by luosm 20170223
 
 	/**
 	 * (non-Javadoc)
