@@ -1,5 +1,8 @@
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,7 +29,9 @@ public class ActivitySaleRemindApiImplTest extends ApplicationTests {
 	@Test
 	public void sendSafetyWarningTest(){
 		String storeSkuId = "8a98683a5669d21d01567e1a834d0604";
-		activitySaleRemindApi.sendSafetyWarning(storeSkuId);
+		List<String> storeSkuIds = new ArrayList<String>();
+		storeSkuIds.add(storeSkuId);
+		//activitySaleRemindApi.sendSafetyWarning(storeSkuIds);
 	}
 	
 }

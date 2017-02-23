@@ -966,7 +966,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 	// Begin V2.1.0 added by luosm 20170220
 	@Override
-	public List<ActivityCoupons> findByOrderId(String orderId) throws ServiceException {
+	public ActivityCoupons findByOrderId(String orderId) throws ServiceException {
 		return activityCouponsMapper.findByOrderId(orderId);
 	}
 	// End V2.1.0 added by luosm 20170220

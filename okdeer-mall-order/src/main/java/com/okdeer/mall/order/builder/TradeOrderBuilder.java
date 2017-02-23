@@ -697,7 +697,9 @@ public class TradeOrderBuilder {
 		if (address == null) {
 			return null;
 		}
-
+		// 保存用户送货上门地址Id
+		tradeOrder.setPickUpId(address.getId());
+		
 		TradeOrderLogistics orderLogistics = new TradeOrderLogistics();
 		orderLogistics.setId(UuidUtils.getUuid());
 		orderLogistics.setConsigneeName(address.getConsigneeName());

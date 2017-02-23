@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.system.entity.SysUserInvitationCode;
 import com.okdeer.mall.system.entity.SysUserInvitationCodeVo;
+import com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO;
 
 /**
  * ClassName: SysUserInvitationCodeMapper 
@@ -124,4 +125,15 @@ public interface SysUserInvitationCodeMapper extends IBaseCrudMapper {
      * @date 2016年10月19日
      */
     SysUserInvitationCode selectById(@Param("id")String id);
+    
+    //Begin V2.1.0 added by luosm 20170222
+    /**
+     * 
+     * @Description: 根据用户id获取邀请人登录名集合
+     * @return
+     * @author luosm
+     * @date 2017年2月22日
+     */
+    List<SysUserInvitationLoginNameVO> selectLoginNameByUserId(@Param("userIds") List<String> userIds);
+   //End V2.1.0 added by luosm 20170222
 }

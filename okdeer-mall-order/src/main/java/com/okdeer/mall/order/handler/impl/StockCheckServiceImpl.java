@@ -122,9 +122,9 @@ public class StockCheckServiceImpl implements StockCheckService {
 		// End 1.0.Z add by zengj
 
 		for (TradeOrderGoodsItem goodsItem : req.getList()) {
-			int currentStock = findStock(context, goodsItem, stockList);
-			// 如果库存不足，直接返回
-			if (currentStock < goodsItem.getSkuNum()) {
+			GoodsStoreSkuStock currentStock = findStock(context, goodsItem, stockList);
+			// 如果库存不足，直接返回.特惠商品，锁定库存和可售库存小于购买数量，则不能进行购买
+			if (currentStock.getSellable() < goodsItem.getSkuNum() || (goodsItem.isPrivilege() && currentStock.getLocked() < goodsItem.getSkuNum())) {
 				respDto.setFlag(false);
 				respDto.setMessage(OrderTipMsgConstant.STOCK_NOT_ENOUGH);
 				// Begin modified by maojj 2016-08-10 Bug:12572
@@ -286,9 +286,8 @@ public class StockCheckServiceImpl implements StockCheckService {
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private int findStock(TradeOrderContext context, TradeOrderGoodsItem goodsItem, List<GoodsStoreSkuStock> stockList)
+	private GoodsStoreSkuStock findStock(TradeOrderContext context, TradeOrderGoodsItem goodsItem, List<GoodsStoreSkuStock> stockList)
 			throws ServiceException {
-		int currentStock = 0;
 		GoodsStoreSkuStock storeSkuStock = null;
 		for (GoodsStoreSkuStock tmp : stockList) {
 			if (goodsItem.getSkuId().equals(tmp.getStoreSkuId())) {
@@ -300,13 +299,6 @@ public class StockCheckServiceImpl implements StockCheckService {
 			logger.error("未查到店铺商品Id为{}的库存", goodsItem.getSkuId());
 			throw new ServiceException("未查到店铺商品Id为" + goodsItem.getSkuId() + "的库存");
 		}
-
-		// 1:特惠活动商品 0:正常商品
-		if (goodsItem.isPrivilege()) {
-			currentStock = storeSkuStock.getLocked();
-		} else {
-			currentStock = storeSkuStock.getSellable();
-		}
-		return currentStock;
+		return storeSkuStock;
 	}
 }
