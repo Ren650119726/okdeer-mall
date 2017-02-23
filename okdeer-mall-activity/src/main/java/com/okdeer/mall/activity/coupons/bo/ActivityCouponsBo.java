@@ -1,5 +1,6 @@
 package com.okdeer.mall.activity.coupons.bo;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -13,7 +14,12 @@ import java.util.Date;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		友门鹿2.1 			2017年2月23日				maojj
  */
-public class ActivityCouponsBo {
+public class ActivityCouponsBo implements Serializable{
+
+	/**
+	 * @Fields serialVersionUID 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * 代金券主键ID
