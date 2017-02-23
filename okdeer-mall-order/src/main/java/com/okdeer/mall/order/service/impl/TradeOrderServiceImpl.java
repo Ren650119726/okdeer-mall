@@ -7083,6 +7083,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<TradeOrder> findUserOrders(UserOrderParamBo paramBo) {
 		PageHelper.startPage(paramBo.getPageNumber(), paramBo.getPageSize(), true);
+		paramBo.setKeyword(ConvertUtil.format(paramBo.getKeyword()).trim());
 		return new PageUtils<TradeOrder>(tradeOrderMapper.findUserOrders(paramBo));
 	}
 
