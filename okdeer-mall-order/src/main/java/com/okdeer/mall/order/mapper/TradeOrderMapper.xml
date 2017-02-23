@@ -4986,7 +4986,6 @@
 		member.city_name as aCity_name,
 		member.area_name as aArea_name,
 		member.address as address,
-		trade.order_resource,
 		trade.income,
 		trade.activity_type,
 		trade.activity_id,
@@ -5020,8 +5019,7 @@
 		LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id
 		WHERE 1=1
 		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
-		<if test="cityName != null and cityName != ''">
-			AND member.city_name = #{cityName, jdbcType=VARCHAR}
+		<if test="locateCityName != null and locateCityName != ''">
 			AND locate.city_id = #{cityId, jdbcType=VARCHAR}
 			AND (trade.type = 3 OR trade.type = 4)
 		</if>
@@ -5085,6 +5083,9 @@
 			#{endTime,jdbcType=TIMESTAMP}
 		</if>
 		<!-- Begin V2.1.0 added by luosm 20170218 -->
+		<if test="cityName != null and cityName != ''">
+			AND member.city_name = #{cityName, jdbcType=VARCHAR}
+		</if>
 		<if test="ids != null">
 			AND trade.id in
 			<foreach collection="ids" index="index" item="item" open="("
