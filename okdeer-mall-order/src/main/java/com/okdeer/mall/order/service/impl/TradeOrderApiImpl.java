@@ -36,6 +36,7 @@ import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
@@ -852,26 +853,34 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	// Begin 重构4.1 add by wusw 20160719
 	@Override
 	public PageResultVo<ERPTradeOrderVoDto> findOrderByParams(Map<String, Object> params) throws Exception {
-			int pageSize = Integer.valueOf(params.get("pageSize").toString());
-			int pageNumber = Integer.valueOf(params.get("pageNumber").toString());
-			// Begin V2.1.0 added by luosm 20170215
-			// 判断cityName是否为空
-			String cityName = null;
-			if (params.get("cityName") != null) {
-				cityName = params.get("cityName").toString().trim();
-				params.put("cityName", cityName);
+		int pageSize = Integer.valueOf(params.get("pageSize").toString());
+		int pageNumber = Integer.valueOf(params.get("pageNumber").toString());
+		// Begin V2.1.0 added by luosm 20170215
+		// 判断cityName是否为空
+		String cityName = null;
+		if (params.get("cityName") != null) {
+			cityName = params.get("cityName").toString().trim();
+			params.put("cityName", cityName);
+			//begin add by  zhulq  2017-02-23
+			Address address = addressService.getByName(cityName);
+			if (address != null) {					
+				params.put("cityId", String.valueOf(address.getId()));
+			} else {
+				params.put("cityId", null);
 			}
-			// End V2.1.0 added by luosm 20170215
-
-			PageUtils<ERPTradeOrderVo> page = tradeOrderService.findOrderForFinanceByParams(params, pageNumber, pageSize);
-
-			List<ERPTradeOrderVoDto> dtoList = buildERPTradeOrderVoDto(page);
-
-			PageResultVo<ERPTradeOrderVoDto> result = new PageResultVo<ERPTradeOrderVoDto>(page.getPageNum(),
-					page.getPageSize(), page.getTotal(), dtoList);
-
-			return result;
+			//begin add by  zhulq  2017-02-23
 		}
+		// End V2.1.0 added by luosm 20170215
+
+		PageUtils<ERPTradeOrderVo> page = tradeOrderService.findOrderForFinanceByParams(params, pageNumber, pageSize);
+
+		List<ERPTradeOrderVoDto> dtoList = buildERPTradeOrderVoDto(page);
+
+		PageResultVo<ERPTradeOrderVoDto> result = new PageResultVo<ERPTradeOrderVoDto>(page.getPageNum(),
+				page.getPageSize(), page.getTotal(), dtoList);
+
+		return result;
+	}
 
 	// End 重构4.1 add by wusw 20160719
 
@@ -916,6 +925,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			// 收货地址
 			dto.setAddress(aProviceName + aCityName + aAreaName + address);
 			// End V2.1.0 added by luosm 2017-02-16
+			
+			//begin add by zhulq  充值订单所属城市和完成时间设置
+			dto.setLocateCityName(vo.getCityName());
+			dto.setCompleteTime(vo.getUpdateTime());
+			//begin add by zhulq  充值订单所属城市和完成时间设置
+			
 			dtoList.add(dto);
 		}
 		return dtoList;
@@ -934,6 +949,14 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		if (params.get("cityName") != null) {
 			cityName = params.get("cityName").toString().trim();
 			params.put("cityName", cityName);
+			//begin add by  zhulq  2017-02-23
+			Address address = addressService.getByName(cityName);
+			if (address != null) {					
+				params.put("cityId", String.valueOf(address.getId()));
+			} else {
+				params.put("cityId", null);
+			}
+			//begin add by  zhulq  2017-02-23
 		}
 		// End V2.1.0 added by luosm 20170215
 
@@ -1061,9 +1084,6 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					}
 				}
 
-				// 优惠金额
-				dto.setPreferentialPrice(vo.getPreferentialPrice());
-
 				// 活动类型
 				if (CollectionUtils.isNotEmpty(activityList)) {
 					for (ActivityInfoVO activityInfoVO : activityList) {
@@ -1092,12 +1112,14 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 									&& vo.getId().equals(tradeOrderRefunds.getOrderId())) {
 								if (tradeOrderRefunds.getTotalAmount() != null) {
 									refundPrice = refundPrice.add(tradeOrderRefunds.getTotalAmount());
-									dto.setRefundPrice(refundPrice);// 退款总金额
+									// 退款总金额
+									dto.setRefundPrice(refundPrice);
 								}
 								if (tradeOrderRefunds.getTotalPreferentialPrice() != null) {
 									refundPreferentialPrice = refundPreferentialPrice
 											.add(tradeOrderRefunds.getTotalPreferentialPrice());
-									dto.setRefundPreferentialPrice(refundPreferentialPrice);// 退款优惠金额
+									// 退款优惠金额
+									dto.setRefundPreferentialPrice(refundPreferentialPrice);
 								}
 							}
 						}
@@ -1129,6 +1151,10 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 				// End V2.1.0 added by luosm 2017-02-18
 
+				//begin add by zhulq  充值订单所属城市和完成时间设置
+				dto.setLocateCityName(vo.getCityName());
+				dto.setCompleteTime(vo.getUpdateTime());
+				//begin add by zhulq  充值订单所属城市和完成时间设置
 				result.add(dto);
 			}
 		}
