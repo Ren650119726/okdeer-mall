@@ -530,4 +530,30 @@
 	  AND activity_id = #{activityId,jdbcType=VARCHAR}
 	</select>
 	<!-- End V2.1.0 added by luosm 20170220 -->
+	
+	<!-- Begin V2.1.0 added by maojj 2017-02-23 -->
+	<update id="updateCouponsNum" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo">
+		UPDATE activity_coupons
+		<set>
+			<if test="usedNum != null">
+				used_num = used_num + #{usedNum,jdbcType=INTEGER},
+			</if>
+			<if test="remainNum != null">
+				remain_num = remain_num + #{remainNum,jdbcType=INTEGER},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime}
+			</if>
+		</set>
+		<where>
+			<if test="usedNum != null">
+				AND used_num + #{usedNum,jdbcType=INTEGER} &gt; 0
+			</if>
+			<if test="remainNum != null">
+				AND	remain_num + #{remainNum,jdbcType=INTEGER} &gt; 0
+			</if>
+			AND id = #{id,jdbcType=VARCHAR}
+		</where>
+	</update>
+	<!-- Begin V2.1.0 added by maojj 2017-02-23 -->
 </mapper>
