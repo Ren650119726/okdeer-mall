@@ -1471,7 +1471,7 @@
 		member.province_name as aProvice_name,
 		member.city_name as aCity_name,
 		member.area_name as aArea_name,
-		member.address as address
+		member.address as memberAddress
 		from trade_order o
 		LEFT JOIN store_info si ON o.store_id=si.id
 		LEFT JOIN psms_agent pa ON
