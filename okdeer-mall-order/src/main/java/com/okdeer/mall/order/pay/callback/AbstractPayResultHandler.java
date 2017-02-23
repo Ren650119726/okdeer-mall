@@ -269,12 +269,10 @@ public abstract class AbstractPayResultHandler {
 		SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrder);
 		tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.createOrder);
 
-		//begin V2.1 xuzq 20170223 到店消费订单、服务订单商家版修改为同便利店 用户下单的时候也发送消息
-		//if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER
-				//&& tradeOrder.getType() != OrderTypeEnum.STORE_CONSUME_ORDER) {
+		if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER
+				&& tradeOrder.getType() != OrderTypeEnum.STORE_CONSUME_ORDER) {
 		tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.createOrder);
-		//}
-		//end V2.1 xuzq 20170223 到店消费订单、服务订单商家版修改为同便利店 用户下单的时候也发送消息
+		}
 	}
 	
 	/**
