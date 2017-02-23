@@ -31,7 +31,7 @@ public class ActivitySaleRemindApiImplTest extends ApplicationTests {
 		String storeSkuId = "8a98683a5669d21d01567e1a834d0604";
 		List<String> storeSkuIds = new ArrayList<String>();
 		storeSkuIds.add(storeSkuId);
-		activitySaleRemindApi.sendSafetyWarning(storeSkuIds);
+		//activitySaleRemindApi.sendSafetyWarning(storeSkuIds);
 	}
 	
 }
