@@ -55,6 +55,7 @@ import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
@@ -99,7 +100,6 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.base.framework.mq.message.MQMessage;
-import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
@@ -252,6 +252,7 @@ import net.sf.json.JSONObject;
  *      V2.0.0            2017-01-09           wusw           修改订单查询和导出的线上订单包括订单来源为友门鹿便利店(CVS)的订单
  *      V2.0.0            2017-01-12        wusw              修改低价商品订单的优惠显示问题
  *      V2.0.0            2017-01-17        wusw              修改服务订单详情的商品规格为null判断
+ *      V2.1.0            2017-02-24        wusw              修改实物订单导出
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -601,13 +602,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	public List<TradeOrderExportVo> selectExportList(Map<String, Object> map) {
 		// 查询订单信息
-		List<TradeOrder> orderPay = tradeOrderMapper.selectRealOrderList(map);
+		List<TradeOrderVo> orderPay = tradeOrderMapper.selectRealOrderList(map);
 		List<TradeOrderExportVo> exportList = new ArrayList<TradeOrderExportVo>();
 		if (orderPay != null) {
 			// 退款单状态Map
 			Map<String, String> orderRefundsStatusMap = RefundsStatusEnum.convertViewStatus();
 			for (int i = 0; i < orderPay.size(); i++) {
-				TradeOrder order = orderPay.get(i);
+				TradeOrderVo order = orderPay.get(i);
 				// 订单状态Map
 				Map<String, String> orderStatusMap = OrderStatusEnum.convertViewStatus(order.getType());
 				String id = order.getId();
@@ -653,9 +654,32 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							exportVo.setAfterService(orderRefundsStatusMap.get(item.getRefundsStatus().getName()));
 						}
 						exportVo.setOperator(order.getSysUser() == null ? null : order.getSysUser().getLoginName());
-						exportVo.setOrderResource(order.getOrderResource());
-						exportVo.setAddress(order.getPickUpId());
+						
+						// Begin V2.1 add by wusw 20170224
+						exportVo.setActivityTypeName(order.getActivityType().getValue());
+						if (order.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
+							exportVo.setAddress("自提");
+						} else {
+							if (order.getMemberConsigneeAddress() != null) {
+								StringBuilder s = new StringBuilder("");
+								if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getProvinceName())) {
+									s.append(order.getMemberConsigneeAddress().getProvinceName());
+								}
+								if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getCityName())) {
+									s.append(order.getMemberConsigneeAddress().getCityName());
+								}
+								if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getAreaName())) {
+									s.append(order.getMemberConsigneeAddress().getAreaName());
+								}
+								if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getAreaExt())) {
+									s.append(order.getMemberConsigneeAddress().getAreaExt());
+								}
+								exportVo.setAddress(s.toString());
+							}
+							
+						}
 						exportVo.setActivityType(order.getActivityType());
+						// End V2.1 add by wusw 20170224
 						exportList.add(exportVo);
 					}
 				}
@@ -5590,13 +5614,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params, int pageNumber,
 			int pageSize) throws ServiceException {
-		PageHelper.startPage(pageNumber, pageSize);
+		PageHelper.startPage(pageNumber, pageSize,false);
 		// 参数转换处理（例如订单状态）
 		this.convertParams(params);
 		List<ERPTradeOrderVo> result = tradeOrderMapper.findOrderForFinanceByParams(params);
 		if (result == null) {
 			result = new ArrayList<ERPTradeOrderVo>();
 		}
+		
+		 //Begin V2.1.0 added by luosm 20170224
+		 Page<ERPTradeOrderVo> page = (Page<ERPTradeOrderVo>) result;
+		 int total = tradeOrderMapper.countOrderForFinanceByParams(params);
+		 page.setTotal(total);
+		//End V2.1.0 added by luosm 20170224	
 		return new PageUtils<ERPTradeOrderVo>(result);
 	}
 
@@ -5688,6 +5718,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 			if (params.get("endTime") == null || StringUtils.isBlank(params.get("endTime").toString())) {
 				params.remove("endTime");
+			}
+			
+			if (params.get("cityName") == null || StringUtils.isBlank(params.get("cityName").toString())) {
+				params.remove("cityName");
 			}
 		}
 		// Begin 重构4.1 add by wusw 20160727
