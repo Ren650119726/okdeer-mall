@@ -1478,6 +1478,7 @@
 		pa.id=si.agent_id
 		LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
 		LEFT JOIN member_consignee_address member ON member.id = o.pick_up_id
+		LEFT JOIN trade_order_locate locate ON locate.order_id = o.id
 		WHERE 1=1
 		AND o.disabled =0
 		AND o.order_resource !=2
@@ -5077,7 +5078,7 @@
 		WHERE 1=1
 		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
 		<if test="locateCityName != null and locateCityName != ''">
-			AND locate.city_id = #{cityId, jdbcType=VARCHAR}
+			AND locate.city_name LIKE CONCAT('%', #{locateCityName,jdbcType=VARCHAR},'%')
 			AND (trade.type = 3 OR trade.type = 4)
 		</if>
 		<!-- end add by zhulq 订单所属城市 和定位地址 -->
