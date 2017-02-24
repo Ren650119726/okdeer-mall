@@ -13,7 +13,9 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.kafka.producer.KafkaProducer;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mcm.dto.PushMsgDto;
 import com.okdeer.mcm.dto.PushUserDto;
@@ -47,37 +49,52 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
     private static final Logger LOGGER = LoggerFactory.getLogger(TradeOrderSendMessageServiceImpl.class);
     
     @Override
-    public void tradeSendMessage(TradeOrder tradeOrder) {
+    public void tradeSendMessage(TradeOrder tradeOrder, TradeOrderRefunds orderRefunds) {
         LOGGER.info("订单状态改变发送消息");
         
-        //订单状态为卖家接单，发货，派送，签收和拒收的时候，发送通知
-        OrderStatusEnum status = tradeOrder.getStatus();
-        
         PushMsgDto msgDto = new PushMsgDto();
+        if(tradeOrder != null) {
+            //订单状态为卖家接单，发货，派送，签收和拒收的时候，发送通知
+            OrderStatusEnum status = tradeOrder.getStatus();
+            //根据订单的不同状态组织不同的消息通知内容
+            if(status == OrderStatusEnum.DROPSHIPPING) {
+                //卖家已接单（待发货）
+                msgDto.setMsgNotifyContent("卖家已接单");
+                msgDto.setMsgDetailContent("卖家已接单   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));          
+            } else if (status == OrderStatusEnum.TO_BE_SIGNED) {
+                //卖家已发货
+                msgDto.setMsgNotifyContent("卖家已发货");
+                msgDto.setMsgDetailContent("卖家已发货   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
+            } else if (status == OrderStatusEnum.CANCELED) {
+                //已取消
+                msgDto.setMsgNotifyContent("订单已取消");
+                msgDto.setMsgDetailContent("订单已取消   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
+            } else if (status == OrderStatusEnum.REFUSED) {
+                //已拒收
+                msgDto.setMsgNotifyContent("买家拒收");
+                msgDto.setMsgDetailContent("买家拒收   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
+            } else if (status == OrderStatusEnum.HAS_BEEN_SIGNED) {
+                //订单完成
+                msgDto.setMsgNotifyContent("买家已签收");
+                msgDto.setMsgDetailContent("买家已签收   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
+            } else {
+                return;
+            }
+        } 
         
-        //根据订单的不同状态组织不同的消息通知内容
-        if(status == OrderStatusEnum.DROPSHIPPING) {
-            //卖家已接单（待发货）
-            msgDto.setMsgNotifyContent("卖家已接单");
-            msgDto.setMsgDetailContent("卖家已接单   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));          
-        } else if (status == OrderStatusEnum.TO_BE_SIGNED) {
-            //卖家已发货
-            msgDto.setMsgNotifyContent("卖家已发货");
-            msgDto.setMsgDetailContent("卖家已发货   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
-        } else if (status == OrderStatusEnum.CANCELED) {
-            //已取消
-            msgDto.setMsgNotifyContent("订单已取消");
-            msgDto.setMsgDetailContent("订单已取消   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
-        } else if (status == OrderStatusEnum.REFUSED) {
-            //已拒收
-            msgDto.setMsgNotifyContent("买家拒收");
-            msgDto.setMsgDetailContent("买家拒收   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
-        } else if (status == OrderStatusEnum.HAS_BEEN_SIGNED) {
-            //订单完成
-            msgDto.setMsgNotifyContent("买家已签收");
-            msgDto.setMsgDetailContent("买家已签收   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
-        } else {
-            return;
+        if (orderRefunds != null) {
+            RefundsStatusEnum refudnsStatus = orderRefunds.getRefundsStatus();
+            if (refudnsStatus == RefundsStatusEnum.WAIT_SELLER_VERIFY) {
+                //用户申请退款
+                msgDto.setMsgNotifyContent("订单退款中");
+                msgDto.setMsgDetailContent("订单退款中   " + DateUtils.formatDateTime(orderRefunds.getUpdateTime()));
+            } else if(refudnsStatus == RefundsStatusEnum.REFUND_SUCCESS) {
+                //卖家退款成功
+                msgDto.setMsgNotifyContent("退款成功");
+                msgDto.setMsgDetailContent("退款成功   " + DateUtils.formatDateTime(orderRefunds.getUpdateTime()));
+            } else {
+                return;
+            }
         }
         
         //主键
