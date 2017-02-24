@@ -239,7 +239,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Override
 	@Transactional(readOnly = true)
 	public int selectCountByParams(ActivityCouponsRecord activityCouponsRecord) throws ServiceException {
-		return activityCouponsRecordMapper.selectCountByParams(activityCouponsRecord);
+		Integer count = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecord);
+		if (null == count) {
+			return 0;
+		} else {
+			return count;
+		}
 	}
 
 	// begin update by　zhulq  2016-10-17  新增方法提供给之前的版本
