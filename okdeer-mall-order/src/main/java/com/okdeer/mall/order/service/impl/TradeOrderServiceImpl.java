@@ -55,6 +55,7 @@ import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
@@ -99,7 +100,6 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.base.framework.mq.message.MQMessage;
-import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
@@ -5584,13 +5584,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params, int pageNumber,
 			int pageSize) throws ServiceException {
-		PageHelper.startPage(pageNumber, pageSize);
+		PageHelper.startPage(pageNumber, pageSize,false);
 		// 参数转换处理（例如订单状态）
 		this.convertParams(params);
 		List<ERPTradeOrderVo> result = tradeOrderMapper.findOrderForFinanceByParams(params);
 		if (result == null) {
 			result = new ArrayList<ERPTradeOrderVo>();
 		}
+		
+		 //Begin V2.1.0 added by luosm 20170224
+		 Page<ERPTradeOrderVo> page = (Page<ERPTradeOrderVo>) result;
+		 int total = tradeOrderMapper.countOrderForFinanceByParams(params);
+		 page.setTotal(total);
+		//End V2.1.0 added by luosm 20170224	
 		return new PageUtils<ERPTradeOrderVo>(result);
 	}
 
@@ -5682,6 +5688,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 			if (params.get("endTime") == null || StringUtils.isBlank(params.get("endTime").toString())) {
 				params.remove("endTime");
+			}
+			
+			if (params.get("cityName") == null || StringUtils.isBlank(params.get("cityName").toString())) {
+				params.remove("cityName");
 			}
 		}
 		// Begin 重构4.1 add by wusw 20160727

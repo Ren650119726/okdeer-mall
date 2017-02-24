@@ -5162,6 +5162,88 @@
 		order by trade.create_time desc
 	</select>
 
+	<!-- Begin V2.1.0 added by luosm 20170224 -->
+	<!-- 统计财务订单列表数量  -->
+	<select id="countOrderForFinanceByParams" resultType="java.lang.Integer"
+		parameterType="java.util.Map">
+		SELECT count(1)  
+		FROM trade_order trade
+		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
+		LEFT JOIN store_info store ON store.id = trade.store_id
+		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
+		LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id
+		WHERE 1=1
+		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
+		<if test="locateCityName != null and locateCityName != ''">
+			AND locate.city_id = #{cityId, jdbcType=VARCHAR}
+			AND (trade.type = 3 OR trade.type = 4)
+		</if>
+		<!-- end add by zhulq 订单所属城市 和定位地址 -->
+		<if test="unDisabled != null">
+			AND (trade.disabled = #{unDisabled, jdbcType=TINYINT}
+			<if test="completeStatus != null">
+				OR (trade.disabled = #{disabled, jdbcType=TINYINT} AND trade.status =
+				#{completeStatus, jdbcType=TINYINT})
+			</if>
+			)
+		</if>
+		<if test="orderNo != null and orderNo != ''">
+			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
+		</if>
+		<if test="storeName != null and storeName != ''">
+			AND ((trade.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR},
+			'%') AND (trade.type = 3 OR trade.type = 4))
+			OR
+			(store.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR}, '%') AND trade.type
+			!= 3 AND trade.type != 4))
+
+		</if>
+		<if test="userPhone != null and userPhone != ''">
+			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
+			'%')
+		</if>
+		<if test="type != null and type.size() > 0">
+			AND trade.type IN
+			<foreach collection="type" index="index" item="item" open="("
+				close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="status != null">
+			AND trade.status IN
+			<foreach collection="status" index="index" item="item" open="("
+				close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="orderResource != null">
+			 AND trade.order_resource =#{orderResource, jdbcType=TINYINT}
+		</if>
+		<if test="payType != null">
+			<if test="payType != 4">
+				AND pay.pay_type = #{payType, jdbcType=TINYINT}
+			</if>
+			<if test="payType == 4">
+				AND (trade.pay_way = #{payWayServer,jdbcType=TINYINT} OR trade.pay_way
+				= #{payWayPhysical,jdbcType=TINYINT} OR pay.pay_type = #{payType,
+				jdbcType=TINYINT})
+			</if>
+		</if>
+		<if test="startTime != null">
+			AND trade.create_time <![CDATA[ >= ]]>
+			#{startTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="endTime != null">
+			AND trade.create_time <![CDATA[ <= ]]>
+			#{endTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="cityName != null and cityName != ''">
+			AND member.city_name LIKE CONCAT('%',#{cityName,jdbcType=VARCHAR},'%')
+		</if>
+		order by trade.create_time desc
+	</select>
+	<!-- Begin V2.1.0 added by luosm 20170224 -->
+
 	<select id="findRechargeOrdersByStatus" resultMap="BaseResultMap">
 		select
 		<include refid="Base_Column_List" />
@@ -5314,6 +5396,7 @@
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN store_info store ON store.id = trade.store_id
+		LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id
 		WHERE 1=1
 		<if test="unDisabled != null">
 			AND (trade.disabled = #{unDisabled, jdbcType=TINYINT}
@@ -5338,6 +5421,10 @@
 			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
 			'%')
 		</if>
+		<if test="cityName != null and cityName != ''">
+			AND member.city_name LIKE CONCAT('%', #{cityName,jdbcType=VARCHAR},
+			'%')
+	    </if>
 		<if test="type != null and type.size() > 0">
 			AND trade.type IN
 			<foreach collection="type" index="index" item="item" open="("

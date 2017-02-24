@@ -981,7 +981,11 @@ public interface TradeOrderMapper {
 	 */
 	List<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params);
 	// End 重构4.1 add by wusw 20160719
-
+	
+	//Begin V2.1.0 added by luosm 20170224
+	int countOrderForFinanceByParams(Map<String, Object> params);
+	//End V2.1.0 added by luosm 20170224
+	
 	// Begin 重构4.1 add by wusw 20160729
 	/**
 	 * 
