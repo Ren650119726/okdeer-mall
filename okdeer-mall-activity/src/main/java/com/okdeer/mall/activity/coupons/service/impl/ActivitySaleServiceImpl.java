@@ -176,7 +176,14 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				&& saleGoods.getSaleStock().intValue() >= activitySaleGoods.getSaleStock().intValue() )) {
 			return;
 		}
-		saleGoods.setSaleStock(activitySaleGoods.getSaleStock() - saleGoods.getSaleStock());
+		GoodsStoreSku goodsStoreSku = goodsStoreSkuServiceApi.getById(activitySaleGoods.getStoreSkuId());
+		//如果是组合商品,不需要同步进销存的库存
+		if (goodsStoreSku.getSpuTypeEnum() == SpuTypeEnum.assembleSpu){
+			saleGoods.setSaleStock(activitySaleGoods.getSaleStock());
+		} else{
+			saleGoods.setSaleStock(activitySaleGoods.getSaleStock() - saleGoods.getSaleStock());
+		}
+		
 		List<ActivitySaleGoods> list = new ArrayList<ActivitySaleGoods>();
 		list.add(saleGoods);
 		// 库存同步--库存出错的几率更大。先处理库存

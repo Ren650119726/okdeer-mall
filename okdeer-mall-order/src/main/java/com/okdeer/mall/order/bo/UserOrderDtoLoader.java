@@ -240,7 +240,7 @@ public class UserOrderDtoLoader {
 			itemDto.setMainPicUrl(orderItem.getMainPicPrl());
 			itemDto.setStoreSkuId(orderItem.getStoreSkuId());
 			itemDto.setSkuName(orderItem.getSkuName());
-			itemDto.setPropertiesIndb(orderItem.getPropertiesIndb());
+			itemDto.setPropertiesIndb(ConvertUtil.format(orderItem.getPropertiesIndb()));
 			itemDto.setQuantity(orderItem.getQuantity()==null ? 0 : orderItem.getQuantity().intValue());
 			itemDto.setUnitPrice(ConvertUtil.format(orderItem.getUnitPrice()));
 			itemDto.setUnit(orderItem.getUnit());
