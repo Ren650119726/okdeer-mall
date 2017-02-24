@@ -91,6 +91,7 @@ import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.enums.SendMsgType;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
@@ -114,6 +115,7 @@ import com.okdeer.mall.order.service.TradeOrderRefundsLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderRefundsTraceService;
+import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
@@ -122,6 +124,7 @@ import com.okdeer.mall.order.vo.TradeOrderRefundsExportVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsQueryVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsVo;
+import com.okdeer.mall.order.vo.TradeOrderVo;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysMsgMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
@@ -148,7 +151,8 @@ import net.sf.json.JSONObject;
  *    V1.1.0				2016-09-28			wusw			       修改查询退款单数量，如果是服务店，只查询到店消费退款单
  *    V1.1.0			2016-09-29			maojj			  退款流程中增加轨迹的存储
  *    V1.1.0					2016 10 06  zhulq  在后台将消费码中间四位用* 显示
- *  
+ *    V2.1.0            2017-02-24           zhaoqc           用户申请退款，向APP推送消息
+ *    V2.1.0            2017-02-24        wusw              修改实物退款订单导出
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderRefundsServiceApi")
 public class TradeOrderRefundsServiceImpl
@@ -316,6 +320,9 @@ public class TradeOrderRefundsServiceImpl
 	@Resource
 	private StockOperateService stockOperateService;
 
+	@Resource
+	private TradeOrderSendMessageService sendMessageService;
+	
 	/**
 	 * 根据主键查询退款单
 	 *
@@ -367,6 +374,12 @@ public class TradeOrderRefundsServiceImpl
 		// 新增退款单时，保存退款轨迹
 		tradeOrderRefundsTraceService.saveRefundTrace(orderRefunds);
 		// End added by maojj 2016-10-11
+		
+		//Begin 用户申请退款时向APP推送消息 added by zhaoqc
+		logger.info("用户申请退款时向APP推送消息");
+        this.sendMessageService.tradeSendMessage(null, orderRefunds);
+		//End added by zhaoqc 2017-02-24
+		
 		tradeOrderRefundsMapper.insertSelective(orderRefunds);
 	}
 
@@ -1181,6 +1194,36 @@ public class TradeOrderRefundsServiceImpl
 							}
 						}
 						exportVo.setOrderResource(refundsVo.getOrderResource());
+						
+						// Begin V2.1 add by wusw 20170224
+						if (refundsVo.getTradeOrderVo() != null) {
+							exportVo.setActivityTypeName(refundsVo.getTradeOrderVo().getActivityType().getValue());
+							
+							TradeOrderVo order = refundsVo.getTradeOrderVo();
+							if (order.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
+								exportVo.setAddress("自提");
+							} else {
+								if (order.getMemberConsigneeAddress() != null) {
+									StringBuilder s = new StringBuilder("");
+									if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getProvinceName())) {
+										s.append(order.getMemberConsigneeAddress().getProvinceName());
+									}
+									if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getCityName())) {
+										s.append(order.getMemberConsigneeAddress().getCityName());
+									}
+									if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getAreaName())) {
+										s.append(order.getMemberConsigneeAddress().getAreaName());
+									}
+									if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getAreaExt())) {
+										s.append(order.getMemberConsigneeAddress().getAreaExt());
+									}
+									exportVo.setAddress(s.toString());
+								}
+								
+							}
+							
+						}
+						// End V2.1 add by wusw 20170224
 						list.add(exportVo);
 					}
 				}

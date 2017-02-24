@@ -51,6 +51,7 @@ import com.okdeer.mall.order.vo.UserTradeServiceOrderVo;
  *    V1.1.0			2016-10-10          luosm				服务店到店消费订单金额统计及订单列表
  *    V1.1.0			2016-10-11          luosm				服务店到店消费订单列表查询
  *    友门鹿V2.1			2017-02-18			maojj				全部订单查询优化
+ *    V2.1.0            2017-02-24        wusw              修改实物订单导出
  */
 public interface TradeOrderMapper {
 
@@ -885,7 +886,9 @@ public interface TradeOrderMapper {
 	* @param map
 	* @return
 	*/
-	List<TradeOrder> selectRealOrderList(Map<String, Object> map);
+	// Begin V2.1 add by wusw 20170224
+	List<TradeOrderVo> selectRealOrderList(Map<String, Object> map);
+	// End V2.1 add by wusw 20170224
 
 	/**
 	 * 
@@ -981,7 +984,11 @@ public interface TradeOrderMapper {
 	 */
 	List<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params);
 	// End 重构4.1 add by wusw 20160719
-
+	
+	//Begin V2.1.0 added by luosm 20170224
+	int countOrderForFinanceByParams(Map<String, Object> params);
+	//End V2.1.0 added by luosm 20170224
+	
 	// Begin 重构4.1 add by wusw 20160729
 	/**
 	 * 

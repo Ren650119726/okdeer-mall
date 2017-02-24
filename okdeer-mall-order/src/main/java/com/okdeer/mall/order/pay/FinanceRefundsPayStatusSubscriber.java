@@ -31,6 +31,7 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsLogMapper;
 import com.okdeer.mall.order.pay.entity.FinanceResponseResult;
 import com.okdeer.mall.order.pay.entity.RefuseFinanceResponseResult;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
+import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.common.utils.StringUtils;
@@ -46,7 +47,8 @@ import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *    1.0.Z			2016-09-05			zengj					增加订单操作记录   
+ *    1.0.Z			2016-09-05			zengj					增加订单操作记录
+ *    V2.1.0        2017-02-24          zhaoqc                  店铺退款时向用户推送消息   
  */
 @Service
 public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscriber implements PayMessageConstant {
@@ -69,6 +71,9 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 	private TradeOrderRefundsLogMapper tradeOrderRefundsLogMapper;
 	// End 1.0.Z 增加订单操作记录Service add by zengj
 
+	@Resource
+	private TradeOrderSendMessageService sendMessageService;
+	
 	@Override
 	public String getTopic() {
 		return TOPIC_REFUND_RESULT;
@@ -115,6 +120,11 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 			if (orderRefunds.getRefundsStatus() == RefundsStatusEnum.SELLER_REFUNDING) {
 				logger.info("=============卖家退款中，修改退款的订单的状态=============");
 				orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
+				
+				//Begin 便利店退款成功，向用户推送消息 added by zhaoqc
+				logger.info("退款成功向用户发送通知消息");
+		        this.sendMessageService.tradeSendMessage(null, orderRefunds);
+                //End added by zhaoqc 2017-02-24
 			} else if (orderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND) {
 				orderRefunds.setRefundsStatus(RefundsStatusEnum.YSC_REFUND_SUCCESS);
 			} else if (orderRefunds.getRefundsStatus() == RefundsStatusEnum.FORCE_SELLER_REFUND) {

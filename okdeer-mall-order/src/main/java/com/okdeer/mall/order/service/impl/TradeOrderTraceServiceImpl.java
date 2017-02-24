@@ -72,7 +72,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 	        //便利店订单状态发生改变发送消息
 	        LOGGER.info("便利店订单状态发生改变向用户发送通知消息");
 	        
-	        this.sendMessageService.tradeSendMessage(tradeOrder);
+	        this.sendMessageService.tradeSendMessage(tradeOrder, null);
 	    }
 	    //End
 	        

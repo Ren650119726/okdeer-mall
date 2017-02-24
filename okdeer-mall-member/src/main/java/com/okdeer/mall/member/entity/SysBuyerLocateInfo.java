@@ -69,6 +69,10 @@ public class SysBuyerLocateInfo {
      * pos机注册时所在店铺城市id
      */
     private String storeCityId;
+    /**
+     * 具体地址
+     */
+    private String address;
 
 
     public String getId() {
@@ -181,5 +185,13 @@ public class SysBuyerLocateInfo {
 
 	public void setStoreCityId(String storeCityId) {
 		this.storeCityId = storeCityId;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
 	}
 }

@@ -324,8 +324,8 @@
    </select>
   
   <!-- wusw:根据代金券id、活动id、活动类型和领取人id，查询代金券领取记录信息 -->
-	<select id="selectCountByParams" resultType="int" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
-	  select IFNULL(count(1), 0)
+	<select id="selectCountByParams" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
+	  select count(1)
 	  FROM activity_coupons_record 
 	  WHERE  1=1
 	  <!-- 领取人id -->
