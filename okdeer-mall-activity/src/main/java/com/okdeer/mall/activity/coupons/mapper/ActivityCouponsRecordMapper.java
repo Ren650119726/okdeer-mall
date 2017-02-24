@@ -59,7 +59,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @param couponsCollectRecord
 	 * @return
 	 */
-	int selectCountByParams(ActivityCouponsRecord activityCouponsRecord);
+	Integer selectCountByParams(ActivityCouponsRecord activityCouponsRecord);
 
 	/**
 	 * 
