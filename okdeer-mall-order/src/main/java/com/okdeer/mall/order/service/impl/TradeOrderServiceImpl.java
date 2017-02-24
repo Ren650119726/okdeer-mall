@@ -252,6 +252,7 @@ import net.sf.json.JSONObject;
  *      V2.0.0            2017-01-09           wusw           修改订单查询和导出的线上订单包括订单来源为友门鹿便利店(CVS)的订单
  *      V2.0.0            2017-01-12        wusw              修改低价商品订单的优惠显示问题
  *      V2.0.0            2017-01-17        wusw              修改服务订单详情的商品规格为null判断
+ *      V2.1.0            2017-02-24        wusw              修改实物订单导出
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -601,13 +602,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	public List<TradeOrderExportVo> selectExportList(Map<String, Object> map) {
 		// 查询订单信息
-		List<TradeOrder> orderPay = tradeOrderMapper.selectRealOrderList(map);
+		List<TradeOrderVo> orderPay = tradeOrderMapper.selectRealOrderList(map);
 		List<TradeOrderExportVo> exportList = new ArrayList<TradeOrderExportVo>();
 		if (orderPay != null) {
 			// 退款单状态Map
 			Map<String, String> orderRefundsStatusMap = RefundsStatusEnum.convertViewStatus();
 			for (int i = 0; i < orderPay.size(); i++) {
-				TradeOrder order = orderPay.get(i);
+				TradeOrderVo order = orderPay.get(i);
 				// 订单状态Map
 				Map<String, String> orderStatusMap = OrderStatusEnum.convertViewStatus(order.getType());
 				String id = order.getId();
@@ -653,6 +654,32 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							exportVo.setAfterService(orderRefundsStatusMap.get(item.getRefundsStatus().getName()));
 						}
 						exportVo.setOperator(order.getSysUser() == null ? null : order.getSysUser().getLoginName());
+						
+						// Begin V2.1 add by wusw 20170224
+						exportVo.setActivityTypeName(order.getActivityType().getValue());
+						if (order.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
+							exportVo.setAddress("自提");
+						} else {
+							if (order.getMemberConsigneeAddress() != null) {
+								StringBuilder s = new StringBuilder("");
+								if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getProvinceName())) {
+									s.append(order.getMemberConsigneeAddress().getProvinceName());
+								}
+								if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getCityName())) {
+									s.append(order.getMemberConsigneeAddress().getCityName());
+								}
+								if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getAreaName())) {
+									s.append(order.getMemberConsigneeAddress().getAreaName());
+								}
+								if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getAreaExt())) {
+									s.append(order.getMemberConsigneeAddress().getAreaExt());
+								}
+								exportVo.setAddress(s.toString());
+							}
+							
+						}
+						
+						// End V2.1 add by wusw 20170224
 						exportList.add(exportVo);
 					}
 				}
