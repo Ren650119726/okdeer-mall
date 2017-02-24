@@ -1,6 +1,7 @@
 package com.okdeer.mall.order.service;
 
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderRefunds;
 
 /**
  * ClassName: TradeOrderSendMessageService 
@@ -21,6 +22,6 @@ public interface TradeOrderSendMessageService {
      * @return
      * @date 2017-2-18
      */
-    void tradeSendMessage(TradeOrder tradeOrder);
+    void tradeSendMessage(TradeOrder tradeOrder, TradeOrderRefunds orderRefunds);
     
 }

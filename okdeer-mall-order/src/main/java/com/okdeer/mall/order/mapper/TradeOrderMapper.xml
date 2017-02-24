@@ -643,6 +643,11 @@
 	<sql id="order_pay_column_list">
 		tr.*,op.pay_type,op.pay_time,su.login_name,su.user_name
 	</sql>
+	
+	<!-- V2.1 add by wusw 20170224 -->
+	<sql id="real_order_export_column_list">
+		tr.*,op.pay_type,op.pay_time,su.login_name,su.user_name,address.province_name,address.city_name,address.area_name,address.area_ext
+	</sql>
 
 	<sql id="collect_column_list">
 		tr.id,tr.order_no,tr.create_time,op.properties_indb,
@@ -4451,15 +4456,94 @@
 			</collection>
 		</collection>
 	</resultMap>
+	
+	<!-- V2.1 add　by wusw 20170224 -->
+	<resultMap id="RealOrderExportMap" type="com.okdeer.mall.order.vo.TradeOrderVo"
+		extends="BaseResultMap">
+		<id property="id" column="id" jdbcType="VARCHAR" />
+		<!-- 操作人用户信息 -->
+		<association property="sysUser"
+			javaType="com.okdeer.archive.system.entity.SysUser">
+			<result column="user_name" property="userName" jdbcType="VARCHAR" />
+			<result column="login_name" property="loginName" jdbcType="VARCHAR" />
+		</association>
+		<!-- 支付信息 -->
+		<association property="tradeOrderPay"
+			javaType="com.okdeer.mall.order.entity.TradeOrderPay">
+			<result column="pay_type" property="payType" jdbcType="TINYINT" />
+			<result column="pay_amount" property="payAmount" jdbcType="DECIMAL" />
+			<result column="pay_time" property="payTime" jdbcType="TIMESTAMP" />
+			<result column="pay_create_time" property="createTime"
+				jdbcType="TIMESTAMP" />
+		</association>
+		<!-- 收货地址信息 -->
+		<association property="memberConsigneeAddress"
+			javaType="com.okdeer.mall.member.member.entity.MemberConsigneeAddress">
+			<result column="province_name" property="provinceName" jdbcType="VARCHAR" />
+			<result column="city_name" property="cityName" jdbcType="VARCHAR" />
+			<result column="area_name" property="areaName" jdbcType="VARCHAR" />
+			<result column="area_ext" property="areaExt" jdbcType="VARCHAR" />
+		</association>
+		<!-- 订单项信息 -->
+		<collection property="tradeOrderItem"
+			ofType="com.okdeer.mall.order.entity.TradeOrderItem" select="selectRealOrderItemList"
+			column="{orderId = id}">
+			<id column="item_id" property="id" jdbcType="VARCHAR" />
+			<result column="order_id" property="orderId" jdbcType="VARCHAR" />
+			<result column="store_spu_id" property="storeSpuId" jdbcType="VARCHAR" />
+			<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+			<result column="sku_name" property="skuName" jdbcType="VARCHAR" />
+			<result column="properties_indb" property="propertiesIndb"
+				jdbcType="VARCHAR" />
+			<result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+			<result column="style_code" property="styleCode" jdbcType="VARCHAR" />
+			<result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
+			<result column="spu_type" property="spuType" jdbcType="TINYINT"
+				javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum" />
+			<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+			<result column="quantity" property="quantity" jdbcType="INTEGER" />
+			<result column="service_assurance" property="serviceAssurance"
+				jdbcType="INTEGER" />
+			<result column="total_amount" property="totalAmount" jdbcType="DECIMAL" />
+			<result column="actual_amount" property="actualAmount"
+				jdbcType="DECIMAL" />
+			<result column="preferential_price" property="preferentialPrice"
+				jdbcType="DECIMAL" />
+			<result column="status" property="status" jdbcType="TINYINT"
+				javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum" />
+			<result column="appraise" property="appraise" jdbcType="TINYINT"
+				javaType="com.okdeer.mall.order.enums.AppraiseEnum" />
+			<result column="compain_status" property="compainStatus"
+				jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.CompainStatusEnum" />
+			<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+			<result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+			<result column="sty_code" property="styleCode" jdbcType="VARCHAR" />
+			<result column="trade_num" property="trade_num" jdbcType="VARCHAR" />
+			<result column="weight" property="weight" jdbcType="DECIMAL" />
+			<result column="income" property="income" jdbcType="DECIMAL" />
+			<result column="article_no" property="articleNo" jdbcType="VARCHAR" />
+			<!-- 订单项详情信息，服务订单特有属性 -->
+			<collection property="tradeOrderItemDetails"
+				ofType="com.okdeer.mall.order.entity.TradeOrderItemDetail">
+				<result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+				<result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+				<result column="consume_code" property="consumeCode"
+					jdbcType="VARCHAR" />
+				<result column="consume_status" property="status" jdbcType="TINYINT"
+					javaType="com.okdeer.mall.order.enums.ConsumeStatusEnum" />
+			</collection>
+		</collection>
+	</resultMap>
 
 	<!-- wusw:实物订单列表查询 （商家中心）update by wusw 20170215 增加按时间排序规则和订单活动类型查询参数-->
-	<select id="selectRealOrderList" resultMap="RealOrderMap"
+	<select id="selectRealOrderList" resultMap="RealOrderExportMap"
 		parameterType="java.util.Map">
 		SELECT
-		<include refid="order_pay_column_list" />
+		<include refid="real_order_export_column_list" />
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN sys_user su ON su.id=tr.seller_id
+		LEFT JOIN member_consignee_address address ON tr.pick_up_id = address.id
 		WHERE 1=1
 		<include refid="order_paytype_condition" />
 		<if test="orderTimeSort != null and orderTimeSort != ''">
@@ -5166,6 +5250,88 @@
 		order by trade.create_time desc
 	</select>
 
+	<!-- Begin V2.1.0 added by luosm 20170224 -->
+	<!-- 统计财务订单列表数量  -->
+	<select id="countOrderForFinanceByParams" resultType="java.lang.Integer"
+		parameterType="java.util.Map">
+		SELECT count(1)  
+		FROM trade_order trade
+		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
+		LEFT JOIN store_info store ON store.id = trade.store_id
+		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
+		LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id
+		WHERE 1=1
+		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
+		<if test="locateCityName != null and locateCityName != ''">
+			AND locate.city_id = #{cityId, jdbcType=VARCHAR}
+			AND (trade.type = 3 OR trade.type = 4)
+		</if>
+		<!-- end add by zhulq 订单所属城市 和定位地址 -->
+		<if test="unDisabled != null">
+			AND (trade.disabled = #{unDisabled, jdbcType=TINYINT}
+			<if test="completeStatus != null">
+				OR (trade.disabled = #{disabled, jdbcType=TINYINT} AND trade.status =
+				#{completeStatus, jdbcType=TINYINT})
+			</if>
+			)
+		</if>
+		<if test="orderNo != null and orderNo != ''">
+			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
+		</if>
+		<if test="storeName != null and storeName != ''">
+			AND ((trade.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR},
+			'%') AND (trade.type = 3 OR trade.type = 4))
+			OR
+			(store.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR}, '%') AND trade.type
+			!= 3 AND trade.type != 4))
+
+		</if>
+		<if test="userPhone != null and userPhone != ''">
+			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
+			'%')
+		</if>
+		<if test="type != null and type.size() > 0">
+			AND trade.type IN
+			<foreach collection="type" index="index" item="item" open="("
+				close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="status != null">
+			AND trade.status IN
+			<foreach collection="status" index="index" item="item" open="("
+				close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="orderResource != null">
+			 AND trade.order_resource =#{orderResource, jdbcType=TINYINT}
+		</if>
+		<if test="payType != null">
+			<if test="payType != 4">
+				AND pay.pay_type = #{payType, jdbcType=TINYINT}
+			</if>
+			<if test="payType == 4">
+				AND (trade.pay_way = #{payWayServer,jdbcType=TINYINT} OR trade.pay_way
+				= #{payWayPhysical,jdbcType=TINYINT} OR pay.pay_type = #{payType,
+				jdbcType=TINYINT})
+			</if>
+		</if>
+		<if test="startTime != null">
+			AND trade.create_time <![CDATA[ >= ]]>
+			#{startTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="endTime != null">
+			AND trade.create_time <![CDATA[ <= ]]>
+			#{endTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="cityName != null and cityName != ''">
+			AND member.city_name LIKE CONCAT('%',#{cityName,jdbcType=VARCHAR},'%')
+		</if>
+		order by trade.create_time desc
+	</select>
+	<!-- Begin V2.1.0 added by luosm 20170224 -->
+
 	<select id="findRechargeOrdersByStatus" resultMap="BaseResultMap">
 		select
 		<include refid="Base_Column_List" />
@@ -5318,6 +5484,7 @@
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN store_info store ON store.id = trade.store_id
+		LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id
 		WHERE 1=1
 		<if test="unDisabled != null">
 			AND (trade.disabled = #{unDisabled, jdbcType=TINYINT}
@@ -5342,6 +5509,10 @@
 			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
 			'%')
 		</if>
+		<if test="cityName != null and cityName != ''">
+			AND member.city_name LIKE CONCAT('%', #{cityName,jdbcType=VARCHAR},
+			'%')
+	    </if>
 		<if test="type != null and type.size() > 0">
 			AND trade.type IN
 			<foreach collection="type" index="index" item="item" open="("

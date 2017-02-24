@@ -653,9 +653,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							exportVo.setAfterService(orderRefundsStatusMap.get(item.getRefundsStatus().getName()));
 						}
 						exportVo.setOperator(order.getSysUser() == null ? null : order.getSysUser().getLoginName());
-						exportVo.setOrderResource(order.getOrderResource());
-						exportVo.setAddress(order.getPickUpId());
-						exportVo.setActivityType(order.getActivityType());
 						exportList.add(exportVo);
 					}
 				}
@@ -5189,9 +5186,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// End 重构4.1 add by wusw 20160727
 						BigDecimal quantity = new BigDecimal(item.getQuantity());
 						vo.setTotalAmount(item.getUnitPrice().multiply(quantity));
-						vo.setOrderResource(order.getOrderResource());
-						vo.setAddress(order.getPickUpId());
-						vo.setActivityType(order.getActivityType());
 						result.add(vo);
 					}
 				}
