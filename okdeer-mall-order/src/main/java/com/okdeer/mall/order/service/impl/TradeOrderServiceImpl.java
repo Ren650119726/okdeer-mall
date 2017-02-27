@@ -658,7 +658,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// Begin V2.1 add by wusw 20170224
 						exportVo.setActivityTypeName(order.getActivityType().getValue());
 						if (order.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
-							exportVo.setAddress("自提");
+							exportVo.setAddress("到店自提");
 						} else {
 							if (order.getMemberConsigneeAddress() != null) {
 								StringBuilder s = new StringBuilder("");
@@ -678,7 +678,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							}
 							
 						}
-						
+						exportVo.setActivityType(order.getActivityType());
 						// End V2.1 add by wusw 20170224
 						exportList.add(exportVo);
 					}
@@ -5213,6 +5213,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// End 重构4.1 add by wusw 20160727
 						BigDecimal quantity = new BigDecimal(item.getQuantity());
 						vo.setTotalAmount(item.getUnitPrice().multiply(quantity));
+						vo.setOrderResource(order.getOrderResource());
+						vo.setAddress(order.getPickUpId());
+						vo.setActivityType(order.getActivityType());
 						result.add(vo);
 					}
 				}
@@ -5720,6 +5723,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			if (params.get("cityName") == null || StringUtils.isBlank(params.get("cityName").toString())) {
 				params.remove("cityName");
 			}
+			
+			if (params.get("orderResource") == null || StringUtils.isBlank(params.get("orderResource").toString())) { 
+				params.remove("orderResource");
+			}
+			
 		}
 		// Begin 重构4.1 add by wusw 20160727
 		// 订单默认参数，以便综合用户已支付，却被POS机取消情况的订单

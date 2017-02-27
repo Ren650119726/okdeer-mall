@@ -114,4 +114,13 @@ public class ColumnAppRecommendGoodsServiceImpl extends BaseServiceImpl implemen
 		return new PageUtils<ServerGoodsChoolseDto>(result);
 	}
 
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.operate.service.ColumnAppRecommendGoodsService#findListByStoreSkuIds(java.util.List)
+	 */
+	@Override
+	public List<ColumnAppRecommendGoods> findListByStoreSkuIds(List<String> storeSkuIds) {
+		return appRecommendGoodsMapper.findListByStoreSkuIds(storeSkuIds);
+	}
+
 }

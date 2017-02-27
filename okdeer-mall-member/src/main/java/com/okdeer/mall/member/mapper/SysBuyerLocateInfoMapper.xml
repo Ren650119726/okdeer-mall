@@ -16,11 +16,12 @@
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
         <result column="store_city_id" property="storeCityId" jdbcType="VARCHAR" />
+        <result column="address" property="address" jdbcType="VARCHAR" />
     </resultMap>
 
     <sql id="Base_Column_List" >
         id, user_id, machine_code, province_id, province_name, city_id, city_name, area_id, 
-        longitude, latitude, register_source, create_time, update_time, store_city_id
+        longitude, latitude, register_source, create_time, update_time, store_city_id, address
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -75,6 +76,9 @@
             <if test="storeCityId != null" >
                 store_city_id,
             </if>
+            <if test="address != null" >
+                address,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -118,6 +122,9 @@
             </if>
             <if test="storeCityId != null" >
                 #{storeCityId,jdbcType=VARCHAR},
+            </if>
+            <if test="address != null" >
+                #{address,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -163,6 +170,9 @@
             </if>
             <if test="storeCityId != null" >
                 store_city_id = #{storeCityId,jdbcType=VARCHAR},
+            </if>
+            <if test="address != null" >
+                address = #{address,jdbcType=VARCHAR},
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}

@@ -247,8 +247,11 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 					adjustDetailVo.setPrice(goods.getSalePrice());
 					/*************新增字段 end  **************/
 					//Begin V2.1.0 added by 标识同步商品参与特惠  tangy  2017-02-21
+					//根据活动类型标识
 					if(activitySale != null && activitySale.getType() == ActivityTypeEnum.SALE_ACTIVITIES){
 						adjustDetailVo.setIsPreference(true);
+					} else if (activitySale != null && activitySale.getType() == ActivityTypeEnum.LOW_PRICE) {
+						adjustDetailVo.setIsEvent(true);
 					}
 					//End added by tangy
 					adjustDetailList.add(adjustDetailVo);
@@ -544,8 +547,13 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// 手动关闭或者定时器结束都要把未卖完的数量释放库存
 				// 和erp同步库存
 				if(CollectionUtils.isNotEmpty(saleGoodsList)){
-					StockOperateEnum stockOperateEnum = activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal() ? StockOperateEnum.OVER_SALE_ORDER_INTEGRAL : StockOperateEnum.OVER_SALE_ORDER_EVENT;
-					this.syncGoodsStockBatch(saleGoodsList, null, "", storeId, stockOperateEnum, rpcIdByStockList);
+					StockOperateEnum stockOperateEnum = StockOperateEnum.ACTIVITY_END;
+					if (activityType != null) {
+						stockOperateEnum = (activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()) ? StockOperateEnum.OVER_SALE_ORDER_INTEGRAL : StockOperateEnum.OVER_SALE_ORDER_EVENT;
+					}
+					ActivitySale activitySale = new ActivitySale();
+					activitySale.setType(ActivityTypeEnum.enumValueOf(activityType));
+					this.syncGoodsStockBatch(saleGoodsList, activitySale, "", storeId, stockOperateEnum, rpcIdByStockList);
 				}
 			}
 		} catch (Exception e) {
