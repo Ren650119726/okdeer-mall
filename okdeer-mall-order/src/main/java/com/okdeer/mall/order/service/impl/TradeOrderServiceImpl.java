@@ -656,6 +656,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public Integer selectOrderNumByList(List<OrderStatusEnum> orderStatus, String storeId,
 									List<RefundsStatusEnum> refundsStatusList) {
 		Map<String, Object> map = Maps.newHashMap();
+		if(orderStatus == null || refundsStatusList == null){
+			return 0;
+		}
 		map.put("statusList", orderStatus); 
 		map.put("storeId", storeId);
 		map.put("refundsStatusList", refundsStatusList);
