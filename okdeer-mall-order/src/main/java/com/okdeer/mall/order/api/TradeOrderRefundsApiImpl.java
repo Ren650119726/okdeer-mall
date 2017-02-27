@@ -51,6 +51,7 @@ import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
+import com.okdeer.mall.order.enums.RefundOrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.exception.ExceedRangeException;
 import com.okdeer.mall.order.service.GenerateNumericalService;
@@ -69,42 +70,42 @@ import com.okdeer.mall.order.vo.TradeOrderRefundsVo;
 import com.okdeer.mall.system.service.SysBuyerUserService;
 
 /**
- * ClassName: TradeOrderRefundsApiImpl 
+ * ClassName: TradeOrderRefundsApiImpl
+ * 
  * @Description: 退款服务api实现
  * @author zengjizu
  * @date 2016年11月14日
  *
- * =================================================================================================
- *     Task ID			  Date			     Author		      Description
- * ----------------+----------------+-------------------+-------------------------------------------
- *    v1.2.0             2016-11-16         zengjz            退款接口重新优化
+ *       =======================================================================
+ *       ========================== Task ID Date Author Description
+ *       ----------------+----------------+-------------------+-----------------
+ *       -------------------------- v1.2.0 2016-11-16 zengjz 退款接口重新优化
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderRefundsApi")
 public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 	private static final Logger logger = LoggerFactory.getLogger(TradeOrderRefundsApiImpl.class);
-	
+
 	/** 记录数 */
 	private static final Integer RECORD_NUM = 10000;
-	
+
 	/**
 	 * 凭证说明前缀
 	 */
 	private static final String MSG = "买家申请了退货退款，退款原因：";
-	
+
 	/**
 	 * 云存储退款凭证、评价、投诉图片路径二级域名
 	 */
 	@Value("${realOrderImagePrefix}")
 	private String realOrderImagePrefix;
-	
+
 	/**
 	 * 云存储订单图片路径二级域名
 	 */
 	@Value("${orderImagePrefix}")
 	private String orderImagePrefix;
-	
-	
+
 	@Autowired
 	private GenerateNumericalService generateNumericalService;
 
@@ -116,29 +117,28 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 	@Autowired
 	private TradeOrderItemDetailService tradeOrderItemDetailService;
-	
+
 	@Autowired
 	private TradeOrderRefundsService tradeOrderRefundsService;
-	
+
 	@Autowired
 	private StoreConsumeOrderService storeConsumeOrderService;
-	
+
 	@Autowired
 	private TradeOrderActivityService tradeOrderActivityService;
-	
+
 	@Autowired
 	private TradeOrderPayService tradeOrderPayService;
-	
+
 	@Resource
 	private SysBuyerUserService sysBuyerUserService;
-	
+
 	@Autowired
 	private TradeOrderRefundsCertificateService tradeOrderRefundsCertificateService;
-	
+
 	@Reference(version = "1.0.0", check = false)
 	private StoreInfoServiceApi storeInfoService;
-	
-	
+
 	@Override
 	public StoreConsumerApplyDto storeConsumerApplyRefunds(StoreConsumerApplyParamDto storeConsumerApplyParamDto) {
 		Assert.hasText(storeConsumerApplyParamDto.getOrderId());
@@ -217,21 +217,22 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 			// if (!order.getUserId().equals(buyerUserId)) {
 			// //如果订单的购买者不是当前申请退款的用户，则不让退款
-			// return resultDataMap(DescriptConstants.ORDER_NOT_EXSITS, PublicResultCodeEnum.FAIL);
+			// return resultDataMap(DescriptConstants.ORDER_NOT_EXSITS,
+			// PublicResultCodeEnum.FAIL);
 			// }
-			
+
 			TradeOrderRefunds orderRefunds = buildRefund(order, tradeOrderItem, refundAmount, refundPrefeAmount,
 					quantity);
 			// 退款单来源
-			 orderRefunds.setOrderResource(storeConsumerApplyParamDto.getOrderResource());
-			 orderRefunds.setOperator(storeConsumerApplyParamDto.getUserId());
-			 orderRefunds.setRefundsReason("消费码未消费退款");
-			 orderRefunds.setMemo("消费码未消费退款");
-			 orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
+			orderRefunds.setOrderResource(storeConsumerApplyParamDto.getOrderResource());
+			orderRefunds.setOperator(storeConsumerApplyParamDto.getUserId());
+			orderRefunds.setRefundsReason("消费码未消费退款");
+			orderRefunds.setMemo("消费码未消费退款");
+			orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
 			// 退款凭证信息
-			TradeOrderRefundsCertificateVo certificate = buildCertificate(orderRefunds.getId(), storeConsumerApplyParamDto.getUserId(),null,
-					MSG + "消费码未消费退款" + "，退款说明：" + "消费码未消费退款");
-			
+			TradeOrderRefundsCertificateVo certificate = buildCertificate(orderRefunds.getId(),
+					storeConsumerApplyParamDto.getUserId(), null, MSG + "消费码未消费退款" + "，退款说明：" + "消费码未消费退款");
+
 			storeConsumeOrderService.refundConsumeCode(order, orderRefunds, certificate, waitRefundDetailList);
 			// 返回结果
 			consumerApplyDto.setRefundId(orderRefunds.getId());
@@ -246,21 +247,20 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		}
 		return consumerApplyDto;
 	}
-	
-	
+
 	@Override
 	public PhysicalOrderApplyDto physicalOrderApplyRefunds(PhysicalOrderApplyParamDto physicalOrderApplyParamDto) {
 		Assert.hasText(physicalOrderApplyParamDto.getOrderId());
 		Assert.hasText(physicalOrderApplyParamDto.getUserId());
 		Assert.hasText(physicalOrderApplyParamDto.getOrderItemId());
-		
+
 		PhysicalOrderApplyDto physicalOrderApplyDto = new PhysicalOrderApplyDto();
 		try {
 
 			String orderId = physicalOrderApplyParamDto.getOrderId();
 			// 订单项ID
 			String orderItemId = physicalOrderApplyParamDto.getOrderItemId();
-			
+
 			// 订单详情
 			TradeOrder order = tradeOrderService.selectById(orderId);
 			TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(orderId);
@@ -270,21 +270,23 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 			// if (!order.getUserId().equals(buyerUserId)) {
 			// //如果订单的购买者不是当前申请退款的用户，则不让退款
-			// return resultDataMap(DescriptConstants.ORDER_NOT_EXSITS, PublicResultCodeEnum.FAIL);
+			// return resultDataMap(DescriptConstants.ORDER_NOT_EXSITS,
+			// PublicResultCodeEnum.FAIL);
 			// }
 
-			TradeOrderRefunds orderRefunds = buildRefund(order, tradeOrderItem, tradeOrderItem.getActualAmount(), tradeOrderItem.getPreferentialPrice(),
-					tradeOrderItem.getQuantity());
+			TradeOrderRefunds orderRefunds = buildRefund(order, tradeOrderItem, tradeOrderItem.getActualAmount(),
+					tradeOrderItem.getPreferentialPrice(), tradeOrderItem.getQuantity());
 			// 退款单来源
-			 orderRefunds.setOrderResource(physicalOrderApplyParamDto.getOrderResource());
-			 orderRefunds.setOperator(physicalOrderApplyParamDto.getUserId());
-			 orderRefunds.setRefundsReason(physicalOrderApplyParamDto.getReason());
-			 orderRefunds.setMemo(physicalOrderApplyParamDto.getMemo());
-			 orderRefunds.setRefundsStatus(RefundsStatusEnum.WAIT_SELLER_VERIFY);
-			 // 退款凭证信息
-			TradeOrderRefundsCertificateVo certificate = buildCertificate(orderRefunds.getId(), physicalOrderApplyParamDto.getUserId(),physicalOrderApplyParamDto.getRefundPics(),
+			orderRefunds.setOrderResource(physicalOrderApplyParamDto.getOrderResource());
+			orderRefunds.setOperator(physicalOrderApplyParamDto.getUserId());
+			orderRefunds.setRefundsReason(physicalOrderApplyParamDto.getReason());
+			orderRefunds.setMemo(physicalOrderApplyParamDto.getMemo());
+			orderRefunds.setRefundsStatus(RefundsStatusEnum.WAIT_SELLER_VERIFY);
+			// 退款凭证信息
+			TradeOrderRefundsCertificateVo certificate = buildCertificate(orderRefunds.getId(),
+					physicalOrderApplyParamDto.getUserId(), physicalOrderApplyParamDto.getRefundPics(),
 					MSG + physicalOrderApplyParamDto.getReason() + "，退款说明：" + physicalOrderApplyParamDto.getMemo());
-			
+
 			tradeOrderRefundsService.insertRefunds(orderRefunds, certificate);
 			// 返回结果
 			physicalOrderApplyDto.setRefundId(orderRefunds.getId());
@@ -299,16 +301,22 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		}
 		return physicalOrderApplyDto;
 	}
-	
+
 	/**
 	 * @Description: 构建退款信息
-	 * @param order 订单信息
-	 * @param item 订单项信息
-	 * @param refundAmount 退款金额
-	 * @param refundPrefeAmount 退款优惠金额
-	 * @param quantity 退款数量
-	 * @return  退款对象
-	 * @throws ServiceException 异常
+	 * @param order
+	 *            订单信息
+	 * @param item
+	 *            订单项信息
+	 * @param refundAmount
+	 *            退款金额
+	 * @param refundPrefeAmount
+	 *            退款优惠金额
+	 * @param quantity
+	 *            退款数量
+	 * @return 退款对象
+	 * @throws ServiceException
+	 *             异常
 	 * @author zengjizu
 	 * @date 2016年11月14日
 	 */
@@ -377,7 +385,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 	 * @author zengjizu
 	 * @date 2016年11月14日
 	 */
-	private TradeOrderRefundsCertificateVo buildCertificate(String refundsId, String userId,List<String> refundPics, String remark) {
+	private TradeOrderRefundsCertificateVo buildCertificate(String refundsId, String userId, List<String> refundPics,
+			String remark) {
 
 		TradeOrderRefundsCertificateVo certificate = new TradeOrderRefundsCertificateVo();
 		String certificateId = UuidUtils.getUuid();
@@ -407,8 +416,6 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		return certificate;
 	}
 
-	
-	
 	/**
 	 * 更新退款单状态
 	 */
@@ -719,15 +726,13 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		return tradeOrderRefundsService.findComplainUnPayCount();
 	}
 
-	
-	/***********************************财务系统*****************************************************/
-	
+	/*********************************** 财务系统 *****************************************************/
+
 	@Override
 	public Integer findCountCharge() throws Exception {
 		return tradeOrderRefundsService.findCountChargeForFinance();
 	}
 
-	
 	@Override
 	public PageResultVo<OrderRefundsDto> findeChargeRefundsByParams(Map<String, Object> params) throws Exception {
 		// 参数处理（例如设置默认参数等）
@@ -765,7 +770,6 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		return result;
 	}
 
-	
 	@Override
 	public List<OrderRefundsDto> findeChargeRefundsListByParams(Map<String, Object> params) throws Exception {
 		// 参数处理（例如设置默认参数等）
@@ -813,7 +817,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 	/**
 	 * @Description: 财务系统退款订单参数转换
-	 * @param map   查询参数
+	 * @param map
+	 *            查询参数
 	 * @author zengjizu
 	 * @date 2016年9月17日
 	 */
@@ -825,8 +830,9 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		List<String> statusList = Lists.newArrayList();
 
 		/*
-		 * 退货/退款状态:(0:等待卖家确认,1:买家撤销退款,2:等待买家退货,3:等待卖家收货,4:待卖家退款,5:卖家拒绝退款,6:退款成功, 7
-		 * :卖家拒绝申请,8:申请客服介入,9:客户介入取消,10:云上城退款,11:(纠纷单)云上城退款成功),12:强制卖家退款,13强制卖家退款成功 ,14卖家退款中'
+		 * 退货/退款状态:(0:等待卖家确认,1:买家撤销退款,2:等待买家退货,3:等待卖家收货,4:待卖家退款,5:卖家拒绝退款,6:退款成功,
+		 * 7 :卖家拒绝申请,8:申请客服介入,9:客户介入取消,10:云上城退款,11:(纠纷单)云上城退款成功),12:强制卖家退款,
+		 * 13强制卖家退款成功 ,14卖家退款中'
 		 */
 
 		if (type != null && "complain".equals(type)) {
@@ -862,8 +868,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 	/**
 	 * 
 	 * @Description: 充值订单列表参数处理（用于财务系统）
-	 * @param params   
-	 * @return void 
+	 * @param params
+	 * @return void
 	 * @author wusw
 	 * @date 2016年7月22日
 	 */
@@ -901,27 +907,27 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		params.put("disabled", Disabled.valid);
 	}
 
-
 	@Override
-	public <T> String applyRefund(com.okdeer.mall.order.request.ApplyRefundRequest<T> request) throws Exception {
-		switch (request.getRefundType()) {
-			case PHYSICAL_ORDER :
-				//实物订单处理
-				PhysOrderApplyRefundParamDto applyRefundParamDto =  (PhysOrderApplyRefundParamDto) request.getRequest();
-				return physOrderApplyRefund(applyRefundParamDto);
-			case STORE_CONSUMER :
-				//到店消费订单处理
-				
-			default:
-				break;
+	public <T> String applyRefund(T request, RefundOrderTypeEnum refundtype) throws Exception {
+		switch (refundtype) {
+		case PHYSICAL_ORDER:
+			// 实物订单处理
+			PhysOrderApplyRefundParamDto applyRefundParamDto = (PhysOrderApplyRefundParamDto) request;
+			return physOrderApplyRefund(applyRefundParamDto);
+		case STORE_CONSUMER:
+			// 到店消费订单处理
+
+		default:
+			break;
 		}
 		return null;
-		
+
 	}
-	
+
 	/**
 	 * @Description: 实物订单退款
-	 * @param applyRefundParamDto 退款申请参数
+	 * @param applyRefundParamDto
+	 *            退款申请参数
 	 * @return
 	 * @throws Exception
 	 * @author zengjizu
@@ -937,28 +943,28 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 			order.setTradeOrderPay(tradeOrderPay);
 			// 订单项详情
 			TradeOrderItem tradeOrderItem = applyRefundParamDto.getTradeOrderItem();
-			
-			TradeOrderRefunds orderRefunds = buildRefund(order, tradeOrderItem, tradeOrderItem.getActualAmount(), tradeOrderItem.getPreferentialPrice(),
-					tradeOrderItem.getQuantity());
+
+			TradeOrderRefunds orderRefunds = buildRefund(order, tradeOrderItem, tradeOrderItem.getActualAmount(),
+					tradeOrderItem.getPreferentialPrice(), tradeOrderItem.getQuantity());
 			// 退款单来源
-			 orderRefunds.setOrderResource(applyRefundParamDto.getOrderResource());
-			 orderRefunds.setOperator(order.getUserId());
-			 orderRefunds.setRefundsReason(applyRefundParamDto.getReason());
-			 orderRefunds.setMemo(applyRefundParamDto.getMemo());
-			 orderRefunds.setRefundsStatus(RefundsStatusEnum.WAIT_SELLER_VERIFY);
-			 // 退款凭证信息
-			TradeOrderRefundsCertificateVo certificate = buildCertificate(orderRefunds.getId(), order.getUserId(),applyRefundParamDto.getRefundPics(),
+			orderRefunds.setOrderResource(applyRefundParamDto.getOrderResource());
+			orderRefunds.setOperator(order.getUserId());
+			orderRefunds.setRefundsReason(applyRefundParamDto.getReason());
+			orderRefunds.setMemo(applyRefundParamDto.getMemo());
+			orderRefunds.setRefundsStatus(RefundsStatusEnum.WAIT_SELLER_VERIFY);
+			// 退款凭证信息
+			TradeOrderRefundsCertificateVo certificate = buildCertificate(orderRefunds.getId(), order.getUserId(),
+					applyRefundParamDto.getRefundPics(),
 					MSG + applyRefundParamDto.getReason() + "，退款说明：" + applyRefundParamDto.getMemo());
-			
+
 			tradeOrderRefundsService.insertRefunds(orderRefunds, certificate);
 			// 返回结果
 			return orderRefunds.getId();
 		} catch (Exception e) {
 			logger.error(DescriptConstants.SYS_ERROR, e);
-			throw new Exception(DescriptConstants.SYS_ERROR,e);
+			throw new Exception(DescriptConstants.SYS_ERROR, e);
 		}
-		
+
 	}
-	
 
 }
