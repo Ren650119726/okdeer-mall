@@ -247,8 +247,11 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 					adjustDetailVo.setPrice(goods.getSalePrice());
 					/*************新增字段 end  **************/
 					//Begin V2.1.0 added by 标识同步商品参与特惠  tangy  2017-02-21
+					//根据活动类型标识
 					if(activitySale != null && activitySale.getType() == ActivityTypeEnum.SALE_ACTIVITIES){
 						adjustDetailVo.setIsPreference(true);
+					} else if (activitySale != null && activitySale.getType() == ActivityTypeEnum.LOW_PRICE) {
+						adjustDetailVo.setIsEvent(true);
 					}
 					//End added by tangy
 					adjustDetailList.add(adjustDetailVo);
