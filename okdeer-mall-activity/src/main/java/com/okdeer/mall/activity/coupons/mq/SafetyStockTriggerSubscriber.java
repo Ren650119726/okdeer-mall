@@ -129,8 +129,8 @@ public class SafetyStockTriggerSubscriber {
 				// 库存信息
 				GoodsStoreSkuStock stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
 				//是否达到提醒条件，安全库存大于活动剩余库存
-				if (stock != null && stock.getLocked() != null 
-						&& activitySaleGoods.getSecurityStock().intValue() > stock.getLocked().intValue()) {
+				if (stock != null && stock.getSellable() != null 
+						&& activitySaleGoods.getSecurityStock().intValue() > stock.getSellable().intValue()) {
 					//活动安全库存联系人
 					List<ActivitySaleRemindBo> saleRemind = activitySaleRemindService.findActivitySaleRemindBySaleId(activitySaleGoods.getSaleId());
 					if (CollectionUtils.isNotEmpty(saleRemind)) {
