@@ -21,6 +21,8 @@ import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.OrderOptTypeEnum;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 /**
@@ -57,6 +59,10 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		checkIsBusiness(resp,paramDto,storeInfo);
 		// 检查店铺营业时间
 		checkBusinessTime(resp,paramDto,storeInfo);
+		// Begin V2.1 added by maojj 2017-02-27
+		// 检查店铺是否支持到店自提
+		checkPickUpType(resp,paramDto,storeInfo);
+		// End V2.1 added by maojj 2017-02-27
 		// 缓存店铺信息
 		paramDto.put("storeInfo", storeInfo);
 	}
@@ -208,6 +214,27 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			} else {
 				return false;
 			}
+		}
+	}
+	
+	/**
+	 * @Description: 检查提货类型
+	 * @param resp
+	 * @param paramDto
+	 * @param storeInfo   
+	 * @author maojj
+	 * @date 2017年2月27日
+	 */
+	private void checkPickUpType(Response<PlaceOrderDto> resp,PlaceOrderParamDto paramDto, StoreInfo storeInfo){
+		if (!resp.isSuccess() || paramDto.getOrderType() != PlaceOrderTypeEnum.CVS_ORDER
+				|| paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT
+				|| paramDto.getPickType() != PickUpTypeEnum.TO_STORE_PICKUP) {
+			// 只有当前面几个检查成功，且是便利店的到店自提的订单，才需要进行校验，否则，不检查
+			return;
+		}
+		if(storeInfo.getStoreInfoExt().getIsPickUp() == 0){
+			// 如果店铺不支持到店自提，请求又是到店自提订单，则直接响应失败
+			resp.setResult(ResultCodeEnum.CVS_NOT_SUPPORT_TO_STORE);
 		}
 	}
 
