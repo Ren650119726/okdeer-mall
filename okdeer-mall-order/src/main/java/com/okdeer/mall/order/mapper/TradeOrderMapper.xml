@@ -5229,9 +5229,6 @@
 			#{endTime,jdbcType=TIMESTAMP}
 		</if>
 		<!-- Begin V2.1.0 added by luosm 20170218 -->
-		<if test="cityName != null and cityName != ''">
-			AND member.city_name LIKE CONCAT('%',#{cityName,jdbcType=VARCHAR},'%')
-		</if>
 		<if test="ids != null">
 			AND trade.id in
 			<foreach collection="ids" index="index" item="item" open="("
@@ -5324,9 +5321,6 @@
 		<if test="endTime != null">
 			AND trade.create_time <![CDATA[ <= ]]>
 			#{endTime,jdbcType=TIMESTAMP}
-		</if>
-		<if test="cityName != null and cityName != ''">
-			AND member.city_name LIKE CONCAT('%',#{cityName,jdbcType=VARCHAR},'%')
 		</if>
 		order by trade.create_time desc
 	</select>
