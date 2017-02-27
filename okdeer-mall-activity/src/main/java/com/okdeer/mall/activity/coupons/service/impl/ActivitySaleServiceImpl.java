@@ -548,7 +548,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// 和erp同步库存
 				if(CollectionUtils.isNotEmpty(saleGoodsList)){
 					StockOperateEnum stockOperateEnum = activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal() ? StockOperateEnum.OVER_SALE_ORDER_INTEGRAL : StockOperateEnum.OVER_SALE_ORDER_EVENT;
-					this.syncGoodsStockBatch(saleGoodsList, null, "", storeId, stockOperateEnum, rpcIdByStockList);
+					ActivitySale activitySale = new ActivitySale();
+					activitySale.setType(ActivityTypeEnum.enumValueOf(activityType));
+					this.syncGoodsStockBatch(saleGoodsList, activitySale, "", storeId, stockOperateEnum, rpcIdByStockList);
 				}
 			}
 		} catch (Exception e) {
