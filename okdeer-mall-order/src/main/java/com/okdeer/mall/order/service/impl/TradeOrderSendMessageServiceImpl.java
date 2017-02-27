@@ -17,6 +17,7 @@ import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
+import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mcm.dto.PushMsgDto;
 import com.okdeer.mcm.dto.PushUserDto;
 
@@ -31,7 +32,7 @@ import net.sf.json.JSONObject;
  * =================================================================================================
  *     Task ID            Date               Author            Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *      友门鹿2.1         2017年2月18日                           zhaoqc        便利店订单状态发生改变时发送通知
+ *     友门鹿2.1         2017年2月18日                            zhaoqc         便利店订单状态发生改变时发送通知
  */
 @Service
 public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageService {
@@ -45,6 +46,9 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
     @Value("${mcm.sys.token}")
     private String msgToken;
     
+    @Autowired
+    private TradeOrderService tradeOrderService;
+    
     //日志管理器
     private static final Logger LOGGER = LoggerFactory.getLogger(TradeOrderSendMessageServiceImpl.class);
     
@@ -56,6 +60,19 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
         if(tradeOrder != null) {
             //订单状态为卖家接单，发货，派送，签收和拒收的时候，发送通知
             OrderStatusEnum status = tradeOrder.getStatus();
+            
+            //消息参照业务ID
+            msgDto.setServiceFkId(tradeOrder.getId());
+            //发送对象列表userList
+            List<PushUserDto> userList = new ArrayList<PushUserDto>();
+            PushUserDto userDto = new PushUserDto();
+            //用户Id
+            userDto.setUserId(tradeOrder.getUserId());
+            //用户手机号码
+            userDto.setMobile(tradeOrder.getUserPhone());
+            userList.add(userDto);
+            msgDto.setUserList(userList);
+            
             //根据订单的不同状态组织不同的消息通知内容
             if(status == OrderStatusEnum.DROPSHIPPING) {
                 //卖家已接单（待发货）
@@ -84,6 +101,30 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
         
         if (orderRefunds != null) {
             RefundsStatusEnum refudnsStatus = orderRefunds.getRefundsStatus();
+            
+            //消息参照业务ID
+            msgDto.setServiceFkId(orderRefunds.getId());
+            //发送对象列表userList
+            List<PushUserDto> userList = new ArrayList<PushUserDto>();
+            PushUserDto userDto = new PushUserDto();
+            //用户Id
+            userDto.setUserId(orderRefunds.getUserId());
+            //用户手机号码
+            TradeOrder order = null;
+            try {
+                order = this.tradeOrderService.selectById(orderRefunds.getOrderId());
+            } catch (Exception e) {
+                LOGGER.error("根据交易流水号查询订单异常", e);
+            }
+            
+            if(order != null) {
+                userDto.setMobile(order.getUserPhone());
+            } else {
+                userDto.setMobile("");
+            }
+            userList.add(userDto);
+            msgDto.setUserList(userList);
+            
             if (refudnsStatus == RefundsStatusEnum.WAIT_SELLER_VERIFY) {
                 //用户申请退款
                 msgDto.setMsgNotifyContent("订单退款中");
@@ -103,8 +144,6 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
         msgDto.setSendUserId("8a94e42850f676fb0150f676fb140000");
         //业务类型
         msgDto.setServiceTypes(new Integer[] {2});
-        //消息参照业务ID
-        msgDto.setServiceFkId(tradeOrder.getId());
         //应用类型 0：用户APP
         msgDto.setAppType(0);
         //在消息中心注册的系统编码
@@ -125,19 +164,8 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
         msgDto.setUserTypeSource("systemCode");
         //推送类型
         msgDto.setActualType("getui");
-        
-        //发送对象列表userList
-        List<PushUserDto> userList = new ArrayList<PushUserDto>();
-        PushUserDto userDto = new PushUserDto();
-        //用户Id
-        userDto.setUserId(tradeOrder.getUserId());
-        //用户手机号码
-        userDto.setMobile(tradeOrder.getUserPhone());
-        userList.add(userDto);
-        msgDto.setUserList(userList);
-        
+
         LOGGER.info("发送消息体为：{}", JSONObject.fromObject(msgDto).toString());
-        
         //消息发送
         kafkaProducer.send(JSONObject.fromObject(msgDto).toString());
     }
