@@ -1201,7 +1201,7 @@ public class TradeOrderRefundsServiceImpl
 							
 							TradeOrderVo order = refundsVo.getTradeOrderVo();
 							if (order.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
-								exportVo.setAddress("自提");
+								exportVo.setAddress("到店自提");
 							} else {
 								if (order.getMemberConsigneeAddress() != null) {
 									StringBuilder s = new StringBuilder("");

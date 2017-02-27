@@ -658,7 +658,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// Begin V2.1 add by wusw 20170224
 						exportVo.setActivityTypeName(order.getActivityType().getValue());
 						if (order.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
-							exportVo.setAddress("自提");
+							exportVo.setAddress("到店自提");
 						} else {
 							if (order.getMemberConsigneeAddress() != null) {
 								StringBuilder s = new StringBuilder("");
