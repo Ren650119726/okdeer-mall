@@ -949,13 +949,13 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		if (params.get("cityName") != null) {
 			cityName = params.get("cityName").toString().trim();
 			params.put("cityName", cityName);
-			//begin add by  zhulq  2017-02-23
-			Address address = addressService.getByName(cityName);
+			//begin add by  zhulq  2017-02-28  现在改为模糊搜索 不用城市id精确匹配了
+			/*Address address = addressService.getByName(cityName);
 			if (address != null) {					
 				params.put("cityId", String.valueOf(address.getId()));
 			} else {
 				params.put("cityId", null);
-			}
+			}*/
 			//begin add by  zhulq  2017-02-23
 		}
 		// End V2.1.0 added by luosm 20170215
@@ -1101,31 +1101,51 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 				if (StringUtils.isNotEmpty(vo.getId()) && (vo.getType() == OrderTypeEnum.PHYSICAL_ORDER
 						|| vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
-
+					//begin add by zhulq 2017-02-27
+					//begin 是否退款记录标示
+					int flag = 0;
 					if (CollectionUtils.isNotEmpty(tradeOrderRefundsList)) {
-						dto.setIsRefundsType("是");
+						//dto.setIsRefundsType("是");
 						BigDecimal refundPrice = new BigDecimal("0");
 						BigDecimal refundPreferentialPrice = new BigDecimal("0");
 						for (TradeOrderRefunds tradeOrderRefunds : tradeOrderRefundsList) {
 							if (StringUtils.isNotEmpty(tradeOrderRefunds.getOrderId())
 									&& StringUtils.isNotEmpty(vo.getId())
 									&& vo.getId().equals(tradeOrderRefunds.getOrderId())) {
+								//如果有退款记录则标记为1 
+								flag = 1;
+								BigDecimal dec = new BigDecimal(0);
 								if (tradeOrderRefunds.getTotalAmount() != null) {
 									refundPrice = refundPrice.add(tradeOrderRefunds.getTotalAmount());
-									// 退款总金额
-									dto.setRefundPrice(refundPrice);
+									//如果退款金额比0大 则显示 如果是0 则显示为空  (zhulq)
+									if (refundPrice.compareTo(dec) == 1) {
+										// 退款总金额
+										dto.setRefundPrice(refundPrice);
+									} else {
+										dto.setRefundPrice(null);
+									}
 								}
 								if (tradeOrderRefunds.getTotalPreferentialPrice() != null) {
 									refundPreferentialPrice = refundPreferentialPrice
 											.add(tradeOrderRefunds.getTotalPreferentialPrice());
-									// 退款优惠金额
-									dto.setRefundPreferentialPrice(refundPreferentialPrice);
+									if (refundPreferentialPrice.compareTo(dec) == 1) {
+										// 退款优惠金额
+										dto.setRefundPreferentialPrice(refundPreferentialPrice);
+									} else {
+										dto.setRefundPreferentialPrice(null);
+									}
 								}
 							}
 						}
+					} /*else {
+						dto.setIsRefundsType("否");
+					}*/
+					if (flag == 1) {
+						dto.setIsRefundsType("是");
 					} else {
 						dto.setIsRefundsType("否");
-					}
+					} 
+					//end add by zhulq 2017-02-27  是否退款记录标示
 				}
 
 				String lProviceName = vo.getlProviceName() == null ? "" : vo.getlProviceName();
