@@ -1385,26 +1385,30 @@
 		#{storeId,jdbcType=VARCHAR} AND status = #{status,jdbcType=BIT}
 	</select>
 	
-	<!-- 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用-->
+	<!-- 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用 tuzhd-->
 	<select id="selectOrderNumByStatus" resultType="java.lang.Integer"
 		parameterType="map">
 		SELECT count(distinct t.id) 
 		FROM trade_order t left join trade_order_refunds r on t.id = r.`order_id`
 		WHERE t.store_id = #{storeId,jdbcType=VARCHAR}
+		<!-- 退款单状态必须与订单同时存在  目前为提供给ERP接口调用-->
 		<if test="statusList != null and statusList.size() > 0">
-			AND t.status in
+			AND (
+			t.status in
 			<foreach collection="statusList" index="index" item="item" open="("
 				separator="," close=")">
 				#{item,jdbcType=BIT}
 			</foreach>
+			<if test="refundsStatusList != null and refundsStatusList.size() > 0">
+				or r.refunds_status in
+				<foreach collection="refundsStatusList" index="index" item="item" open="("
+					separator="," close=")">
+					#{item,jdbcType=BIT}
+				</foreach>
+			</if>
+			)
 		</if>
-		<if test="refundsStatusList != null and refundsStatusList.size() > 0">
-			AND r.refunds_status in
-			<foreach collection="refundsStatusList" index="index" item="item" open="("
-				separator="," close=")">
-				#{item,jdbcType=BIT}
-			</foreach>
-		</if>
+		
 	</select>
 
 	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
