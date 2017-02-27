@@ -88,4 +88,14 @@ public interface ColumnAppRecommendGoodsService extends IBaseService {
 	 */
 	PageUtils<ServerGoodsChoolseDto> findServerGoodsChoolseList(ServerGoodsChoolseDto serverGoodsChoolseDto) throws Exception;
 
+	/**
+	 * @Description: 根据服务店商品ID查询需要服务推荐展示商品关联信息
+	 * @param storeSkuIds 服务店商品ID集合
+	 * @throws Exception   
+	 * @return List<ColumnAppRecommendGoods>  
+	 * @author tangzj02
+	 * @date 2017年2月24日
+	 */
+	List<ColumnAppRecommendGoods> findListByStoreSkuIds(List<String> storeSkuIds) throws Exception;
+
 }
