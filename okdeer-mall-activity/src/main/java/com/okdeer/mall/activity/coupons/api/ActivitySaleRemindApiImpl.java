@@ -1,12 +1,19 @@
+
 package com.okdeer.mall.activity.coupons.api;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.mall.activity.coupons.entity.ActivitySaleRemind;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRemindApi;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRemindService;
+import com.okdeer.mall.activity.coupons.vo.ActivitySaleRemindVo;
 
 /**
  * 
@@ -24,15 +31,23 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleRemindService;
 public class ActivitySaleRemindApiImpl implements ActivitySaleRemindApi {
 
 	/**
-	 * logger
-	 */
-	private static final Logger log = LoggerFactory.getLogger(ActivitySaleRemindApiImpl.class);
- 
-	/**
 	 * 安全库存联系关联人
 	 */
 	@Autowired
 	private ActivitySaleRemindService activitySaleRemindService;
- 
+
+	@Override
+	public void update(List<ActivitySaleRemindVo> activitySaleRemindVos, String saleId) throws ServiceException {
+		if (StringUtils.isBlank(saleId)) {
+			return;
+		}
+        // 删除活动安全库存预警联系人
+		activitySaleRemindService.deleteBySaleId(saleId);
+		// 添加活动安全库存预警联系人
+		if (CollectionUtils.isNotEmpty(activitySaleRemindVos)) {
+			List<ActivitySaleRemind> list = BeanMapper.mapList(activitySaleRemindVos, ActivitySaleRemind.class);
+			activitySaleRemindService.insertSelectiveBatch(list);
+		}
+	}
 
 }
