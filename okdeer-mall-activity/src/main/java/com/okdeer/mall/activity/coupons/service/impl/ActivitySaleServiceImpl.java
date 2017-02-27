@@ -176,13 +176,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				&& saleGoods.getSaleStock().intValue() >= activitySaleGoods.getSaleStock().intValue() )) {
 			return;
 		}
-		GoodsStoreSku goodsStoreSku = goodsStoreSkuServiceApi.getById(activitySaleGoods.getStoreSkuId());
 		//如果是组合商品,不需要同步进销存的库存
-		if (goodsStoreSku.getSpuTypeEnum() == SpuTypeEnum.assembleSpu){
-			saleGoods.setSaleStock(activitySaleGoods.getSaleStock());
-		} else{
-			saleGoods.setSaleStock(activitySaleGoods.getSaleStock() - saleGoods.getSaleStock());
-		}
+		saleGoods.setSaleStock(activitySaleGoods.getSaleStock() - saleGoods.getSaleStock());
 		
 		List<ActivitySaleGoods> list = new ArrayList<ActivitySaleGoods>();
 		list.add(saleGoods);
@@ -250,6 +245,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 					//根据活动类型标识
 					if(activitySale != null && activitySale.getType() == ActivityTypeEnum.SALE_ACTIVITIES){
 						adjustDetailVo.setIsPreference(true);
+						stockAdjustVo.setActivityType(activitySale.getType());
 					} else if (activitySale != null && activitySale.getType() == ActivityTypeEnum.LOW_PRICE) {
 						adjustDetailVo.setIsEvent(true);
 					}
