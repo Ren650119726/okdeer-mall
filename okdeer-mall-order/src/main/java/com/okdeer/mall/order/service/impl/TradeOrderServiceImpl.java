@@ -5723,6 +5723,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			if (params.get("cityName") == null || StringUtils.isBlank(params.get("cityName").toString())) {
 				params.remove("cityName");
 			}
+			
+			if (params.get("orderResource") == null || StringUtils.isBlank(params.get("orderResource").toString())) { 
+				params.remove("orderResource");
+			}
+			
 		}
 		// Begin 重构4.1 add by wusw 20160727
 		// 订单默认参数，以便综合用户已支付，却被POS机取消情况的订单
