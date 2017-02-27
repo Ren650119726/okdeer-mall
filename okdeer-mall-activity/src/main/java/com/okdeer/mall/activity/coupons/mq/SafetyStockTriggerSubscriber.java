@@ -18,6 +18,7 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
 import com.okdeer.archive.store.service.ISysUserAndExtServiceApi;
 import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
@@ -137,7 +138,7 @@ public class SafetyStockTriggerSubscriber {
 						//短信提醒联系人
 						List<String> phoneList = new ArrayList<String>();
 						for (ActivitySaleRemindBo activitySaleRemindBo : saleRemind) {
-							if (activitySaleRemindBo.getPhone() != null) {
+							if (StringUtils.isNoneBlank(activitySaleRemindBo.getPhone())) {
 								phoneList.add(activitySaleRemindBo.getPhone());
 							}
 						}
