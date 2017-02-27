@@ -31,6 +31,7 @@ import com.okdeer.common.consts.DescriptConstants;
 import com.okdeer.mall.common.vo.PageResultVo;
 import com.okdeer.mall.order.dto.OrderRefundsDetailDto;
 import com.okdeer.mall.order.dto.OrderRefundsDto;
+import com.okdeer.mall.order.dto.PhysOrderApplyRefundParamDto;
 import com.okdeer.mall.order.dto.PhysicalOrderApplyDto;
 import com.okdeer.mall.order.dto.PhysicalOrderApplyParamDto;
 import com.okdeer.mall.order.dto.RefundsCertificateDto;
@@ -899,5 +900,65 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		params.put("refundsStatus", refundsStatusList);
 		params.put("disabled", Disabled.valid);
 	}
+
+
+	@Override
+	public <T> String applyRefund(com.okdeer.mall.order.request.ApplyRefundRequest<T> request) throws Exception {
+		switch (request.getRefundType()) {
+			case PHYSICAL_ORDER :
+				//实物订单处理
+				PhysOrderApplyRefundParamDto applyRefundParamDto =  (PhysOrderApplyRefundParamDto) request.getRequest();
+				return physOrderApplyRefund(applyRefundParamDto);
+			case STORE_CONSUMER :
+				//到店消费订单处理
+				
+			default:
+				break;
+		}
+		return null;
+		
+	}
+	
+	/**
+	 * @Description: 实物订单退款
+	 * @param applyRefundParamDto 退款申请参数
+	 * @return
+	 * @throws Exception
+	 * @author zengjizu
+	 * @date 2017年2月27日
+	 */
+	private String physOrderApplyRefund(PhysOrderApplyRefundParamDto applyRefundParamDto) throws Exception {
+		Assert.notNull(applyRefundParamDto.getTradeOrder());
+		Assert.notNull(applyRefundParamDto.getTradeOrderItem());
+		try {
+			// 订单详情
+			TradeOrder order = applyRefundParamDto.getTradeOrder();
+			TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(order.getId());
+			order.setTradeOrderPay(tradeOrderPay);
+			// 订单项详情
+			TradeOrderItem tradeOrderItem = applyRefundParamDto.getTradeOrderItem();
+			
+			TradeOrderRefunds orderRefunds = buildRefund(order, tradeOrderItem, tradeOrderItem.getActualAmount(), tradeOrderItem.getPreferentialPrice(),
+					tradeOrderItem.getQuantity());
+			// 退款单来源
+			 orderRefunds.setOrderResource(applyRefundParamDto.getOrderResource());
+			 orderRefunds.setOperator(order.getUserId());
+			 orderRefunds.setRefundsReason(applyRefundParamDto.getReason());
+			 orderRefunds.setMemo(applyRefundParamDto.getMemo());
+			 orderRefunds.setRefundsStatus(RefundsStatusEnum.WAIT_SELLER_VERIFY);
+			 // 退款凭证信息
+			TradeOrderRefundsCertificateVo certificate = buildCertificate(orderRefunds.getId(), order.getUserId(),applyRefundParamDto.getRefundPics(),
+					MSG + applyRefundParamDto.getReason() + "，退款说明：" + applyRefundParamDto.getMemo());
+			
+			tradeOrderRefundsService.insertRefunds(orderRefunds, certificate);
+			// 返回结果
+			return orderRefunds.getId();
+		} catch (Exception e) {
+			logger.error(DescriptConstants.SYS_ERROR, e);
+			throw new Exception(DescriptConstants.SYS_ERROR,e);
+		}
+		
+	}
+	
 
 }
