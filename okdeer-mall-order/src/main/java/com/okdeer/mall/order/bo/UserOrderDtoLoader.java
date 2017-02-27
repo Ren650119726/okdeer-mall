@@ -195,10 +195,11 @@ public class UserOrderDtoLoader {
 		for(ThirdTrainOrderDto order : trainOrderListTemp){
 			orderDto = new UserOrderDto();
 			orderDto.setOrderId(order.getId());
+			orderDto.setTradeNum(order.getTradeNum());
 			orderDto.setActualAmount(ConvertUtil.format(order.getActualAmount()));
 			orderDto.setOrderStatus(order.getStatus());
 			orderDto.setType(AppOrderTypeEnum.TRAIN_ORDER);
-			orderDto.setCreateTime(DateUtils.formatDate(order.getCreateTime()));
+			orderDto.setCreateTime(DateUtils.formatDate(order.getCreateTime(),"yyyy-MM-dd HH:mm:ss"));
 			orderDto.setLogisticsFlag(String.valueOf(LogisticsType.NONE.ordinal()));
 			orderDto.setLogisticsNo("");
 			
@@ -240,7 +241,7 @@ public class UserOrderDtoLoader {
 			itemDto.setMainPicUrl(orderItem.getMainPicPrl());
 			itemDto.setStoreSkuId(orderItem.getStoreSkuId());
 			itemDto.setSkuName(orderItem.getSkuName());
-			itemDto.setPropertiesIndb(orderItem.getPropertiesIndb());
+			itemDto.setPropertiesIndb(ConvertUtil.format(orderItem.getPropertiesIndb()));
 			itemDto.setQuantity(orderItem.getQuantity()==null ? 0 : orderItem.getQuantity().intValue());
 			itemDto.setUnitPrice(ConvertUtil.format(orderItem.getUnitPrice()));
 			itemDto.setUnit(orderItem.getUnit());

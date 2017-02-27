@@ -605,6 +605,14 @@
 				<result column="type" property="type" jdbcType="VARCHAR"
 					javaType="com.okdeer.mall.common.enums.LogisticsType" />
 			</association>
+			<!-- 收货地址信息 -->
+			<association property="memberConsigneeAddress"
+				javaType="com.okdeer.mall.member.member.entity.MemberConsigneeAddress">
+				<result column="province_name" property="provinceName" jdbcType="VARCHAR" />
+				<result column="city_name" property="cityName" jdbcType="VARCHAR" />
+				<result column="area_name" property="areaName" jdbcType="VARCHAR" />
+				<result column="area_ext" property="areaExt" jdbcType="VARCHAR" />
+			</association>
 		</association>
 		<!-- 退货地址信息 -->
 		<association property="tradeOrderRefundsLogistics"
@@ -1067,11 +1075,12 @@
 		order_create_time,o.user_phone,o.actual_amount,o.fare,o.pay_way,o.payment_time,pay.id
 		as pay_id,pay.pay_type,pay.pay_time,
 		tr.id,tr.refund_no,tr.payment_method,su.login_name,su.user_name,tr.operator,tr.create_time,
-		tr.total_amount,tr.refunds_status,tr.total_income,o.order_resource
+		tr.total_amount,tr.refunds_status,tr.total_income,o.order_resource,o.activity_type,address.province_name,address.city_name,address.area_name,address.area_ext
 		FROM trade_order_refunds AS tr
 		LEFT JOIN sys_user su ON su.id=tr.operator
 		LEFT JOIN trade_order AS o ON o.order_no = tr.order_no
 		LEFT JOIN trade_order_pay as pay on pay.order_id = o.id
+		LEFT JOIN member_consignee_address address ON o.pick_up_id = address.id
 		WHERE 1=1
 		<include refid="refund_condition" />
 		<if test="orderTimeSort != null and orderTimeSort != ''">

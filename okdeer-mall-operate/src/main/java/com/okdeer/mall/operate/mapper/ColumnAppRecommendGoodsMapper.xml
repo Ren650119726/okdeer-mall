@@ -66,6 +66,21 @@
 			</foreach>
 		</if>
 	</select>
+	
+	<select id="findListByStoreSkuIds" resultMap="BaseResultMap" parameterType="java.util.List">
+		SELECT
+			goods.id, goods.recommend_id, goods.store_sku_id, goods.sort, goods.is_show
+		FROM  column_app_recommend_goods goods 
+		INNER JOIN column_app_recommend recommend ON recommend.id = goods.recommend_id
+		WHERE recommend. STATUS = 0
+		  AND recommend.disabled = 0
+		  <if test="storeSkuIds != null and storeSkuIds.size() > 0">
+			AND goods.store_sku_id IN
+			<foreach collection="storeSkuIds" index="index" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
 
 	<insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnAppRecommendGoods">
 		insert into column_app_recommend_goods
