@@ -22,6 +22,10 @@ public class UserOrderApiImpl implements UserOrderApi {
 	@Override
 	public AppUserOrderDto findUserOrders(UserOrderParamDto paramDto) throws Exception {
 		UserOrderParamBo paramBo = BeanMapper.map(paramDto, UserOrderParamBo.class);
+		if(paramBo.getPageNumber() == 1){
+			// 如果查询时第一页，则设置创建时间为空
+			paramBo.setCreateTime(null);
+		}
 		return userOrderService.findUserOrders(paramBo);
 	}
 
