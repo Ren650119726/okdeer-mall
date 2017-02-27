@@ -547,7 +547,10 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// 手动关闭或者定时器结束都要把未卖完的数量释放库存
 				// 和erp同步库存
 				if(CollectionUtils.isNotEmpty(saleGoodsList)){
-					StockOperateEnum stockOperateEnum = activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal() ? StockOperateEnum.OVER_SALE_ORDER_INTEGRAL : StockOperateEnum.OVER_SALE_ORDER_EVENT;
+					StockOperateEnum stockOperateEnum = StockOperateEnum.ACTIVITY_END;
+					if (activityType != null) {
+						stockOperateEnum = (activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()) ? StockOperateEnum.OVER_SALE_ORDER_INTEGRAL : StockOperateEnum.OVER_SALE_ORDER_EVENT;
+					}
 					ActivitySale activitySale = new ActivitySale();
 					activitySale.setType(ActivityTypeEnum.enumValueOf(activityType));
 					this.syncGoodsStockBatch(saleGoodsList, activitySale, "", storeId, stockOperateEnum, rpcIdByStockList);
