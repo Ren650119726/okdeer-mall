@@ -4692,12 +4692,12 @@
 		op.pay_time,
 		su.login_name,
 		su.user_name,
-        CONCAT(mca.area, mca.address) AS pick_up_id
+        CONCAT(tol.area, tol.address) AS pick_up_id
 		FROM trade_order tr
 		<!-- LEFT JOIN trade_order_item item ON item.order_id = tr.id -->
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN sys_user su ON su.id=tr.seller_id
-		LEFT JOIN member_consignee_address mca ON mca.id = tr.pick_up_id 
+		LEFT JOIN trade_order_logistics tol ON tol.order_id = tr.id 
 		WHERE 1=1
 		<if test="null!=skuName and '' !=skuName">
 			AND EXISTS(SELECT 1 FROM trade_order_item i WHERE tr.id = i.order_id AND
