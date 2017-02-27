@@ -452,7 +452,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				}
 				if (storeSku.getQuantity()-storeSku.getSkuActQuantity() > 0) {
 					storeSku.setQuantity(storeSku.getQuantity()-storeSku.getSkuActQuantity());
-					adjustDetailVo = buildDetailVo(storeSku, ActivityTypeEnum.LOW_PRICE);
+					adjustDetailVo = buildDetailVo(storeSku, ActivityTypeEnum.NO_ACTIVITY);
 					adjustDetailList.add(adjustDetailVo);
 				}
 			}else if (storeSku.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()) {
