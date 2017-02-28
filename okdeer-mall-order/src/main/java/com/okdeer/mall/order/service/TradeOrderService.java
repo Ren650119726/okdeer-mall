@@ -1057,4 +1057,15 @@ public interface TradeOrderService {
 	 */
 	List<ActivityInfoVO> findActivityInfo(List<String> orderIds);
 	//End V2.1.0 added by luosm 20170220
+
+	// begin V2.1 add by chenzc 2017-2-28
+	/**
+	 * 
+	 * @Description: 统计用户订单数量
+	 * @return PageUtils<TradeOrder>  
+	 * @author chenzc
+	 * @date 2017年2月28日
+	 */
+	int countUserOrders(UserOrderParamBo paramBo);
+	// end V2.1 add by chenzc 2017-2-28
 }
