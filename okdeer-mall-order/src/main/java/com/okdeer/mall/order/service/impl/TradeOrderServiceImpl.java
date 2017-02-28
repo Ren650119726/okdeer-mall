@@ -1030,7 +1030,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				String lProviceName = orderVo.getlProviceName() == null ? "" : orderVo.getlProviceName();
 				String lCityName = orderVo.getlCityName() == null ? "" : orderVo.getlCityName();
 				String lAreaName = orderVo.getlAreaName() == null ? "" : orderVo.getlAreaName();
-				String areaExt = orderVo.getAreaExt() == null ? "" : orderVo.getAreaExt();
+				String areaExt = orderVo.getlAreaExt() == null ? "" : orderVo.getlAreaExt();
 
 				// 定位基点
 				orderVo.setLocateAddress(lProviceName + lCityName + lAreaName + areaExt);
@@ -1038,7 +1038,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				String aProviceName = orderVo.getaProviceName() == null ? "" : orderVo.getaProviceName();
 				String aCityName = orderVo.getaCityName() == null ? "" : orderVo.getaCityName();
 				String aAreaName = orderVo.getaAreaName() == null ? "" : orderVo.getaAreaName();
-				String address = orderVo.getAddress() == null ? "" : orderVo.getAddress();
+				String address = orderVo.getMemberAddress() == null ? "" : orderVo.getMemberAddress();
 
 				// 所属城市
 				orderVo.setCityName(aCityName);
@@ -5486,7 +5486,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		String lProviceName = vo.getlProviceName() == null ? "" : vo.getlProviceName();
 		String lCityName = vo.getlCityName() == null ? "" : vo.getlCityName();
 		String lAreaName = vo.getlAreaName() == null ? "" : vo.getlAreaName();
-		String areaExt = vo.getAreaExt() == null ? "" : vo.getAreaExt();
+		String areaExt = vo.getlAreaExt() == null ? "" : vo.getlAreaExt();
 
 		// 定位基点
 		vo.setLocateAddress(lProviceName + lCityName + lAreaName + areaExt);
@@ -5494,7 +5494,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		String aProviceName = vo.getaProviceName() == null ? "" : vo.getaProviceName();
 		String aCityName = vo.getaCityName() == null ? "" : vo.getaCityName();
 		String aAreaName = vo.getaAreaName() == null ? "" : vo.getaAreaName();
-		String address = vo.getAddress() == null ? "" : vo.getAddress();
+		String address = vo.getMemberAddress() == null ? "" : vo.getMemberAddress();
 
 		// 所属城市
 		vo.setCityName(aCityName);
