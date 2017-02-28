@@ -68,16 +68,12 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 	public void saveOrderTrace(TradeOrder tradeOrder) {
 	    //便利店实物订单状态改变时，发送通知
 	    //Begin 2017-2-18 added by zhaoqc
-	    if(tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
-	        //便利店订单状态发生改变发送消息
-	        OrderStatusEnum currentStatus = tradeOrder.getCurrentStatus();
-	        if(currentStatus != null) {
-	            if(currentStatus != tradeOrder.getStatus()) {
-	                LOGGER.info("便利店订单状态发生改变向用户发送通知消息");
-	                this.sendMessageService.tradeSendMessage(tradeOrder, null);
-	            }
-	        } 
-	    }
+        if(tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+            //便利店订单状态发生改变发送消息
+            LOGGER.info("便利店订单状态发生改变向用户发送通知消息");
+            
+            this.sendMessageService.tradeSendMessage(tradeOrder, null);
+        }
 	    //End
 	        
 		// 只有上门服务的订单需要保存订单轨迹。

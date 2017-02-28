@@ -92,8 +92,13 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
                 msgDto.setMsgDetailContent("买家拒收   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
             } else if (status == OrderStatusEnum.HAS_BEEN_SIGNED) {
                 //订单完成
-                msgDto.setMsgNotifyContent("买家已签收");
-                msgDto.setMsgDetailContent("买家已签收   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
+                OrderStatusEnum currentStatus = tradeOrder.getCurrentStatus();
+                if(currentStatus != null && currentStatus != tradeOrder.getStatus()) {
+                    msgDto.setMsgNotifyContent("买家已签收");
+                    msgDto.setMsgDetailContent("买家已签收   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
+                } else {
+                    return;
+                }
             } else {
                 return;
             }
@@ -103,7 +108,7 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
             RefundsStatusEnum refudnsStatus = orderRefunds.getRefundsStatus();
             
             //消息参照业务ID
-            msgDto.setServiceFkId(orderRefunds.getId());
+            msgDto.setServiceFkId(orderRefunds.getOrderId());
             //发送对象列表userList
             List<PushUserDto> userList = new ArrayList<PushUserDto>();
             PushUserDto userDto = new PushUserDto();
