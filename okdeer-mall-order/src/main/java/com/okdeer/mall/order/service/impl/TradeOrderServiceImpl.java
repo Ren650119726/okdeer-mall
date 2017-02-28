@@ -7168,13 +7168,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 	
 	@Override
-	public int countUserOrders(UserOrderParamBo paramBo) {
+	public long countUserOrders(UserOrderParamBo paramBo) {
 		paramBo.setKeyword(ConvertUtil.format(paramBo.getKeyword()).trim());
+		PageHelper.startPage(1, -1);
 		List<TradeOrder> list = tradeOrderMapper.findUserOrders(paramBo);
-		if (CollectionUtils.isEmpty(list)) {
-			return 0;
-		} else {
-			return list.size();
-		}
+		PageUtils<TradeOrder> page = new PageUtils<TradeOrder>(list);
+		return page.getTotal();
 	}
 }

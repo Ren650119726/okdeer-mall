@@ -95,11 +95,11 @@ public class UserOrderServiceImpl implements UserOrderService {
 		// 统计结果集合
 		Map<String, Object> resultMap = new HashMap<>();
 		// 待支付标识
-		int unPaySum = 0;
+		long unPaySum = 0;
 		// 待收货标识
-		int unReceiptSum = 0;
+		long unReceiptSum = 0;
 		// 待评价标识
-		int unAppraiseSum = 0;
+		long unAppraiseSum = 0;
 		
 		// 统计待付款
 		UserOrderParamBo paramBo = new UserOrderParamBo();

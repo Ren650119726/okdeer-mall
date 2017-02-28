@@ -1066,6 +1066,6 @@ public interface TradeOrderService {
 	 * @author chenzc
 	 * @date 2017年2月28日
 	 */
-	int countUserOrders(UserOrderParamBo paramBo);
+	long countUserOrders(UserOrderParamBo paramBo);
 	// end V2.1 add by chenzc 2017-2-28
 }
