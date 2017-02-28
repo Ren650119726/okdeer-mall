@@ -16,7 +16,6 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
 import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
-import com.okdeer.archive.goods.dto.StoreMenuParamDto;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
@@ -36,7 +35,6 @@ import javax.annotation.Resource;
 import java.util.List;
 
 import static com.okdeer.common.consts.ELTopicTagConstants.*;
-import static com.okdeer.common.consts.StoreMenuTopicTagConstants.TAG_STORE_MENU_UPDATE;
 
 /**
  * ClassName: ELSkuServiceImpl
@@ -116,9 +114,6 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
                         // 业务方法
                         try {
                             activitySaleService.updateBatchStatus(activityIds, status, storeId, createUserId, null);
-                            StoreMenuParamDto paramDto = new StoreMenuParamDto();
-                            paramDto.setStoreId(storeId);
-                            archiveSendMsgService.structureProducerStoreMenu(paramDto, TAG_STORE_MENU_UPDATE);
                         } catch (Exception e) {
                             logger.error("业务发生异常", e);
                         }
