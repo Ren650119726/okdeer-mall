@@ -450,6 +450,8 @@
         <result column="aCity_name" property="aCityName" jdbcType="VARCHAR" />
         <result column="aArea_name" property="aAreaName" jdbcType="VARCHAR" />
         <result column="memberAddress" property="memberAddress" jdbcType="VARCHAR" />
+        <result column="order_type" property="orderType" jdbcType="TINYINT"
+			javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
 		<!-- End V2.1.0 added by luosm 20170222 -->
 		
 	<!-- begin V2.1 added by zhulq 2017-02-17 -->		
@@ -1464,6 +1466,8 @@
 		pay.pay_type,o.user_phone,o.create_time,o.status,o.order_resource,
 		o.pick_up_time,
 		o.delivery_time,
+		o.user_id,
+		o.type as order_type,
 		o.received_time,
 		o.accept_time,
 		o.activity_type,

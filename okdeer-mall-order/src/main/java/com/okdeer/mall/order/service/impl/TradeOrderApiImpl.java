@@ -1122,7 +1122,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 							}
 						}
 					}
-					if (dto.getRefundPrice().compareTo(new BigDecimal(0))==1) {
+					if (dto.getRefundPrice() != null&&dto.getRefundPrice().compareTo(new BigDecimal(0))==1) {
 						dto.setIsRefundsType(WhetherEnum.whether.getValue());
 					} else {
 						dto.setIsRefundsType(WhetherEnum.not.getValue());
