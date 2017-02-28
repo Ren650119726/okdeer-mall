@@ -1864,7 +1864,7 @@
 		AND refunds.disabled = 0
 		AND refunds.is_show = 1
 		<if test="skuName !=null and skuName !=''">
-		   AND item.sku_name  like CONCAT('%',#{skuName},'%') 
+		   AND ( item.sku_name  like CONCAT('%',#{skuName},'%') OR LOCATE(#{skuName},refunds.refund_no) &gt; 0 )
 		</if>
 		ORDER BY refunds.create_time desc
 	</select>
