@@ -18,6 +18,7 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
 import com.okdeer.archive.store.service.ISysUserAndExtServiceApi;
 import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
@@ -129,15 +130,15 @@ public class SafetyStockTriggerSubscriber {
 				// 库存信息
 				GoodsStoreSkuStock stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
 				//是否达到提醒条件，安全库存大于活动剩余库存
-				if (stock != null && stock.getLocked() != null 
-						&& activitySaleGoods.getSecurityStock().intValue() > stock.getLocked().intValue()) {
+				if (stock != null && stock.getSellable() != null 
+						&& activitySaleGoods.getSecurityStock().intValue() > stock.getSellable().intValue()) {
 					//活动安全库存联系人
 					List<ActivitySaleRemindBo> saleRemind = activitySaleRemindService.findActivitySaleRemindBySaleId(activitySaleGoods.getSaleId());
 					if (CollectionUtils.isNotEmpty(saleRemind)) {
 						//短信提醒联系人
 						List<String> phoneList = new ArrayList<String>();
 						for (ActivitySaleRemindBo activitySaleRemindBo : saleRemind) {
-							if (activitySaleRemindBo.getPhone() != null) {
+							if (StringUtils.isNoneBlank(activitySaleRemindBo.getPhone())) {
 								phoneList.add(activitySaleRemindBo.getPhone());
 							}
 						}

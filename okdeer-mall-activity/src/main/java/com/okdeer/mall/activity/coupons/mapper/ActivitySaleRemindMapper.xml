@@ -7,7 +7,7 @@
         <result column="sys_user_id" property="sysUserId" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
-        <result column="phone" property="phone" jdbcType="VARCHAR" />
+        <result column="tel" property="phone" jdbcType="VARCHAR" />
     </resultMap>
 
     <sql id="Base_Column_List" >
@@ -23,7 +23,7 @@
     
     <select id="findActivitySaleRemindBySaleId" resultMap="BaseResultMap" parameterType="java.lang.String" >
         select 
-        asr.id, asr.sale_id, asr.sys_user_id, asr.create_time, asr.create_user_id, su.user_name, su.phone
+        asr.id, asr.sale_id, asr.sys_user_id, asr.create_time, asr.create_user_id, su.user_name, su.tel 
         FROM activity_sale_remind asr
         LEFT JOIN sys_user su ON su.id = asr.sys_user_id
         WHERE asr.sale_id = #{saleId,jdbcType=VARCHAR}

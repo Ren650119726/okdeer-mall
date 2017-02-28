@@ -325,7 +325,7 @@ public class TradeOrderBuilder {
 			StoreInfoExt storeInfoExt = ((StoreInfo)paramDto.get("storeInfo")).getStoreInfoExt();
 			StoreInfo storeInfo = storeInfoServiceApi.selectDefaultAddressById(paramDto.getStoreId());
 			// 获取默认地址
-			String defaultAddressId = storeInfo.getMemberConsignee().getId();
+			String defaultAddressId = storeInfo.getAddressId();
 			tradeOrder.setPickUpId(defaultAddressId);
 			if (StringUtils.isNotEmpty(pickTime)) {
 				tradeOrder.setPickUpTime(pickTime);
