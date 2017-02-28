@@ -195,7 +195,7 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				if(storeSkuBo.getSkuActQuantity() < skuActNumMap.get(storeSkuBo.getId())){
 					resp.setMessage(ResultCodeEnum.LOW_BUY_IS_OUT.getDesc());
 				}
-			}else if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+			}else if(storeSkuBo.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()){
 				// 特惠商品，判断商品购买数量和活动商品数量
 				if(storeSkuBo.getQuantity() > storeSkuBo.getSellable() || storeSkuBo.getQuantity() > storeSkuBo.getLocked()){
 					if(kindSize > 1){
