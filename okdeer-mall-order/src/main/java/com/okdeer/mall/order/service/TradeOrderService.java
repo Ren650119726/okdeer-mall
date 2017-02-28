@@ -17,6 +17,7 @@ import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.vo.ActivityInfoVO;
+import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderExportVo;
@@ -106,9 +107,11 @@ public interface TradeOrderService {
 	 * 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用
 	 * @param orderStatus 订单状态集合
 	 * @param storeId 店铺id
+	 * @param refundsStatusList 退款单状态
 	 * @return
 	 */
-	Integer selectOrderNumByList(List<OrderStatusEnum> orderStatus, String storeId);
+	public Integer selectOrderNumByList(List<OrderStatusEnum> orderStatus, String storeId,
+									List<RefundsStatusEnum> refundsStatusList);
 
 	TradeOrder selectById(String id) throws ServiceException;
 
