@@ -70,9 +70,13 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 	    //Begin 2017-2-18 added by zhaoqc
 	    if(tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
 	        //便利店订单状态发生改变发送消息
-	        LOGGER.info("便利店订单状态发生改变向用户发送通知消息");
-	        
-	        this.sendMessageService.tradeSendMessage(tradeOrder, null);
+	        OrderStatusEnum currentStatus = tradeOrder.getCurrentStatus();
+	        if(currentStatus != null) {
+	            if(currentStatus != tradeOrder.getStatus()) {
+	                LOGGER.info("便利店订单状态发生改变向用户发送通知消息");
+	                this.sendMessageService.tradeSendMessage(tradeOrder, null);
+	            }
+	        } 
 	    }
 	    //End
 	        
