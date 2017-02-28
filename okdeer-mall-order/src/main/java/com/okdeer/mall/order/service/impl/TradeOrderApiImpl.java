@@ -118,7 +118,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 	@Autowired
 	private TradeOrderActivityService tradeOrderActivityService;
-	
+
 	@Reference(version = "1.0.0", check = false)
 	private ActivityCouponsServiceApi activityCouponsService;
 
@@ -149,22 +149,22 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
-	
+
 	/***
 	 * 邀请信息
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private InvitationCodeServiceApi invitationCodeService;
-	
+
 	@Reference(version = "1.0.0", check = false)
 	private ActivityDiscountServiceApi activityDiscountService;
-	
+
 	@Reference(version = "1.0.0", check = false)
 	private ActivitySaleServiceApi activitySaleService;
-	
+
 	@Reference(version = "1.0.0", check = false)
 	private ActivitySeckillServiceApi activitySeckillService;
-	
+
 	@Reference(version = "1.0.0", check = false)
 	private TradeOrderRefundsServiceApi tradeOrderRefundsService;
 	// End V2.1.0 added by luosm 2017-02-16
@@ -861,14 +861,14 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		if (params.get("cityName") != null) {
 			cityName = params.get("cityName").toString().trim();
 			params.put("cityName", cityName);
-			//begin add by  zhulq  2017-02-23
+			// begin add by zhulq 2017-02-23
 			Address address = addressService.getByName(cityName);
-			if (address != null) {					
+			if (address != null) {
 				params.put("cityId", String.valueOf(address.getId()));
 			} else {
 				params.put("cityId", null);
 			}
-			//begin add by  zhulq  2017-02-23
+			// begin add by zhulq 2017-02-23
 		}
 		// End V2.1.0 added by luosm 20170215
 
@@ -925,12 +925,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			// 收货地址
 			dto.setAddress(aProviceName + aCityName + aAreaName + address);
 			// End V2.1.0 added by luosm 2017-02-16
-			
-			//begin add by zhulq  充值订单所属城市和完成时间设置
+
+			// begin add by zhulq 充值订单所属城市和完成时间设置
 			dto.setLocateCityName(vo.getCityName());
 			dto.setCompleteTime(vo.getUpdateTime());
-			//begin add by zhulq  充值订单所属城市和完成时间设置
-			
+			// begin add by zhulq 充值订单所属城市和完成时间设置
+
 			dtoList.add(dto);
 		}
 		return dtoList;
@@ -949,14 +949,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		if (params.get("cityName") != null) {
 			cityName = params.get("cityName").toString().trim();
 			params.put("cityName", cityName);
-			//begin add by  zhulq  2017-02-28  现在改为模糊搜索 不用城市id精确匹配了
-			/*Address address = addressService.getByName(cityName);
-			if (address != null) {					
-				params.put("cityId", String.valueOf(address.getId()));
-			} else {
-				params.put("cityId", null);
-			}*/
-			//begin add by  zhulq  2017-02-23
+			// begin add by zhulq 2017-02-28 现在改为模糊搜索 不用城市id精确匹配了
+			/*
+			 * Address address = addressService.getByName(cityName); if (address != null) { params.put("cityId",
+			 * String.valueOf(address.getId())); } else { params.put("cityId", null); }
+			 */
+			// begin add by zhulq 2017-02-23
 		}
 		// End V2.1.0 added by luosm 20170215
 
@@ -1011,17 +1009,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				dto.setPreferentialPrice(vo.getPreferentialPrice());
 				// Begin 重构4.1 add by wusw 20160725
 				dto.setCreateTime(vo.getCreateTime());
-				/*if (vo.getOrderResource() != null) {
-					if (vo.getOrderResource() == OrderResourceEnum.YSCAPP
-							|| vo.getOrderResource() == OrderResourceEnum.WECHAT
-							// Begin V2.0.0 add by wusw 20170109
-							|| vo.getOrderResource() == OrderResourceEnum.CVSAPP) {
-						// End V2.0.0 add by wusw 20170109
-						dto.setOrderResource(0);
-					} else {
-						dto.setOrderResource(1);
-					}
-				}*/
+				/*
+				 * if (vo.getOrderResource() != null) { if (vo.getOrderResource() == OrderResourceEnum.YSCAPP ||
+				 * vo.getOrderResource() == OrderResourceEnum.WECHAT // Begin V2.0.0 add by wusw 20170109 ||
+				 * vo.getOrderResource() == OrderResourceEnum.CVSAPP) { // End V2.0.0 add by wusw 20170109
+				 * dto.setOrderResource(0); } else { dto.setOrderResource(1); } }
+				 */
 				// End 重构4.1 add by wusw 20160725
 				dto.setStatus(vo.getStatus().ordinal());
 				if (vo.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
@@ -1101,51 +1094,32 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 				if (StringUtils.isNotEmpty(vo.getId()) && (vo.getType() == OrderTypeEnum.PHYSICAL_ORDER
 						|| vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
-					//begin add by zhulq 2017-02-27
-					//begin 是否退款记录标示
-					int flag = 0;
 					if (CollectionUtils.isNotEmpty(tradeOrderRefundsList)) {
-						//dto.setIsRefundsType("是");
 						BigDecimal refundPrice = new BigDecimal("0");
 						BigDecimal refundPreferentialPrice = new BigDecimal("0");
 						for (TradeOrderRefunds tradeOrderRefunds : tradeOrderRefundsList) {
 							if (StringUtils.isNotEmpty(tradeOrderRefunds.getOrderId())
 									&& StringUtils.isNotEmpty(vo.getId())
 									&& vo.getId().equals(tradeOrderRefunds.getOrderId())) {
-								//如果有退款记录则标记为1 
-								flag = 1;
-								BigDecimal dec = new BigDecimal(0);
 								if (tradeOrderRefunds.getTotalAmount() != null) {
 									refundPrice = refundPrice.add(tradeOrderRefunds.getTotalAmount());
-									//如果退款金额比0大 则显示 如果是0 则显示为空  (zhulq)
-									if (refundPrice.compareTo(dec) == 1) {
-										// 退款总金额
-										dto.setRefundPrice(refundPrice);
-									} else {
-										dto.setRefundPrice(null);
-									}
+									// 退款总金额
+									dto.setRefundPrice(refundPrice);
 								}
 								if (tradeOrderRefunds.getTotalPreferentialPrice() != null) {
 									refundPreferentialPrice = refundPreferentialPrice
 											.add(tradeOrderRefunds.getTotalPreferentialPrice());
-									if (refundPreferentialPrice.compareTo(dec) == 1) {
-										// 退款优惠金额
-										dto.setRefundPreferentialPrice(refundPreferentialPrice);
-									} else {
-										dto.setRefundPreferentialPrice(null);
-									}
+									// 退款优惠金额
+									dto.setRefundPreferentialPrice(refundPreferentialPrice);
 								}
 							}
 						}
-					} /*else {
-						dto.setIsRefundsType("否");
-					}*/
-					if (flag == 1) {
+					}
+					if (dto.getRefundPrice().compareTo(new BigDecimal(0))==1) {
 						dto.setIsRefundsType("是");
 					} else {
 						dto.setIsRefundsType("否");
-					} 
-					//end add by zhulq 2017-02-27  是否退款记录标示
+					}
 				}
 
 				String lProviceName = vo.getlProviceName() == null ? "" : vo.getlProviceName();
@@ -1171,10 +1145,10 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 				// End V2.1.0 added by luosm 2017-02-18
 
-				//begin add by zhulq  充值订单所属城市和完成时间设置
+				// begin add by zhulq 充值订单所属城市和完成时间设置
 				dto.setLocateCityName(vo.getCityName());
 				dto.setCompleteTime(vo.getUpdateTime());
-				//begin add by zhulq  充值订单所属城市和完成时间设置
+				// begin add by zhulq 充值订单所属城市和完成时间设置
 				result.add(dto);
 			}
 		}
