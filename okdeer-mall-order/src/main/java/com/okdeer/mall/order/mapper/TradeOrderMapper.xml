@@ -1552,16 +1552,26 @@
 	<!-- 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用-->
 	<select id="selectOrderNumByStatus" resultType="java.lang.Integer"
 		parameterType="map">
-		SELECT count(1) 
-		FROM trade_order 
-		WHERE store_id = #{storeId,jdbcType=VARCHAR}
-		<if test="statusList != null and statusList.size() > 0">
-			AND status in
+		select count(trade.id) from ( 
+		SELECT d.id 
+		FROM trade_order d
+		WHERE d.store_id = #{storeId,jdbcType=VARCHAR}
+			AND d.status in
 			<foreach collection="statusList" index="index" item="item" open="("
 				separator="," close=")">
 				#{item,jdbcType=BIT}
 			</foreach>
-		</if> 
+		UNION
+		SELECT distinct t.id
+		FROM trade_order t left join trade_order_refunds r on t.id = r.order_id
+		WHERE t.store_id = #{storeId,jdbcType=VARCHAR}
+			<!-- 退款单状态必须与订单同时存在  目前为提供给ERP接口调用-->
+			AND r.refunds_status in
+			<foreach collection="refundsStatusList" index="index" item="item" open="("
+				separator="," close=")">
+				#{item,jdbcType=BIT}
+			</foreach>
+		) trade
 	</select>
 
 	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
