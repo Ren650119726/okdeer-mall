@@ -291,6 +291,13 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		/***********************/
 		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
 		AdjustDetailVo adjustDetailVo = new AdjustDetailVo();
+		//Begin V2.1.0 added by tangy  2017-02-28
+		// 活动信息
+		ActivitySale activitySale = activitySaleMapper.get(goods.getSaleId());
+		if (activitySale != null) {
+			stockAdjustVo.setActivityType(activitySale.getType());
+		}
+		//End added by tangy
 		adjustDetailVo.setStoreSkuId(goods.getStoreSkuId());
 		// adjustDetailVo.setNum(goods.getSaleStock());
 		// begin zhangkn 和曾俊和刘玄确认过,这个值,erp那边没用,传0过去,减少对erp的干扰
