@@ -7166,4 +7166,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public List<TradeOrderRefunds> findRefundsList(List<String> orderIds) {
 		return tradeOrderRefundsMapper.selectByOrderIds(orderIds);
 	}
+	
+	@Override
+	public int countUserOrders(UserOrderParamBo paramBo) {
+		paramBo.setKeyword(ConvertUtil.format(paramBo.getKeyword()).trim());
+		List<TradeOrder> list = tradeOrderMapper.findUserOrders(paramBo);
+		if (CollectionUtils.isEmpty(list)) {
+			return 0;
+		} else {
+			return list.size();
+		}
+	}
 }
