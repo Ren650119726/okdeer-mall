@@ -229,6 +229,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				AdjustDetailVo adjustDetailVo = new AdjustDetailVo();
 				adjustDetailVo.setStoreSkuId(goods.getStoreSkuId());
 				adjustDetailVo.setNum(goods.getSaleStock());
+				stockAdjustVo.setActivityType(activitySale != null ? activitySale.getType() : null);
 				if(entity.getSpuTypeEnum() == SpuTypeEnum.assembleSpu){
 					//如果是组合商品,不需要同步进销存的库存
 					adjustDetailVo.setGoodsName(entity.getName());
@@ -245,7 +246,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 					//根据活动类型标识
 					if(activitySale != null && activitySale.getType() == ActivityTypeEnum.SALE_ACTIVITIES){
 						adjustDetailVo.setIsPreference(true);
-						stockAdjustVo.setActivityType(activitySale.getType());
 					} else if (activitySale != null && activitySale.getType() == ActivityTypeEnum.LOW_PRICE) {
 						adjustDetailVo.setIsEvent(true);
 					}
@@ -429,9 +429,15 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			activitySaleGoodsMapper.saveBatch(asgList);
 			// 同步差集部分商品，也就是原来是特惠商品，然后本次编辑没勾选，所以这批商品需要释放库存。
 			if (CollectionUtils.isNotEmpty(saleGoodsList)) {
+				StockOperateEnum operateEnum = StockOperateEnum.ACTIVITY_END;
+				if (activitySale != null && activitySale.getType() == ActivityTypeEnum.SALE_ACTIVITIES) {
+					operateEnum = StockOperateEnum.OVER_SALE_ORDER_INTEGRAL;
+				} else if (activitySale != null && activitySale.getType() == ActivityTypeEnum.LOW_PRICE) {
+					operateEnum = StockOperateEnum.OVER_SALE_ORDER_INTEGRAL;
+				}
 				// 库存同步
 				this.syncGoodsStockBatch(saleGoodsList, activitySale, activitySale.getCreateUserId(), activitySale.getStoreId(),
-						StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
+						operateEnum, rpcIdByStockList);
 			}
 			// 新加商品的库存同步，需要增加锁定库存
 			// 库存同步
