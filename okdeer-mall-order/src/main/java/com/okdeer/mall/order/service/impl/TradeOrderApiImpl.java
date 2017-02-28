@@ -1132,7 +1132,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				String lProviceName = vo.getlProviceName() == null ? "" : vo.getlProviceName();
 				String lCityName = vo.getlCityName() == null ? "" : vo.getlCityName();
 				String lAreaName = vo.getlAreaName() == null ? "" : vo.getlAreaName();
-				String areaExt = vo.getAreaExt() == null ? "" : vo.getAreaExt();
+				String areaExt = vo.getlAreaExt() == null ? "" : vo.getlAreaExt();
 
 				// 定位基点
 				dto.setLocation(lProviceName + lCityName + lAreaName + areaExt);

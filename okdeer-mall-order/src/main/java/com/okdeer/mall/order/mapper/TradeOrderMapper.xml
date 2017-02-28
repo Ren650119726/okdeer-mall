@@ -289,7 +289,7 @@
 		<result column="lProvice_name" property="lProviceName" jdbcType="VARCHAR" />
         <result column="lCity_name" property="lCityName" jdbcType="VARCHAR" />
         <result column="lArea_name" property="lAreaName" jdbcType="VARCHAR" />
-        <result column="area_ext" property="areaExt" jdbcType="VARCHAR" />
+        <result column="lArea_ext" property="lAreaExt" jdbcType="VARCHAR" />
         <result column="aProvice_name" property="aProviceName" jdbcType="VARCHAR" />
         <result column="aCity_name" property="aCityName" jdbcType="VARCHAR" />
         <result column="aArea_name" property="aAreaName" jdbcType="VARCHAR" />
