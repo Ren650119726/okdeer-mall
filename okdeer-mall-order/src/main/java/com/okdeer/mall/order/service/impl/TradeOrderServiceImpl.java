@@ -1000,7 +1000,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						|| orderVo.getOrderType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
 
 					if (CollectionUtils.isNotEmpty(tradeOrderRefundsList)) {
-						orderVo.setWhetherRefund(WhetherEnum.whether);
 						BigDecimal refundPrice = new BigDecimal("0");
 						BigDecimal refundPreferentialPrice = new BigDecimal("0");
 						for (TradeOrderRefunds tradeOrderRefunds : tradeOrderRefundsList) {
@@ -1020,8 +1019,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 								}
 							}
 						}
-					} else {
-						orderVo.setWhetherRefund(WhetherEnum.not);
+						if (orderVo.getRefundsAmount().compareTo(new BigDecimal(0)) == 1) {
+							orderVo.setWhetherRefund(WhetherEnum.whether);
+						} else {
+							orderVo.setWhetherRefund(WhetherEnum.not);
+						}
 					}
 				}
 
@@ -1090,6 +1092,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			List<String> orderIds = null;
 			// 代理商ID集合
 			List<String> agentIds = null;
+
+			// 用户ID集合
+			List<String> userIds = new ArrayList<String>();
 			// 如果没有根据店铺来搜索，sql中不会加载店铺信息，需要再次查询店铺信息
 			if (StringUtils.isBlank(vo.getStoreName()) && vo.getType() == null) {
 				storeIds = new ArrayList<String>();
@@ -1112,10 +1117,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				if (agentIds != null && StringUtils.isNotBlank(order.getAgentId())) {
 					agentIds.add(order.getAgentId());
 				}
+				if (StringUtils.isNotEmpty(order.getUserId())) {
+					userIds.add(order.getUserId());
+				}
 			}
 
 			// 构建实物订单实体
-			buildPhysicsOrderVo(result, storeIds, orderIds, agentIds);
+			buildPhysicsOrderVo(result, storeIds, orderIds, agentIds, userIds);
 		}
 		return new PageUtils<PhysicsOrderVo>(result);
 	}
@@ -1135,7 +1143,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @date 2016年8月17日
 	 */
 	private void buildPhysicsOrderVo(List<PhysicsOrderVo> result, List<String> storeIds, List<String> orderIds,
-			List<String> agentIds) {
+			List<String> agentIds, List<String> userIds) {
 		// 店铺集合
 		List<StoreInfo> storeInfoList = null;
 		// 订单支付集合
@@ -1152,7 +1160,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (CollectionUtils.isNotEmpty(agentIds)) {
 			agentList = this.psmsAgentServiceApi.selectByIds(agentIds);
 		}
-
+		List<SysUserInvitationLoginNameVO> inviteNameLists = null;
+		if (CollectionUtils.isNotEmpty(userIds)) {
+			inviteNameLists = invitationCodeService.selectLoginNameByUserId(userIds);
+		}
 		// 循环将对应信息加入到订单实体中
 		for (PhysicsOrderVo order : result) {
 			if (CollectionUtils.isNotEmpty(storeInfoList)) {
@@ -1191,6 +1202,25 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			order.setCityName(aCityName);
 			// 收货地址
 			order.setAddress(aProviceName + aCityName + aAreaName + address);
+
+			// 获取邀请人姓名
+			if (CollectionUtils.isNotEmpty(inviteNameLists)) {
+				for (SysUserInvitationLoginNameVO loginNameVO : inviteNameLists) {
+					if (StringUtils.isNotEmpty(loginNameVO.getsLoginName())
+							&& StringUtils.isNotEmpty(loginNameVO.getUserId())
+							&& StringUtils.isNotEmpty(order.getUserId())
+							&& order.getUserId().equals(loginNameVO.getUserId())) {
+						order.setInvitationUserName(loginNameVO.getsLoginName());
+					}
+
+					if (StringUtils.isNotEmpty(loginNameVO.getbLoginName())
+							&& StringUtils.isNotEmpty(loginNameVO.getUserId())
+							&& StringUtils.isNotEmpty(order.getUserId())
+							&& order.getUserId().equals(loginNameVO.getUserId())) {
+						order.setInvitationUserName(loginNameVO.getbLoginName());
+					}
+				}
+			}
 			// End V2.1.0 added by luosm 20170215
 		}
 	}
@@ -5621,12 +5651,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (result == null) {
 			result = new ArrayList<ERPTradeOrderVo>();
 		}
-		
-		 //Begin V2.1.0 added by luosm 20170224
-		 Page<ERPTradeOrderVo> page = (Page<ERPTradeOrderVo>) result;
-		 int total = tradeOrderMapper.countOrderForFinanceByParams(params);
-		 page.setTotal(total);
-		//End V2.1.0 added by luosm 20170224	
+
+		// Begin V2.1.0 added by luosm 20170224
+		Page<ERPTradeOrderVo> page = (Page<ERPTradeOrderVo>) result;
+		int total = tradeOrderMapper.countOrderForFinanceByParams(params);
+		page.setTotal(total);
+		// End V2.1.0 added by luosm 20170224
 		return new PageUtils<ERPTradeOrderVo>(result);
 	}
 
@@ -5723,8 +5753,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			if (params.get("cityName") == null || StringUtils.isBlank(params.get("cityName").toString())) {
 				params.remove("cityName");
 			}
-			
-			if (params.get("orderResource") == null || StringUtils.isBlank(params.get("orderResource").toString())) { 
+
+			if (params.get("orderResource") == null || StringUtils.isBlank(params.get("orderResource").toString())) {
 				params.remove("orderResource");
 			}
 			
