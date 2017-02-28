@@ -1019,11 +1019,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 								}
 							}
 						}
-						if (orderVo.getRefundsAmount().compareTo(new BigDecimal(0)) == 1) {
-							orderVo.setWhetherRefund(WhetherEnum.whether);
-						} else {
-							orderVo.setWhetherRefund(WhetherEnum.not);
-						}
+					}
+					if (orderVo.getRefundsAmount()!=null&&orderVo.getRefundsAmount().compareTo(new BigDecimal(0)) == 1) {
+						orderVo.setWhetherRefund(WhetherEnum.whether);
+					} else {
+						orderVo.setWhetherRefund(WhetherEnum.not);
 					}
 				}
 
