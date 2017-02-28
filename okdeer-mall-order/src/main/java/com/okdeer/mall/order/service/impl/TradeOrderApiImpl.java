@@ -61,10 +61,10 @@ import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.ActivityBelongType;
-import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
+import com.okdeer.mall.order.enums.PreferentialType;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.exception.ExceedRangeException;
 import com.okdeer.mall.order.service.CancelOrderService;
@@ -1078,9 +1078,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				// 优惠类型
 				if (vo.getActivityType().ordinal() != 0) {
 					if (vo.getIncome() != null && vo.getActualAmount().compareTo(vo.getIncome()) == -1) {
-						dto.setPreferentialType("平台优惠");// 0为平台优惠
+						dto.setPreferentialType(PreferentialType.PLATFORM.getValue());// 0为平台优惠
 					} else if (vo.getIncome() != null && vo.getActualAmount().compareTo(vo.getIncome()) == 0) {
-						dto.setPreferentialType("店铺优惠");// 1为店铺优惠
+						dto.setPreferentialType(PreferentialType.STORE.getValue());// 1为店铺优惠
 					}
 				}
 
@@ -1101,51 +1101,32 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 				if (StringUtils.isNotEmpty(vo.getId()) && (vo.getType() == OrderTypeEnum.PHYSICAL_ORDER
 						|| vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
-					//begin add by zhulq 2017-02-27
-					//begin 是否退款记录标示
-					int flag = 0;
 					if (CollectionUtils.isNotEmpty(tradeOrderRefundsList)) {
-						//dto.setIsRefundsType("是");
 						BigDecimal refundPrice = new BigDecimal("0");
 						BigDecimal refundPreferentialPrice = new BigDecimal("0");
 						for (TradeOrderRefunds tradeOrderRefunds : tradeOrderRefundsList) {
 							if (StringUtils.isNotEmpty(tradeOrderRefunds.getOrderId())
 									&& StringUtils.isNotEmpty(vo.getId())
 									&& vo.getId().equals(tradeOrderRefunds.getOrderId())) {
-								//如果有退款记录则标记为1 
-								flag = 1;
-								BigDecimal dec = new BigDecimal(0);
 								if (tradeOrderRefunds.getTotalAmount() != null) {
 									refundPrice = refundPrice.add(tradeOrderRefunds.getTotalAmount());
-									//如果退款金额比0大 则显示 如果是0 则显示为空  (zhulq)
-									if (refundPrice.compareTo(dec) == 1) {
-										// 退款总金额
-										dto.setRefundPrice(refundPrice);
-									} else {
-										dto.setRefundPrice(null);
-									}
+									// 退款总金额
+									dto.setRefundPrice(refundPrice);
 								}
 								if (tradeOrderRefunds.getTotalPreferentialPrice() != null) {
 									refundPreferentialPrice = refundPreferentialPrice
 											.add(tradeOrderRefunds.getTotalPreferentialPrice());
-									if (refundPreferentialPrice.compareTo(dec) == 1) {
-										// 退款优惠金额
-										dto.setRefundPreferentialPrice(refundPreferentialPrice);
-									} else {
-										dto.setRefundPreferentialPrice(null);
-									}
+									// 退款优惠金额
+									dto.setRefundPreferentialPrice(refundPreferentialPrice);
 								}
 							}
 						}
-					} /*else {
-						dto.setIsRefundsType("否");
-					}*/
-					if (flag == 1) {
-						dto.setIsRefundsType("是");
+					}
+					if (dto.getRefundPrice().compareTo(new BigDecimal(0))==1) {
+						dto.setIsRefundsType(WhetherEnum.whether.getValue());
 					} else {
-						dto.setIsRefundsType("否");
-					} 
-					//end add by zhulq 2017-02-27  是否退款记录标示
+						dto.setIsRefundsType(WhetherEnum.not.getValue());
+					}
 				}
 
 				String lProviceName = vo.getlProviceName() == null ? "" : vo.getlProviceName();
