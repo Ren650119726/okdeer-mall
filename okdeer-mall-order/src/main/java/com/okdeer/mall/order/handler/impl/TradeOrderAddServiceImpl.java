@@ -37,7 +37,6 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.framework.mq.MessageDelayTimeLevelUtils;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.common.consts.LogConstants;
@@ -985,8 +984,6 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			try {
 				if(!preferenceMap.isEmpty()){
 					MQMessage msg = new MQMessage(SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER,order.getId(),(Serializable)preferenceMap);
-					// 发送延迟消息，延迟30s
-					msg.setDelayTimeLevel(MessageDelayTimeLevelUtils.getDelayLevel(30));
 					rocketMQProducer.sendMessage(msg);
 				}
 			} catch (Exception e) {
