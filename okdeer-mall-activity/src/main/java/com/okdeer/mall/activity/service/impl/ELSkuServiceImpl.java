@@ -19,6 +19,7 @@ import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.el.service.ELSkuApi;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
@@ -113,7 +114,7 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
                     public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
                         // 业务方法
                         try {
-                            activitySaleService.updateBatchStatus(activityIds, status, storeId, createUserId, null);
+                            activitySaleService.updateBatchStatus(activityIds, status, storeId, createUserId, ActivityTypeEnum.SALE_ACTIVITIES.ordinal());
                         } catch (Exception e) {
                             logger.error("业务发生异常", e);
                         }
