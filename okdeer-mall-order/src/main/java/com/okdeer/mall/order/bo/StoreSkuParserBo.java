@@ -281,6 +281,7 @@ public class StoreSkuParserBo {
 					// 如果是低价或者特惠
 					storeSkuBo.setSellable(stock.getSellable());
 					storeSkuBo.setLocked(stock.getLocked());
+					break;
 				case SECKILL_ACTIVITY:
 					// 如果是秒杀。将锁定库存设置为可售库存。为了统一服务商品库存的判断，所以此处作此处理。
 					storeSkuBo.setSellable(stock.getLocked());
