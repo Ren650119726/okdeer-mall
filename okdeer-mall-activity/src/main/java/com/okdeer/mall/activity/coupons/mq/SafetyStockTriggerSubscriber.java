@@ -16,6 +16,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
+import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.store.service.ISysUserAndExtServiceApi;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
@@ -89,6 +90,12 @@ public class SafetyStockTriggerSubscriber {
      */
     @Reference(version = "1.0.0", check = false)
     ISmsService smsService;
+
+	/**
+	 * 库存管理Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private StockManagerJxcServiceApi stockManagerJxcServiceApi;
    
 	@SuppressWarnings("unchecked")
 	@RocketMQListener(topic = SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER, tag = "*")
@@ -127,8 +134,9 @@ public class SafetyStockTriggerSubscriber {
 				if (activitySaleGoods.getIsRemind() != null && activitySaleGoods.getIsRemind().intValue() > 0) {
 					return;
 				}
-				// 库存信息
-				GoodsStoreSkuStock stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
+				// 查询零售库存信息，避免数据同步延时不准确
+//				GoodsStoreSkuStock stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
+				GoodsStoreSkuStock stock = stockManagerJxcServiceApi.findGoodsStockInfo(storeSkuId);
 				//是否达到提醒条件，安全库存大于活动剩余库存
 				if (stock != null && stock.getSellable() != null 
 						&& activitySaleGoods.getSecurityStock().intValue() > stock.getSellable().intValue()) {

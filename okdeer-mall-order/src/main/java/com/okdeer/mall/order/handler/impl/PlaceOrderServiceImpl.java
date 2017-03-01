@@ -43,7 +43,6 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
 import com.okdeer.mall.activity.coupons.mq.constants.SafetyStockTriggerTopic;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleRemindApi;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
@@ -391,7 +390,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				Map<String,String> preferenceMap = parserBo.extraPreferenceMap();
 				if(preferenceMap != null && !preferenceMap.isEmpty()){
 					// 如果存在特惠商品，则发送库存提醒消息
-					MQMessage msg = new MQMessage(SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER, (Serializable)parserBo.extraPreferenceMap());
+					MQMessage msg = new MQMessage(SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER,tradeOrder.getId(), (Serializable)parserBo.extraPreferenceMap());
 					rocketMQProducer.sendMessage(msg);
 				}
 			} catch (Exception e) {
