@@ -158,7 +158,12 @@
 	  			#{item}  
 	 		</foreach>  
 		</if>
-		
+		<if test="skuTypeList != null and skuTypeList.size != 0">
+			and s.type in 
+			<foreach item="item" index="index" collection="skuTypeList" open="(" separator="," close=")">  
+	  			#{item}  
+	 		</foreach>  
+		</if>
 		<if test="skuType != null">
 			and s.type = #{skuType}
 		</if>
