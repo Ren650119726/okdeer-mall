@@ -482,10 +482,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 		TradeOrderRespDto respDto = new TradeOrderRespDto();
         boolean flag = false;
         
-        //将入参拆分，0位业务参数 1客户端类型
-        String params[] = reqJsonStr.split(",");
-        
-        RechargeOrderReqDto reqDto = JsonMapper.nonDefaultMapper().fromJson(params[0], RechargeOrderReqDto.class);
+        RechargeOrderReqDto reqDto = JsonMapper.nonDefaultMapper().fromJson(reqJsonStr, RechargeOrderReqDto.class);
         //创建订单
         TradeOrder tradeOrder = new TradeOrder();
         TradeOrderItem tradeOrderItem = new TradeOrderItem();
@@ -638,9 +635,9 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         tradeOrder.setDisabled(Disabled.valid);
         tradeOrder.setCreateTime(new Date());
         tradeOrder.setUpdateTime(new Date());
-        String clientType = params[1];
-        if(StringUtils.isNullOrEmpty(clientType)) {
-            tradeOrder.setOrderResource(OrderResourceEnum.enumValueOf(Integer.parseInt(clientType)));
+        Integer clientType = reqDto.getClientType();
+        if(clientType != null) {
+            tradeOrder.setOrderResource(OrderResourceEnum.enumValueOf(clientType));
         } else {
             tradeOrder.setOrderResource(OrderResourceEnum.YSCAPP);
         }
