@@ -34,7 +34,6 @@ import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.framework.mq.MessageDelayTimeLevelUtils;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
@@ -44,7 +43,6 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
 import com.okdeer.mall.activity.coupons.mq.constants.SafetyStockTriggerTopic;
-import com.okdeer.mall.activity.coupons.service.ActivitySaleRemindApi;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
@@ -71,7 +69,6 @@ import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.system.utils.ConvertUtil;
-import com.okdeer.mcm.constant.MsgConstant.MsgDetailType;
 
 import net.sf.json.JSONObject;
 
