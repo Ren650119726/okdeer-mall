@@ -6,6 +6,8 @@
  */
 package com.okdeer.mall.system.api.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -47,6 +49,15 @@ public class SysRandCodeRecordApiImpl implements SysRandCodeRecordApi {
 	@Override
 	public void deleteRecordByRandCodeByCode(String code) throws ServiceException {
 		sysRandCodeRecordService.deleteRecordByRandCodeByCode(code);
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.system.service.SysRandCodeRecordApi#findValidRandCodeList()
+	 */
+	@Override
+	public List<String> findValidRandCodeList() throws ServiceException {
+		return sysRandCodeRecordService.findValidRandCodeList();
 	}
 
 }

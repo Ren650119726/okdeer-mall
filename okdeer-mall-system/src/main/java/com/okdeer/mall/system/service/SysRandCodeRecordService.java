@@ -1,5 +1,7 @@
 package com.okdeer.mall.system.service;
 
+import java.util.List;
+
 import com.okdeer.base.common.exception.ServiceException;
 
 /**
@@ -33,5 +35,14 @@ public interface SysRandCodeRecordService {
 	 * @date 2017年2月27日
 	 */
 	void deleteRecordByRandCodeByCode(String code) throws ServiceException;
+
+	/**
+	 * @Description: 获取全部有效邀请码列表
+	 * @throws ServiceException   
+	 * @return List<String>  
+	 * @author tangzj02
+	 * @date 2017年3月1日
+	 */
+	List<String> findValidRandCodeList() throws ServiceException;
 
 }
