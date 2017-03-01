@@ -246,7 +246,7 @@ public class TradeOrderBuilder {
 	 * @date 2016年12月22日
 	 */
 	public void setOrderStatus(TradeOrder tradeOrder,int payType){
-		// 支付方式：0：在线支付、1:货到付款、6：微信支付
+		// 支付方式：0：在线支付、1:货到付款、6：微信支付 4：线下确认并当面支付
 		switch (payType) {
 			case 0:
 			case 6:

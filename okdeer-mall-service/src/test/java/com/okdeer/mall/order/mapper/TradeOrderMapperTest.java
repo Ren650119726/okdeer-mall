@@ -13,6 +13,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -95,6 +97,9 @@ public class TradeOrderMapperTest extends BaseServiceTest{
 
 	@Test
 	public void testFindUserOrders(){
-		tradeOrderMapper.findUserOrders(userOrderQry);
+		PageHelper.startPage(1, -1);
+		List<TradeOrder> list = tradeOrderMapper.findUserOrders(userOrderQry);
+		PageUtils<TradeOrder> page = new PageUtils<TradeOrder>(list);
+		System.out.println(page.getTotal());
 	}
 }
