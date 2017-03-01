@@ -1260,6 +1260,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				// 如果过滤器不接受该优惠，则将该优惠从列表中移除
 				it.remove();
 			}else{
+				coupons.setFirstUserLimit(coupons.getUseUserType().ordinal());
 				coupons.setMaxFavourStrategy(genericMaxFavourStrategy.calMaxFavourRule(coupons, paramBo.getTotalAmount()));
 			}
 		}
