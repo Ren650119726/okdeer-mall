@@ -7,6 +7,7 @@
 package com.okdeer.mall.system.service.impl;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,15 @@ public class SysRandCodeRecordServiceImpl implements SysRandCodeRecordService {
 			sysRandCodeRecordMapper.updateSysRandCodeRecord(record);
 		}
 
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.system.service.SysRandCodeRecordService#findValidRandCodeList()
+	 */
+	@Override
+	public List<String> findValidRandCodeList() throws ServiceException {
+		return sysRandCodeRecordMapper.findValidRandCodeList();
 	}
 
 }
