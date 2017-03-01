@@ -34,6 +34,7 @@ import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.MessageDelayTimeLevelUtils;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
@@ -70,6 +71,7 @@ import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.system.utils.ConvertUtil;
+import com.okdeer.mcm.constant.MsgConstant.MsgDetailType;
 
 import net.sf.json.JSONObject;
 
@@ -391,7 +393,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				Map<String,String> preferenceMap = parserBo.extraPreferenceMap();
 				if(preferenceMap != null && !preferenceMap.isEmpty()){
 					// 如果存在特惠商品，则发送库存提醒消息
-					MQMessage msg = new MQMessage(SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER, (Serializable)parserBo.extraPreferenceMap());
+					MQMessage msg = new MQMessage(SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER,tradeOrder.getId(), (Serializable)parserBo.extraPreferenceMap());
 					rocketMQProducer.sendMessage(msg);
 				}
 			} catch (Exception e) {
