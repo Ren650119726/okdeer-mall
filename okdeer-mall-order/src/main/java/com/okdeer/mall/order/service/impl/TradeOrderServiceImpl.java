@@ -253,6 +253,7 @@ import net.sf.json.JSONObject;
  *      V2.0.0            2017-01-12        wusw              修改低价商品订单的优惠显示问题
  *      V2.0.0            2017-01-17        wusw              修改服务订单详情的商品规格为null判断
  *      V2.1.0            2017-02-24        wusw              修改实物订单导出
+ *      V2.1.0            2017-03-01        wusw               判断订单是否超时，避免异常情况 
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -798,6 +799,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		// 1 订单支付倒计时计算
 		UserTradeOrderDetailVo orders = tradeOrderMapper.selectRemainTimeById(orderId);
+		// Begin 避免异常情况 add by wusw 20170301
+		if (orders == null) {
+			return null;
+		}
+		// End 避免异常情况 add by wusw 20170301
 		Integer remainingTime = orders.getRemainingTime();
 		Map<String, Object> map = new HashMap<String, Object>();
 		if (remainingTime != null) {
