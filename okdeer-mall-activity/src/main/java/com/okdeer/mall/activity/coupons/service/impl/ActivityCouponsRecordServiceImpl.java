@@ -621,7 +621,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		updateCouponsRecode(record, activityCoupons);
 		//map.put("data", null);
 		map.put("msg", successMsg);
-		map.put("code", 100);
+		map.put("code", 0);
 		return map;
 	}
 	
