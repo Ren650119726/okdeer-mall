@@ -481,7 +481,11 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 	public TradeOrderRespDto addRechargeTradeOrderV110(String reqJsonStr) throws Exception {
 		TradeOrderRespDto respDto = new TradeOrderRespDto();
         boolean flag = false;
-        RechargeOrderReqDto reqDto = JsonMapper.nonDefaultMapper().fromJson(reqJsonStr, RechargeOrderReqDto.class);
+        
+        //将入参拆分，0位业务参数 1客户端类型
+        String params[] = reqJsonStr.split(",");
+        
+        RechargeOrderReqDto reqDto = JsonMapper.nonDefaultMapper().fromJson(params[0], RechargeOrderReqDto.class);
         //创建订单
         TradeOrder tradeOrder = new TradeOrder();
         TradeOrderItem tradeOrderItem = new TradeOrderItem();
@@ -611,6 +615,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         }
         
         tradeOrder.setActualAmount(actualAmount);
+        tradeOrder.setIncome(actualAmount);
         
         tradeOrderItem.setUnitPrice(totalAmount);
         tradeOrderItem.setTotalAmount(totalAmount);
@@ -633,7 +638,13 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         tradeOrder.setDisabled(Disabled.valid);
         tradeOrder.setCreateTime(new Date());
         tradeOrder.setUpdateTime(new Date());
-        tradeOrder.setOrderResource(OrderResourceEnum.YSCAPP);
+        String clientType = params[1];
+        if(StringUtils.isNullOrEmpty(clientType)) {
+            tradeOrder.setOrderResource(OrderResourceEnum.enumValueOf(Integer.parseInt(clientType)));
+        } else {
+            tradeOrder.setOrderResource(OrderResourceEnum.YSCAPP);
+        }
+        
         tradeOrder.setPayWay(PayWayEnum.PAY_ONLINE);
         tradeOrder.setIsComplete(OrderComplete.NO);
         tradeOrder.setTradeNum(TradeNumUtil.getTradeNum());

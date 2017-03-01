@@ -50,6 +50,7 @@ import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
+import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 
 /**
@@ -70,6 +71,7 @@ import com.okdeer.mall.order.service.TradeOrderServiceApi;
  *     V1.1.0          2016年10月5日                              zhaoqc             新增余额支付到店消费订单处理  
  *     V1.1.0			2016-10-15		   wushp				邀请注册首单返券
  *     V1.2.0 		    2016-11-14		   maojj			代码优化
+ *     V2.1.0          2017年3月1日                                zhaoqc             余额支付退款时发送通知
  */
 @Service
 public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
@@ -140,6 +142,9 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	@Resource
 	private TradeOrderCompleteProcessService tradeOrderCompleteProcessService;
     
+	@Resource
+    private TradeOrderSendMessageService sendMessageService;
+	
 	@Override
 	public String getTopic() {
 		return TOPIC_PAY_RESULT;
@@ -311,6 +316,12 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 				tradeOrderRefunds.setRefundMoneyTime(new Date());
 				tradeOrderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
 				tradeOrderRefundsService.updateRefunds(tradeOrderRefunds);
+				
+				//Begin 便利店退款成功，向用户推送消息 added by zhaoqc
+                logger.info("退款成功向用户发送通知消息");
+                this.sendMessageService.tradeSendMessage(null, tradeOrderRefunds);
+                //End added by zhaoqc 2017-03-1
+				
 				// 订单完成后同步到商业管理系统
 				tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(tradeOrderRefunds.getId());
 			} else {
