@@ -85,6 +85,7 @@ public class SafetyStockTriggerSubscriber {
 	/**
 	 * GoodsStoreSkuServiceApi注入
 	 */
+	@Reference(version="1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 	
 	/**
@@ -109,7 +110,7 @@ public class SafetyStockTriggerSubscriber {
 	@RocketMQListener(topic = SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER, tag = "*")
 	public ConsumeConcurrentlyStatus trigger(MQMessage enMessage) {
 		Map<String, String> storeSkuIdMap =  (Map<String, String>) enMessage.getContent();
-		log.debug("活动安全库存信息：{}", JsonMapper.nonEmptyMapper().toJson(storeSkuIdMap));
+		log.info("活动安全库存信息：{}", JsonMapper.nonEmptyMapper().toJson(storeSkuIdMap));
 		if (storeSkuIdMap != null && storeSkuIdMap.size() > 0) {
 			// 判断是否需要短信提醒
 			for(String storeSkuId: storeSkuIdMap.keySet()){ 
@@ -130,7 +131,7 @@ public class SafetyStockTriggerSubscriber {
 	 */
 	private void sendSafetyWarning(String storeSkuId, String saleId){
 		try {
-			log.debug("活动商品安全库存预警:{},{}", storeSkuId, saleId);
+			log.info("活动商品安全库存预警:{},{}", storeSkuId, saleId);
 			ActivitySaleGoods saleGoods = new ActivitySaleGoods();
 			saleGoods.setStoreSkuId(storeSkuId);
 			saleGoods.setSaleId(saleId);
