@@ -1,6 +1,9 @@
 package com.okdeer.mall.activity.bo;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
@@ -49,7 +52,7 @@ public class FavourParamBuilder {
 	 * @author maojj
 	 * @date 2017年2月15日
 	 */
-	public FavourParamBO build(PlaceOrderParamDto paramDto,PlaceOrderDto orderDto){
+	public FavourParamBO build(PlaceOrderParamDto paramDto,PlaceOrderDto orderDto,Set<String> spuCategoryIds){
 		FavourParamBO paramBO = new FavourParamBO();
 		// 获取店铺类型
 		StoreTypeEnum storeType = ((StoreInfo)paramDto.get("storeInfo")).getType();
@@ -68,6 +71,7 @@ public class FavourParamBuilder {
 			}
 		}
 		paramBO.setClientType(EnumAdapter.convert(paramDto.getChannel()));
+		paramBO.setSpuCategoryIds(spuCategoryIds);
 		return paramBO;
 	}
 	
@@ -93,6 +97,7 @@ public class FavourParamBuilder {
 			paramBO.setAddressId(req.getAddressId());
 		}
 		paramBO.setClientType(EnumAdapter.convert(reqDto.getData().getOrderResource()));
+		paramBO.setSpuCategoryIds(reqDto.getContext().getSpuCategoryIds());
 		return paramBO;
 	}
 	
@@ -132,6 +137,7 @@ public class FavourParamBuilder {
 			}
 		}
 		paramBO.setClientType(EnumAdapter.convert(req.getOrderResource()));
+		paramBO.setSpuCategoryIds((Set<String>)req.getContext().get("spuCategoryIds"));
 		return paramBO;
 	}
 	
@@ -156,6 +162,9 @@ public class FavourParamBuilder {
 				paramBO.setAddressId(orderReq.getAddressId());
 			}
 		}
+		List<String> skuIdList = new ArrayList<String>();
+		skuIdList.add(orderReq.getSkuId());
+		paramBO.setSkuIdList(skuIdList);
 		return paramBO;
 	}
 }
