@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -27,6 +29,8 @@ import com.google.common.collect.Maps;
 import com.okdeer.api.pay.account.dto.PayUpdateAmountDto;
 import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
@@ -177,6 +181,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	// Begin added by maojj 2017-02-15
 	@Resource
 	private MaxFavourStrategy genericMaxFavourStrategy;
+	
+	/**
+	 * 店铺商品Api
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 	// End added by maojj 2017-02-15
 
 	@Override
@@ -1256,6 +1266,19 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		Coupons coupons = null;
 		while(it.hasNext()){
 			coupons = it.next();
+			if(coupons.getIsCategory() == Constant.ONE && CollectionUtils.isEmpty(paramBo.getSpuCategoryIds())){
+				// 如果代金券指定分类，且paramBo的分类为空，则重新查询
+				// 当前店铺商品信息
+				List<GoodsStoreSku> currentStoreSkuList = goodsStoreSkuServiceApi.findStoreSkuForOrder(paramBo.getSkuIdList());
+		        //商品类型ids
+				Set<String> spuCategoryIds = new HashSet<String>();
+				if (CollectionUtils.isNotEmpty(currentStoreSkuList)) {
+					for (GoodsStoreSku goodsStoreSku : currentStoreSkuList) {
+						spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
+					}
+				}
+				paramBo.setSpuCategoryIds(spuCategoryIds);
+			}
 			if(!favourFilter.accept(coupons)){
 				// 如果过滤器不接受该优惠，则将该优惠从列表中移除
 				it.remove();

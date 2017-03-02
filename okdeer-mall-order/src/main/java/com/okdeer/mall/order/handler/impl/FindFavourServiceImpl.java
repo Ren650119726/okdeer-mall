@@ -52,7 +52,7 @@ public class FindFavourServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			return;
 		}
 		
-		FavourParamBO favourParamBO = favourParamBuilder.build(paramDto, resp.getData());
+		FavourParamBO favourParamBO = favourParamBuilder.build(paramDto, resp.getData(),parserBo.getCategoryIdSet());
 		// 订单总金额存入上下文，后续流程需要使用
 		paramDto.put("totalAmount", favourParamBO.getTotalAmount());
 		// 查询用户的可用优惠
