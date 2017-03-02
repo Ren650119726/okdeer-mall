@@ -564,6 +564,8 @@
 				jdbcType="VARCHAR" />
 			<result column="service_assurance" property="serviceAssurance"
 				jdbcType="INTEGER" />
+				<!-- add by zhulq  订单商品规格 -->
+			<result column="unit" property="unit" jdbcType="VARCHAR" />
 			<!-- 订单项详情信息，服务订单特有属性 -->
 			<collection property="tradeOrderItemDetails"
 				ofType="com.okdeer.mall.order.entity.TradeOrderItemDetail">
@@ -2726,7 +2728,7 @@
 		tr.is_breach,tr.breach_percent,tr.breach_money,tr.accept_time,
 		ti.id as invoice_id,ti.head,ti.context,it.service_assurance,
 		it.id as
-		item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,tr.reason,it.properties_indb,
+		item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,tr.reason,it.properties_indb,it.unit,
 		ol.id AS
 		logistics_id,ol.consignee_name,ol.mobile,ol.area,ol.address,ol.logistics_company_name,ol.logistics_no,ol.type
 		AS logisticsType,
@@ -4814,7 +4816,8 @@
 		ol.consignee_name,
 		ol.mobile,
 		ol.area,
-		ol.address
+		ol.address,
+		it.unit
 		FROM trade_order AS tr
 		LEFT JOIN trade_order_item AS it ON it.order_id
 		= tr.id
