@@ -119,9 +119,9 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
 					// 如果代金券指定分类，检查分类是否超出指定分类
 					List<String> categoryIdLimitList = null;
-					if(coupons.getCouponsType() == CouponsType.bld.ordinal()){
+					if(coupons.getType() == CouponsType.bld.ordinal()){
 						categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
-					}else if(coupons.getCouponsType() == CouponsType.fwd.ordinal()){
+					}else if(coupons.getType() == CouponsType.fwd.ordinal()){
 						categoryIdLimitList = goodsNavigateCategoryServiceApi
 								.findNavigateCategoryBySkuIds(paramBo.getSpuCategoryIds());
 					}
