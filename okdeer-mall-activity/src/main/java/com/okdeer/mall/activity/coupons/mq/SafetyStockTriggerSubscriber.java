@@ -137,31 +137,48 @@ public class SafetyStockTriggerSubscriber {
 				// 查询零售库存信息，避免数据同步延时不准确
 //				GoodsStoreSkuStock stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
 				GoodsStoreSkuStock stock = stockManagerJxcServiceApi.findGoodsStockInfo(storeSkuId);
+				// 零售没有组合商品信息
+				if (stock == null) {
+					stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
+				}
 				//是否达到提醒条件，安全库存大于活动剩余库存
 				if (stock != null && stock.getSellable() != null 
 						&& activitySaleGoods.getSecurityStock().intValue() > stock.getSellable().intValue()) {
-					//活动安全库存联系人
-					List<ActivitySaleRemindBo> saleRemind = activitySaleRemindService.findActivitySaleRemindBySaleId(activitySaleGoods.getSaleId());
-					if (CollectionUtils.isNotEmpty(saleRemind)) {
-						//短信提醒联系人
-						List<String> phoneList = new ArrayList<String>();
-						for (ActivitySaleRemindBo activitySaleRemindBo : saleRemind) {
-							if (StringUtils.isNoneBlank(activitySaleRemindBo.getPhone())) {
-								phoneList.add(activitySaleRemindBo.getPhone());
-							}
-						}
-						//是否有需要发送提醒短信的联系人
-						if (CollectionUtils.isNotEmpty(phoneList)) {
-							activitySaleGoods.setIsRemind(1);
-						    activitySaleGoodsServiceApi.updateActivitySaleGoods(activitySaleGoods);
-							sendMessg(phoneList);
-						}
-					}
+					getSaleReminds(activitySaleGoods);
 				}
 			}
 		} catch (Exception e) {
 			log.error("活动安全库存预警异常,{}", e);
 			return;
+		}
+	}
+	
+	/**
+	 * 
+	 * @Description: 获取活动安全库存联系人
+	 * @param activitySaleGoods
+	 * @throws Exception   
+	 * @return void  
+	 * @author tangy
+	 * @date 2017年3月1日
+	 */
+	private void getSaleReminds(ActivitySaleGoods activitySaleGoods) throws Exception{
+		//活动安全库存联系人
+		List<ActivitySaleRemindBo> saleRemind = activitySaleRemindService.findActivitySaleRemindBySaleId(activitySaleGoods.getSaleId());
+		if (CollectionUtils.isNotEmpty(saleRemind)) {
+			//短信提醒联系人
+			List<String> phoneList = new ArrayList<String>();
+			for (ActivitySaleRemindBo activitySaleRemindBo : saleRemind) {
+				if (StringUtils.isNoneBlank(activitySaleRemindBo.getPhone())) {
+					phoneList.add(activitySaleRemindBo.getPhone());
+				}
+			}
+			//是否有需要发送提醒短信的联系人
+			if (CollectionUtils.isNotEmpty(phoneList)) {
+				activitySaleGoods.setIsRemind(1);
+			    activitySaleGoodsServiceApi.updateActivitySaleGoods(activitySaleGoods);
+				sendMessg(phoneList);
+			}
 		}
 	}
 
