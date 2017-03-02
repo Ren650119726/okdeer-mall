@@ -6,14 +6,18 @@
  */
 package com.okdeer.mall.system.service.impl;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.common.utils.CommonUtils;
 import com.okdeer.mall.system.entity.SysRandCodeRecord;
 import com.okdeer.mall.system.mapper.SysRandCodeRecordMapper;
 import com.okdeer.mall.system.service.SysRandCodeRecordService;
@@ -36,16 +40,32 @@ public class SysRandCodeRecordServiceImpl implements SysRandCodeRecordService {
 	private SysRandCodeRecordMapper sysRandCodeRecordMapper;
 
 	/**
+	 * RedisTemplate
+	 */
+	@Autowired
+	private RedisTemplate<String, String> redisTemplate;
+
+	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.mall.system.service.SysRandCodeRecordService#findRecordByRandCode()
 	 */
 	@Override
 	public String findRecordByRandCode() throws ServiceException {
-		SysRandCodeRecord record = sysRandCodeRecordMapper.getOneRandCode();
-		if (null != record) {
-			return record.getRandomCode();
+		// 通过redis获取一个邀请码
+		String randCode = (String) redisTemplate.boundListOps("MALL:RANDCODE").rightPop();
+		// 如果获取不到则初始化一redis中的邀请码数据
+		if (StringUtils.isBlank(randCode)) {
+			redisTemplate.delete("MALL:RANDCODE");
+			List<String> recordList = sysRandCodeRecordMapper.findValidRandCodeList();
+			Collections.shuffle(recordList);
+			List<List<String>> splitList = CommonUtils.splitList(recordList);
+			for (List<String> list : splitList) {
+				redisTemplate.boundListOps("MALL:RANDCODE").leftPushAll(list.toArray(new String[list.size()]));
+			}
+			// 初始化完以后， 重新从redis中获取一个邀请码
+			randCode = (String) redisTemplate.boundListOps("MALL:RANDCODE").rightPop();
 		}
-		return null;
+		return randCode;
 	}
 
 	/**
