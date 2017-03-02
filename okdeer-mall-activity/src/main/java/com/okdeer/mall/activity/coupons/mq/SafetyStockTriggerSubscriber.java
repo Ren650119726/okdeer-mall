@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.store.service.ISysUserAndExtServiceApi;
@@ -80,6 +83,11 @@ public class SafetyStockTriggerSubscriber {
 	private ISysUserAndExtServiceApi sysUserAndExtService;
 	
 	/**
+	 * GoodsStoreSkuServiceApi注入
+	 */
+	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
+	
+	/**
 	 * GoodsStoreSkuStockServiceApi注入
 	 */
 	@Reference(version="1.0.0", check = false)
@@ -134,17 +142,16 @@ public class SafetyStockTriggerSubscriber {
 				if (activitySaleGoods.getIsRemind() != null && activitySaleGoods.getIsRemind().intValue() > 0) {
 					return;
 				}
-				// 查询零售库存信息，避免数据同步延时不准确
-//				GoodsStoreSkuStock stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
-				GoodsStoreSkuStock stock = stockManagerJxcServiceApi.findGoodsStockInfo(storeSkuId);
-				// 零售没有组合商品信息
-				if (stock == null) {
-					stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
-				}
+				
+				// 商品库存
+				GoodsStoreSkuStock stock = findByStoreSkuId(storeSkuId);
+				 
 				//是否达到提醒条件，安全库存大于活动剩余库存
 				if (stock != null && stock.getSellable() != null 
 						&& activitySaleGoods.getSecurityStock().intValue() > stock.getSellable().intValue()) {
 					getSaleReminds(activitySaleGoods);
+				} else {
+					
 				}
 			}
 		} catch (Exception e) {
@@ -152,6 +159,32 @@ public class SafetyStockTriggerSubscriber {
 			return;
 		}
 	}
+	
+	/**
+	 * 
+	 * @Description: 查询商品库存
+	 * @param storeSkuId  店铺商品id
+	 * @return GoodsStoreSkuStock  
+	 * @author tangy
+	 * @date 2017年3月2日
+	 */
+	private GoodsStoreSkuStock findByStoreSkuId(String storeSkuId) throws Exception{
+		// 商品信息
+		GoodsStoreSku goodsStoreSku = goodsStoreSkuServiceApi.getById(storeSkuId);
+		// 商品库存
+		GoodsStoreSkuStock stock = null;
+		if (goodsStoreSku != null) {
+			if (goodsStoreSku.getSpuTypeEnum() == SpuTypeEnum.assembleSpu) {
+				// 组合商品查询商城数据库
+	            stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
+			} else {
+				// 查询零售库存信息，避免数据同步延时不准确
+				stock = stockManagerJxcServiceApi.findGoodsStockInfo(storeSkuId);
+			}
+		}
+		return stock;
+	}
+	
 	
 	/**
 	 * 
