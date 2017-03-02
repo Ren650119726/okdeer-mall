@@ -120,10 +120,10 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 					// 如果代金券指定分类，检查分类是否超出指定分类
 					List<String> categoryIdLimitList = null;
 					if(coupons.getCouponsType() == CouponsType.bld.ordinal()){
-						categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryBySkuIds(paramBo.getSpuCategoryIds());
+						categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
 					}else if(coupons.getCouponsType() == CouponsType.fwd.ordinal()){
 						categoryIdLimitList = goodsNavigateCategoryServiceApi
-								.findNavigateCategoryByCouponId(coupons.getCouponId());
+								.findNavigateCategoryBySkuIds(paramBo.getSpuCategoryIds());
 					}
 					if (CollectionUtils.isEmpty(paramBo.getSpuCategoryIds()) || CollectionUtils.isEmpty(categoryIdLimitList) || !categoryIdLimitList.containsAll(paramBo.getSpuCategoryIds())) {
 						return false;
