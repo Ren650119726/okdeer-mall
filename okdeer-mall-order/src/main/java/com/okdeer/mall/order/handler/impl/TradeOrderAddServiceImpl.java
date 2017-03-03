@@ -573,7 +573,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 
 		StoreInfo storeInfo = storeInfoServiceApi.selectDefaultAddressById(req.getStoreId());
 		// 获取默认地址
-		String defaultAddressId = storeInfo.getMemberConsignee().getId();
+		String defaultAddressId = storeInfo.getAddressId();
 		tradeOrder.setPickUpId(defaultAddressId);
 		if (!StringUtils.isEmpty(receiveTime)) {
 			tradeOrder.setPickUpTime(receiveTime);
@@ -983,7 +983,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			}
 			try {
 				if(!preferenceMap.isEmpty()){
-					MQMessage msg = new MQMessage(SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER, (Serializable)preferenceMap);
+					MQMessage msg = new MQMessage(SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER,order.getId(),(Serializable)preferenceMap);
 					rocketMQProducer.sendMessage(msg);
 				}
 			} catch (Exception e) {

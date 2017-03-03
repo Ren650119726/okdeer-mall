@@ -17,6 +17,7 @@ import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.vo.ActivityInfoVO;
+import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderExportVo;
@@ -106,9 +107,11 @@ public interface TradeOrderService {
 	 * 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用
 	 * @param orderStatus 订单状态集合
 	 * @param storeId 店铺id
+	 * @param refundsStatusList 退款单状态
 	 * @return
 	 */
-	Integer selectOrderNumByList(List<OrderStatusEnum> orderStatus, String storeId);
+	public Integer selectOrderNumByList(List<OrderStatusEnum> orderStatus, String storeId,
+									List<RefundsStatusEnum> refundsStatusList);
 
 	TradeOrder selectById(String id) throws ServiceException;
 
@@ -1057,4 +1060,15 @@ public interface TradeOrderService {
 	 */
 	List<ActivityInfoVO> findActivityInfo(List<String> orderIds);
 	//End V2.1.0 added by luosm 20170220
+
+	// begin V2.1 add by chenzc 2017-2-28
+	/**
+	 * 
+	 * @Description: 统计用户订单数量
+	 * @return PageUtils<TradeOrder>  
+	 * @author chenzc
+	 * @date 2017年2月28日
+	 */
+	long countUserOrders(UserOrderParamBo paramBo);
+	// end V2.1 add by chenzc 2017-2-28
 }

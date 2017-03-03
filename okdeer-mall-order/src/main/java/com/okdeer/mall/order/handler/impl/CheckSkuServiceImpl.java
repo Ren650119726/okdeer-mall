@@ -37,6 +37,7 @@ import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 
@@ -98,7 +99,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 			return;
 		}
 		// 解析当前店铺商品列表。获取当前商品的价格、库存、限购数量
-		StoreSkuParserBo parserBo = parseCurrentSkuList(currentSkuList);
+		StoreSkuParserBo parserBo = parseCurrentSkuList(currentSkuList,paramDto.getChannel());
 		parserBo.setSkuIdList(skuIdList);
 		parserBo.loadBuySkuList(paramDto.getSkuList());
 		// 缓存商品解析结果
@@ -141,11 +142,11 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		return skuIdList;
 	}
 
-	private StoreSkuParserBo parseCurrentSkuList(List<GoodsStoreSku> storeSkuList)
+	private StoreSkuParserBo parseCurrentSkuList(List<GoodsStoreSku> storeSkuList,OrderResourceEnum channel)
 			throws ServiceException {
 		StoreSkuParserBo parserBo = new StoreSkuParserBo(storeSkuList);
 		// 从商品列表中提取正在进行中的商品活动关系
-		Map<String, List<String>> activitySkuMap = extractSkuActivityRelation(storeSkuList, parserBo);
+		Map<String, List<String>> activitySkuMap = extractSkuActivityRelation(storeSkuList, parserBo,channel);
 		List<ActivitySaleGoods> activitySkuList = new ArrayList<ActivitySaleGoods>();
 		if (activitySkuMap != null) {
 			// 存在活动商品则获取正在进行中的活动商品信息
@@ -169,7 +170,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 	 * @date 2016年7月14日
 	 */
 	private Map<String, List<String>> extractSkuActivityRelation(List<GoodsStoreSku> storeSkuList,
-			StoreSkuParserBo parserBo) throws ServiceException {
+			StoreSkuParserBo parserBo,OrderResourceEnum channel) throws ServiceException {
 		// 存放活动Id和商品的对应关系
 		Map<String, List<String>> activitySkuMap = new HashMap<String, List<String>>();
 		// 商品参加的活动Id
@@ -199,6 +200,10 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		}
 		Map<String, List<String>> resultMap = new HashMap<String, List<String>>();
 		for (ActivitySale sale : activityList) {
+			if(sale.getType() == ActivityTypeEnum.LOW_PRICE && channel == OrderResourceEnum.WECHAT){
+				// 微信不支持低价活动。如果商品参与了低价活动，但是是微信下单，则按照普通商品进行处理
+				continue;
+			}
 			resultMap.put(sale.getId(), activitySkuMap.get(sale.getId()));
 		}
 		return resultMap;

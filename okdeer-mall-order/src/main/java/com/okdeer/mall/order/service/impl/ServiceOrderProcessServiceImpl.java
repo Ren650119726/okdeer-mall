@@ -262,6 +262,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 	
+	
 	// Begin added by maojj 2016-09-22
 	/**
 	 * 确认订单处理链
@@ -1308,27 +1309,15 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	private void findValidCoupons(StoreInfo storeInfo, ServiceOrderReq orderReq, BigDecimal totalAmount, JSONObject resultJson) throws Exception{
 		
 		FavourParamBO paramBo = favourParamBuilder.build(storeInfo, orderReq, totalAmount);
-		List<String> skuIdList = new ArrayList<String>();
-		skuIdList.add(orderReq.getSkuId());
-		// 当前店铺商品信息
-		List<GoodsStoreSku> currentStoreSkuList = goodsStoreSkuServiceApi.findStoreSkuForOrder(skuIdList);
-        //商品类型ids
-		Set<String> spuCategoryIds = new HashSet<String>();
-		if (CollectionUtils.isNotEmpty(currentStoreSkuList)) {
-			for (GoodsStoreSku goodsStoreSku : currentStoreSkuList) {
-				spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
-			}
-		}
 		// 获取用户有效的代金券
 		List<Coupons> couponList = activityCouponsRecordService.findValidCoupons(paramBo,new FavourFilterStrategy() {
 			
 			@Override
 			public boolean accept(Favour favour) throws Exception {
 				Coupons coupons = (Coupons) favour;
-				if (Constant.ONE == coupons.getIsCategory().intValue()
-						&& CollectionUtils.isNotEmpty(paramBo.getSpuCategoryIds())) {
-					int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getCouponId());
-					if (count == Constant.ZERO || count != spuCategoryIds.size()) {
+				if (Constant.ONE == coupons.getIsCategory().intValue()) {
+					int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(paramBo.getSpuCategoryIds(), coupons.getCouponId());
+					if (count == Constant.ZERO || count != paramBo.getSpuCategoryIds().size()) {
 						return false;
 					}
 				}

@@ -55,6 +55,7 @@ import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
@@ -99,7 +100,6 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.base.framework.mq.message.MQMessage;
-import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
@@ -252,6 +252,8 @@ import net.sf.json.JSONObject;
  *      V2.0.0            2017-01-09           wusw           修改订单查询和导出的线上订单包括订单来源为友门鹿便利店(CVS)的订单
  *      V2.0.0            2017-01-12        wusw              修改低价商品订单的优惠显示问题
  *      V2.0.0            2017-01-17        wusw              修改服务订单详情的商品规格为null判断
+ *      V2.1.0            2017-02-24        wusw              修改实物订单导出
+ *      V2.1.0            2017-03-01        wusw               判断订单是否超时，避免异常情况 
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderServiceApi")
 public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServiceApi, OrderMessageConstant {
@@ -601,13 +603,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	public List<TradeOrderExportVo> selectExportList(Map<String, Object> map) {
 		// 查询订单信息
-		List<TradeOrder> orderPay = tradeOrderMapper.selectRealOrderList(map);
+		List<TradeOrderVo> orderPay = tradeOrderMapper.selectRealOrderList(map);
 		List<TradeOrderExportVo> exportList = new ArrayList<TradeOrderExportVo>();
 		if (orderPay != null) {
 			// 退款单状态Map
 			Map<String, String> orderRefundsStatusMap = RefundsStatusEnum.convertViewStatus();
 			for (int i = 0; i < orderPay.size(); i++) {
-				TradeOrder order = orderPay.get(i);
+				TradeOrderVo order = orderPay.get(i);
 				// 订单状态Map
 				Map<String, String> orderStatusMap = OrderStatusEnum.convertViewStatus(order.getType());
 				String id = order.getId();
@@ -653,6 +655,32 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							exportVo.setAfterService(orderRefundsStatusMap.get(item.getRefundsStatus().getName()));
 						}
 						exportVo.setOperator(order.getSysUser() == null ? null : order.getSysUser().getLoginName());
+						
+						// Begin V2.1 add by wusw 20170224
+						exportVo.setActivityTypeName(order.getActivityType().getValue());
+						if (order.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
+							exportVo.setAddress("到店自提");
+						} else {
+							if (order.getMemberConsigneeAddress() != null) {
+								StringBuilder s = new StringBuilder("");
+								if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getProvinceName())) {
+									s.append(order.getMemberConsigneeAddress().getProvinceName());
+								}
+								if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getCityName())) {
+									s.append(order.getMemberConsigneeAddress().getCityName());
+								}
+								if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getAreaName())) {
+									s.append(order.getMemberConsigneeAddress().getAreaName());
+								}
+								if (StringUtils.isNotEmpty(order.getMemberConsigneeAddress().getAreaExt())) {
+									s.append(order.getMemberConsigneeAddress().getAreaExt());
+								}
+								exportVo.setAddress(s.toString());
+							}
+							
+						}
+						exportVo.setActivityType(order.getActivityType());
+						// End V2.1 add by wusw 20170224
 						exportList.add(exportVo);
 					}
 				}
@@ -682,13 +710,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用
 	 * @param orderStatus 订单状态集合
 	 * @param storeId 店铺id
+	 * @param refundsStatusList 退款单状态
 	 * @return
 	 */
 	@Override
-	public Integer selectOrderNumByList(List<OrderStatusEnum> orderStatus, String storeId) {
+	public Integer selectOrderNumByList(List<OrderStatusEnum> orderStatus, String storeId,
+									List<RefundsStatusEnum> refundsStatusList) {
 		Map<String, Object> map = Maps.newHashMap();
-		map.put("statusList", orderStatus);
+		if(orderStatus == null || refundsStatusList == null){
+			return 0;
+		}
+		map.put("statusList", orderStatus); 
 		map.put("storeId", storeId);
+		map.put("refundsStatusList", refundsStatusList);
 		return tradeOrderMapper.selectOrderNumByStatus(map);
 	}
 
@@ -765,6 +799,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		// 1 订单支付倒计时计算
 		UserTradeOrderDetailVo orders = tradeOrderMapper.selectRemainTimeById(orderId);
+		// Begin 避免异常情况 add by wusw 20170301
+		if (orders == null) {
+			return null;
+		}
+		// End 避免异常情况 add by wusw 20170301
 		Integer remainingTime = orders.getRemainingTime();
 		Map<String, Object> map = new HashMap<String, Object>();
 		if (remainingTime != null) {
@@ -973,7 +1012,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						|| orderVo.getOrderType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
 
 					if (CollectionUtils.isNotEmpty(tradeOrderRefundsList)) {
-						orderVo.setWhetherRefund(WhetherEnum.whether);
 						BigDecimal refundPrice = new BigDecimal("0");
 						BigDecimal refundPreferentialPrice = new BigDecimal("0");
 						for (TradeOrderRefunds tradeOrderRefunds : tradeOrderRefundsList) {
@@ -993,6 +1031,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 								}
 							}
 						}
+					}
+					if (orderVo.getRefundsAmount()!=null&&orderVo.getRefundsAmount().compareTo(new BigDecimal(0)) == 1) {
+						orderVo.setWhetherRefund(WhetherEnum.whether);
 					} else {
 						orderVo.setWhetherRefund(WhetherEnum.not);
 					}
@@ -1001,7 +1042,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				String lProviceName = orderVo.getlProviceName() == null ? "" : orderVo.getlProviceName();
 				String lCityName = orderVo.getlCityName() == null ? "" : orderVo.getlCityName();
 				String lAreaName = orderVo.getlAreaName() == null ? "" : orderVo.getlAreaName();
-				String areaExt = orderVo.getAreaExt() == null ? "" : orderVo.getAreaExt();
+				String areaExt = orderVo.getlAreaExt() == null ? "" : orderVo.getlAreaExt();
 
 				// 定位基点
 				orderVo.setLocateAddress(lProviceName + lCityName + lAreaName + areaExt);
@@ -1009,7 +1050,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				String aProviceName = orderVo.getaProviceName() == null ? "" : orderVo.getaProviceName();
 				String aCityName = orderVo.getaCityName() == null ? "" : orderVo.getaCityName();
 				String aAreaName = orderVo.getaAreaName() == null ? "" : orderVo.getaAreaName();
-				String address = orderVo.getAddress() == null ? "" : orderVo.getAddress();
+				String address = orderVo.getMemberAddress() == null ? "" : orderVo.getMemberAddress();
 
 				// 所属城市
 				orderVo.setCityName(aCityName);
@@ -1063,6 +1104,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			List<String> orderIds = null;
 			// 代理商ID集合
 			List<String> agentIds = null;
+
+			// 用户ID集合
+			List<String> userIds = new ArrayList<String>();
 			// 如果没有根据店铺来搜索，sql中不会加载店铺信息，需要再次查询店铺信息
 			if (StringUtils.isBlank(vo.getStoreName()) && vo.getType() == null) {
 				storeIds = new ArrayList<String>();
@@ -1085,10 +1129,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				if (agentIds != null && StringUtils.isNotBlank(order.getAgentId())) {
 					agentIds.add(order.getAgentId());
 				}
+				if (StringUtils.isNotEmpty(order.getUserId())) {
+					userIds.add(order.getUserId());
+				}
 			}
 
 			// 构建实物订单实体
-			buildPhysicsOrderVo(result, storeIds, orderIds, agentIds);
+			buildPhysicsOrderVo(result, storeIds, orderIds, agentIds, userIds);
 		}
 		return new PageUtils<PhysicsOrderVo>(result);
 	}
@@ -1108,7 +1155,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @date 2016年8月17日
 	 */
 	private void buildPhysicsOrderVo(List<PhysicsOrderVo> result, List<String> storeIds, List<String> orderIds,
-			List<String> agentIds) {
+			List<String> agentIds, List<String> userIds) {
 		// 店铺集合
 		List<StoreInfo> storeInfoList = null;
 		// 订单支付集合
@@ -1125,7 +1172,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (CollectionUtils.isNotEmpty(agentIds)) {
 			agentList = this.psmsAgentServiceApi.selectByIds(agentIds);
 		}
-
+		List<SysUserInvitationLoginNameVO> inviteNameLists = null;
+		if (CollectionUtils.isNotEmpty(userIds)) {
+			inviteNameLists = invitationCodeService.selectLoginNameByUserId(userIds);
+		}
 		// 循环将对应信息加入到订单实体中
 		for (PhysicsOrderVo order : result) {
 			if (CollectionUtils.isNotEmpty(storeInfoList)) {
@@ -1164,6 +1214,25 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			order.setCityName(aCityName);
 			// 收货地址
 			order.setAddress(aProviceName + aCityName + aAreaName + address);
+
+			// 获取邀请人姓名
+			if (CollectionUtils.isNotEmpty(inviteNameLists)) {
+				for (SysUserInvitationLoginNameVO loginNameVO : inviteNameLists) {
+					if (StringUtils.isNotEmpty(loginNameVO.getsLoginName())
+							&& StringUtils.isNotEmpty(loginNameVO.getUserId())
+							&& StringUtils.isNotEmpty(order.getUserId())
+							&& order.getUserId().equals(loginNameVO.getUserId())) {
+						order.setInvitationUserName(loginNameVO.getsLoginName());
+					}
+
+					if (StringUtils.isNotEmpty(loginNameVO.getbLoginName())
+							&& StringUtils.isNotEmpty(loginNameVO.getUserId())
+							&& StringUtils.isNotEmpty(order.getUserId())
+							&& order.getUserId().equals(loginNameVO.getUserId())) {
+						order.setInvitationUserName(loginNameVO.getbLoginName());
+					}
+				}
+			}
 			// End V2.1.0 added by luosm 20170215
 		}
 	}
@@ -5186,6 +5255,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// End 重构4.1 add by wusw 20160727
 						BigDecimal quantity = new BigDecimal(item.getQuantity());
 						vo.setTotalAmount(item.getUnitPrice().multiply(quantity));
+						vo.setOrderResource(order.getOrderResource());
+						vo.setAddress(order.getPickUpId());
+						vo.setActivityType(order.getActivityType());
 						result.add(vo);
 					}
 				}
@@ -5426,7 +5498,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		String lProviceName = vo.getlProviceName() == null ? "" : vo.getlProviceName();
 		String lCityName = vo.getlCityName() == null ? "" : vo.getlCityName();
 		String lAreaName = vo.getlAreaName() == null ? "" : vo.getlAreaName();
-		String areaExt = vo.getAreaExt() == null ? "" : vo.getAreaExt();
+		String areaExt = vo.getlAreaExt() == null ? "" : vo.getlAreaExt();
 
 		// 定位基点
 		vo.setLocateAddress(lProviceName + lCityName + lAreaName + areaExt);
@@ -5434,7 +5506,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		String aProviceName = vo.getaProviceName() == null ? "" : vo.getaProviceName();
 		String aCityName = vo.getaCityName() == null ? "" : vo.getaCityName();
 		String aAreaName = vo.getaAreaName() == null ? "" : vo.getaAreaName();
-		String address = vo.getAddress() == null ? "" : vo.getAddress();
+		String address = vo.getMemberAddress() == null ? "" : vo.getMemberAddress();
 
 		// 所属城市
 		vo.setCityName(aCityName);
@@ -5584,13 +5656,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params, int pageNumber,
 			int pageSize) throws ServiceException {
-		PageHelper.startPage(pageNumber, pageSize);
+		PageHelper.startPage(pageNumber, pageSize,false);
 		// 参数转换处理（例如订单状态）
 		this.convertParams(params);
 		List<ERPTradeOrderVo> result = tradeOrderMapper.findOrderForFinanceByParams(params);
 		if (result == null) {
 			result = new ArrayList<ERPTradeOrderVo>();
 		}
+
+		// Begin V2.1.0 added by luosm 20170224
+		Page<ERPTradeOrderVo> page = (Page<ERPTradeOrderVo>) result;
+		int total = tradeOrderMapper.countOrderForFinanceByParams(params);
+		page.setTotal(total);
+		// End V2.1.0 added by luosm 20170224
 		return new PageUtils<ERPTradeOrderVo>(result);
 	}
 
@@ -5683,6 +5761,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			if (params.get("endTime") == null || StringUtils.isBlank(params.get("endTime").toString())) {
 				params.remove("endTime");
 			}
+			
+			if (params.get("cityName") == null || StringUtils.isBlank(params.get("cityName").toString())) {
+				params.remove("cityName");
+			}
+
+			if (params.get("orderResource") == null || StringUtils.isBlank(params.get("orderResource").toString())) {
+				params.remove("orderResource");
+			}
+			
 		}
 		// Begin 重构4.1 add by wusw 20160727
 		// 订单默认参数，以便综合用户已支付，却被POS机取消情况的订单
@@ -7083,11 +7170,21 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<TradeOrder> findUserOrders(UserOrderParamBo paramBo) {
 		PageHelper.startPage(paramBo.getPageNumber(), paramBo.getPageSize(), true);
+		paramBo.setKeyword(ConvertUtil.format(paramBo.getKeyword()).trim());
 		return new PageUtils<TradeOrder>(tradeOrderMapper.findUserOrders(paramBo));
 	}
 
 	@Override
 	public List<TradeOrderRefunds> findRefundsList(List<String> orderIds) {
 		return tradeOrderRefundsMapper.selectByOrderIds(orderIds);
+	}
+	
+	@Override
+	public long countUserOrders(UserOrderParamBo paramBo) {
+		paramBo.setKeyword(ConvertUtil.format(paramBo.getKeyword()).trim());
+		PageHelper.startPage(1, -1);
+		List<TradeOrder> list = tradeOrderMapper.findUserOrders(paramBo);
+		PageUtils<TradeOrder> page = new PageUtils<TradeOrder>(list);
+		return page.getTotal();
 	}
 }

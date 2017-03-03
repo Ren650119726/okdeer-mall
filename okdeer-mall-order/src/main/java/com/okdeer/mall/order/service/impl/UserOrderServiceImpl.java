@@ -106,47 +106,23 @@ public class UserOrderServiceImpl implements UserOrderService {
 		paramBo.setUserId(userId);
 		paramBo.setStatus("1");
 		// 查询便利店、服务店、充值订单
-		PageHelper.startPage(1, -1);
-		PageUtils<TradeOrder> unPayOrderList = tradeOrderService.findUserOrders(paramBo);
-		if (null != unPayOrderList) {
-			unPaySum += unPayOrderList.getTotal();
-		}
+		unPaySum += tradeOrderService.countUserOrders(paramBo);
 		// 查询火车票订单
-		PageHelper.startPage(1, -1);
-		PageUtils<ThirdTrainOrderDto> unPayTrainOrderList = findTrainOrderList(paramBo);
-		if (null != unPayTrainOrderList) {
-			unPaySum += unPayTrainOrderList.getTotal();
-		}
+		ThirdOrderParamDto thirdParamDto = BeanMapper.map(paramBo, ThirdOrderParamDto.class);
+		unPaySum += thirdTrainOrderApi.countTrainOrderList(thirdParamDto);
 		
 		// 统计待使用
 		paramBo.setStatus("2");
 		// 查询便利店、服务店、充值订单
-		PageHelper.startPage(1, -1);
-		PageUtils<TradeOrder> unReceiptOrderList = tradeOrderService.findUserOrders(paramBo);
-		if (null != unReceiptOrderList) {
-			unReceiptSum += unReceiptOrderList.getTotal();
-		}
+		unReceiptSum += tradeOrderService.countUserOrders(paramBo);
 		// 查询火车票订单
-		PageHelper.startPage(1, -1);
-		PageUtils<ThirdTrainOrderDto> unReceiptTrainOrderList = findTrainOrderList(paramBo);
-		if (null != unReceiptTrainOrderList) {
-			unReceiptSum += unReceiptTrainOrderList.getTotal();
-		}
+		thirdParamDto = BeanMapper.map(paramBo, ThirdOrderParamDto.class);
+		unReceiptSum += thirdTrainOrderApi.countTrainOrderList(thirdParamDto);
 		
-		// 统计待评价
+		// 统计待评价， 火车票不存在待评价状态
 		paramBo.setStatus("3");
 		// 查询便利店、服务店、充值订单
-		PageHelper.startPage(1, -1);
-		PageUtils<TradeOrder> unAppraiseOrderList = tradeOrderService.findUserOrders(paramBo);
-		if (null != unAppraiseOrderList) {
-			unAppraiseSum += unAppraiseOrderList.getTotal();
-		}
-		// 查询火车票订单
-		PageHelper.startPage(1, -1);
-		PageUtils<ThirdTrainOrderDto> unAppraiseTrainOrderList = findTrainOrderList(paramBo);
-		if (null != unAppraiseTrainOrderList) {
-			unAppraiseSum += unAppraiseTrainOrderList.getTotal();
-		}
+		unAppraiseSum += tradeOrderService.countUserOrders(paramBo);
 		
 		resultMap.put("unPay", String.valueOf(unPaySum));
 		resultMap.put("unReceipt", String.valueOf(unReceiptSum));

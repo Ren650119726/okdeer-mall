@@ -176,7 +176,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				&& saleGoods.getSaleStock().intValue() >= activitySaleGoods.getSaleStock().intValue() )) {
 			return;
 		}
+		//如果是组合商品,不需要同步进销存的库存
 		saleGoods.setSaleStock(activitySaleGoods.getSaleStock() - saleGoods.getSaleStock());
+		
 		List<ActivitySaleGoods> list = new ArrayList<ActivitySaleGoods>();
 		list.add(saleGoods);
 		// 库存同步--库存出错的几率更大。先处理库存
@@ -227,6 +229,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				AdjustDetailVo adjustDetailVo = new AdjustDetailVo();
 				adjustDetailVo.setStoreSkuId(goods.getStoreSkuId());
 				adjustDetailVo.setNum(goods.getSaleStock());
+				stockAdjustVo.setActivityType(activitySale != null ? activitySale.getType() : null);
 				if(entity.getSpuTypeEnum() == SpuTypeEnum.assembleSpu){
 					//如果是组合商品,不需要同步进销存的库存
 					adjustDetailVo.setGoodsName(entity.getName());
@@ -240,8 +243,11 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 					adjustDetailVo.setPrice(goods.getSalePrice());
 					/*************新增字段 end  **************/
 					//Begin V2.1.0 added by 标识同步商品参与特惠  tangy  2017-02-21
+					//根据活动类型标识
 					if(activitySale != null && activitySale.getType() == ActivityTypeEnum.SALE_ACTIVITIES){
 						adjustDetailVo.setIsPreference(true);
+					} else if (activitySale != null && activitySale.getType() == ActivityTypeEnum.LOW_PRICE) {
+						adjustDetailVo.setIsEvent(true);
 					}
 					//End added by tangy
 					adjustDetailList.add(adjustDetailVo);
@@ -285,6 +291,13 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		/***********************/
 		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
 		AdjustDetailVo adjustDetailVo = new AdjustDetailVo();
+		//Begin V2.1.0 added by tangy  2017-02-28
+		// 活动信息
+		ActivitySale activitySale = activitySaleMapper.get(goods.getSaleId());
+		if (activitySale != null) {
+			stockAdjustVo.setActivityType(activitySale.getType());
+		}
+		//End added by tangy
 		adjustDetailVo.setStoreSkuId(goods.getStoreSkuId());
 		// adjustDetailVo.setNum(goods.getSaleStock());
 		// begin zhangkn 和曾俊和刘玄确认过,这个值,erp那边没用,传0过去,减少对erp的干扰
@@ -416,9 +429,15 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			activitySaleGoodsMapper.saveBatch(asgList);
 			// 同步差集部分商品，也就是原来是特惠商品，然后本次编辑没勾选，所以这批商品需要释放库存。
 			if (CollectionUtils.isNotEmpty(saleGoodsList)) {
+				StockOperateEnum operateEnum = StockOperateEnum.ACTIVITY_END;
+				if (activitySale != null && activitySale.getType() == ActivityTypeEnum.SALE_ACTIVITIES) {
+					operateEnum = StockOperateEnum.OVER_SALE_ORDER_INTEGRAL;
+				} else if (activitySale != null && activitySale.getType() == ActivityTypeEnum.LOW_PRICE) {
+					operateEnum = StockOperateEnum.OVER_SALE_ORDER_INTEGRAL;
+				}
 				// 库存同步
 				this.syncGoodsStockBatch(saleGoodsList, activitySale, activitySale.getCreateUserId(), activitySale.getStoreId(),
-						StockOperateEnum.ACTIVITY_END, rpcIdByStockList);
+						operateEnum, rpcIdByStockList);
 			}
 			// 新加商品的库存同步，需要增加锁定库存
 			// 库存同步
@@ -537,8 +556,13 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// 手动关闭或者定时器结束都要把未卖完的数量释放库存
 				// 和erp同步库存
 				if(CollectionUtils.isNotEmpty(saleGoodsList)){
-					StockOperateEnum stockOperateEnum = activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal() ? StockOperateEnum.OVER_SALE_ORDER_INTEGRAL : StockOperateEnum.OVER_SALE_ORDER_EVENT;
-					this.syncGoodsStockBatch(saleGoodsList, null, "", storeId, stockOperateEnum, rpcIdByStockList);
+					StockOperateEnum stockOperateEnum = StockOperateEnum.ACTIVITY_END;
+					if (activityType != null) {
+						stockOperateEnum = (activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()) ? StockOperateEnum.OVER_SALE_ORDER_INTEGRAL : StockOperateEnum.OVER_SALE_ORDER_EVENT;
+					}
+					ActivitySale activitySale = new ActivitySale();
+					activitySale.setType(ActivityTypeEnum.enumValueOf(activityType));
+					this.syncGoodsStockBatch(saleGoodsList, activitySale, "", storeId, stockOperateEnum, rpcIdByStockList);
 				}
 			}
 		} catch (Exception e) {

@@ -74,4 +74,7 @@ public interface OrderTipMsgConstant {
 	String RECHARGE_COUPON_VALUE_TOOMUCH = "优惠券面额大于订单实付金额，下单失败。";
 	//End added by zhaoqc
 	
+	// Begin　V2.1 added by maojj 2017-02-27
+	String CVS_NOT_SUPPORT_TO_STORE = "抱歉，店铺不支持到店自提，请重新选择提货方式";
+	// End V2.1 added by maojj 2017-02-27
 }

@@ -14,6 +14,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.discount.entity.PreferentialVo;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
@@ -115,14 +116,22 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 					// 如果代金券限制首单用户。则非首单用户则不能使用
 					return false;
 				}
-				if (Constant.ONE == coupons.getIsCategory().intValue()
-						&& CollectionUtils.isNotEmpty(paramBo.getSpuCategoryIds())) {
+				if (Constant.ONE == coupons.getIsCategory().intValue()) {
 					// 如果代金券指定分类，检查分类是否超出指定分类
-					List<String> categoryIdLimitList = goodsNavigateCategoryServiceApi
-							.findNavigateCategoryByCouponId(coupons.getCouponId());
-					if (!categoryIdLimitList.containsAll(paramBo.getSpuCategoryIds())) {
-						return false;
+					List<String> categoryIdLimitList = null;
+					if(coupons.getType() == CouponsType.bld.ordinal()){
+						categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
+						if (CollectionUtils.isEmpty(paramBo.getSpuCategoryIds()) || CollectionUtils.isEmpty(categoryIdLimitList) || !categoryIdLimitList.containsAll(paramBo.getSpuCategoryIds())) {
+							return false;
+						}
+					}else if(coupons.getType() == CouponsType.fwd.ordinal()){
+						categoryIdLimitList = goodsNavigateCategoryServiceApi
+								.findNavigateCategoryBySkuIds(paramBo.getSpuCategoryIds());
+						if (categoryIdLimitList.size() != paramBo.getSpuCategoryIds().size()) {
+							return false;
+						}
 					}
+					
 				}
 				return true;
 			}

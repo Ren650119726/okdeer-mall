@@ -14,10 +14,15 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
+import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.store.service.ISysUserAndExtServiceApi;
 import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
@@ -78,6 +83,12 @@ public class SafetyStockTriggerSubscriber {
 	private ISysUserAndExtServiceApi sysUserAndExtService;
 	
 	/**
+	 * GoodsStoreSkuServiceApi注入
+	 */
+	@Reference(version="1.0.0", check = false)
+	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
+	
+	/**
 	 * GoodsStoreSkuStockServiceApi注入
 	 */
 	@Reference(version="1.0.0", check = false)
@@ -88,12 +99,18 @@ public class SafetyStockTriggerSubscriber {
      */
     @Reference(version = "1.0.0", check = false)
     ISmsService smsService;
+
+	/**
+	 * 库存管理Service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private StockManagerJxcServiceApi stockManagerJxcServiceApi;
    
 	@SuppressWarnings("unchecked")
 	@RocketMQListener(topic = SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER, tag = "*")
 	public ConsumeConcurrentlyStatus trigger(MQMessage enMessage) {
 		Map<String, String> storeSkuIdMap =  (Map<String, String>) enMessage.getContent();
-		log.debug("活动安全库存信息：{}", JsonMapper.nonEmptyMapper().toJson(storeSkuIdMap));
+		log.info("活动安全库存信息：{}", JsonMapper.nonEmptyMapper().toJson(storeSkuIdMap));
 		if (storeSkuIdMap != null && storeSkuIdMap.size() > 0) {
 			// 判断是否需要短信提醒
 			for(String storeSkuId: storeSkuIdMap.keySet()){ 
@@ -114,7 +131,7 @@ public class SafetyStockTriggerSubscriber {
 	 */
 	private void sendSafetyWarning(String storeSkuId, String saleId){
 		try {
-			log.debug("活动商品安全库存预警:{},{}", storeSkuId, saleId);
+			log.info("活动商品安全库存预警:{},{}", storeSkuId, saleId);
 			ActivitySaleGoods saleGoods = new ActivitySaleGoods();
 			saleGoods.setStoreSkuId(storeSkuId);
 			saleGoods.setSaleId(saleId);
@@ -126,33 +143,76 @@ public class SafetyStockTriggerSubscriber {
 				if (activitySaleGoods.getIsRemind() != null && activitySaleGoods.getIsRemind().intValue() > 0) {
 					return;
 				}
-				// 库存信息
-				GoodsStoreSkuStock stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
+				
+				// 商品库存
+				GoodsStoreSkuStock stock = findByStoreSkuId(storeSkuId);
+				 
 				//是否达到提醒条件，安全库存大于活动剩余库存
-				if (stock != null && stock.getLocked() != null 
-						&& activitySaleGoods.getSecurityStock().intValue() > stock.getLocked().intValue()) {
-					//活动安全库存联系人
-					List<ActivitySaleRemindBo> saleRemind = activitySaleRemindService.findActivitySaleRemindBySaleId(activitySaleGoods.getSaleId());
-					if (CollectionUtils.isNotEmpty(saleRemind)) {
-						//短信提醒联系人
-						List<String> phoneList = new ArrayList<String>();
-						for (ActivitySaleRemindBo activitySaleRemindBo : saleRemind) {
-							if (activitySaleRemindBo.getPhone() != null) {
-								phoneList.add(activitySaleRemindBo.getPhone());
-							}
-						}
-						//是否有需要发送提醒短信的联系人
-						if (CollectionUtils.isNotEmpty(phoneList)) {
-							activitySaleGoods.setIsRemind(1);
-						    activitySaleGoodsServiceApi.updateActivitySaleGoods(activitySaleGoods);
-							sendMessg(phoneList);
-						}
-					}
+				if (stock != null && stock.getSellable() != null 
+						&& activitySaleGoods.getSecurityStock().intValue() > stock.getSellable().intValue()) {
+					getSaleReminds(activitySaleGoods);
+				} else {
+					
 				}
 			}
 		} catch (Exception e) {
 			log.error("活动安全库存预警异常,{}", e);
 			return;
+		}
+	}
+	
+	/**
+	 * 
+	 * @Description: 查询商品库存
+	 * @param storeSkuId  店铺商品id
+	 * @return GoodsStoreSkuStock  
+	 * @author tangy
+	 * @date 2017年3月2日
+	 */
+	private GoodsStoreSkuStock findByStoreSkuId(String storeSkuId) throws Exception{
+		// 商品信息
+		GoodsStoreSku goodsStoreSku = goodsStoreSkuServiceApi.getById(storeSkuId);
+		// 商品库存
+		GoodsStoreSkuStock stock = null;
+		if (goodsStoreSku != null) {
+			if (goodsStoreSku.getSpuTypeEnum() == SpuTypeEnum.assembleSpu) {
+				// 组合商品查询商城数据库
+	            stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
+			} else {
+				// 查询零售库存信息，避免数据同步延时不准确
+				stock = stockManagerJxcServiceApi.findGoodsStockInfo(storeSkuId);
+			}
+		}
+		return stock;
+	}
+	
+	
+	/**
+	 * 
+	 * @Description: 获取活动安全库存联系人
+	 * @param activitySaleGoods
+	 * @throws Exception   
+	 * @return void  
+	 * @author tangy
+	 * @date 2017年3月1日
+	 */
+	private void getSaleReminds(ActivitySaleGoods activitySaleGoods) throws Exception{
+		//活动安全库存联系人
+		List<ActivitySaleRemindBo> saleRemind = activitySaleRemindService.findActivitySaleRemindBySaleId(activitySaleGoods.getSaleId());
+		if (CollectionUtils.isNotEmpty(saleRemind)) {
+			//短信提醒联系人
+			List<String> phoneList = new ArrayList<String>();
+			for (ActivitySaleRemindBo activitySaleRemindBo : saleRemind) {
+				if (StringUtils.isNoneBlank(activitySaleRemindBo.getPhone())) {
+					phoneList.add(activitySaleRemindBo.getPhone());
+				}
+			}
+			//是否有需要发送提醒短信的联系人
+			if (CollectionUtils.isNotEmpty(phoneList)) {
+				activitySaleGoods.setIsRemind(1);
+			    activitySaleGoodsServiceApi.updateActivitySaleGoods(activitySaleGoods);
+				sendMessg(phoneList);
+			}
 		}
 	}
 

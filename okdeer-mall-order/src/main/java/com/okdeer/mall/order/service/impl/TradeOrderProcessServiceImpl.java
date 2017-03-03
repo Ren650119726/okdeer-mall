@@ -481,6 +481,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 	public TradeOrderRespDto addRechargeTradeOrderV110(String reqJsonStr) throws Exception {
 		TradeOrderRespDto respDto = new TradeOrderRespDto();
         boolean flag = false;
+        
         RechargeOrderReqDto reqDto = JsonMapper.nonDefaultMapper().fromJson(reqJsonStr, RechargeOrderReqDto.class);
         //创建订单
         TradeOrder tradeOrder = new TradeOrder();
@@ -611,6 +612,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         }
         
         tradeOrder.setActualAmount(actualAmount);
+        tradeOrder.setIncome(actualAmount);
         
         tradeOrderItem.setUnitPrice(totalAmount);
         tradeOrderItem.setTotalAmount(totalAmount);
@@ -633,7 +635,13 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
         tradeOrder.setDisabled(Disabled.valid);
         tradeOrder.setCreateTime(new Date());
         tradeOrder.setUpdateTime(new Date());
-        tradeOrder.setOrderResource(OrderResourceEnum.YSCAPP);
+        Integer clientType = reqDto.getClientType();
+        if(clientType != null) {
+            tradeOrder.setOrderResource(OrderResourceEnum.enumValueOf(clientType));
+        } else {
+            tradeOrder.setOrderResource(OrderResourceEnum.YSCAPP);
+        }
+        
         tradeOrder.setPayWay(PayWayEnum.PAY_ONLINE);
         tradeOrder.setIsComplete(OrderComplete.NO);
         tradeOrder.setTradeNum(TradeNumUtil.getTradeNum());

@@ -61,10 +61,11 @@ import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.ActivityBelongType;
-import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.OrderActivityType;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
+import com.okdeer.mall.order.enums.PreferentialType;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.exception.ExceedRangeException;
 import com.okdeer.mall.order.service.CancelOrderService;
@@ -908,9 +909,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				if (vo.getPayType() != null) {
 					dto.setPayType(vo.getPayType().ordinal());
 				} else {// Begin 12170 add by wusw 20160806
+					// Begin  add by zhulq 2017-03-01  充值未付款   如果不重新赋值dto的支付类型直接默认是0
+					dto.setPayType(8);
+					// Begin  add by zhulq 2017-03-01  充值未付款
 					if (vo.getType() == OrderTypeEnum.PHYSICAL_ORDER && vo.getPayWay() == PayWayEnum.CASH_DELIERY) {
-						dto.setPayType(4);
-					}
+						dto.setPayType(4);				
+					} 
 				} // End 12170 add by wusw 20160806
 					// End 重构4.1 add by wusw 20160726
 			}
@@ -949,14 +953,6 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		if (params.get("cityName") != null) {
 			cityName = params.get("cityName").toString().trim();
 			params.put("cityName", cityName);
-			//begin add by  zhulq  2017-02-23
-			Address address = addressService.getByName(cityName);
-			if (address != null) {					
-				params.put("cityId", String.valueOf(address.getId()));
-			} else {
-				params.put("cityId", null);
-			}
-			//begin add by  zhulq  2017-02-23
 		}
 		// End V2.1.0 added by luosm 20170215
 
@@ -1031,6 +1027,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					if (vo.getPayType() != null) {
 						dto.setPayType(vo.getPayType().ordinal());
 					} else {// Begin 12170 add by wusw 20160806
+						// Begin  add by zhulq 2017-03-01  充值未付款  如果不重新赋值dto的支付类型直接默认是0
+						dto.setPayType(8);
+						// Begin  add by zhulq 2017-03-01
 						if (vo.getType() == OrderTypeEnum.PHYSICAL_ORDER && vo.getPayWay() == PayWayEnum.CASH_DELIERY) {
 							dto.setPayType(4);
 						}
@@ -1078,12 +1077,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				// 优惠类型
 				if (vo.getActivityType().ordinal() != 0) {
 					if (vo.getIncome() != null && vo.getActualAmount().compareTo(vo.getIncome()) == -1) {
-						dto.setPreferentialType("平台优惠");// 0为平台优惠
+						dto.setPreferentialType(PreferentialType.PLATFORM.getValue());// 0为平台优惠
 					} else if (vo.getIncome() != null && vo.getActualAmount().compareTo(vo.getIncome()) == 0) {
-						dto.setPreferentialType("店铺优惠");// 1为店铺优惠
+						dto.setPreferentialType(PreferentialType.STORE.getValue());// 1为店铺优惠
 					}
 				}
-
+				
 				// 活动类型
 				if (CollectionUtils.isNotEmpty(activityList)) {
 					for (ActivityInfoVO activityInfoVO : activityList) {
@@ -1098,12 +1097,18 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 						}
 					}
 				}
-
+				//begin add by zhulq 充值订单 只要平台优惠  只能用代金卷
+				if (vo.getType() == OrderTypeEnum.PHONE_PAY_ORDER || vo.getType() == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
+					String activityId = vo.getActivityId();
+					if (StringUtils.isNotEmpty(activityId) && !"0".equals(activityId)) {
+						dto.setPreferentialType(PreferentialType.PLATFORM.getValue());
+						dto.setActivityType(OrderActivityType.coupons.getValue());
+					}
+				}
+				
 				if (StringUtils.isNotEmpty(vo.getId()) && (vo.getType() == OrderTypeEnum.PHYSICAL_ORDER
 						|| vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER)) {
-
 					if (CollectionUtils.isNotEmpty(tradeOrderRefundsList)) {
-						dto.setIsRefundsType("是");
 						BigDecimal refundPrice = new BigDecimal("0");
 						BigDecimal refundPreferentialPrice = new BigDecimal("0");
 						for (TradeOrderRefunds tradeOrderRefunds : tradeOrderRefundsList) {
@@ -1123,15 +1128,18 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 								}
 							}
 						}
+					}
+					if (dto.getRefundPrice() != null&&dto.getRefundPrice().compareTo(new BigDecimal(0))==1) {
+						dto.setIsRefundsType(WhetherEnum.whether.getValue());
 					} else {
-						dto.setIsRefundsType("否");
+						dto.setIsRefundsType(WhetherEnum.not.getValue());
 					}
 				}
 
 				String lProviceName = vo.getlProviceName() == null ? "" : vo.getlProviceName();
 				String lCityName = vo.getlCityName() == null ? "" : vo.getlCityName();
 				String lAreaName = vo.getlAreaName() == null ? "" : vo.getlAreaName();
-				String areaExt = vo.getAreaExt() == null ? "" : vo.getAreaExt();
+				String areaExt = vo.getlAreaExt() == null ? "" : vo.getlAreaExt();
 
 				// 定位基点
 				dto.setLocation(lProviceName + lCityName + lAreaName + areaExt);

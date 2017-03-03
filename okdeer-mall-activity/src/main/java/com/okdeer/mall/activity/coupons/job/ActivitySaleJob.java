@@ -4,11 +4,13 @@ package com.okdeer.mall.activity.coupons.job;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
+import com.okdeer.archive.goods.dto.StoreMenuParamDto;
 import com.okdeer.archive.goods.store.service.ELGoodsServiceApi;
 import com.okdeer.common.utils.ELOperateEnum;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.enums.ActivitySaleStatus;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
+import com.okdeer.mall.activity.service.ArchiveSendMsgService;
 import com.okdeer.mall.activity.service.ELSkuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.okdeer.common.consts.StoreMenuTopicTagConstants.TAG_STORE_MENU_UPDATE;
 
 /**
  * @pr mall
@@ -45,6 +49,9 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 	@Reference(version = "1.0.0")
 	private ELGoodsServiceApi elGoodsServiceApi;
 
+	@Autowired
+	private ArchiveSendMsgService archiveSendMsgService;
+
 	@Override
 	public void process(JobExecutionMultipleShardingContext arg0) {
 		try {
@@ -72,6 +79,10 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 							//activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.end.getValue(),
 							//		a.getStoreId(), "0");
 						}
+						// 发送消息，更新店铺菜单
+						StoreMenuParamDto paramDto = new StoreMenuParamDto();
+						paramDto.setStoreId(a.getStoreId());
+						archiveSendMsgService.structureProducerStoreMenu(paramDto, TAG_STORE_MENU_UPDATE);
 					} catch (Exception e) {
 						logger.error("特惠活动定时器异常" + a.getId(), e);
 					}

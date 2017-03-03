@@ -1,6 +1,7 @@
 package com.okdeer.mall.order.service;
 
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderRefunds;
 
 /**
  * ClassName: TradeOrderSendMessageService 
@@ -11,7 +12,7 @@ import com.okdeer.mall.order.entity.TradeOrder;
  * =================================================================================================
  *     Task ID            Date               Author           Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *      友门鹿1.2          2016年11月4日          maojj                 上门服务订单轨迹服务
+ *     友门鹿2.1          2017年2月18日                        zhaoqc          便利店订单状态或者退款单状态发生改变时发送通知消息
  */
 public interface TradeOrderSendMessageService {
     
@@ -20,7 +21,9 @@ public interface TradeOrderSendMessageService {
      * @param tradeOrder 便利店订单
      * @return
      * @date 2017-2-18
+     * @throws Exception
+     * @author zhaoqc
      */
-    void tradeSendMessage(TradeOrder tradeOrder);
+    void tradeSendMessage(TradeOrder tradeOrder, TradeOrderRefunds orderRefunds);
     
 }

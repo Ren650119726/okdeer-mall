@@ -13,11 +13,14 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
+import com.okdeer.mall.order.vo.TradeOrderVo;
 
 /**
  * ClassName: TradeOrderMapperTest 
@@ -88,12 +91,15 @@ public class TradeOrderMapperTest extends BaseServiceTest{
 	
 	@Test
 	public void testSelectRealOrderList() {
-		List<TradeOrder> orderList = tradeOrderMapper.selectRealOrderList(realOrderQry);
+		List<TradeOrderVo> orderList = tradeOrderMapper.selectRealOrderList(realOrderQry);
 		Assert.assertEquals("430064",orderList.get(0).getTradeOrderItem().get(0).getArticleNo());
 	}
 
 	@Test
 	public void testFindUserOrders(){
-		tradeOrderMapper.findUserOrders(userOrderQry);
+		PageHelper.startPage(1, -1);
+		List<TradeOrder> list = tradeOrderMapper.findUserOrders(userOrderQry);
+		PageUtils<TradeOrder> page = new PageUtils<TradeOrder>(list);
+		System.out.println(page.getTotal());
 	}
 }

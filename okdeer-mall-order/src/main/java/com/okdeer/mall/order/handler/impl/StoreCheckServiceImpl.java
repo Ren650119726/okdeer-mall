@@ -15,6 +15,7 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.handler.StoreCheckService;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.vo.TradeOrderReq;
@@ -93,6 +94,13 @@ public class StoreCheckServiceImpl implements StoreCheckService {
 			// End modified by maojj 2016-08-10
 			resp.setIsBusiness(WhetherEnum.not.ordinal());
 			return;
+		}
+		
+		// 店铺不支持到店自提
+		if(reqDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT && req.getPickType() == PickUpTypeEnum.TO_STORE_PICKUP && storeExt.getIsPickUp() == 0){
+			// 如果提交订单，且请求为到店自提，但是店铺不支持到店自提，则返回错误提示
+			respDto.setFlag(false);
+			respDto.setMessage(OrderTipMsgConstant.CVS_NOT_SUPPORT_TO_STORE);
 		}
 
 		// Begin modified by maojj 2016-08-10 Bug:12572
