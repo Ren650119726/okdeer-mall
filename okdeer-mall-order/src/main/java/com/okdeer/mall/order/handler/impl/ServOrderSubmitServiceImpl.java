@@ -324,7 +324,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		tradeOrder.setActivityType(reqData.getActivityType());
 		tradeOrder.setActivityId(reqData.getActivityId());
 		tradeOrder.setActivityItemId(reqData.getActivityItemId());
-		tradeOrder.setOrderResource(OrderResourceEnum.YSCAPP);
+		
+		tradeOrder.setOrderResource(reqData.getChannel() == 1 ? OrderResourceEnum.WECHAT : OrderResourceEnum.YSCAPP);
 		tradeOrder.setIsShow(OrderIsShowEnum.yes);
 		tradeOrder.setPaymentStatus(PaymentStatusEnum.STAY_BACK);
 		tradeOrder.setCompainStatus(CompainStatusEnum.NOT_COMPAIN);
