@@ -182,8 +182,8 @@ public class StockOperateServiceImpl implements StockOperateService {
 		String rpcId = UuidUtils.getUuid();
 		rpcIdList.add(rpcId);
 		stockAdjustVo.setRpcId(rpcId);
-		stockAdjustVo.setOrderId(orderRefunds.getOrderId());
-		stockAdjustVo.setOrderNo(orderRefunds.getOrderNo());
+		stockAdjustVo.setOrderId(orderRefunds.getId());
+		stockAdjustVo.setOrderNo(orderRefunds.getRefundNo());
 		stockAdjustVo.setOrderResource(orderRefunds.getOrderResource());
 		stockAdjustVo.setOrderType(orderRefunds.getType());
 		stockAdjustVo.setStoreId(orderRefunds.getStoreId());
