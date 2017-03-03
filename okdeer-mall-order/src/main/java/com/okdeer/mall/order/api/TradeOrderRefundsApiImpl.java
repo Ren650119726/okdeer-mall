@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.order.api;
 
 import java.math.BigDecimal;
@@ -400,16 +401,14 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		if (CollectionUtils.isNotEmpty(refundPics)) {
 			// 凭证图片名称
 			List<TradeOrderRefundsCertificateImg> certificateImgs = Lists.newArrayList();
+			TradeOrderRefundsCertificateImg certificateImg = null;
 			for (String refundPic : refundPics) {
-				TradeOrderRefundsCertificateImg certificateImg = null;
-				for (int i = 0; i < refundPics.size(); i++) {
-					certificateImg = new TradeOrderRefundsCertificateImg();
-					certificateImg.setCertificateId(certificateId);
-					certificateImg.setId(UuidUtils.getUuid());
-					certificateImg.setImagePath(refundPic);
-					certificateImgs.add(certificateImg);
-					certificateImg = null;
-				}
+				certificateImg = new TradeOrderRefundsCertificateImg();
+				certificateImg.setCertificateId(certificateId);
+				certificateImg.setId(UuidUtils.getUuid());
+				certificateImg.setImagePath(refundPic);
+				certificateImgs.add(certificateImg);
+				certificateImg = null;
 			}
 			certificate.setTradeOrderRefundsCertificateImg(certificateImgs);
 		}
@@ -830,9 +829,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		List<String> statusList = Lists.newArrayList();
 
 		/*
-		 * 退货/退款状态:(0:等待卖家确认,1:买家撤销退款,2:等待买家退货,3:等待卖家收货,4:待卖家退款,5:卖家拒绝退款,6:退款成功,
-		 * 7 :卖家拒绝申请,8:申请客服介入,9:客户介入取消,10:云上城退款,11:(纠纷单)云上城退款成功),12:强制卖家退款,
-		 * 13强制卖家退款成功 ,14卖家退款中'
+		 * 退货/退款状态:(0:等待卖家确认,1:买家撤销退款,2:等待买家退货,3:等待卖家收货,4:待卖家退款,5:卖家拒绝退款,6:退款成功, 7
+		 * :卖家拒绝申请,8:申请客服介入,9:客户介入取消,10:云上城退款,11:(纠纷单)云上城退款成功),12:强制卖家退款, 13强制卖家退款成功 ,14卖家退款中'
 		 */
 
 		if (type != null && "complain".equals(type)) {
@@ -910,15 +908,15 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 	@Override
 	public <T> String applyRefund(T request, RefundOrderTypeEnum refundtype) throws Exception {
 		switch (refundtype) {
-		case PHYSICAL_ORDER:
-			// 实物订单处理
-			PhysOrderApplyRefundParamDto applyRefundParamDto = (PhysOrderApplyRefundParamDto) request;
-			return physOrderApplyRefund(applyRefundParamDto);
-		case STORE_CONSUMER:
-			// 到店消费订单处理
+			case PHYSICAL_ORDER:
+				// 实物订单处理
+				PhysOrderApplyRefundParamDto applyRefundParamDto = (PhysOrderApplyRefundParamDto) request;
+				return physOrderApplyRefund(applyRefundParamDto);
+			case STORE_CONSUMER:
+				// 到店消费订单处理
 
-		default:
-			break;
+			default:
+				break;
 		}
 		return null;
 
