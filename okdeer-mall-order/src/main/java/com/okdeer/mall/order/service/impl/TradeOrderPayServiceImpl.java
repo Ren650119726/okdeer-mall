@@ -909,7 +909,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		// 设置订单信息
 		PayReqestDto payReqest = new PayReqestDto();
 		payReqest.setOpenid(payInfoParamDto.getOpenId());
-		if (payInfoParamDto.getClientType() == null || "0".equals(payInfoParamDto.getClientType())) {
+		if (StringUtils.isBlank(payInfoParamDto.getClientType())  || "0".equals(payInfoParamDto.getClientType())) {
 			payReqest.setApplicationEnum(ApplicationEnum.BUTLER);
 		} else {
 			payReqest.setApplicationEnum(ApplicationEnum.CONVENIENCE_STORE);
