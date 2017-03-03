@@ -86,11 +86,11 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
                 //已取消
                 msgDto.setMsgNotifyContent("订单已取消");
                 msgDto.setMsgDetailContent("订单已取消   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
-            } else if (status == OrderStatusEnum.REFUSED) {
+            } /*else if (status == OrderStatusEnum.REFUSED) {
                 //已拒收
                 msgDto.setMsgNotifyContent("买家拒收");
                 msgDto.setMsgDetailContent("买家拒收   " + DateUtils.formatDateTime(tradeOrder.getUpdateTime()));
-            } else if (status == OrderStatusEnum.HAS_BEEN_SIGNED) {
+            } */else if (status == OrderStatusEnum.HAS_BEEN_SIGNED) {
                 //订单完成
                 OrderStatusEnum currentStatus = tradeOrder.getCurrentStatus();
                 if(currentStatus != null && currentStatus != tradeOrder.getStatus()) {
