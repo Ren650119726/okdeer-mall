@@ -121,13 +121,17 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 					List<String> categoryIdLimitList = null;
 					if(coupons.getType() == CouponsType.bld.ordinal()){
 						categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
+						if (CollectionUtils.isEmpty(paramBo.getSpuCategoryIds()) || CollectionUtils.isEmpty(categoryIdLimitList) || !categoryIdLimitList.containsAll(paramBo.getSpuCategoryIds())) {
+							return false;
+						}
 					}else if(coupons.getType() == CouponsType.fwd.ordinal()){
 						categoryIdLimitList = goodsNavigateCategoryServiceApi
 								.findNavigateCategoryBySkuIds(paramBo.getSpuCategoryIds());
+						if (categoryIdLimitList.size() != paramBo.getSpuCategoryIds().size()) {
+							return false;
+						}
 					}
-					if (CollectionUtils.isEmpty(paramBo.getSpuCategoryIds()) || CollectionUtils.isEmpty(categoryIdLimitList) || !categoryIdLimitList.containsAll(paramBo.getSpuCategoryIds())) {
-						return false;
-					}
+					
 				}
 				return true;
 			}
