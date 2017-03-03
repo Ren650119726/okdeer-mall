@@ -1,22 +1,31 @@
 package com.okdeer.mall.order.handler.impl;
 
+import java.util.List;
+import java.util.Set;
+
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
+import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
+import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
+import com.okdeer.mall.order.bo.StoreSkuParserBo;
+import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.handler.RequestHandler;
@@ -66,11 +75,13 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		ActivityTypeEnum activityType = paramDto.getActivityType();
 		String recordId = paramDto.getRecordId();
 		String activityId = paramDto.getActivityId();
-
+		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
+		Set<String> spuCategoryIds = parserBo == null ? null : parserBo.getCategoryIdSet();
+		
 		boolean isValid = true;
 		switch (activityType) {
 			case VONCHER:
-				isValid = checkCoupons(recordId);
+				isValid = checkCoupons(recordId,spuCategoryIds,resp);
 				break;
 			case FULL_REDUCTION_ACTIVITIES:
 			case FULL_DISCOUNT_ACTIVITIES:
@@ -79,7 +90,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			default:
 				break;
 		}
-		if (!isValid) {
+		if (!isValid && resp.isSuccess()) {
 			resp.setResult(ResultCodeEnum.FAVOUR_NOT_SUPPORT);
 			return;
 		}
@@ -92,13 +103,34 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private boolean checkCoupons(String recordId) {
-		boolean isValid = true;
-		ActivityCouponsRecord conpons = activityCouponsRecordMapper.selectByPrimaryKey(recordId);
-		if (conpons.getStatus() != ActivityCouponsRecordStatusEnum.UNUSED) {
-			isValid = false;
+	private boolean checkCoupons(String recordId,Set<String> spuCategoryIds,Response<PlaceOrderDto> resp) throws Exception{
+		ActivityCouponsRecord couponsRecord = activityCouponsRecordMapper.selectByPrimaryKey(recordId);
+		if (couponsRecord.getStatus() != ActivityCouponsRecordStatusEnum.UNUSED) {
+			return false;
 		}
-		return isValid;
+		
+		// 查询代金券
+		ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsRecord.getCouponsId());
+		if(coupons.getIsCategory() == Constant.ONE){
+			List<String> categoryIdLimitList = null;
+			if(coupons.getType() == CouponsType.bld.ordinal()){
+				categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getId());
+				if (CollectionUtils.isEmpty(spuCategoryIds) || CollectionUtils.isEmpty(categoryIdLimitList) || !categoryIdLimitList.containsAll(spuCategoryIds)) {
+					// 超出指定分类
+					resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
+					return false;
+				}
+			}else if(coupons.getType() == CouponsType.fwd.ordinal()){
+				categoryIdLimitList = goodsNavigateCategoryServiceApi
+						.findNavigateCategoryBySkuIds(spuCategoryIds);
+				if (categoryIdLimitList.size() != spuCategoryIds.size()) {
+					// 超出指定分类
+					resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
+					return false;
+				}
+			}
+		}			
+		return true;
 	}
 
 	/**
