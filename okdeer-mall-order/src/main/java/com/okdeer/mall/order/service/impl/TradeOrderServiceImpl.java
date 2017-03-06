@@ -6316,7 +6316,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			activityCouponsRecord.setCouponsCollectId(collCoupons.get(0).getId());
 			activityCouponsRecord.setCollectTime(new Date());
 			activityCouponsRecord.setCollectUserId(userId);
-			activityCouponsRecord.setValidTime(DateUtils.addDays(new Date(), coupons.getValidDay()));
+			// Begin modified by maojj 2017-03-06 修改代金券到期时间计算方式
+			activityCouponsRecord.setValidTime(calculateValidTime(coupons.getValidDay()));
+			// End modified by maojj 2017-03-06 修改代金券到期时间计算方式
 			activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
 
 			lstCouponsRecords.add(activityCouponsRecord);
@@ -6340,6 +6342,26 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_SUCCESS_TIPS);
 		}
 	}
+	
+	// Begin V2.1 added by maojj 2017-03-06
+	/**
+	 * @Description: 计算代金券到期时间
+	 * @param validDay 有效天数
+	 * @return   
+	 * @author maojj
+	 * @date 2017年3月6日
+	 */
+	private Date calculateValidTime(Integer validDay) {
+		final Calendar c = Calendar.getInstance();
+		c.setTime(new Date());
+		c.add(Calendar.DAY_OF_MONTH, validDay);
+		c.set(Calendar.HOUR_OF_DAY, 0);
+		c.set(Calendar.MINUTE, 0);
+		c.set(Calendar.SECOND, 0);
+		c.set(Calendar.MILLISECOND, 0);
+		return c.getTime();
+	}
+	// End V2.1 added by maojj 2017-03-06
 
 	/**
 	 *
