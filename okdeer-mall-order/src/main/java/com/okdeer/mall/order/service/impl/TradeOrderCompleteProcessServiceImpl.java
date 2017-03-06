@@ -705,23 +705,25 @@ public class TradeOrderCompleteProcessServiceImpl
 				splitItem.setId(UuidUtils.getUuid());
 				splitItem.setOrderId(item.getOrderId());
 				splitItem.setActivityType(ActivityTypeEnum.LOW_PRICE.ordinal());
-				splitItem.setPreferentialPrice(item.getUnitPrice().subtract(item.getActivityPrice()));
+				splitItem.setPreferentialPrice(item.getPreferentialPrice());
 				splitItem.setUnitPrice(item.getUnitPrice());
 				splitItem.setQuantity(item.getActivityQuantity());
 				splitItem.setCreateTime(item.getCreateTime());
 				splitItem.setStoreSkuId(item.getStoreSkuId());
 				splitItemList.add(splitItem);
 				
-				splitItem = new TradeOrderItem();
-				splitItem.setId(UuidUtils.getUuid());
-				splitItem.setOrderId(item.getOrderId());
-				splitItem.setActivityType(ActivityTypeEnum.NO_ACTIVITY.ordinal());
-				splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
-				splitItem.setUnitPrice(item.getUnitPrice());
-				splitItem.setQuantity(item.getQuantity() - item.getActivityQuantity());
-				splitItem.setCreateTime(item.getCreateTime());
-				splitItem.setStoreSkuId(item.getStoreSkuId());
-				splitItemList.add(splitItem);
+				if(item.getQuantity() - item.getActivityQuantity() > 0){
+					splitItem = new TradeOrderItem();
+					splitItem.setId(UuidUtils.getUuid());
+					splitItem.setOrderId(item.getOrderId());
+					splitItem.setActivityType(ActivityTypeEnum.NO_ACTIVITY.ordinal());
+					splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
+					splitItem.setUnitPrice(item.getUnitPrice());
+					splitItem.setQuantity(item.getQuantity() - item.getActivityQuantity());
+					splitItem.setCreateTime(item.getCreateTime());
+					splitItem.setStoreSkuId(item.getStoreSkuId());
+					splitItemList.add(splitItem);
+				}
 				itemIt.remove();
 			}
 		}
