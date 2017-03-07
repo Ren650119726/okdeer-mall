@@ -593,7 +593,7 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setUnitPrice(skuBo.getOnlinePrice());
 			tradeOrderItem.setQuantity(skuBo.getQuantity());
 			tradeOrderItem.setActivityPrice(skuBo.getActPrice());
-			tradeOrderItem.setActivityQuantity(skuBo.getSkuActQuantity());
+			tradeOrderItem.setActivityQuantity(tradeOrder.getActivityType() == ActivityTypeEnum.LOW_PRICE ? skuBo.getSkuActQuantity() : 0);
 			tradeOrderItem.setStatus(OrderItemStatusEnum.NO_REFUND);
 			tradeOrderItem.setCompainStatus(CompainStatusEnum.NOT_COMPAIN);
 			tradeOrderItem.setAppraise(AppraiseEnum.NOT_APPROPRIATE);

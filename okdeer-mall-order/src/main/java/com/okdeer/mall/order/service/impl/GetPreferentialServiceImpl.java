@@ -15,6 +15,7 @@ import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.discount.entity.PreferentialVo;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
@@ -54,6 +55,9 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 	 */
 	@Resource
 	private ActivityCouponsRecordService activityCouponsRecordService;
+	
+	@Resource
+	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
 
 	/**
 	 * 折扣、满减活动Service
@@ -118,16 +122,14 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 				}
 				if (Constant.ONE == coupons.getIsCategory().intValue()) {
 					// 如果代金券指定分类，检查分类是否超出指定分类
-					List<String> categoryIdLimitList = null;
 					if(coupons.getType() == CouponsType.bld.ordinal()){
-						categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
-						if (CollectionUtils.isEmpty(paramBo.getSpuCategoryIds()) || CollectionUtils.isEmpty(categoryIdLimitList) || !categoryIdLimitList.containsAll(paramBo.getSpuCategoryIds())) {
+						List<String> categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
+						if (!categoryIdLimitList.containsAll(paramBo.getSpuCategoryIds())) {
 							return false;
 						}
 					}else if(coupons.getType() == CouponsType.fwd.ordinal()){
-						categoryIdLimitList = goodsNavigateCategoryServiceApi
-								.findNavigateCategoryBySkuIds(paramBo.getSpuCategoryIds());
-						if (categoryIdLimitList.size() != paramBo.getSpuCategoryIds().size()) {
+						int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(paramBo.getSpuCategoryIds(), coupons.getCouponId());
+						if (count != paramBo.getSpuCategoryIds().size()) {
 							return false;
 						}
 					}

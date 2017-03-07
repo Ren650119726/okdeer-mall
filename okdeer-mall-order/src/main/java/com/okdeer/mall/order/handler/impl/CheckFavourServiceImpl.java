@@ -112,18 +112,16 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		// 查询代金券
 		ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsRecord.getCouponsId());
 		if(coupons.getIsCategory() == Constant.ONE){
-			List<String> categoryIdLimitList = null;
 			if(coupons.getType() == CouponsType.bld.ordinal()){
-				categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getId());
-				if (CollectionUtils.isEmpty(spuCategoryIds) || CollectionUtils.isEmpty(categoryIdLimitList) || !categoryIdLimitList.containsAll(spuCategoryIds)) {
+				List<String> categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getId());
+				if (!categoryIdLimitList.containsAll(spuCategoryIds)) {
 					// 超出指定分类
 					resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
 					return false;
 				}
 			}else if(coupons.getType() == CouponsType.fwd.ordinal()){
-				categoryIdLimitList = goodsNavigateCategoryServiceApi
-						.findNavigateCategoryBySkuIds(spuCategoryIds);
-				if (categoryIdLimitList.size() != spuCategoryIds.size()) {
+				int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getId());
+				if (count != spuCategoryIds.size()) {
 					// 超出指定分类
 					resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
 					return false;

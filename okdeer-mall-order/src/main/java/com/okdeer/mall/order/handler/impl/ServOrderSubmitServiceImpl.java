@@ -39,6 +39,8 @@ import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.bdp.address.entity.Address;
+import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
@@ -54,9 +56,11 @@ import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.entity.TradeOrderLocate;
 import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.enums.AppraiseEnum;
@@ -205,6 +209,12 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	@Resource
 	private OrderReturnCouponsService orderReturnCouponsService;
 	// End added by maojj 2016-10-18
+	
+	/**
+	 * 省市区地址查询接口
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private IAddressService addressService;
 
 	@SuppressWarnings("unchecked")
 	@Transactional(rollbackFor = Exception.class)
@@ -324,7 +334,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		tradeOrder.setActivityType(reqData.getActivityType());
 		tradeOrder.setActivityId(reqData.getActivityId());
 		tradeOrder.setActivityItemId(reqData.getActivityItemId());
-		tradeOrder.setOrderResource(OrderResourceEnum.YSCAPP);
+		
+		tradeOrder.setOrderResource(reqData.getChannel() == 1 ? OrderResourceEnum.WECHAT : OrderResourceEnum.YSCAPP);
 		tradeOrder.setIsShow(OrderIsShowEnum.yes);
 		tradeOrder.setPaymentStatus(PaymentStatusEnum.STAY_BACK);
 		tradeOrder.setCompainStatus(CompainStatusEnum.NOT_COMPAIN);
@@ -397,6 +408,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		}
 		// End V1.2 added by maojj 2016-11-08
 		
+		tradeOrder.setTradeOrderLocate(buildTradeOrderLocate(tradeOrder.getId(), reqData));
 		return tradeOrder;
 	}
 
@@ -989,6 +1001,38 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		orderLogistics.setZipCode(address.getZipCode());
 
 		tradeOrder.setTradeOrderLogistics(orderLogistics);
+	}
+	
+	public TradeOrderLocate buildTradeOrderLocate(String orderId, ServiceOrderReq reqData){
+		TradeOrderLocate tradeOrderLocate = new TradeOrderLocate();
+		// 城市名称
+		String cityName = reqData.getCityName();
+		// 区域名称
+		String areaName = reqData.getAreaName();
+		
+		tradeOrderLocate.setId(UuidUtils.getUuid());
+		tradeOrderLocate.setOrderId(orderId);
+		tradeOrderLocate.setLongitude(StringUtils.isEmpty(reqData.getLongitude()) ? 0.0 :Double.parseDouble(reqData.getLongitude()));
+		tradeOrderLocate.setLatitude(StringUtils.isEmpty(reqData.getLatitude()) ? 0.0 :Double.parseDouble(reqData.getLatitude()));
+		tradeOrderLocate.setProviceName(reqData.getProvinceName());
+		tradeOrderLocate.setCityName(cityName);
+		tradeOrderLocate.setAreaName(areaName);
+		tradeOrderLocate.setAreaExt(reqData.getAreaExt());
+
+		if(!StringUtils.isEmpty(reqData.getCityName())){
+			Address cityAddr = addressService.getByName(cityName);
+			if(cityAddr != null){
+				tradeOrderLocate.setProvinceId(String.valueOf(cityAddr.getParentId()));
+				tradeOrderLocate.setCityId(String.valueOf(cityAddr.getId()));
+				
+				if(areaName != null){
+					Address areaAddr = addressService.getByName(cityAddr.getId(), areaName);
+					tradeOrderLocate.setAreaId(areaAddr == null ? "" : String.valueOf(areaAddr.getId()));
+				}
+			}
+		}
+		
+		return tradeOrderLocate;
 	}
 
 	/**
