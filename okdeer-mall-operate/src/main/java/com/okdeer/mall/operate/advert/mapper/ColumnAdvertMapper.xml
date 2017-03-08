@@ -101,8 +101,8 @@
     <result column="isPrivliege" property="isPrivliege" jdbcType="INTEGER" />
     <result column="sale_price" property="salePrice" jdbcType="DECIMAL" />
     <result column="limitNum" property="limitNum" jdbcType="INTEGER" />
-    <result column="trade_max" property="tradeMax" jdbcType="INTEGER" />
     <result column="lockedStock" property="lockedStock" jdbcType="INTEGER" />
+    <result column="lowPriceUpper" property="lowPriceUpper" jdbcType="INTEGER" />
   </resultMap>
 		
 	<resultMap id="getAllSetAreaResult" type="HashMap">
@@ -940,7 +940,7 @@
 			sku.type,
 			if(sa.id IS NULL,sku.online_price,asg.sale_price) AS onlinePrice,
 			sku.market_price AS marketPrice,
-			sku.trade_max AS tradeMax,
+			if(sa.type=1,asg.trade_max,sku.trade_max) AS tradeMax,
 			IFNULL(sku.guaranteed,0) AS guaranteed,
 			IFNULL(sku.obsolete,0) AS obsolete,
 			sku.properties_indb AS propertiesIndb, 		
@@ -948,8 +948,8 @@
 			picture.url,
 			if(sa.id IS NULL,stock.sellable,stock.locked) AS sellableStock,
 			asg.sale_price,
-			asg.trade_max,
 			stock.locked AS lockedStock,
+			asg.trade_max AS lowPriceUpper,
 			sa.`limit` as limitNum
 		FROM column_advert_goods s
 			INNER JOIN goods_store_sku sku on s.goods_id = sku.bar_code
@@ -957,7 +957,7 @@
 			LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
 			LEFT JOIN goods_store_sku_stock stock ON stock.`store_sku_id` = sku.`id`
 			LEFT JOIN `activity_sale` sa ON sa.`id` = sku.`activity_id` AND sa.status = 1 AND sa.disabled = 0
-			LEFT JOIN `activity_sale_goods` asg on sa.id = asg.`sale_id`
+			LEFT JOIN `activity_sale_goods` asg on sa.id = asg.`sale_id` AND sku.id=asg.store_sku_id
 	    WHERE sku.disabled = 0
 			AND stock.disabled = 0
 			AND sku.`status` = 1
