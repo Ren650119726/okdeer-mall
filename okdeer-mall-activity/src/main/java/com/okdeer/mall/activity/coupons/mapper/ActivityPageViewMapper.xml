@@ -8,10 +8,11 @@
 		<result property="machineCode" column="machine_code" />
 		<result property="userId" column="user_id" />
 		<result property="createTime" column="create_time" />
+		<result property="operateDesc" column="operate_desc" />
 	</resultMap>
 	
 	<sql id="columns">
-		id,ip,machine_code,user_id,advert_id,operate_name,create_time
+		id,ip,machine_code,user_id,advert_id,operate_name,create_time,operate_desc
 	</sql>
 	
 	<insert id="save" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityPageView">
@@ -24,7 +25,8 @@
             #{userId},
             #{advertId},
             #{operateName},
-            #{createTime}
+            #{createTime},
+            #{operateDesc}
         )
 	</insert>
 	
