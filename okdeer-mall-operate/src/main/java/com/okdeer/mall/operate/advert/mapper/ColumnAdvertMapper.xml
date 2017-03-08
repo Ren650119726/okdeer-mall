@@ -941,7 +941,7 @@
 			sku.type,
 			if(sa.id IS NULL,sku.online_price,asg.sale_price) AS onlinePrice,
 			sku.market_price AS marketPrice,
-			if(sa.type=1,asg.trade_max,sku.trade_max) AS tradeMax,
+			if(sa.type=5,asg.trade_max,sku.trade_max) AS tradeMax,
 			IFNULL(sku.guaranteed,0) AS guaranteed,
 			IFNULL(sku.obsolete,0) AS obsolete,
 			sku.properties_indb AS propertiesIndb, 		
