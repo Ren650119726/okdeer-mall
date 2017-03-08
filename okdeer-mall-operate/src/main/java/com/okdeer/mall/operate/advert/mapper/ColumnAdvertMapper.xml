@@ -103,6 +103,7 @@
     <result column="limitNum" property="limitNum" jdbcType="INTEGER" />
     <result column="lockedStock" property="lockedStock" jdbcType="INTEGER" />
     <result column="lowPriceUpper" property="lowPriceUpper" jdbcType="INTEGER" />
+    <result column="online" property="online" jdbcType="INTEGER" />
   </resultMap>
 		
 	<resultMap id="getAllSetAreaResult" type="HashMap">
@@ -950,7 +951,8 @@
 			asg.sale_price,
 			stock.locked AS lockedStock,
 			asg.trade_max AS lowPriceUpper,
-			sa.`limit` as limitNum
+			sa.`limit` as limitNum,
+			sku.`online` AS online
 		FROM column_advert_goods s
 			INNER JOIN goods_store_sku sku on s.goods_id = sku.bar_code
 			LEFT JOIN goods_store_sku_plu plu ON plu.store_sku_id = sku.id AND plu.type = 1 AND plu.disabled = 0
@@ -962,7 +964,6 @@
 			AND stock.disabled = 0
 			AND sku.`status` = 1
 			AND sku.violation = 0
-			AND sku.`online` = 1
 			AND sku.store_id = #{storeId,jdbcType=VARCHAR}
 		  	AND s.advert_id=#{advertId,jdbcType=VARCHAR}
 			ORDER BY s.`create_time` 
