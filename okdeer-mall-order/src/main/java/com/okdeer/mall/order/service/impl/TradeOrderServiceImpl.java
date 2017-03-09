@@ -2025,7 +2025,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// DateUtils.addHours(serviceTime, 24).getTime());
 				// Begin V1.0.3修改自动确认收货期限为7天 update by wusw 20160901
 				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout, tradeOrder.getId(),
-						(DateUtils.addHours(serviceTime, 24 * 7).getTime() - DateUtils.getSysDate().getTime()) / 1000);
+						(DateUtils.addHours(serviceTime, 24 * 3).getTime() - DateUtils.getSysDate().getTime()) / 1000);
 				// End V1.0.3修改自动确认收货期限为7天 update by wusw 20160901
 				// 服务店派单发送短信
 				tradeMessageService.sendSmsByServiceStoreShipments(tradeOrder);
