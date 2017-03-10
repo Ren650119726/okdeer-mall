@@ -211,7 +211,10 @@
 		</if>
 		<if test="applyEndTime != null ">
 			AND ca.create_time &lt;= #{applyEndTime}
-		</if>		
+		</if>
+		<if test="advertStatus !=null ">
+			AND ca.status  = #{advertStatus,jdbcType = TINYINT}
+		</if>	
 		ORDER BY aap.approval_time DESC			
 	</select>
 	
