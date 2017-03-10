@@ -2616,6 +2616,7 @@
 		(select count(1) from trade_order_refunds_item r inner join trade_order_item
 		i on r.order_item_id = i.id where i.order_id = tr.id) as refunds_count
 		FROM trade_order as tr
+		LEFT JOIN trade_order_pay tp ON tp.order_id = tr.id
 		WHERE tr.store_id = #{storeId,jdbcType=VARCHAR}
 		and disabled = 0
 		<!-- 状态 -->
@@ -2650,14 +2651,28 @@
 		<!-- 根据不同的tabs做不同的排序 -->
 		<if test="tabs != null and tabs != ''">
 			<!-- 待付款、待发货、待收货、已取消 的排序根据下单时间倒叙 -->
-			<if
+			<!-- <if
 				test="tabs == 'wait_pay' or tabs == 'wait_shipments' or tabs == 'wait_receiving' or tabs == 'cancel'">
+				ORDER BY tr.create_time DESC
+			</if> -->
+			<if test="tabs == 'wait_shipments'">
+				ORDER BY tp.pay_time DESC
+			</if>
+			<if
+				test="tabs == 'wait_receiving'">
+				ORDER BY tr.delivery_time DESC
+			</if>
+			<if
+				test=" tabs == 'cancel'">
 				ORDER BY tr.create_time DESC
 			</if>
 			<!-- 已完成 的排序如果有投诉单，按照投诉时间倒叙，剩下的按照确认收货时间倒叙 -->
-			<if test="tabs == 'done'">
+			<!-- <if test="tabs == 'done'">
 				ORDER BY (SELECT c.create_time from trade_order_complain c where
 				c.order_id = tr.id) desc,tr.received_time desc
+			</if> -->
+			<if test="tabs == 'done'">
+				ORDER BY tr.received_time desc
 			</if>
 		</if>
 		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
@@ -2670,7 +2685,7 @@
 	<select id="selectServiceOrderInfo" parameterType="java.util.Map"
 		resultMap="TradeOrderVo">
 		SELECT
-		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.status,tr.delivery_time,tr.type,tr.is_breach,
+		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.status,tr.consumer_code_status,tr.delivery_time,tr.type,tr.is_breach,
 		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
 		= tr.id) as goods_count,
 		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
