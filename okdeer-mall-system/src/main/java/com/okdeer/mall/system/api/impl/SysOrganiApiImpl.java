@@ -41,7 +41,8 @@ public class SysOrganiApiImpl implements SysOrganiApi {
 
 	@Override
 	public void update(SysOrganiDto dto) throws Exception {
-
+		SysOrganization sysOrganization = BeanMapper.map(dto, SysOrganization.class);
+		sysOrganiService.update(sysOrganization);
 	}
 
 	@Override
