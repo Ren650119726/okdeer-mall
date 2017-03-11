@@ -4,6 +4,7 @@
  * @Date 2017-03-10 Created
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的
  */
+
 package com.okdeer.mall.system.entity;
 
 import java.util.Date;
@@ -18,161 +19,199 @@ import com.okdeer.base.common.enums.Disabled;
  */
 public class SysOrganization {
 
-    /**
-     * 主键ID
-     */
-    private String id;
-    /**
-     * 组织编码
-     */
-    private String code;
-    /**
-     * 组织名称
-     */
-    private String name;
-    /**
-     * 父id
-     */
-    private String parentId;
-    /**
-     * 联系人
-     */
-    private String linkman;
-    /**
-     * 联系电话
-     */
-    private String tel;
-    /**
-     * 联系地址
-     */
-    private String address;
-    /**
-     * 备注
-     */
-    private String remark;
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-    /**
-     * 创建人ID
-     */
-    private String createUserId;
-    /**
-     * 修改时间
-     */
-    private Date updateTime;
-    /**
-     * 修改人ID
-     */
-    private String updateUserId;
-    /**
-     * 删除标识 0未删除，1已删除
-     */
-    private Disabled disabled;
+	/**
+	 * 主键ID
+	 */
+	private String id;
 
+	/**
+	 * 组织编码
+	 */
+	private Integer code;
 
-    public String getId() {
-        return id;
-    }
+	/**
+	 * 组织名称
+	 */
+	private String name;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	/**
+	 * 父id
+	 */
+	private String parentId;
 
-    public String getCode() {
-        return code;
-    }
+	/**
+	 * 联系人
+	 */
+	private String linkman;
 
-    public void setCode(String code) {
-        this.code = code;
-    }
+	/**
+	 * 联系电话
+	 */
+	private String tel;
 
-    public String getName() {
-        return name;
-    }
+	/**
+	 * 联系地址
+	 */
+	private String address;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	/**
+	 * 备注
+	 */
+	private String remark;
 
-    public String getParentId() {
-        return parentId;
-    }
+	/**
+	 * 创建时间
+	 */
+	private Date createTime;
 
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
-    }
+	/**
+	 * 创建人ID
+	 */
+	private String createUserId;
 
-    public String getLinkman() {
-        return linkman;
-    }
+	/**
+	 * 创建人名称
+	 */
+	private String createUserName;
 
-    public void setLinkman(String linkman) {
-        this.linkman = linkman;
-    }
+	/**
+	 * 修改时间
+	 */
+	private Date updateTime;
 
-    public String getTel() {
-        return tel;
-    }
+	/**
+	 * 修改人ID
+	 */
+	private String updateUserId;
 
-    public void setTel(String tel) {
-        this.tel = tel;
-    }
+	/**
+	 * 修改人名称
+	 */
+	private String updateUserName;
 
-    public String getAddress() {
-        return address;
-    }
+	/**
+	 * 删除标识 0未删除，1已删除
+	 */
+	private Disabled disabled;
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public String getRemark() {
-        return remark;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
+	public Integer getCode() {
+		return code;
+	}
 
-    public Date getCreateTime() {
-        return createTime;
-    }
+	public void setCode(Integer code) {
+		this.code = code;
+	}
 
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getCreateUserId() {
-        return createUserId;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setCreateUserId(String createUserId) {
-        this.createUserId = createUserId;
-    }
+	public String getParentId() {
+		return parentId;
+	}
 
-    public Date getUpdateTime() {
-        return updateTime;
-    }
+	public void setParentId(String parentId) {
+		this.parentId = parentId;
+	}
 
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
+	public String getLinkman() {
+		return linkman;
+	}
 
-    public String getUpdateUserId() {
-        return updateUserId;
-    }
+	public void setLinkman(String linkman) {
+		this.linkman = linkman;
+	}
 
-    public void setUpdateUserId(String updateUserId) {
-        this.updateUserId = updateUserId;
-    }
+	public String getTel() {
+		return tel;
+	}
 
-    public Disabled getDisabled() {
-        return disabled;
-    }
+	public void setTel(String tel) {
+		this.tel = tel;
+	}
 
-    public void setDisabled(Disabled disabled) {
-        this.disabled = disabled;
-    }
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
+	public String getCreateUserId() {
+		return createUserId;
+	}
+
+	public void setCreateUserId(String createUserId) {
+		this.createUserId = createUserId;
+	}
+
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
+
+	public String getUpdateUserId() {
+		return updateUserId;
+	}
+
+	public void setUpdateUserId(String updateUserId) {
+		this.updateUserId = updateUserId;
+	}
+
+	public Disabled getDisabled() {
+		return disabled;
+	}
+
+	public void setDisabled(Disabled disabled) {
+		this.disabled = disabled;
+	}
+
+	public String getCreateUserName() {
+		return createUserName;
+	}
+
+	public void setCreateUserName(String createUserName) {
+		this.createUserName = createUserName;
+	}
+
+	public String getUpdateUserName() {
+		return updateUserName;
+	}
+
+	public void setUpdateUserName(String updateUserName) {
+		this.updateUserName = updateUserName;
+	}
+
 }

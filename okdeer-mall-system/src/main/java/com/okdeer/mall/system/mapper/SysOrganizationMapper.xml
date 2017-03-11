@@ -3,7 +3,7 @@
 <mapper namespace="com.okdeer.mall.system.mapper.SysOrganizationMapper" >
     <resultMap id="BaseResultMap" type="com.okdeer.mall.system.entity.SysOrganization" >
         <id column="id" property="id" jdbcType="VARCHAR" />
-        <result column="code" property="code" jdbcType="VARCHAR" />
+        <result column="code" property="code" jdbcType="INTEGER" />
         <result column="name" property="name" jdbcType="VARCHAR" />
         <result column="parent_id" property="parentId" jdbcType="VARCHAR" />
         <result column="linkman" property="linkman" jdbcType="VARCHAR" />
@@ -12,14 +12,16 @@
         <result column="remark" property="remark" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="create_user_name" property="createUserName" jdbcType="VARCHAR" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
         <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="update_user_name" property="updateUserName" jdbcType="VARCHAR" />
         <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled"/>
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, code, name, parent_id, linkman, tel, address, remark, create_time, create_user_id, 
-        update_time, update_user_id, disabled
+        id, code, name, parent_id, linkman, tel, address, remark, create_time, create_user_id,create_user_name, 
+        update_time, update_user_id,update_user_name,disabled
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -62,11 +64,17 @@
             <if test="createUserId != null" >
                 create_user_id,
             </if>
+            <if test="createUserName != null" >
+                create_user_name,
+            </if>
             <if test="updateTime != null" >
                 update_time,
             </if>
             <if test="updateUserId != null" >
                 update_user_id,
+            </if>
+            <if test="updateUserName != null" >
+                update_user_name,
             </if>
             <if test="disabled != null" >
                 disabled,
@@ -103,11 +111,17 @@
             <if test="createUserId != null" >
                 #{createUserId,jdbcType=VARCHAR},
             </if>
+             <if test="createUserName != null" >
+                #{createUserName,jdbcType=VARCHAR},
+            </if>
             <if test="updateTime != null" >
                 #{updateTime,jdbcType=TIMESTAMP},
             </if>
             <if test="updateUserId != null" >
                 #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateUserName != null" >
+                #{updateUserName,jdbcType=VARCHAR},
             </if>
             <if test="disabled != null" >
                 #{disabled,jdbcType=BIT},
@@ -145,11 +159,17 @@
             <if test="createUserId != null" >
                 create_user_id = #{createUserId,jdbcType=VARCHAR},
             </if>
+            <if test="createUserName != null" >
+                create_user_name = #{createUserName,jdbcType=VARCHAR},
+            </if>
             <if test="updateTime != null" >
                 update_time = #{updateTime,jdbcType=TIMESTAMP},
             </if>
             <if test="updateUserId != null" >
                 update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+             <if test="updateUserName != null" >
+                update_user_name = #{updateUserName,jdbcType=VARCHAR},
             </if>
             <if test="disabled != null" >
                 disabled = #{disabled,jdbcType=BIT},
@@ -172,4 +192,9 @@
         	name like  CONCAT('%',#{name,jdbcType=VARCHAR},'%') 
         </if>
     </select>
+    
+    <select id="findMaxCode" resultType="int"  >
+        SELECT IFNULL(MAX(code),10000) FROM sys_organization
+    </select>
+    
 </mapper>

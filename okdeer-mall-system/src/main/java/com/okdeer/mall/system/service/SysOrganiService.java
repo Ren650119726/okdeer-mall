@@ -18,4 +18,6 @@ public interface SysOrganiService extends IBaseService {
 	 */
 	List<SysOrganization> findList(SysOrganiQueryParamDto paramDto);
 
+	int findMaxCode();
+
 }

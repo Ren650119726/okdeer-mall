@@ -33,7 +33,10 @@ public class SysOrganiApiImpl implements SysOrganiApi {
 
 	@Override
 	public void save(SysOrganiDto dto) throws Exception {
-
+		int code = sysOrganiService.findMaxCode() + 1;
+		dto.setCode(code);
+		SysOrganization sysOrganization = BeanMapper.map(dto, SysOrganization.class);
+		sysOrganiService.add(sysOrganization);
 	}
 
 	@Override

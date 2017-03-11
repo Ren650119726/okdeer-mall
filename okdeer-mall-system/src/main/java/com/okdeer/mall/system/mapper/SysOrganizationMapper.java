@@ -14,7 +14,7 @@ import com.okdeer.mall.system.dto.SysOrganiQueryParamDto;
 import com.okdeer.mall.system.entity.SysOrganization;
 
 public interface SysOrganizationMapper extends IBaseMapper {
-	
+
 	/**
 	 * @Description: 根据条件查询列表
 	 * @param paramDto 查询参数
@@ -22,5 +22,7 @@ public interface SysOrganizationMapper extends IBaseMapper {
 	 * @author zengjizu
 	 * @date 2017年3月11日
 	 */
-	public List<SysOrganization> findList(SysOrganiQueryParamDto paramDto);
+	List<SysOrganization> findList(SysOrganiQueryParamDto paramDto);
+
+	int findMaxCode();
 }

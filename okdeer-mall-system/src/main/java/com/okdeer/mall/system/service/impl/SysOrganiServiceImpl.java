@@ -29,4 +29,9 @@ public class SysOrganiServiceImpl extends BaseServiceImpl implements SysOrganiSe
 		return sysOrganizationMapper;
 	}
 
+	@Override
+	public int findMaxCode() {
+		return sysOrganizationMapper.findMaxCode();
+	}
+
 }
