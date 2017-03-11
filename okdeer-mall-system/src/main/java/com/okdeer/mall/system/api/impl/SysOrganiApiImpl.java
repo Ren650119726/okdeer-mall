@@ -16,7 +16,7 @@ import com.okdeer.mall.system.entity.SysOrganization;
 import com.okdeer.mall.system.service.SysOrganiApi;
 import com.okdeer.mall.system.service.SysOrganiService;
 
-@Service(interfaceName = "com.okdeer.mall.system.service.SysOrganiApi", interfaceClass = SysOrganiApi.class,version="1.0.0")
+@Service(interfaceName = "com.okdeer.mall.system.service.SysOrganiApi", interfaceClass = SysOrganiApi.class, version = "1.0.0")
 public class SysOrganiApiImpl implements SysOrganiApi {
 
 	@Autowired
@@ -45,8 +45,12 @@ public class SysOrganiApiImpl implements SysOrganiApi {
 	}
 
 	@Override
-	public SysOrganiDto findById(String id) {
-		return null;
+	public SysOrganiDto findById(String id) throws Exception {
+		SysOrganization sysOrganization = sysOrganiService.findById(id);
+		if (sysOrganization != null) {
+			return BeanMapper.map(sysOrganization, SysOrganiDto.class);
+		}
+		return new SysOrganiDto();
 	}
 
 	@Override
