@@ -12,7 +12,9 @@ import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.system.dto.SysOrganStoreDto;
 import com.okdeer.mall.system.dto.SysOrganiDto;
 import com.okdeer.mall.system.dto.SysOrganiQueryParamDto;
+import com.okdeer.mall.system.entity.SysOrganStore;
 import com.okdeer.mall.system.entity.SysOrganization;
+import com.okdeer.mall.system.service.SysOrganStoreService;
 import com.okdeer.mall.system.service.SysOrganiApi;
 import com.okdeer.mall.system.service.SysOrganiService;
 
@@ -21,6 +23,9 @@ public class SysOrganiApiImpl implements SysOrganiApi {
 
 	@Autowired
 	private SysOrganiService sysOrganiService;
+
+	@Autowired
+	private SysOrganStoreService sysOrganStoreService;
 
 	@Override
 	public List<SysOrganiDto> findList(SysOrganiQueryParamDto paramDto) {
@@ -56,12 +61,15 @@ public class SysOrganiApiImpl implements SysOrganiApi {
 
 	@Override
 	public List<SysOrganStoreDto> findRelationStores(String orgId) {
-		return null;
+		List<SysOrganStore> list = sysOrganStoreService.findByOrgId(orgId);
+		List<SysOrganStoreDto> dtoList = BeanMapper.mapList(list, SysOrganStoreDto.class);
+		return dtoList;
 	}
 
 	@Override
 	public void saveRelationStores(List<SysOrganStoreDto> dtoList) throws Exception {
-
+		List<SysOrganStore> list = BeanMapper.mapList(dtoList, SysOrganStore.class);
+		sysOrganStoreService.batchAdd(list);
 	}
 
 }

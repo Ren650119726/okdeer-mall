@@ -6,13 +6,16 @@
  */
 package com.okdeer.mall.system.entity;
 
+import java.io.Serializable;
+
 /**
  * 组织关联店铺表
  * 
  * @author null
  * @version 1.0 2017-03-10
  */
-public class SysOrganStore {
+@SuppressWarnings("serial")
+public class SysOrganStore implements Serializable{
 
     /**
      * 主键id
