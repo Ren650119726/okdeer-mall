@@ -16,7 +16,7 @@ import com.okdeer.mall.system.entity.SysOrganization;
 import com.okdeer.mall.system.service.SysOrganiApi;
 import com.okdeer.mall.system.service.SysOrganiService;
 
-@Service(interfaceName = "com.okdeer.mall.system.service.SysOrganiApi", interfaceClass = SysOrganiApi.class)
+@Service(interfaceName = "com.okdeer.mall.system.service.SysOrganiApi", interfaceClass = SysOrganiApi.class,version="1.0.0")
 public class SysOrganiApiImpl implements SysOrganiApi {
 
 	@Autowired
