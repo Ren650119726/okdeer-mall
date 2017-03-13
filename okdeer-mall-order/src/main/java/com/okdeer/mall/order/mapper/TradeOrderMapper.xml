@@ -4708,7 +4708,8 @@
 		op.pay_time,
 		su.login_name,
 		su.user_name,
-        CONCAT(tol.area, tol.address) AS pick_up_id
+        CONCAT(tol.area, tol.address) AS pick_up_id,
+        tol.logistics_no, tol.type as logistics_type
 		FROM trade_order tr
 		<!-- LEFT JOIN trade_order_item item ON item.order_id = tr.id -->
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
@@ -4771,6 +4772,13 @@
 		</if>
 		<if test="null != activityType">
 			AND tr.activity_type = #{activityType}
+		</if>
+		<!-- 添加查询条件 by tangy -->
+		<if test="null != logisticsNo">
+			AND tol.logistics_no LIKE CONCAT('%',#{logisticsNo,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="null != logisticsType">
+			AND tol.type = #{logisticsType}
 		</if>
 		<!-- 引用排序sql -->
 		<include refid="order_paytype_orderby" />

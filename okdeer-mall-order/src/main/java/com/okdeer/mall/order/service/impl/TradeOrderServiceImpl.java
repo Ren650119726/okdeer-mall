@@ -5260,6 +5260,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						vo.setOrderResource(order.getOrderResource());
 						vo.setAddress(order.getPickUpId());
 						vo.setActivityType(order.getActivityType());
+						if (order.getTradeOrderLogistics() != null) {
+							vo.setLogisticsType(order.getTradeOrderLogistics().getType());
+						} else{
+							vo.setLogisticsType(LogisticsType.NONE);
+						}
 						result.add(vo);
 					}
 				}
