@@ -7,37 +7,29 @@
  */
 package com.okdeer.mall.operate.column.service.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
-import com.okdeer.mall.common.enums.AreaType;
-import com.okdeer.mall.common.enums.DistrictType;
-import com.okdeer.mall.common.utils.RobotUserUtil;
-import com.okdeer.mall.operate.entity.ColumnOperation;
-import com.okdeer.mall.operate.entity.ColumnOperationArea;
-import com.okdeer.mall.operate.entity.ColumnOperationCommunity;
-import com.okdeer.mall.operate.entity.ColumnOperationQueryVo;
-import com.okdeer.mall.operate.entity.ColumnOperationVo;
-import com.okdeer.mall.operate.enums.State;
-import com.okdeer.mall.operate.service.IColumnOperationServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.mall.common.enums.AreaType;
+import com.okdeer.mall.common.enums.DistrictType;
+import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.operate.column.mapper.ColumnOperationAreaMapper;
 import com.okdeer.mall.operate.column.mapper.ColumnOperationCommunityMapper;
 import com.okdeer.mall.operate.column.mapper.ColumnOperationMapper;
 import com.okdeer.mall.operate.column.service.ColumnOperationService;
+import com.okdeer.mall.operate.dto.ColumnOperationParamDto;
+import com.okdeer.mall.operate.entity.*;
+import com.okdeer.mall.operate.enums.State;
+import com.okdeer.mall.operate.service.IColumnOperationServiceApi;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 /**
  * 运营栏目service实现
@@ -243,6 +235,31 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 		
 		return columnOperationMapper.selectCountByDistrict(params);
 		// Begin 重构4.1  add by wusw  20160719
+	}
+
+	/**
+	 * @desc 查询与指定开始结束时间有交集、指定区域有交集的运营栏目任务记录数量
+	 *
+	 * @param paramDto ColumnOperationParamDto
+	 * @return
+	 * @throws Exception
+	 */
+	@Transactional(readOnly = true)
+	@Override
+	public int selectCountVersionByDistrict(ColumnOperationParamDto paramDto) throws Exception {
+		Map<String,Object> params = new HashMap<String, Object>();
+		params.put("disabled", Disabled.valid);
+		params.put("noStartStatus", State.noStart);
+		params.put("startStatus", State.underWay);
+		params.put("type", paramDto.getType());
+		params.put("startTime", paramDto.getStartTime());
+		params.put("endTime", paramDto.getStartTime());
+		params.put("id", paramDto.getId());
+		params.put("areaType", paramDto.getAreaType());
+		params.put("areaIdList", paramDto.getAreaIdList());
+		params.put("associateIdList", paramDto.getAssociateIdList());
+		params.put("versionList", paramDto.getVersionList());
+		return columnOperationMapper.selectCountByDistrict(params);
 	}
 
 	/**
