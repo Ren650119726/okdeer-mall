@@ -9,12 +9,9 @@ package com.okdeer.mall.member.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import net.sf.json.JSONObject;
-
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,19 +20,19 @@ import org.springframework.stereotype.Service;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.common.message.MessageExt;
-import com.github.pagehelper.StringUtil;
 import com.google.common.base.Charsets;
-import com.google.common.collect.Iterables;
+import com.okdeer.archive.system.entity.SysUser;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.enums.AddressSource;
 import com.okdeer.mall.member.member.enums.AddressType;
-import com.okdeer.archive.system.entity.SysUser;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.utils.StringUtils;
-import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
+
+import net.sf.json.JSONObject;
 
 /***
  * 
@@ -58,14 +55,16 @@ public class MemberConsigneeAddressSyncServiceImpl extends AbstractRocketMQSubsc
 
 	/** topic */
 	private static final String TOPIC = "topic_consigness_address";
+
 	/** add tag */
 	private static final String TAG_ADD = "tag_consigness_address_add";
+
 	/** update tag */
 	private static final String TAG_UPDATE = "tag_consigness_address_update";
-	
+
 	/** update communityIds tag */
 	private static final String TAG_UPDATE_CommunityId = "tag_consigness_address_update_communityId";
-	
+
 	/** delete tag */
 	private static final String TAG_DELETE = "tag_consigness_address_delete";
 
@@ -100,11 +99,11 @@ public class MemberConsigneeAddressSyncServiceImpl extends AbstractRocketMQSubsc
 		MessageExt msgExt = msgs.get(0);
 		switch (msgExt.getTags()) {
 			case TAG_ADD: {
-				//return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+				// return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 				JSONObject json = JSONObject.fromObject(new String(msgs.get(0).getBody(), Charsets.UTF_8));
 				logger.info("同步物业收货地址接收新增消息:" + json);
 				try {
-					if (!Iterables.isEmpty(getAddressList(json))) {
+					if (!CollectionUtils.isEmpty(getAddressList(json))) {
 						break;
 					}
 					MemberConsigneeAddress address = buildSmallCommunity(json, null);
@@ -117,36 +116,34 @@ public class MemberConsigneeAddressSyncServiceImpl extends AbstractRocketMQSubsc
 				}
 				break;
 			}
-			
+
 			case TAG_UPDATE: {
-				//return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-				
 				JSONObject json = JSONObject.fromObject(new String(msgs.get(0).getBody(), Charsets.UTF_8));
 				logger.info("同步物业收货地址修改消息:" + json);
+
 				try {
-					String msg = "商城无同步物业收货地址:" + json;
-					if(getAddress(json) != null && getAddress(json).getId() != null){
-						MemberConsigneeAddress address = buildSmallCommunity(json, getAddress(json).getId());
-						memberConsigneeAddressService.updateConsigneeAddress(address, RobotUserUtil.getRobotUser());
-						msg = "同步物业收货地址修改消息成功";
+					List<MemberConsigneeAddress> addressList = getAddressList(json);
+					if (CollectionUtils.isEmpty(addressList)) {
+						break;
 					}
-					logger.info(msg);
+					MemberConsigneeAddress address = buildSmallCommunity(json, addressList.get(0).getId());
+					memberConsigneeAddressService.updateConsigneeAddress(address, RobotUserUtil.getRobotUser());
 				} catch (Exception e) {
 					logger.error("同步物业收货地址失败", e);
 					return ConsumeConcurrentlyStatus.RECONSUME_LATER;
 				}
 				break;
 			}
-			
-			//begin added by luosm V1.1.0 20161014
-			case TAG_UPDATE_CommunityId:{
+
+			// begin added by luosm V1.1.0 20161014
+			case TAG_UPDATE_CommunityId: {
 				JSONObject json = JSONObject.fromObject(new String(msgs.get(0).getBody(), Charsets.UTF_8));
 				logger.info("同步物业收货地址修改消息:" + json);
 				try {
 					String msg = "商城无同步物业收货地址:" + json;
-					if(getByCommunityIdAddress(json) != null && getByCommunityIdAddress(json).size()>0){
+					if (getByCommunityIdAddress(json) != null && getByCommunityIdAddress(json).size() > 0) {
 						MemberConsigneeAddress address = buildCommunityId(json);
-						if(address == null){
+						if (address == null) {
 							return ConsumeConcurrentlyStatus.RECONSUME_LATER;
 						}
 						memberConsigneeAddressService.updateByCommunityIdsConsigneeAddress(address);
@@ -159,16 +156,17 @@ public class MemberConsigneeAddressSyncServiceImpl extends AbstractRocketMQSubsc
 				}
 				break;
 			}
-			//end added by luosm V1.1.0 20161014
-			
+			// end added by luosm V1.1.0 20161014
+
 			case TAG_DELETE: {
-				//return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+				// return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 				JSONObject json = JSONObject.fromObject(new String(msgs.get(0).getBody(), Charsets.UTF_8));
 				logger.info("同步物业收货地址接收删除消息:" + json);
 				try {
 					List<MemberConsigneeAddress> addrs = getAddressList(json);
 					for (MemberConsigneeAddress addr : addrs) {
-						memberConsigneeAddressService.deleteById(addr.getId(), RobotUserUtil.getRobotUser().getCreateUserId());
+						memberConsigneeAddressService.deleteById(addr.getId(),
+								RobotUserUtil.getRobotUser().getCreateUserId());
 					}
 				} catch (Exception e) {
 					logger.error("同步物业收货地址删除失败", e);
@@ -182,38 +180,25 @@ public class MemberConsigneeAddressSyncServiceImpl extends AbstractRocketMQSubsc
 		}
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 	}
-	
+
 	private List<MemberConsigneeAddress> getAddressList(JSONObject json) throws Exception {
 		MemberConsigneeAddress params = new MemberConsigneeAddress();
 		params.setRoomId(json.getString("roomId"));
 		params.setUserId(json.getString("userId"));
 		return memberConsigneeAddressService.getList(params);
 	}
-	
-	
-	private MemberConsigneeAddress getAddress(JSONObject json) throws Exception {
-		MemberConsigneeAddress params = new MemberConsigneeAddress();
-		params.setRoomId(json.getString("roomId"));
-		params.setUserId(json.getString("userId"));
-		List<MemberConsigneeAddress> list = memberConsigneeAddressService.getList(params);
-		if(list == null){
-			list = new ArrayList<MemberConsigneeAddress>();
-		}
-		return Iterables.getOnlyElement(list);
-	}
-	
-	//begin added by luosm V1.1.0 20161014
+
+	// begin added by luosm V1.1.0 20161014
 	private List<MemberConsigneeAddress> getByCommunityIdAddress(JSONObject json) throws Exception {
 		MemberConsigneeAddress params = new MemberConsigneeAddress();
 		params.setCommunityId(json.getString("communityId"));
 		List<MemberConsigneeAddress> list = memberConsigneeAddressService.getList(params);
-		if(list == null){
+		if (list == null) {
 			list = new ArrayList<MemberConsigneeAddress>();
 		}
 		return list;
 	}
-	//end added by luosm V1.1.0 20161014
-	
+	// end added by luosm V1.1.0 20161014
 
 	/**
 	 * 构建收货地址
@@ -234,14 +219,14 @@ public class MemberConsigneeAddressSyncServiceImpl extends AbstractRocketMQSubsc
 		address.setProvinceId(json.getString("provinceId"));
 		address.setAreaId(json.getString("areaId"));
 		address.setCityId(json.getString("cityId"));
-		
-		//begin add by luosm 2016-08-01
+
+		// begin add by luosm 2016-08-01
 		address.setProvinceName(json.getString("provinceName"));
 		address.setCityName(json.getString("cityName"));
 		address.setAreaName(json.getString("areaName"));
 		address.setAreaExt(json.getString("areaExt"));
-		//end add by luosm 2016-08-01
-		
+		// end add by luosm 2016-08-01
+
 		address.setAddress(json.getString("address"));
 		address.setCommunityId(json.getString("communityId"));
 		address.setDisabled(Disabled.valid);
@@ -251,18 +236,17 @@ public class MemberConsigneeAddressSyncServiceImpl extends AbstractRocketMQSubsc
 		if (json.get("remark") != null) {
 			address.setRemark(json.getString("remark"));
 		}
-		
+
 		address.setRoomId(json.getString("roomId"));
 		address.setSource(AddressSource.PSMS);
 		address.setType(AddressType.BUYER);
-		
-		
+
 		address.setLongitude(json.containsKey("longitude") ? Double.valueOf(json.getString("longitude")) : null);
-		address.setLatitude(json.containsKey("latitude") ? Double.valueOf(json.getString("latitude")) :  null);
+		address.setLatitude(json.containsKey("latitude") ? Double.valueOf(json.getString("latitude")) : null);
 		return address;
 	}
 
-	//begin added by luosm V1.1.0 20161014
+	// begin added by luosm V1.1.0 20161014
 	/**
 	 * 构建根据小区id批量修改物业地址
 	 */
@@ -272,74 +256,73 @@ public class MemberConsigneeAddressSyncServiceImpl extends AbstractRocketMQSubsc
 		address.setCommunityId(json.getString("communityId"));
 		address.setUpdateTime(new Date());
 		address.setUpdateUserId(currentOperateUser.getId());
-		if(!StringUtils.isEmpty(json.getString("provinceName"))){
+		if (!StringUtils.isEmpty(json.getString("provinceName"))) {
 			address.setProvinceName(json.getString("provinceName"));
-		}else{
+		} else {
 			logger.info("provinceName 为空");
 			return null;
 		}
-		
-		
-		if(!StringUtils.isEmpty(json.getString("cityName"))){
+
+		if (!StringUtils.isEmpty(json.getString("cityName"))) {
 			address.setCityName(json.getString("cityName"));
-		}else{
+		} else {
 			logger.info("cityName 为空");
 			return null;
 		}
-		
-		if(!StringUtils.isEmpty(json.getString("areaName"))){
+
+		if (!StringUtils.isEmpty(json.getString("areaName"))) {
 			address.setAreaName(json.getString("areaName"));
-		}else{
+		} else {
 			logger.info("areaName 为空");
 			return null;
 		}
-		
-		if(!StringUtils.isEmpty(json.getString("provinceId"))){
+
+		if (!StringUtils.isEmpty(json.getString("provinceId"))) {
 			address.setProvinceId(json.getString("provinceId"));
-		}else{
+		} else {
 			logger.info("provinceId 为空");
 			return null;
 		}
-		
-		if(!StringUtils.isEmpty(json.getString("cityId"))){
+
+		if (!StringUtils.isEmpty(json.getString("cityId"))) {
 			address.setCityId(json.getString("cityId"));
-		}else{
+		} else {
 			logger.info("cityId 为空");
 			return null;
 		}
-		
-		if(!StringUtils.isEmpty(json.getString("areaId"))){
+
+		if (!StringUtils.isEmpty(json.getString("areaId"))) {
 			address.setAreaId(json.getString("areaId"));
-		}else{
+		} else {
 			logger.info("areaId 为空");
 			return null;
 		}
-		
-		if(!StringUtils.isEmpty(json.getString("areaExt"))){
+
+		if (!StringUtils.isEmpty(json.getString("areaExt"))) {
 			address.setAreaExt(json.getString("areaExt"));
-		}else{
+		} else {
 			logger.info("areaExt 为空");
 			return null;
 		}
-		
-		if(!StringUtils.isEmpty(json.getString("longitude"))){
+
+		if (!StringUtils.isEmpty(json.getString("longitude"))) {
 			address.setLongitude(Double.valueOf(json.getString("longitude")));
-		}else{
+		} else {
 			logger.info("longitude 为空");
 			return null;
 		}
-		
-		if(!StringUtils.isEmpty(json.getString("latitude"))){
+
+		if (!StringUtils.isEmpty(json.getString("latitude"))) {
 			address.setLatitude(Double.valueOf(json.getString("latitude")));
-		}else{
+		} else {
 			logger.info("latitude 为空");
 			return null;
 		}
-		
-		if(!StringUtils.isEmpty(json.getString("address"))){
+
+		if (!StringUtils.isEmpty(json.getString("address"))) {
 			address.setAddress(json.getString("address"));
 		}
 		return address;
 	}
-	//end added by luosm V1.1.0 20161014
+	// end added by luosm V1.1.0 20161014
 }

@@ -29,6 +29,8 @@
 	<!-- 广播消费者 -->
 	<bean id="broadcastRocketMQConsumer" class="com.okdeer.base.framework.mq.BroadcastRocketMQConsumer"/>
 	
+	<bean id="orderlyRocketMQConsumer" class="com.okdeer.base.framework.mq.OrderlyRocketMQConsumer"/>
+	
 	
 	<!-- 用户同步dao -->
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
