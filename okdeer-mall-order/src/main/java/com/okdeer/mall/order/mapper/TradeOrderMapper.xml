@@ -3990,6 +3990,13 @@
 		LEFT JOIN sys_user su ON su.id=tr.seller_id
 		WHERE 1=1
 		<include refid="order_paytype_condition" />
+		<if test="consumStatus != null">
+			AND EXISTS(
+				SELECT 1 FROM trade_order_item toi 
+				LEFT JOIN trade_order_item_detail toid ON toid.order_item_id = toi.id 
+				WHERE tr.id = toi.order_id AND toid.status = #{consumStatus}
+			)
+		</if>
 		<if test="orderTimeSort != null and orderTimeSort != ''">
 	       <if test="orderTimeSort == 1">
 	         ORDER BY tr.create_time DESC
@@ -4562,6 +4569,13 @@
 		LEFT JOIN member_consignee_address address ON tr.pick_up_id = address.id
 		WHERE 1=1
 		<include refid="order_paytype_condition" />
+		<if test="consumStatus != null">
+			AND EXISTS(
+				SELECT 1 FROM trade_order_item toi 
+				LEFT JOIN trade_order_item_detail toid ON toid.order_item_id = toi.id 
+				WHERE tr.id = toi.order_id AND toid.status = #{consumStatus}
+			)
+		</if>
 		<if test="orderTimeSort != null and orderTimeSort != ''">
 	       <if test="orderTimeSort == 1">
 	         ORDER BY tr.create_time DESC
