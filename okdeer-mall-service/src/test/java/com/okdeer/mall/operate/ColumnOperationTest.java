@@ -73,8 +73,8 @@ public class ColumnOperationTest {
         dict.setId(UuidUtils.getUuid());
         dict.setLabel("鹿小宝Tab导航");
         dict.setValue("luXiaoBao");
-        dict.setType("appPageType");
-        dict.setDescription("运营栏目-便利/服务商品详情");
+        dict.setType("columnOperationType");
+        dict.setDescription("运营栏目-鹿小宝Tab导航");
         sysDictServiceApi.add(dict);
         System.out.println("dict对象:" + mapper.toJson(dict).toString());
     }
