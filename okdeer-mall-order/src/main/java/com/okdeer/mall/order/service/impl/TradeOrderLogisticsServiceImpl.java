@@ -80,5 +80,10 @@ class TradeOrderLogisticsServiceImpl implements TradeOrderLogisticsService, Trad
 		tradeOrderLogisticsMapper.insertSelective(tradeOrderLogistics);
 	}
 
+	@Override
+	public void updateByOrderId(TradeOrderLogistics tradeOrderLogistics) {
+		tradeOrderLogisticsMapper.updateByOrderId(tradeOrderLogistics);
+	}
+
 	// End V2.1.0 added by luosm 20170217
 }
