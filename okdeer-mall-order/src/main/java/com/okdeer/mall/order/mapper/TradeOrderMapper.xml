@@ -2726,11 +2726,11 @@
 		<!-- 根据tabs不同按时间排序 -->
 		<if test="sortType != null and sortType != ''">
 			<!-- 顺序 -->
-			<if test="sortType == '0'">
+			<if test="sortType == 0">
 				<include refid="condition_asc_order" />
 			</if>
 			<!-- 倒序 -->
-			<if test="sortType == '1'">
+			<if test="sortType == 1">
 				<include refid="condition_desc_order" />
 			</if>
 		</if>
