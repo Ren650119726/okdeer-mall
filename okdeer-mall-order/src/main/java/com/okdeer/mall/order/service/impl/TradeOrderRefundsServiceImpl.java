@@ -1880,6 +1880,17 @@ public class TradeOrderRefundsServiceImpl
 	public List<TradeOrderRefunds> selectByOrderIds(List<String> orderIds) throws Exception {
 		return tradeOrderRefundsMapper.selectByOrderIds(orderIds);
 	}
-	// Begin V2.1.0 added by luosm 20170222
+	// End V2.1.0 added by luosm 20170222
+
+	// Begin V2.1.0 added by luosm 20170314
+	@Override
+	public PageUtils<TradeOrderRefundsVo> searchOrderRefundForSELLERAPP(Map<String, Object> map, int pageNumber,
+			int pageSize) {
+		if (pageNumber > 0) {
+			PageHelper.startPage(pageNumber == 0 ? 1 : pageNumber, pageSize, pageNumber != 0, false);
+		}
+		return new PageUtils<TradeOrderRefundsVo>(tradeOrderRefundsMapper.searchOrderRefundForSELLERAPP(map));
+	}
+	// End V2.1.0 added by luosm 20170314
 
 }
