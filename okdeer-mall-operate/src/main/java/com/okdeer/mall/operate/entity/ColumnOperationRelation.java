@@ -28,11 +28,6 @@ public class ColumnOperationRelation {
      */
     private String relationId;
 
-    /**
-     * 关联值（字典表label）
-     */
-    private String relationValue;
-
     public String getId() {
         return id;
     }
@@ -55,13 +50,5 @@ public class ColumnOperationRelation {
 
     public void setRelationId(String relationId) {
         this.relationId = relationId;
-    }
-
-    public String getRelationValue() {
-        return relationValue;
-    }
-
-    public void setRelationValue(String relationValue) {
-        this.relationValue = relationValue;
     }
 }

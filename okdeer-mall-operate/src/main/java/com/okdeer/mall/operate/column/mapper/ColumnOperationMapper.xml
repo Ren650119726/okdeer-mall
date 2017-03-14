@@ -493,7 +493,6 @@
     SELECT count(1)
     FROM column_operation a
     LEFT JOIN column_operation_area b ON a.id = b.operation_id
-    LEFT JOIN column_operation_relation r ON a.id = r.column_operation_id
     WHERE a.disabled = #{disabled,jdbcType=VARCHAR}
     AND (a.state = #{noStartStatus,jdbcType=TINYINT} OR a.state = #{startStatus,jdbcType=TINYINT})
     AND a.type = #{type,jdbcType=TINYINT}
@@ -518,12 +517,6 @@
             </foreach>
           </if>
       OR A.area_type = 0)
-    </if>
-    <if test="versionList != null ">
-      AND r.relation_value in
-      <foreach collection="versionList" open="(" close=")" index="index" item="item"  separator=",">
-        #{item}
-      </foreach>
     </if>
   </select>
   <!-- end 查询指定关联栏目下指定开始结束时间有交集、指定区域、指定版本有交集的记录数量 add by wangf01 20170313 -->
