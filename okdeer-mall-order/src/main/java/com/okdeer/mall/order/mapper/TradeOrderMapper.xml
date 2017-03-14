@@ -700,6 +700,81 @@
 		</if>
 	</sql>
 	
+	<!-- Begin V2.1.0 added by luosm 20170313 -->
+	<sql id="condition_asc_order">
+		<!-- 根据不同的tabs做不同的排序 顺序-->
+		<if test="tabs != null and tabs != ''">
+			<!-- 待发货按照付款时间 -->
+			<if test="tabs == 'wait_shipments'">
+				ORDER BY tp.pay_time ASC
+			</if>
+			<if
+				test="tabs == 'wait_receiving'">
+				ORDER BY tr.delivery_time ASC
+			</if>
+			<!-- 已取消 -->
+			<if test=" tabs == 'cancel'">
+				ORDER BY tr.update_time ASC
+			</if>
+			<if test="tabs == 'done'">
+				ORDER BY tr.received_time ASC
+			</if>
+			<!-- 服务店待接单 -->
+			<if test="tabs == 'wait_receive_order'">
+				ORDER BY tp.pay_time ASC
+			</if>
+			<!-- 待派单 -->
+			<if test="tabs == 'dropshipping'">
+				ORDER BY tr.accept_time ASC
+			</if>
+			<!-- 服务中 -->
+			<if test="tabs == 'to_be_signed'">
+				ORDER BY tr.delivery_time ASC
+			</if>
+			<!-- 已完成 -->
+			<if test="tabs == 'has_been_signed'">
+				ORDER BY tr.received_time ASC
+			</if>
+		</if>
+	</sql>
+	
+	<sql id="condition_desc_order">
+		<!-- 根据不同的tabs做不同的排序 顺序-->
+		<if test="tabs != null and tabs != ''">
+			<!-- 待发货按照付款时间 -->
+			<if test="tabs == 'wait_shipments'">
+				ORDER BY tp.pay_time DESC
+			</if>
+			<if test="tabs == 'wait_receiving'">
+				ORDER BY tr.delivery_time DESC
+			</if>
+			<!-- 已取消 -->
+			<if test=" tabs == 'cancel'">
+				ORDER BY tr.update_time DESC
+			</if>
+			<if test="tabs == 'done'">
+				ORDER BY tr.received_time DESC
+			</if>
+			<!-- 服务店待接单 -->
+			<if test="tabs == 'wait_receive_order'">
+				ORDER BY tp.pay_time DESC
+			</if>
+			<!-- 待派单 -->
+			<if test="tabs == 'dropshipping'">
+				ORDER BY tr.accept_time DESC
+			</if>
+			<!-- 服务中 -->
+			<if test="tabs == 'to_be_signed'">
+				ORDER BY tr.delivery_time DESC
+			</if>
+			<!-- 已完成 -->
+			<if test="tabs == 'has_been_signed'">
+				ORDER BY tr.received_time DESC
+			</if>
+		</if>
+	</sql>
+	<!-- End V2.1.0 added by luosm 20170313 -->
+	
 	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
 		parameterType="java.lang.String">
 		select
@@ -2648,31 +2723,15 @@
 			i.sku_name like CONCAT('%',#{searchCondition,jdbcType=VARCHAR},'%'))
 			)
 		</if>
-		<!-- 根据不同的tabs做不同的排序 -->
-		<if test="tabs != null and tabs != ''">
-			<!-- 待付款、待发货、待收货、已取消 的排序根据下单时间倒叙 -->
-			<!-- <if
-				test="tabs == 'wait_pay' or tabs == 'wait_shipments' or tabs == 'wait_receiving' or tabs == 'cancel'">
-				ORDER BY tr.create_time DESC
-			</if> -->
-			<if test="tabs == 'wait_shipments'">
-				ORDER BY tp.pay_time DESC
+		<!-- 根据tabs不同按时间排序 -->
+		<if test="sortType != null and sortType != ''">
+			<!-- 顺序 -->
+			<if test="sortType == '0'">
+				<include refid="condition_asc_order" />
 			</if>
-			<if
-				test="tabs == 'wait_receiving'">
-				ORDER BY tr.delivery_time DESC
-			</if>
-			<if
-				test=" tabs == 'cancel'">
-				ORDER BY tr.create_time DESC
-			</if>
-			<!-- 已完成 的排序如果有投诉单，按照投诉时间倒叙，剩下的按照确认收货时间倒叙 -->
-			<!-- <if test="tabs == 'done'">
-				ORDER BY (SELECT c.create_time from trade_order_complain c where
-				c.order_id = tr.id) desc,tr.received_time desc
-			</if> -->
-			<if test="tabs == 'done'">
-				ORDER BY tr.received_time desc
+			<!-- 倒序 -->
+			<if test="sortType == '1'">
+				<include refid="condition_desc_order" />
 			</if>
 		</if>
 		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
@@ -2728,9 +2787,25 @@
 			OR tr.user_phone LIKE CONCAT('%',#{searchCondition},'%')
 			OR EXISTS(SELECT 1 FROM trade_order_item i WHERE tr.id = i.order_id AND
 			i.sku_name like CONCAT('%',#{searchCondition,jdbcType=VARCHAR},'%'))
+			OR EXISTS(SELECT 1 FROM trade_order_item_detail d WHERE tr.id = d.order_id AND
+			d.consume_code like CONCAT('%',#{searchCondition,jdbcType=VARCHAR},'%'))
 			)
 		</if>
+		<!-- 根据tabs不同按时间排序 -->
+		<if test="sortType != null and sortType != ''">
+			<!-- 顺序 -->
+			<if test="sortType == '0'">
+				<include refid="condition_asc_order" />
+			</if>
+			<!-- 倒序 -->
+			<if test="sortType == '1'">
+				<include refid="condition_desc_order" />
+			</if>
+		</if>
+		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
+		<if test="tabs == null or tabs == ''">
 			ORDER BY tr.create_time DESC
+		</if>
 	</select>
 
 	<!-- zengj:订单详情 -->
