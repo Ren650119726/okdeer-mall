@@ -37,7 +37,7 @@
     </select>
 
     <!-- 根据条件查询数据 -->
-    <select id="findByParam" resultMap="BaseResultMap" parameterType="com.okdeer.archive.goods.dto.GoodsSkuClassifyParamDto" >
+    <select id="findByParam" resultMap="BaseResultMap" parameterType="com.okdeer.mall.operate.dto.ColumnOperationRelationParamDto" >
         select
         <include refid="Base_Column_List" />
         from <include refid="Base_Table" />
@@ -57,7 +57,7 @@
         </trim>
     </insert>
 
-    <delete id="deleteByParam" parameterType="com.okdeer.archive.goods.dto.GoodsSkuClassifyParamDto">
+    <delete id="deleteByParam" parameterType="com.okdeer.mall.operate.dto.ColumnOperationRelationParamDto">
         delete from <include refid="Base_Table" />
         where 1=1
         <include refid="Base_Condition" />
