@@ -2753,6 +2753,7 @@
 		(select count(1) from trade_order_refunds_item r inner join trade_order_item
 		i on r.order_item_id = i.id where i.order_id = tr.id) as refunds_count
 		FROM trade_order as tr
+		LEFT JOIN trade_order_pay tp ON tp.order_id = tr.id
 		WHERE tr.store_id = #{storeId,jdbcType=VARCHAR}
 		and disabled = 0
 		<!-- 状态 -->
@@ -2794,11 +2795,11 @@
 		<!-- 根据tabs不同按时间排序 -->
 		<if test="sortType != null and sortType != ''">
 			<!-- 顺序 -->
-			<if test="sortType == '0'">
+			<if test="sortType == 0">
 				<include refid="condition_asc_order" />
 			</if>
 			<!-- 倒序 -->
-			<if test="sortType == '1'">
+			<if test="sortType == 1">
 				<include refid="condition_desc_order" />
 			</if>
 		</if>
