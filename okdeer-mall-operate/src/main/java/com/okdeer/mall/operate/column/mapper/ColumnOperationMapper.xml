@@ -317,9 +317,46 @@
      <if test="disabled != null">
         AND disabled = #{disabled,jdbcType=TINYINT}
      </if>
-     <if test="type != null" >
+      <if test="type != null" >
         AND type = #{type,jdbcType=TINYINT}
      </if>
+     <if test="target != null" >
+        AND target = #{target,jdbcType=TINYINT}
+     </if>
+     <if test="state != null" >
+        AND state = #{state,jdbcType=TINYINT}
+     </if>
+     <if test="name != null and name != ''" >
+        AND name LIKE CONCAT('%',#{name},'%')
+     </if>
+     
+	<if test="createTimeStart != null">
+       <![CDATA[ AND create_time >= #{createTimeStart} ]]>
+	</if>
+	<if test="createTimeEnd != null">
+       <![CDATA[ AND create_time <= #{createTimeEnd} ]]>
+	</if>
+	
+	<if test="updateTimeStart != null">
+       <![CDATA[ AND update_time >= #{updateTimeStart} ]]>
+	</if>
+	<if test="updateTimeEnd != null">
+       <![CDATA[ AND update_time <= #{updateTimeEnd} ]]>
+	</if>
+	
+	<if test="startTimeStart != null">
+       <![CDATA[ AND start_time >= #{startTimeStart} ]]>
+	</if>
+	<if test="startTimeEnd != null">
+       <![CDATA[ AND start_time <= #{startTimeEnd} ]]>
+	</if>
+	
+	<if test="endTimeStart != null">
+       <![CDATA[ AND end_time >= #{endTimeStart} ]]>
+	</if>
+	<if test="endTimeEnd != null">
+       <![CDATA[ AND end_time <= #{endTimeEnd} ]]>
+	</if>
      ORDER BY state ASC,start_time DESC
   </select>
   
