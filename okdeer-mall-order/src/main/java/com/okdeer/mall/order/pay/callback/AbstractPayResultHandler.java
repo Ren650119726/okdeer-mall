@@ -268,11 +268,13 @@ public abstract class AbstractPayResultHandler {
 		// 发送POS消息
 		SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrder);
 		tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.createOrder);
-
-		if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER
-				&& tradeOrder.getType() != OrderTypeEnum.STORE_CONSUME_ORDER) {
+		// begin add by xuzq 2017-03-14
+		//服务店商家新增订单时增加提醒消息推送 商家app2.1需求
+		//if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER
+			//	&& tradeOrder.getType() != OrderTypeEnum.STORE_CONSUME_ORDER) {
 		tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.createOrder);
-		}
+		//}
+		// begin add by xuzq 2017-03-14
 	}
 	
 	/**

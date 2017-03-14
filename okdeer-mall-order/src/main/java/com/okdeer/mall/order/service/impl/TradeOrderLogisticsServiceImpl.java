@@ -72,7 +72,13 @@ class TradeOrderLogisticsServiceImpl implements TradeOrderLogisticsService, Trad
 	public TradeOrderLogistics selectByOrderId(String orderId) throws ServiceException {
 		return tradeOrderLogisticsMapper.selectByOrderId(orderId);
 	}
-	// End V2.1.0 added by luosm 20170217
-
 	
+
+	@Override
+	public void insertSelective(TradeOrderLogistics tradeOrderLogistics) throws ServiceException {
+		
+		tradeOrderLogisticsMapper.insertSelective(tradeOrderLogistics);
+	}
+
+	// End V2.1.0 added by luosm 20170217
 }
