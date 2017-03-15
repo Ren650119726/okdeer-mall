@@ -20,7 +20,6 @@ import com.okdeer.mall.common.enums.DistrictType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.operate.column.mapper.*;
 import com.okdeer.mall.operate.column.service.ColumnOperationService;
-import com.okdeer.mall.operate.dto.ColumnOperationParamDto;
 import com.okdeer.mall.operate.dto.ColumnOperationRelationParamDto;
 import com.okdeer.mall.operate.dto.ColumnOperationVersionParamDto;
 import com.okdeer.mall.operate.entity.*;
@@ -299,31 +298,6 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 		
 		return columnOperationMapper.selectCountByDistrict(params);
 		// Begin 重构4.1  add by wusw  20160719
-	}
-
-	/**
-	 * @desc 查询与指定开始结束时间有交集、指定区域有交集的运营栏目任务记录数量
-	 *
-	 * @param paramDto ColumnOperationParamDto
-	 * @return
-	 * @throws Exception
-	 */
-	@Transactional(readOnly = true)
-	@Override
-	public int selectCountVersionByDistrict(ColumnOperationParamDto paramDto) throws Exception {
-		Map<String,Object> params = new HashMap<String, Object>();
-		params.put("disabled", Disabled.valid);
-		params.put("noStartStatus", State.noStart);
-		params.put("startStatus", State.underWay);
-		params.put("type", paramDto.getType());
-		params.put("startTime", paramDto.getStartTime());
-		params.put("endTime", paramDto.getStartTime());
-		params.put("id", paramDto.getId());
-		params.put("areaType", paramDto.getAreaType());
-		params.put("areaIdList", paramDto.getAreaIdList());
-		params.put("associateIdList", paramDto.getAssociateIdList());
-		params.put("versionList", paramDto.getVersionList());
-		return columnOperationMapper.selectCountByDistrict(params);
 	}
 
 	/**
