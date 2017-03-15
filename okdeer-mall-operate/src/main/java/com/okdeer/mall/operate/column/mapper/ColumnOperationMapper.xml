@@ -529,6 +529,9 @@
     <result column="type" property="type"  jdbcType="VARCHAR"/>
     <result column="target" property="target" jdbcType="VARCHAR"/>
     <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
+     <!-- begin add by wangf01 20170314 -->
+     <result column="appoint_type" property="appointType" jdbcType="TINYINT" />
+     <!-- end add by wangf01 20170314 -->
   </resultMap>
   <!-- wusw:根据市id或者小区id，获取正在进行中的运营栏目信息列表 -->
   <!-- 修改删除关于小区范围的查询  modify  by  wusw  20160722 -->
@@ -538,7 +541,8 @@
 		operation.`name` AS taskName,
 		operation.type,
 		CASE operation.target_type WHEN 0 THEN operation.target WHEN 1 THEN operation.target_url END AS target,
-		operation.pic_url
+		operation.pic_url,
+        operation.appoint_type
 	FROM column_operation operation
 	LEFT JOIN column_operation_area area ON operation.id = area.operation_id
 	<!-- <if test="communityId != null and communityId != ''">
