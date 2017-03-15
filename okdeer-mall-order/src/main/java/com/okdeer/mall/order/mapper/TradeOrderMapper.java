@@ -290,6 +290,27 @@ public interface TradeOrderMapper {
 	List<TradeOrderVo> selectServiceOrderInfo(Map<String, Object> map);
 	//end added by luosm V1.1.0 20161011
 
+	// begin added by luosm V2.1.0 20170315
+	/***
+	 * 
+	 * @Description: 商家版APP服务店到店消费订单查询 
+	 * @param map
+	 * @return
+	 * @author luosm
+	 * @date 2016年10月11日
+	 */
+	List<TradeOrderVo> selectNewServiceOrderInfo(Map<String, Object> map);
+	
+	/**
+	 * 查询商家版APPV2.1.0订单信息
+	 * @desc TODO Add a description 
+	 *
+	 * @param map
+	 * @return
+	 */
+	List<TradeOrderVo> selectNewOrderInfo(Map<String, Object> map);
+	// end added by luosm V2.1.0 20170315
+
 	/**
 	 * 
 	 * @desc 商家版APP获取订单详情信息
@@ -449,7 +470,7 @@ public interface TradeOrderMapper {
 	 */
 	BigDecimal findPosSum(Map<String, Object> map);
 
-	//Begin 添加查询条件 update by tangy  2016-10-31
+	// Begin 添加查询条件 update by tangy 2016-10-31
 	/**
 	 * 根据店铺id、时间段查询订单统计数据
 	 * @param storeId      店铺id
@@ -459,8 +480,8 @@ public interface TradeOrderMapper {
 	 */
 	PosShiftExchange findPosShiftExchangeByStoreId(@Param("storeId") String storeId, @Param("startTime") Date startTime,
 			@Param("endTime") Date endTime, @Param("userId") String userId);
-	//End added by tangy
-	
+	// End added by tangy
+
 	////////////////////////////// 销售统计
 	////////////////////////////// start///////////////////////////////////////////////
 	/**
@@ -551,8 +572,8 @@ public interface TradeOrderMapper {
 	 * @return
 	 */
 	BigDecimal selectRefundAmount(Map<String, Object> params);
-	
-	//start added by luosm 20161011 V1.1.0
+
+	// start added by luosm 20161011 V1.1.0
 	/**
 	 * 
 	 * @Description: 查询服务店铺到店消费当天的收入
@@ -562,7 +583,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年10月10日
 	 */
 	BigDecimal selectServiceOrderAmount(Map<String, Object> params);
-	
+
 	/**
 	 * 
 	 * @Description: 查询服务店铺到店消费当天的退单(负收入)
@@ -572,7 +593,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年10月10日
 	 */
 	BigDecimal selectServiceRefundAmount(Map<String, Object> params);
-	
+
 	/***
 	 * 
 	 * @Description: 查询商家版APP服务店到店消费订单信息
@@ -582,7 +603,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年10月10日
 	 */
 	List<Map<String, Object>> selectServiceOrderIncomeList(Map<String, Object> params);
-	//end added by luosm 20161011 V1.1.0
+	// end added by luosm 20161011 V1.1.0
 
 	/**
 	 * zengj:查询店铺当天的交易列表,包括订单支付信息和退款信息 
@@ -591,7 +612,7 @@ public interface TradeOrderMapper {
 	 * @return
 	 */
 	List<Map<String, Object>> selectOrderIncomeList(Map<String, Object> params);
-	
+
 	/**
 	 * zengj:根据参数查询订单信息
 	 *
@@ -958,7 +979,7 @@ public interface TradeOrderMapper {
 	 * @author zhulq
 	 * @date 2016年7月18日
 	 */
-	//List<TradeOrderRechargeVo> selectRechargeOrderExport(Map<String, Object> map);	
+	// List<TradeOrderRechargeVo> selectRechargeOrderExport(Map<String, Object> map);
 	List<TradeOrderRechargeVo> findRechargeOrderExport(TradeOrderRechargeVo vo);
 	// End 重构4.1 add by zhulq 2016-7-18
 
@@ -984,11 +1005,11 @@ public interface TradeOrderMapper {
 	 */
 	List<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params);
 	// End 重构4.1 add by wusw 20160719
-	
-	//Begin V2.1.0 added by luosm 20170224
+
+	// Begin V2.1.0 added by luosm 20170224
 	int countOrderForFinanceByParams(Map<String, Object> params);
-	//End V2.1.0 added by luosm 20170224
-	
+	// End V2.1.0 added by luosm 20170224
+
 	// Begin 重构4.1 add by wusw 20160729
 	/**
 	 * 
@@ -1035,7 +1056,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年9月13日
 	 */
 	List<Map<String, Object>> findConfirmDeliveryOrderListByPos(@Param("storeId") String storeId);
-	
+
 	// Begin v1.1.0 add by zengjz
 	/**
 	 * @Description: 按条件统计订单交易量与金额
@@ -1045,7 +1066,7 @@ public interface TradeOrderMapper {
 	 * @date 2016年9月12日
 	 */
 	Map<String, Object> statisOrderForFinanceByParams(Map<String, Object> params);
-	
+
 	/**
 	 * @Description: 按查询条件统计取消订单退款 金额、数量
 	 * @param params 查询参数
@@ -1054,9 +1075,9 @@ public interface TradeOrderMapper {
 	 * @date 2016年9月17日
 	 */
 	Map<String, Object> statisOrderCannelRefundByParams(@Param("params") Map<String, Object> params);
-	
+
 	// end v1.1.0 add by zengjz
-	
+
 	// Begin v1.1.0 add by zengjz 增加查询到店消费列表
 	/**
 	 * @Description: 增加查询到店消费方法
@@ -1068,9 +1089,9 @@ public interface TradeOrderMapper {
 	 * @date 2016年9月22日
 	 */
 	List<TradeOrder> selectStoreConsumeOrderList(Map<String, Object> map);
-	
+
 	// End v1.1.0 add by zengjz 增加查询到店消费列表
-	
+
 	// Begin V1.1.0 add by wusw 20160923
 	/**
 	 * 
@@ -1082,10 +1103,10 @@ public interface TradeOrderMapper {
 	 * @author wusw
 	 * @date 2016年9月23日
 	 */
-	int updateConsumerStatusByIds(@Param("status")ConsumerCodeStatusEnum status,@Param("updateTime")Date updateTime,@Param("ids")List<String> ids);
+	int updateConsumerStatusByIds(@Param("status") ConsumerCodeStatusEnum status, @Param("updateTime") Date updateTime,
+			@Param("ids") List<String> ids);
 	// End V1.1.0 add by wusw 20160923
-	
-	
+
 	// Begin V1.1.0 add by zengjz 20160923
 	/**
 	 * @Description: 查询到店消费订单详情
@@ -1095,10 +1116,10 @@ public interface TradeOrderMapper {
 	 * @date 2016年9月23日
 	 */
 	UserTradeOrderDetailVo findStoreConsumeOrderById(String orderId);
-	
+
 	// End V1.1.0 add by zengjz 20160923
-	
-    //Begin V1.2 added by tangy  2016-11-21
+
+	// Begin V1.2 added by tangy 2016-11-21
 	/**
 	 * @Description: 查询回款记录订单导出的列表
 	 * @param map
@@ -1107,8 +1128,8 @@ public interface TradeOrderMapper {
 	 * @date 2016年11月21日
 	 */
 	List<TradeOrder> findExportList(Map<String, Object> map);
-	//End added by tangy
-	
+	// End added by tangy
+
 	/**
 	 * @Description: tuzhd根据用户id查询其支付完成的订单总量 用于首单条件判断
 	 * @param status 符合条件的状态集合
@@ -1117,9 +1138,9 @@ public interface TradeOrderMapper {
 	 * @author tuzhd
 	 * @date 2016年12月31日
 	 */
-	int selectCountByUserStatus(@Param("userId")String userId);
-	
-	//begin add by zhulq  2017-02-17  根据城市名称搜索订单列表	
+	int selectCountByUserStatus(@Param("userId") String userId);
+
+	// begin add by zhulq 2017-02-17 根据城市名称搜索订单列表
 	/**
 	 * @Description: 根据城市获取订单id
 	 * @param cityId cityId
@@ -1127,10 +1148,10 @@ public interface TradeOrderMapper {
 	 * @author zhulq
 	 * @date 2017年2月17日
 	 */
-	List<String> findOrderIds(@Param("cityId")String cityId);
-	//end add by zhulq  2017-02-17  根据城市名称搜索订单列表		
-	
-	//begin V2.1 add by zhulq 2017-02-17 
+	List<String> findOrderIds(@Param("cityId") String cityId);
+	// end add by zhulq 2017-02-17 根据城市名称搜索订单列表
+
+	// begin V2.1 add by zhulq 2017-02-17
 	/**
 	 * @Description: 根据订单id 获取订单所属店铺 的城市id
 	 * @param orderIds  订单id集合
@@ -1138,8 +1159,8 @@ public interface TradeOrderMapper {
 	 * @author zhulq
 	 * @date 2017年2月17日
 	 */
-	List<PhysicsOrderVo> findCityIds(@Param("orderIds")List<String> orderIds);
-	
+	List<PhysicsOrderVo> findCityIds(@Param("orderIds") List<String> orderIds);
+
 	/**
 	 * @Description: 根据用户id获取改用户的邀请人登录名
 	 * @param userIds 用户集合
@@ -1147,8 +1168,8 @@ public interface TradeOrderMapper {
 	 * @author zhulq
 	 * @date 2017年2月17日
 	 */
-	List<PhysicsOrderVo> findInvitationInfo(@Param("userIds")List<String> userIds);
-	
+	List<PhysicsOrderVo> findInvitationInfo(@Param("userIds") List<String> userIds);
+
 	/**
 	 * 
 	 * @Description: TODO
@@ -1157,9 +1178,9 @@ public interface TradeOrderMapper {
 	 * @author zhulq
 	 * @date 2017年2月22日
 	 */
-	List<ActivityInfoVO> findActivityInfo(@Param("orderIds")List<String> orderIds);
-	//END V2.1 add by zhulq 2017-02-17 
-	
+	List<ActivityInfoVO> findActivityInfo(@Param("orderIds") List<String> orderIds);
+	// END V2.1 add by zhulq 2017-02-17
+
 	// Begin V2.1 added by maojj 2017-02-18
 	/**
 	 * @Description: 查询用户订单列表
