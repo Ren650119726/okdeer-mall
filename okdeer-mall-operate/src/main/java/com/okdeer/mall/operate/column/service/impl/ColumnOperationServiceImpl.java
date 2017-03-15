@@ -21,6 +21,8 @@ import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.operate.column.mapper.*;
 import com.okdeer.mall.operate.column.service.ColumnOperationService;
 import com.okdeer.mall.operate.dto.ColumnOperationParamDto;
+import com.okdeer.mall.operate.dto.ColumnOperationRelationParamDto;
+import com.okdeer.mall.operate.dto.ColumnOperationVersionParamDto;
 import com.okdeer.mall.operate.entity.*;
 import com.okdeer.mall.operate.enums.State;
 import com.okdeer.mall.operate.service.IColumnOperationServiceApi;
@@ -159,14 +161,14 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 		}
 
 		columnOperationMapper.insertSelective(columnOperation);
-		// 判断是否关联店铺或者商品
-		if(columnOperation.getAppointType() != 0){
-			saveOperationRelation(columnOperation);
-		}
 		// 保存鹿小宝版本数据
 		switch (columnOperation.getType()){
 			case luXiaoBao:
-				saveOperationVersion(columnOperation);
+				// 判断是否关联店铺或者商品
+				if(columnOperation.getAppointType() != 0){
+					saveOperationRelation(columnOperation,0);
+				}
+				saveOperationVersion(columnOperation,0);
 				break;
 		}
 		// end add by wangf01 20170314
@@ -200,6 +202,31 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 		columnOperationAreaMapper.deleteByOperationId(columnOperation.getId());
 		// 删除运营栏目与小区关联信息
 		columnOperationCommunityMapper.deleteByOperationId(columnOperation.getId());
+
+		// begin 判断类型是否是鹿小宝专属，根据类型设置appoint_type值 0：无 1：店铺 2：商品 add by wangf01 20170314
+		switch (columnOperation.getTarget()){
+			case storeInfo:
+				columnOperation.setAppointType(1);
+				break;
+			case storeCVSSkuInfo:
+			case storeServerSkuInfo:
+				columnOperation.setAppointType(2);
+				break;
+			default:
+				columnOperation.setAppointType(0);
+				break;
+		}
+		// 保存鹿小宝版本数据
+		switch (columnOperation.getType()){
+			case luXiaoBao:
+				// 判断是否关联店铺或者商品
+				if(columnOperation.getAppointType() != 0){
+					saveOperationRelation(columnOperation,1);
+				}
+				saveOperationVersion(columnOperation,1);
+				break;
+		}
+		// end add by wangf01 20170314
 
 		// 重新插入运营栏目与区域或小区信息
 		this.insertAreaInfo(columnOperation);
@@ -411,8 +438,14 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 	 * 保存运营栏目关联数据
 	 *
 	 * @param columnOperation ColumnOperation
+	 * @param type Integer
 	 */
-	private void saveOperationRelation(ColumnOperation columnOperation){
+	private void saveOperationRelation(ColumnOperation columnOperation, Integer type){
+		if(type == 1){
+			ColumnOperationRelationParamDto paramDto = new ColumnOperationRelationParamDto();
+			paramDto.setColumnOperationId(columnOperation.getId());
+			columnOperationRelationMapper.deleteByParam(paramDto);
+		}
 		List<ColumnOperationRelation> relationList = Lists.newArrayList();
 		ColumnOperationRelation entity = new ColumnOperationRelation();
 		entity.setId(UuidUtils.getUuid());
@@ -426,8 +459,14 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 	 * 保存运营栏目版本数据
 	 *
 	 * @param columnOperation ColumnOperation
+	 * @param type Integer
 	 */
-	private void saveOperationVersion(ColumnOperation columnOperation){
+	private void saveOperationVersion(ColumnOperation columnOperation, Integer type){
+		if(type == 1){
+			ColumnOperationVersionParamDto paramDto = new ColumnOperationVersionParamDto();
+			paramDto.setColumnOperationId(columnOperation.getId());
+			columnOperationVersionMapper.deleteByParam(paramDto);
+		}
 		if(CollectionUtils.isNotEmpty(columnOperation.getVersionList())){
 			List<ColumnOperationVersion> versionList = Lists.newArrayList();
 			columnOperation.getVersionList().forEach(e -> {
