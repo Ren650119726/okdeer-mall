@@ -9,7 +9,6 @@ package com.okdeer.mall.operate.column.service;
 
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.mall.operate.dto.ColumnOperationParamDto;
 import com.okdeer.mall.operate.entity.ColumnOperation;
 import com.okdeer.mall.operate.entity.ColumnOperationQueryVo;
 import com.okdeer.mall.operate.entity.ColumnOperationVo;
@@ -120,18 +119,6 @@ public interface ColumnOperationService {
 	 * @throws ServiceException
 	 */
 	int selectCountByDistrict(ColumnOperation columnOperation,List<String> areaIdList,List<String> associateIdList) throws ServiceException;
-
-    // begin add by wangf01 20170313
-	/**
-	 *
-	 * 查询与指定开始结束时间有交集、指定区域、指定版本有交集的运营栏目任务记录数量
-	 *
-	 * @param paramDto
-	 * @return
-	 * @throws Exception
-	 */
-	int selectCountVersionByDistrict(ColumnOperationParamDto paramDto) throws Exception;
-    // end add by wangf01 20170313
 
 	/**
 	 *
