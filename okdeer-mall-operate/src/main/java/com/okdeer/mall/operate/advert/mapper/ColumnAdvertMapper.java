@@ -103,6 +103,14 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	 */
 	List<ColumnAdvert> getAdvertById(Map<String,Object> params);
 	
+	/**
+	 * @Description: 根据广告位ID查询云周边广告
+	 * @param params  参数
+	 * @return   集合
+	 * @author chenzc
+	 * @date 2017年3月15日
+	 */
+	List<ColumnAdvert> getAdvertByIdV220(Map<String,Object> params);
 	
 	/**
 	 * @Description: 广告列表 pos用 张克能加
@@ -218,6 +226,15 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	 * @date 2017年1月3日
 	 */
 	List<ColumnAdvert> findForApp(ColumnAdvertQueryParamDto advertQueryParamDto);
+	
+	/**
+	 * @Description: 查询广告列表给app接口
+	 * @param advertQueryParamDto 查询参数
+	 * @return
+	 * @author chenzc
+	 * @date 2017年3月15日
+	 */
+	List<ColumnAdvert> findForAppV220(ColumnAdvertQueryParamDto advertQueryParamDto);
 	
 	/**
 	 * @Description: 根据广告id获取广告商品列表
