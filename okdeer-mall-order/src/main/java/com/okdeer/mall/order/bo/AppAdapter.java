@@ -13,7 +13,6 @@ import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
-import com.okdeer.common.utils.StoreServiceInvalidDateUtil;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.utils.DateUtils;
@@ -145,7 +144,7 @@ public class AppAdapter {
 		// 解析下单模式
 		parseOrderTimeModel(dto,storeServExt);
 		// 解析不可用日期
-		dto.setInvalidDate(parseInvalidDate(storeServExt.getInvalidDate()));
+		dto.setInvalidDates(parseInvalidDate(storeServExt.getInvalidDate()));
 		return dto;
 	}
 	
