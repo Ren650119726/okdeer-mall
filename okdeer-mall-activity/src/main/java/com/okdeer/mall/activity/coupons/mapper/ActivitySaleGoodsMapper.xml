@@ -71,6 +71,9 @@
 		<if test="sort != null">
 			sort = #{sort},
 		</if>
+		<if test="salePrice != null">
+			sale_price = #{salePrice},
+		</if>
 		<if test="disabled != null">
 			disabled = #{disabled},
 		</if>
