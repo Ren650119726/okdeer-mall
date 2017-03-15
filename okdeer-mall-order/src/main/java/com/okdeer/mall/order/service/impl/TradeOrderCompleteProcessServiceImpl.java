@@ -416,9 +416,9 @@ public class TradeOrderCompleteProcessServiceImpl
 		}
 		
 		// 平台优惠金额
-		refunds.put("platDiscountAmount", storePreferentialPrice);
+		refunds.put("platDiscountAmount", platDiscountAmount);
 		// 店铺优惠金额
-		refunds.put("discountAmount", platDiscountAmount);
+		refunds.put("discountAmount", storePreferentialPrice);
 		// 运费
 		// orderInfo.put("freightAmount", refundOrder.getFare());
 		// （会员）买家ID
