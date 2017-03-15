@@ -3585,10 +3585,10 @@
 	<!-- zengj:今日(昨日)营收列表 -->
 	<select id="selectOrderIncomeList" parameterType="java.util.Map"
 		resultType="java.util.Map">
-		SELECT tradeNo,income,tradeTime,types
+		SELECT tradeNo,income,tradeTime,types,orderId
 		FROM
 		(SELECT order_no AS tradeNo,income,received_time AS tradeTime,0 as
-		types
+		types,id AS orderId
 		FROM trade_order
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
 		AND (received_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND
@@ -3602,7 +3602,7 @@
 		UNION ALL
 		SELECT refund_no AS tradeNo,(select sum(income) from
 		trade_order_refunds_item i where i.refunds_id = r.id) as
-		income,refund_money_time AS tradeTime,1 as types
+		income,refund_money_time AS tradeTime,1 as types,r.order_id as orderId
 		FROM trade_order_refunds r
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
 		AND refund_money_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND
