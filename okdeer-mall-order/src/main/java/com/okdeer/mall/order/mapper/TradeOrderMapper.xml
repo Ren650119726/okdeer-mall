@@ -1557,7 +1557,8 @@
 		member.province_name as aProvice_name,
 		member.city_name as aCity_name,
 		member.area_name as aArea_name,
-		member.address as memberAddress
+		member.address as memberAddress,
+		IF(first.id is null, "复购", "首购") as isFirstOrder
 		from trade_order o
 		LEFT JOIN store_info si ON o.store_id=si.id
 		LEFT JOIN psms_agent pa ON
@@ -1565,6 +1566,7 @@
 		LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
 		LEFT JOIN member_consignee_address member ON member.id = o.pick_up_id
 		LEFT JOIN trade_order_locate locate ON locate.order_id = o.id
+		LEFT JOIN sys_buyer_first_order_record first ON o.id = first.order_id
 		WHERE 1=1
 		AND o.disabled =0
 		AND o.order_resource !=2
@@ -4974,13 +4976,15 @@
 				tr.order_resource,
 				tr.income,
 				tr.activity_id,
-				tr.user_id	
-				<!-- end V2.1 add by zhulq 导出列表新增字段 -->			
+				tr.user_id,
+				<!-- end V2.1 add by zhulq 导出列表新增字段 -->	
+				IF(first.id is null, "复购", "首购") as isFirstOrder		
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN trade_order_logistics tol ON tr.id = tol.order_id
 		LEFT JOIN trade_order_locate locate ON locate.order_id = tr.id
 		LEFT JOIN member_consignee_address member ON member.id = tr.pick_up_id
+		LEFT JOIN sys_buyer_first_order_record first ON tr.id = first.order_id
 		WHERE 1=1
 		<!-- 订单类型 -->
 		<if test="null != type">
