@@ -117,6 +117,12 @@
 		update_time, update_user_id, disabled, pv, on_shelf_time, off_shelf_time,business_id,sort
 	</sql>
 	
+	<sql id="base_column_list2">
+		ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
+		ca.area_type, ca.start_time, ca.end_time, ca.is_pay, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
+		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, ca.business_id, ca.sort
+	</sql>
+	
 	<select id="findById" resultMap="columnAdvertRsMap">
 		SELECT <include refid="base_column_list" />
 		FROM column_advert
@@ -751,6 +757,184 @@
 		ORDER BY sort DESC, create_time DESC
 	</select>
 	
+	<select id="getAdvertByIdV220" resultMap="columnAdvertRsMap" parameterType="map">
+		select * from(
+		    select * from (
+		       SELECT
+			ca.id,ca.name,
+			ca.pic_url,
+			ca.target_type,
+			ca.belong_type,
+			ca.target,
+			ca.target_url,
+			ca.area_type,
+			ca.on_shelf_time,
+			ca.start_time,
+			ca.create_time,
+			ca.business_id,ca.sort
+		FROM
+			column_advert ca 
+			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
+			LEFT JOIN column_advert_position cpos ON cpos.id = ca.position_id 
+			LEFT JOIN column_advert_area area ON area.advert_id = ca.id
+		<if test="communityId != null and communityId != ''">
+		 	LEFT JOIN column_advert_community community ON ca.id = community.advert_id
+		</if>
+		    LEFT JOIN column_advert_version version ON ca.id = version.advert_id
+		WHERE
+			app.status = 1
+			<if test="type != null">
+			AND version.type = #{type}
+			</if>
+			<if test="version != null and version != ''">
+			AND version.version = #{version}
+			</if>
+			AND ca.status = 1
+			<!-- 查询运营商的 -->
+			and ca.belong_type = 0
+		AND cpos.name = #{name,jdbcType=VARCHAR}
+		<if test="cityId != null and cityId != ''">
+		AND (
+			ca.area_type = 0
+			OR (
+				ca.area_type = 1
+				AND (
+						(
+							area.type = 1
+							AND area.area_id = #{provinceId,jdbcType=VARCHAR}
+						)
+						OR (
+							area.type = 0
+							AND area.area_id = #{cityId,jdbcType=VARCHAR}
+						)				
+				)
+			)
+		)
+		<!-- 排序规则：当定位的地址不属于签约小区时，则默认获取当前城市下的区域广告，
+		区域广告只能有运营商发布，按照广告列表中的生效时间获取最多5张广告，如果有排序值，
+		默认优先按照排序值进行广告展示 ，tips:没有排序值，按上架时间倒叙-->
+		ORDER BY ca.sort DESC, ca.create_time DESC
+		</if>
+		<if test="communityId != null and communityId != ''">
+		 AND (
+			ca.area_type = 0
+			OR (
+				ca.area_type = 1
+				AND (
+						(
+							area.type = 1
+							AND area.area_id = (SELECT province_id FROM psms_small_community_info WHERE id = #{communityId,jdbcType=VARCHAR})
+						)
+						OR (
+							area.type = 0
+							AND area.area_id = (SELECT city_id FROM psms_small_community_info WHERE id = #{communityId,jdbcType=VARCHAR})
+						)				
+				)
+			)
+		   OR (ca.area_type = 2 AND community.community_id = #{communityId,jdbcType=VARCHAR})
+		)
+		<!-- 排序规则:定位小区，
+			1、优先展示代理商广告，
+			2、然后展示运营商发布到小区的广告，
+			3、最后展示运营商发布的范围广告 -->
+		ORDER BY ca.sort DESC, ca.create_time DESC
+	    </if>
+	    <!-- 运营商只查询前5条 -->
+	    limit 5
+		    )a
+		    
+		 union all
+		 select * from (
+		   SELECT
+			ca.id,ca.name,
+			ca.pic_url,
+			ca.target_type,
+			ca.belong_type,
+			ca.target,
+			ca.target_url,
+			ca.area_type,
+			ca.on_shelf_time,
+			ca.start_time,
+			ca.create_time,
+			ca.business_id,ca.sort
+		FROM
+			column_advert ca 
+			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
+			LEFT JOIN column_advert_position cpos ON cpos.id = ca.position_id 
+			LEFT JOIN column_advert_area area ON area.advert_id = ca.id
+		<if test="communityId != null and communityId != ''">
+		 	LEFT JOIN column_advert_community community ON ca.id = community.advert_id
+		</if>
+		    LEFT JOIN column_advert_version version ON ca.id = version.advert_id
+		WHERE
+			app.status = 1
+			<if test="type != null">
+			AND version.type = #{type}
+			</if>
+			<if test="version != null and version != ''">
+			AND version.version = #{version}
+			</if>
+			AND ca.status = 1
+			<!-- 查询代理商的 -->
+			and ca.belong_type > 0
+		AND cpos.name = #{name,jdbcType=VARCHAR}
+		<if test="cityId != null and cityId != ''">
+		AND (
+			ca.area_type = 0
+			OR (
+				ca.area_type = 1
+				AND (
+						(
+							area.type = 1
+							AND area.area_id = #{provinceId,jdbcType=VARCHAR}
+						)
+						OR (
+							area.type = 0
+							AND area.area_id = #{cityId,jdbcType=VARCHAR}
+						)				
+				)
+			)
+		)
+		<!-- 排序规则：当定位的地址不属于签约小区时，则默认获取当前城市下的区域广告，
+		区域广告只能有运营商发布，按照广告列表中的生效时间获取最多5张广告，如果有排序值，
+		默认优先按照排序值进行广告展示 ，tips:没有排序值，按上架时间倒叙-->
+		ORDER BY ca.sort DESC, ca.create_time DESC
+		</if>
+		<if test="communityId != null and communityId != ''">
+		 AND (
+			ca.area_type = 0
+			OR (
+				ca.area_type = 1
+				AND (
+						(
+							area.type = 1
+							AND area.area_id = (SELECT province_id FROM psms_small_community_info WHERE id = #{communityId,jdbcType=VARCHAR})
+						)
+						OR (
+							area.type = 0
+							AND area.area_id = (SELECT city_id FROM psms_small_community_info WHERE id = #{communityId,jdbcType=VARCHAR})
+						)				
+				)
+			)
+		   OR (ca.area_type = 2 AND community.community_id = #{communityId,jdbcType=VARCHAR})
+			)
+			<!-- 排序规则:定位小区，
+				1、优先展示代理商广告，
+				2、然后展示运营商发布到小区的广告，
+				3、最后展示运营商发布的范围广告 -->
+		ORDER BY ca.sort DESC, ca.create_time DESC
+	    </if>
+	     <!-- 代理商只查询前两条 -->
+		 limit 2
+		 )b
+		)obj	   
+		<!-- 排序规则:定位小区，
+			1、优先展示代理商广告，
+			2、然后展示运营商发布到小区的广告，
+			3、最后展示运营商发布的范围广告 -->
+<!-- 		ORDER BY obj.belong_type desc,obj.area_type desc,obj.start_time desc,obj.create_time desc -->
+		ORDER BY sort DESC, create_time DESC
+	</select>
 
 	<select id="listForPos" resultMap="columnAdvertRsMap" parameterType="map">
 		select c.* from column_advert c
@@ -928,6 +1112,56 @@
 			</if>
 		)
 	</select>
+	
+	<select id="findForAppV220" parameterType="com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto" resultMap="columnAdvertRsMap">
+		SELECT <include refid="base_column_list2" />
+		FROM column_advert ca
+		LEFT JOIN column_advert_version version ON ca.id = version.advert_id
+		WHERE 1 = 1
+		<if test="type != null">
+		    and version.type = #{type}
+		</if>
+		<if test="version != null">
+		    and version.version = #{version}
+		</if>
+		<if test="positionId != null and positionId != ''">
+			and position_id = #{positionId,jdbcType=VARCHAR}
+		</if>
+		<if test="advertStatus != null">
+			and status = #{advertStatus,jdbcType=TINYINT}
+		</if>
+		and area_type = 0
+		union all 
+		SELECT <include refid="base_column_list" />
+		FROM column_advert ca 
+		LEFT JOIN column_advert_version version ON ca.id = version.advert_id
+		WHERE 1 = 1
+		<if test="type != null">
+		    and version.type = #{type}
+		</if>
+		<if test="version != null">
+		    and version.version = #{version}
+		</if>
+		<if test="positionId != null and positionId != ''">
+			and ca.position_id = #{positionId,jdbcType=VARCHAR}
+		</if>
+		<if test="advertStatus != null">
+			and ca.status = #{advertStatus,jdbcType=TINYINT}
+		</if>
+		and ca.area_type = 1
+		and  exists (
+			select 1 from column_advert_area caa where  ca.id=caa.advert_id
+			<if test="cityId != null and cityId !='' ">
+				and (
+					 (caa.type = 0 and caa.area_id = #{cityId,jdbcType=VARCHAR}) 
+					 <if test="provinceId != null and provinceId !='' ">
+						or ( caa.type = 1 and caa.area_id = #{provinceId,jdbcType=VARCHAR} )
+					</if>
+				)
+			</if>
+		)
+	</select>
+	
 	<!-- begin 根据广告id获取广告商品列表 xuzq01 20170208-->
 	<select id="findAdvertGoodsByAdvertId" resultMap="advertGoodsMap" parameterType="String">
 		SELECT DISTINCT

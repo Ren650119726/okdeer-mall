@@ -450,6 +450,12 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		List<ColumnAdvert> list = this.advertMapper.getAdvertById(params);
 		return list;
 	}
+	
+	@Override
+	public List<ColumnAdvert> getAdvertByIdV220(Map<String, Object> params) {
+		List<ColumnAdvert> list = this.advertMapper.getAdvertByIdV220(params);
+		return list;
+	}
 
 	/**
 	 * 广告列表 pos用 张克能加
@@ -688,6 +694,11 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	public List<ColumnAdvert> findForApp(ColumnAdvertQueryParamDto advertQueryParamDto) {
 		
 		return advertMapper.findForApp(advertQueryParamDto);
+	}
+	
+	@Override
+	public List<ColumnAdvert> findForAppV220(ColumnAdvertQueryParamDto advertQueryParamDto) {
+		return advertMapper.findForAppV220(advertQueryParamDto);
 	}
 
 	@Override

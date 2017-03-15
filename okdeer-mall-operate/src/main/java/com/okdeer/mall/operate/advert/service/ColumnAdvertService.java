@@ -178,6 +178,15 @@ public interface ColumnAdvertService {
 	 */
 	List<ColumnAdvert> getAdvertById(Map<String,Object> params);
 	
+	/**
+	 * 根据广告位置id查询广告
+	 * @desc 获取广告信息
+	 * @param params 参数
+	 * @return list
+	 * @author chenzc
+	 * @dete 2017-3-15
+	 */
+	List<ColumnAdvert> getAdvertByIdV220(Map<String,Object> params);
 	
 	/**
 	 * 广告列表 pos用 张克能加
@@ -224,4 +233,12 @@ public interface ColumnAdvertService {
 	 */
 	List<ColumnAdvert> findForApp(ColumnAdvertQueryParamDto advertQueryParamDto);
 	
+	/**
+	 * @Description: 查询广告列表给前端app
+	 * @param advertQueryParamDto 查询参数
+	 * @return
+	 * @author chenzc
+	 * @date 2017年3月15日
+	 */
+	List<ColumnAdvert> findForAppV220(ColumnAdvertQueryParamDto advertQueryParamDto);
 }
