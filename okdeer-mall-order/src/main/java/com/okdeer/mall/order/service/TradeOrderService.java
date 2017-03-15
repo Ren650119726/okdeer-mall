@@ -343,7 +343,23 @@ public interface TradeOrderService {
 	 * @return
 	 */
 	public PageUtils<TradeOrderVo> selectMallAppOrderInfo(Map<String, Object> map, int pageSize, int pageNumber);
-
+	
+	//Begin V2.1.0 added by luosm 20170315
+	/**
+	 * 
+	 * @desc 商家APP订单查询
+	 *
+	 * @param map
+	 *            查询条件
+	 * @param pageSize
+	 *            每页大小
+	 * @param pageNumber
+	 *            当前页
+	 * @return
+	 */
+	public PageUtils<TradeOrderVo> selectNewMallAppOrderInfo(Map<String, Object> map, int pageSize, int pageNumber);
+	//End V2.1.0 added by luosm 20170315
+	
 	/**
 	 * 
 	 * @desc 商家版APP获取订单详情信息
