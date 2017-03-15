@@ -158,7 +158,7 @@
         update_user_id,
       </if>
       <!-- begin V2.2.0新增指定类型字段 add by wangf01 20170313 -->
-      <if test="appointType != null and appointType != ''" >
+      <if test="appointType != null " >
         appoint_type,
       </if>
       <!-- end V2.2.0新增指定类型字段 add by wangf01 20170313 -->
@@ -216,8 +216,8 @@
         #{updateUserId,jdbcType=VARCHAR},
       </if>
       <!-- begin V2.2.0新增指定类型字段 add by wangf01 20170313 -->
-      <if test="appointType != null and appointType != ''" >
-        #{appoint_type,jdbcType=TINYINT},
+      <if test="appointType != null " >
+        #{appointType,jdbcType=TINYINT},
       </if>
       <!-- end V2.2.0新增指定类型字段 add by wangf01 20170313 -->
     </trim>
@@ -276,8 +276,8 @@
         update_user_id = #{updateUserId,jdbcType=VARCHAR},
       </if>
       <!-- begin V2.2.0新增指定类型字段 add by wangf01 20170313 -->
-      <if test="appointType != null and appointType != ''" >
-        appoint_type = #{appoint_type,jdbcType=TINYINT},
+      <if test="appointType != null " >
+        appoint_type = #{appointType,jdbcType=TINYINT},
       </if>
       <!-- end V2.2.0新增指定类型字段 add by wangf01 20170313 -->
     </set>
