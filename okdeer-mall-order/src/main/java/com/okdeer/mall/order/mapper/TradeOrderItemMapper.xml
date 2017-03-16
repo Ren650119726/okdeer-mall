@@ -603,4 +603,13 @@
         #{orderId}
     </foreach>
  </select>
+ 
+ <select id="findOrderItemByIdList" parameterType="list" resultMap="BaseResultMap">
+ 	SELECT <include refid="Base_Column_List" />
+ 	FROM trade_order_item
+ 	WHERE id IN
+ 	<foreach collection="idList" item="id" open="(" close=")" separator=",">
+        #{id}
+    </foreach>
+ </select>
 </mapper>

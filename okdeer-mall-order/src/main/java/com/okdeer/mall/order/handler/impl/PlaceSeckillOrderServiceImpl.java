@@ -10,8 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -25,6 +26,7 @@ import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
+import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.TradeOrderBuilder;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
@@ -68,12 +70,18 @@ public class PlaceSeckillOrderServiceImpl implements RequestHandler<PlaceOrderPa
 	 */
 	@Resource
 	private TradeOrderService tradeOrderService;
+	
+	/**
+	 * 店铺库存构建者
+	 */
+	@Resource
+	private MallStockUpdateBuilder mallStockUpdateBuilder;
 
 	/**
-	 * 库存管理Service
+	 * 商城库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi stockManagerServiceApi;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 
 	/**
 	 * 订单超时计时器
@@ -163,36 +171,8 @@ public class PlaceSeckillOrderServiceImpl implements RequestHandler<PlaceOrderPa
 	 * @date 2016年7月14日
 	 */
 	private void updateStock(TradeOrder order, PlaceOrderParamDto paramDto, String rpcId) throws Exception {
-
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
-		CurrentStoreSkuBo skuBo = parserBo.getCurrentStoreSkuBo(paramDto.getSkuList().get(0).getStoreSkuId());
-
-		StockAdjustVo stockAjustVo = new StockAdjustVo();
-		stockAjustVo.setRpcId(rpcId);
-		stockAjustVo.setOrderId(order.getId());
-		stockAjustVo.setOrderNo(order.getOrderNo());
-		stockAjustVo.setOrderResource(order.getOrderResource());
-		stockAjustVo.setOrderType(order.getType());
-
-		stockAjustVo.setStoreId(paramDto.getStoreId());
-		stockAjustVo.setUserId(paramDto.getUserId());
-		stockAjustVo.setMethodName(this.getClass().getName() + ".process");
-		stockAjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_PLACE_ORDER);
-
-		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
-		AdjustDetailVo adjustDetailVo = new AdjustDetailVo();
-		adjustDetailVo.setBarCode(skuBo.getBarCode());
-		adjustDetailVo.setGoodsName(skuBo.getName());
-		adjustDetailVo.setGoodsSkuId(skuBo.getSkuId());
-		adjustDetailVo.setMultipleSkuId(skuBo.getMultipleSkuId());
-		adjustDetailVo.setNum(skuBo.getQuantity());
-		adjustDetailVo.setPrice(skuBo.getOnlinePrice());
-		adjustDetailVo.setPropertiesIndb(skuBo.getPropertiesIndb());
-		adjustDetailVo.setStoreSkuId(skuBo.getId());
-		adjustDetailVo.setGoodsSkuId(skuBo.getSkuId());
-		adjustDetailList.add(adjustDetailVo);
-
-		stockAjustVo.setAdjustDetailList(adjustDetailList);
-		stockManagerServiceApi.updateStock(stockAjustVo);
+		StockUpdateDto updateDto = mallStockUpdateBuilder.build(order, parserBo);
+		goodsStoreSkuStockApi.updateStock(updateDto);
 	}
 }

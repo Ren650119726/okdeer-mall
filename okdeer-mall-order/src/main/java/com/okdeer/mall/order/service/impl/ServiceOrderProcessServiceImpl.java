@@ -12,10 +12,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -36,9 +34,9 @@ import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.enums.GoodsStoreSkuPayTypeEnum;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
+import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreInfo;
@@ -82,6 +80,7 @@ import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.enums.ServerStatus;
+import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
@@ -215,12 +214,6 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	private TradeOrderLogisticsService tradeOrderLogisticsService;
 
 	/**
-	 * 库存管理Service
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi stockManagerService;
-
-	/**
 	 * 店铺信息Service
 	 */
 	@Reference(version = "1.0.0", check = false)
@@ -236,7 +229,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	 * 店铺商品库存Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockService;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 
 	/**
 	 * 满减满折活动Service
@@ -292,6 +285,12 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	@Resource
 	private FavourParamBuilder favourParamBuilder;
 	// End V2.1 added by maojj 2017-02-17
+	
+	/**
+	 * 商城库存构建者
+	 */
+	@Resource
+	private MallStockUpdateBuilder mallStockUpdateBuilder;
 	
 	/**
 	 * @Description: 服务订单确认订单
@@ -562,31 +561,13 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	private void lockStock(TradeOrder tradeOrder, Map<String, Object> checkResult, ServiceOrderReq orderReq)
 			throws Exception {
 		GoodsStoreSku goodsStoreSku = (GoodsStoreSku) checkResult.get("goodsStoreSku");
-		List<AdjustDetailVo> saleGoodsList = new ArrayList<AdjustDetailVo>();
-		AdjustDetailVo saleDetail = new AdjustDetailVo();
-		saleDetail.setBarCode(goodsStoreSku.getBarCode());
-		saleDetail.setGoodsName(goodsStoreSku.getName());
-		saleDetail.setGoodsSkuId(goodsStoreSku.getSkuId());
-		saleDetail.setMultipleSkuId(goodsStoreSku.getMultipleSkuId());
-		saleDetail.setNum(Integer.valueOf(orderReq.getSkuNum()));
-		saleDetail.setPrice(orderReq.getUnitPrice());
-		saleDetail.setPropertiesIndb(goodsStoreSku.getPropertiesIndb());
-		saleDetail.setStoreSkuId(goodsStoreSku.getId());
-		saleGoodsList.add(saleDetail);
-
-		StockAdjustVo stockVo = new StockAdjustVo();
-		stockVo.setOrderId(tradeOrder.getId());
-		stockVo.setStoreId(orderReq.getStoreId());
-		stockVo.setUserId(orderReq.getUserId());
-		stockVo.setAdjustDetailList(saleGoodsList);
-		// 非活动下单，占用普通库存
-		if (StringUtils.isBlank(orderReq.getSeckillId())) {
-			stockVo.setStockOperateEnum(StockOperateEnum.PLACE_ORDER);
-		} else {
-			// 活动下单，占用活动库存
-			stockVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_PLACE_ORDER);
+		ActivityTypeEnum actType = ActivityTypeEnum.NO_ACTIVITY;
+		if (StringUtils.isNotEmpty(orderReq.getSeckillId())) {
+			// 如果秒杀Id不为空，标识为秒杀订单
+			actType = ActivityTypeEnum.SECKILL_ACTIVITY;
 		}
-		stockManagerService.updateStock(stockVo);
+		StockUpdateDto updateDto = mallStockUpdateBuilder.build(tradeOrder, goodsStoreSku, actType, orderReq.getSkuNum());
+		goodsStoreSkuStockApi.updateStock(updateDto);
 	}
 
 	/**
@@ -965,7 +946,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 				}
 			}
 			// 不是秒杀活动，校验正常商品库存
-			GoodsStoreSkuStock goodsStoreSkuStock = goodsStoreSkuStockService.getBySkuId(orderReq.getSkuId());
+			GoodsStoreSkuStock goodsStoreSkuStock = goodsStoreSkuStockApi.findByStoreSkuId(orderReq.getSkuId());
 			if (goodsStoreSkuStock.getSellable() < orderReq.getSkuNum()) {
 				resultJson.put("stockStatus", ExceptionConstant.ONE);
 				resultJson.put("skuInfo", findGoodsStoreSkuInfo(orderReq.getSkuId()));

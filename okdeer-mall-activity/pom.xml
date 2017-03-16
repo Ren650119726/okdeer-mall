@@ -39,6 +39,10 @@
 			<artifactId>okdeer-mall-api</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.okdeer.jxc</groupId>
+			<artifactId>okdeer-jxc-api</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.yschome</groupId>
 			<artifactId>cloudy_file</artifactId>
 		</dependency>

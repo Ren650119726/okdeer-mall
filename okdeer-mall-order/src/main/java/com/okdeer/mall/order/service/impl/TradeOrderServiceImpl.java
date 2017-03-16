@@ -69,17 +69,17 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
+import com.okdeer.archive.stock.dto.StockUpdateDetailDto;
+import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.exception.StockException;
-import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
-import com.okdeer.archive.stock.vo.AdjustDetailVo;
-import com.okdeer.archive.stock.vo.StockAdjustVo;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
@@ -102,6 +102,8 @@ import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
+import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
+import com.okdeer.jxc.stock.vo.StockUpdateVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -142,6 +144,8 @@ import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
+import com.okdeer.mall.order.builder.JxcStockUpdateBuilder;
+import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
@@ -399,14 +403,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	private TradeOrderItemDetailMapper tradeOrderItemDetailMapper;
 
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi serviceStockManagerService;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 
 	// Begin 1.0.Z add by zengj
 	/**
 	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerJxcService;
+	private StockUpdateServiceApi stockUpdateServiceApi;
 	// End 1.0.Z add by zengj
 
 	@Reference(version = "1.0.0", check = false)
@@ -589,6 +593,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Resource
 	private TradeOrderLocateMapper tradeOrderLocateMapper;
 	// End V2.1 added by maojj 2017-02-21
+	
+	@Resource
+	private JxcStockUpdateBuilder jxcStockUpdateBuilder;
+	
+	@Resource
+	private MallStockUpdateBuilder mallStockUpdateBuilder;
 
 	@Override
 	public PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize)
@@ -1619,65 +1629,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 构建服务型订单库存VO
-	 *
-	 * @author zengj
-	 * @param tradeOrder
-	 *            订单
-	 * @param stockOperateEnum
-	 *            库存操作枚举
-	 * @param adjustGoodsNum
-	 *            调整商品数量，如为null,取下单时的商品数量，消费时是一件件商品消费，所以需要一件件来调整库存
-	 * @return StockAdjustVo 库存VO
-	 */
-	private StockAdjustVo buildServiceOrderStock(TradeOrder tradeOrder, StockOperateEnum stockOperateEnum,
-			Integer adjustGoodsNum, List<String> rpcIdList) {
-		StockAdjustVo stockAdjustVo = new StockAdjustVo();
-		// Begin added by maojj 2016-07-26
-		String rpcId = UuidUtils.getUuid();
-		rpcIdList.add(rpcId);
-		stockAdjustVo.setRpcId(rpcId);
-		// End added by maojj 2016-07-26
-		// 订单ID
-		stockAdjustVo.setOrderId(tradeOrder.getId());
-		stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
-		stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
-		stockAdjustVo.setOrderType(tradeOrder.getType());
-		// 店铺ID
-		stockAdjustVo.setStoreId(tradeOrder.getStoreId());
-		// 库存操作枚举
-		stockAdjustVo.setStockOperateEnum(stockOperateEnum);
-		// 操作用户ID
-		stockAdjustVo.setUserId(tradeOrder.getUserId());
-		// 库存调整详情VO
-		List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
-		// 订单项信息
-		List<TradeOrderItem> tradeOrderItems = tradeOrder.getTradeOrderItem();
-		// 如果订单项为空，手动查询下订单项信息
-		if (tradeOrderItems == null) {
-			tradeOrderItems = tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId());
-		}
-
-		// 循环订单项信息
-		for (TradeOrderItem item : tradeOrderItems) {
-			AdjustDetailVo detail = new AdjustDetailVo();
-			detail.setStoreSkuId(item.getStoreSkuId());
-			detail.setGoodsSkuId("");
-			detail.setMultipleSkuId("");
-			detail.setGoodsName(item.getSkuName());
-			detail.setPrice(item.getUnitPrice());
-			detail.setPropertiesIndb(item.getPropertiesIndb());
-			detail.setStyleCode(item.getStyleCode());
-			detail.setBarCode(item.getBarCode());
-			// 调整商品库存数量,如果有传调整数量，取传递过来的，否则取订单下单时的商铺数量
-			detail.setNum(adjustGoodsNum == null || adjustGoodsNum < 1 ? item.getQuantity() : adjustGoodsNum);
-			adjustDetailList.add(detail);
-		}
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
-		return stockAdjustVo;
-	}
-
-	/**
 	 * 确认收货并发送消息
 	 * @TZD 修改 2016-12-12
 	 * @UPDATE  去掉事务消息，快送服务已经不提供，重新添加完成消息，用于活动使用完成处理业务
@@ -1710,7 +1661,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		try {
 			if (entity instanceof TradeOrder) {
 				TradeOrder tradeOrder = (TradeOrder) entity;
-				StockAdjustVo stockAdjustVo = null;
 				// 更新订单状态
 				Integer alterCount = this.updateOrderStatus(tradeOrder);
 				if (alterCount <= 0) {
@@ -1760,25 +1710,20 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
 
 				// 锁定库存
-				// Begin modified by maojj 2016-07-26
-				// 只有实物店才同步商品，走进销存库存,服务商品是派单时就扣了库存
-				if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
-					rpcId = UuidUtils.getUuid();
-					stockAdjustVo = stockAdjustVoBuilder.buildJxcStock(tradeOrder, rpcId);
-					stockManagerJxcService.updateStock(stockAdjustVo);
-					// 如果有组合商品，需要修改商城的组合商品库存
-					rpcId = UuidUtils.getUuid();
-					stockAdjustVo = stockAdjustVoBuilder.buildComboStock(tradeOrder, rpcId,
-							StockOperateEnum.SEND_OUT_GOODS);
-					if (stockAdjustVo != null) {
-						serviceStockManagerService.updateStock(stockAdjustVo);
-					}
+				// Begin modified by maojj 2017-03-15
+				rpcId = UuidUtils.getUuid();
+				StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.buildForCompleteOrder(tradeOrder);
+				StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.buildForCompleteOrder(tradeOrder);
+				if(mallStockUpdate != null){
+					rpcId = mallStockUpdate.getRpcId();
+					goodsStoreSkuStockApi.updateStock(mallStockUpdate);
+				}
+				if(jxcStockUpdate != null){
+					stockUpdateServiceApi.stockUpdateForMessage(jxcStockUpdate);
 					// 订单完成后同步到商业管理系统
 					tradeOrderCompleteProcessService.orderCompleteSyncToJxc(tradeOrder.getId());
-					// End 1.0.Z 增加订单操作记录 add by zengj
 				}
-				// End modified by maojj 2016-07-26
-				// Begin Bug:13700 added by maojj 2016-10-10
+				// End modified by maojj 2017-03-15
 				// 确认收货，更新用户邀请记录
 				updateInvitationRecord(tradeOrder.getUserId());
 				// End Bug:13700 added by maojj 2016-10-10
@@ -1789,6 +1734,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
 			// rollbackMQProducer.sendStockRollbackMsg(rpcId);
+			if(rpcId != null){
+				
+			}
 			throw e;
 		}
 	}
@@ -1900,155 +1848,102 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateOrderShipment(TradeOrderOperateParamVo param) throws ServiceException, Exception {
-		String rpcId = null;
 		TradeOrder tradeOrder = null;
-		try {
-			// 根据订单ID查询出订单信息
-			tradeOrder = this.tradeOrderMapper.selectTradeDetailInfoById(param.getOrderId());
-			// 判断订单是否存在
-			if (tradeOrder == null || !tradeOrder.getStoreId().equals(param.getStoreId())) {
-				// Begin 重构4.1 update by wusw 20160816
-				// 如果订单不存在，抛出异常
-				throw new ServiceException(ORDER_NOT_EXSITS_DELETE);
-				// End 重构4.1 update by wusw 20160816
+		// 根据订单ID查询出订单信息
+		tradeOrder = this.tradeOrderMapper.selectTradeDetailInfoById(param.getOrderId());
+		// 判断订单是否存在
+		if (tradeOrder == null || !tradeOrder.getStoreId().equals(param.getStoreId())) {
+			// Begin 重构4.1 update by wusw 20160816
+			// 如果订单不存在，抛出异常
+			throw new ServiceException(ORDER_NOT_EXSITS_DELETE);
+			// End 重构4.1 update by wusw 20160816
+		}
+
+		// 判断订单状态是否是待发货。只有待发货才能发货
+		if (!OrderStatusEnum.DROPSHIPPING.equals(tradeOrder.getStatus())) {
+			// Begin 重构4.1 update by wusw 20160816
+			// 如果不是待发货状态，直接抛出异常
+			throw new ServiceException(ORDER_STATUS_OVERDUE);
+			// End 重构4.1 update by wusw 20160816
+		}
+
+		// 修改订单状态为已发货
+		tradeOrder.setStatus(OrderStatusEnum.TO_BE_SIGNED);
+		// 修改最后修改时间
+		tradeOrder.setUpdateTime(new Date());
+		// 修改最后修改人
+		tradeOrder.setUpdateUserId(param.getUserId());
+		// 发货时间为当前时间
+		tradeOrder.setDeliveryTime(new Date());
+		// 发货人ID
+		tradeOrder.setShipmentsUserId(param.getUserId());
+		// Begin Bug:15707 added by maojj 2016-12-06
+		// 更新时判断订单状态是否发生变化，以保证数据的一致性。类似乐观锁的处理机制
+		tradeOrder.setCurrentStatus(tradeOrder.getCurrentStatus());
+		// End Bug:15707 added by maojj 2016-12-06
+		// 更新订单信息
+		Integer updateRows = this.updateOrderStatus(tradeOrder);
+		// Begin Bug:15707 added by maojj 2016-12-06
+		// 更新时判断订单状态是否发生变化，以保证数据的一致性。类似乐观锁的处理机制
+		if (updateRows == null || updateRows.intValue() == 0) {
+			// 如果更新影响行数为0，则意味着订单状态已经发生变化。抛出异常终止业务处理
+			throw new ServiceException(ORDER_STATUS_OVERDUE);
+		}
+		// End Bug:15707 added by maojj 2016-12-06
+
+		// 判断是否有物流信息
+		if (StringUtils.isNotBlank(param.getLogisticsCompanyName())) {
+			// 有物流信息表示物流发货,需要更新物流信息到 订单收货地址信息表
+			TradeOrderLogistics tradeOrderLogistics = tradeOrderLogisticsMapper.selectByOrderId(tradeOrder.getId());
+			if (tradeOrderLogistics != null) {
+				// 表示有物流
+				tradeOrderLogistics.setType(LogisticsType.HAS);
+				// 物流公司
+				tradeOrderLogistics.setLogisticsCompanyName(param.getLogisticsCompanyName());
+				// 物流单号
+				tradeOrderLogistics.setLogisticsNo(param.getLogisticsNo());
+
+				// 更新物流信息
+				tradeOrderLogisticsMapper.updateByPrimaryKeySelective(tradeOrderLogistics);
 			}
+		}
 
-			// 判断订单状态是否是待发货。只有待发货才能发货
-			if (!OrderStatusEnum.DROPSHIPPING.equals(tradeOrder.getStatus())) {
-				// Begin 重构4.1 update by wusw 20160816
-				// 如果不是待发货状态，直接抛出异常
-				throw new ServiceException(ORDER_STATUS_OVERDUE);
-				// End 重构4.1 update by wusw 20160816
-			}
+		// 保存订单操作日志
+		// tradeOrderLogMapper.insertSelective(getTradeOrderLog(param,
+		// OrderStatusEnum.TO_BE_SIGNED));
 
-			// 将实际库存-1 订单占用库存 -1
-			// 发货不在修改库存，得订单完成后才有
-			StockAdjustVo stockAdjustVo = new StockAdjustVo();
-			// Begin added by maojj 2016-07-26
-			rpcId = UuidUtils.getUuid();
-			stockAdjustVo.setRpcId(rpcId);
-			// End added by maojj 2016-07-26
-			stockAdjustVo.setStoreId(tradeOrder.getStoreId());
-			stockAdjustVo.setUserId(tradeOrder.getUserId());
-			stockAdjustVo.setOrderId(tradeOrder.getId());
-			ActivityTypeEnum activityType = tradeOrder.getActivityType();
-			if (activityType != null) {
-				if (activityType.equals(ActivityTypeEnum.GROUP_ACTIVITY)) {
-					stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_SEND_OUT_GOODS);
-				} else {
-					stockAdjustVo.setStockOperateEnum(StockOperateEnum.SEND_OUT_GOODS);
-				}
-			}
+		// Begin 1.0.Z 增加订单操作记录 add by zengj
+		tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), param.getUserId(),
+				tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+		// End 1.0.Z 增加订单操作记录 add by zengj
 
-			List<AdjustDetailVo> adjustDetailVos = new ArrayList<AdjustDetailVo>();
-			AdjustDetailVo adjustDetailVo = null;
-			List<TradeOrderItem> orderItems = tradeOrder.getTradeOrderItem();
-			for (TradeOrderItem item : orderItems) {
-				adjustDetailVo = new AdjustDetailVo();
-				adjustDetailVo.setStoreSkuId(item.getStoreSkuId());
-				adjustDetailVo.setGoodsName(item.getSkuName());
-				adjustDetailVo.setBarCode(item.getBarCode());
-				adjustDetailVo.setStyleCode(item.getStyleCode());
-				adjustDetailVo.setPropertiesIndb(item.getPropertiesIndb());
-				adjustDetailVo.setNum(item.getQuantity());
-				// 下单时SKU的价格
-				adjustDetailVo.setPrice(item.getUnitPrice());
-				adjustDetailVos.add(adjustDetailVo);
-			}
-			stockAdjustVo.setAdjustDetailList(adjustDetailVos);
+		// 获取店铺信息
+		StoreInfo storeInfo = storeInfoService.findById(tradeOrder.getStoreId());
 
-			// 修改订单状态为已发货
-			tradeOrder.setStatus(OrderStatusEnum.TO_BE_SIGNED);
-			// 修改最后修改时间
-			tradeOrder.setUpdateTime(new Date());
-			// 修改最后修改人
-			tradeOrder.setUpdateUserId(param.getUserId());
-			// 发货时间为当前时间
-			tradeOrder.setDeliveryTime(new Date());
-			// 发货人ID
-			tradeOrder.setShipmentsUserId(param.getUserId());
-			// Begin Bug:15707 added by maojj 2016-12-06
-			// 更新时判断订单状态是否发生变化，以保证数据的一致性。类似乐观锁的处理机制
-			tradeOrder.setCurrentStatus(tradeOrder.getCurrentStatus());
-			// End Bug:15707 added by maojj 2016-12-06
-			// 更新订单信息
-			Integer updateRows = this.updateOrderStatus(tradeOrder);
-			// Begin Bug:15707 added by maojj 2016-12-06
-			// 更新时判断订单状态是否发生变化，以保证数据的一致性。类似乐观锁的处理机制
-			if (updateRows == null || updateRows.intValue() == 0) {
-				// 如果更新影响行数为0，则意味着订单状态已经发生变化。抛出异常终止业务处理
-				throw new ServiceException(ORDER_STATUS_OVERDUE);
-			}
-			// End Bug:15707 added by maojj 2016-12-06
+		// 发送计时消息
+		// Begin 重构4.1 add by wusw 20160801
+		if (storeInfo.getType() == StoreTypeEnum.SERVICE_STORE) {
+			Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0, 16), "yyyy-MM-dd HH:mm");
+			// 服务店订单，预约服务时间过后24小时未派单的自动确认收货
+			// tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout,
+			// tradeOrder.getId(),
+			// DateUtils.addHours(serviceTime, 24).getTime());
+			// Begin V1.0.3修改自动确认收货期限为7天 update by wusw 20160901
+			// Begin V2.2.0修改自动确认收货期限为3天 update by wangf01 20170307
+			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout, tradeOrder.getId(),
+					(DateUtils.addHours(serviceTime, 24 * 3).getTime() - DateUtils.getSysDate().getTime()) / 1000);
+			// end V2.2.0修改自动确认收货期限为3天 update by wangf01 20170307
+			// End V1.0.3修改自动确认收货期限为7天 update by wusw 20160901
+			// 服务店派单发送短信
+			tradeMessageService.sendSmsByServiceStoreShipments(tradeOrder);
+		} else {// End 重构4.1 add by wusw 20160801
+			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
+		}
 
-			// 判断是否有物流信息
-			if (StringUtils.isNotBlank(param.getLogisticsCompanyName())) {
-				// 有物流信息表示物流发货,需要更新物流信息到 订单收货地址信息表
-				TradeOrderLogistics tradeOrderLogistics = tradeOrderLogisticsMapper.selectByOrderId(tradeOrder.getId());
-				if (tradeOrderLogistics != null) {
-					// 表示有物流
-					tradeOrderLogistics.setType(LogisticsType.HAS);
-					// 物流公司
-					tradeOrderLogistics.setLogisticsCompanyName(param.getLogisticsCompanyName());
-					// 物流单号
-					tradeOrderLogistics.setLogisticsNo(param.getLogisticsNo());
-
-					// 更新物流信息
-					tradeOrderLogisticsMapper.updateByPrimaryKeySelective(tradeOrderLogistics);
-				}
-			}
-
-			// 保存订单操作日志
-			// tradeOrderLogMapper.insertSelective(getTradeOrderLog(param,
-			// OrderStatusEnum.TO_BE_SIGNED));
-
-			// Begin 1.0.Z 增加订单操作记录 add by zengj
-			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), param.getUserId(),
-					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
-			// End 1.0.Z 增加订单操作记录 add by zengj
-			// 实物订单是在确收时才会扣减实际库存，但是服务订单还是在派单时
-			if (tradeOrder.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
-				// 调整库存 Tips:发货不再修改库存，等订单完成才会
-				this.serviceStockManagerService.updateStock(stockAdjustVo);
-			}
-
-			// 获取店铺信息
-			StoreInfo storeInfo = storeInfoService.findById(tradeOrder.getStoreId());
-
-			// 发送计时消息
-			// Begin 重构4.1 add by wusw 20160801
-			if (storeInfo.getType() == StoreTypeEnum.SERVICE_STORE) {
-				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0, 16), "yyyy-MM-dd HH:mm");
-				// 服务店订单，预约服务时间过后24小时未派单的自动确认收货
-				// tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout,
-				// tradeOrder.getId(),
-				// DateUtils.addHours(serviceTime, 24).getTime());
-				// Begin V1.0.3修改自动确认收货期限为7天 update by wusw 20160901
-				// Begin V2.2.0修改自动确认收货期限为3天 update by wangf01 20170307
-				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout, tradeOrder.getId(),
-						(DateUtils.addHours(serviceTime, 24 * 3).getTime() - DateUtils.getSysDate().getTime()) / 1000);
-				// end V2.2.0修改自动确认收货期限为3天 update by wangf01 20170307
-				// End V1.0.3修改自动确认收货期限为7天 update by wusw 20160901
-				// 服务店派单发送短信
-				tradeMessageService.sendSmsByServiceStoreShipments(tradeOrder);
-			} else {// End 重构4.1 add by wusw 20160801
-				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
-			}
-
-			// 只有便利店发货才需要短信
-			if (StoreTypeEnum.CLOUD_STORE.equals(storeInfo.getType())) {
-				// 发送短信
-				tradeMessageService.sendSmsByShipments(tradeOrder);
-			}
-
-			// added by maojj 给ERP发消息去生成出入库单据
-			// stockMQProducer.sendMessage(stockAdjustVo);
-		} catch (Exception e) {
-			// added by maojj 通知回滚库存修改
-			if (tradeOrder != null && tradeOrder.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
-				rollbackMQProducer.sendStockRollbackMsg(rpcId);
-			}
-			throw e;
+		// 只有便利店发货才需要短信
+		if (StoreTypeEnum.CLOUD_STORE.equals(storeInfo.getType())) {
+			// 发送短信
+			tradeMessageService.sendSmsByShipments(tradeOrder);
 		}
 	}
 
@@ -4755,7 +4650,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		Map<String, String> resultMap = new HashMap<String, String>();
 
 		List<String> rpcIdList = new ArrayList<String>();
-		List<StockAdjustVo> stockAdjustList = new ArrayList<StockAdjustVo>();
 		try {
 			// 查询消费码参数
 			Map<String, Object> params = new HashMap<String, Object>();
@@ -4813,11 +4707,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					List<TradeOrderItem> tradeOrderItemList = new ArrayList<TradeOrderItem>();
 					tradeOrderItemList.add(tradeOrderItem);
 					tradeOrder.setTradeOrderItem(tradeOrderItemList);
-					// 消费后调整库存
-					StockAdjustVo stockAdjustVo = buildServiceOrderStock(tradeOrder,
-							StockOperateEnum.ACTIVITY_SEND_OUT_GOODS, 1, rpcIdList);
-					stockAdjustList.add(stockAdjustVo);
-
 					// 验证通过，将该消费码改为已消费
 					tradeOrderItemDetailMapper.updateStatusWithConsumed(data.get("detailId").toString());
 					// 单价
@@ -4841,7 +4730,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 消费完，增加积分
 					addPoint(data.get("userId").toString(), data.get("detailId").toString(), unitPrice);
 
-					serviceStockManagerService.updateStock(stockAdjustVo);
+					// 消费后调整库存
+					StockUpdateDto stockUpdateDto = mallStockUpdateBuilder.buildForStoreConsume(tradeOrder, StockOperateEnum.ACTIVITY_SEND_OUT_GOODS, 1);
+					rpcIdList.add(stockUpdateDto.getRpcId());
+					goodsStoreSkuStockApi.updateStock(stockUpdateDto);
 					// 调用dubbo接口
 					BaseResultDto result = payTradeServiceApi.balanceTrade(payTradeVo);
 					if (result == null || !TradeErrorEnum.SUCCESS.getName().equals(result.getCode())) {
@@ -4975,81 +4867,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	}
 
-	/**
-	 * 修改发货库存
-	 *
-	 * @param tradeOrder
-	 *            订单
-	 * @return StockAdjustVo
-	 */
-	private StockAdjustVo buildDeliveryStock(TradeOrder tradeOrder, String rpcId) {
-		StockAdjustVo stockAdjustVo = new StockAdjustVo();
-		// Begin added by maojj 2016-07-26
-		stockAdjustVo.setRpcId(rpcId);
-		// End added by maojj 2016-07-26
-
-		stockAdjustVo.setOrderId(tradeOrder.getId());
-		stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
-		stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
-		stockAdjustVo.setOrderType(tradeOrder.getType());
-		stockAdjustVo.setStoreId(tradeOrder.getStoreId());
-		// 发货
-		if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {
-			// 活动订单发货
-			if (tradeOrder.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES) {
-				stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_SEND_OUT_GOODS);
-			} else {
-				stockAdjustVo.setStockOperateEnum(StockOperateEnum.SEND_OUT_GOODS);
-			}
-		} else if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
-			// 订单完成
-			if (tradeOrder.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES) {
-				stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_ORDER_COMPLETE);
-			} else {
-				stockAdjustVo.setStockOperateEnum(StockOperateEnum.PLACE_ORDER_COMPLETE);
-			}
-		}
-		stockAdjustVo.setUserId(tradeOrder.getUserId());
-
-		List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
-		List<TradeOrderItem> orderItemList = tradeOrder.getTradeOrderItem();
-		if (CollectionUtils.isEmpty(orderItemList)) {
-			orderItemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
-		}
-		for (TradeOrderItem item : orderItemList) {
-			AdjustDetailVo detail = new AdjustDetailVo();
-			detail.setStoreSkuId(item.getStoreSkuId());
-			detail.setGoodsSkuId("");
-			detail.setMultipleSkuId("");
-			detail.setGoodsName(item.getSkuName());
-			detail.setPrice(item.getUnitPrice());
-			detail.setPropertiesIndb(item.getPropertiesIndb());
-			detail.setStyleCode(item.getStyleCode());
-			detail.setBarCode(item.getBarCode());
-			detail.setNum(item.getQuantity());
-
-			// add by 便利店优惠金额单价 lijun begin
-			if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED
-					&& tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
-				if (item.getPreferentialPrice() != null
-						&& item.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
-					boolean isWeigh = false;
-					if (item.getWeight() != null) {
-						isWeigh = true;
-					}
-					BigDecimal number = convertScaleToKg(item.getQuantity(), isWeigh);
-					// 优惠单价
-					BigDecimal price = item.getIncome().divide(number, 4, BigDecimal.ROUND_HALF_UP);
-					detail.setPrice(price);
-				}
-			}
-			// add by 便利店优惠金额单价 lijun end
-
-			adjustDetailList.add(detail);
-		}
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
-		return stockAdjustVo;
-	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -6658,40 +6475,26 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	private void updateServiceStoreStock(OrderItemDetailConsumeVo detailConsumeVo, List<String> rpcIdList,
 			StockOperateEnum stockOperateEnum, String userId, String storeId)
 			throws StockException, ServiceException, Exception {
-		StockAdjustVo stockAdjustVo = new StockAdjustVo();
 		String rpcId = UuidUtils.getUuid();
 		rpcIdList.add(rpcId);
-		stockAdjustVo.setRpcId(rpcId);
+		
+		StockUpdateDto stockUpdateDto = new StockUpdateDto();
+		stockUpdateDto.setRpcId(rpcId);
+		stockUpdateDto.setMethodName("");
+		stockUpdateDto.setOrderId(detailConsumeVo.getOrderId());
+		stockUpdateDto.setStoreId(storeId);
+		stockUpdateDto.setStockOperateEnum(stockOperateEnum);
 
-		// 订单ID
-		stockAdjustVo.setOrderId(detailConsumeVo.getOrderId());
-		stockAdjustVo.setOrderNo(detailConsumeVo.getOrderNo());
-		stockAdjustVo.setOrderResource(detailConsumeVo.getOrderResource());
-		stockAdjustVo.setOrderType(detailConsumeVo.getOrderType());
-		// 店铺ID
-		stockAdjustVo.setStoreId(storeId);
-		// 库存操作枚举
-		stockAdjustVo.setStockOperateEnum(stockOperateEnum);
-		// 操作用户ID
-		stockAdjustVo.setUserId(detailConsumeVo.getUserId());
-		// 库存调整详情VO
-		List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
-
-		AdjustDetailVo detail = new AdjustDetailVo();
-		detail.setStoreSkuId(detailConsumeVo.getStoreSkuId());
-		detail.setGoodsSkuId("");
-		// detail.setMultipleSkuId("");
-		detail.setGoodsName(detailConsumeVo.getSkuName());
-		detail.setPrice(detailConsumeVo.getUnitPrice());
-		detail.setPropertiesIndb(detailConsumeVo.getPropertiesIndb());
-		detail.setStyleCode(detailConsumeVo.getStyleCode());
-		detail.setBarCode(detailConsumeVo.getBarCode());
-		detail.setNum(detailConsumeVo.getNum());
-		adjustDetailList.add(detail);
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
-
-		// 修改库存
-		serviceStockManagerService.updateStock(stockAdjustVo);
+		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
+		StockUpdateDetailDto updateDetail = new StockUpdateDetailDto();
+		updateDetail.setStoreSkuId(detailConsumeVo.getStoreSkuId());
+		updateDetail.setSpuType(SpuTypeEnum.fwdDdxfSpu);
+		updateDetail.setUpdateNum(detailConsumeVo.getNum());
+		
+		updateDetailList.add(updateDetail);
+		
+		stockUpdateDto.setUpdateDetailList(updateDetailList);
+		goodsStoreSkuStockApi.updateStock(stockUpdateDto);
 	}
 
 	/**
@@ -7035,20 +6838,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		return tradeOrderMapper.selectServiceRefundAmount(params);
 	}
 	// end added by luosm 20161010 V1.1.0
-
-	/**
-	 * 如果是称重会转换成千克
-	 */
-	private BigDecimal convertScaleToKg(Integer value, boolean isWeigh) {
-		if (value == null) {
-			return null;
-		}
-		if (isWeigh) {
-			return BigDecimal.valueOf(value).divide(BigDecimal.valueOf(1000)).setScale(4, BigDecimal.ROUND_FLOOR);
-		} else {
-			return BigDecimal.valueOf(value);
-		}
-	}
 
 	@Override
 	public List<TradeOrderExportVo> findExportList(Map<String, Object> map) {

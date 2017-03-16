@@ -12,7 +12,7 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -23,7 +23,6 @@ import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
-import com.okdeer.mall.order.enums.OrderType;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
@@ -52,7 +51,7 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 	 * 店铺商品库存Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockService;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 
 	@Override
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
@@ -79,7 +78,7 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 			parserBo.processSeckill();
 		}
 		parserBo.loadBuySkuList(paramDto.getSkuList());
-		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(skuIdList);
+		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockApi.findByStoreSkuIdList(skuIdList);
 		parserBo.loadStockList(stockList);
 		// 检查请求的商品类型
 		checkSkuType(paramDto,parserBo);
