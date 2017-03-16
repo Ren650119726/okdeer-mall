@@ -4433,42 +4433,40 @@
 		</if>
 	</select>
 	<!-- zengj:查询导出POS销售单列表 -->
-	<select id="selectPosOrderExportList" resultType="java.util.Map"
-		parameterType="java.util.Map">
+	<select id="selectPosOrderExportList" resultType="java.util.Map" parameterType="java.util.Map">
 		SELECT
-		toi.id AS id,
-		o.order_no AS orderNo,
-		c.`name` AS threeCategory,
-		toi.sku_name AS skuName,
-		toi.bar_code AS barCode,
-		toi.style_code AS styleCode,
-		toi.unit_price AS unitPrice,
-		IFNULL(toi.quantity,toi.weight) AS quantity,
-		toi.unit_price * IFNULL(toi.quantity, toi.weight) as orderItemTotalAmount,
-		o.create_time AS createTime,
-		CAST(o.`status` AS SIGNED) AS `status`,
-		CAST(tor.refunds_status AS SIGNED) AS refundsStatus,
-		IFNULL(tori.quantity,tori.weight) AS refundsQuantity,
-		tori.unit_price * IFNULL(tori.quantity,tori.weight) as refundsAmount,
-		u.login_name AS operator
-		FROM
-		trade_order_item toi
+			toi.id AS id,
+			o.order_no AS orderNo,
+			c.`name` AS threeCategory,
+			toi.sku_name AS skuName,
+			toi.bar_code AS barCode,
+			toi.style_code AS styleCode,
+			toi.unit_price AS unitPrice,
+			IFNULL(toi.quantity,toi.weight) AS quantity,
+			toi.unit_price * IFNULL(toi.quantity, toi.weight) as orderItemTotalAmount,
+			o.create_time AS createTime,
+			CAST(o.`status` AS SIGNED) AS `status`,
+			CAST(tor.refunds_status AS SIGNED) AS refundsStatus,
+			IFNULL(tori.quantity,tori.weight) AS refundsQuantity,
+			tori.unit_price * IFNULL(tori.quantity,tori.weight) as refundsAmount,
+			u.login_name AS operator,
+			o.user_phone AS userPhone,
+			toi.actual_amount AS orderItemActualAmount,
+			toi.preferential_price AS  orderItemPreferentialPrice,
+			IFNULL(tori.amount, 0.00) AS orderItemRefundsAmount,
+			op.pay_type*1 AS payType,
+			o.pay_way*1 AS payWay
+		FROM trade_order_item toi
 		LEFT JOIN trade_order o ON o.id = toi.order_id
-		LEFT JOIN
-		goods_store_sku sku ON toi.store_sku_id = sku.id
-		LEFT JOIN
-		goods_store_spu spu ON sku.store_spu_id = spu.id
-		LEFT JOIN
-		goods_spu_category c ON c.id = spu.spu_category_id
-		LEFT JOIN
-		trade_order_refunds_item tori ON toi.id = tori.order_item_id
-		LEFT JOIN
-		trade_order_refunds tor ON tori.refunds_id = tor.id
-		LEFT JOIN sys_user
-		u ON o.seller_id = u.id
-		WHERE o.store_id = #{storeId,jdbcType=VARCHAR}
-		AND o.disabled = 0
-		and o.order_resource = 2
+		LEFT JOIN goods_store_sku sku ON toi.store_sku_id = sku.id
+		LEFT JOIN goods_store_spu spu ON sku.store_spu_id = spu.id
+		LEFT JOIN goods_spu_category c ON c.id = spu.spu_category_id
+		LEFT JOIN trade_order_refunds_item tori ON toi.id = tori.order_item_id
+		LEFT JOIN trade_order_refunds tor ON tori.refunds_id = tor.id
+		LEFT JOIN sys_user u ON o.seller_id = u.id
+		LEFT JOIN trade_order_pay op ON op.order_id = o.id
+		WHERE o.store_id = #{storeId,jdbcType=VARCHAR} AND o.disabled = 0
+		AND o.order_resource = #{orderResource}
 		<if test="orderNo != null and orderNo != ''">
 			AND o.order_no LIKE CONCAT('%', #{orderNo,jdbcType=VARCHAR}, '%')
 		</if>
@@ -4490,6 +4488,27 @@
 				#{item}
 			</foreach>
 		</if>
+		
+		<if test="null != payType">
+			<!-- 如果支付方式是现金支付的，付款表是没记录的，所以需要查询货到付款和线下支付的订单 -->
+			<if test="payType == 4">
+				AND o.pay_way in(1,3)
+			</if>
+			<!-- 否则根据支付类型查询支付表的支付类型 -->
+			<if test="payType != 4 and payType != -1">
+				AND op.pay_type = #{payType}
+			</if>
+			<!-- 查询未支付信息 -->
+			<if test="payType == -1">
+				AND 0.pay_way in (0,2) 
+				AND op.pay_type is null 
+				AND o.status in(0,11)
+			</if>
+		</if>
+		<if test="null != userPhone and '' != userPhone">
+			AND tr.user_phone like CONCAT('%',#{userPhone},'%')
+		</if>
+		
 		ORDER BY o.create_time desc
 		<if test="maxSize != null and maxSize > 0">
 			LIMIT #{maxSize,jdbcType=INTEGER}
