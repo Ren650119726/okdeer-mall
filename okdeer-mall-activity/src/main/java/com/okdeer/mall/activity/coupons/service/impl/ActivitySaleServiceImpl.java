@@ -223,7 +223,12 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			updateDetail.setStoreSkuId(actSaleGoods.getStoreSkuId());
 			updateDetail.setSpuType(SpuTypeEnum.physicalSpu);
 			updateDetail.setActType(actType);
-			updateDetail.setUpdateNum(actSaleGoods.getSaleStock());
+			if(stockOptType == StockOperateEnum.ACTIVITY_END){
+				// 如果活动结束，将活动数量归0
+				updateDetail.setUpdateNum(0);
+			}else{
+				updateDetail.setUpdateNum(actSaleGoods.getSaleStock());
+			}
 			
 			updateDetailList.add(updateDetail);
 		}
@@ -464,9 +469,6 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 				// 和erp同步库存
 				if(CollectionUtils.isNotEmpty(saleGoodsList)){
 					StockOperateEnum stockOperateEnum = StockOperateEnum.ACTIVITY_END;
-					if (activityType != null) {
-						stockOperateEnum = (activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()) ? StockOperateEnum.OVER_SALE_ORDER_INTEGRAL : StockOperateEnum.OVER_SALE_ORDER_EVENT;
-					}
 					ActivitySale activitySale = new ActivitySale();
 					activitySale.setType(ActivityTypeEnum.enumValueOf(activityType));
 					this.updateLockedStock(saleGoodsList, activitySale, stockOperateEnum);
