@@ -598,9 +598,9 @@ public class TradeOrderCompleteProcessServiceImpl
 									? BigDecimal.valueOf(orderRefundsItem.getQuantity()) : orderRefundsItem.getWeight())
 							.setScale(2, BigDecimal.ROUND_FLOOR));
 			// 平台优惠金额
-			item.put("platDiscountAmount", storePreferentialPrice);
+			item.put("platDiscountAmount", platDiscountAmount);
 			// 店铺优惠金额
-			item.put("discountAmount", platDiscountAmount);
+			item.put("discountAmount", storePreferentialPrice);
 			// item.put("activityType", order.getActivityType().ordinal());
 			// item.put("activityId", order.getActivityId());
 			// item.put("activityItemId", order.getActivityItemId());
