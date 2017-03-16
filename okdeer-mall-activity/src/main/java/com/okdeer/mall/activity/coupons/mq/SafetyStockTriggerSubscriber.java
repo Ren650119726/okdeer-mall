@@ -18,15 +18,17 @@ import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
-import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.service.ISysUserAndExtServiceApi;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
 import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.jxc.stock.entity.GoodsStock;
+import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
 import com.okdeer.mall.activity.coupons.bo.ActivitySaleRemindBo;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.mq.constants.SafetyStockTriggerTopic;
@@ -92,7 +94,10 @@ public class SafetyStockTriggerSubscriber {
 	 * GoodsStoreSkuStockServiceApi注入
 	 */
 	@Reference(version="1.0.0", check = false)
-	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockServiceApi;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
+	
+	@Reference(version="1.0.0", check = false)
+	private StockUpdateServiceApi stockUpdateServiceApi;
 	
     /**
      * 短信接口
@@ -100,12 +105,6 @@ public class SafetyStockTriggerSubscriber {
     @Reference(version = "1.0.0", check = false)
     ISmsService smsService;
 
-	/**
-	 * 库存管理Service
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerJxcServiceApi;
-   
 	@SuppressWarnings("unchecked")
 	@RocketMQListener(topic = SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER, tag = "*")
 	public ConsumeConcurrentlyStatus trigger(MQMessage enMessage) {
@@ -177,10 +176,11 @@ public class SafetyStockTriggerSubscriber {
 		if (goodsStoreSku != null) {
 			if (goodsStoreSku.getSpuTypeEnum() == SpuTypeEnum.assembleSpu) {
 				// 组合商品查询商城数据库
-	            stock = goodsStoreSkuStockServiceApi.getBySkuId(storeSkuId);
+	            stock = goodsStoreSkuStockApi.findByStoreSkuId(storeSkuId);
 			} else {
 				// 查询零售库存信息，避免数据同步延时不准确
-				stock = stockManagerJxcServiceApi.findGoodsStockInfo(storeSkuId);
+				GoodsStock goodsStock = stockUpdateServiceApi.getGoodsStockInfo(storeSkuId);
+				stock = BeanMapper.map(goodsStock, GoodsStoreSkuStock.class);
 			}
 		}
 		return stock;

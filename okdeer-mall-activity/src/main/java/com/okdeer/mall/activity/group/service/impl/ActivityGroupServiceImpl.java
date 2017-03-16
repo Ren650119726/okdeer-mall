@@ -21,12 +21,15 @@ import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.enums.IsActivity;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
 import com.okdeer.archive.system.entity.PsmsSmallCommunityInfo;
 import com.okdeer.archive.system.entity.SysUser;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.group.entity.ActivityGroup;
 import com.okdeer.mall.activity.group.entity.ActivityGroupArea;
 import com.okdeer.mall.activity.group.entity.ActivityGroupCommuntity;
@@ -40,10 +43,6 @@ import com.okdeer.mall.activity.group.service.ActivityGroupService;
 import com.okdeer.mall.activity.group.service.ActivityGroupServiceApi;
 import com.okdeer.mall.common.entity.TreeVo;
 import com.okdeer.mall.system.mapper.SysUserMapper;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.UuidUtils;
 
 import net.sf.json.JSONObject;
 
@@ -80,20 +79,6 @@ public class ActivityGroupServiceImpl implements ActivityGroupServiceApi, Activi
 	 */
 	@Autowired
 	private SysUserMapper sysUserMapper;
-
-	// /**
-	// * 库存调整
-	// */
-	// @Reference(version="1.0.0",check=false)
-	// private StockManagerServiceApi stockManagerServiceApi;
-
-	// Begin 1.0.Z add by zengj
-	/**
-	 * 库存管理Service
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerServiceApi;
-	// End 1.0.Z add by zengj
 
 	/**
 	 * 团购商品service
@@ -493,7 +478,7 @@ public class ActivityGroupServiceImpl implements ActivityGroupServiceApi, Activi
 			stockAdjustVo.setAdjustDetailList(adjustDetailList);
 			stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_STOCK);
 			logger.info("商家中心修改团购活动商品库存参数:" + stockAdjustVo.toString());
-			stockManagerServiceApi.updateStock(stockAdjustVo);
+			// stockManagerServiceApi.updateStock(stockAdjustVo);
 			logger.info("商家中心修改团购活动商品完成:");
 		} catch (Exception e) {
 			logger.info("商家中心修改团购活动商品发生异常:", e);

@@ -18,16 +18,15 @@ import com.okdeer.archive.goods.spu.vo.ActivityGroupGoodsVo;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.group.entity.ActivityGroupGoods;
 import com.okdeer.mall.activity.group.mapper.ActivityGroupGoodsMapper;
 import com.okdeer.mall.activity.group.mapper.ActivityGroupMapper;
 import com.okdeer.mall.activity.group.service.ActivityGroupGoodsService;
 import com.okdeer.mall.activity.group.service.ActivityGroupGoodsServiceApi;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * 
@@ -59,14 +58,6 @@ public class ActivityGroupGoodsServiceImpl implements ActivityGroupGoodsServiceA
 
 	// @Reference(version = "1.0.0", check = false)
 	// private StockManagerServiceApi stockManagerServiceApi;
-
-	// Begin 1.0.Z add by zengj
-	/**
-	 * 库存管理Service
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerServiceApi;
-	// End 1.0.Z add by zengj
 
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
@@ -226,7 +217,7 @@ public class ActivityGroupGoodsServiceImpl implements ActivityGroupGoodsServiceA
 			stockAdjustVo.setAdjustDetailList(adjustDetailList);
 			stockAdjustVo.setStockOperateEnum(stockOperateEnum);
 			logger.info("商家中心修改团购活动商品库存参数:" + stockAdjustVo.toString());
-			stockManagerServiceApi.updateStock(stockAdjustVo);
+			// stockManagerServiceApi.updateStock(stockAdjustVo);
 			logger.info("商家中心修改团购活动商品完成:");
 		} catch (Exception e) {
 			logger.error("商家中心修改团购活动商品发生异常:", e);

@@ -66,6 +66,11 @@ public class CurrentStoreSkuBo {
 	 * 线上价格
 	 */
 	private BigDecimal onlinePrice;
+	
+	/**
+	 * 线下价格
+	 */
+	private BigDecimal offlinePrice;
 
 	/**
 	 * 活动价格
@@ -125,9 +130,14 @@ public class CurrentStoreSkuBo {
 	private SpuTypeEnum spuType;
 
 	/**
-	 * 
+	 * 单位
 	 */
 	private String unit;
+	
+	/**
+	 * 货号
+	 */
+	private String articleNo;
 
 	/******************************服务店商品需要返回的信息**********************************************/
 	private int saleNum;
@@ -394,6 +404,22 @@ public class CurrentStoreSkuBo {
 
 	public void setUnit(String unit) {
 		this.unit = unit;
+	}
+
+	public String getArticleNo() {
+		return articleNo;
+	}
+
+	public void setArticleNo(String articleNo) {
+		this.articleNo = articleNo;
+	}
+
+	public BigDecimal getOfflinePrice() {
+		return offlinePrice;
+	}
+
+	public void setOfflinePrice(BigDecimal offlinePrice) {
+		this.offlinePrice = offlinePrice;
 	}
 
 }

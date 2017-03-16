@@ -34,7 +34,6 @@ import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.service.IStoreInfoExtServiceApi;
@@ -166,10 +165,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 	 */
 	@Autowired
 	private ActivitySaleRecordService activitySaleRecordService;
-
-
-	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi serviceStockManagerService;
 
 	@Resource
 	private TradeOrderRefundsCertificateService tradeOrderRefundsCertificateService;

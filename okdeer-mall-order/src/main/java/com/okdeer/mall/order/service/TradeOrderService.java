@@ -845,22 +845,6 @@ public interface TradeOrderService {
 	public void updateRechargeOrderByTradeNum(TradeOrder tradeOrder) throws Exception;
 
 	/**
-	 * 
-	 * @desc 消费码验证
-	 * @author zengj
-	 * @param userId
-	 *            当前登录ID
-	 * @param storeId
-	 *            店铺ID
-	 * @param consumeCodes
-	 *            消费码集合，多个验证码一起验证
-	 * @return
-	 * @throws Exception
-	 */
-	public Map<String, String> updateServiceOrderConsume(String userId, String storeId, List<String> consumeCodes)
-			throws Exception;
-
-	/**
 	 * 根据用户ID查询团购店是否有购买商品
 	 * 
 	 * @author yangq

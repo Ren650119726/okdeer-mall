@@ -18,7 +18,7 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
@@ -83,7 +83,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 	 * 店铺商品库存Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockService;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 	
 
 	@Override
@@ -117,7 +117,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		}
 		// 查询组合商品库存
 		if(CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())){
-			List<GoodsStoreSkuStock> comboStockList = goodsStoreSkuStockService.selectSingleSkuStockBySkuIdList(parserBo.getComboSkuIdList());
+			List<GoodsStoreSkuStock> comboStockList = goodsStoreSkuStockApi.findByStoreSkuIdList(parserBo.getComboSkuIdList());
 			parserBo.loadStockList(comboStockList);
 		}
 		
