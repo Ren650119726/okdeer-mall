@@ -1246,6 +1246,57 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// End V2.1.0 added by luosm 20170215
 		}
 	}
+	
+	// Begin V2.1.0 added by luosm 20170315
+	/**
+	 *
+	 * @desc 商家APPV2.1.0订单查询
+	 *
+	 * @param map
+	 *            查询条件
+	 * @param pageSize
+	 *            每页大小
+	 * @param pageNumber
+	 *            当前页
+	 * @return
+	 */
+	@Override
+	public PageUtils<TradeOrderVo> selectNewMallAppOrderInfo(Map<String, Object> map, int pageSize, int pageNumber) {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+
+		// begin added by luosm 20161011 V1.1.0
+		String storeId = map.get("storeId").toString();
+		StoreInfo store = storeInfoService.findById(storeId);
+		List<TradeOrderVo> list = null;
+		if (store.getType() == StoreTypeEnum.SERVICE_STORE) {
+			list = tradeOrderMapper.selectNewServiceOrderInfo(map);
+		} else {
+			list = tradeOrderMapper.selectNewOrderInfo(map);
+		}
+		// end added by luosm 20161011 V1.1.0
+
+		if (list != null && !list.isEmpty()) {
+			for (TradeOrderVo tradeOrderVo : list) {
+				// 查询订单项表。
+				tradeOrderVo.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrderVo.getId()));
+				// 查询投诉信息
+				tradeOrderVo.setTradeOrderComplainVoList(
+						tradeOrderComplainMapper.findOrderComplainByParams(tradeOrderVo.getId()));
+
+				// 获取订单活动信息
+				Map<String, Object> activityMap = getActivity(tradeOrderVo.getActivityType(),
+						tradeOrderVo.getActivityId());
+				String activityName = activityMap.get("activityName") == null ? null
+						: activityMap.get("activityName").toString();
+				ActivitySourceEnum activitySource = activityMap.get("activitySource") == null ? null
+						: (ActivitySourceEnum) activityMap.get("activitySource");
+				tradeOrderVo.setActivityName(activityName);
+				tradeOrderVo.setActivitySource(activitySource);
+			}
+		}
+		return new PageUtils<TradeOrderVo>(list);
+	}
+	// End V2.1.0 added by luosm 20170315
 
 	/**
 	 *
