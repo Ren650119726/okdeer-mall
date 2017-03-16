@@ -4194,7 +4194,12 @@
 		WHERE 1=1
 		AND tr.disabled=0
 		<include refid="order_paytype_condition" />
-		order by tr.create_time desc
+		<choose>
+			<when test="orderTimeSortLabel == 2">
+				ORDER BY tr.create_time ASC
+			</when>
+			<otherwise>ORDER BY tr.create_time DESC</otherwise>
+		</choose>
 	</select>
 	<!-- wusw:pos订单项信息查询 （商家中心） -->
 	<select id="selectOrderItemListForSeller" parameterType="java.util.Map"
@@ -4508,8 +4513,13 @@
 		<if test="null != userPhone and '' != userPhone">
 			AND tr.user_phone like CONCAT('%',#{userPhone},'%')
 		</if>
+		<choose>
+			<when test="orderTimeSortLabel == 2">
+				ORDER BY o.create_time ASC
+			</when>
+			<otherwise>ORDER BY o.create_time DESC</otherwise>
+		</choose>
 		
-		ORDER BY o.create_time desc
 		<if test="maxSize != null and maxSize > 0">
 			LIMIT #{maxSize,jdbcType=INTEGER}
 		</if>
