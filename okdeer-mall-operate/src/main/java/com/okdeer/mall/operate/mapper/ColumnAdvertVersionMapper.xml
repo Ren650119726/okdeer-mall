@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.mapper.ColumnAdvertVersionMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.ColumnAdvertVersion" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="advert_id" property="advertId" jdbcType="VARCHAR" />
+        <result column="type" property="type" jdbcType="BIT" />
+        <result column="version" property="version" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, advert_id, type, version
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_advert_version
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+    
+     <select id="findListByAdvertId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_advert_version
+        where advert_id = #{advertId,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnAdvertVersion" >
+        insert into column_advert_version
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="advertId != null" >
+                advert_id,
+            </if>
+            <if test="type != null" >
+                type,
+            </if>
+            <if test="version != null" >
+                version,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="advertId != null" >
+                #{advertId,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                #{type,jdbcType=BIT},
+            </if>
+            <if test="version != null" >
+                #{version,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    
+    <insert id="insertBatch" parameterType="java.util.List">
+		INSERT INTO column_advert_version (
+			 id, advert_id, type, version
+		) VALUES
+		<foreach collection="list" index="index" item="item" separator=",">
+			(
+			#{item.id,jdbcType=VARCHAR}, #{item.advertId,jdbcType=VARCHAR}, 
+			#{item.type,jdbcType=TINYINT}, #{item.version,jdbcType=VARCHAR}
+			)
+		</foreach>
+	</insert>
+    
+
+    <update id="update" parameterType="com.okdeer.mall.operate.entity.ColumnAdvertVersion" >
+        update column_advert_version
+        <set >
+            <if test="advertId != null" >
+                advert_id = #{advertId,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                type = #{type,jdbcType=BIT},
+            </if>
+            <if test="version != null" >
+                version = #{version,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from column_advert_version
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+	<delete id="deleteByAdvertId" parameterType="java.lang.String" >
+        delete from column_advert_version
+        where advert_id = #{advertId,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>
