@@ -60,6 +60,8 @@ public class AppAdapter {
 			}
 			dto.setFreight(ConvertUtil.format(storeExt.getFreight()));
 			dto.setStartPrice(ConvertUtil.format(storeExt.getStartPrice()));
+			// 预约期限默认为7天
+			dto.setSubscribeTime(7);
 		}
 		if(storeInfo.getStoreInfoServiceExt() != null){
 			BeanMapper.copy(storeInfo.getStoreInfoServiceExt(), dto);
@@ -144,7 +146,7 @@ public class AppAdapter {
 		// 解析下单模式
 		parseOrderTimeModel(dto,storeServExt);
 		// 解析不可用日期
-		dto.setInvalidDates(parseInvalidDate(storeServExt.getInvalidDate()));
+		dto.setInvalidDates(parseInvalidDate(storeServExt.getInvalidDate(),dto.getAheadTimeDay()));
 		return dto;
 	}
 	
@@ -192,7 +194,7 @@ public class AppAdapter {
 	 * @author maojj
 	 * @date 2017年3月13日
 	 */
-	private static String[] parseInvalidDate(String invalidDate) {
+	private static String[] parseInvalidDate(String invalidDate,String aheadTimeDay) {
 		if (StringUtils.isEmpty(invalidDate)) {
 			return null;
 		}
@@ -210,7 +212,9 @@ public class AppAdapter {
 		String invalidMonth = null;
 		// 无效的天
 		int invalidDay = 0;
-		for (int addDay = 0, validDays = 0; validDays < 8; addDay++) {
+		// 提前天数
+		int aheadDay = StringUtils.isEmpty(aheadTimeDay) ? 0 : Integer.parseInt(aheadTimeDay);
+		for (int addDay = aheadDay, validDays = 0; validDays < 8; addDay++) {
 			determineDate = DateUtils.formatDate(DateUtils.addDays(new Date(), addDay), "yyyy-MM-dd");
 			determineMonth = determineDate.substring(0, 4) + determineDate.substring(5, 7);
 			for (String invalidTime : invalidDateArr) {
