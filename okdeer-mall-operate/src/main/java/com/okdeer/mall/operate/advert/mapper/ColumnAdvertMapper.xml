@@ -952,7 +952,8 @@
 		stock.locked AS lockedStock,
 		asg.trade_max AS lowPriceUpper,
 		sa.`limit` as limitNum,
-		sku.`online` AS online
+		sku.`online` AS online,
+		if(sa.type=5,1,0) isPrivliege
 	</sql>
 	
 	<!-- begin 根据广告id获取广告商品列表 xuzq01 20170208-->
