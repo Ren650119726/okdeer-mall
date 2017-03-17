@@ -105,21 +105,24 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		// 缓存商品解析结果
 		paramDto.put("parserBo", parserBo);
 		// 获取非组合商品列表
-		List<String> excludeComboList = parserBo.extraSkuListExcludeCombo();
-		if(CollectionUtils.isNotEmpty(excludeComboList)){
-			// 查询商业系统库存集合
-			List<GoodsStoreSkuStock> stockList = stockManagerJxcServiceApi.findGoodsStockInfoList(excludeComboList);
-			if(CollectionUtils.isEmpty(stockList) || stockList.size() != excludeComboList.size()){
-				resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
-				return;
-			}
-			parserBo.loadStockList(stockList);
-		}
-		// 查询组合商品库存
-		if(CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())){
-			List<GoodsStoreSkuStock> comboStockList = goodsStoreSkuStockApi.findByStoreSkuIdList(parserBo.getComboSkuIdList());
-			parserBo.loadStockList(comboStockList);
-		}
+//		List<String> excludeComboList = parserBo.extraSkuListExcludeCombo();
+//		if(CollectionUtils.isNotEmpty(excludeComboList)){
+//			// 查询商业系统库存集合
+//			List<GoodsStoreSkuStock> stockList = stockManagerJxcServiceApi.findGoodsStockInfoList(excludeComboList);
+//			if(CollectionUtils.isEmpty(stockList) || stockList.size() != excludeComboList.size()){
+//				resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
+//				return;
+//			}
+//			parserBo.loadStockList(stockList);
+//		}
+//		// 查询组合商品库存
+//		if(CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())){
+//			List<GoodsStoreSkuStock> comboStockList = goodsStoreSkuStockApi.findByStoreSkuIdList(parserBo.getComboSkuIdList());
+//			parserBo.loadStockList(comboStockList);
+//		}
+		
+		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockApi.findByStoreSkuIdList(skuIdList);
+		parserBo.loadStockList(stockList);
 		
 		// 检查商品信息是否发生变化
 		ResultCodeEnum checkResult = isChange(paramDto, parserBo);
