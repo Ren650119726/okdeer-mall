@@ -1060,12 +1060,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				String aProviceName = orderVo.getaProviceName() == null ? "" : orderVo.getaProviceName();
 				String aCityName = orderVo.getaCityName() == null ? "" : orderVo.getaCityName();
 				String aAreaName = orderVo.getaAreaName() == null ? "" : orderVo.getaAreaName();
+				//begin V2.1 added by zhulq 2017-03-17  收货地址加上区域拓展信息
+				String aAreaExt = vo.getaAreaExt() == null ? "" : vo.getaAreaExt();
+				//end V2.1 added by zhulq 2017-03-17 
 				String address = orderVo.getMemberAddress() == null ? "" : orderVo.getMemberAddress();
 
 				// 所属城市
 				orderVo.setCityName(aCityName);
 				// 收货地址
-				orderVo.setAddress(aProviceName + aCityName + aAreaName + address);
+				orderVo.setAddress(aProviceName + aCityName + aAreaName + aAreaExt + address);
 
 				// 订单来源
 				orderVo.setOrderResource(orderVo.getOrderResource());
@@ -1219,11 +1222,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			String aProviceName = order.getaProviceName() == null ? "" : order.getaProviceName();
 			String aCityName = order.getaCityName() == null ? "" : order.getaCityName();
 			String aAreaName = order.getaAreaName() == null ? "" : order.getaAreaName();
+			String aAreaExt = order.getaAreaExt() == null ? "" : order.getaAreaExt();
 			String address = order.getMemberAddress() == null ? "" : order.getMemberAddress();
 			// 所属城市
 			order.setCityName(aCityName);
 			// 收货地址
-			order.setAddress(aProviceName + aCityName + aAreaName + address);
+			order.setAddress(aProviceName + aCityName + aAreaName + aAreaExt + address);
 
 			// 获取邀请人姓名
 			if (CollectionUtils.isNotEmpty(inviteNameLists)) {
@@ -5384,12 +5388,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		String aProviceName = vo.getaProviceName() == null ? "" : vo.getaProviceName();
 		String aCityName = vo.getaCityName() == null ? "" : vo.getaCityName();
 		String aAreaName = vo.getaAreaName() == null ? "" : vo.getaAreaName();
+		String aAreaExt = vo.getaAreaExt() == null ? "" : vo.getaAreaExt();
 		String address = vo.getMemberAddress() == null ? "" : vo.getMemberAddress();
 
 		// 所属城市
 		vo.setCityName(aCityName);
 		// 收货地址
-		vo.setAddress(aProviceName + aCityName + aAreaName + address);
+		vo.setAddress(aProviceName + aCityName + aAreaName + aAreaExt + address);
 
 		// 订单来源
 		vo.setOrderResource(vo.getOrderResource());
