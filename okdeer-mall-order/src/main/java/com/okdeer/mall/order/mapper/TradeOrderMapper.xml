@@ -449,6 +449,9 @@
         <result column="aProvice_name" property="aProviceName" jdbcType="VARCHAR" />
         <result column="aCity_name" property="aCityName" jdbcType="VARCHAR" />
         <result column="aArea_name" property="aAreaName" jdbcType="VARCHAR" />
+       <!-- begin V2.1 added by zhulq 2017-03-17 -->
+        <result column="aArea_ext" property="aAreaExt" jdbcType="VARCHAR" />
+       <!-- end V2.1 added by zhulq 2017-03-17 -->
         <result column="memberAddress" property="memberAddress" jdbcType="VARCHAR" />
         <result column="order_type" property="orderType" jdbcType="TINYINT"
 			javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
@@ -1468,6 +1471,7 @@
 		member.province_name as aProvice_name,
 		member.city_name as aCity_name,
 		member.area_name as aArea_name,
+		member.area_ext as aArea_ext,
 		member.address as memberAddress,
 		o.order_resource,
 		o.pick_up_time
@@ -1557,6 +1561,7 @@
 		member.province_name as aProvice_name,
 		member.city_name as aCity_name,
 		member.area_name as aArea_name,
+		member.area_ext as aArea_ext,
 		member.address as memberAddress,
 		IF(first.id is null, "复购", "首购") as isFirstOrder
 		from trade_order o
@@ -5114,6 +5119,7 @@
 				member.province_name as aProvice_name,
 				member.city_name as aCity_name,
 				member.area_name as aArea_name,
+				member.area_ext as aArea_ext,
 				member.address as memberAddress,
 				CONCAT(tol.area,tol.address) as area,
 				<!-- begin V2.1 add by zhulq 导出列表新增字段 --> 
