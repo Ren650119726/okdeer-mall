@@ -146,17 +146,21 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 		columnOperation.setCreateTime(date);
 		columnOperation.setUpdateTime(date);
 		// begin 判断类型是否是鹿小宝专属，根据类型设置appoint_type值 0：无 1：店铺 2：商品 add by wangf01 20170314
-		switch (columnOperation.getTarget()){
-			case storeInfo:
-				columnOperation.setAppointType(1);
-				break;
-			case storeCVSSkuInfo:
-			case storeServerSkuInfo:
-				columnOperation.setAppointType(2);
-				break;
-			default:
-				columnOperation.setAppointType(0);
-				break;
+		if(columnOperation.getTarget() != null){
+			switch (columnOperation.getTarget()){
+				case storeInfo:
+					columnOperation.setAppointType(1);
+					break;
+				case storeCVSSkuInfo:
+				case storeServerSkuInfo:
+					columnOperation.setAppointType(2);
+					break;
+				default:
+					columnOperation.setAppointType(0);
+					break;
+			}
+		}else{
+			columnOperation.setAppointType(0);
 		}
 
 		columnOperationMapper.insertSelective(columnOperation);
