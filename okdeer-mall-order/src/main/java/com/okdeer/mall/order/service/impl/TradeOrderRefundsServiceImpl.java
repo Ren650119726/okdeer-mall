@@ -605,10 +605,7 @@ public class TradeOrderRefundsServiceImpl
 			reduceUserPoint(order, orderRefunds);
 
 		} catch (Exception e) {
-			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
-			if (orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
-				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
-			}
+			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 	}

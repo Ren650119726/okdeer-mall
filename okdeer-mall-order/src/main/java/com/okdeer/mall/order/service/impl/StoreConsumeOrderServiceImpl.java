@@ -664,10 +664,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			order.setTradeOrderItem(Lists.newArrayList(item));
 			stockOperateService.recycleStockByOrder(order, rpcIdList);
 		} catch (Exception e) {
-			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
-			if (order.getType() != OrderTypeEnum.PHYSICAL_ORDER){
-				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
-			}
+			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 	}
@@ -985,11 +982,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			// 发送短信
 			tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
 		} catch (Exception e) {
-			// 发消息回滚库存的修改 added by maojj
-			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
-			if (orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER){
-				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
-			}
+			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 	}

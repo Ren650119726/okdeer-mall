@@ -11,6 +11,7 @@ import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
@@ -97,6 +98,7 @@ public class StockOperateServiceImpl implements StockOperateService {
 	}
 
 	@Override
+	@Transactional(rollbackFor=Exception.class)
 	public void recycleStockByRefund(TradeOrder tradeOrder, TradeOrderRefunds orderRefunds,
 			List<String> rpcIdList) throws Exception {
 		List<String> orderItemIdList = extraOrderItemIdList(orderRefunds.getTradeOrderRefundsItem());

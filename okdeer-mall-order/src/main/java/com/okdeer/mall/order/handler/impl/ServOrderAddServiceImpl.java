@@ -462,7 +462,6 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 	 * @date 2016年7月14日
 	 */
 	private void toUpdateStock(TradeOrder order, Request<ServiceOrderReq> req, String rpcId) throws Exception {
-
 		StockUpdateDto updateDto = mallStockUpdateBuilder.build(order, req, rpcId);
 		goodsStoreSkuStockApi.updateStock(updateDto);
 	}

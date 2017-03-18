@@ -173,6 +173,7 @@ public class PlaceSeckillOrderServiceImpl implements RequestHandler<PlaceOrderPa
 	private void updateStock(TradeOrder order, PlaceOrderParamDto paramDto, String rpcId) throws Exception {
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
 		StockUpdateDto updateDto = mallStockUpdateBuilder.build(order, parserBo);
+		updateDto.setRpcId(rpcId);
 		goodsStoreSkuStockApi.updateStock(updateDto);
 	}
 }
