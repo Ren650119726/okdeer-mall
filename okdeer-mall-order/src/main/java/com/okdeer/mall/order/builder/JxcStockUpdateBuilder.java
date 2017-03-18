@@ -23,9 +23,12 @@ import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
-import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.vo.TradeOrderContext;
+import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
+import com.okdeer.mall.order.vo.TradeOrderReq;
+import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
@@ -151,7 +154,7 @@ public class JxcStockUpdateBuilder {
 			detail.setPrice(storeSku.getActPrice());
 		} else {
 			detail.setNum(BigDecimal.valueOf(storeSku.getQuantity()));
-			detail.setPrice(storeSku.getOfflinePrice());
+			detail.setPrice(storeSku.getOnlinePrice());
 		}
 		detail.setOnlineSalePrice(storeSku.getOnlinePrice());
 		detail.setOfflineSalePrice(storeSku.getOfflinePrice());
@@ -281,7 +284,7 @@ public class JxcStockUpdateBuilder {
 		} else {
 			detail.setNum(
 					BigDecimal.valueOf(orderItem.getQuantity() - ConvertUtil.format(orderItem.getActivityQuantity())));
-			detail.setPrice(storeSku.getOfflinePrice());
+			detail.setPrice(storeSku.getOnlinePrice());
 		}
 		detail.setOnlineSalePrice(storeSku.getOnlinePrice());
 		detail.setOfflineSalePrice(storeSku.getOfflinePrice());
@@ -352,5 +355,71 @@ public class JxcStockUpdateBuilder {
 
 		stockUpdateVo.setDetails(detailList);
 		return stockUpdateVo;
+	}
+	
+	/**
+	 * @Description: V2.1版本之前的便利店下单库存变更
+	 * @param order
+	 * @param reqDto
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年3月18日
+	 */
+	public StockUpdateVo build(TradeOrder order, TradeOrderReqDto reqDto) throws Exception {
+		StockUpdateVo stockUpdateVo = new StockUpdateVo();
+		// 机构ID
+		stockUpdateVo.setBranchId(order.getStoreId());
+		// 库存操作类型
+		stockUpdateVo.setType(StockOperaterTypeConst.PLACE_SALE_ORDER);
+		// 销售类型
+		stockUpdateVo.setSaleType(SALE_TYPE_A);
+		// 订单ID
+		stockUpdateVo.setOrderId(order.getId());
+		// 订单编号
+		stockUpdateVo.setOrderNo(order.getOrderNo());
+		// 问了刘玄，先固定写死XS
+		stockUpdateVo.setOrderType(ORDER_TYPE);
+		// 操作人
+		stockUpdateVo.setOperateUserId(order.getUserId());
+
+		List<StockUpdateDetailVo> detailList = buildDetailList(order,reqDto);
+
+		stockUpdateVo.setDetails(detailList);
+		return stockUpdateVo;
+	}
+	
+	public List<StockUpdateDetailVo> buildDetailList(TradeOrder order, TradeOrderReqDto reqDto){
+		TradeOrderReq req = reqDto.getData();
+		TradeOrderContext context = reqDto.getContext();
+		
+		List<StockUpdateDetailVo> detailList = new ArrayList<StockUpdateDetailVo>();
+		StockUpdateDetailVo detail = null;
+		
+		List<GoodsStoreSku> storeSkuList = new ArrayList<GoodsStoreSku>();
+		if(CollectionUtils.isNotEmpty(context.getNomalSkuList())){
+			storeSkuList.addAll(context.getNomalSkuList());
+		}
+		if(CollectionUtils.isNotEmpty(context.getActivitySkuList())){
+			storeSkuList.addAll(context.getActivitySkuList());
+		}
+		
+		int rowNo = 1;
+		for(GoodsStoreSku storeSku : storeSkuList){
+			detail = new StockUpdateDetailVo();
+			TradeOrderGoodsItem orderItem = req.findOrderItem(storeSku.getId());
+			
+			detail.setSkuId(storeSku.getSkuId());
+			detail.setSkuCode(storeSku.getArticleNo());
+			detail.setRowNo(rowNo++);
+			detail.setNum(BigDecimal.valueOf(orderItem.getSkuNum()));
+			detail.setPrice(orderItem.getSkuPrice());
+			detail.setOnlineSalePrice(storeSku.getOnlinePrice());
+			detail.setOfflineSalePrice(storeSku.getOfflinePrice());
+			detail.setBranchSkuId(storeSku.getId());
+			
+			detailList.add(detail);
+		}
+		return detailList;
 	}
 }

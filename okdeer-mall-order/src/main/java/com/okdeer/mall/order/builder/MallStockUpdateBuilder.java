@@ -34,7 +34,10 @@ import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
+import com.okdeer.mall.order.vo.TradeOrderContext;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
+import com.okdeer.mall.order.vo.TradeOrderReq;
+import com.okdeer.mall.order.vo.TradeOrderReqDto;
 
 @Component
 public class MallStockUpdateBuilder {
@@ -402,6 +405,51 @@ public class MallStockUpdateBuilder {
 			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
 			updateDetail.setSpuType(orderItem.getSpuType());
 			updateDetail.setUpdateNum(adjustGoodsNum == null || adjustGoodsNum < 1 ? orderItem.getQuantity() : adjustGoodsNum);
+			updateDetailList.add(updateDetail);
+		}
+		
+		stockUpdateDto.setUpdateDetailList(updateDetailList);
+		return stockUpdateDto;
+	}
+	
+	/**
+	 * @Description: V2.0 版本下单库存构建对象
+	 * @param order
+	 * @param reqDto
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年3月18日
+	 */
+	public StockUpdateDto build(TradeOrder tradeOrder, TradeOrderReqDto reqDto) throws Exception{
+		TradeOrderReq req = reqDto.getData();
+		TradeOrderContext context = reqDto.getContext();
+		if(CollectionUtils.isEmpty(context.getActivitySkuList())){
+			// 商城只负责修改活动商品库存，如果特惠商品列表为空，则不需做处理
+			return null;
+		}
+		
+		StockUpdateDto stockUpdateDto = new StockUpdateDto();
+
+		stockUpdateDto.setRpcId(UuidUtils.getUuid());
+		stockUpdateDto.setMethodName("");
+		stockUpdateDto.setOrderId(tradeOrder.getId());
+		stockUpdateDto.setStoreId(tradeOrder.getStoreId());
+		stockUpdateDto.setStockOperateEnum(StockOperateEnum.PLACE_ORDER);
+
+		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
+		StockUpdateDetailDto updateDetail = null;
+		TradeOrderGoodsItem orderItem = null;
+		// 订单项信息
+		for(GoodsStoreSku storeSku : context.getActivitySkuList()){
+			orderItem = req.findOrderItem(storeSku.getId());
+			// 获取订单项商品活动类型
+			updateDetail = new StockUpdateDetailDto();
+			updateDetail.setStoreSkuId(storeSku.getId());
+			updateDetail.setSpuType(storeSku.getSpuTypeEnum());
+			updateDetail.setUpdateNum(orderItem.getSkuNum());
+			// V2.0版本只有特惠商品，没有其他商品。
+			updateDetail.setActType(ActivityTypeEnum.SALE_ACTIVITIES);
 			updateDetailList.add(updateDetail);
 		}
 		
