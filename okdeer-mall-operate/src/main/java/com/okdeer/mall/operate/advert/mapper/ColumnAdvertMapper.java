@@ -25,6 +25,7 @@ import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.entity.ColumnAdvertCommunity;
 import com.okdeer.mall.advert.entity.ColumnAdvertQueryVo;
 import com.okdeer.mall.advert.entity.ColumnAdvertVo;
+import com.okdeer.mall.operate.entity.ColumnAdvertVersionBo;
 
 /**
  * 广告Mapper
@@ -211,11 +212,11 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	/**
 	 * @Description:    广告区域统计
 	 * @param advert    广告信息 
-	 * @return HashMap<String,Integer>  
+	 * @return List<ColumnAdvertVersionBo> 
 	 * @author tangy
 	 * @date 2016年11月28日
 	 */
-	List<HashMap<String, Integer>> findAdvertRestrictByArea(ColumnAdvert advert);
+	List<ColumnAdvertVersionBo> findAdvertRestrictByArea(ColumnAdvert advert);
 	//End added by tangy
 	
 	/**

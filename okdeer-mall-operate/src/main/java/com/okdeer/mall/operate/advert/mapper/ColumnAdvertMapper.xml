@@ -45,6 +45,7 @@
 		<association property="advertPosition" javaType="com.okdeer.mall.advert.entity.AdvertPosition">
 			<id column="positionId" property="id" jdbcType="VARCHAR"/>
 			<result column="positionName" property="name" jdbcType="VARCHAR"/>
+			<result column="positionType" property="type" jdbcType="VARCHAR"/>
 		</association>
 		<!-- 关联广告商 -->
 		<association property="advertInfo" javaType="com.okdeer.mall.advert.entity.ColumnAdvertInfo">
@@ -106,11 +107,6 @@
     <result column="online" property="online" jdbcType="INTEGER" />
   </resultMap>
 		
-	<resultMap id="getAllSetAreaResult" type="HashMap">
-	    <result property="key" column="areaId" jdbcType="VARCHAR"/>
-	    <result property="value" column="areaNum" jdbcType="INTEGER" />
-	</resultMap>
-	
 	<sql id="base_column_list">
 		id, position_id, belong_type, name, target_type, target, target_url, pic_url,
 		area_type, start_time, end_time, is_pay, trade_num, status, create_time, create_user_id,
@@ -337,8 +333,8 @@
 	<!-- add  by zhulq  去掉判断用户类型    添加时候只是判断运营商的总张数  -->
 	
 	<select id="getAdvertDetailById" resultMap="advertDetailMap">
-	  SELECT ca.id,cp.id AS positionId, ca.name,cp.name AS positionName, ca.start_time,
-	      cp.name as positionName, ca.end_time, ca.pic_url, ca.target_type, ca.target,
+	  SELECT ca.id,cp.id AS positionId, ca.name, cp.name AS positionName, ca.start_time,
+	      cp.type as positionType, ca.end_time, ca.pic_url, ca.target_type, ca.target,
 	      ca.target_url, ci.advertiser, ci.contact,ci.phone,ca.position_id,
 	      ci.id AS advertInfoId,ci.cost, ci.protocol_url,ca.position_id,
 	      caa.id as aaId, caa.area_id, caa.type, ca.area_type,ca.belong_type,
@@ -1045,14 +1041,18 @@
 	</select>
 	
 	<!-- Begin 广告区域统计 added by tangy  2016-11-28 -->
-	<select id="findAdvertRestrictByArea" resultMap="getAllSetAreaResult" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
+	<select id="findAdvertRestrictByArea" resultType="com.okdeer.mall.operate.entity.ColumnAdvertVersionBo" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
 		SELECT 
-		CASE WHEN caa.area_id <![CDATA[ <> ]]> '' THEN  caa.area_id
-		ELSE '0' END AS areaId, COUNT(1) AS areaNum
+		CONCAT_WS('-',IFNULL(caa.area_id, 0), IFNULL(ver.type, 0), IFNULL(ver.version, 'V1.0')) AS idKey,
+		IFNULL(caa.area_id, 0) AS areaId,
+		ver.type,
+		ver.version,
+		COUNT(1) AS count
 		FROM column_advert ca
 		LEFT JOIN column_advert_position ap ON ca.position_id = ap.id
 		LEFT JOIN column_advert_area caa ON caa.advert_id = ca.id
 		LEFT JOIN column_advert_approval app ON app.advert_id = ca.id
+		LEFT JOIN column_advert_version ver ON ver.advert_id = ca.id
 		WHERE ca.disabled = 0 AND ca.status IN(0, 1)	
 		<choose>
 		    <when test="belongType != null and belongType == '0'.toString()">
@@ -1076,7 +1076,7 @@
   		 	</foreach>
   		 	 )
 		  </if> 
-	    GROUP BY caa.area_id
+	    GROUP BY idKey
         ORDER BY COUNT(1) DESC                
 	</select>
 	

@@ -11,11 +11,11 @@ package com.okdeer.mall.operate.advert.service.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.archive.system.entity.PsmsSmallCommunityInfo;
 import com.okdeer.archive.system.entity.SysUser;
@@ -44,15 +45,20 @@ import com.okdeer.mall.advert.entity.ColumnAdvertQueryVo;
 import com.okdeer.mall.advert.entity.ColumnAdvertVo;
 import com.okdeer.mall.advert.enums.AdvertIsPayEnum;
 import com.okdeer.mall.advert.enums.AdvertStatusEnum;
+import com.okdeer.mall.advert.enums.AdvertTypeEnum;
 import com.okdeer.mall.advert.service.IColumnAdvertServiceApi;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.AuditStatusEnum;
+import com.okdeer.mall.common.enums.ClientTypeEnum;
 import com.okdeer.mall.common.enums.UserType;
 import com.okdeer.mall.operate.advert.mapper.ColumnAdvertApprovalMapper;
 import com.okdeer.mall.operate.advert.mapper.ColumnAdvertAreaMapper;
 import com.okdeer.mall.operate.advert.mapper.ColumnAdvertInfoMapper;
 import com.okdeer.mall.operate.advert.mapper.ColumnAdvertMapper;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertService;
+import com.okdeer.mall.operate.entity.ColumnAdvertVersionDto;
+import com.okdeer.mall.operate.entity.ColumnAdvertVersionBo;
+import com.okdeer.mall.operate.mapper.ColumnAdvertVersionMapper;
 
 /**
  * 广告service实现类
@@ -101,6 +107,12 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	 */
 	@Autowired
 	private ColumnAdvertApprovalMapper advertApprovalMapper;
+	
+	/**
+	 * 关联APP版本Mapper注入
+	 */
+	@Autowired
+	private ColumnAdvertVersionMapper advertVersionMapper;
 
 	/**
 	 * @desc 查询广告列表
@@ -257,6 +269,54 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 			// end 出掉小区 add by zhulq 2016-7-14
 			// end 将选择的省信息保存 add by zhulq 2016-7-14
 		}
+		// Begin add by tangzj02 2017-03-16
+		//添加广告与APP以及版本的关联关系
+		insertAdvertVersionBatch(advert);
+		// End tangzj02 2017-03-16
+	}
+
+	/**
+	 * @Description: 插入广告与APP版本的关联信息
+	 * @author tangzj02
+	 * @date 2017年3月14日
+	 */
+	private void insertAdvertVersionBatch(ColumnAdvert columnAdvert) {
+		advertVersionMapper.deleteByAdvertId(columnAdvert.getId());
+		List<ColumnAdvertVersionDto> versionList = Lists.newArrayList();
+		//生成与便利店APP的关联数据
+		if(CollectionUtils.isNotEmpty(columnAdvert.getCvsVersion())){
+			versionList.addAll(createAdvertVersion(columnAdvert.getId(), columnAdvert.getCvsVersion(), ClientTypeEnum.CVS));
+		}
+		//生成与管家APP的关联数据
+		if(CollectionUtils.isNotEmpty(columnAdvert.getStewardVersion())){
+			versionList.addAll(createAdvertVersion(columnAdvert.getId(), columnAdvert.getStewardVersion(), ClientTypeEnum.STEWARD));
+		}
+		if(CollectionUtils.isNotEmpty(versionList)){
+			advertVersionMapper.insertBatch(versionList);
+		}
+	}
+
+	/**
+	 * @Description: 生成广告与APP版本的关联实体信息
+	 * @param advertId 广告ID
+	 * @param versions 版本集合
+	 * @param clientType app类型
+	 * @return List<ColumnAdvertVersion>
+	 * @author tangzj02
+	 * @date 2017年3月14日
+	 */
+	private List<ColumnAdvertVersionDto> createAdvertVersion(String advertId, List<String> versions, ClientTypeEnum clientType) {
+		List<ColumnAdvertVersionDto> versionList = Lists.newArrayList();
+		ColumnAdvertVersionDto version = null;
+		for(String item : versions){
+			version = new ColumnAdvertVersionDto();
+			version.setId(UuidUtils.getUuid());
+			version.setType(clientType.getCode());
+			version.setAdvertId(advertId);
+			version.setVersion(item);
+			versionList.add(version);
+		}
+		return versionList;
 	}
 
 	/**
@@ -318,6 +378,11 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 			// end 出掉小区 add by zhulq 2016-7-14
 			// end 将选择的省信息保存 之前的删除 add by zhulq 2016-7-15
 		}
+		
+		// Begin add by tangzj02 2017-03-16
+		//添加广告与APP以及版本的关联关系
+		insertAdvertVersionBatch(advert);
+		// End tangzj02 2017-03-16
 	}
 
 	/**
@@ -589,18 +654,17 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	}
 	
 	@Override
-	public String findRestrictByArea(ColumnAdvert columnAdvert, Map<String, ColumnAdvertAreaVo> areaMap) {
+	public String findRestrictByArea(ColumnAdvert columnAdvert, Map<String, ColumnAdvertAreaVo> areaMap) throws Exception {
 		String result = null;
+		if(null == areaMap){
+			return result;
+		}
 		//范围类型，0：全国，1：区域范围，2：小区范围 3.店铺
-		if ((AreaType.area.equals(columnAdvert.getAreaType()) 
-				|| AreaType.national.equals(columnAdvert.getAreaType()))
-				&& areaMap != null) {
-			Iterator it = areaMap.keySet().iterator(); 
-			while(it.hasNext()){ 
-			    String key = (String) it.next();
-			    ColumnAdvertAreaVo vo = areaMap.get(key);
+		if (AreaType.area.equals(columnAdvert.getAreaType()) || AreaType.national.equals(columnAdvert.getAreaType())) {
+			for(Map.Entry<String, ColumnAdvertAreaVo> item : areaMap.entrySet()){
+			    ColumnAdvertAreaVo vo = item.getValue();
 			    List<String> areaIds = new ArrayList<String>();
-			    //根据类型获取查询条件
+			    //根据类型获取查询条件  1、全省，0、市
 			    if ("1".equals(vo.getType())) {
 			    	areaIds.addAll(vo.getAreaIds());
 				} else {
@@ -608,85 +672,157 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 				}
 			    areaIds.add(vo.getId());
 			    columnAdvert.setAreaIdList(areaIds);
-			    List<HashMap<String, Integer>> map = advertMapper.findAdvertRestrictByArea(columnAdvert);
-			    Map<String, Integer> areaRetMap = new HashMap<String, Integer>();
-			    if (map != null) {
-				    for (HashMap<String, Integer> hashMap : map) {
-				    	String areaId = String.valueOf(hashMap.get("key"));
-				    	String areaNum = String.valueOf(hashMap.get("value"));
-				    	areaRetMap.put(areaId, Integer.valueOf(areaNum));
-					}
-				    
-				    //地区最大值
-				    Integer maxArea = 0;
-				    if ("1".equals(vo.getType())) {
-						for (String id : vo.getAreaIds()) {
-							Integer value = areaRetMap.get(id);
-							if (value != null && value.intValue() > maxArea) {
-								maxArea = areaRetMap.get(id);
-							}
-						}
-					} else {
-						if (areaRetMap.get(vo.getpId()) != null) {
-							maxArea = areaRetMap.get(vo.getpId());
-						}
-					}
-				    
-				    //全国区域
-				    if (areaRetMap.get("0") != null) {
-						maxArea += areaRetMap.get("0");
-					}
-				    //区域
-				    if (areaRetMap.get(vo.getId()) != null) {
-						maxArea += areaRetMap.get(vo.getId());
-					}
-				    
-				    result = validateAcrossQty(columnAdvert, maxArea);
-				    if (StringUtils.isNotBlank(result)) {
-				    	return result;
-					}
-			     }			    
+			    List<ColumnAdvertVersionBo> countList = advertMapper.findAdvertRestrictByArea(columnAdvert);
+			    if(CollectionUtils.isEmpty(countList)){
+			    	continue;
+			    }
+			    
+			    result = verifyAdvertAreaVersion(columnAdvert, countList, item.getValue());
+			    
+			    if (StringUtils.isNotBlank(result)) {
+			    	return result;
+				}
 			} 
 		}
 		return result;
 	}
 	
 	/**
+	 * @Description: 验证同一个区域（城市）、同一个时间段、同一个版本下的广告发布情况
+	 * @param advert 广告信息
+	 * @param countList 相同地区发布广告的统计信息
+	 * @param areaVo 广告的发布地区信息
+	 * @return String 提示信息 非空则标识广告已经发布上限
+	 * @throws Exception   
+	 * @author tangzj02
+	 * @date 2017年3月17日
+	 */
+	private String verifyAdvertAreaVersion(ColumnAdvert advert, List<ColumnAdvertVersionBo> countList, 
+				ColumnAdvertAreaVo areaVo) throws Exception{
+		//将lis转成Map
+		Map<String, ColumnAdvertVersionBo> map = countList.stream()
+				.collect(Collectors.toMap(ColumnAdvertVersionBo::getIdKey, bo -> bo));
+		//返回信息
+		String result = null;
+		//APP首页分割广告/APP闪屏广告/APP首页广告(便利店)
+		if(CollectionUtils.isNotEmpty(countList) && CollectionUtils.isNotEmpty(advert.getCvsVersion())
+				&& (AdvertTypeEnum.USER_APP_INDEX_PARTITION.getIndex() ==  advert.getAdvertType()
+					||AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType() 
+			        || AdvertTypeEnum.USER_APP_INDEX.getIndex() ==  advert.getAdvertType())){
+			//循环便利店APP版本集合
+			for(String item : advert.getCvsVersion()){
+				//通过地区ID-便利店APP类型-版本号获取广告数
+				int count = getAreaVersionSum("-" + ClientTypeEnum.CVS.getCode() + "-" + item, map, areaVo);
+				//如果返回的数据不是非空则表示广告已经上限
+				result = validateAcrossQty(advert, count, "便利店APP", item);
+				if(StringUtils.isNotBlank(result)){
+					return result;
+				}
+			}
+		}
+		
+        //手机开门页广告/APP闪屏广告/APP首页广告  管家
+        if(CollectionUtils.isNotEmpty(countList) && CollectionUtils.isNotEmpty(advert.getStewardVersion())  
+				&& (AdvertTypeEnum.MOBILE_PHONE_DOOR.getIndex() ==  advert.getAdvertType()
+        		||AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType() 
+                || AdvertTypeEnum.USER_APP_INDEX.getIndex() ==  advert.getAdvertType())){
+        	//循环管家版本集合
+        	for(String item : advert.getStewardVersion()){
+        		//通过地区ID-管家APP类型-版本号获取广告数
+        		int count = getAreaVersionSum("-" + ClientTypeEnum.STEWARD.getCode() + "-" + item, map, areaVo);
+        		//如果返回的数据不是非空则表示广告已经上限
+        		result = validateAcrossQty(advert, count, "管家APP", item);
+				if(StringUtils.isNotBlank(result)){
+					return result;
+				}
+			}
+		}
+		return result;
+	} 
+	
+	/**
+	 * @Description: 获取已发布的广告数
+	 * @param key Map中的部分key(-APP类型-版本号)
+	 * @param versionMap 已发布广告统计数，key:地区ID-APP类型-版本号 value:ColumnAdvertVersionBo
+	 * @param areaVo 当前发布广告的部分地区信息
+	 * @return int 统计的广告记录数
+	 * @throws Exception
+	 * @author tangzj02
+	 * @date 2017年3月17日
+	 */
+	private int getAreaVersionSum(String key, Map<String, ColumnAdvertVersionBo> versionMap,
+				ColumnAdvertAreaVo areaVo) throws Exception{
+		//发布同一地区、时间、APP类型、APP版本的广告统计数
+		ColumnAdvertVersionBo bo = null;
+		int maxArea = 0;
+		//1、全省，0、市
+	    if ("1".equals(areaVo.getType())) {
+			for (String id : areaVo.getAreaIds()) {
+				bo = versionMap.get(id + key);
+				if(null == bo){
+					continue;
+				}
+				int count = bo.getCount();
+				//如果选择的地区是全省省，则该省下的城市发布数也计算在内，以最大发布数为准
+				if (count > maxArea) {
+					maxArea = versionMap.get(id + key).getCount();
+				}
+			}
+		} else {
+			//如果是市，则该市所属省发布的广告也计算在内
+			bo = versionMap.get(areaVo.getpId() + key);
+			if (null != bo) {
+				maxArea = bo.getCount();
+			}
+		}
+		
+		//全国区域 获取直接发布在全国的广告统计数
+	    bo = versionMap.get("0" + key);
+	    if (null != bo) {
+			maxArea += bo.getCount();
+		}
+	    
+	    //区域， 获取直接发布在当前地区的广告统计数
+	    bo = versionMap.get(areaVo.getId() + key);
+	    if (null != bo) {
+			maxArea += bo.getCount();
+		}
+		
+		return maxArea;
+	}
+	
+	/**
 	 * @Description: 判断广告数是否已满
 	 * @param advert 广告信息
+	 * @param clientName APP引用名称
+	 * @param version 发布的APP版本集合
 	 * @param arcossTimeAdvertQty 地区已有最大数
 	 * @return String  
 	 * @author tangy
 	 * @date 2016年11月28日
 	 */
-	private String validateAcrossQty(ColumnAdvert advert, Integer arcossTimeAdvertQty) {
+	private String validateAcrossQty(ColumnAdvert advert, Integer arcossTimeAdvertQty, String clientName, String version) {
 		Integer advertType = advert.getAdvertType();
+		String msg = "当前广告位置，" + clientName + "#已超过发布上限，无法提交广告";
 		if (!"0".equals(advert.getBelongType())) {
 			if (arcossTimeAdvertQty >= 2) {
-				return "用户版APP首页广告，同一区域的同一时间段内代理商最多只能发布2个，请重新选择！";
+				return msg.replace("#", version);
 			}
 		} else {
-			if (advertType == 1) {
-				// 用户版APP闪屏广告, 同一时间段内最多只能上传一张，且时间不能交叉
-				if (arcossTimeAdvertQty >= 1) {
-					return "用户版APP闪屏广告，同一时间段内最多只能发布一个，请重新选择！";
-				}
-			} else if (advertType == 2) {
-				// 在同一时间段内最多运营商能上传5张，且时间不能产生交叉；
-				if (arcossTimeAdvertQty >= 5) {
-					return "用户版APP首页广告，同一区域的同一时间段内运营商最多只能发布五个，请重新选择！";
-				}
-			} else if (advertType == 4) {
-				if (arcossTimeAdvertQty >= 1) {
-					return "手机开门页广告，同一区域的同一时间段内最多只能发布一个，请重新选择！";
-				}
-			} else if (advertType == 5) {
-				// 在同一时间段内最多运营商能上传1张，且时间不能产生交叉；
-				if (arcossTimeAdvertQty >= 1) {
-					return "用户版APP首页分割广告，同一区域的同一时间段内运营商最多只能发布一个，请重新选择！";
-				}
+			if (advertType == AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() && arcossTimeAdvertQty >= 1) {
+				// 在同一个区域（城市）、同一个时间段、同一个版本下, 最多只能上传一张，且时间不能交叉
+				return msg.replace("#", version);
+			} else if (advertType == AdvertTypeEnum.USER_APP_INDEX.getIndex() && arcossTimeAdvertQty >= 5) {
+				// 在同一个区域（城市）、同一个时间段、同一个版本下, 最多运营商能上传5张，且时间不能产生交叉；
+				return msg.replace("#", version);
+			} else if (advertType == AdvertTypeEnum.MOBILE_PHONE_DOOR.getIndex() && arcossTimeAdvertQty >= 1) {
+				// 同一个区域（城市）、同一个时间段、同一个版本下 ,只允许发送1个手机开门页广告
+				return msg.replace("#", version);
+			} else if (advertType == AdvertTypeEnum.USER_APP_INDEX_PARTITION.getIndex() && arcossTimeAdvertQty >= 1) {
+				// 同一个区域（城市）、同一个时间段、同一个版本下,最多运营商能上传1张，且时间不能产生交叉；
+				return msg.replace("#", version);
 			}
-		}	
+		}
 		return null;
 	}
 
