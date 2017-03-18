@@ -429,6 +429,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		updateDetail.setUpdateNum(activitySeckillFormVo.getSeckillNum());
 		updateDetailList.add(updateDetail);
 		
+		rpcIdByStockList.add(stockUpdateDto.getRpcId());
 		goodsStoreSkuStockApi.updateStock(stockUpdateDto);
 	}
 
@@ -454,6 +455,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		updateDetail.setUpdateNum(0);
 		updateDetailList.add(updateDetail);
 		
+		rpcIdByStockList.add(stockUpdateDto.getRpcId());
 		goodsStoreSkuStockApi.updateStock(stockUpdateDto);
 	}
 

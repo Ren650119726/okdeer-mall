@@ -185,10 +185,13 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 					resp.setMessage(String.format(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getDesc(), storeSkuBo.getName()));
 					return true;
 				}
-				// 如果原价购买大于0，则需要检查原价购买的是否超过可售数量
-				if( buyPrimeNum > 0 &&  buyPrimeNum > storeSkuBo.getSellable()){
-					resp.setCode(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getCode());
-					resp.setMessage(String.format(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getDesc(), storeSkuBo.getName()));
+				// 检查总共购买的是否超过可售数量
+				if( storeSkuBo.getQuantity() > storeSkuBo.getSellable()){
+					if(kindSize > 1){
+						resp.setResult(ResultCodeEnum.PART_GOODS_STOCK_NOT_ENOUGH);
+					}else{
+						resp.setResult(ResultCodeEnum.STOCK_NOT_ENOUGH);
+					}
 					return true;
 				}
 				// 如果重新分配的低价活动数量<请求的低价活动数量，则提示：部分商品超过活动限制
