@@ -226,7 +226,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 				}else{
 					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 				}
-			} else if (currentSku.getOnlinePrice().compareTo(item.getSkuPrice()) != 0 || (currentSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && currentSku.getSkuActQuantity() > 0 && item.getSkuActPrice().compareTo(currentSku.getActPrice()) != 0)) {
+			} else if (currentSku.getOnlinePrice().compareTo(item.getSkuPrice()) == 1) {
 				if(kindSize > 1){
 					checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
 				}else{
