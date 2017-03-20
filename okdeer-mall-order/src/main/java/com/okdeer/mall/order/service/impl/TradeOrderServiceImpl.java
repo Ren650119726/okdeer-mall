@@ -165,6 +165,7 @@ import com.okdeer.mall.order.enums.AppOrderTypeEnum;
 import com.okdeer.mall.order.enums.CompainStatusEnum;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
+import com.okdeer.mall.order.enums.FirstTradeOrder;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderComplete;
@@ -964,13 +965,24 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
 			List<ActivityInfoVO> activityList = null;
+			// 首购订单列表
+			List<TradeOrder> firstTradeOrderList = new ArrayList<>();
+			// 首购订单订单id集合
+			List<String> firstTradeOrderIdList = new ArrayList<>();
 			if (CollectionUtils.isNotEmpty(orderIds)) {
 				try {
 					tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
+					firstTradeOrderList = tradeOrderMapper.findFirstTradeOrder();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				activityList = this.findActivityInfo(orderIds);
+			}
+			
+			if (CollectionUtils.isNotEmpty(firstTradeOrderList)) {
+				for (TradeOrder firstOrder : firstTradeOrderList) {
+					firstTradeOrderIdList.add(firstOrder.getId());
+				}
 			}
 
 			for (PhysicsOrderVo orderVo : result) {
@@ -1073,6 +1085,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 				// 订单来源
 				orderVo.setOrderResource(orderVo.getOrderResource());
+				
+				// begin v2.2 added by chenzc 2017-3-20
+				// 判断订单是否首购单
+				if (firstTradeOrderIdList.contains(orderVo.getId())) {
+					orderVo.setIsFirstOrder(FirstTradeOrder.FIRST_TARDE.getValue());
+				} else {
+					orderVo.setIsFirstOrder(FirstTradeOrder.REPEAT_TRADE.getValue());
+				}
+				// end v2.2 added by chenzc 2017-3-20
 			}
 		}
 		// End V2.1.0 added by luosm 20170223
@@ -5222,12 +5243,38 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			params.put("cityName", cityName);
 		} 
 		result = tradeOrderMapper.selectServiceStoreListForOperate(params);
+		
+		// 首购订单列表
+		List<TradeOrder> firstTradeOrderList = new ArrayList<>();
+		// 首购订单订单id集合
+		List<String> firstTradeOrderIdList = new ArrayList<>();
+		try {
+			firstTradeOrderList = tradeOrderMapper.findFirstTradeOrder();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		if (CollectionUtils.isNotEmpty(firstTradeOrderList)) {
+			for (TradeOrder firstOrder : firstTradeOrderList) {
+				firstTradeOrderIdList.add(firstOrder.getId());
+			}
+		}
+		
 		// End V2.1.0 added by luosm 20170215
 		// result = tradeOrderMapper.selectServiceStoreListForOperate(params);
 		if (result == null) {
 			result = new ArrayList<PhysicsOrderVo>();
 		} else {
 			for (PhysicsOrderVo vo : result) {
+				// begin v2.2 added by chenzc 2017-3-20
+				// 判断订单是否首购单
+				if (firstTradeOrderIdList.contains(vo.getId())) {
+					vo.setIsFirstOrder(FirstTradeOrder.FIRST_TARDE.getValue());
+				} else {
+					vo.setIsFirstOrder(FirstTradeOrder.REPEAT_TRADE.getValue());
+				}
+				// end v2.2 added by chenzc 2017-3-20
+				
 				if (params.get("type") == OrderTypeEnum.STORE_CONSUME_ORDER) {
 					this.convertOrderStatusDdxf(vo);
 				} else {
