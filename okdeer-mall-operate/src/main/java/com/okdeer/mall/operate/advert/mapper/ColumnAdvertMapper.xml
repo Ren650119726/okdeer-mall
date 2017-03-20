@@ -1132,7 +1132,7 @@
 		</if>
 		and area_type = 0
 		union all 
-		SELECT <include refid="base_column_list" />
+		SELECT <include refid="base_column_list2" />
 		FROM column_advert ca 
 		LEFT JOIN column_advert_version version ON ca.id = version.advert_id
 		WHERE 1 = 1
