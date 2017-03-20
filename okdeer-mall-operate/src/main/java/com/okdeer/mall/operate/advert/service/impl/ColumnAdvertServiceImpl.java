@@ -773,21 +773,21 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 			sum = calcSum(areaVo.getpId() + key, versionMap, sum);
 			//由于历史广告没有对应的APP类型以及版本号，则将其默认为V1.0版本
 			if("V1.0".equals(version)){
-				sum += calcSum(areaVo.getpId() + key, versionMap, sum);
+				sum = calcSum(areaVo.getpId() + key, versionMap, sum);
 			}
 		}
 		    
 	    //全国区域 获取直接发布在全国的广告统计数
 	    sum = calcSum("0" + key, versionMap, sum);
 	    //区域， 获取直接发布在当前地区的广告统计数
-	    sum += calcSum(areaVo.getId() + key, versionMap, sum);
+	    sum = calcSum(areaVo.getId() + key, versionMap, sum);
 	    
 	    //由于历史广告没有对应的APP类型以及版本号，则将其默认为V1.0版本
 	    if("V1.0".equals(version)){
 	    	//全国区域 获取直接发布在全国的广告统计数
-	    	sum += calcSum("0" + version, versionMap, sum);
+	    	sum = calcSum("0" + version, versionMap, sum);
 	    	//区域， 获取直接发布在当前地区的广告统计数
-	    	sum += calcSum(areaVo.getId() + version, versionMap, sum);
+	    	sum = calcSum(areaVo.getId() + version, versionMap, sum);
 	    }
 	    
 		return sum;
