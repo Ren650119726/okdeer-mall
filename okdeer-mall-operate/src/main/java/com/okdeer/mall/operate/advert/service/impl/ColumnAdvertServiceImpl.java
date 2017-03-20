@@ -707,12 +707,12 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		//APP首页分割广告/APP闪屏广告/APP首页广告(便利店)
 		if(CollectionUtils.isNotEmpty(countList) && CollectionUtils.isNotEmpty(advert.getCvsVersion())
 				&& (AdvertTypeEnum.USER_APP_INDEX_PARTITION.getIndex() ==  advert.getAdvertType()
-					||AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType() 
+					|| AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType() 
 			        || AdvertTypeEnum.USER_APP_INDEX.getIndex() ==  advert.getAdvertType())){
 			//循环便利店APP版本集合
 			for(String item : advert.getCvsVersion()){
 				//通过地区ID-便利店APP类型-版本号获取广告数
-				int count = getAreaVersionSum("-" + ClientTypeEnum.CVS.getCode() + "-" + item, map, areaVo);
+				int count = getAreaVersionSum(ClientTypeEnum.CVS.getCode(), item, map, areaVo);
 				//如果返回的数据不是非空则表示广告已经上限
 				result = validateAcrossQty(advert, count, "便利店APP", item);
 				if(StringUtils.isNotBlank(result)){
@@ -724,12 +724,12 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
         //手机开门页广告/APP闪屏广告/APP首页广告  管家
         if(CollectionUtils.isNotEmpty(countList) && CollectionUtils.isNotEmpty(advert.getStewardVersion())  
 				&& (AdvertTypeEnum.MOBILE_PHONE_DOOR.getIndex() ==  advert.getAdvertType()
-        		||AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType() 
+        		|| AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType() 
                 || AdvertTypeEnum.USER_APP_INDEX.getIndex() ==  advert.getAdvertType())){
         	//循环管家版本集合
         	for(String item : advert.getStewardVersion()){
         		//通过地区ID-管家APP类型-版本号获取广告数
-        		int count = getAreaVersionSum("-" + ClientTypeEnum.STEWARD.getCode() + "-" + item, map, areaVo);
+        		int count = getAreaVersionSum(ClientTypeEnum.STEWARD.getCode(), item, map, areaVo);
         		//如果返回的数据不是非空则表示广告已经上限
         		result = validateAcrossQty(advert, count, "管家APP", item);
 				if(StringUtils.isNotBlank(result)){
@@ -742,53 +742,72 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	
 	/**
 	 * @Description: 获取已发布的广告数
-	 * @param key Map中的部分key(-APP类型-版本号)
-	 * @param versionMap 已发布广告统计数，key:地区ID-APP类型-版本号 value:ColumnAdvertVersionBo
+	 * @param clientType APP类型  ClientTypeEnum
+	 * @param version APP版本号
+	 * @param versionMap 已发布广告统计数，key:地区IDAPP类型版本号(例如1283V1.0)  value:ColumnAdvertVersionBo
 	 * @param areaVo 当前发布广告的部分地区信息
 	 * @return int 统计的广告记录数
 	 * @throws Exception
 	 * @author tangzj02
 	 * @date 2017年3月17日
 	 */
-	private int getAreaVersionSum(String key, Map<String, ColumnAdvertVersionBo> versionMap,
+	private int getAreaVersionSum(Integer clientType, String version, Map<String, ColumnAdvertVersionBo> versionMap,
 				ColumnAdvertAreaVo areaVo) throws Exception{
-		//发布同一地区、时间、APP类型、APP版本的广告统计数
-		ColumnAdvertVersionBo bo = null;
-		int maxArea = 0;
+		int sum = 0;
+		String key = clientType + version;
 		//1、全省，0、市
 	    if ("1".equals(areaVo.getType())) {
 			for (String id : areaVo.getAreaIds()) {
-				bo = versionMap.get(id + key);
-				if(null == bo){
-					continue;
+				int tempCount = calcSum(id + key, versionMap, sum);
+				//由于历史广告没有对应的APP类型以及版本号，则将其默认为V1.0版本
+				if("V1.0".equals(version)){
+					tempCount = calcSum(areaVo.getpId() + key, versionMap, tempCount);
 				}
-				int count = bo.getCount();
 				//如果选择的地区是全省省，则该省下的城市发布数也计算在内，以最大发布数为准
-				if (count > maxArea) {
-					maxArea = versionMap.get(id + key).getCount();
+				if (sum < tempCount) {
+					sum = tempCount;
 				}
 			}
 		} else {
 			//如果是市，则该市所属省发布的广告也计算在内
-			bo = versionMap.get(areaVo.getpId() + key);
-			if (null != bo) {
-				maxArea = bo.getCount();
+			sum = calcSum(areaVo.getpId() + key, versionMap, sum);
+			//由于历史广告没有对应的APP类型以及版本号，则将其默认为V1.0版本
+			if("V1.0".equals(version)){
+				sum += calcSum(areaVo.getpId() + key, versionMap, sum);
 			}
 		}
-		
-		//全国区域 获取直接发布在全国的广告统计数
-	    bo = versionMap.get("0" + key);
-	    if (null != bo) {
-			maxArea += bo.getCount();
-		}
-	    
+		    
+	    //全国区域 获取直接发布在全国的广告统计数
+	    sum = calcSum("0" + key, versionMap, sum);
 	    //区域， 获取直接发布在当前地区的广告统计数
-	    bo = versionMap.get(areaVo.getId() + key);
+	    sum += calcSum(areaVo.getId() + key, versionMap, sum);
+	    
+	    //由于历史广告没有对应的APP类型以及版本号，则将其默认为V1.0版本
+	    if("V1.0".equals(version)){
+	    	//全国区域 获取直接发布在全国的广告统计数
+	    	sum += calcSum("0" + version, versionMap, sum);
+	    	//区域， 获取直接发布在当前地区的广告统计数
+	    	sum += calcSum(areaVo.getId() + version, versionMap, sum);
+	    }
+	    
+		return sum;
+	}
+	/**
+	 * @Description: 计算广告发布总数
+	 * @param key 地区 加 版本号  或者 地区 加 APP类型 加 版本号
+	 * @param versionMap versionMap 已发布广告统计数，key:地区IDAPP类型版本号(例如1283V1.0)  value:ColumnAdvertVersionBo
+	 * @param sum 已经统计广告发布数
+	 * @return int  
+	 * @author tangzj02
+	 * @date 2017年3月20日
+	 */
+	private int calcSum(String key, Map<String, ColumnAdvertVersionBo> versionMap, int sum){
+		//发布同一地区、时间、APP类型、APP版本的广告统计数
+		ColumnAdvertVersionBo bo = versionMap.get(key);
 	    if (null != bo) {
-			maxArea += bo.getCount();
+	    	sum += bo.getCount();
 		}
-		
-		return maxArea;
+		return sum;
 	}
 	
 	/**

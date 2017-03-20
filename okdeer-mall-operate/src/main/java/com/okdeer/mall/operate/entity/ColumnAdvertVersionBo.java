@@ -43,7 +43,7 @@ public class ColumnAdvertVersionBo implements Serializable {
 	private String areaId;
 
 	/**
-	 * 地区ID-APP类型-APP版本
+	 * 地区ID APP类型 APP版本
 	 */
 	private String idKey;
 
