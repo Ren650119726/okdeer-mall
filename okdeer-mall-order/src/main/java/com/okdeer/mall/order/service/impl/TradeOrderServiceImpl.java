@@ -161,6 +161,7 @@ import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderThirdRelation;
 import com.okdeer.mall.order.enums.ActivityBelongType;
+import com.okdeer.mall.order.enums.AppOrderTypeEnum;
 import com.okdeer.mall.order.enums.CompainStatusEnum;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
@@ -4013,6 +4014,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("logisticsFlag", type);
 		json.put("orderlogisticsNo", orderlogisticsNo);
 		json.put("logisticsCmpany", logisticsCmpany);
+		
+		// Begin V2.2 added by maojj 2017-03-20
+		// 如果是扫码购订单，增加订单类型描述
+		if(orders.getOrderResource() == OrderResourceEnum.SWEEP){
+			json.put("orderTypeDesc", AppOrderTypeEnum.SWEEP_ORDER.getDesc());
+		}
+		// End V2.2 added by maojj 2017-03-20
 
 		// 支付方式:(0:在线支付、1:货到付款,2:未付款,3:线下支付)
 		json.put("payway", orders.getPayWay() == null ? "" : orders.getPayWay().ordinal());
