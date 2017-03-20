@@ -597,4 +597,12 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		return activitySaleMapper.findByActivitySaleByStoreId(storeId, ActivityTypeEnum.LOW_PRICE.ordinal(),
 				ActivitySaleStatus.ing.getValue());
 	}
+	
+	@Override
+	public PageUtils<Map<String, Object>> pageListGoodsStoreSkuV220(Map<String, Object> map, Integer pageNumber,
+			Integer pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+		List<Map<String, Object>> list = activitySaleMapper.listGoodsStoreSkuV220(map);
+		return new PageUtils<Map<String, Object>>(list);
+	}
 }
