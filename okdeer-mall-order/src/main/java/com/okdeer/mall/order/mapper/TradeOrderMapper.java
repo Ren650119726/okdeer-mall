@@ -1191,4 +1191,13 @@ public interface TradeOrderMapper {
 	 */
 	List<TradeOrder> findUserOrders(UserOrderParamBo paramBo);
 	// End V2.1 added by maojj 2017-02-18
+	
+	/**
+	 * 
+	 * @Description: 查询所有用户的首购
+	 * @return List<TradeOrder>  
+	 * @author chenzc
+	 * @date 2017年3月20日
+	 */
+	List<TradeOrder> findFirstTradeOrder();
 }
