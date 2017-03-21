@@ -428,7 +428,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		updateDetail.setActType(ActivityTypeEnum.SECKILL_ACTIVITY);
 		updateDetail.setUpdateNum(activitySeckillFormVo.getSeckillNum());
 		updateDetailList.add(updateDetail);
-		
+		stockUpdateDto.setUpdateDetailList(updateDetailList);
 		rpcIdByStockList.add(stockUpdateDto.getRpcId());
 		goodsStoreSkuStockApi.updateStock(stockUpdateDto);
 	}
