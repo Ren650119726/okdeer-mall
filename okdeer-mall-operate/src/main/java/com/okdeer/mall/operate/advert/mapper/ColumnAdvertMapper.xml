@@ -616,7 +616,12 @@
 			AND ca.status = 1
 			<!-- 查询运营商的 -->
 			and ca.belong_type = 0
-		AND cpos.name = #{name,jdbcType=VARCHAR}
+		<if test="name != null and name != ''">
+			AND cpos.name = #{name,jdbcType=VARCHAR}
+		</if>
+		<if test="advertType != null">
+			AND cpos.type = #{advertType}
+		</if>
 		<if test="cityId != null and cityId != ''">
 		AND (
 			ca.area_type = 0
@@ -694,7 +699,12 @@
 			AND ca.status = 1
 			<!-- 查询代理商的 -->
 			and ca.belong_type > 0
-		AND cpos.name = #{name,jdbcType=VARCHAR}
+		<if test="name != null and name != ''">
+			AND cpos.name = #{name,jdbcType=VARCHAR}
+		</if>
+		<if test="advertType != null">
+			AND cpos.type = #{advertType}
+		</if>
 		<if test="cityId != null and cityId != ''">
 		AND (
 			ca.area_type = 0
@@ -788,7 +798,12 @@
 			AND ca.status = 1
 			<!-- 查询运营商的 -->
 			and ca.belong_type = 0
-		AND cpos.name = #{name,jdbcType=VARCHAR}
+		<if test="name != null and name != ''">
+			AND cpos.name = #{name,jdbcType=VARCHAR}
+		</if>
+		<if test="advertType != null">
+			AND cpos.type = #{advertType}
+		</if>
 		<if test="cityId != null and cityId != ''">
 		AND (
 			ca.area_type = 0
@@ -873,7 +888,12 @@
 			AND ca.status = 1
 			<!-- 查询代理商的 -->
 			and ca.belong_type > 0
-		AND cpos.name = #{name,jdbcType=VARCHAR}
+		<if test="name != null and name != ''">
+			AND cpos.name = #{name,jdbcType=VARCHAR}
+		</if>
+		<if test="advertType != null">
+			AND cpos.type = #{advertType}
+		</if>
 		<if test="cityId != null and cityId != ''">
 		AND (
 			ca.area_type = 0
@@ -983,8 +1003,11 @@
 		LEFT JOIN column_advert_approval app ON app.advert_id = ca.id
 		WHERE ca.disabled = 0 AND ca.status = 1 AND app.status = 1
 		<if test="name != null and name != ''">
-	    AND po.name = #{name,jdbcType=VARCHAR}
-	    </if>		
+	        AND po.name = #{name,jdbcType=VARCHAR}
+	    </if>	
+		<if test="advertType != null">
+			AND po.type = #{advertType}
+		</if>	
 		<if test="provinceId != null and provinceId != ''">
 	    AND (ca.area_type =  #{nationalAreaType,jdbcType=TINYINT}
 	        OR (ca.area_type = #{districtAreaType,jdbcType=TINYINT}
