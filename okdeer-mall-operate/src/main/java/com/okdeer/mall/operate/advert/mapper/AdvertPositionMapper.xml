@@ -13,11 +13,12 @@
 		<result column="create_user_id" property="createUserId" jdbcType="VARCHAR"/>
 		<result column="update_time" property="updateTime" jdbcType="DATE"/>
 		<result column="update_user_id" property="updateUserId" jdbcType="VARCHAR"/>
+		<result column="type" property="type" jdbcType="INTEGER"/>
 	</resultMap>
 	
 	<sql id="base_column_list">
 		id, name, belong_type, description, advert_num, create_time, 
-		wide, high, create_user_id, update_time, update_user_id
+		wide, high, create_user_id, update_time, update_user_id, type
 	</sql>
 	
 	<select id="findAdvertPositions" resultMap="positionResultMap">
