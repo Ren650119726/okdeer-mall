@@ -10,12 +10,10 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
-import com.okdeer.mall.operate.entity.ColumnAdvertVersionDto;
 import com.okdeer.mall.operate.entity.ColumnAdvertVersionDto;
 import com.okdeer.mall.operate.service.ColumnAdvertVersionApi;
 import com.okdeer.mall.operate.service.ColumnAdvertVersionService;

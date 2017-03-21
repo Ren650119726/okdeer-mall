@@ -1043,7 +1043,7 @@
 	<!-- Begin 广告区域统计 added by tangy  2016-11-28 -->
 	<select id="findAdvertRestrictByArea" resultType="com.okdeer.mall.operate.entity.ColumnAdvertVersionBo" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
 		SELECT 
-		CONCAT_WS('-',IFNULL(caa.area_id, 0), IFNULL(ver.type, 0), IFNULL(ver.version, 'V1.0')) AS idKey,
+		CONCAT_WS('',IFNULL(caa.area_id, 0), ver.type, IFNULL(ver.version, 'V1.0')) AS idKey,
 		IFNULL(caa.area_id, 0) AS areaId,
 		ver.type,
 		ver.version,

@@ -9,7 +9,6 @@
 package com.okdeer.mall.operate.advert.mapper;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +19,6 @@ import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto;
 import com.okdeer.mall.advert.entity.AdvertDetailVo;
-import com.okdeer.mall.advert.entity.AdvertGoodsVo;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.entity.ColumnAdvertCommunity;
 import com.okdeer.mall.advert.entity.ColumnAdvertQueryVo;
