@@ -78,7 +78,7 @@
   <sql id="Base_Column_List" >
     id, order_id, store_spu_id, store_sku_id, sku_name,properties_indb, main_pic_prl, bar_code,
     spu_type, unit_price, quantity,weight,service_assurance,total_amount,income, actual_amount, preferential_price, 
-    status, appraise,compain_status,create_time,income,recharge_mobile,is_complete,activity_price,activity_quantity
+    status, appraise,compain_status,create_time,income,recharge_mobile,is_complete,activity_type,activity_price,activity_quantity
   </sql>
   
   <sql id="condition" >
