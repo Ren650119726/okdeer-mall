@@ -5242,75 +5242,50 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			cityName = cityName.trim();
 			params.put("cityName", cityName);
 		} 
+		
 		result = tradeOrderMapper.selectServiceStoreListForOperate(params);
-		
-		// 首购订单列表
-		List<TradeOrder> firstTradeOrderList = new ArrayList<>();
-		// 首购订单订单id集合
-		List<String> firstTradeOrderIdList = new ArrayList<>();
-		try {
-			firstTradeOrderList = tradeOrderMapper.findFirstTradeOrder();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		if (CollectionUtils.isNotEmpty(firstTradeOrderList)) {
-			for (TradeOrder firstOrder : firstTradeOrderList) {
-				firstTradeOrderIdList.add(firstOrder.getId());
-			}
-		}
-		
-		// End V2.1.0 added by luosm 20170215
-		// result = tradeOrderMapper.selectServiceStoreListForOperate(params);
+		 
 		if (result == null) {
 			result = new ArrayList<PhysicsOrderVo>();
 		} else {
-			for (PhysicsOrderVo vo : result) {
-				// begin v2.2 added by chenzc 2017-3-20
-				// 判断订单是否首购单
-				if (firstTradeOrderIdList.contains(vo.getId())) {
-					vo.setIsFirstOrder(FirstTradeOrder.FIRST_TARDE.getValue());
-				} else {
-					vo.setIsFirstOrder(FirstTradeOrder.REPEAT_TRADE.getValue());
+			// 订单ID集合
+			List<String> orderIds = new ArrayList<String>();
+			// 用户ID集合
+			List<String> userIds = new ArrayList<String>();
+
+			// 活动id集合
+			for (PhysicsOrderVo order : result) {
+				if (StringUtils.isNotEmpty(order.getId())) {
+					orderIds.add(order.getId());
 				}
-				// end v2.2 added by chenzc 2017-3-20
-				
+				if (StringUtils.isNotEmpty(order.getUserId())) {
+					userIds.add(order.getUserId());
+				}
+			}
+			
+			List<SysUserInvitationLoginNameVO> inviteNameLists = new ArrayList<SysUserInvitationLoginNameVO>();
+			if (CollectionUtils.isNotEmpty(userIds)) {
+				inviteNameLists = invitationCodeService.selectLoginNameByUserId(userIds);
+			}
+
+			List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
+			List<ActivityInfoVO> activityList = null;
+			if (CollectionUtils.isNotEmpty(orderIds)) {
+				try {
+					tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				activityList = this.findActivityInfo(orderIds);
+			}
+			
+			for (PhysicsOrderVo vo : result) {
 				if (params.get("type") == OrderTypeEnum.STORE_CONSUME_ORDER) {
 					this.convertOrderStatusDdxf(vo);
 				} else {
 					// Begin V2.1.0 added by luosm 20170223
 					// 如果有订单信息
 					if (CollectionUtils.isNotEmpty(result)) {
-						// 订单ID集合
-						List<String> orderIds = new ArrayList<String>();
-						// 用户ID集合
-						List<String> userIds = new ArrayList<String>();
-
-						// 活动id集合
-						for (PhysicsOrderVo order : result) {
-							if (StringUtils.isNotEmpty(order.getId())) {
-								orderIds.add(order.getId());
-							}
-							if (StringUtils.isNotEmpty(order.getUserId())) {
-								userIds.add(order.getUserId());
-							}
-						}
-
-						List<SysUserInvitationLoginNameVO> inviteNameLists = new ArrayList<SysUserInvitationLoginNameVO>();
-						if (CollectionUtils.isNotEmpty(userIds)) {
-							inviteNameLists = invitationCodeService.selectLoginNameByUserId(userIds);
-						}
-
-						List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
-						List<ActivityInfoVO> activityList = null;
-						if (CollectionUtils.isNotEmpty(orderIds)) {
-							try {
-								tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							activityList = this.findActivityInfo(orderIds);
-						}
 						this.convertOrderStatusNew(vo, inviteNameLists, tradeOrderRefundsList, activityList);
 					}
 				}
