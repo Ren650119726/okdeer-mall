@@ -320,6 +320,9 @@
       <if test="type != null" >
         AND type = #{type,jdbcType=TINYINT}
      </if>
+     <if test="targetType != null" >
+        AND target_type = #{targetType,jdbcType=TINYINT}
+     </if>
      <if test="target != null" >
         AND target = #{target,jdbcType=TINYINT}
      </if>
