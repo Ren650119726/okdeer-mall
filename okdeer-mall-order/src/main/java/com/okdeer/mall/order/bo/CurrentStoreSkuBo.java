@@ -138,6 +138,11 @@ public class CurrentStoreSkuBo {
 	 * 货号
 	 */
 	private String articleNo;
+	
+	/**
+	 * app请求的活动商品价格
+	 */
+	private BigDecimal appActPrice;
 
 	/******************************服务店商品需要返回的信息**********************************************/
 	private int saleNum;
@@ -420,6 +425,14 @@ public class CurrentStoreSkuBo {
 
 	public void setOfflinePrice(BigDecimal offlinePrice) {
 		this.offlinePrice = offlinePrice;
+	}
+
+	public BigDecimal getAppActPrice() {
+		return appActPrice;
+	}
+
+	public void setAppActPrice(BigDecimal appActPrice) {
+		this.appActPrice = appActPrice;
 	}
 
 }

@@ -55,7 +55,7 @@ public class MallStockUpdateBuilder {
 	private ActivitySeckillService activitySeckillService;
 
 	/**
-	 * @Description: 构建商品更新的Dto。商城负责便利店商品活动库存的变更和组合商品的库存变更
+	 * @Description: V2.1版本。构建商品更新的Dto。商城负责便利店商品活动库存的变更和组合商品的库存变更
 	 * @param order
 	 * @param parserBo
 	 * @return   
@@ -250,13 +250,15 @@ public class MallStockUpdateBuilder {
 		for(TradeOrderItem orderItem : tradeOrder.getTradeOrderItem()){
 			// 获取订单项商品活动类型
 			actType = getActvityType(tradeOrder,orderItem);
-			if(actType == ActivityTypeEnum.NO_ACTIVITY && tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER){
+			// 组合商品需要进行更改
+			if(orderItem.getSpuType() == SpuTypeEnum.physicalSpu && actType == ActivityTypeEnum.NO_ACTIVITY && tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER){
 				continue;
 			}
 			updateDetail = new StockUpdateDetailDto();
 			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
 			updateDetail.setSpuType(orderItem.getSpuType());
 			updateDetail.setActType(actType);
+			// 需要考虑组合商品库存扣减问题
 			if(actType == ActivityTypeEnum.LOW_PRICE){
 				updateDetail.setUpdateNum(orderItem.getActivityQuantity());
 			}else{
@@ -270,6 +272,15 @@ public class MallStockUpdateBuilder {
 		return stockUpdateDto;
 	}
 	
+	/**
+	 * @Description: 获取商品参与的活动类型
+	 * @param tradeOrder
+	 * @param orderItem
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年3月21日
+	 */
 	private ActivityTypeEnum getActvityType(TradeOrder tradeOrder,TradeOrderItem orderItem) throws Exception{
 		if (ActivityTypeEnum.SECKILL_ACTIVITY == tradeOrder.getActivityType()) {
 			ActivitySeckill seckill = activitySeckillService.findSeckillById(tradeOrder.getActivityId());
@@ -306,6 +317,13 @@ public class MallStockUpdateBuilder {
 		
 	}
 	
+	/**
+	 * @Description: 取消订单和拒收共用一个服务层，此处主要是用于区分是取消还是拒收。
+	 * @param orderStatus
+	 * @return   
+	 * @author maojj
+	 * @date 2017年3月21日
+	 */
 	private StockOperateEnum convert(OrderStatusEnum orderStatus){
 		if(orderStatus == OrderStatusEnum.CANCELING || orderStatus == OrderStatusEnum.CANCELED){
 			return StockOperateEnum.CANCEL_ORDER;
@@ -352,6 +370,16 @@ public class MallStockUpdateBuilder {
 		return stockUpdateDto;
 	}
 	
+	/**
+	 * @Description: 退款时，构建库存更新对象
+	 * @param orderRefunds
+	 * @param tradeOrder
+	 * @param orderItemList
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年3月21日
+	 */
 	public StockUpdateDto build(TradeOrderRefunds orderRefunds,TradeOrder tradeOrder,List<TradeOrderItem> orderItemList) throws Exception{
 		StockUpdateDto stockUpdateDto = new StockUpdateDto();
 
@@ -374,6 +402,7 @@ public class MallStockUpdateBuilder {
 			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
 			updateDetail.setSpuType(orderItem.getSpuType());
 			updateDetail.setActType(actType);
+			// 考虑组合商品
 			if(actType == ActivityTypeEnum.LOW_PRICE){
 				updateDetail.setUpdateNum(orderItem.getActivityQuantity());
 			}else{
@@ -387,6 +416,16 @@ public class MallStockUpdateBuilder {
 		return stockUpdateDto;
 	}
 	
+	/**
+	 * @Description: 构建到店消费库存更新对象
+	 * @param tradeOrder
+	 * @param stockOperateEnum
+	 * @param adjustGoodsNum
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年3月21日
+	 */
 	public StockUpdateDto buildForStoreConsume(TradeOrder tradeOrder, StockOperateEnum stockOperateEnum, Integer adjustGoodsNum) throws Exception{
 		StockUpdateDto stockUpdateDto = new StockUpdateDto();
 

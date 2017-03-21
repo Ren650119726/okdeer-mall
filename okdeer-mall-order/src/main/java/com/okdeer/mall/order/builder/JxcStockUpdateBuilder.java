@@ -167,14 +167,12 @@ public class JxcStockUpdateBuilder {
 		StockUpdateDetailVo detail = new StockUpdateDetailVo();
 
 		detail.setSkuId(comboDetail.getSkuId());
-		// TODO 货号是否必填，待定
-		// detail.setSkuCode(comboDetail.getArticleNo());
 		detail.setRowNo(rowNo);
 		detail.setNum(BigDecimal.valueOf(buyNum));
-		// TODO 商品单价。商品价格
+		// 商品单价。商品价格
 		detail.setPrice(comboDetail.getUnitPrice());
 		detail.setOnlineSalePrice(comboDetail.getOnlinePrice());
-		// TODO 线下销售价是否必填
+		// 线下销售价是否必填
 		// detail.setOfflineSalePrice(comboDetail.getOfflinePrice());
 		detail.setBranchSkuId(comboDetail.getStoreSkuId());
 		detail.setGroup(true);

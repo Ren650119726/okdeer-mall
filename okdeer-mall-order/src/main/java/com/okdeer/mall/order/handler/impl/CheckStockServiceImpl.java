@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
@@ -177,6 +178,15 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 					// 重新设置低价商品可参与活动的数量
 					storeSkuBo.setSkuActQuantity(storeSkuBo.getLocked());
 				}
+				if(storeSkuBo.getSkuActQuantity() > 0 && storeSkuBo.getActPrice().compareTo(storeSkuBo.getAppActPrice()) == 1){
+					// 如果后台分配用户有购买低价商品，且当前的低价价格>app请求的低价价格，则提示用户信息发生变化。让用户重新确认购买。
+					if(kindSize > 1){
+						resp.setResult(ResultCodeEnum.PART_GOODS_IS_CHANGE);
+					}else{
+						resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
+					}
+					return true;
+				}
 				// 购买原价商品数量
 				int buyPrimeNum = storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity();
 				if(storeSkuBo.getTradeMax() != null && storeSkuBo.getTradeMax().intValue() > 0 && buyPrimeNum > storeSkuBo.getTradeMax().intValue()){
@@ -185,6 +195,13 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 					resp.setMessage(String.format(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getDesc(), storeSkuBo.getName()));
 					return true;
 				}
+				if(storeSkuBo.getSpuType() == SpuTypeEnum.assembleSpu && buyPrimeNum > 0){
+					// 组合商品只能加入活动才能售卖。组合商品不能按原价商品进行售卖。所以，如果组合商品参与了低价活动，后台判定有部分数据将被转换成原价时，则不能进行购买。
+					resp.setCode(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getCode());
+					resp.setMessage(String.format(ResultCodeEnum.LOW_STOCK_NOT_ENOUGH.getDesc(), storeSkuBo.getName()));
+					return true;
+				}
+				
 				// 检查总共购买的是否超过可售数量
 				if( storeSkuBo.getQuantity() > storeSkuBo.getSellable()){
 					if(kindSize > 1){
