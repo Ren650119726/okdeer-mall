@@ -503,7 +503,7 @@
     item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, 
     item.status, item.appraise, item.create_time,detail.status AS itemDetailStatus,detail.consume_code,
-    detail.start_time,detail.end_time,item.service_assurance,item.income,item.recharge_mobile,item.activity_price,item.activity_quantity
+    detail.start_time,detail.end_time,item.service_assurance,item.income,item.recharge_mobile,item.activity_type,item.activity_price,item.activity_quantity
   </sql>
   
   <!-- wusw:订单项和订单项详细字段 -->
