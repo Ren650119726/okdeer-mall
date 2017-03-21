@@ -4040,6 +4040,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 如果是扫码购订单，增加订单类型描述
 		if(orders.getOrderResource() == OrderResourceEnum.SWEEP){
 			json.put("orderTypeDesc", AppOrderTypeEnum.SWEEP_ORDER.getDesc());
+			json.put("orderType", String.valueOf(AppOrderTypeEnum.SWEEP_ORDER.getCode()));
 		}
 		// End V2.2 added by maojj 2017-03-20
 
