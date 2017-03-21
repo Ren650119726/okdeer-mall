@@ -360,7 +360,7 @@
 	<if test="endTimeEnd != null">
        <![CDATA[ AND end_time <= #{endTimeEnd} ]]>
 	</if>
-     ORDER BY state ASC,start_time DESC
+     ORDER BY FIELD(state,1,0,2,3) ASC, start_time DESC
   </select>
   
   
