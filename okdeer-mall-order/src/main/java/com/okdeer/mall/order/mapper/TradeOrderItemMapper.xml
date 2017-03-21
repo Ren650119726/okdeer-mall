@@ -29,6 +29,7 @@
     <result column="is_complete" property="isComplete" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderComplete" />
     <result column="recharge_mobile" property="rechargeMobile" jdbcType="VARCHAR" />
     <!-- Begin V2.0 added by maojj 2017-01-07 -->
+    <result column="activity_type" property="activityType" jdbcType="TINYINT" />
     <result column="activity_price" property="activityPrice" jdbcType="DECIMAL" />
     <result column="activity_quantity" property="activityQuantity" jdbcType="TINYINT" />
     <result column="unit" property="unit" jdbcType="VARCHAR" />
@@ -98,7 +99,7 @@
     SELECT 
     T.id, T.order_id, T.store_spu_id, T.store_sku_id, T.sku_name, T.properties_indb, T.main_pic_prl, T.bar_code,
     T.spu_type, T.unit_price, T.quantity, T.weight, T.service_assurance, T.total_amount, T.income, T.actual_amount, T.preferential_price, 
-    R.status, T.appraise, T.compain_status, T.create_time, T.income, T.recharge_mobile,T.activity_price,T.activity_quantity,T.unit
+    R.status, T.appraise, T.compain_status, T.create_time, T.income, T.recharge_mobile,T.activity_type,T.activity_price,T.activity_quantity,T.unit
     FROM trade_order_item T
     LEFT JOIN trade_order_refunds_item R
     on T.id = R.order_item_id 
