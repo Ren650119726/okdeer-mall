@@ -292,6 +292,7 @@ public class StoreSkuParserBo {
 			skuBo = this.currentSkuMap.get(item.getStoreSkuId());
 			skuBo.setQuantity(item.getQuantity());
 			skuBo.setSkuActQuantity(item.getSkuActQuantity());
+			skuBo.setAppActPrice(item.getSkuActPrice());
 
 			this.totalItemAmount = totalItemAmount
 					.add(skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getQuantity())));
