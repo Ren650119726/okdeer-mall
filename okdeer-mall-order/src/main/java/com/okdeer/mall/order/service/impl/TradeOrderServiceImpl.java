@@ -4822,7 +4822,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					addPoint(data.get("userId").toString(), data.get("detailId").toString(), unitPrice);
 
 					// 消费后调整库存
-					StockUpdateDto stockUpdateDto = mallStockUpdateBuilder.buildForStoreConsume(tradeOrder, StockOperateEnum.ACTIVITY_SEND_OUT_GOODS, 1);
+					StockUpdateDto stockUpdateDto = mallStockUpdateBuilder.buildForStoreConsume(tradeOrder, StockOperateEnum.PLACE_ORDER_COMPLETE, 1);
 					rpcIdList.add(stockUpdateDto.getRpcId());
 					goodsStoreSkuStockApi.updateStock(stockUpdateDto);
 					// 调用dubbo接口
@@ -6498,7 +6498,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 													consumeVo.getDetailActualAmount());
 											// 修改库存
 											updateServiceStoreStock(consumeVo, rpcIdList,
-													StockOperateEnum.SEND_OUT_GOODS, userId, storeId);
+													StockOperateEnum.PLACE_ORDER_COMPLETE, userId, storeId);
 										}
 										Date nowTime = new Date();
 										// 批量修改订单项详细验证码状态为已消费，消费时间和更新时间为当前时间
