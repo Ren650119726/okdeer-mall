@@ -320,6 +320,8 @@
 		<result column="city_name" property="cityName" jdbcType="VARCHAR" />
 		<result column="location" property="location" jdbcType="VARCHAR" />
 		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="pick_up_type" property="pickUpType" jdbcType="TINYINT"
+			javaType="com.okdeer.mall.order.enums.PickUpTypeEnum" />
 		<!-- V2.1.0 end add by zhulq 增加订单所属城市  -->
 	</resultMap>
 	<!-- 订单列表 -财务系统接口调用 -luosm end -->
@@ -5415,14 +5417,15 @@
 		trade.store_id,
 		trade.user_phone,
 		trade.user_id,
+		trade.pick_up_type,
 		locate.provice_name as lProvice_name,
 		locate.city_name as lCity_name,
 		locate.area_name as lArea_name,
 		locate.area_ext as lArea_ext,
-		member.province_name as aProvice_name,
+<!-- 		member.province_name as aProvice_name,
 		member.city_name as aCity_name,
 		member.area_name as aArea_name,
-		member.address as address,
+		member.address as address, -->
 		trade.income,
 		trade.activity_type,
 		trade.activity_id,
@@ -5453,7 +5456,7 @@
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN store_info store ON store.id = trade.store_id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
-		LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id
+		<!-- LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id -->
 		WHERE 1=1
 		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
 		<if test="locateCityName != null and locateCityName != ''">
@@ -5547,11 +5550,11 @@
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN store_info store ON store.id = trade.store_id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
-		LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id
+		<!-- LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id -->
 		WHERE 1=1
 		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
 		<if test="locateCityName != null and locateCityName != ''">
-			AND locate.city_id = #{cityId, jdbcType=VARCHAR}
+			AND locate.city_name LIKE CONCAT('%', #{locateCityName,jdbcType=VARCHAR},'%')
 			AND (trade.type = 3 OR trade.type = 4)
 		</if>
 		<!-- end add by zhulq 订单所属城市 和定位地址 -->
