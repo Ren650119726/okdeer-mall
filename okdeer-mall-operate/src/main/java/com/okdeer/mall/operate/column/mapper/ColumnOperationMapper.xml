@@ -320,6 +320,9 @@
       <if test="type != null" >
         AND type = #{type,jdbcType=TINYINT}
      </if>
+     <if test="targetType != null" >
+        AND target_type = #{targetType,jdbcType=TINYINT}
+     </if>
      <if test="target != null" >
         AND target = #{target,jdbcType=TINYINT}
      </if>
@@ -357,7 +360,7 @@
 	<if test="endTimeEnd != null">
        <![CDATA[ AND end_time <= #{endTimeEnd} ]]>
 	</if>
-     ORDER BY state ASC,start_time DESC
+     ORDER BY FIELD(state,1,0,2,3) ASC, start_time DESC
   </select>
   
   

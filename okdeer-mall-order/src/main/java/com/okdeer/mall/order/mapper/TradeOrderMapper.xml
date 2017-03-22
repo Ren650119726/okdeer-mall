@@ -477,6 +477,10 @@
 		<result column="city_name" property="cityName" jdbcType="VARCHAR"/>
 		<result column="income" property="income" jdbcType="DECIMAL"/>
 	<!-- End V2.1 added by zhulq 2017-02-17 -->
+	
+	<!-- begin V2.2 added by chenzc 2017-03-21 -->
+	    <result column="is_first_order" property="isFirstOrder" jdbcType="VARCHAR"/>
+	<!-- end V2.2 added by chenzc 2017-03-21 -->
 	</resultMap>
 
 	<resultMap id="activityInfoResult" type="com.okdeer.mall.order.vo.ActivityInfoVO" >
@@ -1193,7 +1197,7 @@
 	<select id="selectUserOrderDetail" resultMap="UserTradeOrderDetailMap"
 		parameterType="java.lang.String">
 		SELECT
-		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,
+		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,o.order_resource,
 		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,o.cancel_type,
 		logistics.consignee_name,logistics.telephone,logistics.mobile,logistics.area,logistics.address,
 		logistics.type as
@@ -5125,13 +5129,20 @@
 				tr.order_resource,
 				tr.income,
 				tr.activity_id,
-				tr.user_id
+				tr.user_id,
+				IF(fto.received_time is null, '复购', '首购') as is_first_order
 				<!-- end V2.1 add by zhulq 导出列表新增字段 -->	
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN trade_order_logistics tol ON tr.id = tol.order_id
 		LEFT JOIN trade_order_locate locate ON locate.order_id = tr.id
 		LEFT JOIN member_consignee_address member ON member.id = tr.pick_up_id
+		LEFT JOIN 
+			(SELECT id, MIN(received_time) AS received_time
+		    FROM trade_order 
+		    WHERE STATUS = 5 
+		    GROUP BY user_id) fto
+		ON fto.id = tr.id
 		WHERE 1=1
 		<!-- 订单类型 -->
 		<if test="null != type">
