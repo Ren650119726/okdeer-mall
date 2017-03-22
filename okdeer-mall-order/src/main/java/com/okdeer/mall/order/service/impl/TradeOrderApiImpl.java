@@ -35,6 +35,7 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
@@ -44,6 +45,7 @@ import com.okdeer.mall.activity.discount.service.ActivityDiscountServiceApi;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi;
 import com.okdeer.mall.common.vo.PageResultVo;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
+import com.okdeer.mall.member.member.vo.UserAddressVo;
 import com.okdeer.mall.order.dto.ERPTradeOrderVoDto;
 import com.okdeer.mall.order.dto.TradeOrderDto;
 import com.okdeer.mall.order.dto.TradeOrderInvoiceDto;
@@ -65,6 +67,7 @@ import com.okdeer.mall.order.enums.OrderActivityType;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.PreferentialType;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.exception.ExceedRangeException;
@@ -862,14 +865,6 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		if (params.get("cityName") != null) {
 			cityName = params.get("cityName").toString().trim();
 			params.put("cityName", cityName);
-			//begin add by  zhulq  2017-02-23
-			Address address = addressService.getByName(cityName);
-			if (address != null) {					
-				params.put("cityId", String.valueOf(address.getId()));
-			} else {
-				params.put("cityId", null);
-			}
-			//begin add by  zhulq  2017-02-23
 		}
 		// End V2.1.0 added by luosm 20170215
 
@@ -889,6 +884,35 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	// 构建数据
 	public List<ERPTradeOrderVoDto> buildERPTradeOrderVoDto(PageUtils<ERPTradeOrderVo> page) {
 		List<ERPTradeOrderVoDto> dtoList = new ArrayList<ERPTradeOrderVoDto>();
+		// 订单ID集合
+		List<String> orderIds = new ArrayList<String>();
+		//订单关联的店铺ids
+		List<String> storeIds = new ArrayList<String>();
+		for (ERPTradeOrderVo vo : page.getList()) {			
+			if (StringUtils.isNotEmpty(vo.getId())) {
+				orderIds.add(vo.getId());
+			}
+			if (StringUtils.isNotEmpty(vo.getStoreId())) {
+				storeIds.add(vo.getStoreId());
+			}
+		}
+		//V2.1.0  begin  add by zhulq 获取服务店上门服务的收货地址（物流表的地址）
+		//订单的物流信息
+		List<TradeOrderLogistics> logisticsList = null;
+		if (CollectionUtils.isNotEmpty(orderIds)) {
+			try {
+				logisticsList = this.tradeOrderLogisticsService.selectByOrderIds(orderIds);
+			} catch (ServiceException e) {
+				logger.error("查询物流信息异常", e);
+			}
+		}
+		//店铺地址（到店自提和到店消费订单店铺地址）
+		List<UserAddressVo> memberAddressList = null;	
+		//V2.1.0 end add by zhulq 收货地址取物流表信息 之前是取店铺地址
+		if (CollectionUtils.isNotEmpty(storeIds)) {
+			memberAddressList = this.memberConsigneeAddressService.findByStoreIds(storeIds);
+		}
+		//V2.1.0  end add by zhulq 获取服务店上门服务的收货地址（物流表的地址）
 		for (ERPTradeOrderVo vo : page.getList()) {
 			ERPTradeOrderVoDto dto = new ERPTradeOrderVoDto();
 			dto.setId(vo.getId());
@@ -917,23 +941,13 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					} 
 				} // End 12170 add by wusw 20160806
 					// End 重构4.1 add by wusw 20160726
-			}
-
-			// Begin V2.1.0 added by luosm 2017-02-16
-			String aProviceName = vo.getaProviceName() == null ? "" : vo.getaProviceName();
-			String aCityName = vo.getaCityName() == null ? "" : vo.getaCityName();
-			String aAreaName = vo.getaAreaName() == null ? "" : vo.getaAreaName();
-			String address = vo.getAddress() == null ? "" : vo.getAddress();
-			// 所属城市
-			dto.setCityName(aCityName);
-			// 收货地址
-			dto.setAddress(aProviceName + aCityName + aAreaName + address);
-			// End V2.1.0 added by luosm 2017-02-16
-			
+			}		
 			//begin add by zhulq  充值订单所属城市和完成时间设置
 			dto.setLocateCityName(vo.getCityName());
 			dto.setCompleteTime(vo.getUpdateTime());
-			//begin add by zhulq  充值订单所属城市和完成时间设置
+			//begin add by zhulq  充值订单所属城市和完成时间设置		
+			
+			setAddressInfo(vo, dto, memberAddressList, logisticsList);
 			
 			dtoList.add(dto);
 		}
@@ -941,6 +955,80 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	}
 	// End V2.1.0 added by luosm 20170218
 
+	private void setAddressInfo(ERPTradeOrderVo vo,ERPTradeOrderVoDto dto,List<UserAddressVo> memberAddressList,
+			List<TradeOrderLogistics> logisticsList){
+		//实物的送货上门订单收货地址取物流表信息 到店自提取的是店铺地址
+		if (vo.getType() == OrderTypeEnum.PHYSICAL_ORDER && vo.getPickUpType() == PickUpTypeEnum.DELIVERY_DOOR) {
+			if (CollectionUtils.isNotEmpty(logisticsList)) {
+				for (TradeOrderLogistics logistics : logisticsList) {
+					//如果是实物订单 而且是送货上门
+					if (!StringUtils.isBlank(logistics.getOrderId()) && vo.getId().equals(logistics.getOrderId())) {
+						String cityId = logistics.getCityId();
+						if (!StringUtils.isBlank(cityId)) {
+							Address address = addressService.getAddressById(Long.parseLong(cityId));
+							// 所属城市 实物订单的送货上门取物流表的地址
+							dto.setCityName(address.getName() == null ? "" : address.getName());
+						}
+						String area = logistics.getArea() == null ? "" : logistics.getArea();
+						String address = logistics.getAddress() == null ? "" : logistics.getAddress();
+						// 收货地址
+						dto.setAddress(area + address);
+						break;
+					}
+				}
+			}
+		} else if (vo.getType() == OrderTypeEnum.PHYSICAL_ORDER 
+				&& vo.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
+			if (CollectionUtils.isNotEmpty(memberAddressList)) {
+				for (UserAddressVo userAddressVo : memberAddressList) {
+					if (!StringUtils.isBlank(userAddressVo.getUserId()) 
+							&& vo.getStoreId().equals(userAddressVo.getUserId())) {
+						String proviceName = userAddressVo.getProvinceName() == null ? "" : userAddressVo.getProvinceName();
+						String cityName = userAddressVo.getCityName() == null ? "" : userAddressVo.getCityName();
+						String areaName = userAddressVo.getAreaName() == null ? "" : userAddressVo.getAreaName();
+						String ext = userAddressVo.getAreaExt() == null ? "" : userAddressVo.getAreaExt();
+						String address = userAddressVo.getAddress() == null ? "" : userAddressVo.getAddress();
+						// 所属城市
+						dto.setCityName(cityName);
+						// 收货地址
+						dto.setAddress(proviceName + cityName + areaName + ext + address);
+						break;
+					}
+				}
+			}
+		} else if (vo.getType() == OrderTypeEnum.SERVICE_STORE_ORDER) {
+			if (CollectionUtils.isNotEmpty(logisticsList)) {
+				for (TradeOrderLogistics logistics : logisticsList) {
+					//如果是实物订单 而且是送货上门
+					if (!StringUtils.isBlank(logistics.getOrderId()) && vo.getId().equals(logistics.getOrderId())) {
+						String cityId = logistics.getCityId();
+						if (!StringUtils.isBlank(cityId)) {
+							Address address = addressService.getAddressById(Long.parseLong(cityId));
+							// 所属城市 实物订单的送货上门取物流表的地址
+							dto.setCityName(address.getName() == null ? "" : address.getName());
+						}
+						String area = logistics.getArea() == null ? "" : logistics.getArea();
+						String address = logistics.getAddress() == null ? "" : logistics.getAddress();
+						// 收货地址
+						dto.setAddress(area + address);
+						break;
+					}
+				}
+			}
+		} else if (vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+			if (CollectionUtils.isNotEmpty(memberAddressList)) {
+				for (UserAddressVo userAddressVo : memberAddressList) {
+					if (!StringUtils.isBlank(userAddressVo.getUserId()) 
+							&& vo.getStoreId().equals(userAddressVo.getUserId())) {
+						String cityName = userAddressVo.getCityName() == null ? "" : userAddressVo.getCityName();
+						// 所属城市
+						dto.setCityName(cityName);
+						break;
+					}
+				}
+			}
+		}
+	}
 	/**
 	 * (non-Javadoc)
 	 * @see com.yschome.api.mall.order.service.ITradeOrderServiceApi#findOrderListByParams(java.util.Map)
