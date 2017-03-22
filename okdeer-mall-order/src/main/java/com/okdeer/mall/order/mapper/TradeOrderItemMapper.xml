@@ -78,7 +78,7 @@
   <sql id="Base_Column_List" >
     id, order_id, store_spu_id, store_sku_id, sku_name,properties_indb, main_pic_prl, bar_code,
     spu_type, unit_price, quantity,weight,service_assurance,total_amount,income, actual_amount, preferential_price, 
-    status, appraise,compain_status,create_time,income,recharge_mobile,is_complete,activity_price,activity_quantity
+    status, appraise,compain_status,create_time,income,recharge_mobile,is_complete,activity_type,activity_price,activity_quantity
   </sql>
   
   <sql id="condition" >
@@ -120,7 +120,7 @@
        SELECT 
 	    item.id, item.order_id, item.store_spu_id, item.store_sku_id, item.sku_name,item.properties_indb, item.main_pic_prl, 
 	    item.spu_type, item.unit_price, item.quantity,item.service_assurance,item.total_amount, item.actual_amount, item.preferential_price, 
-	    item.status, item.appraise,item.compain_status,item.create_time,item.recharge_mobile,item.activity_price,item.activity_quantity,
+	    item.status, item.appraise,item.compain_status,item.create_time,item.recharge_mobile,item.activity_type,item.activity_price,item.activity_quantity,
 	    refound.id as refoundId,refound.refunds_status,refound.total_amount as refund_total_amount,item.unit
 	    FROM trade_order_item item left join trade_order_refunds_item refundItem on item.id = refundItem.order_item_id
 	    left join trade_order_refunds refound on refound.id = refundItem.refunds_id
@@ -134,7 +134,7 @@
 	SELECT 
 		item.id, item.order_id, item.store_spu_id, item.store_sku_id, item.sku_name,item.properties_indb, item.main_pic_prl, 
 		item.spu_type, item.unit_price, item.quantity,item.service_assurance,item.total_amount, item.actual_amount, item.preferential_price, 
-		item.status, item.appraise,item.compain_status,item.create_time,item.recharge_mobile,item.activity_price,item.activity_quantity,
+		item.status, item.appraise,item.compain_status,item.create_time,item.recharge_mobile,item.activity_type,item.activity_price,item.activity_quantity,
 		item.unit
 	FROM trade_order_item item 
 	WHERE item.order_id = #{orderId,jdbcType=VARCHAR}
@@ -503,14 +503,14 @@
     item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, 
     item.status, item.appraise, item.create_time,detail.status AS itemDetailStatus,detail.consume_code,
-    detail.start_time,detail.end_time,item.service_assurance,item.income,item.recharge_mobile,item.activity_price,item.activity_quantity
+    detail.start_time,detail.end_time,item.service_assurance,item.income,item.recharge_mobile,item.activity_type,item.activity_price,item.activity_quantity
   </sql>
   
   <!-- wusw:订单项和订单项详细字段 -->
   <sql id="Item_Column_List" >
     item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, item.service_assurance,
-    item.status, item.appraise, item.create_time,item.income,item.recharge_mobile,item.is_complete,item.activity_price,item.activity_quantity
+    item.status, item.appraise, item.create_time,item.income,item.recharge_mobile,item.is_complete,item.activity_type,item.activity_price,item.activity_quantity
   </sql>
   
   <!-- wusw:订单项和订单项信息resultMap  -->
