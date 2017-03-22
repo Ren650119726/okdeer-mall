@@ -455,6 +455,8 @@
         <result column="memberAddress" property="memberAddress" jdbcType="VARCHAR" />
         <result column="order_type" property="orderType" jdbcType="TINYINT"
 			javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
+		<result column="pick_up_type" property="pickUpType" jdbcType="TINYINT"
+			javaType="com.okdeer.mall.order.enums.PickUpTypeEnum" />
 		<!-- End V2.1.0 added by luosm 20170222 -->
 		
 	<!-- begin V2.1 added by zhulq 2017-02-17 -->		
@@ -1475,6 +1477,8 @@
 		o.id,
 		o.order_no,
 		o.store_id,
+		o.type as order_type,
+		o.pick_up_type,
 		<if
 			test="(storeName != null and storeName != '') or (fullName != null and fullName != '') or (null!=type)">
 			si.store_name,
@@ -1491,11 +1495,6 @@
 		o.user_phone,
 		o.create_time,
 		o. STATUS,
-		member.province_name as aProvice_name,
-		member.city_name as aCity_name,
-		member.area_name as aArea_name,
-		member.area_ext as aArea_ext,
-		member.address as memberAddress,
 		o.order_resource,
 		o.pick_up_time
 		FROM
@@ -1510,13 +1509,9 @@
 		<if test="null!=payType">
 			LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
 		</if>
-		LEFT JOIN member_consignee_address member ON member.id = o.pick_up_id
 		WHERE 1=1
 		AND o.disabled =0
 		AND o.order_resource !=2
-		<if test="null!=cityName and ''!=cityName">
-			AND member.city_name LIKE CONCAT('%',#{cityName,jdbcType=VARCHAR},'%')
-		</if>
 		<if test="ids != null">
 			AND o.id in
 			<foreach collection="ids" index="index" item="item" open="("
@@ -1581,25 +1576,17 @@
 		locate.city_name as lCity_name,
 		locate.area_name as lArea_name,
 		locate.area_ext as lArea_ext,
-		member.province_name as aProvice_name,
-		member.city_name as aCity_name,
-		member.area_name as aArea_name,
-		member.area_ext as aArea_ext,
-		member.address as memberAddress
+		o.type as order_type,
+		o.pick_up_type
 		from trade_order o
 		LEFT JOIN store_info si ON o.store_id=si.id
 		LEFT JOIN psms_agent pa ON
 		pa.id=si.agent_id
 		LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
-		LEFT JOIN member_consignee_address member ON member.id = o.pick_up_id
 		LEFT JOIN trade_order_locate locate ON locate.order_id = o.id
 		WHERE 1=1
 		AND o.disabled =0
 		AND o.order_resource !=2
-		<!-- Begin V2.1.0 added by luosm 20170218 -->
-		<if test="cityName != null and cityName != ''">
-			AND member.city_name LIKE CONCAT('%',#{cityName,jdbcType=VARCHAR},'%')
-		</if>
 		<!-- End V2.1.0 added by luosm 20170218 -->
 		<if test="ids != null">
 			AND o.id in
@@ -5126,6 +5113,9 @@
 				tr.status,
 				tr.pick_up_time,
 				tr.preferential_price,
+				tr.store_id,
+				tr.type as order_type,
+				tr.pick_up_type,
 				tr.remark,
 				op.pay_type,
 				op.pay_time,
@@ -5137,11 +5127,6 @@
 				locate.city_name as lCity_name,
 				locate.area_name as lArea_name,
 				locate.area_ext as lArea_ext,
-				member.province_name as aProvice_name,
-				member.city_name as aCity_name,
-				member.area_name as aArea_name,
-				member.area_ext as aArea_ext,
-				member.address as memberAddress,
 				CONCAT(tol.area,tol.address) as area,
 				<!-- begin V2.1 add by zhulq 导出列表新增字段 --> 
 				CONCAT(IFNULL(locate.provice_name,''),IFNULL(locate.city_name,''),IFNULL(locate.area_name,''),IFNULL(locate.area_ext,'')) as locate_address,
@@ -5155,7 +5140,6 @@
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN trade_order_logistics tol ON tr.id = tol.order_id
 		LEFT JOIN trade_order_locate locate ON locate.order_id = tr.id
-		LEFT JOIN member_consignee_address member ON member.id = tr.pick_up_id
 		LEFT JOIN 
 			(SELECT id, MIN(received_time) AS received_time
 		    FROM trade_order 
@@ -5168,9 +5152,6 @@
 			AND tr.type = #{type,jdbcType=TINYINT}
 		</if>
 		<!-- Begin V2.1.0 added by luosm 20170218 -->
-		<if test="cityName != null and cityName != ''">
-			AND member.city_name LIKE CONCAT('%',#{cityName,jdbcType=VARCHAR},'%')
-		</if>
 		<!-- End V2.1.0 added by luosm 20170218 -->
 		<if test="null != payType">
 			<!-- 如果支付方式是线下支付的订单 -->
