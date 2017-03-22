@@ -1058,7 +1058,8 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			List<String> orderIds = new ArrayList<String>();
 			// 用户ID集合
 			List<String> userIds = new ArrayList<String>();
-
+			//订单关联的店铺ids
+			List<String> storeIds = new ArrayList<String>();
 			// 活动id集合
 			for (ERPTradeOrderVo order : list) {
 				if (StringUtils.isNotEmpty(order.getId())) {
@@ -1067,8 +1068,29 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				if (StringUtils.isNotEmpty(order.getUserId())) {
 					userIds.add(order.getUserId());
 				}
+				if (StringUtils.isNotEmpty(order.getStoreId())) {
+					storeIds.add(order.getStoreId());
+				}
 			}
 
+			//V2.1.0  begin  add by zhulq 获取服务店上门服务的收货地址（物流表的地址）
+			//订单的物流信息
+			List<TradeOrderLogistics> logisticsList = null;
+			if (CollectionUtils.isNotEmpty(orderIds)) {
+				try {
+					logisticsList = this.tradeOrderLogisticsService.selectByOrderIds(orderIds);
+				} catch (ServiceException e) {
+					logger.error("查询物流信息异常", e);
+				}
+			}
+			//店铺地址（到店自提和到店消费订单店铺地址）
+			List<UserAddressVo> memberAddressList = null;	
+			//V2.1.0 end add by zhulq 收货地址取物流表信息 之前是取店铺地址
+			if (CollectionUtils.isNotEmpty(storeIds)) {
+				memberAddressList = this.memberConsigneeAddressService.findByStoreIds(storeIds);
+			}
+			//V2.1.0  end add by zhulq 获取服务店上门服务的收货地址（物流表的地址）
+			
 			List<SysUserInvitationLoginNameVO> inviteNameLists = new ArrayList<SysUserInvitationLoginNameVO>();
 			if (CollectionUtils.isNotEmpty(userIds)) {
 				inviteNameLists = invitationCodeService.selectLoginNameByUserId(userIds);
@@ -1095,17 +1117,6 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				dto.setPreferentialPrice(vo.getPreferentialPrice());
 				// Begin 重构4.1 add by wusw 20160725
 				dto.setCreateTime(vo.getCreateTime());
-				/*if (vo.getOrderResource() != null) {
-					if (vo.getOrderResource() == OrderResourceEnum.YSCAPP
-							|| vo.getOrderResource() == OrderResourceEnum.WECHAT
-							// Begin V2.0.0 add by wusw 20170109
-							|| vo.getOrderResource() == OrderResourceEnum.CVSAPP) {
-						// End V2.0.0 add by wusw 20170109
-						dto.setOrderResource(0);
-					} else {
-						dto.setOrderResource(1);
-					}
-				}*/
 				// End 重构4.1 add by wusw 20160725
 				dto.setStatus(vo.getStatus().ordinal());
 				if (vo.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
@@ -1232,16 +1243,10 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				// 定位基点
 				dto.setLocation(lProviceName + lCityName + lAreaName + areaExt);
 
-				String aProviceName = vo.getaProviceName() == null ? "" : vo.getaProviceName();
-				String aCityName = vo.getaCityName() == null ? "" : vo.getaCityName();
-				String aAreaName = vo.getaAreaName() == null ? "" : vo.getaAreaName();
-				String address = vo.getAddress() == null ? "" : vo.getAddress();
-
-				// 所属城市
-				dto.setCityName(aCityName);
-				// 收货地址
-				dto.setAddress(aProviceName + aCityName + aAreaName + address);
-
+				// begin V2.1.0 added by zhulq 2017-03-22  订单的收货地址
+				setAddressInfo(vo, dto, memberAddressList, logisticsList);
+				// End V2.1.0 added by zhulq 2017-03-22
+				
 				// 订单来源
 				dto.setOrderResource(vo.getOrderResource().ordinal());
 
