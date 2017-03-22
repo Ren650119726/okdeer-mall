@@ -228,7 +228,14 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				
 				//begin add by zengjz 取消订单换接口类
 				order.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
-				cancelOrderService.cancelOrder(order, false);
+				if(order.getOrderResource() == OrderResourceEnum.SWEEP){
+					//modify by mengsj begin 扫码购超时取消订单
+					order.setStatus(OrderStatusEnum.ALREADY_EXPIRED);
+					tradeOrderService.updateOrderStatus(order);
+					//modify by mengsj end 扫码购超时取消订单
+				}else{
+					cancelOrderService.cancelOrder(order, false);
+				}
 				//end add by zengjz 取消订单换接口类
 			}
 		} catch (Exception e) {
