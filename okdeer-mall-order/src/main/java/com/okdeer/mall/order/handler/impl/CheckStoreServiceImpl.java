@@ -24,6 +24,7 @@ import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
@@ -269,8 +270,9 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 */
 	private void checkServTime(Response<PlaceOrderDto> resp,PlaceOrderParamDto paramDto, StoreInfo storeInfo){
 		if (!resp.isSuccess() || paramDto.getOrderType() == PlaceOrderTypeEnum.CVS_ORDER
+				|| paramDto.getSkuType() == OrderTypeEnum.STORE_CONSUME_ORDER
 				|| paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
-			// 只对服务店提交订单时做校验
+			// 只对上门服务店提交订单时做校验
 			return;
 		}
 		StoreInfoServiceExt servExt = storeInfo.getStoreInfoServiceExt();
