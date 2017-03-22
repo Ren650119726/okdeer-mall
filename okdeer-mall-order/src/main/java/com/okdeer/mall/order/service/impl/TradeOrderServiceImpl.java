@@ -646,7 +646,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						exportVo.setCategoryName(item.getCategoryName());
 						exportVo.setStatus(orderStatusMap.get(order.getStatus().getName()));
 						exportVo.setUnitPrice(item.getUnitPrice());
-						exportVo.setTotalAmount(order.getTotalAmount());
+						// begin 将订单金额修改为订单项金额 add by wangf01 20170322
+						exportVo.setTotalAmount(item.getTotalAmount());
+						//exportVo.setTotalAmount(order.getTotalAmount());
+						// begin add by wangf01 20170322
 						if (!OrderStatusEnum.UNPAID.equals(order.getStatus())
 								&& !OrderStatusEnum.BUYER_PAYING.equals(order.getStatus())) {
 							// 支付方式
