@@ -2051,7 +2051,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// End Bug:15707 added by maojj 2016-12-06
 
 		// 判断是否有物流信息
-		if (StringUtils.isNotBlank(param.getLogisticsCompanyName())) {
+		// begin 将判断物流公司名称换成判断物流单号 add by wangf01 20170322
+		if (StringUtils.isNotBlank(param.getLogisticsNo())) {
 			// 有物流信息表示物流发货,需要更新物流信息到 订单收货地址信息表
 			TradeOrderLogistics tradeOrderLogistics = tradeOrderLogisticsMapper.selectByOrderId(tradeOrder.getId());
 			if (tradeOrderLogistics != null) {
@@ -2066,6 +2067,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				tradeOrderLogisticsMapper.updateByPrimaryKeySelective(tradeOrderLogistics);
 			}
 		}
+		// end add by wangf01 20170322
 
 		// 保存订单操作日志
 		// tradeOrderLogMapper.insertSelective(getTradeOrderLog(param,
