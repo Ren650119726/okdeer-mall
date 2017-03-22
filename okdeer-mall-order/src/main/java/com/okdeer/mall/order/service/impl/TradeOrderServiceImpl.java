@@ -1604,6 +1604,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Transactional(rollbackFor = Exception.class)
 	public boolean insertTradeOrder(TradeOrder tradeOrder) throws Exception {
 		insertOrder(tradeOrder);
+		//add by mengsj begin 由于扫码购提交订单流程不能与便利店订单共用
+		//故在此单独判断订单来源，如果是扫码购，发送超时支付消息
+		if(tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP){
+			// 超时未支付的，取消订单
+			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, tradeOrder.getId());
+		}
 		return true;
 	}
 
