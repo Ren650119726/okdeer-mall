@@ -143,6 +143,7 @@ import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
+import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.builder.JxcStockUpdateBuilder;
 import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
@@ -7103,5 +7104,80 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		List<TradeOrder> list = tradeOrderMapper.findUserOrders(paramBo);
 		PageUtils<TradeOrder> page = new PageUtils<TradeOrder>(list);
 		return page.getTotal();
+	}
+	@Override
+	public PageUtils<TradeOrderDetailBo> findOrderInfo(Map<String, Object> map, int pageSize, int pageNumber) {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+
+		String storeId = map.get("storeId").toString();
+		StoreInfo store = storeInfoService.findById(storeId);
+		List<TradeOrderDetailBo> list = null;
+		if (store.getType() == StoreTypeEnum.SERVICE_STORE) {
+			list = tradeOrderMapper.findServiceOrderInfo(map);
+		} else {
+			list = tradeOrderMapper.findCloudOrderInfo(map);
+		}
+
+		if (list != null && !list.isEmpty()) {
+			for (TradeOrderDetailBo tradeOrderVo : list) {
+				// 查询订单项表。
+				tradeOrderVo.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrderVo.getId()));
+				// 查询投诉信息
+				tradeOrderVo.setTradeOrderComplainVoList(
+						tradeOrderComplainMapper.findOrderComplainByParams(tradeOrderVo.getId()));
+
+				// 获取订单活动信息
+				Map<String, Object> activityMap = getActivity(tradeOrderVo.getActivityType(),
+						tradeOrderVo.getActivityId());
+				String activityName = activityMap.get("activityName") == null ? null
+						: activityMap.get("activityName").toString();
+				ActivitySourceEnum activitySource = activityMap.get("activitySource") == null ? null
+						: (ActivitySourceEnum) activityMap.get("activitySource");
+				tradeOrderVo.setActivityName(activityName);
+				tradeOrderVo.setActivitySource(activitySource);
+			}
+		}
+		return new PageUtils<TradeOrderDetailBo>(list);
+	}
+	
+	/**
+	 * 获取活动信息 2.2.0修改 
+	 * @author xuzq
+	 * @param activityType活动类型
+	 * @param activityId 活动ID
+	 */
+	private Map<String, Object> getActivity(int activityType, String activityId) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		// 活动名称
+		String activityName = null;
+		// 活动来源，（活动发起者身份）
+		ActivitySourceEnum activitySource = null;
+		// 如果有活动ID，说明该订单参与了活动
+		if (StringUtils.isNotBlank(activityId) && !"0".equals(activityId)) {
+			// 代金券活动
+			if (ActivityTypeEnum.VONCHER.equals(activityType)) {
+				ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(activityId);
+				if (activityCollectCoupons != null) {
+					activityName = activityCollectCoupons.getName();
+					// 所属代理商id，运营商以0标识
+					if ("0".equals(activityCollectCoupons.getBelongType())) {
+						activitySource = ActivitySourceEnum.OPERATOR;
+					} else {
+						activitySource = ActivitySourceEnum.AGENT;
+					}
+				}
+			} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(activityType)
+					|| ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES.equals(activityType)) {
+				// 满减活动
+				ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(activityId);
+				if (activityDiscount != null) {
+					activityName = activityDiscount.getName();
+				}
+			}
+			// End 15698 add by wusw 20161205
+		}
+		map.put("activityName", activityName);
+		map.put("activitySource", activitySource);
+		return map;
 	}
 }
