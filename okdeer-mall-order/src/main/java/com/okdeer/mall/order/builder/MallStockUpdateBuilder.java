@@ -31,6 +31,7 @@ import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
+import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
@@ -402,18 +403,42 @@ public class MallStockUpdateBuilder {
 			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
 			updateDetail.setSpuType(orderItem.getSpuType());
 			updateDetail.setActType(actType);
-			// 考虑组合商品
-			if(actType == ActivityTypeEnum.LOW_PRICE){
-				updateDetail.setUpdateNum(orderItem.getActivityQuantity());
-			}else{
-				updateDetail.setUpdateNum(orderItem.getQuantity());
-			}
-			
+			updateDetail.setUpdateNum(getRefundsNum(orderRefunds,orderItem,actType));
 			updateDetailList.add(updateDetail);
 		}
 		
 		stockUpdateDto.setUpdateDetailList(updateDetailList);
 		return stockUpdateDto;
+	}
+	
+	/**
+	 * @Description: 获取退货数量
+	 * @param orderRefunds
+	 * @param orderItem
+	 * @param actType
+	 * @return   
+	 * @author maojj
+	 * @date 2017年3月22日
+	 */
+	private Integer getRefundsNum(TradeOrderRefunds orderRefunds,TradeOrderItem orderItem,ActivityTypeEnum actType){
+		if(orderItem.getSpuType() != SpuTypeEnum.fwdDdxfSpu){
+			// 到店消费商品退款，退货数量由退款单项中的数量决定。其他都是与订单项数量等同
+			if(actType == ActivityTypeEnum.LOW_PRICE){
+				// 低价活动的，商城只负责处理活动商品数量
+				return orderItem.getActivityQuantity();
+			}else{
+				return orderItem.getQuantity();
+			}
+		}
+		// 如果是到店消费商品退货，从退款项中获取商品数量
+		Integer refundsNum = Integer.valueOf(0);
+		for(TradeOrderRefundsItem refundsItem : orderRefunds.getTradeOrderRefundsItem()){
+			if(refundsItem.getOrderItemId().equals(orderItem.getId())){
+				refundsNum = refundsItem.getQuantity();
+				break;
+			}
+		}
+		return refundsNum;
 	}
 	
 	/**

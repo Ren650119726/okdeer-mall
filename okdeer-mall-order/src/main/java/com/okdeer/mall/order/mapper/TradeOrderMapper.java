@@ -10,6 +10,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -1200,4 +1201,18 @@ public interface TradeOrderMapper {
 	 * @date 2017年3月20日
 	 */
 	List<TradeOrder> findFirstTradeOrder();
+	
+	/**
+	 * 查询服务店订单信息
+	 * @param map
+	 * @return
+	 */
+	List<TradeOrderDetailBo> findServiceOrderInfo(Map<String, Object> map);
+	
+	/**
+	 * 查询便利店订单信息
+	 * @param map
+	 * @return
+	 */
+	List<TradeOrderDetailBo> findCloudOrderInfo(Map<String, Object> map);
 }
