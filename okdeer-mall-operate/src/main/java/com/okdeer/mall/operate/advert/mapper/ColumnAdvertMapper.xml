@@ -1104,18 +1104,29 @@
 	</select>
 	
 	<select id="findForApp" parameterType="com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto" resultMap="columnAdvertRsMap">
-		SELECT <include refid="base_column_list" />
-		FROM column_advert WHERE 1 = 1
+		SELECT 
+		c.id, c.position_id, c.belong_type, c.name, c.target_type, c.target, c.target_url, c.pic_url,
+		c.area_type, c.start_time, c.end_time, c.is_pay, c.trade_num, c.status, c.create_time, c.create_user_id,
+		c.update_time, c.update_user_id, c.disabled, c.pv, c.on_shelf_time, c.off_shelf_time,c.business_id,c.sort
+		FROM column_advert c
+		left join column_advert_version v on v.advert_id=c.id
+		WHERE 1 = 1
 		<if test="positionId != null and positionId != ''">
-			and position_id = #{positionId,jdbcType=VARCHAR}
+			and c.position_id = #{positionId,jdbcType=VARCHAR}
 		</if>
 		<if test="advertStatus != null">
-			and status = #{advertStatus,jdbcType=TINYINT}
+			and c.status = #{advertStatus,jdbcType=TINYINT}
 		</if>
-		and area_type = 0
+		and c.area_type = 0
+		and (v.version is null or v.version=#{version,jdbcType=VARCHAR})
 		union all 
-		SELECT <include refid="base_column_list" />
-		FROM column_advert ca WHERE 1 = 1
+		SELECT 
+		ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
+		ca.area_type, ca.start_time, ca.end_time, ca.is_pay, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
+		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time,ca.business_id,ca.sort
+		FROM column_advert ca 
+		left join column_advert_version v on v.advert_id=ca.id
+		WHERE 1 = 1
 		<if test="positionId != null and positionId != ''">
 			and ca.position_id = #{positionId,jdbcType=VARCHAR}
 		</if>
@@ -1134,6 +1145,7 @@
 				)
 			</if>
 		)
+		and (v.version is null or v.version=#{version,jdbcType=VARCHAR})
 	</select>
 	
 	<select id="findForAppV220" parameterType="com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto" resultMap="columnAdvertRsMap">
