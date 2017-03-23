@@ -645,7 +645,7 @@
 		<result column="total_amount" property="totalAmount" jdbcType="DECIMAL" />
 		<result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
 		<result column="fare" property="fare" jdbcType="DECIMAL" />
-		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" javaType="com.okdeer.mall.order.enums.OrderStatusEnum"/>
 		<result column="delivery_time" property="deliveryTime" jdbcType="TIMESTAMP" />
 		<result column="type" property="type" jdbcType="INTEGER" />
 		<result column="pick_up_type" property="pickUpType" jdbcType="INTEGER" />
