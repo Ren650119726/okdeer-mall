@@ -1232,7 +1232,7 @@
 		WHEN `refunds_status` in(1,6,9,10,11,13,14,15,16) THEN 6
 		END as `refunds_status`,count(1) as `count` FROM trade_order_refunds
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
-		AND order_resource IN(0,1)
+		AND order_resource IN(0,1,3)
 		GROUP BY
 		CASE
 		WHEN `refunds_status` = 0 THEN 0
@@ -1252,7 +1252,7 @@
 		WHEN `refunds_status` in(1,6,9,10,11,13,14,15,16) THEN 6
 		END as `refunds_status`,count(1) as `count` FROM trade_order_refunds
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
-		AND order_resource IN(0,1)
+		AND order_resource IN(0,1,3)
 		AND type = '5'
 		GROUP BY
 		CASE
