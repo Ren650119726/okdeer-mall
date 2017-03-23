@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 运营栏目service实现
@@ -122,7 +123,23 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 	 */
 	@Override
 	public ColumnOperationVo getColumnOperationVoById(String id) throws ServiceException {
-		return columnOperationMapper.selectOperationAssociateById(id);
+		
+		ColumnOperationVo vo =  columnOperationMapper.selectOperationAssociateById(id);
+		if(null == vo){
+			return null;
+		}
+		
+		ColumnOperationVersionParamDto paramDto = new ColumnOperationVersionParamDto();
+		paramDto.setColumnOperationId(id);
+		List<ColumnOperationVersion> versionList = columnOperationVersionMapper.findByParam(paramDto);
+		List<String> versionStringList = Lists.newArrayList();
+		if(CollectionUtils.isNotEmpty(versionList)){
+			for(ColumnOperationVersion item : versionList){
+				versionStringList.add(item.getVersion());
+			}
+		}
+		vo.setVersionList(versionStringList);
+		return vo;
 	}
 
 	/**
