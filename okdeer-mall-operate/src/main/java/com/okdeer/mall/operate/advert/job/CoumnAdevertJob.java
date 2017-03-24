@@ -9,11 +9,14 @@ package com.okdeer.mall.operate.advert.job;
 
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
+import com.okdeer.mall.activity.coupons.job.ActivityCollectCouponsJob;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertService;
 
 /**
@@ -25,6 +28,8 @@ import com.okdeer.mall.operate.advert.service.ColumnAdvertService;
 @Service
 public class CoumnAdevertJob extends AbstractSimpleElasticJob {
 
+	private static final Logger log = LoggerFactory.getLogger(CoumnAdevertJob.class);
+	
 	@Resource
 	private ColumnAdvertService columnAdvertService;
 
@@ -38,7 +43,9 @@ public class CoumnAdevertJob extends AbstractSimpleElasticJob {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void process(JobExecutionMultipleShardingContext shardingContext) {
+		log.info("Start  运营商后台广告定时任务定时器");
 		this.columnAdvertService.updateAdvertStatusByJob();
+		log.info("End  运营商后台广告定时任务定时器");
 	}
 	
 }
