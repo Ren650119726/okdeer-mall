@@ -95,8 +95,13 @@ public interface PayMessageConstant {
 	 * (订单退款)余额支付结果消息tag
 	 */
 	String TAG_PAY_RESULT_REFUND = "tag_pay_result_mall_refund";
-
 	
+	//start add by zengjz 2017-3-24 增加扫码购支付结果监听tag
+	/**
+	 * 扫码购监听tag
+	 */
+	String TAG_POST_ORDER =	"tag_pos_order";
+	//end add by zengjz 2017-3-24 增加扫码购支付结果监听tag
 	/*********************************end 接收消息 余额支付或交易记录结果********************************/
 	
 	

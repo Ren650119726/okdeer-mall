@@ -29,6 +29,7 @@ import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.pay.callback.AbstractPayResultHandler;
 import com.okdeer.mall.order.pay.callback.PayResultHandlerFactory;
@@ -70,7 +71,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 
 	@Override
 	public String getTags() {
-		return TAG_ORDER;
+		return TAG_ORDER + JOINT + TAG_POST_ORDER;
 	}
 	
 	/**
@@ -92,7 +93,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
 			tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
-			AbstractPayResultHandler handler = payResultHandlerFactory.getByOrderType(tradeOrder.getType());
+			AbstractPayResultHandler handler = payResultHandlerFactory.getByOrder(tradeOrder);
 			handler.handler(tradeOrder, respDto);
 		} catch (Exception e) {
 			logger.error("订单支付状态消息处理失败", e);
@@ -101,7 +102,10 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 		
 		// begin add by wushp 20161015  
 		try {
-			orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+			if(tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP){
+				//不是扫码购订单才返券
+				orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+			}
 		} catch (Exception e) {
 			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
