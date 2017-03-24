@@ -608,6 +608,7 @@
 			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
 			LEFT JOIN column_advert_position cpos ON cpos.id = ca.position_id 
 			LEFT JOIN column_advert_area area ON area.advert_id = ca.id
+			left join column_advert_version v on ca.id=v.advert_id
 		<if test="communityId != null and communityId != ''">
 		 	LEFT JOIN column_advert_community community ON ca.id = community.advert_id
 		</if>
@@ -622,6 +623,7 @@
 		<if test="advertType != null">
 			AND cpos.type = #{advertType}
 		</if>
+		and (v.version is null or v.version=#{version, jdbcType=VARCHAR})
 		<if test="cityId != null and cityId != ''">
 		AND (
 			ca.area_type = 0
@@ -691,6 +693,7 @@
 			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
 			LEFT JOIN column_advert_position cpos ON cpos.id = ca.position_id 
 			LEFT JOIN column_advert_area area ON area.advert_id = ca.id
+			left join column_advert_version v on ca.id=v.advert_id
 		<if test="communityId != null and communityId != ''">
 		 	LEFT JOIN column_advert_community community ON ca.id = community.advert_id
 		</if>
@@ -705,6 +708,7 @@
 		<if test="advertType != null">
 			AND cpos.type = #{advertType}
 		</if>
+		and (v.version is null or v.version=#{version, jdbcType=VARCHAR})
 		<if test="cityId != null and cityId != ''">
 		AND (
 			ca.area_type = 0
