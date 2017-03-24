@@ -192,7 +192,12 @@ public class StoreSkuParserBo {
 
 				if (actInfo.getType() == ActivityTypeEnum.LOW_PRICE) {
 					// 如果是低价，保存商品的线上价格为线上价格，活动价格为活动价格
-					currentSku.setOnlinePrice(storeSku.getOnlinePrice());
+					if(storeSku.getSpuTypeEnum() == SpuTypeEnum.assembleSpu && storeSku.getMarketPrice() != null){
+						// 如果是组合商品，市场价作为线上价格
+						currentSku.setOnlinePrice(storeSku.getMarketPrice());
+					}else{
+						currentSku.setOnlinePrice(storeSku.getOnlinePrice());
+					}
 					currentSku.setActPrice(actGoods.getSalePrice());
 					currentSku.setLimitKind(actInfo.getLimit());
 				} else {
@@ -354,19 +359,11 @@ public class StoreSkuParserBo {
 	 * @date 2017年1月4日
 	 */
 	public boolean parseLowFavour() {
-		// 参考价格
-		BigDecimal referencePrice = BigDecimal.valueOf(0.0);
 		for (CurrentStoreSkuBo skuBo : this.currentSkuMap.values()) {
 			if (skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0) {
 				this.isLowFavour = true;
 				this.lowActivityId = skuBo.getActivityId();
-				// 如果商品是组合商品，组合商品低价优惠参考价格用市场价格，其它单品用线上价格
-				if(skuBo.getSpuType() == SpuTypeEnum.assembleSpu && skuBo.getMarketPrice() != null){
-					referencePrice = skuBo.getMarketPrice();
-				}else{
-					referencePrice = skuBo.getOnlinePrice();
-				}
-				this.totalLowFavour = this.totalLowFavour.add(referencePrice.subtract(skuBo.getActPrice())
+				this.totalLowFavour = this.totalLowFavour.add(skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
 						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity())));
 			}
 		}
