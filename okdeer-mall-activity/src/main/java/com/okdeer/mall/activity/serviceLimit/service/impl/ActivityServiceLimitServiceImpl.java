@@ -5,11 +5,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
@@ -17,8 +19,8 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.enums.IsActivity;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
 import com.okdeer.archive.stock.exception.StockException;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
@@ -55,7 +57,7 @@ public class ActivityServiceLimitServiceImpl extends BaseServiceImpl
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 	@Reference(version = "1.0.0", check = false)
-	GoodsStoreSkuStockServiceApi stockApi;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 	
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -80,14 +82,14 @@ public class ActivityServiceLimitServiceImpl extends BaseServiceImpl
 		for (ActivityServiceLimitGoods a : asgList) {
 			
 			//处理库存 可销售库存- 活动库存+
-			GoodsStoreSkuStock stock = stockApi.getBySkuId(a.getStoreSkuId());
+			GoodsStoreSkuStock stock = goodsStoreSkuStockApi.findByStoreSkuId(a.getStoreSkuId());
 			if(stock == null){
 				throw new StockException("第"+(i+1)+"个商品库存不存在");
 			}
 			stock.setSellable(stock.getSellable() - a.getActivityStock());
 			stock.setLocked(stock.getLocked() + a.getActivityStock());
 			stock.setUpdateTime(date);
-			stockApi.updateByEditPrivate(stock);
+			goodsStoreSkuStockApi.update(stock);
 			
 			// goodsStoreSku表的is_activity,activity_id,activity_name要修改
 			GoodsStoreSku goodsStoreSku = new GoodsStoreSku();
@@ -130,14 +132,14 @@ public class ActivityServiceLimitServiceImpl extends BaseServiceImpl
 			for (ActivityServiceLimitGoods a : oldLimitGoodsList) {
 				
 				//返还库存 可销售库存+ 活动库存-
-				GoodsStoreSkuStock stock = stockApi.getBySkuId(a.getStoreSkuId());
+				GoodsStoreSkuStock stock = goodsStoreSkuStockApi.findByStoreSkuId(a.getStoreSkuId());
 				if(stock == null){
 					throw new StockException("第"+(i+1)+"个商品库存不存在");
 				}
 				stock.setSellable(stock.getSellable() + a.getActivityStock());
 				stock.setLocked(stock.getLocked() - a.getActivityStock());
 				stock.setUpdateTime(date);
-				stockApi.updateByEditPrivate(stock);
+				goodsStoreSkuStockApi.update(stock);
 				
 				GoodsStoreSku sku = new GoodsStoreSku();
 				sku.setId(a.getStoreSkuId());

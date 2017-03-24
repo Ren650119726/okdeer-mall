@@ -116,4 +116,14 @@ public interface ActivitySaleMapper {
 	 */
 	List<ActivitySale> findBySaleIds(Set<String> idList);
 	// End V2.0 added by maojj 2016-12-31 
+	
+	/**
+	 * 
+	 * @Description: 获取短普所有商品
+	 * @return List<Map<String,Object>>  
+	 * @throws
+	 * @author chenzc
+	 * @date 2017年3月16日
+	 */
+	List<Map<String,Object>> listGoodsStoreSkuV220(Map<String,Object> map);
 }

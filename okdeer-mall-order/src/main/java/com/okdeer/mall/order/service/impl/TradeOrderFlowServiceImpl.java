@@ -35,14 +35,13 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
 import com.okdeer.archive.goods.store.vo.GoodsStoreSkuDetailVo;
 import com.okdeer.archive.goods.store.vo.GoodsStoreSkuToAppVo;
 import com.okdeer.archive.stock.entity.ImsDaily;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.stock.service.ImsDailyServiceApi;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreBranches;
@@ -50,6 +49,9 @@ import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreBranchesServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
@@ -105,7 +107,6 @@ import com.okdeer.mall.order.service.TradeOrderFlowService;
 import com.okdeer.mall.order.service.TradeOrderFlowServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.order.utils.CalculateOrderStock;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.utils.DiscountCalculate;
 import com.okdeer.mall.order.utils.OrderItem;
@@ -129,9 +130,6 @@ import com.okdeer.mall.system.mq.StockMQProducer;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 import com.qiniu.util.Auth;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.UuidUtils;
 import com.yschome.file.FileUtil;
 
 import net.sf.json.JSONArray;
@@ -196,7 +194,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 	private ActivityCouponsService activityCouponsService;
 
 	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockService;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 
 	@Resource
 	private TradeOrderService tradeOrderService;
@@ -224,9 +222,6 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 	@Resource
 	private GenerateNumericalMapper generateNumericalMapper;
-
-	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi stockManagerService;
 
 	// Begin 1.0.Z add by zengj
 	/**
@@ -655,7 +650,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 							Map<String, Object> map = new HashMap<String, Object>(); // 查询商品是否发生变化入参
 							map.put("id", skuId);
-							GoodsStoreSkuStock storeSkuStock = goodsStoreSkuStockService.selectSingleSkuStock(skuId); // 查询商品信息
+							GoodsStoreSkuStock storeSkuStock = goodsStoreSkuStockApi.findByStoreSkuId(skuId); // 查询商品信息
 
 							GoodsStoreSkuDetailVo detailVo = goodsStoreSkuService.selectDetailBySkuId(skuId); // 查询商品详细信息
 							if (detailVo == null) {
@@ -1072,7 +1067,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 							Map<String, Object> map = new HashMap<String, Object>(); // 查询商品是否发生变化入参
 							map.put("id", skuId);
-							GoodsStoreSkuStock storeSkuStock = goodsStoreSkuStockService.selectSingleSkuStock(skuId); // 查询商品信息
+							GoodsStoreSkuStock storeSkuStock = goodsStoreSkuStockApi.findByStoreSkuId(skuId); // 查询商品信息
 
 							GoodsStoreSkuDetailVo detailVo = goodsStoreSkuService.selectDetailBySkuId(skuId); // 查询商品详细信息
 							if (detailVo == null) {
@@ -2724,7 +2719,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 				tradeOrderItem.setUnitPrice(skuPrice); // 订单项商品单价
 				tradeOrderItem.setTotalAmount(singlesPriceSum);
 
-				GoodsStoreSkuStock skuStock = goodsStoreSkuStockService.selectSingleSkuStock(skuId); // 查询便利店商品库存数量
+				GoodsStoreSkuStock skuStock = goodsStoreSkuStockApi.findByStoreSkuId(skuId); // 查询便利店商品库存数量
 				if (skuStock == null) {
 					logger.error("查询便利店商品库存数量", "skuStock 为空------->" + CodeStatistical.getLineInfo());
 					throw new ServiceException("查询便利店商品库存数量异常：skuStock 为空-------->" + CodeStatistical.getLineInfo());
@@ -2737,7 +2732,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 				tradeOrderItem.setUnitPrice(skuPrice); // 订单项商品单价
 				tradeOrderItem.setTotalAmount(singlesPriceSum);
 
-				GoodsStoreSkuStock skuStock = goodsStoreSkuStockService.selectSingleSkuStock(skuId); // 查询便利店商品库存数量
+				GoodsStoreSkuStock skuStock = goodsStoreSkuStockApi.findByStoreSkuId(skuId); // 查询便利店商品库存数量
 				if (skuStock == null) {
 					logger.error("查询便利店商品库存数量", "skuStock 为空------->" + CodeStatistical.getLineInfo());
 					throw new ServiceException("查询便利店商品库存数量异常：skuStock 为空-------->" + CodeStatistical.getLineInfo());
@@ -3190,7 +3185,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 		String storeName = sInfo.getStoreName(); // 店铺名称
 		int isClosed = sInfo.getStoreInfoExt().getIsClosed().ordinal(); // 关闭/开启店铺(0:关闭,1:开启)
 
-		GoodsStoreSkuStock stuStock = goodsStoreSkuStockService.selectBySkuId(storeSkuId); // 活动商品库存查询
+		GoodsStoreSkuStock stuStock = goodsStoreSkuStockApi.findByStoreSkuId(storeSkuId); // 活动商品库存查询
 		int groupInvent = stuStock.getLocked(); // 锁定库存
 
 		int isContent = 1; // 限ID标识(1：未超过,0:已超过)
@@ -3318,7 +3313,7 @@ public class TradeOrderFlowServiceImpl implements TradeOrderFlowService, TradeOr
 
 		int isBuyCount = activityGroupRecordService.selectActivityGroupRecord(hasBuy); // 查询团购活动商品购买数量
 
-		GoodsStoreSkuStock skuStock = goodsStoreSkuStockService.selectBySkuId(skuId); // 查询团购活动商品库存
+		GoodsStoreSkuStock skuStock = goodsStoreSkuStockApi.findByStoreSkuId(skuId); // 查询团购活动商品库存
 		int locked = skuStock.getLocked();
 
 		ActivityGroup activityGroup = activityGroupService.selectGroupStatus(activityId); // 查询团购活动时间

@@ -605,10 +605,7 @@ public class TradeOrderRefundsServiceImpl
 			reduceUserPoint(order, orderRefunds);
 
 		} catch (Exception e) {
-			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
-			if (orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
-				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
-			}
+			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 	}
@@ -1880,6 +1877,17 @@ public class TradeOrderRefundsServiceImpl
 	public List<TradeOrderRefunds> selectByOrderIds(List<String> orderIds) throws Exception {
 		return tradeOrderRefundsMapper.selectByOrderIds(orderIds);
 	}
-	// Begin V2.1.0 added by luosm 20170222
+	// End V2.1.0 added by luosm 20170222
+
+	// Begin V2.1.0 added by luosm 20170314
+	@Override
+	public PageUtils<TradeOrderRefundsVo> searchOrderRefundForSELLERAPP(Map<String, Object> map, int pageNumber,
+			int pageSize) {
+		if (pageNumber > 0) {
+			PageHelper.startPage(pageNumber == 0 ? 1 : pageNumber, pageSize, pageNumber != 0, false);
+		}
+		return new PageUtils<TradeOrderRefundsVo>(tradeOrderRefundsMapper.searchOrderRefundForSELLERAPP(map));
+	}
+	// End V2.1.0 added by luosm 20170314
 
 }

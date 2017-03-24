@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -100,7 +101,11 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
             if (CollectionUtils.isNotEmpty(goodsBoList)) {
                 ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
                 paramDto.setActivityId(id);
-                paramDto.setUpdateStatus(String.valueOf(1));
+                if(status==1){
+                    paramDto.setUpdateStatus("0");
+                }else{
+                    paramDto.setUpdateStatus("1");
+                }
                 List<String> skuIds = goodsBoList.stream().map(m -> m.getStoreSkuId()).collect(Collectors.toList());
                 paramDto.setSkuIds(skuIds);
                 // 5:特惠 7:低价
@@ -154,8 +159,20 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
     	activitySaleService.updateSaleStock(activitySale, activitySaleGoods);
     	//同步库存到搜索引擎
     	ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
-    	List<String> skuIdList = Arrays.asList(activitySaleGoods.getGoodsSkuId());
+    	List<String> skuIdList = Arrays.asList(activitySaleGoods.getStoreSkuId());
     	paramDto.setSkuIds(skuIdList);
     	archiveSendMsgService.structureProducerELGoods(paramDto, TAG_STOCK_EL_UPDATE);
+    }
+    
+    @Override
+    public void updateActivitySaleGoods(ActivitySaleGoods activitySaleGoods) throws Exception {
+    	activitySaleGoodsServiceApi.updateActivitySaleGoods(activitySaleGoods);    	
+    	// 更新搜索引擎
+    	List<String> skuIds = new ArrayList<String>();
+    	skuIds.add(activitySaleGoods.getStoreSkuId());
+    	ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
+        paramDto.setSkuIds(skuIds);
+        paramDto.setActivityId(activitySaleGoods.getSaleId());
+        archiveSendMsgService.structureProducerELGoods(paramDto, TAG_SALE_LOWPRICE_EL_EDIT);
     }
 }

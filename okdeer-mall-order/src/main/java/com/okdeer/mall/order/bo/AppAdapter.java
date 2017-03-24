@@ -60,6 +60,8 @@ public class AppAdapter {
 			}
 			dto.setFreight(ConvertUtil.format(storeExt.getFreight()));
 			dto.setStartPrice(ConvertUtil.format(storeExt.getStartPrice()));
+			// 预约期限默认为7天
+			dto.setSubscribeTime(7);
 		}
 		if(storeInfo.getStoreInfoServiceExt() != null){
 			BeanMapper.copy(storeInfo.getStoreInfoServiceExt(), dto);
@@ -116,6 +118,13 @@ public class AppAdapter {
 		return DateUtils.parseDate(hourMinute);
 	}
 	
+	/**
+	 * @Description: 转换服务店铺扩展信息
+	 * @param storeInfo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年3月13日
+	 */
 	public static AppStoreServiceExtDto convertAppStoreServiceExtDto(StoreInfo storeInfo){
 		if(storeInfo == null || storeInfo.getStoreInfoServiceExt() == null){
 			return null;
@@ -134,10 +143,20 @@ public class AppAdapter {
 				dto.setAheadTimeDay(String.valueOf(storeExt.getAdvanceTime()));
 			}
 		}
+		// 解析下单模式
 		parseOrderTimeModel(dto,storeServExt);
+		// 解析不可用日期
+		dto.setInvalidDates(parseInvalidDate(storeServExt.getInvalidDate(),dto.getAheadTimeDay()));
 		return dto;
 	}
 	
+	/**
+	 * @Description: 解析下单模式
+	 * @param dto
+	 * @param storeServExt   
+	 * @author maojj
+	 * @date 2017年3月13日
+	 */
 	private static void parseOrderTimeModel(AppStoreServiceExtDto dto,StoreInfoServiceExt storeServExt){
 		Integer orderTimeModel = storeServExt.getOrderTimeModel();
 		if (orderTimeModel == null){
@@ -169,12 +188,79 @@ public class AppAdapter {
 	}
 	
 	/**
+	 * @Description: 解析店铺设置的不可用日期。筛选出用户可选7天范围内的不可用日期。
+	 * @param dto
+	 * @param invalidDate   
+	 * @author maojj
+	 * @date 2017年3月13日
+	 */
+	private static String[] parseInvalidDate(String invalidDate,String aheadTimeDay) {
+		if (StringUtils.isEmpty(invalidDate)) {
+			return null;
+		}
+		// 日历控件上选的不可用日期,采用位移算法存数,格式为201703***,201704***
+		String[] invalidDateArr = invalidDate.split(",");
+		// 无效日期列表
+		List<String> invalidDateList = new ArrayList<String>();
+		// 需要判定的日期
+		String determineDate = null;
+		// 需要判定的年月
+		String determineMonth = null;
+		// 有效的天
+		int validDay = 0;
+		// 不可用日期的月分
+		String invalidMonth = null;
+		// 无效的天
+		int invalidDay = 0;
+		// 提前天数
+		int aheadDay = StringUtils.isEmpty(aheadTimeDay) ? 0 : Integer.parseInt(aheadTimeDay);
+		for (int addDay = aheadDay, validDays = 0; validDays < 8; addDay++) {
+			determineDate = DateUtils.formatDate(DateUtils.addDays(new Date(), addDay), "yyyy-MM-dd");
+			determineMonth = determineDate.substring(0, 4) + determineDate.substring(5, 7);
+			for (String invalidTime : invalidDateArr) {
+				invalidMonth = invalidTime.substring(0, 6);
+				if (determineMonth.compareTo(invalidMonth) == -1) {
+					// 如果当前月份小于不可用日期限制的月份，则当前日期一定可用
+					validDays++;
+					break;
+				} else if (determineMonth.compareTo(invalidMonth) == 0) {
+					// 如果当前月份等于不可用日期限制的月份，则判定这天是否可用
+					validDay = Integer.parseInt(determineDate.substring(8, 10));
+					invalidDay = Integer.parseInt(invalidTime.substring(6));
+					if (((invalidDay >> (validDay - 1)) & 1) == 1) {
+						// 如果当前天数为不可用日期，保存记录用于返回给App并跳过判定下一天
+						invalidDateList.add(determineDate);
+						break;
+					} else {
+						// 如果当前天数可用，则可用天数加1
+						validDays++;
+						break;
+					}
+				} else if (determineMonth.compareTo(invalidMonth) == 1) {
+					// 如果当前月份大于不可用日期限制的月份，则循环跳入下一个月份限制进行判定
+					continue;
+				}
+			}
+		}
+		String[] invalidDateResult = new String[invalidDateList.size()];
+		invalidDateList.toArray(invalidDateResult);
+		return invalidDateResult;
+	}
+
+	/**
 	 * 是否提前预约
 	 */
 	private static boolean isAdvance(StoreInfoExt storeExt){
 		return Integer.valueOf(Constant.ONE).equals(storeExt.getIsAdvanceType());
 	}
 	
+	/**
+	 * @Description: 转换给App的商品信息
+	 * @param parserBo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年3月13日
+	 */
 	public static List<AppStoreSkuDto> convert(StoreSkuParserBo parserBo){
 		if(parserBo == null || parserBo.getCurrentSkuMap() == null || CollectionUtils.isEmpty(parserBo.getCurrentSkuMap().values())){
 			return null;
@@ -191,6 +277,13 @@ public class AppAdapter {
 		return dtoList;
 	}
 	
+	/**
+	 * @Description: 转换秒杀信息
+	 * @param seckill
+	 * @return   
+	 * @author maojj
+	 * @date 2017年3月13日
+	 */
 	public static SeckillInfoDto convert(ActivitySeckill seckill){
 		if(seckill == null){
 			return null;

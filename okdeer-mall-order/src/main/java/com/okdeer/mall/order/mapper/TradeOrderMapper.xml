@@ -320,6 +320,8 @@
 		<result column="city_name" property="cityName" jdbcType="VARCHAR" />
 		<result column="location" property="location" jdbcType="VARCHAR" />
 		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="pick_up_type" property="pickUpType" jdbcType="TINYINT"
+			javaType="com.okdeer.mall.order.enums.PickUpTypeEnum" />
 		<!-- V2.1.0 end add by zhulq 增加订单所属城市  -->
 	</resultMap>
 	<!-- 订单列表 -财务系统接口调用 -luosm end -->
@@ -449,9 +451,14 @@
         <result column="aProvice_name" property="aProviceName" jdbcType="VARCHAR" />
         <result column="aCity_name" property="aCityName" jdbcType="VARCHAR" />
         <result column="aArea_name" property="aAreaName" jdbcType="VARCHAR" />
+       <!-- begin V2.1 added by zhulq 2017-03-17 -->
+        <result column="aArea_ext" property="aAreaExt" jdbcType="VARCHAR" />
+       <!-- end V2.1 added by zhulq 2017-03-17 -->
         <result column="memberAddress" property="memberAddress" jdbcType="VARCHAR" />
         <result column="order_type" property="orderType" jdbcType="TINYINT"
 			javaType="com.okdeer.mall.order.enums.OrderTypeEnum" />
+		<result column="pick_up_type" property="pickUpType" jdbcType="TINYINT"
+			javaType="com.okdeer.mall.order.enums.PickUpTypeEnum" />
 		<!-- End V2.1.0 added by luosm 20170222 -->
 		
 	<!-- begin V2.1 added by zhulq 2017-02-17 -->		
@@ -474,6 +481,10 @@
 		<result column="city_name" property="cityName" jdbcType="VARCHAR"/>
 		<result column="income" property="income" jdbcType="DECIMAL"/>
 	<!-- End V2.1 added by zhulq 2017-02-17 -->
+	
+	<!-- begin V2.2 added by chenzc 2017-03-21 -->
+	    <result column="is_first_order" property="isFirstOrder" jdbcType="VARCHAR"/>
+	<!-- end V2.2 added by chenzc 2017-03-21 -->
 	</resultMap>
 
 	<resultMap id="activityInfoResult" type="com.okdeer.mall.order.vo.ActivityInfoVO" >
@@ -626,7 +637,26 @@
 		<result column="order_refunds_counts" property="orderRefundsCounts"
 			jdbcType="INTEGER" />
 	</resultMap>
-
+<!--begin xuzq 20170321 2.2.0 订单查询map -->
+	<resultMap id="tradeOrderDetailBo" type="com.okdeer.mall.order.bo.TradeOrderDetailBo">
+		<result column="id" property="id" jdbcType="VARCHAR" />
+		<result column="order_no" property="orderNo" jdbcType="VARCHAR" />
+		<result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
+		<result column="total_amount" property="totalAmount" jdbcType="DECIMAL" />
+		<result column="preferential_price" property="preferentialPrice" jdbcType="DECIMAL" />
+		<result column="fare" property="fare" jdbcType="DECIMAL" />
+		<result column="status" property="status" jdbcType="INTEGER" javaType="com.okdeer.mall.order.enums.OrderStatusEnum"/>
+		<result column="delivery_time" property="deliveryTime" jdbcType="TIMESTAMP" />
+		<result column="type" property="type" jdbcType="INTEGER" />
+		<result column="pick_up_type" property="pickUpType" jdbcType="INTEGER" />
+		<result column="goods_type_count" property="goodsTypeCount"	jdbcType="INTEGER" />
+		<result column="goods_count" property="goodsCount" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="activity_type" property="activityType" jdbcType="INTEGER" />
+		<result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+		<result column="refunds_count" property="refundsCount" jdbcType="INTEGER" />
+	</resultMap>
+	<!--end xuzq 20170321 2.2.0 订单查询map -->
 	<sql id="Base_Column_List">
 		id, user_id, store_id, store_name, pid, order_no, type, pick_up_type, pick_up_code,
 		pick_up_time,order_resource, is_complete,
@@ -699,6 +729,81 @@
 			AND tr.user_phone = #{userPhone,jdbcType=VARCHAR}
 		</if>
 	</sql>
+	
+	<!-- Begin V2.1.0 added by luosm 20170313 -->
+	<sql id="condition_asc_order">
+		<!-- 根据不同的tabs做不同的排序 顺序-->
+		<if test="tabs != null and tabs != ''">
+			<!-- 待发货按照付款时间 -->
+			<if test="tabs == 'wait_shipments'">
+				ORDER BY tp.pay_time ASC
+			</if>
+			<if
+				test="tabs == 'wait_receiving'">
+				ORDER BY tr.delivery_time ASC
+			</if>
+			<!-- 已取消 -->
+			<if test=" tabs == 'cancel'">
+				ORDER BY tr.update_time ASC
+			</if>
+			<if test="tabs == 'done'">
+				ORDER BY tr.received_time ASC
+			</if>
+			<!-- 服务店待接单 -->
+			<if test="tabs == 'wait_receive_order'">
+				ORDER BY tp.pay_time ASC
+			</if>
+			<!-- 待派单 -->
+			<if test="tabs == 'dropshipping'">
+				ORDER BY tr.accept_time ASC
+			</if>
+			<!-- 服务中 -->
+			<if test="tabs == 'to_be_signed'">
+				ORDER BY tr.delivery_time ASC
+			</if>
+			<!-- 已完成 -->
+			<if test="tabs == 'has_been_signed'">
+				ORDER BY tr.received_time ASC
+			</if>
+		</if>
+	</sql>
+	
+	<sql id="condition_desc_order">
+		<!-- 根据不同的tabs做不同的排序 顺序-->
+		<if test="tabs != null and tabs != ''">
+			<!-- 待发货按照付款时间 -->
+			<if test="tabs == 'wait_shipments'">
+				ORDER BY tp.pay_time DESC
+			</if>
+			<if test="tabs == 'wait_receiving'">
+				ORDER BY tr.delivery_time DESC
+			</if>
+			<!-- 已取消 -->
+			<if test=" tabs == 'cancel'">
+				ORDER BY tr.update_time DESC
+			</if>
+			<if test="tabs == 'done'">
+				ORDER BY tr.received_time DESC
+			</if>
+			<!-- 服务店待接单 -->
+			<if test="tabs == 'wait_receive_order'">
+				ORDER BY tp.pay_time DESC
+			</if>
+			<!-- 待派单 -->
+			<if test="tabs == 'dropshipping'">
+				ORDER BY tr.accept_time DESC
+			</if>
+			<!-- 服务中 -->
+			<if test="tabs == 'to_be_signed'">
+				ORDER BY tr.delivery_time DESC
+			</if>
+			<!-- 已完成 -->
+			<if test="tabs == 'has_been_signed'">
+				ORDER BY tr.received_time DESC
+			</if>
+		</if>
+	</sql>
+	<!-- End V2.1.0 added by luosm 20170313 -->
 	
 	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
 		parameterType="java.lang.String">
@@ -1115,7 +1220,7 @@
 	<select id="selectUserOrderDetail" resultMap="UserTradeOrderDetailMap"
 		parameterType="java.lang.String">
 		SELECT
-		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,
+		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,o.order_resource,
 		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,o.cancel_type,
 		logistics.consignee_name,logistics.telephone,logistics.mobile,logistics.area,logistics.address,
 		logistics.type as
@@ -1374,6 +1479,8 @@
 		o.id,
 		o.order_no,
 		o.store_id,
+		o.type as order_type,
+		o.pick_up_type,
 		<if
 			test="(storeName != null and storeName != '') or (fullName != null and fullName != '') or (null!=type)">
 			si.store_name,
@@ -1390,10 +1497,6 @@
 		o.user_phone,
 		o.create_time,
 		o. STATUS,
-		member.province_name as aProvice_name,
-		member.city_name as aCity_name,
-		member.area_name as aArea_name,
-		member.address as memberAddress,
 		o.order_resource,
 		o.pick_up_time
 		FROM
@@ -1408,13 +1511,9 @@
 		<if test="null!=payType">
 			LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
 		</if>
-		LEFT JOIN member_consignee_address member ON member.id = o.pick_up_id
 		WHERE 1=1
 		AND o.disabled =0
 		AND o.order_resource !=2
-		<if test="null!=cityName and ''!=cityName">
-			AND member.city_name LIKE CONCAT('%',#{cityName,jdbcType=VARCHAR},'%')
-		</if>
 		<if test="ids != null">
 			AND o.id in
 			<foreach collection="ids" index="index" item="item" open="("
@@ -1479,24 +1578,17 @@
 		locate.city_name as lCity_name,
 		locate.area_name as lArea_name,
 		locate.area_ext as lArea_ext,
-		member.province_name as aProvice_name,
-		member.city_name as aCity_name,
-		member.area_name as aArea_name,
-		member.address as memberAddress
+		o.type as order_type,
+		o.pick_up_type
 		from trade_order o
 		LEFT JOIN store_info si ON o.store_id=si.id
 		LEFT JOIN psms_agent pa ON
 		pa.id=si.agent_id
 		LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
-		LEFT JOIN member_consignee_address member ON member.id = o.pick_up_id
 		LEFT JOIN trade_order_locate locate ON locate.order_id = o.id
 		WHERE 1=1
 		AND o.disabled =0
 		AND o.order_resource !=2
-		<!-- Begin V2.1.0 added by luosm 20170218 -->
-		<if test="cityName != null and cityName != ''">
-			AND member.city_name LIKE CONCAT('%',#{cityName,jdbcType=VARCHAR},'%')
-		</if>
 		<!-- End V2.1.0 added by luosm 20170218 -->
 		<if test="ids != null">
 			AND o.id in
@@ -2666,6 +2758,68 @@
 		</if>
 	</select>
 
+	<!-- luosm:V2.1.0商家版APP订单查询 -->
+	<select id="selectNewOrderInfo" parameterType="java.util.Map"
+		resultMap="TradeOrderVo">
+		SELECT
+		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.pick_up_type,tr.preferential_price,tr.fare,tr.status,tr.delivery_time,tr.type,
+		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
+		= tr.id) as goods_count,
+		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
+		goods_type_count,
+		tr.create_time,tr.activity_type,tr.activity_id,
+		(select count(1) from trade_order_refunds_item r inner join trade_order_item
+		i on r.order_item_id = i.id where i.order_id = tr.id) as refunds_count
+		FROM trade_order as tr
+		LEFT JOIN trade_order_pay tp ON tp.order_id = tr.id
+		WHERE tr.store_id = #{storeId,jdbcType=VARCHAR}
+		and disabled = 0
+		<!-- 状态 -->
+		<if test="status != null">
+			AND tr.`status` IN
+			<foreach collection="status" index="index" item="item" open="("
+				close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单来源，多个时使用IN -->
+		<if test="null!=orderResources">
+			AND tr.order_resource IN
+			<foreach collection="orderResources" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单类型 -->
+		<if test="type != null">
+			AND tr.type = #{type,jdbcType=TINYINT}
+		</if>
+		<!-- 查询条件为 商品名称、订单号码、手机号码 -->
+		<if test="searchCondition != null and searchCondition != ''">
+			AND (
+			tr.order_no LIKE CONCAT('%',#{searchCondition},'%')
+			OR tr.user_phone LIKE CONCAT('%',#{searchCondition},'%')
+			OR EXISTS(SELECT 1 FROM trade_order_item i WHERE tr.id = i.order_id AND
+			i.sku_name like CONCAT('%',#{searchCondition,jdbcType=VARCHAR},'%'))
+			)
+		</if>
+		<!-- 根据tabs不同按时间排序 -->
+		<if test="sortType != null and sortType != ''">
+			<!-- 顺序 -->
+			<if test="sortType == 0">
+				<include refid="condition_asc_order" />
+			</if>
+			<!-- 倒序 -->
+			<if test="sortType == 1">
+				<include refid="condition_desc_order" />
+			</if>
+		</if>
+		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
+		<if test="tabs == null or tabs == ''">
+			ORDER BY tr.create_time DESC
+		</if>
+	</select>
+
 	<!-- luosm:商家版APP服务店到店消费订单查询 -->
 	<select id="selectServiceOrderInfo" parameterType="java.util.Map"
 		resultMap="TradeOrderVo">
@@ -2716,6 +2870,75 @@
 			)
 		</if>
 			ORDER BY tr.create_time DESC
+	</select>
+
+	<!-- luosm:V2.1.0商家版APP服务店到店消费订单查询 -->
+	<select id="selectNewServiceOrderInfo" parameterType="java.util.Map"
+		resultMap="TradeOrderVo">
+		SELECT
+		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.status,tr.consumer_code_status,tr.delivery_time,tr.type,tr.is_breach,
+		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
+		= tr.id) as goods_count,
+		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
+		goods_type_count,
+		tr.create_time,tr.activity_type,tr.activity_id,
+		(select count(1) from trade_order_refunds_item r inner join trade_order_item
+		i on r.order_item_id = i.id where i.order_id = tr.id) as refunds_count
+		FROM trade_order as tr
+		LEFT JOIN trade_order_pay tp ON tp.order_id = tr.id
+		WHERE tr.store_id = #{storeId,jdbcType=VARCHAR}
+		and disabled = 0
+		<!-- 状态 -->
+		<if test="status != null">
+			AND CASE
+				WHEN tr.status IN (0,11) THEN 0
+				WHEN tr.status IN (2,4,12,13,6) THEN 2
+				ELSE tr.status
+				END 
+			IN
+			<foreach collection="status" index="index" item="item" open="("
+				close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单来源，多个时使用IN -->
+		<if test="null!=orderResources">
+			AND tr.order_resource IN
+			<foreach collection="orderResources" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单类型 -->
+		<if test="type != null">
+			AND tr.type = #{type,jdbcType=TINYINT}
+		</if>
+		<!-- 查询条件为 商品名称、订单号码、手机号码 -->
+		<if test="searchCondition != null and searchCondition != ''">
+			AND (
+			tr.order_no LIKE CONCAT('%',#{searchCondition},'%')
+			OR tr.user_phone LIKE CONCAT('%',#{searchCondition},'%')
+			OR EXISTS(SELECT 1 FROM trade_order_item i WHERE tr.id = i.order_id AND
+			i.sku_name like CONCAT('%',#{searchCondition,jdbcType=VARCHAR},'%'))
+			OR EXISTS(SELECT 1 FROM trade_order_item_detail d WHERE tr.id = d.order_id AND
+			d.consume_code like CONCAT('%',#{searchCondition,jdbcType=VARCHAR},'%'))
+			)
+		</if>
+		<!-- 根据tabs不同按时间排序 -->
+		<if test="sortType != null and sortType != ''">
+			<!-- 顺序 -->
+			<if test="sortType == 0">
+				<include refid="condition_asc_order" />
+			</if>
+			<!-- 倒序 -->
+			<if test="sortType == 1">
+				<include refid="condition_desc_order" />
+			</if>
+		</if>
+		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
+		<if test="tabs == null or tabs == ''">
+			ORDER BY tr.create_time DESC
+		</if>
 	</select>
 
 	<!-- zengj:订单详情 -->
@@ -3494,10 +3717,10 @@
 	<!-- zengj:今日(昨日)营收列表 -->
 	<select id="selectOrderIncomeList" parameterType="java.util.Map"
 		resultType="java.util.Map">
-		SELECT tradeNo,income,tradeTime,types
+		SELECT tradeNo,income,tradeTime,types,orderId
 		FROM
 		(SELECT order_no AS tradeNo,income,received_time AS tradeTime,0 as
-		types
+		types,id AS orderId
 		FROM trade_order
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
 		AND (received_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND
@@ -3511,7 +3734,7 @@
 		UNION ALL
 		SELECT refund_no AS tradeNo,(select sum(income) from
 		trade_order_refunds_item i where i.refunds_id = r.id) as
-		income,refund_money_time AS tradeTime,1 as types
+		income,refund_money_time AS tradeTime,1 as types,r.order_id as orderId
 		FROM trade_order_refunds r
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
 		AND refund_money_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND
@@ -3990,6 +4213,13 @@
 		LEFT JOIN sys_user su ON su.id=tr.seller_id
 		WHERE 1=1
 		<include refid="order_paytype_condition" />
+		<if test="consumStatus != null">
+			AND EXISTS(
+				SELECT 1 FROM trade_order_item toi 
+				LEFT JOIN trade_order_item_detail toid ON toid.order_item_id = toi.id 
+				WHERE tr.id = toi.order_id AND toid.status = #{consumStatus}
+			)
+		</if>
 		<if test="orderTimeSort != null and orderTimeSort != ''">
 	       <if test="orderTimeSort == 1">
 	         ORDER BY tr.create_time DESC
@@ -4094,7 +4324,12 @@
 		WHERE 1=1
 		AND tr.disabled=0
 		<include refid="order_paytype_condition" />
-		order by tr.create_time desc
+		<choose>
+			<when test="orderTimeSortLabel == 2">
+				ORDER BY tr.create_time ASC
+			</when>
+			<otherwise>ORDER BY tr.create_time DESC</otherwise>
+		</choose>
 	</select>
 	<!-- wusw:pos订单项信息查询 （商家中心） -->
 	<select id="selectOrderItemListForSeller" parameterType="java.util.Map"
@@ -4333,42 +4568,40 @@
 		</if>
 	</select>
 	<!-- zengj:查询导出POS销售单列表 -->
-	<select id="selectPosOrderExportList" resultType="java.util.Map"
-		parameterType="java.util.Map">
+	<select id="selectPosOrderExportList" resultType="java.util.Map" parameterType="java.util.Map">
 		SELECT
-		toi.id AS id,
-		o.order_no AS orderNo,
-		c.`name` AS threeCategory,
-		toi.sku_name AS skuName,
-		toi.bar_code AS barCode,
-		toi.style_code AS styleCode,
-		toi.unit_price AS unitPrice,
-		IFNULL(toi.quantity,toi.weight) AS quantity,
-		toi.unit_price * IFNULL(toi.quantity, toi.weight) as orderItemTotalAmount,
-		o.create_time AS createTime,
-		CAST(o.`status` AS SIGNED) AS `status`,
-		CAST(tor.refunds_status AS SIGNED) AS refundsStatus,
-		IFNULL(tori.quantity,tori.weight) AS refundsQuantity,
-		tori.unit_price * IFNULL(tori.quantity,tori.weight) as refundsAmount,
-		u.login_name AS operator
-		FROM
-		trade_order_item toi
+			toi.id AS id,
+			o.order_no AS orderNo,
+			c.`name` AS threeCategory,
+			toi.sku_name AS skuName,
+			toi.bar_code AS barCode,
+			toi.style_code AS styleCode,
+			toi.unit_price AS unitPrice,
+			IFNULL(toi.quantity,toi.weight) AS quantity,
+			toi.unit_price * IFNULL(toi.quantity, toi.weight) as orderItemTotalAmount,
+			o.create_time AS createTime,
+			CAST(o.`status` AS SIGNED) AS `status`,
+			CAST(tor.refunds_status AS SIGNED) AS refundsStatus,
+			IFNULL(tori.quantity,tori.weight) AS refundsQuantity,
+			tori.unit_price * IFNULL(tori.quantity,tori.weight) as refundsAmount,
+			u.login_name AS operator,
+			o.user_phone AS userPhone,
+			toi.actual_amount AS orderItemActualAmount,
+			toi.preferential_price AS  orderItemPreferentialPrice,
+			IFNULL(tori.amount, 0.00) AS orderItemRefundsAmount,
+			op.pay_type*1 AS payType,
+			o.pay_way*1 AS payWay
+		FROM trade_order_item toi
 		LEFT JOIN trade_order o ON o.id = toi.order_id
-		LEFT JOIN
-		goods_store_sku sku ON toi.store_sku_id = sku.id
-		LEFT JOIN
-		goods_store_spu spu ON sku.store_spu_id = spu.id
-		LEFT JOIN
-		goods_spu_category c ON c.id = spu.spu_category_id
-		LEFT JOIN
-		trade_order_refunds_item tori ON toi.id = tori.order_item_id
-		LEFT JOIN
-		trade_order_refunds tor ON tori.refunds_id = tor.id
-		LEFT JOIN sys_user
-		u ON o.seller_id = u.id
-		WHERE o.store_id = #{storeId,jdbcType=VARCHAR}
-		AND o.disabled = 0
-		and o.order_resource = 2
+		LEFT JOIN goods_store_sku sku ON toi.store_sku_id = sku.id
+		LEFT JOIN goods_store_spu spu ON sku.store_spu_id = spu.id
+		LEFT JOIN goods_spu_category c ON c.id = spu.spu_category_id
+		LEFT JOIN trade_order_refunds_item tori ON toi.id = tori.order_item_id
+		LEFT JOIN trade_order_refunds tor ON tori.refunds_id = tor.id
+		LEFT JOIN sys_user u ON o.seller_id = u.id
+		LEFT JOIN trade_order_pay op ON op.order_id = o.id
+		WHERE o.store_id = #{storeId,jdbcType=VARCHAR} AND o.disabled = 0
+		AND o.order_resource = #{orderResource}
 		<if test="orderNo != null and orderNo != ''">
 			AND o.order_no LIKE CONCAT('%', #{orderNo,jdbcType=VARCHAR}, '%')
 		</if>
@@ -4390,7 +4623,33 @@
 				#{item}
 			</foreach>
 		</if>
-		ORDER BY o.create_time desc
+		
+		<if test="null != payType">
+			<!-- 如果支付方式是现金支付的，付款表是没记录的，所以需要查询货到付款和线下支付的订单 -->
+			<if test="payType == 4">
+				AND o.pay_way in(1,3)
+			</if>
+			<!-- 否则根据支付类型查询支付表的支付类型 -->
+			<if test="payType != 4 and payType != -1">
+				AND op.pay_type = #{payType}
+			</if>
+			<!-- 查询未支付信息 -->
+			<if test="payType == -1">
+				AND 0.pay_way in (0,2) 
+				AND op.pay_type is null 
+				AND o.status in(0,11)
+			</if>
+		</if>
+		<if test="null != userPhone and '' != userPhone">
+			AND tr.user_phone like CONCAT('%',#{userPhone},'%')
+		</if>
+		<choose>
+			<when test="orderTimeSortLabel == 2">
+				ORDER BY o.create_time ASC
+			</when>
+			<otherwise>ORDER BY o.create_time DESC</otherwise>
+		</choose>
+		
 		<if test="maxSize != null and maxSize > 0">
 			LIMIT #{maxSize,jdbcType=INTEGER}
 		</if>
@@ -4562,6 +4821,13 @@
 		LEFT JOIN member_consignee_address address ON tr.pick_up_id = address.id
 		WHERE 1=1
 		<include refid="order_paytype_condition" />
+		<if test="consumStatus != null">
+			AND EXISTS(
+				SELECT 1 FROM trade_order_item toi 
+				LEFT JOIN trade_order_item_detail toid ON toid.order_item_id = toi.id 
+				WHERE tr.id = toi.order_id AND toid.status = #{consumStatus}
+			)
+		</if>
 		<if test="orderTimeSort != null and orderTimeSort != ''">
 	       <if test="orderTimeSort == 1">
 	         ORDER BY tr.create_time DESC
@@ -4708,7 +4974,8 @@
 		op.pay_time,
 		su.login_name,
 		su.user_name,
-        CONCAT(tol.area, tol.address) AS pick_up_id
+        CONCAT(tol.area, tol.address) AS pick_up_id,
+        tol.logistics_no, tol.type as logistics_type
 		FROM trade_order tr
 		<!-- LEFT JOIN trade_order_item item ON item.order_id = tr.id -->
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
@@ -4771,6 +5038,13 @@
 		</if>
 		<if test="null != activityType">
 			AND tr.activity_type = #{activityType}
+		</if>
+		<!-- 添加查询条件 by tangy -->
+		<if test="null != logisticsNo">
+			AND tol.logistics_no LIKE CONCAT('%',#{logisticsNo,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="null != logisticsType">
+			AND tol.type = #{logisticsType}
 		</if>
 		<!-- 引用排序sql -->
 		<include refid="order_paytype_orderby" />
@@ -4841,6 +5115,9 @@
 				tr.status,
 				tr.pick_up_time,
 				tr.preferential_price,
+				tr.store_id,
+				tr.type as order_type,
+				tr.pick_up_type,
 				tr.remark,
 				op.pay_type,
 				op.pay_time,
@@ -4852,32 +5129,31 @@
 				locate.city_name as lCity_name,
 				locate.area_name as lArea_name,
 				locate.area_ext as lArea_ext,
-				member.province_name as aProvice_name,
-				member.city_name as aCity_name,
-				member.area_name as aArea_name,
-				member.address as memberAddress,
 				CONCAT(tol.area,tol.address) as area,
 				<!-- begin V2.1 add by zhulq 导出列表新增字段 --> 
 				CONCAT(IFNULL(locate.provice_name,''),IFNULL(locate.city_name,''),IFNULL(locate.area_name,''),IFNULL(locate.area_ext,'')) as locate_address,
 				tr.order_resource,
 				tr.income,
 				tr.activity_id,
-				tr.user_id	
-				<!-- end V2.1 add by zhulq 导出列表新增字段 -->			
+				tr.user_id,
+				IF(fto.received_time is null, '复购', '首购') as is_first_order
+				<!-- end V2.1 add by zhulq 导出列表新增字段 -->	
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN trade_order_logistics tol ON tr.id = tol.order_id
 		LEFT JOIN trade_order_locate locate ON locate.order_id = tr.id
-		LEFT JOIN member_consignee_address member ON member.id = tr.pick_up_id
+		LEFT JOIN 
+			(SELECT id, MIN(received_time) AS received_time
+		    FROM trade_order 
+		    WHERE STATUS = 5 
+		    GROUP BY user_id) fto
+		ON fto.id = tr.id
 		WHERE 1=1
 		<!-- 订单类型 -->
 		<if test="null != type">
 			AND tr.type = #{type,jdbcType=TINYINT}
 		</if>
 		<!-- Begin V2.1.0 added by luosm 20170218 -->
-		<if test="cityName != null and cityName != ''">
-			AND member.city_name LIKE CONCAT('%',#{cityName,jdbcType=VARCHAR},'%')
-		</if>
 		<!-- End V2.1.0 added by luosm 20170218 -->
 		<if test="null != payType">
 			<!-- 如果支付方式是线下支付的订单 -->
@@ -5141,14 +5417,15 @@
 		trade.store_id,
 		trade.user_phone,
 		trade.user_id,
+		trade.pick_up_type,
 		locate.provice_name as lProvice_name,
 		locate.city_name as lCity_name,
 		locate.area_name as lArea_name,
 		locate.area_ext as lArea_ext,
-		member.province_name as aProvice_name,
+<!-- 		member.province_name as aProvice_name,
 		member.city_name as aCity_name,
 		member.area_name as aArea_name,
-		member.address as address,
+		member.address as address, -->
 		trade.income,
 		trade.activity_type,
 		trade.activity_id,
@@ -5179,7 +5456,7 @@
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN store_info store ON store.id = trade.store_id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
-		LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id
+		<!-- LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id -->
 		WHERE 1=1
 		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
 		<if test="locateCityName != null and locateCityName != ''">
@@ -5273,11 +5550,11 @@
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN store_info store ON store.id = trade.store_id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
-		LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id
+		<!-- LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id -->
 		WHERE 1=1
 		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
 		<if test="locateCityName != null and locateCityName != ''">
-			AND locate.city_id = #{cityId, jdbcType=VARCHAR}
+			AND locate.city_name LIKE CONCAT('%', #{locateCityName,jdbcType=VARCHAR},'%')
 			AND (trade.type = 3 OR trade.type = 4)
 		</if>
 		<!-- end add by zhulq 订单所属城市 和定位地址 -->
@@ -5752,4 +6029,145 @@
 		ORDER BY t.create_time desc
 	</select>
 	<!-- End V2.1 added by maojj 查找用户订单列表-->
+	
+	<!-- begin v2.2 added by chenzc 查询所有用户的首购 -->
+	<select id="findFirstTradeOrder" resultMap="BaseResultMap">
+	    SELECT id, order_no, user_id, MIN(received_time) as received_time
+	    FROM trade_order 
+	    WHERE STATUS = 5 
+	    GROUP BY user_id
+	</select>
+	<!-- end v2.2 added by chenzc 查询所有用户的首购 -->
+	
+	<!-- begin xuzq 20170321 2.2.0 查询订单详情列表 -->
+	<!-- 商家版APP服务店到店消费和上门服务订单查询 -->
+	<select id="findServiceOrderInfo" parameterType="java.util.Map"
+		resultMap="tradeOrderDetailBo">
+		SELECT
+		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.status,tr.consumer_code_status,tr.delivery_time,tr.type,tr.is_breach,
+		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
+		= tr.id) as goods_count,
+		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
+		goods_type_count,
+		tr.create_time,tr.activity_type,tr.activity_id,
+		(select count(1) from trade_order_refunds_item r inner join trade_order_item
+		i on r.order_item_id = i.id where i.order_id = tr.id) as refunds_count
+		FROM trade_order as tr
+		LEFT JOIN trade_order_pay tp ON tp.order_id = tr.id
+		WHERE tr.store_id = #{storeId,jdbcType=VARCHAR}
+		and disabled = 0
+		<!-- 状态 -->
+		<if test="status != null">
+			AND CASE
+				WHEN tr.status IN (0,11) THEN 0
+				WHEN tr.status IN (2,4,12,13,6) THEN 2
+				ELSE tr.status
+				END 
+			IN
+			<foreach collection="status" index="index" item="item" open="("
+				close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单来源，多个时使用IN -->
+		<if test="null!=orderResources">
+			AND tr.order_resource IN
+			<foreach collection="orderResources" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单类型 -->
+		<if test="type != null">
+			AND tr.type = #{type,jdbcType=TINYINT}
+		</if>
+		<!-- 查询条件为 商品名称、订单号码、手机号码 -->
+		<if test="searchCondition != null and searchCondition != ''">
+			AND (
+			tr.order_no LIKE CONCAT('%',#{searchCondition},'%')
+			OR tr.user_phone LIKE CONCAT('%',#{searchCondition},'%')
+			OR EXISTS(SELECT 1 FROM trade_order_item i WHERE tr.id = i.order_id AND
+			i.sku_name like CONCAT('%',#{searchCondition,jdbcType=VARCHAR},'%'))
+			OR EXISTS(SELECT 1 FROM trade_order_item_detail d WHERE tr.id = d.order_id AND
+			d.consume_code like CONCAT('%',#{searchCondition,jdbcType=VARCHAR},'%'))
+			)
+		</if>
+		<!-- 根据tabs不同按时间排序 -->
+		<if test="sortType != null and sortType != ''">
+			<!-- 顺序 -->
+			<if test="sortType == 0">
+				<include refid="condition_asc_order" />
+			</if>
+			<!-- 倒序 -->
+			<if test="sortType == 1">
+				<include refid="condition_desc_order" />
+			</if>
+		</if>
+		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
+		<if test="tabs == null or tabs == ''">
+			ORDER BY tr.create_time DESC
+		</if>
+	</select>
+	<!-- luosm:V2.1.0商家版APP订单查询 -->
+	<select id="findCloudOrderInfo" parameterType="java.util.Map"
+		resultMap="tradeOrderDetailBo">
+		SELECT
+		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.pick_up_type,tr.preferential_price,tr.fare,tr.status,tr.delivery_time,tr.type,
+		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
+		= tr.id) as goods_count,
+		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
+		goods_type_count,
+		tr.create_time,tr.activity_type,tr.activity_id,
+		(select count(1) from trade_order_refunds_item r inner join trade_order_item
+		i on r.order_item_id = i.id where i.order_id = tr.id) as refunds_count
+		FROM trade_order as tr
+		LEFT JOIN trade_order_pay tp ON tp.order_id = tr.id
+		WHERE tr.store_id = #{storeId,jdbcType=VARCHAR}
+		and disabled = 0
+		<!-- 状态 -->
+		<if test="status != null">
+			AND tr.`status` IN
+			<foreach collection="status" index="index" item="item" open="("
+				close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单来源，多个时使用IN -->
+		<if test="null!=orderResources">
+			AND tr.order_resource IN
+			<foreach collection="orderResources" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单类型 -->
+		<if test="type != null">
+			AND tr.type = #{type,jdbcType=TINYINT}
+		</if>
+		<!-- 查询条件为 商品名称、订单号码、手机号码 -->
+		<if test="searchCondition != null and searchCondition != ''">
+			AND (
+			tr.order_no LIKE CONCAT('%',#{searchCondition},'%')
+			OR tr.user_phone LIKE CONCAT('%',#{searchCondition},'%')
+			OR EXISTS(SELECT 1 FROM trade_order_item i WHERE tr.id = i.order_id AND
+			i.sku_name like CONCAT('%',#{searchCondition,jdbcType=VARCHAR},'%'))
+			)
+		</if>
+		<!-- 根据tabs不同按时间排序 -->
+		<if test="sortType != null and sortType != ''">
+			<!-- 顺序 -->
+			<if test="sortType == 0">
+				<include refid="condition_asc_order" />
+			</if>
+			<!-- 倒序 -->
+			<if test="sortType == 1">
+				<include refid="condition_desc_order" />
+			</if>
+		</if>
+		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
+		<if test="tabs == null or tabs == ''">
+			ORDER BY tr.create_time DESC
+		</if>
+	</select>
+	<!-- end xuzq 20170321 2.2.0 查询订单详情列表 -->
 </mapper>

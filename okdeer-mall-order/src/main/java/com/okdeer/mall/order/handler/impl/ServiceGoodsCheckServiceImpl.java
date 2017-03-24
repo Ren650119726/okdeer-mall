@@ -21,7 +21,7 @@ import com.okdeer.archive.goods.store.enums.IsShopNum;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.utils.DateUtils;
@@ -73,7 +73,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 	 * 店铺商品库存Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockService;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 	
 	@Override
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
@@ -337,8 +337,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 	public void buildRespGoodsStock(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
 		List<String> storeSkuIdList = (List<String>)req.getContext().get("storeSkuIdList");
 		// 商品库存
-		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockService
-				.selectSingleSkuStockBySkuIdList(storeSkuIdList);
+		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockApi.findByStoreSkuIdList(storeSkuIdList);
 		
 		List<TradeOrderGoodsItem> list = req.getData().getList();
 		// 存储返回的sku对应的库存信息列表
