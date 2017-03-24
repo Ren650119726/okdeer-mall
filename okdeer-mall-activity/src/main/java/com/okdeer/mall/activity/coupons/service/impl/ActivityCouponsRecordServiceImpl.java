@@ -66,11 +66,12 @@ import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.common.enums.GetUserType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.member.service.MemberService;
 import com.okdeer.mall.member.service.SysBuyerExtService;
-import com.okdeer.mall.operate.advert.service.ColumnAdvertService;
 import com.okdeer.mall.order.constant.OrderMsgConstant;
+import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
@@ -188,6 +189,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 	// End added by maojj 2017-02-15
+	
+	@Reference(version = "1.0.0", check = false)
+	private TradeOrderServiceApi tradeOrderService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -357,8 +361,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		for(ActivityCoupons coupons : activityCoupons){
 			// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 			ActivityCouponsRecord record = new ActivityCouponsRecord();
+			record.setCollectType(activityCouponsType);
 			//进行公共代金劵领取校验
-			if (!checkRecordPubilc(map, coupons,activityCouponsType,record)) {
+			if (!checkRecordPubilc(map, coupons,userId,record)) {
 				checkFlag = false;
 				break;
 			}
@@ -414,8 +419,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			for(ActivityCoupons coupons : activityCoupons){
 				// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 				ActivityCouponsRecordBefore record = new ActivityCouponsRecordBefore();
+				record.setCollectType(activityCouponsType);
 				//进行公共代金劵领取校验
-				if (!checkRecordPubilc(map, coupons,activityCouponsType,record)) {
+				if (!checkRecordPubilc(map, coupons,null,record)) {
 					checkFlag = false;
 					break;
 				}
@@ -584,15 +590,15 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		Map<String, Object> map = new HashMap<String, Object>();
 		// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 		ActivityCouponsRecord record = new ActivityCouponsRecord();
+		record.setCollectType(activityCouponsType);
 		//进行公共代金劵领取校验
-		if (!checkRecordPubilc(map, activityCoupons,activityCouponsType,record)) {
+		if (!checkRecordPubilc(map, activityCoupons,userId,record)) {
 			return map;
 		}
 		//检验随机码是否可以领取
 		if (!checkRandCode(map, userId, record, activityCoupons)) {
 			return map;
 		}
-		//record.setCollectUserId(userId);
 		//更新保存领取代金劵记录
 		updateCouponsRecode(record, activityCoupons);
 		//更新随机码表记录
@@ -618,8 +624,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		Map<String, Object> map = new HashMap<String, Object>();
 		// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 		ActivityCouponsRecord record = new ActivityCouponsRecord();
+		record.setCollectType(activityCouponsType);
 		//进行公共代金劵领取校验
-		if (!checkRecordPubilc(map, activityCoupons,activityCouponsType,record)) {
+		if (!checkRecordPubilc(map, activityCoupons,userId,record)) {
 			return map;
 		}
 		//检验优惠码的领取
@@ -647,7 +654,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @date 2016年10月26日
 	 */
 	private boolean checkRecordPubilc(Map<String, Object> map,ActivityCoupons activityCoupons,
-			 ActivityCouponsType activityCouponsType,ActivityCouponsRecord record) {
+			 String  userId,ActivityCouponsRecord record) {
 		if (activityCoupons.getRemainNum() <= 0) {
 			// 剩余数量小于0 显示已领完
 			//map.put("data", null);
@@ -658,11 +665,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		Date collectTime = DateUtils.getDateStart(new Date());
 		record.setCouponsId(activityCoupons.getId());
 		record.setCouponsCollectId(activityCoupons.getActivityId());
-		record.setCollectType(activityCouponsType);
-		record.setCollectUserId(null);
+		record.setCollectUserId(userId);
 		record.setCollectTime(collectTime);	
 		//校验代金卷的日领取量
-		if (!checkDaliyRecord(map, record, activityCoupons)) {
+		if (!checkDaliyRecord(map, record, activityCoupons,userId)) {
 			return false;
 		}
 		return true;
@@ -768,8 +774,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @author zhulq
 	 * @date 2016年10月26日
 	 */
-	private boolean checkDaliyRecord(Map<String, Object> map,
-								ActivityCouponsRecord record,ActivityCoupons coupons) {
+	private boolean checkDaliyRecord(Map<String, Object> map,ActivityCouponsRecord record,
+								ActivityCoupons coupons,String userId) {
 		// 判断活动是否已结束
 		ActivityCollectCoupons collect = activityCollectCouponsMapper
 				.get(coupons.getActivityId());
@@ -779,6 +785,15 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			map.put("code", 105);
 			return false;
 		}
+		//根据用户id查询其订单完成的订单总量 大于 0 下过单 就不算新用户
+    	if(collect.getGetUserType() == GetUserType.ONlY_NEW_USER){
+	    	//如果用户存在单没有下过单一样送券
+    		if(userId != null && tradeOrderService.selectCountByUserStatus(userId) > 0){
+    	    	map.put("code", 106);
+    			map.put("msg", "该活动为新用户专享！");
+    			return false;
+    		}
+    	}
 		// 当前日期已经领取的数量
 		int dailyCirculation = activityCouponsRecordMapper.selectCountByParams(record);
 		// 当前代金劵日已经预领取领取的数量

@@ -107,6 +107,11 @@
     <result column="online" property="online" jdbcType="INTEGER" />
   </resultMap>
 		
+	<resultMap id="getAllSetAreaResult" type="HashMap">
+	    <result property="key" column="areaId" jdbcType="VARCHAR"/>
+	    <result property="value" column="areaNum" jdbcType="INTEGER" />
+	</resultMap>
+	
 	<sql id="base_column_list">
 		id, position_id, belong_type, name, target_type, target, target_url, pic_url,
 		area_type, start_time, end_time, is_pay, trade_num, status, create_time, create_user_id,
@@ -213,7 +218,10 @@
 		</if>
 		<if test="applyEndTime != null ">
 			AND ca.create_time &lt;= #{applyEndTime}
-		</if>		
+		</if>
+		<if test="advertStatus !=null ">
+			AND ca.status  = #{advertStatus,jdbcType = TINYINT}
+		</if>	
 		ORDER BY aap.approval_time DESC			
 	</select>
 	
@@ -608,6 +616,7 @@
 			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
 			LEFT JOIN column_advert_position cpos ON cpos.id = ca.position_id 
 			LEFT JOIN column_advert_area area ON area.advert_id = ca.id
+			left join column_advert_version v on ca.id=v.advert_id
 		<if test="communityId != null and communityId != ''">
 		 	LEFT JOIN column_advert_community community ON ca.id = community.advert_id
 		</if>
@@ -622,6 +631,7 @@
 		<if test="advertType != null">
 			AND cpos.type = #{advertType}
 		</if>
+		and (v.version is null or v.version=#{version, jdbcType=VARCHAR})
 		<if test="cityId != null and cityId != ''">
 		AND (
 			ca.area_type = 0
@@ -691,6 +701,7 @@
 			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
 			LEFT JOIN column_advert_position cpos ON cpos.id = ca.position_id 
 			LEFT JOIN column_advert_area area ON area.advert_id = ca.id
+			left join column_advert_version v on ca.id=v.advert_id
 		<if test="communityId != null and communityId != ''">
 		 	LEFT JOIN column_advert_community community ON ca.id = community.advert_id
 		</if>
@@ -705,6 +716,7 @@
 		<if test="advertType != null">
 			AND cpos.type = #{advertType}
 		</if>
+		and (v.version is null or v.version=#{version, jdbcType=VARCHAR})
 		<if test="cityId != null and cityId != ''">
 		AND (
 			ca.area_type = 0
@@ -1197,31 +1209,37 @@
 		)
 	</select>
 	
+	
+	<sql id="advert_goods_columns">
+		sku.id,
+		sku.name,
+		sku.alias,
+		IFNULL(sku.tag_type,0) AS tagType,
+		sku.bar_code,
+		sku.update_time AS updateTime,
+		sku.store_id,
+		sku.type,
+		if(sa.type=5,asg.sale_price,sku.online_price) AS onlinePrice,
+		sku.market_price AS marketPrice,
+		if(sa.type=5,asg.trade_max,sku.trade_max) AS tradeMax,
+		IFNULL(sku.guaranteed,0) AS guaranteed,
+		IFNULL(sku.obsolete,0) AS obsolete,
+		sku.properties_indb AS propertiesIndb, 		
+		sku.activity_type AS activityType,
+		picture.url,
+		stock.sellable AS sellableStock,
+		asg.sale_price,
+		stock.locked AS lockedStock,
+		asg.trade_max AS lowPriceUpper,
+		sa.`limit` as limitNum,
+		sku.`online` AS online,
+		if(sa.type=5,1,0) isPrivliege
+	</sql>
+	
 	<!-- begin 根据广告id获取广告商品列表 xuzq01 20170208-->
 	<select id="findAdvertGoodsByAdvertId" resultMap="advertGoodsMap" parameterType="String">
 		SELECT DISTINCT
-	        sku.id,
-			sku.name,
-			sku.alias,
-			IFNULL(sku.tag_type,0) AS tagType,
-			sku.bar_code,
-			sku.update_time AS updateTime,
-			sku.store_id,
-			sku.type,
-			if(sa.type=5,asg.sale_price,sku.online_price) AS onlinePrice,
-			sku.market_price AS marketPrice,
-			if(sa.type=5,asg.trade_max,sku.trade_max) AS tradeMax,
-			IFNULL(sku.guaranteed,0) AS guaranteed,
-			IFNULL(sku.obsolete,0) AS obsolete,
-			sku.properties_indb AS propertiesIndb, 		
-			sku.activity_type AS activityType,
-			picture.url,
-			stock.sellable AS sellableStock,
-			asg.sale_price,
-			stock.locked AS lockedStock,
-			asg.trade_max AS lowPriceUpper,
-			sa.`limit` as limitNum,
-			sku.`online` AS online
+	        <include refid="advert_goods_columns" />
 		FROM column_advert_goods s
 			INNER JOIN goods_store_sku sku on s.goods_id = sku.bar_code
 			LEFT JOIN goods_store_sku_plu plu ON plu.store_sku_id = sku.id AND plu.type = 1 AND plu.disabled = 0
@@ -1238,4 +1256,26 @@
 			ORDER BY s.`create_time` 
 	</select>
 	<!-- end 根据广告id获取广告商品列表 xuzq01 20170208-->
+	
+	<!-- begin 根据店铺活动类型 活动商品列表 tuzhd 20170313-->
+	<select id="findGoodsByActivityType" resultMap="advertGoodsMap" >
+		SELECT DISTINCT
+	        <include refid="advert_goods_columns" />
+		FROM goods_store_sku sku 
+			INNER JOIN `activity_sale` sa ON sa.`id` = sku.`activity_id` AND sa.status = 1 AND sa.disabled = 0
+			INNER JOIN `activity_sale_goods` asg on sa.id = asg.`sale_id` AND sku.id=asg.store_sku_id
+			LEFT JOIN goods_store_sku_plu plu ON plu.store_sku_id = sku.id AND plu.type = 1 AND plu.disabled = 0
+			LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
+			LEFT JOIN goods_store_sku_stock stock ON stock.`store_sku_id` = sku.`id`
+	    WHERE sku.disabled = 0
+			AND stock.disabled = 0
+			AND sku.`status` = 1
+			AND sku.violation = 0
+			AND sku.store_id = #{storeId,jdbcType=VARCHAR}
+			<if test="saleType != null">
+				AND sa.type = #{saleType,jdbcType=INTEGER}
+			</if>
+			ORDER BY asg.sort DESC 
+	</select>
+	<!-- end 根据店铺活动类型 活动商品列表 20170313-->
 </mapper>

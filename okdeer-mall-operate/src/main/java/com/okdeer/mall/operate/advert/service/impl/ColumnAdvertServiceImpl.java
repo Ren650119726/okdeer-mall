@@ -863,4 +863,16 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		List<GoodsStoreActivitySkuDto> list = advertMapper.findAdvertGoodsByAdvertId(advertId, storeId);
 		return new PageUtils<GoodsStoreActivitySkuDto>(list);
 	}
+	
+	/**
+	 * @Description:根据店铺活动类型 活动商品列表
+	 * @param storeId
+	 * @param saleType
+	 * @author tuzhd
+	 * @date 2017年3月13日
+	 */
+	@Override
+	public List<GoodsStoreActivitySkuDto> findGoodsByActivityType(String storeId,Integer saleType) {
+		return advertMapper.findGoodsByActivityType(storeId,saleType);
+	}
 }

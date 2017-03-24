@@ -19,6 +19,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
@@ -45,6 +46,7 @@ import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
+import com.okdeer.mall.order.enums.ActivityBelongType;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
@@ -55,6 +57,7 @@ import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
+import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessServiceApi;
 import com.okdeer.mall.order.utils.OrderNoUtils;
@@ -133,6 +136,9 @@ public class TradeOrderCompleteProcessServiceImpl
 	/**积分规则查询服务 */
 	@Resource
 	private PointsService pointsService;
+	
+	@Autowired
+	private TradeOrderActivityService orderActivityService;
 
 	/**
 	 * 
@@ -400,6 +406,7 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 订单来源
 		refunds.put("orderResource", orderRefunds.getOrderResource().ordinal());
 		// 原价金额=商品实际金额和运费
+		BigDecimal actualAmount = orderRefunds.getTotalAmount();
 		refunds.put("totalAmount", orderRefunds.getTotalAmount().add(orderRefunds.getTotalPreferentialPrice()));
 		// 商家实收金额
 		refunds.put("amount", orderRefunds.getTotalIncome());
@@ -408,16 +415,16 @@ public class TradeOrderCompleteProcessServiceImpl
 		// 店铺优惠金额
 		BigDecimal platDiscountAmount = BigDecimal.ZERO;
 		// 订单金额如果不等于店家收入金额，说明是店铺有优惠
-		if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0 ) {
+		if (actualAmount.compareTo(orderRefunds.getTotalIncome()) != 0 ) {
 			platDiscountAmount = orderRefunds.getTotalPreferentialPrice();
 		} else {
 			storePreferentialPrice = orderRefunds.getTotalPreferentialPrice();
 		}
 		
 		// 平台优惠金额
-		refunds.put("platDiscountAmount", storePreferentialPrice);
+		refunds.put("platDiscountAmount", platDiscountAmount);
 		// 店铺优惠金额
-		refunds.put("discountAmount", platDiscountAmount);
+		refunds.put("discountAmount", storePreferentialPrice);
 		// 运费
 		// orderInfo.put("freightAmount", refundOrder.getFare());
 		// （会员）买家ID
@@ -551,26 +558,42 @@ public class TradeOrderCompleteProcessServiceImpl
 			item.put("skuId", goods.getSkuId());
 			// 店铺优惠金额
 			BigDecimal storePreferentialPrice = BigDecimal.ZERO;
+			
 			//Begin update by tangy  2016-11-7
 			// 平台优惠金额
 			BigDecimal platDiscountAmount = BigDecimal.ZERO;
-			// 订单金额如果不等于店家收入金额，说明是店铺有优惠
-			if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0) {
-				storePreferentialPrice = orderRefundsItem.getPreferentialPrice();
-			} else if (orderRefundsItem.getPreferentialPrice() != null 
-					&& orderRefundsItem.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
-				platDiscountAmount = orderRefundsItem.getPreferentialPrice();
+			
+			
+			//Begin update by zengjz  2017-3-20 由于零售那边说优惠金额算错了，所以重新计算优惠的归宿
+			TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
+			if (tradeOrder.getActivityType() != null && 
+					tradeOrder.getActivityType() != ActivityTypeEnum.NO_ACTIVITY) {
+				ActivityBelongType activityBelongType = orderActivityService.findActivityType(tradeOrder);
+				if (activityBelongType == ActivityBelongType.SELLER) {
+					storePreferentialPrice = orderRefundsItem.getPreferentialPrice();
+				}else{
+					platDiscountAmount = orderRefundsItem.getPreferentialPrice();
+				}
 			}
+			//end update by zengjz  2017-3-20 由于零售那边说优惠金额算错了，所以重新计算优惠的归宿
+			
+			// 订单实付金额如果不等于店家收入金额，说明是平台有优惠
+//			if (orderRefunds.getTotalAmount().compareTo(orderRefunds.getTotalIncome()) != 0) {
+//				platDiscountAmount = orderRefundsItem.getPreferentialPrice();
+//			} else if (orderRefundsItem.getPreferentialPrice() != null 
+//					&& orderRefundsItem.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
+//				storePreferentialPrice = orderRefundsItem.getPreferentialPrice();
+//			}
 			// 实际单价=原单价减去店铺优惠
 			BigDecimal actualPrice = orderRefundsItem.getUnitPrice();
 			if (orderRefundsItem.getQuantity() != null && orderRefundsItem.getQuantity().intValue() > 0
-					&& platDiscountAmount.compareTo(BigDecimal.ZERO) == 1) {
+					&& storePreferentialPrice.compareTo(BigDecimal.ZERO) == 1) {
 				actualPrice = orderRefundsItem.getUnitPrice().subtract(
-						platDiscountAmount.divide(new BigDecimal(orderRefundsItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
+						storePreferentialPrice.divide(new BigDecimal(orderRefundsItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
 			} else if (orderRefundsItem.getWeight() != null 
-					&& platDiscountAmount.compareTo(BigDecimal.ZERO) == 1) {
+					&& storePreferentialPrice.compareTo(BigDecimal.ZERO) == 1) {
 				actualPrice = orderRefundsItem.getUnitPrice().subtract(
-						platDiscountAmount.divide(orderRefundsItem.getWeight(), 4, BigDecimal.ROUND_HALF_UP));
+						storePreferentialPrice.divide(orderRefundsItem.getWeight(), 4, BigDecimal.ROUND_HALF_UP));
 			} 	
 			//End update by tangy
 			// 货号

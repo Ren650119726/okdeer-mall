@@ -2638,38 +2638,53 @@
 		AND trade.id = #{orderId,jdbcType=VARCHAR}
 	</select>
 
-	<!-- zengj:获取订单总数，根据订单状态分组 V1.1.0  update by wusw 20160928 -->
-	<select id="getOrderCount" parameterType="java.util.Map"
+	<!--  xuzq 20170324  查询服务店订单数量-->
+	<select id="getServiceOrderCount" parameterType="java.util.Map"
 		resultMap="TradeOrderStatusVoMap">
 		SELECT CASE
-		WHEN `status` IN (14) THEN 1
-		WHEN `status` IN (1) THEN 2
+		WHEN `status` IN (14) THEN 14
+		WHEN `status` IN (1) THEN 1
 		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5,6) THEN 4
-		WHEN `status` IN (2,4,12,13) THEN 5
+		WHEN `status` IN (5) THEN 5
+		WHEN `status` IN (2) THEN 2
 		ELSE `STATUS`
 		END AS `status`,count(1) as `count` FROM trade_order
 		WHERE store_id = #{storeId,jdbcType=VARCHAR}
 		and disabled = 0
 		<!-- 订单来源，多个时使用IN -->
-		<if test="null!=orderResources">
-			AND order_resource IN
-			<foreach collection="orderResources" index="index" item="item"
-				open="(" close=")" separator=",">
-				#{item}
-			</foreach>
-		</if>
-		<if test="type != null">
-		   AND type = #{type,jdbcType=TINYINT}
-		</if>
+		AND order_resource IN (0,1,3)
 		and `status` >= 0
 		GROUP BY
 		CASE
-		WHEN `status` IN (14) THEN 1
-		WHEN `status` IN (1) THEN 2
+		WHEN `status` IN (14) THEN 14
+		WHEN `status` IN (1) THEN 1
 		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5,6) THEN 4
-		WHEN `status` IN (2,4,12,13) THEN 5
+		WHEN `status` IN (5) THEN 5
+		WHEN `status` IN (2) THEN 2
+		ELSE `STATUS`
+		END
+	</select>
+	<!-- zengj:获取便利店订单总数，根据订单状态分组 V1.1.0  update by wusw 20160928 update by xuzq 20170324-->
+	<select id="getOrderCount" parameterType="java.util.Map"
+		resultMap="TradeOrderStatusVoMap">
+		SELECT CASE
+		WHEN `status` IN (1) THEN 1
+		WHEN `status` IN (3) THEN 3
+		WHEN `status` IN (5,6) THEN 5
+		WHEN `status` IN (2,4,12,13) THEN 2
+		ELSE `STATUS`
+		END AS `status`,count(1) as `count` FROM trade_order
+		WHERE store_id = #{storeId,jdbcType=VARCHAR}
+		and disabled = 0
+		<!-- 订单来源，多个时使用IN -->
+		AND order_resource IN (0,1,3)
+		and `status` >= 0
+		GROUP BY
+		CASE
+		WHEN `status` IN (1) THEN 1
+		WHEN `status` IN (3) THEN 3
+		WHEN `status` IN (5,6) THEN 5
+		WHEN `status` IN (2,4,12,13) THEN 2
 		ELSE `STATUS`
 		END
 	</select>

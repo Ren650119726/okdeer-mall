@@ -192,7 +192,12 @@ public class StoreSkuParserBo {
 
 				if (actInfo.getType() == ActivityTypeEnum.LOW_PRICE) {
 					// 如果是低价，保存商品的线上价格为线上价格，活动价格为活动价格
-					currentSku.setOnlinePrice(storeSku.getOnlinePrice());
+					if(storeSku.getSpuTypeEnum() == SpuTypeEnum.assembleSpu && storeSku.getMarketPrice() != null){
+						// 如果是组合商品，市场价作为线上价格
+						currentSku.setOnlinePrice(storeSku.getMarketPrice());
+					}else{
+						currentSku.setOnlinePrice(storeSku.getOnlinePrice());
+					}
 					currentSku.setActPrice(actGoods.getSalePrice());
 					currentSku.setLimitKind(actInfo.getLimit());
 				} else {
