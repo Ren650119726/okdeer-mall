@@ -85,12 +85,6 @@
 		<dependency>
 			<groupId>com.okdeer.ca</groupId>
 			<artifactId>okdeer-ca-client</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>okdeer-base-framework</artifactId>
-					<groupId>com.okdeer.base</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
