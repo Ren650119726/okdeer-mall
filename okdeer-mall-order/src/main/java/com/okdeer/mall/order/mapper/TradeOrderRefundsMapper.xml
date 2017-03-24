@@ -94,6 +94,36 @@
     </if>
   </sql>
   
+  <!-- Begin V2.1.0 added by luosm 20170314 -->
+	<sql id="condition_asc_order">
+		<!-- 根据不同的tabs做不同的排序 顺序-->
+		<if test="tabs != null and tabs != ''">
+			<!-- 售后申请按照创建时间 -->
+			<if test="tabs == 'apply'">
+				ORDER BY tr.create_time ASC
+			</if>
+			<!-- 便利店已拒绝,已同意,已完成 -->
+			<if test="tabs == 'rejected' or tabs == 'agree' or tabs == 'done'">
+					ORDER BY tr.update_time ASC
+			</if>
+		</if>
+	</sql>
+	
+	<sql id="condition_desc_order">
+		<!-- 根据不同的tabs做不同的排序 顺序-->
+		<if test="tabs != null and tabs != ''">
+			<!-- 售后申请按照创建时间 -->
+			<if test="tabs == 'apply'">
+				ORDER BY tr.create_time DESC
+			</if>
+			<!-- 便利店已拒绝,已同意,已完成 -->
+			<if test="tabs == 'rejected' or tabs == 'agree' or tabs == 'done'">
+					ORDER BY tr.update_time DESC
+			</if>
+		</if>
+	</sql>
+	<!-- End V2.1.0 added by luosm 20170314 -->
+  
   <!-- 查询退款单列表 zhongy start-->
   <select id="selectByUserIdAndType" resultMap="BaseResultMap" parameterType="map" >
     SELECT refunds.id,refunds.total_amount,refunds.refunds_status,refunds.refund_no,refunds.order_no,refunds.trade_num,
@@ -537,6 +567,7 @@
 		<result column="order_id" property="orderId" jdbcType="VARCHAR" />
 		<result column="order_create_time" property="orderCreateTime"
 			jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
 		<result column="user_phone" property="userPhone" jdbcType="VARCHAR" />
 		<result column="actual_amount" property="actualAmount"
 			jdbcType="DECIMAL" />
@@ -1122,6 +1153,39 @@
 		</if>
 	</select>
 
+	<!-- Begin V2.1.0 added by luosm 20170314 -->
+	<select id="searchOrderRefundForSELLERAPP" parameterType="map"
+		resultMap="TradeOrderRefundsVo2">
+		SELECT o.id AS order_id,o.order_no,o.create_time as
+		order_create_time,o.user_phone,o.actual_amount,o.fare,o.pay_way,o.payment_time,pay.id
+		as pay_id,pay.pay_type,pay.pay_time,
+		tr.id,tr.refund_no,tr.payment_method,su.login_name,su.user_name,tr.operator,tr.create_time,tr.update_time,
+		tr.total_amount,tr.refunds_status,tr.total_income,o.order_resource,o.activity_type,address.province_name,address.city_name,address.area_name,address.area_ext
+		FROM trade_order_refunds AS tr
+		LEFT JOIN sys_user su ON su.id=tr.operator
+		LEFT JOIN trade_order AS o ON o.order_no = tr.order_no
+		LEFT JOIN trade_order_pay as pay on pay.order_id = o.id
+		LEFT JOIN member_consignee_address address ON o.pick_up_id = address.id
+		WHERE 1=1
+		<include refid="refund_condition" />
+	    <!-- 根据tabs不同按时间排序 -->
+		<if test="sortType != null and sortType != ''">
+			<!-- 顺序 -->
+			<if test="sortType == 0">
+				<include refid="condition_asc_order" />
+			</if>
+			<!-- 倒序 -->
+			<if test="sortType == 1">
+				<include refid="condition_desc_order" />
+			</if>
+		</if>
+		<!-- 默认排序 -->
+		<if test="tabs == null or tabs == ''">
+			ORDER BY tr.create_time desc
+		</if>
+	</select>
+	<!-- End V2.1.0 added by luosm 20170314 -->
+
 	<select id="getOrderRefundByParams" parameterType="map"
 		resultMap="BaseResultMap">
 		select
@@ -1169,7 +1233,7 @@
 		WHEN `refunds_status` in(1,6,9,10,11,13,14,15,16) THEN 6
 		END as `refunds_status`,count(1) as `count` FROM trade_order_refunds
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
-		AND order_resource IN(0,1)
+		AND order_resource IN(0,1,3)
 		GROUP BY
 		CASE
 		WHEN `refunds_status` = 0 THEN 0
@@ -1189,7 +1253,7 @@
 		WHEN `refunds_status` in(1,6,9,10,11,13,14,15,16) THEN 6
 		END as `refunds_status`,count(1) as `count` FROM trade_order_refunds
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
-		AND order_resource IN(0,1)
+		AND order_resource IN(0,1,3)
 		AND type = '5'
 		GROUP BY
 		CASE

@@ -9,7 +9,6 @@
 package com.okdeer.mall.operate.advert.mapper;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,11 +19,11 @@ import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto;
 import com.okdeer.mall.advert.entity.AdvertDetailVo;
-import com.okdeer.mall.advert.entity.AdvertGoodsVo;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
 import com.okdeer.mall.advert.entity.ColumnAdvertCommunity;
 import com.okdeer.mall.advert.entity.ColumnAdvertQueryVo;
 import com.okdeer.mall.advert.entity.ColumnAdvertVo;
+import com.okdeer.mall.operate.entity.ColumnAdvertVersionBo;
 
 /**
  * 广告Mapper
@@ -103,6 +102,14 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	 */
 	List<ColumnAdvert> getAdvertById(Map<String,Object> params);
 	
+	/**
+	 * @Description: 根据广告位ID查询云周边广告
+	 * @param params  参数
+	 * @return   集合
+	 * @author chenzc
+	 * @date 2017年3月15日
+	 */
+	List<ColumnAdvert> getAdvertByIdV220(Map<String,Object> params);
 	
 	/**
 	 * @Description: 广告列表 pos用 张克能加
@@ -203,11 +210,11 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	/**
 	 * @Description:    广告区域统计
 	 * @param advert    广告信息 
-	 * @return HashMap<String,Integer>  
+	 * @return List<ColumnAdvertVersionBo> 
 	 * @author tangy
 	 * @date 2016年11月28日
 	 */
-	List<HashMap<String, Integer>> findAdvertRestrictByArea(ColumnAdvert advert);
+	List<ColumnAdvertVersionBo> findAdvertRestrictByArea(ColumnAdvert advert);
 	//End added by tangy
 	
 	/**
@@ -220,6 +227,15 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	List<ColumnAdvert> findForApp(ColumnAdvertQueryParamDto advertQueryParamDto);
 	
 	/**
+	 * @Description: 查询广告列表给app接口
+	 * @param advertQueryParamDto 查询参数
+	 * @return
+	 * @author chenzc
+	 * @date 2017年3月15日
+	 */
+	List<ColumnAdvert> findForAppV220(ColumnAdvertQueryParamDto advertQueryParamDto);
+	
+	/**
 	 * @Description: 根据广告id获取广告商品列表
 	 * @param advertId  广告id
 	 * @return list
@@ -228,5 +244,14 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	 * @date 2017年02月08日
 	 */
 	List<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(@Param("advertId")String advertId, @Param("storeId")String storeId);
+	
+	
+	/**
+	 * @Description: 根据店铺活动类型 活动商品列表
+	 * @return list
+	 * @author tuzhd
+	 * @param storeId 
+	 * @date 2017年03月13日
+	 */
+	List<GoodsStoreActivitySkuDto> findGoodsByActivityType(@Param("storeId")String storeId,@Param("saleType")Integer saleType);
 }
-

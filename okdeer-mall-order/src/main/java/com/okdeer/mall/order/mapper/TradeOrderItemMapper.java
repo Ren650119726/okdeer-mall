@@ -131,4 +131,6 @@ public interface TradeOrderItemMapper{
 	 */
 	List<TradeOrderItem> findOrderItems(@Param("orderIds")List<String> orderIds);
 	// End V2.1 added by maojj 2017-02-18
+	
+	List<TradeOrderItem> findOrderItemByIdList(@Param("idList")List<String> idList);
 }

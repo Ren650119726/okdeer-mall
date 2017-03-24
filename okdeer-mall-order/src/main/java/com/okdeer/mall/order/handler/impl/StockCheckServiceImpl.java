@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
@@ -78,7 +79,7 @@ public class StockCheckServiceImpl implements StockCheckService {
 	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerService;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 
 	/**
 	 * 校验商品库存
@@ -118,7 +119,9 @@ public class StockCheckServiceImpl implements StockCheckService {
 			storeSkuIdList.add(goodsItem.getSkuId());
 		}
 		// 查询库存集合
-		List<GoodsStoreSkuStock> stockList = stockManagerService.findGoodsStockInfoList(storeSkuIdList);
+		// Begin V2.2 modified by maojj 2017-03-18.因为商城管控锁定库存，考虑商城与商业系统库存同步较快，库存查询直接查询商城数据
+		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockApi.findByStoreSkuIdList(storeSkuIdList);
+		// End V2.2 modified by maojj 2017-03-18
 		// End 1.0.Z add by zengj
 
 		for (TradeOrderGoodsItem goodsItem : req.getList()) {

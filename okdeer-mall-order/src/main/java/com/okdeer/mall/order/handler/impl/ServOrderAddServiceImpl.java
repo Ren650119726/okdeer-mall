@@ -16,8 +16,9 @@ import org.springframework.util.StringUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
@@ -36,6 +37,7 @@ import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -99,7 +101,7 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi stockManagerServiceApi;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 
 	/**
 	 * 订单超时计时器
@@ -118,6 +120,12 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 	 */
 	@Resource
 	private RollbackMQProducer rollbackMQProducer;
+	
+	/**
+	 * 库存更新构建者
+	 */
+	@Resource
+	private MallStockUpdateBuilder mallStockUpdateBuilder;
 
 	@Transactional(rollbackFor=Exception.class)
 	@Override
@@ -454,36 +462,7 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 	 * @date 2016年7月14日
 	 */
 	private void toUpdateStock(TradeOrder order, Request<ServiceOrderReq> req, String rpcId) throws Exception {
-
-		GoodsStoreSku storeSku = (GoodsStoreSku) req.getContext().get("storeSku");
-		ServiceOrderReq reqData = req.getData();
-
-		StockAdjustVo stockAjustVo = new StockAdjustVo();
-		stockAjustVo.setRpcId(rpcId);
-		stockAjustVo.setOrderId(order.getId());
-		stockAjustVo.setOrderNo(order.getOrderNo());
-		stockAjustVo.setOrderResource(order.getOrderResource());
-		stockAjustVo.setOrderType(order.getType());
-
-		stockAjustVo.setStoreId(reqData.getStoreId());
-		stockAjustVo.setUserId(reqData.getUserId());
-		stockAjustVo.setMethodName(this.getClass().getName() + ".process");
-		stockAjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_PLACE_ORDER);
-
-		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
-		AdjustDetailVo adjustDetailVo = new AdjustDetailVo();
-		adjustDetailVo.setBarCode(storeSku.getBarCode());
-		adjustDetailVo.setGoodsName(storeSku.getName());
-		adjustDetailVo.setGoodsSkuId(storeSku.getSkuId());
-		adjustDetailVo.setMultipleSkuId(storeSku.getMultipleSkuId());
-		adjustDetailVo.setNum(reqData.getSkuNum());
-		adjustDetailVo.setPrice(storeSku.getOnlinePrice());
-		adjustDetailVo.setPropertiesIndb(storeSku.getPropertiesIndb());
-		adjustDetailVo.setStoreSkuId(storeSku.getId());
-		adjustDetailVo.setGoodsSkuId(storeSku.getSkuId());
-		adjustDetailList.add(adjustDetailVo);
-
-		stockAjustVo.setAdjustDetailList(adjustDetailList);
-		stockManagerServiceApi.updateStock(stockAjustVo);
+		StockUpdateDto updateDto = mallStockUpdateBuilder.build(order, req, rpcId);
+		goodsStoreSkuStockApi.updateStock(updateDto);
 	}
 }

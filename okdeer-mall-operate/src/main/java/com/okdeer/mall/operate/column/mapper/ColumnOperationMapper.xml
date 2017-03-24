@@ -19,6 +19,9 @@
     <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
     <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+    <!-- begin V2.2.0新增指定类型字段 add by wangf01 20170313 -->
+    <result column="appoint_type" property="appointType" jdbcType="TINYINT"/>
+    <!-- end V2.2.0新增指定类型字段 add by wangf01 20170313 -->
   </resultMap>
   
   
@@ -41,7 +44,7 @@
   <sql id="Base_Column_List" >
     id, name, description, type, target_type, target, target_url, pic_url, area_type, 
     start_time, end_time, state, disabled, create_time, create_user_id, update_time, 
-    update_user_id
+    update_user_id, appoint_type
   </sql>
   
   <!-- 查询条件 -->
@@ -90,13 +93,13 @@
       pic_url, area_type, start_time, 
       end_time, state, disabled, 
       create_time, create_user_id, update_time, 
-      update_user_id)
+      update_user_id, appoint_type)
     VALUES (#{id,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, 
       #{type,jdbcType=TINYINT}, #{targetType,jdbcType=TINYINT}, #{target,jdbcType=TINYINT}, #{targetUrl,jdbcType=VARCHAR}, 
       #{picUrl,jdbcType=VARCHAR}, #{areaType,jdbcType=TINYINT}, #{startTime,jdbcType=TIMESTAMP}, 
       #{endTime,jdbcType=TIMESTAMP}, #{state,jdbcType=TINYINT}, #{disabled,jdbcType=TINYINT}, 
       #{createTime,jdbcType=TIMESTAMP}, #{createUserId,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP}, 
-      #{updateUserId,jdbcType=VARCHAR})
+      #{updateUserId,jdbcType=VARCHAR}, #{appointType,jdbcType=TINYINT})
   </insert>
   
   <!-- 判断是否为空，插入运营栏目信息 -->
@@ -154,6 +157,11 @@
       <if test="updateUserId != null and updateUserId != ''" >
         update_user_id,
       </if>
+      <!-- begin V2.2.0新增指定类型字段 add by wangf01 20170313 -->
+      <if test="appointType != null " >
+        appoint_type,
+      </if>
+      <!-- end V2.2.0新增指定类型字段 add by wangf01 20170313 -->
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null and id != ''" >
@@ -207,6 +215,11 @@
       <if test="updateUserId != null and updateUserId != ''" >
         #{updateUserId,jdbcType=VARCHAR},
       </if>
+      <!-- begin V2.2.0新增指定类型字段 add by wangf01 20170313 -->
+      <if test="appointType != null " >
+        #{appointType,jdbcType=TINYINT},
+      </if>
+      <!-- end V2.2.0新增指定类型字段 add by wangf01 20170313 -->
     </trim>
   </insert>
   
@@ -262,6 +275,11 @@
       <if test="updateUserId != null and updateUserId != ''" >
         update_user_id = #{updateUserId,jdbcType=VARCHAR},
       </if>
+      <!-- begin V2.2.0新增指定类型字段 add by wangf01 20170313 -->
+      <if test="appointType != null " >
+        appoint_type = #{appointType,jdbcType=TINYINT},
+      </if>
+      <!-- end V2.2.0新增指定类型字段 add by wangf01 20170313 -->
     </set>
     WHERE id = #{id,jdbcType=VARCHAR}
   </update>
@@ -284,7 +302,10 @@
       create_time = #{createTime,jdbcType=TIMESTAMP},
       create_user_id = #{createUserId,jdbcType=VARCHAR},
       update_time = #{updateTime,jdbcType=TIMESTAMP},
-      update_user_id = #{updateUserId,jdbcType=VARCHAR}
+      update_user_id = #{updateUserId,jdbcType=VARCHAR},
+    <!-- begin V2.2.0新增指定类型字段 add by wangf01 20170313 -->
+      appoint_type = #{appoint_type,jdbcType=TINYINT}
+    <!-- end V2.2.0新增指定类型字段 add by wangf01 20170313 -->
     WHERE id = #{id,jdbcType=VARCHAR}
   </update>
   
@@ -296,10 +317,50 @@
      <if test="disabled != null">
         AND disabled = #{disabled,jdbcType=TINYINT}
      </if>
-     <if test="type != null" >
+      <if test="type != null" >
         AND type = #{type,jdbcType=TINYINT}
      </if>
-     ORDER BY state ASC,start_time DESC
+     <if test="targetType != null" >
+        AND target_type = #{targetType,jdbcType=TINYINT}
+     </if>
+     <if test="target != null" >
+        AND target = #{target,jdbcType=TINYINT}
+     </if>
+     <if test="state != null" >
+     	AND state = #{state,jdbcType=TINYINT}
+     </if>
+     <if test="name != null and name != ''" >
+        AND name LIKE CONCAT('%',#{name},'%')
+     </if>
+     
+	<if test="createTimeStart != null">
+       <![CDATA[ AND create_time >= #{createTimeStart} ]]>
+	</if>
+	<if test="createTimeEnd != null">
+       <![CDATA[ AND create_time <= #{createTimeEnd} ]]>
+	</if>
+	
+	<if test="updateTimeStart != null">
+       <![CDATA[ AND update_time >= #{updateTimeStart} ]]>
+	</if>
+	<if test="updateTimeEnd != null">
+       <![CDATA[ AND update_time <= #{updateTimeEnd} ]]>
+	</if>
+	
+	<if test="startTimeStart != null">
+       <![CDATA[ AND start_time >= #{startTimeStart} ]]>
+	</if>
+	<if test="startTimeEnd != null">
+       <![CDATA[ AND start_time <= #{startTimeEnd} ]]>
+	</if>
+	
+	<if test="endTimeStart != null">
+       <![CDATA[ AND end_time >= #{endTimeStart} ]]>
+	</if>
+	<if test="endTimeEnd != null">
+       <![CDATA[ AND end_time <= #{endTimeEnd} ]]>
+	</if>
+     ORDER BY FIELD(state,1,0,2,3) ASC, start_time DESC
   </select>
   
   
@@ -429,6 +490,39 @@
 	       OR A.area_type = 0)
 	    </if> -->
    </select>
+
+  <!-- begin 查询指定关联栏目下指定开始结束时间有交集、指定区域、指定版本有交集的记录数量 add by wangf01 20170313 -->
+  <select id="selectVersionCountByDistrict" resultType="int">
+    SELECT count(1)
+    FROM column_operation a
+    LEFT JOIN column_operation_area b ON a.id = b.operation_id
+    WHERE a.disabled = #{disabled,jdbcType=VARCHAR}
+    AND (a.state = #{noStartStatus,jdbcType=TINYINT} OR a.state = #{startStatus,jdbcType=TINYINT})
+    AND a.type = #{type,jdbcType=TINYINT}
+    AND ((a.start_time <![CDATA[>=]]> #{startTime,jdbcType=TIMESTAMP} AND a.start_time <![CDATA[<]]> #{endTime,jdbcType=TIMESTAMP})
+    OR (a.start_time <![CDATA[<=]]> #{startTime,jdbcType=TIMESTAMP} AND a.end_time <![CDATA[>]]> #{startTime,jdbcType=TIMESTAMP})
+    OR (a.start_time <![CDATA[<=]]> #{startTime,jdbcType=TIMESTAMP} AND a.end_time <![CDATA[>=]]> #{endTime,jdbcType=TIMESTAMP}))
+    <if test="id != null and id != ''">
+      AND a.id != #{id,jdbcType=VARCHAR}
+    </if>
+    <if test="areaType.name == 'area'">
+      AND
+      (   <if test="areaIdList != null ">
+            b.area_id in
+            <foreach collection="areaIdList" open="(" close=")" index="index" item="item"  separator=",">
+              #{item}
+            </foreach>
+          </if>
+      OR <if test="associateIdList != null ">
+            b.area_id in
+            <foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
+              #{item}
+            </foreach>
+          </if>
+      OR A.area_type = 0)
+    </if>
+  </select>
+  <!-- end 查询指定关联栏目下指定开始结束时间有交集、指定区域、指定版本有交集的记录数量 add by wangf01 20170313 -->
    
    <!-- wusw:运营栏目基本信息map（不用枚举） -->
    <resultMap id="resultMapForUser" type="com.okdeer.mall.operate.entity.ColumnOperationQueryVo" >
@@ -438,6 +532,9 @@
     <result column="type" property="type"  jdbcType="VARCHAR"/>
     <result column="target" property="target" jdbcType="VARCHAR"/>
     <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
+     <!-- begin add by wangf01 20170314 -->
+     <result column="appoint_type" property="appointType" jdbcType="TINYINT" />
+     <!-- end add by wangf01 20170314 -->
   </resultMap>
   <!-- wusw:根据市id或者小区id，获取正在进行中的运营栏目信息列表 -->
   <!-- 修改删除关于小区范围的查询  modify  by  wusw  20160722 -->
@@ -447,7 +544,8 @@
 		operation.`name` AS taskName,
 		operation.type,
 		CASE operation.target_type WHEN 0 THEN operation.target WHEN 1 THEN operation.target_url END AS target,
-		operation.pic_url
+		operation.pic_url,
+        operation.appoint_type
 	FROM column_operation operation
 	LEFT JOIN column_operation_area area ON operation.id = area.operation_id
 	<!-- <if test="communityId != null and communityId != ''">

@@ -34,7 +34,6 @@ import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.service.IStoreInfoExtServiceApi;
@@ -166,10 +165,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 	 */
 	@Autowired
 	private ActivitySaleRecordService activitySaleRecordService;
-
-
-	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi serviceStockManagerService;
 
 	@Resource
 	private TradeOrderRefundsCertificateService tradeOrderRefundsCertificateService;
@@ -669,10 +664,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			order.setTradeOrderItem(Lists.newArrayList(item));
 			stockOperateService.recycleStockByOrder(order, rpcIdList);
 		} catch (Exception e) {
-			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
-			if (order.getType() != OrderTypeEnum.PHYSICAL_ORDER){
-				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
-			}
+			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 	}
@@ -990,11 +982,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			// 发送短信
 			tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
 		} catch (Exception e) {
-			// 发消息回滚库存的修改 added by maojj
-			// 现在实物库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
-			if (orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER){
-				rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
-			}
+			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 	}

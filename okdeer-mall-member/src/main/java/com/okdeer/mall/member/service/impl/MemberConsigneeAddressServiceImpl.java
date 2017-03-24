@@ -451,4 +451,9 @@ public class MemberConsigneeAddressServiceImpl
 	}
 	// End V2.1.0 added by luosm 20170217
 
+	@Override
+	public List<UserAddressVo> findByStoreIds(List<String> storeIds) {
+		return memberConsigneeAddressMapper.findByStoreIds(storeIds);
+	}
+
 }

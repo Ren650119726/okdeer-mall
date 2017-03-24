@@ -17,10 +17,11 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
-		<base.version>0.0.2-SNAPSHOT</base.version>
-		<ca.version>1.0.0-SNAPSHOT</ca.version>
+		<base.version>1.0.0</base.version>
+		<ca.version>1.1.0-SNAPSHOT</ca.version>
 		<mall.version>0.0.5-SNAPSHOT</mall.version>
 		<yscapi.version>0.0.4-SNAPSHOT</yscapi.version>
+		<jxc.version>0.0.2-SNAPSHOT</jxc.version>
 	</properties>
 
 	<!-- setting local storage -->
@@ -43,9 +44,54 @@
 				<version>${mall.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.okdeer.jxc</groupId>
+				<artifactId>okdeer-jxc-api</artifactId>
+				<version>${jxc.version}</version>
+				<exclusions>
+					<exclusion>
+						<artifactId>okdeer-base-manager</artifactId>
+						<groupId>com.okdeer.base</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>okdeer-base-zookeeper-conf</artifactId>
+						<groupId>com.okdeer.base</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>okdeer-base-dal</artifactId>
+						<groupId>com.okdeer.base</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>okdeer-base-framework</artifactId>
+						<groupId>com.okdeer.base</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>okdeer-ca-common</artifactId>
+						<groupId>com.okdeer.ca</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>okdeer-base-common</artifactId>
+						<groupId>com.okdeer.base</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>okdeer-base-service</artifactId>
+						<groupId>com.okdeer.base</groupId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
 				<groupId>com.okdeer.ca</groupId>
 				<artifactId>okdeer-ca-client</artifactId>
 				<version>${ca.version}</version>
+				<exclusions>
+					<exclusion>
+						<artifactId>okdeer-base-framework</artifactId>
+						<groupId>com.okdeer.base</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>okdeer-base-dal</artifactId>
+						<groupId>com.okdeer.base</groupId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>com.okdeer.ca</groupId>

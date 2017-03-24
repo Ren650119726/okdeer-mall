@@ -23,6 +23,7 @@ import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.enums.AppOrderTypeEnum;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.third.train.dto.ThirdTrainOrderDto;
 
@@ -143,7 +144,12 @@ public class UserOrderDtoLoader {
 			orderDto.setTotalAmount(ConvertUtil.format(order.getTotalAmount()));
 			orderDto.setActualAmount(ConvertUtil.format(order.getActualAmount()));
 			orderDto.setFare(ConvertUtil.format(order.getFare()));
-			orderDto.setType(EnumAdapter.convert(order.getType()));;
+			if(order.getOrderResource() == OrderResourceEnum.SWEEP){
+				orderDto.setType(AppOrderTypeEnum.SWEEP_ORDER);
+			}else{
+				orderDto.setType(EnumAdapter.convert(order.getType()));
+			}
+			
 			orderDto.setCreateTime(DateUtils.formatDate(order.getCreateTime(),"yyyy-MM-dd HH:mm:ss"));
 			orderDto.setLogisticsFlag(String.valueOf(LogisticsType.NONE.ordinal()));
 			orderDto.setLogisticsNo("");

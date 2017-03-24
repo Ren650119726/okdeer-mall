@@ -5,12 +5,14 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.rocketmq.common.message.Message;
 import com.google.common.base.Charsets;
 import com.okdeer.archive.stock.consts.RollBackConstant;
 import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 
 /**
  * ClassName: RollbackMQProducer 
@@ -40,9 +42,12 @@ public class RollbackMQProducer {
 	 * @date 2016年7月26日
 	 */
 	public void sendStockRollbackMsg(List<String> rpcIdList) throws Exception {
-		 for (String rpcId : rpcIdList) {
-			 this.sendStockRollbackMsg(rpcId);
-		 }
+		if(CollectionUtils.isEmpty(rpcIdList)){
+			return;
+		}
+		for (String rpcId : rpcIdList) {
+			this.sendStockRollbackMsg(rpcId);
+		}
 	}
 
 	/**
@@ -56,8 +61,8 @@ public class RollbackMQProducer {
 		 if (rpcId == null) {
 			 return;
 		 }
-		 this.send(rpcId, RollBackConstant.TOPIC_STOCK_ROLLBACK,
-		 RollBackConstant.TAGS_STOCK_ROLLBACK);
+	     MQMessage msg = new MQMessage(RollBackConstant.TOPIC_STOCK_ROLLBACK,rpcId);
+	     rocketMQProducer.sendMessage(msg);
 	}
 
 	/**

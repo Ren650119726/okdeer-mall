@@ -69,17 +69,17 @@ import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
+import com.okdeer.archive.stock.dto.StockUpdateDetailDto;
+import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.exception.StockException;
-import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
-import com.okdeer.archive.stock.vo.AdjustDetailVo;
-import com.okdeer.archive.stock.vo.StockAdjustVo;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
@@ -100,8 +100,11 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
 import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
+import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
+import com.okdeer.jxc.stock.vo.StockUpdateVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -133,15 +136,20 @@ import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
+import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
+import com.okdeer.mall.member.member.vo.UserAddressVo;
 import com.okdeer.mall.member.points.dto.AddPointsParamDto;
 import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
+import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
+import com.okdeer.mall.order.builder.JxcStockUpdateBuilder;
+import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
@@ -157,9 +165,11 @@ import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderThirdRelation;
 import com.okdeer.mall.order.enums.ActivityBelongType;
+import com.okdeer.mall.order.enums.AppOrderTypeEnum;
 import com.okdeer.mall.order.enums.CompainStatusEnum;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
+import com.okdeer.mall.order.enums.FirstTradeOrder;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderComplete;
@@ -399,14 +409,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	private TradeOrderItemDetailMapper tradeOrderItemDetailMapper;
 
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi serviceStockManagerService;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 
 	// Begin 1.0.Z add by zengj
 	/**
 	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerJxcService;
+	private StockUpdateServiceApi stockUpdateServiceApi;
 	// End 1.0.Z add by zengj
 
 	@Reference(version = "1.0.0", check = false)
@@ -582,6 +592,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	private IAddressService addressService;
 	// End V2.1.0 added by luosm 2017-02-14
 
+	//Begin V2.1 added by zhulq 2017-03-22
+	@Resource
+	private MemberConsigneeAddressMapper memberConsigneeAddressMapper;
+	//end V2.1 added by zhulq 2017-03-22
+	
 	// Begin V2.1 added by maojj 2017-02-21
 	/**
 	 * 订单定位mapper
@@ -589,6 +604,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Resource
 	private TradeOrderLocateMapper tradeOrderLocateMapper;
 	// End V2.1 added by maojj 2017-02-21
+	
+	@Resource
+	private JxcStockUpdateBuilder jxcStockUpdateBuilder;
+	
+	@Resource
+	private MallStockUpdateBuilder mallStockUpdateBuilder;
 
 	@Override
 	public PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize)
@@ -633,7 +654,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						exportVo.setCategoryName(item.getCategoryName());
 						exportVo.setStatus(orderStatusMap.get(order.getStatus().getName()));
 						exportVo.setUnitPrice(item.getUnitPrice());
-						exportVo.setTotalAmount(order.getTotalAmount());
+						// begin 将订单金额修改为订单项金额 add by wangf01 20170322
+						exportVo.setTotalAmount(item.getTotalAmount());
+						//exportVo.setTotalAmount(order.getTotalAmount());
+						// begin add by wangf01 20170322
 						if (!OrderStatusEnum.UNPAID.equals(order.getStatus())
 								&& !OrderStatusEnum.BUYER_PAYING.equals(order.getStatus())) {
 							// 支付方式
@@ -921,11 +945,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (vo.getIds() != null && vo.getIds().length <= 0) {
 			vo.setIds(null);
 		}
-		// Begin V2.1.0 added by luosm 20170223
-		if (StringUtils.isNotEmpty(vo.getCityName())) {
-			vo.setCityName(vo.getCityName().trim());
-		}
-		// End V2.1.0 added by luosm 20170223
 		List<PhysicsOrderVo> result = tradeOrderMapper.selectOrderBackStage(vo);
 
 		// Begin V2.1.0 added by luosm 20170223
@@ -935,7 +954,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			List<String> orderIds = new ArrayList<String>();
 			// 用户ID集合
 			List<String> userIds = new ArrayList<String>();
-
+			
+			List<String> storeIds = new ArrayList<String>();
+			
 			// 活动id集合
 			for (PhysicsOrderVo order : result) {
 				if (StringUtils.isNotEmpty(order.getId())) {
@@ -943,6 +964,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				}
 				if (StringUtils.isNotEmpty(order.getUserId())) {
 					userIds.add(order.getUserId());
+				}
+				if (StringUtils.isNotEmpty(order.getStoreId())) {
+					storeIds.add(order.getStoreId());
 				}
 			}
 
@@ -953,13 +977,24 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
 			List<ActivityInfoVO> activityList = null;
+			// 首购订单列表
+			List<TradeOrder> firstTradeOrderList = new ArrayList<>();
+			// 首购订单订单id集合
+			List<String> firstTradeOrderIdList = new ArrayList<>();
 			if (CollectionUtils.isNotEmpty(orderIds)) {
 				try {
 					tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
+					firstTradeOrderList = tradeOrderMapper.findFirstTradeOrder();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				activityList = this.findActivityInfo(orderIds);
+			}
+			
+			if (CollectionUtils.isNotEmpty(firstTradeOrderList)) {
+				for (TradeOrder firstOrder : firstTradeOrderList) {
+					firstTradeOrderIdList.add(firstOrder.getId());
+				}
 			}
 
 			for (PhysicsOrderVo orderVo : result) {
@@ -1046,19 +1081,71 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 				// 定位基点
 				orderVo.setLocateAddress(lProviceName + lCityName + lAreaName + areaExt);
-
-				String aProviceName = orderVo.getaProviceName() == null ? "" : orderVo.getaProviceName();
-				String aCityName = orderVo.getaCityName() == null ? "" : orderVo.getaCityName();
-				String aAreaName = orderVo.getaAreaName() == null ? "" : orderVo.getaAreaName();
-				String address = orderVo.getMemberAddress() == null ? "" : orderVo.getMemberAddress();
-
-				// 所属城市
-				orderVo.setCityName(aCityName);
-				// 收货地址
-				orderVo.setAddress(aProviceName + aCityName + aAreaName + address);
-
+				
+				//店铺地址（到店自提和到店消费订单店铺地址）
+				List<UserAddressVo> memberAddressList = null;	
+				//V2.1.0 end add by zhulq 收货地址取物流表信息 之前是取店铺地址
+				if (CollectionUtils.isNotEmpty(storeIds)) {
+					memberAddressList = this.memberConsigneeAddressMapper.findByStoreIds(storeIds);
+				}
+				
+				//订单的物流信息
+				List<TradeOrderLogistics> logisticsList = null;
+				if (CollectionUtils.isNotEmpty(orderIds)) {
+					logisticsList = this.tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
+				}
+				//实物的送货上门订单收货地址取物流表信息 到店自提取的是店铺地址
+				if (orderVo.getOrderType() == OrderTypeEnum.PHYSICAL_ORDER && orderVo.getPickUpType() == PickUpTypeEnum.DELIVERY_DOOR) {
+					if (CollectionUtils.isNotEmpty(logisticsList)) {
+						for (TradeOrderLogistics logistics : logisticsList) {
+							//如果是实物订单 而且是送货上门
+							if (StringUtils.isNotBlank(logistics.getOrderId()) && orderVo.getId().equals(logistics.getOrderId())) {
+								String cityId = logistics.getCityId();
+								if (StringUtils.isNotBlank(cityId)) {
+									Address address = addressService.getAddressById(Long.parseLong(cityId));
+									// 所属城市 实物订单的送货上门取物流表的地址
+									orderVo.setCityName(address.getName() == null ? "" : address.getName());
+								}
+								String area = logistics.getArea() == null ? "" : logistics.getArea();
+								String address = logistics.getAddress() == null ? "" : logistics.getAddress();
+								// 收货地址
+								orderVo.setAddress(area + address);
+								break;
+							}
+						}
+					}
+				} else if (orderVo.getOrderType() == OrderTypeEnum.PHYSICAL_ORDER 
+						&& orderVo.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
+					if (CollectionUtils.isNotEmpty(memberAddressList)) {
+						for (UserAddressVo userAddressVo : memberAddressList) {
+							if (StringUtils.isNotBlank(userAddressVo.getUserId()) 
+									&& orderVo.getStoreId().equals(userAddressVo.getUserId())) {
+								String proviceName = userAddressVo.getProvinceName() == null ? "" : userAddressVo.getProvinceName();
+								String cityName = userAddressVo.getCityName() == null ? "" : userAddressVo.getCityName();
+								String areaName = userAddressVo.getAreaName() == null ? "" : userAddressVo.getAreaName();
+								String ext = userAddressVo.getAreaExt() == null ? "" : userAddressVo.getAreaExt();
+								String address = userAddressVo.getAddress() == null ? "" : userAddressVo.getAddress();
+								// 所属城市
+								orderVo.setCityName(cityName);
+								// 收货地址
+								orderVo.setAddress(proviceName + cityName + areaName + ext + address);
+								break;
+							}
+						}
+					}
+				}
+				
 				// 订单来源
 				orderVo.setOrderResource(orderVo.getOrderResource());
+				
+				// begin v2.2 added by chenzc 2017-3-20
+				// 判断订单是否首购单
+				if (firstTradeOrderIdList.contains(orderVo.getId())) {
+					orderVo.setIsFirstOrder(FirstTradeOrder.FIRST_TARDE.getValue());
+				} else {
+					orderVo.setIsFirstOrder(FirstTradeOrder.REPEAT_TRADE.getValue());
+				}
+				// end v2.2 added by chenzc 2017-3-20
 			}
 		}
 		// End V2.1.0 added by luosm 20170223
@@ -1084,12 +1171,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	public PageUtils<PhysicsOrderVo> findOrderBackStageNew(PhysicsOrderVo vo, int pageNumber, int pageSize)
 			throws ServiceException {
-		// Begin V2.1.0 added by luosm 20170222
-		if (StringUtils.isNotEmpty(vo.getCityName())) {
-			vo.setCityName(vo.getCityName().trim());
-		}
-		// End V2.1.0 added by luosm 2017022
-
 		// 避免数组ids不为空，但是长度为0的情况
 		if (vo.getIds() != null && vo.getIds().length <= 0) {
 			vo.setIds(null);
@@ -1162,12 +1243,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		List<TradeOrderPay> orderPayList = null;
 		// 代理商集合
 		List<PsmsAgent> agentList = null;
-
+		//V2.1.0 begin add by zhulq 送货上门收货地址取物流表信息 之前是取店铺地址
+		List<TradeOrderLogistics> logisticsList = null;
+		//店铺地址（到店自提和到店消费订单店铺地址）
+		List<UserAddressVo> memberAddressList = null;	
+		//V2.1.0 end add by zhulq 收货地址取物流表信息 之前是取店铺地址
 		if (CollectionUtils.isNotEmpty(storeIds)) {
 			storeInfoList = this.storeInfoService.selectByIds(storeIds);
+			memberAddressList = this.memberConsigneeAddressMapper.findByStoreIds(storeIds);
 		}
 		if (CollectionUtils.isNotEmpty(orderIds)) {
 			orderPayList = this.tradeOrderPayMapper.selectByOrderIds(orderIds);
+			logisticsList = this.tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
 		}
 		if (CollectionUtils.isNotEmpty(agentIds)) {
 			agentList = this.psmsAgentServiceApi.selectByIds(agentIds);
@@ -1204,17 +1291,41 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					}
 				}
 			}
-
-			// Begin V2.1.0 added by luosm 20170215
-			String aProviceName = order.getaProviceName() == null ? "" : order.getaProviceName();
-			String aCityName = order.getaCityName() == null ? "" : order.getaCityName();
-			String aAreaName = order.getaAreaName() == null ? "" : order.getaAreaName();
-			String address = order.getMemberAddress() == null ? "" : order.getMemberAddress();
-			// 所属城市
-			order.setCityName(aCityName);
-			// 收货地址
-			order.setAddress(aProviceName + aCityName + aAreaName + address);
-
+			if (order.getOrderType() == OrderTypeEnum.PHYSICAL_ORDER && order.getPickUpType() == PickUpTypeEnum.DELIVERY_DOOR) {
+				if (CollectionUtils.isNotEmpty(logisticsList)) {
+					for (TradeOrderLogistics logistics : logisticsList) {
+						//如果是实物订单 而且是送货上门
+						if (StringUtils.isNotBlank(logistics.getOrderId()) && order.getId().equals(logistics.getOrderId())) {
+							String cityId = logistics.getCityId();
+							if (StringUtils.isNotBlank(cityId)) {
+								Address address = addressService.getAddressById(Long.parseLong(cityId));
+								// 所属城市 实物订单的送货上门取物流表的地址
+								order.setCityName(address.getName() == null ? "" : address.getName());
+							}
+							String area = logistics.getArea() == null ? "" : logistics.getArea();
+							String address = logistics.getAddress() == null ? "" : logistics.getAddress();
+							// 收货地址
+							order.setAddress(area + address);
+						}
+					}
+				}
+			} else if (order.getOrderType() == OrderTypeEnum.PHYSICAL_ORDER && order.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP) {
+				if (CollectionUtils.isNotEmpty(memberAddressList)) {
+					for (UserAddressVo userAddressVo : memberAddressList) {
+						if (StringUtils.isNotBlank(userAddressVo.getUserId()) && order.getStoreId().equals(userAddressVo.getUserId())) {
+							String proviceName = userAddressVo.getProvinceName() == null ? "" : userAddressVo.getProvinceName();
+							String cityName = userAddressVo.getCityName() == null ? "" : userAddressVo.getCityName();
+							String areaName = userAddressVo.getAreaName() == null ? "" : userAddressVo.getAreaName();
+							String areaExt = userAddressVo.getAreaExt() == null ? "" : userAddressVo.getAreaExt();
+							String address = userAddressVo.getAddress() == null ? "" : userAddressVo.getAddress();
+							// 所属城市
+							order.setCityName(cityName);
+							// 收货地址
+							order.setAddress(proviceName + cityName + areaName + areaExt + address);
+						}
+					}
+				}
+			}
 			// 获取邀请人姓名
 			if (CollectionUtils.isNotEmpty(inviteNameLists)) {
 				for (SysUserInvitationLoginNameVO loginNameVO : inviteNameLists) {
@@ -1236,6 +1347,57 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// End V2.1.0 added by luosm 20170215
 		}
 	}
+	
+	// Begin V2.1.0 added by luosm 20170315
+	/**
+	 *
+	 * @desc 商家APPV2.1.0订单查询
+	 *
+	 * @param map
+	 *            查询条件
+	 * @param pageSize
+	 *            每页大小
+	 * @param pageNumber
+	 *            当前页
+	 * @return
+	 */
+	@Override
+	public PageUtils<TradeOrderVo> selectNewMallAppOrderInfo(Map<String, Object> map, int pageSize, int pageNumber) {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+
+		// begin added by luosm 20161011 V1.1.0
+		String storeId = map.get("storeId").toString();
+		StoreInfo store = storeInfoService.findById(storeId);
+		List<TradeOrderVo> list = null;
+		if (store.getType() == StoreTypeEnum.SERVICE_STORE) {
+			list = tradeOrderMapper.selectNewServiceOrderInfo(map);
+		} else {
+			list = tradeOrderMapper.selectNewOrderInfo(map);
+		}
+		// end added by luosm 20161011 V1.1.0
+
+		if (list != null && !list.isEmpty()) {
+			for (TradeOrderVo tradeOrderVo : list) {
+				// 查询订单项表。
+				tradeOrderVo.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrderVo.getId()));
+				// 查询投诉信息
+				tradeOrderVo.setTradeOrderComplainVoList(
+						tradeOrderComplainMapper.findOrderComplainByParams(tradeOrderVo.getId()));
+
+				// 获取订单活动信息
+				Map<String, Object> activityMap = getActivity(tradeOrderVo.getActivityType(),
+						tradeOrderVo.getActivityId());
+				String activityName = activityMap.get("activityName") == null ? null
+						: activityMap.get("activityName").toString();
+				ActivitySourceEnum activitySource = activityMap.get("activitySource") == null ? null
+						: (ActivitySourceEnum) activityMap.get("activitySource");
+				tradeOrderVo.setActivityName(activityName);
+				tradeOrderVo.setActivitySource(activitySource);
+			}
+		}
+		return new PageUtils<TradeOrderVo>(list);
+	}
+	// End V2.1.0 added by luosm 20170315
 
 	/**
 	 *
@@ -1517,6 +1679,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Transactional(rollbackFor = Exception.class)
 	public boolean insertTradeOrder(TradeOrder tradeOrder) throws Exception {
 		insertOrder(tradeOrder);
+		//add by mengsj begin 由于扫码购提交订单流程不能与便利店订单共用
+		//故在此单独判断订单来源，如果是扫码购，发送超时支付消息
+		if(tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP){
+			// 超时未支付的，取消订单
+			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, tradeOrder.getId());
+		}
 		return true;
 	}
 
@@ -1619,65 +1787,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	/**
-	 * 构建服务型订单库存VO
-	 *
-	 * @author zengj
-	 * @param tradeOrder
-	 *            订单
-	 * @param stockOperateEnum
-	 *            库存操作枚举
-	 * @param adjustGoodsNum
-	 *            调整商品数量，如为null,取下单时的商品数量，消费时是一件件商品消费，所以需要一件件来调整库存
-	 * @return StockAdjustVo 库存VO
-	 */
-	private StockAdjustVo buildServiceOrderStock(TradeOrder tradeOrder, StockOperateEnum stockOperateEnum,
-			Integer adjustGoodsNum, List<String> rpcIdList) {
-		StockAdjustVo stockAdjustVo = new StockAdjustVo();
-		// Begin added by maojj 2016-07-26
-		String rpcId = UuidUtils.getUuid();
-		rpcIdList.add(rpcId);
-		stockAdjustVo.setRpcId(rpcId);
-		// End added by maojj 2016-07-26
-		// 订单ID
-		stockAdjustVo.setOrderId(tradeOrder.getId());
-		stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
-		stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
-		stockAdjustVo.setOrderType(tradeOrder.getType());
-		// 店铺ID
-		stockAdjustVo.setStoreId(tradeOrder.getStoreId());
-		// 库存操作枚举
-		stockAdjustVo.setStockOperateEnum(stockOperateEnum);
-		// 操作用户ID
-		stockAdjustVo.setUserId(tradeOrder.getUserId());
-		// 库存调整详情VO
-		List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
-		// 订单项信息
-		List<TradeOrderItem> tradeOrderItems = tradeOrder.getTradeOrderItem();
-		// 如果订单项为空，手动查询下订单项信息
-		if (tradeOrderItems == null) {
-			tradeOrderItems = tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId());
-		}
-
-		// 循环订单项信息
-		for (TradeOrderItem item : tradeOrderItems) {
-			AdjustDetailVo detail = new AdjustDetailVo();
-			detail.setStoreSkuId(item.getStoreSkuId());
-			detail.setGoodsSkuId("");
-			detail.setMultipleSkuId("");
-			detail.setGoodsName(item.getSkuName());
-			detail.setPrice(item.getUnitPrice());
-			detail.setPropertiesIndb(item.getPropertiesIndb());
-			detail.setStyleCode(item.getStyleCode());
-			detail.setBarCode(item.getBarCode());
-			// 调整商品库存数量,如果有传调整数量，取传递过来的，否则取订单下单时的商铺数量
-			detail.setNum(adjustGoodsNum == null || adjustGoodsNum < 1 ? item.getQuantity() : adjustGoodsNum);
-			adjustDetailList.add(detail);
-		}
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
-		return stockAdjustVo;
-	}
-
-	/**
 	 * 确认收货并发送消息
 	 * @TZD 修改 2016-12-12
 	 * @UPDATE  去掉事务消息，快送服务已经不提供，重新添加完成消息，用于活动使用完成处理业务
@@ -1710,7 +1819,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		try {
 			if (entity instanceof TradeOrder) {
 				TradeOrder tradeOrder = (TradeOrder) entity;
-				StockAdjustVo stockAdjustVo = null;
 				// 更新订单状态
 				Integer alterCount = this.updateOrderStatus(tradeOrder);
 				if (alterCount <= 0) {
@@ -1760,25 +1868,20 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
 
 				// 锁定库存
-				// Begin modified by maojj 2016-07-26
-				// 只有实物店才同步商品，走进销存库存,服务商品是派单时就扣了库存
-				if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
-					rpcId = UuidUtils.getUuid();
-					stockAdjustVo = stockAdjustVoBuilder.buildJxcStock(tradeOrder, rpcId);
-					stockManagerJxcService.updateStock(stockAdjustVo);
-					// 如果有组合商品，需要修改商城的组合商品库存
-					rpcId = UuidUtils.getUuid();
-					stockAdjustVo = stockAdjustVoBuilder.buildComboStock(tradeOrder, rpcId,
-							StockOperateEnum.SEND_OUT_GOODS);
-					if (stockAdjustVo != null) {
-						serviceStockManagerService.updateStock(stockAdjustVo);
-					}
+				// Begin modified by maojj 2017-03-15
+				rpcId = UuidUtils.getUuid();
+				StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.buildForCompleteOrder(tradeOrder);
+				StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.buildForCompleteOrder(tradeOrder);
+				if(mallStockUpdate != null){
+					rpcId = mallStockUpdate.getRpcId();
+					goodsStoreSkuStockApi.updateStock(mallStockUpdate);
+				}
+				if(jxcStockUpdate != null){
+					stockUpdateServiceApi.stockUpdateForMessage(jxcStockUpdate);
 					// 订单完成后同步到商业管理系统
 					tradeOrderCompleteProcessService.orderCompleteSyncToJxc(tradeOrder.getId());
-					// End 1.0.Z 增加订单操作记录 add by zengj
 				}
-				// End modified by maojj 2016-07-26
-				// Begin Bug:13700 added by maojj 2016-10-10
+				// End modified by maojj 2017-03-15
 				// 确认收货，更新用户邀请记录
 				updateInvitationRecord(tradeOrder.getUserId());
 				// End Bug:13700 added by maojj 2016-10-10
@@ -1789,6 +1892,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
 			// rollbackMQProducer.sendStockRollbackMsg(rpcId);
+			if(rpcId != null){
+				
+			}
 			throw e;
 		}
 	}
@@ -1900,153 +2006,104 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateOrderShipment(TradeOrderOperateParamVo param) throws ServiceException, Exception {
-		String rpcId = null;
 		TradeOrder tradeOrder = null;
-		try {
-			// 根据订单ID查询出订单信息
-			tradeOrder = this.tradeOrderMapper.selectTradeDetailInfoById(param.getOrderId());
-			// 判断订单是否存在
-			if (tradeOrder == null || !tradeOrder.getStoreId().equals(param.getStoreId())) {
-				// Begin 重构4.1 update by wusw 20160816
-				// 如果订单不存在，抛出异常
-				throw new ServiceException(ORDER_NOT_EXSITS_DELETE);
-				// End 重构4.1 update by wusw 20160816
+		// 根据订单ID查询出订单信息
+		tradeOrder = this.tradeOrderMapper.selectTradeDetailInfoById(param.getOrderId());
+		// 判断订单是否存在
+		if (tradeOrder == null || !tradeOrder.getStoreId().equals(param.getStoreId())) {
+			// Begin 重构4.1 update by wusw 20160816
+			// 如果订单不存在，抛出异常
+			throw new ServiceException(ORDER_NOT_EXSITS_DELETE);
+			// End 重构4.1 update by wusw 20160816
+		}
+
+		// 判断订单状态是否是待发货。只有待发货才能发货
+		if (!OrderStatusEnum.DROPSHIPPING.equals(tradeOrder.getStatus())) {
+			// Begin 重构4.1 update by wusw 20160816
+			// 如果不是待发货状态，直接抛出异常
+			throw new ServiceException(ORDER_STATUS_OVERDUE);
+			// End 重构4.1 update by wusw 20160816
+		}
+
+		// 修改订单状态为已发货
+		tradeOrder.setStatus(OrderStatusEnum.TO_BE_SIGNED);
+		// 修改最后修改时间
+		tradeOrder.setUpdateTime(new Date());
+		// 修改最后修改人
+		tradeOrder.setUpdateUserId(param.getUserId());
+		// 发货时间为当前时间
+		tradeOrder.setDeliveryTime(new Date());
+		// 发货人ID
+		tradeOrder.setShipmentsUserId(param.getUserId());
+		// Begin Bug:15707 added by maojj 2016-12-06
+		// 更新时判断订单状态是否发生变化，以保证数据的一致性。类似乐观锁的处理机制
+		tradeOrder.setCurrentStatus(tradeOrder.getCurrentStatus());
+		// End Bug:15707 added by maojj 2016-12-06
+		// 更新订单信息
+		Integer updateRows = this.updateOrderStatus(tradeOrder);
+		// Begin Bug:15707 added by maojj 2016-12-06
+		// 更新时判断订单状态是否发生变化，以保证数据的一致性。类似乐观锁的处理机制
+		if (updateRows == null || updateRows.intValue() == 0) {
+			// 如果更新影响行数为0，则意味着订单状态已经发生变化。抛出异常终止业务处理
+			throw new ServiceException(ORDER_STATUS_OVERDUE);
+		}
+		// End Bug:15707 added by maojj 2016-12-06
+
+		// 判断是否有物流信息
+		// begin 将判断物流公司名称换成判断物流单号 add by wangf01 20170322
+		if (StringUtils.isNotBlank(param.getLogisticsNo())) {
+			// 有物流信息表示物流发货,需要更新物流信息到 订单收货地址信息表
+			TradeOrderLogistics tradeOrderLogistics = tradeOrderLogisticsMapper.selectByOrderId(tradeOrder.getId());
+			if (tradeOrderLogistics != null) {
+				// 表示有物流
+				tradeOrderLogistics.setType(LogisticsType.HAS);
+				// 物流公司
+				tradeOrderLogistics.setLogisticsCompanyName(param.getLogisticsCompanyName());
+				// 物流单号
+				tradeOrderLogistics.setLogisticsNo(param.getLogisticsNo());
+
+				// 更新物流信息
+				tradeOrderLogisticsMapper.updateByPrimaryKeySelective(tradeOrderLogistics);
 			}
+		}
+		// end add by wangf01 20170322
 
-			// 判断订单状态是否是待发货。只有待发货才能发货
-			if (!OrderStatusEnum.DROPSHIPPING.equals(tradeOrder.getStatus())) {
-				// Begin 重构4.1 update by wusw 20160816
-				// 如果不是待发货状态，直接抛出异常
-				throw new ServiceException(ORDER_STATUS_OVERDUE);
-				// End 重构4.1 update by wusw 20160816
-			}
+		// 保存订单操作日志
+		// tradeOrderLogMapper.insertSelective(getTradeOrderLog(param,
+		// OrderStatusEnum.TO_BE_SIGNED));
 
-			// 将实际库存-1 订单占用库存 -1
-			// 发货不在修改库存，得订单完成后才有
-			StockAdjustVo stockAdjustVo = new StockAdjustVo();
-			// Begin added by maojj 2016-07-26
-			rpcId = UuidUtils.getUuid();
-			stockAdjustVo.setRpcId(rpcId);
-			// End added by maojj 2016-07-26
-			stockAdjustVo.setStoreId(tradeOrder.getStoreId());
-			stockAdjustVo.setUserId(tradeOrder.getUserId());
-			stockAdjustVo.setOrderId(tradeOrder.getId());
-			ActivityTypeEnum activityType = tradeOrder.getActivityType();
-			if (activityType != null) {
-				if (activityType.equals(ActivityTypeEnum.GROUP_ACTIVITY)) {
-					stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_SEND_OUT_GOODS);
-				} else {
-					stockAdjustVo.setStockOperateEnum(StockOperateEnum.SEND_OUT_GOODS);
-				}
-			}
+		// Begin 1.0.Z 增加订单操作记录 add by zengj
+		tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), param.getUserId(),
+				tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+		// End 1.0.Z 增加订单操作记录 add by zengj
 
-			List<AdjustDetailVo> adjustDetailVos = new ArrayList<AdjustDetailVo>();
-			AdjustDetailVo adjustDetailVo = null;
-			List<TradeOrderItem> orderItems = tradeOrder.getTradeOrderItem();
-			for (TradeOrderItem item : orderItems) {
-				adjustDetailVo = new AdjustDetailVo();
-				adjustDetailVo.setStoreSkuId(item.getStoreSkuId());
-				adjustDetailVo.setGoodsName(item.getSkuName());
-				adjustDetailVo.setBarCode(item.getBarCode());
-				adjustDetailVo.setStyleCode(item.getStyleCode());
-				adjustDetailVo.setPropertiesIndb(item.getPropertiesIndb());
-				adjustDetailVo.setNum(item.getQuantity());
-				// 下单时SKU的价格
-				adjustDetailVo.setPrice(item.getUnitPrice());
-				adjustDetailVos.add(adjustDetailVo);
-			}
-			stockAdjustVo.setAdjustDetailList(adjustDetailVos);
+		// 获取店铺信息
+		StoreInfo storeInfo = storeInfoService.findById(tradeOrder.getStoreId());
 
-			// 修改订单状态为已发货
-			tradeOrder.setStatus(OrderStatusEnum.TO_BE_SIGNED);
-			// 修改最后修改时间
-			tradeOrder.setUpdateTime(new Date());
-			// 修改最后修改人
-			tradeOrder.setUpdateUserId(param.getUserId());
-			// 发货时间为当前时间
-			tradeOrder.setDeliveryTime(new Date());
-			// 发货人ID
-			tradeOrder.setShipmentsUserId(param.getUserId());
-			// Begin Bug:15707 added by maojj 2016-12-06
-			// 更新时判断订单状态是否发生变化，以保证数据的一致性。类似乐观锁的处理机制
-			tradeOrder.setCurrentStatus(tradeOrder.getCurrentStatus());
-			// End Bug:15707 added by maojj 2016-12-06
-			// 更新订单信息
-			Integer updateRows = this.updateOrderStatus(tradeOrder);
-			// Begin Bug:15707 added by maojj 2016-12-06
-			// 更新时判断订单状态是否发生变化，以保证数据的一致性。类似乐观锁的处理机制
-			if (updateRows == null || updateRows.intValue() == 0) {
-				// 如果更新影响行数为0，则意味着订单状态已经发生变化。抛出异常终止业务处理
-				throw new ServiceException(ORDER_STATUS_OVERDUE);
-			}
-			// End Bug:15707 added by maojj 2016-12-06
+		// 发送计时消息
+		// Begin 重构4.1 add by wusw 20160801
+		if (storeInfo.getType() == StoreTypeEnum.SERVICE_STORE) {
+			Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0, 16), "yyyy-MM-dd HH:mm");
+			// 服务店订单，预约服务时间过后24小时未派单的自动确认收货
+			// tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout,
+			// tradeOrder.getId(),
+			// DateUtils.addHours(serviceTime, 24).getTime());
+			// Begin V1.0.3修改自动确认收货期限为7天 update by wusw 20160901
+			// Begin V2.2.0修改自动确认收货期限为3天 update by wangf01 20170307
+			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout, tradeOrder.getId(),
+					(DateUtils.addHours(serviceTime, 24 * 3).getTime() - DateUtils.getSysDate().getTime()) / 1000);
+			// end V2.2.0修改自动确认收货期限为3天 update by wangf01 20170307
+			// End V1.0.3修改自动确认收货期限为7天 update by wusw 20160901
+			// 服务店派单发送短信
+			tradeMessageService.sendSmsByServiceStoreShipments(tradeOrder);
+		} else {// End 重构4.1 add by wusw 20160801
+			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
+		}
 
-			// 判断是否有物流信息
-			if (StringUtils.isNotBlank(param.getLogisticsCompanyName())) {
-				// 有物流信息表示物流发货,需要更新物流信息到 订单收货地址信息表
-				TradeOrderLogistics tradeOrderLogistics = tradeOrderLogisticsMapper.selectByOrderId(tradeOrder.getId());
-				if (tradeOrderLogistics != null) {
-					// 表示有物流
-					tradeOrderLogistics.setType(LogisticsType.HAS);
-					// 物流公司
-					tradeOrderLogistics.setLogisticsCompanyName(param.getLogisticsCompanyName());
-					// 物流单号
-					tradeOrderLogistics.setLogisticsNo(param.getLogisticsNo());
-
-					// 更新物流信息
-					tradeOrderLogisticsMapper.updateByPrimaryKeySelective(tradeOrderLogistics);
-				}
-			}
-
-			// 保存订单操作日志
-			// tradeOrderLogMapper.insertSelective(getTradeOrderLog(param,
-			// OrderStatusEnum.TO_BE_SIGNED));
-
-			// Begin 1.0.Z 增加订单操作记录 add by zengj
-			tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), param.getUserId(),
-					tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
-			// End 1.0.Z 增加订单操作记录 add by zengj
-			// 实物订单是在确收时才会扣减实际库存，但是服务订单还是在派单时
-			if (tradeOrder.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
-				// 调整库存 Tips:发货不再修改库存，等订单完成才会
-				this.serviceStockManagerService.updateStock(stockAdjustVo);
-			}
-
-			// 获取店铺信息
-			StoreInfo storeInfo = storeInfoService.findById(tradeOrder.getStoreId());
-
-			// 发送计时消息
-			// Begin 重构4.1 add by wusw 20160801
-			if (storeInfo.getType() == StoreTypeEnum.SERVICE_STORE) {
-				Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0, 16), "yyyy-MM-dd HH:mm");
-				// 服务店订单，预约服务时间过后24小时未派单的自动确认收货
-				// tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout,
-				// tradeOrder.getId(),
-				// DateUtils.addHours(serviceTime, 24).getTime());
-				// Begin V1.0.3修改自动确认收货期限为7天 update by wusw 20160901
-				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout, tradeOrder.getId(),
-						(DateUtils.addHours(serviceTime, 24 * 7).getTime() - DateUtils.getSysDate().getTime()) / 1000);
-				// End V1.0.3修改自动确认收货期限为7天 update by wusw 20160901
-				// 服务店派单发送短信
-				tradeMessageService.sendSmsByServiceStoreShipments(tradeOrder);
-			} else {// End 重构4.1 add by wusw 20160801
-				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
-			}
-
-			// 只有便利店发货才需要短信
-			if (StoreTypeEnum.CLOUD_STORE.equals(storeInfo.getType())) {
-				// 发送短信
-				tradeMessageService.sendSmsByShipments(tradeOrder);
-			}
-
-			// added by maojj 给ERP发消息去生成出入库单据
-			// stockMQProducer.sendMessage(stockAdjustVo);
-		} catch (Exception e) {
-			// added by maojj 通知回滚库存修改
-			if (tradeOrder != null && tradeOrder.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
-				rollbackMQProducer.sendStockRollbackMsg(rpcId);
-			}
-			throw e;
+		// 只有便利店发货才需要短信
+		if (StoreTypeEnum.CLOUD_STORE.equals(storeInfo.getType())) {
+			// 发送短信
+			tradeMessageService.sendSmsByShipments(tradeOrder);
 		}
 	}
 
@@ -4061,6 +4118,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("logisticsFlag", type);
 		json.put("orderlogisticsNo", orderlogisticsNo);
 		json.put("logisticsCmpany", logisticsCmpany);
+		
+		// Begin V2.2 added by maojj 2017-03-20
+		// 如果是扫码购订单，增加订单类型描述
+		if(orders.getOrderResource() == OrderResourceEnum.SWEEP){
+			json.put("orderTypeDesc", AppOrderTypeEnum.SWEEP_ORDER.getDesc());
+			json.put("orderType", String.valueOf(AppOrderTypeEnum.SWEEP_ORDER.getCode()));
+		}
+		// End V2.2 added by maojj 2017-03-20
 
 		// 支付方式:(0:在线支付、1:货到付款,2:未付款,3:线下支付)
 		json.put("payway", orders.getPayWay() == null ? "" : orders.getPayWay().ordinal());
@@ -4753,7 +4818,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		Map<String, String> resultMap = new HashMap<String, String>();
 
 		List<String> rpcIdList = new ArrayList<String>();
-		List<StockAdjustVo> stockAdjustList = new ArrayList<StockAdjustVo>();
 		try {
 			// 查询消费码参数
 			Map<String, Object> params = new HashMap<String, Object>();
@@ -4811,11 +4875,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					List<TradeOrderItem> tradeOrderItemList = new ArrayList<TradeOrderItem>();
 					tradeOrderItemList.add(tradeOrderItem);
 					tradeOrder.setTradeOrderItem(tradeOrderItemList);
-					// 消费后调整库存
-					StockAdjustVo stockAdjustVo = buildServiceOrderStock(tradeOrder,
-							StockOperateEnum.ACTIVITY_SEND_OUT_GOODS, 1, rpcIdList);
-					stockAdjustList.add(stockAdjustVo);
-
 					// 验证通过，将该消费码改为已消费
 					tradeOrderItemDetailMapper.updateStatusWithConsumed(data.get("detailId").toString());
 					// 单价
@@ -4839,7 +4898,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					// 消费完，增加积分
 					addPoint(data.get("userId").toString(), data.get("detailId").toString(), unitPrice);
 
-					serviceStockManagerService.updateStock(stockAdjustVo);
+					// 消费后调整库存
+					StockUpdateDto stockUpdateDto = mallStockUpdateBuilder.buildForStoreConsume(tradeOrder, StockOperateEnum.PLACE_ORDER_COMPLETE, 1);
+					rpcIdList.add(stockUpdateDto.getRpcId());
+					goodsStoreSkuStockApi.updateStock(stockUpdateDto);
 					// 调用dubbo接口
 					BaseResultDto result = payTradeServiceApi.balanceTrade(payTradeVo);
 					if (result == null || !TradeErrorEnum.SUCCESS.getName().equals(result.getCode())) {
@@ -4973,81 +5035,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	}
 
-	/**
-	 * 修改发货库存
-	 *
-	 * @param tradeOrder
-	 *            订单
-	 * @return StockAdjustVo
-	 */
-	private StockAdjustVo buildDeliveryStock(TradeOrder tradeOrder, String rpcId) {
-		StockAdjustVo stockAdjustVo = new StockAdjustVo();
-		// Begin added by maojj 2016-07-26
-		stockAdjustVo.setRpcId(rpcId);
-		// End added by maojj 2016-07-26
-
-		stockAdjustVo.setOrderId(tradeOrder.getId());
-		stockAdjustVo.setOrderNo(tradeOrder.getOrderNo());
-		stockAdjustVo.setOrderResource(tradeOrder.getOrderResource());
-		stockAdjustVo.setOrderType(tradeOrder.getType());
-		stockAdjustVo.setStoreId(tradeOrder.getStoreId());
-		// 发货
-		if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {
-			// 活动订单发货
-			if (tradeOrder.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES) {
-				stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_SEND_OUT_GOODS);
-			} else {
-				stockAdjustVo.setStockOperateEnum(StockOperateEnum.SEND_OUT_GOODS);
-			}
-		} else if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
-			// 订单完成
-			if (tradeOrder.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES) {
-				stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_ORDER_COMPLETE);
-			} else {
-				stockAdjustVo.setStockOperateEnum(StockOperateEnum.PLACE_ORDER_COMPLETE);
-			}
-		}
-		stockAdjustVo.setUserId(tradeOrder.getUserId());
-
-		List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
-		List<TradeOrderItem> orderItemList = tradeOrder.getTradeOrderItem();
-		if (CollectionUtils.isEmpty(orderItemList)) {
-			orderItemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
-		}
-		for (TradeOrderItem item : orderItemList) {
-			AdjustDetailVo detail = new AdjustDetailVo();
-			detail.setStoreSkuId(item.getStoreSkuId());
-			detail.setGoodsSkuId("");
-			detail.setMultipleSkuId("");
-			detail.setGoodsName(item.getSkuName());
-			detail.setPrice(item.getUnitPrice());
-			detail.setPropertiesIndb(item.getPropertiesIndb());
-			detail.setStyleCode(item.getStyleCode());
-			detail.setBarCode(item.getBarCode());
-			detail.setNum(item.getQuantity());
-
-			// add by 便利店优惠金额单价 lijun begin
-			if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED
-					&& tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
-				if (item.getPreferentialPrice() != null
-						&& item.getPreferentialPrice().compareTo(BigDecimal.ZERO) == 1) {
-					boolean isWeigh = false;
-					if (item.getWeight() != null) {
-						isWeigh = true;
-					}
-					BigDecimal number = convertScaleToKg(item.getQuantity(), isWeigh);
-					// 优惠单价
-					BigDecimal price = item.getIncome().divide(number, 4, BigDecimal.ROUND_HALF_UP);
-					detail.setPrice(price);
-				}
-			}
-			// add by 便利店优惠金额单价 lijun end
-
-			adjustDetailList.add(detail);
-		}
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
-		return stockAdjustVo;
-	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -5119,10 +5106,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.createOrder);
 
 		// begin add by zengjz 2016-10-12
-		if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER
-				&& tradeOrder.getType() != OrderTypeEnum.STORE_CONSUME_ORDER) {
-			tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.createOrder);
-		}
+		// begin add by xuzq 2017-03-14
+		//服务店商家新增订单时增加提醒消息推送 商家app2.1需求
+		//if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER
+			//	&& tradeOrder.getType() != OrderTypeEnum.STORE_CONSUME_ORDER) {
+		tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.createOrder);
+		//}
+		// end add by xuzq 2017-03-14
 		// end add by zengjz 2016-10-12
 	}
 
@@ -5258,6 +5248,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						vo.setOrderResource(order.getOrderResource());
 						vo.setAddress(order.getPickUpId());
 						vo.setActivityType(order.getActivityType());
+						if (order.getTradeOrderLogistics() != null) {
+							vo.setLogisticsType(order.getTradeOrderLogistics().getType());
+							vo.setLogisticsNo(StringUtils.isNotBlank(order.getTradeOrderLogistics().getLogisticsNo())
+									? order.getTradeOrderLogistics().getLogisticsNo() : "");
+						} else{
+							vo.setLogisticsType(LogisticsType.NONE);
+							vo.setLogisticsNo("");
+						}
 						result.add(vo);
 					}
 				}
@@ -5324,57 +5322,79 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			int pageSize) throws ServiceException {
 		List<PhysicsOrderVo> result = null;
 		PageHelper.startPage(pageNumber, pageSize, true, false);
-		// Begin V2.1.0 added by luosm 20170215
-		String cityName = (String) params.get("cityName");
-		// 判断cityName是否为空
-		if (StringUtils.isNotEmpty(cityName)) {
-			cityName = cityName.trim();
-			params.put("cityName", cityName);
-		} 
 		result = tradeOrderMapper.selectServiceStoreListForOperate(params);
-		// End V2.1.0 added by luosm 20170215
-		// result = tradeOrderMapper.selectServiceStoreListForOperate(params);
+		 
 		if (result == null) {
 			result = new ArrayList<PhysicsOrderVo>();
 		} else {
+			// 订单ID集合
+			List<String> orderIds = new ArrayList<String>();
+			// 用户ID集合
+			List<String> userIds = new ArrayList<String>();
+			//订单关联的店铺ids
+			List<String> storeIds = new ArrayList<String>();
+			// 活动id集合
+			for (PhysicsOrderVo order : result) {
+				if (StringUtils.isNotEmpty(order.getId())) {
+					orderIds.add(order.getId());
+				}
+				if (StringUtils.isNotEmpty(order.getUserId())) {
+					userIds.add(order.getUserId());
+				}
+				if (StringUtils.isNotEmpty(order.getStoreId())) {
+					storeIds.add(order.getStoreId());
+				}
+				
+			}
+			
+			List<SysUserInvitationLoginNameVO> inviteNameLists = new ArrayList<SysUserInvitationLoginNameVO>();
+			if (CollectionUtils.isNotEmpty(userIds)) {
+				inviteNameLists = invitationCodeService.selectLoginNameByUserId(userIds);
+			}
+
+			List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
+			List<ActivityInfoVO> activityList = null;
+			if (CollectionUtils.isNotEmpty(orderIds)) {
+				try {
+					tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				activityList = this.findActivityInfo(orderIds);
+			}
+			
+			//V2.1.0  begin  add by zhulq 获取服务店上门服务的收货地址（物流表的地址）
+			//订单的物流信息
+			List<TradeOrderLogistics> logisticsList = null;
+			if (CollectionUtils.isNotEmpty(orderIds)) {
+				logisticsList = this.tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
+			}
+			//店铺地址（到店自提和到店消费订单店铺地址）
+			List<UserAddressVo> memberAddressList = null;	
+			//V2.1.0 end add by zhulq 收货地址取物流表信息 之前是取店铺地址
+			if (CollectionUtils.isNotEmpty(storeIds)) {
+				memberAddressList = this.memberConsigneeAddressMapper.findByStoreIds(storeIds);
+			}
+			//V2.1.0  end add by zhulq 获取服务店上门服务的收货地址（物流表的地址）
 			for (PhysicsOrderVo vo : result) {
 				if (params.get("type") == OrderTypeEnum.STORE_CONSUME_ORDER) {
 					this.convertOrderStatusDdxf(vo);
+					if (CollectionUtils.isNotEmpty(memberAddressList)) {
+						for (UserAddressVo userAddressVo : memberAddressList) {
+							if (StringUtils.isNotBlank(userAddressVo.getUserId()) 
+									&& vo.getStoreId().equals(userAddressVo.getUserId())) {
+								String cityName = userAddressVo.getCityName() == null ? "" : userAddressVo.getCityName();
+								// 所属城市
+								vo.setaCityName(cityName);
+								break;
+							}
+						}
+					}
 				} else {
 					// Begin V2.1.0 added by luosm 20170223
 					// 如果有订单信息
 					if (CollectionUtils.isNotEmpty(result)) {
-						// 订单ID集合
-						List<String> orderIds = new ArrayList<String>();
-						// 用户ID集合
-						List<String> userIds = new ArrayList<String>();
-
-						// 活动id集合
-						for (PhysicsOrderVo order : result) {
-							if (StringUtils.isNotEmpty(order.getId())) {
-								orderIds.add(order.getId());
-							}
-							if (StringUtils.isNotEmpty(order.getUserId())) {
-								userIds.add(order.getUserId());
-							}
-						}
-
-						List<SysUserInvitationLoginNameVO> inviteNameLists = new ArrayList<SysUserInvitationLoginNameVO>();
-						if (CollectionUtils.isNotEmpty(userIds)) {
-							inviteNameLists = invitationCodeService.selectLoginNameByUserId(userIds);
-						}
-
-						List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
-						List<ActivityInfoVO> activityList = null;
-						if (CollectionUtils.isNotEmpty(orderIds)) {
-							try {
-								tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							activityList = this.findActivityInfo(orderIds);
-						}
-						this.convertOrderStatusNew(vo, inviteNameLists, tradeOrderRefundsList, activityList);
+						this.convertOrderStatusNew(vo, inviteNameLists, tradeOrderRefundsList, activityList, logisticsList);
 					}
 				}
 			}
@@ -5392,7 +5412,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @date 2017年2月23日
 	 */
 	private void convertOrderStatusNew(PhysicsOrderVo vo, List<SysUserInvitationLoginNameVO> inviteNameLists,
-			List<TradeOrderRefunds> tradeOrderRefundsList, List<ActivityInfoVO> activityList) {
+			List<TradeOrderRefunds> tradeOrderRefundsList, List<ActivityInfoVO> activityList, List<TradeOrderLogistics> logisticsList) {
 		switch (vo.getStatus()) {
 			case DROPSHIPPING:
 				vo.setOrderStatusName("待派单");
@@ -5499,20 +5519,27 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		String lCityName = vo.getlCityName() == null ? "" : vo.getlCityName();
 		String lAreaName = vo.getlAreaName() == null ? "" : vo.getlAreaName();
 		String areaExt = vo.getlAreaExt() == null ? "" : vo.getlAreaExt();
-
 		// 定位基点
 		vo.setLocateAddress(lProviceName + lCityName + lAreaName + areaExt);
-
-		String aProviceName = vo.getaProviceName() == null ? "" : vo.getaProviceName();
-		String aCityName = vo.getaCityName() == null ? "" : vo.getaCityName();
-		String aAreaName = vo.getaAreaName() == null ? "" : vo.getaAreaName();
-		String address = vo.getMemberAddress() == null ? "" : vo.getMemberAddress();
-
-		// 所属城市
-		vo.setCityName(aCityName);
-		// 收货地址
-		vo.setAddress(aProviceName + aCityName + aAreaName + address);
-
+		
+		//begin add by zhulq  2017-03-22 上门服务订单收货地址取物流信息
+		if (CollectionUtils.isNotEmpty(logisticsList)) {
+			for (TradeOrderLogistics logistics : logisticsList) {
+				if (StringUtils.isNotBlank(logistics.getOrderId()) && vo.getId().equals(logistics.getOrderId())) {
+					String cityId = logistics.getCityId();
+					if (StringUtils.isNotBlank(cityId)) {
+						Address address = addressService.getAddressById(Long.parseLong(cityId));
+						vo.setCityName(address.getName() == null ? "" : address.getName());
+					}
+					String area = logistics.getArea() == null ? "" : logistics.getArea();
+					String address = logistics.getAddress() == null ? "" : logistics.getAddress();
+					// 收货地址
+					vo.setAddress(area + address);
+					break;
+				}
+			}
+		}
+		
 		// 订单来源
 		vo.setOrderResource(vo.getOrderResource());
 	}
@@ -6578,7 +6605,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 													consumeVo.getDetailActualAmount());
 											// 修改库存
 											updateServiceStoreStock(consumeVo, rpcIdList,
-													StockOperateEnum.SEND_OUT_GOODS, userId, storeId);
+													StockOperateEnum.PLACE_ORDER_COMPLETE, userId, storeId);
 										}
 										Date nowTime = new Date();
 										// 批量修改订单项详细验证码状态为已消费，消费时间和更新时间为当前时间
@@ -6648,40 +6675,26 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	private void updateServiceStoreStock(OrderItemDetailConsumeVo detailConsumeVo, List<String> rpcIdList,
 			StockOperateEnum stockOperateEnum, String userId, String storeId)
 			throws StockException, ServiceException, Exception {
-		StockAdjustVo stockAdjustVo = new StockAdjustVo();
 		String rpcId = UuidUtils.getUuid();
 		rpcIdList.add(rpcId);
-		stockAdjustVo.setRpcId(rpcId);
+		
+		StockUpdateDto stockUpdateDto = new StockUpdateDto();
+		stockUpdateDto.setRpcId(rpcId);
+		stockUpdateDto.setMethodName("");
+		stockUpdateDto.setOrderId(detailConsumeVo.getOrderId());
+		stockUpdateDto.setStoreId(storeId);
+		stockUpdateDto.setStockOperateEnum(stockOperateEnum);
 
-		// 订单ID
-		stockAdjustVo.setOrderId(detailConsumeVo.getOrderId());
-		stockAdjustVo.setOrderNo(detailConsumeVo.getOrderNo());
-		stockAdjustVo.setOrderResource(detailConsumeVo.getOrderResource());
-		stockAdjustVo.setOrderType(detailConsumeVo.getOrderType());
-		// 店铺ID
-		stockAdjustVo.setStoreId(storeId);
-		// 库存操作枚举
-		stockAdjustVo.setStockOperateEnum(stockOperateEnum);
-		// 操作用户ID
-		stockAdjustVo.setUserId(detailConsumeVo.getUserId());
-		// 库存调整详情VO
-		List<AdjustDetailVo> adjustDetailList = Lists.newArrayList();
-
-		AdjustDetailVo detail = new AdjustDetailVo();
-		detail.setStoreSkuId(detailConsumeVo.getStoreSkuId());
-		detail.setGoodsSkuId("");
-		// detail.setMultipleSkuId("");
-		detail.setGoodsName(detailConsumeVo.getSkuName());
-		detail.setPrice(detailConsumeVo.getUnitPrice());
-		detail.setPropertiesIndb(detailConsumeVo.getPropertiesIndb());
-		detail.setStyleCode(detailConsumeVo.getStyleCode());
-		detail.setBarCode(detailConsumeVo.getBarCode());
-		detail.setNum(detailConsumeVo.getNum());
-		adjustDetailList.add(detail);
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
-
-		// 修改库存
-		serviceStockManagerService.updateStock(stockAdjustVo);
+		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
+		StockUpdateDetailDto updateDetail = new StockUpdateDetailDto();
+		updateDetail.setStoreSkuId(detailConsumeVo.getStoreSkuId());
+		updateDetail.setSpuType(SpuTypeEnum.fwdDdxfSpu);
+		updateDetail.setUpdateNum(detailConsumeVo.getNum());
+		
+		updateDetailList.add(updateDetail);
+		
+		stockUpdateDto.setUpdateDetailList(updateDetailList);
+		goodsStoreSkuStockApi.updateStock(stockUpdateDto);
 	}
 
 	/**
@@ -7026,20 +7039,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 	// end added by luosm 20161010 V1.1.0
 
-	/**
-	 * 如果是称重会转换成千克
-	 */
-	private BigDecimal convertScaleToKg(Integer value, boolean isWeigh) {
-		if (value == null) {
-			return null;
-		}
-		if (isWeigh) {
-			return BigDecimal.valueOf(value).divide(BigDecimal.valueOf(1000)).setScale(4, BigDecimal.ROUND_FLOOR);
-		} else {
-			return BigDecimal.valueOf(value);
-		}
-	}
-
 	@Override
 	public List<TradeOrderExportVo> findExportList(Map<String, Object> map) {
 		// 查询订单信息
@@ -7208,5 +7207,85 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		List<TradeOrder> list = tradeOrderMapper.findUserOrders(paramBo);
 		PageUtils<TradeOrder> page = new PageUtils<TradeOrder>(list);
 		return page.getTotal();
+	}
+	@Override
+	public PageUtils<TradeOrderDetailBo> findOrderInfo(Map<String, Object> map, int pageSize, int pageNumber) {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+
+		String storeId = map.get("storeId").toString();
+		StoreInfo store = storeInfoService.findById(storeId);
+		List<TradeOrderDetailBo> list = null;
+		if (store.getType() == StoreTypeEnum.SERVICE_STORE) {
+			list = tradeOrderMapper.findServiceOrderInfo(map);
+		} else {
+			list = tradeOrderMapper.findCloudOrderInfo(map);
+		}
+
+		if (list != null && !list.isEmpty()) {
+			for (TradeOrderDetailBo tradeOrderVo : list) {
+				// 查询订单项表。
+				tradeOrderVo.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrderVo.getId()));
+				// 查询投诉信息
+				tradeOrderVo.setTradeOrderComplainVoList(
+						tradeOrderComplainMapper.findOrderComplainByParams(tradeOrderVo.getId()));
+
+				// 获取订单活动信息
+				Map<String, Object> activityMap = getActivity(tradeOrderVo.getActivityType(),
+						tradeOrderVo.getActivityId());
+				String activityName = activityMap.get("activityName") == null ? null
+						: activityMap.get("activityName").toString();
+				ActivitySourceEnum activitySource = activityMap.get("activitySource") == null ? null
+						: (ActivitySourceEnum) activityMap.get("activitySource");
+				tradeOrderVo.setActivityName(activityName);
+				tradeOrderVo.setActivitySource(activitySource);
+			}
+		}
+		return new PageUtils<TradeOrderDetailBo>(list);
+	}
+	
+	/**
+	 * 获取活动信息 2.2.0修改 
+	 * @author xuzq
+	 * @param activityType活动类型
+	 * @param activityId 活动ID
+	 */
+	private Map<String, Object> getActivity(int activityType, String activityId) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		// 活动名称
+		String activityName = null;
+		// 活动来源，（活动发起者身份）
+		ActivitySourceEnum activitySource = null;
+		// 如果有活动ID，说明该订单参与了活动
+		if (StringUtils.isNotBlank(activityId) && !"0".equals(activityId)) {
+			// 代金券活动
+			if (ActivityTypeEnum.VONCHER.equals(activityType)) {
+				ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(activityId);
+				if (activityCollectCoupons != null) {
+					activityName = activityCollectCoupons.getName();
+					// 所属代理商id，运营商以0标识
+					if ("0".equals(activityCollectCoupons.getBelongType())) {
+						activitySource = ActivitySourceEnum.OPERATOR;
+					} else {
+						activitySource = ActivitySourceEnum.AGENT;
+					}
+				}
+			} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(activityType)
+					|| ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES.equals(activityType)) {
+				// 满减活动
+				ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(activityId);
+				if (activityDiscount != null) {
+					activityName = activityDiscount.getName();
+				}
+			}
+			// End 15698 add by wusw 20161205
+		}
+		map.put("activityName", activityName);
+		map.put("activitySource", activitySource);
+		return map;
+	}
+
+	@Override
+	public List<TradeOrderStatusVo> getServiceOrderCount(Map<String, Object> params) {
+		return tradeOrderMapper.getServiceOrderCount(params);
 	}
 }

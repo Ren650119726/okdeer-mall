@@ -164,7 +164,7 @@
 	  			#{item}  
 	 		</foreach>  
 		</if>
-		<if test="skuType != null">
+		<if test="skuType != null and skuType !=''">
 			and s.type = #{skuType}
 		</if>
 		<if test="notSkuType != null">
@@ -344,4 +344,107 @@
         </foreach>
     </select>
 
+	<select id="listGoodsStoreSkuV220" parameterType="map" resultType="map">
+		select 		
+			s.id,
+			s.name,
+			CAST(spu.type AS SIGNED)  as skuType,
+			s.properties_indb as propertiesIndb,
+			s.bar_code as barCode,
+			s.style_code as styleCode,
+			s.offline_price as offlinePrice,
+			s.online_price as onlinePrice,
+			s.create_time as createTime,
+			s.sku_id as skuId,
+			s.sale_num as saleNum,
+			s.online AS online,
+			s.type AS type,
+			d.`name` AS categoryName,
+			p.url as url,
+			f.sellable,
+			f.actual,
+			f.locked
+			<!-- 如果特惠活动主键不为空,需要关联特惠活动商品表,把限购数量,库存,价格等关联出来 -->
+			<if test="id != null and id != ''">
+				,
+				asg.trade_max as tradeMax,
+				asg.sale_stock as saleStock,
+				asg.sale_price as salePrice,
+				asg.sort as sort,
+				asg.id as activitySaleGoodsId,
+				asg.security_stock as securityStock
+			</if>
+				
+		from goods_store_sku s
+		left JOIN goods_store_spu spu on s.store_spu_id = spu.id
+		LEFT JOIN goods_spu_category d ON spu.spu_category_id = d.`id` 
+		LEFT JOIN goods_spu_category_spu_type e ON d.`id` = e.`spu_category_id` 
+		LEFT JOIN goods_store_sku_stock f ON s.`id` = f.`store_sku_id`
+		LEFT JOIN goods_store_sku_picture p ON (p.`store_sku_id` = f.`store_sku_id` AND p.`type` = '1')
+		LEFT JOIN goods_store_sku_plu plu on plu.store_sku_id = s.id
+		
+		<if test="id != null and id != ''">
+			left join activity_sale_goods asg  on ( asg.sale_id = #{id} and asg.store_sku_id = s.id) 
+		</if>
+		
+		where s.disabled = 0 
+		and s.status = 1
+		and s.violation = 0
+<!-- 	李建伟增加的需求,	只查计件的商品 -->
+		and (plu.type = 1 or plu.type is null)
+		<!-- 	王凡增加的需求,	没有主图的过滤掉 -->
+		and p.url is not null 
+		<!-- storeId等于登陆人的 -->
+		and s.store_id = #{storeId}
+		and s.import_type = 0
+		 
+		<!-- 要筛选出未绑定活动的,如果是修改的话,自己所属的商品ids也要筛选出来 -->
+		<if test="isActivity != null and isActivity != ''">
+		and ( s.is_activity = #{isActivity}
+			<if test="editGoodsIds != null and editGoodsIds != ''">
+				or s.id in 
+				<foreach item="item" index="index" collection="editGoodsIds" open="(" separator="," close=")">  
+		  			#{item}  
+		 		</foreach>  
+			</if>
+		)
+		</if>
+		
+		<!-- 可销售库存大于0,才出现商品供选择  如果是修改的话,自己所属的商品ids也要筛选出来-->
+		<if test="sellable != null">
+		and ( f.sellable &gt; 0
+			<if test="editGoodsIds != null and editGoodsIds != ''">
+				or s.id in 
+				<foreach item="item" index="index" collection="editGoodsIds" open="(" separator="," close=")">  
+		  			#{item}  
+		 		</foreach>  
+			</if>
+		)
+		</if>
+		
+		<if test="goodsName != null and goodsName != ''">
+			and s.name like concat('%',#{goodsName},'%' )
+		</if>
+		<if test="categoryName != null and categoryName != ''">
+			and d.`name` like concat('%',#{categoryName},'%' )
+		</if>
+		<if test="barCode != null and barCode != ''">
+			and s.bar_code like concat('%',#{barCode},'%' )
+		</if>
+		<if test="goodsIds != null and goodsIds.length != 0">
+			and s.id in 
+			<foreach item="item" index="index" collection="goodsIds" open="(" separator="," close=")">  
+	  			#{item}  
+	 		</foreach>  
+		</if>
+		<if test="skuType != null and skuType != ''">
+			and s.type = #{skuType}
+		</if>
+		
+		order by 
+		<if test="id != null and id != ''">
+			asg.sort desc,
+		</if>
+		s.create_time desc
+	</select>
 </mapper>

@@ -1,20 +1,17 @@
 package com.okdeer.mall.operate.column.mapper;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Repository;
-
-import com.okdeer.mall.common.enums.AreaType;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.operate.entity.ColumnOperation;
 import com.okdeer.mall.operate.entity.ColumnOperationQueryVo;
 import com.okdeer.mall.operate.entity.ColumnOperationVo;
-import com.okdeer.mall.operate.enums.ColumnOperationType;
 import com.okdeer.mall.operate.enums.State;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.dal.IBaseCrudMapper;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @DESC: 运营栏目mapper
@@ -92,6 +89,18 @@ public interface ColumnOperationMapper extends IBaseCrudMapper {
 	 */
 	int selectCountByDistrict(Map<String,Object> params);
 	// End 重构4.1  add by wusw  20160719
+
+	// begin add by wangf01 20170313
+	/**
+	 *
+	 * @Description: 查询指定关联栏目下指定开始结束时间有交集、指定区域、指定版本有交集的记录数量
+	 * @param params
+	 * @return int
+	 * @author wangf01
+	 * @date 2017年3月13日
+	 */
+	int selectVersionCountByDistrict(Map<String,Object> params);
+	// end add by wangf01 20170313
 	
 	/**
 	 * 
