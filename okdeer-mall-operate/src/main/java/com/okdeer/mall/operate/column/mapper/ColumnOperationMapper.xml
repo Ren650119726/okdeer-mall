@@ -327,14 +327,7 @@
         AND target = #{target,jdbcType=TINYINT}
      </if>
      <if test="state != null" >
-     	<choose>
-     		<when test="state >= 2">
-     			AND state IN(2,3)
-     		</when>
-     		<otherwise>
-     			AND state = #{state,jdbcType=TINYINT}
-     		</otherwise>
-     	</choose>
+     	AND state = #{state,jdbcType=TINYINT}
      </if>
      <if test="name != null and name != ''" >
         AND name LIKE CONCAT('%',#{name},'%')
