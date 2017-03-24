@@ -70,7 +70,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 
 	@Override
 	public String getTags() {
-		return TAG_ORDER;
+		return TAG_ORDER + JOINT + TAG_POST_ORDER;
 	}
 	
 	/**
@@ -92,7 +92,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
 			tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
-			AbstractPayResultHandler handler = payResultHandlerFactory.getByOrderType(tradeOrder.getType());
+			AbstractPayResultHandler handler = payResultHandlerFactory.getByOrder(tradeOrder);
 			handler.handler(tradeOrder, respDto);
 		} catch (Exception e) {
 			logger.error("订单支付状态消息处理失败", e);
