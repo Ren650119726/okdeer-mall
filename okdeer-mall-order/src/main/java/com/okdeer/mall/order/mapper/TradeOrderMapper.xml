@@ -2642,8 +2642,11 @@
 	<select id="getOrderCount" parameterType="java.util.Map"
 		resultMap="TradeOrderStatusVoMap">
 		SELECT CASE
-		WHEN `status` IN (0,11) THEN 0
-		WHEN `status` IN (2,4,12,13,6) THEN 2
+		WHEN `status` IN (14) THEN 1
+		WHEN `status` IN (1) THEN 2
+		WHEN `status` IN (3) THEN 3
+		WHEN `status` IN (5,6) THEN 4
+		WHEN `status` IN (2,4,12,13) THEN 5
 		ELSE `STATUS`
 		END AS `status`,count(1) as `count` FROM trade_order
 		WHERE store_id = #{storeId,jdbcType=VARCHAR}
@@ -2662,8 +2665,11 @@
 		and `status` >= 0
 		GROUP BY
 		CASE
-		WHEN `status` IN (0,11) THEN 0
-		WHEN `status` IN (2,4,12,13,6) THEN 2
+		WHEN `status` IN (14) THEN 1
+		WHEN `status` IN (1) THEN 2
+		WHEN `status` IN (3) THEN 3
+		WHEN `status` IN (5,6) THEN 4
+		WHEN `status` IN (2,4,12,13) THEN 5
 		ELSE `STATUS`
 		END
 	</select>
