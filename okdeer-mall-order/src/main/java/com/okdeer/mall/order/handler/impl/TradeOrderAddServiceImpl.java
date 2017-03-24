@@ -25,10 +25,8 @@ import org.springframework.util.StringUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
-import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
-import com.okdeer.archive.stock.vo.AdjustDetailVo;
-import com.okdeer.archive.stock.vo.StockAdjustVo;
+import com.okdeer.archive.stock.dto.StockUpdateDto;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.entity.StoreBranches;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
@@ -40,6 +38,8 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.common.consts.LogConstants;
+import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
+import com.okdeer.jxc.stock.vo.StockUpdateVo;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
@@ -48,7 +48,6 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleRecordMapper;
-import com.okdeer.mall.activity.coupons.mq.constants.SafetyStockTriggerTopic;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
@@ -59,6 +58,8 @@ import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.order.builder.JxcStockUpdateBuilder;
+import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
@@ -83,7 +84,6 @@ import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.utils.OrderNoUtils;
-import com.okdeer.mall.order.vo.TradeOrderContext;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
 import com.okdeer.mall.order.vo.TradeOrderReq;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
@@ -164,18 +164,21 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	@Resource
 	private TradeOrderTimer tradeOrderTimer;
 
-	// /**
-	// * 库存管理Dubbo接口
-	// */
-	// @Reference(version = "1.0.0", check = false)
-	// private StockManagerServiceApi stockManagerServiceApi;
-
 	// Begin 1.0.Z add by zengj
 	/**
 	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerServiceApi;
+	private StockUpdateServiceApi stockUpdateServiceApi;
+	
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
+	
+	@Resource
+	private JxcStockUpdateBuilder jxcStockUpdateBuilder;
+	
+	@Resource
+	private MallStockUpdateBuilder mallStockUpdateBuilder;
 
 	/**
 	 * 机构Service
@@ -281,8 +284,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			resp.setIsOrder(1);
 			respDto.setMessage(OrderTipMsgConstant.ORDER_SUCESS);
 		} catch (Exception e) {
-			// 现在实物订单库存放入商业管理系统管理。那边没提供补偿机制，先不发消息
-			// rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
+			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 	}
@@ -962,98 +964,13 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	 * @date 2016年7月14日
 	 */
 	private void toUpdateStock(TradeOrder order, TradeOrderReqDto reqDto, List<String> rpcIdList) throws Exception {
-		StockAdjustVo stockAdjustVo = null;
-		if (!CollectionUtils.isEmpty(reqDto.getContext().getNomalSkuList())) {
-			stockAdjustVo = buildStockAdjustVo(order, reqDto, false);
-			rpcIdList.add(stockAdjustVo.getRpcId());
-			// 正常商品下单，更新库存
-			stockManagerServiceApi.updateStock(stockAdjustVo);
+		StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(order,reqDto);
+		if(mallStockUpdate != null){
+			rpcIdList.add(mallStockUpdate.getRpcId());
+			goodsStoreSkuStockApi.updateStock(mallStockUpdate);
 		}
-
-		if (!CollectionUtils.isEmpty(reqDto.getContext().getActivitySkuList())) {
-			stockAdjustVo = buildStockAdjustVo(order, reqDto, true);
-			rpcIdList.add(stockAdjustVo.getRpcId());
-			// 特惠商品下单，更新库存
-			stockManagerServiceApi.updateStock(stockAdjustVo);
-			// Begin V2.1 added by maojj 2017-02-22
-			// 特惠商品下单，增加库存提醒
-			Map<String,String> preferenceMap = new HashMap<String,String>();
-			for(String activitySkuId : reqDto.getContext().getActivitySkuIds()){
-				preferenceMap.put(activitySkuId, reqDto.getContext().getActivityId());
-			}
-			try {
-				if(!preferenceMap.isEmpty()){
-					MQMessage msg = new MQMessage(SafetyStockTriggerTopic.TOPIC_SAFETY_STOCK_TRIGGER,order.getId(),(Serializable)preferenceMap);
-					rocketMQProducer.sendMessage(msg);
-				}
-			} catch (Exception e) {
-				logger.error("发送库存提醒消息异常：{}",e);
-			}
-			// End V2.1 added by maojj 2017-02-22
-		}
-	}
-
-	/**
-	 * @Description: 构建库存更新对象
-	 * @param order 订单对象
-	 * @param reqDto 请求对象
-	 * @param isPrivilege 是否为特惠商品
-	 * @return StockAdjustVo  
-	 * @author maojj
-	 * @date 2016年7月14日
-	 */
-	private StockAdjustVo buildStockAdjustVo(TradeOrder order, TradeOrderReqDto reqDto, boolean isPrivilege) {
-		TradeOrderReq req = reqDto.getData();
-		TradeOrderContext context = reqDto.getContext();
-
-		List<GoodsStoreSku> storeSkuList = null;
-		if (isPrivilege) {
-			storeSkuList = context.getActivitySkuList();
-		} else {
-			storeSkuList = context.getNomalSkuList();
-		}
-
-		StockAdjustVo stockAjustVo = new StockAdjustVo();
-
-		stockAjustVo.setRpcId(UuidUtils.getUuid());
-		stockAjustVo.setOrderId(order.getId());
-		stockAjustVo.setOrderNo(order.getOrderNo());
-		stockAjustVo.setOrderResource(order.getOrderResource());
-		stockAjustVo.setOrderType(order.getType());
-
-		stockAjustVo.setStoreId(req.getStoreId());
-		stockAjustVo.setUserId(req.getUserId());
-		stockAjustVo.setMethodName(this.getClass().getName() + ".process");
-
-		AdjustDetailVo adjustDetailVo = null;
-		TradeOrderGoodsItem orderItem = null;
-		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
-
-		for (GoodsStoreSku storeSku : storeSkuList) {
-			adjustDetailVo = new AdjustDetailVo();
-			orderItem = req.findOrderItem(storeSku.getId());
-
-			adjustDetailVo.setBarCode(storeSku.getBarCode());
-			adjustDetailVo.setGoodsName(storeSku.getName());
-			adjustDetailVo.setGoodsSkuId(storeSku.getSkuId());
-			adjustDetailVo.setMultipleSkuId(storeSku.getMultipleSkuId());
-			adjustDetailVo.setNum(orderItem.getSkuNum());
-			adjustDetailVo.setPrice(orderItem.getSkuPrice());
-			adjustDetailVo.setPropertiesIndb(storeSku.getPropertiesIndb());
-			adjustDetailVo.setStoreSkuId(storeSku.getId());
-			adjustDetailVo.setGoodsSkuId(storeSku.getSkuId());
-			adjustDetailVo.setIsPreference(isPrivilege);
-			adjustDetailList.add(adjustDetailVo);
-		}
-
-		stockAjustVo.setAdjustDetailList(adjustDetailList);
-
-		if (isPrivilege) {
-			stockAjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_PLACE_ORDER);
-		} else {
-			stockAjustVo.setStockOperateEnum(StockOperateEnum.PLACE_ORDER);
-		}
-		return stockAjustVo;
+		StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.build(order, reqDto);
+		stockUpdateServiceApi.stockUpdateForMessage(jxcStockUpdate);
 	}
 
 	/**

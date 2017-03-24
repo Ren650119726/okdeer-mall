@@ -7,11 +7,13 @@ import static com.okdeer.archive.store.enums.ResultCodeEnum.STORE_IS_CLOSED;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
+import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
@@ -22,6 +24,7 @@ import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
@@ -63,6 +66,10 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		// 检查店铺是否支持到店自提
 		checkPickUpType(resp,paramDto,storeInfo);
 		// End V2.1 added by maojj 2017-02-27
+		// Begin V2.2 added by maojj 2017-03-18
+		// 检查服务店铺服务时间是否有效
+		checkServTime(resp,paramDto,storeInfo);
+		// End V2.2 added by maojj 2017-03-18
 		// 缓存店铺信息
 		paramDto.put("storeInfo", storeInfo);
 	}
@@ -253,4 +260,50 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		return DateUtils.parseDate(hourMinute);
 	}
 
+	/**
+	 * @Description: 检查服务时间
+	 * @param resp
+	 * @param paramDto
+	 * @param storeInfo   
+	 * @author maojj
+	 * @date 2017年3月18日
+	 */
+	private void checkServTime(Response<PlaceOrderDto> resp,PlaceOrderParamDto paramDto, StoreInfo storeInfo){
+		if (!resp.isSuccess() || paramDto.getOrderType() == PlaceOrderTypeEnum.CVS_ORDER
+				|| paramDto.getSkuType() == OrderTypeEnum.STORE_CONSUME_ORDER
+				|| paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
+			// 只对上门服务店提交订单时做校验
+			return;
+		}
+		StoreInfoServiceExt servExt = storeInfo.getStoreInfoServiceExt();
+		String servTime = paramDto.getPickTime();
+		if(StringUtils.isEmpty(servTime) || StringUtils.isEmpty(servExt.getInvalidDate())){
+			return;
+		}
+		// 服务时间年月
+		String servMonth = servTime.substring(0,4) + servTime.substring(5,7);
+		// 服务时间天数
+		int servDay = Integer.parseInt(servTime.substring(8,9));
+		String[] invalidDateArr = servExt.getInvalidDate().split(",");
+		String invalidMonth = null;
+		for (String invalidTime : invalidDateArr) {
+			invalidMonth = invalidTime.substring(0, 6);
+			if (servMonth.compareTo(invalidMonth) == -1) {
+				// 如果当前月份小于不可用日期限制的月份，则当前日期一定可用
+				break;
+			} else if (servMonth.compareTo(invalidMonth) == 0) {
+				// 如果当前月份等于不可用日期限制的月份，则判定这天是否可用
+				int invalidDay = Integer.parseInt(invalidTime.substring(6));
+				if (((invalidDay >> (servDay - 1)) & 1) == 1) {
+					// 如果当前天数为不可用日期
+					resp.setResult(ResultCodeEnum.SERV_TIME_INVALID);
+					break;
+				} 
+			} else if (servMonth.compareTo(invalidMonth) == 1) {
+				// 如果当前月份大于不可用日期限制的月份，则循环跳入下一个月份限制进行判定
+				continue;
+			}
+		}
+		
+	}
 }

@@ -47,5 +47,11 @@ public interface TradeOrderLogisticsMapper extends IBaseCrudMapper {
 	 * @date 2017年2月15日
 	 */
 	List<String> selectByCityId(String cityId);
+	
+	/***
+	 * 根据订单id更新物流信息
+	 * @param tradeOrderLogistics
+	 */
+	void updateByOrderId(TradeOrderLogistics tradeOrderLogistics);
 	//End V2.1.0 added by luosm 20170215
 }

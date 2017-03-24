@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -24,14 +23,20 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.enums.IsActivity;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.stock.dto.StockUpdateDetailDto;
+import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
-import com.okdeer.archive.stock.vo.AdjustDetailVo;
-import com.okdeer.archive.stock.vo.StockAdjustVo;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.common.consts.RedisKeyConstants;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRange;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
@@ -46,13 +51,8 @@ import com.okdeer.mall.activity.seckill.vo.ActivitySeckillListPageVo;
 import com.okdeer.mall.activity.seckill.vo.ActivitySeckillQueryFilterVo;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.RangeTypeEnum;
-import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mcm.service.IAppMsgApi;
-import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.common.consts.RedisKeyConstants;
 
 /**
  * ClassName: ActivitySeckillServiceImpl 
@@ -99,7 +99,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	* 注入库存API接口
 	*/
 	@Reference(version = "1.0.0", check = false)
-	StockManagerServiceApi stockManagerServiceApi;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 
 	/**
 	 * 回滚MQ
@@ -414,27 +414,23 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	 */
 	private void lockActivitySkuStock(ActivitySeckillFormVo activitySeckillFormVo, List<String> rpcIdByStockList)
 			throws Exception {
-		// 获取店铺sku信息
-		GoodsStoreSku storeSku = goodsStoreSkuServiceApi.getById(activitySeckillFormVo.getStoreSkuId());
+		StockUpdateDto stockUpdateDto = new StockUpdateDto();
 
-		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
-		AdjustDetailVo detailVo = new AdjustDetailVo();
-		detailVo.setStoreSkuId(activitySeckillFormVo.getStoreSkuId());
-		detailVo.setGoodsName(storeSku.getName());
-		detailVo.setNum(activitySeckillFormVo.getSeckillNum());
-		adjustDetailList.add(detailVo);
+		stockUpdateDto.setRpcId(UuidUtils.getUuid());
+		stockUpdateDto.setMethodName("");
+		stockUpdateDto.setUserId(activitySeckillFormVo.getUpdateUserId());
+		stockUpdateDto.setStockOperateEnum(StockOperateEnum.ACTIVITY_STOCK);
 
-		StockAdjustVo stockAdjustVo = new StockAdjustVo();
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
-		stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_STOCK);
-		stockAdjustVo.setStoreId(storeSku.getStoreId());
-
-		// 保存RPCID
-		String rpcId = UuidUtils.getUuid();
-		rpcIdByStockList.add(rpcId);
-		stockAdjustVo.setRpcId(rpcId);
-		stockAdjustVo.setMethodName(this.getClass().getName() + ".addActivitySkuStock");
-		stockManagerServiceApi.updateStock(stockAdjustVo);
+		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
+		StockUpdateDetailDto updateDetail =  new StockUpdateDetailDto();;
+		updateDetail.setStoreSkuId(activitySeckillFormVo.getStoreSkuId());
+		updateDetail.setSpuType(SpuTypeEnum.serviceSpu);
+		updateDetail.setActType(ActivityTypeEnum.SECKILL_ACTIVITY);
+		updateDetail.setUpdateNum(activitySeckillFormVo.getSeckillNum());
+		updateDetailList.add(updateDetail);
+		stockUpdateDto.setUpdateDetailList(updateDetailList);
+		rpcIdByStockList.add(stockUpdateDto.getRpcId());
+		goodsStoreSkuStockApi.updateStock(stockUpdateDto);
 	}
 
 	/**
@@ -447,27 +443,21 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	 */
 	private void releaseActivitySkuStock(String storeSkuId, List<String> rpcIdByStockList) throws Exception {
 
-		// 获取店铺sku信息
-		GoodsStoreSku storeSku = goodsStoreSkuServiceApi.getById(storeSkuId);
+		StockUpdateDto stockUpdateDto = new StockUpdateDto();
+		stockUpdateDto.setRpcId(UuidUtils.getUuid());
+		stockUpdateDto.setMethodName("");
+		stockUpdateDto.setStockOperateEnum(StockOperateEnum.ACTIVITY_END);
 
-		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
-		AdjustDetailVo detailVo = new AdjustDetailVo();
-		detailVo.setStoreSkuId(storeSkuId);
-		detailVo.setGoodsName(storeSku.getName());
-		detailVo.setNum(0);
-		adjustDetailList.add(detailVo);
-
-		StockAdjustVo stockAdjustVo = new StockAdjustVo();
-		stockAdjustVo.setAdjustDetailList(adjustDetailList);
-		stockAdjustVo.setStockOperateEnum(StockOperateEnum.ACTIVITY_END);
-		stockAdjustVo.setStoreId(storeSku.getStoreId());
-
-		// 保存RPCID
-		String rpcId = UuidUtils.getUuid();
-		rpcIdByStockList.add(rpcId);
-		stockAdjustVo.setRpcId(rpcId);
-		stockAdjustVo.setMethodName(this.getClass().getName() + ".releaseActivitySkuStock");
-		stockManagerServiceApi.updateStock(stockAdjustVo);
+		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
+		StockUpdateDetailDto updateDetail =  new StockUpdateDetailDto();;
+		updateDetail.setStoreSkuId(storeSkuId);
+		updateDetail.setActType(ActivityTypeEnum.SECKILL_ACTIVITY);
+		updateDetail.setUpdateNum(0);
+		updateDetailList.add(updateDetail);
+		
+		stockUpdateDto.setUpdateDetailList(updateDetailList);
+		rpcIdByStockList.add(stockUpdateDto.getRpcId());
+		goodsStoreSkuStockApi.updateStock(stockUpdateDto);
 	}
 
 	/**

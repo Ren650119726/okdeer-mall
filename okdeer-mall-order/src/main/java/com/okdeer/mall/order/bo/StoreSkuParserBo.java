@@ -19,6 +19,7 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.IsShopNum;
 import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
@@ -151,21 +152,8 @@ public class StoreSkuParserBo {
 		for (GoodsStoreSku storeSku : this.currentSkuList) {
 			categoryIdSet.add(storeSku.getSpuCategoryId());
 
-			CurrentStoreSkuBo currentSku = new CurrentStoreSkuBo();
-			currentSku.setId(storeSku.getId());
-			currentSku.setStoreSpuId(storeSku.getStoreSpuId());
-			currentSku.setName(storeSku.getName());
-			currentSku.setBarCode(storeSku.getBarCode());
-			currentSku.setStyleCode(storeSku.getStyleCode());
-			currentSku.setSkuId(storeSku.getSkuId());
-			currentSku.setMultipleSkuId(storeSku.getMultipleSkuId());
-			currentSku.setPropertiesIndb(storeSku.getPropertiesIndb());
+			CurrentStoreSkuBo currentSku = BeanMapper.map(storeSku, CurrentStoreSkuBo.class);
 			currentSku.setSpuType(storeSku.getSpuTypeEnum());
-			currentSku.setGuaranteed(storeSku.getGuaranteed());
-			currentSku.setTradeMax(storeSku.getTradeMax());
-			currentSku.setOnline(storeSku.getOnline());
-			currentSku.setSaleNum(storeSku.getSaleNum());
-			currentSku.setUnit(storeSku.getUnit());
 			if(storeSku.getPayType() != null){
 				currentSku.setPaymentMode(storeSku.getPayType().ordinal());
 			}
@@ -304,6 +292,7 @@ public class StoreSkuParserBo {
 			skuBo = this.currentSkuMap.get(item.getStoreSkuId());
 			skuBo.setQuantity(item.getQuantity());
 			skuBo.setSkuActQuantity(item.getSkuActQuantity());
+			skuBo.setAppActPrice(item.getSkuActPrice());
 
 			this.totalItemAmount = totalItemAmount
 					.add(skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getQuantity())));

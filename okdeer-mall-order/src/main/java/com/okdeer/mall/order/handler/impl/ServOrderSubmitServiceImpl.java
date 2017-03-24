@@ -26,8 +26,9 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
+import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
-import com.okdeer.archive.stock.service.StockManagerServiceApi;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.stock.vo.AdjustDetailVo;
 import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreInfo;
@@ -56,7 +57,7 @@ import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
-import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -134,7 +135,13 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 * 库存管理Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private StockManagerServiceApi stockManagerServiceApi;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
+	
+	/**
+	 * 商城库存更新构建者
+	 */
+	@Resource
+	private MallStockUpdateBuilder mallStockUpdateBuilder;
 
 	/**
 	 * 订单超时计时器
@@ -615,65 +622,11 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 */
 	private void toUpdateStock(TradeOrder order, Request<ServiceOrderReq> req, List<String> rpcIdList,
 			Response<ServiceOrderResp> resp) throws Exception {
-
-		StockAdjustVo stockAdjustVo = null;
-		stockAdjustVo = buildStockAdjustVo(order, req, resp);
-		rpcIdList.add(stockAdjustVo.getRpcId());
-		// 正常商品下单，更新库存
-		stockManagerServiceApi.updateStock(stockAdjustVo);
+		StockUpdateDto updateDto = mallStockUpdateBuilder.build(order, req);
+		rpcIdList.add(updateDto.getRpcId());
+		goodsStoreSkuStockApi.updateStock(updateDto);
 	}
 
-	/**
-	 * @Description: 构建库存更新对象
-	 * @param order 订单对象
-	 * @param reqDto 请求对象
-	 * @return StockAdjustVo  
-	 * @author wushp
-	 * @date 2016年9月28日
-	 */
-	@SuppressWarnings("unchecked")
-	private StockAdjustVo buildStockAdjustVo(TradeOrder order, Request<ServiceOrderReq> req,
-			Response<ServiceOrderResp> resp) {
-		Map<String, Object> context = req.getContext();
-		ServiceOrderReq reqData = req.getData();
-		List<GoodsStoreSku> storeSkuList = (List<GoodsStoreSku>) context.get("storeSkuList");
-
-		StockAdjustVo stockAjustVo = new StockAdjustVo();
-
-		stockAjustVo.setRpcId(UuidUtils.getUuid());
-		stockAjustVo.setOrderId(order.getId());
-		stockAjustVo.setOrderNo(order.getOrderNo());
-		stockAjustVo.setOrderResource(order.getOrderResource());
-		stockAjustVo.setOrderType(order.getType());
-
-		stockAjustVo.setStoreId(reqData.getStoreId());
-		stockAjustVo.setUserId(reqData.getUserId());
-		stockAjustVo.setMethodName(this.getClass().getName() + ".process");
-
-		AdjustDetailVo adjustDetailVo = null;
-		TradeOrderGoodsItem orderItem = null;
-		List<AdjustDetailVo> adjustDetailList = new ArrayList<AdjustDetailVo>();
-
-		for (GoodsStoreSku storeSku : storeSkuList) {
-			adjustDetailVo = new AdjustDetailVo();
-			orderItem = req.getData().findOrderItem(storeSku.getId());
-
-			adjustDetailVo.setBarCode(storeSku.getBarCode());
-			adjustDetailVo.setGoodsName(storeSku.getName());
-			adjustDetailVo.setGoodsSkuId(storeSku.getSkuId());
-			adjustDetailVo.setMultipleSkuId(storeSku.getMultipleSkuId());
-			adjustDetailVo.setNum(orderItem.getSkuNum());
-			adjustDetailVo.setPrice(storeSku.getOnlinePrice());
-			adjustDetailVo.setPropertiesIndb(storeSku.getPropertiesIndb());
-			adjustDetailVo.setStoreSkuId(storeSku.getId());
-			adjustDetailVo.setGoodsSkuId(storeSku.getSkuId());
-			adjustDetailList.add(adjustDetailVo);
-		}
-
-		stockAjustVo.setAdjustDetailList(adjustDetailList);
-		stockAjustVo.setStockOperateEnum(StockOperateEnum.PLACE_ORDER);
-		return stockAjustVo;
-	}
 
 	/**
 	 * @Description: 计算订单总金额
