@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 运营栏目service实现
@@ -165,6 +164,7 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 		// begin 判断类型是否是鹿小宝专属，根据类型设置appoint_type值 0：无 1：店铺 2：商品 add by wangf01 20170314
 		if(columnOperation.getTarget() != null){
 			switch (columnOperation.getTarget()){
+				case storeServerInfo:
 				case storeInfo:
 					columnOperation.setAppointType(1);
 					break;
