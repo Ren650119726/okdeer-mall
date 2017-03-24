@@ -7283,4 +7283,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		map.put("activitySource", activitySource);
 		return map;
 	}
+
+	@Override
+	public List<TradeOrderStatusVo> getServiceOrderCount(Map<String, Object> params) {
+		return tradeOrderMapper.getServiceOrderCount(params);
+	}
 }
