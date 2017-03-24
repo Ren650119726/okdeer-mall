@@ -1215,4 +1215,6 @@ public interface TradeOrderMapper {
 	 * @return
 	 */
 	List<TradeOrderDetailBo> findCloudOrderInfo(Map<String, Object> map);
+
+	List<TradeOrderStatusVo> getServiceOrderCount(Map<String, Object> params);
 }
