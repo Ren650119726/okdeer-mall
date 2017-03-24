@@ -71,6 +71,11 @@ public class CurrentStoreSkuBo {
 	 * 线下价格
 	 */
 	private BigDecimal offlinePrice;
+	
+	/**
+	 * 市场价格
+	 */
+	private BigDecimal marketPrice;
 
 	/**
 	 * 活动价格
@@ -433,6 +438,14 @@ public class CurrentStoreSkuBo {
 
 	public void setAppActPrice(BigDecimal appActPrice) {
 		this.appActPrice = appActPrice;
+	}
+
+	public BigDecimal getMarketPrice() {
+		return marketPrice;
+	}
+
+	public void setMarketPrice(BigDecimal marketPrice) {
+		this.marketPrice = marketPrice;
 	}
 
 }
