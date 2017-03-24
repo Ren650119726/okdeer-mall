@@ -90,7 +90,17 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * @param map 查询条件
 	 */
 	List<TradeOrderRefundsVo> searchOrderRefundByParams(Map<String, Object> map);
-
+	
+	//Begin V2.1.0 added by luosm 20170314
+	/**
+	 * 
+	 * @desc 商家版app退款单搜索
+	 *
+	 * @param map 查询条件
+	 */
+	List<TradeOrderRefundsVo> searchOrderRefundForSELLERAPP(Map<String, Object> map);
+	//End V2.1.0 added by luosm 20170314
+	
 	/**
 	 * 根据状态查询退款订单数量
 	 * @return Integer

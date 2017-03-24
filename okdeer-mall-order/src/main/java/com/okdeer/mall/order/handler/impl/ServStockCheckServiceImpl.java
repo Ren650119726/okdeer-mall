@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuStockServiceApi;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.mall.common.dto.Request;
@@ -38,7 +38,7 @@ public class ServStockCheckServiceImpl implements RequestHandler<ServiceOrderReq
 	 * 店铺商品库存Service
 	 */
 	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuStockServiceApi goodsStoreSkuStockService;
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 	
 	@Override
 	public void process(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp) throws Exception {
@@ -56,8 +56,7 @@ public class ServStockCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		List<String> storeSkuIdList = (List<String>)context.get("storeSkuIdList");
 		// 校验正常商品库存
 		//GoodsStoreSkuStock goodsStoreSkuStock = goodsStoreSkuStockService.getBySkuId(orderReq.getSkuId());
-		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockService
-				.selectSingleSkuStockBySkuIdList(storeSkuIdList);
+		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockApi.findByStoreSkuIdList(storeSkuIdList);
 		
 		// 存储返回的sku对应的库存信息列表
 		List<TradeOrderStock> detail = new ArrayList<TradeOrderStock>();

@@ -890,4 +890,24 @@
 		ORDER BY t.update_time DESC
   </select>
   <!-- End added by maojj 2016-09-24 1.1 -->
+  
+  <!-- begin add by zhulq 根据店铺id集合查询店铺地址 -->
+  <select id="findByStoreIds" resultType="com.okdeer.mall.member.member.vo.UserAddressVo" parameterType="list">
+    	SELECT 
+			t.id addressId,
+			t.user_id as userId,
+			t.province_name AS provinceName,
+			t.city_name AS cityName,
+			t.area_name AS areaName,
+			t.area_ext AS areaExt,
+			t.address
+		FROM member_consignee_address t where t.disabled = 0 and t.is_default = 1
+		<if test="storeIds != null">
+          AND t.user_id in 
+          <foreach collection="storeIds" index="index" item="item" open="(" separator="," close=")">  
+              #{item}   
+          </foreach>
+      </if>
+  </select>
+  <!-- end add by zhulq 根据店铺id集合查询店铺地址 -->
 </mapper>

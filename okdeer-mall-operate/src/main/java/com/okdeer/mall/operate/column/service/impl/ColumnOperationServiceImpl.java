@@ -7,37 +7,31 @@
  */
 package com.okdeer.mall.operate.column.service.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
-import com.okdeer.mall.common.enums.AreaType;
-import com.okdeer.mall.common.enums.DistrictType;
-import com.okdeer.mall.common.utils.RobotUserUtil;
-import com.okdeer.mall.operate.entity.ColumnOperation;
-import com.okdeer.mall.operate.entity.ColumnOperationArea;
-import com.okdeer.mall.operate.entity.ColumnOperationCommunity;
-import com.okdeer.mall.operate.entity.ColumnOperationQueryVo;
-import com.okdeer.mall.operate.entity.ColumnOperationVo;
-import com.okdeer.mall.operate.enums.State;
-import com.okdeer.mall.operate.service.IColumnOperationServiceApi;
+import com.google.common.collect.Lists;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.mall.operate.column.mapper.ColumnOperationAreaMapper;
-import com.okdeer.mall.operate.column.mapper.ColumnOperationCommunityMapper;
-import com.okdeer.mall.operate.column.mapper.ColumnOperationMapper;
+import com.okdeer.mall.common.enums.AreaType;
+import com.okdeer.mall.common.enums.DistrictType;
+import com.okdeer.mall.common.utils.RobotUserUtil;
+import com.okdeer.mall.operate.column.mapper.*;
 import com.okdeer.mall.operate.column.service.ColumnOperationService;
+import com.okdeer.mall.operate.dto.ColumnOperationRelationParamDto;
+import com.okdeer.mall.operate.dto.ColumnOperationVersionParamDto;
+import com.okdeer.mall.operate.entity.*;
+import com.okdeer.mall.operate.enums.State;
+import com.okdeer.mall.operate.service.IColumnOperationServiceApi;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 运营栏目service实现
@@ -71,6 +65,20 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 	 */
 	@Autowired
 	private ColumnOperationCommunityMapper columnOperationCommunityMapper;
+
+	// begin add by wangf01 20170314
+	/**
+	 * 运营栏目关联-mapper
+	 */
+	@Autowired
+	private ColumnOperationRelationMapper columnOperationRelationMapper;
+
+	/**
+	 * 运营栏目版本-mapper
+	 */
+	@Autowired
+	private ColumnOperationVersionMapper columnOperationVersionMapper;
+	// end add by wangf01 20170314
 
 	/**
 	 * @desc 根据条件获取运营栏目任务列表（参数类型实体）
@@ -115,7 +123,23 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 	 */
 	@Override
 	public ColumnOperationVo getColumnOperationVoById(String id) throws ServiceException {
-		return columnOperationMapper.selectOperationAssociateById(id);
+		
+		ColumnOperationVo vo =  columnOperationMapper.selectOperationAssociateById(id);
+		if(null == vo){
+			return null;
+		}
+		
+		ColumnOperationVersionParamDto paramDto = new ColumnOperationVersionParamDto();
+		paramDto.setColumnOperationId(id);
+		List<ColumnOperationVersion> versionList = columnOperationVersionMapper.findByParam(paramDto);
+		List<String> versionStringList = Lists.newArrayList();
+		if(CollectionUtils.isNotEmpty(versionList)){
+			for(ColumnOperationVersion item : versionList){
+				versionStringList.add(item.getVersion());
+			}
+		}
+		vo.setVersionList(versionStringList);
+		return vo;
 	}
 
 	/**
@@ -138,9 +162,36 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 		Date date = new Date();
 		columnOperation.setCreateTime(date);
 		columnOperation.setUpdateTime(date);
+		// begin 判断类型是否是鹿小宝专属，根据类型设置appoint_type值 0：无 1：店铺 2：商品 add by wangf01 20170314
+		if(columnOperation.getTarget() != null){
+			switch (columnOperation.getTarget()){
+				case storeInfo:
+					columnOperation.setAppointType(1);
+					break;
+				case storeCVSSkuInfo:
+				case storeServerSkuInfo:
+					columnOperation.setAppointType(2);
+					break;
+				default:
+					columnOperation.setAppointType(0);
+					break;
+			}
+		}else{
+			columnOperation.setAppointType(0);
+		}
 
 		columnOperationMapper.insertSelective(columnOperation);
-
+		// 保存鹿小宝版本数据
+		switch (columnOperation.getType()){
+			case luXiaoBao:
+				// 判断是否关联店铺或者商品
+				if(columnOperation.getAppointType() != 0){
+					saveOperationRelation(columnOperation,0);
+				}
+				saveOperationVersion(columnOperation,0);
+				break;
+		}
+		// end add by wangf01 20170314
 		// 插入与运营栏目关联的区域或者小区数据
 		this.insertAreaInfo(columnOperation);
 	}
@@ -171,6 +222,31 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 		columnOperationAreaMapper.deleteByOperationId(columnOperation.getId());
 		// 删除运营栏目与小区关联信息
 		columnOperationCommunityMapper.deleteByOperationId(columnOperation.getId());
+
+		// begin 判断类型是否是鹿小宝专属，根据类型设置appoint_type值 0：无 1：店铺 2：商品 add by wangf01 20170314
+		switch (columnOperation.getTarget()){
+			case storeInfo:
+				columnOperation.setAppointType(1);
+				break;
+			case storeCVSSkuInfo:
+			case storeServerSkuInfo:
+				columnOperation.setAppointType(2);
+				break;
+			default:
+				columnOperation.setAppointType(0);
+				break;
+		}
+		// 保存鹿小宝版本数据
+		switch (columnOperation.getType()){
+			case luXiaoBao:
+				// 判断是否关联店铺或者商品
+				if(columnOperation.getAppointType() != 0){
+					saveOperationRelation(columnOperation,1);
+				}
+				saveOperationVersion(columnOperation,1);
+				break;
+		}
+		// end add by wangf01 20170314
 
 		// 重新插入运营栏目与区域或小区信息
 		this.insertAreaInfo(columnOperation);
@@ -351,5 +427,53 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 
 		}
 		log.info("运营商后台运营栏目定时器结束");
+	}
+
+	/**
+	 * 保存运营栏目关联数据
+	 *
+	 * @param columnOperation ColumnOperation
+	 * @param type Integer
+	 */
+	private void saveOperationRelation(ColumnOperation columnOperation, Integer type){
+		if(type == 1){
+			ColumnOperationRelationParamDto paramDto = new ColumnOperationRelationParamDto();
+			paramDto.setColumnOperationId(columnOperation.getId());
+			columnOperationRelationMapper.deleteByParam(paramDto);
+		}
+		List<ColumnOperationRelation> relationList = Lists.newArrayList();
+		ColumnOperationRelation entity = new ColumnOperationRelation();
+		entity.setId(UuidUtils.getUuid());
+		entity.setColumnOperationId(columnOperation.getId());
+		entity.setRelationId(columnOperation.getBusinessId());
+		relationList.add(entity);
+		columnOperationRelationMapper.adds(relationList);
+	}
+
+	/**
+	 * 保存运营栏目版本数据
+	 *
+	 * @param columnOperation ColumnOperation
+	 * @param type Integer
+	 */
+	private void saveOperationVersion(ColumnOperation columnOperation, Integer type){
+		if(type == 1){
+			ColumnOperationVersionParamDto paramDto = new ColumnOperationVersionParamDto();
+			paramDto.setColumnOperationId(columnOperation.getId());
+			columnOperationVersionMapper.deleteByParam(paramDto);
+		}
+		if(CollectionUtils.isNotEmpty(columnOperation.getVersionList())){
+			List<ColumnOperationVersion> versionList = Lists.newArrayList();
+			columnOperation.getVersionList().forEach(e -> {
+				ColumnOperationVersion entity = new ColumnOperationVersion();
+				entity.setId(UuidUtils.getUuid());
+				entity.setColumnOperationId(columnOperation.getId());
+				//默认便利店
+				entity.setType(3);
+				entity.setVersion(e);
+				versionList.add(entity);
+			});
+			columnOperationVersionMapper.adds(versionList);
+		}
 	}
 }

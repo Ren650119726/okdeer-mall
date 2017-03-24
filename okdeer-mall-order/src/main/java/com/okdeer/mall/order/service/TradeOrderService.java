@@ -343,7 +343,23 @@ public interface TradeOrderService {
 	 * @return
 	 */
 	public PageUtils<TradeOrderVo> selectMallAppOrderInfo(Map<String, Object> map, int pageSize, int pageNumber);
-
+	
+	//Begin V2.1.0 added by luosm 20170315
+	/**
+	 * 
+	 * @desc 商家APP订单查询
+	 *
+	 * @param map
+	 *            查询条件
+	 * @param pageSize
+	 *            每页大小
+	 * @param pageNumber
+	 *            当前页
+	 * @return
+	 */
+	public PageUtils<TradeOrderVo> selectNewMallAppOrderInfo(Map<String, Object> map, int pageSize, int pageNumber);
+	//End V2.1.0 added by luosm 20170315
+	
 	/**
 	 * 
 	 * @desc 商家版APP获取订单详情信息
@@ -843,22 +859,6 @@ public interface TradeOrderService {
 	 * @date 2016年8月16日
 	 */
 	public void updateRechargeOrderByTradeNum(TradeOrder tradeOrder) throws Exception;
-
-	/**
-	 * 
-	 * @desc 消费码验证
-	 * @author zengj
-	 * @param userId
-	 *            当前登录ID
-	 * @param storeId
-	 *            店铺ID
-	 * @param consumeCodes
-	 *            消费码集合，多个验证码一起验证
-	 * @return
-	 * @throws Exception
-	 */
-	public Map<String, String> updateServiceOrderConsume(String userId, String storeId, List<String> consumeCodes)
-			throws Exception;
 
 	/**
 	 * 根据用户ID查询团购店是否有购买商品

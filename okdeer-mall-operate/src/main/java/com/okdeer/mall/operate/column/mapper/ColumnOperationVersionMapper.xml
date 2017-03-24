@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.column.mapper.ColumnOperationVersionMapper">
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.ColumnOperationVersion">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="column_operation_id" property="columnOperationId" jdbcType="VARCHAR"/>
+        <result column="version" property="version" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <!-- 基础表名 -->
+    <sql id="Base_Table">
+        column_operateion_version
+    </sql>
+
+    <sql id="Base_Column_List">
+        id, column_operation_id, version, type
+    </sql>
+
+    <!-- 基本查询条件判断 -->
+    <sql id="Base_Condition">
+        <if test="id != null and id !=''">
+            AND id=#{id,jdbcType=VARCHAR}
+        </if>
+        <if test="columnOperationId != null and columnOperationId !=''">
+            AND column_operation_id=#{columnOperationId,jdbcType=VARCHAR}
+        </if>
+        <if test="version != null and version !=''">
+            AND version=#{version,jdbcType=VARCHAR}
+        </if>
+        <if test="type != null">
+            AND type=#{type,jdbcType=VARCHAR}
+        </if>
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="Base_Table"/>
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 根据条件查询数据 -->
+    <select id="findByParam" resultMap="BaseResultMap"
+            parameterType="com.okdeer.mall.operate.dto.ColumnOperationVersionParamDto">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="Base_Table"/>
+        where 1=1
+        <include refid="Base_Condition"/>
+    </select>
+
+    <insert id="adds">
+        insert into
+        <include refid="Base_Table"/>
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <include refid="Base_Column_List"/>
+        </trim>
+        <trim prefix="values">
+            <foreach collection="versionList" item="c" separator=",">
+                (#{c.id,jdbcType=VARCHAR},#{c.columnOperationId,jdbcType=VARCHAR},#{c.version,jdbcType=VARCHAR},#{c.type,jdbcType=TINYINT})
+            </foreach>
+        </trim>
+    </insert>
+
+    <delete id="deleteByParam" parameterType="com.okdeer.mall.operate.dto.ColumnOperationVersionParamDto">
+        delete from
+        <include refid="Base_Table"/>
+        where 1=1
+        <include refid="Base_Condition"/>
+    </delete>
+
+</mapper>
