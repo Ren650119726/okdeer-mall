@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import static com.okdeer.common.consts.ELTopicTagConstants.*;
 import static com.okdeer.common.consts.StoreMenuTopicTagConstants.TAG_STORE_MENU_UPDATE;
 import static com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum.LOW_PRICE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_LOWPRICE_EL_EDIT;
 
 /**
  * 
