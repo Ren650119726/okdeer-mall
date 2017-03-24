@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
-import com.okdeer.mall.activity.coupons.job.ActivityCollectCouponsJob;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertService;
 
 /**
