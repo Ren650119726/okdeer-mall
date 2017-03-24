@@ -567,6 +567,7 @@
 		<result column="order_id" property="orderId" jdbcType="VARCHAR" />
 		<result column="order_create_time" property="orderCreateTime"
 			jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
 		<result column="user_phone" property="userPhone" jdbcType="VARCHAR" />
 		<result column="actual_amount" property="actualAmount"
 			jdbcType="DECIMAL" />
@@ -1158,7 +1159,7 @@
 		SELECT o.id AS order_id,o.order_no,o.create_time as
 		order_create_time,o.user_phone,o.actual_amount,o.fare,o.pay_way,o.payment_time,pay.id
 		as pay_id,pay.pay_type,pay.pay_time,
-		tr.id,tr.refund_no,tr.payment_method,su.login_name,su.user_name,tr.operator,tr.create_time,
+		tr.id,tr.refund_no,tr.payment_method,su.login_name,su.user_name,tr.operator,tr.create_time,tr.update_time,
 		tr.total_amount,tr.refunds_status,tr.total_income,o.order_resource,o.activity_type,address.province_name,address.city_name,address.area_name,address.area_ext
 		FROM trade_order_refunds AS tr
 		LEFT JOIN sys_user su ON su.id=tr.operator
@@ -1232,7 +1233,7 @@
 		WHEN `refunds_status` in(1,6,9,10,11,13,14,15,16) THEN 6
 		END as `refunds_status`,count(1) as `count` FROM trade_order_refunds
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
-		AND order_resource IN(0,1)
+		AND order_resource IN(0,1,3)
 		GROUP BY
 		CASE
 		WHEN `refunds_status` = 0 THEN 0
@@ -1252,7 +1253,7 @@
 		WHEN `refunds_status` in(1,6,9,10,11,13,14,15,16) THEN 6
 		END as `refunds_status`,count(1) as `count` FROM trade_order_refunds
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
-		AND order_resource IN(0,1)
+		AND order_resource IN(0,1,3)
 		AND type = '5'
 		GROUP BY
 		CASE
