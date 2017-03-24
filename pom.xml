@@ -82,6 +82,16 @@
 				<groupId>com.okdeer.ca</groupId>
 				<artifactId>okdeer-ca-client</artifactId>
 				<version>${ca.version}</version>
+				<exclusions>
+					<exclusion>
+						<artifactId>okdeer-base-framework</artifactId>
+						<groupId>com.okdeer.base</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>okdeer-base-dal</artifactId>
+						<groupId>com.okdeer.base</groupId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>com.okdeer.ca</groupId>
