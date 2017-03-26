@@ -6146,7 +6146,7 @@
 		WHERE tr.store_id = #{storeId,jdbcType=VARCHAR}
 		and disabled = 0
 		<!-- 状态 -->
-		<if test="status != null">
+		<if test="status != null and status != ''">
 			AND tr.`status` IN
 			<foreach collection="status" index="index" item="item" open="("
 				close=")" separator=",">
