@@ -6129,7 +6129,7 @@
 			ORDER BY tr.create_time DESC
 		</if>
 	</select>
-	<!-- luosm:V2.1.0商家版APP订单查询 -->
+	<!-- end xuzq 20170321 2.2.0 查询订单详情列表 -->
 	<select id="findCloudOrderInfo" parameterType="java.util.Map"
 		resultMap="tradeOrderDetailBo">
 		SELECT
@@ -6162,7 +6162,7 @@
 			</foreach>
 		</if>
 		<!-- 订单类型 -->
-		<if test="type != null">
+		<if test="type != null and type != ''">
 			AND tr.type = #{type,jdbcType=TINYINT}
 		</if>
 		<!-- 查询条件为 商品名称、订单号码、手机号码 -->
