@@ -5250,10 +5250,21 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						vo.setActivityType(order.getActivityType());
 						if (order.getTradeOrderLogistics() != null) {
 							vo.setLogisticsType(order.getTradeOrderLogistics().getType());
+							//begin  add  by zhulq  订单配送方式入如果没有就是自己联系  2017-03-27
+							if (order.getTradeOrderLogistics().getType() != null) {
+								if (order.getTradeOrderLogistics().getType() == LogisticsType.HAS) {
+									vo.setLogisticsTypeStr("快递物流");
+								} else {
+									vo.setLogisticsTypeStr("自己联系");
+								}
+							}
+							//end  add  by zhulq  订单配送方式入如果没有就是自己联系  2017-03-27
 							vo.setLogisticsNo(StringUtils.isNotBlank(order.getTradeOrderLogistics().getLogisticsNo())
 									? order.getTradeOrderLogistics().getLogisticsNo() : "");
-						} else{
-							vo.setLogisticsType(LogisticsType.NONE);
+						} else {
+							//begin  add  by zhulq  订单配送方式入如果没有就是自己联系  2017-03-27
+							vo.setLogisticsTypeStr("自己联系");
+							//end  add  by zhulq  订单配送方式入如果没有就是自己联系  2017-03-27
 							vo.setLogisticsNo("");
 						}
 						result.add(vo);

@@ -2642,11 +2642,12 @@
 	<select id="getServiceOrderCount" parameterType="java.util.Map"
 		resultMap="TradeOrderStatusVoMap">
 		SELECT CASE
-		WHEN `status` IN (14) THEN 14
-		WHEN `status` IN (1) THEN 1
+		WHEN `status` IN (14) THEN 1
+		WHEN `status` IN (1) THEN 2
 		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5) THEN 5
-		WHEN `status` IN (2) THEN 2
+		WHEN `status` IN (5) THEN 4
+		WHEN `status` IN (2) THEN 5
+		WHEN `status` IN (4) THEN 7
 		ELSE `STATUS`
 		END AS `status`,count(1) as `count` FROM trade_order
 		WHERE store_id = #{storeId,jdbcType=VARCHAR}
@@ -2656,11 +2657,12 @@
 		and `status` >= 0
 		GROUP BY
 		CASE
-		WHEN `status` IN (14) THEN 14
-		WHEN `status` IN (1) THEN 1
+		WHEN `status` IN (14) THEN 1
+		WHEN `status` IN (1) THEN 2
 		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5) THEN 5
-		WHEN `status` IN (2) THEN 2
+		WHEN `status` IN (5) THEN 4
+		WHEN `status` IN (2) THEN 5
+		WHEN `status` IN (4) THEN 7
 		ELSE `STATUS`
 		END
 	</select>
@@ -2668,10 +2670,10 @@
 	<select id="getOrderCount" parameterType="java.util.Map"
 		resultMap="TradeOrderStatusVoMap">
 		SELECT CASE
-		WHEN `status` IN (1) THEN 1
+		WHEN `status` IN (1) THEN 2
 		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5,6) THEN 5
-		WHEN `status` IN (2,4,12,13) THEN 2
+		WHEN `status` IN (5,6) THEN 4
+		WHEN `status` IN (2,4,12,13) THEN 5
 		ELSE `STATUS`
 		END AS `status`,count(1) as `count` FROM trade_order
 		WHERE store_id = #{storeId,jdbcType=VARCHAR}
@@ -2681,10 +2683,10 @@
 		and `status` >= 0
 		GROUP BY
 		CASE
-		WHEN `status` IN (1) THEN 1
+		WHEN `status` IN (1) THEN 2
 		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5,6) THEN 5
-		WHEN `status` IN (2,4,12,13) THEN 2
+		WHEN `status` IN (5,6) THEN 4
+		WHEN `status` IN (2,4,12,13) THEN 5
 		ELSE `STATUS`
 		END
 	</select>
@@ -6078,13 +6080,8 @@
 		WHERE tr.store_id = #{storeId,jdbcType=VARCHAR}
 		and disabled = 0
 		<!-- 状态 -->
-		<if test="status != null">
-			AND CASE
-				WHEN tr.status IN (0,11) THEN 0
-				WHEN tr.status IN (2,4,12,13,6) THEN 2
-				ELSE tr.status
-				END 
-			IN
+		<if test="status != null and status != ''">
+			AND tr.`status` IN
 			<foreach collection="status" index="index" item="item" open="("
 				close=")" separator=",">
 				#{item}
@@ -6102,7 +6099,7 @@
 		<if test="type != null and type != ''">
 			AND tr.type = #{type,jdbcType=TINYINT}
 		</if>
-		<!-- 查询条件为 商品名称、订单号码、手机号码 -->
+		<!-- 查询条件为  商品名称、订单号码、手机号码 消费码-->
 		<if test="searchCondition != null and searchCondition != ''">
 			AND (
 			tr.order_no LIKE CONCAT('%',#{searchCondition},'%')
@@ -6129,7 +6126,7 @@
 			ORDER BY tr.create_time DESC
 		</if>
 	</select>
-	<!-- luosm:V2.1.0商家版APP订单查询 -->
+	<!-- end xuzq 20170321 2.2.0 查询订单详情列表 -->
 	<select id="findCloudOrderInfo" parameterType="java.util.Map"
 		resultMap="tradeOrderDetailBo">
 		SELECT
@@ -6146,7 +6143,7 @@
 		WHERE tr.store_id = #{storeId,jdbcType=VARCHAR}
 		and disabled = 0
 		<!-- 状态 -->
-		<if test="status != null">
+		<if test="status != null and status != ''">
 			AND tr.`status` IN
 			<foreach collection="status" index="index" item="item" open="("
 				close=")" separator=",">
@@ -6162,13 +6159,14 @@
 			</foreach>
 		</if>
 		<!-- 订单类型 -->
-		<if test="type != null">
+		<if test="type != null and type != ''">
 			AND tr.type = #{type,jdbcType=TINYINT}
 		</if>
-		<!-- 查询条件为 商品名称、订单号码、手机号码 -->
+		<!-- 查询条件为 消费码、商品名称、订单号码、手机号码 -->
 		<if test="searchCondition != null and searchCondition != ''">
 			AND (
-			tr.order_no LIKE CONCAT('%',#{searchCondition},'%')
+			tr.pick_up_code = #{searchCondition,jdbcType=VARCHAR}
+			OR tr.order_no LIKE CONCAT('%',#{searchCondition},'%')
 			OR tr.user_phone LIKE CONCAT('%',#{searchCondition},'%')
 			OR EXISTS(SELECT 1 FROM trade_order_item i WHERE tr.id = i.order_id AND
 			i.sku_name like CONCAT('%',#{searchCondition,jdbcType=VARCHAR},'%'))
