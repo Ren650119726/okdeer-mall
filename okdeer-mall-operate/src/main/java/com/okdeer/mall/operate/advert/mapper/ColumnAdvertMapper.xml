@@ -631,7 +631,10 @@
 		<if test="advertType != null">
 			AND cpos.type = #{advertType}
 		</if>
-		and (v.version is null or v.version=#{version, jdbcType=VARCHAR})
+		AND (v.version is null OR v.version=#{version, jdbcType=VARCHAR})
+		<if test="appType != null">
+			AND (v.version is null OR v.type = #{appType})
+		</if>
 		<if test="cityId != null and cityId != ''">
 		AND (
 			ca.area_type = 0
@@ -716,7 +719,10 @@
 		<if test="advertType != null">
 			AND cpos.type = #{advertType}
 		</if>
-		and (v.version is null or v.version=#{version, jdbcType=VARCHAR})
+		AND (v.version is null OR v.version=#{version, jdbcType=VARCHAR})
+		<if test="appType != null">
+			AND (v.version is null OR v.type = #{appType})
+		</if>
 		<if test="cityId != null and cityId != ''">
 		AND (
 			ca.area_type = 0
