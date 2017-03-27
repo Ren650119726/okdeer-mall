@@ -655,6 +655,7 @@
 		<result column="activity_type" property="activityType" jdbcType="INTEGER" />
 		<result column="activity_id" property="activityId" jdbcType="VARCHAR" />
 		<result column="refunds_count" property="refundsCount" jdbcType="INTEGER" />
+		<result column="consumer_code_status" property="consumerCodeStatus" jdbcType="INTEGER" />
 	</resultMap>
 	<!--end xuzq 20170321 2.2.0 订单查询map -->
 	<sql id="Base_Column_List">
@@ -2642,12 +2643,12 @@
 	<select id="getServiceOrderCount" parameterType="java.util.Map"
 		resultMap="TradeOrderStatusVoMap">
 		SELECT CASE
-		WHEN `status` IN (14) THEN 1
-		WHEN `status` IN (1) THEN 2
+		WHEN `status` IN (14) THEN 14
+		WHEN `status` IN (1) THEN 1
 		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5) THEN 4
-		WHEN `status` IN (2) THEN 5
-		WHEN `status` IN (4) THEN 7
+		WHEN `status` IN (5) THEN 5
+		WHEN `status` IN (2) THEN 2
+		WHEN `status` IN (4) THEN 4
 		ELSE `STATUS`
 		END AS `status`,count(1) as `count` FROM trade_order
 		WHERE store_id = #{storeId,jdbcType=VARCHAR}
@@ -2657,12 +2658,12 @@
 		and `status` >= 0
 		GROUP BY
 		CASE
-		WHEN `status` IN (14) THEN 1
-		WHEN `status` IN (1) THEN 2
+		WHEN `status` IN (14) THEN 14
+		WHEN `status` IN (1) THEN 1
 		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5) THEN 4
-		WHEN `status` IN (2) THEN 5
-		WHEN `status` IN (4) THEN 7
+		WHEN `status` IN (5) THEN 5
+		WHEN `status` IN (2) THEN 2
+		WHEN `status` IN (4) THEN 4
 		ELSE `STATUS`
 		END
 	</select>
@@ -2670,10 +2671,10 @@
 	<select id="getOrderCount" parameterType="java.util.Map"
 		resultMap="TradeOrderStatusVoMap">
 		SELECT CASE
-		WHEN `status` IN (1) THEN 2
+		WHEN `status` IN (1) THEN 1
 		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5,6) THEN 4
-		WHEN `status` IN (2,4,12,13) THEN 5
+		WHEN `status` IN (5,6) THEN 5
+		WHEN `status` IN (2,4,12,13) THEN 2
 		ELSE `STATUS`
 		END AS `status`,count(1) as `count` FROM trade_order
 		WHERE store_id = #{storeId,jdbcType=VARCHAR}
@@ -2683,10 +2684,10 @@
 		and `status` >= 0
 		GROUP BY
 		CASE
-		WHEN `status` IN (1) THEN 2
+		WHEN `status` IN (1) THEN 1
 		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5,6) THEN 4
-		WHEN `status` IN (2,4,12,13) THEN 5
+		WHEN `status` IN (5,6) THEN 5
+		WHEN `status` IN (2,4,12,13) THEN 2
 		ELSE `STATUS`
 		END
 	</select>
