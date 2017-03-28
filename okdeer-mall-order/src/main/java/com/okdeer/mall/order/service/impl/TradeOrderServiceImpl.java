@@ -992,6 +992,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				logisticsList = this.tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
 			}
 
+			//店铺地址（到店自提和到店消费订单店铺地址）
+			List<UserAddressVo> memberAddressList = null;	
+			//V2.1.0 end add by zhulq 收货地址取物流表信息 之前是取店铺地址
+			if (CollectionUtils.isNotEmpty(storeIds)) {
+				memberAddressList = this.memberConsigneeAddressMapper.findByStoreIds(storeIds);
+			}
+			
 			for (PhysicsOrderVo orderVo : result) {
 				// 获取邀请人姓名
 				if (CollectionUtils.isNotEmpty(inviteNameLists)) {
@@ -1077,13 +1084,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 定位基点
 				orderVo.setLocateAddress(lProviceName + lCityName + lAreaName + areaExt);
 				
-				//店铺地址（到店自提和到店消费订单店铺地址）
-				List<UserAddressVo> memberAddressList = null;	
-				//V2.1.0 end add by zhulq 收货地址取物流表信息 之前是取店铺地址
-				if (CollectionUtils.isNotEmpty(storeIds)) {
-					memberAddressList = this.memberConsigneeAddressMapper.findByStoreIds(storeIds);
-				}
-				
+				//V2.1.0 begin add by zhulq 收货地址取物流表信息 之前是取店铺地址				
 				//实物的送货上门订单收货地址取物流表信息 到店自提取的是店铺地址
 				if (orderVo.getOrderType() == OrderTypeEnum.PHYSICAL_ORDER && orderVo.getPickUpType() == PickUpTypeEnum.DELIVERY_DOOR) {
 					if (CollectionUtils.isNotEmpty(logisticsList)) {
@@ -1095,12 +1096,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 									Address address = addressService.getAddressById(Long.parseLong(cityId));
 									// 所属城市 实物订单的送货上门取物流表的地址
 									orderVo.setCityName(address.getName() == null ? "" : address.getName());
+									String area = logistics.getArea() == null ? "" : logistics.getArea();
+									String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
+									// 收货地址
+									orderVo.setAddress(area + addressExt);
+									break;
 								}
-								String area = logistics.getArea() == null ? "" : logistics.getArea();
-								String address = logistics.getAddress() == null ? "" : logistics.getAddress();
-								// 收货地址
-								orderVo.setAddress(area + address);
-								break;
 							}
 						}
 					}
@@ -1124,7 +1125,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						}
 					}
 				}
-				
+				//V2.1.0 begin add by zhulq 收货地址取物流表信息 之前是取店铺地址
 				// 订单来源
 				orderVo.setOrderResource(orderVo.getOrderResource());
 			}
@@ -1282,11 +1283,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 								Address address = addressService.getAddressById(Long.parseLong(cityId));
 								// 所属城市 实物订单的送货上门取物流表的地址
 								order.setCityName(address.getName() == null ? "" : address.getName());
+								String area = logistics.getArea() == null ? "" : logistics.getArea();
+								String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
+								// 收货地址
+								order.setAddress(area + addressExt);
+								break;
 							}
-							String area = logistics.getArea() == null ? "" : logistics.getArea();
-							String address = logistics.getAddress() == null ? "" : logistics.getAddress();
-							// 收货地址
-							order.setAddress(area + address);
 						}
 					}
 				}
@@ -1303,6 +1305,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							order.setCityName(cityName);
 							// 收货地址
 							order.setAddress(proviceName + cityName + areaName + areaExt + address);
+							break;
 						}
 					}
 				}
@@ -5522,12 +5525,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					if (StringUtils.isNotBlank(cityId)) {
 						Address address = addressService.getAddressById(Long.parseLong(cityId));
 						vo.setCityName(address.getName() == null ? "" : address.getName());
+						String area = logistics.getArea() == null ? "" : logistics.getArea();
+						String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
+						// 收货地址
+						vo.setAddress(area + addressExt);
+						break;
 					}
-					String area = logistics.getArea() == null ? "" : logistics.getArea();
-					String address = logistics.getAddress() == null ? "" : logistics.getAddress();
-					// 收货地址
-					vo.setAddress(area + address);
-					break;
 				}
 			}
 		}
