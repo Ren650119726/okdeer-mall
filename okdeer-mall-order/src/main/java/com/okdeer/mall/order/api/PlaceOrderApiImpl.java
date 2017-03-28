@@ -161,7 +161,9 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		}
 		// 商品信息发生变化丢消息
 		if(resp.getCode() == ResultCodeEnum.GOODS_IS_CHANGE.getCode() || resp.getCode() == ResultCodeEnum.PART_GOODS_IS_CHANGE.getCode()){
-			structureProducer(parserBo.getSkuIdList(),TAG_GOODS_EL_UPDATE);
+			if(parserBo != null){
+				structureProducer(parserBo.getSkuIdList(),TAG_GOODS_EL_UPDATE);
+			}
 		}
 		if (resp.isSuccess() && req.getData().getOrderType() == PlaceOrderTypeEnum.CVS_ORDER
 				&& StringUtils.isEmpty(resp.getMessage())
@@ -209,6 +211,9 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	 * @throws Exception
 	 */
 	private void structureProducer(List<String> list, String tag) throws Exception {
+		if(CollectionUtils.isEmpty(list)){
+			return;
+		}
 		ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
 		paramDto.setSkuIds(list);
 		ObjectMapper mapper = new ObjectMapper();
