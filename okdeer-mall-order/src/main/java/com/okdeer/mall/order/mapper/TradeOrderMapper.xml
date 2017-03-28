@@ -2657,10 +2657,10 @@
 		SELECT CASE
 		WHEN `status` IN (14) THEN 14
 		WHEN `status` IN (1) THEN 1
-		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5) THEN 5
-		WHEN `status` IN (2) THEN 2
-		WHEN `status` IN (4) THEN 4
+		WHEN `status` IN (3) or (`type` = 5 and `consumer_code_status` in (1) ) THEN 3
+		WHEN `status` IN (5) and  `consumer_code_status` in (0,4,5) ) THEN 5
+		WHEN `status` IN (2) or (`type` = 5 and `consumer_code_status` in (2,3) ) THEN 2
+		WHEN `status` IN (4)  THEN 4
 		ELSE `STATUS`
 		END AS `status`,count(1) as `count` FROM trade_order
 		WHERE store_id = #{storeId,jdbcType=VARCHAR}
@@ -2672,10 +2672,10 @@
 		CASE
 		WHEN `status` IN (14) THEN 14
 		WHEN `status` IN (1) THEN 1
-		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5) THEN 5
-		WHEN `status` IN (2) THEN 2
-		WHEN `status` IN (4) THEN 4
+		WHEN `status` IN (3) or (`type` = 5 and `consumer_code_status` in (1) ) THEN 3
+		WHEN `status` IN (5) and  `consumer_code_status` in (0,4,5) ) THEN 5
+		WHEN `status` IN (2) or (`type` = 5 and `consumer_code_status` in (2,3) ) THEN 2
+		WHEN `status` IN (4)  THEN 4
 		ELSE `STATUS`
 		END
 	</select>
@@ -6100,7 +6100,7 @@
 		and disabled = 0
 		<!-- 状态 -->
 		<if test="status != null and status != '' and consumerCodeStatus !=null and consumerCodeStatus != '' ">
-			AND (tr.`status` IN
+			AND (tr.`type` = 2 and tr.`status` IN 
 			<foreach collection="status" index="index" item="item" open="("
 				close=")" separator=",">
 				#{item}
