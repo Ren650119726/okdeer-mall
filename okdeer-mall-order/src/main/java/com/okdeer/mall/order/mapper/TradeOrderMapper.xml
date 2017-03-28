@@ -1580,7 +1580,11 @@
 		locate.area_name as lArea_name,
 		locate.area_ext as lArea_ext,
 		o.pick_up_type,
-		IF(fto.received_time is null, '复购', '首购') as is_first_order
+		<!-- begin add by chenzc V2.2.0 -->
+		(CASE WHEN o.status != 5 THEN ''
+			ELSE CASE WHEN fto.received_time IS NULL THEN '复购'
+			ELSE '首购' END END) AS is_first_order
+		<!-- end add by chenzc V2.2.0 -->
 		from trade_order o
 		LEFT JOIN store_info si ON o.store_id=si.id
 		LEFT JOIN psms_agent pa ON
@@ -5168,8 +5172,12 @@
 				tr.income,
 				tr.activity_id,
 				tr.user_id,
-				IF(fto.received_time is null, '复购', '首购') as is_first_order
 				<!-- end V2.1 add by zhulq 导出列表新增字段 -->	
+				<!-- begin add by chenzc V2.2.0 -->
+				(CASE WHEN tr.status != 5 THEN ''
+					ELSE CASE WHEN fto.received_time IS NULL THEN '复购'
+					ELSE '首购' END END) AS is_first_order
+				<!-- end add by chenzc V2.2.0 -->
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN trade_order_logistics tol ON tr.id = tol.order_id
