@@ -6091,7 +6091,21 @@
 		WHERE tr.store_id = #{storeId,jdbcType=VARCHAR}
 		and disabled = 0
 		<!-- 状态 -->
-		<if test="status != null and status != ''">
+		<if test="status != null and status != '' and consumerCodeStatus !=null and consumerCodeStatus != '' ">
+			AND (tr.`status` IN
+			<foreach collection="status" index="index" item="item" open="("
+				close=")" separator=",">
+				#{item}
+			</foreach>
+				OR (tr.`type` = 5 and  tr.`consumer_code_status` IN 
+					<foreach collection="consumerCodeStatus" index="index" item="item" open="("
+						close=")" separator=",">
+						#{item}
+					</foreach>
+					)
+			)
+		</if>
+		<if test="status != null and status != '' and consumerCodeStatus == null ">
 			AND tr.`status` IN
 			<foreach collection="status" index="index" item="item" open="("
 				close=")" separator=",">
