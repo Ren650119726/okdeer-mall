@@ -2668,6 +2668,9 @@
 		<!-- 订单来源，多个时使用IN -->
 		AND order_resource IN (0,1,3)
 		and `status` >= 0
+		<if test="type != null and type != ''">
+			AND type = #{type,jdbcType=TINYINT}
+		</if>
 		GROUP BY
 		CASE
 		WHEN `status` IN (14) THEN 14
