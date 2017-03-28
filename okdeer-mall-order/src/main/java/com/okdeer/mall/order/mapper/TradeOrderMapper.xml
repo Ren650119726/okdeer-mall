@@ -1579,14 +1579,22 @@
 		locate.city_name as lCity_name,
 		locate.area_name as lArea_name,
 		locate.area_ext as lArea_ext,
-		o.type as order_type,
-		o.pick_up_type
+		o.pick_up_type,
+		IF(fto.received_time is null, '复购', '首购') as is_first_order
 		from trade_order o
 		LEFT JOIN store_info si ON o.store_id=si.id
 		LEFT JOIN psms_agent pa ON
 		pa.id=si.agent_id
 		LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
 		LEFT JOIN trade_order_locate locate ON locate.order_id = o.id
+		LEFT JOIN 
+			(SELECT id, MIN(received_time) AS received_time
+		    FROM trade_order 
+		    WHERE STATUS = 5
+		    AND type != 3 
+		    AND type != 4
+		    GROUP BY user_id) fto
+		ON fto.id = o.id
 		WHERE 1=1
 		AND o.disabled =0
 		AND o.order_resource !=2
@@ -5170,6 +5178,8 @@
 			(SELECT id, MIN(received_time) AS received_time
 		    FROM trade_order 
 		    WHERE STATUS = 5 
+		    AND type != 3 
+		    AND type != 4
 		    GROUP BY user_id) fto
 		ON fto.id = tr.id
 		WHERE 1=1

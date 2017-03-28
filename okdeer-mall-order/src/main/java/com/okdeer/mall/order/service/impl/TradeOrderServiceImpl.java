@@ -977,24 +977,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
 			List<ActivityInfoVO> activityList = null;
-			// 首购订单列表
-			List<TradeOrder> firstTradeOrderList = new ArrayList<>();
-			// 首购订单订单id集合
-			List<String> firstTradeOrderIdList = new ArrayList<>();
 			if (CollectionUtils.isNotEmpty(orderIds)) {
 				try {
 					tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
-					firstTradeOrderList = tradeOrderMapper.findFirstTradeOrder();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				activityList = this.findActivityInfo(orderIds);
 			}
 			
-			if (CollectionUtils.isNotEmpty(firstTradeOrderList)) {
-				for (TradeOrder firstOrder : firstTradeOrderList) {
-					firstTradeOrderIdList.add(firstOrder.getId());
-				}
+			//订单的物流信息
+			List<TradeOrderLogistics> logisticsList = null;
+			if (CollectionUtils.isNotEmpty(orderIds)) {
+				logisticsList = this.tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
 			}
 
 			for (PhysicsOrderVo orderVo : result) {
@@ -1089,11 +1084,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					memberAddressList = this.memberConsigneeAddressMapper.findByStoreIds(storeIds);
 				}
 				
-				//订单的物流信息
-				List<TradeOrderLogistics> logisticsList = null;
-				if (CollectionUtils.isNotEmpty(orderIds)) {
-					logisticsList = this.tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
-				}
 				//实物的送货上门订单收货地址取物流表信息 到店自提取的是店铺地址
 				if (orderVo.getOrderType() == OrderTypeEnum.PHYSICAL_ORDER && orderVo.getPickUpType() == PickUpTypeEnum.DELIVERY_DOOR) {
 					if (CollectionUtils.isNotEmpty(logisticsList)) {
@@ -1137,15 +1127,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				
 				// 订单来源
 				orderVo.setOrderResource(orderVo.getOrderResource());
-				
-				// begin v2.2 added by chenzc 2017-3-20
-				// 判断订单是否首购单
-				if (firstTradeOrderIdList.contains(orderVo.getId())) {
-					orderVo.setIsFirstOrder(FirstTradeOrder.FIRST_TARDE.getValue());
-				} else {
-					orderVo.setIsFirstOrder(FirstTradeOrder.REPEAT_TRADE.getValue());
-				}
-				// end v2.2 added by chenzc 2017-3-20
 			}
 		}
 		// End V2.1.0 added by luosm 20170223
