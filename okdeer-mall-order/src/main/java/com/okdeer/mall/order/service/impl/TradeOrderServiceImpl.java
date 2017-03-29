@@ -2096,6 +2096,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer updateOrderStatus(TradeOrder tradeOrder) throws ServiceException {
+		//add by mengsj begin 扫码购另外处理
+		if(tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP){
+			return tradeOrderMapper.updateOrderStatus(tradeOrder);
+		}
+		//add by mengsj end 扫码购另外处理
 		// 保存订单轨迹
 		tradeOrderTraceService.saveOrderTrace(tradeOrder);
 		return tradeOrderMapper.updateOrderStatus(tradeOrder);
