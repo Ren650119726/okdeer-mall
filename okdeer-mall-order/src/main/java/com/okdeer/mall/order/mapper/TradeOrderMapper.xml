@@ -1579,14 +1579,26 @@
 		locate.city_name as lCity_name,
 		locate.area_name as lArea_name,
 		locate.area_ext as lArea_ext,
-		o.type as order_type,
-		o.pick_up_type
+		o.pick_up_type,
+		<!-- begin add by chenzc V2.2.0 -->
+		(CASE WHEN o.status != 5 THEN ''
+			ELSE CASE WHEN fto.received_time IS NULL THEN '复购'
+			ELSE '首购' END END) AS is_first_order
+		<!-- end add by chenzc V2.2.0 -->
 		from trade_order o
 		LEFT JOIN store_info si ON o.store_id=si.id
 		LEFT JOIN psms_agent pa ON
 		pa.id=si.agent_id
 		LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
 		LEFT JOIN trade_order_locate locate ON locate.order_id = o.id
+		LEFT JOIN 
+			(SELECT id, MIN(received_time) AS received_time
+		    FROM trade_order 
+		    WHERE STATUS = 5
+		    AND type != 3 
+		    AND type != 4
+		    GROUP BY user_id) fto
+		ON fto.id = o.id
 		WHERE 1=1
 		AND o.disabled =0
 		AND o.order_resource !=2
@@ -2645,10 +2657,10 @@
 		SELECT CASE
 		WHEN `status` IN (14) THEN 14
 		WHEN `status` IN (1) THEN 1
-		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5) THEN 5
-		WHEN `status` IN (2) THEN 2
-		WHEN `status` IN (4) THEN 4
+		WHEN `status` IN (3) or (`type` = 5 and `consumer_code_status` in (1) ) THEN 3
+		WHEN `status` IN (5) and  `consumer_code_status` in (0,4,5)  THEN 5
+		WHEN `status` IN (2) or (`type` = 5 and `consumer_code_status` in (2,3) ) THEN 2
+		WHEN `status` IN (4)  THEN 4
 		ELSE `STATUS`
 		END AS `status`,count(1) as `count` FROM trade_order
 		WHERE store_id = #{storeId,jdbcType=VARCHAR}
@@ -2656,14 +2668,17 @@
 		<!-- 订单来源，多个时使用IN -->
 		AND order_resource IN (0,1,3)
 		and `status` >= 0
+		<if test="type != null and type != ''">
+			AND type = #{type,jdbcType=TINYINT}
+		</if>
 		GROUP BY
 		CASE
 		WHEN `status` IN (14) THEN 14
 		WHEN `status` IN (1) THEN 1
-		WHEN `status` IN (3) THEN 3
-		WHEN `status` IN (5) THEN 5
-		WHEN `status` IN (2) THEN 2
-		WHEN `status` IN (4) THEN 4
+		WHEN `status` IN (3) or (`type` = 5 and `consumer_code_status` in (1) ) THEN 3
+		WHEN `status` IN (5) and  `consumer_code_status` in (0,4,5)  THEN 5
+		WHEN `status` IN (2) or (`type` = 5 and `consumer_code_status` in (2,3) ) THEN 2
+		WHEN `status` IN (4)  THEN 4
 		ELSE `STATUS`
 		END
 	</select>
@@ -5160,8 +5175,12 @@
 				tr.income,
 				tr.activity_id,
 				tr.user_id,
-				IF(fto.received_time is null, '复购', '首购') as is_first_order
 				<!-- end V2.1 add by zhulq 导出列表新增字段 -->	
+				<!-- begin add by chenzc V2.2.0 -->
+				(CASE WHEN tr.status != 5 THEN ''
+					ELSE CASE WHEN fto.received_time IS NULL THEN '复购'
+					ELSE '首购' END END) AS is_first_order
+				<!-- end add by chenzc V2.2.0 -->
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN trade_order_logistics tol ON tr.id = tol.order_id
@@ -5170,6 +5189,8 @@
 			(SELECT id, MIN(received_time) AS received_time
 		    FROM trade_order 
 		    WHERE STATUS = 5 
+		    AND type != 3 
+		    AND type != 4
 		    GROUP BY user_id) fto
 		ON fto.id = tr.id
 		WHERE 1=1
@@ -6081,7 +6102,21 @@
 		WHERE tr.store_id = #{storeId,jdbcType=VARCHAR}
 		and disabled = 0
 		<!-- 状态 -->
-		<if test="status != null and status != ''">
+		<if test="status != null and status != '' and consumerCodeStatus !=null and consumerCodeStatus != '' ">
+			AND (tr.`type` = 2 and tr.`status` IN 
+			<foreach collection="status" index="index" item="item" open="("
+				close=")" separator=",">
+				#{item}
+			</foreach>
+				OR (tr.`type` = 5 and  tr.`consumer_code_status` IN 
+					<foreach collection="consumerCodeStatus" index="index" item="item" open="("
+						close=")" separator=",">
+						#{item}
+					</foreach>
+					)
+			)
+		</if>
+		<if test="status != null and status != '' and consumerCodeStatus == null ">
 			AND tr.`status` IN
 			<foreach collection="status" index="index" item="item" open="("
 				close=")" separator=",">
