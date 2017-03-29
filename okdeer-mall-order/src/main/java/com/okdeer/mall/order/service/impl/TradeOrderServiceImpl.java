@@ -977,26 +977,28 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
 			List<ActivityInfoVO> activityList = null;
-			// 首购订单列表
-			List<TradeOrder> firstTradeOrderList = new ArrayList<>();
-			// 首购订单订单id集合
-			List<String> firstTradeOrderIdList = new ArrayList<>();
 			if (CollectionUtils.isNotEmpty(orderIds)) {
 				try {
 					tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
-					firstTradeOrderList = tradeOrderMapper.findFirstTradeOrder();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				activityList = this.findActivityInfo(orderIds);
 			}
 			
-			if (CollectionUtils.isNotEmpty(firstTradeOrderList)) {
-				for (TradeOrder firstOrder : firstTradeOrderList) {
-					firstTradeOrderIdList.add(firstOrder.getId());
-				}
+			//订单的物流信息
+			List<TradeOrderLogistics> logisticsList = null;
+			if (CollectionUtils.isNotEmpty(orderIds)) {
+				logisticsList = this.tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
 			}
 
+			//店铺地址（到店自提和到店消费订单店铺地址）
+			List<UserAddressVo> memberAddressList = null;	
+			//V2.1.0 end add by zhulq 收货地址取物流表信息 之前是取店铺地址
+			if (CollectionUtils.isNotEmpty(storeIds)) {
+				memberAddressList = this.memberConsigneeAddressMapper.findByStoreIds(storeIds);
+			}
+			
 			for (PhysicsOrderVo orderVo : result) {
 				// 获取邀请人姓名
 				if (CollectionUtils.isNotEmpty(inviteNameLists)) {
@@ -1082,18 +1084,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 定位基点
 				orderVo.setLocateAddress(lProviceName + lCityName + lAreaName + areaExt);
 				
-				//店铺地址（到店自提和到店消费订单店铺地址）
-				List<UserAddressVo> memberAddressList = null;	
-				//V2.1.0 end add by zhulq 收货地址取物流表信息 之前是取店铺地址
-				if (CollectionUtils.isNotEmpty(storeIds)) {
-					memberAddressList = this.memberConsigneeAddressMapper.findByStoreIds(storeIds);
-				}
-				
-				//订单的物流信息
-				List<TradeOrderLogistics> logisticsList = null;
-				if (CollectionUtils.isNotEmpty(orderIds)) {
-					logisticsList = this.tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
-				}
+				//V2.1.0 begin add by zhulq 收货地址取物流表信息 之前是取店铺地址				
 				//实物的送货上门订单收货地址取物流表信息 到店自提取的是店铺地址
 				if (orderVo.getOrderType() == OrderTypeEnum.PHYSICAL_ORDER && orderVo.getPickUpType() == PickUpTypeEnum.DELIVERY_DOOR) {
 					if (CollectionUtils.isNotEmpty(logisticsList)) {
@@ -1105,12 +1096,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 									Address address = addressService.getAddressById(Long.parseLong(cityId));
 									// 所属城市 实物订单的送货上门取物流表的地址
 									orderVo.setCityName(address.getName() == null ? "" : address.getName());
+									String area = logistics.getArea() == null ? "" : logistics.getArea();
+									String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
+									// 收货地址
+									orderVo.setAddress(area + addressExt);
+									break;
 								}
-								String area = logistics.getArea() == null ? "" : logistics.getArea();
-								String address = logistics.getAddress() == null ? "" : logistics.getAddress();
-								// 收货地址
-								orderVo.setAddress(area + address);
-								break;
 							}
 						}
 					}
@@ -1134,18 +1125,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						}
 					}
 				}
-				
+				//V2.1.0 begin add by zhulq 收货地址取物流表信息 之前是取店铺地址
 				// 订单来源
 				orderVo.setOrderResource(orderVo.getOrderResource());
-				
-				// begin v2.2 added by chenzc 2017-3-20
-				// 判断订单是否首购单
-				if (firstTradeOrderIdList.contains(orderVo.getId())) {
-					orderVo.setIsFirstOrder(FirstTradeOrder.FIRST_TARDE.getValue());
-				} else {
-					orderVo.setIsFirstOrder(FirstTradeOrder.REPEAT_TRADE.getValue());
-				}
-				// end v2.2 added by chenzc 2017-3-20
 			}
 		}
 		// End V2.1.0 added by luosm 20170223
@@ -1301,11 +1283,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 								Address address = addressService.getAddressById(Long.parseLong(cityId));
 								// 所属城市 实物订单的送货上门取物流表的地址
 								order.setCityName(address.getName() == null ? "" : address.getName());
+								String area = logistics.getArea() == null ? "" : logistics.getArea();
+								String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
+								// 收货地址
+								order.setAddress(area + addressExt);
+								break;
 							}
-							String area = logistics.getArea() == null ? "" : logistics.getArea();
-							String address = logistics.getAddress() == null ? "" : logistics.getAddress();
-							// 收货地址
-							order.setAddress(area + address);
 						}
 					}
 				}
@@ -1322,6 +1305,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							order.setCityName(cityName);
 							// 收货地址
 							order.setAddress(proviceName + cityName + areaName + areaExt + address);
+							break;
 						}
 					}
 				}
@@ -2112,6 +2096,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer updateOrderStatus(TradeOrder tradeOrder) throws ServiceException {
+		//add by mengsj begin 扫码购另外处理
+		if(tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP){
+			return tradeOrderMapper.updateOrderStatus(tradeOrder);
+		}
+		//add by mengsj end 扫码购另外处理
 		// 保存订单轨迹
 		tradeOrderTraceService.saveOrderTrace(tradeOrder);
 		return tradeOrderMapper.updateOrderStatus(tradeOrder);
@@ -5541,12 +5530,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					if (StringUtils.isNotBlank(cityId)) {
 						Address address = addressService.getAddressById(Long.parseLong(cityId));
 						vo.setCityName(address.getName() == null ? "" : address.getName());
+						String area = logistics.getArea() == null ? "" : logistics.getArea();
+						String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
+						// 收货地址
+						vo.setAddress(area + addressExt);
+						break;
 					}
-					String area = logistics.getArea() == null ? "" : logistics.getArea();
-					String address = logistics.getAddress() == null ? "" : logistics.getAddress();
-					// 收货地址
-					vo.setAddress(area + address);
-					break;
 				}
 			}
 		}

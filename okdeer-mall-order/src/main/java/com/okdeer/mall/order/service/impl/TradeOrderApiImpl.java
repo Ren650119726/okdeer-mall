@@ -968,12 +968,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 							Address address = addressService.getAddressById(Long.parseLong(cityId));
 							// 所属城市 实物订单的送货上门取物流表的地址
 							dto.setCityName(address.getName() == null ? "" : address.getName());
+							String area = logistics.getArea() == null ? "" : logistics.getArea();
+							String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
+							// 收货地址
+							dto.setAddress(area + addressExt);
+							break;
 						}
-						String area = logistics.getArea() == null ? "" : logistics.getArea();
-						String address = logistics.getAddress() == null ? "" : logistics.getAddress();
-						// 收货地址
-						dto.setAddress(area + address);
-						break;
 					}
 				}
 			}
@@ -1006,12 +1006,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 							Address address = addressService.getAddressById(Long.parseLong(cityId));
 							// 所属城市 实物订单的送货上门取物流表的地址
 							dto.setCityName(address.getName() == null ? "" : address.getName());
+							String area = logistics.getArea() == null ? "" : logistics.getArea();
+							String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
+							// 收货地址
+							dto.setAddress(area + addressExt);
+							break;
 						}
-						String area = logistics.getArea() == null ? "" : logistics.getArea();
-						String address = logistics.getAddress() == null ? "" : logistics.getAddress();
-						// 收货地址
-						dto.setAddress(area + address);
-						break;
 					}
 				}
 			}
