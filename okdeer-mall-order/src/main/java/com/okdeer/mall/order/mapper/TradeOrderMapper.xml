@@ -3773,7 +3773,7 @@
 		UNION ALL
 		SELECT refund_no AS tradeNo,(select sum(income) from
 		trade_order_refunds_item i where i.refunds_id = r.id) as
-		income,refund_money_time AS tradeTime,1 as types,r.order_id as orderId
+		income,refund_money_time AS tradeTime,1 as types,r.id as orderId
 		FROM trade_order_refunds r
 		WHERE store_id = #{storeId, jdbcType=VARCHAR}
 		AND refund_money_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND
