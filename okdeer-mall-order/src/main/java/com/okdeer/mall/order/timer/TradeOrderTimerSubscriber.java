@@ -230,8 +230,13 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				order.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
 				if(order.getOrderResource() == OrderResourceEnum.SWEEP){
 					//modify by mengsj begin 扫码购超时取消订单
-					order.setStatus(OrderStatusEnum.ALREADY_EXPIRED);
-					tradeOrderService.updateOrderStatus(order);
+					TradeOrder tradeOrder = new TradeOrder();
+					tradeOrder.setId(order.getId());
+					tradeOrder.setStatus(OrderStatusEnum.ALREADY_EXPIRED);
+					tradeOrder.setUpdateTime(new Date());
+					tradeOrder.setOrderResource(OrderResourceEnum.SWEEP);
+					
+					tradeOrderService.updateOrderStatus(tradeOrder);
 					//modify by mengsj end 扫码购超时取消订单
 				}else{
 					cancelOrderService.cancelOrder(order, false);
