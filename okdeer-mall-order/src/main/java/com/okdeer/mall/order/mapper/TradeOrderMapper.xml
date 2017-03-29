@@ -796,7 +796,7 @@
 			</if>
 			<!-- 服务中 -->
 			<if test="tabs == 'to_be_signed'">
-				ORDER BY tr.delivery_time DESC
+				ORDER BY tr.create_time DESC
 			</if>
 			<!-- 已完成 -->
 			<if test="tabs == 'has_been_signed'">
