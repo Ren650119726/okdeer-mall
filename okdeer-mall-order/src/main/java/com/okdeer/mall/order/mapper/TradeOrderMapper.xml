@@ -737,7 +737,7 @@
 		<if test="tabs != null and tabs != ''">
 			<!-- 待发货按照付款时间 -->
 			<if test="tabs == 'wait_shipments'">
-				ORDER BY tp.pay_time ASC
+				ORDER BY tr.create_time ASC
 			</if>
 			<if
 				test="tabs == 'wait_receiving'">
@@ -774,7 +774,7 @@
 		<if test="tabs != null and tabs != ''">
 			<!-- 待发货按照付款时间 -->
 			<if test="tabs == 'wait_shipments'">
-				ORDER BY tp.pay_time DESC
+				ORDER BY tr.create_time DESC
 			</if>
 			<if test="tabs == 'wait_receiving'">
 				ORDER BY tr.delivery_time DESC
