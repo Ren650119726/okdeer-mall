@@ -2659,9 +2659,9 @@
 		WHEN `status` IN (1) THEN 1
 		WHEN `status` IN (3) or (`type` = 5 and `consumer_code_status` in (1) ) THEN 3
 		WHEN `status` IN (5) and  `consumer_code_status` in (0,4,5,3)  THEN 5
-		WHEN `status` IN (2) or (`type` = 5 and `consumer_code_status` in (2) ) THEN 2
+		WHEN (`status` IN (2) and `type`=2 ) or (`type` = 5 and `consumer_code_status` in (2) ) THEN 2
 		WHEN `status` IN (4)  THEN 4
-		ELSE `STATUS`
+		ELSE 0
 		END AS `status`,count(1) as `count` FROM trade_order
 		WHERE store_id = #{storeId,jdbcType=VARCHAR}
 		and disabled = 0
@@ -2676,10 +2676,10 @@
 		WHEN `status` IN (14) THEN 14
 		WHEN `status` IN (1) THEN 1
 		WHEN `status` IN (3) or (`type` = 5 and `consumer_code_status` in (1) ) THEN 3
-		WHEN `status` IN (5) and  `consumer_code_status` in (0,4,5)  THEN 5
-		WHEN `status` IN (2) or (`type` = 5 and `consumer_code_status` in (2,3) ) THEN 2
+		WHEN `status` IN (5) and  `consumer_code_status` in (0,4,5,3)  THEN 5
+		WHEN (`status` IN (2) and `type`=2 ) or (`type` = 5 and `consumer_code_status` in (2) ) THEN 2
 		WHEN `status` IN (4)  THEN 4
-		ELSE `STATUS`
+		ELSE 0
 		END
 	</select>
 	<!-- zengj:获取便利店订单总数，根据订单状态分组 V1.1.0  update by wusw 20160928 update by xuzq 20170324-->
@@ -6114,6 +6114,7 @@
 						#{item}
 					</foreach>
 					)
+					
 			)
 		</if>
 		<if test="status != null and status != '' and consumerCodeStatus == null ">
