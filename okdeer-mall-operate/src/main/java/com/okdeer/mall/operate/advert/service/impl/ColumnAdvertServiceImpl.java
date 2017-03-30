@@ -708,13 +708,13 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		//返回信息
 		String result = null;
 		logger.info("校验广告版本 - 便利店版本:{}, 管家版本:{} 广告类型:{}", advert.getCvsVersion(), advert.getStewardVersion(), advert.getAdvertType());
-		logger.info("闪屏广告 - ==:{}", AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType());
-		logger.info("闪屏广告 - equals:{}", advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex()));
+		logger.info("闪屏广告 - ==:{}", AdvertTypeEnum.USER_APP_SPLASH_SCREEN.ordinal()==  advert.getAdvertType());
+		logger.info("闪屏广告 - equals:{}", advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_SPLASH_SCREEN.ordinal()));
 		//APP首页分割广告/APP闪屏广告/APP首页广告(便利店)
 		if(CollectionUtils.isNotEmpty(countList) && CollectionUtils.isNotEmpty(advert.getCvsVersion())
-				&& (AdvertTypeEnum.USER_APP_INDEX_PARTITION.getIndex() == advert.getAdvertType()
-					|| AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType() 
-			        || AdvertTypeEnum.USER_APP_INDEX.getIndex() ==  advert.getAdvertType())){
+				&& (advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_INDEX_PARTITION.ordinal())
+					|| advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_SPLASH_SCREEN.ordinal()) 
+			        || advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_INDEX.ordinal()))){
 			logger.info("APP首页分割广告/APP闪屏广告/APP首页广告(便利店)");
 			//循环便利店APP版本集合
 			for(String item : advert.getCvsVersion()){
@@ -730,9 +730,9 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		
         //手机开门页广告/APP闪屏广告/APP首页广告(管家)
         if(CollectionUtils.isNotEmpty(countList) && CollectionUtils.isNotEmpty(advert.getStewardVersion())  
-				&& (AdvertTypeEnum.MOBILE_PHONE_DOOR.getIndex() ==  advert.getAdvertType()
-        		|| AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType() 
-                || AdvertTypeEnum.USER_APP_INDEX.getIndex() ==  advert.getAdvertType())){
+				&& (advert.getAdvertType().equals(AdvertTypeEnum.MOBILE_PHONE_DOOR.ordinal())
+        		|| advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_SPLASH_SCREEN.ordinal()) 
+                || advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_INDEX.ordinal()))){
         	logger.info("手机开门页广告/APP闪屏广告/APP首页广告 (管家)");
         	//循环管家版本集合
         	for(String item : advert.getStewardVersion()){
@@ -836,16 +836,16 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 				return msg.replace("#", version);
 			}
 		} else {
-			if (advertType == AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() && arcossTimeAdvertQty >= 1) {
+			if (advertType.equals(AdvertTypeEnum.USER_APP_SPLASH_SCREEN.ordinal()) && arcossTimeAdvertQty >= 1) {
 				// 在同一个区域（城市）、同一个时间段、同一个版本下, 最多只能上传一张，且时间不能交叉
 				return msg.replace("#", version);
-			} else if (advertType == AdvertTypeEnum.USER_APP_INDEX.getIndex() && arcossTimeAdvertQty >= 5) {
+			} else if (advertType.equals(AdvertTypeEnum.USER_APP_INDEX.ordinal()) && arcossTimeAdvertQty >= 5) {
 				// 在同一个区域（城市）、同一个时间段、同一个版本下, 最多运营商能上传5张，且时间不能产生交叉；
 				return msg.replace("#", version);
-			} else if (advertType == AdvertTypeEnum.MOBILE_PHONE_DOOR.getIndex() && arcossTimeAdvertQty >= 1) {
+			} else if (advertType.equals(AdvertTypeEnum.MOBILE_PHONE_DOOR.ordinal()) && arcossTimeAdvertQty >= 1) {
 				// 同一个区域（城市）、同一个时间段、同一个版本下 ,只允许发送1个手机开门页广告
 				return msg.replace("#", version);
-			} else if (advertType == AdvertTypeEnum.USER_APP_INDEX_PARTITION.getIndex() && arcossTimeAdvertQty >= 1) {
+			} else if (advertType.equals(AdvertTypeEnum.USER_APP_INDEX_PARTITION.ordinal()) && arcossTimeAdvertQty >= 1) {
 				// 同一个区域（城市）、同一个时间段、同一个版本下,最多运营商能上传1张，且时间不能产生交叉；
 				return msg.replace("#", version);
 			}
