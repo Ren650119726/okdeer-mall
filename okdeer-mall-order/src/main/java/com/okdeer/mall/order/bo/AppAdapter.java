@@ -37,7 +37,7 @@ import com.okdeer.mall.system.utils.ConvertUtil;
 public class AppAdapter {
 	
 	private static final Pattern pattern = Pattern.compile("(\\d{2}:\\d{2}-\\d{2}:\\d{2},*)*");
-
+	
 	/**
 	 * @Description: 转换店铺信息给APP
 	 * @param storeInfo
@@ -217,7 +217,9 @@ public class AppAdapter {
 		for (int addDay = aheadDay, validDays = 0; validDays < 8; addDay++) {
 			determineDate = DateUtils.formatDate(DateUtils.addDays(new Date(), addDay), "yyyy-MM-dd");
 			determineMonth = determineDate.substring(0, 4) + determineDate.substring(5, 7);
+			int invalidIndex = 0;
 			for (String invalidTime : invalidDateArr) {
+				invalidIndex ++ ;
 				invalidMonth = invalidTime.substring(0, 6);
 				if (determineMonth.compareTo(invalidMonth) == -1) {
 					// 如果当前月份小于不可用日期限制的月份，则当前日期一定可用
@@ -237,8 +239,13 @@ public class AppAdapter {
 						break;
 					}
 				} else if (determineMonth.compareTo(invalidMonth) == 1) {
-					// 如果当前月份大于不可用日期限制的月份，则循环跳入下一个月份限制进行判定
-					continue;
+					// 如果当前月份大于不可用日期限制的月份，如果不可用日期还存在，则循环跳入下一个月份限制进行判定，否则当前日期可用，直接跳出。
+					if(invalidIndex == invalidDateArr.length){
+						validDays++;
+						break;
+					}else{
+						continue;
+					}
 				}
 			}
 		}

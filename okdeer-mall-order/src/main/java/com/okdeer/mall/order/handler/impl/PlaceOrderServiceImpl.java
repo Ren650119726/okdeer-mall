@@ -23,7 +23,6 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
-import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.DateUtils;
@@ -148,12 +147,6 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuAssembleApi goodsStoreSkuAssembleApi;
-
-	/**
-	 * 商业系统库存管理Service
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerJxcServiceApi;
 
 	/**
 	 * 商城库存管理Dubbo接口
