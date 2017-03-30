@@ -232,7 +232,8 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 					//modify by mengsj begin 扫码购超时取消订单
 					TradeOrder tradeOrder = new TradeOrder();
 					tradeOrder.setId(order.getId());
-					tradeOrder.setStatus(OrderStatusEnum.ALREADY_EXPIRED);
+					tradeOrder.setStatus(OrderStatusEnum.CANCELED);
+					tradeOrder.setCancelType(order.getCancelType());
 					tradeOrder.setUpdateTime(new Date());
 					tradeOrder.setOrderResource(OrderResourceEnum.SWEEP);
 					
