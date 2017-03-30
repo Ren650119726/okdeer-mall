@@ -330,6 +330,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	@Autowired
 	private RocketMQProducer rocketMQProducer;
 	
+	@Reference(version = "1.0.0", check = false)
 	private SysUserLoginLogServiceApi sysUserLoginLogApi;
 	
 	private static final String TOPIC_ONLINE_ORDER_TOPOS = "topic_online_order_topos";
