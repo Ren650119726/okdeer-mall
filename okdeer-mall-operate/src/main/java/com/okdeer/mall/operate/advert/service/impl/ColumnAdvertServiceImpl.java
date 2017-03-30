@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,6 +80,7 @@ import com.okdeer.mall.operate.mapper.ColumnAdvertVersionMapper;
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.advert.service.IColumnAdvertServiceApi")
 public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdvertServiceApi {
 
+	private static final Logger logger = LoggerFactory.getLogger(ColumnAdvertServiceImpl.class);
 	/**
 	 * 广告Mapper注入
 	 */
@@ -704,11 +707,13 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 				.collect(Collectors.toMap(ColumnAdvertVersionBo::getIdKey, bo -> bo));
 		//返回信息
 		String result = null;
+		logger.info("verifyAdvertAreaVersion - 便利店版本:{}, 管家版本:{}", advert.getCvsVersion(), advert.getStewardVersion());
 		//APP首页分割广告/APP闪屏广告/APP首页广告(便利店)
 		if(CollectionUtils.isNotEmpty(countList) && CollectionUtils.isNotEmpty(advert.getCvsVersion())
 				&& (AdvertTypeEnum.USER_APP_INDEX_PARTITION.getIndex() ==  advert.getAdvertType()
 					|| AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType() 
 			        || AdvertTypeEnum.USER_APP_INDEX.getIndex() ==  advert.getAdvertType())){
+			logger.info("APP首页分割广告/APP闪屏广告/APP首页广告(便利店)");
 			//循环便利店APP版本集合
 			for(String item : advert.getCvsVersion()){
 				//通过地区ID-便利店APP类型-版本号获取广告数
@@ -721,11 +726,12 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 			}
 		}
 		
-        //手机开门页广告/APP闪屏广告/APP首页广告  管家
+        //手机开门页广告/APP闪屏广告/APP首页广告(管家)
         if(CollectionUtils.isNotEmpty(countList) && CollectionUtils.isNotEmpty(advert.getStewardVersion())  
 				&& (AdvertTypeEnum.MOBILE_PHONE_DOOR.getIndex() ==  advert.getAdvertType()
         		|| AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType() 
                 || AdvertTypeEnum.USER_APP_INDEX.getIndex() ==  advert.getAdvertType())){
+        	logger.info("手机开门页广告/APP闪屏广告/APP首页广告 (管家)");
         	//循环管家版本集合
         	for(String item : advert.getStewardVersion()){
         		//通过地区ID-管家APP类型-版本号获取广告数
