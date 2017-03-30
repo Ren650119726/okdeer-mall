@@ -656,6 +656,9 @@
 		<result column="activity_id" property="activityId" jdbcType="VARCHAR" />
 		<result column="refunds_count" property="refundsCount" jdbcType="INTEGER" />
 		<result column="consumer_code_status" property="consumerCodeStatus" jdbcType="INTEGER" />
+		<result column="is_breach" property="isBreach" jdbcType="TINYINT" />
+		<result column="breach_money" property="breachMoney" jdbcType="DECIMAL" />
+		
 	</resultMap>
 	<!--end xuzq 20170321 2.2.0 订单查询map -->
 	<sql id="Base_Column_List">
@@ -6089,7 +6092,8 @@
 	<select id="findServiceOrderInfo" parameterType="java.util.Map"
 		resultMap="tradeOrderDetailBo">
 		SELECT
-		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.status,tr.consumer_code_status,tr.delivery_time,tr.type,tr.is_breach,
+		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,
+		tr.status,tr.consumer_code_status,tr.delivery_time,tr.type,tr.is_breach,tr.breach_money,
 		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
 		= tr.id) as goods_count,
 		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
