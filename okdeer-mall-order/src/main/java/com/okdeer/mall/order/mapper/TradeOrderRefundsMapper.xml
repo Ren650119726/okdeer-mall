@@ -986,9 +986,9 @@
 		LEFT JOIN trade_order trade ON trade.order_no = refunds.order_no
 		LEFT JOIN trade_order_refunds_logistics logistics ON refunds.id =
 		logistics.refunds_id
-		LEFT JOIN trade_order_logistics ol ON ol.order_id = trade.id
-		LEFT JOIN trade_order_invoice i ON i.order_id = trade.id
-		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
+		LEFT JOIN trade_order_logistics ol ON ol.order_id = refunds.order_id
+		LEFT JOIN trade_order_invoice i ON i.order_id = refunds.order_id
+		LEFT JOIN trade_order_pay pay ON pay.order_id = refunds.order_id
 		WHERE refunds.id = #{id,jdbcType=VARCHAR}
 	</select>
 	<!-- zengj:查询退款单项信息 -->
