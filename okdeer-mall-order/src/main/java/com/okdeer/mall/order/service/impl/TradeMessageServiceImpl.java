@@ -10,6 +10,7 @@ package com.okdeer.mall.order.service.impl;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -40,8 +41,10 @@ import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysMsg;
 import com.okdeer.archive.system.entity.SysUser;
+import com.okdeer.archive.system.entity.SysUserLoginLog;
 import com.okdeer.archive.system.pos.service.PosShiftExchangeServiceApi;
 import com.okdeer.archive.system.pos.vo.PosShiftExchangeVo;
+import com.okdeer.archive.system.service.SysUserLoginLogServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
@@ -95,8 +98,9 @@ import com.okdeer.mcm.service.ISmsService;
  *    重构4.1             2016-8-11            maojj              消息内容去除商品名称信息
  *    重构4.1             2016-8-11            maojj              订单消息推送 --POS时，修改json转换方式
  *    Bug:13029          2016-8-22            maojj              修改推送的详细内容
- *    V1.2				2016-12-02		     maojj				添加服务店接单通知短信
- *    商业系统对接			2016-12-19			 maojj				POS消息同时推送到商业系统
+ *    V1.2				 2016-12-02		      maojj				   添加服务店接单通知短信
+ *    商业系统对接			 2016-12-19			  maojj				 POS消息同时推送到商业系统
+ *    V2.2.0             2017-3-30            zhaoqc             发送消息根据APP版本区分消息类型
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeMessageServiceApi")
 public class TradeMessageServiceImpl implements TradeMessageService, TradeMessageServiceApi {
@@ -326,6 +330,8 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	@Autowired
 	private RocketMQProducer rocketMQProducer;
 	
+	private SysUserLoginLogServiceApi sysUserLoginLogApi;
+	
 	private static final String TOPIC_ONLINE_ORDER_TOPOS = "topic_online_order_topos";
 	
 	private static final String TAG_ONLINE_ORDER_TOPOS = "tag_online_order_topos";
@@ -513,8 +519,54 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 */
 	@Override
 	public void sendSellerAppMessage(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType) throws Exception {
-		PushMsgVo pushMsgVo = new PushMsgVo();
-		pushMsgVo.setSysCode(msgSysCode);
+		//查询店铺的用户信息
+	    List<SysUser> sysUserList = sysUserMapper.selectUserByStoreId(sendMsgParamVo.getStoreId());
+	    //版本号比较器类
+	    CompareVersion compare = new CompareVersion();	   
+	    
+	    //内容消息推送用户列表
+	    List<PushUserVo> oriMsgUserList = new ArrayList<PushUserVo>();
+	    //链接消息推送列表
+	    List<PushUserVo> linkedMsgUserList = new ArrayList<>();
+	    
+	    if (sysUserList != null && !sysUserList.isEmpty()) {
+	        sysUserList.forEach(sysUser -> {
+	          //查看当前登录的设备APP版本
+                List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null, null);
+	            if(sysUserLoginLogs != null && !sysUserLoginLogs.isEmpty()) {
+	                sysUserLoginLogs.forEach(sysUserLoginLog -> {
+	                    PushUserVo pushUser = createPushUserVo(sysUser);
+	                    
+	                    String version = sysUserLoginLog.getVersion();
+	                    int compareRes = compare.compare(version, "2.1.0");
+	                    if(compareRes == 1 || compareRes == 0) {
+	                        //APP跳转原生页面，发送内容消息
+	                        oriMsgUserList.add(pushUser);
+	                    } else {
+	                        //APP调整H5页面，发送链接消息
+	                        linkedMsgUserList.add(pushUser);
+	                    }
+	                });
+	            }
+	        });  
+	    }
+	    
+	    //构建消息主体
+		if(oriMsgUserList != null && !oriMsgUserList.isEmpty()) {
+		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType);
+		    pushOriMsgVo.setUserList(oriMsgUserList);
+		    
+		    this.kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushOriMsgVo));
+		}
+		
+		if(linkedMsgUserList != null && !linkedMsgUserList.isEmpty()) {
+		    PushMsgVo pushLinkedMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType);
+		    pushLinkedMsgVo.setUserList(linkedMsgUserList);
+		    this.kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushLinkedMsgVo));
+        }
+
+		//Begin added by zhaoqc 讲发送消息代码重写，注释掉旧的逻辑
+		/*pushMsgVo.setSysCode(msgSysCode);
 		pushMsgVo.setToken(msgToken);
 		pushMsgVo.setSendUserId(sendMsgParamVo.getUserId());
 		pushMsgVo.setServiceFkId(sendMsgParamVo.getOrderId());
@@ -525,6 +577,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		pushMsgVo.setMsgType(1);
 		// 业务消息标识
 		String msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_BUY;
+		
 		// 推送消息标题
 		String msgTitle = null;
 		// 推送详情链接,默认订单的详情，在退款单时展示退款详情链接
@@ -571,6 +624,8 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		List<SysUser> sysUserList = sysUserMapper.selectUserByStoreId(sendMsgParamVo.getStoreId());
 		if (sysUserList != null && !sysUserList.isEmpty()) {
 			for (SysUser sysUser : sysUserList) {
+			    //查看当前登录的设备APP版本
+			    List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null, null);
 				PushUserVo pushUser = new PushUserVo();
 
 				pushUser.setUserId(sysUser.getId());
@@ -610,7 +665,103 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		pushMsgVo.setUserList(userList);
 		// Begin modified by maojj 2016-08-18 修改json转换方式
 		kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushMsgVo));
-		// End modified by maojj 2016-08-18
+		// End modified by maojj 2016-08-18*/
+		//End added by zhaoqc 2017-3-30
+	}
+	
+	/**
+	 * 构建消息推送用户VO
+	 * @param sysUser
+	 * @return
+	 */
+	private PushUserVo createPushUserVo(SysUser sysUser) {
+	    PushUserVo pushUser = new PushUserVo();
+	    pushUser.setUserId(sysUser.getId());
+        pushUser.setMobile(sysUser.getPhone());
+        pushUser.setMsgType(1);
+        
+        try {
+            pushUser.setNotificationBuilderId(Integer.valueOf(notificationBuilderId));
+         // 消息信息提示
+            if (WhetherEnum.whether.equals(sysUser.getIsAccept())) {
+                // 有声音
+                pushUser.setIsexitsSound(0);
+                pushUser.setNotificationBasicStyle(Integer.valueOf(notificationBasicStyle1));
+            } else {
+                // 无声音
+                pushUser.setNotificationBasicStyle(Integer.valueOf(notificationBasicStyle2));
+                pushUser.setIsexitsSound(1);
+            }
+        } catch (Exception e) {
+            // 没有配置zookeeper，取默认的
+            pushUser.setNotificationBuilderId(defaultNotificationBuilderId);
+            // 消息信息提示
+            if (WhetherEnum.whether.equals(sysUser.getIsAccept())) {
+                // 有声音
+                pushUser.setIsexitsSound(0);
+                pushUser.setNotificationBasicStyle(defaultNotificationBasicStyle1);
+            } else {
+                // 无声音
+                pushUser.setNotificationBasicStyle(defaultNotificationBasicStyle2);
+                pushUser.setIsexitsSound(1);
+            }
+        }
+        
+        return pushUser;
+	}	
+	
+	
+	private PushMsgVo createPushMsgVo(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType) {
+	    PushMsgVo pushMsgVo = new PushMsgVo();
+	    
+        pushMsgVo.setSysCode(msgSysCode);
+        pushMsgVo.setToken(msgToken);
+        pushMsgVo.setSendUserId(sendMsgParamVo.getUserId());
+        pushMsgVo.setServiceFkId(sendMsgParamVo.getOrderId());
+        pushMsgVo.setServiceTypes(new Integer[] { 2 });
+        // 2:商家APP,3POS机
+        pushMsgVo.setAppType(2);
+        pushMsgVo.setIsUseTemplate(0);
+        pushMsgVo.setMsgType(1);
+        // 业务消息标识
+        String msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_BUY;
+        pushMsgVo.setMsgTypeCustom(msgTypeCustom);
+        // 设置是否定时发送
+        pushMsgVo.setIsTiming(0);
+        
+        // 推送消息标题
+        String msgTitle = null;
+        String linkUrl = orderDetailLink + "/" + sendMsgParamVo.getOrderId();
+        switch (sendMsgType) {
+            // 下单消息
+            case createOrder:
+                msgTitle = "您有一条新订单需要处理";
+                break;
+            // 申请退款消息
+            case applyReturn:
+                msgTitle = "您有一条新的售后申请";
+                linkUrl = orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
+                break;
+            // 卖家同意退款后，买家退货(物流形式)给卖家
+            case returnShipments:
+                msgTitle = "您有一条新的售后申请";
+                linkUrl = orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
+                break;
+            // 投诉单
+            case complainOrder:
+                msgTitle = "您有一条投诉单";
+                break;
+            default:
+                break;
+        }
+        
+        pushMsgVo.setMsgTypeCustom(msgTypeCustom);
+        pushMsgVo.setMsgDetailLinkUrl(linkUrl);
+        pushMsgVo.setMsgNotifyContent(msgTitle);
+        pushMsgVo.setMsgDetailType(1);
+        pushMsgVo.setMsgDetailContent("");
+        
+        return pushMsgVo;
 	}
 
 	@Override
@@ -1084,4 +1235,29 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		}
 		
 	}
+}
+
+/**
+ * 版本号比较器类
+ * 比较版本号的大小
+ * 版本号的格式为三段纯数字格式比如1.0.1
+ * 
+ * @author zhaoqc
+ */
+class CompareVersion implements Comparator<String> {
+    @Override
+    public int compare(String v1, String v2) {
+        String[] v1Segments = v1.split("\\.");
+        String[] v2Segments = v2.split("\\.");
+        
+        for(int i = 0; i <= 2 ; i++) {
+            Integer seg1 = Integer.parseInt(v1Segments[i]);
+            Integer seg2 = Integer.parseInt(v2Segments[i]);
+            
+            if(seg1.compareTo(seg2) != 0) {
+                return seg1.compareTo(seg2);
+            }
+        }
+        return 0;
+    }
 }
