@@ -139,9 +139,9 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				int boughtNum = parserBo.getBoughtSkuNum(activityGoods.getStoreSkuId());
 				if (skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()) {
 					// 低价商品，可购买的低价数量
-					int skuActQuantity = skuBo.getQuantity() > tradeMax - boughtNum ? tradeMax - boughtNum : skuBo.getQuantity();
+					int buyNumEnabled = tradeMax > boughtNum ? tradeMax - boughtNum : 0;
+					int skuActQuantity = skuBo.getQuantity() > buyNumEnabled ? buyNumEnabled : skuBo.getQuantity();
 					skuBo.setSkuActQuantity(skuActQuantity);
-					
 				}else if (skuBo.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()){
 					// 特惠商品超出限款不能进行购买
 					if ( skuBo.getQuantity() > tradeMax - boughtNum) {
