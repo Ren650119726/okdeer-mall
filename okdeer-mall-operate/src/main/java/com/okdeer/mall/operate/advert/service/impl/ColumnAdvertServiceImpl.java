@@ -56,8 +56,8 @@ import com.okdeer.mall.operate.advert.mapper.ColumnAdvertAreaMapper;
 import com.okdeer.mall.operate.advert.mapper.ColumnAdvertInfoMapper;
 import com.okdeer.mall.operate.advert.mapper.ColumnAdvertMapper;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertService;
-import com.okdeer.mall.operate.entity.ColumnAdvertVersionDto;
 import com.okdeer.mall.operate.entity.ColumnAdvertVersionBo;
+import com.okdeer.mall.operate.entity.ColumnAdvertVersionDto;
 import com.okdeer.mall.operate.mapper.ColumnAdvertVersionMapper;
 
 /**
@@ -761,7 +761,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 				int tempCount = calcSum(id + key, versionMap, sum);
 				//由于历史广告没有对应的APP类型以及版本号，则将其默认为V1.0版本
 				if("V1.0".equals(version)){
-					tempCount = calcSum(areaVo.getpId() + key, versionMap, tempCount);
+					tempCount = calcSum(areaVo.getpId() + version, versionMap, tempCount);
 				}
 				//如果选择的地区是全省省，则该省下的城市发布数也计算在内，以最大发布数为准
 				if (sum < tempCount) {
@@ -773,7 +773,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 			sum = calcSum(areaVo.getpId() + key, versionMap, sum);
 			//由于历史广告没有对应的APP类型以及版本号，则将其默认为V1.0版本
 			if("V1.0".equals(version)){
-				sum = calcSum(areaVo.getpId() + key, versionMap, sum);
+				sum = calcSum(areaVo.getpId() + version, versionMap, sum);
 			}
 		}
 		    
