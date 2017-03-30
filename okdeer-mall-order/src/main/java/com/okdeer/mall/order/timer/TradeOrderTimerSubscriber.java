@@ -233,6 +233,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 					TradeOrder tradeOrder = new TradeOrder();
 					tradeOrder.setId(order.getId());
 					tradeOrder.setStatus(OrderStatusEnum.CANCELED);
+					tradeOrder.setCancelType(order.getCancelType());
 					tradeOrder.setUpdateTime(new Date());
 					tradeOrder.setOrderResource(OrderResourceEnum.SWEEP);
 					
