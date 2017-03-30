@@ -539,13 +539,17 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	                    PushUserVo pushUser = createPushUserVo(sysUser);
 	                    
 	                    String version = sysUserLoginLog.getVersion();
-	                    int compareRes = compare.compare(version, "2.1.0");
-	                    if(compareRes == 1 || compareRes == 0) {
-	                        //APP跳转原生页面，发送内容消息
-	                        oriMsgUserList.add(pushUser);
-	                    } else {
-	                        //APP调整H5页面，发送链接消息
-	                        linkedMsgUserList.add(pushUser);
+	                    if(StringUtils.isEmpty(version)){
+	                    	linkedMsgUserList.add(pushUser);
+	                    }else{
+		                    int compareRes = compare.compare(version, "2.1.0");
+		                    if(compareRes == 1 || compareRes == 0) {
+		                        //APP跳转原生页面，发送内容消息
+		                        oriMsgUserList.add(pushUser);
+		                    } else {
+		                        //APP调整H5页面，发送链接消息
+		                        linkedMsgUserList.add(pushUser);
+		                    }
 	                    }
 	                });
 	            }
