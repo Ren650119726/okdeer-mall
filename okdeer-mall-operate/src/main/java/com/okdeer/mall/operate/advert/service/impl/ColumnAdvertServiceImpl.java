@@ -707,10 +707,12 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 				.collect(Collectors.toMap(ColumnAdvertVersionBo::getIdKey, bo -> bo));
 		//返回信息
 		String result = null;
-		logger.info("verifyAdvertAreaVersion - 便利店版本:{}, 管家版本:{}", advert.getCvsVersion(), advert.getStewardVersion());
+		logger.info("校验广告版本 - 便利店版本:{}, 管家版本:{} 广告类型:{}", advert.getCvsVersion(), advert.getStewardVersion(), advert.getAdvertType());
+		logger.info("闪屏广告 - ==:{}", AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType());
+		logger.info("闪屏广告 - equals:{}", advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex()));
 		//APP首页分割广告/APP闪屏广告/APP首页广告(便利店)
 		if(CollectionUtils.isNotEmpty(countList) && CollectionUtils.isNotEmpty(advert.getCvsVersion())
-				&& (AdvertTypeEnum.USER_APP_INDEX_PARTITION.getIndex() ==  advert.getAdvertType()
+				&& (AdvertTypeEnum.USER_APP_INDEX_PARTITION.getIndex() == advert.getAdvertType()
 					|| AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex() ==  advert.getAdvertType() 
 			        || AdvertTypeEnum.USER_APP_INDEX.getIndex() ==  advert.getAdvertType())){
 			logger.info("APP首页分割广告/APP闪屏广告/APP首页广告(便利店)");
