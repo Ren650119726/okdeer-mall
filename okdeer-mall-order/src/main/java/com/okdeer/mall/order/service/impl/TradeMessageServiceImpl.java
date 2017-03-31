@@ -784,7 +784,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         if(msgContentType == 0) {
             pushMsgVo.setMsgDetailLinkUrl(linkUrl);
         } else if(msgContentType == 1) {
-            pushMsgVo.setMsgDetailLinkUrl(serviceFkId);
+            pushMsgVo.setMsgDetailContent(serviceFkId);
         }
         pushMsgVo.setMsgNotifyContent(msgTitle);
         pushMsgVo.setMsgDetailType(msgContentType);
