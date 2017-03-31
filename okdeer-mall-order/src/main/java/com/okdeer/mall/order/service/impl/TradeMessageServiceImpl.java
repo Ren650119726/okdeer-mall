@@ -788,7 +788,6 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         }
         pushMsgVo.setMsgNotifyContent(msgTitle);
         pushMsgVo.setMsgDetailType(msgContentType);
-        pushMsgVo.setMsgDetailContent("");
         
         return pushMsgVo;
 	}
