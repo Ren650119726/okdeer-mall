@@ -563,14 +563,14 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	    
 	    //构建消息主体
 		if(oriMsgUserList != null && !oriMsgUserList.isEmpty()) {
-		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType);
+		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType, 1);
 		    pushOriMsgVo.setUserList(oriMsgUserList);
 		    
 		    this.kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushOriMsgVo));
 		}
 		
 		if(linkedMsgUserList != null && !linkedMsgUserList.isEmpty()) {
-		    PushMsgVo pushLinkedMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType);
+		    PushMsgVo pushLinkedMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType, 0);
 		    pushLinkedMsgVo.setUserList(linkedMsgUserList);
 		    this.kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushLinkedMsgVo));
         }
@@ -720,14 +720,19 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         return pushUser;
 	}	
 	
-	
-	private PushMsgVo createPushMsgVo(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType) {
+	/**
+	 * 
+	 * @param sendMsgParamVo
+	 * @param sendMsgType
+	 * @param msgContentType 0链接，1内容
+	 * @return
+	 */
+	private PushMsgVo createPushMsgVo(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType, int msgContentType) {
 	    PushMsgVo pushMsgVo = new PushMsgVo();
 	    
         pushMsgVo.setSysCode(msgSysCode);
         pushMsgVo.setToken(msgToken);
-        pushMsgVo.setSendUserId(sendMsgParamVo.getUserId());
-        pushMsgVo.setServiceFkId(sendMsgParamVo.getOrderId());
+        pushMsgVo.setSendUserId(sendMsgParamVo.getUserId());       
         pushMsgVo.setServiceTypes(new Integer[] { 2 });
         // 2:商家APP,3POS机
         pushMsgVo.setAppType(2);
@@ -741,38 +746,48 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         
         // 推送消息标题
         String msgTitle = null;
+        String serviceFkId = null;
         String linkUrl = orderDetailLink + "/" + sendMsgParamVo.getOrderId();
         switch (sendMsgType) {
             // 下单消息
             case createOrder:
                 msgTitle = "您有一条新订单需要处理";
                 msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_BUY;
+                serviceFkId = sendMsgParamVo.getOrderId();
                 break;
             // 申请退款消息
             case applyReturn:
                 msgTitle = "您有一条新的售后申请";
                 linkUrl = orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
                 msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_RETURN;
+                serviceFkId = sendMsgParamVo.getRefundsId();
                 break;
             // 卖家同意退款后，买家退货(物流形式)给卖家
             case returnShipments:
                 msgTitle = "您有一条新的售后申请";
                 linkUrl = orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
+                serviceFkId = sendMsgParamVo.getRefundsId();
                 msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_RETURN;
                 break;
             // 投诉单
             case complainOrder:
                 msgTitle = "您有一条投诉单";
                 msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_COMPLAIN;
+                serviceFkId = sendMsgParamVo.getOrderId();
                 break;
             default:
                 break;
         }
         
         pushMsgVo.setMsgTypeCustom(msgTypeCustom);
-        pushMsgVo.setMsgDetailLinkUrl(linkUrl);
+        pushMsgVo.setServiceFkId(serviceFkId);
+        if(msgContentType == 0) {
+            pushMsgVo.setMsgDetailLinkUrl(linkUrl);
+        } else if(msgContentType == 1) {
+            pushMsgVo.setMsgDetailLinkUrl(serviceFkId);
+        }
         pushMsgVo.setMsgNotifyContent(msgTitle);
-        pushMsgVo.setMsgDetailType(1);
+        pushMsgVo.setMsgDetailType(msgContentType);
         pushMsgVo.setMsgDetailContent("");
         
         return pushMsgVo;
