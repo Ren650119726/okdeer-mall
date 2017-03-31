@@ -7252,6 +7252,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @param activityId 活动ID
 	 */
 	private Map<String, Object> getActivity(int activityType, String activityId) {
+		logger.info("activityType活动"+activityType+"activityId:"+activityId);
 		Map<String, Object> map = new HashMap<String, Object>();
 		// 活动名称
 		String activityName = null;
@@ -7262,6 +7263,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 代金券活动
 			if (ActivityTypeEnum.VONCHER.equals(activityType)) {
 				ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(activityId);
+				logger.info("activityCollectCoupons活动"+activityCollectCoupons);
 				if (activityCollectCoupons != null) {
 					activityName = activityCollectCoupons.getName();
 					// 所属代理商id，运营商以0标识
@@ -7275,12 +7277,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					|| ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES.equals(activityType)) {
 				// 满减活动
 				ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(activityId);
+				logger.info("activityDiscount活动"+activityDiscount);
 				if (activityDiscount != null) {
 					activityName = activityDiscount.getName();
 				}
 			}
 			// End 15698 add by wusw 20161205
 		}
+		logger.info("activityName"+activityType);
 		map.put("activityName", activityName);
 		map.put("activitySource", activitySource);
 		return map;
