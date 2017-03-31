@@ -729,8 +729,8 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         pushMsgVo.setIsUseTemplate(0);
         pushMsgVo.setMsgType(1);
         // 业务消息标识
-        String msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_BUY;
-        pushMsgVo.setMsgTypeCustom(msgTypeCustom);
+        String msgTypeCustom = null;
+       
         // 设置是否定时发送
         pushMsgVo.setIsTiming(0);
         
@@ -741,25 +741,30 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
             // 下单消息
             case createOrder:
                 msgTitle = "您有一条新订单需要处理";
+                msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_BUY;
                 break;
             // 申请退款消息
             case applyReturn:
                 msgTitle = "您有一条新的售后申请";
                 linkUrl = orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
+                msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_RETURN;
                 break;
             // 卖家同意退款后，买家退货(物流形式)给卖家
             case returnShipments:
                 msgTitle = "您有一条新的售后申请";
                 linkUrl = orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
+                msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_RETURN;
                 break;
             // 投诉单
             case complainOrder:
                 msgTitle = "您有一条投诉单";
+                msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_COMPLAIN;
                 break;
             default:
                 break;
         }
         
+        pushMsgVo.setMsgTypeCustom(msgTypeCustom);
         pushMsgVo.setMsgTypeCustom(msgTypeCustom);
         pushMsgVo.setMsgDetailLinkUrl(linkUrl);
         pushMsgVo.setMsgNotifyContent(msgTitle);
