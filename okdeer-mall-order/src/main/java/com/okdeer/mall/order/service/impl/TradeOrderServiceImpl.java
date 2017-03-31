@@ -7275,6 +7275,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					|| ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES.equals(activityType)) {
 				// 满减活动
 				ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(activityId);
+				logger.info("activityDiscount.getName()"+ activityDiscount.getName());
 				if (activityDiscount != null) {
 					activityName = activityDiscount.getName();
 				}
