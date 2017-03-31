@@ -7238,6 +7238,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						: (ActivitySourceEnum) activityMap.get("activitySource");
 				tradeOrderVo.setActivityName(activityName);
 				tradeOrderVo.setActivitySource(activitySource);
+				logger.info(tradeOrderVo.getActivityType() + " ==== " +tradeOrderVo.getActivityId());
+				logger.info("activityName ==== " +activityName);
 			}
 		}
 		return new PageUtils<TradeOrderDetailBo>(list);
