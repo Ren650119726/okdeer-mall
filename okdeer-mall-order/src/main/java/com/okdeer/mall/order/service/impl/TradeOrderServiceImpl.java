@@ -7252,6 +7252,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @param activityId 活动ID
 	 */
 	private Map<String, Object> getActivity(int activityType, String activityId) {
+		logger.info("activityType活动"+activityType+"activityId:"+activityId);
 		Map<String, Object> map = new HashMap<String, Object>();
 		// 活动名称
 		String activityName = null;
@@ -7276,6 +7277,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 满减活动
 				ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(activityId);
 				logger.info("activityDiscount.getName()"+ activityDiscount.getName());
+				logger.info("activityDiscount活动"+activityDiscount);
 				if (activityDiscount != null) {
 					activityName = activityDiscount.getName();
 				}
