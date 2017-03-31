@@ -532,7 +532,12 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	    
 	    if (sysUserList != null && !sysUserList.isEmpty()) {
 	        sysUserList.forEach(sysUser -> {
-	          //查看当前登录的设备APP版本
+	            WhetherEnum whetherEnum = sysUser.getIsAccept();
+	            if(whetherEnum == WhetherEnum.not) {
+	                return;
+	            }
+	            
+	            //查看当前登录的设备APP版本
                 List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null, null);
 	            if(sysUserLoginLogs != null && !sysUserLoginLogs.isEmpty()) {
 	                sysUserLoginLogs.forEach(sysUserLoginLog -> {
@@ -764,7 +769,6 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
                 break;
         }
         
-        pushMsgVo.setMsgTypeCustom(msgTypeCustom);
         pushMsgVo.setMsgTypeCustom(msgTypeCustom);
         pushMsgVo.setMsgDetailLinkUrl(linkUrl);
         pushMsgVo.setMsgNotifyContent(msgTitle);
