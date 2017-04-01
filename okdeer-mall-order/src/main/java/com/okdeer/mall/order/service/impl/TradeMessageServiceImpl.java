@@ -537,6 +537,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	            //数据库设计字段备注： '是否接收消息:(0:是,1:否)'
 	            //枚举值： 0 not("否") 1 whether("是")
 	            //为了兼容老版本只能这样进行修改
+	            //修改人：zhaoqc
 	            if(whetherEnum == WhetherEnum.whether) {
 	                return;
 	            }
