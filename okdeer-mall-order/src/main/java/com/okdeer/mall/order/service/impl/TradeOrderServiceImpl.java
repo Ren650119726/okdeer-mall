@@ -7238,8 +7238,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						: (ActivitySourceEnum) activityMap.get("activitySource");
 				tradeOrderVo.setActivityName(activityName);
 				tradeOrderVo.setActivitySource(activitySource);
-				logger.info(tradeOrderVo.getActivityType() + " ==== " +tradeOrderVo.getActivityId());
-				logger.info("activityName ==== " +activityName);
 			}
 		}
 		return new PageUtils<TradeOrderDetailBo>(list);
@@ -7252,7 +7250,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @param activityId 活动ID
 	 */
 	private Map<String, Object> getActivity(int activityType, String activityId) {
-		logger.info("activityType活动"+activityType+"activityId:"+activityId);
 		Map<String, Object> map = new HashMap<String, Object>();
 		// 活动名称
 		String activityName = null;
@@ -7261,7 +7258,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 如果有活动ID，说明该订单参与了活动
 		if (StringUtils.isNotBlank(activityId) && !"0".equals(activityId)) {
 			// 代金券活动
-			if (ActivityTypeEnum.VONCHER.equals(activityType)) {
+			if (ActivityTypeEnum.VONCHER.ordinal() == activityType) {
 				ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(activityId);
 				if (activityCollectCoupons != null) {
 					activityName = activityCollectCoupons.getName();
@@ -7272,12 +7269,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						activitySource = ActivitySourceEnum.AGENT;
 					}
 				}
-			} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(activityType)
-					|| ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES.equals(activityType)) {
+			} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.ordinal() == activityType
+					|| ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES.ordinal() == activityType) {
 				// 满减活动
 				ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(activityId);
+<<<<<<< HEAD
 				logger.info("activityDiscount.getName()"+ activityDiscount.getName());
 				logger.info("activityDiscount活动"+activityDiscount);
+=======
+>>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 				if (activityDiscount != null) {
 					activityName = activityDiscount.getName();
 				}
