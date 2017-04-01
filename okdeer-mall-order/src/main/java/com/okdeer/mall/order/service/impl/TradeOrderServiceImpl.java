@@ -7273,11 +7273,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					|| ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES.ordinal() == activityType) {
 				// 满减活动
 				ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(activityId);
-<<<<<<< HEAD
-				logger.info("activityDiscount.getName()"+ activityDiscount.getName());
-				logger.info("activityDiscount活动"+activityDiscount);
-=======
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 				if (activityDiscount != null) {
 					activityName = activityDiscount.getName();
 				}
