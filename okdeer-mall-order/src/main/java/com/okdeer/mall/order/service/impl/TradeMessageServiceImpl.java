@@ -8,6 +8,7 @@
 
 package com.okdeer.mall.order.service.impl;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -53,6 +54,7 @@ import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.kafka.producer.KafkaProducer;
 import com.okdeer.mall.common.enums.IsRead;
 import com.okdeer.mall.common.enums.MsgType;
@@ -109,6 +111,8 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 
 	/**短信发送成功码*/
 	private static final String SUCCESS_STATUS = "0";
+	
+	private static final String TOPIC = "topic_mcm_msg";
 
 	/**
 	 * 消息系统CODE
@@ -566,7 +570,9 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType, 1);
 		    pushOriMsgVo.setUserList(oriMsgUserList);
 		    
-		    this.kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushOriMsgVo));
+		    //this.kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushOriMsgVo));
+			MQMessage anMessage = new MQMessage(TOPIC, (Serializable)JsonMapper.nonDefaultMapper().toJson(pushOriMsgVo));
+			rocketMQProducer.sendMessage(anMessage);
 		}
 		
 		if(linkedMsgUserList != null && !linkedMsgUserList.isEmpty()) {
