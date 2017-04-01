@@ -1157,9 +1157,9 @@
 	<select id="searchOrderRefundForSELLERAPP" parameterType="map"
 		resultMap="TradeOrderRefundsVo2">
 		SELECT o.id AS order_id,o.order_no,o.create_time as
-		order_create_time,o.user_phone,o.actual_amount,o.fare,o.pay_way,o.payment_time,pay.id
+		order_create_time,o.user_phone,o.actual_amount,o.fare,o.pay_way,o.payment_time,o.user_phone,pay.id
 		as pay_id,pay.pay_type,pay.pay_time,
-		tr.id,tr.refund_no,tr.payment_method,su.login_name,su.user_name,tr.operator,tr.create_time,tr.update_time,
+		tr.id,tr.refund_no,tr.payment_method,su.login_name,su.user_name,tr.operator,tr.create_time,tr.update_time,tr.store_id,
 		tr.total_amount,tr.refunds_status,tr.total_income,o.order_resource,o.activity_type,address.province_name,address.city_name,address.area_name,address.area_ext
 		FROM trade_order_refunds AS tr
 		LEFT JOIN sys_user su ON su.id=tr.operator
@@ -1168,6 +1168,15 @@
 		LEFT JOIN member_consignee_address address ON o.pick_up_id = address.id
 		WHERE 1=1
 		<include refid="refund_condition" />
+		<!-- 查询条件为 商品名称、订单号码、手机号码 -->
+		<if test="searchCondition != null and searchCondition != ''">
+			AND (
+			tr.refund_no LIKE CONCAT('%',#{searchCondition},'%')
+			OR o.user_phone LIKE CONCAT('%',#{searchCondition},'%')
+			OR EXISTS(SELECT 1 FROM trade_order_refunds_item i WHERE tr.id = i.refunds_id AND
+			i.sku_name like CONCAT('%',#{searchCondition,jdbcType=VARCHAR},'%'))
+			)
+		</if>
 	    <!-- 根据tabs不同按时间排序 -->
 		<if test="sortType != null and sortType != ''">
 			<!-- 顺序 -->
