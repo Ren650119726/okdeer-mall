@@ -751,7 +751,7 @@
 				ORDER BY tr.update_time ASC
 			</if>
 			<if test="tabs == 'done'">
-				ORDER BY tr.received_time ASC
+				ORDER BY tr.update_time ASC
 			</if>
 			<!-- 服务店待接单 -->
 			<if test="tabs == 'wait_receive_order'">
@@ -767,7 +767,7 @@
 			</if>
 			<!-- 已完成 -->
 			<if test="tabs == 'has_been_signed'">
-				ORDER BY tr.received_time ASC
+				ORDER BY tr.update_time ASC
 			</if>
 		</if>
 	</sql>
@@ -787,7 +787,7 @@
 				ORDER BY tr.update_time DESC
 			</if>
 			<if test="tabs == 'done'">
-				ORDER BY tr.received_time DESC
+				ORDER BY tr.update_time DESC
 			</if>
 			<!-- 服务店待接单 -->
 			<if test="tabs == 'wait_receive_order'">
@@ -803,7 +803,7 @@
 			</if>
 			<!-- 已完成 -->
 			<if test="tabs == 'has_been_signed'">
-				ORDER BY tr.received_time DESC
+				ORDER BY tr.update_time DESC
 			</if>
 		</if>
 	</sql>
