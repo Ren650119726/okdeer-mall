@@ -5834,12 +5834,8 @@
 			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
 		</if>
 		<if test="storeName != null and storeName != ''">
-			AND ((trade.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR},
-			'%') AND (trade.type = 3 OR trade.type = 4))
-			OR
-			(store.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR}, '%') AND trade.type
-			!= 3 AND trade.type != 4))
-
+			AND (store.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR},'%') 
+				AND (trade.type = 3 OR trade.type = 4))
 		</if>
 		<if test="userPhone != null and userPhone != ''">
 			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
