@@ -283,7 +283,7 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		// 服务时间年月
 		String servMonth = servTime.substring(0,4) + servTime.substring(5,7);
 		// 服务时间天数
-		int servDay = Integer.parseInt(servTime.substring(8,9));
+		int servDay = Integer.parseInt(servTime.substring(8,10));
 		String[] invalidDateArr = servExt.getInvalidDate().split(",");
 		String invalidMonth = null;
 		for (String invalidTime : invalidDateArr) {

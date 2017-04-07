@@ -8,9 +8,9 @@
 
 package com.okdeer.mall.order.service.impl;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -53,7 +53,9 @@ import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.kafka.producer.KafkaProducer;
+import com.okdeer.common.utils.VersionUtils;
 import com.okdeer.mall.common.enums.IsRead;
 import com.okdeer.mall.common.enums.MsgType;
 import com.okdeer.mall.order.constant.text.OrderMsgConstant;
@@ -109,6 +111,8 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 
 	/**短信发送成功码*/
 	private static final String SUCCESS_STATUS = "0";
+	
+	private static final String TOPIC = "topic_mcm_msg";
 
 	/**
 	 * 消息系统CODE
@@ -523,7 +527,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		//查询店铺的用户信息
 	    List<SysUser> sysUserList = sysUserMapper.selectUserByStoreId(sendMsgParamVo.getStoreId());
 	    //版本号比较器类
-	    CompareVersion compare = new CompareVersion();	   
+	    VersionUtils compare = new VersionUtils();	   
 	    
 	    //内容消息推送用户列表
 	    List<PushUserVo> oriMsgUserList = new ArrayList<PushUserVo>();
@@ -566,7 +570,9 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType, 1);
 		    pushOriMsgVo.setUserList(oriMsgUserList);
 		    
-		    this.kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushOriMsgVo));
+		    //this.kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushOriMsgVo));
+			MQMessage anMessage = new MQMessage(TOPIC, (Serializable)JsonMapper.nonDefaultMapper().toJson(pushOriMsgVo));
+			rocketMQProducer.sendMessage(anMessage);
 		}
 		
 		if(linkedMsgUserList != null && !linkedMsgUserList.isEmpty()) {
@@ -783,9 +789,9 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         pushMsgVo.setServiceFkId(serviceFkId);
         if(msgContentType == 0) {
             pushMsgVo.setMsgDetailLinkUrl(linkUrl);
-        } else if(msgContentType == 1) {
+        } /*else if(msgContentType == 1) {
             pushMsgVo.setMsgDetailContent(serviceFkId);
-        }
+        }*/
         pushMsgVo.setMsgNotifyContent(msgTitle);
         pushMsgVo.setMsgDetailType(msgContentType);
         
@@ -1263,29 +1269,4 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		}
 		
 	}
-}
-
-/**
- * 版本号比较器类
- * 比较版本号的大小
- * 版本号的格式为三段纯数字格式比如1.0.1
- * 
- * @author zhaoqc
- */
-class CompareVersion implements Comparator<String> {
-    @Override
-    public int compare(String v1, String v2) {
-        String[] v1Segments = v1.split("\\.");
-        String[] v2Segments = v2.split("\\.");
-        
-        for(int i = 0; i <= 2 ; i++) {
-            Integer seg1 = Integer.parseInt(v1Segments[i]);
-            Integer seg2 = Integer.parseInt(v2Segments[i]);
-            
-            if(seg1.compareTo(seg2) != 0) {
-                return seg1.compareTo(seg2);
-            }
-        }
-        return 0;
-    }
 }

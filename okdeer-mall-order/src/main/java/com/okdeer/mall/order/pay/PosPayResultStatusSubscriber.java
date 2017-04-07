@@ -91,37 +91,38 @@ public class PosPayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			if (0 == Integer.valueOf(map.get("payStatus").toString())) {
 				// 修改订单状态
 				TradeOrder editOrder = tradeOrderService.getByTradeNum(map.get("tradeNum").toString());
-				editOrder.setId(editOrder.getId());
-				editOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
-				editOrder.setUpdateTime(new Date());
-				//add by zhangkn 2016-12-12
-				editOrder.setDisabled(Disabled.valid);
-				//end by zhangkn 2016-12-12
-				tradeOrderService.updateByPrimaryKeySelective(editOrder);
+				if (editOrder != null) {
+					editOrder.setId(editOrder.getId());
+					editOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
+					editOrder.setUpdateTime(new Date());
+					// add by zhangkn 2016-12-12
+					editOrder.setDisabled(Disabled.valid);
+					// end by zhangkn 2016-12-12
+					tradeOrderService.updateByPrimaryKeySelective(editOrder);
 
-				// pay表插入数据
-				TradeOrderPay oldOrderPay = tradeOrderPayService.selectByOrderId(editOrder.getId());
-				if (oldOrderPay == null) {
-					TradeOrderPay orderPay = new TradeOrderPay();
-					orderPay.setId(UuidUtils.getUuid());
-					orderPay.setCreateTime(new Date());
-					orderPay.setOrderId(editOrder.getId());
-					orderPay.setPayAmount(editOrder.getIncome());
-					orderPay.setPayTime(new Date());
+					// pay表插入数据
+					TradeOrderPay oldOrderPay = tradeOrderPayService.selectByOrderId(editOrder.getId());
+					if (oldOrderPay == null) {
+						TradeOrderPay orderPay = new TradeOrderPay();
+						orderPay.setId(UuidUtils.getUuid());
+						orderPay.setCreateTime(new Date());
+						orderPay.setOrderId(editOrder.getId());
+						orderPay.setPayAmount(editOrder.getIncome());
+						orderPay.setPayTime(new Date());
 
-					String payWay = map.get("payWay").toString();
-					// 0:云钱包,1:支付宝支付,2:微信支付,3:京东支付,4:现金支付,5:云上城垫付,6:网银支付,7:银行转账
-					if (payWay.equals("1")) {
-						orderPay.setPayType(PayTypeEnum.ALIPAY);
-					} else if (payWay.equals("2")) {
-						orderPay.setPayType(PayTypeEnum.WXPAY);
+						String payWay = map.get("payWay").toString();
+						// 0:云钱包,1:支付宝支付,2:微信支付,3:京东支付,4:现金支付,5:云上城垫付,6:网银支付,7:银行转账
+						if (payWay.equals("1")) {
+							orderPay.setPayType(PayTypeEnum.ALIPAY);
+						} else if (payWay.equals("2")) {
+							orderPay.setPayType(PayTypeEnum.WXPAY);
+						}
+						orderPay.setReturns(map.get("flowNo").toString());
+						tradeOrderPayService.insertSelective(orderPay);
+
+						tradeOrderCompleteProcessService.orderCompleteSyncToJxc(editOrder.getId());
 					}
-					orderPay.setReturns(map.get("flowNo").toString());
-					tradeOrderPayService.insertSelective(orderPay);
-
-					tradeOrderCompleteProcessService.orderCompleteSyncToJxc(editOrder.getId());
 				}
-
 			}
 		} catch (Exception e) {
 			logger.error("pos支付结果同步消息处理失败", e);
