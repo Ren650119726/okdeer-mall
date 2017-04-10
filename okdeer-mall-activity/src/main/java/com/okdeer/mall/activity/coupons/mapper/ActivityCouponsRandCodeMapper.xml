@@ -13,6 +13,7 @@
 		<result property="createTime" column="create_time" />
 		<result property="updateUserId" column="update_user_id" />
 		<result property="updateTime" column="update_time" />
+		<result property="couponsName" column="coupons_name" />
 	</resultMap>
 
 	<!-- 查询公共列 -->
@@ -179,6 +180,14 @@
 		<if test="randCode != null and randCode != ''">
 			and	rand_code = #{randCode, jdbcType=VARCHAR}
 		</if>
+	</select>
+	
+	<select id="findByCouponsId" parameterType="string" resultMap="activityCouponsRandCodeMap">
+		SELECT coupons.name as coupons_name,rand.rand_code 
+		FROM activity_coupons coupons
+		LEFT JOIN activity_coupons_rand_code rand
+		ON rand.coupons_id = coupons.id
+		WHERE coupons.id = #{couponsId, jdbcType=VARCHAR}
 	</select>
 </mapper>
 

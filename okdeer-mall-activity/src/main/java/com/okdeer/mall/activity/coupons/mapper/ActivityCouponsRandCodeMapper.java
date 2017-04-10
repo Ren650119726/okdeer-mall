@@ -44,4 +44,13 @@ public interface ActivityCouponsRandCodeMapper extends IBaseCrudMapper {
 	 * @date 2016年10月25日
 	 */
 	ActivityCouponsRandCode selectByRandCode(@Param("randCode") String randCode);
+	
+	/**
+	 * @Description: 根据代金券id获取代金券随机码
+	 * @param couponsId 代金券id
+	 * @return 集合
+	 * @author zhulq
+	 * @date 2017年4月6日
+	 */
+	List<ActivityCouponsRandCode> findByCouponsId(@Param("couponsId") String couponsId);
 }
