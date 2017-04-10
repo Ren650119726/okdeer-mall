@@ -70,7 +70,7 @@
 
 	<insert id="insertBatch" parameterType="java.util.List">
 		INSERT INTO column_home_icon_version
-			(id, icon_id, version)
+			(id, icon_id, version) VALUES
 		<foreach collection="list" index="index" item="item" separator=",">
 			(#{item.id, jdbcType=VARCHAR}, #{item.iconId, jdbcType=VARCHAR},
 			 #{item.version, jdbcType=VARCHAR})
