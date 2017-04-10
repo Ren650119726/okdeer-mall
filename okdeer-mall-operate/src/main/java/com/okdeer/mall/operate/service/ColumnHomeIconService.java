@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.common.utils.BaseResult;
+import com.okdeer.mall.operate.dto.ColumnHomeIconVersionDto;
 import com.okdeer.mall.operate.dto.HomeIconParamDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIcon;
 import com.okdeer.mall.operate.entity.ColumnSelectArea;
@@ -43,11 +44,23 @@ public interface ColumnHomeIconService extends IBaseService {
 	 * @param entity 首页ICON信息
 	 * @param areaList 地区集合信息
 	 * @param goodsList 推荐商品信息
+	 * @param versions 版本号信息
 	 * @return BaseResult  
 	 * @throws Exception 
 	 * @author tangzj02
 	 * @date 2017年1月4日
 	 */
-	BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> goodsIds) throws Exception;
+	BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> goodsIds, 
+	        List<String> versions) throws Exception;
 
+
+    /**
+     * @Description: 根据IconId查找支持的版本列表
+     * @param iconId
+     * @throws Exception   
+     * @return ColumnHomeIconVersionDto  
+     * @author zhaoqc
+     * @date 2017年04月07日
+     */
+    List<ColumnHomeIconVersionDto> findIconVersionByIconId(String iconId) throws Exception;
 }
