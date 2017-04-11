@@ -173,7 +173,7 @@
 		SELECT ac.id, ac.name, acc.name as activity_name, ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, ac.used_num, 
 		       ac.remain_num, ac.arrive_limit, ac.valid_day, ac.every_limit, ac.is_cash_delivery, ac.is_category_limit, 
 		       ac.code,ac.exchange_code, ac.area_type, ac.create_user_id, ac.create_time, ac.update_user_id, ac.update_time, 
-		       ac.disabled ,ac.type,ac.is_category
+		       ac.disabled ,ac.type,ac.is_category,ac.is_rand_code
 		FROM activity_coupons ac
         left join activity_collect_coupons acc on ac.activity_id = acc.id
         WHERE 1=1
