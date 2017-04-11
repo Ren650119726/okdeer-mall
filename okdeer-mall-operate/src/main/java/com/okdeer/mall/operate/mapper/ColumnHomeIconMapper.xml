@@ -31,60 +31,70 @@
     
     <select id="findList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.operate.dto.HomeIconParamDto">
         SELECT 
-        <include refid="Base_Column_List" />
-        FROM column_home_icon
-        WHERE disabled = 0
+        c.id, c.name, c.place, c.icon_url, c.banner_url, c.task_content, c.task_type, c.task_scope, 
+        c.create_user_id, c.create_time, c.update_user_id, c.update_time, c.disabled
+        
+        FROM column_home_icon c
+        <if test="versions != null and versions.size() > 0">
+        	LEFT JOIN column_home_icon_version v on c.id = v.icon_id
+        </if>
+        WHERE c.disabled = 0
         <if test="excludeId != null and excludeId != ''">
-			AND id != #{excludeId}
+			AND c.id != #{excludeId}
 		</if>
         <if test="name != null and name != ''">
-			AND name LIKE CONCAT('%',#{name},'%')
+			AND c.name LIKE CONCAT('%',#{name},'%')
 		</if>
 		<if test="null != taskType">
-			AND task_type = #{taskType}
+			AND c.task_type = #{taskType}
 		</if>
 		<if test="null != taskScope">
-			AND task_scope = #{taskScope}
+			AND c.task_scope = #{taskScope}
 		</if>
 		<if test="null != place">
-			AND place = #{place}
+			AND c.place = #{place}
 		</if>
 		<if test="null != addStartTime">
-			AND create_time &gt;= #{addStartTime}
+			AND c.create_time &gt;= #{addStartTime}
 		</if>
 		<if test="null != addEndTime">
-			AND create_time &lt;= #{addEndTime}
+			AND c.create_time &lt;= #{addEndTime}
 		</if>
 		<if test="null != updateStartTime">
-			AND update_time &gt;= #{updateStartTime}
+			AND c.update_time &gt;= #{updateStartTime}
 		</if>
 		<if test="null != updateEndTime">
-			AND update_time &lt;= #{updateEndTime}
+			AND c.update_time &lt;= #{updateEndTime}
 		</if>
 		<choose>  
             <when test="isContainNationwide == true and ids != null and ids.size() > 0">  
                AND (
-               		task_scope = 0  
-               		OR id IN
+               		c.task_scope = 0  
+               		OR c.id IN
 					<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
 						#{item}
 					</foreach>
                )
             </when>
             <when test="isContainNationwide == true">  
-               AND task_scope = 0
+               AND c.task_scope = 0
             </when>   
             <otherwise>  
                <if test="ids != null and ids.size() > 0">
-					AND id IN
+					AND c.id IN
 					<foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
 						#{item}
 					</foreach>
 				</if>
             </otherwise>  
-        </choose>  
-		
-		ORDER BY update_time DESC
+        </choose> 
+        <if test="versions != null and versions.size() > 0">
+        	AND v.version IN
+        	<foreach collection="versions" index="index" item="item" open="(" separator="," close=")">
+        		#{item}
+        	</foreach>
+        </if> 
+		ORDER BY c.update_time DESC
     </select>
 
     <insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnHomeIcon" >
