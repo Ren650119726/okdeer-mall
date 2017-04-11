@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.alibaba.druid.VERSION;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.common.utils.BaseResult;
 import com.okdeer.mall.Application;
@@ -87,7 +88,11 @@ public class ColumnHomeIconServiceTest {
 				goodsList.add(i + "");
 			}
 
-			BaseResult result = homeIconService.save(entity, areaList, goodsList);
+			//关联版本号
+			List<String> versions = new ArrayList<>();
+			versions.add("V2.2");
+			
+			BaseResult result = homeIconService.save(entity, areaList, goodsList, versions);
 			log.info("测试 保存首页ICON ：{}", result);
 			Assert.assertTrue("测试 保存首页ICON失败", result.getStatus().equals("0"));
 		} catch (Exception e) {
