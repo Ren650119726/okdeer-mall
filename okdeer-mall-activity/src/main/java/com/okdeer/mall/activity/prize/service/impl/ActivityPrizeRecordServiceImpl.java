@@ -12,10 +12,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo;
 import com.okdeer.mall.activity.prize.mapper.ActivityPrizeRecordMapper;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 
@@ -80,13 +83,21 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 		ActivityPrizeRecord rec = new ActivityPrizeRecord();
 		rec.setId(UuidUtils.getUuid());
 		rec.setPrizeId(prizeId);
-		rec.setCollectId(collectId);
+		rec.setActivityCollectId(collectId);
 		rec.setUserId(userId);
-		rec.setActivityId(activityId);
+		rec.setLuckDrawId(activityId);
 		rec.setCreateTime(new Date());
 		rec.setIsOffer(0);
 		rec.setDisabled(0);
 		return activityPrizeRecordMapper.add(rec);
+	}
+
+	@Override
+	public PageUtils<ActivityPrizeRecordVo> findPrizeRecordList(ActivityPrizeRecordVo activityPrizeRecordVo,
+			int pageNumber, int pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true);
+		List<ActivityPrizeRecordVo> result = activityPrizeRecordMapper.findPrizeRecordList(activityPrizeRecordVo);
+		return new PageUtils<ActivityPrizeRecordVo>(result);
 	}
 
 }

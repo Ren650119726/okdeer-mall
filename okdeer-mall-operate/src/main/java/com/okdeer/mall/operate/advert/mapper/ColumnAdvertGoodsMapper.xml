@@ -3,21 +3,23 @@
 <mapper namespace="com.okdeer.mall.operate.advert.mapper.ColumnAdvertGoodsMapper" >
     <resultMap id="BaseResultMap" type="com.okdeer.mall.advert.entity.ColumnAdvertGoods" >
         <id column="id" property="id" jdbcType="VARCHAR" />
-        <result column="advert_id" property="advertId" jdbcType="VARCHAR" />
+        <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
         <result column="goods_id" property="goodsId" jdbcType="VARCHAR" />
+        <result column="model_id" property="modelId" jdbcType="VARCHAR" />
+        <result column="sort" property="sort" jdbcType="Integer" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, advert_id, goods_id, create_time
+        id, activity_advert_id, goods_id, model_id, create_time, sort
     </sql>
 	
 	<select id="findByAdvertId" resultMap="BaseResultMap" parameterType="java.lang.String" >
-        select s.id, s.advert_id, if(k.id is NULL,s.goods_id,k.id) goods_id, s.create_time
+        select s.id, s.activity_advert_id, model_id, if(k.id is NULL,s.goods_id,k.id) goods_id, s.create_time
         from column_advert_goods s
 			 LEFT JOIN goods_store_sku_service gs on s.goods_id = gs.product_no
 			 LEFT JOIN goods_store_sku k on k.id = gs.store_sku_id
-        where advert_id = #{advertId,jdbcType=VARCHAR}
+        where activity_advert_id = #{advertId,jdbcType=VARCHAR}
         order by create_time 
     </select>
    
@@ -34,8 +36,14 @@
             <if test="id != null" >
                 id,
             </if>
-            <if test="advertId != null" >
-                advert_id,
+            <if test="activityAdvertId != null" >
+                activity_advert_id,
+            </if>
+            <if test="modelId != null" >
+                model_id,
+            </if>
+            <if test="sort != null" >
+                sort,
             </if>
             <if test="goodsId != null" >
                 goods_id,
@@ -48,8 +56,14 @@
             <if test="id != null" >
                 #{id,jdbcType=VARCHAR},
             </if>
-            <if test="advertId != null" >
-                #{advertId,jdbcType=VARCHAR},
+            <if test="activityAdvertId != null" >
+                #{activityAdvertId,jdbcType=VARCHAR},
+            </if>
+            <if test="modelId != null" >
+                #{modelId,jdbcType=VARCHAR},
+            </if>
+            <if test="sort != null" >
+                #{sort,jdbcType=INTEGER},
             </if>
             <if test="goodsId != null" >
                 #{goodsId,jdbcType=VARCHAR},
@@ -63,8 +77,14 @@
     <update id="update" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertGoods" >
         update column_advert_goods
         <set >
-            <if test="advertId != null" >
-                advert_id = #{advertId,jdbcType=VARCHAR},
+            <if test="activityAdvertId != null" >
+                activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR},
+            </if>
+            <if test="modelId != null" >
+                model_id = #{modelId,jdbcType=VARCHAR},
+            </if>
+            <if test="sort != null" >
+                sort = #{sort,jdbcType=INTEGER},
             </if>
             <if test="goodsId != null" >
                 goods_id = #{goodsId,jdbcType=VARCHAR},

@@ -180,7 +180,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  					defaultNo = i;
  				}
  				ids[i] = prizeWeight.getId();
- 				couponIds[i] = prizeWeight.getCollectId();
+ 				couponIds[i] = prizeWeight.getActivityCollectId();
  				prizeNameArr[i] = prizeWeight.getPrizeName();
  			}
  			//将 无奖品数量的奖项概率和 加到默认奖项 概率中

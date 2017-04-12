@@ -10,8 +10,11 @@ import java.util.List;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeightVo;
 
 import net.sf.json.JSONObject;
 
@@ -45,4 +48,16 @@ public interface ActivityPrizeWeightService extends IBaseService {
 	 * @date 2016年12月14日
 	 */
 	public JSONObject updatePrizesNumber(String id);
+
+	/**
+	 * @Description: TODO
+	 * @param activityPrizeRecordVo
+	 * @param pageNumber
+	 * @param pageSize
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月11日
+	 */
+	public PageUtils<ActivityPrizeWeightVo> findPrizeWeightList(ActivityPrizeWeightVo activityPrizeWeightVo,
+			int pageNumber, int pageSize);
 }

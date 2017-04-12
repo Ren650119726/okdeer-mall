@@ -14,9 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeightVo;
 import com.okdeer.mall.activity.prize.mapper.ActivityPrizeWeightMapper;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeWeightService;
 
@@ -80,6 +83,14 @@ public class ActivityPrizeWeightServiceImpl extends BaseServiceImpl implements A
 			map.put("code", 101);
 		}
 		return JSONObject.fromObject(map);
+	}
+
+	@Override
+	public PageUtils<ActivityPrizeWeightVo> findPrizeWeightList(ActivityPrizeWeightVo activityPrizeWeightVo,
+			int pageNumber, int pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true);
+		List<ActivityPrizeWeightVo> result = activityPrizeWeightMapper.findPrizeRecordList(activityPrizeWeightVo);
+		return new PageUtils<ActivityPrizeWeightVo>(result);
 	}
 	
 	

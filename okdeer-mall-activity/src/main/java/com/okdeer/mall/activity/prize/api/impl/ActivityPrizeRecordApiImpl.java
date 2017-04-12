@@ -11,7 +11,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordApi;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 
@@ -58,6 +60,12 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 	@Override
 	public int findCountByPrizeId(String prizeId) {
 		return activityPrizeRecordService.findCountByPrizeId(prizeId);
+	}
+
+	@Override
+	public PageUtils<ActivityPrizeRecordVo> findPrizeRecordList(ActivityPrizeRecordVo activityPrizeRecordVo,
+			int pageNumber, int pageSize) {
+		return activityPrizeRecordService.findPrizeRecordList(activityPrizeRecordVo, pageNumber, pageSize);
 	}
 
 

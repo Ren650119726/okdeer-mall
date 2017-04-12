@@ -3,7 +3,7 @@
 <mapper namespace="com.okdeer.mall.activity.prize.mapper.ActivityPrizeWeightMapper" >
     <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight" >
         <id column="id" property="id" jdbcType="VARCHAR" />
-        <result column="collect_id" property="collectId" jdbcType="VARCHAR" />
+        <result column="activity_collect_id" property="activityCollectId" jdbcType="VARCHAR" />
         <result column="prize_name" property="prizeName" jdbcType="VARCHAR" />
         <result column="prize_number" property="prizeNumber" jdbcType="INTEGER" />
         <result column="weight" property="weight" jdbcType="INTEGER" />
@@ -11,23 +11,38 @@
         <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
-        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="luck_draw_id" property="luckDrawId" jdbcType="VARCHAR" />
         <result column="order_no" property="orderNo" jdbcType="INTEGER" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
         <result column="disabled" property="disabled" jdbcType="INTEGER" />
         <result column="is_default_weight" property="isDefaultWeight" javaType="com.okdeer.base.common.enums.WhetherEnum" jdbcType="TINYINT"/>
     </resultMap>
-
+ 	<resultMap id="prizeRecordList" type="com.okdeer.mall.activity.prize.entity.ActivityPrizeWeightVo" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_collect_id" property="activityCollectId" jdbcType="VARCHAR" />
+        <result column="prize_name" property="prizeName" jdbcType="VARCHAR" />
+        <result column="prize_number" property="prizeNumber" jdbcType="INTEGER" />
+        <result column="weight" property="weight" jdbcType="INTEGER" />
+        <result column="weight_deno" property="weightDeno" jdbcType="INTEGER" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="luck_draw_id" property="luckDrawId" jdbcType="VARCHAR" />
+        <result column="order_no" property="orderNo" jdbcType="INTEGER" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="disabled" property="disabled" jdbcType="INTEGER" />
+        <result column="is_default_weight" property="isDefaultWeight" javaType="com.okdeer.base.common.enums.WhetherEnum" jdbcType="TINYINT"/>
+    </resultMap>
     <sql id="Base_Column_List" >
-        id, prize_name, weight, weight_deno,prize_number,collect_id, create_user_id, create_time,
-        update_user_id,activity_id,order_no, update_time, disabled,is_default_weight
+        id, prize_name, weight, weight_deno,prize_number,activity_collect_id, create_user_id, create_time,
+        update_user_id,luck_draw_id,order_no, update_time, disabled,is_default_weight
     </sql>
     <!-- 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 -->
 	<select id="findPrizesByactivityId" resultMap="BaseResultMap">
         select 
         <include refid="Base_Column_List" />
         from activity_prize_weight
-        where disabled=0 and activity_id = #{activityId,jdbcType=VARCHAR}
+        where disabled=0 and luck_draw_id = #{activityId,jdbcType=VARCHAR}
         ORDER BY order_no
     </select>
     
@@ -65,8 +80,8 @@
             <if test="updateUserId != null" >
                 update_user_id,
             </if>
-            <if test="activityId != null" >
-                activity_id,
+            <if test="luckDrawId != null" >
+                luck_draw_id,
             </if>
             <if test="orderNo != null" >
                 order_no,
@@ -168,5 +183,13 @@
         delete from activity_prize_weight
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-
+	<!-- begin xuzq 20170411 v2.2 获取奖品列表-->
+	<select id="findPrizeRecordList" resultMap="prizeRecordList" parameterType="com.okdeer.mall.activity.prize.entity.ActivityPrizeWeightVo">
+	        select 
+	        <include refid="Base_Column_List" />
+	        from activity_prize_weight
+	        where disabled=0 and luck_draw_id = #{activityId,jdbcType=VARCHAR}
+	        ORDER BY order_no
+	    </select>
+	<!-- end xuzq 20170411 v2.2 获取奖品列表  -->
 </mapper>
