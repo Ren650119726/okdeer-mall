@@ -57,6 +57,7 @@ import com.okdeer.mall.activity.coupons.vo.AddressCityVo;
 import com.okdeer.mall.activity.coupons.vo.AreaResponseVo;
 import com.okdeer.mall.common.entity.AreaScTreeVo;
 import com.okdeer.mall.common.enums.AreaType;
+import com.okdeer.mall.common.enums.AuditStatusEnum;
 import com.okdeer.mall.common.enums.DistrictType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 
@@ -457,6 +458,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 							activityCouponsArea.setCouponsAreaType(DistrictType.city);
 							Map<String, Object> params = new HashMap<>();
 							params.put("disabled", Disabled.valid);
+							params.put("auditStatus", AuditStatusEnum.pass_verify);
 							params.put("cityId", areas[0]);
 							// 对应枚举 CouponsType 0：便利店和服务店，1：便利店 2 服务店 3 充值
 							if (coupons.getType() == 1) {
@@ -472,6 +474,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 							activityCouponsArea.setCouponsAreaType(DistrictType.province);
 							Map<String, Object> params = new HashMap<>();
 							params.put("disabled", Disabled.valid);
+							params.put("auditStatus", AuditStatusEnum.pass_verify);
 							params.put("provinceId", areas[0]);
 							// 对应枚举 CouponsType 0：便利店和服务店，1：便利店 2 服务店 3 充值
 							if (coupons.getType() == 1) {
