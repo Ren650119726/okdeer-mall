@@ -6,7 +6,9 @@
  */    
 package com.okdeer.mall.activity.prize.service;
 
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.activity.prize.entity.ActivityDrawRecordVo;
 
 /**
  * ClassName: ActivityDrawRecordService 
@@ -38,4 +40,5 @@ public interface ActivityDrawRecordService extends IBaseService {
 	 * @date 2016年12月14日
 	 */
 	public int addDrawRecord(String userId,String activityId);
+
 }

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeightVo;
 /**
  * 
  * ClassName: ActivityPrizeWeightMapper 
@@ -44,4 +45,13 @@ public interface ActivityPrizeWeightMapper extends IBaseMapper {
 	 */
 	@Transactional(rollbackFor = Exception.class)
 	public int updatePrizesNumber(String id);
+
+	/**
+	 * @Description: TODO
+	 * @param activityPrizeWeightVo
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月11日
+	 */
+	public List<ActivityPrizeWeightVo> findPrizeRecordList(ActivityPrizeWeightVo activityPrizeWeightVo);
 }
