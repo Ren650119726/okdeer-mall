@@ -121,5 +121,17 @@
         delete from column_operate_fields_content
         where id = #{id,jdbcType=VARCHAR}
     </delete>
+    
+    <select id="findByFieldId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_operate_fields_content
+        where field_id = #{fieldId,jdbcType=VARCHAR}
+    </select>
 
+	<delete id="deleteByFieldId" parameterType="java.lang.String">
+		delete from column_operate_fields_content
+        where field_id = #{fieldId,jdbcType=VARCHAR}
+	</delete>
+		
 </mapper>
