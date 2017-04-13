@@ -38,6 +38,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectOrderType;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectStore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
@@ -50,6 +51,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCollectAreaMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCommunityMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectOrderTypeMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCollectStoreMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
@@ -84,6 +86,8 @@ public class ActivityCollectCouponsServiceImpl
 
 	@Autowired
 	private ActivityCollectCommunityMapper activityCollectCommunityMapper;
+	@Autowired
+	private ActivityCollectStoreMapper activityCollectStoreMapper;
 
 	@Autowired
 	private ActivityCouponsMapper activityCouponsMapper;
@@ -181,6 +185,21 @@ public class ActivityCollectCouponsServiceImpl
 					areaList.add(a);
 				}
 				activityCollectCommunityMapper.saveBatch(areaList);
+			}
+			
+			// 如果是小区
+			if (activityCollectCoupons.getAreaType() == AreaType.store.ordinal()) {
+				// 批量添加新记录
+				String[] array = areaIds.split(",");
+				List<ActivityCollectStore> storeList = new ArrayList<ActivityCollectStore>();
+				for (String str : array) {
+					ActivityCollectStore a = new ActivityCollectStore();
+					a.setId(UuidUtils.getUuid());
+					a.setCollectCouponsId(activityCollectCoupons.getId());
+					a.setStoreId(str);
+					storeList.add(a);
+				}
+				activityCollectStoreMapper.saveBatch(storeList);
 			}
 		}
 		
@@ -350,6 +369,7 @@ public class ActivityCollectCouponsServiceImpl
 		// 先删除老记录
 		activityCollectAreaMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
 		activityCollectCommunityMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
+		activityCollectStoreMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
 		
 		if(activityCollectCoupons.getType() == ActivityCollectCouponsType.OPEN_DOOR.getValue() ||
 				   activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue() ||	
@@ -387,6 +407,21 @@ public class ActivityCollectCouponsServiceImpl
 					areaList.add(a);
 				}
 				activityCollectCommunityMapper.saveBatch(areaList);
+			}
+			
+			// 如果是小区
+			if (activityCollectCoupons.getAreaType() == AreaType.store.ordinal()) {
+				// 批量添加新记录
+				String[] array = areaIds.split(",");
+				List<ActivityCollectStore> storeList = new ArrayList<ActivityCollectStore>();
+				for (String str : array) {
+					ActivityCollectStore a = new ActivityCollectStore();
+					a.setId(UuidUtils.getUuid());
+					a.setCollectCouponsId(activityCollectCoupons.getId());
+					a.setStoreId(str);
+					storeList.add(a);
+				}
+				activityCollectStoreMapper.saveBatch(storeList);
 			}
 		}
 		
@@ -433,6 +468,12 @@ public class ActivityCollectCouponsServiceImpl
 	@Transactional(readOnly = true)
 	public List<ActivityCollectCommunity> getCommunityList(String collectCouponsId) {
 		return activityCollectCommunityMapper.listByCollectCouponsId(collectCouponsId);
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public List<ActivityCollectStore> getStoreList(String collectCouponsId) {
+		return activityCollectStoreMapper.listByCollectCouponsId(collectCouponsId);
 	}
 
 	@Override
@@ -769,5 +810,4 @@ public class ActivityCollectCouponsServiceImpl
 		}
 		return null;
 	}
-	
 }
