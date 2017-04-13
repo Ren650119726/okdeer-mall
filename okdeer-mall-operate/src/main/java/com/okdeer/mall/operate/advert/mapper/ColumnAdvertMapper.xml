@@ -76,36 +76,6 @@
 			<result column="community_id" property="communityId" jdbcType="VARCHAR"/>
 		</collection>
 	</resultMap>
-	<!-- 活动商品信息  tuzhd-->
-  <resultMap id="advertGoodsMap" type="com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto" >
-    <result column="id" property="id" jdbcType="VARCHAR" />
-    <result column="name" property="name" jdbcType="VARCHAR" />
-    <result column="alias" property="alias" jdbcType="VARCHAR" />
-    <result column="tagType" property="tagType" jdbcType="INTEGER" />
-    <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
-    <result column="onlinePrice" property="onlinePrice" jdbcType="DECIMAL" />
-    <result column="marketPrice" property="marketPrice" jdbcType="DECIMAL" />
-    <result column="sellableStock" property="sellableStock" jdbcType="INTEGER" />
-    <result column="tradeMax" property="tradeMax" jdbcType="INTEGER" />
-    <result column="limitNum" property="limitNum" jdbcType="INTEGER" />
-    <result column="guaranteed" property="guaranteed" jdbcType="INTEGER" />
-    <result column="obsolete" property="obsolete" jdbcType="INTEGER" />
-    <result column="propertiesIndb" property="propertiesIndb" jdbcType="INTEGER" />
-    <result column="activityType" property="activityType" jdbcType="INTEGER" />
-    <result column="url" property="url" jdbcType="VARCHAR" />
-    <result column="updateTime" property="updateTime" jdbcType="TIMESTAMP" />
-    <result column="store_id" property="shopId" jdbcType="VARCHAR" />
-    <result column="store_name" property="shopName" jdbcType="VARCHAR" />
-    <result column="saleName" property="saleName" jdbcType="VARCHAR" />
-    <result column="h5_url" property="h5Url" jdbcType="VARCHAR" />
-    <result column="type" property="type" jdbcType="INTEGER" />
-    <result column="isPrivliege" property="isPrivliege" jdbcType="INTEGER" />
-    <result column="sale_price" property="salePrice" jdbcType="DECIMAL" />
-    <result column="limitNum" property="limitNum" jdbcType="INTEGER" />
-    <result column="lockedStock" property="lockedStock" jdbcType="INTEGER" />
-    <result column="lowPriceUpper" property="lowPriceUpper" jdbcType="INTEGER" />
-    <result column="online" property="online" jdbcType="INTEGER" />
-  </resultMap>
 		
 	<resultMap id="getAllSetAreaResult" type="HashMap">
 	    <result property="key" column="areaId" jdbcType="VARCHAR"/>
@@ -1038,48 +1008,6 @@
 	    ORDER BY ca.create_time DESC limit 1
 	</select>
 	
-	<!-- add by zhangkn -->
-	<select id="listGoodsForAdvert" resultType="map" parameterType="map">
-		select 
-		CAST(se.is_collect AS SIGNED) as addSendPrice,
-		CAST(se.is_support_purchase AS SIGNED) as canConfirmOrder,
-		se.starting_price as fullPrice,
-		sku.`name` as goodsName,
-		sku.id as goodsStoreSkuId,
-		CAST(se.is_starting_price AS SIGNED) as hasFullPrice,
-		CAST(se.is_distribution_fee AS SIGNED) as hasSendPrice,
-		CAST(se.is_shopping_cart AS SIGNED) as isSupportCart,
-		sku.market_price as marketPrice,
-		pic.url as picUrl,
-		sku.online_price as onlinePrice,
-		stock.sellable as sellable,
-		se.distribution_fee as sendPrice,
-		sku.store_id as skuStoreId,
-		CAST(sku.type AS SIGNED) as skuType,
-		service.is_shop_num as isShopNum,
-		service.shop_num as startBuyNum,
-		si.store_name as storeName,
-		sku.update_time as updateTime	,
-		css.column_server_id as serverColumnId,
-		cs .server_name as serverColumnName
-	
-		from goods_store_sku sku
-		LEFT JOIN store_info si on (sku.store_id = si.id)
-		LEFT JOIN goods_store_sku_stock stock on (sku.id = stock.store_sku_id)
-		LEFT JOIN goods_store_sku_picture pic on (sku.id = pic.store_sku_id and pic.type = 1)
-		LEFT JOIN goods_store_sku_service service on (sku.id = service.store_sku_id)
-		LEFT JOIN store_info_ext ext on (si.id = ext.store_id)
-		LEFT JOIN store_service_ext se on (si.id = se.store_id)
-		LEFT JOIN column_server_store css on (css.store_id = si.id)
-		LEFT JOIN column_server cs on (css.column_server_id = cs.id)
-		where 1 = 1 
-		<if test="goodsIdList != null">
-		 and sku.id in 
-	    <foreach collection="goodsIdList" index="index" item="item" open="(" close=")" separator=",">
-        	#{item}
-        </foreach>
-        </if>
-	</select>
 	
 	<!-- Begin 广告区域统计 added by tangy  2016-11-28 -->
 	<select id="findAdvertRestrictByArea" resultType="com.okdeer.mall.operate.entity.ColumnAdvertVersionBo" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
@@ -1242,46 +1170,4 @@
 		if(sa.type=5,1,0) isPrivliege
 	</sql>
 	
-	<!-- begin 根据广告id获取广告商品列表 xuzq01 20170208-->
-	<select id="findAdvertGoodsByAdvertId" resultMap="advertGoodsMap" parameterType="String">
-		SELECT DISTINCT
-	        <include refid="advert_goods_columns" />
-		FROM column_advert_goods s
-			INNER JOIN goods_store_sku sku on s.goods_id = sku.bar_code
-			LEFT JOIN goods_store_sku_plu plu ON plu.store_sku_id = sku.id AND plu.type = 1 AND plu.disabled = 0
-			LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
-			LEFT JOIN goods_store_sku_stock stock ON stock.`store_sku_id` = sku.`id`
-			LEFT JOIN `activity_sale` sa ON sa.`id` = sku.`activity_id` AND sa.status = 1 AND sa.disabled = 0
-			LEFT JOIN `activity_sale_goods` asg on sa.id = asg.`sale_id` AND sku.id=asg.store_sku_id
-	    WHERE sku.disabled = 0
-			AND stock.disabled = 0
-			AND sku.`status` = 1
-			AND sku.violation = 0
-			AND sku.store_id = #{storeId,jdbcType=VARCHAR}
-		  	AND s.advert_id=#{advertId,jdbcType=VARCHAR}
-			ORDER BY s.`create_time` 
-	</select>
-	<!-- end 根据广告id获取广告商品列表 xuzq01 20170208-->
-	
-	<!-- begin 根据店铺活动类型 活动商品列表 tuzhd 20170313-->
-	<select id="findGoodsByActivityType" resultMap="advertGoodsMap" >
-		SELECT DISTINCT
-	        <include refid="advert_goods_columns" />
-		FROM goods_store_sku sku 
-			INNER JOIN `activity_sale` sa ON sa.`id` = sku.`activity_id` AND sa.status = 1 AND sa.disabled = 0
-			INNER JOIN `activity_sale_goods` asg on sa.id = asg.`sale_id` AND sku.id=asg.store_sku_id
-			LEFT JOIN goods_store_sku_plu plu ON plu.store_sku_id = sku.id AND plu.type = 1 AND plu.disabled = 0
-			LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
-			LEFT JOIN goods_store_sku_stock stock ON stock.`store_sku_id` = sku.`id`
-	    WHERE sku.disabled = 0
-			AND stock.disabled = 0
-			AND sku.`status` = 1
-			AND sku.violation = 0
-			AND sku.store_id = #{storeId,jdbcType=VARCHAR}
-			<if test="saleType != null">
-				AND sa.type = #{saleType,jdbcType=INTEGER}
-			</if>
-			ORDER BY asg.sort DESC 
-	</select>
-	<!-- end 根据店铺活动类型 活动商品列表 20170313-->
 </mapper>
