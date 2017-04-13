@@ -9,6 +9,7 @@ package com.okdeer.mall.operate.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,15 +20,18 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.common.utils.BaseResult;
+import com.okdeer.mall.operate.dto.ColumnHomeIconVersionDto;
 import com.okdeer.mall.operate.dto.HomeIconParamDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIcon;
 import com.okdeer.mall.operate.entity.ColumnHomeIconGoods;
+import com.okdeer.mall.operate.entity.ColumnHomeIconVersion;
 import com.okdeer.mall.operate.entity.ColumnSelectArea;
 import com.okdeer.mall.operate.enums.ColumnType;
 import com.okdeer.mall.operate.enums.HomeIconPlace;
 import com.okdeer.mall.operate.enums.HomeIconTaskType;
 import com.okdeer.mall.operate.enums.SelectAreaType;
 import com.okdeer.mall.operate.mapper.ColumnHomeIconMapper;
+import com.okdeer.mall.operate.mapper.ColumnHomeIconVersionMapper;
 import com.okdeer.mall.operate.service.ColumnHomeIconGoodsService;
 import com.okdeer.mall.operate.service.ColumnHomeIconService;
 import com.okdeer.mall.operate.service.ColumnSelectAreaService;
@@ -56,6 +60,9 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 	@Autowired
 	private ColumnSelectAreaService selectAreaService;
 
+	@Autowired
+	private ColumnHomeIconVersionMapper homeIconVersionMapper;
+
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
@@ -81,8 +88,8 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 	 */
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> storeSkuIds)
-			throws Exception {
+	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> storeSkuIds, List<Integer> sorts,
+	        List<String> versions) throws Exception {
 		if (entity == null) {
 			return new BaseResult("HomeIconDto信息不能为空");
 		}
@@ -103,11 +110,15 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 			return new BaseResult("当任务内容为“指定商品推荐”时， 商品列表不允许为空");
 		}
 
+		if(CollectionUtils.isEmpty(versions)) {
+		    return new BaseResult("请选择ICON所支持的版本号");
+		}
+		
 		// 设置首页ICONID
 		String homeIconId = StringUtils.isBlank(entity.getId()) ? UuidUtils.getUuid() : entity.getId();
 		// 判断是否存在重复
-		if (isRepeatArea(homeIconId, entity.getTaskScope(), entity.getPlace(), areaList)) {
-			return new BaseResult("同一区域、同一位置不可同时存在同一ICON栏位设置");
+		if (isRepeatArea(homeIconId, entity.getTaskScope(), entity.getPlace(), areaList, versions)) {
+			return new BaseResult("同一区域、同一位置、同一版本不可同时存在同一ICON栏位设置");
 		}
 
 		// 冗余字段部分信息
@@ -134,13 +145,14 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 			// 删除之前的插入的关联数据
 			selectAreaService.deleteByColumnId(entity.getId());
 			homeIconGoodsService.deleteByHomeIconId(entity.getId());
+			homeIconVersionMapper.deleteByIconId(entity.getId());
 			homeIconMapper.update(entity);
 		} else {
 			entity.setId(homeIconId);
 			entity.setCreateTime(DateUtils.getSysDate());
 			homeIconMapper.add(entity);
 		}
-
+		
 		// 插入所选地区范围关联数据
 		if (null != areaList && areaList.size() > 0) {
 			for (ColumnSelectArea item : areaList) {
@@ -158,24 +170,50 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		if (HomeIconTaskType.goods.equals(entity.getTaskType())) {
 			List<ColumnHomeIconGoods> goodsList = new ArrayList<>();
 			ColumnHomeIconGoods goods = null;
+			
+			int i = 0;
 			for (String item : storeSkuIds) {
 				goods = new ColumnHomeIconGoods();
 				goods.setId(UuidUtils.getUuid());
 				goods.setHomeIconId(entity.getId());
 				goods.setSkuId(item);
+				goods.setSort(sorts.get(i));
 				goodsList.add(goods);
+				i++;
 			}
 			if (goodsList.size() > 0) {
 				homeIconGoodsService.insertMore(goodsList);
 			}
 		}
+		
+		//插入管理版本信息数据
+		if(CollectionUtils.isNotEmpty(versions)) {
+		    List<ColumnHomeIconVersion> iconVersions = new ArrayList<>();
+		    ColumnHomeIconVersion iconVersion = null;
+		    for(String version : versions) {
+		        iconVersion = new ColumnHomeIconVersion();
+		        iconVersion.setId(UuidUtils.getUuid());
+		        iconVersion.setIconId(entity.getId());
+		        iconVersion.setVersion(version);
+		        
+		        iconVersions.add(iconVersion);
+		    }
+		    
+		    if(iconVersions.size() > 0) {
+		        this.homeIconVersionMapper.insertBatch(iconVersions);
+		    }
+		}
+		
 		return new BaseResult();
 	}
 
 	private boolean isRepeatArea(String homeIconId, SelectAreaType taskScope, HomeIconPlace place,
-			List<ColumnSelectArea> areaList) throws Exception {
+			List<ColumnSelectArea> areaList, List<String> versions) throws Exception {
 		// 查询是否已经存在使用了相同的ICON位置数据
 		HomeIconParamDto paramDto = new HomeIconParamDto();
+		//设置ICON的版本号
+		paramDto.setVersions(versions);
+		
 		paramDto.setPlace(place);
 		// 设置排除自己
 		paramDto.setExcludeId(homeIconId);
@@ -231,4 +269,9 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		}
 		return false;
 	}
+
+    @Override
+    public List<ColumnHomeIconVersionDto> findIconVersionByIconId(String iconId) throws Exception {
+        return this.homeIconVersionMapper.findListByIconId(iconId);
+    }
 }

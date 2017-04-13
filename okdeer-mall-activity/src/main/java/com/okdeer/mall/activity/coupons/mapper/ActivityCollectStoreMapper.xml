@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCollectStoreMapper">
+
+	<resultMap type="com.okdeer.mall.activity.coupons.entity.ActivityCollectStore" id="ActivityCollectStore" >
+		<result property="id" column="id" />
+		<result property="collectCouponsId" column="collect_coupons_id" />
+		<result property="storeId" column="store_id" />
+	</resultMap>
+
+    <sql id="columns">
+		id,collect_coupons_id,store_id
+	</sql>
+
+    <insert id="saveBatch" parameterType="list">
+        insert into activity_collect_store(
+			<include refid="columns"/>
+		)values
+		<foreach collection="list" item="item" index="index" separator="," >
+        (
+            #{item.id},
+            #{item.collectCouponsId},
+            #{item.storeId}
+        )
+		</foreach>
+	</insert>
+
+    <delete id="deleteByCollectCouponsId" parameterType="string">
+        delete from activity_collect_store where collect_coupons_id = #{value} 
+    </delete>
+    
+    <select id="listByCollectCouponsId" parameterType="string" resultMap="ActivityCollectStore">
+    	select 
+		a.id,
+		a.collect_coupons_id,
+		a.store_id ,
+		s.store_name as storeName,
+		s.city_id as cityId 
+		from activity_collect_store a 
+		left JOIN store_info s on (a.store_id = s.id)
+		where collect_coupons_id = #{value}
+    </select>
+
+</mapper>

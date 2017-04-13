@@ -19,6 +19,7 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.common.utils.BaseResult;
+import com.okdeer.mall.operate.dto.ColumnHomeIconVersionDto;
 import com.okdeer.mall.operate.dto.HomeIconDto;
 import com.okdeer.mall.operate.dto.HomeIconGoodsDto;
 import com.okdeer.mall.operate.dto.HomeIconParamDto;
@@ -173,7 +174,8 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		} else {
 			areaList = BeanMapper.mapList(dto.getAreaList(), ColumnSelectArea.class);
 		}
-		return homeIconService.save(entity, areaList, dto.getSkuIds());
+		
+		return homeIconService.save(entity, areaList, dto.getSkuIds(),dto.getSorts(), dto.getIconVersions());
 	}
 
 	/**
@@ -181,7 +183,7 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 	 * @see com.okdeer.mall.operate.service.ColumnHomeIconApi#findListByCityId(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public List<HomeIconDto> findListByCityId(String provinceId, String cityId) throws Exception {
+	public List<HomeIconDto> findListByCityId(String provinceId, String cityId, String version) throws Exception {
 		if (!StringUtils.isNotEmptyAll(provinceId, cityId)) {
 			return new ArrayList<HomeIconDto>();
 		}
@@ -194,7 +196,12 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 			paramDto.setIds(ids);
 		}
 		paramDto.setContainNationwide(true);
-
+		
+		//加入版本号过滤
+		List<String> versions = new ArrayList<>();
+		versions.add(version);
+		paramDto.setVersions(versions);
+		
 		// 查询首页ICON列表
 		List<HomeIconDto> sourceList = findList(paramDto);
 		List<HomeIconDto> dtoList = null;
@@ -225,4 +232,9 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		}
 		return storeSkuIds;
 	}
+
+    @Override
+    public List<ColumnHomeIconVersionDto> findIconVersionByIconId(String iconId) throws Exception {
+        return this.homeIconService.findIconVersionByIconId(iconId);
+    }
 }
