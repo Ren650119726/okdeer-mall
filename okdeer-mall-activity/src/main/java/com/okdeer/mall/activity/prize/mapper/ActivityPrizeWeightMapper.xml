@@ -16,7 +16,7 @@
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
         <result column="disabled" property="disabled" jdbcType="INTEGER" />
         <result column="is_default_weight" property="isDefaultWeight" javaType="com.okdeer.base.common.enums.WhetherEnum" jdbcType="TINYINT"/>
-    </resultMap>
+    </resultMap> 
  	<resultMap id="prizeRecordList" type="com.okdeer.mall.activity.prize.entity.ActivityPrizeWeightVo" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="activity_collect_id" property="activityCollectId" jdbcType="VARCHAR" />

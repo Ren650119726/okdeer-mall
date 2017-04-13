@@ -14,7 +14,7 @@
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
         <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
         <result column="disabled" property="disabled" jdbcType="VARCHAR" javaType="com.okdeer.base.common.enums.Disabled" />
-    </resultMap>
+    </resultMap> 
 
     <sql id="Base_Column_List" >
         id, name, weight_deno, activity_advert_id, status, start_time, end_time, create_time, 
