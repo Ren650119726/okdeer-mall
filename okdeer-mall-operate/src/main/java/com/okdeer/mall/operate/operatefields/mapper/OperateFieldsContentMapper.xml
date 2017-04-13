@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.okdeer.mall.operate.mapper.OperateFieldsContentMapper" >
-    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.OperateFieldsContent" >
+<mapper namespace="com.okdeer.mall.operate.operatefields.mapper.OperateFieldsContentMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="field_id" property="fieldId" jdbcType="VARCHAR" />
         <result column="type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsContentType"/>
@@ -24,7 +24,7 @@
         where id = #{id,jdbcType=VARCHAR}
     </select>
 
-    <insert id="add" parameterType="com.okdeer.mall.operate.entity.OperateFieldsContent" >
+    <insert id="add" parameterType="com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent" >
         insert into column_operate_fields_content
         <trim prefix="(" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -86,7 +86,7 @@
         </trim>
     </insert>
 
-    <update id="update" parameterType="com.okdeer.mall.operate.entity.OperateFieldsContent" >
+    <update id="update" parameterType="com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent" >
         update column_operate_fields_content
         <set >
             <if test="fieldId != null" >
