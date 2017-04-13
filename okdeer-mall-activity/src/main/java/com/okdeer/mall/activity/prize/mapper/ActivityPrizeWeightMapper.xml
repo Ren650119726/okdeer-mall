@@ -185,10 +185,19 @@
     </delete>
 	<!-- begin xuzq 20170411 v2.2 获取奖品列表-->
 	<select id="findPrizeRecordList" resultMap="prizeRecordList" parameterType="com.okdeer.mall.activity.prize.entity.ActivityPrizeWeightVo">
-	        select 
-	        <include refid="Base_Column_List" />
-	        from activity_prize_weight
-	        where disabled=0 and luck_draw_id = #{activityId,jdbcType=VARCHAR}
+	        SELECT 
+		     <include refid="Base_Column_List" />
+	        FROM activity_prize_weight prize
+	        WHERE prize.disabled = 0 
+	            <if test="prizeName != null and prizeName !=''" >
+		           AND prize_name LIKE CONCAT('%',#{prizeName,jdbcType=VARCHAR},'%')
+		        </if>
+		        <if test="createTimeStart != null" >
+		           AND create_time &gt;= #{createTimeStart,jdbcType=TIMESTAMP}
+		        </if>
+		        <if test="createTimeEnd != null" >
+		           AND create_time &lt;= #{createTimeEnd,jdbcType=TIMESTAMP}
+		        </if>
 	        ORDER BY order_no
 	    </select>
 	<!-- end xuzq 20170411 v2.2 获取奖品列表  -->

@@ -17,12 +17,17 @@
 	<resultMap id="prizeRecordList" type="com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo" >
        <id column="id" property="id" jdbcType="VARCHAR" />
        <result column="prize_id" property="prizeId" jdbcType="VARCHAR" />
-       <result column="userName" property="userName" jdbcType="VARCHAR" />
+       <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+       <result column="login_name" property="loginName" jdbcType="VARCHAR" />
        <result column="luck_draw_id" property="luckDrawId" jdbcType="VARCHAR" />
+       <result column="luck_draw_name" property="luckDrawName" jdbcType="VARCHAR" />
        <result column="activity_collect_id" property="activityCollectId" jdbcType="VARCHAR" />
+        <result column="activity_collect_name" property="activityCollectName" jdbcType="VARCHAR" />
        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
        <result column="is_offer" property="isOffer" jdbcType="INTEGER" />
-       <result column="prize_offer_time" property="prizeOfferTime" jdbcType="TIMESTAMP" />
+       <result column="prize_name" property="prizeName" jdbcType="VARCHAR" />
+       <result column="activity_name" property="activityName" jdbcType="VARCHAR" />
+       <result column="activity_collect_name" property="activityCollectName" jdbcType="VARCHAR" />
    </resultMap>
     <sql id="Base_Column_List" >
         id, prize_id, user_id,luck_draw_id,activity_collect_id,create_time, is_offer, prize_offer_time, update_user_id, update_time, 
@@ -157,23 +162,48 @@
     </delete>
 	<!--begin xuzq 20170410 V2.2.0 中奖记录查询-->
 	<select id="findPrizeRecordList" resultMap="prizeRecordList"  parameterType="com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo">
-        select 
-        rec.id, rec.prize_id, us.nick_name userName,
-        rec.activity_collect_id,rec.create_time, 
-        rec.is_offer, rec.prize_offer_time
-        from activity_prize_record rec
-        left join sys_buyer_user us on us.id = rec.user_id
-        where 1=1 
-        <if test="userName != null" >
-           AND us.nick_name = #{userName,jdbcType=TIMESTAMP}
-        </if>
-        <if test="createTimeStart != null" >
-           AND rec.create_time = #{createTimeStart,jdbcType=TIMESTAMP}
-        </if>
-        <if test="createTimeEnd != null" >
-           AND rec.create_time = #{createTimeEnd,jdbcType=TIMESTAMP}
-        </if>
-        order by create_time DESC 
+        SELECT
+			record.activity_collect_id,
+			coupon.`name` activity_collect_name,
+			record.create_time,
+			record.is_offer,
+			record.prize_offer_time,
+		    prize.prize_name,
+		    us.nick_name,
+		    us.login_name,
+		    draw.`name` luck_draw_name,
+		    activity.`name` activity_name
+		FROM activity_prize_record record
+		  LEFT JOIN sys_buyer_user us ON us.id = record.user_id
+		  LEFT JOIN activity_prize_weight prize ON record.prize_id = prize.id
+		  LEFT JOIN activity_luck_draw draw ON prize.luck_draw_id = draw.id
+		  LEFT JOIN activity_advert activity ON draw.activity_advert_id = activity.id
+		  LEFT JOIN activity_collect_coupons coupon ON record.activity_collect_id = coupon.id
+        <where>
+	        <if test="activityName != null and activityName != ''" >
+	           AND activity.`name` LIKE CONCAT('%',#{activityName,jdbcType=VARCHAR},'%')
+	        </if>
+	        <if test="activityCollectName != null and activityCollectName != ''" >
+	           AND coupon.`name` LIKE CONCAT('%',#{activityCollectName,jdbcType=VARCHAR},'%')
+	        </if>
+	        <if test="luckDrawName != null and luckDrawName !=''" >
+	           AND draw.`name` LIKE CONCAT('%',#{luckDrawName,jdbcType=VARCHAR},'%')
+	        </if>
+	        <if test="nickName != null and nickName !=''" >
+	           AND us.nick_name LIKE CONCAT('%',#{nickName,jdbcType=VARCHAR},'%')
+	        </if>
+	        <if test="loginName != null and loginName !=''" >
+	           AND us.login_name LIKE CONCAT('%',#{loginName,jdbcType=VARCHAR},'%')
+	        </if>
+	        <if test="createTimeStart != null" >
+	           AND record.create_time &gt;= #{createTimeStart,jdbcType=TIMESTAMP}
+	        </if>
+	        <if test="createTimeEnd != null" >
+	           AND record.create_time &lt;= #{createTimeEnd,jdbcType=TIMESTAMP}
+	        </if>
+        </where>
+        order by record.create_time DESC 
+
     </select>
 	<!--end xuzq 20170410 V2.2.0 中奖记录查询-->
 </mapper>
