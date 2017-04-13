@@ -206,49 +206,6 @@
 	        </if>
         </where>
         order by record.create_time DESC 
-
-	<select id="findPrizeRecordList" resultMap="prizeRecordList"  parameterType="com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo">
-        SELECT
-			record.activity_collect_id,
-			coupon.`name` activity_collect_name,
-			record.create_time,
-			record.is_offer,
-			record.prize_offer_time,
-		    prize.prize_name,
-		    us.nick_name,
-		    us.login_name,
-		    draw.`name` luck_draw_name,
-		    activity.`name` activity_name
-		FROM activity_prize_record record
-		  LEFT JOIN sys_buyer_user us ON us.id = record.user_id
-		  LEFT JOIN activity_prize_weight prize ON record.prize_id = prize.id
-		  LEFT JOIN activity_luck_draw draw ON prize.luck_draw_id = draw.id
-		  LEFT JOIN activity_advert activity ON draw.activity_advert_id = activity.id
-		  LEFT JOIN activity_collect_coupons coupon ON record.activity_collect_id = coupon.id
-        <where>
-	        <if test="activityName != null and activityName != ''" >
-	           AND activity.`name` LIKE CONCAT('%',#{activityName,jdbcType=VARCHAR},'%')
-	        </if>
-	        <if test="activityCollectName != null and activityCollectName != ''" >
-	           AND coupon.`name` LIKE CONCAT('%',#{activityCollectName,jdbcType=VARCHAR},'%')
-	        </if>
-	        <if test="luckDrawName != null and luckDrawName !=''" >
-	           AND draw.`name` LIKE CONCAT('%',#{luckDrawName,jdbcType=VARCHAR},'%')
-	        </if>
-	        <if test="nickName != null and nickName !=''" >
-	           AND us.nick_name LIKE CONCAT('%',#{nickName,jdbcType=VARCHAR},'%')
-	        </if>
-	        <if test="loginName != null and loginName !=''" >
-	           AND us.login_name LIKE CONCAT('%',#{loginName,jdbcType=VARCHAR},'%')
-	        </if>
-	        <if test="createTimeStart != null" >
-	           AND record.create_time &gt;= #{createTimeStart,jdbcType=TIMESTAMP}
-	        </if>
-	        <if test="createTimeEnd != null" >
-	           AND record.create_time &lt;= #{createTimeEnd,jdbcType=TIMESTAMP}
-	        </if>
-        </where>
-        order by record.create_time DESC 
     </select>
 	<!--end xuzq 20170410 V2.2.0 中奖记录查询-->
 </mapper>
