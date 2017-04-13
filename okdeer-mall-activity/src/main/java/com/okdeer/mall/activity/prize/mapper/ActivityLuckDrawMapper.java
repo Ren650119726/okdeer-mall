@@ -8,6 +8,8 @@ package com.okdeer.mall.activity.prize.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
 
@@ -37,6 +39,6 @@ public interface ActivityLuckDrawMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月11日
 	 */
-	void closedLuckDraw(String ids);
+	void closedLuckDraw(@Param("ids") List<String> ids);
 
 }

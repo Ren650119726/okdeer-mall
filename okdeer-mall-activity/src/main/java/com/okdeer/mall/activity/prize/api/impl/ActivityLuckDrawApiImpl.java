@@ -6,6 +6,7 @@
  */    
 package com.okdeer.mall.activity.prize.api.impl;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -89,8 +90,8 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 
 	@Override
 	public void closedLuckDraw(String ids) {
-		activityLuckDrawService.closedLuckDraw(ids);
-		
+		String[] idArray = ids.split(",");
+		activityLuckDrawService.closedLuckDraw(Arrays.asList(idArray));
 	}
 
 	@Override
