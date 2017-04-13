@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.okdeer.mall.operate.advert.mapper.ColumnAdvertGoodsMapper" >
-    <resultMap id="BaseResultMap" type="com.okdeer.mall.advert.entity.ColumnAdvertGoods" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.advert.entity.ColumnAdvertGoods" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
         <result column="goods_id" property="goodsId" jdbcType="VARCHAR" />
@@ -61,7 +61,7 @@
         where id = #{id,jdbcType=VARCHAR}
     </select>
 
-    <insert id="add" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertGoods" >
+    <insert id="add" parameterType="com.okdeer.mall.activity.advert.entity.ColumnAdvertGoods" >
         insert into column_advert_goods
         <trim prefix="(" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -105,7 +105,7 @@
         </trim>
     </insert>
 
-    <update id="update" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertGoods" >
+    <update id="update" parameterType="com.okdeer.mall.activity.advert.entity.ColumnAdvertGoods" >
         update column_advert_goods
         <set >
             <if test="activityAdvertId != null" >
