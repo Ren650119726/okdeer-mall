@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.staticFile.mapper.ActivityStaticFileMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="title" property="title" jdbcType="VARCHAR" />
+        <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
+        <result column="share_title_main" property="shareTitleMain" jdbcType="VARCHAR" />
+        <result column="share_title_sub" property="shareTitleSub" jdbcType="VARCHAR" />
+        <result column="static_file_name" property="staticFileName" jdbcType="VARCHAR" />
+        <result column="static_package" property="staticPackage" jdbcType="VARCHAR" />
+        <result column="visit_url" property="visitUrl" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="disabled" property="disabled" jdbcType="VARCHAR" javaType="com.okdeer.base.common.enums.Disabled" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, title, activity_advert_id, share_title_main, share_title_sub, static_file_name, 
+        static_package, visit_url, create_time, create_user_id, update_time, update_user_id, 
+        disabled
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_static_file
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile" >
+        insert into activity_static_file
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="title != null" >
+                title,
+            </if>
+            <if test="activityAdvertId != null" >
+                activity_advert_id,
+            </if>
+            <if test="shareTitleMain != null" >
+                share_title_main,
+            </if>
+            <if test="shareTitleSub != null" >
+                share_title_sub,
+            </if>
+            <if test="staticFileName != null" >
+                static_file_name,
+            </if>
+            <if test="staticPackage != null" >
+                static_package,
+            </if>
+            <if test="visitUrl != null" >
+                visit_url,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="title != null" >
+                #{title,jdbcType=VARCHAR},
+            </if>
+            <if test="activityAdvertId != null" >
+                #{activityAdvertId,jdbcType=VARCHAR},
+            </if>
+            <if test="shareTitleMain != null" >
+                #{shareTitleMain,jdbcType=VARCHAR},
+            </if>
+            <if test="shareTitleSub != null" >
+                #{shareTitleSub,jdbcType=VARCHAR},
+            </if>
+            <if test="staticFileName != null" >
+                #{staticFileName,jdbcType=VARCHAR},
+            </if>
+            <if test="staticPackage != null" >
+                #{staticPackage,jdbcType=VARCHAR},
+            </if>
+            <if test="visitUrl != null" >
+                #{visitUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile" >
+        update activity_static_file
+        <set >
+            <if test="title != null" >
+                title = #{title,jdbcType=VARCHAR},
+            </if>
+            <if test="activityAdvertId != null" >
+                activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR},
+            </if>
+            <if test="shareTitleMain != null" >
+                share_title_main = #{shareTitleMain,jdbcType=VARCHAR},
+            </if>
+            <if test="shareTitleSub != null" >
+                share_title_sub = #{shareTitleSub,jdbcType=VARCHAR},
+            </if>
+            <if test="staticFileName != null" >
+                static_file_name = #{staticFileName,jdbcType=VARCHAR},
+            </if>
+            <if test="staticPackage != null" >
+                static_package = #{staticPackage,jdbcType=VARCHAR},
+            </if>
+            <if test="visitUrl != null" >
+                visit_url = #{visitUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_static_file
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+	<!--begin xuzq 20170412 查询列表-->
+	<select id="findStaticFileList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_static_file
+        where 1=1 
+        <if test="title != null" >
+              AND title = #{title,jdbcType=VARCHAR}
+           </if>
+    </select>
+    <select id="findCountByName" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile" >
+        select count(*)
+        from activity_static_file
+        where 1=1 
+        <if test="title != null" >
+              AND title = #{title,jdbcType=VARCHAR}
+           </if>
+    </select>
+	<!--end xuzq 20170412  查询列表-->
+</mapper>
