@@ -44,7 +44,7 @@
         	  and r.user_id = #{userId,jdbcType=VARCHAR}
         	  and r.luck_draw_id =#{activityId,jdbcType=VARCHAR}
         order by r.create_time DESC
-    </select>
+    </select> 
     <!-- 轮播显示最新的中奖记录 -->
     <select id="findPrizeRecord" resultMap="BaseResultMap" >
         select 

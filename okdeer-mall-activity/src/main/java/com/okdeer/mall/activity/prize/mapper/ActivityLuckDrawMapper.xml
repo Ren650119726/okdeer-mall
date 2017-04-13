@@ -4,7 +4,7 @@
     <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="name" property="name" jdbcType="VARCHAR" />
-        <result column="weight_deno" property="weightDeno" jdbcType="INTEGER" />
+        <result column="weight_deno" property="weightDeno" jdbcType="NUMERIC" />
         <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
         <result column="status" property="status" jdbcType="VARCHAR" javaType="com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum"/>
         <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
@@ -14,7 +14,7 @@
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
         <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
         <result column="disabled" property="disabled" jdbcType="VARCHAR" javaType="com.okdeer.base.common.enums.Disabled" />
-    </resultMap>
+    </resultMap> 
 
     <sql id="Base_Column_List" >
         id, name, weight_deno, activity_advert_id, status, start_time, end_time, create_time, 
@@ -76,7 +76,7 @@
                 #{name,jdbcType=VARCHAR},
             </if>
             <if test="weightDeno != null" >
-                #{weightDeno,jdbcType=INTEGER},
+                #{weightDeno,jdbcType=NUMERIC},
             </if>
             <if test="activityAdvertId != null" >
                 #{activityAdvertId,jdbcType=VARCHAR},
@@ -115,7 +115,7 @@
                 name = #{name,jdbcType=VARCHAR},
             </if>
             <if test="weightDeno != null" >
-                weight_deno = #{weightDeno,jdbcType=INTEGER},
+                weight_deno = #{weightDeno,jdbcType=NUMERIC},
             </if>
             <if test="activityAdvertId != null" >
                 activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR},
@@ -161,7 +161,7 @@
        where 1=1
        <if test="name != null and name != ''" >
             AND name = #{name,jdbcType=VARCHAR}
-          </if>
+       </if>
    </select>
    <select id="findCountByName" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw">
        select count(*)

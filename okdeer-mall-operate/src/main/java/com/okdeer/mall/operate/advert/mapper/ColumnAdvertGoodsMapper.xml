@@ -41,7 +41,7 @@
     <result column="online" property="online" jdbcType="INTEGER" />
   </resultMap>
 
-    <sql id="Base_Column_List" >
+    <sql id="Base_Column_List" > 
         id, activity_advert_id, goods_id, model_id, create_time, sort
     </sql>
 	
