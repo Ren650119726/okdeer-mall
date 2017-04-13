@@ -247,5 +247,4 @@
 	        </if>
 	        order by g.`sort` desc
 	</select>
-
 </mapper>

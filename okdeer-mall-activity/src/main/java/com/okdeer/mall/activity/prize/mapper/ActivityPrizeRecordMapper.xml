@@ -36,11 +36,14 @@
     <!-- 根据用户id及活动id查询该活动用户获得的奖品记录 -->
 	<select id="findByUserId" resultMap="BaseResultMap" >
         select 
-        <include refid="Base_Column_List" />
-        from activity_prize_record
-        where disabled=0  and user_id = #{userId,jdbcType=VARCHAR}
-        	  and luck_draw_id =#{activityId,jdbcType=VARCHAR}
-        order by create_time DESC
+        	id, prize_id,prize_name, user_id,luck_draw_id,activity_collect_id,
+        	create_time,is_offer, prize_offer_time, update_user_id, update_time
+        from activity_prize_record r 
+        	 inner join activity_prize_weight w on r.`prize_id` = w.`id`
+        where r.disabled=0  
+        	  and r.user_id = #{userId,jdbcType=VARCHAR}
+        	  and r.luck_draw_id =#{activityId,jdbcType=VARCHAR}
+        order by r.create_time DESC
     </select>
     <!-- 轮播显示最新的中奖记录 -->
     <select id="findPrizeRecord" resultMap="BaseResultMap" >
