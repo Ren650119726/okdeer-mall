@@ -92,6 +92,12 @@ public class ActivityPrizeWeightServiceImpl extends BaseServiceImpl implements A
 		List<ActivityPrizeWeightVo> result = activityPrizeWeightMapper.findPrizeRecordList(activityPrizeWeightVo);
 		return new PageUtils<ActivityPrizeWeightVo>(result);
 	}
+
+	@Override
+	public List<ActivityPrizeWeight> findPrizesByLuckDrawId(String luckDrawId) {
+		
+		return activityPrizeWeightMapper.findPrizesByLuckDrawId(luckDrawId);
+	}
 	
 	
 

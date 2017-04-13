@@ -9,6 +9,7 @@ package com.okdeer.mall.activity.prize.service;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
+import com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo;
 
 /**
  * ClassName: ActivityLuckDrawService 
