@@ -729,6 +729,28 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		map.put("storeId", storeId);
 		return tradeOrderMapper.selectOrderNum(map);
 	}
+	
+	//Begin V2.3.0 added by luosm 20170413
+	@Override
+	public Integer selectConsumeOrderNum(ConsumeStatusEnum consumStatus, String storeId) {
+		int num = 0;
+		Map<String, Object> map = Maps.newHashMap();
+		map.put("consumStatus", consumStatus);
+		map.put("storeId", storeId);
+		map.put("tabs", "all");
+		int[] orderResources =new int[]{0,1,3};
+		map.put("orderResources", orderResources);
+		map.put("storeType", "SERVICE_STORE");
+		map.put("type", "STORE_CONSUME_ORDER");
+		try {
+			PageUtils<TradeOrder> page = this.findConsumeByParams(map, 1, 10);
+			num = (int)page.getTotal();
+		} catch (ServiceException e) {
+			e.printStackTrace();
+		}
+		return num;
+	}
+	//End V2.3.0 added by luosm 20170413
 
 	/**
 	 * 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用

@@ -142,5 +142,13 @@
     	<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PreferentialType"/>
     	
     	<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.CouponsType"/>
+    	
+    	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.OperateFieldsBusinessType"/>
+    	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.OperateFieldsContentType"/>
+    	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.OperateFieldsPointType"/>
+    	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.OperateFieldsSortType"/>
+    	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.OperateFieldsTemplate"/>
+    	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.OperateFieldsType"/>
+    	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.base.common.enums.Enabled"/>
     </typeHandlers>
 </configuration>
