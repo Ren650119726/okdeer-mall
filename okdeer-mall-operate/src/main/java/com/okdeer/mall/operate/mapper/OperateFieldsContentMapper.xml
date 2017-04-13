@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.mapper.OperateFieldsContentMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.OperateFieldsContent" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="field_id" property="fieldId" jdbcType="VARCHAR" />
+        <result column="type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsContentType"/>
+        <result column="image_url" property="imageUrl" jdbcType="VARCHAR" />
+        <result column="link_url" property="linkUrl" jdbcType="VARCHAR" />
+        <result column="business_type" property="businessType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsBusinessType"/>
+        <result column="business_id" property="businessId" jdbcType="VARCHAR" />
+        <result column="sort_type" property="sortType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsSortType"/>
+        <result column="sort" property="sort" jdbcType="INTEGER" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, field_id, type, image_url, link_url, business_type, business_id, sort_type, sort
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_operate_fields_content
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.operate.entity.OperateFieldsContent" >
+        insert into column_operate_fields_content
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="fieldId != null" >
+                field_id,
+            </if>
+            <if test="type != null" >
+                type,
+            </if>
+            <if test="imageUrl != null" >
+                image_url,
+            </if>
+            <if test="linkUrl != null" >
+                link_url,
+            </if>
+            <if test="businessType != null" >
+                business_type,
+            </if>
+            <if test="businessId != null" >
+                business_id,
+            </if>
+            <if test="sortType != null" >
+                sort_type,
+            </if>
+            <if test="sort != null" >
+                sort,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="fieldId != null" >
+                #{fieldId,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                #{type,jdbcType=TINYINT},
+            </if>
+            <if test="imageUrl != null" >
+                #{imageUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="linkUrl != null" >
+                #{linkUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="businessType != null" >
+                #{businessType,jdbcType=TINYINT},
+            </if>
+            <if test="businessId != null" >
+                #{businessId,jdbcType=VARCHAR},
+            </if>
+            <if test="sortType != null" >
+                #{sortType,jdbcType=TINYINT},
+            </if>
+            <if test="sort != null" >
+                #{sort,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.operate.entity.OperateFieldsContent" >
+        update column_operate_fields_content
+        <set >
+            <if test="fieldId != null" >
+                field_id = #{fieldId,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                type = #{type,jdbcType=TINYINT},
+            </if>
+            <if test="imageUrl != null" >
+                image_url = #{imageUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="linkUrl != null" >
+                link_url = #{linkUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="businessType != null" >
+                business_type = #{businessType,jdbcType=TINYINT},
+            </if>
+            <if test="businessId != null" >
+                business_id = #{businessId,jdbcType=VARCHAR},
+            </if>
+            <if test="sortType != null" >
+                sort_type = #{sortType,jdbcType=TINYINT},
+            </if>
+            <if test="sort != null" >
+                sort = #{sort,jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from column_operate_fields_content
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>
