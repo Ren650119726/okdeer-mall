@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.okdeer.mall.operate.mapper.OperateFieldsMapper" >
-    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.OperateFields" >
+<mapper namespace="com.okdeer.mall.operate.operatefields.mapper.OperateFieldsMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.operatefields.entity.OperateFields" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsType"/>
         <result column="business_id" property="businessId" jdbcType="VARCHAR" />
@@ -31,7 +31,7 @@
         where id = #{id,jdbcType=VARCHAR}
     </select>
 
-    <insert id="add" parameterType="com.okdeer.mall.operate.entity.OperateFields" >
+    <insert id="add" parameterType="com.okdeer.mall.operate.operatefields.entity.OperateFields" >
         insert into column_operate_fields
         <trim prefix="(" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -129,7 +129,7 @@
         </trim>
     </insert>
 
-    <update id="update" parameterType="com.okdeer.mall.operate.entity.OperateFields" >
+    <update id="update" parameterType="com.okdeer.mall.operate.operatefields.entity.OperateFields" >
         update column_operate_fields
         <set >
             <if test="type != null" >
