@@ -6,7 +6,7 @@
         <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
         <result column="goods_id" property="goodsId" jdbcType="VARCHAR" />
         <result column="model_id" property="modelId" jdbcType="VARCHAR" />
-        <result column="sort" property="sort" jdbcType="Integer" />
+        <result column="sort" property="sort" jdbcType="INTEGER" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     </resultMap>
 

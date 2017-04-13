@@ -165,13 +165,13 @@
         left join sys_buyer_user us on us.id = rec.user_id
         where 1=1 
         <if test="userName != null" >
-           AND us.nick_name = #{userName,jdbcType=TIMESTAMP},
+           AND us.nick_name = #{userName,jdbcType=TIMESTAMP}
         </if>
         <if test="createTimeStart != null" >
-           AND rec.create_time = #{createTimeStart,jdbcType=TIMESTAMP},
+           AND rec.create_time = #{createTimeStart,jdbcType=TIMESTAMP}
         </if>
         <if test="createTimeEnd != null" >
-           AND rec.create_time = #{createTimeEnd,jdbcType=TIMESTAMP},
+           AND rec.create_time = #{createTimeEnd,jdbcType=TIMESTAMP}
         </if>
         order by create_time DESC 
     </select>
