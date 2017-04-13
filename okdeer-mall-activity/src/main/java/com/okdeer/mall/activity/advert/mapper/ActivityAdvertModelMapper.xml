@@ -23,6 +23,14 @@
         from activity_advert_model
         where id = #{id,jdbcType=VARCHAR}
     </select>
+    <!-- 根据模块序号及活动id查询模块信息 -->
+    <select id="findModelByIdNo" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_advert_model
+        where model_no = #{modelNo,jdbcType=VARCHAR}
+        AND activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+    </select>
 
     <insert id="add" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvertModel" >
         insert into activity_advert_model

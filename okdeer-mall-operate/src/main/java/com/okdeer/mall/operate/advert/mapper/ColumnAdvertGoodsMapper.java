@@ -41,13 +41,13 @@ public interface ColumnAdvertGoodsMapper extends IBaseMapper {
 	
 	/**
 	 * @Description: 根据广告id获取广告商品列表
-	 * @param advertId  广告id
+	 * @param modelId  广告模块id
 	 * @return list
 	 * @author xuzq01
 	 * @param storeId 
 	 * @date 2017年02月08日
 	 */
-	List<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(@Param("advertId")String advertId, @Param("storeId")String storeId);
+	List<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(@Param("modelId")String modelId, @Param("storeId")String storeId);
 	
 	
 	/**

@@ -48,7 +48,7 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 	 * @date 2016年12月15日
 	 */
 	@Override
-	public List<ActivityPrizeRecord> findByUserId(String userId,String activityId) {
+	public List<ActivityPrizeRecordVo> findByUserId(String userId,String activityId) {
 		return activityPrizeRecordService.findByUserId(userId,activityId);
 	}
 
