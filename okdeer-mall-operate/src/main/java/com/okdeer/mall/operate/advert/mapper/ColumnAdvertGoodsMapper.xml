@@ -174,7 +174,7 @@
 			AND sku.`status` = 1
 			AND sku.violation = 0
 			AND sku.store_id = #{storeId,jdbcType=VARCHAR}
-		  	AND s.advert_id=#{advertId,jdbcType=VARCHAR}
+		  	AND s.model_id = #{modelId,jdbcType=VARCHAR}
 			ORDER BY s.`create_time` 
 	</select>
 	<!-- end 根据广告id获取广告商品列表 xuzq01 20170208-->
@@ -236,8 +236,8 @@
 			LEFT JOIN column_server_store css on (css.store_id = si.id)
 			LEFT JOIN column_server cs on (css.column_server_id = cs.id)
 		where 1 = 1 
-			<if test="activityAdvertId != null and activityAdvertId != ''">
-		        AND g.`activity_advert_id` = #{activityAdvertId,jdbcType=VARCHAR}
+			<if test="modelId != null and modelId != ''">
+		        AND g.model_id = #{modelId,jdbcType=VARCHAR}
 		    </if>	
 			<if test="goodsIdList != null">
 			 and sku.id in 

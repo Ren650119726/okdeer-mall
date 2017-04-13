@@ -7,6 +7,7 @@
 package com.okdeer.mall.activity.advert.service;
 
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.activity.advert.entity.ActivityAdvertModel;
 
 /**
  * ClassName: ActivityAdvertModelService 
@@ -17,9 +18,17 @@ import com.okdeer.base.service.IBaseService;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ *		V2.2.0			2017-4-13			tuzhd			 活动模块实现类
  */
 
 public interface ActivityAdvertModelService extends IBaseService {
-
+	/**
+	 * @Description: 根据模块序号及活动id查询模块信息
+	 * @param modelNo 模块序号
+	 * @param activityAdvertId 活动id
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月13日
+	 */
+	public ActivityAdvertModel findModelByIdNo(String modelNo,String activityAdvertId);
 }

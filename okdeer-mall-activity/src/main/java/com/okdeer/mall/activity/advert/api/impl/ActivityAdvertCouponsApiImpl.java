@@ -18,7 +18,7 @@ import com.okdeer.mall.activity.advert.service.ActivityAdvertCouponsApi;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ * 		V2.2.0			2017-4-13			tuzhd			 活动模块实现类
  */
 @Service(version="1.0.0")
 public class ActivityAdvertCouponsApiImpl implements ActivityAdvertCouponsApi {

@@ -36,7 +36,7 @@ public interface ActivityPrizeRecordMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年12月8日
 	 */
-	public List<ActivityPrizeRecord> findByUserId(@Param("userId")String userId,@Param("activityId")String activityId);
+	public List<ActivityPrizeRecordVo> findByUserId(@Param("userId")String userId,@Param("activityId")String activityId);
 	
 	/**
 	 * 

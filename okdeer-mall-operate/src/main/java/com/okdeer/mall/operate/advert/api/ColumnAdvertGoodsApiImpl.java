@@ -45,14 +45,14 @@ public class ColumnAdvertGoodsApiImpl implements ColumnAdvertGoodsApi {
 
 	/**
 	 * @Description: 根据运营活动id获取广告商品列表
-	 * @param advertId  广告id
+	 * @param modelId  广告模块id
 	 * @return list
 	 * @author tuzhd
 	 * @param storeId 
 	 * @date 2017年4月12日
 	 */
-	public PageUtils<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(String advertId, String storeId, Integer pageNumber, Integer pageSize){
-		return columnAdvertGoodsService.findAdvertGoodsByAdvertId(advertId, storeId, pageNumber, pageSize);
+	public PageUtils<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(String modelId, String storeId, Integer pageNumber, Integer pageSize){
+		return columnAdvertGoodsService.findAdvertGoodsByAdvertId(modelId, storeId, pageNumber, pageSize);
 	}
 	
 	/**
