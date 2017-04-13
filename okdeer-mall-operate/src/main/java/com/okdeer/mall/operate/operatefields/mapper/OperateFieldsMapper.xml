@@ -18,6 +18,20 @@
         <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
         <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled"/>
     </resultMap>
+    
+    <resultMap  id="OperateFieldsBoMap" extends="BaseResultMap" type="com.okdeer.mall.operate.operatefields.bo.OperateFieldsBo">
+    	<collection property="operateFieldscontentList" ofType="com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent" column="field_id">  
+          	 <id column="cofc_id" property="id" jdbcType="VARCHAR" />
+	        <result column="field_id" property="fieldId" jdbcType="VARCHAR" />
+	        <result column="cofc_type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsContentType"/>
+	        <result column="image_url" property="imageUrl" jdbcType="VARCHAR" />
+	        <result column="link_url" property="linkUrl" jdbcType="VARCHAR" />
+	        <result column="business_type" property="businessType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsBusinessType"/>
+	        <result column="cofc_business_id" property="businessId" jdbcType="VARCHAR" />
+	        <result column="sort_type" property="sortType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsSortType"/>
+	        <result column="cofc_sort" property="sort" jdbcType="INTEGER" />
+        </collection>
+    </resultMap>
 
     <sql id="Base_Column_List" >
         id, type, business_id, name, template, point_type, point_content, head_pic, sort, 
@@ -179,8 +193,71 @@
     </update>
 
     <delete id="delete" parameterType="java.lang.String" >
-        delete from column_operate_fields
-        where id = #{id,jdbcType=VARCHAR}
+        DELETE FROM column_operate_fields
+        WHERE id = #{id,jdbcType=VARCHAR}
     </delete>
-
+	
+	<!-- 根据条件查询列表 -->
+	<select id="findList" parameterType="com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto" resultMap="BaseResultMap">
+		SELECT 
+        <include refid="Base_Column_List" />
+        FROM column_operate_fields
+        WHERE disabled = 0
+        <if test="type != null">
+        	AND type = #{type,jdbcType=TINYINT}
+        </if>
+        <if test="businessId != null and businessId !='' ">
+        	AND business_id = #{businessId,jdbcType=VARCHAR}
+        </if>
+        <if test="enabled != null">
+        	AND enabled = #{enabled,jdbcType=TINYINT}
+        </if>
+        ORDER BY sort DESC
+	</select>
+	
+	<select id="findListWithContent" parameterType="com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto" resultMap="OperateFieldsBoMap">
+		SELECT 
+		cofc.id as cofc_id, cofc.field_id, cofc.type as cofc_type, cofc.image_url, cofc.link_url, cofc.business_type, cofc.business_id as cofc_business_id, cofc.sort_type, cofc.sort as cofc_sort,
+        cof.id, cof.type, cof.business_id, cof.name, cof.template, cof.point_type, cof.point_content, cof.head_pic, cof.sort, 
+        cof.enabled, cof.create_time, cof.update_time, cof.create_user_id, cof.update_user_id, cof.disabled
+        FROM column_operate_fields_content cofc LEFT JOIN column_operate_fields cof ON  cofc.field_id = cof.id
+        WHERE cof.disabled = 0
+        <if test="type != null">
+        	AND cof.type = #{type,jdbcType=TINYINT}
+        </if>
+        <if test="businessId != null and businessId !='' ">
+        	AND cof.business_id = #{businessId,jdbcType=VARCHAR}
+        </if>
+        <if test="enabled != null">
+        	AND cof.enabled = #{enabled,jdbcType=TINYINT}
+        </if>
+        ORDER BY cof.sort desc,cofc.sort  desc
+	</select>
+	
+	<select id="queryMinSort" resultType="java.lang.Integer">
+		SELECT MIN(sort)  FROM  column_operate_fields WHERE  type = #{type,jdbcType=TINYINT} AND business_id = #{businessId,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="findCompareBySort"  resultMap="BaseResultMap">
+		SELECT 
+		<include refid="Base_Column_List" />
+		FROM  column_operate_fields WHERE  
+		
+		<if test="type == 1">
+			<![CDATA[ sort >= #{sort,jdbcType=TINYINT} ]]>
+		</if>
+		<if test="type == -1">
+			<![CDATA[ sort <= #{sort,jdbcType=TINYINT} ]]>
+		</if>
+		AND id != #{id,jdbcType=VARCHAR}
+		
+		<if test="type == 1">
+			ORDER BY sort ASC
+		</if>
+		<if test="type == -1">
+			ORDER BY sort DESC
+		</if>
+		LIMMIT 1
+	</select>
+	
 </mapper>
