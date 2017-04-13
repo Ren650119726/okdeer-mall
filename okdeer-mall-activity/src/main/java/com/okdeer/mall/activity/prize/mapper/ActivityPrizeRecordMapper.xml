@@ -249,7 +249,6 @@
 	        </if>
         </where>
         order by record.create_time DESC 
-
     </select>
 	<!--end xuzq 20170410 V2.2.0 中奖记录查询-->
 </mapper>
