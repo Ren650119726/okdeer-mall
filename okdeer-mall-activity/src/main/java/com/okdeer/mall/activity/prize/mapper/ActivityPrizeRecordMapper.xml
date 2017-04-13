@@ -162,6 +162,7 @@
     </delete>
 	<!--begin xuzq 20170410 V2.2.0 中奖记录查询-->
 	<select id="findPrizeRecordList" resultMap="prizeRecordList"  parameterType="com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo">
+<<<<<<< HEAD
         SELECT
 			record.activity_collect_id,
 			coupon.`name` activity_collect_name,
@@ -203,6 +204,25 @@
 	        </if>
         </where>
         order by record.create_time DESC 
+=======
+        select 
+        rec.id, rec.prize_id, us.nick_name userName,
+        rec.activity_collect_id,rec.create_time, 
+        rec.is_offer, rec.prize_offer_time
+        from activity_prize_record rec
+        left join sys_buyer_user us on us.id = rec.user_id
+        where 1=1 
+        <if test="userName != null" >
+           AND us.nick_name = #{userName,jdbcType=TIMESTAMP}
+        </if>
+        <if test="createTimeStart != null" >
+           AND rec.create_time = #{createTimeStart,jdbcType=TIMESTAMP}
+        </if>
+        <if test="createTimeEnd != null" >
+           AND rec.create_time = #{createTimeEnd,jdbcType=TIMESTAMP}
+        </if>
+        order by create_time DESC 
+>>>>>>> branch 'master_2.2.0_activity' of http://10.20.101.5/MallPlat/okdeer-mall.git
     </select>
 	<!--end xuzq 20170410 V2.2.0 中奖记录查询-->
 </mapper>

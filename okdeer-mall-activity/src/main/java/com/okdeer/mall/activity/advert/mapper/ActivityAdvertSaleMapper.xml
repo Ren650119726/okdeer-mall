@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.advert.mapper.ActivityAdvertSaleMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.advert.entity.ActivityAdvertSale" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activty_sale_id" property="activtySaleId" jdbcType="VARCHAR" />
+        <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
+        <result column="model_id" property="modelId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, activty_sale_id, activity_advert_id, model_id
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_advert_sale
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvertSale" >
+        insert into activity_advert_sale
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="activtySaleId != null" >
+                activty_sale_id,
+            </if>
+            <if test="activityAdvertId != null" >
+                activity_advert_id,
+            </if>
+            <if test="modelId != null" >
+                model_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="activtySaleId != null" >
+                #{activtySaleId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityAdvertId != null" >
+                #{activityAdvertId,jdbcType=VARCHAR},
+            </if>
+            <if test="modelId != null" >
+                #{modelId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvertSale" >
+        update activity_advert_sale
+        <set >
+            <if test="activtySaleId != null" >
+                activty_sale_id = #{activtySaleId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityAdvertId != null" >
+                activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR},
+            </if>
+            <if test="modelId != null" >
+                model_id = #{modelId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_advert_sale
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

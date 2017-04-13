@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.okdeer.mall.activity.prize.mapper.ActivityLuckDrawMapper" >
-    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw" >
+<mapper namespace="com.okdeer.mall.activity.staticFile.mapper.ActivityStaticFileMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile" >
         <id column="id" property="id" jdbcType="VARCHAR" />
-        <result column="name" property="name" jdbcType="VARCHAR" />
-        <result column="weight_deno" property="weightDeno" jdbcType="NUMERIC" />
+        <result column="title" property="title" jdbcType="VARCHAR" />
         <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
-        <result column="status" property="status" jdbcType="VARCHAR" javaType="com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum"/>
-        <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
-        <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+        <result column="share_title_main" property="shareTitleMain" jdbcType="VARCHAR" />
+        <result column="share_title_sub" property="shareTitleSub" jdbcType="VARCHAR" />
+        <result column="static_file_name" property="staticFileName" jdbcType="VARCHAR" />
+        <result column="static_package" property="staticPackage" jdbcType="VARCHAR" />
+        <result column="visit_url" property="visitUrl" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
@@ -17,40 +18,44 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, name, weight_deno, activity_advert_id, status, start_time, end_time, create_time, 
-        create_user_id, update_time, update_user_id, disabled
+        id, title, activity_advert_id, share_title_main, share_title_sub, static_file_name, 
+        static_package, visit_url, create_time, create_user_id, update_time, update_user_id, 
+        disabled
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
         select 
         <include refid="Base_Column_List" />
-        from activity_luck_draw
+        from activity_static_file
         where id = #{id,jdbcType=VARCHAR}
     </select>
 
-    <insert id="add" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw" >
-        insert into activity_luck_draw
+    <insert id="add" parameterType="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile" >
+        insert into activity_static_file
         <trim prefix="(" suffix=")" suffixOverrides="," >
             <if test="id != null" >
                 id,
             </if>
-            <if test="name != null" >
-                name,
-            </if>
-            <if test="weightDeno != null" >
-                weight_deno,
+            <if test="title != null" >
+                title,
             </if>
             <if test="activityAdvertId != null" >
                 activity_advert_id,
             </if>
-            <if test="status != null" >
-                status,
+            <if test="shareTitleMain != null" >
+                share_title_main,
             </if>
-            <if test="startTime != null" >
-                start_time,
+            <if test="shareTitleSub != null" >
+                share_title_sub,
             </if>
-            <if test="endTime != null" >
-                end_time,
+            <if test="staticFileName != null" >
+                static_file_name,
+            </if>
+            <if test="staticPackage != null" >
+                static_package,
+            </if>
+            <if test="visitUrl != null" >
+                visit_url,
             </if>
             <if test="createTime != null" >
                 create_time,
@@ -72,23 +77,26 @@
             <if test="id != null" >
                 #{id,jdbcType=VARCHAR},
             </if>
-            <if test="name != null" >
-                #{name,jdbcType=VARCHAR},
-            </if>
-            <if test="weightDeno != null" >
-                #{weightDeno,jdbcType=NUMERIC},
+            <if test="title != null" >
+                #{title,jdbcType=VARCHAR},
             </if>
             <if test="activityAdvertId != null" >
                 #{activityAdvertId,jdbcType=VARCHAR},
             </if>
-            <if test="status != null" >
-                #{status,jdbcType=BIT},
+            <if test="shareTitleMain != null" >
+                #{shareTitleMain,jdbcType=VARCHAR},
             </if>
-            <if test="startTime != null" >
-                #{startTime,jdbcType=TIMESTAMP},
+            <if test="shareTitleSub != null" >
+                #{shareTitleSub,jdbcType=VARCHAR},
             </if>
-            <if test="endTime != null" >
-                #{endTime,jdbcType=TIMESTAMP},
+            <if test="staticFileName != null" >
+                #{staticFileName,jdbcType=VARCHAR},
+            </if>
+            <if test="staticPackage != null" >
+                #{staticPackage,jdbcType=VARCHAR},
+            </if>
+            <if test="visitUrl != null" >
+                #{visitUrl,jdbcType=VARCHAR},
             </if>
             <if test="createTime != null" >
                 #{createTime,jdbcType=TIMESTAMP},
@@ -108,26 +116,29 @@
         </trim>
     </insert>
 
-    <update id="update" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw" >
-        update activity_luck_draw
+    <update id="update" parameterType="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile" >
+        update activity_static_file
         <set >
-            <if test="name != null" >
-                name = #{name,jdbcType=VARCHAR},
-            </if>
-            <if test="weightDeno != null" >
-                weight_deno = #{weightDeno,jdbcType=NUMERIC},
+            <if test="title != null" >
+                title = #{title,jdbcType=VARCHAR},
             </if>
             <if test="activityAdvertId != null" >
                 activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR},
             </if>
-            <if test="status != null" >
-                status = #{status,jdbcType=BIT},
+            <if test="shareTitleMain != null" >
+                share_title_main = #{shareTitleMain,jdbcType=VARCHAR},
             </if>
-            <if test="startTime != null" >
-                start_time = #{startTime,jdbcType=TIMESTAMP},
+            <if test="shareTitleSub != null" >
+                share_title_sub = #{shareTitleSub,jdbcType=VARCHAR},
             </if>
-            <if test="endTime != null" >
-                end_time = #{endTime,jdbcType=TIMESTAMP},
+            <if test="staticFileName != null" >
+                static_file_name = #{staticFileName,jdbcType=VARCHAR},
+            </if>
+            <if test="staticPackage != null" >
+                static_package = #{staticPackage,jdbcType=VARCHAR},
+            </if>
+            <if test="visitUrl != null" >
+                visit_url = #{visitUrl,jdbcType=VARCHAR},
             </if>
             <if test="createTime != null" >
                 create_time = #{createTime,jdbcType=TIMESTAMP},
@@ -149,29 +160,26 @@
     </update>
 
     <delete id="delete" parameterType="java.lang.String" >
-        delete from activity_luck_draw
+        delete from activity_static_file
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-
-	<!-- begin xuzq 20170411 获取抽奖模板设置列表  -->
-	<select id="findPrizeRecordList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw">
-       select 
-       <include refid="Base_Column_List" />
-       from activity_luck_draw
-       where 1=1
-       <if test="name != null and name != ''" >
-            AND name = #{name,jdbcType=VARCHAR}
-       </if>
-   </select>
-   <select id="findCountByName" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw">
-       select count(*)
-       from activity_luck_draw
-       where 1=1 and disabled = 0 AND name = #{name,jdbcType=VARCHAR}
-   </select>
-   
-   <delete id="closedLuckDraw" parameterType="java.lang.String" >
-        update activity_luck_draw  from 
-        where id = #{id,jdbcType=VARCHAR}
-    </delete>
-	<!-- end xuzq 20170411 获取抽奖模板设置列表  -->
+	<!--begin xuzq 20170412 查询列表-->
+	<select id="findStaticFileList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_static_file
+        where 1=1 
+        <if test="title != null" >
+              AND title = #{title,jdbcType=VARCHAR}
+           </if>
+    </select>
+    <select id="findCountByName" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile" >
+        select count(*)
+        from activity_static_file
+        where 1=1 
+        <if test="title != null" >
+              AND title = #{title,jdbcType=VARCHAR}
+           </if>
+    </select>
+	<!--end xuzq 20170412  查询列表-->
 </mapper>
