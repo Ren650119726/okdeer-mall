@@ -25,6 +25,10 @@ public class ColumnHomeIconGoods {
 	 * 商品ID（关联goods_sku表）
 	 */
 	private String skuId;
+	/**
+	 * 排序(从大到小)
+	 */
+	private Integer sort;
 
 	public String getId() {
 		return id;
@@ -48,5 +52,15 @@ public class ColumnHomeIconGoods {
 
 	public void setSkuId(String skuId) {
 		this.skuId = skuId;
+	}
+
+	
+	public Integer getSort() {
+		return sort;
+	}
+
+	
+	public void setSort(Integer sort) {
+		this.sort = sort;
 	}
 }

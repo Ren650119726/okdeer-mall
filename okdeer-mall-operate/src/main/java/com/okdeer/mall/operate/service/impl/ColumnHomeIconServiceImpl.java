@@ -88,7 +88,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 	 */
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> storeSkuIds, 
+	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> storeSkuIds, List<Integer> sorts,
 	        List<String> versions) throws Exception {
 		if (entity == null) {
 			return new BaseResult("HomeIconDto信息不能为空");
@@ -170,12 +170,16 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		if (HomeIconTaskType.goods.equals(entity.getTaskType())) {
 			List<ColumnHomeIconGoods> goodsList = new ArrayList<>();
 			ColumnHomeIconGoods goods = null;
+			
+			int i = 0;
 			for (String item : storeSkuIds) {
 				goods = new ColumnHomeIconGoods();
 				goods.setId(UuidUtils.getUuid());
 				goods.setHomeIconId(entity.getId());
 				goods.setSkuId(item);
+				goods.setSort(sorts.get(i));
 				goodsList.add(goods);
+				i++;
 			}
 			if (goodsList.size() > 0) {
 				homeIconGoodsService.insertMore(goodsList);
