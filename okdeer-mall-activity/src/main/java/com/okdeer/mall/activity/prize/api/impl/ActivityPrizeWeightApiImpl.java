@@ -56,4 +56,9 @@ public class ActivityPrizeWeightApiImpl implements ActivityPrizeWeightApi{
 		return activityPrizeWeightService.findPrizeWeightList(activityPrizeWeightVo, pageNumber, pageSize);
 	}
 
+	@Override
+	public List<ActivityPrizeWeight> findPrizesByLuckDrawId(String luckDrawId) {
+		return activityPrizeWeightService.findPrizesByLuckDrawId(luckDrawId);
+	}
+
 }

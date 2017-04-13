@@ -12,7 +12,7 @@
         <result column="prize_offer_time" property="prizeOfferTime" jdbcType="TIMESTAMP" />
         <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
-        <result column="disabled" property="disabled" jdbcType="INTEGER" />
+        <result column="disabled" property="disabled" jdbcType="VARCHAR" javaType="com.okdeer.base.common.enums.Disabled" />
     </resultMap>
 	<resultMap id="prizeRecordList" type="com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo" >
        <id column="id" property="id" jdbcType="VARCHAR" />
@@ -22,7 +22,7 @@
        <result column="luck_draw_id" property="luckDrawId" jdbcType="VARCHAR" />
        <result column="luck_draw_name" property="luckDrawName" jdbcType="VARCHAR" />
        <result column="activity_collect_id" property="activityCollectId" jdbcType="VARCHAR" />
-        <result column="activity_collect_name" property="activityCollectName" jdbcType="VARCHAR" />
+       <result column="activity_collect_name" property="activityCollectName" jdbcType="VARCHAR" />
        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
        <result column="is_offer" property="isOffer" jdbcType="INTEGER" />
        <result column="prize_name" property="prizeName" jdbcType="VARCHAR" />

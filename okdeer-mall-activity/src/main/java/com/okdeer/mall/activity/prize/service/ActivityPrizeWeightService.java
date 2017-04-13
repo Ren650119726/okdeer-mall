@@ -37,6 +37,8 @@ public interface ActivityPrizeWeightService extends IBaseService {
 	 * @return List<ActivityPrizeWeight>  
 	 * @author tuzhd
 	 * @date 2016年12月14日
+	 * @deprecated 表修改字段 将activityId改为luckDrawId
+	 * 可以使用 findPrizesByLuckDrawId
 	 */
 	public List<ActivityPrizeWeight> findPrizesByactivityId(String activityId);
 	
@@ -60,4 +62,13 @@ public interface ActivityPrizeWeightService extends IBaseService {
 	 */
 	public PageUtils<ActivityPrizeWeightVo> findPrizeWeightList(ActivityPrizeWeightVo activityPrizeWeightVo,
 			int pageNumber, int pageSize);
+
+	/**
+	 * @Description: TODO
+	 * @param id   
+	 * @author xuzq01
+	 * @return 
+	 * @date 2017年4月13日
+	 */
+	public List<ActivityPrizeWeight> findPrizesByLuckDrawId(String luckDrawId);
 }

@@ -34,6 +34,7 @@ public interface ActivityPrizeWeightMapper extends IBaseMapper {
 	 * @return List<ActivityPrizeWeight>  
 	 * @author tuzhd
 	 * @date 2016年12月14日
+	 * @deprecated
 	 */
 	public List<ActivityPrizeWeight> findPrizesByactivityId(@Param("activityId")String activityId);
 	
@@ -54,4 +55,13 @@ public interface ActivityPrizeWeightMapper extends IBaseMapper {
 	 * @date 2017年4月11日
 	 */
 	public List<ActivityPrizeWeightVo> findPrizeRecordList(ActivityPrizeWeightVo activityPrizeWeightVo);
+
+	/**
+	 * @Description: TODO
+	 * @param luckDrawId
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月13日
+	 */
+	public List<ActivityPrizeWeight> findPrizesByLuckDrawId(String luckDrawId);
 }

@@ -14,7 +14,7 @@
         <result column="luck_draw_id" property="luckDrawId" jdbcType="VARCHAR" />
         <result column="order_no" property="orderNo" jdbcType="INTEGER" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
-        <result column="disabled" property="disabled" jdbcType="INTEGER" />
+        <result column="disabled" property="disabled" jdbcType="VARCHAR" javaType="com.okdeer.base.common.enums.Disabled" />
         <result column="is_default_weight" property="isDefaultWeight" javaType="com.okdeer.base.common.enums.WhetherEnum" jdbcType="TINYINT"/>
     </resultMap> 
  	<resultMap id="prizeRecordList" type="com.okdeer.mall.activity.prize.entity.ActivityPrizeWeightVo" >
@@ -30,7 +30,7 @@
         <result column="luck_draw_id" property="luckDrawId" jdbcType="VARCHAR" />
         <result column="order_no" property="orderNo" jdbcType="INTEGER" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
-        <result column="disabled" property="disabled" jdbcType="INTEGER" />
+        <result column="disabled" property="disabled" jdbcType="VARCHAR" javaType="com.okdeer.base.common.enums.Disabled" />
         <result column="is_default_weight" property="isDefaultWeight" javaType="com.okdeer.base.common.enums.WhetherEnum" jdbcType="TINYINT"/>
     </resultMap>
     <sql id="Base_Column_List" >
@@ -46,6 +46,16 @@
         ORDER BY order_no
     </select>
     
+    <!--begin xuzq 20170413 根据抽奖设置表id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 -->
+	<select id="findPrizesByLuckDrawId" resultMap="BaseResultMap">
+        select 
+        <include refid="Base_Column_List" />
+        from activity_prize_weight
+        where disabled=0 and luck_draw_id = #{luckDrawId,jdbcType=VARCHAR}
+        ORDER BY order_no
+    </select>
+    <!--end xuzq 20170413 根据抽奖设置表id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 -->
+     
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
         select 
         <include refid="Base_Column_List" />
@@ -121,8 +131,8 @@
             <if test="updateUserId != null" >
                 #{updateUserId,jdbcType=VARCHAR},
             </if>
-            <if test="activityId != null" >
-                #{activityId,jdbcType=VARCHAR},
+            <if test="luckDrawId != null" >
+                #{luckDrawId,jdbcType=VARCHAR},
             </if>
             <if test="orderNo != null" >
                 #{orderNo,jdbcType=INTEGER},

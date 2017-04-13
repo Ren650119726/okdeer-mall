@@ -7,16 +7,23 @@
 package com.okdeer.mall.activity.prize.api.impl;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.fastjson.JSONArray;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
+import com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
 import com.okdeer.mall.activity.prize.service.ActivityLuckDrawApi;
 import com.okdeer.mall.activity.prize.service.ActivityLuckDrawService;
+import com.okdeer.mall.activity.prize.service.ActivityPrizeWeightService;
 
 
 /**
@@ -33,10 +40,16 @@ import com.okdeer.mall.activity.prize.service.ActivityLuckDrawService;
 @Service(version="1.0.0")
 public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 	/**
-	 * 中奖记录表Service
+	 * 抽奖设置Service
 	 */
 	@Autowired
 	ActivityLuckDrawService activityLuckDrawService;
+	
+	/**
+	 * 奖品权重表Service
+	 */
+	@Autowired
+	ActivityPrizeWeightService activityPrizeWeightService;
 	
 	@Override
 	public PageUtils<ActivityLuckDraw> findLuckDrawList(ActivityLuckDraw activityLuckDraw, int pageNumber,
@@ -45,19 +58,33 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 	}
 
 	@Override
-	public int findCountByName(ActivityLuckDraw activityLuckDraw) {
+	public int findCountByName(ActivityLuckDrawVo activityLuckDrawVo) {
 		
-		return activityLuckDrawService.findCountByName(activityLuckDraw);
+		return activityLuckDrawService.findCountByName(BeanMapper.map(activityLuckDrawVo, ActivityLuckDraw.class));
 	}
 
 	@Override
-	public void addLuckDraw(ActivityLuckDraw activityLuckDraw) throws Exception {
+	@Transactional(rollbackFor = Exception.class)
+	public void addLuckDraw(ActivityLuckDrawVo activityLuckDrawVo) throws Exception {
 		Date date = new Date();
-		activityLuckDraw.setId(UuidUtils.getUuid());
-		activityLuckDraw.setCreateTime(date);
-		activityLuckDraw.setUpdateTime(date);
-		activityLuckDraw.setDisabled(Disabled.valid);
-		activityLuckDrawService.add(activityLuckDraw);
+		activityLuckDrawVo.setId(UuidUtils.getUuid());
+		activityLuckDrawVo.setCreateTime(date);
+		activityLuckDrawVo.setUpdateTime(date);
+		activityLuckDrawVo.setDisabled(Disabled.valid);
+		BeanMapper.map(activityLuckDrawVo, ActivityLuckDraw.class);
+		activityLuckDrawService.add(BeanMapper.map(activityLuckDrawVo, ActivityLuckDraw.class));
+		
+		//获取奖品权重数据 并添加到权重表
+		String prize = activityLuckDrawVo.getPrizeWeight();
+		List<ActivityPrizeWeight> prizeWeightList = JSONArray.parseArray(prize, ActivityPrizeWeight.class);
+		for(ActivityPrizeWeight prizeWeight : prizeWeightList){
+			prizeWeight.setId(UuidUtils.getUuid());
+			prizeWeight.setLuckDrawId(activityLuckDrawVo.getId());
+			prizeWeight.setCreateTime(date);
+			prizeWeight.setUpdateTime(date);
+			prizeWeight.setDisabled(Disabled.valid);
+			activityPrizeWeightService.add(prizeWeight);
+		}
 	}
 
 	@Override
@@ -68,7 +95,35 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 
 	@Override
 	public ActivityLuckDraw findById(String id) throws Exception {
-		return activityLuckDrawService.findById(id);
+		
+		return  activityLuckDrawService.findById(id);
+		
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateLuckDraw(ActivityLuckDrawVo activityLuckDrawVo) throws Exception {
+		Date date = new Date();
+		//直接更新抽奖设置
+		activityLuckDrawService.update(BeanMapper.map(activityLuckDrawVo, ActivityLuckDraw.class));
+		
+		//获取奖品权重数据 并添加到权重表
+		String prize = activityLuckDrawVo.getPrizeWeight();
+		List<ActivityPrizeWeight> prizeWeightList = JSONArray.parseArray(prize, ActivityPrizeWeight.class);
+		
+		for(ActivityPrizeWeight prizeWeight : prizeWeightList){
+			
+			int result = activityPrizeWeightService.update(prizeWeight);
+			//为零说明为新加奖品 新增数据 
+			if(result==0){
+				prizeWeight.setId(UuidUtils.getUuid());
+				prizeWeight.setLuckDrawId(activityLuckDrawVo.getId());
+				prizeWeight.setCreateTime(date);
+				prizeWeight.setUpdateTime(date);
+				prizeWeight.setDisabled(Disabled.valid);
+				activityPrizeWeightService.add(prizeWeight);
+			}
+		}
 	}
 
 }
