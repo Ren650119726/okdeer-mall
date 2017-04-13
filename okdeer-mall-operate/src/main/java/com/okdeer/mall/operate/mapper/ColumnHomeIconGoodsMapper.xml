@@ -5,10 +5,11 @@
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="home_icon_id" property="homeIconId" jdbcType="VARCHAR" />
         <result column="sku_id" property="skuId" jdbcType="VARCHAR" />
+        <result column="sort" property="sort" jdbcType="INTEGER" />
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, home_icon_id, sku_id
+        id, home_icon_id, sku_id,sort
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -23,6 +24,7 @@
         <include refid="Base_Column_List" />
         from column_home_icon_goods
         where home_icon_id = #{homeIconId}
+        order by sort desc
     </select>
     
     <select id="findListByHomeIconIds" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -37,6 +39,7 @@
 				</foreach>
 			</if>
 		</where>
+		 order by sort desc
     </select>
 
     <insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnHomeIconGoods" >
@@ -51,6 +54,9 @@
             <if test="skuId != null" >
                 sku_id,
             </if>
+            <if test="sort != null" >
+                sort,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -62,16 +68,19 @@
             <if test="skuId != null" >
                 #{skuId,jdbcType=VARCHAR},
             </if>
+            <if test="sort != null" >
+                #{sort,jdbcType=INTEGER},
+            </if>
         </trim>
     </insert>
     
     <insert id="insertMore" parameterType="java.util.List">
 		INSERT INTO column_home_icon_goods (
-			id, home_icon_id, sku_id
+			id, home_icon_id, sku_id,sort
         ) VALUES
 		<foreach collection="list" index="index" item="item" separator=",">
 			(
-				#{item.id}, #{item.homeIconId}, #{item.skuId}
+				#{item.id}, #{item.homeIconId}, #{item.skuId}, #{item.sort}
 			)
 		</foreach>
 	</insert>
@@ -84,6 +93,9 @@
             </if>
             <if test="skuId != null" >
                 sku_id = #{skuId,jdbcType=VARCHAR},
+            </if>
+            <if test="sort != null" >
+                sort = #{skuId,jdbcType=INTEGER},
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}

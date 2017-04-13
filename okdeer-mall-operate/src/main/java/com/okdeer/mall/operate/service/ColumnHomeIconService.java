@@ -50,7 +50,7 @@ public interface ColumnHomeIconService extends IBaseService {
 	 * @author tangzj02
 	 * @date 2017年1月4日
 	 */
-	BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> goodsIds, 
+	BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> goodsIds, List<Integer> sorts,
 	        List<String> versions) throws Exception;
 
 

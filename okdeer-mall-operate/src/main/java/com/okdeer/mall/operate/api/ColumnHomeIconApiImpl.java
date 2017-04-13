@@ -175,7 +175,7 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 			areaList = BeanMapper.mapList(dto.getAreaList(), ColumnSelectArea.class);
 		}
 		
-		return homeIconService.save(entity, areaList, dto.getSkuIds(), dto.getIconVersions());
+		return homeIconService.save(entity, areaList, dto.getSkuIds(),dto.getSorts(), dto.getIconVersions());
 	}
 
 	/**
