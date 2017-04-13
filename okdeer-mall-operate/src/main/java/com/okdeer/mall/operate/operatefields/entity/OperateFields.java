@@ -5,7 +5,7 @@
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的
  */
 
-package com.okdeer.mall.operate.entity;
+package com.okdeer.mall.operate.operatefields.entity;
 
 import java.util.Date;
 
