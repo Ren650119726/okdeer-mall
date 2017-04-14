@@ -162,16 +162,46 @@
        <if test="name != null and name != ''" >
             AND name = #{name,jdbcType=VARCHAR}
        </if>
+       <!-- 创建时间 -->
+       <if test="createTimeStart != null">
+         AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="createTimeEnd != null">
+         AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <!-- 开始时间 -->
+       <if test="startTimeStart != null">
+         AND start_time <![CDATA[ >= ]]> #{startTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="startTimeEnd != null">
+         AND start_time <![CDATA[ <= ]]> #{startTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <!-- 结束时间 -->
+       <if test="endTimeStart != null">
+         AND end_time <![CDATA[ >= ]]> #{endTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="endTimeEnd != null">
+         AND end_time <![CDATA[ <= ]]> #{endTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+        <!-- 状态 -->
+       <if test="status != null and status !=''">
+         AND status = #{status,jdbcType=TINYINT}
+       </if>
+         AND disabled = 0 
+		 ORDER BY create_time DESC
    </select>
    <select id="findCountByName" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw">
        select count(*)
        from activity_luck_draw
        where 1=1 and disabled = 0 AND name = #{name,jdbcType=VARCHAR}
    </select>
-   
-   <delete id="closedLuckDraw" parameterType="java.lang.String" >
-        update activity_luck_draw  from 
-        where id = #{id,jdbcType=VARCHAR}
-    </delete>
+   <!-- 关闭抽奖活动模板 -->
+   <update id="closedLuckDraw" parameterType="java.lang.String" >
+        update activity_luck_draw  set status = 2
+        where id in 
+        <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+            #{item}
+        </foreach>
+    </update>
 	<!-- end xuzq 20170411 获取抽奖模板设置列表  -->
 </mapper>
