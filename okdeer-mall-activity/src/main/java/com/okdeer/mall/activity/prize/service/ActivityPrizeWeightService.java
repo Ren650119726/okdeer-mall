@@ -8,11 +8,8 @@ package com.okdeer.mall.activity.prize.service;
 
 import java.util.List;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeightVo;
 
@@ -64,7 +61,7 @@ public interface ActivityPrizeWeightService extends IBaseService {
 			int pageNumber, int pageSize);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 通过抽奖设置id查询列表
 	 * @param id   
 	 * @author xuzq01
 	 * @return 
