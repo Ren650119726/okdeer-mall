@@ -33,7 +33,7 @@ import com.okdeer.mall.activity.advert.service.ActivityAdvertService;
 public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 	
 	/**
-	 * 广告活动Service
+	 * H5活动Service
 	 */
 	@Autowired
 	ActivityAdvertService activityAdvertService;

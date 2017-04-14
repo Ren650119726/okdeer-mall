@@ -11,14 +11,14 @@ import com.okdeer.mall.activity.advert.entity.ActivityAdvertCoupons;
 
 /**
  * ClassName: ActivityAdvertCouponsMapper 
- * @Description: 代金券活动及广告活动实现类
+ * @Description: 代金券活动及H5活动实现类
  * @author tuzhd
  * @date 2017年4月13日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- * 		V2.2.0			2017-4-13			tuzhd			 代金券活动及广告活动实现
+ * 		V2.2.0			2017-4-13			tuzhd			 代金券活动及H5活动实现
  */
 
 public interface ActivityAdvertCouponsService extends IBaseService {

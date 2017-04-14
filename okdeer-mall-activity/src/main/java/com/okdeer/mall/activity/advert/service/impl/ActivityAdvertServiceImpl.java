@@ -36,7 +36,7 @@ import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
 public class ActivityAdvertServiceImpl extends BaseServiceImpl implements ActivityAdvertService {
 	
 	/**
-	 * 广告活动Service
+	 * H5活动Service
 	 */
 	@Autowired
 	ActivityAdvertMapper activityAdvertMapper;
