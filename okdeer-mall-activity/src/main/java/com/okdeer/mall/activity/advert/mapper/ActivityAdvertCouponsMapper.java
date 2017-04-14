@@ -7,7 +7,24 @@
 package com.okdeer.mall.activity.advert.mapper;
 
 import com.okdeer.base.dal.IBaseMapper;
-
+import com.okdeer.mall.activity.advert.entity.ActivityAdvertCoupons;
+/**
+ * ClassName: ActivityAdvertCouponsMapper 
+ * @Description: 代金券活动及广告活动持久化类
+ * @author tuzhd
+ * @date 2017年4月13日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ * 		V2.2.0			2017-4-13			tuzhd			 代金券活动及广告活动实现类
+ */
 public interface ActivityAdvertCouponsMapper extends IBaseMapper {
-
+	/**
+	 * @Description: 根据活动id及模板编号查询关联的代金券活动
+	 * @return ActivityAdvertSale  
+	 * @author tuzhd
+	 * @date 2017年4月13日
+	 */
+    public ActivityAdvertCoupons findAdvertCouponsByIdNo(String modelNo,String activityAdvertId);
 }

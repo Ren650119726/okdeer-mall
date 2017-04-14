@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseMapper;
@@ -88,7 +89,7 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 		rec.setLuckDrawId(activityId);
 		rec.setCreateTime(new Date());
 		rec.setIsOffer(0);
-		rec.setDisabled(0);
+		rec.setDisabled(Disabled.valid);
 		return activityPrizeRecordMapper.add(rec);
 	}
 
