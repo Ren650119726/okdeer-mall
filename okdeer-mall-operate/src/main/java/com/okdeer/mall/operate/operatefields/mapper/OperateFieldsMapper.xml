@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.operatefields.mapper.OperateFieldsMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.operatefields.entity.OperateFields" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsType"/>
+        <result column="business_id" property="businessId" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="template" property="template" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsTemplate"/>
+        <result column="point_type" property="pointType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsPointType"/>
+        <result column="point_content" property="pointContent" jdbcType="VARCHAR" />
+        <result column="head_pic" property="headPic" jdbcType="VARCHAR" />
+        <result column="sort" property="sort" jdbcType="TINYINT" />
+        <result column="enabled" property="enabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Enabled"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled"/>
+    </resultMap>
+    
+    <resultMap  id="OperateFieldsBoMap" extends="BaseResultMap" type="com.okdeer.mall.operate.operatefields.bo.OperateFieldsBo">
+    	<collection property="operateFieldscontentList" ofType="com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent" column="field_id">  
+          	 <id column="cofc_id" property="id" jdbcType="VARCHAR" />
+	        <result column="field_id" property="fieldId" jdbcType="VARCHAR" />
+	        <result column="cofc_type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsContentType"/>
+	        <result column="image_url" property="imageUrl" jdbcType="VARCHAR" />
+	        <result column="link_url" property="linkUrl" jdbcType="VARCHAR" />
+	        <result column="business_type" property="businessType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsBusinessType"/>
+	        <result column="cofc_business_id" property="businessId" jdbcType="VARCHAR" />
+	        <result column="sort_type" property="sortType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsSortType"/>
+	        <result column="cofc_sort" property="sort" jdbcType="INTEGER" />
+        </collection>
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, type, business_id, name, template, point_type, point_content, head_pic, sort, 
+        enabled, create_time, update_time, create_user_id, update_user_id, disabled
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_operate_fields
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.operate.operatefields.entity.OperateFields" >
+        insert into column_operate_fields
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="type != null" >
+                type,
+            </if>
+            <if test="businessId != null" >
+                business_id,
+            </if>
+            <if test="name != null" >
+                name,
+            </if>
+            <if test="template != null" >
+                template,
+            </if>
+            <if test="pointType != null" >
+                point_type,
+            </if>
+            <if test="pointContent != null" >
+                point_content,
+            </if>
+            <if test="headPic != null" >
+                head_pic,
+            </if>
+            <if test="sort != null" >
+                sort,
+            </if>
+            <if test="enabled != null" >
+                enabled,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                #{type,jdbcType=TINYINT},
+            </if>
+            <if test="businessId != null" >
+                #{businessId,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null" >
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="template != null" >
+                #{template,jdbcType=TINYINT},
+            </if>
+            <if test="pointType != null" >
+                #{pointType,jdbcType=TINYINT},
+            </if>
+            <if test="pointContent != null" >
+                #{pointContent,jdbcType=VARCHAR},
+            </if>
+            <if test="headPic != null" >
+                #{headPic,jdbcType=VARCHAR},
+            </if>
+            <if test="sort != null" >
+                #{sort,jdbcType=TINYINT},
+            </if>
+            <if test="enabled != null" >
+                #{enabled,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateUserId != null" >
+                #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.operate.operatefields.entity.OperateFields" >
+        update column_operate_fields
+        <set >
+            <if test="type != null" >
+                type = #{type,jdbcType=TINYINT},
+            </if>
+            <if test="businessId != null" >
+                business_id = #{businessId,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null" >
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="template != null" >
+                template = #{template,jdbcType=TINYINT},
+            </if>
+            <if test="pointType != null" >
+                point_type = #{pointType,jdbcType=TINYINT},
+            </if>
+            <if test="pointContent != null" >
+                point_content = #{pointContent,jdbcType=VARCHAR},
+            </if>
+            <if test="headPic != null" >
+                head_pic = #{headPic,jdbcType=VARCHAR},
+            </if>
+            <if test="sort != null" >
+                sort = #{sort,jdbcType=TINYINT},
+            </if>
+            <if test="enabled != null" >
+                enabled = #{enabled,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=TINYINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        DELETE FROM column_operate_fields
+        WHERE id = #{id,jdbcType=VARCHAR}
+    </delete>
+	
+	<!-- 根据条件查询列表 -->
+	<select id="findList" parameterType="com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto" resultMap="BaseResultMap">
+		SELECT 
+        <include refid="Base_Column_List" />
+        FROM column_operate_fields
+        WHERE disabled = 0
+        <if test="type != null">
+        	AND type = #{type,jdbcType=TINYINT}
+        </if>
+        <if test="businessId != null and businessId !='' ">
+        	AND business_id = #{businessId,jdbcType=VARCHAR}
+        </if>
+        <if test="enabled != null">
+        	AND enabled = #{enabled,jdbcType=TINYINT}
+        </if>
+        ORDER BY sort DESC
+	</select>
+	
+	<select id="findListWithContent" parameterType="com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto" resultMap="OperateFieldsBoMap">
+		SELECT 
+		cofc.id as cofc_id, cofc.field_id, cofc.type as cofc_type, cofc.image_url, cofc.link_url, cofc.business_type, cofc.business_id as cofc_business_id, cofc.sort_type, cofc.sort as cofc_sort,
+        cof.id, cof.type, cof.business_id, cof.name, cof.template, cof.point_type, cof.point_content, cof.head_pic, cof.sort, 
+        cof.enabled, cof.create_time, cof.update_time, cof.create_user_id, cof.update_user_id, cof.disabled
+        FROM column_operate_fields_content cofc LEFT JOIN column_operate_fields cof ON  cofc.field_id = cof.id
+        WHERE cof.disabled = 0
+        <if test="type != null">
+        	AND cof.type = #{type,jdbcType=TINYINT}
+        </if>
+        <if test="businessId != null and businessId !='' ">
+        	AND cof.business_id = #{businessId,jdbcType=VARCHAR}
+        </if>
+        <if test="enabled != null">
+        	AND cof.enabled = #{enabled,jdbcType=TINYINT}
+        </if>
+        ORDER BY cof.sort desc,cofc.sort  desc
+	</select>
+	
+	<select id="queryMinSort" resultType="java.lang.Integer">
+		SELECT MIN(sort)  FROM  column_operate_fields WHERE  type = #{type,jdbcType=TINYINT} AND business_id = #{businessId,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="findCompareBySort"  resultMap="BaseResultMap">
+		SELECT 
+		<include refid="Base_Column_List" />
+		FROM  column_operate_fields WHERE  
+		
+		<if test="type == 1">
+			<![CDATA[ sort >= #{sort,jdbcType=TINYINT} ]]>
+		</if>
+		<if test="type == -1">
+			<![CDATA[ sort <= #{sort,jdbcType=TINYINT} ]]>
+		</if>
+		AND id != #{id,jdbcType=VARCHAR}
+		
+		<if test="type == 1">
+			ORDER BY sort ASC
+		</if>
+		<if test="type == -1">
+			ORDER BY sort DESC
+		</if>
+		LIMMIT 1
+	</select>
+	
+</mapper>
