@@ -40,7 +40,7 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 	/**
 	 * @Description: TODO
 	 * @param userId
-	 * @param activityId 活动id 广告活动id 以后会是对应
+	 * @param activityId 活动id H5活动id 以后会是对应
 	 * @return   
 	 * @return List<ActivityPrizeRecord>  
 	 * @throws

@@ -190,7 +190,7 @@ public interface ActivityCollectCouponsMapper {
 	// add by zhulq 2016-10-25
 	
 	/**
-	 * @Description: 获取广告活动的代金卷
+	 * @Description: 获取H5活动的代金卷
 	 * @param map 参数
 	 * @return List
 	 * @author zhulq

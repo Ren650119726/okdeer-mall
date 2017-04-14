@@ -395,7 +395,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @param phone 用户手机号码
 	 * @param activityCouponsType 活动类型
 	 * @param userId 	邀请的用户id 没有null
-	 * @param advertId 	广告活动id
+	 * @param advertId 	H5活动id
 	 * @return tuzhiding 
 	 * @throws ServiceException
 	 */
@@ -425,7 +425,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 					checkFlag = false;
 					break;
 				}
-				//预领取记录中 手机号码 、 邀请人id 、广告活动id
+				//预领取记录中 手机号码 、 邀请人id 、H5活动id
 				record.setCollectUser(phone);
 				record.setInviteUserId(userId);
 				record.setActivityId(advertId);

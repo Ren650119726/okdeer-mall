@@ -11,14 +11,14 @@ import com.okdeer.mall.activity.advert.entity.ActivityAdvertSale;
 
 /**
  * ClassName: ActivityAdvertSaleService 
- * @Description: 销售活动及广告活动关联接口类
+ * @Description: 销售活动及H5活动关联接口类
  * @author tuzhd
  * @date 2017年4月13日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- * 		V2.2.0			2017-4-13			tuzhd			 销售活动及广告活动关联接口类
+ * 		V2.2.0			2017-4-13			tuzhd			 销售活动及H5活动关联接口类
  */
 
 public interface ActivityAdvertSaleService extends IBaseService {

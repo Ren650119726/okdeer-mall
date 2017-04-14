@@ -15,14 +15,14 @@ import com.okdeer.mall.activity.advert.service.ActivityAdvertCouponsService;
 
 /**
  * ClassName: ActivityAdvertCouponsMapper 
- * @Description: 代金券活动及广告活动对外实现类
+ * @Description: 代金券活动及H5活动对外实现类
  * @author tuzhd
  * @date 2017年4月13日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- * 		V2.2.0			2017-4-13			tuzhd			 代金券活动及广告活动对外实现
+ * 		V2.2.0			2017-4-13			tuzhd			 代金券活动及H5活动对外实现
  */
 
 @Service(version="1.0.0")
