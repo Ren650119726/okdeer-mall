@@ -53,9 +53,9 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 	ActivityPrizeWeightService activityPrizeWeightService;
 	
 	@Override
-	public PageUtils<ActivityLuckDraw> findLuckDrawList(ActivityLuckDraw activityLuckDraw, int pageNumber,
+	public PageUtils<ActivityLuckDraw> findLuckDrawList(ActivityLuckDrawVo activityLuckDrawVo, int pageNumber,
 			int pageSize) {
-		return activityLuckDrawService.findLuckDrawList(activityLuckDraw, pageNumber, pageSize);
+		return activityLuckDrawService.findLuckDrawList(activityLuckDrawVo, pageNumber, pageSize);
 	}
 
 	@Override

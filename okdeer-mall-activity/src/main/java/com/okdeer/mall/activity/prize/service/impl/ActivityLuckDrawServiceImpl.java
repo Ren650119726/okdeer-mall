@@ -16,6 +16,7 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
+import com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo;
 import com.okdeer.mall.activity.prize.mapper.ActivityLuckDrawMapper;
 import com.okdeer.mall.activity.prize.service.ActivityLuckDrawService;
 
@@ -46,10 +47,10 @@ public class ActivityLuckDrawServiceImpl extends BaseServiceImpl implements Acti
 	}
 	
 	@Override
-	public PageUtils<ActivityLuckDraw> findLuckDrawList(ActivityLuckDraw activityLuckDraw, int pageNumber,
+	public PageUtils<ActivityLuckDraw> findLuckDrawList(ActivityLuckDrawVo activityLuckDrawVo, int pageNumber,
 			int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true);
-		List<ActivityLuckDraw> result = activityLuckDrawMapper.findPrizeRecordList(activityLuckDraw);
+		List<ActivityLuckDraw> result = activityLuckDrawMapper.findPrizeRecordList(activityLuckDrawVo);
 		return new PageUtils<ActivityLuckDraw>(result);
 	}
 

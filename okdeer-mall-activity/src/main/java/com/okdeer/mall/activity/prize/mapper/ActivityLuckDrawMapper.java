@@ -12,17 +12,18 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
+import com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo;
 
 public interface ActivityLuckDrawMapper extends IBaseMapper {
 
 	/**
 	 * @Description: 查询模板列表
-	 * @param activityLuckDraw
+	 * @param activityLuckDrawVo
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年4月11日
 	 */
-	List<ActivityLuckDraw> findPrizeRecordList(ActivityLuckDraw activityLuckDraw);
+	List<ActivityLuckDraw> findPrizeRecordList(ActivityLuckDrawVo activityLuckDrawVo);
 
 	/**
 	 * @Description: 通过模板名称查询模板数量

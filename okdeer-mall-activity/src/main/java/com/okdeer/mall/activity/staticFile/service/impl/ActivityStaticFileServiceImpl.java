@@ -16,6 +16,7 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
+import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFileVo;
 import com.okdeer.mall.activity.staticFile.mapper.ActivityStaticFileMapper;
 import com.okdeer.mall.activity.staticFile.service.ActivityStaticFileService;
 
@@ -47,10 +48,10 @@ public class ActivityStaticFileServiceImpl extends BaseServiceImpl implements Ac
 	}
 
 	@Override
-	public PageUtils<ActivityStaticFile> findStaticFileList(ActivityStaticFile activityStaticFile, int pageNumber,
+	public PageUtils<ActivityStaticFile> findStaticFileList(ActivityStaticFileVo activityStaticFileVo, int pageNumber,
 			int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true);
-		List<ActivityStaticFile> result = activityStaticFileMapper.findStaticFileList(activityStaticFile);
+		List<ActivityStaticFile> result = activityStaticFileMapper.findStaticFileList(activityStaticFileVo);
 		return new PageUtils<ActivityStaticFile>(result);
 	}
 

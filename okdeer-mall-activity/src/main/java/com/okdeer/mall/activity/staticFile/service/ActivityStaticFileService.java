@@ -9,6 +9,7 @@ package com.okdeer.mall.activity.staticFile.service;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
+import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFileVo;
 
 /**
  * ClassName: ActivityStaticFileService 
@@ -26,14 +27,14 @@ public interface ActivityStaticFileService extends IBaseService {
 
 	/**
 	 * @Description: TODO
-	 * @param activityStaticFile
+	 * @param activityStaticFileVo
 	 * @param pageNumber
 	 * @param pageSize
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年4月12日
 	 */
-	PageUtils<ActivityStaticFile> findStaticFileList(ActivityStaticFile activityStaticFile, int pageNumber,
+	PageUtils<ActivityStaticFile> findStaticFileList(ActivityStaticFileVo activityStaticFileVo, int pageNumber,
 			int pageSize);
 
 	/**

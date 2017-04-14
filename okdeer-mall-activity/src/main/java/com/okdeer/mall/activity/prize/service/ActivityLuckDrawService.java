@@ -11,6 +11,7 @@ import java.util.List;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
+import com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo;
 
 /**
  * ClassName: ActivityLuckDrawService 
@@ -28,14 +29,14 @@ public interface ActivityLuckDrawService extends IBaseService {
 
 	/**
 	 * @Description: TODO
-	 * @param activityLuckDraw
+	 * @param activityLuckDrawVo
 	 * @param pageNumber
 	 * @param pageSize
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年4月11日
 	 */
-	PageUtils<ActivityLuckDraw> findLuckDrawList(ActivityLuckDraw activityLuckDraw, int pageNumber, int pageSize);
+	PageUtils<ActivityLuckDraw> findLuckDrawList(ActivityLuckDrawVo activityLuckDrawVo, int pageNumber, int pageSize);
 
 	/**
 	 * @Description: TODO
