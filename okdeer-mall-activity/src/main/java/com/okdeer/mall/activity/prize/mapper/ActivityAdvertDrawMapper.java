@@ -7,7 +7,26 @@
 package com.okdeer.mall.activity.prize.mapper;
 
 import com.okdeer.base.dal.IBaseMapper;
-
+import com.okdeer.mall.activity.prize.entity.ActivityAdvertDraw;
+/**
+ * ClassName: ActivityAdvertDrawMapper 
+ * @Description: 抽奖活动及广告活动持久化类
+ * @author tuzhd
+ * @date 2017年4月13日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ * 		V2.2.0			2017-4-13			tuzhd			抽奖活动及广告活动持久化类
+ */
 public interface ActivityAdvertDrawMapper extends IBaseMapper {
-
+	
+	/**
+	 * @Description: 根据活动id及模板编号查询关联的抽奖活动
+	 * @return ActivityAdvertSale  
+	 * @author tuzhd
+	 * @date 2017年4月13日
+	 */
+    public ActivityAdvertDraw findAdvertDrawByIdNo(String modelNo,String activityAdvertId);
+	
 }

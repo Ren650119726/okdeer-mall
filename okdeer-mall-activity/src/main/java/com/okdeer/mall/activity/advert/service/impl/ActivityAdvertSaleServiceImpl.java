@@ -6,34 +6,48 @@
  */    
 package com.okdeer.mall.activity.advert.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.activity.advert.service.ActivityAdvertSaleApi;
+import com.okdeer.mall.activity.advert.entity.ActivityAdvertSale;
+import com.okdeer.mall.activity.advert.mapper.ActivityAdvertSaleMapper;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertSaleService;
 
 /**
  * ClassName: ActivityAdvertSaleServiceImpl 
- * @Description: TODO
- * @author xuzq01
- * @date 2017年4月12日
+ * @Description: 销售活动及广告活动关联实现类
+ * @author tuzhd
+ * @date 2017年4月13日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ * 		V2.2.0			2017-4-13			tuzhd			 销售活动及广告活动关联实现类
  */
 @Service
 public class ActivityAdvertSaleServiceImpl extends BaseServiceImpl implements ActivityAdvertSaleService {
-
+	
+	@Autowired
+	ActivityAdvertSaleMapper activityAdvertSaleMapper;
+	
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
 	 */
 	@Override
 	public IBaseMapper getBaseMapper() {
-		// TODO Auto-generated method stub
-		return null;
+		return activityAdvertSaleMapper;
 	}
-
+	
+	/**
+	 * @Description: 根据活动id及模板编号查询关联的销售类型 
+	 * @return ActivityAdvertSale  
+	 * @author tuzhd
+	 * @date 2017年4月13日
+	 */
+    public ActivityAdvertSale findSaleByIdNo(String modelNo,String activityAdvertId){
+    	return activityAdvertSaleMapper.findSaleByIdNo(modelNo, activityAdvertId);
+    }
 }
