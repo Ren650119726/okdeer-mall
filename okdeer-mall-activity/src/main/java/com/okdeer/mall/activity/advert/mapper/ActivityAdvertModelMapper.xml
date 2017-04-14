@@ -6,6 +6,7 @@
         <result column="name" property="name" jdbcType="VARCHAR" />
         <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
         <result column="model_no" property="modelNo" jdbcType="INTEGER" />
+        <result column="model_type" property="modelType" jdbcType="INTEGER" javaType="com.okdeer.mall.activity.advert.enums.ModelTypeEnum"/>
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />

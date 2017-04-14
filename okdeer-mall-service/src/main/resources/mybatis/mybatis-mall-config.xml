@@ -142,5 +142,8 @@
     	<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PreferentialType"/>
     	
     	<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.CouponsType"/>
+	    <!--begin xuzq 20170414  广告活动增加枚举 V2.2-->
+	    <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.advert.enums.ModelTypeEnum"/>
+	    <!-- end  xuzq 20170414  广告活动增加枚举 V2.2-->
     </typeHandlers>
 </configuration>

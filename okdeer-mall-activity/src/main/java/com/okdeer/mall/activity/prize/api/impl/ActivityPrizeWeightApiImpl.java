@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeightVo;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeWeightApi;
