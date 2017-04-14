@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCouponsAreaMapper">	
+    <resultMap id="CouponsResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea">
+        <id property="id" column="id" javaType="string" jdbcType="VARCHAR"/>
+        <result property="couponsId" column="coupons_id" javaType="string" jdbcType="VARCHAR"/>
+        <result property="areaId" column="area_id" javaType="string" jdbcType="VARCHAR"/>    
+        <result property="couponsAreaType" column="type" javaType="com.okdeer.mall.common.enums.DistrictType" jdbcType="TINYINT"/>            
+    </resultMap>
+    
+  <!-- Begin V2.2.1 added by zhulq 20170411 -->
+    <select id="findListByType" resultMap="CouponsResultMap" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea">
+      SELECT 
+      ACA.id,ACA.coupons_id,ACA.area_id,ACA.type
+      FROM activity_coupons AC
+      LEFT JOIN activity_coupons_area ACA
+      ON ACA.coupons_id = AC.id
+      WHERE AC.disabled = 0
+      AND 
+			(
+				(ACA.area_id = #{provinceId,jdbcType=VARCHAR} and ACA.type = 1)
+				or 
+				(ACA.area_id = #{cityId,jdbcType=VARCHAR} and ACA.type = 0)
+			)	
+    </select>
+</mapper>
