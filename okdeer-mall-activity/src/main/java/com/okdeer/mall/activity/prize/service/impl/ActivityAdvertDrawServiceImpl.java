@@ -31,7 +31,7 @@ import com.okdeer.mall.activity.prize.service.ActivityAdvertDrawService;
 public class ActivityAdvertDrawServiceImpl extends BaseServiceImpl implements ActivityAdvertDrawService {
 
 	/**
-	 * 广告活动与特惠或低价关联mapper
+	 * H5活动与特惠或低价关联mapper
 	 */
 	@Autowired
 	ActivityAdvertDrawMapper activityAdvertDrawMapper;

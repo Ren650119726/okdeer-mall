@@ -16,7 +16,7 @@ import com.okdeer.mall.activity.prize.service.ActivityAdvertDrawService;
 
 /**
  * ClassName: ActivityAdvertDrawApiImpl 
- * @Description: 广告活动与特惠或低价关联api实现
+ * @Description: H5活动与特惠或低价关联api实现
  * @author xuzq01
  * @date 2017年4月14日
  *
@@ -29,7 +29,7 @@ import com.okdeer.mall.activity.prize.service.ActivityAdvertDrawService;
 public class ActivityAdvertDrawApiImpl implements ActivityAdvertDrawApi {
 	
 	/**
-	 * 广告活动与特惠或低价关联service
+	 * H5活动与特惠或低价关联service
 	 */
 	@Autowired
 	ActivityAdvertDrawService activityAdvertDrawService;
