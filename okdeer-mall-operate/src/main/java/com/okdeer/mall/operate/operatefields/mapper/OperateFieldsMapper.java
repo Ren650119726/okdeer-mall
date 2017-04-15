@@ -9,6 +9,8 @@ package com.okdeer.mall.operate.operatefields.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
 import com.okdeer.mall.operate.enums.OperateFieldsType;
@@ -54,7 +56,7 @@ public interface OperateFieldsMapper extends IBaseMapper {
 	 * @author zengjizu
 	 * @date 2017年4月13日
 	 */
-	Integer queryMinSort(OperateFieldsType type,String businessId);
+	Integer queryMinSort(@Param("type")OperateFieldsType type,@Param("businessId")String businessId);
 	
 	/**
 	 * @Description: 查询需要对比的数据
