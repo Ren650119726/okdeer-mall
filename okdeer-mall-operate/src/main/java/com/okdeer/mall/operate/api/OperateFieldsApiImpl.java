@@ -74,6 +74,12 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 		OperateFields operateFields = BeanMapper.map(operateFieldsDto, OperateFields.class);
 		return operateFieldsService.update(operateFields);
 	}
+
+	@Override
+	public OperateFieldsDto findById(String id) throws Exception {
+		OperateFields operateFields =  operateFieldsService.findById(id);
+		return BeanMapper.map(operateFields, OperateFieldsDto.class);
+	}
 	
 	
 	
