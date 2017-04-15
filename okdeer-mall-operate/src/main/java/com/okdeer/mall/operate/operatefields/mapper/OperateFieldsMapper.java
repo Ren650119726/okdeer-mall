@@ -66,6 +66,6 @@ public interface OperateFieldsMapper extends IBaseMapper {
 	 * @author zengjizu
 	 * @date 2017年4月13日
 	 */
-	OperateFields findCompareBySort(String id, int sort,int type);
+	OperateFields findCompareBySort(@Param("id")String id, @Param("sort")int sort,@Param("type")int type);
 	
 }
