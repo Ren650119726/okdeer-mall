@@ -10,17 +10,18 @@ import java.util.List;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
+import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFileVo;
 
 public interface ActivityStaticFileMapper extends IBaseMapper {
 
 	/**
 	 * @Description: TODO
-	 * @param activityStaticFile
+	 * @param activityStaticFileVo
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年4月12日
 	 */
-	List<ActivityStaticFile> findStaticFileList(ActivityStaticFile activityStaticFile);
+	List<ActivityStaticFile> findStaticFileList(ActivityStaticFileVo activityStaticFileVo);
 
 	/**
 	 * @Description: TODO

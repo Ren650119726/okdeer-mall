@@ -164,14 +164,20 @@
         where id = #{id,jdbcType=VARCHAR}
     </delete>
 	<!--begin xuzq 20170412 查询列表-->
-	<select id="findStaticFileList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile" >
+	<select id="findStaticFileList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFileVo" >
         select 
         <include refid="Base_Column_List" />
         from activity_static_file
         where 1=1 
-        <if test="title != null" >
-              AND title = #{title,jdbcType=VARCHAR}
-           </if>
+        <if test="title != null and title != ''" >
+           AND title = #{title,jdbcType=VARCHAR}
+        </if>
+        <if test="null != createTimeStart and createTimeStart != ''">
+          AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+        </if>
+        <if test="null != createTimeEnd and createTimeEnd != ''">
+          AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+        </if>
     </select>
     <select id="findCountByName" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile" >
         select count(*)

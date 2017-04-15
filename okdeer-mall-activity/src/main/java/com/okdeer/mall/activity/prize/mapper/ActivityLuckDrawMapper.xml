@@ -154,7 +154,7 @@
     </delete>
 
 	<!-- begin xuzq 20170411 获取抽奖模板设置列表  -->
-	<select id="findPrizeRecordList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw">
+	<select id="findPrizeRecordList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo">
        select 
        <include refid="Base_Column_List" />
        from activity_luck_draw

@@ -15,6 +15,7 @@ import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
+import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFileVo;
 import com.okdeer.mall.activity.staticFile.service.ActivityStaticFileApi;
 import com.okdeer.mall.activity.staticFile.service.ActivityStaticFileService;
 
@@ -40,10 +41,10 @@ public class ActivityStaticFileApiImpl implements ActivityStaticFileApi {
 	private ActivityStaticFileService activityStaticFileService;
 	
 	@Override
-	public PageUtils<ActivityStaticFile> findStaticFileList(ActivityStaticFile activityStaticFile, int pageNumber,
+	public PageUtils<ActivityStaticFile> findStaticFileList(ActivityStaticFileVo activityStaticFileVo, int pageNumber,
 			int pageSize) {
 		
-		return activityStaticFileService.findStaticFileList(activityStaticFile, pageNumber, pageSize);
+		return activityStaticFileService.findStaticFileList(activityStaticFileVo, pageNumber, pageSize);
 	}
 
 	@Override
