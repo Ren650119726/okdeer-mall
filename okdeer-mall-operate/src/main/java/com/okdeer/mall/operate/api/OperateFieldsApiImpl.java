@@ -65,7 +65,7 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 	}
 
 	@Override
-	public void updateSort(String id, boolean isUp) {
+	public void updateSort(String id, boolean isUp) throws Exception {
 		operateFieldsService.updateSort(id, isUp);
 	}
 
