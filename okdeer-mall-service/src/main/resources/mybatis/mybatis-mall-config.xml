@@ -150,5 +150,8 @@
     	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.OperateFieldsTemplate"/>
     	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.OperateFieldsType"/>
     	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.base.common.enums.Enabled"/>
+    	
+	    <typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.activity.discount.enums.ActivityBusinessType"/>
+    	
     </typeHandlers>
 </configuration>
