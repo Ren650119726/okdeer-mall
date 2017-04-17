@@ -70,4 +70,10 @@ public class ActivityStaticFileApiImpl implements ActivityStaticFileApi {
 		return activityStaticFileService.findById(id);
 	}
 
+	@Override
+	public void associateActivity(String id, String activityId) {
+		activityStaticFileService.associateActivity(id, activityId);
+		
+	}
+
 }
