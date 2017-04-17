@@ -40,6 +40,6 @@ public interface ActivityLuckDrawMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月11日
 	 */
-	void closedLuckDraw(@Param("ids") List<String> ids);
+	void updateLuckDrawStatus(@Param("ids") List<String> ids, @Param("status") int status);
 
 }

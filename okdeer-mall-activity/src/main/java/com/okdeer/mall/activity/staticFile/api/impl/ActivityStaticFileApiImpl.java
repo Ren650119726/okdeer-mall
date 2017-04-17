@@ -76,4 +76,11 @@ public class ActivityStaticFileApiImpl implements ActivityStaticFileApi {
 		
 	}
 
+	@Override
+	public void updateStaticFile(ActivityStaticFile staticFile) throws Exception {
+		Date date = new Date();
+		staticFile.setUpdateTime(date);
+		activityStaticFileService.update(staticFile);
+	}
+
 }
