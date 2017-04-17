@@ -130,7 +130,7 @@
     
 	<select id="selectStoreInfoByCityId" parameterType="com.okdeer.archive.store.entity.StoreInfo" resultType="com.okdeer.mall.common.entity.AreaScTreeVo">
 		SELECT id , disabled, type, agent_id, CONCAT(store_name,'(',area,')') as text FROM store_info 
-		WHERE city_id = #{cityId, jdbcType=VARCHAR} AND disabled = #{disabled,jdbcType=TINYINT}
+		WHERE audit_status = 1 and city_id = #{cityId, jdbcType=VARCHAR} AND disabled = #{disabled,jdbcType=TINYINT}
 		AND type = #{type,jdbcType=TINYINT} 
 		<if test="agentId != null and agentId != ''">
             AND agent_id = #{agentId, jdbcType=VARCHAR}
@@ -173,7 +173,7 @@
 		SELECT ac.id, ac.name, acc.name as activity_name, ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, ac.used_num, 
 		       ac.remain_num, ac.arrive_limit, ac.valid_day, ac.every_limit, ac.is_cash_delivery, ac.is_category_limit, 
 		       ac.code,ac.exchange_code, ac.area_type, ac.create_user_id, ac.create_time, ac.update_user_id, ac.update_time, 
-		       ac.disabled ,ac.type,ac.is_category
+		       ac.disabled ,ac.type,ac.is_category,ac.is_rand_code
 		FROM activity_coupons ac
         left join activity_collect_coupons acc on ac.activity_id = acc.id
         WHERE 1=1
