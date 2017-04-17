@@ -60,4 +60,11 @@ public class ActivityStaticFileServiceImpl extends BaseServiceImpl implements Ac
 		return activityStaticFileMapper.findCountByName(activityStaticFile);
 	}
 
+	@Override
+	public void associateActivity(String id, String activityId) {
+		
+		activityStaticFileMapper.associateActivity(id, activityId);
+		
+	}
+
 }

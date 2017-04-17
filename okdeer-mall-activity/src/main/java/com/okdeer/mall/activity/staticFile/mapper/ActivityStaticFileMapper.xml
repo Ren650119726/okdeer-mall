@@ -187,5 +187,15 @@
               AND title = #{title,jdbcType=VARCHAR}
            </if>
     </select>
+    
+    <update id="associateActivity"  parameterType="java.lang.String" >
+        update activity_static_file
+        <set >
+            <if test="activityId != null" >
+                activity_advert_id = #{activityId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
 	<!--end xuzq 20170412  查询列表-->
 </mapper>

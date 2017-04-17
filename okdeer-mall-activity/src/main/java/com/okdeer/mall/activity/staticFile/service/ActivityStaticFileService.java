@@ -46,4 +46,13 @@ public interface ActivityStaticFileService extends IBaseService {
 	 */
 	int findCountByName(ActivityStaticFile activityStaticFile);
 
+	/**
+	 * @Description: TODO
+	 * @param id
+	 * @param activityId   
+	 * @author xuzq01
+	 * @date 2017年4月17日
+	 */
+	void associateActivity(String id, String activityId);
+
 }
