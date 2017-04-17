@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.google.common.collect.Maps;
 import com.okdeer.archive.store.entity.StoreDetailVo;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -32,8 +33,10 @@ import com.okdeer.archive.system.service.SysSmsVerifyCodeServiceApi;
 import com.okdeer.archive.system.service.SysUserLoginLogServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.model.RequestParameter;
 import com.okdeer.base.common.utils.EncryptionUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.service.BaseCrudServiceImpl;
@@ -45,6 +48,7 @@ import com.okdeer.ca.api.common.ApiException;
 import com.okdeer.ca.api.sysuser.entity.SysUserDto;
 import com.okdeer.ca.api.sysuser.service.ISysUserApi;
 import com.okdeer.common.consts.RedisKeyConstants;
+import com.okdeer.mall.common.enums.ClientTypeEnum;
 import com.okdeer.mall.common.utils.security.DESUtils;
 import com.okdeer.mall.member.member.dto.SysBuyerLocateInfoDto;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
@@ -176,11 +180,6 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	@Autowired
 	private SysRandCodeRecordMapper sysRandCodeRecordMapper;
 	
-	/**
-	 * mq
-	 */
-	@Autowired
-	private RocketMQProducer rocketMQProducer;
 	
 	/**
 	 * 用户定位信息api
@@ -442,54 +441,133 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 		return sysBuyerUserMapper.selectByPrimaryKey(userId);
 	}
 	// end add by wushp
-
-	// begin by wangf01 2016.07.26
-	@Transactional(rollbackFor = Exception.class)
+	
+	/**
+	 * 登入验证
+	 */
 	@Override
-	public Map<String, Object> saveBuyerUserPwdLogin(Map<String, Object> requestMap) throws Exception {
+	public int loginValidation(BuyerUserVo buyerUserVo) throws Exception {
+		
+		String mobilePhone = DESUtils.decrypt(buyerUserVo.getLoginName());
+		String loginPassword = buyerUserVo.getLoginPassword();
+		if (!StringUtils.isEmpty(loginPassword)) {
+			return validationByPwd(mobilePhone,loginPassword);
+		}else{
+			return validationByVerifyCode(mobilePhone,buyerUserVo);
+		}
+	}
+	
+	/**
+	 * 验证码登入验证
+	 * @param mobilePhone
+	 * @param buyerUserVo
+	 * @return
+	 * @throws Exception   
+	 * @author guocp
+	 * @date 2017年4月13日
+	 */
+	private int validationByVerifyCode(String mobilePhone,BuyerUserVo buyerUserVo) throws Exception {
+		
 		Map<String, Object> map = new HashMap<String, Object>();
-
-		String mobilePhone = requestMap.get("mobilePhone").toString();
-		String loginPassword = requestMap.get("loginPassword").toString();
-		String machineCode = requestMap.get("machineCode").toString();
-		String token = requestMap.get("token").toString();
-		SysBuyerUserItemDto sysBuyerUserItemDto = (SysBuyerUserItemDto) requestMap.get("sysBuyerUserItemDto");
-		BuyerUserVo resultBuyerUserVo = (BuyerUserVo) requestMap.get("resultBuyerUserVo");
-
+		buyerUserVo.setVerifyCode(buyerUserVo.getVerifyCode().toLowerCase());
+		String verifyCode = buyerUserVo.getVerifyCode();
+		Integer verifyCodeType = buyerUserVo.getVerifyCodeType();
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("phoneSearch", mobilePhone);
+		params.put("typeSearch", verifyCodeType);
+		params.put("bussinessTypeSearch", VerifyCodeBussinessTypeEnum.LOGIN.getCode());
+		SysSmsVerifyCode sysSmsVerifyCode = sysSmsVerifyCodeService.findLatestByParams(params);
+		// 更新验证码状态
+		sysSmsVerifyCodeService.modifyUsedStatus(sysSmsVerifyCode.getId());
+		// 如果验证码为空或者验证码不相等，则提示验证码错误，如果验证码相等，但状态为已使用，则提示验证码失效
+		if (null == sysSmsVerifyCode || !verifyCode.equals(sysSmsVerifyCode.getVerifyCode())) {
+			return 12;
+		} else if (sysSmsVerifyCode.getStatus() == 1) {
+			map.put("flag", 11);
+			return 11;
+		}
+		return 0;
+	}
+	
+	/**
+	 * 密码登入验证
+	 * @param mobilePhone
+	 * @param loginPassword
+	 * @return
+	 * @throws Exception   
+	 * @author guocp
+	 * @date 2017年4月13日
+	 */
+	private int validationByPwd(String mobilePhone,String loginPassword) throws Exception {
+		
 		loginPassword = EncryptionUtils.md5(DESUtils.decrypt(loginPassword));
 		// 查询手机用户信息
-		sysBuyerUserItemDto = sysBuyerUserApi.login(mobilePhone, null);
+		SysBuyerUserItemDto sysBuyerUserItemDto = sysBuyerUserApi.login(mobilePhone, null);
 		// 验证密码登录
 		if (null == sysBuyerUserItemDto) {
-			map.put("flag", 1);
-			return map;
+			return 1;
 		}
 		// 验证用户是否设置密码
 		if (StringUtils.isEmpty(sysBuyerUserItemDto.getLoginPassword())) {
-			map.put("flag", 2);
-			return map;
+			return 2;
 		}
+		// 密码错误
 		if (!(loginPassword.toLowerCase()).equals(sysBuyerUserItemDto.getLoginPassword().toLowerCase())) {
-			map.put("flag", 3);
-			return map;
+			return 3;
 		}
-		
-		//查看用户是否有邀请码
-		SysUserInvitationCode invitationCodeEntity = this.invitationCodeService.findInvitationCodeByUserId(sysBuyerUserItemDto.getId(), InvitationUserType.phoneUser);
-		resultBuyerUserVo = new BuyerUserVo();
-		if(invitationCodeEntity != null) {
-		    resultBuyerUserVo.setInvitationCode(invitationCodeEntity.getInvitationCode());
-		}
-		
-		PropertyUtils.copyProperties(resultBuyerUserVo, sysBuyerUserItemDto);
-		// 单点登录
-		List<SysUserLoginLog> sysUserLoginLogs = sysUserLoginLogService.findAllByUserId(sysBuyerUserItemDto.getId(),
-				null, null, SysUserLoginLog.CLIENT_TYPE_APP);
-		singlePoint(machineCode, token, sysBuyerUserItemDto, map, sysUserLoginLogs);
+		return 0;
+	}
 
-		map.put("resultBuyerUserVo", resultBuyerUserVo);
-		map.put("sysBuyerUserItemDto", sysBuyerUserItemDto);
-		return map;
+
+	/**
+	 * 保存用户登入日志
+	 * @param sysUserLoginLogs
+	 * @param cLIENT_TYPE_APP   
+	 * @author guocp
+	 * @date 2017年4月11日
+	 */
+	private List<SysUserLoginLog> saveUserLoginLog( final String token, final String deviceId,
+			final String userId, final Integer clientType) {
+
+		List<SysUserLoginLog> sysUserLoginLogs = sysUserLoginLogService.findAllByUserId(userId, null, deviceId, clientType);
+		Date data = new Date();
+		// 设置设备登陆信息
+		if (!CollectionUtils.isEmpty(sysUserLoginLogs)) {
+			SysUserLoginLog sysLog = BeanMapper.map(sysUserLoginLogs.get(0), SysUserLoginLog.class);
+			sysLog.setIsLogin(SysUserLoginLog.IS_LOGIN_STAUE_1);
+			sysLog.setToken(token);
+			sysLog.setUpdateTime(data);
+			sysUserLoginLogService.updateSysUserLoginLog(sysLog);
+		} else {
+			SysUserLoginLog sysLog = new SysUserLoginLog();
+			sysLog.setId(UuidUtils.getUuid());
+			sysLog.setDeviceId(deviceId);
+			sysLog.setIsLogin(SysUserLoginLog.IS_LOGIN_STAUE_1);
+			sysLog.setToken(token);
+			sysLog.setUserId(userId);
+			sysLog.setCreateTime(data);
+			sysLog.setUpdateTime(data);
+			sysLog.setClientType(clientType);
+			sysUserLoginLogService.insertSysUserLoginLog(sysLog);
+		}
+		return sysUserLoginLogs;
+	}
+
+	/**
+	 * 获取登入日志
+	 * @param id
+	 * @param clientType
+	 * @return   获取登入日志
+	 * @author guocp
+	 * @date 2017年4月11日
+	 */
+	private List<SysUserLoginLog> findUserLoginLogs(String userId,String deviceId, String clientTypeStr) {
+		Integer clientType = ClientTypeEnum.CVS.getCode();
+		if(clientType!=null){
+			clientType = Integer.valueOf(clientTypeStr);
+		}
+		List<SysUserLoginLog> sysUserLoginLogs = sysUserLoginLogService.findAllByUserId(userId, null, deviceId, clientType);
+		return sysUserLoginLogs;
 	}
 
 	/**
@@ -505,7 +583,7 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	 * @date 2016年7月26日
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void singlePoint(String machineCode, String token, SysBuyerUserItemDto sysBuyerUserItemDto, Map map,
+	private void singlePoint(String machineCode, String token, SysBuyerUserItemDto sysBuyerUserItemDto, /*Map map,*/
 			List<SysUserLoginLog> sysUserLoginLogs) {
 		List<String> ids = new ArrayList<String>();
 		boolean bool = true;
@@ -529,89 +607,34 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 
 		}
 
-		map.put("sysUserLoginLogs", sysUserLoginLogs);
+//		map.put("sysUserLoginLogs", sysUserLoginLogs);
 
 		// 清除已上线设备
 		if (ids != null && ids.size() > 0) {
 			sysUserLoginLogService.updateIsLoginByIds(ids);
 		}
 
-		Date data = new Date();
-		// 设置设备登陆信息
-		if (!bool) {
-			sysLog.setIsLogin(SysUserLoginLog.IS_LOGIN_STAUE_1);
-			sysLog.setToken(token);
-			sysLog.setUpdateTime(data);
-			sysUserLoginLogService.updateSysUserLoginLog(sysLog);
-		} else {
-			sysLog = new SysUserLoginLog();
-			sysLog.setId(UuidUtils.getUuid());
-			sysLog.setDeviceId(machineCode);
-			sysLog.setIsLogin(SysUserLoginLog.IS_LOGIN_STAUE_1);
-			sysLog.setToken(token);
-			sysLog.setUserId(sysBuyerUserItemDto.getId());
-			sysLog.setCreateTime(data);
-			sysLog.setUpdateTime(data);
-			sysLog.setClientType(SysUserLoginLog.CLIENT_TYPE_APP);
-			sysUserLoginLogService.insertSysUserLoginLog(sysLog);
-		}
 	}
 
+	/**
+	 * 新增用户或查询用户信息
+	 */
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public Map<String, Object> saveBuyerUserVerifyCodeLogin(Map<String, Object> requestMap) throws Exception {
-		BuyerUserVo buyerUserVo = (BuyerUserVo) requestMap.get("buyerUserVo");
-		String mobilePhone = requestMap.get("mobilePhone").toString();
-		SysBuyerUserDto sysBuyerUserDto = (SysBuyerUserDto) requestMap.get("sysBuyerUserDto");
-		BuyerUserVo resultBuyerUserVo = (BuyerUserVo) requestMap.get("resultBuyerUserVo");
-		SysBuyerUserItemDto sysBuyerUserItemDto = (SysBuyerUserItemDto) requestMap.get("sysBuyerUserItemDto");
-		String machineCode = requestMap.get("machineCode").toString();
-		String token = requestMap.get("token").toString();
-
-		buyerUserVo.setVerifyCode(buyerUserVo.getVerifyCode().toLowerCase());
-		String verifyCode = buyerUserVo.getVerifyCode();
-		Integer verifyCodeType = buyerUserVo.getVerifyCodeType();
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("phoneSearch", mobilePhone);
-		params.put("typeSearch", verifyCodeType);
-		params.put("bussinessTypeSearch", VerifyCodeBussinessTypeEnum.LOGIN.getCode());
-		SysSmsVerifyCode sysSmsVerifyCode = sysSmsVerifyCodeService.findLatestByParams(params);
-		// 如果验证码为空或者验证码不相等，则提示验证码错误，如果验证码相等，但状态为已使用，则提示验证码失效
-		if (null == sysSmsVerifyCode || !verifyCode.equals(sysSmsVerifyCode.getVerifyCode())) {
-			requestMap.put("flag", 12);
-			return requestMap;
-		} else if (sysSmsVerifyCode.getStatus() == 1) {
-			requestMap.put("flag", 11);
-			return requestMap;
-		}
+	public Map<String, Object> saveBuyerUserAndLog(RequestParameter parameters,String mobilePhone) throws Exception {
+		// 添加用户来源，clientType:0是管家版app，3是便利店app
+		String clientTypeStr = parameters.getClientType();
 		SysBuyerUserConditionDto condition = new SysBuyerUserConditionDto();
 		condition.setLoginName(mobilePhone);
 		List<SysBuyerUserItemDto> lstUserItemDtos = sysBuyerUserApi.findByCondition(condition);
+		
+		SysBuyerUserItemDto sysBuyerUserItemDto = new SysBuyerUserItemDto();
+		BuyerUserVo resultBuyerUserVo;
 		if (CollectionUtils.isEmpty(lstUserItemDtos)) {
-			// 更新验证码已使用状态
-			SysSmsVerifyCode sysSmsVerifyCodeUpdate = new SysSmsVerifyCode();
-			sysSmsVerifyCodeUpdate.setId(sysSmsVerifyCode.getId());
-			sysSmsVerifyCodeUpdate.setStatus(1);
-
-			sysBuyerUserDto = new SysBuyerUserDto();
-			PropertyUtils.copyProperties(sysBuyerUserDto, buyerUserVo);
-			sysBuyerUserDto.setLoginName(mobilePhone);
-			sysBuyerUserDto.setPhone(mobilePhone);
-			
-			// 添加用户来源，clientType:0是管家版app，3是便利店app
-			String clientType = requestMap.get("clientType").toString();
-			if (StringUtils.isNotBlank(clientType) && "0".equals(clientType)) {
-				sysBuyerUserDto.setDataSource(String.valueOf(OrderResourceEnum.YSCAPP.ordinal()));
-			} else if (StringUtils.isNotBlank(clientType) && "3".equals(clientType)) {
-				sysBuyerUserDto.setDataSource(String.valueOf(OrderResourceEnum.CVSAPP.ordinal()));
-			}
-			String userId = sysBuyerUserService.addSysBuyerSync410(sysBuyerUserDto, sysSmsVerifyCodeUpdate, null);
-
-			//Begin added by zhaoqc
-			//用户创建邀请码记录
+			//调用用户中心保存用户
+			String userId = saveBuyerUser(mobilePhone,clientTypeStr);
+			//保存邀请码
 			SysUserInvitationCode invitationCode = saveInvitationCode(userId);
-			//End added by zhaoqc
-			
 			resultBuyerUserVo = new BuyerUserVo();
 			resultBuyerUserVo.setId(userId);
 			resultBuyerUserVo.setLoginName(mobilePhone);
@@ -632,19 +655,38 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 			}
 			//end 涂志定
 			PropertyUtils.copyProperties(resultBuyerUserVo, sysBuyerUserItemDto);
+			resultBuyerUserVo.setUserId(sysBuyerUserItemDto.getId());
 		}
-		// 更新验证码状态
-		sysSmsVerifyCodeService.modifyUsedStatus(sysSmsVerifyCode.getId());
-
-		// 单点登录
-		List<SysUserLoginLog> sysUserLoginLogs = sysUserLoginLogService.findAllByUserId(sysBuyerUserItemDto.getId(),
-				null, null, SysUserLoginLog.CLIENT_TYPE_APP);
-		singlePoint(machineCode, token, sysBuyerUserItemDto, requestMap, sysUserLoginLogs);
-		requestMap.put("sysBuyerUserItemDto", sysBuyerUserItemDto);
+		Integer clientType = StringUtils.isNotBlank(clientTypeStr) ? Integer.valueOf(clientTypeStr)
+				: ClientTypeEnum.CVS.getCode();
+		//保存用户登入日志
+		List<SysUserLoginLog> sysUserLoginLogs = saveUserLoginLog(parameters.getToken(),parameters.getMachineCode(),sysBuyerUserItemDto.getId(),clientType);
+		Map<String, Object> requestMap = Maps.newHashMap();
+		requestMap .put("sysUserLoginLogs", sysUserLoginLogs);
 		requestMap.put("resultBuyerUserVo", resultBuyerUserVo);
 		return requestMap;
 	}
-	// end by wangf01 2016.07.26
+
+	/**
+	 * 新增用户
+	 * @return   
+	 * @author guocp
+	 * @throws Exception 
+	 * @date 2017年4月11日
+	 */
+	private String saveBuyerUser(String mobilePhone,String clientType) throws Exception {
+		SysBuyerUserDto sysBuyerUserDto = new SysBuyerUserDto();
+		sysBuyerUserDto.setLoginName(mobilePhone);
+		sysBuyerUserDto.setPhone(mobilePhone);
+		
+		if (StringUtils.isNotBlank(clientType) && "0".equals(clientType)) {
+			sysBuyerUserDto.setDataSource(String.valueOf(OrderResourceEnum.YSCAPP.ordinal()));
+		} else if (StringUtils.isNotBlank(clientType) && "3".equals(clientType)) {
+			sysBuyerUserDto.setDataSource(String.valueOf(OrderResourceEnum.CVSAPP.ordinal()));
+		}
+		//新增用户及关系
+		return sysBuyerUserService.addSysBuyerSync410(sysBuyerUserDto, null, null);
+	}
 
 	//Begin add by zhaoqc 2016.10.05
     @Override

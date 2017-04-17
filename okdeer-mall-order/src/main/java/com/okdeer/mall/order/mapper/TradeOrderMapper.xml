@@ -1560,6 +1560,19 @@
 				AND o.order_resource = #{orderResource,jdbcType=TINYINT}
 			</if>
 		</if>
+		<!-- add by mengsj begin 增加数据权限控制sql -->
+		<if test="currentUserId != null">
+			AND o.store_id IN (SELECT
+					dd.store_id
+				FROM
+					sys_user aa
+				INNER JOIN sys_user_org bb ON aa.id = bb.user_id
+				INNER JOIN sys_organization cc ON bb.org_id = cc.id
+				INNER JOIN sys_organ_store dd ON cc.id = dd.org_id
+				WHERE
+					aa.id = #{currentUserId,jdbcType=VARCHAR})
+		</if>
+		<!-- add by mengsj end 增加数据权限控制sql -->
 
 		ORDER BY o.create_time DESC
 	</select>
@@ -5248,6 +5261,19 @@
 				#{item}
 			</foreach>
 		</if>
+		<!-- add by mengsj begin 增加数据权限控制sql -->
+		<if test="currentUserId != null">
+			AND tr.store_id IN (SELECT
+					dd.store_id
+				FROM
+					sys_user aa
+				INNER JOIN sys_user_org bb ON aa.id = bb.user_id
+				INNER JOIN sys_organization cc ON bb.org_id = cc.id
+				INNER JOIN sys_organ_store dd ON cc.id = dd.org_id
+				WHERE
+					aa.id = #{currentUserId,jdbcType=VARCHAR})
+		</if>
+		<!-- add by mengsj end 增加数据权限控制sql -->
 		ORDER BY tr.create_time DESC
 	</select>
 
@@ -5834,12 +5860,8 @@
 			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
 		</if>
 		<if test="storeName != null and storeName != ''">
-			AND ((trade.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR},
-			'%') AND (trade.type = 3 OR trade.type = 4))
-			OR
-			(store.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR}, '%') AND trade.type
-			!= 3 AND trade.type != 4))
-
+			AND (store.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR},'%') 
+				AND (trade.type = 3 OR trade.type = 4))
 		</if>
 		<if test="userPhone != null and userPhone != ''">
 			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
