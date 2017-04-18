@@ -25,6 +25,7 @@
 	        <result column="field_id" property="fieldId" jdbcType="VARCHAR" />
 	        <result column="cofc_type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsContentType"/>
 	        <result column="image_url" property="imageUrl" jdbcType="VARCHAR" />
+	        <result column="title" property="title" jdbcType="VARCHAR" />
 	        <result column="link_url" property="linkUrl" jdbcType="VARCHAR" />
 	        <result column="business_type" property="businessType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsBusinessType"/>
 	        <result column="cofc_business_id" property="businessId" jdbcType="VARCHAR" />
