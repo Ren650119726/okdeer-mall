@@ -152,6 +152,15 @@
           and name = #{name,jdbcType=VARCHAR}
        </if>
     </select>
+     <select id="findActivityListByStatus" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvert" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_advert
+        where 1=1 and status in 
+        <foreach collection="statusList" open="(" close=")" index="index" item="item"  separator=",">
+            #{item}
+        </foreach>
+    </select>
      <select id="findCountByName" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvert" >
         select count(*) 
         from activity_advert

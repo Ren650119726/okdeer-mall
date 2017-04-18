@@ -59,4 +59,9 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 		return new PageUtils<ActivityAdvert>(result);
 	}
 
+	@Override
+	public List<ActivityAdvert> findActivityListByStatus(List<String> statusList) {
+		return activityAdvertMapper.findActivityListByStatus(statusList);
+	}
+
 }

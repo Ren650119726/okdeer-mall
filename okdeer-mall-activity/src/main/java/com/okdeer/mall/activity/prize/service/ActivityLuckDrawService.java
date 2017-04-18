@@ -53,7 +53,7 @@ public interface ActivityLuckDrawService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2017年4月11日
 	 */
-	void closedLuckDraw(List<String> list);
+	void updateLuckDrawStatus(List<String> list,int status);
 
 
 }

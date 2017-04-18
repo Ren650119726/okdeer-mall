@@ -196,8 +196,8 @@
        where 1=1 and disabled = 0 AND name = #{name,jdbcType=VARCHAR}
    </select>
    <!-- 关闭抽奖活动模板 -->
-   <update id="closedLuckDraw" parameterType="java.lang.String" >
-        update activity_luck_draw  set status = 2
+   <update id="updateLuckDrawStatus" parameterType="java.lang.String" >
+        update activity_luck_draw  set status = #{status,jdbcType=NUMERIC}
         where id in 
         <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
             #{item}

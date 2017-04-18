@@ -8,6 +8,8 @@ package com.okdeer.mall.activity.advert.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvert;
 
@@ -30,5 +32,14 @@ public interface ActivityAdvertMapper extends IBaseMapper {
 	 * @date 2017年4月12日
 	 */
 	List<ActivityAdvert> findActivityAdvertList(ActivityAdvert activityAdvert);
+
+	/**
+	 * @Description: TODO
+	 * @param statusList
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月17日
+	 */
+	List<ActivityAdvert> findActivityListByStatus(@Param("statusList") List<String> statusList);
 
 }
