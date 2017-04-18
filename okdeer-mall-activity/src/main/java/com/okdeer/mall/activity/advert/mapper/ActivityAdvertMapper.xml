@@ -7,6 +7,7 @@
         <result column="status" property="status" jdbcType="BIT" />
         <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
         <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+        <result column="area_type" property="areaType" jdbcType="TINYINT" javaType="com.okdeer.mall.common.enums.AreaType"/>
         <result column="remark" property="remark" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
@@ -16,7 +17,7 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, name, status, start_time, end_time, remark, create_time, create_user_id, update_time, 
+        id, name, status, start_time, end_time,area_type, remark, create_time, create_user_id, update_time, 
         update_user_id, disabled
     </sql>
 
@@ -44,6 +45,9 @@
             </if>
             <if test="endTime != null" >
                 end_time,
+            </if>
+            <if test="areaType != null" >
+                area_type,
             </if>
             <if test="remark != null" >
                 remark,
@@ -79,6 +83,9 @@
             </if>
             <if test="endTime != null" >
                 #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="areaType != null" >
+                #{areaType,jdbcType=BIT},
             </if>
             <if test="remark != null" >
                 #{remark,jdbcType=VARCHAR},
@@ -116,6 +123,9 @@
             <if test="endTime != null" >
                 end_time = #{endTime,jdbcType=TIMESTAMP},
             </if>
+            <if test="areaType != null" >
+                area_type = #{areaType,jdbcType=BIT},
+            </if>
             <if test="remark != null" >
                 remark = #{remark,jdbcType=VARCHAR},
             </if>
@@ -152,7 +162,7 @@
           and name = #{name,jdbcType=VARCHAR}
        </if>
     </select>
-     <select id="findCountByName" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvert" >
+     <select id="findCountByName" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.advert.dto.ActivityAdvertDto" >
         select count(*) 
         from activity_advert
         where 1=1

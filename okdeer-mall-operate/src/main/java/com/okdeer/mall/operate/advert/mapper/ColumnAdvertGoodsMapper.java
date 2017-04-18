@@ -67,4 +67,10 @@ public interface ColumnAdvertGoodsMapper extends IBaseMapper {
 	 * @date 2016年10月18日
 	 */
 	List<Map<String,Object>> listGoodsForAdvert(Map<String, Object> map);
+	
+	/**
+	 * @desc 批量添加 活动商品列表
+	 * @param list  活动商品列表
+	 */
+	void saveBatch(List<ColumnAdvertGoods> list);
 }

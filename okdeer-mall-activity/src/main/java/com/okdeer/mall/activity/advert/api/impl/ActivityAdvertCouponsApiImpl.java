@@ -38,4 +38,15 @@ public class ActivityAdvertCouponsApiImpl implements ActivityAdvertCouponsApi {
     public ActivityAdvertCoupons findAdvertCouponsByIdNo(String modelNo,String activityAdvertId){
     	return  activityAdvertCouponsService.findAdvertCouponsByIdNo(modelNo, activityAdvertId);
     }
+    
+    /**
+     * @Description: 添加代金券关联信息
+     * @param coupons 代金券信息
+     * @return int  
+     * @author tuzhd
+     * @date 2017年4月17日
+     */
+    public int addCoupons(ActivityAdvertCoupons coupons){
+    	return  activityAdvertCouponsService.addCoupons(coupons);
+    }
 }

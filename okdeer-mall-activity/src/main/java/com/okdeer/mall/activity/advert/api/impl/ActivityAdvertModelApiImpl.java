@@ -40,4 +40,16 @@ public class ActivityAdvertModelApiImpl implements ActivityAdvertModelApi {
 	public ActivityAdvertModel findModelByIdNo(String modelNo,String activityAdvertId){
 		return activityAdvertModelService.findModelByIdNo(modelNo, activityAdvertId);
 	}
+	
+	/**
+	 * @Description: 新增模块信息
+	 * @param modelNo 模块序号
+	 * @param activityAdvertId 活动id
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月13日
+	 */
+	public int addModel(ActivityAdvertModel model){
+		return activityAdvertModelService.addModel(model);
+	}
 }

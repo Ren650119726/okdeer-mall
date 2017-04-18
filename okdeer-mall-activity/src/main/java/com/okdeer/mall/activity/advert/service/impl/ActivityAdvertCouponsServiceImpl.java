@@ -47,5 +47,15 @@ public class ActivityAdvertCouponsServiceImpl extends BaseServiceImpl implements
     	return activityAdvertCouponsMapper.findAdvertCouponsByIdNo(modelNo, activityAdvertId);
     }
 	
+    /**
+     * @Description: 添加代金券关联信息
+     * @param coupons 代金券信息
+     * @return int  
+     * @author tuzhd
+     * @date 2017年4月17日
+     */
+    public int addCoupons(ActivityAdvertCoupons coupons){
+    	return activityAdvertCouponsMapper.add(coupons);
+    }
 
 }

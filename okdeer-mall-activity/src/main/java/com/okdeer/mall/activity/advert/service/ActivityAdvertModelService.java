@@ -31,4 +31,13 @@ public interface ActivityAdvertModelService extends IBaseService {
 	 * @date 2017年4月13日
 	 */
 	public ActivityAdvertModel findModelByIdNo(String modelNo,String activityAdvertId);
+	/**
+	 * @Description: 新增模块信息
+	 * @param modelNo 模块序号
+	 * @param activityAdvertId 活动id
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月13日
+	 */
+	public int addModel(ActivityAdvertModel model);
 }

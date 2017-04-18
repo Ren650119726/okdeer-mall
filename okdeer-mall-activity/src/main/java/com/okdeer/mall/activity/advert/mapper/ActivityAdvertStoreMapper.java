@@ -6,8 +6,28 @@
  */
 package com.okdeer.mall.activity.advert.mapper;
 
+import java.util.List;
+
 import com.okdeer.base.dal.IBaseMapper;
-
+import com.okdeer.mall.activity.advert.entity.ActivityAdvertStore;
+/**
+ * ClassName: ActivityAdvertStoreMapper 
+ * @Description: 关联店铺信息持久化类
+ * @author tuzhd
+ * @date 2017年4月18日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *		V2.2.2			2017-4-18			tuzhd				关联店铺信息持久化类
+ */
 public interface ActivityAdvertStoreMapper extends IBaseMapper {
-
+	/**
+	 * @Description: 批量添加关联店铺信息
+	 * @param list   要插入的关联店铺集合
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月17日
+	 */
+	public void saveBatch(List<ActivityAdvertStore> list);
 }

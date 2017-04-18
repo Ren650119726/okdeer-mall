@@ -77,4 +77,14 @@ public class ColumnAdvertGoodsApiImpl implements ColumnAdvertGoodsApi {
 		return columnAdvertGoodsService.listGoodsForAdvert(map);
 	}
 
+	/**
+	 * @Description: 批量添加 活动商品列表
+	 * @param list   要插入的商品集合
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月17日
+	 */
+	public void saveBatch(List<ColumnAdvertGoods> list){
+		columnAdvertGoodsService.saveBatch(list);
+	}
 }

@@ -88,5 +88,16 @@ public class ColumnAdvertGoodsServiceImpl extends BaseServiceImpl implements Col
 	public List<Map<String, Object>> listGoodsForAdvert(Map<String, Object> map) {
 		return columnAdvertGoodsMapper.listGoodsForAdvert(map);
 	}
+	
+	/**
+	 * @Description: 批量添加 活动商品列表
+	 * @param list   要插入的商品集合
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月17日
+	 */
+	public void saveBatch(List<ColumnAdvertGoods> list){
+		columnAdvertGoodsMapper.saveBatch(list);
+	}
 
 }

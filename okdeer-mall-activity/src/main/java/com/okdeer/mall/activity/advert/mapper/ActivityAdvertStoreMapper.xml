@@ -43,6 +43,20 @@
             </if>
         </trim>
     </insert>
+    
+    <!-- 批量插入关联商品 -->
+    <insert id="saveBatch" parameterType="list">
+        insert into activity_collect_area(
+			<include refid="Base_Column_List"/>
+		)values
+		<foreach collection="list" item="item" index="index" separator="," >
+        (
+            #{id,jdbcType=VARCHAR},
+            #{storeId,jdbcType=VARCHAR},
+            #{activityAdvertId,jdbcType=VARCHAR}
+        )
+		</foreach>
+	</insert>
 
     <update id="update" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvertStore" >
         update activity_advert_store
