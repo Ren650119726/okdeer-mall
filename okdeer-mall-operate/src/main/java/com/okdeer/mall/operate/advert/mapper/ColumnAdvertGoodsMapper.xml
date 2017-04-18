@@ -106,17 +106,17 @@
     </insert>
     <!-- 批量插入关联商品 -->
     <insert id="saveBatch" parameterType="list">
-        insert into activity_collect_area(
+        insert into column_advert_goods(
 			id, activity_advert_id, goods_id, model_id, create_time, sort
 		)values
 		<foreach collection="list" item="item" index="index" separator="," >
         (
-            #{id,jdbcType=VARCHAR},
-            #{activityAdvertId,jdbcType=VARCHAR},
-            #{goodsId,jdbcType=VARCHAR},
-            #{modelId,jdbcType=VARCHAR},
-            #{createTime,jdbcType=TIMESTAMP},
-            #{sort,jdbcType=INTEGER}
+            #{item.id,jdbcType=VARCHAR},
+            #{item.activityAdvertId,jdbcType=VARCHAR},
+            #{item.goodsId,jdbcType=VARCHAR},
+            #{item.modelId,jdbcType=VARCHAR},
+            #{item.createTime,jdbcType=TIMESTAMP},
+            #{item.sort,jdbcType=INTEGER}
         )
 		</foreach>
 	</insert>

@@ -46,14 +46,14 @@
     
     <!-- 批量插入关联商品 -->
     <insert id="saveBatch" parameterType="list">
-        insert into activity_collect_area(
+        insert into activity_advert_store(
 			<include refid="Base_Column_List"/>
 		)values
 		<foreach collection="list" item="item" index="index" separator="," >
         (
-            #{id,jdbcType=VARCHAR},
-            #{storeId,jdbcType=VARCHAR},
-            #{activityAdvertId,jdbcType=VARCHAR}
+            #{item.id,jdbcType=VARCHAR},
+            #{item.storeId,jdbcType=VARCHAR},
+            #{item.activityAdvertId,jdbcType=VARCHAR}
         )
 		</foreach>
 	</insert>

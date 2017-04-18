@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
@@ -96,6 +97,7 @@ public class ColumnAdvertGoodsServiceImpl extends BaseServiceImpl implements Col
 	 * @author tuzhd
 	 * @date 2017年4月17日
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	public void saveBatch(List<ColumnAdvertGoods> list){
 		columnAdvertGoodsMapper.saveBatch(list);
 	}

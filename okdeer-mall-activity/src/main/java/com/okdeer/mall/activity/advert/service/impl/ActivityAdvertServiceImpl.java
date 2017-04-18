@@ -13,14 +13,16 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.fasterxml.jackson.databind.JavaType;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.advert.dto.ActivityAdvertDto;
@@ -32,23 +34,17 @@ import com.okdeer.mall.activity.advert.entity.ActivityAdvertStore;
 import com.okdeer.mall.activity.advert.entity.ColumnAdvertGoods;
 import com.okdeer.mall.activity.advert.enums.ModelTypeEnum;
 import com.okdeer.mall.activity.advert.mapper.ActivityAdvertMapper;
-import com.okdeer.mall.activity.advert.service.ActivityAdvertApi;
-import com.okdeer.mall.activity.advert.service.ActivityAdvertCouponsApi;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertCouponsService;
-import com.okdeer.mall.activity.advert.service.ActivityAdvertModelApi;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertModelService;
-import com.okdeer.mall.activity.advert.service.ActivityAdvertSaleApi;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertSaleService;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertService;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertStoreService;
-import com.okdeer.mall.activity.advert.service.ColumnAdvertGoodsApi;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.prize.entity.ActivityAdvertDraw;
+import com.okdeer.mall.activity.prize.service.ActivityAdvertDrawService;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
-import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
+import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertGoodsService;
-
-import net.sf.json.JSONArray;
 
 /**
  * ClassName: ActivityAdvertServiceImpl 
@@ -80,6 +76,8 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 	private ActivityAdvertStoreService activityAdvertStoreService;
 	@Autowired
 	private ColumnAdvertGoodsService columnAdvertGoodsService;
+	@Autowired
+	private ActivityAdvertDrawService activityAdvertDrawService;
 	
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -105,9 +103,11 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 	 * @param userId    用户id
 	 * @return void  
 	 * @author tuzhd
+	 * @throws Exception 
 	 * @date 2017年4月18日
 	 */
-	public void addActivityAdvert(ActivityAdvertDto activityAdvertDto){
+	@Transactional(rollbackFor = Exception.class)
+	public void addActivityAdvert(ActivityAdvertDto activityAdvertDto) throws Exception{
 		
 		String userId = activityAdvertDto.getCreateUserId();
 		ActivityAdvert advertActivity =  BeanMapper.map(activityAdvertDto, ActivityAdvert.class);
@@ -122,13 +122,16 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 		activityAdvertMapper.add(advertActivity);
 		
 		//选择店铺信息
-		addAdvertStore(activityAdvertDto.getStoreIds(), advertActivity.getId());
+		if(advertActivity.getAreaType() == AreaType.store){
+			addAdvertStore(activityAdvertDto.getStoreIds(), advertActivity.getId());
+		}
 		//保存模块信息,模块信息存在
 		String modelListJson = activityAdvertDto.getModelListJson();
 		//存在模块信息
 		if(StringUtils.isNotBlank(modelListJson)){
-			List<ActivityAdvertModel> array = (List<ActivityAdvertModel>) JSONArray.
-						toCollection(JSONArray.fromObject(modelListJson),ActivityAdvertModel.class);
+			JsonMapper jsonMapper = new JsonMapper();
+			JavaType javaType = jsonMapper.contructCollectionType(ArrayList.class, ActivityAdvertModel.class);
+			List<ActivityAdvertModel> array = jsonMapper.fromJson(modelListJson, javaType);
 			//添加活动模块信息
 			addAdvertModels(array, advertActivity,userId);
 		}
@@ -151,9 +154,12 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 				store.setActivityAdvertId(activityAdvertId);
 				store.setStoreId(storeId);
 				store.setId(UuidUtils.getUuid());
+				list.add(store);
 			}
-			
-			activityAdvertStoreService.saveBatch(list);
+			//存在需要插入的数据
+ 			if(list.size() > 0){
+				activityAdvertStoreService.saveBatch(list);
+			}
 		}
 	}
 
@@ -163,14 +169,16 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 	 * @param advertActivity  活动信息  
 	 * @param userId   创建用户id
 	 * @author tuzhd
+	 * @throws Exception 
 	 * @date 2017年4月17日
 	 */
-	public void addAdvertModels(List<ActivityAdvertModel> array,ActivityAdvert advertActivity,String userId){
+	public void addAdvertModels(List<ActivityAdvertModel> array,ActivityAdvert advertActivity,String userId) throws Exception{
 		if(CollectionUtils.isNotEmpty(array) ){
 			//根据模块类型进行保存
 			for(ActivityAdvertModel md : array){
 				md.setCreateTime(new Date());
 				md.setCreateUserId(userId);
+				md.setActivityAdvertId(advertActivity.getId());
 				md.setId(UuidUtils.getUuid());
 				activityAdvertModelService.addModel(md);
 				//指定便利店商品
@@ -180,7 +188,7 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 				}else if(ModelTypeEnum.STORE_SALE_ACTIVITY== md.getModelType()){
 					ActivityAdvertSale sale = new ActivityAdvertSale();
 					sale.setActivityAdvertId(advertActivity.getId());
-					sale.setId(userId);
+					sale.setId(UuidUtils.getUuid());
 					sale.setModelId(md.getId());
 					//当为店铺促销时放的销售类型
 					sale.setSaleType(ActivityTypeEnum.enumValueOf(Integer.parseInt(md.getModelIdStr())));
@@ -192,7 +200,7 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 				}else if(ModelTypeEnum.COUPON_ACTIVITY==  md.getModelType()){
 					ActivityAdvertCoupons coupons = new ActivityAdvertCoupons();
 					coupons.setActivityAdvertId(advertActivity.getId());
-					coupons.setId(userId);
+					coupons.setId(UuidUtils.getUuid());
 					coupons.setModelId(md.getId());
 					coupons.setCollectCouponsId(md.getModelIdStr());
 					activityAdvertCouponsService.addCoupons(coupons);
@@ -200,9 +208,10 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 				}else if(ModelTypeEnum.DRAW_PRIZE_ACTIVITY ==  md.getModelType()){
 					ActivityAdvertDraw draw = new ActivityAdvertDraw();
 					draw.setActivityAdvertId(advertActivity.getId());
-					draw.setId(userId);
+					draw.setId(UuidUtils.getUuid());
 					draw.setModelId(md.getId());
 					draw.setLuckDrawId(md.getModelIdStr());
+					activityAdvertDrawService.add(draw);
 				}
 			}
 		}
@@ -232,7 +241,10 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 				goods.setSort(Integer.parseInt(sort[i]));
 				listGoods.add(goods);
 			}
-			columnAdvertGoodsService.saveBatch(listGoods);
+			//存在需要插入的数据
+ 			if(listGoods.size() > 0){
+ 				columnAdvertGoodsService.saveBatch(listGoods);
+ 			}
 		}
 	}
 

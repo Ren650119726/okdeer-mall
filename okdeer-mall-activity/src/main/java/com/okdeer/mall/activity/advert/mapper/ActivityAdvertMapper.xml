@@ -4,7 +4,7 @@
     <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.advert.entity.ActivityAdvert" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="name" property="name" jdbcType="VARCHAR" />
-        <result column="status" property="status" jdbcType="BIT" />
+        <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum"/>
         <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
         <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
         <result column="area_type" property="areaType" jdbcType="TINYINT" javaType="com.okdeer.mall.common.enums.AreaType"/>
@@ -76,7 +76,7 @@
                 #{name,jdbcType=VARCHAR},
             </if>
             <if test="status != null" >
-                #{status,jdbcType=BIT},
+                #{status,jdbcType=TINYINT},
             </if>
             <if test="startTime != null" >
                 #{startTime,jdbcType=TIMESTAMP},
@@ -85,7 +85,7 @@
                 #{endTime,jdbcType=TIMESTAMP},
             </if>
             <if test="areaType != null" >
-                #{areaType,jdbcType=BIT},
+                #{areaType,jdbcType=TINYINT},
             </if>
             <if test="remark != null" >
                 #{remark,jdbcType=VARCHAR},
@@ -103,7 +103,7 @@
                 #{updateUserId,jdbcType=VARCHAR},
             </if>
             <if test="disabled != null" >
-                #{disabled,jdbcType=BIT},
+                #{disabled,jdbcType=TINYINT},
             </if>
         </trim>
     </insert>
@@ -115,7 +115,7 @@
                 name = #{name,jdbcType=VARCHAR},
             </if>
             <if test="status != null" >
-                status = #{status,jdbcType=BIT},
+                status = #{status,jdbcType=TINYINT},
             </if>
             <if test="startTime != null" >
                 start_time = #{startTime,jdbcType=TIMESTAMP},
@@ -124,7 +124,7 @@
                 end_time = #{endTime,jdbcType=TIMESTAMP},
             </if>
             <if test="areaType != null" >
-                area_type = #{areaType,jdbcType=BIT},
+                area_type = #{areaType,jdbcType=TINYINT},
             </if>
             <if test="remark != null" >
                 remark = #{remark,jdbcType=VARCHAR},
@@ -142,7 +142,7 @@
                 update_user_id = #{updateUserId,jdbcType=VARCHAR},
             </if>
             <if test="disabled != null" >
-                disabled = #{disabled,jdbcType=BIT},
+                disabled = #{disabled,jdbcType=TINYINT},
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}

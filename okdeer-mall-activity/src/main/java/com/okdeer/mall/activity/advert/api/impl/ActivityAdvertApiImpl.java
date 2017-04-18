@@ -63,9 +63,10 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 	 * @param userId    用户id
 	 * @return void  
 	 * @author tuzhd
+	 * @throws Exception 
 	 * @date 2017年4月18日
 	 */
-	public void addActivityAdvert(ActivityAdvertDto activityAdvertDto){
+	public void addActivityAdvert(ActivityAdvertDto activityAdvertDto) throws Exception{
 		activityAdvertService.addActivityAdvert(activityAdvertDto);
 	}
 
