@@ -160,7 +160,7 @@
        from activity_luck_draw
        where 1=1
        <if test="name != null and name != ''" >
-            AND name = #{name,jdbcType=VARCHAR}
+            AND name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
        </if>
        <!-- 创建时间 -->
        <if test="createTimeStart != null">
@@ -184,7 +184,7 @@
          AND end_time <![CDATA[ <= ]]> #{endTimeEnd,jdbcType=TIMESTAMP}
        </if>
         <!-- 状态 -->
-       <if test="status != null and status !=''">
+       <if test="status != null">
          AND status = #{status,jdbcType=TINYINT}
        </if>
          AND disabled = 0 
@@ -197,11 +197,28 @@
    </select>
    <!-- 关闭抽奖活动模板 -->
    <update id="updateLuckDrawStatus" parameterType="java.lang.String" >
-        update activity_luck_draw  set status = #{status,jdbcType=NUMERIC}
+        update activity_luck_draw  
+		set status = #{status,jdbcType=NUMERIC},
+            update_time = #{updateTime,jdbcType=TIMESTAMP},
+            update_user_id = #{updateUserId,jdbcType=VARCHAR}
         where id in 
         <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
             #{item}
         </foreach>
+    </update>
+   	<select id="listByJob"  resultMap="BaseResultMap">
+		select s.* from activity_luck_draw s where 
+		(s.`status` = 0 and  s.start_time &lt;= NOW())
+		OR
+		(s.`status` = 1 and  s.end_time &lt;= NOW())
+	</select> 
+	
+	<update id="updateBatchStatus" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw" >
+        update activity_luck_draw  
+        set status = #{status,jdbcType=NUMERIC},
+            update_time = #{updateTime,jdbcType=TIMESTAMP},
+            update_user_id = #{updateUserId,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=VARCHAR}
     </update>
 	<!-- end xuzq 20170411 获取抽奖模板设置列表  -->
 </mapper>

@@ -6,12 +6,14 @@
  */    
 package com.okdeer.mall.activity.prize.service;
 
+import java.util.Date;
 import java.util.List;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
 import com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo;
+import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 
 /**
  * ClassName: ActivityLuckDrawService 
@@ -54,6 +56,25 @@ public interface ActivityLuckDrawService extends IBaseService {
 	 * @date 2017年4月11日
 	 */
 	void updateLuckDrawStatus(List<String> list,int status);
+
+	/**
+	 * @Description: TODO
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月18日
+	 */
+	List<ActivityLuckDraw> listByJob();
+
+	/**
+	 * @Description: TODO
+	 * @param id
+	 * @param end
+	 * @param updateUserId
+	 * @param updateTime   
+	 * @author xuzq01
+	 * @date 2017年4月18日
+	 */
+	void updateBatchStatus(String id, SeckillStatusEnum end, String updateUserId, Date updateTime);
 
 
 }

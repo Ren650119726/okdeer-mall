@@ -6,6 +6,8 @@
  */    
 package com.okdeer.mall.activity.prize.service.impl;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,8 @@ import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
 import com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo;
 import com.okdeer.mall.activity.prize.mapper.ActivityLuckDrawMapper;
 import com.okdeer.mall.activity.prize.service.ActivityLuckDrawService;
+import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
+import com.okdeer.mall.common.utils.RobotUserUtil;
 
 
 /**
@@ -51,6 +55,9 @@ public class ActivityLuckDrawServiceImpl extends BaseServiceImpl implements Acti
 			int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true);
 		List<ActivityLuckDraw> result = activityLuckDrawMapper.findPrizeRecordList(activityLuckDrawVo);
+		if(result == null){
+			result = new ArrayList<ActivityLuckDraw>();
+		}
 		return new PageUtils<ActivityLuckDraw>(result);
 	}
 
@@ -61,8 +68,25 @@ public class ActivityLuckDrawServiceImpl extends BaseServiceImpl implements Acti
 
 	@Override
 	public void updateLuckDrawStatus(List<String> ids,int status) {
-		activityLuckDrawMapper.updateLuckDrawStatus(ids,status);
+		Date updateTime = new Date();
+		String updateUserId = RobotUserUtil.getRobotUser().getId();
+		activityLuckDrawMapper.updateLuckDrawStatus(ids,status,updateTime,updateUserId);
 		
+	}
+
+	@Override
+	public List<ActivityLuckDraw> listByJob() {
+		return activityLuckDrawMapper.listByJob();
+	}
+
+	@Override
+	public void updateBatchStatus(String id, SeckillStatusEnum status, String updateUserId, Date updateTime) {
+		ActivityLuckDraw draw = new ActivityLuckDraw();
+		draw.setId(id);
+		draw.setStatus(status);
+		draw.setUpdateTime(updateTime);
+		draw.setUpdateUserId(updateUserId);
+		activityLuckDrawMapper.updateBatchStatus(draw);
 	}
 
 }
