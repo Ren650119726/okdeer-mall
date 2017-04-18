@@ -65,7 +65,7 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 	}
 
 	@Override
-	public void updateSort(String id, boolean isUp) {
+	public void updateSort(String id, boolean isUp) throws Exception {
 		operateFieldsService.updateSort(id, isUp);
 	}
 
@@ -73,6 +73,12 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 	public int update(OperateFieldsDto operateFieldsDto) throws Exception {
 		OperateFields operateFields = BeanMapper.map(operateFieldsDto, OperateFields.class);
 		return operateFieldsService.update(operateFields);
+	}
+
+	@Override
+	public OperateFieldsDto findById(String id) throws Exception {
+		OperateFields operateFields =  operateFieldsService.findById(id);
+		return BeanMapper.map(operateFields, OperateFieldsDto.class);
 	}
 	
 	

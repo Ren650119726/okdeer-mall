@@ -61,5 +61,5 @@ public interface OperateFieldsService extends IBaseService {
 	 * @author zengjizu
 	 * @date 2017年4月13日
 	 */
-	void updateSort(String id,boolean isUp);
+	void updateSort(String id,boolean isUp) throws Exception;
 }
