@@ -6,6 +6,7 @@
  */
 package com.okdeer.mall.activity.prize.mapper;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
@@ -38,8 +39,26 @@ public interface ActivityLuckDrawMapper extends IBaseMapper {
 	 * @Description: 批量关闭抽奖模板
 	 * @param ids   
 	 * @author xuzq01
+	 * @param updateUserId 
+	 * @param updateTime 
 	 * @date 2017年4月11日
 	 */
-	void updateLuckDrawStatus(@Param("ids") List<String> ids, @Param("status") int status);
+	void updateLuckDrawStatus(@Param("ids") List<String> ids, @Param("status") int status,@Param("updateTime") Date updateTime, @Param("updateUserId") String updateUserId);
+
+	/**
+	 * @Description: TODO
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月18日
+	 */
+	List<ActivityLuckDraw> listByJob();
+
+	/**
+	 * @Description: TODO
+	 * @param draw   
+	 * @author xuzq01
+	 * @date 2017年4月18日
+	 */
+	void updateBatchStatus(ActivityLuckDraw draw);
 
 }
