@@ -60,8 +60,8 @@ public class ActivityLuckDrawServiceImpl extends BaseServiceImpl implements Acti
 	}
 
 	@Override
-	public void closedLuckDraw(List<String> ids) {
-		activityLuckDrawMapper.closedLuckDraw(ids);
+	public void updateLuckDrawStatus(List<String> ids,int status) {
+		activityLuckDrawMapper.updateLuckDrawStatus(ids,status);
 		
 	}
 

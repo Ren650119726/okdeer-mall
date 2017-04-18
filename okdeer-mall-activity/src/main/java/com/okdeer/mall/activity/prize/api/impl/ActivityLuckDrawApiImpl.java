@@ -83,15 +83,17 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 			prizeWeight.setLuckDrawId(activityLuckDrawVo.getId());
 			prizeWeight.setCreateTime(date);
 			prizeWeight.setUpdateTime(date);
+			prizeWeight.setCreateUserId(activityLuckDrawVo.getCreateUserId());
+			prizeWeight.setUpdateUserId(activityLuckDrawVo.getCreateUserId());
 			prizeWeight.setDisabled(Disabled.valid);
 			activityPrizeWeightService.add(prizeWeight);
 		}
 	}
 
 	@Override
-	public void closedLuckDraw(String ids) {
+	public void updateLuckDrawStatus(String ids, int status) {
 		String[] idArray = ids.split(",");
-		activityLuckDrawService.closedLuckDraw(Arrays.asList(idArray));
+		activityLuckDrawService.updateLuckDrawStatus(Arrays.asList(idArray),status);
 	}
 
 	@Override
@@ -105,6 +107,7 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 	@Transactional(rollbackFor = Exception.class)
 	public void updateLuckDraw(ActivityLuckDrawVo activityLuckDrawVo) throws Exception {
 		Date date = new Date();
+		activityLuckDrawVo.setUpdateTime(date);
 		//直接更新抽奖设置
 		activityLuckDrawService.update(BeanMapper.map(activityLuckDrawVo, ActivityLuckDraw.class));
 		
@@ -113,14 +116,16 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 		List<ActivityPrizeWeight> prizeWeightList = JSONArray.parseArray(prize, ActivityPrizeWeight.class);
 		
 		for(ActivityPrizeWeight prizeWeight : prizeWeightList){
-			
+			prizeWeight.setUpdateTime(date);
+			prizeWeight.setUpdateUserId(activityLuckDrawVo.getUpdateUserId());
 			int result = activityPrizeWeightService.update(prizeWeight);
 			//为零说明为新加奖品 新增数据 
 			if(result==0){
 				prizeWeight.setId(UuidUtils.getUuid());
 				prizeWeight.setLuckDrawId(activityLuckDrawVo.getId());
 				prizeWeight.setCreateTime(date);
-				prizeWeight.setUpdateTime(date);
+				prizeWeight.setCreateUserId(activityLuckDrawVo.getUpdateUserId());
+				prizeWeight.setUpdateUserId(activityLuckDrawVo.getUpdateUserId());
 				prizeWeight.setDisabled(Disabled.valid);
 				activityPrizeWeightService.add(prizeWeight);
 			}

@@ -6,7 +6,9 @@
  */    
 package com.okdeer.mall.activity.advert.api.impl;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,6 +67,12 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 	 */
 	public void addActivityAdvert(ActivityAdvertDto activityAdvertDto){
 		activityAdvertService.addActivityAdvert(activityAdvertDto);
+	}
+
+	@Override
+	public List<ActivityAdvert> findActivityListByStatus(String status) {
+		String[] statusList = status.split(",");
+		return activityAdvertService.findActivityListByStatus(Arrays.asList(statusList));
 	}
 
 }

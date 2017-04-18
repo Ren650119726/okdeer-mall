@@ -6,6 +6,8 @@
  */    
 package com.okdeer.mall.activity.advert.service;
 
+import java.util.List;
+
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.advert.dto.ActivityAdvertDto;
@@ -54,5 +56,14 @@ public interface ActivityAdvertService extends IBaseService {
 	 * @date 2017年4月18日
 	 */
 	public void addActivityAdvert(ActivityAdvertDto activityAdvertDto);
+
+	/**
+	 * @Description: TODO
+	 * @param asList
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月17日
+	 */
+	List<ActivityAdvert> findActivityListByStatus(List<String> statusList);
 
 }
