@@ -83,6 +83,8 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 			prizeWeight.setLuckDrawId(activityLuckDrawVo.getId());
 			prizeWeight.setCreateTime(date);
 			prizeWeight.setUpdateTime(date);
+			prizeWeight.setCreateUserId(activityLuckDrawVo.getCreateUserId());
+			prizeWeight.setUpdateUserId(activityLuckDrawVo.getCreateUserId());
 			prizeWeight.setDisabled(Disabled.valid);
 			activityPrizeWeightService.add(prizeWeight);
 		}
@@ -115,13 +117,15 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 		
 		for(ActivityPrizeWeight prizeWeight : prizeWeightList){
 			prizeWeight.setUpdateTime(date);
-			
+			prizeWeight.setUpdateUserId(activityLuckDrawVo.getUpdateUserId());
 			int result = activityPrizeWeightService.update(prizeWeight);
 			//为零说明为新加奖品 新增数据 
 			if(result==0){
 				prizeWeight.setId(UuidUtils.getUuid());
 				prizeWeight.setLuckDrawId(activityLuckDrawVo.getId());
 				prizeWeight.setCreateTime(date);
+				prizeWeight.setCreateUserId(activityLuckDrawVo.getUpdateUserId());
+				prizeWeight.setUpdateUserId(activityLuckDrawVo.getUpdateUserId());
 				prizeWeight.setDisabled(Disabled.valid);
 				activityPrizeWeightService.add(prizeWeight);
 			}
