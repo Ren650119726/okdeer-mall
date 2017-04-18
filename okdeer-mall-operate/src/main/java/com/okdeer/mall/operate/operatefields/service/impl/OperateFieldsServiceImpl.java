@@ -1,7 +1,6 @@
 
 package com.okdeer.mall.operate.operatefields.service.impl;
 
-
 import java.util.Date;
 import java.util.List;
 
@@ -80,15 +79,18 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public void updateSort(String id, boolean isUp) {
+	public void updateSort(String id, boolean isUp) throws Exception {
 		OperateFields operateFields = operateFieldsMapper.findById(id);
 		int sort = operateFields.getSort();
 		int type = -1;
 		if (isUp) {
 			type = 1;
 		}
-		OperateFields compareOperateFields = operateFieldsMapper.findCompareBySort(operateFields.getId(),sort, type);
+		OperateFields compareOperateFields = operateFieldsMapper.findCompareBySort(operateFields.getId(), sort, type);
 
+		if (compareOperateFields == null) {
+			throw new Exception("没有可以移动的数据");
+		}
 		if (operateFields.getSort() == compareOperateFields.getSort()) {
 			if (isUp) {
 				operateFields.setSort(sort + 1);

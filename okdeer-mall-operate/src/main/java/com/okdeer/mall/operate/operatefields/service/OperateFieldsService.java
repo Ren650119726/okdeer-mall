@@ -61,7 +61,7 @@ public interface OperateFieldsService extends IBaseService {
 	 * @author zengjizu
 	 * @date 2017年4月13日
 	 */
-	void updateSort(String id,boolean isUp);
+    void updateSort(String id,boolean isUp) throws Exception;
 	
 	/**
 	 * 根据店铺Id和店铺商品Id查找关联的运营栏位
@@ -72,5 +72,5 @@ public interface OperateFieldsService extends IBaseService {
 	 * @date 2017-4-18
 	 */
 	List<OperateFields> getGoodsRalationFields(String storeId, String storeSkuId);
-	
+
 }

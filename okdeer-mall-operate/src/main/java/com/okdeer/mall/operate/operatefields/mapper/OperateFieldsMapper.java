@@ -56,7 +56,7 @@ public interface OperateFieldsMapper extends IBaseMapper {
 	 * @author zengjizu
 	 * @date 2017年4月13日
 	 */
-	Integer queryMinSort(OperateFieldsType type,String businessId);
+	Integer queryMinSort(@Param("type")OperateFieldsType type,@Param("businessId")String businessId);
 	
 	/**
 	 * @Description: 查询需要对比的数据
@@ -66,7 +66,7 @@ public interface OperateFieldsMapper extends IBaseMapper {
 	 * @author zengjizu
 	 * @date 2017年4月13日
 	 */
-	OperateFields findCompareBySort(String id, int sort,int type);
+	OperateFields findCompareBySort(@Param("id")String id, @Param("sort")int sort,@Param("type")int type);
 	
 	/**
      * 根据店铺Id和店铺商品Id查找关联的运营栏位
