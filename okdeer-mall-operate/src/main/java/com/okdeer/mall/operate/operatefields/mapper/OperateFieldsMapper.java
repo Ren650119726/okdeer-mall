@@ -9,6 +9,8 @@ package com.okdeer.mall.operate.operatefields.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
 import com.okdeer.mall.operate.enums.OperateFieldsType;
@@ -65,5 +67,18 @@ public interface OperateFieldsMapper extends IBaseMapper {
 	 * @date 2017年4月13日
 	 */
 	OperateFields findCompareBySort(String id, int sort,int type);
+	
+	/**
+     * 根据店铺Id和店铺商品Id查找关联的运营栏位
+     * @param storeId 店铺Id
+     * @param storeSkuId 店铺商品Id
+     * @return 栏位列表
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+	List<OperateFields> getGoodsRalationFields(@Param("storeId")String storeId, @Param("storeSkuId") String storeSkuId);
+	
+	
+	
 	
 }

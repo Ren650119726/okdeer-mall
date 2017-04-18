@@ -160,4 +160,18 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
 		return sort;
 	}
 
+	/**
+     * 根据店铺Id和店铺商品Id查找关联的运营栏位
+     * @param storeId 店铺Id
+     * @param storeSkuId 店铺商品Id
+     * @return 栏位列表
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+    @Override
+    public List<OperateFields> getGoodsRalationFields(String storeId, String storeSkuId) {
+       
+        return null;
+    }
+
 }
