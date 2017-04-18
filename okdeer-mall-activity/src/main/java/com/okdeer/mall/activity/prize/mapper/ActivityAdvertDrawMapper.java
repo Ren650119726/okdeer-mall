@@ -29,4 +29,6 @@ public interface ActivityAdvertDrawMapper extends IBaseMapper {
 	 */
     public ActivityAdvertDraw findAdvertDrawByIdNo(String modelNo,String activityAdvertId);
 	
+    
+    
 }

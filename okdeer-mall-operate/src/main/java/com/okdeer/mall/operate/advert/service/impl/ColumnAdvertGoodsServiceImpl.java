@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
@@ -87,6 +88,18 @@ public class ColumnAdvertGoodsServiceImpl extends BaseServiceImpl implements Col
 	@Override
 	public List<Map<String, Object>> listGoodsForAdvert(Map<String, Object> map) {
 		return columnAdvertGoodsMapper.listGoodsForAdvert(map);
+	}
+	
+	/**
+	 * @Description: 批量添加 活动商品列表
+	 * @param list   要插入的商品集合
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月17日
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public void saveBatch(List<ColumnAdvertGoods> list){
+		columnAdvertGoodsMapper.saveBatch(list);
 	}
 
 }

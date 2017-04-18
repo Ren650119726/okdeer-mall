@@ -30,4 +30,12 @@ public interface ActivityAdvertSaleService extends IBaseService {
 	 * @date 2017年4月13日
 	 */
     public ActivityAdvertSale findSaleByIdNo(String modelNo,String activityAdvertId);
+    
+    /**
+	 * @Description: 新增销售类型 
+	 * @param ActivityAdvertSale 店铺销售活动
+	 * @author tuzhd
+	 * @date 2017年4月13日
+	 */
+	public int addSale(ActivityAdvertSale sale);
 }

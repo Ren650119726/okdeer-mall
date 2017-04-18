@@ -4,9 +4,10 @@
     <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.advert.entity.ActivityAdvert" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="name" property="name" jdbcType="VARCHAR" />
-        <result column="status" property="status" jdbcType="BIT" />
+        <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum"/>
         <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
         <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+        <result column="area_type" property="areaType" jdbcType="TINYINT" javaType="com.okdeer.mall.common.enums.AreaType"/>
         <result column="remark" property="remark" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
@@ -16,7 +17,7 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, name, status, start_time, end_time, remark, create_time, create_user_id, update_time, 
+        id, name, status, start_time, end_time,area_type, remark, create_time, create_user_id, update_time, 
         update_user_id, disabled
     </sql>
 
@@ -45,6 +46,9 @@
             <if test="endTime != null" >
                 end_time,
             </if>
+            <if test="areaType != null" >
+                area_type,
+            </if>
             <if test="remark != null" >
                 remark,
             </if>
@@ -72,13 +76,16 @@
                 #{name,jdbcType=VARCHAR},
             </if>
             <if test="status != null" >
-                #{status,jdbcType=BIT},
+                #{status,jdbcType=TINYINT},
             </if>
             <if test="startTime != null" >
                 #{startTime,jdbcType=TIMESTAMP},
             </if>
             <if test="endTime != null" >
                 #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="areaType != null" >
+                #{areaType,jdbcType=TINYINT},
             </if>
             <if test="remark != null" >
                 #{remark,jdbcType=VARCHAR},
@@ -96,7 +103,7 @@
                 #{updateUserId,jdbcType=VARCHAR},
             </if>
             <if test="disabled != null" >
-                #{disabled,jdbcType=BIT},
+                #{disabled,jdbcType=TINYINT},
             </if>
         </trim>
     </insert>
@@ -108,13 +115,16 @@
                 name = #{name,jdbcType=VARCHAR},
             </if>
             <if test="status != null" >
-                status = #{status,jdbcType=BIT},
+                status = #{status,jdbcType=TINYINT},
             </if>
             <if test="startTime != null" >
                 start_time = #{startTime,jdbcType=TIMESTAMP},
             </if>
             <if test="endTime != null" >
                 end_time = #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="areaType != null" >
+                area_type = #{areaType,jdbcType=TINYINT},
             </if>
             <if test="remark != null" >
                 remark = #{remark,jdbcType=VARCHAR},
@@ -132,7 +142,7 @@
                 update_user_id = #{updateUserId,jdbcType=VARCHAR},
             </if>
             <if test="disabled != null" >
-                disabled = #{disabled,jdbcType=BIT},
+                disabled = #{disabled,jdbcType=TINYINT},
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
@@ -161,7 +171,7 @@
             #{item}
         </foreach>
     </select>
-     <select id="findCountByName" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvert" >
+    <select id="findCountByName" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.advert.dto.ActivityAdvertDto" >
         select count(*) 
         from activity_advert
         where 1=1

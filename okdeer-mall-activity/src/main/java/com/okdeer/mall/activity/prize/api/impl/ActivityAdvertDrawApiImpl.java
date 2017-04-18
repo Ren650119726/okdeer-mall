@@ -10,20 +10,22 @@ package com.okdeer.mall.activity.prize.api.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.mall.activity.advert.entity.ActivityAdvertCoupons;
+import com.okdeer.mall.activity.prize.entity.ActivityAdvertDraw;
 import com.okdeer.mall.activity.prize.mapper.ActivityAdvertDrawMapper;
 import com.okdeer.mall.activity.prize.service.ActivityAdvertDrawApi;
 import com.okdeer.mall.activity.prize.service.ActivityAdvertDrawService;
 
 /**
  * ClassName: ActivityAdvertDrawApiImpl 
- * @Description: H5活动与特惠或低价关联api实现
- * @author xuzq01
- * @date 2017年4月14日
+ * @Description:  抽奖活动及H5活动关联 对外接口类
+ * @author tuzhd
+ * @date 2017年4月17日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ * 		V2.2.0			2017-4-13			tuzhd			抽奖活动及H5活动关联 对外接口类
  */
 @Service(version="1.0.0")
 public class ActivityAdvertDrawApiImpl implements ActivityAdvertDrawApi {
@@ -33,5 +35,27 @@ public class ActivityAdvertDrawApiImpl implements ActivityAdvertDrawApi {
 	 */
 	@Autowired
 	ActivityAdvertDrawService activityAdvertDrawService;
+	
+	/**
+     * @Description: 添加代金券关联信息
+     * @param coupons 代金券信息
+     * @return int  
+     * @author tuzhd
+	 * @throws Exception 
+     * @date 2017年4月17日
+     */
+    public int addAdvertDraw(ActivityAdvertDraw draw) throws Exception{
+    	return activityAdvertDrawService.add(draw);
+    }
+    
+    /**
+	 * @Description: 根据活动id及模板编号查询关联的抽奖活动
+	 * @return ActivityAdvertSale  
+	 * @author tuzhd
+	 * @date 2017年4月13日
+	 */
+    public ActivityAdvertDraw findAdvertDrawByIdNo(String modelNo,String activityAdvertId){
+    	return activityAdvertDrawService.findAdvertDrawByIdNo(modelNo, activityAdvertId);
+    }
 	
 }

@@ -7,6 +7,7 @@
 package com.okdeer.mall.activity.advert.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.dal.IBaseMapper;
@@ -50,4 +51,15 @@ public class ActivityAdvertSaleServiceImpl extends BaseServiceImpl implements Ac
     public ActivityAdvertSale findSaleByIdNo(String modelNo,String activityAdvertId){
     	return activityAdvertSaleMapper.findSaleByIdNo(modelNo, activityAdvertId);
     }
+    
+    /**
+	 * @Description: 新增销售类型 
+	 * @param ActivityAdvertSale 店铺销售活动
+	 * @author tuzhd
+	 * @date 2017年4月13日
+	 */
+    @Transactional(rollbackFor = Exception.class)
+	public int addSale(ActivityAdvertSale sale){
+		return activityAdvertSaleMapper.add(sale);
+	}
 }

@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.activity.advert.dto.ActivityAdvertDto;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvert;
 
 /**
@@ -33,7 +34,7 @@ public interface ActivityAdvertService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2017年4月12日
 	 */
-	int findCountByName(ActivityAdvert activityAdvert);
+	int findCountByName(ActivityAdvertDto activityAdvertDto);
 
 	/**
 	 * @Description: TODO
@@ -45,6 +46,16 @@ public interface ActivityAdvertService extends IBaseService {
 	 * @date 2017年4月12日
 	 */
 	PageUtils<ActivityAdvert> findActivityAdvertList(ActivityAdvert activityAdvert, int pageNumber, int pageSize);
+	
+	/**
+	 * @Description: 保存新增活动信息
+	 * @param activityAdvertDto 活动对象
+	 * @param userId    用户id
+	 * @return void  
+	 * @author tuzhd
+	 * @date 2017年4月18日
+	 */
+	public void addActivityAdvert(ActivityAdvertDto activityAdvertDto)throws Exception;
 
 	/**
 	 * @Description: TODO

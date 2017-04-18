@@ -16,6 +16,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.mall.activity.advert.dto.ActivityAdvertDto;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvert;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertApi;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertService;
@@ -46,8 +47,8 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 	}
 
 	@Override
-	public int findCountByName(ActivityAdvert activityAdvert) {
-		return activityAdvertService.findCountByName(activityAdvert);
+	public int findCountByName(ActivityAdvertDto activityAdvertDto) {
+		return activityAdvertService.findCountByName(activityAdvertDto);
 	}
 
 	@Override
@@ -56,15 +57,17 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 		return activityAdvertService.findActivityAdvertList(activityAdvert, pageNumber, pageSize);
 	}
 
-	@Override
-	public void addActivityAdvert(ActivityAdvert activityAdvert) throws Exception {
-		Date date = new Date();
-		activityAdvert.setId(UuidUtils.getUuid());
-		activityAdvert.setCreateTime(date);
-		activityAdvert.setUpdateTime(date);
-		activityAdvert.setDisabled(Disabled.valid);
-		activityAdvertService.add(activityAdvert);
-		
+	/**
+	 * @Description: 保存新增活动信息
+	 * @param activityAdvertDto 活动对象
+	 * @param userId    用户id
+	 * @return void  
+	 * @author tuzhd
+	 * @throws Exception 
+	 * @date 2017年4月18日
+	 */
+	public void addActivityAdvert(ActivityAdvertDto activityAdvertDto) throws Exception{
+		activityAdvertService.addActivityAdvert(activityAdvertDto);
 	}
 
 	@Override

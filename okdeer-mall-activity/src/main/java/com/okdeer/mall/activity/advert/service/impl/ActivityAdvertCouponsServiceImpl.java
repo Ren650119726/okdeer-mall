@@ -7,6 +7,7 @@
 package com.okdeer.mall.activity.advert.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.dal.IBaseMapper;
@@ -47,5 +48,16 @@ public class ActivityAdvertCouponsServiceImpl extends BaseServiceImpl implements
     	return activityAdvertCouponsMapper.findAdvertCouponsByIdNo(modelNo, activityAdvertId);
     }
 	
+    /**
+     * @Description: 添加代金券关联信息
+     * @param coupons 代金券信息
+     * @return int  
+     * @author tuzhd
+     * @date 2017年4月17日
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public int addCoupons(ActivityAdvertCoupons coupons){
+    	return activityAdvertCouponsMapper.add(coupons);
+    }
 
 }

@@ -63,4 +63,13 @@ public interface ColumnAdvertGoodsService extends IBaseService {
 	 * @date 2016年10月18日
 	 */
 	List<Map<String,Object>> listGoodsForAdvert(Map<String, Object> map);
+	
+	/**
+	 * @Description: 批量添加 活动商品列表
+	 * @param list   要插入的商品集合
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月17日
+	 */
+	void saveBatch(List<ColumnAdvertGoods> list);
 }

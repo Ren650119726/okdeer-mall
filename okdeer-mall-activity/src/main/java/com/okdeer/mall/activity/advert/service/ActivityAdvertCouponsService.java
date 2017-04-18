@@ -29,4 +29,13 @@ public interface ActivityAdvertCouponsService extends IBaseService {
 	 * @date 2017年4月13日
 	 */
     public ActivityAdvertCoupons findAdvertCouponsByIdNo(String modelNo,String activityAdvertId);
+    
+    /**
+     * @Description: 添加代金券关联信息
+     * @param coupons 代金券信息
+     * @return int  
+     * @author tuzhd
+     * @date 2017年4月17日
+     */
+    public int addCoupons(ActivityAdvertCoupons coupons);
 }
