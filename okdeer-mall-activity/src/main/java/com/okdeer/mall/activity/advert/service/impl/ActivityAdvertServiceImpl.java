@@ -85,8 +85,8 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 	}
 
 	@Override
-	public int findCountByName(ActivityAdvertDto activityAdvertDto) {
-		return activityAdvertMapper.findCountByName(activityAdvertDto);
+	public int findCountByName(String advertName) {
+		return activityAdvertMapper.findCountByName(advertName);
 	}
 
 	@Override
@@ -113,7 +113,6 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 		ActivityAdvert advertActivity =  BeanMapper.map(activityAdvertDto, ActivityAdvert.class);
 		advertActivity.setCreateTime(new Date());
 		advertActivity.setId(UuidUtils.getUuid());
-		advertActivity.setId(UuidUtils.getUuid());
 		advertActivity.setStatus(SeckillStatusEnum.noStart);
 		advertActivity.setCreateTime(new Date());
 		advertActivity.setUpdateTime(new Date());
@@ -129,7 +128,7 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 		String modelListJson = activityAdvertDto.getModelListJson();
 		//存在模块信息
 		if(StringUtils.isNotBlank(modelListJson)){
-			JsonMapper jsonMapper = new JsonMapper();
+			JsonMapper jsonMapper = JsonMapper.nonDefaultMapper();
 			JavaType javaType = jsonMapper.contructCollectionType(ArrayList.class, ActivityAdvertModel.class);
 			List<ActivityAdvertModel> array = jsonMapper.fromJson(modelListJson, javaType);
 			//添加活动模块信息
