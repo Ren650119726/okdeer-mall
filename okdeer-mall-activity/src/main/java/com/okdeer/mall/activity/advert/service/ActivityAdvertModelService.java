@@ -6,6 +6,8 @@
  */    
 package com.okdeer.mall.activity.advert.service;
 
+import java.util.List;
+
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvertModel;
 
@@ -40,4 +42,12 @@ public interface ActivityAdvertModelService extends IBaseService {
 	 * @date 2017年4月13日
 	 */
 	public int addModel(ActivityAdvertModel model);
+	/**
+	 * @Description: 获取活动模板列表
+	 * @param model
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月19日
+	 */
+	public List<ActivityAdvertModel> findModelList(ActivityAdvertModel model);
 }

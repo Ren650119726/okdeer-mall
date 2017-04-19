@@ -40,7 +40,27 @@
     <result column="lowPriceUpper" property="lowPriceUpper" jdbcType="INTEGER" />
     <result column="online" property="online" jdbcType="INTEGER" />
   </resultMap>
-
+	<!-- begin xuzq 20170419 查询广告活动关联的店铺商品信息 -->
+	<!-- 便利店商品返回 -->
+	<resultMap id="CloudResultMap" type="com.okdeer.mall.operate.advert.bo.ActivityAdvertStoreSkuBo" >
+	    <id column="id" property="id" jdbcType="VARCHAR" />
+	    <result column="name" property="name" jdbcType="VARCHAR" />
+	    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+	    <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+	    <result column="style_code" property="styleCode" jdbcType="VARCHAR" />
+	    <result column="properties_indb" property="propertiesIndb" jdbcType="VARCHAR" />
+		<result property="sort" column="sort" jdbcType="INTEGER"/>
+   </resultMap>
+  <!-- 服务店商品返回 -->
+  <resultMap id="ServiceResultMap" type="com.okdeer.mall.operate.advert.bo.ActivityAdvertStoreSkuBo" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="product_no" property="productNo" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+    <result column="store_name" property="storeName" jdbcType="VARCHAR" />
+    <result property="sort" column="sort" jdbcType="INTEGER"/>
+  </resultMap>
+  <!-- end xuzq 20170419 查询广告活动关联的店铺商品信息 -->
     <sql id="Base_Column_List" > 
         id, activity_advert_id, goods_id, model_id, create_time, sort
     </sql>
@@ -263,4 +283,25 @@
 	        </if>
 	        order by g.`sort` desc
 	</select>
+	
+  <!-- begin xuzq 20170419 查询广告活动关联的店铺商品信息 -->
+	<select id="findServiceSkuByModelId" resultMap="ServiceResultMap" parameterType="java.lang.String" >
+        select distinct
+        sku.id,sku.name,sku.store_id,service.product_no,goods.sort,store.store_name
+        from goods_store_sku sku
+        LEFT JOIN goods_store_sku_service service ON sku.id = service.store_sku_id
+        LEFT JOIN column_advert_goods goods on goods.goods_id = sku.id
+        LEFT JOIN store_info store ON store.id = sku.store_id  
+         where goods.activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+       		   and goods.model_id = #{modelId,jdbcType=VARCHAR}
+    </select>
+    <select id="findCloudSkuByModelId" resultMap="CloudResultMap" parameterType="java.lang.String" >
+        select distinct
+        sku.id,sku.name,sku.store_id,sku.bar_code,sku.style_code,sku.properties_indb,goods.sort
+        from goods_sku sku 
+        LEFT JOIN column_advert_goods goods on goods.goods_id = sku.id
+        where goods.activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+       		  and goods.model_id = #{modelId,jdbcType=VARCHAR}
+    </select>
+	<!-- end xuzq 20170419 查询广告活动关联的店铺商品信息 --> 
 </mapper>

@@ -14,6 +14,7 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.advert.entity.ColumnAdvertGoods;
+import com.okdeer.mall.operate.advert.bo.ActivityAdvertStoreSkuBo;
 
 /**
  * ClassName: ColumnAdvertGoodsMapper 
@@ -73,4 +74,24 @@ public interface ColumnAdvertGoodsMapper extends IBaseMapper {
 	 * @param list  活动商品列表
 	 */
 	void saveBatch(List<ColumnAdvertGoods> list);
+
+	/**
+	 * @Description: TODO
+	 * @param modelId
+	 * @param activityAdvertId
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月19日
+	 */
+	public List<ActivityAdvertStoreSkuBo> findServiceSkuByModelId(String modelId, String activityAdvertId);
+
+	/**
+	 * @Description: TODO
+	 * @param modelId
+	 * @param activityAdvertId
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月19日
+	 */
+	public List<ActivityAdvertStoreSkuBo> findCloudSkuByModelId(String modelId, String activityAdvertId);
 }

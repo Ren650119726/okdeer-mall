@@ -32,7 +32,12 @@
         where model_no = #{modelNo,jdbcType=VARCHAR}
         AND activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
     </select>
-
+	<select id="findModelList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvertModel" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_advert_model
+        where activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+    </select>
     <insert id="add" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvertModel" >
         insert into activity_advert_model
         <trim prefix="(" suffix=")" suffixOverrides="," >

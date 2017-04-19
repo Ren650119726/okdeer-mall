@@ -89,4 +89,9 @@ public class ActivityLuckDrawServiceImpl extends BaseServiceImpl implements Acti
 		activityLuckDrawMapper.updateBatchStatus(draw);
 	}
 
+	@Override
+	public ActivityLuckDraw findLuckDrawByModelId(String modelId, String activityAdvertId) {
+		return activityLuckDrawMapper.findLuckDrawByModelId(modelId,activityAdvertId);
+	}
+
 }

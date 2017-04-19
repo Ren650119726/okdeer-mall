@@ -204,4 +204,13 @@ public interface ActivityCollectCouponsMapper {
 	 * @return
 	 */
 	int selectCountByUserId(Map<String,Object> map);
+
+	/**
+	 * @Description: TODO
+	 * @param modelId
+	 * @param activityAdvertId   
+	 * @author xuzq01
+	 * @date 2017年4月18日
+	 */
+	public ActivityCollectCoupons findCollectCouponsByModelId(@Param("modelId") String modelId, @Param("activityAdvertId") String activityAdvertId);
 }
