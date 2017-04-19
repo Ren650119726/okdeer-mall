@@ -319,17 +319,23 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 		return activityAdvertService.findActivityListByStatus(Arrays.asList(statusList));
 	}
 	@Override
-	public ActivityAdverModelDto findAdvertByActivityAdvertId(String activityId) throws Exception {
-		ActivityAdvert advert = activityAdvertService.findById(activityId);
+	public List<ActivityAdverModelDto> findAdvertByActivityAdvertId(String activityId) throws Exception {
 		//获取广告活动模块表list
 		ActivityAdvertModel model = new ActivityAdvertModel();
-		model.setActivityAdvertId(advert.getId());
+		model.setActivityAdvertId(activityId);
 		List<ActivityAdvertModel> modelList = activityAdvertModelService.findModelList(model);
-		ActivityAdverModelDto result = new ActivityAdverModelDto();
-		if(!modelList.isEmpty() && modelList.size()>0){
+		List<ActivityAdverModelDto> result = new ArrayList<ActivityAdverModelDto>();
+		//查询模块集合不为空
+		if(CollectionUtils.isNotEmpty(modelList)){
+			
+			//循环各个模块的信息 并合并到result结果集中
 			for(ActivityAdvertModel advertModel:modelList){
+				ActivityAdverModelDto dto = BeanMapper.map(advertModel, ActivityAdverModelDto.class);
 				//根据不同的模块类型获取关联的信息
-				getModelInfo(advertModel,result);
+				getModelInfo(advertModel,dto);
+				
+				//将单个模块放入到集合中
+				result.add(dto);
 			}
 		}
 		return result;
