@@ -127,13 +127,4 @@ public interface ActivitySaleMapper {
 	 */
 	List<Map<String,Object>> listGoodsStoreSkuV220(Map<String,Object> map);
 
-	/**
-	 * @Description: 活获取关联的优惠信息
-	 * @param modelId
-	 * @param activityAdvertId
-	 * @return   
-	 * @author xuzq01
-	 * @date 2017年4月19日
-	 */
-	ActivitySale findActivitySaleByModelId(@Param("modelId") String modelId, @Param("activityAdvertId") String activityAdvertId);
 }

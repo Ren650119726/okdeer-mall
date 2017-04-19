@@ -35,7 +35,7 @@ public class ActivityAdvertCouponsApiImpl implements ActivityAdvertCouponsApi {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertCoupons findAdvertCouponsByIdNo(String modelNo,String activityAdvertId){
+    public ActivityAdvertCoupons findAdvertCouponsByIdNo(int modelNo,String activityAdvertId){
     	return  activityAdvertCouponsService.findAdvertCouponsByIdNo(modelNo, activityAdvertId);
     }
     

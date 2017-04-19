@@ -776,7 +776,8 @@
 	  </select>
 	  <!-- begin xuzq 20170419 根据模块id和广告活动id查询优惠券 -->
 	  <select id="findCollectCouponsByModelId" resultMap="ActivityCollectCoupons" parameterType="string">
-		SELECT count(1)
+		SELECT 
+			collect.id,collect.name
 		FROM activity_collect_coupons collect
 		LEFT JOIN activity_advert_coupons cou ON collect.id=cou.collect_coupons_id
 		where cou.activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR} 

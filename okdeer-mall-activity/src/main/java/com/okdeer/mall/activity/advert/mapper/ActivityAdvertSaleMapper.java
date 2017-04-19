@@ -27,7 +27,7 @@ public interface ActivityAdvertSaleMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertSale findSaleByIdNo(String modelNo,String activityAdvertId);
+    public ActivityAdvertSale findSaleByIdNo(int modelNo,String activityAdvertId);
     
     /**
 	 * @Description: 删除关联店铺促销信息by活动id

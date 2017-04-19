@@ -610,8 +610,4 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		return new PageUtils<Map<String, Object>>(list);
 	}
 
-	@Override
-	public ActivitySale findActivitySaleByModelId(String modelId, String activityAdvertId) {
-		return activitySaleMapper.findActivitySaleByModelId(modelId, activityAdvertId);
-	}
 }
