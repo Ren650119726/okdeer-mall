@@ -8,6 +8,8 @@ package com.okdeer.mall.activity.advert.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvertModel;
 /**
@@ -31,7 +33,7 @@ public interface ActivityAdvertModelMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-	public ActivityAdvertModel findModelByIdNo(int modelNo,String activityAdvertId);
+	public ActivityAdvertModel findModelByIdNo(@Param("modelNo") int modelNo,@Param("activityAdvertId") String activityAdvertId);
 
 	/**
 	 * @Description: TODO
