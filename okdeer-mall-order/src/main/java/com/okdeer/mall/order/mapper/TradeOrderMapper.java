@@ -56,6 +56,15 @@ import com.okdeer.mall.order.vo.UserTradeServiceOrderVo;
  */
 public interface TradeOrderMapper {
 
+	// begin V2.3.0 add by wangf01 20170419
+	/**
+	 * 根据条件查询符合的数据
+	 * @param param TradeOrder
+	 * @return
+	 */
+	List<TradeOrder> selectByParam(TradeOrder param);
+	// end add by wangf01 20170419
+
 	void insertSelective(TradeOrder tradeOrder);
 
 	List<TradeOrderItem> selectTraderOrderList(Map<String, Object> map);
