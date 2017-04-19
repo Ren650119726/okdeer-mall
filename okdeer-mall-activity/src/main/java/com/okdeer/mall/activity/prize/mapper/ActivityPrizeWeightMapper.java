@@ -48,7 +48,7 @@ public interface ActivityPrizeWeightMapper extends IBaseMapper {
 	public int updatePrizesNumber(String id);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 获取奖品记录列表
 	 * @param activityPrizeWeightVo
 	 * @return   
 	 * @author xuzq01
@@ -57,7 +57,7 @@ public interface ActivityPrizeWeightMapper extends IBaseMapper {
 	public List<ActivityPrizeWeightVo> findPrizeRecordList(ActivityPrizeWeightVo activityPrizeWeightVo);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 通过抽奖设置id获取奖品列表
 	 * @param luckDrawId
 	 * @return   
 	 * @author xuzq01

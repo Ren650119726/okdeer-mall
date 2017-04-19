@@ -76,7 +76,7 @@ public interface ColumnAdvertGoodsMapper extends IBaseMapper {
 	void saveBatch(List<ColumnAdvertGoods> list);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 通过模块id查询服务店商品信息
 	 * @param modelId
 	 * @param activityAdvertId
 	 * @return   
@@ -86,7 +86,7 @@ public interface ColumnAdvertGoodsMapper extends IBaseMapper {
 	public List<ActivityAdvertStoreSkuBo> findServiceSkuByModelId(String modelId, String activityAdvertId);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 通过模块id查询便利店商品信息
 	 * @param modelId
 	 * @param activityAdvertId
 	 * @return   

@@ -21,7 +21,7 @@ import com.okdeer.mall.activity.advert.service.ActivityAdvertModelService;
 
 /**
  * ClassName: ActivityAdvertModelServiceImpl 
- * @Description: TODO
+ * @Description: 活动模块实现类
  * @author xuzq01
  * @date 2017年4月12日
  *

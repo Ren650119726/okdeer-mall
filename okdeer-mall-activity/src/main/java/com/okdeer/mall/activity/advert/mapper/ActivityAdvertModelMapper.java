@@ -34,7 +34,7 @@ public interface ActivityAdvertModelMapper extends IBaseMapper {
 	public ActivityAdvertModel findModelByIdNo(String modelNo,String activityAdvertId);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 获取活动模块列表
 	 * @param model
 	 * @return   
 	 * @author xuzq01
