@@ -34,7 +34,7 @@ public class ActivityAdvertSaleApiImpl implements ActivityAdvertSaleApi {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertSale findSaleByIdNo(String modelNo,String activityAdvertId){
+    public ActivityAdvertSale findSaleByIdNo(int modelNo,String activityAdvertId){
     	return activityAdvertSaleService.findSaleByIdNo(modelNo, activityAdvertId);
     }
     

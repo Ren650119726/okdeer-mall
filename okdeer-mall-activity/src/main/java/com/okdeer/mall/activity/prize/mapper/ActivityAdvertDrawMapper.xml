@@ -18,7 +18,7 @@
         	<include refid="Base_Column_List" />
         from activity_advert_draw s
         	 inner join activity_advert_model m on s.model_id = m.id
-        where m.model_no = #{modelNo,jdbcType=VARCHAR}
+        where m.model_no = #{modelNo,jdbcType=INTEGER}
         	  AND m.activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
     </select>
     

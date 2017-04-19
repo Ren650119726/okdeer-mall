@@ -47,7 +47,7 @@ public class ActivityAdvertDrawServiceImpl extends BaseServiceImpl implements Ac
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertDraw findAdvertDrawByIdNo(String modelNo,String activityAdvertId){
+    public ActivityAdvertDraw findAdvertDrawByIdNo(int modelNo,String activityAdvertId){
     	return activityAdvertDrawMapper.findAdvertDrawByIdNo(modelNo, activityAdvertId);
     }
 	

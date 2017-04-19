@@ -78,11 +78,6 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 	@Autowired
 	ActivityAdvertModelService activityAdvertModelService;
 	
-	/**
-	 * 广告活动与特惠或低价关联Service
-	 */
-	@Autowired
-	ActivitySaleService activitySaleService;
 	
 	/**
 	 * 广告活动与抽奖关联表Service
@@ -355,15 +350,15 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 		int modelType = result.getModelType().ordinal();
 		switch(modelType){
 			case 0:
-				getCloudStoreInfo(result);
+				getCloudStoreInfo(result); break;
 			case 1:
-				getSaleInfo(result);
+				getSaleInfo(result); break;
 			case 2:
-				getServiceStoreInfo(result);
+				getServiceStoreInfo(result); break;
 			case 3:
-				getCouponInfo(result);
+				getCouponInfo(result);break;
 			case 4:
-				getDrawInfo(result);
+				getDrawInfo(result);break;
 		}
 		return result;
 		
@@ -423,7 +418,7 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 	 * @date 2017年4月18日
 	 */
 	private void getSaleInfo(ActivityAdverModelDto result) {
-		ActivitySale sale = activitySaleService.findActivitySaleByModelId(result.getModelNo().toString(), result.getActivityAdvertId());
+		ActivityAdvertSale sale = activityAdvertSaleService.findSaleByIdNo(result.getModelNo(), result.getActivityAdvertId());
 		result.setSale(sale);
 	}
 }

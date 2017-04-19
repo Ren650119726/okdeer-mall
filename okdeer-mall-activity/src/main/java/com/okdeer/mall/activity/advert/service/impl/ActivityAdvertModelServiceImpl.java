@@ -52,7 +52,7 @@ public class ActivityAdvertModelServiceImpl extends BaseServiceImpl implements A
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-	public ActivityAdvertModel findModelByIdNo(String modelNo,String activityAdvertId){
+	public ActivityAdvertModel findModelByIdNo(int modelNo,String activityAdvertId){
 		return activityAdvertModelMapper.findModelByIdNo(modelNo, activityAdvertId);
 	}
 	

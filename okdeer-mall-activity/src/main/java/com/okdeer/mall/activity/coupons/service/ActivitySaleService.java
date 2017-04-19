@@ -79,14 +79,5 @@ public interface ActivitySaleService {
 	 * @date 2017年2月21日
 	 */
 	void updateSaleStock(ActivitySale activitySale, ActivitySaleGoods activitySaleGoods) throws Exception;
-
-	/**
-	 * @Description: TODO
-	 * @param modelId
-	 * @param activityAdvertId   
-	 * @author xuzq01
-	 * @date 2017年4月18日
-	 */
-	ActivitySale findActivitySaleByModelId(String modelId, String activityAdvertId);
 	
 }

@@ -27,7 +27,7 @@ public interface ActivityAdvertDrawMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertDraw findAdvertDrawByIdNo(String modelNo,String activityAdvertId);
+    public ActivityAdvertDraw findAdvertDrawByIdNo(int modelNo,String activityAdvertId);
 	
 	/**
 	 * @Description: 删除关联抽奖信息by活动id
