@@ -218,7 +218,7 @@
 	
 	<select id="findListWithContent" parameterType="com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto" resultMap="OperateFieldsBoMap">
 		SELECT 
-		cofc.id as cofc_id, cofc.field_id, cofc.type as cofc_type, cofc.image_url, cofc.link_url, cofc.business_type, cofc.business_id as cofc_business_id, cofc.sort_type, cofc.sort as cofc_sort,
+		cofc.id as cofc_id, cofc.field_id, cofc.type as cofc_type, cofc.image_url,cofc.title,cofc.link_url, cofc.business_type, cofc.business_id as cofc_business_id, cofc.sort_type, cofc.sort as cofc_sort,
         cof.id, cof.type, cof.business_id, cof.name, cof.template, cof.point_type, cof.point_content, cof.head_pic, cof.sort, 
         cof.enabled, cof.create_time, cof.update_time, cof.create_user_id, cof.update_user_id, cof.disabled
         FROM column_operate_fields_content cofc LEFT JOIN column_operate_fields cof ON  cofc.field_id = cof.id
