@@ -34,7 +34,7 @@ public interface ActivityAdvertService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2017年4月12日
 	 */
-	int findCountByName(ActivityAdvertDto activityAdvertDto);
+	int findCountByName(String advertName);
 
 	/**
 	 * @Description: TODO

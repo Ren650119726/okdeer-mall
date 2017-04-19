@@ -13,9 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.activity.advert.bo.ActivityAdvertStoreBo;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvertStore;
 import com.okdeer.mall.activity.advert.mapper.ActivityAdvertStoreMapper;
-import com.okdeer.mall.activity.advert.service.ActivityAdvertStoreApi;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertStoreService;
 
 /**
@@ -48,6 +48,17 @@ public class ActivityAdvertStoreServiceImpl extends BaseServiceImpl implements A
 	 */
 	public void saveBatch(List<ActivityAdvertStore> list){
 		activityAdvertStoreMapper.saveBatch(list);
+	}
+	
+	/**
+	 * @Description:查询店铺信息根据活动id
+	 * @param activityAdverId
+	 * @return List<ActivityAdvertStoreDto>  
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public List<ActivityAdvertStoreBo> findShopByAdvertId(String activityAdverId){
+		return activityAdvertStoreMapper.findShopByAdvertId(activityAdverId);
 	}
 
 }

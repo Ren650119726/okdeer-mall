@@ -6,6 +6,22 @@
         <result column="store_id" property="storeId" jdbcType="VARCHAR" />
         <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
     </resultMap>
+    
+    <resultMap id="ShopResultMap" type="com.okdeer.mall.activity.advert.bo.ActivityAdvertStoreBo" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+        <result column="store_name" property="storeName" jdbcType="VARCHAR" />
+        <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <!-- 查询店铺信息根据活动id -->
+    <select id="findShopByAdvertId" resultMap="ShopResultMap" parameterType="java.lang.String" >
+       	SELECT 
+       		  s.id, s.store_id, s.activity_advert_id,st.store_name
+        FROM  activity_advert_store s 
+        INNER JOIN store_info st on s.store_id = st.id
+        where s.activity_advert_id = #{activityAdverId,jdbcType=VARCHAR}
+    </select>
 
     <sql id="Base_Column_List" >
         id, store_id, activity_advert_id

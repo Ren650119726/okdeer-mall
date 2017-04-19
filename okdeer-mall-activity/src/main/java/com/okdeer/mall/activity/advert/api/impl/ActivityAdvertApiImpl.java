@@ -22,15 +22,15 @@ import com.okdeer.mall.activity.advert.service.ActivityAdvertApi;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertService;
 
 /**
- * ClassName: ActivityAdvertServiceImpl 
- * @Description: TODO
- * @author xuzq01
- * @date 2017年4月12日
+ * ClassName: ActivityAdvertStoreMapper 
+ * @Description: 关联店铺信息对外接口类
+ * @author tuzhd
+ * @date 2017年4月18日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ *		V2.2.2			2017-4-18			tuzhd			关联店铺信息对外接口类
  */
 @Service(version="1.0.0")
 public class ActivityAdvertApiImpl implements ActivityAdvertApi {
@@ -47,8 +47,8 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 	}
 
 	@Override
-	public int findCountByName(ActivityAdvertDto activityAdvertDto) {
-		return activityAdvertService.findCountByName(activityAdvertDto);
+	public int findCountByName(String advertName) {
+		return activityAdvertService.findCountByName(advertName);
 	}
 
 	@Override

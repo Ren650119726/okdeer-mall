@@ -9,6 +9,7 @@ package com.okdeer.mall.activity.advert.mapper;
 import java.util.List;
 
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.activity.advert.bo.ActivityAdvertStoreBo;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvertStore;
 /**
  * ClassName: ActivityAdvertStoreMapper 
@@ -30,4 +31,13 @@ public interface ActivityAdvertStoreMapper extends IBaseMapper {
 	 * @date 2017年4月17日
 	 */
 	public void saveBatch(List<ActivityAdvertStore> list);
+	
+	/**
+	 * @Description:查询店铺信息根据活动id
+	 * @param activityAdverId
+	 * @return List<ActivityAdvertStoreDto>  
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public List<ActivityAdvertStoreBo> findShopByAdvertId(String activityAdverId);
 }

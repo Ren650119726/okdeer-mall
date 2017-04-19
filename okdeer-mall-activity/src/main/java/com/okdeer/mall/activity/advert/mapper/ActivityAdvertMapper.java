@@ -11,7 +11,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
-import com.okdeer.mall.activity.advert.dto.ActivityAdvertDto;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvert;
 
 public interface ActivityAdvertMapper extends IBaseMapper {
@@ -23,7 +22,7 @@ public interface ActivityAdvertMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月12日
 	 */
-	int findCountByName(ActivityAdvertDto activityAdvertDto);
+	int findCountByName(String advertName);
 
 	/**
 	 * @Description: TODO
