@@ -13,6 +13,7 @@ import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.advert.entity.ColumnAdvertGoods;
+import com.okdeer.mall.operate.advert.bo.ActivityAdvertStoreSkuBo;
 
 /**
  * ClassName: ColumnAdvertGoodsApiImpl 
@@ -72,4 +73,22 @@ public interface ColumnAdvertGoodsService extends IBaseService {
 	 * @date 2017年4月17日
 	 */
 	void saveBatch(List<ColumnAdvertGoods> list);
+	/**
+	 * @Description: 获取服务店关联商品
+	 * @param id
+	 * @param activityAdvertId   
+	 * @author xuzq01
+	 * @return 
+	 * @date 2017年4月19日
+	 */
+	List<ActivityAdvertStoreSkuBo> findServiceSkuByModelId(String modelId, String activityAdvertId);
+	/**
+	 * @Description: 获取便利店关联商品
+	 * @param id
+	 * @param activityAdvertId   
+	 * @author xuzq01
+	 * @return 
+	 * @date 2017年4月19日
+	 */
+	List<ActivityAdvertStoreSkuBo> findCloudSkuByModelId(String modelId, String activityAdvertId);
 }

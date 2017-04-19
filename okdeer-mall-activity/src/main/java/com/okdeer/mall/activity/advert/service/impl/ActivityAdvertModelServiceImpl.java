@@ -6,6 +6,8 @@
  */    
 package com.okdeer.mall.activity.advert.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,6 +67,12 @@ public class ActivityAdvertModelServiceImpl extends BaseServiceImpl implements A
 	@Transactional(rollbackFor = Exception.class)
 	public int addModel(ActivityAdvertModel model){
 		return activityAdvertModelMapper.add(model);
+	}
+
+	@Override
+	public List<ActivityAdvertModel> findModelList(ActivityAdvertModel model) {
+		
+		return activityAdvertModelMapper.findModelList(model);
 	}
 
 }

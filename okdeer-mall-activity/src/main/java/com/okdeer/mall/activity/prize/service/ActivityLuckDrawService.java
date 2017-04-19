@@ -76,5 +76,15 @@ public interface ActivityLuckDrawService extends IBaseService {
 	 */
 	void updateBatchStatus(String id, SeckillStatusEnum end, String updateUserId, Date updateTime);
 
+	/**
+	 * @Description: TODO
+	 * @param id
+	 * @param activityAdvertId
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月18日
+	 */
+	ActivityLuckDraw findLuckDrawByModelId(String id, String activityAdvertId);
+
 
 }

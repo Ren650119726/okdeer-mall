@@ -126,4 +126,14 @@ public interface ActivitySaleMapper {
 	 * @date 2017年3月16日
 	 */
 	List<Map<String,Object>> listGoodsStoreSkuV220(Map<String,Object> map);
+
+	/**
+	 * @Description: TODO
+	 * @param modelId
+	 * @param activityAdvertId
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月19日
+	 */
+	ActivitySale findActivitySaleByModelId(String modelId, String activityAdvertId);
 }
