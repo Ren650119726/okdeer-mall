@@ -33,7 +33,7 @@ public interface ActivityLuckDrawMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月11日
 	 */
-	int findCountByName(ActivityLuckDraw activityLuckDraw);
+	int findCountByName(String name);
 
 	/**
 	 * @Description: 批量关闭抽奖模板
@@ -46,7 +46,7 @@ public interface ActivityLuckDrawMapper extends IBaseMapper {
 	void updateLuckDrawStatus(@Param("ids") List<String> ids, @Param("status") int status,@Param("updateTime") Date updateTime, @Param("updateUserId") String updateUserId);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 定时器查询抽奖模板列表
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年4月18日
@@ -54,7 +54,7 @@ public interface ActivityLuckDrawMapper extends IBaseMapper {
 	List<ActivityLuckDraw> listByJob();
 
 	/**
-	 * @Description: TODO
+	 * @Description: 更新模板状态
 	 * @param draw   
 	 * @author xuzq01
 	 * @date 2017年4月18日
@@ -62,7 +62,7 @@ public interface ActivityLuckDrawMapper extends IBaseMapper {
 	void updateBatchStatus(ActivityLuckDraw draw);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 通过模板id和广告活动id查询抽奖
 	 * @param modelId
 	 * @param activityAdvertId
 	 * @return   

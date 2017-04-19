@@ -36,7 +36,7 @@ import com.okdeer.mall.activity.prize.service.ActivityPrizeWeightService;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ *	V2.2.2			2017年4月11日				xuzq01			抽奖设置api实现
  */
 @Service(version="1.0.0")
 public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
@@ -59,9 +59,9 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 	}
 
 	@Override
-	public int findCountByName(ActivityLuckDrawVo activityLuckDrawVo) {
+	public int findCountByName(String name) {
 		
-		return activityLuckDrawService.findCountByName(BeanMapper.map(activityLuckDrawVo, ActivityLuckDraw.class));
+		return activityLuckDrawService.findCountByName(name);
 	}
 
 	@Override

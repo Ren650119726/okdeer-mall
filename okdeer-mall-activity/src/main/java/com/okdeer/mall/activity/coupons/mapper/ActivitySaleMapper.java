@@ -87,7 +87,7 @@ public interface ActivitySaleMapper {
 	ActivitySale getAcSaleStatus(String id);
 	
 	/**
-	 * @Description: TODO
+	 * @Description: 通过店铺获取list
 	 * @param map
 	 * @return
 	 * @author zhangkn
@@ -128,12 +128,12 @@ public interface ActivitySaleMapper {
 	List<Map<String,Object>> listGoodsStoreSkuV220(Map<String,Object> map);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 活获取关联的优惠信息
 	 * @param modelId
 	 * @param activityAdvertId
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年4月19日
 	 */
-	ActivitySale findActivitySaleByModelId(String modelId, String activityAdvertId);
+	ActivitySale findActivitySaleByModelId(@Param("modelId") String modelId, @Param("activityAdvertId") String activityAdvertId);
 }

@@ -30,7 +30,7 @@ import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 public interface ActivityLuckDrawService extends IBaseService {
 
 	/**
-	 * @Description: TODO
+	 * @Description: 获取抽奖模板列表
 	 * @param activityLuckDrawVo
 	 * @param pageNumber
 	 * @param pageSize
@@ -42,12 +42,12 @@ public interface ActivityLuckDrawService extends IBaseService {
 
 	/**
 	 * @Description: TODO
-	 * @param activityLuckDraw
+	 * @param name
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年4月11日
 	 */
-	int findCountByName(ActivityLuckDraw activityLuckDraw);
+	int findCountByName(String name);
 
 	/**
 	 * @Description: TODO

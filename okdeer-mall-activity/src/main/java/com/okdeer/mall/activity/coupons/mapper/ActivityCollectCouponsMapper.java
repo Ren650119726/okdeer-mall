@@ -206,7 +206,7 @@ public interface ActivityCollectCouponsMapper {
 	int selectCountByUserId(Map<String,Object> map);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 获取优惠券信息
 	 * @param modelId
 	 * @param activityAdvertId   
 	 * @author xuzq01

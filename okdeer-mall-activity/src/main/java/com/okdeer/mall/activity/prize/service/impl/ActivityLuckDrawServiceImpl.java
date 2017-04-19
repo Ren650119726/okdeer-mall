@@ -34,7 +34,7 @@ import com.okdeer.mall.common.utils.RobotUserUtil;
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ *	   V2.2.0         2017年4月11日                       xuzq01          	    抽奖模型管理service
  */
 @Service
 public class ActivityLuckDrawServiceImpl extends BaseServiceImpl implements ActivityLuckDrawService {
@@ -62,8 +62,8 @@ public class ActivityLuckDrawServiceImpl extends BaseServiceImpl implements Acti
 	}
 
 	@Override
-	public int findCountByName(ActivityLuckDraw activityLuckDraw) {
-		return activityLuckDrawMapper.findCountByName(activityLuckDraw);
+	public int findCountByName(String name) {
+		return activityLuckDrawMapper.findCountByName(name);
 	}
 
 	@Override

@@ -23,7 +23,6 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
-import com.okdeer.mall.activity.advert.bo.ActivityAdvertStoreSkuBo;
 import com.okdeer.mall.activity.advert.dto.ActivityAdverModelDto;
 import com.okdeer.mall.activity.advert.dto.ActivityAdvertDto;
 import com.okdeer.mall.activity.advert.dto.ActivityAdvertStoreSkuDto;
@@ -51,6 +50,7 @@ import com.okdeer.mall.activity.prize.service.ActivityAdvertDrawService;
 import com.okdeer.mall.activity.prize.service.ActivityLuckDrawService;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.common.enums.AreaType;
+import com.okdeer.mall.operate.advert.bo.ActivityAdvertStoreSkuBo;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertGoodsService;
 
 /**
@@ -332,7 +332,7 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 			for(ActivityAdvertModel advertModel:modelList){
 				ActivityAdverModelDto dto = BeanMapper.map(advertModel, ActivityAdverModelDto.class);
 				//根据不同的模块类型获取关联的信息
-				getModelInfo(advertModel,dto);
+				getModelInfo(dto);
 				
 				//将单个模块放入到集合中
 				result.add(dto);
@@ -349,21 +349,21 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 	 * @return 
 	 * @date 2017年4月18日
 	 */
-	private ActivityAdverModelDto getModelInfo(ActivityAdvertModel advertModel, ActivityAdverModelDto result) {
+	private ActivityAdverModelDto getModelInfo(ActivityAdverModelDto result) {
 		
 		//模块类型 0、指定便利店商品 1、指定店铺促销活动、2、指定服务店商品、3、指定领券活动、4、执行抽奖活动
-		int modelType = advertModel.getModelType().ordinal();
+		int modelType = result.getModelType().ordinal();
 		switch(modelType){
 			case 0:
-				getCloudStoreInfo(advertModel,result);
+				getCloudStoreInfo(result);
 			case 1:
-				getSaleInfo(advertModel,result);
+				getSaleInfo(result);
 			case 2:
-				getServiceStoreInfo(advertModel,result);
+				getServiceStoreInfo(result);
 			case 3:
-				getCouponInfo(advertModel,result);
+				getCouponInfo(result);
 			case 4:
-				getDrawInfo(advertModel,result);
+				getDrawInfo(result);
 		}
 		return result;
 		
@@ -371,64 +371,59 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 
 	/**
 	 * @Description: 获取抽奖活动信息
-	 * @param advertModel   
 	 * @author xuzq01
 	 * @param result 
 	 * @date 2017年4月18日
 	 */
-	private void getDrawInfo(ActivityAdvertModel advertModel, ActivityAdverModelDto result) {
+	private void getDrawInfo(ActivityAdverModelDto result) {
 		//获取广告活动与抽奖关联信息
-		ActivityLuckDraw draw = activityLuckDrawService.findLuckDrawByModelId(advertModel.getId(), advertModel.getActivityAdvertId());
+		ActivityLuckDraw draw = activityLuckDrawService.findLuckDrawByModelId(result.getId(), result.getActivityAdvertId());
 		result.setDraw(draw);
 	}
 
 	/**
 	 * @Description: 获取领券活动信息
-	 * @param advertModel   
 	 * @author xuzq01
 	 * @param result 
 	 * @date 2017年4月18日
 	 */
-	private void getCouponInfo(ActivityAdvertModel advertModel, ActivityAdverModelDto result) {
-		ActivityCollectCoupons coupon = activityCollectCouponsService.findCollectCouponsByModelId(advertModel.getId(), advertModel.getActivityAdvertId());
+	private void getCouponInfo(ActivityAdverModelDto result) {
+		ActivityCollectCoupons coupon = activityCollectCouponsService.findCollectCouponsByModelId(result.getId(), result.getActivityAdvertId());
 		result.setCoupon(coupon);
 	}
 
 	/**
 	 * @Description: 获取服务店关联商品列表
-	 * @param advertModel   
 	 * @author xuzq01
 	 * @param result 
 	 * @date 2017年4月18日
 	 */
-	private void getServiceStoreInfo(ActivityAdvertModel advertModel, ActivityAdverModelDto result) {
+	private void getServiceStoreInfo(ActivityAdverModelDto result) {
+		List<ActivityAdvertStoreSkuBo> serviceSkuList = columnAdvertGoodsService.findServiceSkuByModelId(result.getId(), result.getActivityAdvertId());
 		
-		List<ActivityAdvertStoreSkuBo> serviceSkuList = BeanMapper.mapList(columnAdvertGoodsService.findServiceSkuByModelId(advertModel.getId(), advertModel.getActivityAdvertId()), ActivityAdvertStoreSkuBo.class);
-		//再将bo转换成dto 放入封装对象
+		//将bo转换成dto 放入封装对象
 		result.setServiceSkuList(BeanMapper.mapList(serviceSkuList, ActivityAdvertStoreSkuDto.class));
 	}
 	/**
 	 * @Description: 获取便利店商品关联列表
-	 * @param advertModel   
 	 * @author xuzq01
 	 * @param result 
 	 * @date 2017年4月18日
 	 */
-	private void getCloudStoreInfo(ActivityAdvertModel advertModel, ActivityAdverModelDto result) {
-		List<ActivityAdvertStoreSkuBo> cloudSkuList = BeanMapper.mapList(columnAdvertGoodsService.findCloudSkuByModelId(advertModel.getId(), advertModel.getActivityAdvertId()), ActivityAdvertStoreSkuBo.class);
-		//再将bo转换成dto 放入封装对象
+	private void getCloudStoreInfo(ActivityAdverModelDto result) {
+		List<ActivityAdvertStoreSkuBo> cloudSkuList = columnAdvertGoodsService.findCloudSkuByModelId(result.getId(), result.getActivityAdvertId());
+		//将bo转换成dto 放入封装对象
 		result.setColoudSkuList(BeanMapper.mapList(cloudSkuList, ActivityAdvertStoreSkuDto.class));
 	}
 	
 	/**
 	 * @Description: 获取关联的优惠信息
-	 * @param advertModel   
 	 * @author xuzq01
 	 * @param result 
 	 * @date 2017年4月18日
 	 */
-	private void getSaleInfo(ActivityAdvertModel advertModel, ActivityAdverModelDto result) {
-		ActivitySale sale = activitySaleService.findActivitySaleByModelId(advertModel.getModelNo().toString(), advertModel.getActivityAdvertId());
+	private void getSaleInfo(ActivityAdverModelDto result) {
+		ActivitySale sale = activitySaleService.findActivitySaleByModelId(result.getModelNo().toString(), result.getActivityAdvertId());
 		result.setSale(sale);
 	}
 }

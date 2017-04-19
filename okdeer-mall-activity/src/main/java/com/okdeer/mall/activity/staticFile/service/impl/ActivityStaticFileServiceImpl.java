@@ -12,24 +12,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
-import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.activity.staticFile.dto.ActivityStaticFileParamDto;
 import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
-import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFileVo;
 import com.okdeer.mall.activity.staticFile.mapper.ActivityStaticFileMapper;
 import com.okdeer.mall.activity.staticFile.service.ActivityStaticFileService;
 
 /**
  * ClassName: ActivityStaticFileServiceImpl 
- * @Description: TODO
+ * @Description: 前端静态模块service
  * @author xuzq01
  * @date 2017年4月12日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ *      V2.2.2			2017年4月12日 		xuzq01				前端静态模块service
  */
 @Service
 public class ActivityStaticFileServiceImpl extends BaseServiceImpl implements ActivityStaticFileService {
@@ -48,23 +47,15 @@ public class ActivityStaticFileServiceImpl extends BaseServiceImpl implements Ac
 	}
 
 	@Override
-	public PageUtils<ActivityStaticFile> findStaticFileList(ActivityStaticFileVo activityStaticFileVo, int pageNumber,
+	public List<ActivityStaticFile> findStaticFileList(ActivityStaticFileParamDto activityStaticFileParamDto, int pageNumber,
 			int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true);
-		List<ActivityStaticFile> result = activityStaticFileMapper.findStaticFileList(activityStaticFileVo);
-		return new PageUtils<ActivityStaticFile>(result);
+		return activityStaticFileMapper.findStaticFileList(activityStaticFileParamDto);
 	}
 
 	@Override
-	public int findCountByName(ActivityStaticFile activityStaticFile) {
-		return activityStaticFileMapper.findCountByName(activityStaticFile);
-	}
-
-	@Override
-	public void associateActivity(String id, String activityId) {
-		
-		activityStaticFileMapper.associateActivity(id, activityId);
-		
+	public int findCountByName(String title) {
+		return activityStaticFileMapper.findCountByName(title);
 	}
 
 }
