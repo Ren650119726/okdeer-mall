@@ -6,6 +6,7 @@
         <result column="field_id" property="fieldId" jdbcType="VARCHAR" />
         <result column="type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsContentType"/>
         <result column="image_url" property="imageUrl" jdbcType="VARCHAR" />
+        <result column="title" property="title" jdbcType="VARCHAR" />
         <result column="link_url" property="linkUrl" jdbcType="VARCHAR" />
         <result column="business_type" property="businessType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsBusinessType"/>
         <result column="business_id" property="businessId" jdbcType="VARCHAR" />
@@ -14,7 +15,7 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, field_id, type, image_url, link_url, business_type, business_id, sort_type, sort
+        id, field_id, type, image_url, link_url,title, business_type, business_id, sort_type, sort
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -38,6 +39,9 @@
             </if>
             <if test="imageUrl != null" >
                 image_url,
+            </if>
+            <if test="title != null" >
+                title,
             </if>
             <if test="linkUrl != null" >
                 link_url,
@@ -68,6 +72,9 @@
             <if test="imageUrl != null" >
                 #{imageUrl,jdbcType=VARCHAR},
             </if>
+             <if test="title != null" >
+               #{title,jdbcType=VARCHAR},
+            </if>
             <if test="linkUrl != null" >
                 #{linkUrl,jdbcType=VARCHAR},
             </if>
@@ -97,6 +104,9 @@
             </if>
             <if test="imageUrl != null" >
                 image_url = #{imageUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="title != null" >
+                title = #{title,jdbcType=VARCHAR},
             </if>
             <if test="linkUrl != null" >
                 link_url = #{linkUrl,jdbcType=VARCHAR},
