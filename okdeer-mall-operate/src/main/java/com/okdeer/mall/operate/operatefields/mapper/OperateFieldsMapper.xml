@@ -258,7 +258,7 @@
 		<if test="type == -1">
 			ORDER BY sort DESC
 		</if>
-		LIMMIT 1
+		LIMIT 1
 	</select>
 	
 </mapper>
