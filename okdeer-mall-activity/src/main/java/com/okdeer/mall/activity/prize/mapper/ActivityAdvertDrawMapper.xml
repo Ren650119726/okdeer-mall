@@ -81,5 +81,9 @@
         delete from activity_advert_draw
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-
+	<!-- 删除关联抽奖信息by活动id -->
+    <delete id="deleteByActivityAdvertId" parameterType="java.lang.String" >
+        delete from activity_advert_draw
+        where activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+    </delete>
 </mapper>

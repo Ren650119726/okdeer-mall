@@ -23,7 +23,10 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.mall.activity.advert.bo.ActivityAdvertStoreSkuBo;
+import com.okdeer.mall.activity.advert.dto.ActivityAdverModelDto;
 import com.okdeer.mall.activity.advert.dto.ActivityAdvertDto;
+import com.okdeer.mall.activity.advert.dto.ActivityAdvertStoreSkuDto;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvert;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvertCoupons;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvertModel;
@@ -37,9 +40,15 @@ import com.okdeer.mall.activity.advert.service.ActivityAdvertModelService;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertSaleService;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertService;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertStoreService;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.prize.entity.ActivityAdvertDraw;
+import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
 import com.okdeer.mall.activity.prize.service.ActivityAdvertDrawService;
+import com.okdeer.mall.activity.prize.service.ActivityLuckDrawService;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertGoodsService;
@@ -63,17 +72,43 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 	 */
 	@Autowired
 	ActivityAdvertService activityAdvertService;
-	
+	/**
+	 * 广告活动模块表Service
+	 */
 	@Autowired
-	private ActivityAdvertModelService activityAdvertModelService;
+	ActivityAdvertModelService activityAdvertModelService;
+	
+	/**
+	 * 广告活动与特惠或低价关联Service
+	 */
+	@Autowired
+	ActivitySaleService activitySaleService;
+	
+	/**
+	 * 广告活动与抽奖关联表Service
+	 */
+	@Autowired
+	ActivityLuckDrawService activityLuckDrawService;
+	
+	/**
+	 * 广告活动代金劵管理表Service
+	 */
+	@Autowired
+	ActivityCollectCouponsService activityCollectCouponsService;
+
+	
+	/**
+	 * 活动商品中间表Service
+	 */
+	@Autowired
+	ColumnAdvertGoodsService columnAdvertGoodsService;
+	
 	@Autowired
 	private ActivityAdvertSaleService activityAdvertSaleService;
 	@Autowired
 	private ActivityAdvertCouponsService activityAdvertCouponsService;
 	@Autowired
 	private ActivityAdvertStoreService activityAdvertStoreService;
-	@Autowired
-	private ColumnAdvertGoodsService columnAdvertGoodsService;
 	@Autowired
 	private ActivityAdvertDrawService activityAdvertDrawService;
 	
@@ -226,18 +261,22 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 		//修改当前H5活动信息
 		activityAdvertService.update(advertActivity);
 		
-				//根据活动ID删除模块信息
-				//根据活动ID删除关联店铺信息
-				//根据活动ID删除关联的商品信息
-				//根据活动ID删除关联的代金券信息
-				//根据活动ID删除关联的抽奖活动信息
-		
-		
+		//根据活动ID删除模块信息
+		activityAdvertModelService.deleteByActivityAdvertId(advertActivity.getId());
+		//根据活动ID删除关联店铺信息
+		activityAdvertStoreService.deleteByActivityAdvertId(advertActivity.getId());
+		//根据活动促销店铺信息
+		activityAdvertSaleService.deleteByActivityAdvertId(advertActivity.getId());
+		//根据活动ID删除关联的代金券信息
+		activityAdvertCouponsService.deleteByActivityAdvertId(advertActivity.getId());
+		//根据活动ID删除关联的抽奖活动信息
+		activityAdvertDrawService.deleteByActivityAdvertId(advertActivity.getId());
+		//删除关联商品信息
+		columnAdvertGoodsService.deleteByActivityAdvertId(advertActivity.getId());
 		//选择店铺信息
 		if(advertActivity.getAreaType() == AreaType.store){
 			addAdvertStore(activityAdvertDto.getStoreIds(), advertActivity.getId());
 		}
-		//TODO 新增模块信息
 		//保存模块信息,模块信息存在 //添加活动模块信息
 		addAdvertModels(activityAdvertDto.getModelListJson(),advertActivity,userId);
 		

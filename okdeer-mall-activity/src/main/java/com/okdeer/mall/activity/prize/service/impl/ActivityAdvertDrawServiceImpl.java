@@ -51,4 +51,16 @@ public class ActivityAdvertDrawServiceImpl extends BaseServiceImpl implements Ac
     	return activityAdvertDrawMapper.findAdvertDrawByIdNo(modelNo, activityAdvertId);
     }
 	
+	/**
+	 * @Description: 删除关联抽奖信息by活动id
+	 * @param activityAdvertId 活动id
+	 * @return int  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public int deleteByActivityAdvertId(String activityAdvertId){
+		return activityAdvertDrawMapper.deleteByActivityAdvertId(activityAdvertId);
+	}
+    
 }

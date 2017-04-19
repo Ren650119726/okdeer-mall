@@ -80,5 +80,9 @@
         delete from activity_advert_coupons
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-
+	<!-- 删除关联代金券信息by活动id -->
+    <delete id="deleteByActivityAdvertId" parameterType="java.lang.String" >
+        delete from activity_advert_coupons
+        where activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+    </delete>
 </mapper>

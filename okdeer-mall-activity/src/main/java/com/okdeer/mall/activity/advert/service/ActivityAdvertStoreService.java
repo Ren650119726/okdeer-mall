@@ -43,5 +43,13 @@ public interface ActivityAdvertStoreService extends IBaseService {
 	 */
 	public List<ActivityAdvertStoreBo> findShopByAdvertId(String activityAdverId);
 	
-	
+	/**
+	 * @Description: 删除关联店铺信息by活动id
+	 * @param activityAdvertId 活动id
+	 * @return int  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public int deleteByActivityAdvertId(String activityAdvertId);
 }

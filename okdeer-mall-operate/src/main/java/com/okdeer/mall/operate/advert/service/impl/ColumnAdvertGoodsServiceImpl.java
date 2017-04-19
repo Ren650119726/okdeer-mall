@@ -19,6 +19,7 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.advert.entity.ColumnAdvertGoods;
+import com.okdeer.mall.operate.advert.bo.ActivityAdvertStoreSkuBo;
 import com.okdeer.mall.operate.advert.mapper.ColumnAdvertGoodsMapper;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertGoodsService;
 
@@ -102,4 +103,25 @@ public class ColumnAdvertGoodsServiceImpl extends BaseServiceImpl implements Col
 		columnAdvertGoodsMapper.saveBatch(list);
 	}
 
+	@Override
+	public List<ActivityAdvertStoreSkuBo> findServiceSkuByModelId(String modelId, String activityAdvertId) {
+		return columnAdvertGoodsMapper.findServiceSkuByModelId(modelId, activityAdvertId);
+	}
+
+	@Override
+	public List<ActivityAdvertStoreSkuBo> findCloudSkuByModelId(String modelId, String activityAdvertId) {
+		return columnAdvertGoodsMapper.findCloudSkuByModelId(modelId, activityAdvertId);
+	}
+
+	/**
+	 * @Description: 删除关联商品信息by活动id
+	 * @param activityAdvertId 活动id
+	 * @return int  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public int deleteByActivityAdvertId(String activityAdvertId){
+		return columnAdvertGoodsMapper.deleteByActivityAdvertId(activityAdvertId);
+	}
 }

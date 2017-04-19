@@ -60,4 +60,16 @@ public class ActivityAdvertCouponsServiceImpl extends BaseServiceImpl implements
     	return activityAdvertCouponsMapper.add(coupons);
     }
 
+    /**
+	 * @Description: 删除关联代金券信息by活动id
+	 * @param activityAdvertId 活动id
+	 * @return int  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public int deleteByActivityAdvertId(String activityAdvertId){
+		return activityAdvertCouponsMapper.deleteByActivityAdvertId(activityAdvertId);
+	}
+    
 }

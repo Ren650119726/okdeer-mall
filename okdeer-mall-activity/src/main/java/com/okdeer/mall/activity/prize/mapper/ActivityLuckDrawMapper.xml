@@ -220,5 +220,15 @@
             update_user_id = #{updateUserId,jdbcType=VARCHAR}
         where id = #{id,jdbcType=VARCHAR}
     </update>
+    <!-- 根据模块id和广告活动id关联查询抽奖设置信息 -->
+    <select id="findLuckDrawByModelId"  resultMap="BaseResultMap" parameterType="java.lang.String">
+		select  
+		<include refid="Base_Column_List" /> 
+		from activity_luck_draw draw 
+		LEFT JOIN  activity_advert_draw aad on
+		draw.id = aad.luck_draw_id
+		where aad.model_id = #{modelId,jdbcType=VARCHAR} 
+		 and aad.activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+	</select> 
 	<!-- end xuzq 20170411 获取抽奖模板设置列表  -->
 </mapper>

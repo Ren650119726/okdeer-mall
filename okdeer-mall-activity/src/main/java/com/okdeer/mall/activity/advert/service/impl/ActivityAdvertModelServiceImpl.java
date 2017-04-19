@@ -6,6 +6,8 @@
  */    
 package com.okdeer.mall.activity.advert.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,4 +69,21 @@ public class ActivityAdvertModelServiceImpl extends BaseServiceImpl implements A
 		return activityAdvertModelMapper.add(model);
 	}
 
+	@Override
+	public List<ActivityAdvertModel> findModelList(ActivityAdvertModel model) {
+		
+		return activityAdvertModelMapper.findModelList(model);
+	}
+	
+	/**
+	 * @Description: 删除关联模块信息by活动id
+	 * @param activityAdvertId 活动id
+	 * @return int  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public int deleteByActivityAdvertId(String activityAdvertId){
+		return activityAdvertModelMapper.deleteByActivityAdvertId(activityAdvertId);
+	}
 }
