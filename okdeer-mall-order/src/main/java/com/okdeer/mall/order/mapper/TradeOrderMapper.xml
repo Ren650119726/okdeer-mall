@@ -566,6 +566,7 @@
 			<result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
 			<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
 			<result column="quantity" property="quantity" jdbcType="DECIMAL" />
+			<result column="item_total_amount" property="totalAmount" jdbcType="DECIMAL" />
 			<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
 			<result column="properties_indb" property="propertiesIndb"
 				jdbcType="VARCHAR" />
@@ -3024,7 +3025,7 @@
 		tr.consumer_code_status,tr.user_phone,tr.is_breach,tr.breach_percent,tr.breach_money,tr.accept_time,
 		ti.id as invoice_id,ti.head,ti.context,it.service_assurance,
 		it.id as
-		item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,tr.reason,it.properties_indb,it.unit,
+		item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,tr.reason,it.properties_indb,it.unit,it.total_amount as item_total_amount,
 		ol.id AS
 		logistics_id,ol.consignee_name,ol.mobile,ol.area,ol.address,ol.logistics_company_name,ol.logistics_no,ol.type
 		AS logisticsType,
