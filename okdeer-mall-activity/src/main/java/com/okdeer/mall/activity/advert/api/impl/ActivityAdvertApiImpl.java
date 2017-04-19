@@ -191,7 +191,7 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 	 */
 	public void addAdvertModels(String modelListJson,ActivityAdvert advertActivity,String userId) throws Exception{
 		//不存在模块信息
-		if(StringUtils.isNotBlank(modelListJson)){
+		if(StringUtils.isBlank(modelListJson)){
 			return;
 		}
 		JsonMapper jsonMapper = JsonMapper.nonDefaultMapper();
@@ -215,7 +215,7 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 					sale.setId(UuidUtils.getUuid());
 					sale.setModelId(md.getId());
 					//当为店铺促销时放的销售类型
-					sale.setSaleType(ActivityTypeEnum.enumValueOf(Integer.parseInt(md.getModelIdStr())));
+					sale.setSaleType(ActivityTypeEnum.valueOf(md.getModelIdStr()));
 					activityAdvertSaleService.addSale(sale);
 				//指定服务商品	
 				}else if(ModelTypeEnum.SERVICE_STORE_GOOD ==  md.getModelType()){
@@ -250,6 +250,7 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 	 * @throws Exception 
 	 * @date 2017年4月18日
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	public void updateActivityAdvert(ActivityAdvertDto activityAdvertDto,ActivityAdvert advertActivity)throws Exception{
 		//当前操作用户
 		String userId = activityAdvertDto.getUpdateUserId();
@@ -421,4 +422,5 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 		ActivityAdvertSale sale = activityAdvertSaleService.findSaleByIdNo(result.getModelNo(), result.getActivityAdvertId());
 		result.setSale(sale);
 	}
+	
 }
