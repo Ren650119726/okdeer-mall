@@ -817,6 +817,24 @@
 		where id = #{id,jdbcType=VARCHAR}
 	</select>
 
+	<sql id="base_condition">
+		<if test="id != null and id != ''">
+			AND id = #{id,jdbcType=VARCHAR}
+		</if>
+		<if test="orderNo != null and orderNo != ''">
+			AND order_no = #{orderNo,jdbcType=VARCHAR}
+		</if>
+	</sql>
+
+	<select id="selectByParam" resultMap="BaseResultMap"
+			parameterType="com.okdeer.mall.order.entity.TradeOrder">
+		select
+		<include refid="Base_Column_List" />
+		from trade_order
+		where disabled=0
+		<include refid="base_condition" />
+	</select>
+
 	<!-- 财务系统接口-通过订单id查询订单详情 luosm start 12050 update by wusw 20160810 12051 
 		update by wusw 20160811 -->
 	<select id="selectByOrderId" resultType="com.okdeer.mall.order.entity.TradeOrder"
