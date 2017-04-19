@@ -16,7 +16,7 @@ import com.okdeer.mall.activity.advert.entity.ActivityAdvert;
 public interface ActivityAdvertMapper extends IBaseMapper {
 
 	/**
-	 * @Description: TODO
+	 * @Description: 通过名称获取数量
 	 * @param activityAdvert
 	 * @return   
 	 * @author xuzq01
@@ -25,7 +25,7 @@ public interface ActivityAdvertMapper extends IBaseMapper {
 	int findCountByName(String advertName);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 获取广告活动列表
 	 * @param activityAdvert
 	 * @return   
 	 * @author xuzq01
@@ -34,7 +34,7 @@ public interface ActivityAdvertMapper extends IBaseMapper {
 	List<ActivityAdvert> findActivityAdvertList(ActivityAdvert activityAdvert);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 通过广告状态查询列表
 	 * @param statusList
 	 * @return   
 	 * @author xuzq01

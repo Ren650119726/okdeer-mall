@@ -6,53 +6,45 @@
  */    
 package com.okdeer.mall.activity.staticFile.service;
 
-import com.okdeer.base.common.utils.PageUtils;
+import java.util.List;
+
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.activity.staticFile.dto.ActivityStaticFileParamDto;
 import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
-import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFileVo;
 
 /**
  * ClassName: ActivityStaticFileService 
- * @Description: TODO
+ * @Description:   前端模块管理service
  * @author xuzq01
  * @date 2017年4月12日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ *	V2.2.0          2017年4月12日                       xuzq01          	     前端模块管理service
  */
 
 public interface ActivityStaticFileService extends IBaseService {
 
 	/**
-	 * @Description: TODO
-	 * @param activityStaticFileVo
+	 * @Description: 获取列表
+	 * @param activityStaticFileParamDto
 	 * @param pageNumber
 	 * @param pageSize
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年4月12日
 	 */
-	PageUtils<ActivityStaticFile> findStaticFileList(ActivityStaticFileVo activityStaticFileVo, int pageNumber,
+	List<ActivityStaticFile> findStaticFileList(ActivityStaticFileParamDto activityStaticFileParamDto, int pageNumber,
 			int pageSize);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 通过名称查询数量
 	 * @param activityStaticFile
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年4月12日
 	 */
-	int findCountByName(ActivityStaticFile activityStaticFile);
-
-	/**
-	 * @Description: TODO
-	 * @param id
-	 * @param activityId   
-	 * @author xuzq01
-	 * @date 2017年4月17日
-	 */
-	void associateActivity(String id, String activityId);
+	int findCountByName(String name);
 
 }

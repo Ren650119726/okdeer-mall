@@ -8,39 +8,28 @@ package com.okdeer.mall.activity.staticFile.mapper;
 
 import java.util.List;
 
-import org.apache.ibatis.annotations.Param;
-
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.activity.staticFile.dto.ActivityStaticFileParamDto;
 import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
-import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFileVo;
 
 public interface ActivityStaticFileMapper extends IBaseMapper {
 
 	/**
-	 * @Description: TODO
+	 * @Description: 查询列表
 	 * @param activityStaticFileVo
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年4月12日
 	 */
-	List<ActivityStaticFile> findStaticFileList(ActivityStaticFileVo activityStaticFileVo);
+	List<ActivityStaticFile> findStaticFileList(ActivityStaticFileParamDto activityStaticFileParamDto);
 
 	/**
-	 * @Description: TODO
-	 * @param activityStaticFile
+	 * @Description: 通过名称获取数量
+	 * @param title
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年4月12日
 	 */
-	int findCountByName(ActivityStaticFile activityStaticFile);
-
-	/**
-	 * @Description: TODO
-	 * @param id
-	 * @param activityId   
-	 * @author xuzq01
-	 * @date 2017年4月17日
-	 */
-	void associateActivity(@Param("id") String id, @Param("activityId") String activityId);
+	int findCountByName(String title);
 
 }

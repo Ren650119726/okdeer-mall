@@ -190,7 +190,7 @@
          AND disabled = 0 
 		 ORDER BY create_time DESC
    </select>
-   <select id="findCountByName" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw">
+   <select id="findCountByName" resultType="java.lang.Integer" parameterType="java.lang.String">
        select count(*)
        from activity_luck_draw
        where 1=1 and disabled = 0 AND name = #{name,jdbcType=VARCHAR}
