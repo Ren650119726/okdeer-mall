@@ -38,4 +38,14 @@ public interface ActivityAdvertSaleService extends IBaseService {
 	 * @date 2017年4月13日
 	 */
 	public int addSale(ActivityAdvertSale sale);
+	
+	/**
+	 * @Description: 删除关联抽店铺促销信息by活动id
+	 * @param activityAdvertId 活动id
+	 * @return int  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public int deleteByActivityAdvertId(String activityAdvertId);
 }

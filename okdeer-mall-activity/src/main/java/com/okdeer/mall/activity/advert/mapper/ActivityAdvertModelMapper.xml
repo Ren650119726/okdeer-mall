@@ -126,5 +126,9 @@
         delete from activity_advert_model
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-
+ 	<!-- 删除模板by活动id -->
+    <delete id="deleteByActivityAdvertId" parameterType="java.lang.String" >
+        delete from activity_advert_model
+        where activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+    </delete>
 </mapper>

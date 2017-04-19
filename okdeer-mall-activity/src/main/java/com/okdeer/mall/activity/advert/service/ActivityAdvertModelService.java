@@ -50,4 +50,15 @@ public interface ActivityAdvertModelService extends IBaseService {
 	 * @date 2017年4月19日
 	 */
 	public List<ActivityAdvertModel> findModelList(ActivityAdvertModel model);
+	
+	/**
+	 * @Description: 删除关联模块信息by活动id
+	 * @param activityAdvertId 活动id
+	 * @return int  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public int deleteByActivityAdvertId(String activityAdvertId);
+	
 }

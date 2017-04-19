@@ -91,4 +91,14 @@ public interface ColumnAdvertGoodsService extends IBaseService {
 	 * @date 2017年4月19日
 	 */
 	List<ActivityAdvertStoreSkuBo> findCloudSkuByModelId(String modelId, String activityAdvertId);
+	
+	/**
+	 * @Description: 删除关联商品信息by活动id
+	 * @param activityAdvertId 活动id
+	 * @return int  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public int deleteByActivityAdvertId(String activityAdvertId);
 }

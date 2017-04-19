@@ -168,6 +168,11 @@
         where id = #{id,jdbcType=VARCHAR}
     </delete>
     
+    <!-- 删除关联商品信息by活动id -->
+    <delete id="deleteByActivityAdvertId" parameterType="java.lang.String" >
+        delete from column_advert_goods
+        where activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+    </delete>
     
     <sql id="advert_goods_columns">
 		sku.id,

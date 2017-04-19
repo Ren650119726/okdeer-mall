@@ -70,5 +70,5 @@ public interface ActivityLuckDrawMapper extends IBaseMapper {
 	 * @date 2017年4月18日
 	 */
 	ActivityLuckDraw findLuckDrawByModelId(@Param("modelId") String modelId, @Param("activityAdvertId") String activityAdvertId);
-
+	
 }

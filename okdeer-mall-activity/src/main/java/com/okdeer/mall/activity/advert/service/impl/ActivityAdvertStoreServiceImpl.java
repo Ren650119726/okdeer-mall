@@ -61,4 +61,15 @@ public class ActivityAdvertStoreServiceImpl extends BaseServiceImpl implements A
 		return activityAdvertStoreMapper.findShopByAdvertId(activityAdverId);
 	}
 
+	/**
+	 * @Description: 删除关联店铺信息by活动id
+	 * @param activityAdvertId 活动id
+	 * @return int  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public int deleteByActivityAdvertId(String activityAdvertId){
+		return activityAdvertStoreMapper.deleteByActivityAdvertId(activityAdvertId);
+	}
 }

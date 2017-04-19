@@ -38,4 +38,15 @@ public interface ActivityAdvertCouponsService extends IBaseService {
      * @date 2017年4月17日
      */
     public int addCoupons(ActivityAdvertCoupons coupons);
+    
+    /**
+	 * @Description: 删除关联代金券信息by活动id
+	 * @param activityAdvertId 活动id
+	 * @return int  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public int deleteByActivityAdvertId(String activityAdvertId);
+    
 }

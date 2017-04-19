@@ -74,5 +74,16 @@ public class ActivityAdvertModelServiceImpl extends BaseServiceImpl implements A
 		
 		return activityAdvertModelMapper.findModelList(model);
 	}
-
+	
+	/**
+	 * @Description: 删除关联模块信息by活动id
+	 * @param activityAdvertId 活动id
+	 * @return int  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public int deleteByActivityAdvertId(String activityAdvertId){
+		return activityAdvertModelMapper.deleteByActivityAdvertId(activityAdvertId);
+	}
 }

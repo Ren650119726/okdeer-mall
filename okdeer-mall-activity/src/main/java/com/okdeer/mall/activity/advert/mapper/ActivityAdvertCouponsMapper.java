@@ -27,4 +27,14 @@ public interface ActivityAdvertCouponsMapper extends IBaseMapper {
 	 * @date 2017年4月13日
 	 */
     public ActivityAdvertCoupons findAdvertCouponsByIdNo(String modelNo,String activityAdvertId);
+    
+    /**
+	 * @Description: 删除关联代金券信息by活动id
+	 * @param activityAdvertId 活动id
+	 * @return int  
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月19日
+	 */
+	public int deleteByActivityAdvertId(String activityAdvertId);
 }

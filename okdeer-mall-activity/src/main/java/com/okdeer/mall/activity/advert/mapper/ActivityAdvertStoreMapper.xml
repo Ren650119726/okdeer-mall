@@ -91,5 +91,9 @@
         delete from activity_advert_store
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-
+	<!-- 删除关联店铺信息by活动id -->
+    <delete id="deleteByActivityAdvertId" parameterType="java.lang.String" >
+        delete from activity_advert_store
+        where activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+    </delete>
 </mapper>

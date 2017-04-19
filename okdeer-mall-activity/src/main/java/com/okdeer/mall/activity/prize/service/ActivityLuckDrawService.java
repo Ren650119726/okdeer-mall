@@ -86,5 +86,4 @@ public interface ActivityLuckDrawService extends IBaseService {
 	 */
 	ActivityLuckDraw findLuckDrawByModelId(String id, String activityAdvertId);
 
-
 }
