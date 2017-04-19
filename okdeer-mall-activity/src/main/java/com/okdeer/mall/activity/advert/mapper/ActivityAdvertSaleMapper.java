@@ -6,6 +6,8 @@
  */
 package com.okdeer.mall.activity.advert.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvertSale;
 /**
@@ -27,7 +29,7 @@ public interface ActivityAdvertSaleMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertSale findSaleByIdNo(int modelNo,String activityAdvertId);
+    public ActivityAdvertSale findSaleByIdNo(@Param("modelNo") int modelNo,@Param("activityAdvertId") String activityAdvertId);
     
     /**
 	 * @Description: 删除关联店铺促销信息by活动id

@@ -12,7 +12,7 @@
         id, collect_coupons_id, activity_advert_id, model_id
     </sql>
 	<!-- 根据活动id及模板编号查询关联的代金券活动 -->
-    <select id="findAdvertCouponsByIdNo" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    <select id="findAdvertCouponsByIdNo" resultMap="BaseResultMap"  >
         select 
         	<include refid="Base_Column_List" />
         from activity_advert_coupons s
