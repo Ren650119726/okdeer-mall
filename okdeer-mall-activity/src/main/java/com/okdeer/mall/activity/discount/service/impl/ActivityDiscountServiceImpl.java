@@ -449,4 +449,18 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			}
 		}
 	}
+
+	@Override
+	public List<ActivityInfoDto> findByStore(ActivityParamDto paramDto) throws Exception {
+		List<String> activityIds = activityDiscountMapper.findByStore(paramDto);
+		List<ActivityInfoDto> actInfoList = Lists.newArrayList();
+		ActivityInfoDto actInfo = null;
+		for(String activityId : activityIds){
+			actInfo = this.findInfoById(activityId);
+			if(actInfo != null){
+				actInfoList.add(actInfo);
+			}
+		}
+		return actInfoList;
+	}
 }
