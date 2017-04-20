@@ -22,7 +22,7 @@ public interface ActivityAdvertMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月12日
 	 */
-	int findCountByName(String advertName);
+	int findCountByName(@Param("advertName")String advertName);
 
 	/**
 	 * @Description: 获取广告活动列表
