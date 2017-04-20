@@ -69,6 +69,9 @@
             <if test="id != null" >
                 id,
             </if>
+            <if test="activityCollectId != null" >
+                activity_collect_id,
+            </if>
             <if test="prizeName != null" >
                 prize_name,
             </if>
@@ -109,6 +112,9 @@
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
                 #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="activityCollectId != null" >
+                #{activityCollectId,jdbcType=VARCHAR},
             </if>
             <if test="prizeName != null" >
                 #{prizeName,jdbcType=VARCHAR},
@@ -154,6 +160,9 @@
         <set >
             <if test="prizeName != null" >
                 prize_name = #{prizeName,jdbcType=VARCHAR},
+            </if>
+            <if test="activityCollectId != null" >
+               activity_collect_id =  #{activityCollectId,jdbcType=VARCHAR},
             </if>
             <if test="weight != null" >
                 weight = #{weight,jdbcType=INTEGER},
