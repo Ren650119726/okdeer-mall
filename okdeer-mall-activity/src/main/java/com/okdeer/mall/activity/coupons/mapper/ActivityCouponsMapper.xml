@@ -131,10 +131,16 @@
 	<select id="selectStoreInfoByCityId" parameterType="com.okdeer.archive.store.entity.StoreInfo" resultType="com.okdeer.mall.common.entity.AreaScTreeVo">
 		SELECT id , disabled, type, agent_id, CONCAT(store_name,'(',area,')') as text FROM store_info 
 		WHERE audit_status = 1 and city_id = #{cityId, jdbcType=VARCHAR} AND disabled = #{disabled,jdbcType=TINYINT}
-		AND type = #{type,jdbcType=TINYINT} 
+		<if test="type != null">
+           AND type = #{type,jdbcType=TINYINT} 
+       </if> 
+		<if test="type == null">
+           AND type in (2,4)
+       </if> 
 		<if test="agentId != null and agentId != ''">
             AND agent_id = #{agentId, jdbcType=VARCHAR}
        </if> 
+		
 	</select>
 	
 	<sql id="BaseSelectSQL">
