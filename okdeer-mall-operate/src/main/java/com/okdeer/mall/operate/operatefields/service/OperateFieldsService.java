@@ -3,7 +3,10 @@ package com.okdeer.mall.operate.operatefields.service;
 import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.operate.dto.FieldGoodsQueryDto;
+import com.okdeer.mall.operate.dto.OperateFieldContentDto;
 import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
+import com.okdeer.mall.operate.dto.StoreActivitGoodsQueryDto;
 import com.okdeer.mall.operate.operatefields.bo.OperateFieldsBo;
 import com.okdeer.mall.operate.operatefields.entity.OperateFields;
 import com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent;
@@ -61,5 +64,62 @@ public interface OperateFieldsService extends IBaseService {
 	 * @author zengjizu
 	 * @date 2017年4月13日
 	 */
-	void updateSort(String id,boolean isUp) throws Exception;
+    void updateSort(String id,boolean isUp) throws Exception;
+	
+	/**
+	 * 根据店铺Id和店铺商品Id查找关联的运营栏位
+	 * @param storeId 店铺Id
+	 * @param storeSkuId 店铺商品Id
+	 * @return 栏位列表
+	 * @author zhaoqc
+	 * @date 2017-4-18
+	 */
+	List<OperateFields> getGoodsRalationFields(String storeId, String storeSkuId);
+
+	/**
+     * 初始化店铺运营栏位
+     * @param storeId
+     * @throws Exception
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+    void initStoreOperateFieldData(String storeId) throws Exception;
+    
+    /**
+     * 初始化城市运营栏位
+     * @param cityId
+     * @param storeId
+     * @throws Exception
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+    void initCityOperateFieldData(String cityId)  throws Exception;
+    
+    /**
+     * 查找店铺活动关联的商品运营位内容
+     * @param queryDto
+     * @return
+     * @author zhaoqc
+     * @date 2017-4-19
+     */
+    List<OperateFieldContentDto> getGoodsOfStoreActivityFields(StoreActivitGoodsQueryDto queryDto) throws Exception;
+    
+    /**
+     * 根据店铺Id和skuId查找运营栏位关联的商品信息
+     * @param goodsId 商品Id
+     * @param storeId 店铺Id
+     * @return
+     * @author zhaoqc
+     * @date 2017-4-19
+     */
+    OperateFieldContentDto getSingleGoodsOfOperateField(String goodsId, String storeId) throws Exception;
+    
+    /**
+     * 根据商品的三级分类查询商品
+     * @param queryDto 查询DTO
+     * @return
+     * @throws Exception
+     */
+    List<OperateFieldContentDto> getGoodsOfCategoryField(FieldGoodsQueryDto queryDto) throws Exception;
+    
 }

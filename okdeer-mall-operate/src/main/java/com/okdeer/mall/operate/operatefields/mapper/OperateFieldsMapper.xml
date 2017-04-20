@@ -261,4 +261,17 @@
 		LIMIT 1
 	</select>
 	
+	<select id="getGoodsRalationFields" resultMap="BaseResultMap">
+		select distinct f.id, f.type, f.business_id, f.name, f.template, f.point_type, f.point_content,
+        f.head_pic, f.sort, f.enabled, f.create_time, f.update_time, f.create_user_id, f.update_user_id, f.disabled
+		from column_operate_fields f
+		left join column_operate_fields_content c on f.id=c.field_id
+		where f.type = 2  <!-- 店铺运营栏位 -->
+			and f.point_type = 0 <!-- 指向商品类型 -->
+			and f.point_content = 0 <!-- 指向内容为商品 -->
+			and f.business_id = #{storeId} <!--  -->
+			and c.business_id = #{storeSkuId} <!--  -->
+		order by f.sort desc
+	</select>
+	
 </mapper>

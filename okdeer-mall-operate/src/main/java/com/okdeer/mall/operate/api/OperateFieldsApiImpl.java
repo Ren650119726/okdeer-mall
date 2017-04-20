@@ -88,6 +88,30 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 		dto.setOperateFieldscontentDtoList(operateFieldsContentDtoList);
 		return dto;
 	}
+
+	/**
+     * 初始化店铺运营栏位
+     * @param storeId
+     * @throws Exception
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+    @Override
+    public void initStoreOperateFieldData(String storeId) throws Exception {
+        this.operateFieldsService.initStoreOperateFieldData(storeId);
+    }
+
+    /**
+     * 初始化城市运营栏位
+     * @param cityId
+     * @throws Exception
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+    @Override
+    public void initCityOperateFieldData(String cityId) throws Exception {
+        this.operateFieldsService.initCityOperateFieldData(cityId);
+    }
 	
 	
 	

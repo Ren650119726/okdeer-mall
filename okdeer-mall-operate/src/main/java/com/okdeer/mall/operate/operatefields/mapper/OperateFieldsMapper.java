@@ -68,4 +68,17 @@ public interface OperateFieldsMapper extends IBaseMapper {
 	 */
 	OperateFields findCompareBySort(@Param("id")String id, @Param("sort")int sort,@Param("type")int type);
 	
+	/**
+     * 根据店铺Id和店铺商品Id查找关联的运营栏位
+     * @param storeId 店铺Id
+     * @param storeSkuId 店铺商品Id
+     * @return 栏位列表
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+	List<OperateFields> getGoodsRalationFields(@Param("storeId")String storeId, @Param("storeSkuId") String storeSkuId);
+	
+	
+	
+	
 }
