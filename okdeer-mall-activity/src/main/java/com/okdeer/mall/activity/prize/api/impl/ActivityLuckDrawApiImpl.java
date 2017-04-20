@@ -81,6 +81,7 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 		for(ActivityPrizeWeight prizeWeight : prizeWeightList){
 			prizeWeight.setId(UuidUtils.getUuid());
 			prizeWeight.setLuckDrawId(activityLuckDrawVo.getId());
+			prizeWeight.setWeightDeno(activityLuckDrawVo.getWeightDeno());
 			prizeWeight.setCreateTime(date);
 			prizeWeight.setUpdateTime(date);
 			prizeWeight.setCreateUserId(activityLuckDrawVo.getCreateUserId());
@@ -123,6 +124,7 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 			if(result==0){
 				prizeWeight.setId(UuidUtils.getUuid());
 				prizeWeight.setLuckDrawId(activityLuckDrawVo.getId());
+				prizeWeight.setWeightDeno(activityLuckDrawVo.getWeightDeno());
 				prizeWeight.setCreateTime(date);
 				prizeWeight.setCreateUserId(activityLuckDrawVo.getUpdateUserId());
 				prizeWeight.setUpdateUserId(activityLuckDrawVo.getUpdateUserId());
