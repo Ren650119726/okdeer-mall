@@ -59,7 +59,7 @@ public interface ActivityPrizeRecordMapper extends IBaseMapper {
 	public int findCountByPrizeId(String prizeId);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 获取奖品记录列表
 	 * @param activityPrizeRecordVo
 	 * @return   
 	 * @author xuzq01

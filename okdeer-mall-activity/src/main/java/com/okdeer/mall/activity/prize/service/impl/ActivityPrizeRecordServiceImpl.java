@@ -50,7 +50,7 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 	}
 
 	/**
-	 * @Description: TODO
+	 * @Description: 通过用户id获取奖品列表
 	 * @param userId
 	 * @param activityId 活动id H5活动id 以后会是对应
 	 * @return   

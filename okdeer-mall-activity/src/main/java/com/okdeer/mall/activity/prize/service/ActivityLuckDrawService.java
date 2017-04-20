@@ -17,14 +17,14 @@ import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 
 /**
  * ClassName: ActivityLuckDrawService 
- * @Description: TODO
+ * @Description: 活动抽奖记录Service
  * @author xuzq01
  * @date 2017年4月11日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *
+ *		v2.2.0			2017年4月11日		xuzq01				活动抽奖记录Service
  */
 
 public interface ActivityLuckDrawService extends IBaseService {
@@ -41,7 +41,7 @@ public interface ActivityLuckDrawService extends IBaseService {
 	PageUtils<ActivityLuckDraw> findLuckDrawList(ActivityLuckDrawVo activityLuckDrawVo, int pageNumber, int pageSize);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 校验是否有重复名称
 	 * @param name
 	 * @return   
 	 * @author xuzq01
@@ -50,7 +50,7 @@ public interface ActivityLuckDrawService extends IBaseService {
 	int findCountByName(String name);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 更新抽奖设置状态
 	 * @param list   
 	 * @author xuzq01
 	 * @date 2017年4月11日
@@ -58,7 +58,7 @@ public interface ActivityLuckDrawService extends IBaseService {
 	void updateLuckDrawStatus(List<String> list,int status);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 定时器查询抽奖设置列表
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年4月18日
@@ -66,7 +66,7 @@ public interface ActivityLuckDrawService extends IBaseService {
 	List<ActivityLuckDraw> listByJob();
 
 	/**
-	 * @Description: TODO
+	 * @Description: 定时器批量更新状态
 	 * @param id
 	 * @param end
 	 * @param updateUserId
@@ -77,7 +77,7 @@ public interface ActivityLuckDrawService extends IBaseService {
 	void updateBatchStatus(String id, SeckillStatusEnum end, String updateUserId, Date updateTime);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 通过模块id获取关联的抽奖设置
 	 * @param id
 	 * @param activityAdvertId
 	 * @return   

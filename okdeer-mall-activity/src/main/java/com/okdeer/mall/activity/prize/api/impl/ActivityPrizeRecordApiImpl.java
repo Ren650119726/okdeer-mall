@@ -38,7 +38,7 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 	ActivityPrizeRecordService activityPrizeRecordService;
 	
 	/**
-	 * @Description: TODO
+	 * @Description: 用户id获奖奖品列表
 	 * @param userId
 	 * @param activityId 活动id H5活动id 以后会是对应
 	 * @return   

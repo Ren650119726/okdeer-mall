@@ -12,14 +12,14 @@ import com.okdeer.mall.activity.prize.entity.ActivityDrawRecordVo;
 
 /**
  * ClassName: ActivityDrawRecordService 
- * @Description: TODO
+ * @Description: 活动抽奖记录Service
  * @author xuzq01
  * @date 2016年12月8日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *		v1.2.3			2016年12月8日		xuzq01				活动抽奖记录mapper
+ *		v1.2.3			2016年12月8日		xuzq01				活动抽奖记录Service
  */
 
 public interface ActivityDrawRecordService extends IBaseService {
