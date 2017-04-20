@@ -106,7 +106,7 @@
                 disabled,
             </if>
             <if test="isDefaultWeight != null" >
-                is_default_weight,
+                is_default_weight
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
@@ -186,7 +186,7 @@
                 disabled = #{disabled,jdbcType=INTEGER},
             </if>
             <if test="isDefaultWeight != null" >
-               isDefaultWeight = #{isDefaultWeight,jdbcType=TINYINT},
+               is_default_weight = #{isDefaultWeight,jdbcType=TINYINT}
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
