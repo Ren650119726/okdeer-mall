@@ -179,5 +179,19 @@
           and name = #{advertName,jdbcType=VARCHAR}
        </if>
     </select>
+   	<select id="listByJob"  resultMap="BaseResultMap">
+		select s.* from activity_advert s where 
+		(s.`status` = 0 and  s.start_time &lt;= NOW())
+		OR
+		(s.`status` = 1 and  s.end_time &lt;= NOW())
+	</select> 
+	
+	<update id="updateBatchStatus" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvert" >
+        update activity_advert  
+        set status = #{status,jdbcType=NUMERIC},
+            update_time = #{updateTime,jdbcType=TIMESTAMP},
+            update_user_id = #{updateUserId,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
 	<!--end xuzq 20170412 -->
 </mapper>
