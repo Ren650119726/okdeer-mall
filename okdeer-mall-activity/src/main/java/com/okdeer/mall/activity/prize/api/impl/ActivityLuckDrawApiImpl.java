@@ -132,4 +132,10 @@ public class ActivityLuckDrawApiImpl implements ActivityLuckDrawApi {
 		}
 	}
 
+	@Override
+	public PageUtils<ActivityLuckDraw> findLuckDrawSelectList(ActivityLuckDrawVo activityLuckDrawVo, int pageNumber,
+			int pageSize) {
+		return activityLuckDrawService.findLuckDrawSelectList(activityLuckDrawVo, pageNumber, pageSize);
+	}
+
 }

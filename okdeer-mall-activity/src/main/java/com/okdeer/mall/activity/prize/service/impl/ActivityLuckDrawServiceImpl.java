@@ -7,6 +7,7 @@
 package com.okdeer.mall.activity.prize.service.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -92,6 +93,14 @@ public class ActivityLuckDrawServiceImpl extends BaseServiceImpl implements Acti
 	@Override
 	public ActivityLuckDraw findLuckDrawByModelId(String modelId, String activityAdvertId) {
 		return activityLuckDrawMapper.findLuckDrawByModelId(modelId,activityAdvertId);
+	}
+
+	@Override
+	public PageUtils<ActivityLuckDraw> findLuckDrawSelectList(ActivityLuckDrawVo activityLuckDrawVo, int pageNumber,
+			int pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true);
+		List<ActivityLuckDraw> result = activityLuckDrawMapper.findLuckDrawSelectList(activityLuckDrawVo);
+		return new PageUtils<ActivityLuckDraw>(result);
 	}
 
 }

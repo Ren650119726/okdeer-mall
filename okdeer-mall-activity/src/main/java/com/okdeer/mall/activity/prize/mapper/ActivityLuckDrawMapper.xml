@@ -190,6 +190,17 @@
          AND disabled = 0 
 		 ORDER BY create_time DESC
    </select>
+   <select id="findLuckDrawSelectList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo">
+       select 
+       <include refid="Base_Column_List" />
+       from activity_luck_draw
+       where 1=1 AND (status = 0 or status = 1)
+       <if test="name != null and name != ''" >
+            AND name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
+       </if>
+       AND disabled = 0 
+	   ORDER BY create_time DESC
+   </select>
    <select id="findCountByName" resultType="java.lang.Integer" parameterType="java.lang.String">
        select count(*)
        from activity_luck_draw
