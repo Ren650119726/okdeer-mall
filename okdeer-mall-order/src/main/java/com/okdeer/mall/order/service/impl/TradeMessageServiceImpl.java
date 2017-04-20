@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 
+import com.okdeer.mcm.constant.MsgConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -695,7 +696,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	    PushUserVo pushUser = new PushUserVo();
 	    pushUser.setUserId(sysUser.getId());
         pushUser.setMobile(sysUser.getPhone());
-        pushUser.setMsgType(1);
+        pushUser.setMsgType(MsgConstant.MsgType.THROUGH);
         // begin V2.3.0 新增语音播放文件名 add by wangf01 20170419
 		pushUser.setSoundStyle("order.wav");
 		// end add by wangf01 20170419
