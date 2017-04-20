@@ -103,6 +103,7 @@ import com.okdeer.mcm.service.ISmsService;
  *    V1.2				 2016-12-02		      maojj				   添加服务店接单通知短信
  *    商业系统对接			 2016-12-19			  maojj				 POS消息同时推送到商业系统
  *    V2.2.0             2017-3-30            zhaoqc             发送消息根据APP版本区分消息类型
+ *    V2.3.0			20170419				wangf01			新增推送语音提示文件名
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeMessageServiceApi")
 public class TradeMessageServiceImpl implements TradeMessageService, TradeMessageServiceApi {
@@ -695,6 +696,9 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	    pushUser.setUserId(sysUser.getId());
         pushUser.setMobile(sysUser.getPhone());
         pushUser.setMsgType(1);
+        // begin V2.3.0 新增语音播放文件名 add by wangf01 20170419
+		pushUser.setSoundStyle("order.wav");
+		// end add by wangf01 20170419
         
         try {
             pushUser.setNotificationBuilderId(Integer.valueOf(notificationBuilderId));
