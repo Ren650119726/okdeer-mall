@@ -64,4 +64,9 @@ public class ActivityDiscountApiImpl implements ActivityDiscountApi{
 		return activityDiscountService.findInfoById(id);
 	}
 
+	@Override
+	public List<ActivityInfoDto> findByStore(ActivityParamDto paramDto) throws Exception {
+		return activityDiscountService.findByStore(paramDto);
+	}
+
 }

@@ -110,4 +110,13 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @date 2017年4月19日
 	 */
 	ActivityInfoDto findInfoById(String id) throws Exception;
+	
+	/**
+	 * @Description: 查询店铺所拥有的满减活动列表
+	 * @param paramDto
+	 * @return   
+	 * @author maojj
+	 * @date 2017年4月20日
+	 */
+	List<ActivityInfoDto> findByStore(ActivityParamDto paramDto) throws Exception;
 }
