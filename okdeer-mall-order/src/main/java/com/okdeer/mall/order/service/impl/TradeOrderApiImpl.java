@@ -41,7 +41,7 @@ import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
-import com.okdeer.mall.activity.discount.service.ActivityDiscountServiceApi;
+import com.okdeer.mall.activity.discount.service.ActivityDiscountApi;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi;
 import com.okdeer.mall.common.vo.PageResultVo;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
@@ -161,7 +161,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	private InvitationCodeServiceApi invitationCodeService;
 	
 	@Reference(version = "1.0.0", check = false)
-	private ActivityDiscountServiceApi activityDiscountService;
+	private ActivityDiscountApi activityDiscountService;
 	
 	@Reference(version = "1.0.0", check = false)
 	private ActivitySaleServiceApi activitySaleService;

@@ -1378,7 +1378,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(activityType)
 					|| ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES.equals(activityType)) {
 				// 满减活动
-				ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(activityId);
+				ActivityDiscount activityDiscount = activityDiscountMapper.findById(activityId);
 				if (activityDiscount != null) {
 					activityName = activityDiscount.getName();
 
@@ -2091,7 +2091,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrder.getActivityType())) {
 				// 满减活动
 				ActivityDiscount activityDiscount = activityDiscountMapper
-						.selectByPrimaryKey(tradeOrder.getActivityId());
+						.findById(tradeOrder.getActivityId());
 				activityName = activityDiscount.getName();
 			}
 		}
@@ -2136,7 +2136,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrderVo.getActivityType())) {
 						// 满减活动
 						ActivityDiscount activityDiscount = activityDiscountMapper
-								.selectByPrimaryKey(tradeOrderVo.getActivityId());
+								.findById(tradeOrderVo.getActivityId());
 						if (activityDiscount != null) {
 							tradeOrderVo.setActivityName(activityDiscount.getName());
 						}
@@ -2207,7 +2207,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrderVo.getActivityType())) {
 					// 满减活动
 					ActivityDiscount activityDiscount = activityDiscountMapper
-							.selectByPrimaryKey(tradeOrderVo.getActivityId());
+							.findById(tradeOrderVo.getActivityId());
 					if (activityDiscount != null) {
 						tradeOrderVo.setActivityName(activityDiscount.getName());
 					}
@@ -2259,7 +2259,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrderVo.getActivityType())) {
 						// 满减活动
 						ActivityDiscount activityDiscount = activityDiscountMapper
-								.selectByPrimaryKey(tradeOrderVo.getActivityId());
+								.findById(tradeOrderVo.getActivityId());
 						if (activityDiscount != null) {
 							tradeOrderVo.setActivityName(activityDiscount.getName());
 						}
@@ -2310,7 +2310,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrderVo.getActivityType())) {
 						// 满减活动
 						ActivityDiscount activityDiscount = activityDiscountMapper
-								.selectByPrimaryKey(tradeOrderVo.getActivityId());
+								.findById(tradeOrderVo.getActivityId());
 						if (activityDiscount != null) {
 							tradeOrderVo.setActivityName(activityDiscount.getName());
 						}
@@ -2360,7 +2360,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrderVo.getActivityType())) {
 						// 满减活动
 						ActivityDiscount activityDiscount = activityDiscountMapper
-								.selectByPrimaryKey(tradeOrderVo.getActivityId());
+								.findById(tradeOrderVo.getActivityId());
 						if (activityDiscount != null) {
 							tradeOrderVo.setActivityName(activityDiscount.getName());
 						}
@@ -5914,7 +5914,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		} else if (activityType == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
 				|| activityType == ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES) {
 			// 满减或满折活动
-			ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(activityId);
+			ActivityDiscount activityDiscount = activityDiscountMapper.findById(activityId);
 			return activityDiscount.getName();
 		} else if (activityType == ActivityTypeEnum.SECKILL_ACTIVITY) {
 			// 秒杀活动
@@ -7187,7 +7187,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.ordinal() == activityType
 					|| ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES.ordinal() == activityType) {
 				// 满减活动
-				ActivityDiscount activityDiscount = activityDiscountMapper.selectByPrimaryKey(activityId);
+				ActivityDiscount activityDiscount = activityDiscountMapper.findById(activityId);
 				if (activityDiscount != null) {
 					activityName = activityDiscount.getName();
 				}

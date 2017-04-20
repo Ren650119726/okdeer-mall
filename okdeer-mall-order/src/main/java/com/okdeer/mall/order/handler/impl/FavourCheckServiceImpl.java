@@ -147,7 +147,7 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 	 */
 	private boolean checkDiscount(String activityId) {
 		boolean isValid = true;
-		ActivityDiscount discount = activityDiscountMapper.selectByPrimaryKey(activityId);
+		ActivityDiscount discount = activityDiscountMapper.findById(activityId);
 		if (discount.getStatus() != ActivityDiscountStatus.ing) {
 			isValid = false;
 		}

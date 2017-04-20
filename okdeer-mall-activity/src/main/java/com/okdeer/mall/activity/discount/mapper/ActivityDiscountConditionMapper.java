@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
-import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * 店铺活动满减(满折)条件
@@ -19,41 +19,34 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *     重构4.1          2016年7月18日                               zengj				新增增加活动项信息方法
+ *     友门鹿V2.3 	   2017-04-18			 maojj				优化优惠条件
  */
-public interface ActivityDiscountConditionMapper extends IBaseCrudMapper {
+public interface ActivityDiscountConditionMapper extends IBaseMapper {
+
 	/**
-	 * 
-	 * @desc 添加满减(满折)活动条件
-	 *
-	 * @param activityDiscountConditionList 满减(满折)条件集合
+	 * @Description: 批量新增优惠条件
+	 * @param conditionList   
+	 * @author maojj
+	 * @date 2017年4月18日
 	 */
-	void insertActivityDiscountCondition(List<ActivityDiscountCondition> list);
+	void batchAdd(@Param("conditionList")List<ActivityDiscountCondition> conditionList);
 	
 	/**
-	 * 
-	 * @desc 删除满减(满折)活动下的条件
-	 *
-	 * @param discountId 满减(满折)活动ID
+	 * @Description: 删除活动下的优惠条件
+	 * @param activityId 满减(满折、零钱包)活动ID
+	 * @return   
+	 * @author maojj
+	 * @date 2017年4月18日
 	 */
-	void deleteActivityDiscountCondition(@Param("discountId") String discountId);
+	int deleteByActivityId(@Param("activityId")String activityId);
 	
 	/**
-	 * 
-	 * @desc 查询 满减(满折)活动下的条件
-	 *
-	 * @param discountId 满减(满折)活动ID
-	 * @return  满减(满折)活动条件集合
+	 * @Description: 查询活动下的优惠条件
+	 * @param activityId
+	 * @return   
+	 * @author maojj
+	 * @date 2017年4月18日
 	 */
-	List<ActivityDiscountCondition> selectByDiscountId(@Param("discountId") String discountId);
-	
-	//重构4.1 add by zengj
-	/**
-	 * @Description: 根据主键查询活动项信息
-	 * @param id主键ID
-	 * @return ActivityDiscountCondition 活动项信息  
-	 * @author zengj
-	 * @date 2016年7月18日
-	 */
-	ActivityDiscountCondition findByPrimaryKey(@Param("id") String id);
-	//重构4.1 add by zengj
+	List<ActivityDiscountCondition> findByActivityId(@Param("activityId") String activityId);
+
 }
