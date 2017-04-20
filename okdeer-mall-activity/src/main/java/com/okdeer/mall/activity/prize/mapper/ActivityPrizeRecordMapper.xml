@@ -34,10 +34,10 @@
         disabled
     </sql>
     <!-- 根据用户id及活动id查询该活动用户获得的奖品记录 -->
-	<select id="findByUserId" resultMap="prizeRecordList" >
+	<select id="findByUserId" resultMap="prizeRecordList" parameterType="java.lang.String" >
         select 
-        	id, prize_id,prize_name, user_id,luck_draw_id,activity_collect_id,
-        	create_time,is_offer, prize_offer_time, update_user_id, update_time
+        	r.id, r.prize_id,r.prize_name, r.user_id,r.luck_draw_id,r.activity_collect_id,
+        	r.create_time,r.is_offer, r.prize_offer_time, r.update_user_id, r.update_time
         from activity_prize_record r 
         	 inner join activity_prize_weight w on r.`prize_id` = w.`id`
         where r.disabled=0  
