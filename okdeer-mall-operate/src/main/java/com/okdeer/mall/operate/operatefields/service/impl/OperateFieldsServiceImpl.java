@@ -25,6 +25,7 @@ import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.Enabled;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
@@ -603,5 +604,13 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
     public List<OperateFieldContentDto> getGoodsOfStoreLabelField(FieldGoodsQueryDto queryDto) throws Exception {
         return this.operateFieldsContentMapper.getGoodsOfStoreLabelField(queryDto);
     }
+
+	@Override
+	public void initOperationField(String storeId) throws Exception {
+		if(StringUtils.isNotBlank(storeId)){
+			operateFieldsMapper.initOperationField(storeId);
+		}
+		
+	}
     
 }

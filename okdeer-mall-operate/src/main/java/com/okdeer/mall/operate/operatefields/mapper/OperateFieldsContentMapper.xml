@@ -382,5 +382,61 @@
 			limit #{template} 
 		</if>
 	</select>
+
+	<!-- add by mengsj begin 初始化店铺运营栏位内容 -->
+	<insert id="initOperationFieldContext" parameterType="string">
+		INSERT INTO column_operate_fields_content (
+			id,
+			field_id,
+			type,
+			image_url,
+			title,
+			link_url,
+			business_type,
+			business_id,
+			sort_type,
+			sort
+		) SELECT
+			REPLACE (UUID(), '-', '') AS id,
+			bb.id field_id,
+			aa.type,
+			aa.image_url,
+			aa.title,
+			aa.link_url,
+			aa.business_type,
+			aa.business_id,
+			aa.sort_type,
+			aa.sort
+		FROM
+			(
+				SELECT
+					bb.type,
+					bb.image_url,
+					bb.title,
+					bb.link_url,
+					bb.business_type,
+					bb.business_id,
+					bb.sort_type,
+					bb.sort
+				FROM
+					column_operate_fields aa
+				INNER JOIN column_operate_fields_content bb ON aa.id = bb.field_id
+				WHERE
+					aa.type = 1
+				AND aa.business_id = '0'	
+			) aa
+		INNER JOIN column_operate_fields bb ON (
+			bb.type = 2
+			AND NOT EXISTS (
+				SELECT
+					id
+				FROM
+					column_operate_fields_content
+				WHERE
+					field_id = bb.id
+			)
+		) WHERE bb.business_id = #{storeId,jdbcType=VARCHAR}
+	</insert>
+	<!-- add by mengsj end 初始化店铺运营栏位内容 -->
 	
 </mapper>

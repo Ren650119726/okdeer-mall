@@ -274,4 +274,49 @@
 		order by f.sort desc
 	</select>
 	
+	<!-- add by mengsj begin 初始化店铺运营栏位 -->
+	<insert id="initOperationField" parameterType="string">
+		INSERT INTO column_operate_fields (
+			id,
+			type,
+			business_id,
+			name,
+			template,
+			point_type,
+			point_content,
+			head_pic,
+			sort,
+			enabled,
+			create_time,
+			update_time,
+			create_user_id,
+			update_user_id,
+			disabled
+		) SELECT
+			REPLACE (UUID(), '-', '') AS id,
+			2 AS type,
+			bb.id AS business_id,
+			aa.name,
+			aa.template,
+			aa.point_type,
+			aa.point_content,
+			aa.head_pic,
+			aa.sort,
+			aa.enabled,
+			aa.create_time,
+			aa.update_time,
+			aa.create_user_id,
+			aa.update_user_id,
+			aa.disabled
+		FROM
+			column_operate_fields aa
+		INNER JOIN store_info bb ON (
+			bb.type = 2
+			AND bb.audit_status = 1
+			AND aa.type = 1
+			AND aa.business_id = '0'
+		) WHERE bb.id = #{storeId,jdbcType=VARCHAR}
+	</insert>
+	<!-- add by mengsj begin 初始化店铺运营栏位 -->
+	
 </mapper>
