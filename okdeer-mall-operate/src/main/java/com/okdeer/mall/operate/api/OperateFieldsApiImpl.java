@@ -14,6 +14,7 @@ import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
 import com.okdeer.mall.operate.operatefields.bo.OperateFieldsBo;
 import com.okdeer.mall.operate.operatefields.entity.OperateFields;
 import com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent;
+import com.okdeer.mall.operate.operatefields.service.OperateFieldsContentService;
 import com.okdeer.mall.operate.operatefields.service.OperateFieldsService;
 import com.okdeer.mall.operate.service.OperateFieldsApi;
 
@@ -22,6 +23,9 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 
 	@Autowired
 	private OperateFieldsService operateFieldsService;
+	
+	@Autowired
+	private OperateFieldsContentService operateFieldsContentService;
 	
 	@Override
 	public List<OperateFieldsDto> findList(OperateFieldsQueryParamDto queryParamDto) {
@@ -78,7 +82,11 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 	@Override
 	public OperateFieldsDto findById(String id) throws Exception {
 		OperateFields operateFields =  operateFieldsService.findById(id);
-		return BeanMapper.map(operateFields, OperateFieldsDto.class);
+		List<OperateFieldsContent> operateFieldsContentList =  operateFieldsContentService.findByFieldId(id);
+		List<OperateFieldsContentDto> operateFieldsContentDtoList = BeanMapper.mapList(operateFieldsContentList, OperateFieldsContentDto.class);
+		OperateFieldsDto dto = BeanMapper.map(operateFields, OperateFieldsDto.class);
+		dto.setOperateFieldscontentDtoList(operateFieldsContentDtoList);
+		return dto;
 	}
 	
 	
