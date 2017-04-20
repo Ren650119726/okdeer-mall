@@ -207,6 +207,9 @@
 		<if test="status != null and status != ''">
 			and status = #{status}
 		</if>
+		<if test="statusValid != null and statusValid != ''">
+			and (status = 0 or status = 1 )
+		</if>
 		order by create_time desc
 	</select>
 
