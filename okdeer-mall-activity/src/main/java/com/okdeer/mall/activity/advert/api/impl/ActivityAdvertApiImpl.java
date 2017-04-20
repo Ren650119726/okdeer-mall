@@ -420,5 +420,11 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 		ActivityAdvertSale sale = activityAdvertSaleService.findSaleByIdNo(result.getModelNo(), result.getActivityAdvertId());
 		result.setSale(sale);
 	}
+
+	@Override
+	public void updateStatus(String id, SeckillStatusEnum status,String updateUserId) {
+		
+		activityAdvertService.updateBatchStatus(id, status, updateUserId, new Date());
+	}
 	
 }

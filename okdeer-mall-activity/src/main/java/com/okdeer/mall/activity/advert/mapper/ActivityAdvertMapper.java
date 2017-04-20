@@ -42,4 +42,20 @@ public interface ActivityAdvertMapper extends IBaseMapper {
 	 */
 	List<ActivityAdvert> findActivityListByStatus(@Param("statusList") List<String> statusList);
 
+	/**
+	 * @Description: 定时器获取列表  
+	 * @author xuzq01
+	 * @return 
+	 * @date 2017年4月20日
+	 */
+	List<ActivityAdvert> listByJob();
+
+	/**
+	 * @Description: 批量更新广告活动状态
+	 * @param advert   
+	 * @author xuzq01
+	 * @date 2017年4月20日
+	 */
+	void updateBatchStatus(ActivityAdvert advert);
+
 }

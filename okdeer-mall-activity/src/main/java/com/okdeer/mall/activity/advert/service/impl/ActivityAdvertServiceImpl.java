@@ -6,6 +6,7 @@
  */    
 package com.okdeer.mall.activity.advert.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvert;
 import com.okdeer.mall.activity.advert.mapper.ActivityAdvertMapper;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertService;
+import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 
 /**
  * ClassName: ActivityAdvertServiceImpl 
@@ -77,6 +79,22 @@ public class ActivityAdvertServiceImpl extends BaseServiceImpl implements Activi
 	@Override
 	public List<ActivityAdvert> findActivityListByStatus(List<String> statusList) {
 		return activityAdvertMapper.findActivityListByStatus(statusList);
+	}
+
+	@Override
+	public List<ActivityAdvert> listByJob() {
+		return activityAdvertMapper.listByJob();
+	}
+
+	@Override
+	public void updateBatchStatus(String id, SeckillStatusEnum status, String updateUserId, Date updateTime) {
+		ActivityAdvert advert = new ActivityAdvert();
+		advert.setId(id);
+		advert.setStatus(status);
+		advert.setUpdateTime(updateTime);
+		advert.setUpdateUserId(updateUserId);
+		activityAdvertMapper.updateBatchStatus(advert);
+		
 	}
 
 }

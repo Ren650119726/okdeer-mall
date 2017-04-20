@@ -6,11 +6,13 @@
  */    
 package com.okdeer.mall.activity.advert.service;
 
+import java.util.Date;
 import java.util.List;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvert;
+import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 
 /**
  * ClassName: ActivityAdvertService 
@@ -64,5 +66,24 @@ public interface ActivityAdvertService extends IBaseService {
 	 * @date 2017年4月17日
 	 */
 	List<ActivityAdvert> findActivityListByStatus(List<String> statusList);
+
+	/**
+	 * @Description: 定时器查询未开始和进行中状态的广告活动列表
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月20日
+	 */
+	List<ActivityAdvert> listByJob();
+
+	/**
+	 * @Description: 定时器批量更新广告活动状态
+	 * @param id
+	 * @param ing
+	 * @param updateUserId
+	 * @param updateTime   
+	 * @author xuzq01
+	 * @date 2017年4月20日
+	 */
+	void updateBatchStatus(String id, SeckillStatusEnum status, String updateUserId, Date updateTime);
 
 }
