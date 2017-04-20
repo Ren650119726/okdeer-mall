@@ -12,10 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.activity.staticFile.dto.ActivityStaticFileDto;
 import com.okdeer.mall.activity.staticFile.dto.ActivityStaticFileParamDto;
-import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
 import com.okdeer.mall.activity.staticFile.mapper.ActivityStaticFileMapper;
 import com.okdeer.mall.activity.staticFile.service.ActivityStaticFileService;
 
@@ -47,10 +48,10 @@ public class ActivityStaticFileServiceImpl extends BaseServiceImpl implements Ac
 	}
 
 	@Override
-	public List<ActivityStaticFile> findStaticFileList(ActivityStaticFileParamDto activityStaticFileParamDto, int pageNumber,
+	public List<ActivityStaticFileDto> findStaticFileList(ActivityStaticFileParamDto activityStaticFileParamDto, int pageNumber,
 			int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true);
-		return activityStaticFileMapper.findStaticFileList(activityStaticFileParamDto);
+		return BeanMapper.mapList(activityStaticFileMapper.findStaticFileList(activityStaticFileParamDto),ActivityStaticFileDto.class);
 	}
 
 	@Override

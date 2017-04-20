@@ -16,7 +16,9 @@
         <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
         <result column="disabled" property="disabled" jdbcType="VARCHAR" javaType="com.okdeer.base.common.enums.Disabled" />
     </resultMap>
-
+	<resultMap id="ResultMap" type="com.okdeer.mall.activity.staticFile.bo.ActivityStaticFileBo" extends="BaseResultMap">
+        <result column="name" property="activityAdvertName"  />
+    </resultMap>
     <sql id="Base_Column_List" >
         id, title, activity_advert_id, share_title_main, share_title_sub, static_file_name, 
         static_package, visit_url, create_time, create_user_id, update_time, update_user_id, 
@@ -164,10 +166,13 @@
         where id = #{id,jdbcType=VARCHAR}
     </delete>
 	<!--begin xuzq 20170412 查询列表-->
-	<select id="findStaticFileList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.staticFile.dto.ActivityStaticFileParamDto" >
+	<select id="findStaticFileList" resultMap="ResultMap" parameterType="com.okdeer.mall.activity.staticFile.dto.ActivityStaticFileParamDto" >
         select 
-        <include refid="Base_Column_List" />
-        from activity_static_file
+        file.id, file.title, file.activity_advert_id, file.share_title_main, file.share_title_sub, file.static_file_name, 
+        file.static_package, file.visit_url, file.create_time, file.create_user_id, file.update_time, file.update_user_id, 
+        file.disabled,ad.name
+        from activity_static_file file 
+        LEFT JOIN activity_advert ad on ad.id = file.activity_advert_id
         where 1=1 
         <if test="title != null and title != ''" >
            AND title = #{title,jdbcType=VARCHAR}
@@ -178,6 +183,7 @@
         <if test="null != createTimeEnd and createTimeEnd != ''">
           AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
         </if>
+        order by file.create_time DESC
     </select>
     <select id="findCountByName" resultType="java.lang.Integer" parameterType="java.lang.String" >
         select count(*)
@@ -185,7 +191,7 @@
         where 1=1 
         <if test="title != null" >
               AND title = #{title,jdbcType=VARCHAR}
-           </if>
+        </if>
     </select>
 	<!--end xuzq 20170412  查询列表-->
 </mapper>

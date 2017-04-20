@@ -15,7 +15,6 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.staticFile.dto.ActivityStaticFileDto;
 import com.okdeer.mall.activity.staticFile.dto.ActivityStaticFileParamDto;
 import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
@@ -46,9 +45,9 @@ public class ActivityStaticFileApiImpl implements ActivityStaticFileApi {
 	@Override
 	public PageUtils<ActivityStaticFileDto> findStaticFileList(ActivityStaticFileParamDto activityStaticFileParamDto, int pageNumber,
 			int pageSize) {
-		List<ActivityStaticFile>  file = activityStaticFileService.findStaticFileList(activityStaticFileParamDto, pageNumber, pageSize);
+		List<ActivityStaticFileDto>  file = activityStaticFileService.findStaticFileList(activityStaticFileParamDto, pageNumber, pageSize);
 		
-		return new PageUtils<ActivityStaticFileDto>(BeanMapper.mapList(file, ActivityStaticFileDto.class));
+		return new PageUtils<ActivityStaticFileDto>(file);
 	}
 
 	@Override
