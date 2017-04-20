@@ -53,14 +53,15 @@ public class TradeOrderActivityServiceImpl implements TradeOrderActivityService,
 	 * 查询活动创建者userId
 	 *
 	 * @param order 订单
+	 * @throws Exception 
 	 */
 	@Override
-	public String findActivityUserId(TradeOrder order) {
+	public String findActivityUserId(TradeOrder order) throws Exception{
 		String activityUserId = null;
 		if (ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES == order.getActivityType()
 				|| ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES == order.getActivityType()) {
 			// 满折:店铺；满减活动：店铺、运营商
-			ActivityDiscount discount = activityDiscountService.selectByPrimaryKey(order.getActivityId());
+			ActivityDiscount discount = activityDiscountService.findById(order.getActivityId());
 			if (!ActivityCollectCoupons.OPERATOR_CODE.equals(discount.getStoreId())) {
 				activityUserId = discount.getStoreId();
 			} else {
@@ -86,12 +87,13 @@ public class TradeOrderActivityServiceImpl implements TradeOrderActivityService,
 
 	/**
 	 * 返回活动归属
+	 * @throws Exception 
 	 */
-	public ActivityBelongType findActivityType(TradeOrder order) {
+	public ActivityBelongType findActivityType(TradeOrder order) throws Exception {
 		if (ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES == order.getActivityType()
 				|| ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES == order.getActivityType()) {
 			// 满折:店铺；满减活动：店铺、运营商
-			ActivityDiscount discount = activityDiscountService.selectByPrimaryKey(order.getActivityId());
+			ActivityDiscount discount = activityDiscountService.findById(order.getActivityId());
 			if (!ActivityCollectCoupons.OPERATOR_CODE.equals(discount.getStoreId())) {
 				return ActivityBelongType.SELLER;
 			} else {
