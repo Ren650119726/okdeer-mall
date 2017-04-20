@@ -78,7 +78,13 @@ public interface OperateFieldsMapper extends IBaseMapper {
      */
 	List<OperateFields> getGoodsRalationFields(@Param("storeId")String storeId, @Param("storeSkuId") String storeSkuId);
 	
-	
-	
-	
+	/**
+	 * 初始化店铺运营栏位
+	 * @Description: 
+	 * @param storeId void
+	 * @throws
+	 * @author mengsj
+	 * @date 2017年4月17日
+	 */
+	void initOperationField(@Param("storeId")String storeId);
 }

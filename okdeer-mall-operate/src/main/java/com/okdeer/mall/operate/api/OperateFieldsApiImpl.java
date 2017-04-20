@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.operate.dto.OperateFieldsContentDto;
 import com.okdeer.mall.operate.dto.OperateFieldsDto;
@@ -112,6 +113,20 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
     public void initCityOperateFieldData(String cityId) throws Exception {
         this.operateFieldsService.initCityOperateFieldData(cityId);
     }
+
+	@Override
+	public void initOperationField(String storeId) throws Exception {
+		if(StringUtils.isNotBlank(storeId)){
+			operateFieldsService.initOperationField(storeId);
+		}
+	}
+
+	@Override
+	public void initOperationFieldContext(String storeId) throws Exception {
+		if(StringUtils.isNotBlank(storeId)){
+			operateFieldsContentService.initOperationFieldContext(storeId);
+		}
+	}
 	
 	
 	
