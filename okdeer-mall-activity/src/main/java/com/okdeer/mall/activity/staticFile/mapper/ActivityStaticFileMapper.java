@@ -8,9 +8,11 @@ package com.okdeer.mall.activity.staticFile.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.activity.staticFile.bo.ActivityStaticFileBo;
 import com.okdeer.mall.activity.staticFile.dto.ActivityStaticFileParamDto;
-import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
 
 public interface ActivityStaticFileMapper extends IBaseMapper {
 
@@ -21,7 +23,7 @@ public interface ActivityStaticFileMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月12日
 	 */
-	List<ActivityStaticFile> findStaticFileList(ActivityStaticFileParamDto activityStaticFileParamDto);
+	List<ActivityStaticFileBo> findStaticFileList(ActivityStaticFileParamDto activityStaticFileParamDto);
 
 	/**
 	 * @Description: 通过名称获取数量
@@ -30,6 +32,6 @@ public interface ActivityStaticFileMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月12日
 	 */
-	int findCountByName(String title);
+	int findCountByName(@Param("title") String title);
 
 }
