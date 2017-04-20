@@ -23,7 +23,7 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
 
 /**
  * 
- * TODO 特惠活动的商品
+ * 特惠活动的商品
  * @project yschome-mall
  * @author zhulq
  * @date 2016年4月27日 上午9:37:58

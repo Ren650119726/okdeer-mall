@@ -80,6 +80,30 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 		OperateFields operateFields =  operateFieldsService.findById(id);
 		return BeanMapper.map(operateFields, OperateFieldsDto.class);
 	}
+
+	/**
+     * 初始化店铺运营栏位
+     * @param storeId
+     * @throws Exception
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+    @Override
+    public void initStoreOperateFieldData(String storeId) throws Exception {
+        this.operateFieldsService.initStoreOperateFieldData(storeId);
+    }
+
+    /**
+     * 初始化城市运营栏位
+     * @param cityId
+     * @throws Exception
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+    @Override
+    public void initCityOperateFieldData(String cityId) throws Exception {
+        this.operateFieldsService.initCityOperateFieldData(cityId);
+    }
 	
 	
 	

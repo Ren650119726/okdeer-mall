@@ -7,15 +7,16 @@
  */
 package com.okdeer.mall.operate.operatefields.mq;
 
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TOPIC_OPERATE_FIELD;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADD_GOODS;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_EDIT_GOODS;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_GOODS_ONSHELF;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_GOODS_OFFSHELF;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADDEDIT_ONSALE_ACTIVITY;
 import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADDEDIT_LOWPRICE_ACTIVITY;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_CLOSED_ONSALE_ACTIVITY;
+import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADDEDIT_ONSALE_ACTIVITY;
+import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADD_GOODS;
 import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_CLOSED_LOWPRICE_ACTIVITY;
+import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_CLOSED_ONSALE_ACTIVITY;
+import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_EDIT_GOODS;
+import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_GOODS_OFFSHELF;
+import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_GOODS_ONSHELF;
+import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TOPIC_OPERATE_FIELD;
+
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
-import com.okdeer.mall.operate.operatefields.dto.OperateFieldDto;
+import com.okdeer.mall.operate.dto.OperateFieldDto;
 import com.okdeer.mall.operate.operatefields.mq.dto.GoodsChangedMsgDto;
 
 /**
@@ -43,7 +44,7 @@ import com.okdeer.mall.operate.operatefields.mq.dto.GoodsChangedMsgDto;
  *     V2.3.0          2017年4月17日                              zhaoqc             新建
  *     
  */
-@Service
+//@Service
 public class OperateFieldsSubscriber {
     /**
      * 日志管理类

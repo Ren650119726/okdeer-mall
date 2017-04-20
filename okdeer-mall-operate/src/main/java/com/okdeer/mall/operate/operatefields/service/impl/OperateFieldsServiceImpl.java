@@ -1,19 +1,41 @@
 
 package com.okdeer.mall.operate.operatefields.service.impl;
 
+import static com.okdeer.mall.operate.operatefields.service.contants.OperateFieldContants.CITY_OPERATE_FIELD_KEY;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
+import com.okdeer.archive.goods.base.service.GoodsSpuCategoryServiceApi;
+import com.okdeer.archive.goods.menu.GoodsStoreMenuApi;
+import com.okdeer.archive.store.dto.GoodsStoreMenuDto;
+import com.okdeer.archive.store.dto.GoodsStoreMenuParamDto;
+import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.Enabled;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.operate.dto.FieldGoodsQueryDto;
+import com.okdeer.mall.operate.dto.FieldInfoDto;
+import com.okdeer.mall.operate.dto.OperateFieldContentDto;
+import com.okdeer.mall.operate.dto.OperateFieldDto;
 import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
+import com.okdeer.mall.operate.dto.StoreActivitGoodsQueryDto;
+import com.okdeer.mall.operate.enums.OperateFieldsAppPointType;
+import com.okdeer.mall.operate.enums.OperateFieldsBusinessType;
+import com.okdeer.mall.operate.enums.OperateFieldsContentType;
+import com.okdeer.mall.operate.enums.OperateFieldsType;
 import com.okdeer.mall.operate.operatefields.bo.OperateFieldsBo;
 import com.okdeer.mall.operate.operatefields.entity.OperateFields;
 import com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent;
@@ -43,6 +65,21 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
 	@Autowired
 	private OperateFieldsContentMapper operateFieldsContentMapper;
 
+	@Reference(version="1.0.0", check=false)
+	private StoreInfoServiceApi storeInfoServiceApi;
+	
+    /**
+     * redis接入
+     */
+    @Autowired
+    private IRedisTemplateWrapper<String, OperateFieldDto> redisTemplateWrapper;
+	
+    @Reference(version="1.0.0", check=false)
+    private GoodsSpuCategoryServiceApi goodsSpuCategoryServiceApi;
+    
+    @Reference(version="1.0.0", check=false)
+    private GoodsStoreMenuApi goodsStoreMenuApi;
+    
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return operateFieldsMapper;
@@ -176,4 +213,341 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         return null;
     }
 
+    /**
+     * 初始化店铺运营栏位
+     * @param storeId
+     * @throws Exception
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+    @Override
+    public void initStoreOperateFieldData(String storeId) throws Exception {
+        OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
+        queryParamDto.setType(OperateFieldsType.STORE);
+        queryParamDto.setBusinessId(storeId);
+        queryParamDto.setEnabled(Enabled.YES);
+        
+        OperateFieldDto operateField = null;
+        FieldInfoDto fieldInfo = null;
+        //查出属于该店铺的所有店铺运营栏位
+        List<OperateFieldsBo> fieldsList = this.findListWithContent(queryParamDto);
+        for(OperateFieldsBo fields : fieldsList) {
+            fieldInfo = createFieldInfoDto(fields);
+            List<OperateFieldContentDto> contentDtos = new ArrayList<>();
+            OperateFieldContentDto contentDto = null;
+            List<OperateFieldsContent> contentList = fields.getOperateFieldscontentList();
+            
+            int template = fieldInfo.getTemplate();
+            for(OperateFieldsContent content : contentList) {
+                OperateFieldsContentType type = content.getType();
+                
+                if(type == OperateFieldsContentType.SINGLE_GOODS) {
+                    //单品选择
+                    contentDto = this.getSingleGoodsOfOperateField(content.getBusinessId(), storeId);
+                    contentDtos.add(contentDto);
+                } else if(type == OperateFieldsContentType.STORE_ACTIVITY) {
+                    //店铺活动
+                    contentDtos = getGoodsOfStoreActivityField(storeId, content.getBusinessType().getCode(),
+                            template, content.getSortType().getCode(), content.getSort());
+                } else if(type == OperateFieldsContentType.STORE_MENU) {
+                    //指定店铺菜单
+                    OperateFieldsBusinessType businessType = content.getBusinessType();
+                    if(businessType == OperateFieldsBusinessType.STORE_MENU) {
+                        //店铺菜单
+                        GoodsStoreMenuParamDto paramDto = new GoodsStoreMenuParamDto();
+                        paramDto.setId(content.getBusinessId());
+                        List<GoodsStoreMenuDto> menuDtos = this.goodsStoreMenuApi.findByParam(paramDto);
+                        if(CollectionUtils.isEmpty(menuDtos)) {
+                            //business为导航分类
+                            
+                            
+                        } else {
+                           //businessId为店铺菜单
+                            GoodsStoreMenuDto goodsStoreDto = menuDtos.get(0);
+                            Integer menuType = goodsStoreDto.getType();
+                            if(menuType == 0) {
+                                //标签
+                                
+                                
+                            } else if(menuType == 1 || menuType == 2) {
+                                //为分类 1:一级分类 2:二级分类
+                                contentDtos = this.getGoodsOfCategoryFields(goodsStoreDto.getPkId(), template, 
+                                        content.getSort(), content.getSortType().getCode());
+                            }
+                        }
+                    } else if (businessType == OperateFieldsBusinessType.NAVIGATE) {
+                        //导航分类
+                        
+                    }
+                } else if(type == OperateFieldsContentType.GOODS_CLASSIFY) {
+                    //指定商品分类
+                    contentDtos = this.getGoodsOfCategoryFields(content.getBusinessId(), template, 
+                            content.getSort(), content.getSortType().getCode());
+                } else if (type == OperateFieldsContentType.H5_LINK) {
+                    //H5链接
+                    contentDto = h5LinkFieldContent(content);
+                    contentDtos.add(contentDto);
+                } else if (type == OperateFieldsContentType.NATIVE_SUBJECT) {
+                    //原生专题页
+                    contentDto = nativeSubjectContent(content);
+                    contentDtos.add(contentDto);
+                } else if (type == OperateFieldsContentType.BUSINESS_ENTRANCE) {
+                    //业务入口
+                    contentDto = businessEntranceContent(content);
+                    contentDtos.add(contentDto);
+                }
+                
+                
+            }
+            
+        }
+        
+        
+        
+    }    
+    
+    /**
+     * 初始化城市运营栏位
+     * @param cityId
+     * @param storeId
+     * @throws Exception
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+    @Override
+    public void initCityOperateFieldData(String cityId) throws Exception {
+        OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
+        queryParamDto.setType(OperateFieldsType.CITY);
+        queryParamDto.setBusinessId(cityId);
+        queryParamDto.setEnabled(Enabled.YES);
+        
+        OperateFieldDto operateField = null;
+        FieldInfoDto fieldInfo = null;
+        //查出该城市下的城市运营栏位
+        List<OperateFieldsBo> fieldsList = this.findListWithContent(queryParamDto);
+        
+        int score = 1;
+        for(OperateFieldsBo fields : fieldsList) {
+            fieldInfo = createFieldInfoDto(fields);
+            List<OperateFieldContentDto> contentDtos = new ArrayList<>();
+            OperateFieldContentDto contentDto = null;
+            List<OperateFieldsContent> contentList = fields.getOperateFieldscontentList();
+            
+            int template = fieldInfo.getTemplate();
+            for(OperateFieldsContent content : contentList) {
+                OperateFieldsContentType type = content.getType();
+                if(type == OperateFieldsContentType.STORE_ACTIVITY) {
+                    contentDtos = getGoodsOfCityStoreActivityField(cityId, content.getBusinessType().getCode(),
+                            template, content.getSortType().getCode(), content.getSort());
+                } else if (type == OperateFieldsContentType.H5_LINK) {
+                    contentDto = h5LinkFieldContent(content);
+                    contentDtos.add(contentDto);
+                } else if(type == OperateFieldsContentType.NATIVE_SUBJECT) {
+                    contentDto = nativeSubjectContent(content);
+                    contentDtos.add(contentDto);
+                } else if(type == OperateFieldsContentType.BUSINESS_ENTRANCE) {
+                    contentDto = businessEntranceContent(content);
+                    contentDtos.add(contentDto);
+                }
+            }
+            
+            if(contentDto != null) {
+                operateField = new OperateFieldDto();
+                operateField.setFieldInfo(fieldInfo);
+                operateField.setContentList(contentDtos);
+            }
+            
+            //将运营栏位信息缓存进Redis
+            redisTemplateWrapper.zAdd(CITY_OPERATE_FIELD_KEY + cityId, operateField, score);
+            //每添加一个运营栏位，权重+1
+            score ++;
+        }
+    }
+    
+
+/*    public List<OperateFieldContentDto> getGoodsOfStoreMenuField(String menuId) {
+        
+        
+    }*/
+    
+    
+    private List<OperateFieldContentDto> getGoodsOfCategoryFields(String categoryId, int template, int sort, int sortType) throws Exception {
+        //查找出分类下的所有三级分类
+        List<GoodsSpuCategory> categorys = goodsSpuCategoryServiceApi.findCategorysByPid(categoryId, "3");
+        List<String> categoryIds = new ArrayList<>();
+        categorys.forEach(category -> {
+            categoryIds.add(category.getId());
+        });
+        
+        FieldGoodsQueryDto queryDto = new FieldGoodsQueryDto();
+        queryDto.setCategoryIds(categoryIds);
+        queryDto.setSort(sort);
+        queryDto.setTemplate(template + 1);
+        queryDto.setSortType(sortType);
+        
+        List<OperateFieldContentDto> contentDtos = this.getGoodsOfCategoryField(queryDto);
+        
+        if(contentDtos.size() == (template + 1)) {
+            return contentDtos;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * 店铺运营位查找店铺活动的商品
+     * @param businessType 0:特惠活动 1:低价活动
+     * @param template 模板
+     * @param 排序类型   0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高 
+     * @param sortStart 排序开始值
+     * @throws Exception 
+     */
+    private List<OperateFieldContentDto> getGoodsOfStoreActivityField(String storeId, int businessType, int template, int sortType, int sort) throws Exception {
+        StoreActivitGoodsQueryDto queryDto = new StoreActivitGoodsQueryDto();
+        //转换业务类型使之和数据库一致 
+        if(businessType == 0) {
+            businessType = 5;
+        } else if(businessType == 1) {
+            businessType = 7;
+        }
+        queryDto.setBusinessType(businessType);
+        queryDto.setTemplate(template + 1);
+        queryDto.setSort(sort);
+        queryDto.setSortType(sortType);
+        queryDto.setStoreId(storeId);
+       
+        List<OperateFieldContentDto> contentDtos = this.getGoodsOfStoreActivityFields(queryDto);
+        if(contentDtos.size() == (template + 1)) {
+            return contentDtos;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * 城市运营位查找店铺活动的商品
+     * @param businessType 0:特惠活动 1:低价活动
+     * @param template 模板
+     * @param 排序类型   0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高 
+     * @param sortStart 排序开始值
+     * @throws Exception 
+     */
+    private List<OperateFieldContentDto> getGoodsOfCityStoreActivityField(String cityId, int businessType, 
+            int template, int sortType, int sort) throws Exception {
+        //查找城市下所有的店铺
+        List<StoreInfo> storeInfos = storeInfoServiceApi.selectCloudStoreByCityId(cityId);
+        List<String> storeIds = new ArrayList<>();
+        storeInfos.forEach(storeInfo -> {
+            storeIds.add(storeInfo.getId());  
+        });
+                
+        StoreActivitGoodsQueryDto queryDto = new StoreActivitGoodsQueryDto();
+        //转换业务类型使之和数据库一致 
+        if(businessType == 0) {
+            businessType = 5;
+        } else if(businessType == 1) {
+            businessType = 7;
+        }
+        queryDto.setBusinessType(businessType);
+        queryDto.setTemplate(template + 1);
+        queryDto.setSort(sort);
+        queryDto.setSortType(sortType);
+
+        List<OperateFieldContentDto> contentDtos = this.getGoodsOfStoreActivityFields(queryDto);
+        if(contentDtos.size() == (template + 1)) {
+            return contentDtos;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * 创建H5链接的栏位内容
+     * @param content
+     * @return
+     */
+    private OperateFieldContentDto h5LinkFieldContent(OperateFieldsContent content) {
+        OperateFieldContentDto contentDto = new OperateFieldContentDto();
+        contentDto.setPointType(OperateFieldsAppPointType.H5_LINK.getCode());
+        contentDto.setTitle(content.getTitle());
+        contentDto.setPointContent(content.getLinkUrl());
+        contentDto.setImageUrl(content.getImageUrl());
+        
+        return contentDto;
+    }
+    
+    /**
+     * 创建原生主题的栏位内容
+     * @param content
+     * @return
+     */
+    private OperateFieldContentDto nativeSubjectContent(OperateFieldsContent content) {
+        OperateFieldContentDto contentDto = new OperateFieldContentDto();
+        contentDto.setPointType(OperateFieldsAppPointType.NATIVE_SUBJECT.getCode());
+        contentDto.setPointContent(content.getBusinessId());
+        contentDto.setImageUrl(content.getImageUrl());
+        
+        return contentDto;
+    }
+    
+    private OperateFieldContentDto businessEntranceContent(OperateFieldsContent content) {
+        OperateFieldContentDto contentDto = new OperateFieldContentDto();
+        OperateFieldsBusinessType businessType = content.getBusinessType();
+        if(businessType == OperateFieldsBusinessType.STORE_INDEX_PAGE) {
+            contentDto.setPointType(OperateFieldsAppPointType.STORE_INDEX.getCode());
+        } else if(businessType == OperateFieldsBusinessType.GOODS_DETAIL) {
+            contentDto.setPointType(OperateFieldsAppPointType.GOODS_DETAIL.getCode());
+        } else if(businessType == OperateFieldsBusinessType.STORE_MENU) {
+            contentDto.setPointType(OperateFieldsAppPointType.STORE_MENU.getCode());
+        }
+        contentDto.setPointContent(content.getBusinessId());
+        contentDto.setImageUrl(content.getImageUrl());
+        
+        return contentDto;
+    }
+    
+    private FieldInfoDto createFieldInfoDto(OperateFieldsBo fieldBo) {
+        FieldInfoDto fieldInfo = new FieldInfoDto();
+        fieldInfo.setTitle("");
+        fieldInfo.setHeadPic(fieldBo.getHeadPic());
+        fieldInfo.setTarget("");
+        fieldInfo.setId(fieldInfo.getId());
+        fieldInfo.setType(fieldBo.getType().getCode());
+        fieldInfo.setBusinessId(fieldBo.getBusinessId());
+        fieldInfo.setName(fieldBo.getName());
+        fieldInfo.setTemplate(fieldBo.getTemplate().ordinal());
+        
+        return fieldInfo;
+    }
+
+    /**
+     * 查找店铺活动关联的商品运营位内容
+     * @param queryDto
+     * @return
+     * @author zhaoqc
+     * @date 2017-4-19
+     */
+    @Override
+    public List<OperateFieldContentDto> getGoodsOfStoreActivityFields(StoreActivitGoodsQueryDto queryDto) throws Exception {
+        return this.operateFieldsContentMapper.getGoodsOfStoreActivityFields(queryDto);
+    }
+
+    /**
+     * 根据店铺Id和skuId查找运营栏位关联的商品信息
+     * @param goodsId 商品Id
+     * @param storeId 店铺Id
+     * @return
+     * @author zhaoqc
+     * @date 2017-4-19
+     */
+    @Override
+    public OperateFieldContentDto getSingleGoodsOfOperateField(String goodsId, String storeId) throws Exception {
+        return this.operateFieldsContentMapper.getSingleGoodsOfOperateField(goodsId, storeId);
+    }
+
+    @Override
+    public List<OperateFieldContentDto> getGoodsOfCategoryField(FieldGoodsQueryDto queryDto) throws Exception {
+        return this.operateFieldsContentMapper.getGoodsOfCategoryField(queryDto);
+    }
+    
 }
