@@ -36,6 +36,7 @@ import com.okdeer.mall.operate.enums.OperateFieldsAppPointType;
 import com.okdeer.mall.operate.enums.OperateFieldsBusinessType;
 import com.okdeer.mall.operate.enums.OperateFieldsContentType;
 import com.okdeer.mall.operate.enums.OperateFieldsType;
+
 import com.okdeer.mall.operate.operatefields.bo.OperateFieldsBo;
 import com.okdeer.mall.operate.operatefields.entity.OperateFields;
 import com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent;

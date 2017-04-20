@@ -2,6 +2,7 @@ package com.okdeer.mall.operate.operatefields.service.impl;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.base.dal.IBaseMapper;
@@ -24,6 +25,7 @@ import com.okdeer.mall.operate.operatefields.service.OperateFieldsContentService
 @Service
 public class OperateFieldsContentServiceImpl extends BaseServiceImpl implements OperateFieldsContentService {
 
+	@Autowired
 	private OperateFieldsContentMapper operateFieldsContentMapper;
 	
 	@Override
