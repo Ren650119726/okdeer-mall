@@ -86,4 +86,16 @@ public interface ActivityLuckDrawService extends IBaseService {
 	 */
 	ActivityLuckDraw findLuckDrawByModelId(String id, String activityAdvertId);
 
+	/**
+	 * @Description: 关联广告活动获取抽奖设置列表
+	 * @param activityLuckDrawVo
+	 * @param pageNumber
+	 * @param pageSize
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月20日
+	 */
+	PageUtils<ActivityLuckDraw> findLuckDrawSelectList(ActivityLuckDrawVo activityLuckDrawVo, int pageNumber,
+			int pageSize);
+
 }
