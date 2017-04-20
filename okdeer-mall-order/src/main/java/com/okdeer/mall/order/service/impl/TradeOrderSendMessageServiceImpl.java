@@ -1,14 +1,5 @@
 package com.okdeer.mall.order.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.kafka.producer.KafkaProducer;
@@ -18,10 +9,18 @@ import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mcm.constant.MsgConstant;
 import com.okdeer.mcm.dto.PushMsgDto;
 import com.okdeer.mcm.dto.PushUserDto;
-
 import net.sf.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ClassName: TradeOrderSendMessageServiceImpl 
@@ -164,7 +163,7 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
         //备注
         msgDto.setRemark("");
         //消息类型  0透传消息  1通知
-        msgDto.setMsgType(0);
+        msgDto.setMsgType(MsgConstant.MsgType.NO_PUSH);
         //表示推送的消息是系统消息 还是物业消息
         msgDto.setUserTypeSource("systemCode");
         //推送类型
