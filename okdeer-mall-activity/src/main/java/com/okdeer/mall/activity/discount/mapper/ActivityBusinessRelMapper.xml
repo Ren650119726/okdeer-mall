@@ -81,5 +81,34 @@
         delete from activity_business_rel
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-
+	
+	<insert id="batchAdd" parameterType="com.okdeer.mall.activity.discount.entity.ActivityBusinessRel">
+		INSERT INTO activity_business_rel (
+	        id,
+	        activity_id,
+	        business_id,
+	        business_type,
+	        sort
+	    ) VALUES 
+	    <foreach collection="relList" item="item" separator="," open="" close="">
+	        (
+	        	#{item.id,jdbcType=VARCHAR},
+	        	#{item.activityId,jdbcType=VARCHAR},
+	        	#{item.businessId,jdbcType=VARCHAR},
+	        	#{item.businessType,jdbcType=TINYINT},
+	        	#{item.sort,jdbcType=INTEGER}
+	        )
+	    </foreach>
+	</insert>
+	
+	<select id="findByActivityId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        SELECT <include refid="Base_Column_List" />
+        FROM activity_business_rel
+        WHERE activity_id = #{activityId,jdbcType=VARCHAR}
+    </select>
+    
+    <delete id="deleteByActivityId" parameterType="java.lang.String" >
+        delete from activity_business_rel
+        where activity_id = #{activityId,jdbcType=VARCHAR}
+    </delete>
 </mapper>

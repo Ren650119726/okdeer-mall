@@ -1307,7 +1307,7 @@ public class TradeOrderRefundsServiceImpl
 				} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
 						.equals(refundsVo.getTradeOrderVo().getActivityType())) {
 					// 满减活动
-					ActivityDiscount activityDiscount = activityDiscountService.selectByPrimaryKey(activityId);
+					ActivityDiscount activityDiscount = activityDiscountService.findById(activityId);
 					if (activityDiscount != null) {
 						refundsVo.getTradeOrderVo().setActivityName(activityDiscount.getName());
 					}

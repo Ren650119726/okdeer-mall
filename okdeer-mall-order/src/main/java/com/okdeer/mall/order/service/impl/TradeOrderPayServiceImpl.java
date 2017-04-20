@@ -352,7 +352,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	/**
 	 * 构建取消订单支付对象
 	 */
-	private String buildBalanceCancelPay(TradeOrder order) throws ServiceException {
+	private String buildBalanceCancelPay(TradeOrder order) throws Exception {
 
 		BigDecimal preferentialAmount = null;
 		// 优惠额退款 判断是否有优惠劵
@@ -479,7 +479,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	 * @date 2016年8月6日
 	 */
 	private String buildBalanceConfirmPayByUsable(TradeOrder order, List<TradeOrderItem> tradeOrderItemList)
-			throws ServiceException {
+			throws Exception {
 		// 订单金额,初始化等于配送费金额
 		BigDecimal tradeAmount = order.getFare() == null ? BigDecimal.ZERO : order.getFare();
 		// 优惠金额
@@ -554,7 +554,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	 * @date 2016年8月6日
 	 */
 	private String buildBalanceConfirmPayByFreeze(TradeOrder order, List<TradeOrderItem> tradeOrderItemList)
-			throws ServiceException {
+			throws Exception {
 		// 订单金额
 		BigDecimal tradeAmount = BigDecimal.ZERO;
 		// 优惠金额
@@ -796,7 +796,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	/**
 	 * 构建云钱包(余额)支付对象
 	 */
-	private BalancePayTradeVo buildBalancePay(TradeOrder order) throws ServiceException {
+	private BalancePayTradeVo buildBalancePay(TradeOrder order) throws Exception {
 
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 
@@ -868,9 +868,10 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	 * @param order 订单信息
 	 * @param payTradeVo 云钱包数据发送对象
 	 * @author zengjizu
+	 * @throws Exception 
 	 * @date 2016年11月18日
 	 */
-	private void setActiveAmount(TradeOrder order, BalancePayTradeVo payTradeVo) {
+	private void setActiveAmount(TradeOrder order, BalancePayTradeVo payTradeVo) throws Exception {
 		// 优惠额退款 判断是否有优惠劵
 		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
 		if (activityResource == ActivityBelongType.OPERATOR || activityResource == ActivityBelongType.AGENT
@@ -905,7 +906,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	 * @author zengjizu
 	 * @date 2017年1月4日
 	 */
-	private PayReqestDto buildPayRequest(PayInfoParamDto payInfoParamDto,TradeOrder order) throws ServiceException {
+	private PayReqestDto buildPayRequest(PayInfoParamDto payInfoParamDto,TradeOrder order) throws Exception {
 		// 设置订单信息
 		PayReqestDto payReqest = new PayReqestDto();
 		payReqest.setOpenid(payInfoParamDto.getOpenId());
