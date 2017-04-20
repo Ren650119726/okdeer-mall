@@ -4141,35 +4141,39 @@
 		SELECT IFNULL(SUM(tmp.orders), 0) order_counts,
 		IFNULL(SUM(tmp.total_amount), 0) order_total_amount,
 		COUNT(tmp.user_id) user_counts,
-		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN
-		(6, 11, 13)
-		AND CURDATE()=DATE_FORMAT(toref.create_time,'%Y-%m-%d')
+		(
+		SELECT COUNT(*) 
+		FROM trade_order_refunds toref 
+		WHERE toref.refunds_status IN(6, 11, 13)
+		AND CURDATE()=DATE_FORMAT(date_sub(toref.create_time,interval 1 day),'%Y-%m-%d')
 		AND toref.store_id = #{storeId,jdbcType=VARCHAR}) order_refunds_counts
-		FROM (SELECT user_id,
+		FROM (
+		SELECT user_id,
 		COUNT(*) orders,
 		SUM(actual_amount) total_amount
 		FROM trade_order tord
 		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
 		AND tord.status IN(1,3,5)))
-		AND CURDATE()=DATE_FORMAT(tord.create_time,'%Y-%m-%d')
+		AND CURDATE()=DATE_FORMAT(date_sub(tord.create_time,interval 1 day),'%Y-%m-%d')
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
 		GROUP BY user_id) tmp
 		UNION ALL
-		SELECT IFNULL(SUM(tmp.orders),0)
+		SELECT 
+		IFNULL(SUM(tmp.orders),0)
 		order_counts,
 		IFNULL(SUM(tmp.total_amount),0) order_total_amount,
 		COUNT(tmp.user_id) user_counts,
-		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN
-		(6, 11, 13)
-		AND YEARWEEK(toref.create_time,3)=YEARWEEK(NOW(),3)
+		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN(6, 11, 13)
+		AND YEARWEEK(toref.create_time,3)=YEARWEEK(date_sub(NOW(),interval 1 day),3)
 		AND toref.store_id = #{storeId, jdbcType=VARCHAR}) order_refunds_counts
-		FROM (SELECT user_id,
+		FROM (
+		SELECT user_id,
 		COUNT(*) orders,
 		SUM(actual_amount) total_amount
 		FROM trade_order tord
 		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
 		AND tord.status IN(1,3,5)))
-		AND YEARWEEK(tord.create_time,3)=YEARWEEK(NOW(),3)
+		AND YEARWEEK(tord.create_time,3)=YEARWEEK(date_sub(NOW(),interval 1 day),3)
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
 		GROUP BY user_id) tmp
 		UNION ALL
@@ -4177,35 +4181,35 @@
 		order_counts,
 		IFNULL(SUM(tmp.total_amount),0) order_total_amount,
 		COUNT(tmp.user_id) user_counts,
-		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN
-		(6, 11, 13)
-		AND DATE_FORMAT(CURDATE(),'%Y-%m')=DATE_FORMAT(toref.create_time,'%Y-%m')
+		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN(6, 11, 13)
+		AND DATE_FORMAT(date_sub(CURDATE(),interval 1 day),'%Y-%m')=DATE_FORMAT(toref.create_time,'%Y-%m')
 		AND toref.store_id = #{storeId, jdbcType=VARCHAR})
 		order_refunds_counts
-		FROM (SELECT user_id,
+		FROM (
+		SELECT user_id,
 		COUNT(*) orders,
 		SUM(actual_amount) total_amount
 		FROM trade_order tord
 		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
 		AND tord.status IN(1,3,5)))
-		AND DATE_FORMAT(CURDATE(),'%Y-%m')=DATE_FORMAT(tord.create_time,'%Y-%m')
+		AND DATE_FORMAT(date_sub(CURDATE(),interval 1 day),'%Y-%m')=DATE_FORMAT(tord.create_time,'%Y-%m')
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
 		GROUP BY user_id) tmp
 		UNION ALL
 		SELECT IFNULL(SUM(tmp.orders),0) order_counts,
 		IFNULL(SUM(tmp.total_amount),0) order_total_amount,
 		COUNT(tmp.user_id) user_counts,
-		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN
-		(6, 11, 13)
-		AND YEAR(CURDATE())=YEAR(toref.create_time)
+		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN(6, 11, 13)
+		AND YEAR(date_sub(CURDATE(),interval 1 day))=YEAR(toref.create_time)
 		AND toref.store_id = #{storeId, jdbcType=VARCHAR}) order_refunds_counts
-		FROM (SELECT user_id,
+		FROM (
+		SELECT user_id,
 		COUNT(*) orders,
 		SUM(actual_amount) total_amount
 		FROM trade_order tord
 		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
 		AND tord.status IN(1,3,5)))
-		AND YEAR(CURDATE())=YEAR(tord.create_time)
+		AND YEAR(date_sub(CURDATE(),interval 1 day))=YEAR(tord.create_time)
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
 		GROUP BY user_id) tmp
 	</select>
