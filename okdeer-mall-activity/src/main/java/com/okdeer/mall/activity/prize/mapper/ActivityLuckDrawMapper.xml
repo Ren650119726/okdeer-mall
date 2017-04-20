@@ -5,7 +5,6 @@
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="name" property="name" jdbcType="VARCHAR" />
         <result column="weight_deno" property="weightDeno" jdbcType="NUMERIC" />
-        <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
         <result column="status" property="status" jdbcType="VARCHAR" javaType="com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum"/>
         <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
         <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
@@ -17,7 +16,7 @@
     </resultMap> 
 
     <sql id="Base_Column_List" >
-        id, name, weight_deno, activity_advert_id, status, start_time, end_time, create_time, 
+        id, name, weight_deno, status, start_time, end_time, create_time, 
         create_user_id, update_time, update_user_id, disabled
     </sql>
 
@@ -39,9 +38,6 @@
             </if>
             <if test="weightDeno != null" >
                 weight_deno,
-            </if>
-            <if test="activityAdvertId != null" >
-                activity_advert_id,
             </if>
             <if test="status != null" >
                 status,
@@ -78,9 +74,6 @@
             <if test="weightDeno != null" >
                 #{weightDeno,jdbcType=NUMERIC},
             </if>
-            <if test="activityAdvertId != null" >
-                #{activityAdvertId,jdbcType=VARCHAR},
-            </if>
             <if test="status != null" >
                 #{status,jdbcType=BIT},
             </if>
@@ -116,9 +109,6 @@
             </if>
             <if test="weightDeno != null" >
                 weight_deno = #{weightDeno,jdbcType=NUMERIC},
-            </if>
-            <if test="activityAdvertId != null" >
-                activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR},
             </if>
             <if test="status != null" >
                 status = #{status,jdbcType=BIT},
