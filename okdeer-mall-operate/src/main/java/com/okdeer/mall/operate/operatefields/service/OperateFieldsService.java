@@ -121,6 +121,14 @@ public interface OperateFieldsService extends IBaseService {
      * @throws Exception
      */
     List<OperateFieldContentDto> getGoodsOfCategoryField(FieldGoodsQueryDto queryDto) throws Exception;
+ 
+    /**
+     * 根据店铺菜单->菜单为标签查找所属的商品
+     * @param queryDto
+     * @return
+     * @throws Exception
+     */
+    List<OperateFieldContentDto> getGoodsOfStoreLabelField(FieldGoodsQueryDto queryDto) throws Exception;
 
 	/**
 	 * 店铺审核通过，初始化店铺运营栏位
@@ -131,5 +139,5 @@ public interface OperateFieldsService extends IBaseService {
 	 * @date 2017年4月20日
 	 */
 	void initOperationField(String storeId) throws Exception;
-    
+
 }
