@@ -73,4 +73,12 @@ public interface OperateFieldsContentMapper extends IBaseMapper {
      * @throws Exception
      */
 	List<OperateFieldContentDto> getGoodsOfCategoryField(FieldGoodsQueryDto queryDto);
+	
+    /**
+     * 根据店铺菜单->菜单为标签查找所属的商品
+     * @param queryDto
+     * @return
+     * @throws Exception
+     */
+	List<OperateFieldContentDto> getGoodsOfStoreLabelField(FieldGoodsQueryDto queryDto);
 }

@@ -121,5 +121,14 @@ public interface OperateFieldsService extends IBaseService {
      * @throws Exception
      */
     List<OperateFieldContentDto> getGoodsOfCategoryField(FieldGoodsQueryDto queryDto) throws Exception;
+ 
+    /**
+     * 根据店铺菜单->菜单为标签查找所属的商品
+     * @param queryDto
+     * @return
+     * @throws Exception
+     */
+    List<OperateFieldContentDto> getGoodsOfStoreLabelField(FieldGoodsQueryDto queryDto) throws Exception;
     
+
 }
