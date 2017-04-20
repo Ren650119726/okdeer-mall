@@ -83,7 +83,7 @@ public interface ColumnAdvertGoodsMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月19日
 	 */
-	public List<ActivityAdvertStoreSkuBo> findServiceSkuByModelId(String modelId, String activityAdvertId);
+	public List<ActivityAdvertStoreSkuBo> findServiceSkuByModelId(@Param("modelId") String modelId,@Param("activityAdvertId") String activityAdvertId);
 
 	/**
 	 * @Description: 通过模块id查询便利店商品信息
@@ -93,7 +93,7 @@ public interface ColumnAdvertGoodsMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月19日
 	 */
-	public List<ActivityAdvertStoreSkuBo> findCloudSkuByModelId(String modelId, String activityAdvertId);
+	public List<ActivityAdvertStoreSkuBo> findCloudSkuByModelId(@Param("modelId") String modelId,@Param("activityAdvertId") String activityAdvertId);
 	
 	/**
 	 * @Description: 删除关联商品信息by活动id

@@ -48,7 +48,7 @@ public class ActivityAdvertSaleServiceImpl extends BaseServiceImpl implements Ac
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertSale findSaleByIdNo(String modelNo,String activityAdvertId){
+    public ActivityAdvertSale findSaleByIdNo(int modelNo,String activityAdvertId){
     	return activityAdvertSaleMapper.findSaleByIdNo(modelNo, activityAdvertId);
     }
     

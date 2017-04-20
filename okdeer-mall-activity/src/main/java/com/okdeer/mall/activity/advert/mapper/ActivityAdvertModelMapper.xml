@@ -6,7 +6,7 @@
         <result column="name" property="name" jdbcType="VARCHAR" />
         <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
         <result column="model_no" property="modelNo" jdbcType="INTEGER" />
-        <result column="model_type" property="modelType" jdbcType="INTEGER" javaType="com.okdeer.mall.activity.advert.enums.ModelTypeEnum"/>
+        <result column="model_type" property="modelType" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.advert.enums.ModelTypeEnum"/>
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
@@ -14,11 +14,11 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, name, activity_advert_id, model_no, create_time, create_user_id, update_time, 
+        id, name, activity_advert_id,model_type, model_no, create_time, create_user_id, update_time, 
         update_user_id
     </sql>
 
-    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    <select id="findById" resultMap="BaseResultMap"  >
         select 
         <include refid="Base_Column_List" />
         from activity_advert_model
@@ -29,7 +29,7 @@
         select 
         <include refid="Base_Column_List" />
         from activity_advert_model
-        where model_no = #{modelNo,jdbcType=VARCHAR}
+        where model_no = #{modelNo,jdbcType=INTEGER}
         AND activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
     </select>
 	<select id="findModelList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvertModel" >
@@ -52,6 +52,9 @@
             </if>
             <if test="modelNo != null" >
                 model_no,
+            </if>
+            <if test="modelType != null" >
+                model_type,
             </if>
             <if test="createTime != null" >
                 create_time,
@@ -79,6 +82,9 @@
             <if test="modelNo != null" >
                 #{modelNo,jdbcType=INTEGER},
             </if>
+            <if test="modelType != null" >
+                 #{modelType,jdbcType=TINYINT},
+            </if>
             <if test="createTime != null" >
                 #{createTime,jdbcType=TIMESTAMP},
             </if>
@@ -105,6 +111,9 @@
             </if>
             <if test="modelNo != null" >
                 model_no = #{modelNo,jdbcType=INTEGER},
+            </if>
+            <if test="modelType != null" >
+                model_type = #{modelType,jdbcType=TINYINT},
             </if>
             <if test="createTime != null" >
                 create_time = #{createTime,jdbcType=TIMESTAMP},

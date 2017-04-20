@@ -37,7 +37,7 @@ public class ActivityAdvertModelApiImpl implements ActivityAdvertModelApi {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-	public ActivityAdvertModel findModelByIdNo(String modelNo,String activityAdvertId){
+	public ActivityAdvertModel findModelByIdNo(int modelNo,String activityAdvertId){
 		return activityAdvertModelService.findModelByIdNo(modelNo, activityAdvertId);
 	}
 	

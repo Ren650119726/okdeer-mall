@@ -12,12 +12,12 @@
         id, collect_coupons_id, activity_advert_id, model_id
     </sql>
 	<!-- 根据活动id及模板编号查询关联的代金券活动 -->
-    <select id="findAdvertCouponsByIdNo" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    <select id="findAdvertCouponsByIdNo" resultMap="BaseResultMap"  >
         select 
         	<include refid="Base_Column_List" />
         from activity_advert_coupons s
         	 inner join activity_advert_model m on s.model_id = m.id
-        where m.model_no = #{modelNo,jdbcType=VARCHAR}
+        where m.model_no = #{modelNo,jdbcType=INTEGER}
         	  AND m.activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
     </select>
 

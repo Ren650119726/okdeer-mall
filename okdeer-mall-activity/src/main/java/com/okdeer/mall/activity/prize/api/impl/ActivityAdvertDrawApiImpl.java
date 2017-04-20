@@ -54,7 +54,7 @@ public class ActivityAdvertDrawApiImpl implements ActivityAdvertDrawApi {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertDraw findAdvertDrawByIdNo(String modelNo,String activityAdvertId){
+    public ActivityAdvertDraw findAdvertDrawByIdNo(int modelNo,String activityAdvertId){
     	return activityAdvertDrawService.findAdvertDrawByIdNo(modelNo, activityAdvertId);
     }
 	

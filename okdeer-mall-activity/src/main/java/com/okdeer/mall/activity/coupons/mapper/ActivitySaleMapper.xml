@@ -447,13 +447,4 @@
 		</if>
 		s.create_time desc
 	</select>
-	<!-- begin xuzq 20170419 根据模块id和广告活动id查询优惠信息-->
-	<select id="findActivitySaleByModelId" resultMap="ActivitySale" parameterType="string">
-        select <include refid="columns"/> from activity_sale sale
-        LEFT JOIN activity_advert_sale adv ON sale.type = adv.sale_type  
-        where  sale.disabled = 0 
-        and adv.activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR} 
-        and adv.model_id = #{modelId,jdbcType=VARCHAR} 
-    </select>
-    <!-- begin xuzq 20170419 根据模块id和广告活动id查询优惠信息-->
 </mapper>

@@ -6,6 +6,8 @@
  */
 package com.okdeer.mall.activity.prize.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.prize.entity.ActivityAdvertDraw;
 /**
@@ -27,7 +29,7 @@ public interface ActivityAdvertDrawMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertDraw findAdvertDrawByIdNo(String modelNo,String activityAdvertId);
+    public ActivityAdvertDraw findAdvertDrawByIdNo(@Param("modelNo") int modelNo,@Param("activityAdvertId") String activityAdvertId);
 	
 	/**
 	 * @Description: 删除关联抽奖信息by活动id

@@ -223,7 +223,7 @@
     <!-- 根据模块id和广告活动id关联查询抽奖设置信息 -->
     <select id="findLuckDrawByModelId"  resultMap="BaseResultMap" parameterType="java.lang.String">
 		select  
-		<include refid="Base_Column_List" /> 
+			draw.`id`,draw.`name`
 		from activity_luck_draw draw 
 		LEFT JOIN  activity_advert_draw aad on
 		draw.id = aad.luck_draw_id

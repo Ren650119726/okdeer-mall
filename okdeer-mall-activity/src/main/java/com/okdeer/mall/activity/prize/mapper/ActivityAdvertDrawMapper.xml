@@ -13,12 +13,12 @@
     </sql>
 
 	<!-- 根据活动id及模板编号查询关联的抽奖活动 -->
-    <select id="findAdvertDrawByIdNo" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    <select id="findAdvertDrawByIdNo" resultMap="BaseResultMap"  >
         select 
         	<include refid="Base_Column_List" />
         from activity_advert_draw s
         	 inner join activity_advert_model m on s.model_id = m.id
-        where m.model_no = #{modelNo,jdbcType=VARCHAR}
+        where m.model_no = #{modelNo,jdbcType=INTEGER}
         	  AND m.activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
     </select>
     
