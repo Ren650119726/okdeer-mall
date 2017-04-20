@@ -8,7 +8,12 @@ package com.okdeer.mall.operate.operatefields.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.operate.dto.FieldGoodsQueryDto;
+import com.okdeer.mall.operate.dto.OperateFieldContentDto;
+import com.okdeer.mall.operate.dto.StoreActivitGoodsQueryDto;
 import com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent;
 
 /**
@@ -41,4 +46,49 @@ public interface OperateFieldsContentMapper extends IBaseMapper {
 	 * @date 2017年4月13日
 	 */
 	int deleteByFieldId(String fieldId);
+	
+    /**
+     * 查找店铺活动关联的商品运营位内容
+     * @param queryDto
+     * @return
+     * @author zhaoqc
+     * @date 2017-4-19
+     */
+	List<OperateFieldContentDto> getGoodsOfStoreActivityFields(StoreActivitGoodsQueryDto queryDto);
+	
+    /**
+     * 根据店铺Id和skuId查找运营栏位关联的商品信息
+     * @param goodsId 商品Id
+     * @param storeId 店铺Id
+     * @return
+     * @author zhaoqc
+     * @date 2017-4-19
+     */
+	OperateFieldContentDto getSingleGoodsOfOperateField(@Param("goodsId") String goodsId, @Param("storeId") String storeId);
+
+    /**
+     * 根据商品的三级分类查询商品
+     * @param queryDto 查询DTO
+     * @return
+     * @throws Exception
+     */
+	List<OperateFieldContentDto> getGoodsOfCategoryField(FieldGoodsQueryDto queryDto);
+	
+    /**
+     * 根据店铺菜单->菜单为标签查找所属的商品
+     * @param queryDto
+     * @return
+     * @throws Exception
+     */
+	List<OperateFieldContentDto> getGoodsOfStoreLabelField(FieldGoodsQueryDto queryDto);
+
+	/**
+	 * 初始化店铺运营栏位内容
+	 * @Description: 
+	 * @param storeId void
+	 * @throws
+	 * @author mengsj
+	 * @date 2017年4月17日
+	 */
+	void initOperationFieldContext(@Param("storeId")String storeId);
 }

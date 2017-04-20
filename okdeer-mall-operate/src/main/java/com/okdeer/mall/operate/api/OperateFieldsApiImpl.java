@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.operate.dto.OperateFieldsContentDto;
 import com.okdeer.mall.operate.dto.OperateFieldsDto;
@@ -14,6 +15,7 @@ import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
 import com.okdeer.mall.operate.operatefields.bo.OperateFieldsBo;
 import com.okdeer.mall.operate.operatefields.entity.OperateFields;
 import com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent;
+import com.okdeer.mall.operate.operatefields.service.OperateFieldsContentService;
 import com.okdeer.mall.operate.operatefields.service.OperateFieldsService;
 import com.okdeer.mall.operate.service.OperateFieldsApi;
 
@@ -22,6 +24,9 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 
 	@Autowired
 	private OperateFieldsService operateFieldsService;
+	
+	@Autowired
+	private OperateFieldsContentService operateFieldsContentService;
 	
 	@Override
 	public List<OperateFieldsDto> findList(OperateFieldsQueryParamDto queryParamDto) {
@@ -78,7 +83,49 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 	@Override
 	public OperateFieldsDto findById(String id) throws Exception {
 		OperateFields operateFields =  operateFieldsService.findById(id);
-		return BeanMapper.map(operateFields, OperateFieldsDto.class);
+		List<OperateFieldsContent> operateFieldsContentList =  operateFieldsContentService.findByFieldId(id);
+		List<OperateFieldsContentDto> operateFieldsContentDtoList = BeanMapper.mapList(operateFieldsContentList, OperateFieldsContentDto.class);
+		OperateFieldsDto dto = BeanMapper.map(operateFields, OperateFieldsDto.class);
+		dto.setOperateFieldscontentDtoList(operateFieldsContentDtoList);
+		return dto;
+	}
+
+	/**
+     * 初始化店铺运营栏位
+     * @param storeId
+     * @throws Exception
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+    @Override
+    public void initStoreOperateFieldData(String storeId) throws Exception {
+        this.operateFieldsService.initStoreOperateFieldData(storeId);
+    }
+
+    /**
+     * 初始化城市运营栏位
+     * @param cityId
+     * @throws Exception
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+    @Override
+    public void initCityOperateFieldData(String cityId) throws Exception {
+        this.operateFieldsService.initCityOperateFieldData(cityId);
+    }
+
+	@Override
+	public void initOperationField(String storeId) throws Exception {
+		if(StringUtils.isNotBlank(storeId)){
+			operateFieldsService.initOperationField(storeId);
+		}
+	}
+
+	@Override
+	public void initOperationFieldContext(String storeId) throws Exception {
+		if(StringUtils.isNotBlank(storeId)){
+			operateFieldsContentService.initOperationFieldContext(storeId);
+		}
 	}
 	
 	

@@ -602,7 +602,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 	 * @author zengjizu
 	 * @date 2016年11月15日
 	 */
-	private String buildBalancePayTrade(TradeOrder order, TradeOrderItem item) throws ServiceException {
+	private String buildBalancePayTrade(TradeOrder order, TradeOrderItem item) throws Exception {
 		// 退款金额
 		BigDecimal refundAmount = new BigDecimal("0.00");
 		// 退款优惠金额

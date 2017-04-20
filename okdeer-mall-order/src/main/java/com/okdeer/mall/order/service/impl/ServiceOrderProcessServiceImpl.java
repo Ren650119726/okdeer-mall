@@ -1005,7 +1005,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		// 如果存在活动，判断活动
 		if (StringUtils.isNotEmpty(orderReq.getActivityId()) && StringUtils.isNotEmpty(orderReq.getActivityItemId())) {
 			// 服务订单只有店铺满减满折活动，都是在同一个表中
-			ActivityDiscount activityDiscount = activityDiscountService.getById(orderReq.getActivityId());
+			ActivityDiscount activityDiscount = activityDiscountService.findById(orderReq.getActivityId());
 			// 活动不存在
 			if (activityDiscount == null) {
 				throw new OrderException(ExceptionConstant.ACTIVITY_NOT_EXISTS);
@@ -1020,7 +1020,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 			}
 			// 查询活动项信息
 			ActivityDiscountCondition activityDiscountCondition = activityDiscountConditionMapper
-					.findByPrimaryKey(orderReq.getActivityItemId());
+					.findById(orderReq.getActivityItemId());
 			// 活动项不存在
 			if (activityDiscountCondition == null) {
 				throw new OrderException(ExceptionConstant.ACTIVITY_ITEM_NOT_EXISTS);
