@@ -7,6 +7,7 @@ import java.util.Set;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.common.enums.UseClientType;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 
 /**
  * ClassName: FavourParamBo 
@@ -65,6 +66,16 @@ public class FavourParamBO {
 	 * 商品类目集合
 	 */
 	private Set<String> spuCategoryIds;
+
+	/**
+	 * 下单渠道
+	 */
+	private OrderResourceEnum channel;
+
+	/**
+	 * 是否是首单用户
+	 */
+	private Boolean isFirstOrderUser;
 
 	public String getUserId() {
 		return userId;
@@ -136,6 +147,22 @@ public class FavourParamBO {
 
 	public void setSkuIdList(List<String> skuIdList) {
 		this.skuIdList = skuIdList;
+	}
+
+	public OrderResourceEnum getChannel() {
+		return channel;
+	}
+
+	public void setChannel(OrderResourceEnum channel) {
+		this.channel = channel;
+	}
+
+	public Boolean getIsFirstOrderUser() {
+		return isFirstOrderUser;
+	}
+
+	public void setIsFirstOrderUser(Boolean isFirstOrderUser) {
+		this.isFirstOrderUser = isFirstOrderUser;
 	}
 
 }

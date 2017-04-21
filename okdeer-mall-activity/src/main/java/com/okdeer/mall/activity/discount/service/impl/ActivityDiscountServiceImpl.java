@@ -54,6 +54,7 @@ import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.order.vo.Discount;
+import com.okdeer.mall.order.vo.Favour;
 import com.okdeer.mall.order.vo.FullSubtract;
 
 /**
@@ -377,7 +378,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	}
 
 	@Override
-	public ActivityInfoDto findInfoById(String id) throws ServiceException {
+	public ActivityInfoDto findInfoById(String id,boolean isLoadDetail) throws ServiceException {
 		// 活动基本信息
 		ActivityDiscount activityInfo = activityDiscountMapper.findById(id);
 		// 活动优惠条件信息
@@ -385,7 +386,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		// 活动业务限制信息
 		List<ActivityBusinessRel> relList = activityBusinessRelMapper.findByActivityId(id);
 		// 解析业务限制信息
-		ActLimitRelBuilder limitBuilder = parseRelList(relList);
+		ActLimitRelBuilder limitBuilder = parseRelList(relList,isLoadDetail);
 		ActivityInfoDto actInfoDto = new ActivityInfoDto();
 		actInfoDto.setActivityInfo(activityInfo);
 		actInfoDto.setActivityType(activityInfo.getType().ordinal());
@@ -397,13 +398,26 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		return actInfoDto;
 	}
 	
-	private  ActLimitRelBuilder parseRelList(List<ActivityBusinessRel> relList) throws ServiceException{
+	/**
+	 * @Description: 解析活动限制关系
+	 * @param relList
+	 * @param isLoadDetail
+	 * @return
+	 * @throws ServiceException   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
+	private  ActLimitRelBuilder parseRelList(List<ActivityBusinessRel> relList,boolean isLoadDetail) throws ServiceException{
 		if(CollectionUtils.isEmpty(relList)){
 			return null;
 		}
 		ActLimitRelBuilder builder = new ActLimitRelBuilder();
 		// 加载当前业务列表
 		builder.loadBusiRelList(relList);
+		if(!isLoadDetail){
+			// 不用加载明细，直接返回
+			return builder;
+		}
 		// 地址列表
 		List<Address> areaList = Lists.newArrayList();
 		// 店铺列表
@@ -477,6 +491,12 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		return storeSkuPage.getList();
 	}
 	
+	/**
+	 * @Description: 后置处理店铺信息
+	 * @param storeInfoList   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
 	private void postStoreList(List<StoreInfo> storeInfoList){
 		if(CollectionUtils.isEmpty(storeInfoList)){
 			return;
@@ -495,11 +515,19 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		List<ActivityInfoDto> actInfoList = Lists.newArrayList();
 		ActivityInfoDto actInfo = null;
 		for(String activityId : activityIds){
-			actInfo = this.findInfoById(activityId);
+			actInfo = this.findInfoById(activityId,false);
 			if(actInfo != null){
 				actInfoList.add(actInfo);
 			}
 		}
 		return actInfoList;
+	}
+
+	@Override
+	public List<? extends Favour> findValidFavour(FavourParamBO paramBo, FavourFilterStrategy favourFilter)
+			throws Exception {
+		List<? extends Favour> favourList = Lists.newArrayList();
+		
+		return null;
 	}
 }
