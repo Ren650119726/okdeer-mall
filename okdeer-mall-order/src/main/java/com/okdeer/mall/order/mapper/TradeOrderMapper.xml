@@ -566,6 +566,7 @@
 			<result column="main_pic_prl" property="mainPicPrl" jdbcType="VARCHAR" />
 			<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
 			<result column="quantity" property="quantity" jdbcType="DECIMAL" />
+			<result column="item_total_amount" property="totalAmount" jdbcType="DECIMAL" />
 			<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
 			<result column="properties_indb" property="propertiesIndb"
 				jdbcType="VARCHAR" />
@@ -815,6 +816,24 @@
 		<include refid="Base_Column_List" />
 		from trade_order
 		where id = #{id,jdbcType=VARCHAR}
+	</select>
+
+	<sql id="base_condition">
+		<if test="id != null and id != ''">
+			AND id = #{id,jdbcType=VARCHAR}
+		</if>
+		<if test="orderNo != null and orderNo != ''">
+			AND order_no = #{orderNo,jdbcType=VARCHAR}
+		</if>
+	</sql>
+
+	<select id="selectByParam" resultMap="BaseResultMap"
+			parameterType="com.okdeer.mall.order.entity.TradeOrder">
+		select
+		<include refid="Base_Column_List" />
+		from trade_order
+		where disabled=0
+		<include refid="base_condition" />
 	</select>
 
 	<!-- 财务系统接口-通过订单id查询订单详情 luosm start 12050 update by wusw 20160810 12051 
@@ -1560,6 +1579,19 @@
 				AND o.order_resource = #{orderResource,jdbcType=TINYINT}
 			</if>
 		</if>
+		<!-- add by mengsj begin 增加数据权限控制sql -->
+		<if test="currentUserId != null">
+			AND o.store_id IN (SELECT
+					dd.store_id
+				FROM
+					sys_user aa
+				INNER JOIN sys_user_org bb ON aa.id = bb.user_id
+				INNER JOIN sys_organization cc ON bb.org_id = cc.id
+				INNER JOIN sys_organ_store dd ON cc.id = dd.org_id
+				WHERE
+					aa.id = #{currentUserId,jdbcType=VARCHAR})
+		</if>
+		<!-- add by mengsj end 增加数据权限控制sql -->
 
 		ORDER BY o.create_time DESC
 	</select>
@@ -2993,7 +3025,7 @@
 		tr.consumer_code_status,tr.user_phone,tr.is_breach,tr.breach_percent,tr.breach_money,tr.accept_time,
 		ti.id as invoice_id,ti.head,ti.context,it.service_assurance,
 		it.id as
-		item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,tr.reason,it.properties_indb,it.unit,
+		item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,tr.reason,it.properties_indb,it.unit,it.total_amount as item_total_amount,
 		ol.id AS
 		logistics_id,ol.consignee_name,ol.mobile,ol.area,ol.address,ol.logistics_company_name,ol.logistics_no,ol.type
 		AS logisticsType,
@@ -4109,35 +4141,39 @@
 		SELECT IFNULL(SUM(tmp.orders), 0) order_counts,
 		IFNULL(SUM(tmp.total_amount), 0) order_total_amount,
 		COUNT(tmp.user_id) user_counts,
-		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN
-		(6, 11, 13)
-		AND CURDATE()=DATE_FORMAT(toref.create_time,'%Y-%m-%d')
+		(
+		SELECT COUNT(*) 
+		FROM trade_order_refunds toref 
+		WHERE toref.refunds_status IN(6, 11, 13)
+		AND CURDATE()=DATE_FORMAT(date_sub(toref.create_time,interval 1 day),'%Y-%m-%d')
 		AND toref.store_id = #{storeId,jdbcType=VARCHAR}) order_refunds_counts
-		FROM (SELECT user_id,
+		FROM (
+		SELECT user_id,
 		COUNT(*) orders,
 		SUM(actual_amount) total_amount
 		FROM trade_order tord
 		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
 		AND tord.status IN(1,3,5)))
-		AND CURDATE()=DATE_FORMAT(tord.create_time,'%Y-%m-%d')
+		AND CURDATE()=DATE_FORMAT(date_sub(tord.create_time,interval 1 day),'%Y-%m-%d')
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
 		GROUP BY user_id) tmp
 		UNION ALL
-		SELECT IFNULL(SUM(tmp.orders),0)
+		SELECT 
+		IFNULL(SUM(tmp.orders),0)
 		order_counts,
 		IFNULL(SUM(tmp.total_amount),0) order_total_amount,
 		COUNT(tmp.user_id) user_counts,
-		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN
-		(6, 11, 13)
-		AND YEARWEEK(toref.create_time,3)=YEARWEEK(NOW(),3)
+		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN(6, 11, 13)
+		AND YEARWEEK(toref.create_time,3)=YEARWEEK(date_sub(NOW(),interval 1 day),3)
 		AND toref.store_id = #{storeId, jdbcType=VARCHAR}) order_refunds_counts
-		FROM (SELECT user_id,
+		FROM (
+		SELECT user_id,
 		COUNT(*) orders,
 		SUM(actual_amount) total_amount
 		FROM trade_order tord
 		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
 		AND tord.status IN(1,3,5)))
-		AND YEARWEEK(tord.create_time,3)=YEARWEEK(NOW(),3)
+		AND YEARWEEK(tord.create_time,3)=YEARWEEK(date_sub(NOW(),interval 1 day),3)
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
 		GROUP BY user_id) tmp
 		UNION ALL
@@ -4145,35 +4181,35 @@
 		order_counts,
 		IFNULL(SUM(tmp.total_amount),0) order_total_amount,
 		COUNT(tmp.user_id) user_counts,
-		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN
-		(6, 11, 13)
-		AND DATE_FORMAT(CURDATE(),'%Y-%m')=DATE_FORMAT(toref.create_time,'%Y-%m')
+		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN(6, 11, 13)
+		AND DATE_FORMAT(date_sub(CURDATE(),interval 1 day),'%Y-%m')=DATE_FORMAT(toref.create_time,'%Y-%m')
 		AND toref.store_id = #{storeId, jdbcType=VARCHAR})
 		order_refunds_counts
-		FROM (SELECT user_id,
+		FROM (
+		SELECT user_id,
 		COUNT(*) orders,
 		SUM(actual_amount) total_amount
 		FROM trade_order tord
 		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
 		AND tord.status IN(1,3,5)))
-		AND DATE_FORMAT(CURDATE(),'%Y-%m')=DATE_FORMAT(tord.create_time,'%Y-%m')
+		AND DATE_FORMAT(date_sub(CURDATE(),interval 1 day),'%Y-%m')=DATE_FORMAT(tord.create_time,'%Y-%m')
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
 		GROUP BY user_id) tmp
 		UNION ALL
 		SELECT IFNULL(SUM(tmp.orders),0) order_counts,
 		IFNULL(SUM(tmp.total_amount),0) order_total_amount,
 		COUNT(tmp.user_id) user_counts,
-		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN
-		(6, 11, 13)
-		AND YEAR(CURDATE())=YEAR(toref.create_time)
+		(SELECT COUNT(*) FROM trade_order_refunds toref WHERE toref.refunds_status IN(6, 11, 13)
+		AND YEAR(date_sub(CURDATE(),interval 1 day))=YEAR(toref.create_time)
 		AND toref.store_id = #{storeId, jdbcType=VARCHAR}) order_refunds_counts
-		FROM (SELECT user_id,
+		FROM (
+		SELECT user_id,
 		COUNT(*) orders,
 		SUM(actual_amount) total_amount
 		FROM trade_order tord
 		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
 		AND tord.status IN(1,3,5)))
-		AND YEAR(CURDATE())=YEAR(tord.create_time)
+		AND YEAR(date_sub(CURDATE(),interval 1 day))=YEAR(tord.create_time)
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
 		GROUP BY user_id) tmp
 	</select>
@@ -5248,6 +5284,19 @@
 				#{item}
 			</foreach>
 		</if>
+		<!-- add by mengsj begin 增加数据权限控制sql -->
+		<if test="currentUserId != null">
+			AND tr.store_id IN (SELECT
+					dd.store_id
+				FROM
+					sys_user aa
+				INNER JOIN sys_user_org bb ON aa.id = bb.user_id
+				INNER JOIN sys_organization cc ON bb.org_id = cc.id
+				INNER JOIN sys_organ_store dd ON cc.id = dd.org_id
+				WHERE
+					aa.id = #{currentUserId,jdbcType=VARCHAR})
+		</if>
+		<!-- add by mengsj end 增加数据权限控制sql -->
 		ORDER BY tr.create_time DESC
 	</select>
 
@@ -5834,12 +5883,8 @@
 			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
 		</if>
 		<if test="storeName != null and storeName != ''">
-			AND ((trade.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR},
-			'%') AND (trade.type = 3 OR trade.type = 4))
-			OR
-			(store.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR}, '%') AND trade.type
-			!= 3 AND trade.type != 4))
-
+			AND (store.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR},'%') 
+				AND (trade.type = 3 OR trade.type = 4))
 		</if>
 		<if test="userPhone != null and userPhone != ''">
 			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},

@@ -23,12 +23,12 @@ public interface TradeOrderActivityService {
 	 *
 	 * @param order 订单
 	 */
-	String findActivityUserId(TradeOrder order);
+	String findActivityUserId(TradeOrder order) throws Exception;
 
 	/**
 	 * 返回活动归属
 	 * @return 
 	 */
-	ActivityBelongType findActivityType(TradeOrder order);
+	ActivityBelongType findActivityType(TradeOrder order) throws Exception;
 
 }

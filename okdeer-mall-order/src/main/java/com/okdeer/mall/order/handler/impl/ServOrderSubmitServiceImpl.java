@@ -803,7 +803,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 */
 	private boolean isPublishByStore(String activityId) {
 		boolean isPublishByStore = true;
-		ActivityDiscount discount = activityDiscountMapper.selectByPrimaryKey(activityId);
+		ActivityDiscount discount = activityDiscountMapper.findById(activityId);
 		String storeId = discount.getStoreId();
 		if ("0".equals(storeId)) {
 			isPublishByStore = false;

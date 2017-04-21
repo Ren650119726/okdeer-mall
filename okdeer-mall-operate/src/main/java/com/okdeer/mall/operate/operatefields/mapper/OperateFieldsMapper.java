@@ -9,6 +9,8 @@ package com.okdeer.mall.operate.operatefields.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
 import com.okdeer.mall.operate.enums.OperateFieldsType;
@@ -54,7 +56,7 @@ public interface OperateFieldsMapper extends IBaseMapper {
 	 * @author zengjizu
 	 * @date 2017年4月13日
 	 */
-	Integer queryMinSort(OperateFieldsType type,String businessId);
+	Integer queryMinSort(@Param("type")OperateFieldsType type,@Param("businessId")String businessId);
 	
 	/**
 	 * @Description: 查询需要对比的数据
@@ -64,6 +66,25 @@ public interface OperateFieldsMapper extends IBaseMapper {
 	 * @author zengjizu
 	 * @date 2017年4月13日
 	 */
-	OperateFields findCompareBySort(String id, int sort,int type);
+	OperateFields findCompareBySort(@Param("id")String id, @Param("sort")int sort,@Param("type")int type);
 	
+	/**
+     * 根据店铺Id和店铺商品Id查找关联的运营栏位
+     * @param storeId 店铺Id
+     * @param storeSkuId 店铺商品Id
+     * @return 栏位列表
+     * @author zhaoqc
+     * @date 2017-4-18
+     */
+	List<OperateFields> getGoodsRalationFields(@Param("storeId")String storeId, @Param("storeSkuId") String storeSkuId);
+	
+	/**
+	 * 初始化店铺运营栏位
+	 * @Description: 
+	 * @param storeId void
+	 * @throws
+	 * @author mengsj
+	 * @date 2017年4月17日
+	 */
+	void initOperationField(@Param("storeId")String storeId);
 }

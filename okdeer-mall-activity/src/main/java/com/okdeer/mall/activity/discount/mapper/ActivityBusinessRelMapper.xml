@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.discount.mapper.ActivityBusinessRelMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.discount.entity.ActivityBusinessRel" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="business_id" property="businessId" jdbcType="VARCHAR" />
+        <result column="business_type" property="businessType" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.discount.enums.ActivityBusinessType" />
+        <result column="sort" property="sort" jdbcType="INTEGER" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, activity_id, business_id, business_type, sort
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_business_rel
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.discount.entity.ActivityBusinessRel" >
+        insert into activity_business_rel
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
+            <if test="businessId != null" >
+                business_id,
+            </if>
+            <if test="businessType != null" >
+                business_type,
+            </if>
+            <if test="sort != null" >
+                sort,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="businessId != null" >
+                #{businessId,jdbcType=VARCHAR},
+            </if>
+            <if test="businessType != null" >
+                #{businessType,jdbcType=TINYINT},
+            </if>
+            <if test="sort != null" >
+                #{sort,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.discount.entity.ActivityBusinessRel" >
+        update activity_business_rel
+        <set >
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="businessId != null" >
+                business_id = #{businessId,jdbcType=VARCHAR},
+            </if>
+            <if test="businessType != null" >
+                business_type = #{businessType,jdbcType=TINYINT},
+            </if>
+            <if test="sort != null" >
+                sort = #{sort,jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_business_rel
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+	
+	<insert id="batchAdd" parameterType="com.okdeer.mall.activity.discount.entity.ActivityBusinessRel">
+		INSERT INTO activity_business_rel (
+	        id,
+	        activity_id,
+	        business_id,
+	        business_type,
+	        sort
+	    ) VALUES 
+	    <foreach collection="relList" item="item" separator="," open="" close="">
+	        (
+	        	#{item.id,jdbcType=VARCHAR},
+	        	#{item.activityId,jdbcType=VARCHAR},
+	        	#{item.businessId,jdbcType=VARCHAR},
+	        	#{item.businessType,jdbcType=TINYINT},
+	        	#{item.sort,jdbcType=INTEGER}
+	        )
+	    </foreach>
+	</insert>
+	
+	<select id="findByActivityId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        SELECT <include refid="Base_Column_List" />
+        FROM activity_business_rel
+        WHERE activity_id = #{activityId,jdbcType=VARCHAR}
+    </select>
+    
+    <delete id="deleteByActivityId" parameterType="java.lang.String" >
+        delete from activity_business_rel
+        where activity_id = #{activityId,jdbcType=VARCHAR}
+    </delete>
+</mapper>

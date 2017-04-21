@@ -45,6 +45,11 @@ public class OperateFieldsContent {
 	private String linkUrl;
 
 	/**
+	 * 标题
+	 */
+	private String title;
+
+	/**
 	 * 业务类型( 0:特惠活动1：特价活动 2:商品详情3：店铺首页 4：店铺菜单)
 	 */
 	private OperateFieldsBusinessType businessType;
@@ -134,6 +139,14 @@ public class OperateFieldsContent {
 
 	public void setSort(Integer sort) {
 		this.sort = sort;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 }

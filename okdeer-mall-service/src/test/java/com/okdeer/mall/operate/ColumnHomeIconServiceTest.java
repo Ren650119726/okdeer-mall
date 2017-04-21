@@ -92,9 +92,9 @@ public class ColumnHomeIconServiceTest {
 			List<String> versions = new ArrayList<>();
 			versions.add("V2.2");
 			
-			BaseResult result = homeIconService.save(entity, areaList, goodsList, versions);
-			log.info("测试 保存首页ICON ：{}", result);
-			Assert.assertTrue("测试 保存首页ICON失败", result.getStatus().equals("0"));
+//			BaseResult result = homeIconService.save(entity, areaList, goodsList, versions);
+//			log.info("测试 保存首页ICON ：{}", result);
+//			Assert.assertTrue("测试 保存首页ICON失败", result.getStatus().equals("0"));
 		} catch (Exception e) {
 			log.error("测试 保存首页ICON异常:{}", e);
 		}

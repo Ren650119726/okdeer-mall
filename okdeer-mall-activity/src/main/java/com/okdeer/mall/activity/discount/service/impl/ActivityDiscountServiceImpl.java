@@ -1,60 +1,60 @@
 package com.okdeer.mall.activity.discount.service.impl;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
-import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.google.common.collect.Lists;
+import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
+import com.okdeer.archive.goods.base.service.GoodsSpuCategoryServiceApi;
+import com.okdeer.archive.goods.dto.StoreSkuParamDto;
+import com.okdeer.archive.goods.store.dto.StoreSkuDto;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
-import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.bdp.address.entity.Address;
+import com.okdeer.bdp.address.service.IAddressService;
+import com.okdeer.common.entity.ReturnInfo;
+import com.okdeer.mall.activity.bo.ActLimitRelBuilder;
+import com.okdeer.mall.activity.bo.ActivityParamBo;
 import com.okdeer.mall.activity.bo.FavourParamBO;
-import com.okdeer.mall.activity.coupons.enums.CashDelivery;
+import com.okdeer.mall.activity.discount.entity.ActivityBusinessRel;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
-import com.okdeer.mall.activity.discount.entity.ActivityDiscountArea;
-import com.okdeer.mall.activity.discount.entity.ActivityDiscountCommunity;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
-import com.okdeer.mall.activity.discount.entity.ActivityDiscountDto;
-import com.okdeer.mall.activity.discount.entity.ActivityDiscountQueryVo;
-import com.okdeer.mall.activity.discount.entity.ActivityDiscountRelationStore;
-import com.okdeer.mall.activity.discount.entity.ActivityDiscountStore;
-import com.okdeer.mall.activity.discount.entity.ActivityDiscountVo;
+import com.okdeer.mall.activity.discount.enums.ActivityBusinessType;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
-import com.okdeer.mall.activity.discount.enums.IdentityLimit;
-import com.okdeer.mall.activity.discount.enums.LimitClientType;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountAreaMapper;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountCommunityMapper;
+import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
+import com.okdeer.mall.activity.discount.mapper.ActivityBusinessRelMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRelationStoreMapper;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountStoreMapper;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
-import com.okdeer.mall.activity.discount.service.ActivityDiscountServiceApi;
+import com.okdeer.mall.activity.dto.ActivityBusinessRelDto;
+import com.okdeer.mall.activity.dto.ActivityInfoDto;
+import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
-import com.okdeer.mall.common.enums.AreaType;
-import com.okdeer.mall.common.enums.DistrictType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.order.vo.Discount;
+import com.okdeer.mall.order.vo.Favour;
 import com.okdeer.mall.order.vo.FullSubtract;
 
 /**
@@ -70,669 +70,236 @@ import com.okdeer.mall.order.vo.FullSubtract;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		重构V4.1 			2016-07-22			zengj			查询店铺有效的满减
  */
-@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.discount.service.ActivityDiscountServiceApi")
-public class ActivityDiscountServiceImpl implements ActivityDiscountServiceApi, ActivityDiscountService {
+@Service
+public class ActivityDiscountServiceImpl extends BaseServiceImpl implements ActivityDiscountService {
 
-	/**
-	 * 满减(满折)DAO
-	 */
-	@Autowired
+	@Resource
 	private ActivityDiscountMapper activityDiscountMapper;
-
-	/**
-	 * 满减(满折)条件DAO
-	 */
-	@Autowired
+	
+	@Resource
 	private ActivityDiscountConditionMapper activityDiscountConditionMapper;
-
-	/**
-	 * 满减（满折）区域信息mapper
-	 */
-	@Autowired
-	private ActivityDiscountAreaMapper activityDiscountAreaMapper;
-
-	/**
-	 * 满减（满折）小区信息mapper
-	 */
-	@Autowired
-	private ActivityDiscountCommunityMapper activityDiscountCommunityMapper;
-
-	/**
-	 * 满减（满折）店铺信息mapper
-	 */
-	@Autowired
-	private ActivityDiscountStoreMapper activityDiscountStoreMapper;
-
-	/**
-	 * 满减（满折）活动的范围关联的店铺mapper
-	 */
-	@Autowired
-	private ActivityDiscountRelationStoreMapper activityDiscountRelationStoreMapper;
-
-	/**
-	 * 店铺基本信息mapper
-	 */
-	@Reference(version = "1.0.0", check = false)
+	
+	@Resource
+	private ActivityBusinessRelMapper activityBusinessRelMapper;
+	
+	@Resource
+	private MaxFavourStrategy maxFavourStrategy;
+	
+	@Reference(version = "1.0.0",check=false)
+	private IAddressService addressApi;
+	
+	@Reference(version = "1.0.0",check=false)
 	private StoreInfoServiceApi storeInfoServiceApi;
 	
-	// Begin added by maojj 2017-02-15
-	@Resource
-	private MaxFavourStrategy genericMaxFavourStrategy;
+	@Reference(version = "1.0.0",check=false)
+	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
+	
+	@Reference(version = "1.0.0",check=false)
+	private GoodsSpuCategoryServiceApi goodsSpuCategoryServiceApi;
+	
+	@Override
+	public IBaseMapper getBaseMapper() {
+		return activityDiscountMapper;
+	}
+	
+	@Override
+	@Transactional(rollbackFor=Exception.class)
+	public ReturnInfo update(ActivityInfoDto actInfoDto) {
+		// 初始化ReturnInfo
+		ReturnInfo retInfo = new ReturnInfo();
+		// 活动信息
+		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
+		String activityId = actInfo.getId();
+		ActivityDiscount currentAct = activityDiscountMapper.findById(activityId);
+		if(currentAct.getStatus() != ActivityDiscountStatus.noStart){
+			retInfo.setFlag(false);
+			retInfo.setMessage("该满减活动处于" + currentAct.getStatus().getValue() + "状态下，不能修改！");
+		}
+		// 同一时间、同一地区、同一店铺活动唯一性检查。
+		if(!checkUnique(actInfoDto)){
+			retInfo.setFlag(false);
+			retInfo.setMessage("创建失败，选定范围指定时间内已存在活动，请重新选择范围或更改时间！");
+			return retInfo;
+		}
+		// 优惠条件列表
+		List<ActivityDiscountCondition> conditionList = parseConditionList(actInfoDto);
+		// 限制条件列表
+		List<ActivityBusinessRel> limitList = parseLimitList(actInfoDto);
+		if(actInfo.getType() != ActivityDiscountType.PIN_MONEY){
+			actInfo.setGrantType(0);
+		}
+		// 修改活动信息
+		activityDiscountMapper.update(actInfo);
+		// 删除活动下的优惠条件
+		activityDiscountConditionMapper.deleteByActivityId(activityId);
+		// 删除活动下的业务关联关系
+		activityBusinessRelMapper.deleteByActivityId(activityId);
+		// 批量新增优惠条件列表
+		activityDiscountConditionMapper.batchAdd(conditionList);
+		// 批量新增活动限制信息
+		if(CollectionUtils.isNotEmpty(limitList)){
+			activityBusinessRelMapper.batchAdd(limitList);
+		}
+		return retInfo;
+	}
+	
+	@Override
+	@Transactional(rollbackFor=Exception.class)
+	public ReturnInfo add(ActivityInfoDto actInfoDto) {
+		// 初始化ReturnInfo
+		ReturnInfo retInfo = new ReturnInfo();
+		// 同一时间、同一地区、同一店铺活动唯一性检查。
+		if(!checkUnique(actInfoDto)){
+			retInfo.setFlag(false);
+			retInfo.setMessage("创建失败，选定范围指定时间内已存在活动，请重新选择范围或更改时间！");
+			return retInfo;
+		}
+		// 活动信息
+		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
+		// 生成唯一主键
+		actInfo.setId(UuidUtils.getUuid());
+		// 活动状态默认为未开始
+		actInfo.setStatus(ActivityDiscountStatus.noStart);
+		if(actInfo.getType() != ActivityDiscountType.PIN_MONEY){
+			actInfo.setGrantType(0);
+		}
+		// 优惠条件列表
+		List<ActivityDiscountCondition> conditionList = parseConditionList(actInfoDto);
+		// 限制条件列表
+		List<ActivityBusinessRel> limitList = parseLimitList(actInfoDto);
+		// 新增活动信息
+		activityDiscountMapper.add(actInfo);
+		// 批量新增优惠条件列表
+		activityDiscountConditionMapper.batchAdd(conditionList);
+		// 批量新增活动限制信息
+		if(CollectionUtils.isNotEmpty(limitList)){
+			activityBusinessRelMapper.batchAdd(limitList);
+		}
+		return retInfo;
+	}
 	
 	/**
-	 * 店铺商品Api
+	 * @Description: 活动唯一性校验
+	 * @param actInfoDto
+	 * @return   
+	 * @author maojj
+	 * @date 2017年4月21日
 	 */
-	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
-	// End added by maojj 2017-02-15
-
-	/**
-	 * 
-	 * @desc 添加活动
-	 *
-	 * @param activityDiscount 活动对象
-	 * @param activityDiscountConditionList 活动条件集合
-	 */
-	@Override
-	public void insertActivityDiscount(ActivityDiscount activityDiscount,
-			List<ActivityDiscountCondition> activityDiscountConditionList) {
-		String id = UuidUtils.getUuid();
-		activityDiscount.setId(id);
+	private boolean checkUnique(ActivityInfoDto actInfoDto){
+		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
+		ActivityParamBo paramBo = BeanMapper.map(actInfo, ActivityParamBo.class);
+		if(StringUtils.isNotEmpty(actInfo.getId())){
+			paramBo.setExcludedId(actInfo.getId());
+		}
+		if(StringUtils.isNotEmpty(actInfoDto.getLimitRangeIds())){
+			String[] tempArr = actInfoDto.getLimitRangeIds().split(",");
+			paramBo.setLimitRangeIds(Arrays.asList(tempArr));
+		}
+		int count = activityDiscountMapper.countConflict(paramBo);
+		if(count >= 1){
+			return false;
+		}else{
+			return true;
+		}
+	}
+	
+	private List<ActivityDiscountCondition> parseConditionList(ActivityInfoDto actInfoDto){
+		List<ActivityDiscountCondition> conditionList = actInfoDto.getConditionList();
+		ActivityDiscountType activityType = actInfoDto.getActivityInfo().getType();
+		String activityId = actInfoDto.getActivityInfo().getId();
+		// 最小区间
+		int minSection = 0;
+		// 最大区间
+		int maxSection = 0;
+		// 上一个最大区间值
+		int lastMaxSection = 0;
 		int sort = 0;
-		activityDiscount.setAreaType(AreaType.store);
-		// 添加活动信息
-		activityDiscountMapper.insertActivityDiscount(activityDiscount);
-		if (activityDiscountConditionList != null && !activityDiscountConditionList.isEmpty()) {
-			for (ActivityDiscountCondition activityDiscountCondition : activityDiscountConditionList) {
-				activityDiscountCondition.setDiscountId(id);
-				activityDiscountCondition.setId(UuidUtils.getUuid());
-
-				activityDiscountCondition.setSort(sort++);
+		for(ActivityDiscountCondition condition : conditionList){
+			condition.setId(UuidUtils.getUuid());
+			condition.setDiscountId(activityId);
+			if(activityType == ActivityDiscountType.PIN_MONEY){
+				// 如果是零钱活动，需要根据百分比计算百分比区间.百分比必须为整数，所以百分比区间值按照100进行划分。
+				// 如优惠条件百分比分配为10%，40%，50%。则对应区间为：[1~10],[11~50],[51~100]
+				minSection = lastMaxSection + 1;
+				maxSection = lastMaxSection + condition.getRate();
+				lastMaxSection = maxSection;
+				condition.setMinSection(minSection);
+				condition.setMaxSection(maxSection);
+				condition.setArrive(BigDecimal.valueOf(0.00));
+				condition.setDiscount(BigDecimal.valueOf(0.00));
+			}else{
+				// 设置默认值
+				condition.setMinAmount(BigDecimal.valueOf(0.00));
+				condition.setMaxAmount(BigDecimal.valueOf(0.00));
+				condition.setRate(0);
+				condition.setMinSection(0);
+				condition.setMaxSection(0);
 			}
-			// 添加活动条件信息
-			activityDiscountConditionMapper.insertActivityDiscountCondition(activityDiscountConditionList);
+			condition.setSort(sort++);
 		}
-		ActivityDiscountStore activityDiscountStore = new ActivityDiscountStore();
-		activityDiscountStore.setId(UuidUtils.getUuid());
-		activityDiscountStore.setDiscountId(activityDiscount.getId());
-		activityDiscountStore.setStoreId(activityDiscount.getStoreId());
-
-		activityDiscountStoreMapper.insert(activityDiscountStore);
-
+		return conditionList;
 	}
-
+	
 	/**
-	 * 
-	 * @desc 修改活动
-	 *
-	 * @param activityDiscount 活动对象
-	 * @param activityDiscountConditionList 活动条件集合
+	 * @Description: 解析限制条件列表，为限制条件生成主键Id
+	 * @param actInfoDto
+	 * @return   
+	 * @author maojj
+	 * @date 2017年4月18日
 	 */
-	@Override
-	public void updateActivityDiscount(ActivityDiscount activityDiscount,
-			List<ActivityDiscountCondition> activityDiscountConditionList) {
-		activityDiscount.setStatus(ActivityDiscountStatus.noStart);
-		activityDiscountMapper.updateActivityDiscount(activityDiscount);
-		// 先删除该活动下的所有条件
-		activityDiscountConditionMapper.deleteActivityDiscountCondition(activityDiscount.getId());
-		if (activityDiscountConditionList != null && !activityDiscountConditionList.isEmpty()) {
-			for (ActivityDiscountCondition condition : activityDiscountConditionList) {
-				condition.setId(UuidUtils.getUuid());
-				condition.setDiscountId(activityDiscount.getId());
-			}
-			// 添加活动条件
-			activityDiscountConditionMapper.insertActivityDiscountCondition(activityDiscountConditionList);
+	private List<ActivityBusinessRel> parseLimitList(ActivityInfoDto actInfoDto){
+		// 限制条件列表
+		List<ActivityBusinessRel> limitList = Lists.newArrayList();
+		List<ActivityBusinessRelDto<Object>> relDtoList = actInfoDto.getRelDtoList();
+		String activityId = actInfoDto.getActivityInfo().getId();
+		// 活动业务关联关系（限制关系）
+		ActivityBusinessRel limitRel = null;
+		int sort = 0;
+		for(ActivityBusinessRelDto<?> relDto : relDtoList){
+			limitRel = BeanMapper.map(relDto, ActivityBusinessRel.class);
+			limitRel.setId(UuidUtils.getUuid());
+			limitRel.setActivityId(activityId);
+			limitRel.setSort(sort++);
+			limitList.add(limitRel);
 		}
-	}
-
-	/**
-	 * 
-	 * @desc 根据活动名称查询活动信息
-	 *
-	 * @param storeId 店铺ID
-	 * @param name 活动名称
-	 * @return 活动信息
-	 */
-	public List<ActivityDiscount> selectByActivityName(String storeId, String name) {
-		return activityDiscountMapper.selectByActivityName(storeId, name);
-	}
-
-	/**
-	 * 
-	 * @desc 查询同个店铺相同时间段的同一类型活动 
-	 *
-	 * @param activityDiscountVo 查询条件-活动对象
-	 * @return 满足条件的对象集合,如没有满足的，返回空
-	 */
-	@Override
-	public List<ActivityDiscount> selectActivityByTime(ActivityDiscountVo activityDiscountVo) {
-		return activityDiscountMapper.selectActivityByTime(activityDiscountVo);
-	}
-
-	/**
-	 * 
-	 * @desc 店铺活动搜索列表 
-	 *
-	 * @param activityDiscountVo 查询条件-活动对象
-	 * @param pageNumber 当前页
-	 * @param pageSize 每页展示的记录数
-	 * @return
-	 */
-	@Override
-	public PageUtils<ActivityDiscount> searchByEntityParams(ActivityDiscountVo activityDiscountVo, int pageNumber,
-			int pageSize) {
-		PageHelper.startPage(pageNumber, pageSize, true, false);
-		PageUtils<ActivityDiscount> page = new PageUtils<ActivityDiscount>(
-				activityDiscountMapper.searchByEntityParams(activityDiscountVo));
-		return page;
-	}
-
-	/**
-	 * 
-	 * @desc 店铺活动搜索列表 
-	 *
-	 * @param activityDiscountVo 查询条件-活动对象
-	 * @param pageNumber 当前页
-	 * @param pageSize 每页展示的记录数
-	 * @return
-	 */
-	@Override
-	public PageUtils<ActivityDiscount> searchByMap(Map<String, Object> map, int pageNumber, int pageSize) {
-		PageHelper.startPage(pageNumber, pageSize, true);
-		return new PageUtils<ActivityDiscount>(activityDiscountMapper.searchByMap(map));
-	}
-
-	/**
-	 * 
-	 * @desc 关闭活动 
-	 *
-	 * @param map
-	 */
-	@Override
-	public void updateCloseActivityDiscount(Map<String, Object> map) {
-		activityDiscountMapper.updateCloseActivityDiscount(map);
-	}
-
-	/**
-	 * @desc 根据主键ID获取对象
-	 *
-	 * @param id 主键ID
-	 * @return 活动信息
-	 */
-	public ActivityDiscount selectByPrimaryKey(String id) {
-		return activityDiscountMapper.selectByPrimaryKey(id);
-	}
-
-	/**
-	 * 
-	 * @desc 根据活动ID查询活动条件 
-	 *
-	 * @param discountId 活动ID
-	 * @return 活动条件集合
-	 */
-	public List<ActivityDiscountCondition> selectByDiscountId(String discountId) {
-		return activityDiscountConditionMapper.selectByDiscountId(discountId);
-	}
-
-	/**
-	 * @desc 根据查询条件，获取满减（满折）活动信息列表 
-	 * @author wusw
-	 * @param activityDiscountVo
-	 * @param pageNumber
-	 * @param pageSize
-	 * @return
-	 * @throws ServiceException
-	 */
-	@Override
-	public PageUtils<ActivityDiscount> findByEntity(ActivityDiscountVo activityDiscountVo, int pageNumber, int pageSize)
-			throws ServiceException {
-		PageHelper.startPage(pageNumber, pageSize, true);
-		activityDiscountVo.setStoreId("0");
-		activityDiscountVo.setDisabled(Disabled.valid);
-		List<ActivityDiscount> result = activityDiscountMapper.selectByEntity(activityDiscountVo);
-		if (result == null) {
-			result = new ArrayList<ActivityDiscount>();
-		}
-		return new PageUtils<ActivityDiscount>(result);
-	}
-
-	/**
-	 * @desc 根据主键id，获取满减（满折）活动详细信息（包括关联信息） 
-	 * 
-	 * @author wusw
-	 * @param id
-	 * @return
-	 * @throws ServiceException
-	 */
-	@Override
-	public ActivityDiscountQueryVo getActivityDiscountQueryVoById(String id) throws ServiceException {
-		ActivityDiscountQueryVo discountQueryVo = activityDiscountMapper.selectDiscountAssociateById(id);;
-		List<ActivityDiscountCondition> conditionList = activityDiscountConditionMapper.selectByDiscountId(id);
-		discountQueryVo.setDiscountConditionList(conditionList);
-		return discountQueryVo;
-	}
-
-	/**
-	 * @desc 新增满减（满折）活动
-	 * 
-	 * @author wusw
-	 * @param activityDiscountVo
-	 * @param currentOperateUserId
-	 * @throws ServiceException
-	 */
-	@Override
-	public void addActivityDiscount(ActivityDiscountVo activityDiscountVo, String currentOperateUserId)
-			throws ServiceException {
-		activityDiscountVo.setId(UuidUtils.getUuid());
-		activityDiscountVo.setDisabled(Disabled.valid);
-		activityDiscountVo.setStoreId("0");
-		activityDiscountVo.setStatus(ActivityDiscountStatus.noStart);
-		activityDiscountVo.setCreateUserId(currentOperateUserId);
-		activityDiscountVo.setUpdateUserId(currentOperateUserId);
-		Date date = new Date();
-		activityDiscountVo.setCreateTime(date);
-		activityDiscountVo.setUpdateTime(date);
-
-		// 后面根据产品要求，页面删掉的字段
-		activityDiscountVo.setIdentityLimit(IdentityLimit.no);
-		activityDiscountVo.setLimitClientType(LimitClientType.no);
-		activityDiscountVo.setIsCashDelivery(CashDelivery.no);
-
-		activityDiscountMapper.insertActivityDiscount(activityDiscountVo);
-
-		// 插入满减活动条件信息
-		this.insertCondition(activityDiscountVo);
-
-		// 插入满减活动与区域、小区、店铺关联信息，活动与范围下的店铺关联信息
-		this.insertAreaInfo(activityDiscountVo);
-
-	}
-
-	/**
-	 * @desc 修改满减（满折）活动
-	 *
-	 * @author wusw
-	 * @param activityDiscountVo
-	 * @param currentOperateUserId
-	 * @throws ServiceException
-	 */
-	@Override
-	public void updateActivityDiscount(ActivityDiscountVo activityDiscountVo, String currentOperateUserId)
-			throws ServiceException {
-
-		activityDiscountVo.setUpdateUserId(currentOperateUserId);
-		activityDiscountVo.setUpdateTime(new Date());
-		activityDiscountMapper.updateActivityDiscount(activityDiscountVo);
-
-		// 先删除该活动下的所有条件
-		activityDiscountConditionMapper.deleteActivityDiscountCondition(activityDiscountVo.getId());
-
-		// 插入满减活动条件信息
-		this.insertCondition(activityDiscountVo);
-
-		// 删除活动与区域、小区、店铺关联信息
-		activityDiscountAreaMapper.deleteByDiscountId(activityDiscountVo.getId());
-		activityDiscountCommunityMapper.deleteByDiscountId(activityDiscountVo.getId());
-		activityDiscountStoreMapper.deleteByDiscountId(activityDiscountVo.getId());
-		// 删除活动与范围下的店铺关联信息
-		activityDiscountRelationStoreMapper.deleteByDiscountId(activityDiscountVo.getId());
-
-		// 插入满减活动与区域、小区、店铺关联的信息，活动与范围下的店铺关联信息
-		this.insertAreaInfo(activityDiscountVo);
-
+		return limitList;
 	}
 
 	@Override
-	public int selectCountClosedByIds(List<String> ids) throws ServiceException {
-		int count = 0;
-		if (ids != null && ids.size() > 0) {
-			count = activityDiscountMapper.selectCountClosedByIds(Disabled.valid, ActivityDiscountStatus.closed, ids);
-		}
-		return count;
-	}
-
-	/**
-	 * @desc 根据主键id，关闭活动（批量）
-	 * 
-	 * @author wusw
-	 * @param ids
-	 * @param currentOperateUserId
-	 * @throws ServiceException
-	 */
-	@Override
-	public void closeByDiscountId(List<String> ids, String currentOperateUserId) throws ServiceException {
-		if (ids != null && ids.size() > 0) {
-			activityDiscountMapper.closeByDiscountId(ids, ActivityDiscountStatus.closed, new Date(),
-					currentOperateUserId);
-		}
-	}
-
-	/**
-	 * @desc 查询指定名称相同的数量
-	 * 
-	 * @author wusw
-	 * @param activityDiscountVo
-	 * @return
-	 * @throws ServiceException
-	 */
-	@Override
-	public int selectCountByName(ActivityDiscountVo activityDiscountVo) throws ServiceException {
-
-		return activityDiscountMapper.selectCountByName(activityDiscountVo);
-	}
-
-	/**
-	 * @desc 查询与指定开始结束时间有交集、指定区域有交集的记录数量 
-	 *
-	 * @author wusw
-	 * @param activityDiscountVo
-	 * @param areaIdList 区域ID（省市ID）集合
-	 * @param associateIdList 省下所有市和市所在省的id集合
-	 * @return
-	 * @throws ServiceException
-	 */
-	@Override
-	public int selectCountByDistrict(ActivityDiscountVo activityDiscountVo, List<String> areaIdList,
-			List<String> associateIdList) throws ServiceException {
-
-		return activityDiscountMapper.selectCountByDistrict(activityDiscountVo.getId(), "0", Disabled.valid,
-				ActivityDiscountStatus.noStart, ActivityDiscountStatus.ing, activityDiscountVo.getAreaType(),
-				activityDiscountVo.getStartTime(), activityDiscountVo.getEndTime(), areaIdList, associateIdList);
-	}
-
-	@Override
-	public List<ActivityDiscount> findByStoreAndLimitType(ActivityDiscountStatus status, String storeId)
-			throws ServiceException {
-
-		return activityDiscountMapper.selectByStoreAndLimitType(status, storeId);
-	}
-
-	/**
-	 * 
-	 * 插入满减（满折）条件
-	 *
-	 * @author wusw
-	 * @param activityDiscountVo
-	 */
-	private void insertCondition(ActivityDiscountVo activityDiscountVo) {
-		if (activityDiscountVo.getArrive() != null && activityDiscountVo.getArrive().length > 0) {
-			List<ActivityDiscountCondition> conditionList = new ArrayList<ActivityDiscountCondition>();
-			for (int i = 0; i < activityDiscountVo.getArrive().length; i++) {
-				ActivityDiscountCondition condition = new ActivityDiscountCondition();
-				condition.setId(UuidUtils.getUuid());
-				condition.setDiscountId(activityDiscountVo.getId());
-				condition.setSort(i);
-				condition.setArrive(activityDiscountVo.getArrive()[i]);
-				condition.setDiscount(activityDiscountVo.getDiscount()[i]);
-				conditionList.add(condition);
-			}
-			activityDiscountConditionMapper.insertActivityDiscountCondition(conditionList);
-		}
-	}
-
-	/**
-	 * 
-	 * 插入满减活动与区域、小区、店铺关联信息，活动与范围下的店铺关联信息
-	 *
-	 * @author wusw
-	 * @param activityDiscountVo
-	 */
-	private void insertAreaInfo(ActivityDiscountVo activityDiscountVo) {
-
-		if (activityDiscountVo.getAreaType() == AreaType.area) {
-			// 区域信息字符串格式：id-level,id-level,.....
-			String areaIds = activityDiscountVo.getAreaIds();
-			if (StringUtils.isNotEmpty(areaIds)) {
-				String[] areaArr = areaIds.split(",");
-				// 所有区域关联信息list
-				List<ActivityDiscountArea> areaList = new ArrayList<ActivityDiscountArea>();
-				// 所有区域下面的店铺信息list
-				List<StoreInfo> allStoreInfoList = new ArrayList<StoreInfo>();
-				ActivityDiscountArea activityDiscountArea = null;
-
-				for (String areaIdType : areaArr) {
-					String[] areaIdTypeArr = areaIdType.split("-");
-					activityDiscountArea = new ActivityDiscountArea();
-					activityDiscountArea.setId(UuidUtils.getUuid());
-					activityDiscountArea.setDiscountId(activityDiscountVo.getId());
-					activityDiscountArea.setAreaId(areaIdTypeArr[0]);
-
-					List<StoreInfo> storeInfoList = null;
-					// 根据level判断是省还是市
-					if (areaIdTypeArr[1].equals("1")) {
-						activityDiscountArea.setType(DistrictType.province);
-						// 获取省下面所有的便利店
-						storeInfoList = storeInfoServiceApi.selectCloudStoreByProvinceId(areaIdTypeArr[0]);
-					} else {
-						activityDiscountArea.setType(DistrictType.city);
-						// 获取市下面所有的便利店
-						storeInfoList = storeInfoServiceApi.selectCloudStoreByCityId(areaIdTypeArr[0]);
-					}
-					areaList.add(activityDiscountArea);
-					// 将省市下面的所有便利店存放起来
-					if (storeInfoList != null && storeInfoList.size() > 0) {
-						allStoreInfoList.addAll(storeInfoList);
-					}
-				}
-				activityDiscountAreaMapper.insertAreaBatch(areaList);
-				// 批量插入满减（满折）活动的范围关联的店铺信息
-				this.insertRelationStoreBatch(allStoreInfoList, activityDiscountVo.getId());
-			}
-
-		} else if (activityDiscountVo.getAreaType() == AreaType.community) {
-			// 小区信息字符串格式：id,id,.....
-			String areaIds = activityDiscountVo.getAreaIds();
-			if (StringUtils.isNotEmpty(areaIds)) {
-				// 所有小区关联list
-				List<ActivityDiscountCommunity> areaList = new ArrayList<ActivityDiscountCommunity>();
-				// 所有小区下面的店铺信息list
-				List<StoreInfo> allStoreInfoList = new ArrayList<StoreInfo>();
-				ActivityDiscountCommunity activityDiscountCommunity = null;
-				String[] areaIdArr = areaIds.split(",");
-				for (String areaId : areaIdArr) {
-					activityDiscountCommunity = new ActivityDiscountCommunity();
-					activityDiscountCommunity.setId(UuidUtils.getUuid());
-					activityDiscountCommunity.setDiscountId(activityDiscountVo.getId());
-					activityDiscountCommunity.setCommunityId(areaId);
-					areaList.add(activityDiscountCommunity);
-
-					// 获取指定小区下面所有的便利店list
-					List<StoreInfo> storeInfoList = storeInfoServiceApi.selectCloudStoreByCommunityId(areaId);
-					// 将省市下面的所有便利店存放起来
-					if (storeInfoList != null && storeInfoList.size() > 0) {
-						allStoreInfoList.addAll(storeInfoList);
-					}
-				}
-				activityDiscountCommunityMapper.insertCommunityBatch(areaList);
-				// 批量插入满减（满折）活动的范围关联的店铺信息
-				this.insertRelationStoreBatch(allStoreInfoList, activityDiscountVo.getId());
-			}
-		} else if (activityDiscountVo.getAreaType() == AreaType.store) {
-			// 店铺信息字符串格式：id,id,.....
-			String areaIds = activityDiscountVo.getAreaIds();
-			if (StringUtils.isNotEmpty(areaIds)) {
-				// 所有的店铺关联list
-				List<ActivityDiscountStore> areaList = new ArrayList<ActivityDiscountStore>();
-				// 所有的店铺信息list
-				List<StoreInfo> allStoreInfoList = new ArrayList<StoreInfo>();
-				ActivityDiscountStore activityDiscountStore = null;
-				String[] areaIdArr = areaIds.split(",");
-				for (String areaId : areaIdArr) {
-					activityDiscountStore = new ActivityDiscountStore();
-					activityDiscountStore.setId(UuidUtils.getUuid());
-					activityDiscountStore.setDiscountId(activityDiscountVo.getId());
-					activityDiscountStore.setStoreId(areaId);
-					areaList.add(activityDiscountStore);
-
-					// 将所有的店铺信息存放起来
-					StoreInfo storeInfo = new StoreInfo();
-					storeInfo.setId(areaId);
-					allStoreInfoList.add(storeInfo);
-				}
-				activityDiscountStoreMapper.insertStoreBatch(areaList);
-				// 批量插入满减（满折）活动的范围关联的店铺信息
-				this.insertRelationStoreBatch(allStoreInfoList, activityDiscountVo.getId());
-			}
-		}
-	}
-
-	/**
-	 * 
-	 * 批量插入满减（满折）活动的范围关联的店铺信息
-	 * 
-	 * @author wusw
-	 * @param storeInfoList
-	 * @param discountId
-	 */
-	private void insertRelationStoreBatch(List<StoreInfo> storeInfoList, String discountId) {
-		List<ActivityDiscountRelationStore> relationStoreList = new ArrayList<ActivityDiscountRelationStore>();
-		if (storeInfoList != null && storeInfoList.size() > 0) {
-			for (StoreInfo storeInfo : storeInfoList) {
-				ActivityDiscountRelationStore relationStore = new ActivityDiscountRelationStore();
-				relationStore.setId(UuidUtils.getUuid());
-				relationStore.setDiscountId(discountId);
-				relationStore.setStoreId(storeInfo.getId());
-				relationStoreList.add(relationStore);
-			}
-			activityDiscountRelationStoreMapper.insertRelationStoreBatch(relationStoreList);
-		}
-	}
-
-	/**
-	 * 查询需要修改状态的集合。然后批量更新
-	 *
-	 * @return
-	 */
+	@Transactional(rollbackFor=Exception.class)
 	public void updateStatus() {
+		// 当前时间
+		Date currentDate = DateUtils.getSysDate();
 		// 查询需要更新状态的集合
-		List<ActivityDiscount> list = activityDiscountMapper.selectNeedUpdateList(DateUtils.getSysDate());
-		if (list != null && !list.isEmpty()) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			// 需要修改为进行中的活动ID集合
-			List<String> ingList = new ArrayList<String>();
-			// 需要修改为已结束的活动ID集合
-			List<String> endList = new ArrayList<String>();
-
-			for (ActivityDiscount activityDiscount : list) {
-				if (ActivityDiscountStatus.ing.equals(activityDiscount.getStatus())) {
-					ingList.add(activityDiscount.getId());
-				} else if (ActivityDiscountStatus.end.equals(activityDiscount.getStatus())) {
-					endList.add(activityDiscount.getId());
-				}
-			}
-
-			map.put("updateTime", DateUtils.getSysDate());
-			map.put("updateUserId", RobotUserUtil.getRobotUser().getId());
-			// 如果有需要修改状态为进行中的活动
-			if (!ingList.isEmpty()) {
-				map.put("ids", ingList);
-				map.put("status", ActivityDiscountStatus.ing);
-
-				activityDiscountMapper.updateStatus(map);
-			}
-			// 如果有需要修改状态为已结束的活动
-			if (!endList.isEmpty()) {
-				map.put("ids", endList);
-				map.put("status", ActivityDiscountStatus.end);
-
-				activityDiscountMapper.updateStatus(map);
-			}
-
+		List<ActivityDiscount> actList = activityDiscountMapper.findNeedUpdateList(currentDate);
+		if(CollectionUtils.isEmpty(actList)){
+			return;
 		}
+		// 状态变更调度，需要将未开始的进行开始，已关闭的进行关闭。
+		ActivityParamBo paramBo = new ActivityParamBo();
+		paramBo.setUpdateTime(currentDate);
+		paramBo.setUpdateUserId(RobotUserUtil.getRobotUser().getId());
+		// 需要设置为进行中的活动Id列表
+		List<String> ingList = Lists.newArrayList();
+		// 需要设置为已结速的活动Id列表
+		List<String> endList = Lists.newArrayList();
+		for(ActivityDiscount act : actList){
+			if(act.getStatus() == ActivityDiscountStatus.ing){
+				ingList.add(act.getId());
+			}else if(act.getStatus() == ActivityDiscountStatus.end){
+				endList.add(act.getId());
+			}
+		}
+		// 更新进行中的活动
+		paramBo.setStatus(ActivityDiscountStatus.ing);
+		paramBo.setActivityIds(ingList);
+		activityDiscountMapper.updateStatus(paramBo);
+		// 更新需要结束的活动
+		paramBo.setStatus(ActivityDiscountStatus.end);
+		paramBo.setActivityIds(endList);
+		activityDiscountMapper.updateStatus(paramBo);
 	}
 
-	@Override
-	public List<ActivityDiscountDto> selectByStoreId(String storeId, Date currentDate) throws ServiceException {
-		return activityDiscountMapper.selectByStoreId(storeId, currentDate);
-	}
-
-	@Override
-	public List<ActivityDiscount> findActivityIndustrys(String storeId) {
-		return activityDiscountMapper.findActivityIndustrys(storeId);
-	}
-
-	@Override
-	public List<ActivityDiscount> findDtoByStoreId(String storeId) throws ServiceException {
-		return activityDiscountMapper.selectDtoByStoreId(storeId);
-	}
-
-	@Override
-	public String getDiscountConditionsId(String discountId) {
-		return activityDiscountMapper.getDiscountConditionsId(discountId);
-	}
-
-	@Override
-	public ActivityDiscountCondition getDiscountConditions(Map<String, String> map) {
-		return activityDiscountMapper.getDiscountConditions(map);
-	}
-
-	@Override
-	public List<ActivityDiscountCondition> selectByStoreReduce(ActivityDiscountStatus status, String storeId) {
-		List<ActivityDiscountCondition> activity = new ArrayList<ActivityDiscountCondition>();
-		activity = activityDiscountMapper.selectByStoreReduce(status, storeId);
-		return activity;
-	}
-
-	@Override
-	public List<ActivityDiscountCondition> selectByStoreDiscount(Map<String, String> map) {
-		List<ActivityDiscountCondition> activity = new ArrayList<ActivityDiscountCondition>();
-		activity = activityDiscountMapper.selectByStoreDiscount(map);
-		return activity;
-	}
-
-	@Override
-	public ActivityDiscountCondition getReduceConditions(Map<String, String> map) {
-		ActivityDiscountCondition condition = new ActivityDiscountCondition();
-		condition = activityDiscountMapper.getReduceConditions(map);
-		return condition;
-	}
-
-	@Override
-	public ActivityDiscount getById(String id) throws ServiceException {
-		return activityDiscountMapper.selectRelaveOrderById(id);
-	}
-
-	@Override
-	public List<ActivityDiscountCondition> selectByStoreReduceOff(ActivityDiscountStatus status, String storeId)
-			throws Exception {
-		return activityDiscountMapper.selectByStoreReduceOff(status, storeId);
-	}
-
-	@Override
-	public List<ActivityDiscount> findDtoByStoreIdForNoCloud(String storeId) throws ServiceException {
-
-		return activityDiscountMapper.selectDtoByStoreIdForNoCloud(storeId);
-	}
-
-	// begin 重构4.1 added by zhangkn
-	/**
-	 * @Description: 查询店铺的满减满折列表 (用户app首页用)
-	 * @param map 查询参数
-	 * @return 满件满折列表
-	 * @author zhangkn
-	 * @date 2016年7月18日
-	 */
-	@Override
-	public List<ActivityDiscount> findActivityDiscountForUserApp(Map<String, Object> map) {
-		return activityDiscountMapper.findActivityDiscountForUserApp(map);
-	}
-	// end 重构4.1 added by zhangkn
-
-	// Begin 重构4.1 add by zengj
-	/**
-	 * 
-	 * @Description: 查询店铺的满减满折活动和条件
-	 * @param params 查询参数
-	 * @return List 
-	 * @author zengj
-	 * @date 2016年7月22日
-	 */
-	public List<Map<String, Object>> findActivityDiscountByStoreId(Map<String, Object> params) {
-		return activityDiscountMapper.findActivityDiscountByStoreId(params);
-	}
-	// End 重构4.1 add by zengj
-
-	// Begin V2.1 added by maojj 2017-02-17
 	@Override
 	public List<Discount> findValidDiscount(FavourParamBO paramBo, FavourFilterStrategy favourFilter) throws Exception {
 		List<Discount> discountList = activityDiscountMapper.findValidDiscount(paramBo);
@@ -748,14 +315,15 @@ public class ActivityDiscountServiceImpl implements ActivityDiscountServiceApi, 
 				// 如果过滤器不接受该优惠，则将该优惠从列表中移除
 				it.remove();
 			}else{
-				discount.setMaxFavourStrategy(genericMaxFavourStrategy.calMaxFavourRule(discount, paramBo.getTotalAmount()));
+				discount.setMaxFavourStrategy(maxFavourStrategy.calMaxFavourRule(discount, paramBo.getTotalAmount()));
 			}
 		}
 		return discountList;
 	}
 
 	@Override
-	public List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo, FavourFilterStrategy favourFilter) throws Exception{
+	public List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo, FavourFilterStrategy favourFilter)
+			throws Exception {
 		List<FullSubtract> fullSubtractList = activityDiscountMapper.findValidFullSubtract(paramBo);
 		if(CollectionUtils.isEmpty(fullSubtractList)){
 			return fullSubtractList;
@@ -769,10 +337,197 @@ public class ActivityDiscountServiceImpl implements ActivityDiscountServiceApi, 
 				// 如果过滤器不接受该优惠，则将该优惠从列表中移除
 				it.remove();
 			}else{
-				fullSubtract.setMaxFavourStrategy(genericMaxFavourStrategy.calMaxFavourRule(fullSubtract, paramBo.getTotalAmount()));
+				fullSubtract.setMaxFavourStrategy(maxFavourStrategy.calMaxFavourRule(fullSubtract, paramBo.getTotalAmount()));
 			}
 		}
 		return fullSubtractList;
 	}
-	// End V2.1 added by maojj 2017-02-17
+
+	@Override
+	public List<Map<String, Object>> findActivityDiscountByStoreId(Map<String, Object> params) {
+		return activityDiscountMapper.findActivityDiscountByStoreId(params);
+	}
+
+	@Override
+	public List<ActivityDiscount> findListByParam(ActivityParamDto paramDto) {
+		if(paramDto.getPageNumber() != null && paramDto.getPageSize() != null){
+			PageHelper.startPage(paramDto.getPageNumber(),paramDto.getPageSize());
+		}
+		return activityDiscountMapper.findListByParam(paramDto);
+	}
+
+	@Override
+	public ReturnInfo batchClose(ActivityParamBo paramBo) {
+		ReturnInfo retInfo = new ReturnInfo();
+		ActivityParamDto paramDto = new ActivityParamDto();
+		paramDto.setActivityIds(paramBo.getActivityIds());
+		// 检查需要关闭的活动状态
+		List<ActivityDiscount> actList = activityDiscountMapper.findListByParam(paramDto);
+		for(ActivityDiscount act : actList){
+			if(act.getStatus() != ActivityDiscountStatus.noStart 
+					&& act.getStatus() != ActivityDiscountStatus.ing){
+				// 活动只能关闭未开始和已进行中的
+				retInfo.setFlag(false);
+				retInfo.setMessage("选中的活动中存在已关闭活动，请重新选择!");
+				return retInfo;
+			}
+		}
+		// 关闭活动
+		activityDiscountMapper.updateStatus(paramBo);
+		return retInfo;
+	}
+
+	@Override
+	public ActivityInfoDto findInfoById(String id,boolean isLoadDetail) throws ServiceException {
+		// 活动基本信息
+		ActivityDiscount activityInfo = activityDiscountMapper.findById(id);
+		// 活动优惠条件信息
+		List<ActivityDiscountCondition> conditionList = activityDiscountConditionMapper.findByActivityId(id);
+		// 活动业务限制信息
+		List<ActivityBusinessRel> relList = activityBusinessRelMapper.findByActivityId(id);
+		// 解析业务限制信息
+		ActLimitRelBuilder limitBuilder = parseRelList(relList,isLoadDetail);
+		ActivityInfoDto actInfoDto = new ActivityInfoDto();
+		actInfoDto.setActivityInfo(activityInfo);
+		actInfoDto.setActivityType(activityInfo.getType().ordinal());
+		actInfoDto.setConditionList(conditionList);
+		if(limitBuilder != null){
+			actInfoDto.setRelDtoList(limitBuilder.retrieveResult());
+			actInfoDto.setLimitRangeIds(limitBuilder.getLimitRangeIds());
+		}
+		return actInfoDto;
+	}
+	
+	/**
+	 * @Description: 解析活动限制关系
+	 * @param relList
+	 * @param isLoadDetail
+	 * @return
+	 * @throws ServiceException   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
+	private  ActLimitRelBuilder parseRelList(List<ActivityBusinessRel> relList,boolean isLoadDetail) throws ServiceException{
+		if(CollectionUtils.isEmpty(relList)){
+			return null;
+		}
+		ActLimitRelBuilder builder = new ActLimitRelBuilder();
+		// 加载当前业务列表
+		builder.loadBusiRelList(relList);
+		if(!isLoadDetail){
+			// 不用加载明细，直接返回
+			return builder;
+		}
+		// 地址列表
+		List<Address> areaList = Lists.newArrayList();
+		// 店铺列表
+		List<StoreInfo> storeInfoList = null;
+		// 分类列表
+		List<GoodsSpuCategory> spuCtgList = null;
+		// 商品列表
+		List<StoreSkuDto> storeSkuList = null;
+		// 遍历具体业务信息
+		for(Map.Entry<ActivityBusinessType, List<String>> entry : builder.getRelIdMap().entrySet()){
+			ActivityBusinessType busiType = entry.getKey();
+			List<String> busiIds = entry.getValue();
+			switch (busiType) {
+				case CITY:
+				case PROVINCE:
+					findAreaList(areaList,busiIds,busiType);
+					break;
+				case STORE:
+					storeInfoList = storeInfoServiceApi.selectByIds(busiIds);
+					postStoreList(storeInfoList);
+					break;
+				case SKU:
+					storeSkuList = findStoreSkuList(busiIds);
+					break;
+				case SKU_CATEGORY:
+					spuCtgList = goodsSpuCategoryServiceApi.selectByIds(busiIds);
+					break;
+
+				default:
+					break;
+			}
+		}
+		builder.loadAreaList(areaList);
+		builder.loadStoreList(storeInfoList);
+		builder.loadSpuCtgList(spuCtgList);
+		builder.loadStoreSkuList(storeSkuList);
+		return builder;
+	}
+	
+	/**
+	 * @Description: 查询地区列表
+	 * @param areaList
+	 * @param areaIds   
+	 * @author maojj
+	 * @date 2017年4月20日
+	 */
+	private void findAreaList(List<Address> areaList,List<String> areaIds,ActivityBusinessType busiType){
+		Address addr = null;
+		for(String areaId : areaIds){
+			addr = addressApi.getAddressById(Long.parseLong(areaId));
+			if(busiType == ActivityBusinessType.PROVINCE){
+				areaList.addAll(addressApi.getChildrenList(Long.parseLong(areaId)));
+			}
+			areaList.add(addr);
+		}
+	}
+	
+	/**
+	 * @Description: 查询店铺商品列表
+	 * @param storeSkuIds
+	 * @return   
+	 * @author maojj
+	 * @date 2017年4月20日
+	 */
+	private List<StoreSkuDto> findStoreSkuList(List<String> storeSkuIds){
+		StoreSkuParamDto paramDto = new StoreSkuParamDto();
+		paramDto.setPageNumber(1);
+		paramDto.setPageSize(storeSkuIds.size());
+		paramDto.setStoreSkuIds(storeSkuIds);
+		PageUtils<StoreSkuDto> storeSkuPage = goodsStoreSkuServiceApi.findStoreSkuList(paramDto);
+		return storeSkuPage.getList();
+	}
+	
+	/**
+	 * @Description: 后置处理店铺信息
+	 * @param storeInfoList   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
+	private void postStoreList(List<StoreInfo> storeInfoList){
+		if(CollectionUtils.isEmpty(storeInfoList)){
+			return;
+		}
+		for(StoreInfo storeInfo : storeInfoList){
+			if(StringUtils.isNotEmpty(storeInfo.getCityId())){
+				Address address = addressApi.getAddressById(Long.parseLong(storeInfo.getCityId()));
+				storeInfo.setAddress(address.getName());
+			}
+		}
+	}
+
+	@Override
+	public List<ActivityInfoDto> findByStore(ActivityParamDto paramDto) throws Exception {
+		List<String> activityIds = activityDiscountMapper.findByStore(paramDto);
+		List<ActivityInfoDto> actInfoList = Lists.newArrayList();
+		ActivityInfoDto actInfo = null;
+		for(String activityId : activityIds){
+			actInfo = this.findInfoById(activityId,false);
+			if(actInfo != null){
+				actInfoList.add(actInfo);
+			}
+		}
+		return actInfoList;
+	}
+
+	@Override
+	public List<? extends Favour> findValidFavour(FavourParamBO paramBo, FavourFilterStrategy favourFilter)
+			throws Exception {
+		List<? extends Favour> favourList = Lists.newArrayList();
+		
+		return null;
+	}
 }

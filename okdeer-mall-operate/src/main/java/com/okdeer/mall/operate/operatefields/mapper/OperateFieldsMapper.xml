@@ -25,6 +25,7 @@
 	        <result column="field_id" property="fieldId" jdbcType="VARCHAR" />
 	        <result column="cofc_type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsContentType"/>
 	        <result column="image_url" property="imageUrl" jdbcType="VARCHAR" />
+	        <result column="title" property="title" jdbcType="VARCHAR" />
 	        <result column="link_url" property="linkUrl" jdbcType="VARCHAR" />
 	        <result column="business_type" property="businessType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsBusinessType"/>
 	        <result column="cofc_business_id" property="businessId" jdbcType="VARCHAR" />
@@ -217,7 +218,7 @@
 	
 	<select id="findListWithContent" parameterType="com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto" resultMap="OperateFieldsBoMap">
 		SELECT 
-		cofc.id as cofc_id, cofc.field_id, cofc.type as cofc_type, cofc.image_url, cofc.link_url, cofc.business_type, cofc.business_id as cofc_business_id, cofc.sort_type, cofc.sort as cofc_sort,
+		cofc.id as cofc_id, cofc.field_id, cofc.type as cofc_type, cofc.image_url,cofc.title,cofc.link_url, cofc.business_type, cofc.business_id as cofc_business_id, cofc.sort_type, cofc.sort as cofc_sort,
         cof.id, cof.type, cof.business_id, cof.name, cof.template, cof.point_type, cof.point_content, cof.head_pic, cof.sort, 
         cof.enabled, cof.create_time, cof.update_time, cof.create_user_id, cof.update_user_id, cof.disabled
         FROM column_operate_fields_content cofc LEFT JOIN column_operate_fields cof ON  cofc.field_id = cof.id
@@ -257,7 +258,64 @@
 		<if test="type == -1">
 			ORDER BY sort DESC
 		</if>
-		LIMMIT 1
+		LIMIT 1
 	</select>
+	
+	<select id="getGoodsRalationFields" resultMap="BaseResultMap">
+		select distinct f.id, f.type, f.business_id, f.name, f.template, f.point_type, f.point_content,
+        f.head_pic, f.sort, f.enabled, f.create_time, f.update_time, f.create_user_id, f.update_user_id, f.disabled
+		from column_operate_fields f
+		left join column_operate_fields_content c on f.id=c.field_id
+		where f.type = 2  <!-- 店铺运营栏位 -->
+			and f.point_type = 0 <!-- 指向商品类型 -->
+			and f.point_content = 0 <!-- 指向内容为商品 -->
+			and f.business_id = #{storeId} <!--  -->
+			and c.business_id = #{storeSkuId} <!--  -->
+		order by f.sort desc
+	</select>
+	
+	<!-- add by mengsj begin 初始化店铺运营栏位 -->
+	<insert id="initOperationField" parameterType="string">
+		INSERT INTO column_operate_fields (
+			id,
+			type,
+			business_id,
+			name,
+			template,
+			point_type,
+			point_content,
+			head_pic,
+			sort,
+			enabled,
+			create_time,
+			update_time,
+			create_user_id,
+			update_user_id,
+			disabled
+		) SELECT
+			REPLACE (UUID(), '-', '') AS id,
+			2 AS type,
+			bb.id AS business_id,
+			aa.name,
+			aa.template,
+			aa.point_type,
+			aa.point_content,
+			aa.head_pic,
+			aa.sort,
+			aa.enabled,
+			aa.create_time,
+			aa.update_time,
+			aa.create_user_id,
+			aa.update_user_id,
+			aa.disabled
+		FROM
+			column_operate_fields aa
+		INNER JOIN store_info bb ON (
+			bb.type = 2
+			AND aa.type = 1
+			AND aa.business_id = '0'
+		) WHERE bb.id = #{storeId,jdbcType=VARCHAR}
+	</insert>
+	<!-- add by mengsj begin 初始化店铺运营栏位 -->
 	
 </mapper>
