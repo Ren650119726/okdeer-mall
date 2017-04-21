@@ -161,7 +161,7 @@
         <if test="name != null" >
           and name = #{name,jdbcType=VARCHAR}
        </if>
-       order by create_time
+       order by create_time DESC
     </select>
      <select id="findActivityListByStatus" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvert" >
         select 
@@ -171,7 +171,7 @@
         <foreach collection="statusList" open="(" close=")" index="index" item="item"  separator=",">
             #{item}
         </foreach>
-        order by create_time
+        order by create_time DESC
     </select>
     <select id="findCountByName" resultType="java.lang.Integer" parameterType="java.lang.String" >
         select count(*) 
