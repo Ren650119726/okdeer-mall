@@ -175,13 +175,13 @@
         LEFT JOIN activity_advert ad on ad.id = file.activity_advert_id
         where 1=1 
         <if test="title != null and title != ''" >
-           AND title = #{title,jdbcType=VARCHAR}
+           AND file.title LIKE CONCAT('%',#{title,jdbcType=VARCHAR},'%')
         </if>
-        <if test="null != createTimeStart and createTimeStart != ''">
-          AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+        <if test="null != createTimeStart">
+          AND file.create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
         </if>
-        <if test="null != createTimeEnd and createTimeEnd != ''">
-          AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+        <if test="null != createTimeEnd">
+          AND file.create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
         </if>
         order by file.create_time DESC
     </select>
