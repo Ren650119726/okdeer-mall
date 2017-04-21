@@ -6068,6 +6068,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 服务店订单 ，活动范围判定：物流地址
 			map.put("provinceId", storeInfo.getProvinceId());
 			map.put("cityId", storeInfo.getCityId());
+			//add by mengsj begin 增加店铺id
+			map.put("storeId", storeInfo.getId());
+			//add by mengsj end 增加店铺id
 		}
 		// end 涂志定
 		// 订单实付金额
