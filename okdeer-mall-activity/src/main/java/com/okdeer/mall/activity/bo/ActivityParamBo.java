@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
+import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 
 /**
  * ClassName: ActivityParamBo 
@@ -24,6 +25,11 @@ public class ActivityParamBo {
 	private ActivityDiscountStatus status;
 
 	/**
+	 * 活动类型
+	 */
+	private ActivityDiscountType type;
+
+	/**
 	 * 更新时间
 	 */
 	private Date updateTime;
@@ -37,6 +43,26 @@ public class ActivityParamBo {
 	 * 活动Id列表
 	 */
 	private List<String> activityIds;
+
+	/**
+	 * 排除的活动ID
+	 */
+	private String excludedId;
+
+	/**
+	 * 限制范围ID列表
+	 */
+	private List<String> limitRangeIds;
+
+	/**
+	 * 活动开始时间
+	 */
+	private Date startTime;
+
+	/**
+	 * 活动结束时间
+	 */
+	private Date endTime;
 
 	public ActivityDiscountStatus getStatus() {
 		return status;
@@ -68,6 +94,46 @@ public class ActivityParamBo {
 
 	public void setActivityIds(List<String> activityIds) {
 		this.activityIds = activityIds;
+	}
+
+	public String getExcludedId() {
+		return excludedId;
+	}
+
+	public void setExcludedId(String excludedId) {
+		this.excludedId = excludedId;
+	}
+
+	public List<String> getLimitRangeIds() {
+		return limitRangeIds;
+	}
+
+	public void setLimitRangeIds(List<String> limitRangeIds) {
+		this.limitRangeIds = limitRangeIds;
+	}
+
+	public Date getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(Date startTime) {
+		this.startTime = startTime;
+	}
+
+	public Date getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(Date endTime) {
+		this.endTime = endTime;
+	}
+
+	public ActivityDiscountType getType() {
+		return type;
+	}
+
+	public void setType(ActivityDiscountType type) {
+		this.type = type;
 	}
 
 }
