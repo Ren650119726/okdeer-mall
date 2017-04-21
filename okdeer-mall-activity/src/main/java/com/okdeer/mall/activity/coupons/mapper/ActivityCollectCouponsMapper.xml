@@ -696,7 +696,10 @@
 		FROM activity_collect_coupons coll 
 		LEFT JOIN activity_coupons coupons ON coll.id= coupons.activity_id
 		LEFT JOIN activity_collect_order_type collOrder ON coll.`id` = collOrder.`collect_coupons_id`
-		LEFT JOIN activity_collect_area area1 ON coll.`id` = area1.`collect_coupons_id` 
+		LEFT JOIN activity_collect_area area1 ON coll.`id` = area1.`collect_coupons_id`
+		<if test="storeId != null && storeId != ''"> 
+		LEFT JOIN activity_collect_store store ON coll.id = store.collect_coupons_id
+		</if>
 		WHERE  1 = 1
 		<![CDATA[ AND (coll.limit_amount is null OR coll.limit_amount = 0 OR coll.limit_amount <= #{limitAmout} )]]>
 		AND coll.`status` = 1 
@@ -704,7 +707,7 @@
 		AND coll.`type` = 4
 		AND collOrder.`order_type` = #{orderType}   
 		AND (coll.`area_type` = 0 OR (area1.type = 1 AND area1.`area_id`=#{provinceId}) OR 
-		(area1.type = 0 AND area1.`area_id`=#{cityId}));
+		(area1.type = 0 AND area1.`area_id`=#{cityId}) <if test="storeId != null and storeId != ''">OR (coll.area_type = 2 AND store.store_id =#{storeId})</if>);
 		
 	</select>
 	
