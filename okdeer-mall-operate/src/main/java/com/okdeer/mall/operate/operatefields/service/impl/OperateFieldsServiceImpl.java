@@ -136,7 +136,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
 		if (compareOperateFields == null) {
 			throw new Exception("没有可以移动的数据");
 		}
-		if (operateFields.getSort() == compareOperateFields.getSort()) {
+		if (sort == compareOperateFields.getSort().intValue()) {
 			if (isUp) {
 				operateFields.setSort(sort + 1);
 			} else {
