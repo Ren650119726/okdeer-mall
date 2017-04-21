@@ -11,6 +11,7 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
@@ -81,11 +82,14 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 		// 确定首单用户专享代金券是否能使用
 		boolean isFirstOrderUser = sysBuyerFirstOrderRecordService.isExistsOrderRecord(paramBo.getUserId())?false:true;
 		// 获取用户有效的代金券
-		List<Coupons> couponList = getCouponsList(paramBo, isFirstOrderUser);
-		// 获取用户有效的折扣
-		List<Discount> discountList = getDiscountList(paramBo, isFirstOrderUser);
-		// 获取用户有效的满减
-		List<FullSubtract> fullSubtractList = getFullSubtractList(paramBo, isFirstOrderUser);
+//		List<Coupons> couponList = getCouponsList(paramBo, isFirstOrderUser);
+		List<Coupons> couponList = Lists.newArrayList();
+//		// 获取用户有效的折扣
+//		List<Discount> discountList = getDiscountList(paramBo, isFirstOrderUser);
+		List<Discount> discountList = Lists.newArrayList();
+//		// 获取用户有效的满减
+//		List<FullSubtract> fullSubtractList = getFullSubtractList(paramBo, isFirstOrderUser);
+		List<FullSubtract> fullSubtractList = Lists.newArrayList();
 		// 获取线上支付最大优惠
 		Favour maxFavourOnline = getMaxFavour(couponList,discountList,fullSubtractList,true);
 		// 获取线下支付最大优惠
