@@ -217,19 +217,19 @@
 		</if>
 		<if test="sortType == 1">
 			<if test="sort != null">
-				and g.sort gt;= #{sort}
+				and g.sort &gt;= #{sort}
 			</if>
 			order by g.sort DESC
 		</if>
 		<if test="sortType == 2">
 			<if test="sort != null">
-				and g.sale_price gt;= #{sort}
+				and g.sale_price &gt;= #{sort}
 			</if>
 			order by g.sale_price ASC
 		</if>
 		<if test="sortType == 3">
 			<if test="sort != null">
-				and g.sort gt;= #{sort}
+				and g.sort &gt;= #{sort}
 			</if>
 			order by g.sort ASC
 		</if>
@@ -261,7 +261,7 @@
 		left join store_branches sb on si.id=sb.id
 		left join goods_store_sku_picture p on p.store_sku_id=gs.id and p.type = 1 
 		where gs.store_id = #{storeId}
-			and gs.id=#{goodsId}
+			and gs.id = #{goodsId}
 			and gs.disabled=0 
 	</select>
 	
@@ -290,12 +290,18 @@
 		left join goods_store_sku_picture p on p.store_sku_id=gs.id and p.type = 1 
 		left join store_info si on gs.store_id = si.id
 		left join store_branches sb on si.id=sb.id
-		where gsc.id in
-		<foreach collection="categoryIds" index="index" item="item" open="(" close=")" separator=",">
-			#{item}
-		</foreach>
-		and gs.store_id = #{storeId}
-		and gs.disabled=0 
+		where gs.disabled=0 and gs.store_id = #{storeId}
+		<choose>  
+            <when test="categoryIds != null and categoryIds.size > 0 ">  
+                and gsc.id in
+				<foreach collection="categoryIds" index="index" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+            </when> 
+            <otherwise>  
+               and gsc.id = ''
+            </otherwise>
+        </choose>
 		<!-- 0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高  -->
 		<if test="sortType == 0">
 			<if test="sort != null">
@@ -305,19 +311,19 @@
 		</if>
 		<if test="sortType == 1">
 			<if test="sort != null">
-				and gs.sort gt;= #{sort}
+				and gs.sort &gt;= #{sort}
 			</if>
 			order by gs.sort DESC
 		</if>
 		<if test="sortType == 2">
 			<if test="sort != null">
-				and gs.online_price gt;= #{sort}
+				and gs.online_price &gt;= #{sort}
 			</if>
 			order by gs.online_price ASC
 		</if>
 		<if test="sortType == 3">
 			<if test="sort != null">
-				and gs.sort gt;= #{sort}
+				and gs.sort &gt;= #{sort}
 			</if>
 			order by gs.sort ASC
 		</if>
@@ -362,19 +368,19 @@
 		</if>
 		<if test="sortType == 1">
 			<if test="sort != null">
-				and gs.sort gt;= #{sort}
+				and gs.sort &gt;= #{sort}
 			</if>
 			order by gs.sort DESC
 		</if>
 		<if test="sortType == 2">
 			<if test="sort != null">
-				and gs.online_price gt;= #{sort}
+				and gs.online_price &gt;= #{sort}
 			</if>
 			order by gs.online_price ASC
 		</if>
 		<if test="sortType == 3">
 			<if test="sort != null">
-				and gs.sort gt;= #{sort}
+				and gs.sort &gt;= #{sort}
 			</if>
 			order by gs.sort ASC
 		</if>

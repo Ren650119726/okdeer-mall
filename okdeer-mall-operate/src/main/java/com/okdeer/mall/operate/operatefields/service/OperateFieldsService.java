@@ -140,4 +140,7 @@ public interface OperateFieldsService extends IBaseService {
 	 */
 	void initOperationField(String storeId) throws Exception;
 
+	
+	List<OperateFieldContentDto> getGoodsOfStoreNavigateFields(String storeId, String navigateId, 
+            int template, int sort, int sortType) throws Exception;
 }

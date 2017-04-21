@@ -307,10 +307,11 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                 operateField = new OperateFieldDto();
                 operateField.setFieldInfo(fieldInfo);
                 operateField.setContentList(contentDtos);
+                
+                //将运营栏位信息缓存进Redis
+                redisTemplateWrapper.zAdd(STORE_OPERATE_FIELD_KEY + storeId, operateField, fieldInfo.getSort());  
             }
             
-            //将运营栏位信息缓存进Redis
-            redisTemplateWrapper.zAdd(STORE_OPERATE_FIELD_KEY + storeId, operateField, fieldInfo.getSort());  
         }
     }    
     
@@ -362,10 +363,10 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                 operateField = new OperateFieldDto();
                 operateField.setFieldInfo(fieldInfo);
                 operateField.setContentList(contentDtos);
-            }
-            
-            //将运营栏位信息缓存进Redis
-            redisTemplateWrapper.zAdd(CITY_OPERATE_FIELD_KEY + cityId, operateField, fieldInfo.getSort());
+                
+                //将运营栏位信息缓存进Redis
+                redisTemplateWrapper.zAdd(CITY_OPERATE_FIELD_KEY + cityId, operateField, fieldInfo.getSort());
+            } 
         }
     }
     
@@ -387,14 +388,16 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         }
     }
     
-    private List<OperateFieldContentDto> getGoodsOfStoreNavigateFields(String storeId, String navigateId, 
+    public List<OperateFieldContentDto> getGoodsOfStoreNavigateFields(String storeId, String navigateId, 
             int template, int sort, int sortType) throws Exception {
         //查出导航分类的二级分类和商品三级分类之间的关系
         List<GoodsCategoryAssociation> associations = this.navigateCategoryServiceApi.getGoodsCategoryAssociation(navigateId);
         
         List<String> categoryIds = new ArrayList<>();
         associations.forEach(association -> {
-            categoryIds.add(association.getSpuCategoryId());
+            if(association != null) {
+                categoryIds.add(association.getSpuCategoryId());
+            }
         });
         
         

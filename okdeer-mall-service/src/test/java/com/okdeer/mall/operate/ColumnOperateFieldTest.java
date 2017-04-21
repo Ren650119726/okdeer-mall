@@ -58,4 +58,12 @@ public class ColumnOperateFieldTest {
         System.out.println(contentDto.getName());
     }
     
+    @Test
+    public void testInitStoreOperateFieldData() throws Exception {
+        //开心小卖部
+        String storeId = "5592971b276511e6aaff00163e010eb1";
+        
+        this.operateFieldsService.initStoreOperateFieldData(storeId);
+    }
+    
 }
