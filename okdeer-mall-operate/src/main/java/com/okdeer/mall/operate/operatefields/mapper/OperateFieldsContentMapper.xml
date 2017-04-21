@@ -435,7 +435,7 @@
 				WHERE
 					field_id = bb.id
 			)
-		) WHERE bb.business_id = #{storeId,jdbcType=VARCHAR}
+		) WHERE bb.business_id = #{storeId,jdbcType=VARCHAR} GROUP BY bb.id
 	</insert>
 	<!-- add by mengsj end 初始化店铺运营栏位内容 -->
 	
