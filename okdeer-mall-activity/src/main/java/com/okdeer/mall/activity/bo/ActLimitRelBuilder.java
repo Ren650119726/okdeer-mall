@@ -56,7 +56,10 @@ public class ActLimitRelBuilder {
 	 */
 	private Map<String,StoreSkuDto> storeSkuMap;
 	
-	private String areaIds;
+	/**
+	 * 限制范围Id列表
+	 */
+	private StringBuilder limitRangeBuilder;
 	
 	public ActLimitRelBuilder(){
 		this.relIdMap = Maps.newHashMap();
@@ -64,7 +67,7 @@ public class ActLimitRelBuilder {
 		this.storeInfoMap = Maps.newHashMap();
 		this.spuCtgMap = Maps.newHashMap();
 		this.storeSkuMap = Maps.newHashMap();
-		this.areaIds = "";
+		this.limitRangeBuilder = new StringBuilder();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -109,7 +112,7 @@ public class ActLimitRelBuilder {
 		}
 		for(Address addr : areaList){
 			this.addressMap.put(String.valueOf(addr.getId()), addr);
-			this.areaIds += addr.getId();
+			this.limitRangeBuilder.append(addr.getId()).append(",");
 		}
 	}
 	
@@ -125,6 +128,9 @@ public class ActLimitRelBuilder {
 		}
 		for(StoreInfo storeInfo : storeList){
 			this.storeInfoMap.put(storeInfo.getId(), storeInfo);
+			this.limitRangeBuilder.append(storeInfo.getProvinceId())
+					.append(",").append(storeInfo.getCityId())
+					.append(",").append(storeInfo.getId()).append(",");
 		}
 	}
 	
@@ -181,8 +187,7 @@ public class ActLimitRelBuilder {
 		return concreteInfo;
 	}
 
-	
-	public String getAreaIds() {
-		return areaIds;
+	public String getLimitRangeIds() {
+		return this.limitRangeBuilder.toString();
 	}
 }

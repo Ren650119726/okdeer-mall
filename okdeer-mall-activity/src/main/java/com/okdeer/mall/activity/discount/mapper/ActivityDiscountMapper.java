@@ -17,7 +17,6 @@ import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.bo.ActivityParamBo;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
-import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.order.vo.Discount;
 import com.okdeer.mall.order.vo.FullSubtract;
@@ -98,4 +97,13 @@ public interface ActivityDiscountMapper extends IBaseMapper {
 	 * @date 2017年4月20日
 	 */
 	List<String> findByStore(ActivityParamDto paramDto);
+	
+	/**
+	 * @Description: 统计存在冲突的记录。即同一时间、同一地区、同一店铺只能存在一个满减、满折、零花钱活动
+	 * @param paramDto
+	 * @return   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
+	int countConflict(ActivityParamBo paramBo);
 }
