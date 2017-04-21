@@ -697,7 +697,7 @@
 		LEFT JOIN activity_coupons coupons ON coll.id= coupons.activity_id
 		LEFT JOIN activity_collect_order_type collOrder ON coll.`id` = collOrder.`collect_coupons_id`
 		LEFT JOIN activity_collect_area area1 ON coll.`id` = area1.`collect_coupons_id`
-		<if test="storeId != null && storeId != ''"> 
+		<if test="storeId != null and storeId != ''"> 
 		LEFT JOIN activity_collect_store store ON coll.id = store.collect_coupons_id
 		</if>
 		WHERE  1 = 1
