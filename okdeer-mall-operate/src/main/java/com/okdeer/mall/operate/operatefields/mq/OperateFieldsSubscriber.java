@@ -9,12 +9,13 @@ package com.okdeer.mall.operate.operatefields.mq;
 
 import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADDEDIT_LOWPRICE_ACTIVITY;
 import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADDEDIT_ONSALE_ACTIVITY;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADD_GOODS;
+import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADDEDIT_OPERATE_FIELD;
 import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_CLOSED_LOWPRICE_ACTIVITY;
 import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_CLOSED_ONSALE_ACTIVITY;
 import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_EDIT_GOODS;
 import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_GOODS_OFFSHELF;
 import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_GOODS_ONSHELF;
+import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_RANK_OPERATE_FIELD;
 import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TOPIC_OPERATE_FIELD;
 
 import java.util.List;
@@ -44,7 +45,7 @@ import com.okdeer.mall.operate.operatefields.mq.dto.GoodsChangedMsgDto;
  *     V2.3.0          2017年4月17日                              zhaoqc             新建
  *     
  */
-//@Service
+@Service
 public class OperateFieldsSubscriber {
     /**
      * 日志管理类
@@ -52,31 +53,59 @@ public class OperateFieldsSubscriber {
     private static final Logger logger = LoggerFactory.getLogger(OperateFieldsSubscriber.class);
     
     /**
-     * 
+     * reids接入
      */
     @Autowired
     private IRedisTemplateWrapper<String, List<OperateFieldDto>> redisTemplateWrapper;
     
     /**
-     * 当新增商品时的消息订阅
+     * 运营栏位消息订阅
      * 
      * @param enMessage
      * @return
      * @author zhaoqc
      * @date 2017-4-17
      */
-    @RocketMQListener(topic = TOPIC_OPERATE_FIELD, tag = TAG_ADD_GOODS)
-    public ConsumeConcurrentlyStatus addGoodsMsg(MQMessage enMessage) {
-        GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
-        logger.info("新增商品时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
+    @RocketMQListener(topic = TOPIC_OPERATE_FIELD, tag = "*")
+    public ConsumeConcurrentlyStatus subscribeMessage(MQMessage enMessage) {
+        String tags =  enMessage.getTags();
+        logger.info("APP首页运营栏位订阅消息TAG：{}", tags);
         try {
-            
-            
-            
-            
-            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+            ConsumeConcurrentlyStatus status = ConsumeConcurrentlyStatus.RECONSUME_LATER;
+            switch (tags) {
+            case TAG_EDIT_GOODS:
+                status = editGoodsMsg(enMessage);
+                break;
+            case TAG_GOODS_ONSHELF:
+                status = goodsOnShelfMsg(enMessage);
+                break;
+            case TAG_GOODS_OFFSHELF:
+                status = goodsOffShelfMsg(enMessage);
+                break;
+            case TAG_ADDEDIT_ONSALE_ACTIVITY:
+                status = onsaleActivityMsg(enMessage);
+                break;
+            case TAG_CLOSED_ONSALE_ACTIVITY:
+                status = closeOnsaleActivityMsg(enMessage);
+                break;
+            case TAG_ADDEDIT_LOWPRICE_ACTIVITY:
+                status = lowPriceActivityMsg(enMessage);
+                break;
+            case TAG_CLOSED_LOWPRICE_ACTIVITY:
+                status = closeLowPriceActivityMsg(enMessage);
+                break;
+            case TAG_ADDEDIT_OPERATE_FIELD:
+                status = addEditOperateField(enMessage);
+              break;
+            case TAG_RANK_OPERATE_FIELD:
+                status = rankOperateField(enMessage);
+              break;
+            default:
+                break;
+            }
+            return status;
         } catch (Exception e) {
-            logger.error("新增商品时，消息处理失败：{}", JsonMapper.nonEmptyMapper().toJson(msgDto), e);
+            logger.error("新增商品时，消息处理失败：{}", JsonMapper.nonEmptyMapper().toJson(enMessage), e);
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
         }
     }
@@ -89,13 +118,12 @@ public class OperateFieldsSubscriber {
      * @author zhaoqc
      * @date 2017-4-17
      */
-    @RocketMQListener(topic = TOPIC_OPERATE_FIELD, tag = TAG_EDIT_GOODS)
     public ConsumeConcurrentlyStatus editGoodsMsg(MQMessage enMessage) {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("编辑商品时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
         try {
             
-            
+           
             
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
@@ -113,7 +141,6 @@ public class OperateFieldsSubscriber {
      * @author zhaoqc
      * @date 2017-4-17
      */
-    @RocketMQListener(topic = TOPIC_OPERATE_FIELD, tag = TAG_GOODS_ONSHELF)
     public ConsumeConcurrentlyStatus goodsOnShelfMsg(MQMessage enMessage) {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("商品上架时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
@@ -136,7 +163,6 @@ public class OperateFieldsSubscriber {
      * @author zhaoqc
      * @date 2017-4-17
      */
-    @RocketMQListener(topic = TOPIC_OPERATE_FIELD, tag = TAG_GOODS_OFFSHELF)
     public ConsumeConcurrentlyStatus goodsOffShelfMsg(MQMessage enMessage) {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("商品下架时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
@@ -159,7 +185,6 @@ public class OperateFieldsSubscriber {
      * @author zhaoqc
      * @date 2017-4-17
      */
-    @RocketMQListener(topic = TOPIC_OPERATE_FIELD, tag = TAG_ADDEDIT_ONSALE_ACTIVITY)
     public ConsumeConcurrentlyStatus onsaleActivityMsg(MQMessage enMessage) {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("新增、编辑商品特惠活动时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
@@ -182,7 +207,6 @@ public class OperateFieldsSubscriber {
      * @author zhaoqc
      * @date 2017-4-17
      */
-    @RocketMQListener(topic = TOPIC_OPERATE_FIELD, tag = TAG_CLOSED_ONSALE_ACTIVITY)
     public ConsumeConcurrentlyStatus closeOnsaleActivityMsg(MQMessage enMessage) {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("关闭商品特惠活动时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
@@ -205,7 +229,6 @@ public class OperateFieldsSubscriber {
      * @author zhaoqc
      * @date 2017-4-17
      */
-    @RocketMQListener(topic = TOPIC_OPERATE_FIELD, tag = TAG_ADDEDIT_LOWPRICE_ACTIVITY)
     public ConsumeConcurrentlyStatus lowPriceActivityMsg(MQMessage enMessage) {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("新增编辑低价活动时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
@@ -228,7 +251,6 @@ public class OperateFieldsSubscriber {
      * @author zhaoqc
      * @date 2017-4-17
      */
-    @RocketMQListener(topic = TOPIC_OPERATE_FIELD, tag = TAG_CLOSED_LOWPRICE_ACTIVITY)
     public ConsumeConcurrentlyStatus closeLowPriceActivityMsg(MQMessage enMessage) {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("关闭低价活动时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
@@ -242,5 +264,49 @@ public class OperateFieldsSubscriber {
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
         }
     }   
+    
+    /**
+     * 运营栏位新增编辑时消息订阅
+     * 
+     * @param enMessage
+     * @return
+     * @author zhaoqc
+     * @date 2017-4-21
+     */
+    public ConsumeConcurrentlyStatus addEditOperateField(MQMessage enMessage) {
+        GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
+        logger.info("新增编辑运营栏位时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto)); 
+        try {
+            
+            
+            
+            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+        } catch (Exception e) {
+            logger.error("新增编辑运营栏位时，消息处理失败：{}", JsonMapper.nonEmptyMapper().toJson(msgDto), e);
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+        }
+    }
+    
+    /**
+     * 运营栏位位置上移下移时消息订阅
+     * 
+     * @param enMessage
+     * @return
+     * @author zhaoqc
+     * @date 2017-4-21
+     */
+    public ConsumeConcurrentlyStatus rankOperateField(MQMessage enMessage) {
+        GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
+        logger.info("运营栏位排序变化时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
+        try {
+            
+            
+            
+            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+        } catch (Exception e) {
+            logger.error("运营栏位排序变化时，消息处理失败：{}", JsonMapper.nonEmptyMapper().toJson(msgDto), e);
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+        }
+    }
     
 }
