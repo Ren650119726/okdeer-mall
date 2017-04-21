@@ -748,7 +748,8 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         // 2:商家APP,3POS机
         pushMsgVo.setAppType(2);
         pushMsgVo.setIsUseTemplate(0);
-        pushMsgVo.setMsgType(1);
+        //pushMsgVo.setMsgType(0);
+		pushMsgVo.setMsgType(MsgConstant.MsgType.THROUGH);
         // 业务消息标识
         String msgTypeCustom = null;
        
