@@ -229,7 +229,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
      * @date 2017-4-18
      */
     @Override
-    public void initStoreOperateFieldData(String storeId) throws Exception {
+    public synchronized void initStoreOperateFieldData(String storeId) throws Exception {
         OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
         queryParamDto.setType(OperateFieldsType.STORE);
         queryParamDto.setBusinessId(storeId);
@@ -324,7 +324,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
      * @date 2017-4-18
      */
     @Override
-    public void initCityOperateFieldData(String cityId) throws Exception {
+    public synchronized void initCityOperateFieldData(String cityId) throws Exception {
         OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
         queryParamDto.setType(OperateFieldsType.CITY);
         queryParamDto.setBusinessId(cityId);

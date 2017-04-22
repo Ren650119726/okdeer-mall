@@ -24,11 +24,6 @@ public final class OperateFielMQConstants {
      * 主题topic
      */
     public static final String TOPIC_OPERATE_FIELD = "topic_operate_field"; 
-
-    /**
-     * tag 采购商品
-     */
-    public static final String TAG_ADD_GOODS = "tag_add_goods";
     
     /**
      * tag 商品编辑
@@ -64,6 +59,16 @@ public final class OperateFielMQConstants {
      * 关闭 低价活动
      */
     public static final String TAG_CLOSED_LOWPRICE_ACTIVITY = "tag_closed_lowprice_activity";
+    
+    /**
+     * 新增修改运营栏位
+     */
+    public static final String TAG_ADDEDIT_OPERATE_FIELD = "tag_addedit_operate_field";
+    
+    /**
+     * 运营栏位排序
+     */
+    public static final String TAG_RANK_OPERATE_FIELD = "tag_rank_operate_field";
     
     
     
