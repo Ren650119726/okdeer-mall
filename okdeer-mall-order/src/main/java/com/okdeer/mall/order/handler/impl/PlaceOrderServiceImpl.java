@@ -330,6 +330,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		discountRecord.setStoreId(req.getStoreId());
 		discountRecord.setOrderId(orderId);
 		discountRecord.setOrderTime(new Date());
+		discountRecord.setOrderDisabled(Disabled.valid);
 
 		if (activityType == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
 			// 满减活动
@@ -339,7 +340,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			discountRecord.setDiscountType(ActivityDiscountType.discount);
 		}
 
-		activityDiscountRecordMapper.insertRecord(discountRecord);
+		activityDiscountRecordMapper.add(discountRecord);
 	}
 
 	/**

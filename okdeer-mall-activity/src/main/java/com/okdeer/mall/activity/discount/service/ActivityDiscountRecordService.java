@@ -1,6 +1,8 @@
 package com.okdeer.mall.activity.discount.service;
 
-import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
+import org.apache.ibatis.annotations.Param;
+
+import com.okdeer.base.service.IBaseService;
 
 /**
  * @DESC: 
@@ -10,14 +12,23 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
  * @copyright ©2005-2020 yschome.com Inc. All rights reserved
  * 
  */
-public interface ActivityDiscountRecordService{
+public interface ActivityDiscountRecordService extends IBaseService{
 	
 	/**
-	 * 添加活动使用记录 </p>
-	 * 
-	 * @author yangq
-	 * @param record
+	 * @Description: 统计用户参与活动的总次数
+	 * @param userId
+	 * @param activityId
+	 * @return   
+	 * @author maojj
+	 * @date 2017年4月21日
 	 */
-	void insertRecord(ActivityDiscountRecord record)throws Exception;
+	int countTotalFreq(@Param("userId")String userId,@Param("activityId")String activityId);
 	
+	/**
+	 * @Description: 根据订单删除用户使用活动记录
+	 * @param record   
+	 * @author maojj
+	 * @date 2017年4月22日
+	 */
+	void deleteByOrderId(String orderId);
 }

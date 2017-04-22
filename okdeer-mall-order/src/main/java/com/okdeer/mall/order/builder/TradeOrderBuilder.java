@@ -618,6 +618,9 @@ public class TradeOrderBuilder {
 			// 计算订单项优惠金额
 			BigDecimal favourItem = BigDecimal.valueOf(0.0);
 			if (paramDto.getActivityType() != ActivityTypeEnum.NO_ACTIVITY) {
+				if(!parserBo.getHaveFavourGoodsMap().containsKey(skuBo.getId())){
+					favourItem = BigDecimal.valueOf(0.0);
+				}
 				if (index++ < itemSize - 1) {
 					favourItem = totalAmountOfItem.multiply(totalFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
 					if (favourItem.compareTo(totalAmountOfItem) == 1) {

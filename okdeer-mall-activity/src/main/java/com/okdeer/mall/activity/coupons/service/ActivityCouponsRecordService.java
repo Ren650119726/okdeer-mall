@@ -13,7 +13,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
-import com.okdeer.mall.activity.service.FavourFilterStrategy;
+import com.okdeer.mall.activity.service.CouponsFilterStrategy;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.order.vo.Coupons;
 
@@ -202,6 +202,6 @@ public interface ActivityCouponsRecordService {
 	 * @author maojj
 	 * @date 2017年2月15日
 	 */
-	List<Coupons> findValidCoupons(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
+	List<Coupons> findValidCoupons(FavourParamBO paramBo,CouponsFilterStrategy favourFilter) throws Exception;
 	// End V2.1 added by maojj 2017-02-15
 }
