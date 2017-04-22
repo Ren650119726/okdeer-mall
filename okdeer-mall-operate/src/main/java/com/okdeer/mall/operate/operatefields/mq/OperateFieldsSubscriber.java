@@ -13,6 +13,7 @@ import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ADDEDIT_
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_CLOSED_LOWPRICE_ACTIVITY;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_CLOSED_ONSALE_ACTIVITY;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_EDIT_GOODS;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ENABLEDISABLE_OPERATE_FIELD;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_GOODS_OFFSHELF;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_GOODS_ONSHELF;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_RANK_OPERATE_FIELD;
@@ -98,6 +99,8 @@ public class OperateFieldsSubscriber {
             case TAG_RANK_OPERATE_FIELD:
                 status = rankOperateField(enMessage);
               break;
+            case TAG_ENABLEDISABLE_OPERATE_FIELD:
+                status = enableDisableOperateField(enMessage);
             default:
                 break;
             }
@@ -307,6 +310,27 @@ public class OperateFieldsSubscriber {
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
             logger.error("运营栏位排序变化时，消息处理失败：{}", JsonMapper.nonEmptyMapper().toJson(msgDto), e);
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+        }
+    }
+    
+    /**
+     * 启用禁用运营栏位时消息订阅
+     * 
+     * @param enMessage
+     * @return
+     * @author zhaoqc
+     * @date 2017-4-21
+     */
+    public ConsumeConcurrentlyStatus enableDisableOperateField(MQMessage enMessage) {
+        GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
+        logger.info("启用禁用运营栏位时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
+        try {
+            initOperateField(msgDto);
+            
+            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+        } catch (Exception e) {
+            logger.error("启用禁用运营栏位时，消息处理失败：{}", JsonMapper.nonEmptyMapper().toJson(msgDto), e);
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
         }
     }
