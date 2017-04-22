@@ -82,7 +82,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
      * @Fields storeInfoService : 注入店铺service
      */
     @Autowired
-    private StoreInfoServiceApi storeInfoService;	
+    private StoreInfoServiceApi storeInfoServiceApi;	
 
     @Override
     public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
@@ -97,7 +97,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         }
         // add by mengsj begin 发送运营栏位更新信息20170422
         GoodsChangedMsgDto data = new GoodsChangedMsgDto();
-        StoreInfo store = storeInfoService.findById(activitySale.getStoreId());
+        StoreInfo store = storeInfoServiceApi.findById(activitySale.getStoreId());
         data.setStoreId(store.getId());
         data.setCityId(store.getCityId());
         if(activitySale.getType() == LOW_PRICE){
@@ -120,7 +120,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         
         // add by mengsj begin 发送运营栏位更新信息20170422
         GoodsChangedMsgDto data = new GoodsChangedMsgDto();
-        StoreInfo store = storeInfoService.findById(ActivitySale.getStoreId());
+        StoreInfo store = storeInfoServiceApi.findById(ActivitySale.getStoreId());
         data.setStoreId(store.getId());
         data.setCityId(store.getCityId());
         if(ActivitySale.getType() == LOW_PRICE){
@@ -166,7 +166,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         
         // add by mengsj begin 发送运营栏位更新信息20170422
         GoodsChangedMsgDto data = new GoodsChangedMsgDto();
-        StoreInfo store = storeInfoService.findById(storeId);
+        StoreInfo store = storeInfoServiceApi.findById(storeId);
         data.setStoreId(store.getId());
         data.setCityId(store.getCityId());
         if(activityType == LOW_PRICE.ordinal()){
