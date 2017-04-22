@@ -3,7 +3,6 @@ package com.okdeer.mall.activity.discount.service.impl;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +36,7 @@ import com.okdeer.common.entity.ReturnInfo;
 import com.okdeer.mall.activity.bo.ActLimitRelBuilder;
 import com.okdeer.mall.activity.bo.ActivityParamBo;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.enums.CashDelivery;
 import com.okdeer.mall.activity.discount.entity.ActivityBusinessRel;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
@@ -53,9 +53,8 @@ import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.common.utils.RobotUserUtil;
-import com.okdeer.mall.order.vo.Discount;
-import com.okdeer.mall.order.vo.Favour;
 import com.okdeer.mall.order.vo.FullSubtract;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * 满减(满折)活动service实现类
@@ -96,6 +95,9 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	
 	@Reference(version = "1.0.0",check=false)
 	private GoodsSpuCategoryServiceApi goodsSpuCategoryServiceApi;
+	
+	@Resource
+	private MaxFavourStrategy genericMaxFavourStrategy;
 	
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -291,56 +293,17 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			}
 		}
 		// 更新进行中的活动
-		paramBo.setStatus(ActivityDiscountStatus.ing);
-		paramBo.setActivityIds(ingList);
-		activityDiscountMapper.updateStatus(paramBo);
+		if(CollectionUtils.isNotEmpty(ingList)){
+			paramBo.setStatus(ActivityDiscountStatus.ing);
+			paramBo.setActivityIds(ingList);
+			activityDiscountMapper.updateStatus(paramBo);
+		}
 		// 更新需要结束的活动
-		paramBo.setStatus(ActivityDiscountStatus.end);
-		paramBo.setActivityIds(endList);
+		if(CollectionUtils.isNotEmpty(endList)){
+			paramBo.setStatus(ActivityDiscountStatus.end);
+			paramBo.setActivityIds(endList);
+		}
 		activityDiscountMapper.updateStatus(paramBo);
-	}
-
-	@Override
-	public List<Discount> findValidDiscount(FavourParamBO paramBo, FavourFilterStrategy favourFilter) throws Exception {
-		List<Discount> discountList = activityDiscountMapper.findValidDiscount(paramBo);
-		if(CollectionUtils.isEmpty(discountList)){
-			return discountList;
-		}
-		// 对集合进行数据迭代
-		Iterator<Discount> it = discountList.iterator();
-		Discount discount = null;
-		while(it.hasNext()){
-			discount = it.next();
-			if(!favourFilter.accept(discount)){
-				// 如果过滤器不接受该优惠，则将该优惠从列表中移除
-				it.remove();
-			}else{
-				discount.setMaxFavourStrategy(maxFavourStrategy.calMaxFavourRule(discount, paramBo.getTotalAmount()));
-			}
-		}
-		return discountList;
-	}
-
-	@Override
-	public List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo, FavourFilterStrategy favourFilter)
-			throws Exception {
-		List<FullSubtract> fullSubtractList = activityDiscountMapper.findValidFullSubtract(paramBo);
-		if(CollectionUtils.isEmpty(fullSubtractList)){
-			return fullSubtractList;
-		}
-		// 对集合进行数据迭代
-		Iterator<FullSubtract> it = fullSubtractList.iterator();
-		FullSubtract fullSubtract = null;
-		while(it.hasNext()){
-			fullSubtract = it.next();
-			if(!favourFilter.accept(fullSubtract)){
-				// 如果过滤器不接受该优惠，则将该优惠从列表中移除
-				it.remove();
-			}else{
-				fullSubtract.setMaxFavourStrategy(maxFavourStrategy.calMaxFavourRule(fullSubtract, paramBo.getTotalAmount()));
-			}
-		}
-		return fullSubtractList;
 	}
 
 	@Override
@@ -357,6 +320,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	}
 
 	@Override
+	@Transactional(rollbackFor=Exception.class)
 	public ReturnInfo batchClose(ActivityParamBo paramBo) {
 		ReturnInfo retInfo = new ReturnInfo();
 		ActivityParamDto paramDto = new ActivityParamDto();
@@ -524,10 +488,51 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	}
 
 	@Override
-	public List<? extends Favour> findValidFavour(FavourParamBO paramBo, FavourFilterStrategy favourFilter)
+	public List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo, FavourFilterStrategy favourFilter)
 			throws Exception {
-		List<? extends Favour> favourList = Lists.newArrayList();
-		
-		return null;
+		List<FullSubtract> fullSubtractList = Lists.newArrayList();
+		FullSubtract fullSubtract = null;
+		// 满减活动查询条件
+		ActivityParamDto paramDto = new ActivityParamDto();
+		paramDto.setStoreId(paramBo.getStoreId());
+		paramDto.setLimitChannel(String.valueOf(paramBo.getChannel().ordinal()));
+		paramDto.setType(ActivityDiscountType.mlj);
+		// 查询店铺所享有的满减活动
+		List<ActivityInfoDto> actInfoDtoList = this.findByStore(paramDto);
+		if(CollectionUtils.isEmpty(actInfoDtoList)){
+			return fullSubtractList;
+		}
+		List<ActivityDiscountCondition> conditionList = null;
+		for(ActivityInfoDto actInfoDto : actInfoDtoList){
+			ActivityDiscount actInfo = actInfoDto.getActivityInfo();
+			// 一个店铺同一时间只会存在一个满减活动。这里放入循环是为了后期加入折扣时使用。
+			if(!favourFilter.accept(actInfoDto)){
+				continue;
+			}
+			conditionList = actInfoDto.getConditionList();
+			for(ActivityDiscountCondition condition : conditionList){
+				if(condition.getArrive().compareTo(paramBo.getTotalAmount()) == 1){
+					continue;
+				}
+				fullSubtract = new FullSubtract();
+				// 活动Id
+				fullSubtract.setId(actInfoDto.getActivityInfo().getId());
+				// 满减条件Id
+				fullSubtract.setActivityItemId(condition.getId());
+				// 活动类型
+				fullSubtract.setActivityType(actInfo.getType().ordinal());
+				fullSubtract.setArrive(ConvertUtil.format(condition.getArrive()));
+				fullSubtract.setFullSubtractPrice(ConvertUtil.format(condition.getDiscount()));
+				fullSubtract.setIndate(DateUtils.formatDate(actInfo.getEndTime(), "yyyy-MM-dd HH:mm:ss"));
+				// 0：活动由平台发起，1：活动由商家发起
+				fullSubtract.setType("0".equals(actInfo.getStoreId())? 0 : 1);
+				// 可用范围(0,支持在线，1支持货到付款，2，支持所有支付方式)
+				fullSubtract.setUsableRange(actInfo.getIsCashDelivery() == CashDelivery.yes ? "2" : "0");
+				fullSubtract.setMaxFavourStrategy(genericMaxFavourStrategy.calMaxFavourRule(fullSubtract, paramBo.getTotalAmount()));
+				
+				fullSubtractList.add(fullSubtract);
+			}
+		}
+		return fullSubtractList;
 	}
 }

@@ -2,29 +2,45 @@ package com.okdeer.mall.activity.discount.service.impl;
 
 import javax.annotation.Resource;
 
-import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
-import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordServiceApi;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRecordMapper;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
 
 /**
- * @DESC: 
- * @author yangq
- * @date  2016-03-25 20:00:26
- * @version 1.0.0
- * @copyright ©2005-2020 yschome.com Inc. All rights reserved
- * 
+ * ClassName: ActivityDiscountRecordServiceImpl 
+ * @Description: 活动记录服务
+ * @author maojj
+ * @date 2017年4月21日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *		友门鹿2.3 		2017年4月21日				maojj
  */
-@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.discount.service.ActivityDiscountRecordServiceApi")
-class ActivityDiscountRecordServiceImpl implements ActivityDiscountRecordServiceApi, ActivityDiscountRecordService {
+@Service
+class ActivityDiscountRecordServiceImpl extends BaseServiceImpl implements ActivityDiscountRecordService {
 
 	@Resource
 	private ActivityDiscountRecordMapper activityDiscountRecordMapper;
 
 	@Override
-	public void insertRecord(ActivityDiscountRecord record) throws Exception {
-		activityDiscountRecordMapper.insertRecord(record);
+	public IBaseMapper getBaseMapper() {
+		return activityDiscountRecordMapper;
+	}
+
+	@Override
+	public int countTotalFreq(String userId, String activityId) {
+		return activityDiscountRecordMapper.countTotalFreq(userId, activityId);
+	}
+
+	@Override
+	@Transactional(rollbackFor=Exception.class)
+	public void deleteByOrderId(String orderId) {
+		activityDiscountRecordMapper.deleteByOrderId(orderId);
 	}
 
 }

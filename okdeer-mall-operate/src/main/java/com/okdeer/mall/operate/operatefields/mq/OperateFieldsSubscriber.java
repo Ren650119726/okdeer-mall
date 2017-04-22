@@ -7,16 +7,16 @@
  */
 package com.okdeer.mall.operate.operatefields.mq;
 
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADDEDIT_LOWPRICE_ACTIVITY;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADDEDIT_ONSALE_ACTIVITY;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADDEDIT_OPERATE_FIELD;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_CLOSED_LOWPRICE_ACTIVITY;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_CLOSED_ONSALE_ACTIVITY;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_EDIT_GOODS;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_GOODS_OFFSHELF;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_GOODS_ONSHELF;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_RANK_OPERATE_FIELD;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TOPIC_OPERATE_FIELD;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ADDEDIT_LOWPRICE_ACTIVITY;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ADDEDIT_ONSALE_ACTIVITY;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ADDEDIT_OPERATE_FIELD;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_CLOSED_LOWPRICE_ACTIVITY;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_CLOSED_ONSALE_ACTIVITY;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_EDIT_GOODS;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_GOODS_OFFSHELF;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_GOODS_ONSHELF;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_RANK_OPERATE_FIELD;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TOPIC_OPERATE_FIELD;
 
 import java.util.List;
 
@@ -30,8 +30,8 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
+import com.okdeer.mall.operate.dto.GoodsChangedMsgDto;
 import com.okdeer.mall.operate.dto.OperateFieldDto;
-import com.okdeer.mall.operate.operatefields.mq.dto.GoodsChangedMsgDto;
 
 /**
  * 订阅商品属性发生变化时出发的更新运营栏位消息
