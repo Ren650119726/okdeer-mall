@@ -99,7 +99,7 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 		List<OperateFieldsContent> list = BeanMapper.mapList(operateFieldscontentDtoList, OperateFieldsContent.class);
 		operateFieldsService.update(operateFields, list);
 		
-	      //发送栏位变更消息
+	    //发送栏位变更消息
         GoodsChangedMsgDto msgDto = new GoodsChangedMsgDto();
         OperateFieldsType type = operateFieldsDto.getType();
         if (type == OperateFieldsType.CITY) {
@@ -139,6 +139,23 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 	@Override
 	public int update(OperateFieldsDto operateFieldsDto) throws Exception {
 		OperateFields operateFields = BeanMapper.map(operateFieldsDto, OperateFields.class);
+		
+        // 启用禁用栏位时发送消息
+        // 发送栏位变更消息
+        GoodsChangedMsgDto msgDto = new GoodsChangedMsgDto();
+        OperateFieldsType type = operateFieldsDto.getType();
+        if (type == OperateFieldsType.CITY) {
+            msgDto.setCityId(operateFieldsDto.getBusinessId());
+        } else if (type == OperateFieldsType.STORE) {
+            msgDto.setStoreId(operateFieldsDto.getBusinessId());
+        }
+
+        try {
+            produceMessage(msgDto, TAG_ADDEDIT_OPERATE_FIELD);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+		
 		return operateFieldsService.update(operateFields);
 	}
 
