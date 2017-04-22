@@ -2,6 +2,7 @@ package com.okdeer.mall.operate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.okdeer.mall.Application;
 import com.okdeer.mall.operate.dto.OperateFieldContentDto;
+import com.okdeer.mall.operate.dto.OperateFieldDto;
 import com.okdeer.mall.operate.dto.StoreActivitGoodsQueryDto;
 import com.okdeer.mall.operate.operatefields.service.OperateFieldsService;
 
@@ -65,5 +67,13 @@ public class ColumnOperateFieldTest {
         
         this.operateFieldsService.initStoreOperateFieldData(storeId);
     }
+   
+    @Test
+    public void testInitCityOperateFieldData() throws Exception {
+        String cityId = "291";
+        
+        Set<OperateFieldDto> fields = this.operateFieldsService.initCityOperateFieldData(cityId);
     
+        System.out.println(fields.size());
+    }
 }
