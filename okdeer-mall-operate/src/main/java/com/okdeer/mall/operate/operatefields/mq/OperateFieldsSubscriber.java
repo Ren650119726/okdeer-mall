@@ -28,7 +28,7 @@ import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
 import com.okdeer.base.framework.mq.message.MQMessage;
-import com.okdeer.mall.operate.operatefields.mq.dto.GoodsChangedMsgDto;
+import com.okdeer.mall.operate.dto.GoodsChangedMsgDto;
 import com.okdeer.mall.operate.operatefields.service.OperateFieldsService;
 
 /**
