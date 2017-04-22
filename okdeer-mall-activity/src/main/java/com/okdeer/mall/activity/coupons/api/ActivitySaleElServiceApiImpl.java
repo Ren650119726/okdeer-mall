@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.common.message.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -81,7 +82,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
      * add by mengsj
      * @Fields storeInfoService : 注入店铺service
      */
-    @Autowired
+    @Reference(version = "1.0.0", check = false)
     private StoreInfoServiceApi storeInfoServiceApi;	
 
     @Override
