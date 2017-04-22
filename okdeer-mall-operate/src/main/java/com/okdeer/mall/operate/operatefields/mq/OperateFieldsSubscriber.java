@@ -7,16 +7,16 @@
  */
 package com.okdeer.mall.operate.operatefields.mq;
 
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADDEDIT_LOWPRICE_ACTIVITY;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADDEDIT_ONSALE_ACTIVITY;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_ADDEDIT_OPERATE_FIELD;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_CLOSED_LOWPRICE_ACTIVITY;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_CLOSED_ONSALE_ACTIVITY;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_EDIT_GOODS;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_GOODS_OFFSHELF;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_GOODS_ONSHELF;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_RANK_OPERATE_FIELD;
-import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TOPIC_OPERATE_FIELD;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ADDEDIT_LOWPRICE_ACTIVITY;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ADDEDIT_ONSALE_ACTIVITY;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ADDEDIT_OPERATE_FIELD;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_CLOSED_LOWPRICE_ACTIVITY;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_CLOSED_ONSALE_ACTIVITY;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_EDIT_GOODS;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_GOODS_OFFSHELF;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_GOODS_ONSHELF;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_RANK_OPERATE_FIELD;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TOPIC_OPERATE_FIELD;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
