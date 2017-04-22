@@ -23,6 +23,11 @@ public class CurrentStoreSkuBo {
 	private String storeSpuId;
 
 	/**
+	 * 商品类目ID
+	 */
+	private String spuCategoryId;
+
+	/**
 	 * 商品名称
 	 */
 	private String name;
@@ -66,12 +71,12 @@ public class CurrentStoreSkuBo {
 	 * 线上价格
 	 */
 	private BigDecimal onlinePrice;
-	
+
 	/**
 	 * 线下价格
 	 */
 	private BigDecimal offlinePrice;
-	
+
 	/**
 	 * 市场价格
 	 */
@@ -138,12 +143,12 @@ public class CurrentStoreSkuBo {
 	 * 单位
 	 */
 	private String unit;
-	
+
 	/**
 	 * 货号
 	 */
 	private String articleNo;
-	
+
 	/**
 	 * app请求的活动商品价格
 	 */
@@ -446,6 +451,14 @@ public class CurrentStoreSkuBo {
 
 	public void setMarketPrice(BigDecimal marketPrice) {
 		this.marketPrice = marketPrice;
+	}
+
+	public String getSpuCategoryId() {
+		return spuCategoryId;
+	}
+
+	public void setSpuCategoryId(String spuCategoryId) {
+		this.spuCategoryId = spuCategoryId;
 	}
 
 }

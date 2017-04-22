@@ -7,6 +7,7 @@ import java.util.Set;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.common.enums.UseClientType;
+import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 
 /**
@@ -76,6 +77,11 @@ public class FavourParamBO {
 	 * 是否是首单用户
 	 */
 	private Boolean isFirstOrderUser;
+
+	/**
+	 * 下单的商品列表
+	 */
+	private List<PlaceOrderItemDto> goodsList;
 
 	public String getUserId() {
 		return userId;
@@ -163,6 +169,14 @@ public class FavourParamBO {
 
 	public void setIsFirstOrderUser(Boolean isFirstOrderUser) {
 		this.isFirstOrderUser = isFirstOrderUser;
+	}
+
+	public List<PlaceOrderItemDto> getGoodsList() {
+		return goodsList;
+	}
+
+	public void setGoodsList(List<PlaceOrderItemDto> goodsList) {
+		this.goodsList = goodsList;
 	}
 
 }

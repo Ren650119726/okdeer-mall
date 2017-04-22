@@ -8,6 +8,7 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.google.common.collect.Lists;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.common.utils.EnumAdapter;
@@ -16,10 +17,12 @@ import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
 import com.okdeer.mall.member.member.vo.UserAddressVo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
+import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
+import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
 import com.okdeer.mall.order.vo.TradeOrderReq;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
 
@@ -52,7 +55,7 @@ public class FavourParamBuilder {
 	 * @author maojj
 	 * @date 2017年2月15日
 	 */
-	public FavourParamBO build(PlaceOrderParamDto paramDto,PlaceOrderDto orderDto,Set<String> spuCategoryIds){
+	public FavourParamBO build(PlaceOrderParamDto paramDto,PlaceOrderDto orderDto,Set<String> spuCategoryIds,List<PlaceOrderItemDto> goodsList){
 		FavourParamBO paramBO = new FavourParamBO();
 		// 获取店铺类型
 		StoreTypeEnum storeType = ((StoreInfo)paramDto.get("storeInfo")).getType();
@@ -72,6 +75,8 @@ public class FavourParamBuilder {
 		}
 		paramBO.setClientType(EnumAdapter.convert(paramDto.getChannel()));
 		paramBO.setSpuCategoryIds(spuCategoryIds);
+		paramBO.setChannel(paramDto.getChannel());
+		paramBO.setGoodsList(goodsList);
 		return paramBO;
 	}
 	
@@ -98,6 +103,20 @@ public class FavourParamBuilder {
 		}
 		paramBO.setClientType(EnumAdapter.convert(reqDto.getData().getOrderResource()));
 		paramBO.setSpuCategoryIds(reqDto.getContext().getSpuCategoryIds());
+		
+		// Begin V2.3 added by maojj 2017-04-21
+		List<PlaceOrderItemDto> goodsList = Lists.newArrayList();
+		PlaceOrderItemDto goods = null;
+		for(TradeOrderGoodsItem item : req.getList()){
+			goods = new PlaceOrderItemDto();
+			goods.setStoreSkuId(item.getSkuId());
+			goods.setSpuCategoryId(item.getSpuCategoryId());
+			goods.setTotalAmount(item.getTotalAmount());
+			
+			goodsList.add(goods);
+		}
+		paramBO.setGoodsList(goodsList);
+		// End V2.3 added by maojj 2017-04-21
 		return paramBO;
 	}
 	
@@ -138,6 +157,8 @@ public class FavourParamBuilder {
 		}
 		paramBO.setClientType(EnumAdapter.convert(req.getOrderResource()));
 		paramBO.setSpuCategoryIds((Set<String>)req.getContext().get("spuCategoryIds"));
+		List<PlaceOrderItemDto> goodsList = Lists.newArrayList();
+		
 		return paramBO;
 	}
 	
