@@ -83,7 +83,7 @@ public interface OperateFieldsService extends IBaseService {
      * @author zhaoqc
      * @date 2017-4-18
      */
-    void initStoreOperateFieldData(String storeId) throws Exception;
+     void initStoreOperateFieldData(String storeId) throws Exception;
     
     /**
      * 初始化城市运营栏位
