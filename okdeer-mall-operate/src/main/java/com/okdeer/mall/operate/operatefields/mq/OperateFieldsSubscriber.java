@@ -18,20 +18,18 @@ import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQCo
 import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TAG_RANK_OPERATE_FIELD;
 import static com.okdeer.mall.operate.operatefields.mq.constants.OperateFielMQConstants.TOPIC_OPERATE_FIELD;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
 import com.okdeer.base.framework.mq.message.MQMessage;
-import com.okdeer.base.redis.IRedisTemplateWrapper;
-import com.okdeer.mall.operate.dto.OperateFieldDto;
 import com.okdeer.mall.operate.operatefields.mq.dto.GoodsChangedMsgDto;
+import com.okdeer.mall.operate.operatefields.service.OperateFieldsService;
 
 /**
  * 订阅商品属性发生变化时出发的更新运营栏位消息
@@ -56,7 +54,7 @@ public class OperateFieldsSubscriber {
      * reids接入
      */
     @Autowired
-    private IRedisTemplateWrapper<String, List<OperateFieldDto>> redisTemplateWrapper;
+    private OperateFieldsService operateFieldsService;
     
     /**
      * 运营栏位消息订阅
@@ -110,6 +108,19 @@ public class OperateFieldsSubscriber {
         }
     }
     
+    private void initOperateField(GoodsChangedMsgDto msgDto) throws Exception {
+        
+        String storeId = msgDto.getStoreId();
+        if(StringUtils.isNotEmpty(storeId)) {
+            this.operateFieldsService.initStoreOperateFieldData(storeId);
+        }
+        
+        String cityId = msgDto.getCityId();
+        if(StringUtils.isNotEmpty(cityId)) {
+            this.operateFieldsService.initCityOperateFieldData(cityId);
+        }
+    }
+     
     /**
      * 编辑商品时的消息订阅
      * 
@@ -122,8 +133,7 @@ public class OperateFieldsSubscriber {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("编辑商品时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
         try {
-            
-           
+            initOperateField(msgDto);
             
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
@@ -145,8 +155,7 @@ public class OperateFieldsSubscriber {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("商品上架时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
         try {
-            
-            
+            initOperateField(msgDto);
             
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
@@ -167,8 +176,7 @@ public class OperateFieldsSubscriber {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("商品下架时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
         try {
-            
-            
+            initOperateField(msgDto);
             
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
@@ -189,8 +197,7 @@ public class OperateFieldsSubscriber {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("新增、编辑商品特惠活动时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
         try {
-            
-            
+            initOperateField(msgDto);
             
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
@@ -211,8 +218,7 @@ public class OperateFieldsSubscriber {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("关闭商品特惠活动时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
         try {
-            
-            
+            initOperateField(msgDto);
             
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
@@ -233,8 +239,7 @@ public class OperateFieldsSubscriber {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("新增编辑低价活动时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
         try {
-            
-            
+            initOperateField(msgDto);
             
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
@@ -255,8 +260,7 @@ public class OperateFieldsSubscriber {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("关闭低价活动时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
         try {
-            
-            
+            initOperateField(msgDto);
             
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
@@ -277,8 +281,7 @@ public class OperateFieldsSubscriber {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("新增编辑运营栏位时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto)); 
         try {
-            
-            
+            initOperateField(msgDto);
             
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
@@ -299,8 +302,7 @@ public class OperateFieldsSubscriber {
         GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
         logger.info("运营栏位排序变化时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
         try {
-            
-            
+            initOperateField(msgDto);
             
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {

@@ -10,6 +10,11 @@ public class GoodsChangedMsgDto implements Serializable {
     private static final long serialVersionUID = -8412137251108715057L;
 
     /**
+     * 城市Id
+     */
+    private String cityId;
+    
+    /**
      * 店铺ID
      */
     private String storeId;
@@ -46,6 +51,14 @@ public class GoodsChangedMsgDto implements Serializable {
 
     public void setFieldId(String fieldId) {
         this.fieldId = fieldId;
+    }
+
+    public String getCityId() {
+        return cityId;
+    }
+
+    public void setCityId(String cityId) {
+        this.cityId = cityId;
     }
     
 }

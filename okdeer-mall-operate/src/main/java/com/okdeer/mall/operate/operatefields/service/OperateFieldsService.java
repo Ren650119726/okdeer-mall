@@ -1,10 +1,12 @@
 package com.okdeer.mall.operate.operatefields.service;
 
 import java.util.List;
+import java.util.Set;
 
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.operate.dto.FieldGoodsQueryDto;
 import com.okdeer.mall.operate.dto.OperateFieldContentDto;
+import com.okdeer.mall.operate.dto.OperateFieldDto;
 import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
 import com.okdeer.mall.operate.dto.StoreActivitGoodsQueryDto;
 import com.okdeer.mall.operate.operatefields.bo.OperateFieldsBo;
@@ -83,7 +85,7 @@ public interface OperateFieldsService extends IBaseService {
      * @author zhaoqc
      * @date 2017-4-18
      */
-     void initStoreOperateFieldData(String storeId) throws Exception;
+	Set<OperateFieldDto> initStoreOperateFieldData(String storeId) throws Exception;
     
     /**
      * 初始化城市运营栏位
@@ -93,7 +95,7 @@ public interface OperateFieldsService extends IBaseService {
      * @author zhaoqc
      * @date 2017-4-18
      */
-    void initCityOperateFieldData(String cityId)  throws Exception;
+	Set<OperateFieldDto> initCityOperateFieldData(String cityId)  throws Exception;
     
     /**
      * 查找店铺活动关联的商品运营位内容

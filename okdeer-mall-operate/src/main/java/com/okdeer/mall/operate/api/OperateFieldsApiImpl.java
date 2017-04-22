@@ -2,6 +2,7 @@
 package com.okdeer.mall.operate.api;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -9,6 +10,8 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.mall.operate.dto.OperateFieldContentDto;
+import com.okdeer.mall.operate.dto.OperateFieldDto;
 import com.okdeer.mall.operate.dto.OperateFieldsContentDto;
 import com.okdeer.mall.operate.dto.OperateFieldsDto;
 import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
@@ -98,8 +101,8 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
      * @date 2017-4-18
      */
     @Override
-    public void initStoreOperateFieldData(String storeId) throws Exception {
-        this.operateFieldsService.initStoreOperateFieldData(storeId);
+    public Set<OperateFieldDto> initStoreOperateFieldData(String storeId) throws Exception {
+       return this.operateFieldsService.initStoreOperateFieldData(storeId);
     }
 
     /**
@@ -110,8 +113,8 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
      * @date 2017-4-18
      */
     @Override
-    public void initCityOperateFieldData(String cityId) throws Exception {
-        this.operateFieldsService.initCityOperateFieldData(cityId);
+    public Set<OperateFieldDto> initCityOperateFieldData(String cityId) throws Exception {
+        return this.operateFieldsService.initCityOperateFieldData(cityId);
     }
 
 	@Override
@@ -127,6 +130,12 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 			operateFieldsContentService.initOperationFieldContext(storeId);
 		}
 	}
+
+    @Override
+    public OperateFieldContentDto getSingleGoodsOfOperateField(String goodsId, 
+            String storeId) throws Exception {
+        return operateFieldsService.getSingleGoodsOfOperateField(goodsId, storeId);
+    }
 	
 	
 	
