@@ -2,6 +2,8 @@
 package com.okdeer.mall.operate.api;
 
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ADDEDIT_OPERATE_FIELD;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ENABLEDISABLE_OPERATE_FIELD;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_RANK_OPERATE_FIELD;
 
 import java.util.List;
 import java.util.Set;
@@ -130,7 +132,7 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
             msgDto.setStoreId(operateFields.getBusinessId());
         }
         try {
-            produceMessage(msgDto, TAG_ADDEDIT_OPERATE_FIELD);
+            produceMessage(msgDto, TAG_RANK_OPERATE_FIELD);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -151,7 +153,7 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
         }
 
         try {
-            produceMessage(msgDto, TAG_ADDEDIT_OPERATE_FIELD);
+            produceMessage(msgDto, TAG_ENABLEDISABLE_OPERATE_FIELD);
         } catch (Exception e) {
             e.printStackTrace();
         }
