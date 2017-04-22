@@ -60,8 +60,8 @@ public class ActivityDiscountApiImpl implements ActivityDiscountApi{
 	}
 
 	@Override
-	public ActivityInfoDto findInfoById(String id) throws Exception {
-		return activityDiscountService.findInfoById(id);
+	public ActivityInfoDto findInfoById(String id,boolean isLoadDetail) throws Exception {
+		return activityDiscountService.findInfoById(id,isLoadDetail);
 	}
 
 	@Override

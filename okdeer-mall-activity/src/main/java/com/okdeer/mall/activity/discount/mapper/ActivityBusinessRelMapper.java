@@ -30,7 +30,7 @@ public interface ActivityBusinessRelMapper extends IBaseMapper {
 	 * @author maojj
 	 * @date 2017年4月19日
 	 */
-	List<ActivityBusinessRel> findByActivityId(String activityId);
+	List<ActivityBusinessRel> findByActivityId(@Param("activityId")String activityId);
 	
 	/**
 	 * @Description: 根据活动ID删除业务关联关系
@@ -38,5 +38,5 @@ public interface ActivityBusinessRelMapper extends IBaseMapper {
 	 * @author maojj
 	 * @date 2017年4月20日
 	 */
-	void deleteByActivityId(String activityId);
+	void deleteByActivityId(@Param("activityId")String activityId);
 }

@@ -1,6 +1,7 @@
 package com.okdeer.mall.activity.discount.service.impl;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +54,7 @@ import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.order.vo.Discount;
+import com.okdeer.mall.order.vo.Favour;
 import com.okdeer.mall.order.vo.FullSubtract;
 
 /**
@@ -113,13 +115,19 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			retInfo.setFlag(false);
 			retInfo.setMessage("该满减活动处于" + currentAct.getStatus().getValue() + "状态下，不能修改！");
 		}
-		// TODO 同一时间、同一地区、同一店铺活动唯一性检查。
+		// 同一时间、同一地区、同一店铺活动唯一性检查。
+		if(!checkUnique(actInfoDto)){
+			retInfo.setFlag(false);
+			retInfo.setMessage("创建失败，选定范围指定时间内已存在活动，请重新选择范围或更改时间！");
+			return retInfo;
+		}
 		// 优惠条件列表
 		List<ActivityDiscountCondition> conditionList = parseConditionList(actInfoDto);
 		// 限制条件列表
 		List<ActivityBusinessRel> limitList = parseLimitList(actInfoDto);
-		// 删除活动下的条件和业务关联关系
-		
+		if(actInfo.getType() != ActivityDiscountType.PIN_MONEY){
+			actInfo.setGrantType(0);
+		}
 		// 修改活动信息
 		activityDiscountMapper.update(actInfo);
 		// 删除活动下的优惠条件
@@ -140,7 +148,12 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	public ReturnInfo add(ActivityInfoDto actInfoDto) {
 		// 初始化ReturnInfo
 		ReturnInfo retInfo = new ReturnInfo();
-		// TODO 同一时间、同一地区、同一店铺活动唯一性检查。
+		// 同一时间、同一地区、同一店铺活动唯一性检查。
+		if(!checkUnique(actInfoDto)){
+			retInfo.setFlag(false);
+			retInfo.setMessage("创建失败，选定范围指定时间内已存在活动，请重新选择范围或更改时间！");
+			return retInfo;
+		}
 		// 活动信息
 		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
 		// 生成唯一主键
@@ -163,6 +176,31 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			activityBusinessRelMapper.batchAdd(limitList);
 		}
 		return retInfo;
+	}
+	
+	/**
+	 * @Description: 活动唯一性校验
+	 * @param actInfoDto
+	 * @return   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
+	private boolean checkUnique(ActivityInfoDto actInfoDto){
+		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
+		ActivityParamBo paramBo = BeanMapper.map(actInfo, ActivityParamBo.class);
+		if(StringUtils.isNotEmpty(actInfo.getId())){
+			paramBo.setExcludedId(actInfo.getId());
+		}
+		if(StringUtils.isNotEmpty(actInfoDto.getLimitRangeIds())){
+			String[] tempArr = actInfoDto.getLimitRangeIds().split(",");
+			paramBo.setLimitRangeIds(Arrays.asList(tempArr));
+		}
+		int count = activityDiscountMapper.countConflict(paramBo);
+		if(count >= 1){
+			return false;
+		}else{
+			return true;
+		}
 	}
 	
 	private List<ActivityDiscountCondition> parseConditionList(ActivityInfoDto actInfoDto){
@@ -340,7 +378,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	}
 
 	@Override
-	public ActivityInfoDto findInfoById(String id) throws ServiceException {
+	public ActivityInfoDto findInfoById(String id,boolean isLoadDetail) throws ServiceException {
 		// 活动基本信息
 		ActivityDiscount activityInfo = activityDiscountMapper.findById(id);
 		// 活动优惠条件信息
@@ -348,23 +386,38 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		// 活动业务限制信息
 		List<ActivityBusinessRel> relList = activityBusinessRelMapper.findByActivityId(id);
 		// 解析业务限制信息
-		ActLimitRelBuilder limitBuilder = parseRelList(relList);
+		ActLimitRelBuilder limitBuilder = parseRelList(relList,isLoadDetail);
 		ActivityInfoDto actInfoDto = new ActivityInfoDto();
 		actInfoDto.setActivityInfo(activityInfo);
 		actInfoDto.setActivityType(activityInfo.getType().ordinal());
 		actInfoDto.setConditionList(conditionList);
-		actInfoDto.setRelDtoList(limitBuilder.retrieveResult());
-		actInfoDto.setAreaIds(limitBuilder.getAreaIds());
+		if(limitBuilder != null){
+			actInfoDto.setRelDtoList(limitBuilder.retrieveResult());
+			actInfoDto.setLimitRangeIds(limitBuilder.getLimitRangeIds());
+		}
 		return actInfoDto;
 	}
 	
-	private  ActLimitRelBuilder parseRelList(List<ActivityBusinessRel> relList) throws ServiceException{
+	/**
+	 * @Description: 解析活动限制关系
+	 * @param relList
+	 * @param isLoadDetail
+	 * @return
+	 * @throws ServiceException   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
+	private  ActLimitRelBuilder parseRelList(List<ActivityBusinessRel> relList,boolean isLoadDetail) throws ServiceException{
 		if(CollectionUtils.isEmpty(relList)){
 			return null;
 		}
 		ActLimitRelBuilder builder = new ActLimitRelBuilder();
 		// 加载当前业务列表
 		builder.loadBusiRelList(relList);
+		if(!isLoadDetail){
+			// 不用加载明细，直接返回
+			return builder;
+		}
 		// 地址列表
 		List<Address> areaList = Lists.newArrayList();
 		// 店铺列表
@@ -438,6 +491,12 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		return storeSkuPage.getList();
 	}
 	
+	/**
+	 * @Description: 后置处理店铺信息
+	 * @param storeInfoList   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
 	private void postStoreList(List<StoreInfo> storeInfoList){
 		if(CollectionUtils.isEmpty(storeInfoList)){
 			return;
@@ -456,11 +515,19 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		List<ActivityInfoDto> actInfoList = Lists.newArrayList();
 		ActivityInfoDto actInfo = null;
 		for(String activityId : activityIds){
-			actInfo = this.findInfoById(activityId);
+			actInfo = this.findInfoById(activityId,false);
 			if(actInfo != null){
 				actInfoList.add(actInfo);
 			}
 		}
 		return actInfoList;
+	}
+
+	@Override
+	public List<? extends Favour> findValidFavour(FavourParamBO paramBo, FavourFilterStrategy favourFilter)
+			throws Exception {
+		List<? extends Favour> favourList = Lists.newArrayList();
+		
+		return null;
 	}
 }

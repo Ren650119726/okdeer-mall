@@ -83,7 +83,7 @@ public interface OperateFieldsService extends IBaseService {
      * @author zhaoqc
      * @date 2017-4-18
      */
-    void initStoreOperateFieldData(String storeId) throws Exception;
+     void initStoreOperateFieldData(String storeId) throws Exception;
     
     /**
      * 初始化城市运营栏位
@@ -140,4 +140,7 @@ public interface OperateFieldsService extends IBaseService {
 	 */
 	void initOperationField(String storeId) throws Exception;
 
+	
+	List<OperateFieldContentDto> getGoodsOfStoreNavigateFields(String storeId, String navigateId, 
+            int template, int sort, int sortType) throws Exception;
 }

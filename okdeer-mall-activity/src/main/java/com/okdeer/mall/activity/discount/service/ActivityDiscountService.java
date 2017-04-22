@@ -12,6 +12,7 @@ import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.order.vo.Discount;
+import com.okdeer.mall.order.vo.Favour;
 import com.okdeer.mall.order.vo.FullSubtract;
 
 /**
@@ -105,11 +106,13 @@ public interface ActivityDiscountService extends IBaseService{
 	/**
 	 * @Description: 根据活动Id查找活动完整信息
 	 * @param id
-	 * @return   
+	 * @param isLoadDetail 是否加载具体的限制信息，如限制店铺，是否需要加载店铺明细
+	 * @return
+	 * @throws Exception   
 	 * @author maojj
-	 * @date 2017年4月19日
+	 * @date 2017年4月21日
 	 */
-	ActivityInfoDto findInfoById(String id) throws Exception;
+	ActivityInfoDto findInfoById(String id,boolean isLoadDetail) throws Exception;
 	
 	/**
 	 * @Description: 查询店铺所拥有的满减活动列表
@@ -119,4 +122,15 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @date 2017年4月20日
 	 */
 	List<ActivityInfoDto> findByStore(ActivityParamDto paramDto) throws Exception;
+	
+	/**
+	 * @Description: 查询有效的优惠信息
+	 * @param paramBo
+	 * @param favourFilter
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
+	List<? extends Favour> findValidFavour(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
 }

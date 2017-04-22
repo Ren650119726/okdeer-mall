@@ -18,6 +18,11 @@ public class GoodsChangedMsgDto implements Serializable {
      * 店铺商品Id
      */
     private String storeSkuId;
+    
+    /**
+     * 栏位Id
+     */
+    private String fieldId;
 
     public String getStoreId() {
         return storeId;
@@ -33,6 +38,14 @@ public class GoodsChangedMsgDto implements Serializable {
 
     public void setStoreSkuId(String storeSkuId) {
         this.storeSkuId = storeSkuId;
+    }
+
+    public String getFieldId() {
+        return fieldId;
+    }
+
+    public void setFieldId(String fieldId) {
+        this.fieldId = fieldId;
     }
     
 }
