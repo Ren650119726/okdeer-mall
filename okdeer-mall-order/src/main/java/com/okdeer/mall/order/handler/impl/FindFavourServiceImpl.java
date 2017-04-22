@@ -18,7 +18,7 @@ import com.okdeer.mall.order.service.GetPreferentialService;
 
 /**
  * ClassName: FindFavourServiceImpl 
- * @Description: TODO
+ * @Description: 查询优惠服务
  * @author maojj
  * @date 2017年1月5日
  *
@@ -52,7 +52,7 @@ public class FindFavourServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			return;
 		}
 		
-		FavourParamBO favourParamBO = favourParamBuilder.build(paramDto, resp.getData(),parserBo.getCategoryIdSet());
+		FavourParamBO favourParamBO = favourParamBuilder.build(paramDto, resp.getData(),parserBo.getCategoryIdSet(),parserBo.getGoodsList());
 		// 订单总金额存入上下文，后续流程需要使用
 		paramDto.put("totalAmount", favourParamBO.getTotalAmount());
 		// 查询用户的可用优惠

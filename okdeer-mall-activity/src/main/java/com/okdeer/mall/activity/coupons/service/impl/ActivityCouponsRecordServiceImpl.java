@@ -63,7 +63,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
-import com.okdeer.mall.activity.service.FavourFilterStrategy;
+import com.okdeer.mall.activity.service.CouponsFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.GetUserType;
@@ -76,10 +76,10 @@ import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
 import com.okdeer.mall.order.vo.RechargeCouponVo;
-import com.okdeer.mcm.constant.MsgConstant;
 import com.okdeer.mall.system.entity.SysUserInvitationCode;
 import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 import com.okdeer.mall.system.service.InvitationCodeService;
+import com.okdeer.mcm.constant.MsgConstant;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
@@ -1271,7 +1271,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 
 	@Override
-	public List<Coupons> findValidCoupons(FavourParamBO paramBo, FavourFilterStrategy favourFilter) throws Exception {
+	public List<Coupons> findValidCoupons(FavourParamBO paramBo, CouponsFilterStrategy favourFilter) throws Exception {
 		List<Coupons> couponsList = activityCouponsRecordMapper.findValidCoupons(paramBo);
 		if(CollectionUtils.isEmpty(couponsList)){
 			return couponsList;

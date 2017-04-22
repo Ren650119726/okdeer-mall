@@ -11,8 +11,6 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
-import com.okdeer.mall.order.vo.Discount;
-import com.okdeer.mall.order.vo.Favour;
 import com.okdeer.mall.order.vo.FullSubtract;
 
 /**
@@ -56,24 +54,6 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @date 2017年4月18日
 	 */
 	void updateStatus();
-	
-	/**
-	 * @Description: 查询用户有效的折扣优惠
-	 * @param params 查询用户有效优惠请求对象
-	 * @return List
-	 * @author maojj
-	 * @date 2016年7月16日
-	 */
-	List<Discount> findValidDiscount(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
-	
-	/**
-	 * @Description: 查询用户有效的满减优惠
-	 * @param params 查询用户有效优惠请求对象
-	 * @return List
-	 * @author maojj
-	 * @date 2016年7月16日
-	 */
-	List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
 	
 	/**
 	 * 
@@ -132,5 +112,5 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @author maojj
 	 * @date 2017年4月21日
 	 */
-	List<? extends Favour> findValidFavour(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
+	List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
 }
