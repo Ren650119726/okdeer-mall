@@ -64,15 +64,16 @@ public class ColumnOperateFieldTest {
     public void testInitStoreOperateFieldData() throws Exception {
         //开心小卖部
         String storeId = "5592971b276511e6aaff00163e010eb1";
+        storeId = "558d5c24276511e6aaff00163e010eb1";
         
         this.operateFieldsService.initStoreOperateFieldData(storeId);
     }
    
     @Test
     public void testInitCityOperateFieldData() throws Exception {
-        String cityId = "291";
+        String cityId = "305";
         
-        Set<OperateFieldDto> fields = this.operateFieldsService.initCityOperateFieldData(cityId);
+        List<OperateFieldDto> fields = this.operateFieldsService.initCityOperateFieldData(cityId);
     
         System.out.println(fields.size());
     }

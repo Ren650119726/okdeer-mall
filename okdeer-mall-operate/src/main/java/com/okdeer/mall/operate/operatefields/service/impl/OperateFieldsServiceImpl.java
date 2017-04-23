@@ -234,15 +234,15 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
      * @date 2017-4-18
      */
     @Override
-    public synchronized Set<OperateFieldDto> initStoreOperateFieldData(String storeId) throws Exception {
+    public synchronized List<OperateFieldDto> initStoreOperateFieldData(String storeId) throws Exception {
         OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
         queryParamDto.setType(OperateFieldsType.STORE);
         queryParamDto.setBusinessId(storeId);
         queryParamDto.setEnabled(Enabled.YES);
         
         FieldInfoDto fieldInfo = null;
-        Set<TypedTuple<OperateFieldDto>> tuples = new HashSet<>();
-        Set<OperateFieldDto> operateFields = new HashSet<>();
+        //Set<TypedTuple<OperateFieldDto>> tuples = new HashSet<>();
+        List<OperateFieldDto> operateFields = new ArrayList<>();
         //查出属于该店铺的所有店铺运营栏位
         List<OperateFieldsBo> fieldsList = this.findListWithContent(queryParamDto);
         for(OperateFieldsBo fields : fieldsList) {
@@ -315,7 +315,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                 operateField.setContentList(contentDtos);
                 
                 operateFields.add(operateField);
-                tuples.add(new TypedTuple<OperateFieldDto>() {
+                /*tuples.add(new TypedTuple<OperateFieldDto>() {
                     @Override
                     public int compareTo(TypedTuple<OperateFieldDto> o) {
                         return this.getScore().compareTo(o.getScore());
@@ -330,15 +330,16 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                     public Double getScore() {
                         return operateField.getFieldInfo().getSort().doubleValue();
                     }
-                });
+                });*/
             }
         }
         //将运营栏位信息缓存进Redis
         //redisTemplateWrapper.zAdd(STORE_OPERATE_FIELD_KEY + storeId, operateFields, fieldInfo.getSort());
         //缓存之前先删除之前该店铺下存储的栏位信息
         redisTemplate.delete(STORE_OPERATE_FIELD_KEY + storeId);
-        if(CollectionUtils.isNotEmpty(tuples)) {
-            redisTemplate.opsForZSet().add(STORE_OPERATE_FIELD_KEY + storeId, tuples);
+        if(CollectionUtils.isNotEmpty(operateFields)) {
+            //redisTemplate.opsForZSet().add(STORE_OPERATE_FIELD_KEY + storeId, tuples);
+            redisTemplate.opsForList().rightPushAll(STORE_OPERATE_FIELD_KEY + storeId, operateFields);
         }
         
         return operateFields;
@@ -355,15 +356,15 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
      * @date 2017-4-18
      */
     @Override
-    public synchronized Set<OperateFieldDto> initCityOperateFieldData(String cityId) throws Exception {
+    public synchronized List<OperateFieldDto> initCityOperateFieldData(String cityId) throws Exception {
         OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
         queryParamDto.setType(OperateFieldsType.CITY);
         queryParamDto.setBusinessId(cityId);
         queryParamDto.setEnabled(Enabled.YES);
         
         FieldInfoDto fieldInfo = null;
-        Set<TypedTuple<OperateFieldDto>> tuples = new HashSet<>();
-        Set<OperateFieldDto> operateFields = new HashSet<>();
+        //Set<TypedTuple<OperateFieldDto>> tuples = new HashSet<>();
+        List<OperateFieldDto> operateFields = new ArrayList<>();
         //查出该城市下的城市运营栏位
         List<OperateFieldsBo> fieldsList = this.findListWithContent(queryParamDto);
         for(OperateFieldsBo fields : fieldsList) {
@@ -376,8 +377,12 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
             for(OperateFieldsContent content : contentList) {
                 OperateFieldsContentType type = content.getType();
                 if(type == OperateFieldsContentType.STORE_ACTIVITY) {
-                    contentDtos = getGoodsOfCityStoreActivityField(cityId, content.getBusinessType().getCode(),
+                    //contentDtos = getGoodsOfCityStoreActivityField(cityId, content.getBusinessType().getCode(),
+                    //template, content.getSortType().getCode(), content.getSort());*/
+                    //当城市运营栏位指向内容是店铺活动是，往redis中存储规则
+                    contentDto = storeActivityFieldOfCity(content.getBusinessType().getCode(),
                             template, content.getSortType().getCode(), content.getSort());
+                    contentDtos.add(contentDto);
                 } else if (type == OperateFieldsContentType.H5_LINK) {
                     contentDto = h5LinkFieldContent(content);
                     contentDtos.add(contentDto);
@@ -396,7 +401,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                 operateField.setContentList(contentDtos);
                 
                 operateFields.add(operateField);
-                tuples.add(new TypedTuple<OperateFieldDto>() {
+                /*tuples.add(new TypedTuple<OperateFieldDto>() {
                     
                     @Override
                     public int compareTo(TypedTuple<OperateFieldDto> o) {
@@ -412,7 +417,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                     public Double getScore() {
                         return operateField.getFieldInfo().getSort().doubleValue();
                     }
-                });
+                });*/
             } 
         }
         
@@ -420,14 +425,14 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         //redisTemplateWrapper.zAdd(CITY_OPERATE_FIELD_KEY + cityId, operateField, fieldInfo.getSort());
         //缓存之前先删除之前该店铺下存储的栏位信息
         redisTemplate.delete(CITY_OPERATE_FIELD_KEY + cityId);
-        if(CollectionUtils.isNotEmpty(tuples)) {
-            redisTemplate.opsForZSet().add(CITY_OPERATE_FIELD_KEY + cityId, tuples);
+        if(CollectionUtils.isNotEmpty(operateFields)) {
+            //redisTemplate.opsForZSet().add(CITY_OPERATE_FIELD_KEY + cityId, tuples);
+            redisTemplate.opsForList().rightPushAll(CITY_OPERATE_FIELD_KEY + cityId, operateFields);
         }
         
         return operateFields;
     }
     
-
     private List<OperateFieldContentDto> getGoodsOfStoreLebelFields(String storeId, String labelId, int template, 
             int sort, int sortType) throws Exception {
         FieldGoodsQueryDto queryDto = new FieldGoodsQueryDto();
@@ -505,7 +510,9 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
      * @param sortStart 排序开始值
      * @throws Exception 
      */
-    private List<OperateFieldContentDto> getGoodsOfStoreActivityField(String storeId, int businessType, int template, int sortType, int sort) throws Exception {
+    @Override
+    public List<OperateFieldContentDto> getGoodsOfStoreActivityField(String storeId, int businessType, int template, 
+            int sortType, int sort) throws Exception {
         StoreActivitGoodsQueryDto queryDto = new StoreActivitGoodsQueryDto();
         //转换业务类型使之和数据库一致 
         if(businessType == 0) {
@@ -562,6 +569,33 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         } else {
             return null;
         }
+    }
+    
+    /**
+     * 城市运营位指向内容为店铺活动的缓存其规则
+     * @param businessType 0:特惠活动 1:低价活动
+     * @param template 模板
+     * @param 排序类型   0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高 
+     * @param sortStart 排序开始值
+     * @throws Exception 
+     */
+    private OperateFieldContentDto storeActivityFieldOfCity(int businessType, int template, 
+            int sortType, int sort) {
+        OperateFieldContentDto contentDto = new OperateFieldContentDto();
+        //由于redis中栏位指向信息和规则字段不同，所以用以下几个只想类型为商品的字段代替存储商品信息
+        //对应关系如下
+        /**
+         * isLowPrice -> 栏位业务类型 0:特惠活动 1:低价活动
+         * sellableStock -> 栏位模板类型 0一统江山 1 二分天下 3 三足鼎立
+         * tradeMax -> 排序类型  0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高 
+         * lowPriceUpper -> 排序开始值
+         */
+        contentDto.setIsLowPrice(businessType);
+        contentDto.setSellableStock(template);
+        contentDto.setTradeMax(sortType);
+        contentDto.setLowPriceUpper(sort);
+        
+        return contentDto;
     }
     
     /**
