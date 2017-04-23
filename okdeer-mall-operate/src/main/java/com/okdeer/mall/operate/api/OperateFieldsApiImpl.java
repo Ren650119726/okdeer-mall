@@ -179,7 +179,7 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
      * @date 2017-4-18
      */
     @Override
-    public Set<OperateFieldDto> initStoreOperateFieldData(String storeId) throws Exception {
+    public List<OperateFieldDto> initStoreOperateFieldData(String storeId) throws Exception {
        return this.operateFieldsService.initStoreOperateFieldData(storeId);
     }
 
@@ -191,7 +191,7 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
      * @date 2017-4-18
      */
     @Override
-    public Set<OperateFieldDto> initCityOperateFieldData(String cityId) throws Exception {
+    public List<OperateFieldDto> initCityOperateFieldData(String cityId) throws Exception {
         return this.operateFieldsService.initCityOperateFieldData(cityId);
     }
 
@@ -220,6 +220,12 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
         anMessage.setTags(tag);
         anMessage.setContent(data);
         rocketMQProducer.sendMessage(anMessage);
+    }
+
+    @Override
+    public List<OperateFieldContentDto> getGoodsOfStoreActivityField(String storeId, int businessType, int template,
+            int sortType, int sort) throws Exception {
+        return this.operateFieldsService.getGoodsOfStoreActivityField(storeId, businessType, template, sortType, sort);
     }
 	
 }
