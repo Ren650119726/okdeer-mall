@@ -2,7 +2,6 @@ package com.okdeer.mall.order.pay.callback;
 
 import org.springframework.stereotype.Service;
 
-import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;

@@ -425,6 +425,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 */
 	private void addSkuSaleNum(PlaceOrderParamDto paramDto) throws Exception {
 		if(paramDto.getSkuType() != OrderTypeEnum.STORE_CONSUME_ORDER){
+			// 服务店到店消费的订单，下单即进行销量计算。便利店到店自提订单，下单之后即进行销量计算。
 			return;
 		}
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
@@ -432,7 +433,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		for (CurrentStoreSkuBo skuBo : parserBo.getCurrentSkuMap().values()) {
 			storeSku = new GoodsStoreSku();
 			storeSku.setId(skuBo.getId());
-			storeSku.setSaleNum(skuBo.getSaleNum() + skuBo.getQuantity() + skuBo.getSkuActQuantity());
+			storeSku.setSaleNum(skuBo.getSaleNum() + skuBo.getQuantity());
 			this.goodsStoreSkuServiceApi.updateByPrimaryKeySelective(storeSku);
 		}
 	}
