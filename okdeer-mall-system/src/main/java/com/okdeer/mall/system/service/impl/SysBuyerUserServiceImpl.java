@@ -33,7 +33,7 @@ import com.okdeer.archive.system.service.SysSmsVerifyCodeServiceApi;
 import com.okdeer.archive.system.service.SysUserLoginLogServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.model.RequestParameter;
+import com.okdeer.base.common.model.RequestParams;
 import com.okdeer.base.common.utils.EncryptionUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
@@ -621,7 +621,7 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	 */
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public Map<String, Object> saveBuyerUserAndLog(RequestParameter parameters,String mobilePhone) throws Exception {
+	public Map<String, Object> saveBuyerUserAndLog(RequestParams parameters,String mobilePhone) throws Exception {
 		// 添加用户来源，clientType:0是管家版app，3是便利店app
 		String clientTypeStr = parameters.getClientType();
 		SysBuyerUserConditionDto condition = new SysBuyerUserConditionDto();
