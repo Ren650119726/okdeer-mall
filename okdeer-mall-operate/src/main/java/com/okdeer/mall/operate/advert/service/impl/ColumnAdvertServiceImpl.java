@@ -26,6 +26,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.archive.system.entity.PsmsSmallCommunityInfo;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.IPsmsSmallCommunityInfoServiceApi;
@@ -625,6 +626,13 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	}
 	// end add by zhulq 获取默认的广告图片 2016-10-18
 
+	// begin add by zhangkn 获取广告商品列表
+	@Override
+	public List<Map<String, Object>> listGoodsForAdvert(Map<String, Object> map) {
+		return advertMapper.listGoodsForAdvert(map);
+	}
+	// end add by zhangkn 获取广告商品列表
+
 	
 	// begin  add　　by zengjz  修改广告的排序值
 	@Override
@@ -852,5 +860,24 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	public List<ColumnAdvert> findForAppV220(ColumnAdvertQueryParamDto advertQueryParamDto) {
 		return advertMapper.findForAppV220(advertQueryParamDto);
 	}
+
+	@Override
+	public PageUtils<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(String advertId, String storeId, 
+			Integer pageNumber, Integer pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true);
+		List<GoodsStoreActivitySkuDto> list = advertMapper.findAdvertGoodsByAdvertId(advertId, storeId);
+		return new PageUtils<GoodsStoreActivitySkuDto>(list);
+	}
 	
+	/**
+	 * @Description:根据店铺活动类型 活动商品列表
+	 * @param storeId
+	 * @param saleType
+	 * @author tuzhd
+	 * @date 2017年3月13日
+	 */
+	@Override
+	public List<GoodsStoreActivitySkuDto> findGoodsByActivityType(String storeId,Integer saleType) {
+		return advertMapper.findGoodsByActivityType(storeId,saleType);
+	}
 }

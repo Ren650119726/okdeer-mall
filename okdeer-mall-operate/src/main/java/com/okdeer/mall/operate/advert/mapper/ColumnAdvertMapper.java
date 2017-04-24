@@ -187,6 +187,17 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	ColumnAdvert listDefaultForPos(Map<String,Object> map);
 	// begin  add　　by zhulq  获取默认的广告图片  2016-10-18
 	
+	// begin  add　　by zhangkn  获取广告商品列表
+	/**
+	 * @Description: 获取广告商品列表
+	 * @param map  查询参数
+	 * @return list
+	 * @author zhangkn
+	 * @date 2016年10月18日
+	 */
+	List<Map<String,Object>> listGoodsForAdvert(Map<String, Object> map);
+	// end  add　　by zhangkn  获取广告商品列表
+	
 	/**
 	 * 根据活动url查询广告信息
 	 * @param targetUrl 活动url
@@ -224,5 +235,23 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	 */
 	List<ColumnAdvert> findForAppV220(ColumnAdvertQueryParamDto advertQueryParamDto);
 	
-
+	/**
+	 * @Description: 根据广告id获取广告商品列表
+	 * @param advertId  广告id
+	 * @return list
+	 * @author xuzq01
+	 * @param storeId 
+	 * @date 2017年02月08日
+	 */
+	List<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(@Param("advertId")String advertId, @Param("storeId")String storeId);
+	
+	
+	/**
+	 * @Description: 根据店铺活动类型 活动商品列表
+	 * @return list
+	 * @author tuzhd
+	 * @param storeId 
+	 * @date 2017年03月13日
+	 */
+	List<GoodsStoreActivitySkuDto> findGoodsByActivityType(@Param("storeId")String storeId,@Param("saleType")Integer saleType);
 }
