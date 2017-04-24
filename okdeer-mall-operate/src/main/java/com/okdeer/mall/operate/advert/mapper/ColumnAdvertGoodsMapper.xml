@@ -3,7 +3,7 @@
 <mapper namespace="com.okdeer.mall.operate.advert.mapper.ColumnAdvertGoodsMapper" >
     <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.advert.entity.ColumnAdvertGoods" >
         <id column="id" property="id" jdbcType="VARCHAR" />
-        <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
+        <result column="advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
         <result column="goods_id" property="goodsId" jdbcType="VARCHAR" />
         <result column="model_id" property="modelId" jdbcType="VARCHAR" />
         <result column="sort" property="sort" jdbcType="INTEGER" />
@@ -61,16 +61,16 @@
   </resultMap>
   <!-- end xuzq 20170419 查询广告活动关联的店铺商品信息 -->
     <sql id="Base_Column_List" > 
-        id, activity_advert_id, goods_id, model_id, create_time, sort
+        id, advert_id, goods_id, model_id, create_time, sort
     </sql>
 	
 	<select id="findByAdvertId" resultMap="BaseResultMap" parameterType="java.lang.String" >
-        select s.id, s.activity_advert_id, model_id, if(k.id is NULL,s.goods_id,k.id) goods_id, s.create_time
+        select s.id, s.advert_id, model_id, if(k.id is NULL,s.goods_id,k.id) goods_id, s.create_time
         from column_advert_goods s
 			 LEFT JOIN goods_store_sku_service gs on s.goods_id = gs.product_no
 			 LEFT JOIN goods_store_sku k on k.id = gs.store_sku_id
-        where activity_advert_id = #{advertId,jdbcType=VARCHAR}
-        order by create_time 
+        where s.advert_id = #{advertId,jdbcType=VARCHAR}
+        order by s.create_time 
     </select>
    
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -87,7 +87,7 @@
                 id,
             </if>
             <if test="activityAdvertId != null" >
-                activity_advert_id,
+                advert_id,
             </if>
             <if test="modelId != null" >
                 model_id,
@@ -126,7 +126,7 @@
     <!-- 批量插入关联商品 -->
     <insert id="saveBatch" parameterType="list">
         insert into column_advert_goods(
-			id, activity_advert_id, goods_id, model_id, create_time, sort
+			id, advert_id, goods_id, model_id, create_time, sort
 		)values
 		<foreach collection="list" item="item" index="index" separator="," >
         (
@@ -144,7 +144,7 @@
         update column_advert_goods
         <set >
             <if test="activityAdvertId != null" >
-                activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR},
+                advert_id = #{activityAdvertId,jdbcType=VARCHAR},
             </if>
             <if test="modelId != null" >
                 model_id = #{modelId,jdbcType=VARCHAR},
@@ -170,7 +170,7 @@
     <!-- 删除关联商品信息by活动id -->
     <delete id="deleteByActivityAdvertId" parameterType="java.lang.String" >
         delete from column_advert_goods
-        where activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+        where advert_id = #{activityAdvertId,jdbcType=VARCHAR}
     </delete>
     
     <sql id="advert_goods_columns">
@@ -298,8 +298,8 @@
         	LEFT JOIN store_info store ON store.id = sku.store_id  
         where 
        		   goods.model_id = #{modelId,jdbcType=VARCHAR}
-       		   and goods.activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
-       	order by  goods.`sort`
+       		   and goods.advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+       	order by  goods.`sort` DESC 
     </select>
     <select id="findCloudSkuByModelId" resultMap="CloudResultMap" parameterType="java.lang.String" >
         select distinct
@@ -308,8 +308,8 @@
         INNER JOIN column_advert_goods goods on goods.goods_id = sku.id
         where 
        		  goods.model_id = #{modelId,jdbcType=VARCHAR}
-       		  and goods.activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
-       	order by  goods.`sort`
+       		  and goods.advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+       	order by  goods.`sort` DESC
     </select>
 	<!-- end xuzq 20170419 查询广告活动关联的店铺商品信息 --> 
 </mapper>
