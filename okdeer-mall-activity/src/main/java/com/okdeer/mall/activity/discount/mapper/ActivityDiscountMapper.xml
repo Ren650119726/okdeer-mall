@@ -469,17 +469,17 @@
   
   <!-- 注：V2.3版本只有便利店有满减 -->
   <select id="findByStore" parameterType="com.okdeer.mall.activity.dto.ActivityParamDto" resultType="string">
-       SELECT t.id
+       SELECT DISTINCT t.id
        FROM activity_discount t
        LEFT JOIN activity_business_rel t1 ON t.id = t1.activity_id
        LEFT JOIN store_info t2 
        ON (t1.business_type = 0 AND t1.business_id = t2.city_id)
        OR (t1.business_type = 1 AND t1.business_id = t2.province_id)
        OR (t1.business_type = 2 AND t1.business_id = t2.id)
-       WHERE t2.id = #{storeId,jdbcType=VARCHAR}
+       WHERE 
+       	   (t.limit_range = 0 OR t2.id = #{storeId,jdbcType=VARCHAR})
        AND LOCATE(#{limitChannel,jdbcType=VARCHAR},t.limit_channel) &gt; 0
        AND t.status = 1
-       AND t2.type = 2
        <if test="type != null">
        	   AND t.type = #{type}
        </if>
