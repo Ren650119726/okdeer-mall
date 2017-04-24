@@ -303,6 +303,8 @@ public class GoodsCheckServiceImpl implements GoodsCheckService {
 			} else {
 				info.setMessage(OrderTipMsgConstant.GOODS_IS_CHANGE);
 			}
+		} else {
+			item.setSpuCategoryId(storeSku.getSpuCategoryId());
 		}
 		return info;
 	}

@@ -35,10 +35,7 @@ import com.okdeer.archive.goods.store.enums.GoodsStoreSkuPayTypeEnum;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.dto.StockUpdateDto;
-import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
-import com.okdeer.archive.stock.vo.AdjustDetailVo;
-import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.PublicResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
@@ -68,7 +65,7 @@ import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRangeService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
-import com.okdeer.mall.activity.service.FavourFilterStrategy;
+import com.okdeer.mall.activity.service.CouponsFilterStrategy;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
@@ -536,6 +533,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		discountRecord.setStoreId(orderReq.getStoreId());
 		discountRecord.setOrderId(orderId);
 		discountRecord.setOrderTime(new Date());
+		discountRecord.setOrderDisabled(Disabled.valid);
 
 		if (orderReq.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
 			// 满减活动
@@ -545,7 +543,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 			discountRecord.setDiscountType(ActivityDiscountType.discount);
 		}
 
-		activityDiscountRecordMapper.insertRecord(discountRecord);
+		activityDiscountRecordMapper.add(discountRecord);
 	}
 
 	/**
@@ -1291,7 +1289,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		
 		FavourParamBO paramBo = favourParamBuilder.build(storeInfo, orderReq, totalAmount);
 		// 获取用户有效的代金券
-		List<Coupons> couponList = activityCouponsRecordService.findValidCoupons(paramBo,new FavourFilterStrategy() {
+		List<Coupons> couponList = activityCouponsRecordService.findValidCoupons(paramBo,new CouponsFilterStrategy() {
 			
 			@Override
 			public boolean accept(Favour favour) throws Exception {

@@ -1,8 +1,8 @@
 package com.okdeer.mall.activity.discount.service.impl;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -33,9 +33,11 @@ import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.entity.ReturnInfo;
+import com.okdeer.common.utils.EnumAdapter;
 import com.okdeer.mall.activity.bo.ActLimitRelBuilder;
 import com.okdeer.mall.activity.bo.ActivityParamBo;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.enums.CashDelivery;
 import com.okdeer.mall.activity.discount.entity.ActivityBusinessRel;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
@@ -52,8 +54,8 @@ import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.common.utils.RobotUserUtil;
-import com.okdeer.mall.order.vo.Discount;
 import com.okdeer.mall.order.vo.FullSubtract;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * 满减(满折)活动service实现类
@@ -95,6 +97,9 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	@Reference(version = "1.0.0",check=false)
 	private GoodsSpuCategoryServiceApi goodsSpuCategoryServiceApi;
 	
+	@Resource
+	private MaxFavourStrategy genericMaxFavourStrategy;
+	
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return activityDiscountMapper;
@@ -113,13 +118,19 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			retInfo.setFlag(false);
 			retInfo.setMessage("该满减活动处于" + currentAct.getStatus().getValue() + "状态下，不能修改！");
 		}
-		// TODO 同一时间、同一地区、同一店铺活动唯一性检查。
+		// 同一时间、同一地区、同一店铺活动唯一性检查。
+		if(!checkUnique(actInfoDto)){
+			retInfo.setFlag(false);
+			retInfo.setMessage("创建失败，选定范围指定时间内已存在活动，请重新选择范围或更改时间！");
+			return retInfo;
+		}
 		// 优惠条件列表
 		List<ActivityDiscountCondition> conditionList = parseConditionList(actInfoDto);
 		// 限制条件列表
 		List<ActivityBusinessRel> limitList = parseLimitList(actInfoDto);
-		// 删除活动下的条件和业务关联关系
-		
+		if(actInfo.getType() != ActivityDiscountType.PIN_MONEY){
+			actInfo.setGrantType(0);
+		}
 		// 修改活动信息
 		activityDiscountMapper.update(actInfo);
 		// 删除活动下的优惠条件
@@ -140,7 +151,12 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	public ReturnInfo add(ActivityInfoDto actInfoDto) {
 		// 初始化ReturnInfo
 		ReturnInfo retInfo = new ReturnInfo();
-		// TODO 同一时间、同一地区、同一店铺活动唯一性检查。
+		// 同一时间、同一地区、同一店铺活动唯一性检查。
+		if(!checkUnique(actInfoDto)){
+			retInfo.setFlag(false);
+			retInfo.setMessage("创建失败，选定范围指定时间内已存在活动，请重新选择范围或更改时间！");
+			return retInfo;
+		}
 		// 活动信息
 		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
 		// 生成唯一主键
@@ -163,6 +179,31 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			activityBusinessRelMapper.batchAdd(limitList);
 		}
 		return retInfo;
+	}
+	
+	/**
+	 * @Description: 活动唯一性校验
+	 * @param actInfoDto
+	 * @return   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
+	private boolean checkUnique(ActivityInfoDto actInfoDto){
+		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
+		ActivityParamBo paramBo = BeanMapper.map(actInfo, ActivityParamBo.class);
+		if(StringUtils.isNotEmpty(actInfo.getId())){
+			paramBo.setExcludedId(actInfo.getId());
+		}
+		if(StringUtils.isNotEmpty(actInfoDto.getLimitRangeIds())){
+			String[] tempArr = actInfoDto.getLimitRangeIds().split(",");
+			paramBo.setLimitRangeIds(Arrays.asList(tempArr));
+		}
+		int count = activityDiscountMapper.countConflict(paramBo);
+		if(count >= 1){
+			return false;
+		}else{
+			return true;
+		}
 	}
 	
 	private List<ActivityDiscountCondition> parseConditionList(ActivityInfoDto actInfoDto){
@@ -253,56 +294,17 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			}
 		}
 		// 更新进行中的活动
-		paramBo.setStatus(ActivityDiscountStatus.ing);
-		paramBo.setActivityIds(ingList);
-		activityDiscountMapper.updateStatus(paramBo);
+		if(CollectionUtils.isNotEmpty(ingList)){
+			paramBo.setStatus(ActivityDiscountStatus.ing);
+			paramBo.setActivityIds(ingList);
+			activityDiscountMapper.updateStatus(paramBo);
+		}
 		// 更新需要结束的活动
-		paramBo.setStatus(ActivityDiscountStatus.end);
-		paramBo.setActivityIds(endList);
+		if(CollectionUtils.isNotEmpty(endList)){
+			paramBo.setStatus(ActivityDiscountStatus.end);
+			paramBo.setActivityIds(endList);
+		}
 		activityDiscountMapper.updateStatus(paramBo);
-	}
-
-	@Override
-	public List<Discount> findValidDiscount(FavourParamBO paramBo, FavourFilterStrategy favourFilter) throws Exception {
-		List<Discount> discountList = activityDiscountMapper.findValidDiscount(paramBo);
-		if(CollectionUtils.isEmpty(discountList)){
-			return discountList;
-		}
-		// 对集合进行数据迭代
-		Iterator<Discount> it = discountList.iterator();
-		Discount discount = null;
-		while(it.hasNext()){
-			discount = it.next();
-			if(!favourFilter.accept(discount)){
-				// 如果过滤器不接受该优惠，则将该优惠从列表中移除
-				it.remove();
-			}else{
-				discount.setMaxFavourStrategy(maxFavourStrategy.calMaxFavourRule(discount, paramBo.getTotalAmount()));
-			}
-		}
-		return discountList;
-	}
-
-	@Override
-	public List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo, FavourFilterStrategy favourFilter)
-			throws Exception {
-		List<FullSubtract> fullSubtractList = activityDiscountMapper.findValidFullSubtract(paramBo);
-		if(CollectionUtils.isEmpty(fullSubtractList)){
-			return fullSubtractList;
-		}
-		// 对集合进行数据迭代
-		Iterator<FullSubtract> it = fullSubtractList.iterator();
-		FullSubtract fullSubtract = null;
-		while(it.hasNext()){
-			fullSubtract = it.next();
-			if(!favourFilter.accept(fullSubtract)){
-				// 如果过滤器不接受该优惠，则将该优惠从列表中移除
-				it.remove();
-			}else{
-				fullSubtract.setMaxFavourStrategy(maxFavourStrategy.calMaxFavourRule(fullSubtract, paramBo.getTotalAmount()));
-			}
-		}
-		return fullSubtractList;
 	}
 
 	@Override
@@ -319,6 +321,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	}
 
 	@Override
+	@Transactional(rollbackFor=Exception.class)
 	public ReturnInfo batchClose(ActivityParamBo paramBo) {
 		ReturnInfo retInfo = new ReturnInfo();
 		ActivityParamDto paramDto = new ActivityParamDto();
@@ -340,7 +343,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	}
 
 	@Override
-	public ActivityInfoDto findInfoById(String id) throws ServiceException {
+	public ActivityInfoDto findInfoById(String id,boolean isLoadDetail) throws ServiceException {
 		// 活动基本信息
 		ActivityDiscount activityInfo = activityDiscountMapper.findById(id);
 		// 活动优惠条件信息
@@ -348,23 +351,38 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		// 活动业务限制信息
 		List<ActivityBusinessRel> relList = activityBusinessRelMapper.findByActivityId(id);
 		// 解析业务限制信息
-		ActLimitRelBuilder limitBuilder = parseRelList(relList);
+		ActLimitRelBuilder limitBuilder = parseRelList(relList,isLoadDetail);
 		ActivityInfoDto actInfoDto = new ActivityInfoDto();
 		actInfoDto.setActivityInfo(activityInfo);
 		actInfoDto.setActivityType(activityInfo.getType().ordinal());
 		actInfoDto.setConditionList(conditionList);
-		actInfoDto.setRelDtoList(limitBuilder.retrieveResult());
-		actInfoDto.setAreaIds(limitBuilder.getAreaIds());
+		if(limitBuilder != null){
+			actInfoDto.setRelDtoList(limitBuilder.retrieveResult());
+			actInfoDto.setLimitRangeIds(limitBuilder.getLimitRangeIds());
+		}
 		return actInfoDto;
 	}
 	
-	private  ActLimitRelBuilder parseRelList(List<ActivityBusinessRel> relList) throws ServiceException{
+	/**
+	 * @Description: 解析活动限制关系
+	 * @param relList
+	 * @param isLoadDetail
+	 * @return
+	 * @throws ServiceException   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
+	private  ActLimitRelBuilder parseRelList(List<ActivityBusinessRel> relList,boolean isLoadDetail) throws ServiceException{
 		if(CollectionUtils.isEmpty(relList)){
 			return null;
 		}
 		ActLimitRelBuilder builder = new ActLimitRelBuilder();
 		// 加载当前业务列表
 		builder.loadBusiRelList(relList);
+		if(!isLoadDetail){
+			// 不用加载明细，直接返回
+			return builder;
+		}
 		// 地址列表
 		List<Address> areaList = Lists.newArrayList();
 		// 店铺列表
@@ -438,6 +456,12 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		return storeSkuPage.getList();
 	}
 	
+	/**
+	 * @Description: 后置处理店铺信息
+	 * @param storeInfoList   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
 	private void postStoreList(List<StoreInfo> storeInfoList){
 		if(CollectionUtils.isEmpty(storeInfoList)){
 			return;
@@ -456,11 +480,60 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		List<ActivityInfoDto> actInfoList = Lists.newArrayList();
 		ActivityInfoDto actInfo = null;
 		for(String activityId : activityIds){
-			actInfo = this.findInfoById(activityId);
+			actInfo = this.findInfoById(activityId,false);
 			if(actInfo != null){
 				actInfoList.add(actInfo);
 			}
 		}
 		return actInfoList;
+	}
+
+	@Override
+	public List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo, FavourFilterStrategy favourFilter)
+			throws Exception {
+		List<FullSubtract> fullSubtractList = Lists.newArrayList();
+		FullSubtract fullSubtract = null;
+		// 满减活动查询条件
+		ActivityParamDto paramDto = new ActivityParamDto();
+		paramDto.setStoreId(paramBo.getStoreId());
+		paramDto.setLimitChannel(String.valueOf(paramBo.getChannel().ordinal()));
+		paramDto.setType(ActivityDiscountType.mlj);
+		// 查询店铺所享有的满减活动
+		List<ActivityInfoDto> actInfoDtoList = this.findByStore(paramDto);
+		if(CollectionUtils.isEmpty(actInfoDtoList)){
+			return fullSubtractList;
+		}
+		List<ActivityDiscountCondition> conditionList = null;
+		for(ActivityInfoDto actInfoDto : actInfoDtoList){
+			ActivityDiscount actInfo = actInfoDto.getActivityInfo();
+			// 一个店铺同一时间只会存在一个满减活动。这里放入循环是为了后期加入折扣时使用。
+			if(!favourFilter.accept(actInfoDto)){
+				continue;
+			}
+			conditionList = actInfoDto.getConditionList();
+			for(ActivityDiscountCondition condition : conditionList){
+				if(condition.getArrive().compareTo(paramBo.getTotalAmount()) == 1){
+					continue;
+				}
+				fullSubtract = new FullSubtract();
+				// 活动Id
+				fullSubtract.setId(actInfoDto.getActivityInfo().getId());
+				// 满减条件Id
+				fullSubtract.setActivityItemId(condition.getId());
+				// 活动类型
+				fullSubtract.setActivityType(EnumAdapter.convert(actInfo.getType()).ordinal());
+				fullSubtract.setArrive(ConvertUtil.format(condition.getArrive()));
+				fullSubtract.setFullSubtractPrice(ConvertUtil.format(condition.getDiscount()));
+				fullSubtract.setIndate(DateUtils.formatDate(actInfo.getEndTime(), "yyyy-MM-dd HH:mm:ss"));
+				// 0：活动由平台发起，1：活动由商家发起
+				fullSubtract.setType("0".equals(actInfo.getStoreId())? 0 : 1);
+				// 可用范围(0,支持在线，1支持货到付款，2，支持所有支付方式)
+				fullSubtract.setUsableRange(actInfo.getIsCashDelivery() == CashDelivery.yes ? "2" : "0");
+				fullSubtract.setMaxFavourStrategy(genericMaxFavourStrategy.calMaxFavourRule(fullSubtract, paramBo.getTotalAmount()));
+				
+				fullSubtractList.add(fullSubtract);
+			}
+		}
+		return fullSubtractList;
 	}
 }

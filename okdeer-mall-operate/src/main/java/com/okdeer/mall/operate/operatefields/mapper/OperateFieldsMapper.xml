@@ -245,13 +245,14 @@
 		FROM  column_operate_fields WHERE  
 		
 		<if test="type == 1">
-			<![CDATA[ sort >= #{sort,jdbcType=TINYINT} ]]>
+			<![CDATA[ sort >= #{operateFields.sort,jdbcType=TINYINT} ]]>
 		</if>
 		<if test="type == -1">
-			<![CDATA[ sort <= #{sort,jdbcType=TINYINT} ]]>
+			<![CDATA[ sort <= #{operateFields.sort,jdbcType=TINYINT} ]]>
 		</if>
-		AND id != #{id,jdbcType=VARCHAR}
-		
+		AND id != #{operateFields.id,jdbcType=VARCHAR}
+		AND type = #{operateFields.type,jdbcType=TINYINT}
+		AND business_id = #{operateFields.businessId,jdbcType=VARCHAR}
 		<if test="type == 1">
 			ORDER BY sort ASC
 		</if>
@@ -312,7 +313,6 @@
 			column_operate_fields aa
 		INNER JOIN store_info bb ON (
 			bb.type = 2
-			AND bb.audit_status = 1
 			AND aa.type = 1
 			AND aa.business_id = '0'
 		) WHERE bb.id = #{storeId,jdbcType=VARCHAR}

@@ -42,6 +42,7 @@ public class MyBatisConfig implements TransactionManagementConfigurer {
 		ds.setUsername(this.properties.getUsername());
 		ds.setPassword(this.properties.getPassword());
 		ds.setMaxActive(this.properties.getMaxActive());
+		ds.setMaxWait(this.properties.getMaxWait());
 		ds.setInitialSize(this.properties.getInitialSize());
 		ds.setValidationQuery(this.properties.getValidationQuery());
 		ds.setPoolPreparedStatements(this.properties.isPoolPreparedStatements());

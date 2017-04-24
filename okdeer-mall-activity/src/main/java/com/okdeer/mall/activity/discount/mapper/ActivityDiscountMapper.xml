@@ -467,6 +467,7 @@
        and dis.store_id = #{storeId, jdbcType=VARCHAR}
   </select>
   
+  <!-- 注：V2.3版本只有便利店有满减 -->
   <select id="findByStore" parameterType="com.okdeer.mall.activity.dto.ActivityParamDto" resultType="string">
        SELECT t.id
        FROM activity_discount t
@@ -478,11 +479,32 @@
        WHERE t2.id = #{storeId,jdbcType=VARCHAR}
        AND LOCATE(#{limitChannel,jdbcType=VARCHAR},t.limit_channel) &gt; 0
        AND t.status = 1
-       <if test="storeType != null and storeType.name() != 'CLOUD_STORE'">
-       		AND t.store_id = #{storeId,jdbcType=VARCHAR}
-       </if>
+       AND t2.type = 2
        <if test="type != null">
-       		AND t.type = #{type,jdbcType=TINYINT}
+       	   AND t.type = #{type}
+       </if>
+  </select>
+  
+  <!-- 同一地区、同一时间、同一店铺活动互斥统计。 查询业务类型为0：市、1：省、2：店铺，活动状态为未开始和已进行中的-->
+  <select id="countConflict" parameterType="com.okdeer.mall.activity.bo.ActivityParamBo" resultType="int">
+       SELECT COUNT(1)
+       FROM activity_discount t
+       LEFT JOIN activity_business_rel t1 ON t.id = t1.activity_id  
+       WHERE t1.business_type IN (0,1,2)
+       AND t.status IN (0,1)
+       AND (
+       		 (t.start_time &lt;= #{startTime,jdbcType=TIMESTAMP} AND t.end_time &gt;= #{startTime,jdbcType=TIMESTAMP})
+       	  OR (t.start_time &gt;= #{startTime,jdbcType=TIMESTAMP} AND t.start_time &lt;= #{endTime,jdbcType=TIMESTAMP})
+       )
+       AND type = #{type,jdbcType=TINYINT}
+       <if test="limitRangeIds != null and limitRangeIds.size()>0">
+       	   AND t1.business_id IN 
+       	   <foreach collection="limitRangeIds" item="limitRangeId" separator="," open="(" close=")">
+       	   		#{limitRangeId}
+       	   </foreach>
+       </if>
+       <if test="excludedId != null">
+       	   AND t.id != #{excludedId,jdbcType=VARCHAR}
        </if>
   </select>
 </mapper>

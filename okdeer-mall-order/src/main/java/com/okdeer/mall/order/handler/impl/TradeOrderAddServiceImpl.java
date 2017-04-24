@@ -13,13 +13,13 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.beanutils.BeanComparator;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.comparators.ComparatorChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -802,12 +802,13 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 
 		TradeOrderReq req = reqDto.getData();
 		List<GoodsStoreSku> currentStoreSkuList = reqDto.getContext().getCurrentStoreSkuList();
+		List<String> haveFavourGoodsIds = reqDto.getContext().getHaveFavourGoodsIds();
 
 		List<String> mainPicList = new ArrayList<String>();
 
 		String orderId = tradeOrder.getId();
 		// 订单项总金额
-		BigDecimal totalAmount = calculateAmount(req.getList());
+		BigDecimal totalAmount =reqDto.getContext().getTotalAmountHaveFavour();
 		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
 		BigDecimal favourSum = new BigDecimal("0.00");
 		int index = 0;
@@ -849,9 +850,11 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			BigDecimal totalAmountOfItem = goodsItem.getTotalAmount();
 			tradeOrderItem.setTotalAmount(totalAmountOfItem);
 			// 计算订单项优惠金额
-			BigDecimal favourItem = new BigDecimal(0.0);
+			BigDecimal favourItem = BigDecimal.valueOf(0.00);
 			if (req.getActivityType() != ActivityTypeEnum.NO_ACTIVITY) {
-				if (index++ < itemSize - 1) {
+				if(CollectionUtils.isNotEmpty(haveFavourGoodsIds) && !haveFavourGoodsIds.contains(goodsItem.getSkuId())){
+					favourItem = BigDecimal.valueOf(0.00);
+				} else if (index++ < itemSize - 1) {
 					favourItem = totalAmountOfItem.multiply(totalFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
 					if (favourItem.compareTo(totalAmountOfItem) == 1) {
 						favourItem = totalAmountOfItem;
@@ -1090,6 +1093,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		discountRecord.setStoreId(req.getStoreId());
 		discountRecord.setOrderId(orderId);
 		discountRecord.setOrderTime(new Date());
+		discountRecord.setOrderDisabled(Disabled.valid);
 
 		if (activityType == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
 			// 满减活动
@@ -1099,6 +1103,6 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			discountRecord.setDiscountType(ActivityDiscountType.discount);
 		}
 
-		activityDiscountRecordMapper.insertRecord(discountRecord);
+		activityDiscountRecordMapper.add(discountRecord);
 	}
 }

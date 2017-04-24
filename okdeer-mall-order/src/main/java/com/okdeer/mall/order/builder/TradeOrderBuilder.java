@@ -565,7 +565,7 @@ public class TradeOrderBuilder {
 		
 		String orderId = tradeOrder.getId();
 		// 订单项总金额
-		BigDecimal totalAmount = parserBo.getTotalItemAmount();
+		BigDecimal totalAmount = parserBo.getTotalAmountHaveFavour();
 		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
 		BigDecimal favourSum = new BigDecimal("0.00");
 		int index = 0;
@@ -618,7 +618,9 @@ public class TradeOrderBuilder {
 			// 计算订单项优惠金额
 			BigDecimal favourItem = BigDecimal.valueOf(0.0);
 			if (paramDto.getActivityType() != ActivityTypeEnum.NO_ACTIVITY) {
-				if (index++ < itemSize - 1) {
+				if(!parserBo.getHaveFavourGoodsMap().containsKey(skuBo.getId())){
+					favourItem = BigDecimal.valueOf(0.0);
+				} else if (index++ < itemSize - 1) {
 					favourItem = totalAmountOfItem.multiply(totalFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
 					if (favourItem.compareTo(totalAmountOfItem) == 1) {
 						favourItem = totalAmountOfItem;

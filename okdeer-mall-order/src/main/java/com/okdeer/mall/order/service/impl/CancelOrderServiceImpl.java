@@ -36,6 +36,7 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
+import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
 import com.okdeer.mall.activity.group.service.ActivityGroupRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
@@ -67,6 +68,7 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *     v1.2.0            2016-11-11          zengjz           重写取消订单代码
+ *     V2.3 			 2017-04-22			 maojj			  取消时释放用户满减记录
  */
 @Service
 public class CancelOrderServiceImpl implements CancelOrderService {
@@ -141,6 +143,9 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	 */
 	@Resource
 	private RocketMQProducer rocketMQProducer;
+	
+	@Resource
+	private ActivityDiscountRecordService activityDiscountRecordService;
 
 	/**
 	 * @Description: 取消订单
@@ -222,6 +227,16 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			} else if (tradeOrder.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY) {
 				// 秒杀活动释放购买记录
 				activitySeckillRecordService.updateStatusBySeckillId(tradeOrder.getId());
+			} else if (tradeOrder.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES){
+				// Begin V2.3 added by maojj 2017-04-22
+				// 释放用户参与满减活动的频次。规则与代金券保持一致。
+				if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER
+						|| OrderStatusEnum.DROPSHIPPING != oldOrder.getStatus()
+						|| (OrderCancelType.CANCEL_BY_BUYER != tradeOrder.getCancelType())) {
+					// 如果实物订单或者不是待服务状态或者不是用户取消的就需要释放
+					activityDiscountRecordService.deleteByOrderId(tradeOrder.getId());
+				}
+				// End V2.3 added by maojj 2017-04-22
 			}
 
 			// 特惠活动释放限购数量

@@ -11,7 +11,6 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
-import com.okdeer.mall.order.vo.Discount;
 import com.okdeer.mall.order.vo.FullSubtract;
 
 /**
@@ -57,24 +56,6 @@ public interface ActivityDiscountService extends IBaseService{
 	void updateStatus();
 	
 	/**
-	 * @Description: 查询用户有效的折扣优惠
-	 * @param params 查询用户有效优惠请求对象
-	 * @return List
-	 * @author maojj
-	 * @date 2016年7月16日
-	 */
-	List<Discount> findValidDiscount(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
-	
-	/**
-	 * @Description: 查询用户有效的满减优惠
-	 * @param params 查询用户有效优惠请求对象
-	 * @return List
-	 * @author maojj
-	 * @date 2016年7月16日
-	 */
-	List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
-	
-	/**
 	 * 
 	 * @Description: 查询店铺的满减满折活动和条件
 	 * @param params 查询参数
@@ -105,11 +86,13 @@ public interface ActivityDiscountService extends IBaseService{
 	/**
 	 * @Description: 根据活动Id查找活动完整信息
 	 * @param id
-	 * @return   
+	 * @param isLoadDetail 是否加载具体的限制信息，如限制店铺，是否需要加载店铺明细
+	 * @return
+	 * @throws Exception   
 	 * @author maojj
-	 * @date 2017年4月19日
+	 * @date 2017年4月21日
 	 */
-	ActivityInfoDto findInfoById(String id) throws Exception;
+	ActivityInfoDto findInfoById(String id,boolean isLoadDetail) throws Exception;
 	
 	/**
 	 * @Description: 查询店铺所拥有的满减活动列表
@@ -119,4 +102,15 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @date 2017年4月20日
 	 */
 	List<ActivityInfoDto> findByStore(ActivityParamDto paramDto) throws Exception;
+	
+	/**
+	 * @Description: 查询有效的优惠信息
+	 * @param paramBo
+	 * @param favourFilter
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年4月21日
+	 */
+	List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
 }

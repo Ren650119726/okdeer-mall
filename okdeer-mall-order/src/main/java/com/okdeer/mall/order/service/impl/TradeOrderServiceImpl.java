@@ -1786,7 +1786,28 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// End Bug:13700 added by maojj 2016-10-10
 				// added by maojj 给ERP发消息去生成出入库单据
 				// stockMQProducer.sendMessage(stockAdjustVo);
-
+				// Begin V2.3 added by maojj 2017-04-24
+				// 便利店商品，确认收货时增加销量
+				if ( tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+					// 获取订单中的店铺商品Id列表
+					List<String> storeSkuIds = Lists.newArrayList();
+					Map<String,Integer> skuNumMap = Maps.newHashMap();
+					for (TradeOrderItem orderItem : tradeOrder.getTradeOrderItem()) {
+						// 线上支付的，支付完成，销量增加
+						storeSkuIds.add(orderItem.getStoreSkuId());
+						skuNumMap.put(orderItem.getStoreSkuId(), orderItem.getQuantity());
+					}
+					if(CollectionUtils.isEmpty(storeSkuIds)){
+						return;
+					}
+					// 批量查询店铺商品库信息
+					List<GoodsStoreSku> storeSkuList = this.goodsStoreSkuService.selectSkuByIds(storeSkuIds);
+					for(GoodsStoreSku storeSku : storeSkuList){
+						storeSku.setSaleNum(ConvertUtil.format(storeSku.getSaleNum()) + skuNumMap.get(storeSku.getId()));
+						goodsStoreSkuService.updateByPrimaryKeySelective(storeSku);
+					}
+				}
+				// End V2.3 added by maojj 2017-04-24
 			}
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
@@ -6068,6 +6089,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 服务店订单 ，活动范围判定：物流地址
 			map.put("provinceId", storeInfo.getProvinceId());
 			map.put("cityId", storeInfo.getCityId());
+			//add by mengsj begin 增加店铺id
+			map.put("storeId", storeInfo.getId());
+			//add by mengsj end 增加店铺id
 		}
 		// end 涂志定
 		// 订单实付金额
