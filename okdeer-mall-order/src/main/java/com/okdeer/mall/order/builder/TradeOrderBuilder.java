@@ -558,6 +558,7 @@ public class TradeOrderBuilder {
 	 * @author maojj
 	 * @date 2017年1月5日
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private List<TradeOrderItem> buildOrderItemList(TradeOrder tradeOrder, PlaceOrderParamDto paramDto)
 			throws ServiceException {
 		List<TradeOrderItem> orderItemList = new ArrayList<TradeOrderItem>();
@@ -569,7 +570,7 @@ public class TradeOrderBuilder {
 		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
 		BigDecimal favourSum = new BigDecimal("0.00");
 		int index = 0;
-		int itemSize = paramDto.getSkuList().size();
+		int haveFavourItemSize = parserBo.getHaveFavourGoodsMap().size();
 		TradeOrderItem tradeOrderItem = null;
 
 		Collection<CurrentStoreSkuBo> skuBoSet = parserBo.getCurrentSkuMap().values();
@@ -620,7 +621,7 @@ public class TradeOrderBuilder {
 			if (paramDto.getActivityType() != ActivityTypeEnum.NO_ACTIVITY) {
 				if(!parserBo.getHaveFavourGoodsMap().containsKey(skuBo.getId())){
 					favourItem = BigDecimal.valueOf(0.0);
-				} else if (index++ < itemSize - 1) {
+				} else if (index++ < haveFavourItemSize - 1) {
 					favourItem = totalAmountOfItem.multiply(totalFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
 					if (favourItem.compareTo(totalAmountOfItem) == 1) {
 						favourItem = totalAmountOfItem;
