@@ -6,8 +6,9 @@ import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ENABLEDI
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_RANK_OPERATE_FIELD;
 
 import java.util.List;
-import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -45,6 +46,11 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
      */
     @Autowired
     private RocketMQProducer rocketMQProducer;
+    
+    /**
+     * 日志管理类
+     */
+    private static final Logger logger = LoggerFactory.getLogger(OperateFieldsApiImpl.class);
     
 	@Override
 	public List<OperateFieldsDto> findList(OperateFieldsQueryParamDto queryParamDto) {
@@ -91,7 +97,7 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 		try {
             produceMessage(msgDto, TAG_ADDEDIT_OPERATE_FIELD);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("新增栏位时发送消息异常", e);
         }
 	}
 	
@@ -101,7 +107,7 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
 		List<OperateFieldsContent> list = BeanMapper.mapList(operateFieldscontentDtoList, OperateFieldsContent.class);
 		operateFieldsService.update(operateFields, list);
 		
-	    //发送栏位变更消息
+	    //发送栏位修改消息
         GoodsChangedMsgDto msgDto = new GoodsChangedMsgDto();
         OperateFieldsType type = operateFieldsDto.getType();
         if (type == OperateFieldsType.CITY) {
@@ -113,7 +119,7 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
         try {
             produceMessage(msgDto, TAG_ADDEDIT_OPERATE_FIELD);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("编辑栏位时发送消息异常", e);
         }
 	}
 
@@ -134,13 +140,15 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
         try {
             produceMessage(msgDto, TAG_RANK_OPERATE_FIELD);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("栏位变更顺序时发送消息异常", e);
         }
 	}
 
 	@Override
 	public int update(OperateFieldsDto operateFieldsDto) throws Exception {
 		OperateFields operateFields = BeanMapper.map(operateFieldsDto, OperateFields.class);
+		
+		int number = operateFieldsService.update(operateFields);
 		
         // 启用禁用栏位时发送消息
         // 发送栏位变更消息
@@ -155,10 +163,10 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
         try {
             produceMessage(msgDto, TAG_ENABLEDISABLE_OPERATE_FIELD);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("启用禁用栏位时发送消息异常", e);
         }
 		
-		return operateFieldsService.update(operateFields);
+		return number;
 	}
 
 	@Override
