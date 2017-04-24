@@ -215,7 +215,7 @@
 			AND sku.violation = 0
 			AND sku.store_id = #{storeId,jdbcType=VARCHAR}
 		  	AND s.model_id = #{modelId,jdbcType=VARCHAR}
-			ORDER BY s.`create_time` 
+			ORDER BY s.`sort` DESC 
 	</select>
 	<!-- end 根据广告id获取广告商品列表 xuzq01 20170208-->
 	
@@ -285,7 +285,7 @@
 		        	#{item}
 		        </foreach>
 	        </if>
-	        order by g.`sort` desc
+	        ORDER BY g.`sort` DESC 
 	</select>
 	
   <!-- begin xuzq 20170419 查询广告活动关联的店铺商品信息 -->
