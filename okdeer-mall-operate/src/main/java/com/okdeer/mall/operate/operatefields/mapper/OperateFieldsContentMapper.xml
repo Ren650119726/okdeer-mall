@@ -423,7 +423,9 @@
 					bb.business_type,
 					bb.business_id,
 					bb.sort_type,
-					bb.sort
+					bb.sort,
+					aa.name,
+					aa.create_time
 				FROM
 					column_operate_fields aa
 				INNER JOIN column_operate_fields_content bb ON aa.id = bb.field_id
@@ -433,15 +435,9 @@
 			) aa
 		INNER JOIN column_operate_fields bb ON (
 			bb.type = 2
-			AND NOT EXISTS (
-				SELECT
-					id
-				FROM
-					column_operate_fields_content
-				WHERE
-					field_id = bb.id
-			)
-		) WHERE bb.business_id = #{storeId,jdbcType=VARCHAR} GROUP BY bb.id
+			AND bb.name = aa.name
+			AND aa.create_time = bb.create_time
+		) WHERE bb.business_id = #{storeId,jdbcType=VARCHAR}
 	</insert>
 	<!-- add by mengsj end 初始化店铺运营栏位内容 -->
 	
