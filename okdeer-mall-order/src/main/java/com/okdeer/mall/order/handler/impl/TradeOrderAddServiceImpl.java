@@ -795,7 +795,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private List<TradeOrderItem> buildOrderItemList(TradeOrder tradeOrder, TradeOrderReqDto reqDto)
 			throws ServiceException {
 		List<TradeOrderItem> orderItemList = new ArrayList<TradeOrderItem>();
@@ -812,7 +812,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
 		BigDecimal favourSum = new BigDecimal("0.00");
 		int index = 0;
-		int itemSize = req.getList().size();
+		int itemSize = CollectionUtils.isNotEmpty(haveFavourGoodsIds) ? haveFavourGoodsIds.size() :req.getList().size();
 		TradeOrderItem tradeOrderItem = null;
 		GoodsStoreSku storeSku = null;
 
