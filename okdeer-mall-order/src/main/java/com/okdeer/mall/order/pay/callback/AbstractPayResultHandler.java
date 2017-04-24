@@ -21,7 +21,6 @@ import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
-import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.SendMsgType;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;

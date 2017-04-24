@@ -480,7 +480,9 @@
        AND LOCATE(#{limitChannel,jdbcType=VARCHAR},t.limit_channel) &gt; 0
        AND t.status = 1
        AND t2.type = 2
-       AND t.type = #{type}
+       <if test="type != null">
+       	   AND t.type = #{type}
+       </if>
   </select>
   
   <!-- 同一地区、同一时间、同一店铺活动互斥统计。 查询业务类型为0：市、1：省、2：店铺，活动状态为未开始和已进行中的-->
