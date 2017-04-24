@@ -2,8 +2,6 @@ package com.okdeer.mall.order.handler.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -12,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -33,7 +30,6 @@ import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.UseClientType;
 import com.okdeer.mall.common.enums.UseUserType;
-import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
 import com.okdeer.mall.order.handler.FavourCheckService;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
@@ -167,6 +163,7 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 				return false;
 			}
 			reqDto.getContext().setHaveFavourGoodsIds(haveFavourGoodsIdList);
+			reqDto.getContext().setTotalAmount(totalAmount);
 		}
 		return true;
 	}
@@ -226,6 +223,7 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 				return false;
 			}
 			reqDto.getContext().setHaveFavourGoodsIds(haveFavourGoodsIdList);
+			reqDto.getContext().setTotalAmount(totalAmount);
 		} else if (limitSkuType == LimitSkuType.LIMIT_SKU) {
 			// 限制商品Id列表
 			List<String> limitSkuIds = actInfoDto.getBusinessIds(ActivityBusinessType.SKU);
@@ -240,6 +238,7 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 				return false;
 			}
 			reqDto.getContext().setHaveFavourGoodsIds(haveFavourGoodsIdList);
+			reqDto.getContext().setTotalAmount(totalAmount);
 		}
 		return isValid;
 	}
