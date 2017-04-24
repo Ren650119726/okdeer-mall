@@ -33,6 +33,7 @@ import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.entity.ReturnInfo;
+import com.okdeer.common.utils.EnumAdapter;
 import com.okdeer.mall.activity.bo.ActLimitRelBuilder;
 import com.okdeer.mall.activity.bo.ActivityParamBo;
 import com.okdeer.mall.activity.bo.FavourParamBO;
@@ -520,7 +521,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 				// 满减条件Id
 				fullSubtract.setActivityItemId(condition.getId());
 				// 活动类型
-				fullSubtract.setActivityType(actInfo.getType().ordinal());
+				fullSubtract.setActivityType(EnumAdapter.convert(actInfo.getType()).ordinal());
 				fullSubtract.setArrive(ConvertUtil.format(condition.getArrive()));
 				fullSubtract.setFullSubtractPrice(ConvertUtil.format(condition.getDiscount()));
 				fullSubtract.setIndate(DateUtils.formatDate(actInfo.getEndTime(), "yyyy-MM-dd HH:mm:ss"));
