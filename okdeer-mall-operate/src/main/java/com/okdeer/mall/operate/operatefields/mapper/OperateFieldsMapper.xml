@@ -245,13 +245,14 @@
 		FROM  column_operate_fields WHERE  
 		
 		<if test="type == 1">
-			<![CDATA[ sort >= #{sort,jdbcType=TINYINT} ]]>
+			<![CDATA[ sort >= #{operateFields.sort,jdbcType=TINYINT} ]]>
 		</if>
 		<if test="type == -1">
-			<![CDATA[ sort <= #{sort,jdbcType=TINYINT} ]]>
+			<![CDATA[ sort <= #{operateFields.sort,jdbcType=TINYINT} ]]>
 		</if>
-		AND id != #{id,jdbcType=VARCHAR}
-		
+		AND id != #{operateFields.id,jdbcType=VARCHAR}
+		AND type = #{operateFields.type,jdbcType=TINYINT}
+		AND business_id = #{operateFields.businessId,jdbcType=VARCHAR}
 		<if test="type == 1">
 			ORDER BY sort ASC
 		</if>
