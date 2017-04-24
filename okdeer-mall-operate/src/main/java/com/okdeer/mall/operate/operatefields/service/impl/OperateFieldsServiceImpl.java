@@ -6,14 +6,11 @@ import static com.okdeer.mall.operate.contants.OperateFieldContants.STORE_OPERAT
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,10 +36,12 @@ import com.okdeer.mall.operate.dto.OperateFieldContentDto;
 import com.okdeer.mall.operate.dto.OperateFieldDto;
 import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
 import com.okdeer.mall.operate.dto.StoreActivitGoodsQueryDto;
+import com.okdeer.mall.operate.entity.ColumnNativeSubject;
 import com.okdeer.mall.operate.enums.OperateFieldsAppPointType;
 import com.okdeer.mall.operate.enums.OperateFieldsBusinessType;
 import com.okdeer.mall.operate.enums.OperateFieldsContentType;
 import com.okdeer.mall.operate.enums.OperateFieldsType;
+import com.okdeer.mall.operate.mapper.ColumnNativeSubjectMapper;
 import com.okdeer.mall.operate.operatefields.bo.OperateFieldsBo;
 import com.okdeer.mall.operate.operatefields.entity.OperateFields;
 import com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent;
@@ -92,6 +91,9 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
     
     @Reference(version="1.0.0", check=false)
     private GoodsNavigateCategoryServiceApi navigateCategoryServiceApi;
+    
+    @Autowired
+    private ColumnNativeSubjectMapper nativeSubjectMapper;
     
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -623,7 +625,11 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         contentDto.setPointType(OperateFieldsAppPointType.NATIVE_SUBJECT.getCode());
         contentDto.setPointContent(content.getBusinessId());
         contentDto.setImageUrl(content.getImageUrl());
-        contentDto.setTitle(content.getTitle());
+        //查询专题的标题
+        ColumnNativeSubject nativeSubject = this.nativeSubjectMapper.findById(content.getBusinessId());
+        if (nativeSubject != null) {
+            contentDto.setTitle(nativeSubject.getName());
+        }
         
         return contentDto;
     }
