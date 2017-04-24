@@ -707,7 +707,7 @@
 		AND coll.`type` = 4
 		AND collOrder.`order_type` = #{orderType}   
 		AND (coll.`area_type` = 0 OR (area1.type = 1 AND area1.`area_id`=#{provinceId}) OR 
-		(area1.type = 0 AND area1.`area_id`=#{cityId}) <if test="storeId != null and storeId != ''">OR (coll.area_type = 2 AND store.store_id =#{storeId})</if>);
+		(area1.type = 0 AND area1.`area_id`=#{cityId}) <if test="storeId != null and storeId != ''">OR (coll.area_type = 3 AND store.store_id =#{storeId})</if>);
 		
 	</select>
 	
