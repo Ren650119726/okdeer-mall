@@ -808,7 +808,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 
 		String orderId = tradeOrder.getId();
 		// 订单项总金额
-		BigDecimal totalAmount =reqDto.getContext().getTotalAmountHaveFavour();
+		BigDecimal totalAmount =reqDto.getContext().getTotalAmountHaveFavour() == null ? calculateAmount(req.getList()) : reqDto.getContext().getTotalAmountHaveFavour();
 		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
 		BigDecimal favourSum = new BigDecimal("0.00");
 		int index = 0;
