@@ -195,7 +195,9 @@
 		left join activity_sale_goods g on s.id=g.sale_id
 		left join goods_store_sku gs on g.store_sku_id=gs.id
 		left join goods_store_sku_picture p on p.store_sku_id=gs.id and p.type = 1
-		where s.disabled = 0 and s.status = 1 and gs.disabled=0
+		where s.disabled = 0 and s.status = 1 
+			and gs.disabled=0 and gs.online = 1
+			and gs.status = 1 and gs.violation = 0
 		<if test="storeIds != null">
 			and s.store_id IN 
 			<foreach collection="storeIds" index="index" item="item" open="(" close=")" separator=",">
@@ -263,6 +265,9 @@
 		where gs.store_id = #{storeId}
 			and gs.id = #{goodsId}
 			and gs.disabled=0 
+			and gs.online = 1
+			and gs.status = 1 
+			and gs.violation = 0
 	</select>
 	
 	<select id="getGoodsOfCategoryField" resultMap="fieldContentMap">
@@ -290,7 +295,8 @@
 		left join goods_store_sku_picture p on p.store_sku_id=gs.id and p.type = 1 
 		left join store_info si on gs.store_id = si.id
 		left join store_branches sb on si.id=sb.id
-		where gs.disabled=0 and gs.store_id = #{storeId}
+		where gs.disabled=0 and gs.store_id = #{storeId} 
+			and gs.online = 1 and gs.status = 1 and gs.violation = 0
 		<choose>  
             <when test="categoryIds != null and categoryIds.size > 0 ">  
                 and gsc.id in
@@ -360,6 +366,9 @@
 		and sl.store_id= #{storeId}
 		and sl.id = #{labelId}
 		and gs.disabled=0
+		and gs.online = 1
+		and gs.status = 1 
+		and gs.violation = 0
 		<if test="sortType == 0">
 			<if test="sort != null">
 				and gs.online_price &gt;= #{sort}
