@@ -158,6 +158,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 					return false;
 				}
 				parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
+				parserBo.setTotalAmountHaveFavour(totalAmount);
 			} else if(coupons.getType() == CouponsType.fwd.ordinal()){
 				Set<String> spuCategoryIds = parserBo == null ? null : parserBo.getCategoryIdSet();
 				int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getId());
@@ -225,6 +226,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				return false;
 			}
 			parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
+			parserBo.setTotalAmountHaveFavour(totalAmount);
 		} else if (limitSkuType == LimitSkuType.LIMIT_SKU) {
 			// 限制商品Id列表
 			List<String> limitSkuIds = actInfoDto.getBusinessIds(ActivityBusinessType.SKU);
@@ -239,6 +241,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				return false;
 			}
 			parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
+			parserBo.setTotalAmountHaveFavour(totalAmount);
 		}
 		return isValid;
 	}

@@ -808,7 +808,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 
 		String orderId = tradeOrder.getId();
 		// 订单项总金额
-		BigDecimal totalAmount = calculateAmount(req.getList());
+		BigDecimal totalAmount =reqDto.getContext().getTotalAmountHaveFavour();
 		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
 		BigDecimal favourSum = new BigDecimal("0.00");
 		int index = 0;
@@ -850,12 +850,11 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			BigDecimal totalAmountOfItem = goodsItem.getTotalAmount();
 			tradeOrderItem.setTotalAmount(totalAmountOfItem);
 			// 计算订单项优惠金额
-			BigDecimal favourItem = new BigDecimal(0.0);
+			BigDecimal favourItem = BigDecimal.valueOf(0.00);
 			if (req.getActivityType() != ActivityTypeEnum.NO_ACTIVITY) {
 				if(CollectionUtils.isNotEmpty(haveFavourGoodsIds) && !haveFavourGoodsIds.contains(goodsItem.getSkuId())){
-					continue;
-				}
-				if (index++ < itemSize - 1) {
+					favourItem = BigDecimal.valueOf(0.00);
+				} else if (index++ < itemSize - 1) {
 					favourItem = totalAmountOfItem.multiply(totalFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
 					if (favourItem.compareTo(totalAmountOfItem) == 1) {
 						favourItem = totalAmountOfItem;

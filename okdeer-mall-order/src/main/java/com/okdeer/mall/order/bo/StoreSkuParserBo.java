@@ -145,6 +145,11 @@ public class StoreSkuParserBo {
 	 */
 	private Map<String,CurrentStoreSkuBo> haveFavourGoodsMap;
 	
+	/**
+	 * 享受优惠的总金额
+	 */
+	private BigDecimal totalAmountHaveFavour;
+	
 	public StoreSkuParserBo(List<GoodsStoreSku> currentSkuList) {
 		this.currentSkuList = currentSkuList;
 	}
@@ -634,5 +639,14 @@ public class StoreSkuParserBo {
 
 	public void setHaveFavourGoodsMap(Map<String, CurrentStoreSkuBo> haveFavourGoodsMap) {
 		this.haveFavourGoodsMap = haveFavourGoodsMap;
+	}
+
+	
+	public BigDecimal getTotalAmountHaveFavour() {
+		return this.totalAmountHaveFavour == null ? this.totalItemAmount : this.totalAmountHaveFavour;
+	}
+	
+	public void setTotalAmountHaveFavour(BigDecimal totalAmountHaveFavour) {
+		this.totalAmountHaveFavour = totalAmountHaveFavour;
 	}
 }
