@@ -49,6 +49,7 @@ import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.enums.ActivityBelongType;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
@@ -266,6 +267,13 @@ public class TradeOrderCompleteProcessServiceImpl
 			throw new ServiceException(LogConstants.ORDER_REFUNDS_ID_IS_NULL);
 		}
 		TradeOrderRefunds orderRefunds = tradeOrderRefundsMapper.selectByPrimaryKey(refundsId);
+		
+		// Begin V2.3 added by maojj 2017-04-24
+        // 只有便利店订单需要同步。服务店不同步
+        if(orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER){
+        	return;
+        }
+        // End V2.3 added by maojj 2017-04-24
 		// 查询退款单项信息
 		List<TradeOrderRefundsItem> tradeOrderRefundsItemList = tradeOrderRefundsItemMapper
 				.getTradeOrderRefundsItemByRefundsId(refundsId);
