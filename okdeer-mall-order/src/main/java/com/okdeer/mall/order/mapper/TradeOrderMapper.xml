@@ -4519,11 +4519,11 @@
 	<!-- zengj:统计优惠金额 -POS销售统计 -->
 	<select id="selectPreferentialAmount" resultType="java.util.Map"
 		parameterType="java.util.Map">
-		select sum(case when pay_way = 0 and activity_type in(2,3) and total_amount
+		select sum(case when pay_way = 0 and activity_type in(2,3,7) and total_amount
 		!= income then preferential_price else 0 end) onlineStoreDiscount,
 		sum(case when pay_way = 0 and activity_type = 2 and total_amount =
 		income then preferential_price else 0 end) onlinePlatformDiscount,
-		sum(case when pay_way = 1 and activity_type in(2,3) and total_amount
+		sum(case when pay_way = 1 and activity_type in(2,3,7) and total_amount
 		!= income then preferential_price else 0 end) deliveryStoreDiscount,
 		sum(case when pay_way = 1 and activity_type = 2 and total_amount =
 		income then preferential_price else 0 end) deliveryPlatformDiscount
