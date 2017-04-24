@@ -293,12 +293,16 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			}
 		}
 		// 更新进行中的活动
-		paramBo.setStatus(ActivityDiscountStatus.ing);
-		paramBo.setActivityIds(ingList);
-		activityDiscountMapper.updateStatus(paramBo);
+		if(CollectionUtils.isNotEmpty(ingList)){
+			paramBo.setStatus(ActivityDiscountStatus.ing);
+			paramBo.setActivityIds(ingList);
+			activityDiscountMapper.updateStatus(paramBo);
+		}
 		// 更新需要结束的活动
-		paramBo.setStatus(ActivityDiscountStatus.end);
-		paramBo.setActivityIds(endList);
+		if(CollectionUtils.isNotEmpty(endList)){
+			paramBo.setStatus(ActivityDiscountStatus.end);
+			paramBo.setActivityIds(endList);
+		}
 		activityDiscountMapper.updateStatus(paramBo);
 	}
 

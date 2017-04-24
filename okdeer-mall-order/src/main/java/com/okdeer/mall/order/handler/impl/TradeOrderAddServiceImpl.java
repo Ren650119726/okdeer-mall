@@ -13,13 +13,13 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.beanutils.BeanComparator;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.comparators.ComparatorChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -802,6 +802,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 
 		TradeOrderReq req = reqDto.getData();
 		List<GoodsStoreSku> currentStoreSkuList = reqDto.getContext().getCurrentStoreSkuList();
+		List<String> haveFavourGoodsIds = reqDto.getContext().getHaveFavourGoodsIds();
 
 		List<String> mainPicList = new ArrayList<String>();
 
@@ -851,6 +852,9 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			// 计算订单项优惠金额
 			BigDecimal favourItem = new BigDecimal(0.0);
 			if (req.getActivityType() != ActivityTypeEnum.NO_ACTIVITY) {
+				if(CollectionUtils.isNotEmpty(haveFavourGoodsIds) && !haveFavourGoodsIds.contains(goodsItem.getSkuId())){
+					continue;
+				}
 				if (index++ < itemSize - 1) {
 					favourItem = totalAmountOfItem.multiply(totalFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
 					if (favourItem.compareTo(totalAmountOfItem) == 1) {

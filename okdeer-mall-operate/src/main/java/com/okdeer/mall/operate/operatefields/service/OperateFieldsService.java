@@ -1,10 +1,12 @@
 package com.okdeer.mall.operate.operatefields.service;
 
 import java.util.List;
+import java.util.Set;
 
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.operate.dto.FieldGoodsQueryDto;
 import com.okdeer.mall.operate.dto.OperateFieldContentDto;
+import com.okdeer.mall.operate.dto.OperateFieldDto;
 import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
 import com.okdeer.mall.operate.dto.StoreActivitGoodsQueryDto;
 import com.okdeer.mall.operate.operatefields.bo.OperateFieldsBo;
@@ -83,7 +85,7 @@ public interface OperateFieldsService extends IBaseService {
      * @author zhaoqc
      * @date 2017-4-18
      */
-     void initStoreOperateFieldData(String storeId) throws Exception;
+	List<OperateFieldDto> initStoreOperateFieldData(String storeId) throws Exception;
     
     /**
      * 初始化城市运营栏位
@@ -93,7 +95,7 @@ public interface OperateFieldsService extends IBaseService {
      * @author zhaoqc
      * @date 2017-4-18
      */
-    void initCityOperateFieldData(String cityId)  throws Exception;
+	List<OperateFieldDto> initCityOperateFieldData(String cityId)  throws Exception;
     
     /**
      * 查找店铺活动关联的商品运营位内容
@@ -140,7 +142,33 @@ public interface OperateFieldsService extends IBaseService {
 	 */
 	void initOperationField(String storeId) throws Exception;
 
-	
+	/**
+	 * 根据栏位设置的店铺导航分类查找商品
+	 * @param storeId 店铺Id
+	 * @param navigateId 导航Id
+	 * @param template 模板类型
+	 * @param sort 排序起始值
+	 * @param sortType 排序类型
+	 * @return
+	 * @throws Exception
+	 * @author zhaoqc
+	 * @date 2017-4-21
+	 */
 	List<OperateFieldContentDto> getGoodsOfStoreNavigateFields(String storeId, String navigateId, 
             int template, int sort, int sortType) throws Exception;
+	
+	/**
+	 * 查找栏位为店铺活动的管理商品
+	 * @param storeId
+	 * @param businessType
+	 * @param template
+	 * @param sortType
+	 * @param sort
+	 * @return
+	 * @throws Exception
+	 * @author zhaoqc
+	 * @date 2017-4-23
+	 */ 
+	List<OperateFieldContentDto> getGoodsOfStoreActivityField(String storeId, int businessType, int template, 
+            int sortType, int sort) throws Exception;
 }

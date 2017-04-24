@@ -1,13 +1,36 @@
 
 package com.okdeer.mall.activity.coupons.api;
 
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_DEL;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_LOWPRICE_EL_EDIT;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_STOCK_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
+import static com.okdeer.common.consts.StoreMenuTopicTagConstants.TAG_STORE_MENU_UPDATE;
+import static com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum.LOW_PRICE;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.common.message.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
 import com.okdeer.archive.goods.dto.StoreMenuParamDto;
+import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoodsBo;
@@ -16,20 +39,8 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.dto.ActivitySaleGoodsParamDto;
 import com.okdeer.mall.activity.service.ArchiveSendMsgService;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.okdeer.common.consts.ELTopicTagConstants.*;
-import static com.okdeer.common.consts.StoreMenuTopicTagConstants.TAG_STORE_MENU_UPDATE;
-import static com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum.LOW_PRICE;
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_LOWPRICE_EL_EDIT;
+import com.okdeer.mall.operate.contants.OperateFieldContants;
+import com.okdeer.mall.operate.dto.GoodsChangedMsgDto;
 
 /**
  * 
@@ -66,6 +77,13 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
      */
     @Autowired
     private ArchiveSendMsgService archiveSendMsgService;
+    
+    /**
+     * add by mengsj
+     * @Fields storeInfoService : 注入店铺service
+     */
+    @Reference(version = "1.0.0", check = false)
+    private StoreInfoServiceApi storeInfoServiceApi;	
 
     @Override
     public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
@@ -78,6 +96,17 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
             paramDto.setUpdateStatus(String.valueOf(0));
             structureProducer(paramDto, TAG_LOWPRICE_EL_UPDATE);
         }
+        // add by mengsj begin 发送运营栏位更新信息20170422
+        GoodsChangedMsgDto data = new GoodsChangedMsgDto();
+        StoreInfo store = storeInfoServiceApi.findById(activitySale.getStoreId());
+        data.setStoreId(store.getId());
+        data.setCityId(store.getCityId());
+        if(activitySale.getType() == LOW_PRICE){
+        	produceMessage(data, OperateFieldContants.TAG_ADDEDIT_LOWPRICE_ACTIVITY);
+        }else{
+        	produceMessage(data, OperateFieldContants.TAG_ADDEDIT_ONSALE_ACTIVITY);
+        }
+        // add by mengsj end 发送运营栏位更新信息
     }
 
     @Override
@@ -89,6 +118,18 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         paramDto.setSkuIds(list);
         paramDto.setUpdateStatus(String.valueOf(0));
         structureProducer(paramDto, TAG_LOWPRICE_EL_UPDATE);
+        
+        // add by mengsj begin 发送运营栏位更新信息20170422
+        GoodsChangedMsgDto data = new GoodsChangedMsgDto();
+        StoreInfo store = storeInfoServiceApi.findById(ActivitySale.getStoreId());
+        data.setStoreId(store.getId());
+        data.setCityId(store.getCityId());
+        if(ActivitySale.getType() == LOW_PRICE){
+        	produceMessage(data, OperateFieldContants.TAG_ADDEDIT_LOWPRICE_ACTIVITY);
+        }else{
+        	produceMessage(data, OperateFieldContants.TAG_ADDEDIT_ONSALE_ACTIVITY);
+        }
+        // add by mengsj end 发送运营栏位更新信息
     }
 
     @Override
@@ -123,6 +164,18 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         StoreMenuParamDto paramDto = new StoreMenuParamDto();
         paramDto.setStoreId(storeId);
         archiveSendMsgService.structureProducerStoreMenu(paramDto, TAG_STORE_MENU_UPDATE);
+        
+        // add by mengsj begin 发送运营栏位更新信息20170422
+        GoodsChangedMsgDto data = new GoodsChangedMsgDto();
+        StoreInfo store = storeInfoServiceApi.findById(storeId);
+        data.setStoreId(store.getId());
+        data.setCityId(store.getCityId());
+        if(activityType == LOW_PRICE.ordinal()){
+        	produceMessage(data, OperateFieldContants.TAG_CLOSED_LOWPRICE_ACTIVITY);
+        }else{
+        	produceMessage(data, OperateFieldContants.TAG_CLOSED_ONSALE_ACTIVITY);
+        }
+        // add by mengsj end 发送运营栏位更新信息
     }
 
     @Override
@@ -153,6 +206,23 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         String json = mapper.writeValueAsString(paramDto);
         Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
         rocketMQProducer.send(msg);
+    }
+    
+    /**
+     * 发送运营栏位消息
+     * @Description: 
+     * @param data
+     * @param tag
+     * @throws Exception void
+     * @throws
+     * @author mengsj
+     * @date 2017年4月22日
+     */
+    public void produceMessage(GoodsChangedMsgDto data, String tag) throws Exception {
+        MQMessage anMessage = new MQMessage(OperateFieldContants.TOPIC_OPERATE_FIELD);
+        anMessage.setTags(tag);
+        anMessage.setContent(data);
+        rocketMQProducer.sendMessage(anMessage);
     }
     
     @Override
