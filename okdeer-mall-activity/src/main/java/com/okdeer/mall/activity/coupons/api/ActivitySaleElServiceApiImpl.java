@@ -233,6 +233,12 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
     	List<String> skuIdList = Arrays.asList(activitySaleGoods.getStoreSkuId());
     	paramDto.setSkuIds(skuIdList);
     	archiveSendMsgService.structureProducerELGoods(paramDto, TAG_STOCK_EL_UPDATE);
+    	//add by mengsj begin 发送更新运营栏位信息
+    	GoodsChangedMsgDto data = new GoodsChangedMsgDto();
+        StoreInfo store = storeInfoServiceApi.findById(activitySale.getStoreId());
+        data.setStoreId(store.getId());
+        data.setCityId(store.getCityId());
+        //add by mengsj end 发送更新运营栏位信息
     }
     
     @Override
