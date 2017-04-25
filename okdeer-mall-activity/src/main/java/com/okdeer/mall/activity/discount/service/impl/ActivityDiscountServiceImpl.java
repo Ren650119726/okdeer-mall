@@ -53,6 +53,7 @@ import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
+import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.order.vo.FullSubtract;
 import com.okdeer.mall.system.utils.ConvertUtil;
@@ -131,6 +132,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		if(actInfo.getType() != ActivityDiscountType.PIN_MONEY){
 			actInfo.setGrantType(0);
 		}
+		// 活动限制首单用户，默认用户参与总次数为1.
+		if(actInfo.getLimitUser() == UseUserType.ONlY_NEW_USER){
+			actInfo.setLimitTotalFreq(1);
+		}
 		// 修改活动信息
 		activityDiscountMapper.update(actInfo);
 		// 删除活动下的优惠条件
@@ -165,6 +170,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		actInfo.setStatus(ActivityDiscountStatus.noStart);
 		if(actInfo.getType() != ActivityDiscountType.PIN_MONEY){
 			actInfo.setGrantType(0);
+		}
+		// 活动限制首单用户，默认用户参与总次数为1.
+		if(actInfo.getLimitUser() == UseUserType.ONlY_NEW_USER){
+			actInfo.setLimitTotalFreq(1);
 		}
 		// 优惠条件列表
 		List<ActivityDiscountCondition> conditionList = parseConditionList(actInfoDto);
