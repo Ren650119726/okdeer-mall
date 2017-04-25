@@ -450,8 +450,12 @@
 	
 <!-- 	用于判断某个时间段内活动是否冲突 -->
 	<select id="countTimeQuantum"  parameterType="map" resultType="int">
-		select count(*) from activity_collect_coupons c
-	    where c.disabled = 0 
+	    SELECT count(0) FROM activity_collect_coupons c
+		LEFT JOIN activity_collect_area area ON c.id = area.collect_coupons_id
+		LEFT JOIN activity_collect_store acs ON c.id = acs.collect_coupons_id
+		LEFT JOIN store_info store ON store.id = acs.store_id
+	     where c.disabled = 0 
+	    
 <!-- 	    未开始或者进行中 -->
 	    and (c.status = 1 or c.status = 0)
 		AND 
@@ -469,20 +473,6 @@
 	    <if test="type != null and type != ''">
 	    	and c.type = #{type}
 	    </if>
-	    <if test="associateIdList != null">
-	    	and 
-	    	(
-		    	c.area_type = 0 
-				OR
-				c.id in (
-					select a.collect_coupons_id from activity_collect_area a where a.collect_coupons_id = c.id
-					AND a.area_id in  
-					<foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
-						#{item}
-					</foreach>
-				)
-			)
-		</if>
 	    <if test="orderTypeList != null">
 	    	and c.id in (
 				select ot.collect_coupons_id from activity_collect_order_type ot where ot.collect_coupons_id = c.id
@@ -491,6 +481,39 @@
 					#{item}
 				</foreach>
 			)
+		</if>
+		<!-- 1是选择了地区 3是选择了店铺 -->
+		<if test="areaType == 1">
+			<if test="associateIdList != null">
+			AND
+			(
+				 area.area_id in  
+				<foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
+					#{item}
+				</foreach>
+				or
+				store.city_id in  
+				<foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
+					#{item}
+				</foreach>
+			)
+			</if>
+		</if>
+		<if test="areaType == 3">
+			<if test="associateIdList != null">
+			AND
+			(
+				 area.area_id in  
+				<foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
+					#{item}
+				</foreach>
+				or
+				acs.store_id in 
+				<foreach collection="storeIdList" open="(" close=")" index="index" item="item"  separator=",">
+					#{item}
+				</foreach>
+			)
+			</if>
 		</if>
     </select>
     
