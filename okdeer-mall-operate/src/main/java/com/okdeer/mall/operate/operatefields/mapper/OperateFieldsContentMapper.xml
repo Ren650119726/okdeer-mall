@@ -212,31 +212,19 @@
 		</if>
 		<!-- 0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高  -->
 		<if test="sortType == 0">
-			<if test="sort != null">
-				and g.sale_price &gt;= #{sort}
-			</if>
 			order by g.sale_price DESC
 		</if>
 		<if test="sortType == 1">
-			<if test="sort != null">
-				and g.sort &gt;= #{sort}
-			</if>
 			order by g.sort DESC
 		</if>
 		<if test="sortType == 2">
-			<if test="sort != null">
-				and g.sale_price &gt;= #{sort}
-			</if>
 			order by g.sale_price ASC
 		</if>
 		<if test="sortType == 3">
-			<if test="sort != null">
-				and g.sort &gt;= #{sort}
-			</if>
 			order by g.sort ASC
 		</if>
-		<if test="template != null">
-			limit #{template} 
+		<if test="sort != null and template != null">
+			limit #{sort}, #{template} 
 		</if>
 	</select>
 	
@@ -310,31 +298,19 @@
         </choose>
 		<!-- 0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高  -->
 		<if test="sortType == 0">
-			<if test="sort != null">
-				and gs.online_price &gt;= #{sort}
-			</if>
 			order by gs.online_price DESC
 		</if>
 		<if test="sortType == 1">
-			<if test="sort != null">
-				and gs.sort &gt;= #{sort}
-			</if>
 			order by gs.sort DESC
 		</if>
 		<if test="sortType == 2">
-			<if test="sort != null">
-				and gs.online_price &gt;= #{sort}
-			</if>
 			order by gs.online_price ASC
 		</if>
 		<if test="sortType == 3">
-			<if test="sort != null">
-				and gs.sort &gt;= #{sort}
-			</if>
 			order by gs.sort ASC
 		</if>
-		<if test="template != null">
-			limit #{template} 
+		<if test="sort != null and template != null">
+			limit #{sort}, #{template} 
 		</if>
 	</select>
 	
@@ -370,27 +346,15 @@
 		and gs.status = 1 
 		and gs.violation = 0
 		<if test="sortType == 0">
-			<if test="sort != null">
-				and gs.online_price &gt;= #{sort}
-			</if>
 			order by gs.online_price DESC
 		</if>
 		<if test="sortType == 1">
-			<if test="sort != null">
-				and gs.sort &gt;= #{sort}
-			</if>
 			order by gs.sort DESC
 		</if>
 		<if test="sortType == 2">
-			<if test="sort != null">
-				and gs.online_price &gt;= #{sort}
-			</if>
 			order by gs.online_price ASC
 		</if>
 		<if test="sortType == 3">
-			<if test="sort != null">
-				and gs.sort &gt;= #{sort}
-			</if>
 			order by gs.sort ASC
 		</if>
 		<if test="template != null">
