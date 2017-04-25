@@ -22,7 +22,6 @@ import com.okdeer.archive.goods.base.service.GoodsSpuCategoryServiceApi;
 import com.okdeer.archive.goods.menu.GoodsStoreMenuApi;
 import com.okdeer.archive.store.dto.GoodsStoreMenuDto;
 import com.okdeer.archive.store.dto.GoodsStoreMenuParamDto;
-import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.Enabled;
@@ -440,7 +439,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         FieldGoodsQueryDto queryDto = new FieldGoodsQueryDto();
         queryDto.setLabelId(labelId);
         queryDto.setTemplate(template + 1);
-        queryDto.setSort(sort);
+        queryDto.setSort(sort - 1);
         queryDto.setSortType(sortType);
         queryDto.setStoreId(storeId);
      
@@ -490,7 +489,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         
         FieldGoodsQueryDto queryDto = new FieldGoodsQueryDto();
         queryDto.setCategoryIds(categoryIds);
-        queryDto.setSort(sort);
+        queryDto.setSort(sort - 1);
         queryDto.setTemplate(template + 1);
         queryDto.setSortType(sortType);
         queryDto.setStoreId(storeId);
@@ -524,47 +523,10 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         }
         queryDto.setBusinessType(businessType);
         queryDto.setTemplate(template + 1);
-        queryDto.setSort(sort);
+        queryDto.setSort(sort - 1);
         queryDto.setSortType(sortType);
         queryDto.setStoreId(storeId);
        
-        List<OperateFieldContentDto> contentDtos = this.getGoodsOfStoreActivityFields(queryDto);
-        if(contentDtos.size() == (template + 1)) {
-            return contentDtos;
-        } else {
-            return null;
-        }
-    }
-    
-    /**
-     * 城市运营位查找店铺活动的商品
-     * @param businessType 0:特惠活动 1:低价活动
-     * @param template 模板
-     * @param 排序类型   0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高 
-     * @param sortStart 排序开始值
-     * @throws Exception 
-     */
-    private List<OperateFieldContentDto> getGoodsOfCityStoreActivityField(String cityId, int businessType, 
-            int template, int sortType, int sort) throws Exception {
-        //查找城市下所有的店铺
-        List<StoreInfo> storeInfos = storeInfoServiceApi.selectCloudStoreByCityId(cityId);
-        List<String> storeIds = new ArrayList<>();
-        storeInfos.forEach(storeInfo -> {
-            storeIds.add(storeInfo.getId());  
-        });
-                
-        StoreActivitGoodsQueryDto queryDto = new StoreActivitGoodsQueryDto();
-        //转换业务类型使之和数据库一致 
-        if(businessType == 0) {
-            businessType = 5;
-        } else if(businessType == 1) {
-            businessType = 7;
-        }
-        queryDto.setBusinessType(businessType);
-        queryDto.setTemplate(template + 1);
-        queryDto.setSort(sort);
-        queryDto.setSortType(sortType);
-
         List<OperateFieldContentDto> contentDtos = this.getGoodsOfStoreActivityFields(queryDto);
         if(contentDtos.size() == (template + 1)) {
             return contentDtos;
@@ -644,6 +606,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         } else if(businessType == OperateFieldsBusinessType.STORE_MENU) {
             contentDto.setPointType(OperateFieldsAppPointType.STORE_MENU.getCode());
         }
+        
         contentDto.setPointContent(content.getBusinessId());
         contentDto.setImageUrl(content.getImageUrl());
         
