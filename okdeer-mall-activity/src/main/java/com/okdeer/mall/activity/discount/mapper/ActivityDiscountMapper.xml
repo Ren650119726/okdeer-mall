@@ -319,6 +319,9 @@
          	AND store_id = #{storeId,jdbcType=VARCHAR}
         </if>
         <!-- 活动类型 -->
+        <if test="type != null">
+        	AND type = #{type,jdbcType=TINYINT}
+        </if>
 		<if test="typeList != null and typeList.size() > 0">
 		  	AND type IN 
 		  	<foreach collection="typeList" item="type" separator="," open="(" close=")">
