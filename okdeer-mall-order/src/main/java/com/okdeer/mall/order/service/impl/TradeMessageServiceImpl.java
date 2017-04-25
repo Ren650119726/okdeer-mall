@@ -547,7 +547,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
                 List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null, null);
 	            if(sysUserLoginLogs != null && !sysUserLoginLogs.isEmpty()) {
 	                sysUserLoginLogs.forEach(sysUserLoginLog -> {
-	                    PushUserVo pushUser = createPushUserVo(sysUser);
+	                    PushUserVo pushUser = createPushUserVo(sysUser,sendMsgType);
 	                    
 	                    String version = sysUserLoginLog.getVersion();
 	                    if(StringUtils.isEmpty(version)){
@@ -692,13 +692,17 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 * @param sysUser
 	 * @return
 	 */
-	private PushUserVo createPushUserVo(SysUser sysUser) {
+	private PushUserVo createPushUserVo(SysUser sysUser, SendMsgType sendMsgType) {
 	    PushUserVo pushUser = new PushUserVo();
 	    pushUser.setUserId(sysUser.getId());
         pushUser.setMobile(sysUser.getPhone());
         pushUser.setMsgType(MsgConstant.MsgType.THROUGH);
         // begin V2.3.0 新增语音播放文件名 add by wangf01 20170419
 		pushUser.setSoundStyle("order.wav");
+		//判断是否是申请退款，如果是，则提示默认声音，针对IOS
+		if(sendMsgType == SendMsgType.applyReturn){
+			pushUser.setSoundStyle("default");
+		}
 		// end add by wangf01 20170419
         
         try {
