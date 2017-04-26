@@ -99,7 +99,7 @@
         #{id,jdbcType=VARCHAR},
       </if>
       <if test="collectType != null" >
-        #{collectType,jdbcType=BIT},
+        #{collectType,jdbcType=TINYINT},
       </if>
       <if test="couponsId != null" >
         #{couponsId,jdbcType=VARCHAR},
