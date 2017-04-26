@@ -7227,4 +7227,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public List<TradeOrderStatusVo> getServiceOrderCount(Map<String, Object> params) {
 		return tradeOrderMapper.getServiceOrderCount(params);
 	}
+
+	//Begin V2.3.0 added by luosm 20170426
+	@Override
+	public PageUtils<TradeOrder> findConsumeByMap(Map<String, Object> map, int pageNumber, int pageSize)
+			throws ServiceException {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+		List<TradeOrder> list = tradeOrderMapper.selectOrderList(map);
+		return new PageUtils<TradeOrder>(list);
+	}
+	//End V2.3.0 added by luosm 20170426
 }
