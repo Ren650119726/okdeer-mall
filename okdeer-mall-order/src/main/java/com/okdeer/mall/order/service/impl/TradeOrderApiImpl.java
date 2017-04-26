@@ -46,8 +46,8 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountApi;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi;
 import com.okdeer.mall.common.vo.PageResultVo;
-import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
 import com.okdeer.mall.member.member.vo.UserAddressVo;
+import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.order.dto.ERPTradeOrderVoDto;
 import com.okdeer.mall.order.dto.TradeOrderDto;
 import com.okdeer.mall.order.dto.TradeOrderInvoiceDto;
@@ -78,15 +78,15 @@ import com.okdeer.mall.order.service.CancelOrderService;
 import com.okdeer.mall.order.service.ITradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
-import com.okdeer.mall.order.service.TradeOrderLogisticsServiceApi;
-import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
+import com.okdeer.mall.order.service.TradeOrderLogisticsService;
+import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.ActivityInfoVO;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
 import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
 import com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO;
-import com.okdeer.mall.system.service.InvitationCodeServiceApi;
+import com.okdeer.mall.system.service.InvitationCodeService;
 
 /**
  * 订单接口
@@ -148,20 +148,20 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	/**
 	 * 物流service方法
 	 */
-	@Reference(version = "1.0.0", check = false)
-	private TradeOrderLogisticsServiceApi tradeOrderLogisticsService;
+	@Autowired
+	private TradeOrderLogisticsService tradeOrderLogisticsService;
 
 	/**
 	 * 地址service
 	 */
-	@Reference(version = "1.0.0", check = false)
-	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
+	@Autowired
+	private MemberConsigneeAddressService memberConsigneeAddressService;
 
 	/***
 	 * 邀请信息
 	 */
-	@Reference(version = "1.0.0", check = false)
-	private InvitationCodeServiceApi invitationCodeService;
+	@Autowired
+	private InvitationCodeService invitationCodeService;
 
 	@Reference(version = "1.0.0", check = false)
 	private ActivityDiscountApi activityDiscountService;
@@ -172,8 +172,8 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	@Reference(version = "1.0.0", check = false)
 	private ActivitySeckillServiceApi activitySeckillService;
 
-	@Reference(version = "1.0.0", check = false)
-	private TradeOrderRefundsServiceApi tradeOrderRefundsService;
+	@Autowired
+	private TradeOrderRefundsService tradeOrderRefundsService;
 	// End V2.1.0 added by luosm 2017-02-16
 
 	/**
@@ -923,6 +923,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			dto.setId(vo.getId());
 			dto.setOrderNo(vo.getOrderNo());
 			dto.setType(vo.getType().ordinal());
+			dto.setStoreId(vo.getStoreId());
 			dto.setStoreName(vo.getStoreName());
 			dto.setUserPhone(vo.getUserPhone());
 			dto.setTotalAmount(vo.getTotalAmount());
@@ -930,7 +931,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			dto.setPreferentialPrice(vo.getPreferentialPrice());
 			dto.setCreateTime(vo.getCreateTime());
 			dto.setOrderResource(vo.getOrderResource().ordinal());
-			dto.setStatus(vo.getStatus().ordinal());
+			if(vo.getStatus()!=null){
+				dto.setStatus(vo.getStatus().ordinal());
+			}
 			if (vo.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
 				dto.setPayType(3);
 			} else {
@@ -1037,9 +1040,13 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	@Override
 	public List<ERPTradeOrderVoDto> findOrderListByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto)
 			throws Exception {
-
+		
+		long l1 = System.currentTimeMillis();
 		List<ERPTradeOrderVo> list = tradeOrderService.findOrderListForFinanceByParams(tradeOrderQueryParamDto);
 
+		long l2 = System.currentTimeMillis();
+		
+		System.out.println("查询订单信息花费"+(l2-l1));
 		List<ERPTradeOrderVoDto> result = new ArrayList<ERPTradeOrderVoDto>();
 
 		// 如果有订单信息
@@ -1064,6 +1071,8 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			}
 
 			// V2.1.0 begin add by zhulq 获取服务店上门服务的收货地址（物流表的地址）
+			
+			long l3 = System.currentTimeMillis();
 			// 订单的物流信息
 			List<TradeOrderLogistics> logisticsList = null;
 			if (CollectionUtils.isNotEmpty(orderIds)) {
@@ -1076,7 +1085,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			if (logisticsList == null) {
 				logisticsList = Lists.newArrayList();
 			}
-
+			
+			l2 = System.currentTimeMillis();
+			System.out.println("查询物流信息花费"+(l2-l3));
 			// 店铺地址（到店自提和到店消费订单店铺地址）
 			List<UserAddressVo> memberAddressList = null;
 			// V2.1.0 end add by zhulq 收货地址取物流表信息 之前是取店铺地址
@@ -1087,6 +1098,8 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				memberAddressList = Lists.newArrayList();
 			}
 
+			l2 = System.currentTimeMillis();
+			System.out.println("查询地址信息花费"+(l2-l1));
 			// V2.1.0 end add by zhulq 获取服务店上门服务的收货地址（物流表的地址）
 
 			List<SysUserInvitationLoginNameVO> inviteNameLists = new ArrayList<SysUserInvitationLoginNameVO>();
@@ -1096,17 +1109,29 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			if (inviteNameLists == null) {
 				inviteNameLists = Lists.newArrayList();
 			}
-
+			
+			l2 = System.currentTimeMillis();
+			System.out.println("查询invitationCodeService信息花费"+(l2-l1));
+			
 			List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
 			List<ActivityInfoVO> activityList = null;
 			if (CollectionUtils.isNotEmpty(orderIds)) {
 				tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
+				
+				l2 = System.currentTimeMillis();
+				System.out.println("查询tradeOrderRefundsList信息花费"+(l2-l1));
+				
 				activityList = tradeOrderService.findActivityInfo(orderIds);
+				
+				l2 = System.currentTimeMillis();
+				System.out.println("查询activityList信息花费"+(l2-l1));
 			}
 			if (activityList == null) {
 				activityList = Lists.newArrayList();
 			}
 
+			
+			
 			Map<String, UserAddressVo> memberAddressMap = memberAddressList.stream()
 					.collect(Collectors.toMap(m -> m.getUserId(), e -> e));
 
@@ -1122,18 +1147,17 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				ERPTradeOrderVoDto dto = new ERPTradeOrderVoDto();
 				dto.setId(vo.getId());
 				dto.setOrderNo(vo.getOrderNo());
-				// Begin 重构4.1 add by wusw 20160728
 				dto.setType(vo.getType().ordinal());
-				// Begin 重构4.1 add by wusw 20160728
+				dto.setStoreId(vo.getStoreId());
 				dto.setStoreName(vo.getStoreName());
 				dto.setUserPhone(vo.getUserPhone());
 				dto.setTotalAmount(vo.getTotalAmount());
 				dto.setActualAmount(vo.getActualAmount());
 				dto.setPreferentialPrice(vo.getPreferentialPrice());
-				// Begin 重构4.1 add by wusw 20160725
 				dto.setCreateTime(vo.getCreateTime());
-				// End 重构4.1 add by wusw 20160725
-				dto.setStatus(vo.getStatus().ordinal());
+				if(vo.getStatus()!=null){
+					dto.setStatus(vo.getStatus().ordinal());
+				}
 				if (vo.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
 					dto.setPayType(3);
 				} else {
@@ -1269,6 +1293,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				// begin add by zhulq 充值订单所属城市和完成时间设置
 				result.add(dto);
 			}
+			
+			l2 = System.currentTimeMillis();
+			System.out.println("处理完成花费"+(l2-l1));
 		}
 		return result;
 	}

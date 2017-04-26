@@ -1,6 +1,11 @@
 package com.okdeer.mall.order.service;
 
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.common.exception.ServiceException;
 
 /**
@@ -35,4 +40,6 @@ public interface TradeOrderLogisticsService {
 	 */
 	void addTradeOrderLogistics(TradeOrderLogistics logistics);
 	// End 重构4.1 add by zengj
+	
+	List<TradeOrderLogistics> selectByOrderIds(List<String> orderIds) throws ServiceException;
 }

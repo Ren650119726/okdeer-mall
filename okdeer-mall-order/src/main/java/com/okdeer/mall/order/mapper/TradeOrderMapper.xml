@@ -5550,7 +5550,7 @@
 		<if test="startTime != null and startTime!=''">
 			<![CDATA[AND trade.create_time  >= #{startTime,jdbcType=VARCHAR}]]>
 		</if>
-		<if test="endTime != null and startTime!=''">
+		<if test="endTime != null and endTime!=''">
 			<![CDATA[ AND trade.create_time <= #{endTime,jdbcType=VARCHAR}]]>
 		</if>
 		
@@ -5569,9 +5569,9 @@
 		<if test="cityName != null and cityName != ''">
 			AND locate.city_name = #{cityName,jdbcType=VARCHAR}
 		</if>
-		<if test="ids != null">
+		<if test="idList != null">
 			AND trade.id in
-			<foreach collection="ids" index="index" item="item" open="("
+			<foreach collection="idList" index="index" item="item" open="("
 				separator="," close=")">
 				#{item}
 			</foreach>
@@ -5583,7 +5583,7 @@
 	<!-- 统计财务订单列表数量  -->
 	<select id="countOrderForFinanceByParams" resultType="java.lang.Integer"
 		parameterType="com.okdeer.mall.order.dto.TradeOrderQueryParamDto">
-		SELECT count(1) FROM 
+		SELECT count(1)
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
@@ -5609,7 +5609,7 @@
 		<if test="startTime != null and startTime!=''">
 			<![CDATA[AND trade.create_time  >= #{startTime,jdbcType=VARCHAR}]]>
 		</if>
-		<if test="endTime != null and startTime!=''">
+		<if test="endTime != null and endTime!=''">
 			<![CDATA[ AND trade.create_time <= #{endTime,jdbcType=VARCHAR}]]>
 		</if>
 		<if test="payWay != null">
@@ -5627,9 +5627,9 @@
 		<if test="cityName != null and cityName != ''">
 			AND locate.city_name = #{cityName,jdbcType=VARCHAR}
 		</if>
-		<if test="ids != null">
+		<if test="idList != null">
 			AND trade.id in
-			<foreach collection="ids" index="index" item="item" open="("
+			<foreach collection="idList" index="index" item="item" open="("
 				separator="," close=")">
 				#{item}
 			</foreach>

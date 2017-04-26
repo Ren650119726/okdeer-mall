@@ -20,6 +20,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.github.pagehelper.PageHelper;
+import com.google.common.collect.Lists;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
@@ -411,8 +412,40 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 	}
 	
 	@Override
-	public List<SysUserInvitationLoginNameVO> selectLoginNameByUserId(@Param("userIds") List<String> userIds) {
-		return sysUserInvitationCodeMapper.selectLoginNameByUserId(userIds);
+	public List<SysUserInvitationLoginNameVO> selectLoginNameByUserId(List<String> userIds) {
+		return pageQueryByIds(userIds,new PageCallBack<SysUserInvitationLoginNameVO>() {
+
+			@Override
+			public List<SysUserInvitationLoginNameVO> callBackHandle(List<String> idList) {
+				return sysUserInvitationCodeMapper.selectLoginNameByUserId(idList);
+			}
+		}, 100);
 	}
 	// End V2.1.0 added by luosm 20170215
+	
+	public static <T> List<T> pageQueryByIds(List<String> ids, PageCallBack<T> pageCallBack,final int pageSize) {
+		List<T> resultList = Lists.newArrayList();
+		if (ids.size() > pageSize) {
+			// 如果list太大，分批查询
+			int page = ids.size() % pageSize == 0 ? ids.size() / pageSize : ids.size() / pageSize + 1;
+			for (int i = 0; i < page; i++) {
+				int fromIndex = i * pageSize;
+				int toIndex = fromIndex + pageSize - 1;
+				if (toIndex > ids.size()) {
+					toIndex = ids.size();
+				}
+				List<String> indexList = ids.subList(fromIndex, toIndex);
+				List<T> tempList = pageCallBack.callBackHandle(indexList);
+				
+				resultList.addAll(tempList);
+			}
+		}else{
+			List<T> tempList = pageCallBack.callBackHandle(ids);
+			resultList.addAll(tempList);
+		}
+		return resultList;
+	}
+	public interface PageCallBack<T> {
+		List<T> callBackHandle(List<String> idList);
+	}
 }

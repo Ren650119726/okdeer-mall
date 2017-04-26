@@ -102,6 +102,7 @@ import com.okdeer.mall.order.mapper.*;
 import com.okdeer.mall.order.mq.constants.TradeOrderTopic;
 import com.okdeer.mall.order.service.*;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
+import com.okdeer.mall.order.utils.PageQueryUtils;
 import com.okdeer.mall.order.vo.*;
 import com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO;
 import com.okdeer.mall.system.entity.SysUserInvitationRecord;
@@ -5625,9 +5626,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (result == null) {
 			result = new ArrayList<ERPTradeOrderVo>();
 		}
-		Page<ERPTradeOrderVo> page = (Page<ERPTradeOrderVo>) result;
-		int total = tradeOrderMapper.countOrderForFinanceByParams(tradeOrderQueryParamDto);
-		page.setTotal(total);
+//		Page<ERPTradeOrderVo> page = (Page<ERPTradeOrderVo>) result;
+//		int total = tradeOrderMapper.countOrderForFinanceByParams(tradeOrderQueryParamDto);
+//		page.setTotal(total);
 		return new PageUtils<ERPTradeOrderVo>(result);
 	}
 
@@ -7127,7 +7128,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	@Override
 	public List<ActivityInfoVO> findActivityInfo(List<String> orderIds) {
-		return tradeOrderMapper.findActivityInfo(orderIds);
+		List<ActivityInfoVO> list = PageQueryUtils.pageQueryByIds(orderIds, new PageCallBack<ActivityInfoVO>() {
+			@Override
+			public List<ActivityInfoVO> callBackHandle(List<String> idList) {
+				return tradeOrderMapper.findActivityInfo(idList);
+			}
+		});
+		return list;
 	}
 
 	@Override
