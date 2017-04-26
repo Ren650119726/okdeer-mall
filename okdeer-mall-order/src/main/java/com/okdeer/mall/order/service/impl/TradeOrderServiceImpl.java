@@ -95,6 +95,7 @@ import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
+import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.*;
 import com.okdeer.mall.order.enums.*;
 import com.okdeer.mall.order.mapper.*;
@@ -5617,21 +5618,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 *      int, int)
 	 */
 	@Override
-	public PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params, int pageNumber,
+	public PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto, int pageNumber,
 			int pageSize) throws ServiceException {
 		PageHelper.startPage(pageNumber, pageSize,false);
-		// 参数转换处理（例如订单状态）
-		this.convertParams(params);
-		List<ERPTradeOrderVo> result = tradeOrderMapper.findOrderForFinanceByParams(params);
+		List<ERPTradeOrderVo> result = tradeOrderMapper.findOrderForFinanceByParams(tradeOrderQueryParamDto);
 		if (result == null) {
 			result = new ArrayList<ERPTradeOrderVo>();
 		}
-
-		// Begin V2.1.0 added by luosm 20170224
 		Page<ERPTradeOrderVo> page = (Page<ERPTradeOrderVo>) result;
-		int total = tradeOrderMapper.countOrderForFinanceByParams(params);
+		int total = tradeOrderMapper.countOrderForFinanceByParams(tradeOrderQueryParamDto);
 		page.setTotal(total);
-		// End V2.1.0 added by luosm 20170224
 		return new PageUtils<ERPTradeOrderVo>(result);
 	}
 
@@ -5751,11 +5747,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @see com.okdeer.mall.order.service.TradeOrderService#findOrderListForFinanceByParams(java.util.Map)
 	 */
 	@Override
-	public List<ERPTradeOrderVo> findOrderListForFinanceByParams(Map<String, Object> params) throws ServiceException {
+	public List<ERPTradeOrderVo> findOrderListForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException {
 		// 参数转换处理（例如订单状态）
-		this.convertParams(params);
-		return tradeOrderMapper.findOrderForFinanceByParams(params);
+//		this.convertParams(params);
+		return tradeOrderMapper.findOrderForFinanceByParams(tradeOrderQueryParamDto);
 	}
+	
+	@Override
+	public int findOrderCountForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException{
+		return tradeOrderMapper.countOrderForFinanceByParams(tradeOrderQueryParamDto);
+	}
+	
+	
 
 	// End 重构4.1 add by wusw 20160723
 

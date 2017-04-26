@@ -12,6 +12,7 @@ import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
+import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
@@ -940,6 +941,7 @@ public interface TradeOrderService {
 	 */
 	public List<Map<String, Object>> selectPosOrderExportList(Map<String, Object> params);
 
+	
 	// Begin 重构4.1 add by wusw 20160719
 	/**
 	 * 
@@ -952,7 +954,7 @@ public interface TradeOrderService {
 	 * @author wusw
 	 * @date 2016年7月19日
 	 */
-	PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params, int pageNumber, int pageSize)
+	PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto, int pageNumber, int pageSize)
 			throws ServiceException;
 
 	/**
@@ -964,7 +966,18 @@ public interface TradeOrderService {
 	 * @author wusw
 	 * @date 2016年7月23日
 	 */
-	List<ERPTradeOrderVo> findOrderListForFinanceByParams(Map<String, Object> params) throws ServiceException;
+	List<ERPTradeOrderVo> findOrderListForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException;
+	
+	/**
+	 * @Description:根据参数查询数量
+	 * @param tradeOrderQueryParamDto 查询参数
+	 * @return
+	 * @throws ServiceException
+	 * @author zengjizu
+	 * @date 2017年4月26日
+	 */
+	int findOrderCountForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException;
+	
 	// End 重构4.1 add by wusw 20160719
 
 	// Begin 重构4.1 add by zhaoqc 20160730

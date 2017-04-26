@@ -5494,23 +5494,11 @@
 	<!-- 根据查询条件，查询订单列表（用于财务系统，包含服务店订单） add by wusw update by wusw 20160809 修改店铺名称取值（由于充值订单） 
 		update by wusw 20160810 -->
 	<select id="findOrderForFinanceByParams" resultMap="ERPOrderResultMap"
-		parameterType="java.util.Map">
+		parameterType="com.okdeer.mall.order.dto.TradeOrderQueryParamDto">
 		SELECT trade.id,
 		trade.order_no,
 		trade.type,
 		trade.pay_way,
-		CASE trade.type
-		WHEN 3 THEN
-		trade.store_name
-		WHEN 4 THEN
-		trade.store_name
-		WHEN 0 THEN
-		store.store_name
-		WHEN 2 THEN
-		store.store_name
-		WHEN 5 THEN
-		store.store_name
-		END AS store_name,
 		trade.store_id,
 		trade.user_phone,
 		trade.user_id,
@@ -5519,10 +5507,6 @@
 		locate.city_name as lCity_name,
 		locate.area_name as lArea_name,
 		locate.area_ext as lArea_ext,
-<!-- 		member.province_name as aProvice_name,
-		member.city_name as aCity_name,
-		member.area_name as aArea_name,
-		member.address as address, -->
 		trade.income,
 		trade.activity_type,
 		trade.activity_id,
@@ -5536,90 +5520,55 @@
 		trade.order_resource,
 		trade.status,
 		pay.pay_type,
-		<!-- begin add by zengjz 增加是否有违约金相关字段 -->
 		trade.is_breach,
 		trade.breach_money,
-		<!-- end add by zengjz 增加是否有违约金相关字段 -->
-		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
-		CASE
-              WHEN trade.type = 3 THEN locate.city_name
-              WHEN trade.type = 4 THEN locate.city_name 
-		      ELSE ''
-		END AS city_name,
+		locate.city_name AS city_name,
 		CONCAT(IFNULL(locate.provice_name,''),IFNULL(locate.city_name,''),IFNULL(locate.area_name,''),IFNULL(locate.area_ext,'')) as location,
 		trade.update_time
-		<!-- end add by zhulq 订单所属城市 和定位地址 -->      
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
-		LEFT JOIN store_info store ON store.id = trade.store_id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
-		<!-- LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id -->
 		WHERE 1=1
-		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
-		<if test="locateCityName != null and locateCityName != ''">
-			AND locate.city_name LIKE CONCAT('%', #{locateCityName,jdbcType=VARCHAR},'%')
-			AND (trade.type = 3 OR trade.type = 4)
-		</if>
-		<!-- end add by zhulq 订单所属城市 和定位地址 -->
-		<if test="unDisabled != null">
-			AND (trade.disabled = #{unDisabled, jdbcType=TINYINT}
-			<if test="completeStatus != null">
-				OR (trade.disabled = #{disabled, jdbcType=TINYINT} AND trade.status =
-				#{completeStatus, jdbcType=TINYINT})
-			</if>
-			)
-		</if>
 		<if test="orderNo != null and orderNo != ''">
 			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
 		</if>
-		<if test="storeName != null and storeName != ''">
-			AND ((trade.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR},
-			'%') AND (trade.type = 3 OR trade.type = 4))
-			OR
-			(store.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR}, '%') AND trade.type
-			!= 3 AND trade.type != 4))
-
+		<if test="storeId != null and storeId != ''">
+			AND trade.store_id = #{storeId, jdbcType=VARCHAR}
 		</if>
 		<if test="userPhone != null and userPhone != ''">
-			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
-			'%')
-		</if>
-		<if test="type != null and type.size() > 0">
-			AND trade.type IN
-			<foreach collection="type" index="index" item="item" open="("
-				close=")" separator=",">
-				#{item}
-			</foreach>
+			AND trade.user_phone = #{userPhone, jdbcType=VARCHAR}
 		</if>
 		<if test="status != null">
-			AND trade.status IN
-			<foreach collection="status" index="index" item="item" open="("
-				close=")" separator=",">
+			AND trade.status = #{status, jdbcType=TINYINT}
+		</if>
+		<if test="orderResource != null">
+			AND trade.order_resource = #{orderResource, jdbcType=TINYINT}
+		</if>
+		<if test="payType != null">
+			AND pay.pay_type = #{payType, jdbcType=TINYINT}
+		</if>
+		<if test="startTime != null and startTime!=''">
+			<![CDATA[AND trade.create_time  >= #{startTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="endTime != null and startTime!=''">
+			<![CDATA[ AND trade.create_time <= #{endTime,jdbcType=VARCHAR}]]>
+		</if>
+		
+		<if test="payWay != null">
+			AND trade.pay_way = #{payWay, jdbcType=TINYINT}
+		</if>
+		<if test="typeList != null and typeList.size() > 0">
+			AND trade.type IN
+			<foreach collection="typeList" index="index" item="item" open="(" close=")" separator=",">
 				#{item}
 			</foreach>
 		</if>
-		<if test="orderResource != null">
-			 AND trade.order_resource =#{orderResource, jdbcType=TINYINT}
+		<if test="type != null">
+			AND trade.type = #{type, jdbcType=TINYINT}
 		</if>
-		<if test="payType != null">
-			<if test="payType != 4">
-				AND pay.pay_type = #{payType, jdbcType=TINYINT}
-			</if>
-			<if test="payType == 4">
-				AND (trade.pay_way = #{payWayServer,jdbcType=TINYINT} OR trade.pay_way
-				= #{payWayPhysical,jdbcType=TINYINT} OR pay.pay_type = #{payType,
-				jdbcType=TINYINT})
-			</if>
+		<if test="cityName != null and cityName != ''">
+			AND locate.city_name = #{cityName,jdbcType=VARCHAR}
 		</if>
-		<if test="startTime != null">
-			AND trade.create_time <![CDATA[ >= ]]>
-			#{startTime,jdbcType=TIMESTAMP}
-		</if>
-		<if test="endTime != null">
-			AND trade.create_time <![CDATA[ <= ]]>
-			#{endTime,jdbcType=TIMESTAMP}
-		</if>
-		<!-- Begin V2.1.0 added by luosm 20170218 -->
 		<if test="ids != null">
 			AND trade.id in
 			<foreach collection="ids" index="index" item="item" open="("
@@ -5627,93 +5576,64 @@
 				#{item}
 			</foreach>
 		</if>
-		<if test="storeIds != null">
-			AND trade.store_id in
-			<foreach collection="storeIds" index="index" item="item" open="("
-				separator="," close=")">
-				#{item}
-			</foreach>
-		</if>
-		<!-- End V2.1.0 added by luosm 20170218 -->
 		order by trade.create_time desc
 	</select>
 
 	<!-- Begin V2.1.0 added by luosm 20170224 -->
 	<!-- 统计财务订单列表数量  -->
 	<select id="countOrderForFinanceByParams" resultType="java.lang.Integer"
-		parameterType="java.util.Map">
-		SELECT count(1)  
+		parameterType="com.okdeer.mall.order.dto.TradeOrderQueryParamDto">
+		SELECT count(1) FROM 
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
-		LEFT JOIN store_info store ON store.id = trade.store_id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
-		<!-- LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id -->
 		WHERE 1=1
-		<!-- begin add by zhulq 订单所属城市 和定位地址 -->
-		<if test="locateCityName != null and locateCityName != ''">
-			AND locate.city_name LIKE CONCAT('%', #{locateCityName,jdbcType=VARCHAR},'%')
-			AND (trade.type = 3 OR trade.type = 4)
-		</if>
-		<!-- end add by zhulq 订单所属城市 和定位地址 -->
-		<if test="unDisabled != null">
-			AND (trade.disabled = #{unDisabled, jdbcType=TINYINT}
-			<if test="completeStatus != null">
-				OR (trade.disabled = #{disabled, jdbcType=TINYINT} AND trade.status =
-				#{completeStatus, jdbcType=TINYINT})
-			</if>
-			)
-		</if>
 		<if test="orderNo != null and orderNo != ''">
 			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
 		</if>
-		<if test="storeName != null and storeName != ''">
-			AND ((trade.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR},
-			'%') AND (trade.type = 3 OR trade.type = 4))
-			OR
-			(store.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR}, '%') AND trade.type
-			!= 3 AND trade.type != 4))
-
+		<if test="storeId != null and storeId != ''">
+			AND trade.store_id = #{storeId, jdbcType=VARCHAR}
 		</if>
 		<if test="userPhone != null and userPhone != ''">
-			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
-			'%')
-		</if>
-		<if test="type != null and type.size() > 0">
-			AND trade.type IN
-			<foreach collection="type" index="index" item="item" open="("
-				close=")" separator=",">
-				#{item}
-			</foreach>
+			AND trade.user_phone = #{userPhone, jdbcType=VARCHAR}
 		</if>
 		<if test="status != null">
-			AND trade.status IN
-			<foreach collection="status" index="index" item="item" open="("
-				close=")" separator=",">
+			AND trade.status = #{status, jdbcType=TINYINT}
+		</if>
+		<if test="orderResource != null">
+			AND trade.order_resource = #{orderResource, jdbcType=TINYINT}
+		</if>
+		<if test="payType != null">
+			AND pay.pay_type = #{payType, jdbcType=TINYINT}
+		</if>
+		<if test="startTime != null and startTime!=''">
+			<![CDATA[AND trade.create_time  >= #{startTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="endTime != null and startTime!=''">
+			<![CDATA[ AND trade.create_time <= #{endTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="payWay != null">
+			AND trade.pay_way = #{payWay, jdbcType=TINYINT}
+		</if>
+		<if test="typeList != null and typeList.size() > 0">
+			AND trade.type IN
+			<foreach collection="typeList" index="index" item="item" open="(" close=")" separator=",">
 				#{item}
 			</foreach>
 		</if>
-		<if test="orderResource != null">
-			 AND trade.order_resource =#{orderResource, jdbcType=TINYINT}
+		<if test="type != null">
+			AND trade.type = #{type, jdbcType=TINYINT}
 		</if>
-		<if test="payType != null">
-			<if test="payType != 4">
-				AND pay.pay_type = #{payType, jdbcType=TINYINT}
-			</if>
-			<if test="payType == 4">
-				AND (trade.pay_way = #{payWayServer,jdbcType=TINYINT} OR trade.pay_way
-				= #{payWayPhysical,jdbcType=TINYINT} OR pay.pay_type = #{payType,
-				jdbcType=TINYINT})
-			</if>
+		<if test="cityName != null and cityName != ''">
+			AND locate.city_name = #{cityName,jdbcType=VARCHAR}
 		</if>
-		<if test="startTime != null">
-			AND trade.create_time <![CDATA[ >= ]]>
-			#{startTime,jdbcType=TIMESTAMP}
+		<if test="ids != null">
+			AND trade.id in
+			<foreach collection="ids" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
 		</if>
-		<if test="endTime != null">
-			AND trade.create_time <![CDATA[ <= ]]>
-			#{endTime,jdbcType=TIMESTAMP}
-		</if>
-		order by trade.create_time desc
 	</select>
 	<!-- Begin V2.1.0 added by luosm 20170224 -->
 

@@ -12,6 +12,7 @@ import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
+import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
@@ -1008,19 +1009,21 @@ public interface TradeOrderMapper {
 	/**
 	 * 
 	 * @Description: 据查询条件，查询订单列表（用于财务系统，包含服务店订单）
-	 * @param params
+	 * @param tradeOrderQueryParamDto 查询参数
 	 * @return List<ERPTradeOrderVo> 
 	 * @author wusw
 	 * @date 2016年7月19日
 	 */
-	List<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params);
-	// End 重构4.1 add by wusw 20160719
-
-	// Begin V2.1.0 added by luosm 20170224
-	int countOrderForFinanceByParams(Map<String, Object> params);
-	// End V2.1.0 added by luosm 20170224
-
-	// Begin 重构4.1 add by wusw 20160729
+	List<ERPTradeOrderVo> findOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto);
+	
+	/**
+	 * @Description: 据查询数量，查询订单列表（用于财务系统，包含服务店订单）
+	 * @param tradeOrderQueryParamDto 查询参数
+	 * @return 数量
+	 * @author zengjizu
+	 * @date 2017年4月26日
+	 */
+	int countOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto);
 	/**
 	 * 
 	 * @Description: 服务店订单详情（商城后台）
