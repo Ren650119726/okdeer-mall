@@ -636,7 +636,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		map.put("storeType", "SERVICE_STORE");
 		map.put("type", "STORE_CONSUME_ORDER");
 		try {
-			PageUtils<TradeOrder> page = this.findConsumeByParams(map, 1, 10);
+			PageUtils<TradeOrder> page = this.findConsumeByMap(map, 1, 10);
 			num = (int)page.getTotal();
 		} catch (ServiceException e) {
 			e.printStackTrace();
