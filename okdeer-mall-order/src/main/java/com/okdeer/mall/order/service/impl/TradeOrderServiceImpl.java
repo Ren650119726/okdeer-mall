@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -42,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -362,6 +364,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private IStoreInfoExtServiceApi storeInfoExtService;
+	
+	@Autowired
+	private  RedisTemplate<String,Boolean> redisTemplate;
 
 	/**
 	 * 订单收货信息
@@ -6148,32 +6153,73 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		Map<String, Object> map = new HashMap<String, Object>();
 		String storeId = tradeOrder.getStoreId();
 		StoreInfo storeInfo = storeInfoServiceApi.selectByPrimaryKey(storeId);
-		// 如果店铺信息存在即设置省市ID start 涂志定
+		// 如果店铺信息存在即设置省市ID 
 		if (storeInfo != null) {
 			// 服务店订单 ，活动范围判定：物流地址
 			map.put("provinceId", storeInfo.getProvinceId());
 			map.put("cityId", storeInfo.getCityId());
 		}
-		// end 涂志定
 		// 订单实付金额
 		map.put("limitAmout", tradeOrder.getActualAmount());
-		if (orderType == 0) {
-			// 实物订单 订单类型
-			map.put("orderType", ActivityCollectOrderTypeEnum.PHYSICAL_ORDER.getValue());
-			// 获取消费返券信息并赠送代金券
-			getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
-		} else if (orderType == 2 || orderType == 5) {
-			// 订单类型
-			map.put("orderType", ActivityCollectOrderTypeEnum.SERVICE_STORE_ORDER.getValue());
-			// 获取消费返券信息并赠送代金券
-			getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
-		} else if (orderType == 3 || orderType == 4) {
-			// 充值订单
-			// 订单类型
-			map.put("orderType", ActivityCollectOrderTypeEnum.MOBILE_PAY_ORDER.getValue());
-			// 获取消费返券信息并赠送代金券
-			getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
+		
+		//校验成功标识 //如果不存在缓存数据进行加入到缓存中 start 涂志定
+		String key = "coupons"+userId+orderId;
+		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		if(!checkFlag){
+			return ;
 		}
+		
+		try{
+		
+			if (orderType == 0) {
+				// 实物订单 订单类型
+				map.put("orderType", ActivityCollectOrderTypeEnum.PHYSICAL_ORDER.getValue());
+				// 获取消费返券信息并赠送代金券
+				getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
+			} else if (orderType == 2 || orderType == 5) {
+				// 订单类型
+				map.put("orderType", ActivityCollectOrderTypeEnum.SERVICE_STORE_ORDER.getValue());
+				// 获取消费返券信息并赠送代金券
+				getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
+			} else if (orderType == 3 || orderType == 4) {
+				// 充值订单
+				// 订单类型
+				map.put("orderType", ActivityCollectOrderTypeEnum.MOBILE_PAY_ORDER.getValue());
+				// 获取消费返券信息并赠送代金券
+				getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
+			}
+		}catch(Exception e){
+			throw e;
+		}finally {
+			//移除redis缓存的key end 涂志定
+			removeRedisUserStatus(key);
+		}
+		//end 涂志定
+	}
+	
+	/**
+	 * 校验代金券领取的用户状态，避免短时间内并发操作
+	 * @param key 存储的redis key
+	 * @param times 超时时间
+	 * @return
+	 */
+	private boolean checkUserStatusByRedis(String key,int times){
+		//如果不存在缓存数据  返回true 存在false
+		boolean flag = redisTemplate.boundValueOps(key).setIfAbsent(true);
+		if(flag){
+			redisTemplate.expire(key, times, TimeUnit.SECONDS);
+		}else{
+			return false;
+		}
+		return true;
+	}
+	/**
+	 * 移除校验代金券领取的用户状	 
+	 * @param key 存储的redis key
+	 * @return
+	 */
+	private void removeRedisUserStatus(String key){
+		redisTemplate.delete(key);
 	}
 
 	/**
