@@ -341,7 +341,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		}
 		try{
 			ActivityCoupons activityCoupons = activityCouponsMapper.selectByPrimaryKey(couponsId);
-			log.warn(activityCouponsType + "类型,代金券id" + activityCoupons.getActivityId());
 			// 根据数量的判断，插入代金券领取记录
 			map = this.insertRecordByJudgeNum(activityCoupons, currentOperatUserId, "恭喜你，领取成功！", activityCouponsType);
 		}catch(Exception e){
