@@ -203,6 +203,7 @@ public abstract class AbstractPayResultHandler {
 		tradeOrderPay.setPayTime(new Date());
 		tradeOrderPay.setCreateTime(new Date());
 		tradeOrderPay.setReturns(respDto.getFlowNo());
+		tradeOrderPay.setPayAccountId(respDto.getAccountId());
 		return tradeOrderPay;
 	}
 	
