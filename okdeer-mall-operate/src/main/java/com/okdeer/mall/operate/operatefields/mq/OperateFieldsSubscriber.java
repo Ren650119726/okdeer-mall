@@ -17,6 +17,7 @@ import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ENABLEDI
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_GOODS_OFFSHELF;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_GOODS_ONSHELF;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_RANK_OPERATE_FIELD;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_SALE_ACTIVITY_GOODS_DELETE;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TOPIC_OPERATE_FIELD;
 
 import org.slf4j.Logger;
@@ -101,6 +102,10 @@ public class OperateFieldsSubscriber {
               break;
             case TAG_ENABLEDISABLE_OPERATE_FIELD:
                 status = enableDisableOperateField(enMessage);
+                break;
+            case TAG_SALE_ACTIVITY_GOODS_DELETE:
+                status = saleActivityGoodsDelete(enMessage);
+                break;
             default:
                 break;
             }
@@ -335,4 +340,24 @@ public class OperateFieldsSubscriber {
         }
     }
     
+    /**
+     * 特惠活动删除商品时消息订阅
+     * 
+     * @param enMessage
+     * @return
+     * @author zhaoqc
+     * @date 2017-4-21
+     */
+    public ConsumeConcurrentlyStatus saleActivityGoodsDelete(MQMessage enMessage) {
+        GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
+        logger.info("特惠活动删除商品时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
+        try {
+            initOperateField(msgDto);
+            
+            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+        } catch (Exception e) {
+            logger.error("特惠活动删除商品时，消息处理失败：{}", JsonMapper.nonEmptyMapper().toJson(msgDto), e);
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+        }
+    }
 }
