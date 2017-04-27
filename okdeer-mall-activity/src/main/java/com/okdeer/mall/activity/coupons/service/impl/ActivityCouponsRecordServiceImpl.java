@@ -377,8 +377,14 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		}
 		
 		try{
+			ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
+			if(coll == null){
+				map.put("msg", "非法参数！");
+				map.put("code", 105);
+				return JSONObject.fromObject(map);
+			}
 			//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
-			if(checkNewUserCoupons(userId, collectId)){
+			if(checkNewUserCoupons(userId, coll)){
 				map.put("msg", "您已经领取了，快去我的代金券查看使用吧！");
 				map.put("code", 102);
 				return JSONObject.fromObject(map);
@@ -433,8 +439,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @param collectId 代金券活动id
 	 * @return
 	 */
-	private boolean checkNewUserCoupons(String userId,String collectId){
-		ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
+	private boolean checkNewUserCoupons(String userId,ActivityCollectCoupons coll){
 		//如果领取为限新人使用 则校验是否领取过新人代金券
 		if(coll.getGetUserType() == GetUserType.ONlY_NEW_USER){
 			//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
@@ -471,11 +476,18 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			return JSONObject.fromObject(map);
 		}
 		try{
+			ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
+			if(coll == null){
+				map.put("msg", "非法参数！");
+				map.put("code", 105);
+				return JSONObject.fromObject(map);
+			}
+			
 			//循环代金劵id进行送劵
 			List<ActivityCoupons> activityCoupons = activityCouponsMapper.selectByActivityId(collectId);
 			Map<String,ActivityCouponsRecordBefore> reMap = new HashMap<String,ActivityCouponsRecordBefore>();
 			//根据用户手机号码及活动id查询该号码是否领取过 
-			if (checkBeforeCoupons(phone, collectId)) {
+			if (checkBeforeCoupons(phone, coll)) {
 				map.put("code", 102);
 				map.put("msg", "您已经领取了，快去友门鹿app注册使用吧！");
 				checkFlag = false;
@@ -526,8 +538,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @param collectId 代金券活动id
 	 * @return
 	 */
-	private boolean checkBeforeCoupons(String phone,String collectId){
-		ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
+	private boolean checkBeforeCoupons(String phone,ActivityCollectCoupons coll){
 		//如果领取为限新人使用 则校验是否领取过新人代金券
 		if(coll.getGetUserType() == GetUserType.ONlY_NEW_USER){
 			//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
@@ -538,7 +549,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			}
 		}
 		//根据代金劵活动id代金劵预领取统计 持续的活动领取过不能再领取
-		return (activityCouponsRecordBeforeMapper.countCouponsAllId(phone, collectId) > 0);
+		return (activityCouponsRecordBeforeMapper.countCouponsAllId(phone, coll.getId()) > 0);
 	}
 	
 	/**
