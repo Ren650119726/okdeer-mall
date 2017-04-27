@@ -10,6 +10,8 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
+import com.okdeer.mall.common.enums.GetUserType;
 
 /**
  * @DESC: 代金劵预领取记录操作类
@@ -48,6 +50,17 @@ public interface ActivityCouponsRecordBeforeMapper extends IBaseCrudMapper {
 	 * @return
 	 */
 	Integer countCouponsAllId(@Param("collectUser")String collectUser,@Param("collectId")String collectId);
+	
+	/**
+	 * 根据代金劵活动新人限制查询领取未使用的代金劵数量  
+	 * tuzhiding
+	 * @param collectUser 用户信息
+	 * @param collectId  代金劵活动id
+	 * @return
+	 */
+	Integer countCouponsAllId(@Param("getUserType")GetUserType getUserType,@Param("collectUser")String collectUser,@Param("nowDate")Date nowDate);
+	
+	
 	/**
 	 * 
 	 * @Description: 查询用户的邀请信息
