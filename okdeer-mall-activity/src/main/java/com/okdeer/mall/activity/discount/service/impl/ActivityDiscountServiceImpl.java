@@ -22,6 +22,7 @@ import com.okdeer.archive.goods.dto.StoreSkuParamDto;
 import com.okdeer.archive.goods.store.dto.StoreSkuDto;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
@@ -486,8 +487,13 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 
 	@Override
 	public List<ActivityInfoDto> findByStore(ActivityParamDto paramDto) throws Exception {
-		List<String> activityIds = activityDiscountMapper.findByStore(paramDto);
+		StoreInfo storeInfo = storeInfoServiceApi.findById(paramDto.getStoreId());
 		List<ActivityInfoDto> actInfoList = Lists.newArrayList();
+		if(storeInfo.getType() != StoreTypeEnum.CLOUD_STORE){
+			return actInfoList;
+		}
+		List<String> activityIds = activityDiscountMapper.findByStore(paramDto);
+		
 		ActivityInfoDto actInfo = null;
 		for(String activityId : activityIds){
 			actInfo = this.findInfoById(activityId,false);
