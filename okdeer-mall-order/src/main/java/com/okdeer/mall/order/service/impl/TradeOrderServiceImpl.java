@@ -1,5 +1,28 @@
 package com.okdeer.mall.order.service.impl;
 
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_SUCCESS_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_NOT_EXSITS_DELETE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_OVERDUE;
+import static com.okdeer.common.consts.DescriptConstants.REQUEST_PARAM_FAIL;
+import static com.okdeer.common.consts.DescriptConstants.USER_NOT_WALLET;
+import static com.okdeer.common.consts.DescriptConstants.USER_WALLET_FAIL;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
