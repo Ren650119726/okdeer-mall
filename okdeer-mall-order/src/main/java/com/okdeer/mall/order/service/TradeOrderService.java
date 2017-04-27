@@ -1001,7 +1001,7 @@ public interface TradeOrderService {
 	 * @author zengjizu
 	 * @date 2016年9月12日
 	 */
-	Map<String, Object> statisOrderForFinanceByParams(Map<String, Object> params);
+	Map<String, Object> statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto);
 
 	/**
 	 * @Description: 按条件统计取消订单退款交易量与金额

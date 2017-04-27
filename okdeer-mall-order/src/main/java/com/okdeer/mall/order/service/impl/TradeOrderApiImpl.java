@@ -1302,9 +1302,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	// Begin v1.1.0 add by zengjz 20160912
 
 	@Override
-	public Map<String, Object> statisOrderByParams(Map<String, Object> params) {
+	public Map<String, Object> statisOrderByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
 		// 参数转换处理（例如订单状态）
-		Map<String, Object> result = tradeOrderService.statisOrderForFinanceByParams(params);
+		Map<String, Object> result = tradeOrderService.statisOrderForFinanceByParams(tradeOrderQueryParamDto);
 		return result;
 	}
 

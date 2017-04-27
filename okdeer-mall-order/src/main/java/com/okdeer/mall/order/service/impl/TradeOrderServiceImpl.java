@@ -5978,10 +5978,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	// Begin v1.1.0 add by zengjz 20160912
 	@Override
-	public Map<String, Object> statisOrderForFinanceByParams(Map<String, Object> params) {
+	public Map<String, Object> statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
 		// 参数转换处理（例如订单状态）
-		this.convertParams(params);
-		Map<String, Object> result = tradeOrderMapper.statisOrderForFinanceByParams(params);
+		Map<String, Object> result = tradeOrderMapper.statisOrderForFinanceByParams(tradeOrderQueryParamDto);
 		return result;
 	}
 

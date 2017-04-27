@@ -5795,71 +5795,64 @@
 	</select>
 	
 	<!-- 财务系统订单统计接口  V1.1.0 add by zengjz 20160930 -->
-	<select id="statisOrderForFinanceByParams" parameterType="map"
+	<select id="statisOrderForFinanceByParams" parameterType="com.okdeer.mall.order.dto.TradeOrderQueryParamDto"
 		resultType="map">
 		SELECT  IFNULL(sum(total_amount),0) as totalAmount,count(1) as count
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
-		LEFT JOIN store_info store ON store.id = trade.store_id
-		LEFT JOIN member_consignee_address member ON member.id = trade.pick_up_id
+		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
 		WHERE 1=1
-		<if test="unDisabled != null">
-			AND (trade.disabled = #{unDisabled, jdbcType=TINYINT}
-			<if test="completeStatus != null">
-				OR (trade.disabled = #{disabled, jdbcType=TINYINT} AND trade.status =
-				#{completeStatus, jdbcType=TINYINT})
-			</if>
-			)
-		</if>
 		<if test="orderNo != null and orderNo != ''">
 			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
 		</if>
-		<if test="storeName != null and storeName != ''">
-			AND (store.store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR},'%') 
-				AND (trade.type = 3 OR trade.type = 4))
+		<if test="storeId != null and storeId != ''">
+			AND trade.store_id = #{storeId, jdbcType=VARCHAR}
 		</if>
 		<if test="userPhone != null and userPhone != ''">
-			AND trade.user_phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},
-			'%')
+			AND trade.user_phone = #{userPhone, jdbcType=VARCHAR}
 		</if>
-		<if test="cityName != null and cityName != ''">
-			AND member.city_name LIKE CONCAT('%', #{cityName,jdbcType=VARCHAR},
-			'%')
-	    </if>
-		<if test="type != null and type.size() > 0">
-			AND trade.type IN
-			<foreach collection="type" index="index" item="item" open="("
-				close=")" separator=",">
+		<if test="statusList != null and statusList.size() > 0">
+			AND trade.status IN
+			<foreach collection="statusList" index="index" item="item" open="(" close=")" separator=",">
 				#{item}
 			</foreach>
 		</if>
 		<if test="status != null">
-			AND trade.status IN
-			<foreach collection="status" index="index" item="item" open="("
-				close=")" separator=",">
+			AND trade.status = #{status, jdbcType=TINYINT}
+		</if>
+		<if test="orderResource != null">
+			AND trade.order_resource = #{orderResource, jdbcType=TINYINT}
+		</if>
+		<if test="payType != null">
+			AND pay.pay_type = #{payType, jdbcType=TINYINT}
+		</if>
+		<if test="startTime != null and startTime!=''">
+			<![CDATA[AND trade.create_time  >= #{startTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="endTime != null and endTime!=''">
+			<![CDATA[ AND trade.create_time <= #{endTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="payWay != null">
+			AND trade.pay_way = #{payWay, jdbcType=TINYINT}
+		</if>
+		<if test="typeList != null and typeList.size() > 0">
+			AND trade.type IN
+			<foreach collection="typeList" index="index" item="item" open="(" close=")" separator=",">
 				#{item}
 			</foreach>
 		</if>
-		<if test="orderResource != null">
-			AND trade.order_resource =#{orderResource, jdbcType=TINYINT}
+		<if test="type != null">
+			AND trade.type = #{type, jdbcType=TINYINT}
 		</if>
-		<if test="payType != null">
-			<if test="payType != 4">
-				AND pay.pay_type = #{payType, jdbcType=TINYINT}
-			</if>
-			<if test="payType == 4">
-				AND (trade.pay_way = #{payWayServer,jdbcType=TINYINT} OR trade.pay_way
-				= #{payWayPhysical,jdbcType=TINYINT} OR pay.pay_type = #{payType,
-				jdbcType=TINYINT})
-			</if>
+		<if test="cityName != null and cityName != ''">
+			AND locate.city_name = #{cityName,jdbcType=VARCHAR}
 		</if>
-		<if test="startTime != null">
-			AND trade.create_time <![CDATA[ >= ]]>
-			#{startTime,jdbcType=TIMESTAMP}
-		</if>
-		<if test="endTime != null">
-			AND trade.create_time <![CDATA[ <= ]]>
-			#{endTime,jdbcType=TIMESTAMP}
+		<if test="idList != null">
+			AND trade.id in
+			<foreach collection="idList" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
 		</if>
 	</select>
 	
