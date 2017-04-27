@@ -259,7 +259,12 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                 if(type == OperateFieldsContentType.SINGLE_GOODS) {
                     //单品选择
                     contentDto = this.getSingleGoodsOfOperateField(content.getBusinessId(), storeId);
-                    contentDtos.add(contentDto);
+                    if(contentDto != null) {
+                        contentDtos.add(contentDto);
+                    } else {
+                        contentDtos = null;
+                        break;
+                    }
                 } else if(type == OperateFieldsContentType.STORE_ACTIVITY) {
                     //店铺活动
                     contentDtos = getGoodsOfStoreActivityField(storeId, content.getBusinessType().getCode(),
@@ -618,7 +623,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         fieldInfo.setTitle("");
         fieldInfo.setHeadPic(fieldBo.getHeadPic());
         fieldInfo.setTarget("");
-        fieldInfo.setId(fieldInfo.getId());
+        fieldInfo.setId(fieldBo.getId());
         fieldInfo.setType(fieldBo.getType().getCode());
         fieldInfo.setBusinessId(fieldBo.getBusinessId());
         fieldInfo.setName(fieldBo.getName());
