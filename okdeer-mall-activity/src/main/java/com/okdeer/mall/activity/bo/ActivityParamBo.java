@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
+import com.okdeer.mall.common.enums.AreaType;
 
 /**
  * ClassName: ActivityParamBo 
@@ -48,6 +49,11 @@ public class ActivityParamBo {
 	 * 排除的活动ID
 	 */
 	private String excludedId;
+
+	/**
+	 * 限制范围类型
+	 */
+	private AreaType limitRange;
 
 	/**
 	 * 限制范围ID列表
@@ -134,6 +140,14 @@ public class ActivityParamBo {
 
 	public void setType(ActivityDiscountType type) {
 		this.type = type;
+	}
+
+	public AreaType getLimitRange() {
+		return limitRange;
+	}
+
+	public void setLimitRange(AreaType limitRange) {
+		this.limitRange = limitRange;
 	}
 
 }
