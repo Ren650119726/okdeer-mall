@@ -198,7 +198,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 				}
 				// 参与活动次数限制
 				int limitTotalFreq = actInfo.getLimitTotalFreq().intValue();
-				if (limitTotalFreq > 0 && actInfo.getLimitUser() == UseUserType.ALLOW_All) {
+				if (limitTotalFreq > 0) {
 					// 用户参与活动次数。0：不限，大于0有限制
 					int userTotalFreq = activityDiscountRecordService.countTotalFreq(paramBo.getUserId(),
 							actInfo.getId());

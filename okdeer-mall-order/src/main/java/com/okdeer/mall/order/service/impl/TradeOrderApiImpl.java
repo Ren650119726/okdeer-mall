@@ -1041,12 +1041,8 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	public List<ERPTradeOrderVoDto> findOrderListByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto)
 			throws Exception {
 		
-		long l1 = System.currentTimeMillis();
 		List<ERPTradeOrderVo> list = tradeOrderService.findOrderListForFinanceByParams(tradeOrderQueryParamDto);
-
-		long l2 = System.currentTimeMillis();
 		
-		System.out.println("查询订单信息花费"+(l2-l1));
 		List<ERPTradeOrderVoDto> result = new ArrayList<ERPTradeOrderVoDto>();
 
 		// 如果有订单信息
@@ -1072,7 +1068,6 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 			// V2.1.0 begin add by zhulq 获取服务店上门服务的收货地址（物流表的地址）
 			
-			long l3 = System.currentTimeMillis();
 			// 订单的物流信息
 			List<TradeOrderLogistics> logisticsList = null;
 			if (CollectionUtils.isNotEmpty(orderIds)) {
@@ -1086,8 +1081,6 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				logisticsList = Lists.newArrayList();
 			}
 			
-			l2 = System.currentTimeMillis();
-			System.out.println("查询物流信息花费"+(l2-l3));
 			// 店铺地址（到店自提和到店消费订单店铺地址）
 			List<UserAddressVo> memberAddressList = null;
 			// V2.1.0 end add by zhulq 收货地址取物流表信息 之前是取店铺地址
@@ -1098,8 +1091,6 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				memberAddressList = Lists.newArrayList();
 			}
 
-			l2 = System.currentTimeMillis();
-			System.out.println("查询地址信息花费"+(l2-l1));
 			// V2.1.0 end add by zhulq 获取服务店上门服务的收货地址（物流表的地址）
 
 			List<SysUserInvitationLoginNameVO> inviteNameLists = new ArrayList<SysUserInvitationLoginNameVO>();
@@ -1110,21 +1101,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				inviteNameLists = Lists.newArrayList();
 			}
 			
-			l2 = System.currentTimeMillis();
-			System.out.println("查询invitationCodeService信息花费"+(l2-l1));
 			
 			List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
 			List<ActivityInfoVO> activityList = null;
 			if (CollectionUtils.isNotEmpty(orderIds)) {
 				tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
-				
-				l2 = System.currentTimeMillis();
-				System.out.println("查询tradeOrderRefundsList信息花费"+(l2-l1));
-				
 				activityList = tradeOrderService.findActivityInfo(orderIds);
-				
-				l2 = System.currentTimeMillis();
-				System.out.println("查询activityList信息花费"+(l2-l1));
 			}
 			if (activityList == null) {
 				activityList = Lists.newArrayList();
@@ -1293,9 +1275,6 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				// begin add by zhulq 充值订单所属城市和完成时间设置
 				result.add(dto);
 			}
-			
-			l2 = System.currentTimeMillis();
-			System.out.println("处理完成花费"+(l2-l1));
 		}
 		return result;
 	}

@@ -1877,8 +1877,6 @@ public class TradeOrderRefundsServiceImpl
 	// Begin V2.1.0 added by luosm 20170222
 	@Override
 	public List<TradeOrderRefunds> selectByOrderIds(List<String> orderIds) throws Exception {
-		System.out.println("查询退款订单信息");
-		long l1 = System.currentTimeMillis();
 		List<TradeOrderRefunds> list = PageQueryUtils.pageQueryByIds(orderIds, new PageCallBack<TradeOrderRefunds>() {
 			@Override
 			public List<TradeOrderRefunds> callBackHandle(List<String> idList) {
@@ -1886,8 +1884,6 @@ public class TradeOrderRefundsServiceImpl
 			}
 			
 		});
-		long l2 = System.currentTimeMillis();
-		System.out.println("查询退款订单信息结束:"+(l2-l1));
 		return list;
 	}
 	// End V2.1.0 added by luosm 20170222
