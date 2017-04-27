@@ -52,13 +52,13 @@ public interface ActivityCouponsRecordBeforeMapper extends IBaseCrudMapper {
 	Integer countCouponsAllId(@Param("collectUser")String collectUser,@Param("collectId")String collectId);
 	
 	/**
-	 * 根据代金劵活动新人限制查询领取未使用的代金劵数量  
+	 * 查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量   
 	 * tuzhiding
 	 * @param collectUser 用户信息
 	 * @param collectId  代金劵活动id
 	 * @return
 	 */
-	Integer countCouponsAllId(@Param("getUserType")GetUserType getUserType,@Param("collectUser")String collectUser,@Param("nowDate")Date nowDate);
+	Integer countCouponsByType(@Param("getUserType")GetUserType getUserType,@Param("collectUser")String collectUser,@Param("nowDate")Date nowDate);
 	
 	
 	/**
