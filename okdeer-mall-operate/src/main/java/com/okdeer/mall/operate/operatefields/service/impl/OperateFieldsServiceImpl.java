@@ -275,7 +275,8 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                     if(businessType == OperateFieldsBusinessType.STORE_MENU) {
                         //店铺菜单
                         GoodsStoreMenuParamDto paramDto = new GoodsStoreMenuParamDto();
-                        paramDto.setId(content.getBusinessId());
+                        paramDto.setPkId(content.getBusinessId());
+                        paramDto.setStoreId(storeId);
                         List<GoodsStoreMenuDto> menuDtos = this.goodsStoreMenuApi.findByParam(paramDto);
                         if(CollectionUtils.isNotEmpty(menuDtos)) {
                            //businessId为店铺菜单
@@ -315,7 +316,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                 }
             }
             
-            if(contentDtos != null) {
+            if(CollectionUtils.isNotEmpty(contentDtos)) {
                 OperateFieldDto operateField = new OperateFieldDto();
                 operateField.setFieldInfo(fieldInfo);
                 operateField.setContentList(contentDtos);
