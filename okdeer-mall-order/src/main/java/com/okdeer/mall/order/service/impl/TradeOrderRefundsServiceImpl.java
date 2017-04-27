@@ -101,6 +101,7 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsLogMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsLogisticsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.service.GenerateNumericalService;
+import com.okdeer.mall.order.service.PageCallBack;
 import com.okdeer.mall.order.service.StockOperateService;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
@@ -117,6 +118,7 @@ import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderRefundsTraceService;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
+import com.okdeer.mall.order.utils.PageQueryUtils;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsChargeVo;
@@ -1875,7 +1877,14 @@ public class TradeOrderRefundsServiceImpl
 	// Begin V2.1.0 added by luosm 20170222
 	@Override
 	public List<TradeOrderRefunds> selectByOrderIds(List<String> orderIds) throws Exception {
-		return tradeOrderRefundsMapper.selectByOrderIds(orderIds);
+		List<TradeOrderRefunds> list = PageQueryUtils.pageQueryByIds(orderIds, new PageCallBack<TradeOrderRefunds>() {
+			@Override
+			public List<TradeOrderRefunds> callBackHandle(List<String> idList) {
+				return tradeOrderRefundsMapper.selectByOrderIds(idList);
+			}
+			
+		});
+		return list;
 	}
 	// End V2.1.0 added by luosm 20170222
 

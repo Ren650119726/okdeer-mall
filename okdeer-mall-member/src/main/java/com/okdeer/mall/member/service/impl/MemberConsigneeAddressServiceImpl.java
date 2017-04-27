@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.google.common.collect.Lists;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
@@ -453,7 +454,40 @@ public class MemberConsigneeAddressServiceImpl
 
 	@Override
 	public List<UserAddressVo> findByStoreIds(List<String> storeIds) {
-		return memberConsigneeAddressMapper.findByStoreIds(storeIds);
+		return pageQueryByIds(storeIds,new  PageCallBack<UserAddressVo>() {
+			@Override
+			public List<UserAddressVo> callBackHandle(List<String> idList) {
+				return memberConsigneeAddressMapper.findByStoreIds(idList);
+			}
+		}, 100);
+	}
+
+	
+	
+	public static <T> List<T> pageQueryByIds(List<String> ids, PageCallBack<T> pageCallBack,final int pageSize) {
+		List<T> resultList = Lists.newArrayList();
+		if (ids.size() > pageSize) {
+			// 如果list太大，分批查询
+			int page = ids.size() % pageSize == 0 ? ids.size() / pageSize : ids.size() / pageSize + 1;
+			for (int i = 0; i < page; i++) {
+				int fromIndex = i * pageSize;
+				int toIndex = fromIndex + pageSize - 1;
+				if (toIndex > ids.size()) {
+					toIndex = ids.size();
+				}
+				List<String> indexList = ids.subList(fromIndex, toIndex);
+				List<T> tempList = pageCallBack.callBackHandle(indexList);
+				
+				resultList.addAll(tempList);
+			}
+		}else{
+			List<T> tempList = pageCallBack.callBackHandle(ids);
+			resultList.addAll(tempList);
+		}
+		return resultList;
+	}
+	public interface PageCallBack<T> {
+		List<T> callBackHandle(List<String> idList);
 	}
 
 }

@@ -1,8 +1,11 @@
 
 package com.okdeer.mall.system.service;
 
+import java.util.List;
+
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.system.entity.SysUserInvitationCode;
+import com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO;
 import com.okdeer.mall.system.enums.InvitationUserType;
 
 /**
@@ -57,5 +60,7 @@ public interface InvitationCodeService {
 	 * @author tuzhd 2017-2-23修改添加机器编码
 	 */
     public int saveInvatationRecord(SysUserInvitationCode invatitationInfo, String userId, String machineCode)throws Exception;
+    
+    public List<SysUserInvitationLoginNameVO> selectLoginNameByUserId(List<String> userIds);
 
 }

@@ -56,7 +56,6 @@ import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
@@ -154,6 +153,7 @@ import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
+import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -200,6 +200,7 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper;
 import com.okdeer.mall.order.mq.constants.TradeOrderTopic;
+import com.okdeer.mall.order.service.PageCallBack;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
@@ -210,6 +211,7 @@ import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
+import com.okdeer.mall.order.utils.PageQueryUtils;
 import com.okdeer.mall.order.vo.ActivityInfoVO;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.OrderCouponsRespDto;
@@ -5733,21 +5735,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 *      int, int)
 	 */
 	@Override
-	public PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(Map<String, Object> params, int pageNumber,
+	public PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto, int pageNumber,
 			int pageSize) throws ServiceException {
 		PageHelper.startPage(pageNumber, pageSize,false);
-		// 参数转换处理（例如订单状态）
-		this.convertParams(params);
-		List<ERPTradeOrderVo> result = tradeOrderMapper.findOrderForFinanceByParams(params);
+		List<ERPTradeOrderVo> result = tradeOrderMapper.findOrderForFinanceByParams(tradeOrderQueryParamDto);
 		if (result == null) {
 			result = new ArrayList<ERPTradeOrderVo>();
 		}
-
-		// Begin V2.1.0 added by luosm 20170224
-		Page<ERPTradeOrderVo> page = (Page<ERPTradeOrderVo>) result;
-		int total = tradeOrderMapper.countOrderForFinanceByParams(params);
-		page.setTotal(total);
-		// End V2.1.0 added by luosm 20170224
+//		Page<ERPTradeOrderVo> page = (Page<ERPTradeOrderVo>) result;
+//		int total = tradeOrderMapper.countOrderForFinanceByParams(tradeOrderQueryParamDto);
+//		page.setTotal(total);
 		return new PageUtils<ERPTradeOrderVo>(result);
 	}
 
@@ -5867,11 +5864,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @see com.okdeer.mall.order.service.TradeOrderService#findOrderListForFinanceByParams(java.util.Map)
 	 */
 	@Override
-	public List<ERPTradeOrderVo> findOrderListForFinanceByParams(Map<String, Object> params) throws ServiceException {
+	public List<ERPTradeOrderVo> findOrderListForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException {
 		// 参数转换处理（例如订单状态）
-		this.convertParams(params);
-		return tradeOrderMapper.findOrderForFinanceByParams(params);
+//		this.convertParams(params);
+		return tradeOrderMapper.findOrderForFinanceByParams(tradeOrderQueryParamDto);
 	}
+	
+	@Override
+	public int findOrderCountForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException{
+		return tradeOrderMapper.countOrderForFinanceByParams(tradeOrderQueryParamDto);
+	}
+	
+	
 
 	// End 重构4.1 add by wusw 20160723
 
@@ -6090,10 +6094,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	// Begin v1.1.0 add by zengjz 20160912
 	@Override
-	public Map<String, Object> statisOrderForFinanceByParams(Map<String, Object> params) {
+	public Map<String, Object> statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
 		// 参数转换处理（例如订单状态）
-		this.convertParams(params);
-		Map<String, Object> result = tradeOrderMapper.statisOrderForFinanceByParams(params);
+		Map<String, Object> result = tradeOrderMapper.statisOrderForFinanceByParams(tradeOrderQueryParamDto);
 		return result;
 	}
 
@@ -7281,7 +7284,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	@Override
 	public List<ActivityInfoVO> findActivityInfo(List<String> orderIds) {
-		return tradeOrderMapper.findActivityInfo(orderIds);
+		List<ActivityInfoVO> list = PageQueryUtils.pageQueryByIds(orderIds, new PageCallBack<ActivityInfoVO>() {
+			@Override
+			public List<ActivityInfoVO> callBackHandle(List<String> idList) {
+				return tradeOrderMapper.findActivityInfo(idList);
+			}
+		});
+		return list;
 	}
 
 	@Override

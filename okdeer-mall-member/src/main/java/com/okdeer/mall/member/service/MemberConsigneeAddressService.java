@@ -291,4 +291,6 @@ public interface MemberConsigneeAddressService {
 	 */
 	public List<UserAddressVo> findUserAddr(Map<String, Object> params);
 	// End V2.0 added by maojj 2017-01-07
+	
+	List<UserAddressVo> findByStoreIds(List<String> storeIds);
 }
