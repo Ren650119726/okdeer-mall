@@ -182,13 +182,15 @@
 					WHEN 5 THEN '合作店'
 					ELSE '' END
 			) ELSE '合作商家' END AS branchesName,
-			gs.id as goodsId, gs.id as pointContent,g.sale_stock,g.sale_price as lowPrice,
+			gs.id as goodsId, gs.id as pointContent,g.sale_stock,
 			gs.`name`,gs.alias,gs.tag_type,gs.type as sku_type,p.url as newUrl, 0 pointType,
-			gs.online_price, gs.market_price, gs.properties_indb,gs.trade_max,gs.update_time,
+			gs.properties_indb,gs.trade_max,gs.update_time,
 			case s.type when 7  THEN  1 else 0 end as isLowPrice,
 			case s.type when 5 THEN 1 else 0 end as isPrivliege,
 			case s.type when 7 THEN  g.trade_max else '' end as lowPriceUpper,
-			case s.type when 5 THEN g.trade_max else '' end as limitNum
+			case s.type when 5 THEN g.trade_max else '' end as limitNum,
+			g.sale_price as lowPrice, gs.market_price, 
+			case s.type when 5 THEN g.sale_price else gs.online_price end as online_price   
 		from activity_sale s
 		left join store_info si on s.store_id=si.id
 		left join store_branches sb on si.id=sb.id
@@ -238,13 +240,15 @@
 					WHEN 5 THEN '合作店'
 					ELSE '' END
 			) ELSE '合作商家' END AS branchesName,
-			gs.id as goodsId, gs.id as pointContent,g.sale_stock,g.sale_price as lowPrice,
+			gs.id as goodsId, gs.id as pointContent,g.sale_stock,
 			gs.`name`,gs.alias,gs.tag_type,gs.type as sku_type,p.url as newUrl, 0 pointType,
-			gs.online_price, gs.market_price, gs.properties_indb,gs.trade_max,gs.update_time,
+			gs.properties_indb,gs.trade_max,gs.update_time,
 		    case gs.activity_type when 5 THEN  1 else 0 end as isLowPrice,
 			case gs.activity_type when 2 THEN 1 else 0 end as isPrivliege,		
 		    case gs.activity_type when 5 THEN  g.trade_max else '' end as lowPriceUpper,
-			case gs.activity_type when 2 THEN g.trade_max else '' end as limitNum
+			case gs.activity_type when 2 THEN g.trade_max else '' end as limitNum,
+			g.sale_price as lowPrice, gs.market_price,
+			case gs.activity_type when 2 then g.sale_price else gs.online_price end as online_price
 		from goods_store_sku gs 
 		left join activity_sale_goods g on gs.id=g.store_sku_id and g.sale_id = gs.activity_id
 		left join store_info si on gs.store_id = si.id
@@ -269,13 +273,15 @@
 					WHEN 5 THEN '合作店'
 					ELSE '' END
 			) ELSE '合作商家' END AS branchesName
-			, gs.id as pointContent,g.sale_stock,g.sale_price as lowPrice,
+			, gs.id as pointContent,g.sale_stock,
 			gs.`name`,gs.alias,gs.tag_type,gs.type as sku_type,p.url as newUrl, 0 pointType,
-			gs.online_price, gs.market_price, gs.properties_indb,gs.trade_max,gs.update_time,
+			gs.properties_indb,gs.trade_max,gs.update_time,
 			case gs.activity_type when 5 THEN  1 else 0 end as isLowPrice,
 			case gs.activity_type when 2 THEN 1 else 0 end as isPrivliege,		
 			case gs.activity_type when 5 THEN  g.trade_max else '' end as lowPriceUpper,
-			case gs.activity_type when 2 THEN g.trade_max else '' end as limitNum
+			case gs.activity_type when 2 THEN g.trade_max else '' end as limitNum,
+			g.sale_price as lowPrice, gs.market_price, 
+			case gs.activity_type when 2 then g.sale_price else gs.online_price end as online_price
 		from goods_store_sku gs
 		left join activity_sale_goods g on gs.id=g.store_sku_id and g.sale_id = gs.activity_id 
 		left join goods_store_spu gss on gss.id=gs.store_spu_id
@@ -324,13 +330,15 @@
 					WHEN 5 THEN '合作店'
 					ELSE '' END
 			) ELSE '合作商家' END AS branchesName,
-			gs.id as goodsId, gs.id as pointContent,g.sale_stock,g.sale_price as lowPrice,
+			gs.id as goodsId, gs.id as pointContent,g.sale_stock,
 			gs.`name`,gs.alias,gs.tag_type,gs.type as sku_type,0 pointType, p.url as newUrl, 
-			gs.online_price, gs.market_price, gs.properties_indb,gs.trade_max,gs.update_time,
+			gs.properties_indb,gs.trade_max,gs.update_time,
 		    case gs.activity_type when 5 THEN  1 else 0 end as isLowPrice,
 			case gs.activity_type when 2 THEN 1 else 0 end as isPrivliege,		
 		    case gs.activity_type when 5 THEN  g.trade_max else '' end as lowPriceUpper,
-			case gs.activity_type when 2 THEN g.trade_max else '' end as limitNum
+			case gs.activity_type when 2 THEN g.trade_max else '' end as limitNum,
+			g.sale_price as lowPrice, gs.market_price, 
+			case gs.activity_type when 2 then g.sale_price else gs.online_price end as online_price
 		from goods_store_label sl 
 		left join goods_store_label_goods lg on sl.id=lg.label_id
 		left join goods_store_sku gs on lg.goods_store_sku_id=gs.id
