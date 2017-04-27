@@ -472,7 +472,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         
         FieldGoodsQueryDto queryDto = new FieldGoodsQueryDto();
         queryDto.setCategoryIds(categoryIds);
-        queryDto.setSort(sort);
+        queryDto.setSort(sort - 1);
         queryDto.setTemplate(template + 1);
         queryDto.setSortType(sortType);
         queryDto.setStoreId(storeId);

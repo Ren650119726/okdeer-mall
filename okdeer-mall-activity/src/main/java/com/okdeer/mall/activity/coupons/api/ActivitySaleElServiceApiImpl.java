@@ -9,6 +9,7 @@ import static com.okdeer.common.consts.ELTopicTagConstants.TAG_STOCK_EL_UPDATE;
 import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
 import static com.okdeer.common.consts.StoreMenuTopicTagConstants.TAG_STORE_MENU_UPDATE;
 import static com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum.LOW_PRICE;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_SALE_ACTIVITY_GOODS_DELETE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -192,6 +193,15 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         StoreMenuParamDto menuParamDto = new StoreMenuParamDto();
         menuParamDto.setStoreId(storeId);
         archiveSendMsgService.structureProducerStoreMenu(menuParamDto,TAG_STORE_MENU_UPDATE);
+        
+        //added by zhaoqc 特惠活动删除商品时发送栏位变更消息 
+        StoreInfo store = storeInfoServiceApi.findById(storeId);
+        GoodsChangedMsgDto data = new GoodsChangedMsgDto();
+        data.setStoreId(store.getId());
+        data.setCityId(store.getCityId());
+        
+        produceMessage(data, OperateFieldContants.TAG_SALE_ACTIVITY_GOODS_DELETE);
+        //added by zhaoqc
     }
 
     /**
