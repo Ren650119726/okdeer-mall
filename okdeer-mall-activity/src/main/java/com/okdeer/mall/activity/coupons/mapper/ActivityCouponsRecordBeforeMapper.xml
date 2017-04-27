@@ -53,9 +53,9 @@
     insert into activity_coupons_record_before (id, collect_type, coupons_id, 
       coupons_collect_id, collect_time, collect_user, 
       valid_time, status, order_id, room_id, invite_user_id,is_complete,activity_id)
-    values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=BIT}, #{couponsId,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=TINYINT}, #{couponsId,jdbcType=VARCHAR}, 
       #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUser,jdbcType=VARCHAR}, 
-      #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=BIT}, #{orderId,jdbcType=VARCHAR}, 
+      #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=TINYINT}, #{orderId,jdbcType=VARCHAR}, 
       #{roomId,jdbcType=VARCHAR},#{inviteUserId,jdbcType=VARCHAR},#{isComplete,jdbcType=TINYINT},#{activityId,jdbcType=VARCHAR})
   </insert>
   
@@ -73,6 +73,13 @@
 		  </if>
 		  <if test="collectId != null and collectId != ''">
 		  	AND c.id = #{collectId,jdbcType=VARCHAR}
+		  </if>
+		  <if test="getUserType != null">
+		  	AND c.get_user_type = #{getUserType,jdbcType=TINYINT}
+		  </if>
+		  <!-- 领取状态 -->
+		  <if test="nowDate != null">
+		      AND r.valid_time &gt; #{nowDate,jdbcType=TIMESTAMP}
 		  </if>
    </select>
    
@@ -135,7 +142,7 @@
         update activity_coupons_record_before
         <set >
           <if test="collectType != null" >
-	        	collect_type = #{collectType,jdbcType=BIT},
+	        	collect_type = #{collectType,jdbcType=TINYINT},
 	      </if>
 	      <if test="couponsId != null" >
 	        coupons_id = #{couponsId,jdbcType=VARCHAR},
@@ -153,7 +160,7 @@
 	        valid_time = #{validTime,jdbcType=TIMESTAMP},
 	      </if>
 	      <if test="status != null" >
-	        status = #{status,jdbcType=BIT},
+	        status = #{status,jdbcType=TINYINT},
 	      </if>
 	      <if test="orderId != null" >
 	        order_id = #{orderId,jdbcType=VARCHAR},
