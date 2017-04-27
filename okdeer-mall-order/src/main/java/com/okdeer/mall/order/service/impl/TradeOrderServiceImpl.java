@@ -1,10 +1,59 @@
-
 package com.okdeer.mall.order.service.impl;
+
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_SUCCESS_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_NOT_EXSITS_DELETE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_OVERDUE;
+import static com.okdeer.common.consts.DescriptConstants.REQUEST_PARAM_FAIL;
+import static com.okdeer.common.consts.DescriptConstants.USER_NOT_WALLET;
+import static com.okdeer.common.consts.DescriptConstants.USER_WALLET_FAIL;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.rocketmq.client.producer.*;
+import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
+import com.alibaba.rocketmq.client.producer.LocalTransactionState;
+import com.alibaba.rocketmq.client.producer.SendResult;
+import com.alibaba.rocketmq.client.producer.SendStatus;
+import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
+import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.github.pagehelper.Page;
@@ -57,8 +106,18 @@ import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
 import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
 import com.okdeer.jxc.stock.vo.StockUpdateVo;
-import com.okdeer.mall.activity.coupons.entity.*;
-import com.okdeer.mall.activity.coupons.enums.*;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
+import com.okdeer.mall.activity.coupons.entity.ActivitySale;
+import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
+import com.okdeer.mall.activity.coupons.enums.ActivityCollectOrderTypeEnum;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.coupons.enums.ActivitySourceEnum;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsOrderRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
@@ -95,13 +154,80 @@ import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
-import com.okdeer.mall.order.entity.*;
-import com.okdeer.mall.order.enums.*;
-import com.okdeer.mall.order.mapper.*;
+import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderInvoice;
+import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.entity.TradeOrderItemDetail;
+import com.okdeer.mall.order.entity.TradeOrderLocate;
+import com.okdeer.mall.order.entity.TradeOrderLog;
+import com.okdeer.mall.order.entity.TradeOrderLogistics;
+import com.okdeer.mall.order.entity.TradeOrderPay;
+import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
+import com.okdeer.mall.order.entity.TradeOrderRefunds;
+import com.okdeer.mall.order.entity.TradeOrderThirdRelation;
+import com.okdeer.mall.order.enums.ActivityBelongType;
+import com.okdeer.mall.order.enums.AppOrderTypeEnum;
+import com.okdeer.mall.order.enums.CompainStatusEnum;
+import com.okdeer.mall.order.enums.ConsumeStatusEnum;
+import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
+import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
+import com.okdeer.mall.order.enums.OrderCancelType;
+import com.okdeer.mall.order.enums.OrderComplete;
+import com.okdeer.mall.order.enums.OrderIsShowEnum;
+import com.okdeer.mall.order.enums.OrderPayTypeEnum;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTraceEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PayTypeEnum;
+import com.okdeer.mall.order.enums.PayWayEnum;
+import com.okdeer.mall.order.enums.PaymentStatusEnum;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
+import com.okdeer.mall.order.enums.PreferentialType;
+import com.okdeer.mall.order.enums.RefundsStatusEnum;
+import com.okdeer.mall.order.enums.SendMsgType;
+import com.okdeer.mall.order.mapper.TradeOrderCommentMapper;
+import com.okdeer.mall.order.mapper.TradeOrderComplainMapper;
+import com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper;
+import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
+import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderLocateMapper;
+import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
+import com.okdeer.mall.order.mapper.TradeOrderLogisticsMapper;
+import com.okdeer.mall.order.mapper.TradeOrderMapper;
+import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
+import com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper;
 import com.okdeer.mall.order.mq.constants.TradeOrderTopic;
-import com.okdeer.mall.order.service.*;
+import com.okdeer.mall.order.service.TradeMessageService;
+import com.okdeer.mall.order.service.TradeOrderActivityService;
+import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
+import com.okdeer.mall.order.service.TradeOrderLogService;
+import com.okdeer.mall.order.service.TradeOrderPayService;
+import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
+import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.service.TradeOrderServiceApi;
+import com.okdeer.mall.order.service.TradeOrderTraceService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
-import com.okdeer.mall.order.vo.*;
+import com.okdeer.mall.order.vo.ActivityInfoVO;
+import com.okdeer.mall.order.vo.ERPTradeOrderVo;
+import com.okdeer.mall.order.vo.OrderCouponsRespDto;
+import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
+import com.okdeer.mall.order.vo.PhysicsOrderVo;
+import com.okdeer.mall.order.vo.RefundsTraceResp;
+import com.okdeer.mall.order.vo.RefundsTraceVo;
+import com.okdeer.mall.order.vo.SendMsgParamVo;
+import com.okdeer.mall.order.vo.TradeOrderCommentVo;
+import com.okdeer.mall.order.vo.TradeOrderExportVo;
+import com.okdeer.mall.order.vo.TradeOrderItemVo;
+import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
+import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
+import com.okdeer.mall.order.vo.TradeOrderQueryVo;
+import com.okdeer.mall.order.vo.TradeOrderStatisticsVo;
+import com.okdeer.mall.order.vo.TradeOrderStatusVo;
+import com.okdeer.mall.order.vo.TradeOrderVo;
+import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
 import com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO;
 import com.okdeer.mall.system.entity.SysUserInvitationRecord;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
@@ -113,22 +239,9 @@ import com.okdeer.mall.system.service.InvitationCodeServiceApi;
 import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.okdeer.common.consts.DescriptConstants.*;
 
 /**
  *
@@ -249,6 +362,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private IStoreInfoExtServiceApi storeInfoExtService;
+	
+	@Autowired
+	private  RedisTemplate<String,Boolean> redisTemplate;
 
 	/**
 	 * 订单收货信息
@@ -6084,7 +6200,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		Map<String, Object> map = new HashMap<String, Object>();
 		String storeId = tradeOrder.getStoreId();
 		StoreInfo storeInfo = storeInfoServiceApi.selectByPrimaryKey(storeId);
-		// 如果店铺信息存在即设置省市ID start 涂志定
+		// 如果店铺信息存在即设置省市ID 
 		if (storeInfo != null) {
 			// 服务店订单 ，活动范围判定：物流地址
 			map.put("provinceId", storeInfo.getProvinceId());
@@ -6093,26 +6209,67 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			map.put("storeId", storeInfo.getId());
 			//add by mengsj end 增加店铺id
 		}
-		// end 涂志定
 		// 订单实付金额
 		map.put("limitAmout", tradeOrder.getActualAmount());
-		if (orderType == 0) {
-			// 实物订单 订单类型
-			map.put("orderType", ActivityCollectOrderTypeEnum.PHYSICAL_ORDER.getValue());
-			// 获取消费返券信息并赠送代金券
-			getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
-		} else if (orderType == 2 || orderType == 5) {
-			// 订单类型
-			map.put("orderType", ActivityCollectOrderTypeEnum.SERVICE_STORE_ORDER.getValue());
-			// 获取消费返券信息并赠送代金券
-			getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
-		} else if (orderType == 3 || orderType == 4) {
-			// 充值订单
-			// 订单类型
-			map.put("orderType", ActivityCollectOrderTypeEnum.MOBILE_PAY_ORDER.getValue());
-			// 获取消费返券信息并赠送代金券
-			getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
+		
+		//校验成功标识 //如果不存在缓存数据进行加入到缓存中 start 涂志定
+		String key = "coupons"+userId+orderId;
+		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		if(!checkFlag){
+			return ;
 		}
+		
+		try{
+		
+			if (orderType == 0) {
+				// 实物订单 订单类型
+				map.put("orderType", ActivityCollectOrderTypeEnum.PHYSICAL_ORDER.getValue());
+				// 获取消费返券信息并赠送代金券
+				getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
+			} else if (orderType == 2 || orderType == 5) {
+				// 订单类型
+				map.put("orderType", ActivityCollectOrderTypeEnum.SERVICE_STORE_ORDER.getValue());
+				// 获取消费返券信息并赠送代金券
+				getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
+			} else if (orderType == 3 || orderType == 4) {
+				// 充值订单
+				// 订单类型
+				map.put("orderType", ActivityCollectOrderTypeEnum.MOBILE_PAY_ORDER.getValue());
+				// 获取消费返券信息并赠送代金券
+				getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
+			}
+		}catch(Exception e){
+			throw e;
+		}finally {
+			//移除redis缓存的key end 涂志定
+			removeRedisUserStatus(key);
+		}
+		//end 涂志定
+	}
+	
+	/**
+	 * 校验代金券领取的用户状态，避免短时间内并发操作
+	 * @param key 存储的redis key
+	 * @param times 超时时间
+	 * @return
+	 */
+	private boolean checkUserStatusByRedis(String key,int times){
+		//如果不存在缓存数据  返回true 存在false
+		boolean flag = redisTemplate.boundValueOps(key).setIfAbsent(true);
+		if(flag){
+			redisTemplate.expire(key, times, TimeUnit.SECONDS);
+		}else{
+			return false;
+		}
+		return true;
+	}
+	/**
+	 * 移除校验代金券领取的用户状	 
+	 * @param key 存储的redis key
+	 * @return
+	 */
+	private void removeRedisUserStatus(String key){
+		redisTemplate.delete(key);
 	}
 
 	/**
