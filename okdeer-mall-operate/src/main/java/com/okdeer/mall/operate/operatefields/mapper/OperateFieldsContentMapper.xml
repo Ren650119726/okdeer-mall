@@ -366,7 +366,7 @@
 			order by gs.sort ASC
 		</if>
 		<if test="template != null">
-			limit #{template} 
+			limit #{sort}, #{template} 
 		</if>
 	</select>
 
