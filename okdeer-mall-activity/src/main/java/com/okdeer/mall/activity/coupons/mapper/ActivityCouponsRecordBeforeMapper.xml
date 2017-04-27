@@ -74,6 +74,20 @@
 		  <if test="collectId != null and collectId != ''">
 		  	AND c.id = #{collectId,jdbcType=VARCHAR}
 		  </if>
+   </select>
+   
+   <!-- 查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量   -->
+   <select id="countCouponsByType" resultType="int" >
+     SELECT 
+		  count(1)
+		FROM
+		  activity_coupons_record_before r 
+		  inner JOIN activity_collect_coupons c 
+		    ON r.coupons_collect_id = c.id 
+		WHERE c.disabled = 0  
+		  <if test="collectUser != null and collectUser != ''">
+		  	AND r.collect_user = #{collectUser,jdbcType=VARCHAR}
+		  </if>
 		  <if test="getUserType != null">
 		  	AND c.get_user_type = #{getUserType,jdbcType=TINYINT}
 		  </if>

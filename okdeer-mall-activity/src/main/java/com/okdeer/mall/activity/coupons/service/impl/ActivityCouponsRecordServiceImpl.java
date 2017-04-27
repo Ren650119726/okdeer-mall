@@ -509,8 +509,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @return
 	 */
 	private boolean checkBeforeCoupons(String phone,String collectId){
-		//根据代金劵活动新人限制查询领取未使用的代金劵数量  
-		int hadNewCount = activityCouponsRecordBeforeMapper.countCouponsAllId(GetUserType.ONlY_NEW_USER,phone,new Date());
+		//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
+		int hadNewCount = activityCouponsRecordBeforeMapper.countCouponsByType(GetUserType.ONlY_NEW_USER,phone,new Date());
 		//存在未使用的新人代金券则 返回true
 		if(hadNewCount > 0){
 			return true;
