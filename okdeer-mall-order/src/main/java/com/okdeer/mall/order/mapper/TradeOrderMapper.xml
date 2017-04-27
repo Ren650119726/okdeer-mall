@@ -5538,6 +5538,12 @@
 		<if test="userPhone != null and userPhone != ''">
 			AND trade.user_phone = #{userPhone, jdbcType=VARCHAR}
 		</if>
+		<if test="statusList != null and statusList.size() > 0">
+			AND trade.status IN
+			<foreach collection="statusList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
 		<if test="status != null">
 			AND trade.status = #{status, jdbcType=TINYINT}
 		</if>
@@ -5596,6 +5602,12 @@
 		</if>
 		<if test="userPhone != null and userPhone != ''">
 			AND trade.user_phone = #{userPhone, jdbcType=VARCHAR}
+		</if>
+		<if test="statusList != null and statusList.size() > 0">
+			AND trade.status IN
+			<foreach collection="statusList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
 		</if>
 		<if test="status != null">
 			AND trade.status = #{status, jdbcType=TINYINT}
