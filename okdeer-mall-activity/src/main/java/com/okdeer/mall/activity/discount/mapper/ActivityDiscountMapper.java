@@ -15,11 +15,8 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.bo.ActivityParamBo;
-import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
-import com.okdeer.mall.order.vo.Discount;
-import com.okdeer.mall.order.vo.FullSubtract;
 
 public interface ActivityDiscountMapper extends IBaseMapper {
 	
@@ -58,23 +55,6 @@ public interface ActivityDiscountMapper extends IBaseMapper {
 	 */
 	BigDecimal getDiscountValue(String id);
 	
-	/**
-	 * @Description: 查询用户有效的折扣优惠
-	 * @param params 查询用户有效优惠请求对象
-	 * @return List
-	 * @author maojj
-	 * @date 2016年7月16日
-	 */
-	List<Discount> findValidDiscount(FavourParamBO paramBo);
-	
-	/**
-	 * @Description: 查询用户有效的满减优惠
-	 * @param params 查询用户有效优惠请求对象
-	 * @return List
-	 * @author maojj
-	 * @date 2016年7月16日
-	 */
-	List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo);
 	
 	// Begin 重构4.1 add by zengj
 	/**

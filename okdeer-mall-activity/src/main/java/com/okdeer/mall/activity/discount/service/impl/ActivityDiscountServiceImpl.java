@@ -203,6 +203,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		if(StringUtils.isNotEmpty(actInfo.getId())){
 			paramBo.setExcludedId(actInfo.getId());
 		}
+		paramBo.setLimitRange(actInfo.getLimitRange());
 		if(StringUtils.isNotEmpty(actInfoDto.getLimitRangeIds())){
 			String[] tempArr = actInfoDto.getLimitRangeIds().split(",");
 			paramBo.setLimitRangeIds(Arrays.asList(tempArr));
