@@ -377,10 +377,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		}
 		
 		try{
-			// 查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
-			int countCoupons = activityCouponsRecordMapper.findcountByNewType(GetUserType.ONlY_NEW_USER, userId, 
-															ActivityCouponsRecordStatusEnum.UNUSED);
-			if(countCoupons > 0){
+			//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
+			if(checkNewUserCoupons(userId, collectId)){
 				map.put("msg", "您已经领取了，快去我的代金券查看使用吧！");
 				map.put("code", 102);
 				return JSONObject.fromObject(map);
@@ -426,6 +424,26 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		}
 		return JSONObject.fromObject(map);
 
+	}
+	/**
+	 * @DESC 校验预领取记录
+	 * 1、存在未使用的新人代金券则 不能领取返回false
+	 * 2、持续的活动领取过不能再领取
+	 * @param phone 手机号
+	 * @param collectId 代金券活动id
+	 * @return
+	 */
+	private boolean checkNewUserCoupons(String userId,String collectId){
+		ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
+		//如果领取为限新人使用 则校验是否领取过新人代金券
+		if(coll.getGetUserType() == GetUserType.ONlY_NEW_USER){
+			//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
+			int countCoupons = activityCouponsRecordMapper.findcountByNewType(GetUserType.ONlY_NEW_USER, userId, 
+																		ActivityCouponsRecordStatusEnum.UNUSED);
+			//存在未使用的新人代金券则 返回true
+			return (countCoupons > 0);
+		}
+		return false;
 	}
 	
 	/**
@@ -509,15 +527,18 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @return
 	 */
 	private boolean checkBeforeCoupons(String phone,String collectId){
-		//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
-		int hadNewCount = activityCouponsRecordBeforeMapper.countCouponsByType(GetUserType.ONlY_NEW_USER,phone,new Date());
-		//存在未使用的新人代金券则 返回true
-		if(hadNewCount > 0){
-			return true;
-		}else{
-			//根据代金劵活动id代金劵预领取统计 持续的活动领取过不能再领取
-			return (activityCouponsRecordBeforeMapper.countCouponsAllId(phone, collectId) > 0);
+		ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
+		//如果领取为限新人使用 则校验是否领取过新人代金券
+		if(coll.getGetUserType() == GetUserType.ONlY_NEW_USER){
+			//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
+			int hadNewCount = activityCouponsRecordBeforeMapper.countCouponsByType(GetUserType.ONlY_NEW_USER,phone,new Date());
+			//存在未使用的新人代金券则 返回true
+			if(hadNewCount > 0){
+				return true;
+			}
 		}
+		//根据代金劵活动id代金劵预领取统计 持续的活动领取过不能再领取
+		return (activityCouponsRecordBeforeMapper.countCouponsAllId(phone, collectId) > 0);
 	}
 	
 	/**
