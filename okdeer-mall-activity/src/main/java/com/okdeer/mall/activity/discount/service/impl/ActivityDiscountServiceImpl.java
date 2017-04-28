@@ -487,9 +487,12 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 
 	@Override
 	public List<ActivityInfoDto> findByStore(ActivityParamDto paramDto) throws Exception {
-		StoreInfo storeInfo = storeInfoServiceApi.findById(paramDto.getStoreId());
 		List<ActivityInfoDto> actInfoList = Lists.newArrayList();
-		if(storeInfo.getType() != StoreTypeEnum.CLOUD_STORE){
+		if(paramDto.getStoreType() == null){
+			StoreInfo storeInfo = storeInfoServiceApi.findById(paramDto.getStoreId());
+			paramDto.setStoreType(storeInfo.getType());
+		}
+		if(paramDto.getStoreType() != StoreTypeEnum.CLOUD_STORE){
 			return actInfoList;
 		}
 		List<String> activityIds = activityDiscountMapper.findByStore(paramDto);
