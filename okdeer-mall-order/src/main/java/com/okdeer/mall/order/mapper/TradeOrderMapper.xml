@@ -1627,7 +1627,7 @@
 		LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
 		LEFT JOIN trade_order_locate locate ON locate.order_id = o.id
 		LEFT JOIN 
-			(SELECT id, MIN(received_time) AS received_time
+			(SELECT id, MIN(create_time) AS received_time
 		    FROM trade_order 
 		    WHERE STATUS = 5
 		    AND type != 3 
