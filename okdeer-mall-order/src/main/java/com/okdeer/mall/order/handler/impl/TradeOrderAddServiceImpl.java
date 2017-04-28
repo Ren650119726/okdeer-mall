@@ -938,6 +938,9 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 
 		switch (activityType) {
 			case NO_ACTIVITY:
+			case LOW_PRICE:
+			case SECKILL_ACTIVITY:
+			case SALE_ACTIVITIES:
 			case VONCHER:
 				tradeOrderItem.setIncome(tradeOrderItem.getTotalAmount());
 				break;
