@@ -12,6 +12,7 @@ import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ADDEDIT_
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ADDEDIT_OPERATE_FIELD;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_CLOSED_LOWPRICE_ACTIVITY;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_CLOSED_ONSALE_ACTIVITY;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_EDIT_ACTIVITY_SALE_GOODS;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_EDIT_GOODS;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ENABLEDISABLE_OPERATE_FIELD;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_GOODS_OFFSHELF;
@@ -19,6 +20,7 @@ import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_GOODS_ON
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_RANK_OPERATE_FIELD;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_SALE_ACTIVITY_GOODS_DELETE;
 import static com.okdeer.mall.operate.contants.OperateFieldContants.TOPIC_OPERATE_FIELD;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_ERP_MALL_GOODS_SYNC;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,6 +107,12 @@ public class OperateFieldsSubscriber {
                 break;
             case TAG_SALE_ACTIVITY_GOODS_DELETE:
                 status = saleActivityGoodsDelete(enMessage);
+                break;
+            case TAG_EDIT_ACTIVITY_SALE_GOODS:
+                status = editAcitivitySaleGoods(enMessage);
+                break;
+            case TAG_ERP_MALL_GOODS_SYNC:    
+                status = erpMallStoreGoodsSync(enMessage);
                 break;
             default:
                 break;
@@ -357,6 +365,48 @@ public class OperateFieldsSubscriber {
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
             logger.error("特惠活动删除商品时，消息处理失败：{}", JsonMapper.nonEmptyMapper().toJson(msgDto), e);
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+        }
+    }
+    
+    /**
+     * 特惠活动修改商品属性时消息订阅
+     * 
+     * @param enMessage
+     * @return
+     * @author zhaoqc
+     * @date 2017-4-21
+     */
+    public ConsumeConcurrentlyStatus editAcitivitySaleGoods(MQMessage enMessage) {
+        GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
+        logger.info("特惠活动修改商品属性时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
+        try {
+            initOperateField(msgDto);
+            
+            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+        } catch (Exception e) {
+            logger.error("特惠活动修改商品属性时，消息处理失败：{}", JsonMapper.nonEmptyMapper().toJson(msgDto), e);
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+        }
+    }
+    
+    /**
+     * 零售系统和商城店铺商品同步时消息订阅
+     * 
+     * @param enMessage
+     * @return
+     * @author zhaoqc
+     * @date 2017-4-21
+     */
+    public ConsumeConcurrentlyStatus erpMallStoreGoodsSync(MQMessage enMessage) {
+        GoodsChangedMsgDto msgDto = (GoodsChangedMsgDto)enMessage.getContent();
+        logger.info("零售系统和商城店铺商品同步时，消息处理：{}", JsonMapper.nonEmptyMapper().toJson(msgDto));
+        try {
+            initOperateField(msgDto);
+            
+            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+        } catch (Exception e) {
+            logger.error("零售系统和商城店铺商品同步时，消息处理失败：{}", JsonMapper.nonEmptyMapper().toJson(msgDto), e);
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
         }
     }
