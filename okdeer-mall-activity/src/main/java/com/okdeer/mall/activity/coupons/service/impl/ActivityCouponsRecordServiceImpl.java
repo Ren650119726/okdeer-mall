@@ -377,6 +377,19 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		}
 		
 		try{
+			ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
+			if(coll == null){
+				map.put("msg", "非法参数！");
+				map.put("code", 105);
+				return JSONObject.fromObject(map);
+			}
+			//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
+			if(checkNewUserCoupons(userId, coll)){
+				map.put("msg", "您已经领取了，快去我的代金券查看使用吧！");
+				map.put("code", 102);
+				return JSONObject.fromObject(map);
+			}
+			
 			//循环代金劵id进行送劵
 			List<ActivityCoupons> activityCoupons = activityCouponsMapper.selectByActivityId(collectId);
 			Map<String,ActivityCouponsRecord> reMap = new HashMap<String,ActivityCouponsRecord>();
@@ -418,6 +431,25 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		return JSONObject.fromObject(map);
 
 	}
+	/**
+	 * @DESC 校验预领取记录
+	 * 1、存在未使用的新人代金券则 不能领取返回false
+	 * 2、持续的活动领取过不能再领取
+	 * @param phone 手机号
+	 * @param collectId 代金券活动id
+	 * @return
+	 */
+	private boolean checkNewUserCoupons(String userId,ActivityCollectCoupons coll){
+		//如果领取为限新人使用 则校验是否领取过新人代金券
+		if(coll.getGetUserType() == GetUserType.ONlY_NEW_USER){
+			//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
+			int countCoupons = activityCouponsRecordMapper.findcountByNewType(GetUserType.ONlY_NEW_USER, userId, 
+																		ActivityCouponsRecordStatusEnum.UNUSED);
+			//存在未使用的新人代金券则 返回true
+			return (countCoupons > 0);
+		}
+		return false;
+	}
 	
 	/**
 	 * 根据活动ID及用户手机号码领取代金劵
@@ -444,12 +476,18 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			return JSONObject.fromObject(map);
 		}
 		try{
+			ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
+			if(coll == null){
+				map.put("msg", "非法参数！");
+				map.put("code", 105);
+				return JSONObject.fromObject(map);
+			}
+			
 			//循环代金劵id进行送劵
 			List<ActivityCoupons> activityCoupons = activityCouponsMapper.selectByActivityId(collectId);
 			Map<String,ActivityCouponsRecordBefore> reMap = new HashMap<String,ActivityCouponsRecordBefore>();
-			
 			//根据用户手机号码及活动id查询该号码是否领取过 
-			if (activityCouponsRecordBeforeMapper.countCouponsAllId(phone, collectId) > 0) {
+			if (checkBeforeCoupons(phone, coll)) {
 				map.put("code", 102);
 				map.put("msg", "您已经领取了，快去友门鹿app注册使用吧！");
 				checkFlag = false;
@@ -491,6 +529,29 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		return JSONObject.fromObject(map);
 
 	}
+	
+	/**
+	 * @DESC 校验预领取记录
+	 * 1、存在未使用的新人代金券则 不能领取返回false
+	 * 2、持续的活动领取过不能再领取
+	 * @param phone 手机号
+	 * @param collectId 代金券活动id
+	 * @return
+	 */
+	private boolean checkBeforeCoupons(String phone,ActivityCollectCoupons coll){
+		//如果领取为限新人使用 则校验是否领取过新人代金券
+		if(coll.getGetUserType() == GetUserType.ONlY_NEW_USER){
+			//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
+			int hadNewCount = activityCouponsRecordBeforeMapper.countCouponsByType(GetUserType.ONlY_NEW_USER,phone,new Date());
+			//存在未使用的新人代金券则 返回true
+			if(hadNewCount > 0){
+				return true;
+			}
+		}
+		//根据代金劵活动id代金劵预领取统计 持续的活动领取过不能再领取
+		return (activityCouponsRecordBeforeMapper.countCouponsAllId(phone, coll.getId()) > 0);
+	}
+	
 	/**
 	 * 注册送完代金劵后将预代金劵送到用户的账户中
 	 *  @param userId 用户id
@@ -544,31 +605,44 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		if (CollectionUtils.isEmpty(lstActivityCoupons)) {
 			return;
 		}
-
-		List<ActivityCouponsRecord> lstCouponsRecords = new ArrayList<ActivityCouponsRecord>();
-		List<String> lstActivityCouponsIds = new ArrayList<String>();
-		for (ActivityCoupons activityCoupons : lstActivityCoupons) {
-			int remainNum = activityCoupons.getRemainNum();// 剩余总数量
-			if (remainNum <= 0) {
-				continue;
-			}
-			// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
-			ActivityCouponsRecord activityCouponsRecord = new ActivityCouponsRecord();
-			activityCouponsRecord.setId(UuidUtils.getUuid());
-			activityCouponsRecord.setCollectType(activityCouponsType);
-			activityCouponsRecord.setCouponsId(activityCoupons.getId());
-			activityCouponsRecord.setCouponsCollectId(activityCoupons.getActivityId());
-			activityCouponsRecord.setCollectTime(new Date());
-			activityCouponsRecord.setCollectUserId(userId);
-			activityCouponsRecord.setValidTime(DateUtils.addDays(new Date(), activityCoupons.getValidDay()));
-			activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
-
-			lstCouponsRecords.add(activityCouponsRecord);
-			// 更新代金券已使用数量和剩余数量
-			lstActivityCouponsIds.add(activityCoupons.getId());
+		//校验成功标识 //如果不存在缓存数据进行加入到缓存中
+		String key = "drawCoupons"+userId;
+		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		if(!checkFlag){
+			return;
 		}
+		try{
 
-		addActivityCouponsRecord(lstCouponsRecords, lstActivityCouponsIds);
+			List<ActivityCouponsRecord> lstCouponsRecords = new ArrayList<ActivityCouponsRecord>();
+			List<String> lstActivityCouponsIds = new ArrayList<String>();
+			for (ActivityCoupons activityCoupons : lstActivityCoupons) {
+				int remainNum = activityCoupons.getRemainNum();// 剩余总数量
+				if (remainNum <= 0) {
+					continue;
+				}
+				// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
+				ActivityCouponsRecord activityCouponsRecord = new ActivityCouponsRecord();
+				activityCouponsRecord.setId(UuidUtils.getUuid());
+				activityCouponsRecord.setCollectType(activityCouponsType);
+				activityCouponsRecord.setCouponsId(activityCoupons.getId());
+				activityCouponsRecord.setCouponsCollectId(activityCoupons.getActivityId());
+				activityCouponsRecord.setCollectTime(new Date());
+				activityCouponsRecord.setCollectUserId(userId);
+				activityCouponsRecord.setValidTime(DateUtils.addDays(new Date(), activityCoupons.getValidDay()));
+				activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
+	
+				lstCouponsRecords.add(activityCouponsRecord);
+				// 更新代金券已使用数量和剩余数量
+				lstActivityCouponsIds.add(activityCoupons.getId());
+			}
+	
+			addActivityCouponsRecord(lstCouponsRecords, lstActivityCouponsIds);
+		}catch(Exception e){
+			throw e;
+		}finally {
+			//移除redis缓存的key
+			removeRedisUserStatus(key);
+		}
 	}
 
 	/**
