@@ -427,13 +427,13 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
             }
         });  
 	    
-	    //发送内容消息--2.1.0之前版本
+	    //发送内容消息--2.1.0及之后版本
 		if(CollectionUtils.isNotEmpty(oriMsgUserList)) {
 		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType, 1);
 		    pushOriMsgVo.setUserList(oriMsgUserList);
 			sendMessage(pushOriMsgVo);
 		}
-		//发送链接消息--2.1.0之后版本
+		//发送链接消息--2.1.0之前版本
 		if(CollectionUtils.isNotEmpty(linkedMsgUserList)) {
 		    PushMsgVo pushLinkedMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType, 0);
 		    pushLinkedMsgVo.setUserList(linkedMsgUserList);
