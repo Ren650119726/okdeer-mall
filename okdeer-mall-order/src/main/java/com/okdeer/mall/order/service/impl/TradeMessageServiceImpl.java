@@ -454,7 +454,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         // begin V2.3.0 新增语音播放文件名 add by wangf01 20170419
 		pushUser.setSoundStyle("order.wav");
 		//判断是否是申请退款||卖家同意退款后，如果是，则提示默认声音，针对IOS
-		if(sendMsgType == SendMsgType.applyReturn || sendMsgType == SendMsgType.returnShipments ){
+		if(sendMsgType == SendMsgType.applyReturn || sendMsgType == SendMsgType.returnShipments || sendMsgType == SendMsgType.complainOrder){
 			pushUser.setSoundStyle("default");
 		}
 		// end add by wangf01 20170419
