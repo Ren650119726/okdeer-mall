@@ -1,5 +1,6 @@
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -41,7 +42,8 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
-import com.okdeer.base.kafka.producer.KafkaProducer;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
@@ -107,6 +109,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	private static final Logger log = LoggerFactory.getLogger(ActivityCouponsRecordServiceImpl.class);
 
+	private static final String TOPIC = "topic_mcm_msg";
+    
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
+	
 	@Autowired
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
 	
@@ -165,8 +172,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Value("${sms.coupons.notice}")
 	private String smsIsNoticeCouponsRecordStyle;
 	
-	@Resource
-	private KafkaProducer kafkaProducer;
 	/**
 	 * 短信  service
 	 */
@@ -1298,11 +1303,17 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			});
 			// 查询的用户信息
 			pushMsgVo.setUserList(userList);
-			kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushMsgVo));
+			sendMessage(pushMsgVo);
 		}catch(Exception e){
 			//捕获异常不影响发送流程
 			log.error("代金劵到期提醒发送消息异常！",e);
 		}
+	}
+	
+    
+	private void sendMessage(Object entity) throws Exception {
+		MQMessage anMessage = new MQMessage(TOPIC, (Serializable)JsonMapper.nonDefaultMapper().toJson(entity));
+		rocketMQProducer.sendMessage(anMessage);
 	}
 
 	@Override
