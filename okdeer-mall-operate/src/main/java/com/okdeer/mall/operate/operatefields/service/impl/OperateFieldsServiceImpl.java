@@ -264,7 +264,6 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                     //单品选择
                     contentDto = this.getSingleGoodsOfOperateField(content.getBusinessId(), storeId);
                     if(contentDto != null) {
-                        logger.info("==========单品名称：{}，限购：{}==========", contentDto.getName(), contentDto.getTradeMax());
                         contentDtos.add(contentDto);
                     } else {
                         contentDtos = null;
