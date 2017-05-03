@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.google.common.collect.Sets;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreAssembleDto;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
@@ -149,6 +150,11 @@ public class StoreSkuParserBo {
 	 */
 	private BigDecimal totalAmountHaveFavour;
 	
+	/**
+	 * 商品所属店铺 
+	 */
+	private Set<String> storeIdSet = Sets.newHashSet();
+	
 	public StoreSkuParserBo(List<GoodsStoreSku> currentSkuList) {
 		this.currentSkuList = currentSkuList;
 	}
@@ -161,6 +167,7 @@ public class StoreSkuParserBo {
 	public void parseCurrentSku() {
 		for (GoodsStoreSku storeSku : this.currentSkuList) {
 			categoryIdSet.add(storeSku.getSpuCategoryId());
+			storeIdSet.add(storeSku.getStoreId());
 
 			CurrentStoreSkuBo currentSku = BeanMapper.map(storeSku, CurrentStoreSkuBo.class);
 			currentSku.setSpuType(storeSku.getSpuTypeEnum());
@@ -629,5 +636,10 @@ public class StoreSkuParserBo {
 	
 	public void setTotalAmountHaveFavour(BigDecimal totalAmountHaveFavour) {
 		this.totalAmountHaveFavour = totalAmountHaveFavour;
+	}
+
+	
+	public Set<String> getStoreIdSet() {
+		return storeIdSet;
 	}
 }

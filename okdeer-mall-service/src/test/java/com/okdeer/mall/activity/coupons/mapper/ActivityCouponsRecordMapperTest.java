@@ -23,8 +23,6 @@ import com.okdeer.mall.Application;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.order.vo.Coupons;
-import com.okdeer.mall.order.vo.Discount;
-import com.okdeer.mall.order.vo.FullSubtract;
 import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 
 import net.sf.json.JSONArray;

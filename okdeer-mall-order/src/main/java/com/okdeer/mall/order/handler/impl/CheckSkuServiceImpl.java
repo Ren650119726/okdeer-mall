@@ -100,6 +100,12 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		}
 		// 解析当前店铺商品列表。获取当前商品的价格、库存、限购数量
 		StoreSkuParserBo parserBo = parseCurrentSkuList(currentSkuList,paramDto.getChannel());
+		// 检查请求商品与店铺是否一致
+		Set<String> storeIdSet = parserBo.getStoreIdSet();
+		if(storeIdSet.size() > 1 || !storeIdSet.contains(paramDto.getStoreId())){
+			resp.setResult(ResultCodeEnum.STORE_SKU_INCONSISTENT);
+			return;
+		}
 		parserBo.setSkuIdList(skuIdList);
 		parserBo.loadBuySkuList(paramDto.getSkuList());
 		// 缓存商品解析结果
