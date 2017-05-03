@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -62,6 +64,8 @@ import com.okdeer.mall.operate.operatefields.service.OperateFieldsService;
 @Service
 public class OperateFieldsServiceImpl extends BaseServiceImpl implements OperateFieldsService {
 
+    private static final Logger logger = LoggerFactory.getLogger(OperateFieldsServiceImpl.class);
+    
 	private static final int DEFAULT_SORT = 10010;
 
 	@Autowired
@@ -260,6 +264,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                     //单品选择
                     contentDto = this.getSingleGoodsOfOperateField(content.getBusinessId(), storeId);
                     if(contentDto != null) {
+                        logger.info("==========单品名称：{}，限购：{}==========", contentDto.getName(), contentDto.getTradeMax());
                         contentDtos.add(contentDto);
                     } else {
                         contentDtos = null;
