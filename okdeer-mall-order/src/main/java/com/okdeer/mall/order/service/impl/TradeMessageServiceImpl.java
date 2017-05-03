@@ -415,7 +415,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
                     	linkedMsgUserList.add(pushUser);
                     }else{
 	                    int compareRes = compare.compare(version, "2.1.0");
-	                    if(compareRes == 1 || compareRes == 0) {
+	                    if(compareRes == 1) {
 	                        //APP跳转原生页面，发送内容消息
 	                        oriMsgUserList.add(pushUser);
 	                    } else {
