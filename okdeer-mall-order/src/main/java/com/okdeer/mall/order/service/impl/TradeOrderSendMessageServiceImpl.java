@@ -1,8 +1,20 @@
 package com.okdeer.mall.order.service.impl;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.kafka.producer.KafkaProducer;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
@@ -12,15 +24,6 @@ import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mcm.constant.MsgConstant;
 import com.okdeer.mcm.dto.PushMsgDto;
 import com.okdeer.mcm.dto.PushUserDto;
-import net.sf.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * ClassName: TradeOrderSendMessageServiceImpl 
@@ -36,14 +39,16 @@ import java.util.List;
 @Service
 public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageService {
     
-    @Autowired
-    private KafkaProducer kafkaProducer;
-    
     @Value("${mcm.sys.code}")
     private String msgSysCode;
 
     @Value("${mcm.sys.token}")
     private String msgToken;
+    
+	private static final String TOPIC = "topic_mcm_msg";
+    
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
     
     @Autowired
     private TradeOrderService tradeOrderService;
@@ -168,10 +173,17 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
         msgDto.setUserTypeSource("systemCode");
         //推送类型
         msgDto.setActualType("getui");
-
-        LOGGER.info("发送消息体为：{}", JSONObject.fromObject(msgDto).toString());
         //消息发送
-        kafkaProducer.send(JSONObject.fromObject(msgDto).toString());
+        try {
+			sendMessage(msgDto);
+		} catch (Exception e) {
+			LOGGER.error("发送消息异常：{}", JsonMapper.nonDefaultMapper().toJson(msgDto),e);
+		}
     }
+    
+	private void sendMessage(Object entity) throws Exception {
+		MQMessage anMessage = new MQMessage(TOPIC, (Serializable)JsonMapper.nonDefaultMapper().toJson(entity));
+		rocketMQProducer.sendMessage(anMessage);
+	}
     
 }

@@ -7,6 +7,7 @@
 
 package com.okdeer.mall.activity.seckill.service.impl;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,12 +15,14 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
-import com.okdeer.base.kafka.producer.KafkaProducer;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.seckill.entity.SeckillReminde;
 import com.okdeer.mall.activity.seckill.mapper.SeckillRemindeMapper;
 import com.okdeer.mall.activity.seckill.service.SeckillRemindeServiceApi;
@@ -56,6 +59,11 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 	 */
 	@Value("${mcm.sys.token}")
 	private String msgToken;
+	
+	private static final String TOPIC = "topic_mcm_msg";
+    
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
 
 	/**取消订单短信1*/
 	@Value("${sms.cancalOrder.style1}")
@@ -181,26 +189,8 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 	private String smsServiceStoreCancelStyle3;
 	// End 重构4.1 add by wusw
 
-	/**
-	 * 默认通知样式：0
-	 */
-	private final Integer defaultNotificationBuilderId = 0;
-
-	/**
-	 * 默认:响铃+震动+可清除
-	 */
-	private final Integer defaultNotificationBasicStyle1 = 7;
-
-	/**
-	 * 默认:震动+可清除
-	 */
-	private final Integer defaultNotificationBasicStyle2 = 3;
-
 	@Resource
 	private SeckillRemindeMapper seckillRemindeMapper;
-
-	@Resource
-	private KafkaProducer kafkaProducer;
 	
 	@Resource
 	private SysBuyerUserMapper sysBuyerUserMapper;
@@ -247,8 +237,14 @@ public class SeckillRemindeServiceImpl implements SeckillRemindeServiceApi {
 
 		userList.add(pushUser);
 		pushMsgVo.setUserList(userList);
-		kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushMsgVo));
+		sendMessage(pushMsgVo);
 
+	}
+	
+    
+	private void sendMessage(Object entity) throws Exception {
+		MQMessage anMessage = new MQMessage(TOPIC, (Serializable)JsonMapper.nonDefaultMapper().toJson(entity));
+		rocketMQProducer.sendMessage(anMessage);
 	}
 
 	@Override
