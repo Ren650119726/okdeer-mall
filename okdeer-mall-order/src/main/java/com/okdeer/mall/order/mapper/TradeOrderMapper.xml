@@ -5582,6 +5582,7 @@
 				#{item}
 			</foreach>
 		</if>
+		AND order_resource != 4 
 		order by trade.create_time desc
 	</select>
 
