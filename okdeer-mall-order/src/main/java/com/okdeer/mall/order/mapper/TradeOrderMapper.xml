@@ -5647,6 +5647,7 @@
 				#{item}
 			</foreach>
 		</if>
+		AND order_resource != 4 
 	</select>
 	<!-- Begin V2.1.0 added by luosm 20170224 -->
 
