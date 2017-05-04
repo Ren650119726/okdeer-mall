@@ -186,6 +186,7 @@ public class TradeOrderBuilder {
 		tradeOrder.setDisabled(Disabled.valid);
 		tradeOrder.setCreateTime(new Date());
 		tradeOrder.setUpdateTime(new Date());
+		tradeOrder.setClientVersion(paramDto.getVersion());
 		// 设置订单编号
 		setOrderNo(tradeOrder,paramDto.getOrderType());
 		// 设置订单总品项
