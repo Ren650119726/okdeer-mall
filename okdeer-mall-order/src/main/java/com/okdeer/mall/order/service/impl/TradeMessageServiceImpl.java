@@ -395,8 +395,10 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	    
 	    //内容消息推送用户列表
 	    List<PushUserVo> oriMsgUserList = new ArrayList<PushUserVo>();
+	    List<PushUserVo> oriMsgUserList210 = new ArrayList<PushUserVo>();
 	    //链接消息推送列表
-	    List<PushUserVo> linkedMsgUserList = new ArrayList<>();
+	    List<PushUserVo> linkedMsgUserList = new ArrayList<PushUserVo>();
+	    //Map<String,Integer> userToVersion = Maps.newHashMap();
 	    
         sysUserList.forEach(sysUser -> {
             WhetherEnum whetherEnum = sysUser.getIsAccept();
@@ -418,7 +420,9 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	                    if(compareRes == 1) {
 	                        //APP跳转原生页面，发送内容消息
 	                        oriMsgUserList.add(pushUser);
-	                    } else {
+	                    } else if(compareRes == 0){
+	                    	oriMsgUserList210.add(pushUser);
+	                    }else {
 	                        //APP调整H5页面，发送链接消息
 	                        linkedMsgUserList.add(pushUser);
 	                    }
@@ -427,15 +431,21 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
             }
         });  
 	    
-	    //发送内容消息--2.1.0及之后版本
+	    //发送内容消息--2.1.0之后版本
 		if(CollectionUtils.isNotEmpty(oriMsgUserList)) {
-		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType, 1);
+		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType,1);
 		    pushOriMsgVo.setUserList(oriMsgUserList);
+			sendMessage(pushOriMsgVo);
+		}
+		//发送内容消息--2.1.0
+		if(CollectionUtils.isNotEmpty(oriMsgUserList210)) {
+			PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType,0);
+			pushOriMsgVo.setUserList(oriMsgUserList210);
 			sendMessage(pushOriMsgVo);
 		}
 		//发送链接消息--2.1.0之前版本
 		if(CollectionUtils.isNotEmpty(linkedMsgUserList)) {
-		    PushMsgVo pushLinkedMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType, 0);
+		    PushMsgVo pushLinkedMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType,-1);
 		    pushLinkedMsgVo.setUserList(linkedMsgUserList);
 		    sendMessage(pushLinkedMsgVo);
         }
@@ -496,7 +506,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 * @param msgContentType 0链接，1内容
 	 * @return
 	 */
-	private PushMsgVo createPushMsgVo(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType, int msgContentType) {
+	private PushMsgVo createPushMsgVo(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType,int msgContentType) {
 		
         // 推送消息标题
         String msgTitle = null;
@@ -537,13 +547,14 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         PushMsgVo pushMsgVo = new PushMsgVo();
         pushMsgVo.setMsgTypeCustom(msgTypeCustom);
         pushMsgVo.setServiceFkId(serviceFkId);
-        if(msgContentType == 0) {
+        //2.1.0之前的版本发送h5链接
+        pushMsgVo.setMsgDetailType(msgContentType < 0 ? 0 : 1);
+        if(msgContentType < 0) {
             pushMsgVo.setMsgDetailLinkUrl(linkUrl);
         } /*else if(msgContentType == 1) {
             pushMsgVo.setMsgDetailContent(serviceFkId);
         }*/
         pushMsgVo.setMsgNotifyContent(msgTitle);
-        pushMsgVo.setMsgDetailType(msgContentType);
         
         pushMsgVo.setSysCode(msgSysCode);
         pushMsgVo.setToken(msgToken);
@@ -552,7 +563,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         // 2:商家APP,3POS机
         pushMsgVo.setAppType(2);
         pushMsgVo.setIsUseTemplate(0);
-        if(msgContentType==0){
+		if (msgContentType <= 0) {
         	pushMsgVo.setMsgType(MsgConstant.MsgType.NOTICE);
         }else{
         	pushMsgVo.setMsgType(MsgConstant.MsgType.THROUGH);
