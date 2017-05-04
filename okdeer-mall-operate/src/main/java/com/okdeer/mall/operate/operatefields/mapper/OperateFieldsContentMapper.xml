@@ -214,16 +214,16 @@
 		</if>
 		<!-- 0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高  -->
 		<if test="sortType == 0">
-			order by g.sale_price DESC
+			order by g.sale_price DESC, gs.id DESC
 		</if>
 		<if test="sortType == 1">
-			order by g.sort DESC
+			order by g.sort DESC, gs.id DESC
 		</if>
 		<if test="sortType == 2">
-			order by g.sale_price ASC
+			order by g.sale_price ASC, gs.id ASC
 		</if>
 		<if test="sortType == 3">
-			order by g.sort ASC
+			order by g.sort ASC, gs.id ASC
 		</if>
 		<if test="sort != null and template != null">
 			limit #{sort}, #{template} 
@@ -305,16 +305,16 @@
         </choose>
 		<!-- 0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高  -->
 		<if test="sortType == 0">
-			order by gs.online_price DESC
+			order by gs.online_price DESC, gs.id DESC
 		</if>
 		<if test="sortType == 1">
-			order by gs.sort DESC
+			order by gs.sort DESC, gs.id DESC
 		</if>
 		<if test="sortType == 2">
-			order by gs.online_price ASC
+			order by gs.online_price ASC, gs.id ASC
 		</if>
 		<if test="sortType == 3">
-			order by gs.sort ASC
+			order by gs.sort ASC, gs.id ASC
 		</if>
 		<if test="sort != null and template != null">
 			limit #{sort}, #{template} 
@@ -356,16 +356,16 @@
 		and gs.status = 1 
 		and gs.violation = 0
 		<if test="sortType == 0">
-			order by gs.online_price DESC
+			order by gs.online_price DESC, gs.id DESC
 		</if>
 		<if test="sortType == 1">
-			order by gs.sort DESC
+			order by gs.sort DESC, gs.id DESC
 		</if>
 		<if test="sortType == 2">
-			order by gs.online_price ASC
+			order by gs.online_price ASC, gs.id ASC
 		</if>
 		<if test="sortType == 3">
-			order by gs.sort ASC
+			order by gs.sort ASC, gs.id ASC
 		</if>
 		<if test="template != null">
 			limit #{sort}, #{template} 
