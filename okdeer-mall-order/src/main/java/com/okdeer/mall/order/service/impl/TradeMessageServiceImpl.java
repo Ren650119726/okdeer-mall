@@ -19,7 +19,7 @@ import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 
-import com.okdeer.mcm.constant.MsgConstant;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,15 +29,12 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.common.message.Message;
 import com.google.common.base.Charsets;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
-import com.okdeer.archive.store.entity.StoreMemberRelation;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
-import com.okdeer.archive.store.enums.StoreUserTypeEnum;
 import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysMsg;
@@ -55,7 +52,6 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
-import com.okdeer.base.kafka.producer.KafkaProducer;
 import com.okdeer.common.utils.VersionUtils;
 import com.okdeer.mall.common.enums.IsRead;
 import com.okdeer.mall.common.enums.MsgType;
@@ -84,6 +80,7 @@ import com.okdeer.mall.order.vo.TradeOrderComplainVo;
 import com.okdeer.mall.system.mapper.SysMsgMapper;
 import com.okdeer.mall.system.mapper.SysUserMapper;
 import com.okdeer.mall.system.service.SysBuyerUserService;
+import com.okdeer.mcm.constant.MsgConstant;
 import com.okdeer.mcm.entity.BaseResponse;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
@@ -127,165 +124,32 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 */
 	@Value("${mcm.sys.token}")
 	private String msgToken;
-
-	/**取消订单短信1*/
-	@Value("${sms.cancalOrder.style1}")
-	private String smsCancalOrderStyle1;
-
-	/**取消订单短信2*/
-	@Value("${sms.cancalOrder.style2}")
-	private String smsCancalOrderStyle2;
-
-	/**取消订单短信3*/
-	@Value("${sms.cancalOrder.style3}")
-	private String smsCancalOrderStyle3;
-
-	/**商家同意退款短信1*/
-	@Value("${sms.agreeRefundPay.style1}")
-	private String smsAgreeRefundPayStyle1;
-
-	/**商家同意退款短信2*/
-	@Value("${sms.agreeRefundPay.style2}")
-	private String smsAgreeRefundPayStyle2;
-
-	/**商家同意退款短信3*/
-	@Value("${sms.agreeRefundPay.style3}")
-	private String smsAgreeRefundPayStyle3;
-
-	/**用户拒收短信-第三方支付*/
-	@Value("${sms.userRefuse.thirdPay}")
-	private String smsUserRefuseThirdPay;
-
-	/**用户拒收短信-云钱包支付*/
-	@Value("${sms.userRefuse.walletPay}")
-	private String smsUserRefuseWalletPay;
-
-	/**用户拒收短信-货到付款*/
-	@Value("${sms.userRefuse.unPay}")
-	private String smsUserRefuseUnPay;
-
-	/**商家点击发货短信*/
-	@Value("${sms.shipments.style1}")
-	private String smsShipmentsStyle1;
-
-	/**到店自提订单下单短信*/
-	@Value("${sms.order.store.pickup.style1}")
-	private String smsOrderStorePickupStyle1;
-
-	/**团购服务型商品下单短信*/
-	@Value("${sms.server.order.style1}")
-	private String smsServerOrderStyle1;
-
-	/**商家版APP订单详情链接*/
-	@Value("${orderDetailLink}")
-	private String orderDetailLink;
-
-	/**商家版APP退款单详情链接*/
-	@Value("${orderRefundsDetailLink}")
-	private String orderRefundsDetailLink;
-
-	/**
-	 * Android客户端自定义通知样式，如果没有，可以默认为0
-	 */
-	@Value("${notification.builder.id}")
-	private String notificationBuilderId;
-
-	/**
-	 * 只有notificationBuilderId为0时有效
-	 *  响铃：4;振动：2;可清除：1;
-	 *  可组合相加
-	 *  响铃
-	 */
-	@Value("${notification.basic.style1}")
-	private String notificationBasicStyle1;
-
-	/**
-	 * 只有notificationBuilderId为0时有效
-	 *  响铃：4;振动：2;可清除：1;
-	 *  可组合相加
-	 *  震动
-	 */
-	@Value("${notification.basic.style2}")
-	private String notificationBasicStyle2;
 	
-	// Begin V1.2 added by maojj 2016-12-02
-	/**
-	 * 商家点击派单发送短信（服务店）
-	 */
-	@Value("${sms.acceptOrder.style}")
-	private String smsAcceptOrderStyle;
-	// End V1.2 added by maojj 2016-12-02
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
 
-	// Begin 重构4.1 add by wusw
-	/**
-	 * 商家点击派单发送短信（服务店）
-	 */
-	@Value("${sms.service.store.shipments.style1}")
-	private String smsServiceStoreShipmentsStyle1;
-
-	/**
-	 * 商家点击拒绝服务发送短信（服务店，在线支付--微信支付、支付宝支付）
-	 */
-	@Value("${sms.service.store.refuse.style1}")
-	private String smsServiceStoreRefuseStyle1;
-
-	/**
-	 * 商家点击拒绝服务发送短信（服务店，在线支付--余额支付、京东支付）
-	 */
-	@Value("${sms.service.store.refuse.style2}")
-	private String smsServiceStoreRefuseStyle2;
-
-	/**
-	 * 商家点击拒绝服务发送短信（服务店，线下支付并当面确认价格）
-	 */
-	@Value("${sms.service.store.refuse.style3}")
-	private String smsServiceStoreRefuseStyle3;
-
-	/**
-	 * 商家点击取消订单发送短信（服务店，在线支付--微信支付、支付宝支付）
-	 */
-	@Value("${sms.service.store.cancel.style1}")
-	private String smsServiceStoreCancelStyle1;
-
-	/**
-	 * 商家点击取消订单发送短信（服务店，在线支付--余额支付、京东支付）
-	 */
-	@Value("${sms.service.store.cancel.style2}")
-	private String smsServiceStoreCancelStyle2;
-
-	/**
-	 * 商家点击取消订单发送短信（服务店，线下支付并当面确认价格）
-	 */
-	@Value("${sms.service.store.cancel.style3}")
-	private String smsServiceStoreCancelStyle3;
-
-	@Value("${sms.service.store.cancel.style4}")
-	private String smsServiceStoreCancelStyle4;
-
-	@Value("${sms.service.store.cancel.style5}")
-	private String smsServiceStoreCancelStyle5;
-	// End 重构4.1 add by wusw
+	
+	@Autowired
+	private TradeMessageProperties tradeMessageProperties;
 
 	/**
 	 * 默认通知样式：0
 	 */
-	private final Integer defaultNotificationBuilderId = 0;
+	private static final Integer defaultNotificationBuilderId = 0;
 
 	/**
 	 * 默认:响铃+震动+可清除
 	 */
-	private final Integer defaultNotificationBasicStyle1 = 7;
+	private static final Integer defaultNotificationBasicStyle1 = 7;
 
 	/**
 	 * 默认:震动+可清除
 	 */
-	private final Integer defaultNotificationBasicStyle2 = 3;
+	private static final Integer defaultNotificationBasicStyle2 = 3;
+	
 
 	@Reference(version = "1.0.0", check = false)
 	private ISmsService smsService;
-
-	@Resource
-	private KafkaProducer kafkaProducer;
 
 	@Reference(version = "1.0.0", check = false)
 	private PosShiftExchangeServiceApi posShiftExchangeService;
@@ -333,27 +197,21 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	private TradeOrderComplainService tradeOrderComplainService;
 	
 	// Begin 商业系统POS推送对接  added by maojj 2016-12-19
-	@Autowired
-	private RocketMQProducer rocketMQProducer;
-	
 	@Reference(version = "1.0.0", check = false)
 	private SysUserLoginLogServiceApi sysUserLoginLogApi;
 	
 	private static final String TOPIC_ONLINE_ORDER_TOPOS = "topic_online_order_topos";
 	
 	private static final String TAG_ONLINE_ORDER_TOPOS = "tag_online_order_topos";
-
 	// End added by maojj 2016-12-19
 
-	private void sendMessage(Object entity) {
-		// Begin modified by maojj 2016-08-22 修改json转换方式
-		kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(entity));
-		// End modified by maojj 2016-08-22 修改json转换方式
+	private void sendMessage(Object entity) throws Exception {
+		MQMessage anMessage = new MQMessage(TOPIC, (Serializable)JsonMapper.nonDefaultMapper().toJson(entity));
+		rocketMQProducer.sendMessage(anMessage);
 	}
 
 	/**
 	 * 保存商家中心消息
-	 * @desc TODO Add a description 
 	 * @author zengj
 	 * @param tradeOrder
 	 * @param sendMsgType 消息类型
@@ -444,6 +302,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 * @param sendMsgType 推送消息类型
 	 * @throws Exception
 	 */
+	@Deprecated
 	@Override
 	public void sendPosMessage(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType) throws Exception {
 		PushMsgVo pushMsgVo = new PushMsgVo();
@@ -505,9 +364,8 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		}
 
 		pushMsgVo.setUserList(userList);
-		// Begin modified by maojj 2016-08-18 修改json转换方式
-		kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushMsgVo));
-		// End modified by maojj 2016-08-18
+		//发送消息
+		sendMessage(pushMsgVo);
 		
 		// Begin added by maojj 2016-12-19 商业系统POS推送对接
 		sendMsgParamVo.setSendMsgType(sendMsgType.ordinal());
@@ -528,163 +386,69 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	public void sendSellerAppMessage(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType) throws Exception {
 		//查询店铺的用户信息
 	    List<SysUser> sysUserList = sysUserMapper.selectUserByStoreId(sendMsgParamVo.getStoreId());
+	    
+	    if(CollectionUtils.isEmpty(sysUserList)){
+	    	return;
+	    }
 	    //版本号比较器类
 	    VersionUtils compare = new VersionUtils();	   
 	    
 	    //内容消息推送用户列表
 	    List<PushUserVo> oriMsgUserList = new ArrayList<PushUserVo>();
+	    List<PushUserVo> oriMsgUserList210 = new ArrayList<PushUserVo>();
 	    //链接消息推送列表
-	    List<PushUserVo> linkedMsgUserList = new ArrayList<>();
+	    List<PushUserVo> linkedMsgUserList = new ArrayList<PushUserVo>();
+	    //Map<String,Integer> userToVersion = Maps.newHashMap();
 	    
-	    if (sysUserList != null && !sysUserList.isEmpty()) {
-	        sysUserList.forEach(sysUser -> {
-	            WhetherEnum whetherEnum = sysUser.getIsAccept();
-	            if(whetherEnum == WhetherEnum.not) {
-	                return;
-	            }
-	            
-	            //查看当前登录的设备APP版本
-                List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null, null);
-	            if(sysUserLoginLogs != null && !sysUserLoginLogs.isEmpty()) {
-	                sysUserLoginLogs.forEach(sysUserLoginLog -> {
-	                    PushUserVo pushUser = createPushUserVo(sysUser);
-	                    
-	                    String version = sysUserLoginLog.getVersion();
-	                    if(StringUtils.isEmpty(version)){
-	                    	linkedMsgUserList.add(pushUser);
-	                    }else{
-		                    int compareRes = compare.compare(version, "2.1.0");
-		                    if(compareRes == 1 || compareRes == 0) {
-		                        //APP跳转原生页面，发送内容消息
-		                        oriMsgUserList.add(pushUser);
-		                    } else {
-		                        //APP调整H5页面，发送链接消息
-		                        linkedMsgUserList.add(pushUser);
-		                    }
+        sysUserList.forEach(sysUser -> {
+            WhetherEnum whetherEnum = sysUser.getIsAccept();
+            if(whetherEnum == WhetherEnum.not) {
+                return;
+            }
+            
+            //查看当前登录的设备APP版本
+            List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null, null);
+            if(sysUserLoginLogs != null && !sysUserLoginLogs.isEmpty()) {
+                sysUserLoginLogs.forEach(sysUserLoginLog -> {
+                    PushUserVo pushUser = createPushUserVo(sysUser,sendMsgType);
+                    
+                    String version = sysUserLoginLog.getVersion();
+                    if(StringUtils.isEmpty(version)){
+                    	linkedMsgUserList.add(pushUser);
+                    }else{
+	                    int compareRes = compare.compare(version, "2.1.0");
+	                    if(compareRes == 1) {
+	                        //APP跳转原生页面，发送内容消息
+	                        oriMsgUserList.add(pushUser);
+	                    } else if(compareRes == 0){
+	                    	oriMsgUserList210.add(pushUser);
+	                    }else {
+	                        //APP调整H5页面，发送链接消息
+	                        linkedMsgUserList.add(pushUser);
 	                    }
-	                });
-	            }
-	        });  
-	    }
+                    }
+                });
+            }
+        });  
 	    
-	    //构建消息主体
-		if(oriMsgUserList != null && !oriMsgUserList.isEmpty()) {
-		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType, 1);
+	    //发送内容消息--2.1.0之后版本
+		if(CollectionUtils.isNotEmpty(oriMsgUserList)) {
+		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType,1);
 		    pushOriMsgVo.setUserList(oriMsgUserList);
-		    
-		    //this.kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushOriMsgVo));
-			MQMessage anMessage = new MQMessage(TOPIC, (Serializable)JsonMapper.nonDefaultMapper().toJson(pushOriMsgVo));
-			rocketMQProducer.sendMessage(anMessage);
+			sendMessage(pushOriMsgVo);
 		}
-		
-		if(linkedMsgUserList != null && !linkedMsgUserList.isEmpty()) {
-		    PushMsgVo pushLinkedMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType, 0);
+		//发送内容消息--2.1.0
+		if(CollectionUtils.isNotEmpty(oriMsgUserList210)) {
+			PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType,0);
+			pushOriMsgVo.setUserList(oriMsgUserList210);
+			sendMessage(pushOriMsgVo);
+		}
+		//发送链接消息--2.1.0之前版本
+		if(CollectionUtils.isNotEmpty(linkedMsgUserList)) {
+		    PushMsgVo pushLinkedMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType,-1);
 		    pushLinkedMsgVo.setUserList(linkedMsgUserList);
-		    this.kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushLinkedMsgVo));
+		    sendMessage(pushLinkedMsgVo);
         }
-
-		//Begin added by zhaoqc 讲发送消息代码重写，注释掉旧的逻辑
-		/*pushMsgVo.setSysCode(msgSysCode);
-		pushMsgVo.setToken(msgToken);
-		pushMsgVo.setSendUserId(sendMsgParamVo.getUserId());
-		pushMsgVo.setServiceFkId(sendMsgParamVo.getOrderId());
-		pushMsgVo.setServiceTypes(new Integer[] { 2 });
-		// 2:商家APP,3POS机
-		pushMsgVo.setAppType(2);
-		pushMsgVo.setIsUseTemplate(0);
-		pushMsgVo.setMsgType(1);
-		// 业务消息标识
-		String msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_BUY;
-		
-		// 推送消息标题
-		String msgTitle = null;
-		// 推送详情链接,默认订单的详情，在退款单时展示退款详情链接
-		String linkUrl = orderDetailLink + "/" + sendMsgParamVo.getOrderId();
-		switch (sendMsgType) {
-			// 下单消息
-			case createOrder:
-				msgTitle = "您有一条新订单需要处理";
-				break;
-			// 申请退款消息
-			case applyReturn:
-				msgTitle = "您有一条新的售后申请";
-				linkUrl = orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
-				break;
-			// 卖家同意退款后，买家退货(物流形式)给卖家
-			case returnShipments:
-				msgTitle = "您有一条新的售后申请";
-				linkUrl = orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
-				break;
-			// 投诉单
-			case complainOrder:
-				msgTitle = "您有一条投诉单";
-				break;
-			default:
-				break;
-		}
-		pushMsgVo.setMsgTypeCustom(msgTypeCustom);
-		pushMsgVo.setMsgDetailLinkUrl(linkUrl);
-		// 不使用模板
-		pushMsgVo.setMsgNotifyContent(msgTitle);
-		pushMsgVo.setMsgDetailType(1);
-		// Begin modified by maojj 2016-08-22
-		pushMsgVo.setMsgDetailContent("");
-		// End modified by maojj 2016-08-22
-		// 设置是否定时发送
-		pushMsgVo.setIsTiming(0);
-		// 发送用户
-		// String[] users = userIds.split(",");
-		List<PushUserVo> userList = new ArrayList<PushUserVo>();
-		Map<String, Object> params = Maps.newHashMap();
-		params.put("storeId", sendMsgParamVo.getStoreId());
-		params.put("isFinish", 0);
-		// 查询店铺的用户信息
-		List<SysUser> sysUserList = sysUserMapper.selectUserByStoreId(sendMsgParamVo.getStoreId());
-		if (sysUserList != null && !sysUserList.isEmpty()) {
-			for (SysUser sysUser : sysUserList) {
-			    //查看当前登录的设备APP版本
-			    List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null, null);
-				PushUserVo pushUser = new PushUserVo();
-
-				pushUser.setUserId(sysUser.getId());
-				pushUser.setMobile(sysUser.getPhone());
-
-				try {
-					pushUser.setNotificationBuilderId(Integer.valueOf(notificationBuilderId));
-					// 消息信息提示
-					if (WhetherEnum.whether.equals(sysUser.getIsAccept())) {
-						// 有声音
-						pushUser.setIsexitsSound(0);
-						pushUser.setNotificationBasicStyle(Integer.valueOf(notificationBasicStyle1));
-					} else {
-						// 无声音
-						pushUser.setNotificationBasicStyle(Integer.valueOf(notificationBasicStyle2));
-						pushUser.setIsexitsSound(1);
-					}
-				} catch (Exception e) {
-					// 没有配置zookeeper，取默认的
-					pushUser.setNotificationBuilderId(defaultNotificationBuilderId);
-					// 消息信息提示
-					if (WhetherEnum.whether.equals(sysUser.getIsAccept())) {
-						// 有声音
-						pushUser.setIsexitsSound(0);
-						pushUser.setNotificationBasicStyle(defaultNotificationBasicStyle1);
-					} else {
-						// 无声音
-						pushUser.setNotificationBasicStyle(defaultNotificationBasicStyle2);
-						pushUser.setIsexitsSound(1);
-					}
-				}
-				pushUser.setMsgType(1);
-
-				userList.add(pushUser);
-			}
-		}
-		pushMsgVo.setUserList(userList);
-		// Begin modified by maojj 2016-08-18 修改json转换方式
-		kafkaProducer.send(JsonMapper.nonDefaultMapper().toJson(pushMsgVo));
-		// End modified by maojj 2016-08-18*/
-		//End added by zhaoqc 2017-3-30
 	}
 	
 	/**
@@ -692,25 +456,29 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 * @param sysUser
 	 * @return
 	 */
-	private PushUserVo createPushUserVo(SysUser sysUser) {
+	private PushUserVo createPushUserVo(SysUser sysUser, SendMsgType sendMsgType) {
 	    PushUserVo pushUser = new PushUserVo();
 	    pushUser.setUserId(sysUser.getId());
         pushUser.setMobile(sysUser.getPhone());
         pushUser.setMsgType(MsgConstant.MsgType.THROUGH);
         // begin V2.3.0 新增语音播放文件名 add by wangf01 20170419
 		pushUser.setSoundStyle("order.wav");
+		//判断是否是申请退款||卖家同意退款后，如果是，则提示默认声音，针对IOS
+		if(sendMsgType == SendMsgType.applyReturn || sendMsgType == SendMsgType.returnShipments || sendMsgType == SendMsgType.complainOrder){
+			pushUser.setSoundStyle("default");
+		}
 		// end add by wangf01 20170419
         
         try {
-            pushUser.setNotificationBuilderId(Integer.valueOf(notificationBuilderId));
+            pushUser.setNotificationBuilderId(Integer.valueOf(tradeMessageProperties.notificationBuilderId));
          // 消息信息提示
             if (WhetherEnum.whether.equals(sysUser.getIsAccept())) {
                 // 有声音
                 pushUser.setIsexitsSound(0);
-                pushUser.setNotificationBasicStyle(Integer.valueOf(notificationBasicStyle1));
+                pushUser.setNotificationBasicStyle(Integer.valueOf(tradeMessageProperties.notificationBasicStyle1));
             } else {
                 // 无声音
-                pushUser.setNotificationBasicStyle(Integer.valueOf(notificationBasicStyle2));
+                pushUser.setNotificationBasicStyle(Integer.valueOf(tradeMessageProperties.notificationBasicStyle2));
                 pushUser.setIsexitsSound(1);
             }
         } catch (Exception e) {
@@ -738,28 +506,14 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 * @param msgContentType 0链接，1内容
 	 * @return
 	 */
-	private PushMsgVo createPushMsgVo(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType, int msgContentType) {
-	    PushMsgVo pushMsgVo = new PushMsgVo();
-	    
-        pushMsgVo.setSysCode(msgSysCode);
-        pushMsgVo.setToken(msgToken);
-        pushMsgVo.setSendUserId(sendMsgParamVo.getUserId());       
-        pushMsgVo.setServiceTypes(new Integer[] { 2 });
-        // 2:商家APP,3POS机
-        pushMsgVo.setAppType(2);
-        pushMsgVo.setIsUseTemplate(0);
-        //pushMsgVo.setMsgType(0);
-		pushMsgVo.setMsgType(MsgConstant.MsgType.THROUGH);
-        // 业务消息标识
-        String msgTypeCustom = null;
-       
-        // 设置是否定时发送
-        pushMsgVo.setIsTiming(0);
-        
+	private PushMsgVo createPushMsgVo(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType,int msgContentType) {
+		
         // 推送消息标题
         String msgTitle = null;
         String serviceFkId = null;
-        String linkUrl = orderDetailLink + "/" + sendMsgParamVo.getOrderId();
+        // 业务消息标识
+        String msgTypeCustom = null;
+        String linkUrl = tradeMessageProperties.orderDetailLink + "/" + sendMsgParamVo.getOrderId();
         switch (sendMsgType) {
             // 下单消息
             case createOrder:
@@ -770,14 +524,14 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
             // 申请退款消息
             case applyReturn:
                 msgTitle = "您有一条新的售后申请";
-                linkUrl = orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
+                linkUrl = tradeMessageProperties.orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
                 msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_RETURN;
                 serviceFkId = sendMsgParamVo.getRefundsId();
                 break;
             // 卖家同意退款后，买家退货(物流形式)给卖家
             case returnShipments:
                 msgTitle = "您有一条新的售后申请";
-                linkUrl = orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
+                linkUrl = tradeMessageProperties.orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
                 serviceFkId = sendMsgParamVo.getRefundsId();
                 msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_RETURN;
                 break;
@@ -790,131 +544,35 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
             default:
                 break;
         }
-        
+        PushMsgVo pushMsgVo = new PushMsgVo();
         pushMsgVo.setMsgTypeCustom(msgTypeCustom);
         pushMsgVo.setServiceFkId(serviceFkId);
-        if(msgContentType == 0) {
+        //2.1.0之前的版本发送h5链接
+        pushMsgVo.setMsgDetailType(msgContentType < 0 ? 0 : 1);
+        if(msgContentType < 0) {
             pushMsgVo.setMsgDetailLinkUrl(linkUrl);
         } /*else if(msgContentType == 1) {
             pushMsgVo.setMsgDetailContent(serviceFkId);
         }*/
         pushMsgVo.setMsgNotifyContent(msgTitle);
-        pushMsgVo.setMsgDetailType(msgContentType);
         
+        pushMsgVo.setSysCode(msgSysCode);
+        pushMsgVo.setToken(msgToken);
+        pushMsgVo.setSendUserId(sendMsgParamVo.getUserId());       
+        pushMsgVo.setServiceTypes(new Integer[] { 2 });
+        // 2:商家APP,3POS机
+        pushMsgVo.setAppType(2);
+        pushMsgVo.setIsUseTemplate(0);
+		if (msgContentType <= 0) {
+        	pushMsgVo.setMsgType(MsgConstant.MsgType.NOTICE);
+        }else{
+        	pushMsgVo.setMsgType(MsgConstant.MsgType.THROUGH);
+        }
+        // 设置是否定时发送
+        pushMsgVo.setIsTiming(0);
         return pushMsgVo;
 	}
 
-	@Override
-	@Deprecated
-	public void sendMessageWithRefund(TradeOrderRefunds orderRefunds) throws Exception {
-		PushMsgVo pushMsgVo = new PushMsgVo();
-		pushMsgVo.setSysCode(msgSysCode);
-		pushMsgVo.setToken(msgToken);
-		pushMsgVo.setSendUserId(orderRefunds.getUserId());
-		pushMsgVo.setServiceFkId(orderRefunds.getId());
-		pushMsgVo.setServiceTypes(new Integer[] { 2 });
-		pushMsgVo.setMsgTypeCustom(OrderMsgConstant.MESSAGE_RETURN);
-		// 2:商家APP,3POS机
-		pushMsgVo.setAppType(3);
-		pushMsgVo.setIsUseTemplate(0);
-		pushMsgVo.setMsgType(0);
-		// 不使用模板
-		pushMsgVo.setMsgNotifyContent("买家申请退款");
-		pushMsgVo.setMsgDetailType(1);
-		// Begin modified by maojj 2016-08-22
-		pushMsgVo.setMsgDetailContent("");
-		// End modified by maojj 2016-08-22
-		// 设置是否定时发送
-		pushMsgVo.setIsTiming(0);
-		// 发送用户
-		// String[] users = userIds.split(",");
-		List<PushUserVo> userList = new ArrayList<PushUserVo>();
-		Map<String, Object> params = Maps.newHashMap();
-		params.put("storeId", orderRefunds.getStoreId());
-		params.put("isFinish", 0);
-		List<PosShiftExchangeVo> posShifts = posShiftExchangeService.selectByParams(params);
-		for (PosShiftExchangeVo posShift : posShifts) {
-			PushUserVo pushUser = new PushUserVo();
-			pushUser.setUserId(posShift.getUserId());
-			pushUser.setMobile(posShift.getPhone());
-			// posShift.getPosCode();
-			pushUser.setMsgType(0);
-			userList.add(pushUser);
-		}
-
-		// Map<String, Object> map = Maps.newHashMap();
-		// map.put("storeId", orderRefunds.getStoreId());
-		// map.put("memberType", StoreUserTypeEnum.STORE_KEEPER);
-		// List<StoreMemberRelation> storeMenbers =
-		// storeMemberRelationService.findByParams(map);
-		// StoreMemberRelation storeMenber =
-		// Iterables.getOnlyElement(storeMenbers);
-		// PushUserVo pushUser = new PushUserVo();
-		// pushUser.setUserId(storeMenber.getSysUserId());
-		// pushUser.setMobile(storeMenber.getStoreMobile());
-		// pushUser.setMsgType(1);
-		// userList.add(pushUser);
-
-		pushMsgVo.setUserList(userList);
-		sendMessage(pushMsgVo);
-	}
-
-	/**
-	 * @desc 买家退款发货推送消息
-	 */
-	@Override
-	@Deprecated
-	public void sendMessageWithShipper(TradeOrderRefunds orderRefunds) throws ServiceException {
-
-		PushMsgVo pushMsgVo = new PushMsgVo();
-		pushMsgVo.setSysCode(msgSysCode);
-		pushMsgVo.setToken(msgToken);
-		pushMsgVo.setSendUserId(orderRefunds.getUserId());
-		pushMsgVo.setServiceFkId(orderRefunds.getId());
-		pushMsgVo.setServiceTypes(new Integer[] { 2 });
-		pushMsgVo.setMsgTypeCustom(OrderMsgConstant.MESSAGE_LOGISTICS);
-		// 2:商家APP,3POS机
-		pushMsgVo.setAppType(3);
-		pushMsgVo.setIsUseTemplate(0);
-		pushMsgVo.setMsgType(0);
-		// 不使用模板
-		pushMsgVo.setMsgNotifyContent("买家填写物流信息");
-		pushMsgVo.setMsgDetailType(1);
-		// Begin modified by maojj 2016-08-22
-		pushMsgVo.setMsgDetailContent("");
-		// End modified by maojj 2016-08-22
-		// 设置是否定时发送
-		pushMsgVo.setIsTiming(0);
-		// 发送用户
-		// String[] users = userIds.split(",");
-		List<PushUserVo> userList = new ArrayList<PushUserVo>();
-		Map<String, Object> params = Maps.newHashMap();
-		params.put("storeId", orderRefunds.getStoreId());
-		params.put("isFinish", 0);
-		List<PosShiftExchangeVo> posShifts = posShiftExchangeService.selectByParams(params);
-		for (PosShiftExchangeVo posShift : posShifts) {
-			PushUserVo pushUser = new PushUserVo();
-			pushUser.setUserId(posShift.getUserId());
-			pushUser.setMobile(posShift.getPhone());
-			// posShift.getPosCode();
-			pushUser.setMsgType(0);
-			userList.add(pushUser);
-		}
-
-		Map<String, Object> map = Maps.newHashMap();
-		map.put("storeId", orderRefunds.getStoreId());
-		map.put("memberType", StoreUserTypeEnum.STORE_KEEPER);
-		List<StoreMemberRelation> storeMenbers = storeMemberRelationService.findByParams(map);
-		StoreMemberRelation storeMenber = Iterables.getOnlyElement(storeMenbers);
-		PushUserVo pushUser = new PushUserVo();
-		pushUser.setUserId(storeMenber.getSysUserId());
-		pushUser.setMobile(storeMenber.getStoreMobile());
-		pushUser.setMsgType(1);
-		userList.add(pushUser);
-
-		pushMsgVo.setUserList(userList);
-		sendMessage(pushMsgVo);
-	}
 
 	/**
 	 * 点击发货时发送短信
@@ -926,7 +584,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		// 查询用户电话号码
 		String mobile = sysBuyerUserService.selectMemberMobile(order.getUserId());
 		if (StringUtils.isNotBlank(mobile)) {
-			this.sendSms(mobile, smsShipmentsStyle1, params);
+			this.sendSms(mobile, tradeMessageProperties.smsShipmentsStyle1, params);
 		} else {
 			logger.error("订单号：[" + order.getOrderNo() + "]的用户ID:[" + order.getUserId() + "]手机号码为空");
 		}
@@ -965,9 +623,9 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 						
 						//add by zengjz 判断是有违约金 2016-11-25
 						if (WhetherEnum.whether == order.getIsBreach()) {
-							this.sendSms(mobile, smsServiceStoreCancelStyle4, params);
+							this.sendSms(mobile, tradeMessageProperties.smsServiceStoreCancelStyle4, params);
 						} else {
-							this.sendSms(mobile, smsServiceStoreCancelStyle1, params);
+							this.sendSms(mobile, tradeMessageProperties.smsServiceStoreCancelStyle1, params);
 						}
 						//end by zengjz 判断是有违约金 2016-11-25
 						
@@ -976,27 +634,27 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 						
 						//add by zengjz 判断是有违约金 2016-11-25
 						if (WhetherEnum.whether == order.getIsBreach()) {
-							this.sendSms(mobile, smsServiceStoreCancelStyle5, params);
+							this.sendSms(mobile, tradeMessageProperties.smsServiceStoreCancelStyle5, params);
 						} else {
-							this.sendSms(mobile, smsServiceStoreCancelStyle2, params);
+							this.sendSms(mobile, tradeMessageProperties.smsServiceStoreCancelStyle2, params);
 						}
 						//end by zengjz 判断是有违约金 2016-11-25
 
 					} // Begin 重构4.1 add by wusw 20160720
 				} else if (PayWayEnum.OFFLINE_CONFIRM_AND_PAY == order.getPayWay()) {
-					this.sendSms(mobile, smsServiceStoreCancelStyle3, params);
+					this.sendSms(mobile, tradeMessageProperties.smsServiceStoreCancelStyle3, params);
 				}
 				// End 重构4.1 add by wusw 20160720
 			} else {// End 重构4.1 add by wusw
 				if (PayWayEnum.CASH_DELIERY == order.getPayWay()) {
-					this.sendSms(mobile, smsCancalOrderStyle3, params);
+					this.sendSms(mobile, tradeMessageProperties.smsCancalOrderStyle3, params);
 				} else if (PayWayEnum.PAY_ONLINE == order.getPayWay()) {
 					TradeOrderPay payment = order.getTradeOrderPay();
 					if (PayTypeEnum.ALIPAY == payment.getPayType() || PayTypeEnum.WXPAY == payment.getPayType()) {
-						this.sendSms(mobile, smsCancalOrderStyle1, params);
+						this.sendSms(mobile, tradeMessageProperties.smsCancalOrderStyle1, params);
 					} else if (PayTypeEnum.WALLET == payment.getPayType()
 							|| PayTypeEnum.JDPAY == payment.getPayType()) {
-						this.sendSms(mobile, smsCancalOrderStyle2, params);
+						this.sendSms(mobile, tradeMessageProperties.smsCancalOrderStyle2, params);
 					}
 				}
 			}
@@ -1017,24 +675,24 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 				if (PayWayEnum.PAY_ONLINE == order.getPayWay()) {
 					TradeOrderPay payment = order.getTradeOrderPay();
 					if (PayTypeEnum.ALIPAY == payment.getPayType() || PayTypeEnum.WXPAY == payment.getPayType()) {
-						this.sendSms(mobile, smsServiceStoreRefuseStyle1, params);
+						this.sendSms(mobile, tradeMessageProperties.smsServiceStoreRefuseStyle1, params);
 					} else if (PayTypeEnum.WALLET == payment.getPayType()
 							|| PayTypeEnum.JDPAY == payment.getPayType()) {
-						this.sendSms(mobile, smsServiceStoreRefuseStyle2, params);
+						this.sendSms(mobile, tradeMessageProperties.smsServiceStoreRefuseStyle2, params);
 					} // Begin 重构4.1 add by wusw 20160720
 				} else if (PayWayEnum.OFFLINE_CONFIRM_AND_PAY == order.getPayWay()) {
-					this.sendSms(mobile, smsServiceStoreRefuseStyle3, params);
+					this.sendSms(mobile, tradeMessageProperties.smsServiceStoreRefuseStyle3, params);
 				} // End 重构4.1 add by wusw 20160720
 			} else {// End 重构4.1 add by wusw
 				if (PayWayEnum.CASH_DELIERY == order.getPayWay()) {
-					this.sendSms(mobile, smsUserRefuseUnPay, params);
+					this.sendSms(mobile, tradeMessageProperties.smsUserRefuseUnPay, params);
 				} else if (PayWayEnum.PAY_ONLINE == order.getPayWay()) {
 					TradeOrderPay payment = order.getTradeOrderPay();
 					if (PayTypeEnum.ALIPAY == payment.getPayType() || PayTypeEnum.WXPAY == payment.getPayType()) {
-						this.sendSms(mobile, smsUserRefuseThirdPay, params);
+						this.sendSms(mobile, tradeMessageProperties.smsUserRefuseThirdPay, params);
 					} else if (PayTypeEnum.WALLET == payment.getPayType()
 							|| PayTypeEnum.JDPAY == payment.getPayType()) {
-						this.sendSms(mobile, smsUserRefuseWalletPay, params);
+						this.sendSms(mobile, tradeMessageProperties.smsUserRefuseWalletPay, params);
 					}
 				}
 			}
@@ -1055,13 +713,13 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		// 查询用户电话号码
 		String mobile = sysBuyerUserService.selectMemberMobile(refunds.getUserId());
 		if (PayWayEnum.CASH_DELIERY == payWay) {
-			this.sendSms(mobile, smsAgreeRefundPayStyle3, params);
+			this.sendSms(mobile, tradeMessageProperties.smsAgreeRefundPayStyle3, params);
 		} else if (PayWayEnum.PAY_ONLINE == payWay) {
 			PayTypeEnum payType = refunds.getPaymentMethod();
 			if (PayTypeEnum.ALIPAY == payType || PayTypeEnum.WXPAY == payType) {
-				this.sendSms(mobile, smsAgreeRefundPayStyle1, params);
+				this.sendSms(mobile, tradeMessageProperties.smsAgreeRefundPayStyle1, params);
 			} else if (PayTypeEnum.WALLET == payType || PayTypeEnum.JDPAY == payType) {
-				this.sendSms(mobile, smsAgreeRefundPayStyle2, params);
+				this.sendSms(mobile, tradeMessageProperties.smsAgreeRefundPayStyle2, params);
 			}
 		}
 	}
@@ -1079,7 +737,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 
 		// 查询用户电话号码
 		String mobile = sysBuyerUserService.selectMemberMobile(refunds.getUserId());
-		this.sendSms(mobile, smsAgreeRefundPayStyle1, params);
+		this.sendSms(mobile, tradeMessageProperties.smsAgreeRefundPayStyle1, params);
 	}
 
 	/**
@@ -1099,14 +757,14 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		Map<String, String> params = Maps.newHashMap();
 		// 到店自提订单下单短信
 		if (PickUpTypeEnum.TO_STORE_PICKUP.equals(tradeOrder.getPickUpType())) {
-			smsTempate = smsOrderStorePickupStyle1;
+			smsTempate = tradeMessageProperties.smsOrderStorePickupStyle1;
 			// 订单编号
 			params.put("#1", tradeOrder.getOrderNo());
 			// 提货码
 			params.put("#2", tradeOrder.getPickUpCode());
 		} else if (OrderTypeEnum.SERVICE_ORDER.equals(tradeOrder.getType())) {
 			// 团购服务型商品下单短信
-			smsTempate = smsServerOrderStyle1;
+			smsTempate = tradeMessageProperties.smsServerOrderStyle1;
 			// 团购型服务订单只能买一款商品
 			List<TradeOrderItem> tradeOrderItems = tradeOrder.getTradeOrderItem();
 			// 如果订单项为空，去数据库直接查询
@@ -1254,7 +912,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		// 查询用户电话号码
 		String mobile = sysBuyerUserService.selectMemberMobile(order.getUserId());
 		if (StringUtils.isNotBlank(mobile)) {
-			this.sendSms(mobile, smsServiceStoreShipmentsStyle1, params);
+			this.sendSms(mobile, tradeMessageProperties.smsServiceStoreShipmentsStyle1, params);
 		} else {
 			logger.error("订单号：[" + order.getOrderNo() + "]的用户ID:[" + order.getUserId() + "]手机号码为空");
 		}
@@ -1269,7 +927,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		// 查询用户电话号码
 		String mobile = sysBuyerUserService.selectMemberMobile(order.getUserId());
 		if (StringUtils.isNotBlank(mobile)) {
-			this.sendSms(mobile, smsAcceptOrderStyle, params);
+			this.sendSms(mobile, tradeMessageProperties.smsAcceptOrderStyle, params);
 		} else {
 			logger.error("订单号：[" + order.getOrderNo() + "]的用户ID:[" + order.getUserId() + "]手机号码为空");
 		}

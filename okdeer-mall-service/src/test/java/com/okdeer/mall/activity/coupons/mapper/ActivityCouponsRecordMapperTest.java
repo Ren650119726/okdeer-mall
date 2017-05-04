@@ -23,8 +23,6 @@ import com.okdeer.mall.Application;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.order.vo.Coupons;
-import com.okdeer.mall.order.vo.Discount;
-import com.okdeer.mall.order.vo.FullSubtract;
 import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 
 import net.sf.json.JSONArray;
@@ -74,27 +72,6 @@ public class ActivityCouponsRecordMapperTest {
 		}
 	}
 
-	@Test
-	public void testFindValidDiscount() {
-		FavourParamBO paramBo = new FavourParamBO();
-		paramBo.setUserId("8a94e4dd55df05130155df0999f80004");
-		paramBo.setStoreId("8a94e4dd55df05130155df0999f80004");
-		paramBo.setTotalAmount(BigDecimal.valueOf(510));
-		List<Discount> discountList = activityDiscountMapper.findValidDiscount(paramBo);
-		System.out.println(">>>>>>>>>>>>" + JSONArray.fromObject(discountList));
-	}
-	
-	@Test
-	public void testFindValidFullSubtract() {
-		FavourParamBO paramBo = new FavourParamBO();
-		paramBo.setUserId("8a94e4dd55df05130155df0999f80004");
-		paramBo.setStoreId("2c91c0865639a2f2015639b10d800039");
-		paramBo.setTotalAmount(BigDecimal.valueOf(510));
-		
-		List<FullSubtract> discountList = activityDiscountMapper.findValidFullSubtract(paramBo);
-		System.out.println(">>>>>>>>>>>>" + JSONArray.fromObject(discountList));
-	}
-	
 	@Test
 	public void testFindTotalRewardAmount(){
 		Map<String,Object> params = new HashMap<String,Object>();

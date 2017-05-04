@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 import javax.annotation.Resource;
 
@@ -101,6 +103,7 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsLogMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsLogisticsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.service.GenerateNumericalService;
+import com.okdeer.mall.order.service.PageCallBack;
 import com.okdeer.mall.order.service.StockOperateService;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
@@ -117,6 +120,7 @@ import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderRefundsTraceService;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
+import com.okdeer.mall.order.utils.PageQueryUtils;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsChargeVo;
@@ -130,6 +134,7 @@ import com.okdeer.mall.system.mapper.SysMsgMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
 import com.okdeer.mall.system.utils.ConvertUtil;
+import org.springframework.integration.redis.util.RedisLockRegistry;
 
 import net.sf.json.JSONObject;
 
@@ -174,6 +179,9 @@ public class TradeOrderRefundsServiceImpl
 
 	// @Value("${sysMsgContent}")
 	private String sysMsgContent = "您有一条来自用户【#1】的退款申请需要处理，订单号【#2】";
+	
+	@Autowired
+	private RedisLockRegistry redisLockRegistry;
 
 	/**
 	 * 消息发送
@@ -597,7 +605,7 @@ public class TradeOrderRefundsServiceImpl
 
 			// 回收库存
 			stockOperateService.recycleStockByRefund(order, orderRefunds, rpcIdList);
-
+			
 			// 发送短信
 			this.tradeMessageService.sendSmsByAgreePay(orderRefunds, order.getPayWay());
 
@@ -783,7 +791,7 @@ public class TradeOrderRefundsServiceImpl
 	 *            卖家ID
 	 */
 	@Override
-	@Transactional(rollbackFor = Exception.class)
+	//@Transactional(rollbackFor = Exception.class)
 	public void updateAgreePayment(String id, String userId) throws Exception {
 
 		TradeOrderRefunds orderRefunds = this.findInfoById(id);
@@ -801,25 +809,41 @@ public class TradeOrderRefundsServiceImpl
 	 * 执行退款操作
 	 */
 	private void doRefundPay(TradeOrderRefunds orderRefunds) throws Exception {
-		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-		// Begin 1.0.Z 增加退款单操作记录 add by zengj
-		tradeOrderRefundsLogMapper
+		
+		Lock lock = redisLockRegistry.obtain(orderRefunds.getId());
+		if(lock.tryLock(10, TimeUnit.SECONDS)){
+			TradeOrderRefunds refunds = this.findById(orderRefunds.getId());
+			System.out.println(new Date()+"--------"+refunds.getRefundsStatus());
+			if (refunds.getRefundsStatus() != RefundsStatusEnum.WAIT_SELLER_REFUND) {
+				logger.warn("执行退款操作订单状态已经变更，操作失效");
+				lock.unlock();
+				throw new Exception("执行退款操作订单状态已经变更，操作失效");
+			}
+			try {
+				TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
+				// 判断非在线支付
+				if (PayWayEnum.PAY_ONLINE != order.getPayWay()) {
+					// 非线上支付
+					orderRefunds.setRefundMoneyTime(new Date());
+					orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
+					this.save(order, orderRefunds);
+				} else if (isOldWayBack(orderRefunds.getPaymentMethod())) {
+					// 原路返回
+					orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
+					this.updateWalletByThird(order, orderRefunds);
+				} else {
+					// 余额退款
+					this.updateWallet(order, orderRefunds);
+				}
+				// Begin 1.0.Z 增加退款单操作记录 add by zengj
+				tradeOrderRefundsLogMapper
 				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
 						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
-
-		// 判断非在线支付
-		if (PayWayEnum.PAY_ONLINE != order.getPayWay()) {
-			// 非线上支付
-			orderRefunds.setRefundMoneyTime(new Date());
-			orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
-			this.save(order, orderRefunds);
-		} else if (isOldWayBack(orderRefunds.getPaymentMethod())) {
-			// 原路返回
-			orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
-			this.updateWalletByThird(order, orderRefunds);
-		} else {
-			// 余额退款
-			this.updateWallet(order, orderRefunds);
+			} catch (Exception e) {
+				throw e;
+			}finally {
+				lock.unlock();
+			}
 		}
 
 	}
@@ -1875,7 +1899,14 @@ public class TradeOrderRefundsServiceImpl
 	// Begin V2.1.0 added by luosm 20170222
 	@Override
 	public List<TradeOrderRefunds> selectByOrderIds(List<String> orderIds) throws Exception {
-		return tradeOrderRefundsMapper.selectByOrderIds(orderIds);
+		List<TradeOrderRefunds> list = PageQueryUtils.pageQueryByIds(orderIds, new PageCallBack<TradeOrderRefunds>() {
+			@Override
+			public List<TradeOrderRefunds> callBackHandle(List<String> idList) {
+				return tradeOrderRefundsMapper.selectByOrderIds(idList);
+			}
+			
+		});
+		return list;
 	}
 	// End V2.1.0 added by luosm 20170222
 

@@ -1671,9 +1671,12 @@
 	<!-- 商家中心首页 根据状态统计退款单数量(张克能加) -->
 	<select id="selectRefundsCountForIndex" parameterType="java.lang.String"
 		resultType="java.lang.Integer">
-		SELECT count(1) FROM trade_order_refunds WHERE store_id =
-		#{storeId,jdbcType=VARCHAR} and disabled = 0 and order_resource
-		IN(0,1)
+		SELECT count(1) FROM trade_order_refunds 
+		WHERE store_id =#{storeId,jdbcType=VARCHAR} 
+		and type = 0
+		and disabled = 0 
+		and order_resource
+		IN(0,1,3,4)
 		and refunds_status in
 		<foreach collection="refundsStatusList" index="index" item="item"
 			open="(" separator="," close=")">

@@ -52,9 +52,9 @@
       coupons_collect_id, collect_time, collect_user_id, 
       valid_time, status, order_id, 
       room_id)
-    values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=BIT}, #{couponsId,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=TINYINT}, #{couponsId,jdbcType=VARCHAR}, 
       #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUserId,jdbcType=VARCHAR}, 
-      #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=BIT}, #{orderId,jdbcType=VARCHAR}, 
+      #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=TINYINT}, #{orderId,jdbcType=VARCHAR}, 
       #{roomId,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
@@ -99,7 +99,7 @@
         #{id,jdbcType=VARCHAR},
       </if>
       <if test="collectType != null" >
-        #{collectType,jdbcType=BIT},
+        #{collectType,jdbcType=TINYINT},
       </if>
       <if test="couponsId != null" >
         #{couponsId,jdbcType=VARCHAR},
@@ -117,7 +117,7 @@
         #{validTime,jdbcType=TIMESTAMP},
       </if>
       <if test="status != null" >
-        #{status,jdbcType=BIT},
+        #{status,jdbcType=TINYINT},
       </if>
       <if test="orderId != null" >
         #{orderId,jdbcType=VARCHAR},
@@ -134,7 +134,7 @@
     update activity_coupons_record
     <set >
       <if test="collectType != null" >
-        collect_type = #{collectType,jdbcType=BIT},
+        collect_type = #{collectType,jdbcType=TINYINT},
       </if>
       <if test="couponsId != null" >
         coupons_id = #{couponsId,jdbcType=VARCHAR},
@@ -152,7 +152,7 @@
         valid_time = #{validTime,jdbcType=TIMESTAMP},
       </if>
       <if test="status != null" >
-        status = #{status,jdbcType=BIT},
+        status = #{status,jdbcType=TINYINT},
       </if>
       <if test="orderId != null" >
         order_id = #{orderId,jdbcType=VARCHAR},
@@ -165,13 +165,13 @@
   </update>
   <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
     update activity_coupons_record
-    set collect_type = #{collectType,jdbcType=BIT},
+    set collect_type = #{collectType,jdbcType=TINYINT},
       coupons_id = #{couponsId,jdbcType=VARCHAR},
       coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR},
       collect_time = #{collectTime,jdbcType=TIMESTAMP},
       collect_user_id = #{collectUserId,jdbcType=VARCHAR},
       valid_time = #{validTime,jdbcType=TIMESTAMP},
-      status = #{status,jdbcType=BIT},
+      status = #{status,jdbcType=TINYINT},
       order_id = #{orderId,jdbcType=VARCHAR},
       room_id = #{roomId,jdbcType=VARCHAR}
     where id = #{id,jdbcType=VARCHAR}
@@ -577,13 +577,13 @@
          collect_user_id, valid_time, status, order_id, room_id) values
      <foreach collection="list" item="item" index="index" separator="," >
        (#{item.id,jdbcType=VARCHAR},
-        #{item.collectType,jdbcType=BIT},
+        #{item.collectType,jdbcType=TINYINT},
         #{item.couponsId,jdbcType=VARCHAR},
         #{item.couponsCollectId,jdbcType=VARCHAR},
         #{item.collectTime,jdbcType=TIMESTAMP},
         #{item.collectUserId,jdbcType=VARCHAR},
         #{item.validTime,jdbcType=TIMESTAMP},
-        #{item.status,jdbcType=BIT},
+        #{item.status,jdbcType=TINYINT},
         #{item.orderId,jdbcType=VARCHAR},
         #{item.roomId,jdbcType=VARCHAR}
         )
@@ -596,13 +596,13 @@
          collect_user_id, valid_time, status, order_id, room_id) values
      <foreach collection="list" item="item" index="index" separator="," >
        (#{item.id,jdbcType=VARCHAR},
-        #{item.collectType,jdbcType=BIT},
+        #{item.collectType,jdbcType=TINYINT},
         #{item.couponsId,jdbcType=VARCHAR},
         #{item.couponsCollectId,jdbcType=VARCHAR},
         #{item.collectTime,jdbcType=TIMESTAMP},
         #{item.collectUserId,jdbcType=VARCHAR},
         #{item.validTime,jdbcType=TIMESTAMP},
-        #{item.status,jdbcType=BIT},
+        #{item.status,jdbcType=TINYINT},
         #{item.orderId,jdbcType=VARCHAR},
         #{item.roomId,jdbcType=VARCHAR}
         )
@@ -851,6 +851,26 @@
 			<if test="null != userId and ''!= userId">
 				AND r.collect_user_id = #{userId,jdbcType=VARCHAR} 
 			</if>
+   </select>
+   
+   <!-- 根据代金劵活动新人限制查询领取未使用的代金劵数量    -->
+  <select id="findcountByNewType" resultType="int" >
+     	SELECT 
+		  count(1)
+		FROM
+		  activity_coupons_record r 
+		  inner JOIN activity_collect_coupons c 
+		    	ON r.coupons_collect_id = c.id 
+		WHERE c.disabled = 0  
+		  <if test="userId != null and userId != ''">
+		  		AND r.collect_user_id = #{userId,jdbcType=VARCHAR}
+		  </if>
+		  <if test="status != null ">
+		  		AND r.status = #{status,jdbcType=TINYINT}
+		  </if>
+		  <if test="getUserType != null">
+		  		AND c.get_user_type = #{getUserType,jdbcType=TINYINT}
+		  </if>
    </select>
   
 </mapper> 

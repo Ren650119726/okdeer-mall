@@ -11,7 +11,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreAssembleDto;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
@@ -150,6 +150,11 @@ public class StoreSkuParserBo {
 	 */
 	private BigDecimal totalAmountHaveFavour;
 	
+	/**
+	 * 商品所属店铺 
+	 */
+	private Set<String> storeIdSet = Sets.newHashSet();
+	
 	public StoreSkuParserBo(List<GoodsStoreSku> currentSkuList) {
 		this.currentSkuList = currentSkuList;
 	}
@@ -162,6 +167,7 @@ public class StoreSkuParserBo {
 	public void parseCurrentSku() {
 		for (GoodsStoreSku storeSku : this.currentSkuList) {
 			categoryIdSet.add(storeSku.getSpuCategoryId());
+			storeIdSet.add(storeSku.getStoreId());
 
 			CurrentStoreSkuBo currentSku = BeanMapper.map(storeSku, CurrentStoreSkuBo.class);
 			currentSku.setSpuType(storeSku.getSpuTypeEnum());
@@ -309,6 +315,7 @@ public class StoreSkuParserBo {
 			skuBo.setQuantity(item.getQuantity());
 			skuBo.setSkuActQuantity(item.getSkuActQuantity());
 			skuBo.setAppActPrice(item.getSkuActPrice());
+			item.setSpuCategoryId(skuBo.getSpuCategoryId());
 
 			this.totalItemAmount = totalItemAmount
 					.add(skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getQuantity())));
@@ -609,30 +616,11 @@ public class StoreSkuParserBo {
 	
 	// Begin V2.3 added by maojj 2017-04-21
 	/**
-	 * @Description: 获取下单之后的商品项列表
+	 * @Description: 获取拥有优惠的商品列表
 	 * @return   
 	 * @author maojj
-	 * @date 2017年4月21日
+	 * @date 2017年4月26日
 	 */
-	public List<PlaceOrderItemDto> getGoodsList(){
-		List<PlaceOrderItemDto> goodsList = Lists.newArrayList();
-		PlaceOrderItemDto goodsItem = null;
-		for(CurrentStoreSkuBo storeSkuBo : this.currentSkuMap.values()){
-			goodsItem = new PlaceOrderItemDto();
-			goodsItem.setStoreSkuId(storeSkuBo.getId());
-			goodsItem.setSpuCategoryId(storeSkuBo.getSpuCategoryId());
-			goodsItem.setSkuActType(storeSkuBo.getActivityType());
-			goodsItem.setQuantity(storeSkuBo.getQuantity());
-			goodsItem.setSkuActQuantity(storeSkuBo.getSkuActQuantity());
-			goodsItem.setSkuPrice(storeSkuBo.getOfflinePrice());
-			goodsItem.setSkuActPrice(storeSkuBo.getActPrice());
-			goodsItem.setTotalAmount(storeSkuBo.getTotalAmount());
-			goodsList.add(goodsItem);
-		}
-		return goodsList;
-	}
-
-	
 	public Map<String, CurrentStoreSkuBo> getHaveFavourGoodsMap() {
 		return haveFavourGoodsMap == null ? this.currentSkuMap : haveFavourGoodsMap;
 	}
@@ -648,5 +636,10 @@ public class StoreSkuParserBo {
 	
 	public void setTotalAmountHaveFavour(BigDecimal totalAmountHaveFavour) {
 		this.totalAmountHaveFavour = totalAmountHaveFavour;
+	}
+
+	
+	public Set<String> getStoreIdSet() {
+		return storeIdSet;
 	}
 }

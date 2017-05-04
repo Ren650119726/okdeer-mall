@@ -7,8 +7,10 @@ import javax.annotation.Resource;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.service.TradeOrderLogisticsServiceApi;
+import com.okdeer.mall.order.utils.PageQueryUtils;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.mapper.TradeOrderLogisticsMapper;
+import com.okdeer.mall.order.service.PageCallBack;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 
 /**
@@ -59,8 +61,13 @@ class TradeOrderLogisticsServiceImpl implements TradeOrderLogisticsService, Trad
 	// Begin V2.1.0 added by luosm 20170217
 	@Override
 	public List<TradeOrderLogistics> selectByOrderIds(List<String> orderIds) throws ServiceException {
-		
-		return tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
+		List<TradeOrderLogistics> list = PageQueryUtils.pageQueryByIds(orderIds, new PageCallBack<TradeOrderLogistics>() {
+			@Override
+			public List<TradeOrderLogistics> callBackHandle(List<String> indexList) {
+				return tradeOrderLogisticsMapper.selectByOrderIds(indexList);
+			}
+		});
+		return list;
 	}
 
 	@Override
@@ -84,6 +91,5 @@ class TradeOrderLogisticsServiceImpl implements TradeOrderLogisticsService, Trad
 	public void updateByOrderId(TradeOrderLogistics tradeOrderLogistics) {
 		tradeOrderLogisticsMapper.updateByOrderId(tradeOrderLogistics);
 	}
-
 	// End V2.1.0 added by luosm 20170217
 }

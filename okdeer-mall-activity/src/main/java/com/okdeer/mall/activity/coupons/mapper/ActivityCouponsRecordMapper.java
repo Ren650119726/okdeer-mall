@@ -1,5 +1,6 @@
 package com.okdeer.mall.activity.coupons.mapper;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,8 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
+import com.okdeer.mall.common.enums.GetUserType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.RechargeCouponVo;
@@ -308,5 +311,17 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @date 2016年12月31日
 	 */
 	public int findCouponsCountByUser(@Param("useUserType")UseUserType useUserType,@Param("userId")String userId);
+	
+	
+	/**
+	 * 根据代金劵活动新人限制查询领取未使用的代金劵数量  
+	 * tuzhiding
+	 * @param userId 用户信息
+	 * @param getUserType  代金劵活动限领类型
+	 * @param 
+	 * @return
+	 */
+	Integer findcountByNewType(@Param("getUserType")GetUserType getUserType,@Param("userId")String userId,
+													@Param("status")ActivityCouponsRecordStatusEnum status);
 	
 }

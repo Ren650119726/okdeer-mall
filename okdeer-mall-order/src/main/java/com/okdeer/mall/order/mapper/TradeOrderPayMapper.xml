@@ -9,9 +9,10 @@
     <result column="pay_time" property="payTime" jdbcType="TIMESTAMP" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="returns" property="returns" jdbcType="VARCHAR" />
+    <result column="pay_account_id" property="payAccountId" jdbcType="VARCHAR" />
   </resultMap>
   <sql id="Base_Column_List" >
-    id, order_id, pay_type, pay_amount, pay_time, create_time,returns
+    id, order_id, pay_type, pay_amount, pay_time, create_time,returns,pay_account_id
   </sql>
   <sql id="condition" >
     <if test="null!=params" >
@@ -38,10 +39,11 @@
   </delete>
   <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderPay" >
     insert into trade_order_pay (id, order_id, pay_type, 
-      pay_amount, pay_time, create_time,returns
+      pay_amount, pay_time, create_time,returns,pay_account_id
       )
     values (#{id,jdbcType=VARCHAR}, #{orderId,jdbcType=VARCHAR}, #{payType,jdbcType=BIT}, 
-      #{payAmount,jdbcType=DECIMAL}, #{payTime,jdbcType=TIMESTAMP}, #{createTime,jdbcType=TIMESTAMP},#{returns,jdbcType=VARCHAR}
+      #{payAmount,jdbcType=DECIMAL}, #{payTime,jdbcType=TIMESTAMP}, #{createTime,jdbcType=TIMESTAMP},
+      #{returns,jdbcType=VARCHAR},#{payAccountId,jdbcType=VARCHAR}
       )
   </insert>
   <insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderPay" >
@@ -68,6 +70,9 @@
        <if test="returns != null" >
         returns,
       </if>
+      <if test="payAccountId != null" >
+        pay_account_id,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -90,6 +95,9 @@
       </if>
       <if test="returns != null" >
         #{returns,jdbcType=TIMESTAMP},
+      </if>
+       <if test="payAccountId != null" >
+        #{payAccountId,jdbcType=TIMESTAMP},
       </if>
     </trim>
   </insert>
@@ -116,6 +124,9 @@
       <if test="createTime != null" >
         create_time,
       </if>
+       <if test="payAccountId != null" >
+        pay_account_id,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -135,6 +146,9 @@
       </if>
       <if test="createTime != null" >
         #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="payAccountId != null" >
+        #{payAccountId,jdbcType=TIMESTAMP},
       </if>
     </trim>
   </insert>

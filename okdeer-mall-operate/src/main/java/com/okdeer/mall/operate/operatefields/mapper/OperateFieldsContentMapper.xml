@@ -172,8 +172,8 @@
 	</delete>
 	
 	<select id="getGoodsOfStoreActivityFields" resultMap="fieldContentMap">
-		select 
-			s.store_id, si.logo_url, si.store_name, sb.type as branchesType,
+			select 
+			s.store_id, si.logo_url, si.store_name, sb.type as branchesType,s.id,
 			CASE si.type 
 			WHEN 2 THEN (
 					CASE sb.type 
@@ -182,20 +182,24 @@
 					WHEN 5 THEN '合作店'
 					ELSE '' END
 			) ELSE '合作商家' END AS branchesName,
-			gs.id as goodsId, gs.id as pointContent,g.sale_stock,g.sale_price as lowPrice,
+			gs.id as goodsId, gs.id as pointContent,g.sale_stock,
 			gs.`name`,gs.alias,gs.tag_type,gs.type as sku_type,p.url as newUrl, 0 pointType,
-			gs.online_price, gs.market_price, gs.properties_indb,gs.trade_max,gs.update_time,
+			gs.properties_indb,gs.update_time,
 			case s.type when 7  THEN  1 else 0 end as isLowPrice,
 			case s.type when 5 THEN 1 else 0 end as isPrivliege,
 			case s.type when 7 THEN  g.trade_max else '' end as lowPriceUpper,
-			case s.type when 5 THEN g.trade_max else '' end as limitNum
+			case s.type when 5 THEN g.trade_max when 7 THEN gs.trade_max else '' end as trade_max,
+			g.sale_price as lowPrice, gs.market_price, s.`limit` as limitNum,
+			case s.type when 5 THEN g.sale_price else case gs.type when 5 THEN gs.market_price else gs.online_price end	end as online_price
 		from activity_sale s
 		left join store_info si on s.store_id=si.id
 		left join store_branches sb on si.id=sb.id
 		left join activity_sale_goods g on s.id=g.sale_id
 		left join goods_store_sku gs on g.store_sku_id=gs.id
 		left join goods_store_sku_picture p on p.store_sku_id=gs.id and p.type = 1
-		where s.disabled = 0 and s.status = 1 and gs.disabled=0
+		where s.disabled = 0 and s.status = 1 
+			and gs.disabled=0 and gs.online = 1
+			and gs.status = 1 and gs.violation = 0
 		<if test="storeIds != null">
 			and s.store_id IN 
 			<foreach collection="storeIds" index="index" item="item" open="(" close=")" separator=",">
@@ -210,36 +214,24 @@
 		</if>
 		<!-- 0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高  -->
 		<if test="sortType == 0">
-			<if test="sort != null">
-				and g.sale_price &gt;= #{sort}
-			</if>
-			order by g.sale_price DESC
+			order by g.sale_price DESC, gs.id DESC
 		</if>
 		<if test="sortType == 1">
-			<if test="sort != null">
-				and g.sort &gt;= #{sort}
-			</if>
-			order by g.sort DESC
+			order by g.sort DESC, gs.id DESC
 		</if>
 		<if test="sortType == 2">
-			<if test="sort != null">
-				and g.sale_price &gt;= #{sort}
-			</if>
-			order by g.sale_price ASC
+			order by g.sale_price ASC, gs.id ASC
 		</if>
 		<if test="sortType == 3">
-			<if test="sort != null">
-				and g.sort &gt;= #{sort}
-			</if>
-			order by g.sort ASC
+			order by g.sort ASC, gs.id ASC
 		</if>
-		<if test="template != null">
-			limit #{template} 
+		<if test="sort != null and template != null">
+			limit #{sort}, #{template} 
 		</if>
 	</select>
 	
 	<select id="getSingleGoodsOfOperateField" resultMap="fieldContentMap">	
-		select gs.store_id, si.logo_url, si.store_name, sb.type as branchesType,
+			select gs.store_id, si.logo_url, si.store_name, sb.type as branchesType,
 			CASE si.type 
 			WHEN 2 THEN (
 					CASE sb.type 
@@ -248,26 +240,31 @@
 					WHEN 5 THEN '合作店'
 					ELSE '' END
 			) ELSE '合作商家' END AS branchesName,
-			gs.id as goodsId, gs.id as pointContent,g.sale_stock,g.sale_price as lowPrice,
+			gs.id as goodsId, gs.id as pointContent,g.sale_stock,
 			gs.`name`,gs.alias,gs.tag_type,gs.type as sku_type,p.url as newUrl, 0 pointType,
-			gs.online_price, gs.market_price, gs.properties_indb,gs.trade_max,gs.update_time,
-		    case gs.activity_type when 5 THEN  1 else 0 end as isLowPrice,
+			gs.properties_indb,gs.update_time,
+		  	case gs.activity_type when 5 THEN  1 else 0 end as isLowPrice,
 			case gs.activity_type when 2 THEN 1 else 0 end as isPrivliege,		
-		    case gs.activity_type when 5 THEN  g.trade_max else '' end as lowPriceUpper,
-			case gs.activity_type when 2 THEN g.trade_max else '' end as limitNum
+		  	case gs.activity_type when 5 THEN  g.trade_max else '' end as lowPriceUpper,
+			case gs.activity_type when 2 THEN g.trade_max when 5 then gs.trade_max else gs.trade_max end as trade_max,
+			g.sale_price as lowPrice, gs.market_price,s.`limit` as limitNum,
+			case s.type when 5 THEN g.sale_price else case gs.type when 5 THEN gs.market_price else gs.online_price end	end as online_price
 		from goods_store_sku gs 
 		left join activity_sale_goods g on gs.id=g.store_sku_id and g.sale_id = gs.activity_id
+		left join activity_sale s on g.sale_id = s.id
 		left join store_info si on gs.store_id = si.id
 		left join store_branches sb on si.id=sb.id
 		left join goods_store_sku_picture p on p.store_sku_id=gs.id and p.type = 1 
 		where gs.store_id = #{storeId}
 			and gs.id = #{goodsId}
 			and gs.disabled=0 
+			and gs.online = 1
+			and gs.status = 1 
+			and gs.violation = 0
 	</select>
 	
 	<select id="getGoodsOfCategoryField" resultMap="fieldContentMap">
-		select 
-		  gs.id as goodsId, gs.store_id, si.logo_url, si.store_name, sb.type as branchesType,
+			select gs.store_id, si.logo_url, si.store_name, sb.type as branchesType,
 			CASE si.type 
 			WHEN 2 THEN (
 					CASE sb.type 
@@ -275,22 +272,26 @@
 					WHEN 4 THEN '加盟店'
 					WHEN 5 THEN '合作店'
 					ELSE '' END
-			) ELSE '合作商家' END AS branchesName
-			, gs.id as pointContent,g.sale_stock,g.sale_price as lowPrice,
+			) ELSE '合作商家' END AS branchesName,
+			gs.id as goodsId, gs.id as pointContent,g.sale_stock,
 			gs.`name`,gs.alias,gs.tag_type,gs.type as sku_type,p.url as newUrl, 0 pointType,
-			gs.online_price, gs.market_price, gs.properties_indb,gs.trade_max,gs.update_time,
-			case gs.activity_type when 5 THEN  1 else 0 end as isLowPrice,
+			gs.properties_indb,gs.update_time,
+		  	case gs.activity_type when 5 THEN  1 else 0 end as isLowPrice,
 			case gs.activity_type when 2 THEN 1 else 0 end as isPrivliege,		
-			case gs.activity_type when 5 THEN  g.trade_max else '' end as lowPriceUpper,
-			case gs.activity_type when 2 THEN g.trade_max else '' end as limitNum
+		  	case gs.activity_type when 5 THEN  g.trade_max else '' end as lowPriceUpper,
+			case gs.activity_type when 2 THEN g.trade_max when 5 then gs.trade_max else gs.trade_max end as trade_max,
+			g.sale_price as lowPrice, gs.market_price,s.`limit` as limitNum,
+			case s.type when 5 THEN g.sale_price else case gs.type when 5 THEN gs.market_price else gs.online_price end	end as online_price
 		from goods_store_sku gs
 		left join activity_sale_goods g on gs.id=g.store_sku_id and g.sale_id = gs.activity_id 
+		left join activity_sale s on g.sale_id = s.id
 		left join goods_store_spu gss on gss.id=gs.store_spu_id
 		left join goods_spu_category gsc on gss.spu_category_id=gsc.id
 		left join goods_store_sku_picture p on p.store_sku_id=gs.id and p.type = 1 
 		left join store_info si on gs.store_id = si.id
 		left join store_branches sb on si.id=sb.id
-		where gs.disabled=0 and gs.store_id = #{storeId}
+		where gs.disabled=0 and gs.store_id = #{storeId} 
+			and gs.online = 1 and gs.status = 1 and gs.violation = 0
 		<choose>  
             <when test="categoryIds != null and categoryIds.size > 0 ">  
                 and gsc.id in
@@ -304,36 +305,24 @@
         </choose>
 		<!-- 0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高  -->
 		<if test="sortType == 0">
-			<if test="sort != null">
-				and gs.online_price &gt;= #{sort}
-			</if>
-			order by gs.online_price DESC
+			order by gs.online_price DESC, gs.id DESC
 		</if>
 		<if test="sortType == 1">
-			<if test="sort != null">
-				and gs.sort &gt;= #{sort}
-			</if>
-			order by gs.sort DESC
+			order by gs.sort DESC, gs.id DESC
 		</if>
 		<if test="sortType == 2">
-			<if test="sort != null">
-				and gs.online_price &gt;= #{sort}
-			</if>
-			order by gs.online_price ASC
+			order by gs.online_price ASC, gs.id ASC
 		</if>
 		<if test="sortType == 3">
-			<if test="sort != null">
-				and gs.sort &gt;= #{sort}
-			</if>
-			order by gs.sort ASC
+			order by gs.sort ASC, gs.id ASC
 		</if>
-		<if test="template != null">
-			limit #{template} 
+		<if test="sort != null and template != null">
+			limit #{sort}, #{template} 
 		</if>
 	</select>
 	
 	<select id="getGoodsOfStoreLabelField" resultMap="fieldContentMap">
-		select gs.store_id, si.logo_url, si.store_name, sb.type as branchesType,
+			select gs.store_id, si.logo_url, si.store_name, sb.type as branchesType,
 			CASE si.type 
 			WHEN 2 THEN (
 					CASE sb.type 
@@ -342,17 +331,20 @@
 					WHEN 5 THEN '合作店'
 					ELSE '' END
 			) ELSE '合作商家' END AS branchesName,
-			gs.id as goodsId, gs.id as pointContent,g.sale_stock,g.sale_price as lowPrice,
-			gs.`name`,gs.alias,gs.tag_type,gs.type as sku_type,0 pointType, p.url as newUrl, 
-			gs.online_price, gs.market_price, gs.properties_indb,gs.trade_max,gs.update_time,
-		    case gs.activity_type when 5 THEN  1 else 0 end as isLowPrice,
+			gs.id as goodsId, gs.id as pointContent,g.sale_stock,
+			gs.`name`,gs.alias,gs.tag_type,gs.type as sku_type,p.url as newUrl, 0 pointType,
+			gs.properties_indb,gs.update_time,
+		  	case gs.activity_type when 5 THEN  1 else 0 end as isLowPrice,
 			case gs.activity_type when 2 THEN 1 else 0 end as isPrivliege,		
-		    case gs.activity_type when 5 THEN  g.trade_max else '' end as lowPriceUpper,
-			case gs.activity_type when 2 THEN g.trade_max else '' end as limitNum
+		  	case gs.activity_type when 5 THEN  g.trade_max else '' end as lowPriceUpper,
+			case gs.activity_type when 2 THEN g.trade_max when 5 then gs.trade_max else gs.trade_max end as trade_max,
+			g.sale_price as lowPrice, gs.market_price,s.`limit` as limitNum,
+			case s.type when 5 THEN g.sale_price else case gs.type when 5 THEN gs.market_price else gs.online_price end	end as online_price
 		from goods_store_label sl 
 		left join goods_store_label_goods lg on sl.id=lg.label_id
 		left join goods_store_sku gs on lg.goods_store_sku_id=gs.id
 		left join activity_sale_goods g on gs.id=g.store_sku_id and g.sale_id = gs.activity_id
+		left join activity_sale s on g.sale_id = s.id
 		left join store_info si on gs.store_id = si.id
 		left join store_branches sb on si.id=sb.id
 		left join goods_store_sku_picture p on p.store_sku_id=gs.id and p.type = 1
@@ -360,32 +352,23 @@
 		and sl.store_id= #{storeId}
 		and sl.id = #{labelId}
 		and gs.disabled=0
+		and gs.online = 1
+		and gs.status = 1 
+		and gs.violation = 0
 		<if test="sortType == 0">
-			<if test="sort != null">
-				and gs.online_price &gt;= #{sort}
-			</if>
-			order by gs.online_price DESC
+			order by gs.online_price DESC, gs.id DESC
 		</if>
 		<if test="sortType == 1">
-			<if test="sort != null">
-				and gs.sort &gt;= #{sort}
-			</if>
-			order by gs.sort DESC
+			order by gs.sort DESC, gs.id DESC
 		</if>
 		<if test="sortType == 2">
-			<if test="sort != null">
-				and gs.online_price &gt;= #{sort}
-			</if>
-			order by gs.online_price ASC
+			order by gs.online_price ASC, gs.id ASC
 		</if>
 		<if test="sortType == 3">
-			<if test="sort != null">
-				and gs.sort &gt;= #{sort}
-			</if>
-			order by gs.sort ASC
+			order by gs.sort ASC, gs.id ASC
 		</if>
 		<if test="template != null">
-			limit #{template} 
+			limit #{sort}, #{template} 
 		</if>
 	</select>
 
@@ -423,7 +406,9 @@
 					bb.business_type,
 					bb.business_id,
 					bb.sort_type,
-					bb.sort
+					bb.sort,
+					aa.name,
+					aa.create_time
 				FROM
 					column_operate_fields aa
 				INNER JOIN column_operate_fields_content bb ON aa.id = bb.field_id
@@ -433,15 +418,9 @@
 			) aa
 		INNER JOIN column_operate_fields bb ON (
 			bb.type = 2
-			AND NOT EXISTS (
-				SELECT
-					id
-				FROM
-					column_operate_fields_content
-				WHERE
-					field_id = bb.id
-			)
-		) WHERE bb.business_id = #{storeId,jdbcType=VARCHAR} GROUP BY bb.id
+			AND bb.name = aa.name
+			AND aa.create_time = bb.create_time
+		) WHERE bb.business_id = #{storeId,jdbcType=VARCHAR}
 	</insert>
 	<!-- add by mengsj end 初始化店铺运营栏位内容 -->
 	

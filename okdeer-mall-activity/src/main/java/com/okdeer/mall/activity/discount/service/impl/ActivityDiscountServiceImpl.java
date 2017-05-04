@@ -22,6 +22,7 @@ import com.okdeer.archive.goods.dto.StoreSkuParamDto;
 import com.okdeer.archive.goods.store.dto.StoreSkuDto;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
@@ -53,6 +54,7 @@ import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
+import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.order.vo.FullSubtract;
 import com.okdeer.mall.system.utils.ConvertUtil;
@@ -131,6 +133,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		if(actInfo.getType() != ActivityDiscountType.PIN_MONEY){
 			actInfo.setGrantType(0);
 		}
+		// 活动限制首单用户，默认用户参与总次数为1.
+		if(actInfo.getLimitUser() == UseUserType.ONlY_NEW_USER){
+			actInfo.setLimitTotalFreq(1);
+		}
 		// 修改活动信息
 		activityDiscountMapper.update(actInfo);
 		// 删除活动下的优惠条件
@@ -166,6 +172,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		if(actInfo.getType() != ActivityDiscountType.PIN_MONEY){
 			actInfo.setGrantType(0);
 		}
+		// 活动限制首单用户，默认用户参与总次数为1.
+		if(actInfo.getLimitUser() == UseUserType.ONlY_NEW_USER){
+			actInfo.setLimitTotalFreq(1);
+		}
 		// 优惠条件列表
 		List<ActivityDiscountCondition> conditionList = parseConditionList(actInfoDto);
 		// 限制条件列表
@@ -194,6 +204,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		if(StringUtils.isNotEmpty(actInfo.getId())){
 			paramBo.setExcludedId(actInfo.getId());
 		}
+		paramBo.setLimitRange(actInfo.getLimitRange());
 		if(StringUtils.isNotEmpty(actInfoDto.getLimitRangeIds())){
 			String[] tempArr = actInfoDto.getLimitRangeIds().split(",");
 			paramBo.setLimitRangeIds(Arrays.asList(tempArr));
@@ -476,8 +487,16 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 
 	@Override
 	public List<ActivityInfoDto> findByStore(ActivityParamDto paramDto) throws Exception {
-		List<String> activityIds = activityDiscountMapper.findByStore(paramDto);
 		List<ActivityInfoDto> actInfoList = Lists.newArrayList();
+		if(paramDto.getStoreType() == null){
+			StoreInfo storeInfo = storeInfoServiceApi.findById(paramDto.getStoreId());
+			paramDto.setStoreType(storeInfo.getType());
+		}
+		if(paramDto.getStoreType() != StoreTypeEnum.CLOUD_STORE){
+			return actInfoList;
+		}
+		List<String> activityIds = activityDiscountMapper.findByStore(paramDto);
+		
 		ActivityInfoDto actInfo = null;
 		for(String activityId : activityIds){
 			actInfo = this.findInfoById(activityId,false);

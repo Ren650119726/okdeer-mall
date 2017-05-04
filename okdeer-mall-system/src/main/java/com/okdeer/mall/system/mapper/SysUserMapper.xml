@@ -365,6 +365,9 @@
     where member.store_id=#{storeId,jdbcType=VARCHAR}
     AND su.disabled = 0
     AND member.disabled = 0
+  	<!-- Begin added by zhaoqc 过滤掉多店铺管理账号 -->
+  	AND member.is_multi_account = 0
+  	<!-- End added by zhaoqc 2017-4-24 -->
   </select>
 
   <!-- begin 新增根据id集合获取信息 add by wangf01 -->

@@ -28,17 +28,6 @@ import com.okdeer.mall.order.vo.SendMsgParamVo;
  */
 public interface TradeMessageService {
 
-	/**
-	 * 买家申请退货推送消息
-	 */
-	@Deprecated
-	void sendMessageWithRefund(TradeOrderRefunds orderRefunds) throws Exception;
-
-	/**
-	 * 买家发货消息推送
-	 */
-	@Deprecated
-	void sendMessageWithShipper(TradeOrderRefunds orderRefunds) throws Exception;
 
 	/**
 	 * 订单消息推送 --POS</p>

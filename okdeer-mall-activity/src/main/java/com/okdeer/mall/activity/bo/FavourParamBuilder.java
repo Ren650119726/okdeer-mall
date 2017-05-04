@@ -105,14 +105,15 @@ public class FavourParamBuilder {
 		paramBO.setSpuCategoryIds(reqDto.getContext().getSpuCategoryIds());
 		
 		// Begin V2.3 added by maojj 2017-04-21
+		paramBO.setChannel(reqDto.getData().getOrderResource());
 		List<PlaceOrderItemDto> goodsList = Lists.newArrayList();
 		PlaceOrderItemDto goods = null;
 		for(TradeOrderGoodsItem item : req.getList()){
 			goods = new PlaceOrderItemDto();
 			goods.setStoreSkuId(item.getSkuId());
 			goods.setSpuCategoryId(item.getSpuCategoryId());
-			goods.setTotalAmount(item.getTotalAmount());
-			
+			goods.setSkuPrice(item.getSkuPrice());
+			goods.setQuantity(item.getSkuNum());
 			goodsList.add(goods);
 		}
 		paramBO.setGoodsList(goodsList);
@@ -158,7 +159,7 @@ public class FavourParamBuilder {
 		paramBO.setClientType(EnumAdapter.convert(req.getOrderResource()));
 		paramBO.setSpuCategoryIds((Set<String>)req.getContext().get("spuCategoryIds"));
 		List<PlaceOrderItemDto> goodsList = Lists.newArrayList();
-		
+		paramBO.setChannel(req.getOrderResource());
 		return paramBO;
 	}
 	

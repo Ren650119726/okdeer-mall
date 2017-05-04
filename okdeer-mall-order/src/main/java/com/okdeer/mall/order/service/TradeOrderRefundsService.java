@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
@@ -387,4 +389,6 @@ public interface TradeOrderRefundsService {
 	 * @date 2017年1月16日
 	 */
 	void refundSuccess(TradeOrderRefunds orderRefunds) throws Exception;
+	
+	List<TradeOrderRefunds> selectByOrderIds(List<String> orderIds) throws Exception;
 }

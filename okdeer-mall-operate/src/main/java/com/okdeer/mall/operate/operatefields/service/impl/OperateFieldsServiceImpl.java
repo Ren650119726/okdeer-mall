@@ -6,14 +6,13 @@ import static com.okdeer.mall.operate.contants.OperateFieldContants.STORE_OPERAT
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +24,6 @@ import com.okdeer.archive.goods.base.service.GoodsSpuCategoryServiceApi;
 import com.okdeer.archive.goods.menu.GoodsStoreMenuApi;
 import com.okdeer.archive.store.dto.GoodsStoreMenuDto;
 import com.okdeer.archive.store.dto.GoodsStoreMenuParamDto;
-import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.Enabled;
@@ -39,10 +37,12 @@ import com.okdeer.mall.operate.dto.OperateFieldContentDto;
 import com.okdeer.mall.operate.dto.OperateFieldDto;
 import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
 import com.okdeer.mall.operate.dto.StoreActivitGoodsQueryDto;
+import com.okdeer.mall.operate.entity.ColumnNativeSubject;
 import com.okdeer.mall.operate.enums.OperateFieldsAppPointType;
 import com.okdeer.mall.operate.enums.OperateFieldsBusinessType;
 import com.okdeer.mall.operate.enums.OperateFieldsContentType;
 import com.okdeer.mall.operate.enums.OperateFieldsType;
+import com.okdeer.mall.operate.mapper.ColumnNativeSubjectMapper;
 import com.okdeer.mall.operate.operatefields.bo.OperateFieldsBo;
 import com.okdeer.mall.operate.operatefields.entity.OperateFields;
 import com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent;
@@ -64,6 +64,8 @@ import com.okdeer.mall.operate.operatefields.service.OperateFieldsService;
 @Service
 public class OperateFieldsServiceImpl extends BaseServiceImpl implements OperateFieldsService {
 
+    private static final Logger logger = LoggerFactory.getLogger(OperateFieldsServiceImpl.class);
+    
 	private static final int DEFAULT_SORT = 10010;
 
 	@Autowired
@@ -92,6 +94,9 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
     
     @Reference(version="1.0.0", check=false)
     private GoodsNavigateCategoryServiceApi navigateCategoryServiceApi;
+    
+    @Autowired
+    private ColumnNativeSubjectMapper nativeSubjectMapper;
     
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -258,7 +263,12 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                 if(type == OperateFieldsContentType.SINGLE_GOODS) {
                     //单品选择
                     contentDto = this.getSingleGoodsOfOperateField(content.getBusinessId(), storeId);
-                    contentDtos.add(contentDto);
+                    if(contentDto != null) {
+                        contentDtos.add(contentDto);
+                    } else {
+                        contentDtos = null;
+                        break;
+                    }
                 } else if(type == OperateFieldsContentType.STORE_ACTIVITY) {
                     //店铺活动
                     contentDtos = getGoodsOfStoreActivityField(storeId, content.getBusinessType().getCode(),
@@ -269,7 +279,8 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                     if(businessType == OperateFieldsBusinessType.STORE_MENU) {
                         //店铺菜单
                         GoodsStoreMenuParamDto paramDto = new GoodsStoreMenuParamDto();
-                        paramDto.setId(content.getBusinessId());
+                        paramDto.setPkId(content.getBusinessId());
+                        paramDto.setStoreId(storeId);
                         List<GoodsStoreMenuDto> menuDtos = this.goodsStoreMenuApi.findByParam(paramDto);
                         if(CollectionUtils.isNotEmpty(menuDtos)) {
                            //businessId为店铺菜单
@@ -309,7 +320,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                 }
             }
             
-            if(contentDtos != null) {
+            if(CollectionUtils.isNotEmpty(contentDtos)) {
                 OperateFieldDto operateField = new OperateFieldDto();
                 operateField.setFieldInfo(fieldInfo);
                 operateField.setContentList(contentDtos);
@@ -438,7 +449,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         FieldGoodsQueryDto queryDto = new FieldGoodsQueryDto();
         queryDto.setLabelId(labelId);
         queryDto.setTemplate(template + 1);
-        queryDto.setSort(sort);
+        queryDto.setSort(sort - 1);
         queryDto.setSortType(sortType);
         queryDto.setStoreId(storeId);
      
@@ -465,7 +476,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         
         FieldGoodsQueryDto queryDto = new FieldGoodsQueryDto();
         queryDto.setCategoryIds(categoryIds);
-        queryDto.setSort(sort);
+        queryDto.setSort(sort - 1);
         queryDto.setTemplate(template + 1);
         queryDto.setSortType(sortType);
         queryDto.setStoreId(storeId);
@@ -488,7 +499,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         
         FieldGoodsQueryDto queryDto = new FieldGoodsQueryDto();
         queryDto.setCategoryIds(categoryIds);
-        queryDto.setSort(sort);
+        queryDto.setSort(sort - 1);
         queryDto.setTemplate(template + 1);
         queryDto.setSortType(sortType);
         queryDto.setStoreId(storeId);
@@ -522,47 +533,10 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         }
         queryDto.setBusinessType(businessType);
         queryDto.setTemplate(template + 1);
-        queryDto.setSort(sort);
+        queryDto.setSort(sort - 1);
         queryDto.setSortType(sortType);
         queryDto.setStoreId(storeId);
        
-        List<OperateFieldContentDto> contentDtos = this.getGoodsOfStoreActivityFields(queryDto);
-        if(contentDtos.size() == (template + 1)) {
-            return contentDtos;
-        } else {
-            return null;
-        }
-    }
-    
-    /**
-     * 城市运营位查找店铺活动的商品
-     * @param businessType 0:特惠活动 1:低价活动
-     * @param template 模板
-     * @param 排序类型   0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高 
-     * @param sortStart 排序开始值
-     * @throws Exception 
-     */
-    private List<OperateFieldContentDto> getGoodsOfCityStoreActivityField(String cityId, int businessType, 
-            int template, int sortType, int sort) throws Exception {
-        //查找城市下所有的店铺
-        List<StoreInfo> storeInfos = storeInfoServiceApi.selectCloudStoreByCityId(cityId);
-        List<String> storeIds = new ArrayList<>();
-        storeInfos.forEach(storeInfo -> {
-            storeIds.add(storeInfo.getId());  
-        });
-                
-        StoreActivitGoodsQueryDto queryDto = new StoreActivitGoodsQueryDto();
-        //转换业务类型使之和数据库一致 
-        if(businessType == 0) {
-            businessType = 5;
-        } else if(businessType == 1) {
-            businessType = 7;
-        }
-        queryDto.setBusinessType(businessType);
-        queryDto.setTemplate(template + 1);
-        queryDto.setSort(sort);
-        queryDto.setSortType(sortType);
-
         List<OperateFieldContentDto> contentDtos = this.getGoodsOfStoreActivityFields(queryDto);
         if(contentDtos.size() == (template + 1)) {
             return contentDtos;
@@ -623,7 +597,11 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         contentDto.setPointType(OperateFieldsAppPointType.NATIVE_SUBJECT.getCode());
         contentDto.setPointContent(content.getBusinessId());
         contentDto.setImageUrl(content.getImageUrl());
-        contentDto.setTitle(content.getTitle());
+        //查询专题的标题
+        ColumnNativeSubject nativeSubject = this.nativeSubjectMapper.findById(content.getBusinessId());
+        if (nativeSubject != null) {
+            contentDto.setTitle(nativeSubject.getName());
+        }
         
         return contentDto;
     }
@@ -638,6 +616,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         } else if(businessType == OperateFieldsBusinessType.STORE_MENU) {
             contentDto.setPointType(OperateFieldsAppPointType.STORE_MENU.getCode());
         }
+        
         contentDto.setPointContent(content.getBusinessId());
         contentDto.setImageUrl(content.getImageUrl());
         
@@ -649,7 +628,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         fieldInfo.setTitle("");
         fieldInfo.setHeadPic(fieldBo.getHeadPic());
         fieldInfo.setTarget("");
-        fieldInfo.setId(fieldInfo.getId());
+        fieldInfo.setId(fieldBo.getId());
         fieldInfo.setType(fieldBo.getType().getCode());
         fieldInfo.setBusinessId(fieldBo.getBusinessId());
         fieldInfo.setName(fieldBo.getName());

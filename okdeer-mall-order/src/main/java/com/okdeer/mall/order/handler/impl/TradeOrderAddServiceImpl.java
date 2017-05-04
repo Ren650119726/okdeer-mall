@@ -795,7 +795,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private List<TradeOrderItem> buildOrderItemList(TradeOrder tradeOrder, TradeOrderReqDto reqDto)
 			throws ServiceException {
 		List<TradeOrderItem> orderItemList = new ArrayList<TradeOrderItem>();
@@ -808,11 +808,11 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 
 		String orderId = tradeOrder.getId();
 		// 订单项总金额
-		BigDecimal totalAmount =reqDto.getContext().getTotalAmountHaveFavour();
+		BigDecimal totalAmount =reqDto.getContext().getTotalAmountHaveFavour() == null ? calculateAmount(req.getList()) : reqDto.getContext().getTotalAmountHaveFavour();
 		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
 		BigDecimal favourSum = new BigDecimal("0.00");
 		int index = 0;
-		int itemSize = req.getList().size();
+		int itemSize = CollectionUtils.isNotEmpty(haveFavourGoodsIds) ? haveFavourGoodsIds.size() :req.getList().size();
 		TradeOrderItem tradeOrderItem = null;
 		GoodsStoreSku storeSku = null;
 
@@ -938,6 +938,9 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 
 		switch (activityType) {
 			case NO_ACTIVITY:
+			case LOW_PRICE:
+			case SECKILL_ACTIVITY:
+			case SALE_ACTIVITIES:
 			case VONCHER:
 				tradeOrderItem.setIncome(tradeOrderItem.getTotalAmount());
 				break;

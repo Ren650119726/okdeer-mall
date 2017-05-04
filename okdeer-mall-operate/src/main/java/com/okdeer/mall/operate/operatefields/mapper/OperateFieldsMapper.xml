@@ -10,7 +10,7 @@
         <result column="point_type" property="pointType" jdbcType="TINYINT" javaType="com.okdeer.mall.operate.enums.OperateFieldsPointType"/>
         <result column="point_content" property="pointContent" jdbcType="VARCHAR" />
         <result column="head_pic" property="headPic" jdbcType="VARCHAR" />
-        <result column="sort" property="sort" jdbcType="TINYINT" />
+        <result column="sort" property="sort" jdbcType="INTEGER" />
         <result column="enabled" property="enabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Enabled"/>
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
@@ -121,7 +121,7 @@
                 #{headPic,jdbcType=VARCHAR},
             </if>
             <if test="sort != null" >
-                #{sort,jdbcType=TINYINT},
+                #{sort,jdbcType=INTEGER},
             </if>
             <if test="enabled != null" >
                 #{enabled,jdbcType=TINYINT},
@@ -169,7 +169,7 @@
                 head_pic = #{headPic,jdbcType=VARCHAR},
             </if>
             <if test="sort != null" >
-                sort = #{sort,jdbcType=TINYINT},
+                sort = #{sort,jdbcType=INTEGER},
             </if>
             <if test="enabled != null" >
                 enabled = #{enabled,jdbcType=TINYINT},
