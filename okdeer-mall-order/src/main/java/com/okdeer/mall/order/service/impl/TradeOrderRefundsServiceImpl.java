@@ -813,7 +813,6 @@ public class TradeOrderRefundsServiceImpl
 		Lock lock = redisLockRegistry.obtain(orderRefunds.getId());
 		if(lock.tryLock(10, TimeUnit.SECONDS)){
 			TradeOrderRefunds refunds = this.findById(orderRefunds.getId());
-			System.out.println(new Date()+"--------"+refunds.getRefundsStatus());
 			if (refunds.getRefundsStatus() != RefundsStatusEnum.WAIT_SELLER_REFUND) {
 				logger.warn("执行退款操作订单状态已经变更，操作失效");
 				lock.unlock();
