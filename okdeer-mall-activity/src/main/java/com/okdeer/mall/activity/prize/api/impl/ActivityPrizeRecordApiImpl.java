@@ -11,7 +11,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordApi;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 
@@ -36,9 +38,9 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 	ActivityPrizeRecordService activityPrizeRecordService;
 	
 	/**
-	 * @Description: TODO
+	 * @Description: 用户id获奖奖品列表
 	 * @param userId
-	 * @param activityId 活动id 广告活动id 以后会是对应
+	 * @param activityId 活动id H5活动id 以后会是对应
 	 * @return   
 	 * @return List<ActivityPrizeRecord>  
 	 * @throws
@@ -46,7 +48,7 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 	 * @date 2016年12月15日
 	 */
 	@Override
-	public List<ActivityPrizeRecord> findByUserId(String userId,String activityId) {
+	public List<ActivityPrizeRecordVo> findByUserId(String userId,String activityId) {
 		return activityPrizeRecordService.findByUserId(userId,activityId);
 	}
 
@@ -58,6 +60,12 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 	@Override
 	public int findCountByPrizeId(String prizeId) {
 		return activityPrizeRecordService.findCountByPrizeId(prizeId);
+	}
+
+	@Override
+	public PageUtils<ActivityPrizeRecordVo> findPrizeRecordList(ActivityPrizeRecordVo activityPrizeRecordVo,
+			int pageNumber, int pageSize) {
+		return activityPrizeRecordService.findPrizeRecordList(activityPrizeRecordVo, pageNumber, pageSize);
 	}
 
 

@@ -41,7 +41,7 @@
       SELECT 
     	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 
     	  r.valid_time, r.status, r.order_id,collect_user,
-    	  r.room_id,is_complete,invite_user_id,activity_id
+    	  r.room_id,is_complete,invite_user_id,r.activity_id
 	  FROM
 		  activity_coupons_record_before r 
 	  WHERE invite_user_id = #{inviteUserId,jdbcType=VARCHAR}

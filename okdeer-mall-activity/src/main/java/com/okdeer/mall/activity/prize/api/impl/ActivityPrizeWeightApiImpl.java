@@ -11,7 +11,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeightVo;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeWeightApi;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeWeightService;
 
@@ -45,6 +47,17 @@ public class ActivityPrizeWeightApiImpl implements ActivityPrizeWeightApi{
 	@Override
 	public List<ActivityPrizeWeight> findPrizesByactivityId(String activityId){
 		return activityPrizeWeightService.findPrizesByactivityId(activityId);
+	}
+
+	@Override
+	public PageUtils<ActivityPrizeWeightVo> findPrizeWeightList(ActivityPrizeWeightVo activityPrizeWeightVo,
+			int pageNumber, int pageSize) {
+		return activityPrizeWeightService.findPrizeWeightList(activityPrizeWeightVo, pageNumber, pageSize);
+	}
+
+	@Override
+	public List<ActivityPrizeWeight> findPrizesByLuckDrawId(String luckDrawId) {
+		return activityPrizeWeightService.findPrizesByLuckDrawId(luckDrawId);
 	}
 
 }

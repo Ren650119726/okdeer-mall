@@ -462,7 +462,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @param phone 用户手机号码
 	 * @param activityCouponsType 活动类型
 	 * @param userId 	邀请的用户id 没有null
-	 * @param advertId 	广告活动id
+	 * @param advertId 	H5活动id
 	 * @return tuzhiding 
 	 * @throws ServiceException
 	 */

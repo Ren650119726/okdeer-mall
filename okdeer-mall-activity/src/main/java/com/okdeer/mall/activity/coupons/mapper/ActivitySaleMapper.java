@@ -87,7 +87,7 @@ public interface ActivitySaleMapper {
 	ActivitySale getAcSaleStatus(String id);
 	
 	/**
-	 * @Description: TODO
+	 * @Description: 通过店铺获取list
 	 * @param map
 	 * @return
 	 * @author zhangkn
@@ -126,4 +126,5 @@ public interface ActivitySaleMapper {
 	 * @date 2017年3月16日
 	 */
 	List<Map<String,Object>> listGoodsStoreSkuV220(Map<String,Object> map);
+
 }

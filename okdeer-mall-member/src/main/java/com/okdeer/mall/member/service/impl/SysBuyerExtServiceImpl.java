@@ -8,16 +8,15 @@
 
 package com.okdeer.mall.member.service.impl;
 
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.mall.member.mapper.SysBuyerExtMapper;
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
 import com.okdeer.mall.member.member.service.SysBuyerExtServiceApi;
 import com.okdeer.mall.member.service.SysBuyerExtService;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.mall.member.mapper.SysBuyerExtMapper;
 
 /**
  * 用户扩展表信息查询实现类
