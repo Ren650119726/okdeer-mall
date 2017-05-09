@@ -480,6 +480,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			map.put("msg", "用户调用次数超限");
 			return JSONObject.fromObject(map);
 		}
+		//校验成功标识
 		try{
 			ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
 			if(coll == null){
