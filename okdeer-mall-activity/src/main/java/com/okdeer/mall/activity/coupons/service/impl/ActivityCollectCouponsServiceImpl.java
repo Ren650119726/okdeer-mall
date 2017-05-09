@@ -816,5 +816,4 @@ public class ActivityCollectCouponsServiceImpl
 		return activityCollectCouponsMapper.findCollectCouponsByModelId(modelId,activityAdvertId);
 		
 	}
-
 }
