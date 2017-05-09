@@ -62,7 +62,7 @@ public class ActivityDrawRecordServiceImpl extends BaseServiceImpl implements Ac
 	public int addDrawRecord(String userId,String activityId) {
 		ActivityDrawRecord r = new ActivityDrawRecord();
 		r.setId(UuidUtils.getUuid());
-		r.setActivityId(activityId);
+		r.setActivityAdvertId(activityId);
 		r.setUserId(userId);
 		r.setCreateTime(new Date());
 		r.setDisabled(0);
