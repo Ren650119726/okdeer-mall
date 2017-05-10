@@ -4158,7 +4158,7 @@
 		SELECT COUNT(*) 
 		FROM trade_order_refunds toref 
 		WHERE toref.refunds_status IN(6, 11, 13)
-		AND CURDATE()=DATE_FORMAT(date_sub(toref.create_time,interval 1 day),'%Y-%m-%d')
+		AND CURDATE()=DATE_FORMAT(date_sub(NOW(),interval 1 day),'%Y-%m-%d')
 		AND toref.store_id = #{storeId,jdbcType=VARCHAR}) order_refunds_counts
 		FROM (
 		SELECT user_id,
@@ -4167,7 +4167,7 @@
 		FROM trade_order tord
 		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
 		AND tord.status IN(1,3,5)))
-		AND CURDATE()=DATE_FORMAT(date_sub(tord.create_time,interval 1 day),'%Y-%m-%d')
+		AND CURDATE()=DATE_FORMAT(date_sub(NOW(),interval 1 day),'%Y-%m-%d')
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
 		GROUP BY user_id) tmp
 		UNION ALL
