@@ -5563,6 +5563,12 @@
 		<if test="orderResource != null">
 			AND trade.order_resource = #{orderResource, jdbcType=TINYINT}
 		</if>
+		<if test="orderResourceList != null and orderResourceList.size() > 0">
+			AND trade.order_resource IN
+			<foreach collection="orderResourceList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
 		<if test="payType != null">
 			AND pay.pay_type = #{payType, jdbcType=TINYINT}
 		</if>
@@ -5627,6 +5633,12 @@
 		</if>
 		<if test="orderResource != null">
 			AND trade.order_resource = #{orderResource, jdbcType=TINYINT}
+		</if>
+		<if test="orderResourceList != null and orderResourceList.size() > 0">
+			AND trade.order_resource IN
+			<foreach collection="orderResourceList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
 		</if>
 		<if test="payType != null">
 			AND pay.pay_type = #{payType, jdbcType=TINYINT}
@@ -5835,6 +5847,12 @@
 		</if>
 		<if test="orderResource != null">
 			AND trade.order_resource = #{orderResource, jdbcType=TINYINT}
+		</if>
+		<if test="orderResourceList != null and orderResourceList.size() > 0">
+			AND trade.order_resource IN
+			<foreach collection="orderResourceList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
 		</if>
 		<if test="payType != null">
 			AND pay.pay_type = #{payType, jdbcType=TINYINT}

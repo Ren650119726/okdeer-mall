@@ -154,7 +154,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  	private JSONObject addProcessPrize(String userId,String activityId)throws ServiceException{
  		Map<String,Object> map =  new HashMap<String,Object>();
  		//根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 
- 		List<ActivityPrizeWeight> list = activityPrizeWeightService.findPrizesByactivityId(activityId);
+ 		List<ActivityPrizeWeight> list = activityPrizeWeightService.findPrizesByLuckDrawId(activityId);
  		if(CollectionUtils.isNotEmpty(list)){
  			//权限比重集合
  			double[] weight = new double[list.size()];
@@ -180,7 +180,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  					defaultNo = i;
  				}
  				ids[i] = prizeWeight.getId();
- 				couponIds[i] = prizeWeight.getCollectId();
+ 				couponIds[i] = prizeWeight.getActivityCollectId();
  				prizeNameArr[i] = prizeWeight.getPrizeName();
  			}
  			//将 无奖品数量的奖项概率和 加到默认奖项 概率中

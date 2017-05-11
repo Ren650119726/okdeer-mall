@@ -609,4 +609,5 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 		List<Map<String, Object>> list = activitySaleMapper.listGoodsStoreSkuV220(map);
 		return new PageUtils<Map<String, Object>>(list);
 	}
+
 }

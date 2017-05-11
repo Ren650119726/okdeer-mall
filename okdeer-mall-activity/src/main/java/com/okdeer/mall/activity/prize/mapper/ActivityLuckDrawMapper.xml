@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.prize.mapper.ActivityLuckDrawMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="weight_deno" property="weightDeno" jdbcType="NUMERIC" />
+        <result column="status" property="status" jdbcType="VARCHAR" javaType="com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum"/>
+        <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+        <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="disabled" property="disabled" jdbcType="VARCHAR" javaType="com.okdeer.base.common.enums.Disabled" />
+    </resultMap> 
+
+    <sql id="Base_Column_List" >
+        id, name, weight_deno, status, start_time, end_time, create_time, 
+        create_user_id, update_time, update_user_id, disabled
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_luck_draw
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw" >
+        insert into activity_luck_draw
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="name != null" >
+                name,
+            </if>
+            <if test="weightDeno != null" >
+                weight_deno,
+            </if>
+            <if test="status != null" >
+                status,
+            </if>
+            <if test="startTime != null" >
+                start_time,
+            </if>
+            <if test="endTime != null" >
+                end_time,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null" >
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="weightDeno != null" >
+                #{weightDeno,jdbcType=NUMERIC},
+            </if>
+            <if test="status != null" >
+                #{status,jdbcType=BIT},
+            </if>
+            <if test="startTime != null" >
+                #{startTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null" >
+                #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw" >
+        update activity_luck_draw
+        <set >
+            <if test="name != null" >
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="weightDeno != null" >
+                weight_deno = #{weightDeno,jdbcType=NUMERIC},
+            </if>
+            <if test="status != null" >
+                status = #{status,jdbcType=BIT},
+            </if>
+            <if test="startTime != null" >
+                start_time = #{startTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null" >
+                end_time = #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_luck_draw
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+	<!-- begin xuzq 20170411 获取抽奖模板设置列表  -->
+	<select id="findPrizeRecordList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo">
+       select 
+       <include refid="Base_Column_List" />
+       from activity_luck_draw
+       where 1=1
+       <if test="name != null and name != ''" >
+            AND name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
+       </if>
+       <!-- 创建时间 -->
+       <if test="createTimeStart != null">
+         AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="createTimeEnd != null">
+         AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <!-- 开始时间 -->
+       <if test="startTimeStart != null">
+         AND start_time <![CDATA[ >= ]]> #{startTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="startTimeEnd != null">
+         AND start_time <![CDATA[ <= ]]> #{startTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+       <!-- 结束时间 -->
+       <if test="endTimeStart != null">
+         AND end_time <![CDATA[ >= ]]> #{endTimeStart,jdbcType=TIMESTAMP}
+       </if>
+       <if test="endTimeEnd != null">
+         AND end_time <![CDATA[ <= ]]> #{endTimeEnd,jdbcType=TIMESTAMP}
+       </if>
+        <!-- 状态 -->
+       <if test="status != null">
+         AND status = #{status,jdbcType=TINYINT}
+       </if>
+         AND disabled = 0 
+		 ORDER BY create_time DESC
+   </select>
+   <select id="findLuckDrawSelectList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo">
+       select 
+       <include refid="Base_Column_List" />
+       from activity_luck_draw
+       where 1=1 AND (status = 0 or status = 1)
+       <if test="name != null and name != ''" >
+            AND name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
+       </if>
+       AND disabled = 0 
+	   ORDER BY create_time DESC
+   </select>
+   <select id="findCountByName" resultType="java.lang.Integer" parameterType="java.lang.String">
+       select count(*)
+       from activity_luck_draw
+       where 1=1 and disabled = 0 AND name = #{name,jdbcType=VARCHAR}
+   </select>
+   <!-- 关闭抽奖活动模板 -->
+   <update id="updateLuckDrawStatus" parameterType="java.lang.String" >
+        update activity_luck_draw  
+		set status = #{status,jdbcType=NUMERIC},
+            update_time = #{updateTime,jdbcType=TIMESTAMP},
+            update_user_id = #{updateUserId,jdbcType=VARCHAR}
+        where id in 
+        <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+            #{item}
+        </foreach>
+    </update>
+   	<select id="listByJob"  resultMap="BaseResultMap">
+		select s.* from activity_luck_draw s where 
+		(s.`status` = 0 and  s.start_time &lt;= NOW())
+		OR
+		(s.`status` = 1 and  s.end_time &lt;= NOW())
+	</select> 
+	
+	<update id="updateBatchStatus" parameterType="com.okdeer.mall.activity.prize.entity.ActivityLuckDraw" >
+        update activity_luck_draw  
+        set status = #{status,jdbcType=NUMERIC},
+            update_time = #{updateTime,jdbcType=TIMESTAMP},
+            update_user_id = #{updateUserId,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+    <!-- 根据模块id和广告活动id关联查询抽奖设置信息 -->
+    <select id="findLuckDrawByModelId"  resultMap="BaseResultMap" parameterType="java.lang.String">
+		select  
+			draw.`id`,draw.`name`
+		from activity_luck_draw draw 
+		LEFT JOIN  activity_advert_draw aad on
+		draw.id = aad.luck_draw_id
+		where aad.model_id = #{modelId,jdbcType=VARCHAR} 
+		 and aad.activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+	</select> 
+	<!-- end xuzq 20170411 获取抽奖模板设置列表  -->
+</mapper>

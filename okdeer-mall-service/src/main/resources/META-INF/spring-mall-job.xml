@@ -74,5 +74,9 @@
 	<job:simple id="riskOrderRecordJob" class="com.okdeer.mall.risk.job.RiskOrderRecordJob" registry-center-ref="regCenter" cron="0 0 0 * * ?"   sharding-total-count="1"/>
 	
 	<!-- 每隔半个小时执行商家中心促销限购活动的定时任务 -->
-<!-- 	<job:simple id="activityServiceLimitJob" class="com.okdeer.mall.activity.serviceLimit.job.ActivityServiceLimitJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/> -->
+	<!-- 	<job:simple id="activityServiceLimitJob" class="com.okdeer.mall.activity.serviceLimit.job.ActivityServiceLimitJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/> -->
+	<!--begin  xuzq 20170418 每隔半个小时执行-修改抽奖模板的状态job -->
+ 	<job:simple id="activityLuckDrawJob" class="com.okdeer.mall.activity.prize.job.ActivityLuckDrawJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
+	<job:simple id="activityAdvertJob" class="com.okdeer.mall.activity.advert.job.ActivityAdvertJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
+	<!--end xuzq 20170418  每隔半个小时执行-修改抽奖模板的状态job -->
 </beans>

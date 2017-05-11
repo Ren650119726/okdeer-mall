@@ -190,7 +190,7 @@ public interface ActivityCollectCouponsMapper {
 	// add by zhulq 2016-10-25
 	
 	/**
-	 * @Description: 获取广告活动的代金卷
+	 * @Description: 获取H5活动的代金卷
 	 * @param map 参数
 	 * @return List
 	 * @author zhulq
@@ -204,4 +204,13 @@ public interface ActivityCollectCouponsMapper {
 	 * @return
 	 */
 	int selectCountByUserId(Map<String,Object> map);
+
+	/**
+	 * @Description: 获取优惠券信息
+	 * @param modelId
+	 * @param activityAdvertId   
+	 * @author xuzq01
+	 * @date 2017年4月18日
+	 */
+	public ActivityCollectCoupons findCollectCouponsByModelId(@Param("modelId") String modelId, @Param("activityAdvertId") String activityAdvertId);
 }
