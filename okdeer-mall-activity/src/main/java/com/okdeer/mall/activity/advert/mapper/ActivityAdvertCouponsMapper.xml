@@ -14,7 +14,7 @@
 	<!-- 根据活动id及模板编号查询关联的代金券活动 -->
     <select id="findAdvertCouponsByIdNo" resultMap="BaseResultMap"  >
         select 
-        	<include refid="Base_Column_List" />
+        	s.id, s.collect_coupons_id, s.activity_advert_id, s.model_id
         from activity_advert_coupons s
         	 inner join activity_advert_model m on s.model_id = m.id
         where m.model_no = #{modelNo,jdbcType=INTEGER}
