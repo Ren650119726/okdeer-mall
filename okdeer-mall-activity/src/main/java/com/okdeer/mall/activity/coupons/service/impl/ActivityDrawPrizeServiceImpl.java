@@ -16,8 +16,10 @@ import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityDrawPrizeService;
 import com.okdeer.mall.activity.coupons.service.ActivityDrawPrizeServiceApi;
+import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
 import com.okdeer.mall.activity.prize.service.ActivityDrawRecordService;
+import com.okdeer.mall.activity.prize.service.ActivityLuckDrawService;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeWeightService;
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
@@ -52,6 +54,8 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
 	private ActivityPrizeWeightService activityPrizeWeightService;
 	@Autowired
 	ActivityDrawRecordService  activityDrawRecordService;
+	@Autowired
+	private ActivityLuckDrawService activityLuckDrawService;
 	@Autowired
 	ActivityPrizeRecordService activityPrizeRecordService;
 	
@@ -123,14 +127,14 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  	
  	/**
  	 * @Description: 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 
- 	 * @param activityId 活动id
+ 	 * @param luckDrawId 抽奖活动id
  	 * @param userId 用户id
  	 * @return JSONObject 抽奖获取奖品
  	 * @author tuzhd
  	 * @date 2016年12月14日
  	 */
  	@Transactional(rollbackFor = Exception.class)
- 	public JSONObject processPrizeByUser(String userId,String activityId)throws ServiceException{
+ 	public JSONObject processPrizeByUser(String userId,String luckDrawId)throws Exception{
  		SysBuyerExt user = sysBuyerExtService.findByUserId(userId);
 		Map<String,Object> map =  new HashMap<String,Object>();
 		//用户抽奖次数存在让其抽奖否则
@@ -140,22 +144,24 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
 			map.put("msg", "您已经没有抽奖机会哦，可以邀请好友获得抽奖机吧！");
 			return JSONObject.fromObject(map);
 		}
-		return addProcessPrize(userId, activityId);
+		return addProcessPrize(userId, luckDrawId);
  	}
  	/**
  	 * @Description: 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 
- 	 * @param activityId 活动id
+ 	 * @param luckDrawId 抽奖活动id
  	 * @param userId 用户id
  	 * @return JSONObject 抽奖获取奖品
  	 * @author tuzhd
+ 	 * @throws Exception 
  	 * @date 2016年12月14日
  	 */
  	@Transactional(rollbackFor = Exception.class)
- 	private JSONObject addProcessPrize(String userId,String activityId)throws ServiceException{
+ 	private JSONObject addProcessPrize(String userId,String luckDrawId)throws Exception{
  		Map<String,Object> map =  new HashMap<String,Object>();
+ 		ActivityLuckDraw  activityLuckDraw = activityLuckDrawService.findById(luckDrawId);
  		//根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 
- 		List<ActivityPrizeWeight> list = activityPrizeWeightService.findPrizesByLuckDrawId(activityId);
- 		if(CollectionUtils.isNotEmpty(list)){
+ 		List<ActivityPrizeWeight> list = activityPrizeWeightService.findPrizesByLuckDrawId(luckDrawId);
+ 		if(CollectionUtils.isNotEmpty(list) && activityLuckDraw != null){
  			//权限比重集合
  			double[] weight = new double[list.size()];
  			//奖项id集合
@@ -164,7 +170,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  			String[] couponIds =new String[list.size()];
  			String[] prizeNameArr =new String[list.size()];
  			//概率分母
- 			int weightDeno = list.get(0).getWeightDeno();
+ 			int weightDeno = activityLuckDraw.getWeightDeno();
  			//默认概率序号
  			int defaultNo = 0;
  			//已经无奖品数量的奖项概率和 
@@ -190,7 +196,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  			//根据用户id 抽奖之后将其抽奖机会-1,根据产品要求即使代金劵另外也扣抽奖机会
  			sysBuyerExtService.updateCutPrizeCount(userId);
  			//写入抽奖记录
- 			activityDrawRecordService.addDrawRecord(userId, activityId);
+ 			activityDrawRecordService.addDrawRecord(userId, luckDrawId);
  			
  			//抽中的概率序号如果为null及未抽中
  			if(prizeNo == null){
@@ -212,7 +218,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  			//如果奖品扣减成功 -- 写入中奖记录抽奖记录
  			Object code = json.get("code");
  			if(code != null && (int)code == 100){
- 				activityPrizeRecordService.addPrizeRecord(couponId, userId, activityId,id);
+ 				activityPrizeRecordService.addPrizeRecord(couponId, userId, luckDrawId,id);
  			}
  			json.put("prizeNo", prizeNo); 
  			json.put("prizeName", prizeNameArr[prizeNo]); 
@@ -225,13 +231,13 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  	 * 
  	 * @Description: 查询用户的已抽及剩余抽奖次数
  	 * @param userId 用户id
- 	 * @param activityId 活动id
+ 	 * @param luckDrawId 抽奖活动id
  	 * @return JSONObject  
  	 * @author tuzhd
  	 * @throws ServiceException 
  	 * @date 2017年1月11日
  	 */
-	public JSONObject findPrizeCount(String userId,String activityId) throws ServiceException{
+	public JSONObject findPrizeCount(String userId,String luckDrawId) throws ServiceException{
 		JSONObject json  = new JSONObject();
 		
 		int prizeCount = 0;
@@ -240,9 +246,9 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
 			SysBuyerExt user = sysBuyerExtService.findByUserId(userId);
 			hadCount = user.getPrizeCount();
 		}
-		if(StringUtils.isNotBlank(activityId)){
+		if(StringUtils.isNotBlank(luckDrawId)){
 			//根据用户id及活动id查询抽奖次数
-			prizeCount = activityDrawRecordService.findCountByUserIdAndActivityId(userId, activityId);
+			prizeCount = activityDrawRecordService.findCountByUserIdAndActivityId(userId, luckDrawId);
 		}
 		//已抽数量
 		json.put("prizeCount", prizeCount);
