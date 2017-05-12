@@ -33,7 +33,7 @@ public interface ActivityPrizeRecordService extends IBaseService {
 	
 	int findCountByPrizeId(String prizeId);
 	
-	public int addPrizeRecord(String collectId,String userId,String activityId,String prizeId);
+	public int addPrizeRecord(String collectId,String userId,String luckDrawId,String prizeId);
 
 	/**
 	 * @Description: TODO

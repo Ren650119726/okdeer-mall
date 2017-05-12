@@ -80,13 +80,13 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 	 * (non-Javadoc)
 	 */
 	@Override
-	public int addPrizeRecord(String collectId,String userId,String activityId,String prizeId) {
+	public int addPrizeRecord(String collectId,String userId,String luckDrawId,String prizeId) {
 		ActivityPrizeRecord rec = new ActivityPrizeRecord();
 		rec.setId(UuidUtils.getUuid());
 		rec.setPrizeId(prizeId);
 		rec.setActivityCollectId(collectId);
 		rec.setUserId(userId);
-		rec.setLuckDrawId(activityId);
+		rec.setLuckDrawId(luckDrawId);
 		rec.setCreateTime(new Date());
 		rec.setIsOffer(0);
 		rec.setDisabled(Disabled.valid);
