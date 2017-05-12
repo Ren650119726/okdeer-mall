@@ -203,7 +203,7 @@
 		SELECT DISTINCT
 	        <include refid="advert_goods_columns" />
 		FROM column_advert_goods s
-			INNER JOIN goods_store_sku sku on s.goods_id = sku.bar_code
+			INNER JOIN goods_store_sku sku on s.goods_id = sku.sku_id
 			LEFT JOIN goods_store_sku_plu plu ON plu.store_sku_id = sku.id AND plu.type = 1 AND plu.disabled = 0
 			LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
 			LEFT JOIN goods_store_sku_stock stock ON stock.`store_sku_id` = sku.`id`
