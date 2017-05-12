@@ -1516,6 +1516,9 @@
 		<if test="null!=payType">
 			pay.pay_type,
 		</if>
+		<if test="cityIdList != null and cityIdList.size() > 0">
+			lo.city_name as cityName,
+		</if>
 		o.actual_amount,
 		o.user_phone,
 		o.create_time,
@@ -1533,6 +1536,9 @@
 		</if>
 		<if test="null!=payType">
 			LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
+		</if>
+		<if test="cityIdList != null and cityIdList.size() > 0">
+			LEFT JOIN trade_order_locate lo ON lo.order_id = o.id 
 		</if>
 		WHERE 1=1
 		AND o.disabled =0
@@ -1592,7 +1598,15 @@
 					aa.id = #{currentUserId,jdbcType=VARCHAR})
 		</if>
 		<!-- add by mengsj end 增加数据权限控制sql -->
-
+		<!-- add by zhangkn 按地区搜索 -->
+		<if test="cityIdList != null and cityIdList.size() > 0">
+			AND lo.city_id in
+			<foreach collection="cityIdList" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<!-- add by zhangkn 按地区搜索 -->
 		ORDER BY o.create_time DESC
 	</select>
 	<!-- 运营后台实物、服务订单列表查询 start -->
@@ -1610,6 +1624,7 @@
 		o.activity_type,
 		o.preferential_price,
 		o.income,
+		locate.city_name as city_name,
 		locate.provice_name as lProvice_name,
 		locate.city_name as lCity_name,
 		locate.area_name as lArea_name,
@@ -1693,6 +1708,14 @@
 					aa.id = #{currentUserId,jdbcType=VARCHAR})
 		</if>
 		<!-- add by mengsj end 增加数据权限控制sql -->
+		
+		<if test="cityIdList != null and cityIdList.size() > 0">
+			AND locate.city_id in
+			<foreach collection="cityIdList" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
 
 		ORDER BY o.create_time DESC
 	</select>

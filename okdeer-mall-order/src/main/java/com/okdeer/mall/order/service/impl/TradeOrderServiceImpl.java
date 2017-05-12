@@ -1128,7 +1128,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 								if (StringUtils.isNotBlank(cityId)) {
 									Address address = addressService.getAddressById(Long.parseLong(cityId));
 									// 所属城市 实物订单的送货上门取物流表的地址
-									orderVo.setCityName(address.getName() == null ? "" : address.getName());
+//									orderVo.setCityName(address.getName() == null ? "" : address.getName());
 									String area = logistics.getArea() == null ? "" : logistics.getArea();
 									String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
 									// 收货地址
@@ -1150,7 +1150,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 								String ext = userAddressVo.getAreaExt() == null ? "" : userAddressVo.getAreaExt();
 								String address = userAddressVo.getAddress() == null ? "" : userAddressVo.getAddress();
 								// 所属城市
-								orderVo.setCityName(cityName);
+//								orderVo.setCityName(cityName);
 								// 收货地址
 								orderVo.setAddress(proviceName + cityName + areaName + ext + address);
 								break;
@@ -1315,7 +1315,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							if (StringUtils.isNotBlank(cityId)) {
 								Address address = addressService.getAddressById(Long.parseLong(cityId));
 								// 所属城市 实物订单的送货上门取物流表的地址
-								order.setCityName(address.getName() == null ? "" : address.getName());
+//								order.setCityName(address.getName() == null ? "" : address.getName());
 								String area = logistics.getArea() == null ? "" : logistics.getArea();
 								String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
 								// 收货地址
@@ -1335,7 +1335,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 							String areaExt = userAddressVo.getAreaExt() == null ? "" : userAddressVo.getAreaExt();
 							String address = userAddressVo.getAddress() == null ? "" : userAddressVo.getAddress();
 							// 所属城市
-							order.setCityName(cityName);
+//							order.setCityName(cityName);
 							// 收货地址
 							order.setAddress(proviceName + cityName + areaName + areaExt + address);
 							break;
