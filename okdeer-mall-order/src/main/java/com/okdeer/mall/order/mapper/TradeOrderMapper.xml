@@ -1516,6 +1516,9 @@
 		<if test="null!=payType">
 			pay.pay_type,
 		</if>
+		<if test="cityIdList != null and cityIdList.size() > 0">
+			lo.city_name as cityName,
+		</if>
 		o.actual_amount,
 		o.user_phone,
 		o.create_time,
@@ -1533,6 +1536,9 @@
 		</if>
 		<if test="null!=payType">
 			LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
+		</if>
+		<if test="cityIdList != null and cityIdList.size() > 0">
+			LEFT JOIN trade_order_locate lo ON lo.order_id = o.id 
 		</if>
 		WHERE 1=1
 		AND o.disabled =0
@@ -1592,7 +1598,15 @@
 					aa.id = #{currentUserId,jdbcType=VARCHAR})
 		</if>
 		<!-- add by mengsj end 增加数据权限控制sql -->
-
+		<!-- add by zhangkn 按地区搜索 -->
+		<if test="cityIdList != null and cityIdList.size() > 0">
+			AND lo.city_id in
+			<foreach collection="cityIdList" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<!-- add by zhangkn 按地区搜索 -->
 		ORDER BY o.create_time DESC
 	</select>
 	<!-- 运营后台实物、服务订单列表查询 start -->
@@ -1610,6 +1624,7 @@
 		o.activity_type,
 		o.preferential_price,
 		o.income,
+		locate.city_name as city_name,
 		locate.provice_name as lProvice_name,
 		locate.city_name as lCity_name,
 		locate.area_name as lArea_name,
@@ -1679,6 +1694,27 @@
 			<if test="null!=orderResource">
 				AND o.order_resource = #{orderResource,jdbcType=TINYINT}
 			</if>
+		</if>
+		<!-- add by mengsj begin 增加数据权限控制sql -->
+		<if test="currentUserId != null">
+			AND o.store_id IN (SELECT
+					dd.store_id
+				FROM
+					sys_user aa
+				INNER JOIN sys_user_org bb ON aa.id = bb.user_id
+				INNER JOIN sys_organization cc ON bb.org_id = cc.id
+				INNER JOIN sys_organ_store dd ON cc.id = dd.org_id
+				WHERE
+					aa.id = #{currentUserId,jdbcType=VARCHAR})
+		</if>
+		<!-- add by mengsj end 增加数据权限控制sql -->
+		
+		<if test="cityIdList != null and cityIdList.size() > 0">
+			AND locate.city_id in
+			<foreach collection="cityIdList" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
 		</if>
 
 		ORDER BY o.create_time DESC
@@ -4145,7 +4181,7 @@
 		SELECT COUNT(*) 
 		FROM trade_order_refunds toref 
 		WHERE toref.refunds_status IN(6, 11, 13)
-		AND CURDATE()=DATE_FORMAT(date_sub(toref.create_time,interval 1 day),'%Y-%m-%d')
+		AND CURDATE()=DATE_FORMAT(date_sub(NOW(),interval 1 day),'%Y-%m-%d')
 		AND toref.store_id = #{storeId,jdbcType=VARCHAR}) order_refunds_counts
 		FROM (
 		SELECT user_id,
@@ -4154,7 +4190,7 @@
 		FROM trade_order tord
 		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
 		AND tord.status IN(1,3,5)))
-		AND CURDATE()=DATE_FORMAT(date_sub(tord.create_time,interval 1 day),'%Y-%m-%d')
+		AND CURDATE()=DATE_FORMAT(date_sub(NOW(),interval 1 day),'%Y-%m-%d')
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
 		GROUP BY user_id) tmp
 		UNION ALL
