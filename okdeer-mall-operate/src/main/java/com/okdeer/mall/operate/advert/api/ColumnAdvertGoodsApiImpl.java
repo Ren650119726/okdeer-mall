@@ -7,12 +7,15 @@
 package com.okdeer.mall.operate.advert.api;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.mall.activity.prize.service.ColumnAdvertGoodsApi;
-import com.okdeer.mall.advert.entity.ColumnAdvertGoods;
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.mall.activity.advert.entity.ColumnAdvertGoods;
+import com.okdeer.mall.activity.advert.service.ColumnAdvertGoodsApi;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertGoodsService;
 
 /**
@@ -40,4 +43,48 @@ public class ColumnAdvertGoodsApiImpl implements ColumnAdvertGoodsApi {
 		return columnAdvertGoodsService.findByAdvertId(advertId);
 	}
 
+	/**
+	 * @Description: 根据运营活动id获取广告商品列表
+	 * @param modelId  广告模块id
+	 * @return list
+	 * @author tuzhd
+	 * @param storeId 
+	 * @date 2017年4月12日
+	 */
+	public PageUtils<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(String modelId, String storeId, Integer pageNumber, Integer pageSize){
+		return columnAdvertGoodsService.findAdvertGoodsByAdvertId(modelId, storeId, pageNumber, pageSize);
+	}
+	
+	/**
+	 * @Description:根据店铺活动类型 活动商品列表
+	 * @param storeId
+	 * @param saleType
+	 * @author tuzhd
+	 * @date 2017年4月12日
+	 */
+	public List<GoodsStoreActivitySkuDto> findGoodsByActivityType(String storeId,Integer saleType){
+		return columnAdvertGoodsService.findGoodsByActivityType(storeId, saleType);
+	}
+	
+	/**
+	 * @Description: 获取广告服务商品列表
+	 * @param map  查询参数
+	 * @return list
+	 * @author zhangkn
+	 * @date 2016年10月18日
+	 */
+	public List<Map<String,Object>> listGoodsForAdvert(Map<String, Object> map){
+		return columnAdvertGoodsService.listGoodsForAdvert(map);
+	}
+
+	/**
+	 * @Description: 批量添加 活动商品列表
+	 * @param list   要插入的商品集合
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年4月17日
+	 */
+	public void saveBatch(List<ColumnAdvertGoods> list){
+		columnAdvertGoodsService.saveBatch(list);
+	}
 }

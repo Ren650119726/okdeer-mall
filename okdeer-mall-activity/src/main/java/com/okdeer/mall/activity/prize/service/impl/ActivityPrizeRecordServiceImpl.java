@@ -12,10 +12,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo;
 import com.okdeer.mall.activity.prize.mapper.ActivityPrizeRecordMapper;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 
@@ -46,9 +50,9 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 	}
 
 	/**
-	 * @Description: TODO
+	 * @Description: 通过用户id获取奖品列表
 	 * @param userId
-	 * @param activityId 活动id 广告活动id 以后会是对应
+	 * @param activityId 活动id H5活动id 以后会是对应
 	 * @return   
 	 * @return List<ActivityPrizeRecord>  
 	 * @throws
@@ -56,7 +60,7 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 	 * @date 2016年12月15日
 	 */
 	@Override
-	public List<ActivityPrizeRecord> findByUserId(String userId,String activityId) {
+	public List<ActivityPrizeRecordVo> findByUserId(String userId,String activityId) {
 		return activityPrizeRecordMapper.findByUserId(userId,activityId);
 	}
 
@@ -76,17 +80,25 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 	 * (non-Javadoc)
 	 */
 	@Override
-	public int addPrizeRecord(String collectId,String userId,String activityId,String prizeId) {
+	public int addPrizeRecord(String collectId,String userId,String luckDrawId,String prizeId) {
 		ActivityPrizeRecord rec = new ActivityPrizeRecord();
 		rec.setId(UuidUtils.getUuid());
 		rec.setPrizeId(prizeId);
-		rec.setCollectId(collectId);
+		rec.setActivityCollectId(collectId);
 		rec.setUserId(userId);
-		rec.setActivityId(activityId);
+		rec.setLuckDrawId(luckDrawId);
 		rec.setCreateTime(new Date());
 		rec.setIsOffer(0);
-		rec.setDisabled(0);
+		rec.setDisabled(Disabled.valid);
 		return activityPrizeRecordMapper.add(rec);
+	}
+
+	@Override
+	public PageUtils<ActivityPrizeRecordVo> findPrizeRecordList(ActivityPrizeRecordVo activityPrizeRecordVo,
+			int pageNumber, int pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true);
+		List<ActivityPrizeRecordVo> result = activityPrizeRecordMapper.findPrizeRecordList(activityPrizeRecordVo);
+		return new PageUtils<ActivityPrizeRecordVo>(result);
 	}
 
 }

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.advert.mapper.ActivityAdvertStoreMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.advert.entity.ActivityAdvertStore" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+        <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <resultMap id="ShopResultMap" type="com.okdeer.mall.activity.advert.bo.ActivityAdvertStoreBo" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+        <result column="store_name" property="storeName" jdbcType="VARCHAR" />
+        <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <!-- 查询店铺信息根据活动id -->
+    <select id="findShopByAdvertId" resultMap="ShopResultMap" parameterType="java.lang.String" >
+       	SELECT 
+       		  s.id, s.store_id, s.activity_advert_id,st.store_name
+        FROM  activity_advert_store s 
+        INNER JOIN store_info st on s.store_id = st.id
+        where s.activity_advert_id = #{activityAdverId,jdbcType=VARCHAR}
+    </select>
+
+    <sql id="Base_Column_List" >
+        id, store_id, activity_advert_id
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_advert_store
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvertStore" >
+        insert into activity_advert_store
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="storeId != null" >
+                store_id,
+            </if>
+            <if test="activityAdvertId != null" >
+                activity_advert_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="storeId != null" >
+                #{storeId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityAdvertId != null" >
+                #{activityAdvertId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    
+    <!-- 批量插入关联商品 -->
+    <insert id="saveBatch" parameterType="list">
+        insert into activity_advert_store(
+			<include refid="Base_Column_List"/>
+		)values
+		<foreach collection="list" item="item" index="index" separator="," >
+        (
+            #{item.id,jdbcType=VARCHAR},
+            #{item.storeId,jdbcType=VARCHAR},
+            #{item.activityAdvertId,jdbcType=VARCHAR}
+        )
+		</foreach>
+	</insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.advert.entity.ActivityAdvertStore" >
+        update activity_advert_store
+        <set >
+            <if test="storeId != null" >
+                store_id = #{storeId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityAdvertId != null" >
+                activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_advert_store
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+	<!-- 删除关联店铺信息by活动id -->
+    <delete id="deleteByActivityAdvertId" parameterType="java.lang.String" >
+        delete from activity_advert_store
+        where activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+    </delete>
+</mapper>

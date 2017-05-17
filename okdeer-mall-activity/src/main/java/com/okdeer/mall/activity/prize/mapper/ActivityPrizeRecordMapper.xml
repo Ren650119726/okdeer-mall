@@ -5,29 +5,46 @@
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="prize_id" property="prizeId" jdbcType="VARCHAR" />
         <result column="user_id" property="userId" jdbcType="VARCHAR" />
-        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
-        <result column="collect_id" property="collectId" jdbcType="VARCHAR" />
+        <result column="luck_draw_id" property="luckDrawId" jdbcType="VARCHAR" />
+        <result column="activity_collect_id" property="activityCollectId" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="is_offer" property="isOffer" jdbcType="INTEGER" />
         <result column="prize_offer_time" property="prizeOfferTime" jdbcType="TIMESTAMP" />
         <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
-        <result column="disabled" property="disabled" jdbcType="INTEGER" />
+        <result column="disabled" property="disabled" jdbcType="VARCHAR" javaType="com.okdeer.base.common.enums.Disabled" />
     </resultMap>
-
+	<resultMap id="prizeRecordList" type="com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo" >
+       <id column="id" property="id" jdbcType="VARCHAR" />
+       <result column="prize_id" property="prizeId" jdbcType="VARCHAR" />
+       <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+       <result column="login_name" property="loginName" jdbcType="VARCHAR" />
+       <result column="luck_draw_id" property="luckDrawId" jdbcType="VARCHAR" />
+       <result column="luck_draw_name" property="luckDrawName" jdbcType="VARCHAR" />
+       <result column="activity_collect_id" property="activityCollectId" jdbcType="VARCHAR" />
+       <result column="activity_collect_name" property="activityCollectName" jdbcType="VARCHAR" />
+       <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+       <result column="is_offer" property="isOffer" jdbcType="INTEGER" />
+       <result column="prize_name" property="prizeName" jdbcType="VARCHAR" />
+       <result column="activity_name" property="activityName" jdbcType="VARCHAR" />
+       <result column="activity_collect_name" property="activityCollectName" jdbcType="VARCHAR" />
+   </resultMap>
     <sql id="Base_Column_List" >
-        id, prize_id, user_id,activity_id,collect_id,create_time, is_offer, prize_offer_time, update_user_id, update_time, 
+        id, prize_id, user_id,luck_draw_id,activity_collect_id,create_time, is_offer, prize_offer_time, update_user_id, update_time, 
         disabled
     </sql>
     <!-- 根据用户id及活动id查询该活动用户获得的奖品记录 -->
-	<select id="findByUserId" resultMap="BaseResultMap" >
+	<select id="findByUserId" resultMap="prizeRecordList" parameterType="java.lang.String" >
         select 
-        <include refid="Base_Column_List" />
-        from activity_prize_record
-        where disabled=0  and user_id = #{userId,jdbcType=VARCHAR}
-        	  and activity_id =#{activityId,jdbcType=VARCHAR}
-        order by create_time DESC
-    </select>
+        	r.id, r.prize_id,r.prize_name, r.user_id,r.luck_draw_id,r.activity_collect_id,
+        	r.create_time,r.is_offer, r.prize_offer_time, r.update_user_id, r.update_time
+        from activity_prize_record r 
+        	 inner join activity_prize_weight w on r.`prize_id` = w.`id`
+        where r.disabled=0  
+        	  and r.user_id = #{userId,jdbcType=VARCHAR}
+        	  and w.activity_collect_id =#{activityId,jdbcType=VARCHAR}
+        order by r.create_time DESC
+    </select> 
     <!-- 轮播显示最新的中奖记录 -->
     <select id="findPrizeRecord" resultMap="BaseResultMap" >
         select 
@@ -61,11 +78,11 @@
             <if test="userId != null" >
                 user_id,
             </if>
-            <if test="activityId != null" >
-                activity_id,
+            <if test="luckDrawId != null" >
+                luck_draw_id,
             </if>
-            <if test="collectId != null" >
-                collect_id,
+            <if test="activityCollectId != null" >
+                activity_collect_id,
             </if>
             <if test="createTime != null" >
                 create_time,
@@ -96,11 +113,11 @@
             <if test="userId != null" >
                 #{userId,jdbcType=VARCHAR},
             </if>
-            <if test="activityId != null" >
-                #{activityId,jdbcType=VARCHAR},
+            <if test="luckDrawId != null" >
+                #{luckDrawId,jdbcType=VARCHAR},
             </if>
-            <if test="collectId != null" >
-                #{collectId,jdbcType=VARCHAR},
+            <if test="activityCollectId != null" >
+                #{activityCollectId,jdbcType=VARCHAR},
             </if>
             <if test="createTime != null" >
                 #{createTime,jdbcType=TIMESTAMP},
@@ -146,5 +163,49 @@
         delete from activity_prize_record
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-
+	<!--begin xuzq 20170410 V2.2.0 中奖记录查询-->
+	<select id="findPrizeRecordList" resultMap="prizeRecordList"  parameterType="com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo">
+        SELECT
+			record.activity_collect_id,
+			coupon.`name` activity_collect_name,
+			record.create_time,
+			record.is_offer,
+			record.prize_offer_time,
+		    prize.prize_name,
+		    us.nick_name,
+		    us.login_name,
+		    draw.`name` luck_draw_name,
+		    activity.`name` activity_name
+		FROM activity_prize_record record
+		  LEFT JOIN sys_buyer_user us ON us.id = record.user_id
+		  LEFT JOIN activity_prize_weight prize ON record.prize_id = prize.id
+		  LEFT JOIN activity_luck_draw draw ON prize.luck_draw_id = draw.id
+		  LEFT JOIN activity_advert activity ON draw.activity_advert_id = activity.id
+		  LEFT JOIN activity_collect_coupons coupon ON record.activity_collect_id = coupon.id
+        <where>
+	        <if test="activityName != null and activityName != ''" >
+	           AND activity.`name` LIKE CONCAT('%',#{activityName,jdbcType=VARCHAR},'%')
+	        </if>
+	        <if test="activityCollectName != null and activityCollectName != ''" >
+	           AND coupon.`name` LIKE CONCAT('%',#{activityCollectName,jdbcType=VARCHAR},'%')
+	        </if>
+	        <if test="luckDrawName != null and luckDrawName !=''" >
+	           AND draw.`name` LIKE CONCAT('%',#{luckDrawName,jdbcType=VARCHAR},'%')
+	        </if>
+	        <if test="nickName != null and nickName !=''" >
+	           AND us.nick_name LIKE CONCAT('%',#{nickName,jdbcType=VARCHAR},'%')
+	        </if>
+	        <if test="loginName != null and loginName !=''" >
+	           AND us.login_name LIKE CONCAT('%',#{loginName,jdbcType=VARCHAR},'%')
+	        </if>
+	        <if test="createTimeStart != null" >
+	           AND record.create_time &gt;= #{createTimeStart,jdbcType=TIMESTAMP}
+	        </if>
+	        <if test="createTimeEnd != null" >
+	           AND record.create_time &lt;= #{createTimeEnd,jdbcType=TIMESTAMP}
+	        </if>
+        </where>
+        order by record.create_time DESC 
+    </select>
+	<!--end xuzq 20170410 V2.2.0 中奖记录查询-->
 </mapper>

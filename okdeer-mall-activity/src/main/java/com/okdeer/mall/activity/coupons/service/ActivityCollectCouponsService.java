@@ -114,5 +114,15 @@ public interface ActivityCollectCouponsService {
 	 * @Description: 查询最近可用的注册推荐活动 
 	 * @return 注册推荐活动Vo
 	 */
-	ActivityCollectCouponsSimpleVo findRecommendAcvitity(); 
+	ActivityCollectCouponsSimpleVo findRecommendAcvitity();
+
+	/**
+	 * @Description: TODO
+	 * @param id
+	 * @param activityAdvertId   
+	 * @author xuzq01
+	 * @return 
+	 * @date 2017年4月18日
+	 */
+	ActivityCollectCoupons findCollectCouponsByModelId(String id, String activityAdvertId); 
 }

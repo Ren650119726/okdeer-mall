@@ -4181,16 +4181,16 @@
 		SELECT COUNT(*) 
 		FROM trade_order_refunds toref 
 		WHERE toref.refunds_status IN(6, 11, 13)
-		AND CURDATE()=DATE_FORMAT(date_sub(NOW(),interval 1 day),'%Y-%m-%d')
+		AND DATE_FORMAT(toref.create_time,'%Y-%m-%d')=DATE_FORMAT(date_sub(NOW(),interval 1 day),'%Y-%m-%d')
 		AND toref.store_id = #{storeId,jdbcType=VARCHAR}) order_refunds_counts
 		FROM (
 		SELECT user_id,
 		COUNT(*) orders,
 		SUM(actual_amount) total_amount
 		FROM trade_order tord
-		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
+		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3,4)
 		AND tord.status IN(1,3,5)))
-		AND CURDATE()=DATE_FORMAT(date_sub(NOW(),interval 1 day),'%Y-%m-%d')
+		AND DATE_FORMAT(tord.create_time,'%Y-%m-%d')=DATE_FORMAT(date_sub(NOW(),interval 1 day),'%Y-%m-%d')
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
 		GROUP BY user_id) tmp
 		UNION ALL
@@ -4207,7 +4207,7 @@
 		COUNT(*) orders,
 		SUM(actual_amount) total_amount
 		FROM trade_order tord
-		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
+		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3,4)
 		AND tord.status IN(1,3,5)))
 		AND YEARWEEK(tord.create_time,3)=YEARWEEK(date_sub(NOW(),interval 1 day),3)
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
@@ -4226,7 +4226,7 @@
 		COUNT(*) orders,
 		SUM(actual_amount) total_amount
 		FROM trade_order tord
-		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
+		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3,4)
 		AND tord.status IN(1,3,5)))
 		AND DATE_FORMAT(date_sub(CURDATE(),interval 1 day),'%Y-%m')=DATE_FORMAT(tord.create_time,'%Y-%m')
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
@@ -4243,7 +4243,7 @@
 		COUNT(*) orders,
 		SUM(actual_amount) total_amount
 		FROM trade_order tord
-		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3)
+		WHERE ((tord.pay_way=1 AND tord.payment_status=1) OR (tord.pay_way IN(0,3,4)
 		AND tord.status IN(1,3,5)))
 		AND YEAR(date_sub(CURDATE(),interval 1 day))=YEAR(tord.create_time)
 		AND tord.store_id = #{storeId, jdbcType=VARCHAR}
@@ -5586,6 +5586,12 @@
 		<if test="orderResource != null">
 			AND trade.order_resource = #{orderResource, jdbcType=TINYINT}
 		</if>
+		<if test="orderResourceList != null and orderResourceList.size() > 0">
+			AND trade.order_resource IN
+			<foreach collection="orderResourceList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
 		<if test="payType != null">
 			AND pay.pay_type = #{payType, jdbcType=TINYINT}
 		</if>
@@ -5650,6 +5656,12 @@
 		</if>
 		<if test="orderResource != null">
 			AND trade.order_resource = #{orderResource, jdbcType=TINYINT}
+		</if>
+		<if test="orderResourceList != null and orderResourceList.size() > 0">
+			AND trade.order_resource IN
+			<foreach collection="orderResourceList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
 		</if>
 		<if test="payType != null">
 			AND pay.pay_type = #{payType, jdbcType=TINYINT}
@@ -5858,6 +5870,12 @@
 		</if>
 		<if test="orderResource != null">
 			AND trade.order_resource = #{orderResource, jdbcType=TINYINT}
+		</if>
+		<if test="orderResourceList != null and orderResourceList.size() > 0">
+			AND trade.order_resource IN
+			<foreach collection="orderResourceList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
 		</if>
 		<if test="payType != null">
 			AND pay.pay_type = #{payType, jdbcType=TINYINT}
