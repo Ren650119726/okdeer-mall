@@ -130,6 +130,9 @@ public class AppAdapter {
 			return null;
 		}
 		StoreInfoExt storeExt = storeInfo.getStoreInfoExt();
+		// begin V2.4.0修改非营业日期字段位置 add by wangf01 20170517
+		StoreInfoExt storeInfoExt = storeInfo.getStoreInfoExt();
+		// end by wangf01 20170517
 		StoreInfoServiceExt storeServExt = storeInfo.getStoreInfoServiceExt();
 		AppStoreServiceExtDto dto = BeanMapper.map(storeServExt, AppStoreServiceExtDto.class);
 		dto.setStartPrice(ConvertUtil.format(storeServExt.getStartingPrice()));
@@ -146,7 +149,10 @@ public class AppAdapter {
 		// 解析下单模式
 		parseOrderTimeModel(dto,storeServExt);
 		// 解析不可用日期
-		dto.setInvalidDates(parseInvalidDate(storeServExt.getInvalidDate(),dto.getAheadTimeDay()));
+		// begin V2.4.0修改非营业日期字段位置 add by wangf01 20170517
+		//dto.setInvalidDates(parseInvalidDate(storeServExt.getInvalidDate(),dto.getAheadTimeDay()));
+		dto.setInvalidDates(parseInvalidDate(storeInfoExt.getInvalidDate(),dto.getAheadTimeDay()));
+		// end by wangf01 20170517
 		return dto;
 	}
 	
