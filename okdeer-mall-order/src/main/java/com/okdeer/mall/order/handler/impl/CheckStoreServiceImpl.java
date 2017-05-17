@@ -277,14 +277,23 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 		StoreInfoServiceExt servExt = storeInfo.getStoreInfoServiceExt();
 		String servTime = paramDto.getPickTime();
-		if(StringUtils.isEmpty(servTime) || StringUtils.isEmpty(servExt.getInvalidDate())){
+		// begin V2.4.0修改非营业日期字段位置 add by wangf01 20170517
+		StoreInfoExt storeInfoExt = storeInfo.getStoreInfoExt();
+		if(StringUtils.isEmpty(servTime) || StringUtils.isEmpty(storeInfoExt.getInvalidDate())){
 			return;
 		}
+		/*if(StringUtils.isEmpty(servTime) || StringUtils.isEmpty(servExt.getInvalidDate())){
+			return;
+		}*/
+		// end by wangf01 20170517
 		// 服务时间年月
 		String servMonth = servTime.substring(0,4) + servTime.substring(5,7);
 		// 服务时间天数
 		int servDay = Integer.parseInt(servTime.substring(8,10));
-		String[] invalidDateArr = servExt.getInvalidDate().split(",");
+		// begin V2.4.0修改非营业日期字段位置 add by wangf01 20170517
+		/*String[] invalidDateArr = servExt.getInvalidDate().split(",");*/
+		String[] invalidDateArr = storeInfoExt.getInvalidDate().split(",");
+		// end by wangf01 20170517
 		String invalidMonth = null;
 		for (String invalidTime : invalidDateArr) {
 			invalidMonth = invalidTime.substring(0, 6);
