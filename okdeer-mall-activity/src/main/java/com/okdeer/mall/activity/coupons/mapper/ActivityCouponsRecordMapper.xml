@@ -13,6 +13,8 @@
     <result column="order_id" property="orderId" jdbcType="VARCHAR" />
     <result column="room_id" property="roomId" jdbcType="VARCHAR" />   
     <result column="thrid_code" property="thridCode" jdbcType="VARCHAR" />
+    <result column="device_id" property="deviceId" jdbcType="VARCHAR" />
+    <result column="rec_date" property="recDate" jdbcType="VARCHAR" />
   </resultMap>
   
    <resultMap id="VoResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo" extends="BaseResultMap">
@@ -22,7 +24,7 @@
   </resultMap>
   <sql id="Base_Column_List" >
     id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id, 
-    valid_time, status, order_id, room_id,thrid_code
+    valid_time, status, order_id, room_id,thrid_code, device_id, rec_date
   </sql>
   <sql id="condition" >
     <if test="null!=params" >
@@ -51,11 +53,11 @@
     insert into activity_coupons_record (id, collect_type, coupons_id, 
       coupons_collect_id, collect_time, collect_user_id, 
       valid_time, status, order_id, 
-      room_id)
+      room_id, device_id, rec_date)
     values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=TINYINT}, #{couponsId,jdbcType=VARCHAR}, 
       #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUserId,jdbcType=VARCHAR}, 
       #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=TINYINT}, #{orderId,jdbcType=VARCHAR}, 
-      #{roomId,jdbcType=VARCHAR})
+      #{roomId,jdbcType=VARCHAR}, #{deviceId,jdbcType=VARCHAR},#{recDate,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
     insert into activity_coupons_record
@@ -93,6 +95,12 @@
       <if test="thridCode != null" >
         thrid_code,
       </if>
+      <if test="deviceId != null" >
+          device_id,
+      </if>
+      <if test="recDate != null" >
+          rec_date,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -128,6 +136,12 @@
       <if test="thridCode != null" >
         #{thridCode,jdbcType=VARCHAR},
       </if>
+      <if test="deviceId != null" >
+      	#{deviceId,jdbcType=VARCHAR},
+      </if>
+      <if test="recDate != null" >
+    	#{recDate,jdbcType=VARCHAR},
+      </if>
     </trim>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
@@ -159,6 +173,12 @@
       </if>
       <if test="roomId != null" >
         room_id = #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceId != null" >
+          device_id = #{deviceId,jdbcType=VARCHAR},
+      </if>
+      <if test="recDate != null" >
+          rec_date = #{recDate,jdbcType=VARCHAR},
       </if>
     </set>
     where id = #{id,jdbcType=VARCHAR}

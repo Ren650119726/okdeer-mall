@@ -11,11 +11,12 @@
         <result column="order_id" property="orderId" jdbcType="VARCHAR" />
         <result column="order_time" property="orderTime" jdbcType="TIMESTAMP" />
         <result column="order_disabled" property="orderDisabled" jdbcType="TINYINT" />
+		<result column="device_id" property="deviceId" jdbcType="VARCHAR" />
     </resultMap>
 
     <sql id="Base_Column_List" >
         id, discount_id, discount_conditions_id, discount_type, user_id, store_id, order_id, 
-        order_time, order_disabled
+        order_time, order_disabled, device_id
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -55,6 +56,9 @@
             <if test="orderDisabled != null" >
                 order_disabled,
             </if>
+            <if test="deviceId != null" >
+                device_id,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -83,6 +87,9 @@
             </if>
             <if test="orderDisabled != null" >
                 #{orderDisabled,jdbcType=TINYINT},
+            </if>
+            <if test="deviceId != null" >
+                #{deviceId,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -113,6 +120,9 @@
             </if>
             <if test="orderDisabled != null" >
                 order_disabled = #{orderDisabled,jdbcType=TINYINT},
+            </if>
+            <if test="deviceId != null" >
+                device_id = #{deviceId,jdbcType=VARCHAR},
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
