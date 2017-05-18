@@ -1630,8 +1630,8 @@
 			(SELECT id, MIN(create_time) AS received_time
 		    FROM trade_order 
 		    WHERE STATUS = 5
-		    AND type != 3 
-		    AND type != 4
+		    AND type NOT IN (1,3,4)
+		    AND order_resource NOT IN (2,4)
 		    GROUP BY user_id) fto
 		ON fto.id = o.id
 		WHERE 1=1
@@ -5241,8 +5241,8 @@
 			(SELECT id, MIN(create_time) AS received_time
 		    FROM trade_order 
 		    WHERE STATUS = 5 
-		    AND type != 3 
-		    AND type != 4
+		    AND type NOT IN (1,3,4) 
+		    AND order_resource NOT IN (2,4)
 		    GROUP BY user_id) fto
 		ON fto.id = tr.id
 		WHERE 1=1
