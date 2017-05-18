@@ -1,5 +1,7 @@
 package com.okdeer.mall.order.service.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -9,6 +11,9 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.service.TradeOrderItemServiceApi;
 import com.okdeer.mall.order.vo.TradeOrderItemDetailVo;
 import com.okdeer.base.common.exception.ServiceException;
@@ -78,6 +83,31 @@ class TradeOrderItemServiceImpl implements TradeOrderItemService, TradeOrderItem
 			return null;
 		}
 		return tradeOrderItemMapper.findOrderItems(orderIds);
+	}
+	
+	/**
+	 * @Description: 根据日期查询便利店线上完成订单商品项数据 
+	 * @param startDate 起始时间 
+	 * @param endDate 结束时间
+	 * @return List<TradeOrderItem>  
+	 * @author tuzhd
+	 * @date 2017年5月17日
+	 */
+	public List<TradeOrderItem> findOrderItemByDaild(String startDate,String endDate){
+		Map<String, Object> map = new HashMap<String,Object>();
+		//完成订单状态
+		map.put("orderStatus", OrderStatusEnum.HAS_BEEN_SIGNED);
+		List<OrderResourceEnum> list =  new ArrayList<OrderResourceEnum>();
+		list.add(OrderResourceEnum.YSCAPP); 
+		list.add(OrderResourceEnum.WECHAT);
+		list.add(OrderResourceEnum.CVSAPP);
+		//线上订单来源
+		map.put("orderResource", list); 
+		//实物订单
+		map.put("orderType", OrderTypeEnum.PHYSICAL_ORDER); 
+		map.put("orderStartDate", startDate);
+		map.put("orderEndDate", endDate);
+		return tradeOrderItemMapper.findCompletedOrderItem(map);
 	}
 
 }

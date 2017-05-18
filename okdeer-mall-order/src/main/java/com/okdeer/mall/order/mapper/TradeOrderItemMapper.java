@@ -133,4 +133,13 @@ public interface TradeOrderItemMapper{
 	// End V2.1 added by maojj 2017-02-18
 	
 	List<TradeOrderItem> findOrderItemByIdList(@Param("idList")List<String> idList);
+	
+	/**
+	 * @Description: 根据日期查询便利店线上完成订单商品项数据 
+	 * @param map 
+	 * @return List<TradeOrderItem>  
+	 * @author tuzhd
+	 * @date 2017年5月17日
+	 */
+	List<TradeOrderItem> findCompletedOrderItem(Map<String, Object> map);
 }
