@@ -51,41 +51,6 @@ public interface TradeOrderService {
 
 	PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize) throws ServiceException;
 
-	PageUtils<TradeOrder> getTradeOrderByParams(Map<String, Object> map, int pageNumber, int pageSize)
-			throws ServiceException;
-
-	PageUtils<TradeOrder> getOnlineTradeOrderList(Map<String, Object> map, int pageNumber, int pageSize)
-			throws ServiceException;
-
-	/**
-	 * pos 订单回款列表
-	 * 
-	 * @param map
-	 *            Map
-	 * @param pageNumber
-	 *            int
-	 * @param pageSize
-	 *            int
-	 * @return PageUtils
-	 * @throws ServiceException
-	 */
-	PageUtils<TradeOrder> posOrderReceivedList(Map<String, Object> map, int pageNumber, int pageSize)
-			throws ServiceException;
-
-	/**
-	 * pos 订单回款详情
-	 * 
-	 * @param map
-	 *            Map
-	 * @param pageNumber
-	 *            int
-	 * @param pageSize
-	 *            int
-	 * @return PageUtils
-	 * @throws ServiceException
-	 */
-	List<TradeOrderItem> orderReceivedDetail(Map<String, Object> map) throws ServiceException;
-
 	/**
 	 * 
 	 * @desc 查询订单导出的列表
@@ -186,16 +151,6 @@ public interface TradeOrderService {
 	 * @return
 	 */
 	TradeOrder findOrderDetail(String orderId) throws ServiceException;
-
-	/**
-	 * 
-	 * 根据订单id，获取订单详细信息（包括订单基本信息、支付信息、发票信息、店铺基本信息等）
-	 * 
-	 * @author wusw
-	 * @param orderId
-	 * @return
-	 */
-	TradeOrder getOnlineOrderDetail(String orderId) throws ServiceException;
 
 	/**
 	 * 
@@ -498,8 +453,6 @@ public interface TradeOrderService {
 	 * @throws ServiceException
 	 */
 	List<TradeOrderItem> getTradeOrderItems(Map<String, Object> map) throws ServiceException;
-
-	List<TradeOrderItem> findTradeOrderItems(Map<String, Object> map) throws ServiceException;
 
 	/**
 	 * 微商城App订单查询
@@ -878,14 +831,6 @@ public interface TradeOrderService {
 	 * @return
 	 */
 	int selectOrderStatusByTradeNum(String tradeNum) throws Exception;
-
-	/**
-	 * pos发货
-	 * 
-	 * @param tradeOrder
-	 *            TradeOrder
-	 */
-	public void updateOrderDelivery(TradeOrder tradeOrder) throws Exception;
 
 	/**
 	 * 修改代金券领取记录状态
