@@ -70,8 +70,6 @@ public interface TradeOrderMapper {
 
 	List<TradeOrderItem> selectTraderOrderList(Map<String, Object> map);
 
-	List<TradeOrderItem> findTraderOrderList(Map<String, Object> map);
-
 	List<TradeOrder> selectOrderByPayType(Map<String, Object> map);
 
 	/**
@@ -377,13 +375,6 @@ public interface TradeOrderMapper {
 	Integer updateOrderStatus(TradeOrder tradeOrder);
 
 	/**
-	 * 根据参数获取订单列表
-	 * @param map Map
-	 * @return List
-	 */
-	List<TradeOrder> getTradeOrderByParams(Map<String, Object> map);
-
-	/**
 	 * 根据条件获取订单数量
 	 * @param map Map
 	 * @return Integer
@@ -438,23 +429,6 @@ public interface TradeOrderMapper {
 	 * @param id
 	 */
 	void deleteRefundOrder(String id);
-
-	/**
-	 * pos 订单回款列表
-	 * @param map Map
-	 * @param pageNumber int
-	 * @param pageSize int
-	 * @return PageUtils
-	 * @throws ServiceException
-	 */
-	List<TradeOrder> posOrderReceivedList(Map<String, Object> map) throws ServiceException;
-
-	/**
-	 * pos 订单回款详情
-	 * @param map Map
-	 * @throws ServiceException
-	 */
-	List<TradeOrderItem> orderReceivedDetail(Map<String, Object> map) throws ServiceException;
 
 	/**
 	 * 查询pos订单现金总额统计
@@ -1059,16 +1033,6 @@ public interface TradeOrderMapper {
 	List<PhysicsOrderVo> selectOrderBackStageNew(PhysicsOrderVo vo);
 
 	// End sql优化，将复杂sql拆分开来 add by zengj
-
-	/**
-	 * 
-	 * @Description: 查询POS确认收货订单列表
-	 * @param storeId 店铺ID
-	 * @return List 确认收货订单列表  
-	 * @author zengj
-	 * @date 2016年9月13日
-	 */
-	List<Map<String, Object>> findConfirmDeliveryOrderListByPos(@Param("storeId") String storeId);
 
 	// Begin v1.1.0 add by zengjz
 	/**

@@ -2162,14 +2162,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	@Override
-	public PageUtils<TradeOrder> getTradeOrderByParams(Map<String, Object> map, int pageNumber, int pageSize)
-			throws ServiceException {
-		PageHelper.startPage(pageNumber, pageSize, true, false);
-		List<TradeOrder> list = tradeOrderMapper.getTradeOrderByParams(map);
-		return new PageUtils<TradeOrder>(list);
-	}
-
-	@Override
 	public Integer getTradeOrderCount(Map<String, Object> map) {
 		return tradeOrderMapper.getTradeOrderCount(map);
 	}
@@ -2178,81 +2170,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public List<TradeOrderItem> getTradeOrderItems(Map<String, Object> map) throws ServiceException {
 		List<TradeOrderItem> items = tradeOrderMapper.selectTraderOrderList(map);
 		return items;
-	}
-
-	@Override
-	public List<TradeOrderItem> findTradeOrderItems(Map<String, Object> map) throws ServiceException {
-		List<TradeOrderItem> items = tradeOrderMapper.findTraderOrderList(map);
-		return items;
-	}
-
-	@Override
-	public PageUtils<TradeOrder> getOnlineTradeOrderList(Map<String, Object> map, int pageNumber, int pageSize)
-			throws ServiceException {
-		PageHelper.startPage(pageNumber, pageSize, true, false);
-		// begin add 兼容未升级的pos机系统 by wangf01 2017-1-24
-		if (map.containsKey("orderResource")) {
-			List<Integer> statusList = (List<Integer>) map.get("orderResource");
-			if (CollectionUtils.isNotEmpty(statusList) && statusList.size() > 0) {
-				// 添加友门鹿便利店类型查询
-				statusList.add(OrderResourceEnum.CVSAPP.ordinal());
-				// 集合去重
-				statusList.stream().distinct().collect(Collectors.toList());
-				map.put("orderResource", statusList);
-			}
-		}
-		// end add 兼容未升级的pos机系统 by wangf01 2017-1-24
-		List<TradeOrder> list = tradeOrderMapper.getTradeOrderByParams(map);
-		/*
-		 * if (list != null && list.size() > 0) { for (TradeOrder order : list) { if
-		 * (StringUtils.isNotEmpty(order.getActivityId()) && !"0".equals(order.getActivityId())) { if
-		 * (order.getActivityType().equals(ActivityTypeEnum. FULL_REDUCTION_ACTIVITIES)) { // 满减活动 ActivityDiscount
-		 * activityDiscount = activityDiscountMapper .selectByPrimaryKey(order.getActivityId()); if (activityDiscount !=
-		 * null && "0".equals(activityDiscount.getStoreId())) { // 所属店铺 // 运营商类型 // 没有优惠
-		 * order.setPreferentialPrice(null); } } } else { order.setPreferentialPrice(null); } } }
-		 */
-		return new PageUtils<TradeOrder>(list);
-	}
-
-	@Override
-	public TradeOrder getOnlineOrderDetail(String orderId) throws ServiceException {
-		// 订单、支付、发票信息
-		TradeOrder tradeOrder = tradeOrderMapper.selectOrderPayInvoiceById(orderId);
-
-		// 活动名称
-		String activityName = "";
-		// 如果有活动ID，说明该订单参与了活动
-		if (StringUtils.isNotEmpty(tradeOrder.getActivityId()) && !"0".equals(tradeOrder.getActivityId())) {
-			// 代金券活动
-			if (ActivityTypeEnum.VONCHER.equals(tradeOrder.getActivityType())) {
-				ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService
-						.get(tradeOrder.getActivityId());
-				activityName = activityCollectCoupons.getName();
-			} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.equals(tradeOrder.getActivityType())) {
-				// 满减活动
-				ActivityDiscount activityDiscount = activityDiscountMapper
-						.findById(tradeOrder.getActivityId());
-				activityName = activityDiscount.getName();
-			}
-		}
-
-		// 店铺基本信息
-		StoreInfo storeInfo = storeInfoService.selectByPrimaryKey(tradeOrder.getStoreId());
-
-		// 订单物流信息
-		TradeOrderLogistics tradeOrderlogistics = tradeOrderLogisticsMapper.selectByOrderId(orderId);
-
-		// 交易项信息（包括商品基本信息）
-		List<TradeOrderItem> tradeOrderItemList = tradeOrderItemMapper.selectOrderItemDetailById(orderId);
-
-		tradeOrder.setActivityName(activityName);
-		tradeOrder.setStoreName(storeInfo.getStoreName());
-		tradeOrder.setStoreMobile(storeInfo.getMobile());
-		tradeOrder.setStoreType(storeInfo.getType());
-		tradeOrder.setTradeOrderLogistics(tradeOrderlogistics);
-		tradeOrder.setTradeOrderItem(tradeOrderItemList);
-
-		return tradeOrder;
 	}
 
 	@Override
@@ -2522,20 +2439,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 		}
 		return new PageUtils<TradeOrderVo>(list);
-	}
-
-	@Override
-	public PageUtils<TradeOrder> posOrderReceivedList(Map<String, Object> map, int pageNumber, int pageSize)
-			throws ServiceException {
-		PageHelper.startPage(pageNumber, pageSize, true, false);
-		List<TradeOrder> list = tradeOrderMapper.posOrderReceivedList(map);
-		return new PageUtils<TradeOrder>(list);
-	}
-
-	@Override
-	public List<TradeOrderItem> orderReceivedDetail(Map<String, Object> map) throws ServiceException {
-		List<TradeOrderItem> list = tradeOrderMapper.orderReceivedDetail(map);
-		return list;
 	}
 
 	/**
@@ -5039,49 +4942,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateOrderDelivery(TradeOrder tradeOrder) throws Exception {
-		if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {// 发货
-			this.updateOrderStatus(tradeOrder);
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("orderId", tradeOrder.getId());
-			List<TradeOrderItem> tradeOrderItem = this.findTradeOrderItems(map);
-			tradeOrder.setTradeOrderItem(tradeOrderItem);
-			// 锁定库存
-			try {
-				// 发送计时消息
-				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
-				// Begin 1.0.Z 增加订单操作记录 add by zengj
-				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
-						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
-				// End 1.0.Z 增加订单操作记录 add by zengj
-
-				// 发送短信
-				tradeMessageService.sendSmsByShipments(tradeOrder);
-				// added by maojj 给ERP发消息去生成出入库单据
-				// 库存调整-放到最后处理
-				// stockManagerService.updateStock(stockAdjustVo);
-				// stockMQProducer.sendMessage(stockAdjustVo);
-			} catch (Exception e) {
-				logger.error("pos 发货锁定库存发生异常", e);
-				// added by maojj
-				// rollbackMQProducer.sendStockRollbackMsg(rpcId);
-				throw e;
-			}
-
-		} else { // 收货
-			try {
-				this.updateWithConfirm(tradeOrder);
-			} catch (Exception e) {
-				logger.error("pos 发货发生异常", e);
-				throw new ServiceException("发货失败", e);
-			}
-		}
-
-	}
-
-
-	@Override
-	@Transactional(rollbackFor = Exception.class)
 	public void insertPosTradeOrder(Object entity) throws Exception {
 		if (entity instanceof TradeOrder) {
 			TradeOrder tradeOrder = (TradeOrder) entity;
@@ -6073,25 +5933,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 
 	// End 12051 add by wusw 20160811
-
-	/**
-	 *
-	 * @Description: 查询POS确认收货订单列表
-	 * @param storeId
-	 *            店铺ID
-	 * @param pageNumber
-	 *            当前页
-	 * @param pageSize
-	 *            页大小
-	 * @return List 确认收货订单列表
-	 * @author zengj
-	 * @date 2016年9月13日
-	 */
-	public PageUtils<Map<String, Object>> findConfirmDeliveryOrderListByPos(String storeId, int pageNumber,
-			int pageSize) {
-		PageHelper.startPage(pageNumber, pageSize, true, false);
-		return new PageUtils<Map<String, Object>>(tradeOrderMapper.findConfirmDeliveryOrderListByPos(storeId));
-	}
 
 	// Begin v1.1.0 add by zengjz 20160912
 	@Override
