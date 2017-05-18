@@ -52,6 +52,7 @@
     <result column="order_id" property="orderId" jdbcType="VARCHAR" />
     <result column="store_spu_id" property="storeSpuId" jdbcType="VARCHAR" />
     <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
     <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
     <result column="properties_indb" property="propertiesIndb" jdbcType="VARCHAR" />
     <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
@@ -613,4 +614,39 @@
         #{id}
     </foreach>
  </select>
+ 
+ <!-- 根据日期查询便利店线上完成订单商品项数据  tuzhd-->
+  <select id="findCompletedOrderItem" parameterType="map" resultMap="BaseResultMap">
+ 	SELECT 
+ 		 item.id, 		item.order_id, 	item.store_sku_id, 
+ 		 item.sku_name, item.spu_type,	item.main_pic_prl,
+ 		 item.bar_code,	item.weight, 	item.properties_indb, 
+   		 item.quantity,	item.unit_price,item.total_amount, 
+   		 item.actual_amount, item.preferential_price, 
+   		 item.status, item.appraise, item.create_time,
+  		 s.`store_id`
+	FROM trade_order s 
+	inner join trade_order_item m on s.id=m.`order_id`
+	WHERE 1=1
+		<if test="orderStatus != null">
+			AND s.`status` = #{orderStatus, jdbcType=TINYINT}
+		</if>
+		<if test="orderResource != null and orderResource.size() > 0">
+			AND s.`order_resource` in
+			<foreach collection="orderResource" open="(" close=")"
+				index="index" item="item" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="orderType != null">
+			AND s.`type` = #{orderType, jdbcType=TINYINT}
+		</if>
+		<if test="orderStartDate != null"  >
+			AND s.update_time &gt;= #{orderStartDate, jdbcType=VARCHAR}
+		</if>
+		<if test="orderEndDate != null"  >
+			AND s.update_time &lt; #{orderEndDate, jdbcType=VARCHAR}
+		</if>
+ </select>
+ 
 </mapper>
