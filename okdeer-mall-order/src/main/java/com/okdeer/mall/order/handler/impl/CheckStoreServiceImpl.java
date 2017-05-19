@@ -138,7 +138,7 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				checkTimeWhenSettlement(resp, storeInfo.getStoreInfoExt());
 				break;
 			case ORDER_SUBMIT:
-				checkTimeWhenSubmit(resp, storeInfo.getStoreInfoExt(), paramDto.isCheckTime());
+				checkTimeWhenSubmit(resp, storeInfo.getStoreInfoExt(), paramDto);
 				break;
 			default:
 				break;
@@ -176,9 +176,9 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 * @author maojj
 	 * @date 2016年12月31日
 	 */
-	private void checkTimeWhenSubmit(Response<PlaceOrderDto> resp, StoreInfoExt storeExt, boolean isCheckTime) {
+	private void checkTimeWhenSubmit(Response<PlaceOrderDto> resp, StoreInfoExt storeExt, PlaceOrderParamDto paramDto) {
 		// 是否校验营业时间
-		if (!isCheckTime) {
+		if (!paramDto.isCheckTime()) {
 			return;
 		}
 		// 判定当前时间是否在营业时间范围内或者当前日期是否有效

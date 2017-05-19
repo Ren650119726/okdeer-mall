@@ -394,16 +394,9 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 * @date 2017年3月15日
 	 */
 	private void updateStock(TradeOrder tradeOrder, PlaceOrderParamDto paramDto) throws Exception {
-		
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
-		StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.build(tradeOrder, parserBo);
-		StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(tradeOrder, parserBo);
-		if(mallStockUpdate != null){
-			goodsStoreSkuStockApi.updateStock(mallStockUpdate);
-		}
-		if(jxcStockUpdate != null){
-			stockUpdateServiceApi.stockUpdateForMessage(jxcStockUpdate);
-		}
+		StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(tradeOrder);
+		goodsStoreSkuStockApi.updateStock(mallStockUpdate);
 		
 		try {
 			// 特惠商品，商品活动映射关系

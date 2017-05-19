@@ -87,14 +87,8 @@ public class StockOperateServiceImpl implements StockOperateService {
 	@Override
 	public void recycleStockByOrder(TradeOrder tradeOrder, List<String> rpcIdList) throws Exception {
 		StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(tradeOrder);
-		StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.build(tradeOrder);
 		rpcIdList.add(mallStockUpdate.getRpcId());
-		if(mallStockUpdate != null){
-			goodsStoreSkuStockApi.updateStock(mallStockUpdate);
-		}
-		if(jxcStockUpdate != null){
-			stockUpdateServiceApi.stockUpdateForMessage(jxcStockUpdate);
-		}
+		goodsStoreSkuStockApi.updateStock(mallStockUpdate);
 	}
 
 	@Override
