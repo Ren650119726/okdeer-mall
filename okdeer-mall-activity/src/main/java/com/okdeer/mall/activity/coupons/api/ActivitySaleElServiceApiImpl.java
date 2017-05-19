@@ -1,27 +1,6 @@
 
 package com.okdeer.mall.activity.coupons.api;
 
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_UPDATE;
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_DEL;
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_UPDATE;
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_LOWPRICE_EL_EDIT;
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_STOCK_EL_UPDATE;
-import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
-import static com.okdeer.common.consts.StoreMenuTopicTagConstants.TAG_STORE_MENU_UPDATE;
-import static com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum.LOW_PRICE;
-import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_SALE_ACTIVITY_GOODS_DELETE;
-import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_EDIT_ACTIVITY_SALE_GOODS;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.common.message.Message;
@@ -43,6 +22,20 @@ import com.okdeer.mall.activity.dto.ActivitySaleGoodsParamDto;
 import com.okdeer.mall.activity.service.ArchiveSendMsgService;
 import com.okdeer.mall.operate.contants.OperateFieldContants;
 import com.okdeer.mall.operate.dto.GoodsChangedMsgDto;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.okdeer.common.consts.ELTopicTagConstants.*;
+import static com.okdeer.common.consts.StoreMenuTopicTagConstants.TAG_STORE_MENU_UPDATE;
+import static com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum.LOW_PRICE;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_EDIT_ACTIVITY_SALE_GOODS;
 
 /**
  * 
@@ -160,6 +153,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
                     case 7:
                         structureProducer(paramDto, TAG_LOWPRICE_EL_UPDATE);
                         break;
+                    default:break;
                 }
             }
         }

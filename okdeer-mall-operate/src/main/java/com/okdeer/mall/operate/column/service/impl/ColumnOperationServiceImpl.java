@@ -190,6 +190,7 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 				}
 				saveOperationVersion(columnOperation,0);
 				break;
+			default:break;
 		}
 		// end add by wangf01 20170314
 		// 插入与运营栏目关联的区域或者小区数据
@@ -245,6 +246,7 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 				}
 				saveOperationVersion(columnOperation,1);
 				break;
+			default:break;
 		}
 		// end add by wangf01 20170314
 
