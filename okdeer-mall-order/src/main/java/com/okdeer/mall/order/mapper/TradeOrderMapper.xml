@@ -1104,6 +1104,20 @@
 		DESC
 	</select>
 
+	<select id="findTraderOrderList" resultMap="TradeOrderItemMap"
+		parameterType="map">
+		SELECT
+		it.id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,it.actual_amount,it.status,it.bar_code,it.style_code,it.order_id,it.properties_indb,it.spu_type,it.store_sku_id,
+		it.weight, it.income
+		FROM trade_order AS tr LEFT JOIN trade_order_item it
+		ON tr.id=it.order_id
+		WHERE 1=1
+		<include refid="refund_order_condition" />
+		ORDER BY
+		tr.create_time
+		DESC
+	</select>
+
 	<!-- 用户订单列表查询 zhongy start -->
 	<select id="selectUserOrderList" resultMap="BaseResultMap"
 		parameterType="map">
@@ -1393,6 +1407,57 @@
 			end),
 		</if>
 		tr.create_time
+	</select>
+
+	<!--chenwj 根据参数获取订单列表 -->
+	<select id="getTradeOrderByParams" parameterType="map"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from trade_order o where 1=1 and o.disabled = 0
+		<if test="status != null and status !=''">
+			and o.status = #{status}
+		</if>
+		<if test="storeId != null and storeId !=''">
+			and o.store_id = #{storeId}
+		</if>
+		<if test="orderNo != null and orderNo !=''">
+			and o.order_no like CONCAT('%',#{orderNo},'%')
+		</if>
+		<if test="payWay != null and payWay != ''">
+			and o.pay_way = #{payWay}
+		</if>
+		<if test="refundsStatus !=null">
+			and o.refunds_status = #{refundsStatus}
+		</if>
+		<if test="null != orderResource">
+			AND o.order_resource IN
+			<foreach collection="orderResource" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="null != startCreateTime">
+	    <![CDATA[ AND o.create_time >= #{startCreateTime} ]]>
+		</if>
+		<if test="null != endCreateTime">
+	    <![CDATA[ AND o.create_time <= #{endCreateTime} ]]>
+		</if>
+		<if test="paymentStatus != null and paymentStatus !=''">
+			and o.payment_status = #{paymentStatus}
+		</if>
+		<if test="notStatusList != null">
+			AND o.status not in
+			<foreach collection="notStatusList" index="index" item="item"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="userId != null and userId != ''">
+			AND ((o.shipments_user_id = #{userId} AND o.pay_way <![CDATA[ <> ]]> 1) OR (o.payment_user_id = #{userId} AND o.pay_way = 1))
+		</if>
+		order by o.create_time ${createTimeSort}
+
 	</select>
 
 	<!--chenwj 根据条件获取订单数量 -->
@@ -3190,6 +3255,77 @@
 			AND tr.`status` IN(1)
 		</if>
 		ORDER BY tr.create_time DESC
+	</select>
+
+	<!-- 订单回款列表 -->
+	<select id="posOrderReceivedList" parameterType="java.util.Map"
+		resultType="com.okdeer.mall.order.entity.TradeOrder">
+		<!-- SELECT a.id, a.order_no as orderNo,count(b.id) AS quantity,a.actual_amount 
+			as actualAmount,a.fare, -->
+		<!-- a.create_time as createTime,a.store_id as storeId,a.status,a.pay_way 
+			as payWay ,a.payment_status,a.pick_up_type -->
+		<!-- FROM trade_order a LEFT JOIN trade_order_item b ON a.id = b.order_id -->
+		<!-- GROUP BY a.order_no -->
+		<!-- HAVING a.store_id = #{storeId} AND a.pay_way = #{payWay} AND payment_status 
+			= #{paymentStatus} and pick_up_type= #{pickUpType} -->
+
+		<!-- <if test="status != null and status !=''"> -->
+		<!-- AND a.status IN -->
+		<!-- <foreach collection="status" index="index" item="item" open="(" separator="," 
+			close=")"> -->
+		<!-- #{item} -->
+		<!-- </foreach> -->
+		<!-- </if> -->
+		SELECT
+		a.id,
+		a.order_no AS orderNo,
+		(select count(*) from trade_order_item b where b.order_id = a.id) AS
+		quantity,
+		a.actual_amount AS actualAmount,
+		a.fare,
+		a.create_time AS createTime,
+		a.store_id AS storeId,
+		a.STATUS,
+		a.pay_way AS payWay,
+		a.payment_status,
+		a.pick_up_type
+		FROM
+		trade_order a
+		where 1=1
+		<if test="storeId != null and storeId != ''">
+			AND a.store_id = #{storeId}
+		</if>
+		<if test="payWay != null ">
+			AND a.pay_way = #{payWay}
+		</if>
+		<if test="paymentStatus != null">
+			AND a.payment_status = #{paymentStatus}
+		</if>
+		<if test="pickUpType != null ">
+			AND a.pick_up_type= #{pickUpType}
+		</if>
+		<if test="status != null ">
+			AND a.status IN
+			<foreach collection="status" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		order by a.create_time asc
+	</select>
+	<!-- 订单回款详情 -->
+	<select id="orderReceivedDetail" parameterType="java.util.Map"
+		resultType="com.okdeer.mall.order.entity.TradeOrderItem">
+		SELECT o.`activity_type` as activityType, o.`activity_id` as activityId,
+		item.`bar_code` as barCode,item.`sku_name` as
+		skuName,item.`properties_indb` as
+		propertiesIndb,item.`quantity`,item.`unit_price` as unitPrice,
+		item.total_amount as totalAmount,item.actual_amount as
+		actualAmount,item.preferential_price as preferentialPrice
+
+		FROM trade_order o
+		LEFT JOIN trade_order_item item ON o.id = item.order_id
+		WHERE o.id = #{orderId}
 	</select>
 
 	<!-- POS现金统计 -->
@@ -5566,6 +5702,22 @@
 		<include refid="Base_Column_List" />
 		from trade_order
 		where status=#{status,jdbcType=TINYINT} and (type=3 or type=4)
+	</select>
+
+	<!-- POS查询确认收货订单列表 zengj 2016-9-13 15:45:30 -->
+	<select id="findConfirmDeliveryOrderListByPos" parameterType="java.lang.String"
+		resultType="map">
+		SELECT o.id as orderId,
+		o.order_no as orderNo,
+		(select count(1) from trade_order_item i where o.id = i.order_Id) as
+		itemCount,
+		format(o.fare,2) as fare,
+		format(o.income,2) as totalAmount,
+		date_format(o.create_time,'%Y-%m-%d %H:%i:%s') as createTime
+		FROM trade_order o
+		WHERE o. status = 3
+		AND o.store_id = #{storeId, jdbcType=VARCHAR}
+		ORDER BY o.create_time ASC
 	</select>
 
 	<select id="statisOrderCannelRefundByParams" parameterType="map"
