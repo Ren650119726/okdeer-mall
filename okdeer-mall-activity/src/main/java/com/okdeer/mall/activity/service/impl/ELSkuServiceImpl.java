@@ -179,6 +179,7 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
                         case closed:
                             activitySeckillService.saveByCloseSeckill(activity);
                             break;
+                        default:break;
                     }
                 } catch (Exception e) {
                     logger.error("业务发生异常", e);
