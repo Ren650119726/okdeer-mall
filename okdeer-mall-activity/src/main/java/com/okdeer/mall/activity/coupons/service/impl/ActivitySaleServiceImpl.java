@@ -229,9 +229,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			updateDetail.setActType(actType);
 			if(stockOptType == StockOperateEnum.ACTIVITY_END){
 				// 如果活动结束，将活动数量归0
-				updateDetail.setUpdateNum(0);
+				updateDetail.setUpdateLockedNum(0);
 			}else{
-				updateDetail.setUpdateNum(actSaleGoods.getSaleStock());
+				updateDetail.setUpdateLockedNum(actSaleGoods.getSaleStock());
 			}
 			
 			updateDetailList.add(updateDetail);
