@@ -1726,6 +1726,41 @@
 		SELECT count(1) FROM trade_order WHERE store_id =
 		#{storeId,jdbcType=VARCHAR} AND status = #{status,jdbcType=BIT}
 	</select>
+
+	<select id="selectOrderCountByParam" resultType="String" parameterType="com.okdeer.mall.order.dto.TradeOrderCountParamDto">
+		SELECT
+		<choose>
+			<when test="countType != null and countType == 0">
+				count(1)
+			</when>
+			<when test="countType != null and countType == 1">
+				IFNULL(SUM(income),'0.00') as income
+			</when>
+			<when test="countType != null and countType == 2">
+				count(DISTINCT user_id)
+			</when>
+			<otherwise>
+				count(1)
+			</otherwise>
+		</choose>
+		FROM trade_order WHERE 1=1
+		<if test="storeId != null and storeId != ''">
+			AND store_id=#{storeId}
+		</if>
+		<if test="orderStatus != null">
+			AND status in (
+			<foreach collection="orderStatus" item="item" separator=",">
+				${item}
+			</foreach>
+			)
+		</if>
+		<if test="orderResource != null and orderResource != ''">
+			AND order_resource in (${orderResource})
+		</if>
+		<if test="startDate != null and endDate != null">
+			AND DATE_FORMAT(create_time,"%Y-%m-%d") BETWEEN #{startDate} and  #{endDate}
+		</if>
+	</select>
 	
 	<!-- 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用-->
 	<select id="selectOrderNumByStatus" resultType="java.lang.Integer"

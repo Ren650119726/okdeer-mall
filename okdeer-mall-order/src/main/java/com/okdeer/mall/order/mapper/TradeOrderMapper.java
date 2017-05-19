@@ -1,17 +1,11 @@
 
 package com.okdeer.mall.order.mapper;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.ibatis.annotations.Param;
-
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
+import com.okdeer.mall.order.dto.TradeOrderCountParamDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -19,16 +13,13 @@ import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
-import com.okdeer.mall.order.vo.ActivityInfoVO;
-import com.okdeer.mall.order.vo.ERPTradeOrderVo;
-import com.okdeer.mall.order.vo.PhysicsOrderVo;
-import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
-import com.okdeer.mall.order.vo.TradeOrderQueryVo;
-import com.okdeer.mall.order.vo.TradeOrderStatisticsVo;
-import com.okdeer.mall.order.vo.TradeOrderStatusVo;
-import com.okdeer.mall.order.vo.TradeOrderVo;
-import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
-import com.okdeer.mall.order.vo.UserTradeServiceOrderVo;
+import com.okdeer.mall.order.vo.*;
+import org.apache.ibatis.annotations.Param;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @DESC: 
@@ -155,6 +146,14 @@ public interface TradeOrderMapper {
 	List<TradeOrder> selectExportOrder(Map<String, Object> map);
 
 	Integer selectOrderNum(Map<String, Object> map);
+
+	/**
+	 * 查询店铺指定状态订单数量
+	 *
+	 * @param paramDto TradeOrderCountParamDto
+	 * @return
+	 */
+	String selectOrderCountByParam(TradeOrderCountParamDto paramDto);
 
 	TradeOrder selectByPrimaryKey(String id);
 	
