@@ -9,15 +9,20 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
+import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
@@ -164,6 +169,18 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 					}
 
 				}
+				// 如果代金券限制设备
+				if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0){
+					if(coupons.getDeviceDayLimit().compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_DEVICE, coupons.getCouponId()))< 1){
+						return false;
+					}
+				}
+				// 如果代金券限制账号
+				if(coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0){
+					if(coupons.getAccountDayLimit().compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_USER, coupons.getCouponId()))< 1){
+						return false;
+					}
+				}
 				return true;
 			}
 		});
@@ -198,14 +215,40 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 				}
 				// 参与活动次数限制
 				int limitTotalFreq = actInfo.getLimitTotalFreq().intValue();
+				ActivityRecordParamBo recParamBo = null;
 				if (limitTotalFreq > 0) {
 					// 用户参与活动次数。0：不限，大于0有限制
-					int userTotalFreq = activityDiscountRecordService.countTotalFreq(paramBo.getUserId(),
-							actInfo.getId());
+					recParamBo = new ActivityRecordParamBo();
+					recParamBo.setUserId(paramBo.getUserId());
+					recParamBo.setPkId(actInfo.getId());
+					int userTotalFreq = activityDiscountRecordService.countTotalFreq(recParamBo);
 					if (userTotalFreq >= limitTotalFreq) {
 						return false;
 					}
 				}
+				if(actInfo.getDeviceDayLimit() != null && actInfo.getDeviceDayLimit() > 0 && StringUtils.isNotEmpty(paramBo.getDeviceId())){
+					// 同一设备id每天最多使用张数 0：不限，大于0有限制
+					recParamBo = new ActivityRecordParamBo();
+					recParamBo.setPkId(actInfo.getId());
+					recParamBo.setDeviceId(paramBo.getDeviceId());
+					recParamBo.setRecDate(DateUtils.getDate());
+					int deviceTotalNum = activityDiscountRecordService.countTotalFreq(recParamBo);
+					if (actInfo.getDeviceDayLimit().intValue() <= deviceTotalNum) {
+						return false;
+					}
+				}
+				if(actInfo.getAccountDayLimit() != null && actInfo.getAccountDayLimit() > 0){
+					// 同一设备id每天最多使用张数 0：不限，大于0有限制
+					recParamBo = new ActivityRecordParamBo();
+					recParamBo.setPkId(actInfo.getId());
+					recParamBo.setUserId(paramBo.getUserId());
+					recParamBo.setRecDate(DateUtils.getDate());
+					int userTotalNum = activityDiscountRecordService.countTotalFreq(recParamBo);
+					if (actInfo.getAccountDayLimit().intValue() <= userTotalNum) {
+						return false;
+					}
+				}
+				
 				// 商品限制
 				LimitSkuType limitSkuType = actInfo.getLimitSku();
 				// 请求的商品列表

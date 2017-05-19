@@ -1071,9 +1071,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("orderId", tradeOrder.getId());
 			params.put("id", reqData.getRecordId());
-			params.put("collectUserId", tradeOrder.getUserPhone());
-			params.put("couponsId", reqData.getActivityItemId());
-			params.put("collectType", couponsType);
+			params.put("deviceId", reqData.getDeviceId());
+			params.put("recDate", DateUtils.getDate());
 			// 更新代金券状态
 			activityCouponsRecordMapper.updateActivityCouponsStatus(params);
 			// 修改代金券使用数量
@@ -1106,6 +1105,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		discountRecord.setOrderId(orderId);
 		discountRecord.setOrderTime(new Date());
 		discountRecord.setOrderDisabled(Disabled.valid);
+		discountRecord.setDeviceId(reqData.getDeviceId());
 		if (activityType == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
 			// 满减活动
 			discountRecord.setDiscountType(ActivityDiscountType.mlj);

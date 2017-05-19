@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
-import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
@@ -62,14 +61,10 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		checkIsBusiness(resp,paramDto,storeInfo);
 		// 检查店铺营业时间
 		checkBusinessTime(resp,paramDto,storeInfo);
-		// Begin V2.1 added by maojj 2017-02-27
 		// 检查店铺是否支持到店自提
 		checkPickUpType(resp,paramDto,storeInfo);
-		// End V2.1 added by maojj 2017-02-27
-		// Begin V2.2 added by maojj 2017-03-18
-		// 检查服务店铺服务时间是否有效
+		// 检查店铺服务时间是否有效
 		checkServTime(resp,paramDto,storeInfo);
-		// End V2.2 added by maojj 2017-03-18
 		// 缓存店铺信息
 		paramDto.put("storeInfo", storeInfo);
 	}
@@ -158,14 +153,19 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 * @date 2016年12月31日
 	 */
 	private void checkTimeWhenSettlement(Response<PlaceOrderDto> resp, StoreInfoExt storeExt) {
-		// 店铺非营业时间接单，结算时不用校验时间，直接校验通过
-		if (storeExt.getIsAcceptOrder() == WhetherEnum.whether) {
-			return;
+		String deliveryTime = "立即配送";
+		// 当前日期是否有效
+		boolean isValidDate = isValid(DateUtils.getDate(), storeExt.getInvalidDate());
+		// 判定当前时间是否在营业时间范围内或者当前日期是否有效
+		if (!isBusiness(storeExt.getServiceStartTime(), storeExt.getServiceEndTime()) || !isValidDate) {
+			if (storeExt.getIsAcceptOrder() == WhetherEnum.whether){
+				String nextValidDay = getNextValidDay(storeExt.getInvalidDate());
+				deliveryTime = nextValidDay + "营业时进行配送";
+			}else{
+				resp.setResult(CVS_IS_PAUSE);
+			}
 		}
-		// 判定当前时间是否在营业时间范围内
-		if (!isBusiness(storeExt.getServiceStartTime(), storeExt.getServiceEndTime())) {
-			resp.setResult(CVS_IS_PAUSE);
-		}
+		resp.getData().setDeliveryTime(deliveryTime);
 	}
 
 	/**
@@ -181,8 +181,9 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		if (!isCheckTime) {
 			return;
 		}
-		// 判定当前时间是否在营业时间范围内
-		if (!isBusiness(storeExt.getServiceStartTime(), storeExt.getServiceEndTime())) {
+		// 判定当前时间是否在营业时间范围内或者当前日期是否有效
+		if (!isBusiness(storeExt.getServiceStartTime(), storeExt.getServiceEndTime()) 
+				|| !isValid(DateUtils.getDate(), storeExt.getInvalidDate())) {
 			// 不在营业时间范围内
 			if (storeExt.getIsAcceptOrder() == WhetherEnum.whether) {
 				// 店铺非营业时间接单
@@ -275,25 +276,22 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			// 只对上门服务店提交订单时做校验
 			return;
 		}
-		StoreInfoServiceExt servExt = storeInfo.getStoreInfoServiceExt();
-		String servTime = paramDto.getPickTime();
-		// begin V2.4.0修改非营业日期字段位置 add by wangf01 20170517
-		StoreInfoExt storeInfoExt = storeInfo.getStoreInfoExt();
-		if(StringUtils.isEmpty(servTime) || StringUtils.isEmpty(storeInfoExt.getInvalidDate())){
-			return;
+		
+		if(!isValid(paramDto.getPickTime(),storeInfo.getStoreInfoExt().getInvalidDate())){
+			resp.setResult(ResultCodeEnum.SERV_TIME_INVALID);
 		}
-		/*if(StringUtils.isEmpty(servTime) || StringUtils.isEmpty(servExt.getInvalidDate())){
-			return;
-		}*/
-		// end by wangf01 20170517
+		
+	}
+	
+	private boolean isValid(String servTime,String invalidDate){
+		if(StringUtils.isEmpty(servTime) || StringUtils.isEmpty(invalidDate)){
+			return true;
+		}
 		// 服务时间年月
 		String servMonth = servTime.substring(0,4) + servTime.substring(5,7);
 		// 服务时间天数
 		int servDay = Integer.parseInt(servTime.substring(8,10));
-		// begin V2.4.0修改非营业日期字段位置 add by wangf01 20170517
-		/*String[] invalidDateArr = servExt.getInvalidDate().split(",");*/
-		String[] invalidDateArr = storeInfoExt.getInvalidDate().split(",");
-		// end by wangf01 20170517
+		String[] invalidDateArr =  invalidDate.split(",");
 		String invalidMonth = null;
 		for (String invalidTime : invalidDateArr) {
 			invalidMonth = invalidTime.substring(0, 6);
@@ -305,14 +303,24 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				int invalidDay = Integer.parseInt(invalidTime.substring(6));
 				if (((invalidDay >> (servDay - 1)) & 1) == 1) {
 					// 如果当前天数为不可用日期
-					resp.setResult(ResultCodeEnum.SERV_TIME_INVALID);
-					break;
+					return false;
 				} 
 			} else if (servMonth.compareTo(invalidMonth) == 1) {
 				// 如果当前月份大于不可用日期限制的月份，则循环跳入下一个月份限制进行判定
 				continue;
 			}
 		}
-		
+		return true;
+	}
+	
+	private String getNextValidDay(String invalidDate){
+		String checkDay = null;
+		for(int addDay = 1;;addDay++){
+			checkDay = DateUtils.formatDate(DateUtils.addDays(new Date(), addDay), "yyyy-MM-dd");
+			if(isValid(checkDay,invalidDate)){
+				break;
+			}
+		}
+		return checkDay;
 	}
 }

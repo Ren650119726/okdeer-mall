@@ -2,10 +2,16 @@ package com.okdeer.mall.activity.bo;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+
+import com.google.common.collect.Maps;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
+import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
 import com.okdeer.mall.common.enums.UseClientType;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
@@ -82,7 +88,17 @@ public class FavourParamBO {
 	 * 下单的商品列表
 	 */
 	private List<PlaceOrderItemDto> goodsList;
-
+	
+	/**
+	 * 设备Id
+	 */
+	private String deviceId;
+	
+	/**
+	 * 活动统计列表
+	 */
+	private Map<RecordCountRuleEnum,List<ActivityRecordBo>> activityCounter;
+	
 	public String getUserId() {
 		return userId;
 	}
@@ -178,5 +194,36 @@ public class FavourParamBO {
 	public void setGoodsList(List<PlaceOrderItemDto> goodsList) {
 		this.goodsList = goodsList;
 	}
-
+	
+	public String getDeviceId() {
+		return deviceId;
+	}
+	
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+	
+	public void putActivityCounter(RecordCountRuleEnum countRule, List<ActivityRecordBo> recordCountList) {
+		if(this.activityCounter == null){
+			this.activityCounter = Maps.newHashMap();
+		}
+		if(CollectionUtils.isNotEmpty(recordCountList)){
+			this.activityCounter.put(countRule, recordCountList);
+		}
+	}
+	
+	public Integer findCountNum(RecordCountRuleEnum countRule,String pkId){
+		List<ActivityRecordBo> recList = this.activityCounter.get(countRule);
+		if(CollectionUtils.isEmpty(recList)){
+			return 0;
+		}
+		ActivityRecordBo findResult = null;
+		for(ActivityRecordBo recBo : recList){
+			if(pkId.equals(recBo.getPkId())){
+				findResult = recBo;
+				break;
+			}
+		}
+		return findResult == null ? 0 : findResult.getTotalNum();
+	}
 }

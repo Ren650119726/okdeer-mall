@@ -586,7 +586,12 @@
    
    <!-- modified by maojj 2016-10-10 防止用户刷代金券。下单时将代金券状态更改为已使用时，添加状态为0的条件 -->
    <update id="updateActivityCouponsStatus" parameterType="map">
-      UPDATE activity_coupons_record set status = 1,order_id = #{orderId,jdbcType=VARCHAR} 
+      UPDATE activity_coupons_record 
+      SET 
+      		status = 1,
+      		order_id = #{orderId,jdbcType=VARCHAR},
+      		device_id = #{deviceId,jdbcType=VARCHAR} ,
+      		rec_date = #{rec_date,jdbcType=VARCHAR}
       WHERE status = 0
       AND id = #{id,jdbcType=VARCHAR}
    </update>
@@ -893,4 +898,41 @@
 		  </if>
    </select>
   
+   <select id="countActivityRecord" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo"
+   		resultType="com.okdeer.mall.activity.coupons.bo.ActivityRecordBo">
+   		SELECT coupons_id AS pkId,
+   			   count(*) AS totalNum
+   		FROM activity_coupons_record
+   		WHERE coupons_id IN
+   			<foreach collection="pkIdList" item="pkId" separator="," open="(" close=")">
+   				#{pkId}
+   			</foreach>
+   		<if test="deviceId != null">
+   			AND device_id = #{deviceId,jdbcType=VARCHAR}
+   		</if>
+   		<if test="userId != null">
+   			AND collect_user_id = #{userId,jdbcType=VARCHAR}
+   		</if>
+   		<if test="recDate != null">
+   			AND rec_date = #{recDate,jdbcType=VARCHAR}
+   		</if>
+   		AND status = 1
+   		GROUP BY coupons_id
+   </select>
+   
+   <select id="countDayFreq" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo" resultType="int">
+   		SELECT count(*)
+   		FROM activity_coupons_record
+   		WHERE coupons_id = #{pkId}
+   		<if test="deviceId != null">
+   			AND device_id = #{deviceId,jdbcType=VARCHAR}
+   		</if>
+   		<if test="userId != null">
+   			AND collect_user_id = #{userId,jdbcType=VARCHAR}
+   		</if>
+   		<if test="recDate != null">
+   			AND rec_date = #{recDate,jdbcType=VARCHAR}
+   		</if>
+   		AND status = 1
+   </select>
 </mapper> 
