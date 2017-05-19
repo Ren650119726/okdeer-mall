@@ -45,6 +45,8 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -58,6 +60,7 @@ import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
@@ -1426,6 +1429,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		if(CollectionUtils.isEmpty(couponsList)){
 			return couponsList;
 		}
+		// 解析出代金券统一设备、同一账户的使用次数
+		countUseRecord(paramBo,couponsList);
 		// 对集合进行数据迭代
 		Iterator<Coupons> it = couponsList.iterator();
 		Coupons coupons = null;
@@ -1453,6 +1458,41 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			}
 		}
 		return couponsList;
+	}
+	
+	private void countUseRecord(FavourParamBO paramBo,List<Coupons> couponsList){
+		// 有设备限制的代金券Id列表
+		List<String> deviceLimitCouponsIds = Lists.newArrayList();
+		// 有账户限制的代金券Id列表
+		List<String> userLimitCouponsIds = Lists.newArrayList();
+		for(Coupons coupons : couponsList){
+			if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0){
+				deviceLimitCouponsIds.add(coupons.getCouponId());
+			}
+			if(coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0){
+				userLimitCouponsIds.add(coupons.getCouponId());
+			}
+		}
+		ActivityRecordParamBo recParamBo = null;
+		List<ActivityRecordBo> recordBoList = null;
+		if(CollectionUtils.isNotEmpty(deviceLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getDeviceId())){
+			// 根据设备统计使用次数
+			recParamBo = new ActivityRecordParamBo();
+			recParamBo.setPkIdList(deviceLimitCouponsIds);
+			recParamBo.setRecDate(DateUtils.getDate());
+			recParamBo.setDeviceId(paramBo.getDeviceId());
+			recordBoList = activityCouponsRecordMapper.countActivityRecord(recParamBo);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_DEVICE, recordBoList);
+		}
+		if(CollectionUtils.isNotEmpty(userLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getUserId())){
+			// 根据设备统计使用次数
+			recParamBo = new ActivityRecordParamBo();
+			recParamBo.setPkIdList(userLimitCouponsIds);
+			recParamBo.setRecDate(DateUtils.getDate());
+			recParamBo.setUserId(paramBo.getUserId());
+			recordBoList = activityCouponsRecordMapper.countActivityRecord(recParamBo);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_USER, recordBoList);
+		}
 	}
 	
 	/**

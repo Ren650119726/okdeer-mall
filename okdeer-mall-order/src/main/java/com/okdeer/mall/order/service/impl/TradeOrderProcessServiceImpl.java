@@ -35,6 +35,7 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
+import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.HttpClientUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.common.utils.Xml2JsonUtil;
@@ -730,15 +731,13 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
      */
     private void updateActivityCoupons(TradeOrder tradeOrder, TradeOrderReq req) throws Exception{
         ActivityTypeEnum activityType = req.getActivityType();
-        int couponsType = req.getCouponsType();
 
         if (activityType == ActivityTypeEnum.VONCHER ) {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("orderId", tradeOrder.getId());
             params.put("id", req.getRecordId());
-            params.put("collectUserId", tradeOrder.getUserPhone());
-            params.put("couponsId", req.getActivityItemId());
-            params.put("collectType", couponsType);
+            params.put("deviceId", req.getDeviceId());
+			params.put("recDate", DateUtils.getDate());
             // 更新代金券状态
             int updateResult = activityCouponsRecordMapper.updateActivityCouponsStatus(params);
             if(updateResult == 0){

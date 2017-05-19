@@ -1,6 +1,5 @@
 package com.okdeer.mall.activity.coupons.mapper;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -9,6 +8,8 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
@@ -324,4 +325,23 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	Integer findcountByNewType(@Param("getUserType")GetUserType getUserType,@Param("userId")String userId,
 													@Param("status")ActivityCouponsRecordStatusEnum status);
 	
+	// Begin V2.4 added by maojj 2017-05-18
+	/**
+	 * @Description: 统计活动参与记录
+	 * @param paramBo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年5月18日
+	 */
+	List<ActivityRecordBo> countActivityRecord(ActivityRecordParamBo paramBo);
+	
+	/**
+	 * @Description: 统计活动参与记录
+	 * @param paramBo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年5月18日
+	 */
+	int countDayFreq(ActivityRecordParamBo paramBo);
+	// End V2.4 added by maojj 2017-05-18
 }

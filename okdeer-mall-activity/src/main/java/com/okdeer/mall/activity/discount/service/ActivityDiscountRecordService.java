@@ -1,8 +1,7 @@
 package com.okdeer.mall.activity.discount.service;
 
-import org.apache.ibatis.annotations.Param;
-
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 
 /**
  * @DESC: 
@@ -22,7 +21,7 @@ public interface ActivityDiscountRecordService extends IBaseService{
 	 * @author maojj
 	 * @date 2017年4月21日
 	 */
-	int countTotalFreq(@Param("userId")String userId,@Param("activityId")String activityId);
+	int countTotalFreq(ActivityRecordParamBo paramBo);
 	
 	/**
 	 * @Description: 根据订单删除用户使用活动记录
