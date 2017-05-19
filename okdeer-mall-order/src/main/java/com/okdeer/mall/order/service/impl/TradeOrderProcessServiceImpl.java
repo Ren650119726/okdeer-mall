@@ -291,9 +291,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 	 * 提交订单处理流程
 	 */
 	@Override
-	public TradeOrderRespDto addTradeOrder(String requestStr) throws Exception {
-		// 交易订单请求
-		TradeOrderReqDto reqDto = JsonMapper.nonDefaultMapper().fromJson(requestStr, TradeOrderReqDto.class);
+	public TradeOrderRespDto addTradeOrder(TradeOrderReqDto reqDto) throws Exception {
 		// Begin added by maojj 2016-08-10 Bug:12572
 		reqDto.setOrderOptType(OrderOptTypeEnum.ORDER_SUBMIT);
 		// End added by maojj 2016-08-190
