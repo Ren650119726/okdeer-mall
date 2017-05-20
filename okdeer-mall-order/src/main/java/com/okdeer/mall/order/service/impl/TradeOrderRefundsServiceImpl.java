@@ -39,7 +39,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
+import com.okdeer.api.pay.enums.RefundTypeEnum;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
+import com.okdeer.api.pay.pay.dto.PayRefundDto;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
@@ -50,6 +52,7 @@ import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysMsg;
 import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
@@ -611,11 +614,52 @@ public class TradeOrderRefundsServiceImpl
 
 			// 扣减积分与成长值
 			reduceUserPoint(order, orderRefunds);
+			
+			// Begin V2.4 added by maojj 2017-05-20
+			// 发送消息让系统自动给用户退款
+			PayRefundDto payRefundDto = new PayRefundDto();
+			payRefundDto.setTradeAmount(orderRefunds.getTotalAmount());
+			payRefundDto.setServiceId(orderRefunds.getId());
+			payRefundDto.setServiceNo(orderRefunds.getRefundNo());
+			payRefundDto.setRemark(orderRefunds.getOrderNo());
+			payRefundDto.setRefundType(convert(orderRefunds.getType(),orderRefunds.getRefundsStatus()));
+			payRefundDto.setTradeNum(orderRefunds.getTradeNum());
+			payRefundDto.setRefundNum(orderRefunds.getRefundNo());
+			MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, payRefundDto);
+			msg.setKey(orderRefunds.getId());
+			rocketMQProducer.sendMessage(msg);
+			// End V2.4 added by maojj 2017-05-20
 
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
+	}
+	
+	private RefundTypeEnum convert(OrderTypeEnum orderType,RefundsStatusEnum refundsStatus){
+		RefundTypeEnum refundType = null;
+		if(refundsStatus == RefundsStatusEnum.YSC_REFUND){
+			return RefundTypeEnum.YSC_REFUND;
+		}
+		switch (orderType) {
+			case PHYSICAL_ORDER:
+				refundType = RefundTypeEnum.REFUND_ORDER;
+				break;
+			case SERVICE_ORDER:
+			case SERVICE_STORE_ORDER:
+			case STORE_CONSUME_ORDER:
+				refundType = RefundTypeEnum.REFUND_SERVICE_ORDER;
+				break;
+			case PHONE_PAY_ORDER:
+			case TRAFFIC_PAY_ORDER:
+				refundType = RefundTypeEnum.RECHARGE_ORDER_REFUND;
+				break;
+			default:
+				refundType = RefundTypeEnum.REFUND_ORDER;
+				break;
+		}
+		
+		return refundType;
 	}
 
 	/**
