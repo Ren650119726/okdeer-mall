@@ -505,6 +505,21 @@ public class TradeOrderRefundsServiceImpl
 				}
 			}
 		}
+		// Begin V2.4 added by maojj 2017-05-22
+		PayRefundDto payRefundDto = new PayRefundDto();
+		payRefundDto.setTradeAmount(refunds.getTotalAmount());
+		payRefundDto.setServiceId(refunds.getId());
+		payRefundDto.setServiceNo(refunds.getOrderNo());
+		payRefundDto.setRemark(refunds.getOrderNo());
+		payRefundDto.setRefundType(RefundTypeEnum.RECHARGE_ORDER_REFUND);
+		payRefundDto.setTradeNum(refunds.getTradeNum());
+		payRefundDto.setRefundNum(refunds.getRefundNo());
+		
+		MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, payRefundDto);
+		msg.setKey(refunds.getId());
+		// 发送消息
+		rocketMQProducer.sendMessage(msg);
+		// End V2.4 added by maojj 2017-05-22
 
 	}
 
