@@ -160,7 +160,7 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	 */
 	// @Autowired
 	// MemberConsigneeAddressMapper memberConsigneeAddressMapper;
-	@Reference(version = "2.0.0", check = false)
+	@Reference(version = "1.0.0", check = false)
 	private MemberConsigneeAddressServiceApi MemberConsigneeAddressServiceApi;
 
 	/**

@@ -55,7 +55,7 @@ public class ServAddressSearchServiceImpl implements RequestHandler<ServiceOrder
 	/**
 	 * 地址service
 	 */
-	@Reference(version = "2.0.0", check = false)
+	@Reference(version = "1.0.0", check = false)
 	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
 	
 	@Override

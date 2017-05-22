@@ -198,7 +198,7 @@ public interface MemberConsigneeAddressService {
 	 * @return MemberConsigneeAddressVo
 	 * @throws ServiceException
 	 */
-	List<MemberConsigneeAddress> findAppUserAddress(String userId, String clientType) throws ServiceException;
+	List<MemberConsigneeAddress> findAppUserAddress(String userId) throws ServiceException;
 	
 	/**
 	 * APP用户根据id查询收货地址

@@ -42,7 +42,7 @@ public class SeckillAddressSearchServiceImpl implements RequestHandler<ServiceOr
 	/**
 	 * 地址service
 	 */
-	@Reference(version = "2.0.0", check = false)
+	@Reference(version = "1.0.0", check = false)
 	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
 	
 	@Override
