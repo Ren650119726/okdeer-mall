@@ -1189,7 +1189,7 @@
 			</if>
 		</if>
 		<!-- 默认排序 -->
-		<if test="tabs == null or tabs == ''">
+		<if test="tabs == 'all' or tabs == null or tabs == ''">
 			ORDER BY tr.create_time desc
 		</if>
 	</select>
