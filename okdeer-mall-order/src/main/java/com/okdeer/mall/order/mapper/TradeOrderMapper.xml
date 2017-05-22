@@ -6221,8 +6221,16 @@
 				<include refid="condition_desc_order" />
 			</if>
 		</if>
+		<!-- Begin V2.3.0 added by luosm 20170522 -->
+		<if test="null != startCreateTime">
+	    <![CDATA[ AND tr.create_time >= #{startCreateTime} ]]>
+		</if>
+		<if test="null != endCreateTime">
+	    <![CDATA[ AND tr.create_time <= #{endCreateTime} ]]>
+		</if>
+		<!-- End V2.3.0 added by luosm 20170522 -->
 		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
-		<if test="tabs == null or tabs == ''">
+		<if test="tabs == null or tabs == '' or tabs == 6">
 			ORDER BY tr.create_time DESC
 		</if>
 	</select>
@@ -6283,8 +6291,16 @@
 				<include refid="condition_desc_order" />
 			</if>
 		</if>
+		
+		<if test="null != startCreateTime">
+	    <![CDATA[ AND tr.create_time >= #{startCreateTime} ]]>
+		</if>
+		<if test="null != endCreateTime">
+	    <![CDATA[ AND tr.create_time <= #{endCreateTime} ]]>
+		</if>
+		
 		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
-		<if test="tabs == null or tabs == ''">
+		<if test="tabs == null or tabs == '' or tabs == 6">
 			ORDER BY tr.create_time DESC
 		</if>
 	</select>
