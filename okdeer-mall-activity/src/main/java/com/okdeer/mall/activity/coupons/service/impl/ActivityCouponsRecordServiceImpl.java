@@ -363,17 +363,30 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 	
 	/**
+	 * 根据活动ID领取代金劵 存在邀请人用户id需要确认是否记录邀请人
+	 * @param collectId 活动id集合
+	 * @param userId 用户id
+	 * @param activityCouponsType 活动类型
+	 * @return tuzhiding 
+	 * @throws Exception
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public JSONObject addRecordsByCollectId(String collectId, String userId,ActivityCouponsType type) throws Exception{
+		return addRecordsByCollectId(collectId, userId, type, null);
+	}
+	/**
 	 * 根据活动ID领取代金劵
 	 * @param collectId 活动id集合
 	 * @param userId 用户id
 	 * @param activityCouponsType 活动类型
+	 * @param invitaUserId 邀请人用户id
 	 * @return tuzhiding 
 	 * @throws ServiceException
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public JSONObject addRecordsByCollectId(String collectId, String userId,
-			ActivityCouponsType activityCouponsType) throws ServiceException {
+			ActivityCouponsType activityCouponsType,String invitaUserId) throws Exception {
 		Map<String, Object> map = new HashMap<String, Object>();
 		//校验成功标识 //如果不存在缓存数据进行加入到缓存中
 		String key = userId+collectId;
@@ -426,6 +439,22 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				//循环进行代金劵插入
 				for(ActivityCoupons coupons : activityCoupons){
 					updateCouponsRecode(reMap.get(coupons.getId()), coupons);
+				}
+				
+				//存在邀请人用户id需要确认是否记录邀请人
+				if(StringUtils.isNotBlank(invitaUserId)){
+					//根据用户id或用户邀请码查询是否存在邀请码信息，所以userId 可以存储用户id或邀请码
+					SysUserInvitationCode code= sysUserInvitationCodeMapper.selectInvitationById(invitaUserId);
+					//不存在邀请记录 则将给该用户userId记录 邀请记录
+					if(code == null){
+						//根据用户id或用户邀请码，所以InviteUserId 可以存储用户id或邀请码
+						List<SysUserInvitationCode> listCode= sysUserInvitationCodeMapper
+								.findInvitationByIdCode(invitaUserId, invitaUserId);
+						//存在邀请码及添加第一个进去，防止数据库中存在多个
+						if(listCode != null && listCode.size() > 0){
+							invitationCodeService.saveInvatationRecord(listCode.get(0), userId, "");
+						}
+					}
 				}
 				map.put("code", 100);
 				map.put("msg", "恭喜你，领取成功！");

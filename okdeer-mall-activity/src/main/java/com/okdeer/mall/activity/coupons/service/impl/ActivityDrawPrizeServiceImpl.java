@@ -70,7 +70,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
 	 * @date 2016年11月23日
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	public JSONObject processPrize(String userId,double[] iArr,String[] ids) throws ServiceException{
+	public JSONObject processPrize(String userId,double[] iArr,String[] ids) throws Exception{
 		SysBuyerExt user = sysBuyerExtService.findByUserId(userId);
 		Map<String,Object> map =  new HashMap<String,Object>();
 		//用户抽奖次数存在让其抽奖否则
