@@ -48,7 +48,7 @@ import com.okdeer.mall.member.service.MemberConsigneeAddressService;
  *     12978           2016年8月19日                               wusw				修改获取收货地址的详细地址（用于商城后台会员详情）
  *     V1.1.0          2016-10-14     		luosm               根据小区id批量修改省市区名，小区名 
  */
-@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi")
+@Service(version = "2.0.0", interfaceName = "com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi")
 public class MemberConsigneeAddressServiceImpl
 		implements MemberConsigneeAddressServiceApi, MemberConsigneeAddressService {
 
@@ -65,7 +65,7 @@ public class MemberConsigneeAddressServiceImpl
 
 	@Override
 	public List<String> findByUserId(String userId) throws ServiceException {
-		List<MemberConsigneeAddress> addresses = memberConsigneeAddressMapper.selectByUserId(userId);
+		List<MemberConsigneeAddress> addresses = memberConsigneeAddressMapper.selectByUserId(userId, null);
 		List<String> list = new ArrayList<String>();
 		for (MemberConsigneeAddress address : addresses) {
 			// Begin 12978 update by wusw 20160819
@@ -96,7 +96,7 @@ public class MemberConsigneeAddressServiceImpl
 	 * @param userId 用户ID
 	 */
 	public List<MemberConsigneeAddress> findListByUserId(String userId) throws ServiceException {
-		List<MemberConsigneeAddress> addresses = memberConsigneeAddressMapper.selectByUserId(userId);
+		List<MemberConsigneeAddress> addresses = memberConsigneeAddressMapper.selectByUserId(userId, null);
 		return addresses;
 	}
 
@@ -327,9 +327,8 @@ public class MemberConsigneeAddressServiceImpl
 	}
 
 	@Override
-	public List<MemberConsigneeAddress> findAppUserAddress(String userId) throws ServiceException {
-		// TODO Auto-generated method stub
-		List<MemberConsigneeAddress> memberConsigneeAddress = memberConsigneeAddressMapper.selectByUserId(userId);
+	public List<MemberConsigneeAddress> findAppUserAddress(String userId, String clientType) throws ServiceException {
+		List<MemberConsigneeAddress> memberConsigneeAddress = memberConsigneeAddressMapper.selectByUserId(userId, clientType);
 		return memberConsigneeAddress;
 	}
 

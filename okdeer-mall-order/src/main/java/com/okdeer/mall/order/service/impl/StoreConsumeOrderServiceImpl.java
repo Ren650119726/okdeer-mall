@@ -134,7 +134,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 	@Reference(version = "1.0.0", check = false)
 	private IStoreInfoExtServiceApi storeInfoExtService;
 
-	@Reference(version = "1.0.0", check = false)
+	@Reference(version = "2.0.0", check = false)
 	private MemberConsigneeAddressServiceApi memberConsigneeAddressService;
 
 	@Reference(version = "1.0.0", check = false)

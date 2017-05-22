@@ -443,6 +443,9 @@
        <if test="type != null">
        	   AND t.type = #{type}
        </if>
+       <!-- BEGIN 查询店铺活动过滤掉零花钱类型 added by zhaoqc-->
+       	   AND t.type != 2 
+       <!-- END added by zhaoqc-->
   </select>
   
   <!-- 同一地区、同一时间、同一店铺活动互斥统计。 查询业务类型为0：市、1：省、2：店铺，活动状态为未开始和已进行中的-->
