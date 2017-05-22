@@ -591,7 +591,7 @@
       		status = 1,
       		order_id = #{orderId,jdbcType=VARCHAR},
       		device_id = #{deviceId,jdbcType=VARCHAR} ,
-      		rec_date = #{rec_date,jdbcType=VARCHAR}
+      		rec_date = #{recDate,jdbcType=VARCHAR}
       WHERE status = 0
       AND id = #{id,jdbcType=VARCHAR}
    </update>
@@ -676,8 +676,10 @@
 			t2.id AS activityItemId ,
 			FORMAT(t2.arrive_limit,2) AS arrive,
 			t2.is_category AS isCategory,
-			t2.use_user_type as useUserType,
-			t2.use_client_type as useClientType
+			t2.use_user_type AS useUserType,
+			t2.use_client_type AS useClientType,
+			t2.device_day_limit AS deviceDayLimit,
+			t2.account_day_limit AS accountDayLimit
 		FROM
 			activity_coupons_record t
 			LEFT JOIN activity_coupons t2 ON t.coupons_id = t2.id

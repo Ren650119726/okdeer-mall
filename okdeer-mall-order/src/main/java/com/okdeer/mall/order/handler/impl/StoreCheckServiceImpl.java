@@ -3,6 +3,7 @@ package com.okdeer.mall.order.handler.impl;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,10 @@ public class StoreCheckServiceImpl implements StoreCheckService {
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private StoreInfoServiceApi storeInfoServiceApi;
+	
+	private static final String DELIVERY_IMMEDIATELY = "立即配送";
+	
+	private static final String DELIVERY_NEXT_VALIDDAY = "%d月%d日配送";
 
 	/**
 	 * 检查商品信息是否发生变化并获取商品最新信息返回给app
@@ -115,6 +120,9 @@ public class StoreCheckServiceImpl implements StoreCheckService {
 				break;
 		}
 		// End modified by maojj 2016-08-10
+		if(respDto.isFlag() && reqDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT){
+			req.setPickTime(getDeliveryTime(storeExt));
+		}
 	}
 
 	// Begin added by maojj 2016-08-10 Bug:12572
@@ -218,4 +226,112 @@ public class StoreCheckServiceImpl implements StoreCheckService {
 		String hourMinute = hour + ":" + minute;
 		return DateUtils.parseDate(hourMinute);
 	}
+	
+	// Begin V2.4 added by maojj 2017-05-22
+	/**
+	 * @Description: 获取有效的配送时间
+	 * @param storeExt
+	 * @return   
+	 * @author maojj
+	 * @date 2017年5月22日
+	 */
+	private String getDeliveryTime(StoreInfoExt storeExt){
+		String deliveryTime = DELIVERY_IMMEDIATELY;
+		String currentDate = DateUtils.getDate();
+		// 当前日期是否有效
+		boolean isValidDate = isValid(currentDate, storeExt.getInvalidDate());
+		boolean isBusiness = isBusiness(storeExt.getServiceStartTime(), storeExt.getServiceEndTime());
+		// 判定当前时间是否在营业时间范围内或者当前日期是否有效
+		if (!isBusiness || !isValidDate) {
+			if (storeExt.getIsAcceptOrder() == WhetherEnum.whether){
+				String nextValidDay = null;
+				if(!isBusiness && isValidDate && !isBeforeBusiness(storeExt.getServiceStartTime())){
+					// 如果当前时间不营业，且当前日期有效，判断店铺今日营业时间还未开始，则配送时间为今日配送
+					nextValidDay = currentDate;
+				}else{
+					nextValidDay = getNextValidDay(storeExt.getInvalidDate());
+				}
+				if(StringUtils.isNotEmpty(nextValidDay)){
+					deliveryTime = String.format(DELIVERY_NEXT_VALIDDAY,Integer.parseInt(nextValidDay.substring(5,7)),Integer.parseInt(nextValidDay.substring(8,10)));
+				}
+			}
+		}
+		return deliveryTime;
+	}
+	
+	/**
+	 * @Description: 判断当前时间是否再店铺开始营业时间之前
+	 * @param servStartTime
+	 * @return   
+	 * @author maojj
+	 * @date 2017年5月22日
+	 */
+	private boolean isBeforeBusiness(String servStartTime){
+		// 当前时间
+		Date currentDate = getCurrentDate();
+		// 服务开始时间
+		Date startTime = DateUtils.parseDate(servStartTime);
+		if(startTime.after(currentDate)){
+			return false;
+		}else{
+			return true;
+		}
+	}
+	
+	/**
+	 * @Description: 判断当前日期是否被设置为不可用日期
+	 * @param servTime
+	 * @param invalidDate
+	 * @return   
+	 * @author maojj
+	 * @date 2017年5月22日
+	 */
+	private boolean isValid(String servTime,String invalidDate){
+		if(StringUtils.isEmpty(servTime) || StringUtils.isEmpty(invalidDate)){
+			return true;
+		}
+		// 服务时间年月
+		String servMonth = servTime.substring(0,4) + servTime.substring(5,7);
+		// 服务时间天数
+		int servDay = Integer.parseInt(servTime.substring(8,10));
+		String[] invalidDateArr =  invalidDate.split(",");
+		String invalidMonth = null;
+		for (String invalidTime : invalidDateArr) {
+			invalidMonth = invalidTime.substring(0, 6);
+			if (servMonth.compareTo(invalidMonth) == -1) {
+				// 如果当前月份小于不可用日期限制的月份，则当前日期一定可用
+				break;
+			} else if (servMonth.compareTo(invalidMonth) == 0) {
+				// 如果当前月份等于不可用日期限制的月份，则判定这天是否可用
+				int invalidDay = Integer.parseInt(invalidTime.substring(6));
+				if (((invalidDay >> (servDay - 1)) & 1) == 1) {
+					// 如果当前天数为不可用日期
+					return false;
+				} 
+			} else if (servMonth.compareTo(invalidMonth) == 1) {
+				// 如果当前月份大于不可用日期限制的月份，则循环跳入下一个月份限制进行判定
+				continue;
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * @Description: 取得下一个可用日期
+	 * @param invalidDate
+	 * @return   
+	 * @author maojj
+	 * @date 2017年5月22日
+	 */
+	private String getNextValidDay(String invalidDate){
+		String checkDay = null;
+		for(int addDay = 1;;addDay++){
+			checkDay = DateUtils.formatDate(DateUtils.addDays(new Date(), addDay), "yyyy-MM-dd");
+			if(isValid(checkDay,invalidDate)){
+				break;
+			}
+		}
+		return checkDay;
+	}
+	// End V2.4 added by maojj 2017-05-22
 }
