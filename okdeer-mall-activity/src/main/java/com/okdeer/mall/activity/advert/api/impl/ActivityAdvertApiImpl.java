@@ -358,6 +358,7 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 				getCouponInfo(result);break;
 			case 4:
 				getDrawInfo(result);break;
+			default:break;
 		}
 		return result;
 		

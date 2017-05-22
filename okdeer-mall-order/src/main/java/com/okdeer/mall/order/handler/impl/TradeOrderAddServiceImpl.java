@@ -970,13 +970,11 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	 * @date 2016年7月14日
 	 */
 	private void toUpdateStock(TradeOrder order, TradeOrderReqDto reqDto, List<String> rpcIdList) throws Exception {
-		StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(order,reqDto);
-		if(mallStockUpdate != null){
-			rpcIdList.add(mallStockUpdate.getRpcId());
-			goodsStoreSkuStockApi.updateStock(mallStockUpdate);
-		}
-		StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.build(order, reqDto);
-		stockUpdateServiceApi.stockUpdateForMessage(jxcStockUpdate);
+		StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(order);
+		rpcIdList.add(mallStockUpdate.getRpcId());
+		goodsStoreSkuStockApi.updateStock(mallStockUpdate);
+//		StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.build(order, reqDto);
+//		stockUpdateServiceApi.stockUpdateForMessage(jxcStockUpdate);
 	}
 
 	/**

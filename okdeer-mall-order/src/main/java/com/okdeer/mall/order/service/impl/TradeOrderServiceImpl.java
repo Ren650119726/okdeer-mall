@@ -1781,7 +1781,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 锁定库存
 				// Begin modified by maojj 2017-03-15
 				rpcId = UuidUtils.getUuid();
-				StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.buildForCompleteOrder(tradeOrder);
+				StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(tradeOrder);
 				StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.buildForCompleteOrder(tradeOrder);
 				if(mallStockUpdate != null){
 					rpcId = mallStockUpdate.getRpcId();

@@ -155,5 +155,12 @@ public interface PayMessageConstant {
 	 * 订单取消tag
 	 */
 	String TAG_ORDER_CANCELED = "tag_order_canceled";
+	
+	// Begin V2.4 added by maojj 2017-05-20
+	/**
+	 * 系统自动退款消息
+	 */
+	String TOPIC_REFUND = "topic_refund";
+	// End V2.4 added by maojj 2017-05-20
 
 }
