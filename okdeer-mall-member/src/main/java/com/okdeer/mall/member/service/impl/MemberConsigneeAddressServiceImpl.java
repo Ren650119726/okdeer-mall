@@ -65,7 +65,7 @@ public class MemberConsigneeAddressServiceImpl
 
 	@Override
 	public List<String> findByUserId(String userId) throws ServiceException {
-		List<MemberConsigneeAddress> addresses = memberConsigneeAddressMapper.selectByUserId(userId);
+		List<MemberConsigneeAddress> addresses = memberConsigneeAddressMapper.selectByUserId(userId, null);
 		List<String> list = new ArrayList<String>();
 		for (MemberConsigneeAddress address : addresses) {
 			// Begin 12978 update by wusw 20160819
@@ -96,7 +96,7 @@ public class MemberConsigneeAddressServiceImpl
 	 * @param userId 用户ID
 	 */
 	public List<MemberConsigneeAddress> findListByUserId(String userId) throws ServiceException {
-		List<MemberConsigneeAddress> addresses = memberConsigneeAddressMapper.selectByUserId(userId);
+		List<MemberConsigneeAddress> addresses = memberConsigneeAddressMapper.selectByUserId(userId, null);
 		return addresses;
 	}
 
@@ -328,14 +328,18 @@ public class MemberConsigneeAddressServiceImpl
 
 	@Override
 	public List<MemberConsigneeAddress> findAppUserAddress(String userId) throws ServiceException {
-		// TODO Auto-generated method stub
-		List<MemberConsigneeAddress> memberConsigneeAddress = memberConsigneeAddressMapper.selectByUserId(userId);
+		List<MemberConsigneeAddress> memberConsigneeAddress = memberConsigneeAddressMapper.selectByUserId(userId, null);
 		return memberConsigneeAddress;
 	}
 
+   @Override
+    public List<MemberConsigneeAddress> findAppUserAddress(String userId, String clientType) throws ServiceException {
+        List<MemberConsigneeAddress> memberConsigneeAddress = memberConsigneeAddressMapper.selectByUserId(userId, clientType);
+        return memberConsigneeAddress;
+    }
+	   
 	@Override
 	public MemberConsigneeAddress findAppUserById(String id) throws ServiceException {
-		// TODO Auto-generated method stub
 		MemberConsigneeAddress memberConsigneeAddress = memberConsigneeAddressMapper.selectByPrimaryKey(id);
 		return memberConsigneeAddress;
 	}
