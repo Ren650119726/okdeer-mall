@@ -408,6 +408,8 @@
                    jdbcType="TINYINT"/>
         <result property="useUserType" column="use_user_type"  javaType="com.okdeer.mall.common.enums.UseUserType" jdbcType="TINYINT"/> 
         <result property="useClientType" column="use_client_type" javaType="com.okdeer.mall.common.enums.UseClientType" jdbcType="TINYINT"/> 
+        <result property="deviceDayLimit" column="device_day_limit" jdbcType="INTEGER"/>
+        <result property="accountDayLimit" column="account_day_limit" jdbcType="INTEGER"/>
         <collection property="activityCouponsCategory" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory">
 	       <id column="categoryid" property="id" jdbcType="VARCHAR" />
            <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
@@ -440,7 +442,8 @@
    coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
    coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
    coupons.type AS type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, 
-   coupons.id as couponsId,record.id,record.collect_time,record.valid_time,coupons.use_user_type,coupons.use_client_type, 		
+   record.id,record.collect_time,record.valid_time,coupons.use_user_type,coupons.use_client_type, 
+   coupons.device_day_limit, coupons.account_day_limit,		
    CASE
    WHEN coupons.type = 1 THEN nav.name
    WHEN coupons.type = 2 THEN spu.name
@@ -466,7 +469,8 @@
    coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
    coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
    coupons.type AS type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, 
-   coupons.id as couponsId,record.id,record.collect_time,record.valid_time,coupons.use_user_type,coupons.use_client_type,   		
+   record.id,record.collect_time,record.valid_time,coupons.use_user_type,coupons.use_client_type, 
+   coupons.device_day_limit, coupons.account_day_limit,  		
    CASE
    WHEN coupons.type = 1 THEN nav.name
    WHEN coupons.type = 2 THEN spu.name
