@@ -77,6 +77,7 @@ public class FavourParamBuilder {
 		paramBO.setSpuCategoryIds(spuCategoryIds);
 		paramBO.setChannel(paramDto.getChannel());
 		paramBO.setGoodsList(goodsList);
+		paramBO.setDeviceId(paramDto.getDeviceId());
 		return paramBO;
 	}
 	
@@ -117,6 +118,7 @@ public class FavourParamBuilder {
 			goodsList.add(goods);
 		}
 		paramBO.setGoodsList(goodsList);
+		paramBO.setDeviceId(req.getDeviceId());
 		// End V2.3 added by maojj 2017-04-21
 		return paramBO;
 	}
@@ -160,6 +162,7 @@ public class FavourParamBuilder {
 		paramBO.setSpuCategoryIds((Set<String>)req.getContext().get("spuCategoryIds"));
 		List<PlaceOrderItemDto> goodsList = Lists.newArrayList();
 		paramBO.setChannel(req.getOrderResource());
+		paramBO.setDeviceId(reqDto.getDeviceId());
 		return paramBO;
 	}
 	
@@ -187,6 +190,7 @@ public class FavourParamBuilder {
 		List<String> skuIdList = new ArrayList<String>();
 		skuIdList.add(orderReq.getSkuId());
 		paramBO.setSkuIdList(skuIdList);
+		paramBO.setDeviceId(orderReq.getDeviceId());
 		return paramBO;
 	}
 }

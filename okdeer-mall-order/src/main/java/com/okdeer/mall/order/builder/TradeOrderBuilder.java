@@ -316,11 +316,7 @@ public class TradeOrderBuilder {
 		String pickTime = paramDto.getPickTime();
 		if (tradeOrder.getPickUpType() == PickUpTypeEnum.DELIVERY_DOOR){
 			// 如果是上门
-			if (!"".equals(pickTime)) {
-				tradeOrder.setPickUpTime(pickTime);
-			} else {
-				tradeOrder.setPickUpTime("立即配送");
-			}
+			tradeOrder.setPickUpTime(pickTime);
 		}else{
 			// 如果是到店
 			StoreInfoExt storeInfoExt = ((StoreInfo)paramDto.get("storeInfo")).getStoreInfoExt();
