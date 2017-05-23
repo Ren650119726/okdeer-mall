@@ -77,7 +77,7 @@ public class FindUserAddrServiceImpl implements RequestHandler<PlaceOrderParamDt
 	 */
 	private UserAddressVo findUserAddr(PlaceOrderParamDto paramDto) throws ServiceException{
 		List<MemberConsigneeAddressVo> userAddrList = memberConsigneeAddressService.findAppUserList(paramDto.getUserId(), 
-		        paramDto.getStoreId(), paramDto.getClientType());
+		        paramDto.getStoreId(), String.valueOf(paramDto.getChannel().ordinal()));
 		UserAddressVo userAddressVo = null;
 		if (CollectionUtils.isNotEmpty(userAddrList)) {
 			for (MemberConsigneeAddressVo memberConsigneeAddressVo : userAddrList) {
@@ -180,6 +180,7 @@ public class FindUserAddrServiceImpl implements RequestHandler<PlaceOrderParamDt
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("userId", paramDto.getUserId());
 		params.put("storeId", paramDto.getStoreId());
+		params.put("clientType", paramDto.getChannel().ordinal());
 		// 查询用户的所有收货地址
 		Map<String, Object> map = memberConsigneeAddressService.findUserDefaultAddress(params);
 		//当地址为空时 为null肯定不包含 或 不包含时 
