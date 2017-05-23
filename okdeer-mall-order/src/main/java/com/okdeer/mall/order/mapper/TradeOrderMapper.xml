@@ -6230,7 +6230,7 @@
 		</if>
 		<!-- End V2.3.0 added by luosm 20170522 -->
 		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
-		<if test="tabs == null or tabs == '' or tabs == 6">
+		<if test="tabs == null or tabs == '' or tabs == 'all'">
 			ORDER BY tr.create_time DESC
 		</if>
 	</select>
@@ -6300,7 +6300,7 @@
 		</if>
 		
 		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
-		<if test="tabs == null or tabs == '' or tabs == 6">
+		<if test="tabs == null or tabs == '' or tabs == 'all'">
 			ORDER BY tr.create_time DESC
 		</if>
 	</select>
