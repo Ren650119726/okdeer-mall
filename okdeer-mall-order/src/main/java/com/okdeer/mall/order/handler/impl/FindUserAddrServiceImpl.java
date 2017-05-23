@@ -76,7 +76,8 @@ public class FindUserAddrServiceImpl implements RequestHandler<PlaceOrderParamDt
 	 * @date 2017年1月4日
 	 */
 	private UserAddressVo findUserAddr(PlaceOrderParamDto paramDto) throws ServiceException{
-		List<MemberConsigneeAddressVo> userAddrList = memberConsigneeAddressService.findAppUserList(paramDto.getUserId(), paramDto.getStoreId());
+		List<MemberConsigneeAddressVo> userAddrList = memberConsigneeAddressService.findAppUserList(paramDto.getUserId(), 
+		        paramDto.getStoreId(), paramDto.getClientType());
 		UserAddressVo userAddressVo = null;
 		if (CollectionUtils.isNotEmpty(userAddrList)) {
 			for (MemberConsigneeAddressVo memberConsigneeAddressVo : userAddrList) {
