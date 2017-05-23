@@ -512,7 +512,7 @@ public class TradeOrderRefundsServiceImpl
 		payRefundDto.setTradeAmount(refunds.getTotalAmount());
 		payRefundDto.setServiceId(refunds.getId());
 		payRefundDto.setServiceNo(refunds.getOrderNo());
-		payRefundDto.setRemark(refunds.getOrderNo());
+		payRefundDto.setRemark(String.format(REFUND_REMARK,refunds.getOrderNo()));
 		payRefundDto.setRefundType(RefundTypeEnum.RECHARGE_ORDER_REFUND);
 		payRefundDto.setTradeNum(tradeOrder.getTradeNum());
 		payRefundDto.setRefundNum(refunds.getRefundNo());
