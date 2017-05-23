@@ -626,7 +626,7 @@
    		 item.status, item.appraise, item.create_time,
   		 s.`store_id`
 	FROM trade_order s 
-	inner join trade_order_item m on s.id=m.`order_id`
+	inner join trade_order_item item on s.id=item.`order_id`
 	WHERE 1=1
 		<if test="orderStatus != null">
 			AND s.`status` = #{orderStatus, jdbcType=TINYINT}
