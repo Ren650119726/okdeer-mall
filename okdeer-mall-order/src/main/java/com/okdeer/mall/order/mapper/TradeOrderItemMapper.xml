@@ -616,7 +616,7 @@
  </select>
  
  <!-- 根据日期查询便利店线上完成订单商品项数据  tuzhd-->
-  <select id="findCompletedOrderItem" parameterType="map" resultMap="BaseResultMap">
+  <select id="findCompletedOrderItem" parameterType="map" resultMap="OrderItemResultMap">
  	SELECT 
  		 item.id, 		item.order_id, 	item.store_sku_id, 
  		 item.sku_name, item.spu_type,	item.main_pic_prl,
@@ -642,10 +642,10 @@
 			AND s.`type` = #{orderType, jdbcType=TINYINT}
 		</if>
 		<if test="orderStartDate != null"  >
-			AND s.update_time &gt;= #{orderStartDate, jdbcType=VARCHAR}
+			AND s.received_time &gt;= #{orderStartDate, jdbcType=VARCHAR}
 		</if>
 		<if test="orderEndDate != null"  >
-			AND s.update_time &lt; #{orderEndDate, jdbcType=VARCHAR}
+			AND s.received_time &lt; #{orderEndDate, jdbcType=VARCHAR}
 		</if>
  </select>
  
