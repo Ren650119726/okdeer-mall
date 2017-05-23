@@ -36,7 +36,6 @@ import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsLogMapper;
 import com.okdeer.mall.order.pay.entity.FinanceResponseResult;
-import com.okdeer.mall.order.pay.entity.RefuseFinanceResponseResult;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
@@ -87,7 +86,7 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 	/**
 	 * 退款成功的短信提示
 	 */
-	@Value("sms.pay.refund.success")
+	@Value("${sms.pay.refund.success}")
 	private String smsPayRefundSuccess;
 	
 	@Resource
@@ -219,12 +218,10 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 
 	private String convertPayType(String payType){
 		String payTypeDesc = "支付宝/微信/余额";
-		if(StringUtils.isNotEmpty(payType)){
-			if(payType == PayTypeEnum.ALIPAY.name()){
-				payTypeDesc = "支付宝";
-			}else if(payType == PayTypeEnum.WXPAY.name()){
-				payTypeDesc = "微信";
-			}
+		if(PayTypeEnum.ALIPAY.name().equals(payType)){
+			payTypeDesc = "支付宝";
+		}else if(PayTypeEnum.WXPAY.name().equals(payType)){
+			payTypeDesc = "微信";
 		}
 		return payTypeDesc;
 	}
