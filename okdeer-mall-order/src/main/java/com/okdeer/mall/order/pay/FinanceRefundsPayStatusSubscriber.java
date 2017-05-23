@@ -197,6 +197,7 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 				tradeOrderService.updateOrderStatus(tradeOrder);
 			} else {
 				logger.error("该订单不属于取消中状态，故无法取消退款，订单ID为" + msg);
+				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
 			// Begin V2.4 added by maojj 2017-05-23
 			// 增加短信的发送
