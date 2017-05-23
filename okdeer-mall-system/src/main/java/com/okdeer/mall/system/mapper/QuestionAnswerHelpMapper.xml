@@ -23,8 +23,7 @@
 		<if test="disabled != null">
 			AND disabled = 0
 		</if>
-		ORDER BY 
-			   create_time desc
+		ORDER BY sort desc, create_time desc
 	</select>
 	   
     <select id="selectById" parameterType="string" resultMap="QuestionAnswerHelp">

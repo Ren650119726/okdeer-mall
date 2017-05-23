@@ -172,7 +172,7 @@ public interface ActivityCouponsRecordService {
 	 * @return tuzhiding 
 	 * @throws ServiceException
 	 */
-	public JSONObject addRecordsByCollectId(String collectId, String userId,ActivityCouponsType activityCouponsType)throws ServiceException;
+	public JSONObject addRecordsByCollectId(String collectId, String userId,ActivityCouponsType activityCouponsType)throws Exception;
 	
 	/**
 	 * @Description: 邀新活动 被邀用户下单完成后给 邀请人送代金劵及抽奖次数 

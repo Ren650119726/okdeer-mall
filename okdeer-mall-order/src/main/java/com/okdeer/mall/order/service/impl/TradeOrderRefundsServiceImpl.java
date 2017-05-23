@@ -515,7 +515,7 @@ public class TradeOrderRefundsServiceImpl
 		payRefundDto.setTradeNum(refunds.getTradeNum());
 		payRefundDto.setRefundNum(refunds.getRefundNo());
 		
-		MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, payRefundDto);
+		MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, (Serializable)payRefundDto);
 		msg.setKey(refunds.getId());
 		// 发送消息
 		rocketMQProducer.sendMessage(msg);
@@ -640,7 +640,7 @@ public class TradeOrderRefundsServiceImpl
 			payRefundDto.setRefundType(convert(orderRefunds.getType(),orderRefunds.getRefundsStatus()));
 			payRefundDto.setTradeNum(orderRefunds.getTradeNum());
 			payRefundDto.setRefundNum(orderRefunds.getRefundNo());
-			MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, payRefundDto);
+			MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, (Serializable)payRefundDto);
 			msg.setKey(orderRefunds.getId());
 			rocketMQProducer.sendMessage(msg);
 			// End V2.4 added by maojj 2017-05-20
