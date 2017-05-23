@@ -634,17 +634,19 @@ public class TradeOrderRefundsServiceImpl
 			
 			// Begin V2.4 added by maojj 2017-05-20
 			// 发送消息让系统自动给用户退款
-			PayRefundDto payRefundDto = new PayRefundDto();
-			payRefundDto.setTradeAmount(orderRefunds.getTotalAmount());
-			payRefundDto.setServiceId(orderRefunds.getId());
-			payRefundDto.setServiceNo(orderRefunds.getOrderNo());
-			payRefundDto.setRemark(String.format(REFUND_REMARK,orderRefunds.getOrderNo()));
-			payRefundDto.setRefundType(convert(orderRefunds.getType(),orderRefunds.getRefundsStatus()));
-			payRefundDto.setTradeNum(order.getTradeNum());
-			payRefundDto.setRefundNum(orderRefunds.getRefundNo());
-			MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, (Serializable)payRefundDto);
-			msg.setKey(orderRefunds.getId());
-			rocketMQProducer.sendMessage(msg);
+			if(isOldWayBack(orderRefunds.getPaymentMethod())){
+				PayRefundDto payRefundDto = new PayRefundDto();
+				payRefundDto.setTradeAmount(orderRefunds.getTotalAmount());
+				payRefundDto.setServiceId(orderRefunds.getId());
+				payRefundDto.setServiceNo(orderRefunds.getOrderNo());
+				payRefundDto.setRemark(String.format(REFUND_REMARK,orderRefunds.getOrderNo()));
+				payRefundDto.setRefundType(convert(orderRefunds.getType(),orderRefunds.getRefundsStatus()));
+				payRefundDto.setTradeNum(order.getTradeNum());
+				payRefundDto.setRefundNum(orderRefunds.getRefundNo());
+				MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, (Serializable)payRefundDto);
+				msg.setKey(orderRefunds.getId());
+				rocketMQProducer.sendMessage(msg);
+			}
 			// End V2.4 added by maojj 2017-05-20
 
 		} catch (Exception e) {
