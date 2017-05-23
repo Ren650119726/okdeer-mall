@@ -773,7 +773,7 @@
 		</if>
 	</sql>
 	
-	<sql id="condition_desc_order" >
+	<sql id="condition_desc_order">
 		<!-- 根据不同的tabs做不同的排序 顺序-->
 		<if test="tabs != null and tabs != ''">
 			<!-- 待发货按照付款时间 -->
