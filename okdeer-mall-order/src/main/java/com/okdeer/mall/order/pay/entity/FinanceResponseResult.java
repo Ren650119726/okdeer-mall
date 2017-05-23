@@ -32,6 +32,33 @@ public class FinanceResponseResult implements Serializable {
      * 返回结果码 0成功
      */
     private Integer status;
+    
+    // Begin V2.4 added by maojj 2017-05-23
+    /**
+     * 订单Id
+     */
+    private String orderId;
+    
+    /**
+     * 订单编号
+     */
+    private String orderNo;
+    
+    /**
+     * 退款金额
+     */
+    private String refundAmount ;
+    
+    /**
+     * 用户Id
+     */
+    private String userId;
+    
+    /**
+     * 支付方式：ALIPAY 支付宝  WXPAY微信
+     */
+    private String payType;
+    // End V2.4 added by maojj 2017-05-23
 
     /**
      * 构造方法
@@ -56,4 +83,44 @@ public class FinanceResponseResult implements Serializable {
         this.status = status;
     }
 
+	public String getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
+
+	public String getOrderNo() {
+		return orderNo;
+	}
+
+	public void setOrderNo(String orderNo) {
+		this.orderNo = orderNo;
+	}
+
+	public String getRefundAmount() {
+		return refundAmount;
+	}
+
+	public void setRefundAmount(String refundAmount) {
+		this.refundAmount = refundAmount;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public String getPayType() {
+		return payType;
+	}
+
+	public void setPayType(String payType) {
+		this.payType = payType;
+	}
+    
 }
