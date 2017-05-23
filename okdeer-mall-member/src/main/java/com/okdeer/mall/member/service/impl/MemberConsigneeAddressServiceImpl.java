@@ -274,7 +274,6 @@ public class MemberConsigneeAddressServiceImpl
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public String addListByAppUser(MemberConsigneeAddress memberConsigneeAddress) throws ServiceException {
-		// TODO Auto-generated method stub
 		memberConsigneeAddressMapper.insertSelective(memberConsigneeAddress);
 		String id = memberConsigneeAddress.getId();
 		return id;
@@ -283,7 +282,6 @@ public class MemberConsigneeAddressServiceImpl
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public String editListByAppUser(MemberConsigneeAddress memberConsigneeAddress) throws ServiceException {
-		// TODO Auto-generated method stub
 		memberConsigneeAddressMapper.updateByPrimaryKeySelective(memberConsigneeAddress);
 		String id = memberConsigneeAddress.getId();
 		return id;
@@ -291,12 +289,19 @@ public class MemberConsigneeAddressServiceImpl
 
 	@Override
 	public List<MemberConsigneeAddressVo> findAppUserList(String userId, String storeId) throws ServiceException {
-		// TODO Auto-generated method stub
-		List<MemberConsigneeAddressVo> list = memberConsigneeAddressMapper.selectByDistance(userId, storeId);
+		List<MemberConsigneeAddressVo> list = memberConsigneeAddressMapper.selectByDistance(userId, storeId, null);
 
 		return list;
 	}
 	
+    @Override
+    public List<MemberConsigneeAddressVo> findAppUserList(String userId, String storeId, String clientType)
+            throws ServiceException {
+        List<MemberConsigneeAddressVo> list = memberConsigneeAddressMapper.selectByDistance(userId, 
+                storeId, clientType);
+        return list;
+    }
+    
 	@Override
 	public MemberConsigneeAddressVo comfirmDistance(Double latitude, Double longitude, 
 			String storeId) throws ServiceException {
@@ -309,7 +314,6 @@ public class MemberConsigneeAddressServiceImpl
 	 */
 	@Override
 	public List<MemberConsigneeAddressVo> findWxUserList(String userId, String storeId) throws ServiceException {
-		// TODO Auto-generated method stub
 		List<MemberConsigneeAddressVo> list = memberConsigneeAddressMapper.selectByWxDistance(userId, storeId);
 
 		return list;

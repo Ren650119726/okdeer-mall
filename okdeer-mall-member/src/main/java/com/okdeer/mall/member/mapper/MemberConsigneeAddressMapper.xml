@@ -625,6 +625,9 @@
 		  where m.user_id = #{userId,jdbcType=VARCHAR}
 			and s.id = #{storeId,jdbcType=VARCHAR}
 			and m.disabled =0
+			<if test="clientType == 3">
+	     		AND m.source = 1
+	     	</if>
 		ORDER BY distance ASC
 		) sudo,store_info si
       LEFT JOIN store_info_ext AS se ON si.id = se.store_id 
