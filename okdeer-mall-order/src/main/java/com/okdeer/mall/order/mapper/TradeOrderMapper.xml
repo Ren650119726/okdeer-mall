@@ -810,6 +810,18 @@
 	</sql>
 	<!-- End V2.1.0 added by luosm 20170313 -->
 	
+	<!-- Begin V2.3.0 added by luosm 20170523 -->
+	<sql id="condition_sellerApp_desc_order">
+		<!-- 根据不同的tabs做不同的排序 顺序-->
+		<if test="tabs != null and tabs != ''">
+			<!-- 全部按照订单创建时间倒序排序 -->
+			<if test="tabs == 'all' or tabs == 'cancel' or tabs == 'done' or 'has_been_signed'">
+				ORDER BY tr.create_time DESC
+			</if>
+		</if>
+	</sql>
+	<!-- End V2.3.0 added by luosm 20170523 -->
+	
 	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
 		parameterType="java.lang.String">
 		select
@@ -6199,6 +6211,14 @@
 		<if test="type != null and type != ''">
 			AND tr.type = #{type,jdbcType=TINYINT}
 		</if>
+		<!-- Begin V2.3.0 added by luosm 20170522 -->
+		<if test="null != startCreateTime">
+	    <![CDATA[ AND tr.create_time >= #{startCreateTime,jdbcType=TIMESTAMP} ]]>
+		</if>
+		<if test="null != endCreateTime">
+	    <![CDATA[ AND tr.create_time <= #{endCreateTime,jdbcType=TIMESTAMP} ]]>
+		</if>
+		<!-- End V2.3.0 added by luosm 20170522 -->
 		<!-- 查询条件为  商品名称、订单号码、手机号码 消费码-->
 		<if test="searchCondition != null and searchCondition != ''">
 			AND (
@@ -6220,17 +6240,13 @@
 			<if test="sortType == 1">
 				<include refid="condition_desc_order" />
 			</if>
+			<!-- 按照时间搜索订单页面专用 -->
+			<if test="sortType == 2">
+				<include refid="condition_sellerApp_desc_order" />
+			</if>
 		</if>
-		<!-- Begin V2.3.0 added by luosm 20170522 -->
-		<if test="null != startCreateTime">
-	    <![CDATA[ AND tr.create_time >= #{startCreateTime} ]]>
-		</if>
-		<if test="null != endCreateTime">
-	    <![CDATA[ AND tr.create_time <= #{endCreateTime} ]]>
-		</if>
-		<!-- End V2.3.0 added by luosm 20170522 -->
 		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
-		<if test="tabs == null or tabs == '' or tabs == 'all'">
+		<if test="tabs == null or tabs == ''">
 			ORDER BY tr.create_time DESC
 		</if>
 	</select>
@@ -6270,6 +6286,12 @@
 		<if test="type != null and type != ''">
 			AND tr.type = #{type,jdbcType=TINYINT}
 		</if>
+		<if test="null != startCreateTime">
+	    <![CDATA[ AND tr.create_time >= #{startCreateTime,jdbcType=TIMESTAMP} ]]>
+		</if>
+		<if test="null != endCreateTime">
+	    <![CDATA[ AND tr.create_time <= #{endCreateTime,jdbcType=TIMESTAMP} ]]>
+		</if>
 		<!-- 查询条件为 消费码、商品名称、订单号码、手机号码 -->
 		<if test="searchCondition != null and searchCondition != ''">
 			AND (
@@ -6290,17 +6312,13 @@
 			<if test="sortType == 1">
 				<include refid="condition_desc_order" />
 			</if>
+			<!-- 按照时间搜索订单页面专用 -->
+			<if test="sortType == 2">
+				<include refid="condition_sellerApp_desc_order" />
+			</if>
 		</if>
-		
-		<if test="null != startCreateTime">
-	    <![CDATA[ AND tr.create_time >= #{startCreateTime} ]]>
-		</if>
-		<if test="null != endCreateTime">
-	    <![CDATA[ AND tr.create_time <= #{endCreateTime} ]]>
-		</if>
-		
 		<!-- 默认排序为下单时间倒叙,如搜索，目前ID是无序的，所以先用下单时间倒叙 -->
-		<if test="tabs == null or tabs == '' or tabs == 'all'">
+		<if test="tabs == null or tabs == ''">
 			ORDER BY tr.create_time DESC
 		</if>
 	</select>
