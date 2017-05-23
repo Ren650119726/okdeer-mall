@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.order.service.impl;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -353,7 +354,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		// Begin V2.4 added by maojj 2017-05-20
 		if (orderPay.getPayType() != com.okdeer.mall.order.enums.PayTypeEnum.WALLET) {
 			PayRefundDto payRefundDto = buildPayRefundDto(tradeOrder);
-			MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, payRefundDto);
+			MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, (Serializable)payRefundDto);
 			msg.setKey(tradeOrder.getId());
 			// 发送消息
 			SendResult sendResult = rocketMQProducer.sendMessage(msg);
