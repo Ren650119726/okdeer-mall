@@ -360,6 +360,7 @@ public class MallStockUpdateBuilder {
 				break;
 			case UNPAID:
 			case DROPSHIPPING:
+			case WAIT_RECEIVE_ORDER:
 				stockOpt = StockOperateEnum.PLACE_ORDER;
 				break;
 			case HAS_BEEN_SIGNED:
