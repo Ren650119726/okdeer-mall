@@ -71,7 +71,9 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		checkServTime(resp,paramDto,storeInfo);
 		// 缓存店铺信息
 		paramDto.put("storeInfo", storeInfo);
-		if(resp.isSuccess() && paramDto.getOrderType() == PlaceOrderTypeEnum.CVS_ORDER && paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT){
+		if (resp.isSuccess() && paramDto.getOrderType() == PlaceOrderTypeEnum.CVS_ORDER
+				&& paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT
+				&& paramDto.getPickType() == PickUpTypeEnum.DELIVERY_DOOR) {
 			paramDto.setPickTime(getDeliveryTime(storeInfo.getStoreInfoExt()));
 		}
 	}
