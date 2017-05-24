@@ -26,11 +26,11 @@ public interface OrderTipMsgConstant {
 
 	String STORE_IS_CLOSED = "店铺已关闭,不能进行下单";
 	
-	String STORE_IS_PAUSE = "对不起，商家已暂停营业，提交订单失败";
+	String STORE_IS_PAUSE = "抱歉，该商家已停止营业了哦";
 	
-	String STORE_IS_SHUT = "对不起，商家已打烊，提交订单失败";
+	String STORE_IS_SHUT = "店铺已打烊，暂时不接单，给您造成的不便敬请谅解！";
 	
-	String STORE_DELIVERY_TOMORROW = "商家已打烊，现在下单要明日营业后才能配送，给您造成的不便请谅解。";
+	String STORE_DELIVERY_TOMORROW = "店铺休息中，现在下单需要营业后才能配送，给您造成的不便敬请谅解！";
 	
 	String GOODS_IS_CHANGE = "商品信息发生变化不能进行购买";
 	
