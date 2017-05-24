@@ -120,7 +120,8 @@ public class StoreCheckServiceImpl implements StoreCheckService {
 				break;
 		}
 		// End modified by maojj 2016-08-10
-		if(respDto.isFlag() && reqDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT){
+		if(respDto.isFlag() && reqDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT 
+				&& req.getPickType() == PickUpTypeEnum.DELIVERY_DOOR){
 			req.setPickTime(getDeliveryTime(storeExt));
 		}
 	}
