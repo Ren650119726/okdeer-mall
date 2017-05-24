@@ -797,6 +797,9 @@
     WHERE
         addr.user_id = #{userId, jdbcType=VARCHAR}
         and addr.disabled = 0 
+        <if test="clientType == 3">
+	    	AND addr.source = 1
+	    </if>
   </sql>
   
   <!-- 用户收货地址列表，针对服务订单 add by zengj 2016-7-25 19:34:51 -->

@@ -183,6 +183,8 @@ public class TradeOrderRefundsServiceImpl
 	// @Value("${sysMsgContent}")
 	private String sysMsgContent = "您有一条来自用户【#1】的退款申请需要处理，订单号【#2】";
 	
+	private static final String REFUND_REMARK = "关联订单号【%s】";
+	
 	@Autowired
 	private RedisLockRegistry redisLockRegistry;
 
@@ -510,9 +512,9 @@ public class TradeOrderRefundsServiceImpl
 		payRefundDto.setTradeAmount(refunds.getTotalAmount());
 		payRefundDto.setServiceId(refunds.getId());
 		payRefundDto.setServiceNo(refunds.getOrderNo());
-		payRefundDto.setRemark(refunds.getOrderNo());
+		payRefundDto.setRemark(String.format(REFUND_REMARK,refunds.getOrderNo()));
 		payRefundDto.setRefundType(RefundTypeEnum.RECHARGE_ORDER_REFUND);
-		payRefundDto.setTradeNum(refunds.getTradeNum());
+		payRefundDto.setTradeNum(tradeOrder.getTradeNum());
 		payRefundDto.setRefundNum(refunds.getRefundNo());
 		
 		MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, (Serializable)payRefundDto);
@@ -632,17 +634,19 @@ public class TradeOrderRefundsServiceImpl
 			
 			// Begin V2.4 added by maojj 2017-05-20
 			// 发送消息让系统自动给用户退款
-			PayRefundDto payRefundDto = new PayRefundDto();
-			payRefundDto.setTradeAmount(orderRefunds.getTotalAmount());
-			payRefundDto.setServiceId(orderRefunds.getId());
-			payRefundDto.setServiceNo(orderRefunds.getRefundNo());
-			payRefundDto.setRemark(orderRefunds.getOrderNo());
-			payRefundDto.setRefundType(convert(orderRefunds.getType(),orderRefunds.getRefundsStatus()));
-			payRefundDto.setTradeNum(orderRefunds.getTradeNum());
-			payRefundDto.setRefundNum(orderRefunds.getRefundNo());
-			MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, (Serializable)payRefundDto);
-			msg.setKey(orderRefunds.getId());
-			rocketMQProducer.sendMessage(msg);
+			if(isOldWayBack(orderRefunds.getPaymentMethod())){
+				PayRefundDto payRefundDto = new PayRefundDto();
+				payRefundDto.setTradeAmount(orderRefunds.getTotalAmount());
+				payRefundDto.setServiceId(orderRefunds.getId());
+				payRefundDto.setServiceNo(orderRefunds.getOrderNo());
+				payRefundDto.setRemark(String.format(REFUND_REMARK,orderRefunds.getOrderNo()));
+				payRefundDto.setRefundType(convert(orderRefunds.getType(),orderRefunds.getRefundsStatus()));
+				payRefundDto.setTradeNum(order.getTradeNum());
+				payRefundDto.setRefundNum(orderRefunds.getRefundNo());
+				MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, (Serializable)payRefundDto);
+				msg.setKey(orderRefunds.getId());
+				rocketMQProducer.sendMessage(msg);
+			}
 			// End V2.4 added by maojj 2017-05-20
 
 		} catch (Exception e) {

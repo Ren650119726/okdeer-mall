@@ -813,7 +813,7 @@
 			<if test="version != null and version != ''">
 			AND version.version = #{version}
 			</if>
-			AND ca.status = 1
+			AND ca.status = 1  AND ca.disabled = 0
 			<!-- 查询运营商的 -->
 			and ca.belong_type = 0
 		<if test="name != null and name != ''">
@@ -903,7 +903,7 @@
 			<if test="version != null and version != ''">
 			AND version.version = #{version}
 			</if>
-			AND ca.status = 1
+			AND ca.status = 1  AND ca.disabled = 0
 			<!-- 查询代理商的 -->
 			and ca.belong_type > 0
 		<if test="name != null and name != ''">
