@@ -141,7 +141,7 @@ public class StoreCheckServiceImpl implements StoreCheckService {
 		TradeOrderResp resp = respDto.getResp();
 		resp.setIsAcceptOrder(storeExt.getIsAcceptOrder().ordinal());
 		// 判定当前时间是否在营业时间范围内
-		if (!isBusiness(storeExt.getServiceStartTime(), storeExt.getServiceEndTime())) {
+		if (!isBusiness(storeExt.getServiceStartTime(), storeExt.getServiceEndTime()) || !isValid(DateUtils.getDate(), storeExt.getInvalidDate())) {
 			// 1:营业中,0:休息中
 			resp.setIsRest(0);
 			respDto.setFlag(false);
@@ -164,7 +164,7 @@ public class StoreCheckServiceImpl implements StoreCheckService {
 		}
 		TradeOrderResp resp = respDto.getResp();
 		// 判定当前时间是否在营业时间范围内
-		if (!isBusiness(storeExt.getServiceStartTime(), storeExt.getServiceEndTime())) {
+		if (!isBusiness(storeExt.getServiceStartTime(), storeExt.getServiceEndTime()) || !isValid(DateUtils.getDate(), storeExt.getInvalidDate())) {
 			resp.setIsAcceptOrder(storeExt.getIsAcceptOrder().ordinal());
 			resp.setIsRest(0);
 			respDto.setFlag(false);
