@@ -876,7 +876,9 @@ public class TradeOrderRefundsServiceImpl
 		Lock lock = redisLockRegistry.obtain(orderRefunds.getId());
 		if(lock.tryLock(10, TimeUnit.SECONDS)){
 			TradeOrderRefunds refunds = this.findById(orderRefunds.getId());
-			if (refunds.getRefundsStatus() != RefundsStatusEnum.WAIT_SELLER_REFUND) {
+			if (refunds.getRefundsStatus() != RefundsStatusEnum.WAIT_SELLER_REFUND 
+					|| refunds.getRefundsStatus() != RefundsStatusEnum.FORCE_SELLER_REFUND
+					|| refunds.getRefundsStatus() != RefundsStatusEnum.YSC_REFUND) {
 				logger.warn("执行退款操作订单状态已经变更，操作失效");
 				lock.unlock();
 				throw new Exception("执行退款操作订单状态已经变更，操作失效");
@@ -975,7 +977,8 @@ public class TradeOrderRefundsServiceImpl
 		tradeOrderRefundsLogMapper.insertSelective(new TradeOrderRefundsLog(refunds.getId(), refunds.getOperator(),
 				refunds.getRefundsStatus().getName(), refunds.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
-		if (RefundsStatusEnum.YSC_REFUND == status) {
+		// Begin modified by maojj 2017-05-25
+		/*if (RefundsStatusEnum.YSC_REFUND == status) {
 			TradeOrder order = tradeOrderMapper.selectByPrimaryKey(refunds.getOrderId());
 			// 更新退款单
 			this.save(order, refunds);
@@ -988,7 +991,16 @@ public class TradeOrderRefundsServiceImpl
 		} else if (RefundsStatusEnum.CUSTOMER_SERVICE_CANCEL_INTERVENE == status) {
 			// 解冻订单项金额
 			updateWithRevocatory(refunds, null);
+		}*/
+		if (RefundsStatusEnum.YSC_REFUND == status || RefundsStatusEnum.FORCE_SELLER_REFUND == status) {
+			// 执行退款操作
+			refunds.setTradeNum(TradeNumUtil.getTradeNum());
+			doRefundPay(refunds);
+		} else if (RefundsStatusEnum.CUSTOMER_SERVICE_CANCEL_INTERVENE == status) {
+			// 解冻订单项金额
+			updateWithRevocatory(refunds, null);
 		}
+		// Begin modified by maojj 2017-05-25
 		logger.error("客服处理更新订单状态成功");
 	}
 
