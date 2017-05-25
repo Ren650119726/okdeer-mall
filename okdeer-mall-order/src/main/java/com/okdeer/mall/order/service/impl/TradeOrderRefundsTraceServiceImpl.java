@@ -160,6 +160,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 			case CUSTOMER_SERVICE_CANCEL_INTERVENE:
 			case BUYER_REPEAL_REFUND:
 			case YSC_REFUND:
+			case FORCE_SELLER_REFUND:
 			case FORCE_SELLER_REFUND_SUCCESS:
 			case SELLER_REFUNDING:
 			case REFUND_SUCCESS:
