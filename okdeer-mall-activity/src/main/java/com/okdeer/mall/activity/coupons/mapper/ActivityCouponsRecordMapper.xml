@@ -13,6 +13,8 @@
     <result column="order_id" property="orderId" jdbcType="VARCHAR" />
     <result column="room_id" property="roomId" jdbcType="VARCHAR" />   
     <result column="thrid_code" property="thridCode" jdbcType="VARCHAR" />
+    <result column="device_id" property="deviceId" jdbcType="VARCHAR" />
+    <result column="rec_date" property="recDate" jdbcType="VARCHAR" />
   </resultMap>
   
    <resultMap id="VoResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo" extends="BaseResultMap">
@@ -22,7 +24,7 @@
   </resultMap>
   <sql id="Base_Column_List" >
     id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id, 
-    valid_time, status, order_id, room_id,thrid_code
+    valid_time, status, order_id, room_id,thrid_code, device_id, rec_date
   </sql>
   <sql id="condition" >
     <if test="null!=params" >
@@ -51,11 +53,11 @@
     insert into activity_coupons_record (id, collect_type, coupons_id, 
       coupons_collect_id, collect_time, collect_user_id, 
       valid_time, status, order_id, 
-      room_id)
+      room_id, device_id, rec_date)
     values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=TINYINT}, #{couponsId,jdbcType=VARCHAR}, 
       #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUserId,jdbcType=VARCHAR}, 
       #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=TINYINT}, #{orderId,jdbcType=VARCHAR}, 
-      #{roomId,jdbcType=VARCHAR})
+      #{roomId,jdbcType=VARCHAR}, #{deviceId,jdbcType=VARCHAR},#{recDate,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
     insert into activity_coupons_record
@@ -93,6 +95,12 @@
       <if test="thridCode != null" >
         thrid_code,
       </if>
+      <if test="deviceId != null" >
+          device_id,
+      </if>
+      <if test="recDate != null" >
+          rec_date,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -128,6 +136,12 @@
       <if test="thridCode != null" >
         #{thridCode,jdbcType=VARCHAR},
       </if>
+      <if test="deviceId != null" >
+      	#{deviceId,jdbcType=VARCHAR},
+      </if>
+      <if test="recDate != null" >
+    	#{recDate,jdbcType=VARCHAR},
+      </if>
     </trim>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
@@ -159,6 +173,12 @@
       </if>
       <if test="roomId != null" >
         room_id = #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceId != null" >
+          device_id = #{deviceId,jdbcType=VARCHAR},
+      </if>
+      <if test="recDate != null" >
+          rec_date = #{recDate,jdbcType=VARCHAR},
       </if>
     </set>
     where id = #{id,jdbcType=VARCHAR}
@@ -388,6 +408,8 @@
                    jdbcType="TINYINT"/>
         <result property="useUserType" column="use_user_type"  javaType="com.okdeer.mall.common.enums.UseUserType" jdbcType="TINYINT"/> 
         <result property="useClientType" column="use_client_type" javaType="com.okdeer.mall.common.enums.UseClientType" jdbcType="TINYINT"/> 
+        <result property="deviceDayLimit" column="device_day_limit" jdbcType="INTEGER"/>
+        <result property="accountDayLimit" column="account_day_limit" jdbcType="INTEGER"/>
         <collection property="activityCouponsCategory" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory">
 	       <id column="categoryid" property="id" jdbcType="VARCHAR" />
            <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
@@ -420,7 +442,8 @@
    coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
    coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
    coupons.type AS type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, 
-   coupons.id as couponsId,record.id,record.collect_time,record.valid_time,coupons.use_user_type,coupons.use_client_type, 		
+   record.id,record.collect_time,record.valid_time,coupons.use_user_type,coupons.use_client_type, 
+   coupons.device_day_limit, coupons.account_day_limit,		
    CASE
    WHEN coupons.type = 1 THEN nav.name
    WHEN coupons.type = 2 THEN spu.name
@@ -446,7 +469,8 @@
    coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
    coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
    coupons.type AS type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, 
-   coupons.id as couponsId,record.id,record.collect_time,record.valid_time,coupons.use_user_type,coupons.use_client_type,   		
+   record.id,record.collect_time,record.valid_time,coupons.use_user_type,coupons.use_client_type, 
+   coupons.device_day_limit, coupons.account_day_limit,  		
    CASE
    WHEN coupons.type = 1 THEN nav.name
    WHEN coupons.type = 2 THEN spu.name
@@ -566,7 +590,12 @@
    
    <!-- modified by maojj 2016-10-10 防止用户刷代金券。下单时将代金券状态更改为已使用时，添加状态为0的条件 -->
    <update id="updateActivityCouponsStatus" parameterType="map">
-      UPDATE activity_coupons_record set status = 1,order_id = #{orderId,jdbcType=VARCHAR} 
+      UPDATE activity_coupons_record 
+      SET 
+      		status = 1,
+      		order_id = #{orderId,jdbcType=VARCHAR},
+      		device_id = #{deviceId,jdbcType=VARCHAR} ,
+      		rec_date = #{recDate,jdbcType=VARCHAR}
       WHERE status = 0
       AND id = #{id,jdbcType=VARCHAR}
    </update>
@@ -651,8 +680,10 @@
 			t2.id AS activityItemId ,
 			FORMAT(t2.arrive_limit,2) AS arrive,
 			t2.is_category AS isCategory,
-			t2.use_user_type as useUserType,
-			t2.use_client_type as useClientType
+			t2.use_user_type AS useUserType,
+			t2.use_client_type AS useClientType,
+			t2.device_day_limit AS deviceDayLimit,
+			t2.account_day_limit AS accountDayLimit
 		FROM
 			activity_coupons_record t
 			LEFT JOIN activity_coupons t2 ON t.coupons_id = t2.id
@@ -873,4 +904,41 @@
 		  </if>
    </select>
   
+   <select id="countActivityRecord" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo"
+   		resultType="com.okdeer.mall.activity.coupons.bo.ActivityRecordBo">
+   		SELECT coupons_id AS pkId,
+   			   count(*) AS totalNum
+   		FROM activity_coupons_record
+   		WHERE coupons_id IN
+   			<foreach collection="pkIdList" item="pkId" separator="," open="(" close=")">
+   				#{pkId}
+   			</foreach>
+   		<if test="deviceId != null">
+   			AND device_id = #{deviceId,jdbcType=VARCHAR}
+   		</if>
+   		<if test="userId != null">
+   			AND collect_user_id = #{userId,jdbcType=VARCHAR}
+   		</if>
+   		<if test="recDate != null">
+   			AND rec_date = #{recDate,jdbcType=VARCHAR}
+   		</if>
+   		AND status = 1
+   		GROUP BY coupons_id
+   </select>
+   
+   <select id="countDayFreq" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo" resultType="int">
+   		SELECT count(*)
+   		FROM activity_coupons_record
+   		WHERE coupons_id = #{pkId}
+   		<if test="deviceId != null">
+   			AND device_id = #{deviceId,jdbcType=VARCHAR}
+   		</if>
+   		<if test="userId != null">
+   			AND collect_user_id = #{userId,jdbcType=VARCHAR}
+   		</if>
+   		<if test="recDate != null">
+   			AND rec_date = #{recDate,jdbcType=VARCHAR}
+   		</if>
+   		AND status = 1
+   </select>
 </mapper> 

@@ -123,6 +123,22 @@
 		</if>
 	</sql>
 	<!-- End V2.1.0 added by luosm 20170314 -->
+	
+	<!-- Begin V2.3.0 added by luosm 20170523 -->
+	<sql id="condition_sellerApp_desc_order">
+		<!-- 根据不同的tabs做不同的排序 顺序-->
+		<if test="tabs != null and tabs != ''">
+			<!-- 售后申请按照创建时间 -->
+			<if test="tabs == 'apply'">
+				ORDER BY tr.create_time DESC
+			</if>
+			<!-- 便利店已拒绝,已同意,已完成 -->
+			<if test="tabs == 'rejected' or tabs == 'agree' or tabs == 'done'">
+					ORDER BY tr.create_time DESC
+			</if>
+		</if>
+	</sql>
+	<!-- End V2.3.0 added by luosm 20170523 -->
   
   <!-- 查询退款单列表 zhongy start-->
   <select id="selectByUserIdAndType" resultMap="BaseResultMap" parameterType="map" >
@@ -1082,10 +1098,10 @@
 			</foreach>
 		</if>
 		<if test="null != startCreateTime">
-	    <![CDATA[ AND o.create_time >= #{startCreateTime} ]]>
+	    <![CDATA[ AND o.create_time >= #{startCreateTime,jdbcType=TIMESTAMP} ]]>
 		</if>
 		<if test="null != endCreateTime">
-	    <![CDATA[ AND o.create_time <= #{endCreateTime} ]]>
+	    <![CDATA[ AND o.create_time <= #{endCreateTime,jdbcType=TIMESTAMP} ]]>
 		</if>
 		<if test="null != refundIds and refundIds.size > 0  ">
 			AND tr.id IN
@@ -1186,6 +1202,10 @@
 			<!-- 倒序 -->
 			<if test="sortType == 1">
 				<include refid="condition_desc_order" />
+			</if>
+			<!-- 按照时间搜索订单页面专用 -->
+			<if test="sortType == 2">
+				<include refid="condition_sellerApp_desc_order" />
 			</if>
 		</if>
 		<!-- 默认排序 -->

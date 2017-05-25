@@ -6,6 +6,8 @@ import java.util.Map;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
@@ -170,7 +172,7 @@ public interface ActivityCouponsRecordService {
 	 * @return tuzhiding 
 	 * @throws ServiceException
 	 */
-	public JSONObject addRecordsByCollectId(String collectId, String userId,ActivityCouponsType activityCouponsType)throws ServiceException;
+	public JSONObject addRecordsByCollectId(String collectId, String userId,ActivityCouponsType activityCouponsType)throws Exception;
 	
 	/**
 	 * @Description: 邀新活动 被邀用户下单完成后给 邀请人送代金劵及抽奖次数 

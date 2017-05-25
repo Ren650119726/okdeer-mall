@@ -10,18 +10,25 @@ package com.okdeer.mall.order.pay;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
+import com.google.common.collect.Maps;
+import com.okdeer.api.pay.enums.PayTypeEnum;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
@@ -29,13 +36,11 @@ import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsLogMapper;
 import com.okdeer.mall.order.pay.entity.FinanceResponseResult;
-import com.okdeer.mall.order.pay.entity.RefuseFinanceResponseResult;
+import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.base.common.utils.mapper.JsonMapper;
-import com.okdeer.base.common.utils.StringUtils;
-import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
+import com.okdeer.mall.system.service.SysBuyerUserService;
 
 /**
  * 退款支付状态同步
@@ -73,6 +78,20 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 
 	@Resource
 	private TradeOrderSendMessageService sendMessageService;
+	
+	// Begin V2.4 added by maojj 2017-05-23
+	@Resource
+	private TradeMessageService tradeMessageService;
+	
+	/**
+	 * 退款成功的短信提示
+	 */
+	@Value("${sms.pay.refund.success}")
+	private String smsPayRefundSuccess;
+	
+	@Resource
+	private SysBuyerUserService sysBuyerUserService;
+	// End V2.4 added by maojj 2017-05-23
 	
 	@Override
 	public String getTopic() {
@@ -133,6 +152,18 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 			orderRefunds.setRefundMoneyTime(new Date());
 			
 			tradeOrderRefundsService.refundSuccess(orderRefunds);
+			
+			// Begin V2.4 added by maojj 2017-05-23
+			// 增加短信的发送
+			Map<String, String> param = Maps.newHashMap();
+			// 订单 编号
+			param.put("#1", orderRefunds.getRefundNo());
+			// 退款金额
+			param.put("#2", result.getRefundAmount());
+			// 支付方式
+			param.put("#3", convertPayType(result.getPayType()));
+			tradeMessageService.sendSms(sysBuyerUserService.selectMemberMobile(orderRefunds.getUserId()), smsPayRefundSuccess, param);
+			// End V2.4 added by maojj 2017-05-23
 			logger.info("=============修改退款的订单的状态成功=============");
 		} catch (Exception e) {
 			logger.error("退款单支付状态同步消息处理失败", e);
@@ -146,8 +177,8 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 	 */
 	private ConsumeConcurrentlyStatus processCancel(String msg) {
 		try {
-			RefuseFinanceResponseResult result = JsonMapper.nonEmptyMapper().fromJson(msg,
-					RefuseFinanceResponseResult.class);
+			FinanceResponseResult result = JsonMapper.nonEmptyMapper().fromJson(msg,
+					FinanceResponseResult.class);
 			if (StringUtils.isEmpty(result.getOrderId())) {
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
@@ -166,7 +197,19 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 				tradeOrderService.updateOrderStatus(tradeOrder);
 			} else {
 				logger.error("该订单不属于取消中状态，故无法取消退款，订单ID为" + msg);
+				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
+			// Begin V2.4 added by maojj 2017-05-23
+			// 增加短信的发送
+			Map<String, String> param = Maps.newHashMap();
+			// 订单 编号
+			param.put("#1", selectOrder.getOrderNo());
+			// 退款金额
+			param.put("#2", result.getRefundAmount());
+			// 支付方式
+			param.put("#3", convertPayType(result.getPayType()));
+			tradeMessageService.sendSms(selectOrder.getUserPhone(), smsPayRefundSuccess, param);
+			// End V2.4 added by maojj 2017-05-23
 		} catch (Exception e) {
 			logger.error("取消订单支付状态同步消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
@@ -174,4 +217,13 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 	}
 
+	private String convertPayType(String payType){
+		String payTypeDesc = "支付宝/微信/余额";
+		if(PayTypeEnum.ALIPAY.name().equals(payType)){
+			payTypeDesc = "支付宝";
+		}else if(PayTypeEnum.WXPAY.name().equals(payType)){
+			payTypeDesc = "微信";
+		}
+		return payTypeDesc;
+	}
 }

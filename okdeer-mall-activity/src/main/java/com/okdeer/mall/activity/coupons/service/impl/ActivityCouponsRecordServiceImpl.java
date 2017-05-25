@@ -45,6 +45,8 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -58,6 +60,7 @@ import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
@@ -360,17 +363,30 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 	
 	/**
+	 * 根据活动ID领取代金劵 存在邀请人用户id需要确认是否记录邀请人
+	 * @param collectId 活动id集合
+	 * @param userId 用户id
+	 * @param activityCouponsType 活动类型
+	 * @return tuzhiding 
+	 * @throws Exception
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public JSONObject addRecordsByCollectId(String collectId, String userId,ActivityCouponsType type) throws Exception{
+		return addRecordsByCollectId(collectId, userId, type, null);
+	}
+	/**
 	 * 根据活动ID领取代金劵
 	 * @param collectId 活动id集合
 	 * @param userId 用户id
 	 * @param activityCouponsType 活动类型
+	 * @param invitaUserId 邀请人用户id
 	 * @return tuzhiding 
 	 * @throws ServiceException
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public JSONObject addRecordsByCollectId(String collectId, String userId,
-			ActivityCouponsType activityCouponsType) throws ServiceException {
+			ActivityCouponsType activityCouponsType,String invitaUserId) throws Exception {
 		Map<String, Object> map = new HashMap<String, Object>();
 		//校验成功标识 //如果不存在缓存数据进行加入到缓存中
 		String key = userId+collectId;
@@ -424,6 +440,18 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				for(ActivityCoupons coupons : activityCoupons){
 					updateCouponsRecode(reMap.get(coupons.getId()), coupons);
 				}
+				
+				//存在邀请人用户id需要确认是否记录邀请人
+				if(StringUtils.isNotBlank(invitaUserId)){
+					//根据用户id或用户邀请码，所以InviteUserId 可以存储用户id或邀请码
+					List<SysUserInvitationCode> listCode= sysUserInvitationCodeMapper
+							.findInvitationByIdCode(invitaUserId, invitaUserId);
+					//存在邀请码及添加第一个进去，防止数据库中存在多个
+					if(listCode != null && listCode.size() > 0){
+						//内部会判断 不存在邀请记录 则将给该用户userId记录 邀请记录
+						invitationCodeService.saveInvatationRecord(listCode.get(0), userId, "");
+					}
+				}
 				map.put("code", 100);
 				map.put("msg", "恭喜你，领取成功！");
 			}
@@ -462,7 +490,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @param phone 用户手机号码
 	 * @param activityCouponsType 活动类型
 	 * @param userId 	邀请的用户id 没有null
-	 * @param advertId 	广告活动id
+	 * @param advertId 	H5活动id
 	 * @return tuzhiding 
 	 * @throws ServiceException
 	 */
@@ -480,6 +508,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			map.put("msg", "用户调用次数超限");
 			return JSONObject.fromObject(map);
 		}
+		//校验成功标识
 		try{
 			ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
 			if(coll == null){
@@ -1425,6 +1454,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		if(CollectionUtils.isEmpty(couponsList)){
 			return couponsList;
 		}
+		// 解析出代金券统一设备、同一账户的使用次数
+		countUseRecord(paramBo,couponsList);
 		// 对集合进行数据迭代
 		Iterator<Coupons> it = couponsList.iterator();
 		Coupons coupons = null;
@@ -1452,6 +1483,41 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			}
 		}
 		return couponsList;
+	}
+	
+	private void countUseRecord(FavourParamBO paramBo,List<Coupons> couponsList){
+		// 有设备限制的代金券Id列表
+		List<String> deviceLimitCouponsIds = Lists.newArrayList();
+		// 有账户限制的代金券Id列表
+		List<String> userLimitCouponsIds = Lists.newArrayList();
+		for(Coupons coupons : couponsList){
+			if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0){
+				deviceLimitCouponsIds.add(coupons.getCouponId());
+			}
+			if(coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0){
+				userLimitCouponsIds.add(coupons.getCouponId());
+			}
+		}
+		ActivityRecordParamBo recParamBo = null;
+		List<ActivityRecordBo> recordBoList = null;
+		if(CollectionUtils.isNotEmpty(deviceLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getDeviceId())){
+			// 根据设备统计使用次数
+			recParamBo = new ActivityRecordParamBo();
+			recParamBo.setPkIdList(deviceLimitCouponsIds);
+			recParamBo.setRecDate(DateUtils.getDate());
+			recParamBo.setDeviceId(paramBo.getDeviceId());
+			recordBoList = activityCouponsRecordMapper.countActivityRecord(recParamBo);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_DEVICE, recordBoList);
+		}
+		if(CollectionUtils.isNotEmpty(userLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getUserId())){
+			// 根据设备统计使用次数
+			recParamBo = new ActivityRecordParamBo();
+			recParamBo.setPkIdList(userLimitCouponsIds);
+			recParamBo.setRecDate(DateUtils.getDate());
+			recParamBo.setUserId(paramBo.getUserId());
+			recordBoList = activityCouponsRecordMapper.countActivityRecord(recParamBo);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_USER, recordBoList);
+		}
 	}
 	
 	/**

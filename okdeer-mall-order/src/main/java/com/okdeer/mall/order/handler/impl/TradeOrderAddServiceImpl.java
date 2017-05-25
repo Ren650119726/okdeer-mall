@@ -970,13 +970,11 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	 * @date 2016年7月14日
 	 */
 	private void toUpdateStock(TradeOrder order, TradeOrderReqDto reqDto, List<String> rpcIdList) throws Exception {
-		StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(order,reqDto);
-		if(mallStockUpdate != null){
-			rpcIdList.add(mallStockUpdate.getRpcId());
-			goodsStoreSkuStockApi.updateStock(mallStockUpdate);
-		}
-		StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.build(order, reqDto);
-		stockUpdateServiceApi.stockUpdateForMessage(jxcStockUpdate);
+		StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(order);
+		rpcIdList.add(mallStockUpdate.getRpcId());
+		goodsStoreSkuStockApi.updateStock(mallStockUpdate);
+//		StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.build(order, reqDto);
+//		stockUpdateServiceApi.stockUpdateForMessage(jxcStockUpdate);
 	}
 
 	/**
@@ -1008,15 +1006,12 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	 */
 	private void updateActivityCoupons(TradeOrder tradeOrder, TradeOrderReq req) throws Exception{
 		ActivityTypeEnum activityType = req.getActivityType();
-		int couponsType = req.getCouponsType();
-
 		if (activityType == ActivityTypeEnum.VONCHER ) {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("orderId", tradeOrder.getId());
 			params.put("id", req.getRecordId());
-			params.put("collectUserId", tradeOrder.getUserPhone());
-			params.put("couponsId", req.getActivityItemId());
-			params.put("collectType", couponsType);
+			params.put("deviceId", req.getDeviceId());
+			params.put("recDate", DateUtils.getDate());
 			// 更新代金券状态
 			int updateResult = activityCouponsRecordMapper.updateActivityCouponsStatus(params);
 			if(updateResult == 0){
@@ -1097,6 +1092,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		discountRecord.setOrderId(orderId);
 		discountRecord.setOrderTime(new Date());
 		discountRecord.setOrderDisabled(Disabled.valid);
+		discountRecord.setDeviceId(req.getDeviceId());
 
 		if (activityType == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
 			// 满减活动

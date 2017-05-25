@@ -810,4 +810,10 @@ public class ActivityCollectCouponsServiceImpl
 		}
 		return null;
 	}
+
+	@Override
+	public ActivityCollectCoupons findCollectCouponsByModelId(String modelId, String activityAdvertId) {
+		return activityCollectCouponsMapper.findCollectCouponsByModelId(modelId,activityAdvertId);
+		
+	}
 }

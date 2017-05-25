@@ -11,7 +11,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.alibaba.dubbo.config.annotation.Reference;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.okdeer.archive.goods.assemble.GoodsStoreSkuAssembleApi;
+import com.okdeer.archive.goods.assemble.dto.GoodsStoreAssembleDto;
+import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.stock.dto.StockUpdateDetailDto;
@@ -54,6 +59,9 @@ public class MallStockUpdateBuilder {
 	 */
 	@Autowired
 	private ActivitySeckillService activitySeckillService;
+	
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuAssembleApi goodsStoreSkuAssembleApi;
 
 	/**
 	 * @Description: V2.1版本。构建商品更新的Dto。商城负责便利店商品活动库存的变更和组合商品的库存变更
@@ -244,29 +252,43 @@ public class MallStockUpdateBuilder {
 		stockUpdateDto.setOrderId(tradeOrder.getId());
 		stockUpdateDto.setStoreId(tradeOrder.getStoreId());
 		stockUpdateDto.setStockOperateEnum(convert(tradeOrder.getStatus()));
-
+		
+		// 组合商品数量映射列表
+		Map<String,Integer> comboSkuMap = Maps.newHashMap();
+		List<String> comboSkuIds = Lists.newArrayList();
+		
 		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
 		StockUpdateDetailDto updateDetail = null;
 		ActivityTypeEnum actType = null;
 		for(TradeOrderItem orderItem : tradeOrder.getTradeOrderItem()){
 			// 获取订单项商品活动类型
 			actType = getActvityType(tradeOrder,orderItem);
-			// 组合商品需要进行更改
-			if(orderItem.getSpuType() == SpuTypeEnum.physicalSpu && actType == ActivityTypeEnum.NO_ACTIVITY && tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER){
-				continue;
-			}
 			updateDetail = new StockUpdateDetailDto();
 			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
 			updateDetail.setSpuType(orderItem.getSpuType());
 			updateDetail.setActType(actType);
-			// 需要考虑组合商品库存扣减问题
+			updateDetail.setUpdateNum(orderItem.getQuantity());
 			if(actType == ActivityTypeEnum.LOW_PRICE){
-				updateDetail.setUpdateNum(orderItem.getActivityQuantity());
-			}else{
-				updateDetail.setUpdateNum(orderItem.getQuantity());
+				updateDetail.setUpdateLockedNum(orderItem.getActivityQuantity());
 			}
-			
+			if(orderItem.getSpuType() == SpuTypeEnum.assembleSpu){
+				comboSkuIds.add(orderItem.getStoreSkuId());
+				comboSkuMap.put(orderItem.getStoreSkuId(), orderItem.getQuantity());
+			}
 			updateDetailList.add(updateDetail);
+		}
+		// 处理组合商品
+		if(CollectionUtils.isNotEmpty(comboSkuIds)){
+			List<GoodsStoreAssembleDto> comboDtoList = goodsStoreSkuAssembleApi.findByAssembleSkuIds(comboSkuIds);
+			for (GoodsStoreAssembleDto comboDto : comboDtoList) {
+				for (GoodsStoreSkuAssembleDto comboDetail : comboDto.getGoodsStoreSkuAssembleDtos()) {
+					updateDetail = new StockUpdateDetailDto();
+					updateDetail.setStoreSkuId(comboDetail.getStoreSkuId());
+					updateDetail.setSpuType(comboDetail.getSpuTypeEnum());
+					updateDetail.setUpdateNum(comboDetail.getQuantity() * comboSkuMap.get(comboDetail.getAssembleSkuId()));
+					updateDetailList.add(updateDetail);
+				}
+			}
 		}
 		
 		stockUpdateDto.setUpdateDetailList(updateDetailList);
@@ -326,11 +348,28 @@ public class MallStockUpdateBuilder {
 	 * @date 2017年3月21日
 	 */
 	private StockOperateEnum convert(OrderStatusEnum orderStatus){
-		if(orderStatus == OrderStatusEnum.CANCELING || orderStatus == OrderStatusEnum.CANCELED){
-			return StockOperateEnum.CANCEL_ORDER;
-		}else{
-			return StockOperateEnum.REFUSED_SIGN;
+		StockOperateEnum stockOpt = null;
+		switch (orderStatus) {
+			case CANCELING:
+			case CANCELED:
+				stockOpt = StockOperateEnum.CANCEL_ORDER;
+				break;
+			case REFUSING:
+			case REFUSED:
+				stockOpt = StockOperateEnum.REFUSED_SIGN;
+				break;
+			case UNPAID:
+			case DROPSHIPPING:
+			case WAIT_RECEIVE_ORDER:
+				stockOpt = StockOperateEnum.PLACE_ORDER;
+				break;
+			case HAS_BEEN_SIGNED:
+				stockOpt = StockOperateEnum.PLACE_ORDER_COMPLETE;
+				break;
+			default:
+				break;
 		}
+		return stockOpt;
 	}
 	
 	/**
@@ -403,7 +442,7 @@ public class MallStockUpdateBuilder {
 			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
 			updateDetail.setSpuType(orderItem.getSpuType());
 			updateDetail.setActType(actType);
-			updateDetail.setUpdateNum(getRefundsNum(orderRefunds,orderItem,actType));
+			updateDetail.setUpdateLockedNum(getRefundsNum(orderRefunds,orderItem,actType));
 			updateDetailList.add(updateDetail);
 		}
 		

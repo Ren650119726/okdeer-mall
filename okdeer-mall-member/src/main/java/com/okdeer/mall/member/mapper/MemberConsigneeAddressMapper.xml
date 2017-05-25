@@ -582,6 +582,9 @@
     <include refid="Base_Column_List" />
      FROM member_consignee_address WHERE 1=1 AND user_id=#{userId,jdbcType=VARCHAR}
      AND disabled=0 
+     <if test="clientType == 3">
+     	AND source = 1
+     </if>
      ORDER BY update_time DESC
   </select>
   
@@ -622,6 +625,9 @@
 		  where m.user_id = #{userId,jdbcType=VARCHAR}
 			and s.id = #{storeId,jdbcType=VARCHAR}
 			and m.disabled =0
+			<if test="clientType == 3">
+	     		AND m.source = 1
+	     	</if>
 		ORDER BY distance ASC
 		) sudo,store_info si
       LEFT JOIN store_info_ext AS se ON si.id = se.store_id 
@@ -791,6 +797,9 @@
     WHERE
         addr.user_id = #{userId, jdbcType=VARCHAR}
         and addr.disabled = 0 
+        <if test="clientType == 3">
+	    	AND addr.source = 1
+	    </if>
   </sql>
   
   <!-- 用户收货地址列表，针对服务订单 add by zengj 2016-7-25 19:34:51 -->

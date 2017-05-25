@@ -11,11 +11,12 @@
         <result column="order_id" property="orderId" jdbcType="VARCHAR" />
         <result column="order_time" property="orderTime" jdbcType="TIMESTAMP" />
         <result column="order_disabled" property="orderDisabled" jdbcType="TINYINT" />
+		<result column="device_id" property="deviceId" jdbcType="VARCHAR" />
     </resultMap>
 
     <sql id="Base_Column_List" >
         id, discount_id, discount_conditions_id, discount_type, user_id, store_id, order_id, 
-        order_time, order_disabled
+        order_time, order_disabled, device_id
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -55,6 +56,9 @@
             <if test="orderDisabled != null" >
                 order_disabled,
             </if>
+            <if test="deviceId != null" >
+                device_id,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -83,6 +87,9 @@
             </if>
             <if test="orderDisabled != null" >
                 #{orderDisabled,jdbcType=TINYINT},
+            </if>
+            <if test="deviceId != null" >
+                #{deviceId,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -114,6 +121,9 @@
             <if test="orderDisabled != null" >
                 order_disabled = #{orderDisabled,jdbcType=TINYINT},
             </if>
+            <if test="deviceId != null" >
+                device_id = #{deviceId,jdbcType=VARCHAR},
+            </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
     </update>
@@ -123,11 +133,19 @@
         where id = #{id,jdbcType=VARCHAR}
     </delete>
     
-    <select id="countTotalFreq" parameterType="map" resultType="int">
+    <select id="countTotalFreq" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo" resultType="int">
     	SELECT COUNT(1)
     	FROM activity_discount_record
-    	WHERE user_id = #{userId,jdbcType=VARCHAR}
-    	AND discount_id = #{activityId,jdbcType=VARCHAR}
+    	WHERE discount_id = #{pkId,jdbcType=VARCHAR}
+		<if test="deviceId != null">
+   			AND device_id = #{deviceId,jdbcType=VARCHAR}
+   		</if>
+   		<if test="userId != null">
+   			AND user_id = #{userId,jdbcType=VARCHAR}
+   		</if>
+   		<if test="recDate != null">
+   			AND order_time BETWEEN CONCAT(#{recDate,jdbcType=VARCHAR},' 00:00:00') AND CONCAT(#{recDate,jdbcType=VARCHAR},' 23:59:59')
+   		</if>
     	AND order_disabled = 0
     </select>
 

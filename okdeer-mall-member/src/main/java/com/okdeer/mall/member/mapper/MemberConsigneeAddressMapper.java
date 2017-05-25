@@ -55,7 +55,7 @@ public interface MemberConsigneeAddressMapper extends IBaseCrudMapper {
 	 * @param userId 请求参数
 	 * @return 返回结果集
 	 */
-	List<MemberConsigneeAddress> selectByUserId(String userId);
+	List<MemberConsigneeAddress> selectByUserId(@Param("userId") String userId, @Param("clientType") String clientType);
 	
 	/**
 	 * 
@@ -106,7 +106,8 @@ public interface MemberConsigneeAddressMapper extends IBaseCrudMapper {
 	 * @param storeId
 	 * @return
 	 */
-	List<MemberConsigneeAddressVo> selectByDistance(@Param("userId") String id,@Param("storeId") String storeId);
+	List<MemberConsigneeAddressVo> selectByDistance(@Param("userId") String id,@Param("storeId") String storeId, 
+	        @Param("clientType") String clientType);
 	
 	/**
 	 * 

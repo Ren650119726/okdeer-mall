@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRecordMapper;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
 
@@ -33,8 +34,8 @@ class ActivityDiscountRecordServiceImpl extends BaseServiceImpl implements Activ
 	}
 
 	@Override
-	public int countTotalFreq(String userId, String activityId) {
-		return activityDiscountRecordMapper.countTotalFreq(userId, activityId);
+	public int countTotalFreq(ActivityRecordParamBo paramBo) {
+		return activityDiscountRecordMapper.countTotalFreq(paramBo);
 	}
 
 	@Override

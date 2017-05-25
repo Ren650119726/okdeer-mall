@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +48,7 @@ import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
@@ -57,6 +59,8 @@ import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
+import com.okdeer.mcm.entity.SmsVO;
+import com.okdeer.mcm.service.ISmsService;
 
 /**
  * ClassName: CancelOrderServiceImpl 
@@ -147,6 +151,32 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	@Resource
 	private ActivityDiscountRecordService activityDiscountRecordService;
 
+    /**
+     * 短信接口
+     */
+    @Reference(version = "1.0.0", check = false)
+    ISmsService smsService;
+    /**
+     * 消息编码
+     */
+    @Value("${mcm.sys.code}")
+    protected String mcmSysCode;
+    /**
+     * 消息Token
+     */
+    @Value("${mcm.sys.token}")
+    protected String mcmSysToken;
+	/**
+	 * 第三方支付订单取消短信文案
+	 */
+	@Value("${third.pay.cancel.order}")
+	private String thirdPayCancelOrder;
+	/**
+     * 余额支付订单取消短信文案
+     */
+	@Value("${balance.pay.cancel.order}")
+	private String balancePayCancelOrder;
+	
 	/**
 	 * @Description: 取消订单
 	 * @param order 订单
@@ -161,14 +191,55 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		String operator = null;
 		if (isBuyerOperate) {
 			operator = tradeOrder.getUserId();
+			
+			//用户自助取消订单，发送订单取消短信
+			TradeOrderPay orderPay = this.tradeOrderPayService.selectByOrderId(tradeOrder.getId());
+			if (orderPay != null) {
+			    String content = null;
+			    if(orderPay.getPayType() == PayTypeEnum.ALIPAY || orderPay.getPayType() == PayTypeEnum.WXPAY) {
+			        //第三方支付
+			        content = thirdPayCancelOrder;
+			    } else if(orderPay.getPayType() == PayTypeEnum.WALLET) {
+			        //余额支付
+			        content = balancePayCancelOrder;
+			    }
+			    content = joinMsgConten(content, new String[] {tradeOrder.getOrderNo(), tradeOrder.getReason(),
+			            tradeOrder.getActualAmount().toString()});
+			    
+			    SmsVO smsVo = createSmsVo(tradeOrder.getUserPhone(), content);
+	            this.smsService.sendSms(smsVo);
+			}
 		} else {
 			operator = tradeOrder.getUpdateUserId();
 		}
 		updateCancelOrder(tradeOrder, operator);
 		return true;
-
 	}
 
+    protected String joinMsgConten(String template, String ...param) {
+        int idx = 0;
+        for(int i = 0 ; i < param.length ; i++) {
+             logger.info("param[i]:{}", param[i]);
+            idx = template.indexOf("#");
+            template = template.replaceFirst(String.valueOf(template.charAt(idx)), param[i]);
+        }
+        return template;
+    }
+    
+    protected SmsVO createSmsVo(String mobile, String content) {
+        SmsVO smsVo = new SmsVO();
+        smsVo.setId(UuidUtils.getUuid());
+        smsVo.setUserId(mobile);
+        smsVo.setIsTiming(0);
+        smsVo.setToken(mcmSysToken);
+        smsVo.setSysCode(mcmSysCode);
+        smsVo.setMobile(mobile);
+        smsVo.setContent(content);
+        smsVo.setSmsChannelType(3);
+        smsVo.setSendTime(DateUtils.formatDateTime(new Date()));
+        return smsVo;
+    }
+	
 	@Transactional(rollbackFor = Exception.class)
 	private void updateCancelOrder(TradeOrder tradeOrder, String operator) throws Exception {
 		List<String> rpcIdList = new ArrayList<String>();

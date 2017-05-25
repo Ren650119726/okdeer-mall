@@ -118,7 +118,7 @@
 		parameterType="string">
 		SELECT
 		<include refid="resultBaseColumn" />
-		FROM sys_user_invitation_code where sys_buyer_user_id =
+		FROM sys_user_invitation_code suic where suic.sys_buyer_user_id =
 		#{sysBuyerUserId,jdbcType=VARCHAR}
 	</select>
 

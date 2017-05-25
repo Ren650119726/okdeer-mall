@@ -69,7 +69,7 @@ public class TradeOrderProcessServiceImplTest extends BaseTest{
 		String comfirmStr = "{\"data\": { \"recordId\": \"\",\"activityItemId\": \"\", \"storeName\":\"国际公馆一、二期快送店\",\"remark\":\"\",\"pickTime\":\"\",\"fare\":\"0.00\",\"list\":[{\"skuId\":\"001f3c6e276511e6aaff00163e010eb1\",\"skuNum\":\"1\",\"skuPrice\":\"440\",\"updateTime\":\"2015-12-25 08:44:32\",\"isPrivilege\": \"0\"}],\"couponsType\":\"\",\"type\":\"0\",\"orderResource\":\"0\",\"invoiceHead\":\"\",\"addressId\":\"000253b3276311e6aaff00163e010eb1\",\"activityId\":\"\",\"isInvoice\":\"0\",\"userId\":\"00a3c1a8a1b949e5b5e27efc6a377525\",\"receiveTime\": \"\",\"payType\": \"1\",\"userPhone\":\"13925296062\",\"activityType\":\"0\",\"storeId\":\"5646258e276511e6aaff00163e010eb1\",\"pickType\":\"0\",\"invoiceContent\":\"\"}}";
 
 		try {
-			TradeOrderRespDto respDto = tradeOrderProcessServiceApi.addTradeOrder(comfirmStr);
+			TradeOrderRespDto respDto = tradeOrderProcessServiceApi.addTradeOrder(JsonMapper.nonDefaultMapper().fromJson(comfirmStr, TradeOrderReqDto.class));
 			Assert.assertNotNull("should not be null", respDto); // 查看对象是否不为空
 			Assert.assertNull("should be null", respDto); // 查看对象是否为空
 		} catch (Exception e) {

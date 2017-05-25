@@ -142,7 +142,6 @@
     	<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.order.enums.PreferentialType"/>
     	
     	<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.coupons.enums.CouponsType"/>
-    	
     	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.OperateFieldsBusinessType"/>
     	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.OperateFieldsContentType"/>
     	<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.operate.enums.OperateFieldsPointType"/>
@@ -154,6 +153,8 @@
 	    <typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.activity.discount.enums.ActivityBusinessType"/>
 	    <typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.activity.discount.enums.LimitFreqType"/>
    		<typeHandler handler="com.okdeer.base.dal.enums.EnumTypeHandler" javaType="com.okdeer.mall.activity.discount.enums.LimitSkuType"/>
-   		
+   		<!--begin xuzq 20170414  广告活动增加枚举 V2.2-->
+	    <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.okdeer.mall.activity.advert.enums.ModelTypeEnum"/>
+	    <!-- end  xuzq 20170414  广告活动增加枚举 V2.2-->
     </typeHandlers>
 </configuration>

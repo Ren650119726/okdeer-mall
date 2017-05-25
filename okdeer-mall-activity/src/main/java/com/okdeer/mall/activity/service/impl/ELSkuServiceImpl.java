@@ -94,6 +94,7 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
             case 2:
                 tag = TAG_SALE_EL_DEL;
                 break;
+            default:break;
         }
 
         ActivityMessageParamDto activityMessageParamDto = new ActivityMessageParamDto();
@@ -144,6 +145,7 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
             case 2:
                 tag = TAG_SECKILL_EL_DEL;
                 break;
+            default:break;
         }
         ActivityMessageParamDto activityMessageParamDto = new ActivityMessageParamDto();
         activityMessageParamDto.setActivityId(activity.getId());
@@ -177,6 +179,7 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
                         case closed:
                             activitySeckillService.saveByCloseSeckill(activity);
                             break;
+                        default:break;
                     }
                 } catch (Exception e) {
                     logger.error("业务发生异常", e);
@@ -206,6 +209,7 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
             case 2:
                 tag = TAG_LOWPRICE_EL_DEL;
                 break;
+            default:break;
         }
 
         ActivityMessageParamDto activityMessageParamDto = new ActivityMessageParamDto();

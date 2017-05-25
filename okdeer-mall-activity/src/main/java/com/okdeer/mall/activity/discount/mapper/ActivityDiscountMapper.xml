@@ -29,6 +29,8 @@
 		<result column="grant_total_amount" property="grantTotalAmount"	jdbcType="DECIMAL" />
 		<result column="grant_total_user" property="grantTotalUser"	jdbcType="INTEGER" />
 		<result column="grant_total_order" property="grantTotalOrder" jdbcType="INTEGER" />
+		<result column="device_day_limit" property="deviceDayLimit" jdbcType="INTEGER" />
+		<result column="account_day_limit" property="accountDayLimit" jdbcType="INTEGER" />
 	</resultMap>
 
 	<sql id="Base_Column_List">
@@ -38,7 +40,7 @@
 		limit_freq, limit_freq_type, limit_channel, limit_user, limit_sku,
 		limit_order_amount,
 		limit_total_amount, limit_day_amount, grant_type, grant_total_amount, grant_total_user,
-		grant_total_order
+		grant_total_order,device_day_limit,account_day_limit
 	</sql>
 
 	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
@@ -131,6 +133,12 @@
 			<if test="grantTotalOrder != null">
 				grant_total_order,
 			</if>
+			<if test="deviceDayLimit != null">
+				device_day_limit,
+			</if>
+			<if test="accountDayLimit != null">
+				account_day_limit,
+			</if>
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -213,6 +221,12 @@
 			</if>
 			<if test="grantTotalOrder != null">
 				#{grantTotalOrder,jdbcType=INTEGER},
+			</if>
+			<if test="deviceDayLimit != null">
+				#{deviceDayLimit,jdbcType=INTEGER},
+			</if>
+			<if test="accountDayLimit != null">
+				#{accountDayLimit,jdbcType=INTEGER},
 			</if>
 		</trim>
 	</insert>
@@ -297,6 +311,12 @@
 			</if>
 			<if test="grantTotalOrder != null">
 				grant_total_order = #{grantTotalOrder,jdbcType=INTEGER},
+			</if>
+			<if test="deviceDayLimit != null">
+				device_day_limit = #{deviceDayLimit,jdbcType=INTEGER},
+			</if>
+			<if test="accountDayLimit != null">
+				account_day_limit = #{accountDayLimit,jdbcType=INTEGER},
 			</if>
 		</set>
 		where id = #{id,jdbcType=VARCHAR}
@@ -423,6 +443,9 @@
        <if test="type != null">
        	   AND t.type = #{type}
        </if>
+       <!-- BEGIN 查询店铺活动过滤掉零花钱类型 added by zhaoqc-->
+       	   AND t.type != 2 
+       <!-- END added by zhaoqc-->
   </select>
   
   <!-- 同一地区、同一时间、同一店铺活动互斥统计。 查询业务类型为0：市、1：省、2：店铺，活动状态为未开始和已进行中的-->

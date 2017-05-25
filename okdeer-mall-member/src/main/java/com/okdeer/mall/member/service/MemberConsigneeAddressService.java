@@ -190,8 +190,18 @@ public interface MemberConsigneeAddressService {
 	 */
 	List<MemberConsigneeAddressVo> findAppUserList(String userId,String storeId) throws ServiceException;
 	
+	   /**
+     * APP用户查询收货地址（计算是否超出配送范围）
+     * @author zhaoqc
+     * @param userId
+     * @param storeId
+     * @param clientType
+     * @return MemberConsigneeAddressVo
+     * @throws ServiceException
+     */
+    List<MemberConsigneeAddressVo> findAppUserList(String userId, String storeId, String clientType) throws ServiceException;
 	
-	/**
+    /**
 	 * APP用户查询收货地址
 	 * @author luosm
 	 * @param userId

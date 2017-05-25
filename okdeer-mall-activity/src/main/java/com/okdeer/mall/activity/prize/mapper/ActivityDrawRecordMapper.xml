@@ -4,19 +4,20 @@
     <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.prize.entity.ActivityDrawRecord" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="user_id" property="userId" jdbcType="VARCHAR" />
-        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="activity_advert_id" property="activityAdvertId" jdbcType="VARCHAR" />
+       <result column="model_id" property="modelId" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="disabled" property="disabled" jdbcType="INTEGER" />
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, user_id, activity_id, create_time, disabled
+        id, user_id, activity_advert_id, model_id, create_time, disabled
     </sql>
 
 	<select id="findCountByUserIdAndActivityId" resultType="java.lang.Integer" >
         select  count(1)
         from activity_draw_record
-        where disabled=0 and user_id = #{userId,jdbcType=VARCHAR} and activity_id = #{activityId,jdbcType=VARCHAR}
+        where disabled=0 and user_id = #{userId,jdbcType=VARCHAR} and activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
     </select>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -35,8 +36,11 @@
             <if test="userId != null" >
                 user_id,
             </if>
-            <if test="activityId != null" >
-                activity_id,
+            <if test="activityAdvertId != null" >
+                activity_advert_id,
+            </if>
+            <if test="modelId != null" >
+                model_id,
             </if>
             <if test="createTime != null" >
                 create_time,
@@ -52,8 +56,11 @@
             <if test="userId != null" >
                 #{userId,jdbcType=VARCHAR},
             </if>
-            <if test="activityId != null" >
-                #{activityId,jdbcType=VARCHAR},
+            <if test="activityAdvertId != null" >
+                #{activityAdvertId,jdbcType=VARCHAR},
+            </if>
+            <if test="modelId != null" >
+                #{modelId,jdbcType=VARCHAR},
             </if>
             <if test="createTime != null" >
                 #{createTime,jdbcType=TIMESTAMP},
@@ -70,8 +77,11 @@
             <if test="userId != null" >
                 user_id = #{userId,jdbcType=VARCHAR},
             </if>
-            <if test="activityId != null" >
-                activity_id = #{activityId,jdbcType=VARCHAR},
+            <if test="activityAdvertId != null" >
+                activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR},
+            </if>
+            <if test="modelId != null" >
+                model_id = #{modelId,jdbcType=VARCHAR},
             </if>
             <if test="createTime != null" >
                 create_time = #{createTime,jdbcType=TIMESTAMP},

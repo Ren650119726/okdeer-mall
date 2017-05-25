@@ -12,6 +12,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo;
 
 /**
  * ClassName: ActivityPrizeRecordMapper 
@@ -35,7 +36,7 @@ public interface ActivityPrizeRecordMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年12月8日
 	 */
-	public List<ActivityPrizeRecord> findByUserId(@Param("userId")String userId,@Param("activityId")String activityId);
+	public List<ActivityPrizeRecordVo> findByUserId(@Param("userId")String userId,@Param("activityId")String activityId);
 	
 	/**
 	 * 
@@ -56,4 +57,13 @@ public interface ActivityPrizeRecordMapper extends IBaseMapper {
 	 * @date 2016年12月8日
 	 */
 	public int findCountByPrizeId(String prizeId);
+
+	/**
+	 * @Description: 获取奖品记录列表
+	 * @param activityPrizeRecordVo
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年4月10日
+	 */
+	public List<ActivityPrizeRecordVo> findPrizeRecordList(ActivityPrizeRecordVo activityPrizeRecordVo);
 }

@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.order.service.impl;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -36,7 +37,9 @@ import com.okdeer.api.pay.enums.ApplicationEnum;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.enums.PayTradeServiceTypeEnum;
 import com.okdeer.api.pay.enums.PayTradeTypeEnum;
+import com.okdeer.api.pay.enums.RefundTypeEnum;
 import com.okdeer.api.pay.enums.SystemEnum;
+import com.okdeer.api.pay.pay.dto.PayRefundDto;
 import com.okdeer.api.pay.pay.dto.PayReqestDto;
 import com.okdeer.api.pay.service.IPayServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
@@ -48,10 +51,12 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
+import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.dto.PayInfoDto;
 import com.okdeer.mall.order.dto.PayInfoParamDto;
@@ -346,8 +351,39 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 				throw new Exception("取消订单违约金收入发送消息失败");
 			}
 		}
+		// Begin V2.4 added by maojj 2017-05-20
+		if (orderPay.getPayType() != com.okdeer.mall.order.enums.PayTypeEnum.WALLET) {
+			PayRefundDto payRefundDto = buildPayRefundDto(tradeOrder);
+			MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, (Serializable)payRefundDto);
+			msg.setKey(tradeOrder.getId());
+			// 发送消息
+			SendResult sendResult = rocketMQProducer.sendMessage(msg);
+			if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
+				throw new Exception("取消订单第三方支付发送消息失败");
+			}
+		}
+		// End V2.4 added by maojj 2017-05-20
 		return true;
 	}
+	
+	// Begin V2.4 added by maojj 2017-05-20
+	private PayRefundDto buildPayRefundDto(TradeOrder order){
+		PayRefundDto payRefundDto = new PayRefundDto();
+		if (order.getIsBreach() == WhetherEnum.whether) {
+			// 如果订单需要支付违约金，则退款金额为：实付金额-收取的违约金
+			payRefundDto.setTradeAmount(order.getActualAmount().subtract(order.getBreachMoney()));
+		} else {
+			payRefundDto.setTradeAmount(order.getActualAmount());
+		}
+		payRefundDto.setServiceId(order.getId());
+		payRefundDto.setServiceNo(order.getOrderNo());
+		payRefundDto.setRemark(order.getOrderNo());
+		payRefundDto.setRefundType(RefundTypeEnum.CANCEL_ORDER);
+		payRefundDto.setTradeNum(order.getTradeNum());
+		payRefundDto.setRefundNum(TradeNumUtil.getTradeNum());
+		return payRefundDto;
+	}
+	// End V2.4 added by maojj 2017-05-20
 
 	/**
 	 * 构建取消订单支付对象

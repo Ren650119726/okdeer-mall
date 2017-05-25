@@ -39,7 +39,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
+import com.okdeer.api.pay.enums.RefundTypeEnum;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
+import com.okdeer.api.pay.pay.dto.PayRefundDto;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
@@ -50,6 +52,7 @@ import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysMsg;
 import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
@@ -179,6 +182,8 @@ public class TradeOrderRefundsServiceImpl
 
 	// @Value("${sysMsgContent}")
 	private String sysMsgContent = "您有一条来自用户【#1】的退款申请需要处理，订单号【#2】";
+	
+	private static final String REFUND_REMARK = "关联订单号【%s】";
 	
 	@Autowired
 	private RedisLockRegistry redisLockRegistry;
@@ -502,6 +507,21 @@ public class TradeOrderRefundsServiceImpl
 				}
 			}
 		}
+		// Begin V2.4 added by maojj 2017-05-22
+		PayRefundDto payRefundDto = new PayRefundDto();
+		payRefundDto.setTradeAmount(refunds.getTotalAmount());
+		payRefundDto.setServiceId(refunds.getId());
+		payRefundDto.setServiceNo(refunds.getOrderNo());
+		payRefundDto.setRemark(String.format(REFUND_REMARK,refunds.getOrderNo()));
+		payRefundDto.setRefundType(RefundTypeEnum.RECHARGE_ORDER_REFUND);
+		payRefundDto.setTradeNum(tradeOrder.getTradeNum());
+		payRefundDto.setRefundNum(refunds.getRefundNo());
+		
+		MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, (Serializable)payRefundDto);
+		msg.setKey(refunds.getId());
+		// 发送消息
+		rocketMQProducer.sendMessage(msg);
+		// End V2.4 added by maojj 2017-05-22
 
 	}
 
@@ -611,19 +631,66 @@ public class TradeOrderRefundsServiceImpl
 
 			// 扣减积分与成长值
 			reduceUserPoint(order, orderRefunds);
+			
+			// Begin V2.4 added by maojj 2017-05-20
+			// 发送消息让系统自动给用户退款
+			if(isOldWayBack(orderRefunds.getPaymentMethod())){
+				PayRefundDto payRefundDto = new PayRefundDto();
+				payRefundDto.setTradeAmount(orderRefunds.getTotalAmount());
+				payRefundDto.setServiceId(orderRefunds.getId());
+				payRefundDto.setServiceNo(orderRefunds.getOrderNo());
+				payRefundDto.setRemark(String.format(REFUND_REMARK,orderRefunds.getOrderNo()));
+				payRefundDto.setRefundType(convert(orderRefunds.getType(),orderRefunds.getRefundsStatus()));
+				payRefundDto.setTradeNum(order.getTradeNum());
+				payRefundDto.setRefundNum(orderRefunds.getRefundNo());
+				MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, (Serializable)payRefundDto);
+				msg.setKey(orderRefunds.getId());
+				rocketMQProducer.sendMessage(msg);
+			}
+			// End V2.4 added by maojj 2017-05-20
 
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 	}
+	
+	private RefundTypeEnum convert(OrderTypeEnum orderType,RefundsStatusEnum refundsStatus){
+		RefundTypeEnum refundType = null;
+		if(refundsStatus == RefundsStatusEnum.YSC_REFUND){
+			return RefundTypeEnum.YSC_REFUND;
+		}
+		switch (orderType) {
+			case PHYSICAL_ORDER:
+				refundType = RefundTypeEnum.REFUND_ORDER;
+				break;
+			case SERVICE_ORDER:
+			case SERVICE_STORE_ORDER:
+			case STORE_CONSUME_ORDER:
+				refundType = RefundTypeEnum.REFUND_SERVICE_ORDER;
+				break;
+			case PHONE_PAY_ORDER:
+			case TRAFFIC_PAY_ORDER:
+				refundType = RefundTypeEnum.RECHARGE_ORDER_REFUND;
+				break;
+			default:
+				refundType = RefundTypeEnum.REFUND_ORDER;
+				break;
+		}
+		
+		return refundType;
+	}
 
 	/**
 	 * @desc 执行退款更新云钱包余额
 	 */
 	private boolean updateWallet(TradeOrder order, TradeOrderRefunds orderRefunds) throws Exception {
-
-		orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
+		// Begin Modified by maojj 2017-05-25
+		if(orderRefunds.getRefundsStatus() != RefundsStatusEnum.YSC_REFUND 
+				&& orderRefunds.getRefundsStatus() != RefundsStatusEnum.FORCE_SELLER_REFUND){
+			orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
+		}
+		// End Modified by maojj 2017-05-25
 		// 构建余额支付（或添加交易记录）对象
 		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
 				buildBalancePayTrade(orderRefunds).getBytes(Charsets.UTF_8));
@@ -692,7 +759,13 @@ public class TradeOrderRefundsServiceImpl
 		payTradeVo.setTitle("订单退款(余额支付)，退款交易号：" + orderRefunds.getRefundNo());
 
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-		payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
+		// Begin Modified by maojj 2017-05-25
+		if(orderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND){
+			payTradeVo.setBusinessType(BusinessTypeEnum.YSC_REFUND);
+		}else{
+			payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
+		}
+		// End Modified by maojj 2017-05-25
 
 		payTradeVo.setServiceFkId(orderRefunds.getId());
 		payTradeVo.setServiceNo(orderRefunds.getOrderNo());
@@ -813,7 +886,8 @@ public class TradeOrderRefundsServiceImpl
 		Lock lock = redisLockRegistry.obtain(orderRefunds.getId());
 		if(lock.tryLock(10, TimeUnit.SECONDS)){
 			TradeOrderRefunds refunds = this.findById(orderRefunds.getId());
-			if (refunds.getRefundsStatus() != RefundsStatusEnum.WAIT_SELLER_REFUND) {
+			if (refunds.getRefundsStatus() != RefundsStatusEnum.WAIT_SELLER_REFUND 
+					&& refunds.getRefundsStatus() != RefundsStatusEnum.APPLY_CUSTOMER_SERVICE_INTERVENE) {
 				logger.warn("执行退款操作订单状态已经变更，操作失效");
 				lock.unlock();
 				throw new Exception("执行退款操作订单状态已经变更，操作失效");
@@ -828,7 +902,9 @@ public class TradeOrderRefundsServiceImpl
 					this.save(order, orderRefunds);
 				} else if (isOldWayBack(orderRefunds.getPaymentMethod())) {
 					// 原路返回
-					orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
+					if(orderRefunds.getRefundsStatus() == RefundsStatusEnum.WAIT_SELLER_REFUND){
+						orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
+					}
 					this.updateWalletByThird(order, orderRefunds);
 				} else {
 					// 余额退款
@@ -912,7 +988,8 @@ public class TradeOrderRefundsServiceImpl
 		tradeOrderRefundsLogMapper.insertSelective(new TradeOrderRefundsLog(refunds.getId(), refunds.getOperator(),
 				refunds.getRefundsStatus().getName(), refunds.getRefundsStatus().getValue()));
 		// End 1.0.Z 增加退款单操作记录 add by zengj
-		if (RefundsStatusEnum.YSC_REFUND == status) {
+		// Begin modified by maojj 2017-05-25
+		/*if (RefundsStatusEnum.YSC_REFUND == status) {
 			TradeOrder order = tradeOrderMapper.selectByPrimaryKey(refunds.getOrderId());
 			// 更新退款单
 			this.save(order, refunds);
@@ -925,7 +1002,16 @@ public class TradeOrderRefundsServiceImpl
 		} else if (RefundsStatusEnum.CUSTOMER_SERVICE_CANCEL_INTERVENE == status) {
 			// 解冻订单项金额
 			updateWithRevocatory(refunds, null);
+		}*/
+		if (RefundsStatusEnum.YSC_REFUND == status || RefundsStatusEnum.FORCE_SELLER_REFUND == status) {
+			// 执行退款操作
+			refunds.setTradeNum(TradeNumUtil.getTradeNum());
+			doRefundPay(refunds);
+		} else if (RefundsStatusEnum.CUSTOMER_SERVICE_CANCEL_INTERVENE == status) {
+			// 解冻订单项金额
+			updateWithRevocatory(refunds, null);
 		}
+		// Begin modified by maojj 2017-05-25
 		logger.error("客服处理更新订单状态成功");
 	}
 
