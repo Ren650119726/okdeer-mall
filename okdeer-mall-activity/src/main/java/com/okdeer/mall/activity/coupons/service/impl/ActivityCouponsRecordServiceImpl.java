@@ -443,17 +443,13 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				
 				//存在邀请人用户id需要确认是否记录邀请人
 				if(StringUtils.isNotBlank(invitaUserId)){
-					//根据用户id或用户邀请码查询是否存在邀请码信息，所以userId 可以存储用户id或邀请码
-					SysUserInvitationCode code= sysUserInvitationCodeMapper.selectInvitationById(invitaUserId);
-					//不存在邀请记录 则将给该用户userId记录 邀请记录
-					if(code == null){
-						//根据用户id或用户邀请码，所以InviteUserId 可以存储用户id或邀请码
-						List<SysUserInvitationCode> listCode= sysUserInvitationCodeMapper
-								.findInvitationByIdCode(invitaUserId, invitaUserId);
-						//存在邀请码及添加第一个进去，防止数据库中存在多个
-						if(listCode != null && listCode.size() > 0){
-							invitationCodeService.saveInvatationRecord(listCode.get(0), userId, "");
-						}
+					//根据用户id或用户邀请码，所以InviteUserId 可以存储用户id或邀请码
+					List<SysUserInvitationCode> listCode= sysUserInvitationCodeMapper
+							.findInvitationByIdCode(invitaUserId, invitaUserId);
+					//存在邀请码及添加第一个进去，防止数据库中存在多个
+					if(listCode != null && listCode.size() > 0){
+						//内部会判断 不存在邀请记录 则将给该用户userId记录 邀请记录
+						invitationCodeService.saveInvatationRecord(listCode.get(0), userId, "");
 					}
 				}
 				map.put("code", 100);
