@@ -877,7 +877,7 @@ public class TradeOrderRefundsServiceImpl
 		if(lock.tryLock(10, TimeUnit.SECONDS)){
 			TradeOrderRefunds refunds = this.findById(orderRefunds.getId());
 			if (refunds.getRefundsStatus() != RefundsStatusEnum.WAIT_SELLER_REFUND 
-					|| refunds.getRefundsStatus() != RefundsStatusEnum.APPLY_CUSTOMER_SERVICE_INTERVENE) {
+					&& refunds.getRefundsStatus() != RefundsStatusEnum.APPLY_CUSTOMER_SERVICE_INTERVENE) {
 				logger.warn("执行退款操作订单状态已经变更，操作失效");
 				lock.unlock();
 				throw new Exception("执行退款操作订单状态已经变更，操作失效");
