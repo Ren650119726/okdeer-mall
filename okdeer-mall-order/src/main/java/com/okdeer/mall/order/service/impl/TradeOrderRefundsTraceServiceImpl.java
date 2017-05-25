@@ -234,9 +234,9 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 				traceStatus = RefundsTraceEnum.CUSTOMER_SERVICE_DEAL;
 				remark = OKDEER_REFUND_REMARK;
 				break;
-			case FORCE_SELLER_REFUND_SUCCESS:
+			case FORCE_SELLER_REFUND:
 				// 卖家退款成功(强制)
-				traceStatus = RefundsTraceEnum.REFUND_SUCCESS;
+				traceStatus = RefundsTraceEnum.CUSTOMER_SERVICE_DEAL;
 				remark = FORCE_SELLER_REFUND_REMARK;
 				break;
 			case SELLER_REFUNDING:
@@ -245,6 +245,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 				break;
 			case REFUND_SUCCESS : 
 			case YSC_REFUND_SUCCESS:
+			case FORCE_SELLER_REFUND_SUCCESS:
 				traceStatus = RefundsTraceEnum.REFUND_SUCCESS;
 				break;
 			case BUYER_REPEAL_REFUND:
