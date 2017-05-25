@@ -3,6 +3,7 @@ package com.okdeer.mall.order.service.impl;
 import static com.okdeer.mall.order.constant.mq.PayMessageConstant.TAG_PAY_TRADE_MALL;
 import static com.okdeer.mall.order.constant.mq.PayMessageConstant.TOPIC_BALANCE_PAY_TRADE;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,6 +32,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
+import com.okdeer.api.pay.enums.RefundTypeEnum;
+import com.okdeer.api.pay.pay.dto.PayRefundDto;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
@@ -41,8 +44,10 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.utils.DateUtils;
@@ -67,7 +72,6 @@ import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
-import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
@@ -183,6 +187,9 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 	 */
 	@Resource
 	private StockOperateService stockOperateService;
+	
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
 
 	@Override
 	public PageUtils<TradeOrder> findStoreConsumeOrderList(Map<String, Object> map, Integer pageNo, Integer pageSize) {
@@ -794,6 +801,19 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			// 支付宝和微信原路返回
 			orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
 			this.updateWalletByThird(order, orderRefunds, certificate, waitRefundDetailList);
+			// Begin V2.4 added by maojj 2017-05-25
+			PayRefundDto payRefundDto = new PayRefundDto();
+			payRefundDto.setTradeAmount(orderRefunds.getTotalAmount());
+			payRefundDto.setServiceId(orderRefunds.getId());
+			payRefundDto.setServiceNo(orderRefunds.getOrderNo());
+			payRefundDto.setRemark(String.format("关联订单号【%s】",orderRefunds.getOrderNo()));
+			payRefundDto.setRefundType(RefundTypeEnum.REFUND_SERVICE_ORDER);
+			payRefundDto.setTradeNum(order.getTradeNum());
+			payRefundDto.setRefundNum(orderRefunds.getRefundNo());
+			MQMessage msg = new MQMessage(PayMessageConstant.TOPIC_REFUND, (Serializable)payRefundDto);
+			msg.setKey(orderRefunds.getId());
+			rocketMQProducer.sendMessage(msg);
+			// End V2.4 added by maojj 2017-05-25
 		} else {
 			// 余额退款
 			this.updateWallet(order, orderRefunds, certificate, waitRefundDetailList);
