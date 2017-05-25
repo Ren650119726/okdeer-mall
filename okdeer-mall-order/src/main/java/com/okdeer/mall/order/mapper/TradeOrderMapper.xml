@@ -1528,9 +1528,9 @@
 		<if test="null!=payType">
 			pay.pay_type,
 		</if>
-		<if test="cityIdList != null and cityIdList.size() > 0">
+<!-- 		<if test="cityIdList != null and cityIdList.size() > 0"> -->
 			lo.city_name as cityName,
-		</if>
+<!-- 		</if> -->
 		o.actual_amount,
 		o.user_phone,
 		o.create_time,
@@ -1549,9 +1549,9 @@
 		<if test="null!=payType">
 			LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
 		</if>
-		<if test="cityIdList != null and cityIdList.size() > 0">
+<!-- 		<if test="cityIdList != null and cityIdList.size() > 0"> -->
 			LEFT JOIN trade_order_locate lo ON lo.order_id = o.id 
-		</if>
+<!-- 		</if> -->
 		WHERE 1=1
 		AND o.disabled =0
 		AND o.order_resource !=2
