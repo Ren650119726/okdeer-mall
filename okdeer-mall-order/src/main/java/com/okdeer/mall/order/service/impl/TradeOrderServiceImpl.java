@@ -7209,10 +7209,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	}
 	@Override
 	public PageUtils<TradeOrderDetailBo> findOrderInfo(Map<String, Object> map, int pageSize, int pageNumber) {
-		PageHelper.startPage(pageNumber, pageSize, true, false);
 
 		String storeId = map.get("storeId").toString();
 		StoreInfo store = storeInfoService.findById(storeId);
+		
+		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<TradeOrderDetailBo> list = null;
 		if (store.getType() == StoreTypeEnum.SERVICE_STORE) {
 			list = tradeOrderMapper.findServiceOrderInfo(map);
@@ -7222,21 +7223,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 		if (list != null && !list.isEmpty()) {
 			for (TradeOrderDetailBo tradeOrderVo : list) {
-				// 查询订单项表。
+				// 查询订单项表 获取主图。
 				tradeOrderVo.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrderVo.getId()));
-				// 查询投诉信息
-				tradeOrderVo.setTradeOrderComplainVoList(
-						tradeOrderComplainMapper.findOrderComplainByParams(tradeOrderVo.getId()));
-
-				// 获取订单活动信息
-				Map<String, Object> activityMap = getActivity(tradeOrderVo.getActivityType(),
-						tradeOrderVo.getActivityId());
-				String activityName = activityMap.get("activityName") == null ? null
-						: activityMap.get("activityName").toString();
-				ActivitySourceEnum activitySource = activityMap.get("activitySource") == null ? null
-						: (ActivitySourceEnum) activityMap.get("activitySource");
-				tradeOrderVo.setActivityName(activityName);
-				tradeOrderVo.setActivitySource(activitySource);
 			}
 		}
 		return new PageUtils<TradeOrderDetailBo>(list);
