@@ -80,7 +80,9 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		TradeOrderRefundsTrace optTrace = buildOptTrace(refundsOrder);
 		// 构建等待处理轨迹
 		TradeOrderRefundsTrace waitDealTrace = buildWaitDealTrace(refundsOrder);
-		traceList.add(optTrace);
+		if(optTrace != null && optTrace.getTraceStatus() != null){
+			traceList.add(optTrace);
+		}
 		if(waitDealTrace != null){
 			traceList.add(waitDealTrace);
 		}
