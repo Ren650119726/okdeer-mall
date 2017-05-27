@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 import javax.annotation.Resource;
 
@@ -14,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -29,6 +32,7 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
+import com.okdeer.common.consts.DescriptConstants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
@@ -258,6 +262,9 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 	private IAddressService addressService;
  	// End V2.1 added by tangzj02 2017-02-22
     
+	@Resource
+	private RedisLockRegistry redisLockRegistry;
+	
 	/**
 	 * 结算操作时的数据校验
 	 */
@@ -312,9 +319,53 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 		// 创建处理链对象
 		ProcessHandlerChain chain = ProcessHandlerChain.getInstance(handlerChain);
 		// 处理上述五步流程，任何一个流程返回false，则流程中断
-		chain.process(reqDto, respDto);
+		// Begin V2.4 modified by maojj 2017-05-27
+		// 获取锁
+		Lock lock = obtain(reqDto.getData());
+		try{
+			if(lock == null || lock.tryLock(10, TimeUnit.SECONDS)){
+				chain.process(reqDto, respDto);
+			}else{
+				logger.error("提交订单，获取锁失败，请求参数为：{}",JsonMapper.nonDefaultMapper().toJson(reqDto.getData()));
+				throw new Exception("提交订单，获取锁失败");
+			}
+		}finally{
+			if(lock != null){
+				lock.unlock();
+			}
+		}
+		// End V2.4 modified by maojj 2017-05-27
 		return respDto;
 	}
+	
+	// Begin added by maojj 2017-05-28
+	/**
+	 * @Description: 获取分布式锁
+	 * @param paramDto
+	 * @return   
+	 * @author maojj
+	 * @date 2017年5月27日
+	 */
+	private Lock obtain(TradeOrderReq reqData){
+		// 订单参与的活动类型
+		ActivityTypeEnum actType = reqData.getActivityType();
+		if (actType != ActivityTypeEnum.VONCHER
+				&& actType != ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
+			// 如果提交订单不是满减也不是代金券，则无需加锁
+			return null;
+		}
+		// 锁的键值为：活动类型名称（代金券、满减） : 账户Id : 活动Id（代金券、满减Id）
+		String limitActId = null;
+		if(actType == ActivityTypeEnum.VONCHER){
+			// 如果是代金券，代金券Id为活动项Id
+			limitActId = reqData.getActivityItemId();
+		}else if(actType == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES){
+			limitActId = reqData.getActivityId();
+		}
+		String lockKey = String.format("%s:%s:%s", actType.name(),reqData.getUserId(),limitActId);
+		return redisLockRegistry.obtain(lockKey);
+	}
+	// End V2.4 added by maojj 2017-05-27
 	
 	/**
      * @Description: 生成手机充值订单
