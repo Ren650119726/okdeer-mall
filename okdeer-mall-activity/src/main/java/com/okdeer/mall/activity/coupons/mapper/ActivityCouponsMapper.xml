@@ -148,6 +148,7 @@
 	<sql id="BaseSelectSQL">
         id, name, activity_id, belong_type, face_value, total_num, used_num, remain_num, arrive_limit, valid_day, every_limit,
 	    is_cash_delivery, is_category_limit, code, exchange_code, area_type, create_user_id, create_time, update_user_id, update_time, disabled ,type,is_category
+	    ,device_day_limit,account_day_limit,use_client_type,use_user_type
     </sql>
     
    <!--  新增    根据代金卷名字和优惠码查询 名字和优惠码要唯一 -->

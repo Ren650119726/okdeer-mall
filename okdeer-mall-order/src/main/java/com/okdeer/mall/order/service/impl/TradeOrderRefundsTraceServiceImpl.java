@@ -80,7 +80,9 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		TradeOrderRefundsTrace optTrace = buildOptTrace(refundsOrder);
 		// 构建等待处理轨迹
 		TradeOrderRefundsTrace waitDealTrace = buildWaitDealTrace(refundsOrder);
-		traceList.add(optTrace);
+		if(optTrace != null && optTrace.getTraceStatus() != null){
+			traceList.add(optTrace);
+		}
 		if(waitDealTrace != null){
 			traceList.add(waitDealTrace);
 		}
@@ -158,6 +160,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 			case CUSTOMER_SERVICE_CANCEL_INTERVENE:
 			case BUYER_REPEAL_REFUND:
 			case YSC_REFUND:
+			case FORCE_SELLER_REFUND:
 			case FORCE_SELLER_REFUND_SUCCESS:
 			case SELLER_REFUNDING:
 			case REFUND_SUCCESS:
@@ -234,9 +237,9 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 				traceStatus = RefundsTraceEnum.CUSTOMER_SERVICE_DEAL;
 				remark = OKDEER_REFUND_REMARK;
 				break;
-			case FORCE_SELLER_REFUND_SUCCESS:
+			case FORCE_SELLER_REFUND:
 				// 卖家退款成功(强制)
-				traceStatus = RefundsTraceEnum.REFUND_SUCCESS;
+				traceStatus = RefundsTraceEnum.CUSTOMER_SERVICE_DEAL;
 				remark = FORCE_SELLER_REFUND_REMARK;
 				break;
 			case SELLER_REFUNDING:
@@ -245,6 +248,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 				break;
 			case REFUND_SUCCESS : 
 			case YSC_REFUND_SUCCESS:
+			case FORCE_SELLER_REFUND_SUCCESS:
 				traceStatus = RefundsTraceEnum.REFUND_SUCCESS;
 				break;
 			case BUYER_REPEAL_REFUND:

@@ -685,8 +685,12 @@ public class TradeOrderRefundsServiceImpl
 	 * @desc 执行退款更新云钱包余额
 	 */
 	private boolean updateWallet(TradeOrder order, TradeOrderRefunds orderRefunds) throws Exception {
-
-		orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
+		// Begin Modified by maojj 2017-05-25
+		if(orderRefunds.getRefundsStatus() != RefundsStatusEnum.YSC_REFUND 
+				&& orderRefunds.getRefundsStatus() != RefundsStatusEnum.FORCE_SELLER_REFUND){
+			orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
+		}
+		// End Modified by maojj 2017-05-25
 		// 构建余额支付（或添加交易记录）对象
 		Message msg = new Message(TOPIC_BALANCE_PAY_TRADE, TAG_PAY_TRADE_MALL,
 				buildBalancePayTrade(orderRefunds).getBytes(Charsets.UTF_8));
@@ -755,7 +759,13 @@ public class TradeOrderRefundsServiceImpl
 		payTradeVo.setTitle("订单退款(余额支付)，退款交易号：" + orderRefunds.getRefundNo());
 
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-		payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
+		// Begin Modified by maojj 2017-05-25
+		if(orderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND){
+			payTradeVo.setBusinessType(BusinessTypeEnum.YSC_REFUND);
+		}else{
+			payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
+		}
+		// End Modified by maojj 2017-05-25
 
 		payTradeVo.setServiceFkId(orderRefunds.getId());
 		payTradeVo.setServiceNo(orderRefunds.getOrderNo());

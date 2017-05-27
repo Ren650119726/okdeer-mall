@@ -366,7 +366,7 @@
     AND su.disabled = 0
     AND member.disabled = 0
   	<!-- Begin added by zhaoqc 过滤掉多店铺管理账号 -->
-  	AND member.is_multi_account = 0
+  	AND (member.is_multi_account = 0 or member.is_multi_account is null)
   	<!-- End added by zhaoqc 2017-4-24 -->
   </select>
 
