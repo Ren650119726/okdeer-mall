@@ -131,6 +131,12 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	private boolean checkCoupons(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp) throws Exception{
 		String recordId = paramDto.getRecordId();
 		ActivityCouponsRecord couponsRecord = activityCouponsRecordMapper.selectByPrimaryKey(recordId);
+		// Begin V2.4 added by maojj 2017-05-31
+		// 增加领取记录的校验。校验请求提供的领取记录是否是当前用户
+		if(couponsRecord == null || !couponsRecord.getCollectUserId().equals(paramDto.getUserId())){
+			return false;
+		}
+		// End V2.4 added by maojj 2017-05-31
 		if (couponsRecord.getStatus() != ActivityCouponsRecordStatusEnum.UNUSED) {
 			return false;
 		}
