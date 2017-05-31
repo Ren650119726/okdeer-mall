@@ -18,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
-import com.okdeer.api.pay.account.dto.PayUpdateAmountDto;
-import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.service.IPayAccountServiceApi;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.archive.system.entity.PsmsAgent;
@@ -204,15 +202,15 @@ public class ActivityCollectCouponsServiceImpl
 		}
 		
 		// 可用余额- 冻结+ 代理商才同步
-		if (!"0".equals(activityCollectCoupons.getBelongType())) {
-			PayUpdateAmountDto dto = new PayUpdateAmountDto();
-			dto.setUserId(activityCollectCoupons.getCreateUserId());
-			dto.setAmount(activityCollectCoupons.getTotalCost());
-			BaseResultDto result = payTradeServiceApi.freezeAmount(dto);
-			if (result != null && !"0".equals(result.getCode())) {
-				throw new Exception(result.getMsg());
-			}
-		}
+//		if (!"0".equals(activityCollectCoupons.getBelongType())) {
+//			PayUpdateAmountDto dto = new PayUpdateAmountDto();
+//			dto.setUserId(activityCollectCoupons.getCreateUserId());
+//			dto.setAmount(activityCollectCoupons.getTotalCost());
+//			BaseResultDto result = payTradeServiceApi.freezeAmount(dto);
+//			if (result != null && !"0".equals(result.getCode())) {
+//				throw new Exception(result.getMsg());
+//			}
+//		}
 		
 		//批量插入ActivityCollectOrderType表
 		if(activityCollectCoupons.getOrderTypes() != null && 
@@ -301,20 +299,20 @@ public class ActivityCollectCouponsServiceImpl
 				if (acc.getTotalCost() != null) {
 					BigDecimal money = acc.getTotalCost().subtract(useTotal);
 					// 如果差额等于0 就不用调用同步接口了
-					if (money.compareTo(new BigDecimal(0)) != 0) {
-						// 余额+,冻结-
-						PayUpdateAmountDto dto = new PayUpdateAmountDto();
-						dto.setUserId(acc.getCreateUserId());
-						dto.setAmount(money);
-						BaseResultDto result = payTradeServiceApi.unfreezeAmount(dto);
-						if (result != null && !"0".equals(result.getCode())) {
-							log.error("报错信息:");
-							log.error("userId:" + dto.getUserId());
-							log.error("money:" + money + " useTotal:" + useTotal + " totalCost:" + acc.getTotalCost());
-							log.error("活动id:" + id);
-							throw new Exception(id + "" + result.getMsg());
-						}
-					}
+//					if (money.compareTo(new BigDecimal(0)) != 0) {
+//						// 余额+,冻结-
+//						PayUpdateAmountDto dto = new PayUpdateAmountDto();
+//						dto.setUserId(acc.getCreateUserId());
+//						dto.setAmount(money);
+//						BaseResultDto result = payTradeServiceApi.unfreezeAmount(dto);
+//						if (result != null && !"0".equals(result.getCode())) {
+//							log.error("报错信息:");
+//							log.error("userId:" + dto.getUserId());
+//							log.error("money:" + money + " useTotal:" + useTotal + " totalCost:" + acc.getTotalCost());
+//							log.error("活动id:" + id);
+//							throw new Exception(id + "" + result.getMsg());
+//						}
+//					}
 				}
 
 				SysUser anentUser = sysUserMapper.getUserById(acc.getCreateUserId());
@@ -603,16 +601,16 @@ public class ActivityCollectCouponsServiceImpl
 
 			ActivityCollectCoupons acc = activityCollectCouponsMapper.get(obj.getId());
 			// 代理商金额解冻 余额+,冻结-
-			if (acc != null && acc.getBelongType() != null && !"0".equals(acc.getBelongType())) {
-				PayUpdateAmountDto dto = new PayUpdateAmountDto();
-				dto.setUserId(acc.getCreateUserId());
-				dto.setAmount(acc.getTotalCost());
-
-				BaseResultDto result = payTradeServiceApi.unfreezeAmount(dto);
-				if (result != null && !"0".equals(result.getCode())) {
-					return result.getMsg();
-				}
-			}
+//			if (acc != null && acc.getBelongType() != null && !"0".equals(acc.getBelongType())) {
+//				PayUpdateAmountDto dto = new PayUpdateAmountDto();
+//				dto.setUserId(acc.getCreateUserId());
+//				dto.setAmount(acc.getTotalCost());
+//
+//				BaseResultDto result = payTradeServiceApi.unfreezeAmount(dto);
+//				if (result != null && !"0".equals(result.getCode())) {
+//					return result.getMsg();
+//				}
+//			}
 
 			try {
 				// 给代理商发短信
