@@ -30,7 +30,6 @@ import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.account.dto.PayUpdateAmountDto;
-import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
@@ -1119,10 +1118,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		freeDto.setAmount(faceValueTotal);
 		// 将活动改为 领取未使用已经退款 状态为2
 		activityCollectCouponsMapper.updateRefundTypeByVo(id);
-		BaseResultDto result = payTradeServiceApi.unfreezeAmount(freeDto);
-		if (result != null && !"0".equals(result.getCode())) {
-			throw new Exception(result.getMsg());
-		}
+//		BaseResultDto result = payTradeServiceApi.unfreezeAmount(freeDto);
+//		if (result != null && !"0".equals(result.getCode())) {
+//			throw new Exception(result.getMsg());
+//		}
 	}
 
 	@Override

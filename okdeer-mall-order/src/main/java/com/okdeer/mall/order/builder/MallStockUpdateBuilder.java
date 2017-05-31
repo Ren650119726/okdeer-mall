@@ -40,10 +40,7 @@ import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
-import com.okdeer.mall.order.vo.TradeOrderContext;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
-import com.okdeer.mall.order.vo.TradeOrderReq;
-import com.okdeer.mall.order.vo.TradeOrderReqDto;
 
 @Component
 public class MallStockUpdateBuilder {
@@ -64,7 +61,7 @@ public class MallStockUpdateBuilder {
 	private GoodsStoreSkuAssembleApi goodsStoreSkuAssembleApi;
 
 	/**
-	 * @Description: V2.1版本。构建商品更新的Dto。商城负责便利店商品活动库存的变更和组合商品的库存变更
+	 * @Description: V2.1版本。构建商品更新的Dto。仅用于秒杀订单
 	 * @param order
 	 * @param parserBo
 	 * @return   
@@ -96,7 +93,7 @@ public class MallStockUpdateBuilder {
 	}
 
 	/**
-	 * @Description: 构建明细
+	 * @Description: 构建明细（仅用于秒杀订单）
 	 * @param storeSku
 	 * @return   
 	 * @author maojj
@@ -105,32 +102,12 @@ public class MallStockUpdateBuilder {
 	private StockUpdateDetailDto buildDetail(CurrentStoreSkuBo storeSku) {
 		ActivityTypeEnum actType = ActivityTypeEnum.enumValueOf(storeSku.getActivityType());
 		SpuTypeEnum spuType = storeSku.getSpuType();
-		if (spuType == SpuTypeEnum.physicalSpu && actType == ActivityTypeEnum.NO_ACTIVITY) {
-			// 如果是便利店商品，且未参加任何活动，商城不做库存更新的处理。
-			return null;
-		}
-
 		StockUpdateDetailDto detailDto = new StockUpdateDetailDto();
 		detailDto.setStoreSkuId(storeSku.getId());
 		detailDto.setSpuType(spuType);
 		detailDto.setActType(actType);
-		switch (actType) {
-			case NO_ACTIVITY:
-			case SALE_ACTIVITIES:
-			case SECKILL_ACTIVITY:
-				// 服务店（未参加活动、秒杀商品）、便利店特惠商品，商城对库存进行操作。便利店的只操作活动库存。
-				detailDto.setUpdateNum(storeSku.getQuantity());
-				break;
-			case LOW_PRICE:
-				if (storeSku.getSkuActQuantity() > 0) {
-					detailDto.setUpdateNum(storeSku.getSkuActQuantity());
-				} else {
-					return null;
-				}
-				break;
-			default:
-				break;
-		}
+		detailDto.setUpdateNum(storeSku.getQuantity());
+		detailDto.setUpdateLockedNum(storeSku.getQuantity());
 		return detailDto;
 	}
 
@@ -162,7 +139,7 @@ public class MallStockUpdateBuilder {
 	}
 
 	/**
-	 * @Description: 根据店铺商品信息构建明细
+	 * @Description: 根据店铺商品信息构建明细(服务店订单)
 	 * @param storeSku
 	 * @return   
 	 * @author maojj
@@ -174,6 +151,9 @@ public class MallStockUpdateBuilder {
 		updateDetail.setSpuType(storeSku.getSpuTypeEnum());
 		updateDetail.setActType(actType);
 		updateDetail.setUpdateNum(buyNum);
+		if(actType == ActivityTypeEnum.SECKILL_ACTIVITY){
+			updateDetail.setUpdateLockedNum(buyNum);
+		}
 		return updateDetail;
 	}
 
@@ -269,7 +249,11 @@ public class MallStockUpdateBuilder {
 			updateDetail.setActType(actType);
 			updateDetail.setUpdateNum(orderItem.getQuantity());
 			if(actType == ActivityTypeEnum.LOW_PRICE){
+				// 如果是低价
 				updateDetail.setUpdateLockedNum(orderItem.getActivityQuantity());
+			}else if (actType == ActivityTypeEnum.SALE_ACTIVITIES){
+				// 如果是特惠
+				updateDetail.setUpdateLockedNum(orderItem.getQuantity());
 			}
 			if(orderItem.getSpuType() == SpuTypeEnum.assembleSpu){
 				comboSkuIds.add(orderItem.getStoreSkuId());
@@ -442,7 +426,7 @@ public class MallStockUpdateBuilder {
 			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
 			updateDetail.setSpuType(orderItem.getSpuType());
 			updateDetail.setActType(actType);
-			updateDetail.setUpdateLockedNum(getRefundsNum(orderRefunds,orderItem,actType));
+			processRefundsNum(updateDetail,orderRefunds,orderItem,actType);
 			updateDetailList.add(updateDetail);
 		}
 		
@@ -459,25 +443,29 @@ public class MallStockUpdateBuilder {
 	 * @author maojj
 	 * @date 2017年3月22日
 	 */
-	private Integer getRefundsNum(TradeOrderRefunds orderRefunds,TradeOrderItem orderItem,ActivityTypeEnum actType){
+	private void processRefundsNum(StockUpdateDetailDto updateDetail,TradeOrderRefunds orderRefunds,TradeOrderItem orderItem,ActivityTypeEnum actType){
 		if(orderItem.getSpuType() != SpuTypeEnum.fwdDdxfSpu){
+			updateDetail.setUpdateNum(orderItem.getQuantity());
 			// 到店消费商品退款，退货数量由退款单项中的数量决定。其他都是与订单项数量等同
 			if(actType == ActivityTypeEnum.LOW_PRICE){
-				// 低价活动的，商城只负责处理活动商品数量
-				return orderItem.getActivityQuantity();
-			}else{
-				return orderItem.getQuantity();
+				// 低价活动的
+				updateDetail.setUpdateLockedNum(orderItem.getActivityQuantity());
+			}else if(actType == ActivityTypeEnum.SALE_ACTIVITIES || actType == ActivityTypeEnum.SECKILL_ACTIVITY){
+				// 特惠或者秒杀
+				updateDetail.setUpdateLockedNum(orderItem.getQuantity());
 			}
 		}
 		// 如果是到店消费商品退货，从退款项中获取商品数量
-		Integer refundsNum = Integer.valueOf(0);
 		for(TradeOrderRefundsItem refundsItem : orderRefunds.getTradeOrderRefundsItem()){
 			if(refundsItem.getOrderItemId().equals(orderItem.getId())){
-				refundsNum = refundsItem.getQuantity();
+				updateDetail.setUpdateNum(refundsItem.getQuantity());
+				if(actType == ActivityTypeEnum.SECKILL_ACTIVITY){
+					// 低价活动的
+					updateDetail.setUpdateLockedNum(refundsItem.getQuantity());
+				}
 				break;
 			}
 		}
-		return refundsNum;
 	}
 	
 	/**
@@ -503,56 +491,10 @@ public class MallStockUpdateBuilder {
 		StockUpdateDetailDto updateDetail = null;
 		// 订单项信息
 		for(TradeOrderItem orderItem : tradeOrder.getTradeOrderItem()){
-			// 获取订单项商品活动类型
 			updateDetail = new StockUpdateDetailDto();
 			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
 			updateDetail.setSpuType(orderItem.getSpuType());
 			updateDetail.setUpdateNum(adjustGoodsNum == null || adjustGoodsNum < 1 ? orderItem.getQuantity() : adjustGoodsNum);
-			updateDetailList.add(updateDetail);
-		}
-		
-		stockUpdateDto.setUpdateDetailList(updateDetailList);
-		return stockUpdateDto;
-	}
-	
-	/**
-	 * @Description: V2.0 版本下单库存构建对象
-	 * @param order
-	 * @param reqDto
-	 * @return
-	 * @throws Exception   
-	 * @author maojj
-	 * @date 2017年3月18日
-	 */
-	public StockUpdateDto build(TradeOrder tradeOrder, TradeOrderReqDto reqDto) throws Exception{
-		TradeOrderReq req = reqDto.getData();
-		TradeOrderContext context = reqDto.getContext();
-		if(CollectionUtils.isEmpty(context.getActivitySkuList())){
-			// 商城只负责修改活动商品库存，如果特惠商品列表为空，则不需做处理
-			return null;
-		}
-		
-		StockUpdateDto stockUpdateDto = new StockUpdateDto();
-
-		stockUpdateDto.setRpcId(UuidUtils.getUuid());
-		stockUpdateDto.setMethodName("");
-		stockUpdateDto.setOrderId(tradeOrder.getId());
-		stockUpdateDto.setStoreId(tradeOrder.getStoreId());
-		stockUpdateDto.setStockOperateEnum(StockOperateEnum.PLACE_ORDER);
-
-		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
-		StockUpdateDetailDto updateDetail = null;
-		TradeOrderGoodsItem orderItem = null;
-		// 订单项信息
-		for(GoodsStoreSku storeSku : context.getActivitySkuList()){
-			orderItem = req.findOrderItem(storeSku.getId());
-			// 获取订单项商品活动类型
-			updateDetail = new StockUpdateDetailDto();
-			updateDetail.setStoreSkuId(storeSku.getId());
-			updateDetail.setSpuType(storeSku.getSpuTypeEnum());
-			updateDetail.setUpdateNum(orderItem.getSkuNum());
-			// V2.0版本只有特惠商品，没有其他商品。
-			updateDetail.setActType(ActivityTypeEnum.SALE_ACTIVITIES);
 			updateDetailList.add(updateDetail);
 		}
 		
