@@ -197,27 +197,6 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 	
 	// Begin V2.4 added by maojj 2017-05-31
 	/**
-	 * @Description: 检查服务时间
-	 * @param resp
-	 * @param paramDto
-	 * @param storeInfo   
-	 * @author maojj
-	 * @date 2017年3月18日
-	 */
-	private void checkServTime(Response<PlaceOrderDto> resp,PlaceOrderParamDto paramDto, StoreInfo storeInfo){
-		if (!resp.isSuccess() || paramDto.getOrderType() == PlaceOrderTypeEnum.CVS_ORDER
-				|| paramDto.getSkuType() == OrderTypeEnum.STORE_CONSUME_ORDER
-				|| paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT) {
-			// 只对上门服务店提交订单时做校验
-			return;
-		}
-		
-		if(!isValid(paramDto.getPickTime(),storeInfo.getStoreInfoExt().getInvalidDate())){
-			resp.setResult(ResultCodeEnum.SERV_TIME_INVALID);
-		}
-	}
-	
-	/**
 	 * @Description: 判断当前日期是否被设置为不可用日期
 	 * @param servTime
 	 * @param invalidDate
