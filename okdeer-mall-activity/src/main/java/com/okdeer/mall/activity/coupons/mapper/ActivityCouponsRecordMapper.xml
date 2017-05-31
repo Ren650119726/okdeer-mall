@@ -434,6 +434,8 @@
     	<result property="arrive" column="arrive" jdbcType="VARCHAR"/>
     	<result column="status" property="status" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum" jdbcType="TINYINT" />
     	<result property="activityId" column="activity_id" javaType="string" jdbcType="VARCHAR"/>
+    	<result property="deviceDayLimit" column="device_day_limit" jdbcType="INTEGER"/>
+        <result property="accountDayLimit" column="account_day_limit" jdbcType="INTEGER"/>
     </resultMap>
     
   <!-- wusw:根据领取人id、领取状态，查询领取的代金券详细信息 -->
@@ -729,7 +731,8 @@
 			c.id as couponId,
 			c.activity_id,
 			FORMAT(c.face_value, 2) as couponPrice,
-			FORMAT(c.arrive_limit,2) as arrive, t.status
+			FORMAT(c.arrive_limit,2) as arrive, t.status,
+			c.device_day_limit,c.account_day_limit
 		FROM activity_coupons_record t
 		LEFT join activity_coupons c ON t.coupons_id=c.id
 		WHERE t.collect_user_id = #{userId}
