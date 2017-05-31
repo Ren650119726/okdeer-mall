@@ -131,6 +131,12 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 		TradeOrderReq reqParam = reqDto.getData();
 		String recordId = reqParam.getRecordId();
 		ActivityCouponsRecord couponsRecord = activityCouponsRecordMapper.selectByPrimaryKey(recordId);
+		// Begin V2.4 added by maojj 2017-05-31
+		// 增加领取记录的校验。校验请求提供的领取记录是否是当前用户
+		if(couponsRecord == null || !couponsRecord.getCollectUserId().equals(reqParam.getUserId())){
+			return false;
+		}
+		// End V2.4 added by maojj 2017-05-31
 		if (couponsRecord.getStatus() != ActivityCouponsRecordStatusEnum.UNUSED) {
 			return false;
 		}
