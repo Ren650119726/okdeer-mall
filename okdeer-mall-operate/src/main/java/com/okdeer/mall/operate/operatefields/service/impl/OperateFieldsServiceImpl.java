@@ -7,16 +7,20 @@ import static com.okdeer.mall.operate.contants.OperateFieldContants.STORE_OPERAT
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.alibaba.dubbo.registry.redis.RedisRegistry;
 import com.okdeer.archive.goods.base.entity.GoodsCategoryAssociation;
 import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
@@ -97,6 +101,9 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
     
     @Autowired
     private ColumnNativeSubjectMapper nativeSubjectMapper;
+    
+    @Autowired
+    private RedisLockRegistry redisLockRegistry;
     
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -367,7 +374,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
      * @date 2017-4-18
      */
     @Override
-    public synchronized List<OperateFieldDto> initCityOperateFieldData(String cityId) throws Exception {
+    public List<OperateFieldDto> initCityOperateFieldData(String cityId) throws Exception {
         OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
         queryParamDto.setType(OperateFieldsType.CITY);
         queryParamDto.setBusinessId(cityId);
@@ -435,12 +442,18 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         //将运营栏位信息缓存进Redis
         //redisTemplateWrapper.zAdd(CITY_OPERATE_FIELD_KEY + cityId, operateField, fieldInfo.getSort());
         //缓存之前先删除之前该店铺下存储的栏位信息
-        redisTemplate.delete(CITY_OPERATE_FIELD_KEY + cityId);
-        if(CollectionUtils.isNotEmpty(operateFields)) {
-            //redisTemplate.opsForZSet().add(CITY_OPERATE_FIELD_KEY + cityId, tuples);
-            redisTemplate.opsForList().rightPushAll(CITY_OPERATE_FIELD_KEY + cityId, operateFields);
+        Lock lock = redisLockRegistry.obtain(CITY_OPERATE_FIELD_KEY + cityId);
+        try {
+            if(lock.tryLock(10, TimeUnit.SECONDS)) {
+                redisTemplate.delete(CITY_OPERATE_FIELD_KEY + cityId);
+                if(CollectionUtils.isNotEmpty(operateFields)) {
+                    //redisTemplate.opsForZSet().add(CITY_OPERATE_FIELD_KEY + cityId, tuples);
+                    redisTemplate.opsForList().rightPushAll(CITY_OPERATE_FIELD_KEY + cityId, operateFields);
+                }
+            }
+        }finally {
+            lock.unlock();
         }
-        
         return operateFields;
     }
     
