@@ -664,7 +664,7 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setIncome(tradeOrderItem.getActualAmount());
 			return;
 		}
-		ActivityTypeEnum activityType = tradeOrder.getActivityType();
+		ActivityTypeEnum activityType = ActivityTypeEnum.enumValueOf(tradeOrderItem.getActivityType());
 		switch (activityType) {
 			case NO_ACTIVITY:
 			case VONCHER:
