@@ -32,7 +32,6 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
-import com.okdeer.common.consts.DescriptConstants;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
@@ -843,28 +842,32 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 	
 	private boolean checkRechargeCounponsUseLimit(RechargeCouponVo couponVo, RechargeOrderReqDto reqDto) {
 	    ActivityRecordParamBo recParamBo = null;
-	    if(StringUtils.isNotEmpty(reqDto.getDeviceId()) && couponVo.getDeviceDayLimit() > 0) {
-	        recParamBo = new ActivityRecordParamBo();
-	        recParamBo.setPkId(couponVo.getCouponId());
-	        recParamBo.setRecDate(DateUtils.getDate());
-	        recParamBo.setDeviceId(reqDto.getDeviceId());
-	        int times = activityCouponsRecordMapper.countDayFreq(recParamBo);
+	    if(StringUtils.isNotEmpty(reqDto.getDeviceId())) {
+	        if(couponVo.getDeviceDayLimit() != null && couponVo.getDeviceDayLimit() > 0) {
+    	        recParamBo = new ActivityRecordParamBo();
+    	        recParamBo.setPkId(couponVo.getCouponId());
+    	        recParamBo.setRecDate(DateUtils.getDate());
+    	        recParamBo.setDeviceId(reqDto.getDeviceId());
+    	        int times = activityCouponsRecordMapper.countDayFreq(recParamBo);
 	        
-	        if(couponVo.getDeviceDayLimit() <= times) {
-	            return false;
+    	        if(couponVo.getDeviceDayLimit() <= times) {
+    	            return false;
+    	        }
 	        }
 	    } 
 	    
-	    if(StringUtils.isNotEmpty(reqDto.getUserId()) && couponVo.getAccountDayLimit() > 0) {
-	        recParamBo = new ActivityRecordParamBo();
-            recParamBo.setPkId(couponVo.getCouponId());
-            recParamBo.setRecDate(DateUtils.getDate());
-            recParamBo.setUserId(reqDto.getUserId());
-            int times = activityCouponsRecordMapper.countDayFreq(recParamBo);
-            
-            if(couponVo.getAccountDayLimit() <= times) {
-               return false;
-            }
+	    if(StringUtils.isNotEmpty(reqDto.getUserId())) {
+	        if(couponVo.getAccountDayLimit() != null && couponVo.getAccountDayLimit() > 0) {
+    	        recParamBo = new ActivityRecordParamBo();
+                recParamBo.setPkId(couponVo.getCouponId());
+                recParamBo.setRecDate(DateUtils.getDate());
+                recParamBo.setUserId(reqDto.getUserId());
+                int times = activityCouponsRecordMapper.countDayFreq(recParamBo);
+                
+                if(couponVo.getAccountDayLimit() <= times) {
+                   return false;
+                }
+	        }
 	    }
 	    
 	    return true;
