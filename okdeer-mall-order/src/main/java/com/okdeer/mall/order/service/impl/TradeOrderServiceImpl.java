@@ -324,6 +324,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Resource
 	private SysBuyerUserMapper sysBuyerUserMapper;
 
+	@Resource
+	private TradeOrderComplainImageMapper tradeOrderComplainImageMapper;
 	/**
 	 * 消息发送
 	 */
@@ -7230,46 +7232,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		return new PageUtils<TradeOrderDetailBo>(list);
 	}
 	
-	/**
-	 * 获取活动信息 2.2.0修改 
-	 * @author xuzq
-	 * @param activityType活动类型
-	 * @param activityId 活动ID
-	 */
-	private Map<String, Object> getActivity(int activityType, String activityId) {
-		Map<String, Object> map = new HashMap<String, Object>();
-		// 活动名称
-		String activityName = null;
-		// 活动来源，（活动发起者身份）
-		ActivitySourceEnum activitySource = null;
-		// 如果有活动ID，说明该订单参与了活动
-		if (StringUtils.isNotBlank(activityId) && !"0".equals(activityId)) {
-			// 代金券活动
-			if (ActivityTypeEnum.VONCHER.ordinal() == activityType) {
-				ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(activityId);
-				if (activityCollectCoupons != null) {
-					activityName = activityCollectCoupons.getName();
-					// 所属代理商id，运营商以0标识
-					if ("0".equals(activityCollectCoupons.getBelongType())) {
-						activitySource = ActivitySourceEnum.OPERATOR;
-					} else {
-						activitySource = ActivitySourceEnum.AGENT;
-					}
-				}
-			} else if (ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES.ordinal() == activityType
-					|| ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES.ordinal() == activityType) {
-				// 满减活动
-				ActivityDiscount activityDiscount = activityDiscountMapper.findById(activityId);
-				if (activityDiscount != null) {
-					activityName = activityDiscount.getName();
-				}
-			}
-			// End 15698 add by wusw 20161205
-		}
-		map.put("activityName", activityName);
-		map.put("activitySource", activitySource);
-		return map;
-	}
 
 	@Override
 	public List<TradeOrderStatusVo> getServiceOrderCount(Map<String, Object> params) {
@@ -7285,4 +7247,32 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		return new PageUtils<TradeOrder>(list);
 	}
 	//End V2.3.0 added by luosm 20170426
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void insertCompainOrder(String userId, String orderId, String storeId, String content, Object[] object) throws ServiceException {
+		TradeOrder order = new TradeOrder();
+		order.setCompainStatus(CompainStatusEnum.HAVE_COMPAIN);
+		order.setId(orderId);
+		updateOrderStatus(order);
+		
+		String id = UuidUtils.getUuid();
+		TradeOrderComplain tradeOrderComplain = new TradeOrderComplain();
+		tradeOrderComplain.setId(id);
+		tradeOrderComplain.setUserId(userId);
+		tradeOrderComplain.setStoreId(storeId);
+		tradeOrderComplain.setOrderId(orderId);
+		tradeOrderComplain.setContent(content);
+		tradeOrderComplain.setCreateTime(new Date());
+		tradeOrderComplainMapper.insert(tradeOrderComplain);
+
+		for (int i = 0; i < object.length; i++) {
+			TradeOrderComplainImage tradeOrderComplainImage = new TradeOrderComplainImage();
+			tradeOrderComplainImage.setId(UuidUtils.getUuid());
+			tradeOrderComplainImage.setComplainId(id);
+			tradeOrderComplainImage.setImagePath(object[i].toString());
+			tradeOrderComplainImageMapper.insertSelective(tradeOrderComplainImage);
+		}
+		
+	}
 }
