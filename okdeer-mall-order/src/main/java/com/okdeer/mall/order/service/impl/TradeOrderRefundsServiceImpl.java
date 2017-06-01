@@ -905,7 +905,11 @@ public class TradeOrderRefundsServiceImpl
 					if(orderRefunds.getRefundsStatus() == RefundsStatusEnum.WAIT_SELLER_REFUND){
 						orderRefunds.setRefundsStatus(RefundsStatusEnum.SELLER_REFUNDING);
 					}
-					this.updateWalletByThird(order, orderRefunds);
+					if(orderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND){
+						this.save(order, orderRefunds);
+					}else{
+						this.updateWalletByThird(order, orderRefunds);
+					}
 				} else {
 					// 余额退款
 					this.updateWallet(order, orderRefunds);
