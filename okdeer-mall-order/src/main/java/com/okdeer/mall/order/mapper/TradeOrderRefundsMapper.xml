@@ -133,7 +133,7 @@
 				ORDER BY tr.create_time DESC
 			</if>
 			<!-- 便利店已拒绝,已同意,已完成 -->
-			<if test="tabs == 'rejected' or tabs == 'agree' or tabs == 'done'">
+			<if test="tabs == 'rejected' or tabs == 'agree' or tabs == 'done' or tabs =='all'">
 					ORDER BY tr.create_time DESC
 			</if>
 		</if>
