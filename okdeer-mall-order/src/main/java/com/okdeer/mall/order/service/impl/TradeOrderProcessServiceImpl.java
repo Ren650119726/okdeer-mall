@@ -33,6 +33,7 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.DescriptConstants;
+import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
@@ -829,7 +830,44 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
 	        respDto.setFlag(false);
 	        respDto.setMessage("优惠券已过期或者不能使用，提交订单失败。");
 	    }
+	    
+	    //检查优惠券的使用限制
+	    isValid = checkRechargeCounponsUseLimit(couponVo, reqDto);
+	    if(!isValid) {
+	        respDto.setFlag(false);
+	        respDto.setMessage("抱歉，您选择的优惠活动不支持该订单");
+	    }
+	    
 	    return couponVo;
+	}
+	
+	private boolean checkRechargeCounponsUseLimit(RechargeCouponVo couponVo, RechargeOrderReqDto reqDto) {
+	    ActivityRecordParamBo recParamBo = null;
+	    if(StringUtils.isNotEmpty(reqDto.getDeviceId()) && couponVo.getDeviceDayLimit() > 0) {
+	        recParamBo = new ActivityRecordParamBo();
+	        recParamBo.setPkId(couponVo.getCouponId());
+	        recParamBo.setRecDate(DateUtils.getDate());
+	        recParamBo.setDeviceId(reqDto.getDeviceId());
+	        int times = activityCouponsRecordMapper.countDayFreq(recParamBo);
+	        
+	        if(couponVo.getDeviceDayLimit() <= times) {
+	            return false;
+	        }
+	    } 
+	    
+	    if(StringUtils.isNotEmpty(reqDto.getUserId()) && couponVo.getAccountDayLimit() > 0) {
+	        recParamBo = new ActivityRecordParamBo();
+            recParamBo.setPkId(couponVo.getCouponId());
+            recParamBo.setRecDate(DateUtils.getDate());
+            recParamBo.setUserId(reqDto.getUserId());
+            int times = activityCouponsRecordMapper.countDayFreq(recParamBo);
+            
+            if(couponVo.getAccountDayLimit() <= times) {
+               return false;
+            }
+	    }
+	    
+	    return true;
 	}
 	
 	/**

@@ -20,8 +20,12 @@ import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
+import com.okdeer.mall.order.dto.PlaceOrderDto;
+import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.dto.TimeInterval;
+import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.ServStoreInfo;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
@@ -67,7 +71,6 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 			req.setComplete(true);
 			return;
 		}
-		
 		// Begin V2.0 added by maojj 2017-01-19
 		// 店铺已暂停
 		if (storeInfo.getStoreInfoExt().getIsBusiness() == WhetherEnum.not) {
@@ -83,8 +86,16 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		// 上门服务订单，如果商家中心设置起送价，不满起送价不可下单，提示
 		// 提示‘抱歉，订单不满起送价，请重新结算’且页面跳回至购物车页面，购物车页面刷新，获取最新的起送价、配送费信息 
 		if ( reqData.getOrderType() == null || reqData.getOrderType() == OrderTypeEnum.SERVICE_STORE_ORDER ) {
+			// Begin V2.4 added by maojj 2017-05-31
+			if(!isValid(reqData.getServiceTime(),storeInfo.getStoreInfoExt().getInvalidDate())){
+				resp.setResult(ResultCodeEnum.SERV_TIME_INVALID);
+				req.setComplete(true);
+				return;
+			}
+			// End V2.4 added by maojj 2017-05-31
 			// 上门服务订单
 			StoreInfoServiceExt serviceExt = storeInfo.getStoreInfoServiceExt();
+			serviceExt.setInvalidDate(storeInfo.getStoreInfoExt().getInvalidDate());
 			// 返回服务店铺扩展信息
 			data.setStoreInfoServiceExt(serviceExt);
 			
@@ -183,4 +194,44 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 			servStoreInfo.setTimeList(timeList);
 		}
 	}
+	
+	// Begin V2.4 added by maojj 2017-05-31
+	/**
+	 * @Description: 判断当前日期是否被设置为不可用日期
+	 * @param servTime
+	 * @param invalidDate
+	 * @return   
+	 * @author maojj
+	 * @date 2017年5月22日
+	 */
+	private boolean isValid(String servTime,String invalidDate){
+		if(StringUtils.isEmpty(servTime) || StringUtils.isEmpty(invalidDate)){
+			return true;
+		}
+		// 服务时间年月
+		String servMonth = servTime.substring(0,4) + servTime.substring(5,7);
+		// 服务时间天数
+		int servDay = Integer.parseInt(servTime.substring(8,10));
+		String[] invalidDateArr =  invalidDate.split(",");
+		String invalidMonth = null;
+		for (String invalidTime : invalidDateArr) {
+			invalidMonth = invalidTime.substring(0, 6);
+			if (servMonth.compareTo(invalidMonth) == -1) {
+				// 如果当前月份小于不可用日期限制的月份，则当前日期一定可用
+				break;
+			} else if (servMonth.compareTo(invalidMonth) == 0) {
+				// 如果当前月份等于不可用日期限制的月份，则判定这天是否可用
+				int invalidDay = Integer.parseInt(invalidTime.substring(6));
+				if (((invalidDay >> (servDay - 1)) & 1) == 1) {
+					// 如果当前天数为不可用日期
+					return false;
+				} 
+			} else if (servMonth.compareTo(invalidMonth) == 1) {
+				// 如果当前月份大于不可用日期限制的月份，则循环跳入下一个月份限制进行判定
+				continue;
+			}
+		}
+		return true;
+	}
+	// End V2.4 added by maojj 2017-05-31
 }
