@@ -7227,6 +7227,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			for (TradeOrderDetailBo tradeOrderVo : list) {
 				// 查询订单项表 获取主图。
 				tradeOrderVo.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrderVo.getId()));
+				// 查询投诉信息 用于列表显示标签
+				tradeOrderVo.setTradeOrderComplainVoList(
+						tradeOrderComplainMapper.findOrderComplainByParams(tradeOrderVo.getId()));
+
 			}
 		}
 		return new PageUtils<TradeOrderDetailBo>(list);
