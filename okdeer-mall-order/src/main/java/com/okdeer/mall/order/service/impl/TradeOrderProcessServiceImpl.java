@@ -647,6 +647,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
             req.setCouponsType(CouponsType.hfcz.ordinal());
             req.setRecordId(couponRecord.getId());
             req.setActivityItemId(reqDto.getCouponId());
+            req.setDeviceId(reqDto.getDeviceId());
             
             updateActivityCoupons(tradeOrder, req);
         }
