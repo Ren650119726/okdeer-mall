@@ -11,8 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.integration.redis.util.RedisLockRegistry;
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.alibaba.dubbo.registry.redis.RedisRegistry;
 import com.okdeer.archive.goods.base.entity.GoodsCategoryAssociation;
 import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
@@ -67,9 +64,6 @@ import com.okdeer.mall.operate.operatefields.service.OperateFieldsService;
  */
 @Service
 public class OperateFieldsServiceImpl extends BaseServiceImpl implements OperateFieldsService {
-
-    private static final Logger logger = LoggerFactory.getLogger(OperateFieldsServiceImpl.class);
-    
 	private static final int DEFAULT_SORT = 10010;
 
 	@Autowired
@@ -84,9 +78,6 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
     /**
      * redis接入
      */
-    //@Autowired
-    //private IRedisTemplateWrapper<String, OperateFieldDto> redisTemplateWrapper;
-	
 	@Autowired
     private RedisTemplate<String, OperateFieldDto> redisTemplate;
     
@@ -246,14 +237,13 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
      * @date 2017-4-18
      */
     @Override
-    public synchronized List<OperateFieldDto> initStoreOperateFieldData(String storeId) throws Exception {
+    public List<OperateFieldDto> initStoreOperateFieldData(String storeId) throws Exception {
         OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
         queryParamDto.setType(OperateFieldsType.STORE);
         queryParamDto.setBusinessId(storeId);
         queryParamDto.setEnabled(Enabled.YES);
         
         FieldInfoDto fieldInfo = null;
-        //Set<TypedTuple<OperateFieldDto>> tuples = new HashSet<>();
         List<OperateFieldDto> operateFields = new ArrayList<>();
         //查出属于该店铺的所有店铺运营栏位
         List<OperateFieldsBo> fieldsList = this.findListWithContent(queryParamDto);
@@ -333,37 +323,23 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                 operateField.setContentList(contentDtos);
                 
                 operateFields.add(operateField);
-                /*tuples.add(new TypedTuple<OperateFieldDto>() {
-                    @Override
-                    public int compareTo(TypedTuple<OperateFieldDto> o) {
-                        return this.getScore().compareTo(o.getScore());
-                    }
-                    
-                    @Override
-                    public OperateFieldDto getValue() {
-                        return operateField;
-                    }
-                    
-                    @Override
-                    public Double getScore() {
-                        return operateField.getFieldInfo().getSort().doubleValue();
-                    }
-                });*/
             }
         }
         //将运营栏位信息缓存进Redis
-        //redisTemplateWrapper.zAdd(STORE_OPERATE_FIELD_KEY + storeId, operateFields, fieldInfo.getSort());
-        //缓存之前先删除之前该店铺下存储的栏位信息
-        redisTemplate.delete(STORE_OPERATE_FIELD_KEY + storeId);
-        if(CollectionUtils.isNotEmpty(operateFields)) {
-            //redisTemplate.opsForZSet().add(STORE_OPERATE_FIELD_KEY + storeId, tuples);
-            redisTemplate.opsForList().rightPushAll(STORE_OPERATE_FIELD_KEY + storeId, operateFields);
+        Lock lock = redisLockRegistry.obtain(STORE_OPERATE_FIELD_KEY + storeId);
+        try {
+            if(lock.tryLock(10, TimeUnit.SECONDS)) {
+                //缓存之前先删除之前该店铺下存储的栏位信息
+                redisTemplate.delete(STORE_OPERATE_FIELD_KEY + storeId);
+                if(CollectionUtils.isNotEmpty(operateFields)) {
+                    redisTemplate.opsForList().rightPushAll(STORE_OPERATE_FIELD_KEY + storeId, operateFields);
+                }
+            }
+        } finally {
+            lock.unlock();
         }
-        
         return operateFields;
     }    
-    
-    
     
     /**
      * 初始化城市运营栏位
