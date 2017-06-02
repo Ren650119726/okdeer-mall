@@ -52,7 +52,6 @@ import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysMsg;
 import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
@@ -1008,6 +1007,10 @@ public class TradeOrderRefundsServiceImpl
 			updateWithRevocatory(refunds, null);
 		}*/
 		if (RefundsStatusEnum.YSC_REFUND == status || RefundsStatusEnum.FORCE_SELLER_REFUND == status) {
+			if(RefundsStatusEnum.YSC_REFUND == status){
+				//如果是友门鹿退款，则解冻商家金额
+				updateWithRevocatory(refunds, null);
+			}
 			// 执行退款操作
 			refunds.setTradeNum(TradeNumUtil.getTradeNum());
 			doRefundPay(refunds);
