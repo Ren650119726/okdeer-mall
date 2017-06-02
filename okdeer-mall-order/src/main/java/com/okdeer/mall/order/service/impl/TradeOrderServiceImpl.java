@@ -1726,7 +1726,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @param entity
 	 *            订单对象
 	 */
-	@Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
 	private void updateWithConfirmNew(Object entity) throws Exception {
 		String rpcId = null;
 		try {
@@ -1825,9 +1825,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			}
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
-			// rollbackMQProducer.sendStockRollbackMsg(rpcId);
 			if(rpcId != null){
-				
+				rollbackMQProducer.sendStockRollbackMsg(rpcId);
 			}
 			throw e;
 		}
