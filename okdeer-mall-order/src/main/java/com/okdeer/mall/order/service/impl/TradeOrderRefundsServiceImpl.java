@@ -631,6 +631,12 @@ public class TradeOrderRefundsServiceImpl
 			// 扣减积分与成长值
 			reduceUserPoint(order, orderRefunds);
 			
+			
+			//如果是友门鹿退款，解冻商家金额
+			if(RefundsStatusEnum.YSC_REFUND == orderRefunds.getRefundsStatus()){
+				sendUnfreezeRocketMsg(orderRefunds, order);
+			}
+			
 			// Begin V2.4 added by maojj 2017-05-20
 			// 发送消息让系统自动给用户退款
 			if(isOldWayBack(orderRefunds.getPaymentMethod())){
@@ -651,6 +657,23 @@ public class TradeOrderRefundsServiceImpl
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
+		}
+	}
+	
+	/**
+	 * @Description: 发送解冻金额信息
+	 * @param refunds
+	 * @param tradeOrder
+	 * @throws Exception
+	 * @author zengjizu
+	 * @date 2017年6月2日
+	 */
+	private void sendUnfreezeRocketMsg(TradeOrderRefunds refunds,TradeOrder tradeOrder) throws Exception{
+		Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
+				buildBalanceFinish(refunds, tradeOrder).getBytes(Charsets.UTF_8));
+		SendResult sendResult = rocketMQProducer.send(msg);
+		if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
+			throw new Exception("发送解冻消息失败！");
 		}
 	}
 	
@@ -1007,10 +1030,6 @@ public class TradeOrderRefundsServiceImpl
 			updateWithRevocatory(refunds, null);
 		}*/
 		if (RefundsStatusEnum.YSC_REFUND == status || RefundsStatusEnum.FORCE_SELLER_REFUND == status) {
-			if(RefundsStatusEnum.YSC_REFUND == status){
-				//如果是友门鹿退款，则解冻商家金额
-				updateWithRevocatory(refunds, null);
-			}
 			// 执行退款操作
 			refunds.setTradeNum(TradeNumUtil.getTradeNum());
 			doRefundPay(refunds);
