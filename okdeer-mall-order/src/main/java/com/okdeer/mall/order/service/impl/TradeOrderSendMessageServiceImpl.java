@@ -19,8 +19,8 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
+import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
-import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mcm.constant.MsgConstant;
 import com.okdeer.mcm.dto.PushMsgDto;
 import com.okdeer.mcm.dto.PushUserDto;
@@ -51,7 +51,7 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
 	private RocketMQProducer rocketMQProducer;
     
     @Autowired
-    private TradeOrderService tradeOrderService;
+    private TradeOrderMapper tradeOrderMapper;
     
     //日志管理器
     private static final Logger LOGGER = LoggerFactory.getLogger(TradeOrderSendMessageServiceImpl.class);
@@ -121,7 +121,7 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
             //用户手机号码
             TradeOrder order = null;
             try {
-                order = this.tradeOrderService.selectById(orderRefunds.getOrderId());
+                order = this.tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
             } catch (Exception e) {
                 LOGGER.error("根据交易流水号查询订单异常", e);
             }
