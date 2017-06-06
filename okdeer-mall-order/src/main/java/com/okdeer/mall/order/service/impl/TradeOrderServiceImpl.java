@@ -1741,15 +1741,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				if (CollectionUtils.isEmpty(tradeOrder.getTradeOrderItem())) {
 					tradeOrder.setTradeOrderItem(tradeOrderItemMapper.selectTradeOrderItem(tradeOrder.getId()));
 				}
-				// 给卖家打款
-				// begin modify by zengjz 判断是否是服务店订单
-				if (OrderTypeEnum.SERVICE_STORE_ORDER == tradeOrder.getType()) {
-					// 服务店商品走另外的资金流程
-					this.tradeOrderPayService.confirmStoreServiceOrderPay(tradeOrder);
-				} else {
-					this.tradeOrderPayService.confirmOrderPay(tradeOrder);
-				}
-				// begin modify by zengjz 判断是否是服务店订单
+				
 				// begin update by wushp
 
 				// 添加积分
@@ -1822,6 +1814,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					}
 				}
 				// End V2.3 added by maojj 2017-04-24
+				
+				// 给卖家打款
+				// begin modify by zengjz 判断是否是服务店订单
+				if (OrderTypeEnum.SERVICE_STORE_ORDER == tradeOrder.getType()) {
+					// 服务店商品走另外的资金流程
+					this.tradeOrderPayService.confirmStoreServiceOrderPay(tradeOrder);
+				} else {
+					this.tradeOrderPayService.confirmOrderPay(tradeOrder);
+				}
+				// begin modify by zengjz 判断是否是服务店订单
 			}
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
