@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -30,6 +31,7 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
+import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.constant.text.ExceptionConstant;
@@ -52,6 +54,7 @@ import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
+import com.okdeer.mall.order.service.TradeorderProcessLister;
 
 /**
  * 余额支付结果消息订阅处理
@@ -145,6 +148,10 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	@Resource
     private TradeOrderSendMessageService sendMessageService;
 	
+	@Autowired
+	@Qualifier(value="jxcSynTradeorderProcessLister")
+	private TradeorderProcessLister tradeorderProcessLister;
+	
 	@Override
 	public String getTopic() {
 		return TOPIC_PAY_RESULT;
@@ -204,6 +211,11 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		// begin add by wushp 20161015
 		try {
 			orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+			
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;

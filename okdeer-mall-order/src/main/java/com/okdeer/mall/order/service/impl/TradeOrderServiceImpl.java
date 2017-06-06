@@ -86,6 +86,7 @@ import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
+import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.builder.JxcStockUpdateBuilder;
@@ -120,6 +121,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -505,6 +507,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	
 	@Resource
 	private MallStockUpdateBuilder mallStockUpdateBuilder;
+	
+	@Autowired
+	@Qualifier(value="jxcSynTradeorderProcessLister")
+	private TradeorderProcessLister tradeorderProcessLister;
+	
 
 	@Override
 	public List<TradeOrder> selectByParam(TradeOrder param) throws Exception{
@@ -1822,6 +1829,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					}
 				}
 				// End V2.3 added by maojj 2017-04-24
+				
+				//add by  zhangkeneng  和左文明对接丢消息
+				TradeOrderContext tradeOrderContext = new TradeOrderContext();
+				tradeOrderContext.setTradeOrder(tradeOrder);
+				tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+				tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+				tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 			}
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
@@ -4955,6 +4970,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 库存调整-放到最后处理
 				// stockManagerService.updateStock(stockAdjustVo);
 				// stockMQProducer.sendMessage(stockAdjustVo);
+				
+				//add by  zhangkeneng  和左文明对接丢消息
+				TradeOrderContext tradeOrderContext = new TradeOrderContext();
+				tradeOrderContext.setTradeOrder(tradeOrder);
+				tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+				tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+				tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+				
 			} catch (Exception e) {
 				logger.error("pos 发货锁定库存发生异常", e);
 				// added by maojj
