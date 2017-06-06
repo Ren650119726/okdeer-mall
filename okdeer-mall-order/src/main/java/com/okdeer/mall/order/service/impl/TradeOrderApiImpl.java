@@ -491,9 +491,8 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		}
 		// 商品信息
 		/*
-		 * TradeOrderItemDto tradeOrderItemDto = new TradeOrderItemDto();
-		 * TradeOrderItem tradeOrderItem = order.getTradeOrderItem().get(0);
-		 * tradeOrderItemDto.setMainPicPrl(tradeOrderItem.getMainPicPrl());
+		 * TradeOrderItemDto tradeOrderItemDto = new TradeOrderItemDto(); TradeOrderItem tradeOrderItem =
+		 * order.getTradeOrderItem().get(0); tradeOrderItemDto.setMainPicPrl(tradeOrderItem.getMainPicPrl());
 		 * tradeOrderItemDto.setSkuName(tradeOrderItem.getSkuName());
 		 * tradeOrderItemDto.setUnitPrice(tradeOrderItem.getUnitPrice());
 		 * tradeOrderItemDto.setQuantity(tradeOrderItem.getQuantity());
@@ -932,7 +931,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			dto.setPreferentialPrice(vo.getPreferentialPrice());
 			dto.setCreateTime(vo.getCreateTime());
 			dto.setOrderResource(vo.getOrderResource().ordinal());
-			if (vo.getStatus() != null) {
+			if(vo.getStatus()!=null){
 				dto.setStatus(vo.getStatus().ordinal());
 			}
 			if (vo.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
@@ -1041,9 +1040,9 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	@Override
 	public List<ERPTradeOrderVoDto> findOrderListByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto)
 			throws Exception {
-
+		
 		List<ERPTradeOrderVo> list = tradeOrderService.findOrderListForFinanceByParams(tradeOrderQueryParamDto);
-
+		
 		List<ERPTradeOrderVoDto> result = new ArrayList<ERPTradeOrderVoDto>();
 
 		// 如果有订单信息
@@ -1068,7 +1067,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			}
 
 			// V2.1.0 begin add by zhulq 获取服务店上门服务的收货地址（物流表的地址）
-
+			
 			// 订单的物流信息
 			List<TradeOrderLogistics> logisticsList = null;
 			if (CollectionUtils.isNotEmpty(orderIds)) {
@@ -1081,7 +1080,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			if (logisticsList == null) {
 				logisticsList = Lists.newArrayList();
 			}
-
+			
 			// 店铺地址（到店自提和到店消费订单店铺地址）
 			List<UserAddressVo> memberAddressList = null;
 			// V2.1.0 end add by zhulq 收货地址取物流表信息 之前是取店铺地址
@@ -1101,7 +1100,8 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			if (inviteNameLists == null) {
 				inviteNameLists = Lists.newArrayList();
 			}
-
+			
+			
 			List<TradeOrderRefunds> tradeOrderRefundsList = new ArrayList<TradeOrderRefunds>();
 			List<ActivityInfoVO> activityList = null;
 			if (CollectionUtils.isNotEmpty(orderIds)) {
@@ -1112,6 +1112,8 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				activityList = Lists.newArrayList();
 			}
 
+			
+			
 			Map<String, UserAddressVo> memberAddressMap = memberAddressList.stream()
 					.collect(Collectors.toMap(m -> m.getUserId(), e -> e));
 
@@ -1135,7 +1137,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				dto.setActualAmount(vo.getActualAmount());
 				dto.setPreferentialPrice(vo.getPreferentialPrice());
 				dto.setCreateTime(vo.getCreateTime());
-				if (vo.getStatus() != null) {
+				if(vo.getStatus()!=null){
 					dto.setStatus(vo.getStatus().ordinal());
 				}
 				if (vo.getPayWay() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY) {
@@ -1145,8 +1147,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 					if (vo.getPayType() != null) {
 						dto.setPayType(vo.getPayType().ordinal());
 					} else {// Begin 12170 add by wusw 20160806
-						// Begin add by zhulq 2017-03-01 充值未付款
-						// 如果不重新赋值dto的支付类型直接默认是0
+						// Begin add by zhulq 2017-03-01 充值未付款 如果不重新赋值dto的支付类型直接默认是0
 						dto.setPayType(8);
 						// Begin add by zhulq 2017-03-01
 						if (vo.getType() == OrderTypeEnum.PHYSICAL_ORDER && vo.getPayWay() == PayWayEnum.CASH_DELIERY) {
@@ -1293,9 +1294,10 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	}
 	// End v1.1.0 add by zengjz 20160912
 
+
 	@Override
 	public int queryOrderCountByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws Exception {
 		return tradeOrderService.findOrderCountForFinanceByParams(tradeOrderQueryParamDto);
 	}
-
+	
 }
