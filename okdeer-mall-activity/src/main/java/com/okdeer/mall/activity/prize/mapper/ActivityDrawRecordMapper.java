@@ -33,7 +33,7 @@ public interface ActivityDrawRecordMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年12月8日
 	 */
-	public int findCountByUserIdAndActivityId(@Param("userId")String userId,@Param("activityId")String activityId);
+	public int findCountByUserIdAndActivityId(@Param("userId")String userId,@Param("activityAdvertId")String activityId);
 	
 	
 
