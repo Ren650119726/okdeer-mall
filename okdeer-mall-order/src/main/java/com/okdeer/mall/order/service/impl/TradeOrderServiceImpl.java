@@ -2052,6 +2052,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (StoreTypeEnum.CLOUD_STORE.equals(storeInfo.getType())) {
 			// 发送短信
 			tradeMessageService.sendSmsByShipments(tradeOrder);
+			
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+			tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+			tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		}
 	}
 

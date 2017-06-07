@@ -125,14 +125,6 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 			cancelOrderService.updateWithUserRefuse(tradeOrder);
 			userRefuseDto.setStatus(0);
 			userRefuseDto.setMsg("拒收成功");
-			
-			//add by  zhangkeneng  和左文明对接丢消息
-			TradeOrderContext tradeOrderContext = new TradeOrderContext();
-			tradeOrderContext.setTradeOrder(tradeOrder);
-			tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
-			tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
-			tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
-			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error(DescriptConstants.SYS_ERROR, e);
 			userRefuseDto.setStatus(1);

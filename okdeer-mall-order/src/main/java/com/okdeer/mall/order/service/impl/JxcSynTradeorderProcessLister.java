@@ -10,6 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.jxc.common.constant.TradeOrderMQMessage;
@@ -40,6 +44,8 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 	private TradeOrderItemService tradeOrderItemService;
 	@Autowired
 	private TradeOrderLogisticsService tradeOrderLogisticsService;
+	@Reference(version="1.0.0")
+	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 	
 	private static final Logger log = LoggerFactory.getLogger(ServiceOrderProcessServiceImpl.class);
 
@@ -48,7 +54,9 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 		try{
 			if(tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.DROPSHIPPING ){
 				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_SYNC,buildOnlineOrder(tradeOrderContext));
-			}else if(tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.TO_BE_SIGNED){
+			}else if(tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.TO_BE_SIGNED ||
+					tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.REFUSED || 
+							tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.CANCELED){
 				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_UPDATE_SYNC,buildOnlineOrderVo(tradeOrderContext));
 			}
 		} catch(Exception e){
@@ -82,6 +90,21 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 			List<String> orderIds = new ArrayList<String>();
 			orderIds.add(order.getId());
 			itemList = tradeOrderItemService.findOrderItems(orderIds);
+			
+			List<String> goodsStoreSkuIdList = new ArrayList<String>();
+			for(TradeOrderItem item : itemList){
+				goodsStoreSkuIdList.add(item.getStoreSkuId());
+			}
+			//需要得到skuId,把idlist一次拉出来,然后用in的方式
+			List<GoodsStoreSku> goodsStoreSkuList = goodsStoreSkuServiceApi.findByIds(goodsStoreSkuIdList);
+			for(TradeOrderItem item : itemList){
+				for(GoodsStoreSku sku : goodsStoreSkuList){
+					if(item.getStoreSkuId().equals(sku.getId())){
+						item.setGoodsSkuId(sku.getSkuId());
+						break;
+					}
+				}
+			}
 		}
 		
 		//按照文档上的属性一一设置
@@ -138,7 +161,7 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 				ooi.setRowNo(i);
 				ooi.setSaleNum(new BigDecimal(item.getQuantity()));
 				ooi.setSalePrice(item.getUnitPrice());
-				ooi.setSkuId(item.getStoreSkuId());
+				ooi.setSkuId(item.getGoodsSkuId() );
 				i++;
 				ooiList.add(ooi);
 			}
@@ -154,10 +177,17 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 	 * @author zhangkn
 	 * @date 2017年6月6日
 	 */
-	private OnlineOrderVo  buildOnlineOrderVo(TradeOrderContext tradeOrderContext){
+	private OnlineOrderVo  buildOnlineOrderVo(TradeOrderContext tradeOrderContext) throws Exception{
 		OnlineOrderVo vo = new OnlineOrderVo();
 		TradeOrder order = tradeOrderContext.getTradeOrder();
 		
+		//订单物流对象
+		TradeOrderLogistics tradeOrderLogistics = tradeOrderContext.getTradeOrderLogistics();
+		if(tradeOrderLogistics == null){
+			tradeOrderLogistics = tradeOrderLogisticsService.findByOrderId(order.getId());
+		}
+		
+		vo.setOrderId(order.getId());
 		vo.setOrderNo(order.getOrderNo());
 		
 		//操作类型：0-成功1-待发货/等待卖家确认 2-发货/等待买家退货3-确认收货/等待卖家退款4-拒收/卖家拒绝退货5-强制卖家退款6-强制友门鹿退款 7-回款 8-取消
@@ -181,7 +211,6 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 				vo.setOptType(7);
 			}
 		}
-		
 		vo.setUpdateTime(order.getUpdateTime());
 		vo.setUpdateUserId(order.getUpdateUserId());
 		return vo;

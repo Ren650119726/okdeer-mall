@@ -17,6 +17,7 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ import com.okdeer.api.pay.enums.PayTypeEnum;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
+import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
@@ -40,6 +42,7 @@ import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.system.service.SysBuyerUserService;
 
 /**
@@ -92,6 +95,10 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 	@Resource
 	private SysBuyerUserService sysBuyerUserService;
 	// End V2.4 added by maojj 2017-05-23
+	
+	@Autowired
+	@Qualifier(value="jxcSynTradeorderProcessLister")
+	private TradeorderProcessLister tradeorderProcessLister;
 	
 	@Override
 	public String getTopic() {
@@ -210,6 +217,13 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 			param.put("#3", convertPayType(result.getPayType()));
 			tradeMessageService.sendSms(selectOrder.getUserPhone(), smsPayRefundSuccess, param);
 			// End V2.4 added by maojj 2017-05-23
+			
+			TradeOrder tradeOrder = tradeOrderService.selectById(result.getOrderId());
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+			
 		} catch (Exception e) {
 			logger.error("取消订单支付状态同步消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
