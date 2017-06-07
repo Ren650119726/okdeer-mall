@@ -10,6 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.jxc.common.constant.TradeOrderMQMessage;
@@ -44,6 +48,8 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	private TradeOrderLogisticsService tradeOrderLogisticsService;
 	@Autowired
 	private TradeOrderRefundsService tradeOrderRefundsService;
+	@Reference(version="1.0.0")
+	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 	
 	private static final Logger log = LoggerFactory.getLogger(ServiceOrderProcessServiceImpl.class);
 
@@ -87,6 +93,21 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 			List<String> orderIds = new ArrayList<String>();
 			orderIds.add(order.getId());
 			itemList = tradeOrderItemService.findOrderItems(orderIds);
+			
+			List<String> goodsStoreSkuIdList = new ArrayList<String>();
+			for(TradeOrderItem item : itemList){
+				goodsStoreSkuIdList.add(item.getStoreSkuId());
+			}
+			//需要得到skuId,把idlist一次拉出来,然后用in的方式
+			List<GoodsStoreSku> goodsStoreSkuList = goodsStoreSkuServiceApi.findByIds(goodsStoreSkuIdList);
+			for(TradeOrderItem item : itemList){
+				for(GoodsStoreSku sku : goodsStoreSkuList){
+					if(item.getStoreSkuId().equals(sku.getId())){
+						item.setGoodsSkuId(sku.getSkuId());
+						break;
+					}
+				}
+			}
 		}
 		//退款对象
 		TradeOrderRefunds tradeOrderRefunds = tradeOrderContext.getTradeOrderRefunds();
@@ -148,7 +169,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 				ooi.setRowNo(i);
 				ooi.setSaleNum(new BigDecimal(item.getQuantity()));
 				ooi.setSalePrice(item.getUnitPrice());
-				ooi.setSkuId(item.getStoreSkuId());
+				ooi.setSkuId(item.getGoodsSkuId());
 				i++;
 				ooiList.add(ooi);
 			}

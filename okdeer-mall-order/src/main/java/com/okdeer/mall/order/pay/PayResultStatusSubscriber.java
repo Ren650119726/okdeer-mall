@@ -266,6 +266,13 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			} else {
 				logger.error("取消(拒收)订单退款支付失败,订单编号为：" + tradeOrder.getOrderNo() + "，问题原因" + result.getMsg());
 			}
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+			tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+			tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error("取消订单支付结果同步消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
