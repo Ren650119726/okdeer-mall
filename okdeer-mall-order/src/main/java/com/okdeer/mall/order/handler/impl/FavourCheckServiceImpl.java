@@ -142,7 +142,7 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 		}
 		// 查询代金券
 		ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsRecord.getCouponsId());
-		if (coupons.getUseClientType() == UseClientType.ONlY_APP_USE) {
+		if (coupons.getUseUserType() == UseUserType.ONlY_NEW_USER) {
 			// 仅限首单用户，检查当前用户是否为首单用户。
 			if (!isFirstOrderUser(reqParam.getUserId())) {
 				respDto.setFlag(false);
