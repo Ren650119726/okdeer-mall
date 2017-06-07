@@ -20,6 +20,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,6 +79,7 @@ import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.points.dto.RefundPointParamDto;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
+import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -121,6 +123,7 @@ import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderRefundsTraceService;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
+import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.PageQueryUtils;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
@@ -334,6 +337,10 @@ public class TradeOrderRefundsServiceImpl
 
 	@Resource
 	private TradeOrderSendMessageService sendMessageService;
+	
+	@Autowired
+	@Qualifier(value="jxcSynTradeorderProcessLister")
+	private TradeorderProcessLister tradeorderProcessLister;
 	
 	/**
 	 * 根据主键查询退款单
@@ -838,6 +845,15 @@ public class TradeOrderRefundsServiceImpl
 			// End 1.0.Z 增加退款单操作记录 add by zengj
 			// 自动撤销申请计时消息
 			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_cancel_by_agree_timeout, id);
+			
+			TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(id);
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+			tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+			tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error("卖家操作同意退货错误", e);
 			throw new Exception("卖家操作同意退货错误", e);
@@ -875,6 +891,15 @@ public class TradeOrderRefundsServiceImpl
 		// End 1.0.Z 增加退款单操作记录 add by zengj
 		// 售后申请计时消息
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_cancel_by_refuse_apply_timeout, id);
+		
+		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(vo.getOrderId());
+		//add by  zhangkeneng  和左文明对接丢消息
+		TradeOrderContext tradeOrderContext = new TradeOrderContext();
+		tradeOrderContext.setTradeOrder(tradeOrder);
+		tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+		tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+		tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+		tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 	}
 
 	/**
@@ -898,6 +923,15 @@ public class TradeOrderRefundsServiceImpl
 		orderRefunds.setTradeNum(TradeNumUtil.getTradeNum());
 		// 执行退款操作
 		doRefundPay(orderRefunds);
+		
+		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
+		//add by  zhangkeneng  和左文明对接丢消息
+		TradeOrderContext tradeOrderContext = new TradeOrderContext();
+		tradeOrderContext.setTradeOrder(tradeOrder);
+		tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+		tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+		tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+		tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 	}
 
 	/**
