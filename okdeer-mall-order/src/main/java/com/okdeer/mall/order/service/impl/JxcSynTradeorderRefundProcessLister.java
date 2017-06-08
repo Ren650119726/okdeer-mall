@@ -87,6 +87,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 			} else if (tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.REFUND_SUCCESS ||
 					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.WAIT_BUYER_RETURN_GOODS || 
 					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.WAIT_SELLER_TAKE_GOODS ||
+					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.WAIT_SELLER_REFUND ||
 					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.SELLER_REJECT_REFUND ||
 					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.SELLER_REJECT_APPLY ||
 					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.YSC_REFUND_SUCCESS ||
@@ -137,6 +138,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		vo.setReferenceNo(tradeOrderRefunds.getOrderNo());
 		vo.setRefundsType(tradeOrderRefunds.getStatus().ordinal());
 		vo.setRefundsReason(tradeOrderRefunds.getRefundsReason());
+		vo.setRefuseReason(tradeOrderRefunds.getRefuseReson());
 		vo.setMemo(tradeOrderRefunds.getMemo());
 
 		List<TradeOrderRefundsItem> tradeOrderRefundsItems = getTradeOrderRefundsItem(tradeOrderContext);
@@ -266,7 +268,8 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 			vo.setOptType(1);
 		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.WAIT_BUYER_RETURN_GOODS ) {
 			vo.setOptType(2);
-		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.WAIT_SELLER_TAKE_GOODS ) {
+		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.WAIT_SELLER_TAKE_GOODS ||
+				tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.WAIT_SELLER_REFUND	) {
 			vo.setOptType(3);
 		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.SELLER_REJECT_REFUND ||
 				tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.SELLER_REJECT_APPLY	) {

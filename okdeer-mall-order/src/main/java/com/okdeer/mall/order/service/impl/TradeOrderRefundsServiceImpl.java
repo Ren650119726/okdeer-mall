@@ -1300,6 +1300,13 @@ public class TradeOrderRefundsServiceImpl
 		} else {
 			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_confirm_timeout, refunds.getId());
 		}
+		
+		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(refunds.getOrderId());
+		//add by  zhangkeneng  和左文明对接丢消息
+		TradeOrderContext tradeOrderContext = new TradeOrderContext();
+		tradeOrderContext.setTradeOrder(tradeOrder);
+		tradeOrderContext.setTradeOrderRefunds(refunds);
+		tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 	}
 
 	/**
