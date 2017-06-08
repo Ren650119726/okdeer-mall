@@ -124,6 +124,7 @@ import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderRefundsTraceService;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
+import com.okdeer.mall.order.service.TradeorderRefundProcessLister;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.PageQueryUtils;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
@@ -339,8 +340,8 @@ public class TradeOrderRefundsServiceImpl
 	private TradeOrderSendMessageService sendMessageService;
 	
 	@Autowired
-	@Qualifier(value="jxcSynTradeorderProcessLister")
-	private TradeorderProcessLister tradeorderProcessLister;
+	@Qualifier(value="jxcSynTradeorderRefundProcessLister")
+	private TradeorderRefundProcessLister tradeorderRefundProcessLister;
 	
 	/**
 	 * 根据主键查询退款单
@@ -418,6 +419,7 @@ public class TradeOrderRefundsServiceImpl
 
 		// 保存系统消息
 		saveSysMsg(orderRefunds);
+		
 		// 推送消息给POS和商家中心
 		SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(orderRefunds);
 		// 推送消息给POS
@@ -433,6 +435,13 @@ public class TradeOrderRefundsServiceImpl
 
 		// 自动同意申请计时消息
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_agree_timeout, orderRefunds.getId());
+		
+		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
+		//add by  zhangkeneng  和左文明对接丢消息
+		TradeOrderContext tradeOrderContext = new TradeOrderContext();
+		tradeOrderContext.setTradeOrder(tradeOrder);
+		tradeOrderContext.setTradeOrderRefunds(orderRefunds);
+		tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 
 	}
 
@@ -846,14 +855,15 @@ public class TradeOrderRefundsServiceImpl
 			// 自动撤销申请计时消息
 			tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_cancel_by_agree_timeout, id);
 			
-			TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(id);
+			TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(vo.getOrderId());
 			//add by  zhangkeneng  和左文明对接丢消息
 			TradeOrderContext tradeOrderContext = new TradeOrderContext();
 			tradeOrderContext.setTradeOrder(tradeOrder);
-			tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
-			tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
-			tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
-			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+			vo.setRefundsStatus(RefundsStatusEnum.WAIT_BUYER_RETURN_GOODS);
+			vo.setOperator(userId);
+			vo.setUpdateTime(new Date());
+			tradeOrderContext.setTradeOrderRefunds(vo);
+			tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error("卖家操作同意退货错误", e);
 			throw new Exception("卖家操作同意退货错误", e);
@@ -896,10 +906,12 @@ public class TradeOrderRefundsServiceImpl
 		//add by  zhangkeneng  和左文明对接丢消息
 		TradeOrderContext tradeOrderContext = new TradeOrderContext();
 		tradeOrderContext.setTradeOrder(tradeOrder);
-		tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
-		tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
-		tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
-		tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+		vo.setRefundsStatus(RefundsStatusEnum.SELLER_REJECT_APPLY);
+		vo.setOperator(userId);
+		vo.setUpdateTime(new Date());
+		vo.setRefundsReason(remark);
+		tradeOrderContext.setTradeOrderRefunds(vo);
+		tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 	}
 
 	/**
@@ -928,10 +940,8 @@ public class TradeOrderRefundsServiceImpl
 		//add by  zhangkeneng  和左文明对接丢消息
 		TradeOrderContext tradeOrderContext = new TradeOrderContext();
 		tradeOrderContext.setTradeOrder(tradeOrder);
-		tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
-		tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
-		tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
-		tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+		tradeOrderContext.setTradeOrderRefunds(orderRefunds);
+		tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 	}
 
 	/**
@@ -1072,6 +1082,13 @@ public class TradeOrderRefundsServiceImpl
 			updateWithRevocatory(refunds, null);
 		}
 		// Begin modified by maojj 2017-05-25
+		
+		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(refunds.getOrderId());
+		//add by  zhangkeneng  和左文明对接丢消息
+		TradeOrderContext tradeOrderContext = new TradeOrderContext();
+		tradeOrderContext.setTradeOrder(tradeOrder);
+		tradeOrderContext.setTradeOrderRefunds(refunds);
+		tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		logger.error("客服处理更新订单状态成功");
 	}
 
