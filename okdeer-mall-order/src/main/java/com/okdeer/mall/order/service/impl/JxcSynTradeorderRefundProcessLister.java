@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.order.service.impl;
 
 import java.io.Serializable;
@@ -5,34 +6,38 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.jxc.common.constant.TradeOrderMQMessage;
 import com.okdeer.jxc.onlineorder.entity.OnlineOrder;
 import com.okdeer.jxc.onlineorder.entity.OnlineOrderItem;
 import com.okdeer.jxc.onlineorder.vo.OnlineOrderVo;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
-import com.okdeer.mall.order.entity.TradeOrderLogistics;
-import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
-import com.okdeer.mall.order.enums.OrderStatusEnum;
-import com.okdeer.mall.order.enums.PayWayEnum;
-import com.okdeer.mall.order.enums.PaymentStatusEnum;
-import com.okdeer.mall.order.service.TradeOrderItemService;
+import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
+import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
+import com.okdeer.mall.order.enums.ActivityBelongType;
+import com.okdeer.mall.order.enums.OrderType;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.RefundsStatusEnum;
+import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
+import com.okdeer.mall.order.service.TradeOrderRefundsItemService;
+import com.okdeer.mall.order.service.TradeOrderRefundsLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
+import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeorderRefundProcessLister;
 
 @Service("jxcSynTradeorderRefundProcessLister")
@@ -40,150 +45,185 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 
 	@Autowired
 	private RocketMQProducer rocketMQProducer;
+
 	@Autowired
 	private TradeOrderPayService tradeOrderPayService;
+
 	@Autowired
-	private TradeOrderItemService tradeOrderItemService;
+	private TradeOrderService tradeOrderService;
+
+	@Autowired
+	private TradeOrderRefundsItemService tradeOrderRefundsItemService;
+
 	@Autowired
 	private TradeOrderLogisticsService tradeOrderLogisticsService;
+
 	@Autowired
 	private TradeOrderRefundsService tradeOrderRefundsService;
-	@Reference(version="1.0.0")
+
+	@Autowired
+	private TradeOrderRefundsLogisticsService tradeOrderRefundsLogisticsService;
+
+	@Reference(version = "1.0.0")
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
-	
+
+	@Autowired
+	private TradeOrderActivityService tradeOrderActivityService;
+
 	private static final Logger log = LoggerFactory.getLogger(ServiceOrderProcessServiceImpl.class);
 
 	@Override
-	public void tradeOrderStatusChange(TradeOrderContext tradeOrderContext) {
-		//
-		try{
-			if(tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.DROPSHIPPING){
-				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_SYNC,buildOnlineOrder(tradeOrderContext));
-			}else if(tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.TO_BE_SIGNED){
-				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_UPDATE_SYNC,buildOnlineOrderVo(tradeOrderContext));
+	public void tradeOrderStatusChange(TradeOrderContext tradeOrderContext) throws Exception {
+		try {
+			
+			//只同步实物订单
+			getTradeOrder(tradeOrderContext);
+			if(tradeOrderContext.getTradeOrder().getType() != OrderTypeEnum.PHYSICAL_ORDER){
+				return;
 			}
-		} catch(Exception e){
-			log.error("",e);
+			
+			if (tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.WAIT_SELLER_VERIFY) {
+				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_SYNC, buildOnlineOrder(tradeOrderContext));
+			} else if (tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.REFUND_SUCCESS ||
+					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.WAIT_BUYER_RETURN_GOODS || 
+					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.WAIT_SELLER_TAKE_GOODS ||
+					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.SELLER_REJECT_REFUND ||
+					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.SELLER_REJECT_APPLY ||
+					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.YSC_REFUND_SUCCESS ||
+					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.YSC_REFUND ||
+					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.BUYER_REPEAL_REFUND) {
+				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_UPDATE_SYNC, buildOnlineOrderVo(tradeOrderContext));
+			}
+		} catch (Exception e) {
+			log.error("", e);
+			throw e;
 		}
 	}
-	
-	private <T> void sendMQMessage(String topic,T obj) throws Exception{
+
+	private <T> void sendMQMessage(String topic, T obj) throws Exception {
 		MQMessage message = new MQMessage(topic, (Serializable) obj);
 		rocketMQProducer.sendMessage(message);
 	}
-	
-	private OnlineOrder buildOnlineOrder(TradeOrderContext tradeOrderContext) throws Exception{
+
+	private OnlineOrder buildOnlineOrder(TradeOrderContext tradeOrderContext) throws Exception {
 		OnlineOrder vo = new OnlineOrder();
-		TradeOrder order = tradeOrderContext.getTradeOrder();
-		
-		//除了订单主对象,其他信息传过来的时候可能为空,就再查一遍
-		//订单支付对象
-		TradeOrderPay tradeOrderPay = tradeOrderContext.getTradeOrderPay();
-		if(tradeOrderPay == null){
-			tradeOrderPay = tradeOrderPayService.selectByOrderId(order.getId());
-		}
-		//订单物流对象
-		TradeOrderLogistics tradeOrderLogistics = tradeOrderContext.getTradeOrderLogistics();
-		if(tradeOrderLogistics == null){
-			tradeOrderLogistics = tradeOrderLogisticsService.findByOrderId(order.getId());
-		}
-		//订单项列表
-		List<TradeOrderItem> itemList = tradeOrderContext.getItemList();
-		if(CollectionUtils.isEmpty(itemList)){
-			List<String> orderIds = new ArrayList<String>();
-			orderIds.add(order.getId());
-			itemList = tradeOrderItemService.findOrderItems(orderIds);
-			
-			List<String> goodsStoreSkuIdList = new ArrayList<String>();
-			for(TradeOrderItem item : itemList){
-				goodsStoreSkuIdList.add(item.getStoreSkuId());
-			}
-			//需要得到skuId,把idlist一次拉出来,然后用in的方式
-			List<GoodsStoreSku> goodsStoreSkuList = goodsStoreSkuServiceApi.findByIds(goodsStoreSkuIdList);
-			for(TradeOrderItem item : itemList){
-				for(GoodsStoreSku sku : goodsStoreSkuList){
-					if(item.getStoreSkuId().equals(sku.getId())){
-						item.setGoodsSkuId(sku.getSkuId());
-						break;
-					}
-				}
-			}
-		}
-		//退款对象
 		TradeOrderRefunds tradeOrderRefunds = tradeOrderContext.getTradeOrderRefunds();
-		if(tradeOrderRefunds == null){
-			tradeOrderRefunds = tradeOrderRefundsService.getTradeOrderRefundsByOrderNo(order.getOrderNo());
+		vo.setId(tradeOrderRefunds.getId());
+		vo.setStoreId(tradeOrderRefunds.getStoreId());
+		vo.setOrderNo(tradeOrderRefunds.getRefundNo());
+		vo.setSaleType("B");// A销售单 B退货单
+		vo.setOrderResource(tradeOrderRefunds.getOrderResource().ordinal());
+		if (tradeOrderRefunds.getTotalPreferentialPrice() != null) {
+			vo.setTotalAmount(tradeOrderRefunds.getTotalAmount().add(tradeOrderRefunds.getTotalPreferentialPrice()));
+		} else {
+			vo.setTotalAmount(tradeOrderRefunds.getTotalAmount());
+		}
+
+		vo.setActualAmount(tradeOrderRefunds.getTotalAmount());
+
+		Boolean isPlatformPreferential = isPlatformPreferential(tradeOrderContext);
+		if (isPlatformPreferential) {
+			vo.setPlatDiscountAmount(tradeOrderRefunds.getTotalPreferentialPrice());
+			vo.setDiscountAmount(BigDecimal.ZERO);
+		} else {
+			vo.setPlatDiscountAmount(BigDecimal.ZERO);
+			vo.setDiscountAmount(tradeOrderRefunds.getTotalPreferentialPrice());
 		}
 		
-		//按照文档上的属性一一设置
-		vo.setId(order.getId());
-		vo.setStoreId(order.getStoreId());
-		vo.setOrderNo(order.getOrderNo());
-		vo.setSaleType("B");//A销售单 B退货单
-		vo.setOrderResource(order.getOrderResource().ordinal());
-		vo.setTotalAmount(order.getTotalAmount());
-		vo.setActualAmount(order.getActualAmount());
-		//actual_amount 实付金额 a  income 收入 i a<i平台优惠   a=i店铺优惠  先判断是否有优惠信息
-		vo.setDiscountAmount(new BigDecimal(0));
-		vo.setPlatDiscountAmount(new BigDecimal(0));
-		if(order.getActualAmount() != null && order.getIncome() != null && order.getPreferentialPrice() != null){
-			if(order.getActualAmount().compareTo(order.getIncome()) == -1 ){
-				vo.setPlatDiscountAmount(order.getPreferentialPrice());
-			} else if(order.getActualAmount().compareTo(order.getIncome()) == 0){
-				vo.setDiscountAmount(order.getPreferentialPrice());
-			}
-		}
-		vo.setFare(order.getFare());
-		vo.setUserId(order.getUserId());
-		vo.setPickUpCode(order.getPickUpCode());
-		vo.setRemark(order.getRemark());
-		vo.setCreateTime(order.getCreateTime());
-		vo.setPayWay(order.getPayWay().ordinal());
-		vo.setPayType(tradeOrderPay.getPayType().ordinal());
-		vo.setTradeNum(order.getTradeNum());
-		
-		if(tradeOrderLogistics != null){
-			//收货人姓名要从物流表取
-			vo.setUserName(tradeOrderLogistics.getConsigneeName());
-			vo.setPhone(tradeOrderLogistics.getMobile());
-			//省市区+详细地址
-			vo.setAddress(
-				(StringUtils.isEmpty(tradeOrderLogistics.getArea()) ? "" : tradeOrderLogistics.getArea() )
-					+
-				( StringUtils.isEmpty(tradeOrderLogistics.getAddress()) ? "" : tradeOrderLogistics.getAddress())
-			);
-			vo.setLogisticsCompanyName(tradeOrderLogistics.getLogisticsCompanyName());
-			vo.setLogisticsNo(tradeOrderLogistics.getLogisticsNo());
-			vo.setLogisticsType(tradeOrderLogistics.getType().ordinal());
-		}
-		vo.setPickUpType(order.getPickUpType().ordinal());
-		vo.setDeliveryTime(order.getDeliveryTime());
-		
-		//订单项list部分
+		vo.setFare(BigDecimal.ZERO);
+		vo.setUserId(tradeOrderRefunds.getUserId());
+		vo.setCreateTime(tradeOrderRefunds.getCreateTime());
+		vo.setPayType(tradeOrderRefunds.getPaymentMethod().ordinal());
+		vo.setReferenceNo(tradeOrderRefunds.getOrderNo());
+		vo.setRefundsType(tradeOrderRefunds.getStatus().ordinal());
+		vo.setRefundsReason(tradeOrderRefunds.getRefundsReason());
+		vo.setMemo(tradeOrderRefunds.getMemo());
+
+		List<TradeOrderRefundsItem> tradeOrderRefundsItems = getTradeOrderRefundsItem(tradeOrderContext);
+
+		// 订单项list部分
 		List<OnlineOrderItem> ooiList = new ArrayList<OnlineOrderItem>();
-		if(CollectionUtils.isNotEmpty(itemList)){
+		if (CollectionUtils.isNotEmpty(tradeOrderRefundsItems)) {
 			int i = 1;
-			for(TradeOrderItem item : itemList){
+			for (TradeOrderRefundsItem item : tradeOrderRefundsItems) {
 				OnlineOrderItem ooi = new OnlineOrderItem();
 				ooi.setOriginalPrice(item.getUnitPrice());
 				ooi.setRowNo(i);
 				ooi.setSaleNum(new BigDecimal(item.getQuantity()));
-				ooi.setSalePrice(item.getUnitPrice());
+				ooi.setSalePrice(item.getAmount());
 				ooi.setSkuId(item.getGoodsSkuId());
 				i++;
 				ooiList.add(ooi);
 			}
 		}
 		vo.setItemList(ooiList);
-		
-		//退款部分
-		vo.setReferenceNo(tradeOrderRefunds.getOrderNo());
-		vo.setRefundsType(tradeOrderRefunds.getStatus().ordinal());
-		vo.setRefundsReason(tradeOrderRefunds.getRefundsReason());
-		vo.setMemo(tradeOrderRefunds.getMemo());
 		return vo;
 	}
+
+	private TradeOrder getTradeOrder(TradeOrderContext tradeOrderContext) throws ServiceException {
+		TradeOrder tradeOrder = tradeOrderContext.getTradeOrder();
+		if (tradeOrder == null) {
+			tradeOrder  = tradeOrderService.selectById(tradeOrderContext.getTradeOrderRefunds().getOrderId());
+		}
+		tradeOrderContext.setTradeOrder(tradeOrder);
+		return tradeOrder;
+	}
 	
+
+	private Boolean isPlatformPreferential(TradeOrderContext tradeOrderContext) throws Exception {
+		Boolean isPlatformPreferential = tradeOrderContext.getPlatformPreferential();
+		if (isPlatformPreferential == null) {
+			
+			isPlatformPreferential = false;
+			TradeOrder tradeOrder = getTradeOrder(tradeOrderContext);
+			// 是否平台优惠
+			// 优惠额退款 判断是否有优惠劵
+			if (tradeOrder.getActivityType() == ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES
+					|| tradeOrder.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
+					|| tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER) {
+				ActivityBelongType activityBelong = tradeOrderActivityService.findActivityType(tradeOrder);
+				if (ActivityBelongType.OPERATOR == activityBelong || ActivityBelongType.AGENT == activityBelong) {
+					isPlatformPreferential = true;
+				}
+			}
+			tradeOrderContext.setPlatformPreferential(isPlatformPreferential);
+		}
+		tradeOrderContext.setPlatformPreferential(isPlatformPreferential);
+		return isPlatformPreferential;
+	}
+
+	private List<TradeOrderRefundsItem> getTradeOrderRefundsItem(TradeOrderContext tradeOrderContext) throws Exception{
+		List<TradeOrderRefundsItem> tradeOrderRefundsItemList = tradeOrderContext.getOrderRefundsItemList();
+		if (tradeOrderRefundsItemList == null) {
+			tradeOrderRefundsItemList = tradeOrderContext.getTradeOrderRefunds().getTradeOrderRefundsItem();
+		}
+
+		if (tradeOrderRefundsItemList == null) {
+			tradeOrderRefundsItemList = tradeOrderRefundsItemService
+					.getTradeOrderRefundsItemByRefundsId(tradeOrderContext.getTradeOrderRefunds().getId());
+		}
+		
+		//需要标准库商品id
+		List<String> goodsStoreSkuIdList = new ArrayList<String>();
+		for(TradeOrderRefundsItem item : tradeOrderRefundsItemList){
+			goodsStoreSkuIdList.add(item.getStoreSkuId());
+		}
+		//需要得到skuId,把idlist一次拉出来,然后用in的方式
+		List<GoodsStoreSku> goodsStoreSkuList = goodsStoreSkuServiceApi.findByIds(goodsStoreSkuIdList);
+		for(TradeOrderRefundsItem item : tradeOrderRefundsItemList){
+			for(GoodsStoreSku sku : goodsStoreSkuList){
+				if(item.getStoreSkuId().equals(sku.getId())){
+					item.setGoodsSkuId(sku.getSkuId());
+					break;
+				}
+			}
+		}
+		
+		tradeOrderContext.setOrderRefundsItemList(tradeOrderRefundsItemList);
+		return tradeOrderRefundsItemList;
+	}
+	
+
 	/**
 	 * @Description: 修改订单状态
 	 * @param tradeOrderContext
@@ -191,36 +231,61 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	 * @author zhangkn
 	 * @date 2017年6月6日
 	 */
-	private OnlineOrderVo  buildOnlineOrderVo(TradeOrderContext tradeOrderContext){
+	private OnlineOrderVo buildOnlineOrderVo(TradeOrderContext tradeOrderContext) {
 		OnlineOrderVo vo = new OnlineOrderVo();
-		TradeOrder order = tradeOrderContext.getTradeOrder();
+		// 退款对象
+		TradeOrderRefunds tradeOrderRefunds = tradeOrderContext.getTradeOrderRefunds();
 		
-		vo.setOrderNo(order.getOrderNo());
+		vo.setOrderId(tradeOrderRefunds.getId());
+		vo.setOrderNo(tradeOrderRefunds.getRefundNo());
+		vo.setLogisticsType(tradeOrderRefunds.getLogisticsType() == null ? 2 : tradeOrderRefunds.getLogisticsType().ordinal());//为空传2
+		vo.setUpdateTime(tradeOrderRefunds.getUpdateTime());
+		vo.setUpdateUserId(tradeOrderRefunds.getOperator());
+		vo.setRefuseReason(tradeOrderRefunds.getRefundsReason());
 		
-		//操作类型：0-成功1-待发货/等待卖家确认 2-发货/等待买家退货3-确认收货/等待卖家退款4-拒收/卖家拒绝退货5-强制卖家退款6-强制友门鹿退款 7-回款 8-取消
-		if(order.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED){
+		/*
+		 * 0:等待卖家确认,1:买家撤销退款,2:等待买家退货,3:等待卖家收货,4:待卖家退款,5:卖家拒绝退款,
+		 * 6:退款成功,7:卖家拒绝申请,8:申请客服介入,9:客户介入取消,10:友门鹿退款,
+		 * 11:(纠纷单)友门鹿退款成功,12:待卖家退款(强制),13:卖家退款成功(强制),14:卖家退款中
+		 */
+		// 操作类型：0-成功1-待发货/等待卖家确认 2-发货/等待买家退货3-确认收货/等待卖家退款4-拒收/卖家拒绝退货5-强制卖家退款6-强制友门鹿退款 7-回款 8-取消
+		/*
+		我们的值					左文明的值
+		6:退款成功  				0-成功
+		0:等待卖家确认    				1-待发货/等待卖家确认
+		2:等待买家退货     				2-发货/等待买家退货
+		3:等待卖家收货,4:待卖家退款   	3-确认收货/等待卖家退款
+		5:卖家拒绝退款, 7:卖家拒绝申请  	4-拒收 l/卖家拒绝退货
+		11:(纠纷单)友门鹿退款成功   		5-强制卖家退款
+		10:友门鹿退款,  			6-强制友门鹿退款
+		1:买家撤销退款    				8-取消
+		*/
+		if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.REFUND_SUCCESS) {
 			vo.setOptType(0);
-		} else if (order.getStatus() == OrderStatusEnum.DROPSHIPPING){
+		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.WAIT_SELLER_VERIFY) {
 			vo.setOptType(1);
-		} else if (order.getStatus() == OrderStatusEnum.TO_BE_SIGNED){
+		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.WAIT_BUYER_RETURN_GOODS ) {
 			vo.setOptType(2);
-		} else if (order.getStatus() == OrderStatusEnum.REFUSED){
+		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.WAIT_SELLER_TAKE_GOODS ) {
+			vo.setOptType(3);
+		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.SELLER_REJECT_REFUND ||
+				tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.SELLER_REJECT_APPLY	) {
 			vo.setOptType(4);
-		} else if (order.getStatus() == OrderStatusEnum.DROPSHIPPING){
+		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND_SUCCESS ) {
 			vo.setOptType(5);
-		} else if (order.getStatus() == OrderStatusEnum.CANCELED){
+		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND ) {
+			vo.setOptType(6);
+		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.BUYER_REPEAL_REFUND ) {
 			vo.setOptType(8);
 		} 
-		
-		//货到付款的订单 才有回款
-		if(order.getPayWay() != null && order.getPayWay() == PayWayEnum.CASH_DELIERY){
-			if(PaymentStatusEnum.BACK_SECTION == order.getPaymentStatus()){
-				vo.setOptType(7);
-			}
+
+		// 退款物流对象
+		TradeOrderRefundsLogistics tradeOrderRefundsLogistics = tradeOrderContext.getTradeOrderRefundsLogistics();
+		if (tradeOrderRefundsLogistics == null) {
+			tradeOrderRefundsLogistics = tradeOrderRefundsLogisticsService.findByRefundsId(tradeOrderRefunds.getId());
 		}
-		
-		vo.setUpdateTime(order.getUpdateTime());
-		vo.setUpdateUserId(order.getUpdateUserId());
+		vo.setLogisticsNo(tradeOrderRefundsLogistics.getLogisticsNo());
+		vo.setLogisticsCompanyName(tradeOrderRefundsLogistics.getLogisticsCompanyName());
 		return vo;
 	}
 }

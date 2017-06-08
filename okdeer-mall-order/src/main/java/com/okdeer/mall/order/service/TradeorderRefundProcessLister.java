@@ -23,6 +23,6 @@ public interface TradeorderRefundProcessLister {
 	 * @author zhangkn
 	 * @date 2017年6月5日
 	 */
-	void tradeOrderStatusChange(TradeOrderContext tradeOrderContext);
+	void tradeOrderStatusChange(TradeOrderContext tradeOrderContext) throws Exception;
 	
 }

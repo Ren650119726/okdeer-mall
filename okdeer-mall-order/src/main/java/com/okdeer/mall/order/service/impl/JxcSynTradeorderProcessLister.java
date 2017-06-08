@@ -26,6 +26,7 @@ import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.service.TradeOrderItemService;
@@ -52,6 +53,11 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 	@Override
 	public void tradeOrderStatusChange(TradeOrderContext tradeOrderContext) {
 		try{
+			//只同步实物订单
+			if(tradeOrderContext.getTradeOrder().getType() != OrderTypeEnum.PHYSICAL_ORDER){
+				return;
+			}
+			
 			if(tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.DROPSHIPPING ){
 				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_SYNC,buildOnlineOrder(tradeOrderContext));
 			}else if(tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.TO_BE_SIGNED ||
