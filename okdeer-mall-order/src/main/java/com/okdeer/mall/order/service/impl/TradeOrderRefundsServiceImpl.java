@@ -935,13 +935,6 @@ public class TradeOrderRefundsServiceImpl
 		orderRefunds.setTradeNum(TradeNumUtil.getTradeNum());
 		// 执行退款操作
 		doRefundPay(orderRefunds);
-		
-		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
-		//add by  zhangkeneng  和左文明对接丢消息
-		TradeOrderContext tradeOrderContext = new TradeOrderContext();
-		tradeOrderContext.setTradeOrder(tradeOrder);
-		tradeOrderContext.setTradeOrderRefunds(orderRefunds);
-		tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 	}
 
 	/**
@@ -1138,6 +1131,12 @@ public class TradeOrderRefundsServiceImpl
 			// 保存退款凭证
 			tradeOrderRefundsCertificateService.addCertificate(certificate);
 		}
+		//add by  zhangkeneng  和左文明对接丢消息
+		TradeOrderContext tradeOrderContext = new TradeOrderContext();
+		tradeOrderContext.setTradeOrder(tradeOrder);
+		tradeOrderContext.setTradeOrderRefunds(refunds);
+		tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
+		
 	}
 
 	private String buildBalanceFinish(TradeOrderRefunds refunds, TradeOrder order) throws Exception {
@@ -1225,6 +1224,17 @@ public class TradeOrderRefundsServiceImpl
 
 		// 发送超时消息
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_refund_cancel_by_refuse_timeout, id);
+		
+		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(refund.getOrderId());
+		//add by  zhangkeneng  和左文明对接丢消息
+		TradeOrderContext tradeOrderContext = new TradeOrderContext();
+		tradeOrderContext.setTradeOrder(tradeOrder);
+		refund.setRefundsStatus(RefundsStatusEnum.SELLER_REJECT_REFUND);
+		refund.setUpdateTime(new Date());
+		refund.setOperator(userId);
+		refund.setRefuseReson(reason);
+		tradeOrderContext.setTradeOrderRefunds(refund);
+		tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 	}
 
 	@Override

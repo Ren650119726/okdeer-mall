@@ -53,6 +53,7 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 	@Override
 	public void tradeOrderStatusChange(TradeOrderContext tradeOrderContext) {
 		try{
+			log.info("进入同步erp消息 订单号:" + tradeOrderContext.getTradeOrder().getOrderNo());
 			//只同步实物订单
 			if(tradeOrderContext.getTradeOrder().getType() != OrderTypeEnum.PHYSICAL_ORDER){
 				return;

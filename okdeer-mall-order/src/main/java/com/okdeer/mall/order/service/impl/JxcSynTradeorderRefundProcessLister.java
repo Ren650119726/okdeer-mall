@@ -75,7 +75,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	@Override
 	public void tradeOrderStatusChange(TradeOrderContext tradeOrderContext) throws Exception {
 		try {
-			
+			log.info("进入同步erp消息 退款单号:" + tradeOrderContext.getTradeOrderRefunds().getRefundNo());
 			//只同步实物订单
 			getTradeOrder(tradeOrderContext);
 			if(tradeOrderContext.getTradeOrder().getType() != OrderTypeEnum.PHYSICAL_ORDER){
@@ -287,8 +287,10 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		if (tradeOrderRefundsLogistics == null) {
 			tradeOrderRefundsLogistics = tradeOrderRefundsLogisticsService.findByRefundsId(tradeOrderRefunds.getId());
 		}
-		vo.setLogisticsNo(tradeOrderRefundsLogistics.getLogisticsNo());
-		vo.setLogisticsCompanyName(tradeOrderRefundsLogistics.getLogisticsCompanyName());
+		if(tradeOrderRefundsLogistics != null){
+			vo.setLogisticsNo(tradeOrderRefundsLogistics.getLogisticsNo());
+			vo.setLogisticsCompanyName(tradeOrderRefundsLogistics.getLogisticsCompanyName());
+		}
 		return vo;
 	}
 }
