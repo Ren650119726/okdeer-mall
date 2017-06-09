@@ -63,7 +63,8 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_SYNC,buildOnlineOrder(tradeOrderContext));
 			}else if(tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.TO_BE_SIGNED ||
 					tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.REFUSED || 
-							tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.CANCELED){
+					tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.CANCELED || 
+							tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED){
 				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_UPDATE_SYNC,buildOnlineOrderVo(tradeOrderContext));
 			}
 		} catch(Exception e){
