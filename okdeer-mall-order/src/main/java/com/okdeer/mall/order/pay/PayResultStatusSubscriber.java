@@ -55,6 +55,7 @@ import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
+import com.okdeer.mall.order.service.TradeorderRefundProcessLister;
 
 /**
  * 余额支付结果消息订阅处理
@@ -151,6 +152,9 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	@Autowired
 	@Qualifier(value="jxcSynTradeorderProcessLister")
 	private TradeorderProcessLister tradeorderProcessLister;
+	@Autowired
+	@Qualifier(value="jxcSynTradeorderRefundProcessLister")
+	private TradeorderRefundProcessLister tradeorderRefundProcessLister;
 	
 	@Override
 	public String getTopic() {
@@ -353,7 +357,7 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			TradeOrderContext tradeOrderContext = new TradeOrderContext();
 			tradeOrderContext.setTradeOrder(tradeOrder);
 			tradeOrderContext.setTradeOrderRefunds(tradeOrderRefunds);
-			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+			tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error("退款支付状态消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
