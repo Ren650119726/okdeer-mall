@@ -729,6 +729,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public void receivableOrder(String[] ids, String paymentUserId) throws ServiceException {
 		if (ids != null && ids.length > 0) {
 			tradeOrderMapper.updatePaymentStatusByIds(ids, PaymentStatusEnum.BACK_SECTION, new Date(), paymentUserId);
+			
+			for(String id : ids){
+				TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(id);
+				//add by  zhangkeneng  和左文明对接丢消息
+				TradeOrderContext tradeOrderContext = new TradeOrderContext();
+				tradeOrderContext.setTradeOrder(tradeOrder);
+				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+			}
 		}
 	}
 
