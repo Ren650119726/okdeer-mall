@@ -138,7 +138,7 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 		vo.setRemark(order.getRemark());
 		vo.setCreateTime(order.getCreateTime());
 		vo.setPayWay(order.getPayWay().ordinal());
-		vo.setPayType(tradeOrderPay.getPayType().ordinal());
+		vo.setPayType((tradeOrderPay == null || tradeOrderPay.getPayType() == null) ? 4 : tradeOrderPay.getPayType().ordinal());//如果为空,就是4现金
 		vo.setTradeNum(order.getTradeNum());
 		
 		if(tradeOrderLogistics != null){
@@ -153,7 +153,7 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 			);
 			vo.setLogisticsCompanyName(tradeOrderLogistics.getLogisticsCompanyName());
 			vo.setLogisticsNo(tradeOrderLogistics.getLogisticsNo());
-			vo.setLogisticsType(tradeOrderLogistics.getType().ordinal());
+			vo.setLogisticsType(tradeOrderLogistics.getType() == null ? null : tradeOrderLogistics.getType().ordinal());
 		}
 		vo.setPickUpType(order.getPickUpType().ordinal());
 		vo.setDeliveryTime(order.getDeliveryTime());
