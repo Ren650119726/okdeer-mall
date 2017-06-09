@@ -5010,6 +5010,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// rollbackMQProducer.sendStockRollbackMsg(rpcId);
 				throw e;
 			}
+			
+			tradeOrder = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+			tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+			tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 
 		} else { // 收货
 			try {
