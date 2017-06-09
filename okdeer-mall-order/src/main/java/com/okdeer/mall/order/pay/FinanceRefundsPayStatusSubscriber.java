@@ -171,6 +171,14 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 			param.put("#3", convertPayType(result.getPayType()));
 			tradeMessageService.sendSms(sysBuyerUserService.selectMemberMobile(orderRefunds.getUserId()), smsPayRefundSuccess, param);
 			// End V2.4 added by maojj 2017-05-23
+			
+			TradeOrder tradeOrder = tradeOrderService.selectById(orderRefunds.getOrderId());
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeOrderContext.setTradeOrderRefunds(orderRefunds);
+			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+			
 			logger.info("=============修改退款的订单的状态成功=============");
 		} catch (Exception e) {
 			logger.error("退款单支付状态同步消息处理失败", e);
