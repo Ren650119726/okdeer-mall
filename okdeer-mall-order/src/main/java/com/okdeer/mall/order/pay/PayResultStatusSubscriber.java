@@ -337,7 +337,14 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			// 返回状态为success,更新订单状态
 			if (result.getCode().equals(TradeErrorEnum.SUCCESS.getName())) {
 				tradeOrderRefunds.setRefundMoneyTime(new Date());
-				tradeOrderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
+				
+				if(tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND) {
+					tradeOrderRefunds.setRefundsStatus(RefundsStatusEnum.YSC_REFUND_SUCCESS);
+				} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.FORCE_SELLER_REFUND) {
+					tradeOrderRefunds.setRefundsStatus(RefundsStatusEnum.FORCE_SELLER_REFUND_SUCCESS);
+				} else {
+					tradeOrderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
+				}
 				tradeOrderRefundsService.updateRefunds(tradeOrderRefunds);
 				
 				//Begin 便利店退款成功，向用户推送消息 added by zhaoqc
