@@ -252,15 +252,15 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		 */
 		// 操作类型：0-成功1-待发货/等待卖家确认 2-发货/等待买家退货3-确认收货/等待卖家退款4-拒收/卖家拒绝退货5-强制卖家退款6-强制友门鹿退款 7-回款 8-取消
 		/*
-		我们的值					左文明的值
-		6:退款成功  				0-成功
-		0:等待卖家确认    				1-待发货/等待卖家确认
-		2:等待买家退货     				2-发货/等待买家退货
-		3:等待卖家收货,4:待卖家退款   	3-确认收货/等待卖家退款
-		5:卖家拒绝退款, 7:卖家拒绝申请  	4-拒收 l/卖家拒绝退货
-		11:(纠纷单)友门鹿退款成功   		5-强制卖家退款
-		10:友门鹿退款,  			6-强制友门鹿退款
-		1:买家撤销退款    				8-取消
+		我们的值								左文明的值
+		6:退款成功  							0-成功
+		0:等待卖家确认    							1-待发货/等待卖家确认
+		2:等待买家退货     							2-发货/等待买家退货
+		3:等待卖家收货,4:待卖家退款   				3-确认收货/等待卖家退款
+		5:卖家拒绝退款, 7:卖家拒绝申请    				4-拒收/卖家拒绝退货
+		12:待卖家退款(强制),13:卖家退款成功(强制)   	5-强制卖家退款
+		10:友门鹿退款,11:(纠纷单)友门鹿退款成功   		6-强制友门鹿退款
+		1:买家撤销退款 9:客户介入取消,   			8-取消
 		*/
 		if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.REFUND_SUCCESS) {
 			vo.setOptType(0);
@@ -274,11 +274,14 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.SELLER_REJECT_REFUND ||
 				tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.SELLER_REJECT_APPLY	) {
 			vo.setOptType(4);
-		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND_SUCCESS ) {
+		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.FORCE_SELLER_REFUND ||
+				tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.FORCE_SELLER_REFUND_SUCCESS) {
 			vo.setOptType(5);
-		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND ) {
+		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND || 
+				tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND_SUCCESS) {
 			vo.setOptType(6);
-		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.BUYER_REPEAL_REFUND ) {
+		} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.BUYER_REPEAL_REFUND ||
+				tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.CUSTOMER_SERVICE_CANCEL_INTERVENE) {
 			vo.setOptType(8);
 		} 
 
