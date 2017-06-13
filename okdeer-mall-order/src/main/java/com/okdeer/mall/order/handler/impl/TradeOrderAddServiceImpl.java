@@ -832,7 +832,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			tradeOrderItem.setSkuName(storeSku.getName());
 			setPropertiesIndb(tradeOrderItem, storeSku.getPropertiesIndb());
 			tradeOrderItem.setMainPicPrl(storeSku.getGoodsStoreSkuPicture().getUrl());
-			tradeOrderItem.setSpuType(SpuTypeEnum.physicalSpu);
+			tradeOrderItem.setSpuType(storeSku.getSpuTypeEnum());
 			tradeOrderItem.setUnitPrice(goodsItem.getSkuPrice());
 			tradeOrderItem.setQuantity(goodsItem.getSkuNum());
 			tradeOrderItem.setStatus(OrderItemStatusEnum.NO_REFUND);
