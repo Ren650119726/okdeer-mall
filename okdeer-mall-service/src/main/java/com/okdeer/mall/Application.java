@@ -5,10 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
 
-@SpringBootApplication(exclude=DataSourceAutoConfiguration.class)
-@ComponentScan(basePackages="com.okdeer.mall")
+@SpringBootApplication(exclude = { DataSourceAutoConfiguration.class})
 public class Application {
 
 	private static final Logger logger = LoggerFactory.getLogger(Application.class);
