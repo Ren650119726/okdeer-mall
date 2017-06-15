@@ -28,6 +28,7 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.common.consts.DescriptConstants;
 import com.okdeer.mall.common.vo.PageResultVo;
 import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
@@ -441,13 +442,28 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 	 *            params.paymentMethod 支付方式 params.startTime 开始时间 params.endTime
 	 *            结束时间
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public PageUtils<OrderRefundsDto> orderRefund(OrderRefundQueryParamDto orderRefundQueryParamDto) throws Exception {
 		try {
-			PageUtils<OrderRefundsDto> pageList = tradeOrderRefundsService.findPageByFinance(orderRefundQueryParamDto, orderRefundQueryParamDto.getpNum(),
-					orderRefundQueryParamDto.getpSize()).toBean(OrderRefundsDto.class);
-			return pageList;
+			PageUtils<TradeOrderRefundsVo> pageList = tradeOrderRefundsService.findPageByFinance(
+					orderRefundQueryParamDto, orderRefundQueryParamDto.getpNum(), orderRefundQueryParamDto.getpSize());
+
+			List<OrderRefundsDto> orderRefundsDtos = Lists.newArrayList();
+			List<TradeOrderRefundsVo> refundList = pageList.getList();
+			for (TradeOrderRefundsVo tradeOrderRefundsVo : refundList) {
+				OrderRefundsDto dto = BeanMapper.map(tradeOrderRefundsVo, OrderRefundsDto.class);
+				dto.setRefundAmount(tradeOrderRefundsVo.getTotalAmount());
+				dto.setBuyerUserName(tradeOrderRefundsVo.getUserPhone());
+				if (tradeOrderRefundsVo.getRefundsStatus() != null) {
+					dto.setRefundStatus(tradeOrderRefundsVo.getRefundsStatus().ordinal());
+				}
+				orderRefundsDtos.add(dto);
+			}
+			PageUtils<OrderRefundsDto> dtoPage = new PageUtils<>(orderRefundsDtos);
+			dtoPage.setPageSize(pageList.getPageSize());
+			dtoPage.setPageNum(pageList.getPageNum());
+			dtoPage.setTotal(pageList.getTotal());
+			return dtoPage;
 		} catch (ServiceException e) {
 			logger.error("查询退款单异常", e);
 			throw new Exception("查询退款单异常", e);
@@ -455,7 +471,8 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 	}
 
 	@Override
-	public List<OrderRefundsDto> orderRefundExport(OrderRefundQueryParamDto orderRefundQueryParamDto) throws ExceedRangeException, Exception {
+	public List<OrderRefundsDto> orderRefundExport(OrderRefundQueryParamDto orderRefundQueryParamDto)
+			throws ExceedRangeException, Exception {
 		if (tradeOrderRefundsService.findCountByFinance(orderRefundQueryParamDto) > RECORD_NUM) {
 			throw new ExceedRangeException("查询导出退款单异常", new Throwable());
 		}
@@ -775,12 +792,11 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 	// Begin v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
 	@Override
-	public Map<String, Object> statisRefundsByParams(OrderRefundQueryParamDto orderRefundQueryParamDto) throws Exception {
+	public Map<String, Object> statisRefundsByParams(OrderRefundQueryParamDto orderRefundQueryParamDto)
+			throws Exception {
 		return tradeOrderRefundsService.statisRefundsByParams(orderRefundQueryParamDto);
 	}
 	// End v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
-
-	
 
 	/**
 	 * 
