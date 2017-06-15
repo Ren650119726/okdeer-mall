@@ -454,13 +454,13 @@
        FROM activity_discount t
        LEFT JOIN activity_business_rel t1 ON t.id = t1.activity_id  
        LEFT JOIN store_info t2 ON t1.business_id = t2.id AND t1.business_type = 2
-       WHERE t1.business_type IN (0,1,2)
-       AND t.status IN (0,1)
+       WHERE t.status IN (0,1)
        AND (
        		 (t.start_time &lt;= #{startTime,jdbcType=TIMESTAMP} AND t.end_time &gt;= #{startTime,jdbcType=TIMESTAMP})
        	  OR (t.start_time &gt;= #{startTime,jdbcType=TIMESTAMP} AND t.start_time &lt;= #{endTime,jdbcType=TIMESTAMP})
        )
        AND t.type = #{type,jdbcType=TINYINT}
+       AND ( t.limit_range = 0 OR ( t1.business_type IN (0,1,2)
        <if test="limitRangeIds != null and limitRangeIds.size()>0">
        	   AND ( t1.business_id IN 
        	   <foreach collection="limitRangeIds" item="limitRangeId" separator="," open="(" close=")">
@@ -473,7 +473,7 @@
        	   		</foreach>
       	   </if>		
        	   )
-       </if>
+       </if>))
        <if test="excludedId != null">
        	   AND t.id != #{excludedId,jdbcType=VARCHAR}
        </if>
