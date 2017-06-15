@@ -1798,15 +1798,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// Begin modified by maojj 2017-03-15
 				rpcId = UuidUtils.getUuid();
 				StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(tradeOrder);
-				StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.buildForCompleteOrder(tradeOrder);
 				if(mallStockUpdate != null){
 					rpcId = mallStockUpdate.getRpcId();
 					goodsStoreSkuStockApi.updateStock(mallStockUpdate);
-				}
-				if(jxcStockUpdate != null){
-					stockUpdateServiceApi.stockUpdateForMessage(jxcStockUpdate);
-					// 订单完成后同步到商业管理系统
-					tradeOrderCompleteProcessService.orderCompleteSyncToJxc(tradeOrder.getId());
 				}
 				// End modified by maojj 2017-03-15
 				// 确认收货，更新用户邀请记录
