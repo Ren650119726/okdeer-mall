@@ -1347,7 +1347,7 @@
 
 	<!-- 退款列表查询 12114 update by wusw 20160810 12802 update by wusw 20160817 
 		客诉退款排序 update by wusw 20160818 增加退款状态查询参数 update by zengjz 20160914 -->
-	<select id="selectRefundsByFinance" parameterType="java.util.Map"
+	<select id="selectRefundsByFinance" parameterType="com.okdeer.mall.order.dto.OrderRefundQueryParamDto"
 		resultMap="TradeOrderRefundsVo">
 		SELECT
 		tr.id,
@@ -1389,49 +1389,53 @@
 		sys_buyer_user user1 ON tr.user_id = user1.id
 		WHERE
 		tr.disabled = 0
-		<if test="null != shopName and '' != shopName">
-			AND ti.store_name = #{shopName,jdbcType=VARCHAR}
-		</if>
-		<if test="null != buyerUserName and '' != buyerUserName">
-			AND user1.login_name = #{buyerUserName,jdbcType=VARCHAR}
-		</if>
 		<if test="null != orderNo and '' != orderNo">
 			AND tr.order_no = #{orderNo, jdbcType=VARCHAR}
 		</if>
 		<if test="null != refundNo and '' != refundNo">
 			AND tr.refund_no = #{refundNo, jdbcType=VARCHAR}
 		</if>
+		<if test="null != storeId and '' != storeId">
+			AND ti.store_id = #{storeId,jdbcType=VARCHAR}
+		</if>
+		<if test="null != storeName and '' != storeName">
+			AND ti.store_name = #{storeName,jdbcType=VARCHAR}
+		</if>
+		<if test="null != buyerUserName and '' != buyerUserName">
+			AND user1.login_name = #{buyerUserName,jdbcType=VARCHAR}
+		</if>
 		<if test="null != buyerUserId and '' != buyerUserId">
 			AND tr.user_id = #{buyerUserId, jdbcType=VARCHAR}
 		</if>
-		<if test="null != paymentMethod">
-			AND tr.payment_method = #{paymentMethod,jdbcType=TINYINT}
+		<if test="null != payType">
+			AND tr.payment_method = #{payType,jdbcType=TINYINT}
 		</if>
-		<if test="null != startTime">
-			AND tr.create_time &gt; #{startTime, jdbcType=TIMESTAMP}
-		</if>
-		<if test="null != startTime">
-			AND tr.create_time &lt;= #{endTime, jdbcType=TIMESTAMP}
-		</if>
-
-		<if test="statusList != null and statusList.size() > 0 ">
-			AND refunds_status in
-			<foreach collection="statusList" index="index" item="item"
+		<if test="payTypeList != null and payTypeList.size() > 0 ">
+			AND tr.payment_method in
+			<foreach collection="payTypeList" index="index" item="item"
 				open="(" close=")" separator=",">
-				#{item}
+				#{item,jdbcType=TINYINT}
 			</foreach>
 		</if>
-
-		<if test="null != type and 'refunds' == type">
-			AND tr.payment_method in (1,2)
+		<if test="null != startTime and startTime != ''">
+			<![CDATA[AND tr.create_time >= #{startTime, jdbcType=VARCHAR}]]>
 		</if>
-		AND tr.type != 3 AND tr.type != 4
+		<if test="null != endTime and endTime != ''">
+			<![CDATA[AND tr.create_time <= #{endTime, jdbcType=VARCHAR}]]>
+		</if>
+		<if test="refundStatusList != null and refundStatusList.size() > 0 ">
+			AND tr.refunds_status in
+			<foreach collection="refundStatusList" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item,jdbcType=TINYINT}
+			</foreach>
+		</if>
 		ORDER BY statusSort ASC,
 		tr.create_time DESC
 	</select>
 
 	<!-- 统计退款列表查询数 增加退款状态查询参数 update by zengjz 20160914 -->
-	<select id="selectRefundsCountByFinance" parameterType="java.util.Map"
+	<select id="selectRefundsCountByFinance" parameterType="com.okdeer.mall.order.dto.OrderRefundQueryParamDto"
 		resultType="java.lang.Integer">
 		SELECT
 		COUNT(1)
@@ -1446,40 +1450,46 @@
 		LEFT JOIN sys_buyer_user user1 ON tr.user_id = user1.id
 		WHERE
 		tr.disabled = 0
-		<if test="null != shopName and '' != shopName">
-			AND ti.store_name = #{shopName,jdbcType=VARCHAR}
-		</if>
-		<if test="null != buyerUserName and '' != buyerUserName">
-			AND user1.login_name = #{buyerUserName,jdbcType=VARCHAR}
-		</if>
 		<if test="null != orderNo and '' != orderNo">
 			AND tr.order_no = #{orderNo, jdbcType=VARCHAR}
 		</if>
 		<if test="null != refundNo and '' != refundNo">
 			AND tr.refund_no = #{refundNo, jdbcType=VARCHAR}
 		</if>
+		<if test="null != storeId and '' != storeId">
+			AND ti.store_id = #{storeId,jdbcType=VARCHAR}
+		</if>
+		<if test="null != storeName and '' != storeName">
+			AND ti.store_name = #{storeName,jdbcType=VARCHAR}
+		</if>
+		<if test="null != buyerUserName and '' != buyerUserName">
+			AND user1.login_name = #{buyerUserName,jdbcType=VARCHAR}
+		</if>
 		<if test="null != buyerUserId and '' != buyerUserId">
 			AND tr.user_id = #{buyerUserId, jdbcType=VARCHAR}
 		</if>
-		<if test="null != paymentMethod">
-			AND tr.payment_method = #{paymentMethod,jdbcType=TINYINT}
+		<if test="null != payType">
+			AND tr.payment_method = #{payType,jdbcType=TINYINT}
 		</if>
-		<if test="null != startTime">
-			AND tr.create_time &gt; #{startTime, jdbcType=TIMESTAMP}
-		</if>
-		<if test="null != startTime">
-			AND tr.create_time &lt;= #{endTime, jdbcType=TIMESTAMP}
-		</if>
-		<if test="statusList != null and statusList.size() > 0 ">
-			AND refunds_status in
-			<foreach collection="statusList" index="index" item="item"
+		<if test="payTypeList != null and payTypeList.size() > 0 ">
+			AND tr.payment_method in
+			<foreach collection="payTypeList" index="index" item="item"
 				open="(" close=")" separator=",">
-				#{item}
+				#{item,jdbcType=TINYINT}
 			</foreach>
 		</if>
-
-		<if test="null != type and 'refunds' == type">
-			AND tr.payment_method in (1,2)
+		<if test="null != startTime and startTime != ''">
+			<![CDATA[AND tr.create_time >= #{startTime, jdbcType=VARCHAR}]]>
+		</if>
+		<if test="null != endTime and endTime != ''">
+			<![CDATA[AND tr.create_time <= #{endTime, jdbcType=VARCHAR}]]>
+		</if>
+		<if test="refundStatusList != null and refundStatusList.size() > 0 ">
+			AND tr.refunds_status in
+			<foreach collection="refundStatusList" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item,jdbcType=TINYINT}
+			</foreach>
 		</if>
 	</select>
 
@@ -1883,7 +1893,7 @@
 
 
 	<!-- begin add by zengjz 2016-09-14 添加退款单统计金额、数量 -->
-	<select id="statisRefundsByFinance" parameterType="java.util.Map"
+	<select id="statisRefundsByFinance" parameterType="com.okdeer.mall.order.dto.OrderRefundQueryParamDto"
 		resultType="java.util.Map">
 		SELECT
 		IFNULL(sum(tr.total_amount),0) as totalAmount ,count(1) as count
@@ -1899,43 +1909,47 @@
 		= user1.id
 		WHERE
 		tr.disabled = 0
-		<if test="null != shopName and '' != shopName">
-			AND ti.store_name = #{shopName,jdbcType=VARCHAR}
-		</if>
-		<if test="null != buyerUserName and '' != buyerUserName">
-			AND user1.login_name = #{buyerUserName,jdbcType=VARCHAR}
-		</if>
 		<if test="null != orderNo and '' != orderNo">
 			AND tr.order_no = #{orderNo, jdbcType=VARCHAR}
 		</if>
 		<if test="null != refundNo and '' != refundNo">
 			AND tr.refund_no = #{refundNo, jdbcType=VARCHAR}
 		</if>
+		<if test="null != storeId and '' != storeId">
+			AND ti.store_id = #{storeId,jdbcType=VARCHAR}
+		</if>
+		<if test="null != storeName and '' != storeName">
+			AND ti.store_name = #{storeName,jdbcType=VARCHAR}
+		</if>
+		<if test="null != buyerUserName and '' != buyerUserName">
+			AND user1.login_name = #{buyerUserName,jdbcType=VARCHAR}
+		</if>
 		<if test="null != buyerUserId and '' != buyerUserId">
 			AND tr.user_id = #{buyerUserId, jdbcType=VARCHAR}
 		</if>
-		<if test="null != paymentMethod">
-			AND tr.payment_method = #{paymentMethod,jdbcType=TINYINT}
+		<if test="null != payType">
+			AND tr.payment_method = #{payType,jdbcType=TINYINT}
 		</if>
-		<if test="null != startTime">
-			AND tr.create_time &gt; #{startTime, jdbcType=TIMESTAMP}
-		</if>
-		<if test="null != startTime">
-			AND tr.create_time &lt;= #{endTime, jdbcType=TIMESTAMP}
-		</if>
-
-		<if test="statusList != null and statusList.size() > 0 ">
-			AND refunds_status in
-			<foreach collection="statusList" index="index" item="item"
+		<if test="payTypeList != null and payTypeList.size() > 0 ">
+			AND tr.payment_method in
+			<foreach collection="payTypeList" index="index" item="item"
 				open="(" close=")" separator=",">
-				#{item}
+				#{item,jdbcType=TINYINT}
 			</foreach>
 		</if>
-
-		<if test="null != type and 'refunds' == type">
-			AND tr.payment_method in (1,2)
+		<if test="null != startTime and startTime != ''">
+			<![CDATA[AND tr.create_time >= #{startTime, jdbcType=VARCHAR}]]>
 		</if>
-		AND tr.type != 3 AND tr.type != 4
+		<if test="null != endTime and endTime != ''">
+			<![CDATA[AND tr.create_time <= #{endTime, jdbcType=VARCHAR}]]>
+		</if>
+		<if test="refundStatusList != null and refundStatusList.size() > 0 ">
+			AND tr.refunds_status in
+			<foreach collection="refundStatusList" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item,jdbcType=TINYINT}
+			</foreach>
+		</if>
 	</select>
 	<!-- end add by zengjz 2016-09-14 添加退款单统计金额、数量 -->
 	
