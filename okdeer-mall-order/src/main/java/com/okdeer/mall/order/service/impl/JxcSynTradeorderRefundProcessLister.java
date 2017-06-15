@@ -17,6 +17,7 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.jxc.common.constant.TradeOrderMQMessage;
+import com.okdeer.jxc.common.utils.JsonMapper;
 import com.okdeer.jxc.onlineorder.entity.OnlineOrder;
 import com.okdeer.jxc.onlineorder.entity.OnlineOrderItem;
 import com.okdeer.jxc.onlineorder.vo.OnlineOrderVo;
@@ -102,6 +103,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	}
 
 	private <T> void sendMQMessage(String topic, T obj) throws Exception {
+		log.info("同步erp退款消息，topic：{}，消息内容:{}",topic,JsonMapper.nonDefaultMapper().toJson(obj));
 		MQMessage message = new MQMessage(topic, (Serializable) obj);
 		rocketMQProducer.sendMessage(message);
 	}
