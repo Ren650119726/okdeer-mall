@@ -4711,7 +4711,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		tradeOrder.setTradeOrderLogistics(tradeOrderLogistics);
 
 		// 交易订单项消费详细表(仅服务型商品有)
-		List<TradeOrderItemDetail> tradeOrderItemDetail = tradeOrderItemDetailMapper.selectByOrderItemId(orderId);
+		List<TradeOrderItemDetail> tradeOrderItemDetail = tradeOrderItemDetailMapper.selectByOrderItemDetailByOrderId(orderId);
 		tradeOrder.setTradeOrderItemDetail(tradeOrderItemDetail);
 
 		return tradeOrder;
