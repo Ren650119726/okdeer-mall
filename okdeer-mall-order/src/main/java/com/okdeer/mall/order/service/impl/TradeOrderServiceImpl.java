@@ -7336,4 +7336,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		
 	}
+
+	@Override
+	public TradeOrder findByOrderNo(String orderNo) {
+		return tradeOrderMapper.findByOrderNo(orderNo);
+	}
 }

@@ -142,6 +142,11 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		}
 		// 查询代金券
 		ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsRecord.getCouponsId());
+		// Begin Bug:19619 检查限制金额
+		if(parserBo.getTotalItemAmount().compareTo(new BigDecimal(coupons.getArriveLimit())) == -1){
+			return false;
+		}
+		// End Bug:19619 检查限制金额
 		if(coupons.getUseUserType() == UseUserType.ONlY_NEW_USER){
 			// 仅限首单用户，检查当前用户是否为首单用户。
 			if(!isFirstOrderUser(paramDto.getUserId())){
