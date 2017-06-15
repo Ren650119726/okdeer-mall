@@ -28,8 +28,10 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.common.consts.DescriptConstants;
 import com.okdeer.mall.common.vo.PageResultVo;
+import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
 import com.okdeer.mall.order.dto.OrderRefundsDetailDto;
 import com.okdeer.mall.order.dto.OrderRefundsDto;
 import com.okdeer.mall.order.dto.PhysOrderApplyRefundParamDto;
@@ -441,42 +443,27 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 	 *            结束时间
 	 */
 	@Override
-	public PageResultVo<OrderRefundsDto> orderRefund(Map<String, Object> params) throws Exception {
+	public PageUtils<OrderRefundsDto> orderRefund(OrderRefundQueryParamDto orderRefundQueryParamDto) throws Exception {
 		try {
-			int pageNum = Integer.valueOf(params.get("pageNum").toString());
-			int pageSize = Integer.valueOf(params.get("pageSize").toString());
-			List<OrderRefundsDto> orderRefunds = Lists.newArrayList();
+			PageUtils<TradeOrderRefundsVo> pageList = tradeOrderRefundsService.findPageByFinance(
+					orderRefundQueryParamDto, orderRefundQueryParamDto.getpNum(), orderRefundQueryParamDto.getpSize());
 
-			// Begin add by zengjz 2016-9-14 增加退款状态查询条件
-			convertParamsForFinanceRefund(params);
-			// End add by zengjz 2016-9-14 增加退款状态查询条件
-			PageUtils<TradeOrderRefundsVo> pageList = tradeOrderRefundsService.findPageByFinance(params, pageNum,
-					pageSize);
-			for (TradeOrderRefundsVo refundsVo : pageList.getList()) {
-				OrderRefundsDto dto = new OrderRefundsDto();
-				dto.setId(refundsVo.getId());
-				dto.setOrderNo(refundsVo.getOrderNo());
-				dto.setRefundNo(refundsVo.getRefundNo());
-				if (refundsVo.getPaymentMethod() != null) {
-					dto.setPaymentMethod(refundsVo.getPaymentMethod().ordinal());
+			List<OrderRefundsDto> orderRefundsDtos = Lists.newArrayList();
+			List<TradeOrderRefundsVo> refundList = pageList.getList();
+			for (TradeOrderRefundsVo tradeOrderRefundsVo : refundList) {
+				OrderRefundsDto dto = BeanMapper.map(tradeOrderRefundsVo, OrderRefundsDto.class);
+				dto.setRefundAmount(tradeOrderRefundsVo.getTotalAmount());
+				dto.setBuyerUserName(tradeOrderRefundsVo.getUserPhone());
+				if (tradeOrderRefundsVo.getRefundsStatus() != null) {
+					dto.setRefundStatus(tradeOrderRefundsVo.getRefundsStatus().ordinal());
 				}
-				dto.setRefundStatus(refundsVo.getRefundsStatus().ordinal());
-				dto.setTotalAmount(refundsVo.getTotalAmount());
-				dto.setRefundAmount(refundsVo.getTotalAmount());
-				dto.setActualAmount(refundsVo.getActualAmount());
-				dto.setPreferentialAmount(refundsVo.getTotalPreferentialPrice());
-				dto.setRefundMoneyTime(refundsVo.getRefundMoneyTime());
-				dto.setBuyerUserId(refundsVo.getUserId());
-				dto.setBuyerUserName(refundsVo.getUserPhone());
-				dto.setCreateTime(refundsVo.getCreateTime());
-				dto.setAgentName(null);
-				dto.setStoreName(refundsVo.getStoreName());
-				dto.setThirdTransNo(refundsVo.getThirdTransNo());
-				orderRefunds.add(dto);
+				orderRefundsDtos.add(dto);
 			}
-			PageResultVo<OrderRefundsDto> orderRefundPage = new PageResultVo<OrderRefundsDto>(pageList.getPageNum(),
-					pageList.getPageSize(), pageList.getTotal(), orderRefunds);
-			return orderRefundPage;
+			PageUtils<OrderRefundsDto> dtoPage = new PageUtils<>(orderRefundsDtos);
+			dtoPage.setPageSize(pageList.getPageSize());
+			dtoPage.setPageNum(pageList.getPageNum());
+			dtoPage.setTotal(pageList.getTotal());
+			return dtoPage;
 		} catch (ServiceException e) {
 			logger.error("查询退款单异常", e);
 			throw new Exception("查询退款单异常", e);
@@ -484,18 +471,15 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 	}
 
 	@Override
-	public List<OrderRefundsDto> orderRefundExport(Map<String, Object> params) throws ExceedRangeException, Exception {
-		// Begin add by zengjz 2016-9-14 增加退款状态查询条件
-		convertParamsForFinanceRefund(params);
-		// End add by zengjz 2016-9-14 增加退款状态查询条件
-
-		if (tradeOrderRefundsService.findCountByFinance(params) > RECORD_NUM) {
+	public List<OrderRefundsDto> orderRefundExport(OrderRefundQueryParamDto orderRefundQueryParamDto)
+			throws ExceedRangeException, Exception {
+		if (tradeOrderRefundsService.findCountByFinance(orderRefundQueryParamDto) > RECORD_NUM) {
 			throw new ExceedRangeException("查询导出退款单异常", new Throwable());
 		}
 
 		try {
 			List<OrderRefundsDto> orderRefunds = Lists.newArrayList();
-			List<TradeOrderRefundsVo> list = tradeOrderRefundsService.findListByFinance(params);
+			List<TradeOrderRefundsVo> list = tradeOrderRefundsService.findListByFinance(orderRefundQueryParamDto);
 			for (TradeOrderRefundsVo refundsVo : list) {
 				OrderRefundsDto dto = new OrderRefundsDto();
 				dto.setId(refundsVo.getId());
@@ -808,60 +792,11 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 	// Begin v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
 	@Override
-	public Map<String, Object> statisRefundsByParams(Map<String, Object> params) throws Exception {
-		convertParamsForFinanceRefund(params);
-		return tradeOrderRefundsService.statisRefundsByParams(params);
+	public Map<String, Object> statisRefundsByParams(OrderRefundQueryParamDto orderRefundQueryParamDto)
+			throws Exception {
+		return tradeOrderRefundsService.statisRefundsByParams(orderRefundQueryParamDto);
 	}
 	// End v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
-
-	/**
-	 * @Description: 财务系统退款订单参数转换
-	 * @param map
-	 *            查询参数
-	 * @author zengjizu
-	 * @date 2016年9月17日
-	 */
-	private void convertParamsForFinanceRefund(Map<String, Object> map) {
-		// 退款类型参数 : complain客诉订单退款 refunds:普通订单退款
-		String type = (String) map.get("type");
-		// 退款状态参数： 0:退款中 1:退款完成 默认为空，全部
-		String status = (String) map.get("status");
-		List<String> statusList = Lists.newArrayList();
-
-		/*
-		 * 退货/退款状态:(0:等待卖家确认,1:买家撤销退款,2:等待买家退货,3:等待卖家收货,4:待卖家退款,5:卖家拒绝退款,6:退款成功, 7
-		 * :卖家拒绝申请,8:申请客服介入,9:客户介入取消,10:云上城退款,11:(纠纷单)云上城退款成功),12:强制卖家退款, 13强制卖家退款成功 ,14卖家退款中'
-		 */
-
-		if (type != null && "complain".equals(type)) {
-
-			if (status != null && "0".equals(status)) {
-				statusList.add("10");
-			} else if (status != null && "1".equals(status)) {
-				statusList.add("11");
-			} else {
-				statusList.add("10");
-				statusList.add("11");
-			}
-
-		} else if (type != null && "refunds".equals(type)) {
-
-			if (status != null && "0".equals(status)) {
-				statusList.add("14");
-				statusList.add("12");
-			} else if (status != null && "1".equals(status)) {
-				statusList.add("6");
-				statusList.add("13");
-			} else {
-				statusList.add("14");
-				statusList.add("6");
-				statusList.add("12");
-				statusList.add("13");
-			}
-
-		}
-		map.put("statusList", statusList);
-	}
 
 	/**
 	 * 
