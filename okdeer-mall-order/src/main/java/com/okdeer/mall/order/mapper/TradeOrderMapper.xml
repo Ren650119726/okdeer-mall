@@ -6323,10 +6323,4 @@
 		</if>
 	</select>
 	<!-- end xuzq 20170321 2.2.0 查询订单详情列表 -->
-	
-	<select id="findByOrderNo" parameterType="string" resultMap="BaseResultMap">
-		SELECT <include refid="Base_Column_List"/>
-		FROM trade_order
-		WHERE order_no = #{orderNo,jdbcType=VARCHAR}
-	</select>
 </mapper>
