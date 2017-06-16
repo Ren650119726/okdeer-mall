@@ -3,7 +3,12 @@ package com.okdeer.mall.order.service.impl;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -12,15 +17,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.jxc.common.constant.TradeOrderMQMessage;
 import com.okdeer.jxc.onlineorder.entity.OnlineOrder;
 import com.okdeer.jxc.onlineorder.entity.OnlineOrderItem;
 import com.okdeer.jxc.onlineorder.vo.OnlineOrderVo;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.bo.TradeOrderContext;
+import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
@@ -47,6 +57,8 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 	private TradeOrderLogisticsService tradeOrderLogisticsService;
 	@Reference(version="1.0.0")
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
+	@Resource
+	private StockAdjustVoBuilder stockAdjustVoBuilder;
 	
 	private static final Logger log = LoggerFactory.getLogger(ServiceOrderProcessServiceImpl.class);
 
@@ -72,6 +84,7 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 		}
 	}
 	
+	
 	private <T> void sendMQMessage(String topic,T obj) throws Exception{
 		MQMessage message = new MQMessage(topic, (Serializable) obj);
 		rocketMQProducer.sendMessage(message);
@@ -95,6 +108,10 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 		//订单项列表
 		List<TradeOrderItem> itemList = tradeOrderContext.getItemList();
 		if(CollectionUtils.isEmpty(itemList)){
+			
+			//拆分订单项
+			splitItemList(itemList);
+			
 			List<String> orderIds = new ArrayList<String>();
 			orderIds.add(order.getId());
 			itemList = tradeOrderItemService.findOrderItems(orderIds);
@@ -142,6 +159,18 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 		vo.setPayType((tradeOrderPay == null || tradeOrderPay.getPayType() == null) ? 4 : tradeOrderPay.getPayType().ordinal());//如果为空,就是4现金
 		vo.setTradeNum(order.getTradeNum());
 		
+		// 进销存那边的优惠类型0:无活动 ;1：代金券；2：其他
+		int activityType = 0;
+		// 活动类型为代金券活动
+		if (order.getActivityType() == ActivityTypeEnum.VONCHER) {
+			activityType = 1;
+		} else if (order.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
+				&& order.getIncome().compareTo(order.getActualAmount()) != 0) {
+			// 活动类型为满减活动且店家收入不等于用户实付，说明里面有平台的补贴
+			activityType = 2;
+		}
+		vo.setActivityType(activityType);
+		
 		if(tradeOrderLogistics != null){
 			//收货人姓名要从物流表取
 			vo.setUserName(tradeOrderLogistics.getConsigneeName());
@@ -168,7 +197,31 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 				ooi.setOriginalPrice(item.getUnitPrice());
 				ooi.setRowNo(i);
 				ooi.setSaleNum(new BigDecimal(item.getQuantity()));
-				ooi.setSalePrice(item.getUnitPrice());
+				
+				// 店铺优惠金额
+				BigDecimal storePreferentialPrice = BigDecimal.ZERO;
+				// 平台优惠金额
+				BigDecimal platDiscountAmount = BigDecimal.ZERO;
+				// 订单金额如果不等于店家收入金额，说明是店铺有优惠
+				//Begin 排除平台优惠 update by tangy  2016-10-28
+				if (order.getActualAmount().compareTo(order.getIncome()) != 0 ) {
+					platDiscountAmount = item.getPreferentialPrice();
+				} else {
+					storePreferentialPrice = item.getPreferentialPrice();
+				}
+				vo.setPlatDiscountAmount(platDiscountAmount);
+				// 实际单价=原单价减去店铺优惠
+				BigDecimal actualPrice = item.getUnitPrice().subtract(storePreferentialPrice);
+				if (item.getQuantity() != null && item.getQuantity().intValue() > 0) {
+					actualPrice = item.getUnitPrice().subtract(
+							storePreferentialPrice.divide(new BigDecimal(item.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
+				} else if (item.getWeight() != null 
+						&& storePreferentialPrice.compareTo(BigDecimal.ZERO) == 1) {
+					actualPrice = item.getUnitPrice().subtract(
+							storePreferentialPrice.divide(item.getWeight(), 4, BigDecimal.ROUND_HALF_UP));
+				} 
+				ooi.setSalePrice(actualPrice);
+				
 				ooi.setSkuId(item.getGoodsSkuId() );
 				i++;
 				ooiList.add(ooi);
@@ -222,5 +275,62 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 		vo.setUpdateTime(order.getUpdateTime());
 		vo.setUpdateUserId(order.getUpdateUserId());
 		return vo;
+	}
+	
+	//拆分订单项
+	private void splitItemList(List<TradeOrderItem> itemList) throws Exception{
+		Map<String,List<GoodsStoreSkuAssembleDto>> comboSkuMap = stockAdjustVoBuilder.parseComboSku(itemList);
+		Iterator<TradeOrderItem> itemIt = itemList.iterator();
+		TradeOrderItem item = null;
+		List<TradeOrderItem> splitItemList = new ArrayList<TradeOrderItem>();
+		TradeOrderItem splitItem = null;
+		
+		while(itemIt.hasNext()){
+			item = itemIt.next();
+			if(item.getSpuType() == SpuTypeEnum.assembleSpu){
+				// 如果是组合商品，对订单项进行拆分
+				List<GoodsStoreSkuAssembleDto> comboDetailList = comboSkuMap.get(item.getStoreSkuId());
+				for(GoodsStoreSkuAssembleDto comboDto : comboDetailList){
+					splitItem = new TradeOrderItem();
+					splitItem.setId(UuidUtils.getUuid());
+					splitItem.setOrderId(item.getOrderId());
+					splitItem.setActivityType(item.getActivityType());
+					splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
+					splitItem.setUnitPrice(comboDto.getUnitPrice());
+					splitItem.setQuantity(comboDto.getQuantity()*item.getQuantity());
+					splitItem.setStoreSkuId(comboDto.getStoreSkuId());
+					splitItem.setCreateTime(item.getCreateTime());
+					splitItemList.add(splitItem);
+				}
+				itemIt.remove();
+			}else if(item.getActivityQuantity() != null && item.getActivityQuantity() > 0){
+				// 如果是低价且购买了低价商品，对商品进行拆分
+				splitItem = new TradeOrderItem();
+				splitItem.setId(UuidUtils.getUuid());
+				splitItem.setOrderId(item.getOrderId());
+				splitItem.setActivityType(ActivityTypeEnum.LOW_PRICE.ordinal());
+				splitItem.setPreferentialPrice(item.getPreferentialPrice());
+				splitItem.setUnitPrice(item.getUnitPrice());
+				splitItem.setQuantity(item.getActivityQuantity());
+				splitItem.setCreateTime(item.getCreateTime());
+				splitItem.setStoreSkuId(item.getStoreSkuId());
+				splitItemList.add(splitItem);
+				
+				if(item.getQuantity() - item.getActivityQuantity() > 0){
+					splitItem = new TradeOrderItem();
+					splitItem.setId(UuidUtils.getUuid());
+					splitItem.setOrderId(item.getOrderId());
+					splitItem.setActivityType(ActivityTypeEnum.NO_ACTIVITY.ordinal());
+					splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
+					splitItem.setUnitPrice(item.getUnitPrice());
+					splitItem.setQuantity(item.getQuantity() - item.getActivityQuantity());
+					splitItem.setCreateTime(item.getCreateTime());
+					splitItem.setStoreSkuId(item.getStoreSkuId());
+					splitItemList.add(splitItem);
+				}
+				itemIt.remove();
+			}
+		}
+		itemList.addAll(splitItemList);
 	}
 }
