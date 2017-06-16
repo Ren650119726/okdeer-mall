@@ -1,0 +1,52 @@
+{
+  "salt": "7668",
+  "data": {
+    "partner_order_code": "12345",
+    "order_payment_status": 1,
+    "transport_info": {
+      "transport_longitude": 120,
+      "transport_latitude": 30.11111,
+      "transport_name": "饿了么Bod上海普陀1站",
+      "transport_address": "上海市普陀区近铁城市广场5楼",
+      "transport_id": "1023",
+      "transport_tel": "备注",
+      "position_source": 1
+    },
+    "goods_count": 4,
+    "notify_url": "http://ele.me:8090",
+    "partner_remark": "天下萨拉",
+    "is_invoiced": 1,
+    "items_json": [
+      {
+        "is_agent_purchase": 1,
+        "item_actual_price": 9.5,
+        "item_price": 10,
+        "is_need_package": 1,
+        "item_name": "香蕉",
+        "item_quantity": 5
+      },
+      {
+        "is_agent_purchase": 1,
+        "item_actual_price": 9.5,
+        "item_price": 10,
+        "is_need_package": 1,
+        "item_name": "苹果",
+        "item_quantity": 5
+      }
+    ],
+    "order_payment_method": 1,
+    "order_actual_amount": 48,
+    "order_type": 2,
+    "require_payment_pay": 50,
+    "receiver_info": {
+      "receiver_city_name": "阿巴顿",
+      "receiver_primary_phone": "13900000000",
+      "receiver_name": "jiabuchong",
+      "receiver_address": "太阳"
+    },
+    "order_total_amount": 50
+  },
+  "signature": "2601bbabf2acbb5b19acb519442d0612",
+  "app_id": "f90def06c02a69bb22f4c08a4bab93f4"
+}
+
