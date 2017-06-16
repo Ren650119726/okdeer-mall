@@ -83,6 +83,11 @@
 			<version>${parent.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.okdeer.mall</groupId>
+			<artifactId>okdeer-mall-ele</artifactId>
+			<version>${parent.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.okdeer.ca</groupId>
 			<artifactId>okdeer-ca-client</artifactId>
 		</dependency>
