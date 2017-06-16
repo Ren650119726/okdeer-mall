@@ -109,12 +109,12 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 		List<TradeOrderItem> itemList = tradeOrderContext.getItemList();
 		if(CollectionUtils.isEmpty(itemList)){
 			
-			//拆分订单项
-			splitItemList(itemList);
-			
 			List<String> orderIds = new ArrayList<String>();
 			orderIds.add(order.getId());
 			itemList = tradeOrderItemService.findOrderItems(orderIds);
+			
+			//拆分订单项
+			splitItemList(itemList);
 			
 			List<String> goodsStoreSkuIdList = new ArrayList<String>();
 			for(TradeOrderItem item : itemList){
