@@ -553,7 +553,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		// TODO Auto-generated method stub
 		TradeOrderDto tradeOrderDto = new TradeOrderDto();
 		TradeOrder order = tradeOrderService.erpSelectByServiceOrderId(orderId);
-
+		tradeOrderDto.setType(order.getType().ordinal());
 		// 订单状态
 		tradeOrderDto.setId(order.getId());
 		tradeOrderDto.setStatus(order.getStatus().ordinal());
@@ -659,6 +659,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				tradeOrderItemDetailDto.setStatus(tradeOrderItemDetail.getStatus().ordinal());// 状态
 				tradeOrderItemDetailDto.setStartTime(tradeOrderItemDetail.getStartTime());// 有效开始时间
 				tradeOrderItemDetailDto.setEndTime(tradeOrderItemDetail.getEndTime());// 有效结束时间
+				tradeOrderItemDetailDto.setUpdateTime(tradeOrderItemDetail.getUpdateTime());
 				itemDetailDtoList.add(tradeOrderItemDetailDto);
 				tradeOrderDto.setTradeOrderItemDetailDto(itemDetailDtoList);
 			}

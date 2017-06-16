@@ -4,8 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
@@ -178,17 +178,17 @@ public interface TradeOrderRefundsService {
 	/**
 	 * 列表查询by财务
 	 */
-	List<TradeOrderRefundsVo> findListByFinance(Map<String, Object> map) throws Exception;
+	List<TradeOrderRefundsVo> findListByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto) throws Exception;
 
 	/**
 	 * 统计查询列表数by财务
 	 */
-	Integer findCountByFinance(Map<String, Object> map) throws Exception;
+	Integer findCountByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto) throws Exception;
 
 	/**
 	 * 分页查询
 	 */
-	PageUtils<TradeOrderRefundsVo> findPageByFinance(Map<String, Object> map, int pageNumber, int pageSize)
+	PageUtils<TradeOrderRefundsVo> findPageByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto, int pageNumber, int pageSize)
 			throws Exception;
 
 	/**
@@ -378,7 +378,7 @@ public interface TradeOrderRefundsService {
 	void insertRechargeRefunds(TradeOrder tradeOrder) throws Exception;
 
 	// Begin v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
-	Map<String, Object> statisRefundsByParams(Map<String, Object> params) throws Exception;
+	Map<String, Object> statisRefundsByParams(OrderRefundQueryParamDto orderRefundQueryParamDto) throws Exception;
 	// End v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
 	
 	/**

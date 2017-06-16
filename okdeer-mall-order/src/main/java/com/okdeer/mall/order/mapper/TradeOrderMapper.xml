@@ -853,6 +853,7 @@
 	<select id="selectByOrderId" resultType="com.okdeer.mall.order.entity.TradeOrder"
 		parameterType="java.lang.String">
 		SELECT o.id,
+		o.type,
 		o.`status`,
 		o.reason,
 		o.update_time AS updateTime,

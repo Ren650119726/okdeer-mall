@@ -10,6 +10,7 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsImage;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
@@ -161,12 +162,12 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	/**
 	 * 退款列表查询
 	 */
-	List<TradeOrderRefundsVo> selectRefundsByFinance(Map<String, Object> map);
+	List<TradeOrderRefundsVo> selectRefundsByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto);
 
 	/**
 	 * 统计退款列表数
 	 */
-	Integer selectRefundsCountByFinance(Map<String, Object> map);
+	Integer selectRefundsCountByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto);
 
 	/**
 	 * 查询退款详细信息 
@@ -351,7 +352,7 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	 * @author zengjizu
 	 * @date 2016年9月14日
 	 */
-	Map<String, Object> statisRefundsByFinance(Map<String, Object> params);
+	Map<String, Object> statisRefundsByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto);
 	
 	List<TradeOrderRefunds> getListByParams(Map<String, Object> params);
 	

@@ -79,6 +79,7 @@ import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.points.dto.RefundPointParamDto;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
+import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
@@ -1736,22 +1737,22 @@ public class TradeOrderRefundsServiceImpl
 	}
 
 	@Override
-	public PageUtils<TradeOrderRefundsVo> findPageByFinance(Map<String, Object> map, int pageNumber, int pageSize)
+	public PageUtils<TradeOrderRefundsVo> findPageByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto, int pageNumber, int pageSize)
 			throws Exception {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
-		List<TradeOrderRefundsVo> list = tradeOrderRefundsMapper.selectRefundsByFinance(map);
+		List<TradeOrderRefundsVo> list = tradeOrderRefundsMapper.selectRefundsByFinance(orderRefundQueryParamDto);
 		return new PageUtils<TradeOrderRefundsVo>(list);
 	}
 
 	@Override
-	public List<TradeOrderRefundsVo> findListByFinance(Map<String, Object> map) throws Exception {
-		return tradeOrderRefundsMapper.selectRefundsByFinance(map);
+	public List<TradeOrderRefundsVo> findListByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto) throws Exception {
+		return tradeOrderRefundsMapper.selectRefundsByFinance(orderRefundQueryParamDto);
 	}
 
 	@Override
-	public Integer findCountByFinance(Map<String, Object> map) throws Exception {
+	public Integer findCountByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto) throws Exception {
 
-		return tradeOrderRefundsMapper.selectRefundsCountByFinance(map);
+		return tradeOrderRefundsMapper.selectRefundsCountByFinance(orderRefundQueryParamDto);
 	}
 
 	/**
@@ -1934,8 +1935,8 @@ public class TradeOrderRefundsServiceImpl
 	// Begin add by zengjz 2016-9-14
 
 	@Override
-	public Map<String, Object> statisRefundsByParams(Map<String, Object> params) throws Exception {
-		Map<String, Object> result = tradeOrderRefundsMapper.statisRefundsByFinance(params);
+	public Map<String, Object> statisRefundsByParams(OrderRefundQueryParamDto orderRefundQueryParamDto) throws Exception {
+		Map<String, Object> result = tradeOrderRefundsMapper.statisRefundsByFinance(orderRefundQueryParamDto);
 		return result;
 	}
 	// End add by zengjz 2016-9-14
@@ -2031,5 +2032,12 @@ public class TradeOrderRefundsServiceImpl
 		return new PageUtils<TradeOrderRefundsVo>(tradeOrderRefundsMapper.searchOrderRefundForSELLERAPP(map));
 	}
 	// End V2.1.0 added by luosm 20170314
+
+	@Override
+	public List<TradeOrderRefundsVo> findListByFinance(Map<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 }
