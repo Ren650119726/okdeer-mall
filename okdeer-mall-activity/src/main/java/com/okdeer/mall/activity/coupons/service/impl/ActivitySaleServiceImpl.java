@@ -46,7 +46,7 @@ import com.okdeer.mall.activity.coupons.vo.ActivitySaleRemindVo;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 
 /**
- * ClassName: ActivitySaleServiceImpl 
+ * ClassName: ActivitySaleServiceImpl
  * @Description: 特惠活动服务
  * @author zengj 
  * @date 2016年9月7日
@@ -57,6 +57,7 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
  *     1.0.Z	          2016年9月07日                 zengj              库存管理修改，采用商业管理系统校验
  *     V2.1.0             2017年02月20日               tangy              添加活动安全库存及预警联系人
  *     V2.1.0             2017年02月21日               tangy              同步erp添加字段
+ *     V2.5.0             2017年06月19日        wangf01     V2.5.0新增，如果是特惠活动结束，将所有商品变成上架状态，在普通分类下面可以看见
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi")
 public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, ActivitySaleService {
@@ -459,7 +460,11 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 						// 如果是特惠活动，把所有店铺商品online改成下架
 						if (goodsStoreSkuIds.size() > 0 && activityType != null && activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()) {
 							Date date = new Date();
-							goodsStoreSkuServiceApi.updateBatchOnline(goodsStoreSkuIds, BSSC.UNSHELVE.ordinal(), date);
+							// begin add by wangf01 20170619
+							// @TODO V2.5.0新增，如果是特惠活动结束，将所有商品变成上架状态，在普通分类下面可以看见
+							//goodsStoreSkuServiceApi.updateBatchOnline(goodsStoreSkuIds, BSSC.UNSHELVE.ordinal(), date);
+							goodsStoreSkuServiceApi.updateBatchOnline(goodsStoreSkuIds, BSSC.PUTAWAY.ordinal(), date);
+							// begin add by wangf01 20170619
 						}
 						if(goodsSkuIds.size() > 0 && activityType != null && activityType == ActivityTypeEnum.LOW_PRICE.ordinal()){
 							//如果是低价抢购活动并且商品是组合商品，则把关联的组合商品下架
