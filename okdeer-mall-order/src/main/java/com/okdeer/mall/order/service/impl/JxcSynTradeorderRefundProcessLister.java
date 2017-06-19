@@ -27,17 +27,15 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
-import com.okdeer.mall.order.entity.TradeOrderRefundsImage;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
 import com.okdeer.mall.order.enums.ActivityBelongType;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
-import com.okdeer.mall.order.mapper.TradeOrderRefundsImageMapper;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
-import com.okdeer.mall.order.service.TradeOrderRefundsImageService;
+import com.okdeer.mall.order.service.TradeOrderRefundsCertificateService;
 import com.okdeer.mall.order.service.TradeOrderRefundsItemService;
 import com.okdeer.mall.order.service.TradeOrderRefundsLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
@@ -75,7 +73,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	private TradeOrderActivityService tradeOrderActivityService;
 	
 	@Autowired
-	private TradeOrderRefundsImageService tradeOrderRefundsImageService;
+	private TradeOrderRefundsCertificateService tradeOrderRefundsCertificateService;
 
 	private static final Logger log = LoggerFactory.getLogger(ServiceOrderProcessServiceImpl.class);
 
@@ -168,15 +166,15 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		vo.setItemList(ooiList);
 		
 		//退单图片部分
-		List<TradeOrderRefundsImage> imageList = tradeOrderRefundsImageService.findByRefundsId(tradeOrderRefunds.getId());
+		List<String> imageList = tradeOrderRefundsCertificateService.findImageByRefundsId(tradeOrderRefunds.getId());
 		StringBuffer sb = new StringBuffer();
 		if(CollectionUtils.isNotEmpty(imageList)){
-			for(TradeOrderRefundsImage image : imageList){
-				if(StringUtils.isNotBlank(image.getImagePath())){
+			for(String image : imageList){
+				if(StringUtils.isNotBlank(image)){
 					if(!"".equals(sb.toString())){
 						sb.append(",");
 					}
-					sb.append(image.getImagePath());
+					sb.append(image);
 				}
 			}
 		}
