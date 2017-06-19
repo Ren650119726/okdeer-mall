@@ -15,10 +15,10 @@ public class ElemeOpenConfig {
     /**
      * 第三方平台 app_id
      */
-    public static final String appId = "e6641c74-5fbd-424f-a93e-c25327f15d2b";
+    public static final String appId = "262b042d-c22f-4dc0-ba65-c35a1b503ec2";
 
     /**
      * 第三方平台 secret_key
      */
-    public static final String secretKey = "68ddfdc0-6bbd-4d61-9122-eb7aaa6eaf75";
+    public static final String secretKey = "d8a2b720-243e-4be2-bdb9-23ead0d33829";
 }
