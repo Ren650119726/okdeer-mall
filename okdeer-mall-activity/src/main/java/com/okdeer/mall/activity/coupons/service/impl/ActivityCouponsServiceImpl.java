@@ -166,6 +166,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			activityCouponsMapper.insert(coupons);
 		} else if (coupons.getType() == CouponsType.hfcz.getValue()) {
 			activityCouponsMapper.insert(coupons);
+		} else if (coupons.getType() == CouponsType.bldyf.getValue() || coupons.getType() == CouponsType.fwdyf.getValue() || coupons.getType() == CouponsType.bldfwdyf.getValue() ) {
+			activityCouponsMapper.insert(coupons);
 		} else if (coupons.getType() == CouponsType.bld.getValue()) {
 			activityCouponsMapper.insert(coupons);
 			this.addRelatedInfo(coupons);
@@ -345,8 +347,12 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Transactional(rollbackFor = Exception.class)
 	public void updateCoupons(CouponsInfoQuery coupons) throws ServiceException {
 		// 0：便利店和服务店，1：便利店 2 服务店 3 充值
-		if (coupons.getType() == CouponsType.bldfwd.getValue() || coupons.getType() == CouponsType.hfcz.getValue()
-				|| coupons.getType() == CouponsType.yyhz.getValue()) {
+		if (coupons.getType() == CouponsType.bldfwd.getValue() || 
+			coupons.getType() == CouponsType.hfcz.getValue()||
+			coupons.getType() == CouponsType.yyhz.getValue() ||
+			coupons.getType() == CouponsType.bldyf.getValue() || 
+			coupons.getType() == CouponsType.fwdyf.getValue() || 
+			coupons.getType() == CouponsType.bldfwdyf.getValue() ) {
 			activityCouponsMapper.updateCoupons(coupons);
 		} else if (coupons.getType() == CouponsType.bld.getValue() || coupons.getType() == CouponsType.fwd.getValue()
 			|| coupons.getType() == CouponsType.film.getValue()) {
