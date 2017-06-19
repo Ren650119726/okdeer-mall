@@ -30,7 +30,7 @@ import java.util.Map;
 @SpringApplicationConfiguration(classes = Application.class)
 public class TestCreateOrder {
     private static final Log logger = LogFactory.getLog(TestCreateOrder.class);
-    private String token = "b63b07f6-39e6-4669-9043-0bfb7e0db43e";
+    private String token = "3f3fec2e-f1a0-456a-a930-e9a53c7f379e";
 
     /**
      * 推送一个订单
@@ -152,7 +152,8 @@ public class TestCreateOrder {
 
         String url = ElemeOpenConfig.API_URL + RequestConstant.orderCreate;
         try {
-            HttpClient.postBody(url, requestJson);
+            String flag = HttpClient.postBody(url, requestJson);
+            System.out.println("flag=" + flag);
         } catch (Exception e) {
             logger.error("creating order request occurs an exception!");
             throw new HttpClientRuntimeException("推送订单出现异常", e);
