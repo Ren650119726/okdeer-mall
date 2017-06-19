@@ -72,12 +72,14 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 			}
 			
 			if(tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.DROPSHIPPING ){
-				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_SYNC,buildOnlineOrder(tradeOrderContext));
+				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_SYNC,buildOnlineOrder(tradeOrderContext),
+					tradeOrderContext.getTradeOrder().getId(),tradeOrderContext.getTradeOrder().getStatus().ordinal());
 			}else if(tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.TO_BE_SIGNED ||
 					tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.REFUSED || 
 					tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.CANCELED || 
 							tradeOrderContext.getTradeOrder().getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED){
-				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_UPDATE_SYNC,buildOnlineOrderVo(tradeOrderContext));
+				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_UPDATE_SYNC,buildOnlineOrderVo(tradeOrderContext),
+						tradeOrderContext.getTradeOrder().getId(),tradeOrderContext.getTradeOrder().getStatus().ordinal());
 			}
 		} catch(Exception e){
 			log.error("",e);
@@ -85,8 +87,10 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 	}
 	
 	
-	private <T> void sendMQMessage(String topic,T obj) throws Exception{
+	private <T> void sendMQMessage(String topic,T obj,String orderId,Integer orderStatus) throws Exception{
 		MQMessage message = new MQMessage(topic, (Serializable) obj);
+		//加一个key 订单id+状态,没有实际意义,方便查询定位错误
+		message.setKey(orderId + "" + orderStatus);
 		rocketMQProducer.sendMessage(message);
 	}
 	
