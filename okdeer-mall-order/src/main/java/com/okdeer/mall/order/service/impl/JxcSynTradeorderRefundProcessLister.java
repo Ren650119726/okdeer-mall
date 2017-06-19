@@ -5,11 +5,14 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.collections.CollectionUtils;
+import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
@@ -24,17 +27,18 @@ import com.okdeer.jxc.onlineorder.vo.OnlineOrderVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.entity.TradeOrder;
-import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
+import com.okdeer.mall.order.entity.TradeOrderRefundsImage;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
 import com.okdeer.mall.order.enums.ActivityBelongType;
-import com.okdeer.mall.order.enums.OrderType;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsImageMapper;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
+import com.okdeer.mall.order.service.TradeOrderRefundsImageService;
 import com.okdeer.mall.order.service.TradeOrderRefundsItemService;
 import com.okdeer.mall.order.service.TradeOrderRefundsLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
@@ -70,6 +74,9 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 
 	@Autowired
 	private TradeOrderActivityService tradeOrderActivityService;
+	
+	@Autowired
+	private TradeOrderRefundsImageService tradeOrderRefundsImageService;
 
 	private static final Logger log = LoggerFactory.getLogger(ServiceOrderProcessServiceImpl.class);
 
@@ -161,6 +168,21 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 			}
 		}
 		vo.setItemList(ooiList);
+		
+		//退单图片部分
+		List<TradeOrderRefundsImage> imageList = tradeOrderRefundsImageService.findByRefundsId(tradeOrderRefunds.getId());
+		StringBuffer sb = new StringBuffer();
+		if(CollectionUtils.isNotEmpty(imageList)){
+			for(TradeOrderRefundsImage image : imageList){
+				if(StringUtils.isNotBlank(image.getImagePath())){
+					if(!"".equals(sb.toString())){
+						sb.append(",");
+					}
+					sb.append(image.getImagePath());
+				}
+			}
+		}
+		vo.setRefundPicUrl(sb.toString());
 		return vo;
 	}
 
@@ -246,7 +268,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		vo.setUpdateTime(tradeOrderRefunds.getUpdateTime());
 		vo.setUpdateUserId(tradeOrderRefunds.getOperator());
 		vo.setRefuseReason(tradeOrderRefunds.getRefundsReason());
-		
+	
 		/*
 		 * 0:等待卖家确认,1:买家撤销退款,2:等待买家退货,3:等待卖家收货,4:待卖家退款,5:卖家拒绝退款,
 		 * 6:退款成功,7:卖家拒绝申请,8:申请客服介入,9:客户介入取消,10:友门鹿退款,
