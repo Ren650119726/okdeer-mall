@@ -1080,15 +1080,15 @@ public class TradeOrderRefundsServiceImpl
 		} else if (RefundsStatusEnum.CUSTOMER_SERVICE_CANCEL_INTERVENE == status) {
 			// 解冻订单项金额
 			updateWithRevocatory(refunds, null);
+			
+			TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(refunds.getOrderId());
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeOrderContext.setTradeOrderRefunds(refunds);
+			tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		}
 		// Begin modified by maojj 2017-05-25
-		
-		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(refunds.getOrderId());
-		//add by  zhangkeneng  和左文明对接丢消息
-		TradeOrderContext tradeOrderContext = new TradeOrderContext();
-		tradeOrderContext.setTradeOrder(tradeOrder);
-		tradeOrderContext.setTradeOrderRefunds(refunds);
-		tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		logger.error("客服处理更新订单状态成功");
 	}
 
