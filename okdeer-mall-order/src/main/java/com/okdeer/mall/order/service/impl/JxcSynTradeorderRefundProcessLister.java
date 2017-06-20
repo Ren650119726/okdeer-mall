@@ -4,7 +4,11 @@ package com.okdeer.mall.order.service.impl;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -14,9 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.jxc.common.constant.TradeOrderMQMessage;
@@ -26,7 +33,9 @@ import com.okdeer.jxc.onlineorder.entity.OnlineOrderItem;
 import com.okdeer.jxc.onlineorder.vo.OnlineOrderVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.bo.TradeOrderContext;
+import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
@@ -34,6 +43,7 @@ import com.okdeer.mall.order.enums.ActivityBelongType;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
+import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundsCertificateService;
@@ -75,6 +85,11 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	
 	@Autowired
 	private TradeOrderRefundsCertificateService tradeOrderRefundsCertificateService;
+	@Autowired
+	private TradeOrderItemService tradeOrderItemService;
+	
+	@Resource
+	private StockAdjustVoBuilder stockAdjustVoBuilder;
 
 	private static final Logger log = LoggerFactory.getLogger(ServiceOrderProcessServiceImpl.class);
 
@@ -98,7 +113,9 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.SELLER_REJECT_APPLY ||
 					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.YSC_REFUND_SUCCESS ||
 					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.YSC_REFUND ||
-					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.BUYER_REPEAL_REFUND) {
+					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.BUYER_REPEAL_REFUND ||
+					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.CUSTOMER_SERVICE_CANCEL_INTERVENE ||
+					tradeOrderContext.getTradeOrderRefunds().getRefundsStatus() == RefundsStatusEnum.FORCE_SELLER_REFUND_SUCCESS) {
 				sendMQMessage(TradeOrderMQMessage.TOPIC_ORDER_UPDATE_SYNC, buildOnlineOrderVo(tradeOrderContext));
 			}
 		} catch (Exception e) {
@@ -149,6 +166,8 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		vo.setMemo(tradeOrderRefunds.getMemo());
 
 		List<TradeOrderRefundsItem> tradeOrderRefundsItems = getTradeOrderRefundsItem(tradeOrderContext);
+		//拆分退款单item
+		splitItemList(tradeOrderRefundsItems);
 
 		// 订单项list部分
 		List<OnlineOrderItem> ooiList = new ArrayList<OnlineOrderItem>();
@@ -159,7 +178,26 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 				ooi.setOriginalPrice(item.getUnitPrice());
 				ooi.setRowNo(i);
 				ooi.setSaleNum(new BigDecimal(item.getQuantity()));
-				ooi.setSalePrice(item.getAmount());
+				
+				// 店铺优惠金额
+				BigDecimal storePreferentialPrice = BigDecimal.ZERO;
+				// 订单金额如果不等于店家收入金额，说明是店铺有优惠
+				//Begin 排除平台优惠 update by tangy  2016-10-28
+				
+				if (tradeOrderContext.getTradeOrder().getActualAmount().compareTo(tradeOrderContext.getTradeOrder().getIncome()) == 0 ) {
+					storePreferentialPrice = item.getPreferentialPrice();
+				} 
+				// 实际单价=原单价减去店铺优惠
+				BigDecimal actualPrice = item.getUnitPrice().subtract(storePreferentialPrice);
+				if (item.getQuantity() != null && item.getQuantity().intValue() > 0) {
+					actualPrice = item.getUnitPrice().subtract(
+							storePreferentialPrice.divide(new BigDecimal(item.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
+				} else if (item.getWeight() != null 
+						&& storePreferentialPrice.compareTo(BigDecimal.ZERO) == 1) {
+					actualPrice = item.getUnitPrice().subtract(
+							storePreferentialPrice.divide(item.getWeight(), 4, BigDecimal.ROUND_HALF_UP));
+				} 
+				ooi.setSalePrice(actualPrice);
 				ooi.setSkuId(item.getGoodsSkuId());
 				i++;
 				ooiList.add(ooi);
@@ -317,5 +355,60 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 			vo.setLogisticsCompanyName(tradeOrderRefundsLogistics.getLogisticsCompanyName());
 		}
 		return vo;
+	}
+	
+	//拆分订单项
+	private void splitItemList(List<TradeOrderRefundsItem> itemList) throws Exception{
+		Map<String,List<GoodsStoreSkuAssembleDto>> comboSkuMap = stockAdjustVoBuilder.parseComboSkuForRefund(itemList);
+		Iterator<TradeOrderRefundsItem> itemIt = itemList.iterator();
+		TradeOrderRefundsItem item = null;
+		List<TradeOrderRefundsItem> splitItemList = new ArrayList<TradeOrderRefundsItem>();
+		TradeOrderRefundsItem splitItem = null;
+		
+		while(itemIt.hasNext()){
+			item = itemIt.next();
+			
+			TradeOrderItem tradeOrderItem = tradeOrderItemService.selectByPrimaryKey(item.getOrderItemId() ) ;
+			if(item.getSpuType() == SpuTypeEnum.assembleSpu){
+				// 如果是组合商品，对订单项进行拆分
+				List<GoodsStoreSkuAssembleDto> comboDetailList = comboSkuMap.get(item.getStoreSkuId());
+				for(GoodsStoreSkuAssembleDto comboDto : comboDetailList){
+					splitItem = new TradeOrderRefundsItem();
+					splitItem.setId(UuidUtils.getUuid());
+					splitItem.setRefundsId(item.getRefundsId());
+					splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
+					splitItem.setUnitPrice(comboDto.getUnitPrice());
+					splitItem.setQuantity(comboDto.getQuantity()*item.getQuantity());
+					splitItem.setStoreSkuId(comboDto.getStoreSkuId());
+					splitItem.setGoodsSkuId(comboDto.getSkuId());
+					splitItemList.add(splitItem);
+				}
+				itemIt.remove();
+			} else if(tradeOrderItem.getActivityQuantity() != null && tradeOrderItem.getActivityQuantity() > 0){
+				// 如果是低价且购买了低价商品，对商品进行拆分
+				splitItem = new TradeOrderRefundsItem();
+				splitItem.setId(UuidUtils.getUuid());
+				splitItem.setRefundsId(item.getRefundsId());
+				splitItem.setPreferentialPrice(tradeOrderItem.getPreferentialPrice());
+				splitItem.setUnitPrice(tradeOrderItem.getUnitPrice());
+				splitItem.setStoreSkuId(tradeOrderItem.getStoreSkuId());
+				splitItem.setGoodsSkuId(tradeOrderItem.getGoodsSkuId());
+				splitItemList.add(splitItem);
+				
+				if(tradeOrderItem.getQuantity() - tradeOrderItem.getActivityQuantity() > 0){
+					splitItem = new TradeOrderRefundsItem();
+					splitItem.setId(UuidUtils.getUuid());
+					splitItem.setRefundsId(item.getRefundsId());
+					splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
+					splitItem.setUnitPrice(tradeOrderItem.getUnitPrice());
+					splitItem.setQuantity(tradeOrderItem.getQuantity() - tradeOrderItem.getActivityQuantity());
+					splitItem.setStoreSkuId(tradeOrderItem.getStoreSkuId());
+					splitItem.setGoodsSkuId(tradeOrderItem.getGoodsSkuId());
+					splitItemList.add(splitItem);
+				}
+				itemIt.remove();
+			}
+		}
+		itemList.addAll(splitItemList);
 	}
 }
