@@ -935,6 +935,13 @@ public class TradeOrderRefundsServiceImpl
 		orderRefunds.setTradeNum(TradeNumUtil.getTradeNum());
 		// 执行退款操作
 		doRefundPay(orderRefunds);
+		
+		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
+		//add by  zhangkeneng  和左文明对接丢消息
+		TradeOrderContext tradeOrderContext = new TradeOrderContext();
+		tradeOrderContext.setTradeOrder(tradeOrder);
+		tradeOrderContext.setTradeOrderRefunds(orderRefunds);
+		tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 	}
 
 	/**
