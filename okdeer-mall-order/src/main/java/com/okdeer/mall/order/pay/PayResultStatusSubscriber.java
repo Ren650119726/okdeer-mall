@@ -353,7 +353,7 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
                 //End added by zhaoqc 2017-03-1
 				
 				// 订单完成后同步到商业管理系统
-				tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(tradeOrderRefunds.getId());
+				//tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(tradeOrderRefunds.getId());
 			} else {
 				logger.error("退款支付状态消息处理失败,退款单编号为：" + tradeOrderRefunds.getRefundNo() + "，问题原因" + result.getMsg());
 

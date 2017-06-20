@@ -1786,7 +1786,7 @@ public class TradeOrderRefundsServiceImpl
 				// stockMQProducer.sendMessage(stockAdjustList);
 
 				// 退款完成后，同步退款单到商业管理系统
-				tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(tradeOrderRefunds.getId());
+				//tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(tradeOrderRefunds.getId());
 			}
 		} catch (Exception e) {
 			// 发消息回滚库存的更改 added by maojj
@@ -2079,7 +2079,7 @@ public class TradeOrderRefundsServiceImpl
 				.insertSelective(new TradeOrderRefundsLog(orderRefunds.getId(), orderRefunds.getOperator(),
 						orderRefunds.getRefundsStatus().getName(), orderRefunds.getRefundsStatus().getValue()));
 		// 订单完成后同步到商业管理系统
-		tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
+		//tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(orderRefunds.getId());
 	}
 
 	// Begin V2.1.0 added by luosm 20170222

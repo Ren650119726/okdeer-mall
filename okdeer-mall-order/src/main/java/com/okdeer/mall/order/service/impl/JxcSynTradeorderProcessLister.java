@@ -204,16 +204,11 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 				
 				// 店铺优惠金额
 				BigDecimal storePreferentialPrice = BigDecimal.ZERO;
-				// 平台优惠金额
-				BigDecimal platDiscountAmount = BigDecimal.ZERO;
 				// 订单金额如果不等于店家收入金额，说明是店铺有优惠
 				//Begin 排除平台优惠 update by tangy  2016-10-28
-				if (order.getActualAmount().compareTo(order.getIncome()) != 0 ) {
-					platDiscountAmount = item.getPreferentialPrice();
-				} else {
+				if (order.getActualAmount().compareTo(order.getIncome()) == 0 ) {
 					storePreferentialPrice = item.getPreferentialPrice();
-				}
-				vo.setPlatDiscountAmount(platDiscountAmount);
+				} 
 				// 实际单价=原单价减去店铺优惠
 				BigDecimal actualPrice = item.getUnitPrice().subtract(storePreferentialPrice);
 				if (item.getQuantity() != null && item.getQuantity().intValue() > 0) {
