@@ -7,16 +7,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Resource;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
@@ -44,12 +41,9 @@ import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
-import com.okdeer.mall.order.service.TradeOrderLogisticsService;
-import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundsCertificateService;
 import com.okdeer.mall.order.service.TradeOrderRefundsItemService;
 import com.okdeer.mall.order.service.TradeOrderRefundsLogisticsService;
-import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeorderRefundProcessLister;
 
@@ -60,19 +54,10 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	private RocketMQProducer rocketMQProducer;
 
 	@Autowired
-	private TradeOrderPayService tradeOrderPayService;
-
-	@Autowired
 	private TradeOrderService tradeOrderService;
 
 	@Autowired
 	private TradeOrderRefundsItemService tradeOrderRefundsItemService;
-
-	@Autowired
-	private TradeOrderLogisticsService tradeOrderLogisticsService;
-
-	@Autowired
-	private TradeOrderRefundsService tradeOrderRefundsService;
 
 	@Autowired
 	private TradeOrderRefundsLogisticsService tradeOrderRefundsLogisticsService;
@@ -385,6 +370,9 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 				}
 				itemIt.remove();
 			} else if(tradeOrderItem.getActivityQuantity() != null && tradeOrderItem.getActivityQuantity() > 0){
+				
+				//需要标准库商品id,tradeOrderItem里面没有
+				GoodsStoreSku goodsStoreSku = goodsStoreSkuServiceApi.selectByPrimaryKey(tradeOrderItem.getStoreSkuId());
 				// 如果是低价且购买了低价商品，对商品进行拆分
 				splitItem = new TradeOrderRefundsItem();
 				splitItem.setId(UuidUtils.getUuid());
@@ -393,7 +381,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 				splitItem.setUnitPrice(tradeOrderItem.getUnitPrice());
 				splitItem.setQuantity(tradeOrderItem.getQuantity() - tradeOrderItem.getActivityQuantity());
 				splitItem.setStoreSkuId(tradeOrderItem.getStoreSkuId());
-				splitItem.setGoodsSkuId(tradeOrderItem.getGoodsSkuId());
+				splitItem.setGoodsSkuId(goodsStoreSku == null ? "" : goodsStoreSku.getSkuId());
 				splitItemList.add(splitItem);
 				
 				if(tradeOrderItem.getQuantity() - tradeOrderItem.getActivityQuantity() > 0){
@@ -404,7 +392,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 					splitItem.setUnitPrice(tradeOrderItem.getUnitPrice());
 					splitItem.setQuantity(tradeOrderItem.getQuantity() - tradeOrderItem.getActivityQuantity());
 					splitItem.setStoreSkuId(tradeOrderItem.getStoreSkuId());
-					splitItem.setGoodsSkuId(tradeOrderItem.getGoodsSkuId());
+					splitItem.setGoodsSkuId(goodsStoreSku == null ? "" : goodsStoreSku.getSkuId());
 					splitItemList.add(splitItem);
 				}
 				itemIt.remove();
