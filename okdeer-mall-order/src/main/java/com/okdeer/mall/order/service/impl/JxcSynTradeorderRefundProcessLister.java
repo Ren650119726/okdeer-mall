@@ -177,7 +177,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 				OnlineOrderItem ooi = new OnlineOrderItem();
 				ooi.setOriginalPrice(item.getUnitPrice());
 				ooi.setRowNo(i);
-				ooi.setSaleNum(new BigDecimal(item.getQuantity()));
+				ooi.setSaleNum(new BigDecimal(item.getQuantity() == null ? 0 : item.getQuantity()));
 				
 				// 店铺优惠金额
 				BigDecimal storePreferentialPrice = BigDecimal.ZERO;
@@ -391,6 +391,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 				splitItem.setRefundsId(item.getRefundsId());
 				splitItem.setPreferentialPrice(tradeOrderItem.getPreferentialPrice());
 				splitItem.setUnitPrice(tradeOrderItem.getUnitPrice());
+				splitItem.setQuantity(tradeOrderItem.getQuantity() - tradeOrderItem.getActivityQuantity());
 				splitItem.setStoreSkuId(tradeOrderItem.getStoreSkuId());
 				splitItem.setGoodsSkuId(tradeOrderItem.getGoodsSkuId());
 				splitItemList.add(splitItem);
