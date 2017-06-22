@@ -153,7 +153,8 @@ public class ActivityCollectCouponsServiceImpl
 		// 如果是区域
 		if(activityCollectCoupons.getType() == ActivityCollectCouponsType.OPEN_DOOR.getValue() ||
 		   activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue() ||	
-		   activityCollectCoupons.getType() == ActivityCollectCouponsType.get.getValue()){
+		   activityCollectCoupons.getType() == ActivityCollectCouponsType.get.getValue() ||
+		   activityCollectCoupons.getType() == ActivityCollectCouponsType.lzg.getValue()){
 			if (activityCollectCoupons.getAreaType().intValue() == AreaType.area.ordinal()) {
 				// 批量添加新记录
 				String[] array = areaIds.split(",");
@@ -371,7 +372,8 @@ public class ActivityCollectCouponsServiceImpl
 		
 		if(activityCollectCoupons.getType() == ActivityCollectCouponsType.OPEN_DOOR.getValue() ||
 				   activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue() ||	
-				   activityCollectCoupons.getType() == ActivityCollectCouponsType.get.getValue()){
+				   activityCollectCoupons.getType() == ActivityCollectCouponsType.get.getValue() ||
+				   activityCollectCoupons.getType() == ActivityCollectCouponsType.lzg.getValue() ){
 			// 代金卷范围类型：0全国，1区域，2小区 , 3店铺
 			// 如果是区域
 			if (activityCollectCoupons.getAreaType() == 1) {

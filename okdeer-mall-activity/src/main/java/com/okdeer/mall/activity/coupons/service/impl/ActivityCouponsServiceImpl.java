@@ -166,7 +166,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			activityCouponsMapper.insert(coupons);
 		} else if (coupons.getType() == CouponsType.hfcz.getValue()) {
 			activityCouponsMapper.insert(coupons);
-		} else if (coupons.getType() == CouponsType.bldyf.getValue() || coupons.getType() == CouponsType.fwdyf.getValue() || coupons.getType() == CouponsType.bldfwdyf.getValue() ) {
+		} else if (coupons.getType() == CouponsType.bldyf.getValue()) {
 			activityCouponsMapper.insert(coupons);
 		} else if (coupons.getType() == CouponsType.bld.getValue()) {
 			activityCouponsMapper.insert(coupons);
@@ -350,9 +350,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		if (coupons.getType() == CouponsType.bldfwd.getValue() || 
 			coupons.getType() == CouponsType.hfcz.getValue()||
 			coupons.getType() == CouponsType.yyhz.getValue() ||
-			coupons.getType() == CouponsType.bldyf.getValue() || 
-			coupons.getType() == CouponsType.fwdyf.getValue() || 
-			coupons.getType() == CouponsType.bldfwdyf.getValue() ) {
+			coupons.getType() == CouponsType.bldyf.getValue() ) {
 			activityCouponsMapper.updateCoupons(coupons);
 		} else if (coupons.getType() == CouponsType.bld.getValue() || coupons.getType() == CouponsType.fwd.getValue()
 			|| coupons.getType() == CouponsType.film.getValue()) {
@@ -376,6 +374,12 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			activitycoupons.setEndTime(coupons.getEndTime());
 			this.addRelatedInfo(activitycoupons);
 		}
+	}
+	
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void update(CouponsInfoQuery coupons) throws ServiceException {
+		activityCouponsMapper.updateCoupons(coupons);
 	}
 
 	@Override
