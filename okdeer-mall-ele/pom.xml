@@ -15,6 +15,8 @@
     <url>http://maven.apache.org</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <parent.version>0.0.1-SNAPSHOT</parent.version>
+        <third.version>0.0.2-SNAPSHOT</third.version>
     </properties>
     <dependencies>
 
@@ -31,6 +33,36 @@
         <dependency>
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.okdeer.mall</groupId>
+            <artifactId>okdeer-mall-system</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.okdeer.mall</groupId>
+            <artifactId>okdeer-mall-activity</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.okdeer.mall</groupId>
+            <artifactId>okdeer-mall-member</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.okdeer.mall</groupId>
+            <artifactId>okdeer-mall-operate</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.okdeer.mall</groupId>
+            <artifactId>okdeer-mall-order</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.okdeer.mall</groupId>
+            <artifactId>okdeer-mall-api</artifactId>
         </dependency>
 
         <dependency>
