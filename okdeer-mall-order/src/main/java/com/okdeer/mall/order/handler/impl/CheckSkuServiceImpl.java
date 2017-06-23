@@ -14,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.goods.dto.StoreSkuParamDto;
+import com.okdeer.archive.goods.service.StoreSkuApi;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.BSSC;
@@ -85,6 +87,9 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 	
+	@Reference(version = "1.0.0", check = false)
+	private StoreSkuApi storeSkuApi;
+	
 
 	@Override
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
@@ -110,22 +115,13 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		parserBo.loadBuySkuList(paramDto.getSkuList());
 		// 缓存商品解析结果
 		paramDto.put("parserBo", parserBo);
-		// 获取非组合商品列表
-//		List<String> excludeComboList = parserBo.extraSkuListExcludeCombo();
-//		if(CollectionUtils.isNotEmpty(excludeComboList)){
-//			// 查询商业系统库存集合
-//			List<GoodsStoreSkuStock> stockList = stockManagerJxcServiceApi.findGoodsStockInfoList(excludeComboList);
-//			if(CollectionUtils.isEmpty(stockList) || stockList.size() != excludeComboList.size()){
-//				resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
-//				return;
-//			}
-//			parserBo.loadStockList(stockList);
-//		}
-//		// 查询组合商品库存
-//		if(CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())){
-//			List<GoodsStoreSkuStock> comboStockList = goodsStoreSkuStockApi.findByStoreSkuIdList(parserBo.getComboSkuIdList());
-//			parserBo.loadStockList(comboStockList);
-//		}
+		// 查询组合商品库存
+		if(CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())){
+			StoreSkuParamDto skuParamDto = new StoreSkuParamDto();
+			skuParamDto.setStoreSkuIds(parserBo.getComboSkuIdList());
+			List<Integer> comboStockList = storeSkuApi.findCompositeGoodsActualStockByIds(skuParamDto);
+			parserBo.refreshComboStockList(comboStockList);
+		}
 		
 		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockApi.findByStoreSkuIdList(skuIdList);
 		parserBo.loadStockList(stockList);

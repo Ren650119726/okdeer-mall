@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.ele.mapper.ExpressCallbackLogMapper">
+    <!-- 根据条件查询符合的数据 -->
+    <select id="selectExpressCallbackLogListByParam" parameterType="com.okdeer.mall.ele.entity.ExpressCallbackLog"
+            resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        <include refid="Base_Tbale"/>
+        WHERE 1=1
+        <include refid="condition"/>
+    </select>
+
+    <!-- 保存数据 -->
+    <insert id="insert" parameterType="com.okdeer.mall.ele.entity.ExpressCallbackLog">
+        INSERT INTO
+        <include refid="Base_Tbale"/>
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <include refid="prefix_sql"/>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <include refid="suffix_sql"/>
+        </trim>
+    </insert>
+
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.ele.entity.ExpressCallbackLog">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="open_order_code" property="openOrderCode" jdbcType="VARCHAR"/>
+        <result column="partner_order_code" property="partnerOrderCode" jdbcType="VARCHAR"/>
+        <result column="callback_json" property="callbackJson" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Tbale">
+        express_callback_log
+    </sql>
+
+    <sql id="Base_Column_List">
+        id, open_order_code, partner_order_code, callback_json, create_time
+    </sql>
+
+    <sql id="condition">
+        <if test="null != id and ''!= id">
+            AND id = #{id,jdbcType=VARCHAR}
+        </if>
+        <if test="null != openOrderCode and ''!= openOrderCode">
+            AND open_order_code = #{openOrderCode,jdbcType=VARCHAR}
+        </if>
+        <if test="null != partnerOrderCode and ''!= partnerOrderCode">
+            AND partner_order_code = #{partnerOrderCode,jdbcType=VARCHAR}
+        </if>
+    </sql>
+
+    <sql id="prefix_sql">
+        <if test="null != id and ''!= id">
+            id,
+        </if>
+        <if test="null != openOrderCode and ''!= openOrderCode">
+            open_order_code,
+        </if>
+        <if test="null != partnerOrderCode and ''!= partnerOrderCode">
+            partner_order_code,
+        </if>
+        <if test="null != callbackJson and ''!= callbackJson">
+            callback_json,
+        </if>
+        <if test="null != createTime">
+            create_time,
+        </if>
+    </sql>
+
+    <sql id="suffix_sql">
+        <if test="null != id and ''!= id">
+            #{id,jdbcType=VARCHAR},
+        </if>
+        <if test="null != openOrderCode and ''!= openOrderCode">
+            #{openOrderCode,jdbcType=VARCHAR},
+        </if>
+        <if test="null != partnerOrderCode and ''!= partnerOrderCode">
+            #{partnerOrderCode,jdbcType=VARCHAR},
+        </if>
+        <if test="null != callbackJson and ''!= callbackJson">
+            #{callbackJson,jdbcType=VARCHAR},
+        </if>
+        <if test="null != createTime">
+            #{createTime,jdbcType=VARCHAR},
+        </if>
+    </sql>
+</mapper>

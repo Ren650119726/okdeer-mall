@@ -1,9 +1,60 @@
 package com.okdeer.mall.order.service.impl;
 
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_SUCCESS_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_NOT_EXSITS_DELETE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_OVERDUE;
+import static com.okdeer.common.consts.DescriptConstants.REQUEST_PARAM_FAIL;
+import static com.okdeer.common.consts.DescriptConstants.USER_NOT_WALLET;
+import static com.okdeer.common.consts.DescriptConstants.USER_WALLET_FAIL;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.rocketmq.client.producer.*;
+import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
+import com.alibaba.rocketmq.client.producer.LocalTransactionState;
+import com.alibaba.rocketmq.client.producer.SendResult;
+import com.alibaba.rocketmq.client.producer.SendStatus;
+import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
+import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.github.pagehelper.PageHelper;
@@ -54,9 +105,18 @@ import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
 import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
-import com.okdeer.jxc.stock.vo.StockUpdateVo;
-import com.okdeer.mall.activity.coupons.entity.*;
-import com.okdeer.mall.activity.coupons.enums.*;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
+import com.okdeer.mall.activity.coupons.entity.ActivitySale;
+import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
+import com.okdeer.mall.activity.coupons.enums.ActivityCollectOrderTypeEnum;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.coupons.enums.ActivitySourceEnum;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsOrderRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
@@ -86,23 +146,100 @@ import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
+import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
-import com.okdeer.mall.order.builder.JxcStockUpdateBuilder;
 import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.dto.TradeOrderCountParamDto;
+import com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
-import com.okdeer.mall.order.entity.*;
-import com.okdeer.mall.order.enums.*;
-import com.okdeer.mall.order.mapper.*;
+import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderComboSnapshot;
+import com.okdeer.mall.order.entity.TradeOrderComplain;
+import com.okdeer.mall.order.entity.TradeOrderComplainImage;
+import com.okdeer.mall.order.entity.TradeOrderExtSnapshot;
+import com.okdeer.mall.order.entity.TradeOrderInvoice;
+import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.entity.TradeOrderItemDetail;
+import com.okdeer.mall.order.entity.TradeOrderLocate;
+import com.okdeer.mall.order.entity.TradeOrderLog;
+import com.okdeer.mall.order.entity.TradeOrderLogistics;
+import com.okdeer.mall.order.entity.TradeOrderPay;
+import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
+import com.okdeer.mall.order.entity.TradeOrderRefunds;
+import com.okdeer.mall.order.entity.TradeOrderThirdRelation;
+import com.okdeer.mall.order.enums.ActivityBelongType;
+import com.okdeer.mall.order.enums.AppOrderTypeEnum;
+import com.okdeer.mall.order.enums.CompainStatusEnum;
+import com.okdeer.mall.order.enums.ConsumeStatusEnum;
+import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
+import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
+import com.okdeer.mall.order.enums.OrderCancelType;
+import com.okdeer.mall.order.enums.OrderComplete;
+import com.okdeer.mall.order.enums.OrderIsShowEnum;
+import com.okdeer.mall.order.enums.OrderPayTypeEnum;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTraceEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.enums.PayTypeEnum;
+import com.okdeer.mall.order.enums.PayWayEnum;
+import com.okdeer.mall.order.enums.PaymentStatusEnum;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
+import com.okdeer.mall.order.enums.PreferentialType;
+import com.okdeer.mall.order.enums.RefundsStatusEnum;
+import com.okdeer.mall.order.enums.SendMsgType;
+import com.okdeer.mall.order.mapper.TradeOrderComboSnapshotMapper;
+import com.okdeer.mall.order.mapper.TradeOrderCommentMapper;
+import com.okdeer.mall.order.mapper.TradeOrderComplainImageMapper;
+import com.okdeer.mall.order.mapper.TradeOrderComplainMapper;
+import com.okdeer.mall.order.mapper.TradeOrderExtSnapshotMapper;
+import com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper;
+import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
+import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderLocateMapper;
+import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
+import com.okdeer.mall.order.mapper.TradeOrderLogisticsMapper;
+import com.okdeer.mall.order.mapper.TradeOrderMapper;
+import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
+import com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper;
 import com.okdeer.mall.order.mq.constants.TradeOrderTopic;
-import com.okdeer.mall.order.service.*;
+import com.okdeer.mall.order.service.PageCallBack;
+import com.okdeer.mall.order.service.TradeMessageService;
+import com.okdeer.mall.order.service.TradeOrderActivityService;
+import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
+import com.okdeer.mall.order.service.TradeOrderLogService;
+import com.okdeer.mall.order.service.TradeOrderPayService;
+import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
+import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.service.TradeOrderServiceApi;
+import com.okdeer.mall.order.service.TradeOrderTraceService;
+import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.PageQueryUtils;
-import com.okdeer.mall.order.vo.*;
+import com.okdeer.mall.order.vo.ActivityInfoVO;
+import com.okdeer.mall.order.vo.ERPTradeOrderVo;
+import com.okdeer.mall.order.vo.OrderCouponsRespDto;
+import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
+import com.okdeer.mall.order.vo.PhysicsOrderVo;
+import com.okdeer.mall.order.vo.RefundsTraceResp;
+import com.okdeer.mall.order.vo.RefundsTraceVo;
+import com.okdeer.mall.order.vo.SendMsgParamVo;
+import com.okdeer.mall.order.vo.TradeOrderCommentVo;
+import com.okdeer.mall.order.vo.TradeOrderExportVo;
+import com.okdeer.mall.order.vo.TradeOrderItemVo;
+import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
+import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
+import com.okdeer.mall.order.vo.TradeOrderQueryVo;
+import com.okdeer.mall.order.vo.TradeOrderStatisticsVo;
+import com.okdeer.mall.order.vo.TradeOrderStatusVo;
+import com.okdeer.mall.order.vo.TradeOrderVo;
+import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
 import com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO;
 import com.okdeer.mall.system.entity.SysUserInvitationRecord;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
@@ -114,24 +251,9 @@ import com.okdeer.mall.system.service.InvitationCodeServiceApi;
 import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import static com.okdeer.common.consts.DescriptConstants.*;
 
 /**
  *
@@ -501,10 +623,22 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// End V2.1 added by maojj 2017-02-21
 	
 	@Resource
-	private JxcStockUpdateBuilder jxcStockUpdateBuilder;
-	
-	@Resource
 	private MallStockUpdateBuilder mallStockUpdateBuilder;
+	
+	@Autowired
+	@Qualifier(value="jxcSynTradeorderProcessLister")
+	private TradeorderProcessLister tradeorderProcessLister;
+	
+	// Begin　V2.5 added by maojj 2017-06-23
+	@Resource
+	private TradeOrderComboSnapshotMapper tradeOrderComboSnapshotMapper;
+	
+	/**
+	 * 订单扩展信息快照Mapper
+	 */
+	@Resource
+	private TradeOrderExtSnapshotMapper tradeOrderExtSnapshotMapper;
+	// End V2.5 added by maojj 2017-06-23
 
 	@Override
 	public List<TradeOrder> selectByParam(TradeOrder param) throws Exception{
@@ -722,6 +856,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public void receivableOrder(String[] ids, String paymentUserId) throws ServiceException {
 		if (ids != null && ids.length > 0) {
 			tradeOrderMapper.updatePaymentStatusByIds(ids, PaymentStatusEnum.BACK_SECTION, new Date(), paymentUserId);
+			
+			for(String id : ids){
+				TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(id);
+				//add by  zhangkeneng  和左文明对接丢消息
+				TradeOrderContext tradeOrderContext = new TradeOrderContext();
+				tradeOrderContext.setTradeOrder(tradeOrder);
+				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+			}
 		}
 	}
 
@@ -1540,6 +1682,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			TradeOrderInvoice invoice = tradeOrder.getTradeOrderInvoice();
 			TradeOrderLocate orderLocate = tradeOrder.getTradeOrderLocate();
 			ActivitySaleRecord saleRecord = tradeOrder.getActiviySaleRecord();
+			List<TradeOrderComboSnapshot> comboDetailList = tradeOrder.getComboDetailList();
+			TradeOrderExtSnapshot tradeOrderExt = tradeOrder.getTradeOrderExt();
 
 			if (tradeOrderPay != null) {
 				tradeOrderPayMapper.insertSelective(tradeOrderPay);
@@ -1559,6 +1703,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				tradeOrderLocateMapper.add(orderLocate);
 			}
 			// End V2.1 added by maojj 2017-02-21
+			
+			// Begin V2.5 added by maojj 2017-06-23
+			if(CollectionUtils.isNotEmpty(comboDetailList)){
+				tradeOrderComboSnapshotMapper.batchAdd(comboDetailList);
+			}
+			if(tradeOrderExt != null){
+				TradeOrderExtSnapshotParamDto tradeOrderExtDto = (TradeOrderExtSnapshotParamDto)tradeOrderExt;
+				tradeOrderExtSnapshotMapper.insert(tradeOrderExtDto);
+			}
+			// End V2.5 added by maojj 2017-06-23
 
 			List<TradeOrderItem> itemList = tradeOrder.getTradeOrderItem();
 
@@ -1579,9 +1733,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 保存消息中心
 				tradeMessageService.saveSysMsg(tradeOrder, SendMsgType.createOrder);
 				// End 重构4.1 add by zengj
+				
+				//add by  zhangkeneng  和左文明对接丢消息
+				TradeOrderContext tradeOrderContext = new TradeOrderContext();
+				tradeOrderContext.setTradeOrder(tradeOrder);
+				tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+				tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+				tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 			}
 		}
-
 	}
 
 	/**
@@ -1776,15 +1937,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// Begin modified by maojj 2017-03-15
 				rpcId = UuidUtils.getUuid();
 				StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(tradeOrder);
-				StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.buildForCompleteOrder(tradeOrder);
 				if(mallStockUpdate != null){
 					rpcId = mallStockUpdate.getRpcId();
 					goodsStoreSkuStockApi.updateStock(mallStockUpdate);
-				}
-				if(jxcStockUpdate != null){
-					stockUpdateServiceApi.stockUpdateForMessage(jxcStockUpdate);
-					// 订单完成后同步到商业管理系统
-					tradeOrderCompleteProcessService.orderCompleteSyncToJxc(tradeOrder.getId());
 				}
 				// End modified by maojj 2017-03-15
 				// 确认收货，更新用户邀请记录
@@ -1824,6 +1979,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 					this.tradeOrderPayService.confirmOrderPay(tradeOrder);
 				}
 				// begin modify by zengjz 判断是否是服务店订单
+				
+				//add by  zhangkeneng  和左文明对接丢消息
+				TradeOrderContext tradeOrderContext = new TradeOrderContext();
+				tradeOrderContext.setTradeOrder(tradeOrder);
+				tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+				tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+				tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 			}
 		} catch (Exception e) {
 			// added by maojj 通知回滚库存修改
@@ -2039,6 +2202,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		if (StoreTypeEnum.CLOUD_STORE.equals(storeInfo.getType())) {
 			// 发送短信
 			tradeMessageService.sendSmsByShipments(tradeOrder);
+			
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+			tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+			tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		}
 	}
 
@@ -4957,13 +5128,22 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 库存调整-放到最后处理
 				// stockManagerService.updateStock(stockAdjustVo);
 				// stockMQProducer.sendMessage(stockAdjustVo);
+				
+				//add by  zhangkeneng  和左文明对接丢消息
+				TradeOrderContext tradeOrderContext = new TradeOrderContext();
+				tradeOrderContext.setTradeOrder(tradeOrder);
+				tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+				tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+				tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+				
 			} catch (Exception e) {
 				logger.error("pos 发货锁定库存发生异常", e);
 				// added by maojj
 				// rollbackMQProducer.sendStockRollbackMsg(rpcId);
 				throw e;
 			}
-
+			
 		} else { // 收货
 			try {
 				this.updateWithConfirm(tradeOrder);
@@ -4972,7 +5152,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				throw new ServiceException("发货失败", e);
 			}
 		}
-
 	}
 
 
@@ -7279,5 +7458,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			tradeOrderComplainImageMapper.insertSelective(tradeOrderComplainImage);
 		}
 		
+	}
+
+	@Override
+	public TradeOrder findByOrderNo(String orderNo) {
+		return tradeOrderMapper.findByOrderNo(orderNo);
 	}
 }

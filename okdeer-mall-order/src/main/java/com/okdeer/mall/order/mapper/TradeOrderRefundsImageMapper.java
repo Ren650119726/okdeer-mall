@@ -1,6 +1,9 @@
 package com.okdeer.mall.order.mapper;
 
+import java.util.List;
+
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.order.entity.TradeOrderRefundsImage;
 
 /**
  * @DESC: 
@@ -11,4 +14,6 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  * 
  */
 public interface TradeOrderRefundsImageMapper extends IBaseCrudMapper {
+	
+	public List<TradeOrderRefundsImage> findByRefundsId(String refundsId);
 }
