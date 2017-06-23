@@ -37,6 +37,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectOrderType;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectStore;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectXffqRelation;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
@@ -50,6 +51,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCommunityMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectOrderTypeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectStoreMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCollectXffqRelationMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
@@ -92,6 +94,8 @@ public class ActivityCollectCouponsServiceImpl
 	
 	@Autowired
 	private ActivityCollectOrderTypeMapper activityCollectOrderTypeMapper;
+	@Autowired
+	private ActivityCollectXffqRelationMapper activityCollectXffqRelationMapper;
 
 	@Value("${mcm.sys.code}")
 	private String msgSysCode;
@@ -138,7 +142,8 @@ public class ActivityCollectCouponsServiceImpl
 	}
 
 	@Transactional(rollbackFor = Exception.class)
-	public void save(ActivityCollectCoupons activityCollectCoupons, List<String> couponsIds, String areaIds)
+	public void save(ActivityCollectCoupons activityCollectCoupons, List<String> couponsIds, String areaIds,
+		List<ActivityCollectXffqRelation> xffqRelationList)
 			throws Exception {
 		// 先保存活动主对象
 		activityCollectCouponsMapper.save(activityCollectCoupons);
@@ -155,6 +160,13 @@ public class ActivityCollectCouponsServiceImpl
 		   activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue() ||	
 		   activityCollectCoupons.getType() == ActivityCollectCouponsType.get.getValue() ||
 		   activityCollectCoupons.getType() == ActivityCollectCouponsType.lzg.getValue()){
+			
+			//如果是消费返券,要批量插入梯度表
+			if(activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue()){
+				activityCollectXffqRelationMapper.saveBatch(xffqRelationList);
+			}
+			
+			
 			if (activityCollectCoupons.getAreaType().intValue() == AreaType.area.ordinal()) {
 				// 批量添加新记录
 				String[] array = areaIds.split(",");
@@ -353,7 +365,8 @@ public class ActivityCollectCouponsServiceImpl
 	}
 
 	@Transactional(rollbackFor = Exception.class)
-	public void update(ActivityCollectCoupons activityCollectCoupons, List<String> couponsIds, String areaIds) {
+	public void update(ActivityCollectCoupons activityCollectCoupons, List<String> couponsIds, String areaIds,
+			List<ActivityCollectXffqRelation> xffqRelationList) {
 		// 修改活动对象
 		activityCollectCouponsMapper.updateDynamic(activityCollectCoupons);
 
@@ -374,6 +387,14 @@ public class ActivityCollectCouponsServiceImpl
 				   activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue() ||	
 				   activityCollectCoupons.getType() == ActivityCollectCouponsType.get.getValue() ||
 				   activityCollectCoupons.getType() == ActivityCollectCouponsType.lzg.getValue() ){
+			
+			//如果是消费返券,要批量插入梯度表
+			if(activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue()){
+				//修改相比添加,要先删除老数据
+				activityCollectXffqRelationMapper.deleteByCollectId(activityCollectCoupons.getId());
+				activityCollectXffqRelationMapper.saveBatch(xffqRelationList);
+			}
+			
 			// 代金卷范围类型：0全国，1区域，2小区 , 3店铺
 			// 如果是区域
 			if (activityCollectCoupons.getAreaType() == 1) {
