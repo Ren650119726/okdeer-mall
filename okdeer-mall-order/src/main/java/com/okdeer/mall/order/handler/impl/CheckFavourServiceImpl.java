@@ -375,7 +375,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		if(paramDto.getEnjoyFavourTotalAmount().compareTo(new BigDecimal(coupons.getArriveLimit())) == -1){
 			return false;
 		}
-		if(coupons.getType() != CouponsType.bldfwdyf.ordinal() && coupons.getType() != CouponsType.bldyf.ordinal()){
+		if(coupons.getType() != CouponsType.bldyf.ordinal()){
 			return false;
 		}
 		if(coupons.getUseUserType() == UseUserType.ONlY_NEW_USER){

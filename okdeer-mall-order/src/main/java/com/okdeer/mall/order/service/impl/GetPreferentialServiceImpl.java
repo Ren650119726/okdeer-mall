@@ -396,8 +396,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 		Coupons coupons = null;
 		for(Iterator<Coupons> it = couponsList.iterator();it.hasNext();){
 			coupons = it.next();
-			if(CouponsType.bldyf.getValue().equals(coupons.getType()) || 
-					CouponsType.bldfwdyf.equals(coupons.getType())){
+			if(CouponsType.bldyf.getValue().equals(coupons.getType())){
 				// 代金券类型为运费代金券
 				fareCouponsList.add(coupons);
 				it.remove();
