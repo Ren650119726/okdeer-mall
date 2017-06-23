@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
@@ -39,7 +38,6 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
-import com.okdeer.jxc.stock.vo.StockUpdateVo;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
@@ -58,7 +56,6 @@ import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
-import com.okdeer.mall.order.builder.JxcStockUpdateBuilder;
 import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -173,9 +170,6 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
-	
-	@Resource
-	private JxcStockUpdateBuilder jxcStockUpdateBuilder;
 	
 	@Resource
 	private MallStockUpdateBuilder mallStockUpdateBuilder;

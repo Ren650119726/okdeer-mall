@@ -1228,4 +1228,15 @@ public interface TradeOrderMapper {
 	List<TradeOrderDetailBo> findCloudOrderInfo(Map<String, Object> map);
 
 	List<TradeOrderStatusVo> getServiceOrderCount(Map<String, Object> params);
+	
+	// Begin V2.4.1 added by maojj 2017-06-19
+	/**
+	 * @Description: 根据订单编号查询订单
+	 * @param orderNo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年6月19日
+	 */
+	TradeOrder findByOrderNo(String orderNo);
+	// End V2.4.1 added by maojj 2017-06-19
 }
