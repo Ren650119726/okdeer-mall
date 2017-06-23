@@ -11,7 +11,7 @@ package com.okdeer.mall.ele.entity;
  * Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  */
-public class ExpressRequestJson {
+public class ExpressRequestJson<T> {
 
     /**
      * 商户App Id
@@ -25,7 +25,7 @@ public class ExpressRequestJson {
      *
      * @desc 必填
      */
-    private ExpressOrderData data;
+    private T data;
 
     /**
      * 1000-9999随机数
@@ -49,11 +49,11 @@ public class ExpressRequestJson {
         this.app_id = app_id;
     }
 
-    public ExpressOrderData getData() {
+    public T getData() {
         return data;
     }
 
-    public void setData(ExpressOrderData data) {
+    public void setData(T data) {
         this.data = data;
     }
 
