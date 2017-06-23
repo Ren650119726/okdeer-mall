@@ -154,10 +154,13 @@ import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.dto.TradeOrderCountParamDto;
+import com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderComboSnapshot;
 import com.okdeer.mall.order.entity.TradeOrderComplain;
 import com.okdeer.mall.order.entity.TradeOrderComplainImage;
+import com.okdeer.mall.order.entity.TradeOrderExtSnapshot;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
@@ -189,9 +192,11 @@ import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.PreferentialType;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.enums.SendMsgType;
+import com.okdeer.mall.order.mapper.TradeOrderComboSnapshotMapper;
 import com.okdeer.mall.order.mapper.TradeOrderCommentMapper;
 import com.okdeer.mall.order.mapper.TradeOrderComplainImageMapper;
 import com.okdeer.mall.order.mapper.TradeOrderComplainMapper;
+import com.okdeer.mall.order.mapper.TradeOrderExtSnapshotMapper;
 import com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
@@ -624,6 +629,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Qualifier(value="jxcSynTradeorderProcessLister")
 	private TradeorderProcessLister tradeorderProcessLister;
 	
+	// Begin　V2.5 added by maojj 2017-06-23
+	@Resource
+	private TradeOrderComboSnapshotMapper tradeOrderComboSnapshotMapper;
+	
+	/**
+	 * 订单扩展信息快照Mapper
+	 */
+	@Resource
+	private TradeOrderExtSnapshotMapper tradeOrderExtSnapshotMapper;
+	// End V2.5 added by maojj 2017-06-23
 
 	@Override
 	public List<TradeOrder> selectByParam(TradeOrder param) throws Exception{
@@ -1667,6 +1682,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			TradeOrderInvoice invoice = tradeOrder.getTradeOrderInvoice();
 			TradeOrderLocate orderLocate = tradeOrder.getTradeOrderLocate();
 			ActivitySaleRecord saleRecord = tradeOrder.getActiviySaleRecord();
+			List<TradeOrderComboSnapshot> comboDetailList = tradeOrder.getComboDetailList();
+			TradeOrderExtSnapshot tradeOrderExt = tradeOrder.getTradeOrderExt();
 
 			if (tradeOrderPay != null) {
 				tradeOrderPayMapper.insertSelective(tradeOrderPay);
@@ -1686,6 +1703,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				tradeOrderLocateMapper.add(orderLocate);
 			}
 			// End V2.1 added by maojj 2017-02-21
+			
+			// Begin V2.5 added by maojj 2017-06-23
+			if(CollectionUtils.isNotEmpty(comboDetailList)){
+				tradeOrderComboSnapshotMapper.batchAdd(comboDetailList);
+			}
+			if(tradeOrderExt != null){
+				TradeOrderExtSnapshotParamDto tradeOrderExtDto = (TradeOrderExtSnapshotParamDto)tradeOrderExt;
+				tradeOrderExtSnapshotMapper.insert(tradeOrderExtDto);
+			}
+			// End V2.5 added by maojj 2017-06-23
 
 			List<TradeOrderItem> itemList = tradeOrder.getTradeOrderItem();
 

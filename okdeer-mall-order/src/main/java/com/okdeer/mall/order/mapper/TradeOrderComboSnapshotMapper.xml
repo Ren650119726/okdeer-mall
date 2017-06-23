@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderComboSnapshotMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderComboSnapshot" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+        <result column="combo_sku_id" property="comboSkuId" jdbcType="VARCHAR" />
+        <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+        <result column="quantity" property="quantity" jdbcType="INTEGER" />
+        <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, order_id, combo_sku_id, store_sku_id, quantity, unit_price
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from trade_order_combo_snapshot
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.order.entity.TradeOrderComboSnapshot" >
+        insert into trade_order_combo_snapshot
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="orderId != null" >
+                order_id,
+            </if>
+            <if test="comboSkuId != null" >
+                combo_sku_id,
+            </if>
+            <if test="storeSkuId != null" >
+                store_sku_id,
+            </if>
+            <if test="quantity != null" >
+                quantity,
+            </if>
+            <if test="unitPrice != null" >
+                unit_price,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="orderId != null" >
+                #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="comboSkuId != null" >
+                #{comboSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="storeSkuId != null" >
+                #{storeSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="quantity != null" >
+                #{quantity,jdbcType=INTEGER},
+            </if>
+            <if test="unitPrice != null" >
+                #{unitPrice,jdbcType=DECIMAL},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.order.entity.TradeOrderComboSnapshot" >
+        update trade_order_combo_snapshot
+        <set >
+            <if test="orderId != null" >
+                order_id = #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="comboSkuId != null" >
+                combo_sku_id = #{comboSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="storeSkuId != null" >
+                store_sku_id = #{storeSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="quantity != null" >
+                quantity = #{quantity,jdbcType=INTEGER},
+            </if>
+            <if test="unitPrice != null" >
+                unit_price = #{unitPrice,jdbcType=DECIMAL},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from trade_order_combo_snapshot
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+	<insert id="batchAdd" parameterType="com.okdeer.mall.order.entity.TradeOrderComboSnapshot">
+		INSERT INTO trade_order_combo_snapshot
+		(
+	  		id,
+	        order_id,
+	        combo_sku_id,
+	        store_sku_id,
+	        quantity,
+	        unit_price
+	     ) VALUES
+	     <foreach collection="comboDetailList" item="item" separator=",">
+	     	(
+	     		#{item.id,jdbcType=VARCHAR},
+                #{item.orderId,jdbcType=VARCHAR},
+                #{item.comboSkuId,jdbcType=VARCHAR},
+                #{item.storeSkuId,jdbcType=VARCHAR},
+                #{item.quantity,jdbcType=INTEGER},
+                #{item.unitPrice,jdbcType=DECIMAL}
+	     	)
+	     </foreach>
+	</insert>
+</mapper>

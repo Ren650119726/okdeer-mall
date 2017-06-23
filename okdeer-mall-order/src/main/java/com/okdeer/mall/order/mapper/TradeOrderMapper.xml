@@ -72,6 +72,13 @@
 		<result column="accept_time" property="acceptTime" jdbcType="TIMESTAMP" />
 		<result column="totalComment" property="totalComment" />
 		<!-- End V1.2 added by maojj 2016-11-09 增加违约金相关字段 -->
+		<!-- Begin V2.5 added by maojj 2017-06-23 增加优惠信息 -->
+		<result column="fare_preferential" property="farePreferential" jdbcType="DECIMAL" />
+		<result column="real_fare_preferential" property="realFarePreferential" jdbcType="DECIMAL" />
+		<result column="platform_preferential" property="platformPreferential" jdbcType="DECIMAL" />
+		<result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
+		<result column="fare_activity_id" property="fareActivityId" jdbcType="VARCHAR" />
+		<!-- End V2.5 added by maojj 2017-06-23 -->
 		<association property="tradeOrderLogistics"
 			javaType="com.okdeer.mall.order.entity.TradeOrderLogistics">
 			<result column="logistics_id" property="id" jdbcType="VARCHAR" />
@@ -669,7 +676,8 @@
 		activity_id, activity_item_id,pay_way,
 		remark, invoice, disabled, create_time, received_time, delivery_time,
 		update_time,is_show,pospay,reason,trade_num,user_phone,payment_status,payment_time,income,seller_id,shipments_user_id,consumer_code_status,
-		is_breach,is_breach_money,breach_time,breach_percent,breach_money,cancel_type
+		is_breach,is_breach_money,breach_time,breach_percent,breach_money,cancel_type,
+		fare_preferential,real_fare_preferential,platform_preferential,store_preferential,fare_activity_id
 	</sql>
 
 	<sql id="order_column_list">
@@ -1957,6 +1965,23 @@
 				client_version,
 			</if>
 			<!-- End V1.2 added by maojj 2016-11-09 -->
+			<!-- Begin V2.1 added by maojj 2017-06-23 -->
+			<if test="farePreferential != null">
+				fare_preferential,
+			</if>
+			<if test="realFarePreferential != null">
+				real_fare_preferential,
+			</if>
+			<if test="platformPreferential != null">
+				platform_preferential,
+			</if>
+			<if test="storePreferential != null">
+				store_preferential,
+			</if>
+			<if test="fareActivityId != null">
+				fare_activity_id,
+			</if>
+			<!-- End V2.1 added by maojj 2017-06-23 -->
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -2087,6 +2112,23 @@
 				#{clientVersion,jdbcType=VARCHAR},
 			</if>
 			<!-- End V1.2 added by maojj 2016-11-09 -->
+			<!-- Begin V2.1 added by maojj 2017-06-23 -->
+			<if test="farePreferential != null">
+				#{farePreferential,jdbcType=DECIMAL},
+			</if>
+			<if test="realFarePreferential != null">
+				#{realFarePreferential,jdbcType=DECIMAL},
+			</if>
+			<if test="platformPreferential != null">
+				#{platformPreferential,jdbcType=DECIMAL},
+			</if>
+			<if test="storePreferential != null">
+				#{storePreferential,jdbcType=DECIMAL},
+			</if>
+			<if test="fareActivityId != null">
+				#{fareActivityId,jdbcType=VARCHAR},
+			</if>
+			<!-- End V2.1 added by maojj 2017-06-23 -->
 		</trim>
 	</insert>
 

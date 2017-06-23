@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -17,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.google.common.collect.Lists;
+import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.store.entity.StoreBranches;
 import com.okdeer.archive.store.entity.StoreInfo;
@@ -28,6 +31,7 @@ import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.LogConstants;
@@ -46,6 +50,8 @@ import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderComboSnapshot;
+import com.okdeer.mall.order.entity.TradeOrderExtSnapshot;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLocate;
@@ -143,11 +149,19 @@ public class TradeOrderBuilder {
 		// Begin V2.1 added by maojj 2017-02-01
 		// 构建订单定位信息
 		TradeOrderLocate tradeOrderLocate = buildTradeOrderLocate(tradeOrder.getId(),paramDto);
-		tradeOrder.setTradeOrderLocate(tradeOrderLocate);
 		// End V2.1 added by maojj 2017-02-01
+		// Begin V2.5 added by maojj 2017-02-01
+		// 构建订单中使用的组合商品明细快照列表
+		List<TradeOrderComboSnapshot> comboDetailList = buildComboDetailList(tradeOrder.getId(),paramDto);
+		// 构建交易订单扩展快照
+		TradeOrderExtSnapshot tradeOrderExt = buildTradeOrderExt(tradeOrder,tradeOrderLogistics,paramDto);
+		// End V2.5 added by maojj 2017-02-01
 		tradeOrder.setTradeOrderItem(orderItemList);
 		tradeOrder.setTradeOrderInvoice(tradeOrderInvoice);
 		tradeOrder.setTradeOrderLogistics(tradeOrderLogistics);
+		tradeOrder.setTradeOrderLocate(tradeOrderLocate);
+		tradeOrder.setComboDetailList(comboDetailList);
+		tradeOrder.setTradeOrderExt(tradeOrderExt);
 		return tradeOrder;
 	}
 	
@@ -562,6 +576,8 @@ public class TradeOrderBuilder {
 		if (address == null) {
 			return null;
 		}
+		paramDto.put("receiverLat", address.getLatitude());
+		paramDto.put("receiverLng", address.getLongitude());
 		// 保存用户送货上门地址Id
 		tradeOrder.setPickUpId(address.getId());
 		
@@ -629,4 +645,63 @@ public class TradeOrderBuilder {
 		
 		return tradeOrderLocate;
 	}
+	
+	// Begin V2.5 added by maojj 2017-06-23
+	/**
+	 * @Description: 构建交易订单中使用组合商品明细列表
+	 * @param orderId
+	 * @param paramDto
+	 * @return   
+	 * @author maojj
+	 * @date 2017年6月23日
+	 */
+	private List<TradeOrderComboSnapshot> buildComboDetailList(String orderId,PlaceOrderParamDto paramDto){
+		List<TradeOrderComboSnapshot> comboDetailList = Lists.newArrayList();
+		TradeOrderComboSnapshot comboSnapshot = null;
+		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
+		Map<String,List<GoodsStoreSkuAssembleDto>> comboSkuMap = parserBo.getComboSkuMap();
+		if(comboSkuMap == null || comboSkuMap.size() == 0){
+			return comboDetailList;
+		}
+		for(List<GoodsStoreSkuAssembleDto> comboSkuList : parserBo.getComboSkuMap().values()){
+			for(GoodsStoreSkuAssembleDto comboSku : comboSkuList){
+				comboSnapshot = BeanMapper.map(comboSku, TradeOrderComboSnapshot.class);
+				comboSnapshot.setId(UuidUtils.getUuid());
+				comboSnapshot.setComboSkuId(comboSku.getAssembleSkuId());
+				comboSnapshot.setOrderId(orderId);
+				comboDetailList.add(comboSnapshot);
+			}
+		}
+		return comboDetailList;
+	}
+	
+	private TradeOrderExtSnapshot buildTradeOrderExt(TradeOrder tradeOrder,TradeOrderLogistics logistics,PlaceOrderParamDto paramDto){
+		TradeOrderExtSnapshot tradeOrderExt = new TradeOrderExtSnapshot();
+		StoreInfo storeInfo = (StoreInfo)paramDto.get("storeInfo");
+		StoreInfoExt storeInfoExt = storeInfo.getStoreInfoExt();
+		
+		tradeOrderExt.setId(UuidUtils.getUuid());
+		tradeOrderExt.setOrderId(tradeOrder.getId());
+		tradeOrderExt.setOrderNo(tradeOrder.getOrderNo());
+		tradeOrderExt.setTransportName(storeInfo.getStoreName());
+		tradeOrderExt.setTransportAddress(String.format("%s%s", storeInfo.getArea(),storeInfo.getAddress()));
+		tradeOrderExt.setTransportLatitude(String.valueOf(storeInfo.getLatitude()));
+		tradeOrderExt.setTransportLongitude(String.valueOf(storeInfo.getLongitude()));
+		tradeOrderExt.setTransportTel(storeInfo.getMobile());
+		if(logistics != null){
+			tradeOrderExt.setReceiverName(logistics.getConsigneeName());
+			tradeOrderExt.setReceiverPrimaryPhone(logistics.getMobile());
+			tradeOrderExt.setReceiverAddress(String.format("%s%s",logistics.getArea(),logistics.getAddress()));
+			tradeOrderExt.setReceiverLatitude(String.valueOf(paramDto.get("receiverLat")));
+			tradeOrderExt.setReceiverLongitude(String.valueOf(paramDto.get("receiverLng")));
+		}
+		tradeOrderExt.setStartPrice(storeInfoExt.getStartPrice());
+		tradeOrderExt.setFreight(storeInfoExt.getFreight());
+		tradeOrderExt.setFreeFreightPrice(storeInfoExt.getFreeFreightPrice());
+		tradeOrderExt.setDeliveryType(storeInfoExt.getDeliveryType());
+		tradeOrderExt.setCommisionRatio(storeInfoExt.getCommisionRatio());
+		
+		return tradeOrderExt;
+	}
+	// End V2.5 added by maojj 2017-06-23
 }
