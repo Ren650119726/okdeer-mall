@@ -23,6 +23,7 @@ import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.mapper.TradeOrderExtSnapshotMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
+import net.sf.json.JSONObject;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -97,12 +98,14 @@ public class ExpressServiceImpl implements ExpressService {
         String url = ElemeOpenConfig.API_URL + RequestConstant.orderCreate;
         String resultJson = HttpClient.postBody(url, pushJson);
 
+        ResultMsg resultMsg = (ResultMsg) JSONObject.toBean(JSONObject.fromObject(resultJson), ResultMsg.class);
+
         // 4、保存推送日志
         ExpressPushLog param = new ExpressPushLog();
         param.setPushJson(pushJson);
         param.setResultJson(resultJson);
         savePushLog(tradeOrder, param);
-        return null;
+        return resultMsg;
     }
 
 
