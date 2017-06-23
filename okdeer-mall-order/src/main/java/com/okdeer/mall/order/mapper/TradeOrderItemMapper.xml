@@ -74,6 +74,11 @@
     <result column="sty_code" property="styleCode" jdbcType="VARCHAR" />
     <result column="recharge_mobile" property="rechargeMobile" jdbcType="VARCHAR" />
     <result column="is_complete" property="isComplete" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.OrderComplete" />
+    <result column="activity_type" property="activityType" jdbcType="INTEGER" />
+    <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+    <result column="activity_price" property="activityPrice" jdbcType="DECIMAL" />
+    <result column="activity_quantity" property="activityQuantity" jdbcType="INTEGER" />
+    <result column="unit" property="unit" jdbcType="VARCHAR" />
   </resultMap>
   
   <sql id="Base_Column_List" >
@@ -511,7 +516,7 @@
   <sql id="Item_Column_List" >
     item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, item.service_assurance,
-    item.status, item.appraise, item.create_time,item.income,item.recharge_mobile,item.is_complete,item.activity_type,item.activity_price,item.activity_quantity
+    item.status, item.appraise, item.create_time,item.income,item.recharge_mobile,item.is_complete,item.activity_type,item.activity_id,item.activity_price,item.activity_quantity,item.unit
   </sql>
   
   <!-- wusw:订单项和订单项信息resultMap  -->

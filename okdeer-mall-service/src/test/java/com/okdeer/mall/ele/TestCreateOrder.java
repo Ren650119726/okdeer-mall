@@ -1,14 +1,12 @@
 package com.okdeer.mall.ele;
 
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.Application;
 import com.okdeer.mall.ele.config.ElemeOpenConfig;
 import com.okdeer.mall.ele.config.RequestConstant;
 import com.okdeer.mall.ele.request.ElemeCreateOrderRequest;
 import com.okdeer.mall.ele.sign.OpenSignHelper;
-import com.okdeer.mall.ele.util.HttpClient;
-import com.okdeer.mall.ele.util.HttpClientRuntimeException;
-import com.okdeer.mall.ele.util.JsonUtils;
-import com.okdeer.mall.ele.util.RandomUtils;
+import com.okdeer.mall.ele.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
@@ -30,7 +28,7 @@ import java.util.Map;
 @SpringApplicationConfiguration(classes = Application.class)
 public class TestCreateOrder {
     private static final Log logger = LogFactory.getLog(TestCreateOrder.class);
-    private String token = "3f3fec2e-f1a0-456a-a930-e9a53c7f379e";
+    private String token = "3da58b01-d78a-4d0d-a9ea-a1c5eb05db46";
 
     /**
      * 推送一个订单
@@ -46,7 +44,7 @@ public class TestCreateOrder {
          * transportInfo
          */
         ElemeCreateOrderRequest.TransportInfo transportInfo = new ElemeCreateOrderRequest.TransportInfo();
-        //transportInfo.setTransport_name("饿了么BOD");
+        transportInfo.setTransport_name("饿了么BOD");
         transportInfo.setTransport_address("300弄亚都国际名园5号楼2003室");
         transportInfo.setTransport_tel("13900000000");
 
@@ -82,7 +80,7 @@ public class TestCreateOrder {
         item.setItem_quantity(5);
         item.setItem_actual_price(new BigDecimal(9.50));
         item.setItem_price(new BigDecimal(10.00));
-        item.setIs_agent_purchase(1);
+        item.setIs_agent_purchase(0);
         item.setIs_need_package(1);
 
         ElemeCreateOrderRequest.ItemsJson item1 = new ElemeCreateOrderRequest.ItemsJson();
@@ -90,7 +88,7 @@ public class TestCreateOrder {
         item1.setItem_quantity(5);
         item1.setItem_actual_price(new BigDecimal(9.50));
         item1.setItem_price(new BigDecimal(10.00));
-        item1.setIs_agent_purchase(1);
+        item1.setIs_agent_purchase(0);
         item1.setIs_need_package(1);
 
         itemsJsons[0] = item;
@@ -119,7 +117,7 @@ public class TestCreateOrder {
         data.setInvoice("伟大的公司");
         data.setOrder_payment_status(1);
         data.setOrder_payment_method(1);
-        data.setIs_agent_payment(1); // 是否需要承运商代收货款 0：否 1：是
+        data.setIs_agent_payment(0); // 是否需要承运商代收货款 0：否 1：是
         data.setRequire_payment_pay(new BigDecimal(50.00));
         data.setGoods_count(4);
         data.setRequire_receive_time(LocalDateTime.now().plusHours(1).
@@ -153,6 +151,8 @@ public class TestCreateOrder {
         String url = ElemeOpenConfig.API_URL + RequestConstant.orderCreate;
         try {
             String flag = HttpClient.postBody(url, requestJson);
+            ResultMsg rm = new ResultMsg();
+            BeanMapper.copy(flag, rm);
             System.out.println("flag=" + flag);
         } catch (Exception e) {
             logger.error("creating order request occurs an exception!");
