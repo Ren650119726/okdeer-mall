@@ -64,7 +64,7 @@ public class FavourParamBuilder {
 		paramBO.setStoreId(paramDto.getStoreId());
 		paramBO.setStoreType(storeType);
 		paramBO.setCouponsType(EnumAdapter.convert(storeType));
-		paramBO.setTotalAmount(paramDto.getTotalAmount());
+		paramBO.setTotalAmount(paramDto.getEnjoyFavourTotalAmount());
 		if(storeType == StoreTypeEnum.SERVICE_STORE){
 			// 服务店代金券，需要根据用户收货地址来确认是否可用。
 			UserAddressVo addr = orderDto.getUserAddrInfo();

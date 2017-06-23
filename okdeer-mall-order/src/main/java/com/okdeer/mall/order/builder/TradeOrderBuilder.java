@@ -344,83 +344,22 @@ public class TradeOrderBuilder {
 	 * @date 2016年12月22日
 	 */
 	public void parseFavour(TradeOrder tradeOrder,PlaceOrderParamDto paramDto) throws ServiceException{
-		// 优惠金额
-		BigDecimal favourAmount = getFavourAmount(paramDto, tradeOrder.getTotalAmount());	
-		// 设置订单优惠金额
-		tradeOrder.setPreferentialPrice(favourAmount);
+		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
+		// 平台优惠
+		tradeOrder.setPlatformPreferential(format(parserBo.getPlatformPreferential()));
+		// 店铺优惠
+		tradeOrder.setStorePreferential(format(parserBo.getPlatformPreferential()));
+		// 运费优惠
+		tradeOrder.setFarePreferential(format(parserBo.getFarePreferential()));
+		// 实际运费优惠
+		tradeOrder.setRealFarePreferential(format(parserBo.getRealFarePreferential()));
+		// 设置订单优惠金额。此处不加运费优惠，到处理运费时统一进行计算
+		tradeOrder.setPreferentialPrice(tradeOrder.getPlatformPreferential()
+				.add(tradeOrder.getStorePreferential()));
 	}
 	
-	private BigDecimal getFavourAmount(PlaceOrderParamDto paramDto, BigDecimal totalAmount) throws ServiceException {
-		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
-		BigDecimal favourAmount = new BigDecimal(0.0);
-		if(parserBo.isLowFavour()){
-			return parserBo.getTotalLowFavour();
-		}else if(paramDto.getOrderType() == PlaceOrderTypeEnum.SECKILL_ORDER){
-			// 如果是秒杀订单。优惠是活动价格-商品原价
-			ActivitySeckill seckillInfo = (ActivitySeckill)paramDto.get("seckillInfo");
-			favourAmount = parserBo.getCurrentStoreSkuBo(seckillInfo.getStoreSkuId()).getOnlinePrice().subtract(seckillInfo.getSeckillPrice());
-			return favourAmount;
-		}
-		// 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
-		ActivityTypeEnum activityType = paramDto.getActivityType();
-		switch (activityType) {
-			case VONCHER:
-				favourAmount = getCouponsFaceValue(paramDto);
-				break;
-			case FULL_REDUCTION_ACTIVITIES:
-				favourAmount = getDiscountValue(paramDto.getActivityItemId());
-				break;
-			case FULL_DISCOUNT_ACTIVITIES:
-				favourAmount = getDiscountFavour(paramDto.getActivityItemId(), totalAmount);
-				break;
-			default:
-				break;
-		}
-		if (favourAmount == null) {
-			throw new ServiceException("未查到优惠金额");
-		}
-		return favourAmount;
-	}
-
-	/**
-	 * @Description: 获取代金券面额
-	 * @param req 订单请求对象
-	 * @return BigDecimal  
-	 * @author maojj
-	 * @date 2016年7月14日
-	 */
-	private BigDecimal getCouponsFaceValue(PlaceOrderParamDto paramDto) {
-		// 查询代金券
-		ActivityCoupons activityCoupons = activityCouponsRecordMapper
-				.selectCouponsItem(buildCouponsFindVo(paramDto));
-		return BigDecimal.valueOf(activityCoupons.getFaceValue());
-	}
-
-	/**
-	 * @Description: 获取满减优惠金额
-	 * @param req 订单请求对象
-	 * @param totalAmount 订单总金额
-	 * @return BigDecimal  
-	 * @author maojj
-	 * @date 2016年7月14日
-	 */
-	private BigDecimal getDiscountFavour(String activityItemId, BigDecimal totalAmount) {
-		BigDecimal discountVal = getDiscountValue(activityItemId);
-		BigDecimal actualAmount = totalAmount.multiply(discountVal).divide(BigDecimal.valueOf(10)).setScale(2,
-				BigDecimal.ROUND_DOWN);
-		return totalAmount.subtract(actualAmount);
-	}
-
-	/**
-	 * @Description: 获取满减满折优惠金额
-	 * @param req 订单请求对象
-	 * @param type 折扣类型：满减或满折
-	 * @return BigDecimal  
-	 * @author maojj
-	 * @date 2016年7月14日
-	 */
-	private BigDecimal getDiscountValue(String activityItemId) {
-		return activityDiscountMapper.getDiscountValue(activityItemId);
+	private BigDecimal format(BigDecimal value){
+		return value == null ? BigDecimal.valueOf(0.00) : value;
 	}
 	
 	/**
@@ -453,68 +392,15 @@ public class TradeOrderBuilder {
 	 * @date 2016年7月14日
 	 */
 	private void setIncome(TradeOrder tradeOrder,boolean isLowFavour,PlaceOrderTypeEnum orderType) {
-		
-		if(orderType == PlaceOrderTypeEnum.SECKILL_ORDER || isLowFavour){
-			// 如果是秒杀 或者是低价优惠
+		if(tradeOrder.getStorePreferential().compareTo(BigDecimal.valueOf(0.00)) == 1){
+			// 如果有店铺优惠，店铺收入=实付金额
 			tradeOrder.setIncome(tradeOrder.getActualAmount());
-			return;
-		}
-
-		ActivityTypeEnum activityType = tradeOrder.getActivityType();
-		
-		switch (activityType) {
-			case NO_ACTIVITY:
-			case VONCHER:
-				tradeOrder.setIncome(tradeOrder.getTotalAmount());
-				break;
-			case FULL_REDUCTION_ACTIVITIES:
-				if (isPublishByStore(tradeOrder.getActivityId())) {
-					// 活动由店铺发起，则收入==实付金额
-					tradeOrder.setIncome(tradeOrder.getActualAmount());
-				} else {
-					tradeOrder.setIncome(tradeOrder.getTotalAmount());
-				}
-				break;
-			case FULL_DISCOUNT_ACTIVITIES:
-				tradeOrder.setIncome(tradeOrder.getActualAmount());
-				break;
-			default:
-				break;
+		}else{
+			// 如果没有店铺优惠，店铺收入=总金额
+			tradeOrder.setIncome(tradeOrder.getTotalAmount());
 		}
 	}
 
-	/**
-	 * @Description: 构建代金券查询条件
-	 * @param req 订单请求对象
-	 * @return CouponsFindVo  
-	 * @author maojj
-	 * @date 2016年7月14日
-	 */
-	private CouponsFindVo buildCouponsFindVo(PlaceOrderParamDto paramDto) {
-		CouponsFindVo findCondition = new CouponsFindVo();
-		findCondition.setActivityId(paramDto.getActivityId());
-		findCondition.setActivityItemId(paramDto.getActivityItemId());
-		findCondition.setConponsType(paramDto.getCouponsType());
-		return findCondition;
-	}
-	
-	/**
-	 * @Description: 判断活动是否由店铺发起
-	 * @param activityId 活动ID
-	 * @return boolean  
-	 * @author maojj
-	 * @date 2016年7月14日
-	 */
-	public boolean isPublishByStore(String activityId) {
-		boolean isPublishByStore = true;
-		ActivityDiscount discount = activityDiscountMapper.findById(activityId);
-		String storeId = discount.getStoreId();
-		if ("0".equals(storeId)) {
-			isPublishByStore = false;
-		}
-		return isPublishByStore;
-	}
-	
 	/**
 	 * @Description: 处理运费
 	 * @param tradeOrder
@@ -524,9 +410,11 @@ public class TradeOrderBuilder {
 	 */
 	public void processFare(TradeOrder tradeOrder,BigDecimal fare){
 		tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(fare));
-		tradeOrder.setActualAmount(tradeOrder.getActualAmount().add(fare));
+		tradeOrder.setActualAmount(tradeOrder.getActualAmount().add(fare.subtract(tradeOrder.getRealFarePreferential())));
+		// TODO 如果店铺选择的是第三方配送，运费不计入收入。如果店铺选择的是商家自送，运费计入补贴
 		tradeOrder.setIncome(tradeOrder.getIncome().add(fare));
 		tradeOrder.setFare(fare);
+		tradeOrder.setPreferentialPrice(tradeOrder.getPreferentialPrice().add(tradeOrder.getRealFarePreferential()));
 	}
 	
 	public void processBreach(TradeOrder tradeOrder,PlaceOrderParamDto paramDto){
@@ -562,9 +450,10 @@ public class TradeOrderBuilder {
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
 		
 		String orderId = tradeOrder.getId();
-		// 订单项总金额
+		// 订单项参与平台优惠的总金额
 		BigDecimal totalAmount = parserBo.getTotalAmountHaveFavour();
-		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
+		// 订单总的平台优惠
+		BigDecimal platformFavour = parserBo.getPlatformPreferential();
 		BigDecimal favourSum = new BigDecimal("0.00");
 		int index = 0;
 		int haveFavourItemSize = parserBo.getHaveFavourGoodsMap().size();
@@ -613,29 +502,34 @@ public class TradeOrderBuilder {
 			// 订单项总金额
 			BigDecimal totalAmountOfItem = skuBo.getTotalAmount();
 			tradeOrderItem.setTotalAmount(totalAmountOfItem);
-			// 计算订单项优惠金额
+			// 计算订单项平台优惠金额
 			BigDecimal favourItem = BigDecimal.valueOf(0.0);
-			if (paramDto.getActivityType() != ActivityTypeEnum.NO_ACTIVITY) {
+			// 订单项店铺优惠金额
+			BigDecimal storeFavourItem = BigDecimal.valueOf(0.0);
+			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0){
+				storeFavourItem = skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
+						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity()));
+			}
+			if (platformFavour.compareTo(BigDecimal.valueOf(0.00)) == 1) {
 				if(!parserBo.getHaveFavourGoodsMap().containsKey(skuBo.getId())){
 					favourItem = BigDecimal.valueOf(0.0);
 				} else if (index++ < haveFavourItemSize - 1) {
-					favourItem = totalAmountOfItem.multiply(totalFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
+					favourItem = totalAmountOfItem.subtract(storeFavourItem).multiply(platformFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
 					if (favourItem.compareTo(totalAmountOfItem) == 1) {
 						favourItem = totalAmountOfItem;
 					}
 					favourSum = favourSum.add(favourItem);
 				} else {
-					favourItem = totalFavour.subtract(favourSum);
+					favourItem = platformFavour.subtract(favourSum);
 					if (favourItem.compareTo(totalAmountOfItem) == 1) {
 						favourItem = totalAmountOfItem;
 					}
 				}
-			}else if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0){
-				favourItem = skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
-						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity()));
 			}
 			// 设置优惠金额
-			tradeOrderItem.setPreferentialPrice(favourItem);
+			tradeOrderItem.setPreferentialPrice(favourItem.add(storeFavourItem));
+			// 设置平台优惠金额
+			tradeOrderItem.setStorePreferential(storeFavourItem);
 			// 设置实付金额
 			tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(favourItem));
 			// 设置实付金额
@@ -644,8 +538,8 @@ public class TradeOrderBuilder {
 				tradeOrderItem.setActualAmount(BigDecimal.valueOf(0));
 				tradeOrderItem.setIncome(BigDecimal.valueOf(0));
 			}else{
-				// 设置订单项收入
-				setOrderItemIncome(tradeOrderItem, tradeOrder);
+				// 设置订单项总收入=订单项总金额-订单项店铺优惠
+				tradeOrderItem.setIncome(totalAmountOfItem.subtract(storeFavourItem));
 			}
 			if (tradeOrderItem.getActualAmount().compareTo(BigDecimal.ZERO) == 0
 					&& tradeOrderItem.getSpuType() == SpuTypeEnum.fwdDdxfSpu ) {
@@ -656,35 +550,6 @@ public class TradeOrderBuilder {
 		}
 
 		return orderItemList;
-	}
-	
-	public void setOrderItemIncome(TradeOrderItem tradeOrderItem, TradeOrder tradeOrder){
-		if(tradeOrderItem.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
-			// 如果是低价优惠
-			tradeOrderItem.setIncome(tradeOrderItem.getActualAmount());
-			return;
-		}
-		ActivityTypeEnum activityType = ActivityTypeEnum.enumValueOf(tradeOrderItem.getActivityType());
-		switch (activityType) {
-			case NO_ACTIVITY:
-			case VONCHER:
-				tradeOrderItem.setIncome(tradeOrderItem.getTotalAmount());
-				break;
-			case FULL_REDUCTION_ACTIVITIES:
-				if (isPublishByStore(tradeOrder.getActivityId())) {
-					// 活动由店铺发起，则收入==实付金额
-					tradeOrderItem.setIncome(tradeOrderItem.getActualAmount());
-				} else {
-					tradeOrderItem.setIncome(tradeOrderItem.getTotalAmount());
-				}
-				break;
-			case FULL_DISCOUNT_ACTIVITIES:
-			case SECKILL_ACTIVITY:
-				tradeOrderItem.setIncome(tradeOrderItem.getActualAmount());
-				break;
-			default:
-				break;
-		}
 	}
 	
 	public TradeOrderLogistics buildTradeOrderLogistics(TradeOrder tradeOrder, PlaceOrderParamDto paramDto){

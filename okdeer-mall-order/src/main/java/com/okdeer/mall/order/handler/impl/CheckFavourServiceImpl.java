@@ -15,6 +15,7 @@ import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.common.utils.EnumAdapter;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
@@ -23,18 +24,23 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsStoreMapper;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.discount.enums.ActivityBusinessType;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
+import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.enums.LimitSkuType;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
+import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
+import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.UseClientType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
@@ -71,11 +77,17 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	@Resource
 	private ActivityDiscountService activityDiscountService;
 
+	@Resource
+	private ActivityDiscountMapper activityDiscountMapper;
+	
 	/**
 	 * 代金券Mapper
 	 */
 	@Resource
 	private ActivityCouponsMapper activityCouponsMapper;
+	
+	@Resource
+	private ActivityCouponsStoreMapper activityCouponsStoreMapper;
 
 	/**
 	 * 导航类目
@@ -98,11 +110,6 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		// 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
 		ActivityTypeEnum activityType = paramDto.getActivityType();
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
-		if(parserBo.isLowFavour() && activityType != ActivityTypeEnum.NO_ACTIVITY){
-			// 参与低价之后，不能参与任何其他优惠活动
-			resp.setResult(ResultCodeEnum.FAVOUR_NOT_SUPPORT);
-			return;
-		}
 		boolean isValid = true;
 		switch (activityType) {
 			case VONCHER:
@@ -114,6 +121,11 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				break;
 			default:
 				break;
+		}
+		// 检查运费优惠
+		if(!StringUtils.isEmpty(paramDto.getFareActivityId())){
+			// 如果请求中存在运费领取记录Id，则检查运费
+			checkFareCoupons(paramDto, parserBo, resp);
 		}
 		if (!isValid && resp.isSuccess()) {
 			resp.setResult(ResultCodeEnum.FAVOUR_NOT_SUPPORT);
@@ -142,12 +154,24 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		}
 		// 查询代金券
 		ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsRecord.getCouponsId());
+		// 检查金额是否达到使用下限
+		if(paramDto.getEnjoyFavourTotalAmount().compareTo(new BigDecimal(coupons.getArriveLimit())) == -1){
+			return false;
+		}
+		// 检查当前店铺是否可使用该代金券
+		if(coupons.getAreaType() != AreaType.national && activityCouponsStoreMapper.findByStoreIdAndCouponsId(paramDto.getStoreId(), coupons.getId()) == null){
+			return false;
+		}
+		
 		if(coupons.getUseUserType() == UseUserType.ONlY_NEW_USER){
 			// 仅限首单用户，检查当前用户是否为首单用户。
 			if(!isFirstOrderUser(paramDto.getUserId())){
 				resp.setResult(ResultCodeEnum.ACTIVITY_LIMIT_FIRST_ORDER);
 				return false;
 			}
+		}
+		if(coupons.getUseClientType() != UseClientType.ALLOW_All && coupons.getUseClientType() != EnumAdapter.convert(paramDto.getChannel())){
+			return false;
 		}
 		if(coupons.getIsCategory() == Constant.ONE){
 			if(coupons.getType() == CouponsType.bld.ordinal()){
@@ -158,7 +182,11 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				for(CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()){
 					if(categoryIdLimitList.contains(storeSkuBo.getSpuCategoryId())){
 						haveFavourGoodsMap.put(storeSkuBo.getId(), storeSkuBo);
-						totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
+						if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+							totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(BigDecimal.valueOf(storeSkuBo.getQuantity()-storeSkuBo.getSkuActQuantity())));
+						}else{
+							totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
+						}
 					}
 				}
 				if(totalAmount.compareTo(BigDecimal.valueOf(0.0)) == 0 || totalAmount.compareTo(BigDecimal.valueOf(coupons.getArriveLimit())) == -1){
@@ -201,6 +229,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				return false;
 			}
 		}
+		parserBo.setPlatformPreferential(new BigDecimal(coupons.getFaceValue()));
 		return true;
 	}
 
@@ -213,16 +242,27 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	 * @date 2016年7月14日
 	 */
 	private boolean checkDiscount(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo) throws Exception {
-		String activityId = paramDto.getActivityId();
 		String userId = paramDto.getUserId();
 		String activityItemId = paramDto.getActivityItemId();
 		boolean isValid = true;
-		ActivityInfoDto actInfoDto = activityDiscountService.findInfoById(activityId, false);
 		ActivityDiscountCondition condition = activityDiscountConditionMapper.findById(activityItemId);
+		String activityId = condition.getDiscountId();
+		ActivityInfoDto actInfoDto = activityDiscountService.findInfoById(activityId, false);
 		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
 		if (actInfo.getStatus() != ActivityDiscountStatus.ing) {
 			isValid = false;
 		}
+		// Begin V2.5 added by maojj 2017-06-23
+		// 检查当前店铺是否可使用该满减活动
+		ActivityParamDto actParamDto = new ActivityParamDto();
+		actParamDto.setStoreId(paramDto.getStoreId());
+		actParamDto.setLimitChannel(String.valueOf(paramDto.getChannel().ordinal()));
+		actParamDto.setType(actInfo.getType());
+		List<String> activityIds = activityDiscountMapper.findByStore(actParamDto);
+		if(!activityIds.contains(activityIds)){
+			return false;
+		}
+		// End V2.5 added by maojj 2017-06-23
 		if (actInfo.getLimitUser() == UseUserType.ONlY_NEW_USER) {
 			// 如果限制首单用户
 			if (!isFirstOrderUser(userId)) {
@@ -277,7 +317,11 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			for (CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()) {
 				if (limitCtgIds.contains(storeSkuBo.getSpuCategoryId())) {
 					haveFavourGoodsMap.put(storeSkuBo.getId(), storeSkuBo);
-					totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
+					if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+						totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(BigDecimal.valueOf(storeSkuBo.getQuantity()-storeSkuBo.getSkuActQuantity())));
+					}else{
+						totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
+					}
 				}
 			}
 			if (totalAmount.compareTo(BigDecimal.valueOf(0.00)) == 0 || totalAmount.compareTo(condition.getArrive()) == -1) {
@@ -292,7 +336,11 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			for (CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()) {
 				if (limitSkuIds.contains(storeSkuBo.getId())) {
 					haveFavourGoodsMap.put(storeSkuBo.getId(), storeSkuBo);
-					totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
+					if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+						totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(BigDecimal.valueOf(storeSkuBo.getQuantity()-storeSkuBo.getSkuActQuantity())));
+					}else{
+						totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
+					}
 				}
 			}
 			if (totalAmount.compareTo(BigDecimal.valueOf(0.00)) == 0 || totalAmount.compareTo(condition.getArrive()) == -1) {
@@ -301,6 +349,9 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
 			parserBo.setTotalAmountHaveFavour(totalAmount);
 		}
+		
+		// 满立减只能由平台发起，属于平台优惠。且目前暂时只有满减，没有满折。后续出现满折再在此处做修改
+		parserBo.setPlatformPreferential(condition.getDiscount());
 		return isValid;
 	}
 
@@ -308,4 +359,66 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		return sysBuyerFirstOrderRecordService.isExistsOrderRecord(userId) ? false
 				: true;
 	}
+	
+	private boolean checkFareCoupons(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp) throws Exception{
+		ActivityCouponsRecord couponsRecord = activityCouponsRecordMapper.selectByPrimaryKey(paramDto.getFareActivityId());
+		// 增加领取记录的校验。校验请求提供的领取记录是否是当前用户
+		if(couponsRecord == null || !couponsRecord.getCollectUserId().equals(paramDto.getUserId())){
+			return false;
+		}
+		if (couponsRecord.getStatus() != ActivityCouponsRecordStatusEnum.UNUSED) {
+			return false;
+		}
+		// 查询代金券
+		ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsRecord.getCouponsId());
+		// 检查金额是否达到使用下限
+		if(paramDto.getEnjoyFavourTotalAmount().compareTo(new BigDecimal(coupons.getArriveLimit())) == -1){
+			return false;
+		}
+		if(coupons.getType() != CouponsType.bldyf.ordinal()){
+			return false;
+		}
+		if(coupons.getUseUserType() == UseUserType.ONlY_NEW_USER){
+			// 仅限首单用户，检查当前用户是否为首单用户。
+			if(!isFirstOrderUser(paramDto.getUserId())){
+				resp.setResult(ResultCodeEnum.ACTIVITY_LIMIT_FIRST_ORDER);
+				return false;
+			}
+		}
+		if(coupons.getUseClientType() != UseClientType.ALLOW_All && coupons.getUseClientType() != EnumAdapter.convert(paramDto.getChannel())){
+			return false;
+		}
+		ActivityRecordParamBo recParamBo = null;
+		if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0 && StringUtils.isNotEmpty(paramDto.getDeviceId())){
+			// 同一设备id每天最多使用张数 0：不限，大于0有限制
+			recParamBo = new ActivityRecordParamBo();
+			recParamBo.setPkId(coupons.getId());
+			recParamBo.setDeviceId(paramDto.getDeviceId());
+			recParamBo.setRecDate(DateUtils.getDate());
+			int deviceTotalNum = activityCouponsRecordMapper.countDayFreq(recParamBo);
+			if (coupons.getDeviceDayLimit().intValue() <= deviceTotalNum) {
+				return false;
+			}
+		}
+		if(coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0){
+			// 同一设备id每天最多使用张数 0：不限，大于0有限制
+			recParamBo = new ActivityRecordParamBo();
+			recParamBo.setPkId(coupons.getId());
+			recParamBo.setUserId(paramDto.getUserId());
+			recParamBo.setRecDate(DateUtils.getDate());
+			int userTotalNum = activityCouponsRecordMapper.countDayFreq(recParamBo);
+			if (coupons.getAccountDayLimit().intValue() <= userTotalNum) {
+				return false;
+			}
+		}
+		BigDecimal couponsValue = new BigDecimal(coupons.getFaceValue());
+		parserBo.setFarePreferential(couponsValue);
+		if(couponsValue.compareTo(parserBo.getFare()) >= 0){
+			parserBo.setRealFarePreferential(parserBo.getFare());
+		}else{
+			parserBo.setRealFarePreferential(couponsValue);
+		}
+		
+		return true;
+	} 
 }

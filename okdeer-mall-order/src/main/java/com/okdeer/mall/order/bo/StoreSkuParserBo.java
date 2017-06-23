@@ -101,7 +101,7 @@ public class StoreSkuParserBo {
 	private BigDecimal totalItemAmount = BigDecimal.valueOf(0.0);
 	
 	/**
-	 * 缓存低价商品的活动数量
+	 * 缓存请求的低价商品的活动数量
 	 */
 	private Map<String,Integer> skuActNumMap = new HashMap<String,Integer>();
 	
@@ -149,6 +149,30 @@ public class StoreSkuParserBo {
 	 * 享受优惠的总金额
 	 */
 	private BigDecimal totalAmountHaveFavour;
+	
+	// Begin V2.5 added by maojj 2017-06-23
+	/**
+	 * 平台优惠金额
+	 * 注：平台优惠金额包括：代金券、满减
+	 */
+	private BigDecimal platformPreferential;
+	
+	/**
+	 * 店铺优惠
+	 * 注：店铺优惠包括：特价商品产生的优惠，秒杀优惠 
+	 */
+	private BigDecimal storePreferential;
+	
+	/**
+	 * 运费优惠
+	 */
+	private BigDecimal farePreferential;
+	
+	/**
+	 * 实际运费优惠
+	 */
+	private BigDecimal realFarePreferential;
+	// End V2.5 added by maojj 2017-06-23
 	
 	/**
 	 * 商品所属店铺 
@@ -629,17 +653,48 @@ public class StoreSkuParserBo {
 		this.haveFavourGoodsMap = haveFavourGoodsMap;
 	}
 
-	
 	public BigDecimal getTotalAmountHaveFavour() {
 		return this.totalAmountHaveFavour == null ? this.totalItemAmount : this.totalAmountHaveFavour;
 	}
-	
+
 	public void setTotalAmountHaveFavour(BigDecimal totalAmountHaveFavour) {
 		this.totalAmountHaveFavour = totalAmountHaveFavour;
 	}
 
-	
 	public Set<String> getStoreIdSet() {
 		return storeIdSet;
 	}
+
+	public BigDecimal getPlatformPreferential() {
+		return platformPreferential;
+	}
+
+	public void setPlatformPreferential(BigDecimal platformPreferential) {
+		this.platformPreferential = platformPreferential;
+	}
+
+	public BigDecimal getStorePreferential() {
+		return storePreferential;
+	}
+
+	public void setStorePreferential(BigDecimal storePreferential) {
+		this.storePreferential = storePreferential;
+	}
+
+	public BigDecimal getFarePreferential() {
+		return farePreferential;
+	}
+
+	public void setFarePreferential(BigDecimal farePreferential) {
+		this.farePreferential = farePreferential;
+	}
+
+	public BigDecimal getRealFarePreferential() {
+		return realFarePreferential;
+	}
+
+	public void setRealFarePreferential(BigDecimal realFarePreferential) {
+		this.realFarePreferential = realFarePreferential;
+	}
+
 }
