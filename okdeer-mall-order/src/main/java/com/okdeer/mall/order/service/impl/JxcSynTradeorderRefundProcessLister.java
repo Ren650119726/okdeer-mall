@@ -147,7 +147,15 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		vo.setReferenceNo(tradeOrderRefunds.getOrderNo());
 		vo.setRefundsType(tradeOrderRefunds.getStatus().ordinal());
 		vo.setRefundsReason(tradeOrderRefunds.getRefundsReason());
-		vo.setRefuseReason(tradeOrderRefunds.getRefuseReson());
+		//如果是退货单  并且 状态是拒绝  就给值   要不然 就置空
+		if(tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.SELLER_REJECT_APPLY || 
+		   tradeOrderRefunds.getRefundsStatus()	== RefundsStatusEnum.SELLER_REJECT_REFUND
+				){
+			vo.setRefuseReason(tradeOrderRefunds.getRefuseReson());
+		} else {
+			vo.setRefundsReason(null);
+		}
+		
 		vo.setMemo(tradeOrderRefunds.getMemo());
 
 		List<TradeOrderRefundsItem> tradeOrderRefundsItems = getTradeOrderRefundsItem(tradeOrderContext);
