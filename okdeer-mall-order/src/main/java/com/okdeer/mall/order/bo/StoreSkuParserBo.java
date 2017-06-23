@@ -512,6 +512,20 @@ public class StoreSkuParserBo {
 		}
 		return resultMap;
 	}
+	
+	// Begin V2.5 added by maojj 2017-06-23
+	public void refreshComboStockList(List<Integer> comboStockList){
+		if(CollectionUtils.isEmpty(comboStockList) && comboStockList.size() != this.comboSkuIdList.size()){
+			return;
+		}
+		int index = 0;
+		CurrentStoreSkuBo storeSkuBo = null;
+		for(Integer comboStock : comboStockList){
+			storeSkuBo = this.currentSkuMap.get(this.comboSkuIdList.get(index++));
+			storeSkuBo.setSellable(comboStock);
+		}
+	}
+	// End V2.5 added by maojj 2017-06-23
 
 	public Map<String, List<String>> getActivitySkuMap() {
 		return activitySkuMap;

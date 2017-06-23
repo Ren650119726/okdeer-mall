@@ -29,7 +29,6 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.discount.enums.ActivityBusinessType;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
-import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.enums.LimitSkuType;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;

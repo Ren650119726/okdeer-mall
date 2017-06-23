@@ -34,6 +34,10 @@
     <result column="activity_quantity" property="activityQuantity" jdbcType="TINYINT" />
     <result column="unit" property="unit" jdbcType="VARCHAR" />
     <!-- End V2.0 added by maojj 2017-01-07 -->
+    <!-- Begin V2.5 added by maojj 2017-06-23 -->
+    <result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
+    <result column="commission" property="commission" jdbcType="DECIMAL" />
+    <!-- End V2.0 added by maojj 2017-06-23-->
     <association property="tradeOrderRefunds" javaType="com.okdeer.mall.order.entity.TradeOrderRefunds">
     	<result column="refoundId" property="id" jdbcType="VARCHAR" />
 	    <result column="refunds_status" property="refundsStatus" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundsStatusEnum" />
@@ -84,7 +88,8 @@
   <sql id="Base_Column_List" >
     id, order_id, store_spu_id, store_sku_id, sku_name,properties_indb, main_pic_prl, bar_code,
     spu_type, unit_price, quantity,weight,service_assurance,total_amount,income, actual_amount, preferential_price, 
-    status, appraise,compain_status,create_time,income,recharge_mobile,is_complete,activity_type,activity_price,activity_quantity
+    status, appraise,compain_status,create_time,income,recharge_mobile,is_complete,activity_type,activity_price,
+    activity_quantity,commission,store_preferential
   </sql>
   
   <sql id="condition" >
@@ -212,9 +217,13 @@
 			income,
 			recharge_mobile,
 			is_complete,
+			
 			activity_price,
 			activity_quantity,
-			unit
+			unit,
+			
+			store_preferential,
+			commission
 		)values
 		<foreach collection="list" item="item" index="index" separator="," >
         (
@@ -249,6 +258,9 @@
 			#{item.activityPrice,jdbcType=DECIMAL},
 			#{item.activityQuantity,jdbcType=INTEGER},
 			#{item.unit,jdbcType=VARCHAR}
+			
+			#{item.storePreferential,jdbcType=DECIMAL},
+			#{item.commission,jdbcType=DECIMAL},
         )
 		</foreach>
   </insert>
