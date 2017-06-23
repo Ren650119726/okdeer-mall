@@ -35,7 +35,7 @@ public class TradeOrderRefundsServiceImplTest extends BaseServiceTest{
 	@Parameters
 	public static Collection<Object[]> initParam(){
 		return Arrays.asList(new Object[][]{
-			{"40289d635c3e7c74015c3e98d3a50046",RefundsStatusEnum.FORCE_SELLER_REFUND,"8a94e8f152967d17015297323ada0011"}
+			{"40289d645cc40316015cc566c0b103ec",RefundsStatusEnum.FORCE_SELLER_REFUND,"14527626891242d4d00a207c4d69bd80"}
 		});
 	}
 

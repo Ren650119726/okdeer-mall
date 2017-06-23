@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -18,7 +19,6 @@ import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.mall.activity.bo.FavourParamBO;
-import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
@@ -98,10 +98,10 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 	@Override
 	public PreferentialVo findPreferentialByUser(FavourParamBO paramBo) throws Exception {
 		PreferentialVo preferentialVo = new PreferentialVo();
-		// 确定首单用户专享代金券是否能使用
-
 		// 获取用户有效的代金券
 		List<Coupons> couponList = getCouponsList(paramBo);
+		// 抽取运费代金券
+		List<Coupons> fareCouponList = extractFareCouponsList(couponList);
 		List<Discount> discountList = Lists.newArrayList();
 		// 获取用户有效的满减
 		List<FullSubtract> fullSubtractList = getFullSubtractList(paramBo);
@@ -109,12 +109,15 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 		Favour maxFavourOnline = getMaxFavour(couponList, discountList, fullSubtractList, true);
 		// 获取线下支付最大优惠
 		Favour maxFavourOffline = getMaxFavour(couponList, discountList, fullSubtractList, false);
+		// 获取最大运费代金券
+		Favour maxFareFavour = getMaxFavour(fareCouponList);
 
 		preferentialVo.setCouponList(couponList);
 		preferentialVo.setDiscountList(discountList);
 		preferentialVo.setFullSubtractList(fullSubtractList);
 		preferentialVo.setMaxFavourOnline(maxFavourOnline);
 		preferentialVo.setMaxFavourOffline(maxFavourOffline);
+		preferentialVo.setMaxFareFavour(maxFareFavour);
 		return preferentialVo;
 	}
 
@@ -154,7 +157,12 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 						for (PlaceOrderItemDto goods : paramBo.getGoodsList()) {
 							if (limitCtgIds.contains(goods.getSpuCategoryId())) {
 								// 如果包含此分类，则意味着该商品在活动范围之类。计算总金额
-								totalAmount = totalAmount.add(goods.getTotalAmount());
+								if(goods.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+									// 低价商品只有原价购买的才可享受优惠
+									totalAmount = totalAmount.add(goods.getSkuPrice().multiply(BigDecimal.valueOf(goods.getQuantity()-goods.getSkuActQuantity())));
+								}else{
+									totalAmount = totalAmount.add(goods.getTotalAmount());
+								}
 							}
 						}
 						if (totalAmount.compareTo(new BigDecimal(coupons.getArrive())) == -1) {
@@ -262,8 +270,12 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 					// 遍历购买的商品
 					for (PlaceOrderItemDto goods : goodsList) {
 						if (limitCtgIds.contains(goods.getSpuCategoryId())) {
-							// 如果包含此分类，则意味着该商品在活动范围之类。计算总金额
-							totalAmount = totalAmount.add(goods.getTotalAmount());
+							if(goods.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+								// 低价商品只有原价购买的才可享受优惠
+								totalAmount = totalAmount.add(goods.getSkuPrice().multiply(BigDecimal.valueOf(goods.getQuantity()-goods.getSkuActQuantity())));
+							}else{
+								totalAmount = totalAmount.add(goods.getTotalAmount());
+							}
 						}
 					}
 					if (totalAmount.compareTo(BigDecimal.valueOf(0.00)) == 0) {
@@ -276,8 +288,13 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 					// 遍历购买的商品
 					for (PlaceOrderItemDto goods : goodsList) {
 						if (limitSkuIds.contains(goods.getStoreSkuId())) {
-							// 如果包含此分类，则意味着该商品在活动范围之类。计算总金额
-							totalAmount = totalAmount.add(goods.getTotalAmount());
+							// 如果包含此商品，则意味着该商品在活动范围之类。计算总金额
+							if(goods.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+								// 低价商品只有原价购买的才可享受优惠
+								totalAmount = totalAmount.add(goods.getSkuPrice().multiply(BigDecimal.valueOf(goods.getQuantity()-goods.getSkuActQuantity())));
+							}else{
+								totalAmount = totalAmount.add(goods.getTotalAmount());
+							}
 						}
 					}
 					if (totalAmount.compareTo(BigDecimal.valueOf(0.00)) == 0) {
@@ -362,4 +379,47 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 		}
 	}
 	// End V2.1 modified by maojj 2017-02-17
+	
+	// Begin V2.5 added by maojj 2017-06-22
+	/**
+	 * @Description: 抽取运费代金券
+	 * @param couponList
+	 * @return   
+	 * @author maojj
+	 * @date 2017年6月22日
+	 */
+	private List<Coupons> extractFareCouponsList(List<Coupons> couponsList){
+		List<Coupons> fareCouponsList = Lists.newArrayList();
+		if(CollectionUtils.isEmpty(couponsList)){
+			return fareCouponsList;
+		}
+		Coupons coupons = null;
+		for(Iterator<Coupons> it = couponsList.iterator();it.hasNext();){
+			coupons = it.next();
+			if(CouponsType.bldyf.getValue().equals(coupons.getType()) || 
+					CouponsType.bldfwdyf.equals(coupons.getType())){
+				// 代金券类型为运费代金券
+				fareCouponsList.add(coupons);
+				it.remove();
+			}
+		}
+		return fareCouponsList;
+	}
+	
+	
+	private Favour getMaxFavour(List<Coupons> couponList) {
+		Collections.sort(couponList, new Comparator<Coupons>() {
+
+			@Override
+			public int compare(Coupons o1, Coupons o2) {
+				return o2.getMaxFavourStrategy().compareTo(o1.getMaxFavourStrategy());
+			}
+		});
+		if (CollectionUtils.isEmpty(couponList)) {
+			return null;
+		} else {
+			return couponList.get(0);
+		}
+	}
+	// End V2.5 added by maojj 2017-06-22
 }

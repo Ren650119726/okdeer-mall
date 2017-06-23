@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCouponsStoreMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="coupons_id" property="couponsId" jdbcType="VARCHAR" />
+        <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, coupons_id, store_id
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_coupons_store
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore" >
+        insert into activity_coupons_store
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="couponsId != null" >
+                coupons_id,
+            </if>
+            <if test="storeId != null" >
+                store_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="couponsId != null" >
+                #{couponsId,jdbcType=VARCHAR},
+            </if>
+            <if test="storeId != null" >
+                #{storeId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore" >
+        update activity_coupons_store
+        <set >
+            <if test="couponsId != null" >
+                coupons_id = #{couponsId,jdbcType=VARCHAR},
+            </if>
+            <if test="storeId != null" >
+                store_id = #{storeId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_coupons_store
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+	<select id="findByStoreIdAndCouponsId" parameterType="map" resultMap="BaseResultMap">
+		SELECT <include refid="Base_Column_List" />
+		FROM activity_coupons_store
+		WHERE store_id = #{storeId,jdbcType=VARCHAR}
+		AND coupons_id = #{couponsId,jdbcType=VARCHAR}
+	</select>
+</mapper>
