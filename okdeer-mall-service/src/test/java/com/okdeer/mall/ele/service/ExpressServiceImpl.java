@@ -10,11 +10,11 @@ public class ExpressServiceImpl extends BaseServiceTest {
     private ExpressService expressService;
 
     @Test
-    public void expressPushTest(){
+    public void expressPushTest() {
         try {
             expressService.saveExpressOrder("40289d675cca2ea5015cced58b40032a");
         } catch (Exception e) {
-            System.out.println("推送订单异常");
+            System.out.println("推送订单异常" + e);
         }
     }
 }

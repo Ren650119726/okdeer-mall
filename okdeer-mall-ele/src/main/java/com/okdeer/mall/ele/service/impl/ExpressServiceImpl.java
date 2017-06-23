@@ -16,8 +16,11 @@ import com.okdeer.mall.ele.util.HttpClient;
 import com.okdeer.mall.ele.util.JsonUtils;
 import com.okdeer.mall.ele.util.RandomUtils;
 import com.okdeer.mall.ele.util.ResultMsg;
+import com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderExtSnapshot;
 import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.mapper.TradeOrderExtSnapshotMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import org.apache.http.message.BasicNameValuePair;
@@ -26,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -62,6 +66,12 @@ public class ExpressServiceImpl implements ExpressService {
      */
     @Autowired
     private TradeOrderItemMapper tradeOrderItemMapper;
+
+    /**
+     * 订单扩展信息快照
+     */
+    @Autowired
+    private TradeOrderExtSnapshotMapper tradeOrderExtSnapshotMapper;
 
     /**
      * 推送订单日志
@@ -124,13 +134,17 @@ public class ExpressServiceImpl implements ExpressService {
      */
     private ExpressOrderData createExpressOrderData(TradeOrder tradeOrder) {
         ExpressOrderData data = new ExpressOrderData();
-        //设置基本信息
+        // 1、设置基本信息
         createExpreOrderBaseData(data, tradeOrder);
-        //设置门店信息
-        data.setTransport_info(createExpressTransport(tradeOrder));
-        //设置收货人信息
-        data.setReceiver_info(createExpressReceiver(tradeOrder));
-        //设置订单项信息
+        // 2、设置门店信息
+        //查询订单扩展信息快照
+        TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
+        paramDto.setOrderId(tradeOrder.getId());
+        TradeOrderExtSnapshot entity = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
+        data.setTransport_info(createExpressTransport(tradeOrder, entity));
+        // 3、设置收货人信息
+        data.setReceiver_info(createExpressReceiver(tradeOrder, entity));
+        // 4、设置订单项信息
         data.setItems_json(createExpressOrderItem(tradeOrder));
         return data;
     }
@@ -153,10 +167,16 @@ public class ExpressServiceImpl implements ExpressService {
      * 封装订单门店地址数据
      *
      * @param tradeOrder TradeOrder
+     * @param entity     TradeOrderExtSnapshot
      * @return ExpressTransportInfo
      */
-    private ExpressTransportInfo createExpressTransport(TradeOrder tradeOrder) {
+    private ExpressTransportInfo createExpressTransport(TradeOrder tradeOrder, TradeOrderExtSnapshot entity) {
         ExpressTransportInfo data = new ExpressTransportInfo();
+        data.setTransport_name(entity.getTransportName());
+        data.setTransport_address(entity.getTransportAddress());
+        data.setTransport_longitude(new BigDecimal(entity.getTransportLongitude()));
+        data.setTransport_latitude(new BigDecimal(entity.getTransportLatitude()));
+        data.setTransport_tel(entity.getTransportTel());
         return data;
     }
 
@@ -164,10 +184,16 @@ public class ExpressServiceImpl implements ExpressService {
      * 封装订单收货人数据
      *
      * @param tradeOrder TradeOrder
+     * @param entity     TradeOrderExtSnapshot
      * @return ExpressReceiverInfo
      */
-    private ExpressReceiverInfo createExpressReceiver(TradeOrder tradeOrder) {
+    private ExpressReceiverInfo createExpressReceiver(TradeOrder tradeOrder, TradeOrderExtSnapshot entity) {
         ExpressReceiverInfo data = new ExpressReceiverInfo();
+        data.setReceiver_name(entity.getReceiverName());
+        data.setReceiver_primary_phone(entity.getReceiverPrimaryPhone());
+        data.setReceiver_address(entity.getReceiverAddress());
+        data.setReceiver_longitude(new BigDecimal(entity.getReceiverLongitude()));
+        data.setReceiver_latitude(new BigDecimal(entity.getReceiverLatitude()));
         return data;
     }
 
