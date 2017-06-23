@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.ele.mapper.ExpressCallbackMapper">
+
+    <!-- 根据条件查询符合的数据 -->
+    <select id="selectExpressCallbackByParam" parameterType="com.okdeer.mall.ele.entity.ExpressCallback"
+            resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        <include refid="Base_Tbale"/>
+        WHERE 1=1
+        <include refid="condition"/>
+    </select>
+
+    <!-- 根据条件查询符合的数据 -->
+    <select id="selectExpressCallbackListByParam" parameterType="com.okdeer.mall.ele.entity.ExpressCallback"
+            resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        <include refid="Base_Tbale"/>
+        WHERE 1=1
+        <include refid="condition"/>
+    </select>
+
+    <!-- 保存数据 -->
+    <insert id="insert" parameterType="com.okdeer.mall.ele.entity.ExpressCallback">
+        INSERT INTO
+        <include refid="Base_Tbale"/>
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <include refid="prefix_sql"/>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <include refid="suffix_sql"/>
+        </trim>
+    </insert>
+
+    <!-- 更新数据 -->
+    <update id="update" parameterType="com.okdeer.mall.ele.entity.ExpressCallback">
+        UPDATE
+        <include refid="Base_Tbale"/>
+        <set>
+            <include refid="update_sql"/>
+        </set>
+        WHERE 1=1
+        <include refid="update_condition"/>
+    </update>
+
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.ele.entity.ExpressCallback">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="open_order_code" property="openOrderCode" jdbcType="VARCHAR"/>
+        <result column="partner_order_code" property="partnerOrderCode" jdbcType="VARCHAR"/>
+        <result column="order_status" property="orderStatus" jdbcType="INTEGER"/>
+        <result column="push_time" property="pushTime" jdbcType="TIMESTAMP"/>
+        <result column="carrier_driver_name" property="carrierDriverName" jdbcType="VARCHAR"/>
+        <result column="carrier_driver_phone" property="carrierDriverPhone" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="latitude" property="latitude" jdbcType="VARCHAR"/>
+        <result column="longitude" property="longitude" jdbcType="VARCHAR"/>
+        <result column="cancel_reason" property="cancelReason" jdbcType="INTEGER"/>
+        <result column="error_code" property="errorCode" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Tbale">
+        express_callback
+    </sql>
+
+    <sql id="Base_Column_List">
+        id, open_order_code, partner_order_code, order_status, push_time, carrier_driver_name, carrier_driver_phone, description, address, latitude, longitude, cancel_reason, error_code
+    </sql>
+
+    <sql id="condition">
+        <include refid="update_condition"/>
+        <if test="null != orderStatus">
+            AND order_status = #{orderStatus,jdbcType=VARCHAR}
+        </if>
+        <if test="null != carrierDriverName and ''!= carrierDriverName">
+            AND carrier_driver_name = #{carrierDriverName,jdbcType=VARCHAR}
+        </if>
+        <if test="null != carrierDriverPhone and ''!= carrierDriverPhone">
+            AND carrier_driver_phone = #{carrierDriverPhone,jdbcType=VARCHAR}
+        </if>
+        <if test="null != cancelReason">
+            AND cancel_reason = #{cancelReason,jdbcType=VARCHAR}
+        </if>
+        <if test="null != errorCode and ''!= errorCode">
+            AND error_code = #{errorCode,jdbcType=VARCHAR}
+        </if>
+    </sql>
+
+    <sql id="update_condition">
+        <if test="null != id and ''!= id">
+            AND id = #{id,jdbcType=VARCHAR}
+        </if>
+        <if test="null != openOrderCode and ''!= openOrderCode">
+            AND open_order_code = #{openOrderCode,jdbcType=VARCHAR}
+        </if>
+        <if test="null != partnerOrderCode and ''!= partnerOrderCode">
+            AND partner_order_code = #{partnerOrderCode,jdbcType=VARCHAR}
+        </if>
+    </sql>
+
+    <sql id="prefix_sql">
+        <if test="null != id and ''!= id">
+            id,
+        </if>
+        <if test="null != openOrderCode and ''!= openOrderCode">
+            open_order_code,
+        </if>
+        <if test="null != partnerOrderCode and ''!= partnerOrderCode">
+            partner_order_code,
+        </if>
+        <if test="null != orderStatus">
+            order_status,
+        </if>
+        <if test="null != pushTime">
+            push_time,
+        </if>
+        <if test="null != carrierDriverName and ''!= carrierDriverName">
+            carrier_driver_name,
+        </if>
+        <if test="null != carrierDriverPhone and ''!= carrierDriverPhone">
+            carrier_driver_phone,
+        </if>
+        <if test="null != description and ''!= description">
+            description,
+        </if>
+        <if test="null != address and ''!= address">
+            address,
+        </if>
+        <if test="null != latitude and ''!= latitude">
+            latitude,
+        </if>
+        <if test="null != longitude and ''!= longitude">
+            longitude,
+        </if>
+        <if test="null != cancelReason">
+            cancel_reason,
+        </if>
+        <if test="null != errorCode and ''!= errorCode">
+            error_code,
+        </if>
+    </sql>
+
+    <sql id="suffix_sql">
+        <if test="null != id and ''!= id">
+            #{id,jdbcType=VARCHAR},
+        </if>
+        <if test="null != openOrderCode and ''!= openOrderCode">
+            #{openOrderCode,jdbcType=VARCHAR},
+        </if>
+        <if test="null != partnerOrderCode and ''!= partnerOrderCode">
+            #{partnerOrderCode,jdbcType=VARCHAR},
+        </if>
+        <if test="null != orderStatus">
+            #{orderStatus,jdbcType=VARCHAR},
+        </if>
+        <if test="null != pushTime">
+            #{pushTime,jdbcType=VARCHAR},
+        </if>
+        <if test="null != carrierDriverName and ''!= carrierDriverName">
+            #{carrierDriverName,jdbcType=VARCHAR},
+        </if>
+        <if test="null != carrierDriverPhone and ''!= carrierDriverPhone">
+            #{carrierDriverPhone,jdbcType=VARCHAR},
+        </if>
+        <if test="null != description and ''!= description">
+            #{description,jdbcType=VARCHAR},
+        </if>
+        <if test="null != address and ''!= address">
+            #{address,jdbcType=VARCHAR},
+        </if>
+        <if test="null != latitude and ''!= latitude">
+            #{latitude,jdbcType=VARCHAR},
+        </if>
+        <if test="null != longitude and ''!= longitude">
+            #{longitude,jdbcType=VARCHAR},
+        </if>
+        <if test="null != cancelReason">
+            #{cancelReason,jdbcType=VARCHAR},
+        </if>
+        <if test="null != errorCode and ''!= errorCode">
+            #{errorCode,jdbcType=VARCHAR},
+        </if>
+    </sql>
+
+    <sql id="update_sql">
+        <if test="null != orderStatus">
+            order_status = #{orderStatus,jdbcType=VARCHAR},
+        </if>
+        <if test="null != pushTime">
+            push_time = #{pushTime,jdbcType=VARCHAR},
+        </if>
+        <if test="null != carrierDriverName and ''!= carrierDriverName">
+            carrier_driver_name = #{carrierDriverName,jdbcType=VARCHAR},
+        </if>
+        <if test="null != carrierDriverPhone and ''!= carrierDriverPhone">
+            carrier_driver_phone = #{carrierDriverPhone,jdbcType=VARCHAR},
+        </if>
+        <if test="null != description and ''!= description">
+            description = #{description,jdbcType=VARCHAR},
+        </if>
+        <if test="null != address and ''!= address">
+            address = #{address,jdbcType=VARCHAR},
+        </if>
+        <if test="null != latitude and ''!= latitude">
+            latitude = #{latitude,jdbcType=VARCHAR},
+        </if>
+        <if test="null != longitude and ''!= longitude">
+            longitude = #{longitude,jdbcType=VARCHAR},
+        </if>
+        <if test="null != cancelReason">
+            cancel_reason = #{cancelReason,jdbcType=VARCHAR},
+        </if>
+        <if test="null != errorCode and ''!= errorCode">
+            error_code = #{errorCode,jdbcType=VARCHAR},
+        </if>
+    </sql>
+</mapper>

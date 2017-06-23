@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderExtSnapshotMapper">
+
+    <!-- 根据条件查询符合的数据 -->
+    <select id="selectExtSnapshotByParam" parameterType="com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto"
+            resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        <include refid="Base_Tbale"/>
+        WHERE 1=1
+        <include refid="condition"/>
+    </select>
+
+    <!-- 根据条件查询符合的数据 -->
+    <select id="selectExtSnapshotListByParam" parameterType="com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto"
+            resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        <include refid="Base_Tbale"/>
+        WHERE 1=1
+        <include refid="condition"/>
+    </select>
+
+    <!-- 保存数据 -->
+    <insert id="insert" parameterType="com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto">
+        INSERT INTO
+        <include refid="Base_Tbale"/>
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <include refid="prefix_sql"/>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <include refid="suffix_sql"/>
+        </trim>
+    </insert>
+
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderExtSnapshot">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="order_id" property="orderId" jdbcType="VARCHAR"/>
+        <result column="order_no" property="orderNo" jdbcType="VARCHAR"/>
+        <result column="transport_name" property="transportName" jdbcType="VARCHAR"/>
+        <result column="transport_address" property="transportAddress" jdbcType="VARCHAR"/>
+        <result column="transport_longitude" property="transportLongitude" jdbcType="VARCHAR"/>
+        <result column="transport_latitude" property="transportLatitude" jdbcType="VARCHAR"/>
+        <result column="transport_tel" property="transportTel" jdbcType="VARCHAR"/>
+        <result column="receiver_name" property="receiverName" jdbcType="VARCHAR"/>
+        <result column="receiver_primary_phone" property="receiverPrimaryPhone" jdbcType="VARCHAR"/>
+        <result column="receiver_address" property="receiverAddress" jdbcType="VARCHAR"/>
+        <result column="receiver_longitude" property="receiverLongitude" jdbcType="VARCHAR"/>
+        <result column="receiver_latitude" property="receiverLatitude" jdbcType="VARCHAR"/>
+        <result column="start_price" property="startPrice" jdbcType="DECIMAL"/>
+        <result column="freight" property="freight" jdbcType="DECIMAL"/>
+        <result column="free_freight_price" property="freeFreightPrice" jdbcType="DECIMAL"/>
+        <result column="delivery_type" property="deliveryType" jdbcType="INTEGER"/>
+        <result column="commision_ratio" property="commisionRatio" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <sql id="Base_Tbale">
+        trade_order_ext_snapshot
+    </sql>
+
+    <sql id="Base_Column_List">
+        id, order_id, order_no, transport_name, transport_address, transport_longitude, transport_latitude, transport_tel, receiver_name, receiver_primary_phone, receiver_address, receiver_longitude, receiver_latitude, start_price, freight, free_freight_price, delivery_type, commision_ratio
+    </sql>
+
+    <sql id="condition">
+        <if test="null != id and ''!= id">
+            AND id = #{id,jdbcType=VARCHAR}
+        </if>
+        <if test="null != orderId and ''!= orderId">
+            AND order_id = #{orderId,jdbcType=VARCHAR}
+        </if>
+        <if test="null != orderNo and ''!= orderNo">
+            AND order_no = #{orderNo,jdbcType=VARCHAR}
+        </if>
+        <if test="orderIdList != null and orderIdList.size() > 0">
+            <foreach collection="orderIdList" index="index" item="item" open="AND order_id IN (" separator=","
+                     close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="orderNoList != null and orderNoList.size() > 0">
+            <foreach collection="orderNoList" index="index" item="item" open="AND order_no IN (" separator=","
+                     close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="prefix_sql">
+        <if test="null != id and ''!= id">
+            id,
+        </if>
+        <if test="null != orderId and ''!= orderId">
+            order_id,
+        </if>
+        <if test="null != orderNo and ''!= orderNo">
+            order_no,
+        </if>
+        <if test="null != transportName and ''!= transportName">
+            transport_name,
+        </if>
+        <if test="null != transportAddress and ''!= transportAddress">
+            transport_address,
+        </if>
+        <if test="null != transportLongitude and ''!= transportLongitude">
+            transport_longitude,
+        </if>
+        <if test="null != transportLatitude and ''!= transportLatitude">
+            transport_latitude,
+        </if>
+        <if test="null != transportTel and ''!= transportTel">
+            transport_tel,
+        </if>
+        <if test="null != receiverName and ''!= receiverName">
+            receiver_name,
+        </if>
+        <if test="null != receiverPrimaryPhone and ''!= receiverPrimaryPhone">
+            receiver_primary_phone,
+        </if>
+        <if test="null != receiverAddress and ''!= receiverAddress">
+            receiver_address,
+        </if>
+        <if test="null != receiverLongitude and ''!= receiverLongitude">
+            receiver_longitude,
+        </if>
+        <if test="null != receiverLatitude and ''!= receiverLatitude">
+            receiver_latitude,
+        </if>
+        <if test="null != startPrice">
+            start_price,
+        </if>
+        <if test="null != freight">
+            freight,
+        </if>
+        <if test="null != freeFreightPrice">
+            free_freight_price,
+        </if>
+        <if test="null != deliveryType">
+            delivery_type,
+        </if>
+        <if test="null != commisionRatio">
+            commision_ratio,
+        </if>
+    </sql>
+
+    <sql id="suffix_sql">
+        <if test="null != id and ''!= id">
+            #{id,jdbcType=VARCHAR},
+        </if>
+        <if test="null != orderId and ''!= orderId">
+            #{orderId,jdbcType=VARCHAR},
+        </if>
+        <if test="null != orderNo and ''!= orderNo">
+            #{orderNo,jdbcType=VARCHAR},
+        </if>
+        <if test="null != transportName and ''!= transportName">
+            #{transportName,jdbcType=VARCHAR},
+        </if>
+        <if test="null != transportAddress and ''!= transportAddress">
+            #{transportAddress,jdbcType=VARCHAR},
+        </if>
+        <if test="null != transportLongitude and ''!= transportLongitude">
+            #{transportLongitude,jdbcType=VARCHAR},
+        </if>
+        <if test="null != transportLatitude and ''!= transportLatitude">
+            #{transportLatitude,jdbcType=VARCHAR},
+        </if>
+        <if test="null != transportTel and ''!= transportTel">
+            #{transportTel,jdbcType=VARCHAR},
+        </if>
+        <if test="null != receiverName and ''!= receiverName">
+            #{receiverName,jdbcType=VARCHAR},
+        </if>
+        <if test="null != receiverPrimaryPhone and ''!= receiverPrimaryPhone">
+            #{receiverPrimaryPhone,jdbcType=VARCHAR},
+        </if>
+        <if test="null != receiverAddress and ''!= receiverAddress">
+            #{receiverAddress,jdbcType=VARCHAR},
+        </if>
+        <if test="null != receiverLongitude and ''!= receiverLongitude">
+            #{receiverLongitude,jdbcType=VARCHAR},
+        </if>
+        <if test="null != receiverLatitude and ''!= receiverLatitude">
+            #{receiverLatitude,jdbcType=VARCHAR},
+        </if>
+        <if test="null != startPrice">
+            #{startPrice,jdbcType=DECIMAL},
+        </if>
+        <if test="null != freight">
+            #{freight,jdbcType=DECIMAL},
+        </if>
+        <if test="null != freeFreightPrice">
+            #{freeFreightPrice,jdbcType=DECIMAL},
+        </if>
+        <if test="null != deliveryType">
+            #{deliveryType,jdbcType=INTEGER},
+        </if>
+        <if test="null != commisionRatio">
+            #{commisionRatio,jdbcType=DECIMAL},
+        </if>
+    </sql>
+</mapper>
