@@ -113,7 +113,7 @@ public class ExpressServiceImpl implements ExpressService {
      * @return String
      */
     private String createPushObject(TradeOrder tradeOrder) throws Exception {
-        ExpressRequestJson requestJson = new ExpressRequestJson();
+        ExpressRequestJson<ExpressOrderData> requestJson = new ExpressRequestJson<ExpressOrderData>();
 
         // 1、封装data数据（订单信息数据）
         ExpressOrderData data = createExpressOrderData(tradeOrder);
