@@ -1,5 +1,6 @@
 package com.okdeer.mall.ele.service;
 
+import com.okdeer.mall.ele.entity.ExpressCallback;
 import com.okdeer.mall.ele.util.ResultMsg;
 
 /**
@@ -23,4 +24,12 @@ public interface ExpressService {
      * @throws Exception
      */
     ResultMsg saveExpressOrder(String orderId) throws Exception;
+
+    /**
+     * 处理回调信息
+     *
+     * @param data ExpressCallback 回调信息
+     * @throws Exception
+     */
+    void saveCallback(ExpressCallback data) throws Exception;
 }

@@ -73,6 +73,9 @@
 
     <sql id="condition">
         <include refid="update_condition"/>
+        <if test="null != openOrderCode and ''!= openOrderCode">
+            AND open_order_code = #{openOrderCode,jdbcType=VARCHAR}
+        </if>
         <if test="null != orderStatus">
             AND order_status = #{orderStatus,jdbcType=VARCHAR}
         </if>
@@ -93,9 +96,6 @@
     <sql id="update_condition">
         <if test="null != id and ''!= id">
             AND id = #{id,jdbcType=VARCHAR}
-        </if>
-        <if test="null != openOrderCode and ''!= openOrderCode">
-            AND open_order_code = #{openOrderCode,jdbcType=VARCHAR}
         </if>
         <if test="null != partnerOrderCode and ''!= partnerOrderCode">
             AND partner_order_code = #{partnerOrderCode,jdbcType=VARCHAR}

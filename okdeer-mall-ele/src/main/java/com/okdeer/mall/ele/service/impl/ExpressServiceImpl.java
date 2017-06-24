@@ -8,6 +8,8 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.ele.config.ElemeOpenConfig;
 import com.okdeer.mall.ele.config.RequestConstant;
 import com.okdeer.mall.ele.entity.*;
+import com.okdeer.mall.ele.mapper.ExpressCallbackLogMapper;
+import com.okdeer.mall.ele.mapper.ExpressCallbackMapper;
 import com.okdeer.mall.ele.mapper.ExpressPushLogMapper;
 import com.okdeer.mall.ele.response.TokenResponse;
 import com.okdeer.mall.ele.service.ExpressService;
@@ -56,6 +58,9 @@ public class ExpressServiceImpl implements ExpressService {
     @Value("${ele.secretKey}")
     private String secretKey;
 
+    @Value("${ele.notifyUrl}")
+    private String notifyUrl;
+
     /**
      * 订单查询mapper
      */
@@ -79,6 +84,18 @@ public class ExpressServiceImpl implements ExpressService {
      */
     @Autowired
     private ExpressPushLogMapper expressPushLogMapper;
+
+    /**
+     * 回调信息处理
+     */
+    @Autowired
+    private ExpressCallbackMapper expressCallbackMapper;
+
+    /**
+     * 回调信息日志保存
+     */
+    @Autowired
+    private ExpressCallbackLogMapper expressCallbackLogMapper;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -105,7 +122,32 @@ public class ExpressServiceImpl implements ExpressService {
         param.setPushJson(pushJson);
         param.setResultJson(resultJson);
         savePushLog(tradeOrder, param);
+
+        // 5、初始化回调数据信息，默认状态为200，推单成功才保存信息记录
+        if (resultMsg.getCode() == 200) {
+            ExpressCallback data = new ExpressCallback();
+            data.setId(UuidUtils.getUuid());
+            data.setPartnerOrderCode(tradeOrder.getId());
+            data.setOrderStatus(resultMsg.getCode());
+            data.setPushTime(DateUtils.getSysDate());
+            expressCallbackMapper.insert(data);
+        }
         return resultMsg;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void saveCallback(ExpressCallback data) throws Exception {
+        //保存第三方回调信息
+        expressCallbackMapper.update(data);
+        //保存回调日志
+        ExpressCallbackLog callbackLog = new ExpressCallbackLog();
+        callbackLog.setId(UuidUtils.getUuid());
+        callbackLog.setCreateTime(DateUtils.getSysDate());
+        callbackLog.setOpenOrderCode(data.getOpenOrderCode());
+        callbackLog.setPartnerOrderCode(data.getPartnerOrderCode());
+        callbackLog.setCallbackJson(JsonMapper.nonDefaultMapper().toJson(data));
+        expressCallbackLogMapper.insert(callbackLog);
     }
 
 
@@ -160,7 +202,7 @@ public class ExpressServiceImpl implements ExpressService {
      */
     private void createExpreOrderBaseData(ExpressOrderData data, TradeOrder tradeOrder) {
         data.setPartner_order_code(tradeOrder.getOrderNo());
-        data.setNotify_url("http://192.168.104.133:5000");
+        data.setNotify_url(notifyUrl);
         data.setOrder_total_amount(tradeOrder.getTotalAmount());
         data.setOrder_actual_amount(tradeOrder.getActualAmount());
         data.setGoods_count(tradeOrder.getTradeOrderItem().size());
