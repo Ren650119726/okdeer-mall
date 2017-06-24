@@ -224,12 +224,6 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		try{
 			if(lock == null || lock.tryLock(10, TimeUnit.SECONDS)){
 				handlerChain.process(req, resp);
-				
-				//add by  zhangkeneng  和左文明对接丢消息
-				TradeOrderContext tradeOrderContext = new TradeOrderContext();
-				String orderId = resp.getData().getOrderId();
-				tradeOrderContext.setTradeOrder(tradeOrderService.selectById(orderId));
-				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 			}else{
 				logger.error("提交订单，获取锁失败，请求参数为：{}",JsonMapper.nonDefaultMapper().toJson(req.getData()));
 				resp.setResult(ResultCodeEnum.FAIL);
