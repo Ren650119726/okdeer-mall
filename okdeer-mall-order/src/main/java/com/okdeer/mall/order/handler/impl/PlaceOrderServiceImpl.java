@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.assemble.GoodsStoreSkuAssembleApi;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
@@ -31,6 +32,7 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
@@ -66,7 +68,7 @@ import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * ClassName: PlaceOrderServiceImpl 
- * @Description: TODO
+ * @Description:
  * @author maojj
  * @date 2017年1月5日
  *
@@ -196,7 +198,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 
 		tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUserId(),
 				tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
-		// TODO 更新库存TODO
+		// 更新库存TODO
 		updateStock(tradeOrder, paramDto);
 		// 如果订单实付金额为0，调用余额支付进行支付。
 		if (tradeOrder.getActualAmount().compareTo(BigDecimal.valueOf(0.0)) == 0
@@ -227,12 +229,16 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 * @date 2016年7月14日
 	 */
 	private void updateActivityCoupons(TradeOrder tradeOrder, PlaceOrderParamDto req) throws Exception {
-		ActivityTypeEnum activityType = req.getActivityType();
-
-		if (activityType == ActivityTypeEnum.VONCHER) {
+		StoreSkuParserBo parserBo = (StoreSkuParserBo) req.get("parserBo");
+		List<ActivityCouponsRecord> couponsRecList = parserBo.getCouponsList();
+		if(CollectionUtils.isEmpty(couponsRecList)){
+			return;
+		}
+		List<String> couponsIdList = Lists.newArrayList();
+		for(ActivityCouponsRecord couponsRec : couponsRecList){
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("orderId", tradeOrder.getId());
-			params.put("id", req.getRecordId());
+			params.put("id", couponsRec.getId());
 			params.put("deviceId", req.getDeviceId());
 			params.put("recDate", DateUtils.getDate());
 			// 更新代金券状态
@@ -240,8 +246,11 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			if (updateResult == 0) {
 				throw new Exception("代金券已使用或者已过期");
 			}
-			// 发送消息修改代金券使用数量
-			ActivityCouponsBo couponsBo = new ActivityCouponsBo(req.getActivityItemId(), Integer.valueOf(1));
+			couponsIdList.add(couponsRec.getCouponsId());
+		}
+		// 发送消息修改代金券使用数量
+		for(String couponsId : couponsIdList){
+			ActivityCouponsBo couponsBo = new ActivityCouponsBo(couponsId, Integer.valueOf(1));
 			MQMessage anMessage = new MQMessage(ActivityCouponsTopic.TOPIC_COUPONS_COUNT, (Serializable) couponsBo);
 			try {
 				rocketMQProducer.sendMessage(anMessage);

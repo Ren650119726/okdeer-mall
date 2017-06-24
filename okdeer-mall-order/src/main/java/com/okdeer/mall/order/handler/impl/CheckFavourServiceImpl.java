@@ -122,7 +122,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				break;
 		}
 		// 检查运费优惠
-		if(!StringUtils.isEmpty(paramDto.getFareActivityId())){
+		if(!StringUtils.isEmpty(paramDto.getFareRecId())){
 			// 如果请求中存在运费领取记录Id，则检查运费
 			checkFareCoupons(paramDto, parserBo, resp);
 		}
@@ -229,6 +229,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			}
 		}
 		parserBo.setPlatformPreferential(new BigDecimal(coupons.getFaceValue()));
+		parserBo.addCoupons(couponsRecord);
 		return true;
 	}
 
@@ -360,7 +361,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	}
 	
 	private boolean checkFareCoupons(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp) throws Exception{
-		ActivityCouponsRecord couponsRecord = activityCouponsRecordMapper.selectByPrimaryKey(paramDto.getFareActivityId());
+		ActivityCouponsRecord couponsRecord = activityCouponsRecordMapper.selectByPrimaryKey(paramDto.getFareRecId());
 		// 增加领取记录的校验。校验请求提供的领取记录是否是当前用户
 		if(couponsRecord == null || !couponsRecord.getCollectUserId().equals(paramDto.getUserId())){
 			return false;
@@ -417,7 +418,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		}else{
 			parserBo.setRealFarePreferential(couponsValue);
 		}
-		
+		parserBo.addCoupons(couponsRecord);
 		return true;
 	} 
 }

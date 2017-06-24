@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreAssembleDto;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
@@ -21,6 +22,7 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.IsShopNum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
@@ -178,6 +180,11 @@ public class StoreSkuParserBo {
 	 * 商品所属店铺 
 	 */
 	private Set<String> storeIdSet = Sets.newHashSet();
+	
+	/**
+	 * 使用的代金券列表信息 
+	 */
+	private List<ActivityCouponsRecord> couponsList;
 	
 	public StoreSkuParserBo(List<GoodsStoreSku> currentSkuList) {
 		this.currentSkuList = currentSkuList;
@@ -514,6 +521,12 @@ public class StoreSkuParserBo {
 	}
 	
 	// Begin V2.5 added by maojj 2017-06-23
+	/**
+	 * @Description: 刷新组合商品库存
+	 * @param comboStockList   
+	 * @author maojj
+	 * @date 2017年6月24日
+	 */
 	public void refreshComboStockList(List<Integer> comboStockList){
 		if(CollectionUtils.isEmpty(comboStockList) && comboStockList.size() != this.comboSkuIdList.size()){
 			return;
@@ -524,6 +537,21 @@ public class StoreSkuParserBo {
 			storeSkuBo = this.currentSkuMap.get(this.comboSkuIdList.get(index++));
 			storeSkuBo.setSellable(comboStock);
 		}
+	}
+	
+	/**
+	 * @Description: 增加代金券
+	 * @param couponsActId 代金券活动Id
+	 * @param couponsId 代金券Id
+	 * @param couponsRecId 代金券领取记录Id
+	 * @author maojj
+	 * @date 2017年6月24日
+	 */
+	public void addCoupons(ActivityCouponsRecord couponsRec){
+		if(this.couponsList == null){
+			this.couponsList = Lists.newArrayList();
+		}
+		this.couponsList.add(couponsRec);
 	}
 	// End V2.5 added by maojj 2017-06-23
 
@@ -711,4 +739,7 @@ public class StoreSkuParserBo {
 		this.realFarePreferential = realFarePreferential;
 	}
 
+	public List<ActivityCouponsRecord> getCouponsList() {
+		return couponsList;
+	}
 }

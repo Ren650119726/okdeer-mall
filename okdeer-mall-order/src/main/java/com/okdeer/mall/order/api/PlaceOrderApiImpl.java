@@ -23,19 +23,21 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.dianping.cat.Cat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.jxc.common.utils.JsonMapper;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.bo.AppAdapter;
 import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
-import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.dto.AppStoreDto;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
@@ -44,7 +46,6 @@ import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandlerChain;
 import com.okdeer.mall.order.service.PlaceOrderApi;
-import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.system.utils.ConvertUtil;
 
@@ -89,11 +90,8 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitSeckillOrderService;
 
-	/**
-	 * 订单service
-	 */
-	@Autowired
-	private TradeOrderService tradeOrderService;
+	@Resource
+	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
 	
 	/**
 	 * mq注入
@@ -218,22 +216,24 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			default:
 				break;
 		}
-		// Begin V2.4 modified by maojj 2017-05-27
+		// Begin V2.5 modified by maojj 2017-05-27
 		// 获取锁
-		Lock lock = obtain(req.getData());
+		List<Lock> lockList = obtain(req.getData());
 		try{
-			if(lock == null || lock.tryLock(10, TimeUnit.SECONDS)){
+			if(tryLock(lockList,10, TimeUnit.SECONDS)){
 				handlerChain.process(req, resp);
 			}else{
 				logger.error("提交订单，获取锁失败，请求参数为：{}",JsonMapper.nonDefaultMapper().toJson(req.getData()));
 				resp.setResult(ResultCodeEnum.FAIL);
 			}
 		}finally{
-			if(lock != null){
-				lock.unlock();
+			if(CollectionUtils.isNotEmpty(lockList)){
+				for(Lock lock : lockList){
+					lock.unlock();
+				}
 			}
 		}
-		// End V2.4 modified by maojj 2017-05-27
+		// End V2.5 modified by maojj 2017-05-27
 		// 下单埋点
 		Cat.logMetricForCount("submitOrder");
 		resp.getData().setCurrentTime(System.currentTimeMillis());
@@ -269,13 +269,19 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	 * @author maojj
 	 * @date 2017年5月27日
 	 */
-	private Lock obtain(PlaceOrderParamDto paramDto){
+	private List<Lock> obtain(PlaceOrderParamDto paramDto){
+		List<Lock> lockList = Lists.newArrayList();
+		if(StringUtils.isNotEmpty(paramDto.getFareRecId())){
+			ActivityCouponsRecord fareRec = activityCouponsRecordMapper.selectByPrimaryKey(paramDto.getFareRecId());
+			String fareLockKey =  String.format("%s:%s", paramDto.getUserId(),fareRec.getCouponsId());
+			lockList.add(redisLockRegistry.obtain(fareLockKey));
+		}
 		// 订单参与的活动类型
 		ActivityTypeEnum actType = paramDto.getActivityType();
 		if (actType != ActivityTypeEnum.VONCHER
 				&& actType != ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
 			// 如果提交订单不是满减也不是代金券，则无需加锁
-			return null;
+			return lockList;
 		}
 		// 锁的键值为：活动类型名称（代金券、满减） : 账户Id : 活动Id（代金券、满减Id）
 		String limitActId = null;
@@ -286,6 +292,29 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			limitActId = paramDto.getActivityId();
 		}
 		String lockKey = String.format("%s:%s:%s", actType.name(),paramDto.getUserId(),limitActId);
-		return redisLockRegistry.obtain(lockKey);
+		lockList.add(redisLockRegistry.obtain(lockKey));
+		return lockList;
+	}
+	
+	/**
+	 * @Description: 尝试获取锁
+	 * @param lockList
+	 * @param time
+	 * @param unit
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年6月24日
+	 */
+	private boolean tryLock(List<Lock> lockList,long time, TimeUnit unit) throws Exception{
+		if(CollectionUtils.isEmpty(lockList)){
+			return true;
+		}
+		for(Lock lock : lockList){
+			if(!lock.tryLock(time,unit)){
+				return false;
+			}
+		}
+		return true;
 	}
 }
