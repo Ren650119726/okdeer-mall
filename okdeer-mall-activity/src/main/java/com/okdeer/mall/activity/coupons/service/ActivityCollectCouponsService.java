@@ -13,6 +13,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectXffqRelation;
 
 /**
  * @pr yscm
@@ -25,11 +26,11 @@ public interface ActivityCollectCouponsService {
 	
 	void save(ActivityCollectCoupons activityCollectCoupons);
 	
-	void save(ActivityCollectCoupons activityCollectCoupons,List<String> couponsIds,String areaIds) throws Exception;
+	void save(ActivityCollectCoupons activityCollectCoupons,List<String> couponsIds,String areaIds,List<ActivityCollectXffqRelation> xffqRelationList) throws Exception;
 
 	void updateDynamic(ActivityCollectCoupons activityCollectCoupons);
 	
-	void update(ActivityCollectCoupons activityCollectCoupons,List<String> activityIds,String areaIds);
+	void update(ActivityCollectCoupons activityCollectCoupons,List<String> activityIds,String areaIds,List<ActivityCollectXffqRelation> xffqRelationList);
 
 	ActivityCollectCoupons get(String id);
 	

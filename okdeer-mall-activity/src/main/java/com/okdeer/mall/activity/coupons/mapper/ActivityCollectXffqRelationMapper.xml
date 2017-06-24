@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCollectXffqRelationMapper">	
+
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCollectXffqRelation">
+        <id property="id" column="id" javaType="string" jdbcType="VARCHAR"/>
+        <result property="collectId" column="collect_id" javaType="string" jdbcType="VARCHAR"/>
+        <result property="limitAmount" column="limit_amount"/>    
+        <result property="couponsIds" column="coupons_ids" javaType="string" jdbcType="VARCHAR"/>            
+    </resultMap>
+    
+    <sql id="columns">
+    	id,collect_id,limit_amount,coupons_ids
+    </sql>
+    
+    <insert id="saveBatch" parameterType="list">
+        insert into activity_collect_xffq_relation(
+			<include refid="columns"/>
+		)values
+		<foreach collection="list" item="item" index="index" separator="," >
+        (
+            #{item.id},
+            #{item.collectId},
+            #{item.limitAmount},
+            #{item.couponsIds}
+        )
+		</foreach>
+	</insert>
+	
+	<select id="findByCollectId" resultMap="BaseResultMap" parameterType="string">
+      select <include refid="columns"/> from activity_collect_xffq_relation where collect_id = #{value}
+    </select>
+	
+	<delete id="deleteByCollectId" parameterType="string">
+		delete from activity_collect_xffq_relation where collect_id = #{value}
+	</delete>
+    
+</mapper>
