@@ -153,7 +153,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 				){
 			vo.setRefuseReason(tradeOrderRefunds.getRefuseReson());
 		} else {
-			vo.setRefundsReason(null);
+			vo.setRefuseReason(null);
 		}
 		
 		vo.setMemo(tradeOrderRefunds.getMemo());
