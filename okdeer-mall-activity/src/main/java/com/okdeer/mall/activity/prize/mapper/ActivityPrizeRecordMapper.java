@@ -7,6 +7,7 @@
 package com.okdeer.mall.activity.prize.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -66,4 +67,14 @@ public interface ActivityPrizeRecordMapper extends IBaseMapper {
 	 * @date 2017年4月10日
 	 */
 	public List<ActivityPrizeRecordVo> findPrizeRecordList(ActivityPrizeRecordVo activityPrizeRecordVo);
+	
+	/**
+	 * @Description: 批量更新发放状态
+	 * @param map   
+	 * @return void  
+	 * @author tuzhd
+	 * @date 2017年6月20日
+	 */
+	public void updateBathOffer(Map<String,Object> map);
+	
 }

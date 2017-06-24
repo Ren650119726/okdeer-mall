@@ -7,6 +7,7 @@
 package com.okdeer.mall.activity.prize.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
@@ -33,7 +34,7 @@ public interface ActivityPrizeRecordService extends IBaseService {
 	
 	int findCountByPrizeId(String prizeId);
 	
-	public int addPrizeRecord(String collectId,String userId,String luckDrawId,String prizeId);
+	public int addPrizeRecord(String collectId,String userId,String luckDrawId,String prizeId,int isOffer);
 
 	/**
 	 * @Description: TODO
@@ -46,5 +47,13 @@ public interface ActivityPrizeRecordService extends IBaseService {
 	 */
 	public PageUtils<ActivityPrizeRecordVo> findPrizeRecordList(ActivityPrizeRecordVo activityPrizeRecordVo,
 			int pageNumber, int pageSize);
-
+	
+	/**
+	 * @Description: 批量更新发放状态
+	 * @param map   
+	 * @return void  
+	 * @author tuzhd
+	 * @date 2017年6月20日
+	 */
+	public void updateBathOffer(Map<String,Object> map);
 }

@@ -1505,7 +1505,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 						addRecordsByCollectId(collectId,record.getInviteUserId(),
 											ActivityCouponsType.advert_coupons);
 						//领取后并插入一次奖励 中奖纪录
-						activityPrizeRecordService.addPrizeRecord(collectId, record.getInviteUserId(), record.getActivityId(),null);
+						activityPrizeRecordService.addPrizeRecord(collectId, record.getInviteUserId(), 
+												record.getActivityId(),null,WhetherEnum.whether.ordinal());
 					}
 				}
 			

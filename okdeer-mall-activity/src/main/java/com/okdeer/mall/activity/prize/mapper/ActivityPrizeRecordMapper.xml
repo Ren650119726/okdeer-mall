@@ -143,6 +143,9 @@
     <update id="update" parameterType="com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord" >
         update activity_prize_record
         <set >
+            <if test="isOffer != null" >
+                is_offer = #{isOffer,jdbcType=INTEGER},
+            </if>
             <if test="prizeOfferTime != null" >
                 prize_offer_time = #{prizeOfferTime,jdbcType=TIMESTAMP},
             </if>
@@ -157,6 +160,28 @@
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
+    </update>
+    <!-- 批量发放中奖信息 -->
+    <update id="updateBathOffer" parameterType="map">
+        update activity_prize_record
+        <set >
+            <if test="isOffer != null" >
+                is_offer = #{isOffer,jdbcType=INTEGER},
+            </if>
+            <if test="prizeOfferTime != null" >
+                prize_offer_time = #{prizeOfferTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id in 
+		 <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+	        #{item}
+	     </foreach>
     </update>
 
     <delete id="delete" parameterType="java.lang.String" >
