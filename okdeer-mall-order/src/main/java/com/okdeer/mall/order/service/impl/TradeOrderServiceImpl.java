@@ -1928,11 +1928,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// 添加日志
 				if (tradeOrder.getTradeOrderLog() != null) {
 					tradeOrderLogMapper.insertSelective(tradeOrder.getTradeOrderLog());
+				} else {
+					tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
+							tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
 				}
-
-				// Begin 1.0.Z 增加订单操作记录 add by zengj
-				tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
-						tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
 
 				// 锁定库存
 				// Begin modified by maojj 2017-03-15

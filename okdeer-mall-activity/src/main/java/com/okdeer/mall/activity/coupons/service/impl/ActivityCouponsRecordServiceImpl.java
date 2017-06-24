@@ -77,6 +77,8 @@ import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.member.service.MemberService;
 import com.okdeer.mall.member.service.SysBuyerExtService;
 import com.okdeer.mall.order.constant.OrderMsgConstant;
+import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.PushMsgVo;
@@ -1623,5 +1625,30 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 */
 	private void removeRedisUserStatus(String key){
 		redisTemplate.delete(key);
+	}
+
+	@Override
+	public void releaseConpons(TradeOrder tradeOrder) {
+		Map<String, Object> params = Maps.newHashMap();
+		String orderId = tradeOrder.getId();
+		params.put("orderId", orderId);
+		List<ActivityCouponsRecord> records = activityCouponsRecordMapper.selectByParams(params);
+		if(CollectionUtils.isEmpty(records)){
+			return;
+		}
+		OrderStatusEnum orderState = tradeOrder.getStatus();
+		for(ActivityCouponsRecord record : records){
+			if ((orderState == OrderStatusEnum.REFUSED || orderState == OrderStatusEnum.REFUSING)
+					&& record.getCouponsCollectId().equals(tradeOrder.getFareActivityId())) {
+				// 如果订单为拒收，则不返还运费券
+				continue;
+			}
+			if (record.getValidTime().compareTo(DateUtils.getSysDate()) > 0) {
+				activityCouponsRecordMapper.updateUseStatus(orderId);
+				activityCouponsMapper.updateReduceUseNum(record.getCouponsId());
+			} else {
+				activityCouponsRecordMapper.updateUseStatusAndExpire(orderId);
+			}
+		}
 	}
 }

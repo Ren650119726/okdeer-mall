@@ -265,9 +265,11 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		BigDecimal totalAmount = parserBo.getTotalItemAmount();
 		if (totalAmount.compareTo(freeFarePrice) >= 0){
 			parserBo.setFare(BigDecimal.valueOf(0.00));
-		}else if(totalAmount.compareTo(startPrice) >= 0){
-			parserBo.setFare(fare);
 		}else{
+			parserBo.setFare(fare);
+		}
+		
+		if(totalAmount.compareTo(startPrice) == -1){
 			// 未达到起送价，提交订单失败。
 			resp.setResult(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH);
 		}

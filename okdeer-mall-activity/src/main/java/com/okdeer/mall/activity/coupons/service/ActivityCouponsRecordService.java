@@ -6,8 +6,6 @@ import java.util.Map;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.bo.FavourParamBO;
-import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
-import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
@@ -17,6 +15,7 @@ import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.service.CouponsFilterStrategy;
 import com.okdeer.mall.common.enums.UseUserType;
+import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.vo.Coupons;
 
 import net.sf.json.JSONObject;
@@ -149,6 +148,16 @@ public interface ActivityCouponsRecordService {
 	 * @param orderId
 	 */
 	void updateUseStatus(String orderId);
+	
+	// Begin　V2.5 added by maojj 2017-06-24
+	/**
+	 * @Description: 释放代金券
+	 * @param tradeOrder   
+	 * @author maojj
+	 * @date 2017年6月24日
+	 */
+	void releaseConpons(TradeOrder tradeOrder);
+	// End V2.5 added by maojj 2017-06-24
 
 	ActivityCouponsRecord selectByPrimaryKey(String id);
 	
