@@ -716,6 +716,9 @@
 					</if>
 				)
 			  )
+			  <if test="storeType != null and storeType.name() == 'CLOUD_STORE'">
+			  	OR t2.type = 6
+			  </if>
 			) 
 		</if>
 		AND t2.arrive_limit &lt;= #{totalAmount}

@@ -132,7 +132,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 			resp.setResult(checkResult);
 		}
 		// 计算运费
-		calculateFare(paramDto,parserBo);
+		calculateFare(paramDto,parserBo,resp);
 	}
 
 	public List<GoodsStoreSku> findCurrentSkuList(List<String> skuIdList) {
@@ -249,20 +249,27 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		return checkResult;
 	}
 	
-	private void calculateFare(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo){
+	private void calculateFare(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp){
 		if(paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT && paramDto.getPickType() == PickUpTypeEnum.TO_STORE_PICKUP){
 			// 如果是提交订单，且是到店自提，不计算运费
 			return;
 		}
 		StoreInfoExt storeExt = ((StoreInfo)paramDto.get("storeInfo")).getStoreInfoExt();
 		// 店铺起送价
-		BigDecimal startPrice = storeExt.getStartPrice() == null ? new BigDecimal(0.0) : storeExt.getStartPrice();
+		BigDecimal startPrice = storeExt.getStartPrice() == null ? BigDecimal.valueOf(0.00) : storeExt.getStartPrice();
+		// 店铺免配送费起送价
+		BigDecimal freeFarePrice = storeExt.getFreeFreightPrice() == null ? BigDecimal.valueOf(0.0) : storeExt.getFreeFreightPrice();
 		// 店铺运费
 		BigDecimal fare = storeExt.getFreight() == null ? new BigDecimal(0.0) : storeExt.getFreight();
 		// 获取订单总金额
 		BigDecimal totalAmount = parserBo.getTotalItemAmount();
-		if (totalAmount.compareTo(startPrice) == -1) {
+		if (totalAmount.compareTo(freeFarePrice) >= 0){
+			parserBo.setFare(BigDecimal.valueOf(0.00));
+		}else if(totalAmount.compareTo(startPrice) >= 0){
 			parserBo.setFare(fare);
-		} 
+		}else{
+			// 未达到起送价，提交订单失败。
+			resp.setResult(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH);
+		}
 	}
 }

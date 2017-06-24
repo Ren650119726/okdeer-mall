@@ -198,6 +198,7 @@ public class TradeOrderBuilder {
 		tradeOrder.setCreateTime(new Date());
 		tradeOrder.setUpdateTime(new Date());
 		tradeOrder.setClientVersion(paramDto.getVersion());
+		tradeOrder.setFareActivityId(parserBo.getFareActivityId());
 		// 设置订单编号
 		setOrderNo(tradeOrder,paramDto.getOrderType());
 		// 设置订单总品项

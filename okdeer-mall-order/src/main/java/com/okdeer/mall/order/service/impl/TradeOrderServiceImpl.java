@@ -96,6 +96,7 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
@@ -1709,7 +1710,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				tradeOrderComboSnapshotMapper.batchAdd(comboDetailList);
 			}
 			if(tradeOrderExt != null){
-				TradeOrderExtSnapshotParamDto tradeOrderExtDto = (TradeOrderExtSnapshotParamDto)tradeOrderExt;
+				TradeOrderExtSnapshotParamDto tradeOrderExtDto = BeanMapper.map(tradeOrderExt, TradeOrderExtSnapshotParamDto.class);
 				tradeOrderExtSnapshotMapper.insert(tradeOrderExtDto);
 			}
 			// End V2.5 added by maojj 2017-06-23

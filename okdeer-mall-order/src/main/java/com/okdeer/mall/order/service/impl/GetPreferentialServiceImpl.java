@@ -115,6 +115,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 		preferentialVo.setCouponList(couponList);
 		preferentialVo.setDiscountList(discountList);
 		preferentialVo.setFullSubtractList(fullSubtractList);
+		preferentialVo.setFareCouponsList(fareCouponList);
 		preferentialVo.setMaxFavourOnline(maxFavourOnline);
 		preferentialVo.setMaxFavourOffline(maxFavourOffline);
 		preferentialVo.setMaxFareFavour(maxFareFavour);
