@@ -35,13 +35,9 @@ import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.LogConstants;
-import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
-import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
-import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
-import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
@@ -86,6 +82,7 @@ public class TradeOrderBuilder {
 	
 	private static final Logger logger = LoggerFactory.getLogger(TradeOrderBuilder.class);
 	
+	private static final BigDecimal referenceValue = BigDecimal.valueOf(0.00);
 	/**
 	 * 生成编号的service
 	 */
@@ -222,9 +219,9 @@ public class TradeOrderBuilder {
 		// 设置订单实付金额
 		setActualAmount(tradeOrder);
 		// 设置店铺总收入
-		setIncome(tradeOrder,parserBo.isLowFavour(),paramDto.getOrderType());
+		setIncome(tradeOrder,paramDto);
 		// 处理配送费
-		processFare(tradeOrder,parserBo.getFare());
+		processFare(tradeOrder,parserBo,paramDto);
 		// 处理订单违约信息
 		processBreach(tradeOrder,paramDto);
 		return tradeOrder;
@@ -397,22 +394,25 @@ public class TradeOrderBuilder {
 
 	/**
 	 * @Description:	设置订单总收入
-	 * 	订单未参与活动、使用代金券，店铺总收入为：订单总金额
-	 * 	订单参与运营商发起的满减活动，店铺总收入为：订单总金额
-	 * 	订单参与店铺发起的满减满折活动，店铺总收入为：订单总金额-优惠金额（即订单实付金额）
+	 * 	店铺收入=订单总金额-店铺优惠-佣金收取
 	 * @param tradeOrder 交易订单  
 	 * @return void  
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private void setIncome(TradeOrder tradeOrder,boolean isLowFavour,PlaceOrderTypeEnum orderType) {
-		if(tradeOrder.getStorePreferential().compareTo(BigDecimal.valueOf(0.00)) == 1){
-			// 如果有店铺优惠，店铺收入=实付金额
-			tradeOrder.setIncome(tradeOrder.getActualAmount());
-		}else{
-			// 如果没有店铺优惠，店铺收入=总金额
-			tradeOrder.setIncome(tradeOrder.getTotalAmount());
+	private void setIncome(TradeOrder tradeOrder,PlaceOrderParamDto paramDto) {
+		StoreInfoExt storeInfoExt = ((StoreInfo)paramDto.get("storeInfo")).getStoreInfoExt();
+		BigDecimal income = tradeOrder.getTotalAmount().subtract(tradeOrder.getStorePreferential());
+		// 订单需要收取的佣金为：
+		BigDecimal referenceVal = BigDecimal.valueOf(0.00);
+		BigDecimal commission =  income.multiply(storeInfoExt.getCommisionRatio()).setScale(2,BigDecimal.ROUND_HALF_UP);
+		if(storeInfoExt.getCommisionRatio().compareTo(referenceVal) == 1 && commission.compareTo(referenceVal) == 0){
+			commission = BigDecimal.valueOf(0.01);
 		}
+		paramDto.put("commission", commission);
+		paramDto.put("totalAmountInCommission", income);
+		income = income.subtract(commission);
+		tradeOrder.setIncome(income);
 	}
 
 	/**
@@ -422,11 +422,15 @@ public class TradeOrderBuilder {
 	 * @author maojj
 	 * @date 2017年1月6日
 	 */
-	public void processFare(TradeOrder tradeOrder,BigDecimal fare){
+	public void processFare(TradeOrder tradeOrder,StoreSkuParserBo parserBo,PlaceOrderParamDto paramDto){
+		BigDecimal fare = parserBo.getFare();
+		StoreInfoExt storeInfoExt = ((StoreInfo)paramDto.get("storeInfo")).getStoreInfoExt();
 		tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(fare));
 		tradeOrder.setActualAmount(tradeOrder.getActualAmount().add(fare.subtract(tradeOrder.getRealFarePreferential())));
 		// TODO 如果店铺选择的是第三方配送，运费不计入收入。如果店铺选择的是商家自送，运费计入补贴
-		tradeOrder.setIncome(tradeOrder.getIncome().add(fare));
+		if (storeInfoExt.getDeliveryType() == 2) {
+			tradeOrder.setIncome(tradeOrder.getIncome().add(fare));
+		}
 		tradeOrder.setFare(fare);
 		tradeOrder.setPreferentialPrice(tradeOrder.getPreferentialPrice().add(tradeOrder.getRealFarePreferential()));
 	}
@@ -468,8 +472,14 @@ public class TradeOrderBuilder {
 		BigDecimal totalAmount = parserBo.getTotalAmountHaveFavour();
 		// 订单总的平台优惠
 		BigDecimal platformFavour = parserBo.getPlatformPreferential();
-		BigDecimal favourSum = new BigDecimal("0.00");
+		BigDecimal favourSum =  BigDecimal.valueOf(0.00);
+		// 订单总的佣金费用
+		BigDecimal totalcommission = (BigDecimal)paramDto.get("commission");
 		int index = 0;
+		int commissionIndex = 0;
+		BigDecimal commissionSum = BigDecimal.valueOf(0.00);
+		BigDecimal haveCommissionAmount = (BigDecimal)paramDto.get("totalAmountInCommission");
+		
 		int haveFavourItemSize = parserBo.getHaveFavourGoodsMap().size();
 		TradeOrderItem tradeOrderItem = null;
 
@@ -479,7 +489,7 @@ public class TradeOrderBuilder {
 		ComparatorChain chain = new ComparatorChain();
 		chain.addComparator(new BeanComparator("onlinePrice"), false);
 		Collections.sort(goodsItemList, chain);
-
+		int orderItemSize = goodsItemList.size();
 		for (CurrentStoreSkuBo skuBo : goodsItemList) {
 			tradeOrderItem = new TradeOrderItem();
 
@@ -518,13 +528,15 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setTotalAmount(totalAmountOfItem);
 			// 计算订单项平台优惠金额
 			BigDecimal favourItem = BigDecimal.valueOf(0.0);
+			// 订单项佣金收取金额
+			BigDecimal commissionItem = BigDecimal.valueOf(0.0);
 			// 订单项店铺优惠金额
 			BigDecimal storeFavourItem = BigDecimal.valueOf(0.0);
 			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0){
 				storeFavourItem = skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
 						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity()));
 			}
-			if (platformFavour.compareTo(BigDecimal.valueOf(0.00)) == 1) {
+			if (platformFavour.compareTo(referenceValue) == 1) {
 				if(!parserBo.getHaveFavourGoodsMap().containsKey(skuBo.getId())){
 					favourItem = BigDecimal.valueOf(0.0);
 				} else if (index++ < haveFavourItemSize - 1) {
@@ -540,10 +552,20 @@ public class TradeOrderBuilder {
 					}
 				}
 			}
+			if(totalcommission.compareTo(referenceValue) == 1){
+				// 订单收取佣金
+				if(commissionIndex++ < orderItemSize - 1){
+					commissionItem = totalAmountOfItem.subtract(storeFavourItem).multiply(haveCommissionAmount).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
+				}else{
+					commissionItem = totalcommission.subtract(commissionSum);
+				}
+			}
 			// 设置优惠金额
 			tradeOrderItem.setPreferentialPrice(favourItem.add(storeFavourItem));
 			// 设置平台优惠金额
 			tradeOrderItem.setStorePreferential(storeFavourItem);
+			// 设置订单项佣金金额
+			tradeOrderItem.setCommission(commissionItem);
 			// 设置实付金额
 			tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(favourItem));
 			// 设置实付金额
