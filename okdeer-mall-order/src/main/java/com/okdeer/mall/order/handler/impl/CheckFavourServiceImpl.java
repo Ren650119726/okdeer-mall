@@ -161,7 +161,10 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		if(coupons.getAreaType() != AreaType.national && activityCouponsStoreMapper.findByStoreIdAndCouponsId(paramDto.getStoreId(), coupons.getId()) == null){
 			return false;
 		}
-		
+		if(!coupons.getActivityId().equals(paramDto.getActivityId()) || !coupons.getId().equals(paramDto.getActivityItemId())){
+			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
+			return false;
+		}
 		if(coupons.getUseUserType() == UseUserType.ONlY_NEW_USER){
 			// 仅限首单用户，检查当前用户是否为首单用户。
 			if(!isFirstOrderUser(paramDto.getUserId())){
@@ -419,6 +422,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			parserBo.setRealFarePreferential(couponsValue);
 		}
 		parserBo.addCoupons(couponsRecord);
+		parserBo.setFareActivityId(coupons.getActivityId());
 		return true;
 	} 
 }

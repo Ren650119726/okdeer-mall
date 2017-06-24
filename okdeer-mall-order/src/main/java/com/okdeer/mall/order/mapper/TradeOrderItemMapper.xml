@@ -257,10 +257,10 @@
 			
 			#{item.activityPrice,jdbcType=DECIMAL},
 			#{item.activityQuantity,jdbcType=INTEGER},
-			#{item.unit,jdbcType=VARCHAR}
+			#{item.unit,jdbcType=VARCHAR},
 			
 			#{item.storePreferential,jdbcType=DECIMAL},
-			#{item.commission,jdbcType=DECIMAL},
+			#{item.commission,jdbcType=DECIMAL}
         )
 		</foreach>
   </insert>

@@ -174,17 +174,22 @@ public class StoreSkuParserBo {
 	 * 实际运费优惠
 	 */
 	private BigDecimal realFarePreferential;
+	
+	/**
+	 * 运费代金券活动Id
+	 */
+	private String fareActivityId;
+	
+	/**
+	 * 使用的代金券列表信息 
+	 */
+	private List<ActivityCouponsRecord> couponsList;
 	// End V2.5 added by maojj 2017-06-23
 	
 	/**
 	 * 商品所属店铺 
 	 */
 	private Set<String> storeIdSet = Sets.newHashSet();
-	
-	/**
-	 * 使用的代金券列表信息 
-	 */
-	private List<ActivityCouponsRecord> couponsList;
 	
 	public StoreSkuParserBo(List<GoodsStoreSku> currentSkuList) {
 		this.currentSkuList = currentSkuList;
@@ -742,4 +747,13 @@ public class StoreSkuParserBo {
 	public List<ActivityCouponsRecord> getCouponsList() {
 		return couponsList;
 	}
+
+	public String getFareActivityId() {
+		return fareActivityId;
+	}
+
+	public void setFareActivityId(String fareActivityId) {
+		this.fareActivityId = fareActivityId;
+	}
+
 }
