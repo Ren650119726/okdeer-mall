@@ -8,6 +8,7 @@ package com.okdeer.mall.activity.prize.service.impl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -80,7 +81,7 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 	 * (non-Javadoc)
 	 */
 	@Override
-	public int addPrizeRecord(String collectId,String userId,String luckDrawId,String prizeId) {
+	public int addPrizeRecord(String collectId,String userId,String luckDrawId,String prizeId,int isOffer) {
 		ActivityPrizeRecord rec = new ActivityPrizeRecord();
 		rec.setId(UuidUtils.getUuid());
 		rec.setPrizeId(prizeId);
@@ -88,7 +89,7 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 		rec.setUserId(userId);
 		rec.setLuckDrawId(luckDrawId);
 		rec.setCreateTime(new Date());
-		rec.setIsOffer(0);
+		rec.setIsOffer(isOffer);
 		rec.setDisabled(Disabled.valid);
 		return activityPrizeRecordMapper.add(rec);
 	}
@@ -99,6 +100,17 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 		PageHelper.startPage(pageNumber, pageSize, true);
 		List<ActivityPrizeRecordVo> result = activityPrizeRecordMapper.findPrizeRecordList(activityPrizeRecordVo);
 		return new PageUtils<ActivityPrizeRecordVo>(result);
+	}
+	
+	/**
+	 * @Description: 批量更新发放状态
+	 * @param map   
+	 * @return void  
+	 * @author tuzhd
+	 * @date 2017年6月20日
+	 */
+	public void updateBathOffer(Map<String,Object> map){
+		activityPrizeRecordMapper.updateBathOffer(map);
 	}
 
 }

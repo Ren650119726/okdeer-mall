@@ -374,6 +374,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		// End added by maojj 2016-10-13 
 		for (TradeOrderRefundsTrace trace : traceList) {
 			traceVo = new RefundsTraceVo();
+			traceVo.setRefundsTraceStatus(trace.getTraceStatus());
 			traceVo.setTitle(trace.getTraceStatus().getDesc());
 			// 如果退款轨迹状态为：等待您的处理或者是等待卖家的处理，当所处状态不是最后一个节点时，无需显示备注信息，如果是最后一个节点，需要显示备注的提示信息
 			String remark = trace.getRemark();

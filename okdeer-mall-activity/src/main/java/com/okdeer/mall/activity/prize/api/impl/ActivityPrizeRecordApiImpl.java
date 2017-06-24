@@ -7,6 +7,7 @@
 package com.okdeer.mall.activity.prize.api.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,6 +57,20 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 	public List<ActivityPrizeRecord> findPrizeRecord() {
 		return activityPrizeRecordService.findPrizeRecord();
 	}
+	
+	/**
+	 * @Description: 根据奖品记录id查询记录
+	 * @param id 奖品记录id
+	 * @return List<ActivityPrizeRecord>  
+	 * @throws Exception 
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年6月20日
+	 */
+	@Override
+	public ActivityPrizeRecord findPrizeById(String id) throws Exception {
+		return activityPrizeRecordService.findById(id);
+	}
 
 	@Override
 	public int findCountByPrizeId(String prizeId) {
@@ -67,6 +82,29 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 			int pageNumber, int pageSize) {
 		return activityPrizeRecordService.findPrizeRecordList(activityPrizeRecordVo, pageNumber, pageSize);
 	}
-
+	
+	/**
+	 * @Description: 更新中奖记录
+	 * @param record  中奖对象
+	 * @return void  
+	 * @throws Exception 
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年6月20日
+	 */
+	public void updatePrizeRecord(ActivityPrizeRecord record) throws Exception{
+		activityPrizeRecordService.update(record);
+	}
+	
+	/**
+	 * @Description: 批量更新发放状态
+	 * @param map   
+	 * @return void  
+	 * @author tuzhd
+	 * @date 2017年6月20日
+	 */
+	public void updateBathOffer(Map<String,Object> map){
+		activityPrizeRecordService.updateBathOffer(map);
+	}
 
 }

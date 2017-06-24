@@ -211,14 +211,16 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  			JSONObject json = null;
  			//根据活动奖品扣减数量级返回 记录结果
 			json = activityPrizeWeightService.updatePrizesNumber(id);
- 			//根据序号获取代金劵id 执行送奖 //奖品库存扣减成功后去领取代金券
- 			if(StringUtils.isNotBlank(couponId) && (int)json.get("code")==100){
- 				json = activityCouponsRecordService.addRecordsByCollectId(couponId, userId, ActivityCouponsType.advert_coupons);
- 			}
  			//如果奖品扣减成功 -- 写入中奖记录抽奖记录
  			Object code = json.get("code");
  			if(code != null && (int)code == 100){
- 				activityPrizeRecordService.addPrizeRecord(couponId, userId, luckDrawId,id);
+ 				//根据序号获取代金劵id 执行送奖 //奖品库存扣减成功后去领取代金券
+ 	 			if(StringUtils.isNotBlank(couponId) ){
+ 	 				activityPrizeRecordService.addPrizeRecord(couponId, userId, luckDrawId,id,WhetherEnum.whether.ordinal());
+ 	 				json = activityCouponsRecordService.addRecordsByCollectId(couponId, userId, ActivityCouponsType.advert_coupons);
+ 	 			}else{
+ 	 				activityPrizeRecordService.addPrizeRecord(couponId, userId, luckDrawId,id,WhetherEnum.not.ordinal());
+ 	 			}
  			}
  			json.put("prizeNo", prizeNo); 
  			json.put("prizeName", prizeNameArr[prizeNo]); 
