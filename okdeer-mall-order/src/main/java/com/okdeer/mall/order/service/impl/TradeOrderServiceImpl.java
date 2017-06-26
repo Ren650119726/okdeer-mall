@@ -4183,6 +4183,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("preferentialPrice",
 				orders.getPreferentialPrice() == null ? "" : orders.getPreferentialPrice().toString());
 		json.put("fare", orders.getFare() == null ? "" : orders.getFare().toString());
+		json.put("fareFavour", orders.getRealFarePreferential() == null ? "" : String.valueOf(orders.getRealFarePreferential()));
 		// 订单评价类型0：未评价，1：已评价
 		json.put("orderIsComment", appraise > 0 ? Constant.ONE : Constant.ZERO);
 		// 订单投诉状态
