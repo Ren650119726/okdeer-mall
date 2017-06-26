@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -378,9 +377,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Reference(version = "1.0.0", check = false)
 	private IStoreInfoExtServiceApi storeInfoExtService;
 	
-	@Autowired
-	private  RedisTemplate<String,Boolean> redisTemplate;
-
 	/**
 	 * 订单收货信息
 	 */
