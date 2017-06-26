@@ -5125,6 +5125,24 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	@Transactional(rollbackFor = Exception.class)
 	public void updateOrderDelivery(TradeOrder tradeOrder) throws Exception {
 		if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {// 发货
+			// begin V2.5.0 add by wangf01 20170626
+			//获取快照信息，判断配送方式是什么
+			TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
+			paramDto.setOrderId(tradeOrder.getId());
+			TradeOrderExtSnapshot snapshot = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
+			if(snapshot.getDeliveryType() == 1){
+				//根据订单id查询订单基本信息
+				TradeOrder tradeOrderParam = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
+				//根据订单id查询订单项信息
+				List<TradeOrderItem> orderItemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
+				tradeOrderParam.setTradeOrderItem(orderItemList);
+				tradeOrderParam.setTradeOrderExt(snapshot);
+				ResultMsg resultMsg = expressService.saveExpressOrder(tradeOrderParam);
+				if(resultMsg.getCode() != 200){
+					throw new ServiceException(resultMsg.getMsg());
+				}
+			}
+			// end add by wangf01 20170626
 			this.updateOrderStatus(tradeOrder);
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("orderId", tradeOrder.getId());
