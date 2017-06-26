@@ -93,7 +93,7 @@ public class ExpressServiceImpl implements ExpressService {
         if (resultMsg.getCode() == 200) {
             ExpressCallback data = new ExpressCallback();
             data.setId(UuidUtils.getUuid());
-            data.setPartnerOrderCode(tradeOrder.getId());
+            data.setPartnerOrderCode(tradeOrder.getOrderNo());
             data.setOrderStatus(resultMsg.getCode());
             data.setPushTime(DateUtils.getSysDate());
             expressCallbackMapper.insert(data);
