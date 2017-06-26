@@ -108,7 +108,7 @@ public interface ActivityCollectCouponsService {
 	 * @author wushp
 	 * @date 2016年9月23日
 	 */
-	List<ActivityCollectCouponsOrderVo> findCollCouponsLinks(Map<String,Object> map) throws ServiceException;
+	ActivityCollectCouponsOrderVo findCollCouponsLinks(Map<String,Object> map) throws ServiceException;
 	// end add by wushp V1.1.0 20160923
 	
 	/**

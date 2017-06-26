@@ -8,10 +8,11 @@
     <result column="collect_time" property="collectTime" jdbcType="TIMESTAMP" />
     <result column="collect_user_id" property="collectUserId" jdbcType="VARCHAR" />
     <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="total_value" property="totalValue"  jdbcType="INTEGER" />
   </resultMap>
   
   <sql id="Base_Column_List" >
-    id, collect_type, coupons_collect_id, collect_time, collect_user_id, order_id
+    id, collect_type, coupons_collect_id, collect_time, collect_user_id, order_id,total_value
   </sql>
   <sql id="condition" >
     <if test="null!=params" >
@@ -64,6 +65,9 @@
       <if test="orderId != null" >
         order_id,
       </if>
+      <if test="totalValue != null">
+      	total_value,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -84,6 +88,9 @@
       <if test="orderId != null" >
         #{orderId,jdbcType=VARCHAR},
       </if>
+      <if test="totalValue != null">
+      	 #{totalValue,jdbcType=INTEGER},
+      </if>
     </trim>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord" >
@@ -103,6 +110,9 @@
       </if>
       <if test="orderId != null" >
         order_id = #{orderId,jdbcType=VARCHAR},
+      </if>
+       <if test="totalValue != null">
+      	 total_value = #{totalValue,jdbcType=INTEGER},
       </if>
     </set>
     where id = #{id,jdbcType=VARCHAR}

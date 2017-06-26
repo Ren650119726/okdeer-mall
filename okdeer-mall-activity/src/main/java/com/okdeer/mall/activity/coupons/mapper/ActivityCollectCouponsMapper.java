@@ -174,6 +174,14 @@ public interface ActivityCollectCouponsMapper {
 	List<ActivityCollectCouponsOrderVo> findCollCouponsLinks(Map<String,Object> map);
 	// end add by wushp V1.1.0 20160923
 	
+	/**
+	 * @Description: 根据梯度id查询 梯度中的代金券信息
+	 * @return List<ActivityCoupons>  
+	 * @author tuzhd
+	 * @date 2017年6月26日
+	 */
+	List<ActivityCoupons> findCouponsByReleaID(@Param("relationId") String relationId);
+	
 	//Begin added by zhaoqc 2016-09-29
 	List<ActivityCollectCouponsSimpleVo> findRecommendAcvititys();
 	//End added by zhaoqc 2016-09-29

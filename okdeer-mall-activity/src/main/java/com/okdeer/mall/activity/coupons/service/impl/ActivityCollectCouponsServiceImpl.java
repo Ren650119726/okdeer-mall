@@ -791,9 +791,40 @@ public class ActivityCollectCouponsServiceImpl
 		return activityCollectOrderTypeMapper.findOrderTypeListByCollectCouponsId(collectCouponsId);
 	}
 	
+	/**
+	 * @Description: 消费返券：活动代金券查询 添加梯度
+	 * @param map 参数map
+	 * @return list
+	 * @throws ServiceException 异常
+	 * @author tuzhd
+	 * @date 2017年6月26日
+	 */
 	@Override
-	public List<ActivityCollectCouponsOrderVo> findCollCouponsLinks(Map<String, Object> map) throws ServiceException {
-		return activityCollectCouponsMapper.findCollCouponsLinks(map);
+	public ActivityCollectCouponsOrderVo findCollCouponsLinks(Map<String, Object> map) throws ServiceException {
+		List<ActivityCollectCouponsOrderVo> list = activityCollectCouponsMapper.findCollCouponsLinks(map);
+		//如果未查询到记录 或
+		if(CollectionUtils.isEmpty(list)){
+			return null;
+		}
+		//默认第一个 梯度
+		String relationId =  list.get(0).getRelationId();
+		BigDecimal limitAmout = list.get(0).getLimitAmount();
+		ActivityCollectCouponsOrderVo curr = list.get(0);
+		
+		//筛选符合梯度的 返券梯度
+		for(ActivityCollectCouponsOrderVo li :list){
+			//大于当前梯度 则为返回该梯度
+			if(li.getLimitAmount() != null && li.getLimitAmount().compareTo(limitAmout) > 0){
+				limitAmout = li.getLimitAmount();
+				relationId = li.getRelationId();
+			}
+		}
+		
+		//根据筛选的梯度查询优惠券
+		List<ActivityCoupons>  couponsList = activityCollectCouponsMapper.findCouponsByReleaID(relationId); 
+		curr.setActivityCoupons(couponsList);
+		
+		return curr;
 	}
 
     @Override
