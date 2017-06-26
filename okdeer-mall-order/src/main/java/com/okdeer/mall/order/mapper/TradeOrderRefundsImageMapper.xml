@@ -3,8 +3,9 @@
 <mapper namespace="com.okdeer.mall.order.mapper.TradeOrderRefundsImageMapper" >
   <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderRefundsImage" >
     <id column="id" property="id" jdbcType="VARCHAR" />
-    <result column="certificate_id" property="certificateId" jdbcType="VARCHAR" />
     <result column="image_path" property="imagePath" jdbcType="VARCHAR" />
+    <result column="certificate_id" property="certificateId" jdbcType="VARCHAR" />
+    <result column="refunds_id" property="refundsId" jdbcType="VARCHAR" />
   </resultMap>
   <sql id="Base_Column_List" >
     id, certificate_id, image_path
@@ -81,4 +82,8 @@
       image_path = #{imagePath,jdbcType=VARCHAR}
     where id = #{id,jdbcType=VARCHAR}
   </update>
+  
+  <select id="findByRefundsId" parameterType="string" resultMap="BaseResultMap">
+  	select * from trade_order_refunds_image where refunds_id = #{value}
+  </select>
 </mapper>

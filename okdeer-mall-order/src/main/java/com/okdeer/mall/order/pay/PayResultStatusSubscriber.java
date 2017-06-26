@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -30,6 +31,7 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
+import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.constant.text.ExceptionConstant;
@@ -52,6 +54,8 @@ import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
+import com.okdeer.mall.order.service.TradeorderProcessLister;
+import com.okdeer.mall.order.service.TradeorderRefundProcessLister;
 
 /**
  * 余额支付结果消息订阅处理
@@ -145,6 +149,13 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	@Resource
     private TradeOrderSendMessageService sendMessageService;
 	
+	@Autowired
+	@Qualifier(value="jxcSynTradeorderProcessLister")
+	private TradeorderProcessLister tradeorderProcessLister;
+	@Autowired
+	@Qualifier(value="jxcSynTradeorderRefundProcessLister")
+	private TradeorderRefundProcessLister tradeorderRefundProcessLister;
+	
 	@Override
 	public String getTopic() {
 		return TOPIC_PAY_RESULT;
@@ -204,6 +215,11 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		// begin add by wushp 20161015
 		try {
 			orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+			
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
@@ -254,6 +270,13 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			} else {
 				logger.error("取消(拒收)订单退款支付失败,订单编号为：" + tradeOrder.getOrderNo() + "，问题原因" + result.getMsg());
 			}
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+			tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+			tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error("取消订单支付结果同步消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
@@ -314,7 +337,14 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			// 返回状态为success,更新订单状态
 			if (result.getCode().equals(TradeErrorEnum.SUCCESS.getName())) {
 				tradeOrderRefunds.setRefundMoneyTime(new Date());
-				tradeOrderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
+				
+				if(tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND) {
+					tradeOrderRefunds.setRefundsStatus(RefundsStatusEnum.YSC_REFUND_SUCCESS);
+				} else if (tradeOrderRefunds.getRefundsStatus() == RefundsStatusEnum.FORCE_SELLER_REFUND) {
+					tradeOrderRefunds.setRefundsStatus(RefundsStatusEnum.FORCE_SELLER_REFUND_SUCCESS);
+				} else {
+					tradeOrderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
+				}
 				tradeOrderRefundsService.updateRefunds(tradeOrderRefunds);
 				
 				//Begin 便利店退款成功，向用户推送消息 added by zhaoqc
@@ -323,11 +353,18 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
                 //End added by zhaoqc 2017-03-1
 				
 				// 订单完成后同步到商业管理系统
-				tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(tradeOrderRefunds.getId());
+				//tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(tradeOrderRefunds.getId());
 			} else {
 				logger.error("退款支付状态消息处理失败,退款单编号为：" + tradeOrderRefunds.getRefundNo() + "，问题原因" + result.getMsg());
 
 			}
+			
+			TradeOrder tradeOrder = tradeOrderService.getByTradeNum(result.getTradeNum());
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeOrderContext.setTradeOrderRefunds(tradeOrderRefunds);
+			tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error("退款支付状态消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;

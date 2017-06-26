@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,7 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
 import com.okdeer.mall.activity.group.service.ActivityGroupRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
+import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -58,6 +60,7 @@ import com.okdeer.mall.order.service.StockOperateService;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
+import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
@@ -176,6 +179,10 @@ public class CancelOrderServiceImpl implements CancelOrderService {
      */
 	@Value("${balance.pay.cancel.order}")
 	private String balancePayCancelOrder;
+	
+	@Autowired
+	@Qualifier(value="jxcSynTradeorderProcessLister")
+	private TradeorderProcessLister tradeorderProcessLister;
 	
 	/**
 	 * @Description: 取消订单
@@ -359,6 +366,16 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				// 如果不是支付中的状态是需要退款给用户的
 				this.tradeOrderPayService.cancelOrderPay(tradeOrder);
 			}
+			
+			//如果是货到付款的,走拒收的流程
+			if(oldOrder.getPayWay() != PayWayEnum.PAY_ONLINE){
+				//add by  zhangkeneng  和左文明对接丢消息
+				TradeOrderContext tradeOrderContext = new TradeOrderContext();
+				tradeOrderContext.setTradeOrder(tradeOrder);
+				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+			}
+			
+			
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;

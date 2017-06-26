@@ -30,7 +30,6 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
-import com.okdeer.jxc.stock.vo.StockUpdateVo;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
@@ -49,7 +48,6 @@ import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
-import com.okdeer.mall.order.builder.JxcStockUpdateBuilder;
 import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.TradeOrderBuilder;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
@@ -159,9 +157,6 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private StockUpdateServiceApi stockUpdateServiceApi;
-	
-	@Resource
-	private JxcStockUpdateBuilder jxcStockUpdateBuilder;
 	
 	@Resource
 	private MallStockUpdateBuilder mallStockUpdateBuilder;

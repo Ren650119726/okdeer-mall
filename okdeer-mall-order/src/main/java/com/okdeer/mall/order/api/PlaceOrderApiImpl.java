@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -34,6 +35,7 @@ import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.bo.AppAdapter;
 import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
+import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.dto.AppStoreDto;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
@@ -42,6 +44,8 @@ import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandlerChain;
 import com.okdeer.mall.order.service.PlaceOrderApi;
+import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.system.utils.ConvertUtil;
 
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.PlaceOrderApi")
@@ -86,6 +90,12 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitSeckillOrderService;
 
 	/**
+	 * 订单service
+	 */
+	@Autowired
+	private TradeOrderService tradeOrderService;
+	
+	/**
 	 * mq注入
 	 */
 	@Autowired
@@ -93,6 +103,10 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	
 	@Resource
 	private RedisLockRegistry redisLockRegistry;
+	
+	@Autowired
+	@Qualifier(value="jxcSynTradeorderProcessLister")
+	private TradeorderProcessLister tradeorderProcessLister;
 
 	@Override
 	public Response<PlaceOrderDto> confirmOrder(Request<PlaceOrderParamDto> req) throws Exception {

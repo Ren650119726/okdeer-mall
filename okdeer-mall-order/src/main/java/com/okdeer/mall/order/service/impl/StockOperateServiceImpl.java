@@ -1,45 +1,25 @@
 
 package com.okdeer.mall.order.service.impl;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
-import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.stock.dto.StockUpdateDto;
-import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
-import com.okdeer.archive.stock.vo.AdjustDetailVo;
-import com.okdeer.archive.stock.vo.StockAdjustVo;
-import com.okdeer.base.common.utils.StringUtils;
-import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
 import com.okdeer.jxc.stock.vo.StockUpdateVo;
-import com.okdeer.mall.activity.coupons.entity.ActivitySale;
-import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
-import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
-import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
-import com.okdeer.mall.order.builder.JxcStockUpdateBuilder;
 import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
-import com.okdeer.mall.order.enums.OrderStatusEnum;
-import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.service.StockOperateService;
 
@@ -66,9 +46,6 @@ public class StockOperateServiceImpl implements StockOperateService {
 	@Reference(version = "1.0.0", check = false)
 	private StockUpdateServiceApi stockUpdateServiceApi;
 
-	@Resource
-	private JxcStockUpdateBuilder jxcStockUpdateBuilder;
-	
 	@Resource
 	private MallStockUpdateBuilder mallStockUpdateBuilder;
 
@@ -99,13 +76,9 @@ public class StockOperateServiceImpl implements StockOperateService {
 		List<TradeOrderItem> orderItemList = tradeOrderItemMapper.findOrderItemByIdList(orderItemIdList);
 		
 		StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(orderRefunds, tradeOrder, orderItemList);
-		StockUpdateVo jxcStockUpdate = jxcStockUpdateBuilder.build(orderRefunds, orderItemList);
 		rpcIdList.add(mallStockUpdate.getRpcId());
 		if(mallStockUpdate != null){
 			goodsStoreSkuStockApi.updateStock(mallStockUpdate);
-		}
-		if(jxcStockUpdate != null){
-			stockUpdateServiceApi.stockUpdateForMessage(jxcStockUpdate);
 		}
 	}
 	

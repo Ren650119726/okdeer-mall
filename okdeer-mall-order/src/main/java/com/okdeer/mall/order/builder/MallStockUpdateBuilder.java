@@ -357,44 +357,6 @@ public class MallStockUpdateBuilder {
 	}
 	
 	/**
-	 * @Description: 构建库存更新对象为确认收货
-	 * @param tradeOrder
-	 * @return   
-	 * @author maojj
-	 * @date 2017年3月15日
-	 */
-	public StockUpdateDto buildForCompleteOrder(TradeOrder tradeOrder){
-		StockUpdateDto stockUpdateDto = new StockUpdateDto();
-
-		stockUpdateDto.setRpcId(UuidUtils.getUuid());
-		stockUpdateDto.setMethodName("");
-		stockUpdateDto.setOrderId(tradeOrder.getId());
-		stockUpdateDto.setStoreId(tradeOrder.getStoreId());
-		stockUpdateDto.setStockOperateEnum(StockOperateEnum.PLACE_ORDER_COMPLETE);
-
-		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
-		StockUpdateDetailDto updateDetail = null;
-		for(TradeOrderItem orderItem : tradeOrder.getTradeOrderItem()){
-			if(tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER && orderItem.getSpuType() != SpuTypeEnum.assembleSpu){
-				// 完成的订单，商城只对组合商品做处理，其他均不处理。
-				continue;
-			}
-			updateDetail = new StockUpdateDetailDto();
-			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
-			updateDetail.setSpuType(orderItem.getSpuType());
-			updateDetail.setActType(ActivityTypeEnum.NO_ACTIVITY);
-			updateDetail.setUpdateNum(orderItem.getQuantity());
-			
-			updateDetailList.add(updateDetail);
-		}
-		if(CollectionUtils.isEmpty(updateDetailList)){
-			return null;
-		}
-		stockUpdateDto.setUpdateDetailList(updateDetailList);
-		return stockUpdateDto;
-	}
-	
-	/**
 	 * @Description: 退款时，构建库存更新对象
 	 * @param orderRefunds
 	 * @param tradeOrder
@@ -416,20 +378,39 @@ public class MallStockUpdateBuilder {
 		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
 		StockUpdateDetailDto updateDetail = null;
 		ActivityTypeEnum actType = null;
+		
+		// 组合商品数量映射列表
+		Map<String,Integer> comboSkuMap = Maps.newHashMap();
+		List<String> comboSkuIds = Lists.newArrayList();
+		
 		for(TradeOrderItem orderItem : orderItemList){
 			// 获取订单项商品活动类型
 			actType = getActvityType(tradeOrder,orderItem);
-			if(actType == ActivityTypeEnum.NO_ACTIVITY && tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER){
-				continue;
-			}
 			updateDetail = new StockUpdateDetailDto();
 			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
 			updateDetail.setSpuType(orderItem.getSpuType());
 			updateDetail.setActType(actType);
+			updateDetail.setUpdateNum(orderItem.getQuantity());
 			processRefundsNum(updateDetail,orderRefunds,orderItem,actType);
+			if(orderItem.getSpuType() == SpuTypeEnum.assembleSpu){
+				comboSkuIds.add(orderItem.getStoreSkuId());
+				comboSkuMap.put(orderItem.getStoreSkuId(), orderItem.getQuantity());
+			}
 			updateDetailList.add(updateDetail);
 		}
-		
+		// 处理组合商品
+		if(CollectionUtils.isNotEmpty(comboSkuIds)){
+			List<GoodsStoreAssembleDto> comboDtoList = goodsStoreSkuAssembleApi.findByAssembleSkuIds(comboSkuIds);
+			for (GoodsStoreAssembleDto comboDto : comboDtoList) {
+				for (GoodsStoreSkuAssembleDto comboDetail : comboDto.getGoodsStoreSkuAssembleDtos()) {
+					updateDetail = new StockUpdateDetailDto();
+					updateDetail.setStoreSkuId(comboDetail.getStoreSkuId());
+					updateDetail.setSpuType(comboDetail.getSpuTypeEnum());
+					updateDetail.setUpdateNum(comboDetail.getQuantity() * comboSkuMap.get(comboDetail.getAssembleSkuId()));
+					updateDetailList.add(updateDetail);
+				}
+			}
+		}
 		stockUpdateDto.setUpdateDetailList(updateDetailList);
 		return stockUpdateDto;
 	}
