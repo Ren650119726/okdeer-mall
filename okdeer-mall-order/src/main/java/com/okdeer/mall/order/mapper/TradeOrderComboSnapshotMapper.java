@@ -13,5 +13,21 @@ import com.okdeer.mall.order.entity.TradeOrderComboSnapshot;
 
 public interface TradeOrderComboSnapshotMapper extends IBaseMapper {
 
+	/**
+	 * @Description: 批量保存组合商品详情信息
+	 * @param comboDetailList   
+	 * @author maojj
+	 * @date 2017年6月24日
+	 */
 	void batchAdd(List<TradeOrderComboSnapshot> comboDetailList);
+	
+	/**
+	 * @Description: 根据订单Id查询组合商品明细信息
+	 * @param comboSkuIds
+	 * @param orderId
+	 * @return   
+	 * @author maojj
+	 * @date 2017年6月24日
+	 */
+	List<TradeOrderComboSnapshot> findByOrderId(String orderId);
 }

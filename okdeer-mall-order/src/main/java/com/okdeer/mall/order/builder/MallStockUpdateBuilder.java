@@ -11,12 +11,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.okdeer.archive.goods.assemble.GoodsStoreSkuAssembleApi;
-import com.okdeer.archive.goods.assemble.dto.GoodsStoreAssembleDto;
-import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.stock.dto.StockUpdateDetailDto;
@@ -34,11 +30,13 @@ import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderComboSnapshot;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
+import com.okdeer.mall.order.mapper.TradeOrderComboSnapshotMapper;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
 
@@ -57,8 +55,8 @@ public class MallStockUpdateBuilder {
 	@Autowired
 	private ActivitySeckillService activitySeckillService;
 	
-	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuAssembleApi goodsStoreSkuAssembleApi;
+	@Resource
+	private TradeOrderComboSnapshotMapper tradeOrderComboSnapshotMapper;
 
 	/**
 	 * @Description: V2.1版本。构建商品更新的Dto。仅用于秒杀订单
@@ -263,15 +261,13 @@ public class MallStockUpdateBuilder {
 		}
 		// 处理组合商品
 		if(CollectionUtils.isNotEmpty(comboSkuIds)){
-			List<GoodsStoreAssembleDto> comboDtoList = goodsStoreSkuAssembleApi.findByAssembleSkuIds(comboSkuIds);
-			for (GoodsStoreAssembleDto comboDto : comboDtoList) {
-				for (GoodsStoreSkuAssembleDto comboDetail : comboDto.getGoodsStoreSkuAssembleDtos()) {
-					updateDetail = new StockUpdateDetailDto();
-					updateDetail.setStoreSkuId(comboDetail.getStoreSkuId());
-					updateDetail.setSpuType(comboDetail.getSpuTypeEnum());
-					updateDetail.setUpdateNum(comboDetail.getQuantity() * comboSkuMap.get(comboDetail.getAssembleSkuId()));
-					updateDetailList.add(updateDetail);
-				}
+			List<TradeOrderComboSnapshot> comboSkuList = tradeOrderComboSnapshotMapper.findByOrderId(tradeOrder.getId());
+			for (TradeOrderComboSnapshot comboSku : comboSkuList) {
+				updateDetail = new StockUpdateDetailDto();
+				updateDetail.setStoreSkuId(comboSku.getStoreSkuId());
+				updateDetail.setSpuType(comboSku.getSkuType());
+				updateDetail.setUpdateNum(comboSku.getQuantity() * comboSkuMap.get(comboSku.getComboSkuId()));
+				updateDetailList.add(updateDetail);
 			}
 		}
 		
@@ -400,15 +396,13 @@ public class MallStockUpdateBuilder {
 		}
 		// 处理组合商品
 		if(CollectionUtils.isNotEmpty(comboSkuIds)){
-			List<GoodsStoreAssembleDto> comboDtoList = goodsStoreSkuAssembleApi.findByAssembleSkuIds(comboSkuIds);
-			for (GoodsStoreAssembleDto comboDto : comboDtoList) {
-				for (GoodsStoreSkuAssembleDto comboDetail : comboDto.getGoodsStoreSkuAssembleDtos()) {
-					updateDetail = new StockUpdateDetailDto();
-					updateDetail.setStoreSkuId(comboDetail.getStoreSkuId());
-					updateDetail.setSpuType(comboDetail.getSpuTypeEnum());
-					updateDetail.setUpdateNum(comboDetail.getQuantity() * comboSkuMap.get(comboDetail.getAssembleSkuId()));
-					updateDetailList.add(updateDetail);
-				}
+			List<TradeOrderComboSnapshot> comboSkuList = tradeOrderComboSnapshotMapper.findByOrderId(tradeOrder.getId());
+			for (TradeOrderComboSnapshot comboSku : comboSkuList) {
+				updateDetail = new StockUpdateDetailDto();
+				updateDetail.setStoreSkuId(comboSku.getStoreSkuId());
+				updateDetail.setSpuType(comboSku.getSkuType());
+				updateDetail.setUpdateNum(comboSku.getQuantity() * comboSkuMap.get(comboSku.getComboSkuId()));
+				updateDetailList.add(updateDetail);
 			}
 		}
 		stockUpdateDto.setUpdateDetailList(updateDetailList);
