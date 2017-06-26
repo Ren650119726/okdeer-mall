@@ -34,32 +34,6 @@
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>com.okdeer.mall</groupId>
-            <artifactId>okdeer-mall-system</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.okdeer.mall</groupId>
-            <artifactId>okdeer-mall-activity</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.okdeer.mall</groupId>
-            <artifactId>okdeer-mall-member</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.okdeer.mall</groupId>
-            <artifactId>okdeer-mall-operate</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.okdeer.mall</groupId>
-            <artifactId>okdeer-mall-order</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.okdeer.mall</groupId>
             <artifactId>okdeer-mall-api</artifactId>
