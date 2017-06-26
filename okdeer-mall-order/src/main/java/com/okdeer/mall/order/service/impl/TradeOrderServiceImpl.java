@@ -2135,7 +2135,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			//根据订单id查询订单项信息
 			List<TradeOrderItem> orderItemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
 			tradeOrderParam.setTradeOrderItem(orderItemList);
-			tradeOrder.setTradeOrderExt(snapshot);
+			tradeOrderParam.setTradeOrderExt(snapshot);
         	ResultMsg resultMsg = expressService.saveExpressOrder(tradeOrderParam);
         	if(resultMsg.getCode() != 200){
         		throw new ServiceException(resultMsg.getMsg());
