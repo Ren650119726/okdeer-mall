@@ -20,6 +20,7 @@ import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.vo.ActivityInfoVO;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.vo.ERPTradeOrderVo;
+import com.okdeer.mall.order.vo.OrderCouponsRespDto;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderExportVo;
 import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
@@ -1084,4 +1085,17 @@ public interface TradeOrderService {
 	 */
 	long countUserOrders(UserOrderParamBo paramBo);
 	// end V2.1 add by chenzc 2017-2-28
+	
+	/**
+	 * @Description: 订单消费返券支持梯度
+	 * @param orderId 订单id
+	 * @param userId 下单用户id
+	 * @param source 订单来源，mall：商城，psms：物业 
+	 * @return OrderCouponsRespDto 响应
+	 * @throws Exception 异常
+	 * @author tuzhd
+	 * @date 2017年6月26日
+	 */
+    OrderCouponsRespDto getOrderCoupons(String orderId, String userId,String source) throws Exception;
+	
 }

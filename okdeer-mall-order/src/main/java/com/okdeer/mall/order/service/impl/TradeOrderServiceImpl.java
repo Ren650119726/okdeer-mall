@@ -1,7 +1,5 @@
 package com.okdeer.mall.order.service.impl;
 
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_ALREADY_TIPS;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT_TIPS;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY;
@@ -33,12 +31,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import com.okdeer.mall.ele.service.ExpressService;
-import com.okdeer.mall.ele.util.ResultMsg;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -139,6 +137,8 @@ import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
+import com.okdeer.mall.ele.service.ExpressService;
+import com.okdeer.mall.ele.util.ResultMsg;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
@@ -520,6 +520,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 */
 	@Resource
 	private TradeOrderLogService tradeOrderLogService;
+	@Autowired
+	private RedisLockRegistry redisLockRegistry;
 
 	/**
 	 * 订单完成后同步商业管理系统Service
@@ -6253,7 +6255,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// begin add by wushp V1.1.0 20160922
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public OrderCouponsRespDto getOrderCoupons(String orderId, String userId, String type) throws ServiceException {
+	public OrderCouponsRespDto getOrderCoupons(String orderId, String userId, String type) throws Exception {
 		OrderCouponsRespDto orderCouponsRespDto = new OrderCouponsRespDto();
 		if ("mall".equals(type)) {
 			// 商城订单
@@ -6274,13 +6276,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * @param userId
 	 *            下单用户id
 	 * @return int 0:符合消费返券，1：不符合消费返券
-	 * @throws ServiceException
-	 *             异常
 	 * @author wushp
+	 * @throws Exception 
+	 * @throws  
 	 * @date 2016年9月22日
 	 */
 	private void getMallOrderCoupons(String orderId, String userId, OrderCouponsRespDto respDto)
-			throws ServiceException {
+			throws  Exception {
 		// 1、获取订单基本信息,判断订单状态是否符合消费返券
 		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderId);
 		// 订单状态(0:等待买家付款,1:待发货,2:已取消,3:已发货,4:已拒收,5:已签收(交易完成),6:交易关闭),7:取消中,8:拒收中，11支付确认中
@@ -6311,64 +6313,36 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		map.put("limitAmout", tradeOrder.getActualAmount());
 		
 		//校验成功标识 //如果不存在缓存数据进行加入到缓存中 start 涂志定
-		String key = "coupons"+userId+orderId;
-		boolean checkFlag = checkUserStatusByRedis(key, 6);
-		if(!checkFlag){
-			return ;
-		}
-		
-		try{
-		
-			if (orderType == 0) {
-				// 实物订单 订单类型
-				map.put("orderType", ActivityCollectOrderTypeEnum.PHYSICAL_ORDER.getValue());
-				// 获取消费返券信息并赠送代金券
-				getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
-			} else if (orderType == 2 || orderType == 5) {
-				// 订单类型
-				map.put("orderType", ActivityCollectOrderTypeEnum.SERVICE_STORE_ORDER.getValue());
-				// 获取消费返券信息并赠送代金券
-				getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
-			} else if (orderType == 3 || orderType == 4) {
-				// 充值订单
-				// 订单类型
-				map.put("orderType", ActivityCollectOrderTypeEnum.MOBILE_PAY_ORDER.getValue());
-				// 获取消费返券信息并赠送代金券
-				getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
+		String key = "coupons_return"+orderId;
+		Lock lock = redisLockRegistry.obtain(key);
+		if(lock.tryLock(10, TimeUnit.SECONDS)){
+			try{
+				if (orderType == 0) {
+					// 实物订单 订单类型
+					map.put("orderType", ActivityCollectOrderTypeEnum.PHYSICAL_ORDER.getValue());
+					// 获取消费返券信息并赠送代金券
+					getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
+				} else if (orderType == 2 || orderType == 5) {
+					// 订单类型
+					map.put("orderType", ActivityCollectOrderTypeEnum.SERVICE_STORE_ORDER.getValue());
+					// 获取消费返券信息并赠送代金券
+					getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
+				} else if (orderType == 3 || orderType == 4) {
+					// 充值订单
+					// 订单类型
+					map.put("orderType", ActivityCollectOrderTypeEnum.MOBILE_PAY_ORDER.getValue());
+					// 获取消费返券信息并赠送代金券
+					getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
+				}
+			}catch(Exception e){
+				throw e;
+			}finally {
+				lock.unlock();
 			}
-		}catch(Exception e){
-			throw e;
-		}finally {
-			//移除redis缓存的key end 涂志定
-			removeRedisUserStatus(key);
 		}
 		//end 涂志定
 	}
 	
-	/**
-	 * 校验代金券领取的用户状态，避免短时间内并发操作
-	 * @param key 存储的redis key
-	 * @param times 超时时间
-	 * @return
-	 */
-	private boolean checkUserStatusByRedis(String key,int times){
-		//如果不存在缓存数据  返回true 存在false
-		boolean flag = redisTemplate.boundValueOps(key).setIfAbsent(true);
-		if(flag){
-			redisTemplate.expire(key, times, TimeUnit.SECONDS);
-		}else{
-			return false;
-		}
-		return true;
-	}
-	/**
-	 * 移除校验代金券领取的用户状	 
-	 * @param key 存储的redis key
-	 * @return
-	 */
-	private void removeRedisUserStatus(String key){
-		redisTemplate.delete(key);
-	}
 
 	/**
 	 * @Description: 物业订单消费返券
@@ -6429,24 +6403,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	/**
 	 *
 	 * @Description: 获取消费返券信息并赠送代金券
-	 * @param orderId
-	 *            订单id
-	 * @param userId
-	 *            用户id
-	 * @param map
-	 *            代金券活动查询map
-	 * @param respDto
-	 *            响应
-	 * @throws ServiceException
-	 *             异常
+	 * @param orderId 订单id
+	 * @param userId  用户id
+	 * @param map 代金券活动查询map
+	 * @param respDto 响应
+	 * @throws ServiceException  异常
 	 * @author wushp
 	 * @date 2016年9月23日
 	 */
 	private void getOrderCouponsInfo(String orderId, String userId, Map<String, Object> map,
 			OrderCouponsRespDto respDto, Date orderTime) throws ServiceException {
-		// 查询是否有符合消费返券的活动（活动代金券）
-		List<ActivityCollectCouponsOrderVo> collCoupons = activityCollectCouponsService.findCollCouponsLinks(map);
-		if (CollectionUtils.isEmpty(collCoupons)) {
+		// 查询是否有符合消费返券的活动（活动代金券） tuzd 修改为梯度返券
+		ActivityCollectCouponsOrderVo collCoupons = activityCollectCouponsService.findCollCouponsLinks(map);
+		if (collCoupons != null) {
 			// 没有符合条件的消费返券活动
 			logger.info(ORDER_COUPONS_NOT_ACTIVITY, orderId, userId);
 			respDto.setMessage(
@@ -6455,7 +6424,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 
 		// Begin added by maojj 2016-11-10
-		if (orderTime != null && orderTime.before(collCoupons.get(0).getStartTime())) {
+		if (orderTime != null && orderTime.before(collCoupons.getStartTime())) {
 			// 如果下单时间在活动开始时间之前，则不送代金券
 			logger.info(ORDER_COUPONS_NOT_ACTIVITY, orderId, userId);
 			respDto.setMessage(
@@ -6464,13 +6433,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		}
 		// End added by maojj 2016-11-10
 
-		/*
-		 * if (collCoupons.size() > 1) { // 同一时间，同一区域，只能有一个消费返券活动 logger.info(ORDER_COUPONS_NOT_ONLY, orderId, userId);
-		 * respDto.setMessage( (respDto.getMessage() == null ? "" : respDto.getMessage()) +
-		 * ORDER_COUPONS_NOT_ONLY_TIPS); return; }
-		 */
 		// 活动关联的代金券
-		List<ActivityCoupons> activityCouponsList = collCoupons.get(0).getActivityCoupons();
+		List<ActivityCoupons> activityCouponsList = collCoupons.getActivityCoupons();
 		if (CollectionUtils.isEmpty(activityCouponsList)) {
 			// 活动没有关联代金券
 			logger.info(ORDER_COUPONS_NOT_COUPONE, orderId, userId);
@@ -6484,8 +6448,20 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		List<ActivityCouponsOrderRecord> recordList = activityCouponsOrderRecordMapper.selectByParams(params);
 		if (CollectionUtils.isNotEmpty(recordList)) {
 			// 该订单已经参与过消费返券活动
-			logger.info(ORDER_COUPONS_ALREADY, orderId, userId);
+			/*logger.info(ORDER_COUPONS_ALREADY, orderId, userId);
 			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_ALREADY_TIPS);
+			return;*/
+			// 该订单已经参与过消费返券活动
+			int totalValue = 0;
+			for(ActivityCouponsOrderRecord r : recordList){
+				// 赠送的代金券总面额
+				totalValue = totalValue + r.getTotalValue();
+			}
+			if (totalValue != 0) {
+				respDto.setTotalValue(totalValue);
+				respDto.setVouContent("恭喜您获得" + totalValue + "元代金券");
+				respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_SUCCESS_TIPS);
+			}
 			return;
 		}
 
@@ -6498,7 +6474,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 代金卷活动类型：0代金券领取活动，1注册活动，2开门成功送代金券活动3 邀请注册送代金券活动4 消费返券活动
 		ActivityCouponsType activityCouponsType = null;
 		for (ActivityCouponsType activityType : ActivityCouponsType.values()) {
-			if (activityType.ordinal() == collCoupons.get(0).getType()) {
+			if (activityType.ordinal() == collCoupons.getType()) {
 				activityCouponsType = activityType;
 			}
 		}
@@ -6534,7 +6510,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			activityCouponsRecord.setId(UuidUtils.getUuid());
 			activityCouponsRecord.setCollectType(activityCouponsType);
 			activityCouponsRecord.setCouponsId(coupons.getId());
-			activityCouponsRecord.setCouponsCollectId(collCoupons.get(0).getId());
+			activityCouponsRecord.setCouponsCollectId(collCoupons.getId());
 			activityCouponsRecord.setCollectTime(new Date());
 			activityCouponsRecord.setCollectUserId(userId);
 			// Begin modified by maojj 2017-03-06 修改代金券到期时间计算方式
@@ -6553,8 +6529,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		record.setCollectTime(new Date());
 		record.setCollectType(activityCouponsType);
 		record.setCollectUserId(userId);
-		record.setCouponsCollectId(collCoupons.get(0).getId());
+		record.setCouponsCollectId(collCoupons.getId());
 		record.setOrderId(orderId);
+		record.setTotalValue(totalValue);
 		// 费返券插入代金券记录以及更新剩余的代金券,插入消费返券记录
 		addActivityCouponsRecord(lstCouponsRecords, lstActivityCouponsIds, record);
 		if (totalValue != 0) {

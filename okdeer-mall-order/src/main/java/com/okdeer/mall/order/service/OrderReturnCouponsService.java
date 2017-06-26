@@ -17,7 +17,7 @@ public interface OrderReturnCouponsService {
 	
 	/**
 	 * 
-	 * @Description: 邀请注册首单送券
+	 * @Description: 订单支付完成下单操作后1、发送消费返券 2、发送邀请注册首单送券
 	 * @param tradeOrder 订单
 	 * @throws Exception 异常
 	 * @author wushp

@@ -30,6 +30,8 @@ import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
+import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.vo.OrderCouponsRespDto;
 
 /**
  * ClassName: OrderReturnCouponsService 
@@ -41,6 +43,7 @@ import com.okdeer.mall.order.service.OrderReturnCouponsService;
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  *		V1.1.0			2016-10-18		wushp				订单返券
+ *		v2.5     		2017-06-26		tuzhd				添加自动消费返券功能 合入
  */
 @Service
 public class OrderReturnCouponsServiceImpl implements OrderReturnCouponsService {
@@ -81,18 +84,45 @@ public class OrderReturnCouponsServiceImpl implements OrderReturnCouponsService 
 	@Autowired
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
 	
+	@Resource
+	private TradeOrderService tradeOrderService;
+	
 	/**
 	 * 订单mapper
 	 */
 	@Resource
 	private TradeOrderMapper tradeOrderMapper;
 	
-	@Transactional(rollbackFor = Exception.class)
+	/**
+	 * @Description: 订单支付完成下单操作后1、发送消费返券 2、发送注册代金
+	 * @param tradeOrder
+	 * @throws Exception   
+	 * @return void  
+	 * @author tuzhd
+	 * @date 2017年6月26日
+	 */
 	@Override
 	public void firstOrderReturnCoupons(TradeOrder tradeOrder) throws Exception {
 		if (tradeOrder == null || StringUtils.isBlank(tradeOrder.getUserId())) {
 			return;
 		}
+		// mall:商城 定时进行消费返券
+		tradeOrderService.getOrderCoupons(tradeOrder.getId(), tradeOrder.getUserId(), "MALL");
+		
+		//发放注册代金券
+		addFirstOrderReturnCoupons(tradeOrder);
+	}
+
+	/**
+	 * @Description: 发放注册代金券
+	 * @param tradeOrder
+	 * @throws Exception   
+	 * @return void  
+	 * @author tuzhd
+	 * @date 2017年6月26日
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public void addFirstOrderReturnCoupons(TradeOrder tradeOrder)throws Exception{
 		// 不管支付结果如何，程序能走到这一步都走邀请注册首单送券流程
 		ActivityCollectCouponsRegisteRecord registeRecord = couponsRegisteRecordServiceApi
 				.selectByInviteId(tradeOrder.getUserId());
@@ -167,5 +197,4 @@ public class OrderReturnCouponsServiceImpl implements OrderReturnCouponsService 
 			activityCouponsRecordMapper.insertSelectiveBatch(lstCouponsRecords);
 		}
 	}
-
 }

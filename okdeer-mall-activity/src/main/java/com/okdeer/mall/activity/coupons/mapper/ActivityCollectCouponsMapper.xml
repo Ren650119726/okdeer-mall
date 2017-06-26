@@ -30,6 +30,25 @@
 		<result property="limitAmount" column="limit_amount" />
 		<result property="getUserType" column="get_user_type" javaType="com.okdeer.mall.common.enums.GetUserType" jdbcType="TINYINT"/>
 	</resultMap>
+	
+	 <!-- 代金券信息 -->
+     <resultMap id="activityCouponsMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCoupons">	
+		<id property="id" column="couponsId" javaType="string" jdbcType="VARCHAR"/>
+		<result property="activityId" column="activity_id" javaType="string" jdbcType="VARCHAR"/>
+		<result property="totalNum" column="total_num" javaType="integer" jdbcType="INTEGER"/>
+		<result property="remainNum" column="remain_num" javaType="integer" jdbcType="INTEGER"/>
+       	<result property="name" column="couponsName" javaType="string" jdbcType="VARCHAR"/>
+       	<result property="faceValue" column="face_value" javaType="integer" jdbcType="INTEGER"/>     	
+       	<result property="arriveLimit" column="arrive_limit" javaType="integer" jdbcType="INTEGER"/>
+       	<result property="validDay" column="valid_day" javaType="integer" jdbcType="INTEGER"/>
+      	 <result property="everyLimit" column="every_limit" javaType="integer" jdbcType="INTEGER"/>
+       	<result property="isCashDelivery" column="is_cash_delivery" javaType="com.okdeer.mall.activity.coupons.enums.CashDelivery" jdbcType="TINYINT"/>
+       	<result property="isCategoryLimit" column="is_category_limit" javaType="com.okdeer.mall.activity.coupons.enums.CategoryLimit"  jdbcType="TINYINT"/>
+       	<result property="belongType" column="belong_type" javaType="string" jdbcType="VARCHAR"/>
+       	<result property="createUserId" column="create_user_id" javaType="string" jdbcType="VARCHAR"/> 
+       	<result property="type" column="coupons_type" javaType="integer" jdbcType="INTEGER"/>
+       	<result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/>
+     </resultMap>
 
     <!-- wusw:代金券领取活动、代金券、限制类目等关联信息 -->
     <resultMap id="couponsAndLimitCategoryDetailMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo">
@@ -102,25 +121,11 @@
 			<result property="type" column="activityCollectAreaType" />
     	</collection>
     </resultMap>
+    
+    <!-- tuzhd 修改消费返券 20170626 -->
     <resultMap id="collectCouponsLinkMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo" extends="ActivityCollectCoupons">
-    	 <!-- 代金券信息 -->
-      <collection property="activityCoupons" ofType="com.okdeer.mall.activity.coupons.entity.ActivityCoupons">	
-		<id property="id" column="couponsId" javaType="string" jdbcType="VARCHAR"/>
-		<result property="activityId" column="activity_id" javaType="string" jdbcType="VARCHAR"/>
-		<result property="totalNum" column="total_num" javaType="integer" jdbcType="INTEGER"/>
-		<result property="remainNum" column="remain_num" javaType="integer" jdbcType="INTEGER"/>
-        <result property="name" column="couponsName" javaType="string" jdbcType="VARCHAR"/>
-        <result property="faceValue" column="face_value" javaType="integer" jdbcType="INTEGER"/>     	
-        <result property="arriveLimit" column="arrive_limit" javaType="integer" jdbcType="INTEGER"/>
-        <result property="validDay" column="valid_day" javaType="integer" jdbcType="INTEGER"/>
-        <result property="everyLimit" column="every_limit" javaType="integer" jdbcType="INTEGER"/>
-        <result property="isCashDelivery" column="is_cash_delivery" javaType="com.okdeer.mall.activity.coupons.enums.CashDelivery" jdbcType="TINYINT"/>
-        <result property="isCategoryLimit" column="is_category_limit" javaType="com.okdeer.mall.activity.coupons.enums.CategoryLimit"  jdbcType="TINYINT"/>
-        <result property="belongType" column="belong_type" javaType="string" jdbcType="VARCHAR"/>
-        <result property="createUserId" column="create_user_id" javaType="string" jdbcType="VARCHAR"/> 
-        <result property="type" column="coupons_type" javaType="integer" jdbcType="INTEGER"/>
-        <result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/>
-      </collection>
+    	<id property="relationId" column="relationId" jdbcType="VARCHAR"/>
+    	<result property="couponsIds" column="coupons_ids" jdbcType="VARCHAR"/>
     </resultMap>
     
     <resultMap type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo" id="activityCouponsSimpleVo">
@@ -138,13 +143,6 @@
 	</sql>
 	<sql id="activityCollectAreaColumns">
 		area.id AS activityCollectAreaId,area.collect_coupons_id,area.area_id,area.type AS activityCollectAreaType
-	</sql>
-	
-	<sql id="columns_as">
-		coll.id,coll.name,coll.type,coll.status,coll.belong_type,coll.limit_client_type,coll.start_time,
-		coll.end_time,coll.description,coll.identity_limit,coll.area_type,coll.total_cost,coll.approval_status,
-		coll.approval_reason,coll.approval_time,coll.approval_user_id,coll.create_time,coll.create_user_id,
-		coll.update_time,coll.update_user_id,coll.disabled,coll.daily_circulation,coll.h5_url,coll.limit_amount
 	</sql>
 	
 	<sql id="activityCoupons">
@@ -718,16 +716,24 @@
 	
 	<!-- add by wushp V1.1.0 消费返券：活动代金券查询 20160923-->
 	<select id="findCollCouponsLinks" parameterType="map" resultMap="collectCouponsLinkMap">
-		SELECT <include refid="columns_as"/>,<include refid="activityCoupons" /> 
+		SELECT coll.id,coll.name,coll.type,coll.status,coll.belong_type,coll.limit_client_type,coll.start_time,
+		coll.end_time,coll.description,coll.identity_limit,coll.area_type,coll.total_cost,coll.approval_status,
+		coll.approval_reason,coll.approval_time,coll.approval_user_id,coll.create_time,coll.create_user_id,
+		coll.update_time,coll.update_user_id,coll.disabled,coll.daily_circulation,coll.h5_url,
+		xffq.limit_amount,xffq.id AS relationId,xffq.coupons_ids 
 		FROM activity_collect_coupons coll 
-		LEFT JOIN activity_coupons coupons ON coll.id= coupons.activity_id
 		LEFT JOIN activity_collect_order_type collOrder ON coll.`id` = collOrder.`collect_coupons_id`
 		LEFT JOIN activity_collect_area area1 ON coll.`id` = area1.`collect_coupons_id`
 		<if test="storeId != null and storeId != ''"> 
 		LEFT JOIN activity_collect_store store ON coll.id = store.collect_coupons_id
 		</if>
+		<!-- start tuzhd 2017-6-26 添加梯度返券 -->
+		LEFT JOIN activity_collect_xffq_relation xffq ON xffq.collect_id = coll.id
 		WHERE  1 = 1
-		<![CDATA[ AND (coll.limit_amount is null OR coll.limit_amount = 0 OR coll.limit_amount <= #{limitAmout} )]]>
+		<![CDATA[ 
+			AND (xffq.limit_amount is null OR xffq.limit_amount = 0 OR xffq.limit_amount <= #{limitAmout} )
+		]]>
+		<!-- end tuzhd 2017-6-26 添加梯度返券 -->
 		AND coll.`status` = 1 
 		AND coll.`disabled` = 0 
 		AND coll.`type` = 4
@@ -735,6 +741,16 @@
 		AND (coll.`area_type` = 0 OR (area1.type = 1 AND area1.`area_id`=#{provinceId}) OR 
 		(area1.type = 0 AND area1.`area_id`=#{cityId}) <if test="storeId != null and storeId != ''">OR (coll.area_type = 3 AND store.store_id =#{storeId})</if>);
 		
+	</select>
+	
+	<!-- tuzhd 根据梯度查询代金券信息 2017-6-26 -->
+	<select id="findCouponsByReleaID" resultMap="activityCouponsMap">
+		SELECT 
+			<include refid="activityCoupons" /> 
+		FROM  activity_coupons coupons 
+		WHERE  EXISTS 
+				( SELECT 1 from activity_collect_xffq_relation xq 
+				  WHERE  xq.id =#{relationId} AND LOCATE(coupons.id,xq.coupons_ids) > 0 )
 	</select>
 	
 	<select id="findRecommendAcvititys" resultMap="activityCouponsSimpleVo">
