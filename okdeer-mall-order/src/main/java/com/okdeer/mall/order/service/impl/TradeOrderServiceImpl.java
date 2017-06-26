@@ -1711,7 +1711,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				TradeOrderContext tradeOrderContext = new TradeOrderContext();
 				tradeOrderContext.setTradeOrder(tradeOrder);
 				tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
-				tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
 				tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
 				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 			}
