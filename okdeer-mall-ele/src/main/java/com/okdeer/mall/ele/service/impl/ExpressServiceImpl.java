@@ -15,13 +15,8 @@ import com.okdeer.mall.ele.response.TokenResponse;
 import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.ele.sign.OpenSignHelper;
 import com.okdeer.mall.ele.util.*;
-import com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
-import com.okdeer.mall.order.entity.TradeOrderExtSnapshot;
 import com.okdeer.mall.order.entity.TradeOrderItem;
-import com.okdeer.mall.order.mapper.TradeOrderExtSnapshotMapper;
-import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
-import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import net.sf.json.JSONObject;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,24 +54,6 @@ public class ExpressServiceImpl implements ExpressService {
     private String notifyUrl;
 
     /**
-     * 订单查询mapper
-     */
-    @Autowired
-    private TradeOrderMapper tradeOrderMapper;
-
-    /**
-     * 订单项查询
-     */
-    @Autowired
-    private TradeOrderItemMapper tradeOrderItemMapper;
-
-    /**
-     * 订单扩展信息快照
-     */
-    @Autowired
-    private TradeOrderExtSnapshotMapper tradeOrderExtSnapshotMapper;
-
-    /**
      * 推送订单日志
      */
     @Autowired
@@ -96,31 +73,23 @@ public class ExpressServiceImpl implements ExpressService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public ResultMsg saveExpressOrder(String orderId) throws Exception {
-        // 1、获取商城订单信息
-
-        //根据订单id查询订单基本信息
-        TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderId);
-        //根据订单id查询订单项信息
-        List<TradeOrderItem> orderItemList = tradeOrderItemMapper.selectOrderItemListById(orderId);
-        tradeOrder.setTradeOrderItem(orderItemList);
-
-        // 2、封装推送入参
+    public ResultMsg saveExpressOrder(TradeOrder tradeOrder) throws Exception {
+        // 1、封装推送入参
         String pushJson = createPushObject(tradeOrder);
 
-        // 3、推送订单
+        // 2、推送订单
         String url = ElemeOpenConfig.API_URL + RequestConstant.orderCreate;
         String resultJson = HttpClient.postBody(url, pushJson);
 
         ResultMsg resultMsg = (ResultMsg) JSONObject.toBean(JSONObject.fromObject(resultJson), ResultMsg.class);
 
-        // 4、保存推送日志
+        // 3、保存推送日志
         ExpressPushLog param = new ExpressPushLog();
         param.setPushJson(pushJson);
         param.setResultJson(resultJson);
         savePushLog(tradeOrder, param);
 
-        // 5、初始化回调数据信息，默认状态为200，推单成功才保存信息记录
+        // 4、初始化回调数据信息，默认状态为200，推单成功才保存信息记录
         if (resultMsg.getCode() == 200) {
             ExpressCallback data = new ExpressCallback();
             data.setId(UuidUtils.getUuid());
@@ -180,13 +149,9 @@ public class ExpressServiceImpl implements ExpressService {
         // 1、设置基本信息
         createExpreOrderBaseData(data, tradeOrder);
         // 2、设置门店信息
-        //查询订单扩展信息快照
-        TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
-        paramDto.setOrderId(tradeOrder.getId());
-        TradeOrderExtSnapshot entity = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
-        data.setTransport_info(createExpressTransport(tradeOrder, entity));
+        data.setTransport_info(createExpressTransport(tradeOrder));
         // 3、设置收货人信息
-        data.setReceiver_info(createExpressReceiver(tradeOrder, entity));
+        data.setReceiver_info(createExpressReceiver(tradeOrder));
         // 4、设置订单项信息
         data.setItems_json(createExpressOrderItem(tradeOrder));
         return data;
@@ -210,16 +175,15 @@ public class ExpressServiceImpl implements ExpressService {
      * 封装订单门店地址数据
      *
      * @param tradeOrder TradeOrder
-     * @param entity     TradeOrderExtSnapshot
      * @return ExpressTransportInfo
      */
-    private ExpressTransportInfo createExpressTransport(TradeOrder tradeOrder, TradeOrderExtSnapshot entity) {
+    private ExpressTransportInfo createExpressTransport(TradeOrder tradeOrder) {
         ExpressTransportInfo data = new ExpressTransportInfo();
-        data.setTransport_name(entity.getTransportName());
-        data.setTransport_address(entity.getTransportAddress());
-        data.setTransport_longitude(new BigDecimal(entity.getTransportLongitude()));
-        data.setTransport_latitude(new BigDecimal(entity.getTransportLatitude()));
-        data.setTransport_tel(entity.getTransportTel());
+        data.setTransport_name(tradeOrder.getTradeOrderExt().getTransportName());
+        data.setTransport_address(tradeOrder.getTradeOrderExt().getTransportAddress());
+        data.setTransport_longitude(new BigDecimal(tradeOrder.getTradeOrderExt().getTransportLongitude()));
+        data.setTransport_latitude(new BigDecimal(tradeOrder.getTradeOrderExt().getTransportLatitude()));
+        data.setTransport_tel(tradeOrder.getTradeOrderExt().getTransportTel());
         return data;
     }
 
@@ -227,16 +191,15 @@ public class ExpressServiceImpl implements ExpressService {
      * 封装订单收货人数据
      *
      * @param tradeOrder TradeOrder
-     * @param entity     TradeOrderExtSnapshot
      * @return ExpressReceiverInfo
      */
-    private ExpressReceiverInfo createExpressReceiver(TradeOrder tradeOrder, TradeOrderExtSnapshot entity) {
+    private ExpressReceiverInfo createExpressReceiver(TradeOrder tradeOrder) {
         ExpressReceiverInfo data = new ExpressReceiverInfo();
-        data.setReceiver_name(entity.getReceiverName());
-        data.setReceiver_primary_phone(entity.getReceiverPrimaryPhone());
-        data.setReceiver_address(entity.getReceiverAddress());
-        data.setReceiver_longitude(new BigDecimal(entity.getReceiverLongitude()));
-        data.setReceiver_latitude(new BigDecimal(entity.getReceiverLatitude()));
+        data.setReceiver_name(tradeOrder.getTradeOrderExt().getReceiverName());
+        data.setReceiver_primary_phone(tradeOrder.getTradeOrderExt().getReceiverPrimaryPhone());
+        data.setReceiver_address(tradeOrder.getTradeOrderExt().getReceiverAddress());
+        data.setReceiver_longitude(new BigDecimal(tradeOrder.getTradeOrderExt().getReceiverLongitude()));
+        data.setReceiver_latitude(new BigDecimal(tradeOrder.getTradeOrderExt().getReceiverLatitude()));
         return data;
     }
 
