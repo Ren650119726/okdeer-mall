@@ -14,10 +14,7 @@ import com.okdeer.mall.ele.mapper.ExpressPushLogMapper;
 import com.okdeer.mall.ele.response.TokenResponse;
 import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.ele.sign.OpenSignHelper;
-import com.okdeer.mall.ele.util.HttpClient;
-import com.okdeer.mall.ele.util.JsonUtils;
-import com.okdeer.mall.ele.util.RandomUtils;
-import com.okdeer.mall.ele.util.ResultMsg;
+import com.okdeer.mall.ele.util.*;
 import com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderExtSnapshot;
@@ -158,11 +155,12 @@ public class ExpressServiceImpl implements ExpressService {
      * @return String
      */
     private String createPushObject(TradeOrder tradeOrder) throws Exception {
-        ExpressRequestJson<ExpressOrderData> requestJson = new ExpressRequestJson<ExpressOrderData>();
+        ExpressRequestJson<String> requestJson = new ExpressRequestJson<String>();
 
         // 1、封装data数据（订单信息数据）
         ExpressOrderData data = createExpressOrderData(tradeOrder);
-        requestJson.setData(data);
+        //注:其中data的值需要用UTF-8进行urlEncode
+        requestJson.setData(URLUtils.getInstance().urlEncode(JsonMapper.nonDefaultMapper().toJson(data)));
 
         // 2、封装data之外的参数
         requestJson.setApp_id(appId);

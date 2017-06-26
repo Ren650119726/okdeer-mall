@@ -72,8 +72,10 @@ public class ExpressOrderData {
 
     /**
      * 订单总重量（kg），营业类型选定为果蔬生鲜、商店超市、其他三类时必填，大于0kg并且小于等于6kg
+     *
+     * @desc 必填
      */
-    private BigDecimal order_weight;
+    private BigDecimal order_weight = new BigDecimal(1);
 
     /**
      * 用户备注
