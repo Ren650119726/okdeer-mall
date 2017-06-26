@@ -37,6 +37,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.okdeer.mall.ele.service.ExpressService;
+import com.okdeer.mall.ele.util.ResultMsg;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -2122,7 +2124,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			throw new ServiceException(ORDER_STATUS_OVERDUE);
 			// End 重构4.1 update by wusw 20160816
 		}
-
+		// begin V2.5.0 add by wangf01 20170626
+		//获取快照信息，判断配送方式是什么
+		TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
+		paramDto.setOrderId(tradeOrder.getId());
+        TradeOrderExtSnapshot snapshot = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
+        if(snapshot.getDeliveryType() == 1){
+        	ResultMsg resultMsg = expressService.saveExpressOrder(tradeOrder.getId());
+        	if(resultMsg.getCode() != 200){
+        		throw new ServiceException(resultMsg.getMsg());
+			}
+		}
+		// end add by wangf01 20170626
 		// 修改订单状态为已发货
 		tradeOrder.setStatus(OrderStatusEnum.TO_BE_SIGNED);
 		// 修改最后修改时间
@@ -7464,4 +7477,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	public TradeOrder findByOrderNo(String orderNo) {
 		return tradeOrderMapper.findByOrderNo(orderNo);
 	}
+
+	@Autowired
+	private ExpressService expressService;
 }
