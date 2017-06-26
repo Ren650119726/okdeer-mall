@@ -6,12 +6,14 @@
         <result column="order_id" property="orderId" jdbcType="VARCHAR" />
         <result column="combo_sku_id" property="comboSkuId" jdbcType="VARCHAR" />
         <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+        <result column="sku_id" property="skuId" jdbcType="VARCHAR" />
+        <result column="sku_type" property="skuType" jdbcType="INTEGER" javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum" />
         <result column="quantity" property="quantity" jdbcType="INTEGER" />
         <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, order_id, combo_sku_id, store_sku_id, quantity, unit_price
+        id, order_id, combo_sku_id, store_sku_id, sku_id, sku_type, quantity, unit_price
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -36,6 +38,12 @@
             <if test="storeSkuId != null" >
                 store_sku_id,
             </if>
+            <if test="skuId != null" >
+                sku_id,
+            </if>
+            <if test="skuType != null" >
+                sku_type,
+            </if>
             <if test="quantity != null" >
                 quantity,
             </if>
@@ -55,6 +63,12 @@
             </if>
             <if test="storeSkuId != null" >
                 #{storeSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="skuId != null" >
+                #{skuId,jdbcType=VARCHAR},
+            </if>
+            <if test="skuType != null" >
+                #{skuType,jdbcType=INTEGER},
             </if>
             <if test="quantity != null" >
                 #{quantity,jdbcType=INTEGER},
@@ -76,6 +90,12 @@
             </if>
             <if test="storeSkuId != null" >
                 store_sku_id = #{storeSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="skuId != null" >
+                sku_id = #{skuId,jdbcType=VARCHAR},
+            </if>
+            <if test="skuType != null" >
+                sku_type = #{skuType,jdbcType=INTEGER},
             </if>
             <if test="quantity != null" >
                 quantity = #{quantity,jdbcType=INTEGER},
@@ -99,6 +119,8 @@
 	        order_id,
 	        combo_sku_id,
 	        store_sku_id,
+	        sku_id,
+	        sku_type,
 	        quantity,
 	        unit_price
 	     ) VALUES
@@ -108,9 +130,17 @@
                 #{item.orderId,jdbcType=VARCHAR},
                 #{item.comboSkuId,jdbcType=VARCHAR},
                 #{item.storeSkuId,jdbcType=VARCHAR},
+                #{item.skuId,jdbcType=VARCHAR},
+                #{item.skuType,jdbcType=INTEGER},
                 #{item.quantity,jdbcType=INTEGER},
                 #{item.unitPrice,jdbcType=DECIMAL}
 	     	)
 	     </foreach>
 	</insert>
+	
+	<select id="findByOrderId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        SELECT  <include refid="Base_Column_List" />
+        FROM trade_order_combo_snapshot
+        WHERE order_id = #{orderId,jdbcType=DECIMAL}
+    </select>
 </mapper>

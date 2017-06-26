@@ -59,9 +59,13 @@ public class AppAdapter {
 				dto.setIsRest(0);
 			}
 			dto.setFreight(ConvertUtil.format(storeExt.getFreight()));
-			dto.setStartPrice(ConvertUtil.format(storeExt.getStartPrice()));
 			// 预约期限默认为7天
 			dto.setSubscribeTime(7);
+			// V2.5 版本以前，startPrice标识免配送费起送价。V2.5该属性废弃
+			dto.setStartPrice(ConvertUtil.format(storeExt.getFreeFreightPrice()));
+			// V2.5 重新定义的起送价属性信息
+			dto.setStartCharge(ConvertUtil.format(storeExt.getStartPrice()));
+			dto.setFreeFreightPrice(ConvertUtil.format(storeExt.getFreeFreightPrice()));
 		}
 		if(storeInfo.getStoreInfoServiceExt() != null){
 			BeanMapper.copy(storeInfo.getStoreInfoServiceExt(), dto);

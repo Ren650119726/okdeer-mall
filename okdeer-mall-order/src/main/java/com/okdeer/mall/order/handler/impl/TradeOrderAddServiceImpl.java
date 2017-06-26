@@ -29,6 +29,7 @@ import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.entity.StoreBranches;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
+import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.service.StoreBranchesServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
@@ -59,6 +60,7 @@ import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderExtSnapshot;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLog;
@@ -81,6 +83,7 @@ import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.utils.OrderNoUtils;
+import com.okdeer.mall.order.vo.TradeOrderContext;
 import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
 import com.okdeer.mall.order.vo.TradeOrderReq;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
@@ -317,6 +320,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		tradeOrder.setDisabled(Disabled.valid);
 		tradeOrder.setCreateTime(new Date());
 		tradeOrder.setUpdateTime(new Date());
+		tradeOrder.setClientVersion("V2.0");
 		// 设置订单编号
 		setOrderNo(tradeOrder);
 		// 设置订单总金额
@@ -325,6 +329,8 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		parsePayType(tradeOrder, req.getPayType());
 		// 解析优惠活动
 		parseFavour(tradeOrder, req);
+		// 解析佣金信息
+		parseCommission(tradeOrder,reqDto);
 		// 解析提货类型
 		parsePickType(tradeOrder, reqDto);
 		// 设置发票
@@ -334,6 +340,9 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		List<TradeOrderItem> orderItemList = buildOrderItemList(tradeOrder, reqDto);
 		// 设置订单项
 		tradeOrder.setTradeOrderItem(orderItemList);
+		// 构建订单扩展信息
+		TradeOrderExtSnapshot tradeOrderExt = buildTradeOrderExt(tradeOrder,reqDto);
+		tradeOrder.setTradeOrderExt(tradeOrderExt);
 		return tradeOrder;
 	}
 
@@ -403,6 +412,23 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 				break;
 		}
 	}
+	
+	// Begin V2.5 added by maojj 2017-06-26
+	private void parseCommission(TradeOrder tradeOrder,TradeOrderReqDto reqDto){
+		StoreInfoExt storeInfoExt = reqDto.getContext().getStoreInfo().getStoreInfoExt();
+		BigDecimal income = tradeOrder.getIncome();
+		// 订单需要收取的佣金为：
+		BigDecimal referenceVal = BigDecimal.valueOf(0.00);
+		BigDecimal commission =  income.multiply(storeInfoExt.getCommisionRatio()).setScale(2,BigDecimal.ROUND_HALF_UP);
+		if(storeInfoExt.getCommisionRatio().compareTo(referenceVal) == 1 && commission.compareTo(referenceVal) == 0){
+			commission = BigDecimal.valueOf(0.01);
+		}
+		reqDto.getContext().setTotalCommission(commission);
+		reqDto.getContext().setTotalAmountInCommission(income);
+		income = income.subtract(commission);
+		tradeOrder.setIncome(income);
+	}
+	// End V2.5 added by maojj 2017-06-26
 
 	/**
 	 * @Description: 解析提货类型
@@ -430,15 +456,17 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		}
 	}
 
+	// Begin V2.5 modified by maojj 2017-06-26
 	/**
 	 * @Description: 送货上门处理
 	 * @param tradeOrder 交易订单
 	 * @param reqDto 订单请求对象  
 	 * @return void  
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2016年7月14日
 	 */
-	private void processDelivery(TradeOrder tradeOrder, TradeOrderReqDto reqDto) {
+	private void processDelivery(TradeOrder tradeOrder, TradeOrderReqDto reqDto) throws ServiceException {
 		TradeOrderReq req = reqDto.getData();
 		StoreInfoExt storeInfoExt = reqDto.getContext().getStoreInfo().getStoreInfoExt();
 
@@ -446,11 +474,15 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		BigDecimal startPrice = storeInfoExt.getStartPrice();
 		// 店铺运费
 		BigDecimal freight = storeInfoExt.getFreight() == null ? new BigDecimal(0.0) : storeInfoExt.getFreight();
-
+		// 店铺免配送费起送价
+		BigDecimal freefreight  = storeInfoExt.getFreeFreightPrice() == null ? new BigDecimal(0.0) : storeInfoExt.getFreeFreightPrice();
 		if (startPrice != null) {
+			if(tradeOrder.getTotalAmount().compareTo(startPrice) == -1){
+				throw new ServiceException(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH.getDesc());
+			}
 			// 判断商品总金额是否达到起送金额 后台判断
 			// 如果商品总金额没有达到起送金额,则订单总金额=订单总金额+运费
-			if (tradeOrder.getTotalAmount().compareTo(startPrice) == -1) {
+			if (tradeOrder.getTotalAmount().compareTo(freefreight) == -1) {
 				// 运费
 				tradeOrder.setFare(freight);
 				tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(freight));
@@ -462,10 +494,11 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			}
 		}
 		// 设置TradeOrderLogistics
-		setTradeOrderLogistics(tradeOrder, req.getAddressId());
+		setTradeOrderLogistics(tradeOrder, reqDto);
 		// 设置提货时间
 		setPickUpTime(tradeOrder, req);
 	}
+	// End V2.5 added by maojj 2017-06-26
 
 	/**
 	 * @Description: 设置TradeOrderLogistics
@@ -475,10 +508,13 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private void setTradeOrderLogistics(TradeOrder tradeOrder, String addressId) {
+	private void setTradeOrderLogistics(TradeOrder tradeOrder, TradeOrderReqDto reqDto) {
+		String addressId = reqDto.getData().getAddressId();
 		// 获取买家收货地址
 		MemberConsigneeAddress address = memberConsigneeAddressMapper.selectAddressById(addressId);
 
+		reqDto.getContext().setReceiverLat(String.valueOf(address.getLatitude()));
+		reqDto.getContext().setReceiverLng(String.valueOf(address.getLongitude()));
 		tradeOrder.setPickUpId(address.getId());
 		
 		TradeOrderLogistics orderLogistics = new TradeOrderLogistics();
@@ -617,6 +653,8 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		BigDecimal favourAmount = getFavourAmount(req, tradeOrder.getTotalAmount());
 		// 设置订单优惠金额
 		tradeOrder.setPreferentialPrice(favourAmount);
+		// 设置店铺优惠金额
+		tradeOrder.setStorePreferential(BigDecimal.valueOf(0.00));
 		// 设置订单实付金额
 		setActualAmount(tradeOrder);
 		// 设置店铺总收入
@@ -805,6 +843,14 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		BigDecimal totalAmount =reqDto.getContext().getTotalAmountHaveFavour() == null ? calculateAmount(req.getList()) : reqDto.getContext().getTotalAmountHaveFavour();
 		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
 		BigDecimal favourSum = new BigDecimal("0.00");
+		
+		// 订单总的佣金费用
+		BigDecimal totalcommission = reqDto.getContext().getTotalCommission();
+		int commissionIndex = 0;
+		BigDecimal commissionSum = BigDecimal.valueOf(0.00);
+		BigDecimal haveCommissionAmount = reqDto.getContext().getTotalAmountInCommission();
+		int orderItemSize = req.getList().size();
+		
 		int index = 0;
 		int itemSize = CollectionUtils.isNotEmpty(haveFavourGoodsIds) ? haveFavourGoodsIds.size() :req.getList().size();
 		TradeOrderItem tradeOrderItem = null;
@@ -845,6 +891,8 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			tradeOrderItem.setTotalAmount(totalAmountOfItem);
 			// 计算订单项优惠金额
 			BigDecimal favourItem = BigDecimal.valueOf(0.00);
+			// 订单项佣金收取金额
+			BigDecimal commissionItem = BigDecimal.valueOf(0.0);
 			if (req.getActivityType() != ActivityTypeEnum.NO_ACTIVITY) {
 				if(CollectionUtils.isNotEmpty(haveFavourGoodsIds) && !haveFavourGoodsIds.contains(goodsItem.getSkuId())){
 					favourItem = BigDecimal.valueOf(0.00);
@@ -861,8 +909,21 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 					}
 				}
 			}
+			
+			if(totalcommission.compareTo(BigDecimal.valueOf(0.00)) == 1){
+				// 订单收取佣金
+				if(commissionIndex++ < orderItemSize - 1){
+					commissionItem = totalAmountOfItem.multiply(haveCommissionAmount).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
+				}else{
+					commissionItem = totalcommission.subtract(commissionSum);
+				}
+			}
 			// 设置优惠金额
 			tradeOrderItem.setPreferentialPrice(favourItem);
+			// 设置平台优惠金额
+			tradeOrderItem.setStorePreferential(BigDecimal.valueOf(0.00));
+			// 设置订单项佣金金额
+			tradeOrderItem.setCommission(commissionItem);
 			// 设置实付金额
 			tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(favourItem));
 			// 设置订单项收入
@@ -952,6 +1013,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			default:
 				break;
 		}
+		tradeOrderItem.setIncome(tradeOrderItem.getIncome().subtract(tradeOrderItem.getCommission()));
 	}
 
 	/**
@@ -1098,4 +1160,37 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 
 		activityDiscountRecordMapper.add(discountRecord);
 	}
+	
+	// Begin　V2.5 added by maojj 2017-06-26
+	private TradeOrderExtSnapshot buildTradeOrderExt(TradeOrder tradeOrder,TradeOrderReqDto reqDto){
+		TradeOrderExtSnapshot tradeOrderExt = new TradeOrderExtSnapshot();
+		TradeOrderContext context = reqDto.getContext();
+		StoreInfo storeInfo = context.getStoreInfo();
+		StoreInfoExt storeInfoExt = storeInfo.getStoreInfoExt();
+		TradeOrderLogistics logistics = tradeOrder.getTradeOrderLogistics();
+		
+		tradeOrderExt.setId(UuidUtils.getUuid());
+		tradeOrderExt.setOrderId(tradeOrder.getId());
+		tradeOrderExt.setOrderNo(tradeOrder.getOrderNo());
+		tradeOrderExt.setTransportName(storeInfo.getStoreName());
+		tradeOrderExt.setTransportAddress(String.format("%s%s", storeInfo.getArea(),storeInfo.getAddress()));
+		tradeOrderExt.setTransportLatitude(String.valueOf(storeInfo.getLatitude()));
+		tradeOrderExt.setTransportLongitude(String.valueOf(storeInfo.getLongitude()));
+		tradeOrderExt.setTransportTel(storeInfo.getMobile());
+		if (logistics != null) {
+			tradeOrderExt.setReceiverName(logistics.getConsigneeName());
+			tradeOrderExt.setReceiverPrimaryPhone(logistics.getMobile());
+			tradeOrderExt.setReceiverAddress(String.format("%s%s", logistics.getArea(), logistics.getAddress()));
+			tradeOrderExt.setReceiverLatitude(context.getReceiverLat());
+			tradeOrderExt.setReceiverLongitude(context.getReceiverLng());
+		}
+		tradeOrderExt.setStartPrice(storeInfoExt.getStartPrice());
+		tradeOrderExt.setFreight(storeInfoExt.getFreight());
+		tradeOrderExt.setFreeFreightPrice(storeInfoExt.getFreeFreightPrice());
+		tradeOrderExt.setDeliveryType(storeInfoExt.getDeliveryType());
+		tradeOrderExt.setCommisionRatio(storeInfoExt.getCommisionRatio());
+		
+		return tradeOrderExt;
+	}
+	// End V2.5 added by maojj 2017-06-26
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
+import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.mall.order.utils.CodeStatistical;
 import com.okdeer.mall.order.vo.TradeOrderContext;
@@ -56,7 +57,7 @@ public class StoreExtProcessServiceImpl implements StoreExtProcessService {
 		// 店铺默认地址查询
 		resp.setAddress(getStoreAddress(reqDto.getData().getStoreId()));
 		// 设置店铺起送金额和运费
-		setStartMoneyAndFare(reqDto, resp);
+		setStartMoneyAndFare(reqDto, respDto);
 		resp.setCurrenTime(new Date().getTime());
 		resp.setIsInvoice(storeExt.getIsInvoice().ordinal());
 		
@@ -98,11 +99,15 @@ public class StoreExtProcessServiceImpl implements StoreExtProcessService {
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private void setStartMoneyAndFare(TradeOrderReqDto reqDto, TradeOrderResp resp) {
+	private void setStartMoneyAndFare(TradeOrderReqDto reqDto, TradeOrderRespDto respDto) {
 		TradeOrderContext context = reqDto.getContext();
+		TradeOrderResp resp = respDto.getResp();
+		
 		StoreInfoExt storeExt = context.getStoreInfo().getStoreInfoExt();
 		// 店铺起送价
 		BigDecimal startPrice = storeExt.getStartPrice() == null ? new BigDecimal(0.0) : storeExt.getStartPrice();
+		// 店铺免配送费起送价格
+		BigDecimal freeFarePrice = storeExt.getFreeFreightPrice() == null ? BigDecimal.valueOf(0.0) : storeExt.getFreeFreightPrice();
 		// 店铺运费
 		BigDecimal fare = storeExt.getFreight() == null ? new BigDecimal(0.0) : storeExt.getFreight();
 		// 获取订单总金额
@@ -112,12 +117,17 @@ public class StoreExtProcessServiceImpl implements StoreExtProcessService {
 			totalAmount = reqDto.getData().getTotalAmount();
 		}
 		// End added by maojj 2016-08-16
-
-		resp.setStartMoney(startPrice);
+		// V2.0版本，返回出参startMoney为店铺免费送费起送价格
+		resp.setStartMoney(freeFarePrice);
 		if (totalAmount.compareTo(startPrice) == -1) {
 			resp.setFare(fare);
 		} else {
 			resp.setFare(new BigDecimal(0.0));
+		}
+		if(totalAmount.compareTo(startPrice) == -1){
+			// 未达到起送价，提交订单失败。
+			respDto.setFlag(false);
+			respDto.setMessage(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH.getDesc());
 		}
 	}
 }

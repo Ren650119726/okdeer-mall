@@ -575,8 +575,8 @@ public class TradeOrderBuilder {
 				tradeOrderItem.setActualAmount(BigDecimal.valueOf(0));
 				tradeOrderItem.setIncome(BigDecimal.valueOf(0));
 			}else{
-				// 设置订单项总收入=订单项总金额-订单项店铺优惠
-				tradeOrderItem.setIncome(totalAmountOfItem.subtract(storeFavourItem));
+				// 设置订单项总收入=订单项总金额-订单项店铺优惠-佣金金额
+				tradeOrderItem.setIncome(totalAmountOfItem.subtract(storeFavourItem).subtract(commissionItem));
 			}
 			if (tradeOrderItem.getActualAmount().compareTo(BigDecimal.ZERO) == 0
 					&& tradeOrderItem.getSpuType() == SpuTypeEnum.fwdDdxfSpu ) {

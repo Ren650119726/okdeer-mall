@@ -269,8 +269,8 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 			parserBo.setFare(fare);
 		}
 		
-		if(totalAmount.compareTo(startPrice) == -1){
-			// 未达到起送价，提交订单失败。
+		if(totalAmount.compareTo(startPrice) == -1 && paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT){
+			// 提交订单且不是到店自提订单，未达到起送价，提交订单失败。
 			resp.setResult(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH);
 		}
 	}

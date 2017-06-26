@@ -41,7 +41,7 @@ import com.okdeer.mall.order.dto.PlaceOrderItemDto;
  *		友门鹿1.2.5		2017年1月3日				maojj		      店铺商品解析器
  */
 public class StoreSkuParserBo {
-
+	
 	/**
 	 * 正在进行中的活动商品映射关系
 	 */
@@ -348,8 +348,8 @@ public class StoreSkuParserBo {
 		CurrentStoreSkuBo skuBo = null;
 		for (PlaceOrderItemDto item : buySkuList) {
 			skuBo = this.currentSkuMap.get(item.getStoreSkuId());
-			skuBo.setQuantity(item.getQuantity());
-			skuBo.setSkuActQuantity(item.getSkuActQuantity());
+			skuBo.setQuantity(skuBo.getQuantity() + item.getQuantity());
+			skuBo.setSkuActQuantity(skuBo.getSkuActQuantity() + item.getSkuActQuantity());
 			skuBo.setAppActPrice(item.getSkuActPrice());
 			item.setSpuCategoryId(skuBo.getSpuCategoryId());
 
@@ -713,7 +713,7 @@ public class StoreSkuParserBo {
 	}
 
 	public BigDecimal getPlatformPreferential() {
-		return platformPreferential;
+		return platformPreferential == null ? BigDecimal.valueOf(0.00) : platformPreferential;
 	}
 
 	public void setPlatformPreferential(BigDecimal platformPreferential) {
@@ -721,7 +721,7 @@ public class StoreSkuParserBo {
 	}
 
 	public BigDecimal getStorePreferential() {
-		return storePreferential;
+		return storePreferential == null ? BigDecimal.valueOf(0.00) : storePreferential;
 	}
 
 	public void setStorePreferential(BigDecimal storePreferential) {
@@ -737,7 +737,7 @@ public class StoreSkuParserBo {
 	}
 
 	public BigDecimal getRealFarePreferential() {
-		return realFarePreferential;
+		return realFarePreferential ==  null ? BigDecimal.valueOf(0.00) : realFarePreferential;
 	}
 
 	public void setRealFarePreferential(BigDecimal realFarePreferential) {
