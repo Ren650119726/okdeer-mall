@@ -1,6 +1,7 @@
 package com.okdeer.mall.ele.mapper;
 
 import com.okdeer.mall.ele.entity.ExpressCallback;
+import com.okdeer.mall.express.dto.ExpressCallbackParamDto;
 
 import java.util.List;
 
@@ -32,6 +33,14 @@ public interface ExpressCallbackMapper {
      * @return List<ExpressCallback>
      */
     List<ExpressCallback> selectExpressCallbackListByParam(ExpressCallback param);
+
+    /**
+     * 根据条件查询符合的数据
+     *
+     * @param paramDto ExpressCallbackParamDto 查询数据的条件
+     * @return List<ExpressCallback>
+     */
+    List<ExpressCallback> selectExpressCallbackByParamDto(ExpressCallbackParamDto paramDto);
 
     /**
      * 保存数据

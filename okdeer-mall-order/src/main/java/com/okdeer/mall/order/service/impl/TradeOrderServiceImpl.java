@@ -76,7 +76,10 @@ import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
+import com.okdeer.mall.ele.entity.ExpressCallback;
 import com.okdeer.mall.ele.service.ExpressService;
+import com.okdeer.mall.express.dto.ExpressCallbackParamDto;
+import com.okdeer.mall.express.dto.ResultMsgDto;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
@@ -1978,6 +1981,31 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             throw new ServiceException(ORDER_STATUS_OVERDUE);
             // End 重构4.1 update by wusw 20160816
         }
+        // begin V2.5.0 add by wangf01 20170626
+        //获取快照信息，判断配送方式是什么
+        TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
+        paramDto.setOrderId(tradeOrder.getId());
+        TradeOrderExtSnapshot snapshot = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
+        if (snapshot.getDeliveryType() == 1) {
+            //首先判断是否存在第三方回调初始化数据，如果没有，则推送订单到第三方，为了兼容商家版老版本
+            ExpressCallbackParamDto callbackParamDto = new ExpressCallbackParamDto();
+            callbackParamDto.setOrderNo(tradeOrder.getOrderNo());
+            List<ExpressCallback> callbackList = expressService.findByParam(callbackParamDto);
+            if(CollectionUtils.isEmpty(callbackList)){
+                //根据订单id查询订单基本信息
+                TradeOrder tradeOrderParam = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
+                //根据订单id查询订单项信息
+                List<TradeOrderItem> orderItemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
+                tradeOrderParam.setTradeOrderItem(orderItemList);
+                tradeOrderParam.setTradeOrderExt(snapshot);
+
+                ResultMsgDto<String> resultMsg = expressService.saveExpressOrder(tradeOrderParam);
+                if (resultMsg.getCode() != 200) {
+                    throw new ServiceException(resultMsg.getMsg());
+                }
+            }
+        }
+        // end add by wangf01 20170626
         // 修改订单状态为已发货
         tradeOrder.setStatus(OrderStatusEnum.TO_BE_SIGNED);
         // 修改最后修改时间
@@ -2126,7 +2154,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         // end add 兼容未升级的pos机系统 by wangf01 2017-1-24
         List<TradeOrder> list = tradeOrderMapper.getTradeOrderByParams(map);
         /*
-         * if (list != null && list.size() > 0) { for (TradeOrder order : list) { if
+		 * if (list != null && list.size() > 0) { for (TradeOrder order : list) { if
 		 * (StringUtils.isNotEmpty(order.getActivityId()) && !"0".equals(order.getActivityId())) { if
 		 * (order.getActivityType().equals(ActivityTypeEnum. FULL_REDUCTION_ACTIVITIES)) { // 满减活动 ActivityDiscount
 		 * activityDiscount = activityDiscountMapper .selectByPrimaryKey(order.getActivityId()); if (activityDiscount !=
