@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.okdeer.mall.express.dto.ResultMsgDto;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -2133,7 +2134,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			List<TradeOrderItem> orderItemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
 			tradeOrderParam.setTradeOrderItem(orderItemList);
 			tradeOrderParam.setTradeOrderExt(snapshot);
-        	ResultMsg resultMsg = expressService.saveExpressOrder(tradeOrderParam);
+        	ResultMsgDto<String> resultMsg = expressService.saveExpressOrder(tradeOrderParam);
         	if(resultMsg.getCode() != 200){
         		throw new ServiceException(resultMsg.getMsg());
 			}
@@ -5137,7 +5138,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				List<TradeOrderItem> orderItemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
 				tradeOrderParam.setTradeOrderItem(orderItemList);
 				tradeOrderParam.setTradeOrderExt(snapshot);
-				ResultMsg resultMsg = expressService.saveExpressOrder(tradeOrderParam);
+				ResultMsgDto<String> resultMsg = expressService.saveExpressOrder(tradeOrderParam);
 				if(resultMsg.getCode() != 200){
 					throw new ServiceException(resultMsg.getMsg());
 				}

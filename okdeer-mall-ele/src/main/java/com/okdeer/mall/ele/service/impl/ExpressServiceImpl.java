@@ -2,6 +2,7 @@ package com.okdeer.mall.ele.service.impl;
 
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
@@ -14,7 +15,12 @@ import com.okdeer.mall.ele.mapper.ExpressPushLogMapper;
 import com.okdeer.mall.ele.response.TokenResponse;
 import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.ele.sign.OpenSignHelper;
-import com.okdeer.mall.ele.util.*;
+import com.okdeer.mall.ele.util.HttpClient;
+import com.okdeer.mall.ele.util.JsonUtils;
+import com.okdeer.mall.ele.util.RandomUtils;
+import com.okdeer.mall.ele.util.URLUtils;
+import com.okdeer.mall.express.dto.ExpressCarrierDto;
+import com.okdeer.mall.express.dto.ResultMsgDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import net.sf.json.JSONObject;
@@ -73,15 +79,16 @@ public class ExpressServiceImpl implements ExpressService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public ResultMsg saveExpressOrder(TradeOrder tradeOrder) throws Exception {
+    public ResultMsgDto<String> saveExpressOrder(TradeOrder tradeOrder) throws Exception {
         // 1、封装推送入参
-        String pushJson = createPushObject(tradeOrder);
+        ExpressOrderData orderData = createExpressOrderData(tradeOrder);
+        String pushJson = createPushObject(orderData);
 
         // 2、推送订单
         String url = ElemeOpenConfig.API_URL + RequestConstant.orderCreate;
         String resultJson = HttpClient.postBody(url, pushJson);
 
-        ResultMsg resultMsg = (ResultMsg) JSONObject.toBean(JSONObject.fromObject(resultJson), ResultMsg.class);
+        ResultMsgDto<String> resultMsg = (ResultMsgDto<String>) JSONObject.toBean(JSONObject.fromObject(resultJson), ResultMsgDto.class);
 
         // 3、保存推送日志
         ExpressPushLog param = new ExpressPushLog();
@@ -116,18 +123,28 @@ public class ExpressServiceImpl implements ExpressService {
         expressCallbackLogMapper.insert(callbackLog);
     }
 
+    @Override
+    public ResultMsgDto<ExpressCarrierDto> findExpressCarrier(String orderNo) throws Exception {
+        String url = ElemeOpenConfig.API_URL + RequestConstant.orderCarrier;
+        Map<String, String> data = Maps.newHashMap();
+        data.put("partner_order_code", orderNo);
+        String pushJson = createPushObject(data);
+        String resultJson = HttpClient.postBody(url, pushJson);
+        ResultMsgDto<ExpressCarrierDto> resultMsgDto = (ResultMsgDto<ExpressCarrierDto>) JSONObject.toBean(JSONObject.fromObject(resultJson), ResultMsgDto.class);
+        return resultMsgDto;
+    }
+
 
     /**
      * 封装推送入参
      *
-     * @param tradeOrder TradeOrder
+     * @param data Object
      * @return String
      */
-    private String createPushObject(TradeOrder tradeOrder) throws Exception {
+    private String createPushObject(Object data) throws Exception {
         ExpressRequestJson<String> requestJson = new ExpressRequestJson<String>();
 
         // 1、封装data数据（订单信息数据）
-        ExpressOrderData data = createExpressOrderData(tradeOrder);
         //注:其中data的值需要用UTF-8进行urlEncode
         requestJson.setData(URLUtils.getInstance().urlEncode(JsonMapper.nonDefaultMapper().toJson(data)));
 
