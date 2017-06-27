@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.ele.config.ElemeOpenConfig;
 import com.okdeer.mall.ele.config.RequestConstant;
@@ -23,7 +24,6 @@ import com.okdeer.mall.express.dto.ExpressCarrierDto;
 import com.okdeer.mall.express.dto.ResultMsgDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
-import net.sf.json.JSONObject;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,7 +88,7 @@ public class ExpressServiceImpl implements ExpressService {
         String url = ElemeOpenConfig.API_URL + RequestConstant.orderCreate;
         String resultJson = HttpClient.postBody(url, pushJson);
 
-        ResultMsgDto<String> resultMsg = (ResultMsgDto<String>) JSONObject.toBean(JSONObject.fromObject(resultJson), ResultMsgDto.class);
+        ResultMsgDto<String> resultMsg = JsonMapper.nonDefaultMapper().fromJson(resultJson, ResultMsgDto.class);
 
         // 3、保存推送日志
         ExpressPushLog param = new ExpressPushLog();
@@ -116,7 +116,7 @@ public class ExpressServiceImpl implements ExpressService {
         //保存回调日志
         ExpressCallbackLog callbackLog = new ExpressCallbackLog();
         callbackLog.setId(UuidUtils.getUuid());
-        callbackLog.setCreateTime(DateUtils.getSysDate());
+        callbackLog.setCreateTime(data.getPushTime());
         callbackLog.setOpenOrderCode(data.getOpenOrderCode());
         callbackLog.setPartnerOrderCode(data.getPartnerOrderCode());
         callbackLog.setCallbackJson(JsonMapper.nonDefaultMapper().toJson(data));
@@ -130,7 +130,8 @@ public class ExpressServiceImpl implements ExpressService {
         data.put("partner_order_code", orderNo);
         String pushJson = createPushObject(data);
         String resultJson = HttpClient.postBody(url, pushJson);
-        ResultMsgDto<ExpressCarrierDto> resultMsgDto = (ResultMsgDto<ExpressCarrierDto>) JSONObject.toBean(JSONObject.fromObject(resultJson), ResultMsgDto.class);
+        ResultMsgDto<ExpressCarrierDto> resultMsgDto = JsonMapper.nonDefaultMapper().fromJson(resultJson, ResultMsgDto.class);
+        resultMsgDto.setData(BeanMapper.map(resultMsgDto.getData(), ExpressCarrierDto.class));
         return resultMsgDto;
     }
 
