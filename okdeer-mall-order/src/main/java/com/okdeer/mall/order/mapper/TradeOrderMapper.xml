@@ -5676,7 +5676,7 @@
 		trade.fare,
 		trade.real_fare_preferential,
 		trade.platform_preferential,
-		trade.store_preferential
+		trade.store_preferential,
 		toes.delivery_type
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
