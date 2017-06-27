@@ -37,6 +37,9 @@
     <!-- Begin V2.5 added by maojj 2017-06-23 -->
     <result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
     <result column="commission" property="commission" jdbcType="DECIMAL" />
+    <result column="store_activity_type" property="storeActivityType"
+			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
+	<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
     <!-- End V2.0 added by maojj 2017-06-23-->
     <association property="tradeOrderRefunds" javaType="com.okdeer.mall.order.entity.TradeOrderRefunds">
     	<result column="refoundId" property="id" jdbcType="VARCHAR" />
@@ -223,7 +226,9 @@
 			unit,
 			
 			store_preferential,
-			commission
+			commission,
+			store_activity_type,
+			store_activity_id
 		)values
 		<foreach collection="list" item="item" index="index" separator="," >
         (
@@ -260,7 +265,9 @@
 			#{item.unit,jdbcType=VARCHAR},
 			
 			#{item.storePreferential,jdbcType=DECIMAL},
-			#{item.commission,jdbcType=DECIMAL}
+			#{item.commission,jdbcType=DECIMAL},
+			#{item.storeActivityType,jdbcType=TINYINT},
+			#{item.storeActivityId,jdbcType=VARCHAR}
         )
 		</foreach>
   </insert>

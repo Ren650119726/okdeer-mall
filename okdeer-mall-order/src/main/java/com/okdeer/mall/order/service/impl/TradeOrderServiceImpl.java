@@ -4179,8 +4179,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		json.put("orderConfirmGoodTime", orders.getReceivedTime() != null
 				? DateUtils.formatDate(orders.getReceivedTime(), "yyyy-MM-dd HH:mm:ss") : "");
 		json.put("activityType", orders.getActivityType() == null ? "" : orders.getActivityType().ordinal());
+		if(orders.getStoreActivityType() == ActivityTypeEnum.LOW_PRICE){
+			// 如果订单中存在秒杀活动，则返回秒杀活动类型。原因是2.5版本之前的请求处理优惠时，如果是低价优惠，显示为：优惠
+			// 而低价优惠可以与代金券、满减一起使用。
+			json.put("activityType", String.valueOf(ActivityTypeEnum.LOW_PRICE.ordinal()));
+		}
 		json.put("preferentialPrice",
-				orders.getPreferentialPrice() == null ? "" : orders.getPreferentialPrice().toString());
+				orders.getPreferentialPrice().subtract(orders.getRealFarePreferential()).toString());
 		json.put("fare", orders.getFare() == null ? "" : orders.getFare().toString());
 		json.put("fareFavour", orders.getRealFarePreferential() == null ? "" : String.valueOf(orders.getRealFarePreferential()));
 		// 订单评价类型0：未评价，1：已评价
