@@ -1504,7 +1504,7 @@
 		<if test="type != null">
 			AND tr.type = #{type,jdbcType=TINYINT}
 		</if>
-		<if test="typeList != null and typeList > 0 ">
+		<if test="typeList != null and typeList.size() > 0 ">
 			AND tr.type in
 			<foreach collection="typeList" index="index" item="item"
 				open="(" close=")" separator=",">
@@ -1973,7 +1973,7 @@
 		<if test="type != null">
 			AND tr.type = #{type,jdbcType=TINYINT}
 		</if>
-		<if test="typeList != null and typeList > 0 ">
+		<if test="typeList != null and typeList.size() > 0 ">
 			AND tr.type in
 			<foreach collection="typeList" index="index" item="item"
 				open="(" close=")" separator=",">
