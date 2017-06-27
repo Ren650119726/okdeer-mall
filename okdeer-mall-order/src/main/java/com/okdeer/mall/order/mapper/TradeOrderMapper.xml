@@ -5742,6 +5742,9 @@
 				#{item}
 			</foreach>
 		</if>
+		<if test="deliveryType !=null">
+			AND toes.delivery_type = #{deliveryType, jdbcType=INTEGER}
+		</if>
 		order by trade.create_time desc
 	</select>
 
@@ -5753,6 +5756,7 @@
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
+		LEFT JOIN trade_order_ext_snapshot toes ON trade.id = toes.order_id
 		WHERE 1=1
 		<if test="orderNo != null and orderNo != ''">
 			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
@@ -5811,6 +5815,9 @@
 				separator="," close=")">
 				#{item}
 			</foreach>
+		</if>
+		<if test="deliveryType !=null">
+			AND toes.delivery_type = #{deliveryType, jdbcType=INTEGER}
 		</if>
 	</select>
 	<!-- Begin V2.1.0 added by luosm 20170224 -->
@@ -5967,6 +5974,7 @@
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
+		LEFT JOIN trade_order_ext_snapshot toes ON trade.id = toes.order_id
 		WHERE 1=1
 		<if test="orderNo != null and orderNo != ''">
 			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
@@ -6025,6 +6033,9 @@
 				separator="," close=")">
 				#{item}
 			</foreach>
+		</if>
+		<if test="deliveryType !=null">
+			AND toes.delivery_type = #{deliveryType, jdbcType=INTEGER}
 		</if>
 	</select>
 	
