@@ -24,6 +24,17 @@
         <include refid="condition"/>
     </select>
 
+    <!-- 根据条件查询符合的数据 -->
+    <select id="selectExpressCallbackByParamDto" parameterType="com.okdeer.mall.express.dto.ExpressCallbackParamDto"
+            resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        <include refid="Base_Tbale"/>
+        WHERE 1=1
+        <include refid="condition_param_dto"/>
+    </select>
+
     <!-- 保存数据 -->
     <insert id="insert" parameterType="com.okdeer.mall.ele.entity.ExpressCallback">
         INSERT INTO
@@ -90,6 +101,17 @@
         </if>
         <if test="null != errorCode and ''!= errorCode">
             AND error_code = #{errorCode,jdbcType=VARCHAR}
+        </if>
+    </sql>
+
+    <sql id="condition_param_dto">
+        <if test="null != orderNo and ''!= orderNo">
+            AND partner_order_code = #{orderNo,jdbcType=VARCHAR}
+        </if>
+        <if test="orderNoList != null and orderNoList.size() > 0">
+            <foreach collection="orderNoList" item="item" open="AND partner_order_code in (" close=")" separator=",">
+                #{item,jdbcType=VARCHAR}
+            </foreach>
         </if>
     </sql>
 

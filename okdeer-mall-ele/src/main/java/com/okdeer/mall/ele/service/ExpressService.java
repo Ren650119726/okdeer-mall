@@ -2,9 +2,12 @@ package com.okdeer.mall.ele.service;
 
 import com.okdeer.mall.ele.entity.ExpressCallback;
 import com.okdeer.mall.ele.entity.ExpressOrderInfo;
+import com.okdeer.mall.express.dto.ExpressCallbackParamDto;
 import com.okdeer.mall.express.dto.ExpressCarrierDto;
 import com.okdeer.mall.express.dto.ResultMsgDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+
+import java.util.List;
 
 /**
  * ClassName: ExpressService
@@ -27,6 +30,15 @@ public interface ExpressService {
      * @throws Exception
      */
     ResultMsgDto<String> saveExpressOrder(TradeOrder tradeOrder) throws Exception;
+
+    /**
+     * 根据条件查询符合的记录
+     *
+     * @param paramDto ExpressCallbackParamDto
+     * @return List<ExpressCallback>
+     * @throws Exception
+     */
+    List<ExpressCallback> findByParam(ExpressCallbackParamDto paramDto) throws Exception;
 
     /**
      * 处理回调信息

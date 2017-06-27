@@ -20,6 +20,7 @@ import com.okdeer.mall.ele.util.HttpClient;
 import com.okdeer.mall.ele.util.JsonUtils;
 import com.okdeer.mall.ele.util.RandomUtils;
 import com.okdeer.mall.ele.util.URLUtils;
+import com.okdeer.mall.express.dto.ExpressCallbackParamDto;
 import com.okdeer.mall.express.dto.ExpressCarrierDto;
 import com.okdeer.mall.express.dto.ResultMsgDto;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -106,6 +107,11 @@ public class ExpressServiceImpl implements ExpressService {
             expressCallbackMapper.insert(data);
         }
         return resultMsg;
+    }
+
+    @Override
+    public List<ExpressCallback> findByParam(ExpressCallbackParamDto paramDto) throws Exception {
+        return expressCallbackMapper.selectExpressCallbackByParamDto(paramDto);
     }
 
     @Transactional(rollbackFor = Exception.class)
