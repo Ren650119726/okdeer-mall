@@ -124,15 +124,38 @@ public class ExpressServiceImpl implements ExpressService {
     }
 
     @Override
-    public ResultMsgDto<ExpressCarrierDto> findExpressCarrier(String orderNo) throws Exception {
-        String url = ElemeOpenConfig.API_URL + RequestConstant.orderCarrier;
+    public ResultMsgDto<ExpressOrderInfo> findExpressOrderInfo(String orderNo) throws Exception {
         Map<String, String> data = Maps.newHashMap();
         data.put("partner_order_code", orderNo);
-        String pushJson = createPushObject(data);
-        String resultJson = HttpClient.postBody(url, pushJson);
+        String resultJson = requestHttpData(RequestConstant.orderQuery, data);
+        ResultMsgDto<ExpressOrderInfo> resultMsgDto = JsonMapper.nonDefaultMapper().fromJson(resultJson, ResultMsgDto.class);
+        resultMsgDto.setData(BeanMapper.map(resultMsgDto.getData(), ExpressOrderInfo.class));
+        return resultMsgDto;
+    }
+
+    @Override
+    public ResultMsgDto<ExpressCarrierDto> findExpressCarrier(String orderNo) throws Exception {
+        Map<String, String> data = Maps.newHashMap();
+        data.put("partner_order_code", orderNo);
+        String resultJson = requestHttpData(RequestConstant.orderCarrier, data);
         ResultMsgDto<ExpressCarrierDto> resultMsgDto = JsonMapper.nonDefaultMapper().fromJson(resultJson, ResultMsgDto.class);
         resultMsgDto.setData(BeanMapper.map(resultMsgDto.getData(), ExpressCarrierDto.class));
         return resultMsgDto;
+    }
+
+    /**
+     * 请求http数据
+     *
+     * @param requestConstant RequestConstant常量类方法名
+     * @param data            Object
+     * @return String
+     * @throws Exception
+     */
+    private String requestHttpData(String requestConstant, Object data) throws Exception {
+        String url = ElemeOpenConfig.API_URL + requestConstant;
+        String pushJson = createPushObject(data);
+        String resultJson = HttpClient.postBody(url, pushJson);
+        return resultJson;
     }
 
 

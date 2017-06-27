@@ -1,15 +1,16 @@
 package com.okdeer.mall.ele.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.annotation.NotThreadSafe;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -30,8 +31,6 @@ import java.util.List;
  * 发送Http请求工具类, get post请求
  */
 public class HttpClient {
-
-    private static final Log logger = LogFactory.getLog(HttpClient.class);
 
     /**
      * @param url
@@ -60,7 +59,7 @@ public class HttpClient {
             try {
                 response = httpclient.execute(httpget);
                 StatusLine statusLine = response.getStatusLine();
-                logger.info(String.format("http protocol:%s statusCode:%s reasonPhrase:%s", new Object[]{statusLine.getProtocolVersion(), statusLine.getStatusCode(), statusLine.getReasonPhrase()}));
+                //logger.info(String.format("http protocol:%s statusCode:%s reasonPhrase:%s", new Object[]{statusLine.getProtocolVersion(), statusLine.getStatusCode(), statusLine.getReasonPhrase()}));
                 HttpEntity entity = response.getEntity();
                 result = EntityUtils.toString(entity, Consts.UTF_8);
             } catch (IOException e) {
@@ -73,7 +72,7 @@ public class HttpClient {
                     throw new HttpClientRuntimeException("httpClient get request error", e);
                 }
             }
-            logger.info(String.format("get request url is %s  response data is %s", url, result));
+            //logger.info(String.format("get request url is %s  response data is %s", url, result));
             return result == null ? "" : result.trim();
         } finally {
             try {
@@ -126,7 +125,7 @@ public class HttpClient {
                 }
                 response = httpClient.execute(httpPost);
                 StatusLine statusLine = response.getStatusLine();
-                logger.info(String.format("http protocol:%s statusCode:%s reasonPhrase:%s", new Object[]{statusLine.getProtocolVersion(), statusLine.getStatusCode(), statusLine.getReasonPhrase()}));
+                //logger.info(String.format("http protocol:%s statusCode:%s reasonPhrase:%s", new Object[]{statusLine.getProtocolVersion(), statusLine.getStatusCode(), statusLine.getReasonPhrase()}));
                 HttpEntity entity = response.getEntity();
                 result = EntityUtils.toString(entity, Consts.UTF_8);
             } catch (UnsupportedEncodingException e) {
@@ -141,7 +140,7 @@ public class HttpClient {
                     throw new HttpClientRuntimeException("httpClient post request error", e);
                 }
             }
-            logger.info(String.format("post request url is %s params is " + params + " response data is \n%s", url, result));
+            //logger.info(String.format("post request url is %s params is " + params + " response data is \n%s", url, result));
             return result == null ? "" : result.trim();
 
         } finally {
@@ -296,7 +295,7 @@ public class HttpClient {
                 }
                 response = httpClient.execute(httpPost);
                 StatusLine statusLine = response.getStatusLine();
-                logger.info(String.format("http protocol:%s statusCode:%s reasonPhrase:%s", new Object[]{statusLine.getProtocolVersion(), statusLine.getStatusCode(), statusLine.getReasonPhrase()}));
+                //logger.info(String.format("http protocol:%s statusCode:%s reasonPhrase:%s", new Object[]{statusLine.getProtocolVersion(), statusLine.getStatusCode(), statusLine.getReasonPhrase()}));
                 HttpEntity entity = response.getEntity();
                 result = EntityUtils.toString(entity, Consts.UTF_8);
             } catch (UnsupportedEncodingException e) {
@@ -311,7 +310,7 @@ public class HttpClient {
                     throw new HttpClientRuntimeException("httpClient post request error", e);
                 }
             }
-            logger.info(String.format("post request url is %s, body is %s, response data is \n%s", url, body, result));
+            //logger.info(String.format("post request url is %s, body is %s, response data is \n%s", url, body, result));
             return result == null ? "" : result.trim();
 
         } finally {
@@ -338,13 +337,12 @@ public class HttpClient {
 
             res = EntityUtils.toString(httpEntity, Consts.UTF_8);
 
-            logger.info(String.format("post request url is %s, request body is %s \n statusCode is %s response data is \n%s\n",
-                    url, data, response.getStatusLine().getStatusCode(), res));
+            //logger.info(String.format("post request url is %s, request body is %s \n statusCode is %s response data is \n%s\n",url, data, response.getStatusLine().getStatusCode(), res));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-     return res;
+        return res;
     }
 
 }
