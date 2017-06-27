@@ -6,6 +6,8 @@ import com.okdeer.mall.ele.entity.ExpressCallback;
 import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.express.api.ExpressApi;
 import com.okdeer.mall.express.dto.ExpressCallbackDto;
+import com.okdeer.mall.express.dto.ExpressCarrierDto;
+import com.okdeer.mall.express.dto.ResultMsgDto;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -30,5 +32,10 @@ public class ExpressApiImpl implements ExpressApi {
         ExpressCallback callback = new ExpressCallback();
         BeanMapper.copy(data, callback);
         expressService.saveCallback(callback);
+    }
+
+    @Override
+    public ResultMsgDto<ExpressCarrierDto> findExpressCarrier(String orderNo) throws Exception {
+        return expressService.findExpressCarrier(orderNo);
     }
 }
