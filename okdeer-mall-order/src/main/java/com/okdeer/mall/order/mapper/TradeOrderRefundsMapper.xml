@@ -1430,6 +1430,16 @@
 				#{item,jdbcType=TINYINT}
 			</foreach>
 		</if>
+		<if test="type != null">
+			AND tr.type = #{type,jdbcType=TINYINT}
+		</if>
+		<if test="typeList != null and typeList > 0 ">
+			AND tr.type in
+			<foreach collection="typeList" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item,jdbcType=TINYINT}
+			</foreach>
+		</if>
 		ORDER BY statusSort ASC,
 		tr.create_time DESC
 	</select>
@@ -1487,6 +1497,16 @@
 		<if test="refundStatusList != null and refundStatusList.size() > 0 ">
 			AND tr.refunds_status in
 			<foreach collection="refundStatusList" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item,jdbcType=TINYINT}
+			</foreach>
+		</if>
+		<if test="type != null">
+			AND tr.type = #{type,jdbcType=TINYINT}
+		</if>
+		<if test="typeList != null and typeList > 0 ">
+			AND tr.type in
+			<foreach collection="typeList" index="index" item="item"
 				open="(" close=")" separator=",">
 				#{item,jdbcType=TINYINT}
 			</foreach>
@@ -1946,6 +1966,16 @@
 		<if test="refundStatusList != null and refundStatusList.size() > 0 ">
 			AND tr.refunds_status in
 			<foreach collection="refundStatusList" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item,jdbcType=TINYINT}
+			</foreach>
+		</if>
+		<if test="type != null">
+			AND tr.type = #{type,jdbcType=TINYINT}
+		</if>
+		<if test="typeList != null and typeList > 0 ">
+			AND tr.type in
+			<foreach collection="typeList" index="index" item="item"
 				open="(" close=")" separator=",">
 				#{item,jdbcType=TINYINT}
 			</foreach>
