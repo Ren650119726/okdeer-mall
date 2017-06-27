@@ -133,6 +133,11 @@ public class StoreSkuParserBo {
 	private BigDecimal totalLowFavour = BigDecimal.valueOf(0.0);
 	
 	/**
+	 * 参与低价的总金额
+	 */
+	private BigDecimal totalAmountInLowPrice = BigDecimal.valueOf(0.0);
+	
+	/**
 	 * 低价活动Id 
 	 */
 	private String lowActivityId;
@@ -419,6 +424,8 @@ public class StoreSkuParserBo {
 				this.lowActivityId = skuBo.getActivityId();
 				this.totalLowFavour = this.totalLowFavour.add(skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
 						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity())));
+				this.totalAmountInLowPrice = this.totalAmountInLowPrice
+						.add(skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity())));
 			}
 		}
 		return false;
@@ -701,7 +708,7 @@ public class StoreSkuParserBo {
 	}
 
 	public BigDecimal getTotalAmountHaveFavour() {
-		return this.totalAmountHaveFavour == null ? this.totalItemAmount : this.totalAmountHaveFavour;
+		return this.totalAmountHaveFavour == null ? this.totalItemAmount.subtract(this.totalAmountInLowPrice) : this.totalAmountHaveFavour;
 	}
 
 	public void setTotalAmountHaveFavour(BigDecimal totalAmountHaveFavour) {
