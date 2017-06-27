@@ -860,13 +860,15 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 	// Begin 重构4.1 add by wusw 20160719
 	@Override
-	public PageResultVo<ERPTradeOrderVoDto> findOrderByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto)
+	public PageUtils<ERPTradeOrderVoDto> findOrderByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto)
 			throws Exception {
 		PageUtils<ERPTradeOrderVo> page = tradeOrderService.findOrderForFinanceByParams(tradeOrderQueryParamDto,
 				tradeOrderQueryParamDto.getPageNumber(), tradeOrderQueryParamDto.getPageSize());
 		List<ERPTradeOrderVoDto> dtoList = buildERPTradeOrderVoDto(page);
-		PageResultVo<ERPTradeOrderVoDto> result = new PageResultVo<ERPTradeOrderVoDto>(page.getPageNum(),
-				page.getPageSize(), page.getTotal(), dtoList);
+		PageUtils<ERPTradeOrderVoDto> result = new PageUtils<ERPTradeOrderVoDto>(dtoList);
+		result.setPageNum(page.getPageNum());
+		result.setPageSize(page.getPageSize());
+		result.setTotal(page.getTotal());
 		return result;
 	}
 
@@ -932,6 +934,12 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			dto.setPreferentialPrice(vo.getPreferentialPrice());
 			dto.setCreateTime(vo.getCreateTime());
 			dto.setOrderResource(vo.getOrderResource().ordinal());
+			dto.setFare(vo.getFare());
+			dto.setRealFarePreferential(vo.getRealFarePreferential());
+			dto.setPlatformPreferential(vo.getPlatformPreferential());
+			dto.setStorePreferential(vo.getStorePreferential());
+			dto.setDeliveryType(vo.getDeliveryType());
+			
 			if(vo.getStatus()!=null){
 				dto.setStatus(vo.getStatus().ordinal());
 			}
