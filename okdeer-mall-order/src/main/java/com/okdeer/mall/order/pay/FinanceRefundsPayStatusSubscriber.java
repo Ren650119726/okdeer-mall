@@ -43,6 +43,7 @@ import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
+import com.okdeer.mall.order.service.TradeorderRefundProcessLister;
 import com.okdeer.mall.system.service.SysBuyerUserService;
 
 /**
@@ -99,6 +100,9 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 	@Autowired
 	@Qualifier(value="jxcSynTradeorderProcessLister")
 	private TradeorderProcessLister tradeorderProcessLister;
+	@Autowired
+	@Qualifier(value="jxcSynTradeorderRefundProcessLister")
+	private TradeorderRefundProcessLister tradeorderRefundProcessLister;
 	
 	@Override
 	public String getTopic() {
@@ -177,7 +181,7 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 			TradeOrderContext tradeOrderContext = new TradeOrderContext();
 			tradeOrderContext.setTradeOrder(tradeOrder);
 			tradeOrderContext.setTradeOrderRefunds(orderRefunds);
-			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+			tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 			
 			logger.info("=============修改退款的订单的状态成功=============");
 		} catch (Exception e) {
