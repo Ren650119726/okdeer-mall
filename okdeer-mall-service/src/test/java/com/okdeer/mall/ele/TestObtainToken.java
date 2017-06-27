@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +32,7 @@ public class TestObtainToken {
      * 请求生成token
      */
     @Test
-    public void testGetToken() throws IOException {
+    public void testGetToken() throws Exception {
         String url = ElemeOpenConfig.API_URL + RequestConstant.obtainToken;
 
         List<BasicNameValuePair> params = new ArrayList<>();
