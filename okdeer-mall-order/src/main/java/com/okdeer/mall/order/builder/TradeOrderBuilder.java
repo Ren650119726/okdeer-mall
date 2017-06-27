@@ -179,13 +179,10 @@ public class TradeOrderBuilder {
 		tradeOrder.setSellerId(paramDto.getStoreId());
 		tradeOrder.setType(paramDto.getSkuType());
 		tradeOrder.setPid("0");
-		if(parserBo.isLowFavour()){
-			tradeOrder.setActivityType(ActivityTypeEnum.LOW_PRICE);
-			tradeOrder.setActivityId(parserBo.getLowActivityId());
-		}else{
-			tradeOrder.setActivityType(paramDto.getActivityType());
-			tradeOrder.setActivityId(paramDto.getActivityId());
-		}
+		// 设置参与的平台优惠类型
+		tradeOrder.setActivityType(paramDto.getActivityType());
+		// 设置参与的平台优惠活动Id
+		tradeOrder.setActivityId(paramDto.getActivityId());
 		tradeOrder.setActivityItemId(paramDto.getActivityItemId());
 		tradeOrder.setRemark(paramDto.getRemark());
 		tradeOrder.setInvoice(paramDto.getIsInvoice());
@@ -360,7 +357,12 @@ public class TradeOrderBuilder {
 		// 平台优惠
 		tradeOrder.setPlatformPreferential(format(parserBo.getPlatformPreferential()));
 		// 店铺优惠
-		tradeOrder.setStorePreferential(format(parserBo.getPlatformPreferential()));
+		if(parserBo.isLowFavour()){
+			// 如果有低价优惠.记录店铺优惠类型和店铺优惠金额
+			tradeOrder.setStoreActivityType(ActivityTypeEnum.LOW_PRICE);
+			tradeOrder.setStorePreferential(parserBo.getTotalLowFavour());
+			tradeOrder.setStoreActivityId(parserBo.getLowActivityId());
+		}
 		// 运费优惠
 		tradeOrder.setFarePreferential(format(parserBo.getFarePreferential()));
 		// 实际运费优惠
@@ -513,11 +515,13 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setServiceAssurance(
 					StringUtils.isEmpty(skuBo.getGuaranteed()) ? 0 : Integer.valueOf(skuBo.getGuaranteed()));
 			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0){
-				tradeOrderItem.setActivityType(skuBo.getActivityType());
-				tradeOrderItem.setActivityId(skuBo.getActivityId());
+				tradeOrderItem.setStoreActivityType(ActivityTypeEnum.enumValueOf(skuBo.getActivityType()));
+				tradeOrderItem.setStoreActivityId(skuBo.getActivityId());
 			}else{
 				tradeOrderItem.setActivityType(paramDto.getActivityType().ordinal());
 				tradeOrderItem.setActivityId(paramDto.getActivityId());
+				tradeOrderItem.setStoreActivityType(ActivityTypeEnum.NO_ACTIVITY);
+				tradeOrderItem.setStoreActivityId("0");
 			}
 			
 			tradeOrderItem.setBarCode(skuBo.getBarCode());

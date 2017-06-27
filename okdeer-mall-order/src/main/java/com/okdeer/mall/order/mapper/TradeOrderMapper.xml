@@ -78,6 +78,9 @@
 		<result column="platform_preferential" property="platformPreferential" jdbcType="DECIMAL" />
 		<result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
 		<result column="fare_activity_id" property="fareActivityId" jdbcType="VARCHAR" />
+		<result column="store_activity_type" property="storeActivityType"
+			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
+		<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
 		<!-- End V2.5 added by maojj 2017-06-23 -->
 		<association property="tradeOrderLogistics"
 			javaType="com.okdeer.mall.order.entity.TradeOrderLogistics">
@@ -1266,6 +1269,7 @@
 		SELECT
 		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,o.order_resource,
 		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,o.cancel_type,
+		o.real_fare_preferential,o.store_activity_type,
 		logistics.consignee_name,logistics.telephone,logistics.mobile,logistics.area,logistics.address,
 		logistics.type as
 		logistics_type,logistics.logistics_no,logistics.logistics_company_name,
@@ -1981,6 +1985,12 @@
 			<if test="fareActivityId != null">
 				fare_activity_id,
 			</if>
+			<if test="storeActivityType != null">
+				store_activity_type,
+			</if>
+			<if test="storeActivityId != null">
+				store_activity_id,
+			</if>
 			<!-- End V2.1 added by maojj 2017-06-23 -->
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -2127,6 +2137,12 @@
 			</if>
 			<if test="fareActivityId != null">
 				#{fareActivityId,jdbcType=VARCHAR},
+			</if>
+			<if test="storeActivityType != null">
+				#{storeActivityType,jdbcType=TINYINT},
+			</if>
+			<if test="storeActivityId != null">
+				#{storeActivityId,jdbcType=VARCHAR},
 			</if>
 			<!-- End V2.1 added by maojj 2017-06-23 -->
 		</trim>
