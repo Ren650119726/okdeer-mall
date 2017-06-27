@@ -545,9 +545,17 @@ public class TradeOrderBuilder {
 				if(!parserBo.getHaveFavourGoodsMap().containsKey(skuBo.getId())){
 					favourItem = BigDecimal.valueOf(0.0);
 				} else if (index++ < haveFavourItemSize - 1) {
-					favourItem = totalAmountOfItem.subtract(storeFavourItem).multiply(platformFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
-					if (favourItem.compareTo(totalAmountOfItem) == 1) {
-						favourItem = totalAmountOfItem;
+					if (skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()) {
+						// 如果是低价商品，平台优惠只针对不享受低价活动的商品进行ch
+						favourItem = skuBo.getOnlinePrice()
+								.multiply(BigDecimal.valueOf(skuBo.getQuantity() - skuBo.getSkuActQuantity()))
+								.multiply(platformFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
+					} else {
+						favourItem = totalAmountOfItem.multiply(platformFavour).divide(totalAmount, 2,
+								BigDecimal.ROUND_FLOOR);
+					}
+					if (favourItem.compareTo(totalAmountOfItem.subtract(storeFavourItem)) == 1) {
+						favourItem = totalAmountOfItem.subtract(storeFavourItem);
 					}
 					favourSum = favourSum.add(favourItem);
 				} else {
