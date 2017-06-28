@@ -32,6 +32,15 @@ public interface ExpressService {
     ResultMsgDto<String> saveExpressOrder(TradeOrder tradeOrder) throws Exception;
 
     /**
+     * 取消蜂鸟订单
+     *
+     * @param orderNo String
+     * @return ResultMsgDto<String>
+     * @throws Exception
+     */
+    ResultMsgDto<String> cancelExpressOrder(String orderNo) throws Exception;
+
+    /**
      * 根据条件查询符合的记录
      *
      * @param paramDto ExpressCallbackParamDto

@@ -48,4 +48,12 @@ public interface TradeOrderCarrierService {
      * @return int
      */
     int insert(TradeOrderCarrier param) throws Exception;
+
+    /**
+     * 更新数据
+     *
+     * @param param TradeOrderCarrier 查询数据的条件
+     * @return int
+     */
+    int update(TradeOrderCarrier param) throws Exception;
 }
