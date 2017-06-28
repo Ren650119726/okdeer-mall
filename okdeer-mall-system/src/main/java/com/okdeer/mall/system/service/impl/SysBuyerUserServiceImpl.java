@@ -477,8 +477,6 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 		params.put("typeSearch", verifyCodeType);
 		params.put("bussinessTypeSearch", VerifyCodeBussinessTypeEnum.LOGIN.getCode());
 		SysSmsVerifyCode sysSmsVerifyCode = sysSmsVerifyCodeService.findLatestByParams(params);
-		// 更新验证码状态
-		sysSmsVerifyCodeService.modifyUsedStatus(sysSmsVerifyCode.getId());
 		// 如果验证码为空或者验证码不相等，则提示验证码错误，如果验证码相等，但状态为已使用，则提示验证码失效
 		if (null == sysSmsVerifyCode || !verifyCode.equals(sysSmsVerifyCode.getVerifyCode())) {
 			return 12;
@@ -486,6 +484,8 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 			map.put("flag", 11);
 			return 11;
 		}
+		// 更新验证码状态 修复未成功验证导致验证码失效
+		sysSmsVerifyCodeService.modifyUsedStatus(sysSmsVerifyCode.getId());
 		return 0;
 	}
 	
