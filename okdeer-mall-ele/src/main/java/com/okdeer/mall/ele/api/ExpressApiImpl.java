@@ -6,11 +6,11 @@ import com.okdeer.mall.ele.entity.ExpressCallback;
 import com.okdeer.mall.ele.entity.ExpressOrderInfo;
 import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.express.api.ExpressApi;
-import com.okdeer.mall.express.dto.ExpressCallbackDto;
-import com.okdeer.mall.express.dto.ExpressCarrierDto;
-import com.okdeer.mall.express.dto.ExpressOrderInfoDto;
-import com.okdeer.mall.express.dto.ResultMsgDto;
+import com.okdeer.mall.express.dto.*;
+import com.okdeer.mall.order.entity.TradeOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  * ClassName: ExpressApiImpl
@@ -30,10 +30,22 @@ public class ExpressApiImpl implements ExpressApi {
     private ExpressService expressService;
 
     @Override
+    public ResultMsgDto<String> saveExpressOrder(TradeOrder tradeOrder) throws Exception {
+        return expressService.saveExpressOrder(tradeOrder);
+    }
+
+    @Override
     public void saveExpressCallback(ExpressCallbackDto data) throws Exception {
         ExpressCallback callback = new ExpressCallback();
         BeanMapper.copy(data, callback);
         expressService.saveCallback(callback);
+    }
+
+    @Override
+    public List<ExpressCallbackDto> findByParam(ExpressCallbackParamDto paramDto) throws Exception {
+        List<ExpressCallback> boList = expressService.findByParam(paramDto);
+        List<ExpressCallbackDto> dtoList = BeanMapper.mapList(boList,ExpressCallbackDto.class);
+        return dtoList;
     }
 
     @Override
