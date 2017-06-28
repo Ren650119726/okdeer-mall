@@ -55,4 +55,10 @@ public class TradeOrderCarrierServiceImpl implements TradeOrderCarrierService {
         int flag = tradeOrderCarrierMapper.insert(param);
         return flag;
     }
+
+    @Override
+    public int update(TradeOrderCarrier param) throws Exception {
+        int flag = tradeOrderCarrierMapper.update(param);
+        return flag;
+    }
 }

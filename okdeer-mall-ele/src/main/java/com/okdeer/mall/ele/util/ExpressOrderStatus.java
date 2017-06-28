@@ -16,13 +16,22 @@ import org.apache.commons.lang.StringUtils;
  */
 public enum ExpressOrderStatus implements ViewEnum {
 
-    STATUS_4("已取消(同步取消不需要关注此状态)"),
-    STATUS_5("异常"),
-    STATUS_1("系统已接单"),
-    STATUS_20("已分配骑手"),
-    STATUS_80("骑手已到店"),
-    STATUS_2("配送中"),
-    STATUS_3("已送达");
+    //接收成功
+    STATUS_200("200"),
+    //异常
+    STATUS_5("5"),
+    //系统已接单
+    STATUS_1("1"),
+    //已分配骑手
+    STATUS_20("20"),
+    //骑手已到店
+    STATUS_80("80"),
+    //配送中
+    STATUS_2("2"),
+    //已送达
+    STATUS_3("3"),
+    //已取消(同步取消不需要关注此状态)
+    STATUS_4("4");
 
     private String value;
 
