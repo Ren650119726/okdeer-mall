@@ -118,6 +118,8 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	private OnlineOrder buildOnlineOrder(TradeOrderContext tradeOrderContext) throws Exception {
 		OnlineOrder vo = new OnlineOrder();
 		TradeOrderRefunds tradeOrderRefunds = tradeOrderContext.getTradeOrderRefunds();
+		TradeOrder order = tradeOrderContext.getTradeOrder();
+		
 		vo.setId(tradeOrderRefunds.getId());
 		vo.setStoreId(tradeOrderRefunds.getStoreId());
 		vo.setOrderNo(tradeOrderRefunds.getRefundNo());
@@ -139,6 +141,18 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 			vo.setPlatDiscountAmount(BigDecimal.ZERO);
 			vo.setDiscountAmount(tradeOrderRefunds.getTotalPreferentialPrice());
 		}
+		
+		// 进销存那边的优惠类型0:无活动 ;1：代金券；2：其他
+		int activityType = 0;
+		// 活动类型为代金券活动
+		if (order.getActivityType() == ActivityTypeEnum.VONCHER) {
+			activityType = 1;
+		} else if (order.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
+				&& order.getIncome().compareTo(order.getActualAmount()) != 0) {
+			// 活动类型为满减活动且店家收入不等于用户实付，说明里面有平台的补贴
+			activityType = 2;
+		}
+		vo.setActivityType(activityType);
 		
 		vo.setFare(BigDecimal.ZERO);
 		vo.setUserId(tradeOrderRefunds.getUserId());
