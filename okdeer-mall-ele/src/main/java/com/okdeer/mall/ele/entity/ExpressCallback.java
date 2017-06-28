@@ -1,5 +1,6 @@
 package com.okdeer.mall.ele.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -13,7 +14,7 @@ import java.util.Date;
  * Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
  */
-public class ExpressCallback {
+public class ExpressCallback implements Serializable {
 
     /**
      * 主键id

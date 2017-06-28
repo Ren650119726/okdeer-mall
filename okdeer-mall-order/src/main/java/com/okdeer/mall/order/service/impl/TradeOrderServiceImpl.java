@@ -1986,7 +1986,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
         paramDto.setOrderId(tradeOrder.getId());
         TradeOrderExtSnapshot snapshot = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
-        if (snapshot.getDeliveryType() == 1) {
+        if (snapshot != null && snapshot.getDeliveryType() == 1) {
             //首先判断是否存在第三方回调初始化数据，如果没有，则推送订单到第三方，为了兼容商家版老版本
             ExpressCallbackParamDto callbackParamDto = new ExpressCallbackParamDto();
             callbackParamDto.setOrderNo(tradeOrder.getOrderNo());
@@ -4963,7 +4963,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
             paramDto.setOrderId(tradeOrder.getId());
             TradeOrderExtSnapshot snapshot = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
-            if (snapshot.getDeliveryType() == 1) {
+            if (snapshot != null && snapshot.getDeliveryType() == 1) {
                 throw new ServiceException("配送方式为第三方配送");
             }
             // end add by wangf01 20170626
