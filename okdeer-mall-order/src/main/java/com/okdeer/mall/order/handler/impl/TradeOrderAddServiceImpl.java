@@ -920,8 +920,10 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			}
 			// 设置优惠金额
 			tradeOrderItem.setPreferentialPrice(favourItem);
-			// 设置平台优惠金额
+			// 设置店铺优惠金额
 			tradeOrderItem.setStorePreferential(BigDecimal.valueOf(0.00));
+			// 设置店铺活动Id
+			tradeOrderItem.setStoreActivityId("0");
 			// 设置订单项佣金金额
 			tradeOrderItem.setCommission(commissionItem);
 			// 设置实付金额
