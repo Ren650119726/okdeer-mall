@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -44,6 +45,7 @@ import com.okdeer.api.pay.enums.RefundTypeEnum;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.api.pay.pay.dto.PayRefundDto;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
+import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeDto;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.enums.MeteringMethod;
@@ -91,7 +93,6 @@ import com.okdeer.mall.order.entity.TradeOrderRefundsCertificate;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLog;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
-import com.okdeer.mall.order.enums.ActivityBelongType;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
@@ -124,7 +125,6 @@ import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderRefundsTraceService;
 import com.okdeer.mall.order.service.TradeOrderSendMessageService;
-import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.order.service.TradeorderRefundProcessLister;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.PageQueryUtils;
@@ -141,7 +141,6 @@ import com.okdeer.mall.system.mapper.SysMsgMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
 import com.okdeer.mall.system.utils.ConvertUtil;
-import org.springframework.integration.redis.util.RedisLockRegistry;
 
 import net.sf.json.JSONObject;
 
@@ -476,6 +475,9 @@ public class TradeOrderRefundsServiceImpl
 		refunds.setStatus(OrderItemStatusEnum.ALL_REFUND);
 		refunds.setTotalAmount(tradeOrder.getActualAmount());
 		refunds.setTotalPreferentialPrice(new BigDecimal("0.00"));
+		// Begin V2.5 added by maojj 2017-06-28
+		refunds.setStorePreferential(BigDecimal.valueOf(0.00));
+		// End V2.5 added by maojj 2017-06-28
 		refunds.setCreateTime(new Date());
 		refunds.setUpdateTime(new Date());
 		refunds.setRefundsReason("聚合平台充值请求失败");
@@ -492,6 +494,9 @@ public class TradeOrderRefundsServiceImpl
 		refundsItem.setSpuType(SpuTypeEnum.serviceSpu);
 		refundsItem.setAmount(tradeOrder.getActualAmount());
 		refundsItem.setPreferentialPrice(new BigDecimal("0"));
+		// Begin V2.5 added by maojj 2017-06-28
+		refundsItem.setStorePreferential(BigDecimal.valueOf(0.00));
+		// End V2.5 added by maojj 2017-06-28
 		refundsItem.setQuantity(1);
 		refundsItem.setStatus(OrderItemStatusEnum.ALL_REFUND);
 		refundsItem.setRechargeMobile(tradeOrderItem.getRechargeMobile());
@@ -763,7 +768,7 @@ public class TradeOrderRefundsServiceImpl
 	 * 构建支付对象
 	 */
 	private String buildBalanceThirdPayTrade(TradeOrder order, TradeOrderRefunds orderRefunds) throws Exception {
-		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
 		payTradeVo.setAmount(orderRefunds.getTotalAmount());
 		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
 		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(orderRefunds.getStoreId()));
@@ -773,13 +778,21 @@ public class TradeOrderRefundsServiceImpl
 		payTradeVo.setServiceFkId(orderRefunds.getId());
 		payTradeVo.setServiceNo(orderRefunds.getOrderNo());
 		payTradeVo.setRemark("关联订单号：" + orderRefunds.getOrderNo());
+		// Begin V2.5 modified by maojj 2017-06-28
 		// 优惠额退款 判断是否有优惠劵
-		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
+		/*ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
 		if (activityResource == ActivityBelongType.OPERATOR || activityResource == ActivityBelongType.AGENT
 				&& (orderRefunds.getTotalPreferentialPrice().compareTo(BigDecimal.ZERO) > 0)) {
 			payTradeVo.setPrefeAmount(orderRefunds.getTotalPreferentialPrice());
 			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
+		}*/
+		BigDecimal platformFavour = orderRefunds.getTotalPreferentialPrice().subtract(orderRefunds.getStorePreferential());
+		if(platformFavour.compareTo(BigDecimal.valueOf(0.00)) == 1){
+			// 如果平台优惠>0.则标识有平台优惠
+			payTradeVo.setPrefeAmount(platformFavour);
+			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
 		}
+		// End V2.5 modified by maojj 2017-06-28
 		// 接受返回消息的tag
 		payTradeVo.setTag(null);
 		return JSONObject.fromObject(payTradeVo).toString();
@@ -809,13 +822,22 @@ public class TradeOrderRefundsServiceImpl
 		payTradeVo.setServiceFkId(orderRefunds.getId());
 		payTradeVo.setServiceNo(orderRefunds.getOrderNo());
 		payTradeVo.setRemark("关联订单号：" + orderRefunds.getOrderNo());
-		// 优惠额退款 判断是否有优惠劵
-		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
+		// 优惠额退款 
+		// Begin V2.5 modified by maojj 2017-06-28
+		/*ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
 		if (activityResource == ActivityBelongType.OPERATOR || activityResource == ActivityBelongType.AGENT
 				&& (orderRefunds.getTotalPreferentialPrice().compareTo(BigDecimal.ZERO) > 0)) {
 			payTradeVo.setPrefeAmount(orderRefunds.getTotalPreferentialPrice());
 			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
+		}*/
+		// 判断是否有平台优惠
+		BigDecimal platformFavour = orderRefunds.getTotalPreferentialPrice().subtract(orderRefunds.getStorePreferential());
+		if(platformFavour.compareTo(BigDecimal.valueOf(0.00)) == 1){
+			// 如果平台优惠>0.则标识有平台优惠
+			payTradeVo.setPrefeAmount(platformFavour);
+			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
 		}
+		// End V2.5 modified by maojj 2017-06-28
 		// 接受返回消息的tag
 		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_REFUND);
 		return JSONObject.fromObject(payTradeVo).toString();
@@ -1150,7 +1172,8 @@ public class TradeOrderRefundsServiceImpl
 	private String buildBalanceFinish(TradeOrderRefunds refunds, TradeOrder order) throws Exception {
 		// 是否店铺优惠
 		BigDecimal totalAmount = refunds.getTotalAmount();
-		// 优惠金额
+		// Begin V2.5 modified by maojj 2017-06-28
+		/*// 优惠金额
 		BigDecimal preferentialPrice = BigDecimal.ZERO;
 		// 优惠额退款 判断是否有优惠劵
 		if (order.getActivityType() == ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES
@@ -1162,7 +1185,10 @@ public class TradeOrderRefundsServiceImpl
 			} else {
 				preferentialPrice = refunds.getTotalPreferentialPrice();
 			}
-		}
+		}*/
+		// 平台优惠金额
+		BigDecimal preferentialPrice = refunds.getTotalPreferentialPrice().subtract(refunds.getStorePreferential());
+		// End V2.5 modified by maojj 
 
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 		payTradeVo.setAmount(totalAmount);

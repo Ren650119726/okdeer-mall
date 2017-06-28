@@ -713,6 +713,9 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 			refundsItem.setSpuType(item.getSpuType());
 			refundsItem.setStyleCode(item.getStyleCode());
 			refundsItem.setPreferentialPrice(item.getPreferentialPrice());
+			// Begin V2.5 added by maojj 2017-06-28
+			refundsItem.setStorePreferential(item.getStorePreferential());
+			// End V2.5 added by maojj 2017-06-28
 			refundsItem.setStatus(OrderItemStatusEnum.ALL_REFUND);
 			refundsItem.setStoreSkuId(item.getStoreSkuId());
 			refundsItem.setUnitPrice(item.getUnitPrice());
@@ -726,6 +729,9 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 			orderRefunds.setTradeOrderRefundsItem(items);
 			orderRefunds.setTotalAmount(item.getActualAmount());
 			orderRefunds.setTotalPreferentialPrice(item.getPreferentialPrice());
+			// Begin V2.5 added by maojj 2017-06-28
+			orderRefunds.setStorePreferential(item.getStorePreferential());
+			// End V2.5 added by maojj 2017-06-28
 		}
 		orderRefunds.setTotalIncome(totalIncome);
 		// 退款凭证信息

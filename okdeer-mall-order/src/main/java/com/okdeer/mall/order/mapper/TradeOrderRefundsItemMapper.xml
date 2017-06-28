@@ -30,6 +30,7 @@
 	    <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
 	    <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
 	    <result column="recharge_mobile" property="rechargeMobile" jdbcType="VARCHAR" />
+	    <result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
 	  </resultMap>
     
     <!-- 数据库表名 start -->
@@ -40,7 +41,7 @@
         <!-- 批量插入 14 个参数 -->
         (id,refunds_id,order_item_id,sku_name,store_sku_id,properties_indb,main_pic_prl,
          spu_type,amount,preferential_price,income,quantity,bar_code,style_code,status,
-         unit_price,weight,recharge_mobile)
+         unit_price,weight,recharge_mobile,store_preferential)
         VALUES
         <foreach collection="list"  index="index" item="s" separator=",">
             <trim prefix="(" suffix=")">
@@ -61,7 +62,8 @@
                 #{s.status,jdbcType=TINYINT},
                 #{s.unitPrice,jdbcType=DECIMAL},
                 #{s.weight,jdbcType=DECIMAL},
-                #{s.rechargeMobile,jdbcType=VARCHAR}
+                #{s.rechargeMobile,jdbcType=VARCHAR},
+                #{s.storePreferential,jdbcType=DECIMAL}
             </trim>
         </foreach>
     </insert>
@@ -104,7 +106,7 @@
     	SELECT 
 			item.id,item.refunds_id,item.order_item_id,item.store_sku_id,item.sku_name,item.properties_indb,item.main_pic_prl,item.spu_type,
         	item.amount,item.preferential_price,item.income,item.quantity,item.weight,item.bar_code,item.style_code,item.status,item.unit_price,
-        	item.recharge_mobile
+        	item.recharge_mobile,item.store_preferential
     	FROM trade_order_refunds_item item 
     	LEFT JOIN trade_order_refunds refunds ON refunds.id = item.refunds_id
     	WHERE  refunds.order_id = #{orderId}
