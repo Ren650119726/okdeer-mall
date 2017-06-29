@@ -312,7 +312,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                     contentDtos.add(contentDto);
                 } else if (type == OperateFieldsContentType.BUSINESS_ENTRANCE) {
                     //业务入口
-                    contentDto = businessEntranceContent(content);
+                    contentDto = businessEntranceContent(content,storeId);
                     contentDtos.add(contentDto);
                 }
             }
@@ -384,7 +384,7 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
                     contentDto = nativeSubjectContent(content);
                     contentDtos.add(contentDto);
                 } else if(type == OperateFieldsContentType.BUSINESS_ENTRANCE) {
-                    contentDto = businessEntranceContent(content);
+                    contentDto = businessEntranceContent(content,null);
                     contentDtos.add(contentDto);
                 }
             }
@@ -595,12 +595,18 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         return contentDto;
     }
     
-    private OperateFieldContentDto businessEntranceContent(OperateFieldsContent content) {
+    private OperateFieldContentDto businessEntranceContent(OperateFieldsContent content,String storeId) throws Exception {
         OperateFieldContentDto contentDto = new OperateFieldContentDto();
         OperateFieldsBusinessType businessType = content.getBusinessType();
         if(businessType == OperateFieldsBusinessType.STORE_INDEX_PAGE) {
             contentDto.setPointType(OperateFieldsAppPointType.STORE_INDEX.getCode());
         } else if(businessType == OperateFieldsBusinessType.GOODS_DETAIL) {
+        	// Begin V2.5 added by maojj 2017-06-29
+        	// 如果是指向商品详情，查询指向的商品信息
+        	if(StringUtils.isNotEmpty(storeId)){
+        		contentDto = this.getSingleGoodsOfOperateField(content.getBusinessId(), storeId);
+        	}
+        	// End V2.5 added by maojj 2017-06-29
             contentDto.setPointType(OperateFieldsAppPointType.GOODS_DETAIL.getCode());
         } else if(businessType == OperateFieldsBusinessType.STORE_MENU) {
             contentDto.setPointType(OperateFieldsAppPointType.STORE_MENU.getCode());
