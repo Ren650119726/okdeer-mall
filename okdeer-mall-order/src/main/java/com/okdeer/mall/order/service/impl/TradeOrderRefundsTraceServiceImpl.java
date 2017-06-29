@@ -384,6 +384,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 				traceVo.setContent(remark);
 			}
 			traceVo.setTime(DateUtils.formatDate(trace.getOptTime(),"MM-dd HH:mm"));
+			traceVo.setOptTime(trace.getOptTime());
 			traceVo.setIsDone(1);
 			traceVoList.add(traceVo);
 			index++;
