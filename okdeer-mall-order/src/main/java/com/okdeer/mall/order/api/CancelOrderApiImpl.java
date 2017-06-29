@@ -1,21 +1,9 @@
 
 package com.okdeer.mall.order.api;
 
-import static com.okdeer.common.consts.DescriptConstants.ORDER_CANCEL_ERROR;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_CANCEL_SUCCESS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_NOT_EXSITS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_NOT_MATCHED;
-
-import java.util.Date;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.util.Assert;
-
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.common.consts.DescriptConstants;
+import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.dto.CancelOrderDto;
 import com.okdeer.mall.order.dto.CancelOrderParamDto;
@@ -28,6 +16,15 @@ import com.okdeer.mall.order.service.CancelOrderApi;
 import com.okdeer.mall.order.service.CancelOrderService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.util.Assert;
+
+import java.util.Date;
+
+import static com.okdeer.common.consts.DescriptConstants.*;
 
 /**
  * ClassName: CancelOrderServiceApiImpl 
@@ -54,6 +51,12 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 	@Autowired
 	@Qualifier(value="jxcSynTradeorderProcessLister")
 	private TradeorderProcessLister tradeorderProcessLister;
+
+	/**
+	 * 注入配送-service
+	 */
+	@Autowired
+	private ExpressService expressService;
 
 	@Override
 	public CancelOrderDto cancelOrder(CancelOrderParamDto cancelOrderParamDto) {
@@ -103,6 +106,10 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 			tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
 			tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
 			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+
+			// begin V2.5.0 add by wangf01 20170629
+			expressService.cancelExpressOrder(tradeOrder.getOrderNo());
+			// end V2.5.0 add by wangf01 20170629
 		} catch (Exception e) {
 			logger.error(ORDER_CANCEL_ERROR, e);
 			cancelOrderDto.setStatus(1);
