@@ -433,7 +433,7 @@ public class TradeOrderBuilder {
 		tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(fare));
 		tradeOrder.setActualAmount(tradeOrder.getActualAmount().add(fare.subtract(tradeOrder.getRealFarePreferential())));
 		// TODO 如果店铺选择的是第三方配送，运费不计入收入。如果店铺选择的是商家自送，运费计入补贴
-		if (storeInfoExt.getDeliveryType() == 2) {
+		if (Integer.valueOf(2).equals(storeInfoExt.getDeliveryType())) {
 			tradeOrder.setIncome(tradeOrder.getIncome().add(fare));
 		}
 		tradeOrder.setFare(fare);
