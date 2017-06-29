@@ -264,10 +264,10 @@
 			#{item.activityQuantity,jdbcType=INTEGER},
 			#{item.unit,jdbcType=VARCHAR},
 			
-			#{item.storePreferential,jdbcType=DECIMAL},
-			#{item.commission,jdbcType=DECIMAL},
-			#{item.storeActivityType,jdbcType=TINYINT},
-			#{item.storeActivityId,jdbcType=VARCHAR}
+			IFNULL(#{item.storePreferential,jdbcType=DECIMAL},0.00),
+			IFNULL(#{item.commission,jdbcType=DECIMAL},0.00),
+			IFNULL(#{item.storeActivityType,jdbcType=TINYINT},0),
+			IFNULL(#{item.storeActivityId,jdbcType=VARCHAR},'0')
         )
 		</foreach>
   </insert>

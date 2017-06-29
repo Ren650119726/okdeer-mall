@@ -362,6 +362,8 @@ public class TradeOrderBuilder {
 			tradeOrder.setStoreActivityType(ActivityTypeEnum.LOW_PRICE);
 			tradeOrder.setStorePreferential(parserBo.getTotalLowFavour());
 			tradeOrder.setStoreActivityId(parserBo.getLowActivityId());
+		} else {
+			tradeOrder.setStorePreferential(BigDecimal.valueOf(0.0));
 		}
 		// 运费优惠
 		tradeOrder.setFarePreferential(format(parserBo.getFarePreferential()));

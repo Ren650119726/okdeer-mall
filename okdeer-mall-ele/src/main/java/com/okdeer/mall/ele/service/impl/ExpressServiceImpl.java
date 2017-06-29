@@ -22,6 +22,7 @@ import com.okdeer.mall.ele.util.RandomUtils;
 import com.okdeer.mall.ele.util.URLUtils;
 import com.okdeer.mall.express.dto.ExpressCallbackParamDto;
 import com.okdeer.mall.express.dto.ExpressCarrierDto;
+import com.okdeer.mall.express.dto.ExpressOrderStatus;
 import com.okdeer.mall.express.dto.ResultMsgDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -110,6 +111,16 @@ public class ExpressServiceImpl implements ExpressService {
     }
 
     @Override
+    public ResultMsgDto<String> cancelExpressOrder(String orderNo) throws Exception {
+        // 1、封装推送入参
+        ExpressCancelData cancelData = new ExpressCancelData();
+        cancelData.setPartner_order_code(orderNo);
+        String resultJson = requestHttpData(RequestConstant.orderCancel, cancelData);
+        ResultMsgDto<String> resultMsg = JsonMapper.nonDefaultMapper().fromJson(resultJson, ResultMsgDto.class);
+        return resultMsg;
+    }
+
+    @Override
     public List<ExpressCallback> findByParam(ExpressCallbackParamDto paramDto) throws Exception {
         return expressCallbackMapper.selectExpressCallbackByParamDto(paramDto);
     }
@@ -117,8 +128,21 @@ public class ExpressServiceImpl implements ExpressService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveCallback(ExpressCallback data) throws Exception {
+        Integer temp_orderStatus = data.getOrderStatus();
         //保存第三方回调信息
+        if (data.getOrderStatus() != null) {
+            //判断当前状态和回调的状态对比，如果当前状态大于回调状态，则不修改状态值字段
+            ExpressCallback param = new ExpressCallback();
+            param.setPartnerOrderCode(data.getPartnerOrderCode());
+            ExpressCallback callback = expressCallbackMapper.selectExpressCallbackByParam(param);
+            int data_index = ExpressOrderStatus.enumValueOf(String.valueOf(data.getOrderStatus())).ordinal();
+            int callback_index = ExpressOrderStatus.enumValueOf(String.valueOf(callback.getOrderStatus())).ordinal();
+            if (callback_index > data_index) {
+                data.setOrderStatus(callback.getOrderStatus());
+            }
+        }
         expressCallbackMapper.update(data);
+        data.setOrderStatus(temp_orderStatus);
         //保存回调日志
         ExpressCallbackLog callbackLog = new ExpressCallbackLog();
         callbackLog.setId(UuidUtils.getUuid());
