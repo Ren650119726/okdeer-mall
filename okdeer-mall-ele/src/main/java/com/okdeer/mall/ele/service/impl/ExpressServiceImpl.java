@@ -110,6 +110,7 @@ public class ExpressServiceImpl implements ExpressService {
         return resultMsg;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public ResultMsgDto<String> cancelExpressOrder(String orderNo) throws Exception {
         // 1、封装推送入参
@@ -117,6 +118,15 @@ public class ExpressServiceImpl implements ExpressService {
         cancelData.setPartner_order_code(orderNo);
         String resultJson = requestHttpData(RequestConstant.orderCancel, cancelData);
         ResultMsgDto<String> resultMsg = JsonMapper.nonDefaultMapper().fromJson(resultJson, ResultMsgDto.class);
+
+        // 2、保存推送日志
+        ExpressPushLog param = new ExpressPushLog();
+        String pushJson = createPushObject(cancelData);
+        param.setPushJson(pushJson);
+        param.setResultJson(resultJson);
+        TradeOrder tradeOrder = new TradeOrder();
+        tradeOrder.setOrderNo(orderNo);
+        savePushLog(tradeOrder, param);
         return resultMsg;
     }
 
@@ -302,8 +312,12 @@ public class ExpressServiceImpl implements ExpressService {
      */
     private void savePushLog(TradeOrder tradeOrder, ExpressPushLog param) {
         param.setId(UuidUtils.getUuid());
-        param.setOrderId(tradeOrder.getId());
-        param.setOrderNo(tradeOrder.getOrderNo());
+        if (tradeOrder.getId() != null) {
+            param.setOrderId(tradeOrder.getId());
+        }
+        if (tradeOrder.getOrderNo() != null) {
+            param.setOrderNo(tradeOrder.getOrderNo());
+        }
         param.setCreateTime(DateUtils.getSysDate());
         expressPushLogMapper.insert(param);
     }
