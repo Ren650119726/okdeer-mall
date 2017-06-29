@@ -332,6 +332,11 @@
 		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
 		<result column="pick_up_type" property="pickUpType" jdbcType="TINYINT"
 			javaType="com.okdeer.mall.order.enums.PickUpTypeEnum" />
+		<result column="fare" property="fare" jdbcType="DECIMAL" />
+		<result column="real_fare_preferential" property="realFarePreferential" jdbcType="DECIMAL" />
+		<result column="platform_preferential" property="platformPreferential" jdbcType="DECIMAL" />
+		<result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
+		<result column="delivery_type" property="deliveryType" jdbcType="INTEGER" />
 		<!-- V2.1.0 end add by zhulq 增加订单所属城市  -->
 	</resultMap>
 	<!-- 订单列表 -财务系统接口调用 -luosm end -->
@@ -5670,10 +5675,16 @@
 		trade.breach_money,
 		locate.city_name AS city_name,
 		CONCAT(IFNULL(locate.provice_name,''),IFNULL(locate.city_name,''),IFNULL(locate.area_name,''),IFNULL(locate.area_ext,'')) as location,
-		trade.update_time
+		trade.update_time,
+		trade.fare,
+		trade.real_fare_preferential,
+		trade.platform_preferential,
+		trade.store_preferential,
+		toes.delivery_type
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
+		LEFT JOIN trade_order_ext_snapshot toes ON trade.id = toes.order_id
 		WHERE 1=1
 		<if test="orderNo != null and orderNo != ''">
 			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
@@ -5734,6 +5745,9 @@
 				#{item}
 			</foreach>
 		</if>
+		<if test="deliveryType !=null">
+			AND toes.delivery_type = #{deliveryType, jdbcType=INTEGER}
+		</if>
 		order by trade.create_time desc
 	</select>
 
@@ -5745,6 +5759,7 @@
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
+		LEFT JOIN trade_order_ext_snapshot toes ON trade.id = toes.order_id
 		WHERE 1=1
 		<if test="orderNo != null and orderNo != ''">
 			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
@@ -5803,6 +5818,9 @@
 				separator="," close=")">
 				#{item}
 			</foreach>
+		</if>
+		<if test="deliveryType !=null">
+			AND toes.delivery_type = #{deliveryType, jdbcType=INTEGER}
 		</if>
 	</select>
 	<!-- Begin V2.1.0 added by luosm 20170224 -->
@@ -5959,6 +5977,7 @@
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
+		LEFT JOIN trade_order_ext_snapshot toes ON trade.id = toes.order_id
 		WHERE 1=1
 		<if test="orderNo != null and orderNo != ''">
 			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
@@ -6017,6 +6036,9 @@
 				separator="," close=")">
 				#{item}
 			</foreach>
+		</if>
+		<if test="deliveryType !=null">
+			AND toes.delivery_type = #{deliveryType, jdbcType=INTEGER}
 		</if>
 	</select>
 	
