@@ -33,7 +33,7 @@ public class ExpressCancelData {
     /**
      * 订单取消描述（order_cancel_code为0时必填）
      */
-    private String order_cancel_description;
+    private String order_cancel_description = "其他";
 
     /**
      * 订单取消时间（毫秒）

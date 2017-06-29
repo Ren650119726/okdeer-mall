@@ -46,4 +46,14 @@ public class ExpressServiceImpl extends BaseServiceTest {
             System.out.println("获取第三方订单信息异常" + e);
         }
     }
+
+    @Test
+    public void expressCancelTest(){
+        try {
+            ResultMsgDto<String> resultMsgDto = expressService.cancelExpressOrder("XS100010017050400012");
+            System.out.println(JsonMapper.nonDefaultMapper().toJson(resultMsgDto));
+        } catch (Exception e) {
+            System.out.println("取消第三方订单信息异常" + e);
+        }
+    }
 }
