@@ -110,6 +110,7 @@ public class ExpressServiceImpl implements ExpressService {
         return resultMsg;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public ResultMsgDto<String> cancelExpressOrder(String orderNo) throws Exception {
         // 1、封装推送入参
