@@ -52,6 +52,9 @@ import java.util.Map;
 @Service
 public class ExpressServiceImpl implements ExpressService {
 
+    @Value("${ele.apiUrl}")
+    private String API_URL;
+
     @Value("${ele.appId}")
     private String appId;
 
@@ -87,7 +90,7 @@ public class ExpressServiceImpl implements ExpressService {
         String pushJson = createPushObject(orderData);
 
         // 2、推送订单
-        String url = ElemeOpenConfig.API_URL + RequestConstant.orderCreate;
+        String url = API_URL + RequestConstant.orderCreate;
         String resultJson = HttpClient.postBody(url, pushJson);
 
         ResultMsgDto<String> resultMsg = JsonMapper.nonDefaultMapper().fromJson(resultJson, ResultMsgDto.class);
@@ -192,7 +195,7 @@ public class ExpressServiceImpl implements ExpressService {
      * @throws Exception
      */
     private String requestHttpData(String requestConstant, Object data) throws Exception {
-        String url = ElemeOpenConfig.API_URL + requestConstant;
+        String url = API_URL + requestConstant;
         String pushJson = createPushObject(data);
         String resultJson = HttpClient.postBody(url, pushJson);
         return resultJson;
@@ -329,7 +332,7 @@ public class ExpressServiceImpl implements ExpressService {
      * @throws Exception
      */
     private String getToken() throws Exception {
-        String url = ElemeOpenConfig.API_URL + RequestConstant.obtainToken;
+        String url = API_URL + RequestConstant.obtainToken;
 
         List<BasicNameValuePair> params = new ArrayList<>();
         String salt = String.valueOf(RandomUtils.getInstance().generateValue(1000, 10000));

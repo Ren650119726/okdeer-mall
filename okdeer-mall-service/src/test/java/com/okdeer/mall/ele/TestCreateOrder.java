@@ -1,12 +1,11 @@
 package com.okdeer.mall.ele;
 
-import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.Application;
 import com.okdeer.mall.ele.config.ElemeOpenConfig;
-import com.okdeer.mall.ele.config.RequestConstant;
 import com.okdeer.mall.ele.request.ElemeCreateOrderRequest;
 import com.okdeer.mall.ele.sign.OpenSignHelper;
-import com.okdeer.mall.ele.util.*;
+import com.okdeer.mall.ele.util.JsonUtils;
+import com.okdeer.mall.ele.util.RandomUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
@@ -148,7 +147,7 @@ public class TestCreateOrder {
         String requestJson = JsonUtils.getInstance().objectToJson(request);
         logger.info(String.format("request json is %s", requestJson));
 
-        String url = ElemeOpenConfig.API_URL + RequestConstant.orderCreate;
+       /* String url = ElemeOpenConfig.API_URL + RequestConstant.orderCreate;
         try {
             String flag = HttpClient.postBody(url, requestJson);
             ResultMsg rm = new ResultMsg();
@@ -157,7 +156,7 @@ public class TestCreateOrder {
         } catch (Exception e) {
             logger.error("creating order request occurs an exception!");
             throw new HttpClientRuntimeException("推送订单出现异常", e);
-        }
+        }*/
     }
 
 }
