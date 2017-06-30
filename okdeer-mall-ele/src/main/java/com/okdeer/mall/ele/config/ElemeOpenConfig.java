@@ -10,7 +10,7 @@ public class ElemeOpenConfig {
      * 联调环境地址 https://exam-anubis.ele.me/anubis-webapi <br>
      * 线上环境地址 https://open-anubis.ele.me/anubis-webapi
      */
-    public static final String API_URL = "https://exam-anubis.ele.me/anubis-webapi";
+    //public static final String API_URL = "https://exam-anubis.ele.me/anubis-webapi";
 
     /**
      * 第三方平台 app_id
