@@ -574,6 +574,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		} else {
 			// 设置运费支出
 			payTradeExt.setFreight(order.getFare());
+			payTradeExt.setIsDeductFreight(true);
 		}
 		payTradeExt.setFreightSubsidy(order.getRealFarePreferential());
 		// 如果订单金额为0，说明该订单全部商品都是可售后的且没有配送费。会转冻结
@@ -612,42 +613,18 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	 */
 	private String buildBalanceConfirmPayByFreeze(TradeOrder order, List<TradeOrderItem> tradeOrderItemList)
 			throws Exception {
-		// 订单金额
+		// 订单冻结总金额
 		BigDecimal tradeAmount = BigDecimal.ZERO;
-		// 优惠金额
-		BigDecimal preferentialAmount = BigDecimal.ZERO;
-		// 优惠额退款 判断是否有优惠劵
-		// if (order.getPreferentialPrice().compareTo(BigDecimal.ZERO) > 0) {
-		// ActivityBelongType activityBelong =
-		// tradeOrderActivityService.findActivityType(order);
-		// if (ActivityBelongType.AGENT == activityBelong ||
-		// ActivityBelongType.OPERATOR == activityBelong) {
-		// preferentialAmount = order.getPreferentialPrice();
-		// }
-		// }
-
-		// 是否平台优惠
-		boolean isPlatformPreferential = false;
-		// 优惠额退款 判断是否有优惠劵
-		if (order.getActivityType() == ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES
-				|| order.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
-				|| order.getActivityType() == ActivityTypeEnum.VONCHER) {
-			ActivityBelongType activityBelong = tradeOrderActivityService.findActivityType(order);
-			if (ActivityBelongType.OPERATOR == activityBelong || ActivityBelongType.AGENT == activityBelong) {
-				isPlatformPreferential = true;
-			}
-		}
+		// 平台优惠金额（不包括运费）
+		BigDecimal preferentialAmount = order.getPreferentialPrice().subtract(order.getStorePreferential())
+				.subtract(order.getRealFarePreferential());
 		// Begin 12205 add by zengj
 		if (!CollectionUtils.isEmpty(tradeOrderItemList)) {
 			for (TradeOrderItem orderItem : tradeOrderItemList) {
 				// 可申请售后的商品金额转冻结
 				if (orderItem.getServiceAssurance() != null && orderItem.getServiceAssurance() > 0) {
 					tradeAmount = tradeAmount
-							.add(orderItem.getActualAmount() == null ? BigDecimal.ZERO : orderItem.getActualAmount());
-					if (isPlatformPreferential) {
-						preferentialAmount = preferentialAmount.add(orderItem.getPreferentialPrice() == null
-								? BigDecimal.ZERO : orderItem.getPreferentialPrice());
-					}
+							.add(orderItem.getTotalAmount()).subtract(orderItem.getStorePreferential());
 				}
 			}
 		}
@@ -661,13 +638,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		payTradeVo.setTradeNum(order.getTradeNum());
 		payTradeVo.setTitle("确认收货(余额支付)，交易号：" + order.getTradeNum());
-		// Begin 12205 modify zengj
-		// if (isServiceAssurance(order)) {
 		payTradeVo.setBusinessType(BusinessTypeEnum.CONFIRM_ORDER);
-		// } else {
-		// payTradeVo.setBusinessType(BusinessTypeEnum.CONFIRM_ORDER_NOSERVICE);
-		// }
-		// End 12205 modify by zengj
 		payTradeVo.setServiceFkId(order.getId());
 		payTradeVo.setServiceNo(order.getOrderNo());
 		// 优惠金额
@@ -708,6 +679,8 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		// End add by zengj
 		// 总的可用金额
 		BigDecimal totalAmount = BigDecimal.ZERO;
+		// 总的退款金额
+		BigDecimal refundAmount = BigDecimal.ZERO;
 		// 平台优惠金额（不包括运费）
 		BigDecimal preferentialAmount = BigDecimal.ZERO;
 		// 总的佣金收取
@@ -732,9 +705,14 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 
 		// 需要减掉退款的金额，退款金额会在退款操作的时候转占用
 		List<TradeOrderRefundsItem> refundsItem = tradeOrderRefundsItemMapper.selectByOrderId(order.getId());
+		BigDecimal refundItemAmount = BigDecimal.ZERO;
 		for (TradeOrderRefundsItem item : refundsItem) {
+			// 订单项退款金额=实际退款金额+平台优惠金额（平台优惠=总优惠-店铺优惠）
+			refundItemAmount = item.getAmount().add(item.getPreferentialPrice()).subtract(item.getStorePreferential());
+			// 总退款金额
+			refundAmount = refundAmount.add(refundItemAmount);
 			// 店铺总可用金额=总金额-退款金额-平台优惠
-			totalAmount = totalAmount.subtract(item.getAmount().add(item.getPreferentialPrice()).subtract(item.getStorePreferential()));
+			totalAmount = totalAmount.subtract(refundItemAmount);
 			// 如果map中存在了该订单项ID，但是该订单项存在退款，该订单项不需要标记为已完成
 			if (tmpOrderItemMap.containsKey(item.getOrderItemId())) {
 				tmpOrderItemMap.remove(item.getOrderItemId());
@@ -765,8 +743,10 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		} else {
 			// 设置运费支出
 			payTradeExt.setFreight(order.getFare());
+			payTradeExt.setIsDeductFreight(true);
 		}
 		payTradeExt.setFreightSubsidy(order.getRealFarePreferential());
+		payTradeExt.setRefundAmount(refundAmount);
 		// 如果没有金额直接返回空
 		if (BigDecimal.ZERO.compareTo(totalAmount) == 0) {
 			return null;
