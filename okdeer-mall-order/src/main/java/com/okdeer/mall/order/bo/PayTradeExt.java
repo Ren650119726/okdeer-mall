@@ -35,6 +35,16 @@ public class PayTradeExt {
 	 */
 	private BigDecimal freightSubsidy;
 
+	/**
+	 * 是否扣减运费
+	 */
+	private boolean isDeductFreight;
+
+	/**
+	 * 退款金额
+	 */
+	private BigDecimal refundAmount;
+
 	public BigDecimal getCommission() {
 		return commission;
 	}
@@ -67,4 +77,19 @@ public class PayTradeExt {
 		this.freightSubsidy = freightSubsidy;
 	}
 
+	public boolean getIsDeductFreight() {
+		return isDeductFreight;
+	}
+
+	public void setIsDeductFreight(boolean isDeductFreight) {
+		this.isDeductFreight = isDeductFreight;
+	}
+
+	public BigDecimal getRefundAmount() {
+		return refundAmount;
+	}
+
+	public void setRefundAmount(BigDecimal refundAmount) {
+		this.refundAmount = refundAmount;
+	}
 }
