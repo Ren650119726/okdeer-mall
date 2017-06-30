@@ -212,6 +212,15 @@ public interface ActivityCollectCouponsMapper {
 	 * @return
 	 */
 	int selectCountByUserId(Map<String,Object> map);
+	
+	/**
+	 * @Description: 根据代金券活动类型及店铺区域查询代金券活动信息
+	 * @param map
+	 * @return List<ActivityCollectCoupons>  
+	 * @author tuzhd
+	 * @date 2017年6月30日
+	 */
+	List<ActivityCollectCoupons> findCollectCouponsByType(Map<String,Object> map);
 
 	/**
 	 * @Description: 获取优惠券信息

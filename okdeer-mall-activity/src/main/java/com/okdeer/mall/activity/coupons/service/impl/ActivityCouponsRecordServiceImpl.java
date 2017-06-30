@@ -372,8 +372,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @throws Exception
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	public JSONObject addRecordsByCollectId(String collectId, String userId,ActivityCouponsType type) throws Exception{
-		return addRecordsByCollectId(collectId, userId, type, null);
+	public JSONObject addRecordsByCollectId(String collectId, String userId) throws Exception{
+		return addRecordsByCollectId(collectId, userId, null);
 	}
 	/**
 	 * 根据活动ID领取代金劵
@@ -386,8 +386,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public JSONObject addRecordsByCollectId(String collectId, String userId,
-			ActivityCouponsType activityCouponsType,String invitaUserId) throws Exception {
+	public JSONObject addRecordsByCollectId(String collectId, String userId,String invitaUserId) throws Exception {
 		Map<String, Object> map = new HashMap<String, Object>();
 		//校验成功标识 //如果不存在缓存数据进行加入到缓存中
 		String key = userId+collectId;
@@ -412,6 +411,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				return JSONObject.fromObject(map);
 			}
 			
+			//校验活动信息
+			if(!checkCollectPublic(map, coll, userId)){
+				return JSONObject.fromObject(map);
+			}
+			
 			//循环代金劵id进行送劵
 			List<ActivityCoupons> activityCoupons = activityCouponsMapper.selectByActivityId(collectId);
 			Map<String,ActivityCouponsRecord> reMap = new HashMap<String,ActivityCouponsRecord>();
@@ -420,9 +424,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			for(ActivityCoupons coupons : activityCoupons){
 				// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 				ActivityCouponsRecord record = new ActivityCouponsRecord();
-				record.setCollectType(activityCouponsType);
+				record.setCollectType(ActivityCouponsType.enumValueOf(coll.getType()));
 				//进行公共代金劵领取校验
-				if (!checkRecordPubilc(map, coupons,userId,record)) {
+				if (!checkRecordPubilc(map, coupons,userId,record,coll)) {
 					checkFlag = false;
 					break;
 				}
@@ -497,8 +501,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public JSONObject addBeforeRecords(String collectId, String phone,String userId,String advertId,
-			ActivityCouponsType activityCouponsType) throws ServiceException {
+	public JSONObject addBeforeRecords(String collectId, String phone,String userId,String advertId) throws ServiceException {
 		Map<String, Object> map = new HashMap<String, Object>();
 		
 		//校验成功标识 //如果不存在缓存数据进行加入到缓存中
@@ -518,6 +521,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				return JSONObject.fromObject(map);
 			}
 			
+			//校验活动信息
+			if(!checkCollectPublic(map, coll, userId)){
+				return JSONObject.fromObject(map);
+			}
+			
 			//循环代金劵id进行送劵
 			List<ActivityCoupons> activityCoupons = activityCouponsMapper.selectByActivityId(collectId);
 			Map<String,ActivityCouponsRecordBefore> reMap = new HashMap<String,ActivityCouponsRecordBefore>();
@@ -531,9 +539,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				for(ActivityCoupons coupons : activityCoupons){
 					// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 					ActivityCouponsRecordBefore record = new ActivityCouponsRecordBefore();
-					record.setCollectType(activityCouponsType);
+					record.setCollectType(ActivityCouponsType.enumValueOf(coll.getType()));
 					//进行公共代金劵领取校验
-					if (!checkRecordPubilc(map, coupons,null,record)) {
+					if (!checkRecordPubilc(map, coupons,null,record,coll)) {
 						checkFlag = false;
 						break;
 					}
@@ -769,8 +777,14 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 			ActivityCouponsRecord record = new ActivityCouponsRecord();
 			record.setCollectType(activityCouponsType);
+			ActivityCollectCoupons collect = activityCollectCouponsMapper
+					.get(activityCoupons.getActivityId());
+			//校验活动信息
+			if(!checkCollectPublic(map, collect, userId)){
+				return map;
+			}
 			//进行公共代金劵领取校验
-			if (!checkRecordPubilc(map, activityCoupons,userId,record)) {
+			if (!checkRecordPubilc(map, activityCoupons,userId,record,collect)) {
 				return map;
 			}
 			//检验随机码是否可以领取
@@ -809,8 +823,15 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 		ActivityCouponsRecord record = new ActivityCouponsRecord();
 		record.setCollectType(activityCouponsType);
+		ActivityCollectCoupons collect = activityCollectCouponsMapper
+				.get(activityCoupons.getActivityId());
+		
+		//校验活动信息
+		if(!checkCollectPublic(map, collect, userId)){
+			return map;
+		}
 		//进行公共代金劵领取校验
-		if (!checkRecordPubilc(map, activityCoupons,userId,record)) {
+		if (!checkRecordPubilc(map, activityCoupons,userId,record,collect)) {
 			return map;
 		}
 		//检验优惠码的领取
@@ -827,6 +848,34 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 	
 	/**
+	 * @Description: 进行公共代金劵活动校验
+	 * @param map 返回值
+	 * @param collect 活动对象
+	 * @param userId 用户id
+	 * @return boolean  
+	 * @author tuzhd
+	 * @date 2017年6月30日
+	 */
+	private boolean checkCollectPublic(Map<String, Object> map,ActivityCollectCoupons collect,String userId){
+		if (collect == null || collect.getStatus().intValue() != 1) {
+			map.put("msg", "活动已结束！");
+			map.put("code", 105);
+			return false;
+		}
+		//根据用户id查询其订单完成的订单总量 大于 0 下过单 就不算新用户
+    	if(collect.getGetUserType() == GetUserType.ONlY_NEW_USER){
+	    	//如果用户存在单没有下过单一样送券
+    		if(userId != null && tradeOrderService.selectCountByUserStatus(userId) > 0){
+    	    	map.put("code", 106);
+    			map.put("msg", "该活动为新用户专享！");
+    			return false;
+    		}
+    	}
+    	
+    	return true;
+	}
+	
+	/**
 	 * @Description: 进行公共代金劵领取校验
 	 * @param map 返回结果
 	 * @param activityCoupons 活动信息
@@ -837,10 +886,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @date 2016年10月26日
 	 */
 	private boolean checkRecordPubilc(Map<String, Object> map,ActivityCoupons activityCoupons,
-			 String  userId,ActivityCouponsRecord record) {
+			 String  userId,ActivityCouponsRecord record,ActivityCollectCoupons collect) {
 		if (activityCoupons.getRemainNum() <= 0) {
 			// 剩余数量小于0 显示已领完
-			//map.put("data", null);
 			map.put("msg", "该代金券已经领完了！");
 			map.put("code", 101);
 			return false;
@@ -851,7 +899,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		record.setCollectUserId(userId);
 		record.setCollectTime(collectTime);	
 		//校验代金卷的日领取量
-		if (!checkDaliyRecord(map, record, activityCoupons,userId)) {
+		if (!checkDaliyRecord(map, record, activityCoupons,userId,collect)) {
 			return false;
 		}
 		return true;
@@ -954,25 +1002,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @date 2016年10月26日
 	 */
 	private boolean checkDaliyRecord(Map<String, Object> map,ActivityCouponsRecord record,
-								ActivityCoupons coupons,String userId) {
-		// 判断活动是否已结束
-		ActivityCollectCoupons collect = activityCollectCouponsMapper
-				.get(coupons.getActivityId());
-		if (collect == null || collect.getStatus().intValue() != 1) {
-			//map.put("data", null);
-			map.put("msg", "活动已结束！");
-			map.put("code", 105);
-			return false;
-		}
-		//根据用户id查询其订单完成的订单总量 大于 0 下过单 就不算新用户
-    	if(collect.getGetUserType() == GetUserType.ONlY_NEW_USER){
-	    	//如果用户存在单没有下过单一样送券
-    		if(userId != null && tradeOrderService.selectCountByUserStatus(userId) > 0){
-    	    	map.put("code", 106);
-    			map.put("msg", "该活动为新用户专享！");
-    			return false;
-    		}
-    	}
+								ActivityCoupons coupons,String userId,ActivityCollectCoupons collect) {
+		
 		// 当前日期已经领取的数量
 		int dailyCirculation = activityCouponsRecordMapper.selectCountByParams(record);
 		// 当前代金劵日已经预领取领取的数量
@@ -1504,8 +1535,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 					String[] collectIds = collectCouponsId.split(",");
 					for(String collectId : collectIds){
 						//根据代金劵活动ID领取代金劵
-						addRecordsByCollectId(collectId,record.getInviteUserId(),
-											ActivityCouponsType.advert_coupons);
+						addRecordsByCollectId(collectId,record.getInviteUserId());
 						//领取后并插入一次奖励 中奖纪录
 						activityPrizeRecordService.addPrizeRecord(collectId, record.getInviteUserId(), 
 												record.getActivityId(),null,WhetherEnum.whether.ordinal());

@@ -868,4 +868,16 @@ public class ActivityCollectCouponsServiceImpl
 		return activityCollectCouponsMapper.findCollectCouponsByModelId(modelId,activityAdvertId);
 		
 	}
+	
+	/**
+	 * @Description: 根据代金券活动类型及店铺区域查询代金券活动信息
+	 * @param map
+	 * @return List<ActivityCollectCoupons>  
+	 * @author tuzhd
+	 * @date 2017年6月30日
+	 */
+	public List<ActivityCollectCoupons> findCollectCouponsByType(Map<String,Object> map){
+		return activityCollectCouponsMapper.findCollectCouponsByType(map);
+	}
+	
 }
