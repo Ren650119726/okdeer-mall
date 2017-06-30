@@ -25,6 +25,7 @@ import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
@@ -268,10 +269,17 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		}else{
 			parserBo.setFare(fare);
 		}
-		
-		if(totalAmount.compareTo(startPrice) == -1 && paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT){
-			// 提交订单且不是到店自提订单，未达到起送价，提交订单失败。
-			resp.setResult(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH);
+		if(totalAmount.compareTo(startPrice) == -1){
+			if(paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT){
+				// 提交订单且不是到店自提订单，未达到起送价，提交订单失败。
+				resp.setResult(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH);
+			}else if(paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT){
+				// 如果是确认订单，返回相关提示信息
+				resp.getData().setIsReachPrice(WhetherEnum.not.ordinal());
+				resp.getData().setUnReachTip(ResultCodeEnum.UN_REACH_PRICE_TIP.getDesc());
+			}
+		}else{
+			resp.getData().setIsReachPrice(WhetherEnum.whether.ordinal());
 		}
 	}
 }
