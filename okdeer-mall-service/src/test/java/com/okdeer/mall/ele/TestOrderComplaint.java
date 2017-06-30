@@ -1,14 +1,6 @@
 package com.okdeer.mall.ele;
 
 import com.okdeer.mall.Application;
-import com.okdeer.mall.ele.config.ElemeOpenConfig;
-import com.okdeer.mall.ele.config.RequestConstant;
-import com.okdeer.mall.ele.request.OrderComplaintRequest;
-import com.okdeer.mall.ele.sign.OpenSignHelper;
-import com.okdeer.mall.ele.util.HttpClient;
-import com.okdeer.mall.ele.util.HttpClientRuntimeException;
-import com.okdeer.mall.ele.util.JsonUtils;
-import com.okdeer.mall.ele.util.RandomUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
@@ -17,9 +9,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * 投诉订单
@@ -34,7 +23,7 @@ public class TestOrderComplaint {
 
     @Test
     public void testCancelOrder() throws IOException {
-        String appId = ElemeOpenConfig.appId;
+        /*String appId = ElemeOpenConfig.appId;
         String url = ElemeOpenConfig.API_URL;
         String partner_order_code = "44451479289481540";  //推单时 第三方订单号
         String token = "bdc94751-c82a-4cb8-b09a-e438ea062a71";
@@ -70,6 +59,6 @@ public class TestOrderComplaint {
             logger.info(String.format("^_^, reponse data: %s", res));
         } catch (Exception e) {
             throw new HttpClientRuntimeException("投诉订单出现异常", e);
-        }
+        }*/
     }
 }
