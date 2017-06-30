@@ -416,7 +416,6 @@ public class TradeOrderBuilder {
 		}
 		paramDto.put("commission", commission);
 		paramDto.put("totalAmountInCommission", income);
-		income = income.subtract(commission);
 		tradeOrder.setIncome(income);
 	}
 
