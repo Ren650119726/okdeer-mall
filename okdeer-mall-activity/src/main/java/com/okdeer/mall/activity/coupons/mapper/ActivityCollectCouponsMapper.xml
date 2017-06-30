@@ -799,6 +799,40 @@
 		</if>
 	  </select>
 	  
+	  <!-- 根据代金券活动类型及店铺区域查询代金券活动信息 tuzhd 用于鹿掌柜代金券活动查询-->
+	  <select id="findCollectCouponsByType" resultMap="ActivityCollectCoupons" parameterType="map">
+		SELECT 
+			coll.id,coll.name,coll.type,coll.status,coll.belong_type,coll.limit_client_type,
+			coll.start_time,coll.end_time,coll.description,coll.identity_limit,coll.area_type,
+			coll.total_cost,coll.approval_status,coll.approval_reason,coll.approval_time,
+			coll.approval_user_id,coll.create_time,coll.create_user_id,coll.update_time,
+			coll.update_user_id,coll.disabled,coll.daily_circulation,coll.h5_url,
+			coll.limit_amount,coll.get_user_type
+		FROM activity_collect_coupons coll 
+		 	LEFT JOIN `activity_collect_area` `area` ON area.collect_coupons_id = coll.`id`
+		 	LEFT JOIN `activity_collect_store` store ON store.`collect_coupons_id` = coll.`id`
+		WHERE 1=1
+			<if test="status != null">
+			 	AND coll.`status`  = #{status,jdbcType=TINYINT}
+			</if>
+			<if test="type != null">
+			 	AND coll.type = #{type,jdbcType=TINYINT}
+			</if>
+			<if test="storeId != null and storeId != '' ">
+				AND (coll.`area_type` = 0 
+					 OR (coll.`area_type`=1  AND 
+							(
+								(area.type = 1 AND area.area_id =  #{provinceId,jdbcType=VARCHAR})
+								OR 
+								(area.type = 0 AND area.area_id = #{cityId,jdbcType=VARCHAR})
+							)
+				   		 )
+				 	 OR (coll.`area_type`= 3 AND  store.`store_id` = #{storeId,jdbcType=VARCHAR})
+				 	)
+		 	</if>
+		 	ORDER BY coll.`create_time` DESC
+	  </select>
+	  
 	  <!-- 判断广告代金卷是否已经被改用户领取 add by zhulq-->
 	  <select id="selectCountByUserId" resultType="int" parameterType="map">
 		SELECT count(1)

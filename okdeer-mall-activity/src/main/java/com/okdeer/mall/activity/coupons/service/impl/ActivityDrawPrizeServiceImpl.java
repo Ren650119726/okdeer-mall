@@ -95,7 +95,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
 			
 		}
 		//根据序号获取代金劵id 执行送奖
-		JSONObject json = activityCouponsRecordService.addRecordsByCollectId(ids[prizeNo.intValue()], userId, ActivityCouponsType.advert_coupons);
+		JSONObject json = activityCouponsRecordService.addRecordsByCollectId(ids[prizeNo.intValue()], userId);
 		json.put("prizeNo", prizeNo); 
 		return json;
 		
@@ -217,7 +217,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  				//根据序号获取代金劵id 执行送奖 //奖品库存扣减成功后去领取代金券
  	 			if(StringUtils.isNotBlank(couponId) ){
  	 				activityPrizeRecordService.addPrizeRecord(couponId, userId, luckDrawId,id,WhetherEnum.whether.ordinal());
- 	 				json = activityCouponsRecordService.addRecordsByCollectId(couponId, userId, ActivityCouponsType.advert_coupons);
+ 	 				json = activityCouponsRecordService.addRecordsByCollectId(couponId, userId);
  	 			}else{
  	 				activityPrizeRecordService.addPrizeRecord(couponId, userId, luckDrawId,id,WhetherEnum.not.ordinal());
  	 			}
