@@ -81,6 +81,8 @@
 		<result column="store_activity_type" property="storeActivityType"
 			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
 		<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
+		<result column="delivery_type" property="deliveryType" jdbcType="INTEGER"/>
+        <result column="commision_ratio" property="commisionRatio" jdbcType="DECIMAL"/>
 		<!-- End V2.5 added by maojj 2017-06-23 -->
 		<association property="tradeOrderLogistics"
 			javaType="com.okdeer.mall.order.entity.TradeOrderLogistics">
@@ -1977,7 +1979,7 @@
 				client_version,
 			</if>
 			<!-- End V1.2 added by maojj 2016-11-09 -->
-			<!-- Begin V2.1 added by maojj 2017-06-23 -->
+			<!-- Begin V2.5 added by maojj 2017-06-23 -->
 			<if test="farePreferential != null">
 				fare_preferential,
 			</if>
@@ -1999,7 +2001,13 @@
 			<if test="storeActivityId != null">
 				store_activity_id,
 			</if>
-			<!-- End V2.1 added by maojj 2017-06-23 -->
+			<if test="null != deliveryType">
+	            delivery_type,
+	        </if>
+	        <if test="null != commisionRatio">
+	            commision_ratio,
+	        </if>
+			<!-- End V2.5 added by maojj 2017-06-23 -->
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -2130,7 +2138,7 @@
 				#{clientVersion,jdbcType=VARCHAR},
 			</if>
 			<!-- End V1.2 added by maojj 2016-11-09 -->
-			<!-- Begin V2.1 added by maojj 2017-06-23 -->
+			<!-- Begin V2.5 added by maojj 2017-06-23 -->
 			<if test="farePreferential != null">
 				#{farePreferential,jdbcType=DECIMAL},
 			</if>
@@ -2152,7 +2160,13 @@
 			<if test="storeActivityId != null">
 				#{storeActivityId,jdbcType=VARCHAR},
 			</if>
-			<!-- End V2.1 added by maojj 2017-06-23 -->
+			<if test="null != deliveryType">
+            	#{deliveryType,jdbcType=INTEGER},
+	        </if>
+	        <if test="null != commisionRatio">
+	            #{commisionRatio,jdbcType=DECIMAL},
+	        </if>
+			<!-- End V2.5 added by maojj 2017-06-23 -->
 		</trim>
 	</insert>
 

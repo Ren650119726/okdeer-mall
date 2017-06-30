@@ -170,12 +170,13 @@ public class TradeOrderBuilder {
 	 */
 	public TradeOrder buildTradeOrder(PlaceOrderParamDto paramDto) throws Exception{
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
+		StoreInfo storeInfo = (StoreInfo)paramDto.get("storeInfo");
 		TradeOrder tradeOrder  = new TradeOrder();
 		tradeOrder.setId(UuidUtils.getUuid());
 		tradeOrder.setUserId(paramDto.getUserId());
 		tradeOrder.setUserPhone(paramDto.getUserPhone());
 		tradeOrder.setStoreId(paramDto.getStoreId());
-		tradeOrder.setStoreName(((StoreInfo)paramDto.get("storeInfo")).getStoreName());
+		tradeOrder.setStoreName(storeInfo.getStoreName());
 		tradeOrder.setSellerId(paramDto.getStoreId());
 		tradeOrder.setType(paramDto.getSkuType());
 		tradeOrder.setPid("0");
@@ -196,6 +197,11 @@ public class TradeOrderBuilder {
 		tradeOrder.setUpdateTime(new Date());
 		tradeOrder.setClientVersion(paramDto.getVersion());
 		tradeOrder.setFareActivityId(parserBo.getFareActivityId());
+		// 设置订单配送方式和佣金比率
+		if(storeInfo.getStoreInfoExt() != null){
+			tradeOrder.setDeliveryType(storeInfo.getStoreInfoExt().getDeliveryType());
+			tradeOrder.setCommisionRatio(storeInfo.getStoreInfoExt().getCommisionRatio());
+		}
 		// 设置订单编号
 		setOrderNo(tradeOrder,paramDto.getOrderType());
 		// 设置订单总品项
