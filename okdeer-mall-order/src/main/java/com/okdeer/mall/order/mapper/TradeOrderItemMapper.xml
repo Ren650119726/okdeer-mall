@@ -113,7 +113,8 @@
     SELECT 
     T.id, T.order_id, T.store_spu_id, T.store_sku_id, T.sku_name, T.properties_indb, T.main_pic_prl, T.bar_code,
     T.spu_type, T.unit_price, T.quantity, T.weight, T.service_assurance, T.total_amount, T.income, T.actual_amount, T.preferential_price, 
-    R.status, T.appraise, T.compain_status, T.create_time, T.income, T.recharge_mobile,T.activity_type,T.activity_price,T.activity_quantity,T.unit
+    R.status, T.appraise, T.compain_status, T.create_time, T.income, T.recharge_mobile,T.activity_type,T.activity_price,T.activity_quantity,
+    T.unit,T.store_preferential,T.commision,T.store_activity_type,T.store_activity_id
     FROM trade_order_item T
     LEFT JOIN trade_order_refunds_item R
     on T.id = R.order_item_id 
@@ -528,7 +529,8 @@
     item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, 
     item.status, item.appraise, item.create_time,detail.status AS itemDetailStatus,detail.consume_code,
-    detail.start_time,detail.end_time,item.service_assurance,item.income,item.recharge_mobile,item.activity_type,item.activity_price,item.activity_quantity
+    detail.start_time,detail.end_time,item.service_assurance,item.income,item.recharge_mobile,item.activity_type,
+    item.activity_price,item.activity_quantity,item.store_preferential,item.commision,item.store_activity_type,item.store_activity_id
   </sql>
   
   <!-- wusw:订单项和订单项详细字段 -->
