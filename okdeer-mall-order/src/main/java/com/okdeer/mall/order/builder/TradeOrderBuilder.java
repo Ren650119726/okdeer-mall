@@ -576,6 +576,7 @@ public class TradeOrderBuilder {
 				// 订单收取佣金
 				if(commisionIndex++ < orderItemSize - 1){
 					commisionItem = totalAmountOfItem.subtract(storeFavourItem).multiply(commisionRate).setScale(2,BigDecimal.ROUND_HALF_UP);
+					commisionSum = commisionSum.add(commisionItem);
 				}else{
 					commisionItem = totalcommision.subtract(commisionSum);
 				}
