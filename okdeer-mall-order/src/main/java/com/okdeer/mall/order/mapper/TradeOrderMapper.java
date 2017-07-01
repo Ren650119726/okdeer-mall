@@ -6,6 +6,7 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.dto.TradeOrderCountParamDto;
+import com.okdeer.mall.order.dto.TradeOrderParamDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -54,7 +55,7 @@ public interface TradeOrderMapper {
 	 * @param param TradeOrder
 	 * @return
 	 */
-	List<TradeOrder> selectByParam(TradeOrder param);
+	List<TradeOrder> selectByParam(TradeOrderParamDto param);
 	// end add by wangf01 20170419
 
 	void insertSelective(TradeOrder tradeOrder);

@@ -680,14 +680,14 @@
 	</resultMap>
 	<!--end xuzq 20170321 2.2.0 订单查询map -->
 	<sql id="Base_Column_List">
-		id, user_id, store_id, store_name, pid, order_no, type, pick_up_type, pick_up_code,
-		pick_up_time,order_resource, is_complete,
-		status, total_amount, actual_amount, preferential_price, fare, activity_type,
-		activity_id, activity_item_id,pay_way,
-		remark, invoice, disabled, create_time, received_time, delivery_time,
-		update_time,is_show,pospay,reason,trade_num,user_phone,payment_status,payment_time,income,seller_id,shipments_user_id,consumer_code_status,
-		is_breach,is_breach_money,breach_time,breach_percent,breach_money,cancel_type,
-		fare_preferential,real_fare_preferential,platform_preferential,store_preferential,fare_activity_id
+		id, status, total_amount, actual_amount, preferential_price, fare, user_phone, user_id,
+		store_name, seller_id, store_id, pid, order_no, type, pick_up_type, pick_up_code, pick_up_time,
+		activity_type, activity_id, remark, invoice, disabled, create_time, update_time, payment_status,
+		order_resource, received_time, delivery_time, pick_up_id, pay_way, properties_indb, reason, payment_time,
+		income, is_show, pospay, compain_status, pick_up_item, trade_num, activity_item_id, is_complete, shipments_user_id,
+		consumer_code_status, payment_user_id, is_breach, is_breach_money, breach_time, breach_percent, breach_money, cancel_type,
+		accept_time, client_version, commission_rate, fare_preferential, real_fare_preferential, platform_preferential, store_preferential,
+		fare_activity_id, store_activity_type
 	</sql>
 
 	<sql id="order_column_list">
@@ -857,13 +857,27 @@
 		</if>
 	</sql>
 
+	<sql id="order_param_condition">
+		<include refid="base_condition"/>
+		<if test="orderIdList != null and orderIdList.size() > 0">
+			<foreach collection="orderIdList" item="item" open="AND id in (" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="orderNoList != null and orderNoList.size() > 0">
+			<foreach collection="orderNoList" item="item" open="AND order_no in (" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+
 	<select id="selectByParam" resultMap="BaseResultMap"
-			parameterType="com.okdeer.mall.order.entity.TradeOrder">
+			parameterType="com.okdeer.mall.order.dto.TradeOrderParamDto">
 		select
 		<include refid="Base_Column_List" />
 		from trade_order
 		where disabled=0
-		<include refid="base_condition" />
+		<include refid="order_param_condition" />
 	</select>
 
 	<!-- 财务系统接口-通过订单id查询订单详情 luosm start 12050 update by wusw 20160810 12051 
