@@ -36,7 +36,7 @@
     <!-- End V2.0 added by maojj 2017-01-07 -->
     <!-- Begin V2.5 added by maojj 2017-06-23 -->
     <result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
-    <result column="commission" property="commission" jdbcType="DECIMAL" />
+    <result column="commision" property="commision" jdbcType="DECIMAL" />
     <result column="store_activity_type" property="storeActivityType"
 			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
 	<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
@@ -92,7 +92,7 @@
     id, order_id, store_spu_id, store_sku_id, sku_name,properties_indb, main_pic_prl, bar_code,
     spu_type, unit_price, quantity,weight,service_assurance,total_amount,income, actual_amount, preferential_price, 
     status, appraise,compain_status,create_time,income,recharge_mobile,is_complete,activity_type,activity_price,
-    activity_quantity,commission,store_preferential
+    activity_quantity,commision,store_preferential
   </sql>
   
   <sql id="condition" >
@@ -226,7 +226,7 @@
 			unit,
 			
 			store_preferential,
-			commission,
+			commision,
 			store_activity_type,
 			store_activity_id
 		)values
@@ -265,7 +265,7 @@
 			#{item.unit,jdbcType=VARCHAR},
 			
 			IFNULL(#{item.storePreferential,jdbcType=DECIMAL},0.00),
-			IFNULL(#{item.commission,jdbcType=DECIMAL},0.00),
+			IFNULL(#{item.commision,jdbcType=DECIMAL},0.00),
 			IFNULL(#{item.storeActivityType,jdbcType=TINYINT},0),
 			IFNULL(#{item.storeActivityId,jdbcType=VARCHAR},'0')
         )

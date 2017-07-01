@@ -298,12 +298,13 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		TradeOrder tradeOrder = new TradeOrder();
 
 		TradeOrderReq req = reqDto.getData();
+		StoreInfo storeInfo = reqDto.getContext().getStoreInfo();
 
 		tradeOrder.setId(UuidUtils.getUuid());
 		tradeOrder.setUserId(req.getUserId());
 		tradeOrder.setUserPhone(req.getUserPhone());
 		tradeOrder.setStoreId(req.getStoreId());
-		tradeOrder.setStoreName(reqDto.getContext().getStoreInfo().getStoreName());
+		tradeOrder.setStoreName(storeInfo.getStoreName());
 		tradeOrder.setSellerId(req.getStoreId());
 		tradeOrder.setRemark(req.getRemark());
 		tradeOrder.setType(req.getType());
@@ -321,6 +322,8 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		tradeOrder.setCreateTime(new Date());
 		tradeOrder.setUpdateTime(new Date());
 		tradeOrder.setClientVersion("V2.0");
+		tradeOrder.setCommisionRatio(storeInfo.getStoreInfoExt().getCommisionRatio());
+		tradeOrder.setDeliveryType(storeInfo.getStoreInfoExt().getDeliveryType());
 		// 设置订单编号
 		setOrderNo(tradeOrder);
 		// 设置订单总金额
@@ -925,7 +928,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			// 设置店铺活动Id
 			tradeOrderItem.setStoreActivityId("0");
 			// 设置订单项佣金金额
-			tradeOrderItem.setCommission(commissionItem);
+			tradeOrderItem.setCommision(commissionItem);
 			// 设置实付金额
 			tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(favourItem));
 			// 设置订单项收入
@@ -1015,7 +1018,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			default:
 				break;
 		}
-		tradeOrderItem.setIncome(tradeOrderItem.getIncome().subtract(tradeOrderItem.getCommission()));
+		tradeOrderItem.setIncome(tradeOrderItem.getIncome().subtract(tradeOrderItem.getCommision()));
 	}
 
 	/**
