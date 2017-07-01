@@ -62,9 +62,7 @@ import com.okdeer.mall.order.bo.PayTradeExt;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.dto.PayInfoDto;
 import com.okdeer.mall.order.dto.PayInfoParamDto;
-import com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
-import com.okdeer.mall.order.entity.TradeOrderExtSnapshot;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.entity.TradeOrderPay;
@@ -75,7 +73,6 @@ import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
-import com.okdeer.mall.order.mapper.TradeOrderExtSnapshotMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
@@ -113,9 +110,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	@Resource
 	private TradeOrderMapper tradeOrderMapper;
 	
-	@Resource
-	private TradeOrderExtSnapshotMapper tradeOrderExtSnapshotMapper;
-
 	@Resource
 	private TradeOrderItemMapper tradeOrderItemMapper;
 
@@ -560,15 +554,9 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			}
 		}
 		// 根据交易订单查询扩展信息
-		TradeOrderExtSnapshot tradeOrderExt = order.getTradeOrderExt() ; 
-		if(tradeOrderExt == null){
-			TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
-			paramDto.setOrderId(order.getId());
-			tradeOrderExt = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
-		}
 		payTradeExt.setCommission(totalCommission);
-		payTradeExt.setCommissionRate(tradeOrderExt == null ? BigDecimal.valueOf(0.0) : tradeOrderExt.getCommisionRatio());
-		if (tradeOrderExt != null && tradeOrderExt.getDeliveryType() != 2){
+		payTradeExt.setCommissionRate(order.getCommisionRatio());
+		if (order.getDeliveryType() != 2){
 			// 如果是商家自送。运费计入商家可用金额
 			tradeAmount = tradeAmount.add(order.getFare().subtract(order.getRealFarePreferential()));
 		} else {
@@ -726,18 +714,11 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		if (!CollectionUtils.isEmpty(orderItemIds)) {
 			this.tradeOrderItemMapper.updateCompleteById(orderItemIds);
 		}
-		// 根据交易订单查询扩展信息
-		TradeOrderExtSnapshot tradeOrderExt = order.getTradeOrderExt() ; 
-		if(tradeOrderExt == null){
-			TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
-			paramDto.setOrderId(order.getId());
-			tradeOrderExt = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
-		}
 		// 支付交易扩展信息
 		PayTradeExt payTradeExt = new PayTradeExt();
-		payTradeExt.setCommission(tradeOrderExt == null ? BigDecimal.valueOf(0.0) : totalCommission);
-		payTradeExt.setCommissionRate(tradeOrderExt.getCommisionRatio());
-		if (tradeOrderExt != null && tradeOrderExt.getDeliveryType() == 2){
+		payTradeExt.setCommission(totalCommission);
+		payTradeExt.setCommissionRate(order.getCommisionRatio());
+		if (order.getDeliveryType() == 2){
 			// 如果是商家自送。运费计入商家可用金额
 			totalAmount = totalAmount.add(order.getFare().subtract(order.getRealFarePreferential()));
 		} else {
