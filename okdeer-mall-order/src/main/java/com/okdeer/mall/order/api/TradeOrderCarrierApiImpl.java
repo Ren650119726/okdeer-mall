@@ -1,6 +1,7 @@
 package com.okdeer.mall.order.api;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.mall.order.dto.TradeOrderCarrierParamDto;
 import com.okdeer.mall.order.entity.TradeOrderCarrier;
 import com.okdeer.mall.order.service.TradeOrderCarrierApi;
 import com.okdeer.mall.order.service.TradeOrderCarrierService;
@@ -34,12 +35,12 @@ public class TradeOrderCarrierApiImpl implements TradeOrderCarrierApi {
     }
 
     @Override
-    public TradeOrderCarrier selectCarrierByParam(TradeOrderCarrier param) throws Exception {
+    public TradeOrderCarrier selectCarrierByParam(TradeOrderCarrierParamDto param) throws Exception {
         return tradeOrderCarrierService.selectCarrierByParam(param);
     }
 
     @Override
-    public List<TradeOrderCarrier> selectCarrierListByParam(TradeOrderCarrier param) throws Exception {
+    public List<TradeOrderCarrier> selectCarrierListByParam(TradeOrderCarrierParamDto param) throws Exception {
         return tradeOrderCarrierService.selectCarrierListByParam(param);
     }
 

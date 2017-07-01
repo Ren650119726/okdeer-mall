@@ -1,5 +1,6 @@
 package com.okdeer.mall.order.service;
 
+import com.okdeer.mall.order.dto.TradeOrderCarrierParamDto;
 import com.okdeer.mall.order.entity.TradeOrderCarrier;
 
 import java.util.List;
@@ -28,18 +29,18 @@ public interface TradeOrderCarrierService {
     /**
      * 根据条件查询符合的数据
      *
-     * @param param TradeOrderCarrier 查询数据的条件
+     * @param param TradeOrderCarrierParamDto 查询数据的条件
      * @return TradeOrderCarrier
      */
-    TradeOrderCarrier selectCarrierByParam(TradeOrderCarrier param) throws Exception;
+    TradeOrderCarrier selectCarrierByParam(TradeOrderCarrierParamDto param) throws Exception;
 
     /**
      * 根据条件查询符合的数据
      *
-     * @param param TradeOrderCarrier 查询数据的条件
+     * @param param TradeOrderCarrierParamDto 查询数据的条件
      * @return TradeOrderCarrier
      */
-    List<TradeOrderCarrier> selectCarrierListByParam(TradeOrderCarrier param) throws Exception;
+    List<TradeOrderCarrier> selectCarrierListByParam(TradeOrderCarrierParamDto param) throws Exception;
 
     /**
      * 保存数据

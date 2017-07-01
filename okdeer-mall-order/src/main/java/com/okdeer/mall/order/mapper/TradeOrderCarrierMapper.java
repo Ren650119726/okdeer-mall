@@ -1,6 +1,7 @@
 package com.okdeer.mall.order.mapper;
 
 
+import com.okdeer.mall.order.dto.TradeOrderCarrierParamDto;
 import com.okdeer.mall.order.entity.TradeOrderCarrier;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public interface TradeOrderCarrierMapper {
      * @param param TradeOrderCarrier 查询数据的条件
      * @return TradeOrderCarrier
      */
-    TradeOrderCarrier selectCarrierByParam(TradeOrderCarrier param);
+    TradeOrderCarrier selectCarrierByParam(TradeOrderCarrierParamDto param);
 
     /**
      * 根据条件查询符合的数据
@@ -32,7 +33,7 @@ public interface TradeOrderCarrierMapper {
      * @param param TradeOrderCarrier 查询数据的条件
      * @return List<TradeOrderCarrier>
      */
-    List<TradeOrderCarrier> selectCarrierListByParam(TradeOrderCarrier param);
+    List<TradeOrderCarrier> selectCarrierListByParam(TradeOrderCarrierParamDto param);
 
     /**
      * 保存数据

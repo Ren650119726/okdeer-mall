@@ -1,6 +1,7 @@
 package com.okdeer.mall.order.service.impl;
 
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.mall.order.dto.TradeOrderCarrierParamDto;
 import com.okdeer.mall.order.entity.TradeOrderCarrier;
 import com.okdeer.mall.order.mapper.TradeOrderCarrierMapper;
 import com.okdeer.mall.order.service.TradeOrderCarrierService;
@@ -31,20 +32,20 @@ public class TradeOrderCarrierServiceImpl implements TradeOrderCarrierService {
 
     @Override
     public TradeOrderCarrier selectCarrierById(String id) throws Exception {
-        TradeOrderCarrier param = new TradeOrderCarrier();
+        TradeOrderCarrierParamDto param = new TradeOrderCarrierParamDto();
         param.setId(id);
         TradeOrderCarrier entity = tradeOrderCarrierMapper.selectCarrierByParam(param);
         return entity;
     }
 
     @Override
-    public TradeOrderCarrier selectCarrierByParam(TradeOrderCarrier param) throws Exception {
+    public TradeOrderCarrier selectCarrierByParam(TradeOrderCarrierParamDto param) throws Exception {
         TradeOrderCarrier entity = tradeOrderCarrierMapper.selectCarrierByParam(param);
         return entity;
     }
 
     @Override
-    public List<TradeOrderCarrier> selectCarrierListByParam(TradeOrderCarrier param) throws Exception {
+    public List<TradeOrderCarrier> selectCarrierListByParam(TradeOrderCarrierParamDto param) throws Exception {
         List<TradeOrderCarrier> list = tradeOrderCarrierMapper.selectCarrierListByParam(param);
         return list;
     }
