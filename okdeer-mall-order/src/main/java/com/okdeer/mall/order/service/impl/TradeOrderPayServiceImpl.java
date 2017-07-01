@@ -547,9 +547,9 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 				// 不可申请售后的商品金额和配送费直接转可用
 				if (orderItem.getServiceAssurance() == null || orderItem.getServiceAssurance() == 0) {
 					// 可用金额
-					tradeAmount = tradeAmount.add(orderItem.getTotalAmount()).subtract(orderItem.getStorePreferential()).subtract(orderItem.getCommission());
+					tradeAmount = tradeAmount.add(orderItem.getTotalAmount()).subtract(orderItem.getStorePreferential()).subtract(orderItem.getCommision());
 					// 收取的总佣金
-					totalCommission = totalCommission.add(orderItem.getCommission());
+					totalCommission = totalCommission.add(orderItem.getCommision());
 					ordreItemIds.add(orderItem.getId());
 				}
 			}
@@ -697,7 +697,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 					// 平台优惠也需要转云钱包
 					preferentialAmount = preferentialAmount.add(orderItem.getPreferentialPrice().subtract(orderItem.getStorePreferential()));
 					// 总的收取佣金
-					totalCommission = totalCommission.add(orderItem.getCommission());
+					totalCommission = totalCommission.add(orderItem.getCommision());
 					tmpOrderItemMap.put(orderItem.getId(), orderItem.getId());
 				}
 			}
