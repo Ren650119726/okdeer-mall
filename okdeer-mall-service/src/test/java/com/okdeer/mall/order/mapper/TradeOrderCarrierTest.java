@@ -1,13 +1,10 @@
 package com.okdeer.mall.order.mapper;
 
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.order.entity.TradeOrderCarrier;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 public class TradeOrderCarrierTest extends BaseServiceTest {
 
@@ -34,7 +31,7 @@ public class TradeOrderCarrierTest extends BaseServiceTest {
         /*TradeOrderCarrier entity = tradeOrderCarrierMapper.selectCarrierByParam(param);
         System.out.println(JsonMapper.nonDefaultMapper().toJson(entity));*/
 
-        List<TradeOrderCarrier> list = tradeOrderCarrierMapper.selectCarrierListByParam(param);
-        System.out.println(JsonMapper.nonDefaultMapper().toJson(list));
+        /*List<TradeOrderCarrier> list = tradeOrderCarrierMapper.selectCarrierListByParam(param);
+        System.out.println(JsonMapper.nonDefaultMapper().toJson(list));*/
     }
 }

@@ -3,25 +3,25 @@
 <mapper namespace="com.okdeer.mall.order.mapper.TradeOrderCarrierMapper">
 
     <!-- 根据条件查询符合的数据 -->
-    <select id="selectCarrierByParam" parameterType="com.okdeer.mall.order.entity.TradeOrderCarrier"
+    <select id="selectCarrierByParam" parameterType="com.okdeer.mall.order.dto.TradeOrderCarrierParamDto"
             resultMap="BaseResultMap">
         SELECT
         <include refid="Base_Column_List"/>
         FROM
         <include refid="Base_Tbale"/>
         WHERE 1=1
-        <include refid="condition"/>
+        <include refid="param_condition"/>
     </select>
 
     <!-- 根据条件查询符合的数据 -->
-    <select id="selectCarrierListByParam" parameterType="com.okdeer.mall.order.entity.TradeOrderCarrier"
+    <select id="selectCarrierListByParam" parameterType="com.okdeer.mall.order.dto.TradeOrderCarrierParamDto"
             resultMap="BaseResultMap">
         SELECT
         <include refid="Base_Column_List"/>
         FROM
         <include refid="Base_Tbale"/>
         WHERE 1=1
-        <include refid="condition"/>
+        <include refid="param_condition"/>
     </select>
 
     <!-- 保存数据 -->
@@ -83,6 +83,20 @@
         </if>
         <if test="null != carrierDriverPhone and ''!= carrierDriverPhone">
             AND carrier_driver_phone = #{carrierDriverPhone,jdbcType=VARCHAR}
+        </if>
+    </sql>
+
+    <sql id="param_condition">
+        <include refid="condition"/>
+        <if test="orderIdList != null and orderIdList.size() > 0">
+            <foreach collection="orderIdList" item="item" open="AND order_id in (" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="orderNoList != null and orderNoList.size() > 0">
+            <foreach collection="orderNoList" item="item" open="AND order_no in (" close=")" separator=",">
+                #{item}
+            </foreach>
         </if>
     </sql>
 
