@@ -686,7 +686,7 @@
 		order_resource, received_time, delivery_time, pick_up_id, pay_way, properties_indb, reason, payment_time,
 		income, is_show, pospay, compain_status, pick_up_item, trade_num, activity_item_id, is_complete, shipments_user_id,
 		consumer_code_status, payment_user_id, is_breach, is_breach_money, breach_time, breach_percent, breach_money, cancel_type,
-		accept_time, client_version, commission_rate, fare_preferential, real_fare_preferential, platform_preferential, store_preferential,
+		accept_time, client_version, fare_preferential, real_fare_preferential, platform_preferential, store_preferential,
 		fare_activity_id, store_activity_type,delivery_type,commision_ratio
 	</sql>
 
