@@ -86,6 +86,11 @@
     <result column="activity_price" property="activityPrice" jdbcType="DECIMAL" />
     <result column="activity_quantity" property="activityQuantity" jdbcType="INTEGER" />
     <result column="unit" property="unit" jdbcType="VARCHAR" />
+    <result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
+    <result column="commision" property="commision" jdbcType="DECIMAL" />
+    <result column="store_activity_type" property="storeActivityType"
+			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
+	<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
   </resultMap>
   
   <sql id="Base_Column_List" >
@@ -537,7 +542,8 @@
   <sql id="Item_Column_List" >
     item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, item.service_assurance,
-    item.status, item.appraise, item.create_time,item.income,item.recharge_mobile,item.is_complete,item.activity_type,item.activity_id,item.activity_price,item.activity_quantity,item.unit
+    item.status, item.appraise, item.create_time,item.income,item.recharge_mobile,item.is_complete,item.activity_type,item.activity_id,item.activity_price,
+    item.activity_quantity,item.unit,item.store_preferential,item.commision,item.store_activity_type,item.store_activity_id
   </sql>
   
   <!-- wusw:订单项和订单项信息resultMap  -->
