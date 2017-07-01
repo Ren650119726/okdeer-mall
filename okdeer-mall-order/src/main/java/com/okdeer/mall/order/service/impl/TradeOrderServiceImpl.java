@@ -99,6 +99,7 @@ import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.dto.TradeOrderCountParamDto;
 import com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto;
+import com.okdeer.mall.order.dto.TradeOrderParamDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.*;
 import com.okdeer.mall.order.enums.*;
@@ -525,7 +526,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     // End V2.5 added by maojj 2017-06-23
 
     @Override
-    public List<TradeOrder> selectByParam(TradeOrder param) throws Exception {
+    public List<TradeOrder> selectByParam(TradeOrderParamDto param) throws Exception {
         List<TradeOrder> list = tradeOrderMapper.selectByParam(param);
         return list;
     }
