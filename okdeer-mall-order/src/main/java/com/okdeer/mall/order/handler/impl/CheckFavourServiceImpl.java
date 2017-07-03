@@ -250,6 +250,10 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		boolean isValid = true;
 		ActivityDiscountCondition condition = activityDiscountConditionMapper.findById(activityItemId);
 		String activityId = condition.getDiscountId();
+		if(!activityId.equals(paramDto.getActivityId())){
+			// 如果请求的满减活动Id与满减条件Id不对应，则返回失败
+			return false;
+		}
 		ActivityInfoDto actInfoDto = activityDiscountService.findInfoById(activityId, false);
 		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
 		if (actInfo.getStatus() != ActivityDiscountStatus.ing) {
@@ -262,7 +266,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		actParamDto.setLimitChannel(String.valueOf(paramDto.getChannel().ordinal()));
 		actParamDto.setType(actInfo.getType());
 		List<String> activityIds = activityDiscountMapper.findByStore(actParamDto);
-		if(!activityIds.contains(activityIds)){
+		if(!activityIds.contains(activityId)){
 			return false;
 		}
 		// End V2.5 added by maojj 2017-06-23
@@ -351,6 +355,11 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			}
 			parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
 			parserBo.setTotalAmountHaveFavour(totalAmount);
+		} else {
+			// 商品没有任何限制，判定能够享受满减总金额是否达到满减条件的限制金额
+			if(parserBo.getTotalAmountHaveFavour().compareTo(condition.getArrive()) == -1){
+				return false;
+			}
 		}
 		
 		// 满立减只能由平台发起，属于平台优惠。且目前暂时只有满减，没有满折。后续出现满折再在此处做修改
