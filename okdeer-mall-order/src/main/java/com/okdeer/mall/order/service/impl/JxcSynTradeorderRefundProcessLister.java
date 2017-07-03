@@ -6,15 +6,18 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+
 import javax.annotation.Resource;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
@@ -32,14 +35,14 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderComboSnapshot;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
-import com.okdeer.mall.order.enums.ActivityBelongType;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
-import com.okdeer.mall.order.service.TradeOrderActivityService;
+import com.okdeer.mall.order.mapper.TradeOrderComboSnapshotMapper;
 import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderRefundsCertificateService;
 import com.okdeer.mall.order.service.TradeOrderRefundsItemService;
@@ -65,8 +68,8 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	@Reference(version = "1.0.0")
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 
-	@Autowired
-	private TradeOrderActivityService tradeOrderActivityService;
+	@Resource
+	private TradeOrderComboSnapshotMapper tradeOrderComboSnapshotMapper;
 	
 	@Autowired
 	private TradeOrderRefundsCertificateService tradeOrderRefundsCertificateService;
@@ -120,27 +123,24 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		TradeOrderRefunds tradeOrderRefunds = tradeOrderContext.getTradeOrderRefunds();
 		TradeOrder order = tradeOrderContext.getTradeOrder();
 		
+		// Begin V2.5 modified by maojj 2017-07-03
+		// 店铺优惠
+		BigDecimal storeFavour = tradeOrderRefunds.getStorePreferential();
+		// 平台优惠
+		BigDecimal platformFavour = tradeOrderRefunds.getTotalPreferentialPrice().subtract(storeFavour);
+		// Begin V2.5 modified by maojj 2017-07-03
+		
 		vo.setId(tradeOrderRefunds.getId());
 		vo.setStoreId(tradeOrderRefunds.getStoreId());
 		vo.setOrderNo(tradeOrderRefunds.getRefundNo());
 		vo.setSaleType("B");// A销售单 B退货单
 		vo.setOrderResource(tradeOrderRefunds.getOrderResource().ordinal());
-		if (tradeOrderRefunds.getTotalPreferentialPrice() != null) {
-			vo.setTotalAmount(tradeOrderRefunds.getTotalAmount().add(tradeOrderRefunds.getTotalPreferentialPrice()));
-		} else {
-			vo.setTotalAmount(tradeOrderRefunds.getTotalAmount());
-		}
-
+		vo.setTotalAmount(tradeOrderRefunds.getTotalAmount().add(platformFavour));
 		vo.setActualAmount(tradeOrderRefunds.getTotalAmount());
-
-		Boolean isPlatformPreferential = isPlatformPreferential(tradeOrderContext);
-		if (isPlatformPreferential) {
-			vo.setPlatDiscountAmount(tradeOrderRefunds.getTotalPreferentialPrice());
-			vo.setDiscountAmount(BigDecimal.ZERO);
-		} else {
-			vo.setPlatDiscountAmount(BigDecimal.ZERO);
-			vo.setDiscountAmount(tradeOrderRefunds.getTotalPreferentialPrice());
-		}
+		// 平台优惠
+		vo.setPlatDiscountAmount(platformFavour);
+		// 店铺优惠
+		vo.setDiscountAmount(storeFavour);
 		
 		// 进销存那边的优惠类型0:无活动 ;1：代金券；2：其他
 		int activityType = 0;
@@ -174,7 +174,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 
 		List<TradeOrderRefundsItem> tradeOrderRefundsItems = getTradeOrderRefundsItem(tradeOrderContext);
 		//拆分退款单item
-		splitItemList(tradeOrderRefundsItems);
+		splitItemList(tradeOrderRefundsItems,order.getId());
 
 		// 订单项list部分
 		List<OnlineOrderItem> ooiList = new ArrayList<OnlineOrderItem>();
@@ -187,15 +187,9 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 				ooi.setSaleNum(new BigDecimal(item.getQuantity() == null ? 0 : item.getQuantity()));
 				
 				// 店铺优惠金额
-				BigDecimal storePreferentialPrice = BigDecimal.ZERO;
-				// 订单金额如果不等于店家收入金额，说明是店铺有优惠
-				//Begin 排除平台优惠 update by tangy  2016-10-28
-				
-				if (tradeOrderContext.getTradeOrder().getActualAmount().compareTo(tradeOrderContext.getTradeOrder().getIncome()) == 0 ) {
-					storePreferentialPrice = item.getPreferentialPrice();
-				} 
-				// 实际单价=原单价减去店铺优惠
-				BigDecimal actualPrice = item.getUnitPrice().subtract(storePreferentialPrice);
+				BigDecimal storePreferentialPrice = item.getStorePreferential();
+				// 实际单价=原单价减去-店铺优惠/商品数量
+				BigDecimal actualPrice = BigDecimal.valueOf(0.00);
 				if (item.getQuantity() != null && item.getQuantity().intValue() > 0) {
 					actualPrice = item.getUnitPrice().subtract(
 							storePreferentialPrice.divide(new BigDecimal(item.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
@@ -238,29 +232,6 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		return tradeOrder;
 	}
 	
-
-	private Boolean isPlatformPreferential(TradeOrderContext tradeOrderContext) throws Exception {
-		Boolean isPlatformPreferential = tradeOrderContext.getPlatformPreferential();
-		if (isPlatformPreferential == null) {
-			
-			isPlatformPreferential = false;
-			TradeOrder tradeOrder = getTradeOrder(tradeOrderContext);
-			// 是否平台优惠
-			// 优惠额退款 判断是否有优惠劵
-			if (tradeOrder.getActivityType() == ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES
-					|| tradeOrder.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
-					|| tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER) {
-				ActivityBelongType activityBelong = tradeOrderActivityService.findActivityType(tradeOrder);
-				if (ActivityBelongType.OPERATOR == activityBelong || ActivityBelongType.AGENT == activityBelong) {
-					isPlatformPreferential = true;
-				}
-			}
-			tradeOrderContext.setPlatformPreferential(isPlatformPreferential);
-		}
-		tradeOrderContext.setPlatformPreferential(isPlatformPreferential);
-		return isPlatformPreferential;
-	}
-
 	private List<TradeOrderRefundsItem> getTradeOrderRefundsItem(TradeOrderContext tradeOrderContext) throws Exception{
 		List<TradeOrderRefundsItem> tradeOrderRefundsItemList = tradeOrderContext.getOrderRefundsItemList();
 		if (tradeOrderRefundsItemList == null) {
@@ -365,8 +336,9 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	}
 	
 	//拆分订单项
-	private void splitItemList(List<TradeOrderRefundsItem> itemList) throws Exception{
-		Map<String,List<GoodsStoreSkuAssembleDto>> comboSkuMap = stockAdjustVoBuilder.parseComboSkuForRefund(itemList);
+	private void splitItemList(List<TradeOrderRefundsItem> itemList,String orderId) throws Exception{
+		// 组合商品快照列表
+		List<TradeOrderComboSnapshot> comboSkuList = tradeOrderComboSnapshotMapper.findByOrderId(orderId);
 		Iterator<TradeOrderRefundsItem> itemIt = itemList.iterator();
 		TradeOrderRefundsItem item = null;
 		List<TradeOrderRefundsItem> splitItemList = new ArrayList<TradeOrderRefundsItem>();
@@ -374,52 +346,33 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		
 		while(itemIt.hasNext()){
 			item = itemIt.next();
-			
-			TradeOrderItem tradeOrderItem = tradeOrderItemService.selectByPrimaryKey(item.getOrderItemId() ) ;
 			if(item.getSpuType() == SpuTypeEnum.assembleSpu){
 				// 如果是组合商品，对订单项进行拆分
-				List<GoodsStoreSkuAssembleDto> comboDetailList = comboSkuMap.get(item.getStoreSkuId());
-				for(GoodsStoreSkuAssembleDto comboDto : comboDetailList){
+				List<TradeOrderComboSnapshot> comboDetailList = findComboDetailList(comboSkuList, item.getStoreSkuId());
+				for(TradeOrderComboSnapshot comboDetail : comboDetailList){
 					splitItem = new TradeOrderRefundsItem();
 					splitItem.setId(UuidUtils.getUuid());
 					splitItem.setRefundsId(item.getRefundsId());
 					splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
-					splitItem.setUnitPrice(comboDto.getUnitPrice());
-					splitItem.setQuantity(comboDto.getQuantity()*item.getQuantity());
-					splitItem.setStoreSkuId(comboDto.getStoreSkuId());
-					splitItem.setGoodsSkuId(comboDto.getSkuId());
+					splitItem.setUnitPrice(comboDetail.getUnitPrice());
+					splitItem.setQuantity(comboDetail.getQuantity()*item.getQuantity());
+					splitItem.setStoreSkuId(comboDetail.getStoreSkuId());
+					splitItem.setGoodsSkuId(comboDetail.getSkuId());
 					splitItemList.add(splitItem);
 				}
 				itemIt.remove();
-			} else if(tradeOrderItem.getActivityQuantity() != null && tradeOrderItem.getActivityQuantity() > 0){
-				
-				//需要标准库商品id,tradeOrderItem里面没有
-				GoodsStoreSku goodsStoreSku = goodsStoreSkuServiceApi.selectByPrimaryKey(tradeOrderItem.getStoreSkuId());
-				// 如果是低价且购买了低价商品，对商品进行拆分
-				splitItem = new TradeOrderRefundsItem();
-				splitItem.setId(UuidUtils.getUuid());
-				splitItem.setRefundsId(item.getRefundsId());
-				splitItem.setPreferentialPrice(tradeOrderItem.getPreferentialPrice());
-				splitItem.setUnitPrice(tradeOrderItem.getUnitPrice());
-				splitItem.setQuantity(tradeOrderItem.getActivityQuantity());
-				splitItem.setStoreSkuId(tradeOrderItem.getStoreSkuId());
-				splitItem.setGoodsSkuId(goodsStoreSku == null ? "" : goodsStoreSku.getSkuId());
-				splitItemList.add(splitItem);
-				
-				if(tradeOrderItem.getQuantity() - tradeOrderItem.getActivityQuantity() > 0){
-					splitItem = new TradeOrderRefundsItem();
-					splitItem.setId(UuidUtils.getUuid());
-					splitItem.setRefundsId(item.getRefundsId());
-					splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
-					splitItem.setUnitPrice(tradeOrderItem.getUnitPrice());
-					splitItem.setQuantity(tradeOrderItem.getQuantity() - tradeOrderItem.getActivityQuantity());
-					splitItem.setStoreSkuId(tradeOrderItem.getStoreSkuId());
-					splitItem.setGoodsSkuId(goodsStoreSku == null ? "" : goodsStoreSku.getSkuId());
-					splitItemList.add(splitItem);
-				}
-				itemIt.remove();
-			}
+			} 
 		}
 		itemList.addAll(splitItemList);
+	}
+	
+	private List<TradeOrderComboSnapshot> findComboDetailList(List<TradeOrderComboSnapshot> comboSkuList,String comboSkuId){
+		List<TradeOrderComboSnapshot> comboDetailList = Lists.newArrayList();
+		for(TradeOrderComboSnapshot comboDetail : comboSkuList){
+			if(comboSkuId.equals(comboDetail.getComboSkuId())){
+				comboDetailList.add(comboDetail);
+			}
+		}
+		return comboDetailList;
 	}
 }
