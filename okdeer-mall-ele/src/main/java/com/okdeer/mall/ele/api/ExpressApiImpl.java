@@ -8,6 +8,7 @@ import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.express.api.ExpressApi;
 import com.okdeer.mall.express.dto.*;
 import com.okdeer.mall.order.entity.TradeOrder;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -31,7 +32,18 @@ public class ExpressApiImpl implements ExpressApi {
 
     @Override
     public ResultMsgDto<String> saveExpressOrder(TradeOrder tradeOrder) throws Exception {
-        return expressService.saveExpressOrder(tradeOrder);
+        ResultMsgDto<String> resultMsgDto = new ResultMsgDto<String>();
+        ExpressCallbackParamDto callbackParamDto = new ExpressCallbackParamDto();
+        callbackParamDto.setOrderNo(tradeOrder.getOrderNo());
+        List<ExpressCallback> callbackList = expressService.findByParam(callbackParamDto);
+        if(CollectionUtils.isNotEmpty(callbackList)){
+            resultMsgDto.setCode(201);
+            resultMsgDto.setMsg("数据已推送，请刷新获取最新数据");
+            resultMsgDto.setData("");
+        }else{
+            resultMsgDto = expressService.saveExpressOrder(tradeOrder);
+        }
+        return resultMsgDto;
     }
 
     @Override
