@@ -41,7 +41,7 @@
         UPDATE
         <include refid="Base_Tbale"/>
         <set>
-
+          <include refid="update_sql"/>
         </set>
         WHERE 1=1
         <include refid="base_condition"/>
