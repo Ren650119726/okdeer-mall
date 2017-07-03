@@ -660,6 +660,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				tradeOrderItemDetailDto.setStartTime(tradeOrderItemDetail.getStartTime());// 有效开始时间
 				tradeOrderItemDetailDto.setEndTime(tradeOrderItemDetail.getEndTime());// 有效结束时间
 				tradeOrderItemDetailDto.setUpdateTime(tradeOrderItemDetail.getUpdateTime());
+				tradeOrderItemDetailDto.setUseTime(tradeOrderItemDetail.getUseTime());
 				itemDetailDtoList.add(tradeOrderItemDetailDto);
 				tradeOrderDto.setTradeOrderItemDetailDto(itemDetailDtoList);
 			}
