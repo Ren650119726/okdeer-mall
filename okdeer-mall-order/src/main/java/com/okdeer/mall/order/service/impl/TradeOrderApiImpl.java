@@ -1147,6 +1147,11 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 				dto.setActualAmount(vo.getActualAmount());
 				dto.setPreferentialPrice(vo.getPreferentialPrice());
 				dto.setCreateTime(vo.getCreateTime());
+				dto.setFare(vo.getFare());
+				dto.setRealFarePreferential(vo.getRealFarePreferential());
+				dto.setPlatformPreferential(vo.getPlatformPreferential());
+				dto.setStorePreferential(vo.getStorePreferential());
+				dto.setDeliveryType(vo.getDeliveryType());
 				if(vo.getStatus()!=null){
 					dto.setStatus(vo.getStatus().ordinal());
 				}
