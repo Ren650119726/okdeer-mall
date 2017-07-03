@@ -31,6 +31,7 @@ import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
+import com.esotericsoftware.minlog.Log;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.okdeer.api.pay.enums.ApplicationEnum;
@@ -484,6 +485,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		String payByUsableJson = buildBalanceConfirmPayByUsable(tradeOrder, tradeOrderItemList);
 		// 如果转可用支付对象json不为空
 		if (StringUtils.isNotBlank(payByUsableJson)) {
+			logger.debug("转可用支付对象：{}",payByUsableJson);
 			// 发送MQ消息
 			Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
 					payByUsableJson.getBytes(Charsets.UTF_8));
@@ -497,6 +499,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		String payByFreezeJson = buildBalanceConfirmPayByFreeze(tradeOrder, tradeOrderItemList);
 		// 如果转冻结支付对象json不为空
 		if (StringUtils.isNotBlank(payByFreezeJson)) {
+			logger.debug("转冻结支付对象：{}",payByFreezeJson);
 			// 发送MQ消息
 			Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
 					payByFreezeJson.getBytes(Charsets.UTF_8));
@@ -524,15 +527,12 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 	 */
 	private String buildBalanceConfirmPayByUsable(TradeOrder order, List<TradeOrderItem> tradeOrderItemList)
 			throws Exception {
-		// 交易可用金额。可用金额=不支持售后的订单项总金额-订单项店铺优惠-佣金
-		BigDecimal tradeAmount = BigDecimal.valueOf(0.00);
+		// 交易可用金额。可用金额=实际支付运费+不可退订单项实付金额
+		BigDecimal tradeAmount = order.getFare().subtract(order.getRealFarePreferential());
 		// 直接转可用收取的总佣金
 		BigDecimal totalCommission = BigDecimal.valueOf(0.00);
-		// 支付交易扩展信息
-		PayTradeExt payTradeExt = new PayTradeExt();
 		// 平台优惠(不包括运费优惠)
-		BigDecimal preferentialAmount = order.getPreferentialPrice().subtract(order.getStorePreferential())
-				.subtract(order.getRealFarePreferential());
+		BigDecimal preferentialAmount = BigDecimal.valueOf(0.00);
 		// 循环订单项列表
 		if (!CollectionUtils.isEmpty(tradeOrderItemList)) {
 			// 需要更新为已完成的订单项ID集合
@@ -541,9 +541,11 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 				// 不可申请售后的商品金额和配送费直接转可用
 				if (orderItem.getServiceAssurance() == null || orderItem.getServiceAssurance() == 0) {
 					// 可用金额
-					tradeAmount = tradeAmount.add(orderItem.getTotalAmount()).subtract(orderItem.getStorePreferential()).subtract(orderItem.getCommision());
+					tradeAmount = tradeAmount.add(orderItem.getActualAmount());
 					// 收取的总佣金
 					totalCommission = totalCommission.add(orderItem.getCommision());
+					// 专可用订单项平台补贴
+					preferentialAmount = preferentialAmount.add(orderItem.getPreferentialPrice()).subtract(orderItem.getStorePreferential());
 					ordreItemIds.add(orderItem.getId());
 				}
 			}
@@ -553,18 +555,17 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 				this.tradeOrderItemMapper.updateCompleteById(ordreItemIds);
 			}
 		}
-		// 根据交易订单查询扩展信息
+		// 支付交易扩展信息
+		PayTradeExt payTradeExt = new PayTradeExt();
 		payTradeExt.setCommission(totalCommission);
 		payTradeExt.setCommissionRate(order.getCommisionRatio());
+		// 设置运费支出
+		payTradeExt.setFreight(order.getFare());
+		payTradeExt.setFreightSubsidy(order.getRealFarePreferential());
 		if (order.getDeliveryType() != 2){
-			// 如果是商家自送。运费计入商家可用金额
-			tradeAmount = tradeAmount.add(order.getFare().subtract(order.getRealFarePreferential()));
-		} else {
-			// 设置运费支出
-			payTradeExt.setFreight(order.getFare());
+			// 不是商家自送，需要扣减运费
 			payTradeExt.setIsDeductFreight(true);
 		}
-		payTradeExt.setFreightSubsidy(order.getRealFarePreferential());
 		// 如果订单金额为0，说明该订单全部商品都是可售后的且没有配送费。会转冻结
 		if (BigDecimal.ZERO.compareTo(tradeAmount) == 0) {
 			return null;
@@ -603,16 +604,18 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			throws Exception {
 		// 订单冻结总金额
 		BigDecimal tradeAmount = BigDecimal.ZERO;
+		// 冻结商品项的总佣金
+		BigDecimal totalCommision = BigDecimal.ZERO;
 		// 平台优惠金额（不包括运费）
-		BigDecimal preferentialAmount = order.getPreferentialPrice().subtract(order.getStorePreferential())
-				.subtract(order.getRealFarePreferential());
+		BigDecimal preferentialAmount = BigDecimal.ZERO;
 		// Begin 12205 add by zengj
 		if (!CollectionUtils.isEmpty(tradeOrderItemList)) {
 			for (TradeOrderItem orderItem : tradeOrderItemList) {
 				// 可申请售后的商品金额转冻结
 				if (orderItem.getServiceAssurance() != null && orderItem.getServiceAssurance() > 0) {
-					tradeAmount = tradeAmount
-							.add(orderItem.getTotalAmount()).subtract(orderItem.getStorePreferential());
+					tradeAmount = tradeAmount.add(orderItem.getActualAmount());
+					preferentialAmount = preferentialAmount.add(orderItem.getPreferentialPrice()).subtract(orderItem.getStorePreferential());
+					totalCommision = totalCommision.add(orderItem.getCommision());
 				}
 			}
 		}
@@ -621,6 +624,9 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			return null;
 		}
 		// End 12205 add by zengj
+		PayTradeExt payTradeExt = new PayTradeExt();
+		payTradeExt.setCommission(totalCommision);
+		payTradeExt.setCommissionRate(order.getCommisionRatio());
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 		payTradeVo.setAmount(tradeAmount);
 		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
@@ -638,6 +644,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payTradeVo.setRemark("无");
 		// 接受返回消息的tag
 		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_CONFIRM);
+		payTradeVo.setExt(JsonMapper.nonDefaultMapper().toJson(payTradeExt));
 		return JSONObject.toJSONString(payTradeVo);
 	}
 

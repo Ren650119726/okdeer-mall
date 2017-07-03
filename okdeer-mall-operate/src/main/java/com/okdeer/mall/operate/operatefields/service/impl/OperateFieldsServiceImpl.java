@@ -605,6 +605,9 @@ public class OperateFieldsServiceImpl extends BaseServiceImpl implements Operate
         	// 如果是指向商品详情，查询指向的商品信息
         	if(StringUtils.isNotEmpty(storeId)){
         		contentDto = this.getSingleGoodsOfOperateField(content.getBusinessId(), storeId);
+        		if(contentDto == null){
+        			contentDto = new OperateFieldContentDto(); 
+        		}
         	}
         	// End V2.5 added by maojj 2017-06-29
             contentDto.setPointType(OperateFieldsAppPointType.GOODS_DETAIL.getCode());
