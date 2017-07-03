@@ -725,15 +725,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		PayTradeExt payTradeExt = new PayTradeExt();
 		payTradeExt.setCommission(totalCommission);
 		payTradeExt.setCommissionRate(order.getCommisionRatio());
-		if (order.getDeliveryType() == 2){
-			// 如果是商家自送。运费计入商家可用金额
-			totalAmount = totalAmount.add(order.getFare().subtract(order.getRealFarePreferential()));
-		} else {
-			// 设置运费支出
-			payTradeExt.setFreight(order.getFare());
-			payTradeExt.setIsDeductFreight(true);
-		}
-		payTradeExt.setFreightSubsidy(order.getRealFarePreferential());
 		payTradeExt.setRefundAmount(refundAmount);
 		// 如果没有金额直接返回空
 		if (BigDecimal.ZERO.compareTo(totalAmount) == 0) {
