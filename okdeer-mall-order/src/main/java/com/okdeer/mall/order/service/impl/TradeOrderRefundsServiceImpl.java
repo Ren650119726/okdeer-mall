@@ -38,6 +38,7 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
@@ -81,6 +82,7 @@ import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.points.dto.RefundPointParamDto;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
+import com.okdeer.mall.order.bo.PayTradeExt;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
@@ -102,6 +104,7 @@ import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.enums.SendMsgType;
+import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsCertificateMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
@@ -208,6 +211,9 @@ public class TradeOrderRefundsServiceImpl
 
 	@Resource
 	private TradeOrderItemService tradeOrderItemService;
+	
+	@Resource
+	private TradeOrderItemMapper tradeOrderItemMapper;
 
 	@Resource
 	private TradeOrderPayService tradeOrderPayService;
@@ -1188,9 +1194,28 @@ public class TradeOrderRefundsServiceImpl
 		}*/
 		// 平台优惠金额
 		BigDecimal preferentialPrice = refunds.getTotalPreferentialPrice().subtract(refunds.getStorePreferential());
+		// 查询退款的退款单项
+		List<TradeOrderRefundsItem> refundsItemList = tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(refunds.getId());
+		// 查询退款单项映射的订单项列表
+		List<String> orderItemIds = Lists.newArrayList();
+		for(TradeOrderRefundsItem refundsItem : refundsItemList){
+			orderItemIds.add(refundsItem.getOrderItemId());
+		}
+		// 查询退款单映射的订单项列表
+		List<TradeOrderItem> orderItemList = Lists.newArrayList();
+		if(CollectionUtils.isNotEmpty(orderItemIds)){
+			orderItemList = tradeOrderItemMapper.findOrderItemByIdList(orderItemIds);
+		}
+		BigDecimal totalCommision = BigDecimal.ZERO;
+		for(TradeOrderItem orderItem : orderItemList){
+			totalCommision = totalCommision.add(orderItem.getCommision());
+		}
+		PayTradeExt payTradeExt = new PayTradeExt();
+		payTradeExt.setCommissionRate(order.getCommisionRatio());
+		payTradeExt.setCommission(totalCommision);
 		// End V2.5 modified by maojj 
 
-		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
 		payTradeVo.setAmount(totalAmount);
 		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		payTradeVo.setTradeNum(refunds.getTradeNum());
@@ -1209,6 +1234,10 @@ public class TradeOrderRefundsServiceImpl
 		payTradeVo.setRemark("无");
 		// 接受返回消息的tag
 		payTradeVo.setTag(null);
+		payTradeVo.setExt(JsonMapper.nonDefaultMapper().toJson(payTradeExt));
+		if(logger.isDebugEnabled()){
+			logger.debug("申请撤销退款发送云钱包消息：{}",JsonMapper.nonDefaultMapper().toJson(payTradeVo));
+		}
 		return JSONObject.fromObject(payTradeVo).toString();
 	}
 
