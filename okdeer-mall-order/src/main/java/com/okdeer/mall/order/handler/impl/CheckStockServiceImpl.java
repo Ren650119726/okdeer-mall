@@ -232,6 +232,9 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 					resp.setResult(ResultCodeEnum.STOCK_NOT_ENOUGH);
 				}
 				return true;
+			}else if(storeSkuBo.getTradeMax() != null && storeSkuBo.getTradeMax().intValue() > 0 && storeSkuBo.getQuantity() > storeSkuBo.getTradeMax().intValue()){
+				resp.setResult(ResultCodeEnum.TRADE_LIMIT_OVERFLOW);
+				return true;
 			}
 		}
 		return false;
