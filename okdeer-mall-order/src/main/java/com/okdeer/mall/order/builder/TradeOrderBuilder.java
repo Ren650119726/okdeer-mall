@@ -587,8 +587,8 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setStorePreferential(storeFavourItem);
 			// 设置订单项佣金金额
 			tradeOrderItem.setCommision(commisionItem);
-			// 设置实付金额
-			tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(favourItem));
+			// 设置实付金额 = 订单总金额-订单总优惠
+			tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(tradeOrderItem.getPreferentialPrice()));
 			// 设置实付金额
 			if (paramDto.getPayType() == PayWayEnum.OFFLINE_CONFIRM_AND_PAY.ordinal()) {
 				// 线下支付的实付金额为0
