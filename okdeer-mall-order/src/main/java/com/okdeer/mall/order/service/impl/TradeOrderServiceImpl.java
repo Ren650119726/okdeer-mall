@@ -6244,7 +6244,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                                      OrderCouponsRespDto respDto, Date orderTime) throws ServiceException {
         // 查询是否有符合消费返券的活动（活动代金券） tuzd 修改为梯度返券
         ActivityCollectCouponsOrderVo collCoupons = activityCollectCouponsService.findCollCouponsLinks(map);
-        if (collCoupons != null) {
+        if (collCoupons == null) {
             // 没有符合条件的消费返券活动
             logger.info(ORDER_COUPONS_NOT_ACTIVITY, orderId, userId);
             respDto.setMessage(
