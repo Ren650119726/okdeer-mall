@@ -1194,25 +1194,9 @@ public class TradeOrderRefundsServiceImpl
 		}*/
 		// 平台优惠金额
 		BigDecimal preferentialPrice = refunds.getTotalPreferentialPrice().subtract(refunds.getStorePreferential());
-		// 查询退款的退款单项
-		List<TradeOrderRefundsItem> refundsItemList = tradeOrderRefundsItemMapper.getTradeOrderRefundsItemByRefundsId(refunds.getId());
-		// 查询退款单项映射的订单项列表
-		List<String> orderItemIds = Lists.newArrayList();
-		for(TradeOrderRefundsItem refundsItem : refundsItemList){
-			orderItemIds.add(refundsItem.getOrderItemId());
-		}
-		// 查询退款单映射的订单项列表
-		List<TradeOrderItem> orderItemList = Lists.newArrayList();
-		if(CollectionUtils.isNotEmpty(orderItemIds)){
-			orderItemList = tradeOrderItemMapper.findOrderItemByIdList(orderItemIds);
-		}
-		BigDecimal totalCommision = BigDecimal.ZERO;
-		for(TradeOrderItem orderItem : orderItemList){
-			totalCommision = totalCommision.add(orderItem.getCommision());
-		}
 		PayTradeExt payTradeExt = new PayTradeExt();
 		payTradeExt.setCommissionRate(order.getCommisionRatio());
-		payTradeExt.setCommission(totalCommision);
+		payTradeExt.setCommission(totalAmount.add(preferentialPrice).multiply(order.getCommisionRatio()).setScale(2,BigDecimal.ROUND_HALF_UP));
 		// End V2.5 modified by maojj 
 
 		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();

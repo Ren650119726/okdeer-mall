@@ -529,8 +529,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			throws Exception {
 		// 交易可用金额。可用金额=实际支付运费+不可退订单项实付金额
 		BigDecimal tradeAmount = order.getFare().subtract(order.getRealFarePreferential());
-		// 直接转可用收取的总佣金
-		BigDecimal totalCommission = BigDecimal.valueOf(0.00);
 		// 平台优惠(不包括运费优惠)
 		BigDecimal preferentialAmount = BigDecimal.valueOf(0.00);
 		// 循环订单项列表
@@ -542,9 +540,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 				if (orderItem.getServiceAssurance() == null || orderItem.getServiceAssurance() == 0) {
 					// 可用金额
 					tradeAmount = tradeAmount.add(orderItem.getActualAmount());
-					// 收取的总佣金
-					totalCommission = totalCommission.add(orderItem.getCommision());
-					// 专可用订单项平台补贴
+					// 转可用订单项平台补贴
 					preferentialAmount = preferentialAmount.add(orderItem.getPreferentialPrice()).subtract(orderItem.getStorePreferential());
 					ordreItemIds.add(orderItem.getId());
 				}
@@ -557,15 +553,18 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		}
 		// 支付交易扩展信息
 		PayTradeExt payTradeExt = new PayTradeExt();
-		payTradeExt.setCommission(totalCommission);
 		payTradeExt.setCommissionRate(order.getCommisionRatio());
 		// 设置运费支出
 		payTradeExt.setFreight(order.getFare());
 		payTradeExt.setFreightSubsidy(order.getRealFarePreferential());
+		// 需要抽佣的总金额=总实付金额+总平台优惠金额+(商家自送+配送费）
+		BigDecimal totalAmountInCommision = tradeAmount.add(preferentialAmount);
 		if (order.getDeliveryType() != 2){
 			// 不是商家自送，需要扣减运费
 			payTradeExt.setIsDeductFreight(true);
-		}
+			totalAmountInCommision.subtract(order.getFare());
+		} 
+		payTradeExt.setCommission(totalAmountInCommision.multiply(order.getCommisionRatio()).setScale(2, BigDecimal.ROUND_HALF_UP));
 		// 如果订单金额为0，说明该订单全部商品都是可售后的且没有配送费。会转冻结
 		if (BigDecimal.ZERO.compareTo(tradeAmount) == 0) {
 			return null;
@@ -604,8 +603,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			throws Exception {
 		// 订单冻结总金额
 		BigDecimal tradeAmount = BigDecimal.ZERO;
-		// 冻结商品项的总佣金
-		BigDecimal totalCommision = BigDecimal.ZERO;
 		// 平台优惠金额（不包括运费）
 		BigDecimal preferentialAmount = BigDecimal.ZERO;
 		// Begin 12205 add by zengj
@@ -615,7 +612,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 				if (orderItem.getServiceAssurance() != null && orderItem.getServiceAssurance() > 0) {
 					tradeAmount = tradeAmount.add(orderItem.getActualAmount());
 					preferentialAmount = preferentialAmount.add(orderItem.getPreferentialPrice()).subtract(orderItem.getStorePreferential());
-					totalCommision = totalCommision.add(orderItem.getCommision());
 				}
 			}
 		}
@@ -625,7 +621,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		}
 		// End 12205 add by zengj
 		PayTradeExt payTradeExt = new PayTradeExt();
-		payTradeExt.setCommission(totalCommision);
+		payTradeExt.setCommission(tradeAmount.add(preferentialAmount).multiply(order.getCommisionRatio()).setScale(2,BigDecimal.ROUND_HALF_UP));
 		payTradeExt.setCommissionRate(order.getCommisionRatio());
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 		payTradeVo.setAmount(tradeAmount);
@@ -678,8 +674,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		BigDecimal refundAmount = BigDecimal.ZERO;
 		// 平台优惠金额（不包括运费）
 		BigDecimal preferentialAmount = BigDecimal.ZERO;
-		// 总的佣金收取
-		BigDecimal totalCommission = BigDecimal.ZERO;
 		// 需要更新为已完成的订单项ID集合
 		List<String> orderItemIds = new ArrayList<String>();
 		Map<String, String> tmpOrderItemMap = new HashMap<String, String>();
@@ -691,8 +685,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 					totalAmount = totalAmount.add(orderItem.getActualAmount());
 					// 平台优惠也需要转云钱包
 					preferentialAmount = preferentialAmount.add(orderItem.getPreferentialPrice().subtract(orderItem.getStorePreferential()));
-					// 总的收取佣金
-					totalCommission = totalCommission.add(orderItem.getCommision());
 					tmpOrderItemMap.put(orderItem.getId(), orderItem.getId());
 				}
 			}
@@ -723,7 +715,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		}
 		// 支付交易扩展信息
 		PayTradeExt payTradeExt = new PayTradeExt();
-		payTradeExt.setCommission(totalCommission);
+		payTradeExt.setCommission(totalAmount.add(preferentialAmount).multiply(order.getCommisionRatio()).setScale(2,BigDecimal.ROUND_HALF_UP));
 		payTradeExt.setCommissionRate(order.getCommisionRatio());
 		payTradeExt.setRefundAmount(refundAmount);
 		// 如果没有金额直接返回空
