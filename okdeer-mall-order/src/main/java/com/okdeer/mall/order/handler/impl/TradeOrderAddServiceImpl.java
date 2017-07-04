@@ -332,8 +332,6 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		parsePayType(tradeOrder, req.getPayType());
 		// 解析优惠活动
 		parseFavour(tradeOrder, req);
-		// 解析佣金信息
-		parseCommission(tradeOrder,reqDto);
 		// 解析提货类型
 		parsePickType(tradeOrder, reqDto);
 		// 设置发票
@@ -416,23 +414,6 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		}
 	}
 	
-	// Begin V2.5 added by maojj 2017-06-26
-	private void parseCommission(TradeOrder tradeOrder,TradeOrderReqDto reqDto){
-		StoreInfoExt storeInfoExt = reqDto.getContext().getStoreInfo().getStoreInfoExt();
-		BigDecimal income = tradeOrder.getIncome();
-		// 订单需要收取的佣金为：
-		BigDecimal referenceVal = BigDecimal.valueOf(0.00);
-		BigDecimal commission =  income.multiply(storeInfoExt.getCommisionRatio()).setScale(2,BigDecimal.ROUND_HALF_UP);
-		if(storeInfoExt.getCommisionRatio().compareTo(referenceVal) == 1 && commission.compareTo(referenceVal) == 0){
-			commission = BigDecimal.valueOf(0.01);
-		}
-		reqDto.getContext().setTotalCommission(commission);
-		reqDto.getContext().setTotalAmountInCommission(income);
-		income = income.subtract(commission);
-		tradeOrder.setIncome(income);
-	}
-	// End V2.5 added by maojj 2017-06-26
-
 	/**
 	 * @Description: 解析提货类型
 	 * @param tradeOrder 交易订单
@@ -847,13 +828,6 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		BigDecimal totalFavour = tradeOrder.getPreferentialPrice();
 		BigDecimal favourSum = new BigDecimal("0.00");
 		
-		// 订单总的佣金费用
-		BigDecimal totalcommission = reqDto.getContext().getTotalCommission();
-		int commissionIndex = 0;
-		BigDecimal commissionSum = BigDecimal.valueOf(0.00);
-		BigDecimal haveCommissionAmount = reqDto.getContext().getTotalAmountInCommission();
-		int orderItemSize = req.getList().size();
-		
 		int index = 0;
 		int itemSize = CollectionUtils.isNotEmpty(haveFavourGoodsIds) ? haveFavourGoodsIds.size() :req.getList().size();
 		TradeOrderItem tradeOrderItem = null;
@@ -894,8 +868,6 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			tradeOrderItem.setTotalAmount(totalAmountOfItem);
 			// 计算订单项优惠金额
 			BigDecimal favourItem = BigDecimal.valueOf(0.00);
-			// 订单项佣金收取金额
-			BigDecimal commissionItem = BigDecimal.valueOf(0.0);
 			if (req.getActivityType() != ActivityTypeEnum.NO_ACTIVITY) {
 				if(CollectionUtils.isNotEmpty(haveFavourGoodsIds) && !haveFavourGoodsIds.contains(goodsItem.getSkuId())){
 					favourItem = BigDecimal.valueOf(0.00);
@@ -913,22 +885,12 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 				}
 			}
 			
-			if(totalcommission.compareTo(BigDecimal.valueOf(0.00)) == 1){
-				// 订单收取佣金
-				if(commissionIndex++ < orderItemSize - 1){
-					commissionItem = totalAmountOfItem.multiply(haveCommissionAmount).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
-				}else{
-					commissionItem = totalcommission.subtract(commissionSum);
-				}
-			}
 			// 设置优惠金额
 			tradeOrderItem.setPreferentialPrice(favourItem);
 			// 设置店铺优惠金额
 			tradeOrderItem.setStorePreferential(BigDecimal.valueOf(0.00));
 			// 设置店铺活动Id
 			tradeOrderItem.setStoreActivityId("0");
-			// 设置订单项佣金金额
-			tradeOrderItem.setCommision(commissionItem);
 			// 设置实付金额
 			tradeOrderItem.setActualAmount(totalAmountOfItem.subtract(favourItem));
 			// 设置订单项收入
@@ -1018,7 +980,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			default:
 				break;
 		}
-		tradeOrderItem.setIncome(tradeOrderItem.getIncome().subtract(tradeOrderItem.getCommision()));
+		tradeOrderItem.setIncome(tradeOrderItem.getIncome());
 	}
 
 	/**

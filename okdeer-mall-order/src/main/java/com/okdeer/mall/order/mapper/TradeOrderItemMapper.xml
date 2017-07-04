@@ -36,7 +36,6 @@
     <!-- End V2.0 added by maojj 2017-01-07 -->
     <!-- Begin V2.5 added by maojj 2017-06-23 -->
     <result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
-    <result column="commision" property="commision" jdbcType="DECIMAL" />
     <result column="store_activity_type" property="storeActivityType"
 			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
 	<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
@@ -87,7 +86,6 @@
     <result column="activity_quantity" property="activityQuantity" jdbcType="INTEGER" />
     <result column="unit" property="unit" jdbcType="VARCHAR" />
     <result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
-    <result column="commision" property="commision" jdbcType="DECIMAL" />
     <result column="store_activity_type" property="storeActivityType"
 			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
 	<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
@@ -97,7 +95,7 @@
     id, order_id, store_spu_id, store_sku_id, sku_name,properties_indb, main_pic_prl, bar_code,
     spu_type, unit_price, quantity,weight,service_assurance,total_amount,income, actual_amount, preferential_price, 
     status, appraise,compain_status,create_time,income,recharge_mobile,is_complete,activity_type,activity_price,
-    activity_quantity,commision,store_preferential
+    activity_quantity,store_preferential
   </sql>
   
   <sql id="condition" >
@@ -119,7 +117,7 @@
     T.id, T.order_id, T.store_spu_id, T.store_sku_id, T.sku_name, T.properties_indb, T.main_pic_prl, T.bar_code,
     T.spu_type, T.unit_price, T.quantity, T.weight, T.service_assurance, T.total_amount, T.income, T.actual_amount, T.preferential_price, 
     R.status, T.appraise, T.compain_status, T.create_time, T.income, T.recharge_mobile,T.activity_type,T.activity_price,T.activity_quantity,
-    T.unit,T.store_preferential,T.commision,T.store_activity_type,T.store_activity_id
+    T.unit,T.store_preferential,T.store_activity_type,T.store_activity_id
     FROM trade_order_item T
     LEFT JOIN trade_order_refunds_item R
     on T.id = R.order_item_id 
@@ -232,7 +230,6 @@
 			unit,
 			
 			store_preferential,
-			commision,
 			store_activity_type,
 			store_activity_id
 		)values
@@ -271,7 +268,6 @@
 			#{item.unit,jdbcType=VARCHAR},
 			
 			IFNULL(#{item.storePreferential,jdbcType=DECIMAL},0.00),
-			IFNULL(#{item.commision,jdbcType=DECIMAL},0.00),
 			IFNULL(#{item.storeActivityType,jdbcType=TINYINT},0),
 			IFNULL(#{item.storeActivityId,jdbcType=VARCHAR},'0')
         )
@@ -535,7 +531,7 @@
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, 
     item.status, item.appraise, item.create_time,detail.status AS itemDetailStatus,detail.consume_code,
     detail.start_time,detail.end_time,item.service_assurance,item.income,item.recharge_mobile,item.activity_type,
-    item.activity_price,item.activity_quantity,item.store_preferential,item.commision,item.store_activity_type,item.store_activity_id
+    item.activity_price,item.activity_quantity,item.store_preferential,item.store_activity_type,item.store_activity_id
   </sql>
   
   <!-- wusw:订单项和订单项详细字段 -->
@@ -543,7 +539,7 @@
     item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, item.service_assurance,
     item.status, item.appraise, item.create_time,item.income,item.recharge_mobile,item.is_complete,item.activity_type,item.activity_id,item.activity_price,
-    item.activity_quantity,item.unit,item.store_preferential,item.commision,item.store_activity_type,item.store_activity_id
+    item.activity_quantity,item.unit,item.store_preferential,item.store_activity_type,item.store_activity_id
   </sql>
   
   <!-- wusw:订单项和订单项信息resultMap  -->
