@@ -107,7 +107,7 @@ public class OrderReturnCouponsServiceImpl implements OrderReturnCouponsService 
 			return;
 		}
 		// mall:商城 定时进行消费返券
-		tradeOrderService.getOrderCoupons(tradeOrder.getId(), tradeOrder.getUserId(), "MALL");
+		tradeOrderService.getOrderCoupons(tradeOrder.getId(), tradeOrder.getUserId(), "mall");
 		
 		//发放注册代金券
 		addFirstOrderReturnCoupons(tradeOrder);
