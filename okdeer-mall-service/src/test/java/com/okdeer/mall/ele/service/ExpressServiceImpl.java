@@ -4,11 +4,14 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.express.api.ExpressApi;
+import com.okdeer.mall.express.dto.ExpressCallbackDto;
 import com.okdeer.mall.express.dto.ExpressCarrierDto;
 import com.okdeer.mall.express.dto.ExpressOrderInfoDto;
 import com.okdeer.mall.express.dto.ResultMsgDto;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 public class ExpressServiceImpl extends BaseServiceTest {
 
@@ -30,7 +33,7 @@ public class ExpressServiceImpl extends BaseServiceTest {
     @Test
     public void expressCarrierTest() {
         try {
-            ResultMsgDto<ExpressCarrierDto> resultMsgDto = expressService.findExpressCarrier("XS100010017062600008");
+            ResultMsgDto<ExpressCarrierDto> resultMsgDto = expressService.findExpressCarrier("XS990170017070400022");
             System.out.println(JsonMapper.nonDefaultMapper().toJson(resultMsgDto));
         } catch (Exception e) {
             System.out.println("获取骑手信息异常" + e);
@@ -48,10 +51,20 @@ public class ExpressServiceImpl extends BaseServiceTest {
     }
 
     @Test
-    public void expressCancelTest(){
+    public void expressCancelTest() {
         try {
             ResultMsgDto<String> resultMsgDto = expressService.cancelExpressOrder("XS100010017050400012");
             System.out.println(JsonMapper.nonDefaultMapper().toJson(resultMsgDto));
+        } catch (Exception e) {
+            System.out.println("取消第三方订单信息异常" + e);
+        }
+    }
+
+    @Test
+    public void expressCallbackLogTest() {
+        try {
+            List<ExpressCallbackDto> list = expressApi.findExpressCallbackLogByOrderNo("XS990170017070400011");
+            System.out.println(JsonMapper.nonDefaultMapper().toJson(list));
         } catch (Exception e) {
             System.out.println("取消第三方订单信息异常" + e);
         }

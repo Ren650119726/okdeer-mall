@@ -10,6 +10,7 @@
         <include refid="Base_Tbale"/>
         WHERE 1=1
         <include refid="condition"/>
+        ORDER BY create_time DESC
     </select>
 
     <!-- 保存数据 -->

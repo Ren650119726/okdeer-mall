@@ -186,6 +186,14 @@ public class ExpressServiceImpl implements ExpressService {
         return resultMsgDto;
     }
 
+    @Override
+    public List<ExpressCallbackLog> findExpressCallbackLogByOrderNo(String orderNo) throws Exception {
+        ExpressCallbackLog callbackLog = new ExpressCallbackLog();
+        callbackLog.setPartnerOrderCode(orderNo);
+        List<ExpressCallbackLog> list = expressCallbackLogMapper.selectExpressCallbackLogListByParam(callbackLog);
+        return list;
+    }
+
     /**
      * 请求http数据
      *
