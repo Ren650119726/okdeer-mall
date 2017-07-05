@@ -1,8 +1,11 @@
 package com.okdeer.mall.ele.api;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.google.common.collect.Lists;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.ele.entity.ExpressCallback;
+import com.okdeer.mall.ele.entity.ExpressCallbackLog;
 import com.okdeer.mall.ele.entity.ExpressOrderInfo;
 import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.express.api.ExpressApi;
@@ -36,11 +39,11 @@ public class ExpressApiImpl implements ExpressApi {
         ExpressCallbackParamDto callbackParamDto = new ExpressCallbackParamDto();
         callbackParamDto.setOrderNo(tradeOrder.getOrderNo());
         List<ExpressCallback> callbackList = expressService.findByParam(callbackParamDto);
-        if(CollectionUtils.isNotEmpty(callbackList)){
+        if (CollectionUtils.isNotEmpty(callbackList)) {
             resultMsgDto.setCode(201);
             resultMsgDto.setMsg("数据已推送，请刷新获取最新数据");
             resultMsgDto.setData("");
-        }else{
+        } else {
             resultMsgDto = expressService.saveExpressOrder(tradeOrder);
         }
         return resultMsgDto;
@@ -56,7 +59,7 @@ public class ExpressApiImpl implements ExpressApi {
     @Override
     public List<ExpressCallbackDto> findByParam(ExpressCallbackParamDto paramDto) throws Exception {
         List<ExpressCallback> boList = expressService.findByParam(paramDto);
-        List<ExpressCallbackDto> dtoList = BeanMapper.mapList(boList,ExpressCallbackDto.class);
+        List<ExpressCallbackDto> dtoList = BeanMapper.mapList(boList, ExpressCallbackDto.class);
         return dtoList;
     }
 
@@ -73,5 +76,22 @@ public class ExpressApiImpl implements ExpressApi {
     @Override
     public ResultMsgDto<ExpressCarrierDto> findExpressCarrier(String orderNo) throws Exception {
         return expressService.findExpressCarrier(orderNo);
+    }
+
+    @Override
+    public List<ExpressCallbackDto> findExpressCallbackLogByOrderNo(String orderNo) throws Exception {
+        List<ExpressCallbackDto> callbackDtoList = Lists.newArrayList();
+        List<ExpressCallbackLog> callbackLogs = expressService.findExpressCallbackLogByOrderNo(orderNo);
+        if (CollectionUtils.isNotEmpty(callbackLogs)) {
+            JsonMapper mapper = new JsonMapper();
+            callbackLogs.forEach(e -> {
+                ExpressCallbackDto dto = new ExpressCallbackDto();
+                String json = e.getCallbackJson();
+                dto = mapper.fromJson(json, ExpressCallbackDto.class);
+                callbackDtoList.add(dto);
+            });
+            callbackDtoList.sort((d1, d2) -> d1.getPushTime().compareTo(d2.getPushTime()));
+        }
+        return callbackDtoList;
     }
 }

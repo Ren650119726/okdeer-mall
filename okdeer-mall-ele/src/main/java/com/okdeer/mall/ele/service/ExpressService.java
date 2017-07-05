@@ -1,6 +1,7 @@
 package com.okdeer.mall.ele.service;
 
 import com.okdeer.mall.ele.entity.ExpressCallback;
+import com.okdeer.mall.ele.entity.ExpressCallbackLog;
 import com.okdeer.mall.ele.entity.ExpressOrderInfo;
 import com.okdeer.mall.express.dto.ExpressCallbackParamDto;
 import com.okdeer.mall.express.dto.ExpressCarrierDto;
@@ -74,4 +75,13 @@ public interface ExpressService {
      * @throws Exception
      */
     ResultMsgDto<ExpressCarrierDto> findExpressCarrier(String orderNo) throws Exception;
+
+    /**
+     * 根据订单编号查询第三方配送日志轨迹
+     *
+     * @param orderNo String 商户订单号（orderNo）
+     * @return List<ExpressCallbackLog>
+     * @throws Exception
+     */
+    List<ExpressCallbackLog> findExpressCallbackLogByOrderNo(String orderNo) throws Exception;
 }
