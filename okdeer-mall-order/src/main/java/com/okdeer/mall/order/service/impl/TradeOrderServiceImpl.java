@@ -901,6 +901,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         if (vo.getIds() != null && vo.getIds().length <= 0) {
             vo.setIds(null);
         }
+        //add by zhangkeneng 优化性能,先把用户的组织关联的店铺idlist查出来,避免关联查询
+        List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(vo.getCurrentUserId());
+        vo.setStoreIdList(storeIdList);
         List<PhysicsOrderVo> result = tradeOrderMapper.selectOrderBackStage(vo);
 
         // Begin V2.1.0 added by luosm 20170223
