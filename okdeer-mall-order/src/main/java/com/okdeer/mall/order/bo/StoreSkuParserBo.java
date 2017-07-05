@@ -356,6 +356,9 @@ public class StoreSkuParserBo {
 			skuBo.setQuantity(skuBo.getQuantity() + item.getQuantity());
 			skuBo.setSkuActQuantity(skuBo.getSkuActQuantity() + item.getSkuActQuantity());
 			skuBo.setAppActPrice(item.getSkuActPrice());
+			if(item.getSkuPrice() == null){
+				item.setSkuPrice(skuBo.getOnlinePrice());
+			}
 			item.setSpuCategoryId(skuBo.getSpuCategoryId());
 
 			this.totalItemAmount = totalItemAmount
