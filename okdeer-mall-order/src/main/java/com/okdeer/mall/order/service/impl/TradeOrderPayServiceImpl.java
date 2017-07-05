@@ -638,8 +638,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payTradeVo.setBusinessType(BusinessTypeEnum.CONFIRM_ORDER_NOSERVICE);
 		payTradeVo.setServiceFkId(order.getId());
 		payTradeVo.setServiceNo(order.getOrderNo());
-		payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
-		payTradeVo.setPrefeAmount(order.getRealFarePreferential());
 		// 接受返回消息的tag
 		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_CONFIRM);
 		payTradeVo.setExt(JsonMapper.nonDefaultMapper().toJson(payTradeExt));
