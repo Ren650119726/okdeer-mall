@@ -557,11 +557,11 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payTradeExt.setFreight(order.getFare());
 		payTradeExt.setFreightSubsidy(order.getRealFarePreferential());
 		// 需要抽佣的总金额=总实付金额+总平台优惠金额+(商家自送+配送费）
-		BigDecimal totalAmountInCommision = tradeAmount.add(preferentialAmount);
+		BigDecimal totalAmountInCommision = tradeAmount.add(preferentialAmount).add(order.getRealFarePreferential());
 		if (order.getDeliveryType() != 2){
 			// 不是商家自送，需要扣减运费
 			payTradeExt.setIsDeductFreight(true);
-			totalAmountInCommision = totalAmountInCommision.subtract(order.getFare().subtract(order.getRealFarePreferential()));
+			totalAmountInCommision = totalAmountInCommision.subtract(order.getFare());
 		} 
 		payTradeExt.setCommission(totalAmountInCommision.multiply(order.getCommisionRatio()).setScale(2, BigDecimal.ROUND_HALF_UP));
 		// 如果订单金额为0，说明该订单全部商品都是可售后的且没有配送费。会转冻结
