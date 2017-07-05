@@ -31,7 +31,6 @@ import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
-import com.esotericsoftware.minlog.Log;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.okdeer.api.pay.enums.ApplicationEnum;
@@ -562,7 +561,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		if (order.getDeliveryType() != 2){
 			// 不是商家自送，需要扣减运费
 			payTradeExt.setIsDeductFreight(true);
-			totalAmountInCommision = totalAmountInCommision.subtract(order.getFare());
+			totalAmountInCommision = totalAmountInCommision.subtract(order.getFare().subtract(order.getRealFarePreferential()));
 		} 
 		payTradeExt.setCommission(totalAmountInCommision.multiply(order.getCommisionRatio()).setScale(2, BigDecimal.ROUND_HALF_UP));
 		// 如果订单金额为0，说明该订单全部商品都是可售后的且没有配送费。会转冻结
