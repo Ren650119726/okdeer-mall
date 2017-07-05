@@ -1635,17 +1635,24 @@
 			</if>
 		</if>
 		<!-- add by mengsj begin 增加数据权限控制sql -->
-		<if test="currentUserId != null">
-			AND o.store_id IN (SELECT
-					dd.store_id
-				FROM
-					sys_user aa
-				INNER JOIN sys_user_org bb ON aa.id = bb.user_id
-				INNER JOIN sys_organization cc ON bb.org_id = cc.id
-				INNER JOIN sys_organ_store dd ON cc.id = dd.org_id
-				WHERE
-					aa.id = #{currentUserId,jdbcType=VARCHAR})
-		</if>
+<!-- 		<if test="currentUserId != null"> -->
+<!-- 			AND o.store_id IN (SELECT -->
+<!-- 					dd.store_id -->
+<!-- 				FROM -->
+<!-- 					sys_user aa -->
+<!-- 				INNER JOIN sys_user_org bb ON aa.id = bb.user_id -->
+<!-- 				INNER JOIN sys_organization cc ON bb.org_id = cc.id -->
+<!-- 				INNER JOIN sys_organ_store dd ON cc.id = dd.org_id -->
+<!-- 				WHERE -->
+<!-- 					aa.id = #{currentUserId,jdbcType=VARCHAR}) -->
+<!-- 		</if> -->
+		<if test="storeIdList != null and storeIdList.size() > 0">
+			AND o.store_id in
+			<foreach collection="storeIdList" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>		
 		<!-- add by mengsj end 增加数据权限控制sql -->
 		<!-- add by zhangkn 按地区搜索 -->
 		<if test="cityIdList != null and cityIdList.size() > 0">
@@ -5392,17 +5399,22 @@
 				tr.order_resource,
 				tr.income,
 				tr.activity_id,
-				tr.user_id,
+				tr.user_id
 				<!-- end V2.1 add by zhulq 导出列表新增字段 -->	
 				<!-- begin add by chenzc V2.2.0 -->
-				(CASE WHEN tr.status != 5 THEN ''
+				<if test="isFirstOrder == 1">
+				,(CASE WHEN tr.status != 5 THEN ''
 					ELSE CASE WHEN fto.received_time IS NULL THEN '复购'
 					ELSE '首购' END END) AS is_first_order
+				</if>
 				<!-- end add by chenzc V2.2.0 -->
 		FROM trade_order tr
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
 		LEFT JOIN trade_order_logistics tol ON tr.id = tol.order_id
 		LEFT JOIN trade_order_locate locate ON locate.order_id = tr.id
+		
+		<!-- 是否需要查询首单,耗费性能,加上判断 -->
+		<if test="isFirstOrder == 1">
 		LEFT JOIN 
 			(SELECT user_id, MIN(create_time) AS received_time
 		    FROM trade_order 
@@ -5411,6 +5423,8 @@
 		    AND order_resource NOT IN (2,4)
 		    GROUP BY user_id) fto
 		ON (fto.user_id = tr.user_id AND fto.received_time = tr.create_time)
+		</if>
+		
 		WHERE 1=1
 		<!-- 订单类型 -->
 		<if test="null != type">
@@ -5464,17 +5478,24 @@
 			</foreach>
 		</if>
 		<!-- add by mengsj begin 增加数据权限控制sql -->
-		<if test="currentUserId != null">
-			AND tr.store_id IN (SELECT
-					dd.store_id
-				FROM
-					sys_user aa
-				INNER JOIN sys_user_org bb ON aa.id = bb.user_id
-				INNER JOIN sys_organization cc ON bb.org_id = cc.id
-				INNER JOIN sys_organ_store dd ON cc.id = dd.org_id
-				WHERE
-					aa.id = #{currentUserId,jdbcType=VARCHAR})
-		</if>
+<!-- 		<if test="currentUserId != null"> -->
+<!-- 			AND tr.store_id IN (SELECT -->
+<!-- 					dd.store_id -->
+<!-- 				FROM -->
+<!-- 					sys_user aa -->
+<!-- 				INNER JOIN sys_user_org bb ON aa.id = bb.user_id -->
+<!-- 				INNER JOIN sys_organization cc ON bb.org_id = cc.id -->
+<!-- 				INNER JOIN sys_organ_store dd ON cc.id = dd.org_id -->
+<!-- 				WHERE -->
+<!-- 					aa.id = #{currentUserId,jdbcType=VARCHAR}) -->
+<!-- 		</if> -->
+			<if test="storeIdList != null and storeIdList.size() > 0">
+				AND tr.store_id in
+				<foreach collection="storeIdList" index="index" item="item" open="("
+					separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
 		<!-- add by mengsj end 增加数据权限控制sql -->
 		ORDER BY tr.create_time DESC
 	</select>
