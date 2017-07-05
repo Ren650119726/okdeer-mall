@@ -38,6 +38,7 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.PsmsAgent;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.archive.system.service.IPsmsAgentServiceApi;
+import com.okdeer.archive.system.service.SysOrganiApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
@@ -260,6 +261,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      */
     @Reference(version = "1.0.0", check = false)
     private IStoreInfoExtServiceApi storeInfoExtService;
+    @Reference(version = "1.0.0", check = false)
+    private SysOrganiApi sysOrganiApi;
 
     /**
      * 订单收货信息
@@ -1105,6 +1108,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         if (vo.getIds() != null && vo.getIds().length <= 0) {
             vo.setIds(null);
         }
+        //add by zhangkeneng 优化性能,先把用户的组织关联的店铺idlist查出来,避免关联查询
+        List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(vo.getCurrentUserId());
+        vo.setStoreIdList(storeIdList);
         PageHelper.startPage(pageNumber, pageSize, true, false);
         List<PhysicsOrderVo> result = tradeOrderMapper.selectOrderBackStageNew(vo);
         // 如果有订单信息
@@ -5314,6 +5320,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     @Override
     public PageUtils<PhysicsOrderVo> findServiceStoreOrderForOperateByParams(Map<String, Object> params, int pageNumber,
                                                                              int pageSize) throws ServiceException {
+    	
+    	 //add by zhangkeneng 优化代码提高性能,先查出登陆人组织关联的storeIdList,再in
+        List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(params.get(Constant.CURR_USER_ID).toString());
+        params.put("storeIdList",storeIdList);
+    	
         List<PhysicsOrderVo> result = null;
         PageHelper.startPage(pageNumber, pageSize, true, false);
         result = tradeOrderMapper.selectServiceStoreListForOperate(params);
