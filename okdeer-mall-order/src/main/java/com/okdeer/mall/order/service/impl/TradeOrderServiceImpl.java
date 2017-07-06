@@ -1992,26 +1992,28 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             // End 重构4.1 update by wusw 20160816
         }
         // begin V2.5.0 add by wangf01 20170626
-        //获取快照信息，判断配送方式是什么
-        TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
-        paramDto.setOrderId(tradeOrder.getId());
-        TradeOrderExtSnapshot snapshot = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
-        if (snapshot != null && snapshot.getDeliveryType() == 1) {
-            //首先判断是否存在第三方回调初始化数据，如果没有，则推送订单到第三方，为了兼容商家版老版本
-            ExpressCallbackParamDto callbackParamDto = new ExpressCallbackParamDto();
-            callbackParamDto.setOrderNo(tradeOrder.getOrderNo());
-            List<ExpressCallback> callbackList = expressService.findByParam(callbackParamDto);
-            if(CollectionUtils.isEmpty(callbackList)){
-                //根据订单id查询订单基本信息
-                TradeOrder tradeOrderParam = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
-                //根据订单id查询订单项信息
-                List<TradeOrderItem> orderItemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
-                tradeOrderParam.setTradeOrderItem(orderItemList);
-                tradeOrderParam.setTradeOrderExt(snapshot);
+        if(tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+            //获取快照信息，判断配送方式是什么
+            TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
+            paramDto.setOrderId(tradeOrder.getId());
+            TradeOrderExtSnapshot snapshot = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
+            if (snapshot != null && snapshot.getDeliveryType() == 1) {
+                //首先判断是否存在第三方回调初始化数据，如果没有，则推送订单到第三方，为了兼容商家版老版本
+                ExpressCallbackParamDto callbackParamDto = new ExpressCallbackParamDto();
+                callbackParamDto.setOrderNo(tradeOrder.getOrderNo());
+                List<ExpressCallback> callbackList = expressService.findByParam(callbackParamDto);
+                if (CollectionUtils.isEmpty(callbackList)) {
+                    //根据订单id查询订单基本信息
+                    TradeOrder tradeOrderParam = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
+                    //根据订单id查询订单项信息
+                    List<TradeOrderItem> orderItemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
+                    tradeOrderParam.setTradeOrderItem(orderItemList);
+                    tradeOrderParam.setTradeOrderExt(snapshot);
 
-                ResultMsgDto<String> resultMsg = expressService.saveExpressOrder(tradeOrderParam);
-                if (resultMsg.getCode() != 200) {
-                    throw new ServiceException(resultMsg.getMsg());
+                    ResultMsgDto<String> resultMsg = expressService.saveExpressOrder(tradeOrderParam);
+                    if (resultMsg.getCode() != 200) {
+                        throw new ServiceException(resultMsg.getMsg());
+                    }
                 }
             }
         }
