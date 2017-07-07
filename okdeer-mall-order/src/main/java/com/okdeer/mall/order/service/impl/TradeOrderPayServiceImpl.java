@@ -579,8 +579,8 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			totalAmountInCommision = totalAmountInCommision.subtract(order.getFare());
 		} 
 		payTradeExt.setCommission(totalAmountInCommision.multiply(order.getCommisionRatio()).setScale(2, BigDecimal.ROUND_HALF_UP));
-		// 如果订单金额为0，说明该订单全部商品都是可售后的且没有配送费。会转冻结
-		if (BigDecimal.ZERO.compareTo(tradeAmount) == 0) {
+		// 如果订单金额为0且运费为0，则不用发消息
+		if (BigDecimal.ZERO.compareTo(tradeAmount) == 0 && BigDecimal.ZERO.compareTo(order.getFare()) == 0) {
 			return null;
 		}
 		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
