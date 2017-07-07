@@ -11,7 +11,7 @@ public class PageQueryUtils {
 	
 	public static <T> List<T> pageQueryByIds(List<String> ids, PageCallBack<T> pageCallBack) {
 		List<T> resultList = Lists.newArrayList();
-		pageQueryByIds(ids, pageCallBack,pageSize);
+		resultList.addAll(pageQueryByIds(ids, pageCallBack,pageSize));
 		return resultList;
 	}
 	
