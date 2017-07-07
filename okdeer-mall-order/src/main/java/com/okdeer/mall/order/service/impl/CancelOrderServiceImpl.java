@@ -291,7 +291,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				throw new Exception(ORDER_STATUS_CHANGE);
 			}
 
-			if (tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER) {
+			if (tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER || StringUtils.isNotEmpty(tradeOrder.getFareActivityId())) {
 				if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER
 						|| OrderStatusEnum.DROPSHIPPING != oldOrder.getStatus()
 						|| (OrderCancelType.CANCEL_BY_BUYER != tradeOrder.getCancelType())) {

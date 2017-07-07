@@ -1674,10 +1674,13 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				continue;
 			}
 			if (record.getValidTime().compareTo(DateUtils.getSysDate()) > 0) {
-				activityCouponsRecordMapper.updateUseStatus(orderId);
+				record.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
+				record.setOrderId("");
+				activityCouponsRecordMapper.updateByPrimaryKeySelective(record);
 				activityCouponsMapper.updateReduceUseNum(record.getCouponsId());
 			} else {
-				activityCouponsRecordMapper.updateUseStatusAndExpire(orderId);
+				record.setStatus(ActivityCouponsRecordStatusEnum.EXPIRES);
+				activityCouponsRecordMapper.updateByPrimaryKeySelective(record);
 			}
 		}
 	}
