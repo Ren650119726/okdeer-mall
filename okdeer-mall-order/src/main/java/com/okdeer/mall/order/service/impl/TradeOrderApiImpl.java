@@ -1018,10 +1018,17 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			}
 		} else if (vo.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 			UserAddressVo userAddressVo = memberAddressMap.get(vo.getStoreId());
-			if (userAddressVo != null && StringUtils.isBlank(userAddressVo.getUserId())) {
+			if (userAddressVo != null) {
+				// 所属城市
+				String proviceName = userAddressVo.getProvinceName() == null ? "" : userAddressVo.getProvinceName();
 				String cityName = userAddressVo.getCityName() == null ? "" : userAddressVo.getCityName();
+				String areaName = userAddressVo.getAreaName() == null ? "" : userAddressVo.getAreaName();
+				String ext = userAddressVo.getAreaExt() == null ? "" : userAddressVo.getAreaExt();
+				String address = userAddressVo.getAddress() == null ? "" : userAddressVo.getAddress();
 				// 所属城市
 				dto.setCityName(cityName);
+				// 收货地址
+				dto.setAddress(proviceName + cityName + areaName + ext + address);
 			}
 		}
 	}
