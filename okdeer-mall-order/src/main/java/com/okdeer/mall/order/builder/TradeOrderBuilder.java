@@ -498,7 +498,6 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setUnitPrice(skuBo.getOnlinePrice());
 			tradeOrderItem.setQuantity(skuBo.getQuantity());
 			tradeOrderItem.setActivityPrice(skuBo.getActPrice());
-			tradeOrderItem.setActivityQuantity(tradeOrder.getActivityType() == ActivityTypeEnum.LOW_PRICE ? skuBo.getSkuActQuantity() : 0);
 			tradeOrderItem.setStatus(OrderItemStatusEnum.NO_REFUND);
 			tradeOrderItem.setCompainStatus(CompainStatusEnum.NOT_COMPAIN);
 			tradeOrderItem.setAppraise(AppraiseEnum.NOT_APPROPRIATE);
@@ -508,6 +507,7 @@ public class TradeOrderBuilder {
 			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0){
 				tradeOrderItem.setStoreActivityType(ActivityTypeEnum.enumValueOf(skuBo.getActivityType()));
 				tradeOrderItem.setStoreActivityId(skuBo.getActivityId());
+				tradeOrderItem.setActivityQuantity(skuBo.getSkuActQuantity());
 			}else{
 				tradeOrderItem.setActivityType(paramDto.getActivityType().ordinal());
 				tradeOrderItem.setActivityId(paramDto.getActivityId());
