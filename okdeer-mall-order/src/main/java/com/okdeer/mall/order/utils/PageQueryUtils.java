@@ -22,7 +22,7 @@ public class PageQueryUtils {
 			int page = ids.size() % pageSize == 0 ? ids.size() / pageSize : ids.size() / pageSize + 1;
 			for (int i = 0; i < page; i++) {
 				int fromIndex = i * pageSize;
-				int toIndex = fromIndex + pageSize - 1;
+				int toIndex = fromIndex + pageSize;
 				if (toIndex > ids.size()) {
 					toIndex = ids.size();
 				}
