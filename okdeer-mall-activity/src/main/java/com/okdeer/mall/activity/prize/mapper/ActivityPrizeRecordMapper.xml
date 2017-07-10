@@ -44,9 +44,10 @@
         from activity_prize_record r 
         	 inner join activity_prize_weight w on r.`prize_id` = w.`id`
         	 inner join sys_buyer_user s on s.id = r.user_id
+        	 inner join activity_advert_draw d on d.luck_draw_id = w.luck_draw_id
         where r.disabled=0  
         	  and r.user_id = #{userId,jdbcType=VARCHAR}
-        	  and w.activity_collect_id =#{activityId,jdbcType=VARCHAR}
+        	  and d.activity_advert_id =#{activityId,jdbcType=VARCHAR}
         order by r.create_time DESC
     </select> 
     <!-- 轮播显示最新的中奖记录 -->
@@ -58,8 +59,9 @@
         from activity_prize_record r 
         	 inner join activity_prize_weight w on r.`prize_id` = w.`id`
         	 inner join sys_buyer_user s on s.id = r.user_id
+        	 inner join activity_advert_draw d on d.luck_draw_id = w.luck_draw_id
         where r.disabled=0  
-        	  and w.activity_collect_id =#{activityAdvertId,jdbcType=VARCHAR}
+        	  and d.activity_advert_id =#{activityAdvertId,jdbcType=VARCHAR}
         order by r.create_time DESC 
         limit 0,#{count,jdbcType=INTEGER}
     </select>
