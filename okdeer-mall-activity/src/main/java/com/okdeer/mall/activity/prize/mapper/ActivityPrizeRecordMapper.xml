@@ -38,7 +38,7 @@
     <!-- 根据用户id及活动id查询该活动用户获得的奖品记录 -->
 	<select id="findByUserId" resultMap="prizeRecordList" parameterType="java.lang.String" >
         select 
-        	r.id, r.prize_id,r.prize_name, r.user_id,r.luck_draw_id,r.activity_collect_id,
+        	r.id, r.prize_id,w.prize_name, r.user_id,r.luck_draw_id,r.activity_collect_id,
         	r.create_time,r.is_offer, r.prize_offer_time, r.update_user_id, r.update_time,
         	s.phone,s.login_name
         from activity_prize_record r 
@@ -52,7 +52,7 @@
     <!-- 轮播显示最新的中奖记录 -->
     <select id="findPrizeRecord" resultMap="prizeRecordList" >
         select 
-        	r.id, r.prize_id,r.prize_name, r.user_id,r.luck_draw_id,r.activity_collect_id,
+        	r.id, r.prize_id,w.prize_name, r.user_id,r.luck_draw_id,r.activity_collect_id,
         	r.create_time,r.is_offer, r.prize_offer_time, r.update_user_id, r.update_time,
         	s.phone,s.login_name
         from activity_prize_record r 
