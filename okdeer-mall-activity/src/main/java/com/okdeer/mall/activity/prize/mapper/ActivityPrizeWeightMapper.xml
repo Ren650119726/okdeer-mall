@@ -161,8 +161,14 @@
             <if test="prizeName != null" >
                 prize_name = #{prizeName,jdbcType=VARCHAR},
             </if>
+            <if test="prizeNumber != null" >
+                prize_number = #{prizeNumber,jdbcType=INTEGER},
+            </if>
             <if test="activityCollectId != null" >
                activity_collect_id =  #{activityCollectId,jdbcType=VARCHAR},
+            </if>
+             <if test="orderNo != null" >
+                order_no = #{orderNo,jdbcType=INTEGER},
             </if>
             <if test="weight != null" >
                 weight = #{weight,jdbcType=INTEGER},
