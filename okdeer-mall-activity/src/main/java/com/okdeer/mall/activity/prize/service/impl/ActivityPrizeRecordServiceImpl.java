@@ -64,9 +64,15 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 		return activityPrizeRecordMapper.findByUserId(userId,activityId);
 	}
 
+	/**
+	 * @Description 根据传递查询前count条中奖记录
+	 * @author tuzhd
+	 * @param count
+	 * @return
+	 */
 	@Override
-	public List<ActivityPrizeRecord> findPrizeRecord() {
-		return activityPrizeRecordMapper.findPrizeRecord();
+	public List<ActivityPrizeRecordVo> findPrizeRecord(String activityAdvertId,Integer count) {
+		return activityPrizeRecordMapper.findPrizeRecord(activityAdvertId,count);
 	}
 
 	@Override

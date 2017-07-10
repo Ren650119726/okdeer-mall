@@ -6,6 +6,8 @@
  */    
 package com.okdeer.mall.activity.prize.service;
 
+import java.util.List;
+
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.prize.entity.ActivityDrawRecordVo;
@@ -26,10 +28,17 @@ public interface ActivityDrawRecordService extends IBaseService {
 	/**
 	 * @Description: 根据用户id及活动id查询抽奖次数
 	 * @param userId 用户id
-	 * @param activityId 活动id
+	 * @param luckDrawId 模板后为抽奖活动id
 	 * @date 2017年1月12日
 	 */
-	int findCountByUserIdAndActivityId(String userId,String activityId);
+	int findCountByUserIdAndActivityId(String userId,String luckDrawId);
+	/**
+	 * @Description: 根据用户id及活动id查询抽奖次数
+	 * @param userId 用户id
+	 * @param ids 模板后为抽奖活动id
+	 * @date 2017年1月12日
+	 */
+	int findCountByUserIdAndIds(String userId, List<String> ids);
 	
 	/**
 	 * @Description:插入用户抽奖记录

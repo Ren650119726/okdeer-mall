@@ -29,7 +29,13 @@ public interface ActivityPrizeRecordService extends IBaseService {
 
 	public List<ActivityPrizeRecordVo> findByUserId(String userId,String activityId);
 	
-	List<ActivityPrizeRecord> findPrizeRecord();
+	/**
+	 * @Description 根据传递查询前count条中奖记录
+	 * @author tuzhd
+	 * @param count
+	 * @return
+	 */
+	List<ActivityPrizeRecordVo> findPrizeRecord(String activityAdvertId,Integer count);
 	
 	int findCountByPrizeId(String prizeId);
 	

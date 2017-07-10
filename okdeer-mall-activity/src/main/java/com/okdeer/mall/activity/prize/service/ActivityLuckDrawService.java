@@ -39,6 +39,13 @@ public interface ActivityLuckDrawService extends IBaseService {
 	 * @date 2017年4月11日
 	 */
 	PageUtils<ActivityLuckDraw> findLuckDrawList(ActivityLuckDrawVo activityLuckDrawVo, int pageNumber, int pageSize);
+	
+	/**
+	 * @Description: 获取抽奖模板列表
+	 * @param activityLuckDrawVo
+	 * @return
+	 */
+	List<ActivityLuckDraw> findLuckDrawList(ActivityLuckDrawVo activityLuckDrawVo);
 
 	/**
 	 * @Description: 校验是否有重复名称

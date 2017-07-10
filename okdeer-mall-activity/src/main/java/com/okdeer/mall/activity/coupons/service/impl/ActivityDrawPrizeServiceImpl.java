@@ -3,10 +3,13 @@ package com.okdeer.mall.activity.coupons.service.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -58,6 +61,9 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
 	private ActivityLuckDrawService activityLuckDrawService;
 	@Autowired
 	ActivityPrizeRecordService activityPrizeRecordService;
+	
+	@Autowired
+    private RedisLockRegistry redisLockRegistry;
 	
 	/**
 	 * @Description: 根据用户id进行抽奖
@@ -144,7 +150,24 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
 			map.put("msg", "您已经没有抽奖机会哦，可以邀请好友获得抽奖机吧！");
 			return JSONObject.fromObject(map);
 		}
-		return addProcessPrize(userId, luckDrawId);
+		//校验成功标识 //如果不存在缓存数据进行加入到缓存中 start 涂志定
+        String key = "draw_user" + userId;
+        Lock lock = redisLockRegistry.obtain(key);
+        if (lock.tryLock(10, TimeUnit.SECONDS)) {
+        	try{
+        		//执行抽奖
+        		return addProcessPrize(userId, luckDrawId);
+	        } catch (Exception e) {
+	            throw e;
+	        } finally {
+	            lock.unlock();
+	        }
+        }else{
+        	map.put("code", 102);
+			map.put("msg", "您抽奖速度太快，稍后再试");
+			return JSONObject.fromObject(map);
+        }
+		
  	}
  	/**
  	 * @Description: 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 

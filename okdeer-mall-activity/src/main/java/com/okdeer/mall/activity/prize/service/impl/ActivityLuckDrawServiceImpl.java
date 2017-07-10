@@ -60,6 +60,15 @@ public class ActivityLuckDrawServiceImpl extends BaseServiceImpl implements Acti
 		}
 		return new PageUtils<ActivityLuckDraw>(result);
 	}
+	
+	@Override
+	public List<ActivityLuckDraw> findLuckDrawList(ActivityLuckDrawVo activityLuckDrawVo) {
+		List<ActivityLuckDraw> result = activityLuckDrawMapper.findPrizeRecordList(activityLuckDrawVo);
+		if(result == null){
+			result = new ArrayList<ActivityLuckDraw>();
+		}
+		return result;
+	}
 
 	@Override
 	public int findCountByName(String name) {

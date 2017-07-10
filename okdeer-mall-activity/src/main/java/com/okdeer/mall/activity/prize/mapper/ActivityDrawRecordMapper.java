@@ -6,6 +6,8 @@
  */
 package com.okdeer.mall.activity.prize.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
@@ -28,12 +30,12 @@ public interface ActivityDrawRecordMapper extends IBaseMapper {
 	 * 
 	 * @Description: 通过用户id和活动id查询抽奖次数
 	 * @param userId
-	 * @param activityId
+	 * @param luckDrawId 模板后为抽奖活动id
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年12月8日
 	 */
-	public int findCountByUserIdAndActivityId(@Param("userId")String userId,@Param("activityAdvertId")String activityId);
+	public int findCountByUserIdAndActivityId(@Param("userId")String userId,@Param("ids")List<String> luckDrawId);
 	
 	
 
