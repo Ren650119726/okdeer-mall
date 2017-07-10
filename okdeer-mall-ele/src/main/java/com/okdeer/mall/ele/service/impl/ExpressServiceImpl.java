@@ -7,7 +7,6 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
-import com.okdeer.mall.ele.config.ElemeOpenConfig;
 import com.okdeer.mall.ele.config.RequestConstant;
 import com.okdeer.mall.ele.entity.*;
 import com.okdeer.mall.ele.mapper.ExpressCallbackLogMapper;
@@ -348,7 +347,7 @@ public class ExpressServiceImpl implements ExpressService {
 
         // 请求token
         List<BasicNameValuePair> paramsToken = new ArrayList<>();
-        paramsToken.add(new BasicNameValuePair("app_id", ElemeOpenConfig.appId));
+        paramsToken.add(new BasicNameValuePair("app_id", appId));
         paramsToken.add(new BasicNameValuePair("salt", salt));
         paramsToken.add(new BasicNameValuePair("signature", sig));
         String tokenRes = "";
@@ -371,7 +370,7 @@ public class ExpressServiceImpl implements ExpressService {
      */
     private void setSigStr(ExpressRequestJson requestJson) throws Exception {
         Map<String, Object> sigStr = new LinkedHashMap<>();      // 注意添加的顺序, 应该如下面一样各个key值顺序一致
-        sigStr.put("app_id", ElemeOpenConfig.appId);
+        sigStr.put("app_id", appId);
         sigStr.put("access_token", getToken());        // 需要使用前面请求生成的token
         sigStr.put("data", requestJson.getData());
         int salt = RandomUtils.getInstance().generateValue(1000, 10000);
