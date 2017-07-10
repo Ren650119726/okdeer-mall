@@ -70,7 +70,7 @@ public class TradeOrderSubScriberHandler {
 			al.forEach(e -> {ids.add(e.getId());});
 			int count = activityDrawRecordService.findCountByUserIdAndIds(tradeOrder.getUserId(), ids);
 			//查询剩余的抽奖次数
-			if((count+user.getPrizeCount()) <= 5){
+			if((count+user.getPrizeCount()) < 5){
 				//执行充值人送代金劵及抽奖次数 1
 				sysBuyerExtService.updateAddPrizeCount(tradeOrder.getUserId(), 1);
 			}
