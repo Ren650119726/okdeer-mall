@@ -121,7 +121,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
 			//如果概率为空，跳过该奖项
 			if (iArr[i] != 0) {
 				if (randonNo >= count && randonNo < step) {
-					System.out.println("中奖概率为"+iArr[i]);
+					System.out.println(i+"中奖概率为"+iArr[i]);
 					
 					return i;
 				}
