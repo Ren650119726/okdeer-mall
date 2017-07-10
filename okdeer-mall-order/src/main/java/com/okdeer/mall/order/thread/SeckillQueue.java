@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.order.thread;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -10,13 +11,13 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.esotericsoftware.minlog.Log;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
-import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.common.consts.RedisKeyConstants;
 import com.okdeer.mall.common.vo.OrderQueue;
 import com.okdeer.mall.order.handler.RequestHandlerChain;
@@ -35,7 +36,7 @@ import com.okdeer.mall.order.vo.ServiceOrderResp;
  *		重构1.1			2016年9月23日				maojj			秒杀订单队列
  */
 @Service
-public class SeckillQueue{
+public class SeckillQueue implements DisposableBean {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SeckillQueue.class);
 
@@ -44,20 +45,20 @@ public class SeckillQueue{
 
 	@Value("${seckill_pool_size}")
 	private int seckillPoolSize;
-	
+
 	@Value("${seckill_wait_time}")
 	private int seckillWaitTime;
-	
-//	@Resource
-//	private IRedisTemplateWrapper<String,Integer> redisTemplateWrapper;
-	
+
+	// @Resource
+	// private IRedisTemplateWrapper<String,Integer> redisTemplateWrapper;
+
 	@Resource
 	private StringRedisTemplate stringRedisTemplate;
 
 	private static ExecutorService executor = null;
 
 	private static BlockingQueue<OrderQueue<ServiceOrderReq, ServiceOrderResp>> orderQueues = null;
-	
+
 	@Resource
 	RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> submitSeckillOrderChain;
 
@@ -67,7 +68,7 @@ public class SeckillQueue{
 				boolean isEnqueue = orderQueues.offer(orderQueue);
 				if (isEnqueue) {
 					String skuId = orderQueue.getReq().getData().getSkuId();
-//					redisTemplateWrapper.incr(RedisKeyConstants.SECKILL_QUEUE + skuId);
+					// redisTemplateWrapper.incr(RedisKeyConstants.SECKILL_QUEUE + skuId);
 					stringRedisTemplate.boundValueOps(RedisKeyConstants.SECKILL_QUEUE + skuId).increment(1);
 					orderQueue.wait(seckillWaitTime);
 					if (!orderQueue.getReq().isComplete()) {
@@ -85,10 +86,10 @@ public class SeckillQueue{
 	@PostConstruct
 	public void init() {
 		executor = Executors.newFixedThreadPool(queueMaxSize);
-		orderQueues = new ArrayBlockingQueue<OrderQueue<ServiceOrderReq, ServiceOrderResp>>(
-				seckillPoolSize, true);
+		orderQueues = new ArrayBlockingQueue<OrderQueue<ServiceOrderReq, ServiceOrderResp>>(seckillPoolSize, true);
 		for (int i = 0; i < seckillPoolSize; i++) {
 			executor.execute(new Runnable() {
+
 				@Override
 				public void run() {
 					OrderQueue<ServiceOrderReq, ServiceOrderResp> orderQueue = null;
@@ -102,8 +103,9 @@ public class SeckillQueue{
 						synchronized (orderQueue) {
 							try {
 								String skuId = orderQueue.getReq().getData().getSkuId();
-//								redisTemplateWrapper.decr(RedisKeyConstants.SECKILL_QUEUE + skuId);
-								stringRedisTemplate.boundValueOps(RedisKeyConstants.SECKILL_QUEUE + skuId).increment(-1);
+								// redisTemplateWrapper.decr(RedisKeyConstants.SECKILL_QUEUE + skuId);
+								stringRedisTemplate.boundValueOps(RedisKeyConstants.SECKILL_QUEUE + skuId)
+										.increment(-1);
 								submitSeckillOrderChain.process(orderQueue.getReq(), orderQueue.getResp());
 								orderQueue.notifyAll();
 
@@ -119,6 +121,18 @@ public class SeckillQueue{
 					}
 				}
 			});
+		}
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		if (orderQueues != null) {
+			orderQueues.clear();
+			orderQueues = null;
+		}
+		if (executor != null) {
+			executor.shutdown();
+			executor = null;
 		}
 	}
 }
