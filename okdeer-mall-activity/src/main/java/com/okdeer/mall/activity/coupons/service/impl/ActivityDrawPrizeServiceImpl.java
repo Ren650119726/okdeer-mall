@@ -121,7 +121,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
 			//如果概率为空，跳过该奖项
 			if (iArr[i] != 0) {
 				if (randonNo >= count && randonNo < step) {
-					System.out.println("中奖概率为"+i);
+					System.out.println(i+"中奖概率为"+iArr[i]);
 					
 					return i;
 				}
@@ -187,11 +187,6 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  		if(CollectionUtils.isNotEmpty(list) && activityLuckDraw != null){
  			//权限比重集合
  			double[] weight = new double[list.size()];
- 			//奖项id集合
- 			String[] ids = new String[list.size()];
- 			//代金劵活动id
- 			String[] couponIds =new String[list.size()];
- 			String[] prizeNameArr =new String[list.size()];
  			//概率分母
  			int weightDeno = activityLuckDraw.getWeightDeno();
  			//默认概率序号
@@ -208,9 +203,6 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  				if(prizeWeight.getIsDefaultWeight() == WhetherEnum.whether){
  					defaultNo = i;
  				}
- 				ids[i] = prizeWeight.getId();
- 				couponIds[i] = prizeWeight.getActivityCollectId();
- 				prizeNameArr[i] = prizeWeight.getPrizeName();
  			}
  			//将 无奖品数量的奖项概率和 加到默认奖项 概率中
  			weight[defaultNo] = weight[defaultNo] + sumWeight;
@@ -228,23 +220,22 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  				map.put("msg", "很遗憾,未抽中！");
  				return JSONObject.fromObject(map);
  			}
- 			//代金劵id 如果代金为null则为实物
- 			String couponId = couponIds[prizeNo.intValue()]; 
- 			String id =ids[prizeNo.intValue()];
+ 			//获得中奖的实体
+ 			ActivityPrizeWeight prizeW = list.get(prizeNo.intValue()); 
  			JSONObject json = null;
  			//根据活动奖品扣减数量级返回 记录结果
-			json = activityPrizeWeightService.updatePrizesNumber(id);
+			json = activityPrizeWeightService.updatePrizesNumber(prizeW.getId());
  			//根据序号获取代金劵id 执行送奖 //奖品库存扣减成功后去领取代金券
- 			if(StringUtils.isNotBlank(couponId) && (int)json.get("code")==100){
- 				json = activityCouponsRecordService.addRecordsByCollectId(couponId, userId, ActivityCouponsType.advert_coupons);
+ 			if(StringUtils.isNotBlank(prizeW.getActivityCollectId()) && (int)json.get("code")==100){
+ 				json = activityCouponsRecordService.addRecordsByCollectId(prizeW.getActivityCollectId(), userId, ActivityCouponsType.advert_coupons);
  			}
  			//如果奖品扣减成功 -- 写入中奖记录抽奖记录
  			Object code = json.get("code");
  			if(code != null && (int)code == 100){
- 				activityPrizeRecordService.addPrizeRecord(couponId, userId, luckDrawId,id);
+ 				activityPrizeRecordService.addPrizeRecord(prizeW.getActivityCollectId(), userId, luckDrawId,prizeW.getId());
  			}
- 			json.put("prizeNo", prizeNo); 
- 			json.put("prizeName", prizeNameArr[prizeNo]); 
+ 			json.put("prizeNo", prizeW.getOrderNo()); 
+ 			json.put("prizeName", prizeW.getPrizeName()); 
  			return json;
  		}
  		return null;
