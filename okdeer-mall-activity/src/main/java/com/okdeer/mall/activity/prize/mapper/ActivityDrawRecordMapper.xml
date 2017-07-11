@@ -13,11 +13,21 @@
     <sql id="Base_Column_List" >
         id, user_id, activity_advert_id, model_id, create_time, disabled
     </sql>
-
+	<!-- 根据用户id及抽奖活动id查询用户抽奖次数，模板后activity_advert_id存储抽奖活动id -->
 	<select id="findCountByUserIdAndActivityId" resultType="java.lang.Integer" >
         select  count(1)
         from activity_draw_record
-        where disabled=0 and user_id = #{userId,jdbcType=VARCHAR} and activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+        where disabled=0 
+        	<if test="userId != null" >
+                and user_id = #{userId,jdbcType=VARCHAR} 
+            </if>
+	        <if test="ids != null">
+				AND `activity_advert_id` IN
+				<foreach collection="ids" index="index" item="item" open="("
+					close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
     </select>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >

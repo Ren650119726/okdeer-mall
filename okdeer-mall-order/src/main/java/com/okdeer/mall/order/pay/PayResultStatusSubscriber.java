@@ -43,6 +43,7 @@ import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
+import com.okdeer.mall.order.mq.TradeOrderSubScriberHandler;
 import com.okdeer.mall.order.pay.callback.AbstractPayResultHandler;
 import com.okdeer.mall.order.pay.callback.PayResultHandlerFactory;
 import com.okdeer.mall.order.pay.entity.ResponseResult;
@@ -119,6 +120,9 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	private GoodsStoreSkuServiceApi goodsStoreSkuService;
 	// End 12002 add by zengj
 
+	@Resource
+	private TradeOrderSubScriberHandler tradeOrderSubScriberHandler;
+	
 	// Begin 1.0.Z 增加订单操作记录Service add by zengj
 	/**
 	 * 订单操作记录Service
@@ -215,6 +219,14 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		// begin add by wushp 20161015
 		try {
 			orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+			
+			//下单赠送抽奖活动的抽奖次数
+			tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
+			
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;

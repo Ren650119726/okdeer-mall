@@ -6,7 +6,9 @@
  */    
 package com.okdeer.mall.activity.prize.service.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,9 +49,26 @@ public class ActivityDrawRecordServiceImpl extends BaseServiceImpl implements Ac
 	 * (non-Javadoc)
 	 */
 	@Override
-	public int findCountByUserIdAndActivityId(String userId, String activityId) {
-		return activityDrawRecordMapper.findCountByUserIdAndActivityId(userId, activityId);
+	public int findCountByUserIdAndActivityId(String userId, String luckDrawId) {
+		//获取当前抽奖活动id集合
+		List<String> ids = new ArrayList<String>();
+		ids.add(luckDrawId);
+		return activityDrawRecordMapper.findCountByUserIdAndActivityId(userId, ids);
 	}
+	
+	/**
+	 * 根据用户id及抽奖活动id查询抽奖次数
+	 * (non-Javadoc)
+	 */
+	@Override
+	public int findCountByUserIdAndIds(String userId, List<String> ids) {
+		return activityDrawRecordMapper.findCountByUserIdAndActivityId(userId, ids);
+	}
+	
+	
+	
+	
+	
 	/**
 	 * @Description:插入用户抽奖记录
 	 * @param userId
