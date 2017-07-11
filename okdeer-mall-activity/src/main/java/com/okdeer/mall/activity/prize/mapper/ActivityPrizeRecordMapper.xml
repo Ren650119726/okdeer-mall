@@ -28,6 +28,8 @@
        <result column="prize_name" property="prizeName" jdbcType="VARCHAR" />
        <result column="activity_name" property="activityName" jdbcType="VARCHAR" />
        <result column="activity_collect_name" property="activityCollectName" jdbcType="VARCHAR" />
+       <result column="phone" property="phone" jdbcType="VARCHAR" />
+       <result column="login_name" property="userName" jdbcType="VARCHAR" />
    </resultMap>
     <sql id="Base_Column_List" >
         id, prize_id, user_id,luck_draw_id,activity_collect_id,create_time, is_offer, prize_offer_time, update_user_id, update_time, 
@@ -35,22 +37,33 @@
     </sql>
     <!-- 根据用户id及活动id查询该活动用户获得的奖品记录 -->
 	<select id="findByUserId" resultMap="prizeRecordList" parameterType="java.lang.String" >
-        select 
-        	r.id, r.prize_id,r.prize_name, r.user_id,r.luck_draw_id,r.activity_collect_id,
-        	r.create_time,r.is_offer, r.prize_offer_time, r.update_user_id, r.update_time
+        select DISTINCT
+        	r.id, r.prize_id,w.prize_name, r.user_id,r.luck_draw_id,r.activity_collect_id,
+        	r.create_time,r.is_offer, r.prize_offer_time, r.update_user_id, r.update_time,
+        	s.phone,s.login_name
         from activity_prize_record r 
         	 inner join activity_prize_weight w on r.`prize_id` = w.`id`
+        	 inner join sys_buyer_user s on s.id = r.user_id
+        	 inner join activity_advert_draw d on d.luck_draw_id = w.luck_draw_id
         where r.disabled=0  
         	  and r.user_id = #{userId,jdbcType=VARCHAR}
-        	  and w.activity_collect_id =#{activityId,jdbcType=VARCHAR}
+        	  and d.activity_advert_id =#{activityId,jdbcType=VARCHAR}
         order by r.create_time DESC
     </select> 
     <!-- 轮播显示最新的中奖记录 -->
-    <select id="findPrizeRecord" resultMap="BaseResultMap" >
-        select 
-        <include refid="Base_Column_List" />
-        from activity_prize_record where disabled=0 
-        order by create_time DESC limit 0,10
+    <select id="findPrizeRecord" resultMap="prizeRecordList" >
+        select DISTINCT
+        	r.id, r.prize_id,w.prize_name, r.user_id,r.luck_draw_id,r.activity_collect_id,
+        	r.create_time,r.is_offer, r.prize_offer_time, r.update_user_id, r.update_time,
+        	s.phone,s.login_name
+        from activity_prize_record r 
+        	 inner join activity_prize_weight w on r.`prize_id` = w.`id`
+        	 inner join sys_buyer_user s on s.id = r.user_id
+        	 inner join activity_advert_draw d on d.luck_draw_id = w.luck_draw_id
+        where r.disabled=0  
+        	  and d.activity_advert_id =#{activityAdvertId,jdbcType=VARCHAR}
+        order by r.create_time DESC 
+        limit 0,#{count,jdbcType=INTEGER}
     </select>
     <!-- 通过奖品id查询奖品中奖数量 -->
     <select id="findCountByPrizeId" resultType="java.lang.Integer" parameterType="java.lang.String" >

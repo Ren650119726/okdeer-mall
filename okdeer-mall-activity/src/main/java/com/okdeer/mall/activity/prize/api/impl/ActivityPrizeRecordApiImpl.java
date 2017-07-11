@@ -53,9 +53,14 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 		return activityPrizeRecordService.findByUserId(userId,activityId);
 	}
 
-	@Override
-	public List<ActivityPrizeRecord> findPrizeRecord() {
-		return activityPrizeRecordService.findPrizeRecord();
+	/**
+	 * @Description 根据传递查询前count条中奖记录
+	 * @author tuzhd
+	 * @param count
+	 * @return
+	 */
+	public List<ActivityPrizeRecordVo> findPrizeRecord(String activityAdvertId,Integer count){
+		return activityPrizeRecordService.findPrizeRecord(activityAdvertId,count);
 	}
 	
 	/**

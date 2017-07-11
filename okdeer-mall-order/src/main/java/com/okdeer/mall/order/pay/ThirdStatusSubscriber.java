@@ -31,6 +31,7 @@ import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
+import com.okdeer.mall.order.mq.TradeOrderSubScriberHandler;
 import com.okdeer.mall.order.pay.callback.AbstractPayResultHandler;
 import com.okdeer.mall.order.pay.callback.PayResultHandlerFactory;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
@@ -63,6 +64,9 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 	
 	@Resource
 	private TradeOrderMapper tradeOrderMapper;
+	
+	@Resource
+	private TradeOrderSubScriberHandler tradeOrderSubScriberHandler;
     
 	@Override
 	public String getTopic() {
@@ -105,6 +109,9 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 			if(tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP){
 				//不是扫码购订单才返券
 				orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+				
+				//下单赠送抽奖活动的抽奖次数
+				tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
 			}
 		} catch (Exception e) {
 			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);

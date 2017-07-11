@@ -41,13 +41,13 @@ public interface ActivityPrizeRecordMapper extends IBaseMapper {
 	
 	/**
 	 * 
-	 * @Description: 展示最新的十条中奖记录
+	 * @Description: 展示最新的15条中奖记录
 	 * @param activityId
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年12月8日
 	 */
-	public List<ActivityPrizeRecord> findPrizeRecord();
+	public List<ActivityPrizeRecordVo> findPrizeRecord(@Param("activityAdvertId")String activityAdvertId,@Param("count")Integer count);
 	
 	/**
 	 * 
