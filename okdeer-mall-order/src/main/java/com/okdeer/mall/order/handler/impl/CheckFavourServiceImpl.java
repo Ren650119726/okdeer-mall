@@ -24,6 +24,7 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsStoreMapper;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
@@ -86,7 +87,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	private ActivityCouponsMapper activityCouponsMapper;
 	
 	@Resource
-	private ActivityCouponsStoreMapper activityCouponsStoreMapper;
+	private ActivityCouponsRelationStoreMapper activityCouponsRelationStoreMapper;
 
 	/**
 	 * 导航类目
@@ -158,7 +159,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			return false;
 		}
 		// 检查当前店铺是否可使用该代金券
-		if(coupons.getAreaType() != AreaType.national && activityCouponsStoreMapper.findByStoreIdAndCouponsId(paramDto.getStoreId(), coupons.getId()) == null){
+		if(coupons.getAreaType() != AreaType.national && activityCouponsRelationStoreMapper.findByStoreIdAndCouponsId(paramDto.getStoreId(), coupons.getId()) == null){
 			return false;
 		}
 		if(!coupons.getActivityId().equals(paramDto.getActivityId()) || !coupons.getId().equals(paramDto.getActivityItemId())){
