@@ -578,7 +578,15 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			payTradeExt.setIsDeductFreight(true);
 			totalAmountInCommision = totalAmountInCommision.subtract(order.getFare());
 		} 
-		payTradeExt.setCommission(totalAmountInCommision.multiply(order.getCommisionRatio()).setScale(2, BigDecimal.ROUND_HALF_UP));
+		// 需要收取的佣金
+		BigDecimal totalCommision = totalAmountInCommision.multiply(order.getCommisionRatio()).setScale(2, BigDecimal.ROUND_HALF_UP);
+		if (order.getCommisionRatio().compareTo(BigDecimal.ZERO) == 1
+				&& totalAmountInCommision.compareTo(BigDecimal.ZERO) == 1
+				&& totalCommision.compareTo(BigDecimal.ZERO) == 0) {
+			// 如果佣金比例>0,且需要收佣金额>0，当收佣金额*佣金比例四舍五入之后结果为0，则将需要收取的佣金金额设置为0.01元
+			totalCommision = BigDecimal.valueOf(0.01);
+		}
+		payTradeExt.setCommission(totalCommision);
 		// 如果订单金额为0且运费为0，则不用发消息
 		if (BigDecimal.ZERO.compareTo(tradeAmount) == 0 && BigDecimal.ZERO.compareTo(order.getFare()) == 0) {
 			return null;
@@ -629,7 +637,14 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			// 没有运费收入，佣金收取金额为0
 			totalAmountInCommision = BigDecimal.ZERO;
 		} 
-		payTradeExt.setCommission(totalAmountInCommision.multiply(order.getCommisionRatio()).setScale(2, BigDecimal.ROUND_HALF_UP));
+		BigDecimal totalCommision = totalAmountInCommision.multiply(order.getCommisionRatio()).setScale(2, BigDecimal.ROUND_HALF_UP);
+		if (order.getCommisionRatio().compareTo(BigDecimal.ZERO) == 1
+				&& totalAmountInCommision.compareTo(BigDecimal.ZERO) == 1
+				&& totalCommision.compareTo(BigDecimal.ZERO) == 0) {
+			// 如果佣金比例>0,且需要收佣金额>0，当收佣金额*佣金比例四舍五入之后结果为0，则将需要收取的佣金金额设置为0.01元
+			totalCommision = BigDecimal.valueOf(0.01);
+		}
+		payTradeExt.setCommission(totalCommision);
 		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
 		payTradeVo.setAmount(tradeAmount);
 		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
@@ -676,7 +691,14 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		}
 		// End 12205 add by zengj
 		PayTradeExt payTradeExt = new PayTradeExt();
-		payTradeExt.setCommission(tradeAmount.add(preferentialAmount).multiply(order.getCommisionRatio()).setScale(2,BigDecimal.ROUND_HALF_UP));
+		BigDecimal totalCommision = tradeAmount.add(preferentialAmount).multiply(order.getCommisionRatio()).setScale(2,BigDecimal.ROUND_HALF_UP);
+		if (order.getCommisionRatio().compareTo(BigDecimal.ZERO) == 1
+				&& tradeAmount.add(preferentialAmount).compareTo(BigDecimal.ZERO) == 1
+				&& totalCommision.compareTo(BigDecimal.ZERO) == 0) {
+			// 如果佣金比例>0,且需要收佣金额>0，当收佣金额*佣金比例四舍五入之后结果为0，则将需要收取的佣金金额设置为0.01元
+			totalCommision = BigDecimal.valueOf(0.01);
+		}
+		payTradeExt.setCommission(totalCommision);
 		payTradeExt.setCommissionRate(order.getCommisionRatio());
 		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
 		payTradeVo.setAmount(tradeAmount);

@@ -252,6 +252,8 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		for(String couponsId : couponsIdList){
 			ActivityCouponsBo couponsBo = new ActivityCouponsBo(couponsId, Integer.valueOf(1));
 			MQMessage anMessage = new MQMessage(ActivityCouponsTopic.TOPIC_COUPONS_COUNT, (Serializable) couponsBo);
+			// key:订单id：代金券id
+			anMessage.setKey(String.format("%s:%s", tradeOrder.getId(),couponsId));
 			try {
 				rocketMQProducer.sendMessage(anMessage);
 			} catch (Exception e) {
