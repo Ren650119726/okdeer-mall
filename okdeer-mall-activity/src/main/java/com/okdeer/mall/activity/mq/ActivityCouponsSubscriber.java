@@ -42,7 +42,7 @@ public class ActivityCouponsSubscriber {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ActivityCouponsSubscriber.class);
 	
-	private static final String LOCK_KEY_FORMAT = "%s%s";
+	private static final String LOCK_KEY_FORMAT = "%s:%s";
 
 	@Resource
 	private ActivityCouponsMapper activityCouponsMapper;
