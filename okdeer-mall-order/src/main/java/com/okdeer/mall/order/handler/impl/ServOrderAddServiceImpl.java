@@ -17,10 +17,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.stock.dto.StockUpdateDto;
-import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
-import com.okdeer.archive.stock.vo.AdjustDetailVo;
-import com.okdeer.archive.stock.vo.StockAdjustVo;
 import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.Disabled;
@@ -246,6 +243,8 @@ public class ServOrderAddServiceImpl implements RequestHandler<ServiceOrderReq, 
 		tradeOrder.setTotalAmount(skuPrice);
 		// 设置订单优惠金额
 		tradeOrder.setPreferentialPrice(favourPrice);
+		// 设置订单店铺优惠（秒杀属于店铺优惠）
+		tradeOrder.setStorePreferential(favourPrice);
 		// 设置订单实付金额
 		tradeOrder.setActualAmount(seckillPrice);
 		// 设置店铺总收入
