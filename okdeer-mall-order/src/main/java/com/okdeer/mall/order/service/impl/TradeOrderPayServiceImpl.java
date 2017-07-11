@@ -31,7 +31,6 @@ import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
-import com.esotericsoftware.minlog.Log;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.okdeer.api.pay.enums.ApplicationEnum;
@@ -354,6 +353,21 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 				throw new Exception("取消订单违约金收入发送消息失败");
 			}
 		}
+		
+		// Begin V2.5 added by maojj 2017-07-05
+		if ((tradeOrder.getStatus() == OrderStatusEnum.REFUSED || tradeOrder.getStatus() == OrderStatusEnum.REFUSING)
+				&& tradeOrder.getFare().compareTo(BigDecimal.ZERO) == 1){
+			String farePayJson = buildFarePayWithRefuse(tradeOrder);
+			// 拒收不退运费，运费转入店铺可用
+			Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
+					farePayJson.getBytes(Charsets.UTF_8));
+			SendResult sendResult = rocketMQProducer.send(msg);
+			if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
+				throw new Exception("确认订单付款发送消息失败");
+			}
+		}
+		// End V2.5 added by maojj 2017-07-05
+		
 		// Begin V2.4 added by maojj 2017-05-20
 		if (orderPay.getPayType() != com.okdeer.mall.order.enums.PayTypeEnum.WALLET) {
 			PayRefundDto payRefundDto = buildPayRefundDto(tradeOrder);
@@ -558,15 +572,15 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payTradeExt.setFreight(order.getFare());
 		payTradeExt.setFreightSubsidy(order.getRealFarePreferential());
 		// 需要抽佣的总金额=总实付金额+总平台优惠金额+(商家自送+配送费）
-		BigDecimal totalAmountInCommision = tradeAmount.add(preferentialAmount);
+		BigDecimal totalAmountInCommision = tradeAmount.add(preferentialAmount).add(order.getRealFarePreferential());
 		if (order.getDeliveryType() != 2){
 			// 不是商家自送，需要扣减运费
 			payTradeExt.setIsDeductFreight(true);
 			totalAmountInCommision = totalAmountInCommision.subtract(order.getFare());
 		} 
 		payTradeExt.setCommission(totalAmountInCommision.multiply(order.getCommisionRatio()).setScale(2, BigDecimal.ROUND_HALF_UP));
-		// 如果订单金额为0，说明该订单全部商品都是可售后的且没有配送费。会转冻结
-		if (BigDecimal.ZERO.compareTo(tradeAmount) == 0) {
+		// 如果订单金额为0且运费为0，则不用发消息
+		if (BigDecimal.ZERO.compareTo(tradeAmount) == 0 && BigDecimal.ZERO.compareTo(order.getFare()) == 0) {
 			return null;
 		}
 		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
@@ -583,6 +597,47 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
 			payTradeVo.setPrefeAmount(preferentialAmount);
 		}
+		// 接受返回消息的tag
+		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_CONFIRM);
+		payTradeVo.setExt(JsonMapper.nonDefaultMapper().toJson(payTradeExt));
+		return JSONObject.toJSONString(payTradeVo);
+	}
+	
+	/**
+	 * @Description: 构建拒收运费支出资金流
+	 * @param order
+	 * @param tradeOrderItemList
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年7月5日
+	 */
+	private String buildFarePayWithRefuse(TradeOrder order) throws Exception {
+		// 交易可用金额。可用金额=实际支付运费
+		BigDecimal tradeAmount = order.getFare().subtract(order.getRealFarePreferential());
+		// 支付交易扩展信息
+		PayTradeExt payTradeExt = new PayTradeExt();
+		payTradeExt.setCommissionRate(order.getCommisionRatio());
+		// 设置运费支出
+		payTradeExt.setFreight(order.getFare());
+		payTradeExt.setFreightSubsidy(order.getRealFarePreferential());
+		// 需要抽佣的总金额=运费总金额
+		BigDecimal totalAmountInCommision = order.getFare();
+		if (order.getDeliveryType() != 2){
+			// 不是商家自送，需要扣减运费
+			payTradeExt.setIsDeductFreight(true);
+			// 没有运费收入，佣金收取金额为0
+			totalAmountInCommision = BigDecimal.ZERO;
+		} 
+		payTradeExt.setCommission(totalAmountInCommision.multiply(order.getCommisionRatio()).setScale(2, BigDecimal.ROUND_HALF_UP));
+		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
+		payTradeVo.setAmount(tradeAmount);
+		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
+		payTradeVo.setTradeNum(order.getTradeNum());
+		payTradeVo.setTitle("确认收货(余额支付)，交易号：" + order.getTradeNum());
+		payTradeVo.setBusinessType(BusinessTypeEnum.CONFIRM_ORDER_NOSERVICE);
+		payTradeVo.setServiceFkId(order.getId());
+		payTradeVo.setServiceNo(order.getOrderNo());
 		// 接受返回消息的tag
 		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_CONFIRM);
 		payTradeVo.setExt(JsonMapper.nonDefaultMapper().toJson(payTradeExt));

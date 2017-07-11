@@ -63,7 +63,7 @@
                 #{s.unitPrice,jdbcType=DECIMAL},
                 #{s.weight,jdbcType=DECIMAL},
                 #{s.rechargeMobile,jdbcType=VARCHAR},
-                #{s.storePreferential,jdbcType=DECIMAL}
+                IFNULL(#{s.storePreferential,jdbcType=DECIMAL},0.00)
             </trim>
         </foreach>
     </insert>

@@ -38,6 +38,7 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.PsmsAgent;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.archive.system.service.IPsmsAgentServiceApi;
+import com.okdeer.archive.system.service.SysOrganiApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
@@ -260,6 +261,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      */
     @Reference(version = "1.0.0", check = false)
     private IStoreInfoExtServiceApi storeInfoExtService;
+    @Reference(version = "1.0.0", check = false)
+    private SysOrganiApi sysOrganiApi;
 
     /**
      * 订单收货信息
@@ -898,6 +901,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         if (vo.getIds() != null && vo.getIds().length <= 0) {
             vo.setIds(null);
         }
+        //add by zhangkeneng 优化性能,先把用户的组织关联的店铺idlist查出来,避免关联查询
+        List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(vo.getCurrentUserId());
+        vo.setStoreIdList(storeIdList);
         List<PhysicsOrderVo> result = tradeOrderMapper.selectOrderBackStage(vo);
 
         // Begin V2.1.0 added by luosm 20170223
@@ -1105,6 +1111,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         if (vo.getIds() != null && vo.getIds().length <= 0) {
             vo.setIds(null);
         }
+        //add by zhangkeneng 优化性能,先把用户的组织关联的店铺idlist查出来,避免关联查询
+        List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(vo.getCurrentUserId());
+        vo.setStoreIdList(storeIdList);
         PageHelper.startPage(pageNumber, pageSize, true, false);
         List<PhysicsOrderVo> result = tradeOrderMapper.selectOrderBackStageNew(vo);
         // 如果有订单信息
@@ -1983,26 +1992,28 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             // End 重构4.1 update by wusw 20160816
         }
         // begin V2.5.0 add by wangf01 20170626
-        //获取快照信息，判断配送方式是什么
-        TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
-        paramDto.setOrderId(tradeOrder.getId());
-        TradeOrderExtSnapshot snapshot = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
-        if (snapshot != null && snapshot.getDeliveryType() == 1) {
-            //首先判断是否存在第三方回调初始化数据，如果没有，则推送订单到第三方，为了兼容商家版老版本
-            ExpressCallbackParamDto callbackParamDto = new ExpressCallbackParamDto();
-            callbackParamDto.setOrderNo(tradeOrder.getOrderNo());
-            List<ExpressCallback> callbackList = expressService.findByParam(callbackParamDto);
-            if(CollectionUtils.isEmpty(callbackList)){
-                //根据订单id查询订单基本信息
-                TradeOrder tradeOrderParam = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
-                //根据订单id查询订单项信息
-                List<TradeOrderItem> orderItemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
-                tradeOrderParam.setTradeOrderItem(orderItemList);
-                tradeOrderParam.setTradeOrderExt(snapshot);
+        if(tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+            //获取快照信息，判断配送方式是什么
+            TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
+            paramDto.setOrderId(tradeOrder.getId());
+            TradeOrderExtSnapshot snapshot = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
+            if (snapshot != null && snapshot.getDeliveryType() == 1) {
+                //首先判断是否存在第三方回调初始化数据，如果没有，则推送订单到第三方，为了兼容商家版老版本
+                ExpressCallbackParamDto callbackParamDto = new ExpressCallbackParamDto();
+                callbackParamDto.setOrderNo(tradeOrder.getOrderNo());
+                List<ExpressCallback> callbackList = expressService.findByParam(callbackParamDto);
+                if (CollectionUtils.isEmpty(callbackList)) {
+                    //根据订单id查询订单基本信息
+                    TradeOrder tradeOrderParam = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
+                    //根据订单id查询订单项信息
+                    List<TradeOrderItem> orderItemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
+                    tradeOrderParam.setTradeOrderItem(orderItemList);
+                    tradeOrderParam.setTradeOrderExt(snapshot);
 
-                ResultMsgDto<String> resultMsg = expressService.saveExpressOrder(tradeOrderParam);
-                if (resultMsg.getCode() != 200) {
-                    throw new ServiceException(resultMsg.getMsg());
+                    ResultMsgDto<String> resultMsg = expressService.saveExpressOrder(tradeOrderParam);
+                    if (resultMsg.getCode() != 200) {
+                        throw new ServiceException(resultMsg.getMsg());
+                    }
                 }
             }
         }
@@ -5314,6 +5325,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     @Override
     public PageUtils<PhysicsOrderVo> findServiceStoreOrderForOperateByParams(Map<String, Object> params, int pageNumber,
                                                                              int pageSize) throws ServiceException {
+    	
+    	 //add by zhangkeneng 优化代码提高性能,先查出登陆人组织关联的storeIdList,再in
+        List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(params.get(Constant.CURR_USER_ID).toString());
+        params.put("storeIdList",storeIdList);
+    	
         List<PhysicsOrderVo> result = null;
         PageHelper.startPage(pageNumber, pageSize, true, false);
         result = tradeOrderMapper.selectServiceStoreListForOperate(params);
