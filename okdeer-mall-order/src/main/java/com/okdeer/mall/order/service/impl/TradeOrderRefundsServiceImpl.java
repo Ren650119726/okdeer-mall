@@ -1196,7 +1196,14 @@ public class TradeOrderRefundsServiceImpl
 		BigDecimal preferentialPrice = refunds.getTotalPreferentialPrice().subtract(refunds.getStorePreferential());
 		PayTradeExt payTradeExt = new PayTradeExt();
 		payTradeExt.setCommissionRate(order.getCommisionRatio());
-		payTradeExt.setCommission(totalAmount.add(preferentialPrice).multiply(order.getCommisionRatio()).setScale(2,BigDecimal.ROUND_HALF_UP));
+		BigDecimal totalCommision = totalAmount.add(preferentialPrice).multiply(order.getCommisionRatio()).setScale(2,BigDecimal.ROUND_HALF_UP);
+		if (order.getCommisionRatio().compareTo(BigDecimal.ZERO) == 1
+				&& totalAmount.add(preferentialPrice).compareTo(BigDecimal.ZERO) == 1
+				&& totalCommision.compareTo(BigDecimal.ZERO) == 0) {
+			// 如果佣金比例>0,且需要收佣金额>0，当收佣金额*佣金比例四舍五入之后结果为0，则将需要收取的佣金金额设置为0.01元
+			totalCommision = BigDecimal.valueOf(0.01);
+		}
+		payTradeExt.setCommission(totalCommision);
 		// End V2.5 modified by maojj 
 
 		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();

@@ -1167,10 +1167,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		if (records != null && records.size() == 1) {
 			if (records.get(0).getValidTime().compareTo(DateUtils.getSysDate()) > 0) {
 				activityCouponsRecordMapper.updateUseStatus(orderId);
-				activityCouponsMapper.updateReduceUseNum(records.get(0).getCouponsId());
 			} else {
 				activityCouponsRecordMapper.updateUseStatusAndExpire(orderId);
 			}
+			activityCouponsMapper.updateReduceUseNum(records.get(0).getCouponsId());
 		}
 
 	}
@@ -1675,13 +1675,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			}
 			if (record.getValidTime().compareTo(DateUtils.getSysDate()) > 0) {
 				record.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
-				record.setOrderId("");
 				activityCouponsRecordMapper.updateByPrimaryKeySelective(record);
-				activityCouponsMapper.updateReduceUseNum(record.getCouponsId());
 			} else {
 				record.setStatus(ActivityCouponsRecordStatusEnum.EXPIRES);
 				activityCouponsRecordMapper.updateByPrimaryKeySelective(record);
 			}
+			activityCouponsMapper.updateReduceUseNum(record.getCouponsId());
 		}
 	}
 }
