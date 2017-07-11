@@ -219,7 +219,6 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		// begin add by wushp 20161015
 		try {
 			orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
-<<<<<<< HEAD
 			
 			//下单赠送抽奖活动的抽奖次数
 			tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
@@ -228,8 +227,6 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			TradeOrderContext tradeOrderContext = new TradeOrderContext();
 			tradeOrderContext.setTradeOrder(tradeOrder);
 			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
-=======
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 		} catch (Exception e) {
 			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
