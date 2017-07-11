@@ -41,4 +41,11 @@
 	    INNER JOIN activity_coupons_relation_store couponsStore ON couponsStore.store_id = store.id
 	    WHERE couponsStore.coupons_id = #{couponsId, jdbcType=VARCHAR}
 	</select>
+	
+	<select id="findByStoreIdAndCouponsId" parameterType="map" resultMap="BaseResultMap">
+		SELECT id, coupons_id, store_id
+		FROM activity_coupons_relation_store
+		WHERE store_id = #{storeId,jdbcType=VARCHAR}
+		AND coupons_id = #{couponsId,jdbcType=VARCHAR}
+	</select>
 </mapper>

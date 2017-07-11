@@ -3,8 +3,10 @@ package com.okdeer.mall.activity.coupons.mapper;
 import java.util.List;
 import java.util.Map;
 
-import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRelationStore;
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRelationStore;
 
 /**
  * 代金卷管理店铺
@@ -52,4 +54,13 @@ public interface ActivityCouponsRelationStoreMapper extends IBaseCrudMapper{
 	 */
 	List<Map<String,Object>> selectAddressRelationProvinceByParams(Map<String,Object> map);
 
+	/**
+	 * @Description: 根据店铺id、代金券id查询关联关系
+	 * @param storeId
+	 * @param couponsId
+	 * @return   
+	 * @author maojj
+	 * @date 2017年7月11日
+	 */
+	ActivityCouponsRelationStore findByStoreIdAndCouponsId(@Param("storeId")String storeId,@Param("couponsId")String couponsId);
 }
