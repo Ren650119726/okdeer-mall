@@ -116,6 +116,8 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		parserBo.loadBuySkuList(paramDto.getSkuList());
 		// 缓存商品解析结果
 		paramDto.put("parserBo", parserBo);
+		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockApi.findByStoreSkuIdList(skuIdList);
+		parserBo.loadStockList(stockList);
 		// 查询组合商品库存
 		if(CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())){
 			StoreSkuParamDto skuParamDto = new StoreSkuParamDto();
@@ -123,9 +125,6 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 			List<Integer> comboStockList = storeSkuApi.findCompositeGoodsActualStockByIds(skuParamDto);
 			parserBo.refreshComboStockList(comboStockList);
 		}
-		
-		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockApi.findByStoreSkuIdList(skuIdList);
-		parserBo.loadStockList(stockList);
 		
 		// 检查商品信息是否发生变化
 		ResultCodeEnum checkResult = isChange(paramDto, parserBo);
