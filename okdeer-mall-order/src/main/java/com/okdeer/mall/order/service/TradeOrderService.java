@@ -1097,5 +1097,7 @@ public interface TradeOrderService {
 	 * @date 2017年6月26日
 	 */
     OrderCouponsRespDto getOrderCoupons(String orderId, String userId,String source) throws Exception;
+
+	TradeOrder findByOrderNo(String orderNo);
 	
 }
