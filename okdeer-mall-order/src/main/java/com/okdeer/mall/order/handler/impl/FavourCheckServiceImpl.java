@@ -31,7 +31,6 @@ import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.common.consts.Constant;
-import com.okdeer.mall.common.enums.UseClientType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.order.constant.text.OrderTipMsgConstant;
 import com.okdeer.mall.order.handler.FavourCheckService;

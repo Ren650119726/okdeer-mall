@@ -38,6 +38,7 @@ import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
+import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
@@ -368,6 +369,11 @@ public class TradeOrderBuilder {
 			tradeOrder.setStoreActivityType(ActivityTypeEnum.LOW_PRICE);
 			tradeOrder.setStorePreferential(parserBo.getTotalLowFavour());
 			tradeOrder.setStoreActivityId(parserBo.getLowActivityId());
+		} else if (paramDto.getOrderType() == PlaceOrderTypeEnum.SECKILL_ORDER){
+			// 如果是秒杀订单。优惠是活动价格-商品原价。秒杀属于店铺优惠
+			ActivitySeckill seckillInfo = (ActivitySeckill)paramDto.get("seckillInfo");
+			BigDecimal favourAmount = parserBo.getCurrentStoreSkuBo(seckillInfo.getStoreSkuId()).getOnlinePrice().subtract(seckillInfo.getSeckillPrice());
+			tradeOrder.setStorePreferential(favourAmount);
 		} else {
 			tradeOrder.setStorePreferential(BigDecimal.valueOf(0.0));
 		}
@@ -428,7 +434,7 @@ public class TradeOrderBuilder {
 		StoreInfoExt storeInfoExt = ((StoreInfo)paramDto.get("storeInfo")).getStoreInfoExt();
 		tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(fare));
 		tradeOrder.setActualAmount(tradeOrder.getActualAmount().add(fare.subtract(tradeOrder.getRealFarePreferential())));
-		// TODO 如果店铺选择的是第三方配送，运费不计入收入。如果店铺选择的是商家自送，运费计入补贴
+		// 如果店铺选择的是第三方配送，运费不计入收入。如果店铺选择的是商家自送，运费计入补贴
 		if (Integer.valueOf(2).equals(storeInfoExt.getDeliveryType())) {
 			tradeOrder.setIncome(tradeOrder.getIncome().add(fare));
 		}
