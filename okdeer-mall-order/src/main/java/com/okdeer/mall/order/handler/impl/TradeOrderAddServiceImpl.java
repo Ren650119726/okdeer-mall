@@ -1043,7 +1043,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 			// 发送消息修改代金券使用数量
 			ActivityCouponsBo couponsBo = new ActivityCouponsBo(req.getActivityItemId(), Integer.valueOf(1));
 			MQMessage anMessage = new MQMessage(ActivityCouponsTopic.TOPIC_COUPONS_COUNT, (Serializable) couponsBo);
-			anMessage.setKey(tradeOrder.getId());
+			anMessage.setKey(String.format("%s:%s", tradeOrder.getId(),req.getActivityItemId()));
 			try {
 				rocketMQProducer.sendMessage(anMessage);
 			} catch (Exception e) {
