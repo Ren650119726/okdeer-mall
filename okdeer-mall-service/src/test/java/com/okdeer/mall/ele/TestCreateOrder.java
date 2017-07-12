@@ -1,3 +1,4 @@
+/*
 package com.okdeer.mall.ele;
 
 import com.okdeer.mall.Application;
@@ -20,46 +21,58 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+*/
 /**
  * 获取token 请求创建订单 例子
- */
+ *//*
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
 public class TestCreateOrder {
     private static final Log logger = LogFactory.getLog(TestCreateOrder.class);
     private String token = "3da58b01-d78a-4d0d-a9ea-a1c5eb05db46";
 
-    /**
+    */
+/**
      * 推送一个订单
-     */
+     *//*
+
     @Test
     public void testCreateOrder() throws Exception {
-        /**
+        */
+/**
          * 将参数构造成一个json
-         */
+         *//*
+
         ElemeCreateOrderRequest.ElemeCreateRequestData data = new ElemeCreateOrderRequest.ElemeCreateRequestData();
 
-        /**
+        */
+/**
          * transportInfo
-         */
+         *//*
+
         ElemeCreateOrderRequest.TransportInfo transportInfo = new ElemeCreateOrderRequest.TransportInfo();
         transportInfo.setTransport_name("饿了么BOD");
         transportInfo.setTransport_address("300弄亚都国际名园5号楼2003室");
         transportInfo.setTransport_tel("13900000000");
 
-        /**
+        */
+/**
          * 31.2461955,121.3847637;31.2441408,121.3766956;31.2306375,121.3718891;
          * 31.2243255,121.3770389;31.2226374,121.3869094;31.2261605,121.391201;
          * 31.2403249,121.3933467;31.2461955,121.3847637
-         */
+         *//*
+
         transportInfo.setTransport_longitude(new BigDecimal(121.5156496362));
         transportInfo.setTransport_latitude(new BigDecimal(31.2331643501));
         transportInfo.setTransport_remark("备注");
         transportInfo.setPosition_source(3);
 
-        /**
+        */
+/**
          * receiverInfo
-         */
+         *//*
+
         ElemeCreateOrderRequest.ReceiverInfo receiverInfo = new ElemeCreateOrderRequest.ReceiverInfo();
         receiverInfo.setReceiver_address("上海近铁广场");
         receiverInfo.setReceiver_name("jiabuchong");
@@ -69,9 +82,11 @@ public class TestCreateOrder {
         receiverInfo.setReceiver_latitude(new BigDecimal(31.2331643501));
         receiverInfo.setPosition_source(1);
 
-        /**
+        */
+/**
          * itemsJson
-         */
+         *//*
+
         // items array
         ElemeCreateOrderRequest.ItemsJson[] itemsJsons = new ElemeCreateOrderRequest.ItemsJson[2];
         ElemeCreateOrderRequest.ItemsJson item = new ElemeCreateOrderRequest.ItemsJson();
@@ -103,10 +118,12 @@ public class TestCreateOrder {
         data.setPartner_order_code(str);
         data.setNotify_url("http://192.168.104.133:5000");
 
-        /**
+        */
+/**
          * 1: 蜂鸟配送, 未向饿了么物流平台查询过站点的订单，支持两小时送达
          * 2: 定点次日达, 提前向饿了么物流平台查询过配送站点的订单，支持次日送达
-         */
+         *//*
+
         data.setOrder_type(1);    // 订单类型
         data.setOrder_total_amount(new BigDecimal(50.00));
         data.setOrder_actual_amount(new BigDecimal(48.00));
@@ -132,9 +149,11 @@ public class TestCreateOrder {
         request.setApp_id(ElemeOpenConfig.appId);
         request.setSalt(salt);
 
-        /**
+        */
+/**
          * 生成签名
-         */
+         *//*
+
         Map<String, Object> sigStr = new LinkedHashMap<>();      // 注意添加的顺序, 应该如下面一样各个key值顺序一致
         sigStr.put("app_id", ElemeOpenConfig.appId);
         sigStr.put("access_token", token);        // 需要使用前面请求生成的token
@@ -147,7 +166,8 @@ public class TestCreateOrder {
         String requestJson = JsonUtils.getInstance().objectToJson(request);
         logger.info(String.format("request json is %s", requestJson));
 
-       /* String url = ElemeOpenConfig.API_URL + RequestConstant.orderCreate;
+       */
+/* String url = ElemeOpenConfig.API_URL + RequestConstant.orderCreate;
         try {
             String flag = HttpClient.postBody(url, requestJson);
             ResultMsg rm = new ResultMsg();
@@ -156,7 +176,9 @@ public class TestCreateOrder {
         } catch (Exception e) {
             logger.error("creating order request occurs an exception!");
             throw new HttpClientRuntimeException("推送订单出现异常", e);
-        }*/
+        }*//*
+
     }
 
 }
+*/
