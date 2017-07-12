@@ -2,15 +2,24 @@ package com.okdeer.mall.order.api;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.google.common.collect.Maps;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.express.dto.ExpressCallbackDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderCarrier;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.service.ExpressOrderCallbackApi;
 import com.okdeer.mall.order.service.ExpressOrderCallbackService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
 /**
  * ClassName: ExpressOrderCallbackApiImpl
@@ -38,6 +47,9 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
     @Autowired
     private TradeOrderService tradeOrderService;
 
+    @Autowired
+    private RocketMQProducer rocketMQProducer;
+
     @Reference(version = "1.0.0", check = false)
     private StoreInfoServiceApi storeInfoServiceApi;
 
@@ -45,6 +57,22 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
     public void saveExpressCallback(ExpressCallbackDto data) throws Exception {
         expressOrderCallbackService.saveExpressCallback(data);
         switch (data.getOrderStatus()) {
+            case 20:
+                TradeOrderCarrier carrier = new TradeOrderCarrier();
+                carrier.setOrderNo(data.getPartnerOrderCode());
+                carrier.setCarrierDriverName(data.getCarrierDriverName());
+                carrier.setCarrierDriverPhone(data.getCarrierDriverPhone());
+                Map<String, Object> map = Maps.newHashMap();
+                map.put("orderNo", data.getPartnerOrderCode());
+                List<TradeOrder> tradeOrderList = tradeOrderService.selectByParams(map);
+                if (CollectionUtils.isNotEmpty(tradeOrderList)) {
+                    carrier.setOrderId(tradeOrderList.get(0).getId());
+                }
+                MQMessage message = new MQMessage("order_carrier_msg", (Serializable) carrier);
+                //加一个key 订单id+状态,没有实际意义,方便查询定位错误
+                message.setKey(carrier.getOrderNo());
+                rocketMQProducer.sendMessage(message);
+                break;
             case 80:
             case 2:
             case 3:
