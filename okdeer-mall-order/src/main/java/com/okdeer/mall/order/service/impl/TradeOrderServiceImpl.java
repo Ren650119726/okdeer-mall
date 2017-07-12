@@ -4966,6 +4966,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         return result;
     }
 
+    /**
+     * 零售pos发货操作
+     * @param tradeOrder
+     * @throws Exception
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateOrderDelivery(TradeOrder tradeOrder) throws Exception {
@@ -4976,10 +4981,20 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             paramDto.setOrderId(tradeOrder.getId());
             TradeOrderExtSnapshot snapshot = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
             if (snapshot != null && snapshot.getDeliveryType() == 1) {
-                throw new ServiceException("配送方式为第三方配送");
+                TradeOrder tradeOrderParam = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
+                List<TradeOrderItem> itemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
+                tradeOrderParam.setTradeOrderItem(itemList);
+                tradeOrderParam.setTradeOrderExt(snapshot);
+                ResultMsgDto<String> resultMsgDto = expressService.saveExpressOrder(tradeOrderParam);
+                if (resultMsgDto.getCode() != 200) {
+                    throw new ServiceException(resultMsgDto.getMsg());
+                }
             }
+        }else{
+            throw new ServiceException("订单状态已更新，请刷新后重试");
+        }
             // end add by wangf01 20170626
-            this.updateOrderStatus(tradeOrder);
+           /* this.updateOrderStatus(tradeOrder);
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("orderId", tradeOrder.getId());
             List<TradeOrderItem> tradeOrderItem = this.findTradeOrderItems(map);
@@ -5022,7 +5037,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 logger.error("pos 发货发生异常", e);
                 throw new ServiceException("发货失败", e);
             }
-        }
+        }*/
     }
 
 
