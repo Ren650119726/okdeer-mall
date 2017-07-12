@@ -156,6 +156,7 @@ public class FindUserAddrServiceImpl implements RequestHandler<PlaceOrderParamDt
 		condition.put("activitySeckillId", seckillInfo.getId());
 		condition.put("seckillRangeType", seckillInfo.getSeckillRangeType().ordinal());
 		condition.put("storeAreaType", storeInfo.getAreaType());
+		condition.put("clientType", paramDto.getChannel().ordinal());
 		List<UserAddressVo> userAddrList = memberConsigneeAddressService.findUserAddr(condition);
 		if(!CollectionUtils.isEmpty(userAddrList)){
 			for(UserAddressVo addr : userAddrList){
