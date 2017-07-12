@@ -582,7 +582,7 @@
     <include refid="Base_Column_List" />
      FROM member_consignee_address WHERE 1=1 AND user_id=#{userId,jdbcType=VARCHAR}
      AND disabled=0 
-     <if test="clientType != 0">
+     <if test="clientType == 1 or clientType == 3">
      	AND source = 1
      </if>
      ORDER BY update_time DESC
@@ -625,7 +625,7 @@
 		  where m.user_id = #{userId,jdbcType=VARCHAR}
 			and s.id = #{storeId,jdbcType=VARCHAR}
 			and m.disabled =0
-			<if test="clientType != 0">
+			<if test="clientType == 1 or clientType == 3">
 	     		AND m.source = 1
 	     	</if>
 		ORDER BY distance ASC
@@ -797,7 +797,7 @@
     WHERE
         addr.user_id = #{userId, jdbcType=VARCHAR}
         and addr.disabled = 0 
-        <if test="clientType != 0">
+        <if test="clientType == 1 or clientType == 3">
 	    	AND addr.source = 1
 	    </if>
   </sql>
@@ -861,6 +861,9 @@
 		AND t1.activity_seckill_id = #{activitySeckillId}
 		WHERE t.user_id = #{userId}
 		AND t.disabled=0
+		<if test="clientType == 1 or clientType == 3">
+	    	AND t.source = 1
+	    </if>
 		ORDER BY t.update_time DESC
   </select>
   
@@ -896,6 +899,9 @@
 		FROM member_consignee_address t
 		WHERE t.user_id = #{userId}
 		AND t.disabled=0
+		<if test="clientType == 1 or clientType == 3">
+	    	AND t.source = 1
+	    </if>
 		ORDER BY t.update_time DESC
   </select>
   <!-- End added by maojj 2016-09-24 1.1 -->
