@@ -168,6 +168,11 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 			activityType = 2;
 		}
 		vo.setActivityType(activityType);
+		// Begin V2.5 added by maojj 2017-07-12
+		vo.setDeliveryType(order.getDeliveryType());
+		vo.setFarePreferential(order.getRealFarePreferential());
+		vo.setCommisionRatio(order.getCommisionRatio());
+		// End V2.5 added by maojj 2017-07-12
 		
 		if(tradeOrderLogistics != null){
 			//收货人姓名要从物流表取
