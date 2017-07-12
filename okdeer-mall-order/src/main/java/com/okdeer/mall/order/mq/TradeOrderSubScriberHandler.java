@@ -2,11 +2,13 @@ package com.okdeer.mall.order.mq;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
@@ -46,6 +48,10 @@ public class TradeOrderSubScriberHandler {
 	@Autowired
 	ActivityCouponsRecordService activityCouponsRecordService;
 	
+	
+	@Autowired
+	private  RedisTemplate<String,Boolean> redisTemplate;
+	
 	/**
 	 * @Description: 下单赠送抽奖活动的抽奖次数
 	 * @param tradeOrder   
@@ -54,6 +60,15 @@ public class TradeOrderSubScriberHandler {
 	 * @date 2017年1月11日
 	 */
 	public void activityAddPrizeCcount(TradeOrder tradeOrder)throws Exception{
+		//如果不存在缓存数据  返回true 存在false
+		String key = "addPrizeCount_"+tradeOrder.getId();
+		boolean flag = redisTemplate.boundValueOps(key).setIfAbsent(true);
+		if(flag){
+			redisTemplate.expire(key,60, TimeUnit.SECONDS);
+		}else{
+			return;
+		}
+		
 		
 		SysBuyerExt user = sysBuyerExtService.findByUserId(tradeOrder.getUserId());
 		if(user != null ){
