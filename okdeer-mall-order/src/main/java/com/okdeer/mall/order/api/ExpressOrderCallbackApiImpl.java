@@ -68,7 +68,7 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
                 if (CollectionUtils.isNotEmpty(tradeOrderList)) {
                     carrier.setOrderId(tradeOrderList.get(0).getId());
                 }
-                MQMessage message = new MQMessage("order_carrier_msg", (Serializable) carrier);
+                MQMessage message = new MQMessage("topic_order_carrier_msg", (Serializable) carrier);
                 //加一个key 订单id+状态,没有实际意义,方便查询定位错误
                 message.setKey(carrier.getOrderNo());
                 rocketMQProducer.sendMessage(message);
