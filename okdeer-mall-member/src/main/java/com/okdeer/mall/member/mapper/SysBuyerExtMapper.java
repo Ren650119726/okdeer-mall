@@ -57,7 +57,7 @@ public interface SysBuyerExtMapper {
 	 * @author tuzhd
 	 * @date 2016年11月22日
 	 */
-	void updateCutPrizeCount(String userId);
+	int updateCutPrizeCount(String userId);
 	
 	/**
 	 * @Description: 给用户添加抽奖次数 count
