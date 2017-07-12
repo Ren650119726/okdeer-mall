@@ -21,7 +21,7 @@
 		<ca.version>1.1.0-SNAPSHOT</ca.version>
 		<mall.version>0.0.9-SNAPSHOT</mall.version>
 		<yscapi.version>0.0.4-SNAPSHOT</yscapi.version>
-		<jxc.version>0.0.2-SNAPSHOT</jxc.version>
+		<jxc.version>0.0.3-SNAPSHOT</jxc.version>
 	</properties>
 
 	<!-- setting local storage -->
