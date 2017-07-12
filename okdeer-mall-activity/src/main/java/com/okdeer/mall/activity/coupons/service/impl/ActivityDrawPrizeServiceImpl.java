@@ -148,7 +148,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
         if (lock.tryLock(10, TimeUnit.SECONDS)) {
         	SysBuyerExt user = sysBuyerExtService.findByUserId(userId);
     		//用户抽奖次数存在让其抽奖否则
-    		if(user != null && user.getPrizeCount() == 0){
+    		if(user == null || user.getPrizeCount() == null || user.getPrizeCount() == 0){
     			// 剩余数量小于0 显示已领完
     			map.put("code", 108);
     			map.put("msg", "您已经没有抽奖机会哦，可以邀请好友获得抽奖机吧！");
