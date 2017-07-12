@@ -210,7 +210,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  			Integer  prizeNo = isHadPrize(weight,weightDeno);
  			//根据用户id 抽奖之后将其抽奖机会-1,根据产品要求即使代金劵另外也扣抽奖机会
  			if(sysBuyerExtService.updateCutPrizeCount(userId) == 0 ){
- 				// 剩余数量小于0 显示已领完
+ 				//更新抽奖结果 0 说明其没有抽奖次数
     			map.put("code", 108);
     			map.put("msg", "您已经没有抽奖机会哦，可以邀请好友获得抽奖机吧！");
     			return JSONObject.fromObject(map);
