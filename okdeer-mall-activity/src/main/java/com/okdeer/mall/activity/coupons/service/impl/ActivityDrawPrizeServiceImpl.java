@@ -141,19 +141,19 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  	 */
  	@Transactional(rollbackFor = Exception.class)
  	public JSONObject processPrizeByUser(String userId,String luckDrawId)throws Exception{
- 		SysBuyerExt user = sysBuyerExtService.findByUserId(userId);
-		Map<String,Object> map =  new HashMap<String,Object>();
-		//用户抽奖次数存在让其抽奖否则
-		if(user != null && user.getPrizeCount() == 0){
-			// 剩余数量小于0 显示已领完
-			map.put("code", 108);
-			map.put("msg", "您已经没有抽奖机会哦，可以邀请好友获得抽奖机吧！");
-			return JSONObject.fromObject(map);
-		}
+ 		Map<String,Object> map =  new HashMap<String,Object>();
 		//校验成功标识 //如果不存在缓存数据进行加入到缓存中 start 涂志定
         String key = "draw_user" + userId;
         Lock lock = redisLockRegistry.obtain(key);
         if (lock.tryLock(10, TimeUnit.SECONDS)) {
+        	SysBuyerExt user = sysBuyerExtService.findByUserId(userId);
+    		//用户抽奖次数存在让其抽奖否则
+    		if(user == null || user.getPrizeCount() == null || user.getPrizeCount() == 0){
+    			// 剩余数量小于0 显示已领完
+    			map.put("code", 108);
+    			map.put("msg", "您已经没有抽奖机会哦，可以邀请好友获得抽奖机吧！");
+    			return JSONObject.fromObject(map);
+    		}
         	try{
         		//执行抽奖
         		return addProcessPrize(userId, luckDrawId);
@@ -209,7 +209,12 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
  			//根据中奖概率执行中奖 
  			Integer  prizeNo = isHadPrize(weight,weightDeno);
  			//根据用户id 抽奖之后将其抽奖机会-1,根据产品要求即使代金劵另外也扣抽奖机会
- 			sysBuyerExtService.updateCutPrizeCount(userId);
+ 			if(sysBuyerExtService.updateCutPrizeCount(userId) == 0 ){
+ 				//更新抽奖结果 0 说明其没有抽奖次数
+    			map.put("code", 108);
+    			map.put("msg", "您已经没有抽奖机会哦，可以邀请好友获得抽奖机吧！");
+    			return JSONObject.fromObject(map);
+ 			}
  			//写入抽奖记录
  			activityDrawRecordService.addDrawRecord(userId, luckDrawId);
  			

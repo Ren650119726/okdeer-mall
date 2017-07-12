@@ -71,8 +71,8 @@ public class SysBuyerExtServiceImpl implements SysBuyerExtServiceApi,SysBuyerExt
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateCutPrizeCount(String userId){
-		sysBuyerExtMapper.updateCutPrizeCount(userId);
+	public int updateCutPrizeCount(String userId){
+		return sysBuyerExtMapper.updateCutPrizeCount(userId);
 	}
 	
 	/**
