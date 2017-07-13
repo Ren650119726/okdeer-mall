@@ -214,6 +214,7 @@
 		    prize.prize_name,
 		    us.nick_name,
 		    us.login_name,
+		    us.phone,
 		    draw.`name` luck_draw_name,
 		    activity.`name` activity_name
 		FROM activity_prize_record record
@@ -246,6 +247,12 @@
 	        </if>
 	        <if test="createTimeEnd != null" >
 	           AND record.create_time &lt;= #{createTimeEnd,jdbcType=TIMESTAMP}
+	        </if>
+	        <if test="ids != null and ids !=''">
+	        	record.id in
+	           	<foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+			        #{item}
+			    </foreach>
 	        </if>
         </where>
         order by record.create_time DESC 
