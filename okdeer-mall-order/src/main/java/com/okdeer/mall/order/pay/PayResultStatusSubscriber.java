@@ -365,13 +365,6 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 				logger.error("退款支付状态消息处理失败,退款单编号为：" + tradeOrderRefunds.getRefundNo() + "，问题原因" + result.getMsg());
 
 			}
-			
-			TradeOrder tradeOrder = tradeOrderService.getByTradeNum(result.getTradeNum());
-			//add by  zhangkeneng  和左文明对接丢消息
-			TradeOrderContext tradeOrderContext = new TradeOrderContext();
-			tradeOrderContext.setTradeOrder(tradeOrder);
-			tradeOrderContext.setTradeOrderRefunds(tradeOrderRefunds);
-			tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error("退款支付状态消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
