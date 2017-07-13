@@ -198,24 +198,6 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		String operator = null;
 		if (isBuyerOperate) {
 			operator = tradeOrder.getUserId();
-			
-			//用户自助取消订单，发送订单取消短信
-			TradeOrderPay orderPay = this.tradeOrderPayService.selectByOrderId(tradeOrder.getId());
-			if (orderPay != null) {
-			    String content = null;
-			    if(orderPay.getPayType() == PayTypeEnum.ALIPAY || orderPay.getPayType() == PayTypeEnum.WXPAY) {
-			        //第三方支付
-			        content = thirdPayCancelOrder;
-			    } else if(orderPay.getPayType() == PayTypeEnum.WALLET) {
-			        //余额支付
-			        content = balancePayCancelOrder;
-			    }
-			    content = joinMsgConten(content, new String[] {tradeOrder.getOrderNo(), tradeOrder.getReason(),
-			            tradeOrder.getActualAmount().toString()});
-			    
-			    SmsVO smsVo = createSmsVo(tradeOrder.getUserPhone(), content);
-	            this.smsService.sendSms(smsVo);
-			}
 		} else {
 			operator = tradeOrder.getUpdateUserId();
 		}
@@ -346,10 +328,9 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
 
 			// 发送短信
-			if (tradeOrder.getCancelType() != OrderCancelType.CANCEL_BY_BUYER
-					&& (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
+			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
 							|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()
-							|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus())) {
+							|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
 				// 查询支付信息
 				TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(oldOrder.getId());
 				tradeOrder.setTradeOrderPay(tradeOrderPay);

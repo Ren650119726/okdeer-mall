@@ -646,6 +646,10 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 				}
 				// End 重构4.1 add by wusw 20160720
 			} else {// End 重构4.1 add by wusw
+				// Begin V2.5 added by maojj 2017-07-13
+				// 拒收不退运费。退款金额=实付金额+运费优惠-运费
+				params.put("#3", actualAmount.add(order.getRealFarePreferential()).subtract(order.getFare()).toString());
+				// End V2.5 added by maojj 2017-07-13
 				if (PayWayEnum.CASH_DELIERY == order.getPayWay()) {
 					this.sendSms(mobile, tradeMessageProperties.smsCancalOrderStyle3, params);
 				} else if (PayWayEnum.PAY_ONLINE == order.getPayWay()) {
