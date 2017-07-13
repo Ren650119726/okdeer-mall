@@ -200,6 +200,7 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	private ConsumeConcurrentlyStatus insertProcessResult(MessageExt message) {
 		String tradeNum = null;
 		TradeOrder tradeOrder = null;
+		AbstractPayResultHandler handler = null;
 		try {
 			String msg = new String(message.getBody(), Charsets.UTF_8);
 			logger.info("订单支付状态消息:" + msg);
@@ -209,7 +210,7 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			}
 			tradeNum = result.getTradeNum();
 			tradeOrder = tradeOrderService.getByTradeNum(result.getTradeNum());
-			AbstractPayResultHandler handler = payResultHandlerFactory.getByOrderType(tradeOrder.getType());
+			handler = payResultHandlerFactory.getByOrderType(tradeOrder.getType());
 			handler.handler(tradeOrder, result);
 		} catch (Exception e) {
 			logger.error("订单支付状态消息处理失败", e);
@@ -218,15 +219,13 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		
 		// begin add by wushp 20161015
 		try {
+			if(handler != null && handler.isConsumed(tradeOrder)){
+				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+			}
 			orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
-			
 			//下单赠送抽奖活动的抽奖次数
 			tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
 			
-			//add by  zhangkeneng  和左文明对接丢消息
-			TradeOrderContext tradeOrderContext = new TradeOrderContext();
-			tradeOrderContext.setTradeOrder(tradeOrder);
-			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
@@ -365,6 +364,13 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 				logger.error("退款支付状态消息处理失败,退款单编号为：" + tradeOrderRefunds.getRefundNo() + "，问题原因" + result.getMsg());
 
 			}
+
+			TradeOrder tradeOrder = tradeOrderService.getByTradeNum(result.getTradeNum());
+			//add by  zhangkeneng  和左文明对接丢消息
+			TradeOrderContext tradeOrderContext = new TradeOrderContext();
+			tradeOrderContext.setTradeOrder(tradeOrder);
+			tradeOrderContext.setTradeOrderRefunds(tradeOrderRefunds);
+			tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error("退款支付状态消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;

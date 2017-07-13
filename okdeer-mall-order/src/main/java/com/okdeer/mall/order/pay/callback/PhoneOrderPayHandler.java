@@ -19,7 +19,7 @@ import net.sf.json.JSONObject;
 public class PhoneOrderPayHandler extends AbstractPhoneRechargePayHandler {
 	
 	@Override
-	protected boolean isConsumed(TradeOrder tradeOrder) {
+	public boolean isConsumed(TradeOrder tradeOrder) {
 		if (tradeOrder == null || tradeOrder.getStatus() == OrderStatusEnum.DROPSHIPPING
 				|| tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
 			return true;

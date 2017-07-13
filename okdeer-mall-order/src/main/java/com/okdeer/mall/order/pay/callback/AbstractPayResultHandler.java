@@ -171,7 +171,7 @@ public abstract class AbstractPayResultHandler {
 	 * @author maojj
 	 * @date 2016年11月14日
 	 */
-	protected boolean isConsumed(TradeOrder tradeOrder){
+	public boolean isConsumed(TradeOrder tradeOrder){
 		if (tradeOrder == null || (tradeOrder.getStatus() != OrderStatusEnum.UNPAID
 				&& tradeOrder.getStatus() != OrderStatusEnum.BUYER_PAYING)) {
 			return true;

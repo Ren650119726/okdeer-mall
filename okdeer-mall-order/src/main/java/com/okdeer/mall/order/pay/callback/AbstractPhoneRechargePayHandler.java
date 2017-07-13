@@ -152,7 +152,7 @@ public abstract class AbstractPhoneRechargePayHandler extends AbstractPayResultH
 	protected String mcmSysToken;
 
 	@Override
-	protected boolean isConsumed(TradeOrder tradeOrder) {
+	public boolean isConsumed(TradeOrder tradeOrder) {
 		if (tradeOrder == null || tradeOrder.getStatus() == OrderStatusEnum.DROPSHIPPING
 				|| tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
 			return true;

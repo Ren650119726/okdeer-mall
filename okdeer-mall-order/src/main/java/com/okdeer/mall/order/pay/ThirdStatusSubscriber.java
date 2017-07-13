@@ -88,6 +88,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 	public ConsumeConcurrentlyStatus subscribeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
 		String tradeNum = null;
 		TradeOrder tradeOrder = null;
+		AbstractPayResultHandler handler = null;
 		try {
 			String msg = new String(msgs.get(0).getBody(), Charsets.UTF_8);
 			logger.info("订单支付状态消息:" + msg);
@@ -97,7 +98,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
 			tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
-			AbstractPayResultHandler handler = payResultHandlerFactory.getByOrder(tradeOrder);
+			handler = payResultHandlerFactory.getByOrder(tradeOrder);
 			handler.handler(tradeOrder, respDto);
 		} catch (Exception e) {
 			logger.error("订单支付状态消息处理失败", e);
@@ -106,6 +107,9 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 		
 		// begin add by wushp 20161015  
 		try {
+			if(handler != null && handler.isConsumed(tradeOrder)){
+				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+			}
 			if(tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP){
 				//不是扫码购订单才返券
 				orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
