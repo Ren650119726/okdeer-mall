@@ -232,6 +232,9 @@
 	        <if test="luckDrawName != null and luckDrawName !=''" >
 	           AND draw.`name` LIKE CONCAT('%',#{luckDrawName,jdbcType=VARCHAR},'%')
 	        </if>
+	        <if test="prizeName != null and prizeName !=''" >
+	           AND prize.prize_name LIKE CONCAT('%',#{prizeName,jdbcType=VARCHAR},'%')
+	        </if>
 	        <if test="nickName != null and nickName !=''" >
 	           AND us.nick_name LIKE CONCAT('%',#{nickName,jdbcType=VARCHAR},'%')
 	        </if>
