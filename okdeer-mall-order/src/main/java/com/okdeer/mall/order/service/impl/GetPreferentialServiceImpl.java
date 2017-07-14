@@ -166,7 +166,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 								}
 							}
 						}
-						if (totalAmount.compareTo(new BigDecimal(coupons.getArrive())) == -1) {
+						if (totalAmount.compareTo(BigDecimal.valueOf(0.0)) == 0 || totalAmount.compareTo(new BigDecimal(coupons.getArrive())) == -1) {
 							return false;
 						}
 					} else if (coupons.getType() == CouponsType.fwd.ordinal()) {
