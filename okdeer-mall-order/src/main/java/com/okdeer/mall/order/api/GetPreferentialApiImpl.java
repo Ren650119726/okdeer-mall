@@ -65,7 +65,7 @@ public class GetPreferentialApiImpl implements GetPreferentialApi {
 			if (SpuTypeEnum.fwdDdxfSpu == sku.getSpuTypeEnum()) {
 				MemberConsigneeAddress address = memberConsigneeAddressService.findByStoreId(paramDto.getStoreId());
 				if (address != null) {
-					paramDto.setAddressId(address.getId());
+					paramBo.setAddressId(address.getId());
 				}
 			}
 		}
