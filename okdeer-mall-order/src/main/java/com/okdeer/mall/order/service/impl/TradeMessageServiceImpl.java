@@ -646,10 +646,6 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 				}
 				// End 重构4.1 add by wusw 20160720
 			} else {// End 重构4.1 add by wusw
-				// Begin V2.5 added by maojj 2017-07-13
-				// 拒收不退运费。退款金额=实付金额+运费优惠-运费
-				params.put("#3", actualAmount.add(order.getRealFarePreferential()).subtract(order.getFare()).toString());
-				// End V2.5 added by maojj 2017-07-13
 				if (PayWayEnum.CASH_DELIERY == order.getPayWay()) {
 					this.sendSms(mobile, tradeMessageProperties.smsCancalOrderStyle3, params);
 				} else if (PayWayEnum.PAY_ONLINE == order.getPayWay()) {
@@ -667,9 +663,11 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			// 用户拒收发送短信
 			Map<String, String> params = Maps.newHashMap();
 			params.put("#1", order.getOrderNo());
-			params.put("#2", order.getActualAmount().toString());
+			// Begin V2.5 added by maojj 2017-07-13
+			// 拒收不退运费。退款金额=实付金额+运费优惠-运费
+			params.put("#2", order.getActualAmount().add(order.getRealFarePreferential()).subtract(order.getFare()).toString());
+			// End V2.5 added by maojj 2017-07-13
 			params.put("#3", order.getReason());
-
 			// 查询用户电话号码
 			String mobile = sysBuyerUserService.selectMemberMobile(order.getUserId());
 			// Begin 重构4.1 add by wusw
