@@ -4989,55 +4989,46 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 if (resultMsgDto.getCode() != 200) {
                     throw new ServiceException(resultMsgDto.getMsg());
                 }
+            }else{
+                this.updateOrderStatus(tradeOrder);
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("orderId", tradeOrder.getId());
+                List<TradeOrderItem> tradeOrderItem = this.findTradeOrderItems(map);
+                tradeOrder.setTradeOrderItem(tradeOrderItem);
+                // 锁定库存
+                try {
+                    // 发送计时消息
+                    tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
+                    // Begin 1.0.Z 增加订单操作记录 add by zengj
+                    tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
+                            tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+                    // End 1.0.Z 增加订单操作记录 add by zengj
+
+                    // 发送短信
+                    tradeMessageService.sendSmsByShipments(tradeOrder);
+                    // added by maojj 给ERP发消息去生成出入库单据
+                    // 库存调整-放到最后处理
+                    // stockManagerService.updateStock(stockAdjustVo);
+                    // stockMQProducer.sendMessage(stockAdjustVo);
+
+                    //add by  zhangkeneng  和左文明对接丢消息
+                    TradeOrderContext tradeOrderContext = new TradeOrderContext();
+                    tradeOrderContext.setTradeOrder(tradeOrder);
+                    tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+                    tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+                    tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+                    tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+
+                } catch (Exception e) {
+                    logger.error("pos 发货锁定库存发生异常", e);
+                    // added by maojj
+                    // rollbackMQProducer.sendStockRollbackMsg(rpcId);
+                    throw e;
+                }
             }
         }else{
             throw new ServiceException("订单状态已更新，请刷新后重试");
         }
-            // end add by wangf01 20170626
-           /* this.updateOrderStatus(tradeOrder);
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("orderId", tradeOrder.getId());
-            List<TradeOrderItem> tradeOrderItem = this.findTradeOrderItems(map);
-            tradeOrder.setTradeOrderItem(tradeOrderItem);
-            // 锁定库存
-            try {
-                // 发送计时消息
-                tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
-                // Begin 1.0.Z 增加订单操作记录 add by zengj
-                tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
-                        tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
-                // End 1.0.Z 增加订单操作记录 add by zengj
-
-                // 发送短信
-                tradeMessageService.sendSmsByShipments(tradeOrder);
-                // added by maojj 给ERP发消息去生成出入库单据
-                // 库存调整-放到最后处理
-                // stockManagerService.updateStock(stockAdjustVo);
-                // stockMQProducer.sendMessage(stockAdjustVo);
-
-                //add by  zhangkeneng  和左文明对接丢消息
-                TradeOrderContext tradeOrderContext = new TradeOrderContext();
-                tradeOrderContext.setTradeOrder(tradeOrder);
-                tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
-                tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
-                tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
-                tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
-
-            } catch (Exception e) {
-                logger.error("pos 发货锁定库存发生异常", e);
-                // added by maojj
-                // rollbackMQProducer.sendStockRollbackMsg(rpcId);
-                throw e;
-            }
-
-        } else { // 收货
-            try {
-                this.updateWithConfirm(tradeOrder);
-            } catch (Exception e) {
-                logger.error("pos 发货发生异常", e);
-                throw new ServiceException("发货失败", e);
-            }
-        }*/
     }
 
 
