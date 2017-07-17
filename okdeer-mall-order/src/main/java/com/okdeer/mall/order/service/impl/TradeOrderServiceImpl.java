@@ -4976,12 +4976,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     public void updateOrderDelivery(TradeOrder tradeOrder) throws Exception {
         if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {// 发货
             // begin V2.5.0 add by wangf01 20170626
+            TradeOrder tradeOrderParam = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
+            if (tradeOrderParam.getStatus() != OrderStatusEnum.DROPSHIPPING){
+                throw new ServiceException("订单状态已更新，请刷新后重试");
+            }
             //获取快照信息，判断配送方式是什么
             TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
             paramDto.setOrderId(tradeOrder.getId());
             TradeOrderExtSnapshot snapshot = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
             if (snapshot != null && snapshot.getDeliveryType() == 1) {
-                TradeOrder tradeOrderParam = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
                 List<TradeOrderItem> itemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
                 tradeOrderParam.setTradeOrderItem(itemList);
                 tradeOrderParam.setTradeOrderExt(snapshot);
@@ -5027,7 +5030,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 }
             }
         }else{
-            throw new ServiceException("订单状态已更新，请刷新后重试");
+            try {
+                this.updateWithConfirm(tradeOrder);
+            } catch (Exception e) {
+                logger.error("pos 发货发生异常", e);
+                throw new ServiceException("发货失败", e);
+            }
         }
     }
 
