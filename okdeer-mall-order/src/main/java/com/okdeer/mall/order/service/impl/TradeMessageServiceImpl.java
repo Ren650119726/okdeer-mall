@@ -61,6 +61,7 @@ import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
+import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
@@ -596,7 +597,6 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 */
 	@Override
 	public void sendSmsByCancel(TradeOrder order, OrderStatusEnum status) {
-
 		// 取消订单发送短信
 		if (status == OrderStatusEnum.DROPSHIPPING || status == OrderStatusEnum.WAIT_RECEIVE_ORDER) {
 			Map<String, String> params = Maps.newHashMap();
@@ -617,6 +617,12 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			StoreInfo storeInfo = storeInfoService.findById(order.getStoreId());
 			// 服务店
 			if (StoreTypeEnum.SERVICE_STORE.equals(storeInfo.getType())) {
+				// Begin V2.5 added by maojj 2017-07-17
+				// 如果是用户取消则不发送短信
+				if(order.getCancelType() == OrderCancelType.CANCEL_BY_BUYER){
+					return;
+				}
+				// End V2.5 added by maojj 2017-07-17
 				if (PayWayEnum.PAY_ONLINE == order.getPayWay()) {
 					TradeOrderPay payment = order.getTradeOrderPay();
 					if (PayTypeEnum.ALIPAY == payment.getPayType() || PayTypeEnum.WXPAY == payment.getPayType()) {
