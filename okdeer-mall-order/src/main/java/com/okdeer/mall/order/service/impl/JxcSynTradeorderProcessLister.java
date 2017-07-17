@@ -287,7 +287,8 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 					splitItem.setId(UuidUtils.getUuid());
 					splitItem.setOrderId(item.getOrderId());
 					splitItem.setActivityType(item.getActivityType());
-					splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
+					splitItem.setPreferentialPrice(BigDecimal.ZERO);
+					splitItem.setStorePreferential(BigDecimal.ZERO);
 					splitItem.setUnitPrice(comboDetail.getUnitPrice());
 					splitItem.setQuantity(comboDetail.getQuantity()*item.getQuantity());
 					splitItem.setStoreSkuId(comboDetail.getStoreSkuId());
