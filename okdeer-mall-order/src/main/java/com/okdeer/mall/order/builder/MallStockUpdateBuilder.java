@@ -261,7 +261,10 @@ public class MallStockUpdateBuilder {
 		}
 		// 处理组合商品
 		if(CollectionUtils.isNotEmpty(comboSkuIds)){
-			List<TradeOrderComboSnapshot> comboSkuList = tradeOrderComboSnapshotMapper.findByOrderId(tradeOrder.getId());
+			List<TradeOrderComboSnapshot> comboSkuList = tradeOrder.getComboDetailList();
+			if(CollectionUtils.isEmpty(comboSkuList)){
+				comboSkuList = tradeOrderComboSnapshotMapper.findByOrderId(tradeOrder.getId());
+			}	
 			for (TradeOrderComboSnapshot comboSku : comboSkuList) {
 				updateDetail = new StockUpdateDetailDto();
 				updateDetail.setStoreSkuId(comboSku.getStoreSkuId());
