@@ -6165,12 +6165,27 @@
 	</select>
 	
 	<!-- tuzhd根据用户id查询其支付完成的订单总量 用于首单条件判断 -->
-	<select id="selectCountByUserStatus" resultType="int">
+	<select id="selectCountByUserStatus" resultType="int" parameterType="com.okdeer.mall.order.dto.TradeOrderParamDto">
 		SELECT COUNT(1)
 			FROM trade_order trade  
 				 INNER JOIN trade_order_pay p ON trade.id = p.order_id 
 			WHERE trade.pay_way = 0 
-				  AND trade.user_id = #{userId,jdbcType=VARCHAR} 
+				<if test="userId != null and userId !='' ">
+				  	AND trade.user_id = #{userId,jdbcType=VARCHAR} 
+				</if>
+				<if test="status != null">
+					AND trade.status = #{status,jdbcType=TINYINT} 
+				</if>
+				<!-- 起始时间-->
+				<if test="startTime != null">
+					AND trade.create_time <![CDATA[ >= ]]>
+						#{startTime,jdbcType=TIMESTAMP}
+				</if>
+				<!-- 结束时间 -->
+				<if test="endTime != null">
+					AND trade.create_time <![CDATA[ <= ]]>
+						#{endTime,jdbcType=TIMESTAMP}
+				</if>
 	</select>
 	
 	

@@ -7154,8 +7154,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      * @author tuzhd
      * @date 2016年12月31日
      */
-    public int selectCountByUserStatus(String userId) {
-        return tradeOrderMapper.selectCountByUserStatus(userId);
+    public int selectCountByUserStatus(TradeOrderParamDto param) {
+        return tradeOrderMapper.selectCountByUserStatus(param);
     }
 
     /**
@@ -7166,8 +7166,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      * @date 2016年12月31日
      */
     public boolean checkUserUseCoupons(String userId) {
+    	TradeOrderParamDto param =new TradeOrderParamDto();
+    	param.setUserId(userId);
         // 根据用户id查询其支付完成的订单总量 用于首单条件判断
-        int orderCount = selectCountByUserStatus(userId);
+        int orderCount = selectCountByUserStatus(param);
         if (orderCount == 0) {
             // 根据用户id查询其是否存在已使用的新用户专享代金劵 用于首单条件判断
             if (activityCouponsRecordMapper.findCouponsCountByUser(UseUserType.ONlY_NEW_USER, userId) == 0) {
