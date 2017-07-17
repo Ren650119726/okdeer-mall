@@ -77,6 +77,7 @@ import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.member.service.MemberService;
 import com.okdeer.mall.member.service.SysBuyerExtService;
 import com.okdeer.mall.order.constant.OrderMsgConstant;
+import com.okdeer.mall.order.dto.TradeOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
@@ -864,8 +865,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		}
 		//根据用户id查询其订单完成的订单总量 大于 0 下过单 就不算新用户
     	if(collect.getGetUserType() == GetUserType.ONlY_NEW_USER){
+    		TradeOrderParamDto param =new TradeOrderParamDto();
+    		param.setUserId(userId);
 	    	//如果用户存在单没有下过单一样送券
-    		if(userId != null && tradeOrderService.selectCountByUserStatus(userId) > 0){
+    		if(userId != null && tradeOrderService.selectCountByUserStatus(param) > 0){
     	    	map.put("code", 106);
     			map.put("msg", "该活动为新用户专享！");
     			return false;

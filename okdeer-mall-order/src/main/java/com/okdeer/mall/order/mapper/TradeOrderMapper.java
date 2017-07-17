@@ -1151,7 +1151,7 @@ public interface TradeOrderMapper {
 	 * @author tuzhd
 	 * @date 2016年12月31日
 	 */
-	int selectCountByUserStatus(@Param("userId") String userId);
+	int selectCountByUserStatus(TradeOrderParamDto param);
 
 	// begin add by zhulq 2017-02-17 根据城市名称搜索订单列表
 	/**

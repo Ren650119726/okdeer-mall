@@ -60,16 +60,6 @@ public class TradeOrderSubScriberHandler {
 	 * @date 2017年1月11日
 	 */
 	public void activityAddPrizeCcount(TradeOrder tradeOrder)throws Exception{
-		//如果不存在缓存数据  返回true 存在false
-		String key = "addPrizeCount_"+tradeOrder.getId();
-		boolean flag = redisTemplate.boundValueOps(key).setIfAbsent(true);
-		if(flag){
-			redisTemplate.expire(key,60, TimeUnit.SECONDS);
-		}else{
-			return;
-		}
-		
-		
 		SysBuyerExt user = sysBuyerExtService.findByUserId(tradeOrder.getUserId());
 		if(user != null ){
 			//查询当前进行中的抽奖活动 

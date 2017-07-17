@@ -12,6 +12,7 @@ import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
+import com.okdeer.mall.order.dto.TradeOrderParamDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -1043,7 +1044,7 @@ public interface TradeOrderService {
 	 * @author tuzhd
 	 * @date 2016年12月31日
 	 */
-	public int selectCountByUserStatus(String userId);
+	public int selectCountByUserStatus(TradeOrderParamDto param);
 	/**
 	 * @Description: 校验用户使用新人专享代金券时 是否符合新用户及未使用该类型代金券的条件
 	 * @param userId
