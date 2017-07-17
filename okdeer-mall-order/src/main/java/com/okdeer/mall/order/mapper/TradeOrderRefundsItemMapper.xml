@@ -8,7 +8,7 @@
     <sql id="base_column">
     	id,refunds_id,order_item_id,store_sku_id,sku_name,properties_indb,main_pic_prl,spu_type,
         amount,preferential_price,income,quantity,weight,bar_code,style_code,status,unit_price,
-        recharge_mobile
+        recharge_mobile,store_preferential
     </sql>
     
     <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderRefundsItem" >
