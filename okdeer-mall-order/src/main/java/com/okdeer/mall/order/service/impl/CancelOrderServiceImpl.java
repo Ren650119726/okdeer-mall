@@ -320,6 +320,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			tradeOrderTraceService.saveOrderTrace(tradeOrder);
 			// 更新订单状态
 			Integer updateRows = tradeOrderMapper.updateOrderStatus(tradeOrder);
+			logger.info("更新后的订单状态:{}",tradeOrder.getStatus().getName());
 			if(updateRows == null || updateRows.intValue() == 0){
 				throw new Exception(ORDER_STATUS_CHANGE);
 			}
