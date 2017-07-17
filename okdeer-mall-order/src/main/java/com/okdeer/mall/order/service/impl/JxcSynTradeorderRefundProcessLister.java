@@ -353,7 +353,8 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 					splitItem = new TradeOrderRefundsItem();
 					splitItem.setId(UuidUtils.getUuid());
 					splitItem.setRefundsId(item.getRefundsId());
-					splitItem.setPreferentialPrice(BigDecimal.valueOf(0.0));
+					splitItem.setPreferentialPrice(BigDecimal.ZERO);
+					splitItem.setStorePreferential(BigDecimal.ZERO);
 					splitItem.setUnitPrice(comboDetail.getUnitPrice());
 					splitItem.setQuantity(comboDetail.getQuantity()*item.getQuantity());
 					splitItem.setStoreSkuId(comboDetail.getStoreSkuId());
