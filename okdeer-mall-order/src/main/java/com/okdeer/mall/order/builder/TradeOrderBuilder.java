@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.beanutils.BeanComparator;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.comparators.ComparatorChain;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Component;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
+import com.okdeer.archive.goods.assemble.GoodsStoreSkuAssembleApi;
+import com.okdeer.archive.goods.assemble.dto.GoodsStoreAssembleDto;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.store.entity.StoreBranches;
@@ -127,6 +130,9 @@ public class TradeOrderBuilder {
 	@Reference(version = "1.0.0", check = false)
 	private IAddressService addressService;
 	// End V2.1 added by maojj 2017-02-01
+	
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuAssembleApi goodsStoreSkuAssembleApi;
 
 	/**
 	 * @Description: 构建TradeOrderBo
@@ -673,12 +679,18 @@ public class TradeOrderBuilder {
 	 * @param paramDto
 	 * @return   
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2017年6月23日
 	 */
-	private List<TradeOrderComboSnapshot> buildComboDetailList(String orderId,PlaceOrderParamDto paramDto){
+	private List<TradeOrderComboSnapshot> buildComboDetailList(String orderId,PlaceOrderParamDto paramDto) throws Exception{
 		List<TradeOrderComboSnapshot> comboDetailList = Lists.newArrayList();
 		TradeOrderComboSnapshot comboSnapshot = null;
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
+		if (CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())) {
+			List<GoodsStoreAssembleDto> comboDtoList = goodsStoreSkuAssembleApi
+					.findByAssembleSkuIds(parserBo.getComboSkuIdList());
+			parserBo.loadComboSkuList(comboDtoList);
+		}
 		Map<String,List<GoodsStoreSkuAssembleDto>> comboSkuMap = parserBo.getComboSkuMap();
 		if(comboSkuMap == null || comboSkuMap.size() == 0){
 			return comboDetailList;

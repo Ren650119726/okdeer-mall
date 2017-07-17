@@ -8,6 +8,8 @@ package com.okdeer.mall.order.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.order.entity.TradeOrderComboSnapshot;
 
@@ -19,7 +21,7 @@ public interface TradeOrderComboSnapshotMapper extends IBaseMapper {
 	 * @author maojj
 	 * @date 2017年6月24日
 	 */
-	void batchAdd(List<TradeOrderComboSnapshot> comboDetailList);
+	void batchAdd(@Param("comboDetailList")List<TradeOrderComboSnapshot> comboDetailList);
 	
 	/**
 	 * @Description: 根据订单Id查询组合商品明细信息
