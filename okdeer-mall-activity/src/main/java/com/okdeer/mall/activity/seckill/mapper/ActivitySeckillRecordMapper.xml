@@ -40,14 +40,12 @@
 	<!-- 统计秒杀数量 add by zengj -->
 	<select id="findSeckillCount" parameterType="java.util.Map"
 		resultType="java.lang.Integer">
-		select count(1)
-		from activity_seckill_record
-		where order_disabled = 0
-		and activity_seckill_id = #{activitySeckillId,jdbcType=VARCHAR}
-
-		<if test="buyerUserId != null and buyerUserId != ''">
-			and buyer_user_id = #{buyerUserId,jdbcType=VARCHAR}
-		</if>
+		SELECT 
+			 st.locked
+		FROM 
+			activity_seckill sk INNER JOIN goods_store_sku_stock st 
+			  ON sk.store_sku_id = st.store_sku_id
+		WHERE sk.id = #{activitySeckillId,jdbcType=VARCHAR}
 	</select>
 
 	<!-- 根据秒杀活动id统计秒杀数量 add by luosm -->
