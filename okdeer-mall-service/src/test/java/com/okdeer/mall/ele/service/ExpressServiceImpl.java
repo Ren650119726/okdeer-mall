@@ -1,6 +1,7 @@
 package com.okdeer.mall.ele.service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.store.dto.StoreInfoDto;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.express.api.ExpressApi;
@@ -67,6 +68,22 @@ public class ExpressServiceImpl extends BaseServiceTest {
             System.out.println(JsonMapper.nonDefaultMapper().toJson(list));
         } catch (Exception e) {
             System.out.println("取消第三方订单信息异常" + e);
+        }
+    }
+
+    @Test
+    public void expressChainStoreTest(){
+        StoreInfoDto dto = new StoreInfoDto();
+        dto.setStoreName("王胜测试店");
+        dto.setAddress("广东省深圳市南山区");
+        dto.setArea("东方科技大厦");
+        dto.setMobile("15107180089");
+        dto.setLongitude(Double.valueOf("113.952547"));
+        dto.setLatitude(Double.valueOf("22.553397"));
+        try {
+            ResultMsgDto<String> resultMsgDto = expressService.saveChainStore(dto);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

@@ -2,6 +2,7 @@ package com.okdeer.mall.ele.api;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
+import com.okdeer.archive.store.dto.StoreInfoDto;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.ele.entity.ExpressCallback;
@@ -47,6 +48,11 @@ public class ExpressApiImpl implements ExpressApi {
             resultMsgDto = expressService.saveExpressOrder(tradeOrder);
         }
         return resultMsgDto;
+    }
+
+    @Override
+    public ResultMsgDto<String> saveChainStore(StoreInfoDto storeInfoDto) throws Exception {
+        return expressService.saveChainStore(storeInfoDto);
     }
 
     @Override

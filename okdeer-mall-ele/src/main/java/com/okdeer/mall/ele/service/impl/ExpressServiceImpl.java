@@ -3,6 +3,7 @@ package com.okdeer.mall.ele.service.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.okdeer.archive.store.dto.StoreInfoDto;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
@@ -109,6 +110,19 @@ public class ExpressServiceImpl implements ExpressService {
             data.setPushTime(DateUtils.getSysDate());
             expressCallbackMapper.insert(data);
         }
+        return resultMsg;
+    }
+
+    @Override
+    public ResultMsgDto<String> saveChainStore(StoreInfoDto storeInfoDto) throws Exception {
+        // 1、封装推送入参
+        ExpressChainStore expressChainStore = new ExpressChainStore();
+        createChainStore(expressChainStore, storeInfoDto);
+        String pushJson = createPushObject(expressChainStore);
+        // 2、推送门店信息
+        String url = API_URL + RequestConstant.chainStore;
+        String resultJson = HttpClient.postBody(url, pushJson);
+        ResultMsgDto<String> resultMsg = JsonMapper.nonDefaultMapper().fromJson(resultJson, ResultMsgDto.class);
         return resultMsg;
     }
 
@@ -246,6 +260,20 @@ public class ExpressServiceImpl implements ExpressService {
         // 4、设置订单项信息
         data.setItems_json(createExpressOrderItem(tradeOrder));
         return data;
+    }
+
+    /**
+     * 设置推送门店信息数据
+     *
+     * @param expressChainStore ExpressChainStore
+     * @param storeInfoDto      StoreInfoDto
+     */
+    private void createChainStore(ExpressChainStore expressChainStore, StoreInfoDto storeInfoDto) {
+        expressChainStore.setName(storeInfoDto.getStoreName());
+        expressChainStore.setContactPhone(storeInfoDto.getMobile());
+        expressChainStore.setAddress(storeInfoDto.getArea() + storeInfoDto.getAddress());
+        expressChainStore.setLongitude(String.valueOf(storeInfoDto.getLongitude()));
+        expressChainStore.setLatitude(String.valueOf(storeInfoDto.getLatitude()));
     }
 
     /**
