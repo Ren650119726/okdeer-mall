@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreAssembleDto;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
@@ -703,6 +704,24 @@ public class StoreSkuParserBo {
 	 * @date 2017年4月26日
 	 */
 	public Map<String, CurrentStoreSkuBo> getHaveFavourGoodsMap() {
+		if(haveFavourGoodsMap == null){
+			// 如果有优惠商品Map为空，则从商品map中提取享受优惠的商品
+			haveFavourGoodsMap = Maps.newHashMap();
+			CurrentStoreSkuBo currentSku = null;
+			String storeSkuId = null;
+			for(Map.Entry<String, CurrentStoreSkuBo> entry : this.currentSkuMap.entrySet()){
+				storeSkuId = entry.getKey();
+				currentSku = entry.getValue();
+				if(currentSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && currentSku.getQuantity() == currentSku.getSkuActQuantity()){
+					// 如果商品是低价商品，且商品购买数量=商品低价购买数量，则说明该商品不享受优惠活动
+					continue;
+				}
+				haveFavourGoodsMap.put(storeSkuId, currentSku);
+			}
+		}else{
+			return haveFavourGoodsMap;
+		}
+		
 		return haveFavourGoodsMap == null ? this.currentSkuMap : haveFavourGoodsMap;
 	}
 

@@ -10,10 +10,12 @@
         <result column="sku_type" property="skuType" jdbcType="INTEGER" javaType="com.okdeer.archive.goods.spu.enums.SpuTypeEnum" />
         <result column="quantity" property="quantity" jdbcType="INTEGER" />
         <result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+        <result column="online_price" property="onlinePrice" jdbcType="DECIMAL" />
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, order_id, combo_sku_id, store_sku_id, sku_id, sku_type, quantity, unit_price
+        id, order_id, combo_sku_id, store_sku_id, sku_id, sku_type, quantity, unit_price, 
+        online_price
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -50,6 +52,9 @@
             <if test="unitPrice != null" >
                 unit_price,
             </if>
+            <if test="onlinePrice != null" >
+                online_price,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -75,6 +80,9 @@
             </if>
             <if test="unitPrice != null" >
                 #{unitPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="onlinePrice != null" >
+                #{onlinePrice,jdbcType=DECIMAL},
             </if>
         </trim>
     </insert>
@@ -103,6 +111,9 @@
             <if test="unitPrice != null" >
                 unit_price = #{unitPrice,jdbcType=DECIMAL},
             </if>
+            <if test="onlinePrice != null" >
+                online_price = #{onlinePrice,jdbcType=DECIMAL},
+            </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
     </update>
@@ -122,7 +133,8 @@
 	        sku_id,
 	        sku_type,
 	        quantity,
-	        unit_price
+	        unit_price,
+	        online_price
 	     ) VALUES
 	     <foreach collection="comboDetailList" item="item" separator=",">
 	     	(
@@ -133,7 +145,8 @@
                 #{item.skuId,jdbcType=VARCHAR},
                 #{item.skuType,jdbcType=INTEGER},
                 #{item.quantity,jdbcType=INTEGER},
-                #{item.unitPrice,jdbcType=DECIMAL}
+                #{item.unitPrice,jdbcType=DECIMAL},
+                #{item.onlinePrice,jdbcType=DECIMAL}
 	     	)
 	     </foreach>
 	</insert>

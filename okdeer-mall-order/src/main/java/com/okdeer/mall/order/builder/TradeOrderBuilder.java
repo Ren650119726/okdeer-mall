@@ -544,10 +544,11 @@ public class TradeOrderBuilder {
 			}
 			if (platformFavour.compareTo(referenceValue) == 1) {
 				if(!parserBo.getHaveFavourGoodsMap().containsKey(skuBo.getId())){
+					// 如果有优惠的商品项不包含改商品，意味着该商品不享有平台优惠
 					favourItem = BigDecimal.valueOf(0.0);
 				} else if (index++ < haveFavourItemSize - 1) {
 					if (skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()) {
-						// 如果是低价商品，平台优惠只针对不享受低价活动的商品进行ch
+						// 如果是低价商品，平台优惠只针对按照原价购买的商品进行平摊=原价购买数量*原价*总优惠/优惠总金额
 						favourItem = skuBo.getOnlinePrice()
 								.multiply(BigDecimal.valueOf(skuBo.getQuantity() - skuBo.getSkuActQuantity()))
 								.multiply(platformFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);

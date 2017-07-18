@@ -28,6 +28,7 @@ import com.okdeer.jxc.onlineorder.entity.OnlineOrder;
 import com.okdeer.jxc.onlineorder.entity.OnlineOrderItem;
 import com.okdeer.jxc.onlineorder.vo.OnlineOrderVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.order.bo.ComboSnapshotAdapter;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderComboSnapshot;
@@ -59,6 +60,8 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 	@Resource
 	private TradeOrderComboSnapshotMapper tradeOrderComboSnapshotMapper;
+	@Resource
+	private ComboSnapshotAdapter comboSnapshotAdapter;
 	
 	private static final Logger log = LoggerFactory.getLogger(ServiceOrderProcessServiceImpl.class);
 
@@ -272,11 +275,15 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 	private void splitItemList(List<TradeOrderItem> itemList,String orderId) throws Exception{
 		// 组合商品快照列表
 		List<TradeOrderComboSnapshot> comboSkuList = tradeOrderComboSnapshotMapper.findByOrderId(orderId);
+		if(CollectionUtils.isEmpty(comboSkuList)){
+			// 如果快照表中没有找到明细，则直接从组合成分表中获取明细
+			comboSkuList = comboSnapshotAdapter.findByTradeOrderItemList(itemList);
+		}
 		Iterator<TradeOrderItem> itemIt = itemList.iterator();
 		TradeOrderItem item = null;
 		List<TradeOrderItem> splitItemList = new ArrayList<TradeOrderItem>();
 		TradeOrderItem splitItem = null;
-		
+		BigDecimal favourItem = null;
 		while(itemIt.hasNext()){
 			item = itemIt.next();
 			if(item.getSpuType() == SpuTypeEnum.assembleSpu){
@@ -287,10 +294,13 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 					splitItem.setId(UuidUtils.getUuid());
 					splitItem.setOrderId(item.getOrderId());
 					splitItem.setActivityType(item.getActivityType());
-					splitItem.setPreferentialPrice(BigDecimal.ZERO);
-					splitItem.setStorePreferential(BigDecimal.ZERO);
-					splitItem.setUnitPrice(comboDetail.getUnitPrice());
+					// 单价即线上价格
+					splitItem.setUnitPrice(comboDetail.getOnlinePrice());
 					splitItem.setQuantity(comboDetail.getQuantity()*item.getQuantity());
+					// 组合商品优惠=（线上价格-组合价格）*组合成分数量
+					favourItem = comboDetail.getOnlinePrice().subtract(comboDetail.getUnitPrice()).multiply(BigDecimal.valueOf(splitItem.getQuantity()));
+					splitItem.setPreferentialPrice(favourItem);
+					splitItem.setStorePreferential(favourItem);
 					splitItem.setStoreSkuId(comboDetail.getStoreSkuId());
 					splitItem.setCreateTime(item.getCreateTime());
 					splitItemList.add(splitItem);
