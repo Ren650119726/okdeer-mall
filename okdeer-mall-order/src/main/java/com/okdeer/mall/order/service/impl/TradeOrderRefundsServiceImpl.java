@@ -661,7 +661,7 @@ public class TradeOrderRefundsServiceImpl
 			
 			
 			//如果是友门鹿退款，解冻商家金额
-			if(RefundsStatusEnum.YSC_REFUND == orderRefunds.getRefundsStatus()){
+			if(RefundsStatusEnum.YSC_REFUND == orderRefunds.getRefundsStatus() && orderRefunds.getPaymentMethod() != PayTypeEnum.WALLET){
 				sendUnfreezeRocketMsg(orderRefunds, order);
 			}
 			
@@ -809,7 +809,7 @@ public class TradeOrderRefundsServiceImpl
 	 */
 	private String buildBalancePayTrade(TradeOrderRefunds orderRefunds) throws Exception {
 
-		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
 		payTradeVo.setAmount(orderRefunds.getTotalAmount());
 		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
 		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(orderRefunds.getStoreId()));
@@ -836,8 +836,20 @@ public class TradeOrderRefundsServiceImpl
 			payTradeVo.setPrefeAmount(orderRefunds.getTotalPreferentialPrice());
 			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
 		}*/
+		// 平台优惠金额
+		// End V2.5 modified by maojj 
 		// 判断是否有平台优惠
 		BigDecimal platformFavour = orderRefunds.getTotalPreferentialPrice().subtract(orderRefunds.getStorePreferential());
+		PayTradeExt payTradeExt = new PayTradeExt();
+		payTradeExt.setCommissionRate(order.getCommisionRatio());
+		BigDecimal totalCommision = orderRefunds.getTotalAmount().add(platformFavour).multiply(order.getCommisionRatio()).setScale(2,BigDecimal.ROUND_HALF_UP);
+		if (order.getCommisionRatio().compareTo(BigDecimal.ZERO) == 1
+				&& orderRefunds.getTotalAmount().add(platformFavour).compareTo(BigDecimal.ZERO) == 1
+				&& totalCommision.compareTo(BigDecimal.ZERO) == 0) {
+			// 如果佣金比例>0,且需要收佣金额>0，当收佣金额*佣金比例四舍五入之后结果为0，则将需要收取的佣金金额设置为0.01元
+			totalCommision = BigDecimal.valueOf(0.01);
+		}
+		payTradeExt.setCommission(totalCommision);
 		if(platformFavour.compareTo(BigDecimal.valueOf(0.00)) == 1){
 			// 如果平台优惠>0.则标识有平台优惠
 			payTradeVo.setPrefeAmount(platformFavour);
@@ -846,6 +858,7 @@ public class TradeOrderRefundsServiceImpl
 		// End V2.5 modified by maojj 2017-06-28
 		// 接受返回消息的tag
 		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_REFUND);
+		payTradeVo.setExt(JsonMapper.nonDefaultMapper().toJson(payTradeExt));
 		return JSONObject.fromObject(payTradeVo).toString();
 	}
 
