@@ -1346,9 +1346,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		List<PushUser> pushUsers = Lists.newArrayList();
 		if(CollectionUtils.isNotEmpty(list)){
 			list.forEach(user->pushUsers.add(new PushUser((String)user.get("id"), (String)user.get("phone"))));
-			pushUsers.forEach(user->{
+			//按产品及运营的要求屏蔽代金券到期提醒短信功能
+			/*pushUsers.forEach(user->{
 				sendMsg(user.phone);
-			});
+			});*/
 			sendPosMessage(pushUsers);
 			log.info("代金卷提醒发送列表：{}",JsonMapper.nonEmptyMapper().toJson(pushUsers));
 		}
