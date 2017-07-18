@@ -27,6 +27,7 @@ import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.dto.Request;
+import com.okdeer.mall.order.bo.ComboSnapshotAdapter;
 import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -58,6 +59,9 @@ public class MallStockUpdateBuilder {
 	@Resource
 	private TradeOrderComboSnapshotMapper tradeOrderComboSnapshotMapper;
 
+	@Resource
+	private ComboSnapshotAdapter comboSnapshotAdapter;
+	
 	/**
 	 * @Description: V2.1版本。构建商品更新的Dto。仅用于秒杀订单
 	 * @param order
@@ -263,8 +267,13 @@ public class MallStockUpdateBuilder {
 		if(CollectionUtils.isNotEmpty(comboSkuIds)){
 			List<TradeOrderComboSnapshot> comboSkuList = tradeOrder.getComboDetailList();
 			if(CollectionUtils.isEmpty(comboSkuList)){
+				// 如果组合商品明细再订单中没有，则去快照表中查询明细
 				comboSkuList = tradeOrderComboSnapshotMapper.findByOrderId(tradeOrder.getId());
 			}	
+			if(CollectionUtils.isEmpty(comboSkuList)){
+				// 如果快照表中没有找到明细，则直接从组合成分表中获取明细
+				comboSkuList = comboSnapshotAdapter.findByComboSkuIds(comboSkuIds);
+			}
 			for (TradeOrderComboSnapshot comboSku : comboSkuList) {
 				updateDetail = new StockUpdateDetailDto();
 				updateDetail.setStoreSkuId(comboSku.getStoreSkuId());

@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
-import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
@@ -32,11 +31,11 @@ import com.okdeer.jxc.onlineorder.entity.OnlineOrder;
 import com.okdeer.jxc.onlineorder.entity.OnlineOrderItem;
 import com.okdeer.jxc.onlineorder.vo.OnlineOrderVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.order.bo.ComboSnapshotAdapter;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderComboSnapshot;
-import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
@@ -73,11 +72,12 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	
 	@Autowired
 	private TradeOrderRefundsCertificateService tradeOrderRefundsCertificateService;
-	@Autowired
-	private TradeOrderItemService tradeOrderItemService;
 	
 	@Resource
 	private StockAdjustVoBuilder stockAdjustVoBuilder;
+	
+	@Resource
+	private ComboSnapshotAdapter comboSnapshotAdapter;
 
 	private static final Logger log = LoggerFactory.getLogger(ServiceOrderProcessServiceImpl.class);
 
@@ -339,11 +339,15 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	private void splitItemList(List<TradeOrderRefundsItem> itemList,String orderId) throws Exception{
 		// 组合商品快照列表
 		List<TradeOrderComboSnapshot> comboSkuList = tradeOrderComboSnapshotMapper.findByOrderId(orderId);
+		if(CollectionUtils.isEmpty(comboSkuList)){
+			// 如果快照表中没有找到明细，则直接从组合成分表中获取明细
+			comboSkuList = comboSnapshotAdapter.findByRefundsItemList(itemList);
+		}
 		Iterator<TradeOrderRefundsItem> itemIt = itemList.iterator();
 		TradeOrderRefundsItem item = null;
 		List<TradeOrderRefundsItem> splitItemList = new ArrayList<TradeOrderRefundsItem>();
 		TradeOrderRefundsItem splitItem = null;
-		
+		BigDecimal favourItem = null;
 		while(itemIt.hasNext()){
 			item = itemIt.next();
 			if(item.getSpuType() == SpuTypeEnum.assembleSpu){
@@ -353,10 +357,14 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 					splitItem = new TradeOrderRefundsItem();
 					splitItem.setId(UuidUtils.getUuid());
 					splitItem.setRefundsId(item.getRefundsId());
-					splitItem.setPreferentialPrice(BigDecimal.ZERO);
-					splitItem.setStorePreferential(BigDecimal.ZERO);
-					splitItem.setUnitPrice(comboDetail.getUnitPrice());
 					splitItem.setQuantity(comboDetail.getQuantity()*item.getQuantity());
+					// 单价即线上价格
+					splitItem.setUnitPrice(comboDetail.getOnlinePrice());
+					splitItem.setQuantity(comboDetail.getQuantity()*item.getQuantity());
+					// 组合商品优惠=（线上价格-组合价格）*组合成分数量
+					favourItem = comboDetail.getOnlinePrice().subtract(comboDetail.getUnitPrice()).multiply(BigDecimal.valueOf(splitItem.getQuantity()));
+					splitItem.setPreferentialPrice(favourItem);
+					splitItem.setStorePreferential(favourItem);
 					splitItem.setStoreSkuId(comboDetail.getStoreSkuId());
 					splitItem.setGoodsSkuId(comboDetail.getSkuId());
 					splitItemList.add(splitItem);
