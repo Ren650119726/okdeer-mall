@@ -100,15 +100,6 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 		PreferentialVo preferentialVo = new PreferentialVo();
 		// 获取用户有效的代金券
 		List<Coupons> couponList = getCouponsList(paramBo);
-		// Begin V2.5 added by maojj 2017-07-17
-		// 代金券列表按照最大优惠规则进行排序
-		couponList.sort(new Comparator<Coupons>() {
-			@Override
-			public int compare(Coupons o1, Coupons o2) {
-				return o2.getMaxFavourStrategy().compareTo(o1.getMaxFavourStrategy());
-			}
-		});
-		// End V2.5 added by maojj 2017-07-17
 		// 抽取运费代金券
 		List<Coupons> fareCouponList = extractFareCouponsList(couponList);
 		List<Discount> discountList = Lists.newArrayList();
