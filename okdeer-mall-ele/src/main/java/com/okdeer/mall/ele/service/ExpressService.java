@@ -1,5 +1,6 @@
 package com.okdeer.mall.ele.service;
 
+import com.okdeer.archive.store.dto.StoreInfoDto;
 import com.okdeer.mall.ele.entity.ExpressCallback;
 import com.okdeer.mall.ele.entity.ExpressCallbackLog;
 import com.okdeer.mall.ele.entity.ExpressOrderInfo;
@@ -31,6 +32,15 @@ public interface ExpressService {
      * @throws Exception
      */
     ResultMsgDto<String> saveExpressOrder(TradeOrder tradeOrder) throws Exception;
+
+    /**
+     * 推送门店信息
+     *
+     * @param storeInfoDto StoreInfoDto
+     * @return ResultMsgDto<String>
+     * @throws Exception
+     */
+    ResultMsgDto<String> saveChainStore(StoreInfoDto storeInfoDto) throws Exception;
 
     /**
      * 取消蜂鸟订单

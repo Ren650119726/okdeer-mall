@@ -33,4 +33,9 @@ public class RequestConstant {
      * 骑手座标
      */
     public static final String orderCarrier = "/v2/order/carrier";
+
+    /**
+     * 添加门店
+     */
+    public static final String chainStore = "/v2/chain_store";
 }
