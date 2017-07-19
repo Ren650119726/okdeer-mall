@@ -283,7 +283,7 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 		TradeOrderItem item = null;
 		List<TradeOrderItem> splitItemList = new ArrayList<TradeOrderItem>();
 		TradeOrderItem splitItem = null;
-		BigDecimal favourItem = null;
+//		BigDecimal favourItem = null;
 		while(itemIt.hasNext()){
 			item = itemIt.next();
 			if(item.getSpuType() == SpuTypeEnum.assembleSpu){
@@ -294,13 +294,17 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 					splitItem.setId(UuidUtils.getUuid());
 					splitItem.setOrderId(item.getOrderId());
 					splitItem.setActivityType(item.getActivityType());
-					// 单价即线上价格
+					/*// 单价即线上价格
 					splitItem.setUnitPrice(comboDetail.getOnlinePrice());
 					splitItem.setQuantity(comboDetail.getQuantity()*item.getQuantity());
 					// 组合商品优惠=（线上价格-组合价格）*组合成分数量
 					favourItem = comboDetail.getOnlinePrice().subtract(comboDetail.getUnitPrice()).multiply(BigDecimal.valueOf(splitItem.getQuantity()));
 					splitItem.setPreferentialPrice(favourItem);
-					splitItem.setStorePreferential(favourItem);
+					splitItem.setStorePreferential(favourItem);*/
+					splitItem.setQuantity(comboDetail.getQuantity()*item.getQuantity());
+					splitItem.setUnitPrice(comboDetail.getUnitPrice());
+					splitItem.setPreferentialPrice(BigDecimal.ZERO);
+					splitItem.setStorePreferential(BigDecimal.ZERO);
 					splitItem.setStoreSkuId(comboDetail.getStoreSkuId());
 					splitItem.setCreateTime(item.getCreateTime());
 					splitItemList.add(splitItem);

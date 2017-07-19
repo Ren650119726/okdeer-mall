@@ -347,7 +347,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		TradeOrderRefundsItem item = null;
 		List<TradeOrderRefundsItem> splitItemList = new ArrayList<TradeOrderRefundsItem>();
 		TradeOrderRefundsItem splitItem = null;
-		BigDecimal favourItem = null;
+//		BigDecimal favourItem = null;
 		while(itemIt.hasNext()){
 			item = itemIt.next();
 			if(item.getSpuType() == SpuTypeEnum.assembleSpu){
@@ -358,13 +358,16 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 					splitItem.setId(UuidUtils.getUuid());
 					splitItem.setRefundsId(item.getRefundsId());
 					splitItem.setQuantity(comboDetail.getQuantity()*item.getQuantity());
-					// 单价即线上价格
+					splitItem.setUnitPrice(comboDetail.getUnitPrice());
+					splitItem.setPreferentialPrice(BigDecimal.ZERO);
+					splitItem.setStorePreferential(BigDecimal.ZERO);
+					/*// 单价即线上价格
 					splitItem.setUnitPrice(comboDetail.getOnlinePrice());
 					splitItem.setQuantity(comboDetail.getQuantity()*item.getQuantity());
 					// 组合商品优惠=（线上价格-组合价格）*组合成分数量
 					favourItem = comboDetail.getOnlinePrice().subtract(comboDetail.getUnitPrice()).multiply(BigDecimal.valueOf(splitItem.getQuantity()));
 					splitItem.setPreferentialPrice(favourItem);
-					splitItem.setStorePreferential(favourItem);
+					splitItem.setStorePreferential(favourItem);*/
 					splitItem.setStoreSkuId(comboDetail.getStoreSkuId());
 					splitItem.setGoodsSkuId(comboDetail.getSkuId());
 					splitItemList.add(splitItem);
