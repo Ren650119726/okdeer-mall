@@ -108,7 +108,9 @@ public interface TimerMessageConstant {
         /**
          * 订单完成超时未售后处理,并送积分 1天
          */
-        tag_finish_timeout(1 * 24 * 60 * 60L),
+        // TODO 供测试使用，将售后改成15分钟，测试完成之后更改回来
+        tag_finish_timeout(15 * 60L),
+        //tag_finish_timeout(1 * 24 * 60 * 60L),
 
         /**
          * 订单完成超时未售后处理,并送积分(团购) 7天
