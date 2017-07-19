@@ -1152,6 +1152,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 if (StringUtils.isNotEmpty(order.getUserId())) {
                     userIds.add(order.getUserId());
                 }
+                if (StringUtils.isNotEmpty(order.getCityId())) {
+                	Address address = addressService.getAddressById(Long.parseLong(order.getCityId()));
+                	order.setCityName(address == null ? "" : address.getName());
+                }
             }
 
             // 构建实物订单实体
