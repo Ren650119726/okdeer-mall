@@ -743,7 +743,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		// Begin add by zengj
 		List<TradeOrderItem> orderItemList = this.tradeOrderItemMapper.selectOrderItemListById(order.getId());
 		// End add by zengj
-		// 总的可用金额
+		// 总的可用金额--仅指用户实付金额
 		BigDecimal totalAmount = BigDecimal.ZERO;
 		// 总的退款金额
 		BigDecimal refundAmount = BigDecimal.ZERO;
@@ -767,14 +767,15 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 
 		// 需要减掉退款的金额，退款金额会在退款操作的时候转占用
 		List<TradeOrderRefundsItem> refundsItem = tradeOrderRefundsItemMapper.selectByOrderId(order.getId());
-		BigDecimal refundItemAmount = BigDecimal.ZERO;
+		// 退款项的平台优惠金额
+		BigDecimal refundsItemFavour = BigDecimal.ZERO;
 		for (TradeOrderRefundsItem item : refundsItem) {
-			// 订单项退款金额=实际退款金额+平台优惠金额（平台优惠=总优惠-店铺优惠）
-			refundItemAmount = item.getAmount().add(item.getPreferentialPrice()).subtract(item.getStorePreferential());
-			// 总退款金额
-			refundAmount = refundAmount.add(refundItemAmount);
-			// 店铺总可用金额=总金额-退款金额-平台优惠
-			totalAmount = totalAmount.subtract(refundItemAmount);
+			// 订单项退款优惠
+			refundsItemFavour =  item.getPreferentialPrice().subtract(item.getStorePreferential());
+			// 店铺总可用金额=总金额-退款实付金额
+			totalAmount = totalAmount.subtract(item.getAmount());
+			// 总优惠金额=总平台优惠金额-退款的平台优惠金额
+			preferentialAmount = preferentialAmount.subtract(refundsItemFavour);
 			// 如果map中存在了该订单项ID，但是该订单项存在退款，该订单项不需要标记为已完成
 			if (tmpOrderItemMap.containsKey(item.getOrderItemId())) {
 				tmpOrderItemMap.remove(item.getOrderItemId());
