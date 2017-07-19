@@ -176,6 +176,20 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 						}
 					}
 
+				}else{
+					// 如果不指定分类，低价商品不可享受优惠
+					BigDecimal totalAmount = BigDecimal.valueOf(0.00);
+					for (PlaceOrderItemDto goods : paramBo.getGoodsList()) {
+						if(goods.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+							// 低价商品只有原价购买的才可享受优惠
+							totalAmount = totalAmount.add(goods.getSkuPrice().multiply(BigDecimal.valueOf(goods.getQuantity()-goods.getSkuActQuantity())));
+						}else{
+							totalAmount = totalAmount.add(goods.getTotalAmount());
+						}
+					}
+					if (totalAmount.compareTo(BigDecimal.valueOf(0.0)) == 0 || totalAmount.compareTo(new BigDecimal(coupons.getArrive())) == -1) {
+						return false;
+					}
 				}
 				// 如果代金券限制设备
 				if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0){
