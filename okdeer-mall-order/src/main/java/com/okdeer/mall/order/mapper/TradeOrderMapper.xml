@@ -1566,7 +1566,8 @@
 			pay.pay_type,
 		</if>
 <!-- 		<if test="cityIdList != null and cityIdList.size() > 0"> -->
-			lo.city_name as cityName,
+<!-- 			lo.city_name as cityName, -->
+				si.city_id,
 <!-- 		</if> -->
 		o.actual_amount,
 		o.user_phone,
@@ -1576,10 +1577,10 @@
 		o.pick_up_time
 		FROM
 		trade_order o
-		<if
-			test="(storeName != null and storeName != '') or (fullName != null and fullName != '') or(null!=type)">
+<!-- 		<if -->
+<!-- 			test="(storeName != null and storeName != '') or (fullName != null and fullName != '') or(null!=type)"> -->
 			INNER JOIN store_info si ON o.store_id=si.id
-		</if>
+<!-- 		</if> -->
 		<if test="fullName != null and fullName != ''">
 			LEFT JOIN psms_agent pa ON pa.id=si.agent_id
 		</if>
@@ -1587,7 +1588,7 @@
 			LEFT JOIN trade_order_pay pay ON pay.order_id=o.id
 		</if>
 <!-- 		<if test="cityIdList != null and cityIdList.size() > 0"> -->
-			LEFT JOIN trade_order_locate lo ON lo.order_id = o.id 
+<!-- 			LEFT JOIN trade_order_locate lo ON lo.order_id = o.id  -->
 <!-- 		</if> -->
 		WHERE 1=1
 		AND o.disabled =0
@@ -1656,7 +1657,7 @@
 		<!-- add by mengsj end 增加数据权限控制sql -->
 		<!-- add by zhangkn 按地区搜索 -->
 		<if test="cityIdList != null and cityIdList.size() > 0">
-			AND lo.city_id in
+			AND si.city_id in
 			<foreach collection="cityIdList" index="index" item="item" open="("
 				separator="," close=")">
 				#{item}
