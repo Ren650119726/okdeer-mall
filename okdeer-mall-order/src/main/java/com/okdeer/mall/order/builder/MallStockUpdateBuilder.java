@@ -409,6 +409,10 @@ public class MallStockUpdateBuilder {
 		// 处理组合商品
 		if(CollectionUtils.isNotEmpty(comboSkuIds)){
 			List<TradeOrderComboSnapshot> comboSkuList = tradeOrderComboSnapshotMapper.findByOrderId(tradeOrder.getId());
+			if(CollectionUtils.isEmpty(comboSkuList)){
+				// 如果快照表中没有找到明细，则直接从组合成分表中获取明细
+				comboSkuList = comboSnapshotAdapter.findByComboSkuIds(comboSkuIds);
+			}
 			for (TradeOrderComboSnapshot comboSku : comboSkuList) {
 				updateDetail = new StockUpdateDetailDto();
 				updateDetail.setStoreSkuId(comboSku.getStoreSkuId());
