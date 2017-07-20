@@ -219,9 +219,6 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		
 		// begin add by wushp 20161015
 		try {
-			if(handler != null && handler.isConsumed(tradeOrder)){
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-			}
 			orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
 			//下单赠送抽奖活动的抽奖次数
 			tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);

@@ -107,9 +107,6 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 		
 		// begin add by wushp 20161015  
 		try {
-			if(handler != null && handler.isConsumed(tradeOrder)){
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-			}
 			if(tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP){
 				//不是扫码购订单才返券
 				orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
