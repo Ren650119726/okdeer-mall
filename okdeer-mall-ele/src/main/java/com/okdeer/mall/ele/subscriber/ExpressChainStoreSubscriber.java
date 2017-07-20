@@ -2,9 +2,11 @@ package com.okdeer.mall.ele.subscriber;
 
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.okdeer.archive.store.dto.StoreInfoDto;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.ele.service.ExpressService;
+import com.okdeer.mall.express.dto.ResultMsgDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +42,8 @@ public class ExpressChainStoreSubscriber {
         }
         try {
             StoreInfoDto paramDto = (StoreInfoDto) mqMessage.getContent();
-            expressService.saveChainStore(paramDto);
+            ResultMsgDto<String> resultMsgDto = expressService.saveChainStore(paramDto);
+            logger.info("第三方添加门店信息消费:{}", JsonMapper.nonDefaultMapper().toJson(resultMsgDto));
         } catch (Exception e) {
             logger.error("第三方添加门店信息异常", e);
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
