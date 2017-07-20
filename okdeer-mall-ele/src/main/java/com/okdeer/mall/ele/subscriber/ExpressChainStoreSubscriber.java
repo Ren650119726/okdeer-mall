@@ -36,10 +36,6 @@ public class ExpressChainStoreSubscriber {
 
     @RocketMQListener(topic = "topic_express_chain_store", tag = "*")
     public ConsumeConcurrentlyStatus subscribeMessage(MQMessage mqMessage) {
-        String tag = mqMessage.getTags();
-        if (tag == null || tag.equals("")) {
-            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-        }
         try {
             StoreInfoDto paramDto = (StoreInfoDto) mqMessage.getContent();
             ResultMsgDto<String> resultMsgDto = expressService.saveChainStore(paramDto);
