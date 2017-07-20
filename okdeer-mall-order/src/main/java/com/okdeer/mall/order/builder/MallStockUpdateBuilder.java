@@ -253,8 +253,8 @@ public class MallStockUpdateBuilder {
 			if(actType == ActivityTypeEnum.LOW_PRICE){
 				// 如果是低价
 				updateDetail.setUpdateLockedNum(orderItem.getActivityQuantity());
-			}else if (actType == ActivityTypeEnum.SALE_ACTIVITIES){
-				// 如果是特惠
+			}else if (actType == ActivityTypeEnum.SALE_ACTIVITIES || actType == ActivityTypeEnum.SECKILL_ACTIVITY){
+				// 如果是特惠或者是秒杀
 				updateDetail.setUpdateLockedNum(orderItem.getQuantity());
 			}
 			if(orderItem.getSpuType() == SpuTypeEnum.assembleSpu){
