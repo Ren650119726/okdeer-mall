@@ -541,6 +541,8 @@ public class TradeOrderBuilder {
 			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0){
 				storeFavourItem = skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
 						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity()));
+			}else if(skuBo.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY.ordinal()){
+				storeFavourItem = tradeOrder.getStorePreferential();
 			}
 			if (platformFavour.compareTo(referenceValue) == 1) {
 				if(!parserBo.getHaveFavourGoodsMap().containsKey(skuBo.getId())){
