@@ -684,7 +684,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 			}
 		}
 		// 如果订单金额为0，只能说明该订单所有商品都不可退货，所以直接转可用了
-		if (BigDecimal.ZERO.compareTo(tradeAmount) == 0) {
+		if (BigDecimal.ZERO.compareTo(tradeAmount) == 0 && BigDecimal.ZERO.compareTo(preferentialAmount) == 0) {
 			return null;
 		}
 		// End 12205 add by zengj
@@ -795,7 +795,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payTradeExt.setCommissionRate(order.getCommisionRatio());
 		payTradeExt.setRefundAmount(refundAmount);
 		// 如果没有金额直接返回空
-		if (BigDecimal.ZERO.compareTo(totalAmount) == 0) {
+		if (BigDecimal.ZERO.compareTo(totalAmount) == 0 && BigDecimal.ZERO.compareTo(preferentialAmount) == 0) {
 			return null;
 		}
 		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
