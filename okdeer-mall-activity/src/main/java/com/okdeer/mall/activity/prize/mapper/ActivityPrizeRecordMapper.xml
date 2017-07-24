@@ -249,7 +249,7 @@
 	           AND record.create_time &lt;= #{createTimeEnd,jdbcType=TIMESTAMP}
 	        </if>
 	        <if test="ids != null and ids !=''">
-	        	record.id in
+	           AND record.id in
 	           	<foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
 			        #{item}
 			    </foreach>
