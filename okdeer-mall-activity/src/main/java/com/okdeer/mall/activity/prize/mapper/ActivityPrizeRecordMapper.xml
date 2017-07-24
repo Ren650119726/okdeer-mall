@@ -221,7 +221,8 @@
 		  LEFT JOIN sys_buyer_user us ON us.id = record.user_id
 		  LEFT JOIN activity_prize_weight prize ON record.prize_id = prize.id
 		  LEFT JOIN activity_luck_draw draw ON prize.luck_draw_id = draw.id
-		  LEFT JOIN activity_advert activity ON draw.activity_advert_id = activity.id
+		  LEFT JOIN activity_advert_draw ad ON draw.id= ad.luck_draw_id
+		  LEFT JOIN activity_advert activity ON ad.activity_advert_id = activity.id
 		  LEFT JOIN activity_collect_coupons coupon ON record.activity_collect_id = coupon.id
         <where>
 	        <if test="activityName != null and activityName != ''" >
