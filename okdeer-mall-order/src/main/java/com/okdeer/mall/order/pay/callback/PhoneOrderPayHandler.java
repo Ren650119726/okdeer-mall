@@ -45,9 +45,15 @@ public class PhoneOrderPayHandler extends AbstractPhoneRechargePayHandler {
 		String cardnum = tradeOrderItem.getStoreSkuId();
 		String orderid = tradeOrder.getTradeNum();
 
-		// 风控验证
-		if (isTrigger(tradeOrder,respDto,phoneno)) {
-			refunds(tradeOrder, tradeOrderItem);
+		try {
+			// 风控验证
+			if (isTrigger(tradeOrder, respDto, phoneno)) {
+				refunds(tradeOrder, tradeOrderItem);
+				return;
+			}
+		} catch (Exception e) {
+			logger.error("充值风控异常", e);
+			this.tradeOrderRefundsService.insertRechargeRefunds(tradeOrder);
 			return;
 		}
 

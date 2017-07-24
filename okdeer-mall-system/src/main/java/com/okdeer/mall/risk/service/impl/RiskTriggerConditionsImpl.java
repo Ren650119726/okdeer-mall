@@ -69,6 +69,10 @@ public class RiskTriggerConditionsImpl implements RiskTriggerConditions {
 	public boolean isTrigger(RiskOrderRecord riskOrder) throws Exception {
 
 		log.debug("进入风控条件检测中,订单信息：{}",JsonMapper.nonDefaultMapper().toJson(riskOrder));
+		//解决临时问题，屏蔽云钱包未传支付ID问题，后期可以去掉
+		if (riskOrder.getPayAccount() == null) {
+			return true;
+		}
 		// 新增订单记录
 		riskOrderRecordService.add(riskOrder);
 
