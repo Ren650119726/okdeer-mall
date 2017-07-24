@@ -27,6 +27,7 @@
        <result column="is_offer" property="isOffer" jdbcType="INTEGER" />
        <result column="prize_name" property="prizeName" jdbcType="VARCHAR" />
        <result column="activity_name" property="activityName" jdbcType="VARCHAR" />
+       <result column="prize_offer_time" property="prizeOfferTime" jdbcType="TIMESTAMP" />
        <result column="activity_collect_name" property="activityCollectName" jdbcType="VARCHAR" />
        <result column="phone" property="phone" jdbcType="VARCHAR" />
        <result column="login_name" property="userName" jdbcType="VARCHAR" />
