@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseMapper;
@@ -95,6 +96,9 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 		rec.setUserId(userId);
 		rec.setLuckDrawId(luckDrawId);
 		rec.setCreateTime(new Date());
+		if(isOffer == WhetherEnum.whether.ordinal()){
+			rec.setPrizeOfferTime(new Date());
+		}
 		rec.setIsOffer(isOffer);
 		rec.setDisabled(Disabled.valid);
 		return activityPrizeRecordMapper.add(rec);
