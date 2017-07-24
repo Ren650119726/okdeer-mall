@@ -940,7 +940,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 			dto.setPlatformPreferential(vo.getPlatformPreferential());
 			dto.setStorePreferential(vo.getStorePreferential());
 			dto.setDeliveryType(vo.getDeliveryType());
-			
+			dto.setPickUpType(vo.getPickUpType());
 			if(vo.getStatus()!=null){
 				dto.setStatus(vo.getStatus().ordinal());
 			}
