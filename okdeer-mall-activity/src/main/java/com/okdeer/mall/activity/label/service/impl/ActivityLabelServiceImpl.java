@@ -208,12 +208,12 @@ public class ActivityLabelServiceImpl extends BaseServiceImpl implements Activit
 				for(ActivityLabel a : accList){
 					try{
 						//未开始的 
-						if(a.getStatus() == ActivityLabelStatus.noStart.getValue()){
+						if(ActivityLabelStatus.noStart.getValue().equals(a.getStatus())){
 							//根据id修改服务标签活动状态
 							updateStatusById(a.getId(),  ActivityLabelStatus.ing.getValue(), updateUserId, nowTime);
 						
 						//进行中的改为已结束的
-						}else if(a.getStatus() == ActivityLabelStatus.ing.getValue()){
+						}else if(ActivityLabelStatus.ing.getValue().equals(a.getStatus())){
 							//根据id修改服务标签活动状态
 							updateStatusById(a.getId(),  ActivityLabelStatus.end.getValue(), updateUserId, nowTime);
 						}

@@ -156,13 +156,13 @@ public class ActivityCollectCouponsServiceImpl
 
 		// 代金卷范围类型：0全国，1区域，2小区 , 3店铺
 		// 如果是区域
-		if(activityCollectCoupons.getType() == ActivityCollectCouponsType.OPEN_DOOR.getValue() ||
-		   activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue() ||	
-		   activityCollectCoupons.getType() == ActivityCollectCouponsType.get.getValue() ||
-		   activityCollectCoupons.getType() == ActivityCollectCouponsType.lzg.getValue()){
+		if(ActivityCollectCouponsType.OPEN_DOOR.getValue().equals(activityCollectCoupons.getType()) ||
+		   ActivityCollectCouponsType.consume_return.getValue().equals(activityCollectCoupons.getType()) ||	
+		   ActivityCollectCouponsType.get.getValue().equals(activityCollectCoupons.getType()) ||
+		   ActivityCollectCouponsType.lzg.getValue().equals(activityCollectCoupons.getType())){
 			
 			//如果是消费返券,要批量插入梯度表
-			if(activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue()){
+			if(ActivityCollectCouponsType.consume_return.getValue().equals(activityCollectCoupons.getType())){
 				activityCollectXffqRelationMapper.saveBatch(xffqRelationList);
 			}
 			
@@ -383,13 +383,13 @@ public class ActivityCollectCouponsServiceImpl
 		activityCollectCommunityMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
 		activityCollectStoreMapper.deleteByCollectCouponsId(activityCollectCoupons.getId());
 		
-		if(activityCollectCoupons.getType() == ActivityCollectCouponsType.OPEN_DOOR.getValue() ||
-				   activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue() ||	
-				   activityCollectCoupons.getType() == ActivityCollectCouponsType.get.getValue() ||
-				   activityCollectCoupons.getType() == ActivityCollectCouponsType.lzg.getValue() ){
+		if (ActivityCollectCouponsType.OPEN_DOOR.getValue().equals(activityCollectCoupons.getType())
+				|| ActivityCollectCouponsType.consume_return.getValue().equals(activityCollectCoupons.getType())
+				|| ActivityCollectCouponsType.get.getValue().equals(activityCollectCoupons.getType())
+				|| ActivityCollectCouponsType.lzg.getValue().equals(activityCollectCoupons.getType())){
 			
 			//如果是消费返券,要批量插入梯度表
-			if(activityCollectCoupons.getType() == ActivityCollectCouponsType.consume_return.getValue()){
+			if(ActivityCollectCouponsType.consume_return.getValue().equals(activityCollectCoupons.getType())){
 				//修改相比添加,要先删除老数据
 				activityCollectXffqRelationMapper.deleteByCollectId(activityCollectCoupons.getId());
 				activityCollectXffqRelationMapper.saveBatch(xffqRelationList);
@@ -620,7 +620,7 @@ public class ActivityCollectCouponsServiceImpl
 		activityCollectCouponsMapper.updateDynamic(obj);
 
 		// 审核不通过就给代理商发短信,并且解冻代理商金额
-		if (obj.getApprovalStatus() == ActivityCollectCouponsApprovalStatus.noPass.getValue()) {
+		if (ActivityCollectCouponsApprovalStatus.noPass.getValue().equals(obj.getApprovalStatus())) {
 
 			ActivityCollectCoupons acc = activityCollectCouponsMapper.get(obj.getId());
 			// 代理商金额解冻 余额+,冻结-

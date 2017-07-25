@@ -236,12 +236,12 @@ public class ActivityServiceGoodsRecommendServiceImpl extends BaseServiceImpl
 				for(ActivityServiceGoodsRecommend a : accList){
 					try{
 						//未开始的 
-						if(a.getStatus() == ActivityServiceGoodsRecommendStatus.noStart.getValue()){
+						if(ActivityServiceGoodsRecommendStatus.noStart.getValue().equals(a.getStatus())){
 							//根据id修改服务商品活动状态
 							updateStatusById(a.getId(), ActivityServiceGoodsRecommendStatus.ing.getValue(), updateUserId, nowTime);
 						
 						//进行中的改为已结束的
-						}else if(a.getStatus() == ActivityServiceGoodsRecommendStatus.ing.getValue()){
+						}else if(ActivityServiceGoodsRecommendStatus.ing.getValue().equals(a.getStatus())){
 							//根据id修改服务商品活动状态
 							updateStatusById(a.getId(), ActivityServiceGoodsRecommendStatus.end.getValue(), updateUserId, nowTime);
 						}

@@ -267,7 +267,9 @@ public class TradeOrderCompleteProcessServiceImpl
 			throw new ServiceException(LogConstants.ORDER_REFUNDS_ID_IS_NULL);
 		}
 		TradeOrderRefunds orderRefunds = tradeOrderRefundsMapper.selectByPrimaryKey(refundsId);
-		
+		if(orderRefunds == null){
+			throw new ServiceException(LogConstants.ORDER_REFUNDS_NOT_EXISTS);
+		}
 		// Begin V2.3 added by maojj 2017-04-24
         // 只有便利店订单需要同步。服务店不同步
         if(orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER){

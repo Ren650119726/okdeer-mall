@@ -58,7 +58,7 @@ public class ExpressOrderCallbackServiceImpl implements ExpressOrderCallbackServ
         BeanMapper.copy(data, callback);
         expressService.saveCallback(callback);
         //保存骑手信息
-        if (data.getOrderStatus() != null && data.getOrderStatus() == Integer.valueOf(ExpressOrderStatus.STATUS_20.getValue())) {
+        if (Integer.valueOf(ExpressOrderStatus.STATUS_20.getValue()).equals(data.getOrderStatus())) {
             TradeOrderCarrier entity = new TradeOrderCarrier();
             entity.setOrderNo(data.getPartnerOrderCode());
             entity.setCarrierDriverName(data.getCarrierDriverName());
@@ -70,7 +70,7 @@ public class ExpressOrderCallbackServiceImpl implements ExpressOrderCallbackServ
                 entity.setOrderId(tradeOrderList.get(0).getId());
             }
             tradeOrderCarrierService.insert(entity);
-        } else if (data.getOrderStatus() != null && data.getOrderStatus() == Integer.valueOf(ExpressOrderStatus.STATUS_3.getValue())) {
+        } else if (Integer.valueOf(ExpressOrderStatus.STATUS_3.getValue()).equals(data.getOrderStatus())) {
             TradeOrderCarrier entity = new TradeOrderCarrier();
             entity.setOrderNo(data.getPartnerOrderCode());
             entity.setCarrierDriverName(data.getCarrierDriverName());

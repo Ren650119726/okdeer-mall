@@ -388,7 +388,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 		json.put("orderShopMobile", storeMobile);
 		json.put("orderExtractShopName", storeName);
 		json.put("orderShopAddress", address);
-		json.put("storeLogo", storeInfo.getLogoUrl() == null ? "" : storeInfo.getLogoUrl());
+		json.put("storeLogo", storeInfo == null || storeInfo.getLogoUrl() == null ? "" : storeInfo.getLogoUrl());
 
 	}
 

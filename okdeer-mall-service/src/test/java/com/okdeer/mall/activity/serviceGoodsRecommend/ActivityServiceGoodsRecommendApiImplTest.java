@@ -54,7 +54,7 @@ public class ActivityServiceGoodsRecommendApiImplTest extends BaseServiceTest {
 		try {
 			PageUtils<ActivityServiceGoodsRecommend> page = service.list(params, pageNumber,
 					pageSize);
-//			Assert.assertEquals(2, page.getList().size());
+			Assert.assertEquals(2, page.getList().size());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -62,10 +62,10 @@ public class ActivityServiceGoodsRecommendApiImplTest extends BaseServiceTest {
 
 	@Test
 	public void testSave() {
-		try {
+		/*try {
 			ActivityServiceGoodsRecommend r = new ActivityServiceGoodsRecommend();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 }

@@ -55,9 +55,9 @@ public class SeckillQueue implements DisposableBean {
 	@Resource
 	private StringRedisTemplate stringRedisTemplate;
 
-	private static ExecutorService executor = null;
+	private ExecutorService executor = null;
 
-	private static BlockingQueue<OrderQueue<ServiceOrderReq, ServiceOrderResp>> orderQueues = null;
+	private BlockingQueue<OrderQueue<ServiceOrderReq, ServiceOrderResp>> orderQueues = null;
 
 	@Resource
 	RequestHandlerChain<ServiceOrderReq, ServiceOrderResp> submitSeckillOrderChain;
@@ -98,6 +98,9 @@ public class SeckillQueue implements DisposableBean {
 							orderQueue = orderQueues.take();
 						} catch (InterruptedException e) {
 							Log.error("获取消费队列时发生异常");
+							continue;
+						}
+						if(orderQueue == null){
 							continue;
 						}
 						synchronized (orderQueue) {

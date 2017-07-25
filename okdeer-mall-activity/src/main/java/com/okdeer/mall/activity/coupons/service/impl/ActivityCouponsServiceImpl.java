@@ -162,19 +162,19 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Transactional(rollbackFor = Exception.class)
 	public void addCoupons(ActivityCoupons coupons) throws ServiceException {
 		// 0：便利店和服务店，1：便利店 2 服务店 3话费充值
-		if (coupons.getType() == CouponsType.bldfwd.getValue()) {
+		if (CouponsType.bldfwd.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.insert(coupons);
-		} else if (coupons.getType() == CouponsType.hfcz.getValue()) {
+		} else if (CouponsType.hfcz.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.insert(coupons);
-		} else if (coupons.getType() == CouponsType.bldyf.getValue()) {
+		} else if (CouponsType.bldyf.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.insert(coupons);
-		} else if (coupons.getType() == CouponsType.bld.getValue()) {
-			activityCouponsMapper.insert(coupons);
-			this.addRelatedInfo(coupons);
-		} else if (coupons.getType() == CouponsType.fwd.getValue()) {
+		} else if (CouponsType.bld.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.insert(coupons);
 			this.addRelatedInfo(coupons);
-		} else if (coupons.getType() == CouponsType.yyhz.getValue()) {
+		} else if (CouponsType.fwd.getValue().equals(coupons.getType())) {
+			activityCouponsMapper.insert(coupons);
+			this.addRelatedInfo(coupons);
+		} else if (CouponsType.yyhz.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.insert(coupons);
 			//批量插入excel导入的兑换码
 			if(CollectionUtils.isNotEmpty(coupons.getYiyeCodeList())){
@@ -190,7 +190,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 				}
 				activityCouponsThirdCodeMapper.saveBatch(acList);
 			}
-		} else if (coupons.getType() == CouponsType.film.getValue()) {
+		} else if (CouponsType.film.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.insert(coupons);
 			this.addRelatedInfo(coupons);
 		}
@@ -347,13 +347,14 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Transactional(rollbackFor = Exception.class)
 	public void updateCoupons(CouponsInfoQuery coupons) throws ServiceException {
 		// 0：便利店和服务店，1：便利店 2 服务店 3 充值
-		if (coupons.getType() == CouponsType.bldfwd.getValue() || 
-			coupons.getType() == CouponsType.hfcz.getValue()||
-			coupons.getType() == CouponsType.yyhz.getValue() ||
-			coupons.getType() == CouponsType.bldyf.getValue() ) {
+		if (CouponsType.bldfwd.getValue().equals(coupons.getType())
+				|| CouponsType.hfcz.getValue().equals(coupons.getType())
+				|| CouponsType.yyhz.getValue().equals(coupons.getType())
+				|| CouponsType.bldyf.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.updateCoupons(coupons);
-		} else if (coupons.getType() == CouponsType.bld.getValue() || coupons.getType() == CouponsType.fwd.getValue()
-			|| coupons.getType() == CouponsType.film.getValue()) {
+		} else if (CouponsType.bld.getValue().equals(coupons.getType())
+				|| CouponsType.fwd.getValue().equals(coupons.getType())
+				|| CouponsType.film.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.updateCoupons(coupons);
 
 			// 删掉老数据
@@ -507,7 +508,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			}
 		} else if (coupons.getAreaType() == AreaType.community) {
 			ArrayList<ActivityCouponsCommunity> communityList = new ArrayList<>();
-			if (coupons.getAreaIds() != null && coupons.getAreaIds() != "") {
+			if (StringUtils.isNotBlank(coupons.getAreaIds())) {
 				communitys = coupons.getAreaIds().split(",");
 				if (communitys != null && communitys.length > 0) {
 					for (int i = 0; i < communitys.length; i++) {
@@ -532,7 +533,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 		} else if (coupons.getAreaType() == AreaType.store) {
 			ArrayList<ActivityCouponsStore> storeList = new ArrayList<>();
-			if (coupons.getAreaIds() != null && coupons.getAreaIds() != "") {
+			if (StringUtils.isNotBlank(coupons.getAreaIds())) {
 				stores = coupons.getAreaIds().split(",");
 				if (stores != null && stores.length > 0) {
 					for (int i = 0; i < stores.length; i++) {
@@ -555,9 +556,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 		// 代金券关联的分类 1 导航分类 2 服务店店铺商品分类
 		int type = 0;
-		if (coupons.getType() == CouponsType.bld.getValue()) {
+		if (CouponsType.bld.getValue().equals(coupons.getType())) {
 			type = 1;
-		} else if (coupons.getType() == CouponsType.fwd.getValue()) {
+		} else if (CouponsType.fwd.getValue().equals(coupons.getType())) {
 			type = 2;
 		}
 		if (StringUtils.isNotEmpty(coupons.getCategoryIds())) {
@@ -697,7 +698,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 				List<Map<String, Object>> provinceIdList = couponsRelationStoreMapper
 						.selectAddressRelationProvinceByParams(params);
 				if (provinceIdList != null && provinceIdList.size() > 0) {
-					AreaResponseVo areaResponseVo = new AreaResponseVo();
+					// AreaResponseVo areaResponseVo = new AreaResponseVo();
 					// 循环省份id，查询出省名称，并且确定省名称唯一
 					for (Map<String, Object> map : provinceIdList) {
 						AddressCityVo address = new AddressCityVo();

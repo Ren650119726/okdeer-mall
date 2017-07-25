@@ -1065,9 +1065,9 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	 */
 	private void updateActivityCoupons(TradeOrder tradeOrder, ServiceOrderReq reqData) {
 		ActivityTypeEnum activityType = reqData.getActivityType();
-		int couponsType = reqData.getCouponsType();
+//		int couponsType = reqData.getCouponsType();
 
-		if (activityType != ActivityTypeEnum.NO_ACTIVITY && !"".equals(couponsType)) {
+		if (activityType != ActivityTypeEnum.NO_ACTIVITY) {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("orderId", tradeOrder.getId());
 			params.put("id", reqData.getRecordId());

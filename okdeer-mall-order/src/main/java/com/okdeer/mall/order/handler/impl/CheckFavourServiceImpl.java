@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -204,6 +205,9 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				parserBo.setTotalAmountHaveFavour(totalAmount);
 			} else if(coupons.getType() == CouponsType.fwd.ordinal()){
 				Set<String> spuCategoryIds = parserBo == null ? null : parserBo.getCategoryIdSet();
+				if(CollectionUtils.isEmpty(spuCategoryIds)){
+					return false;
+				}
 				int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getId());
 				if (count != spuCategoryIds.size()) {
 					// 超出指定分类
