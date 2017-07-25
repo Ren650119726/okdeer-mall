@@ -18,16 +18,20 @@ import com.okdeer.api.pay.pay.dto.PayResponseDto;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.common.consts.LogConstants;
+import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderPay;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.SendMsgType;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
+import com.okdeer.mall.order.mq.TradeOrderSubScriberHandler;
 import com.okdeer.mall.order.pay.ThirdStatusSubscriber;
 import com.okdeer.mall.order.pay.entity.ResponseResult;
+import com.okdeer.mall.order.service.OrderReturnCouponsService;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
@@ -69,6 +73,15 @@ public abstract class AbstractPayResultHandler {
 	protected TradeOrderItemMapper tradeOrderItemMapper;
 	
 	@Resource
+	private TradeOrderSubScriberHandler tradeOrderSubScriberHandler;
+	
+	/**
+ 	 * 订单返券service
+ 	 */
+ 	@Autowired
+ 	private OrderReturnCouponsService orderReturnCouponsService;
+	
+	@Resource
 	protected SysBuyerFirstOrderRecordService sysBuyerFirstOrderRecordService;
 
 	/**
@@ -104,7 +117,8 @@ public abstract class AbstractPayResultHandler {
 		sendNotifyMessage(tradeOrder);
 		// 第六步 发送超时消息
 		sendTimerMessage(tradeOrder);
-		
+		// 第七步 订单支付完成后 进行其他业务 发送处理
+		sendOtherService(tradeOrder);
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 	}
 	
@@ -143,6 +157,8 @@ public abstract class AbstractPayResultHandler {
 			sendNotifyMessage(tradeOrder);
 			// 第六步 发送超时消息
 			sendTimerMessage(tradeOrder);
+			// 第七步 订单支付完成后 进行其他业务 发送处理
+			sendOtherService(tradeOrder);
 		}else{
 			// 如果支付失败，只需更改订单状态
 			logger.error("订单余额支付失败,订单编号为：" + tradeOrder.getOrderNo());
@@ -150,6 +166,28 @@ public abstract class AbstractPayResultHandler {
 			updateOrderStatus(tradeOrder);
 		}
 	}
+	
+	/**
+	 * @Description: 订单支付完成后 进行其他业务 发送处理
+	 * @param tradeOrder   
+	 * @return void  
+	 * @author tuzhd
+	 * @date 2017年7月25日
+	 */
+	private void sendOtherService(TradeOrder tradeOrder){
+		try {
+			//不是扫码购订单才返券
+			if(tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP){
+				orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+				//下单赠送抽奖活动的抽奖次数
+				tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
+			}
+			
+		} catch (Exception e) {
+			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeOrder.getTradeNum(), e);
+		}
+	}
+	
 	
 	/**
 	 * @Description: 解析Mq消息

@@ -65,9 +65,6 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 	@Resource
 	private TradeOrderMapper tradeOrderMapper;
 	
-	@Resource
-	private TradeOrderSubScriberHandler tradeOrderSubScriberHandler;
-    
 	@Override
 	public String getTopic() {
 		return TOPIC_PAY;
@@ -77,12 +74,6 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 	public String getTags() {
 		return TAG_ORDER + JOINT + TAG_POST_ORDER;
 	}
-	
-	/**
-	 * 订单返券service
-	 */
-	@Autowired
-	private OrderReturnCouponsService orderReturnCouponsService;
 	
 	@Override
 	public ConsumeConcurrentlyStatus subscribeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
@@ -105,20 +96,6 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
 		}
 		
-		// begin add by wushp 20161015  
-		try {
-			if(tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP){
-				//不是扫码购订单才返券
-				orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
-				
-				//下单赠送抽奖活动的抽奖次数
-				tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
-			}
-		} catch (Exception e) {
-			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
-			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-		}
-		// end add by wushp 20161015 
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 	}
 }
