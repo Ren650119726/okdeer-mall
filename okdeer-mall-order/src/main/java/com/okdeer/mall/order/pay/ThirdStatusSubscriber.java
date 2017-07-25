@@ -65,9 +65,6 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 	@Resource
 	private TradeOrderMapper tradeOrderMapper;
 	
-	@Resource
-	private TradeOrderSubScriberHandler tradeOrderSubScriberHandler;
-    
 	@Override
 	public String getTopic() {
 		return TOPIC_PAY;
@@ -77,12 +74,6 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 	public String getTags() {
 		return TAG_ORDER + JOINT + TAG_POST_ORDER;
 	}
-	
-	/**
-	 * 订单返券service
-	 */
-	@Autowired
-	private OrderReturnCouponsService orderReturnCouponsService;
 	
 	@Override
 	public ConsumeConcurrentlyStatus subscribeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
