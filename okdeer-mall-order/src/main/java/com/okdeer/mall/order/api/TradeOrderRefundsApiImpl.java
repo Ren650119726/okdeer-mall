@@ -761,13 +761,16 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 	@Override
 	public List<OrderRefundsDto> findeChargeRefundsListByParams(Map<String, Object> params) throws Exception {
+		List<OrderRefundsDto> result = new ArrayList<OrderRefundsDto>();
 		// 参数处理（例如设置默认参数等）
 		this.convertParamsForFinance(params);
 		List<TradeOrderRefundsChargeVo> list = tradeOrderRefundsService.findeChargeRefundsListByParams(params);
-		if (list != null && list.size() > RECORD_NUM) {
+		if(CollectionUtils.isEmpty(list)){
+			return result;
+		}
+		if (list.size() > RECORD_NUM) {
 			throw new ExceedRangeException("查询导出充值退款单超过一万条", new Throwable());
 		}
-		List<OrderRefundsDto> result = new ArrayList<OrderRefundsDto>();
 		for (TradeOrderRefundsChargeVo vo : list) {
 			OrderRefundsDto dto = new OrderRefundsDto();
 			dto.setId(vo.getId());

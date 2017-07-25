@@ -92,7 +92,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 
 	@Transactional(rollbackFor = Exception.class)
 	public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
-		List<String> rpcIdByStockList = new ArrayList<String>();
+		// List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		try {
 			// 先保存特惠主对象
@@ -160,7 +160,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateSaleStock(ActivitySale activitySale, ActivitySaleGoods activitySaleGoods) throws Exception {
-		List<String> rpcIdByStockList = new ArrayList<String>();
+		// List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		ActivitySaleGoods saleGoods = activitySaleGoodsMapper.get(activitySaleGoods.getId());
 		//活动商品存在并活动库存小于修改库存
@@ -244,7 +244,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 
 	@Transactional(rollbackFor = Exception.class)
 	public void update(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
-		List<String> rpcIdByStockList = new ArrayList<String>();
+		// List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		List<String> rpcIdByBathSkuList = new ArrayList<String>();
 		try {
@@ -394,7 +394,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateBatchStatus(List<String> ids, int status, String storeId, String createUserId,Integer activityType) throws Exception {
-		List<String> rpcIdByStockList = new ArrayList<String>();
+		// List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdByBathSkuList = new ArrayList<String>();
 		try {
 			Map<String, Object> params = new HashMap<String, Object>();
@@ -517,7 +517,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteActivitySaleGoods(String storeId, String createUserId, String activitySaleGoodsId,
 			String goodsStoreSkuId) throws Exception {
-		List<String> rpcIdByStockList = new ArrayList<String>();
+		// List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		try {
 			// 在删除前,先获取对象

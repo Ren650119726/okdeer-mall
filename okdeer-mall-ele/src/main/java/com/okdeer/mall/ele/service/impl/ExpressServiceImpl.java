@@ -369,7 +369,7 @@ public class ExpressServiceImpl implements ExpressService {
     private String getToken() throws Exception {
         String url = API_URL + RequestConstant.obtainToken;
 
-        List<BasicNameValuePair> params = new ArrayList<>();
+        // List<BasicNameValuePair> params = new ArrayList<>();
         String salt = String.valueOf(RandomUtils.getInstance().generateValue(1000, 10000));
         String sig = OpenSignHelper.generateSign(appId, salt, secretKey);
 

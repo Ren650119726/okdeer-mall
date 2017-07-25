@@ -100,15 +100,13 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 	 * @date 2016年11月18日
 	 */
 	private void initialize() {
-		if (!isInitialize) {
-			synchronized (sync) {
-				if (!isInitialize) {
-					try {
-						doInitialize();
-						isInitialize = true;
-					} catch (Exception e) {
-						LOGGER.error("风控获取黑名单初始设置异常", e);
-					}
+		synchronized (sync) {
+			if (!isInitialize) {
+				try {
+					doInitialize();
+					isInitialize = true;
+				} catch (Exception e) {
+					LOGGER.error("风控获取黑名单初始设置异常", e);
 				}
 			}
 		}

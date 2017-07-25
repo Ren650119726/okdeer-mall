@@ -3959,6 +3959,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     @Override
     public JSONObject findUserOrderDetailList(String orderId) throws ServiceException {
+    	if(StringUtils.isEmpty(orderId)){
+    		throw new ServiceException("非法请求参数");
+    	}
         UserTradeOrderDetailVo orders = tradeOrderMapper.selectUserOrderDetail(orderId);
         // Begin 13113 待付款的订单不展示提货码 add by zengj
         if (orders != null
@@ -4254,7 +4257,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         if (receivedTime != null && serviceAssurance != 0) {
             Date nowDate = new Date();
             long nowTime = nowDate.getTime();
-            long endTime = receivedTime.getTime() + serviceAssurance * 24 * 60 * 60 * 1000;
+            long serviceAssuranceTmp = Long.valueOf(serviceAssurance);
+            long endTime = receivedTime.getTime() + serviceAssuranceTmp * 24 * 60 * 60 * 1000;
             if (nowTime < endTime) {
                 flag = "1";
             }

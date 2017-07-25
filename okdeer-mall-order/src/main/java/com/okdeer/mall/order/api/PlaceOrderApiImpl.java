@@ -126,6 +126,10 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			default:
 				break;
 		}
+		if(handlerChain == null){
+			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
+			return resp;
+		}
 		handlerChain.process(req, resp);
 		// 填充响应结果
 		fillResponse(req, resp);

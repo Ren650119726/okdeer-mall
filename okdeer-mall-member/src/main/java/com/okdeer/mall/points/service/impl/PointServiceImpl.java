@@ -196,7 +196,7 @@ public class PointServiceImpl implements PointsService {
 		paramBo.setCode(ruleCode.getCode());
 		paramBo.setUserId(userId);
 		// 查询此账号是否已注册
-		if (ruleCode.getCode() == PointsRuleCode.REGISTER.getCode()) {
+		if (PointsRuleCode.REGISTER.getCode().equals(ruleCode.getCode())) {
 			// 注册只能有一次
 			int records = pointsRecordMapper.statisRecordCount(paramBo);
 			if (records > 0) {

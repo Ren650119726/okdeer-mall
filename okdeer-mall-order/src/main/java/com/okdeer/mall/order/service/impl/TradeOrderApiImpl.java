@@ -216,7 +216,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		}
 
 		List<TradeOrderItemDto> itemDtoList = new ArrayList<TradeOrderItemDto>();
-		if (tradeOrder.getTradeOrderItem() != null) {
+		if (tradeOrder != null && tradeOrder.getTradeOrderItem() != null) {
 			for (TradeOrderItem item : tradeOrder.getTradeOrderItem()) {
 				TradeOrderItemDto itemDto = new TradeOrderItemDto();
 				BeanUtils.copyProperties(itemDto, item);

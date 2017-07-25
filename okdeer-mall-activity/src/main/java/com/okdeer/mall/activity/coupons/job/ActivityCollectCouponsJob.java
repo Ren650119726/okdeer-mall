@@ -50,7 +50,7 @@ public class ActivityCollectCouponsJob extends AbstractSimpleElasticJob {
 				
 				for(ActivityCollectCoupons a : accList){
 					//未开始的 
-					if(a.getStatus() == ActivityCollectCouponsStatus.noStart.getValue()){
+					if(ActivityCollectCouponsStatus.noStart.getValue().equals(a.getStatus())){
 						//代理商提交过来的活动超时没审核就是改为已经失效
 						if(!"0".equals(a.getBelongType()) && 
 							(a.getApprovalStatus() == null || a.getApprovalStatus() == ActivityCollectCouponsApprovalStatus.noApproval.ordinal() )
@@ -63,7 +63,7 @@ public class ActivityCollectCouponsJob extends AbstractSimpleElasticJob {
 						}
 					}
 					//进行中的改为已结束的
-					else if(a.getStatus() == ActivityCollectCouponsStatus.ing.getValue()){
+					else if(ActivityCollectCouponsStatus.ing.getValue().equals(a.getStatus())){
 						listIdIng.add(a.getId());
 					}
 				}

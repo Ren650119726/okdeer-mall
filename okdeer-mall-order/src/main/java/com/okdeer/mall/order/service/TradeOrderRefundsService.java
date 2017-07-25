@@ -203,12 +203,6 @@ public interface TradeOrderRefundsService {
 	Double getSumAmountByOrderId(String orderId) throws Exception;
 
 	/**
-	 * 插入POS退款单
-	 */
-	String updateTradeRefundsWithOfflinePos(List<TradeOrderRefundsItem> items, String orderNo, String refundNo,
-			String userId, Date currentTime) throws Exception;
-
-	/**
 	 * 根据退款状态，查询线上退款单信息（pos--线上退货列表）
 	 * @author wusw
 	 */

@@ -153,15 +153,13 @@ public class RiskSettingServiceImpl extends BaseServiceImpl implements RiskSetti
 	 * @date 2016年11月18日
 	 */
 	private void initialize() {
-		if (!isInitialize) {
-			synchronized (sync) {
-				if (!isInitialize) {
-					try {
-						doInitialize();
-						isInitialize = true;
-					} catch (Exception e) {
-						logger.error("执行风控设置初始异常", e);
-					}
+		synchronized (sync) {
+			if (!isInitialize) {
+				try {
+					doInitialize();
+					isInitialize = true;
+				} catch (Exception e) {
+					logger.error("执行风控设置初始异常", e);
 				}
 			}
 		}

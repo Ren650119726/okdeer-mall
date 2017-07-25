@@ -61,7 +61,7 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 			if (list != null && list.size() > 0) {
 				for (ActivitySale a : list) {
 					try {
-						if (a.getStatus() == ActivitySaleStatus.noStart.getValue()) {
+						if (ActivitySaleStatus.noStart.getValue().equals(a.getStatus())) {
 							// 未开始改为进行中
 							List<String> idList = new ArrayList<String>();
 							idList.add(a.getId());
@@ -69,7 +69,7 @@ public class ActivitySaleJob extends AbstractSimpleElasticJob {
 									a.getStoreId(), "0", ELOperateEnum.UPDATE.ordinal());
 							logger.info("开启特惠活动信息（同步搜索引擎-开启）：activityIds{}",idList);
 							//activitySaleService.updateBatchStatus(idList, ActivitySaleStatus.ing.getValue(), a.getStoreId(), "0");
-						} else if (a.getStatus() == ActivitySaleStatus.ing.getValue()) {
+						} else if (ActivitySaleStatus.ing.getValue().equals(a.getStatus())) {
 							// 进行中改为已关闭
 							List<String> idList = new ArrayList<String>();
 							idList.add(a.getId());

@@ -74,6 +74,9 @@ public class ServAddressSearchServiceImpl implements RequestHandler<ServiceOrder
 			MemberConsigneeAddress memberConsignee = memberConsigneeAddressMapper.getSellerDefaultAddress(reqData.getStoreId());
 			//StoreInfo storeInfo = storeInfoServiceApi.selectDefaultAddressById(reqData.getStoreId());
 			//MemberConsigneeAddress memberConsignee = storeInfo.getMemberConsignee();
+			if(memberConsignee == null){
+				return;
+			}
 			if (memberConsignee != null) {
 				UserAddressVo userAddressVo = new UserAddressVo();
 				BeanUtils.copyProperties(userAddressVo, memberConsignee);

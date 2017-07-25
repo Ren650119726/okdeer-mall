@@ -256,12 +256,12 @@ public class ActivityServiceLimitServiceImpl extends BaseServiceImpl
 		if (CollectionUtils.isNotEmpty(list)) {
 			for (ActivityServiceLimit a : list) {
 				try {
-					if (a.getStatus() == ActivitySaleStatus.noStart.getValue()) {
+					if (ActivitySaleStatus.noStart.getValue().equals(a.getStatus())) {
 						List<String> idList = new ArrayList<String>();
 						idList.add(a.getId());
 						updateBatchStatus(idList, ActivitySaleStatus.ing.getValue(),
 								a.getStoreId(), "0");
-					} else if (a.getStatus() == ActivitySaleStatus.ing.getValue()) {
+					} else if (ActivitySaleStatus.ing.getValue().equals(a.getStatus())) {
 						List<String> idList = new ArrayList<String>();
 						idList.add(a.getId());
 						updateBatchStatus(idList, ActivitySaleStatus.end.getValue(),
