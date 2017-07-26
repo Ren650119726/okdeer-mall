@@ -23,31 +23,31 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
  */
 public interface ActivityCollectCouponsMapper {
 	
-	public void save(ActivityCollectCoupons activityCollectCoupons);
+	void save(ActivityCollectCoupons activityCollectCoupons);
 	
 	/**
 	 * @desc 修改对象
 	 * @param activityCollectCoupons
 	 */
-	public void updateDynamic(ActivityCollectCoupons activityCollectCoupons);
+	void updateDynamic(ActivityCollectCoupons activityCollectCoupons);
 	
 	/**
 	 * @desc 通过主键获取对象
 	 * @param id
 	 * @return
 	 */
-	public ActivityCollectCoupons get(String id);
+	ActivityCollectCoupons get(String id);
 	
 	/**
 	 * @desc 列表搜索
 	 * @param map
 	 * @return
 	 */
-	public List<ActivityCollectCoupons> list(Map<String,Object> map);
+	List<ActivityCollectCoupons> list(Map<String,Object> map);
 	
-	public void updateBatchStatus(Map<String,Object> map);
+	void updateBatchStatus(Map<String,Object> map);
 	
-	public List<ActivityCollectCoupons> listByJob();
+	List<ActivityCollectCoupons> listByJob();
 	
 	/**
 	 * 
@@ -106,7 +106,7 @@ public interface ActivityCollectCouponsMapper {
 	 *
 	 * @param activityCollectCouponsVoList
 	 */
-	public void updateRefundType(List<ActivityCollectCouponsVo> activityCollectCouponsVoList);
+	void updateRefundType(List<ActivityCollectCouponsVo> activityCollectCouponsVoList);
 	
 	/**
 	 * 
@@ -114,7 +114,7 @@ public interface ActivityCollectCouponsMapper {
 	 *
 	 * @param ids
 	 */
-	public void updateRefundTypeByVo(String id);
+	void updateRefundTypeByVo(String id);
 	
 	/**
 	 * 
@@ -229,5 +229,6 @@ public interface ActivityCollectCouponsMapper {
 	 * @author xuzq01
 	 * @date 2017年4月18日
 	 */
-	public ActivityCollectCoupons findCollectCouponsByModelId(@Param("modelId") String modelId, @Param("activityAdvertId") String activityAdvertId);
+	ActivityCollectCoupons findCollectCouponsByModelId(@Param("modelId") String modelId,
+			@Param("activityAdvertId") String activityAdvertId);
 }

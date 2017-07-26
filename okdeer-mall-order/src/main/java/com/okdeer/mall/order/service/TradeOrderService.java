@@ -52,7 +52,15 @@ import net.sf.json.JSONObject;
 public interface TradeOrderService {
 
 	PageUtils<TradeOrder> selectByParams(Map<String, Object> map, int pageNumber, int pageSize) throws ServiceException;
-
+	
+	/**
+	 * zengj:根据参数查询订单信息
+	 *
+	 * @param params
+	 * @return
+	 */
+	List<TradeOrder> selectByParams(Map<String, Object> params);
+	
 	PageUtils<TradeOrder> getTradeOrderByParams(Map<String, Object> map, int pageNumber, int pageSize)
 			throws ServiceException;
 
@@ -610,7 +618,6 @@ public interface TradeOrderService {
 
 	/**
 	 * 销售统计
-	 * @desc TODO Add a description 
 	 * @author zengj
 	 * @param parames
 	 * @return
@@ -684,14 +691,6 @@ public interface TradeOrderService {
 	PageUtils<Map<String, Object>> selectServiceOrderIncomeList(Map<String, Object> params, int pageSize,
 			int pageNumber);
 	// end added by luosm 20161010 V1.1.0
-
-	/**
-	 * zengj:根据参数查询订单信息
-	 *
-	 * @param params
-	 * @return
-	 */
-	List<TradeOrder> selectByParams(Map<String, Object> params);
 
 	/**
 	 * 
@@ -932,16 +931,15 @@ public interface TradeOrderService {
 	 * 更新订单信息
 	 * @param tradeOrder
 	 */
-	public void updateByPrimaryKeySelective(TradeOrder tradeOrder);
+	void updateByPrimaryKeySelective(TradeOrder tradeOrder);
 
 	/**
 	 * 查询导出POS销售单列表
-	 * @desc TODO Add a description 
 	 * @author zengj
 	 * @param params
 	 * @return
 	 */
-	public List<Map<String, Object>> selectPosOrderExportList(Map<String, Object> params);
+	List<Map<String, Object>> selectPosOrderExportList(Map<String, Object> params);
 
 	
 	// Begin 重构4.1 add by wusw 20160719
@@ -1035,7 +1033,7 @@ public interface TradeOrderService {
      * @param result
      * @throws Exception
      */
-    public void dealWithStoreConsumeOrder(TradeOrder tradeOrder) throws Exception;
+    void dealWithStoreConsumeOrder(TradeOrder tradeOrder) throws Exception;
     
     /**
 	 * @Description: tuzhd根据用户id查询其支付完成的订单总量 用于首单条件判断
@@ -1044,7 +1042,7 @@ public interface TradeOrderService {
 	 * @author tuzhd
 	 * @date 2016年12月31日
 	 */
-	public int selectCountByUserStatus(TradeOrderParamDto param);
+	int selectCountByUserStatus(TradeOrderParamDto param);
 	/**
 	 * @Description: 校验用户使用新人专享代金券时 是否符合新用户及未使用该类型代金券的条件
 	 * @param userId
@@ -1052,7 +1050,7 @@ public interface TradeOrderService {
 	 * @author tuzhd
 	 * @date 2016年12月31日
 	 */
-	public boolean checkUserUseCoupons(String userId);
+	boolean checkUserUseCoupons(String userId);
 	
 	// Begin V2.1 added by maojj 2017-02-18
 	/**

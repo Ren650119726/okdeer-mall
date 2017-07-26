@@ -50,13 +50,13 @@ public interface ActivityServiceGoodsRecommendMapper extends IBaseMapper{
 	
 	/**
 	 * 1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束
-	 * @Description: TODO
+	 * @Description: 
 	 * @param map 传递查询参数
 	 * @return List<ActivityServiceGoodsRecommend>  
 	 * @author tuzhd
 	 * @date 2016年11月12日
 	 */
-	public List<ActivityServiceGoodsRecommend>  listByJob(Map<String,Object> map);
+	List<ActivityServiceGoodsRecommend>  listByJob(Map<String,Object> map);
 	
 	/**
 	 * @Description: 查询微信推荐商品列表
@@ -65,6 +65,6 @@ public interface ActivityServiceGoodsRecommendMapper extends IBaseMapper{
 	 * @author zhangkn
 	 * @date 2016年11月14日
 	 */
-	public List<Map<String,Object>> listRecommendGoodsFowWx(Map<String,Object> map);
+	List<Map<String,Object>> listRecommendGoodsFowWx(Map<String,Object> map);
 	
 }

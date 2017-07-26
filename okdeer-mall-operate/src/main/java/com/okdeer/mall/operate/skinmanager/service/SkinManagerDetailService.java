@@ -15,7 +15,6 @@ import com.okdeer.mall.operate.entity.SkinManagerDetail;
 
 /**
  * ClassName: ISkinManagerDetailService 
- * @Description: TODO
  * @author xuzq01
  * @date 2016年11月14日
  *
@@ -34,10 +33,9 @@ public interface SkinManagerDetailService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月5日
 	 */
-	public int addBatch(@Param(value = "detail") List<SkinManagerDetail> detail) throws Exception;
+	int addBatch(@Param(value = "detail") List<SkinManagerDetail> detail) throws Exception;
 
 	/**
-	 * @Description: TODO
 	 * @param detail
 	 * @return
 	 * @throws Exception   

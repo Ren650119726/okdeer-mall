@@ -38,7 +38,6 @@ import com.okdeer.base.common.utils.EncryptionUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseCrudMapper;
-import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.service.BaseCrudServiceImpl;
 import com.okdeer.ca.api.buyeruser.entity.SysBuyerUserConditionDto;
 import com.okdeer.ca.api.buyeruser.entity.SysBuyerUserDto;

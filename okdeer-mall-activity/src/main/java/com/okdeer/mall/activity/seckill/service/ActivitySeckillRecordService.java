@@ -8,10 +8,8 @@ package com.okdeer.mall.activity.seckill.service;
 
 import java.util.Map;
 
-import org.apache.ibatis.annotations.Param;
-
-import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRecord;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRecord;
 
 /**
  * ClassName: ActivitySeckillRecordService 
@@ -30,7 +28,7 @@ public interface ActivitySeckillRecordService {
 
 	/**
 	 * 统计秒杀数量
-	 * @Description: TODO
+	 * @Description: 
 	 * @param params
 	 * @return int 购买的秒杀数量
 	 * @throws
@@ -41,7 +39,7 @@ public interface ActivitySeckillRecordService {
 
 	/**
 	 * 新增秒杀活动买家购买记录
-	 * @Description: TODO
+	 * @Description: 
 	 * @param activitySeckillRecord   
 	 * @return void  
 	 * @throws

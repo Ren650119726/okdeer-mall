@@ -339,6 +339,21 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 		}
 		return true;
 	}
+	
+	private Favour getMaxFavour(List<Coupons> couponList) {
+		Collections.sort(couponList, new Comparator<Coupons>() {
+
+			@Override
+			public int compare(Coupons o1, Coupons o2) {
+				return o2.getMaxFavourStrategy().compareTo(o1.getMaxFavourStrategy());
+			}
+		});
+		if (CollectionUtils.isEmpty(couponList)) {
+			return null;
+		} else {
+			return couponList.get(0);
+		}
+	}
 
 	/**
 	 * @Description: 获取最大优惠
@@ -417,22 +432,6 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 			}
 		}
 		return fareCouponsList;
-	}
-	
-	
-	private Favour getMaxFavour(List<Coupons> couponList) {
-		Collections.sort(couponList, new Comparator<Coupons>() {
-
-			@Override
-			public int compare(Coupons o1, Coupons o2) {
-				return o2.getMaxFavourStrategy().compareTo(o1.getMaxFavourStrategy());
-			}
-		});
-		if (CollectionUtils.isEmpty(couponList)) {
-			return null;
-		} else {
-			return couponList.get(0);
-		}
 	}
 	// End V2.5 added by maojj 2017-06-22
 }

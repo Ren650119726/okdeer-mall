@@ -67,13 +67,11 @@ class TradeOrderComplainServiceImpl implements TradeOrderComplainService, TradeO
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void update(TradeOrderComplain tradeOrderComplain) throws ServiceException {
-		// TODO Auto-generated method stub
 		tradeOrderComplainMapper.insertSelective(tradeOrderComplain);
 	}
 
 	@Override
 	public List<TradeOrderComplainVo> findByOrderId(String orderId) throws ServiceException {
-		// TODO Auto-generated method stub
 		return tradeOrderComplainMapper.findOrderComplainByParams(orderId);
 	}
 	

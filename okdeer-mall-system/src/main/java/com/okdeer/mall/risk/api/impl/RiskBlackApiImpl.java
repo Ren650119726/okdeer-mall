@@ -136,7 +136,7 @@ public class RiskBlackApiImpl implements RiskBlackApi {
 	@Override
 	public void deleteBatchByIds(String accountIds, String updateUserId) {
 		Date updateTime = new Date();
-		List<String> ids = (List<String>) java.util.Arrays.asList(accountIds.split(","));; 
+		List<String> ids = (List<String>) java.util.Arrays.asList(accountIds.split(","));
 		blackListService.deleteBatchByIds(ids,updateUserId,updateTime);
 		
 	}

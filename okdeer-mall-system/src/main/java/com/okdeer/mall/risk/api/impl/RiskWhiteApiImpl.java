@@ -90,7 +90,7 @@ public class RiskWhiteApiImpl implements RiskWhiteApi {
 	@Override
 	public void deleteBatchByIds(String accountIds, String updateUserId) {
 		Date updateTime = new Date();
-		List<String> ids = (List<String>) java.util.Arrays.asList(accountIds.split(","));; 
+		List<String> ids = (List<String>) java.util.Arrays.asList(accountIds.split(","));
 		
 		whiteListService.deleteBatchByIds(ids,updateUserId,updateTime);
 		

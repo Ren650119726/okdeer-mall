@@ -26,7 +26,6 @@ public class ActivityCouponsRecordBeforeMapperTest {
 			List<ActivityCouponsRecordBefore> list = activityCouponsRecordBeforeMapper.getCopyRecords("8a94e446584906ee0158490c33f10008", new Date(), "15813820637");
 			System.out.println(list.size());
 		} catch (ServiceException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

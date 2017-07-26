@@ -7,6 +7,25 @@
 
 package com.okdeer.mall.activity.service.impl;
 
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_ADD;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_DEL;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_ADD;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_DEL;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SECKILL_EL_ADD;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SECKILL_EL_DEL;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SECKILL_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
 import com.alibaba.rocketmq.client.producer.LocalTransactionState;
@@ -27,15 +46,8 @@ import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.activity.service.ArchiveSendMsgService;
 import com.okdeer.mall.activity.service.ELSkuService;
+
 import net.sf.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import java.util.List;
-
-import static com.okdeer.common.consts.ELTopicTagConstants.*;
 
 /**
  * ClassName: ELSkuServiceImpl

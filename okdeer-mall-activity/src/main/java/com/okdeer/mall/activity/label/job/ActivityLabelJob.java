@@ -13,7 +13,7 @@ import com.okdeer.mall.activity.label.service.ActivityLabelApi;
 /**
  * 
  * ClassName: 执行服务标签活动的定时任务处理 
- * @Description: TODO
+ * @Description: 
  * @author tuzhd
  * @date 2016年11月12日
  *

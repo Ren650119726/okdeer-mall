@@ -122,28 +122,7 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
             logger.error("编辑栏位时发送消息异常", e);
         }
 	}
-
-	@Override
-	public void updateSort(String id, boolean isUp) throws Exception {
-		operateFieldsService.updateSort(id, isUp);
-		
-		//查询栏位信息
-		OperateFields operateFields = this.operateFieldsService.findById(id);
-        //发送栏位变更消息
-        GoodsChangedMsgDto msgDto = new GoodsChangedMsgDto();
-        OperateFieldsType type = operateFields.getType();
-        if (type == OperateFieldsType.CITY) {
-            msgDto.setCityId(operateFields.getBusinessId());
-        } else if (type == OperateFieldsType.STORE) {
-            msgDto.setStoreId(operateFields.getBusinessId());
-        }
-        try {
-            produceMessage(msgDto, TAG_RANK_OPERATE_FIELD);
-        } catch (Exception e) {
-            logger.error("栏位变更顺序时发送消息异常", e);
-        }
-	}
-
+	
 	@Override
 	public int update(OperateFieldsDto operateFieldsDto) throws Exception {
 		OperateFields operateFields = BeanMapper.map(operateFieldsDto, OperateFields.class);
@@ -167,6 +146,27 @@ public class OperateFieldsApiImpl implements OperateFieldsApi {
         }
 		
 		return number;
+	}
+
+	@Override
+	public void updateSort(String id, boolean isUp) throws Exception {
+		operateFieldsService.updateSort(id, isUp);
+		
+		//查询栏位信息
+		OperateFields operateFields = this.operateFieldsService.findById(id);
+        //发送栏位变更消息
+        GoodsChangedMsgDto msgDto = new GoodsChangedMsgDto();
+        OperateFieldsType type = operateFields.getType();
+        if (type == OperateFieldsType.CITY) {
+            msgDto.setCityId(operateFields.getBusinessId());
+        } else if (type == OperateFieldsType.STORE) {
+            msgDto.setStoreId(operateFields.getBusinessId());
+        }
+        try {
+            produceMessage(msgDto, TAG_RANK_OPERATE_FIELD);
+        } catch (Exception e) {
+            logger.error("栏位变更顺序时发送消息异常", e);
+        }
 	}
 
 	@Override

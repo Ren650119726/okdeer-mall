@@ -28,7 +28,7 @@ import com.okdeer.base.common.utils.PageUtils;
 /***
  * 
  * ClassName: MemberConsigneeAddressService 
- * @Description: TODO
+ * @Description: 
  * @author luosm
  * @date 2016年10月14日
  *
@@ -293,7 +293,7 @@ public interface MemberConsigneeAddressService {
 	// Begin V2.0 added by maojj 2017-01-07
 	/**
 	 * 
-	 * @Description: TODO
+	 * @Description: 
 	 * @param params
 	 * @return   
 	 * @author maojj

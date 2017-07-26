@@ -86,7 +86,7 @@ public interface SysBuyerUserService{
 
 	// Begin 重构4.1  add by wusw  20160719
 	/**
-	 * @Description: TODO
+	 * @Description: 
 	 * @param id
 	 * @return EntityType  
 	 * @author wusw

@@ -34,7 +34,7 @@ public interface RiskBlackService extends IBaseService {
 			Integer pageSize);
 
 	/**
-	 * @Description: TODO   
+	 * @Description:    
 	 * @author xuzq01
 	 * @param riskBlackList 
 	 * @date 2016年11月16日
@@ -51,7 +51,7 @@ public interface RiskBlackService extends IBaseService {
 	List<RiskBlack> findBlackListByParams(Map<String,Object> map);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 
 	 * @param ids
 	 * @param updateUserId
 	 * @param updateTime   
@@ -97,7 +97,7 @@ public interface RiskBlackService extends IBaseService {
 	public Set<String> findAllBlackLoginAccount();
 
 	/**
-	 * @Description: TODO
+	 * @Description: 
 	 * @param riskBlack
 	 * @return
 	 * @throws Exception   
@@ -107,7 +107,7 @@ public interface RiskBlackService extends IBaseService {
 	int add(RiskBlack riskBlack) throws Exception;
 
 	/**
-	 * @Description: TODO
+	 * @Description: 
 	 * @param riskBlack
 	 * @return   
 	 * @author xuzq01

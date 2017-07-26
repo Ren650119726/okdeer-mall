@@ -12,7 +12,6 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
-import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo;
 
 /**
@@ -37,7 +36,7 @@ public interface ActivityPrizeRecordMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年12月8日
 	 */
-	public List<ActivityPrizeRecordVo> findByUserId(@Param("userId")String userId,@Param("activityId")String activityId);
+	List<ActivityPrizeRecordVo> findByUserId(@Param("userId")String userId,@Param("activityId")String activityId);
 	
 	/**
 	 * 
@@ -47,7 +46,7 @@ public interface ActivityPrizeRecordMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年12月8日
 	 */
-	public List<ActivityPrizeRecordVo> findPrizeRecord(@Param("activityAdvertId")String activityAdvertId,@Param("count")Integer count);
+	List<ActivityPrizeRecordVo> findPrizeRecord(@Param("activityAdvertId")String activityAdvertId,@Param("count")Integer count);
 	
 	/**
 	 * 
@@ -57,7 +56,7 @@ public interface ActivityPrizeRecordMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年12月8日
 	 */
-	public int findCountByPrizeId(String prizeId);
+	int findCountByPrizeId(String prizeId);
 
 	/**
 	 * @Description: 获取奖品记录列表
@@ -66,7 +65,7 @@ public interface ActivityPrizeRecordMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月10日
 	 */
-	public List<ActivityPrizeRecordVo> findPrizeRecordList(ActivityPrizeRecordVo activityPrizeRecordVo);
+	List<ActivityPrizeRecordVo> findPrizeRecordList(ActivityPrizeRecordVo activityPrizeRecordVo);
 	
 	/**
 	 * @Description: 批量更新发放状态
@@ -75,6 +74,6 @@ public interface ActivityPrizeRecordMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年6月20日
 	 */
-	public void updateBathOffer(Map<String,Object> map);
+	void updateBathOffer(Map<String,Object> map);
 	
 }

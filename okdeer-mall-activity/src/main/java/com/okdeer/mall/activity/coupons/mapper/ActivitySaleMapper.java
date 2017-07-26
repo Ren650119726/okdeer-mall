@@ -120,7 +120,7 @@ public interface ActivitySaleMapper {
 	/**
 	 * 
 	 * @Description: 获取短普所有商品
-	 * @return List<Map<String,Object>>  
+	 * @return List<Map<String,Object>> 
 	 * @throws
 	 * @author chenzc
 	 * @date 2017年3月16日

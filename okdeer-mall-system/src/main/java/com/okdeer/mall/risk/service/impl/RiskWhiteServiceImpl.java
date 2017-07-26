@@ -50,7 +50,7 @@ public class RiskWhiteServiceImpl extends BaseServiceImpl implements RiskWhiteSe
 	
 	private String sync = "sync";
 	
-	private final static String TOPIC = "topic_risk_white_notity";
+	private static final String TOPIC = "topic_risk_white_notity";
 	
 	@Autowired
 	private RocketMQProducer producer;

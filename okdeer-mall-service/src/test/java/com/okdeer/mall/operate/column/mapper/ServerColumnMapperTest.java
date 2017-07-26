@@ -22,7 +22,7 @@ import com.okdeer.mall.Application;
 
 /**
  * ClassName: ServerColumnMapperTest 
- * @Description: TODO
+ * @Description: 
  * @author luosm
  * @date 2016年7月18日
  *

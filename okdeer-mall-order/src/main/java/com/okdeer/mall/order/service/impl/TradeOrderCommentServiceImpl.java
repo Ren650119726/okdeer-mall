@@ -304,7 +304,7 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 					@Override
 					public LocalTransactionState executeLocalTransactionBranch(Message msg,
 							Object tradeOrderCommentVoList) {
-						// todo 执行本地业务
+						//  执行本地业务
 						try {
 							addCommentByBatch((List<TradeOrderCommentVo>) tradeOrderCommentVoList);
 							
@@ -418,7 +418,7 @@ public class TradeOrderCommentServiceImpl implements TradeOrderCommentService, T
 	// Begin V2.1 add by wusw 20170216 添加保存店铺评分方法
 	/**
 	 * 
-	 * @Description: TODO
+	 * @Description: 
 	 * @param dto
 	 * @throws ServiceException
 	 * @author wusw

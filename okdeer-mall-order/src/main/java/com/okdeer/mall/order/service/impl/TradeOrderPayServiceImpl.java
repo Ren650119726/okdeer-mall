@@ -179,9 +179,9 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		try {
 			BeanUtils.copyProperties(tradeOrderLog, orderLog);
 		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+			logger.error("对象转换发生异常：",e);
 		} catch (InvocationTargetException e) {
-			e.printStackTrace();
+			logger.error("对象转换发生异常：",e);
 		}
 
 		tradeOrderLogMapper.insertSelective(tradeOrderLog);

@@ -150,8 +150,6 @@ public class SafetyStockTriggerSubscriber {
 				if (stock != null && stock.getSellable() != null 
 						&& activitySaleGoods.getSecurityStock().intValue() > stock.getSellable().intValue()) {
 					getSaleReminds(activitySaleGoods);
-				} else {
-					
 				}
 			}
 		} catch (Exception e) {

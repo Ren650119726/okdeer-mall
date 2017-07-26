@@ -14,7 +14,6 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
@@ -27,14 +26,10 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
-import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
-import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
-import com.okdeer.mall.order.mq.TradeOrderSubScriberHandler;
 import com.okdeer.mall.order.pay.callback.AbstractPayResultHandler;
 import com.okdeer.mall.order.pay.callback.PayResultHandlerFactory;
-import com.okdeer.mall.order.service.OrderReturnCouponsService;
 
 /**
  * @ClassName: AlipayStatusSubscriber

@@ -260,14 +260,6 @@ public class ActivityGroupServiceImpl implements ActivityGroupServiceApi, Activi
 		return new PageUtils<ActivityGroup>(activityGroups);
 	}
 
-	public static void main(String[] args) {
-		String formJson = "{activityGroup={\"id\":\"8a94e43d5308a033015308a033a70000\",\"city\":\"[{'id':'81','pId':'3','name':'衡水市'}]\",\"areaType\":\"1\"}";
-		JSONObject json = JSONObject.fromObject(formJson);
-		ActivityGroup activityGroup = (ActivityGroup) JSONObject.toBean((JSONObject) json.get("activityGroup"),
-				ActivityGroup.class);
-		System.out.println(activityGroup);
-	}
-
 	@Override
 	public void publishActivityGroup(JSONObject json, SysUser user, Object city) throws Exception {
 		// 团购活动

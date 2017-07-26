@@ -37,6 +37,6 @@ public interface ActivityServiceGoodsRecommendAreaMapper {
 	 * @author YSCGD
 	 * @date 2016年11月8日
 	 */
-	public List<ActivityServiceGoodsRecommendArea> listByActivityId(String activityId);
+	List<ActivityServiceGoodsRecommendArea> listByActivityId(String activityId);
 	
 }

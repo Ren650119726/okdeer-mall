@@ -422,7 +422,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		stockUpdateDto.setStockOperateEnum(StockOperateEnum.ACTIVITY_STOCK);
 
 		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
-		StockUpdateDetailDto updateDetail =  new StockUpdateDetailDto();;
+		StockUpdateDetailDto updateDetail =  new StockUpdateDetailDto();
 		updateDetail.setStoreSkuId(activitySeckillFormVo.getStoreSkuId());
 		updateDetail.setSpuType(SpuTypeEnum.serviceSpu);
 		updateDetail.setActType(ActivityTypeEnum.SECKILL_ACTIVITY);
@@ -449,7 +449,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		stockUpdateDto.setStockOperateEnum(StockOperateEnum.ACTIVITY_END);
 
 		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
-		StockUpdateDetailDto updateDetail =  new StockUpdateDetailDto();;
+		StockUpdateDetailDto updateDetail =  new StockUpdateDetailDto();
 		updateDetail.setStoreSkuId(storeSkuId);
 		updateDetail.setActType(ActivityTypeEnum.SECKILL_ACTIVITY);
 		updateDetail.setUpdateLockedNum(0);

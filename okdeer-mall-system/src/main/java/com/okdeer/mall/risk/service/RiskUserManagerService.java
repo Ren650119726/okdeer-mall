@@ -49,7 +49,7 @@ public interface RiskUserManagerService extends IBaseService {
 	PageUtils<RiskUserManager> findUserList(RiskUserManagerDto userManagerDto, Integer pageNumber, Integer pageSize);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 
 	 * @param ids
 	 * @param updateUserId
 	 * @param updateTime   
@@ -59,7 +59,7 @@ public interface RiskUserManagerService extends IBaseService {
 	void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 
 	 * @param riskUserManager
 	 * @return   
 	 * @author xuzq01

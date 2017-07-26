@@ -1,7 +1,6 @@
 package com.okdeer.mall.system.service;
 
 import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.service.IBaseCrudService;
 
 /**
  * @DESC: 

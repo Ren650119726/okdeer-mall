@@ -18,7 +18,7 @@ import com.okdeer.mall.operate.operatefields.entity.OperateFieldsContent;
 
 /**
  * ClassName: OperateFieldsContentMapper 
- * @Description: TODO
+ * @Description: 
  * @author zengjizu
  * @date 2017年4月13日
  *

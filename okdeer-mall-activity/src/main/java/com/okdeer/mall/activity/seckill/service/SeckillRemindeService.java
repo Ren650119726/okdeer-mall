@@ -12,7 +12,6 @@ import com.okdeer.mall.order.vo.SendMsgParamVo;
 
 /**
  * ClassName: SeckillRemindeService 
- * @Description: TODO
  * @author yangq
  * @date 2016年9月28日
  *

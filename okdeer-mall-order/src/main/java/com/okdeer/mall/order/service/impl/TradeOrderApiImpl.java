@@ -420,7 +420,6 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	 */
 	@Override
 	public TradeOrderDto selectByOrderId(String orderId) throws Exception {
-		// TODO Auto-generated method stub
 		TradeOrder order = tradeOrderService.erpSelectByOrderId(orderId);
 		TradeOrderDto tradeOrderDto = new TradeOrderDto();
 
@@ -550,7 +549,6 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	 */
 	@Override
 	public TradeOrderDto selectByServiceOrderId(String orderId) throws Exception {
-		// TODO Auto-generated method stub
 		TradeOrderDto tradeOrderDto = new TradeOrderDto();
 		TradeOrder order = tradeOrderService.erpSelectByServiceOrderId(orderId);
 		tradeOrderDto.setType(order.getType().ordinal());

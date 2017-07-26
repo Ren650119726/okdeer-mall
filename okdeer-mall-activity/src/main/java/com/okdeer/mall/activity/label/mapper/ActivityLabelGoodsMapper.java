@@ -18,6 +18,6 @@ public interface ActivityLabelGoodsMapper {
 
 	void deleteByActivityId(String activityId);
 	
-	public List<ActivityLabelGoods> listByActivityId(String activityId);
+	List<ActivityLabelGoods> listByActivityId(String activityId);
 	
 }

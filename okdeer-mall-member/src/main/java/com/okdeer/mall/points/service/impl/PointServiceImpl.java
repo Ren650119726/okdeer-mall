@@ -164,6 +164,28 @@ public class PointServiceImpl implements PointsService {
 		addRankRecord(addPointsParamDto.getUserId(), addPointsParamDto.getBusinessId(), 1,
 				addPointsParamDto.getAmount(), growthVal);
 	}
+	
+	/**
+	 * @Description: 添加用户成长值记录
+	 * @param userId 用户id
+	 * @param bussinessId 业务id
+	 * @param type 类型 1:加成长值 2:减成长值
+	 * @param amount 金额
+	 * @param growthVal 成长值
+	 * @author zengjizu
+	 * @date 2017年1月7日
+	 */
+	private void addRankRecord(String userId, String bussinessId, int type, BigDecimal amount, int growthVal) {
+		SysBuyerRankRecord buyerRankRecord = new SysBuyerRankRecord();
+		buyerRankRecord.setBusinessId(bussinessId);
+		buyerRankRecord.setBusinessType(type);
+		buyerRankRecord.setConsumeAmount(amount);
+		buyerRankRecord.setCreateTime(new Date());
+		buyerRankRecord.setGrowthVal(growthVal);
+		buyerRankRecord.setId(UuidUtils.getUuid());
+		buyerRankRecord.setUserId(userId);
+		sysBuyerRankRecordMapper.add(buyerRankRecord);
+	}
 
 	/**
 	 * @Description: 校验是否满足规则
@@ -549,27 +571,4 @@ public class PointServiceImpl implements PointsService {
 		}
 		sysBuyerExtMapper.updateByPrimaryKeySelective(sysBuyerExt);
 	}
-
-	/**
-	 * @Description: 添加用户成长值记录
-	 * @param userId 用户id
-	 * @param bussinessId 业务id
-	 * @param type 类型 1:加成长值 2:减成长值
-	 * @param amount 金额
-	 * @param growthVal 成长值
-	 * @author zengjizu
-	 * @date 2017年1月7日
-	 */
-	private void addRankRecord(String userId, String bussinessId, int type, BigDecimal amount, int growthVal) {
-		SysBuyerRankRecord buyerRankRecord = new SysBuyerRankRecord();
-		buyerRankRecord.setBusinessId(bussinessId);
-		buyerRankRecord.setBusinessType(type);
-		buyerRankRecord.setConsumeAmount(amount);
-		buyerRankRecord.setCreateTime(new Date());
-		buyerRankRecord.setGrowthVal(growthVal);
-		buyerRankRecord.setId(UuidUtils.getUuid());
-		buyerRankRecord.setUserId(userId);
-		sysBuyerRankRecordMapper.add(buyerRankRecord);
-	}
-
 }

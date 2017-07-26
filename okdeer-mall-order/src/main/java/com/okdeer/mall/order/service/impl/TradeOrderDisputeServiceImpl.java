@@ -113,13 +113,11 @@ class TradeOrderDisputeServiceImpl implements TradeOrderDisputeService, TradeOrd
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateByApplyDispute(TradeOrderDispute tradeOrderDispute) throws ServiceException {
-		// TODO Auto-generated method stub
 		tradeOrderDisputeMapper.insertDispute(tradeOrderDispute);
 	}
 
 	@Override
 	public TradeOrderDispute findById(String id) throws ServiceException {
-		// TODO Auto-generated method stub
 		return tradeOrderDisputeMapper.selectByPrimaryKey(id);
 	}
 }

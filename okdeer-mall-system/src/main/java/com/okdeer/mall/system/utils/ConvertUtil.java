@@ -188,24 +188,8 @@ public class ConvertUtil {
 		return priceConvertToString(price,num,type);
 	}
 	
-	/**
-	 * @Description: 格式化字符串
-	 * @param str
-	 * @return   
-	 * @author maojj
-	 * @date 2016年9月23日
-	 */
-	public static Integer parseInt(String str){
-		String convertStr = format(str,DEFAULT_NULL_STR);
-		return Integer.parseInt(convertStr);
-	}
-	
 	public static String format(String str){
 		return format(str,DEFAULT_NULL_STR);
-	}
-	
-	public static Integer format(Integer intVal){
-		return intVal == null ? Integer.valueOf(0) : intVal;
 	}
 	
 	/**
@@ -218,5 +202,21 @@ public class ConvertUtil {
 	 */
 	public static String format(String str,String defaultStr){
 		return str == null ? defaultStr : str;
+	}
+	
+	public static Integer format(Integer intVal){
+		return intVal == null ? Integer.valueOf(0) : intVal;
+	}
+	
+	/**
+	 * @Description: 格式化字符串
+	 * @param str
+	 * @return   
+	 * @author maojj
+	 * @date 2016年9月23日
+	 */
+	public static Integer parseInt(String str){
+		String convertStr = format(str,DEFAULT_NULL_STR);
+		return Integer.parseInt(convertStr);
 	}
 }

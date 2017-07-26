@@ -31,7 +31,7 @@ import com.okdeer.mall.risk.service.RiskOrderRecordService;
 
 /**
  * ClassName: RiskOrderRecordServiceTest 
- * @Description: TODO
+ * @Description: 
  * @author xuzq01
  * @date 2016年11月25日
  *

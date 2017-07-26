@@ -201,7 +201,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 		String reason = tradeOrder.getReason();
 		// 判断订单取消类型：0：系统取消，1：用户取消，2：商家取消
 		OrderCancelType cancelType = tradeOrder.getCancelType();
-		// TODO 是否有违约金 0:否，1:是
+		// 是否有违约金 0:否，1:是
 		WhetherEnum isBreach = tradeOrder.getIsBreach();
 		// 查询当前订单
 		TradeOrder currentOrder = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
@@ -234,7 +234,7 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 				case DROPSHIPPING:
 					if (cancelType == OrderCancelType.CANCEL_BY_BUYER) {
 						if (isBreach == WhetherEnum.whether) {
-							// TODO 第二个参数时违约金的百分比
+							// 第二个参数时违约金的百分比
 							remark = String.format(OrderTraceConstant.CANCEL_BY_USER_BREAK_CONTRACT, reason, tradeOrder.getBreachPercent(),ConvertUtil.format(tradeOrder.getBreachMoney()));
 						} else {
 							remark = String.format(OrderTraceConstant.CANCEL_BY_USER_DROPSHIPPING, reason);
@@ -306,13 +306,9 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 			return true;
 		}
 		TradeOrderTrace firstNode = traceList.get(0);
-		if (firstNode.getTraceStatus() != OrderTraceEnum.SUBMIT_ORDER
-				&& firstNode.getTraceStatus() != OrderTraceEnum.WAIT_RECEIVE) {
-			// 如果第一个轨迹节点不是提交订单或者是待接单，也认为是历史订单
-			return true;
-		} else {
-			return false;
-		}
+		// 如果第一个轨迹节点不是提交订单或者是待接单，也认为是历史订单
+		return firstNode.getTraceStatus() != OrderTraceEnum.SUBMIT_ORDER
+				&& firstNode.getTraceStatus() != OrderTraceEnum.WAIT_RECEIVE;
 	}
 
 	/**

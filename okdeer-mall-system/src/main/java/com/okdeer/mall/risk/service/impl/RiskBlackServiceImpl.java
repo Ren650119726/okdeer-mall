@@ -53,7 +53,7 @@ public class RiskBlackServiceImpl extends BaseServiceImpl implements RiskBlackSe
 
 	private String sync = "sync";
 
-	private final static String TOPIC = "topic_risk_black_notity";
+	private static final String TOPIC = "topic_risk_black_notity";
 	
 	@Autowired
 	private RocketMQProducer producer;

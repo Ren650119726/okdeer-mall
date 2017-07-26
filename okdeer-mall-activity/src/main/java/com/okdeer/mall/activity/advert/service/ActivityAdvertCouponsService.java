@@ -28,7 +28,7 @@ public interface ActivityAdvertCouponsService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertCoupons findAdvertCouponsByIdNo(int modelNo,String activityAdvertId);
+    ActivityAdvertCoupons findAdvertCouponsByIdNo(int modelNo,String activityAdvertId);
     
     /**
      * @Description: 添加代金券关联信息
@@ -37,7 +37,7 @@ public interface ActivityAdvertCouponsService extends IBaseService {
      * @author tuzhd
      * @date 2017年4月17日
      */
-    public int addCoupons(ActivityAdvertCoupons coupons);
+    int addCoupons(ActivityAdvertCoupons coupons);
     
     /**
 	 * @Description: 删除关联代金券信息by活动id
@@ -47,6 +47,6 @@ public interface ActivityAdvertCouponsService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月19日
 	 */
-	public int deleteByActivityAdvertId(String activityAdvertId);
+	int deleteByActivityAdvertId(String activityAdvertId);
     
 }

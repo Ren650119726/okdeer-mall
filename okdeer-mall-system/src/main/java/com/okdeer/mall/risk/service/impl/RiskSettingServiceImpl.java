@@ -50,11 +50,11 @@ import com.okdeer.mall.risk.service.RiskSettingService;
 @Service
 public class RiskSettingServiceImpl extends BaseServiceImpl implements RiskSettingService,IMQMessageReceive {
 
-	private final static Logger logger = LoggerFactory.getLogger(RiskSettingServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(RiskSettingServiceImpl.class);
 
 	private String sync = "sync";
 
-	private final static String TOPIC = "topic_risk_setting_notity";
+	private static final String TOPIC = "topic_risk_setting_notity";
 
 	/**
 	 * 未使用优惠提醒限制明细

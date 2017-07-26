@@ -56,7 +56,7 @@ public interface ActivityAdvertService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月18日
 	 */
-	public void addActivityAdvert(ActivityAdvert activityAdvert)throws Exception;
+	void addActivityAdvert(ActivityAdvert activityAdvert)throws Exception;
 
 	/**
 	 * @Description: 根据状态获取列表

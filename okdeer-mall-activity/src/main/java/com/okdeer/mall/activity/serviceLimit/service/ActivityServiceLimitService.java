@@ -9,7 +9,6 @@ import com.okdeer.mall.activity.serviceLimit.entity.ActivityServiceLimitGoods;
 
 /**
  * ClassName: ActivityLimitService 
- * @Description: TODO
  * @author zhangkn
  * @date 2016年12月9日
  *

@@ -8,7 +8,7 @@ import com.okdeer.base.common.exception.ServiceException;
 /**
  * 
  * ClassName: TradeOrderPayService 
- * @Description: TODO
+ * @Description: 
  * @author zengjizu
  * @date 2016年11月18日
  *

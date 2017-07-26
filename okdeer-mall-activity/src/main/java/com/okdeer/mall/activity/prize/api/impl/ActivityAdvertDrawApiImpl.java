@@ -10,9 +10,7 @@ package com.okdeer.mall.activity.prize.api.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.mall.activity.advert.entity.ActivityAdvertCoupons;
 import com.okdeer.mall.activity.prize.entity.ActivityAdvertDraw;
-import com.okdeer.mall.activity.prize.mapper.ActivityAdvertDrawMapper;
 import com.okdeer.mall.activity.prize.service.ActivityAdvertDrawApi;
 import com.okdeer.mall.activity.prize.service.ActivityAdvertDrawService;
 

@@ -7,6 +7,17 @@
  */
 package com.okdeer.mall.operate.column.service.impl;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
@@ -18,19 +29,23 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.DistrictType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
-import com.okdeer.mall.operate.column.mapper.*;
+import com.okdeer.mall.operate.column.mapper.ColumnOperationAreaMapper;
+import com.okdeer.mall.operate.column.mapper.ColumnOperationCommunityMapper;
+import com.okdeer.mall.operate.column.mapper.ColumnOperationMapper;
+import com.okdeer.mall.operate.column.mapper.ColumnOperationRelationMapper;
+import com.okdeer.mall.operate.column.mapper.ColumnOperationVersionMapper;
 import com.okdeer.mall.operate.column.service.ColumnOperationService;
 import com.okdeer.mall.operate.dto.ColumnOperationRelationParamDto;
 import com.okdeer.mall.operate.dto.ColumnOperationVersionParamDto;
-import com.okdeer.mall.operate.entity.*;
+import com.okdeer.mall.operate.entity.ColumnOperation;
+import com.okdeer.mall.operate.entity.ColumnOperationArea;
+import com.okdeer.mall.operate.entity.ColumnOperationCommunity;
+import com.okdeer.mall.operate.entity.ColumnOperationQueryVo;
+import com.okdeer.mall.operate.entity.ColumnOperationRelation;
+import com.okdeer.mall.operate.entity.ColumnOperationVersion;
+import com.okdeer.mall.operate.entity.ColumnOperationVo;
 import com.okdeer.mall.operate.enums.State;
 import com.okdeer.mall.operate.service.IColumnOperationServiceApi;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
 
 /**
  * 运营栏目service实现
@@ -408,9 +423,8 @@ public class ColumnOperationServiceImpl implements ColumnOperationService, IColu
 				// 未开始的
 				if (a.getState() == State.noStart) {
 					listIdIng.add(a.getId());
-				}
-				// 进行中的改为已结束的
-				else if (a.getState() == State.underWay) {
+				}else if (a.getState() == State.underWay) {
+					// 进行中的改为已结束的
 					listIdEnd.add(a.getId());
 				}
 			}

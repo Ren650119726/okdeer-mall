@@ -1320,7 +1320,6 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 	@Override
 	public Response<ServiceOrderResp> submitSeckillOrder(Request<ServiceOrderReq> req, Response<ServiceOrderResp> resp)
 			throws OrderException, Exception {
-		// TODO Auto-generated method stub
 		resp.setData(new ServiceOrderResp());
 		req.setOrderOptType(OrderOptTypeEnum.ORDER_SUBMIT);
 		OrderQueue<ServiceOrderReq, ServiceOrderResp> orderQueue = new OrderQueue<ServiceOrderReq, ServiceOrderResp>(

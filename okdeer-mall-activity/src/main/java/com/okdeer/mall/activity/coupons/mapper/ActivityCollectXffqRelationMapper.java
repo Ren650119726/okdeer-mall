@@ -7,7 +7,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectXffqRelation;
 
 /**
  * ClassName: ActivityCollectXffqRelationMapper 
- * @Description: TODO
+ * @Description: 
  * @author zhangkn
  * @date 2017年6月23日
  *

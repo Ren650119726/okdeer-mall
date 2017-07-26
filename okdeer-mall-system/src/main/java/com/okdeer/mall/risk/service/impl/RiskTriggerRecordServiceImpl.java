@@ -6,7 +6,6 @@
  */    
 package com.okdeer.mall.risk.service.impl;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +21,7 @@ import com.okdeer.mall.risk.service.RiskTriggerRecordService;
 
 /**
  * ClassName: RiskTriggerRecordServiceImpl 
- * @Description: TODO
+ * @Description: 
  * @author guocp
  * @date 2016年11月17日
  *

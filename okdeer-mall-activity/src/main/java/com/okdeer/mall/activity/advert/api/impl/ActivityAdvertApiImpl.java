@@ -349,15 +349,20 @@ public class ActivityAdvertApiImpl implements ActivityAdvertApi {
 		int modelType = result.getModelType().ordinal();
 		switch(modelType){
 			case 0:
-				getCloudStoreInfo(result); break;
+				getCloudStoreInfo(result); 
+				break;
 			case 1:
-				getSaleInfo(result); break;
+				getSaleInfo(result); 
+				break;
 			case 2:
-				getServiceStoreInfo(result); break;
+				getServiceStoreInfo(result); 
+				break;
 			case 3:
-				getCouponInfo(result);break;
+				getCouponInfo(result);
+				break;
 			case 4:
-				getDrawInfo(result);break;
+				getDrawInfo(result);
+				break;
 			default:break;
 		}
 		return result;

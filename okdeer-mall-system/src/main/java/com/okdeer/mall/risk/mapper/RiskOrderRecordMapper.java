@@ -56,7 +56,6 @@ public interface RiskOrderRecordMapper extends IBaseMapper {
 	Set<String> findLoginNamesByParam(@Param("deviceId") String deviceId, @Param("isPreferential") int isPreferential);
 	
 	/**
-	 * @Description: TODO   
 	 * @author xuzq01
 	 * @date 2016年11月25日
 	 */

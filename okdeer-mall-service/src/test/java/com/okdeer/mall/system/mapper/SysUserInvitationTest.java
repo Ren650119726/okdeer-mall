@@ -1,13 +1,9 @@
 package com.okdeer.mall.system.mapper;
 
-import static org.junit.Assert.*;
-
 import java.util.Date;
-import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;

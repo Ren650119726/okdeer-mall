@@ -15,22 +15,20 @@ import com.okdeer.mall.operate.entity.SkinManagerDetail;
 public interface SkinManagerDetailMapper extends IBaseMapper {
 
 	/**
-	 * @Description: TODO
 	 * @param detail
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年11月14日
 	 */
-	public int addBatch(List<SkinManagerDetail> detail);
+	int addBatch(List<SkinManagerDetail> detail);
 
 	/**
-	 * @Description: TODO
 	 * @param detail
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年11月14日
 	 */
-	public int updateBatch(List<SkinManagerDetail> detail);
+	int updateBatch(List<SkinManagerDetail> detail);
 	
 	/**
 	 * @Description: 根据皮肤管理Id删除皮肤详情   

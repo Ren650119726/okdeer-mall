@@ -31,7 +31,7 @@ public interface RiskWhiteService extends IBaseService{
 	
 	/**
 	 * 
-	 * @Description: TODO
+	 * @Description: 
 	 * @param whiteManagerDto
 	 * @param pageNumber
 	 * @param pageSize
@@ -43,7 +43,7 @@ public interface RiskWhiteService extends IBaseService{
 			Integer pageSize);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 
 	 * @param ids
 	 * @param updateUserId
 	 * @param updateTime   
@@ -53,7 +53,7 @@ public interface RiskWhiteService extends IBaseService{
 	public void deleteBatchByIds(List<String> ids, String updateUserId, Date updateTime);
 
 	/**
-	 * @Description: TODO
+	 * @Description: 
 	 * @param riskWhiteList   
 	 * @author xuzq01
 	 * @date 2016年11月17日

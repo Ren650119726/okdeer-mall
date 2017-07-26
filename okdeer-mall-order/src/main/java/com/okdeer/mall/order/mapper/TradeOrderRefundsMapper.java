@@ -273,18 +273,17 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	/**
 	 * 商家中心首页 根据状态统计退款单数量(张克能加)
 	 */
-	public Integer selectRefundsCountForIndex(@Param("storeId")
+	Integer selectRefundsCountForIndex(@Param("storeId")
 	String storeId, @Param("refundsStatusList")
 	List<Integer> refundsStatusList);
 
 	/**
 	 * 查询pos退款单导出列表
-	 * @desc TODO Add a description 
 	 * @author zengj
 	 * @param params
 	 * @return
 	 */
-	public List<Map<String, Object>> selectPosRefundExportList(Map<String, Object> params);
+	List<Map<String, Object>> selectPosRefundExportList(Map<String, Object> params);
 
 	// begin 根据订单id查询退款详情 add by zhulq 2019-7-19
 	/**

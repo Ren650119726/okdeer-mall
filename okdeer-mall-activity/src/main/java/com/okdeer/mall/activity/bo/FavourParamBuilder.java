@@ -140,7 +140,7 @@ public class FavourParamBuilder {
 		
 		paramBO.setUserId(reqDto.getUserId());
 		paramBO.setStoreId(reqDto.getStoreId());
-		paramBO.setStoreType((storeType));
+		paramBO.setStoreType(storeType);
 		paramBO.setCouponsType(EnumAdapter.convert(storeType));
 		paramBO.setTotalAmount(reqDto.getTotalAmount());
 		if(storeType == StoreTypeEnum.SERVICE_STORE){
@@ -173,7 +173,7 @@ public class FavourParamBuilder {
 		
 		paramBO.setUserId(orderReq.getUserId());
 		paramBO.setStoreId(orderReq.getStoreId());
-		paramBO.setStoreType((storeType));
+		paramBO.setStoreType(storeType);
 		paramBO.setCouponsType(EnumAdapter.convert(storeType));
 		paramBO.setTotalAmount(totalAmount);
 		if(storeType == StoreTypeEnum.SERVICE_STORE){
