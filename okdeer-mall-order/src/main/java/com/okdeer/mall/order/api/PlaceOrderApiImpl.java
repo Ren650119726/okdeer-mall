@@ -137,6 +137,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	}
 
 	/**
+	 * 
 	 * @Description: 填充响应结果
 	 * @param req
 	 * @param resp   
@@ -170,7 +171,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				for(CurrentStoreSkuBo skuBo:parserBo.getCurrentSkuMap().values()){
 					if(StringUtils.isEmpty(paramDto.getVersion()) && skuBo.getActivityType() == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()){
 						// 如果是2.1版本之前的特惠商品，特惠商品的可售库存中存储特惠商品的锁定库存
-						skuBo.setSellable(skuBo.getLocked());;
+						skuBo.setSellable(skuBo.getLocked());
 					}
 					skuList.add(skuBo);
 				}

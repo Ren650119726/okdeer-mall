@@ -198,7 +198,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 
 		tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUserId(),
 				tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
-		// 更新库存TODO
+		// 更新库存
 		updateStock(tradeOrder, paramDto);
 		// 如果订单实付金额为0，调用余额支付进行支付。
 		if (tradeOrder.getActualAmount().compareTo(BigDecimal.valueOf(0.0)) == 0

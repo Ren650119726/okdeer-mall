@@ -19,7 +19,7 @@ import com.okdeer.mall.system.service.SysUserInvitationRecordApi;
 
 /**
  * ClassName: SysUserInvitationRecordServiceImpl 
- * @Description: TODO
+ * @Description: 
  * @author yangq
  * @date 2016年10月4日
  *

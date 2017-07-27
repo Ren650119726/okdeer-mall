@@ -31,7 +31,6 @@ import com.okdeer.mall.risk.entity.RiskBlack;
 public interface RiskBlackMapper extends IBaseMapper {
 
 	/**
-	 * @Description: TODO
 	 * @param blackManagerDto
 	 * @return   
 	 * @author xuzq01
@@ -40,7 +39,6 @@ public interface RiskBlackMapper extends IBaseMapper {
 	List<RiskBlack> findBlackList(RiskBlackDto blackManagerDto);
 	
 	/**
-	 * @Description: TODO
 	 * @param ids
 	 * @param updateUserId
 	 * @param updateTime   
@@ -50,7 +48,6 @@ public interface RiskBlackMapper extends IBaseMapper {
 	void deleteBatchByIds(@Param("ids")List<String> ids,@Param("updateUserId") String updateUserId,@Param("updateTime") Date updateTime);
 	
 	/**
-	 * @Description: TODO
 	 * @param riskBlackList   
 	 * @author xuzq01
 	 * @date 2016年11月17日
@@ -67,7 +64,6 @@ public interface RiskBlackMapper extends IBaseMapper {
 	List<RiskBlack> findBlackListByParams(Map<String,Object> map);
 
 	/**
-	 * @Description: TODO
 	 * @param riskBlack
 	 * @return   
 	 * @author xuzq01
@@ -76,7 +72,6 @@ public interface RiskBlackMapper extends IBaseMapper {
 	int findCountByAccount(RiskBlack riskBlack);
 
 	/**
-	 * @Description: TODO
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年11月21日
@@ -84,7 +79,6 @@ public interface RiskBlackMapper extends IBaseMapper {
 	Set<RiskBlack> findAllBlackMobile();
 
 	/**
-	 * @Description: TODO
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年11月21日
@@ -92,7 +86,6 @@ public interface RiskBlackMapper extends IBaseMapper {
 	Set<RiskBlack> findAllBlackDevice();
 
 	/**
-	 * @Description: TODO
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年11月21日
@@ -100,7 +93,6 @@ public interface RiskBlackMapper extends IBaseMapper {
 	Set<RiskBlack> findAllBlackPayAccount();
 
 	/**
-	 * @Description: TODO
 	 * @return   
 	 * @author xuzq01
 	 * @date 2016年11月21日

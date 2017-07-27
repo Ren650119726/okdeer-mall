@@ -1,7 +1,6 @@
 package com.okdeer.mall.operate.operatefields.service;
 
 import java.util.List;
-import java.util.Set;
 
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.operate.dto.FieldGoodsQueryDto;

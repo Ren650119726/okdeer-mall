@@ -77,7 +77,6 @@ public class PointsRecordServiceImpl implements PointsRecordServiceApi {
 
 	@Override
 	public List<PointsRecord> findByUserId(Map<String, Object> param) throws ServiceException {
-		// TODO Auto-generated method stub
 		return pointsRecordMapper.selectByParams(param);
 	}
 

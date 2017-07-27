@@ -8,9 +8,7 @@ package com.okdeer.mall.activity.prize.service;
 
 import java.util.List;
 
-import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.activity.prize.entity.ActivityDrawRecordVo;
 
 /**
  * ClassName: ActivityDrawRecordService 
@@ -48,6 +46,6 @@ public interface ActivityDrawRecordService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2016年12月14日
 	 */
-	public int addDrawRecord(String userId,String activityId);
+	int addDrawRecord(String userId,String activityId);
 
 }

@@ -29,7 +29,7 @@ public interface ActivityAdvertSaleService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertSale findSaleByIdNo(int modelNo,String activityAdvertId);
+    ActivityAdvertSale findSaleByIdNo(int modelNo,String activityAdvertId);
     
     /**
 	 * @Description: 新增销售类型 
@@ -37,7 +37,7 @@ public interface ActivityAdvertSaleService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-	public int addSale(ActivityAdvertSale sale);
+	int addSale(ActivityAdvertSale sale);
 	
 	/**
 	 * @Description: 删除关联抽店铺促销信息by活动id
@@ -47,5 +47,5 @@ public interface ActivityAdvertSaleService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月19日
 	 */
-	public int deleteByActivityAdvertId(String activityAdvertId);
+	int deleteByActivityAdvertId(String activityAdvertId);
 }

@@ -28,7 +28,6 @@ class TradeOrderDisputeImageServiceImpl implements TradeOrderDisputeImageService
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void update(TradeOrderDisputeImage tradeOrderDisputeImage) throws ServiceException {
-		// TODO Auto-generated method stub
 		tradeOrderDisputeImageMapper.insertSelective(tradeOrderDisputeImage);
 	}
 }

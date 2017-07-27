@@ -11,7 +11,6 @@ import com.okdeer.mall.operate.service.SkinManagerApi;
  * 
  * APPTAB换肤定时任务
  * ClassName: SkinManagerJob 
- * @Description: TODO
  * @author tuzhd
  * @date 2016年11月17日
  *
@@ -27,7 +26,6 @@ public class SkinManagerJob extends AbstractSimpleElasticJob {
 
 	@Override
 	public void process(JobExecutionMultipleShardingContext shardingContext) {
-		// TODO Auto-generated method stub
 		skinManagerApi.processSkinActivityJob();
 	}
 

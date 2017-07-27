@@ -2,12 +2,11 @@ package com.okdeer.mall.operate.column.service;
 
 import java.util.List;
 
-import com.okdeer.mall.operate.entity.ServerColumn;
-import com.okdeer.mall.operate.entity.ServerColumnArea;
-import com.okdeer.mall.operate.entity.ServerColumnQueryVo;
-import com.okdeer.mall.operate.entity.ServerColumnStore;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.mall.operate.entity.ServerColumn;
+import com.okdeer.mall.operate.entity.ServerColumnQueryVo;
+import com.okdeer.mall.operate.entity.ServerColumnStore;
 
 /**
  * 

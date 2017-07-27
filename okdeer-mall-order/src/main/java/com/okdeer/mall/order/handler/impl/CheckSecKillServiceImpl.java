@@ -22,7 +22,6 @@ import com.okdeer.mall.order.handler.RequestHandler;
 
 /**
  * ClassName: CheckSecKillServiceImpl 
- * @Description: TODO
  * @author maojj
  * @date 2017年1月7日
  *

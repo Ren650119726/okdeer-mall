@@ -54,7 +54,7 @@ public class SeckillAddressSearchServiceImpl implements RequestHandler<ServiceOr
 			processConsumeToStore(req.getData().getStoreId(),respData);
 		}else{
 			// 上门服务，返回用户有效的地址
-			processServToDoor(req,respData);
+			processServor(req,respData);
 		}
 	}
 	
@@ -85,7 +85,7 @@ public class SeckillAddressSearchServiceImpl implements RequestHandler<ServiceOr
 	 * @author maojj
 	 * @date 2016年11月18日
 	 */
-	private void processServToDoor(Request<ServiceOrderReq> req,ServiceOrderResp respData){
+	private void processServor(Request<ServiceOrderReq> req,ServiceOrderResp respData){
 		// 区域类型：0全国，1区域
 		Map<String,Object> condition = new HashMap<String,Object>();
 		condition.put("userId", req.getData().getUserId());

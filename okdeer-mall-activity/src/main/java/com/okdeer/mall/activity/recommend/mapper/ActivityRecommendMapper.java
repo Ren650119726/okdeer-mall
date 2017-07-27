@@ -19,7 +19,7 @@ import com.okdeer.base.common.exception.ServiceException;
 /**
  * 
  * ClassName: ActivityRecommendMapper 
- * @Description: TODO
+ * @Description: 
  * @author zhongy
  * @date 2016年7月18日
  *

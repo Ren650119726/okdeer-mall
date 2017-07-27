@@ -12,6 +12,6 @@ import com.okdeer.mall.activity.coupons.entity.ActivityPageView;
  */
 public interface ActivityPageViewMapper {
 	
-	public void save(ActivityPageView activityPageView);
+	void save(ActivityPageView activityPageView);
 	
 }

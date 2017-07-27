@@ -3,7 +3,6 @@ package com.okdeer.mall.system.service;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.system.dto.QuestionAnswerHelpDto;
-import com.okdeer.mall.system.entity.QuestionAnswerHelp;
 
 /**
  * ClassName: QuestionAnswerHelpService 

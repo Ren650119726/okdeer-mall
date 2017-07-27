@@ -36,7 +36,7 @@ public interface ActivityPrizeWeightMapper extends IBaseMapper {
 	 * @date 2016年12月14日
 	 * @deprecated
 	 */
-	public List<ActivityPrizeWeight> findPrizesByactivityId(@Param("activityId")String activityId);
+	List<ActivityPrizeWeight> findPrizesByactivityId(@Param("activityId")String activityId);
 	
 	/**
 	 * 根据活动id扣减奖品数量
@@ -45,7 +45,7 @@ public interface ActivityPrizeWeightMapper extends IBaseMapper {
 	 * @date 2016年12月14日
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	public int updatePrizesNumber(String id);
+	int updatePrizesNumber(String id);
 
 	/**
 	 * @Description: 获取奖品记录列表
@@ -54,7 +54,7 @@ public interface ActivityPrizeWeightMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月11日
 	 */
-	public List<ActivityPrizeWeightVo> findPrizeRecordList(ActivityPrizeWeightVo activityPrizeWeightVo);
+	List<ActivityPrizeWeightVo> findPrizeRecordList(ActivityPrizeWeightVo activityPrizeWeightVo);
 
 	/**
 	 * @Description: 通过抽奖设置id获取奖品列表
@@ -63,5 +63,5 @@ public interface ActivityPrizeWeightMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月13日
 	 */
-	public List<ActivityPrizeWeight> findPrizesByLuckDrawId(String luckDrawId);
+	List<ActivityPrizeWeight> findPrizesByLuckDrawId(String luckDrawId);
 }

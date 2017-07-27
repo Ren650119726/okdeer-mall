@@ -15,7 +15,7 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 
 /**
- * TODO 推荐活动服务接口类
+ * 推荐活动服务接口类
  * @project yschome-mall
  * @author zhongy
  * @date 2016年7月13日 下午5:59:04

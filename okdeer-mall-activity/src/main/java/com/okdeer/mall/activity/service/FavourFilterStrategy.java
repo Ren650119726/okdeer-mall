@@ -1,7 +1,6 @@
 package com.okdeer.mall.activity.service;
 
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
-import com.okdeer.mall.order.vo.Favour;
 
 /**
  * ClassName: FavourFilter 

@@ -650,6 +650,39 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 		payTradeVo.setTag(null);
 		return JSONObject.fromObject(payTradeVo).toString();
 	}
+	
+	/**
+	 * @Description: 构建云钱包调用消息
+	 * @param order 订单信息
+	 * @param orderRefunds 退款单信息
+	 * @return
+	 * @throws Exception
+	 * @author zengjizu
+	 * @date 2016年10月11日
+	 */
+	private String buildBalancePayTrade(TradeOrder order, TradeOrderRefunds orderRefunds) throws Exception {
+
+		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+		payTradeVo.setAmount(orderRefunds.getTotalAmount());
+		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
+		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(orderRefunds.getStoreId()));
+		payTradeVo.setTradeNum(orderRefunds.getTradeNum());
+		payTradeVo.setTitle("订单退款(余额支付)，退款交易号：" + orderRefunds.getRefundNo());
+		payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
+		payTradeVo.setServiceFkId(orderRefunds.getId());
+		payTradeVo.setServiceNo(orderRefunds.getOrderNo());
+		payTradeVo.setRemark("关联订单号：" + orderRefunds.getOrderNo());
+		// 优惠额退款 判断是否有优惠劵
+		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
+		if (activityResource == ActivityBelongType.OPERATOR || activityResource == ActivityBelongType.AGENT
+				&& (orderRefunds.getTotalPreferentialPrice().compareTo(BigDecimal.ZERO) > 0)) {
+			payTradeVo.setPrefeAmount(orderRefunds.getTotalPreferentialPrice());
+			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
+		}
+		// 接受返回消息的tag
+		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_REFUND);
+		return JSONObject.fromObject(payTradeVo).toString();
+	}
 
 	@Transactional(rollbackFor = Exception.class)
 	private void updateOrderStatus(TradeOrder order, TradeOrderItem item) throws Exception {
@@ -923,39 +956,6 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 		}
 		// 接受返回消息的tag
 		payTradeVo.setTag(null);
-		return JSONObject.fromObject(payTradeVo).toString();
-	}
-
-	/**
-	 * @Description: 构建云钱包调用消息
-	 * @param order 订单信息
-	 * @param orderRefunds 退款单信息
-	 * @return
-	 * @throws Exception
-	 * @author zengjizu
-	 * @date 2016年10月11日
-	 */
-	private String buildBalancePayTrade(TradeOrder order, TradeOrderRefunds orderRefunds) throws Exception {
-
-		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
-		payTradeVo.setAmount(orderRefunds.getTotalAmount());
-		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
-		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(orderRefunds.getStoreId()));
-		payTradeVo.setTradeNum(orderRefunds.getTradeNum());
-		payTradeVo.setTitle("订单退款(余额支付)，退款交易号：" + orderRefunds.getRefundNo());
-		payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
-		payTradeVo.setServiceFkId(orderRefunds.getId());
-		payTradeVo.setServiceNo(orderRefunds.getOrderNo());
-		payTradeVo.setRemark("关联订单号：" + orderRefunds.getOrderNo());
-		// 优惠额退款 判断是否有优惠劵
-		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
-		if (activityResource == ActivityBelongType.OPERATOR || activityResource == ActivityBelongType.AGENT
-				&& (orderRefunds.getTotalPreferentialPrice().compareTo(BigDecimal.ZERO) > 0)) {
-			payTradeVo.setPrefeAmount(orderRefunds.getTotalPreferentialPrice());
-			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
-		}
-		// 接受返回消息的tag
-		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_REFUND);
 		return JSONObject.fromObject(payTradeVo).toString();
 	}
 

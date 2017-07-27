@@ -6,8 +6,6 @@
  */    
 package com.okdeer.mall.system.api.impl;
 
-import java.util.Date;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -21,7 +19,7 @@ import com.okdeer.mall.system.service.SysErrorLogService;
 
 /**
  * ClassName: SysErrorLogApiImpl 
- * @Description: TODO
+ * @Description: 
  * @author xuzq01
  * @date 2017年1月8日
  *

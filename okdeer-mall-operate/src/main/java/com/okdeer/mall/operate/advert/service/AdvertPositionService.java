@@ -63,7 +63,7 @@ public interface AdvertPositionService {
 	
 	/**
 	 * 
-	 * @Description: TODO
+	 * @Description: 
 	 * @param advertType
 	 * @return
 	 * @author zengjizu

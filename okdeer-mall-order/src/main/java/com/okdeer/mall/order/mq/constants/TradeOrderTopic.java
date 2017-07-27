@@ -9,7 +9,6 @@ package com.okdeer.mall.order.mq.constants;
 
 /**
  * ClassName: 订单消息 topic
- * @Description: TODO
  * @author tuzhd
  * @date 2016年12月12日
  *

@@ -62,7 +62,7 @@ public interface ActivityServiceLimitMapper extends IBaseMapper{
 	int validateExist(Map<String,Object> map);
 	
 	/**
-	 * @Description: TODO
+	 * @Description: 
 	 * @param map
 	 * @return
 	 * @author zhangkn

@@ -10,7 +10,7 @@ import com.okdeer.mall.risk.entity.RiskOrderRecord;
 
 /**
  * ClassName: RiskConditionsTrigger 
- * @Description: TODO
+ * @Description: 
  * @author guocp
  * @date 2016年11月17日
  *

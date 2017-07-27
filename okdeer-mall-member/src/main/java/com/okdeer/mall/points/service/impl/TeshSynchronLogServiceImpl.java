@@ -36,7 +36,6 @@ public class TeshSynchronLogServiceImpl implements TeshSynchronLogService {
 
 	@Override
 	public TeshSynchronLog findBySynchronTime(String synchronTime) throws ServiceException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	

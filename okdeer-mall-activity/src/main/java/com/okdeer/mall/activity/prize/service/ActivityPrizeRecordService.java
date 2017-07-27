@@ -11,7 +11,6 @@ import java.util.Map;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecord;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo;
 
 /**
@@ -28,7 +27,7 @@ import com.okdeer.mall.activity.prize.entity.ActivityPrizeRecordVo;
 
 public interface ActivityPrizeRecordService extends IBaseService {
 
-	public List<ActivityPrizeRecordVo> findByUserId(String userId,String activityId);
+	List<ActivityPrizeRecordVo> findByUserId(String userId,String activityId);
 	
 	/**
 	 * @Description 根据传递查询前count条中奖记录
@@ -40,10 +39,10 @@ public interface ActivityPrizeRecordService extends IBaseService {
 	
 	int findCountByPrizeId(String prizeId);
 	
-	public int addPrizeRecord(String collectId,String userId,String luckDrawId,String prizeId,int isOffer);
+	int addPrizeRecord(String collectId,String userId,String luckDrawId,String prizeId,int isOffer);
 
 	/**
-	 * @Description: TODO
+	 * @Description:
 	 * @param activityPrizeRecordVo
 	 * @param pageNumber
 	 * @param pageSize
@@ -51,7 +50,7 @@ public interface ActivityPrizeRecordService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2017年4月10日
 	 */
-	public PageUtils<ActivityPrizeRecordVo> findPrizeRecordList(ActivityPrizeRecordVo activityPrizeRecordVo,
+	PageUtils<ActivityPrizeRecordVo> findPrizeRecordList(ActivityPrizeRecordVo activityPrizeRecordVo,
 			int pageNumber, int pageSize);
 	
 	/**
@@ -61,5 +60,5 @@ public interface ActivityPrizeRecordService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年6月20日
 	 */
-	public void updateBathOffer(Map<String,Object> map);
+	void updateBathOffer(Map<String,Object> map);
 }

@@ -10,7 +10,6 @@ import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
-import com.okdeer.mall.order.enums.ActivityBelongType;
 
 /**
  * ClassName: TradeOrderContext 

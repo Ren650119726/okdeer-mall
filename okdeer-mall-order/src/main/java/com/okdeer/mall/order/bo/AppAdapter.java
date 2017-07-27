@@ -39,6 +39,29 @@ public class AppAdapter {
 	private static final Pattern pattern = Pattern.compile("(\\d{2}:\\d{2}-\\d{2}:\\d{2},*)*");
 	
 	/**
+	 * @Description: 转换给App的商品信息
+	 * @param parserBo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年3月13日
+	 */
+	public static List<AppStoreSkuDto> convert(StoreSkuParserBo parserBo){
+		if(parserBo == null || parserBo.getCurrentSkuMap() == null || CollectionUtils.isEmpty(parserBo.getCurrentSkuMap().values())){
+			return null;
+		}
+		List<AppStoreSkuDto> dtoList = new ArrayList<AppStoreSkuDto>();
+		AppStoreSkuDto dto = null;
+		for(CurrentStoreSkuBo skuBo : parserBo.getCurrentSkuMap().values()){
+			dto = BeanMapper.map(skuBo, AppStoreSkuDto.class);
+			dto.setOnline(skuBo.getOnline().ordinal());
+			dto.setOnlinePrice(ConvertUtil.format(skuBo.getOnlinePrice()));
+			dto.setActPrice(ConvertUtil.format(skuBo.getActPrice()));
+			dtoList.add(dto);
+		}
+		return dtoList;
+	}
+	
+	/**
 	 * @Description: 转换店铺信息给APP
 	 * @param storeInfo
 	 * @return   
@@ -77,6 +100,25 @@ public class AppAdapter {
 	}
 	
 	/**
+	 * @Description: 转换秒杀信息
+	 * @param seckill
+	 * @return   
+	 * @author maojj
+	 * @date 2017年3月13日
+	 */
+	public static SeckillInfoDto convert(ActivitySeckill seckill){
+		if(seckill == null){
+			return null;
+		}
+		SeckillInfoDto seckillInfo = new SeckillInfoDto();
+		seckillInfo.setId(seckill.getId());
+		seckillInfo.setSeckillPrice(ConvertUtil.format(seckill.getSeckillPrice()));
+		seckillInfo.setSeckillStatus(seckill.getSeckillStatus().ordinal());
+		seckillInfo.setSeckillRangeType(seckill.getSeckillRangeType().ordinal());
+		return seckillInfo;
+	}
+	
+	/**
 	 * @Description: 判断当前时间是否再营业时间范围内
 	 * @param servStartTime 店铺营业开始时间
 	 * @param servEndTime  店铺营业结束时间
@@ -92,18 +134,10 @@ public class AppAdapter {
 		Date endTime = DateUtils.parseDate(servEndTime);
 		if (startTime.before(endTime)) {
 			// 不跨天营业
-			if ((currentDate.after(startTime)) && (endTime.after(currentDate))) {
-				return true;
-			} else {
-				return false;
-			}
+			return (currentDate.after(startTime)) && (endTime.after(currentDate));
 		} else {
 			// 跨天营业
-			if (currentDate.after(startTime) || endTime.after(currentDate)) {
-				return true;
-			} else {
-				return false;
-			}
+			return currentDate.after(startTime) || endTime.after(currentDate);
 		}
 	}
 
@@ -269,47 +303,5 @@ public class AppAdapter {
 	 */
 	private static boolean isAdvance(StoreInfoExt storeExt){
 		return Integer.valueOf(Constant.ONE).equals(storeExt.getIsAdvanceType());
-	}
-	
-	/**
-	 * @Description: 转换给App的商品信息
-	 * @param parserBo
-	 * @return   
-	 * @author maojj
-	 * @date 2017年3月13日
-	 */
-	public static List<AppStoreSkuDto> convert(StoreSkuParserBo parserBo){
-		if(parserBo == null || parserBo.getCurrentSkuMap() == null || CollectionUtils.isEmpty(parserBo.getCurrentSkuMap().values())){
-			return null;
-		}
-		List<AppStoreSkuDto> dtoList = new ArrayList<AppStoreSkuDto>();
-		AppStoreSkuDto dto = null;
-		for(CurrentStoreSkuBo skuBo : parserBo.getCurrentSkuMap().values()){
-			dto = BeanMapper.map(skuBo, AppStoreSkuDto.class);
-			dto.setOnline(skuBo.getOnline().ordinal());
-			dto.setOnlinePrice(ConvertUtil.format(skuBo.getOnlinePrice()));
-			dto.setActPrice(ConvertUtil.format(skuBo.getActPrice()));
-			dtoList.add(dto);
-		}
-		return dtoList;
-	}
-	
-	/**
-	 * @Description: 转换秒杀信息
-	 * @param seckill
-	 * @return   
-	 * @author maojj
-	 * @date 2017年3月13日
-	 */
-	public static SeckillInfoDto convert(ActivitySeckill seckill){
-		if(seckill == null){
-			return null;
-		}
-		SeckillInfoDto seckillInfo = new SeckillInfoDto();
-		seckillInfo.setId(seckill.getId());
-		seckillInfo.setSeckillPrice(ConvertUtil.format(seckill.getSeckillPrice()));
-		seckillInfo.setSeckillStatus(seckill.getSeckillStatus().ordinal());
-		seckillInfo.setSeckillRangeType(seckill.getSeckillRangeType().ordinal());
-		return seckillInfo;
 	}
 }

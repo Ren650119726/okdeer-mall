@@ -23,7 +23,7 @@ import com.okdeer.mall.system.mapper.SysMsgMapper;
 
 /**
  * ClassName: TradeOrderMapperTest 
- * @Description: TODO
+ * @Description: 
  * @author yangq
  * @date 2016年11月2日
  *

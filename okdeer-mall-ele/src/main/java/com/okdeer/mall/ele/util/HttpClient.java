@@ -40,6 +40,79 @@ public class HttpClient {
     public static String get(String url) {
         return get(url, null);
     }
+    
+    /**
+     * get 参数 你可以放在url,也可以放在参数 params 集合，你也可以在url和params混合放入post的参数
+     *
+     * @param url
+     * @param params
+     * @return
+     * @throw HttpClientRuntimeException
+     */
+    public static String get(String url, List<BasicNameValuePair> params) {
+        URI uri = null;
+        if (url == null || url.length() <= 0) {
+            return "request url is empty";
+        }
+
+        try {
+            String scheme;
+            if (url.indexOf("://") == -1) {
+                scheme = "http";
+            } else {
+                scheme = url.substring(0, url.indexOf("://"));
+                url = url.substring(url.indexOf("://") + 3);
+            }
+            String path = null;
+            if (url.indexOf("?") == -1) {
+                if (url.indexOf("/") == -1) {
+                    path = "";
+                } else {
+                    path = url.substring(url.indexOf("/"));
+                    url = url.substring(0, url.indexOf("/"));
+                }
+            } else {
+                String paramsStr = url.substring(url.indexOf("?"));
+                if (url.indexOf("/") == -1) {
+                    path = "";
+                    url = url.substring(0, url.indexOf("?"));
+                } else {
+                    path = url.substring(url.indexOf("/"), url.indexOf("?"));
+                    url = url.substring(0, url.indexOf("/"));
+                }
+                if (StringUtils.isNotEmpty(paramsStr)) {
+                    String[] paramsArr = paramsStr.substring(1).split("&");
+					if (params == null) {
+						params = new ArrayList<BasicNameValuePair>();
+					}
+                    for (String str : paramsArr) {
+                        String[] each = str.split("=");
+                        if (each.length == 0) {
+                        	continue;
+                        } else if (each.length == 1) {
+                            params.add(new BasicNameValuePair(each[0], null));
+                        } else {
+                            params.add(new BasicNameValuePair(each[0], each[1]));
+                        }
+                    }
+
+                }
+            }
+            URIBuilder uriBuilder = new URIBuilder()
+                    .setScheme(scheme)
+                    .setHost(url)
+                    .setPath(path);
+            if (params != null) {
+                for (BasicNameValuePair nv : params) {
+                    uriBuilder.setParameter(nv.getName(), nv.getValue());
+                }
+            }
+            uri = uriBuilder.build();
+        } catch (URISyntaxException e) {
+            throw new HttpClientRuntimeException("get url format error ", e);
+        }
+        return innerGet(uri.toString());
+    }
 
     private static String innerGet(String url) {
         CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -99,6 +172,16 @@ public class HttpClient {
         return null;
     }
 
+    /**
+     * 允许post请求时把参数放在url里
+     *
+     * @param url
+     * @return
+     * @throw HttpClientRuntimeException
+     */
+    public static String post(String url) {
+        return post(url, null);
+    }
 
     /**
      * post 参数分为url参数和body参数，不会把这两者参数混合到一起，加入url参数含有中文，
@@ -134,8 +217,9 @@ public class HttpClient {
                 e.printStackTrace();
             } finally {
                 try {
-                    if (response != null)
-                        response.close();
+                    if (response != null){
+                    	response.close();
+                    }
                 } catch (IOException e) {
                     throw new HttpClientRuntimeException("httpClient post request error", e);
                 }
@@ -163,12 +247,13 @@ public class HttpClient {
         if (StringUtils.isNotEmpty(paramsStr)) {
             String[] paramsArr = paramsStr.substring(1).split("&");
             List<BasicNameValuePair> params = new ArrayList<BasicNameValuePair>();
-            if (params == null)
-                params = new ArrayList<BasicNameValuePair>();
+			if (params == null) {
+				params = new ArrayList<BasicNameValuePair>();
+			}
             for (String str : paramsArr) {
                 String[] each = str.split("=");
                 if (each.length == 0) {
-
+                	continue;
                 } else if (each.length == 1) {
                     params.add(new BasicNameValuePair(each[0], null));
                 } else {
@@ -190,90 +275,6 @@ public class HttpClient {
             }
         }
         return params.toString();
-    }
-
-
-    /**
-     * get 参数 你可以放在url,也可以放在参数 params 集合，你也可以在url和params混合放入post的参数
-     *
-     * @param url
-     * @param params
-     * @return
-     * @throw HttpClientRuntimeException
-     */
-    public static String get(String url, List<BasicNameValuePair> params) {
-        URI uri = null;
-        if (url == null || url.length() <= 0) {
-            return "request url is empty";
-        }
-
-        try {
-            String scheme;
-            if (url.indexOf("://") == -1) {
-                scheme = "http";
-            } else {
-                scheme = url.substring(0, url.indexOf("://"));
-                url = url.substring(url.indexOf("://") + 3);
-            }
-            String path = null;
-            if (url.indexOf("?") == -1) {
-                if (url.indexOf("/") == -1) {
-                    path = "";
-                } else {
-                    path = url.substring(url.indexOf("/"));
-                    url = url.substring(0, url.indexOf("/"));
-                }
-            } else {
-                String paramsStr = url.substring(url.indexOf("?"));
-                if (url.indexOf("/") == -1) {
-                    path = "";
-                    url = url.substring(0, url.indexOf("?"));
-                } else {
-                    path = url.substring(url.indexOf("/"), url.indexOf("?"));
-                    url = url.substring(0, url.indexOf("/"));
-                }
-                if (StringUtils.isNotEmpty(paramsStr)) {
-                    String[] paramsArr = paramsStr.substring(1).split("&");
-                    if (params == null)
-                        params = new ArrayList<BasicNameValuePair>();
-                    for (String str : paramsArr) {
-                        String[] each = str.split("=");
-                        if (each.length == 0) {
-
-                        } else if (each.length == 1) {
-                            params.add(new BasicNameValuePair(each[0], null));
-                        } else {
-                            params.add(new BasicNameValuePair(each[0], each[1]));
-                        }
-                    }
-
-                }
-            }
-            URIBuilder uriBuilder = new URIBuilder()
-                    .setScheme(scheme)
-                    .setHost(url)
-                    .setPath(path);
-            if (params != null) {
-                for (BasicNameValuePair nv : params) {
-                    uriBuilder.setParameter(nv.getName(), nv.getValue());
-                }
-            }
-            uri = uriBuilder.build();
-        } catch (URISyntaxException e) {
-            throw new HttpClientRuntimeException("get url format error ", e);
-        }
-        return innerGet(uri.toString());
-    }
-
-    /**
-     * 允许post请求时把参数放在url里
-     *
-     * @param url
-     * @return
-     * @throw HttpClientRuntimeException
-     */
-    public static String post(String url) {
-        return post(url, null);
     }
 
     public static String postBody(String url, String body) {
@@ -304,8 +305,9 @@ public class HttpClient {
                 e.printStackTrace();
             } finally {
                 try {
-                    if (response != null)
-                        response.close();
+                    if (response != null){
+                    	response.close();
+                    }
                 } catch (IOException e) {
                     throw new HttpClientRuntimeException("httpClient post request error", e);
                 }

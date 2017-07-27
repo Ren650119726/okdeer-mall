@@ -219,7 +219,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			try {
 				activityCouponsRecordVo.setStartTime(DateUtils.parseDate(str, "yyyy-MM-dd HH:mm:ss"));
 			} catch (ParseException e) {
-				e.printStackTrace();
+				log.error("getAllRecords执行异常,",e);
 			} 
 		}
 		if(activityCouponsRecordVo.getEndTime() != null) {
@@ -227,7 +227,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			try {
 				activityCouponsRecordVo.setEndTime(DateUtils.parseDate(str, "yyyy-MM-dd HH:mm:ss"));
 			} catch (ParseException e) {
-				e.printStackTrace();
+				log.error("getAllRecords执行异常,",e);
 			} 
 		}
 		//end 重构4.1 added by zhangkn
@@ -485,7 +485,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			int countCoupons = activityCouponsRecordMapper.findcountByNewType(GetUserType.ONlY_NEW_USER, userId, 
 																		ActivityCouponsRecordStatusEnum.UNUSED);
 			//存在未使用的新人代金券则 返回true
-			return (countCoupons > 0);
+			return countCoupons > 0;
 		}
 		return false;
 	}
@@ -593,7 +593,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			}
 		}
 		//根据代金劵活动id代金劵预领取统计 持续的活动领取过不能再领取
-		return (activityCouponsRecordBeforeMapper.countCouponsAllId(phone, coll.getId()) > 0);
+		return activityCouponsRecordBeforeMapper.countCouponsAllId(phone, coll.getId()) > 0;
 	}
 	
 	/**
@@ -633,7 +633,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			//捕获异常不影响注册流程
 			log.error("将预代金劵送到用户的账户中出现异常！",e);
 		}
-	};
+	}
 	 
 	/**
 	 * DESC: 领取活动优惠券
@@ -1283,7 +1283,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
         return true;
     }
     
-    @Transactional(rollbackFor = Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void insertSelective(ActivityCouponsRecord couponsRecord) throws Exception {
 		activityCouponsRecordMapper.insertSelective(couponsRecord);
@@ -1524,8 +1524,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				sysBuyerExtService.updateAddPrizeCount(record.getInviteUserId(), 1);
 				
 				//用户的邀请次数
-				int inviteCount = activityCouponsRecordBeforeMapper.
-						findInviteUserCount(record.getInviteUserId(), record.getActivityId());
+				int inviteCount = activityCouponsRecordBeforeMapper.findInviteUserCount(record.getInviteUserId(),
+						record.getActivityId());
 				log.info("已成功邀请到"+inviteCount+"个用户");
 				//修改预领取记录 为已完成邀请
 				record.setIsComplete(WhetherEnum.whether);

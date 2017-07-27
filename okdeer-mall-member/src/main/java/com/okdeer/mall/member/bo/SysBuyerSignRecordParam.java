@@ -4,7 +4,7 @@ package com.okdeer.mall.member.bo;
 /**
  * 买家签到记录查询参数
  * ClassName: SysBuyerSignRecordParam 
- * @Description: TODO
+ * @Description: 
  * @author zengjizu
  * @date 2016年12月31日
  *

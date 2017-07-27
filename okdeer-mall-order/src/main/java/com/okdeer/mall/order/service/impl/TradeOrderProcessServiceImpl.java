@@ -419,7 +419,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
             String discount = null;
             if(!StringUtils.isNullOrEmpty(resp)) {
                 logger.info("流量充值号码{}归属地运营商查询返回：{}", rechargeMobile, resp);
-                String respArr[] = resp.split("\\|");
+                String[] respArr = resp.split("\\|");
                 try {
                     if ("移动".equals(respArr[2])) {
                         discount = cmccDiscount;
@@ -430,7 +430,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
                     }
                     
                     String pid = reqDto.getPid();
-                    String arr[] = pid.split("\\|");
+                    String[] arr = pid.split("\\|");
                     String perValue = arr[0];
                     String flowValue = arr[1];
                     url = "http://" + userid + ".api2.ofpay.com/flowCheck.do?userid=" + userid + "&userpws=" + userpws + "&phoneno=" + rechargeMobile
@@ -581,7 +581,7 @@ public class TradeOrderProcessServiceImpl implements TradeOrderProcessService, T
             String discount = null;
             if(!StringUtils.isNullOrEmpty(resp)) {
                 logger.info("流量充值号码{}归属地运营商查询返回：{}", rechargeMobile, resp);
-                String respArr[] = resp.split("\\|");
+                String[] respArr = resp.split("\\|");
                 try {
                     if ("移动".equals(respArr[2])) {
                         discount = cmccDiscount;

@@ -55,12 +55,11 @@ public class ActivityAdvertJob extends AbstractSimpleElasticJob {
 				List<String> listIdIng = new ArrayList<String>();
 				
 				for(ActivityAdvert advert : accList){
-					//未开始的 
 					if(advert.getStatus() == SeckillStatusEnum.noStart){
+						//未开始的 
 						listIdNoStart.add(advert.getId());
-					}
-					//进行中的改为已结束的
-					else if(advert.getStatus() == SeckillStatusEnum.ing){
+					}else if(advert.getStatus() == SeckillStatusEnum.ing){
+						//进行中的改为已结束的
 						listIdIng.add(advert.getId());
 					}
 				}

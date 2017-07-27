@@ -8,8 +8,6 @@ package com.okdeer.mall.operate.skinmanager.service;
 
 import java.util.Date;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
@@ -38,7 +36,7 @@ public interface SkinManagerService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public PageUtils<SkinManagerDto> findSkinList(SkinManagerParamDto paramDto);
+	PageUtils<SkinManagerDto> findSkinList(SkinManagerParamDto paramDto);
 
 	/**
 	 * 
@@ -48,7 +46,7 @@ public interface SkinManagerService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public void deleteSkinById(String skinId, String userId);
+	void deleteSkinById(String skinId, String userId);
 
 	/**
 	 * 
@@ -58,7 +56,7 @@ public interface SkinManagerService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月3日
 	 */
-	public void closeSkinById(String skinId, String userId);
+	void closeSkinById(String skinId, String userId);
 
 	/**
 	 * 
@@ -68,7 +66,7 @@ public interface SkinManagerService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月4日
 	 */
-	public int findSkinByTime(SkinManagerDto skinManagerVo);
+	int findSkinByTime(SkinManagerDto skinManagerVo);
 
 	/**
 	 * @Description: 通过名称查询皮肤数量
@@ -77,7 +75,7 @@ public interface SkinManagerService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2016年11月8日
 	 */
-	public int findSkinCountByName(SkinManagerDto skinManagerVo);
+	int findSkinCountByName(SkinManagerDto skinManagerVo);
 	
 	// Begin V1.2.0 added by maojj 2016-11-16
 	/**
@@ -108,14 +106,13 @@ public interface SkinManagerService extends IBaseService {
 	
 	
 	/**
-	 * 执行换肤活动管理 JOB 任务
-	 * @Description: TODO   
+	 * @Description: 执行换肤活动管理 JOB 任务   
 	 * @return void  
 	 * @throws
 	 * @author tuzhd
 	 * @date 2016年11月16日
 	 */
-	public void processSkinActivityJob();
+	void processSkinActivityJob();
 	
 	/**
 	 * @Description: 根据id换肤活动管理状态
@@ -127,5 +124,5 @@ public interface SkinManagerService extends IBaseService {
 	 * @author tuzhiding
 	 * @date 2016年11月12日
 	 */
-	public void updateStatusById(String id, SkinManagerStatus status, String updateUserId, Date updateTime) throws Exception;
+	void updateStatusById(String id, SkinManagerStatus status, String updateUserId, Date updateTime) throws Exception;
 }

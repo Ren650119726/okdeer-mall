@@ -31,7 +31,6 @@ public class ActivityCouponsRecordJob extends AbstractSimpleElasticJob {
 		try {
 			activityCouponsRecordService.updateStatusByJob();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			logger.error("更改代金券领取记录状态job异常",e);
 		}
 	}

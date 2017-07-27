@@ -49,7 +49,6 @@ public interface RiskUserManagerMapper extends IBaseMapper {
 	void deleteBatchByIds(@Param("ids")List<String> ids,@Param("updateUserId") String updateUserId,@Param("updateTime") Date updateTime);
 
 	/**
-	 * @Description: TODO
 	 * @param riskUserManager
 	 * @return   
 	 * @author xuzq01

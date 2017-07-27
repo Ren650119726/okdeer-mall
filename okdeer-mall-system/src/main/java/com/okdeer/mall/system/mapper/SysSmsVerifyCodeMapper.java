@@ -27,7 +27,7 @@ public interface SysSmsVerifyCodeMapper extends IBaseCrudMapper {
 
 	/**
 	 * 更新验证码信息
-	 * @desc TODO Add a description 
+	 * @desc  Add a description 
 	 *
 	 */
 	public void updateByPrimaryKeySelective(SysSmsVerifyCode sysSmsVerifyCode);

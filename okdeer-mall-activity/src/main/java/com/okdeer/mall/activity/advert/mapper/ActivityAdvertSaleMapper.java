@@ -29,7 +29,7 @@ public interface ActivityAdvertSaleMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertSale findSaleByIdNo(@Param("modelNo") int modelNo,@Param("activityAdvertId") String activityAdvertId);
+    ActivityAdvertSale findSaleByIdNo(@Param("modelNo") int modelNo,@Param("activityAdvertId") String activityAdvertId);
     
     /**
 	 * @Description: 删除关联店铺促销信息by活动id
@@ -39,5 +39,5 @@ public interface ActivityAdvertSaleMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年4月19日
 	 */
-	public int deleteByActivityAdvertId(String activityAdvertId);
+	int deleteByActivityAdvertId(String activityAdvertId);
 }

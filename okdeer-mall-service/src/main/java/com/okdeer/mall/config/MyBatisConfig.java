@@ -52,7 +52,7 @@ public class MyBatisConfig implements TransactionManagementConfigurer {
 		try {
 			ds.setFilters(this.properties.getFilters());
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error("发生异常：",e);
 		}
 		ds.setConnectionProperties(this.properties.getConnectionProperties());
 		return ds;

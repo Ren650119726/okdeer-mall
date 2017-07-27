@@ -211,9 +211,8 @@ public class ActivityServiceLimitServiceImpl extends BaseServiceImpl
 				if (goodsStoreSkuIds.size() > 0) {
 					goodsStoreSkuServiceApi.updateBatchOnline(goodsStoreSkuIds, BSSC.PUTAWAY.ordinal(), date);
 				}
-			}
-			// 状态如果是已经结束,或者关闭,goodsStoreSku表的is_activity,activity_id,activity_name要修改,解绑活动和商品的关系
-			else if (status == ActivitySaleStatus.end.getValue() || status == ActivitySaleStatus.closed.getValue()) {
+			}else if (status == ActivitySaleStatus.end.getValue() || status == ActivitySaleStatus.closed.getValue()) {
+				// 状态如果是已经结束,或者关闭,goodsStoreSku表的is_activity,activity_id,activity_name要修改,解绑活动和商品的关系
 				// 已经结束或者已关闭,解绑商品,释放活动占用库存
 				for (String id : ids) {
 					//活动关联的商品列表

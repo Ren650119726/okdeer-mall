@@ -64,7 +64,6 @@ class TradeOrderRefundsLogisticsServiceImpl implements TradeOrderRefundsLogistic
 
 	@Override
 	public List<TradeOrderRefundsLogistics> findByParams(Map<String, Object> params) throws ServiceException {
-		// TODO Auto-generated method stub
 		return tradeOrderRefundsLogisticsMapper.selectByParams(params);
 	}
 }

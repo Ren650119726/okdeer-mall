@@ -77,13 +77,4 @@ public class AdvertBalancePayStatusSubscriber extends AbstractRocketMQSubscriber
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
 		}
 	}
-	
-	
-	public static void main(String[] args) {
-		String msg = "{\"id\":\"你好\",\"name\":\"zhaoqc\",\"age\":18}";
-		JSONObject json = JSONObject.fromObject(msg);
-		System.out.println(json.getString("id"));
-		System.out.println(json.getString("name"));
-		System.out.println(json.getInt("age"));
-	}
 }

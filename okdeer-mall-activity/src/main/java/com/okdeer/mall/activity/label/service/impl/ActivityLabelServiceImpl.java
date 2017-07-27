@@ -187,7 +187,7 @@ public class ActivityLabelServiceImpl extends BaseServiceImpl implements Activit
 	
 	/**
 	 * 执行服务标签管理 JOB 任务
-	 * @Description: TODO   
+	 * @Description:   
 	 * @return void  
 	 * @throws
 	 * @author tuzhd

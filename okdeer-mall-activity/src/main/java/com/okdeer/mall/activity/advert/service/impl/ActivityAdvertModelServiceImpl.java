@@ -16,7 +16,6 @@ import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.advert.entity.ActivityAdvertModel;
 import com.okdeer.mall.activity.advert.mapper.ActivityAdvertModelMapper;
-import com.okdeer.mall.activity.advert.service.ActivityAdvertModelApi;
 import com.okdeer.mall.activity.advert.service.ActivityAdvertModelService;
 
 /**

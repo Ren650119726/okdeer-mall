@@ -210,11 +210,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			paramBo.setLimitRangeIds(Arrays.asList(tempArr));
 		}
 		int count = activityDiscountMapper.countConflict(paramBo);
-		if(count >= 1){
-			return false;
-		}else{
-			return true;
-		}
+		return count < 1;
 	}
 	
 	private List<ActivityDiscountCondition> parseConditionList(ActivityInfoDto actInfoDto){

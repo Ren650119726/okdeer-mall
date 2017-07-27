@@ -1,7 +1,7 @@
 package com.okdeer.mall.activity.serviceLimit.mapper;
 
 import java.util.List;
-import java.util.Map;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.serviceLimit.entity.ActivityServiceLimitGoods;
 

@@ -401,7 +401,8 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 			params.put("ids", ids);
 			params.put("status", status);
 			//modify by mengsj 如果是低价抢购活动，关闭时设置活动结束时间为当前日期
-			if(activityType != null && activityType == ActivityTypeEnum.LOW_PRICE.ordinal() && status == ActivitySaleStatus.closed.ordinal()){
+			if (activityType != null && activityType == ActivityTypeEnum.LOW_PRICE.ordinal()
+					&& status == ActivitySaleStatus.closed.ordinal()) {
 				params.put("endTime", new Date());
 			}
 			activitySaleMapper.updateBatchStatus(params);
@@ -423,10 +424,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 					Date date = new Date();
 					goodsStoreSkuServiceApi.updateBatchOnline(goodsStoreSkuIds, BSSC.PUTAWAY.ordinal(), date);
 				}
-			}
-			// 状态如果是
-			// 已经结束,或者关闭,goodsStoreSku表的is_activity,activity_id,activity_name要修改,解绑活动和商品的关系
-			else if (status == ActivitySaleStatus.end.getValue() || status == ActivitySaleStatus.closed.getValue()) {
+			}else if (status == ActivitySaleStatus.end.getValue() || status == ActivitySaleStatus.closed.getValue()) {
+				// 状态如果是
+				// 已经结束,或者关闭,goodsStoreSku表的is_activity,activity_id,activity_name要修改,解绑活动和商品的关系
 				String rcpId = UuidUtils.getUuid();
 				rpcIdByBathSkuList.add(rcpId);
 				goodsStoreSkuServiceApi.updateActivityByActivityIds(ids.toArray(new String[ids.size()]), rcpId);
@@ -461,7 +461,7 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 						if (goodsStoreSkuIds.size() > 0 && activityType != null && activityType == ActivityTypeEnum.SALE_ACTIVITIES.ordinal()) {
 							Date date = new Date();
 							// begin add by wangf01 20170619
-							// @TODO V2.5.0新增，如果是特惠活动结束，将所有商品变成上架状态，在普通分类下面可以看见
+							// V2.5.0新增，如果是特惠活动结束，将所有商品变成上架状态，在普通分类下面可以看见
 							//goodsStoreSkuServiceApi.updateBatchOnline(goodsStoreSkuIds, BSSC.UNSHELVE.ordinal(), date);
 							goodsStoreSkuServiceApi.updateBatchOnline(goodsStoreSkuIds, BSSC.PUTAWAY.ordinal(), date);
 							// begin add by wangf01 20170619

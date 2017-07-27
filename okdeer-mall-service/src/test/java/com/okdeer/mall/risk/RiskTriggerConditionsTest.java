@@ -28,7 +28,7 @@ import com.okdeer.mall.risk.service.RiskTriggerConditions;
 
 /**
  * ClassName: RiskTriggerConditionsTest 
- * @Description: TODO
+ * @Description: 
  * @author guocp
  * @date 2016年11月17日
  *

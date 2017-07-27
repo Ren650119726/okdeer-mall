@@ -1,12 +1,9 @@
 package com.okdeer.mall.order.service;
 
-import com.okdeer.mall.order.entity.TradeOrderLogistics;
-
 import java.util.List;
 
-import org.apache.ibatis.annotations.Param;
-
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.mall.order.entity.TradeOrderLogistics;
 
 /**
  * @DESC: 

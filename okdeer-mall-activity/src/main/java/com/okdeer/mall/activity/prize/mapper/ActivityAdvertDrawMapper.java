@@ -29,7 +29,7 @@ public interface ActivityAdvertDrawMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertDraw findAdvertDrawByIdNo(@Param("modelNo") int modelNo,@Param("activityAdvertId") String activityAdvertId);
+    ActivityAdvertDraw findAdvertDrawByIdNo(@Param("modelNo") int modelNo,@Param("activityAdvertId") String activityAdvertId);
 	
 	/**
 	 * @Description: 删除关联抽奖信息by活动id
@@ -39,6 +39,6 @@ public interface ActivityAdvertDrawMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年4月19日
 	 */
-	public int deleteByActivityAdvertId(String activityAdvertId);
+	int deleteByActivityAdvertId(String activityAdvertId);
     
 }

@@ -98,8 +98,7 @@ public class ActivityLabelApiImpl implements ActivityLabelApi{
 	}
 	
 	/**
-	 * 执行服务标签的JOB 任务
-	 * @Description: TODO   
+	 * @Description: 执行服务标签的JOB 任务   
 	 * @return void  
 	 * @throws
 	 * @author tuzhd

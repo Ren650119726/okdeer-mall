@@ -114,7 +114,6 @@ public class ActivityServiceGoodsRecommendApiImpl implements ActivityServiceGood
 	
 	/**
 	 * 1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束
-	 * @Description: TODO
 	 * @param map 传递查询参数
 	 * @return List<ActivityServiceGoodsRecommend>  
 	 * @author tuzhd
@@ -179,7 +178,6 @@ public class ActivityServiceGoodsRecommendApiImpl implements ActivityServiceGood
 	
 	/**
 	 * 服务商品推荐定时器 job 执行方法
-	 * @Description: TODO   
 	 * @return void  
 	 * @throws
 	 * @author tuzhd
