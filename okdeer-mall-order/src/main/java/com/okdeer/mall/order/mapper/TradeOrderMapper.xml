@@ -283,7 +283,7 @@
 	</resultMap>
 
 	<!-- 订单列表 -财务系统接口调用 -luosm start -->
-	<resultMap id="ERPOrderResultMap" type="com.okdeer.mall.order.vo.ERPTradeOrderVo">
+	<resultMap id="FmsTradeOrderResultMap" type="com.okdeer.mall.order.bo.FmsTradeOrderBo">
 		<id column="id" property="id" jdbcType="VARCHAR" />
 		<result column="order_no" property="orderNo" jdbcType="VARCHAR" />
 		<result column="type" property="type" jdbcType="TINYINT"
@@ -4433,47 +4433,7 @@
 		DUAL
 	</select>
 
-	<!-- 查询订单列表 ERP接口 luosm start -->
-	<select id="ERPSelectByParams" resultMap="ERPOrderResultMap"
-		parameterType="java.util.Map">
-		select
-		<include refid="Erp_column_list" />
-		from trade_order
-		where 1=1
-		<if test="id != null and id != ''">
-			and id = #{id, jdbcType=VARCHAR}
-		</if>
-		<if test="orderNo != null and orderNo != ''">
-			and order_no = #{orderNo, jdbcType=VARCHAR}
-		</if>
-		<if test="storeName != null and storeName != ''">
-			and store_name LIKE CONCAT('%', #{storeName,jdbcType=VARCHAR}, '%')
-		</if>
-		<if test="payWay != null">
-			and pay_way = #{payWay, jdbcType=TINYINT}
-		</if>
-		<if test="userPhone != null and userPhone != ''">
-			and user_phone = #{userPhone, jdbcType=VARCHAR}
-		</if>
-		
-		<if test="typeList != null and typeList.size() > 0">
-			and type in
-			<foreach collection="typeList" index="index" item="item"
-				open="(" separator="," close=")">
-				#{item}
-			</foreach>
-		</if>
-		
-		<if test="status != null">
-			and status = #{status, jdbcType=TINYINT}
-		</if>
-		<if test="startTime != null and endTime != null">
-			and create_time BETWEEN #{startTime, jdbcType=TIMESTAMP} AND #{endTime,
-			jdbcType=TIMESTAMP}
-		</if>
-		order by create_time desc
-	</select>
-	<!-- 查询订单列表 ERP接口 luosm end -->
+	
 
 	<!-- zengj:订单列表查询  update by wusw 20170215 修改排序规则和增加活动类型参数-->
 	<select id="selectOrderList" resultMap="TradeOrderMap"
@@ -5705,7 +5665,7 @@
 
 	<!-- 根据查询条件，查询订单列表（用于财务系统，包含服务店订单） add by wusw update by wusw 20160809 修改店铺名称取值（由于充值订单） 
 		update by wusw 20160810 -->
-	<select id="findOrderForFinanceByParams" resultMap="ERPOrderResultMap"
+	<select id="findOrderForFinanceByParams" resultMap="FmsTradeOrderResultMap"
 		parameterType="com.okdeer.mall.order.dto.TradeOrderQueryParamDto">
 		SELECT trade.id,
 		trade.order_no,
@@ -5812,78 +5772,7 @@
 		order by trade.create_time desc
 	</select>
 
-	<!-- Begin V2.1.0 added by luosm 20170224 -->
-	<!-- 统计财务订单列表数量  -->
-	<select id="countOrderForFinanceByParams" resultType="java.lang.Integer"
-		parameterType="com.okdeer.mall.order.dto.TradeOrderQueryParamDto">
-		SELECT count(1)
-		FROM trade_order trade
-		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
-		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
-		LEFT JOIN trade_order_ext_snapshot toes ON trade.id = toes.order_id
-		WHERE 1=1
-		<if test="orderNo != null and orderNo != ''">
-			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
-		</if>
-		<if test="storeId != null and storeId != ''">
-			AND trade.store_id = #{storeId, jdbcType=VARCHAR}
-		</if>
-		<if test="userPhone != null and userPhone != ''">
-			AND trade.user_phone = #{userPhone, jdbcType=VARCHAR}
-		</if>
-		<if test="statusList != null and statusList.size() > 0">
-			AND trade.status IN
-			<foreach collection="statusList" index="index" item="item" open="(" close=")" separator=",">
-				#{item}
-			</foreach>
-		</if>
-		<if test="status != null">
-			AND trade.status = #{status, jdbcType=TINYINT}
-		</if>
-		<if test="orderResource != null">
-			AND trade.order_resource = #{orderResource, jdbcType=TINYINT}
-		</if>
-		<if test="orderResourceList != null and orderResourceList.size() > 0">
-			AND trade.order_resource IN
-			<foreach collection="orderResourceList" index="index" item="item" open="(" close=")" separator=",">
-				#{item}
-			</foreach>
-		</if>
-		<if test="payType != null">
-			AND pay.pay_type = #{payType, jdbcType=TINYINT}
-		</if>
-		<if test="startTime != null and startTime!=''">
-			<![CDATA[AND trade.create_time  >= #{startTime,jdbcType=VARCHAR}]]>
-		</if>
-		<if test="endTime != null and endTime!=''">
-			<![CDATA[ AND trade.create_time <= #{endTime,jdbcType=VARCHAR}]]>
-		</if>
-		<if test="payWay != null">
-			AND trade.pay_way = #{payWay, jdbcType=TINYINT}
-		</if>
-		<if test="typeList != null and typeList.size() > 0">
-			AND trade.type IN
-			<foreach collection="typeList" index="index" item="item" open="(" close=")" separator=",">
-				#{item}
-			</foreach>
-		</if>
-		<if test="type != null">
-			AND trade.type = #{type, jdbcType=TINYINT}
-		</if>
-		<if test="cityName != null and cityName != ''">
-			AND locate.city_name = #{cityName,jdbcType=VARCHAR}
-		</if>
-		<if test="idList != null">
-			AND trade.id in
-			<foreach collection="idList" index="index" item="item" open="("
-				separator="," close=")">
-				#{item}
-			</foreach>
-		</if>
-		<if test="deliveryType !=null">
-			AND toes.delivery_type = #{deliveryType, jdbcType=INTEGER}
-		</if>
-	</select>
+	
 	<!-- Begin V2.1.0 added by luosm 20170224 -->
 
 	<select id="findRechargeOrdersByStatus" resultMap="BaseResultMap">

@@ -80,4 +80,13 @@ public interface ActivitySaleService {
 	 */
 	void updateSaleStock(ActivitySale activitySale, ActivitySaleGoods activitySaleGoods) throws Exception;
 	
+	/**
+	 * @Description: 根据id列表查询
+	 * @param saleActiviIdList
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年7月27日
+	 */
+	List<ActivitySale> findByIds(List<String> saleActiviIdList);
+	
 }
