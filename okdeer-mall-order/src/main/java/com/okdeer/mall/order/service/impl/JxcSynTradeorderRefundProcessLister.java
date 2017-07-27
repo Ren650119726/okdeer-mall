@@ -147,8 +147,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		// 活动类型为代金券活动
 		if (order.getActivityType() == ActivityTypeEnum.VONCHER) {
 			activityType = 1;
-		} else if (order.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
-				&& order.getIncome().compareTo(order.getActualAmount()) != 0) {
+		} else if (order.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
 			// 活动类型为满减活动且店家收入不等于用户实付，说明里面有平台的补贴
 			activityType = 2;
 		}
