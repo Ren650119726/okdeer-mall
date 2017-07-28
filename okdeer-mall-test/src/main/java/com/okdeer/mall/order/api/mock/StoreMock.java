@@ -1,6 +1,5 @@
 package com.okdeer.mall.order.api.mock;
 
-import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -9,8 +8,8 @@ import com.google.common.collect.Lists;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.StoreStatusEnum;
-import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.base.common.enums.WhetherEnum;
+import com.okdeer.mall.base.MockUtils;
 import com.okdeer.mall.common.utils.DateUtils;
 
 public class StoreMock {
@@ -33,30 +32,7 @@ public class StoreMock {
 	}
 	
 	public static StoreInfo initCvs(){
-		StoreInfo storeInfo = new StoreInfo();
-		storeInfo.setId("4028b1e05cbf666b015cc3723f7d40a8");
-		storeInfo.setStoreNo("Y003789");
-		storeInfo.setStoreName("好邻居便利店");
-		storeInfo.setContacts("13412341234");
-		storeInfo.setMobile("13412341234");
-		storeInfo.setAddress("荆州博物馆");
-		storeInfo.setArea("湖北省荆州市荆州区");
-		storeInfo.setLongitude(112.186803);
-		storeInfo.setLatitude(30.359302);
-		storeInfo.setType(StoreTypeEnum.AROUND_STORE);
-		
-		StoreInfoExt storeExt = new StoreInfoExt();
-		storeExt.setServiceStartTime("08:00");
-		storeExt.setServiceEndTime("23:30");
-		storeExt.setIsAcceptOrder(WhetherEnum.whether);
-		storeExt.setIsBusiness(WhetherEnum.whether);
-		storeExt.setStartPrice(BigDecimal.valueOf(15));
-		storeExt.setFreight(BigDecimal.valueOf(6));
-		storeExt.setFreeFreightPrice(BigDecimal.valueOf(30));
-		storeExt.setIsPickUp(0);
-		
-		storeInfo.setStoreInfoExt(storeExt);
-		return storeInfo;
+		return MockUtils.getMockSingleData("/com/okdeer/mall/order/api/mock/mock-store.json", StoreInfo.class);
 	}
 	
 	/**

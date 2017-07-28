@@ -178,7 +178,8 @@ public class CheckStoreServiceImpl implements RequestHandler<PlaceOrderParamDto,
 					nextValidDay = getNextValidDay(storeExt.getInvalidDate());
 				}
 				if(StringUtils.isNotEmpty(nextValidDay)){
-					deliveryTime = String.format(DELIVERY_NEXT_VALIDDAY,Integer.parseInt(nextValidDay.substring(5,7)),Integer.parseInt(nextValidDay.substring(8,10)));
+					deliveryTime = String.format(DELIVERY_NEXT_VALIDDAY, Integer.parseInt(nextValidDay.substring(5, 7)),
+							Integer.parseInt(nextValidDay.substring(8, 10)));
 				}
 			}else{
 				resp.setResult(CVS_IS_PAUSE);

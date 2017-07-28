@@ -36,13 +36,12 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
-import com.okdeer.mall.activity.discount.service.impl.ActivityDiscountServiceImpl;
 import com.okdeer.mall.base.AopTargetUtils;
 import com.okdeer.mall.base.BaseServiceTest;
+import com.okdeer.mall.base.MockUtils;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.api.mock.StoreMock;
-import com.okdeer.mall.order.api.mock.StoreSkuAndStockMock;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.handler.impl.CheckSkuServiceImpl;
@@ -165,9 +164,11 @@ public class PlaceOrderApiImplTest extends BaseServiceTest {
 	}
 	
 	private void initMockSkuAndStock(){
-		List<List<GoodsStoreSku>> mockSkuList = StoreSkuAndStockMock.mockSku();
+		List<List<GoodsStoreSku>> mockSkuList = MockUtils
+				.getMockData("/com/okdeer/mall/order/api/mock/mock-sku.json", GoodsStoreSku.class);
 		this.storeSkuList = mockSkuList.get(0);
-		List<List<GoodsStoreSkuStock>> mockStockList = StoreSkuAndStockMock.mockStock();
+		List<List<GoodsStoreSkuStock>> mockStockList = MockUtils
+				.getMockData("/com/okdeer/mall/order/api/mock/mock-stock.json", GoodsStoreSkuStock.class);
 		this.skuStockList = mockStockList.get(0);
 	}
 	
