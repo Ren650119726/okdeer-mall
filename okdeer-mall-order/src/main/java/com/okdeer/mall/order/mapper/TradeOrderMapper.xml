@@ -5672,6 +5672,7 @@
 		trade.type,
 		trade.pay_way,
 		trade.store_id,
+		trade.store_name,
 		trade.user_phone,
 		trade.user_id,
 		trade.pick_up_type,
