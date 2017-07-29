@@ -167,7 +167,8 @@
 		<module>okdeer-mall-operate</module>
 		<module>okdeer-mall-activity</module>
 		<module>okdeer-mall-order</module>
-		<module>okdeer-mall-service</module>
 		<module>okdeer-mall-ele</module>
+		<module>okdeer-mall-service</module>
+		<module>okdeer-mall-test</module>
 	</modules>
 </project>
