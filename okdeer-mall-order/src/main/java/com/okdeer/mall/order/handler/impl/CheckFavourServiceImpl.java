@@ -46,6 +46,7 @@ import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.system.service.SysBuyerFirstOrderRecordService;
 
@@ -124,7 +125,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		// 检查运费优惠
 		if(!StringUtils.isEmpty(paramDto.getFareRecId())){
 			// 如果请求中存在运费领取记录Id，则检查运费
-			checkFareCoupons(paramDto, parserBo, resp);
+			isValid = checkFareCoupons(paramDto, parserBo, resp);
 		}
 		if (!isValid && resp.isSuccess()) {
 			resp.setResult(ResultCodeEnum.FAVOUR_NOT_SUPPORT);
@@ -385,6 +386,14 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	}
 	
 	private boolean checkFareCoupons(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp) throws Exception{
+		// Begin V2.5.1 added by maojj 2017-07-29
+		// 为了解决IOS到店自提请求中提交了运费券的bug
+		if(paramDto.getPickType() == PickUpTypeEnum.TO_STORE_PICKUP){
+			// 如果是到店自提，则将运费券记录id置为空
+			paramDto.setFareRecId("");
+			return true;
+		}
+		// End V2.5.1 added by maojj 2017-07-29
 		ActivityCouponsRecord couponsRecord = activityCouponsRecordMapper.selectByPrimaryKey(paramDto.getFareRecId());
 		// 增加领取记录的校验。校验请求提供的领取记录是否是当前用户
 		if(couponsRecord == null || !couponsRecord.getCollectUserId().equals(paramDto.getUserId())){
