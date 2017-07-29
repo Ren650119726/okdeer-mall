@@ -61,7 +61,7 @@ public class CheckStoreServiceImplTest extends BaseServiceTest{
 	
 	@Override
 	public void initMocks(){
-		CheckStoreServiceImpl checkStoreService = this.ac.getBean(CheckStoreServiceImpl.class);
+		CheckStoreServiceImpl checkStoreService = this.applicationContext.getBean(CheckStoreServiceImpl.class);
 		ReflectionTestUtils.setField(checkStoreService, "storeInfoServiceApi", storeInfoServiceApi);
 	}
 	
