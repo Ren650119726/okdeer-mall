@@ -555,4 +555,9 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		}
 		return fullSubtractList;
 	}
+
+	@Override
+	public List<ActivityDiscount> findByIds(List<String> idList) {
+		return activityDiscountMapper.findByIds(idList);
+	}
 }

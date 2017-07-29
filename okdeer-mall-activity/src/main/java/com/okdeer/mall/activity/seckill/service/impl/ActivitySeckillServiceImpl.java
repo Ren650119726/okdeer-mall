@@ -610,4 +610,10 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	
 		return null;
 	}
+
+	@Override
+	public List<ActivitySeckill> findByIds(List<String> idList) {
+		
+		return activitySeckillMapper.findByIds(idList);
+	}
 }

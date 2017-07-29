@@ -230,4 +230,13 @@ public interface ActivityCollectCouponsMapper {
 	 * @date 2017年4月18日
 	 */
 	public ActivityCollectCoupons findCollectCouponsByModelId(@Param("modelId") String modelId, @Param("activityAdvertId") String activityAdvertId);
+	
+	/**
+	 * @Description: 根据id列表查询
+	 * @param idList
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年7月27日
+	 */
+	List<ActivityCollectCoupons> findByIds(@Param("idList") List<String> idList);
 }

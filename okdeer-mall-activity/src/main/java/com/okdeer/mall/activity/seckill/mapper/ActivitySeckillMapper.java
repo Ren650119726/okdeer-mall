@@ -161,4 +161,13 @@ public interface ActivitySeckillMapper {
 	 */
 	ActivitySeckillItemVo findAppUserSecKillBySeckill(@Param("id") String id);
 	// end add by luosm 2016-07-22
+	
+	/**
+	 * @Description: 根据id列表查询
+	 * @param idList
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年7月27日
+	 */
+	List<ActivitySeckill> findByIds(@Param("idList")List<String> idList);
 }
