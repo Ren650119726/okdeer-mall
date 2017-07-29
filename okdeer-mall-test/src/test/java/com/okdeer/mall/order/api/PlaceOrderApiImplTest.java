@@ -23,6 +23,7 @@ import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -36,7 +37,6 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
-import com.okdeer.mall.base.AopTargetUtils;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.base.MockUtils;
 import com.okdeer.mall.common.dto.Request;
@@ -185,7 +185,8 @@ public class PlaceOrderApiImplTest extends BaseServiceTest {
 		ReflectionTestUtils.setField(checkStoreService, "storeInfoServiceApi", storeInfoServiceApi);
 		ReflectionTestUtils.setField(checkSkuService, "goodsStoreSkuServiceApi", goodsStoreSkuServiceApi);
 		ReflectionTestUtils.setField(checkSkuService, "goodsStoreSkuStockApi", goodsStoreSkuStockApi);
-		ReflectionTestUtils.setField(AopTargetUtils.getTarget(activityDiscountService), "storeInfoServiceApi", storeInfoServiceApi);
+		ReflectionTestUtils.setField((ActivityDiscountService) AopTestUtils.getTargetObject(activityDiscountService),
+				"storeInfoServiceApi", storeInfoServiceApi);
 	}
 
 	private static Map<String, List<String>> readReqData() throws IOException {
