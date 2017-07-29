@@ -238,5 +238,5 @@ public interface ActivityCollectCouponsMapper {
 	 * @author zengjizu
 	 * @date 2017年7月27日
 	 */
-	List<ActivityCollectCoupons> findByIds(List<String> idList);
+	List<ActivityCollectCoupons> findByIds(@Param("idList") List<String> idList);
 }

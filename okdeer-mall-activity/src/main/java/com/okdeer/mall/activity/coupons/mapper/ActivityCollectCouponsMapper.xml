@@ -868,7 +868,7 @@
 	  <select id="findByIds" resultMap="ActivityCollectCoupons" parameterType="java.util.List">
 	  	 SELECT * FROM  activity_collect_coupons WHERE  id IN
 	  	 <foreach collection="idList" open="(" close=")" separator="," item="item">
-	  	 	#{item.id}
+	  	 	#{item}
 	  	 </foreach>
 	  </select>
 </mapper>

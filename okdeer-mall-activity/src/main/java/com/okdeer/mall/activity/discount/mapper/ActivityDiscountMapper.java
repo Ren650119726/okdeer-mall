@@ -93,5 +93,5 @@ public interface ActivityDiscountMapper extends IBaseMapper {
 	 * @author zengjizu
 	 * @date 2017年7月27日
 	 */
-	List<ActivityDiscount> findByIds(List<String> idList);
+	List<ActivityDiscount> findByIds(@Param("idList")List<String> idList);
 }

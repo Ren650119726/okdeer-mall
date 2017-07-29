@@ -480,10 +480,10 @@
   </select>
   
    <!-- begin zengjz 2017-7-27 根据id列表查询 -->
-	  <select id="findByIds" resultMap="ActivityCollectCoupons" parameterType="java.util.List">
+	  <select id="findByIds" resultMap="BaseResultMap" parameterType="java.util.List">
 	  	 SELECT * FROM  activity_discount WHERE  id IN
 	  	 <foreach collection="idList" open="(" close=")" separator="," item="item">
-	  	 	#{item.id}
+	  	 	#{item}
 	  	 </foreach>
 	  </select>
 </mapper>

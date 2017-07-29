@@ -169,5 +169,5 @@ public interface ActivitySeckillMapper {
 	 * @author zengjizu
 	 * @date 2017年7月27日
 	 */
-	List<ActivitySeckill> findByIds(List<String> idList);
+	List<ActivitySeckill> findByIds(@Param("idList")List<String> idList);
 }
