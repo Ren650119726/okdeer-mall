@@ -119,9 +119,28 @@ public class StoreMock {
 		StoreInfoExt storeExt = storeInfo.getStoreInfoExt();
 		storeExt.setIsClosed(StoreStatusEnum.OPENING);
 		storeExt.setIsBusiness(WhetherEnum.whether);
-		storeExt.setServiceStartTime(addMinute(-30));
+		storeExt.setServiceStartTime(addMinute(30));
 		storeExt.setServiceEndTime(addMinute(2*60));
 		storeExt.setIsAcceptOrder(WhetherEnum.whether);
+		storeInfo.setStoreInfoExt(storeExt);
+		return storeInfo;
+	}
+	
+	/**
+	 * @Description: 当天不可营业
+	 * @return   
+	 * @author maojj
+	 * @date 2017年7月29日
+	 */
+	public static StoreInfo mockInvalidDate(){
+		StoreInfo storeInfo = initCvs();
+		StoreInfoExt storeExt = storeInfo.getStoreInfoExt();
+		storeExt.setIsClosed(StoreStatusEnum.OPENING);
+		storeExt.setIsBusiness(WhetherEnum.whether);
+		storeExt.setServiceStartTime(addMinute(30));
+		storeExt.setServiceEndTime(addMinute(2*60));
+		storeExt.setIsAcceptOrder(WhetherEnum.whether);
+		
 		storeInfo.setStoreInfoExt(storeExt);
 		return storeInfo;
 	}

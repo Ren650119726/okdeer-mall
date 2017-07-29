@@ -1,0 +1,31 @@
+Begin--
+{
+	"version": "V2.5.0",
+	"data": {
+		"storeId": "4028b1e05cbf666b015cc3723f7d40a8",
+		"version": "V2.5.0",
+		"cityName": "荆州市",
+		"fare": "3.00",
+		"channel": "3",
+		"userPhone": "18613138749",
+		"startMoney": "15.00",
+		"areaExt": "荆州博物馆",
+		"lat": "30.3593",
+		"lng": "112.186806",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"areaName": "荆州区",
+		"orderType": "0",
+		"provinceName": "湖北省",
+		"skuList": [{
+			"quantity": "2",
+			"updateTime": "2017-07-01 16:25:51",
+			"skuActQuantity": "0",
+			"skuPrice": "2.00",
+			"storeSkuId": "40289d775ce7942a015ce79c091a000a",
+			"skuActType": "0",
+			"skuActPrice": "0.00"
+		}],
+		"skuType": "0"
+	}
+}
+End--
