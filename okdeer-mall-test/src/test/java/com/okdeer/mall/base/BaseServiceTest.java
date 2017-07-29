@@ -15,6 +15,8 @@ import com.okdeer.mall.Application;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
 public class BaseServiceTest {
+	
+	protected static final String BASE_CLASS_PATH = "/com/okdeer/mall/";
 
 	@Autowired
 	protected ApplicationContext ac;
