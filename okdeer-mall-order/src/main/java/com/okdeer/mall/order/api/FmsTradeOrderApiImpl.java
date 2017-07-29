@@ -2,6 +2,7 @@
 package com.okdeer.mall.order.api;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -14,6 +15,8 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.okdeer.archive.store.dto.StoreInfoDto;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
@@ -40,16 +43,20 @@ import com.okdeer.mall.order.service.FmsTradeOrderApi;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO;
+import com.okdeer.mall.system.service.InvitationCodeServiceApi;
 
 /**
- * ClassName: FmsTradeOrderApiImpl 
+ * ClassName: FmsTradeOrderApiImpl
+ * 
  * @Description: 财务系统订单api查询
  * @author zengjizu
  * @date 2017年7月27日
  *
- * =================================================================================================
- *     Task ID			  Date			     Author		      Description
- * ----------------+----------------+-------------------+-------------------------------------------
+ *       =======================================================================
+ *       ========================== Task ID Date Author Description
+ *       ----------------+----------------+-------------------+-----------------
+ *       --------------------------
  *
  */
 @Service(version = "1.0.0")
@@ -78,6 +85,18 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 
 	@Autowired
 	private TradeOrderRefundsService tradeOrderRefundsService;
+
+	/**
+	 * 地址service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private StoreInfoServiceApi storeInfoServiceApi;
+
+	/***
+	 * 邀请信息
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private InvitationCodeServiceApi invitationCodeService;
 
 	@Override
 	public PageUtils<FmsTradeOrderDto> findOrderListByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto,
@@ -127,19 +146,51 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 		}
 		List<FmsTradeOrderDto> list = BeanMapper.mapList(fmsTradeOrderBoList, FmsTradeOrderDto.class);
 		if (tradeOrderQueryParamDto.isQueryActive()) {
-			// 查询活动信息
+			// 设置活动信息
 			setActiveInfo(list);
 		}
 
 		if (tradeOrderQueryParamDto.isQueryShipAddress()) {
-			// 查询收货地址
+			// 设置收货地址
 			setShipAddressInfo(list);
 		}
 
 		if (tradeOrderQueryParamDto.isQueryRefund()) {
+			// 设置退款信息
 			setRefundInfo(list);
 		}
+		if (tradeOrderQueryParamDto.isQueryInviteInfo()) {
+			// 设置邀请人信息
+			setInviteInfo(list);
+		}
 		return list;
+	}
+
+	private void setInviteInfo(List<FmsTradeOrderDto> fmsTradeOrderDtoList) {
+		List<String> userIdList = Lists.newArrayList();
+		for (FmsTradeOrderDto fmsTradeOrderDto : fmsTradeOrderDtoList) {
+			if (!userIdList.contains(fmsTradeOrderDto.getUserId())) {
+				userIdList.add(fmsTradeOrderDto.getUserId());
+			}
+		}
+		List<SysUserInvitationLoginNameVO> inviteNameLists = new ArrayList<SysUserInvitationLoginNameVO>();
+		if (CollectionUtils.isNotEmpty(userIdList)) {
+			inviteNameLists = invitationCodeService.selectLoginNameByUserId(userIdList);
+		}
+		Map<String, SysUserInvitationLoginNameVO> inviteMap = inviteNameLists.stream()
+				.collect(Collectors.toMap(SysUserInvitationLoginNameVO::getUserId, e -> e));
+
+		for (FmsTradeOrderDto fmsTradeOrderDto : fmsTradeOrderDtoList) {
+			SysUserInvitationLoginNameVO sysUserInvitationLoginNameVO = inviteMap.get(fmsTradeOrderDto.getUserId());
+			if (sysUserInvitationLoginNameVO == null) {
+				continue;
+			}
+			if (sysUserInvitationLoginNameVO.getsLoginName() != null) {
+				fmsTradeOrderDto.setInviteName(sysUserInvitationLoginNameVO.getsLoginName());
+			} else if (sysUserInvitationLoginNameVO.getbLoginName() != null) {
+				fmsTradeOrderDto.setInviteName(sysUserInvitationLoginNameVO.getbLoginName());
+			}
+		}
 	}
 
 	/**
@@ -152,48 +203,88 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 	private void setShipAddressInfo(List<FmsTradeOrderDto> fmsTradeOrderDtoList) throws MallApiException {
 		// 有物流信息的订单id
 		List<String> logisticOrderIdList = Lists.newArrayList();
+		List<String> storeIdList = Lists.newArrayList();
 		for (FmsTradeOrderDto fmsTradeOrderDto : fmsTradeOrderDtoList) {
-			// logisticOrderIdList 添加数据
-			// 送货上门
-			boolean isDliver = fmsTradeOrderDto.getType() == OrderTypeEnum.PHYSICAL_ORDER
-					&& fmsTradeOrderDto.getPickUpType() == PickUpTypeEnum.DELIVERY_DOOR;
-
-			// 上门服务订单
-			boolean isServiceStoreOrder = fmsTradeOrderDto.getType() == OrderTypeEnum.SERVICE_STORE_ORDER;
-
-			if (isDliver || isServiceStoreOrder) {
+			boolean isQueryShipAddress = isQueryShipAddress(fmsTradeOrderDto);
+			if (isQueryShipAddress) {
 				logisticOrderIdList.add(fmsTradeOrderDto.getId());
 			}
+			boolean isQueryStoreAddress = isQueryStoreAddress(fmsTradeOrderDto);
+			if (isQueryStoreAddress && !storeIdList.contains(fmsTradeOrderDto.getStoreId())) {
+				storeIdList.add(fmsTradeOrderDto.getStoreId());
+			}
 		}
-		List<TradeOrderLogistics> logisticsList;
+
 		try {
-			logisticsList = tradeOrderLogisticsService.selectByOrderIds(logisticOrderIdList);
+
+			List<TradeOrderLogistics> logisticsList = Lists.newArrayList();
+			if (CollectionUtils.isNotEmpty(logisticOrderIdList)) {
+				logisticsList = tradeOrderLogisticsService.selectByOrderIds(logisticOrderIdList);
+			}
+
 			Map<String, TradeOrderLogistics> logisticsMap = logisticsList.stream()
 					.collect(Collectors.toMap(TradeOrderLogistics::getOrderId, e -> e));
+
+			List<StoreInfoDto> addressList = Lists.newArrayList();
+			if (CollectionUtils.isNotEmpty(storeIdList)) {
+				addressList = storeInfoServiceApi.findByIds(storeIdList);
+			}
+
+			Map<String, StoreInfoDto> storeAddressMap = addressList.stream()
+					.collect(Collectors.toMap(StoreInfoDto::getId, e -> e));
 
 			Map<String, Address> addressMap = Maps.newHashMap();
 			for (FmsTradeOrderDto fmsTradeOrderDto : fmsTradeOrderDtoList) {
 				TradeOrderLogistics logistics = logisticsMap.get(fmsTradeOrderDto.getId());
-				if (logistics != null && !StringUtils.isBlank(logistics.getCityId())) {
+				boolean isQueryShipAddress = isQueryShipAddress(fmsTradeOrderDto);
+				if (isQueryShipAddress && logistics != null && !StringUtils.isBlank(logistics.getCityId())) {
 					Address address = getAddressByCityId(logistics.getCityId(), addressMap);
 					// 所属城市 实物订单的送货上门取物流表的地址
-					fmsTradeOrderDto.setCityName(address.getName() == null ? "" : address.getName());
+					fmsTradeOrderDto.setCityName(address == null ? "" : address.getName());
 					String area = logistics.getArea() == null ? "" : logistics.getArea();
 					String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
 					// 收货地址
 					fmsTradeOrderDto.setAddress(area + addressExt);
 				}
-			}
 
+				StoreInfoDto storeInfoDto = storeAddressMap.get(fmsTradeOrderDto.getStoreId());
+				boolean isQueryStoreAddress = isQueryStoreAddress(fmsTradeOrderDto);
+				if (isQueryStoreAddress && storeInfoDto != null) {
+					Address address = getAddressByCityId(storeInfoDto.getCityId(), addressMap);
+					fmsTradeOrderDto.setCityName(address == null ? "" : address.getName());
+					fmsTradeOrderDto.setAddress(storeInfoDto.getAddress());
+				}
+
+			}
 		} catch (ServiceException e1) {
 			throw new MallApiException(e1);
 		}
 	}
 
+	private boolean isQueryStoreAddress(FmsTradeOrderDto fmsTradeOrderDto) {
+		// 送货上门
+		boolean isToStore = fmsTradeOrderDto.getType() == OrderTypeEnum.PHYSICAL_ORDER
+				&& fmsTradeOrderDto.getPickUpType() == PickUpTypeEnum.TO_STORE_PICKUP;
+		// 上门服务订单
+		boolean isStoreConsumeOrder = fmsTradeOrderDto.getType() == OrderTypeEnum.STORE_CONSUME_ORDER;
+		return isToStore || isStoreConsumeOrder;
+	}
+
+	private boolean isQueryShipAddress(FmsTradeOrderDto fmsTradeOrderDto) {
+		// 送货上门
+		boolean isDliver = fmsTradeOrderDto.getType() == OrderTypeEnum.PHYSICAL_ORDER
+				&& fmsTradeOrderDto.getPickUpType() == PickUpTypeEnum.DELIVERY_DOOR;
+		// 上门服务订单
+		boolean isServiceStoreOrder = fmsTradeOrderDto.getType() == OrderTypeEnum.SERVICE_STORE_ORDER;
+		return isDliver || isServiceStoreOrder;
+	}
+
 	/**
 	 * @Description: 获得城市信息
-	 * @param cityId 城市id
-	 * @param cityMap 缓村map
+	 * @param cityId
+	 *            城市id
+	 * @param cityMap
+	 *            缓村map
 	 * @return
 	 * @author zengjizu
 	 * @date 2017年4月26日
@@ -225,23 +316,23 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 
 		for (FmsTradeOrderDto fmsTradeOrderDto : fmsTradeOrderDtoList) {
 			switch (fmsTradeOrderDto.getActivityType()) {
-				case VONCHER:
-					addActivityId(voncherActiviIdList, fmsTradeOrderDto.getActivityId());
-					break;
-				case FULL_REDUCTION_ACTIVITIES:
-				case FULL_DISCOUNT_ACTIVITIES:
-					addActivityId(discountActiviIdList, fmsTradeOrderDto.getActivityId());
-					break;
-				case SALE_ACTIVITIES:
-				case LOW_PRICE:
-					addActivityId(saleActiviIdList, fmsTradeOrderDto.getActivityId());
-					break;
-				case SECKILL_ACTIVITY:
-					addActivityId(seckillActiviIdList, fmsTradeOrderDto.getActivityId());
-					break;
+			case VONCHER:
+				addActivityId(voncherActiviIdList, fmsTradeOrderDto.getActivityId());
+				break;
+			case FULL_REDUCTION_ACTIVITIES:
+			case FULL_DISCOUNT_ACTIVITIES:
+				addActivityId(discountActiviIdList, fmsTradeOrderDto.getActivityId());
+				break;
+			case SALE_ACTIVITIES:
+			case LOW_PRICE:
+				addActivityId(saleActiviIdList, fmsTradeOrderDto.getActivityId());
+				break;
+			case SECKILL_ACTIVITY:
+				addActivityId(seckillActiviIdList, fmsTradeOrderDto.getActivityId());
+				break;
 
-				default:
-					break;
+			default:
+				break;
 			}
 		}
 		Map<String, ActivityCollectCoupons> voncherActiviMap = queryVoncherActiviList(voncherActiviIdList);
@@ -254,33 +345,31 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 
 		for (FmsTradeOrderDto fmsTradeOrderDto : fmsTradeOrderDtoList) {
 			switch (fmsTradeOrderDto.getActivityType()) {
-				case VONCHER:
-					if (voncherActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
-						fmsTradeOrderDto
-								.setActivityName(voncherActiviMap.get(fmsTradeOrderDto.getActivityId()).getName());
-					}
-					break;
-				case FULL_REDUCTION_ACTIVITIES:
-				case FULL_DISCOUNT_ACTIVITIES:
-					if (discountActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
-						fmsTradeOrderDto
-								.setActivityName(discountActiviMap.get(fmsTradeOrderDto.getActivityId()).getName());
-					}
-					break;
-				case SALE_ACTIVITIES:
-				case LOW_PRICE:
-					if (saleActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
-						fmsTradeOrderDto.setActivityName(saleActiviMap.get(fmsTradeOrderDto.getActivityId()).getName());
-					}
-					break;
-				case SECKILL_ACTIVITY:
-					if (seckillActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
-						fmsTradeOrderDto.setActivityName(
-								seckillActiviMap.get(fmsTradeOrderDto.getActivityId()).getSeckillName());
-					}
-					break;
-				default:
-					break;
+			case VONCHER:
+				if (voncherActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
+					fmsTradeOrderDto.setActivityName(voncherActiviMap.get(fmsTradeOrderDto.getActivityId()).getName());
+				}
+				break;
+			case FULL_REDUCTION_ACTIVITIES:
+			case FULL_DISCOUNT_ACTIVITIES:
+				if (discountActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
+					fmsTradeOrderDto.setActivityName(discountActiviMap.get(fmsTradeOrderDto.getActivityId()).getName());
+				}
+				break;
+			case SALE_ACTIVITIES:
+			case LOW_PRICE:
+				if (saleActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
+					fmsTradeOrderDto.setActivityName(saleActiviMap.get(fmsTradeOrderDto.getActivityId()).getName());
+				}
+				break;
+			case SECKILL_ACTIVITY:
+				if (seckillActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
+					fmsTradeOrderDto
+							.setActivityName(seckillActiviMap.get(fmsTradeOrderDto.getActivityId()).getSeckillName());
+				}
+				break;
+			default:
+				break;
 			}
 		}
 
@@ -290,7 +379,7 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 	 * @Description: 设置退款信息
 	 * @param list
 	 * @author zengjizu
-	 * @throws MallApiException 
+	 * @throws MallApiException
 	 * @date 2017年7月27日
 	 */
 	private void setRefundInfo(List<FmsTradeOrderDto> fmsTradeOrderDtoList) throws MallApiException {
