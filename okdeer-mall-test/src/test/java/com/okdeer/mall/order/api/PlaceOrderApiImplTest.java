@@ -179,9 +179,9 @@ public class PlaceOrderApiImplTest extends BaseServiceTest {
 	 * @date 2017年7月27日
 	 */
 	public void initMockDubbo(){
-		CheckStoreServiceImpl checkStoreService = this.ac.getBean(CheckStoreServiceImpl.class);
-		CheckSkuServiceImpl checkSkuService = this.ac.getBean(CheckSkuServiceImpl.class);
-		ActivityDiscountService activityDiscountService = this.ac.getBean(ActivityDiscountService.class);
+		CheckStoreServiceImpl checkStoreService = this.applicationContext.getBean(CheckStoreServiceImpl.class);
+		CheckSkuServiceImpl checkSkuService = this.applicationContext.getBean(CheckSkuServiceImpl.class);
+		ActivityDiscountService activityDiscountService = this.applicationContext.getBean(ActivityDiscountService.class);
 		ReflectionTestUtils.setField(checkStoreService, "storeInfoServiceApi", storeInfoServiceApi);
 		ReflectionTestUtils.setField(checkSkuService, "goodsStoreSkuServiceApi", goodsStoreSkuServiceApi);
 		ReflectionTestUtils.setField(checkSkuService, "goodsStoreSkuStockApi", goodsStoreSkuStockApi);

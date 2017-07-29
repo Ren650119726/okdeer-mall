@@ -19,7 +19,7 @@ public class BaseServiceTest {
 	protected static final String BASE_CLASS_PATH = "/com/okdeer/mall/";
 
 	@Autowired
-	protected ApplicationContext ac;
+	protected ApplicationContext applicationContext;
 	
 	private TestContextManager testContextManager;
 
