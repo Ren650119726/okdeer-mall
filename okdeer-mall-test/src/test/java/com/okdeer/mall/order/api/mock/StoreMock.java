@@ -13,7 +13,7 @@ import com.okdeer.mall.base.MockUtils;
 import com.okdeer.mall.common.utils.DateUtils;
 
 public class StoreMock {
-
+	
 	public static List<StoreInfo> mock(){
 		List<StoreInfo> storeList = Lists.newArrayList();
 		// 店铺不存在
@@ -126,13 +126,50 @@ public class StoreMock {
 		return storeInfo;
 	}
 	
+	public static StoreInfo mockInvalidDate(int addMonth,int day){
+		return mockInvalidDate(addMonth,day,30);
+	}
+	
 	/**
-	 * @Description: 当天不可营业
+	 * @Description: 模拟不可用日期
 	 * @return   
 	 * @author maojj
 	 * @date 2017年7月29日
 	 */
-	public static StoreInfo mockInvalidDate(){
+	public static StoreInfo mockInvalidDate(int addMonth,int day,int minute){
+		StoreInfo storeInfo = initCvs();
+		StoreInfoExt storeExt = storeInfo.getStoreInfoExt();
+		storeExt.setIsClosed(StoreStatusEnum.OPENING);
+		storeExt.setIsBusiness(WhetherEnum.whether);
+		storeExt.setServiceStartTime(addMinute(minute));
+		storeExt.setServiceEndTime(addMinute(2*60));
+		storeExt.setIsAcceptOrder(WhetherEnum.whether);
+		storeExt.setInvalidDate(getInvalidDate(addMonth,day));
+		storeInfo.setStoreInfoExt(storeExt);
+		return storeInfo;
+	}
+	
+	public static int getCurrentDay(){
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		return cal.get(Calendar.DAY_OF_MONTH);
+	}
+	
+	public static String getInvalidDate(int addMonth,int day){
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.add(Calendar.MONTH, addMonth);
+		int invalidDay = 1 << (day-1);
+		return DateUtils.formatDate(cal.getTime(), "yyyyMM") + invalidDay;
+	}
+	
+	/**
+	 * @Description: mock不支持到店自提
+	 * @return   
+	 * @author maojj
+	 * @date 2017年7月29日
+	 */
+	public static StoreInfo mockIsPickUp(){
 		StoreInfo storeInfo = initCvs();
 		StoreInfoExt storeExt = storeInfo.getStoreInfoExt();
 		storeExt.setIsClosed(StoreStatusEnum.OPENING);
@@ -140,7 +177,7 @@ public class StoreMock {
 		storeExt.setServiceStartTime(addMinute(30));
 		storeExt.setServiceEndTime(addMinute(2*60));
 		storeExt.setIsAcceptOrder(WhetherEnum.whether);
-		
+		storeExt.setIsPickUp(0);
 		storeInfo.setStoreInfoExt(storeExt);
 		return storeInfo;
 	}
