@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.enums.BSSC;
@@ -619,6 +620,9 @@ public class ActivitySaleServiceImpl implements ActivitySaleServiceApi, Activity
 
 	@Override
 	public List<ActivitySale> findByIds(List<String> idList) {
+		if(CollectionUtils.isEmpty(idList)){
+			return Lists.newArrayList();
+		}
 		Set<String> idSet = new HashSet<>();         
 		idSet.addAll(idList);     
 		return activitySaleMapper.findBySaleIds(idSet);

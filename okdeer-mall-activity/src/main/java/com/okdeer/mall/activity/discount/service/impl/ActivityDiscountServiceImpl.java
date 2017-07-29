@@ -558,6 +558,9 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 
 	@Override
 	public List<ActivityDiscount> findByIds(List<String> idList) {
+		if(CollectionUtils.isEmpty(idList)){
+			return Lists.newArrayList();
+		}
 		return activityDiscountMapper.findByIds(idList);
 	}
 }

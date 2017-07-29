@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.enums.IsActivity;
@@ -613,7 +614,9 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 
 	@Override
 	public List<ActivitySeckill> findByIds(List<String> idList) {
-		
+		if(CollectionUtils.isEmpty(idList)){
+			return Lists.newArrayList();
+		}
 		return activitySeckillMapper.findByIds(idList);
 	}
 }
