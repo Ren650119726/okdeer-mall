@@ -6,6 +6,7 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
@@ -29,6 +30,7 @@ import com.okdeer.mall.activity.wxchat.util.HttpClient;
  * ----------------+----------------+-------------------+-------------------------------------------
  *
  */
+@Service
 public class WechatServiceImpl implements WechatService {
 
 	private static final Logger logger = LoggerFactory.getLogger(WechatServiceImpl.class);
