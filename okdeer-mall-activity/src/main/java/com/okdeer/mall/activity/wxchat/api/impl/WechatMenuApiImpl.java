@@ -12,6 +12,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.common.exception.MallApiException;
@@ -39,6 +40,7 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 	public void add(WechatMenuDto wechatMenuDto) throws Exception {
 		wechatMenuDto.setCreateTime(new Date());
 		WechatMenu wechatMenu = BeanMapper.map(wechatMenuDto, WechatMenu.class);
+		wechatMenu.setId(UuidUtils.getUuid());
 		wechatMenuService.add(wechatMenu);
 	}
 
