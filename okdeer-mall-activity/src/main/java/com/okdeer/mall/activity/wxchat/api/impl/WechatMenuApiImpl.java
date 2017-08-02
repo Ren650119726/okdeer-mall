@@ -50,8 +50,12 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 	}
 
 	@Override
-	public void delete(String id) throws Exception {
-		wechatMenuService.delete(id);
+	public void delete(String id) throws MallApiException {
+		try {
+			wechatMenuService.delete(id);
+		} catch (Exception e) {
+			throw new MallApiException(e);
+		}
 	}
 
 	@Override
