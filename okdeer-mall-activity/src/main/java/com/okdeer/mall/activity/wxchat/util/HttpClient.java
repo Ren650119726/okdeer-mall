@@ -43,8 +43,7 @@ public class HttpClient {
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		final HttpPost httpPost = new HttpPost(url);
 		try {
-			logger.info("API，POST过去的数据是：");
-			logger.info(postData);
+			logger.info("API，POST过去的数据是：URL:{},DATA:{}",url,postData);
 			// 得指明使用UTF-8编码，否则到API服务器XML的中文不能被成功识别
 			StringEntity postEntity = new StringEntity(postData, CHARSET_UTF8);
 			httpPost.addHeader("Content-Type", "text/xml");
@@ -65,7 +64,7 @@ public class HttpClient {
 	public static String get(String url) throws ClientProtocolException, IOException {
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		try {
-			HttpGet httpget = new HttpGet("http://httpbin.org/get");
+			HttpGet httpget = new HttpGet(url);
 			CloseableHttpResponse response = httpclient.execute(httpget);
 			try {
 				HttpEntity entity = response.getEntity();
