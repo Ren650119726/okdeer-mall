@@ -14,6 +14,7 @@ import com.google.common.collect.Maps;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.activity.wechat.dto.WechatMenuDto;
 import com.okdeer.mall.activity.wechat.service.WechatMenuApi;
 import com.okdeer.mall.activity.wxchat.entity.WechatMenu;
@@ -94,6 +95,16 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 	@Override
 	public void sysFromWxServer() throws Exception {
 
+	}
+
+	@Override
+	public WechatMenuDto findById(String id) throws MallApiException {
+		try {
+			WechatMenu wechatMenu = wechatMenuService.findById(id);
+			return BeanMapper.map(wechatMenu, WechatMenuDto.class);
+		} catch (Exception e) {
+			throw new MallApiException(e);
+		}
 	}
 
 }
