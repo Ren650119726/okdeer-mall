@@ -93,7 +93,7 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 				secondMenuMap.get(wechatMenu.getParentId()).add(wechatMenuMap);
 			}
 		}
-		menu.put("button", menu);
+		menu.put("button", firstThirdMenuList);
 		String requestJson = JsonMapper.nonEmptyMapper().toJson(menu);
 		try {
 			wechatService.createMenu(requestJson);
