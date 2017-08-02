@@ -76,4 +76,10 @@ public class WechatApiImpl implements WechatApi {
 		}
 	}
 
+	@Override
+	public String processRequest(String xmlCotent) throws MallApiException {
+		
+		return "success";
+	}
+
 }
