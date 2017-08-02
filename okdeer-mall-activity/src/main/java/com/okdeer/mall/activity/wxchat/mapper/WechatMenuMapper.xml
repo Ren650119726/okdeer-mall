@@ -18,7 +18,7 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, level_type, button_name, button_key, type, url, media_id, sort, create_time, 
+        id,parent_id,level_type, button_name, button_key, type, url, media_id, sort, create_time, 
         create_user, update_time, update_user
     </sql>
 	
