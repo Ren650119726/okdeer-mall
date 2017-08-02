@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.activity.wxchat.api.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -35,12 +36,14 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 
 	@Override
 	public void add(WechatMenuDto wechatMenuDto) throws Exception {
+		wechatMenuDto.setCreateTime(new Date());
 		WechatMenu wechatMenu = BeanMapper.map(wechatMenuDto, WechatMenu.class);
 		wechatMenuService.add(wechatMenu);
 	}
 
 	@Override
 	public void update(WechatMenuDto wechatMenuDto) throws Exception {
+		wechatMenuDto.setUpdateTime(new Date());
 		WechatMenu wechatMenu = BeanMapper.map(wechatMenuDto, WechatMenu.class);
 		wechatMenuService.update(wechatMenu);
 	}
@@ -58,8 +61,8 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 		}
 		Map<String, Object> menu = Maps.newHashMap();
 		List<Map<String, Object>> firstThirdMenuList = Lists.newArrayList();
-		Map<String,List<Map<String, Object>>> secondMenuMap = Maps.newHashMap();
-		
+		Map<String, List<Map<String, Object>>> secondMenuMap = Maps.newHashMap();
+
 		for (WechatMenu wechatMenu : list) {
 			Map<String, Object> wechatMenuMap = Maps.newHashMap();
 			wechatMenuMap.put("type", wechatMenu.getType().name().toLowerCase());
@@ -67,10 +70,10 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 			wechatMenuMap.put("key", wechatMenu.getButtonKey());
 			wechatMenuMap.put("url", wechatMenu.getUrl());
 			wechatMenuMap.put("media_id", wechatMenu.getMediaId());
-			
-			if(StringUtils.isNotEmpty(wechatMenu.getParentId())){
+
+			if (StringUtils.isNotEmpty(wechatMenu.getParentId())) {
 				List<Map<String, Object>> sencMenuList = secondMenuMap.get(wechatMenu.getParentId());
-				if(sencMenuList == null){
+				if (sencMenuList == null) {
 					sencMenuList = Lists.newArrayList();
 					secondMenuMap.put(wechatMenu.getParentId(), sencMenuList);
 				}
@@ -90,7 +93,7 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 
 	@Override
 	public void sysFromWxServer() throws Exception {
-		
+
 	}
 
 }
