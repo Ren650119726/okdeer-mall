@@ -9,9 +9,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.mall.activity.wechat.dto.CheckWxchatServerParamDto;
-import com.okdeer.mall.activity.wechat.dto.WechatConfigDto;
 import com.okdeer.mall.activity.wechat.service.WechatApi;
 import com.okdeer.mall.activity.wxchat.config.WechatConfig;
 import com.okdeer.mall.activity.wxchat.service.WechatService;

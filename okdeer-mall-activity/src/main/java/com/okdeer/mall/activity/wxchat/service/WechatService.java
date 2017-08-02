@@ -18,4 +18,6 @@ public interface WechatService {
 
 	TokenInfo getTokenInfo() throws Exception;
 
+	void createMenu(String requestJson) throws Exception;
+
 }
