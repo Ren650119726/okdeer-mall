@@ -181,8 +181,13 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 					BigDecimal totalAmount = BigDecimal.valueOf(0.00);
 					for (PlaceOrderItemDto goods : paramBo.getGoodsList()) {
 						if(goods.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
-							// 低价商品只有原价购买的才可享受优惠
-							totalAmount = totalAmount.add(goods.getSkuPrice().multiply(BigDecimal.valueOf(goods.getQuantity()-goods.getSkuActQuantity())));
+							if(coupons.getType() == CouponsType.bldyf.ordinal()){
+								//运费券不排除低价部分
+								totalAmount = totalAmount.add(goods.getSkuPrice().multiply(BigDecimal.valueOf(goods.getQuantity())));
+							}else{
+								// 低价商品只有原价购买的才可享受优惠
+								totalAmount = totalAmount.add(goods.getSkuPrice().multiply(BigDecimal.valueOf(goods.getQuantity()-goods.getSkuActQuantity())));
+							}
 						}else{
 							totalAmount = totalAmount.add(goods.getTotalAmount());
 						}
