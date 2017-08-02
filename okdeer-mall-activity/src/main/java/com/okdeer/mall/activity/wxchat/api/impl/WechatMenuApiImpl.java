@@ -59,10 +59,10 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 	}
 
 	@Override
-	public void synToWxserver() throws Exception {
+	public void synToWxserver() throws MallApiException {
 		List<WechatMenu> list = wechatMenuService.findByList();
 		if (CollectionUtils.isEmpty(list)) {
-			throw new Exception("当前没有设置任何菜单");
+			throw new MallApiException("当前没有设置任何菜单");
 		}
 		Map<String, Object> menu = Maps.newHashMap();
 		List<Map<String, Object>> firstThirdMenuList = Lists.newArrayList();
@@ -93,7 +93,11 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 		}
 		menu.put("button", menu);
 		String requestJson = JsonMapper.nonEmptyMapper().toJson(menu);
-		wechatService.createMenu(requestJson);
+		try {
+			wechatService.createMenu(requestJson);
+		} catch (Exception e) {
+			throw new MallApiException(e);
+		}
 	}
 
 	@Override
