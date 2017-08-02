@@ -1,6 +1,8 @@
 
 package com.okdeer.mall.activity.wxchat.service.impl;
 
+import java.util.Map;
+
 import javax.annotation.Resource;
 
 import org.slf4j.Logger;
@@ -8,11 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Maps;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.mall.activity.wechat.dto.WechatConfigDto;
+import com.okdeer.mall.activity.wxchat.bo.QueryMaterialResponse;
 import com.okdeer.mall.activity.wxchat.bo.TokenInfo;
 import com.okdeer.mall.activity.wxchat.bo.WechatBaseResult;
 import com.okdeer.mall.activity.wxchat.config.WechatConfig;
@@ -95,6 +99,17 @@ public class WechatServiceImpl implements WechatService {
 	private boolean isExpirToken(WechatConfigDto wechatConfigDto) {
 		return StringUtils.isEmpty(wechatConfigDto.getAccessToken())
 				|| System.currentTimeMillis() >= wechatConfigDto.getExpireTime().getTime();
+	}
+
+	@Override
+	public QueryMaterialResponse findMaterialList(String type, int pageNum, int pageSize) throws  Exception {
+		Map<String, Object> requestMap = Maps.newHashMap();
+		requestMap.put("type", type);
+		requestMap.put("offset", (pageNum - 1) * pageSize);
+		requestMap.put("count", pageSize);
+		String response = HttpClient.post(WECHAT_API_CREATE_MENU_URL + getAcessToken(),
+				JsonMapper.nonEmptyMapper().toJson(requestMap));
+		return JsonMapper.nonEmptyMapper().fromJson(response, QueryMaterialResponse.class);
 	}
 
 }
