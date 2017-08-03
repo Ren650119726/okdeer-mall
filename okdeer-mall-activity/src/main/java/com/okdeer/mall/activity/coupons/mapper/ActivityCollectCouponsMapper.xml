@@ -29,6 +29,8 @@
 		<result property="h5Url" column="h5_url" />
 		<result property="limitAmount" column="limit_amount" />
 		<result property="getUserType" column="get_user_type" javaType="com.okdeer.mall.common.enums.GetUserType" jdbcType="TINYINT"/>
+		<result property="deviceDayLimit" column="device_day_limit" javaType="integer" jdbcType="INTEGER"/>
+        <result property="accountDayLimit" column="account_day_limit" javaType="integer" jdbcType="INTEGER"/>
 	</resultMap>
 	
 	 <!-- 代金券信息 -->
@@ -136,7 +138,8 @@
     <!-- end：查询代金券活动以及关联地区列表 add by wushp -->
     
     <sql id="columns">
-		id,name,type,status,belong_type,limit_client_type,start_time,end_time,description,identity_limit,area_type,total_cost,approval_status,approval_reason,approval_time,approval_user_id,create_time,create_user_id,update_time,update_user_id,disabled,daily_circulation,h5_url,limit_amount,get_user_type
+		id,name,type,status,belong_type,limit_client_type,start_time,end_time,description,identity_limit,area_type,total_cost,approval_status,approval_reason,approval_time,
+		approval_user_id,create_time,create_user_id,update_time,update_user_id,disabled,daily_circulation,h5_url,limit_amount,get_user_type,device_day_limit,account_day_limit
 	</sql>
 	<sql id="columnsExt">
 		collectCoupons.id,name,collectCoupons.type,status,belong_type,limit_client_type,start_time,end_time,description,identity_limit,area_type,total_cost,approval_status,approval_reason,approval_time,approval_user_id,create_time,create_user_id,update_time,update_user_id,disabled,daily_circulation
@@ -239,7 +242,9 @@
             #{dailyCirculation},
             #{h5Url},
             #{limitAmount},
-            #{getUserType, jdbcType=TINYINT}
+            #{getUserType, jdbcType=TINYINT},
+            #{deviceDayLimit, jdbcType=INTEGER},
+            #{accountDayLimit, jdbcType=INTEGER}
         )
 	</insert>
 
@@ -317,6 +322,12 @@
 			<if test="getUserType != null">
 				get_user_type = #{getUserType, jdbcType=TINYINT},
 			</if>
+			<if test="deviceDayLimit != null" >
+        		device_day_limit = #{deviceDayLimit,jdbcType=INTEGER},
+     		</if>
+     	 	<if test="accountDayLimit != null" >
+        		account_day_limit = #{accountDayLimit,jdbcType=INTEGER},
+     		</if>
         id = #{id}
         where id = #{id}
     </update>
