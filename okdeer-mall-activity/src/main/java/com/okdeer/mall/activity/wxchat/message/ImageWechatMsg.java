@@ -6,14 +6,13 @@ import java.util.List;
 
 import com.okdeer.mall.activity.wxchat.annotation.XStreamCDATA;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 @XStreamAlias("xml")
 public class ImageWechatMsg extends WechatMsg {
 
-	@XStreamImplicit(keyFieldName="Image",itemFieldName="MediaId")
+	@XStreamAlias("Image")
 	@XStreamCDATA
-	private List<String> mediaIdList;
+	private WechatMedia wechatMedia;
 
 	public ImageWechatMsg() {
 		setMsgType("image");
@@ -21,13 +20,12 @@ public class ImageWechatMsg extends WechatMsg {
 
 	}
 
-	public List<String> getMediaIdList() {
-		return mediaIdList;
+	public WechatMedia getWechatMedia() {
+		return wechatMedia;
 	}
 
-	public void setMediaIdList(List<String> mediaIdList) {
-		this.mediaIdList = mediaIdList;
+	public void setWechatMedia(WechatMedia wechatMedia) {
+		this.wechatMedia = wechatMedia;
 	}
-
 
 }

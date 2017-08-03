@@ -12,6 +12,7 @@ import com.okdeer.mall.activity.wxchat.config.WechatConfig;
 import com.okdeer.mall.activity.wxchat.entity.WechatUser;
 import com.okdeer.mall.activity.wxchat.message.ImageWechatMsg;
 import com.okdeer.mall.activity.wxchat.message.WechatEventMsg;
+import com.okdeer.mall.activity.wxchat.message.WechatMedia;
 import com.okdeer.mall.activity.wxchat.message.WechatMsg;
 import com.okdeer.mall.activity.wxchat.service.PosterActivityService;
 import com.okdeer.mall.activity.wxchat.service.WechatMenuProcessService;
@@ -33,9 +34,11 @@ public class PosterActivityServiceImpl implements WechatMenuProcessService, Post
 		ImageWechatMsg responseWechatMsg = new ImageWechatMsg();
 		responseWechatMsg.setFromUserName(wechatConfig.getAccount());
 		responseWechatMsg.setToUserName(wechatEventMsg.getFromUserName());
+		WechatMedia wechatMedia = new WechatMedia();
 		List<String> mediaIdList = Lists.newArrayList();
 		mediaIdList.add("vnNkLA3NmeiM8Shwn0Nh0P1Z5zRhndx9bxY_i1RriB0");
-		responseWechatMsg.setMediaIdList(mediaIdList);
+		wechatMedia.setMediaIdList(mediaIdList);
+		responseWechatMsg.setWechatMedia(wechatMedia);
 		// 生成海报
 		return responseWechatMsg;
 	}
