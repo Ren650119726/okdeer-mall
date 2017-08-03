@@ -32,7 +32,7 @@ public class BaseServiceTest {
 		initMocks();
 	}
 	
-	protected void initMocks(){
+	protected void initMocks() throws Exception{
 		// 留给模板方法实现
 	}
 }

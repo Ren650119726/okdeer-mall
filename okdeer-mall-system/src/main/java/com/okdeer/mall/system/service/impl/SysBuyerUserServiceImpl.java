@@ -95,8 +95,6 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	@Resource
 	private SysBuyerUserMapper sysBuyerUserMapper;
 
-	// begin by wangf01 2016.07.27
-
 	/**
 	 * 系统用户登陆信息日志
 	 */
@@ -108,13 +106,6 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private SysSmsVerifyCodeServiceApi sysSmsVerifyCodeService;
-
-	/**
-	 * 
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private SysBuyerUserServiceApi sysBuyerUserService;
-	// end by wangf01 2016.07.27
 
 	// @Resource
 	// private SysBuyerExtMapper sysBuyerExtMapper;
@@ -684,7 +675,7 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 			sysBuyerUserDto.setDataSource(String.valueOf(OrderResourceEnum.CVSAPP.ordinal()));
 		}
 		//新增用户及关系
-		return sysBuyerUserService.addSysBuyerSync410(sysBuyerUserDto, null, null);
+		return this.addSysBuyerSync410(sysBuyerUserDto, null, null);
 	}
 
 	//Begin add by zhaoqc 2016.10.05
