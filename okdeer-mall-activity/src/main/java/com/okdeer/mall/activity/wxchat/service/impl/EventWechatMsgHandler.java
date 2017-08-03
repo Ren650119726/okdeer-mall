@@ -37,5 +37,10 @@ public class EventWechatMsgHandler extends WechatMsgHandler implements EventWech
 		}
 		eventServiceMap.put(event, eventWechatMsgService);
 	}
+	
+	@Override
+	Class<?> getRequestClass() {
+		return WechatEventMsg.class;
+	}
 
 }

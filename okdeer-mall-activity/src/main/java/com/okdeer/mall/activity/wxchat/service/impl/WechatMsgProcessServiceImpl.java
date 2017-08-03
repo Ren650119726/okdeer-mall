@@ -34,6 +34,8 @@ public class WechatMsgProcessServiceImpl implements WechatMsgProcessService, Wec
 			return null;
 		}
 		XStream xStream = new XStream(new Dom4JDriver());
+		xStream.autodetectAnnotations(true);
+		xStream.alias("xml", wechatMsgHandler.getRequestClass());
 		Object requestObj = xStream.fromXML(requestXml);
 		logger.debug("{}开始处理请求....", wechatMsgHandler.getClass().getName());
 		Object response = wechatMsgHandler.process(requestObj);

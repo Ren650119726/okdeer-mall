@@ -20,4 +20,6 @@ public abstract class WechatMsgHandler implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		msgHandlerService.addHandler(this);
 	}
+
+	abstract Class<?> getRequestClass();
 }
