@@ -344,4 +344,13 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 */
 	int countDayFreq(ActivityRecordParamBo paramBo);
 	// End V2.4 added by maojj 2017-05-18
+
+	/**
+	 * @Description: 统计代金券活动参与记录
+	 * @param recParamBo
+	 * @return   
+	 * @author guocp
+	 * @date 2017年8月3日
+	 */
+	List<ActivityRecordBo> countCollectActivityRecord(ActivityRecordParamBo paramBo);
 }

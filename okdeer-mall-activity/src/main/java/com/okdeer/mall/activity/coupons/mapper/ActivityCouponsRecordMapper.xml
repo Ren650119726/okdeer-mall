@@ -932,10 +932,15 @@
    		GROUP BY coupons_id
    </select>
    
-   <select id="countDayFreq" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo" resultType="int">
-   		SELECT count(*)
+   <select id="countCollectActivityRecord" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo"
+   		resultType="com.okdeer.mall.activity.coupons.bo.ActivityRecordBo">
+   		SELECT coupons_collect_id AS pkId,
+   			   count(*) AS totalNum
    		FROM activity_coupons_record
-   		WHERE coupons_id = #{pkId}
+   		WHERE coupons_id IN
+   			<foreach collection="pkIdList" item="pkId" separator="," open="(" close=")">
+   				#{pkId}
+   			</foreach>
    		<if test="deviceId != null">
    			AND device_id = #{deviceId,jdbcType=VARCHAR}
    		</if>
@@ -946,5 +951,30 @@
    			AND rec_date = #{recDate,jdbcType=VARCHAR}
    		</if>
    		AND status = 1
+   		GROUP BY coupons_collect_id
    </select>
+   
+   <select id="countDayFreq" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo" resultType="int">
+   		SELECT count(*)
+   		FROM activity_coupons_record
+   		<where> 
+	   		<if test="pkId != null">
+	   			coupons_id = #{pkId,jdbcType=VARCHAR}
+	   		</if>
+	   		<if test="collectId != null">
+	   			AND coupons_collect_id = #{collectId,jdbcType=VARCHAR}
+	   		</if>
+	   		<if test="deviceId != null">
+	   			AND device_id = #{deviceId,jdbcType=VARCHAR}
+	   		</if>
+	   		<if test="userId != null">
+	   			AND collect_user_id = #{userId,jdbcType=VARCHAR}
+	   		</if>
+	   		<if test="recDate != null">
+	   			AND rec_date = #{recDate,jdbcType=VARCHAR}
+	   		</if>
+	   		AND status = 1
+   		</where>
+   </select>
+
 </mapper> 

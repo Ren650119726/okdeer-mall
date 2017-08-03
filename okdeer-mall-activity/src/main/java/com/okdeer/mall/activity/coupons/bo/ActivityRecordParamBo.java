@@ -16,14 +16,19 @@ import java.util.List;
 public class ActivityRecordParamBo {
 
 	/**
-	 * 业务Id列表。如果是代金券，则为代金券Id列表。如果是满减，则为满减Id列表
+	 * 业务Id列表。如果是代金券，则为代金券Id列表;如果是满减,则为满减Id列表;如果是代金券活动，则为活动ID
 	 */
 	private List<String> pkIdList;
 
 	/**
-	 * 业务Id
+	 * 代金券Id
 	 */
 	private String pkId;
+	
+	/**
+	 * 代金券活动Id
+	 */
+	private String collectId;
 
 	/**
 	 * 设备Id
@@ -78,6 +83,16 @@ public class ActivityRecordParamBo {
 
 	public void setPkId(String pkId) {
 		this.pkId = pkId;
+	}
+
+	
+	public String getCollectId() {
+		return collectId;
+	}
+
+	
+	public void setCollectId(String collectId) {
+		this.collectId = collectId;
 	}
 
 }
