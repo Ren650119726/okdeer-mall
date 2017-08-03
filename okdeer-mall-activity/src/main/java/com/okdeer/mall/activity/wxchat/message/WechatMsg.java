@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.activity.wxchat.message;
 
+import com.okdeer.mall.activity.wxchat.annotation.XStreamCDATA;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 public class WechatMsg {
@@ -9,24 +10,28 @@ public class WechatMsg {
 	 * 开发者微信号 ToUserName
 	 */
 	@XStreamAlias("ToUserName")
+	@XStreamCDATA
 	private String toUserName;
 
 	/**
 	 * 发送方帐号（一个OpenID） 
 	 */
 	@XStreamAlias("FromUserName")
+	@XStreamCDATA
 	private String fromUserName;
 
 	/**
 	 * 消息创建时间 （整型） CreateTime
 	 */
 	@XStreamAlias("CreateTime")
+	@XStreamCDATA
 	private String createTime;
 
 	/**
 	 * 消息类型，event  MsgType
 	 */
 	@XStreamAlias("MsgType")
+	@XStreamCDATA
 	private String msgType;
 
 	public String getToUserName() {

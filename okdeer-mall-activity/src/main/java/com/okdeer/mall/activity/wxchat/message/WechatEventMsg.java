@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.activity.wxchat.message;
 
+import com.okdeer.mall.activity.wxchat.annotation.XStreamCDATA;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 
@@ -11,12 +12,14 @@ public class WechatEventMsg extends WechatMsg{
 	 * 事件类型，CLICK、VIEW  Event
 	 */
 	@XStreamAlias("Event")
+	@XStreamCDATA
 	private String event;
 
 	/**
 	 * 事件KEY值，与自定义菜单接口中KEY值对应 EventKey
 	 */
 	@XStreamAlias("EventKey")
+	@XStreamCDATA
 	private String eventKey;
 
 	

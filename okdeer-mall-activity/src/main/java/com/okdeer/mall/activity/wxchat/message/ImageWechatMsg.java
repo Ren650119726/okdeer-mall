@@ -3,12 +3,14 @@ package com.okdeer.mall.activity.wxchat.message;
 
 import java.util.Date;
 
+import com.okdeer.mall.activity.wxchat.annotation.XStreamCDATA;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 @XStreamAlias("xml")
 public class ImageWechatMsg extends WechatMsg {
 
 	@XStreamAlias("MediaId")
+	@XStreamCDATA
 	private String mediaId;
 
 	public ImageWechatMsg() {
