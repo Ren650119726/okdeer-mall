@@ -13,7 +13,7 @@ public class ImageWechatMsg extends WechatMsg {
 
 	@XStreamImplicit(keyFieldName="Image",itemFieldName="MediaId")
 	@XStreamCDATA
-	private List<String> mediaId;
+	private List<String> mediaIdList;
 
 	public ImageWechatMsg() {
 		setMsgType("image");
@@ -21,12 +21,13 @@ public class ImageWechatMsg extends WechatMsg {
 
 	}
 
-	public List<String> getMediaId() {
-		return mediaId;
+	public List<String> getMediaIdList() {
+		return mediaIdList;
 	}
 
-	public void setMediaId(List<String> mediaId) {
-		this.mediaId = mediaId;
+	public void setMediaIdList(List<String> mediaIdList) {
+		this.mediaIdList = mediaIdList;
 	}
+
 
 }

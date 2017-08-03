@@ -2,9 +2,12 @@
 package com.okdeer.mall.activity.wxchat.service.impl;
 
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Lists;
 import com.okdeer.mall.activity.wxchat.config.WechatConfig;
 import com.okdeer.mall.activity.wxchat.entity.WechatUser;
 import com.okdeer.mall.activity.wxchat.message.ImageWechatMsg;
@@ -30,7 +33,9 @@ public class PosterActivityServiceImpl implements WechatMenuProcessService, Post
 		ImageWechatMsg responseWechatMsg = new ImageWechatMsg();
 		responseWechatMsg.setFromUserName(wechatConfig.getAccount());
 		responseWechatMsg.setToUserName(wechatEventMsg.getFromUserName());
-		responseWechatMsg.setMediaId("vnNkLA3NmeiM8Shwn0Nh0P1Z5zRhndx9bxY_i1RriB0");
+		List<String> mediaIdList = Lists.newArrayList();
+		mediaIdList.add("vnNkLA3NmeiM8Shwn0Nh0P1Z5zRhndx9bxY_i1RriB0");
+		responseWechatMsg.setMediaIdList(mediaIdList);
 		// 生成海报
 		return responseWechatMsg;
 	}
