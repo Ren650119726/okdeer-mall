@@ -17,7 +17,10 @@
         <result column="group_Id" property="groupId" jdbcType="VARCHAR" />
         <result column="tagids" property="tagids" jdbcType="VARCHAR" />
     </resultMap>
-
+	
+	<sql id="Base_Column_List" >
+        id,openid,nick_name, sex, city, country, language, head_img_url, subscribe_time, unionid,remark, group_Id, tagids
+    </sql>
     <insert id="add" parameterType="com.okdeer.mall.activity.wxchat.entity.WechatUser" >
         insert into wechat_user
         <trim prefix="(" suffix=")" suffixOverrides="," >
@@ -109,5 +112,10 @@
             </if>
         </trim>
     </insert>
-
+	
+	<select id="findByOpenid" resultMap="BaseResultMap" parameterType="string">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM wechat_user  where openid = #{openid,jdbcType=VARCHAR}
+	</select>
 </mapper>

@@ -24,8 +24,9 @@ public class WechatConfig {
 	 */
 	@Value("${wechat.token}")
 	private String token;
-	
-	@Value("${wechat.api.url}")
+
+	@Value("${wechat.account}")
+	private String account;
 
 	public String getAppId() {
 		return appId;
@@ -49,6 +50,14 @@ public class WechatConfig {
 
 	public void setToken(String token) {
 		this.token = token;
+	}
+
+	public String getAccount() {
+		return account;
+	}
+
+	public void setAccount(String account) {
+		this.account = account;
 	}
 
 }

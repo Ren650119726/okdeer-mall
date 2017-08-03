@@ -7,7 +7,10 @@
 package com.okdeer.mall.activity.wxchat.mapper;
 
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.activity.wxchat.entity.WechatUser;
 
 public interface WechatUserMapper extends IBaseMapper {
+
+	WechatUser findByOpenid(String openid);
 
 }

@@ -20,6 +20,7 @@ import com.okdeer.mall.activity.wechat.service.WechatApi;
 import com.okdeer.mall.activity.wxchat.bo.Material;
 import com.okdeer.mall.activity.wxchat.bo.QueryMaterialResponse;
 import com.okdeer.mall.activity.wxchat.config.WechatConfig;
+import com.okdeer.mall.activity.wxchat.service.WechatMsgProcessService;
 import com.okdeer.mall.activity.wxchat.service.WechatService;
 
 @Service(version = "1.0.0")
@@ -30,6 +31,9 @@ public class WechatApiImpl implements WechatApi {
 
 	@Autowired
 	private WechatService wechatService;
+	
+	@Autowired
+	private WechatMsgProcessService wechatMsgProcessService;
 
 	@Override
 	public boolean checkWxchatServer(CheckWxchatServerParamDto checkWxchatServerParamDto) {
@@ -78,8 +82,7 @@ public class WechatApiImpl implements WechatApi {
 
 	@Override
 	public String processRequest(String xmlCotent) throws MallApiException {
-		
-		return "success";
+		return wechatMsgProcessService.process(xmlCotent);
 	}
 
 }
