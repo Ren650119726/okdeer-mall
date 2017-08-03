@@ -28,7 +28,7 @@ public class WechatMsgProcessServiceImpl implements WechatMsgProcessService, Wec
 		if (msgType == null) {
 			throw new MallApiException("解析msgType出错");
 		}
-		WechatMsgHandler wechatMsgHandler = msgHandlerMap.get(msgType);
+		WechatMsgHandler wechatMsgHandler = msgHandlerMap.get(msgType.toUpperCase());
 		if (wechatMsgHandler == null) {
 			logger.warn("没有找到相应的消息处理类：msgType={}", msgType);
 			return null;
