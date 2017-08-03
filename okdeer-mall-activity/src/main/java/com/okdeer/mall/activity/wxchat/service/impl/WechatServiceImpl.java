@@ -20,6 +20,7 @@ import com.okdeer.mall.activity.wechat.dto.WechatConfigDto;
 import com.okdeer.mall.activity.wxchat.bo.QueryMaterialResponse;
 import com.okdeer.mall.activity.wxchat.bo.TokenInfo;
 import com.okdeer.mall.activity.wxchat.bo.WechatBaseResult;
+import com.okdeer.mall.activity.wxchat.bo.WechatUserInfo;
 import com.okdeer.mall.activity.wxchat.config.WechatConfig;
 import com.okdeer.mall.activity.wxchat.service.WechatService;
 import com.okdeer.mall.activity.wxchat.util.HttpClient;
@@ -45,12 +46,11 @@ public class WechatServiceImpl implements WechatService {
 	private static final String WECHAT_API_GET_TOKEN_URL = WECHAT_API_SERVER + "/cgi-bin/token";
 
 	private static final String WECHAT_API_CREATE_MENU_URL = WECHAT_API_SERVER + "/cgi-bin/menu/create";
-	
-	//https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=ACCESS_TOKEN
+
 	private static final String WECHAT_API_GET_MATERIAL_URL = WECHAT_API_SERVER + "/cgi-bin/material/batchget_material";
 
 	private static final String ACESS_TOKEN_PARAM = "access_token";
-	
+
 	@Autowired
 	private WechatConfig wechatConfig;
 
@@ -98,33 +98,43 @@ public class WechatServiceImpl implements WechatService {
 		}
 		wechatConfigDto = new WechatConfigDto();
 		wechatConfigDto.setAccessToken(tokenInfo.getAccessToken());
-		long expireTime = System.currentTimeMillis()+ (tokenInfo.getExpiresIn()-60*30)*1000;
+		long expireTime = System.currentTimeMillis() + (tokenInfo.getExpiresIn() - 60 * 30) * 1000;
 		wechatConfigDto.setExpireTime(new Date(expireTime));
 		BeanMapper.copy(wechatConfigDto, WECHAT_CONFIG);
 		redisTemplateWrapper.set(CONFIG_KEY, wechatConfigDto, tokenInfo.getExpiresIn() - 60 * 30);
 		return tokenInfo.getAccessToken();
 	}
 
-	
-
 	@Override
-	public QueryMaterialResponse findMaterialList(String type, int pageNum, int pageSize) throws  Exception {
+	public QueryMaterialResponse findMaterialList(String type, int pageNum, int pageSize) throws Exception {
 		Map<String, Object> requestMap = Maps.newHashMap();
 		requestMap.put("type", type);
 		requestMap.put("offset", (pageNum - 1) * pageSize);
 		requestMap.put("count", pageSize);
-		String response = HttpClient.post(WECHAT_API_GET_MATERIAL_URL +getTokenUrl(),
+		String response = HttpClient.post(WECHAT_API_GET_MATERIAL_URL + getTokenUrl(),
 				JsonMapper.nonEmptyMapper().toJson(requestMap));
-		logger.debug("微信返回素材应答：{}：",response);
+		logger.debug("微信返回素材应答：{}：", response);
 		return JsonMapper.nonEmptyMapper().fromJson(response, QueryMaterialResponse.class);
 	}
-	
-	
-	private String getTokenUrl () throws Exception{
-		return "?"+ACESS_TOKEN_PARAM+"=" +getAcessToken();
+
+	private String getTokenUrl() throws Exception {
+		return "?" + ACESS_TOKEN_PARAM + "=" + getAcessToken();
 	}
+
 	private boolean isExpirToken(WechatConfigDto wechatConfigDto) {
 		return StringUtils.isEmpty(wechatConfigDto.getAccessToken())
 				|| System.currentTimeMillis() >= wechatConfigDto.getExpireTime().getTime();
+	}
+
+	@Override
+	public WechatUserInfo getUserInfo(String fromUserName) throws Exception {
+		String url = WECHAT_API_SERVER + "cgi-bin/user/info" + getTokenUrl() + "openid=" + fromUserName + "&lang=zh_CN";
+		logger.debug("获取token，请求url:{}", url);
+		String resp = HttpClient.get(url);
+		logger.debug("微信返回数据:{}", resp);
+		if (resp == null) {
+			throw new Exception("获取微信用户信息出错");
+		}
+		return JsonMapper.nonDefaultMapper().fromJson(resp, WechatUserInfo.class);
 	}
 }

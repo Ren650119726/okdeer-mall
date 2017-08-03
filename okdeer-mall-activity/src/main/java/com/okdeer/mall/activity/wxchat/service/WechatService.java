@@ -3,6 +3,7 @@ package com.okdeer.mall.activity.wxchat.service;
 
 import com.okdeer.mall.activity.wxchat.bo.QueryMaterialResponse;
 import com.okdeer.mall.activity.wxchat.bo.TokenInfo;
+import com.okdeer.mall.activity.wxchat.bo.WechatUserInfo;
 
 /**
  * ClassName: WechatService 
@@ -22,5 +23,7 @@ public interface WechatService {
 	void createMenu(String requestJson) throws Exception;
 
 	QueryMaterialResponse findMaterialList(String type, int pageNum, int pageSize) throws  Exception ;
+
+	WechatUserInfo getUserInfo(String fromUserName) throws  Exception;
 
 }
