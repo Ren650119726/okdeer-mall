@@ -1,26 +1,32 @@
 
 package com.okdeer.mall.activity.wxchat.message;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+
 public class WechatMsg {
 
 	/**
 	 * 开发者微信号 ToUserName
 	 */
+	@XStreamAlias("ToUserName")
 	private String toUserName;
 
 	/**
-	 * 发送方帐号（一个OpenID） FromUserName
+	 * 发送方帐号（一个OpenID） 
 	 */
+	@XStreamAlias("FromUserName")
 	private String fromUserName;
 
 	/**
 	 * 消息创建时间 （整型） CreateTime
 	 */
+	@XStreamAlias("createTime")
 	private String createTime;
 
 	/**
 	 * 消息类型，event  MsgType
 	 */
+	@XStreamAlias("msgType")
 	private String msgType;
 
 	public String getToUserName() {
