@@ -2,6 +2,7 @@
 package com.okdeer.mall.activity.wxchat.bo;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -74,7 +75,7 @@ public class WechatUserInfo implements Serializable {
 	 * 标签ID列表
 	 */
 	@JsonProperty("tagid_list")
-	private String tagids;
+	private List<String> tagids;
 
 	public String getOpenid() {
 		return openid;
@@ -172,11 +173,11 @@ public class WechatUserInfo implements Serializable {
 		this.groupId = groupId;
 	}
 
-	public String getTagids() {
+	public List<String> getTagids() {
 		return tagids;
 	}
 
-	public void setTagids(String tagids) {
+	public void setTagids(List<String> tagids) {
 		this.tagids = tagids;
 	}
 
