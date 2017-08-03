@@ -77,6 +77,7 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 			wechatMenuMap.put("key", wechatMenu.getButtonKey());
 			wechatMenuMap.put("url", wechatMenu.getUrl());
 			wechatMenuMap.put("media_id", wechatMenu.getMediaId());
+			wechatMenuMap.put("id", wechatMenu.getId());
 
 			if (StringUtils.isNotEmpty(wechatMenu.getParentId())) {
 				List<Map<String, Object>> sencMenuList = secondMenuMap.get(wechatMenu.getParentId());
@@ -88,10 +89,14 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 			if (wechatMenu.getLevelType() == 1) {
 				// 一级菜单
 				firstThirdMenuList.add(wechatMenuMap);
-				wechatMenuMap.put("sub_button", secondMenuMap.get(wechatMenu.getId()));
 			} else if (wechatMenu.getLevelType() == 2) {
 				secondMenuMap.get(wechatMenu.getParentId()).add(wechatMenuMap);
 			}
+		}
+		
+		for (Map<String, Object> map : firstThirdMenuList) {
+			map.put("sub_button", secondMenuMap.get(map.get("id")));
+			map.remove("id");
 		}
 		menu.put("button", firstThirdMenuList);
 		String requestJson = JsonMapper.nonEmptyMapper().toJson(menu);

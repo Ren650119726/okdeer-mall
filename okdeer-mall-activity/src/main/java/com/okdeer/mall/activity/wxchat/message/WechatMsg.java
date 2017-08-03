@@ -20,13 +20,13 @@ public class WechatMsg {
 	/**
 	 * 消息创建时间 （整型） CreateTime
 	 */
-	@XStreamAlias("createTime")
+	@XStreamAlias("CreateTime")
 	private String createTime;
 
 	/**
 	 * 消息类型，event  MsgType
 	 */
-	@XStreamAlias("msgType")
+	@XStreamAlias("MsgType")
 	private String msgType;
 
 	public String getToUserName() {

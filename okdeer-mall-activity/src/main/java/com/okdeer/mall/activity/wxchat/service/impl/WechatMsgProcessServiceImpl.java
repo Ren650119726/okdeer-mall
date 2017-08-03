@@ -78,7 +78,7 @@ public class WechatMsgProcessServiceImpl implements WechatMsgProcessService, Wec
 		}
 		String msgType = body.substring(indexOfSignNode + msgTypeNodeName.length(), indexOfSignEndNode);
 		if (msgType.indexOf("CDATA") != -1) {
-			msgType = msgType.substring("<![CDATA[".length() + 1, msgType.length() - "]]>".length());
+			msgType = msgType.substring("<![CDATA[".length(), msgType.length() - "]]>".length());
 			return msgType;
 		}
 		return msgType;

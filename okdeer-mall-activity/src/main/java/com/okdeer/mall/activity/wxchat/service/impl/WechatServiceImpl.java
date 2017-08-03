@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.activity.wxchat.service.impl;
 
+import java.util.Date;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -96,6 +97,9 @@ public class WechatServiceImpl implements WechatService {
 			throw new Exception("获取token出错," + tokenInfo.getErrMsg());
 		}
 		wechatConfigDto = new WechatConfigDto();
+		wechatConfigDto.setAccessToken(tokenInfo.getAccessToken());
+		long expireTime = System.currentTimeMillis()+ (tokenInfo.getExpiresIn()-60*30)*1000;
+		wechatConfigDto.setExpireTime(new Date(expireTime));
 		BeanMapper.copy(wechatConfigDto, WECHAT_CONFIG);
 		redisTemplateWrapper.set(CONFIG_KEY, wechatConfigDto, tokenInfo.getExpiresIn() - 60 * 30);
 		return tokenInfo.getAccessToken();

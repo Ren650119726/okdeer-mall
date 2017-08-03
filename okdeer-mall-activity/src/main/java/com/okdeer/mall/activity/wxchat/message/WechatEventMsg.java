@@ -3,6 +3,8 @@ package com.okdeer.mall.activity.wxchat.message;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+
+@XStreamAlias("xml")
 public class WechatEventMsg extends WechatMsg{
 	
 	/**

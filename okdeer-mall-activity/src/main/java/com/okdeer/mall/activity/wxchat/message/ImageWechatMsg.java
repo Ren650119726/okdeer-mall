@@ -5,6 +5,7 @@ import java.util.Date;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+@XStreamAlias("xml")
 public class ImageWechatMsg extends WechatMsg {
 
 	@XStreamAlias("MediaId")
