@@ -1182,6 +1182,17 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	public ActivityCouponsRecord selectByPrimaryKey(String id) {
 		return activityCouponsMapper.selectByPrimaryKey(id);
 	}
+	
+	/**
+	 * 添加根据条件查询代金券信息
+	 * @param params
+	 * @return
+	 */
+	@Override
+	public List<ActivityCouponsRecord> selectByParams(Map<String, Object> params) {
+		return activityCouponsRecordMapper.selectByParams(params);
+	}
+	
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
