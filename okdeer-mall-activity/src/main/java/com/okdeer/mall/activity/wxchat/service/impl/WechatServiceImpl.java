@@ -128,7 +128,7 @@ public class WechatServiceImpl implements WechatService {
 
 	@Override
 	public WechatUserInfo getUserInfo(String fromUserName) throws Exception {
-		String url = WECHAT_API_SERVER + "cgi-bin/user/info" + getTokenUrl() + "openid=" + fromUserName + "&lang=zh_CN";
+		String url = WECHAT_API_SERVER + "/cgi-bin/user/info" + getTokenUrl() + "&openid=" + fromUserName + "&lang=zh_CN";
 		logger.debug("获取token，请求url:{}", url);
 		String resp = HttpClient.get(url);
 		logger.debug("微信返回数据:{}", resp);

@@ -41,6 +41,7 @@ public class PosterActivityServiceImpl implements WechatMenuProcessService, Post
 		try {
 			WechatUserInfo wechatUserInfo = wechatService.getUserInfo(wechatEventMsg.getFromUserName());
 			System.out.println(wechatUserInfo.getNickName());
+			System.out.println(wechatUserInfo.getHeadImgUrl());
 			String mediaId = "vnNkLA3NmeiM8Shwn0Nh0P1Z5zRhndx9bxY_i1RriB0";
 			// 生成海报
 			return createImageWechatMsg(wechatEventMsg.getFromUserName(),mediaId);
