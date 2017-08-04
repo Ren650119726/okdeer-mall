@@ -12,7 +12,7 @@ public abstract class WechatMsgHandler implements InitializingBean {
 	@Autowired
 	private WechatMsgHandlerService msgHandlerService;
 
-	abstract String getMsgType();
+	abstract String getMsgTypeEvent();
 
 	abstract Object process(Object obj) throws MallApiException;
 

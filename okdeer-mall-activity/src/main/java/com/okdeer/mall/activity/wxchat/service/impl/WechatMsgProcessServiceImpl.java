@@ -35,9 +35,14 @@ public class WechatMsgProcessServiceImpl implements WechatMsgProcessService, Wec
 		if (msgType == null) {
 			throw new MallApiException("解析msgType出错");
 		}
-		WechatMsgHandler wechatMsgHandler = msgHandlerMap.get(msgType.toUpperCase());
+		String event = getEvent(requestXml);
+		if (event == null) {
+			throw new MallApiException("解析event出错");
+		}
+		WechatMsgHandler wechatMsgHandler = msgHandlerMap
+				.get(msgType.toUpperCase() + WxchatUtils.JOIN + event.toUpperCase());
 		if (wechatMsgHandler == null) {
-			logger.warn("没有找到相应的消息处理类：msgType={}", msgType);
+			logger.warn("没有找到相应的消息处理类：msgType={},event={}", msgType);
 			return null;
 		}
 		XStream xStream = createXstream();
@@ -54,11 +59,11 @@ public class WechatMsgProcessServiceImpl implements WechatMsgProcessService, Wec
 
 	@Override
 	public void addHandler(WechatMsgHandler wechatMsgHandler) throws MallApiException {
-		if (msgHandlerMap.get(wechatMsgHandler.getMsgType()) != null) {
-			throw new MallApiException("微信消息处理类重复,消息类型：" + wechatMsgHandler.getMsgType() + "，已经存在的类为："
-					+ msgHandlerMap.get(wechatMsgHandler.getMsgType()).getClass());
+		if (msgHandlerMap.get(wechatMsgHandler.getMsgTypeEvent()) != null) {
+			throw new MallApiException("微信消息处理类重复,消息类型：" + wechatMsgHandler.getMsgTypeEvent() + "，已经存在的类为："
+					+ msgHandlerMap.get(wechatMsgHandler.getMsgTypeEvent()).getClass());
 		}
-		msgHandlerMap.put(wechatMsgHandler.getMsgType(), wechatMsgHandler);
+		msgHandlerMap.put(wechatMsgHandler.getMsgTypeEvent(), wechatMsgHandler);
 	}
 
 	/**
@@ -68,22 +73,28 @@ public class WechatMsgProcessServiceImpl implements WechatMsgProcessService, Wec
 	 * @return
 	 */
 	private String getMsgType(String body) {
+		return getElement(body, WxchatUtils.MSGTYPE);
+	}
 
-		String msgTypeNodeName = "<" + WxchatUtils.MSGTYPE + ">";
-		String msgTypeEndNodeName = "</" + WxchatUtils.MSGTYPE + ">";
+	private String getEvent(String body) {
+		return getElement(body, WxchatUtils.EVENT);
+	}
 
+	private String getElement(String body, String elementName) {
+		String msgTypeNodeName = "<" + elementName + ">";
+		String msgTypeEndNodeName = "</" + elementName + ">";
 		int indexOfSignNode = body.indexOf(msgTypeNodeName);
 		int indexOfSignEndNode = body.indexOf(msgTypeEndNodeName);
 
 		if (indexOfSignNode < 0 || indexOfSignEndNode < 0) {
 			return null;
 		}
-		String msgType = body.substring(indexOfSignNode + msgTypeNodeName.length(), indexOfSignEndNode);
-		if (msgType.indexOf("CDATA") != -1) {
-			msgType = msgType.substring("<![CDATA[".length(), msgType.length() - "]]>".length());
-			return msgType;
+		String content = body.substring(indexOfSignNode + msgTypeNodeName.length(), indexOfSignEndNode);
+		if (content.indexOf("CDATA") != -1) {
+			content = content.substring("<![CDATA[".length(), content.length() - "]]>".length());
+			return content;
 		}
-		return msgType;
+		return content;
 	}
 
 	private XStream createXstream() {

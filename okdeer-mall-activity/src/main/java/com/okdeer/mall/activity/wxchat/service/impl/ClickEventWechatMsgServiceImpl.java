@@ -42,4 +42,9 @@ public class ClickEventWechatMsgServiceImpl extends AbstractEventWechatMsgServic
 		wechatMenuProcessServiceMap.put(eventKey, wechatMenuProcessService);
 	}
 
+	@Override
+	Class<?> getRequestClass() {
+		return WechatEventMsg.class;
+	}
+
 }

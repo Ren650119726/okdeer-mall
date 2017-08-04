@@ -19,7 +19,9 @@ public class WxchatUtils {
 	}
 
 	public static final String MSGTYPE = "MsgType";
-	
+
+	public static final String EVENT = "Event";
+
 	// 请求消息类型：文本
 	public static final String REQ_MESSAGE_TYPE_TEXT = "text";
 
@@ -77,4 +79,5 @@ public class WxchatUtils {
 	// 响应消息类型：图文
 	public static final String RESP_MESSAGE_TYPE_NEWS = "news";
 
+	public static final String JOIN = "-";
 }
