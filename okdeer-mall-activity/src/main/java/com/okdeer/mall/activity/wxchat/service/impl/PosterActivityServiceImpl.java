@@ -2,20 +2,21 @@
 package com.okdeer.mall.activity.wxchat.service.impl;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
+import com.okdeer.mall.activity.wxchat.bo.PosterAddWechatUserRequest;
 import com.okdeer.mall.activity.wxchat.bo.WechatUserInfo;
 import com.okdeer.mall.activity.wxchat.config.WechatConfig;
 import com.okdeer.mall.activity.wxchat.message.ImageWechatMsg;
@@ -35,9 +37,12 @@ import com.okdeer.mall.activity.wxchat.service.WechatUserService;
 import com.okdeer.mall.activity.wxchat.util.ImageUtils;
 
 @Service("posterActivityService")
-public class PosterActivityServiceImpl implements WechatMenuProcessService, PosterActivityService {
+public class PosterActivityServiceImpl
+		implements WechatMenuProcessService, PosterActivityService, InitializingBean, DisposableBean {
 
 	private static final Logger logger = LoggerFactory.getLogger(PosterActivityServiceImpl.class);
+
+	private BlockingQueue<PosterAddWechatUserRequest> posterAddWechatUserRequestQueue;
 
 	@Autowired
 	private WechatUserService wechatUserService;
@@ -69,8 +74,7 @@ public class PosterActivityServiceImpl implements WechatMenuProcessService, Post
 			}
 			String fileName = posterImg[index];
 
-			byte[] posterImgIs = createPosterInStream(bufferedImage,
-					fileName.substring(fileName.lastIndexOf('.') + 1));
+			byte[] posterImgIs = createPosterInStream(bufferedImage, fileName.substring(fileName.lastIndexOf('.') + 1));
 			// 添加图片到微信服务器
 			AddMediaResult result = wechatService.addMedia(posterImgIs, "image", fileName);
 			if (!result.isSuccess()) {
@@ -110,7 +114,8 @@ public class PosterActivityServiceImpl implements WechatMenuProcessService, Post
 			// 将用户头像合并到海报中
 			BufferedImage newImg = ImageUtils.overlapImage(posterImg, convertImage, 210, 292);
 			// 海报图片添加昵称
-			ImageUtils.drawTextInImg(newImg, "#EEE5DE", wechatUserInfo.getNickName(), 210, 292 + convertImage.getHeight() + 20);
+			ImageUtils.drawTextInImg(newImg, "#EEE5DE", wechatUserInfo.getNickName(), 210,
+					292 + convertImage.getHeight() + 20);
 			return newImg;
 		} catch (IOException e) {
 			logger.error("读取图片出错", e);
@@ -130,30 +135,27 @@ public class PosterActivityServiceImpl implements WechatMenuProcessService, Post
 		// 生成海报
 		return responseWechatMsg;
 	}
-
-	public static void main(String[] args) {
-
+	
+	
+	@Override
+	public void putPosterAddWechatUserRequest(PosterAddWechatUserRequest posterAddWechatUserRequest) {
 		try {
-			// 用户头像
-			String userInfoHead = "http://wx.qlogo.cn/mmopen/r48cSSlr7jiaX5qmicB2Ru90YgEpysNWlicYsDUfyphHKL9iczF6hMRCfDjjIWtLqBFckDwHXOCbMFBEo2V8XOWFZdOUJXg1ph3S/0";
-			// 海报图片
-			URL posterPicUrl = new URL("http://7xs69a.com1.z0.glb.clouddn.com/posterpic1.png");
-			URL userPicUrl = new URL(userInfoHead);
-			BufferedImage posterImg = ImageIO.read(posterPicUrl);
-			BufferedImage userImg = ImageIO.read(userPicUrl);
-			long l1 = System.currentTimeMillis();
-			BufferedImage convertImage = ImageUtils.scaleByPercentage(userImg, 160, 160);
-			convertImage = ImageUtils.convertCircular(convertImage);
-			BufferedImage newImg = ImageUtils.overlapImage(posterImg, convertImage, 210, 292);
-			ImageUtils.drawTextInImg(newImg, "#EEE5DE", "三届散仙", 210, 292 + convertImage.getHeight() + 20);
-			long l2 = System.currentTimeMillis();
-			System.out.println(l2 - l1);
-			ImageIO.write(newImg, "png", new File("E:\\yschome\\11.png"));
-
-		} catch (IOException e) {
-			logger.error("读取图片出错", e);
+			posterAddWechatUserRequestQueue.put(posterAddWechatUserRequest);
+		} catch (InterruptedException e) {
+			logger.error("当前线程{}已经中断", Thread.currentThread().getName(), e);
+			Thread.currentThread().interrupt();
 		}
+	}
 
+	@Override
+	public void destroy() throws Exception {
+		posterAddWechatUserRequestQueue.clear();
+		
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		posterAddWechatUserRequestQueue = new LinkedBlockingQueue<>();
 	}
 
 }

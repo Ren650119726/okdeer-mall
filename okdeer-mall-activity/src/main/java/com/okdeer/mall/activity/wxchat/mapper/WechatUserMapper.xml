@@ -1,121 +1,181 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.okdeer.mall.activity.wxchat.mapper.WechatUserMapper" >
-    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.wxchat.entity.WechatUser" >
-        <result column="id" property="id" jdbcType="VARCHAR" />
-        <result column="openid" property="openid" jdbcType="VARCHAR" />
-        <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
-        <result column="sex" property="sex" jdbcType="INTEGER" />
-        <result column="city" property="city" jdbcType="VARCHAR" />
-        <result column="country" property="country" jdbcType="VARCHAR" />
-        <result column="province" property="province" jdbcType="VARCHAR" />
-        <result column="language" property="language" jdbcType="VARCHAR" />
-        <result column="head_img_url" property="headImgUrl" jdbcType="VARCHAR" />
-        <result column="subscribe_time" property="subscribeTime" jdbcType="TIMESTAMP" />
-        <result column="unionid" property="unionid" jdbcType="VARCHAR" />
-        <result column="remark" property="remark" jdbcType="VARCHAR" />
-        <result column="group_Id" property="groupId" jdbcType="VARCHAR" />
-        <result column="tagids" property="tagids" jdbcType="VARCHAR" />
-    </resultMap>
-	
-	<sql id="Base_Column_List" >
-        id,openid,nick_name, sex, city, country, language, head_img_url, subscribe_time, unionid,remark, group_Id, tagids
-    </sql>
-    <insert id="add" parameterType="com.okdeer.mall.activity.wxchat.entity.WechatUser" >
-        insert into wechat_user
-        <trim prefix="(" suffix=")" suffixOverrides="," >
-            <if test="id != null" >
-                id,
-            </if>
-            <if test="openid != null" >
-                openid,
-            </if>
-            <if test="nickName != null" >
-                nick_name,
-            </if>
-            <if test="sex != null" >
-                sex,
-            </if>
-            <if test="city != null" >
-                city,
-            </if>
-            <if test="country != null" >
-                country,
-            </if>
-            <if test="province != null" >
-                province,
-            </if>
-            <if test="language != null" >
-                language,
-            </if>
-            <if test="headImgUrl != null" >
-                head_img_url,
-            </if>
-            <if test="subscribeTime != null" >
-                subscribe_time,
-            </if>
-            <if test="unionid != null" >
-                unionid,
-            </if>
-            <if test="remark != null" >
-                remark,
-            </if>
-            <if test="groupId != null" >
-                group_Id,
-            </if>
-            <if test="tagids != null" >
-                tagids,
-            </if>
-        </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides="," >
-            <if test="id != null" >
-                #{id,jdbcType=VARCHAR},
-            </if>
-            <if test="openid != null" >
-                #{openid,jdbcType=VARCHAR},
-            </if>
-            <if test="nickName != null" >
-                #{nickName,jdbcType=VARCHAR},
-            </if>
-            <if test="sex != null" >
-                #{sex,jdbcType=INTEGER},
-            </if>
-            <if test="city != null" >
-                #{city,jdbcType=VARCHAR},
-            </if>
-            <if test="country != null" >
-                #{country,jdbcType=VARCHAR},
-            </if>
-            <if test="province != null" >
-                #{province,jdbcType=VARCHAR},
-            </if>
-            <if test="language != null" >
-                #{language,jdbcType=VARCHAR},
-            </if>
-            <if test="headImgUrl != null" >
-                #{headImgUrl,jdbcType=VARCHAR},
-            </if>
-            <if test="subscribeTime != null" >
-                #{subscribeTime,jdbcType=TIMESTAMP},
-            </if>
-            <if test="unionid != null" >
-                #{unionid,jdbcType=VARCHAR},
-            </if>
-            <if test="remark != null" >
-                #{remark,jdbcType=VARCHAR},
-            </if>
-            <if test="groupId != null" >
-                #{groupId,jdbcType=VARCHAR},
-            </if>
-            <if test="tagids != null" >
-                #{tagids,jdbcType=VARCHAR},
-            </if>
-        </trim>
-    </insert>
-	
-	<select id="findByOpenid" resultMap="BaseResultMap" parameterType="string">
-        SELECT 
-        <include refid="Base_Column_List" />
-        FROM wechat_user  where openid = #{openid,jdbcType=VARCHAR}
+<mapper namespace="com.okdeer.mall.activity.wxchat.mapper.WechatUserMapper">
+	<resultMap id="BaseResultMap"
+		type="com.okdeer.mall.activity.wxchat.entity.WechatUser">
+		<result column="id" property="id" jdbcType="VARCHAR" />
+		<result column="openid" property="openid" jdbcType="VARCHAR" />
+		<result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+		<result column="sex" property="sex" jdbcType="INTEGER" />
+		<result column="city" property="city" jdbcType="VARCHAR" />
+		<result column="country" property="country" jdbcType="VARCHAR" />
+		<result column="province" property="province" jdbcType="VARCHAR" />
+		<result column="language" property="language" jdbcType="VARCHAR" />
+		<result column="head_img_url" property="headImgUrl" jdbcType="VARCHAR" />
+		<result column="subscribe_time" property="subscribeTime"
+			jdbcType="TIMESTAMP" />
+		<result column="unionid" property="unionid" jdbcType="VARCHAR" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="group_Id" property="groupId" jdbcType="VARCHAR" />
+		<result column="tagids" property="tagids" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id,openid,nick_name, sex, city, country, language, head_img_url, subscribe_time,
+		unionid,remark, group_Id, tagids
+	</sql>
+	<insert id="add" parameterType="com.okdeer.mall.activity.wxchat.entity.WechatUser">
+		insert into wechat_user
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="openid != null">
+				openid,
+			</if>
+			<if test="nickName != null">
+				nick_name,
+			</if>
+			<if test="sex != null">
+				sex,
+			</if>
+			<if test="city != null">
+				city,
+			</if>
+			<if test="country != null">
+				country,
+			</if>
+			<if test="province != null">
+				province,
+			</if>
+			<if test="language != null">
+				language,
+			</if>
+			<if test="headImgUrl != null">
+				head_img_url,
+			</if>
+			<if test="subscribeTime != null">
+				subscribe_time,
+			</if>
+			<if test="unionid != null">
+				unionid,
+			</if>
+			<if test="remark != null">
+				remark,
+			</if>
+			<if test="groupId != null">
+				group_Id,
+			</if>
+			<if test="tagids != null">
+				tagids,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="openid != null">
+				#{openid,jdbcType=VARCHAR},
+			</if>
+			<if test="nickName != null">
+				#{nickName,jdbcType=VARCHAR},
+			</if>
+			<if test="sex != null">
+				#{sex,jdbcType=INTEGER},
+			</if>
+			<if test="city != null">
+				#{city,jdbcType=VARCHAR},
+			</if>
+			<if test="country != null">
+				#{country,jdbcType=VARCHAR},
+			</if>
+			<if test="province != null">
+				#{province,jdbcType=VARCHAR},
+			</if>
+			<if test="language != null">
+				#{language,jdbcType=VARCHAR},
+			</if>
+			<if test="headImgUrl != null">
+				#{headImgUrl,jdbcType=VARCHAR},
+			</if>
+			<if test="subscribeTime != null">
+				#{subscribeTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="unionid != null">
+				#{unionid,jdbcType=VARCHAR},
+			</if>
+			<if test="remark != null">
+				#{remark,jdbcType=VARCHAR},
+			</if>
+			<if test="groupId != null">
+				#{groupId,jdbcType=VARCHAR},
+			</if>
+			<if test="tagids != null">
+				#{tagids,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+
+	<update id="update" parameterType="com.okdeer.mall.activity.wxchat.entity.WechatUser">
+		UPDATE wechat_user 
+		<set>
+			<if test="openid != null">
+				openid = #{openid,jdbcType=VARCHAR},
+			</if>
+			<if test="nickName != null">
+				nick_name = #{nickName,jdbcType=VARCHAR},
+			</if>
+			<if test="sex != null">
+				sex = #{sex,jdbcType=INTEGER},
+			</if>
+			<if test="city != null">
+				city = #{city,jdbcType=VARCHAR},
+			</if>
+			<if test="country != null">
+				country = #{country,jdbcType=VARCHAR},
+			</if>
+			<if test="province != null">
+				province = #{province,jdbcType=VARCHAR},
+			</if>
+			<if test="language != null">
+				language = #{language,jdbcType=VARCHAR},
+			</if>
+			<if test="headImgUrl != null">
+				head_img_url = #{headImgUrl,jdbcType=VARCHAR},
+			</if>
+			<if test="subscribeTime != null">
+				subscribe_time = #{subscribeTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="unionid != null">
+				unionid = #{unionid,jdbcType=VARCHAR},
+			</if>
+			<if test="remark != null">
+				remark = #{remark,jdbcType=VARCHAR},
+			</if>
+			<if test="groupId != null">
+				group_Id = #{groupId,jdbcType=VARCHAR},
+			</if>
+			<if test="tagids != null">
+				tagids = #{tagids,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<select id="findByOpenid" resultMap="BaseResultMap"
+		parameterType="string">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM wechat_user where openid = #{openid,jdbcType=VARCHAR}
 	</select>
+
+	<select id="findById" resultMap="BaseResultMap" parameterType="string">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM wechat_user WHERE id = #{id,jdbcType=VARCHAR}
+	</select>
+	<delete id="delete">
+		DELETE FROM wechat_user WHERE id =
+		#{id,jdbcType=VARCHAR}
+	</delete>
 </mapper>

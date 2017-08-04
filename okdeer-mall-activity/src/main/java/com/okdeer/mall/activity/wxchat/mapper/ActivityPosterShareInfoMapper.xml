@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.wxchat.mapper.ActivityPosterShareInfoMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.wxchat.entity.ActivityPosterShareInfo" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="openid" property="openid" jdbcType="VARCHAR" />
+        <result column="share_openid" property="shareOpenid" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, openid, share_openid, create_time
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_poster_share_info
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.wxchat.entity.ActivityPosterShareInfo" >
+        insert into activity_poster_share_info
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="openid != null" >
+                openid,
+            </if>
+            <if test="shareOpenid != null" >
+                share_openid,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="openid != null" >
+                #{openid,jdbcType=VARCHAR},
+            </if>
+            <if test="shareOpenid != null" >
+                #{shareOpenid,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.wxchat.entity.ActivityPosterShareInfo" >
+        update activity_poster_share_info
+        <set >
+            <if test="openid != null" >
+                openid = #{openid,jdbcType=VARCHAR},
+            </if>
+            <if test="shareOpenid != null" >
+                share_openid = #{shareOpenid,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_poster_share_info
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

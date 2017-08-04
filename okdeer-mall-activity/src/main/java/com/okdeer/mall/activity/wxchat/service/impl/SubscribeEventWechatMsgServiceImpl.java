@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.activity.wxchat.message.WechatEventMsg;
 import com.okdeer.mall.activity.wxchat.service.WechatUserService;
@@ -24,7 +25,7 @@ import com.okdeer.mall.activity.wxchat.util.WxchatUtils;
  */
 @Service
 public class SubscribeEventWechatMsgServiceImpl extends AbstractEventWechatMsgService {
-
+	
 	private static final Logger logger = LoggerFactory.getLogger(SubscribeEventWechatMsgServiceImpl.class);
 
 	@Autowired
@@ -35,6 +36,11 @@ public class SubscribeEventWechatMsgServiceImpl extends AbstractEventWechatMsgSe
 		WechatEventMsg wechatEventMsg = (WechatEventMsg) object;
 		logger.info("{}用户关注了我们的公众号", wechatEventMsg.getFromUserName());
 		wechatUserService.updateUserInfo(wechatEventMsg.getFromUserName());
+		if(StringUtils.isNotEmpty(wechatEventMsg.getEventKey()) && wechatEventMsg.getEventKey().startsWith("qrscene_")){
+			//用户未关注我们的公众号，并且通过好友分享的二维码来关注我们的公众号
+			String shareOpenid = wechatEventMsg.getEventKey().substring(wechatEventMsg.getEventKey().indexOf("qrscene_"));
+			
+		}
 		return null;
 	}
 
