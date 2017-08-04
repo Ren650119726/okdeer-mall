@@ -19,6 +19,7 @@ import com.okdeer.mall.activity.wxchat.entity.WechatUser;
 import com.okdeer.mall.activity.wxchat.mapper.WechatUserMapper;
 import com.okdeer.mall.activity.wxchat.service.WechatService;
 import com.okdeer.mall.activity.wxchat.service.WechatUserService;
+import com.okdeer.mall.activity.wxchat.util.EmojiFilter;
 
 @Service
 public class WechatUserServiceImpl extends BaseServiceImpl implements WechatUserService {
@@ -76,6 +77,8 @@ public class WechatUserServiceImpl extends BaseServiceImpl implements WechatUser
 			}
 			wechatUser.setTagids(tagids.toString());
 		}
+		//过滤表情包
+		wechatUser.setNickName(EmojiFilter.filterEmoji(wechatUser.getNickName()));
 		return wechatUser;
 	}
 
