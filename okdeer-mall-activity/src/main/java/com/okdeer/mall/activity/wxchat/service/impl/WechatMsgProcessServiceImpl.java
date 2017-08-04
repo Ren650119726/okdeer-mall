@@ -46,7 +46,10 @@ public class WechatMsgProcessServiceImpl implements WechatMsgProcessService, Wec
 		Object requestObj = xStream.fromXML(requestXml);
 		logger.debug("{}开始处理请求....", wechatMsgHandler.getClass().getName());
 		Object response = wechatMsgHandler.process(requestObj);
-		return xStream.toXML(response);
+		if (response != null) {
+			return xStream.toXML(response);
+		}
+		return "";
 	}
 
 	@Override

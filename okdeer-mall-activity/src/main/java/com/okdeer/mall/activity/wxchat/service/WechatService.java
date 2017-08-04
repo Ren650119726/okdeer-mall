@@ -28,7 +28,7 @@ public interface WechatService {
 
 	QueryMaterialResponse findMaterialList(String type, int pageNum, int pageSize) throws  Exception ;
 
-	WechatUserInfo getUserInfo(String fromUserName) throws  Exception;
+	WechatUserInfo getUserInfo(String openid) throws  Exception;
 
 	AddMediaResult addMedia(byte[] inputStream, String type, String fileName) throws Exception;
 
