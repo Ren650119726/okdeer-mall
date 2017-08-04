@@ -1643,12 +1643,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_USER, recordBoList);
 		}
 		// 代金券活动统计
-		if(CollectionUtils.isNotEmpty(userLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getUserId())){
+		if(CollectionUtils.isNotEmpty(userCouponsIds) && StringUtils.isNotEmpty(paramBo.getUserId())){
 			// 根据设备统计使用次数
 			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userCouponsIds, null, paramBo.getDeviceId(), true);
 			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_COLLECT_BY_DEVICE, recordBoList);
 		}
-		if(CollectionUtils.isNotEmpty(userLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getUserId())){
+		if(CollectionUtils.isNotEmpty(userCouponsIds) && StringUtils.isNotEmpty(paramBo.getUserId())){
 			// 根据用户统计使用次数
 			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userCouponsIds, paramBo.getUserId(), null, true);
 			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_COLLECT_BY_USER, recordBoList);
