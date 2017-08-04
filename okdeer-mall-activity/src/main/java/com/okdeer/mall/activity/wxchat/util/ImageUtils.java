@@ -91,6 +91,7 @@ public class ImageUtils {
 			BufferedImage img = new BufferedImage(newWidth, newHeight, type);
 			Graphics2D graphics2d = img.createGraphics();
 			graphics2d.setRenderingHints(renderingHints);
+			
 			graphics2d.drawImage(inputImage, 0, 0, newWidth, newHeight, 0, 0, width, height, null);
 			graphics2d.dispose();
 			return img;

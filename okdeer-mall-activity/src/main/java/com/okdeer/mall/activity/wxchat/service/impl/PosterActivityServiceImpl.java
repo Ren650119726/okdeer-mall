@@ -69,7 +69,7 @@ public class PosterActivityServiceImpl implements WechatMenuProcessService, Post
 			}
 			String fileName = posterImg[index];
 
-			InputStream posterImgIs = createPosterInStream(bufferedImage,
+			byte[] posterImgIs = createPosterInStream(bufferedImage,
 					fileName.substring(fileName.lastIndexOf('.') + 1));
 			// 添加图片到微信服务器
 			AddMediaResult result = wechatService.addMedia(posterImgIs, "image", fileName);
@@ -80,16 +80,16 @@ public class PosterActivityServiceImpl implements WechatMenuProcessService, Post
 			// 生成海报
 			return createImageWechatMsg(wechatEventMsg.getFromUserName(), mediaId);
 		} catch (Exception e) {
-			logger.error("获取微信用户信息出错", e);
+			logger.error("处理请求失败信息出错", e);
 		}
 		return null;
 	}
 
-	private InputStream createPosterInStream(BufferedImage bufferedImage, String type) throws IOException {
+	private byte[] createPosterInStream(BufferedImage bufferedImage, String type) throws IOException {
 		ByteArrayOutputStream bs = new ByteArrayOutputStream();
 		ImageOutputStream imOut = ImageIO.createImageOutputStream(bs);
 		ImageIO.write(bufferedImage, type, imOut);
-		return new ByteArrayInputStream(bs.toByteArray());
+		return bs.toByteArray();
 	}
 
 	private BufferedImage createPosterPic(String posterImgUrl, WechatUserInfo wechatUserInfo) {
@@ -108,9 +108,9 @@ public class PosterActivityServiceImpl implements WechatMenuProcessService, Post
 			// 将头像改为圆形
 			convertImage = ImageUtils.convertCircular(convertImage);
 			// 将用户头像合并到海报中
-			BufferedImage newImg = ImageUtils.overlapImage(posterImg, userImg, 210, 180);
+			BufferedImage newImg = ImageUtils.overlapImage(posterImg, convertImage, 210, 292);
 			// 海报图片添加昵称
-			ImageUtils.drawTextInImg(newImg, "#EEE5DE", "三届散仙", 210, 292 + convertImage.getHeight() + 20);
+			ImageUtils.drawTextInImg(newImg, "#EEE5DE", wechatUserInfo.getNickName(), 210, 292 + convertImage.getHeight() + 20);
 			return newImg;
 		} catch (IOException e) {
 			logger.error("读取图片出错", e);
@@ -148,7 +148,7 @@ public class PosterActivityServiceImpl implements WechatMenuProcessService, Post
 			ImageUtils.drawTextInImg(newImg, "#EEE5DE", "三届散仙", 210, 292 + convertImage.getHeight() + 20);
 			long l2 = System.currentTimeMillis();
 			System.out.println(l2 - l1);
-			ImageIO.write(newImg, "png", new File("/data/Devopen/pojie/11.png"));
+			ImageIO.write(newImg, "png", new File("E:\\yschome\\11.png"));
 
 		} catch (IOException e) {
 			logger.error("读取图片出错", e);

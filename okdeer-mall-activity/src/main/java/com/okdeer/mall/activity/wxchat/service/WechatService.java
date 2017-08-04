@@ -30,6 +30,6 @@ public interface WechatService {
 
 	WechatUserInfo getUserInfo(String fromUserName) throws  Exception;
 
-	AddMediaResult addMedia(InputStream inputStream, String type, String fileName) throws Exception;
+	AddMediaResult addMedia(byte[] inputStream, String type, String fileName) throws Exception;
 
 }

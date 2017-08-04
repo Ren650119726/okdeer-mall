@@ -33,6 +33,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -70,6 +71,7 @@ public class HttpClient {
 	}
 
 	public static String get(String url) throws ClientProtocolException, IOException {
+		logger.info("get请求URL:{}", url);
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		try {
 			HttpGet httpget = new HttpGet(url);
@@ -85,12 +87,14 @@ public class HttpClient {
 		}
 	}
 
-	public static String postMultipart(String url, InputStream inputStream, String fileName)
+	public static String postMultipart(String url, byte[] inputStream, String fileName)
 			throws ClientProtocolException, IOException {
+		logger.info("上传文件请求：url:{},fileName:{}",url,fileName);
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		try {
 			HttpPost httppost = new HttpPost(url);
-			InputStreamBody inputStreamBody = new InputStreamBody(inputStream, ContentType.APPLICATION_JSON, fileName);
+			ByteArrayBody inputStreamBody = new ByteArrayBody(inputStream,ContentType.APPLICATION_OCTET_STREAM,fileName);
+			logger.info("inputStreamBody.length={}",inputStreamBody.getContentLength());
 			HttpEntity reqEntity = MultipartEntityBuilder.create().addPart("media", inputStreamBody).build();
 			httppost.setEntity(reqEntity);
 			CloseableHttpResponse response = httpclient.execute(httppost);

@@ -142,9 +142,10 @@ public class WechatServiceImpl implements WechatService {
 	}
 
 	@Override
-	public AddMediaResult addMedia(InputStream inputStream, String type, String fileName) throws Exception {
-		String url = WECHAT_API_SERVER + "/cgi-bin/user/info" + getTokenUrl() + "&type=" + type;
+	public AddMediaResult addMedia(byte[] inputStream, String type, String fileName) throws Exception {
+		String url = WECHAT_API_SERVER + "/cgi-bin/media/upload" + getTokenUrl() + "&type=" + type;
 		String resp = HttpClient.postMultipart(url, inputStream, fileName);
+		logger.info("上传素材返回信息：{}",resp);
 		if (resp == null) {
 			throw new Exception("上传素材信息出错");
 		}
