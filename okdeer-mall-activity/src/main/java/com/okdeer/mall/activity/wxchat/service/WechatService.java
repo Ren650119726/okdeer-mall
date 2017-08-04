@@ -1,9 +1,6 @@
 
 package com.okdeer.mall.activity.wxchat.service;
 
-import java.awt.image.BufferedImage;
-import java.io.InputStream;
-
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
 import com.okdeer.mall.activity.wxchat.bo.QueryMaterialResponse;
 import com.okdeer.mall.activity.wxchat.bo.TokenInfo;

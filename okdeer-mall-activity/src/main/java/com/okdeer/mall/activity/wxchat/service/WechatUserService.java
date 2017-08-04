@@ -2,6 +2,7 @@
 package com.okdeer.mall.activity.wxchat.service;
 
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.activity.wxchat.bo.WechatUserInfo;
 import com.okdeer.mall.activity.wxchat.entity.WechatUser;
 
 public interface WechatUserService extends IBaseService {
@@ -14,6 +15,6 @@ public interface WechatUserService extends IBaseService {
 	 * @date 2017年8月3日
 	 */
 	WechatUser findByOpenid(String openid);
-	
-	void updateUserInfo(String openid);
+
+	WechatUserInfo updateUserInfo(String openid);
 }

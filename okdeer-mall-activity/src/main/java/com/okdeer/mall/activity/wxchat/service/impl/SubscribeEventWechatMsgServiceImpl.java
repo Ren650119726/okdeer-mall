@@ -8,7 +8,12 @@ import org.springframework.stereotype.Service;
 
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.common.exception.MallApiException;
+import com.okdeer.mall.activity.wxchat.bo.WechatUserInfo;
+import com.okdeer.mall.activity.wxchat.entity.ActivityPosterShareInfo;
+import com.okdeer.mall.activity.wxchat.message.TextWechatMsg;
 import com.okdeer.mall.activity.wxchat.message.WechatEventMsg;
+import com.okdeer.mall.activity.wxchat.service.ActivityPosterShareInfoService;
+import com.okdeer.mall.activity.wxchat.service.WechatService;
 import com.okdeer.mall.activity.wxchat.service.WechatUserService;
 import com.okdeer.mall.activity.wxchat.util.WxchatUtils;
 
@@ -25,23 +30,52 @@ import com.okdeer.mall.activity.wxchat.util.WxchatUtils;
  */
 @Service
 public class SubscribeEventWechatMsgServiceImpl extends AbstractEventWechatMsgService {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(SubscribeEventWechatMsgServiceImpl.class);
 
 	@Autowired
 	private WechatUserService wechatUserService;
 
+	@Autowired
+	private WechatService wechatService;
+
+	@Autowired
+	private ActivityPosterShareInfoService activityPosterShareInfoService;
+
 	@Override
 	Object process(Object object) throws MallApiException {
 		WechatEventMsg wechatEventMsg = (WechatEventMsg) object;
 		logger.info("{}用户关注了我们的公众号", wechatEventMsg.getFromUserName());
-		wechatUserService.updateUserInfo(wechatEventMsg.getFromUserName());
-		if(StringUtils.isNotEmpty(wechatEventMsg.getEventKey()) && wechatEventMsg.getEventKey().startsWith("qrscene_")){
-			//用户未关注我们的公众号，并且通过好友分享的二维码来关注我们的公众号
-			String shareOpenid = wechatEventMsg.getEventKey().substring(wechatEventMsg.getEventKey().indexOf("qrscene_"));
-			
+		WechatUserInfo subscribeUser = wechatUserService.updateUserInfo(wechatEventMsg.getFromUserName());
+		if (StringUtils.isNotEmpty(wechatEventMsg.getEventKey())
+				&& wechatEventMsg.getEventKey().startsWith("qrscene_")) {
+			// 用户未关注我们的公众号，并且通过好友分享的二维码来关注我们的公众号
+			String shareOpenid = wechatEventMsg.getEventKey()
+					.substring(wechatEventMsg.getEventKey().indexOf("qrscene_"));
+			ActivityPosterShareInfo activityPosterShareInfo = activityPosterShareInfoService
+					.findByOpenid(wechatEventMsg.getFromUserName());
+			if (activityPosterShareInfo == null) {
+				try {
+					WechatUserInfo wechatUserInfo = wechatService.getUserInfo(shareOpenid);
+					return createResponse(subscribeUser, wechatUserInfo);
+				} catch (Exception e) {
+					logger.error("获取分享人信息出错", e);
+				}
+
+			}
 		}
 		return null;
+	}
+
+	private TextWechatMsg createResponse(WechatUserInfo subscribeUser, WechatUserInfo wechatUserInfo) {
+		TextWechatMsg textWechatMsg = new TextWechatMsg();
+		textWechatMsg.setFromUserName(wechatConfig.getAccount());
+		textWechatMsg.setToUserName(subscribeUser.getOpenid());
+		String content = subscribeUser.getNickName() + "，您现在是" + wechatUserInfo.getNickName()
+				+ "的推荐好友啦，您也可点击服务号栏目“七夕情报” 生成您的个人专属情报，每三位好友扫码关注，您就可以领取iPhone 7/鲜花/100元优惠券，每天可领15次！点击查看活动细则及奖品记录（链接）”。"
+				+ "点击<a href=\"http://www.baidu.com\">【查看活动细则及奖品记录】</a>链接，进入七夕情报拆奖页面。";
+		textWechatMsg.setContent(content);
+		return textWechatMsg;
 	}
 
 	@Override

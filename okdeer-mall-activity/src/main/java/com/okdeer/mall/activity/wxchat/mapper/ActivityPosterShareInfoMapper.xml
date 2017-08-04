@@ -71,5 +71,11 @@
         delete from activity_poster_share_info
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-
+	
+	<select id="findByOpenid" parameterType="java.lang.String">
+	 	select 
+        <include refid="Base_Column_List" />
+        from activity_poster_share_info
+        where openid = #{openid,jdbcType=VARCHAR}
+	</select>
 </mapper>

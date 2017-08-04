@@ -1,6 +1,8 @@
 
 package com.okdeer.mall.activity.wxchat.message;
 
+import java.util.Date;
+
 import com.okdeer.mall.activity.wxchat.annotation.XStreamCDATA;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
@@ -33,6 +35,15 @@ public class WechatMsg {
 	@XStreamAlias("MsgType")
 	@XStreamCDATA
 	private String msgType;
+
+	public WechatMsg(String msgType) {
+		this.msgType = msgType;
+		this.createTime = Long.toString((new Date().getTime()) / 1000);
+	}
+
+	public WechatMsg() {
+
+	}
 
 	public String getToUserName() {
 		return toUserName;

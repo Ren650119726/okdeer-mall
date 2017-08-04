@@ -1,9 +1,6 @@
 
 package com.okdeer.mall.activity.wxchat.message;
 
-import java.util.Date;
-import java.util.List;
-
 import com.okdeer.mall.activity.wxchat.annotation.XStreamCDATA;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
@@ -15,8 +12,7 @@ public class ImageWechatMsg extends WechatMsg {
 	private WechatMedia wechatMedia;
 
 	public ImageWechatMsg() {
-		setMsgType("image");
-		setCreateTime(Long.toString((new Date().getTime()) / 1000));
+		super("image");
 
 	}
 

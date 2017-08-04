@@ -45,7 +45,7 @@ public class WechatUserServiceImpl extends BaseServiceImpl implements WechatUser
 	}
 
 	@Override
-	public void updateUserInfo(String openid) {
+	public WechatUserInfo updateUserInfo(String openid) {
 		WechatUser wechatUser = wechatUserMapper.findByOpenid(openid);
 		try {
 			WechatUserInfo wechatUserInfo = wechatService.getUserInfo(openid);
@@ -60,9 +60,11 @@ public class WechatUserServiceImpl extends BaseServiceImpl implements WechatUser
 				updateInfo.setId(wechatUser.getId());
 				wechatUserMapper.update(updateInfo);
 			}
+			return wechatUserInfo;
 		} catch (Exception e) {
 			logger.error("查询用户信息出错", e);
 		}
+		return new WechatUserInfo();
 	}
 
 	private WechatUser createWechatUser(WechatUserInfo wechatUserInfo) {
@@ -77,7 +79,7 @@ public class WechatUserServiceImpl extends BaseServiceImpl implements WechatUser
 			}
 			wechatUser.setTagids(tagids.toString());
 		}
-		//过滤表情包
+		// 过滤表情包
 		wechatUser.setNickName(EmojiFilter.filterEmoji(wechatUser.getNickName()));
 		return wechatUser;
 	}
