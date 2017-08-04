@@ -213,17 +213,17 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 						return false;
 					}
 				}
-				// 代金券活动设备现在
 				//代金券活动
 				ActivityCollectCoupons collectCoupons = activityCollectCouponsMapper.get(coupons.getId());
-				if (collectCoupons != null && collectCoupons.getDeviceDayLimit() > 0) {
+				// 代金券活动设备限制
+				if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null && collectCoupons.getDeviceDayLimit() > 0) {
 					if (collectCoupons.getDeviceDayLimit().compareTo(
 							paramBo.findCountNum(RecordCountRuleEnum.COUPONS_COLLECT_BY_DEVICE, coupons.getId())) < 1) {
 						return false;
 					}
 				}
 				// 代金券活动账号现在
-				if (collectCoupons != null && collectCoupons.getAccountDayLimit() > 0) {
+				if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null && collectCoupons.getAccountDayLimit() > 0) {
 					if (collectCoupons.getAccountDayLimit().compareTo(
 							paramBo.findCountNum(RecordCountRuleEnum.COUPONS_COLLECT_BY_USER, coupons.getId())) < 1) {
 						return false;

@@ -1612,11 +1612,16 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		return couponsList;
 	}
 	
+	/**
+	 * 统计用户代金券使用记录
+	 */
 	private void countUseRecord(FavourParamBO paramBo,List<Coupons> couponsList){
 		// 有设备限制的代金券Id列表
 		List<String> deviceLimitCouponsIds = Lists.newArrayList();
 		// 有账户限制的代金券Id列表
 		List<String> userLimitCouponsIds = Lists.newArrayList();
+		// 用户所有代金券ID
+		List<String> userCouponsIds = Lists.newArrayList();
 		for(Coupons coupons : couponsList){
 			if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0){
 				deviceLimitCouponsIds.add(coupons.getCouponId());
@@ -1624,47 +1629,54 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			if(coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0){
 				userLimitCouponsIds.add(coupons.getCouponId());
 			}
+			userCouponsIds.add(coupons.getCouponId());
 		}
-		ActivityRecordParamBo recParamBo = null;
-		List<ActivityRecordBo> recordBoList = null;
+		
 		if(CollectionUtils.isNotEmpty(deviceLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getDeviceId())){
 			// 根据设备统计使用次数
-			recParamBo = new ActivityRecordParamBo();
-			recParamBo.setPkIdList(deviceLimitCouponsIds);
-			recParamBo.setRecDate(DateUtils.getDate());
-			recParamBo.setDeviceId(paramBo.getDeviceId());
-			recordBoList = activityCouponsRecordMapper.countActivityRecord(recParamBo);
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(deviceLimitCouponsIds, null, paramBo.getDeviceId(), false);
 			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_DEVICE, recordBoList);
 		}
 		if(CollectionUtils.isNotEmpty(userLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getUserId())){
 			// 根据设备统计使用次数
-			recParamBo = new ActivityRecordParamBo();
-			recParamBo.setPkIdList(userLimitCouponsIds);
-			recParamBo.setRecDate(DateUtils.getDate());
-			recParamBo.setUserId(paramBo.getUserId());
-			recordBoList = activityCouponsRecordMapper.countActivityRecord(recParamBo);
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userLimitCouponsIds, paramBo.getUserId(), null, false);
 			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_USER, recordBoList);
 		}
 		// 代金券活动统计
 		if(CollectionUtils.isNotEmpty(userLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getUserId())){
 			// 根据设备统计使用次数
-			recParamBo = new ActivityRecordParamBo();
-			recParamBo.setPkIdList(userLimitCouponsIds);
-			recParamBo.setRecDate(DateUtils.getDate());
-			recParamBo.setDeviceId(paramBo.getDeviceId());
-			recordBoList = activityCouponsRecordMapper.countCollectActivityRecord(recParamBo);
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userCouponsIds, null, paramBo.getDeviceId(), true);
 			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_COLLECT_BY_DEVICE, recordBoList);
 		}
 		if(CollectionUtils.isNotEmpty(userLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getUserId())){
 			// 根据用户统计使用次数
-			recParamBo = new ActivityRecordParamBo();
-			recParamBo.setPkIdList(userLimitCouponsIds);
-			recParamBo.setRecDate(DateUtils.getDate());
-			recParamBo.setUserId(paramBo.getUserId());
-			recordBoList = activityCouponsRecordMapper.countCollectActivityRecord(recParamBo);
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userCouponsIds, paramBo.getUserId(), null, true);
 			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_COLLECT_BY_USER, recordBoList);
 		}
-		
+	}
+	
+	/**
+	 * @Description: 查找代金券及代金券活动已使用统计
+	 * @param couponsIds
+	 * @param userId
+	 * @param deviceId
+	 * @param isFindCollectActivity
+	 * @return   
+	 * @author guocp
+	 * @date 2017年8月4日
+	 */
+	private List<ActivityRecordBo> findActivityRecordCount(List<String> couponsIds,String userId,String 
+			deviceId,boolean isFindCollectActivity){
+		ActivityRecordParamBo recParamBo = new ActivityRecordParamBo();
+		recParamBo.setPkIdList(couponsIds);
+		recParamBo.setUserId(userId);
+		recParamBo.setDeviceId(deviceId);
+		recParamBo.setRecDate(DateUtils.getDate());
+		if(isFindCollectActivity){
+			return activityCouponsRecordMapper.countCollectActivityRecord(recParamBo);
+		}else{
+			return activityCouponsRecordMapper.countActivityRecord(recParamBo);
+		}
 	}
 	
 	/**
