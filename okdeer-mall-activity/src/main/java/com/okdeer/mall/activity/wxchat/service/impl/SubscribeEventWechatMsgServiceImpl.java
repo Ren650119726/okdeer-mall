@@ -41,6 +41,8 @@ public class SubscribeEventWechatMsgServiceImpl extends AbstractEventWechatMsgSe
 
 	@Autowired
 	private ActivityPosterShareInfoService activityPosterShareInfoService;
+	
+	private static final String QRSCENE_STR ="qrscene_";
 
 	@Override
 	Object process(Object object) throws MallApiException {
@@ -48,10 +50,10 @@ public class SubscribeEventWechatMsgServiceImpl extends AbstractEventWechatMsgSe
 		logger.info("{}用户关注了我们的公众号", wechatEventMsg.getFromUserName());
 		WechatUserInfo subscribeUser = wechatUserService.updateUserInfo(wechatEventMsg.getFromUserName());
 		if (StringUtils.isNotEmpty(wechatEventMsg.getEventKey())
-				&& wechatEventMsg.getEventKey().startsWith("qrscene_")) {
+				&& wechatEventMsg.getEventKey().startsWith(QRSCENE_STR)) {
 			// 用户未关注我们的公众号，并且通过好友分享的二维码来关注我们的公众号
 			String shareOpenid = wechatEventMsg.getEventKey()
-					.substring(wechatEventMsg.getEventKey().indexOf("qrscene_"));
+					.substring(wechatEventMsg.getEventKey().indexOf("qrscene_")+ QRSCENE_STR.length());
 			ActivityPosterShareInfo activityPosterShareInfo = activityPosterShareInfoService
 					.findByOpenid(wechatEventMsg.getFromUserName());
 			if (activityPosterShareInfo == null) {
