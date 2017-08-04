@@ -1,6 +1,10 @@
 
 package com.okdeer.mall.activity.wxchat.service;
 
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+
+import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
 import com.okdeer.mall.activity.wxchat.bo.QueryMaterialResponse;
 import com.okdeer.mall.activity.wxchat.bo.TokenInfo;
 import com.okdeer.mall.activity.wxchat.bo.WechatUserInfo;
@@ -25,5 +29,7 @@ public interface WechatService {
 	QueryMaterialResponse findMaterialList(String type, int pageNum, int pageSize) throws  Exception ;
 
 	WechatUserInfo getUserInfo(String fromUserName) throws  Exception;
+
+	AddMediaResult addMedia(InputStream inputStream, String type, String fileName) throws Exception;
 
 }

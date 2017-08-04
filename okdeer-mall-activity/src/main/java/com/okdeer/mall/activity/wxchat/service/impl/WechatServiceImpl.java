@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.activity.wxchat.service.impl;
 
+import java.io.InputStream;
 import java.util.Date;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.mall.activity.wechat.dto.WechatConfigDto;
+import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
 import com.okdeer.mall.activity.wxchat.bo.QueryMaterialResponse;
 import com.okdeer.mall.activity.wxchat.bo.TokenInfo;
 import com.okdeer.mall.activity.wxchat.bo.WechatBaseResult;
@@ -128,7 +130,8 @@ public class WechatServiceImpl implements WechatService {
 
 	@Override
 	public WechatUserInfo getUserInfo(String fromUserName) throws Exception {
-		String url = WECHAT_API_SERVER + "/cgi-bin/user/info" + getTokenUrl() + "&openid=" + fromUserName + "&lang=zh_CN";
+		String url = WECHAT_API_SERVER + "/cgi-bin/user/info" + getTokenUrl() + "&openid=" + fromUserName
+				+ "&lang=zh_CN";
 		logger.debug("获取token，请求url:{}", url);
 		String resp = HttpClient.get(url);
 		logger.debug("微信返回数据:{}", resp);
@@ -136,5 +139,15 @@ public class WechatServiceImpl implements WechatService {
 			throw new Exception("获取微信用户信息出错");
 		}
 		return JsonMapper.nonDefaultMapper().fromJson(resp, WechatUserInfo.class);
+	}
+
+	@Override
+	public AddMediaResult addMedia(InputStream inputStream, String type, String fileName) throws Exception {
+		String url = WECHAT_API_SERVER + "/cgi-bin/user/info" + getTokenUrl() + "&type=" + type;
+		String resp = HttpClient.postMultipart(url, inputStream, fileName);
+		if (resp == null) {
+			throw new Exception("上传素材信息出错");
+		}
+		return JsonMapper.nonDefaultMapper().fromJson(resp, AddMediaResult.class);
 	}
 }
