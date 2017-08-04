@@ -24,4 +24,5 @@ public abstract class AbstractEventWechatMsgService implements InitializingBean 
 	abstract Object process(Object object) throws MallApiException;
 
 	abstract String getEvent();
+	
 }
