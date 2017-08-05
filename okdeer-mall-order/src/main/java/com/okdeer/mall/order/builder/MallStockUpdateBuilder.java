@@ -414,6 +414,10 @@ public class MallStockUpdateBuilder {
 				comboSkuList = comboSnapshotAdapter.findByComboSkuIds(comboSkuIds);
 			}
 			for (TradeOrderComboSnapshot comboSku : comboSkuList) {
+				Integer num = comboSkuMap.get(comboSku.getComboSkuId());
+				if(num==null){
+					continue;
+				}
 				updateDetail = new StockUpdateDetailDto();
 				updateDetail.setStoreSkuId(comboSku.getStoreSkuId());
 				updateDetail.setSpuType(comboSku.getSkuType());
