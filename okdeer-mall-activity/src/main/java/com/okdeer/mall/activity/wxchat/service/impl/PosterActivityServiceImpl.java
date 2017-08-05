@@ -83,9 +83,7 @@ public class PosterActivityServiceImpl
 	@Override
 	public Object process(WechatEventMsg wechatEventMsg) throws MallApiException {
 		try {
-			cachedThreadPool.execute(() -> {
-				createAndSendPoster(wechatEventMsg.getFromUserName());
-			});
+			asynCreatePoster(wechatEventMsg.getFromUserName());
 			ActivityPosterConfig activityPosterConfig = activityPosterConfigService.findById(ACTIVITY_ID);
 			if (activityPosterConfig != null) {
 				return createImageingResponseMsg(wechatEventMsg.getFromUserName(), activityPosterConfig);
@@ -95,8 +93,20 @@ public class PosterActivityServiceImpl
 		}
 		return null;
 	}
-	
-	
+
+	private void asynCreatePoster(String openid) {
+		cachedThreadPool.execute(() -> {
+			try {
+				//让线程先睡眠2秒钟，避免海报生成了，提示语还没发出去
+				Thread.sleep(2000);
+				createAndSendPoster(openid);
+			} catch (Exception e) {
+				logger.error("创建海报出错",e);
+			}
+
+		});
+	}
+
 	/**
 	 * @Description: 生成海报图片并且发送給用户
 	 * @param fromUserName
@@ -205,7 +215,7 @@ public class PosterActivityServiceImpl
 			// 生成用户二维码分享图片
 			BufferedImage qrCodeImg = createUserShareQrcodeImg(wechatUserInfo.getOpenid());
 			// 将用户的二维码图片合成到海报中
-			ImageUtils.overlapImage(posterReadImg,qrCodeImg, 240, 805);
+			ImageUtils.overlapImage(posterReadImg, qrCodeImg, 240, 805);
 			// 海报图片添加昵称
 			ImageUtils.drawTextInImg(posterReadImg, "#EEE5DE", wechatUserInfo.getNickName(), 210,
 					292 + convertImage.getHeight() + 20);
