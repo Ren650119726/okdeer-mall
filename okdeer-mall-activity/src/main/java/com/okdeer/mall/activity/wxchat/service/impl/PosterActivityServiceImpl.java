@@ -295,6 +295,7 @@ public class PosterActivityServiceImpl
 	public void afterPropertiesSet() throws Exception {
 		posterAddWechatUserRequestQueue = new LinkedBlockingQueue<>();
 		cachedThreadPool = Executors.newCachedThreadPool(new ThreadFactoryImpl("PosterActivityServiceExecutorThread_"));
+		wechatUserSubscribleProcessSerivce = new WechatUserSubscribleProcessSerivce();
 		wechatUserSubscribleProcessSerivce.start();
 	}
 
