@@ -28,4 +28,9 @@ public class ActivityPosterShareInfoServiceImpl extends BaseServiceImpl implemen
 		return activityPosterShareInfoMapper;
 	}
 
+	@Override
+	public int queryCountByShareOpenId(String shareOpenid) {
+		return activityPosterShareInfoMapper.queryCountByShareOpenId(shareOpenid);
+	}
+
 }

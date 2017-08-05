@@ -13,4 +13,6 @@ public interface ActivityPosterShareInfoMapper extends IBaseMapper {
 
 	ActivityPosterShareInfo findByOpenid(String openid);
 
+	int queryCountByShareOpenId(String shareOpenid);
+
 }

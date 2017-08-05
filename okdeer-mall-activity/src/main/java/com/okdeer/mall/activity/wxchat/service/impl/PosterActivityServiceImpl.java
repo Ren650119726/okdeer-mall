@@ -332,23 +332,38 @@ public class PosterActivityServiceImpl
 			ActivityPosterShareInfo activityPosterShareInfo = activityPosterShareInfoService
 					.findByOpenid(wechatEventMsg.getFromUserName());
 			if (activityPosterShareInfo == null) {
-				//如果用户之前已经是别人的推荐好友了，则不处理
+				// 如果用户之前已经是别人的推荐好友了，则不处理
 				try {
 					// 保存活动信息
 					saveActivityPosterShareInfo(subscribeUser.getOpenid(), shareOpenid);
 					// 获取关注用户的最新信息
 					WechatUserInfo wechatUserInfo = wechatService.getUserInfo(shareOpenid);
 					// 发送提示信息給关注的用户
-					TextWechatMsg subcribleResponseTextWechatMsg = createSubscribleResponse(subscribeUser,
-							wechatUserInfo);
-					customerService.sendMsg(subcribleResponseTextWechatMsg);
-					// 发送海报图片
+					customerService.sendMsg(createSubscribleResponse(subscribeUser, wechatUserInfo));
+					// 发送海报图片給关注用户
 					createAndSendPoster(subscribeUser.getOpenid());
 					// 給分享的好友发送提示信息
 					customerService.sendMsg(createFriendTip(subscribeUser, wechatUserInfo));
+					// 判断分享人的抽奖资格
+					doProcessShareUserQualifica(shareOpenid);
 				} catch (Exception e) {
-					logger.error("获取分享人信息出错", e);
+					logger.error("处理用户关注信息出错", e);
 				}
+			}
+		}
+	}
+
+	private void doProcessShareUserQualifica(String shareOpenid) {
+		int count = activityPosterShareInfoService.queryCountByShareOpenId(shareOpenid);
+		if (count % 3 == 0) {
+			// 如果是3的倍数，则更新用户的资格次数
+			ActivityPosterWechatUserInfo activityPosterWechatUser = new ActivityPosterWechatUserInfo();
+			activityPosterWechatUser.setOpenid(shareOpenid);
+			activityPosterWechatUser.setQualificaCount(count / 3);
+			try {
+				activityPosterWechatUserService.update(activityPosterWechatUser);
+			} catch (Exception e) {
+				logger.error("更新用户的资格数出错", e);
 			}
 		}
 	}
@@ -362,7 +377,7 @@ public class PosterActivityServiceImpl
 		try {
 			activityPosterShareInfoService.add(activityPosterShareInfo);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("保存用户与好友的关联关系出错", e);
 		}
 	}
 

@@ -78,4 +78,12 @@
         from activity_poster_share_info
         where openid = #{openid,jdbcType=VARCHAR}
 	</select>
+	
+	<select id="queryCountByShareOpenId"  resultType="int" parameterType="java.lang.String">
+	 	SELECT 
+        <include refid="Base_Column_List" />
+        FROM activity_poster_share_info
+        WHERE share_openid = #{shareOpenid,jdbcType=VARCHAR}
+	</select>
+	
 </mapper>
