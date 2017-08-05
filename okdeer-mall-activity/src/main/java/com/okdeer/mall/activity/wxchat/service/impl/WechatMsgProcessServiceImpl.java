@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
@@ -19,6 +20,7 @@ import com.google.common.collect.Maps;
 import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.activity.wxchat.annotation.XStreamCDATA;
 import com.okdeer.mall.activity.wxchat.bo.WechatMsgRequest;
+import com.okdeer.mall.activity.wxchat.service.CustomerService;
 import com.okdeer.mall.activity.wxchat.service.WechatMsgHandlerService;
 import com.okdeer.mall.activity.wxchat.service.WechatMsgProcessService;
 import com.okdeer.mall.activity.wxchat.util.WxchatUtils;
@@ -40,6 +42,9 @@ public class WechatMsgProcessServiceImpl
 	private ExecutorService cachedThreadPool;
 
 	private static final String DEFAULT_RESPONSE = "success";
+
+	@Autowired
+	private CustomerService customerService;
 
 	@Override
 	public String process(String requestXml) throws MallApiException {
@@ -80,7 +85,7 @@ public class WechatMsgProcessServiceImpl
 				wechatMsgRequest.setResult(result);
 				if (wechatMsgRequest.isTimeOut() && result != null) {
 					// 已经处理超时了，并且返回信息不为null，此时将消息异步通过客服接口发送給用户
-					
+					customerService.sendMsg(result);
 				}
 			} catch (Exception e) {
 				logger.error("处理微信请求出错", e);
