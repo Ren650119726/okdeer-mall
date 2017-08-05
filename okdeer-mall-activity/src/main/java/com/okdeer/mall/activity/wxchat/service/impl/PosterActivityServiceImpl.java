@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
+import com.okdeer.mall.activity.wxchat.bo.CreateQrCodeResult;
 import com.okdeer.mall.activity.wxchat.bo.PosterAddWechatUserRequest;
 import com.okdeer.mall.activity.wxchat.bo.WechatUserInfo;
 import com.okdeer.mall.activity.wxchat.config.WechatConfig;
@@ -63,9 +65,8 @@ public class PosterActivityServiceImpl
 
 	@Override
 	public Object process(WechatEventMsg wechatEventMsg) throws MallApiException {
-
 		try {
-			String mediaId = getMediaId(wechatEventMsg);
+			String mediaId = getMediaId(wechatEventMsg.getFromUserName());
 			// 生成图片信息返回
 			return createImageWechatMsg(wechatEventMsg.getFromUserName(), mediaId);
 		} catch (Exception e) {
@@ -74,10 +75,10 @@ public class PosterActivityServiceImpl
 		return null;
 	}
 
-	private String getMediaId(WechatEventMsg wechatEventMsg) throws Exception {
+	private String getMediaId(String openid) throws Exception {
 		// 查询用户是否已经有海报信息等
 		ActivityPosterWechatUserInfo activityPosterWechatUserInfo = activityPosterWechatUserService
-				.findByOpenid(wechatEventMsg.getFromUserName());
+				.findByOpenid(openid);
 		if (activityPosterWechatUserInfo != null
 				&& StringUtils.isNotEmpty(activityPosterWechatUserInfo.getPosterMediaId())
 				&& !isExpireForPoster(activityPosterWechatUserInfo.getPosterExpireTime())) {
@@ -85,7 +86,7 @@ public class PosterActivityServiceImpl
 		}
 
 		// 获取微信用户最新信息
-		WechatUserInfo wechatUserInfo = wechatService.getUserInfo(wechatEventMsg.getFromUserName());
+		WechatUserInfo wechatUserInfo = wechatService.getUserInfo(openid);
 		// 随机一张图片
 		Random random = new Random();
 		int index = random.nextInt(posterImg.length);
@@ -143,15 +144,39 @@ public class PosterActivityServiceImpl
 			// 将头像改为圆形
 			convertImage = ImageUtils.convertCircular(convertImage);
 			// 将用户头像合并到海报中
-			BufferedImage newImg = ImageUtils.overlapImage(posterReadImg, convertImage, 210, 292);
+			ImageUtils.overlapImage(posterReadImg, convertImage, 210, 292);
+			// 生成用户二维码分享图片
+			BufferedImage qrCodeImg = createUserShareQrcodeImg(wechatUserInfo.getOpenid());
+			// 将用户的二维码图片合成到海报中
+			ImageUtils.overlapImage(qrCodeImg, convertImage, 240, 805);
 			// 海报图片添加昵称
-			ImageUtils.drawTextInImg(newImg, "#EEE5DE", wechatUserInfo.getNickName(), 210,
+			ImageUtils.drawTextInImg(posterReadImg, "#EEE5DE", wechatUserInfo.getNickName(), 210,
 					292 + convertImage.getHeight() + 20);
-			return newImg;
+			return posterReadImg;
 		} catch (IOException e) {
 			logger.error("读取图片出错", e);
+		} catch (MallApiException e) {
+			logger.error("获取用户的二维码图片出错");
 		}
 		return null;
+	}
+
+	private BufferedImage createUserShareQrcodeImg(String openid) throws MallApiException {
+		String sceneStr = openid;
+		int expireSeconds = 2592000;
+		try {
+			CreateQrCodeResult createQrCodeResult = wechatService.createQrCode(sceneStr, expireSeconds);
+			if (!createQrCodeResult.isSuccess()) {
+				throw new MallApiException("获取用户二维码图片出错，微信返回错误信息：" + createQrCodeResult.getErrMsg());
+			}
+			URL imgUrl = new URL("https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket="
+					+ URLEncoder.encode(createQrCodeResult.getTicket(), "UTF-8"));
+			BufferedImage image = ImageIO.read(imgUrl);
+			// 将图片转换为260x260的
+			return ImageUtils.scaleByPercentage(image, 260, 260);
+		} catch (Exception e) {
+			throw new MallApiException("获取用户二维码图片出错");
+		}
 	}
 
 	private ImageWechatMsg createImageWechatMsg(String openid, String mediaId) {

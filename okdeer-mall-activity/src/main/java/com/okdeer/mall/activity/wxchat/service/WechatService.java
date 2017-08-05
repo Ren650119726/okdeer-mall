@@ -2,6 +2,7 @@
 package com.okdeer.mall.activity.wxchat.service;
 
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
+import com.okdeer.mall.activity.wxchat.bo.CreateQrCodeResult;
 import com.okdeer.mall.activity.wxchat.bo.QueryMaterialResponse;
 import com.okdeer.mall.activity.wxchat.bo.TokenInfo;
 import com.okdeer.mall.activity.wxchat.bo.WechatUserInfo;
@@ -23,12 +24,14 @@ public interface WechatService {
 
 	void createMenu(String requestJson) throws Exception;
 
-	QueryMaterialResponse findMaterialList(String type, int pageNum, int pageSize) throws  Exception ;
+	QueryMaterialResponse findMaterialList(String type, int pageNum, int pageSize) throws Exception;
 
-	WechatUserInfo getUserInfo(String openid) throws  Exception;
+	WechatUserInfo getUserInfo(String openid) throws Exception;
 
 	AddMediaResult addMedia(byte[] inputStream, String type, String fileName) throws Exception;
 
 	boolean send(String msginfo);
+
+	CreateQrCodeResult createQrCode(String sceneStr, int expireSeconds) throws Exception;
 
 }

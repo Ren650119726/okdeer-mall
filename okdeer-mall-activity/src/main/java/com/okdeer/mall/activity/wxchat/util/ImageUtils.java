@@ -34,12 +34,11 @@ public class ImageUtils {
 	 * @author:liuyc 
 	 * @time:2016年5月27日 下午5:51:20 
 	 */
-	public static final BufferedImage overlapImage(BufferedImage big, BufferedImage small, int startX, int startY) {
+	public static final void overlapImage(BufferedImage big, BufferedImage small, int startX, int startY) {
 		try {
 			Graphics2D g = big.createGraphics();
 			g.drawImage(small, startX, startY, small.getWidth(), small.getHeight(), null);
 			g.dispose();
-			return big;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

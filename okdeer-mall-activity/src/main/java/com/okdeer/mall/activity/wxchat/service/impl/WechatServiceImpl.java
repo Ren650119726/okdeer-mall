@@ -21,6 +21,7 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.mall.activity.wechat.dto.WechatConfigDto;
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
+import com.okdeer.mall.activity.wxchat.bo.CreateQrCodeResult;
 import com.okdeer.mall.activity.wxchat.bo.QueryMaterialResponse;
 import com.okdeer.mall.activity.wxchat.bo.TokenInfo;
 import com.okdeer.mall.activity.wxchat.bo.WechatBaseResult;
@@ -177,5 +178,24 @@ public class WechatServiceImpl implements WechatService {
 			logger.error("获取token信息出错", e);
 		}
 		return false;
+	}
+
+	@Override
+	public CreateQrCodeResult createQrCode(String sceneStr, int expireSeconds) throws Exception {
+		Map<String, Object> sceneMap = Maps.newHashMap();
+		sceneMap.put("scene_str", sceneStr);
+		Map<String, Object> actionInfoMap = Maps.newHashMap();
+		actionInfoMap.put("scene", sceneMap);
+		Map<String, Object> requestMap = Maps.newHashMap();
+		requestMap.put("action_name", "QR_LIMIT_STR_SCENE");
+		requestMap.put("action_info", actionInfoMap);
+		String url = WECHAT_API_SERVER + "/cgi-bin/qrcode/create" + getTokenUrl();
+		String postData = JsonMapper.nonEmptyMapper().toJson(requestMap);
+		String resp = HttpClient.post(url, postData);
+		logger.debug("生成带参数的二维码返回数据:{}", resp);
+		if (resp == null) {
+			throw new Exception("生成带参数的二维码出错");
+		}
+		return JsonMapper.nonDefaultMapper().fromJson(resp, CreateQrCodeResult.class);
 	}
 }
