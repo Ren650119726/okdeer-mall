@@ -35,17 +35,21 @@ import com.okdeer.mall.activity.wxchat.bo.PosterAddWechatUserRequest;
 import com.okdeer.mall.activity.wxchat.bo.WechatUserInfo;
 import com.okdeer.mall.activity.wxchat.config.WechatConfig;
 import com.okdeer.mall.activity.wxchat.entity.ActivityPosterConfig;
+import com.okdeer.mall.activity.wxchat.entity.ActivityPosterShareInfo;
 import com.okdeer.mall.activity.wxchat.entity.ActivityPosterWechatUserInfo;
 import com.okdeer.mall.activity.wxchat.message.ImageWechatMsg;
+import com.okdeer.mall.activity.wxchat.message.SubscribeEventWechatEventMsg;
 import com.okdeer.mall.activity.wxchat.message.TextWechatMsg;
 import com.okdeer.mall.activity.wxchat.message.WechatEventMsg;
 import com.okdeer.mall.activity.wxchat.message.WechatMedia;
 import com.okdeer.mall.activity.wxchat.service.ActivityPosterConfigService;
+import com.okdeer.mall.activity.wxchat.service.ActivityPosterShareInfoService;
 import com.okdeer.mall.activity.wxchat.service.ActivityPosterWechatUserService;
 import com.okdeer.mall.activity.wxchat.service.CustomerService;
 import com.okdeer.mall.activity.wxchat.service.PosterActivityService;
 import com.okdeer.mall.activity.wxchat.service.WechatMenuProcessService;
 import com.okdeer.mall.activity.wxchat.service.WechatService;
+import com.okdeer.mall.activity.wxchat.service.WechatUserService;
 import com.okdeer.mall.activity.wxchat.util.ImageUtils;
 
 @Service("posterActivityService")
@@ -69,6 +73,12 @@ public class PosterActivityServiceImpl
 	private ActivityPosterConfigService activityPosterConfigService;
 
 	@Autowired
+	private ActivityPosterShareInfoService activityPosterShareInfoService;
+
+	@Autowired
+	private WechatUserService wechatUserService;
+
+	@Autowired
 	private CustomerService customerService;
 
 	@Value("${operateImagePrefix}")
@@ -79,6 +89,10 @@ public class PosterActivityServiceImpl
 	private static final String ACTIVITY_ID = "1";
 
 	private ExecutorService cachedThreadPool;
+
+	private WechatUserSubscribleProcessSerivce wechatUserSubscribleProcessSerivce;
+
+	private static final String QRSCENE_STR = "qrscene_";
 
 	@Override
 	public Object process(WechatEventMsg wechatEventMsg) throws MallApiException {
@@ -95,8 +109,7 @@ public class PosterActivityServiceImpl
 		}
 		return null;
 	}
-	
-	
+
 	/**
 	 * @Description: 生成海报图片并且发送給用户
 	 * @param fromUserName
@@ -116,7 +129,7 @@ public class PosterActivityServiceImpl
 
 	private TextWechatMsg createImageingResponseMsg(String openid, ActivityPosterConfig activityPosterConfig) {
 		TextWechatMsg textWechatMsg = new TextWechatMsg();
-		textWechatMsg.setFromUserName(textWechatMsg.getFromUserName());
+		textWechatMsg.setFromUserName(wechatConfig.getAccount());
 		textWechatMsg.setToUserName(openid);
 		textWechatMsg.setContent("尊敬的用户，正在生成您的专属七夕情报，您可以保存情报，分享给好友或朋友圈，每三位好友扫码关注，您就可以领取iPhone 7/鲜花/100元优惠券，每天可领15次！");
 		WechatUserInfo wechatUserInfo;
@@ -263,12 +276,105 @@ public class PosterActivityServiceImpl
 	public void destroy() throws Exception {
 		posterAddWechatUserRequestQueue.clear();
 		cachedThreadPool.shutdown();
+		wechatUserSubscribleProcessSerivce.interrupt();
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		posterAddWechatUserRequestQueue = new LinkedBlockingQueue<>();
 		cachedThreadPool = Executors.newCachedThreadPool(new ThreadFactoryImpl("PosterActivityServiceExecutorThread_"));
+		wechatUserSubscribleProcessSerivce.start();
+	}
+
+	class WechatUserSubscribleProcessSerivce extends Thread {
+
+		public WechatUserSubscribleProcessSerivce() {
+			super("WechatUserSubscribleProcessSerivceThread");
+		}
+
+		@Override
+		public void run() {
+			while (true) {
+				try {
+					PosterAddWechatUserRequest posterAddWechatUserRequest = posterAddWechatUserRequestQueue.take();
+					cachedThreadPool.execute(() -> {
+						doProcessSubscribleRequest(posterAddWechatUserRequest);
+					});
+				} catch (InterruptedException e) {
+					logger.error("当前线程中断", e);
+					break;
+				}
+			}
+		}
+	}
+
+	public void doProcessSubscribleRequest(PosterAddWechatUserRequest posterAddWechatUserRequest) {
+		SubscribeEventWechatEventMsg wechatEventMsg = posterAddWechatUserRequest.getSubscribeEventWechatEventMsg();
+
+		WechatUserInfo subscribeUser = wechatUserService.updateUserInfo(wechatEventMsg.getFromUserName());
+		if (StringUtils.isNotEmpty(wechatEventMsg.getEventKey())
+				&& wechatEventMsg.getEventKey().startsWith(QRSCENE_STR)) {
+			// 用户未关注我们的公众号，并且通过好友分享的二维码来关注我们的公众号
+			String shareOpenid = wechatEventMsg.getEventKey()
+					.substring(wechatEventMsg.getEventKey().indexOf("qrscene_") + QRSCENE_STR.length());
+			ActivityPosterShareInfo activityPosterShareInfo = activityPosterShareInfoService
+					.findByOpenid(wechatEventMsg.getFromUserName());
+			if (activityPosterShareInfo == null) {
+				try {
+					WechatUserInfo wechatUserInfo = wechatService.getUserInfo(shareOpenid);
+					TextWechatMsg subcribleResponseTextWechatMsg = createSubscribleResponse(subscribeUser,
+							wechatUserInfo);
+					customerService.sendMsg(subcribleResponseTextWechatMsg);
+					// 发送海报图片
+					createAndSendPoster(subscribeUser.getOpenid());
+					// 給分享的好友发送提示信息
+					customerService.sendMsg(createFriendTip(subscribeUser, wechatUserInfo));
+				} catch (Exception e) {
+					logger.error("获取分享人信息出错", e);
+				}
+
+			}
+		}
+	}
+
+	private Object createFriendTip(WechatUserInfo subscribeUser, WechatUserInfo wechatUserInfo) {
+		TextWechatMsg textWechatMsg = new TextWechatMsg();
+		textWechatMsg.setFromUserName(wechatConfig.getAccount());
+		textWechatMsg.setToUserName(wechatUserInfo.getOpenid());
+		String content = subscribeUser.getNickName()
+				+ "扫码关注了您的七夕情报撩了您一下，每积满3位好友即可领取1次奖品喔~当B用户的数量满足3的倍数时，推送信息为：”魅力爆棚，已有{3*n}好友扫码关注您的七夕情报，恭喜获得N次领取iPhone7/鲜花/100元优惠券的机会 点击领取";
+		try {
+			ActivityPosterConfig activityPosterConfig = activityPosterConfigService.findById(ACTIVITY_ID);
+			if (activityPosterConfig != null) {
+				content = activityPosterConfig.getFriendSubscribeTip()
+						.replaceAll("#frientname", subscribeUser.getNickName());
+			}
+		} catch (Exception e) {
+			logger.error("查询配置信息出错", e);
+		}
+		textWechatMsg.setContent(content);
+		return textWechatMsg;
+	}
+
+	private TextWechatMsg createSubscribleResponse(WechatUserInfo subscribeUser, WechatUserInfo wechatUserInfo) {
+		TextWechatMsg textWechatMsg = new TextWechatMsg();
+		textWechatMsg.setFromUserName(wechatConfig.getAccount());
+		textWechatMsg.setToUserName(subscribeUser.getOpenid());
+		String content = subscribeUser.getNickName() + "，您现在是" + wechatUserInfo.getNickName()
+				+ "的推荐好友啦，您也可点击服务号栏目“七夕情报” 生成您的个人专属情报，每三位好友扫码关注，您就可以领取iPhone 7/鲜花/100元优惠券，每天可领15次！点击查看活动细则及奖品记录（链接）”。"
+				+ "点击<a href=\"http://www.baidu.com\">【查看活动细则及奖品记录】</a>链接，进入七夕情报拆奖页面。";
+		try {
+			ActivityPosterConfig activityPosterConfig = activityPosterConfigService.findById(ACTIVITY_ID);
+			if (activityPosterConfig != null) {
+				content = activityPosterConfig.getSubscribeWechatTip()
+						.replaceAll("#nickname", subscribeUser.getNickName())
+						.replaceAll("#friendname", wechatUserInfo.getNickName());
+			}
+		} catch (Exception e) {
+			logger.error("查询配置信息出错", e);
+		}
+		textWechatMsg.setContent(content);
+		return textWechatMsg;
 	}
 
 }

@@ -1,41 +1,25 @@
 
 package com.okdeer.mall.activity.wxchat.bo;
 
+import com.okdeer.mall.activity.wxchat.message.SubscribeEventWechatEventMsg;
+
 public class PosterAddWechatUserRequest {
 
-	/**
-	 * 关注用户id
-	 */
-	private String openid;
-
-	/**
-	 * 分享人用户id
-	 */
-	private String shareOpenid;
+	private SubscribeEventWechatEventMsg subscribeEventWechatEventMsg;
 
 	public PosterAddWechatUserRequest() {
-
 	}
 
-	public PosterAddWechatUserRequest(String openid, String shareOpenid) {
-		this.openid = openid;
-		this.shareOpenid = shareOpenid;
+	public PosterAddWechatUserRequest(SubscribeEventWechatEventMsg subscribeEventWechatEventMsg) {
+		this.subscribeEventWechatEventMsg = subscribeEventWechatEventMsg;
 	}
 
-	public String getOpenid() {
-		return openid;
+	public SubscribeEventWechatEventMsg getSubscribeEventWechatEventMsg() {
+		return subscribeEventWechatEventMsg;
 	}
 
-	public void setOpenid(String openid) {
-		this.openid = openid;
-	}
-
-	public String getShareOpenid() {
-		return shareOpenid;
-	}
-
-	public void setShareOpenid(String shareOpenid) {
-		this.shareOpenid = shareOpenid;
+	public void setSubscribeEventWechatEventMsg(SubscribeEventWechatEventMsg subscribeEventWechatEventMsg) {
+		this.subscribeEventWechatEventMsg = subscribeEventWechatEventMsg;
 	}
 
 }
