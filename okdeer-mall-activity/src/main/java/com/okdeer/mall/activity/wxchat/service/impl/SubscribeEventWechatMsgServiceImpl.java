@@ -6,17 +6,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.activity.wxchat.bo.PosterAddWechatUserRequest;
-import com.okdeer.mall.activity.wxchat.bo.WechatUserInfo;
-import com.okdeer.mall.activity.wxchat.entity.ActivityPosterShareInfo;
 import com.okdeer.mall.activity.wxchat.message.SubscribeEventWechatEventMsg;
-import com.okdeer.mall.activity.wxchat.message.TextWechatMsg;
-import com.okdeer.mall.activity.wxchat.service.ActivityPosterShareInfoService;
 import com.okdeer.mall.activity.wxchat.service.PosterActivityService;
-import com.okdeer.mall.activity.wxchat.service.WechatService;
-import com.okdeer.mall.activity.wxchat.service.WechatUserService;
 import com.okdeer.mall.activity.wxchat.util.WxchatUtils;
 
 /**

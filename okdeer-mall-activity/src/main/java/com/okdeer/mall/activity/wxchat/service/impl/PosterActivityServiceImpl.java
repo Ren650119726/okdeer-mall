@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.google.common.collect.Lists;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
 import com.okdeer.mall.activity.wxchat.bo.CreateQrCodeResult;
@@ -108,15 +109,14 @@ public class PosterActivityServiceImpl
 		return null;
 	}
 
-
 	private void asynCreatePoster(String openid) {
 		cachedThreadPool.execute(() -> {
 			try {
-				//让线程先睡眠2秒钟，避免海报生成了，提示语还没发出去
+				// 让线程先睡眠2秒钟，避免海报生成了，提示语还没发出去
 				Thread.sleep(2000);
 				createAndSendPoster(openid);
 			} catch (Exception e) {
-				logger.error("创建海报出错",e);
+				logger.error("创建海报出错", e);
 			}
 
 		});
@@ -323,7 +323,6 @@ public class PosterActivityServiceImpl
 
 	public void doProcessSubscribleRequest(PosterAddWechatUserRequest posterAddWechatUserRequest) {
 		SubscribeEventWechatEventMsg wechatEventMsg = posterAddWechatUserRequest.getSubscribeEventWechatEventMsg();
-
 		WechatUserInfo subscribeUser = wechatUserService.updateUserInfo(wechatEventMsg.getFromUserName());
 		if (StringUtils.isNotEmpty(wechatEventMsg.getEventKey())
 				&& wechatEventMsg.getEventKey().startsWith(QRSCENE_STR)) {
@@ -333,8 +332,13 @@ public class PosterActivityServiceImpl
 			ActivityPosterShareInfo activityPosterShareInfo = activityPosterShareInfoService
 					.findByOpenid(wechatEventMsg.getFromUserName());
 			if (activityPosterShareInfo == null) {
+				//如果用户之前已经是别人的推荐好友了，则不处理
 				try {
+					// 保存活动信息
+					saveActivityPosterShareInfo(subscribeUser.getOpenid(), shareOpenid);
+					// 获取关注用户的最新信息
 					WechatUserInfo wechatUserInfo = wechatService.getUserInfo(shareOpenid);
+					// 发送提示信息給关注的用户
 					TextWechatMsg subcribleResponseTextWechatMsg = createSubscribleResponse(subscribeUser,
 							wechatUserInfo);
 					customerService.sendMsg(subcribleResponseTextWechatMsg);
@@ -345,8 +349,20 @@ public class PosterActivityServiceImpl
 				} catch (Exception e) {
 					logger.error("获取分享人信息出错", e);
 				}
-
 			}
+		}
+	}
+
+	private void saveActivityPosterShareInfo(String openid, String shareOpenid) {
+		ActivityPosterShareInfo activityPosterShareInfo = new ActivityPosterShareInfo();
+		activityPosterShareInfo.setCreateTime(new Date());
+		activityPosterShareInfo.setId(UuidUtils.getUuid());
+		activityPosterShareInfo.setOpenid(openid);
+		activityPosterShareInfo.setShareOpenid(shareOpenid);
+		try {
+			activityPosterShareInfoService.add(activityPosterShareInfo);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -355,12 +371,12 @@ public class PosterActivityServiceImpl
 		textWechatMsg.setFromUserName(wechatConfig.getAccount());
 		textWechatMsg.setToUserName(wechatUserInfo.getOpenid());
 		String content = subscribeUser.getNickName()
-				+ "扫码关注了您的七夕情报撩了您一下，每积满3位好友即可领取1次奖品喔~当B用户的数量满足3的倍数时，推送信息为：”魅力爆棚，已有{3*n}好友扫码关注您的七夕情报，恭喜获得N次领取iPhone7/鲜花/100元优惠券的机会 点击领取";
+				+ "扫码关注了您的七夕情报撩了您一下，每积满3位好友即可领取1次奖品喔~ 魅力爆棚，已有{3*n}好友扫码关注您的七夕情报，恭喜获得N次领取iPhone7/鲜花/100元优惠券的机会 点击领取";
 		try {
 			ActivityPosterConfig activityPosterConfig = activityPosterConfigService.findById(ACTIVITY_ID);
 			if (activityPosterConfig != null) {
-				content = activityPosterConfig.getFriendSubscribeTip()
-						.replaceAll("#frientname", subscribeUser.getNickName());
+				content = activityPosterConfig.getFriendSubscribeTip().replaceAll("#frientname",
+						subscribeUser.getNickName());
 			}
 		} catch (Exception e) {
 			logger.error("查询配置信息出错", e);
@@ -374,8 +390,8 @@ public class PosterActivityServiceImpl
 		textWechatMsg.setFromUserName(wechatConfig.getAccount());
 		textWechatMsg.setToUserName(subscribeUser.getOpenid());
 		String content = subscribeUser.getNickName() + "，您现在是" + wechatUserInfo.getNickName()
-				+ "的推荐好友啦，您也可点击服务号栏目“七夕情报” 生成您的个人专属情报，每三位好友扫码关注，您就可以领取iPhone 7/鲜花/100元优惠券，每天可领15次！点击查看活动细则及奖品记录（链接）”。"
-				+ "点击<a href=\"http://www.baidu.com\">【查看活动细则及奖品记录】</a>链接，进入七夕情报拆奖页面。";
+				+ "的推荐好友啦，您也可点击服务号栏目“七夕情报” 生成您的个人专属情报，每三位好友扫码关注，您就可以领取iPhone 7/鲜花/100元优惠券，每天可领15次！"
+				+ "<a href=\"http://www.baidu.com\">【查看活动细则及奖品记录】</a>";
 		try {
 			ActivityPosterConfig activityPosterConfig = activityPosterConfigService.findById(ACTIVITY_ID);
 			if (activityPosterConfig != null) {
