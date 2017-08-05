@@ -205,7 +205,7 @@ public class PosterActivityServiceImpl
 			// 生成用户二维码分享图片
 			BufferedImage qrCodeImg = createUserShareQrcodeImg(wechatUserInfo.getOpenid());
 			// 将用户的二维码图片合成到海报中
-			ImageUtils.overlapImage(qrCodeImg, convertImage, 240, 805);
+			ImageUtils.overlapImage(posterReadImg,qrCodeImg, 240, 805);
 			// 海报图片添加昵称
 			ImageUtils.drawTextInImg(posterReadImg, "#EEE5DE", wechatUserInfo.getNickName(), 210,
 					292 + convertImage.getHeight() + 20);
