@@ -159,7 +159,8 @@ public class ActivityCollectCouponsServiceImpl
 		if(ActivityCollectCouponsType.OPEN_DOOR.getValue().equals(activityCollectCoupons.getType()) ||
 		   ActivityCollectCouponsType.consume_return.getValue().equals(activityCollectCoupons.getType()) ||	
 		   ActivityCollectCouponsType.get.getValue().equals(activityCollectCoupons.getType()) ||
-		   ActivityCollectCouponsType.lzg.getValue().equals(activityCollectCoupons.getType())){
+		   ActivityCollectCouponsType.lzg.getValue().equals(activityCollectCoupons.getType()) ||
+		   ActivityCollectCouponsType.red_packet.getValue().equals(activityCollectCoupons.getType())){
 			
 			//如果是消费返券,要批量插入梯度表
 			if(ActivityCollectCouponsType.consume_return.getValue().equals(activityCollectCoupons.getType())){
@@ -386,7 +387,8 @@ public class ActivityCollectCouponsServiceImpl
 		if (ActivityCollectCouponsType.OPEN_DOOR.getValue().equals(activityCollectCoupons.getType())
 				|| ActivityCollectCouponsType.consume_return.getValue().equals(activityCollectCoupons.getType())
 				|| ActivityCollectCouponsType.get.getValue().equals(activityCollectCoupons.getType())
-				|| ActivityCollectCouponsType.lzg.getValue().equals(activityCollectCoupons.getType())){
+				|| ActivityCollectCouponsType.lzg.getValue().equals(activityCollectCoupons.getType())
+				|| ActivityCollectCouponsType.red_packet.getValue().equals(activityCollectCoupons.getType())){
 			
 			//如果是消费返券,要批量插入梯度表
 			if(ActivityCollectCouponsType.consume_return.getValue().equals(activityCollectCoupons.getType())){
