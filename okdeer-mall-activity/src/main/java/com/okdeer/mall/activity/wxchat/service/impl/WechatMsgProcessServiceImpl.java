@@ -109,7 +109,7 @@ public class WechatMsgProcessServiceImpl
 		WechatMsgHandler wechatMsgHandler = msgHandlerMap.get(key);
 		if (wechatMsgHandler == null) {
 			logger.warn("没有找到相应的消息处理类：msgType={},event={}", msgType, event);
-			return DEFAULT_RESPONSE;
+			throw new MallApiException("没有找到相应的消息处理类");
 		}
 		XStream xStream = createXstream();
 		xStream.autodetectAnnotations(true);

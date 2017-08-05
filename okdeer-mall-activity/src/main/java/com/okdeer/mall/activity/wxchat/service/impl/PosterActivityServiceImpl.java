@@ -97,9 +97,7 @@ public class PosterActivityServiceImpl
 	@Override
 	public Object process(WechatEventMsg wechatEventMsg) throws MallApiException {
 		try {
-			cachedThreadPool.execute(() -> {
-				createAndSendPoster(wechatEventMsg.getFromUserName());
-			});
+			asynCreatePoster(wechatEventMsg.getFromUserName());
 			ActivityPosterConfig activityPosterConfig = activityPosterConfigService.findById(ACTIVITY_ID);
 			if (activityPosterConfig != null) {
 				return createImageingResponseMsg(wechatEventMsg.getFromUserName(), activityPosterConfig);
@@ -108,6 +106,20 @@ public class PosterActivityServiceImpl
 			logger.error("处理请求失败信息出错", e);
 		}
 		return null;
+	}
+
+
+	private void asynCreatePoster(String openid) {
+		cachedThreadPool.execute(() -> {
+			try {
+				//让线程先睡眠2秒钟，避免海报生成了，提示语还没发出去
+				Thread.sleep(2000);
+				createAndSendPoster(openid);
+			} catch (Exception e) {
+				logger.error("创建海报出错",e);
+			}
+
+		});
 	}
 
 	/**
