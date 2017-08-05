@@ -116,15 +116,15 @@ public class PosterActivityServiceImpl
 
 	private TextWechatMsg createImageingResponseMsg(String openid, ActivityPosterConfig activityPosterConfig) {
 		TextWechatMsg textWechatMsg = new TextWechatMsg();
-		textWechatMsg.setFromUserName(textWechatMsg.getFromUserName());
+		textWechatMsg.setFromUserName(wechatConfig.getAccount());
 		textWechatMsg.setToUserName(openid);
 		textWechatMsg.setContent("尊敬的用户，正在生成您的专属七夕情报，您可以保存情报，分享给好友或朋友圈，每三位好友扫码关注，您就可以领取iPhone 7/鲜花/100元优惠券，每天可领15次！");
 		WechatUserInfo wechatUserInfo;
 		try {
 			wechatUserInfo = wechatService.getUserInfo(openid);
 			String content = activityPosterConfig.getCreatePosterTip()
-					.replaceAll("{nickname}", wechatUserInfo.getNickName())
-					.replaceAll("{drawCountLimit}", String.valueOf(activityPosterConfig.getDrawCountLimit()));
+					.replaceAll("#nickname", wechatUserInfo.getNickName())
+					.replaceAll("#drawCountLimit", String.valueOf(activityPosterConfig.getDrawCountLimit()));
 			textWechatMsg.setContent(content);
 		} catch (Exception e) {
 			logger.error("获取微信用户信息出错", e);
