@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.imageio.ImageIO;
@@ -24,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.google.common.collect.Lists;
 import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
@@ -31,11 +34,15 @@ import com.okdeer.mall.activity.wxchat.bo.CreateQrCodeResult;
 import com.okdeer.mall.activity.wxchat.bo.PosterAddWechatUserRequest;
 import com.okdeer.mall.activity.wxchat.bo.WechatUserInfo;
 import com.okdeer.mall.activity.wxchat.config.WechatConfig;
+import com.okdeer.mall.activity.wxchat.entity.ActivityPosterConfig;
 import com.okdeer.mall.activity.wxchat.entity.ActivityPosterWechatUserInfo;
 import com.okdeer.mall.activity.wxchat.message.ImageWechatMsg;
+import com.okdeer.mall.activity.wxchat.message.TextWechatMsg;
 import com.okdeer.mall.activity.wxchat.message.WechatEventMsg;
 import com.okdeer.mall.activity.wxchat.message.WechatMedia;
+import com.okdeer.mall.activity.wxchat.service.ActivityPosterConfigService;
 import com.okdeer.mall.activity.wxchat.service.ActivityPosterWechatUserService;
+import com.okdeer.mall.activity.wxchat.service.CustomerService;
 import com.okdeer.mall.activity.wxchat.service.PosterActivityService;
 import com.okdeer.mall.activity.wxchat.service.WechatMenuProcessService;
 import com.okdeer.mall.activity.wxchat.service.WechatService;
@@ -58,21 +65,71 @@ public class PosterActivityServiceImpl
 	@Autowired
 	private ActivityPosterWechatUserService activityPosterWechatUserService;
 
+	@Autowired
+	private ActivityPosterConfigService activityPosterConfigService;
+
+	@Autowired
+	private CustomerService customerService;
+
 	@Value("${operateImagePrefix}")
 	private String operateImagePrefix;
 
 	private static final String[] posterImg = { "posterpic1.png" };
 
+	private static final String ACTIVITY_ID = "1";
+
+	private ExecutorService cachedThreadPool;
+
 	@Override
 	public Object process(WechatEventMsg wechatEventMsg) throws MallApiException {
 		try {
-			String mediaId = getMediaId(wechatEventMsg.getFromUserName());
-			// 生成图片信息返回
-			return createImageWechatMsg(wechatEventMsg.getFromUserName(), mediaId);
+			cachedThreadPool.execute(() -> {
+				createAndSendPoster(wechatEventMsg.getFromUserName());
+			});
+			ActivityPosterConfig activityPosterConfig = activityPosterConfigService.findById(ACTIVITY_ID);
+			if (activityPosterConfig != null) {
+				return createImageingResponseMsg(wechatEventMsg.getFromUserName(), activityPosterConfig);
+			}
 		} catch (Exception e) {
 			logger.error("处理请求失败信息出错", e);
 		}
 		return null;
+	}
+	
+	
+	/**
+	 * @Description: 生成海报图片并且发送給用户
+	 * @param fromUserName
+	 * @author zengjizu
+	 * @date 2017年8月5日
+	 */
+	private void createAndSendPoster(String fromUserName) {
+		try {
+			String mediaId = getMediaId(fromUserName);
+			// 生成图片信息返回
+			ImageWechatMsg imageWechatMsg = createImageWechatMsg(fromUserName, mediaId);
+			customerService.sendMsg(imageWechatMsg);
+		} catch (Exception e) {
+			logger.error("生成海报图片出错");
+		}
+	}
+
+	private TextWechatMsg createImageingResponseMsg(String openid, ActivityPosterConfig activityPosterConfig) {
+		TextWechatMsg textWechatMsg = new TextWechatMsg();
+		textWechatMsg.setFromUserName(textWechatMsg.getFromUserName());
+		textWechatMsg.setToUserName(openid);
+		textWechatMsg.setContent("尊敬的用户，正在生成您的专属七夕情报，您可以保存情报，分享给好友或朋友圈，每三位好友扫码关注，您就可以领取iPhone 7/鲜花/100元优惠券，每天可领15次！");
+		WechatUserInfo wechatUserInfo;
+		try {
+			wechatUserInfo = wechatService.getUserInfo(openid);
+			String content = activityPosterConfig.getCreatePosterTip()
+					.replaceAll("{nickname}", wechatUserInfo.getNickName())
+					.replaceAll("{drawCountLimit}", String.valueOf(activityPosterConfig.getDrawCountLimit()));
+			textWechatMsg.setContent(content);
+		} catch (Exception e) {
+			logger.error("获取微信用户信息出错", e);
+		}
+		return textWechatMsg;
 	}
 
 	private String getMediaId(String openid) throws Exception {
@@ -205,12 +262,13 @@ public class PosterActivityServiceImpl
 	@Override
 	public void destroy() throws Exception {
 		posterAddWechatUserRequestQueue.clear();
-
+		cachedThreadPool.shutdown();
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		posterAddWechatUserRequestQueue = new LinkedBlockingQueue<>();
+		cachedThreadPool = Executors.newCachedThreadPool(new ThreadFactoryImpl("PosterActivityServiceExecutorThread_"));
 	}
 
 }

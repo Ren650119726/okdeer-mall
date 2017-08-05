@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.wxchat.mapper.ActivityPosterConfigMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.wxchat.entity.ActivityPosterConfig" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="create_poster_tip" property="createPosterTip" jdbcType="VARCHAR" />
+        <result column="draw_count_limit" property="drawCountLimit" jdbcType="INTEGER" />
+        <result column="friend_reach_count_per" property="friendReachCountPer" jdbcType="INTEGER" />
+        <result column="friend_subscribe_tip" property="friendSubscribeTip" jdbcType="VARCHAR" />
+        <result column="subscribe_wechat_tip" property="subscribeWechatTip" jdbcType="VARCHAR" />
+        <result column="poster_img" property="posterImg" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, create_poster_tip, draw_count_limit, friend_reach_count_per, friend_subscribe_tip, 
+        subscribe_wechat_tip, poster_img
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_poster_config
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.wxchat.entity.ActivityPosterConfig" >
+        insert into activity_poster_config
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="createPosterTip != null" >
+                create_poster_tip,
+            </if>
+            <if test="drawCountLimit != null" >
+                draw_count_limit,
+            </if>
+            <if test="friendReachCountPer != null" >
+                friend_reach_count_per,
+            </if>
+            <if test="friendSubscribeTip != null" >
+                friend_subscribe_tip,
+            </if>
+            <if test="subscribeWechatTip != null" >
+                subscribe_wechat_tip,
+            </if>
+            <if test="posterImg != null" >
+                poster_img,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="createPosterTip != null" >
+                #{createPosterTip,jdbcType=VARCHAR},
+            </if>
+            <if test="drawCountLimit != null" >
+                #{drawCountLimit,jdbcType=INTEGER},
+            </if>
+            <if test="friendReachCountPer != null" >
+                #{friendReachCountPer,jdbcType=INTEGER},
+            </if>
+            <if test="friendSubscribeTip != null" >
+                #{friendSubscribeTip,jdbcType=VARCHAR},
+            </if>
+            <if test="subscribeWechatTip != null" >
+                #{subscribeWechatTip,jdbcType=VARCHAR},
+            </if>
+            <if test="posterImg != null" >
+                #{posterImg,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.wxchat.entity.ActivityPosterConfig" >
+        update activity_poster_config
+        <set >
+            <if test="createPosterTip != null" >
+                create_poster_tip = #{createPosterTip,jdbcType=VARCHAR},
+            </if>
+            <if test="drawCountLimit != null" >
+                draw_count_limit = #{drawCountLimit,jdbcType=INTEGER},
+            </if>
+            <if test="friendReachCountPer != null" >
+                friend_reach_count_per = #{friendReachCountPer,jdbcType=INTEGER},
+            </if>
+            <if test="friendSubscribeTip != null" >
+                friend_subscribe_tip = #{friendSubscribeTip,jdbcType=VARCHAR},
+            </if>
+            <if test="subscribeWechatTip != null" >
+                subscribe_wechat_tip = #{subscribeWechatTip,jdbcType=VARCHAR},
+            </if>
+            <if test="posterImg != null" >
+                poster_img = #{posterImg,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_poster_config
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>
