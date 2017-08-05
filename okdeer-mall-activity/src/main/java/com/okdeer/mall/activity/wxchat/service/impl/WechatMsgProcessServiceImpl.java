@@ -39,10 +39,12 @@ public class WechatMsgProcessServiceImpl implements WechatMsgProcessService, Wec
 		if (event == null) {
 			throw new MallApiException("解析event出错");
 		}
+		
+		String key = (msgType + WxchatUtils.JOIN + event).toUpperCase();
 		WechatMsgHandler wechatMsgHandler = msgHandlerMap
-				.get(msgType.toUpperCase() + WxchatUtils.JOIN + event.toUpperCase());
+				.get(key);
 		if (wechatMsgHandler == null) {
-			logger.warn("没有找到相应的消息处理类：msgType={},event={}", msgType);
+			logger.warn("没有找到相应的消息处理类：msgType={},event={}", msgType,event);
 			return null;
 		}
 		XStream xStream = createXstream();
@@ -59,11 +61,14 @@ public class WechatMsgProcessServiceImpl implements WechatMsgProcessService, Wec
 
 	@Override
 	public void addHandler(WechatMsgHandler wechatMsgHandler) throws MallApiException {
-		if (msgHandlerMap.get(wechatMsgHandler.getMsgTypeEvent()) != null) {
-			throw new MallApiException("微信消息处理类重复,消息类型：" + wechatMsgHandler.getMsgTypeEvent() + "，已经存在的类为："
-					+ msgHandlerMap.get(wechatMsgHandler.getMsgTypeEvent()).getClass());
+		String key = wechatMsgHandler.getMsgTypeEvent().toUpperCase();
+		logger.info("添加处理类:{}",key);
+		if (msgHandlerMap.get(key) != null) {
+			throw new MallApiException("微信消息处理类重复,消息类型：" + key + "，已经存在的类为："
+					+ msgHandlerMap.get(key).getClass());
 		}
-		msgHandlerMap.put(wechatMsgHandler.getMsgTypeEvent(), wechatMsgHandler);
+		msgHandlerMap.put(key, wechatMsgHandler);
+		logger.info("{}",msgHandlerMap);
 	}
 
 	/**
