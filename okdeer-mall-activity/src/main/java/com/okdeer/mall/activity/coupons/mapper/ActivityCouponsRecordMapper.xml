@@ -939,15 +939,20 @@
    		GROUP BY coupons_id
    </select>
    
+   <!-- 统计我的代金券的关联活动数据(代金券活动已使用代金券) -->
    <select id="countCollectActivityRecord" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo"
    		resultType="com.okdeer.mall.activity.coupons.bo.ActivityRecordBo">
    		SELECT coupons_collect_id AS pkId,
    			   count(*) AS totalNum
    		FROM activity_coupons_record
-   		WHERE coupons_id IN
+   		WHERE coupons_collect_id in ( 
+   			SELECT coupons_collect_id 
+   			FROM activity_coupons_record 
+   			WHERE coupons_id IN 
    			<foreach collection="pkIdList" item="pkId" separator="," open="(" close=")">
    				#{pkId}
    			</foreach>
+   		)
    		<if test="deviceId != null">
    			AND device_id = #{deviceId,jdbcType=VARCHAR}
    		</if>
