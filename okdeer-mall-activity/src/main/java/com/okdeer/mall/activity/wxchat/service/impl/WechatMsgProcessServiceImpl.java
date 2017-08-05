@@ -54,7 +54,7 @@ public class WechatMsgProcessServiceImpl implements WechatMsgProcessService, Wec
 		if (response != null) {
 			return xStream.toXML(response);
 		}
-		return "";
+		return "success";
 	}
 
 	@Override
