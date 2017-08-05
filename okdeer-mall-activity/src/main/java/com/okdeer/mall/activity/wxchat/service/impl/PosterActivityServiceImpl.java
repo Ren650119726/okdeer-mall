@@ -77,7 +77,7 @@ public class PosterActivityServiceImpl
 	private String getMediaId(WechatEventMsg wechatEventMsg) throws Exception {
 		// 查询用户是否已经有海报信息等
 		ActivityPosterWechatUserInfo activityPosterWechatUserInfo = activityPosterWechatUserService
-				.findById(wechatEventMsg.getFromUserName());
+				.findByOpenid(wechatEventMsg.getFromUserName());
 		if (activityPosterWechatUserInfo != null
 				&& StringUtils.isNotEmpty(activityPosterWechatUserInfo.getPosterMediaId())
 				&& !isExpireForPoster(activityPosterWechatUserInfo.getPosterExpireTime())) {

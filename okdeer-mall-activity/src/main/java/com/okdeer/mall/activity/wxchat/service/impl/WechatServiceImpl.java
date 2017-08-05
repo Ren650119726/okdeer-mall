@@ -157,7 +157,7 @@ public class WechatServiceImpl implements WechatService {
 	@Override
 	public boolean send(String msginfo) {
 		try {
-			String url = WECHAT_API_SERVER + "/message/custom/send" + getTokenUrl();
+			String url = WECHAT_API_SERVER + "/cgi-bin/message/custom/send" + getTokenUrl();
 			String response = HttpClient.post(url, msginfo);
 			logger.info("发送客服消息給用户，微信返回结果：{}", response);
 			if (response == null) {
