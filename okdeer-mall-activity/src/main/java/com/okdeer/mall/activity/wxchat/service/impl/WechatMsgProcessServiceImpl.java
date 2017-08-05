@@ -4,14 +4,21 @@ package com.okdeer.mall.activity.wxchat.service.impl;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.google.common.collect.Maps;
 import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.activity.wxchat.annotation.XStreamCDATA;
+import com.okdeer.mall.activity.wxchat.bo.WechatMsgRequest;
 import com.okdeer.mall.activity.wxchat.service.WechatMsgHandlerService;
 import com.okdeer.mall.activity.wxchat.service.WechatMsgProcessService;
 import com.okdeer.mall.activity.wxchat.util.WxchatUtils;
@@ -23,52 +30,100 @@ import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 import com.thoughtworks.xstream.io.xml.XppDriver;
 
 @Service
-public class WechatMsgProcessServiceImpl implements WechatMsgProcessService, WechatMsgHandlerService {
+public class WechatMsgProcessServiceImpl
+		implements WechatMsgProcessService, WechatMsgHandlerService, InitializingBean, DisposableBean {
 
 	private static final Logger logger = LoggerFactory.getLogger(Logger.class);
 
 	private static final Map<String, WechatMsgHandler> msgHandlerMap = Maps.newHashMap();
 
+	private ExecutorService cachedThreadPool;
+
+	private static final String DEFAULT_RESPONSE = "success";
+
 	@Override
 	public String process(String requestXml) throws MallApiException {
-		String msgType = getMsgType(requestXml);
+		WechatMsgRequest wechatMsgRequest = new WechatMsgRequest(requestXml);
+		submitRequest(wechatMsgRequest);
+		// 等待3秒钟
+		boolean result;
+		try {
+			result = wechatMsgRequest.getCountDownLatch().await(3, TimeUnit.SECONDS);
+			if (!result) {
+				wechatMsgRequest.setTimeOut(true);
+				return DEFAULT_RESPONSE;
+			}
+
+			if (wechatMsgRequest.getResult() == null) {
+				return DEFAULT_RESPONSE;
+			}
+			XStream xStream = createXstream();
+			xStream.autodetectAnnotations(true);
+			return xStream.toXML(wechatMsgRequest.getResult());
+		} catch (InterruptedException e) {
+			logger.error("当前线程{}已经中断", Thread.currentThread().getName(), e);
+			Thread.currentThread().interrupt();
+		}
+		return DEFAULT_RESPONSE;
+	}
+
+	/**
+	 * @Description:提交请求給线程池执行
+	 * @param wechatMsgRequest
+	 * @author zengjizu
+	 * @date 2017年8月5日
+	 */
+	private void submitRequest(WechatMsgRequest wechatMsgRequest) {
+		cachedThreadPool.execute(() -> {
+			try {
+				Object result = doProcess(wechatMsgRequest);
+				wechatMsgRequest.setResult(result);
+				if (wechatMsgRequest.isTimeOut() && result != null) {
+					// 已经处理超时了，并且返回信息不为null，此时将消息异步通过客服接口发送給用户
+					
+				}
+			} catch (Exception e) {
+				logger.error("处理微信请求出错", e);
+			}
+			wechatMsgRequest.getCountDownLatch().countDown();
+		});
+	}
+
+	private Object doProcess(WechatMsgRequest wechatMsgRequest) throws MallApiException {
+
+		String msgType = getMsgType(wechatMsgRequest.getRequestXml());
 		if (msgType == null) {
 			throw new MallApiException("解析msgType出错");
 		}
-		String event = getEvent(requestXml);
+		String event = getEvent(wechatMsgRequest.getRequestXml());
 		if (event == null) {
 			throw new MallApiException("解析event出错");
 		}
-		
+
 		String key = (msgType + WxchatUtils.JOIN + event).toUpperCase();
-		WechatMsgHandler wechatMsgHandler = msgHandlerMap
-				.get(key);
+		WechatMsgHandler wechatMsgHandler = msgHandlerMap.get(key);
 		if (wechatMsgHandler == null) {
-			logger.warn("没有找到相应的消息处理类：msgType={},event={}", msgType,event);
-			return null;
+			logger.warn("没有找到相应的消息处理类：msgType={},event={}", msgType, event);
+			return DEFAULT_RESPONSE;
 		}
 		XStream xStream = createXstream();
 		xStream.autodetectAnnotations(true);
 		xStream.alias("xml", wechatMsgHandler.getRequestClass());
-		Object requestObj = xStream.fromXML(requestXml);
+		Object requestObj = xStream.fromXML(wechatMsgRequest.getRequestXml());
 		logger.debug("{}开始处理请求....", wechatMsgHandler.getClass().getName());
 		Object response = wechatMsgHandler.process(requestObj);
-		if (response != null) {
-			return xStream.toXML(response);
-		}
-		return "success";
+		return response;
 	}
 
 	@Override
 	public void addHandler(WechatMsgHandler wechatMsgHandler) throws MallApiException {
 		String key = wechatMsgHandler.getMsgTypeEvent().toUpperCase();
-		logger.info("添加处理类:{}",key);
+		logger.info("添加处理类:{}", key);
 		if (msgHandlerMap.get(key) != null) {
-			throw new MallApiException("微信消息处理类重复,消息类型：" + key + "，已经存在的类为："
-					+ msgHandlerMap.get(key).getClass());
+			throw new MallApiException("微信消息处理类重复,消息类型：" + key + "，已经存在的类为：" + msgHandlerMap.get(key).getClass());
 		}
 		msgHandlerMap.put(key, wechatMsgHandler);
-		logger.info("{}",msgHandlerMap);
+		logger.info("{}", msgHandlerMap);
 	}
 
 	/**
@@ -178,6 +233,17 @@ public class WechatMsgProcessServiceImpl implements WechatMsgProcessService, Wec
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		cachedThreadPool.shutdown();
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		cachedThreadPool = Executors
+				.newCachedThreadPool(new ThreadFactoryImpl("WechatMsgProcessServiceExecutorThread_"));
 	}
 
 }

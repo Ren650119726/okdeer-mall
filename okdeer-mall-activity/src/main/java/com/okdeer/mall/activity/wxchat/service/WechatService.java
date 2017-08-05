@@ -29,4 +29,6 @@ public interface WechatService {
 
 	AddMediaResult addMedia(byte[] inputStream, String type, String fileName) throws Exception;
 
+	boolean send(String msginfo);
+
 }

@@ -1,12 +1,14 @@
 
 package com.okdeer.mall.activity.wxchat.service.impl;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.apache.http.client.ClientProtocolException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,10 +147,35 @@ public class WechatServiceImpl implements WechatService {
 	public AddMediaResult addMedia(byte[] inputStream, String type, String fileName) throws Exception {
 		String url = WECHAT_API_SERVER + "/cgi-bin/media/upload" + getTokenUrl() + "&type=" + type;
 		String resp = HttpClient.postMultipart(url, inputStream, fileName);
-		logger.info("上传素材返回信息：{}",resp);
+		logger.info("上传素材返回信息：{}", resp);
 		if (resp == null) {
 			throw new Exception("上传素材信息出错");
 		}
 		return JsonMapper.nonDefaultMapper().fromJson(resp, AddMediaResult.class);
+	}
+
+	@Override
+	public boolean send(String msginfo) {
+		try {
+			String url = WECHAT_API_SERVER + "/message/custom/send" + getTokenUrl();
+			String response = HttpClient.post(url, msginfo);
+			logger.info("发送客服消息給用户，微信返回结果：{}", response);
+			if (response == null) {
+				logger.error("客服消息发送失败");
+				return false;
+			}
+			WechatBaseResult result = JsonMapper.nonDefaultMapper().fromJson(response, WechatBaseResult.class);
+			if (result.isSuccess()) {
+				return true;
+			}
+			logger.warn("客服消息发送失败，微信返回错误信息{}", result.getErrMsg());
+		} catch (ClientProtocolException e) {
+			logger.error("协议错误", e);
+		} catch (IOException e) {
+			logger.error("网络出现异常", e);
+		} catch (Exception e) {
+			logger.error("获取token信息出错", e);
+		}
+		return false;
 	}
 }
