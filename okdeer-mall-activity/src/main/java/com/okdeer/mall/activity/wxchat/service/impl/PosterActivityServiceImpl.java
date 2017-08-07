@@ -146,8 +146,8 @@ public class PosterActivityServiceImpl
 		try {
 			wechatUserInfo = wechatService.getUserInfo(openid);
 			String content = activityPosterConfig.getCreatePosterTip()
-					.replaceAll("{nickname}", wechatUserInfo.getNickName())
-					.replaceAll("{drawCountLimit}", String.valueOf(activityPosterConfig.getDrawCountLimit()));
+					.replaceAll("#nickname", wechatUserInfo.getNickName())
+					.replaceAll("#drawCountLimit", String.valueOf(activityPosterConfig.getDrawCountLimit()));
 			textWechatMsg.setContent(content);
 		} catch (Exception e) {
 			logger.error("获取微信用户信息出错", e);
