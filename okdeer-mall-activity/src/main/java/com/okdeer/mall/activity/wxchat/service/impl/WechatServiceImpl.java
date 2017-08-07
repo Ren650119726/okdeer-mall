@@ -2,7 +2,6 @@
 package com.okdeer.mall.activity.wxchat.service.impl;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Date;
 import java.util.Map;
 
