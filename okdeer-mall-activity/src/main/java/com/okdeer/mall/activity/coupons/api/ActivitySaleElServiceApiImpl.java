@@ -36,6 +36,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoodsBo;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleELServiceApi;
+import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.dto.ActivitySaleGoodsParamDto;
@@ -69,6 +70,9 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 
     @Autowired
     private ActivitySaleService activitySaleService;
+    
+    @Autowired
+    private ActivitySaleGoodsService activitySaleGoodsService;
 
     @Autowired
     private ActivitySaleGoodsServiceApi activitySaleGoodsServiceApi;
@@ -276,4 +280,11 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         //added by zhaoqc 2017-4-28
         
     }
+
+	@Override
+	public void addActivitySaleGoodsList(String storeId, String createUserId, String activityId,
+			List<ActivitySaleGoods> activitySaleGoodsList) throws Exception {
+		activitySaleGoodsService.saveBatch(activitySaleGoodsList);
+		
+	}
 }

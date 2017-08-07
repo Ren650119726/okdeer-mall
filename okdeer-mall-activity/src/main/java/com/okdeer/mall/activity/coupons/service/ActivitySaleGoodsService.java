@@ -1,5 +1,6 @@
 package com.okdeer.mall.activity.coupons.service;
 
+import java.util.List;
 import java.util.Map;
 
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
@@ -16,5 +17,7 @@ public interface ActivitySaleGoodsService {
 	ActivitySaleGoods selectByObject(ActivitySaleGoods activitySaleGoods);
 	
 	ActivitySaleGoods selectActivitySaleByParams(Map<String, Object> params);
+	
+	void saveBatch(List<ActivitySaleGoods> list);
 
 }
