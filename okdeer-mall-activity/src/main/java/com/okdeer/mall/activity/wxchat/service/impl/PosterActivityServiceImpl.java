@@ -100,7 +100,8 @@ public class PosterActivityServiceImpl
 	@Override
 	public Object process(WechatEventMsg wechatEventMsg) throws MallApiException {
 		try {
-			TextWechatMsg textWechatMsg = createImageingResponseMsg(wechatEventMsg.getFromUserName(), activityPosterConfig);
+			TextWechatMsg textWechatMsg = createImageingResponseMsg(wechatEventMsg.getFromUserName(),
+					activityPosterConfig);
 			customerService.sendMsg(textWechatMsg);
 			asynCreatePoster(wechatEventMsg.getFromUserName());
 		} catch (Exception e) {
@@ -228,7 +229,7 @@ public class PosterActivityServiceImpl
 			// 生成用户二维码分享图片
 			BufferedImage qrCodeImg = createUserShareQrcodeImg(wechatUserInfo.getOpenid());
 			// 将用户的二维码图片合成到海报中
-			ImageUtils.overlapImage(qrCodeImg, convertImage, 240, 805);
+			ImageUtils.overlapImage(posterReadImg, qrCodeImg, 240, 805);
 			// 海报图片添加昵称
 			ImageUtils.drawTextInImg(posterReadImg, "#EEE5DE", wechatUserInfo.getNickName(), 210,
 					292 + convertImage.getHeight() + 20);
@@ -345,7 +346,7 @@ public class PosterActivityServiceImpl
 					customerService.sendMsg(createSubscribleResponse(subscribeUser, wechatUserInfo));
 					// 发送海报图片給关注用户
 					createAndSendPoster(subscribeUser.getOpenid());
-					//查询分享用户的好友关注数量
+					// 查询分享用户的好友关注数量
 					int count = activityPosterShareInfoService.queryCountByShareOpenId(shareOpenid);
 					// 給分享的好友发送提示信息
 					customerService.sendMsg(createFriendTip(subscribeUser, wechatUserInfo, count));
