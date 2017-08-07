@@ -213,7 +213,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 						return false;
 					}
 				}
-				//代金券活动
+				//代金券活动(coupons.getId为活动ID)
 				ActivityCollectCoupons collectCoupons = activityCollectCouponsMapper.get(coupons.getId());
 				// 代金券活动设备限制
 				if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null && collectCoupons.getDeviceDayLimit() > 0) {
