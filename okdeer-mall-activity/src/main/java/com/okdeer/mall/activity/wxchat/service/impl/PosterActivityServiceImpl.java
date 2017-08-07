@@ -100,8 +100,9 @@ public class PosterActivityServiceImpl
 	@Override
 	public Object process(WechatEventMsg wechatEventMsg) throws MallApiException {
 		try {
+			TextWechatMsg textWechatMsg = createImageingResponseMsg(wechatEventMsg.getFromUserName(), activityPosterConfig);
+			customerService.sendMsg(textWechatMsg);
 			asynCreatePoster(wechatEventMsg.getFromUserName());
-			return createImageingResponseMsg(wechatEventMsg.getFromUserName(), activityPosterConfig);
 		} catch (Exception e) {
 			logger.error("处理请求失败信息出错", e);
 		}
@@ -161,8 +162,6 @@ public class PosterActivityServiceImpl
 		if (activityPosterWechatUserInfo != null
 				&& StringUtils.isNotEmpty(activityPosterWechatUserInfo.getPosterMediaId())
 				&& !isExpireForPoster(activityPosterWechatUserInfo.getPosterExpireTime())) {
-			// 让线程先睡眠2秒钟，避免海报生成了，提示语还没发出去
-			Thread.sleep(2000);
 			return activityPosterWechatUserInfo.getPosterMediaId();
 		}
 
