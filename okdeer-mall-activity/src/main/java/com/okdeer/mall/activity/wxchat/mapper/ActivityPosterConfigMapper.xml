@@ -8,12 +8,13 @@
         <result column="friend_reach_count_per" property="friendReachCountPer" jdbcType="INTEGER" />
         <result column="friend_subscribe_tip" property="friendSubscribeTip" jdbcType="VARCHAR" />
         <result column="subscribe_wechat_tip" property="subscribeWechatTip" jdbcType="VARCHAR" />
+        <result column="get_qualifica_tip" property="getQualificaTip" jdbcType="VARCHAR" />
         <result column="poster_img" property="posterImg" jdbcType="VARCHAR" />
     </resultMap>
 
     <sql id="Base_Column_List" >
         id, create_poster_tip, draw_count_limit, friend_reach_count_per, friend_subscribe_tip, 
-        subscribe_wechat_tip, poster_img
+        subscribe_wechat_tip, get_qualifica_tip, poster_img
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -44,6 +45,9 @@
             <if test="subscribeWechatTip != null" >
                 subscribe_wechat_tip,
             </if>
+            <if test="getQualificaTip != null" >
+                get_qualifica_tip,
+            </if>
             <if test="posterImg != null" >
                 poster_img,
             </if>
@@ -66,6 +70,9 @@
             </if>
             <if test="subscribeWechatTip != null" >
                 #{subscribeWechatTip,jdbcType=VARCHAR},
+            </if>
+            <if test="getQualificaTip != null" >
+                #{getQualificaTip,jdbcType=VARCHAR},
             </if>
             <if test="posterImg != null" >
                 #{posterImg,jdbcType=VARCHAR},
@@ -90,6 +97,9 @@
             </if>
             <if test="subscribeWechatTip != null" >
                 subscribe_wechat_tip = #{subscribeWechatTip,jdbcType=VARCHAR},
+            </if>
+            <if test="getQualificaTip != null" >
+                get_qualifica_tip = #{getQualificaTip,jdbcType=VARCHAR},
             </if>
             <if test="posterImg != null" >
                 poster_img = #{posterImg,jdbcType=VARCHAR},

@@ -95,14 +95,13 @@ public class PosterActivityServiceImpl
 
 	private static final String QRSCENE_STR = "qrscene_";
 
+	private ActivityPosterConfig activityPosterConfig;
+
 	@Override
 	public Object process(WechatEventMsg wechatEventMsg) throws MallApiException {
 		try {
 			asynCreatePoster(wechatEventMsg.getFromUserName());
-			ActivityPosterConfig activityPosterConfig = activityPosterConfigService.findById(ACTIVITY_ID);
-			if (activityPosterConfig != null) {
-				return createImageingResponseMsg(wechatEventMsg.getFromUserName(), activityPosterConfig);
-			}
+			return createImageingResponseMsg(wechatEventMsg.getFromUserName(), activityPosterConfig);
 		} catch (Exception e) {
 			logger.error("处理请求失败信息出错", e);
 		}
@@ -112,8 +111,6 @@ public class PosterActivityServiceImpl
 	private void asynCreatePoster(String openid) {
 		cachedThreadPool.execute(() -> {
 			try {
-				// 让线程先睡眠2秒钟，避免海报生成了，提示语还没发出去
-				Thread.sleep(2000);
 				createAndSendPoster(openid);
 			} catch (Exception e) {
 				logger.error("创建海报出错", e);
@@ -164,6 +161,8 @@ public class PosterActivityServiceImpl
 		if (activityPosterWechatUserInfo != null
 				&& StringUtils.isNotEmpty(activityPosterWechatUserInfo.getPosterMediaId())
 				&& !isExpireForPoster(activityPosterWechatUserInfo.getPosterExpireTime())) {
+			// 让线程先睡眠2秒钟，避免海报生成了，提示语还没发出去
+			Thread.sleep(2000);
 			return activityPosterWechatUserInfo.getPosterMediaId();
 		}
 
@@ -297,6 +296,10 @@ public class PosterActivityServiceImpl
 		cachedThreadPool = Executors.newCachedThreadPool(new ThreadFactoryImpl("PosterActivityServiceExecutorThread_"));
 		wechatUserSubscribleProcessSerivce = new WechatUserSubscribleProcessSerivce();
 		wechatUserSubscribleProcessSerivce.start();
+		activityPosterConfig = activityPosterConfigService.findById(ACTIVITY_ID);
+		if (activityPosterConfig == null) {
+			logger.error("七夕海报活动配置不能为空!");
+		}
 	}
 
 	class WechatUserSubscribleProcessSerivce extends Thread {
@@ -315,6 +318,7 @@ public class PosterActivityServiceImpl
 					});
 				} catch (InterruptedException e) {
 					logger.error("当前线程中断", e);
+					Thread.currentThread().interrupt();
 					break;
 				}
 			}
@@ -342,10 +346,12 @@ public class PosterActivityServiceImpl
 					customerService.sendMsg(createSubscribleResponse(subscribeUser, wechatUserInfo));
 					// 发送海报图片給关注用户
 					createAndSendPoster(subscribeUser.getOpenid());
+					//查询分享用户的好友关注数量
+					int count = activityPosterShareInfoService.queryCountByShareOpenId(shareOpenid);
 					// 給分享的好友发送提示信息
-					customerService.sendMsg(createFriendTip(subscribeUser, wechatUserInfo));
+					customerService.sendMsg(createFriendTip(subscribeUser, wechatUserInfo, count));
 					// 判断分享人的抽奖资格
-					doProcessShareUserQualifica(shareOpenid);
+					doProcessShareUserQualifica(shareOpenid, count);
 				} catch (Exception e) {
 					logger.error("处理用户关注信息出错", e);
 				}
@@ -353,8 +359,7 @@ public class PosterActivityServiceImpl
 		}
 	}
 
-	private void doProcessShareUserQualifica(String shareOpenid) {
-		int count = activityPosterShareInfoService.queryCountByShareOpenId(shareOpenid);
+	private void doProcessShareUserQualifica(String shareOpenid, int count) {
 		if (count % 3 == 0) {
 			// 如果是3的倍数，则更新用户的资格次数
 			ActivityPosterWechatUserInfo activityPosterWechatUser = new ActivityPosterWechatUserInfo();
@@ -381,20 +386,17 @@ public class PosterActivityServiceImpl
 		}
 	}
 
-	private Object createFriendTip(WechatUserInfo subscribeUser, WechatUserInfo wechatUserInfo) {
+	private Object createFriendTip(WechatUserInfo subscribeUser, WechatUserInfo wechatUserInfo, int count) {
 		TextWechatMsg textWechatMsg = new TextWechatMsg();
 		textWechatMsg.setFromUserName(wechatConfig.getAccount());
 		textWechatMsg.setToUserName(wechatUserInfo.getOpenid());
-		String content = subscribeUser.getNickName()
-				+ "扫码关注了您的七夕情报撩了您一下，每积满3位好友即可领取1次奖品喔~ 魅力爆棚，已有{3*n}好友扫码关注您的七夕情报，恭喜获得N次领取iPhone7/鲜花/100元优惠券的机会 点击领取";
-		try {
-			ActivityPosterConfig activityPosterConfig = activityPosterConfigService.findById(ACTIVITY_ID);
-			if (activityPosterConfig != null) {
-				content = activityPosterConfig.getFriendSubscribeTip().replaceAll("#frientname",
-						subscribeUser.getNickName());
-			}
-		} catch (Exception e) {
-			logger.error("查询配置信息出错", e);
+		String content = "";
+		if (count % 3 == 0) {
+			content = activityPosterConfig.getGetQualificaTip().replaceAll("#count", String.valueOf(count))
+					.replaceAll("#N", String.valueOf(count / 3));
+		} else {
+			content = activityPosterConfig.getFriendSubscribeTip().replaceAll("#frientname",
+					subscribeUser.getNickName());
 		}
 		textWechatMsg.setContent(content);
 		return textWechatMsg;
@@ -404,19 +406,9 @@ public class PosterActivityServiceImpl
 		TextWechatMsg textWechatMsg = new TextWechatMsg();
 		textWechatMsg.setFromUserName(wechatConfig.getAccount());
 		textWechatMsg.setToUserName(subscribeUser.getOpenid());
-		String content = subscribeUser.getNickName() + "，您现在是" + wechatUserInfo.getNickName()
-				+ "的推荐好友啦，您也可点击服务号栏目“七夕情报” 生成您的个人专属情报，每三位好友扫码关注，您就可以领取iPhone 7/鲜花/100元优惠券，每天可领15次！"
-				+ "<a href=\"http://www.baidu.com\">【查看活动细则及奖品记录】</a>";
-		try {
-			ActivityPosterConfig activityPosterConfig = activityPosterConfigService.findById(ACTIVITY_ID);
-			if (activityPosterConfig != null) {
-				content = activityPosterConfig.getSubscribeWechatTip()
-						.replaceAll("#nickname", subscribeUser.getNickName())
-						.replaceAll("#friendname", wechatUserInfo.getNickName());
-			}
-		} catch (Exception e) {
-			logger.error("查询配置信息出错", e);
-		}
+		String content = activityPosterConfig.getSubscribeWechatTip()
+				.replaceAll("#nickname", subscribeUser.getNickName())
+				.replaceAll("#friendname", wechatUserInfo.getNickName());
 		textWechatMsg.setContent(content);
 		return textWechatMsg;
 	}

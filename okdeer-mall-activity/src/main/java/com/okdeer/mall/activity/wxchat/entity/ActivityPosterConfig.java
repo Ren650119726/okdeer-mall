@@ -4,6 +4,7 @@
  * @Date 2017-08-05 Created
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的
  */
+
 package com.okdeer.mall.activity.wxchat.entity;
 
 /**
@@ -14,86 +15,105 @@ package com.okdeer.mall.activity.wxchat.entity;
  */
 public class ActivityPosterConfig {
 
-    private String id;
-    /**
-     * 生成海报提示
-     */
-    private String createPosterTip;
-    /**
-     * 抽奖次数上限
-     */
-    private Integer drawCountLimit;
-    /**
-     * 好友达到数量赠送抽奖次数周期
-     */
-    private Integer friendReachCountPer;
-    /**
-     * 好友关注公众号提示
-     */
-    private String friendSubscribeTip;
-    /**
-     * 关注公众号提示
-     */
-    private String subscribeWechatTip;
-    /**
-     * 海报图片，以,分隔
-     */
-    private String posterImg;
+	private String id;
 
+	/**
+	 * 生成海报提示
+	 */
+	private String createPosterTip;
 
-    public String getId() {
-        return id;
-    }
+	/**
+	 * 抽奖次数上限
+	 */
+	private Integer drawCountLimit;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	/**
+	 * 好友达到数量赠送抽奖次数周期
+	 */
+	private Integer friendReachCountPer;
 
-    public String getCreatePosterTip() {
-        return createPosterTip;
-    }
+	/**
+	 * 好友关注公众号提示
+	 */
+	private String friendSubscribeTip;
 
-    public void setCreatePosterTip(String createPosterTip) {
-        this.createPosterTip = createPosterTip;
-    }
+	/**
+	 * 关注公众号提示
+	 */
+	private String subscribeWechatTip;
 
-    public Integer getDrawCountLimit() {
-        return drawCountLimit;
-    }
+	/**
+	 * 获得资格提示
+	 */
+	private String getQualificaTip;
 
-    public void setDrawCountLimit(Integer drawCountLimit) {
-        this.drawCountLimit = drawCountLimit;
-    }
+	/**
+	 * 海报图片，以,分隔
+	 */
+	private String posterImg;
 
-    public Integer getFriendReachCountPer() {
-        return friendReachCountPer;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public void setFriendReachCountPer(Integer friendReachCountPer) {
-        this.friendReachCountPer = friendReachCountPer;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getFriendSubscribeTip() {
-        return friendSubscribeTip;
-    }
+	public String getCreatePosterTip() {
+		return createPosterTip;
+	}
 
-    public void setFriendSubscribeTip(String friendSubscribeTip) {
-        this.friendSubscribeTip = friendSubscribeTip;
-    }
+	public void setCreatePosterTip(String createPosterTip) {
+		this.createPosterTip = createPosterTip;
+	}
 
-    public String getSubscribeWechatTip() {
-        return subscribeWechatTip;
-    }
+	public Integer getDrawCountLimit() {
+		return drawCountLimit;
+	}
 
-    public void setSubscribeWechatTip(String subscribeWechatTip) {
-        this.subscribeWechatTip = subscribeWechatTip;
-    }
+	public void setDrawCountLimit(Integer drawCountLimit) {
+		this.drawCountLimit = drawCountLimit;
+	}
 
-    public String getPosterImg() {
-        return posterImg;
-    }
+	public Integer getFriendReachCountPer() {
+		return friendReachCountPer;
+	}
 
-    public void setPosterImg(String posterImg) {
-        this.posterImg = posterImg;
-    }
+	public void setFriendReachCountPer(Integer friendReachCountPer) {
+		this.friendReachCountPer = friendReachCountPer;
+	}
+
+	public String getFriendSubscribeTip() {
+		return friendSubscribeTip;
+	}
+
+	public void setFriendSubscribeTip(String friendSubscribeTip) {
+		this.friendSubscribeTip = friendSubscribeTip;
+	}
+
+	public String getSubscribeWechatTip() {
+		return subscribeWechatTip;
+	}
+
+	public void setSubscribeWechatTip(String subscribeWechatTip) {
+		this.subscribeWechatTip = subscribeWechatTip;
+	}
+
+	public String getGetQualificaTip() {
+		return getQualificaTip;
+	}
+
+	public void setGetQualificaTip(String getQualificaTip) {
+		this.getQualificaTip = getQualificaTip;
+	}
+
+	public String getPosterImg() {
+		return posterImg;
+	}
+
+	public void setPosterImg(String posterImg) {
+		this.posterImg = posterImg;
+	}
+
 }
