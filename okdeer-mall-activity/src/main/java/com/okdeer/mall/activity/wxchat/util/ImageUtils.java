@@ -101,15 +101,12 @@ public class ImageUtils {
 
 	public static void drawTextInImg(BufferedImage bimage, String color, String text, int x, int y) {
 		// 得到画笔对象
-		long l1 = System.currentTimeMillis();
 		Graphics g = bimage.getGraphics();
-		Font f = new Font("宋体", Font.PLAIN, 25);
+		Font f = new Font("microsoft YaHei", Font.PLAIN, 24);
 		Color mycolor = getColor(color);
 		g.setColor(mycolor);
 		g.setFont(f);
 		g.drawString(text, x, y);
-		long l2 = System.currentTimeMillis();
-		System.out.println("画文花费时间：" + (l2 - l1));
 		g.dispose();
 	}
 

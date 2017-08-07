@@ -231,8 +231,8 @@ public class PosterActivityServiceImpl
 			// 将用户的二维码图片合成到海报中
 			ImageUtils.overlapImage(posterReadImg, qrCodeImg, 240, 805);
 			// 海报图片添加昵称
-			ImageUtils.drawTextInImg(posterReadImg, "#EEE5DE", wechatUserInfo.getNickName(), 210,
-					292 + convertImage.getHeight() + 20);
+			ImageUtils.drawTextInImg(posterReadImg, "#EEE5DE", wechatUserInfo.getNickName(), 220,
+					292 + convertImage.getHeight() + 35);
 			return posterReadImg;
 		} catch (IOException e) {
 			logger.error("读取图片出错", e);
