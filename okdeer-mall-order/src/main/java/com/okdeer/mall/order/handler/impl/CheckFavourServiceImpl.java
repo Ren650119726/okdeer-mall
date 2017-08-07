@@ -17,11 +17,13 @@ import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.common.utils.EnumAdapter;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
@@ -70,6 +72,9 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	 */
 	@Resource
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+	
+	@Resource
+	private ActivityCollectCouponsMapper activityCollectCouponsMapper;
 
 	/**
 	 * 折扣、满减活动Mapper
@@ -216,23 +221,34 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		ActivityRecordParamBo recParamBo = null;
 		if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0 && StringUtils.isNotEmpty(paramDto.getDeviceId())){
 			// 同一设备id每天最多使用张数 0：不限，大于0有限制
-			recParamBo = new ActivityRecordParamBo();
-			recParamBo.setPkId(coupons.getId());
-			recParamBo.setDeviceId(paramDto.getDeviceId());
-			recParamBo.setRecDate(DateUtils.getDate());
-			int deviceTotalNum = activityCouponsRecordMapper.countDayFreq(recParamBo);
+			int deviceTotalNum = findCountDayFreq(null, paramDto.getDeviceId(), null, coupons.getId());
 			if (coupons.getDeviceDayLimit().intValue() <= deviceTotalNum) {
 				return false;
 			}
 		}
 		if(coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0){
 			// 同一设备id每天最多使用张数 0：不限，大于0有限制
-			recParamBo = new ActivityRecordParamBo();
-			recParamBo.setPkId(coupons.getId());
-			recParamBo.setUserId(paramDto.getUserId());
-			recParamBo.setRecDate(DateUtils.getDate());
-			int userTotalNum = activityCouponsRecordMapper.countDayFreq(recParamBo);
+			int userTotalNum = findCountDayFreq(paramDto.getUserId(), null, null, coupons.getId());
 			if (coupons.getAccountDayLimit().intValue() <= userTotalNum) {
+				return false;
+			}
+		}
+		ActivityCollectCoupons collectCoupons = activityCollectCouponsMapper.get(coupons.getActivityId());
+		// 代金券活动设备限制
+		if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null
+				&& collectCoupons.getDeviceDayLimit() > 0 && StringUtils.isNotEmpty(paramDto.getDeviceId())) {
+			// 同一设备id每天最多使用张数 0：不限，大于0有限制
+			int deviceTotalNum = findCountDayFreq(null, paramDto.getDeviceId(), coupons.getActivityId(), null);
+			if (collectCoupons.getDeviceDayLimit().intValue() <= deviceTotalNum) {
+				return false;
+			}
+		}
+		// 代金券活动用户限制
+		if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null
+				&& collectCoupons.getAccountDayLimit() > 0) {
+			// 同一设备id每天最多使用张数 0：不限，大于0有限制
+			int userTotalNum = findCountDayFreq(paramDto.getUserId(), null, coupons.getActivityId(), null);
+			if (collectCoupons.getAccountDayLimit().intValue() <= userTotalNum) {
 				return false;
 			}
 		}
@@ -240,7 +256,16 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		parserBo.addCoupons(couponsRecord);
 		return true;
 	}
-
+	
+	private int findCountDayFreq(String userId,String deviceId,String activityId,String couponsId){
+		ActivityRecordParamBo recParamBo = new ActivityRecordParamBo();
+		recParamBo.setPkId(couponsId);
+		recParamBo.setCollectId(activityId);
+		recParamBo.setUserId(userId);
+		recParamBo.setRecDate(DateUtils.getDate());
+		return activityCouponsRecordMapper.countDayFreq(recParamBo);
+	}
+	
 	/**
 	 * @Description: 校验满减满折
 	 * @param activityId 活动ID

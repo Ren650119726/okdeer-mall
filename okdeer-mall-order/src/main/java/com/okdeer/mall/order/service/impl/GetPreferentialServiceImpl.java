@@ -20,9 +20,11 @@ import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
@@ -74,6 +76,9 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 
 	@Resource
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+	
+	@Resource
+	private ActivityCollectCouponsMapper activityCollectCouponsMapper;
 
 	/**
 	 * 折扣、满减活动Service
@@ -205,6 +210,22 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 				// 如果代金券限制账号
 				if(coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0){
 					if(coupons.getAccountDayLimit().compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_USER, coupons.getCouponId()))< 1){
+						return false;
+					}
+				}
+				//代金券活动
+				ActivityCollectCoupons collectCoupons = activityCollectCouponsMapper.get(coupons.getId());
+				// 代金券活动设备限制
+				if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null && collectCoupons.getDeviceDayLimit() > 0) {
+					if (collectCoupons.getDeviceDayLimit().compareTo(
+							paramBo.findCountNum(RecordCountRuleEnum.COUPONS_COLLECT_BY_DEVICE, coupons.getId())) < 1) {
+						return false;
+					}
+				}
+				// 代金券活动账号现在
+				if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null && collectCoupons.getAccountDayLimit() > 0) {
+					if (collectCoupons.getAccountDayLimit().compareTo(
+							paramBo.findCountNum(RecordCountRuleEnum.COUPONS_COLLECT_BY_USER, coupons.getId())) < 1) {
 						return false;
 					}
 				}
