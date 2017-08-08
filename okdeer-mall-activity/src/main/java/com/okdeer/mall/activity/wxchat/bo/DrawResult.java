@@ -23,6 +23,11 @@ public class DrawResult {
 	 */
 	private String prizeId;
 
+	/**
+	 * 领取记录id
+	 */
+	private String recordId;
+
 	public int getCode() {
 		return code;
 	}
@@ -54,4 +59,13 @@ public class DrawResult {
 	public void setPrizeId(String prizeId) {
 		this.prizeId = prizeId;
 	}
+
+	public String getRecordId() {
+		return recordId;
+	}
+
+	public void setRecordId(String recordId) {
+		this.recordId = recordId;
+	}
+
 }

@@ -486,6 +486,7 @@ public class PosterActivityServiceImpl
 				drawResult.setMsg("哈哈，您拆倒的奖品是" + activityPrizeWeight.getPrizeName());
 				drawResult.setPrizeId(activityPrizeWeight.getId());
 				drawResult.setPrizeName(activityPrizeWeight.getPrizeName());
+				drawResult.setRecordId(activityPosterDrawRecord.getId());
 			}
 
 			int result = activityPosterWechatUserService.updateUsedQualificaCount(openid,
