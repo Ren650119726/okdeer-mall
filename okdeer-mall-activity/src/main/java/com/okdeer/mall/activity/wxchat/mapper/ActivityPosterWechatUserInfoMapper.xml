@@ -104,6 +104,6 @@
     </delete>
 	
 	<update id="updateUsedQualificaCount">
-		UPDATE activity_poster_wechat_user_info SET usedQualificaCount = #{usedQualificaCount,jdbcType=INTEGER} WHERE  openid = #{openid,jdbcType=VARCHAR} AND usedQualificaCount = #{conditionUsedQualificaCount,jdbcType=INTEGER}
+		UPDATE activity_poster_wechat_user_info SET used_qualifica_count = #{usedQualificaCount,jdbcType=INTEGER} WHERE  openid = #{openid,jdbcType=VARCHAR} AND used_qualifica_count = #{conditionUsedQualificaCount,jdbcType=INTEGER}
 	</update>
 </mapper>
