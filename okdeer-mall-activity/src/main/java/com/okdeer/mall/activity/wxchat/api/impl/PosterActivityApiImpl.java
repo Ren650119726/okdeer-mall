@@ -97,4 +97,16 @@ public class PosterActivityApiImpl implements PosterActivityApi {
 		}
 	}
 
+	@Override
+	public ActivityPosterDrawRecordDto findDrawRecordById(String id) throws MallApiException {
+
+		try {
+			ActivityPosterDrawRecord activityPosterDrawRecord = activityPosterDrawRecordService.findById(id);
+			return BeanMapper.map(activityPosterDrawRecord, ActivityPosterDrawRecordDto.class);
+		} catch (Exception e) {
+			throw new MallApiException(e);
+		}
+
+	}
+
 }
