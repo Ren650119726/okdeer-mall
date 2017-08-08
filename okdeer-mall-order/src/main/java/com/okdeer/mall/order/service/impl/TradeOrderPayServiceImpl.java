@@ -555,7 +555,8 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 					// 可用金额
 					tradeAmount = tradeAmount.add(orderItem.getActualAmount());
 					// 转可用订单项平台补贴
-					preferentialAmount = preferentialAmount.add(orderItem.getPreferentialPrice()).subtract(orderItem.getStorePreferential());
+					preferentialAmount = preferentialAmount.add(orderItem.getPreferentialPrice())
+							.subtract(orderItem.getStorePreferential());
 					ordreItemIds.add(orderItem.getId());
 				}
 			}
@@ -571,13 +572,14 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		// 设置运费支出
 		payTradeExt.setFreight(order.getFare());
 		payTradeExt.setFreightSubsidy(order.getRealFarePreferential());
-		// 需要抽佣的总金额=总实付金额+总平台优惠金额+(商家自送+配送费）
-		BigDecimal totalAmountInCommision = tradeAmount.add(preferentialAmount).add(order.getRealFarePreferential());
-		if (order.getDeliveryType() != 2){
-			// 不是商家自送，需要扣减运费
-			payTradeExt.setIsDeductFreight(true);
-			totalAmountInCommision = totalAmountInCommision.subtract(order.getFare());
-		} 
+		// 需要抽佣的总金额=总实付金额+总平台优惠金额-运费
+		BigDecimal totalAmountInCommision = tradeAmount.add(preferentialAmount).add(order.getRealFarePreferential())
+				.subtract(order.getFare());
+		payTradeExt.setIsDeductFreight(true);
+//		if (order.getDeliveryType() != 2){
+//			// 不是商家自送，需要扣减运费
+//			totalAmountInCommision = totalAmountInCommision.subtract(order.getFare());
+//		} 
 		// 需要收取的佣金
 		BigDecimal totalCommision = totalAmountInCommision.multiply(order.getCommisionRatio()).setScale(2, BigDecimal.ROUND_HALF_UP);
 		if (order.getCommisionRatio().compareTo(BigDecimal.ZERO) == 1
