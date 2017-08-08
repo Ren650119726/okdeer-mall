@@ -4776,20 +4776,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     }
 
     @Override
-    public PageUtils<ERPTradeOrderVo> erpSelectByParams(Map<String, Object> params, int pageSize, int pageNum)
-            throws ServiceException {
-        PageHelper.startPage(pageNum, pageSize, true);
-        List<ERPTradeOrderVo> result = tradeOrderMapper.ERPSelectByParams(params);
-        return new PageUtils<ERPTradeOrderVo>(result);
-    }
-
-    @Override
-    public List<ERPTradeOrderVo> erpSelectByParam(Map<String, Object> params) throws ServiceException {
-        List<ERPTradeOrderVo> result = tradeOrderMapper.ERPSelectByParams(params);
-        return result;
-    }
-
-    @Override
     public TradeOrder erpSelectByOrderId(String orderId) throws ServiceException {
         // 订单
         TradeOrder tradeOrder = tradeOrderMapper.selectByOrderId(orderId);
