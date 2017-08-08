@@ -148,7 +148,7 @@
          <if test="openid != null and openid != ''">
         	AND openid = #{openid,jdbcType=VARCHAR}
         </if>
-         <if test="is_take != null">
+         <if test="isTake != null">
         	AND is_take = #{isTake,jdbcType=VARCHAR}
         </if>
          <if test="drawStartTime != null and drawStartTime != ''">
