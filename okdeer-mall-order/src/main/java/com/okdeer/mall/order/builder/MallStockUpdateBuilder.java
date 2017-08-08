@@ -423,6 +423,74 @@ public class MallStockUpdateBuilder {
 				break;
 		}
 		return stockOpt;
+<<<<<<< HEAD
+=======
+	}
+	
+	/**
+	 * @Description: 退款时，构建库存更新对象
+	 * @param orderRefunds
+	 * @param tradeOrder
+	 * @param orderItemList
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年3月21日
+	 */
+	public StockUpdateDto build(TradeOrderRefunds orderRefunds,TradeOrder tradeOrder,List<TradeOrderItem> orderItemList) throws Exception{
+		StockUpdateDto stockUpdateDto = new StockUpdateDto();
+
+		stockUpdateDto.setRpcId(UuidUtils.getUuid());
+		stockUpdateDto.setMethodName("");
+		stockUpdateDto.setOrderId(orderRefunds.getId());
+		stockUpdateDto.setStoreId(orderRefunds.getStoreId());
+		stockUpdateDto.setStockOperateEnum(StockOperateEnum.RETURN_OF_GOODS);
+
+		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
+		StockUpdateDetailDto updateDetail = null;
+		ActivityTypeEnum actType = null;
+		
+		// 组合商品数量映射列表
+		Map<String,Integer> comboSkuMap = Maps.newHashMap();
+		List<String> comboSkuIds = Lists.newArrayList();
+		
+		for(TradeOrderItem orderItem : orderItemList){
+			// 获取订单项商品活动类型
+			actType = getActvityType(tradeOrder,orderItem);
+			updateDetail = new StockUpdateDetailDto();
+			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
+			updateDetail.setSpuType(orderItem.getSpuType());
+			updateDetail.setActType(actType);
+			updateDetail.setUpdateNum(orderItem.getQuantity());
+			processRefundsNum(updateDetail,orderRefunds,orderItem,actType);
+			if(orderItem.getSpuType() == SpuTypeEnum.assembleSpu){
+				comboSkuIds.add(orderItem.getStoreSkuId());
+				comboSkuMap.put(orderItem.getStoreSkuId(), orderItem.getQuantity());
+			}
+			updateDetailList.add(updateDetail);
+		}
+		// 处理组合商品
+		if(CollectionUtils.isNotEmpty(comboSkuIds)){
+			List<TradeOrderComboSnapshot> comboSkuList = tradeOrderComboSnapshotMapper.findByOrderId(tradeOrder.getId());
+			if(CollectionUtils.isEmpty(comboSkuList)){
+				// 如果快照表中没有找到明细，则直接从组合成分表中获取明细
+				comboSkuList = comboSnapshotAdapter.findByComboSkuIds(comboSkuIds);
+			}
+			for (TradeOrderComboSnapshot comboSku : comboSkuList) {
+				Integer num = comboSkuMap.get(comboSku.getComboSkuId());
+				if(num==null){
+					continue;
+				}
+				updateDetail = new StockUpdateDetailDto();
+				updateDetail.setStoreSkuId(comboSku.getStoreSkuId());
+				updateDetail.setSpuType(comboSku.getSkuType());
+				updateDetail.setUpdateNum(comboSku.getQuantity() * comboSkuMap.get(comboSku.getComboSkuId()));
+				updateDetailList.add(updateDetail);
+			}
+		}
+		stockUpdateDto.setUpdateDetailList(updateDetailList);
+		return stockUpdateDto;
+>>>>>>> refs/remotes/upstream/master_V2.5.0_online
 	}
 	
 	/**

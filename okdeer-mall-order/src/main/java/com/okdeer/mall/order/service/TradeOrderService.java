@@ -11,6 +11,7 @@ import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.dto.TradeOrderParamDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
@@ -791,29 +792,7 @@ public interface TradeOrderService {
 
 	public TradeOrder selectOrderByInfo(Map<String, Object> map) throws Exception;
 
-	/**
-	 * 根据订单条件分页查询订单列表
-	 * 
-	 * @author luosm
-	 * @param id
-	 * @param pageSize
-	 * @param pageNumber
-	 * @return
-	 * @throws ServiceException
-	 */
-	public PageUtils<ERPTradeOrderVo> erpSelectByParams(Map<String, Object> params, int pageSize, int pageNum)
-			throws ServiceException;
-
-	/**
-	 * 根据订单条件查询订单列表
-	 * 
-	 * @author luosm
-	 * @param id
-	 * @return
-	 * @throws ServiceException
-	 */
-	public List<ERPTradeOrderVo> erpSelectByParam(Map<String, Object> params) throws ServiceException;
-
+	
 	/***
 	 * erp调用根据订单id获取订单详情-实物订单
 	 * 
@@ -954,7 +933,7 @@ public interface TradeOrderService {
 	 * @author wusw
 	 * @date 2016年7月19日
 	 */
-	PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto, int pageNumber, int pageSize)
+	PageUtils<FmsTradeOrderBo> findOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto, int pageNumber, int pageSize)
 			throws ServiceException;
 
 	/**
@@ -966,7 +945,7 @@ public interface TradeOrderService {
 	 * @author wusw
 	 * @date 2016年7月23日
 	 */
-	List<ERPTradeOrderVo> findOrderListForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException;
+	List<FmsTradeOrderBo> findOrderListForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException;
 	
 	/**
 	 * @Description:根据参数查询数量
@@ -976,7 +955,7 @@ public interface TradeOrderService {
 	 * @author zengjizu
 	 * @date 2017年4月26日
 	 */
-	int findOrderCountForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException;
+	long findOrderCountForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException;
 	
 	// End 重构4.1 add by wusw 20160719
 
