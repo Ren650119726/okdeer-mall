@@ -522,11 +522,6 @@ public class PosterActivityServiceImpl
 		try {
 			ActivityPosterDrawRecord activityPosterDrawRecord = activityPosterDrawRecordService
 					.findById(posterTakePrizeDto.getRecordId());
-			if (!posterTakePrizeDto.getActivityId().equals(activityPosterDrawRecord.getActivityId())) {
-				takePrizeResult.setCode(301);
-				takePrizeResult.setMsg("活动id不正确");
-				return takePrizeResult;
-			}
 			if (!posterTakePrizeDto.getOpenid().equals(activityPosterDrawRecord.getOpenid())) {
 				takePrizeResult.setCode(301);
 				takePrizeResult.setMsg("openid不正确");
