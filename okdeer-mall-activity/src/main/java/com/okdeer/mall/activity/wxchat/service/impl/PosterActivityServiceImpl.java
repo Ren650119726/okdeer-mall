@@ -17,6 +17,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,17 +26,28 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.google.common.collect.Lists;
+import com.okdeer.archive.system.entity.SysBuyerUser;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.common.exception.MallApiException;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
+import com.okdeer.mall.activity.coupons.service.ActivityDrawPrizeService;
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
+import com.okdeer.mall.activity.wechat.dto.ActivityPosterDrawRecordParamDto;
+import com.okdeer.mall.activity.wechat.dto.PosterTakePrizeDto;
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
 import com.okdeer.mall.activity.wxchat.bo.CreateQrCodeResult;
+import com.okdeer.mall.activity.wxchat.bo.DrawResult;
 import com.okdeer.mall.activity.wxchat.bo.PosterAddWechatUserRequest;
+import com.okdeer.mall.activity.wxchat.bo.TakePrizeResult;
 import com.okdeer.mall.activity.wxchat.bo.WechatUserInfo;
 import com.okdeer.mall.activity.wxchat.config.WechatConfig;
 import com.okdeer.mall.activity.wxchat.entity.ActivityPosterConfig;
+import com.okdeer.mall.activity.wxchat.entity.ActivityPosterDrawRecord;
 import com.okdeer.mall.activity.wxchat.entity.ActivityPosterShareInfo;
 import com.okdeer.mall.activity.wxchat.entity.ActivityPosterWechatUserInfo;
 import com.okdeer.mall.activity.wxchat.message.ImageWechatMsg;
@@ -44,6 +56,7 @@ import com.okdeer.mall.activity.wxchat.message.TextWechatMsg;
 import com.okdeer.mall.activity.wxchat.message.WechatEventMsg;
 import com.okdeer.mall.activity.wxchat.message.WechatMedia;
 import com.okdeer.mall.activity.wxchat.service.ActivityPosterConfigService;
+import com.okdeer.mall.activity.wxchat.service.ActivityPosterDrawRecordService;
 import com.okdeer.mall.activity.wxchat.service.ActivityPosterShareInfoService;
 import com.okdeer.mall.activity.wxchat.service.ActivityPosterWechatUserService;
 import com.okdeer.mall.activity.wxchat.service.CustomerService;
@@ -52,6 +65,10 @@ import com.okdeer.mall.activity.wxchat.service.WechatMenuProcessService;
 import com.okdeer.mall.activity.wxchat.service.WechatService;
 import com.okdeer.mall.activity.wxchat.service.WechatUserService;
 import com.okdeer.mall.activity.wxchat.util.ImageUtils;
+import com.okdeer.mall.activity.wxchat.util.WxchatUtils;
+import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
+
+import net.sf.json.JSONObject;
 
 @Service("posterActivityService")
 public class PosterActivityServiceImpl
@@ -82,12 +99,24 @@ public class PosterActivityServiceImpl
 	@Autowired
 	private CustomerService customerService;
 
+	@Autowired
+	private ActivityDrawPrizeService activityDrawPrizeService;
+
+	@Autowired
+	private ActivityPosterDrawRecordService activityPosterDrawRecordService;
+
 	@Value("${operateImagePrefix}")
 	private String operateImagePrefix;
 
+	@Autowired
+	private SysBuyerUserMapper sysBuyerUserMapper;
+
+	@Autowired
+	private ActivityCouponsRecordService activityCouponsRecordService;
+
 	private static final String[] posterImg = { "posterpic1.png" };
 
-	private static final String ACTIVITY_ID = "1";
+	public static final String ACTIVITY_ID = WxchatUtils.ACTIVITY_ID;
 
 	private ExecutorService cachedThreadPool;
 
@@ -231,8 +260,7 @@ public class PosterActivityServiceImpl
 			// 将用户的二维码图片合成到海报中
 			ImageUtils.overlapImage(posterReadImg, qrCodeImg, 240, 805);
 			// 海报图片添加昵称
-//			ImageUtils.drawTextInImg(posterReadImg, "#EEE5DE", wechatUserInfo.getNickName(), 220,
-//					292 + convertImage.getHeight() + 35);
+			// ImageUtils.drawTextInImg(posterReadImg, "#EEE5DE", wechatUserInfo.getNickName(), 220,
 			return posterReadImg;
 		} catch (IOException e) {
 			logger.error("读取图片出错", e);
@@ -322,6 +350,7 @@ public class PosterActivityServiceImpl
 					break;
 				}
 			}
+			logger.info("{}线程已经结束", Thread.currentThread().getName());
 		}
 	}
 
@@ -411,6 +440,141 @@ public class PosterActivityServiceImpl
 				.replaceAll("#friendname", wechatUserInfo.getNickName());
 		textWechatMsg.setContent(content);
 		return textWechatMsg;
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public DrawResult draw(String openid, String activityId) throws MallApiException {
+		DrawResult drawResult = new DrawResult();
+
+		try {
+			ActivityPosterWechatUserInfo activityPosterWechatUserInfo = activityPosterWechatUserService
+					.findByOpenid(openid);
+			// 判断是否有资格次数
+			if (activityPosterWechatUserInfo.getQualificaCount().intValue()
+					- activityPosterWechatUserInfo.getUsedQualificaCount().intValue() <= 0) {
+				drawResult.setCode(101);
+				drawResult.setMsg("您的资格次数不够啦！");
+				return drawResult;
+			}
+			// 判断是否已经超过今天最多抽奖次数
+			ActivityPosterDrawRecordParamDto activityPosterDrawRecordParamDto = new ActivityPosterDrawRecordParamDto();
+			activityPosterDrawRecordParamDto.setActivityId(activityId);
+			activityPosterDrawRecordParamDto.setOpenid(openid);
+			activityPosterDrawRecordParamDto
+					.setDrawStartTime(DateUtils.formatDate(DateUtils.getDateStart(new Date()), "yyyy-MM-dd HH:mm:ss"));
+			activityPosterDrawRecordParamDto
+					.setDrawEndTime(DateUtils.formatDate(DateUtils.getDateEnd(new Date()), "yyyy-MM-dd HH:mm:ss"));
+
+			long count = activityPosterDrawRecordService.findCountByParams(activityPosterDrawRecordParamDto);
+			if (count >= activityPosterConfig.getDrawCountLimit()) {
+				drawResult.setCode(101);
+				drawResult.setMsg("您的抽奖次数已经超过单日限制抽奖次数！");
+				return drawResult;
+			}
+
+			ActivityPrizeWeight activityPrizeWeight = activityDrawPrizeService.drawByWithckDrawId(activityId);
+			if (activityPrizeWeight == null) {
+				drawResult.setCode(101);
+				drawResult.setMsg("很遗憾，您什么也没有抽中，请再接再励!");
+			} else {
+				ActivityPosterDrawRecord activityPosterDrawRecord = buildActivityPosterDrawRecord(openid, activityId,
+						activityPrizeWeight);
+				// 添加领取记录
+				activityPosterDrawRecordService.add(activityPosterDrawRecord);
+				drawResult.setCode(0);
+				drawResult.setMsg("哈哈，您拆倒的奖品是" + activityPrizeWeight.getPrizeName());
+				drawResult.setPrizeId(activityPrizeWeight.getId());
+				drawResult.setPrizeName(activityPrizeWeight.getPrizeName());
+			}
+
+			int result = activityPosterWechatUserService.updateUsedQualificaCount(openid,
+					activityPosterWechatUserInfo.getUsedQualificaCount() + 1,
+					activityPosterWechatUserInfo.getUsedQualificaCount());
+			if (result < 0) {
+				throw new MallApiException("操作太快，请重新再试!");
+			}
+			return drawResult;
+		} catch (Exception e) {
+			throw new MallApiException(e);
+		}
+	}
+
+	private ActivityPosterDrawRecord buildActivityPosterDrawRecord(String openid, String activityId,
+			ActivityPrizeWeight activityPrizeWeight) {
+		ActivityPosterDrawRecord activityPosterDrawRecord = new ActivityPosterDrawRecord();
+		activityPosterDrawRecord.setDrawTime(new Date());
+		activityPosterDrawRecord.setActivityCollectId(activityPrizeWeight.getActivityCollectId());
+		activityPosterDrawRecord.setActivityId(activityId);
+		activityPosterDrawRecord.setId(UuidUtils.getUuid());
+		activityPosterDrawRecord.setIsTake(0);
+		activityPosterDrawRecord.setOpenid(openid);
+		activityPosterDrawRecord.setPrizeId(activityPrizeWeight.getId());
+		activityPosterDrawRecord.setPrizeName(activityPrizeWeight.getPrizeName());
+		return activityPosterDrawRecord;
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public TakePrizeResult takePrize(PosterTakePrizeDto posterTakePrizeDto) throws MallApiException {
+		TakePrizeResult takePrizeResult = new TakePrizeResult();
+		try {
+			ActivityPosterDrawRecord activityPosterDrawRecord = activityPosterDrawRecordService
+					.findById(posterTakePrizeDto.getRecordId());
+			if (!posterTakePrizeDto.getActivityId().equals(activityPosterDrawRecord.getActivityId())) {
+				takePrizeResult.setCode(301);
+				takePrizeResult.setMsg("活动id不正确");
+				return takePrizeResult;
+			}
+			if (!posterTakePrizeDto.getOpenid().equals(activityPosterDrawRecord.getOpenid())) {
+				takePrizeResult.setCode(301);
+				takePrizeResult.setMsg("openid不正确");
+				return takePrizeResult;
+			}
+			if (activityPosterDrawRecord.getIsTake() == 1) {
+				takePrizeResult.setCode(101);
+				takePrizeResult.setMsg("奖品已经领取过了");
+				return takePrizeResult;
+			}
+			activityPosterDrawRecord.setTakeMobile(posterTakePrizeDto.getMobile());
+			activityPosterDrawRecord.setTakeTime(new Date());
+			activityPosterDrawRecord.setIsTake(1);
+			int result = activityPosterDrawRecordService.updateTakeInfo(activityPosterDrawRecord);
+			if (result < 1) {
+				takePrizeResult.setCode(101);
+				takePrizeResult.setMsg("奖品已经领取过了");
+				return takePrizeResult;
+			}
+			if (StringUtils.isNotEmpty(activityPosterDrawRecord.getActivityCollectId())) {
+				// 发放代金劵
+				List<SysBuyerUser> sysBuyerUserList = sysBuyerUserMapper
+						.selectUserByPhone(posterTakePrizeDto.getMobile());
+
+				JSONObject jsonObject = null;
+				if (CollectionUtils.isNotEmpty(sysBuyerUserList)) {
+					// 当该用户不存在邀请人时，记录该用户邀请人为此活动的邀请人
+					SysBuyerUser sysBuyerUser = sysBuyerUserList.get(0);
+					jsonObject = activityCouponsRecordService.addRecordsByCollectId(
+							activityPosterDrawRecord.getActivityCollectId(), sysBuyerUser.getId());
+
+				} else {
+					// 当用户不存在则送到预领劵记录中addRecordsByCollectId
+					jsonObject = activityCouponsRecordService.addBeforeRecords(
+							activityPosterDrawRecord.getActivityCollectId(), posterTakePrizeDto.getMobile(), null,
+							activityPosterDrawRecord.getActivityId());
+				}
+
+				if (jsonObject.getInt("code") != 100) {
+					throw new MallApiException(jsonObject.getString("msg"));
+				}
+			}
+			takePrizeResult.setCode(0);
+			takePrizeResult.setMsg("领取成功");
+		} catch (Exception e) {
+			logger.error("操作数据出错", e);
+			throw new MallApiException("系统繁忙，请稍后再试");
+		}
+		return takePrizeResult;
 	}
 
 }

@@ -8,4 +8,6 @@ public interface ActivityPosterWechatUserService extends IBaseService {
 
 	ActivityPosterWechatUserInfo findByOpenid(String openid);
 
+	int updateUsedQualificaCount(String openid,int usedQualificaCount, int conditionUsedQualificaCount);
+
 }

@@ -34,4 +34,10 @@ public class ActivityPosterWechatUserServiceImpl extends BaseServiceImpl impleme
 		return activityPosterWechatUserInfo;
 	}
 
+	@Override
+	public int updateUsedQualificaCount(String openid,int usedQualificaCount, int conditionUsedQualificaCount) {
+		
+		return activityPosterWechatUserInfoMapper.updateUsedQualificaCount(openid,usedQualificaCount,conditionUsedQualificaCount);
+	}
+
 }

@@ -80,4 +80,6 @@ public class WxchatUtils {
 	public static final String RESP_MESSAGE_TYPE_NEWS = "news";
 
 	public static final String JOIN = "-";
+
+	public static final String ACTIVITY_ID = "1";
 }
