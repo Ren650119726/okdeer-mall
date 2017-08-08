@@ -36,6 +36,16 @@
         </trim>
     </insert>
 
+    <update id="update" parameterType="com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto">
+        UPDATE
+        <include refid="Base_Tbale"/>
+        <set>
+            <include refid="update_sql"/>
+        </set>
+        WHERE 1=1
+        <include refid="condition"/>
+    </update>
+
     <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderExtSnapshot">
         <id column="id" property="id" jdbcType="VARCHAR"/>
         <result column="order_id" property="orderId" jdbcType="VARCHAR"/>
@@ -200,6 +210,15 @@
         </if>
         <if test="null != commisionRatio">
             #{commisionRatio,jdbcType=DECIMAL},
+        </if>
+    </sql>
+
+    <sql id="update_sql">
+        <if test="null != deliveryType">
+            delivery_type = #{deliveryType,jdbcType=INTEGER},
+        </if>
+        <if test="null != commisionRatio">
+            commision_ratio = #{commisionRatio,jdbcType=DECIMAL},
         </if>
     </sql>
 </mapper>

@@ -1,6 +1,7 @@
 package com.okdeer.mall.order.service;
 
 import com.okdeer.mall.express.dto.ExpressCallbackDto;
+import com.okdeer.mall.order.dto.ExpressModeParamDto;
 
 /**
  * ClassName: ExpressOrderCallbackService
@@ -14,6 +15,22 @@ import com.okdeer.mall.express.dto.ExpressCallbackDto;
  * ----------------+----------------+-------------------+-------------------------------------------
  */
 public interface ExpressOrderCallbackService {
+
+    /**
+     * 配送方式：蜂鸟配送
+     *
+     * @param paramDto ExpressModeParamDto
+     * @throws Exception
+     */
+    void saveExpressModePlanA(ExpressModeParamDto paramDto) throws Exception;
+
+    /**
+     * 配送方式：自行配送
+     *
+     * @param paramDto ExpressModeParamDto
+     * @throws Exception
+     */
+    void saveExpressModePlanB(ExpressModeParamDto paramDto) throws Exception;
 
     /**
      * 处理配送回调信息

@@ -2451,6 +2451,14 @@
 				cancel_type = #{cancelType,jdbcType=TINYINT},
 			</if>
 			<!-- End V1.2 added by maojj 2016-11-10 -->
+			<!-- begin V2.6.0 add wangf01 2017-08-08 -->
+			<if test="deliveryType != null">
+				delivery_type = #{deliveryType,jdbcType=TINYINT},
+			</if>
+			<if test="commisionRatio != null">
+				commision_ratio = #{commisionRatio,jdbcType=DECIMAL},
+			</if>
+			<!-- end V2.6.0 add wangf01 2017-08-08 -->
 		</set>
 		where id = #{id,jdbcType=VARCHAR}
 	</update>
