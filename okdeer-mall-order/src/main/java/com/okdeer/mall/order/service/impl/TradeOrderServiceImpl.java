@@ -56,6 +56,7 @@ import com.alibaba.rocketmq.client.producer.TransactionCheckListener;
 import com.alibaba.rocketmq.client.producer.TransactionSendResult;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
@@ -151,6 +152,7 @@ import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
+import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
@@ -4774,20 +4776,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     }
 
     @Override
-    public PageUtils<ERPTradeOrderVo> erpSelectByParams(Map<String, Object> params, int pageSize, int pageNum)
-            throws ServiceException {
-        PageHelper.startPage(pageNum, pageSize, true);
-        List<ERPTradeOrderVo> result = tradeOrderMapper.ERPSelectByParams(params);
-        return new PageUtils<ERPTradeOrderVo>(result);
-    }
-
-    @Override
-    public List<ERPTradeOrderVo> erpSelectByParam(Map<String, Object> params) throws ServiceException {
-        List<ERPTradeOrderVo> result = tradeOrderMapper.ERPSelectByParams(params);
-        return result;
-    }
-
-    @Override
     public TradeOrder erpSelectByOrderId(String orderId) throws ServiceException {
         // 订单
         TradeOrder tradeOrder = tradeOrderMapper.selectByOrderId(orderId);
@@ -5792,126 +5780,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      * int, int)
      */
     @Override
-    public PageUtils<ERPTradeOrderVo> findOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto, int pageNumber,
+    public PageUtils<FmsTradeOrderBo> findOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto, int pageNumber,
                                                                   int pageSize) throws ServiceException {
         PageHelper.startPage(pageNumber, pageSize, false);
-        List<ERPTradeOrderVo> result = tradeOrderMapper.findOrderForFinanceByParams(tradeOrderQueryParamDto);
-        if (result == null) {
-            result = new ArrayList<ERPTradeOrderVo>();
-        }
-//		Page<ERPTradeOrderVo> page = (Page<ERPTradeOrderVo>) result;
-//		int total = tradeOrderMapper.countOrderForFinanceByParams(tradeOrderQueryParamDto);
-//		page.setTotal(total);
-        return new PageUtils<ERPTradeOrderVo>(result);
+        List<FmsTradeOrderBo> result = tradeOrderMapper.findOrderForFinanceByParams(tradeOrderQueryParamDto);
+        return new PageUtils<>(result);
     }
 
-    /**
-     * @param params
-     * @return void
-     * @Description: 财务系统订单 接口参数处理
-     * @author wusw
-     * @date 2016年7月19日
-     */
-    private void convertParams(Map<String, Object> params) {
-        if (params == null) {
-            params = new HashMap<String, Object>();
-        } else {
-            // 订单类型转换，注意充值订单包括话费充值和流量充值
-            if (params.get("type") == null || StringUtils.isBlank(params.get("type").toString())) {
-                params.remove("type");
-            } else {
-                List<OrderTypeEnum> typeList = new ArrayList<OrderTypeEnum>();
-                switch (params.get("type").toString()) {
-                    case "0":
-                        typeList.add(OrderTypeEnum.PHYSICAL_ORDER);
-                        break;
-                    case "1":
-                        typeList.add(OrderTypeEnum.SERVICE_STORE_ORDER);
-                        break;
-                    case "2":
-                        typeList.add(OrderTypeEnum.STORE_CONSUME_ORDER);
-                        break;
-                    case "3":
-                        if (params.get("rechargeType") != null && "1".equals(params.get("rechargeType").toString())) {
-                            // 流量充值
-                            typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
-                        } else if (params.get("rechargeType") != null
-                                && "0".equals(params.get("rechargeType").toString())) {
-                            // 话费充值
-                            typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
-                        } else {
-                            typeList.add(OrderTypeEnum.PHONE_PAY_ORDER);
-                            typeList.add(OrderTypeEnum.TRAFFIC_PAY_ORDER);
-                        }
-                        // begin add by zhulq 如果是充值订单 所属城市用 locateCityName 来判断
-                        params.put("locateCityName", (String) params.get("cityName"));
-                        // begin add by zhulq 如果是充值订单 所属城市用 locateCityName 来判断
-                        break;
-                    default:
-                        break;
-                }
-                params.put("type", typeList);
-
-            }
-            // 由于不同的订单状态描述针对不同的类型订单，所以针对订单状态转换时需要带上相应的订单类型参数
-            if (params.get("status") == null || StringUtils.isBlank(params.get("status").toString())) {
-                params.remove("status");
-            } else {
-                List<OrderStatusEnum> statusList = new ArrayList<OrderStatusEnum>();
-                String[] statusArry = params.get("status").toString().split(",");
-
-                for (int i = 0; i < statusArry.length; i++) {
-                    statusList.add(OrderStatusEnum.enumValueOf(Integer.parseInt(statusArry[i])));
-                }
-                params.put("status", statusList);
-            }
-			/*
-			 * // 订单来源转换，注意线上订单包括云上城app和微信 if (params.get("orderResource") == null ||
-			 * StringUtils.isBlank(params.get("orderResource").toString())) { params.remove("orderResource"); } else {
-			 * List<OrderResourceEnum> orderResourceList = new ArrayList<OrderResourceEnum>(); switch
-			 * (params.get("orderResource").toString()) { case "0": orderResourceList.add(OrderResourceEnum.WECHAT);
-			 * orderResourceList.add(OrderResourceEnum.YSCAPP); // Begin V2.0.0 add by wusw 20170109
-			 * orderResourceList.add(OrderResourceEnum.CVSAPP); // End V2.0.0 add by wusw 20170109 break; case "1":
-			 * orderResourceList.add(OrderResourceEnum.POS); break; default: break; } params.put("orderResource",
-			 * orderResourceList); }
-			 */
-            if (params.get("payType") == null || StringUtils.isBlank(params.get("payType").toString())) {
-                params.remove("payType");
-            } else {
-                // 现金支付包含实物订单的货到付款的支付方式和服务店订单的线下确定价格并当面支付的支付方式
-                if ("4".equals(params.get("payType").toString())) {
-                    params.put("payWayServer", PayWayEnum.OFFLINE_CONFIRM_AND_PAY.ordinal());
-                    // Begin 12170 add by wusw 20160809
-                    params.put("payWayPhysical", PayWayEnum.CASH_DELIERY.ordinal());
-                    // End 12170 add by wusw 20160809
-                    // params.put("payType", PayTypeEnum.CASH.ordinal());
-                }
-            }
-            if (params.get("startTime") == null || StringUtils.isBlank(params.get("startTime").toString())) {
-                params.remove("startTime");
-            }
-            if (params.get("endTime") == null || StringUtils.isBlank(params.get("endTime").toString())) {
-                params.remove("endTime");
-            }
-
-            if (params.get("cityName") == null || StringUtils.isBlank(params.get("cityName").toString())) {
-                params.remove("cityName");
-            }
-
-            if (params.get("orderResource") == null || StringUtils.isBlank(params.get("orderResource").toString())) {
-                params.remove("orderResource");
-            }
-
-        }
-        // Begin 重构4.1 add by wusw 20160727
-        // 订单默认参数，以便综合用户已支付，却被POS机取消情况的订单
-        params.put("unDisabled", Disabled.valid);
-        params.put("disabled", Disabled.invalid);
-        params.put("completeStatus", OrderStatusEnum.HAS_BEEN_SIGNED);
-        // End 重构4.1 add by wusw 20160727
-    }
-
-    // End 重构4.1 add by wusw 20160719
+  
 
     // Begin 重构4.1 add by wusw 20160723
 
@@ -5921,15 +5797,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      * @see com.okdeer.mall.order.service.TradeOrderService#findOrderListForFinanceByParams(java.util.Map)
      */
     @Override
-    public List<ERPTradeOrderVo> findOrderListForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException {
-        // 参数转换处理（例如订单状态）
-//		this.convertParams(params);
+    public List<FmsTradeOrderBo> findOrderListForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException {
         return tradeOrderMapper.findOrderForFinanceByParams(tradeOrderQueryParamDto);
     }
 
     @Override
-    public int findOrderCountForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException {
-        return tradeOrderMapper.countOrderForFinanceByParams(tradeOrderQueryParamDto);
+    public long findOrderCountForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException {
+    	PageHelper.startPage(1, -1, true);
+    	List<FmsTradeOrderBo> result = tradeOrderMapper.findOrderForFinanceByParams(tradeOrderQueryParamDto);
+    	if(result instanceof Page){
+    		return ((Page<FmsTradeOrderBo>) result ).getTotal();
+    	}
+        return 0L;
     }
 
 
@@ -7395,4 +7274,5 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     @Autowired
     private ExpressService expressService;
+
 }

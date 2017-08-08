@@ -18,11 +18,13 @@ import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.common.utils.EnumAdapter;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
@@ -47,6 +49,7 @@ import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.system.service.SysBuyerFirstOrderRecordService;
 
@@ -70,6 +73,9 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	 */
 	@Resource
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+	
+	@Resource
+	private ActivityCollectCouponsMapper activityCollectCouponsMapper;
 
 	/**
 	 * 折扣、满减活动Mapper
@@ -125,7 +131,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		// 检查运费优惠
 		if(!StringUtils.isEmpty(paramDto.getFareRecId())){
 			// 如果请求中存在运费领取记录Id，则检查运费
-			checkFareCoupons(paramDto, parserBo, resp);
+			isValid = checkFareCoupons(paramDto, parserBo, resp);
 		}
 		if (!isValid && resp.isSuccess()) {
 			resp.setResult(ResultCodeEnum.FAVOUR_NOT_SUPPORT);
@@ -219,23 +225,34 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		ActivityRecordParamBo recParamBo = null;
 		if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0 && StringUtils.isNotEmpty(paramDto.getDeviceId())){
 			// 同一设备id每天最多使用张数 0：不限，大于0有限制
-			recParamBo = new ActivityRecordParamBo();
-			recParamBo.setPkId(coupons.getId());
-			recParamBo.setDeviceId(paramDto.getDeviceId());
-			recParamBo.setRecDate(DateUtils.getDate());
-			int deviceTotalNum = activityCouponsRecordMapper.countDayFreq(recParamBo);
+			int deviceTotalNum = findCountDayFreq(null, paramDto.getDeviceId(), null, coupons.getId());
 			if (coupons.getDeviceDayLimit().intValue() <= deviceTotalNum) {
 				return false;
 			}
 		}
 		if(coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0){
 			// 同一设备id每天最多使用张数 0：不限，大于0有限制
-			recParamBo = new ActivityRecordParamBo();
-			recParamBo.setPkId(coupons.getId());
-			recParamBo.setUserId(paramDto.getUserId());
-			recParamBo.setRecDate(DateUtils.getDate());
-			int userTotalNum = activityCouponsRecordMapper.countDayFreq(recParamBo);
+			int userTotalNum = findCountDayFreq(paramDto.getUserId(), null, null, coupons.getId());
 			if (coupons.getAccountDayLimit().intValue() <= userTotalNum) {
+				return false;
+			}
+		}
+		ActivityCollectCoupons collectCoupons = activityCollectCouponsMapper.get(coupons.getActivityId());
+		// 代金券活动设备限制
+		if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null
+				&& collectCoupons.getDeviceDayLimit() > 0 && StringUtils.isNotEmpty(paramDto.getDeviceId())) {
+			// 同一设备id每天最多使用张数 0：不限，大于0有限制
+			int deviceTotalNum = findCountDayFreq(null, paramDto.getDeviceId(), coupons.getActivityId(), null);
+			if (collectCoupons.getDeviceDayLimit().intValue() <= deviceTotalNum) {
+				return false;
+			}
+		}
+		// 代金券活动用户限制
+		if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null
+				&& collectCoupons.getAccountDayLimit() > 0) {
+			// 同一设备id每天最多使用张数 0：不限，大于0有限制
+			int userTotalNum = findCountDayFreq(paramDto.getUserId(), null, coupons.getActivityId(), null);
+			if (collectCoupons.getAccountDayLimit().intValue() <= userTotalNum) {
 				return false;
 			}
 		}
@@ -243,7 +260,16 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		parserBo.addCoupons(couponsRecord);
 		return true;
 	}
-
+	
+	private int findCountDayFreq(String userId,String deviceId,String activityId,String couponsId){
+		ActivityRecordParamBo recParamBo = new ActivityRecordParamBo();
+		recParamBo.setPkId(couponsId);
+		recParamBo.setCollectId(activityId);
+		recParamBo.setUserId(userId);
+		recParamBo.setRecDate(DateUtils.getDate());
+		return activityCouponsRecordMapper.countDayFreq(recParamBo);
+	}
+	
 	/**
 	 * @Description: 校验满减满折
 	 * @param activityId 活动ID
@@ -389,6 +415,14 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	}
 	
 	private boolean checkFareCoupons(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp) throws Exception{
+		// Begin V2.5.1 added by maojj 2017-07-29
+		// 为了解决IOS到店自提请求中提交了运费券的bug
+		if(paramDto.getPickType() == PickUpTypeEnum.TO_STORE_PICKUP){
+			// 如果是到店自提，则将运费券记录id置为空
+			paramDto.setFareRecId("");
+			return true;
+		}
+		// End V2.5.1 added by maojj 2017-07-29
 		ActivityCouponsRecord couponsRecord = activityCouponsRecordMapper.selectByPrimaryKey(paramDto.getFareRecId());
 		// 增加领取记录的校验。校验请求提供的领取记录是否是当前用户
 		if(couponsRecord == null || !couponsRecord.getCollectUserId().equals(paramDto.getUserId())){

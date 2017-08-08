@@ -113,4 +113,13 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @date 2017年4月21日
 	 */
 	List<FullSubtract> findValidFullSubtract(FavourParamBO paramBo,FavourFilterStrategy favourFilter) throws Exception;
+	
+	/**
+	 * @Description: 根据id列表查询数据
+	 * @param discountActiviIdList
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年7月27日
+	 */
+	List<ActivityDiscount> findByIds(List<String> discountActiviIdList);
 }
