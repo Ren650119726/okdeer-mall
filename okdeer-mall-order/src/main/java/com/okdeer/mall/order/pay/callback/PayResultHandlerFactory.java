@@ -68,7 +68,9 @@ public class PayResultHandlerFactory {
 	 */
 	public AbstractPayResultHandler getByOrder(TradeOrder tradeOrder){
 		AbstractPayResultHandler handler = null;
-		if( OrderTypeEnum.PHYSICAL_ORDER == tradeOrder.getType()){
+		if( OrderTypeEnum.PHYSICAL_ORDER == tradeOrder.getType() && (
+				OrderResourceEnum.SWEEP == tradeOrder.getOrderResource() ||
+				OrderResourceEnum.MEMCARD == tradeOrder.getOrderResource() )){
 			//如果是扫码够或会员卡订单使用其对应handler tuzhd 修改 2018-08-08
 			handler = getByOrderResource(tradeOrder.getOrderResource());
 		}else{
