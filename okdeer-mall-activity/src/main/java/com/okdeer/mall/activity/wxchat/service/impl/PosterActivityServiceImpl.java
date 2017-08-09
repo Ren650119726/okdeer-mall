@@ -50,6 +50,7 @@ import com.okdeer.mall.activity.wxchat.entity.ActivityPosterConfig;
 import com.okdeer.mall.activity.wxchat.entity.ActivityPosterDrawRecord;
 import com.okdeer.mall.activity.wxchat.entity.ActivityPosterShareInfo;
 import com.okdeer.mall.activity.wxchat.entity.ActivityPosterWechatUserInfo;
+import com.okdeer.mall.activity.wxchat.entity.WechatUser;
 import com.okdeer.mall.activity.wxchat.message.ImageWechatMsg;
 import com.okdeer.mall.activity.wxchat.message.SubscribeEventWechatEventMsg;
 import com.okdeer.mall.activity.wxchat.message.TextWechatMsg;
@@ -64,6 +65,7 @@ import com.okdeer.mall.activity.wxchat.service.PosterActivityService;
 import com.okdeer.mall.activity.wxchat.service.WechatMenuProcessService;
 import com.okdeer.mall.activity.wxchat.service.WechatService;
 import com.okdeer.mall.activity.wxchat.service.WechatUserService;
+import com.okdeer.mall.activity.wxchat.util.EmojiFilter;
 import com.okdeer.mall.activity.wxchat.util.ImageUtils;
 import com.okdeer.mall.activity.wxchat.util.WxchatUtils;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
@@ -512,6 +514,13 @@ public class PosterActivityServiceImpl
 		activityPosterDrawRecord.setOpenid(openid);
 		activityPosterDrawRecord.setPrizeId(activityPrizeWeight.getId());
 		activityPosterDrawRecord.setPrizeName(activityPrizeWeight.getPrizeName());
+		WechatUser wechatUser = wechatUserService.findByOpenid(openid);
+		if (wechatUser == null) {
+			WechatUserInfo wechatUserInfo = wechatUserService.updateUserInfo(openid);
+			activityPosterDrawRecord.setNickName(EmojiFilter.filterEmoji(wechatUserInfo.getNickName()));
+		} else {
+			activityPosterDrawRecord.setNickName(wechatUser.getNickName());
+		}
 		return activityPosterDrawRecord;
 	}
 
