@@ -193,6 +193,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		} else if (coupons.getType() == CouponsType.film.getValue()) {
 			activityCouponsMapper.insert(coupons);
 			this.addRelatedInfo(coupons);
+		} else if (coupons.getType() == CouponsType.bldty.getValue()) {
+			activityCouponsMapper.insert(coupons);
+			this.addRelatedInfo(coupons);
 		}
 		// Begin added by maojj 2016-10-25
 		// 如果代金券设置了需要生成随机码，则根据代金券的发行量生成随机码
@@ -353,7 +356,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			coupons.getType() == CouponsType.bldyf.getValue() ) {
 			activityCouponsMapper.updateCoupons(coupons);
 		} else if (coupons.getType() == CouponsType.bld.getValue() || coupons.getType() == CouponsType.fwd.getValue()
-			|| coupons.getType() == CouponsType.film.getValue()) {
+			|| coupons.getType() == CouponsType.film.getValue() || coupons.getType() == CouponsType.bldty.getValue()) {
 			activityCouponsMapper.updateCoupons(coupons);
 
 			// 删掉老数据
@@ -555,7 +558,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 		// 代金券关联的分类 1 导航分类 2 服务店店铺商品分类
 		int type = 0;
-		if (coupons.getType() == CouponsType.bld.getValue()) {
+		if (coupons.getType() == CouponsType.bld.getValue() || coupons.getType() == CouponsType.bldty.getValue()) {
 			type = 1;
 		} else if (coupons.getType() == CouponsType.fwd.getValue()) {
 			type = 2;
