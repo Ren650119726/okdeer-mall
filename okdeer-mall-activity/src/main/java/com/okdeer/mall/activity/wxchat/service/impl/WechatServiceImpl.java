@@ -21,6 +21,7 @@ import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.mall.activity.wechat.dto.WechatConfigDto;
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
 import com.okdeer.mall.activity.wxchat.bo.CreateQrCodeResult;
+import com.okdeer.mall.activity.wxchat.bo.JsApiTicketResult;
 import com.okdeer.mall.activity.wxchat.bo.QueryMaterialResponse;
 import com.okdeer.mall.activity.wxchat.bo.TokenInfo;
 import com.okdeer.mall.activity.wxchat.bo.WechatBaseResult;
@@ -63,7 +64,7 @@ public class WechatServiceImpl implements WechatService {
 	@Resource(name = "redisTemplateWrapper")
 	private IRedisTemplateWrapper<String, WechatConfigDto> redisTemplateWrapper;
 
-	private static WechatConfigDto WECHAT_CONFIG = new WechatConfigDto();
+	private WechatConfigDto WECHAT_CONFIG = new WechatConfigDto();
 
 	@Override
 	public TokenInfo getTokenInfo() throws Exception {
@@ -88,25 +89,20 @@ public class WechatServiceImpl implements WechatService {
 	}
 
 	private String getAcessToken() throws Exception {
-		if (!isExpirToken(WECHAT_CONFIG)) {
-			return WECHAT_CONFIG.getAccessToken();
+		return getWechatConfig().getAccessToken();
+	}
+
+	private String getJsapiTicket(String accessToken) {
+		try {
+			String url = WECHAT_API_SERVER + "/cgi-bin/ticket/getticket?access_token=" + accessToken + "&type=jsapi";
+			String returnJson = HttpClient.get(url);
+			JsApiTicketResult jsApiTicketResult = JsonMapper.nonEmptyMapper().fromJson(returnJson,
+					JsApiTicketResult.class);
+			return jsApiTicketResult.getTicket();
+		} catch (Exception e) {
+			logger.error("获取微信jsticket出错", e);
 		}
-		WechatConfigDto wechatConfigDto = redisTemplateWrapper.get(CONFIG_KEY);
-		if (wechatConfigDto != null && !isExpirToken(wechatConfigDto)) {
-			BeanMapper.copy(wechatConfigDto, WECHAT_CONFIG);
-			return wechatConfigDto.getAccessToken();
-		}
-		TokenInfo tokenInfo = getTokenInfo();
-		if (!tokenInfo.isSuccess()) {
-			throw new Exception("获取token出错," + tokenInfo.getErrMsg());
-		}
-		wechatConfigDto = new WechatConfigDto();
-		wechatConfigDto.setAccessToken(tokenInfo.getAccessToken());
-		long expireTime = System.currentTimeMillis() + (tokenInfo.getExpiresIn() - 60 * 30) * 1000;
-		wechatConfigDto.setExpireTime(new Date(expireTime));
-		BeanMapper.copy(wechatConfigDto, WECHAT_CONFIG);
-		redisTemplateWrapper.set(CONFIG_KEY, wechatConfigDto, tokenInfo.getExpiresIn() - 60 * 30);
-		return tokenInfo.getAccessToken();
+		return null;
 	}
 
 	@Override
@@ -197,4 +193,31 @@ public class WechatServiceImpl implements WechatService {
 		}
 		return JsonMapper.nonDefaultMapper().fromJson(resp, CreateQrCodeResult.class);
 	}
+
+	@Override
+	public WechatConfigDto getWechatConfig() throws Exception {
+		if (!isExpirToken(WECHAT_CONFIG)) {
+			return WECHAT_CONFIG;
+		}
+		WechatConfigDto wechatConfigDto = redisTemplateWrapper.get(CONFIG_KEY);
+		if (wechatConfigDto != null && !isExpirToken(wechatConfigDto)) {
+			BeanMapper.copy(wechatConfigDto, WECHAT_CONFIG);
+			return wechatConfigDto;
+		}
+		TokenInfo tokenInfo = getTokenInfo();
+		if (!tokenInfo.isSuccess()) {
+			throw new Exception("获取token出错," + tokenInfo.getErrMsg());
+		}
+		wechatConfigDto = new WechatConfigDto();
+		wechatConfigDto.setAccessToken(tokenInfo.getAccessToken());
+		long expireTime = System.currentTimeMillis() + (tokenInfo.getExpiresIn() - 60 * 30) * 1000;
+		wechatConfigDto.setExpireTime(new Date(expireTime));
+		String jsApiTicket = getJsapiTicket(tokenInfo.getAccessToken());
+		wechatConfigDto.setJsApiTicket(jsApiTicket);
+		wechatConfigDto.setAppid(wechatConfig.getAppId());
+		BeanMapper.copy(wechatConfigDto, WECHAT_CONFIG);
+		redisTemplateWrapper.set(CONFIG_KEY, wechatConfigDto, tokenInfo.getExpiresIn() - 60 * 30);
+		return wechatConfigDto;
+	}
+
 }

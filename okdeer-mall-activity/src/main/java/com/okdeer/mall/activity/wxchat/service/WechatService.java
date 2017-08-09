@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.activity.wxchat.service;
 
+import com.okdeer.mall.activity.wechat.dto.WechatConfigDto;
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
 import com.okdeer.mall.activity.wxchat.bo.CreateQrCodeResult;
 import com.okdeer.mall.activity.wxchat.bo.QueryMaterialResponse;
@@ -33,5 +34,12 @@ public interface WechatService {
 	boolean send(String msginfo);
 
 	CreateQrCodeResult createQrCode(String sceneStr, int expireSeconds) throws Exception;
-
+	
+	/**
+	 * @Description: 获取微信配置
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年8月9日
+	 */
+	WechatConfigDto getWechatConfig() throws Exception;
 }

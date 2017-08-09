@@ -16,6 +16,7 @@ import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.activity.wechat.dto.CheckWxchatServerParamDto;
 import com.okdeer.mall.activity.wechat.dto.MaterialDto;
 import com.okdeer.mall.activity.wechat.dto.NewsDto;
+import com.okdeer.mall.activity.wechat.dto.WechatConfigDto;
 import com.okdeer.mall.activity.wechat.service.WechatApi;
 import com.okdeer.mall.activity.wxchat.bo.Material;
 import com.okdeer.mall.activity.wxchat.bo.QueryMaterialResponse;
@@ -83,6 +84,15 @@ public class WechatApiImpl implements WechatApi {
 	@Override
 	public String processRequest(String xmlCotent) throws MallApiException {
 		return wechatMsgProcessService.process(xmlCotent);
+	}
+
+	@Override
+	public WechatConfigDto getWechatConfig() throws MallApiException {
+		try {
+			return wechatService.getWechatConfig();
+		} catch (Exception e) {
+			throw new MallApiException(e);
+		}
 	}
 
 }
