@@ -577,7 +577,7 @@ public class PosterActivityServiceImpl
 			takePrizeResult.setMsg("领取成功");
 		} catch (Exception e) {
 			logger.error("操作数据出错", e);
-			throw new MallApiException("系统繁忙，请稍后再试");
+			throw new MallApiException(e.getMessage());
 		}
 		return takePrizeResult;
 	}
