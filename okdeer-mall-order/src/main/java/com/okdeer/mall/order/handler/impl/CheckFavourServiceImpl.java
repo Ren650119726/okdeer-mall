@@ -280,6 +280,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		recParamBo.setPkId(couponsId);
 		recParamBo.setCollectId(activityId);
 		recParamBo.setUserId(userId);
+		recParamBo.setDeviceId(deviceId);
 		recParamBo.setRecDate(DateUtils.getDate());
 		return activityCouponsRecordMapper.countDayFreq(recParamBo);
 	}
