@@ -107,7 +107,8 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 		
 		// begin add by wushp 20161015  
 		try {
-			if(tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP){
+			if(tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP || 
+	        		tradeOrder.getOrderResource() != OrderResourceEnum.MEMCARD){
 				//不是扫码购订单才返券
 				orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
 				

@@ -6075,6 +6075,9 @@
 				<if test="totalAmount != null">
 					AND trade.total_amount <![CDATA[ >= ]]> #{totalAmount,jdbcType=DECIMAL}
 				</if>
+				<if test="actualAmount != null">
+					AND trade.actual_amount <![CDATA[ >= ]]> #{actualAmount,jdbcType=DECIMAL}
+				</if>
 				<!-- 结束时间 -->
 				<if test="endTime != null">
 					AND trade.create_time <![CDATA[ <= ]]>
