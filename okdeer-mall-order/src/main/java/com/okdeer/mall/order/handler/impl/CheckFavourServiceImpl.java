@@ -481,19 +481,4 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		parserBo.setFareActivityId(coupons.getActivityId());
 		return true;
 	} 
-	
-	/**
-	 * @Description: 会员卡检查代金券信息
-	 * @param paramDto 代金券参数
-	 * @param parserBo 店铺商品解析器
-	 * @param resp 返回结果
-	 * @return boolean  
-	 * @author tuzhd
-	 * @throws Exception 
-	 * @date 2017年8月8日
-	 */
-	public boolean checkCardCoupons(PlaceOrderParamDto paramDto,Response<PlaceOrderDto> resp) throws Exception{
-		StoreSkuParserBo bo= new StoreSkuParserBo(Lists.newArrayList());
-		return checkCoupons(paramDto, bo, resp);
-	}
 }
