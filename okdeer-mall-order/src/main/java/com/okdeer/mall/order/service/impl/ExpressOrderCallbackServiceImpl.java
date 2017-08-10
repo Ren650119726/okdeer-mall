@@ -141,6 +141,14 @@ public class ExpressOrderCallbackServiceImpl implements ExpressOrderCallbackServ
         }
     }
 
+    @Override
+    public void saveJxcExpressModePlanB(ExpressModeParamDto paramDto) throws Exception {
+        // 1，修改订单方案和佣金字段
+        updateOrderExpress(paramDto);
+        // 2，修改订单扩展快照
+        updateOrderSnapExpress(paramDto);
+    }
+
     /**
      * 修改订单方案和佣金字段
      *
@@ -151,6 +159,7 @@ public class ExpressOrderCallbackServiceImpl implements ExpressOrderCallbackServ
         TradeOrder tradeOrder = new TradeOrder();
         tradeOrder.setId(paramDto.getExpressOrderId());
         tradeOrder.setDeliveryType(paramDto.getExpressType());
+        tradeOrder.setCommisionRatio(paramDto.getCommisionRatio());
         tradeOrderService.updateByPrimaryKeySelective(tradeOrder);
     }
 
@@ -164,6 +173,7 @@ public class ExpressOrderCallbackServiceImpl implements ExpressOrderCallbackServ
         TradeOrderExtSnapshotParamDto snapshotParamDto = new TradeOrderExtSnapshotParamDto();
         snapshotParamDto.setOrderId(paramDto.getExpressOrderId());
         snapshotParamDto.setDeliveryType(paramDto.getExpressType());
+        snapshotParamDto.setCommisionRatio(paramDto.getCommisionRatio());
         snapshotService.update(snapshotParamDto);
     }
 }

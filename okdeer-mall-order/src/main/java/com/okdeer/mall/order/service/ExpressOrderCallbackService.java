@@ -39,4 +39,12 @@ public interface ExpressOrderCallbackService {
      * @throws Exception
      */
     void saveExpressCallback(ExpressCallbackDto data) throws Exception;
+
+    /**
+     * 零售pos发货配送
+     *
+     * @param paramDto ExpressModeParamDto
+     * @throws Exception
+     */
+    void saveJxcExpressModePlanB(ExpressModeParamDto paramDto) throws Exception;
 }

@@ -71,6 +71,9 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
     @Autowired
     private RocketMQProducer rocketMQProducer;
 
+    /**
+     * 注入店铺-api
+     */
     @Reference(version = "1.0.0", check = false)
     private StoreInfoServiceApi storeInfoServiceApi;
 
@@ -176,6 +179,9 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
         } else if (StringUtils.isBlank(paramDto.getUserId())) {
             resultMsgDto.setCode(ExpressModeCheckEnum.USER_ID_NULL.getCode());
             resultMsgDto.setMsg(ExpressModeCheckEnum.USER_ID_NULL.getMsg());
+        } else if (null == paramDto.getCommisionRatio()) {
+            resultMsgDto.setCode(ExpressModeCheckEnum.COMMISION_RATIO_NULL.getCode());
+            resultMsgDto.setMsg(ExpressModeCheckEnum.COMMISION_RATIO_NULL.getMsg());
         } else {
             //检查订单数据
             checkOrderData(paramDto, resultMsgDto);

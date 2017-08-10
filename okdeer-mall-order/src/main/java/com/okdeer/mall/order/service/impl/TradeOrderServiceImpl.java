@@ -1,50 +1,5 @@
 package com.okdeer.mall.order.service.impl;
 
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT_TIPS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY_TIPS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE_TIPS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_TIPS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR_TIPS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT_TIPS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE_TIPS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_SUCCESS_TIPS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_NOT_EXSITS_DELETE;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_OVERDUE;
-import static com.okdeer.common.consts.DescriptConstants.REQUEST_PARAM_FAIL;
-import static com.okdeer.common.consts.DescriptConstants.USER_NOT_WALLET;
-import static com.okdeer.common.consts.DescriptConstants.USER_WALLET_FAIL;
-
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.integration.redis.util.RedisLockRegistry;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
@@ -81,6 +36,7 @@ import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.exception.StockException;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
+import com.okdeer.archive.store.entity.StoreDetailVo;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
@@ -90,7 +46,6 @@ import com.okdeer.archive.system.entity.PsmsAgent;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.archive.system.service.IPsmsAgentServiceApi;
 import com.okdeer.archive.system.service.SysOrganiApi;
-import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
@@ -138,10 +93,7 @@ import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
-import com.okdeer.mall.ele.entity.ExpressCallback;
 import com.okdeer.mall.ele.service.ExpressService;
-import com.okdeer.mall.express.dto.ExpressCallbackParamDto;
-import com.okdeer.mall.express.dto.ResultMsgDto;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
@@ -160,6 +112,7 @@ import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
+import com.okdeer.mall.order.dto.ExpressModeParamDto;
 import com.okdeer.mall.order.dto.TradeOrderCountParamDto;
 import com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto;
 import com.okdeer.mall.order.dto.TradeOrderParamDto;
@@ -217,6 +170,7 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper;
 import com.okdeer.mall.order.mq.constants.TradeOrderTopic;
+import com.okdeer.mall.order.service.ExpressOrderCallbackService;
 import com.okdeer.mall.order.service.PageCallBack;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
@@ -231,7 +185,6 @@ import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.PageQueryUtils;
 import com.okdeer.mall.order.vo.ActivityInfoVO;
-import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.OrderCouponsRespDto;
 import com.okdeer.mall.order.vo.OrderItemDetailConsumeVo;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
@@ -259,9 +212,50 @@ import com.okdeer.mall.system.service.InvitationCodeServiceApi;
 import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
-
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.stream.Collectors;
+import javax.annotation.Resource;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.integration.redis.util.RedisLockRegistry;
+import org.springframework.transaction.annotation.Transactional;
+
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_LIMIT_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_ACTIVITY_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_SUCCESS_TIPS;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_NOT_EXSITS_DELETE;
+import static com.okdeer.common.consts.DescriptConstants.ORDER_STATUS_OVERDUE;
+import static com.okdeer.common.consts.DescriptConstants.REQUEST_PARAM_FAIL;
+import static com.okdeer.common.consts.DescriptConstants.USER_NOT_WALLET;
+import static com.okdeer.common.consts.DescriptConstants.USER_WALLET_FAIL;
 
 /**
  * ClassName: TradeOrderServiceImpl
@@ -648,6 +642,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     @Resource
     private TradeOrderExtSnapshotMapper tradeOrderExtSnapshotMapper;
     // End V2.5 added by maojj 2017-06-23
+
+    //begin add wangf01 2017-08-10
+    /**
+     * 配送方式
+     */
+    @Autowired
+    private ExpressOrderCallbackService expressOrderCallbackService;
 
     @Override
     public List<TradeOrder> selectByParam(TradeOrderParamDto param) throws Exception {
@@ -5059,55 +5060,53 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             if (tradeOrderParam.getStatus() != OrderStatusEnum.DROPSHIPPING){
                 throw new ServiceException("订单状态已更新，请刷新后重试");
             }
-            //获取快照信息，判断配送方式是什么
-            TradeOrderExtSnapshotParamDto paramDto = new TradeOrderExtSnapshotParamDto();
-            paramDto.setOrderId(tradeOrder.getId());
-            TradeOrderExtSnapshot snapshot = tradeOrderExtSnapshotMapper.selectExtSnapshotByParam(paramDto);
-            if (snapshot != null && snapshot.getDeliveryType() == 1) {
-                List<TradeOrderItem> itemList = tradeOrderItemMapper.selectOrderItemListById(tradeOrder.getId());
-                tradeOrderParam.setTradeOrderItem(itemList);
-                tradeOrderParam.setTradeOrderExt(snapshot);
-                ResultMsgDto<String> resultMsgDto = expressService.saveExpressOrder(tradeOrderParam);
-                if (resultMsgDto.getCode() != 200) {
-                    throw new ServiceException(resultMsgDto.getMsg());
-                }
-            }else{
-                this.updateOrderStatus(tradeOrder);
-                Map<String, Object> map = new HashMap<String, Object>();
-                map.put("orderId", tradeOrder.getId());
-                List<TradeOrderItem> tradeOrderItem = this.findTradeOrderItems(map);
-                tradeOrder.setTradeOrderItem(tradeOrderItem);
-                // 锁定库存
-                try {
-                    // 发送计时消息
-                    tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
-                    // Begin 1.0.Z 增加订单操作记录 add by zengj
-                    tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
-                            tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
-                    // End 1.0.Z 增加订单操作记录 add by zengj
+            // begin V2.6.0 零售pos发货默认B方案自行配送 add by wangf01 20170810
+            ExpressModeParamDto paramDto = new ExpressModeParamDto();
+            paramDto.setExpressOrderId(tradeOrder.getId());
+            paramDto.setUserId(tradeOrder.getUpdateUserId());
+            StoreDetailVo vo = storeInfoService.getStoreDetailById(tradeOrderParam.getStoreId());
+            paramDto.setStoreId(tradeOrderParam.getStoreId());
+            paramDto.setExpressType(2);
+            paramDto.setCommisionRatio(vo.getStoreInfoExt().getCommisionRatioPlanB());
+            expressOrderCallbackService.saveJxcExpressModePlanB(paramDto);
+            // begin add by wangf01 20170810
+            //老代码 start
+            this.updateOrderStatus(tradeOrder);
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("orderId", tradeOrder.getId());
+            List<TradeOrderItem> tradeOrderItem = this.findTradeOrderItems(map);
+            tradeOrder.setTradeOrderItem(tradeOrderItem);
+            // 锁定库存
+            try {
+                // 发送计时消息
+                tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_timeout, tradeOrder.getId());
+                // Begin 1.0.Z 增加订单操作记录 add by zengj
+                tradeOrderLogService.insertSelective(new TradeOrderLog(tradeOrder.getId(), tradeOrder.getUpdateUserId(),
+                        tradeOrder.getStatus().getName(), tradeOrder.getStatus().getValue()));
+                // End 1.0.Z 增加订单操作记录 add by zengj
 
-                    // 发送短信
-                    tradeMessageService.sendSmsByShipments(tradeOrder);
-                    // added by maojj 给ERP发消息去生成出入库单据
-                    // 库存调整-放到最后处理
-                    // stockManagerService.updateStock(stockAdjustVo);
-                    // stockMQProducer.sendMessage(stockAdjustVo);
+                // 发送短信
+                tradeMessageService.sendSmsByShipments(tradeOrder);
+                // added by maojj 给ERP发消息去生成出入库单据
+                // 库存调整-放到最后处理
+                // stockManagerService.updateStock(stockAdjustVo);
+                // stockMQProducer.sendMessage(stockAdjustVo);
 
-                    //add by  zhangkeneng  和左文明对接丢消息
-                    TradeOrderContext tradeOrderContext = new TradeOrderContext();
-                    tradeOrderContext.setTradeOrder(tradeOrder);
-                    tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
-                    tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
-                    tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
-                    tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+                //add by  zhangkeneng  和左文明对接丢消息
+                TradeOrderContext tradeOrderContext = new TradeOrderContext();
+                tradeOrderContext.setTradeOrder(tradeOrder);
+                tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+                tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+                tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+                tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 
-                } catch (Exception e) {
-                    logger.error("pos 发货锁定库存发生异常", e);
-                    // added by maojj
-                    // rollbackMQProducer.sendStockRollbackMsg(rpcId);
-                    throw e;
-                }
+            } catch (Exception e) {
+                logger.error("pos 发货锁定库存发生异常", e);
+                // added by maojj
+                // rollbackMQProducer.sendStockRollbackMsg(rpcId);
+                throw e;
             }
+            //老代码 start
         }else{
             try {
                 this.updateWithConfirm(tradeOrder);
