@@ -291,8 +291,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 
 	@Override
 	public ActivityPrizeWeight drawByWithckDrawId(String luckDrawId) throws Exception {
-		ActivityLuckDraw activityLuckDraw;
-		activityLuckDraw = activityLuckDrawService.findById(luckDrawId);
+		ActivityLuckDraw activityLuckDraw = activityLuckDrawService.findById(luckDrawId);
 		// 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应
 		List<ActivityPrizeWeight> list = activityPrizeWeightService.findPrizesByLuckDrawId(luckDrawId);
 		if (CollectionUtils.isNotEmpty(list) && activityLuckDraw != null) {
