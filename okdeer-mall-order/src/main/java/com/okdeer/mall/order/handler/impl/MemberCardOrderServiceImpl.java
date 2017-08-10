@@ -87,7 +87,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	
 	//注入redis缓存记录
 	@Resource
-	private static IRedisTemplateWrapper<String, Object> redisTemplateWrapper;
+	private IRedisTemplateWrapper<String, Object> redisTemplateWrapper;
 	
 	//优惠信息查询类注入
 	@Resource
@@ -505,7 +505,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
      * @author tuzhd
      * @date 2017年8月7日
      */
-    private static String createMemberCard(int length,String start){
+    private String createMemberCard(int length,String start){
     	StringBuilder cards = new StringBuilder(start);
     	//循环长度进行随机生成
     	for(int i= 0; i < length ; i++){
