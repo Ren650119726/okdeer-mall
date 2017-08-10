@@ -108,8 +108,8 @@ public class WechatMenuApiImpl implements WechatMenuApi {
 	}
 
 	@Override
-	public void sysFromWxServer() throws Exception {
-
+	public void sysFromWxServer() throws MallApiException {
+		
 	}
 
 	@Override

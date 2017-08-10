@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.system.entity.SysBuyerUser;
@@ -69,6 +70,9 @@ import com.okdeer.mall.activity.wxchat.util.EmojiFilter;
 import com.okdeer.mall.activity.wxchat.util.ImageUtils;
 import com.okdeer.mall.activity.wxchat.util.WxchatUtils;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
+import com.okdeer.mcm.entity.BaseResponse;
+import com.okdeer.mcm.entity.SmsVO;
+import com.okdeer.mcm.service.ISmsService;
 
 import net.sf.json.JSONObject;
 
@@ -115,6 +119,21 @@ public class PosterActivityServiceImpl
 
 	@Autowired
 	private ActivityCouponsRecordService activityCouponsRecordService;
+
+	@Reference(version = "1.0.0", check = false)
+	private ISmsService smsService;
+	
+	/**
+	 * 消息系统CODE
+	 */
+	@Value("${mcm.sys.code}")
+	private String msgSysCode;
+
+	/**
+	 * 消息token
+	 */
+	@Value("${mcm.sys.token}")
+	private String msgToken;
 
 	private static final String[] posterImg = { "posterpic1.png" };
 
@@ -489,6 +508,11 @@ public class PosterActivityServiceImpl
 				drawResult.setPrizeId(activityPrizeWeight.getId());
 				drawResult.setPrizeName(activityPrizeWeight.getPrizeName());
 				drawResult.setRecordId(activityPosterDrawRecord.getId());
+
+				if (StringUtils.isNotEmpty(activityPosterWechatUserInfo.getPhoneNo())) {
+					// 手机号码已经有了，直接发放
+					takePrize(openid, activityPosterDrawRecord.getId(), activityPosterWechatUserInfo.getPhoneNo());
+				}
 			}
 
 			int result = activityPosterWechatUserService.updateUsedQualificaCount(openid,
@@ -497,6 +521,7 @@ public class PosterActivityServiceImpl
 			if (result < 0) {
 				throw new MallApiException("操作太快，请重新再试!");
 			}
+
 			return drawResult;
 		} catch (Exception e) {
 			throw new MallApiException(e);
@@ -524,11 +549,31 @@ public class PosterActivityServiceImpl
 		return activityPosterDrawRecord;
 	}
 
+	private void takePrize(String openid, String recordId, String mobile) throws MallApiException {
+		PosterTakePrizeDto posterTakePrizeDto = new PosterTakePrizeDto();
+		posterTakePrizeDto.setMobile(mobile);
+		posterTakePrizeDto.setOpenid(openid);
+		posterTakePrizeDto.setRecordId(recordId);
+		posterTakePrizeDto.setFirstTake(false);
+		TakePrizeResult takePrizeResult = takePrize(posterTakePrizeDto);
+		if (takePrizeResult.getCode() != 0) {
+			throw new MallApiException(takePrizeResult.getMsg());
+		}
+	}
+
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public TakePrizeResult takePrize(PosterTakePrizeDto posterTakePrizeDto) throws MallApiException {
 		TakePrizeResult takePrizeResult = new TakePrizeResult();
 		try {
+			if (posterTakePrizeDto.isFirstTake()) {
+				// 第一次领取，记录手机号码
+				ActivityPosterWechatUserInfo activityPosterWechatUserInfo = new ActivityPosterWechatUserInfo();
+				activityPosterWechatUserInfo.setOpenid(posterTakePrizeDto.getOpenid());
+				activityPosterWechatUserInfo.setPhoneNo(posterTakePrizeDto.getMobile());
+				activityPosterWechatUserService.update(activityPosterWechatUserInfo);
+			}
+
 			ActivityPosterDrawRecord activityPosterDrawRecord = activityPosterDrawRecordService
 					.findById(posterTakePrizeDto.getRecordId());
 			if (!posterTakePrizeDto.getOpenid().equals(activityPosterDrawRecord.getOpenid())) {
@@ -573,6 +618,8 @@ public class PosterActivityServiceImpl
 					throw new MallApiException(jsonObject.getString("msg"));
 				}
 			}
+			//发送业务短信
+			sendMsg(posterTakePrizeDto.getMobile(),activityPosterDrawRecord.getPrizeName());
 			takePrizeResult.setCode(0);
 			takePrizeResult.setMsg("领取成功");
 		} catch (Exception e) {
@@ -580,6 +627,33 @@ public class PosterActivityServiceImpl
 			throw new MallApiException(e.getMessage());
 		}
 		return takePrizeResult;
+	}
+	
+	/**
+	 * @Description: 短信通知用户
+	 * @param mobile
+	 * @param prizeName
+	 * @author zengjizu
+	 * @date 2017年8月10日
+	 */
+	private void sendMsg(String mobile, String prizeName) {
+		SmsVO sendVo = new SmsVO();
+		sendVo.setId(UuidUtils.getUuid());
+		sendVo.setUserId(null);
+		sendVo.setSysCode(msgSysCode);
+		sendVo.setToken(msgToken);
+		String content = "尊敬的用户，您通过“七夕情报”活动获得了" + prizeName
+				+ "，请登录友门鹿app使用，APP下载地址：http://a.app.qq.com/o/simple.jsp?pkgname=com.okdeer.store";
+		sendVo.setContent(content);
+		sendVo.setIsTiming(0);
+		sendVo.setMobile(mobile);
+		sendVo.setSmsChannelType(3);
+		BaseResponse response = smsService.sendSms(sendVo, false);
+		if ("0".equals(response.getResult())) {
+			logger.info("短信发送成功............");
+		} else {
+			logger.info("短信发送失败,失败原因：" + response.getMessage());
+		}
 	}
 
 }

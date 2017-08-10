@@ -18,6 +18,7 @@ import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
+import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.activity.wechat.dto.WechatConfigDto;
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
 import com.okdeer.mall.activity.wxchat.bo.CreateQrCodeResult;
@@ -219,5 +220,6 @@ public class WechatServiceImpl implements WechatService {
 		redisTemplateWrapper.set(CONFIG_KEY, wechatConfigDto, tokenInfo.getExpiresIn() - 60 * 30);
 		return wechatConfigDto;
 	}
+
 
 }

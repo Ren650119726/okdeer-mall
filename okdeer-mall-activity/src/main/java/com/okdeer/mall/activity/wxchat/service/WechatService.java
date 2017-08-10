@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.activity.wxchat.service;
 
+import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.activity.wechat.dto.WechatConfigDto;
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
 import com.okdeer.mall.activity.wxchat.bo.CreateQrCodeResult;
