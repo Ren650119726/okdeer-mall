@@ -2,6 +2,8 @@ package com.okdeer.mall.order.handler;
 
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.dto.MemberCardResultDto;
+import com.okdeer.mall.order.dto.PayInfoDto;
+import com.okdeer.mall.order.dto.PayInfoParamDto;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.vo.MemberTradeOrderVo;
 
@@ -19,12 +21,12 @@ import com.okdeer.mall.order.vo.MemberTradeOrderVo;
 public interface MemberCardOrderService {
 	/**
 	 * @Description: 提交会员卡订单
-	 * @param memberPayNum
+	 * @param orderId
 	 * @throws Exception   
 	 * @author tuzhd
 	 * @date 2017年8月9日
 	 */
-	Response<PlaceOrderDto> submitOrder(String memberPayNum,Response<PlaceOrderDto> resp) throws Exception;
+	Response<PlaceOrderDto> submitOrder(String orderId,Response<PlaceOrderDto> resp) throws Exception;
 	
 	
 	/**
@@ -53,4 +55,22 @@ public interface MemberCardOrderService {
 	  * @date 2017年8月9日
 	  */
 	void removetMemberPayNumber(String memberPayNum);
+	
+	/**
+	 * @Description: 获取支付信息
+	 * @param dto
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年8月10日
+	 */
+	MemberCardResultDto<PayInfoDto> getPayInfo(PayInfoParamDto dto);
+	
+	/**
+     * @Description: 根据订单id取消订单,已提交订单不能清除，会导致用户支付无法对上账
+     * @param orderId   
+     * @return void  
+     * @author tuzhd
+     * @date 2017年8月10日
+     */
+    boolean cancelMemberCardOrder(String orderId);
 }
