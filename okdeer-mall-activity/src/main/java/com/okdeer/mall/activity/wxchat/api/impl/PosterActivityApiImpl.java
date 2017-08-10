@@ -4,6 +4,8 @@ package com.okdeer.mall.activity.wxchat.api.impl;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -11,6 +13,9 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.common.exception.MallApiException;
+import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
+import com.okdeer.mall.activity.prize.service.ActivityLuckDrawService;
+import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.wechat.dto.ActivityPosterDrawRecordDto;
 import com.okdeer.mall.activity.wechat.dto.ActivityPosterDrawRecordParamDto;
 import com.okdeer.mall.activity.wechat.dto.ActivityPosterWechatUserDto;
@@ -31,6 +36,8 @@ import com.okdeer.mall.activity.wxchat.util.WxchatUtils;
 @Service(version = "1.0.0")
 public class PosterActivityApiImpl implements PosterActivityApi {
 
+	private static final Logger logger = LoggerFactory.getLogger(PosterActivityApiImpl.class);
+
 	@Autowired
 	private ActivityPosterWechatUserService activityPosterWechatUserService;
 
@@ -42,6 +49,9 @@ public class PosterActivityApiImpl implements PosterActivityApi {
 
 	@Autowired
 	private PosterActivityService posterActivityService;
+
+	@Autowired
+	private ActivityLuckDrawService activityLuckDrawService;
 
 	@Override
 	public ActivityPosterWechatUserDto findByOpenid(String openid, String activityId) throws MallApiException {
@@ -107,6 +117,24 @@ public class PosterActivityApiImpl implements PosterActivityApi {
 			throw new MallApiException(e);
 		}
 
+	}
+
+	@Override
+	public boolean activityIsEnd(String activityId) {
+		try {
+			ActivityLuckDraw activityLuckDraw = activityLuckDrawService.findById(activityId);
+			if (activityLuckDraw.getStatus() != SeckillStatusEnum.ing) {
+				return true;
+			}
+			if (activityLuckDraw.getStartTime().getTime() > System.currentTimeMillis()
+					|| activityLuckDraw.getEndTime().getTime() < System.currentTimeMillis()) {
+				return true;
+			}
+		} catch (Exception e) {
+			logger.error("查询活动信息出错", e);
+			return true;
+		}
+		return false;
 	}
 
 }
