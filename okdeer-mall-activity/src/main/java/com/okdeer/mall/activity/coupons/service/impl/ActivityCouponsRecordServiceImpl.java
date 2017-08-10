@@ -59,6 +59,7 @@ import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
@@ -1214,55 +1215,52 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
         List<RechargeCouponVo> couponVos = activityCouponsRecordMapper.findValidRechargeCoupons(params);
         
         //限制设备使用次数的代金券Id
-        List<String> deviceLimitCouponIds = Lists.newArrayList();
+        List<String> deviceLimitCouponsIds = Lists.newArrayList();
         //限制账号使用次数的代金券Id
-        List<String> accountLimitCouponIds = Lists.newArrayList();
+        List<String> userLimitCouponsIds = Lists.newArrayList();
+		// 用户所有代金券ID
+		List<String> userCouponsIds = Lists.newArrayList();
         for(RechargeCouponVo couponVo : couponVos) {
             if(couponVo.getDeviceDayLimit() != null && couponVo.getDeviceDayLimit() > 0) {
-                deviceLimitCouponIds.add(couponVo.getCouponId());
+            	deviceLimitCouponsIds.add(couponVo.getCouponId());
             }
             if(couponVo.getAccountDayLimit() != null && couponVo.getAccountDayLimit() > 0) {
-                accountLimitCouponIds.add(couponVo.getCouponId());
+            	userLimitCouponsIds.add(couponVo.getCouponId());
             }
+            userCouponsIds.add(couponVo.getCouponId());
         }
         
-        ActivityRecordParamBo recParamBo = null;
-        List<ActivityRecordBo> recordBoList = null;
         FavourParamBO paramBo = new FavourParamBO();
         String machineCode = params.get("machineCode").toString();
         String userId = params.get("userId").toString();
-        if(CollectionUtils.isNotEmpty(deviceLimitCouponIds) && StringUtils.isNotEmpty(machineCode)) {
-            //根据设备统计使用次数
-            recParamBo = new ActivityRecordParamBo();
-            recParamBo.setPkIdList(deviceLimitCouponIds);
-            recParamBo.setRecDate(DateUtils.getDate());
-            recParamBo.setDeviceId(machineCode);
-            recordBoList =  activityCouponsRecordMapper.countActivityRecord(recParamBo);
-            paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_DEVICE, recordBoList);
-        }
-        
-        if(CollectionUtils.isNotEmpty(accountLimitCouponIds) && StringUtils.isNotEmpty(machineCode)) {
-            //根据账号统计使用次数
-            recParamBo = new ActivityRecordParamBo();
-            recParamBo.setPkIdList(accountLimitCouponIds);
-            recParamBo.setRecDate(DateUtils.getDate());
-            recParamBo.setUserId(userId);
-            recordBoList = activityCouponsRecordMapper.countActivityRecord(recParamBo);
-            paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_USER, recordBoList);
-        }
+		if(CollectionUtils.isNotEmpty(deviceLimitCouponsIds) && StringUtils.isNotEmpty(machineCode)){
+			// 根据设备统计使用次数
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(deviceLimitCouponsIds, null, machineCode, false);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_DEVICE, recordBoList);
+		}
+		if(CollectionUtils.isNotEmpty(userLimitCouponsIds) && StringUtils.isNotEmpty(userId)){
+			// 根据设备统计使用次数
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userLimitCouponsIds, userId, null, false);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_USER, recordBoList);
+		}
+		// 代金券活动统计
+		if(CollectionUtils.isNotEmpty(userCouponsIds) && StringUtils.isNotEmpty(machineCode)){
+			// 根据设备统计使用次数
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userCouponsIds, null, machineCode, true);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_COLLECT_BY_DEVICE, recordBoList);
+		}
+		if(CollectionUtils.isNotEmpty(userCouponsIds) && StringUtils.isNotEmpty(userId)){
+			// 根据用户统计使用次数
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userCouponsIds, userId, null, true);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_COLLECT_BY_USER, recordBoList);
+		}
         
         //检验优惠券的设备和账号限制
         Iterator<RechargeCouponVo> it = couponVos.iterator();
         while(it.hasNext()) {
             RechargeCouponVo couponVo = it.next();
-            boolean result = checkCouponUseLimit(paramBo, RecordCountRuleEnum.COUPONS_BY_DEVICE, couponVo);
-            if(result) {
-                result = checkCouponUseLimit(paramBo, RecordCountRuleEnum.COUPONS_BY_USER, couponVo);
-                if(!result) {
-                    it.remove();
-                }
-            } else {
-                it.remove();
+            if(!checkCouponLimit(paramBo, couponVo)) {
+            	it.remove();
             }
         }
         return couponVos;
@@ -1276,23 +1274,37 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
      * @author zhaoqc
      * @return
      */
-    private boolean checkCouponUseLimit(FavourParamBO paramBo, RecordCountRuleEnum rule, 
-            RechargeCouponVo couponVo) {
-        if(rule == RecordCountRuleEnum.COUPONS_BY_DEVICE) {
-            if(couponVo.getDeviceDayLimit() != null && couponVo.getDeviceDayLimit() > 0) {
-                if(couponVo.getDeviceDayLimit().compareTo(paramBo.findCountNum(rule, couponVo.getCouponId())) < 1) {
-                   return false; 
-                }
-            }
-        } else if(rule == RecordCountRuleEnum.COUPONS_BY_USER) {
-            if(couponVo.getAccountDayLimit() != null && couponVo.getAccountDayLimit() > 0) {
-                if(couponVo.getAccountDayLimit().compareTo(paramBo.findCountNum(rule, couponVo.getCouponId())) < 1) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+	private boolean checkCouponLimit(FavourParamBO paramBo, RechargeCouponVo couponVo) {
+		if (couponVo.getDeviceDayLimit() != null && couponVo.getDeviceDayLimit() > 0) {
+			if (couponVo.getDeviceDayLimit().compareTo(
+					paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_DEVICE, couponVo.getCouponId())) < 1) {
+				return false;
+			}
+		}
+		if (couponVo.getAccountDayLimit() != null && couponVo.getAccountDayLimit() > 0) {
+			if (couponVo.getAccountDayLimit()
+					.compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_USER, couponVo.getCouponId())) < 1) {
+				return false;
+			}
+		}
+		// 代金券活动
+		ActivityCollectCoupons collectCoupons = activityCollectCouponsMapper.get(couponVo.getActivityId());
+		// 代金券活动设备限制
+		if (collectCoupons != null && collectCoupons.getDeviceDayLimit() > 0) {
+			if (collectCoupons.getDeviceDayLimit().compareTo(
+					paramBo.findCountNum(RecordCountRuleEnum.COUPONS_COLLECT_BY_DEVICE, couponVo.getActivityId())) < 1) {
+				return false;
+			}
+		}
+		// 代金券活动账号现在
+		if (collectCoupons != null && collectCoupons.getAccountDayLimit() > 0) {
+			if (collectCoupons.getAccountDayLimit().compareTo(
+					paramBo.findCountNum(RecordCountRuleEnum.COUPONS_COLLECT_BY_USER, couponVo.getActivityId())) < 1) {
+				return false;
+			}
+		}
+		return true;
+	}
     
     @Transactional(rollbackFor = Exception.class)
 	@Override
@@ -1643,7 +1655,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_USER, recordBoList);
 		}
 		// 代金券活动统计
-		if(CollectionUtils.isNotEmpty(userCouponsIds) && StringUtils.isNotEmpty(paramBo.getUserId())){
+		if(CollectionUtils.isNotEmpty(userCouponsIds) && StringUtils.isNotEmpty(paramBo.getDeviceId())){
 			// 根据设备统计使用次数
 			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userCouponsIds, null, paramBo.getDeviceId(), true);
 			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_COLLECT_BY_DEVICE, recordBoList);

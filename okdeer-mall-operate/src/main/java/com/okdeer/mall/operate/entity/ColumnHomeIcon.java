@@ -51,7 +51,7 @@ public class ColumnHomeIcon {
 	private String taskContent;
 
 	/**
-	 * 任务内容  0:指定指定商品推荐  1: 自助买单 2:分类 
+	 * 任务内容  0:指定指定商品推荐  1: 自助买单 2:分类 3:会员卡
 	 */
 	private HomeIconTaskType taskType;
 

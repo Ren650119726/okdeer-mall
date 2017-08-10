@@ -1628,11 +1628,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     public boolean insertTradeOrder(TradeOrder tradeOrder) throws Exception {
         insertOrder(tradeOrder);
         //add by mengsj begin 由于扫码购提交订单流程不能与便利店订单共用
-        //故在此单独判断订单来源，如果是扫码购，发送超时支付消息
-        if (tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP) {
+        //故在此单独判断订单来源，如果是扫码购，发送超时支付消息 start tuzhd 添加会员卡扫描付
+        if (tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP || 
+        		tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD) {
             // 超时未支付的，取消订单
             tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, tradeOrder.getId());
         }
+        //end tuzhd 添加会员卡扫描付
         return true;
     }
 
@@ -2119,11 +2121,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer updateOrderStatus(TradeOrder tradeOrder) throws ServiceException {
-        //add by mengsj begin 扫码购另外处理
-        if (tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP) {
+        //add by mengsj begin 扫码购另外处理 and tuzd 会员卡扫码付
+        if (tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP || 
+        		tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD) {
             return tradeOrderMapper.updateOrderStatus(tradeOrder);
         }
-        //add by mengsj end 扫码购另外处理
+        //add by mengsj end 扫码购另外处理 and tuzd 会员卡扫码付
         // 保存订单轨迹
         tradeOrderTraceService.saveOrderTrace(tradeOrder);
         return tradeOrderMapper.updateOrderStatus(tradeOrder);
