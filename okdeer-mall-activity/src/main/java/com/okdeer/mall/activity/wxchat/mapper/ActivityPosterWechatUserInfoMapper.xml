@@ -103,7 +103,7 @@
         where openid = #{openid,jdbcType=VARCHAR}
     </delete>
 	
-	<update id="updateUsedQualificaCount">
+	<update id="updateUsedQualificaCount" >
 		UPDATE activity_poster_wechat_user_info SET used_qualifica_count = #{usedQualificaCount,jdbcType=INTEGER} WHERE  openid = #{openid,jdbcType=VARCHAR} AND used_qualifica_count = #{conditionUsedQualificaCount,jdbcType=INTEGER}
 	</update>
 </mapper>

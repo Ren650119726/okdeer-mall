@@ -7,10 +7,12 @@
 
 package com.okdeer.mall.activity.wxchat.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 
 public interface ActivityPosterWechatUserInfoMapper extends IBaseMapper {
 
-	int updateUsedQualificaCount(String openid, int usedQualificaCount, int conditionUsedQualificaCount);
+	int updateUsedQualificaCount(@Param("openid")String openid,@Param("usedQualificaCount") int usedQualificaCount,@Param("conditionUsedQualificaCount") int conditionUsedQualificaCount);
 
 }
