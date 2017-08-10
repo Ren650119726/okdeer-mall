@@ -9,6 +9,8 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.dto.MemberCardResultDto;
+import com.okdeer.mall.order.dto.PayInfoDto;
+import com.okdeer.mall.order.dto.PayInfoParamDto;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.handler.MemberCardOrderService;
 import com.okdeer.mall.order.service.MemberCardOrderApi;
@@ -45,15 +47,15 @@ public class MemberCardOrderApiImpl implements MemberCardOrderApi {
 	
 	/**
 	 * @Description: 提交会员卡订单
-	 * @param memberPayNum
+	 * @param orderId
 	 * @throws Exception   
 	 * @author tuzhd
 	 * @date 2017年8月9日
 	 */
-	public Response<PlaceOrderDto> submitOrder(String memberPayNum){
+	public Response<PlaceOrderDto> submitOrder(String orderId){
 		Response<PlaceOrderDto> resp = new Response<PlaceOrderDto>();
 		try{
-			resp = memberCardOrderService.submitOrder(memberPayNum,resp);
+			resp = memberCardOrderService.submitOrder(orderId,resp);
 		}catch(Exception e){
 			resp.setResult(ResultCodeEnum.SERVER_COLUMN_IS_CLOSED);
 			logger.error(e.getMessage());
@@ -72,7 +74,29 @@ public class MemberCardOrderApiImpl implements MemberCardOrderApi {
 		return memberCardOrderService.getMemberPayNumber(userId, deviceId);
 	}
 
+	
+	/**
+     * @Description: 根据订单id取消订单,已提交订单不能清除，会导致用户支付无法对上账
+     * @param orderId   
+     * @return void  
+     * @author tuzhd
+     * @date 2017年8月10日
+     */
+    public boolean cancelMemberCardOrder(String orderId){
+    	return memberCardOrderService.cancelMemberCardOrder(orderId);
+    }
 
+    /**
+	 * @Description: 获取支付信息
+	 * @param dto
+	 * @throws
+	 * @author tuzhd
+	 * @date 2017年8月10日
+	 */
+	public MemberCardResultDto<PayInfoDto> getPayInfo(PayInfoParamDto dto){
+		return memberCardOrderService.getPayInfo(dto);
+	}
+    
 	/**
 	  * @Description: 移除会员卡信息接口  
 	  * @param userId  用户id
