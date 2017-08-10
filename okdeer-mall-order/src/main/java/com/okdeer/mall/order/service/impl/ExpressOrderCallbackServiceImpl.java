@@ -74,12 +74,12 @@ public class ExpressOrderCallbackServiceImpl implements ExpressOrderCallbackServ
     @Override
     public void saveExpressModePlanA(ExpressModeParamDto paramDto) throws Exception {
         // 1，查询订单信息组装参数
-        TradeOrder tradeOrder = tradeOrderService.selectById(paramDto.getExpressOrderId());
+        TradeOrder tradeOrder = tradeOrderService.selectById(paramDto.getOrderId());
         //根据订单id查询订单项信息
         List<TradeOrderItem> orderItemList = tradeOrderItemService.selectOrderItemByOrderId(tradeOrder.getId());
         tradeOrder.setTradeOrderItem(orderItemList);
         TradeOrderExtSnapshotParamDto snapshotParamDto = new TradeOrderExtSnapshotParamDto();
-        snapshotParamDto.setOrderId(paramDto.getExpressOrderId());
+        snapshotParamDto.setOrderId(paramDto.getOrderId());
         TradeOrderExtSnapshot snapshot = snapshotService.selectExtSnapshotByParam(snapshotParamDto);
         tradeOrder.setTradeOrderExt(snapshot);
         // 2，保存第三方推送订单信息并进行判断
@@ -104,7 +104,7 @@ public class ExpressOrderCallbackServiceImpl implements ExpressOrderCallbackServ
         // 3，订单发货流程
         TradeOrderOperateParamVo param = new TradeOrderOperateParamVo();
         // 发货的订单ID
-        param.setOrderId(paramDto.getExpressOrderId());
+        param.setOrderId(paramDto.getOrderId());
         // 操作人ID
         param.setUserId(paramDto.getUserId());
         // 店铺ID
@@ -157,7 +157,7 @@ public class ExpressOrderCallbackServiceImpl implements ExpressOrderCallbackServ
      */
     private void updateOrderExpress(ExpressModeParamDto paramDto) throws Exception {
         TradeOrder tradeOrder = new TradeOrder();
-        tradeOrder.setId(paramDto.getExpressOrderId());
+        tradeOrder.setId(paramDto.getOrderId());
         tradeOrder.setDeliveryType(paramDto.getExpressType());
         tradeOrder.setCommisionRatio(paramDto.getCommisionRatio());
         tradeOrderService.updateByPrimaryKeySelective(tradeOrder);
@@ -171,7 +171,7 @@ public class ExpressOrderCallbackServiceImpl implements ExpressOrderCallbackServ
      */
     private void updateOrderSnapExpress(ExpressModeParamDto paramDto) throws Exception {
         TradeOrderExtSnapshotParamDto snapshotParamDto = new TradeOrderExtSnapshotParamDto();
-        snapshotParamDto.setOrderId(paramDto.getExpressOrderId());
+        snapshotParamDto.setOrderId(paramDto.getOrderId());
         snapshotParamDto.setDeliveryType(paramDto.getExpressType());
         snapshotParamDto.setCommisionRatio(paramDto.getCommisionRatio());
         snapshotService.update(snapshotParamDto);

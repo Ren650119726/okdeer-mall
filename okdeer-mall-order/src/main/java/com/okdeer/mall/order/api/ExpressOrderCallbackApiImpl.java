@@ -81,10 +81,10 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
     public ResultMsgDto<String> saveExpressMode(ExpressModeParamDto paramDto) throws Exception {
         ResultMsgDto<String> resultMsgDto = new ResultMsgDto();
         resultMsgDto.setCode(ExpressModeCheckEnum.SUCCESS.getCode());
-        resultMsgDto.setMsg(ExpressModeCheckEnum.SUCCESS.getMsg());
+        resultMsgDto.setMsg(ExpressModeCheckEnum.SUCCESS.getDesc());
         if (paramDto == null) {
             resultMsgDto.setCode(ExpressModeCheckEnum.DTO_NULL.getCode());
-            resultMsgDto.setMsg(ExpressModeCheckEnum.DTO_NULL.getMsg());
+            resultMsgDto.setMsg(ExpressModeCheckEnum.DTO_NULL.getDesc());
         } else {
             //检查传入的参数数据
             resultMsgDto = checkData(paramDto, resultMsgDto);
@@ -95,18 +95,18 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
                         try {
                             expressOrderCallbackService.saveExpressModePlanA(paramDto);
                         } catch (Exception e) {
-                            logger.error("蜂鸟配送异常(订单:" + paramDto.getExpressOrderId() + "):{}", e);
+                            logger.error("蜂鸟配送异常(订单:" + paramDto.getOrderId() + "):{}", e);
                             resultMsgDto.setCode(ExpressModeCheckEnum.ELE_EXPRESS_EXCEPTION.getCode());
-                            resultMsgDto.setMsg(ExpressModeCheckEnum.ELE_EXPRESS_EXCEPTION.getMsg());
+                            resultMsgDto.setMsg(ExpressModeCheckEnum.ELE_EXPRESS_EXCEPTION.getDesc());
                         }
                         break;
                     case 2:
                         try {
                             expressOrderCallbackService.saveExpressModePlanB(paramDto);
                         } catch (Exception e) {
-                            logger.error("自行配送异常异常(订单:" + paramDto.getExpressOrderId() + "):{}", e);
+                            logger.error("自行配送异常异常(订单:" + paramDto.getOrderId() + "):{}", e);
                             resultMsgDto.setCode(ExpressModeCheckEnum.SELLER_EXPRESS_EXCEPTION.getCode());
-                            resultMsgDto.setMsg(ExpressModeCheckEnum.SELLER_EXPRESS_EXCEPTION.getMsg());
+                            resultMsgDto.setMsg(ExpressModeCheckEnum.SELLER_EXPRESS_EXCEPTION.getDesc());
                         }
                         break;
                     default:
@@ -167,21 +167,21 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
      * @return ResultMsgDto
      */
     private ResultMsgDto<String> checkData(ExpressModeParamDto paramDto, ResultMsgDto<String> resultMsgDto) throws Exception {
-        if (StringUtils.isBlank(paramDto.getExpressOrderId())) {
+        if (StringUtils.isBlank(paramDto.getOrderId())) {
             resultMsgDto.setCode(ExpressModeCheckEnum.EXPRESS_ORDER_ID_NULL.getCode());
-            resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_ORDER_ID_NULL.getMsg());
+            resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_ORDER_ID_NULL.getDesc());
         } else if (paramDto.getExpressType() > 2 || paramDto.getExpressType() == 0) {
             resultMsgDto.setCode(ExpressModeCheckEnum.EXPRESS_TYPE_FAIL.getCode());
-            resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_TYPE_FAIL.getMsg());
+            resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_TYPE_FAIL.getDesc());
         } else if (StringUtils.isBlank(paramDto.getStoreId())) {
             resultMsgDto.setCode(ExpressModeCheckEnum.STORE_ID_NULL.getCode());
-            resultMsgDto.setMsg(ExpressModeCheckEnum.STORE_ID_NULL.getMsg());
+            resultMsgDto.setMsg(ExpressModeCheckEnum.STORE_ID_NULL.getDesc());
         } else if (StringUtils.isBlank(paramDto.getUserId())) {
             resultMsgDto.setCode(ExpressModeCheckEnum.USER_ID_NULL.getCode());
-            resultMsgDto.setMsg(ExpressModeCheckEnum.USER_ID_NULL.getMsg());
+            resultMsgDto.setMsg(ExpressModeCheckEnum.USER_ID_NULL.getDesc());
         } else if (null == paramDto.getCommisionRatio()) {
             resultMsgDto.setCode(ExpressModeCheckEnum.COMMISION_RATIO_NULL.getCode());
-            resultMsgDto.setMsg(ExpressModeCheckEnum.COMMISION_RATIO_NULL.getMsg());
+            resultMsgDto.setMsg(ExpressModeCheckEnum.COMMISION_RATIO_NULL.getDesc());
         } else {
             //检查订单数据
             checkOrderData(paramDto, resultMsgDto);
@@ -197,20 +197,20 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
      */
     private void checkOrderData(ExpressModeParamDto paramDto, ResultMsgDto<String> resultMsgDto) throws Exception {
         //检查订单数据正确性，是否符合配送要求
-        TradeOrder tradeOrder = tradeOrderService.selectById(paramDto.getExpressOrderId());
+        TradeOrder tradeOrder = tradeOrderService.selectById(paramDto.getOrderId());
         if (tradeOrder == null) {
             resultMsgDto.setCode(ExpressModeCheckEnum.TRADE_ORDER_NULL.getCode());
-            resultMsgDto.setMsg(ExpressModeCheckEnum.TRADE_ORDER_NULL.getMsg());
+            resultMsgDto.setMsg(ExpressModeCheckEnum.TRADE_ORDER_NULL.getDesc());
         } else if (!OrderTypeEnum.PHYSICAL_ORDER.equals(tradeOrder.getType())
                 || !PickUpTypeEnum.DELIVERY_DOOR.equals(tradeOrder.getPickUpType())) {
             resultMsgDto.setCode(ExpressModeCheckEnum.ORDER_TYPE_FAIL.getCode());
-            resultMsgDto.setMsg(ExpressModeCheckEnum.ORDER_TYPE_FAIL.getMsg());
+            resultMsgDto.setMsg(ExpressModeCheckEnum.ORDER_TYPE_FAIL.getDesc());
         } else if (!OrderStatusEnum.DROPSHIPPING.equals(tradeOrder.getStatus())) {
             resultMsgDto.setCode(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getCode());
-            resultMsgDto.setMsg(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getMsg());
+            resultMsgDto.setMsg(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getDesc());
         } else if (!tradeOrder.getStoreId().equals(paramDto.getStoreId())) {
             resultMsgDto.setCode(ExpressModeCheckEnum.EXPRESS_DATA_FAIL.getCode());
-            resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_DATA_FAIL.getMsg());
+            resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_DATA_FAIL.getDesc());
         } else {
             //检查配送数据
             checkExpressData(tradeOrder.getOrderNo(), paramDto.getExpressType(), resultMsgDto);
@@ -233,12 +233,12 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
             switch (expressType) {
                 case 1:
                     resultMsgDto.setCode(ExpressModeCheckEnum.EXPRESS_STATUS_FAIL.getCode());
-                    resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_STATUS_FAIL.getMsg());
+                    resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_STATUS_FAIL.getDesc());
                     break;
                 case 2:
                     if (callbackList.get(0).getOrderStatus() != Integer.parseInt(ExpressOrderStatus.STATUS_5.getValue())) {
                         resultMsgDto.setCode(ExpressModeCheckEnum.EXPRESS_DATA_FAIL.getCode());
-                        resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_DATA_FAIL.getMsg());
+                        resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_DATA_FAIL.getDesc());
                     }
                     break;
                 default:

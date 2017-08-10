@@ -662,7 +662,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         PageHelper.startPage(pageNumber, pageSize, true, false);
         return new PageUtils<TradeOrder>(tradeOrderMapper.selectOrderList(map));
     }
-    
+
     /**
      * zengj:根据参数查询订单信息
      *
@@ -806,7 +806,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             PageUtils<TradeOrder> page = this.findConsumeByMap(map, 1, 10);
             num = (int) page.getTotal();
         } catch (ServiceException e) {
-            logger.error("查询到店消费订单数量发生异常：",e);
+            logger.error("查询到店消费订单数量发生异常：", e);
         }
         return num;
     }
@@ -1073,7 +1073,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 try {
                     tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
                 } catch (Exception e) {
-                    logger.error("查询退款单列表发生异常：",e);
+                    logger.error("查询退款单列表发生异常：", e);
                 }
                 activityList = this.findActivityInfo(orderIds);
             }
@@ -1286,8 +1286,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                     userIds.add(order.getUserId());
                 }
                 if (StringUtils.isNotEmpty(order.getCityId())) {
-                	Address address = addressService.getAddressById(Long.parseLong(order.getCityId()));
-                	order.setCityName(address == null ? "" : address.getName());
+                    Address address = addressService.getAddressById(Long.parseLong(order.getCityId()));
+                    order.setCityName(address == null ? "" : address.getName());
                 }
             }
 
@@ -1515,8 +1515,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     /**
      * 获取活动信息
      *
-     * @param activityType活动类型
-     * @param activityId       活动ID
+     * @param activityId 活动ID
      * @author zengj
      */
     private Map<String, Object> getActivity(ActivityTypeEnum activityType, String activityId) {
@@ -1576,7 +1575,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                     // 特惠活动或低价抢购活动只有店铺能发
                     activitySource = ActivitySourceEnum.STORE;
                 }
-            }else if (ActivityTypeEnum.SECKILL_ACTIVITY.equals(activityType)) {
+            } else if (ActivityTypeEnum.SECKILL_ACTIVITY.equals(activityType)) {
                 ActivitySeckill activitySeckill = activitySeckillMapper.findByPrimaryKey(activityId);
                 if (activitySeckill != null) {
                     activityName = activitySeckill.getSeckillName();
@@ -2273,7 +2272,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         // end add 兼容未升级的pos机系统 by wangf01 2017-1-24
         List<TradeOrder> list = tradeOrderMapper.getTradeOrderByParams(map);
         /*
-		 * if (list != null && list.size() > 0) { for (TradeOrder order : list) { if
+         * if (list != null && list.size() > 0) { for (TradeOrder order : list) { if
 		 * (StringUtils.isNotEmpty(order.getActivityId()) && !"0".equals(order.getActivityId())) { if
 		 * (order.getActivityType().equals(ActivityTypeEnum. FULL_REDUCTION_ACTIVITIES)) { // 满减活动 ActivityDiscount
 		 * activityDiscount = activityDiscountMapper .selectByPrimaryKey(order.getActivityId()); if (activityDiscount !=
@@ -3358,7 +3357,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     /**
      * 销售统计
      *
-     * @param parames
      * @return
      * @author zengj
      */
@@ -4049,9 +4047,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     @Override
     public JSONObject findUserOrderDetailList(String orderId) throws ServiceException {
-    	if(StringUtils.isEmpty(orderId)){
-    		throw new ServiceException("非法请求参数");
-    	}
+        if (StringUtils.isEmpty(orderId)) {
+            throw new ServiceException("非法请求参数");
+        }
         UserTradeOrderDetailVo orders = tradeOrderMapper.selectUserOrderDetail(orderId);
         // Begin 13113 待付款的订单不展示提货码 add by zengj
         if (orders != null
@@ -4721,7 +4719,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     // begin add by wushp 20160823
 
     /**
-     * @param userI 用户ID
      * @return list
      * @desc 微信查询买家实物订单各状态订单数量
      * @author wushp
@@ -4845,7 +4842,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      * 根据条件查询订单交易号
      * </p>
      *
-     * @param params
      * @return
      * @author yangq
      */
@@ -5048,6 +5044,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     /**
      * 零售pos发货操作
+     *
      * @param tradeOrder
      * @throws Exception
      */
@@ -5057,12 +5054,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {// 发货
             // begin V2.5.0 add by wangf01 20170626
             TradeOrder tradeOrderParam = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
-            if (tradeOrderParam.getStatus() != OrderStatusEnum.DROPSHIPPING){
+            if (tradeOrderParam.getStatus() != OrderStatusEnum.DROPSHIPPING) {
                 throw new ServiceException("订单状态已更新，请刷新后重试");
             }
             // begin V2.6.0 零售pos发货默认B方案自行配送 add by wangf01 20170810
             ExpressModeParamDto paramDto = new ExpressModeParamDto();
-            paramDto.setExpressOrderId(tradeOrder.getId());
+            paramDto.setOrderId(tradeOrder.getId());
             paramDto.setUserId(tradeOrder.getUpdateUserId());
             StoreDetailVo vo = storeInfoService.getStoreDetailById(tradeOrderParam.getStoreId());
             paramDto.setStoreId(tradeOrderParam.getStoreId());
@@ -5107,7 +5104,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 throw e;
             }
             //老代码 start
-        }else{
+        } else {
             try {
                 this.updateWithConfirm(tradeOrder);
             } catch (Exception e) {
@@ -5265,8 +5262,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     /**
      * (non-Javadoc)
-     *
-     * @see com.okdeer.mall.order.service.TradeOrderServiceApi#selectServiceStoreOrderByParams(java.util.Map)
      */
     @Override
     public PageUtils<TradeOrder> findServiceStoreOrderByParams(Map<String, Object> params, int pageNumber, int pageSize)
@@ -5292,8 +5287,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     /**
      * (non-Javadoc)
-     *
-     * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findServiceStoreOrderForExport(java.util.Map)
      */
     @Override
     public PageUtils<TradeOrderExportVo> findServiceStoreOrderForExport(Map<String, Object> params, int pageNumber,
@@ -5414,11 +5407,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     @Override
     public PageUtils<PhysicsOrderVo> findServiceStoreOrderForOperateByParams(Map<String, Object> params, int pageNumber,
                                                                              int pageSize) throws ServiceException {
-    	
-    	 //add by zhangkeneng 优化代码提高性能,先查出登陆人组织关联的storeIdList,再in
+
+        //add by zhangkeneng 优化代码提高性能,先查出登陆人组织关联的storeIdList,再in
         List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(params.get(Constant.CURR_USER_ID).toString());
-        params.put("storeIdList",storeIdList);
-    	
+        params.put("storeIdList", storeIdList);
+
         List<PhysicsOrderVo> result = null;
         PageHelper.startPage(pageNumber, pageSize, true, false);
         result = tradeOrderMapper.selectServiceStoreListForOperate(params);
@@ -5457,7 +5450,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 try {
                     tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIds);
                 } catch (Exception e) {
-                    logger.error("查询退款单列表发生异常：",e);
+                    logger.error("查询退款单列表发生异常：", e);
                 }
                 activityList = this.findActivityInfo(orderIds);
             }
@@ -5761,8 +5754,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     /**
      * (non-Javadoc)
-     *
-     * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findRechargeOrderDetail(java.lang.String)
      */
     @Transactional(readOnly = true)
     @Override
@@ -5774,8 +5765,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     /**
      * (non-Javadoc)
-     *
-     * @see com.okdeer.mall.order.service.TradeOrderService#findOrderByParams(java.util.Map,
+     * <p>
      * int, int)
      */
     @Override
@@ -5786,14 +5776,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         return new PageUtils<>(result);
     }
 
-  
 
     // Begin 重构4.1 add by wusw 20160723
 
     /**
      * (non-Javadoc)
-     *
-     * @see com.okdeer.mall.order.service.TradeOrderService#findOrderListForFinanceByParams(java.util.Map)
      */
     @Override
     public List<FmsTradeOrderBo> findOrderListForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException {
@@ -5802,11 +5789,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     @Override
     public long findOrderCountForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) throws ServiceException {
-    	PageHelper.startPage(1, -1, true);
-    	List<FmsTradeOrderBo> result = tradeOrderMapper.findOrderForFinanceByParams(tradeOrderQueryParamDto);
-    	if(result instanceof Page){
-    		return ((Page<FmsTradeOrderBo>) result ).getTotal();
-    	}
+        PageHelper.startPage(1, -1, true);
+        List<FmsTradeOrderBo> result = tradeOrderMapper.findOrderForFinanceByParams(tradeOrderQueryParamDto);
+        if (result instanceof Page) {
+            return ((Page<FmsTradeOrderBo>) result).getTotal();
+        }
         return 0L;
     }
 
@@ -5953,8 +5940,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     /**
      * (non-Javadoc)
-     *
-     * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findRechargeOrderForExport()
      */
     @Transactional(readOnly = true)
     @Override
@@ -6031,7 +6016,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     }
 
     /**
-     * @param map 查询参数
      * @Description: 财务系统退款订单参数转换
      * @author zengjizu
      * @date 2016年9月17日
@@ -6775,7 +6759,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      * 到店消费订单处理
      *
      * @param tradeOrder 订单
-     * @param result     MQ返回请求数据
      * @throws Exception
      */
     @Transactional(rollbackFor = Exception.class)
@@ -7122,7 +7105,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     }
 
     /**
-     * @param userId 用户id
      * @return int 返回统计值
      * @Description: tuzhd根据用户id查询其支付完成的订单总量 用于首单条件判断
      * @author tuzhd
@@ -7140,8 +7122,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      * @date 2016年12月31日
      */
     public boolean checkUserUseCoupons(String userId) {
-    	TradeOrderParamDto param =new TradeOrderParamDto();
-    	param.setUserId(userId);
+        TradeOrderParamDto param = new TradeOrderParamDto();
+        param.setUserId(userId);
         // 根据用户id查询其支付完成的订单总量 用于首单条件判断
         int orderCount = selectCountByUserStatus(param);
         if (orderCount == 0) {
