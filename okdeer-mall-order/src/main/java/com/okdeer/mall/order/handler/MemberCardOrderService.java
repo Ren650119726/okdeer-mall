@@ -1,5 +1,6 @@
 package com.okdeer.mall.order.handler;
 
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.dto.MemberCardResultDto;
 import com.okdeer.mall.order.dto.PayInfoDto;
@@ -63,7 +64,7 @@ public interface MemberCardOrderService {
 	 * @author tuzhd
 	 * @date 2017年8月10日
 	 */
-	MemberCardResultDto<PayInfoDto> getPayInfo(PayInfoParamDto dto);
+	MemberCardResultDto<PayInfoDto> getPayInfo(PayInfoParamDto dto) throws ServiceException;
 	
 	/**
      * @Description: 根据订单id取消订单,已提交订单不能清除，会导致用户支付无法对上账
