@@ -15,9 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRange;
-import com.okdeer.mall.activity.seckill.service.ActivitySeckillRangeServiceApi;
 import com.okdeer.mall.activity.seckill.mapper.ActivitySeckillRangeMapper;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRangeService;
+import com.okdeer.mall.activity.seckill.service.ActivitySeckillRangeServiceApi;
 
 /**
  * ClassName: ActivitySeckillRangeServiceImpl 
@@ -37,7 +37,7 @@ public class ActivitySeckillRangeServiceImpl implements ActivitySeckillRangeServ
 	/**
 	 * 日志输出
 	 */
-	private static final Logger logger = LoggerFactory.getLogger(ActivitySeckillRangeServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ActivitySeckillRangeServiceImpl.class);
 	
 	/**
 	 * 注入秒杀活动范围Mapper
@@ -48,6 +48,7 @@ public class ActivitySeckillRangeServiceImpl implements ActivitySeckillRangeServ
 	
 	@Override
 	public List<ActivitySeckillRange> findSeckillRangeAllBySeckillId(String seckillId) throws Exception {
+		LOGGER.info("findSeckillRangeAllBySeckillId请求参数==seckillId"+seckillId);
 		return activitySeckillRangeMapper.findBySeckillId(seckillId);
 	}
 

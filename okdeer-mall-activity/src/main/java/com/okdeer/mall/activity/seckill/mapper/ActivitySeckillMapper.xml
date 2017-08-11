@@ -21,6 +21,8 @@
 		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" javaType="date" />
 		<result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" javaType="string" />
 		<result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled" />
+	    <result column="daily_max_num" property="dailyMaxNum" jdbcType="INTEGER" />
+	    <result column="publish_client" property="publishClient" jdbcType="VARCHAR" javaType="string" />
 	</resultMap>
 
 	<!-- 秒杀活动列表查询结果Map add by lijun 20160714 -->
@@ -73,7 +75,7 @@
 		id, seckill_name, seckill_alias, seckill_range_type, seckill_status,
 		start_time,
 		end_time, seckill_num, start_num, seckill_price, pic_url, store_sku_id,
-		create_time, create_user_id, update_time, update_user_id, disabled
+		create_time, create_user_id, update_time, update_user_id, disabled,daily_max_num,publish_client
 	</sql>
 
 	<!-- 秒杀活动列表页查询 add by lijun 20160714 -->
@@ -247,7 +249,9 @@
 		AND sr.city_id = #{cityId,jdbcType=VARCHAR}))
 		AND sec.store_sku_id = gss.id
 		AND gss.store_id = sie.store_id
-		AND sie.is_closed = 1 union 
+		AND sec.publish_client like CONCAT('%','1','%')
+		AND sie.is_closed = 1 
+		UNION 
 		SELECT
 		sec.id,sec.seckill_name,sec.seckill_alias,sec.seckill_range_type,sec.seckill_status,sec.start_time,sec.end_time,
 		sec.seckill_num,sec.start_num,sec.seckill_price,sec.pic_url,sec.store_sku_id,sec.create_time,sec.create_user_id,
@@ -264,6 +268,7 @@
 			SELECT s.start_time FROM activity_seckill s left JOIN activity_seckill_range r on s.id = r.activity_seckill_id 
 			 WHERE s.seckill_status = 0 and (r.city_id = #{cityId,jdbcType=VARCHAR} OR s.seckill_range_type = 0) ORDER BY s.start_time ASC LIMIT 1) 
 		AND sec.seckill_status = 0 
+		AND sec.publish_client like CONCAT('%','1','%')
 	</select>
 	<!-- 查询定位地址是否有秒杀活动 end add by luosm 2016-7-20 -->
 
@@ -339,7 +344,7 @@
 		start_time, end_time,
 		seckill_num, start_num, seckill_price, pic_url, store_sku_id, create_time,
 		create_user_id,
-		update_time, update_user_id, disabled)
+		update_time, update_user_id, disabled,daily_max_num,publish_client)
 		VALUES(
 		#{id,jdbcType=VARCHAR}, #{seckillName,jdbcType=VARCHAR}, #{seckillAlias,jdbcType=VARCHAR},
 		#{seckillRangeType,jdbcType=TINYINT},
@@ -349,7 +354,8 @@
 		#{seckillPrice,jdbcType=DECIMAL}, #{picUrl,jdbcType=VARCHAR}, #{storeSkuId,jdbcType=VARCHAR},
 		#{createTime,jdbcType=TIMESTAMP}, #{createUserId,jdbcType=VARCHAR},
 		#{updateTime,jdbcType=TIMESTAMP},
-		#{updateUserId,jdbcType=VARCHAR}, #{disabled,jdbcType=TINYINT}
+		#{updateUserId,jdbcType=VARCHAR}, #{disabled,jdbcType=TINYINT},#{dailyMaxNum,jdbcType=INTEGER},
+		#{publishClient,jdbcType=VARCHAR}
 		)
 	</insert>
 
@@ -408,6 +414,12 @@
 			</if>
 			<if test="updateUserId != null and updateUserId != ''">
 				update_user_id = #{updateUserId,jdbcType=VARCHAR},
+			</if>
+			<if test="dailyMaxNum != null">
+				daily_max_num = #{dailyMaxNum,jdbcType=INTEGER},
+			</if>
+			<if test="publishClient != null and publishClient != ''">
+				publish_client = #{publishClient,jdbcType=VARCHAR},
 			</if>
 		</set>
 		WHERE id = #{id,jdbcType=VARCHAR}
