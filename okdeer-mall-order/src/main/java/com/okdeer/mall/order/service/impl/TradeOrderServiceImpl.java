@@ -4123,10 +4123,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
         // Begin V2.2 added by maojj  2017-03-20
         // 如果是扫码购订单，增加订单类型描述 添加会员卡订单类型 + tuzhd 2017-8-10
-        if (orders.getOrderResource() == OrderResourceEnum.SWEEP || orders.getOrderResource() == OrderResourceEnum.MEMCARD ) {
+        if (orders.getOrderResource() == OrderResourceEnum.SWEEP ) {
             json.put("orderTypeDesc", AppOrderTypeEnum.SWEEP_ORDER.getDesc());
             json.put("orderType", String.valueOf(AppOrderTypeEnum.SWEEP_ORDER.getCode()));
         }
+        if (orders.getOrderResource() == OrderResourceEnum.MEMCARD ) {
+            json.put("orderTypeDesc", AppOrderTypeEnum.MEMCARD_ORDER.getDesc());
+            json.put("orderType", String.valueOf(AppOrderTypeEnum.MEMCARD_ORDER.getCode()));
+        }
+        json.put("orderResource", orders.getOrderResource().ordinal());
+        json.put("platformPreferential", orders.getPlatformPreferential());
+        json.put("storePreferential", orders.getStorePreferential());
         // End V2.2 added by maojj 2017-03-20  + tuzhd 2017-8-1
 
         // 支付方式:(0:在线支付、1:货到付款,2:未付款,3:线下支付)
