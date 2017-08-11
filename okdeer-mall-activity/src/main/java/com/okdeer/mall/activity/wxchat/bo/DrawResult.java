@@ -28,6 +28,11 @@ public class DrawResult {
 	 */
 	private String recordId;
 
+	/**
+	 * 是否已经领取 1:已经领取 0:未领取
+	 */
+	private Integer isTake;
+
 	public int getCode() {
 		return code;
 	}
@@ -66,6 +71,14 @@ public class DrawResult {
 
 	public void setRecordId(String recordId) {
 		this.recordId = recordId;
+	}
+
+	public Integer getIsTake() {
+		return isTake;
+	}
+
+	public void setIsTake(Integer isTake) {
+		this.isTake = isTake;
 	}
 
 }

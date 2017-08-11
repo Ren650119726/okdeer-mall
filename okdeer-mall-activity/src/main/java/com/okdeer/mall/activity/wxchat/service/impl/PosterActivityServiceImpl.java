@@ -536,6 +536,7 @@ public class PosterActivityServiceImpl
 				if (StringUtils.isNotEmpty(activityPosterWechatUserInfo.getPhoneNo())) {
 					// 手机号码已经有了，直接发放
 					takePrize(openid, activityPosterDrawRecord.getId(), activityPosterWechatUserInfo.getPhoneNo());
+					drawResult.setIsTake(1);
 				}
 			}
 
