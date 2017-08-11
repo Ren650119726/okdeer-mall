@@ -75,7 +75,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	/**
 	 * 日志输出
 	 */
-	private static final Logger logger = LoggerFactory.getLogger(ActivitySeckillServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ActivitySeckillServiceImpl.class);
 
 	/**
 	 * 注入秒杀活动Mapper接口
@@ -117,7 +117,6 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	 * Redis模板注入
 	 */
 	@Autowired
-	//private IRedisTemplateWrapper<String,Integer> redisTemplateWrapper;
 	private StringRedisTemplate stringRedisTemplate;
 	
 	
@@ -183,6 +182,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void saveActivitySeckill(ActivitySeckillFormVo activitySeckillFormVo) throws Exception {
+		LOGGER.info("增加秒杀活动参数===="+activitySeckillFormVo.toString());
 		List<String> rpcIdByStockList = new ArrayList<String>();
 		List<String> rpcIdBySkuList = new ArrayList<String>();
 		try {
@@ -422,7 +422,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		stockUpdateDto.setStockOperateEnum(StockOperateEnum.ACTIVITY_STOCK);
 
 		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
-		StockUpdateDetailDto updateDetail =  new StockUpdateDetailDto();
+		StockUpdateDetailDto updateDetail =  new StockUpdateDetailDto();;
 		updateDetail.setStoreSkuId(activitySeckillFormVo.getStoreSkuId());
 		updateDetail.setSpuType(SpuTypeEnum.serviceSpu);
 		updateDetail.setActType(ActivityTypeEnum.SECKILL_ACTIVITY);
@@ -449,7 +449,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		stockUpdateDto.setStockOperateEnum(StockOperateEnum.ACTIVITY_END);
 
 		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
-		StockUpdateDetailDto updateDetail =  new StockUpdateDetailDto();
+		StockUpdateDetailDto updateDetail =  new StockUpdateDetailDto();;
 		updateDetail.setStoreSkuId(storeSkuId);
 		updateDetail.setActType(ActivityTypeEnum.SECKILL_ACTIVITY);
 		updateDetail.setUpdateLockedNum(0);
@@ -517,6 +517,9 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		activitySeckill.setStoreSkuId(activitySeckillFormVo.getStoreSkuId());
 		activitySeckill.setUpdateTime(date);
 		activitySeckill.setUpdateUserId(activitySeckillFormVo.getUpdateUserId());
+		//2.6添加最大使用量和发布客户端 xuzq 20170805
+		activitySeckill.setDailyMaxNum(activitySeckillFormVo.getDailyMaxNum());
+		activitySeckill.setPublishClient(activitySeckillFormVo.getPublishClient());
 		activitySeckillMapper.add(activitySeckill);
 	}
 
@@ -543,6 +546,8 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		activitySeckill.setStartTime(activitySeckillFormVo.getStartTime());
 		activitySeckill.setStoreSkuId(activitySeckillFormVo.getStoreSkuId());
 		activitySeckill.setUpdateTime(date);
+		activitySeckill.setDailyMaxNum(activitySeckillFormVo.getDailyMaxNum());
+		activitySeckill.setPublishClient(activitySeckillFormVo.getPublishClient());
 		activitySeckillMapper.updateByPrimaryKeySelective(activitySeckill);
 	}
 
