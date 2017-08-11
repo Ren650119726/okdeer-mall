@@ -491,7 +491,7 @@ public class PosterActivityServiceImpl
 	@Transactional(rollbackFor = Exception.class)
 	public DrawResult draw(String openid, String activityId) throws MallApiException {
 		DrawResult drawResult = new DrawResult();
-
+		drawResult.setIsTake(0);
 		try {
 			ActivityPosterWechatUserInfo activityPosterWechatUserInfo = activityPosterWechatUserService
 					.findByOpenid(openid);
