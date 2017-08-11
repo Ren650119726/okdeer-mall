@@ -34,7 +34,8 @@ public class RequestHandlerChain<Q,R> {
 		for (RequestHandler<Q,R> handler : handlerChain) {
 			long beginTime = System.currentTimeMillis();
 			handler.process(req, resp);
-			logger.debug(LogConstants.ORDER_FLOWER_CONSUME_TIME, req.getOrderOptType(),handler.getClass().getSimpleName(),System.currentTimeMillis()-beginTime);
+			logger.debug(LogConstants.ORDER_FLOWER_CONSUME_TIME, req.getOrderOptType(),
+					handler.getClass().getSimpleName(), System.currentTimeMillis() - beginTime);
 			if (!resp.isSuccess()) {
 				return;
 			}
