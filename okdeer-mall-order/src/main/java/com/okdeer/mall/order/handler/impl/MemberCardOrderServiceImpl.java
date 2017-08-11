@@ -179,7 +179,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 				vo.setCouponsActivityId(coupons.getId());
 			}
 		}
-		
+		vo.setOrderResource(OrderResourceEnum.MEMCARD);
 		//不存在存到缓存中
     	redisTemplateWrapper.set(key, vo, timeOutMinutes, TimeUnit.MINUTES);
     	//去掉优惠码位存储，利于前端提取
@@ -477,7 +477,11 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
     		String key = orderId + orderKeyStr;
 	    	//清除redis记录
 	    	MemberTradeOrderVo order = (MemberTradeOrderVo) redisTemplateWrapper.get(key);
-	    	MemberCardResultDto dto =  hykPayOrderServiceApi.cancelOrder(order.getOrderId());
+	    	//订单不存在标识清楚成功返回
+	    	if(order == null){
+	    		return true;
+	    	}
+	    	MemberCardResultDto<?> dto =  hykPayOrderServiceApi.cancelOrder(order.getOrderId());
 	    	//取消失败返回false
 	    	if(dto.getCode() != CommonResultCodeEnum.SUCCESS.getCode()){
 	    		return false;
@@ -509,7 +513,9 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		   //移除会员卡与订单信息 不带优惠位
 		   redisTemplateWrapper.del(newNum + cardKeyStr);
 		   //会员卡标识及 用户id+设备号 相互为key 进行存储
-		   redisTemplateWrapper.del(userInfo);
+		   if(StringUtils.isNotBlank(userInfo)){
+			   redisTemplateWrapper.del(userInfo);
+		   }
 	   }
    }
     
@@ -555,7 +561,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		}
 		// 发送消息修改代金券使用数量
 		ActivityCouponsBo couponsBo = new ActivityCouponsBo(couponsId, Integer.valueOf(1));
-		MQMessage anMessage = new MQMessage(ActivityCouponsTopic.TOPIC_COUPONS_COUNT, (Serializable) couponsBo);
+		MQMessage<?> anMessage = new MQMessage<>(ActivityCouponsTopic.TOPIC_COUPONS_COUNT, (Serializable) couponsBo);
 		// key:订单id：代金券id
 		anMessage.setKey(String.format("%s:%s", orderId,couponsId));
 		try {
