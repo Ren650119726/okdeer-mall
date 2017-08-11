@@ -667,7 +667,7 @@ public class PosterActivityServiceImpl
 		sendVo.setSysCode(msgSysCode);
 		sendVo.setToken(msgToken);
 		String content = "尊敬的用户，您通过“七夕情报”活动获得了" + prizeName
-				+ "，请登录友门鹿app使用，APP下载地址：http://a.app.qq.com/o/simple.jsp?pkgname=com.okdeer.store";
+				+ "，请登录友门鹿app使用，APP下载地址：http://update.okdeer.com/ymlstore.html";
 		sendVo.setContent(content);
 		sendVo.setIsTiming(0);
 		sendVo.setMobile(mobile);
