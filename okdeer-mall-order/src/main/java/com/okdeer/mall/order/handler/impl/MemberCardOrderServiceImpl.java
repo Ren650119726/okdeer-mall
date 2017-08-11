@@ -132,6 +132,13 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	private String orderKeyStr = ":memberCardOrder";
 	
 	/**
+	 * 会员卡缓存后缀
+	 */
+	private String cardKeyStr = ":memberCard";
+	
+	private int  timeOutMinutes = 150;
+	
+	/**
 	 * @Description: 会员卡订单同步
 	 * @param vo 同步记录
 	 * @return MemberCardResultDto  返回结果
@@ -153,7 +160,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		String key = vo.getOrderId() + orderKeyStr;
 		if(redisTemplateWrapper.get(key) != null){
 			dto.setCode(CommonResultCodeEnum.FAIL.getCode());
-			dto.setMessage("会员卡信息已失效，请与用户确认再确认");
+			dto.setMessage("订单已经推送，请与用户确认再确认");
 			return dto;
 		}
 
@@ -163,17 +170,21 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 			FavourParamBO parambo = createFavourParamBo(vo);
 			PreferentialVo preferentialVo = getPreferentialService.findPreferByCard(parambo);
 			Coupons coupons = (Coupons) preferentialVo.getMaxFavourOnline();
-			//设置优惠金额
-			vo.setCouponsFaceValue(new BigDecimal(coupons.getCouponPrice()));
-			setDiscountAmount(vo);
-			vo.setCouponsId(coupons.getCouponId());
-			vo.setRecordId(coupons.getRecordId());
-			vo.setCouponsActivityId(coupons.getId());
+			if(coupons != null){
+				//设置优惠金额
+				vo.setCouponsFaceValue(new BigDecimal(coupons.getCouponPrice()));
+				setDiscountAmount(vo);
+				vo.setCouponsId(coupons.getCouponId());
+				vo.setRecordId(coupons.getRecordId());
+				vo.setCouponsActivityId(coupons.getId());
+			}
 		}
 		
 		//不存在存到缓存中
-    	redisTemplateWrapper.set(key, vo, 15, TimeUnit.MINUTES);
-    	redisTemplateWrapper.set(vo.getMemberPayNum(),key, 15, TimeUnit.MINUTES);
+    	redisTemplateWrapper.set(key, vo, timeOutMinutes, TimeUnit.MINUTES);
+    	//去掉优惠码位存储，利于前端提取
+    	String cardKey = vo.getMemberPayNum().substring(0, vo.getMemberPayNum().length()-1) + cardKeyStr;
+    	redisTemplateWrapper.set(cardKey,key, timeOutMinutes, TimeUnit.MINUTES);
     	
     	//返回结果信息
     	dto.setCode(CommonResultCodeEnum.SUCCESS.getCode());
@@ -288,7 +299,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		resp.getData().setOrderNo(vo.getOrderNo());
 		resp.getData().setTradeNum(vo.getTradeNum());
 		resp.getData().setOrderPrice(String.valueOf(vo.getPaymentAmount()));
-		resp.getData().setLimitTime(15*60);
+		resp.getData().setLimitTime(timeOutMinutes*60);
 		resp.getData().setCurrentTime(System.currentTimeMillis());
 		resp.getData().setPaymentMode(0);
 		resp.getData().setIsReachPrice(1);
@@ -297,10 +308,13 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		//实付金额
 		persity.setActualAmount(vo.getPaymentAmount());
 		persity.setTotalAmount(vo.getSaleAmount());
-		//优惠金额	
-		persity.setPreferentialPrice(vo.getDiscountAmount());
+		//优惠总金额	
+		persity.setPreferentialPrice(vo.getPlatDiscountAmount().add(vo.getDiscountAmount()));
+		
+		//店铺优惠金额	
+		persity.setStorePreferential(vo.getDiscountAmount());
 		//平台优惠字段
-		persity.setPlatformPreferential(vo.getDiscountAmount());
+		persity.setPlatformPreferential(vo.getPlatDiscountAmount());
 		persity.setCreateTime(new Date());
 		persity.setUpdateTime(persity.getCreateTime());
 		//设置显示
@@ -399,7 +413,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		boolean result = false;
 		//获取会员卡信息
 		String memberPayNum =  vo.getMemberPayNum();
-		if(StringUtils.isBlank(memberPayNum)){
+		if(StringUtils.isNotBlank(memberPayNum)){
 			//获取优惠信息 
 			String isHadDiscount = memberPayNum.substring(memberPayNum.length()-1, memberPayNum.length());
 			memberPayNum = memberPayNum.substring(0, memberPayNum.length()-1);
@@ -431,7 +445,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	  */
     public String getMemberPayNumber(String userId,String deviceId){
 		//会员卡缓存标识key 用户id+设备号
-		String key = userId + ":memberCard:" + deviceId;
+		String key = userId + ":cardUser:" + deviceId;
 		//生成随机会员卡信息36开头+12位随机数
 		String card = createMemberCard(12, "36");
 		
@@ -442,9 +456,9 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 			redisTemplateWrapper.del(oldCard);
 		}
 		
-		//设置15分钟过期  会员卡标识及 用户id+设备号 相互为key 进行存储
-		redisTemplateWrapper.set(key,card, 15, TimeUnit.MINUTES);
-		redisTemplateWrapper.set(card,key, 15, TimeUnit.MINUTES);
+		//设置timeOutMinutes分钟过期  会员卡标识及 用户id+设备号 相互为key 进行存储
+		redisTemplateWrapper.set(key,card, timeOutMinutes, TimeUnit.MINUTES);
+		redisTemplateWrapper.set(card,key, timeOutMinutes, TimeUnit.MINUTES);
 		
 		return card;    	
     }
@@ -486,14 +500,14 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	  */
    public void removetMemberPayNumber(String memberPayNum){
 	   if(StringUtils.isNotBlank(memberPayNum)){
-		   //移除会员卡与订单信息 带优惠位
-		   redisTemplateWrapper.del(memberPayNum);
 		   //去除优惠位
 		   String newNum = memberPayNum.substring(0, memberPayNum.length()-1);
 		   //获取会员卡对应用户信息
 		   String userInfo = (String) redisTemplateWrapper.get(newNum);
 		   //剔除会员卡缓存信息
 		   redisTemplateWrapper.del(newNum);
+		   //移除会员卡与订单信息 不带优惠位
+		   redisTemplateWrapper.del(newNum + cardKeyStr);
 		   //会员卡标识及 用户id+设备号 相互为key 进行存储
 		   redisTemplateWrapper.del(userInfo);
 	   }
