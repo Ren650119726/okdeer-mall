@@ -629,7 +629,7 @@ public class PosterActivityServiceImpl
 					// 当该用户不存在邀请人时，记录该用户邀请人为此活动的邀请人
 					SysBuyerUser sysBuyerUser = sysBuyerUserList.get(0);
 					jsonObject = activityCouponsRecordService.addRecordsByCollectId(
-							activityPosterDrawRecord.getActivityCollectId(), sysBuyerUser.getId());
+							activityPosterDrawRecord.getActivityCollectId(), sysBuyerUser.getId(),null,false);
 
 				} else {
 					// 当用户不存在则送到预领劵记录中addRecordsByCollectId

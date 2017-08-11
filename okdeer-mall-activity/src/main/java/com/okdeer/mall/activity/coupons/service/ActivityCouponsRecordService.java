@@ -228,4 +228,14 @@ public interface ActivityCouponsRecordService {
 	 * @date 2017年8月8日
 	 */
 	JSONObject addBeforeRecords(String collectId, String phone,String userId,String advertId) throws ServiceException;
+	
+	/**
+	 * 根据活动ID领取代金劵
+	 * @param collectId 活动id集合
+	 * @param userId 用户id
+	 * @param limitOne 是否限制只领取一次
+	 * @return tuzhiding 
+	 * @throws ServiceException
+	 */
+	public JSONObject addRecordsByCollectId(String collectId, String userId,String invitaUserId,boolean limitOne)throws Exception;
 }
