@@ -77,6 +77,18 @@ public class PlaceOrderServiceConfig {
 	@Resource
 	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  placeSeckillOrderService;
 	
+	/**
+	 * 查询零花钱信息
+	 */
+	@Resource
+	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto> findPinMoneyService;
+	
+	/**
+	 * 检测零花钱
+	 */
+	@Resource
+	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto> checkPinMoneyService;
+	
 	@Bean(name="confirmOrderService")
 	public RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> confirmOrderService() {
 		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> chain = new RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto>();
@@ -88,6 +100,8 @@ public class PlaceOrderServiceConfig {
 		chain.addHandlerChain(checkStockService);
 		// 第四步：查询最优用户地址
 		chain.addHandlerChain(findUserAddrService);
+		// 查询零花钱信息
+		chain.addHandlerChain(findPinMoneyService);
 		// 第五步：查询用户有效的优惠信息
 		chain.addHandlerChain(findFavourService);
 		return chain;
@@ -104,6 +118,8 @@ public class PlaceOrderServiceConfig {
 		chain.addHandlerChain(checkStockService);
 		// 第四步：校验用户优惠信息
 	    chain.addHandlerChain(checkFavourService);
+		// 校验零花钱信息
+		chain.addHandlerChain(checkPinMoneyService);
 		// 第五步：生成订单
 		chain.addHandlerChain(placeOrderService);
 		return chain;

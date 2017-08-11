@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.assemble.GoodsStoreSkuAssembleApi;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
@@ -52,10 +55,13 @@ import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.TradeOrderBuilder;
+import com.okdeer.mall.order.constant.PinMoneyStatusConstant;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderLog;
+import com.okdeer.mall.order.entity.TradePinMoneyObtain;
+import com.okdeer.mall.order.entity.TradePinMoneyUse;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
@@ -63,6 +69,8 @@ import com.okdeer.mall.order.service.OrderReturnCouponsService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.service.TradePinMoneyObtainService;
+import com.okdeer.mall.order.service.TradePinMoneyUseService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.system.utils.ConvertUtil;
 
@@ -132,6 +140,12 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 */
 	@Resource
 	private TradeOrderTimer tradeOrderTimer;
+	
+	@Autowired
+	private TradePinMoneyObtainService tradePinMoneyObtainService;
+	
+	@Autowired
+	private TradePinMoneyUseService tradePinMoneyUseService;
 
 	/**
 	 * 订单操作记录Service
@@ -191,6 +205,8 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		saveActivityDiscountRecord(tradeOrder.getId(), paramDto);
 		// 更新用户最后使用的地址
 		updateLastUseAddr(userUseAddr);
+		// 更新红包记录
+		savePinMoneyRecord(tradeOrder, paramDto);
 		// 插入订单
 		tradeOrderSerive.insertTradeOrder(tradeOrder);
 		// 发送消息
@@ -260,6 +276,63 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				log.error("发送代金券使用消息时发生异常，{}",e);
 			}
 		}
+	}
+	
+	/**
+	 * @Description: 保存红包记录
+	 * @param tradeOrder
+	 * @param paramDto   
+	 * @author guocp
+	 * @throws Exception 
+	 * @date 2017年8月10日
+	 */
+	private void savePinMoneyRecord(TradeOrder tradeOrder, PlaceOrderParamDto paramDto) throws Exception {
+		if(!paramDto.getIsUsePinMoney()){
+			return;
+		}
+		
+		// 查询我的红包记录
+		List<TradePinMoneyObtain> pinMoneyObtains = tradePinMoneyObtainService.findList(paramDto.getUserId(),
+				new Date(), PinMoneyStatusConstant.UNUSED);
+		// 扣减金额
+		BigDecimal deduction = new BigDecimal("0.00");
+		// 用户使用金额
+		BigDecimal usePinMoney = new BigDecimal(paramDto.getPinMoney());
+		List<TradePinMoneyObtain> updateRecord = Lists.newArrayList();
+		for (TradePinMoneyObtain pinMoney : pinMoneyObtains) {
+			// 扣减差额
+			BigDecimal difference = usePinMoney.subtract(deduction);
+			if (difference.compareTo(pinMoney.getRemainAmount()) > 0) {
+				deduction = deduction.add(pinMoney.getRemainAmount());
+				pinMoney.setRemainAmount(new BigDecimal("0.00"));
+				pinMoney.setStatus(PinMoneyStatusConstant.USED);
+				updateRecord.add(pinMoney);
+			} else if (usePinMoney.subtract(deduction).compareTo(difference) == 0) {
+				//判断 用户使用金额 - 扣减的金额 == 扣减差额 
+				deduction = deduction.add(difference);
+				pinMoney.setRemainAmount(pinMoney.getRemainAmount().subtract(difference));
+				updateRecord.add(pinMoney);
+				break;
+			}
+		}
+		
+		// 更新领取记录  updateRecord
+		for(TradePinMoneyObtain entity : updateRecord){
+			entity.setUpdateTime(new Date());
+			tradePinMoneyObtainService.update(entity);
+		}
+		
+		// 更新使用记录
+		List<String> sources = updateRecord.stream().map(record -> record.getId()).collect(Collectors.toList());
+		String sourceIds = Joiner.on(",").join(sources);
+		TradePinMoneyUse tradePinMoneyUse = new TradePinMoneyUse();
+		tradePinMoneyUse.setId(UuidUtils.getUuid());
+		tradePinMoneyUse.setOrderId(tradeOrder.getId());
+		tradePinMoneyUse.setSourceId(sourceIds);
+		tradePinMoneyUse.setUseAmount(usePinMoney);
+		tradePinMoneyUse.setUserId(paramDto.getUserId());
+		tradePinMoneyUse.setCreateTime(new Date());
+		tradePinMoneyUseService.add(tradePinMoneyUse);
 	}
 
 	/**
