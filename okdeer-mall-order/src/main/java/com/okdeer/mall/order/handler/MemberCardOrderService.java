@@ -74,4 +74,12 @@ public interface MemberCardOrderService {
      * @date 2017年8月10日
      */
     boolean cancelMemberCardOrder(String orderId);
+    
+    /**
+     * @Description: 获取会员卡信息接口
+     * @param memberPayNum  会员卡信息
+	 * @author tuzhd
+	 * @date 2017年8月9日
+	 */
+   String getUserIdByMemberCard(String memberPayNum);
 }

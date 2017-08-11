@@ -297,7 +297,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 * @author tuzhd
 	 * @date 2017年8月9日
 	 */
-	@Transactional(rollbackFor = Exception.class)
 	private void saveCardOrder(MemberTradeOrderVo vo,Response<PlaceOrderDto> resp) throws Exception{
 		//转化结果集
 		TradeOrder persity = BeanMapper.map(vo, TradeOrder.class);
@@ -479,6 +478,25 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		
 		return card;    	
     }
+    
+   /**
+     * @Description: 获取会员卡信息接口
+     * @param memberPayNum  会员卡信息
+	 * @author tuzhd
+	 * @date 2017年8月9日
+	 */
+   public String getUserIdByMemberCard(String memberPayNum){
+	   	if(StringUtils.isBlank(memberPayNum)){
+		   return null;
+	   	}
+		//获取会员卡信息获取用户信息
+		String userInfo = (String) redisTemplateWrapper.get(memberPayNum.substring(0, memberPayNum.length()-1));
+		//存在会员卡信息获取用户信息
+		if(StringUtils.isBlank(userInfo)){
+			return null;
+		}
+		return userInfo.split(":")[0];
+   }
     
     /**
      * @Description: 根据订单id取消订单,已提交订单不能清除，会导致用户支付无法对上账

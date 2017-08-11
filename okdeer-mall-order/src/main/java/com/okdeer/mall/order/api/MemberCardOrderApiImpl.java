@@ -109,5 +109,15 @@ public class MemberCardOrderApiImpl implements MemberCardOrderApi {
 	public void removetMemberPayNumber(String memberPayNum){
 		memberCardOrderService.removetMemberPayNumber(memberPayNum);
 	}
+	
+	/**
+     * @Description: 获取会员卡信息接口
+     * @param memberPayNum  会员卡信息
+	 * @author tuzhd
+	 * @date 2017年8月9日
+	 */
+   public String getUserIdByMemberCard(String memberPayNum){
+	  return memberCardOrderService.getUserIdByMemberCard(memberPayNum);
+   }
 
 }
