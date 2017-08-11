@@ -317,7 +317,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		persity.setStoreId(vo.getBranchId());
 		//实付金额
 		persity.setActualAmount(vo.getPaymentAmount());
-		persity.setTotalAmount(vo.getSaleAmount());
 		
 		BigDecimal prefer = vo.getPlatDiscountAmount() != null ? vo.getPlatDiscountAmount():BigDecimal.ZERO;
 		BigDecimal discount = vo.getDiscountAmount() != null ? vo.getDiscountAmount():BigDecimal.ZERO;
