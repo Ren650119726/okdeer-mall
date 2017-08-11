@@ -13,7 +13,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
+import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
 
@@ -25,6 +28,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -122,6 +126,9 @@ public class PosterActivityServiceImpl
 
 	@Reference(version = "1.0.0", check = false)
 	private ISmsService smsService;
+
+	@Resource(name="redisLockRegistry")
+	private RedisLockRegistry redisLockRegistry;
 	
 	/**
 	 * 消息系统CODE
@@ -135,7 +142,7 @@ public class PosterActivityServiceImpl
 	@Value("${mcm.sys.token}")
 	private String msgToken;
 
-	private static final String[] posterImg = { "posterpic1.png" };
+	private static final String[] posterImg = { "posterpic1.png","posterpic2.png"};
 
 	public static final String ACTIVITY_ID = WxchatUtils.ACTIVITY_ID;
 
@@ -146,6 +153,8 @@ public class PosterActivityServiceImpl
 	private static final String QRSCENE_STR = "qrscene_";
 
 	private ActivityPosterConfig activityPosterConfig;
+	
+	
 
 	@Override
 	public Object process(WechatEventMsg wechatEventMsg) throws MallApiException {
@@ -281,7 +290,8 @@ public class PosterActivityServiceImpl
 			// 将用户的二维码图片合成到海报中
 			ImageUtils.overlapImage(posterReadImg, qrCodeImg, 240, 805);
 			// 海报图片添加昵称
-			// ImageUtils.drawTextInImg(posterReadImg, "#EEE5DE", wechatUserInfo.getNickName(), 220,
+			// ImageUtils.drawTextInImg(posterReadImg, "#EEE5DE",
+			// wechatUserInfo.getNickName(), 220,
 			return posterReadImg;
 		} catch (IOException e) {
 			logger.error("读取图片出错", e);
@@ -396,12 +406,10 @@ public class PosterActivityServiceImpl
 					customerService.sendMsg(createSubscribleResponse(subscribeUser, wechatUserInfo));
 					// 发送海报图片給关注用户
 					createAndSendPoster(subscribeUser.getOpenid());
-					// 查询分享用户的好友关注数量
-					int count = activityPosterShareInfoService.queryCountByShareOpenId(shareOpenid);
 					// 給分享的好友发送提示信息
-					customerService.sendMsg(createFriendTip(subscribeUser, wechatUserInfo, count));
+					customerService.sendMsg(createFriendTip(subscribeUser, wechatUserInfo));
 					// 判断分享人的抽奖资格
-					doProcessShareUserQualifica(shareOpenid, count);
+					doProcessShareUserQualifica(shareOpenid);
 				} catch (Exception e) {
 					logger.error("处理用户关注信息出错", e);
 				}
@@ -409,18 +417,30 @@ public class PosterActivityServiceImpl
 		}
 	}
 
-	private void doProcessShareUserQualifica(String shareOpenid, int count) {
-		if (count % 3 == 0) {
-			// 如果是3的倍数，则更新用户的资格次数
-			ActivityPosterWechatUserInfo activityPosterWechatUser = new ActivityPosterWechatUserInfo();
-			activityPosterWechatUser.setOpenid(shareOpenid);
-			activityPosterWechatUser.setQualificaCount(count / 3);
+	private void doProcessShareUserQualifica(String shareOpenid) throws InterruptedException {
+		// 加锁，防止重复的交易号重复执行,出现重复扣款情况
+		Lock lock = redisLockRegistry.obtain("WECHAT_USER_"+shareOpenid);
+		if (lock.tryLock(10, TimeUnit.SECONDS)) {
 			try {
-				activityPosterWechatUserService.update(activityPosterWechatUser);
-			} catch (Exception e) {
-				logger.error("更新用户的资格数出错", e);
+				// 查询分享用户的好友关注数量
+				int count = activityPosterShareInfoService.queryCountByShareOpenId(shareOpenid);
+				if (count % 3 == 0) {
+					// 如果是3的倍数，则更新用户的资格次数
+					ActivityPosterWechatUserInfo activityPosterWechatUser = new ActivityPosterWechatUserInfo();
+					activityPosterWechatUser.setOpenid(shareOpenid);
+					activityPosterWechatUser.setQualificaCount(count / 3);
+					try {
+						activityPosterWechatUserService.update(activityPosterWechatUser);
+					} catch (Exception e) {
+						logger.error("更新用户的资格数出错", e);
+					}
+					customerService.sendMsg(getQucaTip(shareOpenid,count));
+				}
+			} finally {
+				lock.unlock();
 			}
 		}
+
 	}
 
 	private void saveActivityPosterShareInfo(String openid, String shareOpenid) {
@@ -436,18 +456,22 @@ public class PosterActivityServiceImpl
 		}
 	}
 
-	private Object createFriendTip(WechatUserInfo subscribeUser, WechatUserInfo wechatUserInfo, int count) {
+	private Object createFriendTip(WechatUserInfo subscribeUser, WechatUserInfo wechatUserInfo) {
 		TextWechatMsg textWechatMsg = new TextWechatMsg();
 		textWechatMsg.setFromUserName(wechatConfig.getAccount());
 		textWechatMsg.setToUserName(wechatUserInfo.getOpenid());
-		String content = "";
-		if (count % 3 == 0) {
-			content = activityPosterConfig.getGetQualificaTip().replaceAll("#count", String.valueOf(count))
-					.replaceAll("#N", String.valueOf(count / 3));
-		} else {
-			content = activityPosterConfig.getFriendSubscribeTip().replaceAll("#frientname",
-					subscribeUser.getNickName());
-		}
+		String content = activityPosterConfig.getFriendSubscribeTip().replaceAll("#frientname",
+				subscribeUser.getNickName());
+		textWechatMsg.setContent(content);
+		return textWechatMsg;
+	}
+
+	private Object getQucaTip(String openid, int count) {
+		TextWechatMsg textWechatMsg = new TextWechatMsg();
+		textWechatMsg.setFromUserName(wechatConfig.getAccount());
+		textWechatMsg.setToUserName(openid);
+		String content = activityPosterConfig.getGetQualificaTip().replaceAll("#count", String.valueOf(count))
+				.replaceAll("#N", String.valueOf(count / 3));
 		textWechatMsg.setContent(content);
 		return textWechatMsg;
 	}
@@ -618,8 +642,8 @@ public class PosterActivityServiceImpl
 					throw new MallApiException(jsonObject.getString("msg"));
 				}
 			}
-			//发送业务短信
-			sendMsg(posterTakePrizeDto.getMobile(),activityPosterDrawRecord.getPrizeName());
+			// 发送业务短信
+			sendMsg(posterTakePrizeDto.getMobile(), activityPosterDrawRecord.getPrizeName());
 			takePrizeResult.setCode(0);
 			takePrizeResult.setMsg("领取成功");
 		} catch (Exception e) {
@@ -628,7 +652,7 @@ public class PosterActivityServiceImpl
 		}
 		return takePrizeResult;
 	}
-	
+
 	/**
 	 * @Description: 短信通知用户
 	 * @param mobile
