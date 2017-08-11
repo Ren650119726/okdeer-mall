@@ -68,7 +68,6 @@ public class PayResultHandlerFactory {
 	 */
 	public AbstractPayResultHandler getByOrder(TradeOrder tradeOrder){
 		AbstractPayResultHandler handler = null;
-		System.out.println("-------------" + tradeOrder.getOrderResource().getValue());
 		if( OrderTypeEnum.PHYSICAL_ORDER == tradeOrder.getType() && (
 				OrderResourceEnum.SWEEP == tradeOrder.getOrderResource() ||
 				OrderResourceEnum.MEMCARD == tradeOrder.getOrderResource() )){
