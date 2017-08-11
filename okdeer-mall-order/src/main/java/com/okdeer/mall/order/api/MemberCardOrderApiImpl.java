@@ -54,6 +54,8 @@ public class MemberCardOrderApiImpl implements MemberCardOrderApi {
 	 */
 	public Response<PlaceOrderDto> submitOrder(String orderId){
 		Response<PlaceOrderDto> resp = new Response<PlaceOrderDto>();
+		PlaceOrderDto data = new PlaceOrderDto();
+		resp.setData(data);
 		try{
 			resp = memberCardOrderService.submitOrder(orderId,resp);
 		}catch(Exception e){
@@ -93,7 +95,7 @@ public class MemberCardOrderApiImpl implements MemberCardOrderApi {
 	 * @author tuzhd
 	 * @date 2017年8月10日
 	 */
-	public MemberCardResultDto<PayInfoDto> getPayInfo(PayInfoParamDto dto){
+	public MemberCardResultDto<PayInfoDto> getPayInfo(PayInfoParamDto dto)throws Exception{
 		return memberCardOrderService.getPayInfo(dto);
 	}
     

@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
@@ -28,12 +29,14 @@ import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.enums.CommonResultCodeEnum;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
+import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.jxc.bill.service.HykPayOrderServiceApi;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
@@ -160,10 +163,12 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		String key = vo.getOrderId() + orderKeyStr;
 		if(redisTemplateWrapper.get(key) != null){
 			dto.setCode(CommonResultCodeEnum.FAIL.getCode());
-			dto.setMessage("订单已经推送，请与用户确认再确认");
+			dto.setMessage("订单已经推送，请与用户确认");
 			return dto;
 		}
 
+		//默认无活动
+		vo.setActivityType(ActivityTypeEnum.NO_ACTIVITY);
 		//设置为使用才进行查询优惠信息  并设置优惠信息
 		if(vo.isUserDiscount()){
 			//可以使用的优惠金额  即是 排除掉  不可使用优惠的   商品金额
@@ -177,6 +182,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 				vo.setCouponsId(coupons.getCouponId());
 				vo.setRecordId(coupons.getRecordId());
 				vo.setCouponsActivityId(coupons.getId());
+				vo.setActivityType(ActivityTypeEnum.VONCHER);
 			}
 		}
 		vo.setOrderResource(OrderResourceEnum.MEMCARD);
@@ -199,33 +205,32 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 * @author tuzhd
 	 * @date 2017年8月9日
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	public Response<PlaceOrderDto> submitOrder(String orderId,Response<PlaceOrderDto> resp) throws Exception{
 		resp.setResult(ResultCodeEnum.SUCCESS);
 		//获取会员卡信息对应的订单
     	MemberTradeOrderVo order = (MemberTradeOrderVo) redisTemplateWrapper.get(orderId + orderKeyStr);
     	if(order != null){
-    		//检查代金信息
+    		StoreSkuParserBo bo= new StoreSkuParserBo(Lists.newArrayList());
 	    	Request<PlaceOrderParamDto> req = new Request<>();
 	    	PlaceOrderParamDto paramDto= createPlaceOrderParamDto(order);
-	    	req.setData(createPlaceOrderParamDto(order));
-	    	StoreSkuParserBo bo= new StoreSkuParserBo(Lists.newArrayList());
 	    	paramDto.getCacheMap().put("parserBo", bo);
+	    	req.setData(paramDto);
 	    	//共用实物订单代金券校验
 	    	checkFavourService.process(req, resp);
-	    	//如果检查结果为ture
-	    	if(resp.isSuccess()){
+	    	//如果检查结果为ture 且为代金券类型
+	    	if(resp.isSuccess() && order.getActiviType() == ActivityTypeEnum.VONCHER){
 	    		//设置优惠券面额
 	    		order.setCouponsFaceValue(bo.getPlatformPreferential());
 	    		//设置优惠金额
 	    		setDiscountAmount(order);
-	    		//生成交易信息
-	    		order.setTradeNum(TradeNumUtil.getTradeNum());
-	    		order.setOrderResource(OrderResourceEnum.MEMCARD);
-		    	//保存订单信息 及设置返回信息
-	    		saveCardOrder(order,resp);
-	    		//移除会员卡信息
-	    		removetMemberPayNumber(order.getMemberPayNum());
 	    	}
+	    	//生成交易信息
+    		order.setTradeNum(TradeNumUtil.getTradeNum());
+	    	//保存订单信息 及设置返回信息
+    		saveCardOrder(order,resp);
+    		//移除会员卡信息
+    		removetMemberPayNumber(order.getMemberPayNum());
     	}else{
     		resp.setResult(ResultCodeEnum.FAIL);
     	}
@@ -256,11 +261,12 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	/**
 	 * @Description: 获取支付信息
 	 * @param dto
+	 * @throws ServiceException 
 	 * @throws
 	 * @author tuzhd
 	 * @date 2017年8月10日
 	 */
-	public MemberCardResultDto<PayInfoDto> getPayInfo(PayInfoParamDto dto){
+	public MemberCardResultDto<PayInfoDto> getPayInfo(PayInfoParamDto dto) throws ServiceException{
 		MemberCardResultDto<PayInfoDto> payResult =  null;
 		//获取会员卡信息对应的订单
     	MemberTradeOrderVo order = (MemberTradeOrderVo) redisTemplateWrapper.get(dto.getOrderId() + orderKeyStr);
@@ -272,6 +278,8 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
     	}
     	order.setIp(dto.getIp());
 		order.setPayType(PayTypeEnum.enumValueOf(dto.getPaymentType()));
+		TradeOrder trade = tradeOrderService.selectById(order.getOrderId());
+		order.setTradeNum(trade.getTradeNum());
 		payResult = hykPayOrderServiceApi.payOrder(order);
 		//移除缓存中的数据
 		if(payResult.getCode() == CommonResultCodeEnum.SUCCESS.getCode()){
@@ -289,16 +297,19 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 * @author tuzhd
 	 * @date 2017年8月9日
 	 */
-	public void saveCardOrder(MemberTradeOrderVo vo,Response<PlaceOrderDto> resp) throws Exception{
+	@Transactional(rollbackFor = Exception.class)
+	private void saveCardOrder(MemberTradeOrderVo vo,Response<PlaceOrderDto> resp) throws Exception{
 		//转化结果集
 		TradeOrder persity = BeanMapper.map(vo, TradeOrder.class);
 		//设置id值
 		persity.setId(vo.getOrderId());
+		persity.setActivityType(vo.getActiviType());
 		//设置返回值
 		resp.getData().setOrderId(vo.getOrderId());
 		resp.getData().setOrderNo(vo.getOrderNo());
+		
 		resp.getData().setTradeNum(vo.getTradeNum());
-		resp.getData().setOrderPrice(String.valueOf(vo.getPaymentAmount()));
+		resp.getData().setOrderPrice(JsonDateUtil.priceConvertToString(vo.getPaymentAmount(),2,3));
 		resp.getData().setLimitTime(timeOutMinutes*60);
 		resp.getData().setCurrentTime(System.currentTimeMillis());
 		resp.getData().setPaymentMode(0);
@@ -308,8 +319,11 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		//实付金额
 		persity.setActualAmount(vo.getPaymentAmount());
 		persity.setTotalAmount(vo.getSaleAmount());
+		
+		BigDecimal prefer = vo.getPlatDiscountAmount() != null ? vo.getPlatDiscountAmount():BigDecimal.ZERO;
+		BigDecimal discount = vo.getDiscountAmount() != null ? vo.getDiscountAmount():BigDecimal.ZERO;
 		//优惠总金额	
-		persity.setPreferentialPrice(vo.getPlatDiscountAmount().add(vo.getDiscountAmount()));
+		persity.setPreferentialPrice(prefer.add(discount));
 		
 		//店铺优惠金额	
 		persity.setStorePreferential(vo.getDiscountAmount());
@@ -349,8 +363,10 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		logger.info("会员卡下单信息:{}",JsonMapper.nonEmptyMapper().toJson(persity));
 		//保存订单
 		tradeOrderService.insertTradeOrder(persity);
-		//更新优惠券信息
-		updateActivityCoupons(vo.getOrderId(), vo.getRecordId(), vo.getCouponsId(), vo.getDeviceId());
+		if(vo.getActiviType() == ActivityTypeEnum.VONCHER){
+			//更新优惠券信息
+			updateActivityCoupons(vo.getOrderId(), vo.getRecordId(), vo.getCouponsId(), vo.getDeviceId());
+		}
 		resp.setResult(ResultCodeEnum.SUCCESS);
 	}
 	
@@ -363,14 +379,14 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 */
 	private PlaceOrderParamDto createPlaceOrderParamDto(MemberTradeOrderVo vo){
 		PlaceOrderParamDto paramDto =new PlaceOrderParamDto();
-		paramDto.setRecordId(vo.getCouponsId());
+		paramDto.setRecordId(vo.getRecordId());
 		paramDto.setUserId(vo.getUserId());
 		paramDto.setStoreId(vo.getBranchId());
 		paramDto.setActivityId(vo.getCouponsActivityId());
 		paramDto.setActivityItemId(vo.getCouponsId());
 		paramDto.setDeviceId(vo.getDeviceId());
-		paramDto.setChannel(String.valueOf(OrderResourceEnum.MEMCARD.ordinal()));
-		paramDto.setActivityType(String.valueOf(ActivityTypeEnum.VONCHER.ordinal()));
+		paramDto.setChannel(String.valueOf(vo.getOrderResource().ordinal()));
+		paramDto.setActivityType(String.valueOf(vo.getActiviType().ordinal()));
 		
 		PlaceOrderItemDto item = new PlaceOrderItemDto();
 		//设置可优惠金额 用于代金券校验
@@ -398,6 +414,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		parambo.setCouponsType(CouponsType.bldty);
 		parambo.setStoreType(StoreTypeEnum.CLOUD_STORE);
 		parambo.setStoreId(vo.getBranchId());
+		parambo.setGoodsList(Lists.newArrayList());
 		//设置可优惠金额
 		parambo.setTotalAmount(vo.getCanDiscountAmount());
 		return parambo;
@@ -557,7 +574,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		// 更新代金券状态
 		int updateResult = activityCouponsRecordMapper.updateActivityCouponsStatus(params);
 		if (updateResult == 0) {
-			throw new Exception("代金券已使用或者已过期");
+			throw new ServiceException("代金券已使用或者已过期");
 		}
 		// 发送消息修改代金券使用数量
 		ActivityCouponsBo couponsBo = new ActivityCouponsBo(couponsId, Integer.valueOf(1));
