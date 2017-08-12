@@ -241,6 +241,8 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	    	}
 	    	//生成交易信息
     		order.setTradeNum(TradeNumUtil.getTradeNum());
+    		//优惠为0需要提交优惠信息
+    		//MemberCardResultDto<MemberTradeOrderVo> vo = hykPayOrderServiceApi.readyPayOrder(order);
 	    	//保存订单信息 及设置返回信息
     		saveCardOrder(order,resp);
     		//移除会员卡信息
@@ -298,11 +300,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		
 		//移除缓存中的数据
 		if(payResult.getCode() == CommonResultCodeEnum.SUCCESS.getCode()){
-			//支付0元直接改为支付完成
-			if(order.getPaymentAmount().compareTo(BigDecimal.ZERO) == 0){
-				tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
-				tradeOrderService.updateOrderStatus(tradeOrder);
-			}
 			redisTemplateWrapper.del(dto.getOrderId() + orderKeyStr);
 		}
 		return payResult;
@@ -364,8 +361,13 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		}
 		//在线上查找是否有对应商品，在推送的时候已经放入
 		persity.setTradeOrderItem(BeanMapper.mapList(vo.getList(),TradeOrderItem.class));
-		//将订单状态标记为：等待买家付款
-		persity.setStatus(OrderStatusEnum.UNPAID);
+		//支付0元直接改为支付完成
+		if(vo.getPaymentAmount().compareTo(BigDecimal.ZERO) == 0){
+			persity.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
+		}else{
+			//将订单状态标记为：等待买家付款
+			persity.setStatus(OrderStatusEnum.UNPAID);
+		}
 		
 		logger.info("会员卡下单信息:{}",JsonMapper.nonEmptyMapper().toJson(persity));
 		//保存订单
