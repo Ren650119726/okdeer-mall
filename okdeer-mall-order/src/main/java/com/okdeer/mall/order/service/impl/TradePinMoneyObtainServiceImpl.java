@@ -13,8 +13,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.operate.dto.TradePinMoneyQueryDto;
+import com.okdeer.mall.operate.vo.TradePinMoneyObtainVo;
 import com.okdeer.mall.order.entity.TradePinMoneyObtain;
 import com.okdeer.mall.order.mapper.TradePinMoneyObtainMapper;
 import com.okdeer.mall.order.service.TradePinMoneyObtainService;
@@ -37,10 +41,6 @@ public class TradePinMoneyObtainServiceImpl extends BaseServiceImpl implements T
 	@Autowired
 	private TradePinMoneyObtainMapper tradePinMoneyObtainMapper;
 	
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
-	 */
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return tradePinMoneyObtainMapper;
@@ -54,14 +54,21 @@ public class TradePinMoneyObtainServiceImpl extends BaseServiceImpl implements T
 		return tradePinMoneyObtainMapper.findMyUsableTotal(userId,nowDate);
 	}
 
-
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.order.service.TradePinMoneyObtainService#findList(java.lang.String, java.util.Date, int)
-	 */
 	@Override
 	public List<TradePinMoneyObtain> findList(String userId, Date date, int status) {
 		return tradePinMoneyObtainMapper.findList(userId,date,status);
+	}
+
+	@Override
+	public PageUtils<TradePinMoneyObtainVo> findPageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+		List<TradePinMoneyObtainVo> list = tradePinMoneyObtainMapper.findPageList(paramDto);
+		return new PageUtils<TradePinMoneyObtainVo>(list);
+	}
+
+	@Override
+	public Integer findObtainListCount(TradePinMoneyQueryDto paramDto) {
+		return tradePinMoneyObtainMapper.findObtainListCount(paramDto);
 	}
 
 }

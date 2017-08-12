@@ -9,7 +9,13 @@
         <result column="use_amount" property="useAmount" jdbcType="DECIMAL" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     </resultMap>
-
+	<!-- 后台查询领取记录列表 -->
+	<resultMap id="PageListResultMap" type="com.okdeer.mall.operate.vo.TradePinMoneyUseVo" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="userPhone" property="userPhone" jdbcType="VARCHAR" />
+        <result column="use_amount" property="useAmount" jdbcType="DECIMAL" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    </resultMap>
     <sql id="Base_Column_List" >
         id, order_id, source_id, user_id, use_amount, create_time
     </sql>
@@ -91,5 +97,37 @@
         delete from trade_pin_money_use
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-
+	<!-- begin 后台查询零花钱领取列表 xuzq 20170811 -->
+ 	<select id="findPageList" resultMap="PageListResultMap" parameterType="com.okdeer.mall.operate.dto.TradePinMoneyQueryDto" >
+        SELECT 
+        pin.id, buyer.phone userPhone, pin.use_amount, pin.create_time
+        FROM trade_pin_money_use pin
+        LEFT JOIN sys_buyer_user buyer ON pin.user_id = buyer.id
+        WHERE 1=1
+        <if test="createTimeStart != null" >
+        	AND pin.create_time <![CDATA[>=]]> #{createTimeStart,jdbcType=TIMESTAMP}
+        </if>
+        <if test="createTimeEnd != null" >
+        	AND pin.create_time <![CDATA[<= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+        </if>
+        <if test="userPhone != null" >
+            AND buyer.phone like CONCAT('%',#{userPhone,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+    <select id="findUseListCount" resultType="Integer" parameterType="com.okdeer.mall.operate.dto.TradePinMoneyQueryDto" >
+        SELECT count(1) 
+ 		FROM trade_pin_money_use pin
+        LEFT JOIN sys_buyer_user buyer ON pin.user_id = buyer.id
+        WHERE 1=1
+        <if test="createTimeStart != null" >
+        	AND pin.create_time <![CDATA[>=]]> #{createTimeStart,jdbcType=TIMESTAMP}
+        </if>
+        <if test="createTimeEnd != null" >
+        	AND pin.create_time <![CDATA[<= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+        </if>
+        <if test="userPhone != null" >
+            AND buyer.phone like CONCAT('%',#{userPhone,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+    <!-- end 后台查询零花钱领取列表 xuzq 20170811 -->
 </mapper>
