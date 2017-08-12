@@ -1,0 +1,27 @@
+Begin---
+[{
+	"memberPayNum": "369209010919051",
+	"canDiscountAmount": "20",
+	"orderId": "14256114110922ca00dcee964d759259",
+	"orderNo":"201795565234111112222",
+	"branchId": "5592971b276511e6aaff00163e010eb1",
+	"totalAmount": "50",
+	"saleAmount": "40",
+	"platDiscountAmount":"",
+	"discountAmount":"10",
+	"paymentAmount":"40",
+	"list":[{
+		"id":"ttcc704e83fessdsd27f894e357cf",
+		"skuId":"39cc704e83fe11e6823127f894e357cf",
+		"skuName":"鲜肉大包100g/个",
+		"weight":"",
+		"unitPrice":"4",
+		"quantity":"10",
+		"income":"40",
+		"barCode":"2100501147477",
+		"skuCode":"430061",
+		"unit":"个"
+	}]
+	
+}]
+End---
