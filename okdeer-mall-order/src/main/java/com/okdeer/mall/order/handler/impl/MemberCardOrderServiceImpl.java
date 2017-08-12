@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -169,6 +170,8 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 
 		//默认无活动
 		vo.setActivityType(ActivityTypeEnum.NO_ACTIVITY);
+		//设置商品主图及店铺商品信息
+		setGoodsStoreSkuInfo(vo);
 		//设置为使用才进行查询优惠信息  并设置优惠信息
 		if(vo.isUserDiscount()){
 			//可以使用的优惠金额  即是 排除掉  不可使用优惠的   商品金额
@@ -198,6 +201,20 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		return dto;
 	}
 	
+	//设置商品主图及店铺商品信息
+	private void setGoodsStoreSkuInfo(MemberTradeOrderVo vo){
+		List<TradeOrderItemVo> items = vo.getList();
+		if(CollectionUtils.isNotEmpty(items)){
+			for(TradeOrderItemVo itemVo : items){
+				//在线上查找是否有对应商品，如果有，将对应信息设置进去
+				GoodsStoreSku goodsStoreSku = goodsStoreSkuApi.selectByStoreIdAndSkuId(vo.getBranchId(), itemVo.getSkuId());
+				if(goodsStoreSku != null && StringUtils.isNotBlank(goodsStoreSku.getId())){
+					itemVo.setStoreSkuId(goodsStoreSku.getId());
+					itemVo.setMainPicPrl(goodsStoreSku.getContent());
+				}
+			}
+		}
+	}
 	/**
 	 * @Description: 提交会员卡订单
 	 * @param memberPayNum
@@ -342,19 +359,8 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 			resp.setResult(ResultCodeEnum.FAIL);
 			return;
 		}
-		List<TradeOrderItemVo> items = vo.getList();
-		List<TradeOrderItem> itemList = Lists.newArrayList();
-		for(TradeOrderItemVo itemVo : items){
-			TradeOrderItem item = BeanMapper.map(itemVo,TradeOrderItem.class);
-			//在线上查找是否有对应商品，如果有，将对应信息设置进去
-			GoodsStoreSku goodsStoreSku = goodsStoreSkuApi.selectByStoreIdAndSkuId(vo.getBranchId(), itemVo.getSkuId());
-			if(goodsStoreSku != null && StringUtils.isNotBlank(goodsStoreSku.getId())){
-				item.setStoreSkuId(goodsStoreSku.getId());
-				item.setMainPicPrl(goodsStoreSku.getContent());
-			}
-			itemList.add(item);
-		}
-		persity.setTradeOrderItem(itemList);
+		//在线上查找是否有对应商品，在推送的时候已经放入
+		persity.setTradeOrderItem(BeanMapper.mapList(vo.getList(),TradeOrderItem.class));
 		//将订单状态标记为：等待买家付款
 		persity.setStatus(OrderStatusEnum.UNPAID);
 		
@@ -385,11 +391,13 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		paramDto.setDeviceId(vo.getDeviceId());
 		paramDto.setChannel(String.valueOf(vo.getOrderResource().ordinal()));
 		paramDto.setActivityType(String.valueOf(vo.getActiviType().ordinal()));
-		
 		PlaceOrderItemDto item = new PlaceOrderItemDto();
-		//设置可优惠金额 用于代金券校验
+		//设置可优惠金额 用于代金券校验，设置可以优惠金额到订单项中，由于优惠校验
 		item.setTotalAmount(vo.getCanDiscountAmount());
+		item.setSkuPrice(vo.getCanDiscountAmount());
+		item.setQuantity(1);
 		item.setSkuActType(ActivityTypeEnum.NO_ACTIVITY.ordinal());
+		item.setSkuActType(0);
 		List<PlaceOrderItemDto> list= Lists.newArrayList();
 		list.add(item);
 		paramDto.setSkuList(list);
@@ -410,9 +418,12 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		parambo.setClientType(UseClientType.ONlY_APP_USE);
 		//便利店通用代金券
 		parambo.setCouponsType(CouponsType.bldty);
+		parambo.setOnlyCouponsType(CouponsType.bldty);
 		parambo.setStoreType(StoreTypeEnum.CLOUD_STORE);
 		parambo.setStoreId(vo.getBranchId());
-		parambo.setGoodsList(Lists.newArrayList());
+		List<String> goods = Lists.newArrayList();
+		vo.getList().forEach(e -> goods.add(e.getGoodsSkuId()));
+		parambo.setSkuIdList(goods);
 		//设置可优惠金额
 		parambo.setTotalAmount(vo.getCanDiscountAmount());
 		return parambo;
