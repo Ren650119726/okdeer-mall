@@ -140,7 +140,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 */
 	private String cardKeyStr = ":memberCard";
 	
-	private int  timeOutMinutes = 150;
+	private int  timeOutMinutes = 30;
 	
 	/**
 	 * @Description: 会员卡订单同步
