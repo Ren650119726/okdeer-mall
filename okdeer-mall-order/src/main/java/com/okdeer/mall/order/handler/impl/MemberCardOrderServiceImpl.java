@@ -235,12 +235,9 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	    	req.setData(paramDto);
 	    	//共用实物订单代金券校验
 	    	checkFavourService.process(req, resp);
-	    	//如果检查结果为ture 且为代金券类型
-	    	if(resp.isSuccess() && order.getActiviType() == ActivityTypeEnum.VONCHER){
-	    		//设置优惠券面额
-	    		order.setCouponsFaceValue(bo.getPlatformPreferential());
-	    		//设置优惠金额
-	    		setDiscountAmount(order);
+	    	//如果检查结果为false 且为代金券类型
+	    	if(!resp.isSuccess()){
+	    		return resp;
 	    	}
 	    	//生成交易信息
     		order.setTradeNum(TradeNumUtil.getTradeNum());
