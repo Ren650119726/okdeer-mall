@@ -126,7 +126,7 @@ public class UserOrderDtoLoader {
 			}else{
 				orderDto.setType(EnumAdapter.convert(order.getType()));
 			}
-			orderDto.setOrderResource(order.getOrderResource());
+			orderDto.setOrderResource(order.getOrderResource() !=null ? order.getOrderResource().ordinal():null);
 			orderDto.setCreateTime(DateUtils.formatDate(order.getCreateTime(),"yyyy-MM-dd HH:mm:ss"));
 			orderDto.setLogisticsFlag(String.valueOf(LogisticsType.NONE.ordinal()));
 			orderDto.setLogisticsNo("");
