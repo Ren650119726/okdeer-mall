@@ -292,11 +292,17 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
     	}
     	order.setIp(dto.getIp());
 		order.setPayType(PayTypeEnum.enumValueOf(dto.getPaymentType()));
-		TradeOrder trade = tradeOrderService.selectById(order.getOrderId());
-		order.setTradeNum(trade.getTradeNum());
+		TradeOrder tradeOrder = tradeOrderService.selectById(order.getOrderId());
+		order.setTradeNum(tradeOrder.getTradeNum());
 		payResult = hykPayOrderServiceApi.payOrder(order);
+		
 		//移除缓存中的数据
 		if(payResult.getCode() == CommonResultCodeEnum.SUCCESS.getCode()){
+			//支付0元直接改为支付完成
+			if(order.getPaymentAmount().compareTo(BigDecimal.ZERO) == 0){
+				tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
+				tradeOrderService.updateOrderStatus(tradeOrder);
+			}
 			redisTemplateWrapper.del(dto.getOrderId() + orderKeyStr);
 		}
 		return payResult;
