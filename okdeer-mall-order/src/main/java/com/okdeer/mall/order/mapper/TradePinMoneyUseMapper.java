@@ -20,7 +20,7 @@ public interface TradePinMoneyUseMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年8月12日
 	 */
-	List<TradePinMoneyUseBo> findPageList(TradePinMoneyQueryDto paramDto);
+	List<TradePinMoneyUseBo> fingUsePageList(TradePinMoneyQueryDto paramDto);
 
 	/**
 	 * @Description: 获取使用记录数量
@@ -30,4 +30,5 @@ public interface TradePinMoneyUseMapper extends IBaseMapper {
 	 * @date 2017年8月12日
 	 */
 	Integer findUseListCount(TradePinMoneyQueryDto paramDto);
+
 }

@@ -8,9 +8,9 @@ package com.okdeer.mall.order.service;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.order.entity.TradePinMoneyUse;
 import com.okdeer.mall.order.bo.TradePinMoneyUseBo;
 import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
+import com.okdeer.mall.order.entity.TradePinMoneyUse;
 
 /**
  * ClassName: TradePinMoneyObtainService 
@@ -25,16 +25,6 @@ import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
  */
 
 public interface TradePinMoneyUseService extends IBaseService{
-	/**
-	 * @Description: 零花钱使用列表查询
-	 * @param paramDto
-	 * @param pageNumber
-	 * @param pageSize
-	 * @return   
-	 * @author xuzq01
-	 * @date 2017年8月12日
-	 */
-	PageUtils<TradePinMoneyUseBo> fingPageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize);
 
 	/**
 	 * @Description: 查询零花钱
@@ -55,4 +45,16 @@ public interface TradePinMoneyUseService extends IBaseService{
 	 * @date 2017年8月12日
 	 */
 	Integer findUseListCount(TradePinMoneyQueryDto paramDto);
+
+
+	/**
+	 * @Description: 零花钱使用列表查询
+	 * @param paramDto
+	 * @param pageNumber
+	 * @param pageSize
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年8月12日
+	 */
+	PageUtils<TradePinMoneyUseBo> findUsePageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize);
 }

@@ -40,10 +40,6 @@ public class TradePinMoneyObtainServiceImpl extends BaseServiceImpl implements T
 	@Autowired
 	private TradePinMoneyObtainMapper tradePinMoneyObtainMapper;
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
-	 */
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return tradePinMoneyObtainMapper;
@@ -79,9 +75,9 @@ public class TradePinMoneyObtainServiceImpl extends BaseServiceImpl implements T
 	}
 	
 	@Override
-	public PageUtils<TradePinMoneyObtainBo> findPageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize) {
+	public PageUtils<TradePinMoneyObtainBo> findObtainPageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
-		List<TradePinMoneyObtainBo> list = tradePinMoneyObtainMapper.findPageList(paramDto);
+		List<TradePinMoneyObtainBo> list = tradePinMoneyObtainMapper.findObtainPageList(paramDto);
 		return new PageUtils<TradePinMoneyObtainBo>(list);
 	}
 
@@ -89,4 +85,5 @@ public class TradePinMoneyObtainServiceImpl extends BaseServiceImpl implements T
 	public Integer findObtainListCount(TradePinMoneyQueryDto paramDto) {
 		return tradePinMoneyObtainMapper.findObtainListCount(paramDto);
 	}
+
 }
