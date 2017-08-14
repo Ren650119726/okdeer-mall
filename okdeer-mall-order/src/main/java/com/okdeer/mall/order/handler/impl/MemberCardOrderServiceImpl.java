@@ -247,7 +247,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	    	}
     		
     	}else{
-    		resp.setResult(ResultCodeEnum.FAIL);
+    		resp.setResult(ResultCodeEnum.TRADE_CANCEL_OUT);
     	}
     	return resp;
 	}
@@ -529,7 +529,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	    	MemberTradeOrderDto order = (MemberTradeOrderDto) redisTemplateWrapper.get(key);
 	    	//订单不存在标识清楚成功返回
 	    	if(order == null){
-	    		return true;
+	    		return false;
 	    	}
 	    	//删除会员卡信息
 	    	removetMemberPayNumber(order.getMemberPayNum());
