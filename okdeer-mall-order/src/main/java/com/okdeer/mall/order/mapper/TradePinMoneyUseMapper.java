@@ -9,8 +9,8 @@ package com.okdeer.mall.order.mapper;
 import java.util.List;
 
 import com.okdeer.base.dal.IBaseMapper;
-import com.okdeer.mall.operate.bo.TradePinMoneyUseBo;
-import com.okdeer.mall.operate.dto.TradePinMoneyQueryDto;
+import com.okdeer.mall.order.bo.TradePinMoneyUseBo;
+import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
 
 public interface TradePinMoneyUseMapper extends IBaseMapper {
 	/**

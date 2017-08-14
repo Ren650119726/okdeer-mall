@@ -8,8 +8,8 @@ package com.okdeer.mall.order.service;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.operate.bo.TradePinMoneyUseBo;
-import com.okdeer.mall.operate.dto.TradePinMoneyQueryDto;
+import com.okdeer.mall.order.bo.TradePinMoneyUseBo;
+import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
 
 /**
  * ClassName: TradePinMoneyObtainService 

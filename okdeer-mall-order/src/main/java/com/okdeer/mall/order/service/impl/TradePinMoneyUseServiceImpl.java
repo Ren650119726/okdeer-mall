@@ -15,8 +15,8 @@ import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.operate.bo.TradePinMoneyUseBo;
-import com.okdeer.mall.operate.dto.TradePinMoneyQueryDto;
+import com.okdeer.mall.order.bo.TradePinMoneyUseBo;
+import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
 import com.okdeer.mall.order.mapper.TradePinMoneyUseMapper;
 import com.okdeer.mall.order.service.TradePinMoneyUseService;
 

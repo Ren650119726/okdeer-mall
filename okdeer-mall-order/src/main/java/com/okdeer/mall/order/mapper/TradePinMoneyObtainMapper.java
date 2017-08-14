@@ -13,8 +13,8 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
-import com.okdeer.mall.operate.bo.TradePinMoneyObtainBo;
-import com.okdeer.mall.operate.dto.TradePinMoneyQueryDto;
+import com.okdeer.mall.order.bo.TradePinMoneyObtainBo;
+import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
 import com.okdeer.mall.order.entity.TradePinMoneyObtain;
 
 public interface TradePinMoneyObtainMapper extends IBaseMapper {

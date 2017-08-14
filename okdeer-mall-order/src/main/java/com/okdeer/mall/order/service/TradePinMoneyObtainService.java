@@ -12,8 +12,8 @@ import java.util.List;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
-import com.okdeer.mall.operate.bo.TradePinMoneyObtainBo;
-import com.okdeer.mall.operate.dto.TradePinMoneyQueryDto;
+import com.okdeer.mall.order.bo.TradePinMoneyObtainBo;
+import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
 import com.okdeer.mall.order.entity.TradePinMoneyObtain;
 
 /**
