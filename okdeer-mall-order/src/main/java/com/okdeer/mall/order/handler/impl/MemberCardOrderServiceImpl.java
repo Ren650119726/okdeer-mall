@@ -12,11 +12,13 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
@@ -28,12 +30,14 @@ import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.enums.CommonResultCodeEnum;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
+import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.jxc.bill.service.HykPayOrderServiceApi;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
@@ -132,6 +136,13 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	private String orderKeyStr = ":memberCardOrder";
 	
 	/**
+	 * 会员卡缓存后缀
+	 */
+	private String cardKeyStr = ":memberCard";
+	
+	private int  timeOutMinutes = 30;
+	
+	/**
 	 * @Description: 会员卡订单同步
 	 * @param vo 同步记录
 	 * @return MemberCardResultDto  返回结果
@@ -153,27 +164,36 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		String key = vo.getOrderId() + orderKeyStr;
 		if(redisTemplateWrapper.get(key) != null){
 			dto.setCode(CommonResultCodeEnum.FAIL.getCode());
-			dto.setMessage("会员卡信息已失效，请与用户确认再确认");
+			dto.setMessage("订单已经推送，请与用户确认");
 			return dto;
 		}
 
+		//默认无活动
+		vo.setActivityType(ActivityTypeEnum.NO_ACTIVITY);
+		//设置商品主图及店铺商品信息
+		setGoodsStoreSkuInfo(vo);
 		//设置为使用才进行查询优惠信息  并设置优惠信息
 		if(vo.isUserDiscount()){
 			//可以使用的优惠金额  即是 排除掉  不可使用优惠的   商品金额
 			FavourParamBO parambo = createFavourParamBo(vo);
 			PreferentialVo preferentialVo = getPreferentialService.findPreferByCard(parambo);
 			Coupons coupons = (Coupons) preferentialVo.getMaxFavourOnline();
-			//设置优惠金额
-			vo.setCouponsFaceValue(new BigDecimal(coupons.getCouponPrice()));
-			setDiscountAmount(vo);
-			vo.setCouponsId(coupons.getCouponId());
-			vo.setRecordId(coupons.getRecordId());
-			vo.setCouponsActivityId(coupons.getId());
+			if(coupons != null){
+				//设置优惠金额
+				vo.setCouponsFaceValue(new BigDecimal(coupons.getCouponPrice()));
+				setDiscountAmount(vo);
+				vo.setCouponsId(coupons.getCouponId());
+				vo.setRecordId(coupons.getRecordId());
+				vo.setCouponsActivityId(coupons.getId());
+				vo.setActivityType(ActivityTypeEnum.VONCHER);
+			}
 		}
-		
+		vo.setOrderResource(OrderResourceEnum.MEMCARD);
 		//不存在存到缓存中
-    	redisTemplateWrapper.set(key, vo, 15, TimeUnit.MINUTES);
-    	redisTemplateWrapper.set(vo.getMemberPayNum(),key, 15, TimeUnit.MINUTES);
+    	redisTemplateWrapper.set(key, vo, timeOutMinutes, TimeUnit.MINUTES);
+    	//去掉优惠码位存储，利于前端提取
+    	String cardKey = vo.getMemberPayNum().substring(0, vo.getMemberPayNum().length()-1) + cardKeyStr;
+    	redisTemplateWrapper.set(cardKey,key, timeOutMinutes, TimeUnit.MINUTES);
     	
     	//返回结果信息
     	dto.setCode(CommonResultCodeEnum.SUCCESS.getCode());
@@ -181,6 +201,20 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		return dto;
 	}
 	
+	//设置商品主图及店铺商品信息
+	private void setGoodsStoreSkuInfo(MemberTradeOrderVo vo){
+		List<TradeOrderItemVo> items = vo.getList();
+		if(CollectionUtils.isNotEmpty(items)){
+			for(TradeOrderItemVo itemVo : items){
+				//在线上查找是否有对应商品，如果有，将对应信息设置进去
+				GoodsStoreSku goodsStoreSku = goodsStoreSkuApi.selectByStoreIdAndSkuId(vo.getBranchId(), itemVo.getSkuId());
+				if(goodsStoreSku != null && StringUtils.isNotBlank(goodsStoreSku.getId())){
+					itemVo.setStoreSkuId(goodsStoreSku.getId());
+					itemVo.setMainPicPrl(goodsStoreSku.getContent());
+				}
+			}
+		}
+	}
 	/**
 	 * @Description: 提交会员卡订单
 	 * @param memberPayNum
@@ -188,33 +222,31 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 * @author tuzhd
 	 * @date 2017年8月9日
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	public Response<PlaceOrderDto> submitOrder(String orderId,Response<PlaceOrderDto> resp) throws Exception{
 		resp.setResult(ResultCodeEnum.SUCCESS);
 		//获取会员卡信息对应的订单
     	MemberTradeOrderVo order = (MemberTradeOrderVo) redisTemplateWrapper.get(orderId + orderKeyStr);
     	if(order != null){
-    		//检查代金信息
+    		StoreSkuParserBo bo= new StoreSkuParserBo(Lists.newArrayList());
 	    	Request<PlaceOrderParamDto> req = new Request<>();
 	    	PlaceOrderParamDto paramDto= createPlaceOrderParamDto(order);
-	    	req.setData(createPlaceOrderParamDto(order));
-	    	StoreSkuParserBo bo= new StoreSkuParserBo(Lists.newArrayList());
 	    	paramDto.getCacheMap().put("parserBo", bo);
+	    	req.setData(paramDto);
 	    	//共用实物订单代金券校验
 	    	checkFavourService.process(req, resp);
-	    	//如果检查结果为ture
-	    	if(resp.isSuccess()){
-	    		//设置优惠券面额
-	    		order.setCouponsFaceValue(bo.getPlatformPreferential());
-	    		//设置优惠金额
-	    		setDiscountAmount(order);
-	    		//生成交易信息
-	    		order.setTradeNum(TradeNumUtil.getTradeNum());
-	    		order.setOrderResource(OrderResourceEnum.MEMCARD);
-		    	//保存订单信息 及设置返回信息
-	    		saveCardOrder(order,resp);
-	    		//移除会员卡信息
-	    		removetMemberPayNumber(order.getMemberPayNum());
+	    	//如果检查结果为false 且为代金券类型
+	    	if(!resp.isSuccess()){
+	    		return resp;
 	    	}
+	    	//生成交易信息
+    		order.setTradeNum(TradeNumUtil.getTradeNum());
+    		//优惠为0需要提交优惠信息
+    		//MemberCardResultDto<MemberTradeOrderVo> vo = hykPayOrderServiceApi.readyPayOrder(order);
+	    	//保存订单信息 及设置返回信息
+    		saveCardOrder(order,resp);
+    		//移除会员卡信息
+    		removetMemberPayNumber(order.getMemberPayNum());
     	}else{
     		resp.setResult(ResultCodeEnum.FAIL);
     	}
@@ -245,11 +277,12 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	/**
 	 * @Description: 获取支付信息
 	 * @param dto
+	 * @throws ServiceException 
 	 * @throws
 	 * @author tuzhd
 	 * @date 2017年8月10日
 	 */
-	public MemberCardResultDto<PayInfoDto> getPayInfo(PayInfoParamDto dto){
+	public MemberCardResultDto<PayInfoDto> getPayInfo(PayInfoParamDto dto) throws ServiceException{
 		MemberCardResultDto<PayInfoDto> payResult =  null;
 		//获取会员卡信息对应的订单
     	MemberTradeOrderVo order = (MemberTradeOrderVo) redisTemplateWrapper.get(dto.getOrderId() + orderKeyStr);
@@ -261,7 +294,10 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
     	}
     	order.setIp(dto.getIp());
 		order.setPayType(PayTypeEnum.enumValueOf(dto.getPaymentType()));
+		TradeOrder tradeOrder = tradeOrderService.selectById(order.getOrderId());
+		order.setTradeNum(tradeOrder.getTradeNum());
 		payResult = hykPayOrderServiceApi.payOrder(order);
+		
 		//移除缓存中的数据
 		if(payResult.getCode() == CommonResultCodeEnum.SUCCESS.getCode()){
 			redisTemplateWrapper.del(dto.getOrderId() + orderKeyStr);
@@ -278,17 +314,19 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 * @author tuzhd
 	 * @date 2017年8月9日
 	 */
-	public void saveCardOrder(MemberTradeOrderVo vo,Response<PlaceOrderDto> resp) throws Exception{
+	private void saveCardOrder(MemberTradeOrderVo vo,Response<PlaceOrderDto> resp) throws Exception{
 		//转化结果集
 		TradeOrder persity = BeanMapper.map(vo, TradeOrder.class);
 		//设置id值
 		persity.setId(vo.getOrderId());
+		persity.setActivityType(vo.getActiviType());
 		//设置返回值
 		resp.getData().setOrderId(vo.getOrderId());
 		resp.getData().setOrderNo(vo.getOrderNo());
+		
 		resp.getData().setTradeNum(vo.getTradeNum());
-		resp.getData().setOrderPrice(String.valueOf(vo.getPaymentAmount()));
-		resp.getData().setLimitTime(15*60);
+		resp.getData().setOrderPrice(JsonDateUtil.priceConvertToString(vo.getPaymentAmount(),2,3));
+		resp.getData().setLimitTime(timeOutMinutes*60);
 		resp.getData().setCurrentTime(System.currentTimeMillis());
 		resp.getData().setPaymentMode(0);
 		resp.getData().setIsReachPrice(1);
@@ -296,11 +334,16 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		persity.setStoreId(vo.getBranchId());
 		//实付金额
 		persity.setActualAmount(vo.getPaymentAmount());
-		persity.setTotalAmount(vo.getSaleAmount());
-		//优惠金额	
-		persity.setPreferentialPrice(vo.getDiscountAmount());
+		
+		BigDecimal prefer = vo.getPlatDiscountAmount() != null ? vo.getPlatDiscountAmount():BigDecimal.ZERO;
+		BigDecimal discount = vo.getDiscountAmount() != null ? vo.getDiscountAmount():BigDecimal.ZERO;
+		//优惠总金额	
+		persity.setPreferentialPrice(prefer.add(discount));
+		
+		//店铺优惠金额	
+		persity.setStorePreferential(vo.getDiscountAmount());
 		//平台优惠字段
-		persity.setPlatformPreferential(vo.getDiscountAmount());
+		persity.setPlatformPreferential(vo.getPlatDiscountAmount());
 		persity.setCreateTime(new Date());
 		persity.setUpdateTime(persity.getCreateTime());
 		//设置显示
@@ -316,27 +359,23 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 			resp.setResult(ResultCodeEnum.FAIL);
 			return;
 		}
-		List<TradeOrderItemVo> items = vo.getList();
-		List<TradeOrderItem> itemList = Lists.newArrayList();
-		for(TradeOrderItemVo itemVo : items){
-			TradeOrderItem item = BeanMapper.map(itemVo,TradeOrderItem.class);
-			//在线上查找是否有对应商品，如果有，将对应信息设置进去
-			GoodsStoreSku goodsStoreSku = goodsStoreSkuApi.selectByStoreIdAndSkuId(vo.getBranchId(), itemVo.getSkuId());
-			if(goodsStoreSku != null && StringUtils.isNotBlank(goodsStoreSku.getId())){
-				item.setStoreSkuId(goodsStoreSku.getId());
-				item.setMainPicPrl(goodsStoreSku.getContent());
-			}
-			itemList.add(item);
+		//在线上查找是否有对应商品，在推送的时候已经放入
+		persity.setTradeOrderItem(BeanMapper.mapList(vo.getList(),TradeOrderItem.class));
+		//支付0元直接改为支付完成
+		if(vo.getPaymentAmount().compareTo(BigDecimal.ZERO) == 0){
+			persity.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
+		}else{
+			//将订单状态标记为：等待买家付款
+			persity.setStatus(OrderStatusEnum.UNPAID);
 		}
-		persity.setTradeOrderItem(itemList);
-		//将订单状态标记为：等待买家付款
-		persity.setStatus(OrderStatusEnum.UNPAID);
 		
 		logger.info("会员卡下单信息:{}",JsonMapper.nonEmptyMapper().toJson(persity));
 		//保存订单
 		tradeOrderService.insertTradeOrder(persity);
-		//更新优惠券信息
-		updateActivityCoupons(vo.getOrderId(), vo.getRecordId(), vo.getCouponsId(), vo.getDeviceId());
+		if(vo.getActiviType() == ActivityTypeEnum.VONCHER){
+			//更新优惠券信息
+			updateActivityCoupons(vo.getOrderId(), vo.getRecordId(), vo.getCouponsId(), vo.getDeviceId());
+		}
 		resp.setResult(ResultCodeEnum.SUCCESS);
 	}
 	
@@ -349,19 +388,21 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 */
 	private PlaceOrderParamDto createPlaceOrderParamDto(MemberTradeOrderVo vo){
 		PlaceOrderParamDto paramDto =new PlaceOrderParamDto();
-		paramDto.setRecordId(vo.getCouponsId());
+		paramDto.setRecordId(vo.getRecordId());
 		paramDto.setUserId(vo.getUserId());
 		paramDto.setStoreId(vo.getBranchId());
 		paramDto.setActivityId(vo.getCouponsActivityId());
 		paramDto.setActivityItemId(vo.getCouponsId());
 		paramDto.setDeviceId(vo.getDeviceId());
-		paramDto.setChannel(String.valueOf(OrderResourceEnum.MEMCARD.ordinal()));
-		paramDto.setActivityType(String.valueOf(ActivityTypeEnum.VONCHER.ordinal()));
-		
+		paramDto.setChannel(String.valueOf(vo.getOrderResource().ordinal()));
+		paramDto.setActivityType(String.valueOf(vo.getActiviType().ordinal()));
 		PlaceOrderItemDto item = new PlaceOrderItemDto();
-		//设置可优惠金额 用于代金券校验
+		//设置可优惠金额 用于代金券校验，设置可以优惠金额到订单项中，由于优惠校验
 		item.setTotalAmount(vo.getCanDiscountAmount());
+		item.setSkuPrice(vo.getCanDiscountAmount());
+		item.setQuantity(1);
 		item.setSkuActType(ActivityTypeEnum.NO_ACTIVITY.ordinal());
+		item.setSkuActType(0);
 		List<PlaceOrderItemDto> list= Lists.newArrayList();
 		list.add(item);
 		paramDto.setSkuList(list);
@@ -382,8 +423,12 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		parambo.setClientType(UseClientType.ONlY_APP_USE);
 		//便利店通用代金券
 		parambo.setCouponsType(CouponsType.bldty);
+		parambo.setOnlyCouponsType(CouponsType.bldty);
 		parambo.setStoreType(StoreTypeEnum.CLOUD_STORE);
 		parambo.setStoreId(vo.getBranchId());
+		List<String> goods = Lists.newArrayList();
+		vo.getList().forEach(e -> goods.add(e.getGoodsSkuId()));
+		parambo.setSkuIdList(goods);
 		//设置可优惠金额
 		parambo.setTotalAmount(vo.getCanDiscountAmount());
 		return parambo;
@@ -399,7 +444,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		boolean result = false;
 		//获取会员卡信息
 		String memberPayNum =  vo.getMemberPayNum();
-		if(StringUtils.isBlank(memberPayNum)){
+		if(StringUtils.isNotBlank(memberPayNum)){
 			//获取优惠信息 
 			String isHadDiscount = memberPayNum.substring(memberPayNum.length()-1, memberPayNum.length());
 			memberPayNum = memberPayNum.substring(0, memberPayNum.length()-1);
@@ -431,7 +476,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	  */
     public String getMemberPayNumber(String userId,String deviceId){
 		//会员卡缓存标识key 用户id+设备号
-		String key = userId + ":memberCard:" + deviceId;
+		String key = userId + ":cardUser:" + deviceId;
 		//生成随机会员卡信息36开头+12位随机数
 		String card = createMemberCard(12, "36");
 		
@@ -442,12 +487,31 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 			redisTemplateWrapper.del(oldCard);
 		}
 		
-		//设置15分钟过期  会员卡标识及 用户id+设备号 相互为key 进行存储
-		redisTemplateWrapper.set(key,card, 15, TimeUnit.MINUTES);
-		redisTemplateWrapper.set(card,key, 15, TimeUnit.MINUTES);
+		//设置timeOutMinutes分钟过期  会员卡标识及 用户id+设备号 相互为key 进行存储
+		redisTemplateWrapper.set(key,card, timeOutMinutes, TimeUnit.MINUTES);
+		redisTemplateWrapper.set(card,key, timeOutMinutes, TimeUnit.MINUTES);
 		
 		return card;    	
     }
+    
+   /**
+     * @Description: 获取会员卡信息接口
+     * @param memberPayNum  会员卡信息
+	 * @author tuzhd
+	 * @date 2017年8月9日
+	 */
+   public String getUserIdByMemberCard(String memberPayNum){
+	   	if(StringUtils.isBlank(memberPayNum)){
+		   return null;
+	   	}
+		//获取会员卡信息获取用户信息
+		String userInfo = (String) redisTemplateWrapper.get(memberPayNum.substring(0, memberPayNum.length()-1));
+		//存在会员卡信息获取用户信息
+		if(StringUtils.isBlank(userInfo)){
+			return null;
+		}
+		return userInfo.split(":")[0];
+   }
     
     /**
      * @Description: 根据订单id取消订单,已提交订单不能清除，会导致用户支付无法对上账
@@ -461,12 +525,16 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
     	if(StringUtils.isNotBlank(orderId)){
     		//定单缓存key
     		String key = orderId + orderKeyStr;
-	    	//清除redis记录
-	    	MemberTradeOrderVo order = (MemberTradeOrderVo) redisTemplateWrapper.get(key);
-	    	MemberCardResultDto dto =  hykPayOrderServiceApi.cancelOrder(order.getOrderId());
-	    	//取消失败返回false
+    		MemberCardResultDto<?> dto =  hykPayOrderServiceApi.cancelOrder(orderId);
+    		//零售取消失败返回false
 	    	if(dto.getCode() != CommonResultCodeEnum.SUCCESS.getCode()){
 	    		return false;
+	    	}
+	    	//清除商城这边订单redis记录
+	    	MemberTradeOrderVo order = (MemberTradeOrderVo) redisTemplateWrapper.get(key);
+	    	//订单不存在标识清楚成功返回
+	    	if(order == null){
+	    		return true;
 	    	}
 	    	//删除会员卡信息
 	    	removetMemberPayNumber(order.getMemberPayNum());
@@ -486,16 +554,18 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	  */
    public void removetMemberPayNumber(String memberPayNum){
 	   if(StringUtils.isNotBlank(memberPayNum)){
-		   //移除会员卡与订单信息 带优惠位
-		   redisTemplateWrapper.del(memberPayNum);
 		   //去除优惠位
 		   String newNum = memberPayNum.substring(0, memberPayNum.length()-1);
 		   //获取会员卡对应用户信息
 		   String userInfo = (String) redisTemplateWrapper.get(newNum);
 		   //剔除会员卡缓存信息
 		   redisTemplateWrapper.del(newNum);
+		   //移除会员卡与订单信息 不带优惠位
+		   redisTemplateWrapper.del(newNum + cardKeyStr);
 		   //会员卡标识及 用户id+设备号 相互为key 进行存储
-		   redisTemplateWrapper.del(userInfo);
+		   if(StringUtils.isNotBlank(userInfo)){
+			   redisTemplateWrapper.del(userInfo);
+		   }
 	   }
    }
     
@@ -537,11 +607,11 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		// 更新代金券状态
 		int updateResult = activityCouponsRecordMapper.updateActivityCouponsStatus(params);
 		if (updateResult == 0) {
-			throw new Exception("代金券已使用或者已过期");
+			throw new ServiceException("代金券已使用或者已过期");
 		}
 		// 发送消息修改代金券使用数量
 		ActivityCouponsBo couponsBo = new ActivityCouponsBo(couponsId, Integer.valueOf(1));
-		MQMessage anMessage = new MQMessage(ActivityCouponsTopic.TOPIC_COUPONS_COUNT, (Serializable) couponsBo);
+		MQMessage<?> anMessage = new MQMessage<>(ActivityCouponsTopic.TOPIC_COUPONS_COUNT, (Serializable) couponsBo);
 		// key:订单id：代金券id
 		anMessage.setKey(String.format("%s:%s", orderId,couponsId));
 		try {

@@ -2,6 +2,7 @@
 package com.okdeer.mall.order.api;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.common.consts.DescriptConstants;
 import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.order.bo.TradeOrderContext;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.Date;
@@ -146,4 +148,15 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 		return cancelOrderService.isBreach(orderId) ;
 	}
 
+	/**
+	 * @Description: 取消订单
+	 * @param order 订单
+	 * @author tuzhd
+	 * @throws ServiceException 
+	 * @date 2016年11月10日
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public boolean cancelOrder(TradeOrder tradeOrder, boolean isBuyerOperate) throws Exception {
+		return cancelOrderService.cancelOrder(tradeOrder, isBuyerOperate);
+	}
 }
