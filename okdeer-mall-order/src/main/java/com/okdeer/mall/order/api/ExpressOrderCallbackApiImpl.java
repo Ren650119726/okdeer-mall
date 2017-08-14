@@ -3,8 +3,11 @@ package com.okdeer.mall.order.api;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Maps;
+import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.ele.entity.ExpressCallback;
@@ -24,6 +27,8 @@ import com.okdeer.mall.order.service.ExpressOrderCallbackApi;
 import com.okdeer.mall.order.service.ExpressOrderCallbackService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
+import com.okdeer.mcm.entity.SmsVO;
+import com.okdeer.mcm.service.ISmsService;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +36,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * ClassName: ExpressOrderCallbackApiImpl
@@ -49,6 +55,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
 
     private static final Logger logger = LoggerFactory.getLogger(ExpressOrderCallbackApiImpl.class);
+
+    /**
+     * 短信code
+     */
+    @Value("${mcm.sys.code}")
+    private String mcmSysCode;
+
+    /**
+     * 短信token
+     */
+    @Value("${mcm.sys.token}")
+    private String mcmSysToken;
 
     /**
      * 注入-service
@@ -76,6 +94,12 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
      */
     @Reference(version = "1.0.0", check = false)
     private StoreInfoServiceApi storeInfoServiceApi;
+
+    /**
+     * 短信接口
+     */
+    @Reference(version = "1.0.0")
+    private ISmsService smsService;
 
     @Override
     public ResultMsgDto<String> saveExpressMode(ExpressModeParamDto paramDto) throws Exception {
@@ -152,6 +176,27 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
                     // 店铺ID
                     param.setStoreId(tradeOrder.getStoreId());
                     tradeOrderService.updateOrderShipment(param);
+                }
+                break;
+            case 5:
+                try {
+                    TradeOrder order = tradeOrderService.findByOrderNo(data.getPartnerOrderCode());
+                    StoreInfo storeInfo = storeInfoServiceApi.findById(order.getStoreId());
+                    StringBuilder str = new StringBuilder();
+                    str.append(order.getOrderNo()).append("(订单号)配送异常，您可以重新选择自行配送或取消订单");
+                    SmsVO smsVo = new SmsVO();
+                    smsVo.setId(UuidUtils.getUuid());
+                    smsVo.setUserId(order.getSellerId());
+                    smsVo.setIsTiming(0);
+                    smsVo.setToken(mcmSysToken);
+                    smsVo.setSysCode(mcmSysCode);
+                    smsVo.setMobile(storeInfo.getMobile());
+                    smsVo.setContent(str.toString());
+                    smsVo.setSmsChannelType(3);
+                    smsVo.setSendTime(DateUtils.getDateTime());
+                    smsService.sendSms(smsVo);
+                } catch (Exception e) {
+                    logger.error("订单号(" + data.getPartnerOrderCode() + ")蜂鸟配送回调发送业务短信异常:{}", e);
                 }
                 break;
             default:
