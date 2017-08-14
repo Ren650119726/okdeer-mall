@@ -38,6 +38,10 @@ public class TradePinMoneyUse {
      */
     private BigDecimal useAmount;
     /**
+     * 使用金额
+     */
+    private BigDecimal orderAmount;
+    /**
      * 创建时间
      */
     private Date createTime;
@@ -82,8 +86,17 @@ public class TradePinMoneyUse {
     public void setUseAmount(BigDecimal useAmount) {
         this.useAmount = useAmount;
     }
+    
+	public BigDecimal getOrderAmount() {
+		return orderAmount;
+	}
 
-    public Date getCreateTime() {
+	
+	public void setOrderAmount(BigDecimal orderAmount) {
+		this.orderAmount = orderAmount;
+	}
+
+	public Date getCreateTime() {
         return createTime;
     }
 
