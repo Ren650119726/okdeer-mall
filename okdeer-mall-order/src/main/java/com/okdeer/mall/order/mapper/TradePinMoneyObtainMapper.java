@@ -47,7 +47,7 @@ public interface TradePinMoneyObtainMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年8月11日
 	 */
-	List<TradePinMoneyObtainBo> findPageList(TradePinMoneyQueryDto paramDto);
+	List<TradePinMoneyObtainBo> findObtainPageList(TradePinMoneyQueryDto paramDto);
 
 	/**
 	 * @Description: 获取零花钱领取记录数量
@@ -57,4 +57,5 @@ public interface TradePinMoneyObtainMapper extends IBaseMapper {
 	 * @date 2017年8月12日
 	 */
 	Integer findObtainListCount(TradePinMoneyQueryDto paramDto);
+
 }
