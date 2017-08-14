@@ -19,7 +19,7 @@
     </resultMap>
     
     <sql id="Base_Column_List" >
-        id, order_id, source_id, user_id, use_amount, create_time
+        id, order_id, source_id, user_id, use_amount, order_amount, create_time
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -108,6 +108,17 @@
         delete from trade_pin_money_use
         where id = #{id,jdbcType=VARCHAR}
     </delete>
+    
+    <select id="findList" resultMap="BaseResultMap" >
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM trade_pin_money_use
+        WHERE user_id = #{userId,jdbcType=VARCHAR}
+<!--         <if test="nowDate != null" >
+        	AND valid_time >= #{nowDate,jdbcType=TIMESTAMP}
+        </if> -->
+    </select>
+    
 	<!-- begin 商城后台零花钱领取记录条件查询 xuzq 20170814 -->
     <select id="fingUsePageList" resultMap="PageListResultMap" parameterType="com.okdeer.mall.order.dto.TradePinMoneyQueryDto" >
         SELECT 
@@ -126,6 +137,7 @@
         </if>
     </select>
 	<!-- end 商城后台零花钱领取记录条件查询 xuzq 20170814 -->
+	
 	<!-- begin 商城后台零花钱领取记录条件查询记录数 xuzq 20170814 -->
     <select id="findUseListCount" resultType="java.lang.Integer" parameterType="com.okdeer.mall.order.dto.TradePinMoneyQueryDto" >
         SELECT count(1)

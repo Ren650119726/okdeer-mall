@@ -6,11 +6,15 @@
  */
 package com.okdeer.mall.order.mapper;
 
+import java.util.Date;
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.order.bo.TradePinMoneyUseBo;
 import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
+import com.okdeer.mall.order.entity.TradePinMoneyUse;
 
 public interface TradePinMoneyUseMapper extends IBaseMapper {
 	/**
@@ -30,5 +34,16 @@ public interface TradePinMoneyUseMapper extends IBaseMapper {
 	 * @date 2017年8月12日
 	 */
 	Integer findUseListCount(TradePinMoneyQueryDto paramDto);
+
+	/**
+	 * @Description: 查询我的零花钱记录
+	 * @param userId
+	 * @param date
+	 * @param object
+	 * @return   
+	 * @author guocp
+	 * @date 2017年8月14日
+	 */
+	List<TradePinMoneyUse> findList(@Param("userId") String userId);
 
 }
