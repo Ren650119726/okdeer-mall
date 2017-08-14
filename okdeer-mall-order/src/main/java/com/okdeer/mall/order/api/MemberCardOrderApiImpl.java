@@ -9,12 +9,12 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.dto.MemberCardResultDto;
+import com.okdeer.mall.order.dto.MemberTradeOrderDto;
 import com.okdeer.mall.order.dto.PayInfoDto;
 import com.okdeer.mall.order.dto.PayInfoParamDto;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.handler.MemberCardOrderService;
 import com.okdeer.mall.order.service.MemberCardOrderApi;
-import com.okdeer.mall.order.vo.MemberTradeOrderVo;
 /**
  * ClassName: MemberCardOrderApi 
  * @Description: 会员卡订单同步实现类
@@ -41,7 +41,7 @@ public class MemberCardOrderApiImpl implements MemberCardOrderApi {
 	 * @throws Exception 
 	 * @date 2017年8月8日
 	 */
-	public MemberCardResultDto<MemberTradeOrderVo> pushMemberCardOrder(MemberTradeOrderVo vo) throws Exception{
+	public MemberCardResultDto<MemberTradeOrderDto> pushMemberCardOrder(MemberTradeOrderDto vo) throws Exception{
 		return memberCardOrderService.pushMemberCardOrder(vo);
 	}
 	

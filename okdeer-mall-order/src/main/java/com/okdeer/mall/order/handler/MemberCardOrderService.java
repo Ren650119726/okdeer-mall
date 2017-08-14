@@ -3,10 +3,10 @@ package com.okdeer.mall.order.handler;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.dto.MemberCardResultDto;
+import com.okdeer.mall.order.dto.MemberTradeOrderDto;
 import com.okdeer.mall.order.dto.PayInfoDto;
 import com.okdeer.mall.order.dto.PayInfoParamDto;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
-import com.okdeer.mall.order.vo.MemberTradeOrderVo;
 
 /**
  * ClassName: MemberCardOrderService 
@@ -38,7 +38,7 @@ public interface MemberCardOrderService {
 	 * @throws Exception 
 	 * @date 2017年8月8日
 	 */
-	MemberCardResultDto<MemberTradeOrderVo> pushMemberCardOrder(MemberTradeOrderVo vo) throws Exception;
+	MemberCardResultDto<MemberTradeOrderDto> pushMemberCardOrder(MemberTradeOrderDto vo) throws Exception;
 	
 	/**
 	  * @Description: 获取会员卡信息接口
