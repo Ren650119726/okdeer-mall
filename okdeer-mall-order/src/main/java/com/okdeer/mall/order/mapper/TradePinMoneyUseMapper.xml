@@ -9,7 +9,14 @@
         <result column="use_amount" property="useAmount" jdbcType="DECIMAL" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     </resultMap>
-
+	<!-- 后台查询领取记录列表 -->
+	<resultMap id="PageListResultMap" type="com.okdeer.mall.operate.bo.TradePinMoneyUseBo" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="userPhone" property="userPhone" jdbcType="VARCHAR" />
+        <result column="use_amount" property="useAmount" jdbcType="DECIMAL" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+    
     <sql id="Base_Column_List" >
         id, order_id, source_id, user_id, use_amount, create_time
     </sql>

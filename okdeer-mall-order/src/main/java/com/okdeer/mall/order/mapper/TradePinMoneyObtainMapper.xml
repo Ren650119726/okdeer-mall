@@ -13,7 +13,16 @@
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
         <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
     </resultMap>
-
+    <!-- 后台查询领取记录列表 -->
+	<resultMap id="PageListResultMap" type="com.okdeer.mall.operate.bo.TradePinMoneyObtainBo" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="userPhone" property="userPhone" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="TINYINT" />
+        <result column="amount" property="amount" jdbcType="DECIMAL" />
+        <result column="remain_amount" property="remainAmount" jdbcType="DECIMAL" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
+    </resultMap>
     <sql id="Base_Column_List" >
         id, order_id, user_id, device_id, amount, remain_amount, create_time, update_time, 
         valid_time
