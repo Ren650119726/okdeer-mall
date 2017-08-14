@@ -52,10 +52,10 @@ public class TradePinMoneyUseServiceImpl extends BaseServiceImpl implements Trad
 	 */
 	@Override
 	public PageUtils<TradePinMoneyUse> findPage(String userId, int pageNumber, int pageSize) {
-		// TODO Auto-generated method stub
-		return null;
+		PageHelper.startPage(pageNumber, pageSize, true);
+		List<TradePinMoneyUse> list = tradePinMoneyUseMapper.findList(userId);
+		return new PageUtils<TradePinMoneyUse>(list);
 	}
-
 
 	@Override
 	public PageUtils<TradePinMoneyUseBo> fingPageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize) {

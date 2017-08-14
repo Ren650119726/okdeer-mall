@@ -70,6 +70,7 @@ public class TradePinMoneyApiImpl implements TradePinMoneyApi {
 	 * @author guocp
 	 * @date 2017年8月10日
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public PageUtils<TradePinMoneyUseDto> findUseList(String userId, int pageNumber, int pageSize) {
 		return tradePinMoneyUseService.findPage(userId, pageNumber, pageSize).toBean(TradePinMoneyUseDto.class);
