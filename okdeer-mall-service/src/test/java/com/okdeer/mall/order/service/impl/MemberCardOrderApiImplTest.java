@@ -24,9 +24,9 @@ import com.okdeer.archive.system.service.SysUserLoginLogServiceApi;
 import com.okdeer.mall.base.MockUtils;
 import com.okdeer.mall.order.api.PlaceOrderApiImplTest;
 import com.okdeer.mall.order.dto.MemberCardResultDto;
+import com.okdeer.mall.order.dto.MemberTradeOrderDto;
 import com.okdeer.mall.order.service.GetPreferentialService;
 import com.okdeer.mall.order.service.MemberCardOrderApi;
-import com.okdeer.mall.order.vo.MemberTradeOrderVo;
 
 /**
  * ClassName: TradeOrderRefundsApiImplTest 
@@ -52,7 +52,7 @@ public class MemberCardOrderApiImplTest extends BaseServiceTest {
 	private SysUserLoginLogServiceApi sysUserLoginLogApi;
 	
 	
-	private MemberTradeOrderVo memberTradeOrderVo;
+	private MemberTradeOrderDto memberTradeOrderDto;
 	private int index;
 	
 	@Override
@@ -67,16 +67,16 @@ public class MemberCardOrderApiImplTest extends BaseServiceTest {
 		GetPreferentialService getPreferentialService = this.applicationContext.getBean(GetPreferentialService.class);
 		ReflectionTestUtils.setField(getPreferentialService, "goodsNavigateCategoryServiceApi", goodsNavigateCategoryServiceApi);
 	}
-	public MemberCardOrderApiImplTest(int index,MemberTradeOrderVo memberTradeOrderVo) {
+	public MemberCardOrderApiImplTest(int index,MemberTradeOrderDto memberTradeOrderDto) {
 		this.index= index;
-		this.memberTradeOrderVo = memberTradeOrderVo;
+		this.memberTradeOrderDto = memberTradeOrderDto;
 	}
 	
 	@Parameters
 	public static Collection<Object[]> initParam() throws Exception {
 		Collection<Object[]> initParams = new ArrayList<Object[]>();
-		List<List<MemberTradeOrderVo>> paramList = MockUtils
-				.getMockData("/com/okdeer/mall/order/service/impl/mock-physical.json", MemberTradeOrderVo.class);
+		List<List<MemberTradeOrderDto>> paramList = MockUtils
+				.getMockData("/com/okdeer/mall/order/service/impl/mock-physical.json", MemberTradeOrderDto.class);
 		
 		for (int i = 0; i < paramList.size(); i++) {
 			for (int j = 0; j < paramList.get(i).size(); j++) {
@@ -90,7 +90,7 @@ public class MemberCardOrderApiImplTest extends BaseServiceTest {
 	@Rollback(true)
 	public void pushMemberCardOrder() throws Exception {
 		
-		MemberCardResultDto<MemberTradeOrderVo> dto = memberCardOrderApiImpl.pushMemberCardOrder(memberTradeOrderVo);
+		MemberCardResultDto<MemberTradeOrderDto> dto = memberCardOrderApiImpl.pushMemberCardOrder(memberTradeOrderDto);
 		
 		Assert.assertTrue(ResultCodeEnum.SUCCESS.getCode() == dto.getCode());
 	}

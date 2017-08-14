@@ -16,7 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,9 +48,9 @@ import com.okdeer.mall.activity.mq.constants.ActivityCouponsTopic;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.enums.UseClientType;
-import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.MemberCardResultDto;
+import com.okdeer.mall.order.dto.MemberTradeOrderDto;
 import com.okdeer.mall.order.dto.PayInfoDto;
 import com.okdeer.mall.order.dto.PayInfoParamDto;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
@@ -68,7 +67,6 @@ import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.GetPreferentialService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.Coupons;
-import com.okdeer.mall.order.vo.MemberTradeOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderItemVo;
 import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
 
@@ -150,8 +148,8 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 * @throws Exception 
 	 * @date 2017年8月8日
 	 */
-	public MemberCardResultDto<MemberTradeOrderVo> pushMemberCardOrder(MemberTradeOrderVo vo) throws Exception{
-		MemberCardResultDto<MemberTradeOrderVo> dto = new MemberCardResultDto<>();
+	public MemberCardResultDto<MemberTradeOrderDto> pushMemberCardOrder(MemberTradeOrderDto vo) throws Exception{
+		MemberCardResultDto<MemberTradeOrderDto> dto = new MemberCardResultDto<>();
 		dto.setData(vo);
 		//获取及检查用户信息
 		if(!checkUseInfo(vo)){
@@ -202,7 +200,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	}
 	
 	//设置商品主图及店铺商品信息
-	private void setGoodsStoreSkuInfo(MemberTradeOrderVo vo){
+	private void setGoodsStoreSkuInfo(MemberTradeOrderDto vo){
 		List<TradeOrderItemVo> items = vo.getList();
 		if(CollectionUtils.isNotEmpty(items)){
 			for(TradeOrderItemVo itemVo : items){
@@ -226,7 +224,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	public Response<PlaceOrderDto> submitOrder(String orderId,Response<PlaceOrderDto> resp) throws Exception{
 		resp.setResult(ResultCodeEnum.SUCCESS);
 		//获取会员卡信息对应的订单
-    	MemberTradeOrderVo order = (MemberTradeOrderVo) redisTemplateWrapper.get(orderId + orderKeyStr);
+    	MemberTradeOrderDto order = (MemberTradeOrderDto) redisTemplateWrapper.get(orderId + orderKeyStr);
     	if(order != null){
     		StoreSkuParserBo bo= new StoreSkuParserBo(Lists.newArrayList());
 	    	Request<PlaceOrderParamDto> req = new Request<>();
@@ -239,14 +237,15 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	    	if(!resp.isSuccess()){
 	    		return resp;
 	    	}
-	    	//生成交易信息
-    		order.setTradeNum(TradeNumUtil.getTradeNum());
     		//优惠为0需要提交优惠信息
-    		//MemberCardResultDto<MemberTradeOrderVo> vo = hykPayOrderServiceApi.readyPayOrder(order);
-	    	//保存订单信息 及设置返回信息
-    		saveCardOrder(order,resp);
-    		//移除会员卡信息
-    		removetMemberPayNumber(order.getMemberPayNum());
+	    	MemberCardResultDto<MemberTradeOrderDto> result=  hykPayOrderServiceApi.readyPayOrder(order);
+	    	if(result.getCode() != CommonResultCodeEnum.SUCCESS.getCode()){
+	    		//保存订单信息 及设置返回信息
+	    		saveCardOrder(result.getData(),resp);
+	    		//移除会员卡信息
+	    		removetMemberPayNumber(order.getMemberPayNum());
+	    	}
+    		
     	}else{
     		resp.setResult(ResultCodeEnum.FAIL);
     	}
@@ -259,7 +258,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 * @author tuzhd
 	 * @date 2017年8月9日
 	 */
-	private void setDiscountAmount(MemberTradeOrderVo vo) {
+	private void setDiscountAmount(MemberTradeOrderDto vo) {
 		//可以使用优惠金额
 		BigDecimal canDiscountAmount = vo.getCanDiscountAmount();
 		//面额
@@ -285,11 +284,12 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	public MemberCardResultDto<PayInfoDto> getPayInfo(PayInfoParamDto dto) throws ServiceException{
 		MemberCardResultDto<PayInfoDto> payResult =  null;
 		//获取会员卡信息对应的订单
-    	MemberTradeOrderVo order = (MemberTradeOrderVo) redisTemplateWrapper.get(dto.getOrderId() + orderKeyStr);
+    	MemberTradeOrderDto order = (MemberTradeOrderDto) redisTemplateWrapper.get(dto.getOrderId() + orderKeyStr);
     	if(order == null){
     		payResult = new MemberCardResultDto<>();
     		payResult.setCode(ResultCodeEnum.TRADE_CANCEL_OUT.getCode());
     		payResult.setMessage(ResultCodeEnum.TRADE_CANCEL_OUT.getDesc());
+    		redisTemplateWrapper.del(dto.getOrderId() + orderKeyStr);
     		return payResult;
     	}
     	order.setIp(dto.getIp());
@@ -297,11 +297,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		TradeOrder tradeOrder = tradeOrderService.selectById(order.getOrderId());
 		order.setTradeNum(tradeOrder.getTradeNum());
 		payResult = hykPayOrderServiceApi.payOrder(order);
-		
-		//移除缓存中的数据
-		if(payResult.getCode() == CommonResultCodeEnum.SUCCESS.getCode()){
-			redisTemplateWrapper.del(dto.getOrderId() + orderKeyStr);
-		}
 		return payResult;
 	}
 	
@@ -314,7 +309,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 * @author tuzhd
 	 * @date 2017年8月9日
 	 */
-	private void saveCardOrder(MemberTradeOrderVo vo,Response<PlaceOrderDto> resp) throws Exception{
+	private void saveCardOrder(MemberTradeOrderDto vo,Response<PlaceOrderDto> resp) throws Exception{
 		//转化结果集
 		TradeOrder persity = BeanMapper.map(vo, TradeOrder.class);
 		//设置id值
@@ -386,7 +381,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 * @author tuzhd
 	 * @date 2017年8月8日
 	 */
-	private PlaceOrderParamDto createPlaceOrderParamDto(MemberTradeOrderVo vo){
+	private PlaceOrderParamDto createPlaceOrderParamDto(MemberTradeOrderDto vo){
 		PlaceOrderParamDto paramDto =new PlaceOrderParamDto();
 		paramDto.setRecordId(vo.getRecordId());
 		paramDto.setUserId(vo.getUserId());
@@ -416,7 +411,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 * @author tuzhd
 	 * @date 2017年8月8日
 	 */
-	private FavourParamBO createFavourParamBo(MemberTradeOrderVo vo){
+	private FavourParamBO createFavourParamBo(MemberTradeOrderDto vo){
 		FavourParamBO parambo =new FavourParamBO();
 		parambo.setUserId(vo.getUserId());
 		parambo.setChannel(OrderResourceEnum.MEMCARD);
@@ -440,7 +435,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 * @author tuzhd
 	 * @date 2017年8月8日
 	 */
-	private boolean  checkUseInfo(MemberTradeOrderVo vo){
+	private boolean  checkUseInfo(MemberTradeOrderDto vo){
 		boolean result = false;
 		//获取会员卡信息
 		String memberPayNum =  vo.getMemberPayNum();
@@ -531,7 +526,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	    		return false;
 	    	}
 	    	//清除商城这边订单redis记录
-	    	MemberTradeOrderVo order = (MemberTradeOrderVo) redisTemplateWrapper.get(key);
+	    	MemberTradeOrderDto order = (MemberTradeOrderDto) redisTemplateWrapper.get(key);
 	    	//订单不存在标识清楚成功返回
 	    	if(order == null){
 	    		return true;
