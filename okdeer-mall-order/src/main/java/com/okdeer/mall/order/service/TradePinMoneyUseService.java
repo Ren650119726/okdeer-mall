@@ -6,7 +6,9 @@
  */    
 package com.okdeer.mall.order.service;
 
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.order.entity.TradePinMoneyUse;
 
 /**
  * ClassName: TradePinMoneyObtainService 
@@ -21,5 +23,16 @@ import com.okdeer.base.service.IBaseService;
  */
 
 public interface TradePinMoneyUseService extends IBaseService{
+
+	/**
+	 * @Description: 查询零花钱
+	 * @param userId
+	 * @param pageNumber
+	 * @param pageSize
+	 * @return   
+	 * @author guocp
+	 * @date 2017年8月14日
+	 */
+	PageUtils<TradePinMoneyUse> findPage(String userId, int pageNumber, int pageSize);
 
 }

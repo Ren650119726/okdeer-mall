@@ -37,6 +37,6 @@ public interface TradePinMoneyObtainMapper extends IBaseMapper {
 	 * @date 2017年8月11日
 	 */
 	List<TradePinMoneyObtain> findList(@Param("userId") String userId, @Param("nowDate") Date nowDate,
-			@Param("status") int status);
+			@Param("status") Integer status);
 
 }

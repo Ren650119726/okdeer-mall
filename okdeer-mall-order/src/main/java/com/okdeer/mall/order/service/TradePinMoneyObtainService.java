@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.order.entity.TradePinMoneyObtain;
 
@@ -45,5 +46,15 @@ public interface TradePinMoneyObtainService extends IBaseService {
 	 * @date 2017年8月10日
 	 */
 	List<TradePinMoneyObtain> findList(String userId, Date date, int status);
+	
+	/**
+	 * @Description: 查询用户领取记录(分页)
+	 * @param userId
+	 * @param date
+	 * @return   
+	 * @author guocp
+	 * @date 2017年8月10日
+	 */
+	PageUtils<TradePinMoneyObtain> findPage(String userId, int pageNumber, int pageSize);
 
 }

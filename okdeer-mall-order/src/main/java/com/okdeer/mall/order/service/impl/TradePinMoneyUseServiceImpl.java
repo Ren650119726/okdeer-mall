@@ -6,11 +6,19 @@
  */    
 package com.okdeer.mall.order.service.impl;
 
+import java.util.Date;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.order.dto.TradePinMoneyObtainDto;
+import com.okdeer.mall.order.entity.TradePinMoneyObtain;
+import com.okdeer.mall.order.entity.TradePinMoneyUse;
 import com.okdeer.mall.order.mapper.TradePinMoneyUseMapper;
 import com.okdeer.mall.order.service.TradePinMoneyUseService;
 
@@ -39,5 +47,16 @@ public class TradePinMoneyUseServiceImpl extends BaseServiceImpl implements Trad
 	public IBaseMapper getBaseMapper() {
 		return tradePinMoneyUseMapper;
 	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see com.okdeer.mall.order.service.TradePinMoneyUseService#findPage(java.lang.String, int, int)
+	 */
+	@Override
+	public PageUtils<TradePinMoneyUse> findPage(String userId, int pageNumber, int pageSize) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 }

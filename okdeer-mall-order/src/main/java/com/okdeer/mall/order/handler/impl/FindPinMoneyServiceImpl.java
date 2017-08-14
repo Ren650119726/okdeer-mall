@@ -43,7 +43,7 @@ public class FindPinMoneyServiceImpl implements RequestHandler<PlaceOrderParamDt
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
 		BigDecimal myUsable = tradePinMoneyObtainService.findMyUsableTotal(req.getData().getUserId(),new Date());
 		//设置我的可用零花钱总额
-		resp.getData().setUsablePinMoney(myUsable == null ? "0.00" : myUsable.toString());
+		resp.getData().setUsablePinMoney(myUsable.toString());
 	}
 
 }
