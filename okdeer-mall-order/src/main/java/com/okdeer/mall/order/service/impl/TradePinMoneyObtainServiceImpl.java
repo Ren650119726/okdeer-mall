@@ -3,7 +3,7 @@
  *@Author: guocp
  *@Date: 2017年8月10日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
- */    
+ */
 package com.okdeer.mall.order.service.impl;
 
 import java.math.BigDecimal;
@@ -23,7 +23,6 @@ import com.okdeer.mall.order.entity.TradePinMoneyObtain;
 import com.okdeer.mall.order.mapper.TradePinMoneyObtainMapper;
 import com.okdeer.mall.order.service.TradePinMoneyObtainService;
 
-
 /**
  * ClassName: TradePinMoneyObtainServiceImpl 
  * @Description: 零花钱领取服务实现
@@ -40,7 +39,7 @@ public class TradePinMoneyObtainServiceImpl extends BaseServiceImpl implements T
 
 	@Autowired
 	private TradePinMoneyObtainMapper tradePinMoneyObtainMapper;
-	
+
 	/**
 	 * (non-Javadoc)
 	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
@@ -54,18 +53,29 @@ public class TradePinMoneyObtainServiceImpl extends BaseServiceImpl implements T
 	 * 查找我的可用零花钱
 	 */
 	@Override
-	public BigDecimal findMyUsableTotal(String userId,Date nowDate) {
-		return tradePinMoneyObtainMapper.findMyUsableTotal(userId,nowDate);
+	public BigDecimal findMyUsableTotal(String userId, Date nowDate) {
+		BigDecimal myUsable = tradePinMoneyObtainMapper.findMyUsableTotal(userId, nowDate);
+		return myUsable == null ? new BigDecimal("0.00") : myUsable;
 	}
 
-
 	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.order.service.TradePinMoneyObtainService#findList(java.lang.String, java.util.Date, int)
+	 * 查询我的零花钱记录列表
 	 */
 	@Override
 	public List<TradePinMoneyObtain> findList(String userId, Date date, int status) {
-		return tradePinMoneyObtainMapper.findList(userId,date,status);
+		return tradePinMoneyObtainMapper.findList(userId, date, status);
+	}
+
+	/**
+	 * 查询我的零花钱领取记录列表(分页)
+	 * @param pageNumber 
+	 * @param pageSize 
+	 */
+	@Override
+	public PageUtils<TradePinMoneyObtain> findPage(String userId, int pageNumber, int pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true);
+		List<TradePinMoneyObtain> list = tradePinMoneyObtainMapper.findList(userId, new Date(), null);
+		return new PageUtils<TradePinMoneyObtain>(list);
 	}
 	
 	@Override

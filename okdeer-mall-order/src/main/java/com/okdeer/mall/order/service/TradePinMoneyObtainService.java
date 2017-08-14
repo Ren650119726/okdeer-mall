@@ -48,6 +48,16 @@ public interface TradePinMoneyObtainService extends IBaseService {
 	 * @date 2017年8月10日
 	 */
 	List<TradePinMoneyObtain> findList(String userId, Date date, int status);
+	
+	/**
+	 * @Description: 查询用户领取记录(分页)
+	 * @param userId
+	 * @param date
+	 * @return   
+	 * @author guocp
+	 * @date 2017年8月10日
+	 */
+	PageUtils<TradePinMoneyObtain> findPage(String userId, int pageNumber, int pageSize);
 
 	/**
 	 * @Description: 商城后台查询列表

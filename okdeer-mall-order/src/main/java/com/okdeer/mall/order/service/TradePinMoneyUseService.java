@@ -8,6 +8,7 @@ package com.okdeer.mall.order.service;
 
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.order.entity.TradePinMoneyUse;
 import com.okdeer.mall.order.bo.TradePinMoneyUseBo;
 import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
 
@@ -34,6 +35,17 @@ public interface TradePinMoneyUseService extends IBaseService{
 	 * @date 2017年8月12日
 	 */
 	PageUtils<TradePinMoneyUseBo> fingPageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize);
+
+	/**
+	 * @Description: 查询零花钱
+	 * @param userId
+	 * @param pageNumber
+	 * @param pageSize
+	 * @return   
+	 * @author guocp
+	 * @date 2017年8月14日
+	 */
+	PageUtils<TradePinMoneyUse> findPage(String userId, int pageNumber, int pageSize);
 
 	/**
 	 * @Description: 条件获取零花钱使用记录数
