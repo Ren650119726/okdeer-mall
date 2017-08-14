@@ -162,5 +162,39 @@
             AND status = #{status,jdbcType=TINYINT}
         </if>
     </select>
-
+	<!-- begin 商城后台零花钱领取记录条件查询 xuzq 20170814 -->
+    <select id="findObtainPageList" resultMap="PageListResultMap" parameterType="com.okdeer.mall.order.dto.TradePinMoneyQueryDto" >
+        SELECT 
+        pin.id, buyer.phone userPhone,  pin.status, pin.amount, pin.remain_amount, pin.create_time, pin.valid_time
+        FROM trade_pin_money_obtain pin
+        LEFT JOIN sys_buyer_user buyer ON buyer.id=pin.user_id
+        WHERE 1=1
+        <if test="userPhone != null" >
+           AND buyer.phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},'%')
+        </if>
+         <if test="createTimeStart != null" >
+        	AND pin.create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+        </if>
+        <if test="createTimeEnd != null" >
+        	AND pin.create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+        </if>
+    </select>
+	<!-- end 商城后台零花钱领取记录条件查询 xuzq 20170814 -->
+	<!-- begin 商城后台零花钱领取记录条件查询记录数 xuzq 20170814 -->
+    <select id="findObtainListCount" resultType="java.lang.Integer" parameterType="com.okdeer.mall.order.dto.TradePinMoneyQueryDto" >
+        SELECT count(1)
+        FROM trade_pin_money_obtain pin
+        LEFT JOIN sys_buyer_user buyer ON buyer.id=pin.user_id
+        WHERE 1=1
+        <if test="userPhone != null" >
+            AND buyer.phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="createTimeStart != null" >
+        	AND pin.create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+        </if>
+        <if test="createTimeEnd != null" >
+        	AND pin.create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+        </if>
+    </select>
+	<!-- begin 商城后台零花钱领取记录条件查询记录数 xuzq 20170814 -->
 </mapper>

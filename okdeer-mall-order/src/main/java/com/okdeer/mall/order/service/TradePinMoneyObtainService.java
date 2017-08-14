@@ -67,7 +67,7 @@ public interface TradePinMoneyObtainService extends IBaseService {
 	 * @param pageNumber 
 	 * @date 2017年8月11日
 	 */
-	PageUtils<TradePinMoneyObtainBo> findPageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize);
+	PageUtils<TradePinMoneyObtainBo> findObtainPageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize);
 
 	/**
 	 * @Description: 获取零花钱领取记录数
@@ -77,4 +77,5 @@ public interface TradePinMoneyObtainService extends IBaseService {
 	 * @date 2017年8月12日
 	 */
 	Integer findObtainListCount(TradePinMoneyQueryDto paramDto);
+
 }

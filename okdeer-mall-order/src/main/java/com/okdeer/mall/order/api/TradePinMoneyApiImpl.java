@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.order.dto.TradePinMoneyObtainDto;
+import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
 import com.okdeer.mall.order.dto.TradePinMoneyUseDto;
 import com.okdeer.mall.order.service.TradePinMoneyApi;
 import com.okdeer.mall.order.service.TradePinMoneyObtainService;
@@ -70,9 +71,34 @@ public class TradePinMoneyApiImpl implements TradePinMoneyApi {
 	 * @author guocp
 	 * @date 2017年8月10日
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public PageUtils<TradePinMoneyUseDto> findUseList(String userId, int pageNumber, int pageSize) {
 		return tradePinMoneyUseService.findPage(userId, pageNumber, pageSize).toBean(TradePinMoneyUseDto.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public PageUtils<TradePinMoneyObtainDto> findObtainPageList(TradePinMoneyQueryDto paramDto, int pageNumber,
+			int pageSize) {
+		return tradePinMoneyObtainService.findObtainPageList(paramDto, pageNumber, pageSize).toBean(TradePinMoneyObtainDto.class);
+	}
+
+	@Override
+	public Integer findObtainListCount(TradePinMoneyQueryDto paramDto) {
+		return tradePinMoneyObtainService.findObtainListCount(paramDto);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public PageUtils<TradePinMoneyUseDto> findUsePageList(TradePinMoneyQueryDto paramDto, int pageNumber,
+			int pageSize) {
+		return tradePinMoneyUseService.findUsePageList(paramDto, pageNumber, pageSize).toBean(TradePinMoneyUseDto.class);
+	}
+
+	@Override
+	public Integer findUseListCount(TradePinMoneyQueryDto paramDto) {
+		return tradePinMoneyUseService.findUseListCount(paramDto);
 	}
 
 }

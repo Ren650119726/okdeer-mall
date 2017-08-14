@@ -6,7 +6,6 @@
  */    
 package com.okdeer.mall.order.service.impl;
 
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +15,9 @@ import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.order.dto.TradePinMoneyObtainDto;
-import com.okdeer.mall.order.entity.TradePinMoneyObtain;
-import com.okdeer.mall.order.entity.TradePinMoneyUse;
 import com.okdeer.mall.order.bo.TradePinMoneyUseBo;
 import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
+import com.okdeer.mall.order.entity.TradePinMoneyUse;
 import com.okdeer.mall.order.mapper.TradePinMoneyUseMapper;
 import com.okdeer.mall.order.service.TradePinMoneyUseService;
 
@@ -46,10 +43,6 @@ public class TradePinMoneyUseServiceImpl extends BaseServiceImpl implements Trad
 		return tradePinMoneyUseMapper;
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.order.service.TradePinMoneyUseService#findPage(java.lang.String, int, int)
-	 */
 	@Override
 	public PageUtils<TradePinMoneyUse> findPage(String userId, int pageNumber, int pageSize) {
 		// TODO Auto-generated method stub
@@ -58,9 +51,9 @@ public class TradePinMoneyUseServiceImpl extends BaseServiceImpl implements Trad
 
 
 	@Override
-	public PageUtils<TradePinMoneyUseBo> fingPageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize) {
+	public PageUtils<TradePinMoneyUseBo> findUsePageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
-		List<TradePinMoneyUseBo> list = tradePinMoneyUseMapper.findPageList(paramDto);
+		List<TradePinMoneyUseBo> list = tradePinMoneyUseMapper.fingUsePageList(paramDto);
 		return new PageUtils<TradePinMoneyUseBo>(list);
 	}
 
