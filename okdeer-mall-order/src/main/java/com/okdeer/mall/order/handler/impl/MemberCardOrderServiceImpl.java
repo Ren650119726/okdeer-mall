@@ -239,7 +239,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	    	}
     		//优惠为0需要提交优惠信息
 	    	MemberCardResultDto<MemberTradeOrderDto> result=  hykPayOrderServiceApi.readyPayOrder(order);
-	    	if(result.getCode() != CommonResultCodeEnum.SUCCESS.getCode()){
+	    	if(result.getCode() == CommonResultCodeEnum.SUCCESS.getCode()){
 	    		//保存订单信息 及设置返回信息
 	    		saveCardOrder(result.getData(),resp);
 	    		//移除会员卡信息
