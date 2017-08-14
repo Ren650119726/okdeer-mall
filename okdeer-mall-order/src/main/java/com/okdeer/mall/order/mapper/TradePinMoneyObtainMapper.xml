@@ -12,11 +12,21 @@
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
         <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
     </resultMap>
-
+    <!-- 后台查询领取记录列表 -->
+	<resultMap id="PageListResultMap" type="com.okdeer.mall.operate.vo.TradePinMoneyObtainVo" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="userPhone" property="userPhone" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="TINYINT" />
+        <result column="amount" property="amount" jdbcType="DECIMAL" />
+        <result column="remain_amount" property="remainAmount" jdbcType="DECIMAL" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
+    </resultMap>
     <sql id="Base_Column_List" >
-        id, order_id, user_id, device_id, amount, remain_amount, create_time, update_time, 
-        valid_time
+        id, order_id, user_id, device_id, status, amount, remain_amount, create_time, update_time, 
+        valid_time,activity_id
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -59,6 +69,9 @@
             <if test="validTime != null" >
                 valid_time,
             </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -90,6 +103,9 @@
             </if>
             <if test="validTime != null" >
                 #{validTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -124,6 +140,9 @@
             <if test="validTime != null" >
                 valid_time = #{validTime,jdbcType=TIMESTAMP},
             </if>
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
+            </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
     </update>
@@ -153,5 +172,38 @@
             AND status = #{status,jdbcType=TINYINT}
         </if>
     </select>
-
+    <!-- begin 后台查询零花钱领取列表 xuzq 20170811 -->
+ 	<select id="findPageList" resultMap="PageListResultMap" parameterType="com.okdeer.mall.operate.dto.TradePinMoneyQueryDto" >
+        SELECT 
+        pin.id, buyer.phone userPhone, pin.status, pin.amount, pin.remain_amount, pin.create_time,
+        pin.valid_time
+        FROM trade_pin_money_obtain pin
+        LEFT JOIN sys_buyer_user buyer ON pin.user_id = buyer.id
+        WHERE 1=1
+        <if test="createTimeStart != null" >
+        	AND pin.create_time <![CDATA[>=]]> #{createTimeStart,jdbcType=TIMESTAMP}
+        </if>
+        <if test="createTimeEnd != null" >
+        	AND pin.create_time <![CDATA[<= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+        </if>
+        <if test="userPhone != null" >
+            AND buyer.phone like CONCAT('%',#{userPhone,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+    <select id="findObtainListCount" resultType="Integer" parameterType="com.okdeer.mall.operate.dto.TradePinMoneyQueryDto" >
+        SELECT count(1)
+        FROM trade_pin_money_obtain pin
+        LEFT JOIN sys_buyer_user buyer ON pin.user_id = buyer.id
+        WHERE 1=1
+        <if test="createTimeStart != null" >
+        	AND pin.create_time <![CDATA[>=]]> #{createTimeStart,jdbcType=TIMESTAMP}
+        </if>
+        <if test="createTimeEnd != null" >
+        	AND pin.create_time <![CDATA[<= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+        </if>
+        <if test="userPhone != null" >
+            AND buyer.phone like CONCAT('%',#{userPhone,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+    <!-- end 后台查询零花钱领取列表 xuzq 20170811 -->
 </mapper>
