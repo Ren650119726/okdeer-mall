@@ -4,6 +4,7 @@ package com.okdeer.mall.order.api;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.common.consts.DescriptConstants;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.dto.CancelOrderDto;
@@ -53,6 +54,9 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 	@Autowired
 	@Qualifier(value="jxcSynTradeorderProcessLister")
 	private TradeorderProcessLister tradeorderProcessLister;
+	
+	@Autowired
+	private ActivityCouponsRecordService activityCouponsRecordService;
 
 	/**
 	 * 注入配送-service
@@ -156,7 +160,9 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 	 * @date 2016年11月10日
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	public boolean cancelOrder(TradeOrder tradeOrder, boolean isBuyerOperate) throws Exception {
-		return cancelOrderService.cancelOrder(tradeOrder, isBuyerOperate);
+	public void cancelOrder(TradeOrder tradeOrder) throws Exception {
+		activityCouponsRecordService.releaseConpons(tradeOrder);
+		// 更新订单状态
+		tradeorderService.updateOrderStatus(tradeOrder);
 	}
 }
