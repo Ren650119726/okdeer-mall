@@ -59,8 +59,8 @@ public class MemberCardOrderApiImpl implements MemberCardOrderApi {
 		try{
 			resp = memberCardOrderService.submitOrder(orderId,resp);
 		}catch(Exception e){
-			resp.setResult(ResultCodeEnum.SERVER_COLUMN_IS_CLOSED);
-			logger.error(e.getMessage());
+			resp.setResult(ResultCodeEnum.FAIL);
+			logger.error("提交会员卡订单失败",e);
 		}
 		return resp;
 	}
