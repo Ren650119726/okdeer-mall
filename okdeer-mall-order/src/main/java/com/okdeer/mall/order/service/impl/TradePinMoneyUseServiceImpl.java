@@ -19,6 +19,8 @@ import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.order.dto.TradePinMoneyObtainDto;
 import com.okdeer.mall.order.entity.TradePinMoneyObtain;
 import com.okdeer.mall.order.entity.TradePinMoneyUse;
+import com.okdeer.mall.order.bo.TradePinMoneyUseBo;
+import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
 import com.okdeer.mall.order.mapper.TradePinMoneyUseMapper;
 import com.okdeer.mall.order.service.TradePinMoneyUseService;
 
@@ -39,10 +41,6 @@ public class TradePinMoneyUseServiceImpl extends BaseServiceImpl implements Trad
 	@Autowired
 	private TradePinMoneyUseMapper tradePinMoneyUseMapper;
 	
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
-	 */
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return tradePinMoneyUseMapper;
@@ -58,5 +56,17 @@ public class TradePinMoneyUseServiceImpl extends BaseServiceImpl implements Trad
 		return null;
 	}
 
+
+	@Override
+	public PageUtils<TradePinMoneyUseBo> fingPageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+		List<TradePinMoneyUseBo> list = tradePinMoneyUseMapper.findPageList(paramDto);
+		return new PageUtils<TradePinMoneyUseBo>(list);
+	}
+
+	@Override
+	public Integer findUseListCount(TradePinMoneyQueryDto paramDto) {
+		return tradePinMoneyUseMapper.findUseListCount(paramDto);
+	}
 
 }
