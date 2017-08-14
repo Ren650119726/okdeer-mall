@@ -14,7 +14,7 @@
         <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
     </resultMap>
     <!-- 后台查询领取记录列表 -->
-	<resultMap id="PageListResultMap" type="com.okdeer.mall.operate.bo.TradePinMoneyObtainBo" >
+	<resultMap id="PageListResultMap" type="com.okdeer.mall.order.bo.TradePinMoneyObtainBo" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="userPhone" property="userPhone" jdbcType="VARCHAR" />
         <result column="status" property="status" jdbcType="TINYINT" />
