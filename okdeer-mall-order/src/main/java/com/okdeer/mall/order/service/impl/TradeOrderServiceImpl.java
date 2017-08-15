@@ -6024,7 +6024,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     // Begin v1.1.0 add by zengjz 20160912
     @Override
-    public FmsOrderStatisBo statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
+    public List<FmsOrderStatisBo> statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
         return tradeOrderMapper.statisOrderForFinanceByParams(tradeOrderQueryParamDto);
     }
 

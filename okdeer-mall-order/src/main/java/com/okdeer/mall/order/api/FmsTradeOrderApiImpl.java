@@ -463,10 +463,10 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 	}
 
 	@Override
-	public FmsOrderStatisDto statisOrderByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
+	public List<FmsOrderStatisDto> statisOrderByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
 		// 参数转换处理（例如订单状态）
-		FmsOrderStatisBo result = tradeOrderService.statisOrderForFinanceByParams(tradeOrderQueryParamDto);
-		return BeanMapper.map(result, FmsOrderStatisDto.class);
+		List<FmsOrderStatisBo> result = tradeOrderService.statisOrderForFinanceByParams(tradeOrderQueryParamDto);
+		return BeanMapper.mapList(result, FmsOrderStatisDto.class);
 	}
 
 }

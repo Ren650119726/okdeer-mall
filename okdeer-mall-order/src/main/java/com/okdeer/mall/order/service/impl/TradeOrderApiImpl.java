@@ -769,13 +769,6 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 
 	@Override
-	public FmsOrderStatisDto statisOrderByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
-		// 参数转换处理（例如订单状态）
-		FmsOrderStatisBo result = tradeOrderService.statisOrderForFinanceByParams(tradeOrderQueryParamDto);
-		return BeanMapper.map(result, FmsOrderStatisDto.class);
-	}
-
-	@Override
 	public Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params) {
 
 		return tradeOrderService.statisOrderCannelRefundByParams(params);

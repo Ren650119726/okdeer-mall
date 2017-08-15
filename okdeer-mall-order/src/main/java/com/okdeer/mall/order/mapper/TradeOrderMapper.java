@@ -1067,7 +1067,7 @@ public interface TradeOrderMapper {
 	 * @author zengjizu
 	 * @date 2016年9月12日
 	 */
-	FmsOrderStatisBo statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto);
+	List<FmsOrderStatisBo> statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto);
 
 	/**
 	 * @Description: 按查询条件统计取消订单退款 金额、数量

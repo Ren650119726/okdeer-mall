@@ -981,7 +981,7 @@ public interface TradeOrderService {
 	 * @author zengjizu
 	 * @date 2016年9月12日
 	 */
-	FmsOrderStatisBo statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto);
+	List<FmsOrderStatisBo> statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto);
 
 	/**
 	 * @Description: 按条件统计取消订单退款交易量与金额
