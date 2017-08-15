@@ -1,5 +1,8 @@
 package com.okdeer.mall.order.bo;
 
+import com.okdeer.mall.order.enums.OrderResourceEnum;
+
+
 /**
  * ClassName: UserOrderParamBo 
  * @Description: 用户订单参数
@@ -42,6 +45,11 @@ public class UserOrderParamBo {
 	 * 查询关键字
 	 */
 	private String keyword;
+	
+	/**
+	 * 不查询订单来源 0:友门鹿App,1:微信,2:pos 3.友门鹿便利店  4.便利店扫码购 5.会员卡扫码付
+	 */
+	private OrderResourceEnum notOrderResource;
 
 	public String getUserId() {
 		return userId;
@@ -90,5 +98,16 @@ public class UserOrderParamBo {
 	public void setKeyword(String keyword) {
 		this.keyword = keyword;
 	}
+
+	
+	public OrderResourceEnum getNotOrderResource() {
+		return notOrderResource;
+	}
+
+	
+	public void setNotOrderResource(OrderResourceEnum notOrderResource) {
+		this.notOrderResource = notOrderResource;
+	}
+
 
 }

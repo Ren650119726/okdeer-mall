@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.wxchat.mapper.ActivityPosterWechatUserInfoMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.wxchat.entity.ActivityPosterWechatUserInfo" >
+        <id column="openid" property="openid" jdbcType="VARCHAR" />
+        <result column="qualifica_count" property="qualificaCount" jdbcType="INTEGER" />
+        <result column="used_qualifica_count" property="usedQualificaCount" jdbcType="INTEGER" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="poster_media_id" property="posterMediaId" jdbcType="VARCHAR" />
+        <result column="poster_expire_time" property="posterExpireTime" jdbcType="TIMESTAMP" />
+        <result column="phone_no" property="phoneNo" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        openid, qualifica_count, used_qualifica_count, update_time, poster_media_id, poster_expire_time, 
+        phone_no
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_poster_wechat_user_info
+        where openid = #{openid,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.wxchat.entity.ActivityPosterWechatUserInfo" >
+        insert into activity_poster_wechat_user_info
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="openid != null" >
+                openid,
+            </if>
+            <if test="qualificaCount != null" >
+                qualifica_count,
+            </if>
+            <if test="usedQualificaCount != null" >
+                used_qualifica_count,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="posterMediaId != null" >
+                poster_media_id,
+            </if>
+            <if test="posterExpireTime != null" >
+                poster_expire_time,
+            </if>
+            <if test="phoneNo != null" >
+                phone_no,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="openid != null" >
+                #{openid,jdbcType=VARCHAR},
+            </if>
+            <if test="qualificaCount != null" >
+                #{qualificaCount,jdbcType=INTEGER},
+            </if>
+            <if test="usedQualificaCount != null" >
+                #{usedQualificaCount,jdbcType=INTEGER},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="posterMediaId != null" >
+                #{posterMediaId,jdbcType=VARCHAR},
+            </if>
+            <if test="posterExpireTime != null" >
+                #{posterExpireTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="phoneNo != null" >
+                #{phoneNo,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.wxchat.entity.ActivityPosterWechatUserInfo" >
+        update activity_poster_wechat_user_info
+        <set >
+            <if test="qualificaCount != null" >
+                qualifica_count = #{qualificaCount,jdbcType=INTEGER},
+            </if>
+            <if test="usedQualificaCount != null" >
+                used_qualifica_count = #{usedQualificaCount,jdbcType=INTEGER},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="posterMediaId != null" >
+                poster_media_id = #{posterMediaId,jdbcType=VARCHAR},
+            </if>
+            <if test="posterExpireTime != null" >
+                poster_expire_time = #{posterExpireTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="phoneNo != null" >
+                phone_no = #{phoneNo,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where openid = #{openid,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_poster_wechat_user_info
+        where openid = #{openid,jdbcType=VARCHAR}
+    </delete>
+	
+	<update id="updateUsedQualificaCount" >
+		UPDATE activity_poster_wechat_user_info SET used_qualifica_count = #{usedQualificaCount,jdbcType=INTEGER} WHERE  openid = #{openid,jdbcType=VARCHAR} AND used_qualifica_count = #{conditionUsedQualificaCount,jdbcType=INTEGER}
+	</update>
+</mapper>

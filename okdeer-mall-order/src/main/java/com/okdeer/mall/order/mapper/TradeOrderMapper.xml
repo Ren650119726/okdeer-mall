@@ -1296,7 +1296,7 @@
 		SELECT
 		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,o.order_resource,
 		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,o.cancel_type,
-		o.real_fare_preferential,o.store_activity_type,
+		o.real_fare_preferential,o.store_activity_type,o.platform_preferential,o.store_preferential,
 		logistics.consignee_name,logistics.telephone,logistics.mobile,logistics.area,logistics.address,
 		logistics.type as
 		logistics_type,logistics.logistics_no,logistics.logistics_company_name,
@@ -6086,6 +6086,9 @@
 				<if test="totalAmount != null">
 					AND trade.total_amount <![CDATA[ >= ]]> #{totalAmount,jdbcType=DECIMAL}
 				</if>
+				<if test="actualAmount != null">
+					AND trade.actual_amount <![CDATA[ >= ]]> #{actualAmount,jdbcType=DECIMAL}
+				</if>
 				<!-- 结束时间 -->
 				<if test="endTime != null">
 					AND trade.create_time <![CDATA[ <= ]]>
@@ -6197,6 +6200,13 @@
 			<if test="status == '1'.toString()">
 				AND status = 0
 			</if>
+			
+			<!-- 不查询的订单来源 -->
+			<if test="notOrderResource != null">
+				AND order_resource != #{notOrderResource,jdbcType=TINYINT}
+			</if>
+			
+			
 			<!-- 待使用订单查询 -->
 			<if test="status == '2'.toString()">
 				AND (status IN (1, 3, 7, 8, 11,14) OR (type = 5 AND consumer_code_status = 1))

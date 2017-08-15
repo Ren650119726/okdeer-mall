@@ -125,6 +125,25 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 		preferentialVo.setMaxFareFavour(maxFareFavour);
 		return preferentialVo;
 	}
+	
+	/**
+	 * @Description: 根据会员卡信息查询优惠代金券信息
+	 * @param paramBo
+	 * @return PreferentialVo  
+	 * @throws Exception   
+	 * @author tuzhd
+	 * @date 2017年8月8日
+	 */
+	public PreferentialVo findPreferByCard(FavourParamBO paramBo) throws Exception {
+		PreferentialVo preferentialVo = new PreferentialVo();
+		// 获取用户有效的代金券
+		List<Coupons> couponList = getCouponsList(paramBo);
+		// 获取最大有效的代金券
+		Favour maxFavour = getMaxFavour(couponList);
+		preferentialVo.setCouponList(couponList);
+		preferentialVo.setMaxFavourOnline(maxFavour);
+		return preferentialVo;
+	}
 
 	/**
 	 * @Description: 获取用户有效的代金券
