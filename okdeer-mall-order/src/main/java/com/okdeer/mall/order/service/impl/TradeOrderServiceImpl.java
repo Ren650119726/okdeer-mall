@@ -104,6 +104,7 @@ import com.okdeer.mall.member.points.enums.PointsRuleCode;
 import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
+import com.okdeer.mall.order.bo.FmsOrderStatisBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
@@ -6023,10 +6024,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     // Begin v1.1.0 add by zengjz 20160912
     @Override
-    public Map<String, Object> statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
-        // 参数转换处理（例如订单状态）
-        Map<String, Object> result = tradeOrderMapper.statisOrderForFinanceByParams(tradeOrderQueryParamDto);
-        return result;
+    public FmsOrderStatisBo statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
+        return tradeOrderMapper.statisOrderForFinanceByParams(tradeOrderQueryParamDto);
     }
 
     /**
