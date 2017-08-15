@@ -26,7 +26,6 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.activity.label.entity.ActivityLabel;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
 import com.okdeer.mall.operate.dto.SkinManagerParamDto;
@@ -201,8 +200,7 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements SkinManag
 	
 	
 	/**
-	 * 执行换肤活动管理 JOB 任务
-	 * @Description: TODO   
+	 * @Description: 执行换肤活动管理 JOB 任务   
 	 * @return void  
 	 * @throws
 	 * @author tuzhd
@@ -215,7 +213,7 @@ public class SkinManagerServiceImpl extends BaseServiceImpl implements SkinManag
 			Date nowTime = new Date();
 			map.put("nowTime", nowTime);
 			//1、查询活动未开始，开始时间小于当前的数据 即为要设置开始，2、活动开始、结束时间小于当前的数据 即为要设置结束
-			List<SkinManager> accList = skinManagerMapper.listByJob(map);;
+			List<SkinManager> accList = skinManagerMapper.listByJob(map);
 			//获得系统当前系统用户id
 			String updateUserId = RobotUserUtil.getRobotUser().getId();
 			//需要更新状态的活动新不为空进行定时任务处理

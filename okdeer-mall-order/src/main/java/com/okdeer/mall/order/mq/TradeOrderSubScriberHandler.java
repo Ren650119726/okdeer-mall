@@ -2,7 +2,6 @@ package com.okdeer.mall.order.mq;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;

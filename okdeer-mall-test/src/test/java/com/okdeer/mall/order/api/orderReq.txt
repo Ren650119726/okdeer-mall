@@ -1,0 +1,432 @@
+confirm start---0店铺不存在 
+{
+	"version": "V2.5.0",
+	"data": {
+		"storeId": "4028b1e05cbf666b015cc3723f7d40a8",
+		"version": "V2.5.0",
+		"cityName": "荆州市",
+		"fare": "3.00",
+		"channel": "3",
+		"userPhone": "18613138749",
+		"startMoney": "15.00",
+		"areaExt": "荆州博物馆",
+		"lat": "30.3593",
+		"lng": "112.186806",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"areaName": "荆州区",
+		"orderType": "0",
+		"provinceName": "湖北省",
+		"skuList": [{
+			"quantity": "2",
+			"updateTime": "2017-07-01 16:25:51",
+			"skuActQuantity": "0",
+			"skuPrice": "2.00",
+			"storeSkuId": "40289d775ce7942a015ce79c091a000a",
+			"skuActType": "0",
+			"skuActPrice": "0.00"
+		}],
+		"skuType": "0"
+	}
+}
+confirm end---
+submit start---
+{
+	"data": {
+		"storeId": "5592971b276511e6aaff00163e010eb1",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"userPhone" : "18613138749",
+		"lng": "113.9511498388759",
+		"lat": "22.55400291367245",
+		"provinceName": "广东省",
+		"cityName": "深圳市",
+		"areaName": "南山区",
+		"orderType": 0,
+		"skuType":0,
+		"channel":3,
+		"seckillId": "",
+		"isCheckTime":1,
+		"skuList": [{
+			"storeSkuId": "15d3c7d8276311e6aaff00163e010eb1",
+			"quantity": "1",
+			"skuPrice": "0.01",
+			"skuActType" : 0,
+			"skuActPrice": 0.0,
+			"skuActQuantity" : 0,
+			"updateTime": "2016-12-21 20:41:48"
+		}],
+		"userAddrId":"8a94e4cb56b731400156b7424bc30002",
+		"activityType":0,
+		"activityId":"",
+		"activityItemId":"",
+		"couponsType":0,
+		"recordId":"",
+		"remark":"速度发货",
+		"isInvoice":0,
+		"invoiceHead":"",
+		"invoiceContent":"",
+		"payType":0,
+		"pickType":0,
+		"pickTime":"2017-01-05 20:00:00"
+	}
+}
+submit end---
+confirm start---1店铺关闭
+{
+	"version": "V2.5.0",
+	"data": {
+		"storeId": "4028b1e05cbf666b015cc3723f7d40a8",
+		"version": "V2.5.0",
+		"cityName": "荆州市",
+		"fare": "3.00",
+		"channel": "3",
+		"userPhone": "18613138749",
+		"startMoney": "15.00",
+		"areaExt": "荆州博物馆",
+		"lat": "30.3593",
+		"lng": "112.186806",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"areaName": "荆州区",
+		"orderType": "0",
+		"provinceName": "湖北省",
+		"skuList": [{
+			"quantity": "2",
+			"updateTime": "2017-07-01 16:25:51",
+			"skuActQuantity": "0",
+			"skuPrice": "2.00",
+			"storeSkuId": "40289d775ce7942a015ce79c091a000a",
+			"skuActType": "0",
+			"skuActPrice": "0.00"
+		}],
+		"skuType": "0"
+	}
+}
+confirm end---
+submit start---
+{
+	"data": {
+		"storeId": "5592971b276511e6aaff00163e010eb1",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"userPhone" : "18613138749",
+		"lng": "113.9511498388759",
+		"lat": "22.55400291367245",
+		"provinceName": "广东省",
+		"cityName": "深圳市",
+		"areaName": "南山区",
+		"orderType": 0,
+		"skuType":0,
+		"channel":3,
+		"seckillId": "",
+		"isCheckTime":1,
+		"skuList": [{
+			"storeSkuId": "15d3c7d8276311e6aaff00163e010eb1",
+			"quantity": "1",
+			"skuPrice": "0.01",
+			"skuActType" : 0,
+			"skuActPrice": 0.0,
+			"skuActQuantity" : 0,
+			"updateTime": "2016-12-21 20:41:48"
+		}],
+		"userAddrId":"8a94e4cb56b731400156b7424bc30002",
+		"activityType":0,
+		"activityId":"",
+		"activityItemId":"",
+		"couponsType":0,
+		"recordId":"",
+		"remark":"速度发货",
+		"isInvoice":0,
+		"invoiceHead":"",
+		"invoiceContent":"",
+		"payType":0,
+		"pickType":0,
+		"pickTime":"2017-01-05 20:00:00"
+	}
+}
+submit end---
+confirm start---2店铺暂停营业
+{
+	"version": "V2.5.0",
+	"data": {
+		"storeId": "4028b1e05cbf666b015cc3723f7d40a8",
+		"version": "V2.5.0",
+		"cityName": "荆州市",
+		"fare": "3.00",
+		"channel": "3",
+		"userPhone": "18613138749",
+		"startMoney": "15.00",
+		"areaExt": "荆州博物馆",
+		"lat": "30.3593",
+		"lng": "112.186806",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"areaName": "荆州区",
+		"orderType": "0",
+		"provinceName": "湖北省",
+		"skuList": [{
+			"quantity": "2",
+			"updateTime": "2017-07-01 16:25:51",
+			"skuActQuantity": "0",
+			"skuPrice": "2.00",
+			"storeSkuId": "40289d775ce7942a015ce79c091a000a",
+			"skuActType": "0",
+			"skuActPrice": "0.00"
+		}],
+		"skuType": "0"
+	}
+}
+confirm end---
+submit start---
+{
+	"data": {
+		"storeId": "5592971b276511e6aaff00163e010eb1",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"userPhone" : "18613138749",
+		"lng": "113.9511498388759",
+		"lat": "22.55400291367245",
+		"provinceName": "广东省",
+		"cityName": "深圳市",
+		"areaName": "南山区",
+		"orderType": 0,
+		"skuType":0,
+		"channel":3,
+		"seckillId": "",
+		"isCheckTime":1,
+		"skuList": [{
+			"storeSkuId": "15d3c7d8276311e6aaff00163e010eb1",
+			"quantity": "1",
+			"skuPrice": "0.01",
+			"skuActType" : 0,
+			"skuActPrice": 0.0,
+			"skuActQuantity" : 0,
+			"updateTime": "2016-12-21 20:41:48"
+		}],
+		"userAddrId":"8a94e4cb56b731400156b7424bc30002",
+		"activityType":0,
+		"activityId":"",
+		"activityItemId":"",
+		"couponsType":0,
+		"recordId":"",
+		"remark":"速度发货",
+		"isInvoice":0,
+		"invoiceHead":"",
+		"invoiceContent":"",
+		"payType":0,
+		"pickType":0,
+		"pickTime":"2017-01-05 20:00:00"
+	}
+}
+submit end---
+confirm start---3店铺当天营业
+{
+	"version": "V2.5.0",
+	"data": {
+		"storeId": "4028b1e05cbf666b015cc3723f7d40a8",
+		"version": "V2.5.0",
+		"cityName": "荆州市",
+		"fare": "3.00",
+		"channel": "3",
+		"userPhone": "18613138749",
+		"startMoney": "15.00",
+		"areaExt": "荆州博物馆",
+		"lat": "30.3593",
+		"lng": "112.186806",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"areaName": "荆州区",
+		"orderType": "0",
+		"provinceName": "湖北省",
+		"skuList": [{
+			"quantity": "2",
+			"updateTime": "2017-07-01 16:25:51",
+			"skuActQuantity": "0",
+			"skuPrice": "2.00",
+			"storeSkuId": "40289d775ce7942a015ce79c091a000a",
+			"skuActType": "0",
+			"skuActPrice": "0.00"
+		}],
+		"skuType": "0"
+	}
+}
+confirm end---
+submit start---
+{
+	"data": {
+		"storeId": "5592971b276511e6aaff00163e010eb1",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"userPhone" : "18613138749",
+		"lng": "113.9511498388759",
+		"lat": "22.55400291367245",
+		"provinceName": "广东省",
+		"cityName": "深圳市",
+		"areaName": "南山区",
+		"orderType": 0,
+		"skuType":0,
+		"channel":3,
+		"seckillId": "",
+		"isCheckTime":1,
+		"skuList": [{
+			"storeSkuId": "15d3c7d8276311e6aaff00163e010eb1",
+			"quantity": "1",
+			"skuPrice": "0.01",
+			"skuActType" : 0,
+			"skuActPrice": 0.0,
+			"skuActQuantity" : 0,
+			"updateTime": "2016-12-21 20:41:48"
+		}],
+		"userAddrId":"8a94e4cb56b731400156b7424bc30002",
+		"activityType":0,
+		"activityId":"",
+		"activityItemId":"",
+		"couponsType":0,
+		"recordId":"",
+		"remark":"速度发货",
+		"isInvoice":0,
+		"invoiceHead":"",
+		"invoiceContent":"",
+		"payType":0,
+		"pickType":0,
+		"pickTime":"2017-01-05 20:00:00"
+	}
+}
+submit end---
+confirm start---4店铺跨天营业
+{
+	"version": "V2.5.0",
+	"data": {
+		"storeId": "4028b1e05cbf666b015cc3723f7d40a8",
+		"version": "V2.5.0",
+		"cityName": "荆州市",
+		"fare": "3.00",
+		"channel": "3",
+		"userPhone": "18613138749",
+		"startMoney": "15.00",
+		"areaExt": "荆州博物馆",
+		"lat": "30.3593",
+		"lng": "112.186806",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"areaName": "荆州区",
+		"orderType": "0",
+		"provinceName": "湖北省",
+		"skuList": [{
+			"quantity": "2",
+			"updateTime": "2017-07-01 16:25:51",
+			"skuActQuantity": "0",
+			"skuPrice": "2.00",
+			"storeSkuId": "40289d775ce7942a015ce79c091a000a",
+			"skuActType": "0",
+			"skuActPrice": "0.00"
+		}],
+		"skuType": "0"
+	}
+}
+confirm end---
+submit start---
+{
+	"data": {
+		"storeId": "5592971b276511e6aaff00163e010eb1",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"userPhone" : "18613138749",
+		"lng": "113.9511498388759",
+		"lat": "22.55400291367245",
+		"provinceName": "广东省",
+		"cityName": "深圳市",
+		"areaName": "南山区",
+		"orderType": 0,
+		"skuType":0,
+		"channel":3,
+		"seckillId": "",
+		"isCheckTime":1,
+		"skuList": [{
+			"storeSkuId": "15d3c7d8276311e6aaff00163e010eb1",
+			"quantity": "1",
+			"skuPrice": "0.01",
+			"skuActType" : 0,
+			"skuActPrice": 0.0,
+			"skuActQuantity" : 0,
+			"updateTime": "2016-12-21 20:41:48"
+		}],
+		"userAddrId":"8a94e4cb56b731400156b7424bc30002",
+		"activityType":0,
+		"activityId":"",
+		"activityItemId":"",
+		"couponsType":0,
+		"recordId":"",
+		"remark":"速度发货",
+		"isInvoice":0,
+		"invoiceHead":"",
+		"invoiceContent":"",
+		"payType":0,
+		"pickType":0,
+		"pickTime":"2017-01-05 20:00:00"
+	}
+}
+submit end---
+confirm start---5店铺非营业时间接单
+{
+	"version": "V2.5.0",
+	"data": {
+		"storeId": "4028b1e05cbf666b015cc3723f7d40a8",
+		"version": "V2.5.0",
+		"cityName": "荆州市",
+		"fare": "3.00",
+		"channel": "3",
+		"userPhone": "18613138749",
+		"startMoney": "15.00",
+		"areaExt": "荆州博物馆",
+		"lat": "30.3593",
+		"lng": "112.186806",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"areaName": "荆州区",
+		"orderType": "0",
+		"provinceName": "湖北省",
+		"skuList": [{
+			"quantity": "2",
+			"updateTime": "2017-07-17 11:03:30",
+			"skuActQuantity": "0",
+			"skuPrice": "2.00",
+			"storeSkuId": "40289d775ce7942a015ce79c09050006",
+			"skuActType": "0",
+			"skuActPrice": "0.00"
+		}],
+		"skuType": "0"
+	}
+}
+confirm end---
+submit start---
+{
+	"data": {
+		"storeId": "5592971b276511e6aaff00163e010eb1",
+		"userId": "14527626891242d4d00a207c4d69bd80",
+		"userPhone" : "18613138749",
+		"lng": "113.9511498388759",
+		"lat": "22.55400291367245",
+		"provinceName": "广东省",
+		"cityName": "深圳市",
+		"areaName": "南山区",
+		"orderType": 0,
+		"skuType":0,
+		"channel":3,
+		"seckillId": "",
+		"isCheckTime":1,
+		"skuList": [{
+			"storeSkuId": "15d3c7d8276311e6aaff00163e010eb1",
+			"quantity": "1",
+			"skuPrice": "0.01",
+			"skuActType" : 0,
+			"skuActPrice": 0.0,
+			"skuActQuantity" : 0,
+			"updateTime": "2016-12-21 20:41:48"
+		}],
+		"userAddrId":"8a94e4cb56b731400156b7424bc30002",
+		"activityType":0,
+		"activityId":"",
+		"activityItemId":"",
+		"couponsType":0,
+		"recordId":"",
+		"remark":"速度发货",
+		"isInvoice":0,
+		"invoiceHead":"",
+		"invoiceContent":"",
+		"payType":0,
+		"pickType":0,
+		"pickTime":"2017-01-05 20:00:00"
+	}
+}
+submit end---

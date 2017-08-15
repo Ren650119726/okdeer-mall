@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityDrawPrizeService;
 import com.okdeer.mall.activity.coupons.service.ActivityDrawPrizeServiceApi;
@@ -121,8 +120,6 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService,Ac
 			//如果概率为空，跳过该奖项
 			if (iArr[i] != 0) {
 				if (randonNo >= count && randonNo < step) {
-					System.out.println(i+"中奖概率为"+iArr[i]);
-					
 					return i;
 				}
 				count += iArr[i];

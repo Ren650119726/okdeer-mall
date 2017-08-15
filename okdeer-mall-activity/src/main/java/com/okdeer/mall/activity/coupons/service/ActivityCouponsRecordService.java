@@ -96,7 +96,7 @@ public interface ActivityCouponsRecordService {
 	 * @param userId
 	 * @throws ServiceException
 	 */
-	public void drawCouponsRecord(List<ActivityCoupons> lstActivityCoupons, ActivityCouponsType activityCouponsType,
+	void drawCouponsRecord(List<ActivityCoupons> lstActivityCoupons, ActivityCouponsType activityCouponsType,
 			String userId) throws ServiceException;
 
 	/**
@@ -165,13 +165,13 @@ public interface ActivityCouponsRecordService {
 	
 	/**
 	 * 执行代金劵提醒JOB
-	 * @Description: TODO   
+	 * @Description:   
 	 * @return void  
 	 * @throws
 	 * @author tuzhd
 	 * @date 2016年11月21日
 	 */
-	public void procesRecordNoticeJob();
+	void procesRecordNoticeJob();
 	
 	/**
 	 * 根据活动ID领取代金劵
@@ -181,7 +181,7 @@ public interface ActivityCouponsRecordService {
 	 * @return tuzhiding 
 	 * @throws ServiceException
 	 */
-	public JSONObject addRecordsByCollectId(String collectId, String userId)throws Exception;
+	JSONObject addRecordsByCollectId(String collectId, String userId)throws Exception;
 	
 	/**
 	 * @Description: 邀新活动 被邀用户下单完成后给 邀请人送代金劵及抽奖次数 
@@ -192,7 +192,7 @@ public interface ActivityCouponsRecordService {
 	 * @author tuzhd
 	 * @date 2016年12月13日
 	 */
-	public void addInviteUserHandler(String userId,String[] collectCouponsIds)  throws Exception;
+	void addInviteUserHandler(String userId,String[] collectCouponsIds)  throws Exception;
 	
 	/**
 	 * @Description:  tuzhd根据用户id查询其是否存在已使用的新用户专享代金劵 用于首单条件判断
@@ -202,7 +202,7 @@ public interface ActivityCouponsRecordService {
 	 * @author tuzhd
 	 * @date 2016年12月31日
 	 */
-	public int findCouponsCountByUser(UseUserType useUserType,String userId);
+	int findCouponsCountByUser(UseUserType useUserType,String userId);
 	
 	// Begin V2.1 added by maojj 2017-02-15
 	/**

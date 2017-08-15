@@ -48,7 +48,7 @@ public class SkinManagerApiImpl implements SkinManagerApi {
 
 	@Override
 	public void update(SkinManagerDto skinManagerDto) throws Exception {
-		skinManagerService.update(skinManagerDto);;
+		skinManagerService.update(skinManagerDto);
 
 	}
 
@@ -88,8 +88,7 @@ public class SkinManagerApiImpl implements SkinManagerApi {
 	}
 	
 	/**
-	 * 执行换肤活动管理 JOB 任务
-	 * @Description: TODO   
+	 * @Description: 执行换肤活动管理 JOB 任务   
 	 * @return void  
 	 * @throws
 	 * @author tuzhd

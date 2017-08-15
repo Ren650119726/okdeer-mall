@@ -85,7 +85,7 @@ public interface ActivityLabelService extends IBaseService{
 	 * @author tuzhiding
 	 * @date 2016年11月12日
 	 */
-	public void updateStatusById(String id, int status, String updateUserId, Date updateTime) throws Exception;
+	void updateStatusById(String id, int status, String updateUserId, Date updateTime) throws Exception;
 	
 	/**
 	 * @desc 用于判断某个时间段内活动是否冲突
@@ -100,7 +100,7 @@ public interface ActivityLabelService extends IBaseService{
 	 * @param map 传递参数
 	 * @return
 	 */
-	public List<ActivityLabel> listByJob(Map<String,Object> map);
+	List<ActivityLabel> listByJob(Map<String,Object> map);
 	
 	/**
 	 * @Description: 通过活动id获取关联商品列表
@@ -131,8 +131,7 @@ public interface ActivityLabelService extends IBaseService{
 	List<Map<String,Object>> findLabelBySkuId(String skuId);
 	
 	/**
-	 * 执行服务标签的JOB 任务
-	 * @Description: TODO   
+	 * @Description: 执行服务标签的JOB 任务  
 	 * @return void  
 	 * @throws
 	 * @author tuzhd

@@ -25,8 +25,6 @@ import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 
 /**
- * TODO Add a description
- * 
  * @pr yschome-mall
  * @author guocp
  * @date 2016年3月31日 下午2:06:29

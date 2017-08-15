@@ -83,7 +83,7 @@ public interface ActivityCollectCouponsService {
 	 * @desc 查询出需要跑job的活动
 	 * @return
 	 */
-	public List<ActivityCollectCoupons> listByJob();
+	List<ActivityCollectCoupons> listByJob();
 	
 	List<ActivityCollectCouponsRecordVo> findByUnusedOrExpires(Map<String,Object> params); 
 	
@@ -118,7 +118,7 @@ public interface ActivityCollectCouponsService {
 	ActivityCollectCouponsSimpleVo findRecommendAcvitity();
 
 	/**
-	 * @Description: TODO
+	 * @Description: 
 	 * @param id
 	 * @param activityAdvertId   
 	 * @author xuzq01

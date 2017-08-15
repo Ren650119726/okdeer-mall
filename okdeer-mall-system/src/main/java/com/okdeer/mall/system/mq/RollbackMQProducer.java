@@ -86,8 +86,9 @@ public class RollbackMQProducer {
 	 * @date 2016年7月26日
 	 */
 	public void sendSkuRollbackMsg(String rpcId) throws Exception {
-		if (rpcId == null)
+		if (rpcId == null){
 			return;
+		}
 		this.send(rpcId, RollBackConstant.TOPIC_ACTIVITY_SKU_STATUS_ROLLBACK,
 				RollBackConstant.TAGS_ACTIVITY_SKU_STATUS_ROLLBACK);
 	}
@@ -113,8 +114,9 @@ public class RollbackMQProducer {
 	 * @date 2016年7月26日
 	 */
 	public void sendSkuBatchRollbackMsg(String rpcId) throws Exception {
-		if (rpcId == null)
+		if (rpcId == null){
 			return;
+		}
 		this.send(rpcId, RollBackConstant.TOPIC_ACTIVITY_SKU_STATUS_BATCH_ROLLBACK,
 				RollBackConstant.TAGS_ACTIVITY_SKU_STATUS_BATCH_ROLLBACK);
 	}

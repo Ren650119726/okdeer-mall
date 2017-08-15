@@ -32,7 +32,7 @@ public interface ActivityAdvertModelService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-	public ActivityAdvertModel findModelByIdNo(int modelNo,String activityAdvertId);
+	ActivityAdvertModel findModelByIdNo(int modelNo,String activityAdvertId);
 	/**
 	 * @Description: 新增模块信息
 	 * @param modelNo 模块序号
@@ -41,7 +41,7 @@ public interface ActivityAdvertModelService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-	public int addModel(ActivityAdvertModel model);
+	int addModel(ActivityAdvertModel model);
 	/**
 	 * @Description: 获取活动模板列表
 	 * @param model
@@ -49,7 +49,7 @@ public interface ActivityAdvertModelService extends IBaseService {
 	 * @author xuzq01
 	 * @date 2017年4月19日
 	 */
-	public List<ActivityAdvertModel> findModelList(ActivityAdvertModel model);
+	List<ActivityAdvertModel> findModelList(ActivityAdvertModel model);
 	
 	/**
 	 * @Description: 删除关联模块信息by活动id
@@ -59,6 +59,6 @@ public interface ActivityAdvertModelService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月19日
 	 */
-	public int deleteByActivityAdvertId(String activityAdvertId);
+	int deleteByActivityAdvertId(String activityAdvertId);
 	
 }

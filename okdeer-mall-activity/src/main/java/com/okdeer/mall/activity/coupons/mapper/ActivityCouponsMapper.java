@@ -235,12 +235,12 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	 * @param activityCoupons
 	 * @return
 	 */
-	public int updateRemainNum(String activityCouponsId);
+	int updateRemainNum(String activityCouponsId);
 	
 	/**
 	 * 更新代金卷使用数量
 	 */
-	public int updateReduceUseNum(String activityCouponsId);
+	int updateReduceUseNum(String activityCouponsId);
 	
 	/**
 	 * 修改代金券的使用情况 </p>
@@ -322,7 +322,7 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	// Begin V2.1.0 added by luosm 20170220
 	/**
 	 * 通过订单id获取代金券信息
-	 * @Description: TODO
+	 * @Description: 
 	 * @param orderId
 	 * @return
 	 * @author luosm

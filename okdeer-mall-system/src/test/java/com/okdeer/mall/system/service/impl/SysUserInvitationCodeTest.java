@@ -9,7 +9,7 @@ package com.okdeer.mall.system.service.impl;
 
 /**
  * ClassName: SysUserInvitationCodeTest 
- * @Description: TODO
+ * @Description: 
  * @author wangf01
  * @date 2016年9月12日
  *

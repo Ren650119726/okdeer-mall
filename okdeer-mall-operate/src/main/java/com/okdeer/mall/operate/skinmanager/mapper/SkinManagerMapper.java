@@ -9,10 +9,7 @@ package com.okdeer.mall.operate.skinmanager.mapper;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import com.okdeer.base.dal.IBaseMapper;
-import com.okdeer.mall.activity.label.entity.ActivityLabel;
 import com.okdeer.mall.operate.dto.SkinManagerDto;
 import com.okdeer.mall.operate.dto.SkinManagerParamDto;
 import com.okdeer.mall.operate.entity.SkinManager;

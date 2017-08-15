@@ -21,7 +21,6 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
-import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -75,12 +74,6 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 	 */
 	@Resource
 	private ActivitySaleGoodsMapper activitySaleGoodsMapper;
-	
-	/**
-	 * 库存管理Service
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private StockManagerJxcServiceApi stockManagerJxcServiceApi;
 	
 	/**
 	 * 店铺商品库存Service

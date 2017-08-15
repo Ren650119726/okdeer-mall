@@ -9,7 +9,6 @@ import com.okdeer.mall.member.service.SysBuyerExtService;
 /**
  * 重置用户抽奖机会定时JOB
  * ClassName: SysBuyerPrizeCountResetJob 
- * @Description: TODO
  * @author tuzhd
  * @date 2016年11月22日
  *

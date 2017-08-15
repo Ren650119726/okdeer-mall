@@ -330,9 +330,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				order.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
 				cancelOrderService.cancelOrder(order, false);
 				//end add by zengjz 取消订单换接口类
-			} 
-			// Begin V1.2 added by maojj 2016-11-22
-			else if (order.getStatus() == OrderStatusEnum.WAIT_RECEIVE_ORDER) {
+			}else if (order.getStatus() == OrderStatusEnum.WAIT_RECEIVE_ORDER) {
 				logger.info("接单超时自动取消订单,订单号：" + order.getOrderNo());
 				order.setUpdateTime(new Date());
 				order.setUpdateUserId(RobotUserUtil.getRobotUser().getId());
@@ -340,7 +338,6 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				order.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
 				cancelOrderService.cancelOrder(order, false);
 			}
-			// End V1.2 added by maojj 2016-11-22
 		} catch (Exception e) {
 			logger.error("发货超时自动取消订单异常", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;

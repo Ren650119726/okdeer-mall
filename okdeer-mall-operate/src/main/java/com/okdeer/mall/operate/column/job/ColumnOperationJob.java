@@ -18,7 +18,6 @@ import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
 import com.okdeer.mall.operate.column.service.ColumnOperationService;
 
 /**
- * TODO Add a description 
  * @project yschome-mall
  * @author wusw
  * @date 2016年3月25日 下午7:41:30

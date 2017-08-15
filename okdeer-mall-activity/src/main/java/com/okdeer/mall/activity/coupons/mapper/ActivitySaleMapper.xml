@@ -171,11 +171,17 @@
 			and s.type != #{notSkuType}
 		</if>
 		
-		order by 
-		<if test="id != null and id != ''">
-			asg.sort desc,
+		<!-- v2.6 要不同场景按照不同的排序规则,但是此方法好多场景都用到,不能乱动,只能以前的保持不变,新加的业务在contrl手动写入排序规则, -->
+		<if test="orderBy == null or orderBy == ''">
+			order by 
+			<if test="id != null and id != ''">
+				asg.sort desc,
+			</if>
+			s.create_time desc
 		</if>
-		s.create_time desc
+		<if test="orderBy != null and orderBy != ''">
+			order by ${orderBy}
+		</if>
 	</select>
 
     <insert id="save" parameterType="com.okdeer.mall.activity.coupons.entity.ActivitySale">

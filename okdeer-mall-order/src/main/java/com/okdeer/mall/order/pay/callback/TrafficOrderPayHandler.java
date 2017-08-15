@@ -59,7 +59,7 @@ public class TrafficOrderPayHandler extends AbstractPhoneRechargePayHandler {
 			// netType 为空的话，不参与md5验证，不为空的话参与MD5验证
 			// 包体= userid + userpws + phoneno + perValue + flowValue + range +
 			// effectStartTime + effectTime + netType+ sporderId
-			String arr[] = pid.split("\\|");
+			String[] arr = pid.split("\\|");
 			String perValue = arr[0];
 			String flowValue = arr[1];
 			String sign = MD5.md5(userid + userpws + phoneno + perValue + flowValue + range + effectStartTime

@@ -13,7 +13,7 @@ import com.okdeer.mall.system.entity.SysErrorLog;
 
 /**
  * ClassName: SysErrorLogService 
- * @Description: TODO
+ * @Description: 
  * @author xuzq01
  * @date 2017年1月8日
  *

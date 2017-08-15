@@ -11,12 +11,11 @@ package com.okdeer.mall.operate.advert.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Repository;
 
+import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.advert.entity.AdvertPosition;
 import com.okdeer.mall.advert.entity.AdvertPositionQueryVo;
 import com.okdeer.mall.advert.enums.AdvertTypeEnum;
-import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * 广告位Mapper

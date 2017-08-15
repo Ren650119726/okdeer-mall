@@ -1,0 +1,17 @@
+Begin---
+[{
+	"id": "40289d775ce7942a015ce79c09050007",
+	"storeSkuId": "40289d775ce7942a015ce79c09050006",
+	"purchase": 0,
+	"actual": 100,
+	"sellable": 100,
+	"orderOccupied": 0,
+	"unsellable": 0,
+	"locked": 50,
+	"virtual": 0,
+	"air": 0,
+	"disabled": 0,
+	"createTime": 1500260610000,
+	"update_time": 1500260610000
+}]
+End---

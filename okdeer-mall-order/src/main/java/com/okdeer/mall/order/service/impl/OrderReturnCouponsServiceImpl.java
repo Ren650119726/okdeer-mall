@@ -31,7 +31,6 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
 import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.mall.order.vo.OrderCouponsRespDto;
 
 /**
  * ClassName: OrderReturnCouponsService 

@@ -16,7 +16,6 @@ import com.okdeer.mall.order.mq.constants.TradeOrderTopic;
 
 /**
  * ClassName: 订单消息接收处理新类 
- * @Description: TODO
  * @author tuzhd
  * @date 2016年12月12日
  *

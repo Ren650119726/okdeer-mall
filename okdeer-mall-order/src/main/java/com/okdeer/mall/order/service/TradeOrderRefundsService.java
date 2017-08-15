@@ -1,14 +1,12 @@
 package com.okdeer.mall.order.service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
-import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
@@ -18,7 +16,6 @@ import com.okdeer.mall.order.vo.TradeOrderRefundsExportVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsQueryVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsStatusVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsVo;
-import com.okdeer.base.common.utils.PageUtils;
 
 /**
  * @DESC:售后订单Service
@@ -321,12 +318,11 @@ public interface TradeOrderRefundsService {
 
 	/**
 	 * 查询pos退款单导出列表
-	 * @desc TODO Add a description 
 	 * @author zengj
 	 * @param params
 	 * @return
 	 */
-	public List<Map<String, Object>> selectPosRefundExportList(Map<String, Object> params);
+	List<Map<String, Object>> selectPosRefundExportList(Map<String, Object> params);
 
 	// Begin 重构4.1 add by wusw 20160722
 	/**

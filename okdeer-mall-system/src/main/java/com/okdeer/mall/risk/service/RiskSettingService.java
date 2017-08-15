@@ -9,8 +9,6 @@ package com.okdeer.mall.risk.service;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
-import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.risk.entity.RiskSetting;
 import com.okdeer.mall.risk.enums.IsPreferential;
@@ -18,7 +16,7 @@ import com.okdeer.mall.risk.po.RiskLimitInfo;
 
 /**
  * ClassName: IRiskSettingService 
- * @Description: TODO
+ * @Description: 
  * @author xuzq01
  * @date 2016年11月14日
  *
@@ -77,7 +75,7 @@ public interface RiskSettingService extends IBaseService{
 	void retrySetting();
 
 	/**
-	 * @Description: TODO
+	 * @Description: 
 	 * @return   
 	 * @author guocp
 	 * @date 2016年12月5日

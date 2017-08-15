@@ -23,7 +23,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 
 /**
  * ClassName: ActivityCollectCouponsJobTest 
- * @Description: TODO
+ * @Description: 
  * @author lijun
  * @date 2016年7月29日
  *
@@ -43,7 +43,6 @@ public class ActivityCollectCouponsJobTest {
 	@Test
 	public void test() {
 		List<ActivityCollectCoupons> couponsList = activityCollectCouponsMapper.listByJob();
-		System.out.println(couponsList.size());
 	}
 
 }

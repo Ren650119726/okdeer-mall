@@ -29,7 +29,6 @@ class TradeOrderDisputeLogServiceImpl implements TradeOrderDisputeLogService, Tr
 	@Transactional(rollbackFor = Exception.class)
 	public void update(TradeOrderDisputeLog tradeOrderDisputeLog)
 			throws ServiceException {
-		// TODO Auto-generated method stub
 		tradeOrderDisputeLogMapper.insertSelective(tradeOrderDisputeLog);
 	}
 }

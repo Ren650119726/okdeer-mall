@@ -9,7 +9,7 @@ package com.okdeer.mall.risk.mq.constants;
 
 /**
  * ClassName: RiskTriggerTopic 
- * @Description: TODO
+ * @Description: 
  * @author guocp
  * @date 2016年11月19日
  *

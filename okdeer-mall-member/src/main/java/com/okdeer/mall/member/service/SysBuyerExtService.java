@@ -8,11 +8,8 @@
 
 package com.okdeer.mall.member.service;
 
-import com.okdeer.mall.member.member.entity.SysBuyerExt;
-
-import org.springframework.transaction.annotation.Transactional;
-
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.mall.member.member.entity.SysBuyerExt;
 
 
 /**

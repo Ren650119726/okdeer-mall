@@ -9,8 +9,6 @@ package com.okdeer.mall.system.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -18,7 +16,6 @@ import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
-import com.okdeer.mall.operate.dto.SkinManagerDto;
 import com.okdeer.mall.system.dto.SysErrorLogDto;
 import com.okdeer.mall.system.entity.SysErrorLog;
 import com.okdeer.mall.system.mapper.SysErrorLogMapper;
@@ -27,7 +24,7 @@ import com.okdeer.mall.system.service.SysErrorLogService;
 
 /**
  * ClassName: SysErrorLogServiceImpl 
- * @Description: TODO
+ * @Description: 
  * @author xuzq01
  * @date 2017年1月8日
  *

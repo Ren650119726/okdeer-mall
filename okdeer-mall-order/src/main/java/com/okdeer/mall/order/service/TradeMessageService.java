@@ -56,7 +56,6 @@ public interface TradeMessageService {
 
 	/**
 	 * 保存商家中心消息
-	 * @desc TODO Add a description 
 	 * @author zengj
 	 * @param tradeOrder
 	 * @param sendMsgType 消息类型

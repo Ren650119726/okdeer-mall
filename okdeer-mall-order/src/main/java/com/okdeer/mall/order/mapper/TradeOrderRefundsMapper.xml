@@ -690,9 +690,9 @@
 			<result column="quantity" property="quantity" jdbcType="DECIMAL" />
 			<result column="preferential_price" property="preferentialPrice"
 				jdbcType="DECIMAL" />
-			<result column="actual_amount" property="actualAmount"
+			<!-- <result column="actual_amount" property="actualAmount"
 				jdbcType="DECIMAL" />
-			<result column="total_amount" property="totalAmount" jdbcType="DECIMAL" />
+			<result column="total_amount" property="totalAmount" jdbcType="DECIMAL" /> -->
 			<result column="item_status" property="status" jdbcType="TINYINT"
 				javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum" />
 			<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />

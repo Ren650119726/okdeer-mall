@@ -12,7 +12,7 @@ import com.okdeer.mall.activity.coupons.service.ActivityCollectXffqRelationServi
 
 /**
  * ClassName: ActivityCollectXffqRelationServiceImpl 
- * @Description: TODO
+ * @Description: 
  * @author zhangkn
  * @date 2017年6月23日
  *
@@ -32,7 +32,6 @@ public class ActivityCollectXffqRelationServiceImpl implements ActivityCollectXf
 
 	@Override
 	public List<ActivityCollectXffqRelation> findByCollectId(String collectId) {
-		// TODO Auto-generated method stub
 		return ActivityCollectXffqRelationMapper.findByCollectId(collectId);
 	}
 

@@ -38,7 +38,6 @@ public class PointsExchangeOrderServiceImpl implements PointsExchangeOrderServic
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public String add(PointsExchangeOrder pointsExchangeOrder) throws ServiceException {
-		// TODO Auto-generated method stub
 		logger.info("兑吧信息输入数据库", pointsExchangeOrder);
 		pointsExchangeOrderMapper.insertSelective(pointsExchangeOrder);
 		String id = pointsExchangeOrder.getId();
@@ -47,7 +46,6 @@ public class PointsExchangeOrderServiceImpl implements PointsExchangeOrderServic
 
 	@Override
 	public PointsExchangeOrder findById(String id) throws ServiceException {
-		// TODO Auto-generated method stub
 		logger.info("id", id);
 
 		return pointsExchangeOrderMapper.selectByPrimaryKey(id);
@@ -55,14 +53,12 @@ public class PointsExchangeOrderServiceImpl implements PointsExchangeOrderServic
 
 	@Override
 	public PointsExchangeOrder findByDuibaOrderNo(String duibaOrderNo) throws ServiceException {
-		// TODO Auto-generated method stub
 		return pointsExchangeOrderMapper.selectByDuibaOrderNo(duibaOrderNo);
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateByDuibaMap(PointsExchangeOrder pointsExchangeOrder) throws ServiceException {
-		// TODO Auto-generated method stub
 		pointsExchangeOrderMapper.updateByPrimaryKeySelective(pointsExchangeOrder);
 	}
 

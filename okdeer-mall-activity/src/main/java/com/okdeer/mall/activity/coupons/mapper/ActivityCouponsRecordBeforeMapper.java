@@ -10,7 +10,6 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
-import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.common.enums.GetUserType;
 
 /**
@@ -78,6 +77,6 @@ public interface ActivityCouponsRecordBeforeMapper extends IBaseCrudMapper {
 	 * @param collectId  代金劵活动id
 	 * @return
 	 */
-  	public Integer findInviteUserCount(@Param("inviteUserId")String inviteUserId,@Param("activityId")String activityId);
+  	Integer findInviteUserCount(@Param("inviteUserId")String inviteUserId,@Param("activityId")String activityId);
 	
 }

@@ -1,13 +1,11 @@
 package com.okdeer.mall.order.mapper;
 
-import com.okdeer.mall.order.entity.TradeOrderLogistics;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.order.entity.TradeOrderLogistics;
 
 /**
  * @DESC: 

@@ -33,7 +33,7 @@ public interface ActivityAdvertModelMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-	public ActivityAdvertModel findModelByIdNo(@Param("modelNo") int modelNo,@Param("activityAdvertId") String activityAdvertId);
+	ActivityAdvertModel findModelByIdNo(@Param("modelNo") int modelNo,@Param("activityAdvertId") String activityAdvertId);
 
 	/**
 	 * @Description: 获取活动模块列表
@@ -42,7 +42,7 @@ public interface ActivityAdvertModelMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2017年4月19日
 	 */
-	public List<ActivityAdvertModel> findModelList(ActivityAdvertModel model);
+	List<ActivityAdvertModel> findModelList(ActivityAdvertModel model);
 	
 	/**
 	 * @Description: 删除关联模块信息by活动id
@@ -52,6 +52,6 @@ public interface ActivityAdvertModelMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年4月19日
 	 */
-	public int deleteByActivityAdvertId(String activityAdvertId);
+	int deleteByActivityAdvertId(String activityAdvertId);
 
 }

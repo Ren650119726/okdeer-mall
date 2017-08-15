@@ -19,7 +19,6 @@ import com.okdeer.mall.risk.entity.RiskWhite;
 public interface RiskWhiteMapper extends IBaseMapper {
 
 	/**
-	 * @Description: TODO
 	 * @param whiteManagerDto
 	 * @return   
 	 * @author xuzq01
@@ -29,7 +28,6 @@ public interface RiskWhiteMapper extends IBaseMapper {
 
 
 	/**
-	 * @Description: TODO
 	 * @param ids
 	 * @param updateUserId
 	 * @param updateTime   
@@ -39,7 +37,6 @@ public interface RiskWhiteMapper extends IBaseMapper {
 	void deleteBatchByIds(@Param("ids")List<String> ids,@Param("updateUserId") String updateUserId,@Param("updateTime") Date updateTime);
 	
 	/**
-	 * @Description: TODO
 	 * @param riskBlackList   
 	 * @author xuzq01
 	 * @date 2016年11月17日
@@ -47,7 +44,6 @@ public interface RiskWhiteMapper extends IBaseMapper {
 	void addBatch(@Param(value = "riskList")List<RiskWhite> riskList);
 
 	/**
-	 * @Description: TODO
 	 * @param riskWhite
 	 * @return   
 	 * @author xuzq01

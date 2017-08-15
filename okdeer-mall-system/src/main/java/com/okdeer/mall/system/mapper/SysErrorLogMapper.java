@@ -15,7 +15,7 @@ import com.okdeer.mall.system.entity.SysErrorLog;
 public interface SysErrorLogMapper extends IBaseMapper {
 
 	/**
-	 * @Description: TODO
+	 * @Description: 
 	 * @param sysErrorLog
 	 * @return   
 	 * @author xuzq01

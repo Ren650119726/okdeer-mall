@@ -6,7 +6,7 @@
  */    
 package com.okdeer.mall.risk;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,7 +26,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.Application;
 import com.okdeer.mall.risk.dto.RiskBlackDto;
-import com.okdeer.mall.risk.entity.RiskBlack;
 import com.okdeer.mall.risk.entity.RiskBlack;
 import com.okdeer.mall.risk.service.RiskBlackService;
 

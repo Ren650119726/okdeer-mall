@@ -159,7 +159,6 @@ public class OperateCrossBorderElectricityServiceImpl implements OperateCrossBor
 	}*/
 
 	/**
-	 * @desc TODO Add a description 
 	 *
 	 * @param ids
 	 * @param disabled

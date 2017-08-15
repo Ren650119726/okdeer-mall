@@ -22,7 +22,7 @@ import net.sf.json.JSONObject;
 
 /**
  * ClassName: TradeOrderProcessServiceImplTest 
- * @Description: TODO
+ * @Description: 
  * @author yangq
  * @date 2016年10月31日
  *

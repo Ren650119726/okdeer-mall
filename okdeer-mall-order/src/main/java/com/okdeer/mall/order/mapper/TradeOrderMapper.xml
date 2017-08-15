@@ -1076,7 +1076,10 @@
 			</foreach>
 		</if>
 		<if test="activityType != null">
-		   AND tr.activity_type = #{activityType}
+			<choose>
+				<when test="activityType == 5 or activityType == 6 or activityType == 7 ">AND (tr.activity_type = #{activityType} OR tr.store_activity_type = #{activityType})</when>
+				<otherwise>AND tr.activity_type = #{activityType}</otherwise>
+			</choose>
 		</if>
 	</sql>
 

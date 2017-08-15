@@ -58,9 +58,8 @@ public class ActivityLuckDrawJob extends AbstractSimpleElasticJob {
 					//未开始的 
 					if(draw.getStatus() == SeckillStatusEnum.noStart){
 						listIdNoStart.add(draw.getId());
-					}
-					//进行中的改为已结束的
-					else if(draw.getStatus() == SeckillStatusEnum.ing){
+					}else if(draw.getStatus() == SeckillStatusEnum.ing){
+						//进行中的改为已结束的
 						listIdIng.add(draw.getId());
 					}
 				}

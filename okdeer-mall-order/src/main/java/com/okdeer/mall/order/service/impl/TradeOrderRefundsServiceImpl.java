@@ -49,7 +49,6 @@ import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysMsg;
 import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
@@ -1686,6 +1685,11 @@ public class TradeOrderRefundsServiceImpl
 	}
 
 	@Override
+	public List<TradeOrderRefundsVo> findListByFinance(Map<String, Object> map) throws Exception {
+		return null;
+	}
+	
+	@Override
 	public List<TradeOrderRefundsVo> findListByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto) throws Exception {
 		return tradeOrderRefundsMapper.selectRefundsByFinance(orderRefundQueryParamDto);
 	}
@@ -1973,12 +1977,4 @@ public class TradeOrderRefundsServiceImpl
 		return new PageUtils<TradeOrderRefundsVo>(tradeOrderRefundsMapper.searchOrderRefundForSELLERAPP(map));
 	}
 	// End V2.1.0 added by luosm 20170314
-
-	@Override
-	public List<TradeOrderRefundsVo> findListByFinance(Map<String, Object> map) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
 }

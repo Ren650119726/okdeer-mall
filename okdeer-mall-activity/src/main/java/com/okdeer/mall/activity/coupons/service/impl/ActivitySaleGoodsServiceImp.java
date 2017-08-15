@@ -87,4 +87,10 @@ public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi,
 	public void updateActivitySaleGoods(ActivitySaleGoods activitySaleGoods) throws Exception {
 		activitySaleGoodsMapper.updateById(activitySaleGoods);		
 	}
+
+	@Override
+	public void saveBatch(List<ActivitySaleGoods> list) {
+		activitySaleGoodsMapper.saveBatch(list);
+		
+	}
 }

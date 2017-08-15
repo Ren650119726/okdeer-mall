@@ -101,6 +101,132 @@ public class JxcStockUpdateBuilder {
 		stockUpdateVo.setDetails(detailList);
 		return stockUpdateVo;
 	}
+	
+	public StockUpdateVo build(TradeOrder order) throws Exception {
+		if (order.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
+			// 只有实物订单才需要去商业系统做库存更新
+			return null;
+		}
+
+		StockUpdateVo stockUpdateVo = new StockUpdateVo();
+		// 机构ID
+		stockUpdateVo.setBranchId(order.getStoreId());
+		// 库存操作类型
+		stockUpdateVo.setType(convert(order.getStatus()));
+		// 销售类型
+		stockUpdateVo.setSaleType(SALE_TYPE_A);
+		// 订单ID
+		stockUpdateVo.setOrderId(order.getId());
+		// 订单编号
+		stockUpdateVo.setOrderNo(order.getOrderNo());
+		// 问了刘玄，先固定写死XS
+		stockUpdateVo.setOrderType(ORDER_TYPE);
+		// 操作人
+		stockUpdateVo.setOperateUserId(order.getUserId());
+
+		List<StockUpdateDetailVo> detailList = buildDetailList(order.getTradeOrderItem());
+
+		stockUpdateVo.setDetails(detailList);
+		return stockUpdateVo;
+	}
+	
+	public StockUpdateVo build(TradeOrderRefunds orderRefunds,List<TradeOrderItem> orderItemList) throws Exception {
+		if (orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
+			// 只有实物订单才需要去商业系统做库存更新
+			return null;
+		}
+
+		StockUpdateVo stockUpdateVo = new StockUpdateVo();
+		// 机构ID
+		stockUpdateVo.setBranchId(orderRefunds.getStoreId());
+		// 库存操作类型
+		stockUpdateVo.setType(StockOperaterTypeConst.RETURN_SALE_ORDER);
+		// 销售类型
+		stockUpdateVo.setSaleType(SALE_TYPE_B);
+		// 订单ID
+		stockUpdateVo.setOrderId(orderRefunds.getId());
+		// 订单编号
+		stockUpdateVo.setOrderNo(orderRefunds.getRefundNo());
+		// 问了刘玄，先固定写死XS
+		stockUpdateVo.setOrderType(ORDER_TYPE);
+		// 操作人
+		stockUpdateVo.setOperateUserId(orderRefunds.getUserId());
+		
+		List<StockUpdateDetailVo> detailList = buildDetailList(orderItemList);
+		stockUpdateVo.setDetails(detailList);
+		return stockUpdateVo;
+	}
+	
+	/**
+	 * @Description: V2.1版本之前的便利店下单库存变更
+	 * @param order
+	 * @param reqDto
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年3月18日
+	 */
+	public StockUpdateVo build(TradeOrder order, TradeOrderReqDto reqDto) throws Exception {
+		StockUpdateVo stockUpdateVo = new StockUpdateVo();
+		// 机构ID
+		stockUpdateVo.setBranchId(order.getStoreId());
+		// 库存操作类型
+		stockUpdateVo.setType(StockOperaterTypeConst.PLACE_SALE_ORDER);
+		// 销售类型
+		stockUpdateVo.setSaleType(SALE_TYPE_A);
+		// 订单ID
+		stockUpdateVo.setOrderId(order.getId());
+		// 订单编号
+		stockUpdateVo.setOrderNo(order.getOrderNo());
+		// 问了刘玄，先固定写死XS
+		stockUpdateVo.setOrderType(ORDER_TYPE);
+		// 操作人
+		stockUpdateVo.setOperateUserId(order.getUserId());
+
+		List<StockUpdateDetailVo> detailList = buildDetailList(order,reqDto);
+
+		stockUpdateVo.setDetails(detailList);
+		return stockUpdateVo;
+	}
+	
+	public List<StockUpdateDetailVo> buildDetailList(List<TradeOrderItem> orderItemList) throws Exception {
+		// 提取组合商品列表
+		List<String> comboSkuIdList = extraComboSkuIdList(orderItemList);
+		List<GoodsStoreAssembleDto> comboDtoList = null;
+		if (CollectionUtils.isNotEmpty(comboSkuIdList)) {
+			comboDtoList = goodsStoreSkuAssembleApi.findByAssembleSkuIds(comboSkuIdList);
+		}
+
+		List<StockUpdateDetailVo> detailList = new ArrayList<StockUpdateDetailVo>();
+		StockUpdateDetailVo detail = null;
+		int rowNo = 1;
+		for (TradeOrderItem orderItem : orderItemList) {
+			if (orderItem.getSpuType() == SpuTypeEnum.assembleSpu) {
+				// 如果是组合商品，对商品进行拆分.商业系统只负责管理组合成分的库存扣减
+				List<GoodsStoreSkuAssembleDto> comboDetailList = extraComboDetailList(comboDtoList,
+						orderItem.getStoreSkuId());
+				for (GoodsStoreSkuAssembleDto comboDetail : comboDetailList) {
+					int buyNum = comboDetail.getQuantity() * orderItem.getQuantity();
+					detail = buildDetail(comboDetail, rowNo++, buyNum);
+					detailList.add(detail);
+				}
+			} else if (Integer.valueOf(ActivityTypeEnum.LOW_PRICE.ordinal()).equals(orderItem.getActivityType())) {
+				// 如果是低价，需要将订单商品拆分为两条记录去发起库存变更请求
+				if (orderItem.getActivityQuantity() > 0) {
+					detail = buildDetail(orderItem, ActivityTypeEnum.LOW_PRICE, rowNo++);
+					detailList.add(detail);
+				}
+				if (orderItem.getQuantity() - orderItem.getActivityQuantity() > 0) {
+					detail = buildDetail(orderItem, ActivityTypeEnum.NO_ACTIVITY, rowNo++);
+					detailList.add(detail);
+				}
+			} else {
+				detail = buildDetail(orderItem, ActivityTypeEnum.NO_ACTIVITY, rowNo++);
+				detailList.add(detail);
+			}
+		}
+		return detailList;
+	}
 
 	public List<StockUpdateDetailVo> buildDetailList(TradeOrder order, StoreSkuParserBo parserBo) throws Exception {
 		if (CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())) {
@@ -142,250 +268,6 @@ public class JxcStockUpdateBuilder {
 		}
 		return detailList;
 	}
-
-	private StockUpdateDetailVo buildDetail(CurrentStoreSkuBo storeSku, ActivityTypeEnum actType, int rowNo) {
-		StockUpdateDetailVo detail = new StockUpdateDetailVo();
-
-		detail.setSkuId(storeSku.getSkuId());
-		detail.setSkuCode(storeSku.getArticleNo());
-		detail.setRowNo(rowNo);
-		if (actType == ActivityTypeEnum.LOW_PRICE) {
-			detail.setNum(BigDecimal.valueOf(storeSku.getSkuActQuantity()));
-			detail.setPrice(storeSku.getActPrice());
-		} else {
-			detail.setNum(BigDecimal.valueOf(storeSku.getQuantity()));
-			detail.setPrice(storeSku.getOnlinePrice());
-		}
-		detail.setOnlineSalePrice(storeSku.getOnlinePrice());
-		detail.setOfflineSalePrice(storeSku.getOfflinePrice());
-		detail.setBranchSkuId(storeSku.getId());
-
-		return detail;
-	}
-
-	private StockUpdateDetailVo buildDetail(GoodsStoreSkuAssembleDto comboDetail, int rowNo, int buyNum) {
-		StockUpdateDetailVo detail = new StockUpdateDetailVo();
-
-		detail.setSkuId(comboDetail.getSkuId());
-		detail.setRowNo(rowNo);
-		detail.setNum(BigDecimal.valueOf(buyNum));
-		// 商品单价。商品价格
-		detail.setPrice(comboDetail.getUnitPrice());
-		detail.setOnlineSalePrice(comboDetail.getOnlinePrice());
-		// 线下销售价是否必填
-		// detail.setOfflineSalePrice(comboDetail.getOfflinePrice());
-		detail.setBranchSkuId(comboDetail.getStoreSkuId());
-		detail.setGroup(true);
-		return detail;
-	}
-
-	public StockUpdateVo build(TradeOrder order) throws Exception {
-		if (order.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
-			// 只有实物订单才需要去商业系统做库存更新
-			return null;
-		}
-
-		StockUpdateVo stockUpdateVo = new StockUpdateVo();
-		// 机构ID
-		stockUpdateVo.setBranchId(order.getStoreId());
-		// 库存操作类型
-		stockUpdateVo.setType(convert(order.getStatus()));
-		// 销售类型
-		stockUpdateVo.setSaleType(SALE_TYPE_A);
-		// 订单ID
-		stockUpdateVo.setOrderId(order.getId());
-		// 订单编号
-		stockUpdateVo.setOrderNo(order.getOrderNo());
-		// 问了刘玄，先固定写死XS
-		stockUpdateVo.setOrderType(ORDER_TYPE);
-		// 操作人
-		stockUpdateVo.setOperateUserId(order.getUserId());
-
-		List<StockUpdateDetailVo> detailList = buildDetailList(order.getTradeOrderItem());
-
-		stockUpdateVo.setDetails(detailList);
-		return stockUpdateVo;
-	}
-
-	public List<StockUpdateDetailVo> buildDetailList(List<TradeOrderItem> orderItemList) throws Exception {
-		// 提取组合商品列表
-		List<String> comboSkuIdList = extraComboSkuIdList(orderItemList);
-		List<GoodsStoreAssembleDto> comboDtoList = null;
-		if (CollectionUtils.isNotEmpty(comboSkuIdList)) {
-			comboDtoList = goodsStoreSkuAssembleApi.findByAssembleSkuIds(comboSkuIdList);
-		}
-
-		List<StockUpdateDetailVo> detailList = new ArrayList<StockUpdateDetailVo>();
-		StockUpdateDetailVo detail = null;
-		int rowNo = 1;
-		for (TradeOrderItem orderItem : orderItemList) {
-			if (orderItem.getSpuType() == SpuTypeEnum.assembleSpu) {
-				// 如果是组合商品，对商品进行拆分.商业系统只负责管理组合成分的库存扣减
-				List<GoodsStoreSkuAssembleDto> comboDetailList = extraComboDetailList(comboDtoList,
-						orderItem.getStoreSkuId());
-				for (GoodsStoreSkuAssembleDto comboDetail : comboDetailList) {
-					int buyNum = comboDetail.getQuantity() * orderItem.getQuantity();
-					detail = buildDetail(comboDetail, rowNo++, buyNum);
-					detailList.add(detail);
-				}
-			} else if (Integer.valueOf(ActivityTypeEnum.LOW_PRICE.ordinal()).equals(orderItem.getActivityType())) {
-				// 如果是低价，需要将订单商品拆分为两条记录去发起库存变更请求
-				if (orderItem.getActivityQuantity() > 0) {
-					detail = buildDetail(orderItem, ActivityTypeEnum.LOW_PRICE, rowNo++);
-					detailList.add(detail);
-				}
-				if (orderItem.getQuantity() - orderItem.getActivityQuantity() > 0) {
-					detail = buildDetail(orderItem, ActivityTypeEnum.NO_ACTIVITY, rowNo++);
-					detailList.add(detail);
-				}
-			} else {
-				detail = buildDetail(orderItem, ActivityTypeEnum.NO_ACTIVITY, rowNo++);
-				detailList.add(detail);
-			}
-		}
-		return detailList;
-	}
-
-	private List<String> extraComboSkuIdList(List<TradeOrderItem> orderItemList) {
-		List<String> comboSkuIdList = new ArrayList<String>();
-		for (TradeOrderItem orderItem : orderItemList) {
-			if (orderItem.getSpuType() == SpuTypeEnum.assembleSpu) {
-				comboSkuIdList.add(orderItem.getStoreSkuId());
-			}
-		}
-		return comboSkuIdList;
-	}
-
-	private List<GoodsStoreSkuAssembleDto> extraComboDetailList(List<GoodsStoreAssembleDto> comboDtoList,
-			String storeSkuId) {
-		List<GoodsStoreSkuAssembleDto> detailList = new ArrayList<GoodsStoreSkuAssembleDto>();
-		for (GoodsStoreAssembleDto comboDto : comboDtoList) {
-			for (GoodsStoreSkuAssembleDto comboDetail : comboDto.getGoodsStoreSkuAssembleDtos()) {
-				if (comboDetail.getAssembleSkuId().equals(storeSkuId)) {
-					detailList.add(comboDetail);
-				}
-			}
-		}
-		return detailList;
-	}
-
-	private StockUpdateDetailVo buildDetail(TradeOrderItem orderItem, ActivityTypeEnum actType, int rowNo)
-			throws Exception {
-		StockUpdateDetailVo detail = new StockUpdateDetailVo();
-		GoodsStoreSku storeSku = goodsStoreSkuServiceApi.getById(orderItem.getStoreSkuId());
-		detail.setSkuId(storeSku.getSkuId());
-		detail.setSkuCode(storeSku.getArticleNo());
-		detail.setRowNo(rowNo);
-		if (actType == ActivityTypeEnum.LOW_PRICE) {
-			detail.setNum(BigDecimal.valueOf(orderItem.getActivityQuantity()));
-			detail.setPrice(orderItem.getActivityPrice());
-		} else {
-			detail.setNum(
-					BigDecimal.valueOf(orderItem.getQuantity() - ConvertUtil.format(orderItem.getActivityQuantity())));
-			detail.setPrice(storeSku.getOnlinePrice());
-		}
-		detail.setOnlineSalePrice(storeSku.getOnlinePrice());
-		detail.setOfflineSalePrice(storeSku.getOfflinePrice());
-		detail.setBranchSkuId(storeSku.getId());
-
-		return detail;
-	}
-
-	private String convert(OrderStatusEnum orderStatus) {
-		if (orderStatus == OrderStatusEnum.CANCELING || orderStatus == OrderStatusEnum.CANCELED) {
-			return StockOperaterTypeConst.CANCEL_SALE_ORDER;
-		} else {
-			return StockOperaterTypeConst.REFUSE_SALE_ODRER;
-		}
-	}
-	
-	
-	public StockUpdateVo build(TradeOrderRefunds orderRefunds,List<TradeOrderItem> orderItemList) throws Exception {
-		if (orderRefunds.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
-			// 只有实物订单才需要去商业系统做库存更新
-			return null;
-		}
-
-		StockUpdateVo stockUpdateVo = new StockUpdateVo();
-		// 机构ID
-		stockUpdateVo.setBranchId(orderRefunds.getStoreId());
-		// 库存操作类型
-		stockUpdateVo.setType(StockOperaterTypeConst.RETURN_SALE_ORDER);
-		// 销售类型
-		stockUpdateVo.setSaleType(SALE_TYPE_B);
-		// 订单ID
-		stockUpdateVo.setOrderId(orderRefunds.getId());
-		// 订单编号
-		stockUpdateVo.setOrderNo(orderRefunds.getRefundNo());
-		// 问了刘玄，先固定写死XS
-		stockUpdateVo.setOrderType(ORDER_TYPE);
-		// 操作人
-		stockUpdateVo.setOperateUserId(orderRefunds.getUserId());
-		
-		List<StockUpdateDetailVo> detailList = buildDetailList(orderItemList);
-		stockUpdateVo.setDetails(detailList);
-		return stockUpdateVo;
-	}
-	
-	public StockUpdateVo buildForCompleteOrder(TradeOrder order) throws Exception {
-		if (order.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
-			// 只有实物订单才需要去商业系统做库存更新
-			return null;
-		}
-
-		StockUpdateVo stockUpdateVo = new StockUpdateVo();
-		// 机构ID
-		stockUpdateVo.setBranchId(order.getStoreId());
-		// 库存操作类型
-		stockUpdateVo.setType(StockOperaterTypeConst.DELIVER_SALE_ORDER);
-		// 销售类型
-		stockUpdateVo.setSaleType(SALE_TYPE_A);
-		// 订单ID
-		stockUpdateVo.setOrderId(order.getId());
-		// 订单编号
-		stockUpdateVo.setOrderNo(order.getOrderNo());
-		// 问了刘玄，先固定写死XS
-		stockUpdateVo.setOrderType(ORDER_TYPE);
-		// 操作人
-		stockUpdateVo.setOperateUserId(order.getUserId());
-
-		List<StockUpdateDetailVo> detailList = buildDetailList(order.getTradeOrderItem());
-
-		stockUpdateVo.setDetails(detailList);
-		return stockUpdateVo;
-	}
-	
-	/**
-	 * @Description: V2.1版本之前的便利店下单库存变更
-	 * @param order
-	 * @param reqDto
-	 * @return
-	 * @throws Exception   
-	 * @author maojj
-	 * @date 2017年3月18日
-	 */
-	public StockUpdateVo build(TradeOrder order, TradeOrderReqDto reqDto) throws Exception {
-		StockUpdateVo stockUpdateVo = new StockUpdateVo();
-		// 机构ID
-		stockUpdateVo.setBranchId(order.getStoreId());
-		// 库存操作类型
-		stockUpdateVo.setType(StockOperaterTypeConst.PLACE_SALE_ORDER);
-		// 销售类型
-		stockUpdateVo.setSaleType(SALE_TYPE_A);
-		// 订单ID
-		stockUpdateVo.setOrderId(order.getId());
-		// 订单编号
-		stockUpdateVo.setOrderNo(order.getOrderNo());
-		// 问了刘玄，先固定写死XS
-		stockUpdateVo.setOrderType(ORDER_TYPE);
-		// 操作人
-		stockUpdateVo.setOperateUserId(order.getUserId());
-
-		List<StockUpdateDetailVo> detailList = buildDetailList(order,reqDto);
-
-		stockUpdateVo.setDetails(detailList);
-		return stockUpdateVo;
-	}
 	
 	public List<StockUpdateDetailVo> buildDetailList(TradeOrder order, TradeOrderReqDto reqDto){
 		TradeOrderReq req = reqDto.getData();
@@ -419,5 +301,122 @@ public class JxcStockUpdateBuilder {
 			detailList.add(detail);
 		}
 		return detailList;
+	}
+
+	private StockUpdateDetailVo buildDetail(CurrentStoreSkuBo storeSku, ActivityTypeEnum actType, int rowNo) {
+		StockUpdateDetailVo detail = new StockUpdateDetailVo();
+
+		detail.setSkuId(storeSku.getSkuId());
+		detail.setSkuCode(storeSku.getArticleNo());
+		detail.setRowNo(rowNo);
+		if (actType == ActivityTypeEnum.LOW_PRICE) {
+			detail.setNum(BigDecimal.valueOf(storeSku.getSkuActQuantity()));
+			detail.setPrice(storeSku.getActPrice());
+		} else {
+			detail.setNum(BigDecimal.valueOf(storeSku.getQuantity()));
+			detail.setPrice(storeSku.getOnlinePrice());
+		}
+		detail.setOnlineSalePrice(storeSku.getOnlinePrice());
+		detail.setOfflineSalePrice(storeSku.getOfflinePrice());
+		detail.setBranchSkuId(storeSku.getId());
+
+		return detail;
+	}
+
+	private StockUpdateDetailVo buildDetail(TradeOrderItem orderItem, ActivityTypeEnum actType, int rowNo)
+			throws Exception {
+		StockUpdateDetailVo detail = new StockUpdateDetailVo();
+		GoodsStoreSku storeSku = goodsStoreSkuServiceApi.getById(orderItem.getStoreSkuId());
+		detail.setSkuId(storeSku.getSkuId());
+		detail.setSkuCode(storeSku.getArticleNo());
+		detail.setRowNo(rowNo);
+		if (actType == ActivityTypeEnum.LOW_PRICE) {
+			detail.setNum(BigDecimal.valueOf(orderItem.getActivityQuantity()));
+			detail.setPrice(orderItem.getActivityPrice());
+		} else {
+			detail.setNum(
+					BigDecimal.valueOf(orderItem.getQuantity() - ConvertUtil.format(orderItem.getActivityQuantity())));
+			detail.setPrice(storeSku.getOnlinePrice());
+		}
+		detail.setOnlineSalePrice(storeSku.getOnlinePrice());
+		detail.setOfflineSalePrice(storeSku.getOfflinePrice());
+		detail.setBranchSkuId(storeSku.getId());
+
+		return detail;
+	}
+	
+	private StockUpdateDetailVo buildDetail(GoodsStoreSkuAssembleDto comboDetail, int rowNo, int buyNum) {
+		StockUpdateDetailVo detail = new StockUpdateDetailVo();
+
+		detail.setSkuId(comboDetail.getSkuId());
+		detail.setRowNo(rowNo);
+		detail.setNum(BigDecimal.valueOf(buyNum));
+		// 商品单价。商品价格
+		detail.setPrice(comboDetail.getUnitPrice());
+		detail.setOnlineSalePrice(comboDetail.getOnlinePrice());
+		// 线下销售价是否必填
+		// detail.setOfflineSalePrice(comboDetail.getOfflinePrice());
+		detail.setBranchSkuId(comboDetail.getStoreSkuId());
+		detail.setGroup(true);
+		return detail;
+	}
+
+	private List<String> extraComboSkuIdList(List<TradeOrderItem> orderItemList) {
+		List<String> comboSkuIdList = new ArrayList<String>();
+		for (TradeOrderItem orderItem : orderItemList) {
+			if (orderItem.getSpuType() == SpuTypeEnum.assembleSpu) {
+				comboSkuIdList.add(orderItem.getStoreSkuId());
+			}
+		}
+		return comboSkuIdList;
+	}
+
+	private List<GoodsStoreSkuAssembleDto> extraComboDetailList(List<GoodsStoreAssembleDto> comboDtoList,
+			String storeSkuId) {
+		List<GoodsStoreSkuAssembleDto> detailList = new ArrayList<GoodsStoreSkuAssembleDto>();
+		for (GoodsStoreAssembleDto comboDto : comboDtoList) {
+			for (GoodsStoreSkuAssembleDto comboDetail : comboDto.getGoodsStoreSkuAssembleDtos()) {
+				if (comboDetail.getAssembleSkuId().equals(storeSkuId)) {
+					detailList.add(comboDetail);
+				}
+			}
+		}
+		return detailList;
+	}
+
+	private String convert(OrderStatusEnum orderStatus) {
+		if (orderStatus == OrderStatusEnum.CANCELING || orderStatus == OrderStatusEnum.CANCELED) {
+			return StockOperaterTypeConst.CANCEL_SALE_ORDER;
+		} else {
+			return StockOperaterTypeConst.REFUSE_SALE_ODRER;
+		}
+	}
+	
+	public StockUpdateVo buildForCompleteOrder(TradeOrder order) throws Exception {
+		if (order.getType() != OrderTypeEnum.PHYSICAL_ORDER) {
+			// 只有实物订单才需要去商业系统做库存更新
+			return null;
+		}
+
+		StockUpdateVo stockUpdateVo = new StockUpdateVo();
+		// 机构ID
+		stockUpdateVo.setBranchId(order.getStoreId());
+		// 库存操作类型
+		stockUpdateVo.setType(StockOperaterTypeConst.DELIVER_SALE_ORDER);
+		// 销售类型
+		stockUpdateVo.setSaleType(SALE_TYPE_A);
+		// 订单ID
+		stockUpdateVo.setOrderId(order.getId());
+		// 订单编号
+		stockUpdateVo.setOrderNo(order.getOrderNo());
+		// 问了刘玄，先固定写死XS
+		stockUpdateVo.setOrderType(ORDER_TYPE);
+		// 操作人
+		stockUpdateVo.setOperateUserId(order.getUserId());
+
+		List<StockUpdateDetailVo> detailList = buildDetailList(order.getTradeOrderItem());
+
+		stockUpdateVo.setDetails(detailList);
+		return stockUpdateVo;
 	}
 }

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
-import com.okdeer.archive.stock.service.StockManagerJxcServiceApi;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
@@ -31,7 +31,6 @@ import com.okdeer.mall.order.vo.TradeOrderGoodsItem;
 import com.okdeer.mall.order.vo.TradeOrderReq;
 import com.okdeer.mall.order.vo.TradeOrderReqDto;
 import com.okdeer.mall.order.vo.TradeOrderRespDto;
-import com.okdeer.base.common.exception.ServiceException;
 
 /**
  * @author maojj

@@ -7,14 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageHelper;
-import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.system.dto.QuestionAnswerHelpDto;
-import com.okdeer.mall.system.entity.QuestionAnswerHelp;
 import com.okdeer.mall.system.mapper.QuestionAnswerHelpMapper;
 import com.okdeer.mall.system.service.QuestionAnswerHelpService;
-import com.okdeer.mall.system.service.QuestionAnswerHelpApi;
 
 /**
  * ClassName: QuestionAnswerHelpServiceImpl 

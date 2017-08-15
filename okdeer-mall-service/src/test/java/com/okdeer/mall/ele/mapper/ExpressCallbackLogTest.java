@@ -4,7 +4,6 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.ele.entity.ExpressCallbackLog;
-import com.okdeer.mall.ele.mapper.ExpressCallbackLogMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

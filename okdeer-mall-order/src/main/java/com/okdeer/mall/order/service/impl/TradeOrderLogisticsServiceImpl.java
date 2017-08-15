@@ -33,8 +33,6 @@ class TradeOrderLogisticsServiceImpl implements TradeOrderLogisticsService, Trad
 	private TradeOrderLogisticsMapper tradeOrderLogisticsMapper;
 
 	/**
-	 * @desc TODO Add a description 
-	 *
 	 * @param orderId
 	 * @return
 	 * @throws ServiceException

@@ -14,7 +14,7 @@ import com.okdeer.mall.activity.seckill.entity.ActivitySeckillRecord;
 
 /**
  * ClassName: ActivitySeckillRecordMapper 
- * @Description: TODO
+ * @Description: 
  * @author lijun
  * @date 2016年7月13日
  *
@@ -30,7 +30,7 @@ public interface ActivitySeckillRecordMapper {
 
 	/**
 	 * 统计买家总共的秒杀数量
-	 * @Description: TODO
+	 * @Description: 
 	 * @param params
 	 * @return int 购买的秒杀数量
 	 * @throws
@@ -41,7 +41,7 @@ public interface ActivitySeckillRecordMapper {
 	
 	/**
 	 * 新增秒杀活动买家购买记录
-	 * @Description: TODO
+	 * @Description: 
 	 * @param activitySeckillRecord   
 	 * @return void  
 	 * @throws

@@ -14,7 +14,6 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
-import com.okdeer.jxc.stock.vo.StockUpdateVo;
 import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;

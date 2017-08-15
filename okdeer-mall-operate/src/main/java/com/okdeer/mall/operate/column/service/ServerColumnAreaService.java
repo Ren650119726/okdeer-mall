@@ -9,7 +9,6 @@ package com.okdeer.mall.operate.column.service;
 import java.util.List;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.mall.operate.entity.ServerColumnArea;
 
 /**
  * ClassName: ServerColumnAreaService 

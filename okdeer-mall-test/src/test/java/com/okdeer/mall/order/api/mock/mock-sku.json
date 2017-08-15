@@ -1,0 +1,51 @@
+Begin---
+[{
+	"id": "40289d775ce7942a015ce79c09050006",
+	"storeSpuId": "4028b1ec5ce55734015ce7a29543415f",
+	"storeId": "4028b1e05cbf666b015cc3723f7d40a8",
+	"skuId": "d003c611276311e6aaff00163e010eb1",
+	"multipleSkuId": "0",
+	"code": "6907992100043001",
+	"barCode": "6907992100043",
+	"styleCode": "001",
+	"name": "伊利优酸乳(AD)/250ML/盒",
+	"purchasePrice": 0.00,
+	"marketPrice": 0.00,
+	"onlinePrice": 2.00,
+	"offlinePrice": 2.00,
+	"tradeMax": 10,
+	"status": "valid",
+	"online": "PUTAWAY",
+	"violation": "NO_ILLEGAL",
+	"offline":  "ONLINE_OFFLINE",
+	"isActivity": "ABSTENTION",
+	"activityId": "0",
+	"activityName": "",
+	"activityType": "NONE",
+	"disabled": "valid",
+	"createTime": 1498534811000,
+	"updateTime": 1500260610000,
+	"isPrivate": "OPERATOR",
+	"importType": "NOT_IMPORT",
+	"saleNum": 36,
+	"sort": 0,
+	"articleNo": "110250",
+	"bindType": "ordinary",
+	"unit": "盒",
+	"spuTypeEnum": "physicalSpu",
+	"goodsStoreSkuStock": {
+		"actual": 8,
+		"sellable": 8,
+		"locked": 0
+	},
+	"goodsStoreSkuPicture": {
+		"url": "uploadfile_product_30044_1428571785.jpg"
+	},
+	"guaranteed": "1",
+	"obsolete": "newSpu",
+	"isRecommend": "not",
+	"isChoiceness": "not",
+	"operateSort": 0,
+	"spuCategoryId": "52df6f8e276a11e6a672518bbc616d82"
+}]
+End---

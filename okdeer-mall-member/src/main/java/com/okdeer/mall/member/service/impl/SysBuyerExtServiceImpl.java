@@ -41,7 +41,6 @@ public class SysBuyerExtServiceImpl implements SysBuyerExtServiceApi,SysBuyerExt
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateByUserId(SysBuyerExt sysBuyerExt) throws ServiceException {
-		// TODO Auto-generated method stub
 		sysBuyerExtMapper.updateByUserId(sysBuyerExt);
 	}
 

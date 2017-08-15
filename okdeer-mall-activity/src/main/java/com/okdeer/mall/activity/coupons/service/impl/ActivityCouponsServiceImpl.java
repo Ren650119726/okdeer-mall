@@ -54,7 +54,6 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.activity.coupons.vo.AddressCityVo;
-import com.okdeer.mall.activity.coupons.vo.AreaResponseVo;
 import com.okdeer.mall.common.entity.AreaScTreeVo;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.AuditStatusEnum;
@@ -191,6 +190,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 				activityCouponsThirdCodeMapper.saveBatch(acList);
 			}
 		} else if (CouponsType.film.getValue().equals(coupons.getType())) {
+			activityCouponsMapper.insert(coupons);
+			this.addRelatedInfo(coupons);
+		} else if (CouponsType.bldty.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.insert(coupons);
 			this.addRelatedInfo(coupons);
 		}
@@ -354,7 +356,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			activityCouponsMapper.updateCoupons(coupons);
 		} else if (CouponsType.bld.getValue().equals(coupons.getType())
 				|| CouponsType.fwd.getValue().equals(coupons.getType())
-				|| CouponsType.film.getValue().equals(coupons.getType())) {
+				|| CouponsType.film.getValue().equals(coupons.getType())
+				|| CouponsType.bldty.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.updateCoupons(coupons);
 
 			// 删掉老数据
@@ -667,8 +670,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 					}
 					// 当前查询的店铺名称和地址存放在店铺list中
 					Map<String, Object> storeInfo = new HashMap<String, Object>();
-					storeInfo.put("storeName", (map.get("storeName") == null ? "" : map.get("storeName")));
-					storeInfo.put("storeAddress", (map.get("storeAddress") == null ? "" : map.get("storeAddress")));
+					storeInfo.put("storeName", map.get("storeName") == null ? "" : map.get("storeName"));
+					storeInfo.put("storeAddress", map.get("storeAddress") == null ? "" : map.get("storeAddress"));
 					storeList.add(storeInfo);
 
 					resultMap.put(addressCity.getName(), storeList);
@@ -767,12 +770,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Override
 	public Boolean findByIds(List<String> ids) throws ServiceException {
 		int cou = activityCouponsMapper.selectByIds(ids);
-		if (cou < ids.size()) {
-			return false;
-		} else {
-			return true;
-		}
-
+		return cou >= ids.size();
 	}
 
 	@Override
@@ -877,8 +875,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 					}
 					// 当前查询的店铺名称和地址存放在店铺list中
 					Map<String, Object> storeInfo = new HashMap<String, Object>();
-					storeInfo.put("storeName", (map.get("storeName") == null ? "" : map.get("storeName")));
-					storeInfo.put("storeAddress", (map.get("storeAddress") == null ? "" : map.get("storeAddress")));
+					storeInfo.put("storeName", map.get("storeName") == null ? "" : map.get("storeName"));
+					storeInfo.put("storeAddress", map.get("storeAddress") == null ? "" : map.get("storeAddress"));
 					storeList.add(storeInfo);
 					/*resultMap.put(addressCity.getName(), storeList);*/
 					AddressCityVo addressCityVo = new AddressCityVo();

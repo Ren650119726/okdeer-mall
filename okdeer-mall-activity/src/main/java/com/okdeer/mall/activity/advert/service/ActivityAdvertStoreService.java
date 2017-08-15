@@ -32,7 +32,7 @@ public interface ActivityAdvertStoreService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月17日
 	 */
-	public void saveBatch(List<ActivityAdvertStore> list);
+	void saveBatch(List<ActivityAdvertStore> list);
 	
 	/**
 	 * @Description:查询店铺信息根据活动id
@@ -41,7 +41,7 @@ public interface ActivityAdvertStoreService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月19日
 	 */
-	public List<ActivityAdvertStoreBo> findShopByAdvertId(String activityAdverId);
+	List<ActivityAdvertStoreBo> findShopByAdvertId(String activityAdverId);
 	
 	/**
 	 * @Description: 删除关联店铺信息by活动id
@@ -51,5 +51,5 @@ public interface ActivityAdvertStoreService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月19日
 	 */
-	public int deleteByActivityAdvertId(String activityAdvertId);
+	int deleteByActivityAdvertId(String activityAdvertId);
 }

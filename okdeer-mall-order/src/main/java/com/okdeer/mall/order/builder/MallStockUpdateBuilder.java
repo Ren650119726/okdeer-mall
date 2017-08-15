@@ -93,26 +93,7 @@ public class MallStockUpdateBuilder {
 		stockUpdateDto.setUpdateDetailList(updateDetailList);
 		return stockUpdateDto;
 	}
-
-	/**
-	 * @Description: 构建明细（仅用于秒杀订单）
-	 * @param storeSku
-	 * @return   
-	 * @author maojj
-	 * @date 2017年3月15日
-	 */
-	private StockUpdateDetailDto buildDetail(CurrentStoreSkuBo storeSku) {
-		ActivityTypeEnum actType = ActivityTypeEnum.enumValueOf(storeSku.getActivityType());
-		SpuTypeEnum spuType = storeSku.getSpuType();
-		StockUpdateDetailDto detailDto = new StockUpdateDetailDto();
-		detailDto.setStoreSkuId(storeSku.getId());
-		detailDto.setSpuType(spuType);
-		detailDto.setActType(actType);
-		detailDto.setUpdateNum(storeSku.getQuantity());
-		detailDto.setUpdateLockedNum(storeSku.getQuantity());
-		return detailDto;
-	}
-
+	
 	/**
 	 * @Description: 友门鹿V2.1以前的版本和鹿管家版本的构建秒杀库存变更
 	 * @param order
@@ -138,25 +119,6 @@ public class MallStockUpdateBuilder {
 		updateDetailList.add(updateDetail);
 		stockUpdateDto.setUpdateDetailList(updateDetailList);
 		return stockUpdateDto;
-	}
-
-	/**
-	 * @Description: 根据店铺商品信息构建明细(服务店订单)
-	 * @param storeSku
-	 * @return   
-	 * @author maojj
-	 * @date 2017年3月15日
-	 */
-	public StockUpdateDetailDto buildDetail(GoodsStoreSku storeSku,ActivityTypeEnum actType,int buyNum) {
-		StockUpdateDetailDto updateDetail = new StockUpdateDetailDto();
-		updateDetail.setStoreSkuId(storeSku.getId());
-		updateDetail.setSpuType(storeSku.getSpuTypeEnum());
-		updateDetail.setActType(actType);
-		updateDetail.setUpdateNum(buyNum);
-		if(actType == ActivityTypeEnum.SECKILL_ACTIVITY){
-			updateDetail.setUpdateLockedNum(buyNum);
-		}
-		return updateDetail;
 	}
 
 	/**
@@ -216,7 +178,7 @@ public class MallStockUpdateBuilder {
 		
 		stockUpdateDto.setUpdateDetailList(updateDetailList);
 		return stockUpdateDto;
-	} 
+	}
 	
 	/**
 	 * @Description: 根据订单构建库存更新信息。（取消订单、订单拒收）
@@ -285,6 +247,105 @@ public class MallStockUpdateBuilder {
 		
 		stockUpdateDto.setUpdateDetailList(updateDetailList);
 		return stockUpdateDto;
+	}
+	
+	/**
+	 * @Description: 退款时，构建库存更新对象
+	 * @param orderRefunds
+	 * @param tradeOrder
+	 * @param orderItemList
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年3月21日
+	 */
+	public StockUpdateDto build(TradeOrderRefunds orderRefunds,TradeOrder tradeOrder,List<TradeOrderItem> orderItemList) throws Exception{
+		StockUpdateDto stockUpdateDto = new StockUpdateDto();
+
+		stockUpdateDto.setRpcId(UuidUtils.getUuid());
+		stockUpdateDto.setMethodName("");
+		stockUpdateDto.setOrderId(orderRefunds.getId());
+		stockUpdateDto.setStoreId(orderRefunds.getStoreId());
+		stockUpdateDto.setStockOperateEnum(StockOperateEnum.RETURN_OF_GOODS);
+
+		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
+		StockUpdateDetailDto updateDetail = null;
+		ActivityTypeEnum actType = null;
+		
+		// 组合商品数量映射列表
+		Map<String,Integer> comboSkuMap = Maps.newHashMap();
+		List<String> comboSkuIds = Lists.newArrayList();
+		
+		for(TradeOrderItem orderItem : orderItemList){
+			// 获取订单项商品活动类型
+			actType = getActvityType(tradeOrder,orderItem);
+			updateDetail = new StockUpdateDetailDto();
+			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
+			updateDetail.setSpuType(orderItem.getSpuType());
+			updateDetail.setActType(actType);
+			updateDetail.setUpdateNum(orderItem.getQuantity());
+			processRefundsNum(updateDetail,orderRefunds,orderItem,actType);
+			if(orderItem.getSpuType() == SpuTypeEnum.assembleSpu){
+				comboSkuIds.add(orderItem.getStoreSkuId());
+				comboSkuMap.put(orderItem.getStoreSkuId(), orderItem.getQuantity());
+			}
+			updateDetailList.add(updateDetail);
+		}
+		// 处理组合商品
+		if(CollectionUtils.isNotEmpty(comboSkuIds)){
+			List<TradeOrderComboSnapshot> comboSkuList = tradeOrderComboSnapshotMapper.findByOrderId(tradeOrder.getId());
+			if(CollectionUtils.isEmpty(comboSkuList)){
+				// 如果快照表中没有找到明细，则直接从组合成分表中获取明细
+				comboSkuList = comboSnapshotAdapter.findByComboSkuIds(comboSkuIds);
+			}
+			for (TradeOrderComboSnapshot comboSku : comboSkuList) {
+				updateDetail = new StockUpdateDetailDto();
+				updateDetail.setStoreSkuId(comboSku.getStoreSkuId());
+				updateDetail.setSpuType(comboSku.getSkuType());
+				updateDetail.setUpdateNum(comboSku.getQuantity() * comboSkuMap.get(comboSku.getComboSkuId()));
+				updateDetailList.add(updateDetail);
+			}
+		}
+		stockUpdateDto.setUpdateDetailList(updateDetailList);
+		return stockUpdateDto;
+	}
+	
+	/**
+	 * @Description: 构建明细（仅用于秒杀订单）
+	 * @param storeSku
+	 * @return   
+	 * @author maojj
+	 * @date 2017年3月15日
+	 */
+	private StockUpdateDetailDto buildDetail(CurrentStoreSkuBo storeSku) {
+		ActivityTypeEnum actType = ActivityTypeEnum.enumValueOf(storeSku.getActivityType());
+		SpuTypeEnum spuType = storeSku.getSpuType();
+		StockUpdateDetailDto detailDto = new StockUpdateDetailDto();
+		detailDto.setStoreSkuId(storeSku.getId());
+		detailDto.setSpuType(spuType);
+		detailDto.setActType(actType);
+		detailDto.setUpdateNum(storeSku.getQuantity());
+		detailDto.setUpdateLockedNum(storeSku.getQuantity());
+		return detailDto;
+	}
+
+	/**
+	 * @Description: 根据店铺商品信息构建明细(服务店订单)
+	 * @param storeSku
+	 * @return   
+	 * @author maojj
+	 * @date 2017年3月15日
+	 */
+	public StockUpdateDetailDto buildDetail(GoodsStoreSku storeSku,ActivityTypeEnum actType,int buyNum) {
+		StockUpdateDetailDto updateDetail = new StockUpdateDetailDto();
+		updateDetail.setStoreSkuId(storeSku.getId());
+		updateDetail.setSpuType(storeSku.getSpuTypeEnum());
+		updateDetail.setActType(actType);
+		updateDetail.setUpdateNum(buyNum);
+		if(actType == ActivityTypeEnum.SECKILL_ACTIVITY){
+			updateDetail.setUpdateLockedNum(buyNum);
+		}
+		return updateDetail;
 	}
 	
 	/**
@@ -362,67 +423,6 @@ public class MallStockUpdateBuilder {
 				break;
 		}
 		return stockOpt;
-	}
-	
-	/**
-	 * @Description: 退款时，构建库存更新对象
-	 * @param orderRefunds
-	 * @param tradeOrder
-	 * @param orderItemList
-	 * @return
-	 * @throws Exception   
-	 * @author maojj
-	 * @date 2017年3月21日
-	 */
-	public StockUpdateDto build(TradeOrderRefunds orderRefunds,TradeOrder tradeOrder,List<TradeOrderItem> orderItemList) throws Exception{
-		StockUpdateDto stockUpdateDto = new StockUpdateDto();
-
-		stockUpdateDto.setRpcId(UuidUtils.getUuid());
-		stockUpdateDto.setMethodName("");
-		stockUpdateDto.setOrderId(orderRefunds.getId());
-		stockUpdateDto.setStoreId(orderRefunds.getStoreId());
-		stockUpdateDto.setStockOperateEnum(StockOperateEnum.RETURN_OF_GOODS);
-
-		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
-		StockUpdateDetailDto updateDetail = null;
-		ActivityTypeEnum actType = null;
-		
-		// 组合商品数量映射列表
-		Map<String,Integer> comboSkuMap = Maps.newHashMap();
-		List<String> comboSkuIds = Lists.newArrayList();
-		
-		for(TradeOrderItem orderItem : orderItemList){
-			// 获取订单项商品活动类型
-			actType = getActvityType(tradeOrder,orderItem);
-			updateDetail = new StockUpdateDetailDto();
-			updateDetail.setStoreSkuId(orderItem.getStoreSkuId());
-			updateDetail.setSpuType(orderItem.getSpuType());
-			updateDetail.setActType(actType);
-			updateDetail.setUpdateNum(orderItem.getQuantity());
-			processRefundsNum(updateDetail,orderRefunds,orderItem,actType);
-			if(orderItem.getSpuType() == SpuTypeEnum.assembleSpu){
-				comboSkuIds.add(orderItem.getStoreSkuId());
-				comboSkuMap.put(orderItem.getStoreSkuId(), orderItem.getQuantity());
-			}
-			updateDetailList.add(updateDetail);
-		}
-		// 处理组合商品
-		if(CollectionUtils.isNotEmpty(comboSkuIds)){
-			List<TradeOrderComboSnapshot> comboSkuList = tradeOrderComboSnapshotMapper.findByOrderId(tradeOrder.getId());
-			if(CollectionUtils.isEmpty(comboSkuList)){
-				// 如果快照表中没有找到明细，则直接从组合成分表中获取明细
-				comboSkuList = comboSnapshotAdapter.findByComboSkuIds(comboSkuIds);
-			}
-			for (TradeOrderComboSnapshot comboSku : comboSkuList) {
-				updateDetail = new StockUpdateDetailDto();
-				updateDetail.setStoreSkuId(comboSku.getStoreSkuId());
-				updateDetail.setSpuType(comboSku.getSkuType());
-				updateDetail.setUpdateNum(comboSku.getQuantity() * comboSkuMap.get(comboSku.getComboSkuId()));
-				updateDetailList.add(updateDetail);
-			}
-		}
-		stockUpdateDto.setUpdateDetailList(updateDetailList);
-		return stockUpdateDto;
 	}
 	
 	/**

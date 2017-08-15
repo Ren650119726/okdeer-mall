@@ -1,6 +1,13 @@
 
 package com.okdeer.mall.order.mapper;
 
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
@@ -15,13 +22,16 @@ import com.okdeer.mall.order.entity.TradeOrderRechargeVo;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
-import com.okdeer.mall.order.vo.*;
-import org.apache.ibatis.annotations.Param;
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import com.okdeer.mall.order.vo.ActivityInfoVO;
+import com.okdeer.mall.order.vo.ERPTradeOrderVo;
+import com.okdeer.mall.order.vo.PhysicsOrderVo;
+import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
+import com.okdeer.mall.order.vo.TradeOrderQueryVo;
+import com.okdeer.mall.order.vo.TradeOrderStatisticsVo;
+import com.okdeer.mall.order.vo.TradeOrderStatusVo;
+import com.okdeer.mall.order.vo.TradeOrderVo;
+import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
+import com.okdeer.mall.order.vo.UserTradeServiceOrderVo;
 
 /**
  * @DESC: 
@@ -283,7 +293,6 @@ public interface TradeOrderMapper {
 
 	/**
 	 * 查询商家版APP订单信息
-	 * @desc TODO Add a description 
 	 *
 	 * @param map
 	 * @return
@@ -315,7 +324,6 @@ public interface TradeOrderMapper {
 	
 	/**
 	 * 查询商家版APPV2.1.0订单信息
-	 * @desc TODO Add a description 
 	 *
 	 * @param map
 	 * @return
@@ -393,7 +401,6 @@ public interface TradeOrderMapper {
 
 	/**
 	 * 查询微信版APP订单信息
-	 * @desc TODO Add a description 
 	 * @author yangq
 	 * @param map
 	 * @return
@@ -849,7 +856,6 @@ public interface TradeOrderMapper {
 
 	/**
 	 * 统计订单各支付方式金额
-	 * @desc TODO Add a description 
 	 * @author tzd
 	 * @param params
 	 * @return
@@ -858,7 +864,6 @@ public interface TradeOrderMapper {
 
 	/**
 	 * 统计退款各支付方式金额
-	 * @desc TODO Add a description 
 	 * @author tzd
 	 * @param params
 	 * @return
@@ -867,7 +872,6 @@ public interface TradeOrderMapper {
 
 	/**
 	 * 统计线上线下订单数量
-	 * @desc TODO Add a description 
 	 * @author tzd
 	 * @param params
 	 * @return
@@ -896,7 +900,6 @@ public interface TradeOrderMapper {
 
 	/**
 	 * 查询导出POS销售单列表
-	 * @desc TODO Add a description 
 	 * @author zengj
 	 * @param params
 	 * @return
@@ -1170,7 +1173,6 @@ public interface TradeOrderMapper {
 
 	/**
 	 * 
-	 * @Description: TODO
 	 * @param orderIds
 	 * @return
 	 * @author zhulq

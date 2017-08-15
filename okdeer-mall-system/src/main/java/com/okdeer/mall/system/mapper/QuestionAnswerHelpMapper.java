@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.system.dto.QuestionAnswerHelpDto;
-import com.okdeer.mall.system.entity.QuestionAnswerHelp;
 
 /**
  * ClassName: QuestionAnswerHelp 

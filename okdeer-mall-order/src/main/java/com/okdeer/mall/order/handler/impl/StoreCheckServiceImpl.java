@@ -198,18 +198,10 @@ public class StoreCheckServiceImpl implements StoreCheckService {
 		Date endTime = DateUtils.parseDate(servEndTime);
 		if (startTime.before(endTime)) {
 			// 不跨天营业
-			if ((currentDate.after(startTime)) && (endTime.after(currentDate))) {
-				return true;
-			} else {
-				return false;
-			}
+			return currentDate.after(startTime) && endTime.after(currentDate);
 		} else {
 			// 跨天营业
-			if (currentDate.after(startTime) || endTime.after(currentDate)) {
-				return true;
-			} else {
-				return false;
-			}
+			return currentDate.after(startTime) || endTime.after(currentDate);
 		}
 	}
 
@@ -272,11 +264,8 @@ public class StoreCheckServiceImpl implements StoreCheckService {
 		Date currentDate = getCurrentDate();
 		// 服务开始时间
 		Date startTime = DateUtils.parseDate(servStartTime);
-		if(startTime.after(currentDate)){
-			return false;
-		}else{
-			return true;
-		}
+		return startTime.before(currentDate);
+		
 	}
 	
 	/**

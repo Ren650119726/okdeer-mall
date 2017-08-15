@@ -3,8 +3,9 @@ package com.okdeer.mall.activity.coupons.service;
 import java.util.List;
 import java.util.Map;
 
-import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCommunity;
@@ -12,10 +13,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsLimitCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
-import com.okdeer.mall.activity.coupons.vo.AddressCityVo;
 import com.okdeer.mall.common.entity.AreaScTreeVo;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.PageUtils;
 
 
 /**
@@ -49,7 +47,7 @@ public interface ActivityCouponsService {
 	 * @param coupons 对象
 	 * @throws ServiceException 异常
 	 */
-	public void addCoupons(ActivityCoupons coupons) throws ServiceException;
+	void addCoupons(ActivityCoupons coupons) throws ServiceException;
 
 	/**
 	 * 添加代金券类目关联信息 
@@ -57,7 +55,7 @@ public interface ActivityCouponsService {
 	 * @return
 	 * @throws ServiceException
 	 */
-	public void addCouponsLimitCategory(List<ActivityCouponsLimitCategory> activityCouponsLimitCategoryList)
+	void addCouponsLimitCategory(List<ActivityCouponsLimitCategory> activityCouponsLimitCategoryList)
 			throws ServiceException;
 
 	/**
@@ -66,7 +64,7 @@ public interface ActivityCouponsService {
 	 * @return
 	 * @throws ServiceException
 	 */
-	public void addCouponsArea(List<ActivityCouponsArea> activityCouponsAreaList) throws ServiceException;
+	void addCouponsArea(List<ActivityCouponsArea> activityCouponsAreaList) throws ServiceException;
 
 	/**
 	 * 指定的小区
@@ -74,7 +72,7 @@ public interface ActivityCouponsService {
 	 * @return
 	 * @throws ServiceException
 	 */
-	public void addCouponsCommunity(List<ActivityCouponsCommunity> activityCouponsCommunityList)
+	void addCouponsCommunity(List<ActivityCouponsCommunity> activityCouponsCommunityList)
 			throws ServiceException;
 
 	/**
@@ -83,14 +81,14 @@ public interface ActivityCouponsService {
 	 * @return
 	 * @throws ServiceException
 	 */
-	public void addCouponsStore(List<ActivityCouponsStore> activityCouponsStoreList) throws ServiceException;
+	void addCouponsStore(List<ActivityCouponsStore> activityCouponsStoreList) throws ServiceException;
 
 	/**
 	 * 添加关联的信息
 	 * @param coupons
 	 * @throws ServiceException
 	 */
-	public void addRelatedInfo(ActivityCoupons coupons) throws ServiceException;
+	void addRelatedInfo(ActivityCoupons coupons) throws ServiceException;
 
 	/**
 	 * 跟新代金券
@@ -212,14 +210,14 @@ public interface ActivityCouponsService {
 	 * @return
 	 * @throws ServiceException
 	 */
-	public List<ActivityCoupons> listByActivityId(String activityId, String belongType) throws ServiceException;
+	List<ActivityCoupons> listByActivityId(String activityId, String belongType) throws ServiceException;
 
 	/**
 	 * 将区域和小区相关的店铺增加进关联表
 	 * @param StoreInfoList  ActivityCoupons StoreInfoList coupons
 	 * @throws ServiceException 异常
 	 */
-	public void addRelationStore(List<StoreInfo> StoreInfoList, ActivityCoupons coupons) throws ServiceException;
+	void addRelationStore(List<StoreInfo> StoreInfoList, ActivityCoupons coupons) throws ServiceException;
 
 	/**
 	 * 根据代金券id 删除 关联信息

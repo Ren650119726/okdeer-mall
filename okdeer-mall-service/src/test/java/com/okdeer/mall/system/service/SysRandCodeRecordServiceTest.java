@@ -23,7 +23,7 @@ import com.okdeer.mall.Application;
 
 /**
  * ClassName: SysRandCodeRecordServiceTest 
- * @Description: TODO
+ * @Description: 
  * @author tangzj02
  * @date 2017年3月1日
  *

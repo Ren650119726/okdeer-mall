@@ -28,7 +28,7 @@ public interface ActivityAdvertDrawService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月13日
 	 */
-    public ActivityAdvertDraw findAdvertDrawByIdNo(int modelNo,String activityAdvertId);
+    ActivityAdvertDraw findAdvertDrawByIdNo(int modelNo,String activityAdvertId);
     
 	/**
 	 * @Description: 删除关联抽奖信息by活动id
@@ -38,6 +38,6 @@ public interface ActivityAdvertDrawService extends IBaseService {
 	 * @author tuzhd
 	 * @date 2017年4月19日
 	 */
-	public int deleteByActivityAdvertId(String activityAdvertId);
+	int deleteByActivityAdvertId(String activityAdvertId);
     
 }

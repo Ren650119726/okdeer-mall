@@ -150,7 +150,6 @@ public class PointsRuleServiceImpl implements PointsRuleServiceApi {
 
 	@Override
 	public List<PointsRule> queryValidList() throws ServiceException {
-		// TODO Auto-generated method stub
 		return pointsRuleMapper.findValidList();
 	}
 

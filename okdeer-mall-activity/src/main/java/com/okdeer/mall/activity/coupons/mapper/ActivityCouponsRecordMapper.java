@@ -112,7 +112,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	*/
 	List<ActivityCouponsRecord> selectAllForJob();
 
-	public void updateAllByBatch(Map<String, Object> map);
+	void updateAllByBatch(Map<String, Object> map);
 
 	/**
 	* 查询全国的代金券 </p>
@@ -140,7 +140,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @param lstRecords
 	 * @return
 	 */
-	public int insertSelectiveBatch(List<ActivityCouponsRecord> list);
+	int insertSelectiveBatch(List<ActivityCouponsRecord> list);
 	
 	/**
 	 * DESC: 从预领取记录中批量插入代金券 
@@ -148,7 +148,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @param lstRecords
 	 * @return
 	 */
-	public int insertBatchRecordByBefore(List<ActivityCouponsRecordBefore> list);
+	int insertBatchRecordByBefore(List<ActivityCouponsRecordBefore> list);
 
 	/**
 	 * 
@@ -239,7 +239,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	/**
 	 * @Description: 根据代金券id获取类目名称集
 	 * @param couponIds  代金券id集
-	 * @return Map<String,Object>  
+	 * @return List<Map<String, Object>>  
 	 * @author tangy
 	 * @date 2016年9月29日
 	 */
@@ -295,12 +295,12 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	/**
 	 * 1、当代金券设置的领取后的有效期大于3天，则在代金券结束前第三天发送；2、当代金券设置的领取后的有效期大于1天小于或等于3天，
 	 * 则在代金券的有效期最后一天发送；当代金券设置的领取后的有效期等于1天，则不会发送推送和短线
-	 * @Description: TODO
+	 * @Description: 
 	 * @return List<String>  
 	 * @author tuzhd
 	 * @date 2016年11月21日
 	 */
-	public List<Map<String,Object>> getIsNoticeUser();
+	List<Map<String,Object>> getIsNoticeUser();
 	
 	
 	/**
@@ -311,7 +311,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @author tuzhd
 	 * @date 2016年12月31日
 	 */
-	public int findCouponsCountByUser(@Param("useUserType")UseUserType useUserType,@Param("userId")String userId);
+	int findCouponsCountByUser(@Param("useUserType")UseUserType useUserType,@Param("userId")String userId);
 	
 	
 	/**
