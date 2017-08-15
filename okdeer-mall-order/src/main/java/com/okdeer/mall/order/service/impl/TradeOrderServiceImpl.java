@@ -2221,9 +2221,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer updateOrderStatus(TradeOrder tradeOrder) throws ServiceException {
-        //add by mengsj begin 扫码购另外处理 and tuzd 会员卡扫码付
+        //add by mengsj begin 扫码购另外处理 and tuzd 会员卡扫码付 
         if (tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP || 
         		tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD) {
+        	//释放所有代金卷
+        	if(tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD){
+        		activityCouponsRecordService.releaseConpons(tradeOrder);
+        	}
             return tradeOrderMapper.updateOrderStatus(tradeOrder);
         }
         //add by mengsj end 扫码购另外处理 and tuzd 会员卡扫码付
