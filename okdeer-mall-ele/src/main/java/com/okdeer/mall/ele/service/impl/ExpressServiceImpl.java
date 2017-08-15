@@ -1,18 +1,6 @@
 package com.okdeer.mall.ele.service.impl;
 
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.http.message.BasicNameValuePair;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.store.dto.StoreInfoDto;
@@ -48,6 +36,16 @@ import com.okdeer.mall.express.dto.ExpressOrderStatus;
 import com.okdeer.mall.express.dto.ResultMsgDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.http.message.BasicNameValuePair;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * ClassName: EleServiceImpl
@@ -113,7 +111,7 @@ public class ExpressServiceImpl implements ExpressService {
         savePushLog(tradeOrder, param);
 
         // 4、初始化回调数据信息，默认状态为200，推单成功才保存信息记录
-        if (resultMsg.getCode() == 200) {
+        if (resultMsg.getCode() == Integer.parseInt(ExpressOrderStatus.STATUS_200.getValue())) {
             ExpressCallback data = new ExpressCallback();
             data.setId(UuidUtils.getUuid());
             data.setPartnerOrderCode(tradeOrder.getOrderNo());

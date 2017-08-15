@@ -424,5 +424,13 @@
 		</set>
 		WHERE id = #{id,jdbcType=VARCHAR}
 	</update>
+	
+	<!-- begin zengjz 2017-7-27 根据id列表查询 -->
+	  <select id="findByIds" resultMap="BaseResultMap" parameterType="java.util.List">
+	  	 SELECT * FROM  activity_seckill WHERE  id IN
+	  	 <foreach collection="idList" open="(" close=")" separator="," item="item">
+	  	 	#{item}
+	  	 </foreach>
+	  </select>
 </mapper>
 

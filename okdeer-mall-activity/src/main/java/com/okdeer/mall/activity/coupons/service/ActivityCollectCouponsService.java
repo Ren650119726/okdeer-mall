@@ -125,5 +125,14 @@ public interface ActivityCollectCouponsService {
 	 * @return 
 	 * @date 2017年4月18日
 	 */
-	ActivityCollectCoupons findCollectCouponsByModelId(String id, String activityAdvertId); 
+	ActivityCollectCoupons findCollectCouponsByModelId(String id, String activityAdvertId);
+	
+	/**
+	 * @Description: 根据id列表查询
+	 * @param idList id列表
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年7月27日
+	 */
+	List<ActivityCollectCoupons> findByIds(List<String> idList); 
 }

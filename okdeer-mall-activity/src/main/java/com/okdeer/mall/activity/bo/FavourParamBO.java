@@ -48,6 +48,11 @@ public class FavourParamBO {
 	 * 代金券类型
 	 */
 	private CouponsType couponsType;
+	
+	/**
+	 * 只查该类型代金券
+	 */
+	private CouponsType onlyCouponsType;
 
 	/**
 	 * 订单总金额
@@ -226,4 +231,16 @@ public class FavourParamBO {
 		}
 		return findResult == null ? 0 : findResult.getTotalNum();
 	}
+
+	
+	public CouponsType getOnlyCouponsType() {
+		return onlyCouponsType;
+	}
+
+	
+	public void setOnlyCouponsType(CouponsType onlyCouponsType) {
+		this.onlyCouponsType = onlyCouponsType;
+	}
+	
+	
 }

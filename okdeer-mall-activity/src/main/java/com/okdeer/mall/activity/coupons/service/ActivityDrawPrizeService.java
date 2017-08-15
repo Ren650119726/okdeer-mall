@@ -1,4 +1,7 @@
-package com.okdeer.mall.activity.coupons.service;  
+
+package com.okdeer.mall.activity.coupons.service;
+
+import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
 
 /**
  * 
@@ -14,4 +17,12 @@ package com.okdeer.mall.activity.coupons.service;
  */
 public interface ActivityDrawPrizeService {
 
+	/**
+	 * @Description: 根据抽奖活动id抽取奖品
+	 * @param luckDrawId 抽奖活动id
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年8月7日
+	 */
+	ActivityPrizeWeight drawByWithckDrawId(String luckDrawId) throws Exception;
 }

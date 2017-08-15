@@ -86,4 +86,12 @@ public interface ActivityDiscountMapper extends IBaseMapper {
 	 * @date 2017年4月21日
 	 */
 	int countConflict(ActivityParamBo paramBo);
+	/**
+	 * @Description: 根据id列表查询
+	 * @param idList
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年7月27日
+	 */
+	List<ActivityDiscount> findByIds(@Param("idList")List<String> idList);
 }
