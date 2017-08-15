@@ -52,6 +52,7 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.common.utils.VersionUtils;
 import com.okdeer.mall.common.enums.IsRead;
 import com.okdeer.mall.common.enums.MsgType;
@@ -540,6 +541,12 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
             case complainOrder:
                 msgTitle = "您有一条投诉单";
                 msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_COMPLAIN;
+                serviceFkId = sendMsgParamVo.getOrderId();
+                break;
+             // 鹿掌柜收款
+            case lzgGathering:
+                msgTitle = "成功收款"+JsonDateUtil.priceConvertToString(sendMsgParamVo.getLzgAmount())+"元,来自微信";
+                msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_LZGGATHERING;
                 serviceFkId = sendMsgParamVo.getOrderId();
                 break;
             default:
