@@ -703,6 +703,9 @@
 		<if test="clientType != null" >
        		AND (t2.use_client_type = 0 or t2.use_client_type = #{clientType,jdbcType=TINYINT})
     	</if>
+    	<if test="onlyCouponsType != null">
+    		and t2.type = #{onlyCouponsType,jdbcType=TINYINT}
+    	</if>
 		<if test="couponsType != null">
 			AND (t2.type = 0 OR ( t2.type = #{couponsType,jdbcType=TINYINT}
 			     AND (

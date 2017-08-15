@@ -390,6 +390,9 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 				orderIdList.add(fmsTradeOrderDto.getId());
 			}
 		}
+		if(CollectionUtils.isEmpty(orderIdList)){
+			return ;
+		}
 		try {
 			List<TradeOrderRefunds> tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIdList);
 

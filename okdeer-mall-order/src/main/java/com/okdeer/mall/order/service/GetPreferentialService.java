@@ -27,4 +27,15 @@ public interface GetPreferentialService {
 	 * @date 2017年2月17日
 	 */
 	PreferentialVo findPreferentialByUser(FavourParamBO paramBo) throws Exception;
+	
+	
+	/**
+	 * @Description: 根据会员卡信息查询优惠代金券信息
+	 * @param paramBo
+	 * @return PreferentialVo  
+	 * @throws Exception   
+	 * @author tuzhd
+	 * @date 2017年8月8日
+	 */
+	PreferentialVo findPreferByCard(FavourParamBO paramBo) throws Exception;
 }
