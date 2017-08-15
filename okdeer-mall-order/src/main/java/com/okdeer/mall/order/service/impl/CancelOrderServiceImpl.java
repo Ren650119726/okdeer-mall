@@ -59,6 +59,8 @@ import com.okdeer.mall.order.service.StockOperateService;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
+import com.okdeer.mall.order.service.TradePinMoneyObtainService;
+import com.okdeer.mall.order.service.TradePinMoneyUseService;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mcm.entity.SmsVO;
@@ -89,6 +91,12 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 
 	@Autowired
 	private ActivityCouponsRecordService activityCouponsRecordService;
+	
+	@Autowired
+	private TradePinMoneyObtainService tradePinMoneyObtainService;
+	
+	@Autowired
+	private TradePinMoneyUseService tradePinMoneyUseService;
 
 	/**
 	 * 支付service
@@ -228,6 +236,14 @@ public class CancelOrderServiceImpl implements CancelOrderService {
         return smsVo;
     }
 	
+    /**
+     * @Description: 订单取消（拒收）
+     * @param tradeOrder
+     * @param operator
+     * @throws Exception   
+     * @author guocp
+     * @date 2017年8月14日
+     */
 	@Transactional(rollbackFor = Exception.class)
 	private void updateCancelOrder(TradeOrder tradeOrder, String operator) throws Exception {
 		List<String> rpcIdList = new ArrayList<String>();
@@ -243,90 +259,23 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				// 如果需要收取违约金
 				tradeOrder.setIsBreach(WhetherEnum.whether);
 			}
-
-			// 订单状态为已发货或者待发货，全部变为取消中
-			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
-					|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
-				if (oldOrder.getPayWay() == PayWayEnum.PAY_ONLINE) {
-					// begin modify by zengjz 违约金逻辑判断
-					if (isBreach && oldOrder.getBreachMoney().compareTo(oldOrder.getActualAmount()) <= 0) {
-						// 如果违约金是百分白的话，直接把订单状态改为取消完成
-						tradeOrder.setStatus(OrderStatusEnum.CANCELED);
-					} else {
-						tradeOrder.setStatus(OrderStatusEnum.CANCELING);
-					}
-					// end modify by zengjz 违约金逻辑判断
-				} else {
-					tradeOrder.setStatus(OrderStatusEnum.CANCELED);
-				}
-			} else if (OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()) {
-				if (oldOrder.getPayWay() == PayWayEnum.PAY_ONLINE) {
-					tradeOrder.setStatus(OrderStatusEnum.REFUSING);
-				} else {
-					tradeOrder.setStatus(OrderStatusEnum.REFUSED);
-				}
-			} else if (OrderStatusEnum.UNPAID == oldOrder.getStatus()) {
-				// 未支付订单变成已取消
-				tradeOrder.setStatus(OrderStatusEnum.CANCELED);
-			} else {
-				throw new Exception(ORDER_STATUS_CHANGE);
-			}
-
-			if (tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER || StringUtils.isNotEmpty(tradeOrder.getFareActivityId())) {
-				if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER
-						|| OrderStatusEnum.DROPSHIPPING != oldOrder.getStatus()
-						|| (OrderCancelType.CANCEL_BY_BUYER != tradeOrder.getCancelType())) {
-					// 如果实物订单或者不是待服务状态或者不是用户取消的就需要释放代金卷
-					// 释放所有代金卷
-					activityCouponsRecordService.releaseConpons(tradeOrder);
-				}
-			} else if (tradeOrder.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY) {
-				// 团购活动释放限购数量
-				activityGroupRecordService.updateDisabledByOrderId(tradeOrder.getId());
-			} else if (tradeOrder.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY) {
-				// 秒杀活动释放购买记录
-				activitySeckillRecordService.updateStatusBySeckillId(tradeOrder.getId());
-			} else if (tradeOrder.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES){
-				// Begin V2.3 added by maojj 2017-04-22
-				// 释放用户参与满减活动的频次。规则与代金券保持一致。
-				if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER
-						|| OrderStatusEnum.DROPSHIPPING != oldOrder.getStatus()
-						|| (OrderCancelType.CANCEL_BY_BUYER != tradeOrder.getCancelType())) {
-					// 如果实物订单或者不是待服务状态或者不是用户取消的就需要释放
-					activityDiscountRecordService.deleteByOrderId(tradeOrder.getId());
-				}
-				// End V2.3 added by maojj 2017-04-22
-			}
-
-			// 特惠活动释放限购数量
-			for (TradeOrderItem item : tradeOrder.getTradeOrderItem()) {
-				Map<String, Object> params = Maps.newHashMap();
-				params.put("orderId", item.getOrderId());
-				params.put("storeSkuId", item.getStoreSkuId());
-				activitySaleRecordService.updateDisabledByOrderId(params);
-			}
-
-			// 保存订单操作日志信息
-			TradeOrderLog tradeOrderLog = new TradeOrderLog();
-			tradeOrderLog.setId(UuidUtils.getUuid());
-			tradeOrderLog.setOperate(tradeOrder.getStatus().getValue() + "---" + tradeOrder.getStatus().getName());
-			tradeOrderLog.setOperateUser(operator);
-			tradeOrderLog.setRecordTime(new Date());
-			tradeOrderLog.setOrderId(tradeOrder.getId());
-			tradeOrderLogMapper.insertSelective(tradeOrderLog);
-
+			//设置订单状态
+			setOrderStatus(tradeOrder, oldOrder);
+			//释放活动锁定
+			releaseActivity(tradeOrder, oldOrder);
+			//保存订单轨迹
+			saveOrderLog(tradeOrder,operator);
 			// 保存订单轨迹
 			tradeOrderTraceService.saveOrderTrace(tradeOrder);
+			
 			// 更新订单状态
 			Integer updateRows = tradeOrderMapper.updateOrderStatus(tradeOrder);
 			logger.info("更新后的订单状态:{}",tradeOrder.getStatus().getName());
 			if(updateRows == null || updateRows.intValue() == 0){
 				throw new Exception(ORDER_STATUS_CHANGE);
 			}
-			
 			// 回收库存
 			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
-
 			// 发送短信
 			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
 							|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()
@@ -341,13 +290,11 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				// 只有待支付订单状态需要关闭
 				sendCancelMsg(tradeOrder.getTradeNum());
 			}
-
 			// 最后一步退款，避免出现发送了消息，后续操作失败了，无法回滚资金
 			if (OrderStatusEnum.UNPAID != oldOrder.getStatus()) {
 				// 如果不是支付中的状态是需要退款给用户的
 				this.tradeOrderPayService.cancelOrderPay(tradeOrder);
 			}
-			
 			//如果是货到付款的,走拒收的流程
 			if(oldOrder.getPayWay() != PayWayEnum.PAY_ONLINE){
 				//add by  zhangkeneng  和左文明对接丢消息
@@ -355,11 +302,115 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				tradeOrderContext.setTradeOrder(tradeOrder);
 				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
 			}
-			
-			
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
+		}
+	}
+
+	/**
+	 * @Description: 保存订单操作日志
+	 * @param tradeOrder
+	 * @param operator   
+	 * @author guocp
+	 * @date 2017年8月14日
+	 */
+	private void saveOrderLog(TradeOrder tradeOrder, String operator) {
+		// 保存订单操作日志信息
+		TradeOrderLog tradeOrderLog = new TradeOrderLog();
+		tradeOrderLog.setId(UuidUtils.getUuid());
+		tradeOrderLog.setOperate(tradeOrder.getStatus().getValue() + "---" + tradeOrder.getStatus().getName());
+		tradeOrderLog.setOperateUser(operator);
+		tradeOrderLog.setRecordTime(new Date());
+		tradeOrderLog.setOrderId(tradeOrder.getId());
+		tradeOrderLogMapper.insertSelective(tradeOrderLog);		
+	}
+
+	/**
+	 * @Description: 设置订单状态
+	 * @param tradeOrder
+	 * @param oldOrder   
+	 * @author guocp
+	 * @throws Exception 
+	 * @date 2017年8月14日
+	 */
+	private void setOrderStatus(TradeOrder tradeOrder, TradeOrder oldOrder) throws Exception {
+		// 订单状态为已发货或者待发货，全部变为取消中
+		if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
+				|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
+			if (oldOrder.getPayWay() == PayWayEnum.PAY_ONLINE) {
+				// begin modify by zengjz 违约金逻辑判断
+				if (WhetherEnum.whether == tradeOrder.getIsBreach()
+						&& oldOrder.getBreachMoney().compareTo(oldOrder.getActualAmount()) <= 0) {
+					// 如果违约金是百分白的话，直接把订单状态改为取消完成
+					tradeOrder.setStatus(OrderStatusEnum.CANCELED);
+				} else {
+					tradeOrder.setStatus(OrderStatusEnum.CANCELING);
+				}
+				// end modify by zengjz 违约金逻辑判断
+			} else {
+				tradeOrder.setStatus(OrderStatusEnum.CANCELED);
+			}
+		} else if (OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()) {
+			if (oldOrder.getPayWay() == PayWayEnum.PAY_ONLINE) {
+				tradeOrder.setStatus(OrderStatusEnum.REFUSING);
+			} else {
+				tradeOrder.setStatus(OrderStatusEnum.REFUSED);
+			}
+		} else if (OrderStatusEnum.UNPAID == oldOrder.getStatus()) {
+			// 未支付订单变成已取消
+			tradeOrder.setStatus(OrderStatusEnum.CANCELED);
+		} else {
+			throw new Exception(ORDER_STATUS_CHANGE);
+		}
+	}
+
+	/**
+	 * @Description: 释放活动锁定
+	 * @param tradeOrder   
+	 * @author guocp
+	 * @throws ServiceException 
+	 * @date 2017年8月14日
+	 */
+	private void releaseActivity(TradeOrder tradeOrder,TradeOrder oldOrder) throws ServiceException {
+		if (tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER || StringUtils.isNotEmpty(tradeOrder.getFareActivityId())) {
+			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER
+					|| OrderStatusEnum.DROPSHIPPING != oldOrder.getStatus()
+					|| (OrderCancelType.CANCEL_BY_BUYER != tradeOrder.getCancelType())) {
+				// 如果实物订单或者不是待服务状态或者不是用户取消的就需要释放代金卷
+				// 释放所有代金卷
+				activityCouponsRecordService.releaseConpons(tradeOrder);
+			}
+		} else if (tradeOrder.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY) {
+			// 团购活动释放限购数量
+			activityGroupRecordService.updateDisabledByOrderId(tradeOrder.getId());
+		} else if (tradeOrder.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY) {
+			// 秒杀活动释放购买记录
+			activitySeckillRecordService.updateStatusBySeckillId(tradeOrder.getId());
+		} else if (tradeOrder.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES){
+			// Begin V2.3 added by maojj 2017-04-22
+			// 释放用户参与满减活动的频次。规则与代金券保持一致。
+			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER
+					|| OrderStatusEnum.DROPSHIPPING != oldOrder.getStatus()
+					|| (OrderCancelType.CANCEL_BY_BUYER != tradeOrder.getCancelType())) {
+				// 如果实物订单或者不是待服务状态或者不是用户取消的就需要释放
+				activityDiscountRecordService.deleteByOrderId(tradeOrder.getId());
+			}
+			// End V2.3 added by maojj 2017-04-22
+		}
+		
+		// 特惠活动释放限购数量
+		for (TradeOrderItem item : tradeOrder.getTradeOrderItem()) {
+			Map<String, Object> params = Maps.newHashMap();
+			params.put("orderId", item.getOrderId());
+			params.put("storeSkuId", item.getStoreSkuId());
+			activitySaleRecordService.updateDisabledByOrderId(params);
+		}
+		
+		// 释放零花钱
+		if (tradeOrder.getPinMoney().compareTo(BigDecimal.ZERO) > 0) {
+			// 释放订单占用零花钱
+			tradePinMoneyUseService.releaseOrderOccupy(tradeOrder.getId());
 		}
 	}
 
