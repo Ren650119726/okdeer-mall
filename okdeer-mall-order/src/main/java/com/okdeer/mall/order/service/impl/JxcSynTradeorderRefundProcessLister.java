@@ -10,7 +10,6 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +21,7 @@ import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
@@ -146,8 +146,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		// 活动类型为代金券活动
 		if (order.getActivityType() == ActivityTypeEnum.VONCHER) {
 			activityType = 1;
-		} else if (order.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
-				&& order.getIncome().compareTo(order.getActualAmount()) != 0) {
+		} else if (order.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
 			// 活动类型为满减活动且店家收入不等于用户实付，说明里面有平台的补贴
 			activityType = 2;
 		}

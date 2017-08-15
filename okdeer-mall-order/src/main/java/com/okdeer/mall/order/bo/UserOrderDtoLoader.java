@@ -117,10 +117,16 @@ public class UserOrderDtoLoader {
 			orderDto.setFare(ConvertUtil.format(order.getFare()));
 			if(order.getOrderResource() == OrderResourceEnum.SWEEP){
 				orderDto.setType(AppOrderTypeEnum.SWEEP_ORDER);
+			
+			//add by tuzhd start 2017-08-08 添加会员卡订单类型
+			}else if(order.getOrderResource() == OrderResourceEnum.MEMCARD){
+				orderDto.setType(AppOrderTypeEnum.MEMCARD_ORDER);
+			//add by tuzhd end 2017-08-08 添加会员卡订单类型	
+				
 			}else{
 				orderDto.setType(EnumAdapter.convert(order.getType()));
 			}
-			
+			orderDto.setOrderResource(order.getOrderResource() !=null ? order.getOrderResource().ordinal():null);
 			orderDto.setCreateTime(DateUtils.formatDate(order.getCreateTime(),"yyyy-MM-dd HH:mm:ss"));
 			orderDto.setLogisticsFlag(String.valueOf(LogisticsType.NONE.ordinal()));
 			orderDto.setLogisticsNo("");

@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.google.common.collect.Lists;
 import com.okdeer.api.pay.service.IPayAccountServiceApi;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.archive.system.entity.PsmsAgent;
@@ -880,6 +881,14 @@ public class ActivityCollectCouponsServiceImpl
 	 */
 	public List<ActivityCollectCoupons> findCollectCouponsByType(Map<String,Object> map){
 		return activityCollectCouponsMapper.findCollectCouponsByType(map);
+	}
+
+	@Override
+	public List<ActivityCollectCoupons> findByIds(List<String> idList) {
+		if(CollectionUtils.isEmpty(idList)){
+			return Lists.newArrayList();
+		}
+		return activityCollectCouponsMapper.findByIds(idList);
 	}
 	
 }

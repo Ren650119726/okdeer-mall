@@ -54,4 +54,10 @@ public class TradeOrderExtSnapshotServiceImpl implements TradeOrderExtSnapshotSe
         paramDto.setId(UuidUtils.getUuid());
         return tradeOrderExtSnapshotMapper.insert(paramDto);
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public int update(TradeOrderExtSnapshotParamDto paramDto) throws Exception {
+        return tradeOrderExtSnapshotMapper.update(paramDto);
+    }
 }

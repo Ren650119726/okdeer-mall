@@ -10,6 +10,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.dto.TradeOrderCountParamDto;
@@ -737,14 +738,6 @@ public interface TradeOrderMapper {
 	 */
 	TradeOrder selectOrderByInfo(Map<String, Object> map);
 
-	/**
-	 * 
-	 * @desc erp根据条件查询订单列表
-	 * @author luosm
-	 * @param id 订单id
-	 * @return
-	 */
-	List<ERPTradeOrderVo> ERPSelectByParams(Map<String, Object> params);
 
 	/**
 	 * 财务系统接口
@@ -1017,16 +1010,8 @@ public interface TradeOrderMapper {
 	 * @author wusw
 	 * @date 2016年7月19日
 	 */
-	List<ERPTradeOrderVo> findOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto);
+	List<FmsTradeOrderBo> findOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto);
 	
-	/**
-	 * @Description: 据查询数量，查询订单列表（用于财务系统，包含服务店订单）
-	 * @param tradeOrderQueryParamDto 查询参数
-	 * @return 数量
-	 * @author zengjizu
-	 * @date 2017年4月26日
-	 */
-	int countOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto);
 	/**
 	 * 
 	 * @Description: 服务店订单详情（商城后台）

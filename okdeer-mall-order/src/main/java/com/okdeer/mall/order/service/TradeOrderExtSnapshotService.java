@@ -49,4 +49,12 @@ public interface TradeOrderExtSnapshotService {
      * @return int
      */
     int insert(TradeOrderExtSnapshotParamDto paramDto) throws Exception;
+
+    /**
+     * 更新数据
+     *
+     * @param paramDto TradeOrderExtSnapshotParamDto
+     * @return int
+     */
+    int update(TradeOrderExtSnapshotParamDto paramDto) throws Exception;
 }

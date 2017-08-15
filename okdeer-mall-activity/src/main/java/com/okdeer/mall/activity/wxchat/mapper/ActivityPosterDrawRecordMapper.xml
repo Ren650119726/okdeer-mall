@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.wxchat.mapper.ActivityPosterDrawRecordMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.wxchat.entity.ActivityPosterDrawRecord" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="openid" property="openid" jdbcType="VARCHAR" />
+         <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+        <result column="prize_id" property="prizeId" jdbcType="VARCHAR" />
+        <result column="prize_name" property="prizeName" jdbcType="VARCHAR" />
+        <result column="activity_collect_id" property="activityCollectId" jdbcType="VARCHAR" />
+        <result column="is_take" property="isTake" jdbcType="TINYINT" />
+        <result column="draw_time" property="drawTime" jdbcType="TIMESTAMP" />
+        <result column="take_time" property="takeTime" jdbcType="TIMESTAMP" />
+        <result column="take_mobile" property="takeMobile" jdbcType="VARCHAR" />
+    </resultMap>
+
+  <sql id="Base_Column_List" >
+        id, activity_id, openid, nick_name, prize_id, prize_name, activity_collect_id, is_take, 
+        draw_time, take_time, take_mobile
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_poster_draw_record
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.wxchat.entity.ActivityPosterDrawRecord" >
+        insert into activity_poster_draw_record
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
+            <if test="openid != null" >
+                openid,
+            </if>
+            <if test="nickName != null" >
+                nick_name,
+            </if>
+            <if test="prizeId != null" >
+                prize_id,
+            </if>
+            <if test="prizeName != null" >
+                prize_name,
+            </if>
+            <if test="activityCollectId != null" >
+                activity_collect_id,
+            </if>
+            <if test="isTake != null" >
+                is_take,
+            </if>
+            <if test="drawTime != null" >
+                draw_time,
+            </if>
+            <if test="takeTime != null" >
+                take_time,
+            </if>
+            <if test="takeMobile != null" >
+                take_mobile,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="openid != null" >
+                #{openid,jdbcType=VARCHAR},
+            </if>
+            <if test="nickName != null" >
+                #{nickName,jdbcType=VARCHAR},
+            </if>
+            <if test="prizeId != null" >
+                #{prizeId,jdbcType=VARCHAR},
+            </if>
+            <if test="prizeName != null" >
+                #{prizeName,jdbcType=VARCHAR},
+            </if>
+            <if test="activityCollectId != null" >
+                #{activityCollectId,jdbcType=VARCHAR},
+            </if>
+            <if test="isTake != null" >
+                #{isTake,jdbcType=TINYINT},
+            </if>
+            <if test="drawTime != null" >
+                #{drawTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="takeTime != null" >
+                #{takeTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="takeMobile != null" >
+                #{takeMobile,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.wxchat.entity.ActivityPosterDrawRecord" >
+        update activity_poster_draw_record
+        <set >
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="openid != null" >
+                openid = #{openid,jdbcType=VARCHAR},
+            </if>
+            <if test="nickName != null" >
+                nick_name = #{nickName,jdbcType=VARCHAR},
+            </if>
+            <if test="prizeId != null" >
+                prize_id = #{prizeId,jdbcType=VARCHAR},
+            </if>
+            <if test="prizeName != null" >
+                prize_name = #{prizeName,jdbcType=VARCHAR},
+            </if>
+            <if test="activityCollectId != null" >
+                activity_collect_id = #{activityCollectId,jdbcType=VARCHAR},
+            </if>
+            <if test="isTake != null" >
+                is_take = #{isTake,jdbcType=TINYINT},
+            </if>
+            <if test="drawTime != null" >
+                draw_time = #{drawTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="takeTime != null" >
+                take_time = #{takeTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="takeMobile != null" >
+                take_mobile = #{takeMobile,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+	
+	<select id="findByParams" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.wechat.dto.ActivityPosterDrawRecordParamDto" >
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM activity_poster_draw_record WHERE 1=1
+        <if test="activityId != null and activityId !=''">
+        	AND activity_id = #{activityId,jdbcType=VARCHAR}
+        </if>
+         <if test="openid != null and openid != ''">
+        	AND openid = #{openid,jdbcType=VARCHAR}
+        </if>
+         <if test="isTake != null">
+        	AND is_take = #{isTake,jdbcType=VARCHAR}
+        </if>
+         <if test="drawStartTime != null and drawStartTime != ''">
+        	<![CDATA[AND draw_time >= #{drawStartTime,jdbcType=VARCHAR}]]>
+        </if>
+         <if test="drawEndTime != null and drawEndTime != ''">
+        	<![CDATA[AND draw_time <= #{drawEndTime,jdbcType=VARCHAR}]]>
+        </if>
+        ORDER BY draw_time DESC
+    </select>
+    
+    <update id="updateTakeInfo">
+    	 update activity_poster_draw_record
+        <set >
+            <if test="isTake != null" >
+                is_take = #{isTake,jdbcType=TINYINT},
+            </if>
+            <if test="takeTime != null" >
+                take_time = #{takeTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="takeMobile != null" >
+                take_mobile = #{takeMobile,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR} AND is_take = 0
+    </update>
+</mapper>
