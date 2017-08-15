@@ -244,12 +244,8 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 					tradeOrder.setCancelType(order.getCancelType());
 					tradeOrder.setUpdateTime(new Date());
 					tradeOrder.setOrderResource(order.getOrderResource());
-					if(order.getOrderResource() == OrderResourceEnum.MEMCARD){
-						//释放所有代金卷
-						cancelOrderApi.cancelOrder(tradeOrder);
-					}else{
-						tradeOrderService.updateOrderStatus(tradeOrder);
-					}
+					//释放所有代金卷
+					tradeOrderService.updateOrderStatus(tradeOrder);
 					//modify by mengsj end 扫码购超时取消订单 and tuzd 会员卡扫码付
 				}else{
 					cancelOrderService.cancelOrder(order, false);
