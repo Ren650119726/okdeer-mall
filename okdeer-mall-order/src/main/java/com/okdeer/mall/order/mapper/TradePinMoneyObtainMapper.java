@@ -58,4 +58,14 @@ public interface TradePinMoneyObtainMapper extends IBaseMapper {
 	 */
 	Integer findObtainListCount(TradePinMoneyQueryDto paramDto);
 
+
+	/**
+	 * @Description: 根据ID列表查询领取记录
+	 * @param ids
+	 * @return   
+	 * @author guocp
+	 * @date 2017年8月15日
+	 */
+	List<TradePinMoneyObtain> findByIds(@Param("ids") List<String> ids);
+
 }
