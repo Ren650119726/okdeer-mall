@@ -53,6 +53,7 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.service.CancelOrderApi;
 import com.okdeer.mall.order.service.CancelOrderService;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.TradeOrderCommentService;
@@ -139,6 +140,12 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 	
 	@Autowired
 	private CancelOrderService cancelOrderService;
+	
+	/**
+	 * 取消订单服务接口
+	 */
+	@Resource
+	private CancelOrderApi cancelOrderApi;
 	
 	
 	@Override
@@ -237,8 +244,12 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 					tradeOrder.setCancelType(order.getCancelType());
 					tradeOrder.setUpdateTime(new Date());
 					tradeOrder.setOrderResource(order.getOrderResource());
-					
-					tradeOrderService.updateOrderStatus(tradeOrder);
+					if(order.getOrderResource() == OrderResourceEnum.MEMCARD){
+						//释放所有代金卷
+						cancelOrderApi.cancelOrder(tradeOrder);
+					}else{
+						tradeOrderService.updateOrderStatus(tradeOrder);
+					}
 					//modify by mengsj end 扫码购超时取消订单 and tuzd 会员卡扫码付
 				}else{
 					cancelOrderService.cancelOrder(order, false);
