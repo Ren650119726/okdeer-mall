@@ -16,7 +16,6 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.store.dto.StoreInfoDto;
-<<<<<<< HEAD
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
@@ -770,7 +769,6 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 		}
 		if(CollectionUtils.isEmpty(orderIdList)){
 			return ;
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 		}
 		try {
 			List<TradeOrderRefunds> tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIdList);
