@@ -57,4 +57,12 @@ public interface TradePinMoneyUseService extends IBaseService{
 	 * @date 2017年8月12日
 	 */
 	PageUtils<TradePinMoneyUseBo> findUsePageList(TradePinMoneyQueryDto paramDto, int pageNumber, int pageSize);
+
+	/**
+	 * @Description: 释放订单占用零花钱
+	 * @param id   
+	 * @author guocp
+	 * @date 2017年8月14日
+	 */
+	void releaseOrderOccupy(String orderId);
 }

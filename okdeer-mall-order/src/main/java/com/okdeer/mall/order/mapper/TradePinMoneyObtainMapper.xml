@@ -148,6 +148,7 @@
         FROM trade_pin_money_obtain
         WHERE user_id = #{userId,jdbcType=VARCHAR}
         AND valid_time >= #{nowDate,jdbcType=TIMESTAMP}
+        AND status = 0
     </select>
     
     <select id="findList" resultMap="BaseResultMap" >

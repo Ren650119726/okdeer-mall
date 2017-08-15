@@ -369,6 +369,8 @@ public class TradeOrderBuilder {
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
 		// 平台优惠
 		tradeOrder.setPlatformPreferential(format(parserBo.getPlatformPreferential()));
+		// 设置零花钱
+		setPinMoney(tradeOrder, parserBo, paramDto);
 		// 店铺优惠
 		if(parserBo.isLowFavour()){
 			// 如果有低价优惠.记录店铺优惠类型和店铺优惠金额
@@ -389,7 +391,22 @@ public class TradeOrderBuilder {
 		tradeOrder.setRealFarePreferential(format(parserBo.getRealFarePreferential()));
 		// 设置订单优惠金额。此处不加运费优惠，到处理运费时统一进行计算
 		tradeOrder.setPreferentialPrice(tradeOrder.getPlatformPreferential()
-				.add(tradeOrder.getStorePreferential()));
+				.add(tradeOrder.getStorePreferential()).add(tradeOrder.getPinMoney()));
+	}
+	
+	/**
+	 * 设置零花钱
+	 * @author guocp
+	 * @date 2017年8月14日
+	 */
+	private void setPinMoney(TradeOrder tradeOrder,StoreSkuParserBo parserBo,PlaceOrderParamDto paramDto){
+		// 设置零花钱
+		if(paramDto.getIsUsePinMoney()){
+			BigDecimal pinMoney = (BigDecimal) paramDto.get("pinMoney");
+			tradeOrder.setPinMoney(pinMoney);
+		}else{
+			tradeOrder.setPinMoney(BigDecimal.valueOf(0.0));
+		}
 	}
 	
 	private BigDecimal format(BigDecimal value){
@@ -483,8 +500,8 @@ public class TradeOrderBuilder {
 		String orderId = tradeOrder.getId();
 		// 订单项参与平台优惠的总金额
 		BigDecimal totalAmount = parserBo.getTotalAmountHaveFavour();
-		// 订单总的平台优惠
-		BigDecimal platformFavour = parserBo.getPlatformPreferential();
+		// 订单总的平台优惠 （需分摊到商品）: 平台优惠 + 红包优惠
+		BigDecimal platformFavour = parserBo.getPlatformPreferential().add(tradeOrder.getPinMoney());
 		BigDecimal favourSum =  BigDecimal.valueOf(0.00);
 		int index = 0;
 		int haveFavourItemSize = parserBo.getHaveFavourGoodsMap().size();
