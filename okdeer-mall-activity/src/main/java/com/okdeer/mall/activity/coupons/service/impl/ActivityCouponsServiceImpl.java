@@ -559,7 +559,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 		// 代金券关联的分类 1 导航分类 2 服务店店铺商品分类
 		int type = 0;
-		if (CouponsType.bld.getValue().equals(coupons.getType())) {
+		if (CouponsType.bld.getValue().equals(coupons.getType()) || CouponsType.bldty.getValue().equals(coupons.getType())) {
 			type = 1;
 		} else if (CouponsType.fwd.getValue().equals(coupons.getType())) {
 			type = 2;

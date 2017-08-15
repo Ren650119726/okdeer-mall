@@ -53,6 +53,7 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.service.CancelOrderApi;
 import com.okdeer.mall.order.service.CancelOrderService;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.TradeOrderCommentService;
@@ -140,6 +141,12 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 	@Autowired
 	private CancelOrderService cancelOrderService;
 	
+	/**
+	 * 取消订单服务接口
+	 */
+	@Resource
+	private CancelOrderApi cancelOrderApi;
+	
 	
 	@Override
 	public String getTopic() {
@@ -226,19 +233,20 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				order.setUpdateUserId(RobotUserUtil.getRobotUser().getId());
 				order.setReason("超时未支付，系统取消订单");
 				
-				//begin add by zengjz 取消订单换接口类
+				//begin add by zengjz 取消订单换接口类 and tuzd 会员卡扫码付
 				order.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
-				if(order.getOrderResource() == OrderResourceEnum.SWEEP){
+				if(order.getOrderResource() == OrderResourceEnum.SWEEP || 
+						order.getOrderResource() == OrderResourceEnum.MEMCARD){
 					//modify by mengsj begin 扫码购超时取消订单
 					TradeOrder tradeOrder = new TradeOrder();
 					tradeOrder.setId(order.getId());
 					tradeOrder.setStatus(OrderStatusEnum.CANCELED);
 					tradeOrder.setCancelType(order.getCancelType());
 					tradeOrder.setUpdateTime(new Date());
-					tradeOrder.setOrderResource(OrderResourceEnum.SWEEP);
-					
+					tradeOrder.setOrderResource(order.getOrderResource());
+					//释放所有代金卷
 					tradeOrderService.updateOrderStatus(tradeOrder);
-					//modify by mengsj end 扫码购超时取消订单
+					//modify by mengsj end 扫码购超时取消订单 and tuzd 会员卡扫码付
 				}else{
 					cancelOrderService.cancelOrder(order, false);
 				}

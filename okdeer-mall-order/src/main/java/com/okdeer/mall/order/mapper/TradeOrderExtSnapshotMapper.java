@@ -23,4 +23,6 @@ public interface TradeOrderExtSnapshotMapper {
     List<TradeOrderExtSnapshot> selectExtSnapshotListByParam(TradeOrderExtSnapshotParamDto paramDto);
 
     int insert(TradeOrderExtSnapshotParamDto paramDto);
+
+    int update(TradeOrderExtSnapshotParamDto paramDto);
 }

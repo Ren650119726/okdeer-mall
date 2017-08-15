@@ -87,6 +87,11 @@ public class TradeOrderBuilder {
 	private static final Logger logger = LoggerFactory.getLogger(TradeOrderBuilder.class);
 	
 	private static final BigDecimal referenceValue = BigDecimal.valueOf(0.00);
+	
+	/**
+	 * 佣金方案b
+	 */
+	private static final Integer DELIVERY_TYPE_B = 2;
 	/**
 	 * 生成编号的service
 	 */
@@ -206,8 +211,9 @@ public class TradeOrderBuilder {
 		tradeOrder.setFareActivityId(parserBo.getFareActivityId());
 		// 设置订单配送方式和佣金比率
 		if(storeInfo.getStoreInfoExt() != null){
-			tradeOrder.setDeliveryType(storeInfo.getStoreInfoExt().getDeliveryType());
-			tradeOrder.setCommisionRatio(storeInfo.getStoreInfoExt().getCommisionRatio());
+			//直接设置佣金方案为： 2 商家自己配送
+			tradeOrder.setDeliveryType(DELIVERY_TYPE_B);
+			tradeOrder.setCommisionRatio(storeInfo.getStoreInfoExt().getCommisionRatioPlanB());
 		}
 		// 设置订单编号
 		setOrderNo(tradeOrder,paramDto.getOrderType());

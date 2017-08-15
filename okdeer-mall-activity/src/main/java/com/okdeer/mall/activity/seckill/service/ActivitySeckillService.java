@@ -94,4 +94,13 @@ public interface ActivitySeckillService {
 	// end add by luosm 2016-07-22
 
 	void saveByCloseSeckill(ActivitySeckill activitySeckill) throws Exception;
+	
+	/**
+	 * @Description: 根据id列表查询
+	 * @param idList id列表
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年7月27日
+	 */
+	List<ActivitySeckill> findByIds(List<String> idList);
 }

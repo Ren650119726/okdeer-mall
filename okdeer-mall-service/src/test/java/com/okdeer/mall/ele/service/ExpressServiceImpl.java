@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+
 public class ExpressServiceImpl extends BaseServiceTest {
 
     @Autowired
@@ -26,6 +28,7 @@ public class ExpressServiceImpl extends BaseServiceTest {
     public void expressPushTest() {
         try {
             //expressService.saveExpressOrder("8a94e7545cd93f77015cd940590d0003");
+            assertEquals(2,2);
         } catch (Exception e) {
             System.out.println("推送订单异常" + e);
         }
