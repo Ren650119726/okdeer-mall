@@ -46,4 +46,13 @@ public interface TradePinMoneyUseMapper extends IBaseMapper {
 	 */
 	List<TradePinMoneyUse> findList(@Param("userId") String userId);
 
+	/**
+	 * @Description: 根据订单ID查询零花钱使用记录
+	 * @param orderId
+	 * @return   
+	 * @author guocp
+	 * @date 2017年8月15日
+	 */
+	TradePinMoneyUse findByOrderId(@Param("orderId") String orderId);
+
 }

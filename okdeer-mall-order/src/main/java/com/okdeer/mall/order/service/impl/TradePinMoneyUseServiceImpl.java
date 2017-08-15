@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
@@ -60,6 +61,23 @@ public class TradePinMoneyUseServiceImpl extends BaseServiceImpl implements Trad
 	@Override
 	public Integer findUseListCount(TradePinMoneyQueryDto paramDto) {
 		return tradePinMoneyUseMapper.findUseListCount(paramDto);
+	}
+
+	/**
+	 * 释放订单占用零花钱
+	 */
+	@Override
+	public void releaseOrderOccupy(String orderId) {
+		TradePinMoneyUse pinMoneyUse = tradePinMoneyUseMapper.findByOrderId(orderId);
+		//设置失效
+		pinMoneyUse.setDisabled(Disabled.invalid);
+		tradePinMoneyUseMapper.update(pinMoneyUse);
+		
+		//释放零花钱领取占用
+//		pinMoneyUse.getSourceId();
+//		tradePinMoneyUseMapper.add(record)
+		
+		
 	}
 
 }

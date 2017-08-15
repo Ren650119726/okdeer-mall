@@ -279,14 +279,14 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	}
 	
 	/**
-	 * @Description: 保存红包记录
+	 * @Description: 保存零花钱记录
 	 * @param tradeOrder
 	 * @param paramDto   
 	 * @author guocp
 	 * @throws Exception 
 	 * @date 2017年8月10日
 	 */
-	private void savePinMoneyRecord(TradeOrder tradeOrder, PlaceOrderParamDto paramDto) throws Exception {
+	private void savePinMoneyRecord(final TradeOrder tradeOrder, final PlaceOrderParamDto paramDto) throws Exception {
 		if(!paramDto.getIsUsePinMoney()){
 			return;
 		}
@@ -314,6 +314,10 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				updateRecord.add(pinMoney);
 				break;
 			}
+		}
+		
+		if (deduction.compareTo(usePinMoney) != 0) {
+			throw new Exception("零花钱扣减异常");
 		}
 		
 		// 更新领取记录  updateRecord
