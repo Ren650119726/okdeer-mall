@@ -1,20 +1,12 @@
-/**   
-* @Title: AlipayStatusSubscriber.java 
-* @Package com.okdeer.mall.trade.order.pay 
-* @Description: (用一句话描述该文件做什么) 
-* @author A18ccms A18ccms_gmail_com   
-* @date 2016年3月30日 下午7:39:54 
-* @version V1.0   
-*/
+/**
+ * @Title: AlipayStatusSubscriber.java
+ * @Package com.okdeer.mall.trade.order.pay
+ * @Description: (用一句话描述该文件做什么)
+ * @author A18ccms A18ccms_gmail_com
+ * @date 2016年3月30日 下午7:39:54
+ * @version V1.0
+ */
 package com.okdeer.mall.order.pay;
-
-import java.util.List;
-
-import javax.annotation.Resource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -26,17 +18,27 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
+import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
+import com.okdeer.mall.order.mq.TradeOrderSubScriberHandler;
 import com.okdeer.mall.order.pay.callback.AbstractPayResultHandler;
 import com.okdeer.mall.order.pay.callback.PayResultHandlerFactory;
+import com.okdeer.mall.order.service.OrderReturnCouponsService;
+import java.util.List;
+import javax.annotation.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @ClassName: AlipayStatusSubscriber
- * @Description: 订单状态写入消息,第三方支付
+ * @Description: 订单状态写入消息, 第三方支付
  * @author yangq
  * @date 2016年3月30日 下午7:39:54
- * 
+ *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
@@ -50,65 +52,70 @@ import com.okdeer.mall.order.pay.callback.PayResultHandlerFactory;
  */
 @Service
 public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
-		implements PayMessageConstant, OrderMessageConstant {
+        implements PayMessageConstant, OrderMessageConstant {
 
-	private static final Logger logger = LoggerFactory.getLogger(ThirdStatusSubscriber.class);
-	
-	@Resource
-	private PayResultHandlerFactory payResultHandlerFactory;
-	
-	@Resource
-	private TradeOrderMapper tradeOrderMapper;
-	
-	@Override
-	public String getTopic() {
-		return TOPIC_PAY;
-	}
+    private static final Logger logger = LoggerFactory.getLogger(ThirdStatusSubscriber.class);
 
-	@Override
-	public String getTags() {
-		return TAG_ORDER + JOINT + TAG_POST_ORDER;
-	}
-	
-	@Override
-	public ConsumeConcurrentlyStatus subscribeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
-		String tradeNum = null;
-		TradeOrder tradeOrder = null;
-		AbstractPayResultHandler handler = null;
-		try {
-			String msg = new String(msgs.get(0).getBody(), Charsets.UTF_8);
-			logger.info("订单支付状态消息:" + msg);
-			PayResponseDto respDto = JsonMapper.nonEmptyMapper().fromJson(msg, PayResponseDto.class);
-			tradeNum = respDto.getTradeNum();
-			if (StringUtils.isEmpty(tradeNum)) {
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-			}
-			tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
-			handler = payResultHandlerFactory.getByOrder(tradeOrder);
-			handler.handler(tradeOrder, respDto);
-		} catch (Exception e) {
-			logger.error("订单支付状态消息处理失败", e);
-			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
-		}
-		
-<<<<<<< HEAD
-=======
-		// begin add by wushp 20161015  
-		try {
-			if(tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP && 
-	        		tradeOrder.getOrderResource() != OrderResourceEnum.MEMCARD){
-				//不是扫码购订单才返券
-				orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
-				
-				//下单赠送抽奖活动的抽奖次数
-				tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
-			}
-		} catch (Exception e) {
-			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
-			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-		}
-		// end add by wushp 20161015 
->>>>>>> refs/remotes/upstream/master_V2.5.0_online
-		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-	}
+    @Resource
+    private PayResultHandlerFactory payResultHandlerFactory;
+
+    @Resource
+    private TradeOrderMapper tradeOrderMapper;
+
+    @Resource
+    private TradeOrderSubScriberHandler tradeOrderSubScriberHandler;
+
+    /**
+     * 订单返券service
+     */
+    @Autowired
+    private OrderReturnCouponsService orderReturnCouponsService;
+
+    @Override
+    public String getTopic() {
+        return TOPIC_PAY;
+    }
+
+    @Override
+    public String getTags() {
+        return TAG_ORDER + JOINT + TAG_POST_ORDER;
+    }
+
+    @Override
+    public ConsumeConcurrentlyStatus subscribeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
+        String tradeNum = null;
+        TradeOrder tradeOrder = null;
+        AbstractPayResultHandler handler = null;
+        try {
+            String msg = new String(msgs.get(0).getBody(), Charsets.UTF_8);
+            logger.info("订单支付状态消息:" + msg);
+            PayResponseDto respDto = JsonMapper.nonEmptyMapper().fromJson(msg, PayResponseDto.class);
+            tradeNum = respDto.getTradeNum();
+            if (StringUtils.isEmpty(tradeNum)) {
+                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+            }
+            tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
+            handler = payResultHandlerFactory.getByOrder(tradeOrder);
+            handler.handler(tradeOrder, respDto);
+        } catch (Exception e) {
+            logger.error("订单支付状态消息处理失败", e);
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+        }
+        // begin add by wushp 20161015
+        try {
+            if (tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP &&
+                    tradeOrder.getOrderResource() != OrderResourceEnum.MEMCARD) {
+                //不是扫码购订单才返券
+                orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+
+                //下单赠送抽奖活动的抽奖次数
+                tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
+            }
+        } catch (Exception e) {
+            logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
+            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+        }
+        // end add by wushp 20161015
+        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+    }
 }
