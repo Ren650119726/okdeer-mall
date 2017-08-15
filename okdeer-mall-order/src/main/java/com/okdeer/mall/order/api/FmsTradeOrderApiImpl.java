@@ -32,7 +32,9 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
+import com.okdeer.mall.order.bo.FmsOrderStatisBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
+import com.okdeer.mall.order.dto.FmsOrderStatisDto;
 import com.okdeer.mall.order.dto.FmsTradeOrderDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
@@ -316,23 +318,23 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 
 		for (FmsTradeOrderDto fmsTradeOrderDto : fmsTradeOrderDtoList) {
 			switch (fmsTradeOrderDto.getActivityType()) {
-			case VONCHER:
-				addActivityId(voncherActiviIdList, fmsTradeOrderDto.getActivityId());
-				break;
-			case FULL_REDUCTION_ACTIVITIES:
-			case FULL_DISCOUNT_ACTIVITIES:
-				addActivityId(discountActiviIdList, fmsTradeOrderDto.getActivityId());
-				break;
-			case SALE_ACTIVITIES:
-			case LOW_PRICE:
-				addActivityId(saleActiviIdList, fmsTradeOrderDto.getActivityId());
-				break;
-			case SECKILL_ACTIVITY:
-				addActivityId(seckillActiviIdList, fmsTradeOrderDto.getActivityId());
-				break;
+				case VONCHER:
+					addActivityId(voncherActiviIdList, fmsTradeOrderDto.getActivityId());
+					break;
+				case FULL_REDUCTION_ACTIVITIES:
+				case FULL_DISCOUNT_ACTIVITIES:
+					addActivityId(discountActiviIdList, fmsTradeOrderDto.getActivityId());
+					break;
+				case SALE_ACTIVITIES:
+				case LOW_PRICE:
+					addActivityId(saleActiviIdList, fmsTradeOrderDto.getActivityId());
+					break;
+				case SECKILL_ACTIVITY:
+					addActivityId(seckillActiviIdList, fmsTradeOrderDto.getActivityId());
+					break;
 
-			default:
-				break;
+				default:
+					break;
 			}
 		}
 		Map<String, ActivityCollectCoupons> voncherActiviMap = queryVoncherActiviList(voncherActiviIdList);
@@ -345,31 +347,33 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 
 		for (FmsTradeOrderDto fmsTradeOrderDto : fmsTradeOrderDtoList) {
 			switch (fmsTradeOrderDto.getActivityType()) {
-			case VONCHER:
-				if (voncherActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
-					fmsTradeOrderDto.setActivityName(voncherActiviMap.get(fmsTradeOrderDto.getActivityId()).getName());
-				}
-				break;
-			case FULL_REDUCTION_ACTIVITIES:
-			case FULL_DISCOUNT_ACTIVITIES:
-				if (discountActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
-					fmsTradeOrderDto.setActivityName(discountActiviMap.get(fmsTradeOrderDto.getActivityId()).getName());
-				}
-				break;
-			case SALE_ACTIVITIES:
-			case LOW_PRICE:
-				if (saleActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
-					fmsTradeOrderDto.setActivityName(saleActiviMap.get(fmsTradeOrderDto.getActivityId()).getName());
-				}
-				break;
-			case SECKILL_ACTIVITY:
-				if (seckillActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
-					fmsTradeOrderDto
-							.setActivityName(seckillActiviMap.get(fmsTradeOrderDto.getActivityId()).getSeckillName());
-				}
-				break;
-			default:
-				break;
+				case VONCHER:
+					if (voncherActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
+						fmsTradeOrderDto
+								.setActivityName(voncherActiviMap.get(fmsTradeOrderDto.getActivityId()).getName());
+					}
+					break;
+				case FULL_REDUCTION_ACTIVITIES:
+				case FULL_DISCOUNT_ACTIVITIES:
+					if (discountActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
+						fmsTradeOrderDto
+								.setActivityName(discountActiviMap.get(fmsTradeOrderDto.getActivityId()).getName());
+					}
+					break;
+				case SALE_ACTIVITIES:
+				case LOW_PRICE:
+					if (saleActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
+						fmsTradeOrderDto.setActivityName(saleActiviMap.get(fmsTradeOrderDto.getActivityId()).getName());
+					}
+					break;
+				case SECKILL_ACTIVITY:
+					if (seckillActiviMap.get(fmsTradeOrderDto.getActivityId()) != null) {
+						fmsTradeOrderDto.setActivityName(
+								seckillActiviMap.get(fmsTradeOrderDto.getActivityId()).getSeckillName());
+					}
+					break;
+				default:
+					break;
 			}
 		}
 
@@ -390,8 +394,8 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 				orderIdList.add(fmsTradeOrderDto.getId());
 			}
 		}
-		if(CollectionUtils.isEmpty(orderIdList)){
-			return ;
+		if (CollectionUtils.isEmpty(orderIdList)) {
+			return;
 		}
 		try {
 			List<TradeOrderRefunds> tradeOrderRefundsList = tradeOrderRefundsService.selectByOrderIds(orderIdList);
@@ -456,6 +460,13 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 	private Map<String, ActivitySeckill> querySeckillActiviList(List<String> seckillActiviIdList) {
 		List<ActivitySeckill> list = activitySeckillService.findByIds(seckillActiviIdList);
 		return list.stream().collect(Collectors.toMap(ActivitySeckill::getId, e -> e));
+	}
+
+	@Override
+	public List<FmsOrderStatisDto> statisOrderByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
+		// 参数转换处理（例如订单状态）
+		List<FmsOrderStatisBo> result = tradeOrderService.statisOrderForFinanceByParams(tradeOrderQueryParamDto);
+		return BeanMapper.mapList(result, FmsOrderStatisDto.class);
 	}
 
 }

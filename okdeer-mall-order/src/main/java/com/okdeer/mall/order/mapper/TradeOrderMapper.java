@@ -10,6 +10,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.mall.order.bo.FmsOrderStatisBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
@@ -1066,7 +1067,7 @@ public interface TradeOrderMapper {
 	 * @author zengjizu
 	 * @date 2016年9月12日
 	 */
-	Map<String, Object> statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto);
+	List<FmsOrderStatisBo> statisOrderForFinanceByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto);
 
 	/**
 	 * @Description: 按查询条件统计取消订单退款 金额、数量

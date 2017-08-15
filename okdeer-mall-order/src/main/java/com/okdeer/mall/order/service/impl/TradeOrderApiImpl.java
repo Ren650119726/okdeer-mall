@@ -39,6 +39,7 @@ import com.okdeer.archive.system.service.ISysUserServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
@@ -48,7 +49,9 @@ import com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi;
 import com.okdeer.mall.common.vo.PageResultVo;
 import com.okdeer.mall.member.member.vo.UserAddressVo;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
+import com.okdeer.mall.order.bo.FmsOrderStatisBo;
 import com.okdeer.mall.order.dto.ERPTradeOrderVoDto;
+import com.okdeer.mall.order.dto.FmsOrderStatisDto;
 import com.okdeer.mall.order.dto.TradeOrderDto;
 import com.okdeer.mall.order.dto.TradeOrderInvoiceDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
@@ -764,13 +767,6 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 	
 
-
-	@Override
-	public Map<String, Object> statisOrderByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
-		// 参数转换处理（例如订单状态）
-		Map<String, Object> result = tradeOrderService.statisOrderForFinanceByParams(tradeOrderQueryParamDto);
-		return result;
-	}
 
 	@Override
 	public Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params) {

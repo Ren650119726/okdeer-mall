@@ -5934,8 +5934,8 @@
 	
 	<!-- 财务系统订单统计接口  V1.1.0 add by zengjz 20160930 -->
 	<select id="statisOrderForFinanceByParams" parameterType="com.okdeer.mall.order.dto.TradeOrderQueryParamDto"
-		resultType="map">
-		SELECT  IFNULL(sum(total_amount),0) as totalAmount,count(1) as count
+		resultType="com.okdeer.mall.order.bo.FmsOrderStatisBo">
+		SELECT  IFNULL(sum(trade.total_amount),0) AS totalAmount,IFNULL(sum(trade.actual_amount),0) AS actualAmount,IFNULL(sum(trade.preferential_price),0) AS preferentialPrice,IFNULL(sum(trade.platform_preferential),0) AS platformPreferential,IFNULL(sum(trade.store_preferential),0) AS storePreferential,count(1) as totalCount,trade.status as status
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
@@ -6002,6 +6002,7 @@
 		<if test="deliveryType !=null">
 			AND toes.delivery_type = #{deliveryType, jdbcType=INTEGER}
 		</if>
+		GROUP BY trade.status
 	</select>
 	
     <!-- tangy 查询历史回款记录导出 -->
