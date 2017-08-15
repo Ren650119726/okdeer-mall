@@ -520,11 +520,11 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
     	if(StringUtils.isNotBlank(orderId)){
     		//定单缓存key
     		String key = orderId + orderKeyStr;
-    		MemberCardResultDto<?> dto =  hykPayOrderServiceApi.cancelOrder(orderId);
-    		//零售取消失败返回false
-	    	if(dto.getCode() != CommonResultCodeEnum.SUCCESS.getCode()){
-	    		return false;
-	    	}
+    		//零售取消失败返回false,不管pos是否失败，避免app失败卡死在页面中
+    		hykPayOrderServiceApi.cancelOrder(orderId);
+//	    	if(dto.getCode() != CommonResultCodeEnum.SUCCESS.getCode()){
+//	    		return false;
+//	    	}
 	    	//清除商城这边订单redis记录
 	    	MemberTradeOrderDto order = (MemberTradeOrderDto) redisTemplateWrapper.get(key);
 	    	//订单不存在标识清楚成功返回
