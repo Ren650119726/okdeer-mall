@@ -9,6 +9,8 @@ import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -16,13 +18,16 @@ import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.common.utils.EnumAdapter;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
@@ -47,6 +52,7 @@ import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.system.service.SysBuyerFirstOrderRecordService;
 
@@ -64,12 +70,17 @@ import com.okdeer.mall.system.service.SysBuyerFirstOrderRecordService;
  */
 @Service("checkFavourService")
 public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto, PlaceOrderDto> {
+	
+	private static final Logger logger = LoggerFactory.getLogger(CheckFavourServiceImpl.class);
 
 	/**
 	 * 代金券记录Mapper
 	 */
 	@Resource
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+	
+	@Resource
+	private ActivityCollectCouponsMapper activityCollectCouponsMapper;
 
 	/**
 	 * 折扣、满减活动Mapper
@@ -123,9 +134,9 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				break;
 		}
 		// 检查运费优惠
-		if(!StringUtils.isEmpty(paramDto.getFareRecId())){
+		if(isValid && !StringUtils.isEmpty(paramDto.getFareRecId())){
 			// 如果请求中存在运费领取记录Id，则检查运费
-			checkFareCoupons(paramDto, parserBo, resp);
+			isValid = checkFareCoupons(paramDto, parserBo, resp);
 		}
 		if (!isValid && resp.isSuccess()) {
 			resp.setResult(ResultCodeEnum.FAVOUR_NOT_SUPPORT);
@@ -140,40 +151,48 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private boolean checkCoupons(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp) throws Exception{
+	private boolean checkCoupons(PlaceOrderParamDto paramDto, StoreSkuParserBo parserBo, Response<PlaceOrderDto> resp)
+			throws Exception {
 		String recordId = paramDto.getRecordId();
 		ActivityCouponsRecord couponsRecord = activityCouponsRecordMapper.selectByPrimaryKey(recordId);
 		// Begin V2.4 added by maojj 2017-05-31
 		// 增加领取记录的校验。校验请求提供的领取记录是否是当前用户
 		if(couponsRecord == null || !couponsRecord.getCollectUserId().equals(paramDto.getUserId())){
+			logger.info("代金券使用检查不通过1：{}",JsonMapper.nonDefaultMapper().toJson(couponsRecord));
 			return false;
 		}
 		// End V2.4 added by maojj 2017-05-31
 		if (couponsRecord.getStatus() != ActivityCouponsRecordStatusEnum.UNUSED) {
+			logger.info("代金券使用检查不通过2：{}",JsonMapper.nonDefaultMapper().toJson(couponsRecord));
 			return false;
 		}
 		// 查询代金券
 		ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsRecord.getCouponsId());
 		// 检查金额是否达到使用下限
 		if(paramDto.getEnjoyFavourTotalAmount().compareTo(new BigDecimal(coupons.getArriveLimit())) == -1){
+			logger.info("代金券使用检查不通过3：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 			return false;
 		}
 		// 检查当前店铺是否可使用该代金券
 		if(coupons.getAreaType() != AreaType.national && activityCouponsRelationStoreMapper.findByStoreIdAndCouponsId(paramDto.getStoreId(), coupons.getId()) == null){
+			logger.info("代金券使用检查不通过4：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 			return false;
 		}
 		if(!coupons.getActivityId().equals(paramDto.getActivityId()) || !coupons.getId().equals(paramDto.getActivityItemId())){
 			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
+			logger.info("代金券使用检查不通过5：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 			return false;
 		}
 		if(coupons.getUseUserType() == UseUserType.ONlY_NEW_USER){
 			// 仅限首单用户，检查当前用户是否为首单用户。
 			if(!isFirstOrderUser(paramDto.getUserId())){
+				logger.info("代金券使用检查不通过6：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 				resp.setResult(ResultCodeEnum.ACTIVITY_LIMIT_FIRST_ORDER);
 				return false;
 			}
 		}
 		if(coupons.getUseClientType() != UseClientType.ALLOW_All && coupons.getUseClientType() != EnumAdapter.convert(paramDto.getChannel())){
+			logger.info("代金券使用检查不通过7：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 			return false;
 		}
 		if(coupons.getIsCategory() == Constant.ONE){
@@ -199,6 +218,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				if(totalAmount.compareTo(BigDecimal.valueOf(0.0)) == 0 || totalAmount.compareTo(BigDecimal.valueOf(coupons.getArriveLimit())) == -1){
 					// 如果享受优惠的商品总金额为0，标识没有指定分类的商品。如果享受优惠的商品总金额小于代金券的使用条件，也不能使用该代金券
 					resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
+					logger.info("代金券使用检查不通过8：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 					return false;
 				}
 				parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
@@ -212,30 +232,45 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				if (count != spuCategoryIds.size()) {
 					// 超出指定分类
 					resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
+					logger.info("代金券使用检查不通过9：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 					return false;
 				}
 			}
 		}	
-		ActivityRecordParamBo recParamBo = null;
 		if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0 && StringUtils.isNotEmpty(paramDto.getDeviceId())){
 			// 同一设备id每天最多使用张数 0：不限，大于0有限制
-			recParamBo = new ActivityRecordParamBo();
-			recParamBo.setPkId(coupons.getId());
-			recParamBo.setDeviceId(paramDto.getDeviceId());
-			recParamBo.setRecDate(DateUtils.getDate());
-			int deviceTotalNum = activityCouponsRecordMapper.countDayFreq(recParamBo);
+			int deviceTotalNum = findCountDayFreq(null, paramDto.getDeviceId(), null, coupons.getId());
 			if (coupons.getDeviceDayLimit().intValue() <= deviceTotalNum) {
+				logger.info("代金券使用检查不通过10：{},deviceTotalNum:{}",JsonMapper.nonDefaultMapper().toJson(coupons),deviceTotalNum);
 				return false;
 			}
 		}
 		if(coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0){
 			// 同一设备id每天最多使用张数 0：不限，大于0有限制
-			recParamBo = new ActivityRecordParamBo();
-			recParamBo.setPkId(coupons.getId());
-			recParamBo.setUserId(paramDto.getUserId());
-			recParamBo.setRecDate(DateUtils.getDate());
-			int userTotalNum = activityCouponsRecordMapper.countDayFreq(recParamBo);
+			int userTotalNum = findCountDayFreq(paramDto.getUserId(), null, null, coupons.getId());
 			if (coupons.getAccountDayLimit().intValue() <= userTotalNum) {
+				logger.info("代金券使用检查不通过11：{},userTotalNum:{}",JsonMapper.nonDefaultMapper().toJson(coupons),userTotalNum);
+				return false;
+			}
+		}
+		ActivityCollectCoupons collectCoupons = activityCollectCouponsMapper.get(coupons.getActivityId());
+		// 代金券活动设备限制
+		if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null
+				&& collectCoupons.getDeviceDayLimit() > 0 && StringUtils.isNotEmpty(paramDto.getDeviceId())) {
+			// 同一设备id每天最多使用张数 0：不限，大于0有限制
+			int deviceTotalNum = findCountDayFreq(null, paramDto.getDeviceId(), coupons.getActivityId(), null);
+			if (collectCoupons.getDeviceDayLimit().intValue() <= deviceTotalNum) {
+				logger.info("代金券使用检查不通过12：{},deviceTotalNum:{}",collectCoupons,deviceTotalNum);
+				return false;
+			}
+		}
+		// 代金券活动用户限制
+		if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null
+				&& collectCoupons.getAccountDayLimit() > 0) {
+			// 同一设备id每天最多使用张数 0：不限，大于0有限制
+			int userTotalNum = findCountDayFreq(paramDto.getUserId(), null, coupons.getActivityId(), null);
+			if (collectCoupons.getAccountDayLimit().intValue() <= userTotalNum) {
+				logger.info("代金券使用检查不通过13：{},userTotalNum:{}",collectCoupons,userTotalNum);
 				return false;
 			}
 		}
@@ -243,7 +278,17 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		parserBo.addCoupons(couponsRecord);
 		return true;
 	}
-
+	
+	private int findCountDayFreq(String userId,String deviceId,String activityId,String couponsId){
+		ActivityRecordParamBo recParamBo = new ActivityRecordParamBo();
+		recParamBo.setPkId(couponsId);
+		recParamBo.setCollectId(activityId);
+		recParamBo.setUserId(userId);
+		recParamBo.setDeviceId(deviceId);
+		recParamBo.setRecDate(DateUtils.getDate());
+		return activityCouponsRecordMapper.countDayFreq(recParamBo);
+	}
+	
 	/**
 	 * @Description: 校验满减满折
 	 * @param activityId 活动ID
@@ -389,6 +434,14 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	}
 	
 	private boolean checkFareCoupons(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp) throws Exception{
+		// Begin V2.5.1 added by maojj 2017-07-29
+		// 为了解决IOS到店自提请求中提交了运费券的bug
+		if(paramDto.getPickType() == PickUpTypeEnum.TO_STORE_PICKUP){
+			// 如果是到店自提，则将运费券记录id置为空
+			paramDto.setFareRecId("");
+			return true;
+		}
+		// End V2.5.1 added by maojj 2017-07-29
 		ActivityCouponsRecord couponsRecord = activityCouponsRecordMapper.selectByPrimaryKey(paramDto.getFareRecId());
 		// 增加领取记录的校验。校验请求提供的领取记录是否是当前用户
 		if(couponsRecord == null || !couponsRecord.getCollectUserId().equals(paramDto.getUserId())){

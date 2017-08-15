@@ -140,8 +140,6 @@ import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.ele.entity.ExpressCallback;
 import com.okdeer.mall.ele.service.ExpressService;
-import com.okdeer.mall.express.dto.ExpressCallbackParamDto;
-import com.okdeer.mall.express.dto.ResultMsgDto;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;

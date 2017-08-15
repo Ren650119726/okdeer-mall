@@ -9,6 +9,8 @@
         <result column="use_amount" property="useAmount" jdbcType="DECIMAL" />
         <result column="order_amount" property="orderAmount" jdbcType="DECIMAL" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+   		<result column="disabled" property="disabled" jdbcType="TINYINT"
+			javaType="com.okdeer.base.common.enums.Disabled" />
     </resultMap>
 	<!-- 后台查询领取记录列表 -->
 	<resultMap id="PageListResultMap" type="com.okdeer.mall.order.bo.TradePinMoneyUseBo" >
@@ -19,14 +21,14 @@
     </resultMap>
     
     <sql id="Base_Column_List" >
-        id, order_id, source_id, user_id, use_amount, order_amount, create_time
+        id, order_id, source_id, user_id, use_amount, order_amount, create_time, disabled
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
-        select 
+        SELECT 
         <include refid="Base_Column_List" />
-        from trade_pin_money_use
-        where id = #{id,jdbcType=VARCHAR}
+        FROM trade_pin_money_use
+        WHERE id = #{id,jdbcType=VARCHAR}
     </select>
 
     <insert id="add" parameterType="com.okdeer.mall.order.entity.TradePinMoneyUse" >
@@ -53,6 +55,9 @@
             <if test="createTime != null" >
                 create_time,
             </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -76,11 +81,14 @@
             <if test="createTime != null" >
                 #{createTime,jdbcType=TIMESTAMP},
             </if>
+			<if test="disabled != null">
+				#{disabled,jdbcType=BIT},
+			</if>
         </trim>
     </insert>
 
     <update id="update" parameterType="com.okdeer.mall.order.entity.TradePinMoneyUse" >
-        update trade_pin_money_use
+        UPDATE trade_pin_money_use
         <set >
             <if test="orderId != null" >
                 order_id = #{orderId,jdbcType=VARCHAR},
@@ -100,20 +108,31 @@
             <if test="createTime != null" >
                 create_time = #{createTime,jdbcType=TIMESTAMP},
             </if>
+            <if test="disabled != null">
+				disabled = #{disabled,jdbcType=BIT},
+			</if>
         </set>
-        where id = #{id,jdbcType=VARCHAR}
+        WHERE id = #{id,jdbcType=VARCHAR}
     </update>
 
     <delete id="delete" parameterType="java.lang.String" >
-        delete from trade_pin_money_use
-        where id = #{id,jdbcType=VARCHAR}
+        DELETE FROM trade_pin_money_use
+        WHERE id = #{id,jdbcType=VARCHAR}
     </delete>
+    
+    <select id="findByOrderId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM trade_pin_money_use
+        WHERE order_id = #{orderId,jdbcType=VARCHAR}
+    </select>
     
     <select id="findList" resultMap="BaseResultMap" >
         SELECT 
         <include refid="Base_Column_List" />
         FROM trade_pin_money_use
         WHERE user_id = #{userId,jdbcType=VARCHAR}
+        AND disabled = 0
 <!--         <if test="nowDate != null" >
         	AND valid_time >= #{nowDate,jdbcType=TIMESTAMP}
         </if> -->
@@ -125,7 +144,7 @@
         pin.id, buyer.phone userPhone, pin.use_amount, pin.create_time
         FROM trade_pin_money_use pin
         LEFT JOIN sys_buyer_user buyer ON buyer.id=pin.user_id
-        WHERE 1=1
+        WHERE disabled = 0
         <if test="userPhone != null" >
            AND buyer.phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},'%')
         </if>
@@ -143,7 +162,7 @@
         SELECT count(1)
         FROM trade_pin_money_use pin
         LEFT JOIN sys_buyer_user buyer ON buyer.id=pin.user_id
-        WHERE 1=1
+        WHERE disabled = 0
         <if test="userPhone != null" >
            AND buyer.phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},'%')
         </if>

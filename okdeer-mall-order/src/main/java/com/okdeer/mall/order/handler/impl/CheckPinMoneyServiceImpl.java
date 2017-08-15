@@ -19,6 +19,7 @@ import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.TradePinMoneyObtainService;
+import com.site.lookup.util.StringUtils;
 
 
 /**
@@ -44,13 +45,14 @@ public class CheckPinMoneyServiceImpl implements RequestHandler<PlaceOrderParamD
 	@Override
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
 		PlaceOrderParamDto paramDto = req.getData();
-		if(paramDto.getIsUsePinMoney()){
+		if(paramDto.getIsUsePinMoney() && StringUtils.isNotEmpty(paramDto.getPinMoney())){
 			BigDecimal myUsable = tradePinMoneyObtainService.findMyUsableTotal(req.getData().getUserId(),new Date());
 			BigDecimal pinMoney = new BigDecimal( paramDto.getPinMoney());
 			if (pinMoney.compareTo(myUsable) > 1) {
 				resp.setResult(ResultCodeEnum.TRADE_LIMIT_PIN_MONEY);
 				return;
 			}
+			paramDto.put("pinMoney", pinMoney);
 		}
 	}
 

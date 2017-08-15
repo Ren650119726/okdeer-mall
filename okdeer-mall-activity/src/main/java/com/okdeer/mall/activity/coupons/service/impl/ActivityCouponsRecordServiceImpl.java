@@ -59,6 +59,7 @@ import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
@@ -388,86 +389,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public JSONObject addRecordsByCollectId(String collectId, String userId,String invitaUserId) throws Exception {
-		Map<String, Object> map = new HashMap<String, Object>();
-		//校验成功标识 //如果不存在缓存数据进行加入到缓存中
-		String key = userId+collectId;
-		boolean checkFlag = checkUserStatusByRedis(key, 6);
-		if(!checkFlag){
-			map.put("code", 104);
-			map.put("msg", "用户调用次数超限");
-			return JSONObject.fromObject(map);
-		}
-		
-		try{
-			ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
-			if(coll == null){
-				map.put("msg", "非法参数！");
-				map.put("code", 105);
-				return JSONObject.fromObject(map);
-			}
-			//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
-			if(checkNewUserCoupons(userId, coll)){
-				map.put("msg", "您已经领取了，快去我的代金券查看使用吧！");
-				map.put("code", 102);
-				return JSONObject.fromObject(map);
-			}
-			
-			//校验活动信息
-			if(!checkCollectPublic(map, coll, userId)){
-				return JSONObject.fromObject(map);
-			}
-			
-			//循环代金劵id进行送劵
-			List<ActivityCoupons> activityCoupons = activityCouponsMapper.selectByActivityId(collectId);
-			Map<String,ActivityCouponsRecord> reMap = new HashMap<String,ActivityCouponsRecord>();
-			
-			//根据代金劵列表逐个领取，当出现一个代金劵领取异常即反馈错误给前端
-			for(ActivityCoupons coupons : activityCoupons){
-				// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
-				ActivityCouponsRecord record = new ActivityCouponsRecord();
-				record.setCollectType(ActivityCouponsType.enumValueOf(coll.getType()));
-				//进行公共代金劵领取校验
-				if (!checkRecordPubilc(map, coupons,userId,record,coll)) {
-					checkFlag = false;
-					break;
-				}
-				//检验优惠码的领取
-				if (!checkExchangeCode(map, userId, record, coupons)) {
-					checkFlag = false;
-					break;
-				}
-				record.setCollectUserId(userId);
-				reMap.put(coupons.getId(), record);
-				checkFlag = true;
-			}
-			//判断是否是成功，成功则进行批量保存代金劵
-			if(checkFlag){
-				//循环进行代金劵插入
-				for(ActivityCoupons coupons : activityCoupons){
-					updateCouponsRecode(reMap.get(coupons.getId()), coupons);
-				}
-				
-				//存在邀请人用户id需要确认是否记录邀请人
-				if(StringUtils.isNotBlank(invitaUserId)){
-					//根据用户id或用户邀请码，所以InviteUserId 可以存储用户id或邀请码
-					List<SysUserInvitationCode> listCode= sysUserInvitationCodeMapper
-							.findInvitationByIdCode(invitaUserId, invitaUserId);
-					//存在邀请码及添加第一个进去，防止数据库中存在多个
-					if(listCode != null && listCode.size() > 0){
-						//内部会判断 不存在邀请记录 则将给该用户userId记录 邀请记录
-						invitationCodeService.saveInvatationRecord(listCode.get(0), userId, "");
-					}
-				}
-				map.put("code", 100);
-				map.put("msg", "恭喜你，领取成功！");
-			}
-		}catch(Exception e){
-			throw e;
-		}finally {
-			//移除redis缓存的key
-			removeRedisUserStatus(key);
-		}
-		return JSONObject.fromObject(map);
+		return addRecordsByCollectId(collectId, userId, invitaUserId, true);
 
 	}
 	/**
@@ -531,11 +453,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			List<ActivityCoupons> activityCoupons = activityCouponsMapper.selectByActivityId(collectId);
 			Map<String,ActivityCouponsRecordBefore> reMap = new HashMap<String,ActivityCouponsRecordBefore>();
 			//根据用户手机号码及活动id查询该号码是否领取过 
-			if (checkBeforeCoupons(phone, coll)) {
-				map.put("code", 102);
-				map.put("msg", "您已经领取了，快去友门鹿app注册使用吧！");
-				checkFlag = false;
-			}else{
+//			if (checkBeforeCoupons(phone, coll)) {
+//				map.put("code", 102);
+//				map.put("msg", "您已经领取了，快去友门鹿app注册使用吧！");
+//				checkFlag = false;
+//			}else{
 				//根据代金劵列表逐个领取，当出现一个代金劵领取异常即反馈错误给前端
 				for(ActivityCoupons coupons : activityCoupons){
 					// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
@@ -554,7 +476,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 					reMap.put(coupons.getId(), record);
 					checkFlag = true;
 				}
-			}
+//			}
 			//判断是否是成功，成功则进行批量保存代金劵
 			if(checkFlag){
 				//循环进行代金劵插入
@@ -1182,6 +1104,17 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	public ActivityCouponsRecord selectByPrimaryKey(String id) {
 		return activityCouponsMapper.selectByPrimaryKey(id);
 	}
+	
+	/**
+	 * 添加根据条件查询代金券信息
+	 * @param params
+	 * @return
+	 */
+	@Override
+	public List<ActivityCouponsRecord> selectByParams(Map<String, Object> params) {
+		return activityCouponsRecordMapper.selectByParams(params);
+	}
+	
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -1203,55 +1136,52 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
         List<RechargeCouponVo> couponVos = activityCouponsRecordMapper.findValidRechargeCoupons(params);
         
         //限制设备使用次数的代金券Id
-        List<String> deviceLimitCouponIds = Lists.newArrayList();
+        List<String> deviceLimitCouponsIds = Lists.newArrayList();
         //限制账号使用次数的代金券Id
-        List<String> accountLimitCouponIds = Lists.newArrayList();
+        List<String> userLimitCouponsIds = Lists.newArrayList();
+		// 用户所有代金券ID
+		List<String> userCouponsIds = Lists.newArrayList();
         for(RechargeCouponVo couponVo : couponVos) {
             if(couponVo.getDeviceDayLimit() != null && couponVo.getDeviceDayLimit() > 0) {
-                deviceLimitCouponIds.add(couponVo.getCouponId());
+            	deviceLimitCouponsIds.add(couponVo.getCouponId());
             }
             if(couponVo.getAccountDayLimit() != null && couponVo.getAccountDayLimit() > 0) {
-                accountLimitCouponIds.add(couponVo.getCouponId());
+            	userLimitCouponsIds.add(couponVo.getCouponId());
             }
+            userCouponsIds.add(couponVo.getCouponId());
         }
         
-        ActivityRecordParamBo recParamBo = null;
-        List<ActivityRecordBo> recordBoList = null;
         FavourParamBO paramBo = new FavourParamBO();
         String machineCode = params.get("machineCode").toString();
         String userId = params.get("userId").toString();
-        if(CollectionUtils.isNotEmpty(deviceLimitCouponIds) && StringUtils.isNotEmpty(machineCode)) {
-            //根据设备统计使用次数
-            recParamBo = new ActivityRecordParamBo();
-            recParamBo.setPkIdList(deviceLimitCouponIds);
-            recParamBo.setRecDate(DateUtils.getDate());
-            recParamBo.setDeviceId(machineCode);
-            recordBoList =  activityCouponsRecordMapper.countActivityRecord(recParamBo);
-            paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_DEVICE, recordBoList);
-        }
-        
-        if(CollectionUtils.isNotEmpty(accountLimitCouponIds) && StringUtils.isNotEmpty(machineCode)) {
-            //根据账号统计使用次数
-            recParamBo = new ActivityRecordParamBo();
-            recParamBo.setPkIdList(accountLimitCouponIds);
-            recParamBo.setRecDate(DateUtils.getDate());
-            recParamBo.setUserId(userId);
-            recordBoList = activityCouponsRecordMapper.countActivityRecord(recParamBo);
-            paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_USER, recordBoList);
-        }
+		if(CollectionUtils.isNotEmpty(deviceLimitCouponsIds) && StringUtils.isNotEmpty(machineCode)){
+			// 根据设备统计使用次数
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(deviceLimitCouponsIds, null, machineCode, false);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_DEVICE, recordBoList);
+		}
+		if(CollectionUtils.isNotEmpty(userLimitCouponsIds) && StringUtils.isNotEmpty(userId)){
+			// 根据设备统计使用次数
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userLimitCouponsIds, userId, null, false);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_USER, recordBoList);
+		}
+		// 代金券活动统计
+		if(CollectionUtils.isNotEmpty(userCouponsIds) && StringUtils.isNotEmpty(machineCode)){
+			// 根据设备统计使用次数
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userCouponsIds, null, machineCode, true);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_COLLECT_BY_DEVICE, recordBoList);
+		}
+		if(CollectionUtils.isNotEmpty(userCouponsIds) && StringUtils.isNotEmpty(userId)){
+			// 根据用户统计使用次数
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userCouponsIds, userId, null, true);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_COLLECT_BY_USER, recordBoList);
+		}
         
         //检验优惠券的设备和账号限制
         Iterator<RechargeCouponVo> it = couponVos.iterator();
         while(it.hasNext()) {
             RechargeCouponVo couponVo = it.next();
-            boolean result = checkCouponUseLimit(paramBo, RecordCountRuleEnum.COUPONS_BY_DEVICE, couponVo);
-            if(result) {
-                result = checkCouponUseLimit(paramBo, RecordCountRuleEnum.COUPONS_BY_USER, couponVo);
-                if(!result) {
-                    it.remove();
-                }
-            } else {
-                it.remove();
+            if(!checkCouponLimit(paramBo, couponVo)) {
+            	it.remove();
             }
         }
         return couponVos;
@@ -1265,23 +1195,37 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
      * @author zhaoqc
      * @return
      */
-    private boolean checkCouponUseLimit(FavourParamBO paramBo, RecordCountRuleEnum rule, 
-            RechargeCouponVo couponVo) {
-        if(rule == RecordCountRuleEnum.COUPONS_BY_DEVICE) {
-            if(couponVo.getDeviceDayLimit() != null && couponVo.getDeviceDayLimit() > 0) {
-                if(couponVo.getDeviceDayLimit().compareTo(paramBo.findCountNum(rule, couponVo.getCouponId())) < 1) {
-                   return false; 
-                }
-            }
-        } else if(rule == RecordCountRuleEnum.COUPONS_BY_USER) {
-            if(couponVo.getAccountDayLimit() != null && couponVo.getAccountDayLimit() > 0) {
-                if(couponVo.getAccountDayLimit().compareTo(paramBo.findCountNum(rule, couponVo.getCouponId())) < 1) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+	private boolean checkCouponLimit(FavourParamBO paramBo, RechargeCouponVo couponVo) {
+		if (couponVo.getDeviceDayLimit() != null && couponVo.getDeviceDayLimit() > 0) {
+			if (couponVo.getDeviceDayLimit().compareTo(
+					paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_DEVICE, couponVo.getCouponId())) < 1) {
+				return false;
+			}
+		}
+		if (couponVo.getAccountDayLimit() != null && couponVo.getAccountDayLimit() > 0) {
+			if (couponVo.getAccountDayLimit()
+					.compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_USER, couponVo.getCouponId())) < 1) {
+				return false;
+			}
+		}
+		// 代金券活动
+		ActivityCollectCoupons collectCoupons = activityCollectCouponsMapper.get(couponVo.getActivityId());
+		// 代金券活动设备限制
+		if (collectCoupons != null && collectCoupons.getDeviceDayLimit() > 0) {
+			if (collectCoupons.getDeviceDayLimit().compareTo(
+					paramBo.findCountNum(RecordCountRuleEnum.COUPONS_COLLECT_BY_DEVICE, couponVo.getActivityId())) < 1) {
+				return false;
+			}
+		}
+		// 代金券活动账号现在
+		if (collectCoupons != null && collectCoupons.getAccountDayLimit() > 0) {
+			if (collectCoupons.getAccountDayLimit().compareTo(
+					paramBo.findCountNum(RecordCountRuleEnum.COUPONS_COLLECT_BY_USER, couponVo.getActivityId())) < 1) {
+				return false;
+			}
+		}
+		return true;
+	}
     
 	@Transactional(rollbackFor = Exception.class)
 	@Override
@@ -1601,11 +1545,16 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		return couponsList;
 	}
 	
+	/**
+	 * 统计用户代金券使用记录
+	 */
 	private void countUseRecord(FavourParamBO paramBo,List<Coupons> couponsList){
 		// 有设备限制的代金券Id列表
 		List<String> deviceLimitCouponsIds = Lists.newArrayList();
 		// 有账户限制的代金券Id列表
 		List<String> userLimitCouponsIds = Lists.newArrayList();
+		// 用户所有代金券ID
+		List<String> userCouponsIds = Lists.newArrayList();
 		for(Coupons coupons : couponsList){
 			if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0){
 				deviceLimitCouponsIds.add(coupons.getCouponId());
@@ -1613,26 +1562,53 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			if(coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0){
 				userLimitCouponsIds.add(coupons.getCouponId());
 			}
+			userCouponsIds.add(coupons.getCouponId());
 		}
-		ActivityRecordParamBo recParamBo = null;
-		List<ActivityRecordBo> recordBoList = null;
+		
 		if(CollectionUtils.isNotEmpty(deviceLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getDeviceId())){
 			// 根据设备统计使用次数
-			recParamBo = new ActivityRecordParamBo();
-			recParamBo.setPkIdList(deviceLimitCouponsIds);
-			recParamBo.setRecDate(DateUtils.getDate());
-			recParamBo.setDeviceId(paramBo.getDeviceId());
-			recordBoList = activityCouponsRecordMapper.countActivityRecord(recParamBo);
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(deviceLimitCouponsIds, null, paramBo.getDeviceId(), false);
 			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_DEVICE, recordBoList);
 		}
 		if(CollectionUtils.isNotEmpty(userLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getUserId())){
 			// 根据设备统计使用次数
-			recParamBo = new ActivityRecordParamBo();
-			recParamBo.setPkIdList(userLimitCouponsIds);
-			recParamBo.setRecDate(DateUtils.getDate());
-			recParamBo.setUserId(paramBo.getUserId());
-			recordBoList = activityCouponsRecordMapper.countActivityRecord(recParamBo);
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userLimitCouponsIds, paramBo.getUserId(), null, false);
 			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_BY_USER, recordBoList);
+		}
+		// 代金券活动统计
+		if(CollectionUtils.isNotEmpty(userCouponsIds) && StringUtils.isNotEmpty(paramBo.getDeviceId())){
+			// 根据设备统计使用次数
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userCouponsIds, null, paramBo.getDeviceId(), true);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_COLLECT_BY_DEVICE, recordBoList);
+		}
+		if(CollectionUtils.isNotEmpty(userCouponsIds) && StringUtils.isNotEmpty(paramBo.getUserId())){
+			// 根据用户统计使用次数
+			List<ActivityRecordBo> recordBoList = findActivityRecordCount(userCouponsIds, paramBo.getUserId(), null, true);
+			paramBo.putActivityCounter(RecordCountRuleEnum.COUPONS_COLLECT_BY_USER, recordBoList);
+		}
+	}
+	
+	/**
+	 * @Description: 查找代金券及代金券活动已使用统计
+	 * @param couponsIds
+	 * @param userId
+	 * @param deviceId
+	 * @param isFindCollectActivity
+	 * @return   
+	 * @author guocp
+	 * @date 2017年8月4日
+	 */
+	private List<ActivityRecordBo> findActivityRecordCount(List<String> couponsIds,String userId,String 
+			deviceId,boolean isFindCollectActivity){
+		ActivityRecordParamBo recParamBo = new ActivityRecordParamBo();
+		recParamBo.setPkIdList(couponsIds);
+		recParamBo.setUserId(userId);
+		recParamBo.setDeviceId(deviceId);
+		recParamBo.setRecDate(DateUtils.getDate());
+		if(isFindCollectActivity){
+			return activityCouponsRecordMapper.countCollectActivityRecord(recParamBo);
+		}else{
+			return activityCouponsRecordMapper.countActivityRecord(recParamBo);
 		}
 	}
 	
@@ -1686,5 +1662,88 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			}
 			activityCouponsMapper.updateReduceUseNum(record.getCouponsId());
 		}
+	}
+
+	@Override
+	public JSONObject addRecordsByCollectId(String collectId, String userId, String invitaUserId,boolean limitOne) throws Exception {
+		Map<String, Object> map = new HashMap<String, Object>();
+		//校验成功标识 //如果不存在缓存数据进行加入到缓存中
+		String key = userId+collectId;
+		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		if(!checkFlag){
+			map.put("code", 104);
+			map.put("msg", "用户调用次数超限");
+			return JSONObject.fromObject(map);
+		}
+		
+		try{
+			ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
+			if(coll == null){
+				map.put("msg", "非法参数！");
+				map.put("code", 105);
+				return JSONObject.fromObject(map);
+			}
+			//查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量 
+			if(limitOne && checkNewUserCoupons(userId, coll)){
+				map.put("msg", "您已经领取了，快去我的代金券查看使用吧！");
+				map.put("code", 102);
+				return JSONObject.fromObject(map);
+			}
+			//校验活动信息
+			if(!checkCollectPublic(map, coll, userId)){
+				return JSONObject.fromObject(map);
+			}
+			
+			//循环代金劵id进行送劵
+			List<ActivityCoupons> activityCoupons = activityCouponsMapper.selectByActivityId(collectId);
+			Map<String,ActivityCouponsRecord> reMap = new HashMap<String,ActivityCouponsRecord>();
+			
+			//根据代金劵列表逐个领取，当出现一个代金劵领取异常即反馈错误给前端
+			for(ActivityCoupons coupons : activityCoupons){
+				// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
+				ActivityCouponsRecord record = new ActivityCouponsRecord();
+				record.setCollectType(ActivityCouponsType.enumValueOf(coll.getType()));
+				//进行公共代金劵领取校验
+				if (!checkRecordPubilc(map, coupons,userId,record,coll)) {
+					checkFlag = false;
+					break;
+				}
+				//检验优惠码的领取
+				if (!checkExchangeCode(map, userId, record, coupons)) {
+					checkFlag = false;
+					break;
+				}
+				record.setCollectUserId(userId);
+				reMap.put(coupons.getId(), record);
+				checkFlag = true;
+			}
+			//判断是否是成功，成功则进行批量保存代金劵
+			if(checkFlag){
+				//循环进行代金劵插入
+				for(ActivityCoupons coupons : activityCoupons){
+					updateCouponsRecode(reMap.get(coupons.getId()), coupons);
+				}
+				
+				//存在邀请人用户id需要确认是否记录邀请人
+				if(StringUtils.isNotBlank(invitaUserId)){
+					//根据用户id或用户邀请码，所以InviteUserId 可以存储用户id或邀请码
+					List<SysUserInvitationCode> listCode= sysUserInvitationCodeMapper
+							.findInvitationByIdCode(invitaUserId, invitaUserId);
+					//存在邀请码及添加第一个进去，防止数据库中存在多个
+					if(listCode != null && listCode.size() > 0){
+						//内部会判断 不存在邀请记录 则将给该用户userId记录 邀请记录
+						invitationCodeService.saveInvatationRecord(listCode.get(0), userId, "");
+					}
+				}
+				map.put("code", 100);
+				map.put("msg", "恭喜你，领取成功！");
+			}
+		}catch(Exception e){
+			throw e;
+		}finally {
+			//移除redis缓存的key
+			removeRedisUserStatus(key);
+		}
+		return JSONObject.fromObject(map);
 	}
 }

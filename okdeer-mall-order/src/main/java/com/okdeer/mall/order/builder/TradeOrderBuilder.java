@@ -87,6 +87,11 @@ public class TradeOrderBuilder {
 	private static final Logger logger = LoggerFactory.getLogger(TradeOrderBuilder.class);
 	
 	private static final BigDecimal referenceValue = BigDecimal.valueOf(0.00);
+	
+	/**
+	 * 佣金方案b
+	 */
+	private static final Integer DELIVERY_TYPE_B = 2;
 	/**
 	 * 生成编号的service
 	 */
@@ -206,8 +211,9 @@ public class TradeOrderBuilder {
 		tradeOrder.setFareActivityId(parserBo.getFareActivityId());
 		// 设置订单配送方式和佣金比率
 		if(storeInfo.getStoreInfoExt() != null){
-			tradeOrder.setDeliveryType(storeInfo.getStoreInfoExt().getDeliveryType());
-			tradeOrder.setCommisionRatio(storeInfo.getStoreInfoExt().getCommisionRatio());
+			//直接设置佣金方案为： 2 商家自己配送
+			tradeOrder.setDeliveryType(DELIVERY_TYPE_B);
+			tradeOrder.setCommisionRatio(storeInfo.getStoreInfoExt().getCommisionRatioPlanB());
 		}
 		// 设置订单编号
 		setOrderNo(tradeOrder,paramDto.getOrderType());
@@ -369,6 +375,8 @@ public class TradeOrderBuilder {
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
 		// 平台优惠
 		tradeOrder.setPlatformPreferential(format(parserBo.getPlatformPreferential()));
+		// 设置零花钱
+		setPinMoney(tradeOrder, parserBo, paramDto);
 		// 店铺优惠
 		if(parserBo.isLowFavour()){
 			// 如果有低价优惠.记录店铺优惠类型和店铺优惠金额
@@ -389,7 +397,22 @@ public class TradeOrderBuilder {
 		tradeOrder.setRealFarePreferential(format(parserBo.getRealFarePreferential()));
 		// 设置订单优惠金额。此处不加运费优惠，到处理运费时统一进行计算
 		tradeOrder.setPreferentialPrice(tradeOrder.getPlatformPreferential()
-				.add(tradeOrder.getStorePreferential()));
+				.add(tradeOrder.getStorePreferential()).add(tradeOrder.getPinMoney()));
+	}
+	
+	/**
+	 * 设置零花钱
+	 * @author guocp
+	 * @date 2017年8月14日
+	 */
+	private void setPinMoney(TradeOrder tradeOrder,StoreSkuParserBo parserBo,PlaceOrderParamDto paramDto){
+		// 设置零花钱
+		if(paramDto.getIsUsePinMoney()){
+			BigDecimal pinMoney = (BigDecimal) paramDto.get("pinMoney");
+			tradeOrder.setPinMoney(pinMoney);
+		}else{
+			tradeOrder.setPinMoney(BigDecimal.valueOf(0.0));
+		}
 	}
 	
 	private BigDecimal format(BigDecimal value){
@@ -483,8 +506,8 @@ public class TradeOrderBuilder {
 		String orderId = tradeOrder.getId();
 		// 订单项参与平台优惠的总金额
 		BigDecimal totalAmount = parserBo.getTotalAmountHaveFavour();
-		// 订单总的平台优惠
-		BigDecimal platformFavour = parserBo.getPlatformPreferential();
+		// 订单总的平台优惠 （需分摊到商品）: 平台优惠 + 红包优惠
+		BigDecimal platformFavour = parserBo.getPlatformPreferential().add(tradeOrder.getPinMoney());
 		BigDecimal favourSum =  BigDecimal.valueOf(0.00);
 		int index = 0;
 		int haveFavourItemSize = parserBo.getHaveFavourGoodsMap().size();

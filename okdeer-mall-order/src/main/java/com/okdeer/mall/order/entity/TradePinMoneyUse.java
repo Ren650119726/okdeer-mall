@@ -9,6 +9,8 @@ package com.okdeer.mall.order.entity;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.okdeer.base.common.enums.Disabled;
+
 /**
  * 零花钱使用
  * 
@@ -45,6 +47,11 @@ public class TradePinMoneyUse {
      * 创建时间
      */
     private Date createTime;
+    
+    /**
+     * 是否可用
+     */
+    private Disabled disabled;
 
 
     public String getId() {
@@ -103,4 +110,12 @@ public class TradePinMoneyUse {
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
+	
+	public Disabled getDisabled() {
+		return disabled;
+	}
+	
+	public void setDisabled(Disabled disabled) {
+		this.disabled = disabled;
+	}
 }
