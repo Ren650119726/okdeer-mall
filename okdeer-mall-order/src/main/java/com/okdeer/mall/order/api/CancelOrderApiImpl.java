@@ -151,18 +151,4 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 		Assert.hasText(orderId);
 		return cancelOrderService.isBreach(orderId) ;
 	}
-
-	/**
-	 * @Description: 取消订单
-	 * @param order 订单
-	 * @author tuzhd
-	 * @throws ServiceException 
-	 * @date 2016年11月10日
-	 */
-	@Transactional(rollbackFor = Exception.class)
-	public void cancelOrder(TradeOrder tradeOrder) throws Exception {
-		activityCouponsRecordService.releaseConpons(tradeOrder);
-		// 更新订单状态
-		tradeorderService.updateOrderStatus(tradeOrder);
-	}
 }
