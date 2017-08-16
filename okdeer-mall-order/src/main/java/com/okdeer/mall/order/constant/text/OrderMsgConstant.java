@@ -58,6 +58,11 @@ public interface OrderMsgConstant {
 	 */
 	String SELLER_MESSAGE_COMPLAIN = "220";
 	
+	/**
+	 * 鹿掌柜收款标识
+	 */
+	String SELLER_MESSAGE_LZGGATHERING = "230";
+	
 	/********************用户表************************/
 
 
