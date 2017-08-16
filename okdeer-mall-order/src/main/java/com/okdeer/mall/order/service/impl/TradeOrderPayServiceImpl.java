@@ -405,6 +405,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		payRefundDto.setRefundType(RefundTypeEnum.CANCEL_ORDER);
 		payRefundDto.setTradeNum(order.getTradeNum());
 		payRefundDto.setRefundNum(TradeNumUtil.getTradeNum());
+		payRefundDto.setPrefeAmount(order.getPlatformPreferential());
 		return payRefundDto;
 	}
 	// End V2.4 added by maojj 2017-05-20
