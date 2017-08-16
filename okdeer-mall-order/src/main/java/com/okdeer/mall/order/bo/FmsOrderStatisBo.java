@@ -27,6 +27,11 @@ public class FmsOrderStatisBo {
 	private int status;
 
 	/**
+	 * 订单类型
+	 */
+	private int type;
+
+	/**
 	 * 总金额
 	 */
 	private BigDecimal totalAmount;
@@ -105,6 +110,14 @@ public class FmsOrderStatisBo {
 
 	public void setPlatformPreferential(BigDecimal platformPreferential) {
 		this.platformPreferential = platformPreferential;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
 	}
 
 }
