@@ -124,25 +124,26 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
         		tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
                 handler = payResultHandlerFactory.getByOrder(tradeOrder);
                 handler.handler(tradeOrder, respDto);
+                // begin add by wushp 20161015
+                try {
+                    if (tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP &&
+                            tradeOrder.getOrderResource() != OrderResourceEnum.MEMCARD) {
+                        //不是扫码购订单才返券
+                        orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+
+                        //下单赠送抽奖活动的抽奖次数
+                        tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
+                    }
+                } catch (Exception e) {
+                    logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
+                    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                }
         	}
         } catch (Exception e) {
             logger.error("订单支付状态消息处理失败", e);
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
         }
-        // begin add by wushp 20161015
-        try {
-            if (tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP &&
-                    tradeOrder.getOrderResource() != OrderResourceEnum.MEMCARD) {
-                //不是扫码购订单才返券
-                orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
-
-                //下单赠送抽奖活动的抽奖次数
-                tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
-            }
-        } catch (Exception e) {
-            logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
-            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-        }
+       
         // end add by wushp 20161015
         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
     }
