@@ -12,6 +12,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
@@ -19,16 +20,21 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.common.utils.BaseResult;
+import com.okdeer.mall.operate.dto.ColumnHomeIconClassifyDto;
 import com.okdeer.mall.operate.dto.ColumnHomeIconVersionDto;
 import com.okdeer.mall.operate.dto.HomeIconDto;
 import com.okdeer.mall.operate.dto.HomeIconGoodsDto;
 import com.okdeer.mall.operate.dto.HomeIconParamDto;
 import com.okdeer.mall.operate.dto.SelectAreaDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIcon;
+import com.okdeer.mall.operate.entity.ColumnHomeIconClassify;
 import com.okdeer.mall.operate.entity.ColumnHomeIconGoods;
 import com.okdeer.mall.operate.entity.ColumnSelectArea;
 import com.okdeer.mall.operate.enums.ColumnType;
+import com.okdeer.mall.operate.enums.HomeIconTaskType;
+import com.okdeer.mall.operate.enums.SelectAreaType;
 import com.okdeer.mall.operate.service.ColumnHomeIconApi;
+import com.okdeer.mall.operate.service.ColumnHomeIconClassifyService;
 import com.okdeer.mall.operate.service.ColumnHomeIconGoodsService;
 import com.okdeer.mall.operate.service.ColumnHomeIconService;
 import com.okdeer.mall.operate.service.ColumnSelectAreaService;
@@ -58,11 +64,10 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 
 	@Autowired
 	private ColumnSelectAreaService selectAreaService;
+	
+	@Autowired
+	private ColumnHomeIconClassifyService columnHomeIconClassifyService;
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.operate.service.ColumnSelectAreaApi#findList(com.okdeer.mall.operate.dto.HomeIconParamDto)
-	 */
 	@Override
 	public List<HomeIconDto> findList(HomeIconParamDto paramDto) throws Exception {
 		log.info("查询首页IOCN列表参数:{}", paramDto);
@@ -76,10 +81,6 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		return dtoList;
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.operate.service.ColumnHomeIconApi#findListPage(com.okdeer.mall.operate.dto.HomeIconParamDto)
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public PageUtils<HomeIconDto> findListPage(HomeIconParamDto paramDto) throws Exception {
@@ -107,10 +108,6 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		return dtoList;
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.operate.service.ColumnSelectAreaApi#findById(java.lang.String)
-	 */
 	@Override
 	public HomeIconDto findById(String homeIconId) throws Exception {
 		if (StringUtils.isBlank(homeIconId)) {
@@ -121,34 +118,46 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 			return null;
 		}
 		HomeIconDto dto = BeanMapper.map(source, HomeIconDto.class);
-
-		// 查询商品关联信息
-		List<ColumnHomeIconGoods> goodsList = homeIconGoodsService.findListByHomeIconId(homeIconId);
-		List<HomeIconGoodsDto> goodsDtoList = null;
-		if (goodsList == null) {
-			goodsDtoList = new ArrayList<>();
-		} else {
-			goodsDtoList = BeanMapper.mapList(goodsList, HomeIconGoodsDto.class);
+		//任务内容为指定商品
+		if(dto.getTaskType() == HomeIconTaskType.goods){
+			// 查询商品关联信息
+			List<ColumnHomeIconGoods> goodsList = homeIconGoodsService.findListByHomeIconId(homeIconId);
+			List<HomeIconGoodsDto> goodsDtoList = null;
+			if (goodsList == null) {
+				goodsDtoList = new ArrayList<>();
+			} else {
+				goodsDtoList = BeanMapper.mapList(goodsList, HomeIconGoodsDto.class);
+			}
+			dto.setGoodsList(goodsDtoList);
 		}
-		dto.setGoodsList(goodsDtoList);
-
-		// 查询关联区域
-		List<ColumnSelectArea> areaList = selectAreaService.findListByColumnId(homeIconId);
-		List<SelectAreaDto> aradDtos = null;
-		if (areaList != null && !areaList.isEmpty()) {
-			aradDtos = BeanMapper.mapList(areaList, SelectAreaDto.class);
-		} else {
-			aradDtos = new ArrayList<SelectAreaDto>();
+		//任务内容为分类 关联导航分类
+		if(dto.getTaskType() == HomeIconTaskType.classify){
+			// 查询关联区域
+			List<ColumnHomeIconClassify> classifyList = columnHomeIconClassifyService.findListByHomeIconId(homeIconId);
+			List<ColumnHomeIconClassifyDto> classifyDtos = null;
+			if (CollectionUtils.isEmpty(classifyList)) {
+				classifyDtos = BeanMapper.mapList(classifyList, ColumnHomeIconClassifyDto.class);
+			} else {
+				classifyDtos = new ArrayList<ColumnHomeIconClassifyDto>();
+			}
+			dto.setClassifyList(classifyDtos);
 		}
-		dto.setAreaList(aradDtos);
+		//按照城市选择任务范围
+		if(dto.getTaskScope() == SelectAreaType.city){
+			// 查询关联区域
+			List<ColumnSelectArea> areaList = selectAreaService.findListByColumnId(homeIconId);
+			List<SelectAreaDto> aradDtos = null;
+			if (areaList != null && !areaList.isEmpty()) {
+				aradDtos = BeanMapper.mapList(areaList, SelectAreaDto.class);
+			} else {
+				aradDtos = new ArrayList<SelectAreaDto>();
+			}
+			dto.setAreaList(aradDtos);
+		}
 
 		return dto;
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.operate.service.ColumnSelectAreaApi#deleteById(java.lang.String)
-	 */
 	@Override
 	public BaseResult deleteById(String homeIconId) throws Exception {
 		if (StringUtils.isBlank(homeIconId)) {
@@ -161,27 +170,18 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		return new BaseResult("删除失败");
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.operate.service.ColumnSelectAreaApi#save(com.okdeer.mall.operate.dto.HomeIconDto)
-	 */
 	@Override
 	public BaseResult save(HomeIconDto dto) throws Exception {
 		ColumnHomeIcon entity = BeanMapper.map(dto, ColumnHomeIcon.class);
 		List<ColumnSelectArea> areaList = null;
 		if (null == dto.getAreaList()) {
-			areaList = new ArrayList<>();
+			areaList = new ArrayList<ColumnSelectArea>();
 		} else {
 			areaList = BeanMapper.mapList(dto.getAreaList(), ColumnSelectArea.class);
 		}
-		
-		return homeIconService.save(entity, areaList, dto.getSkuIds(),dto.getSorts(), dto.getIconVersions());
+		return homeIconService.save(entity, areaList, dto.getSkuIds(),dto.getSorts(), dto.getIconVersions(),dto.getSelectcategoryIds());
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.operate.service.ColumnHomeIconApi#findListByCityId(java.lang.String, java.lang.String)
-	 */
 	@Override
 	public List<HomeIconDto> findListByCityId(String provinceId, String cityId, String version) throws Exception {
 		if (!StringUtils.isNotEmptyAll(provinceId, cityId)) {

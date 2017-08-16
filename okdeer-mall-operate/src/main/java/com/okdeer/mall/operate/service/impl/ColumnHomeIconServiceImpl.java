@@ -32,6 +32,7 @@ import com.okdeer.mall.operate.enums.HomeIconTaskType;
 import com.okdeer.mall.operate.enums.SelectAreaType;
 import com.okdeer.mall.operate.mapper.ColumnHomeIconMapper;
 import com.okdeer.mall.operate.mapper.ColumnHomeIconVersionMapper;
+import com.okdeer.mall.operate.service.ColumnHomeIconClassifyService;
 import com.okdeer.mall.operate.service.ColumnHomeIconGoodsService;
 import com.okdeer.mall.operate.service.ColumnHomeIconService;
 import com.okdeer.mall.operate.service.ColumnSelectAreaService;
@@ -59,33 +60,23 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 
 	@Autowired
 	private ColumnSelectAreaService selectAreaService;
+	
+	@Autowired
+	private ColumnHomeIconClassifyService columnHomeIconClassifyService;
 
 	@Autowired
 	private ColumnHomeIconVersionMapper homeIconVersionMapper;
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.base.service.BaseServiceImpl#getBaseMapper()
-	 */
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return homeIconMapper;
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see com.okdeer.mall.operate.service.ColumnHomeIconService#findList(com.okdeer.mall.operate.dto.HomeIconParamDto)
-	 */
 	@Override
 	public List<ColumnHomeIcon> findList(HomeIconParamDto paramDto) throws Exception {
 		return homeIconMapper.findList(paramDto);
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @throws Exception 
-	 * @see com.okdeer.mall.operate.service.ColumnHomeIconService#save(com.okdeer.mall.operate.entity.ColumnHomeIcon, java.util.List, java.util.List)
-	 */
 	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> storeSkuIds, List<Integer> sorts,
@@ -145,6 +136,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 			// 删除之前的插入的关联数据
 			selectAreaService.deleteByColumnId(entity.getId());
 			homeIconGoodsService.deleteByHomeIconId(entity.getId());
+			columnHomeIconClassifyService.deleteByHomeIconId(entity.getId());
 			homeIconVersionMapper.deleteByIconId(entity.getId());
 			homeIconMapper.update(entity);
 		} else {
@@ -152,7 +144,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 			entity.setCreateTime(DateUtils.getSysDate());
 			homeIconMapper.add(entity);
 		}
-		
+	
 		// 插入所选地区范围关联数据
 		if (null != areaList && areaList.size() > 0) {
 			for (ColumnSelectArea item : areaList) {
@@ -206,7 +198,17 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		
 		return new BaseResult();
 	}
-
+	
+	@Override
+	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> goodsIds,
+			List<Integer> sorts, List<String> versions, String selectcategoryIds) throws Exception {
+		save(entity, areaList, goodsIds, sorts, versions);
+		if(StringUtils.isNotEmpty(selectcategoryIds)){
+			columnHomeIconClassifyService.addClassifyBatch(entity.getId(),selectcategoryIds);
+		}
+		return new BaseResult();
+	}
+	
 	private boolean isRepeatArea(String homeIconId, SelectAreaType taskScope, HomeIconPlace place,
 			List<ColumnSelectArea> areaList, List<String> versions) throws Exception {
 		// 查询是否已经存在使用了相同的ICON位置数据
@@ -274,4 +276,5 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
     public List<ColumnHomeIconVersionDto> findIconVersionByIconId(String iconId) throws Exception {
         return this.homeIconVersionMapper.findListByIconId(iconId);
     }
+
 }
