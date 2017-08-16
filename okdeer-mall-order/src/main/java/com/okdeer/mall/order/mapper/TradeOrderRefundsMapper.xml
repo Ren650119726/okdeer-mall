@@ -779,6 +779,7 @@
 				<id column="pay_id" property="id" jdbcType="VARCHAR" />
 				<result column="pay_type" property="payType" jdbcType="TINYINT" />
 				<result column="pay_time" property="payTime" jdbcType="TIMESTAMP" />
+				<result column="returns" property="returns" jdbcType="VARCHAR" />
 			</association>
 			<!-- 关联发票信息 -->
 			<association property="tradeOrderInvoice"
@@ -795,12 +796,14 @@
 			<result column="sku_name" property="skuName" jdbcType="VARCHAR" />
 			<result column="main_pic_prl" property="mainPicUrl" jdbcType="VARCHAR" />
 			<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+			<result column="amount" property="amount" jdbcType="DECIMAL" />
 			<result column="quantity" property="quantity" jdbcType="DECIMAL" />
 			<result column="preferential_price" property="preferentialPrice"
 				jdbcType="DECIMAL" />
 			<result column="item_status" property="status" jdbcType="TINYINT"
 				javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum" />
 			<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+			<result column="order_item_id" property="orderItemId" jdbcType="VARCHAR" />
 		</collection>
 	</resultMap>
 
@@ -1530,6 +1533,7 @@
 		tr.total_amount,
 		tr.create_time,
 		tr.trade_num,
+		tr.type,
 		ri.quantity,
 		ri.unit_price,
 		ri.sku_name,
@@ -1540,12 +1544,14 @@
 		tr.refund_money_time,
 		tr.order_no,
 		tr.store_id,
+		tr.refunds_reason,
 		i.head,i.context,
 		trade.create_time AS order_time,
 		trade.delivery_time,
 		trade.activity_type,
 		trade.invoice,
 		item.actual_amount,
+		ri.order_item_id,
 		pay.returns,
 		pay.pay_time,
 		user.login_name as user_phone
