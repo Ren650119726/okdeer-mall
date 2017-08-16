@@ -622,7 +622,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		TradeOrderRefundsVo refunds;
 		try {
 			refunds = tradeOrderRefundsService.findDetailByFinance(refundsId);
-
+			orderRefundsDto.setRefundsReason(refunds.getRefundsReason());
 			orderRefundsDto.setId(refunds.getId());
 			orderRefundsDto.setTotalAmount(refunds.getTotalAmount());
 			orderRefundsDto.setActualAmount(refunds.getActualAmount());
@@ -665,12 +665,12 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 				itemDto.setQuantity(item.getQuantity());
 				itemDto.setUnitPrice(item.getUnitPrice());
 				itemDto.setTotalAmount(item.getAmount());
-				itemList.add(itemDto);
 				//到店消费订单，还要查询退款码
 				if(refunds.getType()==OrderTypeEnum.STORE_CONSUME_ORDER){
 					List<TradeOrderItemDetail> detailList = tradeOrderItemDetailService.selectByOrderItemById(item.getOrderItemId());
 					itemDto.setItemDetailList(BeanMapper.mapList(detailList, TradeOrderItemDetailDto.class));
 				}
+				itemList.add(itemDto);
 			}
 			orderRefundsDto.setOrderItems(itemList);
 

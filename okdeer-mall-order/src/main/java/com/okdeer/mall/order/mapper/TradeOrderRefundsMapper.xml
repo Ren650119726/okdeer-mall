@@ -803,6 +803,7 @@
 			<result column="item_status" property="status" jdbcType="TINYINT"
 				javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum" />
 			<result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+			<result column="order_item_id" property="orderItemId" jdbcType="VARCHAR" />
 		</collection>
 	</resultMap>
 
@@ -1532,6 +1533,7 @@
 		tr.total_amount,
 		tr.create_time,
 		tr.trade_num,
+		tr.type,
 		ri.quantity,
 		ri.unit_price,
 		ri.sku_name,
@@ -1542,12 +1544,14 @@
 		tr.refund_money_time,
 		tr.order_no,
 		tr.store_id,
+		tr.refunds_reason,
 		i.head,i.context,
 		trade.create_time AS order_time,
 		trade.delivery_time,
 		trade.activity_type,
 		trade.invoice,
 		item.actual_amount,
+		ri.order_item_id,
 		pay.returns,
 		pay.pay_time,
 		user.login_name as user_phone
