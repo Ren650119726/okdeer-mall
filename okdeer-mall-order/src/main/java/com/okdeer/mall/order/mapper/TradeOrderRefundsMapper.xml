@@ -779,6 +779,7 @@
 				<id column="pay_id" property="id" jdbcType="VARCHAR" />
 				<result column="pay_type" property="payType" jdbcType="TINYINT" />
 				<result column="pay_time" property="payTime" jdbcType="TIMESTAMP" />
+				<result column="returns" property="returns" jdbcType="VARCHAR" />
 			</association>
 			<!-- 关联发票信息 -->
 			<association property="tradeOrderInvoice"
@@ -795,6 +796,7 @@
 			<result column="sku_name" property="skuName" jdbcType="VARCHAR" />
 			<result column="main_pic_prl" property="mainPicUrl" jdbcType="VARCHAR" />
 			<result column="unit_price" property="unitPrice" jdbcType="DECIMAL" />
+			<result column="amount" property="amount" jdbcType="DECIMAL" />
 			<result column="quantity" property="quantity" jdbcType="DECIMAL" />
 			<result column="preferential_price" property="preferentialPrice"
 				jdbcType="DECIMAL" />

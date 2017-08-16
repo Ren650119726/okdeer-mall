@@ -655,6 +655,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 				orderRefundsDto.setInvoiceTile(refunds.getTradeOrderVo().getTradeOrderInvoice().getHead());
 			}
 
+			List<TradeOrderItemDto> itemList = Lists.newArrayList();
 			for (TradeOrderRefundsItem item : refunds.getTradeOrderRefundsItem()) {
 
 				TradeOrderItemDto itemDto = new TradeOrderItemDto();
@@ -662,8 +663,10 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 				itemDto.setSkuName(item.getSkuName());
 				itemDto.setQuantity(item.getQuantity());
 				itemDto.setUnitPrice(item.getUnitPrice());
-				orderRefundsDto.setOrderItems(Lists.newArrayList(itemDto));
+				itemDto.setTotalAmount(item.getAmount());
+				itemList.add(itemDto);
 			}
+			orderRefundsDto.setOrderItems(itemList);
 
 			List<TradeOrderRefundsCertificateVo> certificateVos = tradeOrderRefundsCertificateService
 					.findByRefundsId(refundsId);
