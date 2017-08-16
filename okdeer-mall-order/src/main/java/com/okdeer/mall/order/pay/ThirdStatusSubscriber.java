@@ -16,6 +16,8 @@ import com.google.common.base.Charsets;
 import com.okdeer.api.pay.luzgorder.dto.PayLuzgOrderDto;
 import com.okdeer.api.pay.pay.dto.PayResponseDto;
 import com.okdeer.api.pay.service.PayLuzgOrderApi;
+import com.okdeer.archive.store.entity.StoreMemberRelation;
+import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
@@ -33,8 +35,14 @@ import com.okdeer.mall.order.service.OrderReturnCouponsService;
 import com.okdeer.mall.order.service.TradeMessageServiceApi;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +84,8 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
     private PayLuzgOrderApi payLuzgOrderApi;
     @Reference(version = "1.0.0", check = false)
     private TradeMessageServiceApi tradeMessageServiceApi;
+    @Reference(version = "1.0.0", check = false)
+	private IStoreMemberRelationServiceApi storeMemberRelationApi;
 
     /**
      * 订单返券service
@@ -156,7 +166,15 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 			//订单id
 			sendMsgParamVo.setOrderId(lzgOrderDto.getId());
 			sendMsgParamVo.setSendMsgType(SendMsgType.lzgGathering.ordinal());
-			tradeMessageServiceApi.sendSellerAppMessage(sendMsgParamVo, SendMsgType.lzgGathering);
+			//通过userId得到店铺id
+			Map<String,Object> map = new HashMap<String, Object>();
+			map.put("sysUserId",sendMsgParamVo.getUserId());
+			map.put("memberType",0);
+			List<StoreMemberRelation> smrList = storeMemberRelationApi.findByParams(map);
+			if(CollectionUtils.isNotEmpty(smrList)){
+				sendMsgParamVo.setStoreId(smrList.get(0).getStoreId());
+				tradeMessageServiceApi.sendSellerAppMessage(sendMsgParamVo, SendMsgType.lzgGathering);
+			}
 		}
     }
 }
