@@ -2226,7 +2226,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         if (tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP || 
         		tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD) {
         	//释放所有代金卷
-        	if(tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD){
+        	if(tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD && 
+        			tradeOrder.getStatus() == OrderStatusEnum.CANCELED){
         		activityCouponsRecordService.releaseConpons(tradeOrder);
         	}
             return tradeOrderMapper.updateOrderStatus(tradeOrder);
