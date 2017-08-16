@@ -41,6 +41,7 @@ import com.okdeer.mall.order.dto.RefundsCertificateDto;
 import com.okdeer.mall.order.dto.RefundsMoneyDto;
 import com.okdeer.mall.order.dto.StoreConsumerApplyDto;
 import com.okdeer.mall.order.dto.StoreConsumerApplyParamDto;
+import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -665,6 +666,11 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 				itemDto.setUnitPrice(item.getUnitPrice());
 				itemDto.setTotalAmount(item.getAmount());
 				itemList.add(itemDto);
+				//到店消费订单，还要查询退款码
+				if(refunds.getType()==OrderTypeEnum.STORE_CONSUME_ORDER){
+					List<TradeOrderItemDetail> detailList = tradeOrderItemDetailService.selectByOrderItemById(item.getOrderItemId());
+					itemDto.setItemDetailList(BeanMapper.mapList(detailList, TradeOrderItemDetailDto.class));
+				}
 			}
 			orderRefundsDto.setOrderItems(itemList);
 
