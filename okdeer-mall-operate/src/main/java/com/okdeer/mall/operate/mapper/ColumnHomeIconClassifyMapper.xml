@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.mapper.ColumnHomeIconClassifyMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.ColumnHomeIconClassify" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="home_icon_id" property="homeIconId" jdbcType="VARCHAR" />
+        <result column="navigate_category_id" property="navigateCategoryId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, home_icon_id, navigate_category_id
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_home_icon_classify
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnHomeIconClassify" >
+        insert into column_home_icon_classify
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="homeIconId != null" >
+                home_icon_id,
+            </if>
+            <if test="navigateCategoryId != null" >
+                navigate_category_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="homeIconId != null" >
+                #{homeIconId,jdbcType=VARCHAR},
+            </if>
+            <if test="navigateCategoryId != null" >
+                #{navigateCategoryId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.operate.entity.ColumnHomeIconClassify" >
+        update column_home_icon_classify
+        <set >
+            <if test="homeIconId != null" >
+                home_icon_id = #{homeIconId,jdbcType=VARCHAR},
+            </if>
+            <if test="navigateCategoryId != null" >
+                navigate_category_id = #{navigateCategoryId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from column_home_icon_classify
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <select id="findListByHomeIconId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_home_icon_classify
+        where home_icon_id = #{homeIconId,jdbcType=VARCHAR}
+    </select>
+     <delete id="deleteByHomeIconId" parameterType="java.lang.String" >
+        delete from column_home_icon_classify
+        where home_icon_id = #{homeIconId,jdbcType=VARCHAR}
+    </delete>
+</mapper>
