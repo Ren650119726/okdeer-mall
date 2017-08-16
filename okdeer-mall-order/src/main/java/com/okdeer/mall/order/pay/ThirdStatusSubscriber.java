@@ -26,6 +26,7 @@ import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.SendMsgType;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.mq.TradeOrderSubScriberHandler;
@@ -167,6 +168,8 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 			//订单id
 			sendMsgParamVo.setOrderId(lzgOrderDto.getId());
 			sendMsgParamVo.setSendMsgType(SendMsgType.lzgGathering.ordinal());
+			sendMsgParamVo.setPayType(PayTypeEnum.enumValueOf(lzgOrderDto.getPayType().ordinal()));
+			
 			//通过userId得到店铺id
 			Map<String,Object> map = new HashMap<String, Object>();
 			map.put("sysUserId",sendMsgParamVo.getUserId());
