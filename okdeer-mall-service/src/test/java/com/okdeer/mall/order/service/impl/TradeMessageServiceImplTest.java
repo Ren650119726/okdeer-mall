@@ -23,6 +23,7 @@ import com.okdeer.archive.store.entity.StoreMemberRelation;
 import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.enums.SendMsgType;
 import com.okdeer.mall.order.service.CancelOrderApi;
@@ -58,6 +59,7 @@ public class TradeMessageServiceImplTest extends BaseServiceTest{
 				//订单id
 				sendMsgParamVo.setOrderId(lzgOrderDto.getId());
 				sendMsgParamVo.setSendMsgType(SendMsgType.lzgGathering.ordinal());
+				sendMsgParamVo.setPayType(PayTypeEnum.enumValueOf(lzgOrderDto.getPayType().ordinal()));
 				//店铺id
 //				TradeOrder order = tradeOrderServiceApi.selectById(lzgOrderDto.getId());
 				Map<String,Object> map = new HashMap<String, Object>();

@@ -545,7 +545,8 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
                 break;
              // 鹿掌柜收款
             case lzgGathering:
-                msgTitle = "成功收款"+JsonDateUtil.priceConvertToString(sendMsgParamVo.getLzgAmount())+"元,来自微信";
+                msgTitle = "成功收款"+JsonDateUtil.priceConvertToString(sendMsgParamVo.getLzgAmount())+"元,来自" + 
+            		sendMsgParamVo.getPayType().getValue();
                 msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_LZGGATHERING;
                 serviceFkId = sendMsgParamVo.getOrderId();
                 break;
@@ -578,6 +579,13 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         }
         // 设置是否定时发送
         pushMsgVo.setIsTiming(0);
+        
+        //add by zhangkeneng v2.6.0 鹿掌柜收款需要单独设置
+        if(sendMsgType == SendMsgType.lzgGathering){
+        	pushMsgVo.setMsgDetailType(0);
+        	pushMsgVo.setMsgDetailLinkUrl("成功收款"+JsonDateUtil.priceConvertToString(sendMsgParamVo.getLzgAmount())+"元,来自" + 
+        			sendMsgParamVo.getPayType().getValue());
+        }
         return pushMsgVo;
 	}
 
