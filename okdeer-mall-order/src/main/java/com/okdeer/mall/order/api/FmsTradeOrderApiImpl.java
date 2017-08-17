@@ -36,16 +36,20 @@ import com.okdeer.mall.order.bo.FmsOrderStatisBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.dto.FmsOrderStatisDto;
 import com.okdeer.mall.order.dto.FmsTradeOrderDto;
+import com.okdeer.mall.order.dto.TradeOrderDto;
+import com.okdeer.mall.order.dto.TradeOrderInvoiceDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDto;
+import com.okdeer.mall.order.dto.TradeOrderLogisticsDto;
+import com.okdeer.mall.order.dto.TradeOrderPayDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
-import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
+import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
+import com.okdeer.mall.order.enums.WithInvoiceEnum;
 import com.okdeer.mall.order.service.FmsTradeOrderApi;
-import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
@@ -70,9 +74,6 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 
 	@Autowired
 	private TradeOrderService tradeOrderService;
-	
-	@Autowired
-	private TradeOrderItemService tradeOrderItemService;
 
 	@Autowired
 	private ActivityCollectCouponsService activityCollectCouponsService;
@@ -182,7 +183,7 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 				userIdList.add(fmsTradeOrderDto.getUserId());
 			}
 		}
-		List<SysUserInvitationLoginNameVO> inviteNameLists = new ArrayList<SysUserInvitationLoginNameVO>();
+		List<SysUserInvitationLoginNameVO> inviteNameLists = new ArrayList<>();
 		if (CollectionUtils.isNotEmpty(userIdList)) {
 			inviteNameLists = invitationCodeService.selectLoginNameByUserId(userIdList);
 		}
@@ -476,18 +477,49 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 	}
 
 	@Override
-	public FmsTradeOrderDto findById(String id) throws MallApiException {
+	public TradeOrderDto findById(String id) throws MallApiException {
 		try {
-			TradeOrder tradeOrder = tradeOrderService.selectById(id);
-			FmsTradeOrderDto fmsTradeOrderDto = BeanMapper.map(tradeOrder, FmsTradeOrderDto.class);
-			List<TradeOrderItem> tradeOrderItems = tradeOrderItemService.selectOrderItemByOrderId(id);
-			List<TradeOrderItemDto> tradeOrderItemDtos = BeanMapper.mapList(tradeOrderItems, TradeOrderItemDto.class);
-			fmsTradeOrderDto.setTradeOrderItemDtoList(tradeOrderItemDtos);
+			TradeOrder order = tradeOrderService.erpSelectByOrderId(id);
+			TradeOrderDto tradeOrderDto = BeanMapper.map(order, TradeOrderDto.class);
+			// 收货信息
+			if (order.getTradeOrderLogistics() != null) {
+				TradeOrderLogisticsDto tradeOrderLogisticsDto = BeanMapper.map(order.getTradeOrderLogistics(),
+						TradeOrderLogisticsDto.class);
+				tradeOrderDto.setTradeOrderLogistics(tradeOrderLogisticsDto);
+			}
+			// 发票信息
+			if (order.getInvoice() == WithInvoiceEnum.HAS) {
+				TradeOrderInvoiceDto tradeOrderInvoiceDto = BeanMapper.map(order.getTradeOrderInvoice(),
+						TradeOrderInvoiceDto.class);
+				tradeOrderDto.setTradeOrderInvoice(tradeOrderInvoiceDto);
+			}
+
+			// 付款信息
+			if (order.getTradeOrderPay() != null) {
+				TradeOrderPayDto tradeOrderPayDto = BeanMapper.map(order.getTradeOrderPay(), TradeOrderPayDto.class);
+				tradeOrderDto.setTradeOrderPay(tradeOrderPayDto);// 付款时间
+			}
+
+			if (order.getTradeOrderItem() != null) {
+				List<TradeOrderItemDto> itemDtoList = BeanMapper.mapList(order.getTradeOrderItem(),
+						TradeOrderItemDto.class);
+				tradeOrderDto.setTradeOrderItem(itemDtoList);
+			}
+			BigDecimal refundAmount = order.getActualAmount();
+			if (order.getIsBreach() == WhetherEnum.whether) {
+				//如果有违约金，就减去违约金
+				refundAmount = refundAmount.subtract(order.getBreachMoney());
+			}
 			
+			if(order.getStatus() == OrderStatusEnum.REFUSING || order.getStatus() == OrderStatusEnum.REFUSED){
+				refundAmount = refundAmount.subtract(order.getFare().subtract(order.getRealFarePreferential()));
+			}
+			
+			tradeOrderDto.setRealRefundAmount(refundAmount);
+			return tradeOrderDto;
 		} catch (ServiceException e) {
 			throw new MallApiException(e);
 		}
-		return null;
 	}
 
 }
