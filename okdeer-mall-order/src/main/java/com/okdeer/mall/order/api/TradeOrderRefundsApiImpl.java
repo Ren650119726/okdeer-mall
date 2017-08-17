@@ -41,6 +41,7 @@ import com.okdeer.mall.order.dto.RefundsCertificateDto;
 import com.okdeer.mall.order.dto.RefundsMoneyDto;
 import com.okdeer.mall.order.dto.StoreConsumerApplyDto;
 import com.okdeer.mall.order.dto.StoreConsumerApplyParamDto;
+import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -621,7 +622,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		TradeOrderRefundsVo refunds;
 		try {
 			refunds = tradeOrderRefundsService.findDetailByFinance(refundsId);
-
+			orderRefundsDto.setRefundsReason(refunds.getRefundsReason());
 			orderRefundsDto.setId(refunds.getId());
 			orderRefundsDto.setTotalAmount(refunds.getTotalAmount());
 			orderRefundsDto.setActualAmount(refunds.getActualAmount());
@@ -655,6 +656,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 				orderRefundsDto.setInvoiceTile(refunds.getTradeOrderVo().getTradeOrderInvoice().getHead());
 			}
 
+			List<TradeOrderItemDto> itemList = Lists.newArrayList();
 			for (TradeOrderRefundsItem item : refunds.getTradeOrderRefundsItem()) {
 
 				TradeOrderItemDto itemDto = new TradeOrderItemDto();
@@ -662,8 +664,15 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 				itemDto.setSkuName(item.getSkuName());
 				itemDto.setQuantity(item.getQuantity());
 				itemDto.setUnitPrice(item.getUnitPrice());
-				orderRefundsDto.setOrderItems(Lists.newArrayList(itemDto));
+				itemDto.setTotalAmount(item.getAmount());
+				//到店消费订单，还要查询退款码
+				if(refunds.getType()==OrderTypeEnum.STORE_CONSUME_ORDER){
+					List<TradeOrderItemDetail> detailList = tradeOrderItemDetailService.selectByOrderItemById(item.getOrderItemId());
+					itemDto.setItemDetailList(BeanMapper.mapList(detailList, TradeOrderItemDetailDto.class));
+				}
+				itemList.add(itemDto);
 			}
+			orderRefundsDto.setOrderItems(itemList);
 
 			List<TradeOrderRefundsCertificateVo> certificateVos = tradeOrderRefundsCertificateService
 					.findByRefundsId(refundsId);

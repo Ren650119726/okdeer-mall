@@ -52,6 +52,7 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.common.utils.VersionUtils;
 import com.okdeer.mall.common.enums.IsRead;
 import com.okdeer.mall.common.enums.MsgType;
@@ -542,6 +543,13 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
                 msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_COMPLAIN;
                 serviceFkId = sendMsgParamVo.getOrderId();
                 break;
+             // 鹿掌柜收款
+            case lzgGathering:
+                msgTitle = "成功收款"+JsonDateUtil.priceConvertToString(sendMsgParamVo.getLzgAmount())+"元,来自" + 
+            		sendMsgParamVo.getPayType().getValue();
+                msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_LZGGATHERING;
+                serviceFkId = sendMsgParamVo.getOrderId();
+                break;
             default:
                 break;
         }
@@ -571,6 +579,13 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         }
         // 设置是否定时发送
         pushMsgVo.setIsTiming(0);
+        
+        //add by zhangkeneng v2.6.0 鹿掌柜收款需要单独设置
+        if(sendMsgType == SendMsgType.lzgGathering){
+        	pushMsgVo.setMsgDetailType(0);
+        	pushMsgVo.setMsgDetailLinkUrl("成功收款"+JsonDateUtil.priceConvertToString(sendMsgParamVo.getLzgAmount())+"元,来自" + 
+        			sendMsgParamVo.getPayType().getValue());
+        }
         return pushMsgVo;
 	}
 

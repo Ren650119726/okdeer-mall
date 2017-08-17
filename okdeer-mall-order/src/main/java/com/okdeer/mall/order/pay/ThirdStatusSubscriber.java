@@ -8,11 +8,16 @@
  */
 package com.okdeer.mall.order.pay;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
+import com.okdeer.api.pay.luzgorder.dto.PayLuzgOrderDto;
 import com.okdeer.api.pay.pay.dto.PayResponseDto;
+import com.okdeer.api.pay.service.PayLuzgOrderApi;
+import com.okdeer.archive.store.entity.StoreMemberRelation;
+import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
@@ -21,13 +26,24 @@ import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.PayTypeEnum;
+import com.okdeer.mall.order.enums.SendMsgType;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.mq.TradeOrderSubScriberHandler;
 import com.okdeer.mall.order.pay.callback.AbstractPayResultHandler;
 import com.okdeer.mall.order.pay.callback.PayResultHandlerFactory;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
+import com.okdeer.mall.order.service.TradeMessageServiceApi;
+import com.okdeer.mall.order.vo.SendMsgParamVo;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +80,13 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 
     @Resource
     private TradeOrderSubScriberHandler tradeOrderSubScriberHandler;
+    
+    @Reference(version = "1.0.0", check = false)
+    private PayLuzgOrderApi payLuzgOrderApi;
+    @Reference(version = "1.0.0", check = false)
+    private TradeMessageServiceApi tradeMessageServiceApi;
+    @Reference(version = "1.0.0", check = false)
+	private IStoreMemberRelationServiceApi storeMemberRelationApi;
 
     /**
      * 订单返券service
@@ -78,7 +101,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 
     @Override
     public String getTags() {
-        return TAG_ORDER + JOINT + TAG_POST_ORDER;
+        return TAG_ORDER + JOINT + TAG_POST_ORDER + JOINT + TAG_LUZG_ORDER;
     }
 
     @Override
@@ -94,28 +117,68 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
             if (StringUtils.isEmpty(tradeNum)) {
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
-            tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
-            handler = payResultHandlerFactory.getByOrder(tradeOrder);
-            handler.handler(tradeOrder, respDto);
+            
+            //如果是鹿掌柜的tag
+        	if(msgs.get(0).getTags().indexOf(TAG_LUZG_ORDER) >= 0){
+        		handlerLzg(respDto);
+        	} else {
+        		tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
+                handler = payResultHandlerFactory.getByOrder(tradeOrder);
+                handler.handler(tradeOrder, respDto);
+                // begin add by wushp 20161015
+                try {
+                    if (tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP &&
+                            tradeOrder.getOrderResource() != OrderResourceEnum.MEMCARD) {
+                        //不是扫码购订单才返券
+                        orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
+
+                        //下单赠送抽奖活动的抽奖次数
+                        tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
+                    }
+                } catch (Exception e) {
+                    logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
+                    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                }
+        	}
         } catch (Exception e) {
             logger.error("订单支付状态消息处理失败", e);
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
         }
-        // begin add by wushp 20161015
-        try {
-            if (tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP &&
-                    tradeOrder.getOrderResource() != OrderResourceEnum.MEMCARD) {
-                //不是扫码购订单才返券
-                orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
-
-                //下单赠送抽奖活动的抽奖次数
-                tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
-            }
-        } catch (Exception e) {
-            logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeNum, e);
-            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-        }
+       
         // end add by wushp 20161015
         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+    }
+    
+    /**
+     * @Description: 处理鹿掌柜的逻辑
+     * @param respDto
+     * @throws Exception
+     * @author zhangkn
+     * @date 2017年8月16日
+     */
+    private void handlerLzg(PayResponseDto respDto) throws Exception{
+    	logger.info("鹿掌柜支付:" + respDto);
+    	PayLuzgOrderDto lzgOrderDto = payLuzgOrderApi.findByTradeNum(respDto.getTradeNum());
+		if(lzgOrderDto != null){
+			SendMsgParamVo sendMsgParamVo = new SendMsgParamVo();
+			//鹿掌柜的金额
+			sendMsgParamVo.setLzgAmount(respDto.getTradeAmount());
+			//店老板用户id
+			sendMsgParamVo.setUserId(lzgOrderDto.getPayeeUserId());
+			//订单id
+			sendMsgParamVo.setOrderId(lzgOrderDto.getId());
+			sendMsgParamVo.setSendMsgType(SendMsgType.lzgGathering.ordinal());
+			sendMsgParamVo.setPayType(PayTypeEnum.enumValueOf(lzgOrderDto.getPayType().ordinal()));
+			
+			//通过userId得到店铺id
+			Map<String,Object> map = new HashMap<String, Object>();
+			map.put("sysUserId",sendMsgParamVo.getUserId());
+			map.put("memberType",0);
+			List<StoreMemberRelation> smrList = storeMemberRelationApi.findByParams(map);
+			if(CollectionUtils.isNotEmpty(smrList)){
+				sendMsgParamVo.setStoreId(smrList.get(0).getStoreId());
+				tradeMessageServiceApi.sendSellerAppMessage(sendMsgParamVo, SendMsgType.lzgGathering);
+			}
+		}
     }
 }
