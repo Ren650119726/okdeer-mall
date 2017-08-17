@@ -142,7 +142,7 @@ public class PosterActivityServiceImpl
 	@Value("${mcm.sys.token}")
 	private String msgToken;
 
-	private static final String[] posterImg = { "posterpic1.png","posterpic2.png"};
+//	private static final String[] posterImg = { "posterpic1.png","posterpic2.png"};
 
 	public static final String ACTIVITY_ID = WxchatUtils.ACTIVITY_ID;
 
@@ -229,14 +229,16 @@ public class PosterActivityServiceImpl
 		WechatUserInfo wechatUserInfo = wechatService.getUserInfo(openid);
 		// 随机一张图片
 		Random random = new Random();
-		int index = random.nextInt(posterImg.length);
-		String posterUrl = operateImagePrefix + posterImg[index];
+		String[] imageArry = activityPosterConfig.getPosterImg().split(",");
+		
+		int index = random.nextInt(imageArry.length);
+		String posterUrl = operateImagePrefix + imageArry[index];
 		// 创建海报图片
 		BufferedImage bufferedImage = createPosterPic(posterUrl, wechatUserInfo);
 		if (bufferedImage == null) {
 			throw new MallApiException("生成海报图片出错!");
 		}
-		String fileName = posterImg[index];
+		String fileName = imageArry[index];
 
 		byte[] posterImgIs = createPosterInStream(bufferedImage, fileName.substring(fileName.lastIndexOf('.') + 1));
 		// 添加图片到微信服务器
