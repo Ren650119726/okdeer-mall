@@ -469,6 +469,9 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		if(sendMsgType == SendMsgType.applyReturn || sendMsgType == SendMsgType.returnShipments || sendMsgType == SendMsgType.complainOrder){
 			pushUser.setSoundStyle("default");
 		}
+		if(sendMsgType == SendMsgType.lzgGathering){
+			pushUser.setSoundStyle("");
+		}
 		// end add by wangf01 20170419
         
         try {
