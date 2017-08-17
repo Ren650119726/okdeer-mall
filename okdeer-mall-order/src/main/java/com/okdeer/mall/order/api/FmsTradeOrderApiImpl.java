@@ -36,12 +36,16 @@ import com.okdeer.mall.order.bo.FmsOrderStatisBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.dto.FmsOrderStatisDto;
 import com.okdeer.mall.order.dto.FmsTradeOrderDto;
+import com.okdeer.mall.order.dto.TradeOrderItemDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
+import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.service.FmsTradeOrderApi;
+import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
@@ -66,6 +70,9 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 
 	@Autowired
 	private TradeOrderService tradeOrderService;
+	
+	@Autowired
+	private TradeOrderItemService tradeOrderItemService;
 
 	@Autowired
 	private ActivityCollectCouponsService activityCollectCouponsService;
@@ -464,9 +471,23 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 
 	@Override
 	public List<FmsOrderStatisDto> statisOrderByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
-		// 参数转换处理（例如订单状态）
 		List<FmsOrderStatisBo> result = tradeOrderService.statisOrderForFinanceByParams(tradeOrderQueryParamDto);
 		return BeanMapper.mapList(result, FmsOrderStatisDto.class);
+	}
+
+	@Override
+	public FmsTradeOrderDto findById(String id) throws MallApiException {
+		try {
+			TradeOrder tradeOrder = tradeOrderService.selectById(id);
+			FmsTradeOrderDto fmsTradeOrderDto = BeanMapper.map(tradeOrder, FmsTradeOrderDto.class);
+			List<TradeOrderItem> tradeOrderItems = tradeOrderItemService.selectOrderItemByOrderId(id);
+			List<TradeOrderItemDto> tradeOrderItemDtos = BeanMapper.mapList(tradeOrderItems, TradeOrderItemDto.class);
+			fmsTradeOrderDto.setTradeOrderItemDtoList(tradeOrderItemDtos);
+			
+		} catch (ServiceException e) {
+			throw new MallApiException(e);
+		}
+		return null;
 	}
 
 }
