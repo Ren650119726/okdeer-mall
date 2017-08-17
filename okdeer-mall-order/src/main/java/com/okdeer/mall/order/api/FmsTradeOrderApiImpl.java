@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -107,6 +108,9 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private InvitationCodeServiceApi invitationCodeService;
+
+	@Value("${orderImagePrefix}")
+	private String orderImagePrefix;
 
 	@Override
 	public PageUtils<FmsTradeOrderDto> findOrderListByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto,
@@ -503,18 +507,22 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 			if (order.getTradeOrderItem() != null) {
 				List<TradeOrderItemDto> itemDtoList = BeanMapper.mapList(order.getTradeOrderItem(),
 						TradeOrderItemDto.class);
+				for (TradeOrderItemDto tradeOrderItemDto : itemDtoList) {
+					tradeOrderItemDto.setMainPicPrl(orderImagePrefix + tradeOrderItemDto.getMainPicPrl());
+				}
+
 				tradeOrderDto.setTradeOrderItem(itemDtoList);
 			}
 			BigDecimal refundAmount = order.getActualAmount();
 			if (order.getIsBreach() == WhetherEnum.whether) {
-				//如果有违约金，就减去违约金
+				// 如果有违约金，就减去违约金
 				refundAmount = refundAmount.subtract(order.getBreachMoney());
 			}
-			
-			if(order.getStatus() == OrderStatusEnum.REFUSING || order.getStatus() == OrderStatusEnum.REFUSED){
+
+			if (order.getStatus() == OrderStatusEnum.REFUSING || order.getStatus() == OrderStatusEnum.REFUSED) {
 				refundAmount = refundAmount.subtract(order.getFare().subtract(order.getRealFarePreferential()));
 			}
-			
+
 			tradeOrderDto.setRealRefundAmount(refundAmount);
 			return tradeOrderDto;
 		} catch (ServiceException e) {
