@@ -420,7 +420,7 @@ public class PosterActivityServiceImpl
 					wechatUserInfo = wechatService.getUserInfo(activityPosterShareInfo.getShareOpenid());
 					TextWechatMsg textWechatMsg = new TextWechatMsg();
 					textWechatMsg.setFromUserName(wechatConfig.getAccount());
-					textWechatMsg.setToUserName(wechatUserInfo.getOpenid());
+					textWechatMsg.setToUserName(subscribeUser.getOpenid());
 					String content = subscribeUser.getNickName() + "，您已经关注过" + wechatUserInfo.getNickName()
 							+ "，成为Ta的推荐好友啦";
 					textWechatMsg.setContent(content);
