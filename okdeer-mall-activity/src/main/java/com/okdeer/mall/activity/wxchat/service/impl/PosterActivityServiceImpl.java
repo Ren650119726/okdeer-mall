@@ -636,8 +636,8 @@ public class PosterActivityServiceImpl
 
 				} else {
 					// 当用户不存在则送到预领劵记录中addRecordsByCollectId
-					jsonObject = activityCouponsRecordService.addBeforeRecords(
-							activityPosterDrawRecord.getActivityCollectId(), posterTakePrizeDto.getMobile(), null,
+					jsonObject = activityCouponsRecordService.addBeforeRecordsForWechatActivity(
+							activityPosterDrawRecord.getActivityCollectId(), posterTakePrizeDto.getMobile(),
 							activityPosterDrawRecord.getActivityId());
 				}
 
