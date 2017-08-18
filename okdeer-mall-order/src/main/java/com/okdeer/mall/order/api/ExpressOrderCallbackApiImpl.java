@@ -126,7 +126,7 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
                     resultMsgDto.setCode(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getCode());
                     resultMsgDto.setMsg(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getMsg());
                 } else {
-                    //保险起见，设置redis数据6秒超时删除
+                    //保险起见，设置redis数据6秒超时删除key
                     redisTemplate.expire(EXPRESSMODE + paramDto.getOrderId(), 6, TimeUnit.SECONDS);
                     //根据配送方式的不同，进入不同的业务流程 1：蜂鸟配送 2：自行配送
                     switch (paramDto.getExpressType()) {
