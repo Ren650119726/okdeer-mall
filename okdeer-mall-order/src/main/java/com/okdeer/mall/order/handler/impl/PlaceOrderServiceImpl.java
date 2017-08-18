@@ -22,6 +22,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.assemble.GoodsStoreSkuAssembleApi;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
@@ -31,6 +32,7 @@ import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
@@ -294,32 +296,33 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		// 查询我的红包记录
 		List<TradePinMoneyObtain> pinMoneyObtains = tradePinMoneyObtainService.findList(paramDto.getUserId(),
 				new Date(), PinMoneyStatusConstant.UNUSED);
-		// 扣减金额
+		// 需扣减金额
 		BigDecimal deduction = new BigDecimal("0.00");
 		// 用户使用金额
 		BigDecimal usePinMoney = new BigDecimal(paramDto.getPinMoney());
+		Map<String,BigDecimal> records = Maps.newHashMap();
 		List<TradePinMoneyObtain> updateRecord = Lists.newArrayList();
 		for (TradePinMoneyObtain pinMoney : pinMoneyObtains) {
+			if (deduction.compareTo(usePinMoney) >= 0) {
+				break;
+			}
 			// 扣减差额
 			BigDecimal difference = usePinMoney.subtract(deduction);
-			if (difference.compareTo(pinMoney.getRemainAmount()) > 0) {
+			records.put(pinMoney.getId(),
+					difference.compareTo(pinMoney.getRemainAmount()) >= 0 ? pinMoney.getRemainAmount() : difference);
+			if (difference.compareTo(pinMoney.getRemainAmount()) >= 0) {
 				deduction = deduction.add(pinMoney.getRemainAmount());
 				pinMoney.setRemainAmount(new BigDecimal("0.00"));
 				pinMoney.setStatus(PinMoneyStatusConstant.USED);
-				updateRecord.add(pinMoney);
-			} else if (usePinMoney.subtract(deduction).compareTo(difference) == 0) {
-				//判断 用户使用金额 - 扣减的金额 == 扣减差额 
+			} else {
 				deduction = deduction.add(difference);
 				pinMoney.setRemainAmount(pinMoney.getRemainAmount().subtract(difference));
-				updateRecord.add(pinMoney);
-				break;
 			}
+			updateRecord.add(pinMoney);
 		}
-		
 		if (deduction.compareTo(usePinMoney) != 0) {
 			throw new Exception("零花钱扣减异常");
 		}
-		
 		// 更新领取记录  updateRecord
 		for(TradePinMoneyObtain entity : updateRecord){
 			entity.setUpdateTime(new Date());
@@ -327,12 +330,11 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 		
 		// 更新使用记录
-		List<String> sources = updateRecord.stream().map(record -> record.getId()).collect(Collectors.toList());
-		String sourceIds = Joiner.on(",").join(sources);
+		String sources = JsonMapper.nonDefaultMapper().toJson(records);
 		TradePinMoneyUse tradePinMoneyUse = new TradePinMoneyUse();
 		tradePinMoneyUse.setId(UuidUtils.getUuid());
 		tradePinMoneyUse.setOrderId(tradeOrder.getId());
-		tradePinMoneyUse.setSourceId(sourceIds);
+		tradePinMoneyUse.setSourceId(sources);
 		tradePinMoneyUse.setUseAmount(usePinMoney);
 		tradePinMoneyUse.setUserId(paramDto.getUserId());
 		tradePinMoneyUse.setCreateTime(new Date());

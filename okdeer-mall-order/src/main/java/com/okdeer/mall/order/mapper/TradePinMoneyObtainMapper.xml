@@ -163,6 +163,19 @@
             AND status = #{status,jdbcType=TINYINT}
         </if>
     </select>
+    
+    <!-- 根据ID列表查询记录 -->
+    <select id="findByIds" resultMap="BaseResultMap" >
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM trade_pin_money_obtain
+        WHERE id IN 
+       	<foreach collection="ids" index="index" item="id"
+			open="(" separator="," close=")">
+			#{id,jdbcType=VARCHAR}
+		</foreach>
+    </select>
+    
 	<!-- begin 商城后台零花钱领取记录条件查询 xuzq 20170814 -->
     <select id="findObtainPageList" resultMap="PageListResultMap" parameterType="com.okdeer.mall.order.dto.TradePinMoneyQueryDto" >
         SELECT 

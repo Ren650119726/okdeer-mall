@@ -48,7 +48,7 @@ public class CheckPinMoneyServiceImpl implements RequestHandler<PlaceOrderParamD
 		if(paramDto.getIsUsePinMoney() && StringUtils.isNotEmpty(paramDto.getPinMoney())){
 			BigDecimal myUsable = tradePinMoneyObtainService.findMyUsableTotal(req.getData().getUserId(),new Date());
 			BigDecimal pinMoney = new BigDecimal( paramDto.getPinMoney());
-			if (pinMoney.compareTo(myUsable) > 1) {
+			if (pinMoney.compareTo(myUsable) > 0) {
 				resp.setResult(ResultCodeEnum.TRADE_LIMIT_PIN_MONEY);
 				return;
 			}

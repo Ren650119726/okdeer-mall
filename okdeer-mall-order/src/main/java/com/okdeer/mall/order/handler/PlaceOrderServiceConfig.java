@@ -136,6 +136,8 @@ public class PlaceOrderServiceConfig {
 		chain.addHandlerChain(checkServStockService);
 		// 第四步：查询最优用户地址
 		chain.addHandlerChain(findUserAddrService);
+		// 查询零花钱信息
+		chain.addHandlerChain(findPinMoneyService);
 		// 第五步：查询用户有效的优惠信息
 		chain.addHandlerChain(findFavourService);
 		return chain;
@@ -152,6 +154,8 @@ public class PlaceOrderServiceConfig {
 		chain.addHandlerChain(checkServStockService);
 		// 第四步：校验用户优惠信息
         chain.addHandlerChain(checkFavourService);
+		// 校验零花钱信息
+		chain.addHandlerChain(checkPinMoneyService);
 		// 第五步：生成订单
 		chain.addHandlerChain(placeOrderService);
 		return chain;
@@ -168,6 +172,8 @@ public class PlaceOrderServiceConfig {
 		chain.addHandlerChain(checkServSkuService);
 		// 第四步：校验商品库存
 		chain.addHandlerChain(checkServStockService);
+		// 查询零花钱信息
+		chain.addHandlerChain(findPinMoneyService);
 		// 第五步：查询最优用户地址
 		chain.addHandlerChain(findUserAddrService);
 		return chain;
@@ -184,6 +190,8 @@ public class PlaceOrderServiceConfig {
 		chain.addHandlerChain(checkServSkuService);
 		// 第四步：校验商品库存
 		chain.addHandlerChain(checkServStockService);
+		// 校验零花钱信息
+		chain.addHandlerChain(checkPinMoneyService);
 		// 第五步：生成订单
 		chain.addHandlerChain(placeSeckillOrderService);
 		return chain;

@@ -48,6 +48,9 @@
 		<if test="buyerUserId != null and buyerUserId != ''">
 			and buyer_user_id = #{buyerUserId,jdbcType=VARCHAR}
 		</if>
+		<if test="buyerDeviceId != null and buyerDeviceId != ''">
+			and device_id = #{buyerUserId,jdbcType=VARCHAR}
+		</if>
 	</select>
 
 	<!-- 根据秒杀活动剩余秒杀数量 add by luosm -->

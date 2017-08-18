@@ -6,19 +6,29 @@
  */    
 package com.okdeer.mall.order.service.impl;
 
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.pagehelper.PageHelper;
+import com.google.common.collect.Lists;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.order.bo.TradePinMoneyUseBo;
+import com.okdeer.mall.order.constant.PinMoneyStatusConstant;
 import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
+import com.okdeer.mall.order.entity.TradePinMoneyObtain;
 import com.okdeer.mall.order.entity.TradePinMoneyUse;
+import com.okdeer.mall.order.mapper.TradePinMoneyObtainMapper;
 import com.okdeer.mall.order.mapper.TradePinMoneyUseMapper;
 import com.okdeer.mall.order.service.TradePinMoneyUseService;
 
@@ -38,6 +48,9 @@ public class TradePinMoneyUseServiceImpl extends BaseServiceImpl implements Trad
 
 	@Autowired
 	private TradePinMoneyUseMapper tradePinMoneyUseMapper;
+	
+	@Autowired
+	private TradePinMoneyObtainMapper tradePinMoneyObtainMapper;
 	
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -74,10 +87,18 @@ public class TradePinMoneyUseServiceImpl extends BaseServiceImpl implements Trad
 		tradePinMoneyUseMapper.update(pinMoneyUse);
 		
 		//释放零花钱领取占用
-//		pinMoneyUse.getSourceId();
-//		tradePinMoneyUseMapper.add(record)
-		
-		
+		Map<String, BigDecimal> sourceMap = JsonMapper.nonDefaultMapper().fromJson(pinMoneyUse.getSourceId(),
+				new TypeReference<HashMap<String, BigDecimal>>() {
+				});
+		List<String> ids = Lists.newArrayList();
+		sourceMap.keySet().forEach(k -> ids.add(k));
+		List<TradePinMoneyObtain> pinMoneyObtains = tradePinMoneyObtainMapper.findByIds(ids);
+		for (TradePinMoneyObtain pinMoneyObtain : pinMoneyObtains) {
+			pinMoneyObtain.setStatus(PinMoneyStatusConstant.UNUSED);
+			pinMoneyObtain.setRemainAmount(pinMoneyObtain.getRemainAmount().add(sourceMap.get(pinMoneyObtain.getId())));
+			pinMoneyObtain.setUpdateTime(new Date());
+			tradePinMoneyObtainMapper.update(pinMoneyObtain);
+		}
 	}
 
 }

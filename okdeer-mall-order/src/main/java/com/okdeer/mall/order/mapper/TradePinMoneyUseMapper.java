@@ -6,7 +6,6 @@
  */
 package com.okdeer.mall.order.mapper;
 
-import java.util.Date;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
@@ -14,6 +13,7 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.order.bo.TradePinMoneyUseBo;
 import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
+import com.okdeer.mall.order.entity.TradePinMoneyObtain;
 import com.okdeer.mall.order.entity.TradePinMoneyUse;
 
 public interface TradePinMoneyUseMapper extends IBaseMapper {

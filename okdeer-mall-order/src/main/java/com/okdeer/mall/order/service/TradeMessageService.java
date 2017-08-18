@@ -29,15 +29,6 @@ import com.okdeer.mall.order.vo.SendMsgParamVo;
 public interface TradeMessageService {
 
 
-	/**
-	 * 订单消息推送 --POS</p>
-	 * 
-	 * @author zengj
-	 * @param sendMsgParamVo 消息推送参数
-	 * @param sendMsgType 推送消息类型
-	 * @throws Exception
-	 */
-	public void sendPosMessage(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType) throws Exception;
 
 	/**
 	 * 商品版App消息推送 --商家版APP</p>
