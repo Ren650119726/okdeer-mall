@@ -1,6 +1,7 @@
 package com.okdeer.mall.member.service.impl;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,8 +9,10 @@ import org.springframework.stereotype.Service;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.member.bo.SysBuyerLocateInfoBo;
 import com.okdeer.mall.member.entity.SysBuyerLocateInfo;
 import com.okdeer.mall.member.mapper.SysBuyerLocateInfoMapper;
+import com.okdeer.mall.member.member.dto.LocateInfoQueryDto;
 import com.okdeer.mall.member.service.SysBuyerLocateInfoService;
 
 /**
@@ -42,6 +45,11 @@ public class SysBuyerLocateInfoServiceImpl extends BaseServiceImpl implements Sy
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return sysBuyerLocateInfoMapper;
+	}
+
+	@Override
+	public List<SysBuyerLocateInfoBo> findUserList(LocateInfoQueryDto dto) {
+		return sysBuyerLocateInfoMapper.findUserList(dto);
 	}
 
 }

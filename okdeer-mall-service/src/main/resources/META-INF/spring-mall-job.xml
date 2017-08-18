@@ -79,4 +79,8 @@
  	<job:simple id="activityLuckDrawJob" class="com.okdeer.mall.activity.prize.job.ActivityLuckDrawJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
 	<job:simple id="activityAdvertJob" class="com.okdeer.mall.activity.advert.job.ActivityAdvertJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
 	<!--end xuzq 20170418  每隔半个小时执行-修改抽奖模板的状态job -->
+	<!-- 每隔半个小时执行代金卷活动 退款 定时任务 -->
+	<!--begin  xuzq 20170818 每隔半个小时执行-app消息推送job -->
+	<job:simple id="messageSendSettingJob" class="com.okdeer.mall.operate.job.MessageSendSettingJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
+	<!--begin  xuzq 20170818 每隔半个小时执行-app消息推送job -->
 </beans>

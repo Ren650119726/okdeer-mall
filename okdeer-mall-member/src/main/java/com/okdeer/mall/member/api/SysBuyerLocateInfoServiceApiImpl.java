@@ -1,10 +1,14 @@
 package com.okdeer.mall.member.api;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.mall.member.bo.SysBuyerLocateInfoBo;
 import com.okdeer.mall.member.entity.SysBuyerLocateInfo;
+import com.okdeer.mall.member.member.dto.LocateInfoQueryDto;
 import com.okdeer.mall.member.member.dto.SysBuyerLocateInfoDto;
 import com.okdeer.mall.member.member.service.SysBuyerLocateInfoServiceApi;
 import com.okdeer.mall.member.service.SysBuyerLocateInfoService;
@@ -26,5 +30,11 @@ public class SysBuyerLocateInfoServiceApiImpl implements SysBuyerLocateInfoServi
 	public void save(SysBuyerLocateInfoDto dto) throws Exception {
 		SysBuyerLocateInfo info = BeanMapper.map(dto, SysBuyerLocateInfo.class);
 		sysBuyerLocateInfoService.save(info);
+	}
+
+	@Override
+	public List<SysBuyerLocateInfoDto> findUserList(LocateInfoQueryDto dto) {
+		List<SysBuyerLocateInfoBo>  boList = sysBuyerLocateInfoService.findUserList(dto);
+		return BeanMapper.mapList(boList, SysBuyerLocateInfoDto.class);
 	}
 }
