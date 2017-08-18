@@ -174,7 +174,8 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			return false;
 		}
 		// 检查当前店铺是否可使用该代金券
-		if(coupons.getAreaType() != AreaType.national && activityCouponsRelationStoreMapper.findByStoreIdAndCouponsId(paramDto.getStoreId(), coupons.getId()) == null){
+		if (coupons.getAreaType() != AreaType.national && activityCouponsRelationStoreMapper
+				.findByStoreIdAndCouponsId(paramDto.getStoreId(), coupons.getId()) == null) {
 			logger.info("代金券使用检查不通过4：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 			return false;
 		}
@@ -191,52 +192,57 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				return false;
 			}
 		}
-		if(coupons.getUseClientType() != UseClientType.ALLOW_All && coupons.getUseClientType() != EnumAdapter.convert(paramDto.getChannel())){
+		if (coupons.getUseClientType() != UseClientType.ALLOW_All
+				&& coupons.getUseClientType() != EnumAdapter.convert(paramDto.getChannel())) {
 			logger.info("代金券使用检查不通过7：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 			return false;
 		}
-		if(coupons.getIsCategory() == Constant.ONE){
-			if(coupons.getType() == CouponsType.bld.ordinal()){
-				// 便利店限制品类
-				List<String> categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getId());
-				Map<String, CurrentStoreSkuBo> haveFavourGoodsMap = Maps.newHashMap();
-				BigDecimal totalAmount = BigDecimal.valueOf(0.00);
-				for(CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()){
-					if(categoryIdLimitList.contains(storeSkuBo.getSpuCategoryId())){
-						if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()){
-							// 如果商品是低价商品，且商品购买数量=商品低价购买数量，则说明该商品不享受优惠活动
-							continue;
-						}
-						if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
-							totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(BigDecimal.valueOf(storeSkuBo.getQuantity()-storeSkuBo.getSkuActQuantity())));
-						}else{
-							totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
-						}
-						haveFavourGoodsMap.put(storeSkuBo.getId(), storeSkuBo);
+		
+		if(coupons.getType() == CouponsType.bld.ordinal()){
+			// 便利店限制品类
+			List<String> categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getId());
+			Map<String, CurrentStoreSkuBo> haveFavourGoodsMap = Maps.newHashMap();
+			BigDecimal totalAmount = BigDecimal.valueOf(0.00);
+			for(CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()){
+				if (coupons.getIsCategory() != Constant.ONE || (coupons.getIsCategory() == Constant.ONE
+						&& categoryIdLimitList.contains(storeSkuBo.getSpuCategoryId()))) {
+					if (storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()
+							&& storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()) {
+						// 如果商品是低价商品，且商品购买数量=商品低价购买数量，则说明该商品不享受优惠活动
+						continue;
 					}
-				}
-				if(totalAmount.compareTo(BigDecimal.valueOf(0.0)) == 0 || totalAmount.compareTo(BigDecimal.valueOf(coupons.getArriveLimit())) == -1){
-					// 如果享受优惠的商品总金额为0，标识没有指定分类的商品。如果享受优惠的商品总金额小于代金券的使用条件，也不能使用该代金券
-					resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
-					logger.info("代金券使用检查不通过8：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
-					return false;
-				}
-				parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
-				parserBo.setTotalAmountHaveFavour(totalAmount);
-			} else if(coupons.getType() == CouponsType.fwd.ordinal()){
-				Set<String> spuCategoryIds = parserBo == null ? null : parserBo.getCategoryIdSet();
-				if(CollectionUtils.isEmpty(spuCategoryIds)){
-					return false;
-				}
-				int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getId());
-				if (count != spuCategoryIds.size()) {
-					// 超出指定分类
-					resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
-					logger.info("代金券使用检查不通过9：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
-					return false;
+					if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+						totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(
+								BigDecimal.valueOf(storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity())));
+					}else{
+						totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
+					}
+					haveFavourGoodsMap.put(storeSkuBo.getId(), storeSkuBo);
 				}
 			}
-		}	
+			if (totalAmount.compareTo(BigDecimal.valueOf(0.0)) == 0
+					|| totalAmount.compareTo(BigDecimal.valueOf(coupons.getArriveLimit())) == -1) {
+				// 如果享受优惠的商品总金额为0，标识没有指定分类的商品。如果享受优惠的商品总金额小于代金券的使用条件，也不能使用该代金券
+				resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
+				logger.info("代金券使用检查不通过8：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
+				return false;
+			}
+			parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
+			parserBo.setTotalAmountHaveFavour(totalAmount);
+		} else if(coupons.getType() == CouponsType.fwd.ordinal()){
+			Set<String> spuCategoryIds = parserBo == null ? null : parserBo.getCategoryIdSet();
+			if(CollectionUtils.isEmpty(spuCategoryIds)){
+				return false;
+			}
+			int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getId());
+			if (count != spuCategoryIds.size()) {
+				// 超出指定分类
+				resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
+				logger.info("代金券使用检查不通过9：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
+				return false;
+			}
+		}
+		
 		if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0 && StringUtils.isNotEmpty(paramDto.getDeviceId())){
 			// 同一设备id每天最多使用张数 0：不限，大于0有限制
 			int deviceTotalNum = findCountDayFreq(null, paramDto.getDeviceId(), null, coupons.getId());
