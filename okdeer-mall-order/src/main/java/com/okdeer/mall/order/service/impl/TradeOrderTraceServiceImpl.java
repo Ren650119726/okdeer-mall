@@ -67,15 +67,13 @@ public class TradeOrderTraceServiceImpl implements TradeOrderTraceService {
 	@Transactional(rollbackFor = Exception.class)
 	public void saveOrderTrace(TradeOrder tradeOrder) {
 	    //便利店实物订单状态改变时，发送通知
-	    //Begin 2017-2-18 added by zhaoqc
-        if(tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
-            //便利店订单状态发生改变发送消息
-            LOGGER.info("便利店订单状态发生改变向用户发送通知消息");
-            //向用户推送消息时，输出订单信息的日志
-            LOGGER.info("订单Id:{},订单号：{}", tradeOrder.getId(), tradeOrder.getOrderNo());
-            this.sendMessageService.tradeSendMessage(tradeOrder, null);
-        }
-	    //End
+//        if(tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER) {
+//            //便利店订单状态发生改变发送消息
+//            LOGGER.info("便利店订单状态发生改变向用户发送通知消息");
+//            //向用户推送消息时，输出订单信息的日志
+//            LOGGER.info("订单Id:{},订单号：{}", tradeOrder.getId(), tradeOrder.getOrderNo());
+//            this.sendMessageService.tradeSendMessage(tradeOrder, null);
+//        }
 	        
 		// 只有上门服务的订单需要保存订单轨迹。
 		if (tradeOrder.getType() != OrderTypeEnum.SERVICE_STORE_ORDER) {

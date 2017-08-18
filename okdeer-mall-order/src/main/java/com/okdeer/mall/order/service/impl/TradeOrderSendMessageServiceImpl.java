@@ -178,7 +178,7 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
     }
     
 	private void sendMessage(Object entity) throws Exception {
-		MQMessage anMessage = new MQMessage(TOPIC, (Serializable)JsonMapper.nonDefaultMapper().toJson(entity));
+		MQMessage<String> anMessage = new MQMessage<String>(TOPIC, JsonMapper.nonDefaultMapper().toJson(entity));
 		rocketMQProducer.sendMessage(anMessage);
 	}
     

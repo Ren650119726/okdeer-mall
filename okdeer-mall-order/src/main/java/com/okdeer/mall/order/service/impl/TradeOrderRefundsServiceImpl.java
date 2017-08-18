@@ -393,12 +393,10 @@ public class TradeOrderRefundsServiceImpl
 		// 新增退款单时，保存退款轨迹
 		tradeOrderRefundsTraceService.saveRefundTrace(orderRefunds);
 		// End added by maojj 2016-10-11
-		
-		//Begin 用户申请退款时向APP推送消息 added by zhaoqc
-		logger.info("用户申请退款时向APP推送消息");
-        this.sendMessageService.tradeSendMessage(null, orderRefunds);
-		//End added by zhaoqc 2017-02-24
-		
+
+		// 用户申请退款时向APP推送消息
+//		this.sendMessageService.tradeSendMessage(null, orderRefunds);
+
 		tradeOrderRefundsMapper.insertSelective(orderRefunds);
 	}
 
