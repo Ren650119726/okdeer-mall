@@ -169,66 +169,51 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 						return false;
 					}
 				}
-				if (Constant.ONE == coupons.getIsCategory().intValue()) {
-					// 如果代金券指定分类，检查分类是否超出指定分类
-					// 便利店代金券，超出分类依然可以购买，V2.3修改此逻辑，服务店保持不变
-					if (coupons.getType() == CouponsType.bld.ordinal()) {
-						List<String> limitCtgIds = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
-						if(CollectionUtils.isEmpty(paramBo.getGoodsList())){
-							return false;
-						}
-						BigDecimal totalAmount = BigDecimal.valueOf(0.00);
-						for (PlaceOrderItemDto goods : paramBo.getGoodsList()) {
-							if (limitCtgIds.contains(goods.getSpuCategoryId())) {
-								// 如果包含此分类，则意味着该商品在活动范围之类。计算总金额
-								if(goods.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
-									// 低价商品只有原价购买的才可享受优惠
-									totalAmount = totalAmount.add(goods.getSkuPrice().multiply(BigDecimal.valueOf(goods.getQuantity()-goods.getSkuActQuantity())));
-								}else{
-									totalAmount = totalAmount.add(goods.getTotalAmount());
-								}
-							}
-						}
-						if (totalAmount.compareTo(BigDecimal.valueOf(0.0)) == 0 || totalAmount.compareTo(new BigDecimal(coupons.getArrive())) == -1) {
-							return false;
-						}
-					} else if (coupons.getType() == CouponsType.fwd.ordinal()) {
-						int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(paramBo.getSpuCategoryIds(),
-								coupons.getCouponId());
-						if (count != paramBo.getSpuCategoryIds().size()) {
-							return false;
-						}
+				// 便利店代金券，超出分类依然可以购买，V2.3修改此逻辑，服务店保持不变
+				if (coupons.getType() == CouponsType.bld.ordinal()) {
+					List<String> limitCtgIds = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getCouponId());
+					if(CollectionUtils.isEmpty(paramBo.getGoodsList())){
+						return false;
 					}
-
-				}else{
-					// 如果不指定分类，低价商品不可享受优惠
 					BigDecimal totalAmount = BigDecimal.valueOf(0.00);
 					for (PlaceOrderItemDto goods : paramBo.getGoodsList()) {
-						if(goods.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
-							if(coupons.getType() == CouponsType.bldyf.ordinal()){
-								//运费券不排除低价部分
-								totalAmount = totalAmount.add(goods.getSkuPrice().multiply(BigDecimal.valueOf(goods.getQuantity())));
-							}else{
+						// 如果代金券指定分类，检查分类是否超出指定分类
+						if (Constant.ONE != coupons.getIsCategory().intValue()
+								|| (Constant.ONE == coupons.getIsCategory().intValue()
+										&& limitCtgIds.contains(goods.getSpuCategoryId()))) {
+							// 如果包含此分类，则意味着该商品在活动范围之类。计算总金额
+							if(goods.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
 								// 低价商品只有原价购买的才可享受优惠
-								totalAmount = totalAmount.add(goods.getSkuPrice().multiply(BigDecimal.valueOf(goods.getQuantity()-goods.getSkuActQuantity())));
+								totalAmount = totalAmount.add(goods.getSkuPrice().multiply(
+										BigDecimal.valueOf(goods.getQuantity() - goods.getSkuActQuantity())));
+							}else{
+								totalAmount = totalAmount.add(goods.getTotalAmount());
 							}
-						}else{
-							totalAmount = totalAmount.add(goods.getTotalAmount());
 						}
 					}
-					if (totalAmount.compareTo(BigDecimal.valueOf(0.0)) == 0 || totalAmount.compareTo(new BigDecimal(coupons.getArrive())) == -1) {
+					if (totalAmount.compareTo(BigDecimal.valueOf(0.0)) == 0
+							|| totalAmount.compareTo(new BigDecimal(coupons.getArrive())) == -1) {
+						return false;
+					}
+				} else if (coupons.getType() == CouponsType.fwd.ordinal()) {
+					int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(paramBo.getSpuCategoryIds(),
+							coupons.getCouponId());
+					if (count != paramBo.getSpuCategoryIds().size()) {
 						return false;
 					}
 				}
+				
 				// 如果代金券限制设备
 				if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0){
-					if(coupons.getDeviceDayLimit().compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_DEVICE, coupons.getCouponId()))< 1){
+					if (coupons.getDeviceDayLimit().compareTo(
+							paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_DEVICE, coupons.getCouponId())) < 1) {
 						return false;
 					}
 				}
 				// 如果代金券限制账号
 				if(coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0){
-					if(coupons.getAccountDayLimit().compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_USER, coupons.getCouponId()))< 1){
+					if (coupons.getAccountDayLimit().compareTo(
+							paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_USER, coupons.getCouponId())) < 1) {
 						return false;
 					}
 				}
