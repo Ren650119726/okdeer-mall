@@ -32,6 +32,7 @@ import com.okdeer.mcm.service.ISmsService;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,11 +120,14 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
             //检查传入的参数数据
             resultMsgDto = checkData(paramDto, resultMsgDto);
             if (resultMsgDto.getCode() == ExpressModeCheckEnum.SUCCESS.getCode()) {
+                //使用redis防止并发操作
                 boolean flag = redisTemplate.boundValueOps(EXPRESSMODE + paramDto.getOrderId()).setIfAbsent(true);
                 if (!flag) {
                     resultMsgDto.setCode(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getCode());
                     resultMsgDto.setMsg(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getMsg());
                 } else {
+                    //保险起见，设置redis数据6秒超时删除
+                    redisTemplate.expire(EXPRESSMODE + paramDto.getOrderId(), 6, TimeUnit.SECONDS);
                     //根据配送方式的不同，进入不同的业务流程 1：蜂鸟配送 2：自行配送
                     switch (paramDto.getExpressType()) {
                         case 1:
@@ -148,6 +152,7 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
                             break;
                     }
                 }
+                //业务走完后删除redis中的key，以便后续操作
                 redisTemplate.delete(EXPRESSMODE + paramDto.getOrderId());
             }
         }
