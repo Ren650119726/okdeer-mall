@@ -6092,7 +6092,7 @@
 					AND trade.actual_amount <![CDATA[ >= ]]> #{actualAmount,jdbcType=DECIMAL}
 				</if>
 				<if test="preferentialAmount != null">
-					AND (trade.preferential_price - trade.real_fare_preferential) = #{preferentialAmount,jdbcType=DECIMAL}
+					AND (trade.preferential_price - trade.real_fare_preferential) = #{preferentialAmount,jdbcType=DECIMAL} 
 				</if>
 				<!-- 结束时间 -->
 				<if test="endTime != null">

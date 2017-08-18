@@ -217,19 +217,6 @@ public interface ActivityCouponsRecordService {
 	// End V2.1 added by maojj 2017-02-15
 	
 	/**
-	 * @Description: 预领取代金劵
-	 * @param collectId
-	 * @param phone
-	 * @param userId
-	 * @param advertId
-	 * @return
-	 * @throws ServiceException
-	 * @author zengjizu
-	 * @date 2017年8月8日
-	 */
-	JSONObject addBeforeRecords(String collectId, String phone,String userId,String advertId) throws ServiceException;
-	
-	/**
 	 * 根据活动ID领取代金劵
 	 * @param collectId 活动id集合
 	 * @param userId 用户id
@@ -238,4 +225,7 @@ public interface ActivityCouponsRecordService {
 	 * @throws ServiceException
 	 */
 	public JSONObject addRecordsByCollectId(String collectId, String userId,String invitaUserId,boolean limitOne)throws Exception;
+
+	JSONObject addBeforeRecordsForWechatActivity(String collectId, String phone, String advertId)
+			throws ServiceException;
 }

@@ -127,9 +127,9 @@ public class PosterActivityServiceImpl
 	@Reference(version = "1.0.0", check = false)
 	private ISmsService smsService;
 
-	@Resource(name="redisLockRegistry")
+	@Resource(name = "redisLockRegistry")
 	private RedisLockRegistry redisLockRegistry;
-	
+
 	/**
 	 * 消息系统CODE
 	 */
@@ -142,7 +142,7 @@ public class PosterActivityServiceImpl
 	@Value("${mcm.sys.token}")
 	private String msgToken;
 
-	private static final String[] posterImg = { "posterpic1.png","posterpic2.png"};
+	// private static final String[] posterImg = { "posterpic1.png","posterpic2.png"};
 
 	public static final String ACTIVITY_ID = WxchatUtils.ACTIVITY_ID;
 
@@ -153,8 +153,6 @@ public class PosterActivityServiceImpl
 	private static final String QRSCENE_STR = "qrscene_";
 
 	private ActivityPosterConfig activityPosterConfig;
-	
-	
 
 	@Override
 	public Object process(WechatEventMsg wechatEventMsg) throws MallApiException {
@@ -229,14 +227,16 @@ public class PosterActivityServiceImpl
 		WechatUserInfo wechatUserInfo = wechatService.getUserInfo(openid);
 		// 随机一张图片
 		Random random = new Random();
-		int index = random.nextInt(posterImg.length);
-		String posterUrl = operateImagePrefix + posterImg[index];
+		String[] imageArry = activityPosterConfig.getPosterImg().split(",");
+
+		int index = random.nextInt(imageArry.length);
+		String posterUrl = operateImagePrefix + imageArry[index] + "?date=" + System.currentTimeMillis();
 		// 创建海报图片
 		BufferedImage bufferedImage = createPosterPic(posterUrl, wechatUserInfo);
 		if (bufferedImage == null) {
 			throw new MallApiException("生成海报图片出错!");
 		}
-		String fileName = posterImg[index];
+		String fileName = imageArry[index];
 
 		byte[] posterImgIs = createPosterInStream(bufferedImage, fileName.substring(fileName.lastIndexOf('.') + 1));
 		// 添加图片到微信服务器
@@ -413,13 +413,30 @@ public class PosterActivityServiceImpl
 				} catch (Exception e) {
 					logger.error("处理用户关注信息出错", e);
 				}
+			} else {
+
+				WechatUserInfo wechatUserInfo;
+				try {
+					wechatUserInfo = wechatService.getUserInfo(activityPosterShareInfo.getShareOpenid());
+					TextWechatMsg textWechatMsg = new TextWechatMsg();
+					textWechatMsg.setFromUserName(wechatConfig.getAccount());
+					textWechatMsg.setToUserName(subscribeUser.getOpenid());
+					String content = subscribeUser.getNickName() + "，您已经关注过" + wechatUserInfo.getNickName()
+							+ "，成为Ta的推荐好友啦";
+					textWechatMsg.setContent(content);
+					// 发送提示信息給关注的用户
+					customerService.sendMsg(textWechatMsg);
+				} catch (Exception e) {
+					logger.error("获取分享人的信息出错",e);
+				}
+				
 			}
 		}
 	}
 
 	private void doProcessShareUserQualifica(String shareOpenid) throws InterruptedException {
 		// 加锁，防止重复的交易号重复执行,出现重复扣款情况
-		Lock lock = redisLockRegistry.obtain("WECHAT_USER_"+shareOpenid);
+		Lock lock = redisLockRegistry.obtain("WECHAT_USER_" + shareOpenid);
 		if (lock.tryLock(10, TimeUnit.SECONDS)) {
 			try {
 				// 查询分享用户的好友关注数量
@@ -434,7 +451,7 @@ public class PosterActivityServiceImpl
 					} catch (Exception e) {
 						logger.error("更新用户的资格数出错", e);
 					}
-					customerService.sendMsg(getQucaTip(shareOpenid,count));
+					customerService.sendMsg(getQucaTip(shareOpenid, count));
 				}
 			} finally {
 				lock.unlock();
@@ -630,12 +647,12 @@ public class PosterActivityServiceImpl
 					// 当该用户不存在邀请人时，记录该用户邀请人为此活动的邀请人
 					SysBuyerUser sysBuyerUser = sysBuyerUserList.get(0);
 					jsonObject = activityCouponsRecordService.addRecordsByCollectId(
-							activityPosterDrawRecord.getActivityCollectId(), sysBuyerUser.getId(),null,false);
+							activityPosterDrawRecord.getActivityCollectId(), sysBuyerUser.getId(), null, false);
 
 				} else {
 					// 当用户不存在则送到预领劵记录中addRecordsByCollectId
-					jsonObject = activityCouponsRecordService.addBeforeRecords(
-							activityPosterDrawRecord.getActivityCollectId(), posterTakePrizeDto.getMobile(), null,
+					jsonObject = activityCouponsRecordService.addBeforeRecordsForWechatActivity(
+							activityPosterDrawRecord.getActivityCollectId(), posterTakePrizeDto.getMobile(),
 							activityPosterDrawRecord.getActivityId());
 				}
 

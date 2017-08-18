@@ -254,8 +254,8 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
             resultMsgDto.setCode(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getCode());
             resultMsgDto.setMsg(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getMsg());
         } else if (!tradeOrder.getStoreId().equals(paramDto.getStoreId())) {
-            resultMsgDto.setCode(ExpressModeCheckEnum.EXPRESS_DATA_FAIL.getCode());
-            resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_DATA_FAIL.getMsg());
+            resultMsgDto.setCode(ExpressModeCheckEnum.ORDER_STORE_FAIL.getCode());
+            resultMsgDto.setMsg(ExpressModeCheckEnum.ORDER_STORE_FAIL.getMsg());
         } else {
             //检查配送数据
             checkExpressData(tradeOrder.getOrderNo(), paramDto.getExpressType(), resultMsgDto);
@@ -282,8 +282,8 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
                     break;
                 case 2:
                     if (callbackList.get(0).getOrderStatus() != Integer.parseInt(ExpressOrderStatus.STATUS_5.getValue())) {
-                        resultMsgDto.setCode(ExpressModeCheckEnum.EXPRESS_DATA_FAIL.getCode());
-                        resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_DATA_FAIL.getMsg());
+                        resultMsgDto.setCode(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getCode());
+                        resultMsgDto.setMsg(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getMsg());
                     }
                     break;
                 default:
