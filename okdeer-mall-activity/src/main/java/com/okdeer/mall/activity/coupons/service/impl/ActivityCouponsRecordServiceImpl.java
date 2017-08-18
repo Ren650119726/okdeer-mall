@@ -455,7 +455,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 			// 循环代金劵id进行送劵
 			List<ActivityCoupons> activityCoupons = activityCouponsMapper.selectByActivityId(collectId);
-<<<<<<< HEAD
 			Map<String, ActivityCouponsRecordBefore> reMap = new HashMap<String, ActivityCouponsRecordBefore>();
 			// 根据用户手机号码及活动id查询该号码是否领取过
 			if (checkBeforeCoupons(phone, coll)) {
@@ -465,17 +464,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			} else {
 				// 根据代金劵列表逐个领取，当出现一个代金劵领取异常即反馈错误给前端
 				for (ActivityCoupons coupons : activityCoupons) {
-=======
-			Map<String,ActivityCouponsRecordBefore> reMap = new HashMap<String,ActivityCouponsRecordBefore>();
-			//根据用户手机号码及活动id查询该号码是否领取过 
-			if (checkBeforeCoupons(phone, coll)) {
-				map.put("code", 102);
-				map.put("msg", "您已经领取了，快去友门鹿app注册使用吧！");
-				checkFlag = false;
-			}else{
-				//根据代金劵列表逐个领取，当出现一个代金劵领取异常即反馈错误给前端
-				for(ActivityCoupons coupons : activityCoupons){
->>>>>>> refs/remotes/upstream/master_V2.5.0_online
 					// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 					ActivityCouponsRecordBefore record = new ActivityCouponsRecordBefore();
 					record.setCollectType(ActivityCouponsType.enumValueOf(coll.getType()));
@@ -493,17 +481,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 					checkFlag = true;
 				}
 			}
-<<<<<<< HEAD
 			// 判断是否是成功，成功则进行批量保存代金劵
 			if (checkFlag) {
 				// 循环进行代金劵插入
 				for (ActivityCoupons coupons : activityCoupons) {
-=======
-			//判断是否是成功，成功则进行批量保存代金劵
-			if(checkFlag){
-				//循环进行代金劵插入
-				for(ActivityCoupons coupons : activityCoupons){
->>>>>>> refs/remotes/upstream/master_V2.5.0_online
 					insertRecodeBefore(reMap.get(coupons.getId()), coupons);
 				}
 				map.put("code", 100);
