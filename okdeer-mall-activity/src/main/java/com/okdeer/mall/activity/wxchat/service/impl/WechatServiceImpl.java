@@ -4,6 +4,7 @@ package com.okdeer.mall.activity.wxchat.service.impl;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -226,7 +227,7 @@ public class WechatServiceImpl implements WechatService {
 		wechatConfigDto.setJsApiTicket(jsApiTicket);
 		wechatConfigDto.setAppid(wechatConfig.getAppId());
 		BeanMapper.copy(wechatConfigDto, WECHAT_CONFIG);
-		redisTemplateWrapper.set(CONFIG_KEY, wechatConfigDto, tokenInfo.getExpiresIn() - 60 * 30);
+		redisTemplateWrapper.set(CONFIG_KEY, wechatConfigDto, tokenInfo.getExpiresIn() - 60 * 30,TimeUnit.SECONDS);
 		return wechatConfigDto;
 	}
 
