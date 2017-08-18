@@ -631,22 +631,9 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService, TradeOrde
 		// 设置运费支出
 		payTradeExt.setFreight(order.getFare());
 		payTradeExt.setFreightSubsidy(order.getRealFarePreferential());
-		// 需要抽佣的总金额=运费总金额
-		BigDecimal totalAmountInCommision = order.getFare();
-		if (order.getDeliveryType() != 2){
-			// 不是商家自送，需要扣减运费
-			payTradeExt.setIsDeductFreight(true);
-			// 没有运费收入，佣金收取金额为0
-			totalAmountInCommision = BigDecimal.ZERO;
-		} 
-		BigDecimal totalCommision = totalAmountInCommision.multiply(order.getCommisionRatio()).setScale(2, BigDecimal.ROUND_HALF_UP);
-		if (order.getCommisionRatio().compareTo(BigDecimal.ZERO) == 1
-				&& totalAmountInCommision.compareTo(BigDecimal.ZERO) == 1
-				&& totalCommision.compareTo(BigDecimal.ZERO) == 0) {
-			// 如果佣金比例>0,且需要收佣金额>0，当收佣金额*佣金比例四舍五入之后结果为0，则将需要收取的佣金金额设置为0.01元
-			totalCommision = BigDecimal.valueOf(0.01);
-		}
-		payTradeExt.setCommission(totalCommision);
+		// 需要扣减运费给平台  V2.6
+		payTradeExt.setIsDeductFreight(true);
+		payTradeExt.setCommission(BigDecimal.ZERO);
 		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
 		payTradeVo.setAmount(tradeAmount);
 		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
