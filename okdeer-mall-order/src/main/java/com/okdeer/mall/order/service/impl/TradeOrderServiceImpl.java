@@ -1730,8 +1730,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                     || PayWayEnum.OFFLINE_CONFIRM_AND_PAY.equals(tradeOrder.getPayWay())) {
                 // Begin 重构4.1 add by zengj
                 SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrder);
-                // 发送POS消息
-                tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.createOrder);
+                // 发送POS消息 已删除
+//                tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.createOrder);
                 // 发送商家版APP消息
                 tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.createOrder);
                 // 保存消息中心
@@ -5024,7 +5024,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         tradeOrder.setId(orders.getId());
         tradeOrderMapper.updateTradeOrderByTradeNum(tradeOrder);
         tradeMessageService.sendSmsByCreateOrder(orders);
-        tradeMessageService.sendPosMessage(new SendMsgParamVo(tradeOrder), SendMsgType.createOrder);
     }
 
     @Override
@@ -5198,8 +5197,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         tradeMessageService.sendSmsByCreateOrder(order);
 
         SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrder);
-        tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.createOrder);
-
         // begin add by zengjz 2016-10-12
         // begin add by xuzq 2017-03-14
         //服务店商家新增订单时增加提醒消息推送 商家app2.1需求

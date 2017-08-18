@@ -421,8 +421,8 @@ public class TradeOrderRefundsServiceImpl
 		
 		// 推送消息给POS和商家中心
 		SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(orderRefunds);
-		// 推送消息给POS
-		tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.applyReturn);
+		// 推送消息给POS 已删除
+//		tradeMessageService.sendPosMessage(sendMsgParamVo, SendMsgType.applyReturn);
 		// 推送消息给商家版APP
 		tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.applyReturn);
 

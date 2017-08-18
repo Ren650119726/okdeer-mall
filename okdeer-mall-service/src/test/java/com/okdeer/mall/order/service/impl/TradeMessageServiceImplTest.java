@@ -59,7 +59,7 @@ public class TradeMessageServiceImplTest extends BaseServiceTest{
 				//订单id
 				sendMsgParamVo.setOrderId(lzgOrderDto.getId());
 				sendMsgParamVo.setSendMsgType(SendMsgType.lzgGathering.ordinal());
-				sendMsgParamVo.setPayType(PayTypeEnum.enumValueOf(lzgOrderDto.getPayType().ordinal()));
+//				sendMsgParamVo.setPayType(PayTypeEnum.enumValueOf(lzgOrderDto.getPayType().ordinal()));
 				//店铺id
 //				TradeOrder order = tradeOrderServiceApi.selectById(lzgOrderDto.getId());
 				Map<String,Object> map = new HashMap<String, Object>();
