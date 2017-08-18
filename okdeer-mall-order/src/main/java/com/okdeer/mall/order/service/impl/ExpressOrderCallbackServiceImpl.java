@@ -7,14 +7,12 @@ import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.express.dto.ExpressCallbackDto;
 import com.okdeer.mall.express.dto.ExpressOrderStatus;
 import com.okdeer.mall.express.dto.ResultMsgDto;
-import com.okdeer.mall.express.enums.ExpressModeCheckEnum;
 import com.okdeer.mall.order.dto.ExpressModeParamDto;
 import com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderCarrier;
 import com.okdeer.mall.order.entity.TradeOrderExtSnapshot;
 import com.okdeer.mall.order.entity.TradeOrderItem;
-import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.service.ExpressOrderCallbackService;
 import com.okdeer.mall.order.service.TradeOrderCarrierService;
 import com.okdeer.mall.order.service.TradeOrderExtSnapshotService;
@@ -77,26 +75,22 @@ public class ExpressOrderCallbackServiceImpl implements ExpressOrderCallbackServ
     public void saveExpressModePlanA(ExpressModeParamDto paramDto) throws Exception {
         // 1，查询订单信息组装参数
         TradeOrder tradeOrder = tradeOrderService.selectById(paramDto.getOrderId());
-        if (tradeOrder.getStatus().equals(OrderStatusEnum.DROPSHIPPING)) {
-            //根据订单id查询订单项信息
-            List<TradeOrderItem> orderItemList = tradeOrderItemService.selectOrderItemByOrderId(tradeOrder.getId());
-            tradeOrder.setTradeOrderItem(orderItemList);
-            TradeOrderExtSnapshotParamDto snapshotParamDto = new TradeOrderExtSnapshotParamDto();
-            snapshotParamDto.setOrderId(paramDto.getOrderId());
-            TradeOrderExtSnapshot snapshot = snapshotService.selectExtSnapshotByParam(snapshotParamDto);
-            tradeOrder.setTradeOrderExt(snapshot);
-            // 2，保存第三方推送订单信息并进行判断
-            ResultMsgDto<String> resultMsg = expressService.saveExpressOrder(tradeOrder);
-            if (resultMsg.getCode() != Integer.parseInt(ExpressOrderStatus.STATUS_200.getValue())) {
-                throw new Exception("蜂鸟推送异常" + resultMsg.getMsg());
-            }
-            // 3，修改订单方案和佣金字段
-            updateOrderExpress(paramDto);
-            // 4，修改订单扩展快照
-            updateOrderSnapExpress(paramDto);
-        } else {
-            throw new Exception(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getMsg());
+        //根据订单id查询订单项信息
+        List<TradeOrderItem> orderItemList = tradeOrderItemService.selectOrderItemByOrderId(tradeOrder.getId());
+        tradeOrder.setTradeOrderItem(orderItemList);
+        TradeOrderExtSnapshotParamDto snapshotParamDto = new TradeOrderExtSnapshotParamDto();
+        snapshotParamDto.setOrderId(paramDto.getOrderId());
+        TradeOrderExtSnapshot snapshot = snapshotService.selectExtSnapshotByParam(snapshotParamDto);
+        tradeOrder.setTradeOrderExt(snapshot);
+        // 2，保存第三方推送订单信息并进行判断
+        ResultMsgDto<String> resultMsg = expressService.saveExpressOrder(tradeOrder);
+        if (resultMsg.getCode() != Integer.parseInt(ExpressOrderStatus.STATUS_200.getValue())) {
+            throw new Exception("蜂鸟推送异常" + resultMsg.getMsg());
         }
+        // 3，修改订单方案和佣金字段
+        updateOrderExpress(paramDto);
+        // 4，修改订单扩展快照
+        updateOrderSnapExpress(paramDto);
     }
 
     @Transactional(rollbackFor = Exception.class)

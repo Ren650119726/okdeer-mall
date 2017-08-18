@@ -121,7 +121,7 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
                         } catch (Exception e) {
                             logger.error("蜂鸟配送异常(订单:" + paramDto.getOrderId() + "):{}", e);
                             resultMsgDto.setCode(ExpressModeCheckEnum.ELE_EXPRESS_EXCEPTION.getCode());
-                            resultMsgDto.setMsg(e.getMessage());
+                            resultMsgDto.setMsg(ExpressModeCheckEnum.ELE_EXPRESS_EXCEPTION.getMsg());
                         }
                         break;
                     case 2:
