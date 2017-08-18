@@ -6,10 +6,14 @@
  */
 package com.okdeer.mall.member.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.member.bo.SysBuyerLocateInfoBo;
 import com.okdeer.mall.member.entity.SysBuyerLocateInfo;
+import com.okdeer.mall.member.member.dto.LocateInfoQueryDto;
 
 /**
  * 
@@ -29,5 +33,14 @@ public interface SysBuyerLocateInfoMapper extends IBaseMapper {
 	 * @date 2017年2月17日
 	 */
 	SysBuyerLocateInfo findByUserId(@Param("userId")String userId);
+
+	/**
+	 * @Description: 查询用户下单列表
+	 * @param dto
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年8月18日
+	 */
+	List<SysBuyerLocateInfoBo> findUserList(LocateInfoQueryDto dto);
 	
 }

@@ -4,16 +4,15 @@
     <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.MessageSendSelectArea" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="message_id" property="messageId" jdbcType="VARCHAR" />
-        <result column="message_type" property="messageType" jdbcType="BIT" />
+        <result column="message_type" property="messageType" jdbcType="TINYINT" />
         <result column="province_id" property="provinceId" jdbcType="VARCHAR" />
         <result column="province_name" property="provinceName" jdbcType="VARCHAR" />
         <result column="city_id" property="cityId" jdbcType="VARCHAR" />
         <result column="city_name" property="cityName" jdbcType="VARCHAR" />
-        <result column="area_type" property="areaType" jdbcType="BIT" />
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, message_id, message_type, province_id, province_name, city_id, city_name, area_type
+        id, message_id, message_type, province_id, province_name, city_id, city_name
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -47,9 +46,6 @@
             <if test="cityName != null" >
                 city_name,
             </if>
-            <if test="areaType != null" >
-                area_type,
-            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -59,7 +55,7 @@
                 #{messageId,jdbcType=VARCHAR},
             </if>
             <if test="messageType != null" >
-                #{messageType,jdbcType=BIT},
+                #{messageType,jdbcType=TINYINT},
             </if>
             <if test="provinceId != null" >
                 #{provinceId,jdbcType=VARCHAR},
@@ -73,9 +69,6 @@
             <if test="cityName != null" >
                 #{cityName,jdbcType=VARCHAR},
             </if>
-            <if test="areaType != null" >
-                #{areaType,jdbcType=BIT},
-            </if>
         </trim>
     </insert>
 
@@ -86,7 +79,7 @@
                 message_id = #{messageId,jdbcType=VARCHAR},
             </if>
             <if test="messageType != null" >
-                message_type = #{messageType,jdbcType=BIT},
+                message_type = #{messageType,jdbcType=TINYINT},
             </if>
             <if test="provinceId != null" >
                 province_id = #{provinceId,jdbcType=VARCHAR},
@@ -100,16 +93,19 @@
             <if test="cityName != null" >
                 city_name = #{cityName,jdbcType=VARCHAR},
             </if>
-            <if test="areaType != null" >
-                area_type = #{areaType,jdbcType=BIT},
-            </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
     </update>
 
-    <delete id="delete" parameterType="java.lang.String" >
+    <delete id="deleteByMessageId" parameterType="java.lang.String" >
         delete from message_send_select_area
-        where id = #{id,jdbcType=VARCHAR}
+        where message_id = #{messageId,jdbcType=VARCHAR}
     </delete>
-
+    <select id="findListByMessageId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from message_send_select_area
+        where message_id = #{messageId,jdbcType=VARCHAR}
+    </select>
+    
 </mapper>

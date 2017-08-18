@@ -144,7 +144,7 @@
         pin.id, buyer.phone userPhone, pin.use_amount, pin.create_time
         FROM trade_pin_money_use pin
         LEFT JOIN sys_buyer_user buyer ON buyer.id=pin.user_id
-        WHERE disabled = 0
+        WHERE pin.disabled = 0
         <if test="userPhone != null" >
            AND buyer.phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},'%')
         </if>
@@ -162,7 +162,7 @@
         SELECT count(1)
         FROM trade_pin_money_use pin
         LEFT JOIN sys_buyer_user buyer ON buyer.id=pin.user_id
-        WHERE disabled = 0
+        WHERE pin.disabled = 0
         <if test="userPhone != null" >
            AND buyer.phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},'%')
         </if>

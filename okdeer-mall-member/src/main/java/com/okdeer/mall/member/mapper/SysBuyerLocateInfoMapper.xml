@@ -187,4 +187,30 @@
 	    select * from sys_buyer_locate_info
 	    where user_id = #{userId}
 	</select>
+	 <resultMap id="UserResultMap" type="com.okdeer.mall.member.bo.SysBuyerLocateInfoBo" >
+        <result column="user_id" property="userId" jdbcType="VARCHAR" />
+        <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+    </resultMap>
+	<select id="findUserList" parameterType="com.okdeer.mall.member.member.dto.LocateInfoQueryDto" resultMap="UserResultMap">
+	    select DISTINCT buyer.user_id,buyer.city_id,buyer.city_name from sys_buyer_locate_info buyer
+	    <!-- 0 全部用户 1新用户 2 老用户 3 自定义用户 -->
+	    <if test="type != null and (type == 0 or type == 3)" >
+           LEFT JOIN trade_order trade ON trade.user_id = buyer.user_id
+        </if>
+        <if test="type != null and type == 1 " >
+           LEFT JOIN trade_order trade ON trade.user_id = buyer.user_id AND trade.id is null
+        </if>
+        <if test="type != null and type == 2 " >
+           INNER JOIN trade_order trade ON trade.user_id = buyer.user_id
+        </if>
+	    where 1=1 
+        <if test="cityIdList != null">
+            <foreach collection="cityIdList" item="item" separator="," open="AND buyer.city_id in (" close=")">
+                #{item,jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        <if test="type != null and type == 3 and endTime != null" >
+           and buyer.update_time <![CDATA[ <= ]]> #{endTime,jdbcType=TIMESTAMP}
+        </if>
+	</select>
 </mapper>

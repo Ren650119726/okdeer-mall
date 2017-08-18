@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.mapper.MessageSendSettingMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.entity.MessageSendSetting" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="message_name" property="messageName" jdbcType="VARCHAR" />
+        <result column="context" property="context" jdbcType="VARCHAR" />
+        <result column="range_type" property="rangeType" jdbcType="BIT" />
+        <result column="send_time" property="sendTime" jdbcType="TIMESTAMP" />
+        <result column="type" property="type" jdbcType="TINYINT" />
+        <result column="status" property="status" jdbcType="TINYINT" />
+        <result column="send_object" property="sendObject" jdbcType="INTEGER" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="disabled" property="disabled" jdbcType="BIT" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, message_name, context, range_type, send_time, type, status, send_object, create_time, 
+        create_user_id, update_time, update_user_id, disabled
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from message_send_setting
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.operate.entity.MessageSendSetting" >
+        insert into message_send_setting
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="messageName != null" >
+                message_name,
+            </if>
+            <if test="context != null" >
+                context,
+            </if>
+            <if test="rangeType != null" >
+                range_type,
+            </if>
+            <if test="sendTime != null" >
+                send_time,
+            </if>
+            <if test="type != null" >
+                type,
+            </if>
+            <if test="status != null" >
+                status,
+            </if>
+            <if test="sendObject != null" >
+                send_object,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="messageName != null" >
+                #{messageName,jdbcType=VARCHAR},
+            </if>
+            <if test="context != null" >
+                #{context,jdbcType=VARCHAR},
+            </if>
+            <if test="rangeType != null" >
+                #{rangeType,jdbcType=BIT},
+            </if>
+            <if test="sendTime != null" >
+                #{sendTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="type != null" >
+                #{type,jdbcType=TINYINT},
+            </if>
+            <if test="status != null" >
+                #{status,jdbcType=TINYINT},
+            </if>
+            <if test="sendObject != null" >
+                #{sendObject,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.operate.entity.MessageSendSetting" >
+        update message_send_setting
+        <set >
+            <if test="messageName != null" >
+                message_name = #{messageName,jdbcType=VARCHAR},
+            </if>
+            <if test="context != null" >
+                context = #{context,jdbcType=VARCHAR},
+            </if>
+            <if test="rangeType != null" >
+                range_type = #{rangeType,jdbcType=BIT},
+            </if>
+            <if test="sendTime != null" >
+                send_time = #{sendTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="type != null" >
+                type = #{type,jdbcType=TINYINT},
+            </if>
+            <if test="status != null" >
+                type = #{status,jdbcType=TINYINT},
+            </if>
+            <if test="sendObject != null" >
+                send_object = #{sendObject,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from message_send_setting
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <select id="findPageList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.operate.dto.MessageSendSettingQueryDto" >
+        select 
+        <include refid="Base_Column_List" />
+        from message_send_setting
+        where 1=1
+        <if test="messageName != null" >
+            AND message_name LIKE CONCAT('%', #{messageName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="createTimeStart != null" >
+        	AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+        </if>
+        <if test="createTimeEnd != null" >
+        	AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+        </if>
+        <if test="status != null" >
+            AND status = #{status,jdbcType=TINYINT}
+        </if>
+    </select>
+    
+    <select id="findCountByName" resultType="Integer" parameterType="java.lang.String" >
+        select count(1) 
+        from message_send_setting
+        where message_name = #{messageName,jdbcType=VARCHAR}
+    </select>
+    <!-- 修改还未达到发送时间的消息 -->
+     <update id="updateSetting" parameterType="com.okdeer.mall.operate.entity.MessageSendSetting" >
+        update message_send_setting
+        <set >
+            <if test="messageName != null" >
+                message_name = #{messageName,jdbcType=VARCHAR},
+            </if>
+            <if test="context != null" >
+                context = #{context,jdbcType=VARCHAR},
+            </if>
+            <if test="rangeType != null" >
+                range_type = #{rangeType,jdbcType=BIT},
+            </if>
+            <if test="sendTime != null" >
+                send_time = #{sendTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="type != null" >
+                type = #{type,jdbcType=TINYINT},
+            </if>
+            <if test="status != null" >
+                type = #{status,jdbcType=TINYINT},
+            </if>
+            <if test="sendObject != null" >
+                send_object = #{sendObject,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR} 
+        and send_time > #{sendTime,jdbcType=TIMESTAMP}
+    </update>
+</mapper>
