@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.archive.store.enums.ResultCodeEnum;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
@@ -99,6 +100,9 @@ public class CheckSecKillServiceImpl implements RequestHandler<PlaceOrderParamDt
 	 * @date 2017年8月17日
 	 */
 	private boolean isOutOfLimitByDevice(PlaceOrderParamDto paramDto) throws Exception {
+		if(StringUtils.isNullOrEmpty(paramDto.getSeckillId())){
+			return false;
+		}
 		// 统计该用户是否参与过该秒杀活动
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("activitySeckillId", paramDto.getSeckillId());

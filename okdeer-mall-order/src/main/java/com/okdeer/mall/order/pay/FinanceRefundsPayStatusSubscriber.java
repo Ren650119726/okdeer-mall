@@ -151,10 +151,9 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 				logger.info("=============卖家退款中，修改退款的订单的状态=============");
 				orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
 				
-				//Begin 便利店退款成功，向用户推送消息 added by zhaoqc
-				logger.info("退款成功向用户发送通知消息");
-		        this.sendMessageService.tradeSendMessage(null, orderRefunds);
-                //End added by zhaoqc 2017-02-24
+				//退款成功向用户发送通知消息
+//		        this.sendMessageService.tradeSendMessage(null, orderRefunds);
+				
 			} else if (orderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND) {
 				orderRefunds.setRefundsStatus(RefundsStatusEnum.YSC_REFUND_SUCCESS);
 			} else if (orderRefunds.getRefundsStatus() == RefundsStatusEnum.FORCE_SELLER_REFUND) {

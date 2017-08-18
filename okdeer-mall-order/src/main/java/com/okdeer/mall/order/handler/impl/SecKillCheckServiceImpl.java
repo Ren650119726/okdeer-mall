@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.archive.store.enums.ResultCodeEnum;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
@@ -15,6 +16,7 @@ import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.constant.text.ExceptionConstant;
+import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
@@ -83,6 +85,12 @@ public class SecKillCheckServiceImpl implements RequestHandler<ServiceOrderReq,S
 			req.setComplete(true);
 			return;
 		}
+		// 秒杀限制设备。判断是否超出限购
+		if (isOutOfLimitByDevice(reqData)) {
+			resp.setResult(ResultCodeEnum.ACTIVITY_LIMIT_NUM);
+			req.setComplete(true);
+			return;
+		}
 		
 		// 设置响应结果
 		respData.setSeckillStatus(activitySeckill.getSeckillStatus().ordinal());
@@ -115,6 +123,32 @@ public class SecKillCheckServiceImpl implements RequestHandler<ServiceOrderReq,S
 		int userBuyNum = activitySeckillRecordService.findSeckillCount(params);
 		// 判断该用户是否参与过该秒杀活动，如果参与过，不能再次参与
 		if (userBuyNum > 0) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * @Description: 设备限制
+	 * @param paramDto
+	 * @return   
+	 * @author guocp
+	 * @throws Exception 
+	 * @date 2017年8月17日
+	 */
+	private boolean isOutOfLimitByDevice(ServiceOrderReq reqData) throws Exception {
+		if(StringUtils.isNullOrEmpty(reqData.getSeckillId())){
+			return false;
+		}
+		// 统计该用户是否参与过该秒杀活动
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("activitySeckillId", reqData.getSeckillId());
+		params.put("buyerDeviceId", reqData.getDeviceId());
+		// 查询用户参与该秒杀活动的次数 
+		int userBuyNum = activitySeckillRecordService.findSeckillCount(params);
+		ActivitySeckill seckill = activitySeckillService.findSeckillById(reqData.getSeckillId());
+		// 判断该设备参与该秒杀的次数是否大于限制次数
+		if (seckill != null && seckill.getDailyMaxNum() != null && userBuyNum >= seckill.getDailyMaxNum().intValue()) {
 			return true;
 		}
 		return false;

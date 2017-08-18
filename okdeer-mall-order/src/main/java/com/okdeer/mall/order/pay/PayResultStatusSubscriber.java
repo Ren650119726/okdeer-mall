@@ -326,10 +326,8 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 				}
 				tradeOrderRefundsService.updateRefunds(tradeOrderRefunds);
 				
-				//Begin 便利店退款成功，向用户推送消息 added by zhaoqc
-                logger.info("退款成功向用户发送通知消息");
-                this.sendMessageService.tradeSendMessage(null, tradeOrderRefunds);
-                //End added by zhaoqc 2017-03-1
+                //退款成功向用户发送通知消息
+//              this.sendMessageService.tradeSendMessage(null, tradeOrderRefunds);
 				
 				// 订单完成后同步到商业管理系统
 				//tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(tradeOrderRefunds.getId());

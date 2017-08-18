@@ -137,17 +137,17 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	/**
 	 * 默认通知样式：0
 	 */
-	private static final Integer defaultNotificationBuilderId = 0;
+	private static final Integer DEFAULTNOTIFICATIONBUILDERID = 0;
 
 	/**
 	 * 默认:响铃+震动+可清除
 	 */
-	private static final Integer defaultNotificationBasicStyle1 = 7;
+	private static final Integer DEFAULTNOTIFICATIONBASICSTYLE1 = 7;
 
 	/**
 	 * 默认:震动+可清除
 	 */
-	private static final Integer defaultNotificationBasicStyle2 = 3;
+	private static final Integer DEFAULTNOTIFICATIONBASICSTYLE2 = 3;
 	
 
 	@Reference(version = "1.0.0", check = false)
@@ -202,14 +202,9 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	@Reference(version = "1.0.0", check = false)
 	private SysUserLoginLogServiceApi sysUserLoginLogApi;
 	
-	private static final String TOPIC_ONLINE_ORDER_TOPOS = "topic_online_order_topos";
-	
-	private static final String TAG_ONLINE_ORDER_TOPOS = "tag_online_order_topos";
-	// End added by maojj 2016-12-19
 
 	private void sendMessage(Object entity) throws Exception {
-		MQMessage anMessage = new MQMessage(TOPIC, (Serializable)JsonMapper.nonDefaultMapper().toJson(entity));
-		rocketMQProducer.sendMessage(anMessage);
+		rocketMQProducer.sendMessage(new MQMessage<String>(TOPIC, JsonMapper.nonDefaultMapper().toJson(entity)));
 	}
 
 	/**
@@ -220,7 +215,6 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 */
 	public void saveSysMsg(TradeOrder tradeOrder, SendMsgType sendMsgType) {
 		SysMsg sysMsg = new SysMsg();
-
 		// 订单信息不存在，不做保存
 		if (tradeOrder == null || StringUtils.isBlank(tradeOrder.getId())) {
 			return;
@@ -310,69 +304,33 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	public void sendSellerAppMessage(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType) throws Exception {
 		//查询店铺的用户信息
 	    List<SysUser> sysUserList = sysUserMapper.selectUserByStoreId(sendMsgParamVo.getStoreId());
-	    
 	    if(CollectionUtils.isEmpty(sysUserList)){
 	    	return;
 	    }
-	    //版本号比较器类
-	    VersionUtils compare = new VersionUtils();	   
-	    
 	    //内容消息推送用户列表
 	    List<PushUserVo> oriMsgUserList = new ArrayList<PushUserVo>();
-	    List<PushUserVo> oriMsgUserList210 = new ArrayList<PushUserVo>();
-	    //链接消息推送列表
-	    List<PushUserVo> linkedMsgUserList = new ArrayList<PushUserVo>();
-	    //Map<String,Integer> userToVersion = Maps.newHashMap();
-	    
         sysUserList.forEach(sysUser -> {
             WhetherEnum whetherEnum = sysUser.getIsAccept();
             if(whetherEnum == WhetherEnum.not) {
                 return;
             }
-            
             //查看当前登录的设备APP版本
             List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null, null);
             if(sysUserLoginLogs != null && !sysUserLoginLogs.isEmpty()) {
                 sysUserLoginLogs.forEach(sysUserLoginLog -> {
                     PushUserVo pushUser = createPushUserVo(sysUser,sendMsgType);
-                    
-                    String version = sysUserLoginLog.getVersion();
-                    if(StringUtils.isEmpty(version)){
-                    	linkedMsgUserList.add(pushUser);
-                    }else{
-	                    int compareRes = compare.compare(version, "2.1.0");
-	                    if(compareRes == 1) {
-	                        //APP跳转原生页面，发送内容消息
-	                        oriMsgUserList.add(pushUser);
-	                    } else if(compareRes == 0){
-	                    	oriMsgUserList210.add(pushUser);
-	                    }else {
-	                        //APP调整H5页面，发送链接消息
-	                        linkedMsgUserList.add(pushUser);
-	                    }
-                    }
+                    //APP跳转原生页面，发送内容消息
+                    oriMsgUserList.add(pushUser);
                 });
             }
         });  
 	    
-	    //发送内容消息--2.1.0之后版本
+	    //发送内容消息
 		if(CollectionUtils.isNotEmpty(oriMsgUserList)) {
-		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType,1);
+		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType);
 		    pushOriMsgVo.setUserList(oriMsgUserList);
 			sendMessage(pushOriMsgVo);
 		}
-		//发送内容消息--2.1.0
-		if(CollectionUtils.isNotEmpty(oriMsgUserList210)) {
-			PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType,0);
-			pushOriMsgVo.setUserList(oriMsgUserList210);
-			sendMessage(pushOriMsgVo);
-		}
-		//发送链接消息--2.1.0之前版本
-		if(CollectionUtils.isNotEmpty(linkedMsgUserList)) {
-		    PushMsgVo pushLinkedMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType,-1);
-		    pushLinkedMsgVo.setUserList(linkedMsgUserList);
-		    sendMessage(pushLinkedMsgVo);
-        }
 	}
 	
 	/**
@@ -388,7 +346,8 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         // begin V2.3.0 新增语音播放文件名 add by wangf01 20170419
 		pushUser.setSoundStyle("order.wav");
 		//判断是否是申请退款||卖家同意退款后，如果是，则提示默认声音，针对IOS
-		if(sendMsgType == SendMsgType.applyReturn || sendMsgType == SendMsgType.returnShipments || sendMsgType == SendMsgType.complainOrder){
+		if (sendMsgType == SendMsgType.applyReturn || sendMsgType == SendMsgType.returnShipments
+				|| sendMsgType == SendMsgType.complainOrder) {
 			pushUser.setSoundStyle("default");
 		}
 		if(sendMsgType == SendMsgType.lzgGathering){
@@ -410,15 +369,15 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
             }
         } catch (Exception e) {
             // 没有配置zookeeper，取默认的
-            pushUser.setNotificationBuilderId(defaultNotificationBuilderId);
+            pushUser.setNotificationBuilderId(DEFAULTNOTIFICATIONBUILDERID);
             // 消息信息提示
             if (WhetherEnum.whether.equals(sysUser.getIsAccept())) {
                 // 有声音
                 pushUser.setIsexitsSound(0);
-                pushUser.setNotificationBasicStyle(defaultNotificationBasicStyle1);
+                pushUser.setNotificationBasicStyle(DEFAULTNOTIFICATIONBASICSTYLE1);
             } else {
                 // 无声音
-                pushUser.setNotificationBasicStyle(defaultNotificationBasicStyle2);
+                pushUser.setNotificationBasicStyle(DEFAULTNOTIFICATIONBASICSTYLE2);
                 pushUser.setIsexitsSound(1);
             }
         }
@@ -433,7 +392,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 * @param msgContentType 0链接，1内容
 	 * @return
 	 */
-	private PushMsgVo createPushMsgVo(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType,int msgContentType) {
+	private PushMsgVo createPushMsgVo(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType) {
 		
         // 推送消息标题
         String msgTitle = null;
@@ -481,13 +440,13 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         pushMsgVo.setMsgTypeCustom(msgTypeCustom);
         pushMsgVo.setServiceFkId(serviceFkId);
         //2.1.0之前的版本发送h5链接
-        pushMsgVo.setMsgDetailType(msgContentType < 0 ? 0 : 1);
-        if(msgContentType < 0) {
-            pushMsgVo.setMsgDetailLinkUrl(linkUrl);
-        } /*else if(msgContentType == 1) {
-            pushMsgVo.setMsgDetailContent(serviceFkId);
-        }*/
+        pushMsgVo.setMsgDetailType(MsgConstant.MsgDetailType.CONTENT);
         pushMsgVo.setMsgNotifyContent(msgTitle);
+        //add by zhangkeneng v2.6.0 鹿掌柜收款需要单独设置
+        if(sendMsgType == SendMsgType.lzgGathering){
+        	pushMsgVo.setMsgDetailType(0);
+        	pushMsgVo.setMsgDetailLinkUrl("鹿掌柜到账"+JsonDateUtil.priceConvertToString(sendMsgParamVo.getLzgAmount())+"元");
+        }
         
         pushMsgVo.setSysCode(msgSysCode);
         pushMsgVo.setToken(msgToken);
@@ -496,19 +455,10 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
         // 2:商家APP,3POS机
         pushMsgVo.setAppType(2);
         pushMsgVo.setIsUseTemplate(0);
-		if (msgContentType <= 0) {
-        	pushMsgVo.setMsgType(MsgConstant.MsgType.NOTICE);
-        }else{
-        	pushMsgVo.setMsgType(MsgConstant.MsgType.THROUGH);
-        }
+        pushMsgVo.setMsgType(MsgConstant.MsgType.THROUGH);
         // 设置是否定时发送
         pushMsgVo.setIsTiming(0);
         
-        //add by zhangkeneng v2.6.0 鹿掌柜收款需要单独设置
-        if(sendMsgType == SendMsgType.lzgGathering){
-        	pushMsgVo.setMsgDetailType(0);
-        	pushMsgVo.setMsgDetailLinkUrl("鹿掌柜到账"+JsonDateUtil.priceConvertToString(sendMsgParamVo.getLzgAmount())+"元");
-        }
         return pushMsgVo;
 	}
 
