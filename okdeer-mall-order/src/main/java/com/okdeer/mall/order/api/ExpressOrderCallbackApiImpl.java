@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * ClassName: ExpressOrderCallbackApiImpl
@@ -55,6 +56,8 @@ import org.springframework.beans.factory.annotation.Value;
 public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
 
     private static final Logger logger = LoggerFactory.getLogger(ExpressOrderCallbackApiImpl.class);
+
+    private static final String EXPRESSMODE = "expressMode";
 
     /**
      * 短信code
@@ -101,6 +104,9 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
     @Reference(version = "1.0.0")
     private ISmsService smsService;
 
+    @Autowired
+    private RedisTemplate<String, Boolean> redisTemplate;
+
     @Override
     public ResultMsgDto<String> saveExpressMode(ExpressModeParamDto paramDto) throws Exception {
         ResultMsgDto<String> resultMsgDto = new ResultMsgDto();
@@ -113,29 +119,36 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
             //检查传入的参数数据
             resultMsgDto = checkData(paramDto, resultMsgDto);
             if (resultMsgDto.getCode() == ExpressModeCheckEnum.SUCCESS.getCode()) {
-                //根据配送方式的不同，进入不同的业务流程 1：蜂鸟配送 2：自行配送
-                switch (paramDto.getExpressType()) {
-                    case 1:
-                        try {
-                            expressOrderCallbackService.saveExpressModePlanA(paramDto);
-                        } catch (Exception e) {
-                            logger.error("蜂鸟配送异常(订单:" + paramDto.getOrderId() + "):{}", e);
-                            resultMsgDto.setCode(ExpressModeCheckEnum.ELE_EXPRESS_EXCEPTION.getCode());
-                            resultMsgDto.setMsg(ExpressModeCheckEnum.ELE_EXPRESS_EXCEPTION.getMsg());
-                        }
-                        break;
-                    case 2:
-                        try {
-                            expressOrderCallbackService.saveExpressModePlanB(paramDto);
-                        } catch (Exception e) {
-                            logger.error("自行配送异常异常(订单:" + paramDto.getOrderId() + "):{}", e);
-                            resultMsgDto.setCode(ExpressModeCheckEnum.SELLER_EXPRESS_EXCEPTION.getCode());
-                            resultMsgDto.setMsg(ExpressModeCheckEnum.SELLER_EXPRESS_EXCEPTION.getMsg());
-                        }
-                        break;
-                    default:
-                        break;
+                boolean flag = redisTemplate.boundValueOps(EXPRESSMODE + paramDto.getOrderId()).setIfAbsent(true);
+                if (!flag) {
+                    resultMsgDto.setCode(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getCode());
+                    resultMsgDto.setMsg(ExpressModeCheckEnum.ORDER_STATUS_FAIL.getMsg());
+                } else {
+                    //根据配送方式的不同，进入不同的业务流程 1：蜂鸟配送 2：自行配送
+                    switch (paramDto.getExpressType()) {
+                        case 1:
+                            try {
+                                expressOrderCallbackService.saveExpressModePlanA(paramDto);
+                            } catch (Exception e) {
+                                logger.error("蜂鸟配送异常(订单:" + paramDto.getOrderId() + "):{}", e);
+                                resultMsgDto.setCode(ExpressModeCheckEnum.ELE_EXPRESS_EXCEPTION.getCode());
+                                resultMsgDto.setMsg(ExpressModeCheckEnum.ELE_EXPRESS_EXCEPTION.getMsg());
+                            }
+                            break;
+                        case 2:
+                            try {
+                                expressOrderCallbackService.saveExpressModePlanB(paramDto);
+                            } catch (Exception e) {
+                                logger.error("自行配送异常异常(订单:" + paramDto.getOrderId() + "):{}", e);
+                                resultMsgDto.setCode(ExpressModeCheckEnum.SELLER_EXPRESS_EXCEPTION.getCode());
+                                resultMsgDto.setMsg(ExpressModeCheckEnum.SELLER_EXPRESS_EXCEPTION.getMsg());
+                            }
+                            break;
+                        default:
+                            break;
+                    }
                 }
+                redisTemplate.delete(EXPRESSMODE + paramDto.getOrderId());
             }
         }
         return resultMsgDto;
