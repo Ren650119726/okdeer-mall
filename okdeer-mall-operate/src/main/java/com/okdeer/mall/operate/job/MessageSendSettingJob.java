@@ -94,8 +94,6 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 	@Autowired
 	private RocketMQProducer rocketMQProducer;
 	
-	//private KafkaProducer kafkaProducer ;
-	
 	@Override
 	public void process(JobExecutionMultipleShardingContext shardingContext) {
 		try {
@@ -165,10 +163,10 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 		pushMsgVo.setIsUseTemplate(Constant.ZERO);
 		pushMsgVo.setMsgType(Constant.ONE);
 		pushMsgVo.setMsgTypeCustom(OrderMsgConstant.APP_MESSAGE_SEND);
-		pushMsgVo.setMsgDetailType(Constant.ZERO);
 
 		// 不使用模板 设置消息名称内容
 		pushMsgVo.setMsgNotifyContent(messageSend.getContext());
+		//消息详情类型： 0 链接详情，1内容详情
 		pushMsgVo.setMsgDetailType(Constant.ONE);
 		pushMsgVo.setMsgDetailContent(messageSend.getContext());
 		// 设置是否定时发送 定时发送
