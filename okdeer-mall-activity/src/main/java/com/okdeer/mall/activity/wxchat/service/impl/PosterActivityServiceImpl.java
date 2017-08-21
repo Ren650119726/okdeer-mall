@@ -531,7 +531,7 @@ public class PosterActivityServiceImpl
 			long count = activityPosterDrawRecordService.findCountByParams(activityPosterDrawRecordParamDto);
 			if (count >= activityPosterConfig.getDrawCountLimit()) {
 				drawResult.setCode(101);
-				drawResult.setMsg("您的抽奖次数已经超过单日限制抽奖次数！");
+				drawResult.setMsg("您的抽奖次数已经超过当日限制抽奖次数，请明天再来！");
 				return drawResult;
 			}
 
