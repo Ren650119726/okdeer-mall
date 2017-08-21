@@ -673,8 +673,31 @@
 			AND s.received_time &gt;= #{orderStartDate, jdbcType=VARCHAR}
 		</if>
 		<if test="orderEndDate != null"  >
-			AND s.received_time &lt; #{orderEndDate, jdbcType=VARCHAR}
+			AND s.received_time &lt;= #{orderEndDate, jdbcType=VARCHAR}
 		</if>
  </select>
- 
+ <!--begin xuzq 20170821 每天2点查询昨天店铺已完成订单的商品销售情况 -->
+<resultMap id="SellerResultMap" type="com.okdeer.mall.order.bo.StoreGoodsHotSellerBo" >
+    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+    <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+    <result column="spu_category_id" property="spuCategoryId" jdbcType="VARCHAR" />
+    <result column="quantity" property="quantity" jdbcType="INTEGER" />
+    <result column="sale" property="sale" jdbcType="DECIMAL" />
+ </resultMap>   
+ <select id="findSellerList"  resultMap="SellerResultMap">
+ 	SELECT DISTINCT
+ 		trade.store_id,
+ 		item.store_sku_id,
+ 		sku.spu_category_id,
+        count(item.quantity) quantity,
+        count(item.actual_amount) sale
+	FROM trade_order_item item 
+	left join trade_order trade on item.order_id = trade.id
+	left join goods_store_sku sku on sku.id = item.store_sku_id
+    where item.create_time &gt;= date_sub(curdate(),interval 1 day)
+          and item.create_time &lt;= curdate()
+          and trade.status=5
+          group by sku.store_id,item.store_sku_id,sku.spu_category_id
+ </select>
+  <!--begin xuzq 20170821 每天2点查询昨天店铺已完成订单的商品销售情况 -->
 </mapper>

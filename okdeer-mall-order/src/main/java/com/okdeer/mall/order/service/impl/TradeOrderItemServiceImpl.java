@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.mall.order.bo.StoreGoodsHotSellerBo;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
@@ -108,6 +109,11 @@ class TradeOrderItemServiceImpl implements TradeOrderItemService, TradeOrderItem
 		map.put("orderStartDate", startDate);
 		map.put("orderEndDate", endDate);
 		return tradeOrderItemMapper.findCompletedOrderItem(map);
+	}
+
+	@Override
+	public List<StoreGoodsHotSellerBo> findSellerList() {
+		return tradeOrderItemMapper.findSellerList();
 	}
 
 }
