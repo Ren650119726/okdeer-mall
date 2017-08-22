@@ -580,118 +580,118 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		return tradeOrderDto;
 	}
 
-	/******************************* 财务系统接口 **************************************************************************************/
-	/**
-	 * 查询微信或支付宝支付的，订单状态处于已取消、已拒收、取消中、拒收中的订单 （主要用于财务系统接口,分页）
-	 * 
-	 * @author wusw
-	 * @param params
-	 * @return
-	 * @throws Exception
-	 */
-	@Override
-	public PageResultVo<TradeOrderPayQueryDto> findByStatusPayType(Map<String, Object> params) throws Exception {
-		int pageNum = Integer.valueOf(params.get("page").toString());
-		int pageSize = Integer.valueOf(params.get("rows").toString());
-		List<TradeOrderPayQueryDto> dtoList = new ArrayList<TradeOrderPayQueryDto>();
-		PageUtils<TradeOrderPayQueryVo> voPage = tradeOrderService.findByStatusPayType(params, pageNum, pageSize);
-		if (voPage.getList() != null) {
-			for (TradeOrderPayQueryVo vo : voPage.getList()) {
-				TradeOrderPayQueryDto dto = new TradeOrderPayQueryDto();
-				dto.setOrderId(vo.getOrderId());
-				dto.setOrderNo(vo.getOrderNo());
-				dto.setShopName(vo.getShopName());
-				dto.setBuyer(vo.getBuyer());
-				dto.setAgentName(vo.getAgentName());
-				dto.setTransMoney(vo.getTransMoney());
-				dto.setRealMoney(vo.getRealMoney());
-				dto.setPreferMoney(vo.getPreferMoney());
-				if (vo.getApplyTime() != null) {
-					dto.setApplyTime(vo.getApplyTime());
-				}
-				if (vo.getDealTime() != null) {
-					dto.setDealTime(vo.getDealTime());
-				}
-				if (vo.getHandTime() != null) {
-					dto.setHandTime(vo.getHandTime());
-				}
-				dto.setStatus(vo.getStatus());
-
-				// begin add by zengjz 增加违约金的处理
-				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
-					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
-				} else {
-					dto.setRefundAmount(vo.getRealMoney());
-				}
-				// end add by zengjz 增加违约金的处理
-
-				dto.setThirdTransNo(vo.getThirdTransNo());
-				dto.setPayType(vo.getPayType());
-
-				// BeanUtils.copyProperties(dto, vo);
-				dtoList.add(dto);
-			}
-		}
-		PageResultVo<TradeOrderPayQueryDto> dtoPage = new PageResultVo<TradeOrderPayQueryDto>(voPage.getPageNum(),
-				voPage.getPageSize(), voPage.getTotal(), dtoList);
-		return dtoPage;
-	}
-
-	/**
-	 * 查询微信或支付宝支付的，订单状态处于已取消、已拒收、取消中、拒收中的订单 （主要用于财务系统接口,不分页）
-	 * 
-	 * @author wusw
-	 * @param params
-	 * @return
-	 * @throws Exception
-	 */
-	@Override
-	public List<TradeOrderPayQueryDto> findListByStatusPayType(Map<String, Object> params)
-			throws ExceedRangeException, Exception {
-		if (tradeOrderService.selectCountByStatusPayType(params) > RECORD_NUM) {
-			throw new ExceedRangeException("查询导出取消、拒收订单异常", new Throwable());
-		}
-
-		List<TradeOrderPayQueryDto> dtoList = new ArrayList<TradeOrderPayQueryDto>();
-		List<TradeOrderPayQueryVo> voList = tradeOrderService.findListByStatusPayType(params);
-		if (voList != null) {
-			for (TradeOrderPayQueryVo vo : voList) {
-				TradeOrderPayQueryDto dto = new TradeOrderPayQueryDto();
-				dto.setOrderId(vo.getOrderId());
-				dto.setOrderNo(vo.getOrderNo());
-				dto.setShopName(vo.getShopName());
-				dto.setBuyer(vo.getBuyer());
-				dto.setTransMoney(vo.getTransMoney());
-				dto.setRealMoney(vo.getRealMoney());
-				dto.setPreferMoney(vo.getPreferMoney());
-				if (vo.getApplyTime() != null) {
-					dto.setApplyTime(vo.getApplyTime());
-				}
-				if (vo.getDealTime() != null) {
-					dto.setDealTime(vo.getDealTime());
-				}
-				if (vo.getHandTime() != null) {
-					dto.setHandTime(vo.getHandTime());
-				}
-				dto.setStatus(vo.getStatus());
-
-				// begin add by zengjz 增加违约金的处理
-				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
-					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
-				} else {
-					dto.setRefundAmount(vo.getRealMoney());
-				}
-				// end add by zengjz 增加违约金的处理
-				dto.setThirdTransNo(vo.getThirdTransNo());
-				dto.setPayType(vo.getPayType());
-				dto.setOrderResource(vo.getOrderResource());
-
-				// BeanUtils.copyProperties(dto, vo);
-				dtoList.add(dto);
-			}
-		}
-		return dtoList;
-	}
+//	/******************************* 财务系统接口 **************************************************************************************/
+//	/**
+//	 * 查询微信或支付宝支付的，订单状态处于已取消、已拒收、取消中、拒收中的订单 （主要用于财务系统接口,分页）
+//	 * 
+//	 * @author wusw
+//	 * @param params
+//	 * @return
+//	 * @throws Exception
+//	 */
+//	@Override
+//	public PageResultVo<TradeOrderPayQueryDto> findByStatusPayType(Map<String, Object> params) throws Exception {
+//		int pageNum = Integer.valueOf(params.get("page").toString());
+//		int pageSize = Integer.valueOf(params.get("rows").toString());
+//		List<TradeOrderPayQueryDto> dtoList = new ArrayList<TradeOrderPayQueryDto>();
+//		PageUtils<TradeOrderPayQueryVo> voPage = tradeOrderService.findByStatusPayType(params, pageNum, pageSize);
+//		if (voPage.getList() != null) {
+//			for (TradeOrderPayQueryVo vo : voPage.getList()) {
+//				TradeOrderPayQueryDto dto = new TradeOrderPayQueryDto();
+//				dto.setOrderId(vo.getOrderId());
+//				dto.setOrderNo(vo.getOrderNo());
+//				dto.setShopName(vo.getShopName());
+//				dto.setBuyer(vo.getBuyer());
+//				dto.setAgentName(vo.getAgentName());
+//				dto.setTransMoney(vo.getTransMoney());
+//				dto.setRealMoney(vo.getRealMoney());
+//				dto.setPreferMoney(vo.getPreferMoney());
+//				if (vo.getApplyTime() != null) {
+//					dto.setApplyTime(vo.getApplyTime());
+//				}
+//				if (vo.getDealTime() != null) {
+//					dto.setDealTime(vo.getDealTime());
+//				}
+//				if (vo.getHandTime() != null) {
+//					dto.setHandTime(vo.getHandTime());
+//				}
+//				dto.setStatus(vo.getStatus());
+//
+//				// begin add by zengjz 增加违约金的处理
+//				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
+//					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
+//				} else {
+//					dto.setRefundAmount(vo.getRealMoney());
+//				}
+//				// end add by zengjz 增加违约金的处理
+//
+//				dto.setThirdTransNo(vo.getThirdTransNo());
+//				dto.setPayType(vo.getPayType());
+//
+//				// BeanUtils.copyProperties(dto, vo);
+//				dtoList.add(dto);
+//			}
+//		}
+//		PageResultVo<TradeOrderPayQueryDto> dtoPage = new PageResultVo<TradeOrderPayQueryDto>(voPage.getPageNum(),
+//				voPage.getPageSize(), voPage.getTotal(), dtoList);
+//		return dtoPage;
+//	}
+//
+//	/**
+//	 * 查询微信或支付宝支付的，订单状态处于已取消、已拒收、取消中、拒收中的订单 （主要用于财务系统接口,不分页）
+//	 * 
+//	 * @author wusw
+//	 * @param params
+//	 * @return
+//	 * @throws Exception
+//	 */
+//	@Override
+//	public List<TradeOrderPayQueryDto> findListByStatusPayType(Map<String, Object> params)
+//			throws ExceedRangeException, Exception {
+//		if (tradeOrderService.selectCountByStatusPayType(params) > RECORD_NUM) {
+//			throw new ExceedRangeException("查询导出取消、拒收订单异常", new Throwable());
+//		}
+//
+//		List<TradeOrderPayQueryDto> dtoList = new ArrayList<TradeOrderPayQueryDto>();
+//		List<TradeOrderPayQueryVo> voList = tradeOrderService.findListByStatusPayType(params);
+//		if (voList != null) {
+//			for (TradeOrderPayQueryVo vo : voList) {
+//				TradeOrderPayQueryDto dto = new TradeOrderPayQueryDto();
+//				dto.setOrderId(vo.getOrderId());
+//				dto.setOrderNo(vo.getOrderNo());
+//				dto.setShopName(vo.getShopName());
+//				dto.setBuyer(vo.getBuyer());
+//				dto.setTransMoney(vo.getTransMoney());
+//				dto.setRealMoney(vo.getRealMoney());
+//				dto.setPreferMoney(vo.getPreferMoney());
+//				if (vo.getApplyTime() != null) {
+//					dto.setApplyTime(vo.getApplyTime());
+//				}
+//				if (vo.getDealTime() != null) {
+//					dto.setDealTime(vo.getDealTime());
+//				}
+//				if (vo.getHandTime() != null) {
+//					dto.setHandTime(vo.getHandTime());
+//				}
+//				dto.setStatus(vo.getStatus());
+//
+//				// begin add by zengjz 增加违约金的处理
+//				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
+//					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
+//				} else {
+//					dto.setRefundAmount(vo.getRealMoney());
+//				}
+//				// end add by zengjz 增加违约金的处理
+//				dto.setThirdTransNo(vo.getThirdTransNo());
+//				dto.setPayType(vo.getPayType());
+//				dto.setOrderResource(vo.getOrderResource());
+//
+//				// BeanUtils.copyProperties(dto, vo);
+//				dtoList.add(dto);
+//			}
+//		}
+//		return dtoList;
+//	}
 
 	/**
 	 * @desc 根据订单id集合，查询订单信息 （主要用于财务系统接口）

@@ -37,6 +37,8 @@ import com.okdeer.mall.order.bo.FmsOrderStatisBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.dto.FmsOrderStatisDto;
 import com.okdeer.mall.order.dto.FmsTradeOrderDto;
+import com.okdeer.mall.order.dto.FmsTradeOrderForRefundDto;
+import com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto;
 import com.okdeer.mall.order.dto.TradeOrderDto;
 import com.okdeer.mall.order.dto.TradeOrderInvoiceDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
@@ -57,6 +59,7 @@ import com.okdeer.mall.order.service.TradeOrderItemDetailService;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
 import com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO;
 import com.okdeer.mall.system.service.InvitationCodeServiceApi;
 
@@ -79,11 +82,9 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 	@Autowired
 	private TradeOrderService tradeOrderService;
 
-	
 	@Autowired
 	private TradeOrderItemDetailService tradeOrderItemDetailService;
-	
-	
+
 	@Autowired
 	private ActivityCollectCouponsService activityCollectCouponsService;
 
@@ -517,10 +518,12 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 						TradeOrderItemDto.class);
 				for (TradeOrderItemDto tradeOrderItemDto : itemDtoList) {
 					tradeOrderItemDto.setMainPicPrl(orderImagePrefix + tradeOrderItemDto.getMainPicPrl());
-					
-					if(order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER){
-						List<TradeOrderItemDetail> orderItemDetails =tradeOrderItemDetailService.selectByOrderItemById(tradeOrderItemDto.getId());
-						tradeOrderItemDto.setItemDetailList(BeanMapper.mapList(orderItemDetails, TradeOrderItemDetailDto.class));
+
+					if (order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+						List<TradeOrderItemDetail> orderItemDetails = tradeOrderItemDetailService
+								.selectByOrderItemById(tradeOrderItemDto.getId());
+						tradeOrderItemDto
+								.setItemDetailList(BeanMapper.mapList(orderItemDetails, TradeOrderItemDetailDto.class));
 					}
 				}
 
@@ -533,17 +536,27 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 			}
 
 			if (order.getStatus() == OrderStatusEnum.REFUSING || order.getStatus() == OrderStatusEnum.REFUSED) {
-				refundAmount = refundAmount.subtract(order.getFare().subtract(order.getRealFarePreferential()==null?BigDecimal.ZERO:order.getRealFarePreferential()));
+				refundAmount = refundAmount.subtract(order.getFare().subtract(
+						order.getRealFarePreferential() == null ? BigDecimal.ZERO : order.getRealFarePreferential()));
 			}
 
 			tradeOrderDto.setRealRefundAmount(refundAmount);
-			
-			
-			
+
 			return tradeOrderDto;
 		} catch (ServiceException e) {
 			throw new MallApiException(e);
 		} catch (Exception e) {
+			throw new MallApiException(e);
+		}
+	}
+
+	@Override
+	public PageUtils<FmsTradeOrderForRefundDto> findTradeOrderForRefund(
+			FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto, int pageNum, int pageSize) throws MallApiException {
+		try {
+			PageUtils<TradeOrderPayQueryVo> pageUtils = tradeOrderService.findTradeOrderForRefund(fmsTradeOrderForRefundParamDto, pageNum, pageSize);
+			return pageUtils.toBean(FmsTradeOrderForRefundDto.class);
+		} catch (ServiceException e) {
 			throw new MallApiException(e);
 		}
 	}

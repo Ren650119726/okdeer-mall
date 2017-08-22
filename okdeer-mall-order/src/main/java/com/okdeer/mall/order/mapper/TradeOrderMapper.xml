@@ -2729,8 +2729,61 @@
 
 	<!-- wusw:查询微信或支付宝支付的，订单状态处于已取消、已拒收、取消中、拒收中的订单 （主要用于财务系统接口） 12508 update 
 		by wusw 20160810 -->
-	<select id="selectByStatusPayType" resultMap="orderPayBuyerResultMap"
-		parameterType="map">
+		
+	<sql id="FmsTradeOrderForRefundParamSQL">
+		<if test="storeId != null and storeId !='' ">
+			AND trade.store_id = #{storeId,jdbcType=VARCHAR}
+		</if>
+		<if test="statusList != null and statusList.size() > 0">
+			AND trade.store_id IN
+			<foreach collection="storeIdList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单状态 -->
+		<if test="status != null">
+			AND trade.`status` = #{status,jdbcType=TINYINT}
+		</if>
+		<if test="statusList != null and statusList.size() > 0">
+				AND trade.`status` IN
+			<foreach collection="statusList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单支付方式 -->
+		<if test="payWay != null">
+			AND trade.pay_way = #{payWay,jdbcType=TINYINT}
+		</if>
+		<!-- 订单支付类型 -->
+		<if test="payType != null">
+			AND trade.pay_type = #{payType,jdbcType=TINYINT}
+		</if>
+		<if test="payTypeList != null and payTypeList.size() > 0">
+			AND pay.pay_type IN
+			<foreach collection="payTypeList" index="index" item="item"
+					open="(" close=")" separator=",">
+					#{item}
+			</foreach>
+		</if>
+		<!-- 订单编号 -->
+		<if test="orderNo != null and orderNo != ''">
+			AND trade.order_no LIKE CONCAT('%',#{orderNo},'%')
+		</if>
+		<!-- 更新时间 -->
+		<if test="startTime != null and startTime !=''">
+			AND trade.create_time <![CDATA[ >= ]]> #{startTime,jdbcType=VARCHAR}
+		</if>
+		<!-- 更新时间 -->
+		<if test="endTime != null and endTime!=''">
+			AND trade.create_time <![CDATA[ <= ]]> #{endTime,jdbcType=VARCHAR}
+		</if>
+		<!-- 买家用户手机号码 -->
+		<if test="buyer != null and buyer != ''">
+			AND trade.user_phone LIKE CONCAT('%',#{buyer},'%')
+		</if>		
+	</sql>	
+	<select id="findTradeOrderForRefund" resultMap="orderPayBuyerResultMap"
+		parameterType="com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto">
 		SELECT DISTINCT
 		trade.id,
 		trade.order_no,
@@ -2743,66 +2796,18 @@
 		trade.create_time,
 		trade.update_time,
 		trade.order_resource,
-		<!-- begin add by zengjz 增加是否有违约金相关字段 -->
 		trade.is_breach,
 		trade.breach_money,
-		<!-- end add by zengjz 增加是否有违约金相关字段 -->
 		pay.pay_type,
 		pay.pay_amount,
 		pay.`returns`,
-		store.store_name,
 		CASE trade.`status` WHEN 2 THEN 1 WHEN 4 THEN 1 WHEN 12 THEN 0 WHEN 13
 		THEN 0 END AS statusSort
 		FROM trade_order trade
 		LEFT JOIN
 		trade_order_pay pay ON pay.order_id = trade.id
-		LEFT JOIN store_info
-		store ON store.id = trade.store_id
 		WHERE 1=1
-		<!-- trade.disabled = 0 -->
-		<if test="params != null">
-			<!-- 订单状态 -->
-			<if test="params.status != null and params.status.size() > 0">
-				AND trade.`status` IN
-				<foreach collection="params.status" index="index" item="item"
-					open="(" close=")" separator=",">
-					#{item}
-				</foreach>
-			</if>
-			<!-- 订单支付方式 -->
-			<if test="params.payWay != null">
-				AND trade.pay_way = #{params.payWay,jdbcType=TINYINT}
-			</if>
-			<!-- 订单支付类型 -->
-			<if test="params.payType != null">
-				AND pay.pay_type IN
-				<foreach collection="params.payType" index="index" item="item"
-					open="(" close=")" separator=",">
-					#{item}
-				</foreach>
-			</if>
-			<!-- 订单编号 -->
-			<if test="params.orderNo != null and params.orderNo != ''">
-				AND trade.order_no LIKE CONCAT('%',#{params.orderNo},'%')
-			</if>
-			<if test="params.shopName != null and params.shopName != ''">
-				AND store.store_name LIKE CONCAT('%',#{params.shopName},'%')
-			</if>
-			<!-- 更新时间 -->
-			<if test="params.startTime != null">
-				AND trade.create_time <![CDATA[ >= ]]>
-				#{params.startTime,jdbcType=TIMESTAMP}
-			</if>
-			<!-- 更新时间 -->
-			<if test="params.endTime != null">
-				AND trade.create_time <![CDATA[ <= ]]>
-				#{params.endTime,jdbcType=TIMESTAMP}
-			</if>
-			<!-- 买家用户手机号码 -->
-			<if test="params.buyer != null and params.buyer != ''">
-				AND trade.user_phone LIKE CONCAT('%',#{params.buyer},'%')
-			</if>
-		</if>
+		<include refid="FmsTradeOrderForRefundParamSQL" />			
 		ORDER BY statusSort ASC, trade.update_time DESC
 	</select>
 
