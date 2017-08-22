@@ -14,6 +14,7 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.order.bo.FmsOrderStatisBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
+import com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto;
 import com.okdeer.mall.order.dto.TradeOrderParamDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -239,7 +240,7 @@ public interface TradeOrderService {
 	 * @return
 	 * @throws ServiceException
 	 */
-	PageUtils<TradeOrderPayQueryVo> findByStatusPayType(Map<String, Object> params, int pageNumber, int pageSize)
+	PageUtils<TradeOrderPayQueryVo> findTradeOrderForRefund(FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto, int pageNum, int pageSize)
 			throws ServiceException;
 
 	/**
@@ -251,7 +252,7 @@ public interface TradeOrderService {
 	 * @return
 	 * @throws ServiceException
 	 */
-	List<TradeOrderPayQueryVo> findListByStatusPayType(Map<String, Object> params) throws ServiceException;
+	List<TradeOrderPayQueryVo> findTradeOrderForRefund(FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto) throws ServiceException;
 
 	/**
 	 * 

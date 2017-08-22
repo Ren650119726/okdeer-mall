@@ -14,6 +14,7 @@ import com.okdeer.mall.order.bo.FmsOrderStatisBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
+import com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto;
 import com.okdeer.mall.order.dto.TradeOrderCountParamDto;
 import com.okdeer.mall.order.dto.TradeOrderParamDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
@@ -260,7 +261,7 @@ public interface TradeOrderMapper {
 	 * @param params
 	 * @return
 	 */
-	List<TradeOrderPayQueryVo> selectByStatusPayType(@Param("params") Map<String, Object> params);
+	List<TradeOrderPayQueryVo> findTradeOrderForRefund(FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto);
 
 	/**
 	 * 
