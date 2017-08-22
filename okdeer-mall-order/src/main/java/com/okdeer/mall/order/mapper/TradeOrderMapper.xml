@@ -5677,54 +5677,18 @@
 
 	<!-- 根据查询条件，查询订单列表（用于财务系统，包含服务店订单） add by wusw update by wusw 20160809 修改店铺名称取值（由于充值订单） 
 		update by wusw 20160810 -->
-	<select id="findOrderForFinanceByParams" resultMap="FmsTradeOrderResultMap"
-		parameterType="com.okdeer.mall.order.dto.TradeOrderQueryParamDto">
-		SELECT trade.id,
-		trade.order_no,
-		trade.type,
-		trade.pay_way,
-		trade.store_id,
-		trade.store_name,
-		trade.user_phone,
-		trade.user_id,
-		trade.pick_up_type,
-		locate.provice_name as lProvice_name,
-		locate.city_name as lCity_name,
-		locate.area_name as lArea_name,
-		locate.area_ext as lArea_ext,
-		trade.income,
-		trade.activity_type,
-		trade.activity_id,
-		trade.accept_time,
-		trade.delivery_time,
-		trade.received_time,
-		trade.total_amount,
-		trade.actual_amount,
-		trade.preferential_price,
-		trade.create_time,
-		trade.order_resource,
-		trade.status,
-		pay.pay_type,
-		trade.is_breach,
-		trade.breach_money,
-		locate.city_name AS city_name,
-		CONCAT(IFNULL(locate.provice_name,''),IFNULL(locate.city_name,''),IFNULL(locate.area_name,''),IFNULL(locate.area_ext,'')) as location,
-		trade.update_time,
-		trade.fare,
-		trade.real_fare_preferential,
-		trade.platform_preferential,
-		trade.store_preferential,
-		toes.delivery_type
-		FROM trade_order trade
-		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
-		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
-		LEFT JOIN trade_order_ext_snapshot toes ON trade.id = toes.order_id
-		WHERE 1=1
+	<sql id="findOrderForFinanceByParamsSql">
 		<if test="orderNo != null and orderNo != ''">
 			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
 		</if>
 		<if test="storeId != null and storeId != ''">
 			AND trade.store_id = #{storeId, jdbcType=VARCHAR}
+		</if>
+		<if test="storeIdList != null and storeIdList.size() > 0">
+			AND trade.store_id IN
+			<foreach collection="storeIdList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
 		</if>
 		<if test="userPhone != null and userPhone != ''">
 			AND trade.user_phone = #{userPhone, jdbcType=VARCHAR}
@@ -5782,6 +5746,51 @@
 		<if test="deliveryType !=null">
 			AND toes.delivery_type = #{deliveryType, jdbcType=INTEGER}
 		</if>
+	</sql>
+	<select id="findOrderForFinanceByParams" resultMap="FmsTradeOrderResultMap"
+		parameterType="com.okdeer.mall.order.dto.TradeOrderQueryParamDto">
+		SELECT trade.id,
+		trade.order_no,
+		trade.type,
+		trade.pay_way,
+		trade.store_id,
+		trade.store_name,
+		trade.user_phone,
+		trade.user_id,
+		trade.pick_up_type,
+		locate.provice_name as lProvice_name,
+		locate.city_name as lCity_name,
+		locate.area_name as lArea_name,
+		locate.area_ext as lArea_ext,
+		trade.income,
+		trade.activity_type,
+		trade.activity_id,
+		trade.accept_time,
+		trade.delivery_time,
+		trade.received_time,
+		trade.total_amount,
+		trade.actual_amount,
+		trade.preferential_price,
+		trade.create_time,
+		trade.order_resource,
+		trade.status,
+		pay.pay_type,
+		trade.is_breach,
+		trade.breach_money,
+		locate.city_name AS city_name,
+		CONCAT(IFNULL(locate.provice_name,''),IFNULL(locate.city_name,''),IFNULL(locate.area_name,''),IFNULL(locate.area_ext,'')) as location,
+		trade.update_time,
+		trade.fare,
+		trade.real_fare_preferential,
+		trade.platform_preferential,
+		trade.store_preferential,
+		toes.delivery_type
+		FROM trade_order trade
+		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
+		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
+		LEFT JOIN trade_order_ext_snapshot toes ON trade.id = toes.order_id
+		WHERE 1=1
+		<include refid="findOrderForFinanceByParamsSql" />
 		order by trade.create_time desc
 	</select>
 
@@ -5942,67 +5951,7 @@
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
 		LEFT JOIN trade_order_ext_snapshot toes ON trade.id = toes.order_id
 		WHERE 1=1
-		<if test="orderNo != null and orderNo != ''">
-			AND trade.order_no = #{orderNo, jdbcType=VARCHAR}
-		</if>
-		<if test="storeId != null and storeId != ''">
-			AND trade.store_id = #{storeId, jdbcType=VARCHAR}
-		</if>
-		<if test="userPhone != null and userPhone != ''">
-			AND trade.user_phone = #{userPhone, jdbcType=VARCHAR}
-		</if>
-		<if test="statusList != null and statusList.size() > 0">
-			AND trade.status IN
-			<foreach collection="statusList" index="index" item="item" open="(" close=")" separator=",">
-				#{item}
-			</foreach>
-		</if>
-		<if test="status != null">
-			AND trade.status = #{status, jdbcType=TINYINT}
-		</if>
-		<if test="orderResource != null">
-			AND trade.order_resource = #{orderResource, jdbcType=TINYINT}
-		</if>
-		<if test="orderResourceList != null and orderResourceList.size() > 0">
-			AND trade.order_resource IN
-			<foreach collection="orderResourceList" index="index" item="item" open="(" close=")" separator=",">
-				#{item}
-			</foreach>
-		</if>
-		<if test="payType != null">
-			AND pay.pay_type = #{payType, jdbcType=TINYINT}
-		</if>
-		<if test="startTime != null and startTime!=''">
-			<![CDATA[AND trade.create_time  >= #{startTime,jdbcType=VARCHAR}]]>
-		</if>
-		<if test="endTime != null and endTime!=''">
-			<![CDATA[ AND trade.create_time <= #{endTime,jdbcType=VARCHAR}]]>
-		</if>
-		<if test="payWay != null">
-			AND trade.pay_way = #{payWay, jdbcType=TINYINT}
-		</if>
-		<if test="typeList != null and typeList.size() > 0">
-			AND trade.type IN
-			<foreach collection="typeList" index="index" item="item" open="(" close=")" separator=",">
-				#{item}
-			</foreach>
-		</if>
-		<if test="type != null">
-			AND trade.type = #{type, jdbcType=TINYINT}
-		</if>
-		<if test="cityName != null and cityName != ''">
-			AND locate.city_name = #{cityName,jdbcType=VARCHAR}
-		</if>
-		<if test="idList != null">
-			AND trade.id in
-			<foreach collection="idList" index="index" item="item" open="("
-				separator="," close=")">
-				#{item}
-			</foreach>
-		</if>
-		<if test="deliveryType !=null">
-			AND toes.delivery_type = #{deliveryType, jdbcType=INTEGER}
-		</if>
+		<include refid="findOrderForFinanceByParamsSql" />
 		GROUP BY trade.type,trade.status
 	</select>
 	
