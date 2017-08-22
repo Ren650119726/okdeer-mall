@@ -5831,8 +5831,8 @@
 		ORDER BY o.create_time ASC
 	</select>
 
-	<select id="statisOrderCannelRefundByParams" parameterType="com.okdeer.mall.order.bo.FmsStatisOrderCannelRefundBo"
-		resultType="com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto">
+	<select id="statisOrderCannelRefundByParams" resultType="com.okdeer.mall.order.bo.FmsStatisOrderCannelRefundBo"
+		parameterType="com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto">
 		SELECT  IFNULL(SUM(actual_return_amount),0) as refundAmount,
 		count(1) as refundCount
 		FROM trade_order trade
