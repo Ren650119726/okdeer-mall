@@ -12,23 +12,18 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
 
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreMemberRelation;
@@ -37,59 +32,34 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.mapper.BeanMapper;
-import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountApi;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi;
-import com.okdeer.mall.common.vo.PageResultVo;
-import com.okdeer.mall.member.member.vo.UserAddressVo;
-import com.okdeer.mall.member.service.MemberConsigneeAddressService;
-import com.okdeer.mall.order.bo.FmsOrderStatisBo;
-import com.okdeer.mall.order.dto.ERPTradeOrderVoDto;
-import com.okdeer.mall.order.dto.FmsOrderStatisDto;
 import com.okdeer.mall.order.dto.TradeOrderDto;
 import com.okdeer.mall.order.dto.TradeOrderInvoiceDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDto;
 import com.okdeer.mall.order.dto.TradeOrderLogisticsDto;
 import com.okdeer.mall.order.dto.TradeOrderPayDto;
-import com.okdeer.mall.order.dto.TradeOrderPayQueryDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryDto;
-import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.entity.TradeOrderPay;
-import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.ActivityBelongType;
-import com.okdeer.mall.order.enums.OrderActivityType;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
-import com.okdeer.mall.order.enums.OrderTypeEnum;
-import com.okdeer.mall.order.enums.PayWayEnum;
-import com.okdeer.mall.order.enums.PickUpTypeEnum;
-import com.okdeer.mall.order.enums.PreferentialType;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
-import com.okdeer.mall.order.exception.ExceedRangeException;
 import com.okdeer.mall.order.service.CancelOrderService;
 import com.okdeer.mall.order.service.ITradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
-import com.okdeer.mall.order.service.TradeOrderLogisticsService;
-import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.mall.order.vo.ActivityInfoVO;
-import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
 import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
-import com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO;
-import com.okdeer.mall.system.service.InvitationCodeService;
 
 /**
  * 订单接口
@@ -113,9 +83,6 @@ import com.okdeer.mall.system.service.InvitationCodeService;
 public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 	private static final Logger logger = LoggerFactory.getLogger(TradeOrderApiImpl.class);
-
-	/** 记录数 */
-	private static final Integer RECORD_NUM = 10000;
 
 	@Resource
 	private TradeOrderService tradeOrderService;
@@ -764,18 +731,5 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 		return tradeOrderService.selectCountForUnRefund();
 	}
-
-	
-
-
-	@Override
-	public Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params) {
-
-		return tradeOrderService.statisOrderCannelRefundByParams(params);
-	}
-	// End v1.1.0 add by zengjz 20160912
-
-
-
 	
 }
