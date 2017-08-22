@@ -102,6 +102,7 @@ import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
 import com.okdeer.mall.order.bo.FmsOrderStatisBo;
+import com.okdeer.mall.order.bo.FmsStatisOrderCannelRefundBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
@@ -5922,9 +5923,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     }
 
     @Override
-    public Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params) {
-        convertParamsForFinance(params);
-        return tradeOrderMapper.statisOrderCannelRefundByParams(params);
+    public FmsStatisOrderCannelRefundBo statisOrderCannelRefundByParams(FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto) {
+        return tradeOrderMapper.statisOrderCannelRefundByParams(fmsTradeOrderForRefundParamDto);
     }
     // End v1.1.0 add by zengjz 20160912
 

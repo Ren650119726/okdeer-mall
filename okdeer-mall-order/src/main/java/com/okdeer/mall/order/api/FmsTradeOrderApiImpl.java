@@ -34,11 +34,13 @@ import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.order.bo.FmsOrderStatisBo;
+import com.okdeer.mall.order.bo.FmsStatisOrderCannelRefundBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.dto.FmsOrderStatisDto;
 import com.okdeer.mall.order.dto.FmsTradeOrderDto;
 import com.okdeer.mall.order.dto.FmsTradeOrderForRefundDto;
 import com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto;
+import com.okdeer.mall.order.dto.StatisOrderCannelRefundDto;
 import com.okdeer.mall.order.dto.TradeOrderDto;
 import com.okdeer.mall.order.dto.TradeOrderInvoiceDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
@@ -570,6 +572,13 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 		} catch (ServiceException e) {
 			throw new MallApiException(e);
 		}
+	}
+
+	@Override
+	public StatisOrderCannelRefundDto statisOrderCannelRefundByParams(
+			FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto) throws MallApiException {
+		FmsStatisOrderCannelRefundBo statisOrderCannelRefundBo = tradeOrderService.statisOrderCannelRefundByParams(fmsTradeOrderForRefundParamDto);
+		return BeanMapper.map(statisOrderCannelRefundBo, StatisOrderCannelRefundDto.class);
 	}
 
 }

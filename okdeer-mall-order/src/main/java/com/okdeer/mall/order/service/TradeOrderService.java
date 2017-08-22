@@ -12,6 +12,7 @@ import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.order.bo.FmsOrderStatisBo;
+import com.okdeer.mall.order.bo.FmsStatisOrderCannelRefundBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto;
@@ -992,7 +993,7 @@ public interface TradeOrderService {
 	 * @author zengjizu
 	 * @date 2016年9月17日
 	 */
-	Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params);
+	FmsStatisOrderCannelRefundBo statisOrderCannelRefundByParams(FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto);
 	// End v1.1.0 add by zengjz 20160912
 	
 	// Begin 重构4.1 add by zhaoqc 20160722
