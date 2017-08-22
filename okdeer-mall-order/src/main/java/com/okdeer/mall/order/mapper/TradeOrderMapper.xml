@@ -2756,7 +2756,7 @@
 		</if>
 		<!-- 订单支付类型 -->
 		<if test="payType != null">
-			AND trade.pay_type = #{payType,jdbcType=TINYINT}
+			AND pay.pay_type = #{payType,jdbcType=TINYINT}
 		</if>
 		<if test="payTypeList != null and payTypeList.size() > 0">
 			AND pay.pay_type IN
