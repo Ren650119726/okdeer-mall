@@ -5833,7 +5833,7 @@
 
 	<select id="statisOrderCannelRefundByParams" parameterType="com.okdeer.mall.order.bo.FmsStatisOrderCannelRefundBo"
 		resultType="com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto">
-		SELECT  actual_return_amount as refundAmount,
+		SELECT  IFNULL(SUM(actual_return_amount),0) as refundAmount,
 		count(1) as refundCount
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
