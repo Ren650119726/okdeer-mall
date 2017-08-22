@@ -36,7 +36,6 @@ import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.exception.StockException;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
-import com.okdeer.archive.store.entity.StoreDetailVo;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
@@ -113,7 +112,6 @@ import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
-import com.okdeer.mall.order.dto.ExpressModeParamDto;
 import com.okdeer.mall.order.dto.TradeOrderCountParamDto;
 import com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto;
 import com.okdeer.mall.order.dto.TradeOrderParamDto;
@@ -5072,16 +5070,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             if (tradeOrderParam.getStatus() != OrderStatusEnum.DROPSHIPPING) {
                 throw new ServiceException("订单状态已更新，请刷新后重试");
             }
-            // begin V2.6.0 零售pos发货默认B方案自行配送 add by wangf01 20170810
-            ExpressModeParamDto paramDto = new ExpressModeParamDto();
-            paramDto.setOrderId(tradeOrder.getId());
-            paramDto.setUserId(tradeOrder.getUpdateUserId());
-            StoreDetailVo vo = storeInfoService.getStoreDetailById(tradeOrderParam.getStoreId());
-            paramDto.setStoreId(tradeOrderParam.getStoreId());
-            paramDto.setExpressType(2);
-            paramDto.setCommisionRatio(vo.getStoreInfoExt().getCommisionRatioPlanB());
-            expressOrderCallbackService.saveJxcExpressModePlanB(paramDto);
-            // begin add by wangf01 20170810
             //老代码 start
             this.updateOrderStatus(tradeOrder);
             Map<String, Object> map = new HashMap<String, Object>();
