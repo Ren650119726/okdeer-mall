@@ -1,0 +1,19 @@
+Begin---
+[{
+	"orderId": "4028015f5d82dda1015d88046e520408",
+	"orderItemId": "4028015f5d82dda1015d88046e660409",
+	"userId": "14256114110922ca00dcee964d759259",
+	"orderResource":"CVSAPP",
+	"refundPics": ["11111111111111"],
+	"reason": "退款原因2222",
+	"memo": "退款说明3333"
+},{
+	"orderId": "4028015f5d82dda1015d88046e520408",
+	"orderItemId": "4028015f5d82dda1015d88046e660409",
+	"userId": "14256114110922ca00dcee964d759259",
+	"orderResource":"CVSAPP",
+	"refundPics": ["11111111111111"],
+	"reason": "退款原因2222",
+	"memo": "退款说明3333"
+}]
+End---
