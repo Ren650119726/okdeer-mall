@@ -236,6 +236,8 @@ public class FmsTradeOrderBo {
 	 */
 	private Integer deliveryType;
 
+	private BigDecimal actualReturnAmount;
+
 	public String getId() {
 		return id;
 	}
@@ -570,6 +572,14 @@ public class FmsTradeOrderBo {
 
 	public void setDeliveryType(Integer deliveryType) {
 		this.deliveryType = deliveryType;
+	}
+
+	public BigDecimal getActualReturnAmount() {
+		return actualReturnAmount;
+	}
+
+	public void setActualReturnAmount(BigDecimal actualReturnAmount) {
+		this.actualReturnAmount = actualReturnAmount;
 	}
 
 }
