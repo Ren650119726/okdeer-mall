@@ -2734,7 +2734,7 @@
 		<if test="storeId != null and storeId !='' ">
 			AND trade.store_id = #{storeId,jdbcType=VARCHAR}
 		</if>
-		<if test="statusList != null and statusList.size() > 0">
+		<if test="storeIdList != null and storeIdList.size() > 0">
 			AND trade.store_id IN
 			<foreach collection="storeIdList" index="index" item="item" open="(" close=")" separator=",">
 				#{item}
@@ -2756,7 +2756,7 @@
 		</if>
 		<!-- 订单支付类型 -->
 		<if test="payType != null">
-			AND trade.pay_type = #{payType,jdbcType=TINYINT}
+			AND pay.pay_type = #{payType,jdbcType=TINYINT}
 		</if>
 		<if test="payTypeList != null and payTypeList.size() > 0">
 			AND pay.pay_type IN
@@ -2798,6 +2798,8 @@
 		trade.order_resource,
 		trade.is_breach,
 		trade.breach_money,
+		trade.store_name,
+		trade.store_id,
 		pay.pay_type,
 		pay.pay_amount,
 		pay.`returns`,
