@@ -266,6 +266,10 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 				vo.setOptType(7);
 			}
 		}
+		// begin V2.6.1 同步修改配送类型和佣金比例到零售 add by wangf01 2017-08-22
+		vo.setDeliveryType(order.getDeliveryType());
+		vo.setCommisionRatio(order.getCommisionRatio());
+		// end add by wangf01 2017-08-22
 		vo.setUpdateTime(order.getUpdateTime());
 		vo.setUpdateUserId(order.getUpdateUserId());
 		return vo;

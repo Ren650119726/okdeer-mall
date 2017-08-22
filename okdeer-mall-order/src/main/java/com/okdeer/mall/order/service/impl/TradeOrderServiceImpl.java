@@ -4213,6 +4213,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         json.put("orderResource", orders.getOrderResource().ordinal());
         json.put("platformPreferential", orders.getPlatformPreferential());
         json.put("storePreferential", orders.getStorePreferential());
+        json.put("pinMoney", orders.getPinMoney());
         // End V2.2 added by maojj 2017-03-20  + tuzhd 2017-8-1
 
         // 支付方式:(0:在线支付、1:货到付款,2:未付款,3:线下支付)
