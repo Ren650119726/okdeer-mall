@@ -1364,10 +1364,10 @@
 			AND tr.refund_no = #{refundNo, jdbcType=VARCHAR}
 		</if>
 		<if test="null != storeId and '' != storeId">
-			AND ti.store_id = #{storeId,jdbcType=VARCHAR}
+			AND tr.store_id = #{storeId,jdbcType=VARCHAR}
 		</if>
 		<if test="storeIdList != null and storeIdList.size() > 0 ">
-			AND ti.store_id in
+			AND tr.store_id in
 			<foreach collection="storeIdList" index="index" item="item"
 				open="(" close=")" separator=",">
 				#{item,jdbcType=VARCHAR}
