@@ -2798,6 +2798,8 @@
 		trade.order_resource,
 		trade.is_breach,
 		trade.breach_money,
+		trade.store_name,
+		trade.store_id,
 		pay.pay_type,
 		pay.pay_amount,
 		pay.`returns`,
