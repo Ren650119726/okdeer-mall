@@ -2734,6 +2734,13 @@
 		by wusw 20160810 -->
 		
 	<sql id="FmsTradeOrderForRefundParamSQL">
+	
+		<if test="idList != null and idList.size() > 0">
+			AND trade.id IN
+			<foreach collection="idList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
 		<if test="storeId != null and storeId !='' ">
 			AND trade.store_id = #{storeId,jdbcType=VARCHAR}
 		</if>

@@ -671,7 +671,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	@Override
 	public List<TradeOrderQueryDto> findByOrderIdForRefunds(List<String> orderIds) throws Exception {
 
-		List<TradeOrderQueryDto> dtoList = new ArrayList<TradeOrderQueryDto>();
+		List<TradeOrderQueryDto> dtoList = new ArrayList<>();
 		List<TradeOrderPayQueryVo> voList = tradeOrderService.findByOrderIdList(orderIds);
 		if (voList != null) {
 			for (TradeOrderPayQueryVo vo : voList) {
