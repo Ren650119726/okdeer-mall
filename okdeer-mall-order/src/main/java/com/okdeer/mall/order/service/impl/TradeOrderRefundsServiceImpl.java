@@ -1679,13 +1679,9 @@ public class TradeOrderRefundsServiceImpl
 			throws Exception {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
 		List<TradeOrderRefundsVo> list = tradeOrderRefundsMapper.selectRefundsByFinance(orderRefundQueryParamDto);
-		return new PageUtils<TradeOrderRefundsVo>(list);
+		return new PageUtils<>(list);
 	}
 
-	@Override
-	public List<TradeOrderRefundsVo> findListByFinance(Map<String, Object> map) throws Exception {
-		return null;
-	}
 	
 	@Override
 	public List<TradeOrderRefundsVo> findListByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto) throws Exception {
