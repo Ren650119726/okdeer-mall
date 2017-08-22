@@ -561,4 +561,15 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 		}
 	}
 
+	@Override
+	public List<FmsTradeOrderForRefundDto> findTradeOrderForRefund(
+			FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto) throws MallApiException {
+		try {
+			List<TradeOrderPayQueryVo>  list = tradeOrderService.findTradeOrderForRefund(fmsTradeOrderForRefundParamDto);
+			return BeanMapper.mapList(list, FmsTradeOrderForRefundDto.class);
+		} catch (ServiceException e) {
+			throw new MallApiException(e);
+		}
+	}
+
 }
