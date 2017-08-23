@@ -78,7 +78,7 @@ import com.okdeer.mall.order.handler.TradeOrderAddService;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
-import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
+import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.CodeStatistical;
@@ -217,8 +217,8 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 	private RollbackMQProducer rollbackMQProducer;
 	
 	// Begin Bug:13906 added by maojj 2016-10-10
-	@Reference(version = "1.0.0", check = false)
-	private TradeOrderPayServiceApi tradeOrderPayService;
+	@Resource
+	private TradeOrderPayService tradeOrderPayService;
 	// End Bug:13906 added by maojj 2016-10-10
 	
 	// Begin added by maojj 2016-10-18 
