@@ -3367,6 +3367,9 @@
 			<if test="cancelType != null">
 				cancel_type = #{cancelType,jdbcType=TINYINT},
 			</if>
+			<if test="actualReturnAmount != null">
+				actual_return_amount = #{actualReturnAmount,jdbcType=DECIMAL},
+			</if>
 		</set>
 		WHERE id = #{id,jdbcType=VARCHAR}
 		<if test="currentStatus != null">

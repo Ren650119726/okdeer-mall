@@ -91,10 +91,10 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 
 	@Autowired
 	private ActivityCouponsRecordService activityCouponsRecordService;
-	
+
 	@Autowired
 	private TradePinMoneyObtainService tradePinMoneyObtainService;
-	
+
 	@Autowired
 	private TradePinMoneyUseService tradePinMoneyUseService;
 
@@ -157,40 +157,44 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	 */
 	@Resource
 	private RocketMQProducer rocketMQProducer;
-	
+
 	@Resource
 	private ActivityDiscountRecordService activityDiscountRecordService;
 
-    /**
-     * 短信接口
-     */
-    @Reference(version = "1.0.0", check = false)
-    ISmsService smsService;
-    /**
-     * 消息编码
-     */
-    @Value("${mcm.sys.code}")
-    protected String mcmSysCode;
-    /**
-     * 消息Token
-     */
-    @Value("${mcm.sys.token}")
-    protected String mcmSysToken;
+	/**
+	 * 短信接口
+	 */
+	@Reference(version = "1.0.0", check = false)
+	ISmsService smsService;
+
+	/**
+	 * 消息编码
+	 */
+	@Value("${mcm.sys.code}")
+	protected String mcmSysCode;
+
+	/**
+	 * 消息Token
+	 */
+	@Value("${mcm.sys.token}")
+	protected String mcmSysToken;
+
 	/**
 	 * 第三方支付订单取消短信文案
 	 */
 	@Value("${third.pay.cancel.order}")
 	private String thirdPayCancelOrder;
+
 	/**
-     * 余额支付订单取消短信文案
-     */
+	 * 余额支付订单取消短信文案
+	 */
 	@Value("${balance.pay.cancel.order}")
 	private String balancePayCancelOrder;
-	
+
 	@Autowired
-	@Qualifier(value="jxcSynTradeorderProcessLister")
+	@Qualifier(value = "jxcSynTradeorderProcessLister")
 	private TradeorderProcessLister tradeorderProcessLister;
-	
+
 	/**
 	 * @Description: 取消订单
 	 * @param order 订单
@@ -212,38 +216,38 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		return true;
 	}
 
-    protected String joinMsgConten(String template, String ...param) {
-        int idx = 0;
-        for(int i = 0 ; i < param.length ; i++) {
-             logger.info("param[i]:{}", param[i]);
-            idx = template.indexOf("#");
-            template = template.replaceFirst(String.valueOf(template.charAt(idx)), param[i]);
-        }
-        return template;
-    }
-    
-    protected SmsVO createSmsVo(String mobile, String content) {
-        SmsVO smsVo = new SmsVO();
-        smsVo.setId(UuidUtils.getUuid());
-        smsVo.setUserId(mobile);
-        smsVo.setIsTiming(0);
-        smsVo.setToken(mcmSysToken);
-        smsVo.setSysCode(mcmSysCode);
-        smsVo.setMobile(mobile);
-        smsVo.setContent(content);
-        smsVo.setSmsChannelType(3);
-        smsVo.setSendTime(DateUtils.formatDateTime(new Date()));
-        return smsVo;
-    }
-	
-    /**
-     * @Description: 订单取消（拒收）
-     * @param tradeOrder
-     * @param operator
-     * @throws Exception   
-     * @author guocp
-     * @date 2017年8月14日
-     */
+	protected String joinMsgConten(String template, String... param) {
+		int idx = 0;
+		for (int i = 0; i < param.length; i++) {
+			logger.info("param[i]:{}", param[i]);
+			idx = template.indexOf("#");
+			template = template.replaceFirst(String.valueOf(template.charAt(idx)), param[i]);
+		}
+		return template;
+	}
+
+	protected SmsVO createSmsVo(String mobile, String content) {
+		SmsVO smsVo = new SmsVO();
+		smsVo.setId(UuidUtils.getUuid());
+		smsVo.setUserId(mobile);
+		smsVo.setIsTiming(0);
+		smsVo.setToken(mcmSysToken);
+		smsVo.setSysCode(mcmSysCode);
+		smsVo.setMobile(mobile);
+		smsVo.setContent(content);
+		smsVo.setSmsChannelType(3);
+		smsVo.setSendTime(DateUtils.formatDateTime(new Date()));
+		return smsVo;
+	}
+
+	/**
+	 * @Description: 订单取消（拒收）
+	 * @param tradeOrder
+	 * @param operator
+	 * @throws Exception   
+	 * @author guocp
+	 * @date 2017年8月14日
+	 */
 	@Transactional(rollbackFor = Exception.class)
 	private void updateCancelOrder(TradeOrder tradeOrder, String operator) throws Exception {
 		List<String> rpcIdList = new ArrayList<String>();
@@ -259,27 +263,29 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				// 如果需要收取违约金
 				tradeOrder.setIsBreach(WhetherEnum.whether);
 			}
-			//设置订单状态
+			// 设置订单状态
 			setOrderStatus(tradeOrder, oldOrder);
-			//释放活动锁定
+			// 设置退款金额
+			setReturnAmount(tradeOrder,oldOrder);
+			// 释放活动锁定
 			releaseActivity(tradeOrder, oldOrder);
-			//保存订单轨迹
-			saveOrderLog(tradeOrder,operator);
+			// 保存订单轨迹
+			saveOrderLog(tradeOrder, operator);
 			// 保存订单轨迹
 			tradeOrderTraceService.saveOrderTrace(tradeOrder);
-			
+
 			// 更新订单状态
 			Integer updateRows = tradeOrderMapper.updateOrderStatus(tradeOrder);
-			logger.info("更新后的订单状态:{}",tradeOrder.getStatus().getName());
-			if(updateRows == null || updateRows.intValue() == 0){
+			logger.info("更新后的订单状态:{}", tradeOrder.getStatus().getName());
+			if (updateRows == null || updateRows.intValue() == 0) {
 				throw new Exception(ORDER_STATUS_CHANGE);
 			}
 			// 回收库存
 			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
 			// 发送短信
 			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
-							|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()
-							|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
+					|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()
+					|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
 				// 查询支付信息
 				TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(oldOrder.getId());
 				tradeOrder.setTradeOrderPay(tradeOrderPay);
@@ -295,9 +301,9 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				// 如果不是支付中的状态是需要退款给用户的
 				this.tradeOrderPayService.cancelOrderPay(tradeOrder);
 			}
-			//如果是货到付款的,走拒收的流程
-			if(oldOrder.getPayWay() != PayWayEnum.PAY_ONLINE){
-				//add by  zhangkeneng  和左文明对接丢消息
+			// 如果是货到付款的,走拒收的流程
+			if (oldOrder.getPayWay() != PayWayEnum.PAY_ONLINE) {
+				// add by zhangkeneng 和左文明对接丢消息
 				TradeOrderContext tradeOrderContext = new TradeOrderContext();
 				tradeOrderContext.setTradeOrder(tradeOrder);
 				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
@@ -306,6 +312,41 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
+	}
+	
+	/**
+	 * @Description: 设置退款金额
+	 * @param tradeOrder
+	 * @param oldOrder
+	 * @author zengjizu
+	 * @date 2017年8月23日
+	 */
+	private void setReturnAmount(TradeOrder tradeOrder,TradeOrder oldOrder) {
+		if (OrderStatusEnum.UNPAID == oldOrder.getStatus()) {
+			//待支付中，退款金额为0
+			tradeOrder.setActualReturnAmount(new BigDecimal(0));
+			return ;
+		}
+		// 默认是等于实际支付金额
+		BigDecimal returnAmount = tradeOrder.getActualAmount();
+		tradeOrder.setActualReturnAmount(tradeOrder.getActualAmount());
+		if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER && (tradeOrder.getStatus() == OrderStatusEnum.REFUSED
+				|| tradeOrder.getStatus() == OrderStatusEnum.REFUSING)) {
+			// 实物订单
+			if (tradeOrder.getFare() == null) {
+				tradeOrder.setFare(new BigDecimal(0));
+			}
+			if (tradeOrder.getRealFarePreferential() == null) {
+				tradeOrder.setRealFarePreferential(new BigDecimal(0));
+			}
+			//减去运费
+			returnAmount = returnAmount.subtract(tradeOrder.getFare().subtract(tradeOrder.getRealFarePreferential()));
+		} else if (tradeOrder.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
+				&& tradeOrder.getIsBreach() == WhetherEnum.whether) {
+			// 上门服务订单
+			returnAmount = returnAmount.subtract(tradeOrder.getBreachMoney());
+		}
+		tradeOrder.setActualReturnAmount(returnAmount);
 	}
 
 	/**
@@ -323,7 +364,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		tradeOrderLog.setOperateUser(operator);
 		tradeOrderLog.setRecordTime(new Date());
 		tradeOrderLog.setOrderId(tradeOrder.getId());
-		tradeOrderLogMapper.insertSelective(tradeOrderLog);		
+		tradeOrderLogMapper.insertSelective(tradeOrderLog);
 	}
 
 	/**
@@ -372,8 +413,9 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	 * @throws ServiceException 
 	 * @date 2017年8月14日
 	 */
-	private void releaseActivity(TradeOrder tradeOrder,TradeOrder oldOrder) throws ServiceException {
-		if (tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER || StringUtils.isNotEmpty(tradeOrder.getFareActivityId())) {
+	private void releaseActivity(TradeOrder tradeOrder, TradeOrder oldOrder) throws ServiceException {
+		if (tradeOrder.getActivityType() == ActivityTypeEnum.VONCHER
+				|| StringUtils.isNotEmpty(tradeOrder.getFareActivityId())) {
 			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER
 					|| OrderStatusEnum.DROPSHIPPING != oldOrder.getStatus()
 					|| (OrderCancelType.CANCEL_BY_BUYER != tradeOrder.getCancelType())) {
@@ -387,7 +429,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		} else if (tradeOrder.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY) {
 			// 秒杀活动释放购买记录
 			activitySeckillRecordService.updateStatusBySeckillId(tradeOrder.getId());
-		} else if (tradeOrder.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES){
+		} else if (tradeOrder.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
 			// Begin V2.3 added by maojj 2017-04-22
 			// 释放用户参与满减活动的频次。规则与代金券保持一致。
 			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER
@@ -398,7 +440,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			}
 			// End V2.3 added by maojj 2017-04-22
 		}
-		
+
 		// 特惠活动释放限购数量
 		for (TradeOrderItem item : tradeOrder.getTradeOrderItem()) {
 			Map<String, Object> params = Maps.newHashMap();
@@ -406,7 +448,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			params.put("storeSkuId", item.getStoreSkuId());
 			activitySaleRecordService.updateDisabledByOrderId(params);
 		}
-		
+
 		// 释放零花钱
 		if (tradeOrder.getPinMoney().compareTo(BigDecimal.ZERO) > 0) {
 			// 释放订单占用零花钱
