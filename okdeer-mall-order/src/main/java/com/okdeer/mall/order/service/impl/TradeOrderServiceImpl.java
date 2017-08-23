@@ -90,7 +90,6 @@ import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RandomStringUtil;
 import com.okdeer.mall.common.utils.TradeNumUtil;
-import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
@@ -4005,42 +4004,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         return tradeOrderMapper.selectPickUpTotalAmount(params);
     }
 
-    /**
-     * zengj:查询消费码使用记录
-     *
-     * @param params
-     * @param pageNumber
-     * @param pageSize
-     * @return
-     */
-    @Override
-    public PageUtils<Map<String, Object>> selectConsumeCodeUseRecord(Map<String, Object> params, int pageNumber,
-                                                                     int pageSize) {
-        PageHelper.startPage(pageNumber, pageSize, true, false);
-        return new PageUtils<Map<String, Object>>(tradeOrderMapper.selectConsumeCodeUseRecord(params));
-    }
-
-    /**
-     * zengj:查询消费码订单总额
-     *
-     * @param params
-     * @return
-     */
-    @Override
-    public BigDecimal selectConsumeTotalAmount(Map<String, Object> params) {
-        return tradeOrderMapper.selectConsumeTotalAmount(params);
-    }
-
-    /**
-     * zengj:根据消费码查询订单信息
-     *
-     * @param params
-     * @return
-     */
-    @Override
-    public Map<String, Object> selectOrderDetailByConsumeCode(Map<String, Object> params) {
-        return tradeOrderMapper.selectOrderDetailByConsumeCode(params);
-    }
+   
 
     @Override
     public JSONObject findUserOrderDetailList(String orderId) throws ServiceException {
@@ -6828,6 +6792,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             payTradeVo.setPrefeAmount(prefAmount);
             payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
         }
+        payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
         return payTradeVo;
     }
 

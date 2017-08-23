@@ -713,33 +713,6 @@ public interface TradeOrderService {
 	 */
 	BigDecimal selectPickUpTotalAmount(Map<String, Object> params);
 
-	/**
-	 * zengj:查询消费码使用记录
-	 *
-	 * @param params
-	 * @param pageNumber
-	 * @param pageSize
-	 * @return
-	 */
-	PageUtils<Map<String, Object>> selectConsumeCodeUseRecord(Map<String, Object> params, int pageNumber, int pageSize);
-
-	/**
-	 * 
-	 * zengj:查询消费码订单总额
-	 *
-	 * @param params
-	 * @return
-	 */
-	BigDecimal selectConsumeTotalAmount(Map<String, Object> params);
-
-	/**
-	 * 
-	 * zengj:根据消费码查询订单信息
-	 *
-	 * @param params
-	 * @return
-	 */
-	Map<String, Object> selectOrderDetailByConsumeCode(Map<String, Object> params);
 
 	/**
 	 * 未支付订单倒计时时间查询
