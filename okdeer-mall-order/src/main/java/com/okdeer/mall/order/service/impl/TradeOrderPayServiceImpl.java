@@ -845,7 +845,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 
 	@Override
 	public PayInfo getPayInfo(PayInfoParamDto payInfoParamDto) throws Exception {
-		TradeOrder order = tradeOrderMapper.selectTradeDetailInfoById(payInfoParamDto.getOrderId());
+		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(payInfoParamDto.getOrderId());
 		if (order.getStatus() != OrderStatusEnum.UNPAID) {
 			throw new Exception("订单状态已经非待支付状态");
 		}
