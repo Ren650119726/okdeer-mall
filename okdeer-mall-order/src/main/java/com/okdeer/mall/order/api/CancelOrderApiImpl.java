@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.Assert;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.common.consts.DescriptConstants;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.ele.service.ExpressService;
@@ -58,9 +57,6 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 	@Qualifier(value="jxcSynTradeorderProcessLister")
 	private TradeorderProcessLister tradeorderProcessLister;
 	
-	@Autowired
-	private ActivityCouponsRecordService activityCouponsRecordService;
-
 	/**
 	 * 注入配送-service
 	 */
