@@ -7,7 +7,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>okdeer-mall</name>
-	
+
 	<parent>
 		<groupId>com.okdeer</groupId>
 		<artifactId>okdeer-root</artifactId>
@@ -22,6 +22,7 @@
 		<mall.version>0.1.2-SNAPSHOT</mall.version>
 		<yscapi.version>0.0.4-SNAPSHOT</yscapi.version>
 		<jxc.version>0.0.3-SNAPSHOT</jxc.version>
+		<pay.version>1.8.0-SNAPSHOT</pay.version>
 	</properties>
 
 	<!-- setting local storage -->
@@ -42,6 +43,11 @@
 				<groupId>com.okdeer.mall</groupId>
 				<artifactId>okdeer-mall-api</artifactId>
 				<version>${mall.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.okdeer.pay</groupId>
+				<artifactId>pay-api</artifactId>
+				<version>${pay.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.okdeer.jxc</groupId>
