@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -89,7 +90,7 @@ import com.okdeer.mall.order.service.TradeOrderPayService;
  * ----------------+----------------+-------------------+-------------------------------------------
  *     v1.2.0            2016-11-18         zengjz           增加服务订单确认调用云钱包方法、提取除共用的设置优惠信息的方法
  */
-
+@Service
 public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 
 	public static final Logger logger = LoggerFactory.getLogger(TradeOrderPayServiceImpl.class);
@@ -844,7 +845,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 
 	@Override
 	public PayInfo getPayInfo(PayInfoParamDto payInfoParamDto) throws Exception {
-		TradeOrder order = tradeOrderMapper.selectTradeDetailInfoById(payInfoParamDto.getOrderId());
+		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(payInfoParamDto.getOrderId());
 		if (order.getStatus() != OrderStatusEnum.UNPAID) {
 			throw new Exception("订单状态已经非待支付状态");
 		}

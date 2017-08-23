@@ -84,6 +84,7 @@
 		<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
 		<result column="delivery_type" property="deliveryType" jdbcType="INTEGER"/>
         <result column="commision_ratio" property="commisionRatio" jdbcType="DECIMAL"/>
+        <result column="actual_return_amount" property="actualReturnAmount" jdbcType="DECIMAL"/>
 		<!-- End V2.5 added by maojj 2017-06-23 -->
 		<association property="tradeOrderLogistics"
 			javaType="com.okdeer.mall.order.entity.TradeOrderLogistics">
@@ -98,7 +99,6 @@
 			<result column="area" property="area" jdbcType="VARCHAR" />
 			<result column="address" property="address" jdbcType="VARCHAR" />
 			<result column="logistics_type" property="type" jdbcType="TINYINT" />
-			<result column="actual_return_amount" property="actualReturnAmount" jdbcType="DECIMAL"/>
 		</association>
 	</resultMap>
 
@@ -690,7 +690,7 @@
 		income, is_show, pospay, compain_status, pick_up_item, trade_num, activity_item_id, is_complete, shipments_user_id,
 		consumer_code_status, payment_user_id, is_breach, is_breach_money, breach_time, breach_percent, breach_money, cancel_type,
 		accept_time, client_version, fare_preferential, real_fare_preferential, platform_preferential, store_preferential,
-		fare_activity_id, store_activity_type,delivery_type,commision_ratio,pin_money
+		fare_activity_id, store_activity_type,delivery_type,commision_ratio,pin_money,actual_return_amount
 	</sql>
 
 	<sql id="order_column_list">
