@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.nadvert.mapper.ActivityH5AdvertContentMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContent" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="content_type" property="contentType" jdbcType="TINYINT" />
+        <result column="sort_no" property="sortNo" jdbcType="TINYINT" />
+        <result column="color_setting" property="colorSetting" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, activity_id, content_type, sort_no, color_setting, create_time, create_user_id
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_h5_advert_content
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <select id="findByActId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_h5_advert_content
+        where
+        	1=1
+        <if test="activityId != null">
+	       AND activity_id = #{activityId,jdbcType=VARCHAR}
+        </if>
+    </select>
+    
+    <insert id="add" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContent" >
+        insert into activity_h5_advert_content
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
+            <if test="contentType != null" >
+                content_type,
+            </if>
+            <if test="sortNo != null" >
+                sort_no,
+            </if>
+            <if test="colorSetting != null" >
+                color_setting,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="contentType != null" >
+                #{contentType,jdbcType=TINYINT},
+            </if>
+            <if test="sortNo != null" >
+                #{sortNo,jdbcType=TINYINT},
+            </if>
+            <if test="colorSetting != null" >
+                #{colorSetting,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    
+    <insert id="batchSave" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContent">
+    	INSERT INTO activity_h5_advert_content (<include refid="Base_Column_List" />)
+    	VALUES  
+	    <foreach collection="list" item="item" index="index" separator="," >  
+	        (#{item.id,jdbcType=VARCHAR},
+	         #{item.activityId,jdbcType=VARCHAR},
+	         #{item.contentType,jdbcType=TINYINT},
+	         #{item.sortNo,jdbcType=TINYINT},
+	         #{item.colorSetting,jdbcType=VARCHAR},
+	         #{item.createTime,jdbcType=TIMESTAMP},
+	         #{item.createUserId,jdbcType=VARCHAR})
+	    </foreach> 
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContent" >
+        update activity_h5_advert_content
+        <set >
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="contentType != null" >
+                content_type = #{contentType,jdbcType=TINYINT},
+            </if>
+            <if test="sortNo != null" >
+                sort_no = #{sortNo,jdbcType=TINYINT},
+            </if>
+            <if test="colorSetting != null" >
+                color_setting = #{colorSetting,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_h5_advert_content
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="deleteByActId" parameterType="java.lang.String" >
+        delete from activity_h5_advert_content
+        where
+        	1=1
+        <if test="activityId != null">
+	       	AND activity_id = #{activityId,jdbcType=VARCHAR}
+        </if>	 
+    </delete>    
+</mapper>

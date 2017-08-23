@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.nadvert.mapper.ActivityH5AdvertRoleMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertRole" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="city_id" property="cityId" jdbcType="VARCHAR" />
+        <result column="content" property="content" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, activity_id, city_id, content, create_time, create_user_id
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_h5_advert_role
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="findByActId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_h5_advert_role
+        where
+        	1=1
+        <if test="activityId != null">
+	       AND activity_id = #{activityId,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertRole" >
+        insert into activity_h5_advert_role
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
+            <if test="cityId != null" >
+                city_id,
+            </if>
+            <if test="content != null" >
+                content,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="cityId != null" >
+                #{cityId,jdbcType=VARCHAR},
+            </if>
+            <if test="content != null" >
+                #{content,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    
+    <insert id="batchSave" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertRole">
+    	INSERT INTO activity_h5_advert_role (<include refid="Base_Column_List" />)
+    	VALUES  
+	    <foreach collection="list" item="item" index="index" separator="," >  
+	        (#{item.id,jdbcType=VARCHAR},
+	         #{item.activityId,jdbcType=VARCHAR},
+	         #{item.cityId,jdbcType=VARCHAR},
+	         #{item.content,jdbcType=VARCHAR},
+	         #{item.createTime,jdbcType=TIMESTAMP},
+	         #{item.createUserId,jdbcType=VARCHAR})
+	    </foreach> 
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertRole" >
+        update activity_h5_advert_role
+        <set >
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="cityId != null" >
+                city_id = #{cityId,jdbcType=VARCHAR},
+            </if>
+            <if test="content != null" >
+                content = #{content,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_h5_advert_role
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="deleteByActId" parameterType="java.lang.String" >
+        delete from activity_h5_advert_role
+        where
+        	1=1
+        <if test="activityId != null">
+	       	AND activity_id = #{activityId,jdbcType=VARCHAR}
+        </if>	 
+    </delete>
+</mapper>

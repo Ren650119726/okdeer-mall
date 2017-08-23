@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.nadvert.mapper.ActivityH5AdvertMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.nadvert.entity.ActivityH5Advert" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="TINYINT" />
+        <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+        <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+        <result column="page_title" property="pageTitle" jdbcType="VARCHAR" />
+        <result column="share_main_title" property="shareMainTitle" jdbcType="VARCHAR" />
+        <result column="share_sub_title" property="shareSubTitle" jdbcType="VARCHAR" />
+        <result column="share_link_picture" property="shareLinkPicture" jdbcType="VARCHAR" />
+        <result column="back_ground_color" property="backGroundColor" jdbcType="VARCHAR" />
+        <result column="disabled" property="disabled" jdbcType="TINYINT" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, name, status, start_time, end_time, remark, page_title, share_main_title, share_sub_title, 
+        share_link_picture, back_ground_color, disabled, create_time, create_user_id, update_time, 
+        update_user_id
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_h5_advert
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="findByParam" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.nadvert.param.ActivityH5AdvertQParam">
+    	select 
+        <include refid="Base_Column_List" />
+        from activity_h5_advert
+        where
+        	1=1
+        <if test="name !=  null and name != ''">
+        	 AND name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="createTimeBegin !=  null and createTimeBegin != ''">
+        	 <![CDATA[AND create_time >= #{createTimeBegin,jdbcType=TIMESTAMP}]]>
+        </if>
+        <if test="createTimeEnd !=  null and createTimeEnd != ''">
+        	 <![CDATA[AND create_time >= #{createTimeEnd,jdbcType=TIMESTAMP}]]>
+        </if>
+    </select>
+    
+    <select id="listByJob" resultMap="BaseResultMap" parameterType="java.lang.Object">
+		select s.* from activity_h5_advert s where 
+		(s.status = 0 and  s.start_time &lt;= #{currentTime,jdbcType=TIMESTAMP})
+		OR
+		(s.status = 1 and  s.end_time &lt;= #{currentTime,jdbcType=TIMESTAMP})
+	</select>
+	
+    <insert id="add" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5Advert" >
+        insert into activity_h5_advert
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="name != null" >
+                name,
+            </if>
+            <if test="status != null" >
+                status,
+            </if>
+            <if test="startTime != null" >
+                start_time,
+            </if>
+            <if test="endTime != null" >
+                end_time,
+            </if>
+            <if test="remark != null" >
+                remark,
+            </if>
+            <if test="pageTitle != null" >
+                page_title,
+            </if>
+            <if test="shareMainTitle != null" >
+                share_main_title,
+            </if>
+            <if test="shareSubTitle != null" >
+                share_sub_title,
+            </if>
+            <if test="shareLinkPicture != null" >
+                share_link_picture,
+            </if>
+            <if test="backGroundColor != null" >
+                back_ground_color,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null" >
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null" >
+                #{status,jdbcType=TINYINT},
+            </if>
+            <if test="startTime != null" >
+                #{startTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null" >
+                #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remark != null" >
+                #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="pageTitle != null" >
+                #{pageTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="shareMainTitle != null" >
+                #{shareMainTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="shareSubTitle != null" >
+                #{shareSubTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="shareLinkPicture != null" >
+                #{shareLinkPicture,jdbcType=VARCHAR},
+            </if>
+            <if test="backGroundColor != null" >
+                #{backGroundColor,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                #{updateUserId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5Advert" >
+        update activity_h5_advert
+        <set >
+            <if test="name != null" >
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null" >
+                status = #{status,jdbcType=TINYINT},
+            </if>
+            <if test="startTime != null" >
+                start_time = #{startTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null" >
+                end_time = #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remark != null" >
+                remark = #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="pageTitle != null" >
+                page_title = #{pageTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="shareMainTitle != null" >
+                share_main_title = #{shareMainTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="shareSubTitle != null" >
+                share_sub_title = #{shareSubTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="shareLinkPicture != null" >
+                share_link_picture = #{shareLinkPicture,jdbcType=VARCHAR},
+            </if>
+            <if test="backGroundColor != null" >
+                back_ground_color = #{backGroundColor,jdbcType=VARCHAR},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+    
+    <update id="updateBatchStatus" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5Advert" >
+        update activity_h5_advert  
+        set status = #{status,jdbcType=TINYINT},
+            update_time = #{updateTime,jdbcType=TIMESTAMP},
+            update_user_id = #{updateUserId,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_h5_advert
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

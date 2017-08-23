@@ -11,9 +11,12 @@ import org.apache.ibatis.annotations.Param;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.bo.FmsOrderStatisBo;
+import com.okdeer.mall.order.bo.FmsStatisOrderCannelRefundBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
+import com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto;
+import com.okdeer.mall.order.dto.StatisOrderCannelRefundDto;
 import com.okdeer.mall.order.dto.TradeOrderCountParamDto;
 import com.okdeer.mall.order.dto.TradeOrderParamDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
@@ -260,7 +263,7 @@ public interface TradeOrderMapper {
 	 * @param params
 	 * @return
 	 */
-	List<TradeOrderPayQueryVo> selectByStatusPayType(@Param("params") Map<String, Object> params);
+	List<TradeOrderPayQueryVo> findTradeOrderForRefund(FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto);
 
 	/**
 	 * 
@@ -1076,7 +1079,7 @@ public interface TradeOrderMapper {
 	 * @author zengjizu
 	 * @date 2016年9月17日
 	 */
-	Map<String, Object> statisOrderCannelRefundByParams(@Param("params") Map<String, Object> params);
+	FmsStatisOrderCannelRefundBo statisOrderCannelRefundByParams(FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto);
 
 	// end v1.1.0 add by zengjz
 

@@ -17,12 +17,10 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.account.dto.PayAccountDto;
-import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
-import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.api.pay.service.IPayAccountServiceApi;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
-import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
+import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeDto;
 import com.okdeer.api.psms.finance.entity.CostPaymentApi;
 import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
@@ -36,7 +34,6 @@ import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.exception.StockException;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
-import com.okdeer.archive.store.entity.StoreDetailVo;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.entity.StoreInfoExt;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
@@ -105,6 +102,7 @@ import com.okdeer.mall.operate.column.service.ServerColumnService;
 import com.okdeer.mall.operate.entity.ServerColumn;
 import com.okdeer.mall.operate.entity.ServerColumnStore;
 import com.okdeer.mall.order.bo.FmsOrderStatisBo;
+import com.okdeer.mall.order.bo.FmsStatisOrderCannelRefundBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.bo.TradeOrderDetailBo;
@@ -113,7 +111,7 @@ import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
-import com.okdeer.mall.order.dto.ExpressModeParamDto;
+import com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto;
 import com.okdeer.mall.order.dto.TradeOrderCountParamDto;
 import com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto;
 import com.okdeer.mall.order.dto.TradeOrderParamDto;
@@ -935,27 +933,17 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     }
 
     @Override
-    public PageUtils<TradeOrderPayQueryVo> findByStatusPayType(Map<String, Object> params, int pageNumber, int pageSize)
+    public PageUtils<TradeOrderPayQueryVo> findTradeOrderForRefund(
+			FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto, int pageNum, int pageSize)
             throws ServiceException {
-        PageHelper.startPage(pageNumber, pageSize);
-
-        // Begin v1.1.0 modify by zengjz 20160912 增加退款状态的判断
-        convertParamsForFinance(params);
-        // End v1.1.0 modify by zengjz 20160912
-        List<TradeOrderPayQueryVo> result = tradeOrderMapper.selectByStatusPayType(params);
-        if (result == null) {
-            result = new ArrayList<TradeOrderPayQueryVo>();
-        }
-        return new PageUtils<TradeOrderPayQueryVo>(result);
+        PageHelper.startPage(pageNum, pageSize,true);
+        List<TradeOrderPayQueryVo> result = tradeOrderMapper.findTradeOrderForRefund(fmsTradeOrderForRefundParamDto);
+        return new PageUtils<>(result);
     }
 
     @Override
-    public List<TradeOrderPayQueryVo> findListByStatusPayType(Map<String, Object> params) throws ServiceException {
-        List<TradeOrderPayQueryVo> result = tradeOrderMapper.selectByStatusPayType(params);
-        if (result == null) {
-            result = new ArrayList<TradeOrderPayQueryVo>();
-        }
-        return result;
+    public List<TradeOrderPayQueryVo> findTradeOrderForRefund(FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto) throws ServiceException {
+        return tradeOrderMapper.findTradeOrderForRefund(fmsTradeOrderForRefundParamDto);
     }
 
     @Override
@@ -4226,6 +4214,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         json.put("orderResource", orders.getOrderResource().ordinal());
         json.put("platformPreferential", orders.getPlatformPreferential());
         json.put("storePreferential", orders.getStorePreferential());
+        json.put("pinMoney", orders.getPinMoney());
         // End V2.2 added by maojj 2017-03-20  + tuzhd 2017-8-1
 
         // 支付方式:(0:在线支付、1:货到付款,2:未付款,3:线下支付)
@@ -4869,136 +4858,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     // Begin modified by maojj 2016-07-26 添加分布式事务处理机制
 
-    /**
-     * @param userId       当前登录ID
-     * @param storeId      店铺ID
-     * @param consumeCodes 消费码集合，多个验证码一起验证
-     * @return
-     * @throws Exception
-     * @desc 消费码验证
-     * @author zengj
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public Map<String, String> updateServiceOrderConsume(String userId, String storeId, List<String> consumeCodes)
-            throws Exception {
-        // 返回值Map
-        Map<String, String> resultMap = new HashMap<String, String>();
-
-        List<String> rpcIdList = new ArrayList<String>();
-        try {
-            // 查询消费码参数
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("storeId", storeId);
-
-            // 验证成功的消费码
-            StringBuffer successResult = new StringBuffer();
-            // 验证失败的消费码
-            StringBuffer failResult = new StringBuffer();
-            // 当前时间
-            Calendar calendar = Calendar.getInstance();
-            for (String consumeCode : consumeCodes) {
-                params.put("consumeCode", consumeCode);
-                // 根据消费码查询订单信息
-                Map<String, Object> data = this.selectOrderDetailByConsumeCode(params);
-                // 没有找到订单信息
-                if (data == null || data.get("id") == null || data.get("orderItemId") == null
-                        || data.get("detailId") == null) {
-                    failResult.append(consumeCode + "|抱歉,没有对应的订单信息,请核实消费码的准确性;");
-                    continue;
-                }
-                // 消费码有效开始时间
-                Date startTime = data.get("startTime") == null ? null : (Date) data.get("startTime");
-                // 消费码有效结束时间
-                Date endTime = data.get("endTime") == null ? null : (Date) data.get("endTime");
-                if (ConsumeStatusEnum.noConsume.ordinal() != ((Long) data.get("status"))) {
-                    // 消费码状态不为未消费
-                    failResult.append(consumeCode + "|抱歉,消费码失效,请输入有效的消费码;");
-                    continue;
-                } else if (startTime != null && calendar.getTime().getTime() < startTime.getTime()) {
-                    // 如果当前时间小于消费码有效开始时间，说明该消费码暂时还不能消费
-                    failResult.append(consumeCode + "|抱歉,消费码还未到使用日期;");
-                    continue;
-                } else if (endTime != null && calendar.getTime().getTime() > endTime.getTime()) {
-                    // 如果当前时间大于消费码有效结束时间，说明该消费码已过期
-                    failResult.append(consumeCode + "|抱歉,消费码已过期;");
-                    continue;
-                } else {
-                    TradeOrder tradeOrder = new TradeOrder();
-                    // 订单编号
-                    String orderNo = data.get("orderNo").toString();
-                    // 订单交易号
-                    String tradeNum = data.get("tradeNum").toString();
-                    // 店主ID
-                    String storeUserId = data.get("storeUserId") == null ? null : data.get("storeUserId").toString();
-                    // 当前登录用户ID
-                    tradeOrder.setUserId(userId);
-                    // 店铺ID
-                    tradeOrder.setStoreId(storeId);
-                    // 订单ID
-                    tradeOrder.setId(data.get("id").toString());
-                    // 查询消费码对应的订单项信息
-                    TradeOrderItem tradeOrderItem = tradeOrderItemMapper
-                            .selectOrderItemById(data.get("orderItemId").toString());
-                    List<TradeOrderItem> tradeOrderItemList = new ArrayList<TradeOrderItem>();
-                    tradeOrderItemList.add(tradeOrderItem);
-                    tradeOrder.setTradeOrderItem(tradeOrderItemList);
-                    // 验证通过，将该消费码改为已消费
-                    tradeOrderItemDetailMapper.updateStatusWithConsumed(data.get("detailId").toString());
-                    // 单价
-                    BigDecimal unitPrice = data.get("unitPrice") == null ? BigDecimal.ZERO
-                            : new BigDecimal(data.get("unitPrice").toString());
-                    BigDecimal totalAmount = data.get("totalAmount") == null ? BigDecimal.ZERO
-                            : new BigDecimal(data.get("totalAmount").toString());
-
-                    BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
-                    payTradeVo.setAmount(unitPrice); // 交易金额
-                    payTradeVo.setCheckAmount(totalAmount);// 订单总金额
-                    payTradeVo.setPayUserId(userId);// 用户id
-                    payTradeVo.setTradeNum(tradeNum);// 交易号
-                    payTradeVo.setTitle("订单收入");// 标题
-                    payTradeVo.setBusinessType(BusinessTypeEnum.SPEND_SERVICE_ORDER);// 业务类型
-                    payTradeVo.setServiceFkId(data.get("id").toString());// 服务单id
-                    payTradeVo.setServiceNo(orderNo);// 服务单号，例如订单号、退单号
-                    payTradeVo.setRemark("订单[" + orderNo + "]");// 备注信息
-                    payTradeVo.setIncomeUserId(storeUserId);// 收款人，根据业务不同设置不同的id
-
-                    // 消费完，增加积分
-                    addPoint(data.get("userId").toString(), data.get("detailId").toString(), unitPrice);
-
-                    // 消费后调整库存
-                    StockUpdateDto stockUpdateDto = mallStockUpdateBuilder.buildForStoreConsume(tradeOrder, StockOperateEnum.PLACE_ORDER_COMPLETE, 1);
-                    rpcIdList.add(stockUpdateDto.getRpcId());
-                    goodsStoreSkuStockApi.updateStock(stockUpdateDto);
-                    // 调用dubbo接口
-                    BaseResultDto result = payTradeServiceApi.balanceTrade(payTradeVo);
-                    if (result == null || !TradeErrorEnum.SUCCESS.getName().equals(result.getCode())) {
-                        throw new ServiceException("调用云钱包dubbo失败==code==" + (result == null ? null : result.getCode())
-                                + "==message==" + (result == null ? null : result.getMsg()));
-                    }
-
-                    // 自动评价计时消息
-                    tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_finish_evaluate_timeout,
-                            tradeOrder.getId());
-                }
-            }
-            // Begin added by maojj 给ERP发消息去生成出入库单据
-            // stockMQProducer.sendMessage(stockAdjustList);
-            // End added by maojj
-
-            // 这里返回的key与BaseController中一样，就没有重新定义，先写死
-            // 验证成功的消费码信息,多条以逗号隔开。信息与消费码以|隔开
-            resultMap.put("success", successResult.toString());
-            // 验证失败的消费码信息,多条以逗号隔开。信息与消费码以|隔开
-            resultMap.put("failure", failResult.toString());
-        } catch (Exception e) {
-            // added by maojj 通知回滚库存修改
-            // 现在实物订单库存放入商业管理系统管理。那边没提供补偿机制，实物订单不发送消息。
-            // rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
-            throw e;
-        }
-
-        return resultMap;
-    }
+   
 
     /**
      * 生成账号规则：固定字符串+length长度的随机数字
@@ -5072,16 +4932,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             if (tradeOrderParam.getStatus() != OrderStatusEnum.DROPSHIPPING) {
                 throw new ServiceException("订单状态已更新，请刷新后重试");
             }
-            // begin V2.6.0 零售pos发货默认B方案自行配送 add by wangf01 20170810
-            ExpressModeParamDto paramDto = new ExpressModeParamDto();
-            paramDto.setOrderId(tradeOrder.getId());
-            paramDto.setUserId(tradeOrder.getUpdateUserId());
-            StoreDetailVo vo = storeInfoService.getStoreDetailById(tradeOrderParam.getStoreId());
-            paramDto.setStoreId(tradeOrderParam.getStoreId());
-            paramDto.setExpressType(2);
-            paramDto.setCommisionRatio(vo.getStoreInfoExt().getCommisionRatioPlanB());
-            expressOrderCallbackService.saveJxcExpressModePlanB(paramDto);
-            // begin add by wangf01 20170810
             //老代码 start
             this.updateOrderStatus(tradeOrder);
             Map<String, Object> map = new HashMap<String, Object>();
@@ -6073,9 +5923,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     }
 
     @Override
-    public Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params) {
-        convertParamsForFinance(params);
-        return tradeOrderMapper.statisOrderCannelRefundByParams(params);
+    public FmsStatisOrderCannelRefundBo statisOrderCannelRefundByParams(FmsTradeOrderForRefundParamDto fmsTradeOrderForRefundParamDto) {
+        return tradeOrderMapper.statisOrderCannelRefundByParams(fmsTradeOrderForRefundParamDto);
     }
     // End v1.1.0 add by zengjz 20160912
 
@@ -6537,7 +6386,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                     }
 
                     TradeOrder order = null;
-                    List<BalancePayTradeVo> tradeVoList = Lists.newArrayList();
+                    List<BalancePayTradeDto> tradeVoList = Lists.newArrayList();
 
                     // 总收入金额
                     BigDecimal totalCome = new BigDecimal("0");
@@ -6552,7 +6401,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                         // 每个订单的订单项详细优惠金额（当前输入验证码的订单项）
                         BigDecimal prefAmountDetail = detailConsumeVo.getPreferentialPrice();
 
-                        BalancePayTradeVo tradeVo = buildBalancePayTrade(order, bossId, totalAmountDetail,
+                        BalancePayTradeDto tradeVo = buildBalancePayTrade(order, bossId, totalAmountDetail,
                                 prefAmountDetail);
                         tradeVoList.add(tradeVo);
 
@@ -6960,9 +6809,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     /**
      * 构建支付对象
      */
-    private BalancePayTradeVo buildBalancePayTrade(TradeOrder order, String bossId, BigDecimal amount,
+    private BalancePayTradeDto buildBalancePayTrade(TradeOrder order, String bossId, BigDecimal amount,
                                                    BigDecimal prefAmount) throws Exception {
-        BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+    	BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
         payTradeVo.setAmount(amount);
         payTradeVo.setIncomeUserId(bossId);
         payTradeVo.setPayUserId("1");
@@ -7264,7 +7113,5 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         return tradeOrderMapper.findByOrderNo(orderNo);
     }
 
-    @Autowired
-    private ExpressService expressService;
 
 }

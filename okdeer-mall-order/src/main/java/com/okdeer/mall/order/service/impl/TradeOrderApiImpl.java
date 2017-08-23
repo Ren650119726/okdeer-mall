@@ -12,23 +12,18 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
 
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreMemberRelation;
@@ -37,59 +32,34 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
 import com.okdeer.base.common.enums.WhetherEnum;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.mapper.BeanMapper;
-import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountApi;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillServiceApi;
-import com.okdeer.mall.common.vo.PageResultVo;
-import com.okdeer.mall.member.member.vo.UserAddressVo;
-import com.okdeer.mall.member.service.MemberConsigneeAddressService;
-import com.okdeer.mall.order.bo.FmsOrderStatisBo;
-import com.okdeer.mall.order.dto.ERPTradeOrderVoDto;
-import com.okdeer.mall.order.dto.FmsOrderStatisDto;
 import com.okdeer.mall.order.dto.TradeOrderDto;
 import com.okdeer.mall.order.dto.TradeOrderInvoiceDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDto;
 import com.okdeer.mall.order.dto.TradeOrderLogisticsDto;
 import com.okdeer.mall.order.dto.TradeOrderPayDto;
-import com.okdeer.mall.order.dto.TradeOrderPayQueryDto;
 import com.okdeer.mall.order.dto.TradeOrderQueryDto;
-import com.okdeer.mall.order.dto.TradeOrderQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.entity.TradeOrderPay;
-import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.ActivityBelongType;
-import com.okdeer.mall.order.enums.OrderActivityType;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
-import com.okdeer.mall.order.enums.OrderTypeEnum;
-import com.okdeer.mall.order.enums.PayWayEnum;
-import com.okdeer.mall.order.enums.PickUpTypeEnum;
-import com.okdeer.mall.order.enums.PreferentialType;
 import com.okdeer.mall.order.enums.WithInvoiceEnum;
-import com.okdeer.mall.order.exception.ExceedRangeException;
 import com.okdeer.mall.order.service.CancelOrderService;
 import com.okdeer.mall.order.service.ITradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
-import com.okdeer.mall.order.service.TradeOrderLogisticsService;
-import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.mall.order.vo.ActivityInfoVO;
-import com.okdeer.mall.order.vo.ERPTradeOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderOperateParamVo;
 import com.okdeer.mall.order.vo.TradeOrderPayQueryVo;
-import com.okdeer.mall.system.entity.SysUserInvitationLoginNameVO;
-import com.okdeer.mall.system.service.InvitationCodeService;
 
 /**
  * 订单接口
@@ -113,9 +83,6 @@ import com.okdeer.mall.system.service.InvitationCodeService;
 public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 	private static final Logger logger = LoggerFactory.getLogger(TradeOrderApiImpl.class);
-
-	/** 记录数 */
-	private static final Integer RECORD_NUM = 10000;
 
 	@Resource
 	private TradeOrderService tradeOrderService;
@@ -580,118 +547,118 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 		return tradeOrderDto;
 	}
 
-	/******************************* 财务系统接口 **************************************************************************************/
-	/**
-	 * 查询微信或支付宝支付的，订单状态处于已取消、已拒收、取消中、拒收中的订单 （主要用于财务系统接口,分页）
-	 * 
-	 * @author wusw
-	 * @param params
-	 * @return
-	 * @throws Exception
-	 */
-	@Override
-	public PageResultVo<TradeOrderPayQueryDto> findByStatusPayType(Map<String, Object> params) throws Exception {
-		int pageNum = Integer.valueOf(params.get("page").toString());
-		int pageSize = Integer.valueOf(params.get("rows").toString());
-		List<TradeOrderPayQueryDto> dtoList = new ArrayList<TradeOrderPayQueryDto>();
-		PageUtils<TradeOrderPayQueryVo> voPage = tradeOrderService.findByStatusPayType(params, pageNum, pageSize);
-		if (voPage.getList() != null) {
-			for (TradeOrderPayQueryVo vo : voPage.getList()) {
-				TradeOrderPayQueryDto dto = new TradeOrderPayQueryDto();
-				dto.setOrderId(vo.getOrderId());
-				dto.setOrderNo(vo.getOrderNo());
-				dto.setShopName(vo.getShopName());
-				dto.setBuyer(vo.getBuyer());
-				dto.setAgentName(vo.getAgentName());
-				dto.setTransMoney(vo.getTransMoney());
-				dto.setRealMoney(vo.getRealMoney());
-				dto.setPreferMoney(vo.getPreferMoney());
-				if (vo.getApplyTime() != null) {
-					dto.setApplyTime(vo.getApplyTime());
-				}
-				if (vo.getDealTime() != null) {
-					dto.setDealTime(vo.getDealTime());
-				}
-				if (vo.getHandTime() != null) {
-					dto.setHandTime(vo.getHandTime());
-				}
-				dto.setStatus(vo.getStatus());
-
-				// begin add by zengjz 增加违约金的处理
-				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
-					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
-				} else {
-					dto.setRefundAmount(vo.getRealMoney());
-				}
-				// end add by zengjz 增加违约金的处理
-
-				dto.setThirdTransNo(vo.getThirdTransNo());
-				dto.setPayType(vo.getPayType());
-
-				// BeanUtils.copyProperties(dto, vo);
-				dtoList.add(dto);
-			}
-		}
-		PageResultVo<TradeOrderPayQueryDto> dtoPage = new PageResultVo<TradeOrderPayQueryDto>(voPage.getPageNum(),
-				voPage.getPageSize(), voPage.getTotal(), dtoList);
-		return dtoPage;
-	}
-
-	/**
-	 * 查询微信或支付宝支付的，订单状态处于已取消、已拒收、取消中、拒收中的订单 （主要用于财务系统接口,不分页）
-	 * 
-	 * @author wusw
-	 * @param params
-	 * @return
-	 * @throws Exception
-	 */
-	@Override
-	public List<TradeOrderPayQueryDto> findListByStatusPayType(Map<String, Object> params)
-			throws ExceedRangeException, Exception {
-		if (tradeOrderService.selectCountByStatusPayType(params) > RECORD_NUM) {
-			throw new ExceedRangeException("查询导出取消、拒收订单异常", new Throwable());
-		}
-
-		List<TradeOrderPayQueryDto> dtoList = new ArrayList<TradeOrderPayQueryDto>();
-		List<TradeOrderPayQueryVo> voList = tradeOrderService.findListByStatusPayType(params);
-		if (voList != null) {
-			for (TradeOrderPayQueryVo vo : voList) {
-				TradeOrderPayQueryDto dto = new TradeOrderPayQueryDto();
-				dto.setOrderId(vo.getOrderId());
-				dto.setOrderNo(vo.getOrderNo());
-				dto.setShopName(vo.getShopName());
-				dto.setBuyer(vo.getBuyer());
-				dto.setTransMoney(vo.getTransMoney());
-				dto.setRealMoney(vo.getRealMoney());
-				dto.setPreferMoney(vo.getPreferMoney());
-				if (vo.getApplyTime() != null) {
-					dto.setApplyTime(vo.getApplyTime());
-				}
-				if (vo.getDealTime() != null) {
-					dto.setDealTime(vo.getDealTime());
-				}
-				if (vo.getHandTime() != null) {
-					dto.setHandTime(vo.getHandTime());
-				}
-				dto.setStatus(vo.getStatus());
-
-				// begin add by zengjz 增加违约金的处理
-				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
-					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
-				} else {
-					dto.setRefundAmount(vo.getRealMoney());
-				}
-				// end add by zengjz 增加违约金的处理
-				dto.setThirdTransNo(vo.getThirdTransNo());
-				dto.setPayType(vo.getPayType());
-				dto.setOrderResource(vo.getOrderResource());
-
-				// BeanUtils.copyProperties(dto, vo);
-				dtoList.add(dto);
-			}
-		}
-		return dtoList;
-	}
+//	/******************************* 财务系统接口 **************************************************************************************/
+//	/**
+//	 * 查询微信或支付宝支付的，订单状态处于已取消、已拒收、取消中、拒收中的订单 （主要用于财务系统接口,分页）
+//	 * 
+//	 * @author wusw
+//	 * @param params
+//	 * @return
+//	 * @throws Exception
+//	 */
+//	@Override
+//	public PageResultVo<TradeOrderPayQueryDto> findByStatusPayType(Map<String, Object> params) throws Exception {
+//		int pageNum = Integer.valueOf(params.get("page").toString());
+//		int pageSize = Integer.valueOf(params.get("rows").toString());
+//		List<TradeOrderPayQueryDto> dtoList = new ArrayList<TradeOrderPayQueryDto>();
+//		PageUtils<TradeOrderPayQueryVo> voPage = tradeOrderService.findByStatusPayType(params, pageNum, pageSize);
+//		if (voPage.getList() != null) {
+//			for (TradeOrderPayQueryVo vo : voPage.getList()) {
+//				TradeOrderPayQueryDto dto = new TradeOrderPayQueryDto();
+//				dto.setOrderId(vo.getOrderId());
+//				dto.setOrderNo(vo.getOrderNo());
+//				dto.setShopName(vo.getShopName());
+//				dto.setBuyer(vo.getBuyer());
+//				dto.setAgentName(vo.getAgentName());
+//				dto.setTransMoney(vo.getTransMoney());
+//				dto.setRealMoney(vo.getRealMoney());
+//				dto.setPreferMoney(vo.getPreferMoney());
+//				if (vo.getApplyTime() != null) {
+//					dto.setApplyTime(vo.getApplyTime());
+//				}
+//				if (vo.getDealTime() != null) {
+//					dto.setDealTime(vo.getDealTime());
+//				}
+//				if (vo.getHandTime() != null) {
+//					dto.setHandTime(vo.getHandTime());
+//				}
+//				dto.setStatus(vo.getStatus());
+//
+//				// begin add by zengjz 增加违约金的处理
+//				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
+//					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
+//				} else {
+//					dto.setRefundAmount(vo.getRealMoney());
+//				}
+//				// end add by zengjz 增加违约金的处理
+//
+//				dto.setThirdTransNo(vo.getThirdTransNo());
+//				dto.setPayType(vo.getPayType());
+//
+//				// BeanUtils.copyProperties(dto, vo);
+//				dtoList.add(dto);
+//			}
+//		}
+//		PageResultVo<TradeOrderPayQueryDto> dtoPage = new PageResultVo<TradeOrderPayQueryDto>(voPage.getPageNum(),
+//				voPage.getPageSize(), voPage.getTotal(), dtoList);
+//		return dtoPage;
+//	}
+//
+//	/**
+//	 * 查询微信或支付宝支付的，订单状态处于已取消、已拒收、取消中、拒收中的订单 （主要用于财务系统接口,不分页）
+//	 * 
+//	 * @author wusw
+//	 * @param params
+//	 * @return
+//	 * @throws Exception
+//	 */
+//	@Override
+//	public List<TradeOrderPayQueryDto> findListByStatusPayType(Map<String, Object> params)
+//			throws ExceedRangeException, Exception {
+//		if (tradeOrderService.selectCountByStatusPayType(params) > RECORD_NUM) {
+//			throw new ExceedRangeException("查询导出取消、拒收订单异常", new Throwable());
+//		}
+//
+//		List<TradeOrderPayQueryDto> dtoList = new ArrayList<TradeOrderPayQueryDto>();
+//		List<TradeOrderPayQueryVo> voList = tradeOrderService.findListByStatusPayType(params);
+//		if (voList != null) {
+//			for (TradeOrderPayQueryVo vo : voList) {
+//				TradeOrderPayQueryDto dto = new TradeOrderPayQueryDto();
+//				dto.setOrderId(vo.getOrderId());
+//				dto.setOrderNo(vo.getOrderNo());
+//				dto.setShopName(vo.getShopName());
+//				dto.setBuyer(vo.getBuyer());
+//				dto.setTransMoney(vo.getTransMoney());
+//				dto.setRealMoney(vo.getRealMoney());
+//				dto.setPreferMoney(vo.getPreferMoney());
+//				if (vo.getApplyTime() != null) {
+//					dto.setApplyTime(vo.getApplyTime());
+//				}
+//				if (vo.getDealTime() != null) {
+//					dto.setDealTime(vo.getDealTime());
+//				}
+//				if (vo.getHandTime() != null) {
+//					dto.setHandTime(vo.getHandTime());
+//				}
+//				dto.setStatus(vo.getStatus());
+//
+//				// begin add by zengjz 增加违约金的处理
+//				if (WhetherEnum.whether == vo.getIsBreach() && vo.getBreachMoney() != null) {
+//					dto.setRefundAmount(vo.getRealMoney().subtract(vo.getBreachMoney()));
+//				} else {
+//					dto.setRefundAmount(vo.getRealMoney());
+//				}
+//				// end add by zengjz 增加违约金的处理
+//				dto.setThirdTransNo(vo.getThirdTransNo());
+//				dto.setPayType(vo.getPayType());
+//				dto.setOrderResource(vo.getOrderResource());
+//
+//				// BeanUtils.copyProperties(dto, vo);
+//				dtoList.add(dto);
+//			}
+//		}
+//		return dtoList;
+//	}
 
 	/**
 	 * @desc 根据订单id集合，查询订单信息 （主要用于财务系统接口）
@@ -704,7 +671,7 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 	@Override
 	public List<TradeOrderQueryDto> findByOrderIdForRefunds(List<String> orderIds) throws Exception {
 
-		List<TradeOrderQueryDto> dtoList = new ArrayList<TradeOrderQueryDto>();
+		List<TradeOrderQueryDto> dtoList = new ArrayList<>();
 		List<TradeOrderPayQueryVo> voList = tradeOrderService.findByOrderIdList(orderIds);
 		if (voList != null) {
 			for (TradeOrderPayQueryVo vo : voList) {
@@ -764,18 +731,5 @@ public class TradeOrderApiImpl implements ITradeOrderServiceApi {
 
 		return tradeOrderService.selectCountForUnRefund();
 	}
-
-	
-
-
-	@Override
-	public Map<String, Object> statisOrderCannelRefundByParams(Map<String, Object> params) {
-
-		return tradeOrderService.statisOrderCannelRefundByParams(params);
-	}
-	// End v1.1.0 add by zengjz 20160912
-
-
-
 	
 }

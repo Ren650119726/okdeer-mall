@@ -76,7 +76,7 @@ import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
-import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
+import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
@@ -206,8 +206,8 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceServiceApi goodsStoreSkuServiceServiceApi;
 	
-	@Reference(version = "1.0.0", check = false)
-	private TradeOrderPayServiceApi tradeOrderPayService;
+	@Resource
+	private TradeOrderPayService tradeOrderPayService;
 	
 	// Begin added by maojj 2016-10-18 
 	@Resource

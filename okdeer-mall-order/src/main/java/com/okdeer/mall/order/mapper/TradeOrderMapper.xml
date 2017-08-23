@@ -98,6 +98,7 @@
 			<result column="area" property="area" jdbcType="VARCHAR" />
 			<result column="address" property="address" jdbcType="VARCHAR" />
 			<result column="logistics_type" property="type" jdbcType="TINYINT" />
+			<result column="actual_return_amount" property="actualReturnAmount" jdbcType="DECIMAL"/>
 		</association>
 	</resultMap>
 
@@ -340,11 +341,12 @@
 		<result column="platform_preferential" property="platformPreferential" jdbcType="DECIMAL" />
 		<result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
 		<result column="delivery_type" property="deliveryType" jdbcType="INTEGER" />
+		<result column="actual_return_amount" property="actualReturnAmount" jdbcType="DECIMAL"/>
 		<!-- V2.1.0 end add by zhulq 增加订单所属城市  -->
 	</resultMap>
 	<!-- 订单列表 -财务系统接口调用 -luosm end -->
 	<sql id="Erp_column_list">
-		id,order_no,type,store_name,user_phone,total_amount,actual_amount,preferential_price,create_time,pay_way,status,is_breach,breach_money
+		id,order_no,type,store_name,user_phone,total_amount,actual_amount,preferential_price,create_time,pay_way,status,is_breach,breach_money,actual_return_amount
 	</sql>
 
 	<resultMap id="TradeOrderItemMap" type="com.okdeer.mall.order.entity.TradeOrderItem">
@@ -1297,7 +1299,7 @@
 		SELECT
 		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,o.order_resource,
 		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,o.cancel_type,
-		o.real_fare_preferential,o.store_activity_type,o.platform_preferential,o.store_preferential,
+		o.real_fare_preferential,o.store_activity_type,o.platform_preferential,o.store_preferential,o.pin_money,
 		logistics.consignee_name,logistics.telephone,logistics.mobile,logistics.area,logistics.address,
 		logistics.type as
 		logistics_type,logistics.logistics_no,logistics.logistics_company_name,
@@ -2724,13 +2726,74 @@
 		<!-- begin add by zengjz 增加是否有违约金相关字段 -->	
 		<result column="is_breach" property="isBreach" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.WhetherEnum" />
 		<result column="breach_money" property="breachMoney" jdbcType="DECIMAL" />
+		<result column="actual_return_amount" property="actualReturnAmount" jdbcType="DECIMAL" />
 		<!-- begin add by zengjz 增加是否有违约金相关字段 -->
 	</resultMap>
 
 	<!-- wusw:查询微信或支付宝支付的，订单状态处于已取消、已拒收、取消中、拒收中的订单 （主要用于财务系统接口） 12508 update 
 		by wusw 20160810 -->
-	<select id="selectByStatusPayType" resultMap="orderPayBuyerResultMap"
-		parameterType="map">
+		
+	<sql id="FmsTradeOrderForRefundParamSQL">
+	
+		<if test="idList != null and idList.size() > 0">
+			AND trade.id IN
+			<foreach collection="idList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="storeId != null and storeId !='' ">
+			AND trade.store_id = #{storeId,jdbcType=VARCHAR}
+		</if>
+		<if test="storeIdList != null and storeIdList.size() > 0">
+			AND trade.store_id IN
+			<foreach collection="storeIdList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单状态 -->
+		<if test="status != null">
+			AND trade.`status` = #{status,jdbcType=TINYINT}
+		</if>
+		<if test="statusList != null and statusList.size() > 0">
+				AND trade.`status` IN
+			<foreach collection="statusList" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 订单支付方式 -->
+		<if test="payWay != null">
+			AND trade.pay_way = #{payWay,jdbcType=TINYINT}
+		</if>
+		<!-- 订单支付类型 -->
+		<if test="payType != null">
+			AND pay.pay_type = #{payType,jdbcType=TINYINT}
+		</if>
+		<if test="payTypeList != null and payTypeList.size() > 0">
+			AND pay.pay_type IN
+			<foreach collection="payTypeList" index="index" item="item"
+					open="(" close=")" separator=",">
+					#{item}
+			</foreach>
+		</if>
+		<!-- 订单编号 -->
+		<if test="orderNo != null and orderNo != ''">
+			AND trade.order_no LIKE CONCAT('%',#{orderNo},'%')
+		</if>
+		<!-- 更新时间 -->
+		<if test="startTime != null and startTime !=''">
+			AND trade.create_time <![CDATA[ >= ]]> #{startTime,jdbcType=VARCHAR}
+		</if>
+		<!-- 更新时间 -->
+		<if test="endTime != null and endTime!=''">
+			AND trade.create_time <![CDATA[ <= ]]> #{endTime,jdbcType=VARCHAR}
+		</if>
+		<!-- 买家用户手机号码 -->
+		<if test="buyer != null and buyer != ''">
+			AND trade.user_phone LIKE CONCAT('%',#{buyer},'%')
+		</if>		
+	</sql>	
+	<select id="findTradeOrderForRefund" resultMap="orderPayBuyerResultMap"
+		parameterType="com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto">
 		SELECT DISTINCT
 		trade.id,
 		trade.order_no,
@@ -2743,66 +2806,21 @@
 		trade.create_time,
 		trade.update_time,
 		trade.order_resource,
-		<!-- begin add by zengjz 增加是否有违约金相关字段 -->
 		trade.is_breach,
 		trade.breach_money,
-		<!-- end add by zengjz 增加是否有违约金相关字段 -->
+		trade.store_name,
+		trade.store_id,
+		trade.actual_return_amount,
 		pay.pay_type,
 		pay.pay_amount,
 		pay.`returns`,
-		store.store_name,
 		CASE trade.`status` WHEN 2 THEN 1 WHEN 4 THEN 1 WHEN 12 THEN 0 WHEN 13
 		THEN 0 END AS statusSort
 		FROM trade_order trade
 		LEFT JOIN
 		trade_order_pay pay ON pay.order_id = trade.id
-		LEFT JOIN store_info
-		store ON store.id = trade.store_id
 		WHERE 1=1
-		<!-- trade.disabled = 0 -->
-		<if test="params != null">
-			<!-- 订单状态 -->
-			<if test="params.status != null and params.status.size() > 0">
-				AND trade.`status` IN
-				<foreach collection="params.status" index="index" item="item"
-					open="(" close=")" separator=",">
-					#{item}
-				</foreach>
-			</if>
-			<!-- 订单支付方式 -->
-			<if test="params.payWay != null">
-				AND trade.pay_way = #{params.payWay,jdbcType=TINYINT}
-			</if>
-			<!-- 订单支付类型 -->
-			<if test="params.payType != null">
-				AND pay.pay_type IN
-				<foreach collection="params.payType" index="index" item="item"
-					open="(" close=")" separator=",">
-					#{item}
-				</foreach>
-			</if>
-			<!-- 订单编号 -->
-			<if test="params.orderNo != null and params.orderNo != ''">
-				AND trade.order_no LIKE CONCAT('%',#{params.orderNo},'%')
-			</if>
-			<if test="params.shopName != null and params.shopName != ''">
-				AND store.store_name LIKE CONCAT('%',#{params.shopName},'%')
-			</if>
-			<!-- 更新时间 -->
-			<if test="params.startTime != null">
-				AND trade.create_time <![CDATA[ >= ]]>
-				#{params.startTime,jdbcType=TIMESTAMP}
-			</if>
-			<!-- 更新时间 -->
-			<if test="params.endTime != null">
-				AND trade.create_time <![CDATA[ <= ]]>
-				#{params.endTime,jdbcType=TIMESTAMP}
-			</if>
-			<!-- 买家用户手机号码 -->
-			<if test="params.buyer != null and params.buyer != ''">
-				AND trade.user_phone LIKE CONCAT('%',#{params.buyer},'%')
-			</if>
-		</if>
+		<include refid="FmsTradeOrderForRefundParamSQL" />			
 		ORDER BY statusSort ASC, trade.update_time DESC
 	</select>
 
@@ -3348,6 +3366,9 @@
 			</if>
 			<if test="cancelType != null">
 				cancel_type = #{cancelType,jdbcType=TINYINT},
+			</if>
+			<if test="actualReturnAmount != null">
+				actual_return_amount = #{actualReturnAmount,jdbcType=DECIMAL},
 			</if>
 		</set>
 		WHERE id = #{id,jdbcType=VARCHAR}
@@ -5820,61 +5841,14 @@
 		ORDER BY o.create_time ASC
 	</select>
 
-	<select id="statisOrderCannelRefundByParams" parameterType="map"
-		resultType="map">
-		SELECT case trade.is_breach  when 0 then  IFNULL(sum(actual_amount),0) 
-		when 1 then IFNULL(sum(actual_amount - trade.breach_money),0) end as totalAmount,
-		count(1) as count
+	<select id="statisOrderCannelRefundByParams" resultType="com.okdeer.mall.order.bo.FmsStatisOrderCannelRefundBo"
+		parameterType="com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto">
+		SELECT  IFNULL(SUM(actual_return_amount),0) as refundAmount,
+		count(1) as refundCount
 		FROM trade_order trade
-		LEFT JOIN trade_order_pay pay ON pay.order_id =
-		trade.id
-		LEFT JOIN store_info store ON store.id = trade.store_id
+		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		WHERE 1=1
-		<!-- trade.disabled = 0 -->
-		<if test="params != null">
-			<!-- 订单状态 -->
-			<if test="params.status != null and params.status.size() > 0">
-				AND trade.`status` IN
-				<foreach collection="params.status" index="index" item="item"
-					open="(" close=")" separator=",">
-					#{item}
-				</foreach>
-			</if>
-			<!-- 订单支付方式 -->
-			<if test="params.payWay != null">
-				AND trade.pay_way = #{params.payWay,jdbcType=TINYINT}
-			</if>
-			<!-- 订单支付类型 -->
-			<if test="params.payType != null">
-				AND pay.pay_type IN
-				<foreach collection="params.payType" index="index" item="item"
-					open="(" close=")" separator=",">
-					#{item}
-				</foreach>
-			</if>
-			<!-- 订单编号 -->
-			<if test="params.orderNo != null and params.orderNo != ''">
-				AND trade.order_no LIKE CONCAT('%',#{params.orderNo},'%')
-			</if>
-			<if test="params.shopName != null and params.shopName != ''">
-				AND store.store_name LIKE
-				CONCAT('%',#{params.shopName},'%')
-			</if>
-			<!-- 更新时间 -->
-			<if test="params.startTime != null">
-				AND trade.create_time <![CDATA[ >= ]]>
-				#{params.startTime,jdbcType=TIMESTAMP}
-			</if>
-			<!-- 更新时间 -->
-			<if test="params.endTime != null">
-				AND trade.create_time <![CDATA[ <= ]]>
-				#{params.endTime,jdbcType=TIMESTAMP}
-			</if>
-			<!-- 买家用户手机号码 -->
-			<if test="params.buyer != null and params.buyer != ''">
-				AND trade.user_phone LIKE CONCAT('%',#{params.buyer},'%')
-			</if>
-		</if>
+		<include refid="FmsTradeOrderForRefundParamSQL" />
 	</select>
 
 

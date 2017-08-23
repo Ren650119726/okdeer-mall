@@ -69,7 +69,7 @@ import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
-import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
+import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradePinMoneyObtainService;
 import com.okdeer.mall.order.service.TradePinMoneyUseService;
@@ -155,8 +155,8 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	@Resource
 	private TradeOrderLogService tradeOrderLogService;
 
-	@Reference(version = "1.0.0", check = false)
-	private TradeOrderPayServiceApi tradeOrderPayService;
+	@Resource
+	private TradeOrderPayService tradeOrderPayService;
 
 	@Resource
 	private OrderReturnCouponsService orderReturnCouponsService;
