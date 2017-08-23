@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.nadvert.mapper.ActivityH5AdvertContentGoodsMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="content_id" property="contentId" jdbcType="VARCHAR" />
+        <result column="goods_type" property="goodsType" jdbcType="TINYINT" />
+        <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+        <result column="goods_sku_pic" property="goodsSkuPic" jdbcType="VARCHAR" />
+        <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
+        <result column="store_activity_type" property="storeActivityType" jdbcType="TINYINT" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, activity_id, content_id, goods_type, store_sku_id, pic_url, 
+        store_activity_type, create_time, create_user_id
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        	aa.*,bb.url goods_sku_pic
+        from activity_h5_advert_content_goods
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <select id="findByActId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        	aa.id, aa.activity_id, aa.content_id, aa.goods_type, aa.store_sku_id, aa.pic_url, 
+        	aa.store_activity_type, aa.create_time, aa.create_user_id,bb.url as goods_sku_pic
+        from activity_h5_advert_content_goods aa
+        LEFT JOIN goods_store_sku_picture bb ON (aa.store_sku_id = bb.store_sku_id AND bb.type = 1) 
+        where 
+        	1=1
+        <if test="activityId != null">
+        	 AND activity_id = #{activityId,jdbcType=VARCHAR}
+        </if>	
+        <if test="contentId != null">
+        	 AND content_id = #{contentId,jdbcType=VARCHAR}
+        </if>
+        GROUP BY aa.store_sku_id;	
+    </select>
+    
+    <insert id="add" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods" >
+        insert into activity_h5_advert_content_goods
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
+            <if test="contentId != null" >
+                content_id,
+            </if>
+            <if test="goodsType != null" >
+                goods_type,
+            </if>
+            <if test="godsSkuId != null" >
+                store_sku_id,
+            </if>
+            <if test="picUrl != null" >
+                pic_url,
+            </if>
+            <if test="storeActivityType != null" >
+                store_activity_type,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="contentId != null" >
+                #{contentId,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsType != null" >
+                #{goodsType,jdbcType=TINYINT},
+            </if>
+            <if test="storeSkuId != null" >
+                #{storeSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="picUrl != null" >
+                #{picUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="storeActivityType != null" >
+                #{storeActivityType,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    
+    <insert id="batchSave" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods">
+    	INSERT INTO activity_h5_advert_content_goods (<include refid="Base_Column_List" />)
+    	VALUES  
+	    <foreach collection="list" item="item" index="index" separator="," >  
+	        (#{item.id,jdbcType=VARCHAR},
+	         #{item.activityId,jdbcType=VARCHAR},
+	         #{item.contentId,jdbcType=VARCHAR},
+	         #{item.goodsType,jdbcType=TINYINT},
+	         #{item.storeSkuId,jdbcType=VARCHAR},
+	         #{item.picUrl,jdbcType=VARCHAR},
+	         #{item.storeActivityType,jdbcType=TINYINT},
+	         #{item.createTime,jdbcType=TIMESTAMP},
+	         #{item.createUserId,jdbcType=VARCHAR})
+	    </foreach> 
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods" >
+        update activity_h5_advert_content_goods
+        <set >
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="contentId != null" >
+                content_id = #{contentId,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsType != null" >
+                goods_type = #{goodsType,jdbcType=TINYINT},
+            </if>
+            <if test="godsSkuId != null" >
+                store_sku_id = #{godsSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="picUrl != null" >
+                pic_url = #{picUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="storeActivityType != null" >
+                store_activity_type = #{storeActivityType,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_h5_advert_content_goods
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="deleteByActId" parameterType="java.lang.String" >
+        delete from activity_h5_advert_content_goods
+        where
+        	1=1
+        <if test="activityId != null">
+	       	AND activity_id = #{activityId,jdbcType=VARCHAR}
+        </if>	 
+        <if test="contentId != null">
+	       	AND content_id = #{contentId,jdbcType=VARCHAR}
+        </if>	 
+    </delete>
+
+</mapper>
