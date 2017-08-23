@@ -27,13 +27,6 @@ public interface TradeOrderPayService {
 	TradeOrderPay selectByOrderId(String orderId) throws ServiceException;
 
 	/**
-	 * 订单支付
-	 * @param tradeOrderPay
-	 * @throws ServiceException
-	 */
-	void insertOrderPay(TradeOrderPay tradeOrderPay) throws ServiceException;
-
-	/**
 	 * 取消订单支付
 	 * @return 
 	 * @throws Exception 
@@ -47,24 +40,15 @@ public interface TradeOrderPayService {
 	boolean confirmOrderPay(TradeOrder tradeOrder) throws Exception;
 
 	/**
-	 * 验证云钱包用户名是否正确</p>
-	 * 
-	 * @author yangq
+	 * @Description: 余额支付
 	 * @param orderMoney
+	 * @param order
 	 * @return
 	 * @throws Exception
+	 * @author zengjizu
+	 * @date 2017年8月23日
 	 */
 	public boolean wlletPay(String orderMoney, TradeOrder order) throws Exception;
-
-	/**
-	 * 查询订单是否产生交易记录
-	 * 
-	 * @author yangq
-	 * @param orderId
-	 * @return
-	 * @throws Exception
-	 */
-	int selectTradeOrderPayByOrderId(String orderId) throws Exception;
 
 	/**
 	 * 判断订单是否有售后服务

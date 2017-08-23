@@ -34,7 +34,7 @@ import com.google.common.collect.Maps;
 import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.enums.RefundTypeEnum;
 import com.okdeer.api.pay.pay.dto.PayRefundDto;
-import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeVo;
+import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeDto;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
@@ -627,7 +627,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			}
 		}
 
-		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
 		payTradeVo.setAmount(refundAmount);
 		payTradeVo.setIncomeUserId("1");
 		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
@@ -648,6 +648,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 		}
 		// 接受返回消息的tag
 		payTradeVo.setTag(null);
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		return JSONObject.fromObject(payTradeVo).toString();
 	}
 	
@@ -662,7 +663,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 	 */
 	private String buildBalancePayTrade(TradeOrder order, TradeOrderRefunds orderRefunds) throws Exception {
 
-		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
 		payTradeVo.setAmount(orderRefunds.getTotalAmount());
 		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
 		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(orderRefunds.getStoreId()));
@@ -681,6 +682,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 		}
 		// 接受返回消息的tag
 		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_REFUND);
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		return JSONObject.fromObject(payTradeVo).toString();
 	}
 
@@ -936,7 +938,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 
 		BigDecimal amount = orderRefunds.getTotalAmount();
 
-		BalancePayTradeVo payTradeVo = new BalancePayTradeVo();
+		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
 		payTradeVo.setAmount(amount);
 		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
 		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(orderRefunds.getStoreId()));
@@ -956,6 +958,7 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 		}
 		// 接受返回消息的tag
 		payTradeVo.setTag(null);
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		return JSONObject.fromObject(payTradeVo).toString();
 	}
 

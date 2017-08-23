@@ -2,7 +2,6 @@
 package com.okdeer.mall.order.service.impl;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,7 +11,6 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -62,17 +60,14 @@ import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.dto.PayInfoParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
-import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
-import com.okdeer.mall.order.enums.ActivityBelongType;
 import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
-import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
@@ -113,8 +108,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 	@Resource
 	private TradeOrderRefundsItemMapper tradeOrderRefundsItemMapper;
 
-	@Resource
-	private TradeOrderLogMapper tradeOrderLogMapper;
 
 	@Reference(version = "1.0.0", check = false)
 	private IPayServiceApi payServiceApi;
@@ -153,42 +146,12 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		return tradeOrderPayMapper.selectByOrderId(orderId);
 	}
 
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public void insertOrderPay(TradeOrderPay tradeOrderPay) throws ServiceException {
-
-		// 1、订单金额 支付联调,如果支付成功才做订单支付数据的新增 暂未开始
-
-		boolean flag = true;
-
-		// 缺少 订单支付方法
-
-		TradeOrderLog tradeOrderLog = new TradeOrderLog();
-
-		TradeOrderLog orderLog = tradeOrderPay.getTradeOrderLog();
-
-		try {
-			BeanUtils.copyProperties(tradeOrderLog, orderLog);
-		} catch (IllegalAccessException e) {
-			logger.error("对象转换发生异常：", e);
-		} catch (InvocationTargetException e) {
-			logger.error("对象转换发生异常：", e);
-		}
-
-		tradeOrderLogMapper.insertSelective(tradeOrderLog);
-		if (flag) { // 如果订单支付回调状态为true
-
-		}
-
-	}
-
 	/**
 	 * 
 	 * @return
 	 */
-	@Transactional(rollbackFor = Exception.class)
-	public void insertTradeOrderPayLog(TradeOrder tradeOrder) {
-		tradeOrderMapper.updateByPrimaryKeySelective(tradeOrder);
+	private int updateOrderInfo(TradeOrder tradeOrder) {
+		return tradeOrderMapper.updateOrderStatus(tradeOrder);
 	}
 
 	/**
@@ -337,6 +300,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		}
 		// 接受返回消息的tag
 		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_CANCEL);
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		return JSONObject.toJSONString(payTradeVo);
 	}
 
@@ -363,6 +327,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		payTradeVo.setServiceNo(order.getOrderNo());
 		// 接受返回消息的tag
 		payTradeVo.setTag(null);
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		return JSONObject.toJSONString(payTradeVo);
 	}
 
@@ -495,6 +460,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		// 接受返回消息的tag
 		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_CONFIRM);
 		payTradeVo.setExt(JsonMapper.nonDefaultMapper().toJson(payTradeExt));
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		return JSONObject.toJSONString(payTradeVo);
 	}
 
@@ -528,6 +494,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		payTradeVo.setServiceFkId(order.getId());
 		payTradeVo.setServiceNo(order.getOrderNo());
 		payTradeVo.setExt(JsonMapper.nonDefaultMapper().toJson(payTradeExt));
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		return JSONObject.toJSONString(payTradeVo);
 	}
 
@@ -592,6 +559,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		// 接受返回消息的tag
 		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_CONFIRM);
 		payTradeVo.setExt(JsonMapper.nonDefaultMapper().toJson(payTradeExt));
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		return JSONObject.toJSONString(payTradeVo);
 	}
 
@@ -693,6 +661,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		// 接受返回消息的tag
 		payTradeVo.setTag(null);
 		payTradeVo.setExt(JsonMapper.nonDefaultMapper().toJson(payTradeExt));
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		return JSONObject.toJSONString(payTradeVo);
 	}
 
@@ -724,15 +693,13 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		orderPay.setOrderId(order.getId());
 		orderPay.setPayAmount(order.getActualAmount());
 		orderPay.setPayTime(new Date());
-
 		orderPay.setPayType(com.okdeer.mall.order.enums.PayTypeEnum.WALLET);
-		order.setStatus(OrderStatusEnum.BUYER_PAYING);
 		order.setTradeOrderPay(orderPay);
+		order.setStatus(OrderStatusEnum.BUYER_PAYING);
+		order.setCurrentStatus(OrderStatusEnum.UNPAID);
 
 		BalancePayTradeDto payTrade = buildBalancePay(order);
-
 		String json = JsonMapper.nonEmptyMapper().toJson(payTrade);
-
 		logger.info("发送余额支付信息到云钱包:{}", json);
 
 		Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
@@ -743,7 +710,11 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 
 			@Override
 			public LocalTransactionState executeLocalTransactionBranch(Message msg, Object object) {
-				insertTradeOrderPayLog((TradeOrder) object);
+				int result = updateOrderInfo((TradeOrder) object);
+				if (result < 1) {
+					logger.error("订单状态不是待支付，支付失败！");
+					return LocalTransactionState.ROLLBACK_MESSAGE;
+				}
 				return LocalTransactionState.COMMIT_MESSAGE;
 			}
 		}, new TransactionCheckListener() {
@@ -759,40 +730,25 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 	 * 构建云钱包(余额)支付对象
 	 */
 	private BalancePayTradeDto buildBalancePay(TradeOrder order) throws Exception {
-
 		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
-
-		// begin modify by zengjz 将设置优惠金额部分提取出来共用
 		setActiveAmount(order, payTradeVo);
-		// end modify by zengjz 将设置优惠金额部分提取出来共用
-
 		payTradeVo.setAmount(order.getActualAmount()); // 交易金额
 		payTradeVo.setPayUserId(order.getUserId());// 用户id
 		payTradeVo.setTradeNum(order.getTradeNum());// 交易号
 		payTradeVo.setTitle("订单支付");// 标题
-		if (order.getType() == OrderTypeEnum.PHONE_PAY_ORDER || order.getType() == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
-			payTradeVo.setBusinessType(BusinessTypeEnum.RECHARGE_ORDER_PAY);
-			payTradeVo.setTag(PayMessageConstant.TAG_PAY_RECHARGE_ORDER_BLANCE);// 接受返回消息的tag
-		} else if (order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+		if (order.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 			payTradeVo.setBusinessType(BusinessTypeEnum.STORE_CONSUME_ORDER);
-			payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_INSERT);// 接受返回消息的tag
-			payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		} else {
 			payTradeVo.setBusinessType(BusinessTypeEnum.ORDER_PAY);// 业务类型
-			payTradeVo.setTag("tag_pay_result_mall_insert");// 接受返回消息的tag
 		}
+		payTradeVo.setTag(PayMessageConstant.TAG_PAY_RESULT_INSERT);// 接受返回消息的tag
+		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
 		payTradeVo.setServiceFkId(order.getId());// 服务单id
 		payTradeVo.setServiceNo(order.getOrderNo());// 服务单号，例如订单号、退单号
-		payTradeVo.setRemark("订单");// 备注信息
-
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		return payTradeVo;
-
 	}
 
-	@Override
-	public int selectTradeOrderPayByOrderId(String orderId) throws Exception {
-		return tradeOrderPayMapper.selectTradeOrderPayByOrderId(orderId);
-	}
 
 	// bigein add by zengjz 2016-11-18 增加服务订单确认调用云钱包方法
 	@Override
@@ -814,6 +770,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		payTradeVo.setTag(null);
 		// 设置优惠金额信息
 		setActiveAmount(tradeOrder, payTradeVo);
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		String sendJson = JSONObject.toJSONString(payTradeVo);
 		// 发送MQ消息
 		Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
@@ -835,11 +792,9 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 	 */
 	private void setActiveAmount(TradeOrder order, BalancePayTradeDto payTradeVo) throws Exception {
 		// 优惠额退款 判断是否有优惠劵
-		ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
-		if (activityResource == ActivityBelongType.OPERATOR || activityResource == ActivityBelongType.AGENT
-				&& (order.getPreferentialPrice().compareTo(BigDecimal.ZERO) > 0)) {
-			payTradeVo.setPrefeAmount(order.getPreferentialPrice());
-			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
+		if (order.getPlatformPreferential() != null && order.getPlatformPreferential().compareTo(BigDecimal.ZERO) > 0) {
+			payTradeVo.setPrefeAmount(order.getPlatformPreferential());
+			payTradeVo.setActivitier(yscWalletAccount);
 		}
 	}
 

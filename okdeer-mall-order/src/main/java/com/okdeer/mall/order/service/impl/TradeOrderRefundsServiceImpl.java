@@ -769,20 +769,14 @@ public class TradeOrderRefundsServiceImpl
 		payTradeVo.setAmount(orderRefunds.getTotalAmount());
 		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
 		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(orderRefunds.getStoreId()));
-		payTradeVo.setTradeNum(orderRefunds.getTradeNum());
+		payTradeVo.setTradeNum(order.getTradeNum());
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		payTradeVo.setTitle("订单退款，退款交易号：" + orderRefunds.getRefundNo());
 		payTradeVo.setBusinessType(BusinessTypeEnum.AGREEN_REFUND);
 		payTradeVo.setServiceFkId(orderRefunds.getId());
 		payTradeVo.setServiceNo(orderRefunds.getOrderNo());
 		payTradeVo.setRemark("关联订单号：" + orderRefunds.getOrderNo());
 		// Begin V2.5 modified by maojj 2017-06-28
-		// 优惠额退款 判断是否有优惠劵
-		/*ActivityBelongType activityResource = tradeOrderActivityService.findActivityType(order);
-		if (activityResource == ActivityBelongType.OPERATOR || activityResource == ActivityBelongType.AGENT
-				&& (orderRefunds.getTotalPreferentialPrice().compareTo(BigDecimal.ZERO) > 0)) {
-			payTradeVo.setPrefeAmount(orderRefunds.getTotalPreferentialPrice());
-			payTradeVo.setActivitier(tradeOrderActivityService.findActivityUserId(order));
-		}*/
 		BigDecimal platformFavour = orderRefunds.getTotalPreferentialPrice().subtract(orderRefunds.getStorePreferential());
 		if(platformFavour.compareTo(BigDecimal.valueOf(0.00)) == 1){
 			// 如果平台优惠>0.则标识有平台优惠
@@ -804,10 +798,10 @@ public class TradeOrderRefundsServiceImpl
 		payTradeVo.setAmount(orderRefunds.getTotalAmount());
 		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
 		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(orderRefunds.getStoreId()));
-		payTradeVo.setTradeNum(orderRefunds.getTradeNum());
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		payTradeVo.setTitle("订单退款(余额支付)，退款交易号：" + orderRefunds.getRefundNo());
-
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
+		payTradeVo.setTradeNum(order.getTradeNum());
 		// Begin Modified by maojj 2017-05-25
 		if(orderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND){
 			payTradeVo.setBusinessType(BusinessTypeEnum.YSC_REFUND);
@@ -1213,7 +1207,8 @@ public class TradeOrderRefundsServiceImpl
 		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
 		payTradeVo.setAmount(totalAmount);
 		payTradeVo.setIncomeUserId(storeInfoService.getBossIdByStoreId(order.getStoreId()));
-		payTradeVo.setTradeNum(refunds.getTradeNum());
+		payTradeVo.setTradeNum(order.getTradeNum());
+		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		payTradeVo.setTitle("解冻余额，交易号：" + refunds.getTradeNum());
 		payTradeVo.setBusinessType(BusinessTypeEnum.COMPLETE_ORDER);
 		payTradeVo.setServiceFkId(order.getId());
@@ -1226,7 +1221,6 @@ public class TradeOrderRefundsServiceImpl
 			payTradeVo.setPrefeAmount(preferentialPrice);
 		}
 		// End 12205 add by zengj
-		payTradeVo.setRemark("无");
 		// 接受返回消息的tag
 		payTradeVo.setTag(null);
 		payTradeVo.setExt(JsonMapper.nonDefaultMapper().toJson(payTradeExt));
