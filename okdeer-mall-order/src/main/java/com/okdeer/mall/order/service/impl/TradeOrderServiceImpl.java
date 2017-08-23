@@ -7078,5 +7078,31 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         return tradeOrderMapper.findByOrderNo(orderNo);
     }
 
+    /**
+     * zengj:查询消费码使用记录
+     *
+     * @param params
+     * @param pageNumber
+     * @param pageSize
+     * @return
+     */
+    @Override
+    public PageUtils<Map<String, Object>> selectConsumeCodeUseRecord(Map<String, Object> params, int pageNumber,
+                                                                     int pageSize) {
+        PageHelper.startPage(pageNumber, pageSize, true, false);
+        return new PageUtils<Map<String, Object>>(tradeOrderMapper.selectConsumeCodeUseRecord(params));
+    }
+
+    /**
+     * zengj:查询消费码订单总额
+     *
+     * @param params
+     * @return
+     */
+    @Override
+    public BigDecimal selectConsumeTotalAmount(Map<String, Object> params) {
+        return tradeOrderMapper.selectConsumeTotalAmount(params);
+    }
+
 
 }
