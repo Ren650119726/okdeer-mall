@@ -373,6 +373,10 @@
 		<if test="endTimeEnd != null">
 		  	AND end_time <![CDATA[ <= ]]> #{endTimeEnd,jdbcType=TIMESTAMP}
 		</if>
+		<!-- 添加参与条件限制搜索条件 -->
+		<if test="limitChannel != null and limitChannel != ''">
+         	AND limit_channel like CONCAT('%',#{limitChannel,jdbcType=VARCHAR},'%')
+        </if>
        ORDER BY update_time DESC,status ASC
     </select>
 	

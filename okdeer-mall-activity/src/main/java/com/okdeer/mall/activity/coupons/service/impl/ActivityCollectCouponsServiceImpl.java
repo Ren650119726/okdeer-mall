@@ -19,6 +19,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.okdeer.api.pay.service.IPayAccountServiceApi;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.archive.system.entity.PsmsAgent;
@@ -54,9 +55,11 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCollectOrderTypeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectStoreMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectXffqRelationMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi;
+import com.okdeer.mall.activity.dto.ActivityCollectCouponsQueryDto;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.system.mapper.SysUserMapper;
 import com.okdeer.mcm.entity.SmsVO;
@@ -121,6 +124,11 @@ public class ActivityCollectCouponsServiceImpl
 	 */
 	@Autowired
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+	/**
+	 * 代金券预录取记录mapper
+	 */
+	@Autowired
+	private ActivityCouponsRecordBeforeMapper activityCouponsRecordBeforeMapper;
 
 	@Reference(version = "1.0.0", check = false)
 	private IPayAccountServiceApi payAccountServiceApi;
@@ -889,6 +897,47 @@ public class ActivityCollectCouponsServiceImpl
 			return Lists.newArrayList();
 		}
 		return activityCollectCouponsMapper.findByIds(idList);
+	}
+
+	@Override
+	public Boolean isShareRedPackage(ActivityCollectCouponsQueryDto dto) {
+		Map<String, Object > map = Maps.newHashMap();
+		map.put("type", 7);
+		map.put("status", 1);
+		map.put("storeId", dto.getStoreId());
+		List<ActivityCollectCoupons> couponsList = activityCollectCouponsMapper.findCollectCouponsByType(map);
+		//正常应该只有一条数据
+		if(CollectionUtils.isNotEmpty(couponsList)){
+			ActivityCouponsRecord record = new ActivityCouponsRecord();
+			record.setCollectTime(DateUtils.getDateStart(new Date()));
+			record.setCollectType(ActivityCouponsType.red_packet);
+			record.setCouponsCollectId(couponsList.get(0).getId());
+			int drawAmount = getDaliyDrawAmount(record);
+			
+			//0表示不限制 每日最大发行量大于领取数量
+			if(Integer.valueOf(couponsList.get(0).getDailyCirculation())==0 ||Integer.valueOf(couponsList.get(0).getDailyCirculation())>drawAmount){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @Description: 获取代金券每日已领取数量
+	 * @param record
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年8月22日
+	 */
+	private int getDaliyDrawAmount(ActivityCouponsRecord record) {
+
+		// 当前日期已经领取的数量
+		int dailyCirculation = activityCouponsRecordMapper.selectCountByParams(record);
+		// 当前代金劵日已经预领取领取的数量
+		int dailyBefore = activityCouponsRecordBeforeMapper.getCountByDayParams(record);
+		
+		return dailyCirculation + dailyBefore;
 	}
 	
 }
