@@ -134,5 +134,4 @@
 		 and store_id  = #{storeId,jdbcType=VARCHAR}		
      </if>
   </select>
-  
- --></mapper>
+ </mapper>
