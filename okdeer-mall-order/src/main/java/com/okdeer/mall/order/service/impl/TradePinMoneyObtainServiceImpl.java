@@ -70,7 +70,7 @@ public class TradePinMoneyObtainServiceImpl extends BaseServiceImpl implements T
 	@Override
 	public PageUtils<TradePinMoneyObtain> findPage(String userId, int pageNumber, int pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true);
-		List<TradePinMoneyObtain> list = tradePinMoneyObtainMapper.findList(userId, new Date(), null);
+		List<TradePinMoneyObtain> list = tradePinMoneyObtainMapper.findList(userId, null, null);
 		return new PageUtils<TradePinMoneyObtain>(list);
 	}
 	

@@ -162,6 +162,7 @@
         <if test="status != null" >
             AND status = #{status,jdbcType=TINYINT}
         </if>
+        ORDER BY create_time DESC
     </select>
     
     <!-- 根据ID列表查询记录 -->

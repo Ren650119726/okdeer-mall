@@ -3,6 +3,8 @@ package com.okdeer.mall.order.handler.impl;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -296,6 +298,8 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		// 查询我的红包记录
 		List<TradePinMoneyObtain> pinMoneyObtains = tradePinMoneyObtainService.findList(paramDto.getUserId(),
 				new Date(), PinMoneyStatusConstant.UNUSED);
+		//倒序
+		Collections.reverse(pinMoneyObtains);
 		// 需扣减金额
 		BigDecimal deduction = new BigDecimal("0.00");
 		// 用户使用金额
