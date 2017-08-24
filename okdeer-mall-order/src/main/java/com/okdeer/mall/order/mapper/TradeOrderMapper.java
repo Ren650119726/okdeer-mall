@@ -1229,4 +1229,22 @@ public interface TradeOrderMapper {
 	 */
 	TradeOrder findByOrderNo(String orderNo);
 	// End V2.4.1 added by maojj 2017-06-19
+
+	/**
+	 * @Description: 条件查询订单数
+	 * @param paramDto
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年8月24日
+	 */
+	Integer findUserOrderCount(TradeOrderParamDto paramDto);
+
+	/**
+	 * @Description: 获取零花钱领取金额
+	 * @param paramDto
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年8月24日
+	 */
+	BigDecimal findPinMoneyAmount(TradeOrderParamDto paramDto);
 }

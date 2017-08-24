@@ -41,19 +41,25 @@ import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.enums.CashDelivery;
 import com.okdeer.mall.activity.discount.entity.ActivityBusinessRel;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountArea;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountStore;
 import com.okdeer.mall.activity.discount.enums.ActivityBusinessType;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityBusinessRelMapper;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountAreaMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountStoreMapper;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.dto.ActivityBusinessRelDto;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
+import com.okdeer.mall.activity.dto.ActivityPinMoneyDto;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
+import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.order.vo.FullSubtract;
@@ -101,6 +107,12 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	
 	@Resource
 	private MaxFavourStrategy genericMaxFavourStrategy;
+	
+	@Resource
+	private ActivityDiscountAreaMapper activityDiscountAreaMapper;
+	
+	@Resource
+	private ActivityDiscountStoreMapper activityDiscountStoreMapper;
 	
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -558,5 +570,22 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			return Lists.newArrayList();
 		}
 		return activityDiscountMapper.findByIds(idList);
+	}
+
+	@Override
+	public boolean isJoinPinMoney(ActivityPinMoneyDto activityPinMoneyDto, String storeId,String cityId) {
+		
+		AreaType areaType = activityPinMoneyDto.getLimitRange();
+		//区域
+		if(areaType == AreaType.area){
+			ActivityDiscountArea discountArea = activityDiscountAreaMapper.findByAreaId(cityId,activityPinMoneyDto.getId());
+			return discountArea == null ? false:true;
+		}
+		//店铺
+		if(areaType == AreaType.store){
+			ActivityDiscountStore discountStore = activityDiscountStoreMapper.findDiscountStore(activityPinMoneyDto.getId(),storeId);
+			return discountStore == null ? false:true;
+		}
+		return true;
 	}
 }
