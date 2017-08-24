@@ -122,8 +122,16 @@
      </if>  
   </delete>
   
-<!--   <select id="selectActivityDiscount" parameterType="com.okdeer.mall.activity.discount.vo.ActivityDiscountFindVo" resultMap="">
-  		
+  <!-- 根据查询条件，查询折扣活动关联信息 -->
+  <select id="findDiscountStore" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_discount_store WHERE 1=1 
+     <if test="discountId != null ">
+		 and discount_id  = #{discountId,jdbcType=VARCHAR}		
+     </if>
+     <if test="discountId != null ">
+		 and store_id  = #{storeId,jdbcType=VARCHAR}		
+     </if>
   </select>
-  
- --></mapper>
+ </mapper>

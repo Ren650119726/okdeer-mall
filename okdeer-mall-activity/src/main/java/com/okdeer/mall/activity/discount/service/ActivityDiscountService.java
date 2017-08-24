@@ -10,6 +10,7 @@ import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
+import com.okdeer.mall.activity.dto.ActivityPinMoneyDto;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.order.vo.FullSubtract;
 
@@ -122,4 +123,14 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @date 2017年7月27日
 	 */
 	List<ActivityDiscount> findByIds(List<String> discountActiviIdList);
+
+	/**
+	 * @Description: 判断店铺 或者城市是否参与零花钱活动
+	 * @param activityPinMoneyDto
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年8月23日
+	 */
+	boolean isJoinPinMoney(ActivityPinMoneyDto activityPinMoneyDto, String storeId,String cityId);
+
 }

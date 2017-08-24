@@ -133,4 +133,16 @@
       1 = 2
      </if>  
   </delete>
+  <!-- 根据查询条件，查询活动区域信息列表 -->
+  <select id="findByAreaId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+     FROM activity_discount_area WHERE type=0 
+     <if test="discountId != null ">
+		 and discount_id  = #{discountId,jdbcType=VARCHAR}		
+     </if>
+     <if test="areaId != null ">
+		 and area_id  = #{areaId,jdbcType=VARCHAR}		
+     </if>
+  </select>
 </mapper>
