@@ -31,6 +31,7 @@
 		<result column="grant_total_order" property="grantTotalOrder" jdbcType="INTEGER" />
 		<result column="device_day_limit" property="deviceDayLimit" jdbcType="INTEGER" />
 		<result column="account_day_limit" property="accountDayLimit" jdbcType="INTEGER" />
+		<result column="valid_day" property="validDay" jdbcType="INTEGER" />
 	</resultMap>
 
 	<sql id="Base_Column_List">
@@ -40,7 +41,7 @@
 		limit_freq, limit_freq_type, limit_channel, limit_user, limit_sku,
 		limit_order_amount,
 		limit_total_amount, limit_day_amount, grant_type, grant_total_amount, grant_total_user,
-		grant_total_order,device_day_limit,account_day_limit
+		grant_total_order,device_day_limit,account_day_limit,valid_day
 	</sql>
 
 	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
@@ -139,6 +140,9 @@
 			<if test="accountDayLimit != null">
 				account_day_limit,
 			</if>
+			<if test="validDay != null">
+				valid_day,
+			</if>
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -227,6 +231,9 @@
 			</if>
 			<if test="accountDayLimit != null">
 				#{accountDayLimit,jdbcType=INTEGER},
+			</if>
+			<if test="validDay != null">
+				#{validDay,jdbcType=INTEGER},
 			</if>
 		</trim>
 	</insert>
@@ -317,6 +324,9 @@
 			</if>
 			<if test="accountDayLimit != null">
 				account_day_limit = #{accountDayLimit,jdbcType=INTEGER},
+			</if>
+			<if test="validDay != null">
+				valid_day = #{validDay,jdbcType=INTEGER},
 			</if>
 		</set>
 		where id = #{id,jdbcType=VARCHAR}

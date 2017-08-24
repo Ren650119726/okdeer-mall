@@ -1,18 +1,20 @@
 package com.okdeer.mall.ele.service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.alibaba.rocketmq.common.message.Message;
+import com.google.common.base.Charsets;
 import com.okdeer.archive.store.dto.StoreInfoDto;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.express.api.ExpressApi;
 import com.okdeer.mall.express.dto.ExpressCallbackDto;
 import com.okdeer.mall.express.dto.ExpressCarrierDto;
 import com.okdeer.mall.express.dto.ExpressOrderInfoDto;
 import com.okdeer.mall.express.dto.ResultMsgDto;
+import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -23,6 +25,63 @@ public class ExpressServiceImpl extends BaseServiceTest {
 
     @Reference(version = "1.0.0", check = false)
     private ExpressApi expressApi;
+
+    @Autowired
+    private RocketMQProducer rocketMQProducer;
+
+    @Test
+    public void rocaketTest() throws Exception{
+        String json = "{\n" +
+                "\t\"goodsSkuList\": [{\n" +
+                "\t\t\t\"skuId\": \"商品sku_id\",\n" +
+                "\t\t\t\"skuCode\": \"商品货号\",\n" +
+                "\t\t\t\"barCode\": \"商品条形码\",\n" +
+                "\t\t\t\"skuName\": \"商品名称\",\n" +
+                "\t\t\t\"status\": \"0\",\n" +
+                "\t\t\t\"bindType\": \"3\",\n" +
+                "\t\t\t\"spec\": \"商品规格\",\n" +
+                "\t\t\t\"unit\": \"单位\",\n" +
+                "\t\t\t\"salePrice\": \"1\",\n" +
+                "\t\t\t\"vipPrice\": \"1\",\n" +
+                "\t\t\t\"pricingType\": \"0\",\n" +
+                "\t\t\t\"remark\": \"备注信息\"\n" +
+                "\t\t}\n" +
+                "\t],\n" +
+                "\t\"bindingList\": [{\n" +
+                "\t\t\t\"skuId\": \"商品sku_id\",\n" +
+                "\t\t\t\"skuCode\": \"主商品-商品货号\",\n" +
+                "\t\t\t\"barCode\": \"主商品-商品条形码\",\n" +
+                "\t\t\t\"skuName\": \"主商品-商品名称\",\n" +
+                "\t\t\t\"status\": \"0\",\n" +
+                "\t\t\t\"bindType\": \"3\",\n" +
+                "\t\t\t\"spec\": \"商品规格\",\n" +
+                "\t\t\t\"unit\": \"单位\",\n" +
+                "\t\t\t\"salePrice\": \"1\",\n" +
+                "\t\t\t\"vipPrice\": \"1\",\n" +
+                "\t\t\t\"pricingType\": \"0\",\n" +
+                "\t\t\t\"remark\": \"备注信息\",\n" +
+                "\t\t\t\"makeupList\": [{\n" +
+                "\t\t\t\t\t\"skuId\": \"成份商品-商品sku_id\",\n" +
+                "\t\t\t\t\t\"skuCode\": \"成份商品-商品货号\",\n" +
+                "\t\t\t\t\t\"barCode\": \"成份商品-商品条形码\",\n" +
+                "\t\t\t\t\t\"skuName\": \"成份商品-商品名称\",\n" +
+                "\t\t\t\t\t\"status\": \"0\",\n" +
+                "\t\t\t\t\t\"bindType\": \"0\",\n" +
+                "\t\t\t\t\t\"spec\": \"商品规格\",\n" +
+                "\t\t\t\t\t\"unit\": \"单位\",\n" +
+                "\t\t\t\t\t\"salePrice\": \"1\",\n" +
+                "\t\t\t\t\t\"vipPrice\": \"1\",\n" +
+                "\t\t\t\t\t\"pricingType\": \"0\",\n" +
+                "\t\t\t\t\t\"remark\": \"备注信息\",\n" +
+                "\t\t\t\t\t\"componentNum\": \"成份商品数量\"\n" +
+                "\t\t\t\t}\n" +
+                "\t\t\t]\n" +
+                "\t\t}\n" +
+                "\t]\n" +
+                "}\n";
+        Message msg = new Message("topic_sku_add_wangfan", "tag_sku_add", json.getBytes(Charsets.UTF_8));
+        rocketMQProducer.send(msg);
+    }
 
     @Test
     public void expressPushTest() {

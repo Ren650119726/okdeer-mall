@@ -136,6 +136,7 @@
 <!--         <if test="nowDate != null" >
         	AND valid_time >= #{nowDate,jdbcType=TIMESTAMP}
         </if> -->
+        ORDER BY create_time DESC
     </select>
     
 	<!-- begin 商城后台零花钱领取记录条件查询 xuzq 20170814 -->
