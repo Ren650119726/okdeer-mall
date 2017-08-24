@@ -133,7 +133,6 @@
       1 = 2
      </if>  
   </delete>
-  findByAreaId
   <!-- 根据查询条件，查询活动区域信息列表 -->
   <select id="findByAreaId" resultMap="BaseResultMap" parameterType="java.lang.String" >
     SELECT 

@@ -8,6 +8,7 @@ package com.okdeer.mall.activity.discount.mapper;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountStore;
 
 /**
@@ -22,7 +23,7 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscountStore;
  *
  */
 
-public interface ActivityDiscountStoreMapper {
+public interface ActivityDiscountStoreMapper extends IBaseMapper {
 
 	/**
 	 * @Description: 通过活动id和店铺id查询对象

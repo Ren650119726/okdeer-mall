@@ -8,6 +8,7 @@ package com.okdeer.mall.activity.discount.mapper;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountArea;
 
 /**
@@ -22,7 +23,7 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscountArea;
  *
  */
 
-public interface ActivityDiscountAreaMapper {
+public interface ActivityDiscountAreaMapper extends IBaseMapper {
 
 	/**
 	 * @Description: 通过区域id和区域类型查询
