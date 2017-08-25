@@ -134,7 +134,7 @@
                 type = #{type,jdbcType=TINYINT},
             </if>
             <if test="status != null" >
-                type = #{status,jdbcType=TINYINT},
+                status = #{status,jdbcType=TINYINT},
             </if>
             <if test="sendObject != null" >
                 send_object = #{sendObject,jdbcType=INTEGER},
