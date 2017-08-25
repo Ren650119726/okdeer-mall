@@ -125,6 +125,7 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
+import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.activity.group.entity.ActivityGroup;
 import com.okdeer.mall.activity.group.service.ActivityGroupService;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
@@ -6129,7 +6130,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             } // 每人限领数量
             Integer everyLimit = coupons.getEveryLimit();
             // 构造某个用户领取某一种代金券数量的 查询条件
-            ActivityCouponsRecord record = new ActivityCouponsRecord();
+            ActivityCouponsRecordQueryParamDto record = new ActivityCouponsRecordQueryParamDto();
             record.setCollectUserId(userId);
             record.setCouponsId(coupons.getId());
             // 查询用户领取该代金券的数量

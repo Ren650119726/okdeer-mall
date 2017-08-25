@@ -2,6 +2,8 @@
 package com.okdeer.mall.activity.coupons.service.impl;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,20 +32,26 @@ import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCommunity;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsLimitCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRandCode;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRelationStore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsThirdCode;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsLimitCategoryMapper;
@@ -51,9 +59,12 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordBeforeService;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.activity.coupons.vo.AddressCityVo;
+import com.okdeer.mall.activity.dto.TakeActivityCouponParamDto;
 import com.okdeer.mall.common.entity.AreaScTreeVo;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.AuditStatusEnum;
@@ -74,6 +85,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	 */
 	@Autowired
 	private ActivityCouponsMapper activityCouponsMapper;
+
 	/**
 	 * 注入代金券管理mapper
 	 */
@@ -115,16 +127,22 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private IAddressService addressService;
-	
+
 	// Begin added by maojj 2016-10-25
 	/**
 	 * 保存数据库的最大值。用于随机码生成
 	 */
 	@Resource
 	private ActivityCouponsRandCodeMapper activityCouponsRandCodeMapper;
-	
+
+	@Resource
+	private ActivityCouponsRecordService activityCouponsRecordService;
+
+	@Resource
+	private ActivityCouponsRecordBeforeService activityCouponsRecordBeforeService;
+
 	private static final int MAX_NUM = 1000;
-	
+
 	/**
 	 * 随机数长度
 	 */
@@ -175,15 +193,15 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			this.addRelatedInfo(coupons);
 		} else if (CouponsType.yyhz.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.insert(coupons);
-			//批量插入excel导入的兑换码
-			if(CollectionUtils.isNotEmpty(coupons.getYiyeCodeList())){
+			// 批量插入excel导入的兑换码
+			if (CollectionUtils.isNotEmpty(coupons.getYiyeCodeList())) {
 				List<ActivityCouponsThirdCode> acList = new ArrayList<ActivityCouponsThirdCode>();
-				for(String code : coupons.getYiyeCodeList()){
+				for (String code : coupons.getYiyeCodeList()) {
 					ActivityCouponsThirdCode a = new ActivityCouponsThirdCode();
 					a.setCode(code);
 					a.setCouponsId(coupons.getId());
 					a.setId(UuidUtils.getUuid());
-					//默认为未领取
+					// 默认为未领取
 					a.setStatus(0);
 					acList.add(a);
 				}
@@ -204,14 +222,14 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		}
 		// End added by maojj 2016-10-25
 	}
-	
+
 	/**
 	 * @Description: 根据发行量生成随机码并保存到数据库
 	 * @param coupons   
 	 * @author maojj
 	 * @date 2016年10月25日
 	 */
-	private void generateRandCodeAndSave(ActivityCoupons coupons){
+	private void generateRandCodeAndSave(ActivityCoupons coupons) {
 		// 随机码
 		Set<String> randCodeSet = null;
 		List<ActivityCouponsRandCode> couponsRandCodeList = null;
@@ -220,16 +238,16 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		int totalNum = coupons.getTotalNum().intValue();
 		// 根据总发行量，1000条处理一次的规则生成随机码并保存
 		// 循环处理次数
-		int loopNum = totalNum%MAX_NUM == 0 ? totalNum/MAX_NUM : totalNum/MAX_NUM + 1;
+		int loopNum = totalNum % MAX_NUM == 0 ? totalNum / MAX_NUM : totalNum / MAX_NUM + 1;
 		// 生成随机码的数量
 		int randCodeNum = 0;
 		for (int i = 0; i < loopNum; i++) {
-			randCodeNum = (i+1)*MAX_NUM > totalNum ? (totalNum - i*MAX_NUM) : MAX_NUM;
+			randCodeNum = (i + 1) * MAX_NUM > totalNum ? (totalNum - i * MAX_NUM) : MAX_NUM;
 			randCodeSet = new HashSet<String>();
 			// 增加随机数
-			addRandCode(randCodeSet,randCodeNum);
+			addRandCode(randCodeSet, randCodeNum);
 			couponsRandCodeList = new ArrayList<ActivityCouponsRandCode>();
-			for(String randCode : randCodeSet){
+			for (String randCode : randCodeSet) {
 				couponsRandCode = new ActivityCouponsRandCode();
 				couponsRandCode.setId(UuidUtils.getUuid());
 				couponsRandCode.setCouponsId(coupons.getId());
@@ -237,13 +255,13 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 				couponsRandCode.setIsExchange(WhetherEnum.not.ordinal());
 				couponsRandCode.setCreateUserId(coupons.getCreateUserId());
 				couponsRandCode.setCreateTime(coupons.getCreateTime());
-				
+
 				couponsRandCodeList.add(couponsRandCode);
 			}
 			activityCouponsRandCodeMapper.batchInsert(couponsRandCodeList);
 		}
 	}
-	
+
 	/**
 	 * @Description: 随机N个不重复的随机数
 	 * @param randCodeSet 随机数的Set集合。利用set的无重复特性
@@ -251,25 +269,25 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	 * @author maojj
 	 * @date 2016年10月25日
 	 */
-	private void addRandCode(Set<String> randCodeSet,int randCodeNum){
-		for(int i=0;i<randCodeNum-randCodeSet.size();i++){
+	private void addRandCode(Set<String> randCodeSet, int randCodeNum) {
+		for (int i = 0; i < randCodeNum - randCodeSet.size(); i++) {
 			randCodeSet.add(RandomStringUtil.getRandomNumStr(RAND_CODE_LENGTH));
 		}
 		int setSize = randCodeSet.size();
 		// 如果存入Set的数量小于指定生成的个数，则递归调用，直到达到指定数值。
-		if(setSize < randCodeNum){
-			addRandCode(randCodeSet,randCodeNum);
+		if (setSize < randCodeNum) {
+			addRandCode(randCodeSet, randCodeNum);
 		}
 		// 查询activity_coupons_rand_code中已经存在的随机数，从集合中剔除，并继续添加随机数
 		Set<String> existRandCode = activityCouponsRandCodeMapper.findExistCodeSet(randCodeSet);
-		if(CollectionUtils.isNotEmpty(existRandCode)){
+		if (CollectionUtils.isNotEmpty(existRandCode)) {
 			// 从生成的集合中移除已存在的code
 			randCodeSet.removeAll(existRandCode);
 			// 如果有已经存的code，移除之后，需要继续添加。
-			addRandCode(randCodeSet,randCodeNum);
+			addRandCode(randCodeSet, randCodeNum);
 		}
 	}
-	
+
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void addCouponsLimitCategory(List<ActivityCouponsLimitCategory> activityCouponsLimitCategoryList)
@@ -299,10 +317,10 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Override
 	public List<GoodsSpuCategory> findSpuCategoryList(Map<String, Object> map) {
 		List<String> firstCagegoryList = activityCouponsMapper.findFwdFirstSpuCategoryList(map);
-		if(CollectionUtils.isNotEmpty(firstCagegoryList)){
+		if (CollectionUtils.isNotEmpty(firstCagegoryList)) {
 			StringBuffer sb = new StringBuffer();
-			for(String categoryId : firstCagegoryList){
-				if(!"".equals(sb.toString())){
+			for (String categoryId : firstCagegoryList) {
+				if (!"".equals(sb.toString())) {
 					sb.append(" or ");
 				}
 				sb.append(" g.level_id like '" + categoryId + "|%' ");
@@ -321,13 +339,12 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Override
 	public CouponsInfoQuery getCouponsInfoById(String id) throws ServiceException {
 		CouponsInfoQuery c = activityCouponsMapper.selectCouponsById(id);
-		if(c != null){
-			//如果是异业代金券,加载兑换码列表
-			if(c.getType() == 4){
-				Map<String,Object> param = new HashMap<String, Object>();
+		if (c != null) {
+			// 如果是异业代金券,加载兑换码列表
+			if (c.getType() == 4) {
+				Map<String, Object> param = new HashMap<String, Object>();
 				param.put("couponsId", id);
-				List<ActivityCouponsThirdCode> list = 
-						activityCouponsThirdCodeMapper.listByParam(param);
+				List<ActivityCouponsThirdCode> list = activityCouponsThirdCodeMapper.listByParam(param);
 				c.setThirdCodeList(list);
 			}
 		}
@@ -379,7 +396,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			this.addRelatedInfo(activitycoupons);
 		}
 	}
-	
+
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void update(CouponsInfoQuery coupons) throws ServiceException {
@@ -401,8 +418,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		int store = this.getStore(id);
 		int relationStores = this.getCouponsRelationStroe(id);
 		/*
-		 * if (category > 0) {
-		 * couponsManageService.deleteCouponsLimitCategory(id); }
+		 * if (category > 0) { couponsManageService.deleteCouponsLimitCategory(id); }
 		 */
 		if (area > 0) {
 			this.deleteCouponsArea(id);
@@ -417,9 +433,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			this.deleteCouponsRelationStroe(id);
 		}
 		activityCouponsMapper.deleteByIds(id);
-		
-		//如果是异业合作代金券,要把关联的兑换码都删除 (异业的现在2.0.0不需要)
-		//activityCouponsThirdCodeMapper.deleteByCouponsId(id);
+
+		// 如果是异业合作代金券,要把关联的兑换码都删除 (异业的现在2.0.0不需要)
+		// activityCouponsThirdCodeMapper.deleteByCouponsId(id);
 	}
 
 	@Override
@@ -559,7 +575,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 		// 代金券关联的分类 1 导航分类 2 服务店店铺商品分类
 		int type = 0;
-		if (CouponsType.bld.getValue().equals(coupons.getType()) || CouponsType.bldty.getValue().equals(coupons.getType())) {
+		if (CouponsType.bld.getValue().equals(coupons.getType())
+				|| CouponsType.bldty.getValue().equals(coupons.getType())) {
 			type = 1;
 		} else if (CouponsType.fwd.getValue().equals(coupons.getType())) {
 			type = 2;
@@ -814,8 +831,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 						}
 					}
 				} /*
-					 * else if (area.getCouponsAreaType() ==
-					 * DistrictType.province) { cityMap.put("0", "所属范围内都可以用"); }
+					 * else if (area.getCouponsAreaType() == DistrictType.province) { cityMap.put("0", "所属范围内都可以用"); }
 					 */
 			}
 
@@ -823,14 +839,14 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		return cityMap;
 	}
 
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	@Override
 	public List<ActivityCoupons> selectByActivityId(String id) throws Exception {
 		List<ActivityCoupons> result = activityCouponsMapper.selectByActivityId(id);
 		return result;
 	}
 
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	@Override
 	public int selectFaceMoney(String id) throws Exception {
 		int result = activityCouponsMapper.selectFaceMoney(id);
@@ -878,7 +894,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 					storeInfo.put("storeName", map.get("storeName") == null ? "" : map.get("storeName"));
 					storeInfo.put("storeAddress", map.get("storeAddress") == null ? "" : map.get("storeAddress"));
 					storeList.add(storeInfo);
-					/*resultMap.put(addressCity.getName(), storeList);*/
+					/* resultMap.put(addressCity.getName(), storeList); */
 					AddressCityVo addressCityVo = new AddressCityVo();
 					addressCityVo.setStores(storeList);
 					addressCityVo.setId(addressCity.getId().toString());
@@ -912,14 +928,14 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 							}
 						}
 					}
-				} 
+				}
 			}
 
 		}
 		String json = JsonMapper.nonDefaultMapper().toJson(cityList);
 		return json;
 	}
-	
+
 	@Override
 	public Map<String, Object> findCouponsProvinceByCouponsId(String couponsId) throws ServiceException {
 		// 存放省信息,key是省id，value是省名称
@@ -983,5 +999,74 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	}
 	// End V2.1.0 added by luosm 20170220
 
-	
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void takeCoupons(ActivityCollectCoupons activityCollectCoupons,
+			TakeActivityCouponParamDto activityCouponParamDto) throws Exception {
+		List<ActivityCoupons> activityCouponList = getActivityCoupons(activityCollectCoupons.getId());
+		for (ActivityCoupons activityCoupons : activityCouponList) {
+			boolean isSuccess = checkActivityCouponsRule(activityCoupons);
+			if (isSuccess) {
+				updateCouponsAndAddCouponsRecord(activityCoupons, activityCouponParamDto);
+			} else {
+				if (activityCouponParamDto.isContinueTakeOther()) {
+					continue;
+				}
+			}
+		}
+	}
+
+	private void updateCouponsAndAddCouponsRecord(ActivityCoupons activityCoupons,
+			TakeActivityCouponParamDto activityCouponParamDto) throws Exception {
+		// 更新代金劵数量
+		updateCouponsNum(activityCoupons.getId());
+		// 添加领取记录
+		ActivityCouponsRecord activityCouponsRecord = createActivityCouponsRecord(activityCoupons,
+				activityCouponParamDto);
+		activityCouponsRecord.setCollectType(activityCouponParamDto.getActivityCouponsType());
+		if (StringUtils.isNotEmpty(activityCouponParamDto.getUserId())) {
+			// 用户已经存在
+			activityCouponsRecordService.add(activityCouponsRecord);
+		} else {
+			// 用户还没有注册，添加预领取记录
+			ActivityCouponsRecordBefore activityCouponsRecordBefore = BeanMapper.map(activityCouponsRecord,
+					ActivityCouponsRecordBefore.class);
+			activityCouponsRecordBeforeService.add(activityCouponsRecordBefore);
+		}
+	}
+
+	private boolean checkActivityCouponsRule(ActivityCoupons activityCoupons) {
+		return false;
+	}
+
+	private void updateCouponsNum(String activityCouponId) throws Exception {
+		ActivityCouponsBo activityCouponsBo = new ActivityCouponsBo();
+		activityCouponsBo.setId(activityCouponId);
+		activityCouponsBo.setRemainNum(-1);
+		activityCouponsBo.setUsedNum(1);
+		activityCouponsBo.setUpdateTime(new Date());
+		int result = activityCouponsMapper.updateCouponsNum(activityCouponsBo);
+		if (result < 1) {
+			throw new Exception("代金劵已经领完");
+		}
+	}
+
+	private ActivityCouponsRecord createActivityCouponsRecord(ActivityCoupons activityCoupons,
+			TakeActivityCouponParamDto activityCouponParamDto) {
+		ActivityCouponsRecord activityCouponsRecord = new ActivityCouponsRecord();
+		activityCouponsRecord.setCollectTime(new Date());
+		activityCouponsRecord.setId(UuidUtils.getUuid());
+		activityCouponsRecord.setCouponsId(activityCoupons.getId());
+		activityCouponsRecord.setCouponsCollectId(activityCoupons.getActivityId());
+		activityCouponsRecord.setCollectUserId(activityCouponParamDto.getUserId());
+		activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
+		activityCouponsRecord.setOrderId(activityCouponParamDto.getOrderId());
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.add(Calendar.DAY_OF_YEAR, activityCoupons.getValidDay());
+		activityCouponsRecord.setValidTime(calendar.getTime());
+		return activityCouponsRecord;
+	}
 }

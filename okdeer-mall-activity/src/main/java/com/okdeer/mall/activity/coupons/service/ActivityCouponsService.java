@@ -6,6 +6,7 @@ import java.util.Map;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCommunity;
@@ -13,6 +14,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsLimitCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
+import com.okdeer.mall.activity.dto.TakeActivityCouponParamDto;
 import com.okdeer.mall.common.entity.AreaScTreeVo;
 
 
@@ -288,4 +290,13 @@ public interface ActivityCouponsService {
 	void updateActivityCouponsUsedNum(String activityItemId);
 
 	ActivityCoupons selectByPrimaryKey(String id);
+	
+	/**
+	 * @Description: 领取代价劵
+	 * @param activityCollectCoupons
+	 * @param activityCouponParamDto
+	 * @author zengjizu
+	 * @date 2017年8月25日
+	 */
+	void takeCoupons(ActivityCollectCoupons activityCollectCoupons, TakeActivityCouponParamDto activityCouponParamDto) throws Exception;
 }
