@@ -7,6 +7,7 @@
 package com.okdeer.mall.activity.nadvert.entity;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -38,6 +39,17 @@ public class ActivityH5AdvertContentGoods implements Serializable {
      * 商品id
      */
     private String storeSkuId;
+    
+    /**
+     * @Fields skuPrice : 商品价格
+     */
+    private BigDecimal skuPrice;
+    
+    /**
+     * @Fields skuName : 商品名称
+     */
+    private String skuName;
+    
     /**
      * 商品图片
      */
@@ -139,4 +151,20 @@ public class ActivityH5AdvertContentGoods implements Serializable {
     public void setCreateUserId(String createUserId) {
         this.createUserId = createUserId;
     }
+
+	public BigDecimal getSkuPrice() {
+		return skuPrice;
+	}
+
+	public void setSkuPrice(BigDecimal skuPrice) {
+		this.skuPrice = skuPrice;
+	}
+
+	public String getSkuName() {
+		return skuName;
+	}
+
+	public void setSkuName(String skuName) {
+		this.skuName = skuName;
+	}
 }
