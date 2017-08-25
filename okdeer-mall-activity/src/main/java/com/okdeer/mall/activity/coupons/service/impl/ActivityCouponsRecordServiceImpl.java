@@ -41,6 +41,7 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
@@ -60,7 +61,6 @@ import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
-import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
@@ -70,6 +70,8 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
+import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
+import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 import com.okdeer.mall.activity.service.CouponsFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
@@ -267,13 +269,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	@Override
 	@Transactional(readOnly = true)
-	public int selectCountByParams(ActivityCouponsRecord activityCouponsRecord) throws ServiceException {
-		Integer count = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecord);
-		if (null == count) {
-			return 0;
-		} else {
-			return count;
-		}
+	public int selectCountByParams(ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParam) throws ServiceException {
+		return  activityCouponsRecordMapper.selectCountByParams(activityCouponsRecordQueryParam);
 	}
 
 	// begin update by zhulq 2016-10-17 新增方法提供给之前的版本
@@ -885,12 +882,15 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			return false;
 		}
 		Date collectTime = DateUtils.getDateStart(new Date());
-		record.setCouponsId(activityCoupons.getId());
-		record.setCouponsCollectId(activityCoupons.getActivityId());
-		record.setCollectUserId(userId);
-		record.setCollectTime(collectTime);
+		
+		ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto = new ActivityCouponsRecordQueryParamDto();
+		activityCouponsRecordQueryParamDto.setCouponsId(activityCoupons.getId());
+		activityCouponsRecordQueryParamDto.setCouponsCollectId(activityCoupons.getActivityId());
+		activityCouponsRecordQueryParamDto.setCollectUserId(userId);
+		activityCouponsRecordQueryParamDto.setCollectTime(collectTime);
+		activityCouponsRecordQueryParamDto.setCollectType(record.getCollectType().ordinal());
 		// 校验代金卷的日领取量
-		if (!checkDaliyRecord(map, record, activityCoupons, userId, collect)) {
+		if (!checkDaliyRecord(map, activityCouponsRecordQueryParamDto, activityCoupons, userId, collect)) {
 			return false;
 		}
 		return true;
@@ -984,18 +984,19 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @author zhulq
 	 * @date 2016年10月26日
 	 */
-	private boolean checkDaliyRecord(Map<String, Object> map, ActivityCouponsRecord record, ActivityCoupons coupons,
+	private boolean checkDaliyRecord(Map<String, Object> map, ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto, ActivityCoupons coupons,
 			String userId, ActivityCollectCoupons collect) {
-
+		
 		// 当前日期已经领取的数量
-		int dailyCirculation = activityCouponsRecordMapper.selectCountByParams(record);
+		int dailyCirculation = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecordQueryParamDto);
+		ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParamDto = new ActivityCouponsRecordBeforeParamDto();
+		BeanMapper.copy(activityCouponsRecordQueryParamDto, activityCouponsRecordBeforeParamDto);
 		// 当前代金劵日已经预领取领取的数量
-		int dailyBefore = activityCouponsRecordBeforeMapper.getCountByDayParams(record);
+		int dailyBefore = activityCouponsRecordBeforeMapper.getCountByDayParams(activityCouponsRecordBeforeParamDto);
 		dailyCirculation = dailyCirculation + dailyBefore;
 		if (collect.getDailyCirculation() != null) {
 			// 获取当前登陆用户已领取的指定代金券数量
 			if (dailyCirculation >= Integer.parseInt(collect.getDailyCirculation())) {
-				// map.put("data", null);
 				map.put("msg", "来迟啦！券已抢完，明天早点哦");
 				map.put("code", 104);
 				return false;
@@ -1018,7 +1019,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		if (!StringUtils.isEmpty(userId)) {
 			record.setCollectUserId(userId);
 			record.setCollectTime(null);
-			int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(record);
+			
+			ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto = new ActivityCouponsRecordQueryParamDto();
+			BeanMapper.copy(record, activityCouponsRecordQueryParamDto);
+			int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecordQueryParamDto);
 			if (currentRecordCount >= coupons.getEveryLimit().intValue()) {
 				// 已领取
 				// map.put("data", null);
@@ -1058,7 +1062,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			// 判断 该用户是否还能领卷该类代金卷
 			record.setCollectUserId(userId);
 			record.setCollectTime(null);
-			int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(record);
+			
+			ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto = new ActivityCouponsRecordQueryParamDto();
+			BeanMapper.copy(record, activityCouponsRecordQueryParamDto);
+			
+			int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecordQueryParamDto);
 			if (currentRecordCount >= coupons.getEveryLimit().intValue()) {
 				// 已领取
 				map.put("code", 102);
@@ -1473,7 +1481,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		activityCouponsRecord.setCouponsId(couponsId);
 		activityCouponsRecord.setCollectType(ActivityCouponsType.coupons);
 		activityCouponsRecord.setCollectUserId(userId);
-		int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecord);
+		ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto = new ActivityCouponsRecordQueryParamDto();
+		BeanMapper.copy(activityCouponsRecord, activityCouponsRecordQueryParamDto);
+		activityCouponsRecordQueryParamDto.setCollectType(ActivityCouponsType.coupons.ordinal());
+		int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecordQueryParamDto);
 		if (activityCoupons.getRemainNum() <= 0) {
 			// 剩余数量小于0 显示已领完
 			return 0;
@@ -1813,5 +1824,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			removeRedisUserStatus(key);
 		}
 		return JSONObject.fromObject(map);
+	}
+
+	
+	@Override
+	public void add(ActivityCouponsRecord activityCouponsRecord) {
+		activityCouponsRecordMapper.insertSelective(activityCouponsRecord);
 	}
 }

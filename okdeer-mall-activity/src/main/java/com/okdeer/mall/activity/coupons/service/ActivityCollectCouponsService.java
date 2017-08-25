@@ -14,6 +14,8 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectXffqRelation;
+import com.okdeer.mall.activity.dto.TakeActivityCouponParamDto;
+import com.okdeer.mall.activity.dto.TakeActivityCouponResultDto;
 
 /**
  * @pr yscm
@@ -134,5 +136,14 @@ public interface ActivityCollectCouponsService {
 	 * @author zengjizu
 	 * @date 2017年7月27日
 	 */
-	List<ActivityCollectCoupons> findByIds(List<String> idList); 
+	List<ActivityCollectCoupons> findByIds(List<String> idList);
+	
+	/**
+	 * @Description: 领取代价劵
+	 * @param activityCouponParamDto
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年8月24日
+	 */
+	TakeActivityCouponResultDto takeActivityCoupon(TakeActivityCouponParamDto activityCouponParamDto); 
 }

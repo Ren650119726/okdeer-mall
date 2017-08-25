@@ -27,6 +27,7 @@ import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsRegisteRec
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
+import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
@@ -165,11 +166,11 @@ public class OrderReturnCouponsServiceImpl implements OrderReturnCouponsService 
 				return;
 			}
 			
-			ActivityCouponsRecord recordTemp = new ActivityCouponsRecord();
+			ActivityCouponsRecordQueryParamDto recordTemp = new ActivityCouponsRecordQueryParamDto();
 			recordTemp.setCollectUserId(registeRecord.getUserId());
 			recordTemp.setCouponsId(coupons.getId());
 			recordTemp.setCouponsCollectId(collectCoupons.getId());
-			recordTemp.setCollectType(ActivityCouponsType.invite_regist);
+			recordTemp.setCollectType(ActivityCouponsType.invite_regist.ordinal());
 			// 领取总量
 			int countRecord = activityCouponsRecordServiceApi.selectCountByParams(recordTemp);
 			if (coupons.getEveryLimit() != 0 && countRecord >= coupons.getEveryLimit()) {

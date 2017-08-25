@@ -545,11 +545,6 @@
 		and (status = 0 or status = 1)
 	</select>
 	
-	<select id="selectActivityCononsOwner" parameterType="string" resultType="string">
-	
-	
-	
-	</select>
 	
 	<!--    已经失效的所有代金卷   addBy zlq-->
 	<select id="selectByCollectStatus" resultMap="couponsAndLimitCategoryDetailMap" parameterType="map">

@@ -6,6 +6,7 @@ import java.util.Map;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsRecordQueryParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
@@ -13,6 +14,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.activity.service.CouponsFilterStrategy;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -61,7 +63,7 @@ public interface ActivityCouponsRecordService {
 	 * @param couponsCollectRecord
 	 * @return
 	 */
-	int selectCountByParams(ActivityCouponsRecord activityCouponsRecord) throws ServiceException;
+	int selectCountByParams(ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamBo) throws ServiceException;
 
 	/**
 	 * 
@@ -228,4 +230,12 @@ public interface ActivityCouponsRecordService {
 
 	JSONObject addBeforeRecordsForWechatActivity(String collectId, String phone, String advertId)
 			throws ServiceException;
+	
+	/**
+	 * @Description: 添加代价劵领取记录
+	 * @param activityCouponsRecord
+	 * @author zengjizu
+	 * @date 2017年8月25日
+	 */
+	void add(ActivityCouponsRecord activityCouponsRecord);
 }

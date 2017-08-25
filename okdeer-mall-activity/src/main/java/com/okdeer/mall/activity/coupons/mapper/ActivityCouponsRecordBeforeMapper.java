@@ -10,6 +10,7 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
+import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
 import com.okdeer.mall.common.enums.GetUserType;
 
 /**
@@ -28,7 +29,7 @@ public interface ActivityCouponsRecordBeforeMapper extends IBaseCrudMapper {
 	List<ActivityCouponsRecordBefore> getCopyRecords(@Param("userId")String userId,
 			@Param("nowDate")Date nowDate,@Param("phone")String phone) throws ServiceException;
 	
-	int getCountByDayParams(ActivityCouponsRecord activityCouponsRecord);
+	int getCountByDayParams(ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParam);
 	
 	/**
 	 * @Description: 根据用户id判断完成首单的用户是否 有效完成邀请

@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsRecordQueryParamBo;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -18,6 +19,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
+import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.common.enums.GetUserType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.order.vo.Coupons;
@@ -63,7 +65,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @param couponsCollectRecord
 	 * @return
 	 */
-	Integer selectCountByParams(ActivityCouponsRecord activityCouponsRecord);
+	int selectCountByParams(ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto);
 
 	/**
 	 * 
