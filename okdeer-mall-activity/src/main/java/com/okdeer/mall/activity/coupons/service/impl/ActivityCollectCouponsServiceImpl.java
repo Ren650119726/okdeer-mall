@@ -20,6 +20,11 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
+<<<<<<< HEAD
+=======
+import com.okdeer.api.pay.service.IPayAccountServiceApi;
+import com.okdeer.api.pay.service.IPayTradeServiceApi;
+>>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 import com.okdeer.archive.system.entity.PsmsAgent;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysUser;

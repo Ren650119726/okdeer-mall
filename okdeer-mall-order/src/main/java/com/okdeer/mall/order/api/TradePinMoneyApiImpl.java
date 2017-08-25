@@ -7,15 +7,21 @@
 package com.okdeer.mall.order.api;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.mall.activity.dto.ActivityPinMoneyQueryDto;
 import com.okdeer.mall.order.dto.TradePinMoneyObtainDto;
 import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
 import com.okdeer.mall.order.dto.TradePinMoneyUseDto;
+import com.okdeer.mall.order.entity.TradePinMoneyObtain;
 import com.okdeer.mall.order.service.TradePinMoneyApi;
 import com.okdeer.mall.order.service.TradePinMoneyObtainService;
 import com.okdeer.mall.order.service.TradePinMoneyUseService;
@@ -99,6 +105,29 @@ public class TradePinMoneyApiImpl implements TradePinMoneyApi {
 	@Override
 	public Integer findUseListCount(TradePinMoneyQueryDto paramDto) {
 		return tradePinMoneyUseService.findUseListCount(paramDto);
+	}
+
+	@Override
+	public void addObtainRecord(ActivityPinMoneyQueryDto dto, String deviceId, int validDay, BigDecimal pinMoney) throws Exception {
+		TradePinMoneyObtain obtain = BeanMapper.map(dto, TradePinMoneyObtain.class);
+		obtain.setId(UuidUtils.getUuid());
+		obtain.setDeviceId(deviceId);
+		obtain.setStatus(0);
+		obtain.setAmount(pinMoney);
+		obtain.setRemainAmount(pinMoney);
+		Date date = new Date();
+		obtain.setCreateTime(date);
+		obtain.setUpdateTime(date);
+		//0为无过期时间 
+		if(validDay==0){
+			obtain.setValidTime(DateUtils.parseDate("2050-08-24 00:00:00"));
+		}else{
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(date);
+			calendar.add(calendar.DATE,validDay);
+			obtain.setValidTime(calendar.getTime());
+		}
+		tradePinMoneyObtainService.add(obtain);
 	}
 
 }
