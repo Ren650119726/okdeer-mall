@@ -12,6 +12,7 @@
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
         <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
     </resultMap>
     <!-- 后台查询领取记录列表 -->
 	<resultMap id="PageListResultMap" type="com.okdeer.mall.order.bo.TradePinMoneyObtainBo" >
@@ -25,7 +26,7 @@
     </resultMap>
     <sql id="Base_Column_List" >
         id, order_id, user_id, device_id, amount, remain_amount, create_time, update_time, 
-        valid_time
+        valid_time,activity_id
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -68,6 +69,9 @@
             <if test="validTime != null" >
                 valid_time,
             </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -99,6 +103,9 @@
             </if>
             <if test="validTime != null" >
                 #{validTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -132,6 +139,9 @@
             </if>
             <if test="validTime != null" >
                 valid_time = #{validTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}

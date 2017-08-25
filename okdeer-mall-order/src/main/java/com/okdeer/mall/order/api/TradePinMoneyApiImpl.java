@@ -17,6 +17,7 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.mall.activity.dto.ActivityPinMoneyDto;
 import com.okdeer.mall.activity.dto.ActivityPinMoneyQueryDto;
 import com.okdeer.mall.order.dto.TradePinMoneyObtainDto;
 import com.okdeer.mall.order.dto.TradePinMoneyQueryDto;
@@ -108,7 +109,7 @@ public class TradePinMoneyApiImpl implements TradePinMoneyApi {
 	}
 
 	@Override
-	public void addObtainRecord(ActivityPinMoneyQueryDto dto, String deviceId, int validDay, BigDecimal pinMoney) throws Exception {
+	public void addObtainRecord(ActivityPinMoneyQueryDto dto, String deviceId, ActivityPinMoneyDto moneyDto, BigDecimal pinMoney) throws Exception {
 		TradePinMoneyObtain obtain = BeanMapper.map(dto, TradePinMoneyObtain.class);
 		obtain.setId(UuidUtils.getUuid());
 		obtain.setDeviceId(deviceId);
@@ -118,13 +119,14 @@ public class TradePinMoneyApiImpl implements TradePinMoneyApi {
 		Date date = new Date();
 		obtain.setCreateTime(date);
 		obtain.setUpdateTime(date);
+		obtain.setActivityId(moneyDto.getId());
 		//0为无过期时间 
-		if(validDay==0){
+		if(moneyDto.getValidDay()==0){
 			obtain.setValidTime(DateUtils.parseDate("2050-08-24 00:00:00"));
 		}else{
 			Calendar calendar = Calendar.getInstance();
 			calendar.setTime(date);
-			calendar.add(calendar.DATE,validDay);
+			calendar.add(calendar.DATE,moneyDto.getValidDay());
 			obtain.setValidTime(calendar.getTime());
 		}
 		tradePinMoneyObtainService.add(obtain);

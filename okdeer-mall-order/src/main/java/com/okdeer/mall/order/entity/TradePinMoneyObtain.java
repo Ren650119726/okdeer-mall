@@ -58,6 +58,10 @@ public class TradePinMoneyObtain {
      * 有效时间
      */
     private Date validTime;
+    /**
+     * 零花钱活动id
+     */
+    private String activityId;
 
 
     public String getId() {
@@ -137,6 +141,14 @@ public class TradePinMoneyObtain {
 	}
 	public void setStatus(Integer status) {
 		this.status = status;
+	}
+
+	public String getActivityId() {
+		return activityId;
+	}
+
+	public void setActivityId(String activityId) {
+		this.activityId = activityId;
 	}
     
 }
