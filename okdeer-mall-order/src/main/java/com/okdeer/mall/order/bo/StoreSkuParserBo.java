@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -16,6 +17,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreAssembleDto;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
+import com.okdeer.archive.goods.dto.StoreSkuComponentDto;
+import com.okdeer.archive.goods.spu.enums.SkuBindType;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
@@ -92,6 +95,16 @@ public class StoreSkuParserBo {
 	 * 组合商品Id成分映射　Key:组合商品ID Value：组合商品明细列表
 	 */
 	private Map<String,List<GoodsStoreSkuAssembleDto>> comboSkuMap = new HashMap<String,List<GoodsStoreSkuAssembleDto>>();
+	
+	/**
+	 * 捆绑商品Id列表
+	 */
+	private List<String> componentSkuIdList = new ArrayList<String>();
+	
+	/**
+	 * 捆绑商品Id成分映射　Key:组合商品ID Value：组合商品明细列表
+	 */
+	private Map<String,List<StoreSkuComponentDto>> componentSkuMap = new HashMap<String,List<StoreSkuComponentDto>>();
 
 	/**
 	 * 购买商品ID清单
@@ -269,10 +282,14 @@ public class StoreSkuParserBo {
 				currentSku.setOnlinePrice(storeSku.getOnlinePrice());
 			}
 			currentSku.setUpdateTime(DateUtils.formatDateTime(storeSku.getUpdateTime()));
-			this.currentSkuMap.put(storeSku.getId(), currentSku);
 			if (storeSku.getSpuTypeEnum() == SpuTypeEnum.assembleSpu) {
 				this.comboSkuIdList.add(storeSku.getId());
 			}
+			//组合商品
+			if (storeSku.getBindType() == SkuBindType.bind) {
+				this.componentSkuIdList.add(storeSku.getId());
+			}
+			this.currentSkuMap.put(storeSku.getId(), currentSku);
 		}
 	}
 	
@@ -413,6 +430,21 @@ public class StoreSkuParserBo {
 				this.comboSkuMap.get(detail.getAssembleSkuId()).add(detail);
 			}
 		}
+	}
+	
+	/**
+	 * @Description: 加载捆绑商品
+	 * @param componentSkuList   
+	 * @author guocp
+	 * @return 
+	 * @date 2017年8月25日
+	 */
+	public void loadCompomentSkuList(List<StoreSkuComponentDto> componentSkuList){
+		if(CollectionUtils.isEmpty(componentSkuList)){
+			return ;
+		}
+		this.componentSkuMap = componentSkuList.stream()
+				.collect(Collectors.groupingBy(StoreSkuComponentDto::getComponentSkuId));
 	}
 	
 	/**
@@ -664,6 +696,24 @@ public class StoreSkuParserBo {
 		return comboSkuMap;
 	}
 	
+	
+	public List<String> getComponentSkuIdList() {
+		return componentSkuIdList;
+	}
+
+	public void setComponentSkuIdList(List<String> componentSkuIdList) {
+		this.componentSkuIdList = componentSkuIdList;
+	}
+
+	public Map<String, List<StoreSkuComponentDto>> getComponentSkuMap() {
+		return componentSkuMap;
+	}
+
+	
+	public void setComponentSkuMap(Map<String, List<StoreSkuComponentDto>> componentSkuMap) {
+		this.componentSkuMap = componentSkuMap;
+	}
+
 	public int getTotalQuantity() {
 		return totalQuantity;
 	}
