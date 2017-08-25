@@ -7,6 +7,8 @@
         <result column="content_id" property="contentId" jdbcType="VARCHAR" />
         <result column="goods_type" property="goodsType" jdbcType="TINYINT" />
         <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+        <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
+        <result column="sku_price" property="skuPrice" jdbcType="DECIMAL" />
         <result column="goods_sku_pic" property="goodsSkuPic" jdbcType="VARCHAR" />
         <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
         <result column="store_activity_type" property="storeActivityType" jdbcType="TINYINT" />
@@ -29,16 +31,19 @@
     <select id="findByActId" resultMap="BaseResultMap" parameterType="java.lang.String" >
         select 
         	aa.id, aa.activity_id, aa.content_id, aa.goods_type, aa.store_sku_id, aa.pic_url, 
-        	aa.store_activity_type, aa.create_time, aa.create_user_id,bb.url as goods_sku_pic
+        	aa.store_activity_type, aa.create_time, aa.create_user_id,(case when bb.url is not null then bb.url when dd.url then dd.url end) goods_sku_pic,
+        	cc.name sku_name
         from activity_h5_advert_content_goods aa
-        LEFT JOIN goods_store_sku_picture bb ON (aa.store_sku_id = bb.store_sku_id AND bb.type = 1) 
+        LEFT JOIN goods_sku cc ON aa.store_sku_id = cc.id
+        LEFT JOIN goods_sku_picture bb ON (aa.store_sku_id = bb.sku_id AND bb.type = 1)
+        LEFT JOIN goods_store_sku_picture dd ON (aa.store_sku_id = dd.store_sku_id AND dd.type = 1) 
         where 
         	1=1
         <if test="activityId != null">
-        	 AND activity_id = #{activityId,jdbcType=VARCHAR}
+        	 AND aa.activity_id = #{activityId,jdbcType=VARCHAR}
         </if>	
         <if test="contentId != null">
-        	 AND content_id = #{contentId,jdbcType=VARCHAR}
+        	 AND aa.content_id = #{contentId,jdbcType=VARCHAR}
         </if>
         GROUP BY aa.store_sku_id;	
     </select>

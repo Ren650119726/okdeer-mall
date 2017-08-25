@@ -127,12 +127,18 @@ public class ActivityH5AdvertContentServiceImpl
 				ActivityH5AdvertContentBo bo = new ActivityH5AdvertContentBo();
 				bo.setContent(BeanMapper.map(obj, ActivityH5AdvertContent.class));
 				//设置广告图片
-				List<ActivityH5AdvertContentAdv> advs = advService.findByActId(activityId, obj.getId());
-				bo.setContentAdv(advs.size() > 0 ? advs.get(0) : new ActivityH5AdvertContentAdv());
+				if(obj.getContentType() == 1){
+					List<ActivityH5AdvertContentAdv> advs = advService.findByActId(activityId, obj.getId());
+					bo.setContentAdv(advs.size() > 0 ? advs.get(0) : new ActivityH5AdvertContentAdv());
+				}
 				//设置代金券活动
-				bo.setContentCoupons(couponsService.findByActId(activityId, obj.getId()));
+				if(obj.getContentType() == 3){
+					bo.setContentCoupons(couponsService.findByActId(activityId, obj.getId()));
+				}
 				//设置商品列表
-				bo.setContentGoods(goodsService.findByActId(activityId, obj.getId()));
+				if(obj.getContentType() == 2 || obj.getContentType() == 4){
+					bo.setContentGoods(goodsService.findByActId(activityId, obj.getId()));
+				}
 				bos.add(bo);
 			});
 			return bos;
