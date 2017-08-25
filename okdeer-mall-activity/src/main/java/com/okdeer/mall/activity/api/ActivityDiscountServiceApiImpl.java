@@ -9,9 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
-import com.okdeer.bdp.address.entity.Address;
-import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
@@ -31,10 +31,10 @@ public class ActivityDiscountServiceApiImpl implements ActivityDiscountServiceAp
 	private ActivityDiscountService activityDiscountService;
 	
 	/**
-	 * 基础数据平台地址Service
+	 * 店铺信息api
 	 */
 	@Reference(version = "1.0.0", check = false)
-	IAddressService addressService;
+	private StoreInfoServiceApi storeInfoApi;
 	
 	@Override
 	public ActivityDiscount selectByPrimaryKey(String id) {
@@ -59,10 +59,10 @@ public class ActivityDiscountServiceApiImpl implements ActivityDiscountServiceAp
 	}
 
 	@Override
-	public boolean isJoinPinMoney(ActivityPinMoneyDto activityPinMoneyDto, String storeId, String cityName) {
-		//根据城市名称获取城市地址信息
-		Address address = addressService.getByName(cityName);
-		return activityDiscountService.isJoinPinMoney(activityPinMoneyDto, storeId,address.getId().toString());
+	public boolean isJoinPinMoney(ActivityPinMoneyDto activityPinMoneyDto, String storeId) {
+		// 根据店铺id获取店铺的地址信息
+		StoreInfo storeInfo = storeInfoApi.findById(storeId);
+		return activityDiscountService.isJoinPinMoney(activityPinMoneyDto, storeId,storeInfo.getCityId());
 	}
 
 	@Override

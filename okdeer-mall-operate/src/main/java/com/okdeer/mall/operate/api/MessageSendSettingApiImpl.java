@@ -148,7 +148,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		entity.setUpdateTime(new Date());
 		int result = messageSendSettingService.add(entity);
 		//推送地区选择为城市
-		if(!entity.getRangeType()){
+		if(entity.getRangeType()){
 			List<MessageSendSelectArea> list = getRangeInfo(messageDto);
 			for(MessageSendSelectArea selectArea : list){
 				selectArea.setId(UuidUtils.getUuid());
