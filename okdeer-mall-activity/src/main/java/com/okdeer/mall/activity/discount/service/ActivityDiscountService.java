@@ -8,6 +8,7 @@ import com.okdeer.common.entity.ReturnInfo;
 import com.okdeer.mall.activity.bo.ActivityParamBo;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.activity.dto.ActivityPinMoneyDto;
@@ -132,5 +133,14 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @date 2017年8月23日
 	 */
 	boolean isJoinPinMoney(ActivityPinMoneyDto activityPinMoneyDto, String storeId,String cityId);
+
+	/**
+	 * @Description: 获取优惠活动的优惠条件列表
+	 * @param discountId
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年8月25日
+	 */
+	List<ActivityDiscountCondition> getActivityDiscountConditions(String discountId);
 
 }

@@ -67,8 +67,7 @@ public class ActivityDiscountServiceApiImpl implements ActivityDiscountServiceAp
 
 	@Override
 	public List<ActivityDiscountCondition> getActivityDiscountConditions(String discountId) {
-		// TODO Auto-generated method stub
-		return null;
+		return activityDiscountService.getActivityDiscountConditions(discountId);
 	}
 
 }

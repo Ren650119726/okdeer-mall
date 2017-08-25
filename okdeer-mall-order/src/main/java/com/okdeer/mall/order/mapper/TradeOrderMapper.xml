@@ -6356,7 +6356,7 @@
 	    	<![CDATA[ AND tr.create_time <= #{endTime,jdbcType=TIMESTAMP} ]]>
 		</if>
 	</select>
-	<select id="findPinMoneyAmount" parameterType="com.okdeer.mall.order.dto.TradeOrderParamDto" resultType="Integer">
+	<select id="findPinMoneyAmount" parameterType="com.okdeer.mall.order.dto.TradeOrderParamDto" resultType="DECIMAL">
 		SELECT count(tr.pin_money)
 		FROM trade_order tr
 		WHERE 1=1

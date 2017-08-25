@@ -588,4 +588,9 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		}
 		return true;
 	}
+
+	@Override
+	public List<ActivityDiscountCondition> getActivityDiscountConditions(String discountId) {
+		return activityDiscountConditionMapper.findByActivityId(discountId);
+	}
 }
