@@ -3235,7 +3235,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         // 订单总金额=线上订单金额+货到付款订单金额+POS订单金额
 //        BigDecimal totalOrderAmount = onlineOrderAmount.add(deliveryOrderAmount).add(posOrderAmount);
         // 总退款金额=线上订单退款金额+货到付款订单退款金额+POS订单退款金额
-        BigDecimal totalRefundAmount = onlineRefundAmount.add(deliveryRefundAmount).add(posRefundAmount);
+//        BigDecimal totalRefundAmount = onlineRefundAmount.add(deliveryRefundAmount).add(posRefundAmount);
         // 货到付款订单平台优惠金额
         BigDecimal deliveryPlatformDiscount = BigDecimal.valueOf(json.optDouble("deliveryPlatformDiscount", 0));
         // 线上订单店铺优惠金额
@@ -4178,7 +4178,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         json.put("orderResource", orders.getOrderResource().ordinal());
         json.put("platformPreferential", orders.getPlatformPreferential());
         json.put("storePreferential", orders.getStorePreferential());
-        json.put("pinMoney", orders.getPinMoney());
+        json.put("pinMoney", ConvertUtil.format(orders.getPinMoney()));
         // End V2.2 added by maojj 2017-03-20  + tuzhd 2017-8-1
 
         // 支付方式:(0:在线支付、1:货到付款,2:未付款,3:线下支付)
