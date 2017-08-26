@@ -6,6 +6,7 @@
         <result column="message_name" property="messageName" jdbcType="VARCHAR" />
         <result column="context" property="context" jdbcType="VARCHAR" />
         <result column="range_type" property="rangeType" jdbcType="BIT" />
+        <result column="send_type" property="sendType" jdbcType="TINYINT" />
         <result column="send_time" property="sendTime" jdbcType="TIMESTAMP" />
         <result column="type" property="type" jdbcType="TINYINT" />
         <result column="status" property="status" jdbcType="TINYINT" />
@@ -18,7 +19,7 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, message_name, context, range_type, send_time, type, status, send_object, create_time, 
+        id, message_name, context, range_type, send_type, send_time, type, status, send_object, create_time, 
         create_user_id, update_time, update_user_id, disabled
     </sql>
 
@@ -71,6 +72,9 @@
             <if test="disabled != null" >
                 disabled,
             </if>
+            <if test="sendType != null" >
+                send_type,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -111,6 +115,9 @@
             </if>
             <if test="disabled != null" >
                 #{disabled,jdbcType=BIT},
+            </if>
+            <if test="sendType != null" >
+                #{sendType,jdbcType=TINYINT},
             </if>
         </trim>
     </insert>
@@ -154,6 +161,9 @@
             <if test="disabled != null" >
                 disabled = #{disabled,jdbcType=BIT},
             </if>
+            <if test="sendType != null" >
+               send_type = #{sendType,jdbcType=TINYINT},
+            </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
     </update>
@@ -180,6 +190,7 @@
         <if test="status != null" >
             AND status = #{status,jdbcType=TINYINT}
         </if>
+        order by create_time desc
     </select>
     
     <select id="findCountByName" resultType="Integer" parameterType="java.lang.String" >
@@ -188,7 +199,7 @@
         where message_name = #{messageName,jdbcType=VARCHAR}
     </select>
     <!-- 修改还未达到发送时间的消息 -->
-     <update id="updateSetting" parameterType="com.okdeer.mall.operate.entity.MessageSendSetting" >
+    <update id="updateSetting" parameterType="com.okdeer.mall.operate.entity.MessageSendSetting" >
         update message_send_setting
         <set >
             <if test="messageName != null" >
@@ -200,6 +211,9 @@
             <if test="rangeType != null" >
                 range_type = #{rangeType,jdbcType=BIT},
             </if>
+            <if test="sendType != null" >
+                send_type = #{sendType,jdbcType=TINYINT},
+            </if>
             <if test="sendTime != null" >
                 send_time = #{sendTime,jdbcType=TIMESTAMP},
             </if>
@@ -207,7 +221,7 @@
                 type = #{type,jdbcType=TINYINT},
             </if>
             <if test="status != null" >
-                type = #{status,jdbcType=TINYINT},
+                status = #{status,jdbcType=TINYINT},
             </if>
             <if test="sendObject != null" >
                 send_object = #{sendObject,jdbcType=INTEGER},

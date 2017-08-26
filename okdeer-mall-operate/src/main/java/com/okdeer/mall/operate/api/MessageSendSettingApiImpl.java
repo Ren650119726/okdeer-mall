@@ -31,6 +31,7 @@ import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.member.member.dto.LocateInfoQueryDto;
 import com.okdeer.mall.member.member.dto.SysBuyerLocateInfoDto;
 import com.okdeer.mall.member.member.service.SysBuyerLocateInfoServiceApi;
+import com.okdeer.mall.operate.dto.MessageSendSelectAreaDto;
 import com.okdeer.mall.operate.dto.MessageSendSettingDto;
 import com.okdeer.mall.operate.dto.MessageSendSettingQueryDto;
 import com.okdeer.mall.operate.entity.MessageSendSelectArea;
@@ -93,7 +94,11 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 
 	@Override
 	public MessageSendSettingDto findById(String id) throws Exception {
-		return BeanMapper.map(messageSendSettingService.findById(id),MessageSendSettingDto.class);
+		MessageSendSetting sendSetting = messageSendSettingService.findById(id);
+		List<MessageSendSelectArea> areaList = messageSendSelectAreaService.findListByMessageId(sendSetting.getId());
+		MessageSendSettingDto sendSettingDto = BeanMapper.map(sendSetting, MessageSendSettingDto.class);
+		sendSettingDto.setAreaList(BeanMapper.mapList(areaList, MessageSendSelectAreaDto.class));
+		return sendSettingDto;
 	}
 
 	@Override
@@ -107,7 +112,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		MessageSendSetting entity = BeanMapper.map(messageDto, MessageSendSetting.class);
 		
 		entity.setUpdateTime(new Date());
-		if(messageDto.getSendTimeType()==0){
+		if(messageDto.getSendType()==0){
 			entity.setSendTime(new Date());
 		}
 		//根据时间修改消息未达到发送时间的消息
@@ -125,7 +130,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 			}
 		}
 		//修改成功且发送类型为立即发送
-		if(result>0 && messageDto.getSendTimeType()==0){
+		if(result>0 && messageDto.getSendType()==0){
 			messageSettingSend(entity);
 		}
 		return result;
@@ -139,7 +144,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		
 		MessageSendSetting entity = BeanMapper.map(messageDto, MessageSendSetting.class);
 		
-		if(messageDto.getSendTimeType()==0){
+		if(messageDto.getSendType()==0){
 			entity.setSendTime(new Date());
 		}
 		String guid = UuidUtils.getUuid();
@@ -158,7 +163,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 			}
 		}
 		//增加成功且消息发送时间为立即发送
-		if(result>0 && messageDto.getSendTimeType()==0){
+		if(result>0 && messageDto.getSendType()==0){
 			messageSettingSend(entity);
 		}
 	}

@@ -33,6 +33,10 @@ public class MessageSendSetting {
      */
     private Boolean rangeType;
     /**
+     * 发送类型 0 立即发送 1自定义发送
+     */
+    private Integer sendType;
+    /**
      * 发送时间
      */
     private Date sendTime;
@@ -102,7 +106,15 @@ public class MessageSendSetting {
         this.rangeType = rangeType;
     }
 
-    public Date getSendTime() {
+	public Integer getSendType() {
+		return sendType;
+	}
+
+	public void setSendType(Integer sendType) {
+		this.sendType = sendType;
+	}
+
+	public Date getSendTime() {
         return sendTime;
     }
 
