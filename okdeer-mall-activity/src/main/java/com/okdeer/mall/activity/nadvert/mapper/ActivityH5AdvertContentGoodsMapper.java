@@ -45,4 +45,16 @@ public interface ActivityH5AdvertContentGoodsMapper extends IBaseMapper {
 	 */
 	void deleteByActId(@Param("activityId")String activityId,@Param("contentId")String contentId);
 
+	/**
+	 * @Description: 根据h5活动id查询关联的便利店商品列表
+	 * @param storeId 店铺id
+	 * @param activityId h5活动id
+	 * @param contentId h5活动内容id
+	 * @return List<ActivityH5AdvertContentGoods>
+	 * @throws
+	 * @author mengsj
+	 * @date 2017年8月26日
+	 */
+	List<ActivityH5AdvertContentGoods> findBldGoodsByActivityId(@Param("storeId")String storeId,@Param("activityId")String activityId, @Param("contentId")String contentId);
+
 }
