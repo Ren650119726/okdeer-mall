@@ -214,7 +214,6 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper;
 import com.okdeer.mall.order.mq.constants.TradeOrderTopic;
-import com.okdeer.mall.order.service.ExpressOrderCallbackService;
 import com.okdeer.mall.order.service.PageCallBack;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
@@ -647,11 +646,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     // End V2.5 added by maojj 2017-06-23
 
     //begin add wangf01 2017-08-10
-    /**
-     * 配送方式
-     */
-    @Autowired
-    private ExpressOrderCallbackService expressOrderCallbackService;
 
     @Override
     public List<TradeOrder> selectByParam(TradeOrderParamDto param) throws Exception {
@@ -1178,7 +1172,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                             if (StringUtils.isNotBlank(logistics.getOrderId()) && orderVo.getId().equals(logistics.getOrderId())) {
                                 String cityId = logistics.getCityId();
                                 if (StringUtils.isNotBlank(cityId)) {
-                                    Address address = addressService.getAddressById(Long.parseLong(cityId));
+//                                    Address address = addressService.getAddressById(Long.parseLong(cityId));
                                     // 所属城市 实物订单的送货上门取物流表的地址
 //									orderVo.setCityName(address.getName() == null ? "" : address.getName());
                                     String area = logistics.getArea() == null ? "" : logistics.getArea();
@@ -3238,9 +3232,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         // POS退款金额
         BigDecimal posRefundAmount = BigDecimal.valueOf(json.optDouble("posRefundAmount", 0));
         // 订单总金额=线上订单金额+货到付款订单金额+POS订单金额
-        BigDecimal totalOrderAmount = onlineOrderAmount.add(deliveryOrderAmount).add(posOrderAmount);
+//        BigDecimal totalOrderAmount = onlineOrderAmount.add(deliveryOrderAmount).add(posOrderAmount);
         // 总退款金额=线上订单退款金额+货到付款订单退款金额+POS订单退款金额
-        BigDecimal totalRefundAmount = onlineRefundAmount.add(deliveryRefundAmount).add(posRefundAmount);
+//        BigDecimal totalRefundAmount = onlineRefundAmount.add(deliveryRefundAmount).add(posRefundAmount);
         // 货到付款订单平台优惠金额
         BigDecimal deliveryPlatformDiscount = BigDecimal.valueOf(json.optDouble("deliveryPlatformDiscount", 0));
         // 线上订单店铺优惠金额
@@ -4102,7 +4096,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             json.put("activityType", String.valueOf(ActivityTypeEnum.LOW_PRICE.ordinal()));
         }
         json.put("preferentialPrice",
-                orders.getPreferentialPrice().subtract(orders.getRealFarePreferential()).toString());
+                orders.getPreferentialPrice().subtract(orders.getRealFarePreferential()).subtract(orders.getPinMoney()).toString());
         json.put("fare", orders.getFare() == null ? "" : orders.getFare().toString());
         json.put("fareFavour", orders.getRealFarePreferential() == null ? "" : String.valueOf(orders.getRealFarePreferential()));
         // 订单评价类型0：未评价，1：已评价
@@ -4183,7 +4177,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         json.put("orderResource", orders.getOrderResource().ordinal());
         json.put("platformPreferential", orders.getPlatformPreferential());
         json.put("storePreferential", orders.getStorePreferential());
-        json.put("pinMoney", orders.getPinMoney());
+        json.put("pinMoney", ConvertUtil.format(orders.getPinMoney()));
         // End V2.2 added by maojj 2017-03-20  + tuzhd 2017-8-1
 
         // 支付方式:(0:在线支付、1:货到付款,2:未付款,3:线下支付)

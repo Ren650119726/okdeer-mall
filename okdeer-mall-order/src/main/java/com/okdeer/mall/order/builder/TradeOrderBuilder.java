@@ -395,7 +395,7 @@ public class TradeOrderBuilder {
 		tradeOrder.setRealFarePreferential(format(parserBo.getRealFarePreferential()));
 		// 设置订单优惠金额。此处不加运费优惠，到处理运费时统一进行计算
 		tradeOrder.setPreferentialPrice(tradeOrder.getPlatformPreferential()
-				.add(tradeOrder.getStorePreferential()).add(tradeOrder.getPinMoney()));
+				.add(tradeOrder.getStorePreferential()));
 	}
 	
 	
@@ -421,13 +421,16 @@ public class TradeOrderBuilder {
 			//实际支付差额
 			BigDecimal actualAmount = totalAmount.subtract(favourAmount);
 			// 使用零花钱
+			BigDecimal usePinMoney = BigDecimal.ZERO;
+			BigDecimal preferentialPrice = tradeOrder.getPreferentialPrice();
 			if(paramDto.getIsUsePinMoney()){
 				BigDecimal pinMoney = (BigDecimal) paramDto.get("pinMoneyAmount");
-				BigDecimal usePinMoney =  actualAmount.compareTo(pinMoney) >= 0 ? pinMoney : actualAmount.subtract(pinMoney);
-				tradeOrder.setPinMoney(usePinMoney);
+				usePinMoney =  actualAmount.compareTo(pinMoney) >= 0 ? pinMoney : actualAmount.subtract(pinMoney);
 				actualAmount = actualAmount.subtract(usePinMoney);
-				tradeOrder.setPreferentialPrice(tradeOrder.getPreferentialPrice().add(usePinMoney));
+				preferentialPrice = preferentialPrice.add(usePinMoney);
 			}
+			tradeOrder.setPreferentialPrice(preferentialPrice);
+			tradeOrder.setPinMoney(usePinMoney);
 			tradeOrder.setActualAmount(actualAmount);
 		}
 	}

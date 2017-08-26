@@ -145,12 +145,12 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 	private List<String> parseCompomentSkuId(List<GoodsStoreSku> currentSkuList,StoreSkuParserBo parserBo) {
 		List<String> skuIds = Lists.newArrayList();
 		Map<String, List<StoreSkuComponentDto>> componentSkuMap = parserBo.getComponentSkuMap();
-		for(GoodsStoreSku storeSku: currentSkuList){
-			if(storeSku.getBindType()==SkuBindType.bind){
+		for (GoodsStoreSku storeSku : currentSkuList) {
+			if (storeSku.getBindType() != SkuBindType.bind) {
 				skuIds.add(storeSku.getId());
-			}else{
+			} else {
 				List<StoreSkuComponentDto> componentSkus = componentSkuMap.get(storeSku.getId());
-				skuIds.addAll(componentSkus.stream().map(e->e.getId()).collect(Collectors.toList()));
+				skuIds.addAll(componentSkus.stream().map(e -> e.getId()).collect(Collectors.toList()));
 			}
 		}
 		return skuIds;
