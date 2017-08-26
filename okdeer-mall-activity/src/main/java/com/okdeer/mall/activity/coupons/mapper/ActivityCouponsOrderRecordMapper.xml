@@ -49,7 +49,7 @@
     <include refid="condition" />
   </select>
   
-  <select id="findByParam" resultType="int" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityCouponsOrderRecordParamBo" >
+  <select id="findCountByParam" resultType="int" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityCouponsOrderRecordParamBo" >
     SELECT  COUNT(1) FROM activity_coupons_order_record WHERE 1=1 
     <include refid="condition" />
   </select>
