@@ -118,7 +118,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		//根据时间修改消息未达到发送时间的消息
 		int result = messageSendSettingService.updateSetting(entity);
 		//推送地区选择为城市
-		if(result>0 && !entity.getRangeType()){
+		if(result>0 && entity.getRangeType() == 1){
 			messageSendSelectAreaService.deleteByMessageId(messageDto.getId());
 			
 			List<MessageSendSelectArea> list = getRangeInfo(messageDto);
@@ -153,7 +153,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		entity.setUpdateTime(new Date());
 		int result = messageSendSettingService.add(entity);
 		//推送地区选择为城市
-		if(entity.getRangeType()){
+		if(entity.getRangeType() == 1){
 			List<MessageSendSelectArea> list = getRangeInfo(messageDto);
 			for(MessageSendSelectArea selectArea : list){
 				selectArea.setId(UuidUtils.getUuid());
@@ -181,7 +181,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		// 120,葫芦岛市,0|6,辽宁省,1#119,朝阳市,0|6,辽宁省,1
 		List<MessageSendSelectArea> selectAreaList = new ArrayList<MessageSendSelectArea>();
 		//false 全部 true 选择城市
-		boolean rangeType = settingDto.getRangeType();
+		boolean rangeType = settingDto.getRangeType() ==1 ;
 		if (rangeType && StringUtils.isNotBlank(settingDto.getAreaIds())) {
 			// 城市--省份
 			String[] arrObjList = settingDto.getAreaIds().split("#");
@@ -211,7 +211,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 	private void messageSettingSend(MessageSendSetting entity) throws Exception {
 		//根据城市筛选用户
 		List<String> cityIdsList =Lists.newArrayList();
-		if(entity.getRangeType()){
+		if(entity.getRangeType() == 1){
 			List<MessageSendSelectArea> areaList = messageSendSelectAreaService.findListByMessageId(entity.getId());
 			areaList.forEach(selectArea -> cityIdsList.add(selectArea.getCityId()));
 		}

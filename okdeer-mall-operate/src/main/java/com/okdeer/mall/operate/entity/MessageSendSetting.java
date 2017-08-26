@@ -31,7 +31,7 @@ public class MessageSendSetting {
     /**
      * 发送范围类型 0：全部 1：区域城市
      */
-    private Boolean rangeType;
+    private Integer rangeType;
     /**
      * 发送类型 0 立即发送 1自定义发送
      */
@@ -98,13 +98,13 @@ public class MessageSendSetting {
         this.context = context;
     }
 
-    public Boolean getRangeType() {
-        return rangeType;
-    }
+    public Integer getRangeType() {
+		return rangeType;
+	}
 
-    public void setRangeType(Boolean rangeType) {
-        this.rangeType = rangeType;
-    }
+	public void setRangeType(Integer rangeType) {
+		this.rangeType = rangeType;
+	}
 
 	public Integer getSendType() {
 		return sendType;
