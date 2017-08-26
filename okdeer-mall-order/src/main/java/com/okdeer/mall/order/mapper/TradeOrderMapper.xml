@@ -1931,6 +1931,9 @@
 			<if test="actualAmount != null">
 				actual_amount,
 			</if>
+			<if test="pinMoney != null">
+				pin_money,
+			</if>
 			<if test="preferentialPrice != null">
 				preferential_price,
 			</if>
@@ -2089,6 +2092,9 @@
 			</if>
 			<if test="actualAmount != null">
 				#{actualAmount,jdbcType=DECIMAL},
+			</if>
+			<if test="pinMoney != null">
+				#{pinMoney,jdbcType=DECIMAL},
 			</if>
 			<if test="preferentialPrice != null">
 				#{preferentialPrice,jdbcType=DECIMAL},
