@@ -297,7 +297,9 @@
              <if test="isCashDelivery != null">
                 is_cash_delivery = #{isCashDelivery, jdbcType=TINYINT},
              </if>
+             <if test="exchangeCode != null">
                 exchange_code = #{exchangeCode, jdbcType=VARCHAR},
+             </if>
              <if test="areaType != null">
                 area_type = #{areaType, jdbcType=TINYINT},
              </if>
