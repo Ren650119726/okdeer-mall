@@ -14,6 +14,8 @@ import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
@@ -56,6 +59,7 @@ import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsLimitCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsOrderRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
@@ -64,6 +68,8 @@ import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.activity.coupons.vo.AddressCityVo;
+import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
+import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.activity.dto.TakeActivityCouponParamDto;
 import com.okdeer.mall.common.entity.AreaScTreeVo;
 import com.okdeer.mall.common.enums.AreaType;
@@ -80,6 +86,8 @@ import com.okdeer.mall.common.utils.RandomStringUtil;
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi")
 public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, ActivityCouponsService {
 
+	private static Logger logger = LoggerFactory.getLogger(ActivityCouponsServiceImpl.class);
+	
 	/**
 	 * 注入代金券管理mapper
 	 */
@@ -140,7 +148,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 	@Resource
 	private ActivityCouponsRecordBeforeService activityCouponsRecordBeforeService;
-
+	
 	private static final int MAX_NUM = 1000;
 
 	/**
@@ -1005,10 +1013,10 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			TakeActivityCouponParamDto activityCouponParamDto) throws Exception {
 		List<ActivityCoupons> activityCouponList = getActivityCoupons(activityCollectCoupons.getId());
 		for (ActivityCoupons activityCoupons : activityCouponList) {
-			boolean isSuccess = checkActivityCouponsRule(activityCoupons);
-			if (isSuccess) {
+			try {
+				checkActivityCouponsRule(activityCoupons, activityCouponParamDto);
 				updateCouponsAndAddCouponsRecord(activityCoupons, activityCouponParamDto);
-			} else {
+			} catch (Exception e) {
 				if (activityCouponParamDto.isContinueTakeOther()) {
 					continue;
 				}
@@ -1035,8 +1043,34 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		}
 	}
 
-	private boolean checkActivityCouponsRule(ActivityCoupons activityCoupons) {
-		return false;
+	private void checkActivityCouponsRule(ActivityCoupons activityCoupons,
+			TakeActivityCouponParamDto activityCouponParamDto) throws Exception {
+		if (activityCoupons.getRemainNum() <= 0) {
+			// 代金劵数量不够了
+			throw new Exception("您来晚了一步，代经卷已经被领取完了");
+		}
+		int drawCount = 0;
+		String dateFormat = "yyyy-MM-dd HH:mm:ss";
+		String startTime = DateUtils.formatDate(DateUtils.getDateStart(new Date()), dateFormat);
+		String endTime = DateUtils.formatDate(DateUtils.getDateEnd(new Date()), dateFormat);
+
+		ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParam = new ActivityCouponsRecordQueryParamDto();
+		activityCouponsRecordQueryParam.setCollectStartTime(startTime);
+		activityCouponsRecordQueryParam.setCollectEndTime(endTime);
+		activityCouponsRecordQueryParam.setCouponsCollectId(activityCouponParamDto.getActivityId());
+		activityCouponsRecordQueryParam.setCouponsId(activityCoupons.getId());
+		if (StringUtils.isNotEmpty(activityCouponParamDto.getUserId())) {
+			activityCouponsRecordQueryParam.setCollectUserId(activityCouponParamDto.getUserId());
+			drawCount = activityCouponsRecordService.selectCountByParams(activityCouponsRecordQueryParam);
+		} else {
+			ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParam = BeanMapper
+					.map(activityCouponsRecordQueryParam, ActivityCouponsRecordBeforeParamDto.class);
+			activityCouponsRecordBeforeParam.setCollectUser(activityCouponParamDto.getMobile());
+			drawCount = activityCouponsRecordBeforeService.selectCountByParam(activityCouponsRecordBeforeParam);
+		}
+		if (drawCount >= activityCoupons.getEveryLimit()) {
+			throw new Exception("不要贪心哦，您已经领取了" + activityCoupons.getEveryLimit() + "张代金劵");
+		}
 	}
 
 	private void updateCouponsNum(String activityCouponId) throws Exception {
@@ -1047,7 +1081,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		activityCouponsBo.setUpdateTime(new Date());
 		int result = activityCouponsMapper.updateCouponsNum(activityCouponsBo);
 		if (result < 1) {
-			throw new Exception("代金劵已经领完");
+			throw new Exception("您来晚了一步,代金劵已经被领完了");
 		}
 	}
 

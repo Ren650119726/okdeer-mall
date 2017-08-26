@@ -15,36 +15,51 @@
     id, collect_type, coupons_collect_id, collect_time, collect_user_id, order_id,total_value
   </sql>
   <sql id="condition" >
-    <if test="null!=params" >
-      <if test="null!=params.orderId and ''!=params.orderId" >
-        AND order_id = #{params.orderId,jdbcType=VARCHAR}
+      <if test="null!= orderId and ''!= orderId" >
+        AND order_id = #{orderId,jdbcType=VARCHAR}
       </if>
-    </if>
+      <if test="collectUserId != null and collectUserId != ''">
+      	AND coupons_collect_id =  #{collectUserId,jdbcType=VARCHAR}
+      </if>
+      <if test="couponsCollectId != null and couponsCollectId !='' ">
+      	AND coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR}
+      </if>
+      <if test="collectType != null ">
+      	AND collect_type = #{collectType,jdbcType=TINYINT}
+      </if>
+      <if test="collectStartTime != null and collectStartTime != ''">
+      	<![CDATA[AND collect_time >= #{collectStartTime,jdbcType=VARCHAR}]]>
+      </if>
+      <if test="collectEndTime != null and collectEndTime != ''">
+      	<![CDATA[AND collect_time <= #{collectEndTime,jdbcType=VARCHAR}]]>
+      </if>
   </sql>
-  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+  
+  <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
     select 
     <include refid="Base_Column_List" />
     from activity_coupons_order_record
     where id = #{id,jdbcType=VARCHAR}
   </select>
-  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
+  
+  <select id="findByParam" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityCouponsOrderRecordParamBo" >
     SELECT 
     <include refid="Base_Column_List" />
      FROM activity_coupons_order_record WHERE 1=1 
     <include refid="condition" />
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+  
+  <select id="findCountByParam" resultType="int" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityCouponsOrderRecordParamBo" >
+    SELECT  COUNT(1) FROM activity_coupons_order_record WHERE 1=1 
+    <include refid="condition" />
+  </select>
+  
+  <delete id="delete" parameterType="java.lang.String" >
     DELETE FROM activity_coupons_order_record
     WHERE id = #{id,jdbcType=VARCHAR}
   </delete>
-  <insert id="insert" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord" >
-    insert into activity_coupons_order_record (id, collect_type,  
-      coupons_collect_id, collect_time, collect_user_id, order_id)
-    values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=BIT}, 
-      #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUserId,jdbcType=VARCHAR}, 
-      #{orderId,jdbcType=VARCHAR})
-  </insert>
-  <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord" >
+ 
+  <insert id="add" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord" >
     insert into activity_coupons_order_record
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -93,7 +108,7 @@
       </if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord" >
+  <update id="update" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord" >
     update activity_coupons_order_record
     <set >
       <if test="collectType != null" >
@@ -115,15 +130,6 @@
       	 total_value = #{totalValue,jdbcType=INTEGER},
       </if>
     </set>
-    where id = #{id,jdbcType=VARCHAR}
-  </update>
-  <update id="updateByPrimaryKey" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord" >
-    update activity_coupons_order_record
-    set collect_type = #{collectType,jdbcType=BIT},
-      coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR},
-      collect_time = #{collectTime,jdbcType=TIMESTAMP},
-      collect_user_id = #{collectUserId,jdbcType=VARCHAR},
-      order_id = #{orderId,jdbcType=VARCHAR},
     where id = #{id,jdbcType=VARCHAR}
   </update>
 </mapper> 

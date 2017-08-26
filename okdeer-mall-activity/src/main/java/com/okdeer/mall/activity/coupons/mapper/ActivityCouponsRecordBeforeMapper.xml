@@ -101,45 +101,54 @@
     <sql id="ActivityCouponsRecordBeforeParamSql">
     		  <!-- 领取人id -->
 	  <if test="collectUser != null and collectUser != ''">
-	     AND collect_user = #{collectUser,jdbcType=VARCHAR}
+	     AND  b.collect_user = #{collectUser,jdbcType=VARCHAR}
 	  </if>
 	  <!-- 代金券领取活动（注册活动）id -->
 	  <if test="couponsCollectId != null and couponsCollectId != ''">
-	    AND coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR}
+	    AND b.coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR}
 	  </if>
 	  <!-- 代金券id -->
 	  <if test="couponsId != null and couponsId != ''">
-	    AND coupons_id = #{couponsId,jdbcType=VARCHAR}
+	    AND b.coupons_id = #{couponsId,jdbcType=VARCHAR}
 	  </if>
 	  <!-- 活动类型 -->
 	  <if test="collectType != null">
-	     AND collect_type = #{collectType,jdbcType=TINYINT}
+	     AND b.collect_type = #{collectType,jdbcType=TINYINT}
 	  </if>
 	  <!-- 领取状态 -->
 	  <if test="status != null">
-	     AND `status` = #{status,jdbcType=TINYINT}
+	     AND b.`status` = #{status,jdbcType=TINYINT}
 	  </if>
 	  <!-- 领取时间-->
 	  <if test="collectTime != null">
-	     AND collect_time = #{collectTime}
+	     AND b.collect_time = #{collectTime}
 	  </if>
 	  <if test="collectStartTime !=null and collectStartTime != ''">
-	  	 <![CDATA[AND collect_time >= #{collectStartTime,jdbcType=VARCHAR}]]>
+	  	 <![CDATA[AND b.collect_time >= #{collectStartTime,jdbcType=VARCHAR}]]>
 	  </if>
 	  <if test="collectEndTime !=null and collectEndTime != ''">
-	  	 <![CDATA[AND collect_time <= #{collectEndTime,jdbcType=VARCHAR}]]>
+	  	 <![CDATA[AND b.collect_time <= #{collectEndTime,jdbcType=VARCHAR}]]>
 	  </if>
-	  
     </sql>
+    
 	<select id="getCountByDayParams" resultType="int" parameterType="com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto">
 	  SELECT count(1)
 	  FROM activity_coupons_record_before  b left join activity_coupons_record c on b.id =c.id
 	  WHERE  c.id is null
-	  
-	  
+	  <include refid="ActivityCouponsRecordBeforeParamSql" />
 	</select>
 	
+	<select id="selectActivityCountByParams">
+		 SELECT COUNT(DISTINCT coupons_collect_id) FROM activity_coupons_record_before  b left join activity_coupons_record c on b.id =c.id
+	  	 WHERE  1=1
+	  	<include refid="ActivityCouponsRecordBeforeParamSql"/>
+	</select>
 	
+	<select id="selectOrderCountByParams">
+		SELECT COUNT(DISTINCT order_id) FROM activity_coupons_record_before  b left join activity_coupons_record c on b.id =c.id
+	  	 WHERE  1=1
+	  	<include refid="ActivityCouponsRecordBeforeParamSql"/>
+	</select>
  <!-- 根据用户id判断完成首单的用户是否 有效完成邀请 tuzhiding  -->
  <select id="findRecordVaildByUserId" resultMap="BaseBeforeMap" >
     SELECT 

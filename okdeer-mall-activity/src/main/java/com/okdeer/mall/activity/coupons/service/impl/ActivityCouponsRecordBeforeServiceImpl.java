@@ -6,6 +6,7 @@ import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordBeforeService;
+import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
 
 @Service
 public class ActivityCouponsRecordBeforeServiceImpl 
@@ -31,6 +32,11 @@ public class ActivityCouponsRecordBeforeServiceImpl
 	@Override
 	public <T> int update(T arg0) throws Exception {
 		return activityCouponsRecordBeforeMapper.updateByPrimaryKeySelective(arg0);
+	}
+
+	@Override
+	public int selectCountByParam(ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParam) {
+		return activityCouponsRecordBeforeMapper.getCountByDayParams(activityCouponsRecordBeforeParam);
 	}
 
 }

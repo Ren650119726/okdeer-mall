@@ -104,6 +104,7 @@ import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
 import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsOrderRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -6074,10 +6075,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                     (respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_NOT_COUPONE_TIPS);
             return;
         }
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("orderId", orderId);
+        ActivityCouponsOrderRecordParamBo activityCouponsOrderRecordParamBo = new ActivityCouponsOrderRecordParamBo();
+        activityCouponsOrderRecordParamBo.setOrderId(orderId);
         // 消费返券记录
-        List<ActivityCouponsOrderRecord> recordList = activityCouponsOrderRecordMapper.selectByParams(params);
+        List<ActivityCouponsOrderRecord> recordList = activityCouponsOrderRecordMapper.findByParam(activityCouponsOrderRecordParamBo);
         if (CollectionUtils.isNotEmpty(recordList)) {
             // 该订单已经参与过消费返券活动
 			/*logger.info(ORDER_COUPONS_ALREADY, orderId, userId);
@@ -6208,7 +6209,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
         try {
             // 插入消费返券记录
-            activityCouponsOrderRecordMapper.insertSelective(record);
+            activityCouponsOrderRecordMapper.add(record);
             // 批量插入代金券
             if (!CollectionUtils.isEmpty(lstCouponsRecords)) {
                 activityCouponsRecordMapper.insertSelectiveBatch(lstCouponsRecords);

@@ -355,4 +355,21 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @date 2017年8月3日
 	 */
 	List<ActivityRecordBo> countCollectActivityRecord(ActivityRecordParamBo paramBo);
+	/**
+	 * @Description: 根据活动统计用户领取次数
+	 * @param activityCouponsRecordQueryParamDto
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年8月26日
+	 */
+	int selectActivityCountByParams(ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto);
+	
+	/**
+	 * @Description: 根据活动统计用户领取次数
+	 * @param activityCouponsRecordQueryParamDto
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年8月26日
+	 */
+	int selectOrderCountByParams(ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto);
 }
