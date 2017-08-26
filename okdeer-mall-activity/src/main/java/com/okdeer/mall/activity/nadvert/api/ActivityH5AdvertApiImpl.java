@@ -12,11 +12,14 @@ import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.nadvert.bo.ActivityH5AdvertBo;
 import com.okdeer.mall.activity.nadvert.bo.ActivityH5AdvertContentBo;
 import com.okdeer.mall.activity.nadvert.dto.ActivityH5AdvertContentDto;
+import com.okdeer.mall.activity.nadvert.dto.ActivityH5AdvertContentGoodsDto;
 import com.okdeer.mall.activity.nadvert.dto.ActivityH5AdvertDto;
 import com.okdeer.mall.activity.nadvert.dto.ActivityH5AdvertRoleDto;
 import com.okdeer.mall.activity.nadvert.entity.ActivityH5Advert;
+import com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods;
 import com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertRole;
 import com.okdeer.mall.activity.nadvert.param.ActivityH5AdvertQParam;
+import com.okdeer.mall.activity.nadvert.service.ActivityH5AdvertContentGoodsService;
 import com.okdeer.mall.activity.nadvert.service.ActivityH5AdvertService;
 
 /**
@@ -35,6 +38,8 @@ import com.okdeer.mall.activity.nadvert.service.ActivityH5AdvertService;
 public class ActivityH5AdvertApiImpl implements ActivityH5AdvertApi {
 	@Autowired
 	private ActivityH5AdvertService advertService;
+	@Autowired
+	private ActivityH5AdvertContentGoodsService contentGoodsService;
 	@Override
 	public void save(ActivityH5AdvertDto entity) throws Exception {
 		advertService.save(convertDtoToBo(entity));
@@ -115,5 +120,14 @@ public class ActivityH5AdvertApiImpl implements ActivityH5AdvertApi {
 			Integer pageNumber, Integer pageSize) {
 		PageUtils<ActivityH5Advert> page = advertService.findByParam(param, pageNumber, pageSize);
 		return page.toBean(ActivityH5AdvertDto.class);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public PageUtils<ActivityH5AdvertContentGoodsDto> findBldGoodsByActivityId(
+			String storeId, String activityId, String contentId,
+			Integer pageNumber, Integer pageSize) {
+		PageUtils<ActivityH5AdvertContentGoods> page = contentGoodsService.findBldGoodsByActivityId(storeId, activityId, contentId, pageNumber, pageSize);
+		return  page.toBean(ActivityH5AdvertContentGoodsDto.class);
 	}
 }

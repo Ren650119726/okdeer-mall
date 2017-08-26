@@ -5,20 +5,21 @@
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
         <result column="content_id" property="contentId" jdbcType="VARCHAR" />
-        <result column="goods_type" property="goodsType" jdbcType="TINYINT" />
         <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
         <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
         <result column="sku_price" property="skuPrice" jdbcType="DECIMAL" />
         <result column="goods_sku_pic" property="goodsSkuPic" jdbcType="VARCHAR" />
         <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
-        <result column="store_activity_type" property="storeActivityType" jdbcType="TINYINT" />
+        <result column="sellable_stock" property="sellableStock" jdbcType="INTEGER" />
+        <result column="locked_stock" property="lockedStock" jdbcType="INTEGER" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
     </resultMap>
+    
+    
 
     <sql id="Base_Column_List" >
-        id, activity_id, content_id, goods_type, store_sku_id, pic_url, 
-        store_activity_type, create_time, create_user_id
+        id, activity_id, content_id,store_sku_id, pic_url,create_time, create_user_id
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -30,13 +31,22 @@
 
     <select id="findByActId" resultMap="BaseResultMap" parameterType="java.lang.String" >
         select 
-        	aa.id, aa.activity_id, aa.content_id, aa.goods_type, aa.store_sku_id, aa.pic_url, 
-        	aa.store_activity_type, aa.create_time, aa.create_user_id,(case when bb.url is not null then bb.url when dd.url then dd.url end) goods_sku_pic,
-        	cc.name sku_name
+        	aa.id, 
+        	aa.activity_id, 
+        	aa.content_id, 
+        	aa.store_sku_id, 
+        	aa.pic_url, 
+        	aa.create_time, 
+        	(case when bb.url is not null then bb.url when dd.url then dd.url end) goods_sku_pic,
+        	(case when ee.id is not null then ee.seckill_price else sku.online_price end) AS sku_price,
+        	stock.sellable AS sellable_stock,
+        	stock.locked AS locked_stock
         from activity_h5_advert_content_goods aa
         LEFT JOIN goods_sku cc ON aa.store_sku_id = cc.id
         LEFT JOIN goods_sku_picture bb ON (aa.store_sku_id = bb.sku_id AND bb.type = 1)
         LEFT JOIN goods_store_sku_picture dd ON (aa.store_sku_id = dd.store_sku_id AND dd.type = 1) 
+        LEFT JOIN goods_store_sku_stock stock ON stock.store_sku_id = aa.store_skku_id
+        LEFT JOIN activity_seckill ee ON (ee.store_sku_id = aa.store_sku_id AND kill_status = 1)
         where 
         	1=1
         <if test="activityId != null">
@@ -47,6 +57,68 @@
         </if>
         GROUP BY aa.store_sku_id;	
     </select>
+    
+    <!-- begin 根据h5活动id获取便利店商品列表mengsj 20170826-->
+	<select id="findBldGoodsByActivityId" resultMap="BaseResultMap" parameterType="String">
+		SELECT
+	        aa.id, 
+	        aa.activity_id, 
+	        aa.content_id, 
+	        aa.store_sku_id, 
+	        aa.pic_url, 
+        	aa.create_time, 
+        	picture.url goods_sku_pic,
+        	sku.name sku_name,
+        	(case when sa.id is not null then asg.sale_price else sku.online_price end) AS sku_price,
+        	stock.sellable AS sellable_stock,
+        	stock.locked AS locked_stock
+		FROM activity_h5_advert_content_goods aa
+			INNER JOIN goods_store_sku sku on aa.store_sku_id = sku.sku_id
+			LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
+			LEFT JOIN goods_store_sku_stock stock ON stock.store_sku_id = sku.id
+			LEFT JOIN activity_sale sa ON sa.id = sku.activity_id AND sa.status = 1 AND sa.disabled = 0
+			LEFT JOIN activity_sale_goods asg on sa.id = asg.sale_id AND sku.id=asg.store_sku_id
+	    WHERE sku.disabled = 0
+			AND stock.disabled = 0
+			AND sku.status = 1
+			AND sku.violation = 0
+			AND sku.store_id = #{storeId,jdbcType=VARCHAR}
+		  	AND aa.activity_id = #{activityId,jdbcType=VARCHAR}
+		  	AND aa.content_id = #{contentId,jdbcType=VARCHAR}
+		 GROUP BY aa.store_sku_id 	
+		 ORDER BY aa.id DESC 
+	</select>
+	
+	<!-- 查询h5关联的店铺特惠或者低价商品 -->
+	<select id="findBldActGoodsByActivityId" resultMap="BaseResultMap" parameterType="String">
+		SELECT
+	        aa.id, 
+	        aa.activity_id, 
+	        aa.content_id, 
+	        aa.store_sku_id, 
+	        aa.pic_url, 
+        	aa.create_time, 
+        	picture.url goods_sku_pic,
+        	sku.name sku_name,
+        	if(sa.type=5,asg.sale_price,sku.online_price) AS sku_price,
+        	stock.sellable AS sellable_stock,
+        	stock.locked AS locked_stock
+		FROM activity_h5_advert_content_goods aa
+			INNER JOIN goods_store_sku sku on aa.store_sku_id = sku.sku_id
+			LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
+			LEFT JOIN goods_store_sku_stock stock ON stock.store_sku_id = sku.id
+			LEFT JOIN activity_sale sa ON sa.id = sku.activity_id AND sa.status = 1 AND sa.disabled = 0
+			LEFT JOIN activity_sale_goods asg on sa.id = asg.sale_id AND sku.id=asg.store_sku_id
+	    WHERE sku.disabled = 0
+			AND stock.disabled = 0
+			AND sku.status = 1
+			AND sku.violation = 0
+			AND sku.store_id = #{storeId,jdbcType=VARCHAR}
+		  	AND s.activity_id = #{activityId,jdbcType=VARCHAR}
+		  	AND s.content_id = #{contentId,jdbcType=VARCHAR}
+		 GROUP BY aa.store_sku_id 	
+		 ORDER BY aa.id DESC 
+	</select>
     
     <insert id="add" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods" >
         insert into activity_h5_advert_content_goods
@@ -60,17 +132,11 @@
             <if test="contentId != null" >
                 content_id,
             </if>
-            <if test="goodsType != null" >
-                goods_type,
-            </if>
             <if test="godsSkuId != null" >
                 store_sku_id,
             </if>
             <if test="picUrl != null" >
                 pic_url,
-            </if>
-            <if test="storeActivityType != null" >
-                store_activity_type,
             </if>
             <if test="createTime != null" >
                 create_time,
@@ -89,17 +155,11 @@
             <if test="contentId != null" >
                 #{contentId,jdbcType=VARCHAR},
             </if>
-            <if test="goodsType != null" >
-                #{goodsType,jdbcType=TINYINT},
-            </if>
             <if test="storeSkuId != null" >
                 #{storeSkuId,jdbcType=VARCHAR},
             </if>
             <if test="picUrl != null" >
                 #{picUrl,jdbcType=VARCHAR},
-            </if>
-            <if test="storeActivityType != null" >
-                #{storeActivityType,jdbcType=TINYINT},
             </if>
             <if test="createTime != null" >
                 #{createTime,jdbcType=TIMESTAMP},
@@ -117,10 +177,8 @@
 	        (#{item.id,jdbcType=VARCHAR},
 	         #{item.activityId,jdbcType=VARCHAR},
 	         #{item.contentId,jdbcType=VARCHAR},
-	         #{item.goodsType,jdbcType=TINYINT},
 	         #{item.storeSkuId,jdbcType=VARCHAR},
 	         #{item.picUrl,jdbcType=VARCHAR},
-	         #{item.storeActivityType,jdbcType=TINYINT},
 	         #{item.createTime,jdbcType=TIMESTAMP},
 	         #{item.createUserId,jdbcType=VARCHAR})
 	    </foreach> 
@@ -135,17 +193,11 @@
             <if test="contentId != null" >
                 content_id = #{contentId,jdbcType=VARCHAR},
             </if>
-            <if test="goodsType != null" >
-                goods_type = #{goodsType,jdbcType=TINYINT},
-            </if>
             <if test="godsSkuId != null" >
                 store_sku_id = #{godsSkuId,jdbcType=VARCHAR},
             </if>
             <if test="picUrl != null" >
                 pic_url = #{picUrl,jdbcType=VARCHAR},
-            </if>
-            <if test="storeActivityType != null" >
-                store_activity_type = #{storeActivityType,jdbcType=TINYINT},
             </if>
             <if test="createTime != null" >
                 create_time = #{createTime,jdbcType=TIMESTAMP},

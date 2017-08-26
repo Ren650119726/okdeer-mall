@@ -6,10 +6,11 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.github.pagehelper.PageHelper;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods;
@@ -32,12 +33,6 @@ import com.okdeer.mall.activity.nadvert.service.ActivityH5AdvertContentGoodsServ
 public class ActivityH5AdvertContentGoodsServiceImpl
 		implements ActivityH5AdvertContentGoodsService {
 	
-	@Value("${goodsImagePrefix}")
-	private String goodsImgPath;
-
-	@Value("${storeImagePrefix}")
-	private String serviceGoodsImgPath;
-	
 	@Autowired
 	private ActivityH5AdvertContentGoodsMapper mapper;
 
@@ -59,15 +54,6 @@ public class ActivityH5AdvertContentGoodsServiceImpl
 			String contentId) {
 		if(StringUtils.isNotBlank(activityId)){
 			List<ActivityH5AdvertContentGoods> goods = mapper.findByActId(activityId, contentId);
-			goods.forEach(good -> {
-				//便利店商品
-				if(good.getGoodsType() == 1){
-					good.setGoodsSkuPic(goodsImgPath + good.getGoodsSkuPic());
-				}else if(good.getGoodsType() == 2){
-					//服务店
-					good.setGoodsSkuPic(serviceGoodsImgPath + good.getGoodsSkuPic());
-				}
-			});
 			return goods;
 		}
 		return new ArrayList<>();
@@ -78,5 +64,14 @@ public class ActivityH5AdvertContentGoodsServiceImpl
 	public void deleteByActId(String activityId, String contentId)
 			throws Exception {
 		mapper.deleteByActId(activityId, contentId);
+	}
+
+	@Override
+	public PageUtils<ActivityH5AdvertContentGoods> findBldGoodsByActivityId(
+			String storeId, String activityId, String contentId,
+			Integer pageNumber, Integer pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true, false);
+        List<ActivityH5AdvertContentGoods> result = mapper.findBldGoodsByActivityId(storeId,activityId,contentId);
+        return new PageUtils<ActivityH5AdvertContentGoods>(result);
 	}
 }
