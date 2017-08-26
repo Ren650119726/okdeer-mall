@@ -106,7 +106,7 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 					//2 获取要发送的用户对象列表 
 					//根据城市筛选用户
 					List<String> cityIdsList =Lists.newArrayList();
-					if(messageSend.getRangeType()){
+					if(messageSend.getRangeType() == 1){
 						List<MessageSendSelectArea> areaList = messageSendSelectAreaService.findListByMessageId(messageSend.getId());
 						areaList.forEach(selectArea -> cityIdsList.add(selectArea.getCityId()));
 					}

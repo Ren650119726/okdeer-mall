@@ -5,7 +5,7 @@
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="message_name" property="messageName" jdbcType="VARCHAR" />
         <result column="context" property="context" jdbcType="VARCHAR" />
-        <result column="range_type" property="rangeType" jdbcType="BIT" />
+        <result column="range_type" property="rangeType" jdbcType="TINYINT" />
         <result column="send_type" property="sendType" jdbcType="TINYINT" />
         <result column="send_time" property="sendTime" jdbcType="TIMESTAMP" />
         <result column="type" property="type" jdbcType="TINYINT" />
@@ -87,7 +87,7 @@
                 #{context,jdbcType=VARCHAR},
             </if>
             <if test="rangeType != null" >
-                #{rangeType,jdbcType=BIT},
+                #{rangeType,jdbcType=TINYINT},
             </if>
             <if test="sendTime != null" >
                 #{sendTime,jdbcType=TIMESTAMP},
@@ -132,7 +132,7 @@
                 context = #{context,jdbcType=VARCHAR},
             </if>
             <if test="rangeType != null" >
-                range_type = #{rangeType,jdbcType=BIT},
+                range_type = #{rangeType,jdbcType=TINYINT},
             </if>
             <if test="sendTime != null" >
                 send_time = #{sendTime,jdbcType=TIMESTAMP},
@@ -209,7 +209,7 @@
                 context = #{context,jdbcType=VARCHAR},
             </if>
             <if test="rangeType != null" >
-                range_type = #{rangeType,jdbcType=BIT},
+                range_type = #{rangeType,jdbcType=TINYINT},
             </if>
             <if test="sendType != null" >
                 send_type = #{sendType,jdbcType=TINYINT},
