@@ -425,7 +425,7 @@ public class TradeOrderBuilder {
 			BigDecimal preferentialPrice = tradeOrder.getPreferentialPrice();
 			if(paramDto.getIsUsePinMoney()){
 				BigDecimal pinMoney = (BigDecimal) paramDto.get("pinMoneyAmount");
-				usePinMoney =  actualAmount.compareTo(pinMoney) >= 0 ? pinMoney : actualAmount.subtract(pinMoney);
+				usePinMoney =  actualAmount.compareTo(pinMoney) >= 0 ? pinMoney : actualAmount;
 				actualAmount = actualAmount.subtract(usePinMoney);
 				preferentialPrice = preferentialPrice.add(usePinMoney);
 			}
