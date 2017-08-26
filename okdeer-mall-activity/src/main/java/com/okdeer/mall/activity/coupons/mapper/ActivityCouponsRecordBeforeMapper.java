@@ -11,6 +11,7 @@ import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
+import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.common.enums.GetUserType;
 
 /**
@@ -79,5 +80,23 @@ public interface ActivityCouponsRecordBeforeMapper extends IBaseCrudMapper {
 	 * @return
 	 */
   	Integer findInviteUserCount(@Param("inviteUserId")String inviteUserId,@Param("activityId")String activityId);
+  	
+  	
+  	/**
+	 * @Description: 根据活动统计用户领取次数
+	 * @param activityCouponsRecordQueryParamDto
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年8月26日
+	 */
+	int selectActivityCountByParams(ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParam);
 	
+	/**
+	 * @Description: 根据活动统计用户领取次数
+	 * @param activityCouponsRecordQueryParamDto
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年8月26日
+	 */
+	int selectOrderCountByParams(ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParam);
 }

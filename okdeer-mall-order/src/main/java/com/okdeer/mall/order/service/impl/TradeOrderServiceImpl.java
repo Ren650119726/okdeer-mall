@@ -104,6 +104,7 @@ import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
 import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsOrderRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsOrderVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -214,7 +215,6 @@ import com.okdeer.mall.order.mapper.TradeOrderRefundsItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
 import com.okdeer.mall.order.mapper.TradeOrderThirdRelationMapper;
 import com.okdeer.mall.order.mq.constants.TradeOrderTopic;
-import com.okdeer.mall.order.service.ExpressOrderCallbackService;
 import com.okdeer.mall.order.service.PageCallBack;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
@@ -647,11 +647,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     // End V2.5 added by maojj 2017-06-23
 
     //begin add wangf01 2017-08-10
-    /**
-     * 配送方式
-     */
-    @Autowired
-    private ExpressOrderCallbackService expressOrderCallbackService;
 
     @Override
     public List<TradeOrder> selectByParam(TradeOrderParamDto param) throws Exception {
@@ -1178,7 +1173,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                             if (StringUtils.isNotBlank(logistics.getOrderId()) && orderVo.getId().equals(logistics.getOrderId())) {
                                 String cityId = logistics.getCityId();
                                 if (StringUtils.isNotBlank(cityId)) {
-                                    Address address = addressService.getAddressById(Long.parseLong(cityId));
+//                                    Address address = addressService.getAddressById(Long.parseLong(cityId));
                                     // 所属城市 实物订单的送货上门取物流表的地址
 //									orderVo.setCityName(address.getName() == null ? "" : address.getName());
                                     String area = logistics.getArea() == null ? "" : logistics.getArea();
@@ -3238,7 +3233,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         // POS退款金额
         BigDecimal posRefundAmount = BigDecimal.valueOf(json.optDouble("posRefundAmount", 0));
         // 订单总金额=线上订单金额+货到付款订单金额+POS订单金额
-        BigDecimal totalOrderAmount = onlineOrderAmount.add(deliveryOrderAmount).add(posOrderAmount);
+//        BigDecimal totalOrderAmount = onlineOrderAmount.add(deliveryOrderAmount).add(posOrderAmount);
         // 总退款金额=线上订单退款金额+货到付款订单退款金额+POS订单退款金额
         BigDecimal totalRefundAmount = onlineRefundAmount.add(deliveryRefundAmount).add(posRefundAmount);
         // 货到付款订单平台优惠金额
@@ -4102,7 +4097,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             json.put("activityType", String.valueOf(ActivityTypeEnum.LOW_PRICE.ordinal()));
         }
         json.put("preferentialPrice",
-                orders.getPreferentialPrice().subtract(orders.getRealFarePreferential()).toString());
+                orders.getPreferentialPrice().subtract(orders.getRealFarePreferential()).subtract(orders.getPinMoney()).toString());
         json.put("fare", orders.getFare() == null ? "" : orders.getFare().toString());
         json.put("fareFavour", orders.getRealFarePreferential() == null ? "" : String.valueOf(orders.getRealFarePreferential()));
         // 订单评价类型0：未评价，1：已评价
@@ -6080,10 +6075,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                     (respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_NOT_COUPONE_TIPS);
             return;
         }
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("orderId", orderId);
+        ActivityCouponsOrderRecordParamBo activityCouponsOrderRecordParamBo = new ActivityCouponsOrderRecordParamBo();
+        activityCouponsOrderRecordParamBo.setOrderId(orderId);
         // 消费返券记录
-        List<ActivityCouponsOrderRecord> recordList = activityCouponsOrderRecordMapper.selectByParams(params);
+        List<ActivityCouponsOrderRecord> recordList = activityCouponsOrderRecordMapper.findByParam(activityCouponsOrderRecordParamBo);
         if (CollectionUtils.isNotEmpty(recordList)) {
             // 该订单已经参与过消费返券活动
 			/*logger.info(ORDER_COUPONS_ALREADY, orderId, userId);
@@ -6214,7 +6209,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
         try {
             // 插入消费返券记录
-            activityCouponsOrderRecordMapper.insertSelective(record);
+            activityCouponsOrderRecordMapper.add(record);
             // 批量插入代金券
             if (!CollectionUtils.isEmpty(lstCouponsRecords)) {
                 activityCouponsRecordMapper.insertSelectiveBatch(lstCouponsRecords);

@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -20,8 +22,6 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
-import com.okdeer.api.pay.service.IPayAccountServiceApi;
-import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.archive.system.entity.PsmsAgent;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysUser;
@@ -57,6 +57,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCollectOrderTypeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectStoreMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectXffqRelationMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsOrderRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
@@ -113,6 +114,9 @@ public class ActivityCollectCouponsServiceImpl
 
 	@Autowired
 	private ActivityCollectXffqRelationMapper activityCollectXffqRelationMapper;
+
+	@Resource
+	private ActivityCouponsOrderRecordMapper activityCouponsOrderRecordMapper;
 
 	@Value("${mcm.sys.code}")
 	private String msgSysCode;
@@ -315,12 +319,6 @@ public class ActivityCollectCouponsServiceImpl
 			// 代理商的数据 才同步金额或者发短信
 			if (acc != null && acc.getBelongType() != null && !"0".equals(acc.getBelongType())) {
 				// 某个活动已经使用过的总金额
-				BigDecimal useTotal = activityCollectCouponsMapper.selectTotalFaceValueByCollectId(id);
-				// 活动总金额 - 已经使用过的差
-				if (acc.getTotalCost() != null) {
-					BigDecimal money = acc.getTotalCost().subtract(useTotal);
-					// 如果差额等于0 就不用调用同步接口了
-				}
 
 				SysUser anentUser = sysUserMapper.getUserById(acc.getCreateUserId());
 				if (anentUser != null && StringUtils.isNotEmpty(anentUser.getPhone())) {
@@ -607,41 +605,6 @@ public class ActivityCollectCouponsServiceImpl
 		return activityCollectCouponsMapper.listByJob();
 	}
 
-	/**
-	 * @desc 审核活动
-	 * @param obj
-	 */
-	@Transactional(rollbackFor = Exception.class)
-	public String updateApproval(ActivityCollectCoupons obj) throws Exception {
-		activityCollectCouponsMapper.updateDynamic(obj);
-
-		// 审核不通过就给代理商发短信,并且解冻代理商金额
-		if (ActivityCollectCouponsApprovalStatus.noPass.getValue().equals(obj.getApprovalStatus())) {
-
-			ActivityCollectCoupons acc = activityCollectCouponsMapper.get(obj.getId());
-			try {
-				// 给代理商发短信
-				SysUser user = sysUserMapper.getUserById(obj.getCreateUserId());
-				if (user != null && StringUtils.isNotEmpty(user.getPhone())) {
-					SmsVO smsVo = new SmsVO();
-					smsVo.setId(UuidUtils.getUuid());
-					smsVo.setIsTiming(0);
-					smsVo.setToken(msgToken);
-					smsVo.setSysCode(msgSysCode);
-					smsVo.setMobile(user.getPhone());
-					// smsVo.setMobile("18566239287");
-					smsVo.setContent("您好，你的代金券活动" + obj.getName() + "，因以下原因：（" + obj.getApprovalReason()
-							+ "）审核不通过，如有疑问请联系运营商客服，客服电话：400-831-0008");
-					smsVo.setSendTime(DateUtils.formatDateTime(new Date()));
-					smsVo.setSmsChannelType(3);
-					smsService.sendSms(smsVo);
-				}
-			} catch (Exception e) {
-				log.error("审核活动,给代理商发短信异常:" + e);
-			}
-		}
-		return "";
-	}
 
 	@Override
 	@Transactional(readOnly = true)
@@ -913,8 +876,13 @@ public class ActivityCollectCouponsServiceImpl
 	private int getDaliyDrawAmount(ActivityCouponsRecord record) {
 		ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto = new ActivityCouponsRecordQueryParamDto();
 		BeanMapper.copy(record, activityCouponsRecordQueryParamDto);
+		String dateFormat = "yyyy-MM-dd HH:mm:ss";
+		String startTime = DateUtils.formatDate(DateUtils.getDateStart(new Date()), dateFormat);
+		String endTime = DateUtils.formatDate(DateUtils.getDateEnd(new Date()), dateFormat);
+		activityCouponsRecordQueryParamDto.setCollectStartTime(startTime);
+		activityCouponsRecordQueryParamDto.setCollectEndTime(endTime);
 		ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParamDto = new ActivityCouponsRecordBeforeParamDto();
-		BeanMapper.copy(record, activityCouponsRecordBeforeParamDto);
+		BeanMapper.copy(activityCouponsRecordQueryParamDto, activityCouponsRecordBeforeParamDto);
 		// 当前日期已经领取的数量
 		int dailyCirculation = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecordQueryParamDto);
 		// 当前代金劵日已经预领取领取的数量
@@ -956,22 +924,64 @@ public class ActivityCollectCouponsServiceImpl
 			return resultDto;
 		}
 		// 校验用户的领取次数是否已经超过每日最多领取次数
-		int userDrawCount = getActivityRecordCount(activityCollectCoupons, activityCouponParamDto.getUserId(),
-				activityCouponParamDto.getMobile());
+		int userDrawTimes = getActivityDrawTimesByActivity(activityCollectCoupons, activityCouponParamDto);
+
+		if (userDrawTimes >= activityCollectCoupons.getUserDayTimesLimit()) {
+			setTakeActivityCouponResult(resultDto, 104, "您已经超过今日领取次数，请明日再来!");
+			return resultDto;
+		}
+		// 校验是否需要限制订单数
+		if (activityCouponParamDto.isLimitOrder()) {
+			int drawTimes = getActivityDrawTimesByOrder(activityCollectCoupons, activityCouponParamDto);
+			if(drawTimes > 0){
+				setTakeActivityCouponResult(resultDto, 105, "您已经领取过了!");
+			}
+		}
 		try {
 			activityCouponsService.takeCoupons(activityCollectCoupons, activityCouponParamDto);
+			resultDto.setCode(0);
+			resultDto.setMsg("领取成功");
 		} catch (Exception e) {
 			log.error("领取代金劵失败", e);
+			setTakeActivityCouponResult(resultDto, 106, e.getMessage());
 		}
-		return null;
+		return resultDto;
 	}
 
-	private int getActivityRecordCount(ActivityCollectCoupons activityCollectCoupons, String userId, String mobile) {
-		ActivityCouponsRecord record = new ActivityCouponsRecord();
-		record.setCollectTime(DateUtils.getDateStart(new Date()));
-		record.setCollectType(ActivityCouponsType.enumValueOf(activityCollectCoupons.getType()));
-		record.setCouponsCollectId(activityCollectCoupons.getId());
-		return getDaliyDrawAmount(record);
+	private int getActivityDrawTimesByOrder(ActivityCollectCoupons activityCollectCoupons,
+			TakeActivityCouponParamDto activityCouponParamDto) {
+		ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto = new ActivityCouponsRecordQueryParamDto();
+		activityCouponsRecordQueryParamDto.setCouponsCollectId(activityCollectCoupons.getId());
+		activityCouponsRecordQueryParamDto.setCollectUserId(activityCouponParamDto.getUserId());
+		activityCouponsRecordQueryParamDto.setOrderId(activityCouponParamDto.getOrderId());
+		if (StringUtils.isNotEmpty(activityCouponParamDto.getUserId())) {
+			return activityCouponsRecordMapper.selectActivityCountByParams(activityCouponsRecordQueryParamDto);
+		} else {
+			ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParamDto = new ActivityCouponsRecordBeforeParamDto();
+			BeanMapper.copy(activityCouponsRecordQueryParamDto, activityCouponsRecordBeforeParamDto);
+			activityCouponsRecordBeforeParamDto.setCollectUser(activityCouponParamDto.getMobile());
+			return activityCouponsRecordBeforeMapper.selectActivityCountByParams(activityCouponsRecordBeforeParamDto);
+		}
+	}
+
+	private int getActivityDrawTimesByActivity(ActivityCollectCoupons activityCollectCoupons,
+			TakeActivityCouponParamDto activityCouponParamDto) {
+		ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto = new ActivityCouponsRecordQueryParamDto();
+		String dateFormat = "yyyy-MM-dd HH:mm:ss";
+		String startTime = DateUtils.formatDate(DateUtils.getDateStart(new Date()), dateFormat);
+		String endTime = DateUtils.formatDate(DateUtils.getDateEnd(new Date()), dateFormat);
+		activityCouponsRecordQueryParamDto.setCollectStartTime(startTime);
+		activityCouponsRecordQueryParamDto.setCollectEndTime(endTime);
+		activityCouponsRecordQueryParamDto.setCouponsCollectId(activityCollectCoupons.getId());
+		activityCouponsRecordQueryParamDto.setCollectUserId(activityCouponParamDto.getUserId());
+		if (StringUtils.isNotEmpty(activityCouponParamDto.getUserId())) {
+			return activityCouponsRecordMapper.selectActivityCountByParams(activityCouponsRecordQueryParamDto);
+		} else {
+			ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParamDto = new ActivityCouponsRecordBeforeParamDto();
+			BeanMapper.copy(activityCouponsRecordQueryParamDto, activityCouponsRecordBeforeParamDto);
+			activityCouponsRecordBeforeParamDto.setCollectUser(activityCouponParamDto.getMobile());
+			return activityCouponsRecordBeforeMapper.selectActivityCountByParams(activityCouponsRecordBeforeParamDto);
+		}
 	}
 
 	/**

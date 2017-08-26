@@ -1,6 +1,11 @@
+
 package com.okdeer.mall.activity.coupons.mapper;
 
-import com.okdeer.base.dal.IBaseCrudMapper;
+import java.util.List;
+
+import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsOrderRecordParamBo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord;
 
 /**
  * ClassName: ActivityCouponsOrderRecordMapper 
@@ -13,6 +18,22 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		V1.1.0			2016-09-23		wushp				消费返券记录mapper
  */
-public interface ActivityCouponsOrderRecordMapper extends IBaseCrudMapper {
+public interface ActivityCouponsOrderRecordMapper extends IBaseMapper {
 	
+	/**
+	 * @Description: 根据参数查询
+	 * @param activityCouponsOrderRecordParamBo
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年8月26日
+	 */
+	List<ActivityCouponsOrderRecord> findByParam(ActivityCouponsOrderRecordParamBo activityCouponsOrderRecordParamBo);
+	/**
+	 * @Description: 根据参数查询数量
+	 * @param activityCouponsOrderRecordParamBo
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年8月26日
+	 */
+	int findCountByParam(ActivityCouponsOrderRecordParamBo activityCouponsOrderRecordParamBo);
 }

@@ -63,7 +63,7 @@ public interface ActivityCouponsRecordService {
 	 * @param couponsCollectRecord
 	 * @return
 	 */
-	int selectCountByParams(ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamBo) throws ServiceException;
+	int selectCountByParams(ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParam) throws ServiceException;
 
 	/**
 	 * 
