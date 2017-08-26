@@ -4,12 +4,10 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -21,8 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.assemble.GoodsStoreSkuAssembleApi;
@@ -294,6 +290,11 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		if(!paramDto.getIsUsePinMoney()){
 			return;
 		}
+		// 用户使用金额
+		BigDecimal usePinMoney = tradeOrder.getPinMoney();
+		if (usePinMoney.compareTo(BigDecimal.ZERO) <= 0) {
+			return;
+		}
 		
 		// 查询我的红包记录
 		List<TradePinMoneyObtain> pinMoneyObtains = tradePinMoneyObtainService.findList(paramDto.getUserId(),
@@ -302,8 +303,6 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		Collections.reverse(pinMoneyObtains);
 		// 需扣减金额
 		BigDecimal deduction = new BigDecimal("0.00");
-		// 用户使用金额
-		BigDecimal usePinMoney = new BigDecimal(paramDto.getPinMoney());
 		Map<String,BigDecimal> records = Maps.newHashMap();
 		List<TradePinMoneyObtain> updateRecord = Lists.newArrayList();
 		for (TradePinMoneyObtain pinMoney : pinMoneyObtains) {
@@ -340,6 +339,7 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		tradePinMoneyUse.setOrderId(tradeOrder.getId());
 		tradePinMoneyUse.setSourceId(sources);
 		tradePinMoneyUse.setUseAmount(usePinMoney);
+		tradePinMoneyUse.setOrderAmount(paramDto.getTotalAmount());
 		tradePinMoneyUse.setUserId(paramDto.getUserId());
 		tradePinMoneyUse.setCreateTime(new Date());
 		tradePinMoneyUseService.add(tradePinMoneyUse);

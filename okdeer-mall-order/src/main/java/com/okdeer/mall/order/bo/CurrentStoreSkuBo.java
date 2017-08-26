@@ -5,6 +5,7 @@ import java.util.Date;
 
 import org.springframework.util.StringUtils;
 
+import com.okdeer.archive.goods.spu.enums.SkuBindType;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.enums.BSSC;
 
@@ -138,6 +139,11 @@ public class CurrentStoreSkuBo {
 	 * 商品类型
 	 */
 	private SpuTypeEnum spuType;
+	
+	/**
+	 * 绑定类型, 0:普通商品 1:制单组合 2:制单拆分  3:捆绑商品 4:自动转货
+	 */
+	private SkuBindType bindType;
 
 	/**
 	 * 单位
@@ -323,6 +329,15 @@ public class CurrentStoreSkuBo {
 
 	public void setSpuType(SpuTypeEnum spuType) {
 		this.spuType = spuType;
+	}
+	
+	
+	public SkuBindType getBindType() {
+		return bindType;
+	}
+
+	public void setBindType(SkuBindType bindType) {
+		this.bindType = bindType;
 	}
 
 	public String getUpdateTime() {

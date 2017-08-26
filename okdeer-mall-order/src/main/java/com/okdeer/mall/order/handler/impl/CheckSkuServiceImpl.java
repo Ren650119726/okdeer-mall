@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -14,8 +15,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.google.common.collect.Lists;
+import com.okdeer.archive.goods.dto.StoreSkuComponentDto;
+import com.okdeer.archive.goods.dto.StoreSkuComponentParamDto;
 import com.okdeer.archive.goods.dto.StoreSkuParamDto;
 import com.okdeer.archive.goods.service.StoreSkuApi;
+import com.okdeer.archive.goods.spu.enums.SkuBindType;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.BSSC;
@@ -109,7 +114,9 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		parserBo.loadBuySkuList(paramDto.getSkuList());
 		// 缓存商品解析结果
 		paramDto.put("parserBo", parserBo);
-		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockApi.findByStoreSkuIdList(skuIdList);
+		//所有商品ID(包含捆绑商品中的成分商品)
+		List<String> allSkuIds = parseCompomentSkuId(currentSkuList,parserBo);
+		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockApi.findByStoreSkuIdList(allSkuIds);
 		parserBo.loadStockList(stockList);
 		// 查询组合商品库存
 		if(CollectionUtils.isNotEmpty(parserBo.getComboSkuIdList())){
@@ -128,6 +135,27 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		calculateFare(paramDto,parserBo,resp);
 	}
 
+	/**
+	 * @Description: 解析成分sku id
+	 * @param currentSkuList
+	 * @return   
+	 * @author guocp
+	 * @date 2017年8月25日
+	 */
+	private List<String> parseCompomentSkuId(List<GoodsStoreSku> currentSkuList,StoreSkuParserBo parserBo) {
+		List<String> skuIds = Lists.newArrayList();
+		Map<String, List<StoreSkuComponentDto>> componentSkuMap = parserBo.getComponentSkuMap();
+		for (GoodsStoreSku storeSku : currentSkuList) {
+			if (storeSku.getBindType() != SkuBindType.bind) {
+				skuIds.add(storeSku.getId());
+			} else {
+				List<StoreSkuComponentDto> componentSkus = componentSkuMap.get(storeSku.getId());
+				skuIds.addAll(componentSkus.stream().map(e -> e.getId()).collect(Collectors.toList()));
+			}
+		}
+		return skuIds;
+	}
+
 	public List<GoodsStoreSku> findCurrentSkuList(List<String> skuIdList) {
 		return goodsStoreSkuServiceApi.findStoreSkuForOrder(skuIdList);
 	}
@@ -141,7 +169,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 	}
 
 	private StoreSkuParserBo parseCurrentSkuList(List<GoodsStoreSku> storeSkuList,OrderResourceEnum channel)
-			throws ServiceException {
+			throws Exception {
 		StoreSkuParserBo parserBo = new StoreSkuParserBo(storeSkuList);
 		// 从商品列表中提取正在进行中的商品活动关系
 		Map<String, List<String>> activitySkuMap = extractSkuActivityRelation(storeSkuList, parserBo,channel);
@@ -156,6 +184,13 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		parserBo.setActivitySkuMap(activitySkuMap);
 		// 解析当前商品信息。商品存在活动则获取活动价格。不存在活动则获取线上销售价
 		parserBo.parseCurrentSku();
+		//加载捆绑商品成分
+		if(CollectionUtils.isNotEmpty(parserBo.getComponentSkuIdList())){
+			StoreSkuComponentParamDto paramDto = new StoreSkuComponentParamDto();
+			paramDto.setStoreSkuIds(parserBo.getComponentSkuIdList());
+			List<StoreSkuComponentDto> skuComponent =  storeSkuApi.findComponentByParam(paramDto);
+			parserBo.loadCompomentSkuList(skuComponent);
+		}
 		return parserBo;
 	}
 

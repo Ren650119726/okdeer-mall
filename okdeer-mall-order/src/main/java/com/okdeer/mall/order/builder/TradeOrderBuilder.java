@@ -233,8 +233,8 @@ public class TradeOrderBuilder {
 		setPickUpTimeAndPickUpId(tradeOrder,paramDto);
 		// 解析优惠活动
 		parseFavour(tradeOrder, paramDto);
-		// 设置订单实付金额
-		setActualAmount(tradeOrder);
+		// 设置订单实付金额和零花钱
+		setActualAmount(tradeOrder,paramDto);
 		// 设置店铺总收入
 		setIncome(tradeOrder,paramDto);
 		// 处理配送费
@@ -375,8 +375,6 @@ public class TradeOrderBuilder {
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
 		// 平台优惠
 		tradeOrder.setPlatformPreferential(format(parserBo.getPlatformPreferential()));
-		// 设置零花钱
-		setPinMoney(tradeOrder, parserBo, paramDto);
 		// 店铺优惠
 		if(parserBo.isLowFavour()){
 			// 如果有低价优惠.记录店铺优惠类型和店铺优惠金额
@@ -397,23 +395,9 @@ public class TradeOrderBuilder {
 		tradeOrder.setRealFarePreferential(format(parserBo.getRealFarePreferential()));
 		// 设置订单优惠金额。此处不加运费优惠，到处理运费时统一进行计算
 		tradeOrder.setPreferentialPrice(tradeOrder.getPlatformPreferential()
-				.add(tradeOrder.getStorePreferential()).add(tradeOrder.getPinMoney()));
+				.add(tradeOrder.getStorePreferential()));
 	}
 	
-	/**
-	 * 设置零花钱
-	 * @author guocp
-	 * @date 2017年8月14日
-	 */
-	private void setPinMoney(TradeOrder tradeOrder,StoreSkuParserBo parserBo,PlaceOrderParamDto paramDto){
-		// 设置零花钱
-		if(paramDto.getIsUsePinMoney()){
-			BigDecimal pinMoney = (BigDecimal) paramDto.get("pinMoney");
-			tradeOrder.setPinMoney(pinMoney);
-		}else{
-			tradeOrder.setPinMoney(BigDecimal.valueOf(0.0));
-		}
-	}
 	
 	private BigDecimal format(BigDecimal value){
 		return value == null ? BigDecimal.valueOf(0.00) : value;
@@ -426,7 +410,7 @@ public class TradeOrderBuilder {
 	 * @author maojj
 	 * @date 2016年7月14日
 	 */
-	private void setActualAmount(TradeOrder tradeOrder) {
+	private void setActualAmount(TradeOrder tradeOrder,PlaceOrderParamDto paramDto) {
 		BigDecimal totalAmount = tradeOrder.getTotalAmount();
 		BigDecimal favourAmount = tradeOrder.getPreferentialPrice();
 		// 如果总金额<优惠金额，则实付为0，优惠为订单总金额，否则实付金额为总金额-优惠金额，优惠为优惠金额
@@ -434,7 +418,20 @@ public class TradeOrderBuilder {
 			tradeOrder.setActualAmount(BigDecimal.valueOf(0.0));
 			tradeOrder.setPreferentialPrice(totalAmount);
 		} else {
-			tradeOrder.setActualAmount(totalAmount.subtract(favourAmount));
+			//实际支付差额
+			BigDecimal actualAmount = totalAmount.subtract(favourAmount);
+			// 使用零花钱
+			BigDecimal usePinMoney = BigDecimal.ZERO;
+			BigDecimal preferentialPrice = tradeOrder.getPreferentialPrice();
+			if(paramDto.getIsUsePinMoney()){
+				BigDecimal pinMoney = (BigDecimal) paramDto.get("pinMoneyAmount");
+				usePinMoney =  actualAmount.compareTo(pinMoney) >= 0 ? pinMoney : actualAmount;
+				actualAmount = actualAmount.subtract(usePinMoney);
+				preferentialPrice = preferentialPrice.add(usePinMoney);
+			}
+			tradeOrder.setPreferentialPrice(preferentialPrice);
+			tradeOrder.setPinMoney(usePinMoney);
+			tradeOrder.setActualAmount(actualAmount);
 		}
 	}
 

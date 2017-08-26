@@ -49,11 +49,6 @@ public interface ActivityCollectCouponsService {
 	 */
 	PageUtils<ActivityCollectCoupons> list(Map<String,Object> map,int pageNumber,int pageSize) throws ServiceException;
 	
-	/**
-	 * @desc 审核活动
-	 * @param obj
-	 */
-	String updateApproval(ActivityCollectCoupons obj) throws Exception;
 	
 	void updateBatchStatus(String id,int status,String updateUserId,Date updateTime,String belongType) throws Exception;
 	

@@ -52,7 +52,8 @@ public class CheckPinMoneyServiceImpl implements RequestHandler<PlaceOrderParamD
 				resp.setResult(ResultCodeEnum.TRADE_LIMIT_PIN_MONEY);
 				return;
 			}
-			paramDto.put("pinMoney", pinMoney);
+			//设置个人零花钱总额
+			paramDto.put("pinMoneyAmount", myUsable);
 		}
 	}
 
