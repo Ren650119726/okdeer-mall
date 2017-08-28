@@ -233,7 +233,7 @@ public class TradeOrderBuilder {
 		setPickUpTimeAndPickUpId(tradeOrder,paramDto);
 		// 解析优惠活动
 		parseFavour(tradeOrder, paramDto);
-		// 设置订单实付金额和零花钱
+		// 计算订单实付金额和零花钱
 		setActualAmount(tradeOrder,paramDto);
 		// 设置店铺总收入
 		setIncome(tradeOrder,paramDto);
