@@ -224,8 +224,8 @@
             AND pin.user_id = #{userId,jdbcType=VARCHAR}
         </if>
     </select>
-    <select id="findPinMoneyObtainAmount" resultType="DECIMAL" parameterType="com.okdeer.mall.order.dto.TradePinMoneyQueryDto" >
-        SELECT count(pin.amount)
+    <select id="findPinMoneyObtainAmount" resultType="java.math.BigDecimal" parameterType="com.okdeer.mall.order.dto.TradePinMoneyQueryDto" >
+        SELECT sum(pin.amount)
         FROM trade_pin_money_obtain pin
         WHERE 1=1
         <if test="createTimeStart != null" >
