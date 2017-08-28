@@ -92,6 +92,7 @@
     <result column="store_activity_type" property="storeActivityType"
 			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
 	<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
+	<result column="bind_type" property="bindType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.spu.enums.SkuBindType"/>
   </resultMap>
   
   <sql id="Base_Column_List" >
@@ -120,7 +121,7 @@
     T.id, T.order_id, T.store_spu_id, T.store_sku_id, T.sku_name, T.properties_indb, T.main_pic_prl, T.bar_code,
     T.spu_type, T.unit_price, T.quantity, T.weight, T.service_assurance, T.total_amount, T.income, T.actual_amount, T.preferential_price, 
     R.status, T.appraise, T.compain_status, T.create_time, T.income, T.recharge_mobile,T.activity_type,T.activity_price,T.activity_quantity,
-    T.unit,T.store_preferential,T.store_activity_type,T.store_activity_id
+    T.unit,T.store_preferential,T.store_activity_type,T.store_activity_id,T.bind_type
     FROM trade_order_item T
     LEFT JOIN trade_order_refunds_item R
     on T.id = R.order_item_id 
@@ -538,7 +539,7 @@
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, 
     item.status, item.appraise, item.create_time,detail.status AS itemDetailStatus,detail.consume_code,
     detail.start_time,detail.end_time,item.service_assurance,item.income,item.recharge_mobile,item.activity_type,
-    item.activity_price,item.activity_quantity,item.store_preferential,item.store_activity_type,item.store_activity_id
+    item.activity_price,item.activity_quantity,item.store_preferential,item.store_activity_type,item.store_activity_id,item.bind_type
   </sql>
   
   <!-- wusw:订单项和订单项详细字段 -->
@@ -546,7 +547,7 @@
     item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, item.service_assurance,
     item.status, item.appraise, item.create_time,item.income,item.recharge_mobile,item.is_complete,item.activity_type,item.activity_id,item.activity_price,
-    item.activity_quantity,item.unit,item.store_preferential,item.store_activity_type,item.store_activity_id
+    item.activity_quantity,item.unit,item.store_preferential,item.store_activity_type,item.store_activity_id,item.bind_type
   </sql>
   
   <!-- wusw:订单项和订单项信息resultMap  -->
