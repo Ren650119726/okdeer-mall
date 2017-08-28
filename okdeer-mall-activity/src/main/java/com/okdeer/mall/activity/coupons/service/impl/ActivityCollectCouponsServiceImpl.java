@@ -841,6 +841,7 @@ public class ActivityCollectCouponsServiceImpl
 	 * @author tuzhd
 	 * @date 2017年6月30日
 	 */
+	@Override
 	public List<ActivityCollectCoupons> findCollectCouponsByType(Map<String, Object> map) {
 		return activityCollectCouponsMapper.findCollectCouponsByType(map);
 	}
@@ -860,7 +861,8 @@ public class ActivityCollectCouponsServiceImpl
 		record.setCollectType(ActivityCouponsType.red_packet);
 		record.setCouponsCollectId(coupon.getId());
 		int drawAmount = getDaliyDrawAmount(record);
-
+		log.info("红包每天已发行数量drawAmount====="+drawAmount);
+		
 		// 0表示不限制 每日最大发行量大于领取数量
 		if (Integer.valueOf(coupon.getDailyCirculation()) == 0
 				|| Integer.valueOf(coupon.getDailyCirculation()) > drawAmount) {
