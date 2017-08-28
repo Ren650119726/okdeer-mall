@@ -14,10 +14,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.core.io.ClassPathResource;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.ca.common.mapper.JsonMapper;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.common.dto.Request;
@@ -35,6 +39,12 @@ public class PlaceOrderApiImplTest extends BaseServiceTest {
 	private Request<PlaceOrderParamDto> confirmReq;
 
 	private Request<PlaceOrderParamDto> submitReq;
+	
+	@Mock
+	private StoreInfoServiceApi storeInfoServiceApi;
+	
+	private static StoreInfo storeMock;
+	
 
 	public PlaceOrderApiImplTest(Request<PlaceOrderParamDto> confirmReq, Request<PlaceOrderParamDto> submitReq) {
 		this.confirmReq = confirmReq;
@@ -51,7 +61,13 @@ public class PlaceOrderApiImplTest extends BaseServiceTest {
 		for (int i = 0; i < size; i++) {
 			initParams.add(new Object[] { parseObject(confirmList.get(i)), parseObject(submitList.get(i)) });
 		}
+		// 初始化mock出来的店铺信息
+		initMockStore();
 		return initParams;
+	}
+	
+	private static void initMockStore(){
+		storeMock = Mockito.mock(StoreInfo.class);
 	}
 
 	private static Map<String, List<String>> readReqData() throws Exception {
@@ -64,13 +80,13 @@ public class PlaceOrderApiImplTest extends BaseServiceTest {
 		StringBuilder sb = null;
 		String line = null;
 		while ((line = reader.readLine()) != null) {
-			if ("confirm start---".equals(line) || "submit start---".equals(line)) {
+			if (line.startsWith("confirm start---") || line.startsWith("submit start---")) {
 				sb = new StringBuilder();
-			} else if ("confirm end---".equals(line)) {
+			} else if (line.startsWith("confirm end---")) {
 				reqDataMap.get("confirm").add(sb.toString());
-			} else if ("submit start---".equals(line)) {
+			} else if (line.startsWith("submit start---")) {
 				sb = new StringBuilder();
-			} else if ("submit end---".equals(line)) {
+			} else if (line.startsWith("submit end---")) {
 				reqDataMap.get("submit").add(sb.toString());
 			} else {
 				sb.append(line);

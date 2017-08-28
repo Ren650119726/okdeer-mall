@@ -527,6 +527,7 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setPropertiesIndb(skuBo.getPropertiesIndb());
 			tradeOrderItem.setMainPicPrl(skuBo.getMainPicUrl());
 			tradeOrderItem.setSpuType(skuBo.getSpuType());
+			tradeOrderItem.setBindType(skuBo.getBindType());
 			tradeOrderItem.setUnitPrice(skuBo.getOnlinePrice());
 			tradeOrderItem.setQuantity(skuBo.getQuantity());
 			tradeOrderItem.setActivityPrice(skuBo.getActPrice());

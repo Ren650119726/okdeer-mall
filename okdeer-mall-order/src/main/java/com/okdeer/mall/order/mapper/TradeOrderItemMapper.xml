@@ -40,6 +40,9 @@
 			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
 	<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
     <!-- End V2.0 added by maojj 2017-06-23-->
+    <!-- Begin V2.6.1 added by maojj 2017-08-28 -->
+    <result column="bind_type" property="bindType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.spu.enums.SkuBindType"/>
+    <!-- End V2.6.1 added by maojj 2017-08-28 -->
     <association property="tradeOrderRefunds" javaType="com.okdeer.mall.order.entity.TradeOrderRefunds">
     	<result column="refoundId" property="id" jdbcType="VARCHAR" />
 	    <result column="refunds_status" property="refundsStatus" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.RefundsStatusEnum" />
@@ -95,7 +98,7 @@
     id, order_id, store_spu_id, store_sku_id, sku_name,properties_indb, main_pic_prl, bar_code,
     spu_type, unit_price, quantity,weight,service_assurance,total_amount,income, actual_amount, preferential_price, 
     status, appraise,compain_status,create_time,income,recharge_mobile,is_complete,activity_type,activity_price,
-    activity_quantity,store_preferential
+    activity_quantity,store_preferential,bind_type
   </sql>
   
   <sql id="condition" >
@@ -231,7 +234,9 @@
 			
 			store_preferential,
 			store_activity_type,
-			store_activity_id
+			store_activity_id,
+			
+			bind_type
 		)values
 		<foreach collection="list" item="item" index="index" separator="," >
         (
@@ -269,7 +274,9 @@
 			
 			IFNULL(#{item.storePreferential,jdbcType=DECIMAL},0.00),
 			IFNULL(#{item.storeActivityType,jdbcType=TINYINT},0),
-			IFNULL(#{item.storeActivityId,jdbcType=VARCHAR},'0')
+			IFNULL(#{item.storeActivityId,jdbcType=VARCHAR},'0'),
+			
+			IFNULL(#{item.bindType,jdbcType=TINYINT},0)
         )
 		</foreach>
   </insert>
