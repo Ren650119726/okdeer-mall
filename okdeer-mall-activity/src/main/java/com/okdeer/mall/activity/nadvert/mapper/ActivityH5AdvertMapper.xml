@@ -8,6 +8,7 @@
         <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
         <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
         <result column="remark" property="remark" jdbcType="VARCHAR" />
+        <result column="act_link_url" property="actLinkUrl" jdbcType="VARCHAR" />
         <result column="page_title" property="pageTitle" jdbcType="VARCHAR" />
         <result column="share_main_title" property="shareMainTitle" jdbcType="VARCHAR" />
         <result column="share_sub_title" property="shareSubTitle" jdbcType="VARCHAR" />
@@ -21,7 +22,7 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, name, status, start_time, end_time, remark, page_title, share_main_title, share_sub_title, 
+        id, name, status, start_time, end_time, remark,act_link_url, page_title, share_main_title, share_sub_title, 
         share_link_picture, back_ground_color, disabled, create_time, create_user_id, update_time, 
         update_user_id
     </sql>
@@ -78,6 +79,9 @@
             <if test="remark != null" >
                 remark,
             </if>
+            <if test="actLinkUrl != null" >
+                act_link_url,
+            </if>
             <if test="pageTitle != null" >
                 page_title,
             </if>
@@ -127,6 +131,9 @@
             </if>
             <if test="remark != null" >
                 #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="actLinkUrl != null" >
+                #{actLinkUrl,jdbcType=VARCHAR},
             </if>
             <if test="pageTitle != null" >
                 #{pageTitle,jdbcType=VARCHAR},
@@ -178,6 +185,9 @@
             </if>
             <if test="remark != null" >
                 remark = #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="actLinkUrl != null" >
+                act_link_url = #{actLinkUrl,jdbcType=VARCHAR},
             </if>
             <if test="pageTitle != null" >
                 page_title = #{pageTitle,jdbcType=VARCHAR},

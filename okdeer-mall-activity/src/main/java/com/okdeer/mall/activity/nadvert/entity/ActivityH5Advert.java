@@ -45,6 +45,11 @@ public class ActivityH5Advert implements Serializable {
      * 备注
      */
     private String remark;
+    
+	/**
+	 * @Fields actlinkUrl : 活动链接地址
+	 */
+	private String actLinkUrl;
     /**
      * 页面标题
      */
@@ -134,8 +139,16 @@ public class ActivityH5Advert implements Serializable {
     public void setRemark(String remark) {
         this.remark = remark;
     }
+    
+    public String getActLinkUrl() {
+		return actLinkUrl;
+	}
 
-    public String getPageTitle() {
+	public void setActLinkUrl(String actLinkUrl) {
+		this.actLinkUrl = actLinkUrl;
+	}
+
+	public String getPageTitle() {
         return pageTitle;
     }
 

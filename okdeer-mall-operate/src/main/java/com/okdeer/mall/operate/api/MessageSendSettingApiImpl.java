@@ -31,6 +31,7 @@ import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.member.member.dto.LocateInfoQueryDto;
 import com.okdeer.mall.member.member.dto.SysBuyerLocateInfoDto;
 import com.okdeer.mall.member.member.service.SysBuyerLocateInfoServiceApi;
+import com.okdeer.mall.operate.dto.MessageSendSelectAreaDto;
 import com.okdeer.mall.operate.dto.MessageSendSettingDto;
 import com.okdeer.mall.operate.dto.MessageSendSettingQueryDto;
 import com.okdeer.mall.operate.entity.MessageSendSelectArea;
@@ -93,7 +94,11 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 
 	@Override
 	public MessageSendSettingDto findById(String id) throws Exception {
-		return BeanMapper.map(messageSendSettingService.findById(id),MessageSendSettingDto.class);
+		MessageSendSetting sendSetting = messageSendSettingService.findById(id);
+		List<MessageSendSelectArea> areaList = messageSendSelectAreaService.findListByMessageId(sendSetting.getId());
+		MessageSendSettingDto sendSettingDto = BeanMapper.map(sendSetting, MessageSendSettingDto.class);
+		sendSettingDto.setAreaList(BeanMapper.mapList(areaList, MessageSendSelectAreaDto.class));
+		return sendSettingDto;
 	}
 
 	@Override
@@ -107,13 +112,13 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		MessageSendSetting entity = BeanMapper.map(messageDto, MessageSendSetting.class);
 		
 		entity.setUpdateTime(new Date());
-		if(messageDto.getSendTimeType()==0){
+		if(messageDto.getSendType()==0){
 			entity.setSendTime(new Date());
 		}
 		//根据时间修改消息未达到发送时间的消息
 		int result = messageSendSettingService.updateSetting(entity);
 		//推送地区选择为城市
-		if(result>0 && !entity.getRangeType()){
+		if(result>0 && entity.getRangeType() == 1){
 			messageSendSelectAreaService.deleteByMessageId(messageDto.getId());
 			
 			List<MessageSendSelectArea> list = getRangeInfo(messageDto);
@@ -125,7 +130,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 			}
 		}
 		//修改成功且发送类型为立即发送
-		if(result>0 && messageDto.getSendTimeType()==0){
+		if(result>0 && messageDto.getSendType()==0){
 			messageSettingSend(entity);
 		}
 		return result;
@@ -139,7 +144,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		
 		MessageSendSetting entity = BeanMapper.map(messageDto, MessageSendSetting.class);
 		
-		if(messageDto.getSendTimeType()==0){
+		if(messageDto.getSendType()==0){
 			entity.setSendTime(new Date());
 		}
 		String guid = UuidUtils.getUuid();
@@ -148,7 +153,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		entity.setUpdateTime(new Date());
 		int result = messageSendSettingService.add(entity);
 		//推送地区选择为城市
-		if(entity.getRangeType()){
+		if(entity.getRangeType() == 1){
 			List<MessageSendSelectArea> list = getRangeInfo(messageDto);
 			for(MessageSendSelectArea selectArea : list){
 				selectArea.setId(UuidUtils.getUuid());
@@ -158,7 +163,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 			}
 		}
 		//增加成功且消息发送时间为立即发送
-		if(result>0 && messageDto.getSendTimeType()==0){
+		if(result>0 && messageDto.getSendType()==0){
 			messageSettingSend(entity);
 		}
 	}
@@ -176,7 +181,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		// 120,葫芦岛市,0|6,辽宁省,1#119,朝阳市,0|6,辽宁省,1
 		List<MessageSendSelectArea> selectAreaList = new ArrayList<MessageSendSelectArea>();
 		//false 全部 true 选择城市
-		boolean rangeType = settingDto.getRangeType();
+		boolean rangeType = settingDto.getRangeType() ==1 ;
 		if (rangeType && StringUtils.isNotBlank(settingDto.getAreaIds())) {
 			// 城市--省份
 			String[] arrObjList = settingDto.getAreaIds().split("#");
@@ -206,7 +211,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 	private void messageSettingSend(MessageSendSetting entity) throws Exception {
 		//根据城市筛选用户
 		List<String> cityIdsList =Lists.newArrayList();
-		if(entity.getRangeType()){
+		if(entity.getRangeType() == 1){
 			List<MessageSendSelectArea> areaList = messageSendSelectAreaService.findListByMessageId(entity.getId());
 			areaList.forEach(selectArea -> cityIdsList.add(selectArea.getCityId()));
 		}

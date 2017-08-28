@@ -31,10 +31,7 @@ public class ActivityH5AdvertContentGoods implements Serializable {
      * 活动内容id
      */
     private String contentId;
-    /**
-     * 商品类型(1.便利店商品，2.服务商品)
-     */
-    private Integer goodsType;
+    
     /**
      * 商品id
      */
@@ -58,10 +55,17 @@ public class ActivityH5AdvertContentGoods implements Serializable {
      *  图片设置
      */
     private String picUrl;
+    
     /**
-     * 店铺活动类型(1.特惠商品，2.低价商品)
+     * @Fields sellableStock : 可销售库存
      */
-    private Integer storeActivityType;
+    private Integer sellableStock;
+    
+    /**
+     * @Fields lockedStock : 锁定库存
+     */
+    private Integer lockedStock;
+
     /**
      * 创建时间
      */
@@ -96,14 +100,6 @@ public class ActivityH5AdvertContentGoods implements Serializable {
         this.contentId = contentId;
     }
 
-    public Integer getGoodsType() {
-        return goodsType;
-    }
-
-    public void setGoodsType(Integer goodsType) {
-        this.goodsType = goodsType;
-    }
-
     public String getStoreSkuId() {
         return storeSkuId;
     }
@@ -126,14 +122,6 @@ public class ActivityH5AdvertContentGoods implements Serializable {
 
     public void setPicUrl(String picUrl) {
         this.picUrl = picUrl;
-    }
-
-    public Integer getStoreActivityType() {
-        return storeActivityType;
-    }
-
-    public void setStoreActivityType(Integer storeActivityType) {
-        this.storeActivityType = storeActivityType;
     }
 
     public Date getCreateTime() {
@@ -166,5 +154,21 @@ public class ActivityH5AdvertContentGoods implements Serializable {
 
 	public void setSkuName(String skuName) {
 		this.skuName = skuName;
+	}
+
+	public Integer getSellableStock() {
+		return sellableStock;
+	}
+
+	public void setSellableStock(Integer sellableStock) {
+		this.sellableStock = sellableStock;
+	}
+
+	public Integer getLockedStock() {
+		return lockedStock;
+	}
+
+	public void setLockedStock(Integer lockedStock) {
+		this.lockedStock = lockedStock;
 	}
 }

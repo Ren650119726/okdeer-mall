@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +48,12 @@ public class ActivityH5AdvertContentServiceImpl
 	private ActivityH5AdvertContentGoodsService goodsService;
 	@Autowired
 	private ActivityH5AdvertContentCouponsService couponsService;
+	
+	@Value("${goodsImagePrefix}")
+	private String goodsImgPath;
+
+	@Value("${storeImagePrefix}")
+	private String serviceGoodsImgPath;
 
 	@Override
 	@Transactional(rollbackFor=Exception.class)
@@ -137,7 +144,19 @@ public class ActivityH5AdvertContentServiceImpl
 				}
 				//设置商品列表
 				if(obj.getContentType() == 2 || obj.getContentType() == 4){
-					bo.setContentGoods(goodsService.findByActId(activityId, obj.getId()));
+					List<ActivityH5AdvertContentGoods> goods = goodsService.findByActId(activityId, obj.getId());
+					//便利店商品
+					if(obj.getGoodsType() == 1){
+						goods.forEach(good -> {
+							good.setGoodsSkuPic(goodsImgPath + good.getGoodsSkuPic());
+						});
+					}else if(obj.getGoodsType() == 2){
+						//服务店商品
+						goods.forEach(good -> {
+							good.setGoodsSkuPic(serviceGoodsImgPath + good.getGoodsSkuPic());
+						});
+					}
+					bo.setContentGoods(goods);
 				}
 				bos.add(bo);
 			});

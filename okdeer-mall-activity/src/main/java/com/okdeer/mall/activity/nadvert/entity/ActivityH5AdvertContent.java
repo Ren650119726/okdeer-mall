@@ -38,6 +38,17 @@ public class ActivityH5AdvertContent implements Serializable {
      * 颜色设置(json格式)
      */
     private String colorSetting;
+    
+    /**
+     * 商品类型(1.便利店商品，2.服务商品)
+     */
+    private Integer goodsType; 
+    
+    /**
+     * 店铺活动类型((1.特惠商品，2.低价商品))
+     */
+    private Integer storeActivityType;
+    
     /**
      * 创建时间
      */
@@ -87,8 +98,24 @@ public class ActivityH5AdvertContent implements Serializable {
     public void setColorSetting(String colorSetting) {
         this.colorSetting = colorSetting;
     }
+    
+    public Integer getGoodsType() {
+		return goodsType;
+	}
 
-    public Date getCreateTime() {
+	public void setGoodsType(Integer goodsType) {
+		this.goodsType = goodsType;
+	}
+
+	public Integer getStoreActivityType() {
+		return storeActivityType;
+	}
+
+	public void setStoreActivityType(Integer storeActivityType) {
+		this.storeActivityType = storeActivityType;
+	}
+
+	public Date getCreateTime() {
         return createTime;
     }
 
