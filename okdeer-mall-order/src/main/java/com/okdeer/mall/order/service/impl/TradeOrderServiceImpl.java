@@ -4465,7 +4465,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         json.put("orderConfirmGoodTime", orders.getReceivedTime() != null
                 ? DateUtils.formatDate(orders.getReceivedTime(), "yyyy-MM-dd HH:mm:ss") : "");
         // 优惠金额
-        json.put("preferentialPrice", orders.getPreferentialPrice() == null ? "" : orders.getPreferentialPrice());
+		json.put("preferentialPrice", orders.getPreferentialPrice() == null ? ""
+				: orders.getPreferentialPrice().subtract(orders.getPinMoney()));
+        json.put("pinMoney", ConvertUtil.format(orders.getPinMoney()));
         // 订单评价类型0：未评价，1：已评价 1已投诉
         json.put("orderIsComment", appraise > 0 ? Constant.ONE : Constant.ZERO);
         // 订单投诉状态 0未投诉

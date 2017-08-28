@@ -92,6 +92,7 @@ import com.okdeer.mall.order.vo.ExpireStoreConsumerOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
 import com.okdeer.mall.order.vo.UserTradeOrderDetailVo;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -314,7 +315,8 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 			json.put("activityType", userTradeOrderDetailVo.getActivityType() == null ? ""
 					: userTradeOrderDetailVo.getActivityType().ordinal());
 			json.put("preferentialPrice", userTradeOrderDetailVo.getPreferentialPrice() == null ? ""
-					: userTradeOrderDetailVo.getPreferentialPrice());
+					: userTradeOrderDetailVo.getPreferentialPrice().subtract(userTradeOrderDetailVo.getPinMoney()).toString());
+			json.put("pinMoney", ConvertUtil.format(userTradeOrderDetailVo.getPinMoney()));
 			// 订单评价类型0：未评价，1：已评价
 			json.put("orderIsComment", appraise > 0 ? Constant.ONE : Constant.ZERO);
 			// 订单投诉状态
