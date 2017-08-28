@@ -83,7 +83,7 @@ public class CheckSecKillServiceImpl implements RequestHandler<PlaceOrderParamDt
 		}
 		// 秒杀限制设备。判断是否超出限购
 		if (isOutOfLimitByDevice(paramDto)) {
-			resp.setResult(ResultCodeEnum.ACTIVITY_LIMIT_NUM);
+			resp.setResult(ResultCodeEnum.ACTIVITY_DEVICE_LIMIT_NUM);
 			req.setComplete(true);
 			return;
 		}

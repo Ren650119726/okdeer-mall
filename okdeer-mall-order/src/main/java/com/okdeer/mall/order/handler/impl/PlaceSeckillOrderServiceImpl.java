@@ -137,6 +137,7 @@ public class PlaceSeckillOrderServiceImpl implements RequestHandler<PlaceOrderPa
 		activitySeckillRecord.setActivitySeckillId(paramDto.getSeckillId());
 		// 买家ID
 		activitySeckillRecord.setBuyerUserId(paramDto.getUserId());
+		activitySeckillRecord.setDeviceId(paramDto.getDeviceId());
 		activitySeckillRecord.setStoreId(paramDto.getStoreId());
 		activitySeckillRecord.setOrderId(order.getId());
 		// 活动商品ID

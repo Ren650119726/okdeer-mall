@@ -20,13 +20,15 @@
 			javaType="string" />
 		<result column="order_disabled" property="orderDisabled"
 			jdbcType="VARCHAR" javaType="string" />
+		<result column="device_id" property="deviceId"
+			jdbcType="VARCHAR" javaType="string" />
 	</resultMap>
 	<!-- 基本返回类型 end -->
 
 	<!-- 基本返回字段 start -->
 	<sql id="Base_Column_List">
 		id, activity_seckill_id, buyer_user_id, store_id, order_id,
-		goods_store_sku_id, order_no, order_disabled
+		goods_store_sku_id, order_no, order_disabled,device_id
 	</sql>
 	<!-- 基本返回字段 end -->
 	
@@ -49,7 +51,7 @@
 			and buyer_user_id = #{buyerUserId,jdbcType=VARCHAR}
 		</if>
 		<if test="buyerDeviceId != null and buyerDeviceId != ''">
-			and device_id = #{buyerUserId,jdbcType=VARCHAR}
+			and device_id = #{buyerDeviceId,jdbcType=VARCHAR}
 		</if>
 	</select>
 
@@ -71,6 +73,7 @@
 		(id,
 		activity_seckill_id,
 		buyer_user_id,
+		device_id,
 		store_id,
 		order_id,
 		goods_store_sku_id,
@@ -80,6 +83,7 @@
 		(#{id,jdbcType=VARCHAR},
 		#{activitySeckillId,jdbcType=VARCHAR},
 		#{buyerUserId,jdbcType=VARCHAR},
+		#{deviceId,jdbcType=VARCHAR},
 		#{storeId,jdbcType=VARCHAR},
 		#{orderId,jdbcType=VARCHAR},
 		#{goodsStoreSkuId,jdbcType=VARCHAR},
