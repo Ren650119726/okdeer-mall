@@ -138,14 +138,14 @@
 	  <include refid="ActivityCouponsRecordBeforeParamSql" />
 	</select>
 	
-	<select id="selectActivityCountByParams">
-		 SELECT COUNT(DISTINCT coupons_collect_id) FROM activity_coupons_record_before  b left join activity_coupons_record c on b.id =c.id
+	<select id="selectActivityCountByParams" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto">
+		 SELECT COUNT(DISTINCT b.coupons_collect_id) FROM activity_coupons_record_before  b left join activity_coupons_record c on b.id =c.id
 	  	 WHERE  1=1
 	  	<include refid="ActivityCouponsRecordBeforeParamSql"/>
 	</select>
 	
-	<select id="selectOrderCountByParams">
-		SELECT COUNT(DISTINCT order_id) FROM activity_coupons_record_before  b left join activity_coupons_record c on b.id =c.id
+	<select id="selectOrderCountByParams" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto">
+		SELECT COUNT(DISTINCT b.order_id) FROM activity_coupons_record_before  b left join activity_coupons_record c on b.id =c.id
 	  	 WHERE  1=1
 	  	<include refid="ActivityCouponsRecordBeforeParamSql"/>
 	</select>

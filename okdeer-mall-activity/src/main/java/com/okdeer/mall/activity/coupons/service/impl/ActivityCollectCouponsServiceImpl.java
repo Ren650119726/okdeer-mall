@@ -75,15 +75,16 @@ import com.okdeer.mcm.service.ISmsService;
 
 /**
  * 
- * ClassName: ActivityCollectCouponsServiceImpl 
+ * ClassName: ActivityCollectCouponsServiceImpl
+ * 
  * @Description: 活动管理实现类
  * @author zengjizu
  * @date 2016年12月16日
  *
- * =================================================================================================
- *     Task ID			  Date			     Author		      Description
- * ----------------+----------------+-------------------+-------------------------------------------
- *    v1.3.0            2016-12-16           zengjz          开门领取代金券增加小区参数   
+ *       =======================================================================
+ *       ========================== Task ID Date Author Description
+ *       ----------------+----------------+-------------------+-----------------
+ *       -------------------------- v1.3.0 2016-12-16 zengjz 开门领取代金券增加小区参数
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi")
 public class ActivityCollectCouponsServiceImpl
@@ -605,7 +606,6 @@ public class ActivityCollectCouponsServiceImpl
 		return activityCollectCouponsMapper.listByJob();
 	}
 
-
 	@Override
 	@Transactional(readOnly = true)
 	public int selectCountByStoreAndLimitType(Map<String, Object> params) throws ServiceException {
@@ -615,6 +615,7 @@ public class ActivityCollectCouponsServiceImpl
 
 	/**
 	 * (non-Javadoc)
+	 * 
 	 * @see com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi#findCollectCouponsAreaList(java.util.Map)
 	 */
 	@Override
@@ -714,20 +715,20 @@ public class ActivityCollectCouponsServiceImpl
 				String usableRange = "";
 				// Begin 开门红包代金券根据类型返回文案 added by tangy 2016-10-20
 				switch (activityCoupon.getType().intValue()) {
-					case 0:
-						usableRange = "友门鹿代金券";
-						break;
-					case 1:
-						usableRange = "限便利店专用";
-						break;
-					case 2:
-						usableRange = "限服务店专用";
-						break;
-					case 3:
-						usableRange = "限话费充值";
-						break;
-					default:
-						break;
+				case 0:
+					usableRange = "友门鹿代金券";
+					break;
+				case 1:
+					usableRange = "限便利店专用";
+					break;
+				case 2:
+					usableRange = "限服务店专用";
+					break;
+				case 3:
+					usableRange = "限话费充值";
+					break;
+				default:
+					break;
 				}
 				resultMap.put("usableRange", usableRange);
 			}
@@ -743,7 +744,8 @@ public class ActivityCollectCouponsServiceImpl
 
 	/**
 	 * @Description: 根据活动id查询列表
-	 * @param collectCouponsId 代金券活动id
+	 * @param collectCouponsId
+	 *            代金券活动id
 	 * @author zhangkn
 	 * @date 2016年9月17日
 	 */
@@ -754,9 +756,11 @@ public class ActivityCollectCouponsServiceImpl
 
 	/**
 	 * @Description: 消费返券：活动代金券查询 添加梯度
-	 * @param map 参数map
+	 * @param map
+	 *            参数map
 	 * @return list
-	 * @throws ServiceException 异常
+	 * @throws ServiceException
+	 *             异常
 	 * @author tuzhd
 	 * @date 2017年6月26日
 	 */
@@ -833,7 +837,7 @@ public class ActivityCollectCouponsServiceImpl
 	/**
 	 * @Description: 根据代金券活动类型及店铺区域查询代金券活动信息
 	 * @param map
-	 * @return List<ActivityCollectCoupons>  
+	 * @return List<ActivityCollectCoupons>
 	 * @author tuzhd
 	 * @date 2017年6月30日
 	 */
@@ -869,7 +873,7 @@ public class ActivityCollectCouponsServiceImpl
 	 * 
 	 * @Description: 获取代金券每日已领取数量
 	 * @param record
-	 * @return   
+	 * @return
 	 * @author xuzq01
 	 * @date 2017年8月22日
 	 */
@@ -895,14 +899,20 @@ public class ActivityCollectCouponsServiceImpl
 	@Transactional(rollbackFor = Exception.class)
 	public TakeActivityCouponResultDto takeActivityCoupon(TakeActivityCouponParamDto activityCouponParamDto) {
 		TakeActivityCouponResultDto resultDto = new TakeActivityCouponResultDto();
-		SysBuyerUser sysBuyerUser = buyerUserMapper.selectByPrimaryKey(activityCouponParamDto.getUserId());
-		if (sysBuyerUser == null) {
-			setTakeActivityCouponResult(resultDto, 103, "用户不存在");
-			return resultDto;
+		if(StringUtils.isEmpty(activityCouponParamDto.getUserId()) && StringUtils.isEmpty(activityCouponParamDto.getMobile()) ){
+			setTakeActivityCouponResult(resultDto, 103, "参数错误");
 		}
-		List<SysBuyerUser> sysBuyerUserList = buyerUserMapper.selectUserByPhone(activityCouponParamDto.getMobile());
-		if (CollectionUtils.isNotEmpty(sysBuyerUserList)) {
-			activityCouponParamDto.setUserId(sysBuyerUserList.get(0).getId());
+		if (StringUtils.isNotEmpty(activityCouponParamDto.getUserId())) {
+			SysBuyerUser sysBuyerUser = buyerUserMapper.selectByPrimaryKey(activityCouponParamDto.getUserId());
+			if (sysBuyerUser == null) {
+				setTakeActivityCouponResult(resultDto, 103, "用户不存在");
+				return resultDto;
+			}
+		} else {
+			List<SysBuyerUser> sysBuyerUserList = buyerUserMapper.selectUserByPhone(activityCouponParamDto.getMobile());
+			if (CollectionUtils.isNotEmpty(sysBuyerUserList)) {
+				activityCouponParamDto.setUserId(sysBuyerUserList.get(0).getId());
+			}
 		}
 
 		ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsMapper
@@ -919,7 +929,7 @@ public class ActivityCollectCouponsServiceImpl
 		}
 		// 校验领取次数是否已经超过 每日发行量
 		int drawCount = getActivityRecordCount(activityCollectCoupons);
-		if (Integer.valueOf(activityCollectCoupons.getDailyCirculation()) >= drawCount) {
+		if (drawCount>= Integer.valueOf(activityCollectCoupons.getDailyCirculation()) ) {
 			setTakeActivityCouponResult(resultDto, 102, "今日奖品已经被抽完啦，请明日再来");
 			return resultDto;
 		}
@@ -933,8 +943,9 @@ public class ActivityCollectCouponsServiceImpl
 		// 校验是否需要限制订单数
 		if (activityCouponParamDto.isLimitOrder()) {
 			int drawTimes = getActivityDrawTimesByOrder(activityCollectCoupons, activityCouponParamDto);
-			if(drawTimes > 0){
+			if (drawTimes > 0) {
 				setTakeActivityCouponResult(resultDto, 105, "您已经领取过了!");
+				return resultDto;
 			}
 		}
 		try {
