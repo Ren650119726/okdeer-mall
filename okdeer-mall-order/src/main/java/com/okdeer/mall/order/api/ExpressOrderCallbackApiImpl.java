@@ -4,7 +4,10 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.entity.StoreInfoExt;
+import com.okdeer.archive.store.service.IStoreInfoExtServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -100,6 +103,12 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
     private StoreInfoServiceApi storeInfoServiceApi;
 
     /**
+     * 注入店铺扩展-api
+     */
+    @Reference(version = "1.0.0", check = false)
+    private IStoreInfoExtServiceApi storeInfoExtServiceApi;
+
+    /**
      * 短信接口
      */
     @Reference(version = "1.0.0")
@@ -107,6 +116,29 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
 
     @Autowired
     private RedisTemplate<String, Boolean> redisTemplate;
+
+    @Override
+    public ResultMsgDto<String> findExpressCallback(ExpressModeParamDto paramDto) throws Exception {
+        ResultMsgDto<String> resultMsgDto = new ResultMsgDto();
+        try {
+            TradeOrder order = tradeOrderService.selectById(paramDto.getOrderId());
+            ExpressCallbackParamDto callbackParamDto = new ExpressCallbackParamDto();
+            callbackParamDto.setOrderNo(order.getOrderNo());
+            List<ExpressCallback> callbackList = expressService.findByParam(callbackParamDto);
+            if (CollectionUtils.isNotEmpty(callbackList)) {
+                ExpressCallback callback = callbackList.get(0);
+                resultMsgDto.setCode(callback.getOrderStatus());
+                resultMsgDto.setMsg(callback.getDescription());
+            } else {
+                resultMsgDto.setCode(ExpressModeCheckEnum.SUCCESS.getCode());
+                resultMsgDto.setMsg("查询第三方信息异常");
+            }
+        } catch (Exception e) {
+            resultMsgDto.setCode(ExpressModeCheckEnum.SUCCESS.getCode());
+            resultMsgDto.setMsg("查询第三方信息异常");
+        }
+        return resultMsgDto;
+    }
 
     @Override
     public ResultMsgDto<String> saveExpressMode(ExpressModeParamDto paramDto) throws Exception {
@@ -128,6 +160,18 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
                 } else {
                     //保险起见，设置redis数据6秒超时删除key
                     redisTemplate.expire(EXPRESSMODE + paramDto.getOrderId(), 6, TimeUnit.SECONDS);
+                    //获取店铺佣金方案比例
+                    StoreInfoExt storeDetailVo = storeInfoExtServiceApi.findByStoreId(paramDto.getStoreId());
+                    switch (paramDto.getExpressType()) {
+                        case 1:
+                            paramDto.setCommisionRatio(storeDetailVo.getCommisionRatio());
+                            break;
+                        case 2:
+                            paramDto.setCommisionRatio(storeDetailVo.getCommisionRatioPlanB());
+                            break;
+                        default:
+                            break;
+                    }
                     //根据配送方式的不同，进入不同的业务流程 1：蜂鸟配送 2：自行配送
                     switch (paramDto.getExpressType()) {
                         case 1:
@@ -230,6 +274,24 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
      * @return ResultMsgDto
      */
     private ResultMsgDto<String> checkData(ExpressModeParamDto paramDto, ResultMsgDto<String> resultMsgDto) throws Exception {
+        if (null == paramDto.getCommisionRatio()) {
+            try {
+                //获取店铺佣金方案比例
+                StoreInfoExt storeDetailVo = storeInfoExtServiceApi.findByStoreId(paramDto.getStoreId());
+                switch (paramDto.getExpressType()) {
+                    case 1:
+                        paramDto.setCommisionRatio(storeDetailVo.getCommisionRatio());
+                        break;
+                    case 2:
+                        paramDto.setCommisionRatio(storeDetailVo.getCommisionRatioPlanB());
+                        break;
+                    default:
+                        break;
+                }
+            } catch (ServiceException e) {
+                logger.error("查询店铺佣金方案比例异常(店铺" + paramDto.getStoreId() + ")：{}", e);
+            }
+        }
         if (StringUtils.isBlank(paramDto.getOrderId())) {
             resultMsgDto.setCode(ExpressModeCheckEnum.EXPRESS_ORDER_ID_NULL.getCode());
             resultMsgDto.setMsg(ExpressModeCheckEnum.EXPRESS_ORDER_ID_NULL.getMsg());
