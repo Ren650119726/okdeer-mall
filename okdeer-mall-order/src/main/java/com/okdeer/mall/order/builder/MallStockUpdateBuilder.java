@@ -11,8 +11,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.okdeer.archive.goods.dto.StoreSkuComponentDto;
+import com.okdeer.archive.goods.dto.StoreSkuComponentParamDto;
+import com.okdeer.archive.goods.service.StoreSkuApi;
+import com.okdeer.archive.goods.spu.enums.SkuBindType;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.stock.dto.StockUpdateDetailDto;
@@ -61,6 +66,9 @@ public class MallStockUpdateBuilder {
 
 	@Resource
 	private ComboSnapshotAdapter comboSnapshotAdapter;
+	
+	@Reference(version="1.0.0",check=false)
+	private StoreSkuApi storeSkuApi;
 	
 	/**
 	 * @Description: V2.1版本。构建商品更新的Dto。仅用于秒杀订单
@@ -201,6 +209,10 @@ public class MallStockUpdateBuilder {
 		Map<String,Integer> comboSkuMap = Maps.newHashMap();
 		List<String> comboSkuIds = Lists.newArrayList();
 		
+		// 捆绑商品数量映射列表
+		Map<String,Integer> bindSkuMap = Maps.newHashMap();
+		List<String> bindSkuIds = Lists.newArrayList();
+		
 		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
 		StockUpdateDetailDto updateDetail = null;
 		ActivityTypeEnum actType = null;
@@ -223,6 +235,13 @@ public class MallStockUpdateBuilder {
 				comboSkuIds.add(orderItem.getStoreSkuId());
 				comboSkuMap.put(orderItem.getStoreSkuId(), orderItem.getQuantity());
 			}
+			// Begin V2.6.1 added by maojj 2017-08-28
+			if(orderItem.getBindType() == SkuBindType.bind){
+				// 捆绑商品
+				bindSkuIds.add(orderItem.getStoreSkuId());
+				bindSkuMap.put(orderItem.getStoreSkuId(), orderItem.getQuantity());
+			}
+			// End V2.6.1 added by maojj 2017-08-28
 			updateDetailList.add(updateDetail);
 		}
 		// 处理组合商品
@@ -244,6 +263,21 @@ public class MallStockUpdateBuilder {
 				updateDetailList.add(updateDetail);
 			}
 		}
+		
+		// Begin V2.6.1 added by maojj 2017-08-28
+		// 处理捆绑商品
+		if (CollectionUtils.isNotEmpty(bindSkuIds)) {
+			StoreSkuComponentParamDto paramDto = new StoreSkuComponentParamDto();
+			paramDto.setStoreSkuIds(bindSkuIds);
+			List<StoreSkuComponentDto> bindSkuList = storeSkuApi.findComponentByParam(paramDto);
+			for(StoreSkuComponentDto bindSku : bindSkuList){
+				updateDetail = new StockUpdateDetailDto();
+				updateDetail.setStoreSkuId(bindSku.getComponentStoreSkuId());
+				updateDetail.setUpdateNum(bindSku.getComponentNum().intValue() * bindSkuMap.get(bindSku.getStoreSkuId()));
+				updateDetailList.add(updateDetail);
+			}
+		}
+		// End V2.6.1 added by maojj 2017-08-28
 		
 		stockUpdateDto.setUpdateDetailList(updateDetailList);
 		return stockUpdateDto;

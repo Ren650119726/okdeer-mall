@@ -24,7 +24,7 @@ import com.okdeer.mall.Application;
 
 /**
  * ClassName: BaseTest 
- * @Description: TODO
+ * @Description: 
  * @author yangq
  * @date 2016年11月2日
  *
@@ -57,5 +57,4 @@ public class BaseTest extends AbstractTransactionalJUnit4SpringContextTests{
 	public void setup(){
 		this.mockMvc = webAppContextSetup(this.webApplicationContext).build();
 	}
-	
 }
