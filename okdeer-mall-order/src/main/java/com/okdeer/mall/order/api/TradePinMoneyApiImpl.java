@@ -132,4 +132,9 @@ public class TradePinMoneyApiImpl implements TradePinMoneyApi {
 		tradePinMoneyObtainService.add(obtain);
 	}
 
+	@Override
+	public BigDecimal findPinMoneyObtainAmount(TradePinMoneyQueryDto queryDto) {
+		return tradePinMoneyObtainService.findPinMoneyObtainAmount(queryDto);
+	}
+
 }

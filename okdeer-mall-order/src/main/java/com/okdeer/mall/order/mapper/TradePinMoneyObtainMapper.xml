@@ -220,6 +220,20 @@
         <if test="createTimeEnd != null" >
         	AND pin.create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
         </if>
+        <if test="userId != null" >
+            AND pin.user_id = #{userId,jdbcType=VARCHAR}
+        </if>
+    </select>
+    <select id="findPinMoneyObtainAmount" resultType="DECIMAL" parameterType="com.okdeer.mall.order.dto.TradePinMoneyQueryDto" >
+        SELECT count(pin.amount)
+        FROM trade_pin_money_obtain pin
+        WHERE 1=1
+        <if test="createTimeStart != null" >
+        	AND pin.create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+        </if>
+        <if test="createTimeEnd != null" >
+        	AND pin.create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+        </if>
     </select>
 	<!-- begin 商城后台零花钱领取记录条件查询记录数 xuzq 20170814 -->
 </mapper>

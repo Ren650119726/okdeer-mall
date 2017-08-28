@@ -78,4 +78,13 @@ public interface TradePinMoneyObtainService extends IBaseService {
 	 */
 	Integer findObtainListCount(TradePinMoneyQueryDto paramDto);
 
+	/**
+	 * @Description: 查询用户零花钱领取金额
+	 * @param queryDto
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年8月28日
+	 */
+	BigDecimal findPinMoneyObtainAmount(TradePinMoneyQueryDto queryDto);
+
 }

@@ -7110,10 +7110,4 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		return tradeOrderMapper.findUserOrderCount(paramDto);
 	}
 
-	@Override
-	public BigDecimal findPinMoneyAmount(TradeOrderParamDto paramDto) {
-		return tradeOrderMapper.findPinMoneyAmount(paramDto);
-	}
-
-
 }
