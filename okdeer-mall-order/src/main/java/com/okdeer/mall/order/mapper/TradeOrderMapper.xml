@@ -6362,16 +6362,5 @@
 	    	<![CDATA[ AND tr.create_time <= #{endTime,jdbcType=TIMESTAMP} ]]>
 		</if>
 	</select>
-	<select id="findPinMoneyAmount" parameterType="com.okdeer.mall.order.dto.TradeOrderParamDto" resultType="DECIMAL">
-		SELECT count(tr.pin_money)
-		FROM trade_order tr
-		WHERE 1=1
-		<if test="null != startTime">
-	    	<![CDATA[ AND tr.create_time >= #{startTime,jdbcType=TIMESTAMP} ]]>
-		</if>
-		<if test="null != endTime">
-	    	<![CDATA[ AND tr.create_time <= #{endTime,jdbcType=TIMESTAMP} ]]>
-		</if>
-	</select>
 	<!-- end xuzq V2.6.1 20170824 领取零花钱查询订单数和零花钱总金额 -->
 </mapper>

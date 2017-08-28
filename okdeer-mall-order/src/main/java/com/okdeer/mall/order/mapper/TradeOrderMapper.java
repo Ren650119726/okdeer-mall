@@ -1239,12 +1239,4 @@ public interface TradeOrderMapper {
 	 */
 	Integer findUserOrderCount(TradeOrderParamDto paramDto);
 
-	/**
-	 * @Description: 获取零花钱领取金额
-	 * @param paramDto
-	 * @return   
-	 * @author xuzq01
-	 * @date 2017年8月24日
-	 */
-	BigDecimal findPinMoneyAmount(TradeOrderParamDto paramDto);
 }

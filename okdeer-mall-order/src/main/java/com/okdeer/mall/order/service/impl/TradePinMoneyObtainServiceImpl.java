@@ -86,4 +86,9 @@ public class TradePinMoneyObtainServiceImpl extends BaseServiceImpl implements T
 		return tradePinMoneyObtainMapper.findObtainListCount(paramDto);
 	}
 
+	@Override
+	public BigDecimal findPinMoneyObtainAmount(TradePinMoneyQueryDto queryDto) {
+		return tradePinMoneyObtainMapper.findPinMoneyObtainAmount(queryDto);
+	}
+
 }
