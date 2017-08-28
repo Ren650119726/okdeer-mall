@@ -8,6 +8,7 @@
         <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
         <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
         <result column="sku_price" property="skuPrice" jdbcType="DECIMAL" />
+        <result column="market_price" property="marketPrice" jdbcType="DECIMAL" />
         <result column="goods_sku_pic" property="goodsSkuPic" jdbcType="VARCHAR" />
         <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
         <result column="sellable_stock" property="sellableStock" jdbcType="INTEGER" />
@@ -39,14 +40,16 @@
         	aa.create_time, 
         	(case when bb.url is not null then bb.url when dd.url then dd.url end) goods_sku_pic,
         	(case when ee.id is not null then ee.seckill_price else sku.online_price end) AS sku_price,
+        	sku.market_price,
         	stock.sellable AS sellable_stock,
         	stock.locked AS locked_stock
         from activity_h5_advert_content_goods aa
         LEFT JOIN goods_sku cc ON aa.store_sku_id = cc.id
         LEFT JOIN goods_sku_picture bb ON (aa.store_sku_id = bb.sku_id AND bb.type = 1)
+        LEFT JOIN goods_store_sku sku on aa.store_sku_id = sku.id
         LEFT JOIN goods_store_sku_picture dd ON (aa.store_sku_id = dd.store_sku_id AND dd.type = 1) 
-        LEFT JOIN goods_store_sku_stock stock ON stock.store_sku_id = aa.store_skku_id
-        LEFT JOIN activity_seckill ee ON (ee.store_sku_id = aa.store_sku_id AND kill_status = 1)
+        LEFT JOIN goods_store_sku_stock stock ON stock.store_sku_id = aa.store_sku_id
+        LEFT JOIN activity_seckill ee ON (ee.store_sku_id = aa.store_sku_id AND seckill_status = 1)
         where 
         	1=1
         <if test="activityId != null">
@@ -70,6 +73,7 @@
         	picture.url goods_sku_pic,
         	sku.name sku_name,
         	(case when sa.id is not null then asg.sale_price else sku.online_price end) AS sku_price,
+        	sku.market_price,
         	stock.sellable AS sellable_stock,
         	stock.locked AS locked_stock
 		FROM activity_h5_advert_content_goods aa
@@ -89,36 +93,6 @@
 		 ORDER BY aa.id DESC 
 	</select>
 	
-	<!-- 查询h5关联的店铺特惠或者低价商品 -->
-	<select id="findBldActGoodsByActivityId" resultMap="BaseResultMap" parameterType="String">
-		SELECT
-	        aa.id, 
-	        aa.activity_id, 
-	        aa.content_id, 
-	        aa.store_sku_id, 
-	        aa.pic_url, 
-        	aa.create_time, 
-        	picture.url goods_sku_pic,
-        	sku.name sku_name,
-        	if(sa.type=5,asg.sale_price,sku.online_price) AS sku_price,
-        	stock.sellable AS sellable_stock,
-        	stock.locked AS locked_stock
-		FROM activity_h5_advert_content_goods aa
-			INNER JOIN goods_store_sku sku on aa.store_sku_id = sku.sku_id
-			LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
-			LEFT JOIN goods_store_sku_stock stock ON stock.store_sku_id = sku.id
-			LEFT JOIN activity_sale sa ON sa.id = sku.activity_id AND sa.status = 1 AND sa.disabled = 0
-			LEFT JOIN activity_sale_goods asg on sa.id = asg.sale_id AND sku.id=asg.store_sku_id
-	    WHERE sku.disabled = 0
-			AND stock.disabled = 0
-			AND sku.status = 1
-			AND sku.violation = 0
-			AND sku.store_id = #{storeId,jdbcType=VARCHAR}
-		  	AND s.activity_id = #{activityId,jdbcType=VARCHAR}
-		  	AND s.content_id = #{contentId,jdbcType=VARCHAR}
-		 GROUP BY aa.store_sku_id 	
-		 ORDER BY aa.id DESC 
-	</select>
     
     <insert id="add" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods" >
         insert into activity_h5_advert_content_goods

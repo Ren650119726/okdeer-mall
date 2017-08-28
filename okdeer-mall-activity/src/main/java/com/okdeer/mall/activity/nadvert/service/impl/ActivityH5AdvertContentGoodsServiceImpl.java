@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,9 +34,12 @@ import com.okdeer.mall.activity.nadvert.service.ActivityH5AdvertContentGoodsServ
 public class ActivityH5AdvertContentGoodsServiceImpl
 		implements ActivityH5AdvertContentGoodsService {
 	
+	@Value("${goodsImagePrefix}")
+	private String goodsImgPath;
+	
 	@Autowired
 	private ActivityH5AdvertContentGoodsMapper mapper;
-
+	
 	@Override
 	@Transactional(rollbackFor=Exception.class)
 	public void batchSave(List<ActivityH5AdvertContentGoods> entitys)
@@ -72,6 +76,9 @@ public class ActivityH5AdvertContentGoodsServiceImpl
 			Integer pageNumber, Integer pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
         List<ActivityH5AdvertContentGoods> result = mapper.findBldGoodsByActivityId(storeId,activityId,contentId);
+        result.forEach(obj -> {
+        	obj.setGoodsSkuPic(goodsImgPath + obj.getGoodsSkuPic());
+        });
         return new PageUtils<ActivityH5AdvertContentGoods>(result);
 	}
 }

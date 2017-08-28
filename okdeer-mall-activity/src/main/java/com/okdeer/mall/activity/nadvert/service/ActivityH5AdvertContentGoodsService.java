@@ -50,4 +50,5 @@ public interface ActivityH5AdvertContentGoodsService {
 	 * @date 2017年8月26日
 	 */
 	PageUtils<ActivityH5AdvertContentGoods> findBldGoodsByActivityId(String storeId,String activityId,String contentId ,Integer pageNumber,Integer pageSize);
+	
 }
