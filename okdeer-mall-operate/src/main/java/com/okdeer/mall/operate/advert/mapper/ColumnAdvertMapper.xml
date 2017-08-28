@@ -1284,4 +1284,18 @@
 			ORDER BY asg.sort DESC 
 	</select>
 	<!-- end 根据店铺活动类型 活动商品列表 20170313-->
+	
+	
+	<select id="findForWx" parameterType="com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto" resultMap="columnAdvertRsMap">
+		SELECT <include refid="base_column_list"/>
+		FROM column_advert c
+		WHERE 1 = 1
+		<if test="advertStatus != null">
+			and c.status = #{advertStatus,jdbcType=TINYINT}
+		</if>
+		<if test="type != null">
+		    and version.type = #{type}
+		</if>
+		order by sort desc , create_time desc
+	</select>
 </mapper>

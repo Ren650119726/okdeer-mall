@@ -860,6 +860,11 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	public List<ColumnAdvert> findForAppV220(ColumnAdvertQueryParamDto advertQueryParamDto) {
 		return advertMapper.findForAppV220(advertQueryParamDto);
 	}
+	
+	@Override
+	public List<ColumnAdvert> findForWx(ColumnAdvertQueryParamDto advertQueryParamDto) {
+		return advertMapper.findForWx(advertQueryParamDto);
+	}
 
 	@Override
 	public PageUtils<GoodsStoreActivitySkuDto> findAdvertGoodsByAdvertId(String advertId, String storeId, 
