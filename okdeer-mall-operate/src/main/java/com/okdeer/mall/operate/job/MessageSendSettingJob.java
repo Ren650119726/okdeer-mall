@@ -63,7 +63,7 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 	private static final Logger logger = LoggerFactory.getLogger(MessageSendSettingJob.class);
 
 	/**
-	 * 注入秒杀活动service
+	 * 消息推送设置service
 	 */
 	@Autowired
 	MessageSendSettingService messageSendSettingService;
@@ -79,6 +79,8 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 	private SysBuyerLocateInfoServiceApi sysBuyerLocateInfoApi;
 	
 	private static final String TOPIC = "topic_mcm_msg";
+	
+	public static final int time = 60000 * 15;
 	/**
 	 * 消息系统CODE
 	 */
@@ -97,7 +99,7 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 	@Override
 	public void process(JobExecutionMultipleShardingContext shardingContext) {
 		try {
-			logger.info("秒杀活动定时任务修改活动状态开始-----" + DateUtils.getDateTime());
+			logger.info("app消息推送定时器开始-----" + DateUtils.getDateTime());
 			
 			// 1 查询所有推送状态为未推送的消息列表
 			List<MessageSendSetting> messageSendList = messageSendSettingService.findMessageListByStatus(0);
@@ -171,6 +173,8 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 		pushMsgVo.setMsgDetailContent(messageSend.getContext());
 		// 设置是否定时发送 定时发送
 		pushMsgVo.setIsTiming(Constant.ONE);
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		pushMsgVo.setSendTime(format.format(new Date(messageSend.getSendTime().getTime() - time)));
 
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
@@ -178,6 +182,9 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 			PushUserVo pushUser = new PushUserVo();
 			pushUser.setUserId(user.getUserId());
 			pushUser.setMsgType(Constant.ONE);
+			//设置手机号
+			pushUser.setMobile(user.getUserPhone());
+			
 			userList.add(pushUser);
 		});
 		// 查询的用户信息

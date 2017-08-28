@@ -28,6 +28,10 @@ public class SysBuyerLocateInfoBo {
 	 * 城市id
 	 */
 	private String cityId;
+	/**
+	 * 用户手机号
+	 */
+	private String userPhone;
 	
 	public String getUserId() {
 		return userId;
@@ -43,6 +47,14 @@ public class SysBuyerLocateInfoBo {
 	
 	public void setCityId(String cityId) {
 		this.cityId = cityId;
+	}
+
+	public String getUserPhone() {
+		return userPhone;
+	}
+
+	public void setUserPhone(String userPhone) {
+		this.userPhone = userPhone;
 	}
 	
 }

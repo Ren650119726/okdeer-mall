@@ -231,6 +231,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		dto.setCityIdList(cityIdsList);
 		
 		List<SysBuyerLocateInfoDto> infoList = sysBuyerLocateInfoApi.findUserList(dto);
+		
 		//3 发送消息
 		sendAppMessage(entity,infoList);
 		//4 更新发送状态
@@ -265,8 +266,11 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		pushMsgVo.setMsgNotifyContent(messageSend.getContext());
 		pushMsgVo.setMsgDetailType(Constant.ONE);
 		pushMsgVo.setMsgDetailContent(messageSend.getContext());
-		// 设置是否定时发送 定时发送
-		pushMsgVo.setIsTiming(Constant.ONE);
+		// 设置是否定时发送 立即发送 非定时
+		pushMsgVo.setIsTiming(Constant.ZERO);
+		//设置发送时间
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		pushMsgVo.setSendTime(format.format(new Date()));
 
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
@@ -274,6 +278,9 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 			PushUserVo pushUser = new PushUserVo();
 			pushUser.setUserId(user.getUserId());
 			pushUser.setMsgType(Constant.ONE);
+			//设置手机号
+			pushUser.setMobile(user.getUserPhone());
+			
 			userList.add(pushUser);
 		});
 		// 查询的用户信息
