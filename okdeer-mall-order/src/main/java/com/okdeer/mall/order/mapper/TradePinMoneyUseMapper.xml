@@ -155,6 +155,7 @@
         <if test="createTimeEnd != null" >
         	AND pin.create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
         </if>
+        order by pin.create_time desc
     </select>
 	<!-- end 商城后台零花钱领取记录条件查询 xuzq 20170814 -->
 	

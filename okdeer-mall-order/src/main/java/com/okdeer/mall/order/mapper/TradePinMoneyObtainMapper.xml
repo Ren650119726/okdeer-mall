@@ -203,6 +203,7 @@
         <if test="createTimeEnd != null" >
         	AND pin.create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
         </if>
+        order by pin.create_time desc
     </select>
 	<!-- end 商城后台零花钱领取记录条件查询 xuzq 20170814 -->
 	<!-- begin 商城后台零花钱领取记录条件查询记录数 xuzq 20170814 -->
@@ -222,6 +223,9 @@
         </if>
         <if test="userId != null" >
             AND pin.user_id = #{userId,jdbcType=VARCHAR}
+        </if>
+        <if test="orderId != null" >
+            AND pin.order_id = #{orderId,jdbcType=VARCHAR}
         </if>
     </select>
     <select id="findPinMoneyObtainAmount" resultType="java.math.BigDecimal" parameterType="com.okdeer.mall.order.dto.TradePinMoneyQueryDto" >
