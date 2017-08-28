@@ -43,6 +43,11 @@ public class ActivityH5AdvertContentGoods implements Serializable {
     private BigDecimal skuPrice;
     
     /**
+     * @Fields marketPrice : 市场价
+     */
+    private BigDecimal marketPrice;
+    
+    /**
      * @Fields skuName : 商品名称
      */
     private String skuName;
@@ -146,6 +151,14 @@ public class ActivityH5AdvertContentGoods implements Serializable {
 
 	public void setSkuPrice(BigDecimal skuPrice) {
 		this.skuPrice = skuPrice;
+	}
+	
+	public BigDecimal getMarketPrice() {
+		return marketPrice;
+	}
+
+	public void setMarketPrice(BigDecimal marketPrice) {
+		this.marketPrice = marketPrice;
 	}
 
 	public String getSkuName() {

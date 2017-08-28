@@ -40,6 +40,7 @@ public class ActivityH5AdvertApiImpl implements ActivityH5AdvertApi {
 	private ActivityH5AdvertService advertService;
 	@Autowired
 	private ActivityH5AdvertContentGoodsService contentGoodsService;
+	
 	@Override
 	public void save(ActivityH5AdvertDto entity) throws Exception {
 		advertService.save(convertDtoToBo(entity));
