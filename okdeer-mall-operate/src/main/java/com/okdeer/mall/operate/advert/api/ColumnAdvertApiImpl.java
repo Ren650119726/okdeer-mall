@@ -58,4 +58,16 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 		}
 		return null;
 	}
+
+	@Override
+	public List<ColumnAdvertDto> findForWx(ColumnAdvertQueryParamDto advertQueryParamDto) {
+		AdvertPosition advertPosition = advertPositionService.findByType(advertQueryParamDto.getAdvertType());
+		advertQueryParamDto.setPositionId(advertPosition.getId());
+		List<ColumnAdvert> list = columnAdvertService.findForWx(advertQueryParamDto);
+		if (list != null) {
+			List<ColumnAdvertDto> dtoList = BeanMapper.mapList(list, ColumnAdvertDto.class);
+			return dtoList;
+		}
+		return null;
+	}
 }

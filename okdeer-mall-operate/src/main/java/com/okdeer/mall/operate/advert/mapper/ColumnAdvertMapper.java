@@ -236,6 +236,15 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	List<ColumnAdvert> findForAppV220(ColumnAdvertQueryParamDto advertQueryParamDto);
 	
 	/**
+	 * @Description: 查询广告列表给app接口
+	 * @param advertQueryParamDto 查询参数
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年1月3日
+	 */
+	List<ColumnAdvert> findForWx(ColumnAdvertQueryParamDto advertQueryParamDto);
+	
+	/**
 	 * @Description: 根据广告id获取广告商品列表
 	 * @param advertId  广告id
 	 * @return list

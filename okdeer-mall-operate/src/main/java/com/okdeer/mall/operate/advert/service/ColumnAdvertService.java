@@ -241,4 +241,13 @@ public interface ColumnAdvertService {
 	 * @date 2017年3月15日
 	 */
 	List<ColumnAdvert> findForAppV220(ColumnAdvertQueryParamDto advertQueryParamDto);
+	
+	/**
+	 * @Description: 查询广告列表给前端app
+	 * @param advertQueryParamDto 查询参数
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年1月3日
+	 */
+	List<ColumnAdvert> findForWx(ColumnAdvertQueryParamDto advertQueryParamDto);
 }
