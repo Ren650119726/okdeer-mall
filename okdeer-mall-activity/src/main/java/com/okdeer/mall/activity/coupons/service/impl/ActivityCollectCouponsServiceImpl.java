@@ -898,7 +898,6 @@ public class ActivityCollectCouponsServiceImpl
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
 	public TakeActivityCouponResultDto takeActivityCoupon(TakeActivityCouponParamDto activityCouponParamDto) {
 		TakeActivityCouponResultDto resultDto = new TakeActivityCouponResultDto();
 		if(StringUtils.isEmpty(activityCouponParamDto.getUserId()) && StringUtils.isEmpty(activityCouponParamDto.getMobile()) ){
@@ -1006,7 +1005,7 @@ public class ActivityCollectCouponsServiceImpl
 	 */
 	private int getActivityRecordCount(ActivityCollectCoupons activityCollectCoupons) {
 		ActivityCouponsRecord record = new ActivityCouponsRecord();
-		record.setCollectTime(DateUtils.getDateStart(new Date()));
+//		record.setCollectTime(DateUtils.getDateStart(new Date()));
 		record.setCollectType(ActivityCouponsType.enumValueOf(activityCollectCoupons.getType()));
 		record.setCouponsCollectId(activityCollectCoupons.getId());
 		return getDaliyDrawAmount(record);

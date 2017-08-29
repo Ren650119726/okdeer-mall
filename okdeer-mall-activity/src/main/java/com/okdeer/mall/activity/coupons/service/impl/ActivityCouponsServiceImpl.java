@@ -1019,6 +1019,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			} catch (Exception e) {
 				if (activityCouponParamDto.isContinueTakeOther()) {
 					continue;
+				}else{
+					throw e;
 				}
 			}
 		}
