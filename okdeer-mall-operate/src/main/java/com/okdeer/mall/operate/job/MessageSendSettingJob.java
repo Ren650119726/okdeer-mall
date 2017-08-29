@@ -80,7 +80,6 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 	
 	private static final String TOPIC = "topic_mcm_msg";
 	
-	public static final int time = 60000 * 15;
 	/**
 	 * 消息系统CODE
 	 */
@@ -172,9 +171,10 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 		pushMsgVo.setMsgDetailType(Constant.ONE);
 		pushMsgVo.setMsgDetailContent(messageSend.getContext());
 		// 设置是否定时发送 定时发送
-		pushMsgVo.setIsTiming(Constant.ONE);
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		pushMsgVo.setSendTime(format.format(new Date(messageSend.getSendTime().getTime() - time)));
+		pushMsgVo.setIsTiming(Constant.ZERO);
+		//发送时间无需设置 会立即发送
+		//SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		//pushMsgVo.setSendTime(format.format(new Date(messageSend.getSendTime().getTime() - time)));
 
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();

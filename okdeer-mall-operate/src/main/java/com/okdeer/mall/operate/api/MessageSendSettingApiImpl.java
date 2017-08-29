@@ -268,9 +268,9 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		pushMsgVo.setMsgDetailContent(messageSend.getContext());
 		// 设置是否定时发送 立即发送 非定时
 		pushMsgVo.setIsTiming(Constant.ZERO);
-		//设置发送时间
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		pushMsgVo.setSendTime(format.format(new Date()));
+		//发送时间无需设置 会立即发送
+		//SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		//pushMsgVo.setSendTime(format.format(new Date()));
 
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();

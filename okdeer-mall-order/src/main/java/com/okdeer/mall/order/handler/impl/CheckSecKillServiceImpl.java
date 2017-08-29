@@ -100,7 +100,7 @@ public class CheckSecKillServiceImpl implements RequestHandler<PlaceOrderParamDt
 	 * @date 2017年8月17日
 	 */
 	private boolean isOutOfLimitByDevice(PlaceOrderParamDto paramDto) throws Exception {
-		if(StringUtils.isNullOrEmpty(paramDto.getSeckillId())){
+		if(StringUtils.isNullOrEmpty(paramDto.getSeckillId()) || StringUtils.isNullOrEmpty(paramDto.getDeviceId())){
 			return false;
 		}
 		// 统计该用户是否参与过该秒杀活动

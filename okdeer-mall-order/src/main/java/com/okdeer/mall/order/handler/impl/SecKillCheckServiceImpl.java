@@ -137,7 +137,7 @@ public class SecKillCheckServiceImpl implements RequestHandler<ServiceOrderReq,S
 	 * @date 2017年8月17日
 	 */
 	private boolean isOutOfLimitByDevice(ServiceOrderReq reqData) throws Exception {
-		if(StringUtils.isNullOrEmpty(reqData.getSeckillId())){
+		if(StringUtils.isNullOrEmpty(reqData.getSeckillId()) || StringUtils.isNullOrEmpty(reqData.getDeviceId())){
 			return false;
 		}
 		// 统计该用户是否参与过该秒杀活动
