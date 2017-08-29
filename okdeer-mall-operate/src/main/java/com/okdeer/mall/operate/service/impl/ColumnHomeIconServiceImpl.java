@@ -20,6 +20,7 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.common.utils.BaseResult;
+import com.okdeer.mall.operate.dto.ColumnHomeIconClassifyDto;
 import com.okdeer.mall.operate.dto.ColumnHomeIconVersionDto;
 import com.okdeer.mall.operate.dto.HomeIconParamDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIcon;
@@ -201,10 +202,10 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 	
 	@Override
 	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> goodsIds,
-			List<Integer> sorts, List<String> versions, String selectcategoryIds) throws Exception {
+			List<Integer> sorts, List<String> versions, List<ColumnHomeIconClassifyDto> classifyList) throws Exception {
 		save(entity, areaList, goodsIds, sorts, versions);
-		if(StringUtils.isNotEmpty(selectcategoryIds)){
-			columnHomeIconClassifyService.addClassifyBatch(entity.getId(),selectcategoryIds);
+		if(CollectionUtils.isNotEmpty(classifyList)){
+			columnHomeIconClassifyService.addClassifyBatch(entity.getId(),classifyList);
 		}
 		return new BaseResult();
 	}

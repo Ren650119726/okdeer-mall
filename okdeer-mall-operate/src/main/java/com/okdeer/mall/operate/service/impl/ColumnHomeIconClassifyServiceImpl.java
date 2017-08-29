@@ -6,15 +6,16 @@
  */    
 package com.okdeer.mall.operate.service.impl;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.operate.dto.ColumnHomeIconClassifyDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIconClassify;
 import com.okdeer.mall.operate.mapper.ColumnHomeIconClassifyMapper;
 import com.okdeer.mall.operate.service.ColumnHomeIconClassifyService;
@@ -53,13 +54,11 @@ public class ColumnHomeIconClassifyServiceImpl extends BaseServiceImpl implement
 	}
 
 	@Override
-	public void addClassifyBatch(String homeIconId, String selectcategoryIds) {
-		List<String> categoryList = Arrays.asList(selectcategoryIds);
-		for(String categoryId : categoryList){
-			ColumnHomeIconClassify classify = new ColumnHomeIconClassify();
+	public void addClassifyBatch(String homeIconId, List<ColumnHomeIconClassifyDto> classifyList) {
+		for(ColumnHomeIconClassifyDto categoryDto : classifyList){
+			ColumnHomeIconClassify classify = BeanMapper.map(categoryDto, ColumnHomeIconClassify.class);
 			classify.setId(UuidUtils.getUuid());
 			classify.setHomeIconId(homeIconId);
-			classify.setNavigateCategoryId(categoryId);
 			columnHomeIconClassifyMapper.add(classify);
 		}
 	}

@@ -113,12 +113,13 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		if (StringUtils.isBlank(homeIconId)) {
 			return null;
 		}
+		// 1获取首页功能icon对象
 		ColumnHomeIcon source = homeIconService.findById(homeIconId);
 		if (null == source) {
 			return null;
 		}
 		HomeIconDto dto = BeanMapper.map(source, HomeIconDto.class);
-		//任务内容为指定商品
+		// 2任务内容为指定商品
 		if(dto.getTaskType() == HomeIconTaskType.goods){
 			// 查询商品关联信息
 			List<ColumnHomeIconGoods> goodsList = homeIconGoodsService.findListByHomeIconId(homeIconId);
@@ -130,19 +131,19 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 			}
 			dto.setGoodsList(goodsDtoList);
 		}
-		//任务内容为分类 关联导航分类
+		// 3任务内容为分类 关联导航分类
 		if(dto.getTaskType() == HomeIconTaskType.classify){
 			// 查询关联区域
 			List<ColumnHomeIconClassify> classifyList = columnHomeIconClassifyService.findListByHomeIconId(homeIconId);
 			List<ColumnHomeIconClassifyDto> classifyDtos = null;
-			if (CollectionUtils.isEmpty(classifyList)) {
+			if (!CollectionUtils.isEmpty(classifyList)) {
 				classifyDtos = BeanMapper.mapList(classifyList, ColumnHomeIconClassifyDto.class);
 			} else {
 				classifyDtos = new ArrayList<ColumnHomeIconClassifyDto>();
 			}
 			dto.setClassifyList(classifyDtos);
 		}
-		//按照城市选择任务范围
+		// 4按照城市选择任务范围
 		if(dto.getTaskScope() == SelectAreaType.city){
 			// 查询关联区域
 			List<ColumnSelectArea> areaList = selectAreaService.findListByColumnId(homeIconId);
@@ -179,7 +180,14 @@ public class ColumnHomeIconApiImpl implements ColumnHomeIconApi {
 		} else {
 			areaList = BeanMapper.mapList(dto.getAreaList(), ColumnSelectArea.class);
 		}
-		return homeIconService.save(entity, areaList, dto.getSkuIds(),dto.getSorts(), dto.getIconVersions(),dto.getSelectcategoryIds());
+		//导航分类选择
+		List<ColumnHomeIconClassifyDto> classifyList = null;
+		if (null == dto.getClassifyList()) {
+			classifyList = new ArrayList<ColumnHomeIconClassifyDto>();
+		} else {
+			classifyList = BeanMapper.mapList(dto.getClassifyList(), ColumnHomeIconClassifyDto.class);
+		}
+		return homeIconService.save(entity, areaList, dto.getSkuIds(),dto.getSorts(), dto.getIconVersions(),classifyList);
 	}
 
 	@Override

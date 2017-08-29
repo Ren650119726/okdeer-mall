@@ -5,10 +5,15 @@
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="home_icon_id" property="homeIconId" jdbcType="VARCHAR" />
         <result column="navigate_category_id" property="navigateCategoryId" jdbcType="VARCHAR" />
+        <result column="navigate_category_name" property="navigateCategoryName" jdbcType="VARCHAR" />
+        <result column="pid_navigate_category_id" property="pidNavigateCategoryId" jdbcType="VARCHAR" />
+        <result column="pid_navigate_category_name" property="pidNavigateCategoryName" jdbcType="VARCHAR" />
+        <result column="level_type" property="levelType" jdbcType="TINYINT" />
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, home_icon_id, navigate_category_id
+        id, home_icon_id, navigate_category_id, navigate_category_name, pid_navigate_category_id, 
+        pid_navigate_category_name, level_type
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -30,6 +35,18 @@
             <if test="navigateCategoryId != null" >
                 navigate_category_id,
             </if>
+            <if test="navigateCategoryName != null" >
+                navigate_category_name,
+            </if>
+            <if test="pidNavigateCategoryId != null" >
+                pid_navigate_category_id,
+            </if>
+            <if test="pidNavigateCategoryName != null" >
+                pid_navigate_category_name,
+            </if>
+            <if test="levelType != null" >
+                level_type,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -40,6 +57,18 @@
             </if>
             <if test="navigateCategoryId != null" >
                 #{navigateCategoryId,jdbcType=VARCHAR},
+            </if>
+            <if test="navigateCategoryName != null" >
+                #{navigateCategoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="pidNavigateCategoryId != null" >
+                #{pidNavigateCategoryId,jdbcType=VARCHAR},
+            </if>
+            <if test="pidNavigateCategoryName != null" >
+                #{pidNavigateCategoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="levelType != null" >
+                #{levelType,jdbcType=TINYINT},
             </if>
         </trim>
     </insert>
@@ -53,6 +82,18 @@
             <if test="navigateCategoryId != null" >
                 navigate_category_id = #{navigateCategoryId,jdbcType=VARCHAR},
             </if>
+            <if test="navigateCategoryName != null" >
+                navigate_category_name = #{navigateCategoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="pidNavigateCategoryId != null" >
+                pid_navigate_category_id = #{pidNavigateCategoryId,jdbcType=VARCHAR},
+            </if>
+            <if test="pidNavigateCategoryName != null" >
+                pid_navigate_category_name = #{pidNavigateCategoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="levelType != null" >
+                level_type = #{levelType,jdbcType=TINYINT},
+            </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
     </update>
@@ -61,8 +102,7 @@
         delete from column_home_icon_classify
         where id = #{id,jdbcType=VARCHAR}
     </delete>
-    
-    <select id="findListByHomeIconId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+	<select id="findListByHomeIconId" resultMap="BaseResultMap" parameterType="java.lang.String" >
         select 
         <include refid="Base_Column_List" />
         from column_home_icon_classify
