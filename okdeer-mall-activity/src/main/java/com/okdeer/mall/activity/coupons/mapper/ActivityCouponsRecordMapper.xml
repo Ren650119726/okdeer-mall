@@ -260,7 +260,10 @@
 	</if>
 	  <if test="status != null">
 			AND A.STATUS = #{status,jdbcType=TINYINT} 
-	  </if>  
+	  </if>
+	  <if test="activityId !=null and activityId !=''">
+	  		AND A.coupons_collect_id = #{activityId,jdbcType=VARCHAR}
+	  </if>
 	  ORDER BY 
 		A.collect_time 
 	  DESC 
