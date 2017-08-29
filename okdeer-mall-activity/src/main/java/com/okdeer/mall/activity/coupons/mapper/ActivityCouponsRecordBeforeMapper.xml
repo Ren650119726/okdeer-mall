@@ -129,6 +129,9 @@
 	  <if test="collectEndTime !=null and collectEndTime != ''">
 	  	 <![CDATA[AND b.collect_time <= #{collectEndTime,jdbcType=VARCHAR}]]>
 	  </if>
+	   <if test="orderId != null and orderId !=''">
+	  	AND order_id = #{orderId,jdbcType=VARCHAR}
+	  </if>
     </sql>
     
 	<select id="getCountByDayParams" resultType="int" parameterType="com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto">
