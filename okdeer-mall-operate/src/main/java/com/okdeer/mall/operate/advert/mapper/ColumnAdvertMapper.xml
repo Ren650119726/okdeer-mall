@@ -1298,4 +1298,24 @@
 		</if>
 		order by sort desc , create_time desc
 	</select>
+	
+	<select id="findCount" resultType="int" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertQueryVo">
+		SELECT 
+		COUNT(1) 
+		FROM column_advert ca
+		WHERE ca.disabled = 0 AND ca.status IN(0, 1)	
+	    AND 
+	    	(
+	    		(	
+	    			#{advertStartTime} BETWEEN ca.start_time AND ca.end_time
+	    		) 
+	    		OR 
+	    		(
+	    			#{advertEndTime} BETWEEN ca.start_time AND ca.end_time
+	    		)
+	    	)
+	    <if test="positionId != null and positionId !=''">
+	   	   AND ca.position_id = #{positionId, jdbcType=VARCHAR}
+	    </if>   
+	</select>
 </mapper>

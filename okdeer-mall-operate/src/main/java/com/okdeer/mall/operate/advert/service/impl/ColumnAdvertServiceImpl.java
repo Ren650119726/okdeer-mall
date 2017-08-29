@@ -885,4 +885,9 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	public List<GoodsStoreActivitySkuDto> findGoodsByActivityType(String storeId,Integer saleType) {
 		return advertMapper.findGoodsByActivityType(storeId,saleType);
 	}
+
+	@Override
+	public int findCount(ColumnAdvertQueryVo query) {
+		return advertMapper.findCount(query);
+	}
 }
