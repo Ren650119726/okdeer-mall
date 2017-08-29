@@ -263,4 +263,13 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	 * @date 2017年03月13日
 	 */
 	List<GoodsStoreActivitySkuDto> findGoodsByActivityType(@Param("storeId")String storeId,@Param("saleType")Integer saleType);
+	
+	/**
+	 * @Description: 根据条件查询count
+	 * @param query
+	 * @return
+	 * @author zhangkn
+	 * @date 2017年8月29日
+	 */
+	int findCount(ColumnAdvertQueryVo query);
 }
