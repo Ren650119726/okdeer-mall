@@ -968,12 +968,12 @@ public class ActivityCollectCouponsServiceImpl
 		activityCouponsRecordQueryParamDto.setCollectUserId(activityCouponParamDto.getUserId());
 		activityCouponsRecordQueryParamDto.setOrderId(activityCouponParamDto.getOrderId());
 		if (StringUtils.isNotEmpty(activityCouponParamDto.getUserId())) {
-			return activityCouponsRecordMapper.selectActivityCountByParams(activityCouponsRecordQueryParamDto);
+			return activityCouponsRecordMapper.selectOrderCountByParams(activityCouponsRecordQueryParamDto);
 		} else {
 			ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParamDto = new ActivityCouponsRecordBeforeParamDto();
 			BeanMapper.copy(activityCouponsRecordQueryParamDto, activityCouponsRecordBeforeParamDto);
 			activityCouponsRecordBeforeParamDto.setCollectUser(activityCouponParamDto.getMobile());
-			return activityCouponsRecordBeforeMapper.selectActivityCountByParams(activityCouponsRecordBeforeParamDto);
+			return activityCouponsRecordBeforeMapper.selectOrderCountByParams(activityCouponsRecordBeforeParamDto);
 		}
 	}
 
