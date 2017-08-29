@@ -864,13 +864,15 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		payReqest.setServiceId(order.getId());
 
 		int paymentType = payInfoParamDto.getPaymentType();
-		// 支付类型 0:云钱包,1:支付宝app支付,2:微信app支付, 6：微信公众号
+		// 支付类型 0:云钱包,1:支付宝app支付,2:微信app支付, 6：微信公众号 7 微信h5
 		if (1 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.APP_ALIPAY);
 		} else if (2 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.APP_WXPAY);
 		} else if (6 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.WX_WXPAY);
+		}else if (7 == paymentType) {
+			payReqest.setTradeType(PayTradeTypeEnum.WAP_WXPAY);
 		}
 		return payReqest;
 	}

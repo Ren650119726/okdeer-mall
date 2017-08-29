@@ -80,7 +80,6 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 	
 	private static final String TOPIC = "topic_mcm_msg";
 	
-	public static final int time = 60000 * 15;
 	/**
 	 * 消息系统CODE
 	 */
@@ -172,20 +171,23 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 		pushMsgVo.setMsgDetailType(Constant.ONE);
 		pushMsgVo.setMsgDetailContent(messageSend.getContext());
 		// 设置是否定时发送 定时发送
-		pushMsgVo.setIsTiming(Constant.ONE);
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		pushMsgVo.setSendTime(format.format(new Date(messageSend.getSendTime().getTime() - time)));
+		pushMsgVo.setIsTiming(Constant.ZERO);
+		//发送时间无需设置 会立即发送
+		//SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		//pushMsgVo.setSendTime(format.format(new Date(messageSend.getSendTime().getTime() - time)));
 
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
 		infoList.forEach(user -> {
-			PushUserVo pushUser = new PushUserVo();
-			pushUser.setUserId(user.getUserId());
-			pushUser.setMsgType(Constant.ONE);
-			//设置手机号
-			pushUser.setMobile(user.getUserPhone());
-			
-			userList.add(pushUser);
+			if(user.getUserPhone() != null){
+				PushUserVo pushUser = new PushUserVo();
+				pushUser.setUserId(user.getUserId());
+				pushUser.setMsgType(Constant.ONE);
+				//设置手机号
+				pushUser.setMobile(user.getUserPhone());
+				
+				userList.add(pushUser);
+			}
 		});
 		// 查询的用户信息
 		pushMsgVo.setUserList(userList);

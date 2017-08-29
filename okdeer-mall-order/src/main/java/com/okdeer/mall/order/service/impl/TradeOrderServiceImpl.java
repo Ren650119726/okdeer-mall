@@ -305,9 +305,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     @Value("${mcm.sys.token}")
     private String msgToken;
 
-    @Value("${mcm.verifyCode.templateId}")
-    private String templateId;
-
     /**
      * 支付有效时长
      */
