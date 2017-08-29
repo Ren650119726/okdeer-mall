@@ -179,13 +179,15 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
 		infoList.forEach(user -> {
-			PushUserVo pushUser = new PushUserVo();
-			pushUser.setUserId(user.getUserId());
-			pushUser.setMsgType(Constant.ONE);
-			//设置手机号
-			pushUser.setMobile(user.getUserPhone());
-			
-			userList.add(pushUser);
+			if(user.getUserPhone() != null){
+				PushUserVo pushUser = new PushUserVo();
+				pushUser.setUserId(user.getUserId());
+				pushUser.setMsgType(Constant.ONE);
+				//设置手机号
+				pushUser.setMobile(user.getUserPhone());
+				
+				userList.add(pushUser);
+			}
 		});
 		// 查询的用户信息
 		pushMsgVo.setUserList(userList);
