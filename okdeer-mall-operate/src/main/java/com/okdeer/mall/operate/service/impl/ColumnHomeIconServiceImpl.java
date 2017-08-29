@@ -14,6 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.dubbo.config.annotation.Reference;
+import com.google.common.collect.Lists;
+import com.okdeer.archive.goods.store.dto.GoodsStoreSkuDto;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -67,6 +71,11 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 
 	@Autowired
 	private ColumnHomeIconVersionMapper homeIconVersionMapper;
+	/**
+	 * 店铺商品api
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuServiceApi goodsStoreSkuApi;
 
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -206,6 +215,23 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		save(entity, areaList, goodsIds, sorts, versions);
 		if(CollectionUtils.isNotEmpty(classifyList)){
 			columnHomeIconClassifyService.addClassifyBatch(entity.getId(),classifyList);
+		}
+		// 保存选择的导航分类商品到column_home_icon_goods表 标准库商品
+		List<String> categoryIds = Lists.newArrayList();
+		classifyList.forEach(classify -> categoryIds.add(classify.getNavigateCategoryId()));
+		if(entity.getTaskType() == HomeIconTaskType.classify && CollectionUtils.isNotEmpty(categoryIds)){
+			// 查询标准库商品id
+			List<GoodsStoreSkuDto> skuList = goodsStoreSkuApi.findGoodByCateroyIds(categoryIds);
+			
+			// 保存到首页ICON商品关联表
+			for(GoodsStoreSkuDto sku: skuList){
+				ColumnHomeIconGoods goods = new ColumnHomeIconGoods();
+				goods.setId(UuidUtils.getUuid());
+				goods.setHomeIconId(entity.getId());
+				goods.setSkuId(sku.getSkuId());
+				
+				homeIconGoodsService.add(goods);
+			}
 		}
 		return new BaseResult();
 	}

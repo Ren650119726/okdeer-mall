@@ -61,6 +61,7 @@ public class ColumnHomeIconClassifyServiceImpl extends BaseServiceImpl implement
 			classify.setHomeIconId(homeIconId);
 			columnHomeIconClassifyMapper.add(classify);
 		}
+		
 	}
 
 }
