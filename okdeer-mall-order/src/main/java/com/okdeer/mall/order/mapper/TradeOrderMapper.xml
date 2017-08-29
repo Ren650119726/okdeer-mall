@@ -690,7 +690,7 @@
 		income, is_show, pospay, compain_status, pick_up_item, trade_num, activity_item_id, is_complete, shipments_user_id,
 		consumer_code_status, payment_user_id, is_breach, is_breach_money, breach_time, breach_percent, breach_money, cancel_type,
 		accept_time, client_version, fare_preferential, real_fare_preferential, platform_preferential, store_preferential,
-		fare_activity_id, store_activity_type,delivery_type,commision_ratio,pin_money,actual_return_amount
+		fare_activity_id, store_activity_type,delivery_type,commision_ratio,pin_money,actual_return_amount,pin_money
 	</sql>
 
 	<sql id="order_column_list">
