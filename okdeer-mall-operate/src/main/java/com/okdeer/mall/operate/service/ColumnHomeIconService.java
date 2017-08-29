@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.common.utils.BaseResult;
+import com.okdeer.mall.operate.dto.ColumnHomeIconClassifyDto;
 import com.okdeer.mall.operate.dto.ColumnHomeIconVersionDto;
 import com.okdeer.mall.operate.dto.HomeIconParamDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIcon;
@@ -68,18 +69,18 @@ public interface ColumnHomeIconService extends IBaseService {
     /**
      * 
      * @Description: 编辑或者添加首页ICON
-     * 增加选择分类任务内容时 分类ids参数传递
+     * 增加选择分类任务内容时 分类列表集合
      * @param entity
      * @param areaList
      * @param goodsIds
      * @param sorts
      * @param versions
-     * @param selectcategoryIds
+     * @param classifyList
      * @return
      * @throws Exception   
      * @author xuzq01
      * @date 2017年8月16日
      */
     BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> goodsIds, List<Integer> sorts,
-	        List<String> versions,String selectcategoryIds) throws Exception;
+	        List<String> versions, List<ColumnHomeIconClassifyDto> classifyList) throws Exception;
 }

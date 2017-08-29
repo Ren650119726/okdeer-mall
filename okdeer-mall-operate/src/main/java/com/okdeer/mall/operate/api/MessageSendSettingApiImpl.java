@@ -262,8 +262,8 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		pushMsgVo.setMsgTypeCustom(OrderMsgConstant.APP_MESSAGE_SEND);
 		pushMsgVo.setMsgDetailType(Constant.ZERO);
 
-		// 不使用模板 设置消息名称内容
-		pushMsgVo.setMsgNotifyContent(messageSend.getContext());
+		// 不使用模板 设置消息名称
+		pushMsgVo.setMsgNotifyContent(messageSend.getMessageName());
 		pushMsgVo.setMsgDetailType(Constant.ONE);
 		pushMsgVo.setMsgDetailContent(messageSend.getContext());
 		// 设置是否定时发送 立即发送 非定时

@@ -9,6 +9,7 @@ package com.okdeer.mall.operate.service;
 import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.operate.dto.ColumnHomeIconClassifyDto;
 import com.okdeer.mall.operate.entity.ColumnHomeIconClassify;
 
 /**
@@ -45,10 +46,10 @@ public interface ColumnHomeIconClassifyService extends IBaseService {
 	/**
 	 * @Description: 批量添加分类信息
 	 * @param homeIconId
-	 * @param selectcategoryIds   
+	 * @param classifyList   
 	 * @author xuzq01
 	 * @date 2017年8月16日
 	 */
-	void addClassifyBatch(String homeIconId, String selectcategoryIds);
+	void addClassifyBatch(String homeIconId, List<ColumnHomeIconClassifyDto> classifyList);
 
 }

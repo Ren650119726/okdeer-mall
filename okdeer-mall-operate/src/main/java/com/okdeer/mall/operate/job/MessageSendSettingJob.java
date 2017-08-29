@@ -165,8 +165,8 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 		pushMsgVo.setMsgType(Constant.ONE);
 		pushMsgVo.setMsgTypeCustom(OrderMsgConstant.APP_MESSAGE_SEND);
 
-		// 不使用模板 设置消息名称内容
-		pushMsgVo.setMsgNotifyContent(messageSend.getContext());
+		// 不使用模板 设置消息名称
+		pushMsgVo.setMsgNotifyContent(messageSend.getMessageName());
 		//消息详情类型： 0 链接详情，1内容详情
 		pushMsgVo.setMsgDetailType(Constant.ONE);
 		pushMsgVo.setMsgDetailContent(messageSend.getContext());
