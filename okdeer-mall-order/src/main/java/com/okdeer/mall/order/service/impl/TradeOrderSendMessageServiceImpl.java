@@ -154,21 +154,21 @@ public class TradeOrderSendMessageServiceImpl implements TradeOrderSendMessageSe
         //在消息中心注册的系统编码
         msgDto.setSysCode(msgSysCode);
         //在消息中心注册的token
-        msgDto.setToken(msgToken);
+//        msgDto.setToken(msgToken);
         //是否使用模板方式0不是，1是
         msgDto.setIsUseTemplate(0);
         //是否定时发送 0不是 1是
-        msgDto.setIsTiming(0);
+//        msgDto.setIsTiming(0);
         //消息详情类型
         msgDto.setMsgDetailType(1);
         //备注
-        msgDto.setRemark("");
+//        msgDto.setRemark("");
         //消息类型  0透传消息  1通知
         msgDto.setMsgType(MsgConstant.MsgType.NO_PUSH);
         //表示推送的消息是系统消息 还是物业消息
-        msgDto.setUserTypeSource("systemCode");
+//        msgDto.setUserTypeSource("systemCode");
         //推送类型
-        msgDto.setActualType("getui");
+//        msgDto.setActualType("getui");
         //消息发送
         try {
 			sendMessage(msgDto);
