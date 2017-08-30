@@ -33,7 +33,7 @@
         <if test="activityId != null">
 	       AND activity_id = #{activityId,jdbcType=VARCHAR}
         </if>
-        order by content_type,sort_no;
+        order by sort_no;
     </select>
     
     <insert id="add" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContent" >

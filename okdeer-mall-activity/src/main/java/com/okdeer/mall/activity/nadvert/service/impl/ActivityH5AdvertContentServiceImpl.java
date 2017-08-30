@@ -144,7 +144,7 @@ public class ActivityH5AdvertContentServiceImpl
 				}
 				//设置商品列表
 				if(obj.getContentType() == 2 || obj.getContentType() == 4){
-					List<ActivityH5AdvertContentGoods> goods = goodsService.findByActId(activityId, obj.getId());
+					List<ActivityH5AdvertContentGoods> goods = goodsService.findByActId(activityId, obj.getId(),obj.getContentType());
 					//便利店商品
 					if(obj.getGoodsType() == 1){
 						goods.forEach(good -> {
