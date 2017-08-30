@@ -471,7 +471,8 @@ public class MallStockUpdateBuilder {
 	 * @author maojj
 	 * @date 2017年3月22日
 	 */
-	private void processRefundsNum(StockUpdateDetailDto updateDetail,TradeOrderRefunds orderRefunds,TradeOrderItem orderItem,ActivityTypeEnum actType){
+	private void processRefundsNum(StockUpdateDetailDto updateDetail, TradeOrderRefunds orderRefunds,
+			TradeOrderItem orderItem, ActivityTypeEnum actType) {
 		if(orderItem.getSpuType() != SpuTypeEnum.fwdDdxfSpu){
 			updateDetail.setUpdateNum(orderItem.getQuantity());
 			// 到店消费商品退款，退货数量由退款单项中的数量决定。其他都是与订单项数量等同
@@ -506,7 +507,8 @@ public class MallStockUpdateBuilder {
 	 * @author maojj
 	 * @date 2017年3月21日
 	 */
-	public StockUpdateDto buildForStoreConsume(TradeOrder tradeOrder, StockOperateEnum stockOperateEnum, Integer adjustGoodsNum) throws Exception{
+	public StockUpdateDto buildForStoreConsume(TradeOrder tradeOrder, StockOperateEnum stockOperateEnum,
+			Integer adjustGoodsNum) throws Exception {
 		StockUpdateDto stockUpdateDto = new StockUpdateDto();
 
 		stockUpdateDto.setRpcId(UuidUtils.getUuid());
