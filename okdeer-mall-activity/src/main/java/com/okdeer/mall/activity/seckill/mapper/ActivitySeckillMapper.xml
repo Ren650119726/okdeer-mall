@@ -249,7 +249,7 @@
 		AND sr.city_id = #{cityId,jdbcType=VARCHAR}))
 		AND sec.store_sku_id = gss.id
 		AND gss.store_id = sie.store_id
-		AND sec.publish_client like CONCAT('%','1','%')
+		AND sec.publish_client like CONCAT('%','0','%')
 		AND sie.is_closed = 1 
 		UNION 
 		SELECT
