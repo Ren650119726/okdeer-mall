@@ -111,7 +111,8 @@ public class CheckSecKillServiceImpl implements RequestHandler<PlaceOrderParamDt
 		int userBuyNum = activitySeckillRecordService.findSeckillCount(params);
 		ActivitySeckill seckill = activitySeckillService.findSeckillById(paramDto.getSeckillId());
 		// 判断该设备参与该秒杀的次数是否大于限制次数
-		if (seckill != null && seckill.getDailyMaxNum() != null && userBuyNum >= seckill.getDailyMaxNum().intValue()) {
+		if (seckill != null && seckill.getDailyMaxNum() != null && seckill.getDailyMaxNum().intValue() > 0
+				&& userBuyNum >= seckill.getDailyMaxNum().intValue()) {
 			return true;
 		}
 		return false;
