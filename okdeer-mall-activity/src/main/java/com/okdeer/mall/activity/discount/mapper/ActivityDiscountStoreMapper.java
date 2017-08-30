@@ -13,7 +13,7 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscountStore;
 
 /**
  * ClassName: ActivityDiscountStoreMapper 
- * @Description: TODO
+ * @Description: 此接口和表已经没有使用 活动关联店铺由activity_business_rel替代
  * @author xuzq01
  * @date 2017年8月23日
  *
@@ -22,7 +22,7 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscountStore;
  * ----------------+----------------+-------------------+-------------------------------------------
  *
  */
-
+@Deprecated
 public interface ActivityDiscountStoreMapper extends IBaseMapper {
 
 	/**

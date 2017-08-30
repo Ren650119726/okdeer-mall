@@ -43,7 +43,6 @@ import com.okdeer.mall.activity.discount.entity.ActivityBusinessRel;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountArea;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
-import com.okdeer.mall.activity.discount.entity.ActivityDiscountStore;
 import com.okdeer.mall.activity.discount.enums.ActivityBusinessType;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
@@ -51,7 +50,6 @@ import com.okdeer.mall.activity.discount.mapper.ActivityBusinessRelMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountAreaMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountStoreMapper;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.dto.ActivityBusinessRelDto;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
@@ -110,9 +108,6 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	
 	@Resource
 	private ActivityDiscountAreaMapper activityDiscountAreaMapper;
-	
-	@Resource
-	private ActivityDiscountStoreMapper activityDiscountStoreMapper;
 	
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -583,10 +578,15 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		}
 		//店铺
 		if(areaType == AreaType.store){
-			ActivityDiscountStore discountStore = activityDiscountStoreMapper.findDiscountStore(activityPinMoneyDto.getId(),storeId);
-			return discountStore == null ? false:true;
+			// 共用原来方法 查询列表后遍历
+			List<ActivityBusinessRel> relList = activityBusinessRelMapper.findByActivityId(activityPinMoneyDto.getId());
+			for(ActivityBusinessRel rel : relList){
+				if(storeId.equals(rel.getBusinessId())){
+					return true;
+				}
+			}
 		}
-		return true;
+		return false;
 	}
 
 	@Override
