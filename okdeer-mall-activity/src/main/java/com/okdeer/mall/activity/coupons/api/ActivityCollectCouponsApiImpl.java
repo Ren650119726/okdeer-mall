@@ -26,8 +26,14 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 
 	@Override
 	public TakeActivityCouponResultDto takeActivityCoupon(TakeActivityCouponParamDto activityCouponParamDto) {
-		
-		return activityCollectCouponsService.takeActivityCoupon(activityCouponParamDto);
+		try {
+			return activityCollectCouponsService.takeActivityCoupon(activityCouponParamDto) ;
+		} catch (Exception e) {
+			TakeActivityCouponResultDto activityCouponResultDto = new TakeActivityCouponResultDto();
+			activityCouponResultDto.setCode(110);
+			activityCouponResultDto.setMsg("服务器繁忙，领取失败!");
+			return activityCouponResultDto;
+		}
 	}
 
 }

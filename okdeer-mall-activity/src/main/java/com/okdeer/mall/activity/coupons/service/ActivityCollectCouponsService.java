@@ -140,5 +140,5 @@ public interface ActivityCollectCouponsService {
 	 * @author zengjizu
 	 * @date 2017年8月24日
 	 */
-	TakeActivityCouponResultDto takeActivityCoupon(TakeActivityCouponParamDto activityCouponParamDto); 
+	TakeActivityCouponResultDto takeActivityCoupon(TakeActivityCouponParamDto activityCouponParamDto) throws Exception; 
 }

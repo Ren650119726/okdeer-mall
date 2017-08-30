@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsRecordMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecord" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="coupons_collect_id" property="couponsCollectId" jdbcType="VARCHAR" />
+        <result column="phone_no" property="phoneNo" jdbcType="VARCHAR" />
+        <result column="collect_time" property="collectTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, coupons_collect_id, phone_no, collect_time
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_collect_coupons_record
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecord" >
+        insert into activity_collect_coupons_record
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="couponsCollectId != null" >
+                coupons_collect_id,
+            </if>
+            <if test="phoneNo != null" >
+                phone_no,
+            </if>
+            <if test="collectTime != null" >
+                collect_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="couponsCollectId != null" >
+                #{couponsCollectId,jdbcType=VARCHAR},
+            </if>
+            <if test="phoneNo != null" >
+                #{phoneNo,jdbcType=VARCHAR},
+            </if>
+            <if test="collectTime != null" >
+                #{collectTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecord" >
+        update activity_collect_coupons_record
+        <set >
+            <if test="couponsCollectId != null" >
+                coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR},
+            </if>
+            <if test="phoneNo != null" >
+                phone_no = #{phoneNo,jdbcType=VARCHAR},
+            </if>
+            <if test="collectTime != null" >
+                collect_time = #{collectTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_collect_coupons_record
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+	
+	<sql id="ActivityCollectCouponsRecordParamSql">
+		<if test="couponsCollectId != null and couponsCollectId != ''">
+			AND coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR}
+		</if>
+		<if test="phoneNo != null and phoneNo != ''">
+			AND phone_no = #{phoneNo,jdbcType=VARCHAR}
+		</if>
+		 <if test="collectStartTime !=null and collectStartTime != ''">
+	  	 		<![CDATA[AND collect_time >= #{collectStartTime,jdbcType=VARCHAR}]]>
+		  </if>
+		  <if test="collectEndTime !=null and collectEndTime != ''">
+		  	    <![CDATA[AND collect_time <= #{collectEndTime,jdbcType=VARCHAR}]]>
+		  </if>
+	</sql>
+	<select id="findCountByParams" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityCollectCouponsRecordParamBo" resultType="java.lang.Integer">
+		SELECT count(1) FROM activity_collect_coupons_record WHERE 1=1 
+		<include refid="ActivityCollectCouponsRecordParamSql" />
+	</select>
+</mapper>
