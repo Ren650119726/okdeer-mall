@@ -943,6 +943,14 @@
 		<if test="status != null and status != ''">
 			and status = #{status, jdbcType=TINYINT}
 		</if>
+		<!-- 订单来源，多个时使用IN -->
+		<if test="null!=orderResources">
+			AND order_resource IN
+			<foreach collection="orderResources" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
 	</select>
 
 	<select id="selectByParamsTrade" resultMap="BaseResultMap"
