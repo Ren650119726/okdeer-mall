@@ -28,7 +28,13 @@
     	select 
         <include refid="Base_Column_List" />
         from activity_h5_advert_content_adv
-        where activity_id = #{activityId,jdbcType=VARCHAR}
+        where 1=1
+        <if test="activityId != null">
+        	 AND activity_id = #{activityId,jdbcType=VARCHAR}
+        </if>	
+        <if test="contentId != null">
+        	 AND content_id = #{contentId,jdbcType=VARCHAR}
+        </if>
     </select>
 
     <insert id="add" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentAdv" >

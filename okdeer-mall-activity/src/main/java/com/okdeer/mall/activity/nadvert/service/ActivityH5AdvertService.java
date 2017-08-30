@@ -43,6 +43,17 @@ public interface ActivityH5AdvertService{
 	void update(ActivityH5AdvertBo bo) throws Exception;
 	
 	/**
+	 * 
+	 * @Description: 更新ActivityH5Advert
+	 * @param entity
+	 * @throws Exception void
+	 * @throws
+	 * @author mengsj
+	 * @date 2017年8月11日
+	 */
+	void updateNoContent(ActivityH5Advert bo) throws Exception;
+	
+	/**
 	 * @Description: 通过id查询ActivityH5Advert对象
 	 * @param id
 	 * @return ActivityH5Advert

@@ -131,4 +131,10 @@ public class ActivityH5AdvertApiImpl implements ActivityH5AdvertApi {
 		PageUtils<ActivityH5AdvertContentGoods> page = contentGoodsService.findBldGoodsByActivityId(storeId, activityId, contentId, pageNumber, pageSize);
 		return  page.toBean(ActivityH5AdvertContentGoodsDto.class);
 	}
+
+	@Override
+	public void updateNoContent(ActivityH5AdvertDto entity) throws Exception {
+		ActivityH5Advert advert = BeanMapper.map(entity, ActivityH5Advert.class);
+		advertService.updateNoContent(advert);
+	}
 }

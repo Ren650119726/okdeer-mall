@@ -25,7 +25,7 @@ public interface ActivityH5AdvertContentGoodsService {
 	 * @author mengsj
 	 * @date 2017年8月11日
 	 */
-	List<ActivityH5AdvertContentGoods> findByActId(String activityId,String contentId);
+	List<ActivityH5AdvertContentGoods> findByActId(String activityId,String contentId,Integer goodsType);
 	
 	/**
 	 * @Description: 删除与h5活动内容关联的商品对象

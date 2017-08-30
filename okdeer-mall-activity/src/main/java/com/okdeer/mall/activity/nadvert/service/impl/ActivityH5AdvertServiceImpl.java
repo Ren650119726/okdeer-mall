@@ -141,4 +141,10 @@ public class ActivityH5AdvertServiceImpl implements ActivityH5AdvertService {
 	public void updateBatchStatus(ActivityH5Advert entity) throws Exception {
 		mapper.updateBatchStatus(entity);
 	}
+
+	@Override
+	public void updateNoContent(ActivityH5Advert entity) throws Exception {
+		entity.setUpdateTime(new Date());
+		mapper.update(entity);
+	}
 }
