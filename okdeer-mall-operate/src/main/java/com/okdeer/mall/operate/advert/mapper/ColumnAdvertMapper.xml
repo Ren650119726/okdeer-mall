@@ -1296,6 +1296,9 @@
 		<if test="type != null">
 		    and version.type = #{type}
 		</if>
+		<if test="positionId != null and positionId != ''">
+		    and c.position_id = #{positionId}
+		</if>
 		order by sort desc , create_time desc
 	</select>
 	
