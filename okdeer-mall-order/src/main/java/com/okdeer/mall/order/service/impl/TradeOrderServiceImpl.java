@@ -1020,7 +1020,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             vo.setIds(null);
         }
         //add by zhangkeneng 优化性能,先把用户的组织关联的店铺idlist查出来,避免关联查询
-        List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(vo.getCurrentUserId());
+        List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(vo.getCurrentUserId(),0);
         vo.setStoreIdList(storeIdList);
         List<PhysicsOrderVo> result = tradeOrderMapper.selectOrderBackStage(vo);
 
@@ -1230,7 +1230,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             vo.setIds(null);
         }
         //add by zhangkeneng 优化性能,先把用户的组织关联的店铺idlist查出来,避免关联查询
-        List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(vo.getCurrentUserId());
+        List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(vo.getCurrentUserId(),0);
         vo.setStoreIdList(storeIdList);
         PageHelper.startPage(pageNumber, pageSize, true, false);
         List<PhysicsOrderVo> result = tradeOrderMapper.selectOrderBackStageNew(vo);
@@ -5235,7 +5235,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                                                                              int pageSize) throws ServiceException {
 
         //add by zhangkeneng 优化代码提高性能,先查出登陆人组织关联的storeIdList,再in
-        List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(params.get(Constant.CURR_USER_ID).toString());
+        List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(params.get(Constant.CURR_USER_ID).toString(),0);
         params.put("storeIdList", storeIdList);
 
         List<PhysicsOrderVo> result = null;
