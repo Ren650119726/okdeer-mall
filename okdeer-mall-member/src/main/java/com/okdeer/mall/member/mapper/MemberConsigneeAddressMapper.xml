@@ -899,9 +899,7 @@
 		FROM member_consignee_address t
 		WHERE t.user_id = #{userId}
 		AND t.disabled=0
-		<if test="clientType == 1 or clientType == 3">
-	    	AND t.source = 1
-	    </if>
+	    AND t.source = 1
 		ORDER BY t.update_time DESC
   </select>
   <!-- End added by maojj 2016-09-24 1.1 -->
