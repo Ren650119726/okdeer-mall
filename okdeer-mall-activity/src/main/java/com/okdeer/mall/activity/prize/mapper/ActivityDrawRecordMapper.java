@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.activity.prize.dto.ActivityDrawRecordParamDto;
 
 /**
  * ClassName: ActivityDrawRecordMapper 
@@ -35,7 +36,7 @@ public interface ActivityDrawRecordMapper extends IBaseMapper {
 	 * @author xuzq01
 	 * @date 2016年12月8日
 	 */
-	int findCountByUserIdAndActivityId(@Param("userId")String userId,@Param("ids")List<String> luckDrawId);
+	int findCountByUserIdAndActivityId(ActivityDrawRecordParamDto params);
 	
 	
 

@@ -934,6 +934,26 @@
 		<if test="orderNo != null and orderNo != ''">
 			and order_no = #{orderNo, jdbcType=VARCHAR}
 		</if>
+		<if test="userId != null and userId !='' ">
+		  	AND user_id = #{userId,jdbcType=VARCHAR} 
+		</if>
+		<if test="status != null">
+			AND status = #{status,jdbcType=TINYINT} 
+		</if>
+		<!-- 起始时间-->
+		<if test="startReceivedTime != null">
+			AND received_time <![CDATA[ >= ]]>
+				#{startReceivedTime,jdbcType=TIMESTAMP}
+		</if>
+		<!-- 起始时间-->
+		<if test="endReceivedTime != null">
+			AND received_time <![CDATA[ <= ]]>
+				#{endReceivedTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="orderBy != null and orderBy !='' ">
+		  	ORDER BY received_time
+		</if>
+		
 	</select>
 
 	<select id="selectByParamsTrade" resultMap="BaseResultMap"
@@ -6098,7 +6118,6 @@
 						#{endTime,jdbcType=TIMESTAMP}
 				</if>
 	</select>
-	
 	
 	<!--begin add by zhulq 2017-02-18 到店消费订单导出列表优化-->
 	<!-- 根据城市名称获取订单列表 -->

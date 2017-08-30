@@ -44,10 +44,8 @@ public class TradeOrderSubScriber {
 		TradeOrder tradeOrder = (TradeOrder) enMessage.getContent();
 		logger.debug("订单完成后处理开始：{}", JsonMapper.nonEmptyMapper().toJson(tradeOrder));
 		try {
-			//处理订单完成后的业务功能之一  邀新活动 被邀用户下单完成后给 邀请人送代金劵及抽奖次数
-			//tradeOrderSubScriberHandler.activityInviteHandler(tradeOrder);
-			//处理手机充值订单完成后的业务功能之一 手机充值后赠送刮奖机会，手机刮刮乐活动
-			//tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
+			//九月活动需求 改为已完成订单（原来为消费即可获取抽奖次数）
+			tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 		} catch (Exception e) {
 			logger.error("订单完成后处理业务异常：{}",JsonMapper.nonEmptyMapper().toJson(tradeOrder), e);
