@@ -9,6 +9,7 @@ package com.okdeer.mall.activity.prize.service;
 import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.activity.prize.dto.ActivityDrawRecordParamDto;
 
 /**
  * ClassName: ActivityDrawRecordService 
@@ -37,6 +38,11 @@ public interface ActivityDrawRecordService extends IBaseService {
 	 * @date 2017年1月12日
 	 */
 	int findCountByUserIdAndIds(String userId, List<String> ids);
+	
+	/**
+	 * 根据用户参数查询抽奖次数
+	 */
+	int findCountByParams(ActivityDrawRecordParamDto params);
 	
 	/**
 	 * @Description:插入用户抽奖记录

@@ -14,7 +14,7 @@
         id, user_id, activity_advert_id, model_id, create_time, disabled
     </sql>
 	<!-- 根据用户id及抽奖活动id查询用户抽奖次数，模板后activity_advert_id存储抽奖活动id -->
-	<select id="findCountByUserIdAndActivityId" resultType="java.lang.Integer" >
+	<select id="findCountByUserIdAndActivityId" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.prize.dto.ActivityDrawRecordParamDto">
         select  count(1)
         from activity_draw_record
         where disabled=0 
@@ -27,6 +27,16 @@
 					close=")" separator=",">
 					#{item}
 				</foreach>
+			</if>
+			<!-- 起始时间-->
+			<if test="startCreateTime != null">
+				AND create_time <![CDATA[ >= ]]>
+					#{startCreateTime,jdbcType=TIMESTAMP}
+			</if>
+			<!-- 结束时间-->
+			<if test="endCreateTime != null">
+				AND create_time <![CDATA[ <= ]]>
+					#{endCreateTime,jdbcType=TIMESTAMP}
 			</if>
     </select>
 
