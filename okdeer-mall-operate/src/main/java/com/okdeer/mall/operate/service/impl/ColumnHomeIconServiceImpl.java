@@ -87,7 +87,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		return homeIconMapper.findList(paramDto);
 	}
 
-	@Transactional(rollbackFor = Exception.class)
+	
 	@Override
 	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> storeSkuIds, List<Integer> sorts,
 	        List<String> versions) throws Exception {
@@ -209,6 +209,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		return new BaseResult();
 	}
 	
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> goodsIds,
 			List<Integer> sorts, List<String> versions, List<ColumnHomeIconClassifyDto> classifyList) throws Exception {
@@ -222,6 +223,7 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 		if(entity.getTaskType() == HomeIconTaskType.classify && CollectionUtils.isNotEmpty(categoryIds)){
 			// 查询标准库商品id
 			List<GoodsStoreSkuDto> skuList = goodsStoreSkuApi.findGoodByCateroyIds(categoryIds);
+			List<ColumnHomeIconGoods> goodsList = new ArrayList<>();
 			
 			// 保存到首页ICON商品关联表
 			for(GoodsStoreSkuDto sku: skuList){
@@ -229,8 +231,11 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 				goods.setId(UuidUtils.getUuid());
 				goods.setHomeIconId(entity.getId());
 				goods.setSkuId(sku.getSkuId());
-				
-				homeIconGoodsService.add(goods);
+				goods.setSort(goodsList.size());
+				goodsList.add(goods);
+			}
+			if (goodsList.size() > 0) {
+				homeIconGoodsService.insertMore(goodsList);
 			}
 		}
 		return new BaseResult();
