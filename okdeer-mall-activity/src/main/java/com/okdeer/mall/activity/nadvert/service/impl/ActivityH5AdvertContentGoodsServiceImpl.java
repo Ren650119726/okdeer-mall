@@ -55,9 +55,9 @@ public class ActivityH5AdvertContentGoodsServiceImpl
 
 	@Override
 	public List<ActivityH5AdvertContentGoods> findByActId(String activityId,
-			String contentId) {
+			String contentId,Integer goodsType) {
 		if(StringUtils.isNotBlank(activityId)){
-			List<ActivityH5AdvertContentGoods> goods = mapper.findByActId(activityId, contentId);
+			List<ActivityH5AdvertContentGoods> goods = mapper.findByActId(activityId, contentId,goodsType);
 			return goods;
 		}
 		return new ArrayList<>();

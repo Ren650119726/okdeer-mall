@@ -28,12 +28,13 @@ public interface ActivityH5AdvertContentGoodsMapper extends IBaseMapper {
 	 * @Description: 通过活动id，活动内容id查询与活动内容关联的商品列表
 	 * @param activityId
 	 * @param contentId
+	 * @param goodsType
 	 * @return List<ActivityH5AdvertContentGoods>
 	 * @throws
 	 * @author mengsj
 	 * @date 2017年8月12日
 	 */
-	List<ActivityH5AdvertContentGoods> findByActId(@Param("activityId")String activityId,@Param("contentId")String contentId);
+	List<ActivityH5AdvertContentGoods> findByActId(@Param("activityId")String activityId,@Param("contentId")String contentId,@Param("goodsType")Integer goodsType);
 	
 	/**
 	 * @Description: 删除与h5活动内容关联的商品对象

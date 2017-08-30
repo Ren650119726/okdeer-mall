@@ -30,12 +30,13 @@
         where id = #{id,jdbcType=VARCHAR}
     </select>
 
-    <select id="findByActId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    <select id="findByActId" resultMap="BaseResultMap" parameterType="java.lang.Object" >
         select 
         	aa.id, 
         	aa.activity_id, 
         	aa.content_id, 
-        	aa.store_sku_id, 
+        	aa.store_sku_id,
+        	sku.name sku_name, 
         	aa.pic_url, 
         	aa.create_time, 
         	(case when bb.url is not null then bb.url when dd.url then dd.url end) goods_sku_pic,
@@ -46,9 +47,14 @@
         from activity_h5_advert_content_goods aa
         LEFT JOIN goods_sku cc ON aa.store_sku_id = cc.id
         LEFT JOIN goods_sku_picture bb ON (aa.store_sku_id = bb.sku_id AND bb.type = 1)
-        LEFT JOIN goods_store_sku sku on aa.store_sku_id = sku.id
-        LEFT JOIN goods_store_sku_picture dd ON (aa.store_sku_id = dd.store_sku_id AND dd.type = 1) 
-        LEFT JOIN goods_store_sku_stock stock ON stock.store_sku_id = aa.store_sku_id
+        LEFT JOIN goods_store_sku sku on (
+	        <choose>
+	        	<when test="goodsType == 1">aa.store_sku_id = sku.sku_id</when>
+	        	<otherwise>aa.store_sku_id = sku.id</otherwise>
+	        </choose>
+        )
+        LEFT JOIN goods_store_sku_picture dd ON (sku.id = dd.store_sku_id AND dd.type = 1) 
+        LEFT JOIN goods_store_sku_stock stock ON stock.store_sku_id = sku.id
         LEFT JOIN activity_seckill ee ON (ee.store_sku_id = aa.store_sku_id AND seckill_status = 1)
         where 
         	1=1
