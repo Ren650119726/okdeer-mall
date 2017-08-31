@@ -149,6 +149,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		}
 		String guid = UuidUtils.getUuid();
 		entity.setId(guid);
+		entity.setStatus(0);
 		entity.setCreateTime(new Date());
 		entity.setUpdateTime(new Date());
 		int result = messageSendSettingService.add(entity);
@@ -275,7 +276,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
 		infoList.forEach(user -> {
-			if(user.getUserPhone() != null){
+			if(StringUtils.isNotEmpty(user.getUserPhone())){
 				PushUserVo pushUser = new PushUserVo();
 				pushUser.setUserId(user.getUserId());
 				pushUser.setMsgType(Constant.ONE);
