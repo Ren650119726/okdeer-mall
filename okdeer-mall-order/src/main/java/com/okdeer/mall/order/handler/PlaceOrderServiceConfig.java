@@ -173,7 +173,7 @@ public class PlaceOrderServiceConfig {
 		// 第四步：校验商品库存
 		chain.addHandlerChain(checkServStockService);
 		// 查询零花钱信息
-		chain.addHandlerChain(findPinMoneyService);
+//		chain.addHandlerChain(findPinMoneyService);
 		// 第五步：查询最优用户地址
 		chain.addHandlerChain(findUserAddrService);
 		return chain;
@@ -191,7 +191,7 @@ public class PlaceOrderServiceConfig {
 		// 第四步：校验商品库存
 		chain.addHandlerChain(checkServStockService);
 		// 校验零花钱信息
-		chain.addHandlerChain(checkPinMoneyService);
+//		chain.addHandlerChain(checkPinMoneyService);
 		// 第五步：生成订单
 		chain.addHandlerChain(placeSeckillOrderService);
 		return chain;
