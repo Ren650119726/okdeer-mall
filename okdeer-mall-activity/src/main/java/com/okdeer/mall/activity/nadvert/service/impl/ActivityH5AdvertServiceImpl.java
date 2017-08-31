@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.mall.activity.coupons.enums.ActivityStatus;
 import com.okdeer.mall.activity.nadvert.bo.ActivityH5AdvertBo;
 import com.okdeer.mall.activity.nadvert.bo.ActivityH5AdvertContentBo;
 import com.okdeer.mall.activity.nadvert.entity.ActivityH5Advert;
@@ -60,6 +61,7 @@ public class ActivityH5AdvertServiceImpl implements ActivityH5AdvertService {
 		entity.setCreateTime(new Date());
 		entity.setUpdateTime(entity.getCreateTime());
 		entity.setUpdateUserId(entity.getCreateUserId());
+		entity.setStatus(ActivityStatus.notStarted.ordinal());
 		mapper.add(entity);
 		//保存h5活动规则和内容
 		saveRoleAndContent(bo);
@@ -88,6 +90,7 @@ public class ActivityH5AdvertServiceImpl implements ActivityH5AdvertService {
 	}
 
 	@Override
+	@Transactional(rollbackFor=Exception.class)
 	public void update(ActivityH5AdvertBo bo) throws Exception {
 		ActivityH5Advert  advert = bo.getAdvert();
 		advert.setUpdateTime(new Date());
