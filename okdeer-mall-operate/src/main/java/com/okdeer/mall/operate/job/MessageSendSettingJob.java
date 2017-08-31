@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -179,7 +180,7 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
 		infoList.forEach(user -> {
-			if(user.getUserPhone() != null){
+			if(StringUtils.isNotEmpty(user.getUserPhone())){
 				PushUserVo pushUser = new PushUserVo();
 				pushUser.setUserId(user.getUserId());
 				pushUser.setMsgType(Constant.ONE);
