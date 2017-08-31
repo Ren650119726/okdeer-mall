@@ -516,24 +516,28 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	 * @author guocp
 	 * @date 2017年4月11日
 	 */
-	private List<SysUserLoginLog> saveUserLoginLog( final String token, final String deviceId,
-			final String userId, final Integer clientType) {
+	private List<SysUserLoginLog> saveUserLoginLog(RequestParams parameters, final String userId) {
 
-		List<SysUserLoginLog> sysUserLoginLogs = sysUserLoginLogService.findAllByUserId(userId, null, deviceId, clientType);
+		Integer clientType = StringUtils.isNotBlank(parameters.getClientType())
+				? Integer.valueOf(parameters.getClientType()) : ClientTypeEnum.CVS.getCode();
+		List<SysUserLoginLog> sysUserLoginLogs = sysUserLoginLogService.findAllByUserId(userId, null,
+				parameters.getMachineCode(), clientType);
 		Date data = new Date();
 		// 设置设备登陆信息
 		if (!CollectionUtils.isEmpty(sysUserLoginLogs)) {
 			SysUserLoginLog sysLog = BeanMapper.map(sysUserLoginLogs.get(0), SysUserLoginLog.class);
 			sysLog.setIsLogin(SysUserLoginLog.IS_LOGIN_STAUE_1);
-			sysLog.setToken(token);
+			sysLog.setToken(parameters.getToken());
+			sysLog.setVersion(parameters.getVersion());
 			sysLog.setUpdateTime(data);
 			sysUserLoginLogService.updateSysUserLoginLog(sysLog);
 		} else {
 			SysUserLoginLog sysLog = new SysUserLoginLog();
 			sysLog.setId(UuidUtils.getUuid());
-			sysLog.setDeviceId(deviceId);
+			sysLog.setDeviceId(parameters.getMachineCode());
 			sysLog.setIsLogin(SysUserLoginLog.IS_LOGIN_STAUE_1);
-			sysLog.setToken(token);
+			sysLog.setVersion(parameters.getVersion());
+			sysLog.setToken(parameters.getToken());
 			sysLog.setUserId(userId);
 			sysLog.setCreateTime(data);
 			sysLog.setUpdateTime(data);
@@ -638,7 +642,8 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 			resultBuyerUserVo = new BuyerUserVo();
 			
 			//查询用户邀请码
-			SysUserInvitationCode invitationCode = this.invitationCodeService.findInvitationCodeByUserId(sysBuyerUserItemDto.getId(), InvitationUserType.phoneUser);
+			SysUserInvitationCode invitationCode = this.invitationCodeService
+					.findInvitationCodeByUserId(sysBuyerUserItemDto.getId(), InvitationUserType.phoneUser);
 			//当邀请码为空时，让用户继续登录  start 涂志定
 			if(invitationCode != null){
 				resultBuyerUserVo.setInvitationCode(invitationCode.getInvitationCode());
@@ -647,10 +652,8 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 			PropertyUtils.copyProperties(resultBuyerUserVo, sysBuyerUserItemDto);
 			resultBuyerUserVo.setUserId(sysBuyerUserItemDto.getId());
 		}
-		Integer clientType = StringUtils.isNotBlank(clientTypeStr) ? Integer.valueOf(clientTypeStr)
-				: ClientTypeEnum.CVS.getCode();
 		//保存用户登入日志
-		List<SysUserLoginLog> sysUserLoginLogs = saveUserLoginLog(parameters.getToken(),parameters.getMachineCode(),sysBuyerUserItemDto.getId(),clientType);
+		List<SysUserLoginLog> sysUserLoginLogs = saveUserLoginLog(parameters, sysBuyerUserItemDto.getId());
 		Map<String, Object> requestMap = Maps.newHashMap();
 		requestMap .put("sysUserLoginLogs", sysUserLoginLogs);
 		requestMap.put("resultBuyerUserVo", resultBuyerUserVo);
