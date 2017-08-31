@@ -423,7 +423,7 @@ public class TradeOrderBuilder {
 			// 使用零花钱
 			BigDecimal usePinMoney = BigDecimal.ZERO;
 			BigDecimal preferentialPrice = tradeOrder.getPreferentialPrice();
-			if(paramDto.getIsUsePinMoney()){
+			if(PlaceOrderTypeEnum.SECKILL_ORDER != paramDto.getOrderType() && paramDto.getIsUsePinMoney()){
 				BigDecimal pinMoney = (BigDecimal) paramDto.get("pinMoneyAmount");
 				usePinMoney =  actualAmount.compareTo(pinMoney) >= 0 ? pinMoney : actualAmount;
 				actualAmount = actualAmount.subtract(usePinMoney);
