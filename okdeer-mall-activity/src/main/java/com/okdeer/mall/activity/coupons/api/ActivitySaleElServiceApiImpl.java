@@ -1,26 +1,6 @@
 
 package com.okdeer.mall.activity.coupons.api;
 
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_UPDATE;
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_DEL;
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_UPDATE;
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_LOWPRICE_EL_EDIT;
-import static com.okdeer.common.consts.ELTopicTagConstants.TAG_STOCK_EL_UPDATE;
-import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
-import static com.okdeer.common.consts.StoreMenuTopicTagConstants.TAG_STORE_MENU_UPDATE;
-import static com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum.LOW_PRICE;
-import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_EDIT_ACTIVITY_SALE_GOODS;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.common.message.Message;
@@ -43,19 +23,39 @@ import com.okdeer.mall.activity.dto.ActivitySaleGoodsParamDto;
 import com.okdeer.mall.activity.service.ArchiveSendMsgService;
 import com.okdeer.mall.operate.contants.OperateFieldContants;
 import com.okdeer.mall.operate.dto.GoodsChangedMsgDto;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_LOWPRICE_GOOD_EL_ADD;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_DEL;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_GOOD_EL_ADD;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SALE_LOWPRICE_EL_EDIT;
+import static com.okdeer.common.consts.ELTopicTagConstants.TAG_STOCK_EL_UPDATE;
+import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
+import static com.okdeer.common.consts.StoreMenuTopicTagConstants.TAG_STORE_MENU_UPDATE;
+import static com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum.LOW_PRICE;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_EDIT_ACTIVITY_SALE_GOODS;
 
 /**
- * 
- * ClassName: ActivitySaleElServiceApiImpl 
- * @Description: 
+ *
+ * ClassName: ActivitySaleElServiceApiImpl
+ * @Description:
  * @author tangy
  * @date 2017年2月21日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *     V2.1.0          2017年2月21日                               tangy           增量添加活动库存     
- *     V2.1.0          2017年2月22日                               tangy           库存变更通知搜索引擎    
+ *     V2.1.0          2017年2月21日                               tangy           增量添加活动库存
+ *     V2.1.0          2017年2月22日                               tangy           库存变更通知搜索引擎
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivitySaleELServiceApi")
 public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
@@ -70,25 +70,25 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 
     @Autowired
     private ActivitySaleService activitySaleService;
-    
+
     @Autowired
     private ActivitySaleGoodsService activitySaleGoodsService;
 
     @Autowired
     private ActivitySaleGoodsServiceApi activitySaleGoodsServiceApi;
-    
+
     /**
      * 消息管理-service
      */
     @Autowired
     private ArchiveSendMsgService archiveSendMsgService;
-    
+
     /**
      * add by mengsj
      * @Fields storeInfoService : 注入店铺service
      */
     @Reference(version = "1.0.0", check = false)
-    private StoreInfoServiceApi storeInfoServiceApi;	
+    private StoreInfoServiceApi storeInfoServiceApi;
 
     @Override
     public void save(ActivitySale activitySale, List<ActivitySaleGoods> asgList) throws Exception {
@@ -123,7 +123,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         paramDto.setSkuIds(list);
         paramDto.setUpdateStatus(String.valueOf(0));
         structureProducer(paramDto, TAG_LOWPRICE_EL_UPDATE);
-        
+
         // add by mengsj begin 发送运营栏位更新信息20170422
         GoodsChangedMsgDto data = new GoodsChangedMsgDto();
         StoreInfo store = storeInfoServiceApi.findById(ActivitySale.getStoreId());
@@ -170,7 +170,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         StoreMenuParamDto paramDto = new StoreMenuParamDto();
         paramDto.setStoreId(storeId);
         archiveSendMsgService.structureProducerStoreMenu(paramDto, TAG_STORE_MENU_UPDATE);
-        
+
         // add by mengsj begin 发送运营栏位更新信息20170422
         GoodsChangedMsgDto data = new GoodsChangedMsgDto();
         StoreInfo store = storeInfoServiceApi.findById(storeId);
@@ -194,17 +194,17 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         paramDto.setUpdateStatus(String.valueOf(0));
         paramDto.setSkuIds(list);
         structureProducer(paramDto, TAG_SALE_EL_DEL);
-        
+
         StoreMenuParamDto menuParamDto = new StoreMenuParamDto();
         menuParamDto.setStoreId(storeId);
         archiveSendMsgService.structureProducerStoreMenu(menuParamDto,TAG_STORE_MENU_UPDATE);
-        
+
         //added by zhaoqc 特惠活动删除商品时发送栏位变更消息 
         StoreInfo store = storeInfoServiceApi.findById(storeId);
         GoodsChangedMsgDto data = new GoodsChangedMsgDto();
         data.setStoreId(store.getId());
         data.setCityId(store.getCityId());
-        
+
         produceMessage(data, OperateFieldContants.TAG_SALE_ACTIVITY_GOODS_DELETE);
         //added by zhaoqc
     }
@@ -222,10 +222,10 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         Message msg = new Message(TOPIC_GOODS_SYNC_EL, tag, json.getBytes(Charsets.UTF_8));
         rocketMQProducer.send(msg);
     }
-    
+
     /**
      * 发送运营栏位消息
-     * @Description: 
+     * @Description:
      * @param data
      * @param tag
      * @throws Exception void
@@ -239,7 +239,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         anMessage.setContent(data);
         rocketMQProducer.sendMessage(anMessage);
     }
-    
+
     @Override
     public void updateSaleStock(ActivitySale activitySale, ActivitySaleGoods activitySaleGoods) throws Exception {
     	activitySaleService.updateSaleStock(activitySale, activitySaleGoods);
@@ -256,10 +256,10 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         produceMessage(data, TAG_EDIT_ACTIVITY_SALE_GOODS);
         //add by mengsj end 发送更新运营栏位信息
     }
-    
+
     @Override
     public void updateActivitySaleGoods(ActivitySaleGoods activitySaleGoods) throws Exception {
-    	activitySaleGoodsServiceApi.updateActivitySaleGoods(activitySaleGoods);    	
+    	activitySaleGoodsServiceApi.updateActivitySaleGoods(activitySaleGoods);
     	// 更新搜索引擎
     	List<String> skuIds = new ArrayList<String>();
     	skuIds.add(activitySaleGoods.getStoreSkuId());
@@ -267,7 +267,7 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
         paramDto.setSkuIds(skuIds);
         paramDto.setActivityId(activitySaleGoods.getSaleId());
         archiveSendMsgService.structureProducerELGoods(paramDto, TAG_SALE_LOWPRICE_EL_EDIT);
-        
+
         //added by zhaoqc 活动商品编辑顺序价格是发送消息
         GoodsChangedMsgDto data = new GoodsChangedMsgDto();
         ActivitySale activitySale = this.activitySaleService.get(activitySaleGoods.getSaleId());
@@ -278,13 +278,27 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
             produceMessage(data, TAG_EDIT_ACTIVITY_SALE_GOODS);
         }
         //added by zhaoqc 2017-4-28
-        
+
     }
 
 	@Override
 	public void addActivitySaleGoodsList(String storeId, String createUserId, String activityId,
 			List<ActivitySaleGoods> activitySaleGoodsList) throws Exception {
 		activitySaleGoodsService.saveBatch(activitySaleGoodsList);
-		
+        ActivitySale sale = activitySaleService.get(activityId);
+		//特惠活动新增商品
+        ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
+        paramDto.setSkuIds(activitySaleGoodsList.stream().map(e -> e.getStoreSkuId()).collect(Collectors.toList()));
+        paramDto.setActivityId(activityId);
+        switch (sale.getType()){
+            case SALE_ACTIVITIES:
+                archiveSendMsgService.structureProducerELGoods(paramDto, TAG_SALE_GOOD_EL_ADD);
+                break;
+            case LOW_PRICE:
+                archiveSendMsgService.structureProducerELGoods(paramDto, TAG_LOWPRICE_GOOD_EL_ADD);
+                break;
+            default:
+                break;
+        }
 	}
 }
