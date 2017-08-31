@@ -101,8 +101,9 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 		try {
 			logger.info("app消息推送定时器开始-----" + DateUtils.getDateTime());
 			
-			// 1 查询所有推送状态为未推送的消息列表
-			List<MessageSendSetting> messageSendList = messageSendSettingService.findMessageListByStatus(0);
+			// 1 查询当前时间未推送的所有的消息列表
+			Date sendTime = new Date();
+			List<MessageSendSetting> messageSendList = messageSendSettingService.findMessageListByStatus(0,sendTime);
 			if (CollectionUtils.isNotEmpty(messageSendList)) {
 				for (MessageSendSetting messageSend : messageSendList) {
 					//2 获取要发送的用户对象列表 

@@ -190,6 +190,9 @@
         <if test="status != null" >
             AND status = #{status,jdbcType=TINYINT}
         </if>
+        <if test="sendTime != null" >
+            AND send_time <![CDATA[ <= ]]> #{sendTime,jdbcType=TIMESTAMP}
+        </if>
         order by create_time desc
     </select>
     
