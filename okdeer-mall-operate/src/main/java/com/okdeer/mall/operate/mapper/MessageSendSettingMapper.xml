@@ -243,6 +243,6 @@
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR} 
-        and send_time > #{sendTime,jdbcType=TIMESTAMP}
+        and status=0
     </update>
 </mapper>

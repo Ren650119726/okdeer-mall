@@ -585,8 +585,9 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 					return true;
 				}
 			}
+			return false;	
 		}
-		return false;
+		return true;
 	}
 
 	@Override
