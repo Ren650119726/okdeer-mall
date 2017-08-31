@@ -444,7 +444,7 @@ public class StoreSkuParserBo {
 			return ;
 		}
 		this.componentSkuMap = componentSkuList.stream()
-				.collect(Collectors.groupingBy(StoreSkuComponentDto::getComponentSkuId));
+				.collect(Collectors.groupingBy(StoreSkuComponentDto::getStoreSkuId));
 	}
 	
 	/**
