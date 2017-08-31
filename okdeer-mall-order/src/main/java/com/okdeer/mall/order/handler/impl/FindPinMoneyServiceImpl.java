@@ -16,6 +16,7 @@ import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.TradePinMoneyObtainService;
 
@@ -41,8 +42,11 @@ public class FindPinMoneyServiceImpl implements RequestHandler<PlaceOrderParamDt
 	 */
 	@Override
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
-		BigDecimal myUsable = tradePinMoneyObtainService.findMyUsableTotal(req.getData().getUserId(),new Date());
-		//设置我的可用零花钱总额
+		BigDecimal myUsable = BigDecimal.ZERO;
+		if(req.getData().getOrderType() != PlaceOrderTypeEnum.SECKILL_ORDER){
+			//设置我的可用零花钱总额
+			myUsable = tradePinMoneyObtainService.findMyUsableTotal(req.getData().getUserId(),new Date());
+		}
 		resp.getData().setUsablePinMoney(myUsable.toString());
 	}
 
