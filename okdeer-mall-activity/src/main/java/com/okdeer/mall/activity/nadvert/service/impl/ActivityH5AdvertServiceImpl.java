@@ -88,6 +88,7 @@ public class ActivityH5AdvertServiceImpl implements ActivityH5AdvertService {
 	}
 
 	@Override
+	@Transactional(rollbackFor=Exception.class)
 	public void update(ActivityH5AdvertBo bo) throws Exception {
 		ActivityH5Advert  advert = bo.getAdvert();
 		advert.setUpdateTime(new Date());
