@@ -2,7 +2,6 @@ package com.okdeer.mall.order.handler.impl;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 import javax.annotation.Resource;
 
@@ -13,6 +12,7 @@ import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.dto.StoreSkuComponentDto;
 import com.okdeer.archive.goods.spu.enums.SkuBindType;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
@@ -174,10 +174,14 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 * @date 2017年1月4日
 	 */
 	private boolean isOutOfStock(StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp) {
-		int kindSize = parserBo.getCurrentSkuMap().values().size();
+		// 当前商品映射信息
+		Map<String, CurrentStoreSkuBo> currentSkuMap = parserBo.getCurrentSkuMap();
+		int kindSize = currentSkuMap.values().size();
+		// 特价商品购买数量映射Map
 		Map<String,Integer> skuActNumMap = parserBo.getSkuActNumMap();
+		// 商品购买数量映射Map
 		Map<String,Integer> skuNumMap = Maps.newHashMap();
-		for (CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()) {
+		for (CurrentStoreSkuBo storeSkuBo : currentSkuMap.values()) {
 			if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
 				if(storeSkuBo.getSkuActQuantity() > 0 && storeSkuBo.getSkuActQuantity() > storeSkuBo.getLocked()){
 					// 重新设置低价商品可参与活动的数量
@@ -236,7 +240,7 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			
 			//捆绑商品库存计算
 			if (storeSkuBo.getBindType() == SkuBindType.bind) {
-				List<StoreSkuComponentDto> skuComponent = parserBo.getComponentSkuMap().get(storeSkuBo.getStoreSpuId());
+				List<StoreSkuComponentDto> skuComponent = parserBo.getComponentSkuMap().get(storeSkuBo.getId());
 				for (StoreSkuComponentDto comDto : skuComponent) {
 					if(skuNumMap.containsKey(comDto.getComponentStoreSkuId())){
 						skuNumMap.put(comDto.getComponentStoreSkuId(),skuNumMap.get(comDto.getComponentStoreSkuId())
@@ -254,13 +258,25 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 				}
 			}
 		}
+		// Begin V2.6.1 Modified by maojj 2017-08-31 
 		//验证SKU库存(包含校验捆绑商品成分)
-		for(Map.Entry<String, Integer> skuNum:skuNumMap.entrySet()){
-			if(skuNum.getValue() > parserBo.getCurrentSkuMap().get(skuNum.getKey()).getSellable()){
+		// 库存检查值--当前商品的可售库存
+		Integer stockCheckNum = null; 
+		// 捆绑商品明细库存映射
+		Map<String, GoodsStoreSkuStock> bindStockMap = parserBo.getBindStockMap();
+		for(Map.Entry<String, Integer> skuNum : skuNumMap.entrySet()){
+			// 如果当前商品中不存在商品Id，则表示该商品为捆绑商品成分，需要从捆绑商品库存映射中查找
+			if (currentSkuMap.containsKey(skuNum.getKey())) {
+				stockCheckNum = currentSkuMap.get(skuNum.getKey()).getSellable();
+			} else if (bindStockMap.containsKey(skuNum.getKey())) {
+				stockCheckNum = bindStockMap.get(skuNum.getKey()).getSellable();
+			}
+			if(skuNum.getValue().compareTo(stockCheckNum) == 1){
 				resp.setResult(kindSize > 1 ? ResultCodeEnum.PART_GOODS_STOCK_NOT_ENOUGH:ResultCodeEnum.STOCK_NOT_ENOUGH);
 				return true;
 			}
 		}
+		// End V2.6.1 Modified by maojj 2017-08-31 
 		return false;
 	}
 

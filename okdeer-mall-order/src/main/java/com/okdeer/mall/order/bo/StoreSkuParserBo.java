@@ -205,6 +205,13 @@ public class StoreSkuParserBo {
 	private List<ActivityCouponsRecord> couponsList;
 	// End V2.5 added by maojj 2017-06-23
 	
+	// Begin V2.6.1 added by maojj 2017-08-31
+	/**
+	 * 捆绑商品明细库存映射关系
+	 */
+	private Map<String,GoodsStoreSkuStock> bindStockMap = null;
+	// End V2.6.1 added by maojj 2017-08-31
+	
 	/**
 	 * 商品所属店铺 
 	 */
@@ -339,6 +346,16 @@ public class StoreSkuParserBo {
 		CurrentStoreSkuBo storeSkuBo = null;
 		for (GoodsStoreSkuStock stock : stockList) {
 			storeSkuBo = this.getCurrentStoreSkuBo(stock.getStoreSkuId());
+			// Begin V2.6.1 added by maojj 2017-08-31
+			if(storeSkuBo == null){
+				// 如果当前商品不存在，则表示该商品为捆绑商品成分。将库存信息缓存用于后面检查库存进行判断
+				if(this.bindStockMap == null){
+					this.bindStockMap = Maps.newHashMap();
+				}
+				this.bindStockMap.put(stock.getStoreSkuId(), stock);
+				continue;
+			}
+			// End V2.6.1 added by maojj 2017-08-31
 			ActivityTypeEnum activityType = ActivityTypeEnum.enumValueOf(storeSkuBo.getActivityType());
 			switch (activityType) {
 				case NO_ACTIVITY:
@@ -834,5 +851,8 @@ public class StoreSkuParserBo {
 	public void setFareActivityId(String fareActivityId) {
 		this.fareActivityId = fareActivityId;
 	}
-
+	
+	public Map<String, GoodsStoreSkuStock> getBindStockMap() {
+		return bindStockMap;
+	}
 }
