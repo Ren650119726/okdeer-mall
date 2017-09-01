@@ -756,4 +756,9 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 		return checkResult;
     }
     // End added by maojj 2016-10-17
+
+	@Override
+	public List<SysBuyerUser> findUserListByIds(List<String> ids) {
+		return sysBuyerUserMapper.findByIds(ids);
+	}
 }
