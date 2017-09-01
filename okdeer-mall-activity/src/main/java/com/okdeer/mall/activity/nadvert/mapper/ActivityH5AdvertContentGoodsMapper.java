@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods;
 
@@ -56,6 +57,6 @@ public interface ActivityH5AdvertContentGoodsMapper extends IBaseMapper {
 	 * @author mengsj
 	 * @date 2017年8月26日
 	 */
-	List<ActivityH5AdvertContentGoods> findBldGoodsByActivityId(@Param("storeId")String storeId,@Param("activityId")String activityId, @Param("contentId")String contentId);
+	List<GoodsStoreActivitySkuDto> findBldGoodsByActivityId(@Param("storeId")String storeId,@Param("activityId")String activityId, @Param("contentId")String contentId);
 
 }

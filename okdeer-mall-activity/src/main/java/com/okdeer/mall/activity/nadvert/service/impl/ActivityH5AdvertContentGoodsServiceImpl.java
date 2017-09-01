@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.github.pagehelper.PageHelper;
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -71,14 +72,11 @@ public class ActivityH5AdvertContentGoodsServiceImpl
 	}
 
 	@Override
-	public PageUtils<ActivityH5AdvertContentGoods> findBldGoodsByActivityId(
+	public PageUtils<GoodsStoreActivitySkuDto> findBldGoodsByActivityId(
 			String storeId, String activityId, String contentId,
 			Integer pageNumber, Integer pageSize) {
 		PageHelper.startPage(pageNumber, pageSize, true, false);
-        List<ActivityH5AdvertContentGoods> result = mapper.findBldGoodsByActivityId(storeId,activityId,contentId);
-        result.forEach(obj -> {
-        	obj.setGoodsSkuPic(goodsImgPath + obj.getGoodsSkuPic());
-        });
-        return new PageUtils<ActivityH5AdvertContentGoods>(result);
+        List<GoodsStoreActivitySkuDto> result = mapper.findBldGoodsByActivityId(storeId,activityId,contentId);
+        return new PageUtils<GoodsStoreActivitySkuDto>(result);
 	}
 }
