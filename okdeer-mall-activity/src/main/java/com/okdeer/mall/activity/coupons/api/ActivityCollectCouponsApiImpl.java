@@ -31,7 +31,7 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 		} catch (Exception e) {
 			TakeActivityCouponResultDto activityCouponResultDto = new TakeActivityCouponResultDto();
 			activityCouponResultDto.setCode(110);
-			activityCouponResultDto.setMsg("服务器繁忙，领取失败!");
+			activityCouponResultDto.setMsg(e.getMessage());
 			return activityCouponResultDto;
 		}
 	}
