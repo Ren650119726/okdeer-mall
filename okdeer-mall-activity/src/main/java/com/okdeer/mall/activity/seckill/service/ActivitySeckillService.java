@@ -74,12 +74,13 @@ public interface ActivitySeckillService {
 	 * 
 	 * @Description: 根据城市id查询当前区域是否有秒杀活动
 	 * @param cityId 城市id
+	 * @publishClient 发布客户端 0 便利店app 1 微商城(V2.6) 以，间隔
 	 * @return List 秒杀信息
 	 * @throws Exception 抛出异常
 	 * @author luosm
 	 * @date 2016年7月20日
 	 */
-	List<ActivitySeckill> findByUserAppSecKillByCityId(String cityId) throws Exception;
+	List<ActivitySeckill> findByUserAppSecKillByCityId(String cityId,String publishClient) throws Exception;
 	
 	/**
 	 * 
