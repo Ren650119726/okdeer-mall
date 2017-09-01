@@ -508,23 +508,22 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		return userInfo.split(":")[0];
    }
     
-    /**
-     * @Description: 根据订单id取消订单,已提交订单不能清除，会导致用户支付无法对上账
-     * @param memberPayNum   
-     * @return void  
-     * @author tuzhd
-     * @date 2017年8月10日
-     */
-    public boolean cancelMemberCardOrder(String orderId){
+	/**
+    * @Description: 根据订单id取消订单,已提交订单不能清除，会导致用户支付无法对上账
+    * @param orderId 订单id
+    * @paran userId 用户id
+    * @param isAppUser 是否是app用户   
+    * @return void  
+    * @author tuzhd
+    * @date 2017年8月10日
+    */
+   public boolean cancelMemberCardOrder(String orderId,String userId,boolean isAppUser){
     	boolean result = false;
     	if(StringUtils.isNotBlank(orderId)){
     		//定单缓存key
     		String key = orderId + orderKeyStr;
-    		//零售取消失败返回false,不管pos是否失败，避免app失败卡死在页面中
-    		hykPayOrderServiceApi.cancelOrder(orderId);
-//	    	if(dto.getCode() != CommonResultCodeEnum.SUCCESS.getCode()){
-//	    		return false;
-//	    	}
+    		//零售取消失败返回false,不管pos是否失败，避免app失败卡死在页面中 app用户不传id
+    		hykPayOrderServiceApi.cancelOrder(orderId,(isAppUser ? null : userId));
 	    	//清除商城这边订单redis记录
 	    	MemberTradeOrderDto order = (MemberTradeOrderDto) redisTemplateWrapper.get(key);
 	    	//订单不存在标识清楚成功返回
