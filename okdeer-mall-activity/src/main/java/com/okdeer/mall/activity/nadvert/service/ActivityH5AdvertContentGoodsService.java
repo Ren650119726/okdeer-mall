@@ -2,6 +2,7 @@ package com.okdeer.mall.activity.nadvert.service;
 
 import java.util.List;
 
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods;
 
@@ -49,6 +50,6 @@ public interface ActivityH5AdvertContentGoodsService {
 	 * @author mengsj
 	 * @date 2017年8月26日
 	 */
-	PageUtils<ActivityH5AdvertContentGoods> findBldGoodsByActivityId(String storeId,String activityId,String contentId ,Integer pageNumber,Integer pageSize);
+	PageUtils<GoodsStoreActivitySkuDto> findBldGoodsByActivityId(String storeId,String activityId,String contentId ,Integer pageNumber,Integer pageSize);
 	
 }

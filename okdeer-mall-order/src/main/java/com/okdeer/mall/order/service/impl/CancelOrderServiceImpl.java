@@ -450,9 +450,13 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		}
 
 		// 释放零花钱
-		if (tradeOrder.getPinMoney().compareTo(BigDecimal.ZERO) > 0) {
-			// 释放订单占用零花钱
-			tradePinMoneyUseService.releaseOrderOccupy(tradeOrder.getId());
+		if (tradeOrder.getPinMoney().compareTo(BigDecimal.ZERO) > 0 ) {
+			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER
+					|| OrderStatusEnum.DROPSHIPPING != oldOrder.getStatus()
+					|| (OrderCancelType.CANCEL_BY_BUYER != tradeOrder.getCancelType())) {
+				// 释放订单占用零花钱
+				tradePinMoneyUseService.releaseOrderOccupy(tradeOrder.getId());
+			}
 		}
 	}
 

@@ -811,11 +811,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		ActivityCouponsRecord record = new ActivityCouponsRecord();
 		record.setCollectType(activityCouponsType);
 		ActivityCollectCoupons collect = activityCollectCouponsMapper.get(activityCoupons.getActivityId());
-
+		record.setCouponsCollectId(collect.getId());
 		// 校验活动信息
 		if (!checkCollectPublic(map, collect, userId)) {
 			return map;
 		}
+		record.setCouponsId(activityCoupons.getId());
 		// 进行公共代金劵领取校验
 		if (!checkRecordPubilc(map, activityCoupons, userId, record, collect)) {
 			return map;
@@ -882,7 +883,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			return false;
 		}
 		Date collectTime = DateUtils.getDateStart(new Date());
-		
 		ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto = new ActivityCouponsRecordQueryParamDto();
 		activityCouponsRecordQueryParamDto.setCouponsId(activityCoupons.getId());
 		activityCouponsRecordQueryParamDto.setCouponsCollectId(activityCoupons.getActivityId());

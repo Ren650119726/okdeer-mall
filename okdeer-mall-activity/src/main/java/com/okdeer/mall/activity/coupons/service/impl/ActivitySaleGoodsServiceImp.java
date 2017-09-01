@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -11,10 +12,18 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.enums.BSSC;
+import com.okdeer.archive.goods.store.enums.IsActivity;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.common.utils.ListUtil;
+import com.okdeer.jxc.sale.enums.ActivityType;
+import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoodsBo;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleGoodsServiceApi;
@@ -92,5 +101,27 @@ public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi,
 	public void saveBatch(List<ActivitySaleGoods> list) {
 		activitySaleGoodsMapper.saveBatch(list);
 		
+	}
+
+	@Override
+	public void addActivitySaleGoodsList(ActivitySale sale, List<ActivitySaleGoods> activitySaleGoodsList)  throws Exception{
+		//批量添加
+		saveBatch(activitySaleGoodsList);
+		//把商品表的商品修改掉活动信息
+		for(ActivitySaleGoods asg : activitySaleGoodsList){
+			GoodsStoreSku sku = new GoodsStoreSku();
+			sku.setId(asg.getStoreSkuId());
+			sku.setActivityId(sale.getId());
+			sku.setActivityName(sale.getName());
+			sku.setIsActivity(IsActivity.ATTEND);
+			//两个活动类型分别对应不同的两个枚举类........., 要转换
+			if(ActivityTypeEnum.LOW_PRICE == sale.getType()){
+				sku.setActivityType(StoreActivityTypeEnum.LOW_PRICE);
+			} else if (ActivityTypeEnum.SALE_ACTIVITIES == sale.getType()){
+				sku.setActivityType(StoreActivityTypeEnum.PRIVLIEGE);
+			}
+			sku.setUpdateTime(new Date());
+			goodsStoreSkuServiceApi.updateByPrimaryKeySelective(sku);
+		}
 	}
 }

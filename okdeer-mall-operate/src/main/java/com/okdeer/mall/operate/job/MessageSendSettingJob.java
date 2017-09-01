@@ -26,6 +26,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
 import com.google.common.collect.Lists;
+import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
@@ -41,6 +42,7 @@ import com.okdeer.mall.operate.service.MessageSendSettingService;
 import com.okdeer.mall.order.constant.OrderMsgConstant;
 import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
+import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
 import com.okdeer.mcm.constant.MsgConstant;
 
 /**
@@ -78,6 +80,11 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private SysBuyerLocateInfoServiceApi sysBuyerLocateInfoApi;
+	/**
+	 * 用户信息表api
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private SysBuyerUserServiceApi buyerUserApi;
 	
 	private static final String TOPIC = "topic_mcm_msg";
 	
@@ -129,8 +136,13 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 					dto.setCityIdList(cityIdsList);
 					
 					List<SysBuyerLocateInfoDto> infoList = sysBuyerLocateInfoApi.findUserList(dto);
+					//根据用户id列表获取用户信息列表
+					List<String> ids = Lists.newArrayList();
+					infoList.forEach(buyer -> ids.add(buyer.getUserId()));
+					
+					List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids);
 					//3 发送消息
-					sendAppMessage(messageSend,infoList);
+					sendAppMessage(messageSend,userList);
 					//4 更新发送状态
 					messageSend.setStatus(1);
 					messageSend.setUpdateTime(new Date());
@@ -156,7 +168,7 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 	 * @throws Exception 
 	 * @date 2017年8月18日
 	 */
-	private void sendAppMessage(MessageSendSetting messageSend, List<SysBuyerLocateInfoDto> infoList) throws Exception {
+	private void sendAppMessage(MessageSendSetting messageSend, List<SysBuyerUser> infoList) throws Exception {
 		PushMsgVo pushMsgVo = new PushMsgVo();
 		pushMsgVo.setSysCode(msgSysCode);
 		pushMsgVo.setToken(msgToken);
@@ -172,21 +184,18 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 		//消息详情类型： 0 链接详情，1内容详情
 		pushMsgVo.setMsgDetailType(Constant.ONE);
 		pushMsgVo.setMsgDetailContent(messageSend.getContext());
-		// 设置是否定时发送 定时发送
+		// 设置是否定时发送  发送时间无需设置 会立即发送
 		pushMsgVo.setIsTiming(Constant.ZERO);
-		//发送时间无需设置 会立即发送
-		//SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		//pushMsgVo.setSendTime(format.format(new Date(messageSend.getSendTime().getTime() - time)));
 
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
 		infoList.forEach(user -> {
-			if(StringUtils.isNotEmpty(user.getUserPhone())){
+			if(StringUtils.isNotEmpty(user.getPhone())){
 				PushUserVo pushUser = new PushUserVo();
-				pushUser.setUserId(user.getUserId());
+				pushUser.setUserId(user.getId());
 				pushUser.setMsgType(Constant.ONE);
 				//设置手机号
-				pushUser.setMobile(user.getUserPhone());
+				pushUser.setMobile(user.getPhone());
 				
 				userList.add(pushUser);
 			}

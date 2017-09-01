@@ -3,6 +3,7 @@ package com.okdeer.mall.activity.coupons.service;
 import java.util.List;
 import java.util.Map;
 
+import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 
 /**
@@ -19,5 +20,12 @@ public interface ActivitySaleGoodsService {
 	ActivitySaleGoods selectActivitySaleByParams(Map<String, Object> params);
 	
 	void saveBatch(List<ActivitySaleGoods> list);
+	
+	/**
+	 * @Description: 给正在进行中的活动添加商品
+	 * @author zhangkn
+	 * @date 2017年9月1日
+	 */
+	void addActivitySaleGoodsList(ActivitySale sale,List<ActivitySaleGoods> activitySaleGoodsList) throws Exception;
 
 }
