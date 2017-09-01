@@ -6,6 +6,7 @@
  */    
 package com.okdeer.mall.operate.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,9 +58,10 @@ public class MessageSendSettingServiceImpl extends BaseServiceImpl implements Me
 	}
 
 	@Override
-	public List<MessageSendSetting> findMessageListByStatus(int status) {
+	public List<MessageSendSetting> findMessageListByStatus(int status, Date sendTime) {
 		MessageSendSettingQueryDto setting = new MessageSendSettingQueryDto();
 		setting.setStatus(status);
+		setting.setSendTime(sendTime);
 		return messageSendSettingMapper.findPageList(setting);
 	}
 
