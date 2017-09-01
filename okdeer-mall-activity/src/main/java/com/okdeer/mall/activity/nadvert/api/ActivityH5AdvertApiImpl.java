@@ -2,6 +2,7 @@ package com.okdeer.mall.activity.nadvert.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,5 +133,10 @@ public class ActivityH5AdvertApiImpl implements ActivityH5AdvertApi {
 	public void updateNoContent(ActivityH5AdvertDto entity) throws Exception {
 		ActivityH5Advert advert = BeanMapper.map(entity, ActivityH5Advert.class);
 		advertService.updateNoContent(advert);
+	}
+
+	@Override
+	public List<Map<String, Object>> findFwdGoodsByContent(String activityId,String contentId) {
+		return contentGoodsService.findFwdGoodsByContent(activityId,contentId);
 	}
 }
