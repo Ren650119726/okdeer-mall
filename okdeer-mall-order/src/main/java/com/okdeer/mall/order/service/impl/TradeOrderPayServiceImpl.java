@@ -818,7 +818,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 	}
 
 	/**
-	 * @Description: 构建云钱包请求参数
+	 * @Description: 构建云钱包请求参数（到店消费）
 	 * @param payInfoParamDto
 	 * @param order
 	 * @return
