@@ -792,8 +792,9 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 	 */
 	private void setActiveAmount(TradeOrder order, BalancePayTradeDto payTradeVo) throws Exception {
 		// 优惠额退款 判断是否有优惠劵
-		if (order.getPlatformPreferential() != null && order.getPlatformPreferential().compareTo(BigDecimal.ZERO) > 0) {
-			payTradeVo.setPrefeAmount(order.getPlatformPreferential());
+		if ((order.getPlatformPreferential() != null && order.getPlatformPreferential().compareTo(BigDecimal.ZERO) > 0)||
+				(order.getPinMoney()!=null && order.getPinMoney().compareTo(BigDecimal.ZERO) > 0)) {
+			payTradeVo.setPrefeAmount(order.getPlatformPreferential().add(order.getPinMoney()));
 			payTradeVo.setActivitier(yscWalletAccount);
 		}
 	}
