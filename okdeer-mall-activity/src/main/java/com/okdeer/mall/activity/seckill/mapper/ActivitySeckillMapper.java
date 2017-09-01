@@ -134,11 +134,12 @@ public interface ActivitySeckillMapper {
 	 * 
 	 * @Description: App首页根据城市名查询当前区域是否有秒杀活动
 	 * @param cityId 城市id
+	 * @publishClient 发布客户端 0 便利店app 1 微商城(V2.6) 以，间隔
 	 * @return List 秒杀信息
 	 * @author luosm
 	 * @date 2016年7月20日
 	 */
-	List<ActivitySeckill> findAppUserSecKillByCityId(@Param("cityId") String cityId);
+	List<ActivitySeckill> findAppUserSecKillByCityId(@Param("cityId") String cityId,@Param("publishClient") String publishClient);
 	
 	/***
 	 * 
