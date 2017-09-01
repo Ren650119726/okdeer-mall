@@ -584,14 +584,15 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 	 * 
 	 * @Description: 根据城市id查询当前区域是否有秒杀活动
 	 * @param cityId 城市id
+	 * @publishClient 发布客户端 0 便利店app 1 微商城(V2.6) 以，间隔
 	 * @return List 秒杀信息
 	 * @throws Exception 抛出异常
 	 * @author luosm
 	 * @date 2016年7月20日
 	 */
 	@Override
-	public List<ActivitySeckill> findByUserAppSecKillByCityId(String cityId) throws Exception {
-		return activitySeckillMapper.findAppUserSecKillByCityId(cityId);
+	public List<ActivitySeckill> findByUserAppSecKillByCityId(String cityId,String publishClient) throws Exception {
+		return activitySeckillMapper.findAppUserSecKillByCityId(cityId,publishClient);
 	}
 	// end update by luosm 2016-07-22
 

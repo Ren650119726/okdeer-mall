@@ -284,8 +284,9 @@ public class ActivitySaleElServiceApiImpl implements ActivitySaleELServiceApi {
 	@Override
 	public void addActivitySaleGoodsList(String storeId, String createUserId, String activityId,
 			List<ActivitySaleGoods> activitySaleGoodsList) throws Exception {
-		activitySaleGoodsService.saveBatch(activitySaleGoodsList);
+		
         ActivitySale sale = activitySaleService.get(activityId);
+        activitySaleGoodsService.addActivitySaleGoodsList(sale,activitySaleGoodsList);
 		//特惠活动新增商品
         ActivityMessageParamDto paramDto = new ActivityMessageParamDto();
         paramDto.setSkuIds(activitySaleGoodsList.stream().map(e -> e.getStoreSkuId()).collect(Collectors.toList()));

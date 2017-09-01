@@ -34,7 +34,7 @@ public class TradeOrderRefundsTraceServiceImplTest {
 	@Test
 	public void testQuery(){
 		try {
-			List<ActivitySeckill> activitySeckill = activitySeckillService.findByUserAppSecKillByCityId("291");
+			List<ActivitySeckill> activitySeckill = activitySeckillService.findByUserAppSecKillByCityId("291","0");
 			System.out.println(activitySeckill.size());
 		} catch (Exception e) {
 			//  Auto-generated catch block

@@ -6,6 +6,7 @@
  */    
 package com.okdeer.mall.operate.service;
 
+import java.util.Date;
 import java.util.List;
 
 import com.okdeer.base.common.utils.PageUtils;
@@ -49,12 +50,13 @@ public interface MessageSendSettingService extends IBaseService {
 
 	/**
 	 * @Description: 根据消息状态查询消息列表
-	 * @param status
+	 * @param status 消息状态
+	 * @param sendTime 发送时间
 	 * @return   
 	 * @author xuzq01
 	 * @date 2017年8月18日
 	 */
-	List<MessageSendSetting> findMessageListByStatus(int status);
+	List<MessageSendSetting> findMessageListByStatus(int status, Date sendTime);
 
 	/**
 	 * @Description: 根据消息设置的发送时间修改消息

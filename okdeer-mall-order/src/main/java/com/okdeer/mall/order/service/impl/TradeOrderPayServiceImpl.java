@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.Resource;
 
@@ -792,8 +793,9 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 	 */
 	private void setActiveAmount(TradeOrder order, BalancePayTradeDto payTradeVo) throws Exception {
 		// 优惠额退款 判断是否有优惠劵
-		if (order.getPlatformPreferential() != null && order.getPlatformPreferential().compareTo(BigDecimal.ZERO) > 0) {
-			payTradeVo.setPrefeAmount(order.getPlatformPreferential());
+		if ((order.getPlatformPreferential() != null && order.getPlatformPreferential().compareTo(BigDecimal.ZERO) > 0)||
+				(order.getPinMoney()!=null && order.getPinMoney().compareTo(BigDecimal.ZERO) > 0)) {
+			payTradeVo.setPrefeAmount(order.getPlatformPreferential().add(order.getPinMoney()));
 			payTradeVo.setActivitier(yscWalletAccount);
 		}
 	}
@@ -816,7 +818,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 	}
 
 	/**
-	 * @Description: 构建云钱包请求参数
+	 * @Description: 构建云钱包请求参数（到店消费）
 	 * @param payInfoParamDto
 	 * @param order
 	 * @return
@@ -833,9 +835,17 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		} else {
 			payReqest.setApplicationEnum(ApplicationEnum.CONVENIENCE_STORE);
 		}
+		//平台补贴
+		BigDecimal subsidies = BigDecimal.ZERO;
 		if (order.getPlatformPreferential() != null && order.getPlatformPreferential().compareTo(BigDecimal.ZERO) > 0) {
+			subsidies.add(order.getPlatformPreferential());
+		}
+		if(order.getPinMoney()!=null && order.getPinMoney().compareTo(BigDecimal.ZERO)>0){
+			subsidies.add(order.getPinMoney());
+		}
+		if (subsidies.compareTo(BigDecimal.ZERO) > 0) {
 			payReqest.setActivitier(yscWalletAccount);
-			payReqest.setPrefeAmount(order.getPlatformPreferential());
+			payReqest.setPrefeAmount(subsidies);
 		}
 		// 买家ID
 		payReqest.setUserId(order.getUserId());
@@ -872,7 +882,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		} else if (6 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.WX_WXPAY);
 		}else if (7 == paymentType) {
-			payReqest.setTradeType(PayTradeTypeEnum.WAP_WXPAY);
+//			payReqest.setTradeType(PayTradeTypeEnum.WAP_WXPAY);
 		}
 		return payReqest;
 	}
