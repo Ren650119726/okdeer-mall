@@ -7,6 +7,7 @@
 package com.okdeer.mall.activity.nadvert.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -58,5 +59,16 @@ public interface ActivityH5AdvertContentGoodsMapper extends IBaseMapper {
 	 * @date 2017年8月26日
 	 */
 	List<GoodsStoreActivitySkuDto> findBldGoodsByActivityId(@Param("storeId")String storeId,@Param("activityId")String activityId, @Param("contentId")String contentId);
+	
+	/**
+	 * @Description: 根据h5活动id查询关联的服务商品列表
+	 * @param activityId 活动id
+	 * @param contentId 内容id
+	 * @return List<Map<String,String>>
+	 * @throws
+	 * @author mengsj
+	 * @date 2017年9月1日
+	 */
+	List<Map<String, Object>> findFwdGoodsByContent(@Param("activityId")String activityId, @Param("contentId")String contentId);
 
 }

@@ -102,4 +102,5 @@ public interface ActivityH5AdvertService{
 	 * @date 2017年8月15日
 	 */
 	void updateBatchStatus(ActivityH5Advert entity) throws Exception;
+
 }
