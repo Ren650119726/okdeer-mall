@@ -68,12 +68,14 @@ public interface MemberCardOrderService {
 	
 	/**
      * @Description: 根据订单id取消订单,已提交订单不能清除，会导致用户支付无法对上账
-     * @param orderId   
+     * @param orderId 订单id
+     * @paran userId 用户id
+     * @param isAppUser 是否是后台用户   
      * @return void  
      * @author tuzhd
      * @date 2017年8月10日
      */
-    boolean cancelMemberCardOrder(String orderId);
+    boolean cancelMemberCardOrder(String orderId,String userId,boolean isAppUser);
     
     /**
      * @Description: 获取会员卡信息接口

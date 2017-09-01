@@ -79,13 +79,15 @@ public class MemberCardOrderApiImpl implements MemberCardOrderApi {
 	
 	/**
      * @Description: 根据订单id取消订单,已提交订单不能清除，会导致用户支付无法对上账
-     * @param orderId   
+     * @param orderId 订单id
+     * @paran userId 用户id
+     * @param isAppUser 是否是后台用户   
      * @return void  
      * @author tuzhd
      * @date 2017年8月10日
      */
-    public boolean cancelMemberCardOrder(String orderId){
-    	return memberCardOrderService.cancelMemberCardOrder(orderId);
+    public boolean cancelMemberCardOrder(String orderId,String userId,boolean isAppUser){
+    	return memberCardOrderService.cancelMemberCardOrder(orderId,userId,isAppUser);
     }
 
     /**
