@@ -7,17 +7,14 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.nadvert.bo.ActivityH5AdvertBo;
 import com.okdeer.mall.activity.nadvert.bo.ActivityH5AdvertContentBo;
 import com.okdeer.mall.activity.nadvert.dto.ActivityH5AdvertContentDto;
-import com.okdeer.mall.activity.nadvert.dto.ActivityH5AdvertContentGoodsDto;
 import com.okdeer.mall.activity.nadvert.dto.ActivityH5AdvertDto;
-import com.okdeer.mall.activity.nadvert.dto.ActivityH5AdvertRoleDto;
 import com.okdeer.mall.activity.nadvert.entity.ActivityH5Advert;
-import com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods;
-import com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertRole;
 import com.okdeer.mall.activity.nadvert.param.ActivityH5AdvertQParam;
 import com.okdeer.mall.activity.nadvert.service.ActivityH5AdvertContentGoodsService;
 import com.okdeer.mall.activity.nadvert.service.ActivityH5AdvertService;
@@ -56,7 +53,7 @@ public class ActivityH5AdvertApiImpl implements ActivityH5AdvertApi {
 	 */
 	private ActivityH5AdvertBo convertDtoToBo(ActivityH5AdvertDto dto){
 		ActivityH5Advert advert = BeanMapper.map(dto, ActivityH5Advert.class);
-		List<ActivityH5AdvertRole> roles = BeanMapper.mapList(dto.getRoleDtos(), ActivityH5AdvertRole.class);
+//		List<ActivityH5AdvertRole> roles = BeanMapper.mapList(dto.getRoleDtos(), ActivityH5AdvertRole.class);
 		List<ActivityH5AdvertContentBo> contents = new ArrayList<ActivityH5AdvertContentBo>();
 		
 		List<ActivityH5AdvertContentDto> contentDtos = dto.getContentDtos();
@@ -69,7 +66,7 @@ public class ActivityH5AdvertApiImpl implements ActivityH5AdvertApi {
 		}
 		ActivityH5AdvertBo bo = new ActivityH5AdvertBo();
 		bo.setAdvert(advert);
-		bo.setRoles(roles);
+//		bo.setRoles(roles);
 		bo.setContents(contents);
 		return bo;
 	}
@@ -84,7 +81,7 @@ public class ActivityH5AdvertApiImpl implements ActivityH5AdvertApi {
 	 */
 	private ActivityH5AdvertDto convertBoToDto(ActivityH5AdvertBo bo){
 		ActivityH5AdvertDto advert = BeanMapper.map(bo.getAdvert(), ActivityH5AdvertDto.class);
-		List<ActivityH5AdvertRoleDto> roles = BeanMapper.mapList(bo.getRoles(), ActivityH5AdvertRoleDto.class);
+//		List<ActivityH5AdvertRoleDto> roles = BeanMapper.mapList(bo.getRoles(), ActivityH5AdvertRoleDto.class);
 		
 		List<ActivityH5AdvertContentDto> contents = new ArrayList<ActivityH5AdvertContentDto>();
 		
@@ -95,7 +92,7 @@ public class ActivityH5AdvertApiImpl implements ActivityH5AdvertApi {
 				contents.add(obj.convertBoToDto());
 			});
 		};
-		advert.setRoleDtos(roles);
+//		advert.setRoleDtos(roles);
 		advert.setContentDtos(contents);
 		return advert;
 	}
@@ -124,12 +121,11 @@ public class ActivityH5AdvertApiImpl implements ActivityH5AdvertApi {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public PageUtils<ActivityH5AdvertContentGoodsDto> findBldGoodsByActivityId(
+	public PageUtils<GoodsStoreActivitySkuDto> findBldGoodsByActivityId(
 			String storeId, String activityId, String contentId,
 			Integer pageNumber, Integer pageSize) {
-		PageUtils<ActivityH5AdvertContentGoods> page = contentGoodsService.findBldGoodsByActivityId(storeId, activityId, contentId, pageNumber, pageSize);
-		return  page.toBean(ActivityH5AdvertContentGoodsDto.class);
+		PageUtils<GoodsStoreActivitySkuDto> page = contentGoodsService.findBldGoodsByActivityId(storeId, activityId, contentId, pageNumber, pageSize);
+		return  page;
 	}
 
 	@Override
