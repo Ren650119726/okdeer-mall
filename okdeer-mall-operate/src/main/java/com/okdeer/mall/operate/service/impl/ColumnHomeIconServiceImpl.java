@@ -213,7 +213,12 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 	@Override
 	public BaseResult save(ColumnHomeIcon entity, List<ColumnSelectArea> areaList, List<String> goodsIds,
 			List<Integer> sorts, List<String> versions, List<ColumnHomeIconClassifyDto> classifyList) throws Exception {
-		save(entity, areaList, goodsIds, sorts, versions);
+		BaseResult result = save(entity, areaList, goodsIds, sorts, versions);
+		//保存icon失败直接返回结果
+		if("1".equals(result.getStatus())){
+			return result;
+		}
+		
 		if(CollectionUtils.isNotEmpty(classifyList)){
 			columnHomeIconClassifyService.addClassifyBatch(entity.getId(),classifyList);
 		}

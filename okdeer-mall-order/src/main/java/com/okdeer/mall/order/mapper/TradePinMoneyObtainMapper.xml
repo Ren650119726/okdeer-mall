@@ -241,6 +241,9 @@
         <if test="createTimeEnd != null" >
         	AND pin.create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
         </if>
+        <if test="activityId != null" >
+            AND pin.activity_id = #{activityId,jdbcType=VARCHAR}
+        </if>
     </select>
 	<!-- begin 商城后台零花钱领取记录条件查询记录数 xuzq 20170814 -->
 </mapper>
