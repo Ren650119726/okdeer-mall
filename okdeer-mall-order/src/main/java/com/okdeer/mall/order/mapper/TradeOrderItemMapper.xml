@@ -694,18 +694,16 @@
  </resultMap>   
  <select id="findSellerList"  resultMap="SellerResultMap">
  	SELECT DISTINCT
- 		trade.store_id,
+ 	    tr.store_id,
  		item.store_sku_id,
- 		sku.spu_category_id,
         count(item.quantity) quantity,
-        count(item.actual_amount) sale
-	FROM trade_order_item item 
-	left join trade_order trade on item.order_id = trade.id
-	left join goods_store_sku sku on sku.id = item.store_sku_id
-    where item.create_time &gt;= date_sub(curdate(),interval 1 day)
-          and item.create_time &lt;= curdate()
-          and trade.status=5
-          group by sku.store_id,item.store_sku_id,sku.spu_category_id
+        sum(item.actual_amount) sale
+	FROM trade_order_item item inner join trade_order tr on tr.id = item.order_id
+    where tr.id in
+		<foreach collection="orderIds" open="(" close=")" index="index" item="item" separator=",">
+			#{item}
+		</foreach>
+    group by tr.store_id,item.store_sku_id
  </select>
   <!--begin xuzq 20170821 每天2点查询昨天店铺已完成订单的商品销售情况 -->
 </mapper>

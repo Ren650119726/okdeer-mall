@@ -8,6 +8,7 @@ package com.okdeer.mall.operate.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
-import com.okdeer.archive.goods.store.dto.GoodsStoreSkuDto;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.google.common.collect.Sets;
+import com.okdeer.archive.goods.base.entity.GoodsCategoryAssociation;
+import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
+import com.okdeer.archive.goods.spu.service.GoodsSkuServiceApi;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -71,11 +75,18 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 
 	@Autowired
 	private ColumnHomeIconVersionMapper homeIconVersionMapper;
+    
 	/**
-	 * 店铺商品api
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuServiceApi goodsStoreSkuApi;
+     * 导航分类api
+     */
+    @Reference(version = "1.0.0", check = false)
+    private GoodsNavigateCategoryServiceApi goodsNavigateCategoryApi;
+    
+	/**
+     * 标准库商品api
+     */
+    @Reference(version = "1.0.0", check = false)
+    private GoodsSkuServiceApi goodsSkuApi;
 
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -223,21 +234,37 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 			columnHomeIconClassifyService.addClassifyBatch(entity.getId(),classifyList);
 		}
 		// 保存选择的导航分类商品到column_home_icon_goods表 标准库商品
-		List<String> categoryIds = Lists.newArrayList();
-		classifyList.forEach(classify -> categoryIds.add(classify.getNavigateCategoryId()));
-		if(entity.getTaskType() == HomeIconTaskType.classify && CollectionUtils.isNotEmpty(categoryIds)){
+		if(entity.getTaskType() == HomeIconTaskType.classify && CollectionUtils.isNotEmpty(classifyList)){
+			
+			List<GoodsCategoryAssociation> spuGoodsNavigateList = Lists.newArrayList();
+			for(ColumnHomeIconClassifyDto classifyDto : classifyList){
+				spuGoodsNavigateList.addAll(goodsNavigateCategoryApi.getGoodsCategoryAssociation(classifyDto.getNavigateCategoryId()));
+			}
+			List<GoodsStoreSku> skuList = Lists.newArrayListWithCapacity(1000);
+			for(GoodsCategoryAssociation asso : spuGoodsNavigateList){
+				skuList.addAll(goodsSkuApi.selectBySpuCategoryId(asso.getSpuCategoryId()));
+			}
+			//关联的标准库商品id
+			Set<String> skuSet = Sets.newHashSetWithExpectedSize(10000);
+			for(GoodsStoreSku sku : skuList){
+				skuSet.add(sku.getId());
+			}
 			// 查询标准库商品id
-			List<GoodsStoreSkuDto> skuList = goodsStoreSkuApi.findGoodByCateroyIds(categoryIds);
 			List<ColumnHomeIconGoods> goodsList = new ArrayList<>();
 			
 			// 保存到首页ICON商品关联表
-			for(GoodsStoreSkuDto sku: skuList){
+			for(String skuId: skuSet){
 				ColumnHomeIconGoods goods = new ColumnHomeIconGoods();
 				goods.setId(UuidUtils.getUuid());
 				goods.setHomeIconId(entity.getId());
-				goods.setSkuId(sku.getSkuId());
+				goods.setSkuId(skuId);
 				goods.setSort(goodsList.size());
 				goodsList.add(goods);
+				//选择多个导航分类的时候 会有几千条数据插入
+				if(goodsList.size()>=100){
+					homeIconGoodsService.insertMore(goodsList);
+					goodsList.clear();
+				}
 			}
 			if (goodsList.size() > 0) {
 				homeIconGoodsService.insertMore(goodsList);
