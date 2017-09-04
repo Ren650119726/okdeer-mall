@@ -715,13 +715,15 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 					|| advert.getAdvertType().equals(AdvertTypeEnum.ALIPAY_SUCCESS.getIndex())){
 			logger.info("APP首页分割广告/APP闪屏广告/APP首页广告(便利店)");
 			//循环便利店APP版本集合
-			for(String item : advert.getCvsVersion()){
-				//通过地区ID-便利店APP类型-版本号获取广告数
-				int count = getAreaVersionSum(ClientTypeEnum.CVS.getCode(), item, map, areaVo);
-				//如果返回的数据不是非空则表示广告已经上限
-				result = validateAcrossQty(advert, count, "便利店APP", item);
-				if(StringUtils.isNotBlank(result)){
-					return result;
+			if(CollectionUtils.isNotEmpty(advert.getCvsVersion())){
+				for(String item : advert.getCvsVersion()){
+					//通过地区ID-便利店APP类型-版本号获取广告数
+					int count = getAreaVersionSum(ClientTypeEnum.CVS.getCode(), item, map, areaVo);
+					//如果返回的数据不是非空则表示广告已经上限
+					result = validateAcrossQty(advert, count, "便利店APP", item);
+					if(StringUtils.isNotBlank(result)){
+						return result;
+					}
 				}
 			}
 		}
