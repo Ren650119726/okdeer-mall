@@ -195,11 +195,8 @@
 	<select id="findUserList" parameterType="com.okdeer.mall.member.member.dto.LocateInfoQueryDto" resultMap="UserResultMap">
 	    select DISTINCT buyer.user_id,buyer.city_id,buyer.city_name from sys_buyer_locate_info buyer
 	    <!-- 0 全部用户 1新用户 2 老用户 3 自定义用户 -->
-	    <if test="type != null and (type == 0 or type == 3)" >
+	    <if test="type != null and type == 3" >
            LEFT JOIN trade_order trade ON trade.user_id = buyer.user_id
-        </if>
-        <if test="type != null and type == 1 " >
-           LEFT JOIN trade_order trade ON trade.user_id = buyer.user_id AND trade.id is null
         </if>
         <if test="type != null and type == 2 " >
            INNER JOIN trade_order trade ON trade.user_id = buyer.user_id
@@ -212,6 +209,9 @@
         </if>
         <if test="type != null and type == 3 and endTime != null" >
            and buyer.update_time <![CDATA[ <= ]]> #{endTime,jdbcType=TIMESTAMP}
+        </if>
+        <if test="type != null and type == 1 " >
+           and not exists ( select 1 from trade_order trade where trade.user_id = buyer.user_id )
         </if>
 	</select>
 </mapper>
