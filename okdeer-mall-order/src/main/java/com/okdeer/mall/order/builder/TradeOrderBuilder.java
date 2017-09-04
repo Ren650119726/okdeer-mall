@@ -658,7 +658,7 @@ public class TradeOrderBuilder {
 						BigDecimal.ROUND_FLOOR);
 				unAllocateMoney = unAllocateMoney.subtract(pinMoneyItem);
 			}else{
-				pinMoneyItem = unAllocateMoney;
+				pinMoneyItem = orderItem.getActualAmount().compareTo(unAllocateMoney) == 1?unAllocateMoney:orderItem.getActualAmount();
 			}
 			orderItem.setPreferentialPrice(orderItem.getPreferentialPrice().add(pinMoneyItem));
 			orderItem.setActualAmount(orderItem.getActualAmount().subtract(pinMoneyItem));
