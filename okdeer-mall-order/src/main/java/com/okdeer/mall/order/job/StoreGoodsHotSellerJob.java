@@ -22,6 +22,7 @@ import com.okdeer.archive.goods.dto.StoreGoodsHotSellerDto;
 import com.okdeer.archive.goods.service.StoreGoodsHotSellerApi;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.order.bo.StoreGoodsHotSellerBo;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -69,6 +70,7 @@ public class StoreGoodsHotSellerJob extends AbstractSimpleElasticJob  {
 
 	@Override
 	public void process(JobExecutionMultipleShardingContext shardingContext) {
+		LOGGER.info("店铺统计每日热销商品定时器开始-----" + DateUtils.getDateTime());
 		try {
 			// 1获取所有昨天有销售订单完成的订单
 			List<TradeOrder> orderList = tradeOrderService.findOrderListForJob();
@@ -96,9 +98,9 @@ public class StoreGoodsHotSellerJob extends AbstractSimpleElasticJob  {
 					}
 				}
 			}
-
+			LOGGER.info("店铺统计每日热销商品定时器结束-----" + DateUtils.getDateTime());
 		} catch (Exception e) {
-			LOGGER.error("店铺统计商品销售出现异常，订单id{}", e);
+			LOGGER.error("店铺统计商品销售出现异常", e);
 		}
 
 	}
