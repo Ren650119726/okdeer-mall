@@ -12,15 +12,21 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.dangdang.ddframe.job.api.JobExecutionMultipleShardingContext;
 import com.dangdang.ddframe.job.plugin.job.type.simple.AbstractSimpleElasticJob;
+import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.dto.StoreGoodsHotSellerDto;
 import com.okdeer.archive.goods.service.StoreGoodsHotSellerApi;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.order.bo.StoreGoodsHotSellerBo;
+import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.service.TradeOrderItemService;
+import com.okdeer.mall.order.service.TradeOrderService;
 
 /**
  * ClassName: StoreGoodsHotSellerJob 
@@ -33,39 +39,68 @@ import com.okdeer.mall.order.service.TradeOrderItemService;
  * ----------------+----------------+-------------------+-------------------------------------------
  *  V2.6.0            2017年8月21日                       xuzq01             每日2点定时统计店铺商品销售数量
  */
-
+@Service
 public class StoreGoodsHotSellerJob extends AbstractSimpleElasticJob  {
 	/**
 	 * 日志管理器
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(StoreGoodsHotSellerJob.class);
-
-
+	
+	/**
+	 * 订单项service
+	 */
 	@Autowired
 	private TradeOrderItemService tradeOrderItemService;
-	
+	/**
+	 * 订单service
+	 */
+	@Autowired
+	private TradeOrderService tradeOrderService;
+	/**
+	 * 店铺商品sku表service
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuServiceApi goodsStoreSkuApi;
+	/**
+	 * 店铺热销商品api
+	 */
 	@Reference(version = "1.0.0", check = false)
 	private StoreGoodsHotSellerApi storeGoodsHotSellerApi;
 
 	@Override
 	public void process(JobExecutionMultipleShardingContext shardingContext) {
-
-		// 获取昨天的所有已销售商品列表
-		List<StoreGoodsHotSellerBo> sellerList = tradeOrderItemService.findSellerList();
-
-		if (CollectionUtils.isNotEmpty(sellerList)) {
-
-			for (StoreGoodsHotSellerBo storeGoodsHotSellerBo : sellerList) {
-				try {
-					StoreGoodsHotSellerDto dto = BeanMapper.map(storeGoodsHotSellerBo, StoreGoodsHotSellerDto.class);
-					
-					storeGoodsHotSellerApi.addHotSeller(dto);
-				} catch (Exception e) {
-					LOGGER.error("店铺统计商品销售出现异常，订单id{}", storeGoodsHotSellerBo.getStoreSkuId());
+		try {
+			// 1获取所有昨天有销售订单完成的订单
+			List<TradeOrder> orderList = tradeOrderService.findOrderListForJob();
+			
+			List<String> orderIds = Lists.newArrayList();
+			orderList.forEach(order -> orderIds.add(order.getId()));
+			
+			// 2根据订单id统计所有订单项销售商品
+			List<StoreGoodsHotSellerBo> sellerList = tradeOrderItemService.findSellerList(orderIds);
+			
+			// 3根据skuids获取店铺商品信息
+			List<String> skuIds = Lists.newArrayList();
+			sellerList.forEach(seller -> skuIds.add(seller.getStoreSkuId()));
+			
+			List<GoodsStoreSku>	skuList = goodsStoreSkuApi.findByIds(skuIds);
+			// 4 遍历获取SpuCategoryId
+			if (CollectionUtils.isNotEmpty(sellerList)) {
+				for(StoreGoodsHotSellerBo sellerBo : sellerList ){
+					for(GoodsStoreSku storeSku : skuList){
+						if(sellerBo.getStoreSkuId().equals(storeSku.getId())){
+							sellerBo.setSpuCategoryId(storeSku.getSpuCategoryId());
+							StoreGoodsHotSellerDto dto = BeanMapper.map(sellerBo, StoreGoodsHotSellerDto.class);
+							storeGoodsHotSellerApi.addHotSeller(dto);
+						}
+					}
 				}
 			}
 
+		} catch (Exception e) {
+			LOGGER.error("店铺统计商品销售出现异常，订单id{}", e);
 		}
 
 	}
+
 }

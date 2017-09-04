@@ -22,9 +22,8 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
-import com.okdeer.mall.order.vo.ActivityInfoVO;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
-import com.okdeer.mall.order.vo.ERPTradeOrderVo;
+import com.okdeer.mall.order.vo.ActivityInfoVO;
 import com.okdeer.mall.order.vo.OrderCouponsRespDto;
 import com.okdeer.mall.order.vo.PhysicsOrderVo;
 import com.okdeer.mall.order.vo.TradeOrderExportVo;
@@ -1053,5 +1052,13 @@ public interface TradeOrderService {
     OrderCouponsRespDto getOrderCoupons(String orderId, String userId,String source) throws Exception;
 
 	TradeOrder findByOrderNo(String orderNo);
+
+	/**
+	 * @Description: 销售订单统计 定时获取昨天所有销售完成订单列表
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年9月4日
+	 */
+	List<TradeOrder> findOrderListForJob();
 	
 }

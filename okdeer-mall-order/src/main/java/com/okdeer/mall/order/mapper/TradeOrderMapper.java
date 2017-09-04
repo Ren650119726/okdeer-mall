@@ -1239,4 +1239,12 @@ public interface TradeOrderMapper {
 	 */
 	Integer findUserOrderCount(TradeOrderParamDto paramDto);
 
+	/**
+	 * @Description: 销售订单统计 获取昨天所有销售完成订单列表
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年9月4日
+	 */
+	List<TradeOrder> findOrderListForJob();
+
 }
