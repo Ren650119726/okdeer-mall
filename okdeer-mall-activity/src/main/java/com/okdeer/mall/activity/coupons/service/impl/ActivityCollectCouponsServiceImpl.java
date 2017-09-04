@@ -22,6 +22,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
+import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.system.entity.PsmsAgent;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysUser;
@@ -861,18 +862,48 @@ public class ActivityCollectCouponsServiceImpl
 	}
 
 	@Override
-	public Boolean isShareRedPackage(ActivityCollectCoupons coupon) {
-		ActivityCouponsRecord record = new ActivityCouponsRecord();
-		record.setCollectTime(DateUtils.getDateStart(new Date()));
-		record.setCollectType(ActivityCouponsType.red_packet);
-		record.setCouponsCollectId(coupon.getId());
-		int drawAmount = getDaliyDrawAmount(record);
-		log.info("红包每天已发行数量drawAmount=====" + drawAmount);
-
-		// 0表示不限制 每日最大发行量大于领取数量
-		if (Integer.valueOf(coupon.getDailyCirculation()) == 0
-				|| Integer.valueOf(coupon.getDailyCirculation()) > drawAmount) {
-			return true;
+	public Boolean isShareRedPackage(ActivityCollectCoupons coupon,StoreInfo storeInfo) {
+		Boolean flag = false;
+		//活动范围为全国
+		if(coupon.getAreaType() ==0 ){
+			flag = true;
+		}
+		//活动范围类型为区域
+		if(coupon.getAreaType() == 1){
+			List<ActivityCollectArea> areaList = activityCollectAreaMapper.listByCollectCouponsId(coupon.getId());
+			for(ActivityCollectArea collectArea : areaList){
+				//0市 1 省
+				if(collectArea.getType() == 0 && collectArea.getAreaId().equals(storeInfo.getCityId())){
+					flag = true;
+				}
+				if(collectArea.getType() == 1 && collectArea.getAreaId().equals(storeInfo.getProvinceId())){
+					flag = true;
+				}
+			}
+		}
+		//活动范围类型为指定店铺
+		if(coupon.getAreaType() == 3){
+			List<ActivityCollectStore> storeList = activityCollectStoreMapper.listByCollectCouponsId(coupon.getId());
+			for(ActivityCollectStore collectStore : storeList){
+				if(collectStore.getStoreId().equals(storeInfo.getId())){
+					flag = true;
+				}
+			}
+		}
+		//店铺参与活动继续进行校验
+		if(flag){
+			ActivityCouponsRecord record = new ActivityCouponsRecord();
+			record.setCollectTime(DateUtils.getDateStart(new Date()));
+			record.setCollectType(ActivityCouponsType.red_packet);
+			record.setCouponsCollectId(coupon.getId());
+			int drawAmount = getDaliyDrawAmount(record);
+			log.info("红包每天已发行数量drawAmount=====" + drawAmount);
+			
+			// 0表示不限制 每日最大发行量大于领取数量
+			if (Integer.valueOf(coupon.getDailyCirculation()) == 0
+					|| Integer.valueOf(coupon.getDailyCirculation()) > drawAmount) {
+				return true;
+			}
 		}
 		return false;
 	}
