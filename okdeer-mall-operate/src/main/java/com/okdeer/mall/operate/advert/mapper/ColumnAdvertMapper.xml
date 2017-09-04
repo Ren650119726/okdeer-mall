@@ -1316,6 +1316,10 @@
 	    		(
 	    			#{advertEndTime} BETWEEN ca.start_time AND ca.end_time
 	    		)
+	    		OR 
+	    		(
+	    			#{advertStartTime} &lt;= ca.start_time AND #{advertEndTime} &gt;= ca.end_time
+	    		)
 	    	)
 	    <if test="positionId != null and positionId !=''">
 	   	   AND ca.position_id = #{positionId, jdbcType=VARCHAR}
