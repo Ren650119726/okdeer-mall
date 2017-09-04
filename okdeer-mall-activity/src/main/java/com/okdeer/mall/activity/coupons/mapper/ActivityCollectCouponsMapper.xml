@@ -513,6 +513,8 @@
 				<foreach collection="associateIdList" open="(" close=")" index="index" item="item"  separator=",">
 					#{item}
 				</foreach>
+				OR
+				c.area_type = 0
 			)
 			</if>
 		</if>
@@ -529,6 +531,8 @@
 				<foreach collection="storeIdList" open="(" close=")" index="index" item="item"  separator=",">
 					#{item}
 				</foreach>
+				OR
+				c.area_type = 0
 			)
 			</if>
 		</if>
