@@ -67,38 +67,93 @@
         GROUP BY aa.store_sku_id;	
     </select>
     
-    <!-- begin 根据h5活动id获取便利店商品列表mengsj 20170826-->
-	<select id="findBldGoodsByActivityId" resultMap="BaseResultMap" parameterType="String">
+	
+	<!-- begin 根据h5活动id获取便利店商品列表mengsj 20170826-->
+	<select id="findBldGoodsByActivityId" resultType="com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto" parameterType="String">
 		SELECT
-	        aa.id, 
-	        aa.activity_id, 
-	        aa.content_id, 
-	        aa.store_sku_id, 
-	        aa.pic_url, 
-        	aa.create_time, 
-        	picture.url goods_sku_pic,
-        	sku.name sku_name,
-        	(case when sa.id is not null then asg.sale_price else sku.online_price end) AS sku_price,
-        	sku.market_price,
-        	stock.sellable AS sellable_stock,
-        	stock.locked AS locked_stock
-		FROM activity_h5_advert_content_goods aa
-			INNER JOIN goods_store_sku sku on aa.store_sku_id = sku.sku_id
+	        sku.id,
+			sku.name,
+			sku.alias,
+			IFNULL(sku.tag_type,0) AS tagType,
+			sku.bar_code,
+			sku.update_time AS updateTime,
+			sku.store_id,
+			sku.type,
+			if(sa.type=5,asg.sale_price,sku.online_price) AS onlinePrice,
+			sku.market_price AS marketPrice,
+			if(sa.type=5,asg.trade_max,sku.trade_max) AS tradeMax,
+			IFNULL(sku.guaranteed,0) AS guaranteed,
+			IFNULL(sku.obsolete,0) AS obsolete,
+			sku.properties_indb AS propertiesIndb, 		
+			sku.activity_type AS activityType,
+			picture.url,
+			stock.sellable AS sellableStock,
+			asg.sale_price,
+			stock.locked AS lockedStock,
+			asg.trade_max AS lowPriceUpper,
+			sa.`limit` as limitNum,
+			sku.`online` AS online,
+			if(sa.type=5,1,0) isPrivliege
+		FROM activity_h5_advert_content_goods s
+			INNER JOIN goods_store_sku sku on s.store_sku_id = sku.sku_id
+			LEFT JOIN goods_store_sku_plu plu ON plu.store_sku_id = sku.id AND plu.type = 1 AND plu.disabled = 0
 			LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
-			LEFT JOIN goods_store_sku_stock stock ON stock.store_sku_id = sku.id
-			LEFT JOIN activity_sale sa ON sa.id = sku.activity_id AND sa.status = 1 AND sa.disabled = 0
-			LEFT JOIN activity_sale_goods asg on sa.id = asg.sale_id AND sku.id=asg.store_sku_id
+			LEFT JOIN goods_store_sku_stock stock ON stock.`store_sku_id` = sku.`id`
+			LEFT JOIN `activity_sale` sa ON sa.`id` = sku.`activity_id` AND sa.status = 1 AND sa.disabled = 0
+			LEFT JOIN `activity_sale_goods` asg on sa.id = asg.`sale_id` AND sku.id=asg.store_sku_id
 	    WHERE sku.disabled = 0
 			AND stock.disabled = 0
-			AND sku.status = 1
+			AND sku.`status` = 1
 			AND sku.violation = 0
 			AND sku.store_id = #{storeId,jdbcType=VARCHAR}
-		  	AND aa.activity_id = #{activityId,jdbcType=VARCHAR}
-		  	AND aa.content_id = #{contentId,jdbcType=VARCHAR}
-		 GROUP BY aa.store_sku_id 	
-		 ORDER BY aa.id DESC 
+		  	AND s.activity_id = #{activityId,jdbcType=VARCHAR}
+		  	AND s.content_id = #{contentId,jdbcType=VARCHAR}
+		GROUP BY sku.id 
 	</select>
 	
+	<!-- add by mengsj 查询h5活动关联的服务商品 -->
+	<select id="findFwdGoodsByContent" resultType="map" parameterType="java.lang.String">
+		select 
+			CAST(se.is_collect AS SIGNED) as addSendPrice,
+			CAST(se.is_support_purchase AS SIGNED) as canConfirmOrder,
+			se.starting_price as fullPrice,
+			sku.`name` as goodsName,
+			sku.id as goodsStoreSkuId,
+			CAST(se.is_starting_price AS SIGNED) as hasFullPrice,
+			CAST(se.is_distribution_fee AS SIGNED) as hasSendPrice,
+			CAST(se.is_shopping_cart AS SIGNED) as isSupportCart,
+			sku.market_price as marketPrice,
+			pic.url as picUrl,
+			sku.online_price as onlinePrice,
+			stock.sellable as sellable,
+			se.distribution_fee as sendPrice,
+			sku.store_id as skuStoreId,
+			CAST(sku.type AS SIGNED) as skuType,
+			service.is_shop_num as isShopNum,
+			service.shop_num as startBuyNum,
+			si.store_name as storeName,
+			sku.update_time as updateTime	,
+			css.column_server_id as serverColumnId,
+			cs .server_name as serverColumnName
+		from goods_store_sku sku
+			INNER JOIN activity_h5_advert_content_goods g on sku.id = g.store_sku_id
+			LEFT JOIN store_info si on (sku.store_id = si.id)
+			LEFT JOIN goods_store_sku_stock stock on (sku.id = stock.store_sku_id)
+			LEFT JOIN goods_store_sku_picture pic on (sku.id = pic.store_sku_id and pic.type = 1)
+			LEFT JOIN goods_store_sku_service service on (sku.id = service.store_sku_id)
+			LEFT JOIN store_info_ext ext on (si.id = ext.store_id)
+			LEFT JOIN store_service_ext se on (si.id = se.store_id)
+			LEFT JOIN column_server_store css on (css.store_id = si.id)
+			LEFT JOIN column_server cs on (css.column_server_id = cs.id)
+		where 1 = 1 
+			<if test="activityId != null and activityId != ''">
+		        AND g.activity_id = #{activityId,jdbcType=VARCHAR}
+		    </if>
+		    <if test="contentId != null and contentId != ''">
+		        AND g.content_id = #{contentId,jdbcType=VARCHAR}
+		    </if>	
+	        ORDER BY g.create_time DESC 
+	</select>
     
     <insert id="add" parameterType="com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods" >
         insert into activity_h5_advert_content_goods

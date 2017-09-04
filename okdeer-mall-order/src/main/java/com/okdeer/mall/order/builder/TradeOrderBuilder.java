@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -504,7 +505,7 @@ public class TradeOrderBuilder {
 		// 订单项参与平台优惠的总金额
 		BigDecimal totalAmount = parserBo.getTotalAmountHaveFavour();
 		// 订单总的平台优惠 （需分摊到商品）: 平台优惠 + 红包优惠
-		BigDecimal platformFavour = parserBo.getPlatformPreferential().add(tradeOrder.getPinMoney());
+		BigDecimal platformFavour = parserBo.getPlatformPreferential();
 		BigDecimal favourSum =  BigDecimal.valueOf(0.00);
 		int index = 0;
 		int haveFavourItemSize = parserBo.getHaveFavourGoodsMap().size();
@@ -602,7 +603,7 @@ public class TradeOrderBuilder {
 				tradeOrderItem.setActualAmount(BigDecimal.valueOf(0));
 				tradeOrderItem.setIncome(BigDecimal.valueOf(0));
 			}else{
-				// 设置订单项总收入=订单项总金额-订单项店铺优惠-佣金金额
+				// 设置订单项总收入=订单项总金额-订单项店铺优惠
 				tradeOrderItem.setIncome(totalAmountOfItem.subtract(storeFavourItem));
 			}
 			if (tradeOrderItem.getActualAmount().compareTo(BigDecimal.ZERO) == 0
@@ -612,9 +613,63 @@ public class TradeOrderBuilder {
 			}
 			orderItemList.add(tradeOrderItem);
 		}
-
+		// Begin V2.6.1 added by maojj 2017-09-01
+		// 分配零花钱到各个订单项
+		allocatePinMoney(tradeOrder.getPinMoney(),orderItemList);
+		// End V2.6.1 added by maojj 2017-09-01
 		return orderItemList;
 	}
+	
+	// Begin V2.6.1 added by maojj 2017-09-01
+	/**
+	 * @Description: 分配零花钱
+	 * @param pinMoney
+	 * @param orderItemList   
+	 * @author maojj
+	 * @date 2017年9月1日
+	 */
+	private void allocatePinMoney(BigDecimal pinMoney, List<TradeOrderItem> orderItemList) {
+		if (pinMoney.compareTo(BigDecimal.ZERO) <= 0) {
+			// 如果零花钱的值<=0,则无需做任何处理
+			return;
+		}
+		// 统计订单项的总的实付金额，用于分摊零花钱
+		BigDecimal totalActual = BigDecimal
+				.valueOf(orderItemList.stream().mapToDouble(orderItem -> orderItem.getActualAmount().doubleValue()).sum());
+		// 分配剩余零花钱金额
+		BigDecimal unAllocateMoney = pinMoney;
+		// 订单项分配的零花钱金额
+		BigDecimal pinMoneyItem = null;
+		// 订单项索引
+		int index = 0;
+		// 订单过滤实付金额为0的总数
+		int size = (int)orderItemList.stream().filter(orderItem -> orderItem.getActualAmount().compareTo(BigDecimal.ZERO) == 1).count();
+		// 订单项根据实付金额倒序序排列
+		ComparatorChain chain = new ComparatorChain();
+		chain.addComparator(new BeanComparator("actualAmount"), false);
+		Collections.sort(orderItemList, chain);
+		// 遍历订单项对零花钱进行分摊处理
+		for(TradeOrderItem orderItem : orderItemList){
+			if(orderItem.getActualAmount().compareTo(BigDecimal.ZERO) == 0){
+				continue;
+			}
+			if(index++ < size - 1){
+				pinMoneyItem = orderItem.getActualAmount().multiply(pinMoney).divide(totalActual, 2,
+						BigDecimal.ROUND_FLOOR);
+				unAllocateMoney = unAllocateMoney.subtract(pinMoneyItem);
+			}else{
+				pinMoneyItem = orderItem.getActualAmount().compareTo(unAllocateMoney) == 1?unAllocateMoney:orderItem.getActualAmount();
+			}
+			orderItem.setPreferentialPrice(orderItem.getPreferentialPrice().add(pinMoneyItem));
+			orderItem.setActualAmount(orderItem.getActualAmount().subtract(pinMoneyItem));
+			if (orderItem.getActualAmount().compareTo(BigDecimal.ZERO) == 0
+					&& orderItem.getSpuType() == SpuTypeEnum.fwdDdxfSpu ) {
+				// 实付金额为0的到店消费商品，设置服务保障为无
+				orderItem.setServiceAssurance(0);
+			}
+		}
+	}
+	// End V2.6.1 added by maojj 2017-09-01
 	
 	public TradeOrderLogistics buildTradeOrderLogistics(TradeOrder tradeOrder, PlaceOrderParamDto paramDto){
 		if(paramDto.getOrderType() ==PlaceOrderTypeEnum.CVS_ORDER && paramDto.getPickType() == PickUpTypeEnum.TO_STORE_PICKUP){

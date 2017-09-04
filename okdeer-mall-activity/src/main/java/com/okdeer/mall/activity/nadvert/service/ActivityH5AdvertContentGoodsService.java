@@ -1,7 +1,9 @@
 package com.okdeer.mall.activity.nadvert.service;
 
 import java.util.List;
+import java.util.Map;
 
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentGoods;
 
@@ -49,6 +51,16 @@ public interface ActivityH5AdvertContentGoodsService {
 	 * @author mengsj
 	 * @date 2017年8月26日
 	 */
-	PageUtils<ActivityH5AdvertContentGoods> findBldGoodsByActivityId(String storeId,String activityId,String contentId ,Integer pageNumber,Integer pageSize);
-	
+	PageUtils<GoodsStoreActivitySkuDto> findBldGoodsByActivityId(String storeId,String activityId,String contentId ,Integer pageNumber,Integer pageSize);
+
+	/**
+	 * @Description: 根据活动id和内容id获取关联的服务商品
+	 * @param activityId
+	 * @param contentId
+	 * @return List<Map<String,Object>>
+	 * @throws
+	 * @author mengsj
+	 * @date 2017年9月1日
+	 */
+	List<Map<String, Object>> findFwdGoodsByContent(String activityId,String contentId);
 }

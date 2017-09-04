@@ -249,7 +249,9 @@
 		AND sr.city_id = #{cityId,jdbcType=VARCHAR}))
 		AND sec.store_sku_id = gss.id
 		AND gss.store_id = sie.store_id
-		AND sec.publish_client like CONCAT('%','0','%')
+		<if test="publishClient != null and publishClient != null">
+			AND sec.publish_client like CONCAT('%',#{publishClient},'%')
+		</if>
 		AND sie.is_closed = 1 
 		UNION 
 		SELECT
@@ -257,7 +259,8 @@
 		sec.seckill_num,sec.start_num,sec.seckill_price,sec.pic_url,sec.store_sku_id,sec.create_time,sec.create_user_id,
 		sec.update_time,sec.update_user_id,sec.disabled
 		FROM activity_seckill sec,goods_store_sku gss,store_info_ext sie
-		where (sec.seckill_range_type = 0 or exists
+		where sec.seckill_status = 1
+		AND (sec.seckill_range_type = 0 or exists
 		(select 1
 		from activity_seckill_range sr
 		where sr.activity_seckill_id = sec.id
@@ -268,7 +271,9 @@
 			SELECT s.start_time FROM activity_seckill s left JOIN activity_seckill_range r on s.id = r.activity_seckill_id 
 			 WHERE s.seckill_status = 0 and (r.city_id = #{cityId,jdbcType=VARCHAR} OR s.seckill_range_type = 0) ORDER BY s.start_time ASC LIMIT 1) 
 		AND sec.seckill_status = 0 
-		AND sec.publish_client like CONCAT('%','1','%')
+		<if test="publishClient != null and publishClient != null">
+			AND sec.publish_client like CONCAT('%',#{publishClient},'%')
+		</if>
 	</select>
 	<!-- 查询定位地址是否有秒杀活动 end add by luosm 2016-7-20 -->
 

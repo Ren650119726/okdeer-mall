@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
+import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
@@ -42,6 +43,7 @@ import com.okdeer.mall.operate.service.MessageSendSettingService;
 import com.okdeer.mall.order.constant.OrderMsgConstant;
 import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
+import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
 import com.okdeer.mcm.constant.MsgConstant;
 
 
@@ -72,6 +74,12 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private SysBuyerLocateInfoServiceApi sysBuyerLocateInfoApi;
+	
+	/**
+	 * 用户信息表api
+	 */
+	@Reference(version = "1.0.0", check = false)
+	private SysBuyerUserServiceApi buyerUserApi;
     
     @Value("${mcm.sys.code}")
     private String msgSysCode;
@@ -232,9 +240,13 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		dto.setCityIdList(cityIdsList);
 		
 		List<SysBuyerLocateInfoDto> infoList = sysBuyerLocateInfoApi.findUserList(dto);
+		//根据用户id列表获取用户信息列表
+		List<String> ids = Lists.newArrayList();
+		infoList.forEach(buyer -> ids.add(buyer.getUserId()));
 		
+		List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids);
 		//3 发送消息
-		sendAppMessage(entity,infoList);
+		sendAppMessage(entity,userList);
 		//4 更新发送状态
 		entity.setStatus(1);
 		entity.setUpdateTime(new Date());
@@ -251,7 +263,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 	 * @throws Exception 
 	 * @date 2017年8月18日
 	 */
-	private void sendAppMessage(MessageSendSetting messageSend, List<SysBuyerLocateInfoDto> infoList) throws Exception {
+	private void sendAppMessage(MessageSendSetting messageSend, List<SysBuyerUser> infoList) throws Exception {
 		PushMsgVo pushMsgVo = new PushMsgVo();
 		pushMsgVo.setSysCode(msgSysCode);
 		pushMsgVo.setToken(msgToken);
@@ -276,12 +288,12 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
 		infoList.forEach(user -> {
-			if(StringUtils.isNotEmpty(user.getUserPhone())){
+			if(StringUtils.isNotEmpty(user.getPhone())){
 				PushUserVo pushUser = new PushUserVo();
-				pushUser.setUserId(user.getUserId());
+				pushUser.setUserId(user.getId());
 				pushUser.setMsgType(Constant.ONE);
 				//设置手机号
-				pushUser.setMobile(user.getUserPhone());
+				pushUser.setMobile(user.getPhone());
 				
 				userList.add(pushUser);
 			}
