@@ -742,6 +742,7 @@
 			jdbcType="DECIMAL" />
 		<result column="store_name" property="storeName" jdbcType="DECIMAL" />
 		<result column="fare" property="fare" jdbcType="DECIMAL" />
+		<result column="total_income" property="totalIncome" jdbcType="DECIMAL" />
 		<!-- 订单信息VO -->
 		<association property="tradeOrderVo"
 			javaType="com.okdeer.mall.order.vo.TradeOrderVo">
@@ -799,6 +800,8 @@
 			<result column="amount" property="amount" jdbcType="DECIMAL" />
 			<result column="quantity" property="quantity" jdbcType="DECIMAL" />
 			<result column="preferential_price" property="preferentialPrice"
+				jdbcType="DECIMAL" />
+			<result column="income" property="income"
 				jdbcType="DECIMAL" />
 			<result column="item_status" property="status" jdbcType="TINYINT"
 				javaType="com.okdeer.mall.order.enums.OrderItemStatusEnum" />
@@ -1494,6 +1497,7 @@
 		tr.trade_num,
 		tr.type,
 		tr.total_preferential_price,
+		tr.total_income,
 		ri.quantity,
 		ri.unit_price,
 		ri.sku_name,
@@ -1511,6 +1515,7 @@
 		trade.activity_type,
 		trade.invoice,
 		item.actual_amount,
+		item.income,
 		ri.order_item_id,
 		pay.returns,
 		pay.pay_time,
