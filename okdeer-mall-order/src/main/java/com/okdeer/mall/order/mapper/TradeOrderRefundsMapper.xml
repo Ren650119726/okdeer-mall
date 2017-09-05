@@ -1493,6 +1493,7 @@
 		tr.create_time,
 		tr.trade_num,
 		tr.type,
+		tr.total_preferential_price,
 		ri.quantity,
 		ri.unit_price,
 		ri.sku_name,
