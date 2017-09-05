@@ -75,25 +75,27 @@ public class StoreGoodsHotSellerJob extends AbstractSimpleElasticJob  {
 			// 1获取所有昨天有销售订单完成的订单
 			List<TradeOrder> orderList = tradeOrderService.findOrderListForJob();
 			
-			List<String> orderIds = Lists.newArrayList();
-			orderList.forEach(order -> orderIds.add(order.getId()));
-			
-			// 2根据订单id统计所有订单项销售商品
-			List<StoreGoodsHotSellerBo> sellerList = tradeOrderItemService.findSellerList(orderIds);
-			
-			// 3根据skuids获取店铺商品信息
-			List<String> skuIds = Lists.newArrayList();
-			sellerList.forEach(seller -> skuIds.add(seller.getStoreSkuId()));
-			
-			List<GoodsStoreSku>	skuList = goodsStoreSkuApi.findByIds(skuIds);
-			// 4 遍历获取SpuCategoryId
-			if (CollectionUtils.isNotEmpty(sellerList)) {
-				for(StoreGoodsHotSellerBo sellerBo : sellerList ){
-					for(GoodsStoreSku storeSku : skuList){
-						if(sellerBo.getStoreSkuId().equals(storeSku.getId())){
-							sellerBo.setSpuCategoryId(storeSku.getSpuCategoryId());
-							StoreGoodsHotSellerDto dto = BeanMapper.map(sellerBo, StoreGoodsHotSellerDto.class);
-							storeGoodsHotSellerApi.addHotSeller(dto);
+			if(CollectionUtils.isNotEmpty(orderList)){
+				List<String> orderIds = Lists.newArrayList();
+				orderList.forEach(order -> orderIds.add(order.getId()));
+				
+				// 2根据订单id统计所有订单项销售商品
+				List<StoreGoodsHotSellerBo> sellerList = tradeOrderItemService.findSellerList(orderIds);
+				
+				// 3根据skuids获取店铺商品信息
+				List<String> skuIds = Lists.newArrayList();
+				sellerList.forEach(seller -> skuIds.add(seller.getStoreSkuId()));
+				
+				List<GoodsStoreSku>	skuList = goodsStoreSkuApi.findByIds(skuIds);
+				// 4 遍历获取SpuCategoryId
+				if (CollectionUtils.isNotEmpty(sellerList)) {
+					for(StoreGoodsHotSellerBo sellerBo : sellerList ){
+						for(GoodsStoreSku storeSku : skuList){
+							if(sellerBo.getStoreSkuId().equals(storeSku.getId())){
+								sellerBo.setSpuCategoryId(storeSku.getSpuCategoryId());
+								StoreGoodsHotSellerDto dto = BeanMapper.map(sellerBo, StoreGoodsHotSellerDto.class);
+								storeGoodsHotSellerApi.addHotSeller(dto);
+							}
 						}
 					}
 				}
