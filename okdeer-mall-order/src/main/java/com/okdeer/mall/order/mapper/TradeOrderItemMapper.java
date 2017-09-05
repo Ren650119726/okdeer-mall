@@ -150,5 +150,5 @@ public interface TradeOrderItemMapper{
 	 * @author xuzq01
 	 * @date 2017年8月21日
 	 */
-	List<StoreGoodsHotSellerBo> findSellerList();
+	List<StoreGoodsHotSellerBo> findSellerList(@Param("orderIds")List<String> orderIds);
 }

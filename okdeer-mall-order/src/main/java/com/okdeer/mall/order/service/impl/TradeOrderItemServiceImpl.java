@@ -112,8 +112,8 @@ class TradeOrderItemServiceImpl implements TradeOrderItemService, TradeOrderItem
 	}
 
 	@Override
-	public List<StoreGoodsHotSellerBo> findSellerList() {
-		return tradeOrderItemMapper.findSellerList();
+	public List<StoreGoodsHotSellerBo> findSellerList(List<String> orderIds) {
+		return tradeOrderItemMapper.findSellerList(orderIds);
 	}
 
 }
