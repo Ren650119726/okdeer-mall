@@ -624,7 +624,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 			refunds = tradeOrderRefundsService.findDetailByFinance(refundsId);
 			orderRefundsDto.setRefundsReason(refunds.getRefundsReason());
 			orderRefundsDto.setId(refunds.getId());
-			orderRefundsDto.setTotalAmount(refunds.getTotalAmount());
+			orderRefundsDto.setTotalAmount(refunds.getTotalIncome());
 			orderRefundsDto.setActualAmount(refunds.getActualAmount());
 			orderRefundsDto.setRefundAmount(refunds.getTotalAmount());
 			orderRefundsDto.setPreferentialAmount(refunds.getTotalPreferentialPrice());
@@ -664,7 +664,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 				itemDto.setSkuName(item.getSkuName());
 				itemDto.setQuantity(item.getQuantity());
 				itemDto.setUnitPrice(item.getUnitPrice());
-				itemDto.setTotalAmount(item.getAmount());
+				itemDto.setTotalAmount(item.getIncome());
 				//到店消费订单，还要查询退款码
 				if(refunds.getType()==OrderTypeEnum.STORE_CONSUME_ORDER){
 					List<TradeOrderItemDetail> detailList = tradeOrderItemDetailService.selectByOrderItemById(item.getOrderItemId());
