@@ -1515,7 +1515,7 @@
 		trade.activity_type,
 		trade.invoice,
 		item.actual_amount,
-		item.income,
+		ri.income,
 		ri.order_item_id,
 		pay.returns,
 		pay.pay_time,
