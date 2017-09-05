@@ -22,6 +22,14 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRandCode;
 public interface ActivityCouponsRandCodeMapper extends IBaseCrudMapper {
 	
 	/**
+	 * @Description: 根据代金券id删除
+	 * @param couponsId
+	 * @author zhangkn
+	 * @date 2017年9月5日
+	 */
+	void deleteByCouponsId(String couponsId);
+	
+	/**
 	 * 批量新增
 	 * @param activityCouponsRandCodeList
 	 */

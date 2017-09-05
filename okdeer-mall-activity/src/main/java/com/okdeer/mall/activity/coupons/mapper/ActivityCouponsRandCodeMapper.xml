@@ -189,5 +189,9 @@
 		ON rand.coupons_id = coupons.id
 		WHERE coupons.id = #{couponsId, jdbcType=VARCHAR}
 	</select>
+	
+	<select id="deleteByCouponsId" parameterType="string">
+		delete FROM activity_coupons_rand_code where coupons_id = #{value}
+	</select>
 </mapper>
 

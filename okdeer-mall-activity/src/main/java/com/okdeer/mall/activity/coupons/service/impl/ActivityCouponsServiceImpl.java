@@ -263,6 +263,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 				couponsRandCode.setIsExchange(WhetherEnum.not.ordinal());
 				couponsRandCode.setCreateUserId(coupons.getCreateUserId());
 				couponsRandCode.setCreateTime(coupons.getCreateTime());
+				couponsRandCode.setUpdateUserId(coupons.getUpdateUserId());
+				couponsRandCode.setUpdateTime(coupons.getUpdateTime());
 
 				couponsRandCodeList.add(couponsRandCode);
 			}
@@ -402,6 +404,21 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			activitycoupons.setStartTime(coupons.getStartTime());
 			activitycoupons.setEndTime(coupons.getEndTime());
 			this.addRelatedInfo(activitycoupons);
+		}
+		
+		// add by zhangkeneng v2.6
+		// 先把老数据删掉
+		activityCouponsRandCodeMapper.deleteByCouponsId(coupons.getId());
+		// 如果代金券设置了需要生成随机码，则根据代金券的发行量生成随机码
+		if (coupons.getIsRandCode() == WhetherEnum.whether.ordinal()) {
+			// (由于新增和修改 接收的对象用的不是同一个,只能重新转换一下)
+			ActivityCoupons activitycoupons = new ActivityCoupons();
+			BeanMapper.copy(coupons, activitycoupons);
+			activitycoupons.setUpdateTime(new Date());
+			activitycoupons.setCreateTime(new Date());
+			activitycoupons.setCreateUserId(coupons.getUpdateUserId());
+			activitycoupons.setUpdateUserId(coupons.getUpdateUserId());
+			generateRandCodeAndSave(activitycoupons);
 		}
 	}
 
