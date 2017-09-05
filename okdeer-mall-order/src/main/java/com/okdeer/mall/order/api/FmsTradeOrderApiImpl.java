@@ -531,16 +531,7 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 
 				tradeOrderDto.setTradeOrderItem(itemDtoList);
 			}
-			BigDecimal refundAmount = order.getActualAmount();
-			if (order.getIsBreach() == WhetherEnum.whether) {
-				// 如果有违约金，就减去违约金
-				refundAmount = refundAmount.subtract(order.getBreachMoney());
-			}
-
-			if (order.getStatus() == OrderStatusEnum.REFUSING || order.getStatus() == OrderStatusEnum.REFUSED) {
-				refundAmount = refundAmount.subtract(order.getFare().subtract(
-						order.getRealFarePreferential() == null ? BigDecimal.ZERO : order.getRealFarePreferential()));
-			}
+			BigDecimal refundAmount = order.getActualReturnAmount();
 
 			tradeOrderDto.setRealRefundAmount(refundAmount);
 
