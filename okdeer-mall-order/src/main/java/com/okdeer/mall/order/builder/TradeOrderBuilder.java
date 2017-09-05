@@ -629,13 +629,17 @@ public class TradeOrderBuilder {
 	 * @date 2017年9月1日
 	 */
 	private void allocatePinMoney(BigDecimal pinMoney, List<TradeOrderItem> orderItemList) {
-		if (pinMoney.compareTo(BigDecimal.ZERO) <= 0) {
+		if (pinMoney == null || pinMoney.compareTo(BigDecimal.ZERO) <= 0) {
 			// 如果零花钱的值<=0,则无需做任何处理
 			return;
 		}
 		// 统计订单项的总的实付金额，用于分摊零花钱
 		BigDecimal totalActual = BigDecimal
 				.valueOf(orderItemList.stream().mapToDouble(orderItem -> orderItem.getActualAmount().doubleValue()).sum());
+		if(totalActual.compareTo(BigDecimal.ZERO) <= 0){
+			// 如果实付金额为0
+			return;
+		}
 		// 分配剩余零花钱金额
 		BigDecimal unAllocateMoney = pinMoney;
 		// 订单项分配的零花钱金额
