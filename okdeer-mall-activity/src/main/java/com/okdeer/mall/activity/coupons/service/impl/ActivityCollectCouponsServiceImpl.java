@@ -991,14 +991,14 @@ public class ActivityCollectCouponsServiceImpl
 		}
 		try {
 			activityCouponsService.takeCoupons(activityCollectCoupons, activityCouponParamDto);
+			//添加领取记录
+			addActivityCollectCouponsRecord(activityCollectCoupons, activityCouponParamDto);
 			resultDto.setCode(0);
 			resultDto.setMsg("领取成功");
 		} catch (Exception e) {
 			log.error("领取代金劵失败", e);
 			setTakeActivityCouponResult(resultDto, 106, e.getMessage());
-		}
-		if(resultDto.getCode() == 0){
-			addActivityCollectCouponsRecord(activityCollectCoupons, activityCouponParamDto);
+			throw e;
 		}
 		return resultDto;
 	}

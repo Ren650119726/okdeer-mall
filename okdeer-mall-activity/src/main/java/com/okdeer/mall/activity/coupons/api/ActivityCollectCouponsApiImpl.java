@@ -27,7 +27,8 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 	@Override
 	public TakeActivityCouponResultDto takeActivityCoupon(TakeActivityCouponParamDto activityCouponParamDto) {
 		try {
-			return activityCollectCouponsService.takeActivityCoupon(activityCouponParamDto) ;
+			TakeActivityCouponResultDto takeActivityCouponResultDto = activityCollectCouponsService.takeActivityCoupon(activityCouponParamDto) ;
+			return takeActivityCouponResultDto;
 		} catch (Exception e) {
 			TakeActivityCouponResultDto activityCouponResultDto = new TakeActivityCouponResultDto();
 			activityCouponResultDto.setCode(110);
