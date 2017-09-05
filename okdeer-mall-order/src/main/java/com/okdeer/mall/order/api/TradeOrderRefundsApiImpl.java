@@ -668,7 +668,13 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 				//到店消费订单，还要查询退款码
 				if(refunds.getType()==OrderTypeEnum.STORE_CONSUME_ORDER){
 					List<TradeOrderItemDetail> detailList = tradeOrderItemDetailService.selectByOrderItemById(item.getOrderItemId());
-					itemDto.setItemDetailList(BeanMapper.mapList(detailList, TradeOrderItemDetailDto.class));
+					List<TradeOrderItemDetailDto> dtoList = Lists.newArrayList();
+					for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
+						if(tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.refund){
+							dtoList.add(BeanMapper.map(tradeOrderItemDetail, TradeOrderItemDetailDto.class));
+						}
+					}
+					itemDto.setItemDetailList(dtoList);
 				}
 				itemList.add(itemDto);
 			}
