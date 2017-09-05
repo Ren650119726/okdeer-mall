@@ -18,6 +18,7 @@
 	<resultMap id="PageListResultMap" type="com.okdeer.mall.order.bo.TradePinMoneyObtainBo" >
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="userPhone" property="userPhone" jdbcType="VARCHAR" />
+        <result column="name" property="activityName" jdbcType="VARCHAR" />
         <result column="status" property="status" jdbcType="TINYINT" />
         <result column="amount" property="amount" jdbcType="DECIMAL" />
         <result column="remain_amount" property="remainAmount" jdbcType="DECIMAL" />
@@ -189,11 +190,12 @@
     
 	<!-- begin 商城后台零花钱领取记录条件查询 xuzq 20170814 -->
     <select id="findObtainPageList" resultMap="PageListResultMap" parameterType="com.okdeer.mall.order.dto.TradePinMoneyQueryDto" >
-        SELECT 
-        pin.id, buyer.phone userPhone,  pin.status, pin.amount, pin.remain_amount, pin.create_time, pin.valid_time
+        SELECT DISTINCT
+        pin.id, dis.name, buyer.phone userPhone,  pin.status, pin.amount, pin.remain_amount, pin.create_time, pin.valid_time
         FROM trade_pin_money_obtain pin
         LEFT JOIN sys_buyer_user buyer ON buyer.id=pin.user_id
-        WHERE 1=1
+        LEFT JOIN activity_discount dis ON dis.id= pin.activity_id AND dis.type=2 
+        WHERE 1=1 
         <if test="userPhone != null" >
            AND buyer.phone LIKE CONCAT('%', #{userPhone,jdbcType=VARCHAR},'%')
         </if>
