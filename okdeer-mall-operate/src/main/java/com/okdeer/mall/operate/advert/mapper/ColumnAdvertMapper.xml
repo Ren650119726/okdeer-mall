@@ -1299,6 +1299,19 @@
 		<if test="positionId != null and positionId != ''">
 		    and c.position_id = #{positionId}
 		</if>
+		<if test="isServiceGoodsWxRecommend != null and isServiceGoodsWxRecommend == 1">
+			and 
+			(
+				c.target = 10 and c.business_id in (
+					select asgrg.goods_id from activity_service_goods_recommend_goods asgrg 
+						left join activity_service_goods_recommend asgr on (asgrg.activity_id = asgr.id)
+					WHERE asgr.status = 1
+				)
+				or
+				c.target != 10
+			)
+		
+		</if>
 		order by sort desc , create_time desc
 	</select>
 	
