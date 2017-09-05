@@ -61,7 +61,7 @@ public class TradePinMoneyObtainBo implements Serializable {
 	/**
 	 * 活动名称 跟产品确认不动态关联活动 直接写死
 	 */
-    private String activityName = "零花钱活动";
+    private String activityName;
 	/**
 	 * 活动类型  跟产品确认不动态关联活动 直接写死
 	 */
@@ -117,7 +117,11 @@ public class TradePinMoneyObtainBo implements Serializable {
 	public String getActivityName() {
 		return activityName;
 	}
-
+	
+	public void setActivityName(String activityName) {
+		this.activityName = activityName;
+	}
+	
 	public String getActivityType() {
 		return activityType;
 	}
