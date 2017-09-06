@@ -1,5 +1,6 @@
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,9 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityDrawPrizeService;
 import com.okdeer.mall.activity.coupons.service.ActivityDrawPrizeServiceApi;
+import com.okdeer.mall.activity.prize.dto.ActivityDrawRecordParamDto;
 import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
 import com.okdeer.mall.activity.prize.service.ActivityDrawRecordService;
@@ -159,6 +162,17 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 				// 剩余数量小于0 显示已领完
 				map.put("code", 108);
 				map.put("msg", "您已经没有抽奖机会哦，可以邀请好友获得抽奖机吧！");
+				return JSONObject.fromObject(map);
+			}
+			//9月活动查询每日抽奖次数，三次不能抽取
+			ActivityDrawRecordParamDto params = new ActivityDrawRecordParamDto();
+			params.setUserId(userId);
+			params.setStartCreateTime(DateUtils.getDateStart(new Date()));
+			params.setEndCreateTime(DateUtils.getDateEnd(new Date()));
+			//超过三次不能抽取返回
+			if(activityDrawRecordService.findCountByParams(params) >= 3){
+				map.put("code", 118);
+				map.put("msg", "您今天抽奖次数已达上限！");
 				return JSONObject.fromObject(map);
 			}
 			try {
