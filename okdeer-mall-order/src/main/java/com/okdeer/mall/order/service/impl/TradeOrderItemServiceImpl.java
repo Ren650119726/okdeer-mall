@@ -10,16 +10,17 @@ import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.mall.order.bo.StoreGoodsHotSellerBo;
+import com.okdeer.archive.goods.dto.StoreGoodsHotSellerDto;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
-import com.okdeer.mall.order.service.TradeOrderItemServiceApi;
-import com.okdeer.mall.order.vo.TradeOrderItemDetailVo;
-import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.service.TradeOrderItemService;
+import com.okdeer.mall.order.service.TradeOrderItemServiceApi;
+import com.okdeer.mall.order.vo.TradeOrderItemDetailVo;
 
 /**
  * @DESC: 
@@ -112,8 +113,8 @@ class TradeOrderItemServiceImpl implements TradeOrderItemService, TradeOrderItem
 	}
 
 	@Override
-	public List<StoreGoodsHotSellerBo> findSellerList(List<String> orderIds) {
-		return tradeOrderItemMapper.findSellerList(orderIds);
+	public List<StoreGoodsHotSellerDto> findSellerList(List<String> orderIds) {
+		return BeanMapper.mapList(tradeOrderItemMapper.findSellerList(orderIds), StoreGoodsHotSellerDto.class);
 	}
 
 }

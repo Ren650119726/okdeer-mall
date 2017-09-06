@@ -75,11 +75,4 @@ public interface TradeOrderItemService {
 	List<TradeOrderItem> findOrderItems(List<String> orderIds);
 	// End V2.1 added by maojj 2017-02-18
 
-	/**
-	 * @Description: 获取已经确认收货订单完成的商品列表
-	 * @return   
-	 * @author xuzq01
-	 * @date 2017年8月21日
-	 */
-	List<StoreGoodsHotSellerBo> findSellerList(List<String> orderIds);
 }
