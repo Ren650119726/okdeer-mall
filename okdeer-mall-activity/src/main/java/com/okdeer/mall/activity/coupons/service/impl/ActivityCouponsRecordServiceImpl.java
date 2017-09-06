@@ -926,6 +926,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	private void updateCouponsRecode(ActivityCouponsRecord record, ActivityCoupons coupons) {
 		// 立即领取
 		record.setId(UuidUtils.getUuid());
+		record.setCouponsId(coupons.getId());
+		record.setCouponsCollectId(coupons.getActivityId());
 		Date date = new Date();
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
@@ -1065,7 +1067,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			
 			ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto = new ActivityCouponsRecordQueryParamDto();
 			BeanMapper.copy(record, activityCouponsRecordQueryParamDto);
-			
+			activityCouponsRecordQueryParamDto.setCouponsCollectId(coupons.getActivityId());
+			activityCouponsRecordQueryParamDto.setCouponsId(coupons.getId());
 			int currentRecordCount = activityCouponsRecordMapper.selectCountByParams(activityCouponsRecordQueryParamDto);
 			if (currentRecordCount >= coupons.getEveryLimit().intValue()) {
 				// 已领取
