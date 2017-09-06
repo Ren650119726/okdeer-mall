@@ -62,7 +62,7 @@ public class ActivityDiscountServiceApiImpl implements ActivityDiscountServiceAp
 	public boolean isJoinPinMoney(ActivityPinMoneyDto activityPinMoneyDto, String storeId) {
 		// 根据店铺id获取店铺的地址信息
 		StoreInfo storeInfo = storeInfoApi.findById(storeId);
-		return activityDiscountService.isJoinPinMoney(activityPinMoneyDto, storeId,storeInfo.getCityId());
+		return activityDiscountService.isJoinPinMoney(activityPinMoneyDto, storeId,storeInfo.getCityId(),storeInfo.getProvinceId());
 	}
 
 	@Override

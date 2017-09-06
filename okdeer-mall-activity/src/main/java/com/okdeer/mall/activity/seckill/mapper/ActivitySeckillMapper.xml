@@ -197,6 +197,9 @@
 			</if>
 			)
 		</if>
+		<if test="params.publishClient != null and params.publishClient != ''">
+			AND seckill.publish_client REGEXP #{params.publishClient,jdbcType=VARCHAR}
+		</if>
 	</select>
 
 	<!-- 查询定位地址是否在秒杀活动范围 add by zengj 2016-7-16 10:47:30 -->

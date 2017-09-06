@@ -8,6 +8,7 @@
 package com.okdeer.mall.activity.seckill.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -280,6 +281,9 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 		params.put("endTime", endTime);
 		params.put("areaIds", areaIds);
 		params.put("rangeType", rangeType);
+		//设置发布客户端条件
+		String publishClient = activitySeckillFormVo.getPublishClient().replaceAll(",", "|");
+		params.put("publishClient", publishClient);
 
 		Boolean flag = true;
 		if (RangeTypeEnum.area == rangeType) {
@@ -297,6 +301,7 @@ public class ActivitySeckillServiceImpl implements ActivitySeckillService, Activ
 			Integer count = activitySeckillMapper.findSeckillCountByRange(params);
 			flag = count > 0 ? false : true;
 		}
+		
 		return flag;
 	}
 
