@@ -669,7 +669,8 @@ public class StoreConsumeOrderServiceImpl implements StoreConsumeOrderService {
 		payTradeVo.setAmount(orderRefunds.getTotalAmount());
 		payTradeVo.setIncomeUserId(orderRefunds.getUserId());
 		payTradeVo.setPayUserId(storeInfoService.getBossIdByStoreId(orderRefunds.getStoreId()));
-		payTradeVo.setTradeNum(orderRefunds.getTradeNum());
+		payTradeVo.setTradeNum(order.getTradeNum());
+		payTradeVo.setRefundNo(orderRefunds.getRefundNo());
 		payTradeVo.setTitle("订单退款(余额支付)，退款交易号：" + orderRefunds.getRefundNo());
 		payTradeVo.setBusinessType(BusinessTypeEnum.REFUND_ORDER);
 		payTradeVo.setServiceFkId(orderRefunds.getId());

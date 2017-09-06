@@ -802,6 +802,8 @@ public class TradeOrderRefundsServiceImpl
 		payTradeVo.setTitle("订单退款(余额支付)，退款交易号：" + orderRefunds.getRefundNo());
 		TradeOrder order = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
 		payTradeVo.setTradeNum(order.getTradeNum());
+		//退款单号
+		payTradeVo.setRefundNo(orderRefunds.getRefundNo());
 		// Begin Modified by maojj 2017-05-25
 		if(orderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND){
 			payTradeVo.setBusinessType(BusinessTypeEnum.YSC_REFUND);
