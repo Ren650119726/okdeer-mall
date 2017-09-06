@@ -8,10 +8,6 @@ import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPO
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_RECEIVE_TIPS;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_NOT_COUPONE_TIPS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_ERROR_TIPS;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT;
-import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_PSMS_NOT_TIPS;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_STATUS_CHANGE_TIPS;
 import static com.okdeer.common.consts.DescriptConstants.ORDER_COUPONS_SUCCESS_TIPS;
@@ -66,8 +62,6 @@ import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.service.IPayAccountServiceApi;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeDto;
-import com.okdeer.api.psms.finance.entity.CostPaymentApi;
-import com.okdeer.api.psms.finance.service.ICostPaymentServiceApi;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
@@ -547,14 +541,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      */
     @Autowired
     ActivityCouponsOrderRecordMapper activityCouponsOrderRecordMapper;
-
-    // Begin add by wushp V1.1.0 20160923
-    /**
-     * 物业缴费接口
-     */
-    @Autowired
-    ICostPaymentServiceApi costPaymentServiceApi;
-    // end add by wushp V1.1.0 20160923
 
     // Begin V1.1.0 add by wusw 20160924
     /**
@@ -5900,11 +5886,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             // 商城订单
             this.getMallOrderCoupons(orderId, userId, orderCouponsRespDto);
         }
-        if ("psms".equals(type)) {
-            // 物业订单
-            this.getPsmsOrderCoupons(orderId, userId, orderCouponsRespDto);
-        }
-
         return orderCouponsRespDto;
     }
 
@@ -5980,58 +5961,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         //end 涂志定
     }
 
-
-    /**
-     * @param orderId 订单id
-     * @param userId  下单用户id
-     * @param respDto 响应
-     * @throws ServiceException 异常
-     * @Description: 物业订单消费返券
-     * @author wushp
-     * @date 2016年9月22日
-     */
-    private void getPsmsOrderCoupons(String orderId, String userId, OrderCouponsRespDto respDto)
-            throws ServiceException {
-        CostPaymentApi costPayment = null;
-        try {
-            costPayment = costPaymentServiceApi.getCostPaymentApiById(orderId);
-        } catch (Exception e) {
-            logger.error(ORDER_COUPONS_PSMS_ERROR, orderId, userId, e.getMessage());
-            respDto.setMessage(
-                    (respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_PSMS_NOT_TIPS);
-            throw new ServiceException(ORDER_COUPONS_PSMS_ERROR_TIPS);
-        }
-        if (costPayment == null) {
-            // 查询不到该物业订单
-            logger.info(ORDER_COUPONS_PSMS_NOT, orderId, userId);
-            respDto.setMessage(
-                    (respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_PSMS_NOT_TIPS);
-            return;
-        }
-
-        // 调用物业接口获取订单信息，省id，市id
-        Double actualAmount = costPayment.getPayAmount();
-        String provinceId = costPayment.getProvinceId() + "";
-        String cityId = costPayment.getCityId() + "";
-
-        if (StringUtils.isBlank(provinceId) && StringUtils.isBlank(cityId)) {
-            // 物业订单信息异常，没有省市id
-            logger.info(ORDER_COUPONS_PSMS_ERROR, orderId, userId);
-            respDto.setMessage(
-                    (respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_PSMS_ERROR_TIPS);
-            return;
-        }
-
-        Map<String, Object> map = new HashMap<String, Object>();
-        // 订单实付金额
-        map.put("limitAmout", actualAmount);
-        // 订单类型
-        map.put("orderType", ActivityCollectOrderTypeEnum.ESTATE_PAY_ORDER.getValue());
-        map.put("provinceId", provinceId);
-        map.put("cityId", cityId);
-        // 获取消费返券信息并赠送代金券
-        getOrderCouponsInfo(orderId, userId, map, respDto, null);
-    }
 
     /**
      * @param orderId 订单id

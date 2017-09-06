@@ -54,11 +54,6 @@
 			<artifactId>okdeer-jxc-api</artifactId>
 		</dependency>
 		<dependency>
-		  <groupId>com.okdeer.psms</groupId>
-		  <artifactId>psms-api</artifactId>
-		  <version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
 		  <groupId>com.okdeer.pay</groupId>
 		  <artifactId>pay-api</artifactId>
 		</dependency>
