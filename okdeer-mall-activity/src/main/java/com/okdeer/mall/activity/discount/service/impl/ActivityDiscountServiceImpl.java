@@ -563,14 +563,17 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	}
 
 	@Override
-	public boolean isJoinPinMoney(ActivityPinMoneyDto activityPinMoneyDto, String storeId,String cityId) {
+	public boolean isJoinPinMoney(ActivityPinMoneyDto activityPinMoneyDto, String storeId,String cityId, String provinceId) {
 		
 		AreaType areaType = activityPinMoneyDto.getLimitRange();
 		//区域
 		if(areaType == AreaType.area){
 			List<ActivityBusinessRel> areaList = activityBusinessRelMapper.findByActivityId(activityPinMoneyDto.getId());
 			for(ActivityBusinessRel rel : areaList){
-				if(cityId.equals(rel.getBusinessId())){
+				if(rel.getBusinessType() == ActivityBusinessType.PROVINCE && provinceId.equals(rel.getBusinessId())){
+					return true;
+				}
+				if(rel.getBusinessType() == ActivityBusinessType.CITY && cityId.equals(rel.getBusinessId())){
 					return true;
 				}
 			}

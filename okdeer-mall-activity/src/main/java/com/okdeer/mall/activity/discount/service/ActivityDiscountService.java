@@ -132,7 +132,7 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @author xuzq01
 	 * @date 2017年8月23日
 	 */
-	boolean isJoinPinMoney(ActivityPinMoneyDto activityPinMoneyDto, String storeId,String cityId);
+	boolean isJoinPinMoney(ActivityPinMoneyDto activityPinMoneyDto, String storeId,String cityId,String provinceId);
 
 	/**
 	 * @Description: 获取优惠活动的优惠条件列表
