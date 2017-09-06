@@ -160,6 +160,8 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 		vo.setPayWay(order.getPayWay().ordinal());
 		vo.setPayType((tradeOrderPay == null || tradeOrderPay.getPayType() == null) ? 4 : tradeOrderPay.getPayType().ordinal());//如果为空,就是4现金
 		vo.setTradeNum(order.getTradeNum());
+		//添加零花钱
+		vo.setPinAmount(order.getPinMoney());
 		
 		// 进销存那边的优惠类型0:无活动 ;1：代金券；2：其他
 		int activityType = 0;
