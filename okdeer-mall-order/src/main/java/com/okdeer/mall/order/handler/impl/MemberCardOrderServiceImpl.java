@@ -329,6 +329,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		resp.getData().setFavour(JsonDateUtil.priceConvertToString(vo.getPlatDiscountAmount(),2,3));
 		//店铺优惠金额
 		resp.getData().setStoreFavour(JsonDateUtil.priceConvertToString(vo.getDiscountAmount(),2,3));
+		resp.getData().setOrderResource(OrderResourceEnum.MEMCARD);
 		//设置店铺id
 		persity.setStoreId(vo.getBranchId());
 		//实付金额
