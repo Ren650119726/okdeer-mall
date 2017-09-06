@@ -19,7 +19,7 @@
         AND order_id = #{orderId,jdbcType=VARCHAR}
       </if>
       <if test="collectUserId != null and collectUserId != ''">
-      	AND coupons_collect_id =  #{collectUserId,jdbcType=VARCHAR}
+      	AND collect_user_id =  #{collectUserId,jdbcType=VARCHAR}
       </if>
       <if test="couponsCollectId != null and couponsCollectId !='' ">
       	AND coupons_collect_id = #{couponsCollectId,jdbcType=VARCHAR}
