@@ -6,6 +6,7 @@
         <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
         <result column="content_id" property="contentId" jdbcType="VARCHAR" />
         <result column="collect_coupons_id" property="collectCouponsId" jdbcType="VARCHAR" />
+        <result column="collect_name" property="collectName" jdbcType="VARCHAR" />
         <result column="city_id" property="cityId" jdbcType="VARCHAR" />
         <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
@@ -25,16 +26,18 @@
     </select>
     
     <select id="findByActId" resultMap="BaseResultMap" parameterType="java.lang.String" >
-        select 
-        <include refid="Base_Column_List" />
-        from activity_h5_advert_content_coupons
+        select
+        	aa.id, aa.activity_id, aa.content_id, aa.collect_coupons_id,
+        	aa.city_id,aa.pic_url,aa.create_time,aa.create_user_id,bb.name collect_name
+        from activity_h5_advert_content_coupons aa
+        inner join activity_collect_coupons bb on collect_coupons_id = bb.id
         where 
         	1=1
         <if test="activityId != null">
-        	 AND activity_id = #{activityId,jdbcType=VARCHAR}
+        	 AND aa.activity_id = #{activityId,jdbcType=VARCHAR}
         </if>	
         <if test="contentId != null">
-        	 AND content_id = #{contentId,jdbcType=VARCHAR}
+        	 AND aa.content_id = #{contentId,jdbcType=VARCHAR}
         </if>	
     </select>
 
