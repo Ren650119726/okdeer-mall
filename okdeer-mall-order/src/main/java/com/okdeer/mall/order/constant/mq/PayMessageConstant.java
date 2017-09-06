@@ -163,4 +163,10 @@ public interface PayMessageConstant {
 	String TOPIC_REFUND = "topic_refund";
 	// End V2.4 added by maojj 2017-05-20
 
+	//add by zhangkeneng v2.6.0
+	/**
+	 * 鹿掌柜tag
+	 */
+	String TAG_LUZG_ORDER = "tag_luzg_order";
+	
 }
