@@ -4043,7 +4043,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      */
     private void setOrderItemExtJxc(JSONObject json,String orderId){
     	MemberOrderDetailPo  memberOrder = salesQueryService.getMemberOrderById(orderId);
-		if(memberOrder != null){
+		if(memberOrder == null){
 			return;
 		}
 		JSONArray array = (JSONArray) json.get("orderItems");

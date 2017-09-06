@@ -217,4 +217,11 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),list);
 	}
 	
+	@Test
+	public void updateRefundsStatus() throws Exception {
+		//退款单待退款数统计
+		boolean count = tradeOrderRefundsApiImpl.updateRefundsStatus("04a345dd276611e6aaff00163e010eb1", "2", "140627613692649eeed84dde4cc09498");
+		Assert.assertTrue(count);
+	}
+	
 }
