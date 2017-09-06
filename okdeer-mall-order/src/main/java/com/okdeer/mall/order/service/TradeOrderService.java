@@ -1053,12 +1053,4 @@ public interface TradeOrderService {
 
 	TradeOrder findByOrderNo(String orderNo);
 
-	/**
-	 * @Description: 销售订单统计 定时获取昨天所有销售完成订单列表
-	 * @return   
-	 * @author xuzq01
-	 * @date 2017年9月4日
-	 */
-	List<TradeOrder> findOrderListForJob();
-	
 }

@@ -85,7 +85,5 @@
 	<!-- 每隔半个小时执行代金卷活动 退款 定时任务 -->
 	<!--begin  xuzq 20170818 每隔半个小时执行-app消息推送job -->
 	<job:simple id="messageSendSettingJob" class="com.okdeer.mall.operate.job.MessageSendSettingJob" registry-center-ref="regCenter" cron="0 */30 * * * ?"   sharding-total-count="1"/>
-	<!--begin  xuzq 20170818 每隔半个小时执行-app消息推送job -->
-	<!-- 每天夜里2点统计店铺热销商品  xuzq 20170821 v2.6 -->
-	<job:simple id="storeGoodsHotSellerJob" class="com.okdeer.mall.order.job.StoreGoodsHotSellerJob" registry-center-ref="regCenter" cron="0 0 2 * * ?" sharding-total-count="1"/>
+	<!--end  xuzq 20170818 每隔半个小时执行-app消息推送job -->
 </beans>
