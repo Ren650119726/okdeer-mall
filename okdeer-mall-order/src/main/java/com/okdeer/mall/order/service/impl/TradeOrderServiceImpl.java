@@ -97,6 +97,10 @@ import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
+import com.okdeer.common.utils.JsonDateUtil;
+import com.okdeer.jxc.sale.order.po.MemberOrderDetailPo;
+import com.okdeer.jxc.sale.order.po.MemberOrderItemDetailPo;
+import com.okdeer.jxc.sale.order.service.SalesQueryService;
 import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsOrderRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
@@ -628,6 +632,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     @Resource
     private TradeOrderExtSnapshotMapper tradeOrderExtSnapshotMapper;
     // End V2.5 added by maojj 2017-06-23
+    
+    //begin v2.6.1 tuzhd 2017-09-06
+  	@Reference(version="1.0.0",check=false)
+  	private SalesQueryService salesQueryService;
+  	//End v2.6.1 tuzhd 2017-09-06
 
     //begin add wangf01 2017-08-10
 
@@ -4006,17 +4015,68 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         // 判断订单是否评价appraise大于0，已评价
         Integer appraise = tradeOrderItemMapper.selectTradeOrderItemIsAppraise(orderId);
         orders.setItems(tradeOrderItems);
+        
         // 查询店铺扩展信息
         String storeId = orders.getStoreInfo().getId();
         StoreInfoExt storeInfoExt = storeInfoExtService.getByStoreId(storeId);
         JSONObject json = new JSONObject();
         try {
             json = getJsonObj(orders, appraise, storeInfoExt);
+            
+            //如果为会员卡订单 start tuzhd 2017-09-06
+    		if(orders.getOrderResource() == OrderResourceEnum.MEMCARD){
+    			setOrderItemExtJxc(json, orderId);
+    		}
+    		//如果为会员卡订单 end tuzhd 2017-09-06
+            
         } catch (Exception e) {
             logger.error("商品详细查询异常", e);
             throw new ServiceException();
         }
         return json;
+    }
+    
+    /**
+     * @Description: 如果为会员卡订单 添加扩展信息
+     * @author tuzhd
+     * @date 2017年9月6日
+     */
+    private void setOrderItemExtJxc(JSONObject json,String orderId){
+    	MemberOrderDetailPo  memberOrder = salesQueryService.getMemberOrderById(orderId);
+		if(memberOrder != null){
+			return;
+		}
+		JSONArray array = (JSONArray) json.get("orderItems");
+		if(array == null || array.isEmpty()){
+			return;
+		}
+		//app优惠
+		json.put("appDiscountAmount",JsonDateUtil.priceConvertToString(memberOrder.getDiscountAmount(),2,3));
+        //线下店铺订单优惠
+        json.put("storeDiscountAmount",JsonDateUtil.priceConvertToString(memberOrder.getStoreDiscountAmount(),2,3));
+        //根据订单项进行设置jxc的数据
+        for(MemberOrderItemDetailPo item : memberOrder.getItemList()){
+    		for(int i=0;i<array.size();i++){
+    			JSONObject job = array.getJSONObject(i);    
+    			if(job.get("itemId").equals(item.getItemId())){
+    				job.put("originalPrice", item.getOriginalPrice());
+    				job.put("salePrice", item.getSalePrice());
+    				job.put("totalAmount", item.getTotalAmount());
+    				job.put("saleAmount", item.getSaleNum());
+    				//销售数量
+    				job.put("saleNum", JsonDateUtil.priceConvertToString(item.getSaleNum(),2,3));
+    				//活动类型描述
+    				job.put("activityTypeStr", item.getActivityTypeStr());
+    				//是否会员专享活动 (0-不是 1-是)
+    				job.put("memberExclusive", item.getMemberExclusive());
+    				//活动类型
+    				job.put("activityType", item.getActivityType());
+    				//销售类型
+    				job.put("saleType", item.getSaleType());
+    			}
+		  	}
+        }
+		
     }
 
     // 组装返回数据
@@ -4060,8 +4120,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             json.put("pickUpTime", strPickUpTime == null ? "" : strPickUpTime);
         }
         json.put("remark", orders.getRemark() == null ? "" : orders.getRemark());
-        json.put("orderAmount", orders.getTotalAmount() == null ? "0" : orders.getTotalAmount().toString());
-        json.put("actualAmount", orders.getActualAmount() == null ? "0" : orders.getActualAmount().toString());
+        json.put("orderAmount", JsonDateUtil.priceConvertToString(orders.getTotalAmount(),2,3));
+        json.put("actualAmount",JsonDateUtil.priceConvertToString(orders.getActualAmount(),2,3));
         json.put("orderNo", orders.getOrderNo() == null ? "" : orders.getOrderNo());
         json.put("cancelReason", getCancelReason(orders));
         if (orders.getStatus() != null && orders.getStatus() == OrderStatusEnum.CANCELED) {
@@ -4150,14 +4210,20 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
         // Begin V2.2 added by maojj  2017-03-20
         // 如果是扫码购订单，增加订单类型描述 添加会员卡订单类型 + tuzhd 2017-8-10
+        String orderTypeDesc = AppOrderTypeEnum.CVS_ORDER.getDesc();
+        String orderType = String.valueOf(AppOrderTypeEnum.CVS_ORDER.getCode());
         if (orders.getOrderResource() == OrderResourceEnum.SWEEP ) {
-            json.put("orderTypeDesc", AppOrderTypeEnum.SWEEP_ORDER.getDesc());
-            json.put("orderType", String.valueOf(AppOrderTypeEnum.SWEEP_ORDER.getCode()));
+        	orderTypeDesc = AppOrderTypeEnum.SWEEP_ORDER.getDesc();
+            orderType = String.valueOf(AppOrderTypeEnum.SWEEP_ORDER.getCode());
+        }else if (orders.getOrderResource() == OrderResourceEnum.WECHAT ) {
+        	orderTypeDesc = AppOrderTypeEnum.WECHAT.getDesc();
+            orderType = String.valueOf(AppOrderTypeEnum.WECHAT.getCode());
+        }else if (orders.getOrderResource() == OrderResourceEnum.MEMCARD ) {
+        	orderTypeDesc = AppOrderTypeEnum.MEMCARD_ORDER.getDesc();
+            orderType = String.valueOf(AppOrderTypeEnum.MEMCARD_ORDER.getCode());
         }
-        if (orders.getOrderResource() == OrderResourceEnum.MEMCARD ) {
-            json.put("orderTypeDesc", AppOrderTypeEnum.MEMCARD_ORDER.getDesc());
-            json.put("orderType", String.valueOf(AppOrderTypeEnum.MEMCARD_ORDER.getCode()));
-        }
+        json.put("orderTypeDesc", orderTypeDesc);
+        json.put("orderType", orderType);
         json.put("orderResource", orders.getOrderResource().ordinal());
         json.put("platformPreferential", orders.getPlatformPreferential());
         json.put("storePreferential", orders.getStorePreferential());

@@ -325,6 +325,10 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		resp.getData().setCurrentTime(System.currentTimeMillis());
 		resp.getData().setPaymentMode(0);
 		resp.getData().setIsReachPrice(1);
+		//平台优惠
+		resp.getData().setFavour(JsonDateUtil.priceConvertToString(vo.getPlatDiscountAmount(),2,3));
+		//店铺优惠金额
+		resp.getData().setStoreFavour(JsonDateUtil.priceConvertToString(vo.getDiscountAmount(),2,3));
 		//设置店铺id
 		persity.setStoreId(vo.getBranchId());
 		//实付金额

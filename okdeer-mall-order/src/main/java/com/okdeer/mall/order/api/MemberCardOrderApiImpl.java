@@ -53,7 +53,7 @@ public class MemberCardOrderApiImpl implements MemberCardOrderApi {
 	 * @date 2017年8月9日
 	 */
 	public Response<PlaceOrderDto> submitOrder(String orderId){
-		Response<PlaceOrderDto> resp = new Response<PlaceOrderDto>();
+		Response<PlaceOrderDto> resp = new Response<>();
 		PlaceOrderDto data = new PlaceOrderDto();
 		resp.setData(data);
 		try{
