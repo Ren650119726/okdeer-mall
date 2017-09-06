@@ -18,7 +18,14 @@ public class MockUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(MockUtils.class);
 	
-	
+	/**
+	 * @Description: 获取mock请求数据
+	 * @param filePath 文件路径
+	 * @param clazz 请求对应对象的class
+	 * @return   
+	 * @author maojj
+	 * @date 2017年9月4日
+	 */
 	public static <T> T getMockSingleData(String filePath,Class<T> clazz){
 		List<T> mockList = Lists.newArrayList();
 		try {
@@ -36,6 +43,31 @@ public class MockUtils {
 		}
 	}
 	
+	/**
+	 * @Description: mock一个数据集合
+	 * @param filePath
+	 * @param clazz
+	 * @return   
+	 * @author maojj
+	 * @date 2017年9月6日
+	 */
+	public static <T> List<T> getMockListData(String filePath,Class<T> clazz){
+		List<List<T>> mockList = MockUtils.getMockData(filePath, clazz);
+		if(CollectionUtils.isEmpty(mockList)){
+			return Lists.newArrayList();
+		}else{
+			return mockList.get(0);
+		}
+	}
+	
+	/**
+	 * @Description: 获取mock列表数据
+	 * @param filePath 文件路径
+	 * @param clazz 请求对象的class
+	 * @return   
+	 * @author maojj
+	 * @date 2017年9月4日
+	 */
 	public static <T> List<List<T>> getMockData(String filePath,Class<T> clazz){
 		List<List<T>> mockList = Lists.newArrayList();
 		List<T> mockData = null;
@@ -52,6 +84,14 @@ public class MockUtils {
 		return mockList;
 	}
 	
+	/**
+	 * @Description: 获取mock的字符串
+	 * @param filePath 文件路径
+	 * @return
+	 * @throws IOException   
+	 * @author maojj
+	 * @date 2017年9月4日
+	 */
 	public static List<String> getMockData(String filePath) throws IOException {
 		List<String> dataList = Lists.newArrayList();
 		ClassPathResource resource = new ClassPathResource(filePath);

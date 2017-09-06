@@ -41,7 +41,8 @@ import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.base.MockUtils;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
-import com.okdeer.mall.order.api.mock.StoreMock;
+import com.okdeer.mall.mock.MockFilePath;
+import com.okdeer.mall.mock.StoreMock;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.handler.impl.CheckSkuServiceImpl;
@@ -49,10 +50,10 @@ import com.okdeer.mall.order.handler.impl.CheckStoreServiceImpl;
 import com.okdeer.mall.order.service.PlaceOrderApi;
 
 @RunWith(Parameterized.class)
-public class PlaceOrderApiImplTest extends BaseServiceTest {
+public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePath{
 	
 	private static final Logger logger = LoggerFactory.getLogger(PlaceOrderApiImplTest.class);
-
+	
 	@Resource
 	private PlaceOrderApi placeOrderApi;
 	
@@ -165,10 +166,10 @@ public class PlaceOrderApiImplTest extends BaseServiceTest {
 	
 	private void initMockSkuAndStock(){
 		List<List<GoodsStoreSku>> mockSkuList = MockUtils
-				.getMockData("/com/okdeer/mall/order/api/mock/mock-sku.json", GoodsStoreSku.class);
+				.getMockData(MOCK_ORDER_SKU_PATH, GoodsStoreSku.class);
 		this.storeSkuList = mockSkuList.get(0);
 		List<List<GoodsStoreSkuStock>> mockStockList = MockUtils
-				.getMockData("/com/okdeer/mall/order/api/mock/mock-stock.json", GoodsStoreSkuStock.class);
+				.getMockData(MOCK_ORDER_STOCK_PATH, GoodsStoreSkuStock.class);
 		this.skuStockList = mockStockList.get(0);
 	}
 	
@@ -194,7 +195,7 @@ public class PlaceOrderApiImplTest extends BaseServiceTest {
 		reqDataMap.put("confirm", new ArrayList<String>());
 		reqDataMap.put("submit", new ArrayList<String>());
 
-		ClassPathResource resource = new ClassPathResource("/com/okdeer/mall/order/api/orderReq.txt");
+		ClassPathResource resource = new ClassPathResource(MOCK_ORDER_REQ);
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new FileReader(resource.getFile()));

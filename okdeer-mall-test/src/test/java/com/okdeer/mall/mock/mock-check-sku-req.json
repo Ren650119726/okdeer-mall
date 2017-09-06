@@ -1,0 +1,160 @@
+Begin--0：店铺商品不存在
+{
+	"req": {
+		"version": "V2.5.1",
+		"data": {
+			"storeId": "8a8080d15e4bffe6015e50ec13ce207a",
+			"version": "V2.5.1",
+			"cityName": "荆州市",
+			"fare": "0.00",
+			"channel": "3",
+			"userPhone": "18613138749",
+			"startMoney": "0.00",
+			"areaExt": "金九龙大酒店",
+			"lat": "30.34258501739361",
+			"userId": "14527626891242d4d00a207c4d69bd80",
+			"areaName": "荆州区",
+			"orderType": "0",
+			"provinceName": "湖北省",
+			"lng": "112.2164099849718",
+			"skuList": [{
+				"quantity": "1",
+				"updateTime": "2017-09-05 15:53:30",
+				"skuActQuantity": "0",
+				"skuPrice": "11.50",
+				"storeSkuId": "8a8080835e50ec28015e50f2f79d111c",
+				"skuActType": "0",
+				"skuActPrice": "0.00"
+			}],
+			"skuType": "0"
+		}
+	},
+	"code": 243
+}
+End--
+Begin--1：同一请求中包含两个店铺商品的数据
+{
+	"req": {
+		"version": "V2.5.1",
+		"data": {
+			"storeId": "8a8080d15e4bffe6015e50ec13ce207a",
+			"version": "V2.5.1",
+			"cityName": "荆州市",
+			"fare": "0.00",
+			"channel": "3",
+			"userPhone": "18613138749",
+			"startMoney": "0.00",
+			"areaExt": "金九龙大酒店",
+			"lat": "30.34258501739361",
+			"userId": "14527626891242d4d00a207c4d69bd80",
+			"areaName": "荆州区",
+			"orderType": "0",
+			"provinceName": "湖北省",
+			"lng": "112.2164099849718",
+			"skuList": [{
+				"quantity": "1",
+				"updateTime": "2017-09-05 15:53:30",
+				"skuActQuantity": "0",
+				"skuPrice": "11.50",
+				"storeSkuId": "8a8080835e50ec28015e50f2f79d000c",
+				"skuActType": "0",
+				"skuActPrice": "0.00"
+			},{
+				"quantity": "1",
+				"updateTime": "2017-07-01 16:25:51",
+				"skuActQuantity": "0",
+				"skuPrice": "2",
+				"storeSkuId": "40289d775ce7942a015ce79c091a000a",
+				"skuActType": "0",
+				"skuActPrice": "0.00"
+			}],
+			"skuType": "0"
+		}
+	},
+	"code": 236
+}
+End--
+Begin--2：店铺商品不存在
+{
+	"req": {
+		"version": "V2.5.1",
+		"data": {
+			"storeId": "8a8080d15e4bffe6015e50ec13ce207a",
+			"version": "V2.5.1",
+			"cityName": "荆州市",
+			"fare": "0.00",
+			"channel": "3",
+			"userPhone": "18613138749",
+			"startMoney": "0.00",
+			"areaExt": "金九龙大酒店",
+			"lat": "30.34258501739361",
+			"userId": "14527626891242d4d00a207c4d69bd80",
+			"areaName": "荆州区",
+			"orderType": "0",
+			"provinceName": "湖北省",
+			"lng": "112.2164099849718",
+			"skuList": [{
+				"quantity": "1",
+				"updateTime": "2017-09-03 15:53:30",
+				"skuActQuantity": "0",
+				"skuPrice": "11.50",
+				"storeSkuId": "8a8080835e50ec28015e50f2f79d000c",
+				"skuActType": "0",
+				"skuActPrice": "0.00"
+			}],
+			"skuType": "0"
+		}
+	},
+	"code": 243
+}
+End--
+Begin--3：请求商品包含特价组合+特惠单品+捆绑单品
+{
+	"req": {
+		"version": "V2.5.1",
+		"data": {
+			"storeId": "8a8080d15e4bffe6015e50ec13ce207a",
+			"version": "V2.5.1",
+			"cityName": "荆州市",
+			"fare": "0.00",
+			"channel": "3",
+			"userPhone": "18613138749",
+			"startMoney": "0.00",
+			"areaExt": "金九龙大酒店",
+			"lat": "30.34258501739361",
+			"userId": "14527626891242d4d00a207c4d69bd80",
+			"areaName": "荆州区",
+			"orderType": "0",
+			"provinceName": "湖北省",
+			"lng": "112.2164099849718",
+			"skuList": [{
+				"quantity": "1",
+				"updateTime": "2017-09-06 14:48:10",
+				"skuActQuantity": "0",
+				"skuPrice": "6",
+				"storeSkuId": "8a8080f65e50f996015e55f1e99c0013",
+				"skuActType": "7",
+				"skuActPrice": "5"
+			},{
+				"quantity": "1",
+				"updateTime": "2017-09-05 18:25:16",
+				"skuActQuantity": "0",
+				"skuPrice": "2.5",
+				"storeSkuId": "8a8080835e50ec28015e50f7b27b0015",
+				"skuActType": "0",
+				"skuActPrice": "0"
+			},{
+				"quantity": "1",
+				"updateTime": "2017-09-06 15:06:27",
+				"skuActQuantity": "0",
+				"skuPrice": "69",
+				"storeSkuId": "8a8080db5e55e692015e5602bac2000e",
+				"skuActType": "0",
+				"skuActPrice": "0"
+			}],
+			"skuType": "0"
+		}
+	},
+	"code": 0
+}
+End--

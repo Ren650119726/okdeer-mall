@@ -2,7 +2,6 @@ package com.okdeer.mall.base;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -14,9 +13,7 @@ import com.okdeer.mall.Application;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
-public class BaseServiceTest {
-	
-	protected static final String BASE_CLASS_PATH = "/com/okdeer/mall/";
+public abstract class BaseServiceTest {
 
 	@Autowired
 	protected ApplicationContext applicationContext;

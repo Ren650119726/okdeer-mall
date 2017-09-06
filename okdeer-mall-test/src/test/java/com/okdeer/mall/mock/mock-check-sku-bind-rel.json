@@ -1,0 +1,10 @@
+Begin---捆绑商品关联关系数据模拟
+[{
+	"id": "8a8080895e51b07b015e5602f10b353b",
+	"storeId": "8a8080d15e4bffe6015e50ec13ce207a",
+	"storeSkuId": "8a8080db5e55e692015e5602bac2000e",
+	"componentSkuId": "39ea0a7483fe11e6823127f894e357cf",
+	"componentStoreSkuId": "8a8080db5e55e692015e5602babf000c",
+	"componentNum": 12.0000
+}]
+End---

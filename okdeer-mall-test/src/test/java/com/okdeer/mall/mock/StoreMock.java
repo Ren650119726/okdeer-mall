@@ -1,4 +1,4 @@
-package com.okdeer.mall.order.api.mock;
+package com.okdeer.mall.mock;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -12,7 +12,7 @@ import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.mall.base.MockUtils;
 import com.okdeer.mall.common.utils.DateUtils;
 
-public class StoreMock {
+public class StoreMock implements MockFilePath{
 	
 	public static List<StoreInfo> mock(){
 		List<StoreInfo> storeList = Lists.newArrayList();
@@ -32,7 +32,7 @@ public class StoreMock {
 	}
 	
 	public static StoreInfo initCvs(){
-		return MockUtils.getMockSingleData("/com/okdeer/mall/order/api/mock/mock-store.json", StoreInfo.class);
+		return MockUtils.getMockSingleData(MOCK_ORDER_STORE_PATH, StoreInfo.class);
 	}
 	
 	/**
