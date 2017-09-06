@@ -416,8 +416,9 @@ public class TradeOrderBuilder {
 		BigDecimal favourAmount = tradeOrder.getPreferentialPrice();
 		// 如果总金额<优惠金额，则实付为0，优惠为订单总金额，否则实付金额为总金额-优惠金额，优惠为优惠金额
 		if (totalAmount.compareTo(favourAmount) == -1) {
-			tradeOrder.setActualAmount(BigDecimal.valueOf(0.0));
+			tradeOrder.setActualAmount(BigDecimal.ZERO);
 			tradeOrder.setPreferentialPrice(totalAmount);
+			tradeOrder.setPinMoney(BigDecimal.ZERO);
 		} else {
 			//实际支付差额
 			BigDecimal actualAmount = totalAmount.subtract(favourAmount);
