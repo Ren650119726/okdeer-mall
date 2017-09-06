@@ -41,13 +41,11 @@ import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.enums.CashDelivery;
 import com.okdeer.mall.activity.discount.entity.ActivityBusinessRel;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
-import com.okdeer.mall.activity.discount.entity.ActivityDiscountArea;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.discount.enums.ActivityBusinessType;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityBusinessRelMapper;
-import com.okdeer.mall.activity.discount.mapper.ActivityDiscountAreaMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
@@ -105,9 +103,6 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	
 	@Resource
 	private MaxFavourStrategy genericMaxFavourStrategy;
-	
-	@Resource
-	private ActivityDiscountAreaMapper activityDiscountAreaMapper;
 	
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -573,8 +568,13 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		AreaType areaType = activityPinMoneyDto.getLimitRange();
 		//区域
 		if(areaType == AreaType.area){
-			ActivityDiscountArea discountArea = activityDiscountAreaMapper.findByAreaId(cityId,activityPinMoneyDto.getId());
-			return discountArea == null ? false:true;
+			List<ActivityBusinessRel> areaList = activityBusinessRelMapper.findByActivityId(activityPinMoneyDto.getId());
+			for(ActivityBusinessRel rel : areaList){
+				if(cityId.equals(rel.getBusinessId())){
+					return true;
+				}
+			}
+			return false;
 		}
 		//店铺
 		if(areaType == AreaType.store){
