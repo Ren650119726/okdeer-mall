@@ -24,6 +24,7 @@ import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
+import com.okdeer.api.pay.common.dto.BaseResultDto;
 import com.okdeer.api.pay.enums.TradeErrorEnum;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
@@ -299,15 +300,15 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		String msg = new String(message.getBody(), Charsets.UTF_8);
 		logger.info("退款支付状态消息:" + msg);
 		try {
-			ResponseResult result = JsonMapper.nonEmptyMapper().fromJson(msg, ResponseResult.class);
+			BaseResultDto result = JsonMapper.nonEmptyMapper().fromJson(msg, BaseResultDto.class);
 			if (result.getCode().equals(TradeErrorEnum.TRADE_REPEAT)) {
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
-			if (StringUtils.isEmpty(result.getTradeNum())) {
+			if (StringUtils.isEmpty(result.getRefundNo())) {
 				logger.error("退款支付状态消息处理失败,支付流水号为空：" + msg);
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
-			TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundsService.getByTradeNum(result.getTradeNum());
+			TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundsService.getByRefundNo(result.getRefundNo());
 			if (tradeOrderRefunds == null) {
 				logger.error("退款支付状态消息处理失败,支付流水号查询数据为空：" + msg);
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
