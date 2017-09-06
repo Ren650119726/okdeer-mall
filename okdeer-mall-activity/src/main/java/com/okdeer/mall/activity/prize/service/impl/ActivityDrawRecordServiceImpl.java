@@ -16,6 +16,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.activity.prize.dto.ActivityDrawRecordParamDto;
 import com.okdeer.mall.activity.prize.entity.ActivityDrawRecord;
 import com.okdeer.mall.activity.prize.mapper.ActivityDrawRecordMapper;
 import com.okdeer.mall.activity.prize.service.ActivityDrawRecordService;
@@ -53,7 +54,7 @@ public class ActivityDrawRecordServiceImpl extends BaseServiceImpl implements Ac
 		//获取当前抽奖活动id集合
 		List<String> ids = new ArrayList<String>();
 		ids.add(luckDrawId);
-		return activityDrawRecordMapper.findCountByUserIdAndActivityId(userId, ids);
+		return findCountByUserIdAndIds(userId, ids);
 	}
 	
 	/**
@@ -62,10 +63,19 @@ public class ActivityDrawRecordServiceImpl extends BaseServiceImpl implements Ac
 	 */
 	@Override
 	public int findCountByUserIdAndIds(String userId, List<String> ids) {
-		return activityDrawRecordMapper.findCountByUserIdAndActivityId(userId, ids);
+		ActivityDrawRecordParamDto params = new ActivityDrawRecordParamDto();
+		params.setUserId(userId);
+		params.setIds(ids);
+		return findCountByParams(params);
 	}
 	
-	
+	/**
+	 * 根据用户参数查询抽奖次数
+	 */
+	@Override
+	public int findCountByParams(ActivityDrawRecordParamDto params) {
+		return activityDrawRecordMapper.findCountByUserIdAndActivityId(params);
+	}
 	
 	
 	
