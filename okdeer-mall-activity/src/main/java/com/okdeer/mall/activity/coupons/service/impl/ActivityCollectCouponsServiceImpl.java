@@ -34,6 +34,7 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.coupons.bo.ActivityCollectCouponsRecordParamBo;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsOrderRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCommunity;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
@@ -47,6 +48,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectStore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectXffqRelation;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsOrderRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsApprovalStatus;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsStatus;
@@ -993,6 +995,8 @@ public class ActivityCollectCouponsServiceImpl
 			activityCouponsService.takeCoupons(activityCollectCoupons, activityCouponParamDto);
 			//添加领取记录
 			addActivityCollectCouponsRecord(activityCollectCoupons, activityCouponParamDto);
+			//添加订单返劵记录
+			addActivityCouponsOrderRecord(activityCollectCoupons, activityCouponParamDto);
 			resultDto.setCode(0);
 			resultDto.setMsg("领取成功");
 		} catch (Exception e) {
@@ -1001,6 +1005,21 @@ public class ActivityCollectCouponsServiceImpl
 			throw e;
 		}
 		return resultDto;
+	}
+
+	private void addActivityCouponsOrderRecord(ActivityCollectCoupons activityCollectCoupons,
+			TakeActivityCouponParamDto activityCouponParamDto) {
+		if(StringUtils.isNotBlank(activityCouponParamDto.getOrderId())){
+			ActivityCouponsOrderRecord activityCouponsOrderRecord = new ActivityCouponsOrderRecord();
+			activityCouponsOrderRecord.setId(UuidUtils.getUuid());
+			activityCouponsOrderRecord.setCollectType(activityCouponParamDto.getActivityCouponsType());
+			activityCouponsOrderRecord.setCollectTime(new Date());
+			activityCouponsOrderRecord.setCouponsCollectId(activityCollectCoupons.getId());
+			activityCouponsOrderRecord.setOrderId(activityCouponParamDto.getOrderId());
+			activityCouponsOrderRecord.setCollectUserId(activityCouponParamDto.getMobile());
+			activityCouponsOrderRecordMapper.add(activityCouponsOrderRecord);
+		}
+		
 	}
 
 	private void addActivityCollectCouponsRecord(ActivityCollectCoupons activityCollectCoupons,
@@ -1015,18 +1034,11 @@ public class ActivityCollectCouponsServiceImpl
 
 	private int getActivityDrawTimesByOrder(ActivityCollectCoupons activityCollectCoupons,
 			TakeActivityCouponParamDto activityCouponParamDto) {
-		ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto = new ActivityCouponsRecordQueryParamDto();
-		activityCouponsRecordQueryParamDto.setCouponsCollectId(activityCollectCoupons.getId());
-		activityCouponsRecordQueryParamDto.setCollectUserId(activityCouponParamDto.getUserId());
-		activityCouponsRecordQueryParamDto.setOrderId(activityCouponParamDto.getOrderId());
-		if (StringUtils.isNotEmpty(activityCouponParamDto.getUserId())) {
-			return activityCouponsRecordMapper.selectOrderCountByParams(activityCouponsRecordQueryParamDto);
-		} else {
-			ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParamDto = new ActivityCouponsRecordBeforeParamDto();
-			BeanMapper.copy(activityCouponsRecordQueryParamDto, activityCouponsRecordBeforeParamDto);
-			activityCouponsRecordBeforeParamDto.setCollectUser(activityCouponParamDto.getMobile());
-			return activityCouponsRecordBeforeMapper.selectOrderCountByParams(activityCouponsRecordBeforeParamDto);
-		}
+		ActivityCouponsOrderRecordParamBo activityCouponsOrderRecordParamBo = new ActivityCouponsOrderRecordParamBo();
+		activityCouponsOrderRecordParamBo.setCouponsCollectId(activityCollectCoupons.getId());
+		activityCouponsOrderRecordParamBo.setCollectUserId(activityCouponParamDto.getMobile());
+		activityCouponsOrderRecordParamBo.setOrderId(activityCouponParamDto.getOrderId());
+		return activityCouponsOrderRecordMapper.findCountByParam(activityCouponsOrderRecordParamBo);
 	}
 
 	private int getActivityDrawTimesByActivity(ActivityCollectCoupons activityCollectCoupons,
