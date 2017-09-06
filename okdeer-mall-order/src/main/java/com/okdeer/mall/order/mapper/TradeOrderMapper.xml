@@ -941,7 +941,7 @@
 		<if test="userId != null and userId != ''">
 			and user_id = #{userId, jdbcType=VARCHAR}
 		</if>
-		<if test="status != null and status != ''">
+		<if test="status != null">
 			and status = #{status, jdbcType=TINYINT}
 		</if>
 		<!-- 订单来源，多个时使用IN -->
