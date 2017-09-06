@@ -37,6 +37,11 @@ public class ActivityH5AdvertContentCoupons implements Serializable {
      * 广告代金券活动ID
      */
     private String collectCouponsId;
+    
+    /**
+     * @Fields collectName : 代金券活动名称
+     */
+    private String collectName;
     /**
      * 城市id(0表示全国)
      */
@@ -86,8 +91,16 @@ public class ActivityH5AdvertContentCoupons implements Serializable {
     public void setCollectCouponsId(String collectCouponsId) {
         this.collectCouponsId = collectCouponsId;
     }
+    
+    public String getCollectName() {
+		return collectName;
+	}
 
-    public String getCityId() {
+	public void setCollectName(String collectName) {
+		this.collectName = collectName;
+	}
+
+	public String getCityId() {
         return cityId;
     }
 
