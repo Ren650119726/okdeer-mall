@@ -3295,7 +3295,7 @@
 		tori.id AS refunds_item_id,
 		d.id as detail_id,d.consume_code,d.status as
 		detail_status,d.start_time,d.end_time,d.use_time,
-		refunds.refunds_status
+		refunds.refunds_status,tr.pin_money
 		FROM trade_order as tr
 		LEFT JOIN trade_order_pay AS tp on tr.id = tp.order_id
 		LEFT JOIN trade_order_invoice AS ti ON tr.id = ti.order_id
