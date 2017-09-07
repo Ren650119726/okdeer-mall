@@ -5385,6 +5385,7 @@
 		tr.real_fare_preferential,
 		tr.platform_preferential,
 		tr.store_preferential,
+		tr.pin_money,
 		tp.pay_type,
 		tp.pay_time,
 		ti.head,
