@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -17,6 +19,7 @@ import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.activity.dto.ActivityPinMoneyDto;
 import com.okdeer.mall.activity.dto.ActivityPinMoneyQueryDto;
 import com.okdeer.mall.order.dto.TradePinMoneyObtainDto;
@@ -40,7 +43,11 @@ import com.okdeer.mall.order.service.TradePinMoneyUseService;
  */
 @Service(version="1.0.0")
 public class TradePinMoneyApiImpl implements TradePinMoneyApi {
-
+	/**
+	 *日志管理类。
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(TradePinMoneyApiImpl.class);
+	
 	@Autowired
 	private TradePinMoneyObtainService tradePinMoneyObtainService;
 
@@ -110,6 +117,8 @@ public class TradePinMoneyApiImpl implements TradePinMoneyApi {
 
 	@Override
 	public void addObtainRecord(ActivityPinMoneyQueryDto dto, String deviceId, ActivityPinMoneyDto moneyDto, BigDecimal pinMoney) throws Exception {
+		LOGGER.info("零花钱领取客户端设备deviceId===：{}" ,deviceId);
+		
 		TradePinMoneyObtain obtain = BeanMapper.map(dto, TradePinMoneyObtain.class);
 		obtain.setId(UuidUtils.getUuid());
 		obtain.setDeviceId(deviceId);
@@ -129,6 +138,7 @@ public class TradePinMoneyApiImpl implements TradePinMoneyApi {
 			calendar.add(calendar.DATE,moneyDto.getValidDay());
 			obtain.setValidTime(calendar.getTime());
 		}
+		LOGGER.info("零花钱领取对象参数===：{}" ,JsonMapper.nonDefaultMapper().toJson(obtain));
 		tradePinMoneyObtainService.add(obtain);
 	}
 
