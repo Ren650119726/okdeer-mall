@@ -150,7 +150,7 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 		// 店铺优惠
 		vo.setDiscountAmount(order.getStorePreferential());
 		// 平台优惠 = 优惠总金额-店铺优惠-运费优惠
-		BigDecimal platFavoutAmount = order.getPreferentialPrice().subtract(order.getStorePreferential()).subtract(order.getRealFarePreferential());
+		BigDecimal platFavoutAmount = order.getPlatformPreferential();
 		vo.setPlatDiscountAmount(platFavoutAmount);
 		vo.setFare(order.getFare());
 		vo.setUserId(order.getUserId());
