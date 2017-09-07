@@ -154,7 +154,6 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 		vo.setPlatDiscountAmount(platFavoutAmount);
 		vo.setFare(order.getFare());
 		vo.setUserId(order.getUserId());
-		vo.setPickUpCode(order.getPickUpCode());
 		vo.setRemark(order.getRemark());
 		vo.setCreateTime(order.getCreateTime());
 		vo.setPayWay(order.getPayWay().ordinal());
@@ -194,7 +193,9 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 			vo.setLogisticsType(tradeOrderLogistics.getType() == null ? null : tradeOrderLogistics.getType().ordinal());
 		}
 		vo.setPickUpType(order.getPickUpType().ordinal());
-		vo.setDeliveryTime(order.getDeliveryTime());
+		// Begin modified by maojj 依照老左要求，零售的deliveryTime对应商城的配送时间pickUpTime
+		vo.setDeliveryTime(order.getPickUpTime());
+		// End modified by maojj 
 		
 		//订单项list部分
 		List<OnlineOrderItem> ooiList = new ArrayList<OnlineOrderItem>();
