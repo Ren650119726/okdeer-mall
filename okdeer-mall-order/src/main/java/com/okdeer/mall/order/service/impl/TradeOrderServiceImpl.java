@@ -98,6 +98,7 @@ import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
 import com.okdeer.common.utils.JsonDateUtil;
+import com.okdeer.jxc.bill.service.HykPayOrderServiceApi;
 import com.okdeer.jxc.sale.order.po.MemberOrderDetailPo;
 import com.okdeer.jxc.sale.order.po.MemberOrderItemDetailPo;
 import com.okdeer.jxc.sale.order.service.SalesQueryService;
@@ -636,6 +637,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     //begin v2.6.1 tuzhd 2017-09-06
   	@Reference(version="1.0.0",check=false)
   	private SalesQueryService salesQueryService;
+  	/**
+	 * 会员卡零售调用api
+	 */
+	@Reference(version = "1.0.0", check = false)
+	HykPayOrderServiceApi hykPayOrderServiceApi;
   	//End v2.6.1 tuzhd 2017-09-06
 
     //begin add wangf01 2017-08-10
@@ -2208,6 +2214,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         	if(tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD && 
         			tradeOrder.getStatus() == OrderStatusEnum.CANCELED){
         		activityCouponsRecordService.releaseConpons(tradeOrder);
+        		try{
+        			//新版会员卡支付通知零售取消订单
+        			hykPayOrderServiceApi.cancelOrder(tradeOrder.getId(), null);
+        		}catch(Exception e){
+        			logger.error("零售取消订单失败"+tradeOrder.getId(),e);
+        		}
         	}
             return tradeOrderMapper.updateOrderStatus(tradeOrder);
         }
