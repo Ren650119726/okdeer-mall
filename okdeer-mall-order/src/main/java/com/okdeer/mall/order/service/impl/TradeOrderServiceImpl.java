@@ -4043,7 +4043,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      */
     private void setOrderItemExtJxc(JSONObject json,String orderId){
     	MemberOrderDetailPo  memberOrder = salesQueryService.getMemberOrderById(orderId);
-		if(memberOrder != null){
+		if(memberOrder == null){
 			return;
 		}
 		JSONArray array = (JSONArray) json.get("orderItems");
@@ -4059,10 +4059,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     		for(int i=0;i<array.size();i++){
     			JSONObject job = array.getJSONObject(i);    
     			if(job.get("itemId").equals(item.getItemId())){
-    				job.put("originalPrice", item.getOriginalPrice());
-    				job.put("salePrice", item.getSalePrice());
-    				job.put("totalAmount", item.getTotalAmount());
-    				job.put("saleAmount", item.getSaleNum());
+    				job.put("originalPrice", JsonDateUtil.priceConvertToString(item.getOriginalPrice(),2,3));
+    				job.put("salePrice", JsonDateUtil.priceConvertToString(item.getSalePrice(),2,3));
+    				job.put("totalAmount", JsonDateUtil.priceConvertToString(item.getTotalAmount(),2,3));
+    				job.put("saleAmount", JsonDateUtil.priceConvertToString(item.getSaleNum(),2,3));
     				//销售数量
     				job.put("saleNum", JsonDateUtil.priceConvertToString(item.getSaleNum(),2,3));
     				//活动类型描述
