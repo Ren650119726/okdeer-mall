@@ -4065,7 +4065,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		//app优惠
 		json.put("appDiscountAmount",JsonDateUtil.priceConvertToString(memberOrder.getDiscountAmount(),2,3));
         //线下店铺订单优惠
-        json.put("storePreferential",JsonDateUtil.priceConvertToString(memberOrder.getStoreDiscountAmount(),2,3));
+        json.put("storeDiscountAmount",JsonDateUtil.priceConvertToString(memberOrder.getStoreDiscountAmount(),2,3));
         //根据订单项进行设置jxc的数据
         for(MemberOrderItemDetailPo item : memberOrder.getItemList()){
     		for(int i=0;i<array.size();i++){
