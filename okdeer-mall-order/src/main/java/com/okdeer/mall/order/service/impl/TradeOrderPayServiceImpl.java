@@ -882,7 +882,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		} else if (6 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.WX_WXPAY);
 		}else if (7 == paymentType) {
-//			payReqest.setTradeType(PayTradeTypeEnum.WAP_WXPAY);
+			payReqest.setTradeType(PayTradeTypeEnum.WAP_WXPAY);
 		}
 		return payReqest;
 	}
