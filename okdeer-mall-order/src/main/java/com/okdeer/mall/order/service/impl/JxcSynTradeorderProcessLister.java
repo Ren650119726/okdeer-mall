@@ -154,6 +154,7 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 		vo.setPlatDiscountAmount(platFavoutAmount);
 		vo.setFare(order.getFare());
 		vo.setUserId(order.getUserId());
+		vo.setPickUpCode(order.getPickUpCode());
 		vo.setRemark(order.getRemark());
 		vo.setCreateTime(order.getCreateTime());
 		vo.setPayWay(order.getPayWay().ordinal());
