@@ -1,11 +1,14 @@
 
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import com.okdeer.archive.goods.store.enums.BSSC;
+import com.okdeer.base.common.utils.DateUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,6 +128,7 @@ public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi,
 			} else if (ActivityTypeEnum.SALE_ACTIVITIES == sale.getType()){
 				sku.setActivityType(StoreActivityTypeEnum.PRIVLIEGE);
 			}
+			sku.setOnline(BSSC.PUTAWAY);
 			sku.setUpdateTime(new Date());
 			goodsStoreSkuServiceApi.updateByPrimaryKeySelective(sku);
 		}
