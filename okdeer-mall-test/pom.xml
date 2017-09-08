@@ -240,6 +240,9 @@
 				<configuration>
 					<destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
 					<dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
+					<includes>
+                    	<include>**/*</include>
+               	    </includes>
 				</configuration>
 				<executions>
 					<execution>
@@ -259,12 +262,12 @@
 						</configuration>
 					</execution>
 					<execution>
-                    <id>report-integration-test</id>
-                    <phase>verify</phase>
-                    <goals>
-                        <goal>report</goal>
-                    </goals>
-                </execution>
+	                    <id>report-integration-test</id>
+	                    <phase>verify</phase>
+	                    <goals>
+	                        <goal>report</goal>
+	                    </goals>
+	                </execution>
 				</executions>
 			</plugin>
 		</plugins>
