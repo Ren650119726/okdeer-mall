@@ -813,7 +813,12 @@ public class StoreSkuParserBo {
 	}
 
 	public void setPlatformPreferential(BigDecimal platformPreferential) {
-		this.platformPreferential = platformPreferential;
+		if(platformPreferential != null && platformPreferential.compareTo(this.getTotalAmountHaveFavour()) == 1){
+			// 如果平台优惠金额>实际用户享受的优惠金额。即当优惠券金额下限为0时，出现代金券面值大于满足优惠条件的商品总金额时，实际优惠为商品总金额
+			this.platformPreferential = this.getTotalAmountHaveFavour();
+		}else{
+			this.platformPreferential = platformPreferential;
+		}
 	}
 
 	public BigDecimal getStorePreferential() {

@@ -201,6 +201,22 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 					if (count != paramBo.getSpuCategoryIds().size()) {
 						return false;
 					}
+				} else if (coupons.getType() == CouponsType.bldfwd.ordinal()){
+					// Begin V2.6.1 added by maojj 2017-09-08
+					// 便利店服务店不指定分类，如果是便利店下单使用，特价商品不享受优惠
+					BigDecimal totalAmount = BigDecimal.valueOf(0.00);
+					for (PlaceOrderItemDto goods : paramBo.getGoodsList()) {
+						if(goods.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+							// 低价商品只有原价购买的才可享受优惠
+							totalAmount = totalAmount.add(goods.getSkuPrice().multiply(BigDecimal.valueOf(goods.getQuantity()-goods.getSkuActQuantity())));
+						}else{
+							totalAmount = totalAmount.add(goods.getTotalAmount());
+						}
+					}
+					if (totalAmount.compareTo(BigDecimal.valueOf(0.0)) == 0 || totalAmount.compareTo(new BigDecimal(coupons.getArrive())) == -1) {
+						return false;
+					}
+					// End V2.6.1 added by maojj 2017-09-08
 				}
 				
 				// 如果代金券限制设备
