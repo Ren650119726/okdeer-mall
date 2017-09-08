@@ -11,6 +11,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,21 +21,25 @@ import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.pos.service.PosShiftExchangeServiceApi;
 import com.okdeer.archive.system.service.SysUserLoginLogServiceApi;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.common.consts.DescriptConstants;
-import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.base.MockUtils;
 import com.okdeer.mall.common.vo.PageResultVo;
 import com.okdeer.mall.order.api.PlaceOrderApiImplTest;
+import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
 import com.okdeer.mall.order.dto.OrderRefundsDto;
 import com.okdeer.mall.order.dto.PhysicalOrderApplyDto;
 import com.okdeer.mall.order.dto.PhysicalOrderApplyParamDto;
@@ -48,8 +53,8 @@ import com.okdeer.mall.order.service.TradeOrderItemDetailService;
 import com.okdeer.mall.order.service.TradeOrderRefundsApi;
 import com.okdeer.mall.order.service.impl.JxcSynTradeorderRefundProcessLister;
 import com.okdeer.mall.order.service.impl.StockOperateServiceImpl;
-import com.okdeer.mall.order.service.impl.StoreConsumeOrderServiceImpl;
 import com.okdeer.mall.order.service.impl.TradeMessageServiceImpl;
+import com.okdeer.mall.order.service.impl.TradeOrderRefundsServiceImpl;
 
 /**
  * ClassName: TradeOrderRefundsApiImplTest 
@@ -92,6 +97,10 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 	 */
 	private List<TradeOrderItemDetail> tradeOrderItemDetailList;
 	
+//	private List<TradeOrderRefunds> tradeOrderRefundsList;
+//	
+//	@Autowired
+//	private TradeOrderRefundsService tradeOrderRefundsService;
 	
 	private StoreConsumerApplyParamDto storeParamDto;
 	private int index;
@@ -109,6 +118,7 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 		JxcSynTradeorderRefundProcessLister jxcSynTradeorderRefundProcessLister = this.applicationContext.getBean(JxcSynTradeorderRefundProcessLister.class);
 		StoreConsumeOrderService storeConsumeOrderService =  AopTestUtils.getTargetObject(this.applicationContext.getBean("storeConsumeOrderServiceImpl"));
 		StockOperateServiceImpl stockOperateService = AopTestUtils.getTargetObject(this.applicationContext.getBean("stockOperateServiceImpl"));
+		TradeOrderRefundsServiceImpl tradeOrderRefundsService = AopTestUtils.getTargetObject(this.applicationContext.getBean("tradeOrderRefundsServiceImpl"));
 		
 		ReflectionTestUtils.setField(tradeMessageService, "posShiftExchangeService", posShiftExchangeService);
 		ReflectionTestUtils.setField(tradeMessageService, "sysUserLoginLogApi", sysUserLoginLogApi);
@@ -118,6 +128,7 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 		ReflectionTestUtils.setField(storeConsumeOrderService, "storeInfoService", storeInfoService);
 		ReflectionTestUtils.setField(storeConsumeOrderService, "tradeOrderItemDetailMapper", tradeOrderItemDetailMapper);
 		
+		ReflectionTestUtils.setField(tradeOrderRefundsService, "storeInfoService", storeInfoService);
 		ReflectionTestUtils.setField(tradeOrderRefundsApiImpl, "tradeOrderItemDetailService", tradeOrderItemDetailService);
 		tradeOrderItemDetailList = MockUtils
 				.getMockData("/com/okdeer/mall/refunds/params/mock-store-item.json", TradeOrderItemDetail.class).get(0);
@@ -137,7 +148,7 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 		List<List<StoreConsumerApplyParamDto>> storeConsumerList = MockUtils
 				.getMockData("/com/okdeer/mall/refunds/params/mock-storeConsumer.json", StoreConsumerApplyParamDto.class);
 		for (int i = 0; i < refundQueryParamList.size(); i++) {
-			for (int j = 0; j < refundQueryParamList.get(i).size(); j++) {
+			for (int j = 0; j < 1; j++) {
 				initParams.add(new Object[] { j,refundQueryParamList.get(i).get(j),storeConsumerList.get(i).get(j)});
 			}
 		}
@@ -218,10 +229,22 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 	}
 	
 	@Test
+	@Rollback(true)
+	@Transactional
 	public void updateRefundsStatus() throws Exception {
-		//退款单待退款数统计
-		boolean count = tradeOrderRefundsApiImpl.updateRefundsStatus("04a345dd276611e6aaff00163e010eb1", "2", "140627613692649eeed84dde4cc09498");
-		Assert.assertTrue(count);
+		OrderRefundQueryParamDto orderRefundQueryParamDto=new OrderRefundQueryParamDto();
+		List<Integer> list = Lists.newArrayList();
+		list.add(8);
+		orderRefundQueryParamDto.setRefundStatusList(list);
+		orderRefundQueryParamDto.setpSize(1);
+		orderRefundQueryParamDto.setpNum(1);
+		//查询充值退款列表（用于财务系统，不分页）
+		PageUtils<OrderRefundsDto> result = tradeOrderRefundsApiImpl.orderRefund(orderRefundQueryParamDto);
+		if(result != null  && CollectionUtils.isNotEmpty(result.getList())){
+			//退款单待退款数统计
+			boolean count = tradeOrderRefundsApiImpl.updateRefundsStatus(result.getList().get(0).getId(), "9", result.getList().get(0).getBuyerUserId());
+			Assert.assertTrue(count);
+		}
 	}
 	
 }
