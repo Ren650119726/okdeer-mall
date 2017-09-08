@@ -227,6 +227,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+				<argLine>${surefireArgLine}</argLine>
 				<configuration> 
 					<argLine>-Dfile.encoding=UTF-8</argLine>  
 					<testFailureIgnore>true</testFailureIgnore>
@@ -247,6 +248,9 @@
 						<goals>
 							<goal>prepare-agent</goal>
 						</goals>
+						<configuration>
+			                <propertyName>surefireArgLine</propertyName>
+			            </configuration>
 					</execution>
 					<execution>
 						<id>post-unit-test</id>
