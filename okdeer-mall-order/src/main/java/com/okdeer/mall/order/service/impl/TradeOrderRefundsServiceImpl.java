@@ -1066,7 +1066,7 @@ public class TradeOrderRefundsServiceImpl
 		}
 
 		TradeOrderRefunds refunds = this.findById(refundsId);
-
+		JSONObject.fromObject(refunds);
 		List<TradeOrderRefundsItem> refundItemList = tradeOrderRefundsItemService
 				.getTradeOrderRefundsItemByRefundsId(refundsId);
 		refunds.setTradeOrderRefundsItem(refundItemList);

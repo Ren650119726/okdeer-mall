@@ -359,6 +359,13 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 			resp.setResult(ResultCodeEnum.FAIL);
 			return;
 		}
+		vo.getList().forEach(e -> {
+			//称重商品值
+			if(e.getPricingType() == 1){
+				e.setQuantity(null);
+			}
+		});
+		
 		//在线上查找是否有对应商品，在推送的时候已经放入
 		persity.setTradeOrderItem(BeanMapper.mapList(vo.getList(),TradeOrderItem.class));
 		//支付0元直接改为支付完成

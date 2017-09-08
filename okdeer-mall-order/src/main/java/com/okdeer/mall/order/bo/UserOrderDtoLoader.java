@@ -182,6 +182,8 @@ public class UserOrderDtoLoader {
 			itemDto.setSkuName(orderItem.getSkuName());
 			itemDto.setPropertiesIndb(ConvertUtil.format(orderItem.getPropertiesIndb()));
 			itemDto.setQuantity(orderItem.getQuantity()==null ? 0 : orderItem.getQuantity().intValue());
+			itemDto.setQuantityStr(orderItem.getQuantity()==null ? 
+					ConvertUtil.format(orderItem.getWeight()) : String.valueOf(orderItem.getQuantity()));
 			itemDto.setUnitPrice(ConvertUtil.format(orderItem.getUnitPrice()));
 			itemDto.setUnit(orderItem.getUnit());
 			itemDto.setRechargePhone(orderItem.getRechargeMobile());
