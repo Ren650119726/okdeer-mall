@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
@@ -244,9 +245,11 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		List<String> ids = Lists.newArrayList();
 		infoList.forEach(buyer -> ids.add(buyer.getUserId()));
 		
-		List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids);
-		//3 发送消息
-		sendAppMessage(entity,userList);
+		if(CollectionUtils.isNotEmpty(ids)){
+			List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids);
+			//3 发送消息
+			sendAppMessage(entity,userList);
+		}
 		//4 更新发送状态
 		entity.setStatus(1);
 		entity.setUpdateTime(new Date());

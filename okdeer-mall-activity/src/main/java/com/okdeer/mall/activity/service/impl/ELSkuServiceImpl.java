@@ -17,6 +17,7 @@ import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SECKILL_EL_ADD;
 import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SECKILL_EL_DEL;
 import static com.okdeer.common.consts.ELTopicTagConstants.TAG_SECKILL_EL_UPDATE;
 import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
+import static com.okdeer.mall.operate.contants.OperateFieldContants.TAG_SALE_ACTIVITY_GOODS_DELETE;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
 import com.alibaba.rocketmq.client.producer.LocalTransactionState;
@@ -35,9 +37,15 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
 import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
+import com.okdeer.archive.goods.store.enums.BSSC;
+import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.RocketMQTransactionProducer;
 import com.okdeer.base.framework.mq.RocketMqResult;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
 import com.okdeer.mall.activity.el.service.ELSkuApi;
@@ -46,6 +54,8 @@ import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.activity.service.ArchiveSendMsgService;
 import com.okdeer.mall.activity.service.ELSkuService;
+import com.okdeer.mall.operate.contants.OperateFieldContants;
+import com.okdeer.mall.operate.dto.GoodsChangedMsgDto;
 
 import net.sf.json.JSONObject;
 
@@ -91,6 +101,19 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
      */
     @Resource
     private RocketMQTransactionProducer rocketMQTransactionProducer;
+    
+    /**
+     * mq注入
+     */
+    @Autowired
+    private RocketMQProducer rocketMQProducer;
+    
+    /**
+     * add by mengsj
+     * @Fields storeInfoService : 注入店铺service
+     */
+    @Reference(version = "1.0.0")
+    private StoreInfoServiceApi storeInfoService;
 
     @Override
     public boolean syncSaleToEL(List<String> activityIds, int status, String storeId, String createUserId, int syncType)
@@ -140,7 +163,41 @@ public class ELSkuServiceImpl implements ELSkuService, ELSkuApi {
                     }
                 });
         logger.info("特惠定时任务调用搜索引擎同步消息：msg{}", JSONObject.fromObject(msg).toString());
+        // add by mengsj begin 发送运营栏位更新信息20170422
+        if(StringUtils.isNotBlank(storeId)){
+        	GoodsChangedMsgDto data = new GoodsChangedMsgDto();
+        	StoreInfo store = storeInfoService.findById(storeId);
+        	data.setStoreId(store.getId());
+        	data.setCityId(store.getCityId());
+        	
+        	if(status == 1){
+        		//进行中,加入缓存
+        		produceMessage(data, OperateFieldContants.TAG_EDIT_ACTIVITY_SALE_GOODS);
+        	}else if(status == 2){
+        		//已经技术,删除缓存
+        		produceMessage(data, OperateFieldContants.TAG_SALE_ACTIVITY_GOODS_DELETE);
+        	}
+        }
+        // add by mengsj end 发送运营栏位更新信息
+        
         return RocketMqResult.returnResult(sendResult);
+    }
+    
+    /**
+     * 发送运营栏位消息
+     * @Description: 
+     * @param data
+     * @param tag
+     * @throws Exception void
+     * @throws
+     * @author mengsj
+     * @date 2017年4月22日
+     */
+    public void produceMessage(GoodsChangedMsgDto data, String tag) throws Exception {
+        MQMessage anMessage = new MQMessage(OperateFieldContants.TOPIC_OPERATE_FIELD);
+        anMessage.setTags(tag);
+        anMessage.setContent(data);
+        rocketMQProducer.sendMessage(anMessage);
     }
 
     @SuppressWarnings("incomplete-switch")

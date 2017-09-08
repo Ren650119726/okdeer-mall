@@ -169,7 +169,9 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		// 查询代金券
 		ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsRecord.getCouponsId());
 		// 检查金额是否达到使用下限
-		if(paramDto.getEnjoyFavourTotalAmount().compareTo(new BigDecimal(coupons.getArriveLimit())) == -1){
+		if (paramDto.getEnjoyFavourTotalAmount().compareTo(BigDecimal.valueOf(0)) == 0
+				|| paramDto.getEnjoyFavourTotalAmount().compareTo(new BigDecimal(coupons.getArriveLimit())) == -1) {
+			// 如果享受优惠的总金额为0或者享受优惠的总金额未达到优惠限制下限，则不符合优惠使用规则
 			logger.info("代金券使用检查不通过3：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 			return false;
 		}

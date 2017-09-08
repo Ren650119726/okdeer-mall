@@ -49,6 +49,7 @@
         <if test="createTimeEnd !=  null and createTimeEnd != ''">
         	 <![CDATA[AND create_time >= #{createTimeEnd,jdbcType=TIMESTAMP}]]>
         </if>
+        order by create_time desc
     </select>
     
     <select id="listByJob" resultMap="BaseResultMap" parameterType="java.lang.Object">

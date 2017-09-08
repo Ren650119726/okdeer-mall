@@ -134,16 +134,17 @@ public class ActivityH5AdvertContentServiceImpl
 				ActivityH5AdvertContentBo bo = new ActivityH5AdvertContentBo();
 				bo.setContent(BeanMapper.map(obj, ActivityH5AdvertContent.class));
 				//设置广告图片
-				if(obj.getContentType() == 1){
+				Integer contentType = obj.getContentType() != null ? obj.getContentType() : 0;
+				if(contentType == 1){
 					List<ActivityH5AdvertContentAdv> advs = advService.findByActId(activityId, obj.getId());
 					bo.setContentAdv(advs.size() > 0 ? advs.get(0) : new ActivityH5AdvertContentAdv());
 				}
 				//设置代金券活动
-				if(obj.getContentType() == 3){
+				if(contentType == 3){
 					bo.setContentCoupons(couponsService.findByActId(activityId, obj.getId()));
 				}
 				//设置商品列表
-				if(obj.getContentType() == 2 || obj.getContentType() == 4){
+				if(contentType == 2 || contentType == 4){
 					List<ActivityH5AdvertContentGoods> goods = goodsService.findByActId(activityId, obj.getId(),obj.getContentType());
 					//便利店商品
 					if(obj.getGoodsType() == 1){

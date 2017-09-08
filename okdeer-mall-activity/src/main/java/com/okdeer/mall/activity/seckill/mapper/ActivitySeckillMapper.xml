@@ -317,6 +317,9 @@
 		<if test="storeSkuId != null and storeSkuId != ''">
     		AND sec.store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
 		</if>
+		<if test="publishClient != null and publishClient != ''">
+    		AND sec.publish_client like CONCAT('%',#{publishClient},'%')
+		</if>
 		AND (sec.seckill_range_type = 0
 		or exists (select 1
 		from activity_seckill_range sr
