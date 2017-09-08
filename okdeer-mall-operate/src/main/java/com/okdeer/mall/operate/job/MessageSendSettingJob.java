@@ -140,9 +140,11 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 					List<String> ids = Lists.newArrayList();
 					infoList.forEach(buyer -> ids.add(buyer.getUserId()));
 					
-					List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids);
-					//3 发送消息
-					sendAppMessage(messageSend,userList);
+					if(CollectionUtils.isNotEmpty(ids)){
+						List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids);
+						//3 发送消息
+						sendAppMessage(messageSend,userList);
+					}
 					//4 更新发送状态
 					messageSend.setStatus(1);
 					messageSend.setUpdateTime(new Date());
