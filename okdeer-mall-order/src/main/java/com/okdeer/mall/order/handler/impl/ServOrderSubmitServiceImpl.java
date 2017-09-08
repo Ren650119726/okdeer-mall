@@ -662,9 +662,9 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			tradeOrder.setStatus(OrderStatusEnum.UNPAID);
 			OrderTypeEnum orderType = reqData.getOrderType();
 			// 到店消费订单，实付金额为0时，订单状态为5（交易完成）
-			if (orderType == OrderTypeEnum.STORE_CONSUME_ORDER) {
+			/*if (orderType == OrderTypeEnum.STORE_CONSUME_ORDER) {
 				tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
-			}
+			}*/
 		} else {
 			tradeOrder.setActualAmount(totalAmount.subtract(favourAmount));
 		}
