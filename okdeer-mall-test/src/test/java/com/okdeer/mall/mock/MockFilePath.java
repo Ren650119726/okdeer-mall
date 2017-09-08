@@ -52,4 +52,8 @@ public interface MockFilePath {
 	 */
 	String MOCK_CHECK_SKU_BIND_REL_PATH = BASE_MOCK_PATH + "mock-check-sku-bind-rel.json";
 	
+	/**
+	 * 检查库存请求数据模拟文件路径
+	 */
+	String MOCK_CHECK_STOCK_REQ_PATH = BASE_MOCK_PATH + "mock-check-stock-req.json";
 }

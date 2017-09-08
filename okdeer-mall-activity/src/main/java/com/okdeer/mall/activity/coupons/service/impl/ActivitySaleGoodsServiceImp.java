@@ -1,10 +1,14 @@
 
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import com.okdeer.archive.goods.store.enums.BSSC;
+import com.okdeer.base.common.utils.DateUtils;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,14 +16,17 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
-import com.okdeer.archive.goods.store.enums.BSSC;
 import com.okdeer.archive.goods.store.enums.IsActivity;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.stock.dto.StockUpdateDetailDto;
+import com.okdeer.archive.stock.dto.StockUpdateDto;
+import com.okdeer.archive.stock.enums.StockOperateEnum;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
 import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.common.utils.ListUtil;
-import com.okdeer.jxc.sale.enums.ActivityType;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoodsBo;
@@ -45,7 +52,8 @@ public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi,
 
 	@Autowired
 	private ActivitySaleGoodsMapper activitySaleGoodsMapper;
-
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 	/**
 	 * 回滚MQ
 	 */
@@ -120,8 +128,55 @@ public class ActivitySaleGoodsServiceImp implements ActivitySaleGoodsServiceApi,
 			} else if (ActivityTypeEnum.SALE_ACTIVITIES == sale.getType()){
 				sku.setActivityType(StoreActivityTypeEnum.PRIVLIEGE);
 			}
+			sku.setOnline(BSSC.PUTAWAY);
 			sku.setUpdateTime(new Date());
 			goodsStoreSkuServiceApi.updateByPrimaryKeySelective(sku);
 		}
+		//处理库存
+		updateLockedStock(activitySaleGoodsList, sale.getUpdateUserId(),sale.getStoreId(),sale.getType(),StockOperateEnum.ACTIVITY_STOCK);
+	}
+	
+	/**
+	 * 
+	 * @Description: 同步erp库存-批量
+	 * @param goodsList 特惠商品集合
+	 * @param userId 用户ID
+	 * @param storeId 店铺ID
+	 * @param soe 操作
+	 * @param rpcIdByStockList rpcId
+	 * @throws Exception    一次信息
+	 * @author zengj
+	 * @date 2016年9月12日
+	 */
+	private void updateLockedStock(List<ActivitySaleGoods> goodsList,String userId,
+			String storeId,ActivityTypeEnum actType ,StockOperateEnum stockOptType) throws Exception {
+
+		StockUpdateDto stockUpdateDto = new StockUpdateDto();
+
+		stockUpdateDto.setRpcId(UuidUtils.getUuid());
+		stockUpdateDto.setMethodName("");
+		stockUpdateDto.setStoreId(storeId);
+		stockUpdateDto.setUserId(userId);
+		stockUpdateDto.setStockOperateEnum(stockOptType);
+
+		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
+		StockUpdateDetailDto updateDetail = null;
+		for(ActivitySaleGoods actSaleGoods : goodsList){
+			updateDetail = new StockUpdateDetailDto();
+			updateDetail.setStoreSkuId(actSaleGoods.getStoreSkuId());
+			updateDetail.setSpuType(SpuTypeEnum.physicalSpu);
+			updateDetail.setActType(actType);
+			if(stockOptType == StockOperateEnum.ACTIVITY_END){
+				// 如果活动结束，将活动数量归0
+				updateDetail.setUpdateLockedNum(0);
+			}else{
+				updateDetail.setUpdateLockedNum(actSaleGoods.getSaleStock());
+			}
+			
+			updateDetailList.add(updateDetail);
+		}
+		stockUpdateDto.setUpdateDetailList(updateDetailList);
+		
+		goodsStoreSkuStockApi.updateStock(stockUpdateDto);
 	}
 }
