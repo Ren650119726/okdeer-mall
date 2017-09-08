@@ -807,6 +807,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 			throw new Exception("订单状态已经非待支付状态");
 		}
 		PayReqestDto payReqest = buildPayRequest(payInfoParamDto, order);
+		payReqest.setExtParam(payInfoParamDto.getExtParam());
 		logger.info("payReqest{}", payReqest);
 		String result = payServiceApi.appPay(payReqest);
 		logger.info("云钱包返回支付信息:{}", result);
@@ -882,7 +883,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		} else if (6 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.WX_WXPAY);
 		}else if (7 == paymentType) {
-//			payReqest.setTradeType(PayTradeTypeEnum.WAP_WXPAY);
+			payReqest.setTradeType(PayTradeTypeEnum.WAP_WXPAY);
 		}
 		return payReqest;
 	}
