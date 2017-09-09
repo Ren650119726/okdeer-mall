@@ -476,7 +476,10 @@
    <if test="collectUserId != null and collectUserId != ''">
      AND record.collect_user_id = #{collectUserId,jdbcType=VARCHAR}
    </if>
-   <if test="status != null">
+   <if test="status != null and status.name() == 'UNUSED'">
+     AND record.`status` in (0,3)
+   </if>
+   <if test="status != null and status.name() != 'UNUSED'">
      AND record.`status` = #{status,jdbcType=TINYINT}
    </if>
     ORDER BY record.collect_time DESC
@@ -503,7 +506,10 @@
    <if test="collectUserId != null and collectUserId != ''">
      AND record.collect_user_id = #{collectUserId,jdbcType=VARCHAR}
    </if>
-   <if test="status != null">
+    <if test="status != null and status.name() == 'UNUSED'">
+     AND record.`status` in (0,3)
+   </if>
+   <if test="status != null and status.name() != 'UNUSED'">
      AND record.`status` = #{status,jdbcType=TINYINT}
    </if>
     ORDER BY record.collect_time DESC
