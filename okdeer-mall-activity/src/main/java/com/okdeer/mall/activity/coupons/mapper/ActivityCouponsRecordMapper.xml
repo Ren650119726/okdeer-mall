@@ -1004,4 +1004,12 @@
    		</where>
    </select>
 
+	<!-- Begin V2.6.0_P02 added by maojj 2017-09-09 -->
+	<select id="findForJob" parameterType="date" resultMap="BaseResultMap">
+    	SELECT <include refid="Base_Column_List" />
+     	FROM activity_coupons_record 
+     	WHERE (status IN (0,3) AND valid_time &lt;= #{currentDate,jdbcType=TIMESTAMP})
+     	OR (status = 3 AND effect_time &lt;= #{currentDate,jdbcType=TIMESTAMP})
+  	</select>
+  	<!-- End V2.6.0_P02 added by maojj 2017-09-09 -->
 </mapper> 

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -1083,22 +1084,28 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateStatusByJob() throws Exception {
-		List<ActivityCouponsRecord> list = activityCouponsRecordMapper.selectAllForJob();
-		List<String> ids = new ArrayList<>();
-		Date date = new Date(); /* date.compareTo(anotherDate) */
-		if (list != null && list.size() > 0) {
-			for (ActivityCouponsRecord record : list) {
-				Date validTime = record.getValidTime();
-				int res = date.compareTo(validTime);
-				if ((res == 0) || (res == 1)) {
-					ids.add(record.getId());
-				}
-			}
+		List<ActivityCouponsRecord> updateRecList = activityCouponsRecordMapper.findForJob(new Date());
+		if(CollectionUtils.isEmpty(updateRecList)){
+			return;
 		}
-
-		if (ids != null && ids.size() > 0) {
+		Date currentDate = new Date();
+		// 生效的id列表
+		List<String> effectIdList = updateRecList.stream()
+				.filter(e -> e.getEffectTime().after(currentDate) && e.getValidTime().after(currentDate))
+				.map(e -> e.getId()).collect(Collectors.toList());
+		// 过期的id列表
+		List<String> expireIdList = updateRecList.stream().filter(e -> e.getValidTime().before(currentDate))
+				.map(e -> e.getId()).collect(Collectors.toList());
+		if(CollectionUtils.isNotEmpty(effectIdList)){
 			Map<String, Object> params = new HashMap<String, Object>();
-			params.put("ids", ids);
+			params.put("ids", effectIdList);
+			params.put("status", ActivityCouponsRecordStatusEnum.UNUSED);
+			activityCouponsRecordMapper.updateAllByBatch(params);
+		}
+		
+		if(CollectionUtils.isNotEmpty(expireIdList)){
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("ids", expireIdList);
 			params.put("status", ActivityCouponsRecordStatusEnum.EXPIRES);
 			activityCouponsRecordMapper.updateAllByBatch(params);
 		}
