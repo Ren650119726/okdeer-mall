@@ -15,6 +15,7 @@
     <result column="thrid_code" property="thridCode" jdbcType="VARCHAR" />
     <result column="device_id" property="deviceId" jdbcType="VARCHAR" />
     <result column="rec_date" property="recDate" jdbcType="VARCHAR" />
+    <result column="effect_time" property="effectTime" jdbcType="TIMESTAMP" />
   </resultMap>
   
    <resultMap id="VoResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo" extends="BaseResultMap">
@@ -24,7 +25,7 @@
   </resultMap>
   <sql id="Base_Column_List" >
     id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id, 
-    valid_time, status, order_id, room_id,thrid_code, device_id, rec_date
+    valid_time, status, order_id, room_id,thrid_code, device_id, rec_date, effect_time
   </sql>
   <sql id="condition" >
     <if test="null!=params" >
@@ -60,11 +61,11 @@
     insert into activity_coupons_record (id, collect_type, coupons_id, 
       coupons_collect_id, collect_time, collect_user_id, 
       valid_time, status, order_id, 
-      room_id, device_id, rec_date)
+      room_id, device_id, rec_date, effect_time)
     values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=TINYINT}, #{couponsId,jdbcType=VARCHAR}, 
       #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUserId,jdbcType=VARCHAR}, 
       #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=TINYINT}, #{orderId,jdbcType=VARCHAR}, 
-      #{roomId,jdbcType=VARCHAR}, #{deviceId,jdbcType=VARCHAR},#{recDate,jdbcType=VARCHAR})
+      #{roomId,jdbcType=VARCHAR}, #{deviceId,jdbcType=VARCHAR},#{recDate,jdbcType=VARCHAR},#{effectTime,jdbcType=TIMESTAMP})
   </insert>
   <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
     insert into activity_coupons_record
@@ -108,6 +109,9 @@
       <if test="recDate != null" >
           rec_date,
       </if>
+      <if test="effectTime != null" >
+          effect_time,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -149,6 +153,9 @@
       <if test="recDate != null" >
     	#{recDate,jdbcType=VARCHAR},
       </if>
+      <if test="effectTime != null" >
+        #{effectTime,jdbcType=TIMESTAMP},
+       </if>
     </trim>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
@@ -186,6 +193,9 @@
       </if>
       <if test="recDate != null" >
           rec_date = #{recDate,jdbcType=VARCHAR},
+      </if>
+      <if test="effectTime != null" >
+          effect_time = #{effectTime,jdbcType=TIMESTAMP},
       </if>
     </set>
     where id = #{id,jdbcType=VARCHAR}

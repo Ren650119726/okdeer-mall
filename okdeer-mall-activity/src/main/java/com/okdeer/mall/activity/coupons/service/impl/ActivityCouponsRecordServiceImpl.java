@@ -59,6 +59,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsTermType;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
@@ -70,6 +71,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 import com.okdeer.mall.activity.service.CouponsFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
@@ -211,6 +213,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	@Reference(version = "1.0.0", check = false)
 	private TradeOrderServiceApi tradeOrderService;
+	
+	@Resource 
+	private ActivityCouponsReceiveStrategy activityCouponsReceiveStrategy;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -660,10 +665,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				activityCouponsRecord.setCollectType(activityCouponsType);
 				activityCouponsRecord.setCouponsId(activityCoupons.getId());
 				activityCouponsRecord.setCouponsCollectId(activityCoupons.getActivityId());
-				activityCouponsRecord.setCollectTime(new Date());
 				activityCouponsRecord.setCollectUserId(userId);
-				activityCouponsRecord.setValidTime(DateUtils.addDays(new Date(), activityCoupons.getValidDay()));
-				activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
+				activityCouponsReceiveStrategy.process(activityCouponsRecord, activityCoupons);
 
 				lstCouponsRecords.add(activityCouponsRecord);
 				// 更新代金券已使用数量和剩余数量
@@ -916,6 +919,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		}
 	}
 
+	// Begin V2.6.0_P01 modified by maojj 2017-09-09
 	/**
 	 * @Description: 更新保存领取代金劵记录
 	 * @param record 代金劵信息
@@ -926,31 +930,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	private void updateCouponsRecode(ActivityCouponsRecord record, ActivityCoupons coupons) {
 		// 立即领取
 		record.setId(UuidUtils.getUuid());
-		Date date = new Date();
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-		record.setCollectTime(calendar.getTime());
-		record.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
-		calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
-		record.setValidTime(calendar.getTime());
-		// begin v1.3 领取异业代金券时候操作
-		/*
-		 * HashMap<String, Object> map = new HashMap<String, Object>(); map.put("couponsId", coupons.getId());
-		 * map.put("status", 0); map.put("length", 1); List<ActivityCouponsThirdCode> thirdCodeList =
-		 * activityCouponsThirdCodeMapper.listByParam(map); if (thirdCodeList != null && thirdCodeList.size() > 0) {
-		 * ActivityCouponsThirdCode activityCouponsThirdCode = thirdCodeList.get(0); if (activityCouponsThirdCode !=
-		 * null) { String code = activityCouponsThirdCode.getCode(); record.setThridCode(code);
-		 * activityCouponsThirdCode.setStatus(1); //更新代金卷兑换码状态
-		 * activityCouponsThirdCodeMapper.update(activityCouponsThirdCode); } }
-		 */
+		activityCouponsReceiveStrategy.process(record, coupons);
 		// 将代金卷兑换码写入记录表
 		activityCouponsRecordMapper.insertSelective(record);
 		activityCouponsMapper.updateRemainNum(coupons.getId());
-		// begin add by zhulq 2016-12-19 异业代金卷领取成功操作
-
 	}
+	// End V2.6.0_P01 modified by maojj 2017-09-09
 
 	/**
 	 * @Description: 更新保存预领取代金劵记录

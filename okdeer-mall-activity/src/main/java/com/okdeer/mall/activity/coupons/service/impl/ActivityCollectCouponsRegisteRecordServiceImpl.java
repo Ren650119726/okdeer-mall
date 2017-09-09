@@ -40,6 +40,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsRegisteRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsRegisteRecordServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
 import com.okdeer.mall.activity.coupons.vo.InvitationRegisterRecordVo;
 import com.okdeer.mall.activity.coupons.vo.InvitationRegisterVo;
 import com.okdeer.mall.member.points.dto.AddPointsParamDto;
@@ -106,6 +107,9 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 	@Value("${myinfoImagePrefix}")
 	private String userInfoPicServerUrl;
 	// End added by maojj 2016-10-17
+	
+	@Autowired
+	private ActivityCouponsReceiveStrategy activityCouponsReceiveStrategy;
 	
 	@Transactional(readOnly = true)
 	@Override
@@ -291,16 +295,10 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 			couponsRecord.setCollectType(ActivityCouponsType.invite_regist);
 			couponsRecord.setCouponsId(coupons.getId());
 			couponsRecord.setCouponsCollectId(activityId);
-			couponsRecord.setCollectTime(currentDate);
-			couponsRecord.setCollectUserId(inviteesId);
-			Calendar calendar = Calendar.getInstance();
-			calendar.setTime(currentDate);
-			calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0,
-					0, 0);
-			calendar.set(Calendar.MILLISECOND, 0);
-			calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
-			couponsRecord.setValidTime(calendar.getTime());
-			couponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
+			// Begin V2.6.0_P01 modified by maojj 2017-09-09
+			// 处理代金券生效时间、失效时间、状态
+			activityCouponsReceiveStrategy.process(couponsRecord, coupons);
+			// End V2.6.0_P01 modified by maojj 2017-09-09
 			try {
 				// 用户成功领取代金券，需要修改代金券剩余数量
 				activityCouponsMapper.updateRemainNum(coupons.getId());
