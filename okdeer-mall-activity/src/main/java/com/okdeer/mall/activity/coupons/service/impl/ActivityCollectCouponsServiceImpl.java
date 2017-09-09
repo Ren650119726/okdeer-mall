@@ -57,6 +57,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.system.mapper.SysUserMapper;
 import com.okdeer.mcm.entity.SmsVO;
@@ -136,6 +137,9 @@ public class ActivityCollectCouponsServiceImpl
 	 */
 	@Reference(version = "1.0.0",check=false)
 	IPsmsAgentServiceApi iPsmsAgentServiceApi;
+	
+	@Autowired
+	private ActivityCouponsReceiveStrategy activityCouponsReceiveStrategy;
 
 	@Transactional(rollbackFor = Exception.class)
 	public void save(ActivityCollectCoupons activityCollectCoupons) {
@@ -729,18 +733,9 @@ public class ActivityCollectCouponsServiceImpl
 			} else {
 				log.info("userId:"+ userId +"==activityCouponId:"+ activityCoupon.getId());
 				activityCouponsRecord.setId(UuidUtils.getUuid());
-				Date date = new Date();
-				Calendar calendar = Calendar.getInstance();
-				calendar.setTime(date);
-				calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
-				calendar.set(Calendar.MILLISECOND, 0);
 				activityCouponsRecord.setCouponsId(activityCoupon.getId());
 				activityCouponsRecord.setCouponsCollectId(activityCoupon.getActivityId());
-				activityCouponsRecord.setCollectTime(calendar.getTime());
-				activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
-				calendar.add(Calendar.DAY_OF_YEAR, activityCoupon.getValidDay());
-				activityCouponsRecord.setValidTime(calendar.getTime());
-
+				activityCouponsReceiveStrategy.process(activityCouponsRecord, activityCoupon);
 				activityCouponsRecordMapper.insertSelective(activityCouponsRecord);
 				//更新代金券剩余数量
 				int rows = activityCouponsMapper.updateRemainNum(activityCoupon.getId());

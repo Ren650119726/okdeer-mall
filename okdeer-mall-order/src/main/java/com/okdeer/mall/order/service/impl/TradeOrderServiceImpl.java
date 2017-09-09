@@ -78,6 +78,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsOrderRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleService;
@@ -649,6 +650,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      */
     @Autowired
     private ExpressOrderCallbackService expressOrderCallbackService;
+    
+    @Resource
+	private ActivityCouponsReceiveStrategy activityCouponsReceiveStrategy;
 
     @Override
     public List<TradeOrder> selectByParam(TradeOrderParamDto param) throws Exception {
@@ -6335,12 +6339,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             activityCouponsRecord.setCollectType(activityCouponsType);
             activityCouponsRecord.setCouponsId(coupons.getId());
             activityCouponsRecord.setCouponsCollectId(collCoupons.getId());
-            activityCouponsRecord.setCollectTime(new Date());
             activityCouponsRecord.setCollectUserId(userId);
-            // Begin modified by maojj 2017-03-06 修改代金券到期时间计算方式
-            activityCouponsRecord.setValidTime(calculateValidTime(coupons.getValidDay()));
-            // End modified by maojj 2017-03-06 修改代金券到期时间计算方式
-            activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
+            // Begin modified by maojj 2017-09-09 修改代金券到期时间计算方式
+            activityCouponsReceiveStrategy.process(activityCouponsRecord,coupons);
+            // End modified by maojj 2017-09-09 修改代金券到期时间计算方式
 
             lstCouponsRecords.add(activityCouponsRecord);
             // 更新代金券已使用数量和剩余数量

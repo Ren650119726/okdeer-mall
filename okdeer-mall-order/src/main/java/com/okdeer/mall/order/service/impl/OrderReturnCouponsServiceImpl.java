@@ -25,6 +25,8 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsRegisteRecordServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategyApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -91,6 +93,9 @@ public class OrderReturnCouponsServiceImpl implements OrderReturnCouponsService 
 	 */
 	@Resource
 	private TradeOrderMapper tradeOrderMapper;
+	
+	@Resource
+	private ActivityCouponsReceiveStrategy activityCouponsReceiveStrategy;
 	
 	/**
 	 * @Description: 订单支付完成下单操作后1、发送消费返券 2、发送注册代金
@@ -183,10 +188,8 @@ public class OrderReturnCouponsServiceImpl implements OrderReturnCouponsService 
 			activityCouponsRecord.setCollectType(ActivityCouponsType.invite_regist);
 			activityCouponsRecord.setCouponsId(coupons.getId());
 			activityCouponsRecord.setCouponsCollectId(collectCoupons.getId());
-			activityCouponsRecord.setCollectTime(new Date());
 			activityCouponsRecord.setCollectUserId(registeRecord.getUserId());
-			activityCouponsRecord.setValidTime(DateUtils.addDays(new Date(), coupons.getValidDay()));
-			activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
+			activityCouponsReceiveStrategy.process(activityCouponsRecord,coupons);
 			// 更新可使用的
 			activityCouponsMapper.updateRemainNum(coupons.getId());
 			lstCouponsRecords.add(activityCouponsRecord);
