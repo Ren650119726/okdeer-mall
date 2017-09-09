@@ -1,5 +1,6 @@
 package com.okdeer.mall.activity.coupons.mapper;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -353,4 +354,13 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @date 2017年8月3日
 	 */
 	List<ActivityRecordBo> countCollectActivityRecord(ActivityRecordParamBo paramBo);
+	
+	/**
+	 * @Description: 根据当前时间查询需要修改代金券状态的记录
+	 * @param currentDate
+	 * @return   
+	 * @author maojj
+	 * @date 2017年9月9日
+	 */
+	List<ActivityCouponsRecord> findForJob(Date currentDate);
 }
