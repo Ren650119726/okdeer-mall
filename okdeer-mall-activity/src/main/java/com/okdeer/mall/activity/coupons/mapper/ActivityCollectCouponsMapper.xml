@@ -696,7 +696,11 @@
 		s.arrive_limit as arriveLimit,
 		s.every_limit as everyLimit,
 		s.is_rand_code as isRandCode,
-		s.exchange_code as exchangeCode
+		s.exchange_code as exchangeCode,
+		s.effect_day as effectDay,
+		s.term_type as termType,
+		s.start_time as startTime,
+		s.end_time as endTime
 		 from activity_coupons s
 		where s.disabled = 0 
 		and 
