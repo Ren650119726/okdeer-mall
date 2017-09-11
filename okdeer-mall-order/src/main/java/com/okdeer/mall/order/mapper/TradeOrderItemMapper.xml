@@ -137,7 +137,7 @@
   </select>
   <!-- 判断订单是否评价 end zhongy -->
   
-  <!-- 订单项关联退款单查询  zhongy  start-->
+  <!-- 订单项关联退款单查询 zhongy tuzhd 2017-9-11 加入排序，会员卡订单线下半价商品要排在一块并在原价商品下面  start-->
   <select id="selectTradeOrderItemOrRefund" resultMap="BaseResultMap" parameterType="java.lang.String" >
        SELECT 
 	    item.id, item.order_id, item.store_spu_id, item.store_sku_id, item.sku_name,item.properties_indb, item.main_pic_prl, 
@@ -147,8 +147,9 @@
 	    FROM trade_order_item item left join trade_order_refunds_item refundItem on item.id = refundItem.order_item_id
 	    left join trade_order_refunds refound on refound.id = refundItem.refunds_id
 	    WHERE item.order_id = #{orderId,jdbcType=VARCHAR}
+	    ORDER BY store_sku_id,actual_amount DESC
   </select>
-  <!-- 订单项关联退款单查询  zhongy  end-->
+  <!-- 订单项关联退款单查询  zhongy  tuzhd 2017-9-11 加入排序，会员卡订单线下半价商品要排在一块并在原价商品下面 end-->
   
   <!-- 订单项关联详细查询  zhongy  start-->
   <!-- update by wushp 服务店订单详情用 -->
