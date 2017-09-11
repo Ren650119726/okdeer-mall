@@ -201,7 +201,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 					if (count != paramBo.getSpuCategoryIds().size()) {
 						return false;
 					}
-				} else if (coupons.getType() == CouponsType.bldfwd.ordinal()){
+				} else if (coupons.getType() == CouponsType.bldfwd.ordinal() && CollectionUtils.isNotEmpty(paramBo.getGoodsList())){
 					// Begin V2.6.1 added by maojj 2017-09-08
 					// 便利店服务店不指定分类，如果是便利店下单使用，特价商品不享受优惠
 					BigDecimal totalAmount = BigDecimal.valueOf(0.00);
