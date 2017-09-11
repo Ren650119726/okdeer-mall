@@ -534,7 +534,13 @@ public class ActivityCollectCouponsServiceImpl
 						// Begin V2.6.0_P02 added by maojj 2017-09-11
 						// 根据代金券的设置设置代金券的开始时间和结束时间
 						activityCoupons.setStartTime(activityCouponsReceiveStrategy.getEffectTime(activityCoupons));
-						activityCoupons.setEndTime(activityCouponsReceiveStrategy.getExpireTime(activityCoupons));
+						// 代金券失效时间
+						Date expireTime = activityCouponsReceiveStrategy.getExpireTime(activityCoupons);
+						// 失效时间为0点0分0秒，给用户展示将时间往后推迟一天。
+						Calendar cal = Calendar.getInstance();
+						cal.setTime(expireTime);
+						cal.add(Calendar.DATE, -1);
+						activityCoupons.setEndTime(cal.getTime());
 						// End V2.6.0_P02 added by maojj 2017-09-11
 						
 						activityCouponsRecord.setCouponsId(activityCoupons.getId());
