@@ -474,6 +474,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 					record.setInviteUserId(userId);
 					record.setActivityId(advertId);
 					record.setIsComplete(WhetherEnum.not);
+					//add by mengsj begin
+					record.setCouponsCollectId(collectId);
+					record.setCouponsId(coupons.getId());
+					//add by mengsj end
 					reMap.put(coupons.getId(), record);
 					checkFlag = true;
 				}
@@ -974,6 +978,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		record.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
 		calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
 		record.setValidTime(calendar.getTime());
+		
+
 
 		activityCouponsRecordBeforeMapper.insertSelective(record);
 		activityCouponsMapper.updateRemainNum(coupons.getId());
