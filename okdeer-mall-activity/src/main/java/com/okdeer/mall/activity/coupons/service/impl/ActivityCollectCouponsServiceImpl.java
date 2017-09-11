@@ -531,6 +531,12 @@ public class ActivityCollectCouponsServiceImpl
 				activityCouponsList = vo.getActivityCoupons();
 				if (activityCouponsList != null && activityCouponsList.size() > 0) {
 					for (ActivityCoupons activityCoupons : activityCouponsList) {
+						// Begin V2.6.0_P02 added by maojj 2017-09-11
+						// 根据代金券的设置设置代金券的开始时间和结束时间
+						activityCoupons.setStartTime(activityCouponsReceiveStrategy.getEffectTime(activityCoupons));
+						activityCoupons.setEndTime(activityCouponsReceiveStrategy.getExpireTime(activityCoupons));
+						// End V2.6.0_P02 added by maojj 2017-09-11
+						
 						activityCouponsRecord.setCouponsId(activityCoupons.getId());
 						activityCouponsRecord.setCollectType(ActivityCouponsType.coupons);
 						// 当前登陆用户id
