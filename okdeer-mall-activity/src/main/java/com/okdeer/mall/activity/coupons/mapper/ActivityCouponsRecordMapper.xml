@@ -631,7 +631,7 @@
    <insert id="insertSelectiveBatch" parameterType="list" >
     insert into activity_coupons_record
         (id, collect_type, coupons_id, coupons_collect_id, collect_time, 
-         collect_user_id, valid_time, status, order_id, room_id) values
+         collect_user_id, valid_time, status, order_id, room_id,effect_time) values
      <foreach collection="list" item="item" index="index" separator="," >
        (#{item.id,jdbcType=VARCHAR},
         #{item.collectType,jdbcType=TINYINT},
@@ -642,7 +642,8 @@
         #{item.validTime,jdbcType=TIMESTAMP},
         #{item.status,jdbcType=TINYINT},
         #{item.orderId,jdbcType=VARCHAR},
-        #{item.roomId,jdbcType=VARCHAR}
+        #{item.roomId,jdbcType=VARCHAR},
+        #{item.effectTime,jdbcType=TIMESTAMP}
         )
      </foreach>
   </insert> 
@@ -650,7 +651,7 @@
   <insert id="insertBatchRecordByBefore" parameterType="list" >
     insert into activity_coupons_record
         (id, collect_type, coupons_id, coupons_collect_id, collect_time, 
-         collect_user_id, valid_time, status, order_id, room_id) values
+         collect_user_id, valid_time, status, order_id, room_id, effect_time) values
      <foreach collection="list" item="item" index="index" separator="," >
        (#{item.id,jdbcType=VARCHAR},
         #{item.collectType,jdbcType=TINYINT},
@@ -661,7 +662,8 @@
         #{item.validTime,jdbcType=TIMESTAMP},
         #{item.status,jdbcType=TINYINT},
         #{item.orderId,jdbcType=VARCHAR},
-        #{item.roomId,jdbcType=VARCHAR}
+        #{item.roomId,jdbcType=VARCHAR},
+        #{item.collectTime,jdbcType=TIMESTAMP}
         )
      </foreach>
   </insert> 
@@ -852,7 +854,7 @@
    <!-- begin by:yangq 保存邀请码记录 -->
    <insert id="saveActivityCouponsRecord" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
         insert into activity_coupons_record(
-			id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id, valid_time,status,order_id,room_id
+			id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id, valid_time,status,order_id,room_id,effect_time
 		)values(
             #{id,jdbcType=VARCHAR},
             #{collectType,jdbcType=INTEGER},
@@ -862,7 +864,8 @@
             #{validTime,jdbcType=VARCHAR},
             #{status,jdbcType=INTEGER},
             #{orderId,jdbcType=VARCHAR},
-            #{roomId,jdbcType=VARCHAR}
+            #{roomId,jdbcType=VARCHAR},
+            #{effectTime,jdbcType=TIMESTAMP}
         )
 	</insert>
    <!-- end by:yangq 保存邀请码记录 -->
