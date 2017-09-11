@@ -669,7 +669,7 @@
 	    SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time, collect.daily_circulation,
 	           coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
 	           coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num, 
-	           coupons.type as coupons_type,coupons.effect_day,coupons.term_type ,coupons.start_time,coupons.end_time
+	           coupons.type as coupons_type,coupons.effect_day,coupons.term_type ,coupons.start_time AS start_time_coupons,coupons.end_time AS end_time_coupons
 	    FROM activity_collect_coupons collect 
 	    LEFT JOIN activity_coupons coupons ON coupons.activity_id = collect.id
 	    WHERE collect.disabled = 0 AND collect.type=2 AND ( collect.belong_type = '0' or collect.approval_status = 1 ) AND collect.status = 1 AND coupons.remain_num > 0
@@ -789,7 +789,7 @@
               coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
               coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num,
               coupons.type AS coupons_type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, coupons.id as couponsId,
-              coupons.term_type,coupons.effect_day,coupons.start_time,coupons.end_time
+              coupons.term_type,coupons.effect_day,coupons.start_time AS start_time_coupons,coupons.end_time AS end_time_coupons
 		FROM activity_collect_coupons collect
 		INNER JOIN activity_coupons coupons ON coupons.activity_id = collect.id
 		INNER JOIN activity_coupons_rand_code code ON code.coupons_id = coupons.id
