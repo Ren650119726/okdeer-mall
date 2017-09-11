@@ -50,6 +50,10 @@
        	<result property="createUserId" column="create_user_id" javaType="string" jdbcType="VARCHAR"/> 
        	<result property="type" column="coupons_type" javaType="integer" jdbcType="INTEGER"/>
        	<result property="isCategory" column="is_category" javaType="integer" jdbcType="INTEGER"/>
+       	<result property="startTime" column="start_time" javaType="date" jdbcType="TIMESTAMP"/> 
+        <result property="endTime" column="end_time" javaType="date" jdbcType="TIMESTAMP"/> 
+		<result column="effect_day" property="effectDay" jdbcType="INTEGER" />
+        <result column="term_type" property="termType"  javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsTermType" jdbcType="TINYINT" />
      </resultMap>
 
     <!-- wusw:代金券领取活动、代金券、限制类目等关联信息 -->
@@ -157,7 +161,7 @@
         coupons.used_num, coupons.remain_num, coupons.arrive_limit, coupons.valid_day, coupons.every_limit,
 	    coupons.is_cash_delivery, coupons.is_category_limit, coupons.code, coupons.exchange_code, coupons.area_type, 
 	    coupons.create_user_id, coupons.create_time, coupons.update_user_id, coupons.update_time, coupons.disabled,
-	    coupons.type, coupons.is_category
+	    coupons.type, coupons.is_category,coupons.start_time,coupons.end_time,coupons.effect_day,coupons.term_type
     </sql>
     
     <select id="list" parameterType="map" resultMap="ActivityCollectCoupons">
@@ -664,7 +668,8 @@
 	<select id="findActivityCollectCouponsByCity" resultMap="couponsAndLimitCategoryDetailMap" parameterType="string">
 	    SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time, collect.daily_circulation,
 	           coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
-	           coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num, coupons.type as coupons_type
+	           coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num, 
+	           coupons.type as coupons_type,coupons.effect_day,coupons.term_type ,coupons.start_time,coupons.end_time
 	    FROM activity_collect_coupons collect 
 	    LEFT JOIN activity_coupons coupons ON coupons.activity_id = collect.id
 	    WHERE collect.disabled = 0 AND collect.type=2 AND ( collect.belong_type = '0' or collect.approval_status = 1 ) AND collect.status = 1 AND coupons.remain_num > 0
@@ -783,7 +788,8 @@
 		SELECT collect.id,collect.`name`,collect.identity_limit,collect.create_time,collect.start_time,collect.end_time,
               coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,coupons.activity_id,coupons.remain_num,
               coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,coupons.total_num,
-              coupons.type AS coupons_type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, coupons.id as couponsId
+              coupons.type AS coupons_type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, coupons.id as couponsId,
+              coupons.term_type,coupons.effect_day,coupons.start_time,coupons.end_time
 		FROM activity_collect_coupons collect
 		INNER JOIN activity_coupons coupons ON coupons.activity_id = collect.id
 		INNER JOIN activity_coupons_rand_code code ON code.coupons_id = coupons.id
