@@ -600,6 +600,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			List<ActivityCouponsRecordBefore> list = activityCouponsRecordBeforeMapper.getCopyRecords(userId,
 					new Date(), phone);
 			if (list != null && list.size() > 0) {
+				list.forEach(e -> {
+					if(e.getCollectTime().after(new Date())){
+						e.setStatus(ActivityCouponsRecordStatusEnum.UNEFFECTIVE);
+					}
+				});
 				activityCouponsRecordMapper.insertBatchRecordByBefore(list);
 
 				// 循环代金券记录，找出最后一次有效的邀请人领取记录
@@ -948,15 +953,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	private void insertRecodeBefore(ActivityCouponsRecordBefore record, ActivityCoupons coupons) {
 		// 立即领取
 		record.setId(UuidUtils.getUuid());
-		Date date = new Date();
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-		record.setCollectTime(calendar.getTime());
+		record.setCollectTime(activityCouponsReceiveStrategy.getEffectTime(coupons));
 		record.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
-		calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
-		record.setValidTime(calendar.getTime());
+		record.setValidTime(activityCouponsReceiveStrategy.getExpireTime(coupons));
 
 		activityCouponsRecordBeforeMapper.insertSelective(record);
 		activityCouponsMapper.updateRemainNum(coupons.getId());

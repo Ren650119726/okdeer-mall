@@ -647,7 +647,7 @@
         )
      </foreach>
   </insert> 
-  <!--  从预领取记录中批量插入代金券  tuzhd -->
+  <!--  从预领取记录中批量插入代金券  tuzhd 预领取表中的领取时间即为生效时间-->
   <insert id="insertBatchRecordByBefore" parameterType="list" >
     insert into activity_coupons_record
         (id, collect_type, coupons_id, coupons_collect_id, collect_time, 
