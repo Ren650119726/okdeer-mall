@@ -382,7 +382,10 @@
 	     AND collect_type = #{collectType,jdbcType=TINYINT}
 	  </if>
 	  <!-- 领取状态 -->
-	  <if test="status != null">
+	  <if test="status != null and status.name() == 'UNUSED'">
+	     AND `status` in (0,3)
+	  </if>
+	  <if test="status != null and status.name() != 'UNUSED'">
 	     AND `status` = #{status,jdbcType=TINYINT}
 	  </if>
 	  <!-- 领取时间-->
@@ -461,7 +464,7 @@
    coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
    coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
    coupons.type AS type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, 
-   record.id,record.collect_time,record.effect_time,record.valid_time,coupons.use_user_type,coupons.use_client_type, 
+   record.id,record.collect_time,record.effect_time,record.valid_time,record.status,coupons.use_user_type,coupons.use_client_type, 
    coupons.device_day_limit, coupons.account_day_limit,	
    CASE
    WHEN coupons.type = 1 THEN nav.name
