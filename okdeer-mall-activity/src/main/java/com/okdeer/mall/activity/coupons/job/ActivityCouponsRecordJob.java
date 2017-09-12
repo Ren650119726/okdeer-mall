@@ -1,5 +1,7 @@
 package com.okdeer.mall.activity.coupons.job;
 
+import java.util.Date;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ public class ActivityCouponsRecordJob extends AbstractSimpleElasticJob {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void process(JobExecutionMultipleShardingContext arg0) {
+		logger.info("代金券领取记录修改状态开始---{}",new Date());
 		try {
 			activityCouponsRecordService.updateStatusByJob();
 		} catch (Exception e) {
