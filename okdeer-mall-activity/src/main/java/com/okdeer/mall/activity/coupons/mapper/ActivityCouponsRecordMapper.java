@@ -1,5 +1,6 @@
 package com.okdeer.mall.activity.coupons.mapper;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,7 +9,6 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.bo.FavourParamBO;
-import com.okdeer.mall.activity.coupons.bo.ActivityCouponsRecordQueryParamBo;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
