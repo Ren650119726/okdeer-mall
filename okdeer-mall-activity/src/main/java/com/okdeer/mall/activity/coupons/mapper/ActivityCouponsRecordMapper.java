@@ -372,4 +372,14 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @date 2017年8月26日
 	 */
 	int selectOrderCountByParams(ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto);
+	
+		
+	/**
+	 * @Description: 根据当前时间查询需要修改代金券状态的记录
+	 * @param currentDate
+	 * @return   
+	 * @author maojj
+	 * @date 2017年9月9日
+	 */
+	List<ActivityCouponsRecord> findForJob(Date currentDate);
 }

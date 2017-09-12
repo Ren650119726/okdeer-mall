@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -60,6 +61,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsTermType;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
@@ -72,6 +74,7 @@ import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 import com.okdeer.mall.activity.service.CouponsFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
@@ -213,6 +216,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	@Reference(version = "1.0.0", check = false)
 	private TradeOrderServiceApi tradeOrderService;
+	
+	@Resource 
+	private ActivityCouponsReceiveStrategy activityCouponsReceiveStrategy;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -595,6 +601,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			List<ActivityCouponsRecordBefore> list = activityCouponsRecordBeforeMapper.getCopyRecords(userId,
 					new Date(), phone);
 			if (list != null && list.size() > 0) {
+				list.forEach(e -> {
+					if(e.getCollectTime().after(new Date())){
+						e.setStatus(ActivityCouponsRecordStatusEnum.UNEFFECTIVE);
+					}
+				});
 				activityCouponsRecordMapper.insertBatchRecordByBefore(list);
 
 				// 循环代金券记录，找出最后一次有效的邀请人领取记录
@@ -661,10 +672,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				activityCouponsRecord.setCollectType(activityCouponsType);
 				activityCouponsRecord.setCouponsId(activityCoupons.getId());
 				activityCouponsRecord.setCouponsCollectId(activityCoupons.getActivityId());
-				activityCouponsRecord.setCollectTime(new Date());
 				activityCouponsRecord.setCollectUserId(userId);
-				activityCouponsRecord.setValidTime(DateUtils.addDays(new Date(), activityCoupons.getValidDay()));
-				activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
+				activityCouponsReceiveStrategy.process(activityCouponsRecord, activityCoupons);
 
 				lstCouponsRecords.add(activityCouponsRecord);
 				// 更新代金券已使用数量和剩余数量
@@ -922,6 +931,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		}
 	}
 
+	// Begin V2.6.0_P01 modified by maojj 2017-09-09
 	/**
 	 * @Description: 更新保存领取代金劵记录
 	 * @param record 代金劵信息
@@ -932,33 +942,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	private void updateCouponsRecode(ActivityCouponsRecord record, ActivityCoupons coupons) {
 		// 立即领取
 		record.setId(UuidUtils.getUuid());
-		record.setCouponsId(coupons.getId());
-		record.setCouponsCollectId(coupons.getActivityId());
-		Date date = new Date();
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-		record.setCollectTime(calendar.getTime());
-		record.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
-		calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
-		record.setValidTime(calendar.getTime());
-		// begin v1.3 领取异业代金券时候操作
-		/*
-		 * HashMap<String, Object> map = new HashMap<String, Object>(); map.put("couponsId", coupons.getId());
-		 * map.put("status", 0); map.put("length", 1); List<ActivityCouponsThirdCode> thirdCodeList =
-		 * activityCouponsThirdCodeMapper.listByParam(map); if (thirdCodeList != null && thirdCodeList.size() > 0) {
-		 * ActivityCouponsThirdCode activityCouponsThirdCode = thirdCodeList.get(0); if (activityCouponsThirdCode !=
-		 * null) { String code = activityCouponsThirdCode.getCode(); record.setThridCode(code);
-		 * activityCouponsThirdCode.setStatus(1); //更新代金卷兑换码状态
-		 * activityCouponsThirdCodeMapper.update(activityCouponsThirdCode); } }
-		 */
+		activityCouponsReceiveStrategy.process(record, coupons);
 		// 将代金卷兑换码写入记录表
 		activityCouponsRecordMapper.insertSelective(record);
 		activityCouponsMapper.updateRemainNum(coupons.getId());
-		// begin add by zhulq 2016-12-19 异业代金卷领取成功操作
-
 	}
+	// End V2.6.0_P01 modified by maojj 2017-09-09
 
 	/**
 	 * @Description: 更新保存预领取代金劵记录
@@ -970,15 +959,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	private void insertRecodeBefore(ActivityCouponsRecordBefore record, ActivityCoupons coupons) {
 		// 立即领取
 		record.setId(UuidUtils.getUuid());
-		Date date = new Date();
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-		record.setCollectTime(calendar.getTime());
+		record.setCollectTime(activityCouponsReceiveStrategy.getEffectTime(coupons));
 		record.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
-		calendar.add(Calendar.DAY_OF_YEAR, coupons.getValidDay());
-		record.setValidTime(calendar.getTime());
+		record.setValidTime(activityCouponsReceiveStrategy.getExpireTime(coupons));
 		
 
 
@@ -1117,22 +1100,28 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateStatusByJob() throws Exception {
-		List<ActivityCouponsRecord> list = activityCouponsRecordMapper.selectAllForJob();
-		List<String> ids = new ArrayList<>();
-		Date date = new Date(); /* date.compareTo(anotherDate) */
-		if (list != null && list.size() > 0) {
-			for (ActivityCouponsRecord record : list) {
-				Date validTime = record.getValidTime();
-				int res = date.compareTo(validTime);
-				if ((res == 0) || (res == 1)) {
-					ids.add(record.getId());
-				}
-			}
+		List<ActivityCouponsRecord> updateRecList = activityCouponsRecordMapper.findForJob(new Date());
+		if(CollectionUtils.isEmpty(updateRecList)){
+			return;
 		}
-
-		if (ids != null && ids.size() > 0) {
+		Date currentDate = new Date();
+		// 生效的id列表
+		List<String> effectIdList = updateRecList.stream()
+				.filter(e -> e.getEffectTime().before(currentDate) && e.getValidTime().after(currentDate))
+				.map(e -> e.getId()).collect(Collectors.toList());
+		// 过期的id列表
+		List<String> expireIdList = updateRecList.stream().filter(e -> e.getValidTime().before(currentDate))
+				.map(e -> e.getId()).collect(Collectors.toList());
+		if(CollectionUtils.isNotEmpty(effectIdList)){
 			Map<String, Object> params = new HashMap<String, Object>();
-			params.put("ids", ids);
+			params.put("ids", effectIdList);
+			params.put("status", ActivityCouponsRecordStatusEnum.UNUSED);
+			activityCouponsRecordMapper.updateAllByBatch(params);
+		}
+		
+		if(CollectionUtils.isNotEmpty(expireIdList)){
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("ids", expireIdList);
 			params.put("status", ActivityCouponsRecordStatusEnum.EXPIRES);
 			activityCouponsRecordMapper.updateAllByBatch(params);
 		}
