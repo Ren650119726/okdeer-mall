@@ -847,8 +847,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 */
 	private boolean checkCollectPublic(Map<String, Object> map, ActivityCollectCoupons collect, String userId) {
 		if (collect == null || collect.getStatus().intValue() != 1) {
-			map.put("msg", "活动已结束！");
-			map.put("code", 105);
+			int status = collect.getStatus().intValue();
+			map.put("msg", status == 0 ? DateUtils.dateFormat(collect.getStartTime()) : "活动已结束！");
+			map.put("code", status == 0 ? 115 : 105);
 			return false;
 		}
 		// 根据用户id查询其订单完成的订单总量 大于 0 下过单 就不算新用户
