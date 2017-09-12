@@ -113,9 +113,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	@Resource
 	RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  checkFavourService;
 	
-	@Resource
-	private  TradeOrderPayService tradeOrderPayService;
-	
 	@Autowired
 	private RocketMQProducer rocketMQProducer;
 	
