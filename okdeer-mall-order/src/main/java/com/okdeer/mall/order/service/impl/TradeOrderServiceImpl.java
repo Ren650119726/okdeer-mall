@@ -1232,6 +1232,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         }
         //add by zhangkeneng 优化性能,先把用户的组织关联的店铺idlist查出来,避免关联查询
         List<String> storeIdList = sysOrganiApi.findStoreIdListByUserId(vo.getCurrentUserId(),0);
+        //如果一个店铺都没有,就返回一个空的结果集
+        if(CollectionUtils.isEmpty(storeIdList)){
+        	return new PageUtils<PhysicsOrderVo>(new ArrayList<PhysicsOrderVo>());
+        }
+        
         vo.setStoreIdList(storeIdList);
         PageHelper.startPage(pageNumber, pageSize, true, false);
         List<PhysicsOrderVo> result = tradeOrderMapper.selectOrderBackStageNew(vo);
