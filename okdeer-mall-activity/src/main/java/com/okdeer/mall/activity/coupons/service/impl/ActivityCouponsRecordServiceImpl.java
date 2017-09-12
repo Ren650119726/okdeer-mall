@@ -809,14 +809,15 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		Map<String, Object> map = new HashMap<String, Object>();
 		// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 		ActivityCouponsRecord record = new ActivityCouponsRecord();
+		record.setCouponsId(activityCoupons.getId());
 		record.setCollectType(activityCouponsType);
+		record.setCollectUserId(userId);
 		ActivityCollectCoupons collect = activityCollectCouponsMapper.get(activityCoupons.getActivityId());
 		record.setCouponsCollectId(collect.getId());
 		// 校验活动信息
 		if (!checkCollectPublic(map, collect, userId)) {
 			return map;
 		}
-		record.setCouponsId(activityCoupons.getId());
 		// 进行公共代金劵领取校验
 		if (!checkRecordPubilc(map, activityCoupons, userId, record, collect)) {
 			return map;
