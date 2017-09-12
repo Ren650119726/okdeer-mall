@@ -1231,15 +1231,6 @@ public interface TradeOrderMapper {
 	// End V2.4.1 added by maojj 2017-06-19
 
 	/**
-	 * @Description: 条件查询订单数
-	 * @param paramDto
-	 * @return   
-	 * @author xuzq01
-	 * @date 2017年8月24日
-	 */
-	Integer findUserOrderCount(TradeOrderParamDto paramDto);
-
-	/**
 	 * @Description: 销售订单统计 获取昨天所有销售完成订单列表
 	 * @return   
 	 * @author xuzq01
