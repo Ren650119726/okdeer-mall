@@ -7116,12 +7116,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         return tradeOrderMapper.selectConsumeTotalAmount(params);
     }
 
-
-	@Override
-	public Integer findUserOrderCount(TradeOrderParamDto paramDto) {
-		return tradeOrderMapper.findUserOrderCount(paramDto);
-	}
-	
 	@Override
 	public List<TradeOrder> findOrderListForJob() {
 		return tradeOrderMapper.findOrderListForJob();

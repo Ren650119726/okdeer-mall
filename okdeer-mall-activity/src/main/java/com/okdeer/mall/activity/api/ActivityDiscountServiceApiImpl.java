@@ -14,8 +14,6 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
-import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
-import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountServiceApi;
 import com.okdeer.mall.activity.dto.ActivityDiscountQueryDto;
@@ -51,8 +49,8 @@ public class ActivityDiscountServiceApiImpl implements ActivityDiscountServiceAp
 	public List<ActivityPinMoneyDto> findDiscountList(ActivityDiscountQueryDto discountQueryDto) {
 		//订单来源  店铺id 活动类型 状态 城市名称
 		ActivityParamDto paramDto = new ActivityParamDto();
-		paramDto.setType(ActivityDiscountType.PIN_MONEY);
-		paramDto.setStatus(ActivityDiscountStatus.ing);
+		paramDto.setType(discountQueryDto.getType());
+		paramDto.setStatus(discountQueryDto.getStatus());
 		paramDto.setLimitChannel(discountQueryDto.getLimitChannel());
 		List<ActivityDiscount> discountList = activityDiscountService.findListByParam(paramDto);
 		return BeanMapper.mapList(discountList, ActivityPinMoneyDto.class);

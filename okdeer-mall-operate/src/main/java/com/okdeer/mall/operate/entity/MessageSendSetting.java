@@ -49,7 +49,7 @@ public class MessageSendSetting {
      */
     private Integer sendObject;
     /**
-     * 消息推送状态 0未推送 1 已推送
+     * 消息推送状态 0未推送 1已推送 2已关闭
      */
     private Integer status;
     /**

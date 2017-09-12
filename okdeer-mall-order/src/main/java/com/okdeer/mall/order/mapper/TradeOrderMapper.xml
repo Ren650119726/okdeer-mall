@@ -6374,27 +6374,12 @@
 	</select>
 	<!-- End V2.4.1 added by maojj 2017-06-19 -->
 	
-	<!-- begin xuzq V2.6.1  20170824 领取零花钱查询订单数和零花钱总金额 -->
-	<select id="findUserOrderCount" parameterType="com.okdeer.mall.order.dto.TradeOrderParamDto" resultType="Integer">
-		SELECT count(id)
-		FROM trade_order tr
-		WHERE 1=1
-		<if test="userId != null and userId != ''">
-			and tr.user_id = #{userId,jdbcType=VARCHAR}
-		</if>
-		<if test="null != startTime">
-	    	<![CDATA[ AND tr.create_time >= #{startTime,jdbcType=TIMESTAMP} ]]>
-		</if>
-		<if test="null != endTime">
-	    	<![CDATA[ AND tr.create_time <= #{endTime,jdbcType=TIMESTAMP} ]]>
-		</if>
-	</select>
-	<!-- 查询所有在前天更新为订单完成的订单 -->
+	<!-- begin xuzq V2.6.1  20170824 查询所有在前一天更新为订单完成的订单 -->
 	<select id="findOrderListForJob"  resultMap="BaseResultMap">
 		SELECT * FROM trade_order trade
 		where trade.update_time &gt;= date_sub(curdate(),interval 1 day)
           and trade.update_time &lt;= curdate()
           and trade.status=5
 	</select>
-	<!-- end xuzq V2.6.1 20170824 领取零花钱查询订单数和零花钱总金额 -->
+	<!-- end xuzq V2.6.1 20170824 查询所有在前一天更新为订单完成的订单 -->
 </mapper>

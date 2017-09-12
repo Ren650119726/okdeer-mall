@@ -27,4 +27,9 @@ public class SysBuyerFirstOrderRecordServiceImpl extends BaseServiceImpl impleme
 		return firstOrderRecord != null;
 	}
 
+	@Override
+	public SysBuyerFirstOrderRecord findByUserId(String userId) {
+		return sysBuyerFirstOrderRecordMapper.findByUserId(userId);
+	}
+
 }
