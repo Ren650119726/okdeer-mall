@@ -134,6 +134,12 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	HykPayOrderServiceApi hykPayOrderServiceApi;
 	
 	/**
+	 * 支付服务类
+	 */
+	@Resource
+	private  TradeOrderPayService tradeOrderPayService;
+	
+	/**
 	 * 会员卡订单缓存后缀
 	 */
 	private String orderKeyStr = ":memberCardOrder";
