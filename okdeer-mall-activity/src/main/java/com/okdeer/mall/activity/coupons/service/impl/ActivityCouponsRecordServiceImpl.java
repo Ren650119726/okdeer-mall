@@ -1090,7 +1090,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		Date currentDate = new Date();
 		// 生效的id列表
 		List<String> effectIdList = updateRecList.stream()
-				.filter(e -> e.getEffectTime().after(currentDate) && e.getValidTime().after(currentDate))
+				.filter(e -> e.getEffectTime().before(currentDate) && e.getValidTime().after(currentDate))
 				.map(e -> e.getId()).collect(Collectors.toList());
 		// 过期的id列表
 		List<String> expireIdList = updateRecList.stream().filter(e -> e.getValidTime().before(currentDate))
