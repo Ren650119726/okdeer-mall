@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.mall.activity.coupons.enums.ActivityStatus;
 import com.okdeer.mall.activity.nadvert.bo.ActivityH5AdvertBo;
 import com.okdeer.mall.activity.nadvert.bo.ActivityH5AdvertContentBo;
 import com.okdeer.mall.activity.nadvert.entity.ActivityH5Advert;
@@ -21,6 +20,7 @@ import com.okdeer.mall.activity.nadvert.param.ActivityH5AdvertQParam;
 import com.okdeer.mall.activity.nadvert.service.ActivityH5AdvertContentService;
 import com.okdeer.mall.activity.nadvert.service.ActivityH5AdvertRoleService;
 import com.okdeer.mall.activity.nadvert.service.ActivityH5AdvertService;
+import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 
 /**
  * ClassName: ActivityH5AdvertServiceImpl 
@@ -61,7 +61,7 @@ public class ActivityH5AdvertServiceImpl implements ActivityH5AdvertService {
 		entity.setCreateTime(new Date());
 		entity.setUpdateTime(entity.getCreateTime());
 		entity.setUpdateUserId(entity.getCreateUserId());
-		entity.setStatus(ActivityStatus.notStarted.ordinal());
+		entity.setStatus(SeckillStatusEnum.noStart.ordinal());
 		mapper.add(entity);
 		//保存h5活动规则和内容
 		saveRoleAndContent(bo);
@@ -94,6 +94,12 @@ public class ActivityH5AdvertServiceImpl implements ActivityH5AdvertService {
 	public void update(ActivityH5AdvertBo bo) throws Exception {
 		ActivityH5Advert  advert = bo.getAdvert();
 		advert.setUpdateTime(new Date());
+		//如果修改的结束时间大于当前时间
+		if(advert.getEndTime().after(new Date())){
+			advert.setStatus(SeckillStatusEnum.ing.ordinal());
+		}else if(advert.getEndTime().before(new Date())){
+			advert.setStatus(SeckillStatusEnum.end.ordinal());
+		}
 		mapper.update(advert);
 		//先删除h5活动原规则和内容
 		//删除相关活动规则

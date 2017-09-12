@@ -58,6 +58,7 @@ import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
+import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
@@ -286,6 +287,17 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		//获取会员卡信息对应的订单
     	MemberTradeOrderDto order = (MemberTradeOrderDto) redisTemplateWrapper.get(dto.getOrderId() + orderKeyStr);
     	if(order == null){
+    		
+    		//订单取消不能支付将 生成的立即订单取消
+    		TradeOrder tradeOrder = new TradeOrder();
+			tradeOrder.setId(dto.getOrderId());
+			tradeOrder.setStatus(OrderStatusEnum.CANCELED);
+			tradeOrder.setCancelType(OrderCancelType.CANCEL_BY_BUYER);
+			tradeOrder.setUpdateTime(new Date());
+			tradeOrder.setOrderResource(OrderResourceEnum.MEMCARD);
+			//释放所有代金卷
+			tradeOrderService.updateOrderStatus(tradeOrder);
+    		
     		payResult = new MemberCardResultDto<>();
     		payResult.setCode(ResultCodeEnum.TRADE_CANCEL_OUT.getCode());
     		payResult.setMessage(ResultCodeEnum.TRADE_CANCEL_OUT.getDesc());

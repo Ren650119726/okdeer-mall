@@ -130,8 +130,8 @@ public class ExpressOrderCallbackApiImpl implements ExpressOrderCallbackApi {
                 resultMsgDto.setCode(callback.getOrderStatus());
                 resultMsgDto.setMsg(callback.getDescription());
             } else {
-                resultMsgDto.setCode(ExpressModeCheckEnum.SUCCESS.getCode());
-                resultMsgDto.setMsg("查询第三方信息异常");
+                resultMsgDto.setCode(ExpressModeCheckEnum.TRADE_ORDER_NULL.getCode());
+                resultMsgDto.setMsg(ExpressModeCheckEnum.TRADE_ORDER_NULL.getMsg());
             }
         } catch (Exception e) {
             resultMsgDto.setCode(ExpressModeCheckEnum.SUCCESS.getCode());
