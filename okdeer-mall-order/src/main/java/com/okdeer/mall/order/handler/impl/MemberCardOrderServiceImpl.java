@@ -66,6 +66,7 @@ import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.handler.MemberCardOrderService;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.GetPreferentialService;
+import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.TradeOrderItemVo;
@@ -111,6 +112,9 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	 */
 	@Resource
 	RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  checkFavourService;
+	
+	@Resource
+	private  TradeOrderPayService tradeOrderPayService;
 	
 	@Autowired
 	private RocketMQProducer rocketMQProducer;
@@ -380,22 +384,23 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		
 		//在线上查找是否有对应商品，在推送的时候已经放入
 		persity.setTradeOrderItem(BeanMapper.mapList(vo.getList(),TradeOrderItem.class));
-		//支付0元直接改为支付完成
-		if(vo.getPaymentAmount().compareTo(BigDecimal.ZERO) == 0){
-			persity.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
-		}else{
-			//将订单状态标记为：等待买家付款
-			persity.setStatus(OrderStatusEnum.UNPAID);
-		}
+		//将订单状态标记为：等待买家付款
+		persity.setStatus(OrderStatusEnum.UNPAID);
 		
 		logger.info("会员卡下单信息:{}",JsonMapper.nonEmptyMapper().toJson(persity));
 		//保存订单
 		tradeOrderService.insertTradeOrder(persity);
+		
 		if(vo.getActiviType() == ActivityTypeEnum.VONCHER){
 			//更新优惠券信息
 			updateActivityCoupons(vo.getOrderId(), vo.getRecordId(), vo.getCouponsId(), vo.getDeviceId());
 		}
 		resp.setResult(ResultCodeEnum.SUCCESS);
+		
+		//支付0元直接改为支付完成
+		if(vo.getPaymentAmount().compareTo(BigDecimal.ZERO) == 0){
+			tradeOrderPayService.wlletPay(BigDecimal.ZERO.toString(), persity);
+		}
 	}
 	
 	/**
