@@ -512,7 +512,7 @@
    <if test="status != null and status.name() != 'UNUSED'">
      AND record.`status` = #{status,jdbcType=TINYINT}
    </if>
-    ORDER BY record.collect_time DESC
+    ORDER BY record.effect_time DESC
   </select> 
   
   <!-- add by zhulq  新增aql  使用于以前的版本 我的代金券 -->
@@ -542,7 +542,7 @@
    <if test="status != null and status.name() != 'UNUSED'">
      AND record.`status` = #{status,jdbcType=TINYINT}
    </if>
-    ORDER BY record.collect_time DESC
+    ORDER BY record.effect_time DESC
   </select>
   
   <!-- yangq:根据领取人id、领取状态，店铺ID，查询领取的代金券详细信息 -->
@@ -826,7 +826,7 @@
 		SELECT 
 		  STATUS,COUNT(0) AS COUNT,
 		  CASE
-		    WHEN t.status = 0 
+		    WHEN t.status IN (0,3) 
 		    THEN 'unUse' 
 		    WHEN t.status = 1 
 		    THEN 'used' 
@@ -836,7 +836,15 @@
 		FROM
 		  activity_coupons_record t 
 		WHERE t.`collect_user_id` = #{userId} 
-		GROUP BY t.status 	
+		GROUP BY 
+			CASE
+			    WHEN t.status IN (0,3) 
+			    THEN 'unUse' 
+			    WHEN t.status = 1 
+			    THEN 'used' 
+			    WHEN t.status = 2 
+			    THEN 'expires' 
+		  	END 	
 	</select>
 	<!-- end by wushp 20160919 根据用户统计各种状态的代金券数量 -->
 	
