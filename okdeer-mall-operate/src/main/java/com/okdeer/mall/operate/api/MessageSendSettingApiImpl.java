@@ -316,4 +316,11 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		MQMessage anMessage = new MQMessage(TOPIC, (Serializable)JsonMapper.nonDefaultMapper().toJson(entity));
 		rocketMQProducer.sendMessage(anMessage);
 	}
+
+	@Override
+	public int closeMessage(MessageSendSettingDto messageDto) throws Exception {
+		MessageSendSetting entity = BeanMapper.map(messageDto, MessageSendSetting.class);
+		entity.setUpdateTime(new Date());
+		return messageSendSettingService.update(entity);
+	}
 }
