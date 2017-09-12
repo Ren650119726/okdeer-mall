@@ -423,13 +423,16 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				// 释放所有代金卷
 				activityCouponsRecordService.releaseConpons(tradeOrder);
 			}
-		} else if (tradeOrder.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY) {
+		} 
+		if (tradeOrder.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY) {
 			// 团购活动释放限购数量
 			activityGroupRecordService.updateDisabledByOrderId(tradeOrder.getId());
-		} else if (tradeOrder.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY) {
+		} 
+		if (tradeOrder.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY) {
 			// 秒杀活动释放购买记录
 			activitySeckillRecordService.updateStatusBySeckillId(tradeOrder.getId());
-		} else if (tradeOrder.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
+		}
+		if (tradeOrder.getActivityType() == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
 			// Begin V2.3 added by maojj 2017-04-22
 			// 释放用户参与满减活动的频次。规则与代金券保持一致。
 			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER
