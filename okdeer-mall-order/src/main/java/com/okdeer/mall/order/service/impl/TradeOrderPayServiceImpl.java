@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.annotation.Resource;
 
@@ -793,9 +792,15 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 	 */
 	private void setActiveAmount(TradeOrder order, BalancePayTradeDto payTradeVo) throws Exception {
 		// 优惠额退款 判断是否有优惠劵
-		if ((order.getPlatformPreferential() != null && order.getPlatformPreferential().compareTo(BigDecimal.ZERO) > 0)||
-				(order.getPinMoney()!=null && order.getPinMoney().compareTo(BigDecimal.ZERO) > 0)) {
-			payTradeVo.setPrefeAmount(order.getPlatformPreferential().add(order.getPinMoney()));
+		BigDecimal pice = BigDecimal.ZERO;
+		if (order.getPlatformPreferential() != null && order.getPlatformPreferential().compareTo(BigDecimal.ZERO) > 0) {
+			pice = pice.add(order.getPlatformPreferential());
+		}
+		if(order.getPinMoney()!=null && order.getPinMoney().compareTo(BigDecimal.ZERO) > 0){
+			pice = pice.add(order.getPinMoney());
+		}
+		if(pice.compareTo(BigDecimal.ZERO) > 0){
+			payTradeVo.setPrefeAmount(pice);
 			payTradeVo.setActivitier(yscWalletAccount);
 		}
 	}
