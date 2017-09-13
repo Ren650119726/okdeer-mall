@@ -275,6 +275,47 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			activityCouponsRandCodeMapper.batchInsert(couponsRandCodeList);
 		}
 	}
+	
+	/**
+	 * @Description: 根据发行量生成随机码并保存到数据库(增量)
+	 * @param coupons   
+	 * @author maojj
+	 * @date 2016年10月25日
+	 */
+	private void generateRandCodeAndSaveIncrement(ActivityCoupons coupons,Integer totalNum) {
+		// 随机码
+		Set<String> randCodeSet = null;
+		List<ActivityCouponsRandCode> couponsRandCodeList = null;
+		ActivityCouponsRandCode couponsRandCode = null;
+		// 总发行量
+//		int totalNum = coupons.getTotalNum().intValue();
+		// 根据总发行量，1000条处理一次的规则生成随机码并保存
+		// 循环处理次数
+		int loopNum = totalNum % MAX_NUM == 0 ? totalNum / MAX_NUM : totalNum / MAX_NUM + 1;
+		// 生成随机码的数量
+		int randCodeNum = 0;
+		for (int i = 0; i < loopNum; i++) {
+			randCodeNum = (i + 1) * MAX_NUM > totalNum ? (totalNum - i * MAX_NUM) : MAX_NUM;
+			randCodeSet = new HashSet<String>();
+			// 增加随机数
+			addRandCode(randCodeSet, randCodeNum);
+			couponsRandCodeList = new ArrayList<ActivityCouponsRandCode>();
+			for (String randCode : randCodeSet) {
+				couponsRandCode = new ActivityCouponsRandCode();
+				couponsRandCode.setId(UuidUtils.getUuid());
+				couponsRandCode.setCouponsId(coupons.getId());
+				couponsRandCode.setRandCode(randCode);
+				couponsRandCode.setIsExchange(WhetherEnum.not.ordinal());
+				couponsRandCode.setCreateUserId(coupons.getCreateUserId());
+				couponsRandCode.setCreateTime(coupons.getCreateTime());
+				couponsRandCode.setUpdateUserId(coupons.getUpdateUserId());
+				couponsRandCode.setUpdateTime(coupons.getUpdateTime());
+
+				couponsRandCodeList.add(couponsRandCode);
+			}
+			activityCouponsRandCodeMapper.batchInsert(couponsRandCodeList);
+		}
+	}
 
 	/**
 	 * @Description: 随机N个不重复的随机数
@@ -414,7 +455,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		// 先把老数据删掉
 		activityCouponsRandCodeMapper.deleteByCouponsId(coupons.getId());
 		// 如果代金券设置了需要生成随机码，则根据代金券的发行量生成随机码
-		if (coupons.getIsRandCode() == WhetherEnum.whether.ordinal()) {
+		if (coupons.getIsRandCode() != null && coupons.getIsRandCode() == WhetherEnum.whether.ordinal()) {
 			// (由于新增和修改 接收的对象用的不是同一个,只能重新转换一下)
 			ActivityCoupons activitycoupons = new ActivityCoupons();
 			BeanMapper.copy(coupons, activitycoupons);
@@ -424,6 +465,30 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			activitycoupons.setUpdateUserId(coupons.getUpdateUserId());
 			generateRandCodeAndSave(activitycoupons);
 		}
+	}
+	
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateCouponsIng(CouponsInfoQuery coupons) throws ServiceException {
+		ActivityCoupons source = activityCouponsMapper.selectById(coupons.getId());
+		// 如果代金券设置了需要生成随机码，则根据代金券的发行量生成随机码(增量)
+		if (source.getIsRandCode() != null && source.getIsRandCode() == WhetherEnum.whether.ordinal()) {
+			// (由于新增和修改 接收的对象用的不是同一个,只能重新转换一下)
+			ActivityCoupons activitycoupons = new ActivityCoupons();
+			BeanMapper.copy(coupons, activitycoupons);
+			activitycoupons.setUpdateTime(new Date());
+			activitycoupons.setCreateTime(new Date());
+			activitycoupons.setCreateUserId(coupons.getUpdateUserId());
+			activitycoupons.setUpdateUserId(coupons.getUpdateUserId());
+			
+			//增量的数字 是新填入的总发行量 减去 原数据的总发行量,如果为0,就不用重新生成了
+			if(source != null && source.getTotalNum() != null && coupons.getTotalNum() > source.getTotalNum()){
+				generateRandCodeAndSaveIncrement(activitycoupons,coupons.getTotalNum() - source.getTotalNum());
+			}
+		}
+		
+		// 更新基本信息
+		activityCouponsMapper.updateCoupons(coupons);
 	}
 
 	@Override

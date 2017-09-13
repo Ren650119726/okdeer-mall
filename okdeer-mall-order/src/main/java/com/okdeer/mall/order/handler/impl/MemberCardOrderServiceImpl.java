@@ -348,7 +348,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		resp.getData().setFavour(JsonDateUtil.priceConvertToString(vo.getPlatDiscountAmount(),2,3));
 		//店铺优惠金额
 		resp.getData().setStoreFavour(JsonDateUtil.priceConvertToString(vo.getDiscountAmount(),2,3));
-		resp.getData().setOrderResource(OrderResourceEnum.MEMCARD);
+		resp.getData().setOrderResource(OrderResourceEnum.MEMCARD.ordinal());
 		//设置店铺id
 		persity.setStoreId(vo.getBranchId());
 		//实付金额
@@ -456,6 +456,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		List<String> goods = Lists.newArrayList();
 		vo.getList().forEach(e -> goods.add(e.getGoodsSkuId()));
 		parambo.setSkuIdList(goods);
+		parambo.setDeviceId(vo.getDeviceId());
 		//设置可优惠金额
 		parambo.setTotalAmount(vo.getCanDiscountAmount());
 		return parambo;
