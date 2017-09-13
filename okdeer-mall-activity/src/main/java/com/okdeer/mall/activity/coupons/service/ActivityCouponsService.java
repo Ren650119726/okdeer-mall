@@ -100,6 +100,13 @@ public interface ActivityCouponsService {
 	void updateCoupons(CouponsInfoQuery coupons) throws ServiceException;
 	
 	/**
+	 * 更新活动进行中的代金券
+	 * @param coupons 代金券
+	 * @throws ServiceException 异常
+	 */
+	void updateCouponsIng(CouponsInfoQuery coupons) throws ServiceException;
+	
+	/**
 	 * 更新代金券表基本信息
 	 * @param coupons 代金券
 	 * @throws ServiceException 异常
