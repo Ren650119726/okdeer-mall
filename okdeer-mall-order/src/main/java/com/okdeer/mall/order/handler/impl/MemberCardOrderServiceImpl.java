@@ -177,7 +177,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		//默认无活动
 		vo.setActivityType(ActivityTypeEnum.NO_ACTIVITY);
 		//设置商品主图及店铺商品信息
-		//setGoodsStoreSkuInfo(vo);
+		setGoodsStoreSkuInfo(vo);
 		//设置为使用才进行查询优惠信息  并设置优惠信息
 		if(vo.isUserDiscount()){
 			//可以使用的优惠金额  即是 排除掉  不可使用优惠的   商品金额
