@@ -458,6 +458,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		List<String> goods = Lists.newArrayList();
 		vo.getList().forEach(e -> goods.add(e.getGoodsSkuId()));
 		parambo.setSkuIdList(goods);
+		parambo.setDeviceId(vo.getDeviceId());
 		//设置可优惠金额
 		parambo.setTotalAmount(vo.getCanDiscountAmount());
 		return parambo;

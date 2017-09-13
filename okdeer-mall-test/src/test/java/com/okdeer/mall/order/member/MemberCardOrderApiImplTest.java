@@ -20,8 +20,6 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.google.common.collect.Lists;
-import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.CommonResultCodeEnum;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
@@ -29,26 +27,12 @@ import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.jxc.bill.service.HykPayOrderServiceApi;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.base.MockUtils;
-import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.order.dto.MemberCardResultDto;
 import com.okdeer.mall.order.dto.MemberTradeOrderDto;
-import com.okdeer.mall.order.dto.PayInfoDto;
 import com.okdeer.mall.order.dto.PayInfoParamDto;
-import com.okdeer.mall.order.dto.PhysicalOrderApplyParamDto;
-import com.okdeer.mall.order.dto.PlaceOrderDto;
-import com.okdeer.mall.order.dto.StoreConsumerApplyParamDto;
-import com.okdeer.mall.order.entity.TradeOrderItemDetail;
-import com.okdeer.mall.order.handler.impl.MemberCardOrderServiceImpl;
+import com.okdeer.mall.order.handler.MemberCardOrderService;
 import com.okdeer.mall.order.service.MemberCardOrderApi;
-import com.okdeer.mall.order.service.StoreConsumeOrderService;
-import com.okdeer.mall.order.service.impl.JxcSynTradeorderRefundProcessLister;
-import com.okdeer.mall.order.service.impl.StockOperateServiceImpl;
-import com.okdeer.mall.order.service.impl.TradeMessageServiceImpl;
-import com.okdeer.mall.order.service.impl.TradeOrderRefundsServiceImpl;
-import com.okdeer.mall.order.vo.TradeOrderItemVo;
-
-import net.sf.json.JSONObject;
 /**
  * ClassName: MemberCardOrderApiImplTest 
  * @Description: 会员卡订单同步测试类
@@ -85,8 +69,8 @@ public class MemberCardOrderApiImplTest  extends BaseServiceTest {
 	}
 	
 	private void initMockDubbo(){
-		// mock dubbo服务MemberCardOrderServiceImpl
-		MemberCardOrderServiceImpl memberCardOrderServiceImpl = (MemberCardOrderServiceImpl) this.applicationContext.getBean(MemberCardOrderServiceImpl.class);
+		// mock dubbo服务
+		MemberCardOrderService memberCardOrderServiceImpl =  AopTestUtils.getTargetObject(this.applicationContext.getBean("memberCardOrderServiceImpl"));
 		ReflectionTestUtils.setField(memberCardOrderServiceImpl, "hykPayOrderServiceApi", hykPayOrderServiceApi);
 	}
 	public MemberCardOrderApiImplTest(int index,MemberTradeOrderDto memberTradeOrderDto) {
@@ -123,7 +107,7 @@ public class MemberCardOrderApiImplTest  extends BaseServiceTest {
 		//1、生成
 		String memberPayNum = memberCardOrderApi.getMemberPayNumber("141577260798e5eb9e1b8a0645b486c7", "Test_dev01");
 		//2、根据number获得用户信息
-		String userId = memberCardOrderApi.getUserIdByMemberCard(memberPayNum);
+		String userId = memberCardOrderApi.getUserIdByMemberCard(memberPayNum+"1");
 		Assert.assertTrue("141577260798e5eb9e1b8a0645b486c7".equals(userId));
 		String orderId = UuidUtils.getUuid();
 		
