@@ -48,7 +48,6 @@ import com.okdeer.mall.activity.mq.constants.ActivityCouponsTopic;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.enums.UseClientType;
-import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.MemberCardResultDto;
 import com.okdeer.mall.order.dto.MemberTradeOrderDto;
@@ -403,7 +402,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		
 		//支付0元直接改为支付完成
 		if(vo.getPaymentAmount().compareTo(BigDecimal.ZERO) == 0){
-			persity.setTradeNum(TradeNumUtil.getTradeNum());
 			tradeOrderPayService.wlletPay(BigDecimal.ZERO.toString(), persity);
 		}
 	}

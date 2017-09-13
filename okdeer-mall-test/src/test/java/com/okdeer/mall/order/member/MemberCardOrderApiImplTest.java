@@ -105,10 +105,11 @@ public class MemberCardOrderApiImplTest  extends BaseServiceTest {
 	@Rollback(true)
 	public void getMemberPayNumber() throws Exception{
 		//1、生成
-		String memberPayNum = memberCardOrderApi.getMemberPayNumber("141577260798e5eb9e1b8a0645b486c7", "Test_dev01");
+		String memberPayNum = memberCardOrderApi.getMemberPayNumber("141102938903bd0f97c9a9694854bd8c", "Test_dev01");
+		memberPayNum = memberPayNum + "1";
 		//2、根据number获得用户信息
-		String userId = memberCardOrderApi.getUserIdByMemberCard(memberPayNum+"1");
-		Assert.assertTrue("141577260798e5eb9e1b8a0645b486c7".equals(userId));
+		String userId = memberCardOrderApi.getUserIdByMemberCard(memberPayNum);
+		Assert.assertTrue("141102938903bd0f97c9a9694854bd8c".equals(userId));
 		String orderId = UuidUtils.getUuid();
 		
 		memberTradeOrderDto.setOrderId(orderId);
@@ -117,6 +118,7 @@ public class MemberCardOrderApiImplTest  extends BaseServiceTest {
 			e.setOrderId(orderId);
 			e.setId(orderId);
 		});
+		memberTradeOrderDto.setMemberPayNum(memberPayNum);
 		//4、推送改会员订单
 		memberCardOrderApi.pushMemberCardOrder(memberTradeOrderDto);
 		
