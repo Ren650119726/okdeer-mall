@@ -198,7 +198,7 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			}
 			tradeNum = result.getTradeNum();
 			tradeOrder = tradeOrderService.getByTradeNum(result.getTradeNum());
-			handler = payResultHandlerFactory.getByOrderType(tradeOrder.getType());
+			handler = payResultHandlerFactory.getByOrder(tradeOrder);
 			handler.handler(tradeOrder, result);
 		} catch (Exception e) {
 			logger.error("订单支付状态消息处理失败", e);
