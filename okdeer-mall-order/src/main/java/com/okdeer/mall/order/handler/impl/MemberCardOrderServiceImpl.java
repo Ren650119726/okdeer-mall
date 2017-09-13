@@ -48,7 +48,6 @@ import com.okdeer.mall.activity.mq.constants.ActivityCouponsTopic;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.enums.UseClientType;
-import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.MemberCardResultDto;
 import com.okdeer.mall.order.dto.MemberTradeOrderDto;
@@ -178,7 +177,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		//默认无活动
 		vo.setActivityType(ActivityTypeEnum.NO_ACTIVITY);
 		//设置商品主图及店铺商品信息
-		setGoodsStoreSkuInfo(vo);
+		//setGoodsStoreSkuInfo(vo);
 		//设置为使用才进行查询优惠信息  并设置优惠信息
 		if(vo.isUserDiscount()){
 			//可以使用的优惠金额  即是 排除掉  不可使用优惠的   商品金额
@@ -403,7 +402,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		
 		//支付0元直接改为支付完成
 		if(vo.getPaymentAmount().compareTo(BigDecimal.ZERO) == 0){
-			persity.setTradeNum(TradeNumUtil.getTradeNum());
 			tradeOrderPayService.wlletPay(BigDecimal.ZERO.toString(), persity);
 		}
 	}
