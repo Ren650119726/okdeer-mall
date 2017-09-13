@@ -382,10 +382,10 @@
 	     AND collect_type = #{collectType,jdbcType=TINYINT}
 	  </if>
 	  <!-- 领取状态 -->
-	  <if test="status != null and status.name() == 'UNUSED'">
+	  <if test="status != null and status == 0">
 	     AND `status` in (0,3)
 	  </if>
-	  <if test="status != null and status.name() != 'UNUSED'">
+	  <if test="status != null and status != 0">
 	     AND `status` = #{status,jdbcType=TINYINT}
 	  </if>
 	  <!-- 领取时间-->

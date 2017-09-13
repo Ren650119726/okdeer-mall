@@ -233,6 +233,7 @@
 				</configuration>
 			</plugin> 
 			
+			<!-- 检查单元测试代码覆盖率 -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>

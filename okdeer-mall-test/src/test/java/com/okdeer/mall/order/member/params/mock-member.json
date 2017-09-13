@@ -1,0 +1,65 @@
+Begin---
+[{
+    "discountAmount": 2,
+    "paymentAmount": 0.1,
+    "canDiscountAmount": 0.1,
+    "couponsFaceValue": 0,
+    "saleAmount": 0.10,
+    "branchId": "5592971b276511e6aaff00163e010eb1",
+    "orderNo": "",
+    "subZeroAmount": 0,
+    "ip": "121212",
+    "list": [
+        {
+            "storePreferential": 0,
+            "skuName": "散蛋",
+            "activityPrice": 0,
+            "activityQuantity": 0,
+            "skuId": "39cc704e83fe11e6823127f894e357cf",
+            "unitPrice": 0.10,
+            "quantity": 1,
+            "weight": 1.000,
+            "serviceAssurance": 0,
+            "totalAmount": 2.10,
+            "createTime": 1481099399000,
+            "preferentialPrice": 0,
+            "pricingType": 0
+        }
+    ],
+    "platDiscountAmount": 0,
+    "userDiscount": false,
+    "totalAmount": 2.10,
+    "createTime": 1481099399000
+},{
+    "discountAmount": 2,
+    "paymentAmount": 0.1,
+    "canDiscountAmount": 20.1,
+    "couponsFaceValue": 0,
+    "saleAmount": 20.10,
+    "branchId": "5592971b276511e6aaff00163e010eb1",
+    "orderNo": "",
+    "subZeroAmount": 0,
+    "ip": "121212",
+    "list": [
+        {
+            "storePreferential": 0,
+            "skuName": "散蛋",
+            "activityPrice": 0,
+            "activityQuantity": 0,
+            "skuId": "39cc704e83fe11e6823127f894e357cf",
+            "unitPrice": 20.10,
+            "quantity": 1,
+            "weight": 1.000,
+            "serviceAssurance": 0,
+            "totalAmount": 22.10,
+            "createTime": 1481099399000,
+            "preferentialPrice": 0,
+            "pricingType": 0
+        }
+    ],
+    "platDiscountAmount": 0,
+    "userDiscount": false,
+    "totalAmount": 22.10,
+    "createTime": 1481099399000
+}]
+End---

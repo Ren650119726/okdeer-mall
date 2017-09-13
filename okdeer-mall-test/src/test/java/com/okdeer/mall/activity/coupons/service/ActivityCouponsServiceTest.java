@@ -19,6 +19,7 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.jxc.common.utils.DateUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
+import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.enums.CashDelivery;
@@ -102,21 +103,21 @@ public class ActivityCouponsServiceTest extends BaseServiceTest {
 		assertNotNull(update);
 	}
 
+	//通过id获取对象(同时获取其他关联信息,运营后台用)
 	@Test
-	public void testFindById() {
-//		fail("Not yet implemented");
+	public void getCouponsInfoById() throws Exception{
+		String id = "8a8080895e703ee2015e73df2145000d";
+		CouponsInfoQuery co = service.getCouponsInfoById(id);		
+		assertNotNull(co);
 	}
 
-//	@Test
-//	public void testDeleteById() {
-//		fail("Not yet implemented");
-//	}
-
-//	@Test
-//	public void testFindByParam() {
-//		ActivityH5AdvertQParam param = new ActivityH5AdvertQParam();
-//		param.setName("标题");
-//		PageUtils<ActivityH5Advert> page = service.findByParam(param, 1, 10);
-//		System.out.println(page.getList().size());
-//	}
+	//通过查询条件获取分页list (运营后台用)
+	@Test
+	public void getCouponsInfo() throws Exception{
+		CouponsInfoParams param = new CouponsInfoParams();
+		param.setBelongType("0");
+		param.setName("");
+		PageUtils<CouponsInfoQuery> page = service.getCouponsInfo(param,1,10);
+		System.out.println("list.size:" + page.getList().size());
+	}
 }

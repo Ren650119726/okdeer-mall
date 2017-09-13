@@ -900,6 +900,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			map.put("code", 101);
 			return false;
 		}
+		
+		record.setCouponsId(activityCoupons.getId());
+		record.setCouponsCollectId(activityCoupons.getActivityId());
+		record.setCollectUserId(userId);
+		
 		Date collectTime = DateUtils.getDateStart(new Date());
 		ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto = new ActivityCouponsRecordQueryParamDto();
 		activityCouponsRecordQueryParamDto.setCouponsId(activityCoupons.getId());

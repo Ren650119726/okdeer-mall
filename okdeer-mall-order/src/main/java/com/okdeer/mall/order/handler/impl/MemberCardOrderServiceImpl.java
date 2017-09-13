@@ -48,6 +48,7 @@ import com.okdeer.mall.activity.mq.constants.ActivityCouponsTopic;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.enums.UseClientType;
+import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.MemberCardResultDto;
 import com.okdeer.mall.order.dto.MemberTradeOrderDto;
@@ -348,7 +349,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		resp.getData().setFavour(JsonDateUtil.priceConvertToString(vo.getPlatDiscountAmount(),2,3));
 		//店铺优惠金额
 		resp.getData().setStoreFavour(JsonDateUtil.priceConvertToString(vo.getDiscountAmount(),2,3));
-		resp.getData().setOrderResource(OrderResourceEnum.MEMCARD);
+		resp.getData().setOrderResource(OrderResourceEnum.MEMCARD.ordinal());
 		//设置店铺id
 		persity.setStoreId(vo.getBranchId());
 		//实付金额
@@ -402,6 +403,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		
 		//支付0元直接改为支付完成
 		if(vo.getPaymentAmount().compareTo(BigDecimal.ZERO) == 0){
+			persity.setTradeNum(TradeNumUtil.getTradeNum());
 			tradeOrderPayService.wlletPay(BigDecimal.ZERO.toString(), persity);
 		}
 	}
@@ -456,6 +458,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		List<String> goods = Lists.newArrayList();
 		vo.getList().forEach(e -> goods.add(e.getGoodsSkuId()));
 		parambo.setSkuIdList(goods);
+		parambo.setDeviceId(vo.getDeviceId());
 		//设置可优惠金额
 		parambo.setTotalAmount(vo.getCanDiscountAmount());
 		return parambo;

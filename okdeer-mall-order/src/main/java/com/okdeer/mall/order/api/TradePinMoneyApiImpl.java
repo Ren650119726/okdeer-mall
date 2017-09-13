@@ -9,10 +9,15 @@ package com.okdeer.mall.order.api;
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+
+import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.redis.util.RedisLockRegistry;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.utils.DateUtils;
@@ -53,7 +58,10 @@ public class TradePinMoneyApiImpl implements TradePinMoneyApi {
 
 	@Autowired
 	private TradePinMoneyUseService tradePinMoneyUseService;
-
+	
+	@Resource
+	private RedisLockRegistry redisLockRegistry;
+	
 	/**
 	 * 查询我的零花钱余额
 	 */
@@ -139,12 +147,22 @@ public class TradePinMoneyApiImpl implements TradePinMoneyApi {
 			obtain.setValidTime(calendar.getTime());
 		}
 		LOGGER.info("零花钱领取对象参数===：{}" ,JsonMapper.nonDefaultMapper().toJson(obtain));
-		tradePinMoneyObtainService.add(obtain);
+		
+		// 已活动和用户id为key 进行加锁
+		String lockKey = String.format("%s:%s", moneyDto.getId(),dto.getUserId());
+		Lock lock = redisLockRegistry.obtain(lockKey);
+		try {
+			if(lock.tryLock(5,TimeUnit.SECONDS)){
+				tradePinMoneyObtainService.add(obtain);
+			}
+		}finally {
+		    lock.unlock();
+		}
 	}
 
 	@Override
 	public BigDecimal findPinMoneyObtainAmount(TradePinMoneyQueryDto queryDto) {
 		return tradePinMoneyObtainService.findPinMoneyObtainAmount(queryDto);
 	}
-
+	
 }
