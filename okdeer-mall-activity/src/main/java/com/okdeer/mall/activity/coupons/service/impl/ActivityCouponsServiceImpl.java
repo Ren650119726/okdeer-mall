@@ -63,6 +63,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsOrderRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordBeforeService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
@@ -148,6 +149,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 	@Resource
 	private ActivityCouponsRecordBeforeService activityCouponsRecordBeforeService;
+	
+	@Resource 
+	private ActivityCouponsReceiveStrategy activityCouponsReceiveStrategy;
 	
 	private static final int MAX_NUM = 1000;
 
@@ -1120,6 +1124,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		calendar.set(Calendar.MILLISECOND, 0);
 		calendar.add(Calendar.DAY_OF_YEAR, activityCoupons.getValidDay());
 		activityCouponsRecord.setValidTime(calendar.getTime());
+		activityCouponsReceiveStrategy.process(activityCouponsRecord, activityCoupons);
 		return activityCouponsRecord;
 	}
 }
