@@ -15,6 +15,7 @@
     <result column="thrid_code" property="thridCode" jdbcType="VARCHAR" />
     <result column="device_id" property="deviceId" jdbcType="VARCHAR" />
     <result column="rec_date" property="recDate" jdbcType="VARCHAR" />
+    <result column="effect_time" property="effectTime" jdbcType="TIMESTAMP" />
   </resultMap>
   
    <resultMap id="VoResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo" extends="BaseResultMap">
@@ -24,7 +25,7 @@
   </resultMap>
   <sql id="Base_Column_List" >
     id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id, 
-    valid_time, status, order_id, room_id,thrid_code, device_id, rec_date
+    valid_time, status, order_id, room_id,thrid_code, device_id, rec_date, effect_time
   </sql>
   <sql id="condition" >
     <if test="null!=params" >
@@ -60,11 +61,11 @@
     insert into activity_coupons_record (id, collect_type, coupons_id, 
       coupons_collect_id, collect_time, collect_user_id, 
       valid_time, status, order_id, 
-      room_id, device_id, rec_date)
+      room_id, device_id, rec_date, effect_time)
     values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=TINYINT}, #{couponsId,jdbcType=VARCHAR}, 
       #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUserId,jdbcType=VARCHAR}, 
       #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=TINYINT}, #{orderId,jdbcType=VARCHAR}, 
-      #{roomId,jdbcType=VARCHAR}, #{deviceId,jdbcType=VARCHAR},#{recDate,jdbcType=VARCHAR})
+      #{roomId,jdbcType=VARCHAR}, #{deviceId,jdbcType=VARCHAR},#{recDate,jdbcType=VARCHAR},#{effectTime,jdbcType=TIMESTAMP})
   </insert>
   <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
     insert into activity_coupons_record
@@ -108,6 +109,9 @@
       <if test="recDate != null" >
           rec_date,
       </if>
+      <if test="effectTime != null" >
+          effect_time,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -149,6 +153,9 @@
       <if test="recDate != null" >
     	#{recDate,jdbcType=VARCHAR},
       </if>
+      <if test="effectTime != null" >
+        #{effectTime,jdbcType=TIMESTAMP},
+       </if>
     </trim>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord" >
@@ -186,6 +193,9 @@
       </if>
       <if test="recDate != null" >
           rec_date = #{recDate,jdbcType=VARCHAR},
+      </if>
+      <if test="effectTime != null" >
+          effect_time = #{effectTime,jdbcType=TIMESTAMP},
       </if>
     </set>
     where id = #{id,jdbcType=VARCHAR}
@@ -372,7 +382,10 @@
 	     AND collect_type = #{collectType,jdbcType=TINYINT}
 	  </if>
 	  <!-- 领取状态 -->
-	  <if test="status != null">
+	  <if test="status != null and status.name() == 'UNUSED'">
+	     AND `status` in (0,3)
+	  </if>
+	  <if test="status != null and status.name() != 'UNUSED'">
 	     AND `status` = #{status,jdbcType=TINYINT}
 	  </if>
 	  <!-- 领取时间-->
@@ -478,8 +491,8 @@
    coupons.id AS couponsId,coupons.`name` AS couponsName,coupons.face_value,coupons.arrive_limit,
    coupons.valid_day,coupons.every_limit,coupons.is_cash_delivery,coupons.is_category_limit,coupons.valid_day,
    coupons.type AS type,coupons.is_category AS is_category, coupons.area_type as coupons_area_type, 
-   record.id,record.collect_time,record.valid_time,coupons.use_user_type,coupons.use_client_type, 
-   coupons.device_day_limit, coupons.account_day_limit,		
+   record.id,record.collect_time,record.effect_time,record.valid_time,record.status,coupons.use_user_type,coupons.use_client_type, 
+   coupons.device_day_limit, coupons.account_day_limit,	
    CASE
    WHEN coupons.type = 1 THEN nav.name
    WHEN coupons.type = 2 THEN spu.name
@@ -493,10 +506,13 @@
    <if test="collectUserId != null and collectUserId != ''">
      AND record.collect_user_id = #{collectUserId,jdbcType=VARCHAR}
    </if>
-   <if test="status != null">
+   <if test="status != null and status.name() == 'UNUSED'">
+     AND record.`status` in (0,3)
+   </if>
+   <if test="status != null and status.name() != 'UNUSED'">
      AND record.`status` = #{status,jdbcType=TINYINT}
    </if>
-    ORDER BY record.collect_time DESC
+    ORDER BY record.effect_time DESC
   </select> 
   
   <!-- add by zhulq  新增aql  使用于以前的版本 我的代金券 -->
@@ -520,10 +536,13 @@
    <if test="collectUserId != null and collectUserId != ''">
      AND record.collect_user_id = #{collectUserId,jdbcType=VARCHAR}
    </if>
-   <if test="status != null">
+    <if test="status != null and status.name() == 'UNUSED'">
+     AND record.`status` in (0,3)
+   </if>
+   <if test="status != null and status.name() != 'UNUSED'">
      AND record.`status` = #{status,jdbcType=TINYINT}
    </if>
-    ORDER BY record.collect_time DESC
+    ORDER BY record.effect_time DESC
   </select>
   
   <!-- yangq:根据领取人id、领取状态，店铺ID，查询领取的代金券详细信息 -->
@@ -596,7 +615,7 @@
 		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">  
   			#{item}  
  		</foreach>  
- 		and status = 0
+ 		and status IN(0,3)
     </update>
     
    <select id="selectAllVendorById" parameterType="map" resultMap="BaseResultMap">
@@ -639,7 +658,7 @@
    <insert id="insertSelectiveBatch" parameterType="list" >
     insert into activity_coupons_record
         (id, collect_type, coupons_id, coupons_collect_id, collect_time, 
-         collect_user_id, valid_time, status, order_id, room_id) values
+         collect_user_id, valid_time, status, order_id, room_id,effect_time) values
      <foreach collection="list" item="item" index="index" separator="," >
        (#{item.id,jdbcType=VARCHAR},
         #{item.collectType,jdbcType=TINYINT},
@@ -650,15 +669,16 @@
         #{item.validTime,jdbcType=TIMESTAMP},
         #{item.status,jdbcType=TINYINT},
         #{item.orderId,jdbcType=VARCHAR},
-        #{item.roomId,jdbcType=VARCHAR}
+        #{item.roomId,jdbcType=VARCHAR},
+        #{item.effectTime,jdbcType=TIMESTAMP}
         )
      </foreach>
   </insert> 
-  <!--  从预领取记录中批量插入代金券  tuzhd -->
+  <!--  从预领取记录中批量插入代金券  tuzhd 预领取表中的领取时间即为生效时间-->
   <insert id="insertBatchRecordByBefore" parameterType="list" >
     insert into activity_coupons_record
         (id, collect_type, coupons_id, coupons_collect_id, collect_time, 
-         collect_user_id, valid_time, status, order_id, room_id) values
+         collect_user_id, valid_time, status, order_id, room_id, effect_time) values
      <foreach collection="list" item="item" index="index" separator="," >
        (#{item.id,jdbcType=VARCHAR},
         #{item.collectType,jdbcType=TINYINT},
@@ -669,7 +689,8 @@
         #{item.validTime,jdbcType=TIMESTAMP},
         #{item.status,jdbcType=TINYINT},
         #{item.orderId,jdbcType=VARCHAR},
-        #{item.roomId,jdbcType=VARCHAR}
+        #{item.roomId,jdbcType=VARCHAR},
+        #{item.collectTime,jdbcType=TIMESTAMP}
         )
      </foreach>
   </insert> 
@@ -805,7 +826,7 @@
 		SELECT 
 		  STATUS,COUNT(0) AS COUNT,
 		  CASE
-		    WHEN t.status = 0 
+		    WHEN t.status IN (0,3) 
 		    THEN 'unUse' 
 		    WHEN t.status = 1 
 		    THEN 'used' 
@@ -815,7 +836,15 @@
 		FROM
 		  activity_coupons_record t 
 		WHERE t.`collect_user_id` = #{userId} 
-		GROUP BY t.status 	
+		GROUP BY 
+			CASE
+			    WHEN t.status IN (0,3) 
+			    THEN 'unUse' 
+			    WHEN t.status = 1 
+			    THEN 'used' 
+			    WHEN t.status = 2 
+			    THEN 'expires' 
+		  	END 	
 	</select>
 	<!-- end by wushp 20160919 根据用户统计各种状态的代金券数量 -->
 	
@@ -860,7 +889,7 @@
    <!-- begin by:yangq 保存邀请码记录 -->
    <insert id="saveActivityCouponsRecord" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord">
         insert into activity_coupons_record(
-			id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id, valid_time,status,order_id,room_id
+			id, collect_type, coupons_id, coupons_collect_id, collect_time, collect_user_id, valid_time,status,order_id,room_id,effect_time
 		)values(
             #{id,jdbcType=VARCHAR},
             #{collectType,jdbcType=INTEGER},
@@ -870,7 +899,8 @@
             #{validTime,jdbcType=VARCHAR},
             #{status,jdbcType=INTEGER},
             #{orderId,jdbcType=VARCHAR},
-            #{roomId,jdbcType=VARCHAR}
+            #{roomId,jdbcType=VARCHAR},
+            #{effectTime,jdbcType=TIMESTAMP}
         )
 	</insert>
    <!-- end by:yangq 保存邀请码记录 -->
@@ -1021,4 +1051,12 @@
    		</where>
    </select>
 
+	<!-- Begin V2.6.0_P02 added by maojj 2017-09-09 -->
+	<select id="findForJob" parameterType="date" resultMap="BaseResultMap">
+    	SELECT <include refid="Base_Column_List" />
+     	FROM activity_coupons_record 
+     	WHERE (status IN (0,3) AND valid_time &lt;= #{currentDate,jdbcType=TIMESTAMP})
+     	OR (status = 3 AND effect_time &lt;= #{currentDate,jdbcType=TIMESTAMP})
+  	</select>
+  	<!-- End V2.6.0_P02 added by maojj 2017-09-09 -->
 </mapper> 

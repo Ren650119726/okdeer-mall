@@ -1,5 +1,6 @@
 package com.okdeer.mall.activity.coupons.mapper;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,7 +9,6 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.bo.FavourParamBO;
-import com.okdeer.mall.activity.coupons.bo.ActivityCouponsRecordQueryParamBo;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -372,4 +372,14 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @date 2017年8月26日
 	 */
 	int selectOrderCountByParams(ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto);
+	
+		
+	/**
+	 * @Description: 根据当前时间查询需要修改代金券状态的记录
+	 * @param currentDate
+	 * @return   
+	 * @author maojj
+	 * @date 2017年9月9日
+	 */
+	List<ActivityCouponsRecord> findForJob(Date currentDate);
 }

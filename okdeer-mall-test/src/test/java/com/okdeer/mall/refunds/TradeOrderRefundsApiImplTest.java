@@ -21,7 +21,6 @@ import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,17 +36,23 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.common.consts.DescriptConstants;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.base.MockUtils;
-import com.okdeer.mall.common.vo.PageResultVo;
 import com.okdeer.mall.order.api.PlaceOrderApiImplTest;
 import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
 import com.okdeer.mall.order.dto.OrderRefundsDto;
+import com.okdeer.mall.order.dto.PhysOrderApplyRefundParamDto;
 import com.okdeer.mall.order.dto.PhysicalOrderApplyDto;
 import com.okdeer.mall.order.dto.PhysicalOrderApplyParamDto;
 import com.okdeer.mall.order.dto.StoreConsumerApplyDto;
 import com.okdeer.mall.order.dto.StoreConsumerApplyParamDto;
+import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.RefundOrderTypeEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
+import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.service.StoreConsumeOrderService;
 import com.okdeer.mall.order.service.TradeOrderItemDetailService;
 import com.okdeer.mall.order.service.TradeOrderRefundsApi;
@@ -97,10 +102,10 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 	 */
 	private List<TradeOrderItemDetail> tradeOrderItemDetailList;
 	
-//	private List<TradeOrderRefunds> tradeOrderRefundsList;
-//	
-//	@Autowired
-//	private TradeOrderRefundsService tradeOrderRefundsService;
+	@Resource
+	private TradeOrderMapper tradeOrderMapper;
+	@Resource
+	private TradeOrderItemMapper tradeOrderItemMapper;
 	
 	private StoreConsumerApplyParamDto storeParamDto;
 	private int index;
@@ -182,53 +187,6 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 	}
 	
 	@Test
-	public void findCountCharge() throws Exception {
-		//查询退款中状态、第三方支付的充值退款记录数（用于财务系统）
-		Integer count = tradeOrderRefundsApiImpl.findCountCharge();
-		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),count);
-		
-	}
-	@Test
-	public void findCountRefunds() throws Exception {
-		//投诉订单待退款数统计
-		Integer count = tradeOrderRefundsApiImpl.findComplainUnRefundSum();
-		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),count);
-	}
-	
-	@Test
-	public void findUnRefundSum() throws Exception {
-		//退款单待退款数统计
-		Integer count = tradeOrderRefundsApiImpl.findUnRefundSum();
-		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),count);
-	}
-	
-	@Test
-	public void findeChargeRefundsByParams() throws Exception {
-		Map<String, Object> params =  new HashMap<String,Object>();
-		params.put("pageSize", "10");
-		params.put("pageNumber", "1");
-		params.put("paymentMethod", "0");//余额支付
-		//查询充值退款列表（用于财务系统，分页）
-		PageResultVo<OrderRefundsDto> list = tradeOrderRefundsApiImpl.findeChargeRefundsByParams(params);
-		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),list);
-		params.put("paymentMethod", null);
-		list = tradeOrderRefundsApiImpl.findeChargeRefundsByParams(params);
-		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),list);
-	}
-	
-	@Test
-	public void findeChargeRefundsListByParams() throws Exception {
-		Map<String, Object> params =  new HashMap<String,Object>();
-		params.put("paymentMethod", "0");//余额支付
-		//查询充值退款列表（用于财务系统，不分页）
-		List<OrderRefundsDto> list = tradeOrderRefundsApiImpl.findeChargeRefundsListByParams(params);
-		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),list);
-		params.put("paymentMethod", null);
-		list = tradeOrderRefundsApiImpl.findeChargeRefundsListByParams(params);
-		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),list);
-	}
-	
-	@Test
 	@Rollback(true)
 	@Transactional
 	public void updateRefundsStatus() throws Exception {
@@ -245,6 +203,25 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 			boolean count = tradeOrderRefundsApiImpl.updateRefundsStatus(result.getList().get(0).getId(), "9", result.getList().get(0).getBuyerUserId());
 			Assert.assertTrue(count);
 		}
+	}
+	
+	@Test
+	@Rollback(true)
+	@Transactional
+	public void applyRefund() throws Exception {
+		PhysOrderApplyRefundParamDto applyRefundParamDto=new PhysOrderApplyRefundParamDto();
+		Map<String,Object> param  = new HashMap<String,Object>();
+		param.put("storeId", "56583c03276511e6aaff00163e010eb1");
+		param.put("status", 5);
+		List<TradeOrder> order = tradeOrderMapper.selectByParams(param);
+		List<TradeOrderItem> items = tradeOrderItemMapper.selectOrderItemListById(order.get(0).getId());
+		applyRefundParamDto.setTradeOrder(order.get(0));
+		applyRefundParamDto.setTradeOrderItem(items.get(0));
+		applyRefundParamDto.setMemo("1111");
+		applyRefundParamDto.setReason("22222");
+		applyRefundParamDto.setOrderResource(OrderResourceEnum.YSCAPP);
+		//查询充值退款列表
+		Assert.assertNotNull(tradeOrderRefundsApiImpl.applyRefund(applyRefundParamDto, RefundOrderTypeEnum.PHYSICAL_ORDER));
 	}
 	
 }

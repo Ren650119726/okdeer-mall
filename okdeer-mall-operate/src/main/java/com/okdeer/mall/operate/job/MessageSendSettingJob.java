@@ -37,6 +37,7 @@ import com.okdeer.mall.member.member.dto.SysBuyerLocateInfoDto;
 import com.okdeer.mall.member.member.service.SysBuyerLocateInfoServiceApi;
 import com.okdeer.mall.operate.entity.MessageSendSelectArea;
 import com.okdeer.mall.operate.entity.MessageSendSetting;
+import com.okdeer.mall.operate.enums.MessageSendStatusEnum;
 import com.okdeer.mall.operate.service.MessageSendSelectAreaService;
 import com.okdeer.mall.operate.service.MessageSendSettingService;
 import com.okdeer.mall.order.constant.OrderMsgConstant;
@@ -110,7 +111,7 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 			
 			// 1 查询当前时间未推送的所有的消息列表
 			Date sendTime = new Date();
-			List<MessageSendSetting> messageSendList = messageSendSettingService.findMessageListByStatus(0,sendTime);
+			List<MessageSendSetting> messageSendList = messageSendSettingService.findMessageListByStatus(MessageSendStatusEnum.noSend.ordinal(),sendTime);
 			if (CollectionUtils.isNotEmpty(messageSendList)) {
 				for (MessageSendSetting messageSend : messageSendList) {
 					//2 获取要发送的用户对象列表 
@@ -191,7 +192,7 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
-		infoList.forEach(user -> {
+		for(SysBuyerUser user : infoList) {
 			if(StringUtils.isNotEmpty(user.getPhone())){
 				PushUserVo pushUser = new PushUserVo();
 				pushUser.setUserId(user.getId());
@@ -200,11 +201,19 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 				pushUser.setMobile(user.getPhone());
 				
 				userList.add(pushUser);
+				//分批推送 每100条推送一次
+				if(userList.size()>=100){
+					pushMsgVo.setUserList(userList);
+					sendMessage(pushMsgVo);
+					userList.clear();
+				}
 			}
-		});
-		// 查询的用户信息
-		pushMsgVo.setUserList(userList);
-		sendMessage(pushMsgVo);
+		}
+		// 用户信息不为空时 发送消息
+		if(CollectionUtils.isNotEmpty(userList)){
+			pushMsgVo.setUserList(userList);
+			sendMessage(pushMsgVo);
+		}
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

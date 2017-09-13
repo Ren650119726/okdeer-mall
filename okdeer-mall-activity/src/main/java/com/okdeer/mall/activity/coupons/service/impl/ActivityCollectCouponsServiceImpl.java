@@ -73,6 +73,7 @@ import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.activity.dto.TakeActivityCouponParamDto;
 import com.okdeer.mall.activity.dto.TakeActivityCouponResultDto;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.system.mapper.SysBuyerUserMapper;
 import com.okdeer.mall.system.mapper.SysUserMapper;
@@ -169,6 +170,9 @@ public class ActivityCollectCouponsServiceImpl
 	 */
 	@Reference(version = "1.0.0", check = false)
 	IPsmsAgentServiceApi iPsmsAgentServiceApi;
+	
+	@Autowired
+	private ActivityCouponsReceiveStrategy activityCouponsReceiveStrategy;
 
 	@Transactional(rollbackFor = Exception.class)
 	public void save(ActivityCollectCoupons activityCollectCoupons) {
@@ -528,6 +532,18 @@ public class ActivityCollectCouponsServiceImpl
 				activityCouponsList = vo.getActivityCoupons();
 				if (activityCouponsList != null && activityCouponsList.size() > 0) {
 					for (ActivityCoupons activityCoupons : activityCouponsList) {
+						// Begin V2.6.0_P02 added by maojj 2017-09-11
+						// 根据代金券的设置设置代金券的开始时间和结束时间
+						activityCoupons.setStartTime(activityCouponsReceiveStrategy.getEffectTime(activityCoupons));
+						// 代金券失效时间
+						Date expireTime = activityCouponsReceiveStrategy.getExpireTime(activityCoupons);
+						// 失效时间为0点0分0秒，给用户展示将时间往后推迟一天。
+						Calendar cal = Calendar.getInstance();
+						cal.setTime(expireTime);
+						cal.add(Calendar.DATE, -1);
+						activityCoupons.setEndTime(cal.getTime());
+						// End V2.6.0_P02 added by maojj 2017-09-11
+						
 						activityCouponsRecord.setCouponsId(activityCoupons.getId());
 						activityCouponsRecord.setCollectType(ActivityCouponsType.coupons.ordinal());
 						// 当前登陆用户id
@@ -698,19 +714,9 @@ public class ActivityCollectCouponsServiceImpl
 			} else {
 				log.info("userId:" + userId + "==activityCouponId:" + activityCoupon.getId());
 				activityCouponsRecord.setId(UuidUtils.getUuid());
-				Date date = new Date();
-				Calendar calendar = Calendar.getInstance();
-				calendar.setTime(date);
-				calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0,
-						0, 0);
-				calendar.set(Calendar.MILLISECOND, 0);
 				activityCouponsRecord.setCouponsId(activityCoupon.getId());
 				activityCouponsRecord.setCouponsCollectId(activityCoupon.getActivityId());
-				activityCouponsRecord.setCollectTime(calendar.getTime());
-				activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
-				calendar.add(Calendar.DAY_OF_YEAR, activityCoupon.getValidDay());
-				activityCouponsRecord.setValidTime(calendar.getTime());
-
+				activityCouponsReceiveStrategy.process(activityCouponsRecord, activityCoupon);
 				activityCouponsRecordMapper.insertSelective(activityCouponsRecord);
 				// 更新代金券剩余数量
 				int rows = activityCouponsMapper.updateRemainNum(activityCoupon.getId());

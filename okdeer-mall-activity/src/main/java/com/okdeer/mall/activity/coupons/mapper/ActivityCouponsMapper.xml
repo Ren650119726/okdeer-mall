@@ -34,6 +34,10 @@
         <result property="useClientType" column="use_client_type" javaType="com.okdeer.mall.common.enums.UseClientType" jdbcType="TINYINT"/> 
         <result property="deviceDayLimit" column="device_day_limit" javaType="integer" jdbcType="INTEGER"/>
         <result property="accountDayLimit" column="account_day_limit" javaType="integer" jdbcType="INTEGER"/>
+        <!-- Begin V2.6.0_P01 added by maojj 2017-09-09 -->
+        <result column="effect_day" property="effectDay" jdbcType="INTEGER" />
+        <result column="term_type" property="termType"  javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsTermType" jdbcType="TINYINT" />
+        <!-- Begin V2.6.0_P01 added by maojj 2017-09-09 -->
     </resultMap>
     
     <resultMap id="CouponsVoResultMap" type="com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery" extends="CouponsResultMap">
@@ -148,7 +152,7 @@
 	<sql id="BaseSelectSQL">
         id, name, activity_id, belong_type, face_value, total_num, used_num, remain_num, arrive_limit, valid_day, every_limit,
 	    is_cash_delivery, is_category_limit, code, exchange_code, area_type, create_user_id, create_time, update_user_id, update_time, disabled ,type,is_category
-	    ,device_day_limit,account_day_limit,use_client_type,use_user_type
+	    ,device_day_limit,account_day_limit,use_client_type,use_user_type,effect_day,term_type,start_time,end_time
     </sql>
     
    <!--  新增    根据代金卷名字和优惠码查询 名字和优惠码要唯一 -->
@@ -182,7 +186,7 @@
 		SELECT ac.id, ac.name, acc.name as activity_name, ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, ac.used_num, 
 		       ac.remain_num, ac.arrive_limit, ac.valid_day, ac.every_limit, ac.is_cash_delivery, ac.is_category_limit, 
 		       ac.code,ac.exchange_code, ac.area_type, ac.create_user_id, ac.create_time, ac.update_user_id, ac.update_time, 
-		       ac.disabled ,ac.type,ac.is_category,ac.is_rand_code
+		       ac.disabled ,ac.type,ac.is_category,ac.is_rand_code,ac.term_type,ac.effect_day,ac.start_time,ac.end_time
 		FROM activity_coupons ac
         left join activity_collect_coupons acc on ac.activity_id = acc.id
         WHERE 1=1
@@ -234,7 +238,7 @@
 	          ac.valid_day, ac.every_limit,ac.is_cash_delivery, ac.is_category_limit, ac.code,ac.exchange_code, ac.area_type, 
 	          ac.create_user_id, ac.create_time, ac.update_user_id, ac.update_time, ac.disabled, a.area_id, a.type as activityCouponsAreaType, c.community_id,
 	          c.community_name, c.city_id, e.store_name_area, e.storeCityId, e.store_id,ac.is_rand_code,ac.description,ac.start_time,ac.end_time,
-	          ac.use_user_type,ac.use_client_type,ac.device_day_limit,ac.account_day_limit
+	          ac.use_user_type,ac.use_client_type,ac.device_day_limit,ac.account_day_limit,ac.effect_day,ac.term_type
 	  FROM activity_coupons ac 
 	  left join activity_coupons_area a on a.coupons_id = ac.id
 	  left join (SELECT b.id, b.coupons_id, b.community_id, ps.name AS community_name, ps.city_id 
@@ -253,18 +257,19 @@
 	     every_limit, is_cash_delivery, is_category_limit,
 	     exchange_code, area_type, create_user_id, 
 	     create_time, update_user_id, update_time, disabled,type,is_category,is_rand_code,
-	     description,start_time,end_time,use_user_type,use_client_type,device_day_limit,account_day_limit)
+	     description,start_time,end_time,use_user_type,use_client_type,device_day_limit,account_day_limit,effect_day,term_type)
 	     
 	     VALUES(#{id, jdbcType=VARCHAR}, #{name, jdbcType=VARCHAR}, #{belongType, jdbcType=VARCHAR},
 	     #{faceValue, jdbcType=INTEGER}, #{totalNum, jdbcType=INTEGER}, #{usedNum, jdbcType=INTEGER},
-	     #{totalNum, jdbcType=INTEGER}, #{arriveLimit, jdbcType=INTEGER}, #{validDay, jdbcType=INTEGER}, 
+	     #{totalNum, jdbcType=INTEGER}, #{arriveLimit, jdbcType=INTEGER}, IFNULL(#{validDay, jdbcType=INTEGER},0), 
 		 #{everyLimit, jdbcType=INTEGER}, #{isCashDelivery, jdbcType=TINYINT}, #{isCategoryLimit, jdbcType=TINYINT},
 		 #{exchangeCode, jdbcType=VARCHAR}, #{areaType, jdbcType=TINYINT}, #{createUserId, jdbcType=VARCHAR},  
 		 #{createTime, jdbcType=TIMESTAMP}, #{updateUserId, jdbcType=VARCHAR}, #{updateTime, jdbcType=TIMESTAMP}, #{disabled, jdbcType=TINYINT},
 		 #{type, jdbcType=INTEGER},#{isCategory, jdbcType=INTEGER},#{isRandCode, jdbcType=INTEGER},#{description, jdbcType=VARCHAR},
 		 #{startTime, jdbcType=TIMESTAMP},#{endTime, jdbcType=TIMESTAMP},
 		 #{useUserType, jdbcType=TINYINT},#{useClientType, jdbcType=TINYINT},
-		 #{deviceDayLimit, jdbcType=INTEGER},#{accountDayLimit, jdbcType=INTEGER}) 
+		 #{deviceDayLimit, jdbcType=INTEGER},#{accountDayLimit, jdbcType=INTEGER},
+		 IFNULL(#{effectDay, jdbcType=INTEGER},0),IFNULL(#{termType, jdbcType=TINYINT},0)) 
 	</insert> 
 	
     <update id="updateCoupons" parameterType="com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery">
@@ -323,8 +328,14 @@
  		      <if test="startTime != null" >
         		start_time = #{startTime,jdbcType=TIMESTAMP},
      		 </if>
+     		 <if test="startTime == null" >
+        		start_time = null,
+     		 </if>
      		 <if test="endTime != null" >
         		end_time = #{endTime,jdbcType=TIMESTAMP},
+        	 </if>
+        	 <if test="endTime == null" >
+        		end_time = null,
         	 </if>
  		     <if test="useUserType != null" >
         		use_user_type = #{useUserType,jdbcType=TINYINT},
@@ -338,6 +349,12 @@
      		 <if test="accountDayLimit != null" >
         		account_day_limit = #{accountDayLimit,jdbcType=INTEGER},
      		 </if>
+     		 <if test="effectDay != null" >
+                effect_day = #{effectDay,jdbcType=INTEGER},
+            </if>
+            <if test="termType != null" >
+                term_type = #{termType,jdbcType=TINYINT},
+            </if>
      		</set>
 	       WHERE id = #{id,jdbcType=VARCHAR}
 	</update>
@@ -519,8 +536,12 @@
 	
 	<!-- begin yangq 查询邀请注册代金券列表-->
 	<select id="selectByActivityId" parameterType="java.lang.String" resultMap="CouponsResultMap">
-		SELECT ac.id,ac.type,ac.is_category, ac.name,ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, ac.used_num, ac.remain_num, ac.arrive_limit, 
-	          ac.valid_day, ac.every_limit,ac.is_cash_delivery, ac.is_category_limit, ac.code,ac.exchange_code, ac.area_type FROM activity_collect_coupons acc INNER JOIN activity_coupons ac ON acc.`id` = ac.`activity_id` WHERE acc.`id` = #{id,jdbcType=VARCHAR}
+		SELECT ac.id,ac.type,ac.is_category, ac.name,ac.activity_id, ac.belong_type, ac.face_value, ac.total_num, 
+			  ac.used_num, ac.remain_num, ac.arrive_limit, ac.valid_day, ac.every_limit,ac.is_cash_delivery, 
+			  ac.is_category_limit, ac.code,ac.exchange_code, ac.area_type,ac.effect_day,ac.term_type ,ac.start_time,ac.end_time
+		FROM activity_collect_coupons acc 
+		INNER JOIN activity_coupons ac ON acc.`id` = ac.`activity_id` 
+		WHERE acc.`id` = #{id,jdbcType=VARCHAR}
 	</select>
 	<!-- end yangq -->
 	

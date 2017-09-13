@@ -284,13 +284,10 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		pushMsgVo.setMsgDetailContent(messageSend.getContext());
 		// 设置是否定时发送 立即发送 非定时
 		pushMsgVo.setIsTiming(Constant.ZERO);
-		//发送时间无需设置 会立即发送
-		//SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		//pushMsgVo.setSendTime(format.format(new Date()));
 
 		// 发送用户
 		List<PushUserVo> userList = new ArrayList<PushUserVo>();
-		infoList.forEach(user -> {
+		for(SysBuyerUser user : infoList) {
 			if(StringUtils.isNotEmpty(user.getPhone())){
 				PushUserVo pushUser = new PushUserVo();
 				pushUser.setUserId(user.getId());
@@ -299,16 +296,31 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 				pushUser.setMobile(user.getPhone());
 				
 				userList.add(pushUser);
+				//分批推送 每100条推送一次
+				if(userList.size()>=100){
+					pushMsgVo.setUserList(userList);
+					sendMessage(pushMsgVo);
+					userList.clear();
+				}
 			}
-		});
-		// 查询的用户信息
-		pushMsgVo.setUserList(userList);
-		sendMessage(pushMsgVo);
+		}
+		// 用户信息不为空时 发送消息
+		if(CollectionUtils.isNotEmpty(userList)){
+			pushMsgVo.setUserList(userList);
+			sendMessage(pushMsgVo);
+		}
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void sendMessage(Object entity) throws Exception {
 		MQMessage anMessage = new MQMessage(TOPIC, (Serializable)JsonMapper.nonDefaultMapper().toJson(entity));
 		rocketMQProducer.sendMessage(anMessage);
+	}
+
+	@Override
+	public int closeMessage(MessageSendSettingDto messageDto) throws Exception {
+		MessageSendSetting entity = BeanMapper.map(messageDto, MessageSendSetting.class);
+		entity.setUpdateTime(new Date());
+		return messageSendSettingService.update(entity);
 	}
 }

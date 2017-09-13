@@ -190,7 +190,7 @@
 		sku.properties_indb AS propertiesIndb, 		
 		sku.activity_type AS activityType,
 		picture.url,
-		stock.sellable AS sellableStock,
+		IF(sku.type=5,asg.sale_stock,stock.sellable) AS sellableStock,
 		asg.sale_price,
 		stock.locked AS lockedStock,
 		asg.trade_max AS lowPriceUpper,
