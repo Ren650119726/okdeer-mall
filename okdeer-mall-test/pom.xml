@@ -233,6 +233,7 @@
 				</configuration>
 			</plugin> 
 			
+			<!-- 检查单元测试代码覆盖率 -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -261,6 +262,11 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<!-- 集成sorna -->
+			<plugin>
+				<groupId>org.codehaus.sonar</groupId>
+				<artifactId>sonar-maven3-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
