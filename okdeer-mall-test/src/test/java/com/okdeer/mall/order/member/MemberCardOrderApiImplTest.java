@@ -1,6 +1,7 @@
 package com.okdeer.mall.order.member;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,11 +21,14 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.enums.CommonResultCodeEnum;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.jxc.bill.service.HykPayOrderServiceApi;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.base.MockUtils;
 import com.okdeer.mall.common.utils.TradeNumUtil;
@@ -33,6 +37,7 @@ import com.okdeer.mall.order.dto.MemberTradeOrderDto;
 import com.okdeer.mall.order.dto.PayInfoParamDto;
 import com.okdeer.mall.order.handler.MemberCardOrderService;
 import com.okdeer.mall.order.service.MemberCardOrderApi;
+import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
 /**
  * ClassName: MemberCardOrderApiImplTest 
  * @Description: 会员卡订单同步测试类
@@ -53,9 +58,17 @@ public class MemberCardOrderApiImplTest  extends BaseServiceTest {
 	private MemberTradeOrderDto memberTradeOrderDto;
 	@Mock
 	HykPayOrderServiceApi hykPayOrderServiceApi;
+	@Mock
+	private GoodsStoreSkuServiceApi goodsStoreSkuApi;
+	@Mock
+	private SysBuyerUserServiceApi buyserUserService;
+	@Mock
+	private StoreInfoServiceApi storeInfoService;
 	
 	@Resource
 	private IRedisTemplateWrapper<String, Object> redisTemplateWrapper;
+	@Mock
+	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
 	/**
 	 * 会员卡订单缓存后缀
 	 */
@@ -72,6 +85,13 @@ public class MemberCardOrderApiImplTest  extends BaseServiceTest {
 		// mock dubbo服务
 		MemberCardOrderService memberCardOrderServiceImpl =  AopTestUtils.getTargetObject(this.applicationContext.getBean("memberCardOrderServiceImpl"));
 		ReflectionTestUtils.setField(memberCardOrderServiceImpl, "hykPayOrderServiceApi", hykPayOrderServiceApi);
+		ReflectionTestUtils.setField(memberCardOrderServiceImpl, "goodsStoreSkuApi", goodsStoreSkuApi);
+		ReflectionTestUtils.setField(memberCardOrderServiceImpl, "buyserUserService", buyserUserService);
+		ReflectionTestUtils.setField(memberCardOrderServiceImpl, "storeInfoService", storeInfoService);
+		
+		ActivityCouponsRecordService activityCouponsRecordServiceImpl =  AopTestUtils.getTargetObject(this.applicationContext.getBean("activityCouponsRecordServiceImpl"));
+		ReflectionTestUtils.setField(activityCouponsRecordServiceImpl, "goodsStoreSkuServiceApi", goodsStoreSkuServiceApi);
+		
 	}
 	public MemberCardOrderApiImplTest(int index,MemberTradeOrderDto memberTradeOrderDto) {
 		this.index= index;
@@ -129,7 +149,7 @@ public class MemberCardOrderApiImplTest  extends BaseServiceTest {
 		newOr.setTradeNum(TradeNumUtil.getTradeNum());
 		resultDto.setData(newOr);
 		resultDto.setMessage(CommonResultCodeEnum.SUCCESS.getDesc());
-		given(hykPayOrderServiceApi.readyPayOrder(order)).willReturn(resultDto);
+		given(hykPayOrderServiceApi.readyPayOrder(any())).willReturn(resultDto);
 		//5、提交订单
 		memberCardOrderApi.submitOrder(orderId);
 		
