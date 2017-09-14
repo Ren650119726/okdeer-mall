@@ -44,6 +44,7 @@ import com.okdeer.mall.order.dto.StoreConsumerApplyParamDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderPay;
@@ -61,11 +62,13 @@ import com.okdeer.mall.order.exception.ExceedRangeException;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.StoreConsumeOrderService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
+import com.okdeer.mall.order.service.TradeOrderInvoiceService;
 import com.okdeer.mall.order.service.TradeOrderItemDetailService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundsApi;
 import com.okdeer.mall.order.service.TradeOrderRefundsCertificateService;
+import com.okdeer.mall.order.service.TradeOrderRefundsItemService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
@@ -139,7 +142,13 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 	@Autowired
 	private TradeOrderRefundsCertificateService tradeOrderRefundsCertificateService;
-
+	
+	@Autowired
+	private TradeOrderInvoiceService tradeOrderInvoiceService;
+	
+	@Autowired
+	private TradeOrderRefundsItemService tradeOrderRefundsItemService;
+	
 	@Reference(version = "1.0.0", check = false)
 	private StoreInfoServiceApi storeInfoService;
 
@@ -619,45 +628,54 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 	@Override
 	public OrderRefundsDetailDto refundsDetail(String refundsId) {
 		OrderRefundsDetailDto orderRefundsDto = new OrderRefundsDetailDto();
-		TradeOrderRefundsVo refunds;
+
 		try {
-			refunds = tradeOrderRefundsService.findDetailByFinance(refundsId);
+
+			TradeOrderRefunds refunds = tradeOrderRefundsService.findById(refundsId);
+			TradeOrder tradeOrder = tradeOrderService.selectById(refunds.getOrderId());
+			TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(refunds.getOrderId());
+
 			orderRefundsDto.setRefundsReason(refunds.getRefundsReason());
 			orderRefundsDto.setId(refunds.getId());
 			orderRefundsDto.setTotalAmount(refunds.getTotalIncome());
-			orderRefundsDto.setActualAmount(refunds.getActualAmount());
+			orderRefundsDto.setActualAmount(tradeOrder.getActualAmount());
 			orderRefundsDto.setRefundAmount(refunds.getTotalAmount());
 			orderRefundsDto.setPreferentialAmount(refunds.getTotalPreferentialPrice());
 			orderRefundsDto.setRefundMoneyTime(refunds.getRefundMoneyTime());
-			orderRefundsDto.setPayTime(refunds.getTradeOrderVo().getTradeOrderPay().getPayTime());
+			if (tradeOrderPay != null) {
+				orderRefundsDto.setPayTime(tradeOrderPay.getPayTime());
+				orderRefundsDto.setThirdTransNo(tradeOrderPay.getReturns());
+			}
+			
 			orderRefundsDto.setRefundNo(refunds.getRefundNo());
 			orderRefundsDto.setRefundStatus(refunds.getRefundsStatus().ordinal());
 			if (refunds.getPaymentMethod() != null) {
 				orderRefundsDto.setPaymentMethod(refunds.getPaymentMethod().ordinal());
 			}
 			orderRefundsDto.setBuyerUserId(refunds.getUserId());
-			orderRefundsDto.setBuyerUserName(refunds.getUserPhone());
+			orderRefundsDto.setBuyerUserName(tradeOrder.getUserPhone());
 			orderRefundsDto.setOrderNo(refunds.getOrderNo());
 			// 回款金额
 			orderRefundsDto.setApplyTime(refunds.getRefundMoneyTime());
-			if (refunds.getTradeOrderVo().getTradeOrderPay() != null) {
-				orderRefundsDto.setThirdTransNo(refunds.getTradeOrderVo().getTradeOrderPay().getReturns());
-			}
 			orderRefundsDto.setCreateTime(refunds.getCreateTime());
 
-			orderRefundsDto.setDeliveryTime(refunds.getTradeOrderVo().getDeliveryTime());
-			orderRefundsDto.setCreateOrderTime(refunds.getTradeOrderVo().getCreateTime());
-			// orderRefundsDto.setAgentName(agentName);
-			// orderRefundsDto.setAddress(address);
-			orderRefundsDto.setDiscountName(refunds.getTradeOrderVo().getActivityType().getValue());
-			orderRefundsDto.setSendTime(refunds.getTradeOrderVo().getDeliveryTime());
-			if (refunds.getTradeOrderVo().getTradeOrderInvoice() != null) {
-				orderRefundsDto.setInvoiceContent(refunds.getTradeOrderVo().getTradeOrderInvoice().getContext());
-				orderRefundsDto.setInvoiceTile(refunds.getTradeOrderVo().getTradeOrderInvoice().getHead());
+			orderRefundsDto.setDeliveryTime(tradeOrder.getDeliveryTime());
+			orderRefundsDto.setCreateOrderTime(tradeOrder.getCreateTime());
+			orderRefundsDto.setDiscountName(tradeOrder.getActivityType().getValue());
+			orderRefundsDto.setSendTime(tradeOrder.getDeliveryTime());
+			
+			TradeOrderInvoice tradeOrderInvoice = tradeOrderInvoiceService.selectByOrderId(refunds.getOrderId());
+			
+			if (tradeOrderInvoice != null) {
+				orderRefundsDto.setInvoiceContent(tradeOrderInvoice.getContext());
+				orderRefundsDto.setInvoiceTile(tradeOrderInvoice.getHead());
 			}
-
+			
+			
+			List<TradeOrderRefundsItem>  tradeOrderRefundsItems = tradeOrderRefundsItemService.getTradeOrderRefundsItemByRefundsId(refundsId);
+			
 			List<TradeOrderItemDto> itemList = Lists.newArrayList();
-			for (TradeOrderRefundsItem item : refunds.getTradeOrderRefundsItem()) {
+			for (TradeOrderRefundsItem item : tradeOrderRefundsItems) {
 
 				TradeOrderItemDto itemDto = new TradeOrderItemDto();
 				itemDto.setMainPicPrl(orderImagePrefix + item.getMainPicUrl());
@@ -665,12 +683,13 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 				itemDto.setQuantity(item.getQuantity());
 				itemDto.setUnitPrice(item.getUnitPrice());
 				itemDto.setTotalAmount(item.getIncome());
-				//到店消费订单，还要查询退款码
-				if(refunds.getType()==OrderTypeEnum.STORE_CONSUME_ORDER){
-					List<TradeOrderItemDetail> detailList = tradeOrderItemDetailService.selectByOrderItemById(item.getOrderItemId());
+				// 到店消费订单，还要查询退款码
+				if (refunds.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
+					List<TradeOrderItemDetail> detailList = tradeOrderItemDetailService
+							.selectByOrderItemById(item.getOrderItemId());
 					List<TradeOrderItemDetailDto> dtoList = Lists.newArrayList();
 					for (TradeOrderItemDetail tradeOrderItemDetail : detailList) {
-						if(tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.refund){
+						if (tradeOrderItemDetail.getStatus() == ConsumeStatusEnum.refund) {
 							dtoList.add(BeanMapper.map(tradeOrderItemDetail, TradeOrderItemDetailDto.class));
 						}
 					}
@@ -780,7 +799,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		// 参数处理（例如设置默认参数等）
 		this.convertParamsForFinance(params);
 		List<TradeOrderRefundsChargeVo> list = tradeOrderRefundsService.findeChargeRefundsListByParams(params);
-		if(CollectionUtils.isEmpty(list)){
+		if (CollectionUtils.isEmpty(list)) {
 			return result;
 		}
 		if (list.size() > RECORD_NUM) {

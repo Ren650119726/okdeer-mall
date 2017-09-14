@@ -1690,14 +1690,6 @@ public class TradeOrderRefundsServiceImpl
 		return tradeOrderRefundsMapper.selectRefundsCountByFinance(orderRefundQueryParamDto);
 	}
 
-	/**
-	 * @desc 查询退款订单详细信息（财务）
-	 * @param refundId
-	 *            退款ID
-	 */
-	public TradeOrderRefundsVo findDetailByFinance(String refundId) throws Exception {
-		return tradeOrderRefundsMapper.selectDetailByFinance(refundId);
-	}
 
 	/**
 	 * 根据地址id查询会员地址
