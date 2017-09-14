@@ -1486,52 +1486,6 @@
 		<include refid="OrderRefundQueryParamSQL" />
 	</select>
 
-	<select id="selectDetailByFinance" parameterType="java.lang.String"
-		resultMap="TradeOrderRefundsVo">
-		SELECT
-		tr.id,
-		tr.refunds_status,
-		tr.refund_no,
-		tr.total_amount,
-		tr.create_time,
-		tr.trade_num,
-		tr.type,
-		tr.total_preferential_price,
-		tr.total_income,
-		ri.quantity,
-		ri.unit_price,
-		ri.sku_name,
-		ri.main_pic_prl,
-		ri.preferential_price,
-		ri.amount,
-		tr.payment_method,
-		tr.refund_money_time,
-		tr.order_no,
-		tr.store_id,
-		tr.refunds_reason,
-		i.head,i.context,
-		trade.create_time AS order_time,
-		trade.delivery_time,
-		trade.activity_type,
-		trade.invoice,
-		item.actual_amount,
-		ri.income,
-		ri.order_item_id,
-		pay.returns,
-		pay.pay_time,
-		user.login_name as user_phone
-		FROM
-		trade_order_refunds tr
-		LEFT JOIN trade_order_refunds_item ri ON tr.id = ri.refunds_id
-		LEFT JOIN trade_order trade ON trade.order_no = tr.order_no
-		LEFT JOIN trade_order_item item ON trade.id = item.order_id
-		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
-		LEFT JOIN trade_order_invoice i ON i.order_id = trade.id
-		LEFT JOIN sys_buyer_user user ON tr.user_id = user.id
-		WHERE tr.id = #{refundId,jdbcType=VARCHAR}
-	</select>
-
-
 
 	<!-- 退款单现金统计 -->
 	<select id="findRefundCashCount" parameterType="java.util.Map"

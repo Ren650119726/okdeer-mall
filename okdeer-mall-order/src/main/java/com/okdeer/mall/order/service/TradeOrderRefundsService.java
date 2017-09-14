@@ -188,10 +188,6 @@ public interface TradeOrderRefundsService {
 	PageUtils<TradeOrderRefundsVo> findPageByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto, int pageNumber, int pageSize)
 			throws Exception;
 
-	/**
-	 * 财务系统查询售后单详细信息
-	 */
-	TradeOrderRefundsVo findDetailByFinance(String refundId) throws Exception;
 
 	/**
 	 * 根据订单id，统计退款金额
