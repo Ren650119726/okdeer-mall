@@ -73,7 +73,6 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			// 库存检查通过，则解析低价优惠信息
 			parserBo.parseLowFavour();
 		}
-
 	}
 
 	/**
