@@ -2,9 +2,10 @@ package com.okdeer.mall.order.service.impl;
 
 import javax.annotation.Resource;
 
-import com.alibaba.dubbo.config.annotation.Service;
+import org.springframework.stereotype.Service;
+
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
-import com.okdeer.mall.order.service.TradeOrderInvoiceServiceApi;
+import com.okdeer.mall.order.service.TradeOrderInvoiceService;
 import com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper;
 
 /**
@@ -15,9 +16,9 @@ import com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper;
  * @copyright ©2005-2020 yschome.com Inc. All rights reserved
  * 
  */
-@Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderInvoiceServiceApi")
-class TradeOrderInvoiceServiceImpl implements TradeOrderInvoiceServiceApi {
-
+@Service
+public class TradeOrderInvoiceServiceImpl implements TradeOrderInvoiceService {
+	
 	@Resource
 	private TradeOrderInvoiceMapper tradeOrderInvoiceMapper;
 
