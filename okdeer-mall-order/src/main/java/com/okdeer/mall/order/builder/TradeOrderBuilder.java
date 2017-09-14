@@ -419,10 +419,6 @@ public class TradeOrderBuilder {
 			tradeOrder.setActualAmount(BigDecimal.ZERO);
 			tradeOrder.setPreferentialPrice(totalAmount);
 			tradeOrder.setPinMoney(BigDecimal.ZERO);
-			// Begin V2.6.1 added by maojj 2017-09-08
-			// 优惠金额>总金额，重置优惠金额，同时重置平台优惠金额
-			tradeOrder.setPlatformPreferential(tradeOrder.getPreferentialPrice().subtract(tradeOrder.getStorePreferential()));
-			// End V2.6.1 added by maojj 2017-09-08
 		} else {
 			//实际支付差额
 			BigDecimal actualAmount = totalAmount.subtract(favourAmount);
