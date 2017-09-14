@@ -56,4 +56,9 @@ public interface MockFilePath {
 	 * 检查库存请求数据模拟文件路径
 	 */
 	String MOCK_CHECK_STOCK_REQ_PATH = BASE_MOCK_PATH + "mock-check-stock-req.json";
+	
+	/**
+	 * 检查库存商品解析结果模拟文件路径
+	 */
+	String MOCK_CHECK_STOCK_PARSER_BO_PATH = BASE_MOCK_PATH + "mock-check-stock-parser-bo.json";
 }
