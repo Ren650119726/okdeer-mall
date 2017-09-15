@@ -310,8 +310,6 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 					favourItem = comboDetail.getOnlinePrice().subtract(comboDetail.getUnitPrice()).multiply(BigDecimal.valueOf(splitItem.getQuantity()));
 					splitItem.setPreferentialPrice(favourItem);
 					splitItem.setStorePreferential(favourItem);
-					splitItem.setPreferentialPrice(BigDecimal.ZERO);
-					splitItem.setStorePreferential(BigDecimal.ZERO);
 					splitItem.setStoreSkuId(comboDetail.getStoreSkuId());
 					splitItem.setCreateTime(item.getCreateTime());
 					splitItemList.add(splitItem);
