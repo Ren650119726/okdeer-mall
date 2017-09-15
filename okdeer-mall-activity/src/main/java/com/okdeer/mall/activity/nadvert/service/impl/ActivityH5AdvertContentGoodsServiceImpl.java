@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,9 +34,6 @@ import com.okdeer.mall.activity.nadvert.service.ActivityH5AdvertContentGoodsServ
 @Service
 public class ActivityH5AdvertContentGoodsServiceImpl
 		implements ActivityH5AdvertContentGoodsService {
-	
-	@Value("${goodsImagePrefix}")
-	private String goodsImgPath;
 	
 	@Autowired
 	private ActivityH5AdvertContentGoodsMapper mapper;
