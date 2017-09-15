@@ -27,8 +27,8 @@ import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
-import com.okdeer.jxc.common.utils.JsonMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
@@ -241,6 +241,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 					}
 				}
 			}
+			
 		}
 		// End V2.5 modified by maojj 2017-05-27
 		// 下单埋点
@@ -324,6 +325,6 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				return false;
 			}
 		}
-		return true;
+		return false;
 	}
 }
