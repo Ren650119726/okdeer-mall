@@ -234,7 +234,11 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		}finally{
 			if(CollectionUtils.isNotEmpty(lockList)){
 				for(Lock lock : lockList){
-					lock.unlock();
+					try {
+						lock.unlock();
+					} catch (Exception e) {
+						logger.error("释放锁失败：{}",e);
+					}
 				}
 			}
 		}

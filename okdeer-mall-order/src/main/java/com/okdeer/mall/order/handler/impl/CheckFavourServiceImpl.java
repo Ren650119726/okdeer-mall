@@ -121,6 +121,8 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		// 活动类型(0:没参加活动,1:代金券,2:满减活动,3:满折活动,4:团购活动)
 		ActivityTypeEnum activityType = paramDto.getActivityType();
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
+		// 刷新请求商品列表
+		parserBo.refreshReqSkuList(paramDto);
 		boolean isValid = true;
 		switch (activityType) {
 			case VONCHER:
@@ -460,10 +462,6 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		}
 		// 查询代金券
 		ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsRecord.getCouponsId());
-		// 检查金额是否达到使用下限
-		if(paramDto.getEnjoyFavourTotalAmount().compareTo(new BigDecimal(coupons.getArriveLimit())) == -1){
-			return false;
-		}
 		if(coupons.getType() != CouponsType.bldyf.ordinal()){
 			return false;
 		}
