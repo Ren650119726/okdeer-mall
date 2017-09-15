@@ -32,6 +32,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
+import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 
 /**
  * ClassName: StoreSkuPaserBo 
@@ -619,6 +620,28 @@ public class StoreSkuParserBo {
 		this.couponsList.add(couponsRec);
 	}
 	// End V2.5 added by maojj 2017-06-23
+	
+	// Begin V2.6.1 added by maojj 2017-09-15
+	/**
+	 * @Description: 刷新请求参数商品列表
+	 * @param paramDto
+	 * @param parserBo   
+	 * @author maojj
+	 * @date 2017年6月22日
+	 */
+	public void refreshReqSkuList(PlaceOrderParamDto paramDto){
+		List<PlaceOrderItemDto> skuList = paramDto.getSkuList();
+		CurrentStoreSkuBo skuBo = null;
+		for(PlaceOrderItemDto itemDto : skuList){
+			skuBo = this.currentSkuMap.get(itemDto.getStoreSkuId());
+			itemDto.setSkuActType(skuBo.getActivityType());
+			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+				itemDto.setSkuActPrice(skuBo.getActPrice());
+				itemDto.setSkuActQuantity(skuBo.getSkuActQuantity());
+			}
+		}
+	}
+	// End V2.6.1 added by maojj 2017-09-15
 
 	public Map<String, List<String>> getActivitySkuMap() {
 		return activitySkuMap;

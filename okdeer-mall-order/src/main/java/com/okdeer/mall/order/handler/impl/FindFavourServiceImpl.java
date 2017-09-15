@@ -54,7 +54,7 @@ public class FindFavourServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
 		// 刷新请求参数列表
-		refreshReqSkuList(paramDto,parserBo);
+		parserBo.refreshReqSkuList(paramDto);
 		
 		FavourParamBO favourParamBO = favourParamBuilder.build(paramDto, resp.getData(),parserBo.getCategoryIdSet(),paramDto.getSkuList());
 		// 订单总金额存入上下文，后续流程需要使用
@@ -62,26 +62,5 @@ public class FindFavourServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		// 查询用户的可用优惠
 		PreferentialVo preferentialVo = getPreferentialService.findPreferentialByUser(favourParamBO);
 		BeanMapper.copy(preferentialVo, respDto);
-	}
-	
-	/**
-	 * @Description: 刷新请求参数商品列表
-	 * @param paramDto
-	 * @param parserBo   
-	 * @author maojj
-	 * @date 2017年6月22日
-	 */
-	private void refreshReqSkuList(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo){
-		List<PlaceOrderItemDto> skuList = paramDto.getSkuList();
-		Map<String, CurrentStoreSkuBo> currentSkuMap = parserBo.getCurrentSkuMap();
-		CurrentStoreSkuBo skuBo = null;
-		for(PlaceOrderItemDto itemDto : skuList){
-			skuBo = currentSkuMap.get(itemDto.getStoreSkuId());
-			itemDto.setSkuActType(skuBo.getActivityType());
-			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
-				itemDto.setSkuActPrice(skuBo.getActPrice());
-				itemDto.setSkuActQuantity(skuBo.getSkuActQuantity());
-			}
-		}
 	}
 }
