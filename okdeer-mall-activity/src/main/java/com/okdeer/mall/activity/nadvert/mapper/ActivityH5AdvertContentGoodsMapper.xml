@@ -126,6 +126,8 @@
 			sku.market_price as marketPrice,
 			pic.url as picUrl,
 			g.pic_url newUrl,
+			sku.unit,
+			sku.is_recommend isRecommend,
 			sku.online_price as onlinePrice,
 			stock.sellable as sellable,
 			se.distribution_fee as sendPrice,
