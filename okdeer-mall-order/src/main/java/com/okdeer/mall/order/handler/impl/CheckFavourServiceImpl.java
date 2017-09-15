@@ -1,5 +1,6 @@
 package com.okdeer.mall.order.handler.impl;
 
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +123,9 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		ActivityTypeEnum activityType = paramDto.getActivityType();
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
 		// 刷新请求商品列表
-		parserBo.refreshReqSkuList(paramDto);
+		if(paramDto.getChannel() != OrderResourceEnum.MEMCARD){
+			parserBo.refreshReqSkuList(paramDto);
+		}
 		boolean isValid = true;
 		switch (activityType) {
 			case VONCHER:
