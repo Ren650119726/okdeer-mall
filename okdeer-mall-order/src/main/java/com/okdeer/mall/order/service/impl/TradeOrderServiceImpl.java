@@ -717,9 +717,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                                 && !OrderStatusEnum.BUYER_PAYING.equals(order.getStatus())) {
                             // 支付方式
                             if (order.getTradeOrderPay() == null) {
-                                exportVo.setPayType(order.getPayWay().getValue());
+                                exportVo.setPayType(order.getPayWay() != null ? order.getPayWay().getValue() : "");
                             } else {
-                                exportVo.setPayType(order.getTradeOrderPay().getPayType().getValue());
+                                exportVo.setPayType(order.getTradeOrderPay().getPayType() != null ?
+                                		order.getTradeOrderPay().getPayType().getValue() : "");
                             }
                         }
                         exportVo.setOrderResource(order.getOrderResource());
