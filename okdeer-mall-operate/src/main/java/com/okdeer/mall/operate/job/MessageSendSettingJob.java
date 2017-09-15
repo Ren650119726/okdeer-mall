@@ -136,26 +136,29 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 					dto.setType(messageSend.getType());
 					dto.setCityIdList(cityIdsList);
 					
-					List<SysBuyerLocateInfoDto> infoList = sysBuyerLocateInfoApi.findUserList(dto);
-					//根据用户id列表获取用户信息列表
-					List<String> ids = Lists.newArrayList();
-					infoList.forEach(buyer -> ids.add(buyer.getUserId()));
-					
 					//4 先更新发送状态 再发送消息
 					messageSend.setStatus(1);
 					messageSend.setUpdateTime(new Date());
 					messageSendSettingService.update(messageSend);
 					
-					if(CollectionUtils.isNotEmpty(ids)){
-						int size = ids.size();
-						int pageSize = 100;
-						int page = (size + pageSize -1)/pageSize;
-						for (int i = 1; i <= page; i++) {
-							List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids,i,pageSize);
+					List<SysBuyerLocateInfoDto> infoList = sysBuyerLocateInfoApi.findUserList(dto);
+					//根据用户id列表获取用户信息列表
+					List<String> ids = Lists.newArrayList();
+					for(SysBuyerLocateInfoDto buyer : infoList){
+						ids.add(buyer.getUserId());
+						if(ids.size()>=100){
+							List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids,1,100);
 							//3 发送消息
 							sendAppMessage(messageSend,userList);
+							ids.clear();
 						}
 					}
+					if(CollectionUtils.isNotEmpty(ids)){
+						List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids,1,100);
+						//3 发送消息
+						sendAppMessage(messageSend,userList);
+					}
+					
 				}
 				
 			}

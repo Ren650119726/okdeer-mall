@@ -45,8 +45,6 @@ import com.okdeer.mall.order.constant.OrderMsgConstant;
 import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
 import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
-import com.okdeer.mall.system.service.impl.InvitationCodeServiceImpl.PageCallBack;
-import com.okdeer.mall.util.PageCallUtils;
 import com.okdeer.mcm.constant.MsgConstant;
 
 
@@ -242,25 +240,28 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 		dto.setType(entity.getType());
 		dto.setCityIdList(cityIdsList);
 		
-		
-		List<SysBuyerLocateInfoDto> infoList = sysBuyerLocateInfoApi.findUserList(dto);
-		//根据用户id列表获取用户信息列表
-		List<String> ids = Lists.newArrayList();
-		infoList.forEach(buyer -> ids.add(buyer.getUserId()));
 		//4 先更新发送状态 再发送消息
 		entity.setStatus(1);
 		entity.setUpdateTime(new Date());
 		messageSendSettingService.update(entity);
 		
-		if(CollectionUtils.isNotEmpty(ids)){
-			int size = ids.size();
-			int pageSize = 100;
-			int page = (size + pageSize -1)/pageSize;
-			for (int i = 1; i <= page; i++) {
-				List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids,i,pageSize);
+		List<SysBuyerLocateInfoDto> infoList = sysBuyerLocateInfoApi.findUserList(dto);
+		//根据用户id列表获取用户信息列表
+		List<String> ids = Lists.newArrayList();
+		
+		for(SysBuyerLocateInfoDto buyer : infoList){
+			ids.add(buyer.getUserId());
+			if(ids.size()>=100){
+				List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids,1,100);
 				//3 发送消息
 				sendAppMessage(entity,userList);
+				ids.clear();
 			}
+		}
+		if(CollectionUtils.isNotEmpty(ids)){
+			List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids,1,100);
+			//3 发送消息
+			sendAppMessage(entity,userList);
 		}
 	}
 	
