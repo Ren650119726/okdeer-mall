@@ -257,7 +257,7 @@ public class MessageSendSettingApiImpl implements MessageSendSettingApi {
 			int pageSize = 100;
 			int page = (size + pageSize -1)/pageSize;
 			for (int i = 1; i <= page; i++) {
-				List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids,page,pageSize);
+				List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids,i,pageSize);
 				//3 发送消息
 				sendAppMessage(entity,userList);
 			}
