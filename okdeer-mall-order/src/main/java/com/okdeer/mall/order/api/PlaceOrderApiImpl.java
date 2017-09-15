@@ -283,7 +283,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		List<Lock> lockList = Lists.newArrayList();
 		if(StringUtils.isNotEmpty(paramDto.getFareRecId())){
 			ActivityCouponsRecord fareRec = activityCouponsRecordMapper.selectByPrimaryKey(paramDto.getFareRecId());
-			String fareLockKey =  String.format("%s:%s", paramDto.getUserId(),fareRec.getCouponsId());
+			String fareLockKey =  String.format("submitOrder:%s:%s", paramDto.getUserId(),fareRec.getCouponsId());
 			lockList.add(redisLockRegistry.obtain(fareLockKey));
 		}
 		// 订单参与的活动类型
@@ -301,7 +301,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		}else if(actType == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES){
 			limitActId = paramDto.getActivityId();
 		}
-		String lockKey = String.format("%s:%s:%s", actType.name(),paramDto.getUserId(),limitActId);
+		String lockKey = String.format("submitOrder:%s:%s:%s", actType.name(),paramDto.getUserId(),limitActId);
 		lockList.add(redisLockRegistry.obtain(lockKey));
 		return lockList;
 	}
