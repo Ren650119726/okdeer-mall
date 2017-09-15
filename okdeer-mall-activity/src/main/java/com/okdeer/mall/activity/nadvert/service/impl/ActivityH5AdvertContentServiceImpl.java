@@ -154,7 +154,11 @@ public class ActivityH5AdvertContentServiceImpl
 					}else if(obj.getGoodsType() == 2){
 						//服务店商品
 						goods.forEach(good -> {
-							good.setGoodsSkuPic(serviceGoodsImgPath + good.getGoodsSkuPic());
+							if(serviceGoodsImgPath.lastIndexOf("/")  > 0){
+								good.setGoodsSkuPic(serviceGoodsImgPath + good.getGoodsSkuPic());
+							}else{
+								good.setGoodsSkuPic(serviceGoodsImgPath + "/" + good.getGoodsSkuPic());
+							}
 						});
 					}
 					bo.setContentGoods(goods);
