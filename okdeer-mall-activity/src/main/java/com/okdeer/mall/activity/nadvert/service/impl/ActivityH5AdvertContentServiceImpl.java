@@ -154,7 +154,7 @@ public class ActivityH5AdvertContentServiceImpl
 					}else if(obj.getGoodsType() == 2){
 						//服务店商品
 						goods.forEach(good -> {
-							if(serviceGoodsImgPath.lastIndexOf("/")  > 0){
+							if(serviceGoodsImgPath.endsWith("/")){
 								good.setGoodsSkuPic(serviceGoodsImgPath + good.getGoodsSkuPic());
 							}else{
 								good.setGoodsSkuPic(serviceGoodsImgPath + "/" + good.getGoodsSkuPic());
