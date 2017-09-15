@@ -141,15 +141,21 @@ public class MessageSendSettingJob extends AbstractSimpleElasticJob {
 					List<String> ids = Lists.newArrayList();
 					infoList.forEach(buyer -> ids.add(buyer.getUserId()));
 					
-					if(CollectionUtils.isNotEmpty(ids)){
-						List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids);
-						//3 发送消息
-						sendAppMessage(messageSend,userList);
-					}
-					//4 更新发送状态
+					//4 先更新发送状态 再发送消息
 					messageSend.setStatus(1);
 					messageSend.setUpdateTime(new Date());
 					messageSendSettingService.update(messageSend);
+					
+					if(CollectionUtils.isNotEmpty(ids)){
+						int size = ids.size();
+						int pageSize = 100;
+						int page = (size + pageSize -1)/pageSize;
+						for (int i = 1; i <= page; i++) {
+							List<SysBuyerUser> userList = buyerUserApi.findUserListByIds(ids,page,pageSize);
+							//3 发送消息
+							sendAppMessage(messageSend,userList);
+						}
+					}
 				}
 				
 			}
