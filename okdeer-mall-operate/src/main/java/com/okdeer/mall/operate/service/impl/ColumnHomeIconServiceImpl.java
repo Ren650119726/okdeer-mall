@@ -238,7 +238,15 @@ public class ColumnHomeIconServiceImpl extends BaseServiceImpl implements Column
 			
 			List<GoodsCategoryAssociation> spuGoodsNavigateList = Lists.newArrayList();
 			for(ColumnHomeIconClassifyDto classifyDto : classifyList){
-				spuGoodsNavigateList.addAll(goodsNavigateCategoryApi.getGoodsCategoryAssociation(classifyDto.getNavigateCategoryId()));
+               List<GoodsCategoryAssociation> list = goodsNavigateCategoryApi.getGoodsCategoryAssociation(classifyDto.getNavigateCategoryId());
+               //关联查询结果会返回[null]的结果 
+				if(CollectionUtils.isNotEmpty(list)){
+					for(GoodsCategoryAssociation ass : list){
+						if(ass != null){
+							spuGoodsNavigateList.add(ass);
+						}
+					}
+				}
 			}
 			List<GoodsStoreSku> skuList = Lists.newArrayListWithCapacity(1000);
 			for(GoodsCategoryAssociation asso : spuGoodsNavigateList){
