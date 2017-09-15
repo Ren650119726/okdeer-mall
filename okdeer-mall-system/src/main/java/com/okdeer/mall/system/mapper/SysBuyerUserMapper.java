@@ -68,7 +68,7 @@ public interface SysBuyerUserMapper extends IBaseCrudMapper {
 	 * @author wangf01
 	 * @date 2016年9月9日
 	 */
-	List<SysBuyerUser> findByIds(@Param("ids") List<String> ids);
+	List<SysBuyerUser> findByIds(@Param("ids") List<String> ids,@Param("start")Integer start,@Param("pageSize") Integer pageSize);
 	
 	/**
 	 * 根据手机号查询用户信息

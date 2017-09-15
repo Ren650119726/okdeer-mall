@@ -492,10 +492,17 @@
     select 
     <include refid="Base_Column_List" />
     from sys_buyer_user
-    where id in 
-    <foreach collection="ids" item="item" open="(" close=")" separator=",">
-    	#{item}
-    </foreach>
+    <where>
+    	<if test="ids !=null and ids.size() > 0">
+    		 AND id in 
+    		 <foreach collection="ids" item="item" open="(" close=")" separator=",">
+		    	#{item}
+		    </foreach>
+    	</if>
+    </where>
+     <if test="start != null and pageSize != null">
+    	limit #{start,jdbcType = INTEGER},#{pageSize,jdbcType = INTEGER}	
+     </if>
   </select>
   <!-- end 新增根据id集合获取用户信息 add by wangf01 -->
 </mapper>
