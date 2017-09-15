@@ -325,6 +325,6 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 }
