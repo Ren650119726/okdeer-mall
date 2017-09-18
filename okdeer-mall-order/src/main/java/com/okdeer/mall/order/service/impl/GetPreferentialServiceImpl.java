@@ -195,7 +195,7 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 							|| totalAmount.compareTo(new BigDecimal(coupons.getArrive())) == -1) {
 						return false;
 					}
-				} else if (coupons.getType() == CouponsType.fwd.ordinal()) {
+				} else if (coupons.getType() == CouponsType.fwd.ordinal() && Constant.ONE == coupons.getIsCategory().intValue()) {
 					int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(paramBo.getSpuCategoryIds(),
 							coupons.getCouponId());
 					if (count != paramBo.getSpuCategoryIds().size()) {
