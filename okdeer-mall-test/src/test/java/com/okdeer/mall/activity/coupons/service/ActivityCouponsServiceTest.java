@@ -1,12 +1,8 @@
 package com.okdeer.mall.activity.coupons.service;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +20,6 @@ import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.enums.CashDelivery;
 import com.okdeer.mall.activity.coupons.enums.CategoryLimit;
-import com.okdeer.mall.activity.nadvert.bo.ActivityH5AdvertBo;
-import com.okdeer.mall.activity.nadvert.bo.ActivityH5AdvertContentBo;
-import com.okdeer.mall.activity.nadvert.entity.ActivityH5Advert;
-import com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContent;
-import com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertContentCoupons;
-import com.okdeer.mall.activity.nadvert.entity.ActivityH5AdvertRole;
-import com.okdeer.mall.activity.nadvert.param.ActivityH5AdvertQParam;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.UseClientType;
