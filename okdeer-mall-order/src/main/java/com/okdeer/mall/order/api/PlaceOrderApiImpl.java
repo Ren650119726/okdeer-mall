@@ -3,6 +3,7 @@ package com.okdeer.mall.order.api;
 import static com.okdeer.common.consts.ELTopicTagConstants.TAG_GOODS_EL_UPDATE;
 import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -101,6 +103,9 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	
 	@Resource
 	private RedisLockRegistry redisLockRegistry;
+	
+	@Resource
+	private StringRedisTemplate stringRedisTemplate;
 	
 	@Autowired
 	@Qualifier(value="jxcSynTradeorderProcessLister")
@@ -229,6 +234,18 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				handlerChain.process(req, resp);
 			}else{
 				logger.error("提交订单，获取锁失败，请求参数为：{}",JsonMapper.nonDefaultMapper().toJson(req.getData()));
+				// 遍历lock输出信息，方便定位问题
+				for(Lock redisLock : lockList){
+					Field[] fields = redisLock.getClass().getDeclaredFields();
+					for(Field f : fields){
+						f.setAccessible(true);
+						logger.info("redisLock属性名：{}，属性值：{}" ,f.getName(),f.get(redisLock));
+						if("lockKey".equals(f.getName())){
+							String lockKey = String.valueOf(f.get(redisLock));
+							logger.info("redis中锁键：{},缓存的对象值：{}",lockKey,stringRedisTemplate.boundValueOps("MALL-SERVICE:" + lockKey).get());
+						}
+					}
+				}
 				resp.setResult(ResultCodeEnum.FAIL);
 			}
 		}finally{
