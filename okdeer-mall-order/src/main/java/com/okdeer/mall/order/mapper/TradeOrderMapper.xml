@@ -1123,6 +1123,7 @@
 		<!-- 根据页面不同的页签有不同的排序 -->
 		<if test="tabs != null and tabs != ''">
 			<!-- 所有订单页签，排序规则为 未发货、已发货、等待买家付款、交易成功、买家拒收、交易关闭. 在相同状态下（如在未付款状态下），排序规则为时间顺序排序，时间越接近于当前时间排在越后 -->
+			<!-- fieldSort 0下单时间由近及远 1下单时间由远及近 -->
 			<if test="tabs == 'all'">
 				order by (case
 				when tr.`status` = 1 then 0
@@ -1130,31 +1131,67 @@
 				when tr.`status` in(0,11) then 2
 				when tr.`status` in(2,4,5,12,13) then 3
 				when tr.`status` in(6,10) then 4
-				end),tr.create_time asc
+				end),tr.create_time 
+				<if test="fieldSort == '1'.toString() or fieldSort == null or fieldSort == '' ">
+				 asc
+				</if>
+				<if test="fieldSort == '0'.toString() ">
+				 desc
+				</if>
 			</if>
 			<!-- 待付款页签，排序规则为 下单时间倒叙，最新的订单排最前面 -->
 			<if test="tabs == 'unpaid'">
+				<if test="fieldSort == '0'.toString() or fieldSort == null or fieldSort == '' ">
 				order by tr.create_time desc
+				</if>
+				<if test="fieldSort == '1'.toString() ">
+				order by tr.create_time asc
+				</if>
 			</if>
 			<!-- 待发货页签，排序规则为 时间升序，越早下的订单排越前面 -->
 			<if test="tabs == 'dropshipping'">
+				<if test="fieldSort == '1'.toString() or fieldSort == null or fieldSort == '' ">
 				order by tr.create_time asc
+				</if>
+				<if test="fieldSort == '0'.toString() ">
+				order by tr.create_time desc
+				</if>
 			</if>
 			<!-- 已发货页签，排序规则为 发货时间倒叙，最新发货的订单排最前面 -->
 			<if test="tabs == 'shipping'">
+				<if test="fieldSort == '0'.toString() or fieldSort == null or fieldSort == '' ">
 				order by tr.delivery_time desc
+				</if>
+				<if test="fieldSort == '1'.toString()">
+				order by tr.delivery_time asc
+				</if>
 			</if>
 			<!-- 交易成功页签，交易关闭页签 排序规则为最后修改时间倒叙，最新的订单在最前面 -->
 			<if test="tabs == 'finished' or tabs == 'closed'">
+				<if test="fieldSort == '0'.toString() or fieldSort == null or fieldSort == '' ">
 				order by tr.update_time desc
+				</if>
+				<if test="fieldSort == '1'.toString()">
+				order by tr.update_time asc
+				</if>
 			</if>
 			<!-- 预约时间由近到远 -->
 			<if test="tabs == 'pickuptimedesc'">
+				<if test="fieldSort == '0'.toString() or fieldSort == null or fieldSort == '' ">
 				order by tr.pick_up_time desc
+				</if>
+				<if test="fieldSort == '1'.toString()">
+				order by tr.pick_up_time asc
+				</if>
 			</if>
 			<!-- 预约时间由远到近 -->
 			<if test="tabs == 'pickuptimeasc'">
+				<if test="fieldSort == '1'.toString() or fieldSort == null or fieldSort == '' ">
 				order by tr.pick_up_time asc
+				</if>
+				<if test="fieldSort == '0'.toString() ">
+				order by tr.pick_up_time asc
+				</if>
 			</if>
 		</if>
 		<!-- 默认排序 -->
