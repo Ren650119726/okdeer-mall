@@ -965,6 +965,16 @@
 			AND received_time <![CDATA[ <= ]]>
 				#{endReceivedTime,jdbcType=TIMESTAMP}
 		</if>
+		<!-- 起始修改时间-->
+		<if test="startUpdateTime != null">
+			AND update_time <![CDATA[ >= ]]>
+				#{startUpdateTime,jdbcType=TIMESTAMP}
+		</if>
+		<!-- 结束修改时间-->
+		<if test="endUpdateTime != null">
+			AND update_time <![CDATA[ <= ]]>
+				#{endUpdateTime,jdbcType=TIMESTAMP}
+		</if>
 		<if test="orderBy != null and orderBy !='' ">
 		  	ORDER BY received_time
 		</if>
@@ -6384,13 +6394,4 @@
 		WHERE order_no = #{orderNo,jdbcType=VARCHAR}
 	</select>
 	<!-- End V2.4.1 added by maojj 2017-06-19 -->
-	
-	<!-- begin xuzq V2.6.1  20170824 查询所有在前一天更新为订单完成的订单 -->
-	<select id="findOrderListForJob"  resultMap="BaseResultMap">
-		SELECT * FROM trade_order trade
-		where trade.update_time &gt;= date_sub(curdate(),interval 1 day)
-          and trade.update_time &lt;= curdate()
-          and trade.status=5
-	</select>
-	<!-- end xuzq V2.6.1 20170824 查询所有在前一天更新为订单完成的订单 -->
 </mapper>
