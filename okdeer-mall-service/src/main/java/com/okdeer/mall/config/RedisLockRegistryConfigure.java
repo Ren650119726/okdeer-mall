@@ -78,7 +78,9 @@ public class RedisLockRegistryConfigure {
 						}
 					}
 					try {
-						wait(60000);
+						synchronized (this) {
+							wait(60000);
+						}
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 						Thread.currentThread().interrupt();
