@@ -112,7 +112,6 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectOrderTypeEnum;
-import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.enums.ActivitySourceEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
@@ -7118,10 +7117,5 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     public BigDecimal selectConsumeTotalAmount(Map<String, Object> params) {
         return tradeOrderMapper.selectConsumeTotalAmount(params);
     }
-
-	@Override
-	public List<TradeOrder> findOrderListForJob() {
-		return tradeOrderMapper.findOrderListForJob();
-	}
 
 }

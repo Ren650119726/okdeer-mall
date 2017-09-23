@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-import com.okdeer.mall.order.bo.StoreGoodsHotSellerBo;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.vo.TradeOrderItemDetailVo;
 
@@ -144,11 +143,4 @@ public interface TradeOrderItemMapper{
 	 */
 	List<TradeOrderItem> findCompletedOrderItem(Map<String, Object> map);
 
-	/**
-	 * @Description: 获取已经确认收货订单完成的商品列表
-	 * @return   
-	 * @author xuzq01
-	 * @date 2017年8月21日
-	 */
-	List<StoreGoodsHotSellerBo> findSellerList(@Param("orderIds")List<String> orderIds);
 }
