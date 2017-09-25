@@ -46,7 +46,7 @@ public class TradePinMoneyApiTest extends BaseServiceTest {
 	private TradePinMoneyApi tradePinMoneyApi;
 	
 	@Test
-	public void findMyUsableTotal() {
+	public void findMyUsableTotalTest() {
 		String userId =("141102938903bd0f97c9a9694854bd8c");
 		Date nowDate = DateUtils.getCurrDate();
 		BigDecimal usableTotal = tradePinMoneyApi.findMyUsableTotal(userId, nowDate);
@@ -54,21 +54,21 @@ public class TradePinMoneyApiTest extends BaseServiceTest {
 	}
 	
 	@Test
-	public void findObtainList() {
+	public void findObtainListTest() {
 		String userId =("141102938903bd0f97c9a9694854bd8c");
 		PageUtils<TradePinMoneyObtainDto> obtainDto = tradePinMoneyApi.findObtainList(userId, 1, 10);
 		assertNotNull(obtainDto);
 	}
 	
 	@Test
-	public void findUseList() {
+	public void findUseListTest() {
 		String userId =("141102938903bd0f97c9a9694854bd8c");
 		PageUtils<TradePinMoneyUseDto> useDto = tradePinMoneyApi.findUseList(userId, 1, 10);
 		assertNotNull(useDto);
 	}
 	
 	@Test
-	public void findObtainPageList() {
+	public void findObtainPageListTest() {
 		TradePinMoneyQueryDto paramDto = new TradePinMoneyQueryDto();
 		paramDto.setUserPhone("18613138749");
 		paramDto.setCreateTimeStart(DateUtils.parse("2017-08-25 05:00:00"));
@@ -79,7 +79,7 @@ public class TradePinMoneyApiTest extends BaseServiceTest {
 	}
 	
 	@Test
-	public void findObtainListCount() {
+	public void findObtainListCountTest() {
 		TradePinMoneyQueryDto paramDto = new TradePinMoneyQueryDto();
 		paramDto.setUserPhone("18613138749");
 		paramDto.setCreateTimeStart(DateUtils.parse("2017-08-25 05:00:00"));
@@ -92,7 +92,7 @@ public class TradePinMoneyApiTest extends BaseServiceTest {
 	}
 	
 	@Test
-	public void findUsePageList() {
+	public void findUsePageListTest() {
 		TradePinMoneyQueryDto paramDto = new TradePinMoneyQueryDto();
 		paramDto.setUserPhone("18613138749");
 		paramDto.setCreateTimeStart(DateUtils.parse("2017-09-01 05:00:00"));
@@ -116,7 +116,7 @@ public class TradePinMoneyApiTest extends BaseServiceTest {
 	
 	@Rollback(true)
 	@Test
-	public void addObtainRecord() throws Exception {
+	public void addObtainRecordTest() throws Exception {
 		ActivityPinMoneyQueryDto dto = new ActivityPinMoneyQueryDto();
 		dto.setOrderId("402801555e190028015e1c2e24110110");
 		dto.setUserId("141102938903bd0f97c9a9694854bd8c");
@@ -133,7 +133,7 @@ public class TradePinMoneyApiTest extends BaseServiceTest {
 	}
 	
 	@Test
-	public void findPinMoneyObtainAmount() {
+	public void findPinMoneyObtainAmountTest() {
 		TradePinMoneyQueryDto paramDto = new TradePinMoneyQueryDto();
 		paramDto.setCreateTimeStart(DateUtils.parse("2017-08-25 05:00:00"));
 		paramDto.setCreateTimeEnd(DateUtils.parse("2017-09-13 17:00:00"));
