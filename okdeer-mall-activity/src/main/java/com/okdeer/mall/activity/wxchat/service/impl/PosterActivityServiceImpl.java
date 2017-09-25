@@ -191,7 +191,7 @@ public class PosterActivityServiceImpl
 			ImageWechatMsg imageWechatMsg = createImageWechatMsg(fromUserName, mediaId);
 			customerService.sendMsg(imageWechatMsg);
 		} catch (Exception e) {
-			logger.error("生成海报图片出错");
+			logger.error("生成海报图片出错",e);
 		}
 	}
 
@@ -452,12 +452,27 @@ public class PosterActivityServiceImpl
 						logger.error("更新用户的资格数出错", e);
 					}
 					customerService.sendMsg(getQucaTip(shareOpenid, count));
+					//给用户送奖品
+					givePrizeToUser(shareOpenid);
 				}
 			} finally {
 				lock.unlock();
 			}
 		}
-
+		
+	}
+	
+	
+	private void givePrizeToUser(String openId) {
+		ActivityPosterWechatUserInfo acPosterWechatUserInfo = activityPosterWechatUserService.findByOpenid(openId);
+		int count = acPosterWechatUserInfo.getQualificaCount() - acPosterWechatUserInfo.getUsedQualificaCount();
+		for (int i = 0; i < count; i++) {
+			try {
+				draw(openId, activityPosterConfig.getActivityId());
+			} catch (MallApiException e) {
+				logger.error("领取失败奖品失败",e);
+			}
+		}
 	}
 
 	private void saveActivityPosterShareInfo(String openid, String shareOpenid) {
