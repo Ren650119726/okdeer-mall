@@ -3,7 +3,7 @@
 <mapper namespace="com.okdeer.mall.activity.wxchat.mapper.WechatPassiveReplyMapper" >
     <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.wxchat.entity.WechatPassiveReply" >
         <id column="id" property="id" jdbcType="VARCHAR" />
-        <result column="keys" property="keys" jdbcType="VARCHAR" />
+        <result column="input_keys" property="inputKeys" jdbcType="VARCHAR" />
         <result column="resp_msg_type" property="respMsgType" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.wechat.enums.WechatRespMsgTypeEnum" />
         <result column="resp_content" property="respContent" jdbcType="VARCHAR" />
         <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
@@ -14,7 +14,7 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, keys, resp_msg_type, resp_content, create_user_id, create_time, update_user_id, 
+        id, input_keys, resp_msg_type, resp_content, create_user_id, create_time, update_user_id, 
         update_time, disabled
     </sql>
 
@@ -31,8 +31,8 @@
             <if test="id != null" >
                 id,
             </if>
-            <if test="keys != null" >
-                keys,
+            <if test="inputKeys != null" >
+                input_keys,
             </if>
             <if test="respMsgType != null" >
                 resp_msg_type,
@@ -60,8 +60,8 @@
             <if test="id != null" >
                 #{id,jdbcType=VARCHAR},
             </if>
-            <if test="keys != null" >
-                #{keys,jdbcType=VARCHAR},
+            <if test="inputKeys != null" >
+                #{inputKeys,jdbcType=VARCHAR},
             </if>
             <if test="respMsgType != null" >
                 #{respMsgType,jdbcType=TINYINT},
@@ -90,8 +90,8 @@
     <update id="update" parameterType="com.okdeer.mall.activity.wxchat.entity.WechatPassiveReply" >
         update wechat_passive_reply
         <set >
-            <if test="keys != null" >
-                keys = #{keys,jdbcType=VARCHAR},
+            <if test="inputKeys != null" >
+                input_keys = #{inputKeys,jdbcType=VARCHAR},
             </if>
             <if test="respMsgType != null" >
                 resp_msg_type = #{respMsgType,jdbcType=TINYINT},
@@ -128,12 +128,13 @@
         <include refid="Base_Column_List" />
         from wechat_passive_reply
         <where>
-        	<if test="keys != null and keys != ''">
-        		 AND keys = #{keys,jdbcType=VARCHAR}
+        	<if test="inputKeys != null and inputKeys != ''">
+        		 AND inputKeys = #{inputKeys,jdbcType=VARCHAR}
         	</if>
         	<if test="wechatRespMsgType != null">
         		 AND resp_msg_type = #{wechatRespMsgType,jdbcType=VARCHAR}
         	</if>
+        	AND disabled = 0
         </where>
     </select>
 </mapper>

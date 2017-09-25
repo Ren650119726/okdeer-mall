@@ -28,7 +28,7 @@ public class WechatPassiveReply {
 	/**
 	 * 关键值，多个关键字用,隔开
 	 */
-	private String keys;
+	private String inputKeys;
 
 	/**
 	 * 回复类型 1 回复文本消息 2 回复图片消息 3 回复语音消息 4 回复视频消息 5 回复音乐消息 6 回复图文消息
@@ -70,12 +70,12 @@ public class WechatPassiveReply {
 		this.id = id;
 	}
 
-	public String getKeys() {
-		return keys;
+	public String getInputKeys() {
+		return inputKeys;
 	}
 
-	public void setKeys(String keys) {
-		this.keys = keys;
+	public void setInputKeys(String inputKeys) {
+		this.inputKeys = inputKeys;
 	}
 
 	public WechatRespMsgTypeEnum getRespMsgType() {
