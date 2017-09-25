@@ -441,11 +441,11 @@ public class PosterActivityServiceImpl
 			try {
 				// 查询分享用户的好友关注数量
 				int count = activityPosterShareInfoService.queryCountByShareOpenId(shareOpenid);
-				if (count % 3 == 0) {
+				if (count % activityPosterConfig.getFriendReachCountPer() == 0) {
 					// 如果是3的倍数，则更新用户的资格次数
 					ActivityPosterWechatUserInfo activityPosterWechatUser = new ActivityPosterWechatUserInfo();
 					activityPosterWechatUser.setOpenid(shareOpenid);
-					activityPosterWechatUser.setQualificaCount(count / 3);
+					activityPosterWechatUser.setQualificaCount(count / activityPosterConfig.getFriendReachCountPer());
 					try {
 						activityPosterWechatUserService.update(activityPosterWechatUser);
 					} catch (Exception e) {
