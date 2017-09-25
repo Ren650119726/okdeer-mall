@@ -191,7 +191,7 @@ public class PosterActivityServiceImpl
 			ImageWechatMsg imageWechatMsg = createImageWechatMsg(fromUserName, mediaId);
 			customerService.sendMsg(imageWechatMsg);
 		} catch (Exception e) {
-			logger.error("生成海报图片出错");
+			logger.error("生成海报图片出错",e);
 		}
 	}
 
@@ -284,11 +284,11 @@ public class PosterActivityServiceImpl
 			// 将头像改为圆形
 			convertImage = ImageUtils.convertCircular(convertImage);
 			// 将用户头像合并到海报中
-			ImageUtils.overlapImage(posterReadImg, convertImage, 210, 292);
+			ImageUtils.overlapImage(posterReadImg, convertImage, 136, 417);
 			// 生成用户二维码分享图片
 			BufferedImage qrCodeImg = createUserShareQrcodeImg(wechatUserInfo.getOpenid());
 			// 将用户的二维码图片合成到海报中
-			ImageUtils.overlapImage(posterReadImg, qrCodeImg, 240, 805);
+			ImageUtils.overlapImage(posterReadImg, qrCodeImg, 126, 704);
 			// 海报图片添加昵称
 			// ImageUtils.drawTextInImg(posterReadImg, "#EEE5DE",
 			// wechatUserInfo.getNickName(), 220,
@@ -313,7 +313,7 @@ public class PosterActivityServiceImpl
 					+ URLEncoder.encode(createQrCodeResult.getTicket(), "UTF-8"));
 			BufferedImage image = ImageIO.read(imgUrl);
 			// 将图片转换为260x260的
-			return ImageUtils.scaleByPercentage(image, 260, 260);
+			return ImageUtils.scaleByPercentage(image, 142, 142);
 		} catch (Exception e) {
 			throw new MallApiException("获取用户二维码图片出错");
 		}
@@ -441,23 +441,38 @@ public class PosterActivityServiceImpl
 			try {
 				// 查询分享用户的好友关注数量
 				int count = activityPosterShareInfoService.queryCountByShareOpenId(shareOpenid);
-				if (count % 3 == 0) {
+				if (count % activityPosterConfig.getFriendReachCountPer() == 0) {
 					// 如果是3的倍数，则更新用户的资格次数
 					ActivityPosterWechatUserInfo activityPosterWechatUser = new ActivityPosterWechatUserInfo();
 					activityPosterWechatUser.setOpenid(shareOpenid);
-					activityPosterWechatUser.setQualificaCount(count / 3);
+					activityPosterWechatUser.setQualificaCount(count / activityPosterConfig.getFriendReachCountPer());
 					try {
 						activityPosterWechatUserService.update(activityPosterWechatUser);
 					} catch (Exception e) {
 						logger.error("更新用户的资格数出错", e);
 					}
 					customerService.sendMsg(getQucaTip(shareOpenid, count));
+					//给用户送奖品
+					givePrizeToUser(shareOpenid);
 				}
 			} finally {
 				lock.unlock();
 			}
 		}
-
+		
+	}
+	
+	
+	private void givePrizeToUser(String openId) {
+		ActivityPosterWechatUserInfo acPosterWechatUserInfo = activityPosterWechatUserService.findByOpenid(openId);
+		int count = acPosterWechatUserInfo.getQualificaCount() - acPosterWechatUserInfo.getUsedQualificaCount();
+		for (int i = 0; i < count; i++) {
+			try {
+				draw(openId, activityPosterConfig.getActivityId());
+			} catch (MallApiException e) {
+				logger.error("领取失败奖品失败",e);
+			}
+		}
 	}
 
 	private void saveActivityPosterShareInfo(String openid, String shareOpenid) {
