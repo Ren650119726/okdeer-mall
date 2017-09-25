@@ -3,6 +3,7 @@ package com.okdeer.mall.activity.wxchat.service.impl;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageHelper;
@@ -17,6 +18,7 @@ import com.okdeer.mall.activity.wxchat.service.WechatPassiveReplyService;
 @Service
 public class WechatPassiveReplyServiceImpl extends BaseServiceImpl implements WechatPassiveReplyService {
 
+	@Autowired
 	private WechatPassiveReplyMapper wechatPassiveReplyMapper;
 
 	
