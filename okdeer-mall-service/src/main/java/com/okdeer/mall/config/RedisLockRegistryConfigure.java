@@ -43,19 +43,19 @@ public class RedisLockRegistryConfigure {
 
 	private RedisDefaultLockRegistry redisDefaultLockRegistry;
 
-	@Bean(destroyMethod = "distroyRedisDefaultLock")
+	@Bean
 	public RedisLockRegistry redisLockRegistry(RedisConnectionFactory factory) {
 		redisDefaultLockRegistry = new RedisDefaultLockRegistry();
 		return new RedisLockRegistry(factory, "MALL-SERVICE", DEFAULT_EXPIRE_AFTER,
 				redisDefaultLockRegistry);
 	}
 
-	public void distroyRedisDefaultLock() {
-		logger.debug("销毁distroyRedisDefaultLock.......");
-		if (redisDefaultLockRegistry != null) {
-			redisDefaultLockRegistry.distory();
-		}
-	}
+//	public void distroyRedisDefaultLock() {
+//		logger.debug("销毁distroyRedisDefaultLock.......");
+//		if (redisDefaultLockRegistry != null) {
+//			redisDefaultLockRegistry.distory();
+//		}
+//	}
 
 	private class RedisDefaultLockRegistry implements LockRegistry {
 
@@ -71,6 +71,12 @@ public class RedisLockRegistryConfigure {
 		public RedisDefaultLockRegistry() {
 			thread = new Thread(new RemoveExpireLockTask());
 			thread.start();
+		}
+		
+		@Override
+		protected void finalize() throws Throwable {
+			distory();
+			super.finalize();
 		}
 
 		public void distory() {
