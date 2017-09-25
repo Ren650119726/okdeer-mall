@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.wxchat.mapper.WechatPassiveReplyMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.wxchat.entity.WechatPassiveReply" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="keys" property="keys" jdbcType="VARCHAR" />
+        <result column="resp_msg_type" property="respMsgType" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.wechat.enums.WechatRespMsgTypeEnum" />
+        <result column="resp_content" property="respContent" jdbcType="VARCHAR" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="disabled" property="disabled" jdbcType="TINYINT"  javaType="com.okdeer.base.common.enums.Disabled" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, keys, resp_msg_type, resp_content, create_user_id, create_time, update_user_id, 
+        update_time, disabled
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from wechat_passive_reply
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.wxchat.entity.WechatPassiveReply" >
+        insert into wechat_passive_reply
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="keys != null" >
+                keys,
+            </if>
+            <if test="respMsgType != null" >
+                resp_msg_type,
+            </if>
+            <if test="respContent != null" >
+                resp_content,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="keys != null" >
+                #{keys,jdbcType=VARCHAR},
+            </if>
+            <if test="respMsgType != null" >
+                #{respMsgType,jdbcType=TINYINT},
+            </if>
+            <if test="respContent != null" >
+                #{respContent,jdbcType=VARCHAR},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.wxchat.entity.WechatPassiveReply" >
+        update wechat_passive_reply
+        <set >
+            <if test="keys != null" >
+                keys = #{keys,jdbcType=VARCHAR},
+            </if>
+            <if test="respMsgType != null" >
+                resp_msg_type = #{respMsgType,jdbcType=TINYINT},
+            </if>
+            <if test="respContent != null" >
+                resp_content = #{respContent,jdbcType=VARCHAR},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=TINYINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from wechat_passive_reply
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <select id="findList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.wechat.dto.WechatPassiveReplyParamDto">
+    	 select 
+        <include refid="Base_Column_List" />
+        from wechat_passive_reply
+        <where>
+        	<if test="keys != null and keys != ''">
+        		 AND keys = #{keys,jdbcType=VARCHAR}
+        	</if>
+        	<if test="wechatRespMsgType != null">
+        		 AND resp_msg_type = #{wechatRespMsgType,jdbcType=VARCHAR}
+        	</if>
+        </where>
+    </select>
+</mapper>
