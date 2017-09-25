@@ -448,8 +448,8 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	
 	private boolean checkFareCoupons(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo,Response<PlaceOrderDto> resp) throws Exception{
 		// Begin V2.5.1 added by maojj 2017-07-29
-		// 为了解决IOS到店自提请求中提交了运费券的bug
-		if(paramDto.getPickType() == PickUpTypeEnum.TO_STORE_PICKUP){
+		// 为了解决IOS到店自提请求中提交了运费券的bug。免运费时提交了云费券的bug
+		if(paramDto.getPickType() == PickUpTypeEnum.TO_STORE_PICKUP || parserBo.getFare().compareTo(BigDecimal.ZERO) == 0){
 			// 如果是到店自提，则将运费券记录id置为空
 			paramDto.setFareRecId("");
 			return true;
