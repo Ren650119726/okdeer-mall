@@ -67,14 +67,17 @@ public class ActivityPrizeRecordServiceImpl extends BaseServiceImpl implements A
 	}
 
 	/**
-	 * @Description 根据传递查询前count条中奖记录
+	 * @Description 根据传递查询前pageSize条中奖记录
 	 * @author tuzhd
 	 * @param count
 	 * @return
 	 */
 	@Override
-	public List<ActivityPrizeRecordVo> findPrizeRecord(String activityAdvertId,Integer count) {
-		return activityPrizeRecordMapper.findPrizeRecord(activityAdvertId,count);
+	public PageUtils<ActivityPrizeRecordVo> findPrizeRecord(String activityAdvertId,
+			int pageNumber, int pageSize) {
+		PageHelper.startPage(pageNumber, pageSize, true);
+		List<ActivityPrizeRecordVo> result = activityPrizeRecordMapper.findPrizeRecord(activityAdvertId);
+		return new PageUtils<>(result);
 	}
 
 	@Override
