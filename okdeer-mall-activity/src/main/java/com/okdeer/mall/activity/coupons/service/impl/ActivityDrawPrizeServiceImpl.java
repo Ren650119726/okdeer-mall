@@ -148,6 +148,23 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 	}
 
 	/**
+	 * 校验代金券领取的用户状态，避免短时间内并发操作
+	 * @param key 存储的redis key
+	 * @param times 超时时间
+	 * @return
+	 */
+	private boolean checkUserStatusByRedis(String key, int times) {
+		// 如果不存在缓存数据 返回true 存在false
+		boolean flag = redisTemplate.boundValueOps(key).setIfAbsent("true");
+		if (flag) {
+			redisTemplate.expire(key, times, TimeUnit.SECONDS);
+		} else {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
 	 * @Description: 根据活动id查询 到点执行抽奖
 	 * @param userId 用户id
 	 * @param luckDrawId 抽奖活动id
@@ -161,47 +178,46 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 		Map<String, Object> map = new HashMap<>();
 		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中 start 涂志定
 		String key = "arrival_time_prize:" + userId;
-		Lock lock = redisLockRegistry.obtain(key);
-		if (lock.tryLock(10, TimeUnit.SECONDS)) {
-			try {
-				boolean isCanPrize = false ;
-				HashOperations<String, String, String> tempMap = redisTemplate.opsForHash();
-				String userKey = userId;
-				String mapKey = currykey + "Map";
-				for(int i =0 ; i < userCount ; i++){
-					userKey = userId + i;
-		 			//这不存在这个领取记录，代表这个用户可以进行领取，userid加序号，标识可以领取的次数
-		 			if(!userId.equals(tempMap.get(mapKey, userKey))){
-		 				isCanPrize = true;
-		 				break;
-		 			}
-				}
-				if(!isCanPrize){
-					map.put("code", 118);
-					map.put("msg", "您这个时间红包领取数量已达上限！");
-					return JSONObject.fromObject(map);
-				}
-				//获得抽奖机会，从redis中拿出可以抽取凭证
-				if (StringUtils.isBlank(redisTemplate.opsForList().rightPop(currykey + "List"))) {
-					map.put("code", 128);
-					map.put("msg", "您来晚了，该时段红包数量已领完！");
-					return JSONObject.fromObject(map);
-				}
-				// 执行抽奖
-				JSONObject result = addProcessPrize(userId, luckDrawId,false);
-				if(result != null){
-					tempMap.put(mapKey, userKey, userId);
-				}
-				return result;
-			} catch (Exception e) {
-				throw e;
-			} finally {
-				lock.unlock();
-			}
-		} else {
+		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		if (!checkFlag) {
 			map.put("code", 112);
 			map.put("msg", "您抽奖速度太快，稍后再试");
 			return JSONObject.fromObject(map);
+		}
+		try {
+			boolean isCanPrize = false ;
+			HashOperations<String, String, String> tempMap = redisTemplate.opsForHash();
+			String userKey = userId;
+			String mapKey = currykey + "Map";
+			for(int i =0 ; i < userCount ; i++){
+				userKey = userId + i;
+	 			//这不存在这个领取记录，代表这个用户可以进行领取，userid加序号，标识可以领取的次数
+	 			if(!userId.equals(tempMap.get(mapKey, userKey))){
+	 				isCanPrize = true;
+	 				break;
+	 			}
+			}
+			if(!isCanPrize){
+				map.put("code", 118);
+				map.put("msg", "您这个时间红包领取数量已达上限！");
+				return JSONObject.fromObject(map);
+			}
+			//获得抽奖机会，从redis中拿出可以抽取凭证
+			if (StringUtils.isBlank(redisTemplate.opsForList().rightPop(currykey + "List"))) {
+				map.put("code", 128);
+				map.put("msg", "您来晚了，该时段红包数量已领完！");
+				return JSONObject.fromObject(map);
+			}
+			// 执行抽奖
+			JSONObject result = addProcessPrize(userId, luckDrawId,false);
+			if(result != null){
+				tempMap.put(mapKey, userKey, userId);
+			}
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			redisTemplate.delete(key);
 		}
 
 	}
@@ -219,39 +235,38 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 		Map<String, Object> map = new HashMap<>();
 		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中 start 涂志定
 		String key = "draw_user" + userId;
-		Lock lock = redisLockRegistry.obtain(key);
-		if (lock.tryLock(10, TimeUnit.SECONDS)) {
-			try {
-				SysBuyerExt user = sysBuyerExtService.findByUserId(userId);
-				// 用户抽奖次数存在让其抽奖否则
-				if (user == null || user.getPrizeCount() == null || user.getPrizeCount() == 0) {
-					// 剩余数量小于0 显示已领完
-					map.put("code", 108);
-					map.put("msg", "您已经没有抽奖机会哦，可以邀请好友获得抽奖机吧！");
-					return JSONObject.fromObject(map);
-				}
-				//9月活动查询每日抽奖次数，三次不能抽取
-				ActivityDrawRecordParamDto params = new ActivityDrawRecordParamDto();
-				params.setUserId(userId); 
-				params.setStartCreateTime(DateUtils.getDateStart(new Date()));
-				params.setEndCreateTime(DateUtils.getDateEnd(new Date()));
-				//超过三次不能抽取返回
-				if(activityDrawRecordService.findCountByParams(params) >= 5){
-					map.put("code", 118);
-					map.put("msg", "您今天抽奖次数已达上限！");
-					return JSONObject.fromObject(map);
-				}
-				// 执行抽奖
-				return addProcessPrize(userId, luckDrawId);
-			} catch (Exception e) {
-				throw e;
-			} finally {
-				lock.unlock();
-			}
-		} else {
-			map.put("code", 102);
+		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		if (!checkFlag) {
+			map.put("code", 112);
 			map.put("msg", "您抽奖速度太快，稍后再试");
 			return JSONObject.fromObject(map);
+		}
+		try {
+			SysBuyerExt user = sysBuyerExtService.findByUserId(userId);
+			// 用户抽奖次数存在让其抽奖否则
+			if (user == null || user.getPrizeCount() == null || user.getPrizeCount() == 0) {
+				// 剩余数量小于0 显示已领完
+				map.put("code", 108);
+				map.put("msg", "您已经没有抽奖机会哦，可以邀请好友获得抽奖机吧！");
+				return JSONObject.fromObject(map);
+			}
+			//9月活动查询每日抽奖次数，三次不能抽取
+			ActivityDrawRecordParamDto params = new ActivityDrawRecordParamDto();
+			params.setUserId(userId); 
+			params.setStartCreateTime(DateUtils.getDateStart(new Date()));
+			params.setEndCreateTime(DateUtils.getDateEnd(new Date()));
+			//超过三次不能抽取返回
+			if(activityDrawRecordService.findCountByParams(params) >= 5){
+				map.put("code", 118);
+				map.put("msg", "您今天抽奖次数已达上限！");
+				return JSONObject.fromObject(map);
+			}
+			// 执行抽奖
+			return addProcessPrize(userId, luckDrawId);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			redisTemplate.delete(key);
 		}
 
 	}
