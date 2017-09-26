@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Maps;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.mall.activity.wxchat.config.WechatConfig;
 import com.okdeer.mall.activity.wxchat.message.ImageWechatMsg;
 import com.okdeer.mall.activity.wxchat.message.TextWechatMsg;
 import com.okdeer.mall.activity.wxchat.service.CustomerService;
@@ -19,6 +20,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Autowired
 	private WechatService wechatService;
+	
 
 	@Override
 	public void sendMsg(Object obj) {

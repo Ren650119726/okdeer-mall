@@ -191,7 +191,7 @@ public class PosterActivityServiceImpl
 			ImageWechatMsg imageWechatMsg = createImageWechatMsg(fromUserName, mediaId);
 			customerService.sendMsg(imageWechatMsg);
 		} catch (Exception e) {
-			logger.error("生成海报图片出错",e);
+			logger.error("生成海报图片出错", e);
 		}
 	}
 
@@ -427,9 +427,9 @@ public class PosterActivityServiceImpl
 					// 发送提示信息給关注的用户
 					customerService.sendMsg(textWechatMsg);
 				} catch (Exception e) {
-					logger.error("获取分享人的信息出错",e);
+					logger.error("获取分享人的信息出错", e);
 				}
-				
+
 			}
 		}
 	}
@@ -452,17 +452,16 @@ public class PosterActivityServiceImpl
 						logger.error("更新用户的资格数出错", e);
 					}
 					customerService.sendMsg(getQucaTip(shareOpenid, count));
-					//给用户送奖品
+					// 给用户送奖品
 					givePrizeToUser(shareOpenid);
 				}
 			} finally {
 				lock.unlock();
 			}
 		}
-		
+
 	}
-	
-	
+
 	private void givePrizeToUser(String openId) {
 		ActivityPosterWechatUserInfo acPosterWechatUserInfo = activityPosterWechatUserService.findByOpenid(openId);
 		int count = acPosterWechatUserInfo.getQualificaCount() - acPosterWechatUserInfo.getUsedQualificaCount();
@@ -470,7 +469,7 @@ public class PosterActivityServiceImpl
 			try {
 				draw(openId, activityPosterConfig.getActivityId());
 			} catch (MallApiException e) {
-				logger.error("领取失败奖品失败",e);
+				logger.error("领取失败奖品失败", e);
 			}
 		}
 	}
@@ -503,7 +502,7 @@ public class PosterActivityServiceImpl
 		textWechatMsg.setFromUserName(wechatConfig.getAccount());
 		textWechatMsg.setToUserName(openid);
 		String content = activityPosterConfig.getGetQualificaTip().replaceAll("#count", String.valueOf(count))
-				.replaceAll("#N", String.valueOf(count / 3));
+				.replaceAll("#N", String.valueOf(count / activityPosterConfig.getFriendReachCountPer()));
 		textWechatMsg.setContent(content);
 		return textWechatMsg;
 	}
