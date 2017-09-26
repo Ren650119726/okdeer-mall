@@ -30,12 +30,13 @@ public interface ActivityPrizeRecordService extends IBaseService {
 	List<ActivityPrizeRecordVo> findByUserId(String userId,String activityId);
 	
 	/**
-	 * @Description 根据传递查询前count条中奖记录
+	 * @Description 根据传递查询前pageSize条中奖记录
 	 * @author tuzhd
 	 * @param count
 	 * @return
 	 */
-	List<ActivityPrizeRecordVo> findPrizeRecord(String activityAdvertId,Integer count);
+	PageUtils<ActivityPrizeRecordVo> findPrizeRecord(String activityAdvertId,
+			int pageNumber, int pageSize);
 	
 	int findCountByPrizeId(String prizeId);
 	

@@ -48,7 +48,7 @@ public class RedisLock {
 	 */
 	public boolean tryLock(List<String> keyList, long timeOut, TimeUnit unit) {
 		if (CollectionUtils.isEmpty(keyList)) {
-			return false;
+			return true;
 		}
 		try {
 			long expire = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeOut, unit);

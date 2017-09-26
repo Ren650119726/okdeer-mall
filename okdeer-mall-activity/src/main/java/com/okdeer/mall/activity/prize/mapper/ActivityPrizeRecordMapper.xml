@@ -64,7 +64,6 @@
         where r.disabled=0  
         	  and d.activity_advert_id =#{activityAdvertId,jdbcType=VARCHAR}
         order by r.create_time DESC 
-        limit 0,#{count,jdbcType=INTEGER}
     </select>
     <!-- 通过奖品id查询奖品中奖数量 -->
     <select id="findCountByPrizeId" resultType="java.lang.Integer" parameterType="java.lang.String" >
