@@ -328,14 +328,8 @@
  		      <if test="startTime != null" >
         		start_time = #{startTime,jdbcType=TIMESTAMP},
      		 </if>
-     		 <if test="startTime == null" >
-        		start_time = null,
-     		 </if>
      		 <if test="endTime != null" >
         		end_time = #{endTime,jdbcType=TIMESTAMP},
-        	 </if>
-        	 <if test="endTime == null" >
-        		end_time = null,
         	 </if>
  		     <if test="useUserType != null" >
         		use_user_type = #{useUserType,jdbcType=TINYINT},
