@@ -100,15 +100,20 @@ public class WechatMsgProcessServiceImpl
 		if (msgType == null) {
 			throw new MallApiException("解析msgType出错");
 		}
-		String event = getEvent(wechatMsgRequest.getRequestXml());
-		if (event == null) {
-			throw new MallApiException("解析event出错");
-		}
 
-		String key = (msgType + WxchatUtils.JOIN + event).toUpperCase();
+		StringBuilder keyBuilder = new StringBuilder();
+		keyBuilder.append(msgType);
+		if ("event".equals(msgType)) {
+			String event = getEvent(wechatMsgRequest.getRequestXml());
+			if (event == null) {
+				throw new MallApiException("解析event出错");
+			}
+			keyBuilder.append(WxchatUtils.JOIN + event);
+		}
+		String key = keyBuilder.toString().toUpperCase();
 		WechatMsgHandler wechatMsgHandler = msgHandlerMap.get(key);
 		if (wechatMsgHandler == null) {
-			logger.warn("没有找到相应的消息处理类：msgType={},event={}", msgType, event);
+			logger.warn("没有找到相应的消息处理类：{},{}", msgType, key);
 			throw new MallApiException("没有找到相应的消息处理类");
 		}
 		XStream xStream = createXstream();
@@ -132,8 +137,8 @@ public class WechatMsgProcessServiceImpl
 	}
 
 	/**
-	 *  获取签名
-	 *  
+	 * 获取签名
+	 * 
 	 * @param body
 	 * @return
 	 */

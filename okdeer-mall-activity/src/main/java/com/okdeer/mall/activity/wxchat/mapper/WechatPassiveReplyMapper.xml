@@ -129,7 +129,7 @@
         from wechat_passive_reply
         <where>
         	<if test="inputKeys != null and inputKeys != ''">
-        		 AND inputKeys = #{inputKeys,jdbcType=VARCHAR}
+        		 AND input_keys = #{inputKeys,jdbcType=VARCHAR}
         	</if>
         	<if test="wechatRespMsgType != null">
         		 AND resp_msg_type = #{wechatRespMsgType,jdbcType=VARCHAR}

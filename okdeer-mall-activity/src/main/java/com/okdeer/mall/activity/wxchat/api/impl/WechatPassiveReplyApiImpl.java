@@ -6,6 +6,7 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
@@ -34,6 +35,7 @@ public class WechatPassiveReplyApiImpl implements WechatPassiveReplyApi {
 		WechatPassiveReply wechatPassiveReply = BeanMapper.map(wechatPassiveReplyDto, WechatPassiveReply.class);
 		wechatPassiveReply.setId(UuidUtils.getUuid());
 		wechatPassiveReply.setCreateTime(new Date());
+		wechatPassiveReply.setDisabled(Disabled.valid);
 		try {
 			wechatPassiveReplyService.add(wechatPassiveReply);
 		} catch (Exception e) {

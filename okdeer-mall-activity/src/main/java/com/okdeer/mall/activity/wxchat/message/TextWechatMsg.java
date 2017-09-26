@@ -11,6 +11,10 @@ public class TextWechatMsg extends WechatMsg {
 	@XStreamCDATA
 	private String content;
 
+	@XStreamAlias("MsgId")
+	@XStreamCDATA
+	private String msgId;
+
 	public TextWechatMsg() {
 		super("text");
 	}
@@ -21,6 +25,14 @@ public class TextWechatMsg extends WechatMsg {
 
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public String getMsgId() {
+		return msgId;
+	}
+
+	public void setMsgId(String msgId) {
+		this.msgId = msgId;
 	}
 
 }
