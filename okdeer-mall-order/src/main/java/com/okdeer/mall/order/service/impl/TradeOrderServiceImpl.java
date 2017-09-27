@@ -112,7 +112,6 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectOrderTypeEnum;
-import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.enums.ActivitySourceEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
@@ -6616,13 +6615,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
         TradeOrderItemDetail itemDetail = null;
 
-        // 最后一个实际支付金额
-        BigDecimal lastActualAmount = orderItem.getActualAmount();
         // 最后一个优惠金额
         BigDecimal lastPreferentialAmount = orderItem.getPreferentialPrice();
-
-        // 每一个实际支付金额
-        BigDecimal everyActualAmount = actualAmount.divide(new BigDecimal(skuQty), 2, BigDecimal.ROUND_HALF_UP);
         // 每一个优惠金额
         BigDecimal everyPreferentialAmount = preferentialAmount.divide(new BigDecimal(skuQty), 2,
                 BigDecimal.ROUND_HALF_UP);
@@ -6653,15 +6647,13 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
             if (i == (skuQty - 1)) {
                 // 最后一个
-                itemDetail.setActualAmount(lastActualAmount);
+                itemDetail.setActualAmount(unitPrice.subtract(lastPreferentialAmount));
                 itemDetail.setPreferentialPrice(lastPreferentialAmount);
             } else {
-                itemDetail.setActualAmount(everyActualAmount);
+                itemDetail.setActualAmount(unitPrice.subtract(everyPreferentialAmount));
                 itemDetail.setPreferentialPrice(everyPreferentialAmount);
             }
             itemDetail.setStatus(ConsumeStatusEnum.noConsume);
-
-            lastActualAmount = lastActualAmount.subtract(itemDetail.getActualAmount());
             lastPreferentialAmount = lastPreferentialAmount.subtract(itemDetail.getPreferentialPrice());
 
             this.tradeOrderItemDetailMapper.insertSelective(itemDetail);
@@ -7118,10 +7110,5 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     public BigDecimal selectConsumeTotalAmount(Map<String, Object> params) {
         return tradeOrderMapper.selectConsumeTotalAmount(params);
     }
-
-	@Override
-	public List<TradeOrder> findOrderListForJob() {
-		return tradeOrderMapper.findOrderListForJob();
-	}
 
 }

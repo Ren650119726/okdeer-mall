@@ -54,13 +54,14 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 	}
 
 	/**
-	 * @Description 根据传递查询前count条中奖记录
+	 * @Description 根据传递查询前pageSize条中奖记录
 	 * @author tuzhd
 	 * @param count
 	 * @return
 	 */
-	public List<ActivityPrizeRecordVo> findPrizeRecord(String activityAdvertId,Integer count){
-		return activityPrizeRecordService.findPrizeRecord(activityAdvertId,count);
+	public PageUtils<ActivityPrizeRecordVo> findPrizeRecord(String activityAdvertId,
+			int pageNumber, int pageSize){
+		return activityPrizeRecordService.findPrizeRecord(activityAdvertId,pageNumber,pageSize);
 	}
 	
 	/**

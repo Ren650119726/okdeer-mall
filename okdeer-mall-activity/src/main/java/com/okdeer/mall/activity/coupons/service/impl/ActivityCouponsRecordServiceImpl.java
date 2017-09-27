@@ -1753,7 +1753,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Override
 	public JSONObject addRecordsByCollectId(String collectId, String userId, String invitaUserId, boolean limitOne)
 			throws Exception {
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中
 		String key = userId + collectId;
 		boolean checkFlag = checkUserStatusByRedis(key, 6);

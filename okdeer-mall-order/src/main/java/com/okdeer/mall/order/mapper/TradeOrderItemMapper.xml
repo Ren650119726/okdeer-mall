@@ -685,26 +685,5 @@
 			AND s.received_time &lt;= #{orderEndDate, jdbcType=VARCHAR}
 		</if>
  </select>
- <!--begin xuzq 20170821 每天2点查询昨天店铺已完成订单的商品销售情况 -->
-<resultMap id="SellerResultMap" type="com.okdeer.mall.order.bo.StoreGoodsHotSellerBo" >
-    <result column="store_id" property="storeId" jdbcType="VARCHAR" />
-    <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
-    <result column="spu_category_id" property="spuCategoryId" jdbcType="VARCHAR" />
-    <result column="quantity" property="quantity" jdbcType="INTEGER" />
-    <result column="sale" property="sale" jdbcType="DECIMAL" />
- </resultMap>   
- <select id="findSellerList"  resultMap="SellerResultMap">
- 	SELECT DISTINCT
- 	    tr.store_id,
- 		item.store_sku_id,
-        count(item.quantity) quantity,
-        sum(item.actual_amount) sale
-	FROM trade_order_item item inner join trade_order tr on tr.id = item.order_id
-    where tr.id in
-		<foreach collection="orderIds" open="(" close=")" index="index" item="item" separator=",">
-			#{item}
-		</foreach>
-    group by tr.store_id,item.store_sku_id
- </select>
-  <!--begin xuzq 20170821 每天2点查询昨天店铺已完成订单的商品销售情况 -->
+ 
 </mapper>
