@@ -7,12 +7,13 @@
 package com.okdeer.mall.activity.wxchat.mapper;
 
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.activity.wxchat.bo.ActivityPosterShareInfoParamBo;
 import com.okdeer.mall.activity.wxchat.entity.ActivityPosterShareInfo;
 
 public interface ActivityPosterShareInfoMapper extends IBaseMapper {
 
 	ActivityPosterShareInfo findByOpenid(String openid);
 
-	int queryCountByShareOpenId(String shareOpenid);
+	int queryCountByParam(ActivityPosterShareInfoParamBo activityPosterShareInfoParamBo);
 
 }
