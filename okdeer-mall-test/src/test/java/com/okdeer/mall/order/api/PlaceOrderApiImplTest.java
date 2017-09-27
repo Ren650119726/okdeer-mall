@@ -2,16 +2,15 @@ package com.okdeer.mall.order.api;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyString;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -22,31 +21,36 @@ import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Lists;
+import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
+import com.okdeer.archive.goods.dto.StoreSkuComponentDto;
+import com.okdeer.archive.goods.dto.StoreSkuComponentParamDto;
+import com.okdeer.archive.goods.dto.StoreSkuParamDto;
+import com.okdeer.archive.goods.service.StoreSkuApi;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.entity.StoreInfo;
-import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
-import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.base.MockUtils;
-import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.mock.MockFilePath;
-import com.okdeer.mall.mock.StoreMock;
+import com.okdeer.mall.order.api.model.OrderModel;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.handler.RequestHandler;
+import com.okdeer.mall.order.handler.impl.CheckFavourServiceImpl;
 import com.okdeer.mall.order.handler.impl.CheckSkuServiceImpl;
 import com.okdeer.mall.order.handler.impl.CheckStoreServiceImpl;
+import com.okdeer.mall.order.handler.impl.PlaceOrderServiceImpl;
 import com.okdeer.mall.order.service.PlaceOrderApi;
 
 @RunWith(Parameterized.class)
@@ -54,14 +58,13 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	
 	private static final Logger logger = LoggerFactory.getLogger(PlaceOrderApiImplTest.class);
 	
+	private static final JsonMapper JSONMAPPER = JsonMapper.nonDefaultMapper();
+	
 	@Resource
 	private PlaceOrderApi placeOrderApi;
 	
-	private int index;
-
-	private Request<PlaceOrderParamDto> confirmReq;
-
-	private Request<PlaceOrderParamDto> submitReq;
+	@Resource
+	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  placeOrderService;
 	
 	@Mock
 	private StoreInfoServiceApi storeInfoServiceApi;
@@ -72,10 +75,18 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	@Mock
 	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
 	
+	@Mock
+	private StoreSkuApi storeSkuApi;
+	
+	@Mock
+	private GoodsNavigateCategoryServiceApi goodsNavigateCategoryServiceApi;
+	
+	private OrderModel orderModel;
+	
 	/**
 	 * mock店铺资料
 	 */
-	private List<StoreInfo> storeMockList;
+	private StoreInfo storeMock;
 	
 	/**
 	 * mock商品列表
@@ -87,72 +98,39 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	 */
 	private List<GoodsStoreSkuStock> skuStockList;
 	
-	/**
-	 * 返回code码
-	 */
-	private int[] codeArr;
-
-	public PlaceOrderApiImplTest(int index,Request<PlaceOrderParamDto> confirmReq, Request<PlaceOrderParamDto> submitReq) {
-		this.index = index;
-		this.confirmReq = confirmReq;
-		this.submitReq = submitReq;
+	private List<StoreSkuComponentDto> bindRelList;
+	
+	public PlaceOrderApiImplTest(OrderModel orderModel) {
+		this.orderModel = orderModel;
 	}
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testConfirmOrder() throws Exception {
-		given(storeInfoServiceApi.getStoreInfoById("4028b1e05cbf666b015cc3723f7d40a8")).willReturn(this.storeMockList.get(this.index));
-		given(storeInfoServiceApi.findById("4028b1e05cbf666b015cc3723f7d40a8")).willReturn(this.storeMockList.get(this.index));
-		given(goodsStoreSkuServiceApi.findStoreSkuForOrder(anyList())).willReturn(this.storeSkuList);
-		given(goodsStoreSkuStockApi.findByStoreSkuIdList(anyList())).willReturn(this.skuStockList);
-		Response<PlaceOrderDto> resp = placeOrderApi.confirmOrder(confirmReq);
-		if(this.index == 5){
-			assertEquals(ResultCodeEnum.SUCCESS.getCode(), resp.getCode());
-		}else{
-			assertEquals(this.codeArr[this.index], resp.getCode());
-		}
-	}
-	
-	@Test
-	public void testSubmitOrder() throws Exception {
-		Response<PlaceOrderDto> resp = placeOrderApi.submitOrder(submitReq);
-	}
-	
 	@Parameters
 	public static Collection<Object[]> initParam() throws Exception {
-		Map<String, List<String>> dataMap = readReqData();
+		// 申明变量
 		Collection<Object[]> initParams = new ArrayList<Object[]>();
-		List<String> confirmList = dataMap.get("confirm");
-		List<String> submitList = dataMap.get("submit");
-		int size = confirmList.size() > submitList.size() ? submitList.size() : confirmList.size();
-		for (int i = 0; i < size; i++) {
-			initParams.add(new Object[] { i,parseObject(confirmList.get(i)), parseObject(submitList.get(i)) });
+		// 获取mock的json数据列表
+		List<String> mockStrList = MockUtils.getMockData(MOCK_ORDER_REQ);
+		for (String mockStr : mockStrList) {
+			initParams.add(new Object[] {JSONMAPPER.fromJson(mockStr, new TypeReference<OrderModel>(){})});
 		}
 		return initParams;
 	}
 	
 	@Override
-	public void initMocks(){
-		// mock返回消息码
-		initMockCode();
+	public void initMocks() throws Exception{
 		// mock店铺信息
 		initMockStore();
 		// mocks商品信息
 		initMockSkuAndStock();
 		// mock dubbo服务
-		initMockDubbo();
-	}
-	
-	private void initMockCode(){
-		this.codeArr = new int[]{
-				ResultCodeEnum.SERVER_STORE_NOT_EXISTS.getCode(),
-				ResultCodeEnum.STORE_IS_CLOSED.getCode(),
-				ResultCodeEnum.CVS_IS_PAUSE.getCode(),
-				ResultCodeEnum.CVS_IS_PAUSE.getCode(),
-				ResultCodeEnum.CVS_IS_PAUSE.getCode(),
-				ResultCodeEnum.CVS_NOT_SUPPORT_TO_STORE.getCode()
-				
-		};
+		try {
+			initMockDubbo();
+		} catch (Exception e) {
+			logger.error("dubbo服务mock失败：",e);
+		}
+		this.bindRelList = MockUtils.getMockListData(MOCK_CHECK_SKU_BIND_REL_PATH, StoreSkuComponentDto.class);
+		// 驱动事务回滚，方法上增加事务监听
+		beforeMethod(this, "testSubmitOrder");
 	}
 	
 	/**
@@ -161,16 +139,12 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	 * @date 2017年7月27日
 	 */
 	private void initMockStore(){
-		this.storeMockList = StoreMock.mock();
+		this.storeMock = MockUtils.getMockSingleData(MOCK_ORDER_STORE_INFO, StoreInfo.class);
 	}
 	
 	private void initMockSkuAndStock(){
-		List<List<GoodsStoreSku>> mockSkuList = MockUtils
-				.getMockData(MOCK_ORDER_SKU_PATH, GoodsStoreSku.class);
-		this.storeSkuList = mockSkuList.get(0);
-		List<List<GoodsStoreSkuStock>> mockStockList = MockUtils
-				.getMockData(MOCK_ORDER_STOCK_PATH, GoodsStoreSkuStock.class);
-		this.skuStockList = mockStockList.get(0);
+		this.storeSkuList = MockUtils.getMockListData(MOCK_CHECK_SKU_LIST_PATH, GoodsStoreSku.class);
+		this.skuStockList = MockUtils.getMockListData(MOCK_CHECK_SKU_STOCK_PATH, GoodsStoreSkuStock.class);
 	}
 	
 	/**
@@ -179,55 +153,89 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	 * @throws Exception 
 	 * @date 2017年7月27日
 	 */
-	public void initMockDubbo(){
+	@SuppressWarnings("unchecked")
+	public void initMockDubbo() throws Exception{
 		CheckStoreServiceImpl checkStoreService = this.applicationContext.getBean(CheckStoreServiceImpl.class);
 		CheckSkuServiceImpl checkSkuService = this.applicationContext.getBean(CheckSkuServiceImpl.class);
+		CheckFavourServiceImpl checkFavourService =  this.applicationContext.getBean(CheckFavourServiceImpl.class);
 		ActivityDiscountService activityDiscountService = this.applicationContext.getBean(ActivityDiscountService.class);
 		ReflectionTestUtils.setField(checkStoreService, "storeInfoServiceApi", storeInfoServiceApi);
 		ReflectionTestUtils.setField(checkSkuService, "goodsStoreSkuServiceApi", goodsStoreSkuServiceApi);
 		ReflectionTestUtils.setField(checkSkuService, "goodsStoreSkuStockApi", goodsStoreSkuStockApi);
+		ReflectionTestUtils.setField(checkSkuService, "storeSkuApi", storeSkuApi);
+		ReflectionTestUtils.setField(checkFavourService, "goodsNavigateCategoryServiceApi", goodsNavigateCategoryServiceApi);
 		ReflectionTestUtils.setField((ActivityDiscountService) AopTestUtils.getTargetObject(activityDiscountService),
 				"storeInfoServiceApi", storeInfoServiceApi);
-	}
-
-	private static Map<String, List<String>> readReqData() throws IOException {
-		Map<String, List<String>> reqDataMap = new HashMap<String, List<String>>();
-		reqDataMap.put("confirm", new ArrayList<String>());
-		reqDataMap.put("submit", new ArrayList<String>());
-
-		ClassPathResource resource = new ClassPathResource(MOCK_ORDER_REQ);
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new FileReader(resource.getFile()));
-			StringBuilder sb = null;
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				if (line.startsWith("confirm start---") || line.startsWith("submit start---")) {
-					sb = new StringBuilder();
-				} else if (line.startsWith("confirm end---")) {
-					reqDataMap.get("confirm").add(sb.toString());
-				} else if (line.startsWith("submit start---")) {
-					sb = new StringBuilder();
-				} else if (line.startsWith("submit end---")) {
-					reqDataMap.get("submit").add(sb.toString());
-				} else {
-					sb.append(line);
-				}
-			}
-		} catch (Exception e) {
-			logger.error(LogConstants.ERROR_EXCEPTION,e);
-		} finally{
-			if(reader != null){
-				reader.close();
-			}
-		}
-		return reqDataMap;
-	}
-
-	private static Request<PlaceOrderParamDto> parseObject(String reqData) {
-		return JsonMapper.nonDefaultMapper().fromJson(reqData, new TypeReference<Request<PlaceOrderParamDto>>() {
+		ReflectionTestUtils.setField((PlaceOrderServiceImpl) AopTestUtils.getTargetObject(placeOrderService),
+				"goodsStoreSkuStockApi", goodsStoreSkuStockApi);
+		ReflectionTestUtils.setField((PlaceOrderServiceImpl) AopTestUtils.getTargetObject(placeOrderService),
+				"goodsStoreSkuServiceApi", goodsStoreSkuServiceApi);
+		
+		given(storeInfoServiceApi.getStoreInfoById(anyString())).willReturn(this.storeMock);
+		given(storeInfoServiceApi.findById(anyString())).willReturn(this.storeMock);
+		given(goodsStoreSkuServiceApi.findStoreSkuForOrder(anyList())).willAnswer((invocation) -> {
+			List<String> arg = (List<String>) invocation.getArguments()[0];
+			return storeSkuList.stream().filter(item -> arg.contains(item.getId())).collect(Collectors.toList());
 		});
+		given(goodsStoreSkuStockApi.findByStoreSkuIdList(anyList())).willAnswer((invocation) -> {
+			List<String> arg = (List<String>) invocation.getArguments()[0];
+			return skuStockList.stream().filter(item -> arg.contains(item.getStoreSkuId())).collect(Collectors.toList());
+		});
+		given(storeSkuApi.findComponentByParam(any(StoreSkuComponentParamDto.class))).willAnswer((invocation) -> {
+			StoreSkuComponentParamDto paramDto = (StoreSkuComponentParamDto)invocation.getArguments()[0];
+			List<String> storeSkuIds = paramDto.getStoreSkuIds();
+			return bindRelList.stream().filter(item -> storeSkuIds.contains(item.getStoreSkuId())).collect(Collectors.toList());
+		});
+		given(storeSkuApi.findCompositeGoodsActualStockByIds(any())).willAnswer((invocation) -> {
+			StoreSkuParamDto paramDto = (StoreSkuParamDto)invocation.getArguments()[0];
+			List<String> storeSkuIds = paramDto.getStoreSkuIds();
+			return storeSkuIds.stream().map(e -> 100).collect(Collectors.toList());
+		});
+		given(goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(anyString())).willAnswer((invocation) -> {
+			String arg = (String) invocation.getArguments()[0];
+			if("8a8080e15ebd79e7015ebd8099900004".equals(arg)){
+				return Arrays.asList(new String[]{
+						"52fabf5f276a11e6a672518bbc616d82",
+						"52fc6d1a276a11e6a672518bbc616d82",
+						"52fe1ad5276a11e6a672518bbc616d82",
+						"52ffc890276a11e6a672518bbc616d82",
+						"53017648276a11e6a672518bbc616d82",
+						"530323fe276a11e6a672518bbc616d82",
+						"5304f8c7276a11e6a672518bbc616d82",
+						"5306a681276a11e6a672518bbc616d82",
+						"5308543b276a11e6a672518bbc616d82",
+						"530a01f1276a11e6a672518bbc616d82",
+						"0002d6d7c59842d1be5e23b9acd9efc3",
+						"52f8ea93276a11e6a672518bbc616d82",
+						"52f73cd9276a11e6a672518bbc616d82",
+						"52eeb12b276a11e6a672518bbc616d82",
+						"52f085f4276a11e6a672518bbc616d82",
+						"52f233af276a11e6a672518bbc616d82",
+						"52f3e16b276a11e6a672518bbc616d82",
+						"52f58f23276a11e6a672518bbc616d82",
+						"52e9a7fb276a11e6a672518bbc616d82",
+						"52eb55b6276a11e6a672518bbc616d82",
+						"52ed0373276a11e6a672518bbc616d82",
+						"52e62572276a11e6a672518bbc616d82",
+						"52e7d32e276a11e6a672518bbc616d82"
+				});
+			}else{
+				return Lists.newArrayList();
+			}
+		});
+		given(goodsStoreSkuServiceApi.updateByPrimaryKeySelective(any())).willReturn(0);
 	}
-
+	
+	@Test
+	public void testConfirmOrder() throws Exception {
+		Response<PlaceOrderDto> resp = placeOrderApi.confirmOrder(orderModel.getConfirmReq());
+		assertEquals(orderModel.getConfirmExpiredCode(), resp.getCode());
+	}
+		
+	@Test
+	public void testSubmitOrder() throws Exception {
+		Response<PlaceOrderDto> resp = placeOrderApi.submitOrder(orderModel.getSubmitReq());
+		assertEquals(orderModel.getSubmitExpiredCode(), resp.getCode());
+	}
 
 }

@@ -13,10 +13,12 @@ public interface MockFilePath {
 	 */
 	String MOCK_ORDER_REQ = BASE_MOCK_PATH + "mock-order-req.json";
 	
+	String MOCK_ORDER_STORE_INFO = BASE_MOCK_PATH + "mock-order-store-info.json";
+	
 	/**
 	 * 店铺数据模拟文件路径
 	 */
-	String MOCK_ORDER_STORE_PATH = BASE_MOCK_PATH + "mock-order-store.json";
+	String MOCK_ORDER_STORE_PATH = BASE_MOCK_PATH + "mock-check-store-info.json";
 	/**
 	 * 下单黑盒测试商品数据模拟文件路径
 	 */
