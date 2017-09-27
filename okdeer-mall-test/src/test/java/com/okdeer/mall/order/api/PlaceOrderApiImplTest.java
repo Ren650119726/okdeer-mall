@@ -244,6 +244,7 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 		beforeMethod(this, "testSubmitOrder");
 		Response<PlaceOrderDto> resp = placeOrderApi.submitOrder(orderModel.getSubmitReq());
 		assertEquals(orderModel.getSubmitExpiredCode(), resp.getCode());
+		afterTestMethod(this,"testSubmitOrder");
 	}
 
 }
