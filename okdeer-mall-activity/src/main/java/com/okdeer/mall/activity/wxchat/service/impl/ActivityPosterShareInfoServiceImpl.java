@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.activity.wxchat.bo.ActivityPosterShareInfoParamBo;
 import com.okdeer.mall.activity.wxchat.entity.ActivityPosterShareInfo;
 import com.okdeer.mall.activity.wxchat.mapper.ActivityPosterShareInfoMapper;
 import com.okdeer.mall.activity.wxchat.service.ActivityPosterShareInfoService;
@@ -28,9 +29,10 @@ public class ActivityPosterShareInfoServiceImpl extends BaseServiceImpl implemen
 		return activityPosterShareInfoMapper;
 	}
 
+
 	@Override
-	public int queryCountByShareOpenId(String shareOpenid) {
-		return activityPosterShareInfoMapper.queryCountByShareOpenId(shareOpenid);
+	public int queryCountByParam(ActivityPosterShareInfoParamBo activityPosterShareInfoParamBo) {
+		return activityPosterShareInfoMapper.queryCountByParam(activityPosterShareInfoParamBo);
 	}
 
 }

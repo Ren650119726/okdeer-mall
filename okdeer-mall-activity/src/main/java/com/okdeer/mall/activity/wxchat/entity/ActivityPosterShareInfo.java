@@ -4,6 +4,7 @@
  * @Date 2017-08-04 Created
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的
  */
+
 package com.okdeer.mall.activity.wxchat.entity;
 
 import java.util.Date;
@@ -16,53 +17,69 @@ import java.util.Date;
  */
 public class ActivityPosterShareInfo {
 
-    /**
-     * 主键id
-     */
-    private String id;
-    /**
-     * 关注用id
-     */
-    private String openid;
-    /**
-     * 分享用户id
-     */
-    private String shareOpenid;
-    /**
-     * 关注时间
-     */
-    private Date createTime;
+	/**
+	 * 主键id
+	 */
+	private String id;
 
+	/**
+	 * 关注用id
+	 */
+	private String openid;
 
-    public String getId() {
-        return id;
-    }
+	/**
+	 * 分享用户id
+	 */
+	private String shareOpenid;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	/**
+	 * 关注时间
+	 */
+	private Date createTime;
 
-    public String getOpenid() {
-        return openid;
-    }
+	/**
+	 * 活动id
+	 */
+	private String activityId;
 
-    public void setOpenid(String openid) {
-        this.openid = openid;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public String getShareOpenid() {
-        return shareOpenid;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public void setShareOpenid(String shareOpenid) {
-        this.shareOpenid = shareOpenid;
-    }
+	public String getOpenid() {
+		return openid;
+	}
 
-    public Date getCreateTime() {
-        return createTime;
-    }
+	public void setOpenid(String openid) {
+		this.openid = openid;
+	}
 
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
+	public String getShareOpenid() {
+		return shareOpenid;
+	}
+
+	public void setShareOpenid(String shareOpenid) {
+		this.shareOpenid = shareOpenid;
+	}
+
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
+	public String getActivityId() {
+		return activityId;
+	}
+
+	public void setActivityId(String activityId) {
+		this.activityId = activityId;
+	}
+
 }

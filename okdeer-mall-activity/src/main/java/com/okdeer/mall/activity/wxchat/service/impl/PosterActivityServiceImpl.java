@@ -44,6 +44,7 @@ import com.okdeer.mall.activity.coupons.service.ActivityDrawPrizeService;
 import com.okdeer.mall.activity.prize.entity.ActivityPrizeWeight;
 import com.okdeer.mall.activity.wechat.dto.ActivityPosterDrawRecordParamDto;
 import com.okdeer.mall.activity.wechat.dto.PosterTakePrizeDto;
+import com.okdeer.mall.activity.wxchat.bo.ActivityPosterShareInfoParamBo;
 import com.okdeer.mall.activity.wxchat.bo.AddMediaResult;
 import com.okdeer.mall.activity.wxchat.bo.CreateQrCodeResult;
 import com.okdeer.mall.activity.wxchat.bo.DrawResult;
@@ -407,7 +408,7 @@ public class PosterActivityServiceImpl
 				// 如果用户之前已经是别人的推荐好友了，则不处理
 				try {
 					// 保存活动信息
-					saveActivityPosterShareInfo(subscribeUser.getOpenid(), shareOpenid);
+					saveActivityPosterShareInfo(subscribeUser.getOpenid(), shareOpenid,activityPosterConfig);
 					// 获取关注用户的最新信息
 					WechatUserInfo wechatUserInfo = wechatService.getUserInfo(shareOpenid);
 					// 发送提示信息給关注的用户
@@ -448,7 +449,10 @@ public class PosterActivityServiceImpl
 		if (lock.tryLock(10, TimeUnit.SECONDS)) {
 			try {
 				// 查询分享用户的好友关注数量
-				int count = activityPosterShareInfoService.queryCountByShareOpenId(shareOpenid);
+				ActivityPosterShareInfoParamBo activityPosterShareInfoParamBo = new ActivityPosterShareInfoParamBo();
+				activityPosterShareInfoParamBo.setActivityId(activityPosterConfig.getActivityId());
+				activityPosterShareInfoParamBo.setShareOpenid(shareOpenid);
+				int count = activityPosterShareInfoService.queryCountByParam(activityPosterShareInfoParamBo);
 				if (count % activityPosterConfig.getFriendReachCountPer() == 0) {
 					// 如果是3的倍数，则更新用户的资格次数
 					ActivityPosterWechatUserInfo activityPosterWechatUser = new ActivityPosterWechatUserInfo();
@@ -482,12 +486,13 @@ public class PosterActivityServiceImpl
 		}
 	}
 
-	private void saveActivityPosterShareInfo(String openid, String shareOpenid) {
+	private void saveActivityPosterShareInfo(String openid, String shareOpenid,ActivityPosterConfig activityPosterConfig) {
 		ActivityPosterShareInfo activityPosterShareInfo = new ActivityPosterShareInfo();
 		activityPosterShareInfo.setCreateTime(new Date());
 		activityPosterShareInfo.setId(UuidUtils.getUuid());
 		activityPosterShareInfo.setOpenid(openid);
 		activityPosterShareInfo.setShareOpenid(shareOpenid);
+		activityPosterShareInfo.setActivityId(activityPosterConfig.getActivityId());
 		try {
 			activityPosterShareInfoService.add(activityPosterShareInfo);
 		} catch (Exception e) {
