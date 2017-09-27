@@ -45,4 +45,11 @@ public abstract class BaseServiceTest {
 				.filter(e -> methodName.equals(e.getName())).findFirst().get();
 		this.testContextManager.beforeTestMethod(testInstance,testMethod);
 	}
+	
+	protected void afterTestMethod(Object testInstance, String methodName) throws Exception{
+		assertNotNull("methodName must not null", methodName);
+		Method testMethod = Arrays.asList(testInstance.getClass().getDeclaredMethods()).stream()
+				.filter(e -> methodName.equals(e.getName())).findFirst().get();
+		this.testContextManager.afterTestMethod(testInstance, testMethod, new RuntimeException());
+	}
 }
