@@ -21,8 +21,11 @@ import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
@@ -51,6 +54,7 @@ import com.okdeer.mall.order.handler.impl.CheckFavourServiceImpl;
 import com.okdeer.mall.order.handler.impl.CheckSkuServiceImpl;
 import com.okdeer.mall.order.handler.impl.CheckStoreServiceImpl;
 import com.okdeer.mall.order.handler.impl.PlaceOrderServiceImpl;
+import com.okdeer.mall.order.service.GetPreferentialService;
 import com.okdeer.mall.order.service.PlaceOrderApi;
 
 @RunWith(Parameterized.class)
@@ -129,8 +133,6 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 			logger.error("dubbo服务mock失败：",e);
 		}
 		this.bindRelList = MockUtils.getMockListData(MOCK_CHECK_SKU_BIND_REL_PATH, StoreSkuComponentDto.class);
-		// 驱动事务回滚，方法上增加事务监听
-		beforeMethod(this, "testSubmitOrder");
 	}
 	
 	/**
@@ -159,11 +161,13 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 		CheckSkuServiceImpl checkSkuService = this.applicationContext.getBean(CheckSkuServiceImpl.class);
 		CheckFavourServiceImpl checkFavourService =  this.applicationContext.getBean(CheckFavourServiceImpl.class);
 		ActivityDiscountService activityDiscountService = this.applicationContext.getBean(ActivityDiscountService.class);
+		GetPreferentialService getPreferentialService = this.applicationContext.getBean(GetPreferentialService.class);
 		ReflectionTestUtils.setField(checkStoreService, "storeInfoServiceApi", storeInfoServiceApi);
 		ReflectionTestUtils.setField(checkSkuService, "goodsStoreSkuServiceApi", goodsStoreSkuServiceApi);
 		ReflectionTestUtils.setField(checkSkuService, "goodsStoreSkuStockApi", goodsStoreSkuStockApi);
 		ReflectionTestUtils.setField(checkSkuService, "storeSkuApi", storeSkuApi);
 		ReflectionTestUtils.setField(checkFavourService, "goodsNavigateCategoryServiceApi", goodsNavigateCategoryServiceApi);
+		ReflectionTestUtils.setField(getPreferentialService, "goodsNavigateCategoryServiceApi", goodsNavigateCategoryServiceApi);
 		ReflectionTestUtils.setField((ActivityDiscountService) AopTestUtils.getTargetObject(activityDiscountService),
 				"storeInfoServiceApi", storeInfoServiceApi);
 		ReflectionTestUtils.setField((PlaceOrderServiceImpl) AopTestUtils.getTargetObject(placeOrderService),
@@ -233,7 +237,11 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	}
 		
 	@Test
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
+	@Rollback
 	public void testSubmitOrder() throws Exception {
+		// 驱动事务回滚，方法上增加事务监听
+		beforeMethod(this, "testSubmitOrder");
 		Response<PlaceOrderDto> resp = placeOrderApi.submitOrder(orderModel.getSubmitReq());
 		assertEquals(orderModel.getSubmitExpiredCode(), resp.getCode());
 	}
