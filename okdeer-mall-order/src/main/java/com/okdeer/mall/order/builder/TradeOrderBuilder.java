@@ -655,7 +655,7 @@ public class TradeOrderBuilder {
 		int size = (int)orderItemList.stream().filter(orderItem -> orderItem.getActualAmount().compareTo(BigDecimal.ZERO) == 1).count();
 		// 订单项根据实付金额倒序序排列
 		ComparatorChain chain = new ComparatorChain();
-		chain.addComparator(new BeanComparator("actualAmount"), false);
+		chain.addComparator(new BeanComparator("actualAmount"), true);
 		Collections.sort(orderItemList, chain);
 		// 遍历订单项对零花钱进行分摊处理
 		for(TradeOrderItem orderItem : orderItemList){
@@ -665,6 +665,7 @@ public class TradeOrderBuilder {
 			if(index++ < size - 1){
 				pinMoneyItem = orderItem.getActualAmount().multiply(pinMoney).divide(totalActual, 2,
 						BigDecimal.ROUND_FLOOR);
+				pinMoneyItem = orderItem.getActualAmount().compareTo(pinMoneyItem) == 1 ? pinMoneyItem : orderItem.getActualAmount();
 				unAllocateMoney = unAllocateMoney.subtract(pinMoneyItem);
 			}else{
 				pinMoneyItem = orderItem.getActualAmount().compareTo(unAllocateMoney) == 1?unAllocateMoney:orderItem.getActualAmount();
