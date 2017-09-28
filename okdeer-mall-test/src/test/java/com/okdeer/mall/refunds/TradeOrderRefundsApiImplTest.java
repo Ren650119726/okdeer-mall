@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Lists;
@@ -42,6 +43,7 @@ import com.okdeer.mall.order.dto.OrderRefundsDto;
 import com.okdeer.mall.order.dto.PhysOrderApplyRefundParamDto;
 import com.okdeer.mall.order.dto.PhysicalOrderApplyDto;
 import com.okdeer.mall.order.dto.PhysicalOrderApplyParamDto;
+import com.okdeer.mall.order.dto.RefundsMoneyDto;
 import com.okdeer.mall.order.dto.StoreConsumerApplyDto;
 import com.okdeer.mall.order.dto.StoreConsumerApplyParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -161,17 +163,21 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 	}
 	
 	@Test
-	@Rollback(true)
+	@Rollback
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	public void physicalOrderApplyRefunds() throws Exception {
+		beforeMethod(this, "physicalOrderApplyRefunds");
 		//查询充值退款列表（用于财务系统，不分页）
 		PhysicalOrderApplyDto dto = tradeOrderRefundsApiImpl.physicalOrderApplyRefunds(physicalParam);
 		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),dto.getRefundId());
+		afterTestMethod(this, "physicalOrderApplyRefunds");
 	}
 	
 	@Test
 	@Rollback(true)
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	public void storeConsumerApplyRefunds() throws Exception {
-		
+		beforeMethod(this, "storeConsumerApplyRefunds");
 		given(tradeOrderItemDetailService.findById("8a80808558d780180158d7cebaaa000c")).willReturn(tradeOrderItemDetailList.get(index));
 		
 		given(tradeOrderItemDetailMapper.updateStatusWithRefundById("8a80808558d780180158d7cebaaa000c")).willReturn(1);
@@ -184,12 +190,14 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 		}else{
 			Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),dto.getRefundId());
 		}
+		afterTestMethod(this, "storeConsumerApplyRefunds");
 	}
 	
 	@Test
 	@Rollback(true)
-	@Transactional
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	public void updateRefundsStatus() throws Exception {
+		beforeMethod(this, "updateRefundsStatus");
 		OrderRefundQueryParamDto orderRefundQueryParamDto=new OrderRefundQueryParamDto();
 		List<Integer> list = Lists.newArrayList();
 		list.add(8);
@@ -203,18 +211,21 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 			boolean count = tradeOrderRefundsApiImpl.updateRefundsStatus(result.getList().get(0).getId(), "9", result.getList().get(0).getBuyerUserId());
 			Assert.assertTrue(count);
 		}
+		afterTestMethod(this, "updateRefundsStatus");
 	}
 	
 	@Test
 	@Rollback(true)
-	@Transactional
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	public void applyRefund() throws Exception {
+		beforeMethod(this, "applyRefund");
 		PhysOrderApplyRefundParamDto applyRefundParamDto=new PhysOrderApplyRefundParamDto();
 		Map<String,Object> param  = new HashMap<String,Object>();
 		param.put("storeId", "56583c03276511e6aaff00163e010eb1");
 		param.put("status", 5);
 		List<TradeOrder> order = tradeOrderMapper.selectByParams(param);
 		List<TradeOrderItem> items = tradeOrderItemMapper.selectOrderItemListById(order.get(0).getId());
+		order.get(0).setUserId("141577260798e5eb9e1b8a0645b486c7");
 		applyRefundParamDto.setTradeOrder(order.get(0));
 		applyRefundParamDto.setTradeOrderItem(items.get(0));
 		applyRefundParamDto.setMemo("1111");
@@ -222,6 +233,37 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 		applyRefundParamDto.setOrderResource(OrderResourceEnum.YSCAPP);
 		//查询充值退款列表
 		Assert.assertNotNull(tradeOrderRefundsApiImpl.applyRefund(applyRefundParamDto, RefundOrderTypeEnum.PHYSICAL_ORDER));
+		afterTestMethod(this, "applyRefund");
 	}
 	
+	@Test
+	@Rollback(true)
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
+	public void refundsInfo() throws Exception{
+		beforeMethod(this, "refundsInfo");
+		OrderRefundQueryParamDto orderRefundQueryParamDto = new OrderRefundQueryParamDto();
+		orderRefundQueryParamDto.setStoreId("8a284fd056c2991b0156d4fa4a230836");
+		Map<String, Object> result = tradeOrderRefundsApiImpl.statisRefundsByParams(orderRefundQueryParamDto);
+		List<Integer> list = Lists.newArrayList();
+		list.add(3);
+		orderRefundQueryParamDto.setRefundStatusList(list);
+		orderRefundQueryParamDto.setpSize(10);
+		orderRefundQueryParamDto.setpNum(1);
+		//查询充值退款列表（用于财务系统，不分页）
+		PageUtils<OrderRefundsDto> page = tradeOrderRefundsApiImpl.orderRefund(orderRefundQueryParamDto);
+		tradeOrderRefundsApiImpl.orderRefundExport(orderRefundQueryParamDto);
+		if(CollectionUtils.isNotEmpty(page.getList())){
+			String id = page.getList().get(0).getId();
+			RefundsMoneyDto dto = tradeOrderRefundsApiImpl.refundsInfo(id);
+			Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),dto);
+			Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),tradeOrderRefundsApiImpl.refundsDetail(id));
+			List<String> ids = Lists.newArrayList();
+			page.getList().forEach(e -> {
+				ids.add(e.getId());
+			});
+			List<RefundsMoneyDto> dtoList = tradeOrderRefundsApiImpl.refundsInfo(ids);
+			Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),dtoList);
+		}
+		afterTestMethod(this, "refundsInfo");
+	}
 }

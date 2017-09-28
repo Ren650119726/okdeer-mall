@@ -199,33 +199,4 @@ public class TradeOrderRefundsApiImplFindTest extends BaseServiceTest {
 		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),list);
 	}
 	
-
-	
-	public void refundsInfo() throws Exception{
-		OrderRefundQueryParamDto orderRefundQueryParamDto = new OrderRefundQueryParamDto();
-		orderRefundQueryParamDto.setStoreId("8a284fd056c2991b0156d4fa4a230836");
-		Map<String, Object> result = tradeOrderRefundsApiImpl.statisRefundsByParams(orderRefundQueryParamDto);
-		List<Integer> list = Lists.newArrayList();
-		list.add(3);
-		orderRefundQueryParamDto.setRefundStatusList(list);
-		orderRefundQueryParamDto.setpSize(10);
-		orderRefundQueryParamDto.setpNum(1);
-		//查询充值退款列表（用于财务系统，不分页）
-		PageUtils<OrderRefundsDto> page = tradeOrderRefundsApiImpl.orderRefund(orderRefundQueryParamDto);
-		tradeOrderRefundsApiImpl.orderRefundExport(orderRefundQueryParamDto);
-		if(CollectionUtils.isNotEmpty(page.getList())){
-			String id = page.getList().get(0).getId();
-			RefundsMoneyDto dto = tradeOrderRefundsApiImpl.refundsInfo(id);
-			Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),dto);
-			Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),tradeOrderRefundsApiImpl.refundsDetail(id));
-			List<String> ids = Lists.newArrayList();
-			page.getList().forEach(e -> {
-				ids.add(e.getId());
-			});
-			List<RefundsMoneyDto> dtoList = tradeOrderRefundsApiImpl.refundsInfo(ids);
-			Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),dtoList);
-		}
-	}
-	
-	
 }
