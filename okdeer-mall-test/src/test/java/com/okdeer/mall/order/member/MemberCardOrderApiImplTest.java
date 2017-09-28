@@ -1,5 +1,6 @@
 package com.okdeer.mall.order.member;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 
@@ -20,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
@@ -31,12 +34,15 @@ import com.okdeer.jxc.bill.service.HykPayOrderServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.base.MockUtils;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.order.dto.MemberCardResultDto;
 import com.okdeer.mall.order.dto.MemberTradeOrderDto;
 import com.okdeer.mall.order.dto.PayInfoParamDto;
+import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.handler.MemberCardOrderService;
 import com.okdeer.mall.order.service.MemberCardOrderApi;
+import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
 /**
  * ClassName: MemberCardOrderApiImplTest 
@@ -89,6 +95,9 @@ public class MemberCardOrderApiImplTest  extends BaseServiceTest {
 		ReflectionTestUtils.setField(memberCardOrderServiceImpl, "buyserUserService", buyserUserService);
 		ReflectionTestUtils.setField(memberCardOrderServiceImpl, "storeInfoService", storeInfoService);
 		
+		TradeOrderPayService tradeOrderPayServiceImpl =  AopTestUtils.getTargetObject(this.applicationContext.getBean("tradeOrderPayServiceImpl"));
+		ReflectionTestUtils.setField(tradeOrderPayServiceImpl, "storeInfoService", storeInfoService);
+		
 		ActivityCouponsRecordService activityCouponsRecordServiceImpl =  AopTestUtils.getTargetObject(this.applicationContext.getBean("activityCouponsRecordServiceImpl"));
 		ReflectionTestUtils.setField(activityCouponsRecordServiceImpl, "goodsStoreSkuServiceApi", goodsStoreSkuServiceApi);
 		
@@ -122,8 +131,10 @@ public class MemberCardOrderApiImplTest  extends BaseServiceTest {
 	 * @date 2017年8月9日
 	 */
 	@Test
-	@Rollback(true)
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
+	@Rollback
 	public void getMemberPayNumber() throws Exception{
+		beforeMethod(this, "getMemberPayNumber");
 		//1、生成
 		String memberPayNum = memberCardOrderApi.getMemberPayNumber("141102938903bd0f97c9a9694854bd8c", "Test_dev01");
 		memberPayNum = memberPayNum + "1";
@@ -164,6 +175,10 @@ public class MemberCardOrderApiImplTest  extends BaseServiceTest {
 		memberCardOrderApi.cancelMemberCardOrder(orderId,userId,true);
 		//3、删除
 		memberCardOrderApi.removetMemberPayNumber(memberPayNum);
+		
+		memberCardOrderApi.getPayInfo(payInfoParamDto);
+		
+		afterTestMethod(this, "getMemberPayNumber");
 		
 	}
 }
