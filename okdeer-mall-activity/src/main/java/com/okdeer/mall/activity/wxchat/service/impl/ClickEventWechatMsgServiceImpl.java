@@ -18,6 +18,7 @@ public class ClickEventWechatMsgServiceImpl extends AbstractEventWechatMsgServic
 
 	private Map<String, WechatMenuProcessService> wechatMenuProcessServiceMap = Maps.newHashMap();
 
+	
 	@Override
 	Object process(Object obj) throws MallApiException {
 		WechatEventMsg wechatEventMsg = (WechatEventMsg) obj;

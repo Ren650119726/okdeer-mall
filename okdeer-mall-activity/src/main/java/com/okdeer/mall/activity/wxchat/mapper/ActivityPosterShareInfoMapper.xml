@@ -5,11 +5,12 @@
         <id column="id" property="id" jdbcType="VARCHAR" />
         <result column="openid" property="openid" jdbcType="VARCHAR" />
         <result column="share_openid" property="shareOpenid" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, openid, share_openid, create_time
+        id, openid, share_openid,activity_id,create_time
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -31,6 +32,9 @@
             <if test="shareOpenid != null" >
                 share_openid,
             </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
             <if test="createTime != null" >
                 create_time,
             </if>
@@ -44,6 +48,9 @@
             </if>
             <if test="shareOpenid != null" >
                 #{shareOpenid,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
             </if>
             <if test="createTime != null" >
                 #{createTime,jdbcType=TIMESTAMP},
@@ -59,6 +66,9 @@
             </if>
             <if test="shareOpenid != null" >
                 share_openid = #{shareOpenid,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
             </if>
             <if test="createTime != null" >
                 create_time = #{createTime,jdbcType=TIMESTAMP},
@@ -79,9 +89,19 @@
         where openid = #{openid,jdbcType=VARCHAR}
 	</select>
 	
-	<select id="queryCountByShareOpenId"  resultType="int" parameterType="java.lang.String">
+	<select id="queryCountByParam"  resultType="int" parameterType="com.okdeer.mall.activity.wxchat.bo.ActivityPosterShareInfoParamBo">
 	 	SELECT  COUNT(*) FROM activity_poster_share_info
-        WHERE share_openid = #{shareOpenid,jdbcType=VARCHAR}
+	 	<where>
+	 		<if test="openid != null and openid !='' ">
+	 			AND openid = #{openid,jdbcType=VARCHAR}
+	 		</if>
+	 		<if test="shareOpenid != null and shareOpenid !='' ">
+	 			AND share_openid = #{shareOpenid,jdbcType=VARCHAR}
+	 		</if>
+	 		<if test="activityId != null and activityId !='' ">
+	 			AND activity_id = #{activityId,jdbcType=VARCHAR}
+	 		</if>
+	 	</where>
 	</select>
 	
 </mapper>

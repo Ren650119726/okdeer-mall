@@ -369,6 +369,13 @@
 		<if test="status != null">
 		  	AND status = #{status,jdbcType=TINYINT}
 		</if>
+		<!-- 活动创建时间 -->
+		<if test="createTimeStart != null">
+		  	AND create_time <![CDATA[ >= ]]> #{createTimeStart,jdbcType=TIMESTAMP}
+		</if>
+		<if test="createTimeEnd != null">
+		 	AND create_time <![CDATA[ <= ]]> #{createTimeEnd,jdbcType=TIMESTAMP}
+		</if>
 		<!-- 活动开始时间 -->
 		<if test="startTimeStart != null">
 		  	AND start_time <![CDATA[ >= ]]> #{startTimeStart,jdbcType=TIMESTAMP}

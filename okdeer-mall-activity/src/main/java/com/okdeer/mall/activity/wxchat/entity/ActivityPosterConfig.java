@@ -51,6 +51,8 @@ public class ActivityPosterConfig {
 	 * 海报图片，以,分隔
 	 */
 	private String posterImg;
+	
+	private String activityId;
 
 	public String getId() {
 		return id;
@@ -116,4 +118,11 @@ public class ActivityPosterConfig {
 		this.posterImg = posterImg;
 	}
 
+	public String getActivityId() {
+		return activityId;
+	}
+
+	public void setActivityId(String activityId) {
+		this.activityId = activityId;
+	}
 }
