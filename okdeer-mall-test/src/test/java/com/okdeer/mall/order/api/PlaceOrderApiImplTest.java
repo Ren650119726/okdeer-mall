@@ -27,6 +27,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.esotericsoftware.minlog.Log;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
@@ -232,7 +233,9 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	
 	@Test
 	public void testConfirmOrder() throws Exception {
+		logger.info("确认订单请求参数：{}",JSONMAPPER.toJson(orderModel.getConfirmReq()));
 		Response<PlaceOrderDto> resp = placeOrderApi.confirmOrder(orderModel.getConfirmReq());
+		logger.info("确认订单返回结果：{}",JSONMAPPER.toJson(resp));
 		assertEquals(orderModel.getConfirmExpiredCode(), resp.getCode());
 	}
 		
@@ -242,7 +245,9 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	public void testSubmitOrder() throws Exception {
 		// 驱动事务回滚，方法上增加事务监听
 		beforeMethod(this, "testSubmitOrder");
+		logger.info("提交订单请求参数：{}",JSONMAPPER.toJson(orderModel.getSubmitReq()));
 		Response<PlaceOrderDto> resp = placeOrderApi.submitOrder(orderModel.getSubmitReq());
+		logger.info("确认订单返回结果：{}",JSONMAPPER.toJson(resp));
 		assertEquals(orderModel.getSubmitExpiredCode(), resp.getCode());
 		afterTestMethod(this,"testSubmitOrder");
 	}
