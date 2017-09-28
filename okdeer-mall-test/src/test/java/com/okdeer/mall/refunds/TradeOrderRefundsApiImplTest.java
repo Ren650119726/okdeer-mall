@@ -2,6 +2,7 @@ package com.okdeer.mall.refunds;
 
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
+import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
+import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.pos.service.PosShiftExchangeServiceApi;
 import com.okdeer.archive.system.service.SysUserLoginLogServiceApi;
@@ -137,6 +140,7 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 		
 		ReflectionTestUtils.setField(tradeOrderRefundsService, "storeInfoService", storeInfoService);
 		ReflectionTestUtils.setField(tradeOrderRefundsApiImpl, "tradeOrderItemDetailService", tradeOrderItemDetailService);
+		ReflectionTestUtils.setField(tradeOrderRefundsApiImpl, "storeInfoService", storeInfoService);
 		tradeOrderItemDetailList = MockUtils
 				.getMockData("/com/okdeer/mall/refunds/params/mock-store-item.json", TradeOrderItemDetail.class).get(0);
 	}
@@ -242,10 +246,11 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 	public void refundsInfo() throws Exception{
 		beforeMethod(this, "refundsInfo");
 		OrderRefundQueryParamDto orderRefundQueryParamDto = new OrderRefundQueryParamDto();
-		orderRefundQueryParamDto.setStoreId("8a284fd056c2991b0156d4fa4a230836");
+		orderRefundQueryParamDto.setStoreId("5592971b276511e6aaff00163e010eb1");
 		Map<String, Object> result = tradeOrderRefundsApiImpl.statisRefundsByParams(orderRefundQueryParamDto);
 		List<Integer> list = Lists.newArrayList();
-		list.add(3);
+		list.add(6);
+		list.add(13);
 		orderRefundQueryParamDto.setRefundStatusList(list);
 		orderRefundQueryParamDto.setpSize(10);
 		orderRefundQueryParamDto.setpNum(1);
@@ -256,6 +261,13 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 			String id = page.getList().get(0).getId();
 			RefundsMoneyDto dto = tradeOrderRefundsApiImpl.refundsInfo(id);
 			Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),dto);
+			
+			StoreInfo storeInfo = new StoreInfo();
+			storeInfo.setAddress("1111");
+			storeInfo.setStoreName("2222");
+			storeInfo.setMobile("13723770509");
+			storeInfo.setType(StoreTypeEnum.CLOUD_STORE);
+			given(storeInfoService.findById(any())).willReturn(storeInfo);
 			Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),tradeOrderRefundsApiImpl.refundsDetail(id));
 			List<String> ids = Lists.newArrayList();
 			page.getList().forEach(e -> {
