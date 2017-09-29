@@ -46,7 +46,7 @@ public class CheckSkuServiceImplTest extends AbstractHandlerTest implements Mock
 	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto> checkSkuService;
 
 	private List<GoodsStoreSku> storeSkuList = null;
-
+	
 	private List<GoodsStoreSkuStock> stockList = null;
 
 	private StoreInfo storeInfo = null;

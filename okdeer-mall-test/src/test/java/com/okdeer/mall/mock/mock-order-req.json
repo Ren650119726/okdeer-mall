@@ -965,3 +965,284 @@ Begin---10.正常提交订单使用满减（指定商品）
 	"submitExpiredCode": 0
 }
 End---
+Begin---10.上门服务订单测试
+{
+	"confirmReq": {
+		"version": "V2.6.0",
+		"data": {
+			"storeId": "8a8080a35eb844ea015ecb4acd4b4780",
+			"version": "V2.6.0",
+			"channel": "3",
+			"cityName": "荆州市",
+			"userPhone": "18613138749",
+			"lat": "30.342585",
+			"areaExt": "金九龙大酒店",
+			"userId": "14527626891242d4d00a207c4d69bd80",
+			"areaName": "荆州区",
+			"provinceName": "湖北省",
+			"orderType": "1",
+			"lng": "112.21641",
+			"skuList": [{
+				"quantity": "2",
+				"skuPrice": "28.00",
+				"storeSkuId": "8a8080a35eb844ea015ecb6f9ead4a3f",
+				"updateTime": "2017-09-29 10:24:47"
+			},
+			{
+				"quantity": "1",
+				"skuPrice": "40.00",
+				"storeSkuId": "8a8080a35eb844ea015ecb6d3c5249e5",
+				"updateTime": "2017-09-29 10:24:55"
+			}],
+			"skuType": "2"
+		}
+	},
+	"confirmExpiredCode": 0,
+	"submitReq": {
+		"version": "V2.6.0",
+		"data": {
+			"cityName": "荆州市",
+			"isInvoice": "0",
+			"isUsePinMoney": "0",
+			"areaName": "荆州区",
+			"isCheckTime": "0",
+			"userAddrId": "8a94e7545e54f737015e54f812c30002",
+			"userPhone": "18613138749",
+			"userId": "14527626891242d4d00a207c4d69bd80",
+			"pickType": "0",
+			"payType": "0",
+			"skuList": [{
+				"storeSkuId": "8a8080a35eb844ea015ecb6f9ead4a3f",
+				"quantity": "2",
+				"updateTime": "2017-09-29 10:24:47"
+			},
+			{
+				"storeSkuId": "8a8080a35eb844ea015ecb6d3c5249e5",
+				"quantity": "1",
+				"updateTime": "2017-09-29 10:24:55"
+			}],
+			"channel": "3",
+			"lng": "112.21641",
+			"activityItemId": "",
+			"activityType": "0",
+			"activityId": "",
+			"orderType": "1",
+			"version": "V2.6.0",
+			"storeId": "8a8080a35eb844ea015ecb4acd4b4780",
+			"provinceName": "湖北省",
+			"invoiceHead": "",
+			"skuType": "2",
+			"seckillId": "",
+			"lat": "30.342585",
+			"remark": "",
+			"pickTime": "2017-09-29 11:00",
+			"pinMoney": "0.00",
+			"areaExt": "金九龙大酒店"
+		}
+	},
+	"submitExpiredCode": 0
+}
+End---
+Begin---11.线下支付服务订单测试.确认订单商品信息发生变化
+{
+	"confirmReq": {
+		"version": "V2.6.0",
+		"data": {
+			"storeId": "8a8080a35eb844ea015ecb4acd4b4780",
+			"version": "V2.6.0",
+			"channel": "3",
+			"cityName": "荆州市",
+			"userPhone": "18613138749",
+			"lat": "30.342585",
+			"areaExt": "金九龙大酒店",
+			"userId": "14527626891242d4d00a207c4d69bd80",
+			"areaName": "荆州区",
+			"provinceName": "湖北省",
+			"orderType": "1",
+			"lng": "112.21641",
+			"skuList": [{
+				"quantity": "2",
+				"skuPrice": "28.00",
+				"storeSkuId": "8a8080a35eb844ea015ecb6f9ead4a3f",
+				"updateTime": "2017-09-29 10:22:47"
+			}],
+			"skuType": "2"
+		}
+	},
+	"confirmExpiredCode": 243,
+	"submitReq": {
+		"version": "V2.6.0",
+		"data": {
+			"cityName": "荆州市",
+			"isInvoice": "0",
+			"isUsePinMoney": "0",
+			"areaName": "荆州区",
+			"isCheckTime": "0",
+			"userAddrId": "8a94e7545e54f737015e54f812c30002",
+			"userPhone": "18613138749",
+			"userId": "14527626891242d4d00a207c4d69bd80",
+			"pickType": "0",
+			"payType": "4",
+			"skuList": [{
+				"storeSkuId": "8a8080a35eb844ea015ecb6e73394a12",
+				"quantity": "1",
+				"updateTime": "2017-09-29 10:24:51"
+			}],
+			"channel": "3",
+			"lng": "112.21641",
+			"activityItemId": "",
+			"activityType": "0",
+			"activityId": "",
+			"orderType": "1",
+			"version": "V2.6.0",
+			"storeId": "8a8080a35eb844ea015ecb4acd4b4780",
+			"provinceName": "湖北省",
+			"invoiceHead": "",
+			"skuType": "2",
+			"seckillId": "",
+			"lat": "30.342585",
+			"remark": "",
+			"pickTime": "2017-09-29 11:00",
+			"pinMoney": "0.00",
+			"areaExt": "金九龙大酒店"
+		}
+	},
+	"submitExpiredCode": 0
+}
+End---
+Begin---12.到店消费订单测试
+{
+	"confirmReq": {
+		"version": "V2.6.0",
+		"data": {
+			"storeId": "8a8080a35eb844ea015ecb4acd4b4780",
+			"version": "V2.6.0",
+			"channel": "3",
+			"cityName": "荆州市",
+			"userPhone": "18613138749",
+			"lat": "30.342585",
+			"areaExt": "金九龙大酒店",
+			"userId": "14527626891242d4d00a207c4d69bd80",
+			"areaName": "荆州区",
+			"provinceName": "湖北省",
+			"orderType": "1",
+			"lng": "112.21641",
+			"skuList": [{
+				"quantity": "2",
+				"skuPrice": "28.00",
+				"storeSkuId": "8a8080a35eb844ea015ecb6f9ead4a3f",
+				"updateTime": "2017-09-29 10:24:47"
+			}],
+			"skuType": "2"
+		}
+	},
+	"confirmExpiredCode": 0,
+	"submitReq": {
+		"version": "V2.6.0",
+		"data": {
+			"cityName": "荆州市",
+			"isInvoice": "0",
+			"isUsePinMoney": "0",
+			"areaName": "荆州区",
+			"isCheckTime": "0",
+			"userAddrId": "",
+			"userPhone": "18613138749",
+			"userId": "14527626891242d4d00a207c4d69bd80",
+			"pickType": "1",
+			"payType": "0",
+			"skuList": [{
+				"storeSkuId": "8a8080a35eb844ea015ecb70d2124a6c",
+				"quantity": "1",
+				"updateTime": "2017-09-29 10:24:42"
+			}],
+			"channel": "3",
+			"lng": "112.21641",
+			"activityItemId": "",
+			"activityType": "0",
+			"activityId": "",
+			"orderType": "1",
+			"version": "V2.6.0",
+			"storeId": "8a8080a35eb844ea015ecb4acd4b4780",
+			"provinceName": "湖北省",
+			"invoiceHead": "",
+			"skuType": "5",
+			"seckillId": "",
+			"lat": "30.342585",
+			"remark": "",
+			"pickTime": " ",
+			"pinMoney": "0.00",
+			"areaExt": "金九龙大酒店"
+		}
+	},
+	"submitExpiredCode": 0
+}
+End---
+Begin---13.服务店秒杀订单测试
+{
+	"confirmReq": {
+		"version": "V2.6.0",
+		"data": {
+			"storeId": "8a8080a35eb844ea015ecb4acd4b4780",
+			"version": "V2.6.0",
+			"channel": "3",
+			"cityName": "荆州市",
+			"userPhone": "18613138749",
+			"lat": "30.342585",
+			"areaExt": "金九龙大酒店",
+			"userId": "14527626891242d4d00a207c4d69bd80",
+			"areaName": "荆州区",
+			"provinceName": "湖北省",
+			"orderType": "2",
+			"seckillId": "8a8080cf5ec79881015ecb8a74c10011",
+			"lng": "112.21641",
+			"skuList": [{
+				"quantity": "1",
+				"skuPrice": "29.00",
+				"storeSkuId": "8a8080a35eb844ea015ecb722be44a9b",
+				"updateTime": "2017-09-29 10:24:35"
+			}],
+			"skuType": "2"
+		}
+	},
+	"confirmExpiredCode": 0,
+	"submitReq": {
+		"version": "V2.6.0",
+		"data": {
+			"cityName": "荆州市",
+			"isInvoice": "0",
+			"isUsePinMoney": "0",
+			"areaName": "荆州区",
+			"isCheckTime": "0",
+			"userAddrId": "8a94e7545e54f737015e54f812c30002",
+			"userPhone": "18613138749",
+			"userId": "14527626891242d4d00a207c4d69bd80",
+			"pickType": "0",
+			"payType": "0",
+			"skuList": [{
+				"quantity": "1",
+				"skuPrice": "29.00",
+				"storeSkuId": "8a8080a35eb844ea015ecb722be44a9b",
+				"updateTime": "2017-09-29 10:24:35"
+			}],
+			"channel": "3",
+			"lng": "112.21641",
+			"activityItemId": "",
+			"orderType": "2",
+			"activityId": "8a8080cf5ec79881015ecb8a74c10011",
+			"activityType": "6",
+			"version": "V2.6.0",
+			"storeId": "8a8080a35eb844ea015ecb4acd4b4780",
+			"provinceName": "湖北省",
+			"invoiceHead": "",
+			"skuType": "2",
+			"seckillId": "8a8080cf5ec79881015ecb8a74c10011",
+			"lat": "30.342585",
+			"remark": "",
+			"pickTime": "2017-09-29 11:00",
+			"pinMoney": "0.00",
+			"areaExt": "金九龙大酒店"
+		}
+	},
+	"submitExpiredCode": 0
+}
+End---
