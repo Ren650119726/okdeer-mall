@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.okdeer.archive.goods.assemble.GoodsStoreSkuAssembleApi;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.dto.StockUpdateDto;
@@ -33,7 +32,6 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
-import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
@@ -159,20 +157,11 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	@Resource
 	private OrderReturnCouponsService orderReturnCouponsService;
 
-	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuAssembleApi goodsStoreSkuAssembleApi;
-
 	/**
 	 * 商城库存管理Dubbo接口
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
-	
-	/**
-	 * 商业系统存库存管理API
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private StockUpdateServiceApi stockUpdateServiceApi;
 	
 	@Resource
 	private MallStockUpdateBuilder mallStockUpdateBuilder;

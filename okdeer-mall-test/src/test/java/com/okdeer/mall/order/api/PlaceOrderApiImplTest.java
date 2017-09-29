@@ -8,12 +8,15 @@ import static org.mockito.Matchers.anyString;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -27,7 +30,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.esotericsoftware.minlog.Log;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
@@ -39,8 +41,11 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
+import com.okdeer.archive.store.entity.StoreBranches;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.service.StoreBranchesServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.base.BaseServiceTest;
@@ -48,14 +53,19 @@ import com.okdeer.mall.base.MockUtils;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.mock.MockFilePath;
 import com.okdeer.mall.order.api.model.OrderModel;
+import com.okdeer.mall.order.builder.TradeOrderBuilder;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.handler.impl.CheckFavourServiceImpl;
+import com.okdeer.mall.order.handler.impl.CheckServSkuServiceImpl;
 import com.okdeer.mall.order.handler.impl.CheckSkuServiceImpl;
 import com.okdeer.mall.order.handler.impl.CheckStoreServiceImpl;
 import com.okdeer.mall.order.handler.impl.PlaceOrderServiceImpl;
+import com.okdeer.mall.order.handler.impl.PlaceSeckillOrderServiceImpl;
 import com.okdeer.mall.order.service.GetPreferentialService;
+import com.okdeer.mall.order.service.OrderReturnCouponsService;
 import com.okdeer.mall.order.service.PlaceOrderApi;
 
 @RunWith(Parameterized.class)
@@ -71,8 +81,14 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	@Resource
 	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  placeOrderService;
 	
+	@Resource
+	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  placeSeckillOrderService;
+	
 	@Mock
 	private StoreInfoServiceApi storeInfoServiceApi;
+	
+	@Mock
+	private StoreBranchesServiceApi storeBranchesApi;
 	
 	@Mock
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
@@ -86,6 +102,9 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	@Mock
 	private GoodsNavigateCategoryServiceApi goodsNavigateCategoryServiceApi;
 	
+	@Mock
+	private OrderReturnCouponsService orderReturnCouponsService;
+	
 	private OrderModel orderModel;
 	
 	/**
@@ -94,10 +113,21 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	private StoreInfo storeMock;
 	
 	/**
+	 * mock店铺地址信息
+	 */
+	private StoreInfo storeAddrMock;
+	
+	private StoreBranches storeBranchMock;
+	
+	/**
 	 * mock商品列表
 	 */
 	private List<GoodsStoreSku> storeSkuList;
 	
+	/**
+	 * mock服务商品列表
+	 */
+	private List<GoodsStoreSku> servSkuList;
 	/**
 	 * mock库存列表
 	 */
@@ -143,10 +173,13 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	 */
 	private void initMockStore(){
 		this.storeMock = MockUtils.getMockSingleData(MOCK_ORDER_STORE_INFO, StoreInfo.class);
+		this.storeBranchMock = MockUtils.getMockSingleData(MOCK_STORE_BREANCHES_PATH, StoreBranches.class);
+		this.storeAddrMock = MockUtils.getMockSingleData(MOCK_STORE_ADDR_INFO_PATH, StoreInfo.class);
 	}
 	
 	private void initMockSkuAndStock(){
 		this.storeSkuList = MockUtils.getMockListData(MOCK_CHECK_SKU_LIST_PATH, GoodsStoreSku.class);
+		this.servSkuList = MockUtils.getMockListData(MOCK_SERV_SKU_LIST_PATH, GoodsStoreSku.class);
 		this.skuStockList = MockUtils.getMockListData(MOCK_CHECK_SKU_STOCK_PATH, GoodsStoreSkuStock.class);
 	}
 	
@@ -160,13 +193,23 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 	public void initMockDubbo() throws Exception{
 		CheckStoreServiceImpl checkStoreService = this.applicationContext.getBean(CheckStoreServiceImpl.class);
 		CheckSkuServiceImpl checkSkuService = this.applicationContext.getBean(CheckSkuServiceImpl.class);
+		CheckServSkuServiceImpl checkServSkuService = this.applicationContext.getBean(CheckServSkuServiceImpl.class);
 		CheckFavourServiceImpl checkFavourService =  this.applicationContext.getBean(CheckFavourServiceImpl.class);
 		ActivityDiscountService activityDiscountService = this.applicationContext.getBean(ActivityDiscountService.class);
 		GetPreferentialService getPreferentialService = this.applicationContext.getBean(GetPreferentialService.class);
+		TradeOrderBuilder tradeOrderBuilder = this.applicationContext.getBean(TradeOrderBuilder.class);
+		
 		ReflectionTestUtils.setField(checkStoreService, "storeInfoServiceApi", storeInfoServiceApi);
 		ReflectionTestUtils.setField(checkSkuService, "goodsStoreSkuServiceApi", goodsStoreSkuServiceApi);
 		ReflectionTestUtils.setField(checkSkuService, "goodsStoreSkuStockApi", goodsStoreSkuStockApi);
 		ReflectionTestUtils.setField(checkSkuService, "storeSkuApi", storeSkuApi);
+		
+		ReflectionTestUtils.setField(checkServSkuService, "goodsStoreSkuServiceApi", goodsStoreSkuServiceApi);
+		ReflectionTestUtils.setField(checkServSkuService, "goodsStoreSkuStockApi", goodsStoreSkuStockApi);
+		
+		ReflectionTestUtils.setField(tradeOrderBuilder, "storeBranchesApi", storeBranchesApi);
+		ReflectionTestUtils.setField(tradeOrderBuilder, "storeInfoServiceApi", storeInfoServiceApi);
+		
 		ReflectionTestUtils.setField(checkFavourService, "goodsNavigateCategoryServiceApi", goodsNavigateCategoryServiceApi);
 		ReflectionTestUtils.setField(getPreferentialService, "goodsNavigateCategoryServiceApi", goodsNavigateCategoryServiceApi);
 		ReflectionTestUtils.setField((ActivityDiscountService) AopTestUtils.getTargetObject(activityDiscountService),
@@ -175,12 +218,24 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 				"goodsStoreSkuStockApi", goodsStoreSkuStockApi);
 		ReflectionTestUtils.setField((PlaceOrderServiceImpl) AopTestUtils.getTargetObject(placeOrderService),
 				"goodsStoreSkuServiceApi", goodsStoreSkuServiceApi);
+		ReflectionTestUtils.setField((PlaceOrderServiceImpl) AopTestUtils.getTargetObject(placeOrderService),
+				"orderReturnCouponsService", orderReturnCouponsService);
+		
+		ReflectionTestUtils.setField((PlaceSeckillOrderServiceImpl) AopTestUtils.getTargetObject(placeSeckillOrderService),
+				"goodsStoreSkuStockApi", goodsStoreSkuStockApi);
 		
 		given(storeInfoServiceApi.getStoreInfoById(anyString())).willReturn(this.storeMock);
 		given(storeInfoServiceApi.findById(anyString())).willReturn(this.storeMock);
+		given(storeInfoServiceApi.selectDefaultAddressById(anyString())).willReturn(this.storeAddrMock);
+		
+		given(storeBranchesApi.findBranches(anyString())).willReturn(this.storeBranchMock);
 		given(goodsStoreSkuServiceApi.findStoreSkuForOrder(anyList())).willAnswer((invocation) -> {
 			List<String> arg = (List<String>) invocation.getArguments()[0];
 			return storeSkuList.stream().filter(item -> arg.contains(item.getId())).collect(Collectors.toList());
+		});
+		given(goodsStoreSkuServiceApi.selectSkuByIds(anyList())).willAnswer((invocation) -> {
+			List<String> arg = (List<String>) invocation.getArguments()[0];
+			return servSkuList.stream().filter(item -> arg.contains(item.getId())).collect(Collectors.toList());
 		});
 		given(goodsStoreSkuStockApi.findByStoreSkuIdList(anyList())).willAnswer((invocation) -> {
 			List<String> arg = (List<String>) invocation.getArguments()[0];
@@ -246,10 +301,24 @@ public class PlaceOrderApiImplTest extends BaseServiceTest implements MockFilePa
 		// 驱动事务回滚，方法上增加事务监听
 		beforeMethod(this, "testSubmitOrder");
 		logger.info("提交订单请求参数：{}",JSONMAPPER.toJson(orderModel.getSubmitReq()));
+		PlaceOrderParamDto paramDto = orderModel.getSubmitReq().getData();
+		if(paramDto.getOrderType() != PlaceOrderTypeEnum.CVS_ORDER && StringUtils.isNotEmpty(paramDto.getPickTime())){
+			// 如果不是便利店订单，且有提货时间的，需要自己mock时间。
+			paramDto.setPickTime(mockPickUpTime());
+		}
 		Response<PlaceOrderDto> resp = placeOrderApi.submitOrder(orderModel.getSubmitReq());
 		logger.info("确认订单返回结果：{}",JSONMAPPER.toJson(resp));
 		assertEquals(orderModel.getSubmitExpiredCode(), resp.getCode());
 		afterTestMethod(this,"testSubmitOrder");
 	}
 
+	private String mockPickUpTime(){
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		// mock 提货时间为下一天的11点。
+		cal.add(Calendar.DAY_OF_YEAR, 1);
+		cal.set(Calendar.HOUR_OF_DAY, 11);
+		cal.set(Calendar.MINUTE, 0);
+		return DateUtils.formatDate(cal.getTime(), "yyyy-MM-dd HH:mm");
+	}
 }

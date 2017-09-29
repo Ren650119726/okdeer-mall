@@ -67,7 +67,11 @@ public class ActivityCouponsSubscriber {
 
 		} finally {
 			if (lock != null) {
-				lock.unlock();
+				try {
+					lock.unlock();
+				} catch (Exception e) {
+					logger.error("释放锁失败：",e);
+				}
 			}
 		}
 
