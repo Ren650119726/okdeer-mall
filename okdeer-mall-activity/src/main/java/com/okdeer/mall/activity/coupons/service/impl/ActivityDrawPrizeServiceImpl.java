@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.integration.redis.util.RedisLockRegistry;
@@ -186,13 +187,17 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 		}
 		try {
 			boolean isCanPrize = false ;
-			HashOperations<String, String, String> tempMap = redisTemplate.opsForHash();
-			String userKey = userId;
 			String mapKey = currykey + "Map";
+			BoundHashOperations<String, String, String> tempMap = redisTemplate.boundHashOps(mapKey);
+			//设置超时时间
+			tempMap.expire(30,TimeUnit.MINUTES);
+			//用户的标识key
+			String userKey = userId;
+			
 			for(int i =0 ; i < userCount ; i++){
 				userKey = userId + i;
 	 			//这不存在这个领取记录，代表这个用户可以进行领取，userid加序号，标识可以领取的次数
-	 			if(!userId.equals(tempMap.get(mapKey, userKey))){
+	 			if(!userId.equals(tempMap.get(userKey))){
 	 				isCanPrize = true;
 	 				break;
 	 			}
@@ -211,7 +216,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 			// 执行抽奖
 			JSONObject result = addProcessPrize(userId, luckDrawId,false);
 			if(result != null){
-				tempMap.put(mapKey, userKey, userId);
+				tempMap.put(userKey, userId);
 			}
 			return result;
 		} catch (Exception e) {
