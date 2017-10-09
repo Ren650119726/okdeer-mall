@@ -236,7 +236,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			}
 			parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
 			parserBo.setTotalAmountHaveFavour(totalAmount);
-		} else if(coupons.getType() == CouponsType.fwd.ordinal()){
+		} else if(coupons.getType() == CouponsType.fwd.ordinal() && coupons.getIsCategory() == Constant.ONE){
 			Set<String> spuCategoryIds = parserBo == null ? null : parserBo.getCategoryIdSet();
 			if(CollectionUtils.isEmpty(spuCategoryIds)){
 				return false;
