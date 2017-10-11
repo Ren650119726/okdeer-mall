@@ -6,6 +6,8 @@
  */    
 package com.okdeer.mall.order.service;
 
+import java.math.BigDecimal;
+
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.order.bo.TradePinMoneyUseBo;
@@ -65,4 +67,17 @@ public interface TradePinMoneyUseService extends IBaseService{
 	 * @date 2017年8月14日
 	 */
 	void releaseOrderOccupy(String orderId);
+
+	/**
+	 * @Description: 订单占用零花钱
+	 * @param userId
+	 * @param orderId
+	 * @param orderTotalAmount
+	 * @param usePinMoney
+	 * @throws Exception   
+	 * @author guocp
+	 * @date 2017年10月11日
+	 */
+	void orderOccupy(String userId, String orderId, BigDecimal orderTotalAmount, BigDecimal usePinMoney)
+			throws Exception;
 }
