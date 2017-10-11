@@ -7,6 +7,7 @@
 package com.okdeer.mall.system.service.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.BDDMockito.given;
 
 import java.util.Arrays;
@@ -191,17 +192,18 @@ public class SysBuyerUserServiceImplTest extends BaseServiceTest {
 		int result = sysBuyerUserService.loginValidation(buyerUserVo);
 		assertEquals(resultCode, result);
 	}
-	
-	
-	public class SaveBuyerUserTest {
 		
-		@Test
-		public void testSaveBuyerUserAndLog() throws Exception{
-			RequestParams parameters = new RequestParams();
-			//便利店
-			parameters.setClientType("3");
-			sysBuyerUserService.saveBuyerUserAndLog(parameters, mobilePhone);
-		}
+	@Test
+	public void testSaveBuyerUserAndLog() throws Exception{
+		RequestParams parameters = new RequestParams();
+		//便利店
+		parameters.setClientType("3");
+		parameters.setBrand("iphone");
+		parameters.setClientVersion("V2.6.0");
+		parameters.setMachineCode("E3307355-C835-4A34-95F8-6BAFFC2B4A0B");
+		parameters.setToken("8a94e7185b6a803c015b6a803cc30000");
+		Map<String, Object> result = sysBuyerUserService.saveBuyerUserAndLog(parameters, mobilePhone);
+		assertNotNull(result);
 	}
 	
 
