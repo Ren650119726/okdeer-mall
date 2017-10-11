@@ -349,6 +349,9 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		//设置id值
 		persity.setId(vo.getOrderId());
 		persity.setActivityType(vo.getActiviType());
+		if(vo.getActiviType() != ActivityTypeEnum.NO_ACTIVITY){
+			persity.setActivityId(vo.getCouponsActivityId());
+		}
 		//设置返回值
 		resp.getData().setOrderId(vo.getOrderId());
 		resp.getData().setOrderNo(vo.getOrderNo());
