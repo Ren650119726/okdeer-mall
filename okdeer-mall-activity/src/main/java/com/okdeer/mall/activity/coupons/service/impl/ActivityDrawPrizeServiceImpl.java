@@ -301,7 +301,6 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 	 * @throws Exception 
 	 * @date 2016年12月14日
 	 */
-	@Transactional(rollbackFor = Exception.class)
 	private JSONObject addProcessPrize(String userId, String luckDrawId,boolean isUpPrizeCount) throws Exception {
 		Map<String, Object> map = new HashMap<>();
 		ActivityLuckDraw activityLuckDraw = activityLuckDrawService.findById(luckDrawId);

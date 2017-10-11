@@ -861,8 +861,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @date 2017年6月30日
 	 */
 	private boolean checkCollectPublic(Map<String, Object> map, ActivityCollectCoupons collect, String userId) {
-		if (collect == null || collect.getStatus().intValue() != 1) {
-			int status = collect.getStatus().intValue();
+		if (collect == null || collect.getStatus() == null || collect.getStatus().intValue() != 1) {
+			//如果不存在活动都当成活动已结束2
+			int status = (collect != null && collect.getStatus() !=null ) ? collect.getStatus().intValue() : 2;
 			map.put("msg", status == 0 ? DateUtils.dateFormat(collect.getStartTime()) : "活动已结束！");
 			map.put("code", status == 0 ? 115 : 105);
 			return false;
