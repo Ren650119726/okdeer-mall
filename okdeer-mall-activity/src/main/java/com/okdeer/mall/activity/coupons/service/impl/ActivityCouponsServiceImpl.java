@@ -55,6 +55,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsThirdCode;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsTermType;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsLimitCategoryMapper;
@@ -937,6 +938,15 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Override
 	public List<ActivityCoupons> selectByActivityId(String id) throws Exception {
 		List<ActivityCoupons> result = activityCouponsMapper.selectByActivityId(id);
+		//如果是按天类型的，把开始时间与结束时间也计算一下
+		if(CollectionUtils.isNotEmpty(result)){
+			for (ActivityCoupons activityCoupons : result) {
+				if(activityCoupons.getTermType() == ActivityCouponsTermType.BY_DAY){
+					activityCoupons.setStartTime(activityCouponsReceiveStrategy.getEffectTime(activityCoupons));
+					activityCoupons.setEndTime(activityCouponsReceiveStrategy.getExpireTime(activityCoupons));
+				}
+			}
+		}
 		return result;
 	}
 
