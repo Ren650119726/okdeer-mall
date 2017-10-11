@@ -13,6 +13,7 @@
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
         <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
         <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="effect_time" property="effectTime" jdbcType="TIMESTAMP" />
     </resultMap>
     <!-- 后台查询领取记录列表 -->
 	<resultMap id="PageListResultMap" type="com.okdeer.mall.order.bo.TradePinMoneyObtainBo" >
@@ -24,10 +25,11 @@
         <result column="remain_amount" property="remainAmount" jdbcType="DECIMAL" />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
         <result column="valid_time" property="validTime" jdbcType="TIMESTAMP" />
+        <result column="effect_time" property="effectTime" jdbcType="TIMESTAMP" />
     </resultMap>
     <sql id="Base_Column_List" >
         id, order_id, user_id, device_id, amount, remain_amount, create_time, update_time, 
-        valid_time,activity_id
+        valid_time,activity_id,effect_time
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -73,6 +75,9 @@
             <if test="activityId != null" >
                 activity_id,
             </if>
+            <if test="effectTime != null" >
+                effect_time,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -107,6 +112,9 @@
             </if>
             <if test="activityId != null" >
                 #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="effectTime != null" >
+                #{effectTime,jdbcType=TIMESTAMP},
             </if>
         </trim>
     </insert>
@@ -144,6 +152,9 @@
             <if test="activityId != null" >
                 activity_id = #{activityId,jdbcType=VARCHAR},
             </if>
+            <if test="effectTime != null" >
+                effect_time = #{effectTime,jdbcType=TIMESTAMP},
+            </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
     </update>
@@ -153,15 +164,23 @@
         where id = #{id,jdbcType=VARCHAR}
     </delete>
     
-    <!-- 查询我的可用余额 -->
+    <!-- 查询我的零花钱可使用余额  去除未生效零花钱-->
     <select id="findMyUsableTotal" resultType="java.math.BigDecimal" >
+        SELECT sum(remain_amount)
+        FROM trade_pin_money_obtain
+        WHERE user_id = #{userId,jdbcType=VARCHAR}
+        AND effect_time <![CDATA[ <= ]]> #{nowDate,jdbcType=TIMESTAMP}
+        AND valid_time >= #{nowDate,jdbcType=TIMESTAMP}
+        AND status = 0
+    </select>
+    <!-- 查询我的零花钱剩余余额-->
+    <select id="findMyRemainTotal" resultType="java.math.BigDecimal" >
         SELECT sum(remain_amount)
         FROM trade_pin_money_obtain
         WHERE user_id = #{userId,jdbcType=VARCHAR}
         AND valid_time >= #{nowDate,jdbcType=TIMESTAMP}
         AND status = 0
     </select>
-    
     <select id="findList" resultMap="BaseResultMap" >
         SELECT 
         <include refid="Base_Column_List" />
@@ -191,7 +210,7 @@
 	<!-- begin 商城后台零花钱领取记录条件查询 xuzq 20170814 -->
     <select id="findObtainPageList" resultMap="PageListResultMap" parameterType="com.okdeer.mall.order.dto.TradePinMoneyQueryDto" >
         SELECT DISTINCT
-        pin.id, dis.name, buyer.phone userPhone,  pin.status, pin.amount, pin.remain_amount, pin.create_time, pin.valid_time
+        pin.id, dis.name, buyer.phone userPhone,  pin.status, pin.amount, pin.remain_amount, pin.create_time, pin.valid_time,pin.effect_time
         FROM trade_pin_money_obtain pin
         LEFT JOIN sys_buyer_user buyer ON buyer.id=pin.user_id
         LEFT JOIN activity_discount dis ON dis.id= pin.activity_id AND dis.type=2 
