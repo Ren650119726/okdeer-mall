@@ -66,6 +66,10 @@ public class TradePinMoneyObtainBo implements Serializable {
 	 * 活动类型  跟产品确认不动态关联活动 直接写死
 	 */
     private String activityType = "零花钱";
+    /**
+     * 生效时间
+     */
+    private Date effectTime;
     
     public String getId() {
         return id;
@@ -132,6 +136,14 @@ public class TradePinMoneyObtainBo implements Serializable {
 
 	public void setUserPhone(String userPhone) {
 		this.userPhone = userPhone;
+	}
+
+	public Date getEffectTime() {
+		return effectTime;
+	}
+
+	public void setEffectTime(Date effectTime) {
+		this.effectTime = effectTime;
 	}
     
 }
