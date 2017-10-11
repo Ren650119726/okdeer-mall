@@ -1193,7 +1193,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		activityCouponsRecord.setCouponsCollectId(activityCoupons.getActivityId());
 		activityCouponsRecord.setCollectUserId(activityCouponParamDto.getUserId());
 		activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
-		activityCouponsRecord.setOrderId(activityCouponParamDto.getOrderId());
+//		activityCouponsRecord.setOrderId(activityCouponParamDto.getOrderId());
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
 		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
