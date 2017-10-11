@@ -94,13 +94,14 @@ class TradeOrderItemServiceImpl implements TradeOrderItemService, TradeOrderItem
 	 * @date 2017年5月17日
 	 */
 	public List<TradeOrderItem> findOrderItemByDaild(String startDate,String endDate){
-		Map<String, Object> map = new HashMap<String,Object>();
+		Map<String, Object> map = new HashMap<>();
 		//完成订单状态
 		map.put("orderStatus", OrderStatusEnum.HAS_BEEN_SIGNED);
-		List<OrderResourceEnum> list =  new ArrayList<OrderResourceEnum>();
+		List<OrderResourceEnum> list =  new ArrayList<>();
 		list.add(OrderResourceEnum.YSCAPP); 
 		list.add(OrderResourceEnum.WECHAT);
 		list.add(OrderResourceEnum.CVSAPP);
+		list.add(OrderResourceEnum.SWEEP);
 		//线上订单来源
 		map.put("orderResource", list); 
 		//实物订单
