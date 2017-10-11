@@ -1113,6 +1113,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 				checkActivityCouponsRule(activityCoupons, activityCouponParamDto);
 				updateCouponsAndAddCouponsRecord(activityCoupons, activityCouponParamDto);
 			} catch (Exception e) {
+				logger.error("领取带金卷出错",e);
 				if (activityCouponParamDto.isContinueTakeOther()) {
 					continue;
 				}else{
