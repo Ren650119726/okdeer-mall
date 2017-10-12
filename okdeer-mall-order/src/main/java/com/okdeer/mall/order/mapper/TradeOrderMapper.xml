@@ -1122,8 +1122,17 @@
 		</if>
 		<if test="activityType != null">
 			<choose>
-				<when test="activityType == 5 or activityType == 6 or activityType == 7 ">AND (tr.activity_type = #{activityType} OR tr.store_activity_type = #{activityType})</when>
-				<otherwise>AND tr.activity_type = #{activityType}</otherwise>
+			    <!-- 当为特惠 秒杀 低价时 查询活动类型或者店铺活动类型 -->
+				<when test="activityType == 5 or activityType == 6 or activityType == 7 ">
+					AND (tr.activity_type = #{activityType} OR tr.store_activity_type = #{activityType})
+				</when>
+				 <!-- 零花钱活动 订单使用零花钱金额不为0代表参与零花钱-->
+				<when test="activityType == 8 ">
+					AND tr.pin_money > 0
+				</when>
+				<otherwise>
+					AND tr.activity_type = #{activityType}
+				</otherwise>
 			</choose>
 		</if>
 	</sql>
@@ -4525,8 +4534,6 @@
 		FROM
 		DUAL
 	</select>
-
-	
 
 	<!-- zengj:订单列表查询  update by wusw 20170215 修改排序规则和增加活动类型参数-->
 	<select id="selectOrderList" resultMap="TradeOrderMap"
