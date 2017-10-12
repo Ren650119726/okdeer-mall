@@ -60,7 +60,6 @@ import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsLimitCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsOrderRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
@@ -1138,6 +1137,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			// 用户还没有注册，添加预领取记录
 			ActivityCouponsRecordBefore activityCouponsRecordBefore = BeanMapper.map(activityCouponsRecord,
 					ActivityCouponsRecordBefore.class);
+			activityCouponsRecordBefore.setCollectUser(activityCouponParamDto.getMobile());
 			activityCouponsRecordBeforeService.add(activityCouponsRecordBefore);
 		}
 	}
