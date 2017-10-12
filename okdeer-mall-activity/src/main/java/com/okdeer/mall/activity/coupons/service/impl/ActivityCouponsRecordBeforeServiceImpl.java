@@ -1,9 +1,8 @@
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.okdeer.base.dal.IBaseMapper;
-import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordBeforeService;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
@@ -12,7 +11,8 @@ import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
 public class ActivityCouponsRecordBeforeServiceImpl 
 		implements ActivityCouponsRecordBeforeService {
 
-	ActivityCouponsRecordBeforeMapper activityCouponsRecordBeforeMapper;
+	@Autowired
+	private ActivityCouponsRecordBeforeMapper activityCouponsRecordBeforeMapper;
 
 	@Override
 	public <T> int add(T arg0) throws Exception {
