@@ -7,7 +7,6 @@
 package com.okdeer.mall.activity.staticFile.api.impl;
 
 import java.util.Date;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,12 +41,13 @@ public class ActivityStaticFileApiImpl implements ActivityStaticFileApi {
 	@Autowired
 	private ActivityStaticFileService activityStaticFileService;
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public PageUtils<ActivityStaticFileDto> findStaticFileList(ActivityStaticFileParamDto activityStaticFileParamDto, int pageNumber,
 			int pageSize) {
-		List<ActivityStaticFileDto>  file = activityStaticFileService.findStaticFileList(activityStaticFileParamDto, pageNumber, pageSize);
+		return activityStaticFileService.findStaticFileList(activityStaticFileParamDto, pageNumber, pageSize)
+				.toBean(ActivityStaticFileDto.class);
 		
-		return new PageUtils<ActivityStaticFileDto>(file);
 	}
 
 	@Override

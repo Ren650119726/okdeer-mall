@@ -7,6 +7,7 @@
 package com.okdeer.mall.order.service.impl;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -18,8 +19,10 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
@@ -99,6 +102,60 @@ public class TradePinMoneyUseServiceImpl extends BaseServiceImpl implements Trad
 			pinMoneyObtain.setUpdateTime(new Date());
 			tradePinMoneyObtainMapper.update(pinMoneyObtain);
 		}
+	}
+	
+	/**
+	 * 订单占用零花钱
+	 */
+	@Override
+	public void orderOccupy(String userId,String orderId,BigDecimal orderTotalAmount,BigDecimal usePinMoney) throws Exception{
+		// 查询我的红包记录
+		List<TradePinMoneyObtain> pinMoneyObtains = tradePinMoneyObtainMapper.findList(userId,
+				new Date(), PinMoneyStatusConstant.UNUSED);
+		//倒序
+		Collections.reverse(pinMoneyObtains);
+		// 需扣减金额
+		BigDecimal deduction = new BigDecimal("0.00");
+		Map<String,BigDecimal> records = Maps.newHashMap();
+		List<TradePinMoneyObtain> updateRecord = Lists.newArrayList();
+		for (TradePinMoneyObtain pinMoney : pinMoneyObtains) {
+			if (deduction.compareTo(usePinMoney) >= 0) {
+				break;
+			}
+			// 扣减差额
+			BigDecimal difference = usePinMoney.subtract(deduction);
+			records.put(pinMoney.getId(),
+					difference.compareTo(pinMoney.getRemainAmount()) >= 0 ? pinMoney.getRemainAmount() : difference);
+			if (difference.compareTo(pinMoney.getRemainAmount()) >= 0) {
+				deduction = deduction.add(pinMoney.getRemainAmount());
+				pinMoney.setRemainAmount(new BigDecimal("0.00"));
+				pinMoney.setStatus(PinMoneyStatusConstant.USED);
+			} else {
+				deduction = deduction.add(difference);
+				pinMoney.setRemainAmount(pinMoney.getRemainAmount().subtract(difference));
+			}
+			updateRecord.add(pinMoney);
+		}
+		if (deduction.compareTo(usePinMoney) != 0) {
+			throw new Exception("零花钱扣减异常");
+		}
+		// 更新领取记录  updateRecord
+		for(TradePinMoneyObtain entity : updateRecord){
+			entity.setUpdateTime(new Date());
+			tradePinMoneyObtainMapper.update(entity);
+		}
+		
+		// 更新使用记录
+		String sources = JsonMapper.nonDefaultMapper().toJson(records);
+		TradePinMoneyUse tradePinMoneyUse = new TradePinMoneyUse();
+		tradePinMoneyUse.setId(UuidUtils.getUuid());
+		tradePinMoneyUse.setOrderId(orderId);
+		tradePinMoneyUse.setSourceId(sources);
+		tradePinMoneyUse.setUseAmount(usePinMoney);
+		tradePinMoneyUse.setOrderAmount(orderTotalAmount);
+		tradePinMoneyUse.setUserId(userId);
+		tradePinMoneyUse.setCreateTime(new Date());
+		this.add(tradePinMoneyUse);
 	}
 
 }

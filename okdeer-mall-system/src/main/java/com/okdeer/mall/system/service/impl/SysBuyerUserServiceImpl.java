@@ -438,7 +438,8 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 	@Override
 	public int loginValidation(BuyerUserVo buyerUserVo) throws Exception {
 		
-		String mobilePhone = DESUtils.decrypt(buyerUserVo.getLoginName());
+		String mobilePhone = buyerUserVo.isNotDesLoginName() ? buyerUserVo.getLoginName()
+				: DESUtils.decrypt(buyerUserVo.getLoginName());
 		String loginPassword = buyerUserVo.getLoginPassword();
 		if (!StringUtils.isEmpty(loginPassword)) {
 			return validationByPwd(mobilePhone,loginPassword);

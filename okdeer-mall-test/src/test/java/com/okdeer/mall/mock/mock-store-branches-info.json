@@ -1,0 +1,28 @@
+Begin---
+{
+	"id": "8a8080d15e4bffe6015e50ec13ce207a",
+	"createTime": 1504596227000,
+	"createUserId": "1",
+	"updateTime": 1504596227000,
+	"updateUserId": "1",
+	"disabled": 0,
+	"branchCode": "99903",
+	"parentId": "080b1000156211e689240050569e21f2",
+	"branchName": "单元测试便利店",
+	"type": 3,
+	"branchAreaId": "080a1000756211e689240050569e23f3",
+	"branchAreaCode": "000101",
+	"status": 1,
+	"address": "金九龙大酒店",
+	"distriPriceType": 3,
+	"markupRate": 0.0000,
+	"refBranchId": "",
+	"deliverBranchId": "080b1000156211e689240050569e21f2",
+	"contacts": "13453157617",
+	"mobile": "13453157617",
+	"email": "",
+	"salesman": "",
+	"minAmount": 0.0000,
+	"remark": ""
+}
+End---

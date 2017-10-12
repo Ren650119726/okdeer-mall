@@ -91,4 +91,10 @@ public class TradePinMoneyObtainServiceImpl extends BaseServiceImpl implements T
 		return tradePinMoneyObtainMapper.findPinMoneyObtainAmount(queryDto);
 	}
 
+	@Override
+	public BigDecimal findMyRemainTotal(String userId, Date nowDate) {
+		BigDecimal myRemainTotal = tradePinMoneyObtainMapper.findMyRemainTotal(userId, nowDate);
+		return myRemainTotal == null ? new BigDecimal("0.00") : myRemainTotal;
+	}
+
 }

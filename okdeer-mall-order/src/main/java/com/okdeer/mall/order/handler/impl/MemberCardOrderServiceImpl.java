@@ -68,6 +68,8 @@ import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.GetPreferentialService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
+import com.okdeer.mall.order.service.TradePinMoneyObtainService;
+import com.okdeer.mall.order.service.TradePinMoneyUseService;
 import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.TradeOrderItemVo;
 import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
@@ -136,6 +138,12 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	@Resource
 	private  TradeOrderPayService tradeOrderPayService;
 	
+	@Autowired
+	private TradePinMoneyObtainService tradePinMoneyObtainService;
+	
+	@Autowired
+	private TradePinMoneyUseService tradePinMoneyUseService;
+	
 	/**
 	 * 会员卡订单缓存后缀
 	 */
@@ -181,18 +189,43 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		//设置为使用才进行查询优惠信息  并设置优惠信息
 		if(vo.isUserDiscount()){
 			//可以使用的优惠金额  即是 排除掉  不可使用优惠的   商品金额
+			BigDecimal platDiscountAmount = BigDecimal.ZERO;
+			BigDecimal paymentAmount = vo.getPaymentAmount();
 			FavourParamBO parambo = createFavourParamBo(vo);
 			PreferentialVo preferentialVo = getPreferentialService.findPreferByCard(parambo);
 			Coupons coupons = (Coupons) preferentialVo.getMaxFavourOnline();
 			if(coupons != null){
 				//设置优惠金额
 				vo.setCouponsFaceValue(new BigDecimal(coupons.getCouponPrice()));
-				setDiscountAmount(vo);
 				vo.setCouponsId(coupons.getCouponId());
 				vo.setRecordId(coupons.getRecordId());
 				vo.setCouponsActivityId(coupons.getId());
 				vo.setActivityType(ActivityTypeEnum.VONCHER);
+				
+				//可以使用优惠金额
+				BigDecimal canDiscountAmount = vo.getCanDiscountAmount();
+				//面额
+				BigDecimal faceValue = vo.getCouponsFaceValue();
+				// 如果可以使用优惠金额 < 面额，则实付为0，优惠为可以优惠金额，否则为可以优惠金额-优惠金额，优惠为优惠金额
+				if (canDiscountAmount.compareTo(faceValue) < 0) {
+					platDiscountAmount = canDiscountAmount;
+					paymentAmount = vo.getPaymentAmount().subtract(canDiscountAmount);
+				} else {
+					platDiscountAmount = faceValue;
+					paymentAmount = vo.getPaymentAmount().subtract(faceValue);
+				}
 			}
+			//使用零花钱
+			BigDecimal usePinMoney = BigDecimal.ZERO;
+			BigDecimal myUsable = tradePinMoneyObtainService.findMyUsableTotal(vo.getUserId(),new Date());
+			if (myUsable.compareTo(BigDecimal.ZERO) > 0 && paymentAmount.compareTo(BigDecimal.ZERO) > 0) {
+				usePinMoney = paymentAmount.compareTo(myUsable) >= 0 ? myUsable : paymentAmount;
+				platDiscountAmount = platDiscountAmount.add(usePinMoney);
+				paymentAmount = paymentAmount.subtract(usePinMoney);
+			}
+			vo.setPlatDiscountAmount(platDiscountAmount);
+			vo.setPaymentAmount(paymentAmount);
+			vo.setPinMoneyAmount(usePinMoney);
 		}
 		vo.setOrderResource(OrderResourceEnum.MEMCARD);
 		//不存在存到缓存中
@@ -241,6 +274,8 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	    	req.setData(paramDto);
 	    	//共用实物订单代金券校验
 	    	checkFavourService.process(req, resp);
+	    	//检查零花钱金额 TODO
+	        
 	    	//如果检查结果为false 且为代金券类型
 	    	if(!resp.isSuccess()){
 	    		return resp;
@@ -260,26 +295,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
     	return resp;
 	}
     	
-	/**
-	 * @Description: 计算订单实付金额
-	 * @param vo   订单信息
-	 * @author tuzhd
-	 * @date 2017年8月9日
-	 */
-	private void setDiscountAmount(MemberTradeOrderDto vo) {
-		//可以使用优惠金额
-		BigDecimal canDiscountAmount = vo.getCanDiscountAmount();
-		//面额
-		BigDecimal faceValue = vo.getCouponsFaceValue();
-		// 如果可以使用优惠金额 < 面额，则实付为0，优惠为可以优惠金额，否则为可以优惠金额-优惠金额，优惠为优惠金额
-		if (canDiscountAmount.compareTo(faceValue) < 0) {
-			vo.setPlatDiscountAmount(canDiscountAmount);
-			vo.setPaymentAmount(vo.getPaymentAmount().subtract(canDiscountAmount));
-		} else {
-			vo.setPlatDiscountAmount(faceValue);
-			vo.setPaymentAmount(vo.getPaymentAmount().subtract(faceValue));
-		}
-	}
     
 	/**
 	 * @Description: 获取支付信息
@@ -334,6 +349,9 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		//设置id值
 		persity.setId(vo.getOrderId());
 		persity.setActivityType(vo.getActiviType());
+		if(vo.getActiviType() != ActivityTypeEnum.NO_ACTIVITY){
+			persity.setActivityId(vo.getCouponsActivityId());
+		}
 		//设置返回值
 		resp.getData().setOrderId(vo.getOrderId());
 		resp.getData().setOrderNo(vo.getOrderNo());
@@ -361,8 +379,10 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		
 		//店铺优惠金额	
 		persity.setStorePreferential(vo.getDiscountAmount());
+		//零花钱优惠
+		persity.setPinMoney(vo.getPinMoneyAmount());
 		//平台优惠字段
-		persity.setPlatformPreferential(vo.getPlatDiscountAmount());
+		persity.setPlatformPreferential(vo.getPlatDiscountAmount().add(vo.getPinMoneyAmount()));
 		persity.setCreateTime(new Date());
 		persity.setUpdateTime(persity.getCreateTime());
 		//设置显示
@@ -398,6 +418,12 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 			//更新优惠券信息
 			updateActivityCoupons(vo.getOrderId(), vo.getRecordId(), vo.getCouponsId(), vo.getDeviceId());
 		}
+		//TODO 保存零花钱记录
+		if (vo.getPinMoneyAmount().compareTo(BigDecimal.ZERO) > 0) {
+			//保存零花钱记录
+			tradePinMoneyUseService.orderOccupy(vo.getUserId(), vo.getOrderId(), persity.getTotalAmount(),
+					vo.getPinMoneyAmount());
+		}
 		resp.setResult(ResultCodeEnum.SUCCESS);
 		
 		//支付0元直接改为支付完成
@@ -406,6 +432,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		}
 	}
 	
+
 	/**
 	 * @Description: 组装查询优惠券条件
 	 * @param vo

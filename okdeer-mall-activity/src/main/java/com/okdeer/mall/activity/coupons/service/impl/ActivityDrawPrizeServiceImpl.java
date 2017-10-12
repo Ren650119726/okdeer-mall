@@ -12,6 +12,9 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.BoundHashOperations;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,7 @@ import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeWeightService;
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
 import com.okdeer.mall.member.service.SysBuyerExtService;
+import com.okdeer.mall.system.mapper.SysDictMapper;
 
 import net.sf.json.JSONObject;
 
@@ -74,7 +78,10 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 
 	@Autowired
 	private RedisLockRegistry redisLockRegistry;
-
+	
+	@Autowired
+	private  RedisTemplate<String,String> redisTemplate;
+	
 	/**
 	 * @Description: 根据用户id进行抽奖
 	 * @param userId 用户id
@@ -88,7 +95,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 	@Transactional(rollbackFor = Exception.class)
 	public JSONObject processPrize(String userId, double[] iArr, String[] ids) throws Exception {
 		SysBuyerExt user = sysBuyerExtService.findByUserId(userId);
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 		// 用户抽奖次数存在让其抽奖否则
 		if (user != null && user.getPrizeCount() == 0) {
 			// 剩余数量小于0 显示已领完
@@ -142,6 +149,85 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 	}
 
 	/**
+	 * 校验代金券领取的用户状态，避免短时间内并发操作
+	 * @param key 存储的redis key
+	 * @param times 超时时间
+	 * @return
+	 */
+	private boolean checkUserStatusByRedis(String key, int times) {
+		// 如果不存在缓存数据 返回true 存在false
+		boolean flag = redisTemplate.boundValueOps(key).setIfAbsent("true");
+		if (flag) {
+			redisTemplate.expire(key, times, TimeUnit.SECONDS);
+		} else {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * @Description: 根据活动id查询 到点执行抽奖
+	 * @param userId 用户id
+	 * @param luckDrawId 抽奖活动id
+	 * @param currykey  当时时间段标识
+	 * @param userCount 用户次数
+	 * @author tuzhd
+	 * @date 2017年9月22日
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	public JSONObject arrivalTimePrize(String userId, String luckDrawId,String currykey,int userCount) throws Exception {
+		Map<String, Object> map = new HashMap<>();
+		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中 start 涂志定
+		String key = "arrival_time_prize:" + userId;
+		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		if (!checkFlag) {
+			map.put("code", 112);
+			map.put("msg", "您抽奖速度太快，稍后再试");
+			return JSONObject.fromObject(map);
+		}
+		try {
+			boolean isCanPrize = false ;
+			String mapKey = currykey + "Map";
+			BoundHashOperations<String, String, String> tempMap = redisTemplate.boundHashOps(mapKey);
+			//设置超时时间
+			tempMap.expire(30,TimeUnit.MINUTES);
+			//用户的标识key
+			String userKey = userId;
+			
+			for(int i =0 ; i < userCount ; i++){
+				userKey = userId + i;
+	 			//这不存在这个领取记录，代表这个用户可以进行领取，userid加序号，标识可以领取的次数
+	 			if(!userId.equals(tempMap.get(userKey))){
+	 				isCanPrize = true;
+	 				break;
+	 			}
+			}
+			if(!isCanPrize){
+				map.put("code", 118);
+				map.put("msg", "您这个时间红包领取数量已达上限！");
+				return JSONObject.fromObject(map);
+			}
+			//获得抽奖机会，从redis中拿出可以抽取凭证
+			if (StringUtils.isBlank(redisTemplate.opsForList().rightPop(currykey + "List"))) {
+				map.put("code", 128);
+				map.put("msg", "您来晚了，该时段红包数量已领完！");
+				return JSONObject.fromObject(map);
+			}
+			// 执行抽奖
+			JSONObject result = addProcessPrize(userId, luckDrawId,false);
+			if(result != null){
+				tempMap.put(userKey, userId);
+			}
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			redisTemplate.delete(key);
+		}
+
+	}
+	
+	/**
 	 * @Description: 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 
 	 * @param luckDrawId 抽奖活动id
 	 * @param userId 用户id
@@ -151,11 +237,16 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 	 */
 	@Transactional(rollbackFor = Exception.class)
 	public JSONObject processPrizeByUser(String userId, String luckDrawId) throws Exception {
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中 start 涂志定
 		String key = "draw_user" + userId;
-		Lock lock = redisLockRegistry.obtain(key);
-		if (lock.tryLock(10, TimeUnit.SECONDS)) {
+		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		if (!checkFlag) {
+			map.put("code", 112);
+			map.put("msg", "您抽奖速度太快，稍后再试");
+			return JSONObject.fromObject(map);
+		}
+		try {
 			SysBuyerExt user = sysBuyerExtService.findByUserId(userId);
 			// 用户抽奖次数存在让其抽奖否则
 			if (user == null || user.getPrizeCount() == null || user.getPrizeCount() == 0) {
@@ -166,27 +257,21 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 			}
 			//9月活动查询每日抽奖次数，三次不能抽取
 			ActivityDrawRecordParamDto params = new ActivityDrawRecordParamDto();
-			params.setUserId(userId);
+			params.setUserId(userId); 
 			params.setStartCreateTime(DateUtils.getDateStart(new Date()));
 			params.setEndCreateTime(DateUtils.getDateEnd(new Date()));
 			//超过三次不能抽取返回
-			if(activityDrawRecordService.findCountByParams(params) >= 3){
+			if(activityDrawRecordService.findCountByParams(params) >= 5){
 				map.put("code", 118);
 				map.put("msg", "您今天抽奖次数已达上限！");
 				return JSONObject.fromObject(map);
 			}
-			try {
-				// 执行抽奖
-				return addProcessPrize(userId, luckDrawId);
-			} catch (Exception e) {
-				throw e;
-			} finally {
-				lock.unlock();
-			}
-		} else {
-			map.put("code", 102);
-			map.put("msg", "您抽奖速度太快，稍后再试");
-			return JSONObject.fromObject(map);
+			// 执行抽奖
+			return addProcessPrize(userId, luckDrawId);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			redisTemplate.delete(key);
 		}
 
 	}
@@ -195,6 +280,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 	 * @Description: 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 
 	 * @param luckDrawId 抽奖活动id
 	 * @param userId 用户id
+	 * @param isUpPrizeCount 是否扣除抽奖次数
 	 * @return JSONObject 抽奖获取奖品
 	 * @author tuzhd
 	 * @throws Exception 
@@ -202,7 +288,21 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 	 */
 	@Transactional(rollbackFor = Exception.class)
 	private JSONObject addProcessPrize(String userId, String luckDrawId) throws Exception {
-		Map<String, Object> map = new HashMap<String, Object>();
+		return addProcessPrize(userId, luckDrawId, true);
+	}
+	
+	/**
+	 * @Description: 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 
+	 * @param luckDrawId 抽奖活动id
+	 * @param userId 用户id
+	 * @param isUpPrizeCount 是否扣除抽奖次数
+	 * @return JSONObject 抽奖获取奖品
+	 * @author tuzhd
+	 * @throws Exception 
+	 * @date 2016年12月14日
+	 */
+	private JSONObject addProcessPrize(String userId, String luckDrawId,boolean isUpPrizeCount) throws Exception {
+		Map<String, Object> map = new HashMap<>();
 		ActivityLuckDraw activityLuckDraw = activityLuckDrawService.findById(luckDrawId);
 		// 根据活动id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应
 		List<ActivityPrizeWeight> list = activityPrizeWeightService.findPrizesByLuckDrawId(luckDrawId);
@@ -230,8 +330,8 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 			weight[defaultNo] = weight[defaultNo] + sumWeight;
 			// 根据中奖概率执行中奖
 			Integer prizeNo = isHadPrize(weight, weightDeno);
-			// 根据用户id 抽奖之后将其抽奖机会-1,根据产品要求即使代金劵另外也扣抽奖机会
-			if (sysBuyerExtService.updateCutPrizeCount(userId) == 0) {
+			//isUpPrizeCount 为 true才进行 ==》 根据用户id 抽奖之后将其抽奖机会-1,根据产品要求即使代金劵另外也扣抽奖机会
+			if (isUpPrizeCount && sysBuyerExtService.updateCutPrizeCount(userId) == 0) {
 				// 更新抽奖结果 0 说明其没有抽奖次数
 				map.put("code", 108);
 				map.put("msg", "您已经没有抽奖机会哦，可以邀请好友获得抽奖机吧！");
@@ -258,9 +358,11 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 				// 根据序号获取代金劵id 执行送奖 //奖品库存扣减成功后去领取代金券
 				String collectId = prizeW.getActivityCollectId();
 				if (StringUtils.isNotBlank(collectId)) {
+					
 					activityPrizeRecordService.addPrizeRecord(collectId, userId, luckDrawId, prizeW.getId(),
 							WhetherEnum.whether.ordinal());
 					json = activityCouponsRecordService.addRecordsByCollectId(collectId, userId);
+					json.put("prizeType", "1");
 				} else {
 					activityPrizeRecordService.addPrizeRecord(collectId, userId, luckDrawId, prizeW.getId(),
 							WhetherEnum.not.ordinal());

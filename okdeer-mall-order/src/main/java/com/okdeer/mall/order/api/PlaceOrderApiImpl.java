@@ -3,11 +3,8 @@ package com.okdeer.mall.order.api;
 import static com.okdeer.common.consts.ELTopicTagConstants.TAG_GOODS_EL_UPDATE;
 import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 
 import javax.annotation.Resource;
 
@@ -17,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.integration.redis.util.RedisLockRegistry;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.rocketmq.common.message.Message;
@@ -50,6 +45,7 @@ import com.okdeer.mall.order.handler.RequestHandlerChain;
 import com.okdeer.mall.order.service.PlaceOrderApi;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.system.utils.ConvertUtil;
+import com.okdeer.mall.util.RedisLock;
 
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.PlaceOrderApi")
 public class PlaceOrderApiImpl implements PlaceOrderApi {
@@ -102,10 +98,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	private RocketMQProducer rocketMQProducer;
 	
 	@Resource
-	private RedisLockRegistry redisLockRegistry;
-	
-	@Resource
-	private StringRedisTemplate stringRedisTemplate;
+	private RedisLock redisLock;
 	
 	@Autowired
 	@Qualifier(value="jxcSynTradeorderProcessLister")
@@ -227,38 +220,17 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				break;
 		}
 		// Begin V2.5 modified by maojj 2017-05-27
-		// 获取锁
-		List<Lock> lockList = obtain(req.getData());
+		// 获取需要加锁的键列表
+		List<String> keyList = obtain(req.getData());
 		try{
-			if(tryLock(lockList,10, TimeUnit.SECONDS)){
+			if(redisLock.tryLock(keyList, 10)){
 				handlerChain.process(req, resp);
 			}else{
 				logger.error("提交订单，获取锁失败，请求参数为：{}",JsonMapper.nonDefaultMapper().toJson(req.getData()));
-				// 遍历lock输出信息，方便定位问题
-				for(Lock redisLock : lockList){
-					Field[] fields = redisLock.getClass().getDeclaredFields();
-					for(Field f : fields){
-						f.setAccessible(true);
-						logger.info("redisLock属性名：{}，属性值：{}" ,f.getName(),f.get(redisLock));
-						if("lockKey".equals(f.getName())){
-							String lockKey = String.valueOf(f.get(redisLock));
-							logger.info("redis中锁键：{},缓存的对象值：{}",lockKey,stringRedisTemplate.boundValueOps("MALL-SERVICE:" + lockKey).get());
-						}
-					}
-				}
 				resp.setResult(ResultCodeEnum.FAIL);
 			}
 		}finally{
-			if(CollectionUtils.isNotEmpty(lockList)){
-				for(Lock lock : lockList){
-					try {
-						lock.unlock();
-					} catch (Exception e) {
-						logger.error("释放锁失败：{}",e);
-					}
-				}
-			}
-			
+			redisLock.unLock(keyList);
 		}
 		// End V2.5 modified by maojj 2017-05-27
 		// 下单埋点
@@ -274,7 +246,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	/**
 	 * 发送消息同步数据到搜索引擎执行
 	 *
-	 * @param list List<String>
+	 * @param list 
 	 * @throws Exception
 	 */
 	private void structureProducer(List<String> list, String tag) throws Exception {
@@ -296,19 +268,18 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	 * @author maojj
 	 * @date 2017年5月27日
 	 */
-	private List<Lock> obtain(PlaceOrderParamDto paramDto){
-		List<Lock> lockList = Lists.newArrayList();
+	private List<String> obtain(PlaceOrderParamDto paramDto){
+		List<String> keyList = Lists.newArrayList();
 		if(StringUtils.isNotEmpty(paramDto.getFareRecId())){
 			ActivityCouponsRecord fareRec = activityCouponsRecordMapper.selectByPrimaryKey(paramDto.getFareRecId());
-			String fareLockKey =  String.format("submitOrder:%s:%s", paramDto.getUserId(),fareRec.getCouponsId());
-			lockList.add(redisLockRegistry.obtain(fareLockKey));
+			keyList.add(String.format("submitOrder:%s:%s", paramDto.getUserId(),fareRec.getCouponsId()));
 		}
 		// 订单参与的活动类型
 		ActivityTypeEnum actType = paramDto.getActivityType();
 		if (actType != ActivityTypeEnum.VONCHER
 				&& actType != ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES) {
 			// 如果提交订单不是满减也不是代金券，则无需加锁
-			return lockList;
+			return keyList;
 		}
 		// 锁的键值为：活动类型名称（代金券、满减） : 账户Id : 活动Id（代金券、满减Id）
 		String limitActId = null;
@@ -318,30 +289,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		}else if(actType == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES){
 			limitActId = paramDto.getActivityId();
 		}
-		String lockKey = String.format("submitOrder:%s:%s:%s", actType.name(),paramDto.getUserId(),limitActId);
-		lockList.add(redisLockRegistry.obtain(lockKey));
-		return lockList;
-	}
-	
-	/**
-	 * @Description: 尝试获取锁
-	 * @param lockList
-	 * @param time
-	 * @param unit
-	 * @return
-	 * @throws Exception   
-	 * @author maojj
-	 * @date 2017年6月24日
-	 */
-	private boolean tryLock(List<Lock> lockList,long time, TimeUnit unit) throws Exception{
-		if(CollectionUtils.isEmpty(lockList)){
-			return true;
-		}
-		for(Lock lock : lockList){
-			if(!lock.tryLock(time,unit)){
-				return false;
-			}
-		}
-		return true;
+		keyList.add(String.format("submitOrder:%s:%s:%s", actType.name(),paramDto.getUserId(),limitActId));
+		return keyList;
 	}
 }

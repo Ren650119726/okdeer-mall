@@ -62,7 +62,10 @@ public class TradePinMoneyObtain {
      * 零花钱活动id
      */
     private String activityId;
-
+    /**
+     * 生效时间
+     */
+    private Date effectTime;
 
     public String getId() {
         return id;
@@ -149,6 +152,14 @@ public class TradePinMoneyObtain {
 
 	public void setActivityId(String activityId) {
 		this.activityId = activityId;
+	}
+
+	public Date getEffectTime() {
+		return effectTime;
+	}
+
+	public void setEffectTime(Date effectTime) {
+		this.effectTime = effectTime;
 	}
     
 }

@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.okdeer.archive.goods.assemble.GoodsStoreSkuAssembleApi;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.dto.StockUpdateDto;
@@ -33,7 +32,6 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
-import com.okdeer.jxc.stock.service.StockUpdateServiceApi;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
@@ -142,9 +140,6 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	private TradeOrderTimer tradeOrderTimer;
 	
 	@Autowired
-	private TradePinMoneyObtainService tradePinMoneyObtainService;
-	
-	@Autowired
 	private TradePinMoneyUseService tradePinMoneyUseService;
 
 	/**
@@ -159,20 +154,11 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	@Resource
 	private OrderReturnCouponsService orderReturnCouponsService;
 
-	@Reference(version = "1.0.0", check = false)
-	private GoodsStoreSkuAssembleApi goodsStoreSkuAssembleApi;
-
 	/**
 	 * 商城库存管理Dubbo接口
 	 */
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
-	
-	/**
-	 * 商业系统存库存管理API
-	 */
-	@Reference(version = "1.0.0", check = false)
-	private StockUpdateServiceApi stockUpdateServiceApi;
 	
 	@Resource
 	private MallStockUpdateBuilder mallStockUpdateBuilder;
@@ -295,54 +281,9 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		if (usePinMoney.compareTo(BigDecimal.ZERO) <= 0) {
 			return;
 		}
-		
-		// 查询我的红包记录
-		List<TradePinMoneyObtain> pinMoneyObtains = tradePinMoneyObtainService.findList(paramDto.getUserId(),
-				new Date(), PinMoneyStatusConstant.UNUSED);
-		//倒序
-		Collections.reverse(pinMoneyObtains);
-		// 需扣减金额
-		BigDecimal deduction = new BigDecimal("0.00");
-		Map<String,BigDecimal> records = Maps.newHashMap();
-		List<TradePinMoneyObtain> updateRecord = Lists.newArrayList();
-		for (TradePinMoneyObtain pinMoney : pinMoneyObtains) {
-			if (deduction.compareTo(usePinMoney) >= 0) {
-				break;
-			}
-			// 扣减差额
-			BigDecimal difference = usePinMoney.subtract(deduction);
-			records.put(pinMoney.getId(),
-					difference.compareTo(pinMoney.getRemainAmount()) >= 0 ? pinMoney.getRemainAmount() : difference);
-			if (difference.compareTo(pinMoney.getRemainAmount()) >= 0) {
-				deduction = deduction.add(pinMoney.getRemainAmount());
-				pinMoney.setRemainAmount(new BigDecimal("0.00"));
-				pinMoney.setStatus(PinMoneyStatusConstant.USED);
-			} else {
-				deduction = deduction.add(difference);
-				pinMoney.setRemainAmount(pinMoney.getRemainAmount().subtract(difference));
-			}
-			updateRecord.add(pinMoney);
-		}
-		if (deduction.compareTo(usePinMoney) != 0) {
-			throw new Exception("零花钱扣减异常");
-		}
-		// 更新领取记录  updateRecord
-		for(TradePinMoneyObtain entity : updateRecord){
-			entity.setUpdateTime(new Date());
-			tradePinMoneyObtainService.update(entity);
-		}
-		
-		// 更新使用记录
-		String sources = JsonMapper.nonDefaultMapper().toJson(records);
-		TradePinMoneyUse tradePinMoneyUse = new TradePinMoneyUse();
-		tradePinMoneyUse.setId(UuidUtils.getUuid());
-		tradePinMoneyUse.setOrderId(tradeOrder.getId());
-		tradePinMoneyUse.setSourceId(sources);
-		tradePinMoneyUse.setUseAmount(usePinMoney);
-		tradePinMoneyUse.setOrderAmount(paramDto.getTotalAmount());
-		tradePinMoneyUse.setUserId(paramDto.getUserId());
-		tradePinMoneyUse.setCreateTime(new Date());
-		tradePinMoneyUseService.add(tradePinMoneyUse);
+		//保存零花钱记录
+		tradePinMoneyUseService.orderOccupy(paramDto.getUserId(), tradeOrder.getId(), paramDto.getTotalAmount(),
+				usePinMoney);
 	}
 
 	/**

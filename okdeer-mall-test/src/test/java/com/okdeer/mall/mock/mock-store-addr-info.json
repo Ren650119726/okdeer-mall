@@ -1,0 +1,19 @@
+Begin---
+{
+	"id": "8a8080d15e4bffe6015e50ec13ce207a",
+	"storeName": "单元测试便利店",
+	"address": "金九龙大酒店",
+	"area": "湖北省荆州市荆州区",
+	"storeInfoExt": {
+		"serviceStartTime": "07:00",
+		"serviceEndTime": "23:30"
+	},
+	"addressId": "8a8080d15e4bffe6015e50ec1434207b",
+	"memberConsignee": {
+		"id": "8a8080d15e4bffe6015e50ec13ce207a",
+		"consigneeName": "13453157617",
+		"area": "湖北省荆州市荆州区",
+		"address": "金九龙大酒店"
+	}
+}
+End---

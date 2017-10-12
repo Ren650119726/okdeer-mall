@@ -69,7 +69,7 @@ public class CheckStockServiceImplTest extends AbstractHandlerTest implements Mo
 		MockStoreSkuParserBo.initInLimitKind(parserBo);
 		isOutOfLimitKind = (boolean)method.invoke(checkStockService, parserBo,respMock);
 		assertEquals(false, isOutOfLimitKind);
-		// 3.存在活动商品，超出限款
+		// 4.存在活动商品，超出限款
 		MockStoreSkuParserBo.initOutLimitKind(parserBo);
 		isOutOfLimitKind = (boolean)method.invoke(checkStockService, parserBo,respMock);
 		assertEquals(true, isOutOfLimitKind);

@@ -10,11 +10,12 @@
         <result column="subscribe_wechat_tip" property="subscribeWechatTip" jdbcType="VARCHAR" />
         <result column="get_qualifica_tip" property="getQualificaTip" jdbcType="VARCHAR" />
         <result column="poster_img" property="posterImg" jdbcType="VARCHAR" />
+         <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
     </resultMap>
 
     <sql id="Base_Column_List" >
         id, create_poster_tip, draw_count_limit, friend_reach_count_per, friend_subscribe_tip, 
-        subscribe_wechat_tip, get_qualifica_tip, poster_img
+        subscribe_wechat_tip, get_qualifica_tip, poster_img,activity_id
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -51,6 +52,9 @@
             <if test="posterImg != null" >
                 poster_img,
             </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides="," >
             <if test="id != null" >
@@ -76,6 +80,9 @@
             </if>
             <if test="posterImg != null" >
                 #{posterImg,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                 #{activityId,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -103,6 +110,9 @@
             </if>
             <if test="posterImg != null" >
                 poster_img = #{posterImg,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                 activity_id = #{activityId,jdbcType=VARCHAR},
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
