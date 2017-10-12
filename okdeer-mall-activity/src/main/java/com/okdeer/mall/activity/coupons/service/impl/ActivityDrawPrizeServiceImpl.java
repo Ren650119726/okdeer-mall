@@ -1,11 +1,11 @@
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -13,13 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.google.common.collect.Lists;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
@@ -35,7 +33,6 @@ import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeWeightService;
 import com.okdeer.mall.member.member.entity.SysBuyerExt;
 import com.okdeer.mall.member.service.SysBuyerExtService;
-import com.okdeer.mall.system.mapper.SysDictMapper;
 
 import net.sf.json.JSONObject;
 
@@ -258,7 +255,7 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 			}
 			//9月活动查询每日抽奖次数，三次不能抽取
 			ActivityDrawRecordParamDto params = new ActivityDrawRecordParamDto();
-			List<String> ids = Lists.newArrayList();
+			List<String> ids = new ArrayList<String>();
 			ids.add(luckDrawId);
 			params.setIds(ids);
 			params.setUserId(userId); 
