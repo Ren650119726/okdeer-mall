@@ -41,5 +41,12 @@ public interface ActivityDiscountGroupMapper extends IBaseMapper {
 	 * @date 2017年10月12日
 	 */
 	int deleteByActivityId(@Param("activityId")String activityId);
+	
+	/**
+	 * @Description: 查询活动业务团购商品记录
+	 * @author tuzhd
+	 * @date 2017年10月12日日
+	 */
+	List<ActivityDiscountGroup> findByActivityId(@Param("activityId")String activityId);
 
 }
