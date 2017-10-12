@@ -19,6 +19,7 @@ import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.google.common.collect.Lists;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
@@ -257,6 +258,9 @@ public class ActivityDrawPrizeServiceImpl implements ActivityDrawPrizeService, A
 			}
 			//9月活动查询每日抽奖次数，三次不能抽取
 			ActivityDrawRecordParamDto params = new ActivityDrawRecordParamDto();
+			List<String> ids = Lists.newArrayList();
+			ids.add(luckDrawId);
+			params.setIds(ids);
 			params.setUserId(userId); 
 			params.setStartCreateTime(DateUtils.getDateStart(new Date()));
 			params.setEndCreateTime(DateUtils.getDateEnd(new Date()));
