@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.discount.mapper.ActivityDiscountGroupMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="discount_id" property="discountId" jdbcType="VARCHAR" />
+        <result column="group_count" property="groupCount" jdbcType="INTEGER" />
+        <result column="group_price" property="groupPrice" jdbcType="DECIMAL" />
+        <result column="goods_type" property="goodsType" jdbcType="BIT" />
+        <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+        <result column="group_valid" property="groupValid" jdbcType="INTEGER" />
+        <result column="goods_count_limit" property="goodsCountLimit" jdbcType="INTEGER" />
+        <result column="goods_day_count_limit" property="goodsDayCountLimit" jdbcType="INTEGER" />
+        <result column="user_count_limit" property="userCountLimit" jdbcType="INTEGER" />
+        <result column="user_day_count_limit" property="userDayCountLimit" jdbcType="INTEGER" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="create_user_id" property="createUserId" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="update_user_id" property="updateUserId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, discount_id, group_count, group_price, goods_type, store_sku_id, group_valid, 
+        goods_count_limit, goods_day_count_limit, user_count_limit, user_day_count_limit, 
+        create_time, create_user_id, update_time, update_user_id
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_discount_group
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup" >
+        insert into activity_discount_group
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="discountId != null" >
+                discount_id,
+            </if>
+            <if test="groupCount != null" >
+                group_count,
+            </if>
+            <if test="groupPrice != null" >
+                group_price,
+            </if>
+            <if test="goodsType != null" >
+                goods_type,
+            </if>
+            <if test="storeSkuId != null" >
+                store_sku_id,
+            </if>
+            <if test="groupValid != null" >
+                group_valid,
+            </if>
+            <if test="goodsCountLimit != null" >
+                goods_count_limit,
+            </if>
+            <if test="goodsDayCountLimit != null" >
+                goods_day_count_limit,
+            </if>
+            <if test="userCountLimit != null" >
+                user_count_limit,
+            </if>
+            <if test="userDayCountLimit != null" >
+                user_day_count_limit,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="createUserId != null" >
+                create_user_id,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="discountId != null" >
+                #{discountId,jdbcType=VARCHAR},
+            </if>
+            <if test="groupCount != null" >
+                #{groupCount,jdbcType=INTEGER},
+            </if>
+            <if test="groupPrice != null" >
+                #{groupPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsType != null" >
+                #{goodsType,jdbcType=BIT},
+            </if>
+            <if test="storeSkuId != null" >
+                #{storeSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="groupValid != null" >
+                #{groupValid,jdbcType=INTEGER},
+            </if>
+            <if test="goodsCountLimit != null" >
+                #{goodsCountLimit,jdbcType=INTEGER},
+            </if>
+            <if test="goodsDayCountLimit != null" >
+                #{goodsDayCountLimit,jdbcType=INTEGER},
+            </if>
+            <if test="userCountLimit != null" >
+                #{userCountLimit,jdbcType=INTEGER},
+            </if>
+            <if test="userDayCountLimit != null" >
+                #{userDayCountLimit,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                #{updateUserId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup" >
+        update activity_discount_group
+        <set >
+            <if test="discountId != null" >
+                discount_id = #{discountId,jdbcType=VARCHAR},
+            </if>
+            <if test="groupCount != null" >
+                group_count = #{groupCount,jdbcType=INTEGER},
+            </if>
+            <if test="groupPrice != null" >
+                group_price = #{groupPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsType != null" >
+                goods_type = #{goodsType,jdbcType=BIT},
+            </if>
+            <if test="storeSkuId != null" >
+                store_sku_id = #{storeSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="groupValid != null" >
+                group_valid = #{groupValid,jdbcType=INTEGER},
+            </if>
+            <if test="goodsCountLimit != null" >
+                goods_count_limit = #{goodsCountLimit,jdbcType=INTEGER},
+            </if>
+            <if test="goodsDayCountLimit != null" >
+                goods_day_count_limit = #{goodsDayCountLimit,jdbcType=INTEGER},
+            </if>
+            <if test="userCountLimit != null" >
+                user_count_limit = #{userCountLimit,jdbcType=INTEGER},
+            </if>
+            <if test="userDayCountLimit != null" >
+                user_day_count_limit = #{userDayCountLimit,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUserId != null" >
+                create_user_id = #{createUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUserId != null" >
+                update_user_id = #{updateUserId,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_discount_group
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>
