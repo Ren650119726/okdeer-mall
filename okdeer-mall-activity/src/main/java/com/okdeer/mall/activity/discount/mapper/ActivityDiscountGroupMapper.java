@@ -6,7 +6,12 @@
  */
 package com.okdeer.mall.activity.discount.mapper;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
 /**
  * ClassName: ActivityDiscountGroupMapper 
  * @Description: 团购商品关联表实体操作类
@@ -20,5 +25,21 @@ import com.okdeer.base.dal.IBaseMapper;
  */
 public interface ActivityDiscountGroupMapper extends IBaseMapper {
 	
+	/**
+	 * @Description: 批量新增团购活动
+	 * @param list   
+	 * @author tuzhd
+	 * @date 2017年10月12日
+	 */
+	void batchAdd(@Param("list")List<ActivityDiscountGroup> list);
+	
+	/**
+	 * @Description: 根据活动id删除团购商品记录
+	 * @param activityId
+	 * @return int  
+	 * @author tuzhd
+	 * @date 2017年10月12日
+	 */
+	int deleteByActivityId(@Param("activityId")String activityId);
 
 }
