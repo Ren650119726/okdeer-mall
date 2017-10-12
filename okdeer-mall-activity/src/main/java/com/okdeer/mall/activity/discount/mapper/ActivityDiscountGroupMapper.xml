@@ -31,6 +31,24 @@
         from activity_discount_group
         where id = #{id,jdbcType=VARCHAR}
     </select>
+    
+    <!-- 批量添加团购商品信息 -->
+    <insert id="batchAdd" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup">
+		INSERT INTO activity_discount_group(
+	        <include refid="Base_Column_List"/>
+		) VALUES 
+		<foreach collection="list" item="item" index="index" separator="," >
+        ( #{id,jdbcType=VARCHAR},#{discountId,jdbcType=VARCHAR},
+          #{groupCount,jdbcType=INTEGER},#{groupPrice,jdbcType=DECIMAL},
+          #{goodsType,jdbcType=BIT},#{storeSkuId,jdbcType=VARCHAR},
+          #{groupValid,jdbcType=INTEGER},#{goodsCountLimit,jdbcType=INTEGER},
+          #{goodsDayCountLimit,jdbcType=INTEGER},#{userCountLimit,jdbcType=INTEGER},
+          #{userDayCountLimit,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP},
+          #{createUserId,jdbcType=VARCHAR},#{updateTime,jdbcType=TIMESTAMP},
+          #{updateUserId,jdbcType=VARCHAR}
+        )
+		</foreach>
+	</insert>
 
     <insert id="add" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup" >
         insert into activity_discount_group
@@ -178,6 +196,11 @@
         </set>
         where id = #{id,jdbcType=VARCHAR}
     </update>
+	
+	<!-- 删除团购活动的商品 -->
+  	<delete id="deleteByActivityId" parameterType="java.lang.String">
+   		DELETE FROM activity_discount_group WHERE discount_id = #{activityId,jdbcType=VARCHAR};
+  	</delete>
 
     <delete id="delete" parameterType="java.lang.String" >
         delete from activity_discount_group
