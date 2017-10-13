@@ -212,4 +212,12 @@
 	    WHERE discount_id = #{activityId,jdbcType=VARCHAR}
 	    ORDER BY sort ASC
   	</select>
+  	
+  	<!-- 查询团购商品信息 -->
+	<select id="findByActivityIdAndSkuId" parameterType="map" resultMap="BaseResultMap">
+		SELECT <include refid="Base_Column_List" />
+		FROM activity_discount_group
+		WHERE discount_id = #{activityId,jdbcType=VARCHAR}
+		AND store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
+	</select>
 </mapper>

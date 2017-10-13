@@ -6403,4 +6403,24 @@
 		WHERE order_no = #{orderNo,jdbcType=VARCHAR}
 	</select>
 	<!-- End V2.4.1 added by maojj 2017-06-19 -->
+	
+	<!-- Begin V2.6.3 added by maojj 2017-10-12 -->
+	<update id="updateOrderType" parameterType="list">
+		UPDATE trade_order
+		SET type = 7
+		WHERE id IN 
+		<foreach collection="orderIdList" item="orderId" separator="," open="(" close=")">
+			#{orderId}
+		</foreach>	
+	</update>
+	
+	<select id="findByOrderIds" parameterType="list" resultMap="BaseResultMap">
+		SELECT <include refid="Base_Column_List" />
+		FROM trade_order
+		WHERE id IN 
+		<foreach collection="orderIdList" item="orderId" separator="," open="(" close=")">
+			#{orderId}
+		</foreach>	
+	</select>
+	<!-- End V2.6.3 added by maojj 2017-10-12 -->
 </mapper>

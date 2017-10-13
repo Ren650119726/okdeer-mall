@@ -24,6 +24,8 @@ import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.mall.member.bo.UserAddressFilterCondition;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
@@ -32,6 +34,7 @@ import com.okdeer.mall.member.member.enums.AddressType;
 import com.okdeer.mall.member.member.service.MemberConsigneeAddressServiceApi;
 import com.okdeer.mall.member.member.vo.MemberConsigneeAddressVo;
 import com.okdeer.mall.member.member.vo.UserAddressVo;
+import com.okdeer.mall.member.service.AddressFilterStrategy;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 
 /**
@@ -497,5 +500,32 @@ public class MemberConsigneeAddressServiceImpl
 	public interface PageCallBack<T> {
 		List<T> callBackHandle(List<String> idList);
 	}
-
+	
+	// Begin V2.6.3 added by maojj 2017-10-11
+	@Override
+	public List<UserAddressVo> findUserAddrList(String userId, UserAddressFilterCondition filterCondition,
+			AddressFilterStrategy filterStrategy) {
+		List<UserAddressVo> userAddrVoList = Lists.newArrayList();
+		// 查询用户的所有地址信息
+		List<MemberConsigneeAddress> userAddrList = memberConsigneeAddressMapper.findByUserId(userId);
+		userAddrList.forEach(userAddr -> {
+			UserAddressVo userAddrVo = BeanMapper.map(userAddr, UserAddressVo.class);
+			// 地址id
+			userAddrVo.setAddressId(userAddr.getId());
+			if (StringUtils.isNotBlank(userAddr.getCommunityId())
+					&& StringUtils.isNotBlank(userAddr.getRoomId())) {
+				userAddrVo.setIsCommunity(0);
+			}else {
+				userAddrVo.setIsCommunity(1);
+			}
+			if(filterStrategy.isOutRange(userAddr,filterCondition)){
+				userAddrVo.setIsOutRange(1);
+			}else{
+				userAddrVo.setIsOutRange(0);
+			}
+			userAddrVoList.add(userAddrVo);
+		});
+		return userAddrVoList;
+	}
+	// End V2.6.3 added by maojj 2017-10-11
 }

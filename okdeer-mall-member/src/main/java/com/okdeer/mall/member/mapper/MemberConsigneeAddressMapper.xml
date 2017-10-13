@@ -923,4 +923,13 @@
       </if>
   </select>
   <!-- end add by zhulq 根据店铺id集合查询店铺地址 -->
+  
+  <!-- Begin V2.6.3 added by maojj 2017-10-11 查询用户有效的地址过滤物业地址 -->
+  <select id="findByUserId" resultMap="BaseResultMap" parameterType="java.lang.String">
+	SELECT  <include refid="Base_Column_List" />
+    FROM member_consignee_address 
+    WHERE user_id = #{userId,jdbcType=VARCHAR}
+    AND disabled = 0 
+    AND source = 1
+  </select>
 </mapper>

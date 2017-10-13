@@ -1,8 +1,5 @@
 package com.okdeer.mall.order.handler.impl;
 
-import java.util.List;
-import java.util.Map;
-
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
@@ -10,14 +7,11 @@ import org.springframework.stereotype.Service;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.bo.FavourParamBuilder;
-import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.discount.entity.PreferentialVo;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
-import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
-import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.GetPreferentialService;
