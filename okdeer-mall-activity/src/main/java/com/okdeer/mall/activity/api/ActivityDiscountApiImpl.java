@@ -33,12 +33,12 @@ public class ActivityDiscountApiImpl implements ActivityDiscountApi{
 	private ActivityDiscountService activityDiscountService;
 
 	@Override
-	public ReturnInfo add(ActivityInfoDto actInfoDto) {
+	public ReturnInfo add(ActivityInfoDto actInfoDto) throws Exception {
 		return activityDiscountService.add(actInfoDto);
 	}
 	
 	@Override
-	public ReturnInfo update(ActivityInfoDto actInfoDto) {
+	public ReturnInfo update(ActivityInfoDto actInfoDto) throws Exception {
 		return activityDiscountService.update(actInfoDto);
 	}
 
@@ -54,7 +54,7 @@ public class ActivityDiscountApiImpl implements ActivityDiscountApi{
 	}
 
 	@Override
-	public ReturnInfo batchClose(ActivityParamDto paramDto) {
+	public ReturnInfo batchClose(ActivityParamDto paramDto) throws Exception {
 		ActivityParamBo paramBo = BeanMapper.map(paramDto, ActivityParamBo.class);
 		return activityDiscountService.batchClose(paramBo);
 	}
