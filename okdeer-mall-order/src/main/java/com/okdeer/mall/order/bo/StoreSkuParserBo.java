@@ -594,7 +594,7 @@ public class StoreSkuParserBo {
 	 * @date 2017年6月24日
 	 */
 	public void refreshComboStockList(List<Integer> comboStockList){
-		if(CollectionUtils.isEmpty(comboStockList) && comboStockList.size() != this.comboSkuIdList.size()){
+		if(CollectionUtils.isEmpty(comboStockList) || comboStockList.size() != this.comboSkuIdList.size()){
 			return;
 		}
 		int index = 0;

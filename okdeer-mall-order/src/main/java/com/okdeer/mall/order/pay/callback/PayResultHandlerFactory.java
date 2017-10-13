@@ -35,6 +35,11 @@ public class PayResultHandlerFactory {
 	private MemberCardOrderPayHandler memberCardOrderPayHandler;
 	//end add by tuzhd 2017-8-8 增加会员卡支付成功后处理
 	
+	// Begin V2.6.3 added by maojj 2017-10-13
+	@Autowired
+	private GroupOrderPayHandler groupOrderPayHandler;
+	// End V2.6.3 added by maojj 2017-10-13
+	
 	public AbstractPayResultHandler getByOrderType(OrderTypeEnum orderType){
 		AbstractPayResultHandler handler = null;
 		switch (orderType) {
@@ -52,6 +57,9 @@ public class PayResultHandlerFactory {
 				break;
 			case STORE_CONSUME_ORDER:
 				handler = storeConsumOrderPayHandler;
+				break;
+			case GROUP_ORDER:
+				handler = groupOrderPayHandler;
 				break;
 			default:
 				break;

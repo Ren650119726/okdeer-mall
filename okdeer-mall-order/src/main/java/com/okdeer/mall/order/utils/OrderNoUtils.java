@@ -51,4 +51,11 @@ public class OrderNoUtils {
 	public static final String SERV_ORDER_PREFIXE = "FW";
 	
 	//　End added by maojj 2016-09-23
+	
+	// Begin V2.6.3 added by maojj 2017-10-11
+	/**
+	 * 团购订单 编号前缀
+	 */
+	public static final String GROUP_ORDER_PREFIX = "TG";
+	// End added by maojj 2017-10-11
 }

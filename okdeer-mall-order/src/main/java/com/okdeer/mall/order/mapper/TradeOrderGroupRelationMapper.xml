@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderGroupRelationMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderGroupRelation" >
+        <result column="id" property="id" jdbcType="VARCHAR" />
+        <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+        <result column="group_order_id" property="groupOrderId" jdbcType="VARCHAR" />
+        <result column="group_order_id_his" property="groupOrderIdHis" jdbcType="VARCHAR" />
+        <result column="type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.GroupJoinTypeEnum"/>
+        <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.GroupJoinStatusEnum"/>
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, order_id, group_order_id, group_order_id_his, type, status
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="string" >
+        select <include refid="Base_Column_List" />
+        from trade_order_group_relation
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.order.entity.TradeOrderGroupRelation" >
+        insert into trade_order_group_relation
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="orderId != null" >
+                order_id,
+            </if>
+            <if test="groupOrderId != null" >
+                group_order_id,
+            </if>
+            <if test="groupOrderIdHis != null" >
+                group_order_id_his,
+            </if>
+            <if test="type != null" >
+                type,
+            </if>
+            <if test="status != null" >
+                status,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="orderId != null" >
+                #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="groupOrderId != null" >
+                #{groupOrderId,jdbcType=VARCHAR},
+            </if>
+            <if test="groupOrderIdHis != null" >
+                #{groupOrderIdHis,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                #{type,jdbcType=TINYINT},
+            </if>
+            <if test="status != null" >
+                #{status,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.order.entity.TradeOrderGroupRelation" >
+        update trade_order_group_relation
+        <set >
+            <if test="groupOrderId != null" >
+                group_order_id = #{groupOrderId,jdbcType=VARCHAR},
+            </if>
+            <if test="groupOrderIdHis != null" >
+                group_order_id_his = #{groupOrderIdHis,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                type = #{type,jdbcType=TINYINT},
+            </if>
+            <if test="status != null" >
+                status = #{status,jdbcType=TINYINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="string" >
+        delete from trade_order_group_relation
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <!-- 根据订单id查询关联关系 -->
+    <select id="findByOrderId" resultMap="BaseResultMap" parameterType="string" >
+        SELECT <include refid="Base_Column_List" />
+        FROM trade_order_group_relation
+        WHERE order_id =  #{orderId,jdbcType=VARCHAR};
+    </select>
+	
+	<!-- 查询已成功入团的团单关联关系 -->
+	<select id="findByGroupOrderId" parameterType="string" resultMap="BaseResultMap">
+		SELECT <include refid="Base_Column_List" />
+		FROM trade_order_group_relation
+		WHERE group_order_id = #{groupOrderId}
+		AND status = 1
+	</select>
+
+	<!-- 统计成功入团的数量 -->
+	<select id="countSuccessJoinNum" parameterType="string" resultType="int">
+		SELECT COUNT(1) 
+		FROM trade_order_group_relation
+		WHERE group_order_id = #{groupOrderId}
+		AND status = 1
+	</select>
+</mapper>

@@ -89,6 +89,26 @@ public class PlaceOrderServiceConfig {
 	@Resource
 	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto> checkPinMoneyService;
 	
+	// Begin V2.6.3 added by maojj 2017-10-12
+	/**
+	 * 检查团购商品信息
+	 */
+	@Resource
+	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto> checkGroupSkuService;
+	
+	/**
+	 * 检查团购活动信息
+	 */
+	@Resource
+	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto> checkGroupActivityService;
+	
+	/**
+	 * 生成团购订单
+	 */
+	@Resource
+	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto> placeGroupOrderService;
+	// End V2.6.3 added by maojj 2017-10-12
+	
 	@Bean(name="confirmOrderService")
 	public RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> confirmOrderService() {
 		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> chain = new RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto>();
@@ -194,6 +214,34 @@ public class PlaceOrderServiceConfig {
 //		chain.addHandlerChain(checkPinMoneyService);
 		// 第五步：生成订单
 		chain.addHandlerChain(placeSeckillOrderService);
+		return chain;
+	}
+	
+	@Bean(name="confirmGroupOrderService")
+	public RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> confirmGroupOrderService() {
+		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> chain = new RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto>();
+		// 第一步 ：校验店铺
+		chain.addHandlerChain(checkStoreService);
+		// 第二步：检查团购商品
+		chain.addHandlerChain(checkGroupSkuService);
+		// 第三步：检查团购活动
+		chain.addHandlerChain(checkGroupActivityService);
+		// 第四步：查询最优用户地址
+		chain.addHandlerChain(findUserAddrService);
+		return chain;
+	}
+	
+	@Bean(name="submitGroupOrderService")
+	public RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitGroupOrderService() {
+		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> chain = new RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto>();
+		// 第一步 ：校验店铺
+		chain.addHandlerChain(checkStoreService);
+		// 第二步：检查团购商品
+		chain.addHandlerChain(checkGroupSkuService);
+		// 第三步：检查团购活动
+		chain.addHandlerChain(checkGroupActivityService);
+		// 第四步：生成订单
+		chain.addHandlerChain(placeGroupOrderService);
 		return chain;
 	}
 }

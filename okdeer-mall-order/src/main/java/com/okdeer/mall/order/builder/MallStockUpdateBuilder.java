@@ -37,6 +37,7 @@ import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderComboSnapshot;
+import com.okdeer.mall.order.entity.TradeOrderGroup;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
@@ -531,4 +532,26 @@ public class MallStockUpdateBuilder {
 		stockUpdateDto.setUpdateDetailList(updateDetailList);
 		return stockUpdateDto;
 	}
+	
+	// Begin V2.6.3 added by maojj 2017-10-12
+	public StockUpdateDto buildForGroupOrder(TradeOrderGroup orderGroup) throws Exception {
+		StockUpdateDto stockUpdateDto = new StockUpdateDto();
+
+		stockUpdateDto.setRpcId(UuidUtils.getUuid());
+		stockUpdateDto.setMethodName("");
+		stockUpdateDto.setOrderId(orderGroup.getId());
+		stockUpdateDto.setStoreId(orderGroup.getStoreId());
+		stockUpdateDto.setStockOperateEnum(StockOperateEnum.GROUP_ORDER_SUCCESS);
+
+		List<StockUpdateDetailDto> updateDetailList = new ArrayList<StockUpdateDetailDto>();
+		StockUpdateDetailDto updateDetail = null;
+		updateDetail = new StockUpdateDetailDto();
+		updateDetail.setStoreSkuId(orderGroup.getStoreSkuId());
+		updateDetail.setUpdateNum(orderGroup.getGroupCount());
+		updateDetail.setUpdateLockedNum(orderGroup.getGroupCount());
+		updateDetailList.add(updateDetail);
+		stockUpdateDto.setUpdateDetailList(updateDetailList);
+		return stockUpdateDto;
+	}
+	// End V2.6.3 added by maojj 2017-10-12
 }

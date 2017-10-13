@@ -280,7 +280,8 @@ public abstract class AbstractPayResultHandler {
 		switch (tradeOrder.getType()) {
 			case PHYSICAL_ORDER:
 			case PHONE_PAY_ORDER:
-			case TRAFFIC_PAY_ORDER:	
+			case TRAFFIC_PAY_ORDER:
+			case GROUP_ORDER:
 				tradeOrder.setStatus(OrderStatusEnum.DROPSHIPPING);
 				break;
 			case SERVICE_ORDER:
