@@ -274,8 +274,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	    	req.setData(paramDto);
 	    	//共用实物订单代金券校验
 	    	checkFavourService.process(req, resp);
-	    	//检查零花钱金额 TODO
-	        
 	    	//如果检查结果为false 且为代金券类型
 	    	if(!resp.isSuccess()){
 	    		return resp;
@@ -319,7 +317,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 			tradeOrder.setOrderResource(OrderResourceEnum.MEMCARD);
 			//释放所有代金卷
 			tradeOrderService.updateOrderStatus(tradeOrder);
-    		
     		payResult = new MemberCardResultDto<>();
     		payResult.setCode(ResultCodeEnum.TRADE_CANCEL_OUT.getCode());
     		payResult.setMessage(ResultCodeEnum.TRADE_CANCEL_OUT.getDesc());
@@ -364,6 +361,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		resp.getData().setIsReachPrice(1);
 		//平台优惠
 		resp.getData().setFavour(JsonDateUtil.priceConvertToString(vo.getPlatDiscountAmount(),2,3));
+		resp.getData().setUsablePinMoney(JsonDateUtil.priceConvertToString(vo.getPinMoneyAmount(),2,3));
 		//店铺优惠金额
 		resp.getData().setStoreFavour(JsonDateUtil.priceConvertToString(vo.getDiscountAmount(),2,3));
 		resp.getData().setOrderResource(OrderResourceEnum.MEMCARD.ordinal());
@@ -418,7 +416,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 			//更新优惠券信息
 			updateActivityCoupons(vo.getOrderId(), vo.getRecordId(), vo.getCouponsId(), vo.getDeviceId());
 		}
-		//TODO 保存零花钱记录
+		// 保存零花钱记录
 		if (vo.getPinMoneyAmount().compareTo(BigDecimal.ZERO) > 0) {
 			//保存零花钱记录
 			tradePinMoneyUseService.orderOccupy(vo.getUserId(), vo.getOrderId(), persity.getTotalAmount(),
