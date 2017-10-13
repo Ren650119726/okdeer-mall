@@ -1,6 +1,7 @@
 package com.okdeer.mall.activity.discount.service.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -20,6 +21,7 @@ import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.archive.goods.base.service.GoodsSpuCategoryServiceApi;
 import com.okdeer.archive.goods.dto.StoreSkuParamDto;
 import com.okdeer.archive.goods.store.dto.StoreSkuDto;
+import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
@@ -42,11 +44,13 @@ import com.okdeer.mall.activity.coupons.enums.CashDelivery;
 import com.okdeer.mall.activity.discount.entity.ActivityBusinessRel;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
 import com.okdeer.mall.activity.discount.enums.ActivityBusinessType;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityBusinessRelMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountGroupMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.dto.ActivityBusinessRelDto;
@@ -103,7 +107,8 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	
 	@Resource
 	private MaxFavourStrategy genericMaxFavourStrategy;
-	
+	@Resource
+	private ActivityDiscountGroupMapper activityDiscountGroupMapper;
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return activityDiscountMapper;
@@ -128,8 +133,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			retInfo.setMessage("创建失败，选定范围指定时间内已存在活动，请重新选择范围或更改时间！");
 			return retInfo;
 		}
-		// 优惠条件列表
-		List<ActivityDiscountCondition> conditionList = parseConditionList(actInfoDto);
+		
 		// 限制条件列表
 		List<ActivityBusinessRel> limitList = parseLimitList(actInfoDto);
 		if(actInfo.getType() != ActivityDiscountType.PIN_MONEY){
@@ -141,16 +145,32 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		}
 		// 修改活动信息
 		activityDiscountMapper.update(actInfo);
+		
 		// 删除活动下的优惠条件
 		activityDiscountConditionMapper.deleteByActivityId(activityId);
+		//存在优惠条件列表 满减及零花钱存在
+		if(CollectionUtils.isNotEmpty(actInfoDto.getConditionList())){
+			// 优惠条件列表
+			List<ActivityDiscountCondition> conditionList = parseConditionList(actInfoDto);
+			// 批量新增优惠条件列表
+			activityDiscountConditionMapper.batchAdd(conditionList);
+		}
+		
 		// 删除活动下的业务关联关系
 		activityBusinessRelMapper.deleteByActivityId(activityId);
-		// 批量新增优惠条件列表
-		activityDiscountConditionMapper.batchAdd(conditionList);
 		// 批量新增活动限制信息
 		if(CollectionUtils.isNotEmpty(limitList)){
 			activityBusinessRelMapper.batchAdd(limitList);
 		}
+		
+		// 删除团购活动下的团购商品集合
+		activityDiscountGroupMapper.deleteByActivityId(activityId);
+		//团购商品集合 批量保存
+		List<ActivityDiscountGroup> groupGoodsList =  actInfoDto.getGroupGoodsList();
+		if(CollectionUtils.isNotEmpty(groupGoodsList)){
+			activityDiscountGroupMapper.batchAdd(groupGoodsList);
+		}
+		
 		return retInfo;
 	}
 	
@@ -167,8 +187,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		}
 		// 活动信息
 		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
-		// 生成唯一主键
-		actInfo.setId(UuidUtils.getUuid());
+		
 		// 活动状态默认为未开始
 		actInfo.setStatus(ActivityDiscountStatus.noStart);
 		if(actInfo.getType() != ActivityDiscountType.PIN_MONEY){
@@ -178,17 +197,27 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		if(actInfo.getLimitUser() == UseUserType.ONlY_NEW_USER){
 			actInfo.setLimitTotalFreq(1);
 		}
-		// 优惠条件列表
-		List<ActivityDiscountCondition> conditionList = parseConditionList(actInfoDto);
-		// 限制条件列表
-		List<ActivityBusinessRel> limitList = parseLimitList(actInfoDto);
+		
 		// 新增活动信息
 		activityDiscountMapper.add(actInfo);
-		// 批量新增优惠条件列表
-		activityDiscountConditionMapper.batchAdd(conditionList);
+		if(CollectionUtils.isNotEmpty(actInfoDto.getConditionList())){
+			// 优惠条件列表
+			List<ActivityDiscountCondition> conditionList = parseConditionList(actInfoDto);
+			// 批量新增优惠条件列表
+			activityDiscountConditionMapper.batchAdd(conditionList);
+		}
+		
+		// 限制条件列表
+		List<ActivityBusinessRel> limitList = parseLimitList(actInfoDto);
 		// 批量新增活动限制信息
 		if(CollectionUtils.isNotEmpty(limitList)){
 			activityBusinessRelMapper.batchAdd(limitList);
+		}
+		
+		//团购商品集合 批量保存
+		List<ActivityDiscountGroup> groupGoodsList =  actInfoDto.getGroupGoodsList();
+		if(CollectionUtils.isNotEmpty(groupGoodsList)){
+			activityDiscountGroupMapper.batchAdd(groupGoodsList);
 		}
 		return retInfo;
 	}
@@ -352,19 +381,22 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	}
 
 	@Override
-	public ActivityInfoDto findInfoById(String id,boolean isLoadDetail) throws ServiceException {
+	public ActivityInfoDto findInfoById(String id,boolean isLoadDetail) throws Exception {
 		// 活动基本信息
 		ActivityDiscount activityInfo = activityDiscountMapper.findById(id);
 		// 活动优惠条件信息
 		List<ActivityDiscountCondition> conditionList = activityDiscountConditionMapper.findByActivityId(id);
 		// 活动业务限制信息
 		List<ActivityBusinessRel> relList = activityBusinessRelMapper.findByActivityId(id);
+		//查询团购活动商品
+		List<ActivityDiscountGroup> groupGoodsList = activityDiscountGroupMapper.findByActivityId(id);
 		// 解析业务限制信息
 		ActLimitRelBuilder limitBuilder = parseRelList(relList,isLoadDetail);
 		ActivityInfoDto actInfoDto = new ActivityInfoDto();
 		actInfoDto.setActivityInfo(activityInfo);
 		actInfoDto.setActivityType(activityInfo.getType().ordinal());
 		actInfoDto.setConditionList(conditionList);
+		actInfoDto.setGroupGoodsList(groupGoodsList);
 		if(limitBuilder != null){
 			actInfoDto.setRelDtoList(limitBuilder.retrieveResult());
 			actInfoDto.setLimitRangeIds(limitBuilder.getLimitRangeIds());
