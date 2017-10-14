@@ -37,25 +37,28 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @param actInfoDto
 	 * @return   
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2017年4月17日
 	 */
-	ReturnInfo add(ActivityInfoDto actInfoDto);
+	ReturnInfo add(ActivityInfoDto actInfoDto) throws Exception;
 	
 	/**
 	 * @Description: 编辑活动信息
 	 * @param actInfoDto
 	 * @return   
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2017年4月20日
 	 */
-	ReturnInfo update(ActivityInfoDto actInfoDto);
+	ReturnInfo update(ActivityInfoDto actInfoDto) throws Exception;
 	
 	/**
 	 * @Description: 定时调度更改活动状态   
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2017年4月18日
 	 */
-	void updateStatus();
+	void updateStatus() throws Exception;
 	
 	/**
 	 * 
@@ -81,9 +84,10 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @param paramBo
 	 * @return   
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2017年4月19日
 	 */
-	ReturnInfo batchClose(ActivityParamBo paramBo);
+	ReturnInfo batchClose(ActivityParamBo paramBo) throws Exception;
 	
 	/**
 	 * @Description: 根据活动Id查找活动完整信息

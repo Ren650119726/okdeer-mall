@@ -87,6 +87,20 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	 */
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitSeckillOrderService;
+	
+	// Begin V2.6.3 added by maojj 2017-10-12
+	/**
+	 * 团购订单确认
+	 */
+	@Resource
+	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> confirmGroupOrderService;
+	
+	/**
+	 * 团购订单提交
+	 */
+	@Resource
+	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitGroupOrderService;
+	// End V2.6.3 added by maojj 2017-10-12
 
 	@Resource
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
@@ -120,6 +134,9 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				break;
 			case SECKILL_ORDER:
 				handlerChain = confirmSeckillOrderService;
+				break;
+			case GROUP_ORDER:
+				handlerChain = confirmGroupOrderService;
 				break;
 			default:
 				break;
@@ -215,6 +232,9 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				break;
 			case SECKILL_ORDER:
 				handlerChain = submitSeckillOrderService;
+				break;
+			case GROUP_ORDER:
+				handlerChain = submitGroupOrderService;
 				break;
 			default:
 				break;

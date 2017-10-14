@@ -11,6 +11,7 @@ import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,10 +21,17 @@ import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.archive.goods.base.service.GoodsSpuCategoryServiceApi;
 import com.okdeer.archive.goods.dto.StoreSkuParamDto;
+import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.dto.StoreSkuDto;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
+import com.okdeer.archive.goods.store.enums.IsActivity;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.stock.dto.StockUpdateDetailDto;
+import com.okdeer.archive.stock.dto.StockUpdateDto;
+import com.okdeer.archive.stock.enums.StockOperateEnum;
+import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
@@ -40,6 +48,7 @@ import com.okdeer.common.utils.EnumAdapter;
 import com.okdeer.mall.activity.bo.ActLimitRelBuilder;
 import com.okdeer.mall.activity.bo.ActivityParamBo;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CashDelivery;
 import com.okdeer.mall.activity.discount.entity.ActivityBusinessRel;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
@@ -57,12 +66,14 @@ import com.okdeer.mall.activity.dto.ActivityBusinessRelDto;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.activity.dto.ActivityPinMoneyDto;
+import com.okdeer.mall.activity.seckill.vo.ActivitySeckillFormVo;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.order.vo.FullSubtract;
+import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
@@ -105,6 +116,18 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	@Reference(version = "1.0.0",check=false)
 	private GoodsSpuCategoryServiceApi goodsSpuCategoryServiceApi;
 	
+	/**
+	* 注入库存API接口
+	*/
+	@Reference(version = "1.0.0", check = false)
+	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
+	
+	/**
+	 * 回滚MQ
+	 */
+	@Autowired
+	RollbackMQProducer rollbackMQProducer;
+	
 	@Resource
 	private MaxFavourStrategy genericMaxFavourStrategy;
 	@Resource
@@ -116,7 +139,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	
 	@Override
 	@Transactional(rollbackFor=Exception.class)
-	public ReturnInfo update(ActivityInfoDto actInfoDto) {
+	public ReturnInfo update(ActivityInfoDto actInfoDto) throws Exception {
 		// 初始化ReturnInfo
 		ReturnInfo retInfo = new ReturnInfo();
 		// 活动信息
@@ -127,8 +150,8 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			retInfo.setFlag(false);
 			retInfo.setMessage("该满减活动处于" + currentAct.getStatus().getValue() + "状态下，不能修改！");
 		}
-		// 同一时间、同一地区、同一店铺活动唯一性检查。
-		if(!checkUnique(actInfoDto)){
+		// 同一时间、同一地区、同一店铺活动唯一性检查。 团购不检查可以创建
+		if(actInfo.getType() !=ActivityDiscountType.GROUP_PURCHASE && !checkUnique(actInfoDto)){
 			retInfo.setFlag(false);
 			retInfo.setMessage("创建失败，选定范围指定时间内已存在活动，请重新选择范围或更改时间！");
 			return retInfo;
@@ -167,16 +190,20 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		activityDiscountGroupMapper.deleteByActivityId(activityId);
 		//团购商品集合 批量保存
 		List<ActivityDiscountGroup> groupGoodsList =  actInfoDto.getGroupGoodsList();
+		
+		// 释放原来商品活动库存 + 解除原商品关联关系
+		removeSkuAndStockRelation(actInfo.getId());
 		if(CollectionUtils.isNotEmpty(groupGoodsList)){
 			activityDiscountGroupMapper.batchAdd(groupGoodsList);
+			// 保存团购活动商品关系信息 + 锁定团购活动库存信息
+			addSkuAndStockRelation(actInfo, groupGoodsList);
 		}
-		
 		return retInfo;
 	}
 	
 	@Override
 	@Transactional(rollbackFor=Exception.class)
-	public ReturnInfo add(ActivityInfoDto actInfoDto) {
+	public ReturnInfo add(ActivityInfoDto actInfoDto) throws Exception {
 		// 初始化ReturnInfo
 		ReturnInfo retInfo = new ReturnInfo();
 		// 同一时间、同一地区、同一店铺活动唯一性检查。
@@ -218,8 +245,76 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		List<ActivityDiscountGroup> groupGoodsList =  actInfoDto.getGroupGoodsList();
 		if(CollectionUtils.isNotEmpty(groupGoodsList)){
 			activityDiscountGroupMapper.batchAdd(groupGoodsList);
+			
+			// 保存团购活动商品关系信息 + 锁定团购活动库存信息
+			addSkuAndStockRelation(actInfo, groupGoodsList);
 		}
+		
 		return retInfo;
+	}
+	
+	/**
+	 * @Description: 添加商品与活动的关联关系，更新店铺SKU表
+	 * @param skuId 店铺skuId
+	 * @param acvitityId 活动id
+	 * @param rpcIdBySkuList RPCID
+	 * @author tuzhd
+	 * @date 2017年10月13日
+	 */
+	private void addSkuAndStockRelation(ActivityDiscount actInfo,List<ActivityDiscountGroup> groupList) throws Exception {
+		List<String> rpcIdBySkuList = new ArrayList<>();
+		List<String> rpcIdByStockList = new ArrayList<>();
+		try{
+			if(CollectionUtils.isNotEmpty(groupList)){
+				for(ActivityDiscountGroup group : groupList){
+					rpcIdBySkuList.add(
+							goodsStoreSkuServiceApi.addSkuRelation(group.getStoreSkuId(), actInfo.getId(), 
+									StoreActivityTypeEnum.GROUP_BY,this.getClass().getName() + ".addSkuAndStock")
+						);
+					rpcIdByStockList.add(
+							goodsStoreSkuStockApi.lockActivitySkuStock(actInfo.getUpdateUserId(),group.getStoreSkuId(),group.getGoodsCountLimit(), 
+									 this.getClass().getName() + ".addSkuAndStock",ActivityTypeEnum.GROUP_ACTIVITY)
+							);
+				}
+			}
+		} catch (Exception e) {
+			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
+			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
+			throw e;
+		}
+	}
+	
+	/**
+	 * @Description: 解除商品与活动的关联关系
+	 * @param activityId 活动Id
+	 * @throws Exception 抛出异常
+	 * @author tuzhd
+	 * @date 2016年10月13日
+	 */
+	private void removeSkuAndStockRelation(String activityId) throws Exception {
+		List<String> rpcIdBySkuList = new ArrayList<>();
+		List<String> rpcIdByStockList = new ArrayList<>();
+		try{
+			//查询团购活动商品
+			List<ActivityDiscountGroup> oldGoodsList = activityDiscountGroupMapper.findByActivityId(activityId);
+			if(CollectionUtils.isNotEmpty(oldGoodsList)){
+				for(ActivityDiscountGroup group : oldGoodsList){
+					rpcIdBySkuList.add(
+							goodsStoreSkuServiceApi.removeSkuRelation(group.getStoreSkuId(), 
+							this.getClass().getName() + ".removeSkuAndStock")
+						);
+					
+					rpcIdByStockList.add(
+							goodsStoreSkuStockApi.releaseActivitySkuStock(group.getStoreSkuId(), 
+							this.getClass().getName() + ".removeSkuAndStock")
+						);
+				}
+			}
+		} catch (Exception e) {
+			rollbackMQProducer.sendStockRollbackMsg(rpcIdByStockList);
+			rollbackMQProducer.sendSkuRollbackMsg(rpcIdBySkuList);
+			throw e;
+		}
 	}
 	
 	/**
@@ -308,7 +403,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 
 	@Override
 	@Transactional(rollbackFor=Exception.class)
-	public void updateStatus() {
+	public void updateStatus() throws Exception {
 		// 当前时间
 		Date currentDate = DateUtils.getSysDate();
 		// 查询需要更新状态的集合
@@ -329,6 +424,8 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 				ingList.add(act.getId());
 			}else if(act.getStatus() == ActivityDiscountStatus.end){
 				endList.add(act.getId());
+				// 释放原来商品活动库存 + 解除原商品关联关系
+				removeSkuAndStockRelation(act.getId());
 			}
 		}
 		// 更新进行中的活动
@@ -360,7 +457,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 
 	@Override
 	@Transactional(rollbackFor=Exception.class)
-	public ReturnInfo batchClose(ActivityParamBo paramBo) {
+	public ReturnInfo batchClose(ActivityParamBo paramBo) throws Exception {
 		ReturnInfo retInfo = new ReturnInfo();
 		ActivityParamDto paramDto = new ActivityParamDto();
 		paramDto.setActivityIds(paramBo.getActivityIds());
@@ -374,9 +471,13 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 				retInfo.setMessage("选中的活动中存在已关闭活动，请重新选择!");
 				return retInfo;
 			}
+			// 释放原来商品活动库存 + 解除原商品关联关系
+			removeSkuAndStockRelation(act.getId());
 		}
 		// 关闭活动
 		activityDiscountMapper.updateStatus(paramBo);
+		
+		
 		return retInfo;
 	}
 

@@ -342,6 +342,9 @@ public class TradeOrderBuilder {
 	 * @date 2016年7月14日
 	 */
 	private void setPickUpTimeAndPickUpId(TradeOrder tradeOrder, PlaceOrderParamDto paramDto) throws ServiceException {
+		if(paramDto.getOrderType() == PlaceOrderTypeEnum.GROUP_ORDER){
+			return;
+		}
 		String pickTime = paramDto.getPickTime();
 		if (tradeOrder.getPickUpType() == PickUpTypeEnum.DELIVERY_DOOR){
 			// 如果是上门

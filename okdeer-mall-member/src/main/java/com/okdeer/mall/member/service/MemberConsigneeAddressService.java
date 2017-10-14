@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.okdeer.archive.system.entity.SysUser;
+import com.okdeer.mall.member.bo.UserAddressFilterCondition;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.vo.MemberConsigneeAddressVo;
 import com.okdeer.mall.member.member.vo.UserAddressVo;
@@ -303,4 +304,9 @@ public interface MemberConsigneeAddressService {
 	// End V2.0 added by maojj 2017-01-07
 	
 	List<UserAddressVo> findByStoreIds(List<String> storeIds);
+	
+	// Begin V2.6.3 added by maojj 2017-10-11
+	
+	List<UserAddressVo> findUserAddrList(String userId,UserAddressFilterCondition filterCondition,AddressFilterStrategy filterStrategy);
+	// End V2.6.3 added by maojj 2017-10-11
 }
