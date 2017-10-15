@@ -585,6 +585,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				// 更新退款单
 				refund.setRefundsStatus(RefundsStatusEnum.BUYER_REPEAL_REFUND);
 				refund.setUpdateTime(new Date());
+				refund.setOperator(RobotUserUtil.getRobotUser().getId());
 				TradeOrderRefundsCertificateVo certificate = buildCertificate(refund.getId(), "用户超时未归还商品，系统默认撤销退款申请");
 				tradeOrderRefundsService.updateWithRevocatory(refund, certificate);
 			}

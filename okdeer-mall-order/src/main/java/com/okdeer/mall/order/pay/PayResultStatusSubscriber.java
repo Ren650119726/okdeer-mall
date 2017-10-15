@@ -298,7 +298,7 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	 */
 	private ConsumeConcurrentlyStatus refundProcessResult(MessageExt message) {
 		String msg = new String(message.getBody(), Charsets.UTF_8);
-		logger.info("退款支付状态消息:" + msg);
+		logger.info("退款支付状态消息:{}" , msg);
 		try {
 			BaseResultDto result = JsonMapper.nonEmptyMapper().fromJson(msg, BaseResultDto.class);
 			if (result.getCode().equals(TradeErrorEnum.TRADE_REPEAT)) {
@@ -325,24 +325,11 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 				} else {
 					tradeOrderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
 				}
-				tradeOrderRefundsService.updateRefunds(tradeOrderRefunds);
-				
-                //退款成功向用户发送通知消息
-//              this.sendMessageService.tradeSendMessage(null, tradeOrderRefunds);
-				
-				// 订单完成后同步到商业管理系统
-				//tradeOrderCompleteProcessService.orderRefundsCompleteSyncToJxc(tradeOrderRefunds.getId());
+				tradeOrderRefundsService.refundSuccess(tradeOrderRefunds);
 			} else {
 				logger.error("退款支付状态消息处理失败,退款单编号为：" + tradeOrderRefunds.getRefundNo() + "，问题原因" + result.getMsg());
 
 			}
-
-			TradeOrder tradeOrder = tradeOrderService.getByTradeNum(result.getTradeNum());
-			//add by  zhangkeneng  和左文明对接丢消息
-			TradeOrderContext tradeOrderContext = new TradeOrderContext();
-			tradeOrderContext.setTradeOrder(tradeOrder);
-			tradeOrderContext.setTradeOrderRefunds(tradeOrderRefunds);
-			tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
 			logger.error("退款支付状态消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;

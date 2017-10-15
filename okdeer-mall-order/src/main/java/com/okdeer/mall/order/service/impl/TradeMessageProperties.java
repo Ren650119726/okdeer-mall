@@ -159,5 +159,11 @@ public class TradeMessageProperties {
 
 	@Value("${sms.service.store.cancel.style5}")
 	public String smsServiceStoreCancelStyle5;
+	
 	// End 重构4.1 add by wusw
+	/**
+	 * 退款成功的短信提示
+	 */
+	@Value("${sms.pay.refund.success}")
+	public String smsPayRefundSuccess;
 }
