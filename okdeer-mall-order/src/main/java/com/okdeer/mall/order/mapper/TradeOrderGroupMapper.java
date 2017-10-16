@@ -6,8 +6,12 @@
  */
 package com.okdeer.mall.order.mapper;
 
+import java.util.List;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.order.bo.TradeOrderGroupParamBo;
+import com.okdeer.mall.order.dto.TradeOrderGroupDto;
+import com.okdeer.mall.order.dto.TradeOrderGroupParamDto;
 
 public interface TradeOrderGroupMapper extends IBaseMapper {
 
@@ -19,4 +23,13 @@ public interface TradeOrderGroupMapper extends IBaseMapper {
 	 * @date 2017年10月12日
 	 */
 	int countGroupSkuNum(TradeOrderGroupParamBo paramBo);
+	
+	/**
+	 * @Description: 根据查询条件动态查询
+	 * @param param
+	 * @return
+	 * @author zhangkn
+	 * @date 2017年10月16日
+	 */
+	List<TradeOrderGroupDto> findByParam(TradeOrderGroupParamDto param);
 }

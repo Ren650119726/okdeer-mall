@@ -17,6 +17,10 @@
         <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
         <result column="remark" property="remark" jdbcType="VARCHAR" />
     </resultMap>
+    
+    <resultMap id="dto" extends="BaseResultMap" type="com.okdeer.mall.order.dto.TradeOrderGroupDto">
+        
+    </resultMap>
 
     <sql id="Base_Column_List" >
         id, group_no, group_user_id, activity_id, activity_name, group_count, store_sku_id, 
@@ -191,5 +195,45 @@
 				AND status = #{status,jdbcType=TINYINT}
 			</if>
 		</where>
+	</select>
+	
+	<!-- 根据查询条件动态查询(运营后台列表用) -->
+	<select id="findByParam" parameterType="com.okdeer.mall.order.dto.TradeOrderGroupParamDto" resultMap="dto">
+		SELECT 
+			t.* ,
+			store.store_name as storeName,
+			buy.login_name as groupUserName,
+			(select count(*) from trade_order_group_relation r where r.group_order_id = t.id and r.`status` = 1) as joinNum
+			FROM trade_order_group t 
+		left join sys_buyer_user buy on (buy.id = t.group_user_id)
+		left join store_info store on (store.id = t.store_id)
+		where 1 = 1
+		<if test="groupNoLike != null and groupNoLike != '' ">
+			AND t.group_no like CONCAT('%',#{groupNoLike},'%')
+		</if>
+		<if test="storeNameLike != null and storeNameLike != '' ">
+			AND store.store_name like CONCAT('%',#{storeNameLike},'%')
+		</if>
+		<if test="mobileLike != null and mobileLike != '' ">
+			AND buy.login_name like CONCAT('%',#{mobileLike},'%')
+		</if>
+		<if test="createTimeStart != null and createTimeStart != ''">
+			AND #{createTimeStart} &lt;= t.create_time  
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			AND #{createTimeEnd} &gt;= t.create_time  
+		</if>
+		<if test="status != null and status != ''">
+			AND t.status = #{status}
+		</if>
+		<if test="activityId != null and activityId != ''">
+			AND t.activity_id = #{activityId}
+		</if>
+		<if test="idList != null and idList.size() > 0">
+			AND t.id in
+			<foreach collection="idList" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
 	</select>
 </mapper>
