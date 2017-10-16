@@ -1,7 +1,11 @@
 
 package com.okdeer.mall.order.service.impl;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.util.Assert;
 
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -25,7 +29,7 @@ public abstract class AbstractTradeOrderRefundsService implements TradeOrderRefu
 
 	@Autowired
 	protected TradeOrderService tradeOrderService;
-	
+
 	@Autowired
 	protected TradeOrderPayService tradeOrderPayService;
 
@@ -35,11 +39,20 @@ public abstract class AbstractTradeOrderRefundsService implements TradeOrderRefu
 	@Autowired
 	protected TradeOrderRefundBuildFactory tradeOrderRefundBuildFactory;
 
+	@Autowired
+	protected RedisLockRegistry redisLockRegistry;
+
 	@Override
 	public Response<TradeOrderApplyRefundResultDto> processApplyRefund(
 			TradeOrderApplyRefundParamDto tradeOrderApplyRefundParamDto) throws MallApiException {
 		Response<TradeOrderApplyRefundResultDto> response = new Response<>();
+		Lock lock = redisLockRegistry.obtain("REFUND:" + tradeOrderApplyRefundParamDto.getOrderId());
 		try {
+			boolean result = lock.tryLock(10, TimeUnit.SECONDS);
+			if (!result) {
+				response.setResult(ResultCodeEnum.FAIL);
+				return response;
+			}
 			TradeOrderApplyRefundResultDto tradeOrderApplyRefundResultDto = new TradeOrderApplyRefundResultDto();
 			TradeOrder tradeOrder = tradeOrderApplyRefundParamDto.getTradeOrder();
 			if (tradeOrder == null) {
@@ -62,7 +75,7 @@ public abstract class AbstractTradeOrderRefundsService implements TradeOrderRefu
 			if (!checkResult) {
 				return response;
 			}
-			if(tradeOrderRefundContext.getTradeOrderPay() == null && tradeOrder.getPayWay() == PayWayEnum.PAY_ONLINE){
+			if (tradeOrderRefundContext.getTradeOrderPay() == null && tradeOrder.getPayWay() == PayWayEnum.PAY_ONLINE) {
 				TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(tradeOrder.getId());
 				tradeOrderRefundContext.setTradeOrderPay(tradeOrderPay);
 			}
@@ -76,6 +89,11 @@ public abstract class AbstractTradeOrderRefundsService implements TradeOrderRefu
 			return response;
 		} catch (ServiceException e) {
 			throw new MallApiException(e);
+		} catch (InterruptedException e) {
+			Thread.interrupted();
+			throw new MallApiException(e);
+		} finally {
+			lock.unlock();
 		}
 	}
 
