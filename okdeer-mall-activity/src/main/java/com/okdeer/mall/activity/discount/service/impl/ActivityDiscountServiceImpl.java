@@ -206,14 +206,14 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	public ReturnInfo add(ActivityInfoDto actInfoDto) throws Exception {
 		// 初始化ReturnInfo
 		ReturnInfo retInfo = new ReturnInfo();
+		// 活动信息
+		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
 		// 同一时间、同一地区、同一店铺活动唯一性检查。
-		if(!checkUnique(actInfoDto)){
+		if(actInfo.getType() !=ActivityDiscountType.GROUP_PURCHASE && !checkUnique(actInfoDto)){
 			retInfo.setFlag(false);
 			retInfo.setMessage("创建失败，选定范围指定时间内已存在活动，请重新选择范围或更改时间！");
 			return retInfo;
 		}
-		// 活动信息
-		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
 		
 		// 活动状态默认为未开始
 		actInfo.setStatus(ActivityDiscountStatus.noStart);
