@@ -180,7 +180,7 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 			return false;
 		}
 		respDto.setGroupExpireTime(orderGroup.getExpireTime().getTime() - System.currentTimeMillis());
-		respDto.setAbsendNum(orderGroup.getGroupCount());
+		respDto.setAbsentNum(orderGroup.getGroupCount());
 		return true;
 	}
 

@@ -206,7 +206,6 @@ import com.okdeer.mall.order.mapper.TradeOrderCommentMapper;
 import com.okdeer.mall.order.mapper.TradeOrderComplainImageMapper;
 import com.okdeer.mall.order.mapper.TradeOrderComplainMapper;
 import com.okdeer.mall.order.mapper.TradeOrderExtSnapshotMapper;
-import com.okdeer.mall.order.mapper.TradeOrderGroupMapper;
 import com.okdeer.mall.order.mapper.TradeOrderGroupRelationMapper;
 import com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
@@ -224,6 +223,7 @@ import com.okdeer.mall.order.service.PageCallBack;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
+import com.okdeer.mall.order.service.TradeOrderGroupService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
@@ -258,7 +258,6 @@ import com.okdeer.mall.system.mapper.SysUserInvitationRecordMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
 import com.okdeer.mall.system.service.InvitationCodeServiceApi;
-import com.okdeer.mall.system.service.SysBuyerUserService;
 import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
@@ -584,10 +583,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	private TradeOrderGroupRelationMapper tradeOrderGroupRelationMapper;
     
     @Resource
-    private TradeOrderGroupMapper tradeOrderGroupMapper;
-    
-    @Resource
-	private SysBuyerUserService sysBuyerUserService;
+   	private TradeOrderGroupService tradeOrderGroupService;
 
     // Begin Bug:13700 added by maojj 2016-10-10
     /**
@@ -4036,7 +4032,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
    
 
     @Override
-    public JSONObject findUserOrderDetailList(String orderId) throws ServiceException {
+    public JSONObject findUserOrderDetailList(String orderId,String screen) throws ServiceException {
         if (StringUtils.isEmpty(orderId)) {
             throw new ServiceException("非法请求参数");
         }
@@ -4069,7 +4065,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     		// Begin V2.6.3 added by maojj 2017-10-13
     		if(orders.getType() == OrderTypeEnum.GROUP_ORDER && orders.getStatus() == OrderStatusEnum.DROPSHIPPING){
     			// 如果是已付款的团购订单
-    			setGroupInfo(json,orderId);
+    			setGroupInfo(json,orderId,screen);
     		}
     		// End V2.6.3 added by maojj 2017-10-13
         } catch (Exception e) {
@@ -4079,27 +4075,22 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         return json;
     }
     
-    private void setGroupInfo(JSONObject json,String orderId){
+    /**
+     * @Description: TODO
+     * @param json
+     * @param orderId
+     * @param screen
+     * @throws Exception   
+     * @author maojj
+     * @date 2017年10月16日
+     */
+    private void setGroupInfo(JSONObject json,String orderId,String screen) throws Exception{
     	// 查询团购订单关联关系
     	TradeOrderGroupRelation groupRel = tradeOrderGroupRelationMapper.findByOrderId(orderId);
     	// 查询团购订单信息
-    	TradeOrderGroup orderGroup = tradeOrderGroupMapper.findById(groupRel.getGroupOrderId());
+    	TradeOrderGroup orderGroup = tradeOrderGroupService.findById(groupRel.getGroupOrderId());
     	// 根据团购订单查询已经入团的关联关系
-    	List<TradeOrderGroupRelation> groupRelList = tradeOrderGroupRelationMapper.findByGroupOrderId(groupRel.getGroupOrderId());
-    	List<GroupJoinUserDto> joinUserList = Lists.newArrayList();
-    	groupRelList.forEach(item -> {
-			try {
-				SysBuyerUser buyerUser = sysBuyerUserService.findByPrimaryKey(item.getUserId());
-				GroupJoinUserDto joinUser = new GroupJoinUserDto();
-				joinUser.setNickName(ConvertUtil.format(buyerUser.getNickName()));
-				joinUser.setPicUrl(ConvertUtil.format(buyerUser.getPicUrl()));
-				joinUser.setJoinType(String.valueOf(item.getType().getCode()));
-				joinUserList.add(joinUser);
-			} catch (Exception e) {
-			    logger.error("查询用户信息失败：",item);
-			}
-		});
-    	
+    	List<GroupJoinUserDto> joinUserList = tradeOrderGroupService.findGroupJoinUserList(groupRel.getGroupOrderId(), screen);
     	json.put("groupExpireTime", orderGroup.getExpireTime().getTime() - System.currentTimeMillis());
     	json.put("absentNum", orderGroup.getGroupCount() - joinUserList.size());
     	json.put("joinUserList", JSONArray.fromObject(joinUserList));

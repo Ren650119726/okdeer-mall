@@ -27,6 +27,8 @@ import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.common.utils.ImageCutUtils;
+import com.okdeer.common.utils.ImageTypeContants;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
@@ -46,10 +48,9 @@ import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandlerChain;
-import com.okdeer.mall.order.mapper.TradeOrderGroupRelationMapper;
 import com.okdeer.mall.order.service.PlaceOrderApi;
+import com.okdeer.mall.order.service.TradeOrderGroupService;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
-import com.okdeer.mall.system.service.SysBuyerUserService;
 import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mall.util.RedisLock;
 
@@ -111,9 +112,6 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	@Resource
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
 	
-	@Resource
-	private SysBuyerUserService sysBuyerUserService;
-	
 	/**
 	 * mq注入
 	 */
@@ -128,7 +126,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	private TradeorderProcessLister tradeorderProcessLister;
 	
 	@Resource
-	private TradeOrderGroupRelationMapper tradeOrderGroupRelationMapper;
+	private TradeOrderGroupService tradeOrderGroupService;
 
 	@Override
 	public Response<PlaceOrderDto> confirmOrder(Request<PlaceOrderParamDto> req) throws Exception {
@@ -230,23 +228,10 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		if(paramDto.getOrderType() == PlaceOrderTypeEnum.GROUP_ORDER
 				&& paramDto.getGroupJoinType() == GroupJoinTypeEnum.GROUP_JOIN
 				&& paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT){
-			// 如果是团购订单确认且是参团用户，则返回已参团用户信息
-			List<TradeOrderGroupRelation> groupRelList = tradeOrderGroupRelationMapper.findByGroupOrderId(paramDto.getGroupOrderId());
-			List<GroupJoinUserDto> joinUserList = Lists.newArrayList();
-			groupRelList.forEach(groupRel -> {
-				try {
-					SysBuyerUser buyerUser = sysBuyerUserService.findByPrimaryKey(groupRel.getUserId());
-					GroupJoinUserDto joinUser = new GroupJoinUserDto();
-					joinUser.setNickName(ConvertUtil.format(buyerUser.getNickName()));
-					joinUser.setPicUrl(ConvertUtil.format(buyerUser.getPicUrl()));
-					joinUser.setJoinType(String.valueOf(groupRel.getType().getCode()));
-					joinUserList.add(joinUser);
-				} catch (Exception e) {
-				    logger.error("查询用户信息失败：",e);
-				}
-			});
+			List<GroupJoinUserDto> joinUserList = tradeOrderGroupService
+					.findGroupJoinUserList(paramDto.getGroupOrderId(), paramDto.getScreen());
 			resp.getData().setJoinUserList(joinUserList);
-			resp.getData().setAbsendNum(resp.getData().getAbsendNum() - groupRelList.size());
+			resp.getData().setAbsentNum(resp.getData().getAbsentNum() - joinUserList.size());
 		}
 		// End V2.6.3 added by maojj 2017-10-13
 		resp.getData().setCurrentTime(System.currentTimeMillis());
