@@ -7,14 +7,18 @@ import javax.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.common.utils.ImageCutUtils;
 import com.okdeer.common.utils.ImageTypeContants;
 import com.okdeer.mall.order.dto.GroupJoinUserDto;
+import com.okdeer.mall.order.dto.TradeOrderGroupDto;
+import com.okdeer.mall.order.dto.TradeOrderGroupParamDto;
 import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
 import com.okdeer.mall.order.mapper.TradeOrderGroupMapper;
 import com.okdeer.mall.order.mapper.TradeOrderGroupRelationMapper;
@@ -66,6 +70,13 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 			joinUserList.add(joinUser);
 		}
 		return joinUserList;
+	}
+	
+	@Override
+	public PageUtils<TradeOrderGroupDto> findPage(TradeOrderGroupParamDto param, int pageNum, int pageSize)
+			throws Exception {
+		PageHelper.startPage(pageNum, pageSize, true);
+		return new PageUtils<TradeOrderGroupDto>(tradeOrderGroupMapper.findByParam(param));
 	}
 
 }
