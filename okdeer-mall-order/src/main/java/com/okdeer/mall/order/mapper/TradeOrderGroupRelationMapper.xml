@@ -102,6 +102,7 @@
 		FROM trade_order_group_relation
 		WHERE group_order_id = #{groupOrderId}
 		AND status = 1
+		ORDER BY type ASC
 	</select>
 
 	<!-- 统计成功入团的数量 -->
