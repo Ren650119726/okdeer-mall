@@ -315,7 +315,7 @@ public class TradeOrderRefundsServiceImpl extends AbstractTradeOrderRefundsServi
 	public void updateAgreePayment(String id, String userId) throws Exception {
 		List<String> rpcIdList = new ArrayList<>();
 		try {
-			updateTradeOrderRefund(id, RefundsStatusEnum.SELLER_REJECT_APPLY, tradeOrderRefundContext -> {
+			updateTradeOrderRefund(id, RefundsStatusEnum.SELLER_REFUNDING, tradeOrderRefundContext -> {
 
 				TradeOrderRefunds oldTradeOrderRefunds = tradeOrderRefundContext.getTradeOrderRefunds();
 

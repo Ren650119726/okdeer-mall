@@ -183,7 +183,7 @@ public abstract class AbstractTradeOrderRefundProcessService implements TradeOrd
 				if (conditionStatus == null) {
 					throw new MallApiException("未知的状态校验:" + checkStatus);
 				}
-				if (currentRefundsStatus != checkStatus) {
+				if (currentRefundsStatus != conditionStatus) {
 					throw new MallApiException(exceptionMsg);
 				}
 				break;
